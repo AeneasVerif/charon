@@ -12,9 +12,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     crane.url = "github:ipetkov/crane";
+    jail-nix.url = "sourcehut:~alexdavid/jail.nix";
   };
 
-  outputs = { self, flake-utils, nixpkgs, rust-overlay, crane, ... }:
+  outputs = { self, flake-utils, nixpkgs, rust-overlay, crane, jail-nix, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
@@ -132,7 +133,10 @@
         # Runs charon on the whole rustc ui test suite.
         rustc-tests = pkgs.callPackage ./nix/rustc-tests.nix { inherit charon rustToolchain; };
 
-        zulip_bot = pkgs.callPackage ./nix/zulip_bot.nix { inherit charon; };
+        zulip_bot = pkgs.callPackage ./nix/zulip_bot.nix {
+          inherit charon pkgs;
+          jailNixLib = jail-nix.lib;
+        };
 
         # Check that the generated ocaml files match what is committed to the repo.
         check-generated-ml = pkgs.runCommand "check-generated-ml" { } ''

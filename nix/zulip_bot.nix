@@ -1,9 +1,70 @@
 { charon
+, jailNixLib
 , lib
+, pkgs
 , python3Packages
 , writers
 }:
 
+let
+  maxTmpfsBytes = 256 * 1024 * 1024;
+  jail = jailNixLib.extend {
+    inherit pkgs;
+    # The default jail also provides a shell, coreutils, and fake passwd files.
+    # Charon needs none of those inside the sandbox.
+    basePermissions = combinators: with combinators; [
+      bind-nix-store-runtime-closure
+    ];
+  };
+  sandboxedCharon = jail "charon-sandbox" "${charon}/bin/charon" (combinators: with combinators; [
+    (unsafe-add-raw-args (lib.concatStringsSep " " [
+      "--disable-userns"
+      "--cap-drop ALL"
+      "--hostname charon-sandbox"
+      "--clearenv"
+      "--proc /proc"
+      "--remount-ro /proc"
+      "--dev /dev"
+      "--size ${toString maxTmpfsBytes} --tmpfs /tmp"
+      "--size ${toString maxTmpfsBytes} --tmpfs /work"
+      "--chdir /work"
+    ]))
+    (set-env "HOME" "/tmp")
+    (set-env "TMPDIR" "/tmp")
+    (set-env "PATH" "/empty")
+    (add-runtime ''
+      if (( $# != 1 )); then
+        echo "Usage: charon-sandbox INPUT_RS" >&2
+        exit 2
+      fi
+      INPUT_RS=$(realpath -- "$1")
+      if [[ ! -f "$INPUT_RS" ]]; then
+        echo "Input is not a regular file: $1" >&2
+        exit 2
+      fi
+      RUNTIME_ARGS+=(--ro-bind "$INPUT_RS" /work/input.rs)
+    '')
+    (set-argv [ "ui_test" "input.rs" ])
+  ]);
+  sandboxedCharonWithLimits = pkgs.writeShellApplication {
+    name = "charon-sandbox-limited";
+    runtimeInputs = [ pkgs.util-linux ];
+    text = ''
+      if (( $# != 2 )) || [[ ! "$1" =~ ^[1-9][0-9]*$ ]]; then
+        echo "Usage: charon-sandbox-limited TIMEOUT INPUT_RS" >&2
+        exit 2
+      fi
+      exec ${lib.getExe' pkgs.util-linux "prlimit"} \
+        --core=0 \
+        --fsize=1048576 \
+        --as=2147483648 \
+        --nproc=256 \
+        --nofile=128 \
+        --cpu="$1:$1" \
+        -- ${sandboxedCharon}/bin/charon-sandbox "$2"
+    '';
+  };
+in
 (writers.writePython3Bin "charon-zulip-bot"
   {
     libraries = [ python3Packages.zulip ];
@@ -11,13 +72,14 @@
   } ''
   import argparse
   import logging
+  import math
   import os
   import re
-  import resource
   import signal
   import socket
   import subprocess
   import tempfile
+  import time
   from pathlib import Path
 
   import zulip
@@ -85,14 +147,18 @@
 
           with output_path.open("wb") as output:
               process = subprocess.Popen(
-                  ["${charon}/bin/charon", "ui_test", source_path.name],
-                  cwd=directory,
+                  [
+                      "${sandboxedCharonWithLimits}/bin/charon-sandbox-limited",
+                      str(timeout),
+                      str(source_path),
+                  ],
                   stdout=output,
                   stderr=subprocess.STDOUT,
+                  # The sandbox installs a PID-1 helper whose environment is
+                  # readable through `/proc/1/environ`, so scrub the environment
+                  # before the wrapper starts, not only before Charon starts.
+                  env={},
                   start_new_session=True,
-                  preexec_fn=lambda: resource.setrlimit(
-                      resource.RLIMIT_FSIZE, (MAX_OUTPUT_BYTES, MAX_OUTPUT_BYTES)
-                  ),
               )
               timed_out = False
               try:
@@ -130,9 +196,17 @@
           default=15,
           help="maximum duration of one Charon invocation in seconds (default: 15)",
       )
+      parser.add_argument(
+          "--cooldown",
+          type=int,
+          default=10,
+          help="minimum time between requests by one user in seconds (default: 10)",
+      )
       args = parser.parse_args()
       if args.timeout <= 0:
           parser.error("--timeout must be positive")
+      if args.cooldown < 0:
+          parser.error("--cooldown must be non-negative")
 
       logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
       client = ZulipClientWithSystemdNotification(config_file=str(args.zuliprc), client="CharonZulipBot")
@@ -142,6 +216,7 @@
       bot_user_id = profile["user_id"]
       shutdown_requested = False
       handling_message = False
+      last_request_by_user = {}
 
       def request_shutdown(_signum, _frame):
           nonlocal shutdown_requested
@@ -174,6 +249,18 @@
                   if not user.get("is_active") or user.get("role") not in ADMIN_ROLES:
                       send_reply(message, "Only organization owners and administrators can run Charon.")
                       return
+
+                  now = time.monotonic()
+                  retry_after = args.cooldown - (
+                      now - last_request_by_user.get(message["sender_id"], -math.inf)
+                  )
+                  if retry_after > 0:
+                      send_reply(
+                          message,
+                          f"Please wait {math.ceil(retry_after)} seconds before running Charon again.",
+                      )
+                      return
+                  last_request_by_user[message["sender_id"]] = now
 
                   source = extract_source(message["content"])
                   returncode, output = run_charon(source, args.timeout)
@@ -217,6 +304,6 @@
   meta = {
     description = "Zulip bot that runs Charon on Rust snippets";
     mainProgram = "charon-zulip-bot";
-    platforms = lib.platforms.unix;
+    platforms = lib.platforms.linux;
   };
 })
