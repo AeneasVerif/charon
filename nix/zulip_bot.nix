@@ -76,6 +76,7 @@ in
   import os
   import re
   import signal
+  import sqlite3
   import socket
   import subprocess
   import tempfile
@@ -169,6 +170,7 @@ in
                   returncode = process.wait()
 
           output = ANSI_ESCAPE.sub("", output_path.read_text(errors="replace"))
+          output = output.removeprefix("# Final LLBC before serialization:\n\n")
           truncated = output_path.stat().st_size >= MAX_OUTPUT_BYTES
           if timed_out:
               output += f"\nCharon was stopped after {timeout} seconds."
@@ -180,9 +182,15 @@ in
 
 
   def fenced(content):
-      longest_ticks = max((len(run) for run in re.findall(r"`+", content)), default=0)
-      fence = "`" * max(3, longest_ticks + 1)
+      # Tilde fences keep the Rust block from colliding with the surrounding
+      # backtick-delimited Zulip spoiler.
+      longest_tildes = max((len(run) for run in re.findall(r"~+", content)), default=0)
+      fence = "~" * max(3, longest_tildes + 1)
       return f"{fence}rust\n{content}\n{fence}"
+
+
+  def spoiler(content):
+      return f"```spoiler Charon result\n{content}\n```"
 
 
   def main():
@@ -199,8 +207,17 @@ in
       parser.add_argument(
           "--cooldown",
           type=int,
-          default=10,
-          help="minimum time between requests by one user in seconds (default: 10)",
+          default=5,
+          help="minimum time between requests by one user in seconds (default: 5)",
+      )
+      parser.add_argument(
+          "--database",
+          type=Path,
+          help=(
+              "path to the response database (default: responses.sqlite3 in "
+              "$STATE_DIRECTORY, $XDG_STATE_HOME/charon-zulip-bot, or "
+              "~/.local/state/charon-zulip-bot)"
+          ),
       )
       args = parser.parse_args()
       if args.timeout <= 0:
@@ -208,7 +225,28 @@ in
       if args.cooldown < 0:
           parser.error("--cooldown must be non-negative")
 
+      if args.database is None:
+          if state_directory := os.environ.get("STATE_DIRECTORY"):
+              database_directory = Path(state_directory.split(":", 1)[0])
+          elif xdg_state_home := os.environ.get("XDG_STATE_HOME"):
+              database_directory = Path(xdg_state_home) / "charon-zulip-bot"
+          else:
+              database_directory = Path.home() / ".local/state/charon-zulip-bot"
+          args.database = database_directory / "responses.sqlite3"
+      args.database.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+      database = sqlite3.connect(args.database)
+      database.execute("""
+          CREATE TABLE IF NOT EXISTS responses (
+              source_message_id INTEGER PRIMARY KEY,
+              response_message_id INTEGER NOT NULL,
+              sender_id INTEGER NOT NULL
+          )
+      """)
+      database.commit()
+      args.database.chmod(0o600)
+
       logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+      logging.info("using response database %s", args.database)
       client = ZulipClientWithSystemdNotification(config_file=str(args.zuliprc), client="CharonZulipBot")
       profile = client.get_profile()
       if profile.get("result") != "success":
@@ -228,6 +266,39 @@ in
           result = client.send_message(reply_request(message, content))
           if result.get("result") != "success":
               logging.error("failed to send Zulip reply: %s", result.get("msg", result))
+              return None
+          return result["id"]
+
+      def is_admin(sender_id):
+          user_result = client.get_user_by_id(sender_id)
+          if user_result.get("result") != "success":
+              raise RuntimeError(user_result.get("msg", "unknown Zulip API error"))
+          user = user_result["user"]
+          return user.get("is_active") and user.get("role") in ADMIN_ROLES
+
+      def response_content(content):
+          try:
+              source = extract_source(content)
+          except ValueError as error:
+              return str(error)
+
+          returncode, output = run_charon(source, args.timeout)
+          heading = None if returncode == 0 else f"Charon failed (exit status {returncode}):"
+          if len(output) <= MAX_INLINE_OUTPUT:
+              content = fenced(output)
+              return content if heading is None else f"{heading}\n\n{content}"
+
+          with tempfile.NamedTemporaryFile(
+              mode="w+", encoding="utf-8", suffix="-charon-output.txt"
+          ) as output_file:
+              output_file.write(output)
+              output_file.flush()
+              output_file.seek(0)
+              upload = client.upload_file(output_file)
+          if upload.get("result") != "success":
+              raise RuntimeError(upload.get("msg", "failed to upload Charon output"))
+          content = f"[full output]({upload['url']})"
+          return content if heading is None else f"{heading} {content}"
 
       def handle_event(event):
           nonlocal handling_message
@@ -235,54 +306,91 @@ in
               raise ShutdownRequested
           handling_message = True
           try:
-              message = event["message"]
-              if message["sender_id"] == bot_user_id:
-                  return
-              if message["type"] == "stream" and "mentioned" not in event.get("flags", []):
-                  return
-
-              try:
-                  user_result = client.get_user_by_id(message["sender_id"])
-                  if user_result.get("result") != "success":
-                      raise RuntimeError(user_result.get("msg", "unknown Zulip API error"))
-                  user = user_result["user"]
-                  if not user.get("is_active") or user.get("role") not in ADMIN_ROLES:
-                      send_reply(message, "Only organization owners and administrators can run Charon.")
+              if event["type"] == "message":
+                  message = event["message"]
+                  if message["sender_id"] == bot_user_id:
+                      return
+                  if message["type"] == "stream" and "mentioned" not in event.get("flags", []):
                       return
 
-                  now = time.monotonic()
-                  retry_after = args.cooldown - (
-                      now - last_request_by_user.get(message["sender_id"], -math.inf)
-                  )
-                  if retry_after > 0:
-                      send_reply(
-                          message,
-                          f"Please wait {math.ceil(retry_after)} seconds before running Charon again.",
+                  try:
+                      if not is_admin(message["sender_id"]):
+                          send_reply(
+                              message,
+                              "Only organization owners and administrators can run Charon.",
+                          )
+                          return
+
+                      now = time.monotonic()
+                      retry_after = args.cooldown - (
+                          now - last_request_by_user.get(message["sender_id"], -math.inf)
                       )
-                      return
-                  last_request_by_user[message["sender_id"]] = now
+                      if retry_after > 0:
+                          send_reply(
+                              message,
+                              f"Please wait {math.ceil(retry_after)} seconds before running Charon again.",
+                          )
+                          return
+                      last_request_by_user[message["sender_id"]] = now
 
-                  source = extract_source(message["content"])
-                  returncode, output = run_charon(source, args.timeout)
-                  heading = "Charon succeeded:" if returncode == 0 else f"Charon failed (exit status {returncode}):"
-                  if len(output) <= MAX_INLINE_OUTPUT:
-                      send_reply(message, f"{heading}\n\n{fenced(output)}")
-                  else:
-                      with tempfile.NamedTemporaryFile(
-                          mode="w+", encoding="utf-8", suffix="-charon-output.txt"
-                      ) as output_file:
-                          output_file.write(output)
-                          output_file.flush()
-                          output_file.seek(0)
-                          upload = client.upload_file(output_file)
-                      if upload.get("result") != "success":
-                          raise RuntimeError(upload.get("msg", "failed to upload Charon output"))
-                      send_reply(message, f"{heading} [full output]({upload['url']})")
-              except ValueError as error:
-                  send_reply(message, str(error))
-              except Exception:
-                  logging.exception("failed to process Zulip message %s", message.get("id"))
-                  send_reply(message, "The Charon bot encountered an internal error.")
+                      content = spoiler(response_content(message["content"]))
+                  except Exception:
+                      logging.exception("failed to process Zulip message %s", message.get("id"))
+                      content = "The Charon bot encountered an internal error."
+
+                  response_message_id = send_reply(message, content)
+                  if response_message_id is not None:
+                      with database:
+                          database.execute(
+                              """
+                              INSERT INTO responses (
+                                  source_message_id, response_message_id, sender_id
+                              ) VALUES (?, ?, ?)
+                              ON CONFLICT(source_message_id) DO UPDATE SET
+                                  response_message_id = excluded.response_message_id,
+                                  sender_id = excluded.sender_id
+                              """,
+                              (message["id"], response_message_id, message["sender_id"]),
+                          )
+                  return
+
+              if event["type"] == "update_message":
+                  if event.get("rendering_only") or "content" not in event:
+                      return
+                  mapping = database.execute(
+                      """
+                      SELECT response_message_id, sender_id
+                      FROM responses
+                      WHERE source_message_id = ?
+                      """,
+                      (event["message_id"],),
+                  ).fetchone()
+                  if mapping is None:
+                      return
+                  response_message_id, sender_id = mapping
+
+                  try:
+                      if not is_admin(sender_id):
+                          content = "Only organization owners and administrators can run Charon."
+                      else:
+                          # Edits replace an existing request, so they deliberately
+                          # bypass the cooldown for new requests.
+                          content = spoiler(response_content(event["content"]))
+                  except Exception:
+                      logging.exception(
+                          "failed to process edited Zulip message %s", event["message_id"]
+                      )
+                      content = "The Charon bot encountered an internal error."
+
+                  result = client.update_message(
+                      {"message_id": response_message_id, "content": content}
+                  )
+                  if result.get("result") != "success":
+                      logging.error(
+                          "failed to update Zulip response %s: %s",
+                          response_message_id,
+                          result.get("msg", result),
+                      )
           finally:
               handling_message = False
               if shutdown_requested:
@@ -293,9 +401,13 @@ in
           # stop processing any new ones and shut down.
           signal.signal(signal.SIGTERM, request_shutdown)
           logging.info("waiting for Zulip messages as %s", profile["full_name"])
-          client.call_on_each_event(handle_event, event_types=["message"])
+          client.call_on_each_event(
+              handle_event, event_types=["message", "update_message"]
+          )
       except ShutdownRequested:
           logging.info("shutdown requested; all active work is complete")
+      finally:
+          database.close()
 
 
   if __name__ == "__main__":
