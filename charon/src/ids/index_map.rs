@@ -108,6 +108,9 @@ where
 
     /// Remove the value from this slot, leaving other ids unchanged.
     pub fn remove(&mut self, id: I) -> Option<T> {
+        if id.index() >= self.slot_count() {
+            return None;
+        }
         if self.vector[id].is_some() {
             self.elem_count -= 1;
         }
@@ -163,22 +166,22 @@ where
         self.vector.insert(id, Some(x))
     }
 
-    /// Get a mutable reference into the ith element. If the vector is too short, extend it until
-    /// it has enough elements. If the element doesn't exist, use the provided function to
-    /// initialize it.
-    pub fn get_or_extend_and_insert(&mut self, id: I, f: impl FnOnce() -> T) -> &mut T {
-        self.ensure_slot_for(id);
-        self.vector[id].get_or_insert_with(f)
+    /// Get a mutable reference into the ith element, inserting it if it is missing.
+    pub fn get_or_insert_with(&mut self, id: I, f: impl FnOnce() -> T) -> &mut T {
+        if self.get(id).is_none() {
+            self.insert(id, f());
+        }
+        self.get_mut(id).unwrap()
     }
 
     /// Get a mutable reference into the ith element. If the vector is too short, extend it until
     /// it has enough elements. If the element doesn't exist, use the provided function to
     /// initialize it.
-    pub fn get_or_extend_and_insert_default(&mut self, id: I) -> &mut T
+    pub fn get_or_insert_with_default(&mut self, id: I) -> &mut T
     where
         T: Default,
     {
-        self.get_or_extend_and_insert(id, Default::default)
+        self.get_or_insert_with(id, Default::default)
     }
 
     /// Map each entry to a new one, keeping the same ids.
