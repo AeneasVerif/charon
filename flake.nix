@@ -132,6 +132,8 @@
         # Runs charon on the whole rustc ui test suite.
         rustc-tests = pkgs.callPackage ./nix/rustc-tests.nix { inherit charon rustToolchain; };
 
+        zulip_bot = pkgs.callPackage ./nix/zulip_bot.nix { inherit charon; };
+
         # Check that the generated ocaml files match what is committed to the repo.
         check-generated-ml = pkgs.runCommand "check-generated-ml" { } ''
           mkdir generated
@@ -178,7 +180,7 @@
       in
       {
         packages = {
-          inherit charon charon-unwrapped charon-portable charon-release charon-ml polyfill-glibc rustToolchain;
+          inherit charon charon-unwrapped charon-portable charon-release charon-ml polyfill-glibc rustToolchain zulip_bot;
           charon-full-mir-sysroots = fullMirSysroots;
           inherit (rustc-tests) rustc-tests;
           default = charon;
