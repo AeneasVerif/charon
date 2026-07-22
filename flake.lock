@@ -48,6 +48,21 @@
         "type": "github"
       }
     },
+    "jail-nix": {
+      "locked": {
+        "lastModified": 1776230864,
+        "narHash": "sha256-YsEjjdOsGEzTeD+iT7ONh071BqWAOQWpzYVei3okAXE=",
+        "owner": "~alexdavid",
+        "repo": "jail.nix",
+        "rev": "404e7da9da5ab9aa643666682b2ba1312fa5fbe8",
+        "type": "sourcehut"
+      },
+      "original": {
+        "owner": "~alexdavid",
+        "repo": "jail.nix",
+        "type": "sourcehut"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1762111121,
@@ -68,6 +83,7 @@
         "crane": "crane",
         "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
+        "jail-nix": "jail-nix",
         "nixpkgs": "nixpkgs",
         "rust-overlay": "rust-overlay"
       }
