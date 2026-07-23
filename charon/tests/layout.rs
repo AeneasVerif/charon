@@ -25,6 +25,10 @@ fn type_layout() -> anyhow::Result<()> {
             b: T
         }
 
+        struct MonoStruct {
+            inner: GenericStruct<SimpleStruct>
+        }
+
         struct UnsizedStruct {
             x: usize,
             y: [usize]
@@ -113,10 +117,28 @@ fn type_layout() -> anyhow::Result<()> {
             y: u64,
         }
 
+        #[repr(C)]
+        union PackIntsUnionC {
+            x: (u32, u32),
+            y: u64,
+        }
+
         enum NonZeroNiche {
             A(char),
             B,
             C,
+        }
+
+        #[repr(C)]
+        enum ReprC {
+            A(char),
+            B,
+            C,
+        }
+
+        #[repr(C)]
+        enum ReprCSingle {
+            A(char),
         }
 
         #[repr(i32)]
@@ -131,6 +153,12 @@ fn type_layout() -> anyhow::Result<()> {
             Less = -1,
             Equal = 0,
             Greater = 1,
+        }
+
+        #[repr(C, i8)]
+        enum E {
+            A = 0,
+            B(usize) = 12
         }
 
         enum WithNicheAndUninhabited {
@@ -235,7 +263,7 @@ fn type_layout() -> anyhow::Result<()> {
         }
     }
 
-    let layouts: SeqHashMap<String, Option<_>> = crate_data
+    let layouts: SeqHashMap<String, _> = crate_data
         .type_decls
         .iter()
         .filter_map(|tdecl| {
@@ -251,5 +279,72 @@ fn type_layout() -> anyhow::Result<()> {
     let layouts_str = serde_json::to_string_pretty(&layouts)?;
 
     compare_or_overwrite(layouts_str, &PathBuf::from("./tests/layout.json"))?;
+
+    let mut layout_computer = LayoutComputer::new(&crate_data, Some(&the_target));
+    let layouts: SeqHashMap<String, _> = crate_data
+        .type_decls
+        .iter()
+        .filter_map(|tdecl| {
+            if tdecl.item_meta.name.name[0].as_ident().unwrap().0 != "test_crate" {
+                return None;
+            }
+            let name = repr_name(&crate_data, &tdecl.item_meta.name);
+            let opt_guarantee =
+                LayoutGuarantees::for_type_decl(&tdecl.kind, &tdecl.repr, &crate_data);
+            let fake_ty = Ty::new(TyKind::Adt(TypeDeclRef {
+                id: TypeId::Adt(tdecl.def_id),
+                generics: Box::new(tdecl.generics.identity_args()),
+            }));
+
+            let opt_concretized = layout_computer.compute_layout_guarantees(fake_ty.clone());
+            // Check whether concretized layout guarantees always match known layouts.
+            if let Some(layout) = tdecl.layout.get(&the_target)
+                && let Some(guarantees) = &opt_concretized
+                && let Some(size) = layout.size.concrete
+                && let Some(align) = layout.align.concrete
+                && let Some((size_guarantee, align_guarantee)) = guarantees.is_concrete()
+            {
+                assert_eq!(size, size_guarantee);
+                assert_eq!(align, align_guarantee);
+            }
+
+            // Check whether concretized layout guarantees always match known layouts.
+            if let Some(mut layout) = tdecl.layout.get(&the_target).cloned() {
+                layout_computer.normalize_symbolic_byte_count(&mut layout.size.guarantee);
+                layout_computer.normalize_symbolic_byte_count(&mut layout.align.guarantee);
+
+                if let Some(size) = layout.size.concrete
+                    && let Some(align) = layout.align.concrete
+                    && let Some(size_guarantee) = layout.size.guarantee.is_concrete()
+                    && let Some(align_guarantee) = layout.align.guarantee.is_concrete()
+                {
+                    assert_eq!(size, size_guarantee);
+                    assert_eq!(align, align_guarantee);
+                }
+            }
+
+            // Check whether concretized offset guarantees always match known offsets.
+            if let Some(layout) = layout_computer.compute_layout(&fake_ty) {
+                let mut visitor = DynVisitor::new_shared::<ByteCount>(|b| {
+                    if let Some(g) = b.guarantee.is_concrete()
+                        && let Some(c) = b.concrete
+                    {
+                        assert_eq!(g, c);
+                    }
+                });
+                VisitAst::visit(&mut visitor, &layout);
+            }
+
+            let guarantee_serializable = opt_guarantee.map(|l| WithState::new(l, &()));
+            let concretized_serializable = opt_concretized.map(|l| WithState::new(l, &()));
+            Some((name, (guarantee_serializable, concretized_serializable)))
+        })
+        .collect();
+    let layouts_str = serde_json::to_string_pretty(&layouts)?;
+
+    compare_or_overwrite(
+        layouts_str,
+        &PathBuf::from("./tests/layout_guarantees.json"),
+    )?;
     Ok(())
 }

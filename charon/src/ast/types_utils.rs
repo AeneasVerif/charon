@@ -507,7 +507,7 @@ impl GenericArgs {
 impl IntTy {
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
-    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+    pub fn target_size(&self, ptr_size: ConcreteByteCount) -> usize {
         match self {
             IntTy::Isize => ptr_size as usize,
             IntTy::I8 => size_of::<i8>(),
@@ -521,7 +521,7 @@ impl IntTy {
 impl UIntTy {
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
-    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+    pub fn target_size(&self, ptr_size: ConcreteByteCount) -> usize {
         match self {
             UIntTy::Usize => ptr_size as usize,
             UIntTy::U8 => size_of::<u8>(),
@@ -560,10 +560,17 @@ impl IntegerTy {
 
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
-    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+    pub fn target_size(&self, ptr_size: ConcreteByteCount) -> usize {
         match self {
             IntegerTy::Signed(ty) => ty.target_size(ptr_size),
             IntegerTy::Unsigned(ty) => ty.target_size(ptr_size),
+        }
+    }
+
+    pub fn to_literal_ty(&self) -> LiteralTy {
+        match self {
+            IntegerTy::Signed(int_ty) => LiteralTy::Int(*int_ty),
+            IntegerTy::Unsigned(uint_ty) => LiteralTy::UInt(*uint_ty),
         }
     }
 }
@@ -579,7 +586,7 @@ impl LiteralTy {
 
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
-    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+    pub fn target_size(&self, ptr_size: ConcreteByteCount) -> usize {
         match self {
             LiteralTy::Int(int_ty) => int_ty.target_size(ptr_size),
             LiteralTy::UInt(uint_ty) => uint_ty.target_size(ptr_size),
@@ -1468,6 +1475,13 @@ impl TypeDecl {
             .iter_enumerated()
             .find(|(_, field)| field.name.as_deref() == Some(field_name))
     }
+
+    /// When translating without `--target`, there can be at most one layout; this method
+    /// retrieves it.
+    /// Returns `None` if this type decl was translated in multi-target mode or has no layout information whatsoever.
+    pub fn the_layout(&self) -> Option<&Layout> {
+        self.layout.values().exactly_one().ok()
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -1489,11 +1503,13 @@ impl Discriminator {
     /// could not be read.
     pub fn read_discriminant(
         &self,
-        read: impl Fn(ByteCount, IntegerTy) -> Result<ScalarValue, DiscriminantReadError> + Copy,
+        read: impl Fn(ConcreteByteCount, IntegerTy) -> Result<ScalarValue, DiscriminantReadError> + Copy,
     ) -> Result<VariantId, DiscriminantReadError> {
         match self {
             Discriminator::Known(id) => Ok(*id),
-            Discriminator::Invalid => Err(DiscriminantReadError::InvalidDiscriminant),
+            Discriminator::Unknown | Discriminator::Invalid => {
+                Err(DiscriminantReadError::InvalidDiscriminant)
+            }
             Discriminator::Branch {
                 offset,
                 int_ty,
@@ -1518,10 +1534,6 @@ impl Layout {
             .as_ref()
             .is_none_or(|v| v.uninhabited)
     }
-
-    pub fn is_c_repr(&self) -> bool {
-        self.repr.repr_algo == ReprAlgorithm::C
-    }
 }
 
 impl ReprOptions {
@@ -1535,7 +1547,7 @@ impl ReprOptions {
     /// Cf. <https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.struct>
     /// and <https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.adt>.
     pub fn guarantees_fixed_field_order(&self) -> bool {
-        self.repr_algo == ReprAlgorithm::C || self.explicit_discr_type
+        self.repr_algo == ReprAlgorithm::C || self.explicit_discr_type.is_some()
     }
 }
 

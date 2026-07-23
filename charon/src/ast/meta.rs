@@ -55,12 +55,9 @@ pub struct SpanData {
     Hash,
     Serialize,
     Deserialize,
-    SerializeState,
-    DeserializeState,
     Drive,
     DriveMut,
 )]
-#[serde_state(stateless)]
 pub struct Span {
     /// The source code span.
     ///

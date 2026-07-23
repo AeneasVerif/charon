@@ -2006,6 +2006,27 @@ and attribute_of_json (ctx : of_json_ctx) (js : json) :
         Ok (AttrUnknown unknown)
     | _ -> Error "")
 
+and basic_byte_count_of_json (ctx : of_json_ctx) (js : json) :
+    (basic_byte_count, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("SymSize", sym_size) ] ->
+        let* sym_size = ty_of_json ctx sym_size in
+        Ok (SymSize sym_size)
+    | `Assoc [ ("SymAlign", sym_align) ] ->
+        let* sym_align = ty_of_json ctx sym_align in
+        Ok (SymAlign sym_align)
+    | `Assoc [ ("Concrete", concrete) ] ->
+        let* concrete = int_of_json ctx concrete in
+        Ok (Concrete concrete)
+    | `String "TargetDiscr" -> Ok TargetDiscr
+    | `Assoc [ ("SymOffset", `List [ x_0; x_1; x_2 ]) ] ->
+        let* x_0 = type_decl_id_of_json ctx x_0 in
+        let* x_1 = variant_id_of_json ctx x_1 in
+        let* x_2 = field_id_of_json ctx x_2 in
+        Ok (SymOffset (x_0, x_1, x_2))
+    | _ -> Error "")
+
 and body_of_json (ctx : of_json_ctx) (js : json) : (body, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -2043,6 +2064,16 @@ and body_of_json (ctx : of_json_ctx) (js : json) : (body, string) result =
     | `Assoc [ ("Error", error) ] ->
         let* error = error_of_json ctx error in
         Ok (ErrorBody error)
+    | _ -> Error "")
+
+and byte_count_of_json (ctx : of_json_ctx) (js : json) :
+    (byte_count, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("guarantee", guarantee); ("concrete", concrete) ] ->
+        let* guarantee = symbolic_byte_count_of_json ctx guarantee in
+        let* concrete = option_of_json int_of_json ctx concrete in
+        Ok ({ guarantee; concrete } : byte_count)
     | _ -> Error "")
 
 and cli_options_of_json (ctx : of_json_ctx) (js : json) :
@@ -2316,6 +2347,7 @@ and discriminator_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Known", known) ] ->
         let* known = variant_id_of_json ctx known in
         Ok (Known known)
+    | `String "Unknown" -> Ok Unknown
     | `String "Invalid" -> Ok Invalid
     | `Assoc
         [
@@ -2677,10 +2709,9 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
           ("discriminator", discriminator);
           ("uninhabited", uninhabited);
           ("variant_layouts", variant_layouts);
-          ("repr", repr);
         ] ->
-        let* size = option_of_json int_of_json ctx size in
-        let* align = option_of_json int_of_json ctx align in
+        let* size = byte_count_of_json ctx size in
+        let* align = byte_count_of_json ctx align in
         let* discriminator =
           option_of_json discriminator_of_json ctx discriminator
         in
@@ -2690,9 +2721,8 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
             (option_of_json variant_layout_of_json)
             ctx variant_layouts
         in
-        let* repr = repr_options_of_json ctx repr in
         Ok
-          ({ size; align; discriminator; uninhabited; variant_layouts; repr }
+          ({ size; align; discriminator; uninhabited; variant_layouts }
             : layout)
     | _ -> Error "")
 
@@ -2796,7 +2826,9 @@ and repr_options_of_json (ctx : of_json_ctx) (js : json) :
           option_of_json alignment_modifier_of_json ctx align_modif
         in
         let* transparent = bool_of_json ctx transparent in
-        let* explicit_discr_type = bool_of_json ctx explicit_discr_type in
+        let* explicit_discr_type =
+          option_of_json ty_of_json ctx explicit_discr_type
+        in
         Ok
           ({ repr_algo; align_modif; transparent; explicit_discr_type }
             : repr_options)
@@ -2811,6 +2843,90 @@ and serialization_format_arg_of_json (ctx : of_json_ctx) (js : json) :
     | `String "All" -> Ok AllFormats
     | _ -> Error "")
 
+and symbolic_byte_count_of_json (ctx : of_json_ctx) (js : json) :
+    (symbolic_byte_count, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Atom", atom) ] ->
+        let* atom = basic_byte_count_of_json ctx atom in
+        Ok (Atom atom)
+    | `Assoc [ ("Sum", sum) ] ->
+        let* sum = list_of_json symbolic_byte_count_of_json ctx sum in
+        Ok (Sum sum)
+    | `Assoc
+        [ ("Product", `Assoc [ ("atom", atom); ("multiplier", multiplier) ]) ]
+      ->
+        let* atom = box_of_json symbolic_byte_count_of_json ctx atom in
+        let* multiplier = constant_expr_of_json ctx multiplier in
+        Ok (Product (atom, multiplier))
+    | `Assoc
+        [
+          ( "AlignedTo",
+            `Assoc [ ("base", base); ("target_align", target_align) ] );
+        ] ->
+        let* base = box_of_json symbolic_byte_count_of_json ctx base in
+        let* target_align =
+          box_of_json symbolic_byte_count_of_json ctx target_align
+        in
+        Ok (AlignedTo (base, target_align))
+    | `Assoc [ ("Max", max) ] ->
+        let* max = list_of_json symbolic_byte_count_of_json ctx max in
+        Ok (Max max)
+    | `Assoc
+        [
+          ("Packed", `Assoc [ ("max_align", max_align); ("to_pack", to_pack) ]);
+        ] ->
+        let* max_align = basic_byte_count_of_json ctx max_align in
+        let* to_pack = box_of_json symbolic_byte_count_of_json ctx to_pack in
+        Ok (Packed (max_align, to_pack))
+    | _ -> Error "")
+
+and target_alignments_of_json (ctx : of_json_ctx) (js : json) :
+    (target_alignments, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("i1_align", i_1_align);
+          ("i8_align", i_8_align);
+          ("i16_align", i_16_align);
+          ("i32_align", i_32_align);
+          ("i64_align", i_64_align);
+          ("i128_align", i_128_align);
+          ("f16_align", f_16_align);
+          ("f32_align", f_32_align);
+          ("f64_align", f_64_align);
+          ("f128_align", f_128_align);
+          ("ptr_align", ptr_align);
+        ] ->
+        let* i_1_align = int_of_json ctx i_1_align in
+        let* i_8_align = int_of_json ctx i_8_align in
+        let* i_16_align = int_of_json ctx i_16_align in
+        let* i_32_align = int_of_json ctx i_32_align in
+        let* i_64_align = int_of_json ctx i_64_align in
+        let* i_128_align = int_of_json ctx i_128_align in
+        let* f_16_align = int_of_json ctx f_16_align in
+        let* f_32_align = int_of_json ctx f_32_align in
+        let* f_64_align = int_of_json ctx f_64_align in
+        let* f_128_align = int_of_json ctx f_128_align in
+        let* ptr_align = int_of_json ctx ptr_align in
+        Ok
+          ({
+             i_1_align;
+             i_8_align;
+             i_16_align;
+             i_32_align;
+             i_64_align;
+             i_128_align;
+             f_16_align;
+             f_32_align;
+             f_64_align;
+             f_128_align;
+             ptr_align;
+           }
+            : target_alignments)
+    | _ -> Error "")
+
 and target_info_of_json (ctx : of_json_ctx) (js : json) :
     (target_info, string) result =
   combine_error_msgs js __FUNCTION__
@@ -2819,10 +2935,23 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
         [
           ("target_pointer_size", target_pointer_size);
           ("is_little_endian", is_little_endian);
+          ("c_enum_min_size", c_enum_min_size);
+          ("primitive_alignments", primitive_alignments);
         ] ->
         let* target_pointer_size = int_of_json ctx target_pointer_size in
         let* is_little_endian = bool_of_json ctx is_little_endian in
-        Ok ({ target_pointer_size; is_little_endian } : target_info)
+        let* c_enum_min_size = int_of_json ctx c_enum_min_size in
+        let* primitive_alignments =
+          target_alignments_of_json ctx primitive_alignments
+        in
+        Ok
+          ({
+             target_pointer_size;
+             is_little_endian;
+             c_enum_min_size;
+             primitive_alignments;
+           }
+            : target_info)
     | _ -> Error "")
 
 and trait_assoc_const_of_json (ctx : of_json_ctx) (js : json) :
@@ -3126,6 +3255,7 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("kind", kind);
           ("layout", layout);
           ("ptr_metadata", ptr_metadata);
+          ("repr", repr);
         ] ->
         let* def_id = type_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
@@ -3136,8 +3266,18 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           index_map_of_json string_of_json layout_of_json int_of_json ctx layout
         in
         let* ptr_metadata = ptr_metadata_of_json ctx ptr_metadata in
+        let* repr = repr_options_of_json ctx repr in
         Ok
-          ({ def_id; item_meta; generics; src; kind; layout; ptr_metadata }
+          ({
+             def_id;
+             item_meta;
+             generics;
+             src;
+             kind;
+             layout;
+             ptr_metadata;
+             repr;
+           }
             : type_decl)
     | _ -> Error "")
 
@@ -3220,7 +3360,8 @@ and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
           ("tagger", tagger);
         ] ->
         let* field_offsets =
-          index_vec_of_json field_id_of_json int_of_json ctx field_offsets
+          index_vec_of_json field_id_of_json byte_count_of_json ctx
+            field_offsets
         in
         let* uninhabited = bool_of_json ctx uninhabited in
         let* tagger =

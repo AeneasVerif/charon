@@ -520,38 +520,67 @@ pub enum PredicateOrigin {
 }
 
 // rustc counts bytes in layouts as u64
-pub type ByteCount = u64;
+pub type ConcreteByteCount = u64;
+
+/// The size, offset, or alignement of an element of layout, in bytes.
+#[derive(
+    Debug, Default, Clone, PartialEq, Eq, Drive, DriveMut, SerializeState, DeserializeState,
+)]
+pub struct ByteCount {
+    /// The guarantees given by the language about this value.
+    pub guarantee: SymbolicByteCount,
+    /// The value chosen by rustc, if any. That value may change across compilation sessions and compiler versions.
+    #[drive(skip)]
+    #[serde_state(stateless)]
+    pub concrete: Option<ConcreteByteCount>,
+}
+
+impl From<ConcreteByteCount> for ByteCount {
+    fn from(value: ConcreteByteCount) -> Self {
+        Self {
+            guarantee: Default::default(),
+            concrete: Some(value),
+        }
+    }
+}
 
 /// Simplified layout of a single variant.
 ///
 /// Maps fields to their offset within the layout.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Default, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut,
+)]
 pub struct VariantLayout {
     /// The offset of each field.
     #[drive(skip)]
     pub field_offsets: IndexVec<FieldId, ByteCount>,
     /// Whether the variant is uninhabited, i.e. has any valid possible value.
     /// Note that uninhabited types can have arbitrary layouts.
+    #[serde_state(stateless)]
     #[drive(skip)]
     pub uninhabited: bool,
     /// How to write the tag when constructing this variant. Each entry means: write `value` at
     /// byte `offset`. Mirrors MiniRust's `Variant::tagger`.
     #[drive(skip)]
-    pub tagger: Vec<(ByteCount, ScalarValue)>,
+    #[serde_state(stateless)]
+    pub tagger: Vec<(ConcreteByteCount, ScalarValue)>,
 }
 
 /// Decision tree used to determine the active variant by reading memory. Mirrors MiniRust's
 /// `Discriminator`.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, SerializeState, DeserializeState)]
+#[serde_state(stateless)]
 pub enum Discriminator {
     /// The variant is known.
     Known(VariantId),
+    /// Due to missing layout information, we simply don't know.
+    Unknown,
     /// No valid variant (e.g., invalid tag value).
     Invalid,
     /// Branch on an integer value read from memory at `offset`.
     Branch {
         /// Byte offset to read from.
-        offset: ByteCount,
+        offset: ConcreteByteCount,
         /// Integer type to read.
         int_ty: IntegerTy,
         /// If the integer is in one of these ranges, continue with the given `Discriminator`. The
@@ -571,10 +600,10 @@ pub enum Discriminator {
 pub struct Layout {
     /// The size of the type in bytes.
     #[drive(skip)]
-    pub size: Option<ByteCount>,
+    pub size: ByteCount,
     /// The alignment, in bytes.
     #[drive(skip)]
-    pub align: Option<ByteCount>,
+    pub align: ByteCount,
     /// Decision tree that determines the active variant by reading memory. Only `Some` for enums.
     #[drive(skip)]
     #[serde_state(stateless)]
@@ -587,12 +616,7 @@ pub struct Layout {
     /// Map from `VariantId` to the corresponding field layouts. Some variants don't have a
     /// meaningful layout due to being uninhabited (though an uninhabited variant may have a
     /// layout). Structs and unions are modeled as having exactly one variant.
-    #[serde_state(stateless)]
     pub variant_layouts: IndexVec<VariantId, Option<VariantLayout>>,
-    /// The representation options of this type declaration as annotated by the user.
-    #[drive(skip)]
-    #[serde_state(stateless)]
-    pub repr: ReprOptions,
 }
 
 /// The metadata stored in a pointer. That's the information stored in pointers alongside
@@ -645,22 +669,24 @@ pub enum ReprAlgorithm {
 /// Represents `repr(align(n))` and `repr(packed(n))`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AlignmentModifier {
-    Align(ByteCount),
-    Pack(ByteCount),
+    Align(ConcreteByteCount),
+    Pack(ConcreteByteCount),
 }
 
 /// The representation options as annotated by the user.
 ///
 /// NOTE: This does not include less common/unstable representations such as `#[repr(simd)]`
-/// or the compiler internal `#[repr(linear)]`. Similarly, enum discriminant representations
-/// are encoded in [`Variant::discriminant`] and [`Discriminator`] instead.
-/// This only stores whether the discriminant type was derived from an explicit annotation.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// or the compiler internal `#[repr(linear)]`.
+#[derive(Debug, Default, Clone, PartialEq, Eq, SerializeState, DeserializeState)]
+#[serde_state(state_implements = HashConsSerializerState)]
 pub struct ReprOptions {
+    #[serde_state(stateless)]
     pub repr_algo: ReprAlgorithm,
+    #[serde_state(stateless)]
     pub align_modif: Option<AlignmentModifier>,
+    #[serde_state(stateless)]
     pub transparent: bool,
-    pub explicit_discr_type: bool,
+    pub explicit_discr_type: Option<Ty>,
 }
 
 /// A type declaration.
@@ -693,6 +719,9 @@ pub struct TypeDecl {
     pub layout: SeqHashMap<TargetTriple, Layout>,
     /// The metadata associated with a pointer to the type.
     pub ptr_metadata: PtrMetadata,
+    /// The representation options of this type declaration as annotated by the user.
+    #[drive(skip)]
+    pub repr: ReprOptions,
 }
 
 generate_index_type!(VariantId, "Variant");
@@ -743,6 +772,7 @@ pub struct Variant {
     /// The discriminant value outputted by `std::mem::discriminant` for this variant. This can be
     /// different than the value stored in memory (called `tag`); that one is described by
     /// [`Discriminator`] and [`VariantLayout::tagger`].
+    #[serde_state(stateful)]
     pub discriminant: Literal,
 }
 
@@ -867,15 +897,12 @@ pub enum FloatTy {
     EnumIsA,
     Serialize,
     Deserialize,
-    SerializeState,
-    DeserializeState,
     Drive,
     DriveMut,
     Ord,
     PartialOrd,
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("R"))]
-#[serde_state(stateless)]
 pub enum RefKind {
     Mut,
     Shared,
@@ -967,8 +994,6 @@ pub struct TypeDeclRef {
     EnumIsA,
     EnumAsGetters,
     VariantIndexArity,
-    Serialize,
-    Deserialize,
     SerializeState,
     DeserializeState,
     Drive,
@@ -1061,9 +1086,9 @@ pub enum TyKind {
     Never,
     // We don't support floating point numbers on purpose (for now)
     /// A borrow
-    Ref(Region, Ty, RefKind),
+    Ref(Region, Ty, #[serde_state(stateless)] RefKind),
     /// A raw pointer.
-    RawPtr(Ty, RefKind),
+    RawPtr(Ty, #[serde_state(stateless)] RefKind),
     /// A trait associated type
     ///
     /// Ex.:

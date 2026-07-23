@@ -26,8 +26,6 @@ generate_index_type!(LocalId, "");
     VariantName,
     EnumIsA,
     EnumAsGetters,
-    Serialize,
-    Deserialize,
     SerializeState,
     DeserializeState,
     Drive,

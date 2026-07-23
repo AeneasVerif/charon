@@ -160,6 +160,7 @@ pub struct TraitParam {
     /// Index identifying the clause among other clauses bound at the same level.
     pub clause_id: TraitClauseId,
     // TODO: does not need to be an option.
+    #[serde_state(stateless)]
     pub span: Option<Span>,
     /// Where the predicate was written, relative to the item that requires it.
     #[drive(skip)]
