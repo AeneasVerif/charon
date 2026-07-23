@@ -533,6 +533,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             target_data.f128_align.bytes(),
         );
         // INFO: This is not explicitly guaranteed by the reference, but by the implementation of rustc.
+        // https://doc.rust-lang.org/1.97.1/nightly-rustc/src/rustc_ty_utils/layout.rs.html#391
         primitive_alignments.insert(LiteralTy::Char, target_data.i32_align.bytes());
 
         let info = krate::TargetInfo {
