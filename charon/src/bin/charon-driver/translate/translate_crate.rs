@@ -492,9 +492,55 @@ impl<'tcx> TranslateCtx<'tcx> {
     pub(crate) fn register_target_info(&mut self) {
         let target_data = &self.tcx.data_layout;
         let triple = self.get_target_triple();
+
+        let mut primitive_alignments = SeqHashMap::new();
+        primitive_alignments.insert(LiteralTy::Bool, target_data.i8_align.bytes());
+        primitive_alignments.insert(LiteralTy::Int(IntTy::I8), target_data.i8_align.bytes());
+        primitive_alignments.insert(LiteralTy::Int(IntTy::I16), target_data.i16_align.bytes());
+        primitive_alignments.insert(LiteralTy::Int(IntTy::I32), target_data.i32_align.bytes());
+        primitive_alignments.insert(LiteralTy::Int(IntTy::I64), target_data.i64_align.bytes());
+        primitive_alignments.insert(LiteralTy::Int(IntTy::I128), target_data.i128_align.bytes());
+        primitive_alignments.insert(
+            LiteralTy::Int(IntTy::Isize),
+            target_data.pointer_align().bytes(),
+        );
+        primitive_alignments.insert(LiteralTy::UInt(UIntTy::U8), target_data.i8_align.bytes());
+        primitive_alignments.insert(LiteralTy::UInt(UIntTy::U16), target_data.i16_align.bytes());
+        primitive_alignments.insert(LiteralTy::UInt(UIntTy::U32), target_data.i32_align.bytes());
+        primitive_alignments.insert(LiteralTy::UInt(UIntTy::U64), target_data.i64_align.bytes());
+        primitive_alignments.insert(
+            LiteralTy::UInt(UIntTy::U128),
+            target_data.i128_align.bytes(),
+        );
+        primitive_alignments.insert(
+            LiteralTy::UInt(UIntTy::Usize),
+            target_data.pointer_align().bytes(),
+        );
+        primitive_alignments.insert(
+            LiteralTy::Float(FloatTy::F16),
+            target_data.f16_align.bytes(),
+        );
+        primitive_alignments.insert(
+            LiteralTy::Float(FloatTy::F32),
+            target_data.f32_align.bytes(),
+        );
+        primitive_alignments.insert(
+            LiteralTy::Float(FloatTy::F64),
+            target_data.f64_align.bytes(),
+        );
+        primitive_alignments.insert(
+            LiteralTy::Float(FloatTy::F128),
+            target_data.f128_align.bytes(),
+        );
+        // INFO: This is not explicitly guaranteed by the reference, but by the implementation of rustc.
+        // https://doc.rust-lang.org/1.97.1/nightly-rustc/src/rustc_ty_utils/layout.rs.html#391
+        primitive_alignments.insert(LiteralTy::Char, target_data.i32_align.bytes());
+
         let info = krate::TargetInfo {
             target_pointer_size: target_data.pointer_size().bytes(),
             is_little_endian: matches!(target_data.endian, rustc_abi::Endian::Little),
+            c_enum_min_size: target_data.c_enum_min_size.size().bytes(),
+            primitive_alignments,
         };
         self.translated.target_information.insert(triple, info);
     }

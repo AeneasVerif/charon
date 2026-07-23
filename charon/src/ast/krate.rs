@@ -201,6 +201,11 @@ pub struct TargetInfo {
     pub target_pointer_size: types::ByteCount,
     /// Whether the target platform uses little endian byte order.
     pub is_little_endian: bool,
+    /// The minimum size of a [`repr(C)`] enum.
+    pub c_enum_min_size: types::ByteCount,
+    /// Alignments for primitive types.
+    #[serde(with = "SeqHashMapToArray::<LiteralTy, ByteCount>")]
+    pub primitive_alignments: SeqHashMap<LiteralTy, ByteCount>,
 }
 
 #[derive(Default, Clone, Drive, DriveMut, SerializeState, DeserializeState)]

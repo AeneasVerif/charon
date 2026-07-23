@@ -2819,10 +2819,24 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
         [
           ("target_pointer_size", target_pointer_size);
           ("is_little_endian", is_little_endian);
+          ("c_enum_min_size", c_enum_min_size);
+          ("primitive_alignments", primitive_alignments);
         ] ->
         let* target_pointer_size = int_of_json ctx target_pointer_size in
         let* is_little_endian = bool_of_json ctx is_little_endian in
-        Ok ({ target_pointer_size; is_little_endian } : target_info)
+        let* c_enum_min_size = int_of_json ctx c_enum_min_size in
+        let* primitive_alignments =
+          index_map_of_json literal_type_of_json int_of_json int_of_json ctx
+            primitive_alignments
+        in
+        Ok
+          ({
+             target_pointer_size;
+             is_little_endian;
+             c_enum_min_size;
+             primitive_alignments;
+           }
+            : target_info)
     | _ -> Error "")
 
 and trait_assoc_const_of_json (ctx : of_json_ctx) (js : json) :

@@ -311,6 +311,9 @@ and target_info = {
   target_pointer_size : int;  (** The pointer size of the target in bytes. *)
   is_little_endian : bool;
       (** Whether the target platform uses little endian byte order. *)
+  c_enum_min_size : int;  (** The minimum size of a [[repr(C)]] enum. *)
+  primitive_alignments : (literal_type * int) list;
+      (** Alignments for primitive types. *)
 }
 
 (** The complete data of a Rust crate.
