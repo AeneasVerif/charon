@@ -125,7 +125,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         match target_kind {
             ClosureKind::FnOnce => {}
             ClosureKind::FnMut | ClosureKind::Fn => {
-                let rid = regions.push_with(|index| RegionParam::new(index, None));
+                let rid =
+                    regions.push_with(|index| RegionParam::new(index, None, Variance::Covariant));
                 *dref.generics.regions.iter_mut().last().unwrap() =
                     Region::Var(DeBruijnVar::new_at_zero(rid));
             }
@@ -288,7 +289,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let state_ty = match target_kind {
             ClosureKind::FnOnce => state_ty,
             ClosureKind::Fn | ClosureKind::FnMut => {
-                let rid = bound_regions.push_with(|index| RegionParam::new(index, None));
+                let rid = bound_regions
+                    .push_with(|index| RegionParam::new(index, None, Variance::Covariant));
                 let r = Region::Var(DeBruijnVar::new_at_zero(rid));
                 let mutability = if target_kind == ClosureKind::Fn {
                     RefKind::Shared

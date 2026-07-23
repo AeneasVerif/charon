@@ -66,6 +66,16 @@ fn translate_region_name(s: hax::Symbol) -> Option<String> {
     if s == "'_" { None } else { Some(s) }
 }
 
+fn translate_variance(variance: Option<&hax::Variance>) -> Variance {
+    match variance {
+        Some(hax::Variance::Covariant) => Variance::Covariant,
+        Some(hax::Variance::Invariant) => Variance::Invariant,
+        Some(hax::Variance::Contravariant) => Variance::Contravariant,
+        Some(hax::Variance::Bivariant) => Variance::Bivariant,
+        None => Variance::Unknown,
+    }
+}
+
 impl BindingLevel {
     pub(crate) fn new() -> Self {
         Self {
@@ -77,6 +87,7 @@ impl BindingLevel {
     pub(crate) fn push_early_region(
         &mut self,
         region: hax::EarlyParamRegion,
+        variance: Variance,
         mutability: LifetimeMutability,
     ) -> RegionId {
         let name = if self.used_region_names.insert(region.name) {
@@ -92,6 +103,7 @@ impl BindingLevel {
         let rid = self.params.regions.push_with(|index| RegionParam {
             index,
             name,
+            variance,
             mutability,
         });
         self.early_region_vars.insert(region, rid);
@@ -99,7 +111,11 @@ impl BindingLevel {
     }
 
     /// Important: we must push all the early-bound regions before pushing any other region.
-    pub(crate) fn push_bound_region(&mut self, region: hax::BoundRegionKind) -> RegionId {
+    pub(crate) fn push_bound_region(
+        &mut self,
+        region: hax::BoundRegionKind,
+        variance: Variance,
+    ) -> RegionId {
         use crate::hax::BoundRegionKind::*;
         let name = match region {
             Anon => None,
@@ -109,7 +125,7 @@ impl BindingLevel {
         let rid = self
             .params
             .regions
-            .push_with(|index| RegionParam::new(index, name));
+            .push_with(|index| RegionParam::new(index, name, variance));
         self.bound_region_vars.push(rid);
         rid
     }
@@ -121,7 +137,7 @@ impl BindingLevel {
         let region_id = self
             .params
             .regions
-            .push_with(|index| RegionParam::new(index, None));
+            .push_with(|index| RegionParam::new(index, None, Variance::Unknown));
         self.closure_upvar_regions.push(region_id);
         region_id
     }
@@ -130,12 +146,17 @@ impl BindingLevel {
         let region_id = self
             .params
             .regions
-            .push_with(|index| RegionParam::new(index, None));
+            .push_with(|index| RegionParam::new(index, None, Variance::Covariant));
         self.drop_glue_region = Some(region_id);
         region_id
     }
 
-    pub(crate) fn push_type_var(&mut self, rid: u32, name: hax::Symbol) -> TypeVarId {
+    pub(crate) fn push_type_var(
+        &mut self,
+        rid: u32,
+        name: hax::Symbol,
+        variance: Variance,
+    ) -> TypeVarId {
         // Type vars comping from `impl Trait` arguments have as their name the whole `impl Trait`
         // expression. We turn it into an identifier.
         let mut name = name.to_string();
@@ -145,10 +166,11 @@ impl BindingLevel {
         {
             name = format!("T{rid}")
         }
-        let var_id = self
-            .params
-            .types
-            .push_with(|index| TypeParam { index, name });
+        let var_id = self.params.types.push_with(|index| TypeParam {
+            index,
+            name,
+            variance,
+        });
         self.type_vars_map.insert(rid, var_id);
         var_id
     }
@@ -174,8 +196,9 @@ impl BindingLevel {
         use crate::hax::BoundVariableKind::*;
         for p in binder.bound_vars {
             match p {
-                Region(region) => {
-                    self.push_bound_region(region);
+                Region(region, variance) => {
+                    let variance = translate_variance(variance.as_ref());
+                    self.push_bound_region(region, variance);
                 }
                 Ty(_) => {
                     panic!("Unexpected locally bound type variable");
@@ -322,6 +345,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn push_generic_param(&mut self, param: &hax::GenericParamDef) -> Result<(), Error> {
+        let variance = translate_variance(param.variance.as_ref());
         match &param.kind {
             hax::GenericParamDefKind::Lifetime => {
                 let region = hax::EarlyParamRegion {
@@ -338,12 +362,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     );
                 let _ = self
                     .innermost_binder_mut()
-                    .push_early_region(region, mutability);
+                    .push_early_region(region, variance, mutability);
             }
             hax::GenericParamDefKind::Type { .. } => {
-                let _ = self
-                    .innermost_binder_mut()
-                    .push_type_var(param.index, param.name);
+                let _ =
+                    self.innermost_binder_mut()
+                        .push_type_var(param.index, param.name, variance);
             }
             hax::GenericParamDefKind::Const { ty, .. } => {
                 let span = self.def_span(&param.def_id);
@@ -484,7 +508,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .the_only_binder_mut()
                     .params
                     .regions
-                    .push_with(|index| RegionParam::new(index, None));
+                    .push_with(|index| RegionParam::new(index, None, Variance::Covariant));
                 self.the_only_binder_mut().closure_call_method_region = Some(rid);
             }
         }

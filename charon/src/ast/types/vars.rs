@@ -100,6 +100,32 @@ generate_index_type!(ConstGenericVarId, "Const");
 generate_index_type!(TraitClauseId, "TraitClause");
 generate_index_type!(TraitTypeConstraintId, "TraitTypeConstraint");
 
+/// The variance of a lifetime or type parameter.
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+)]
+pub enum Variance {
+    Covariant,
+    Invariant,
+    Contravariant,
+    Bivariant,
+    /// Variance was not sensible (e.g. on impls), not available (e.g. on higher-kinded
+    /// predicates), or not computed (e.g. on parameters that Charon invents).
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("VaUnknown"))]
+    Unknown,
+}
+
 /// A type variable in a signature or binder.
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Drive, DriveMut,
@@ -110,6 +136,9 @@ pub struct TypeParam {
     /// Variable name
     #[drive(skip)]
     pub name: String,
+    /// Variance of this parameter.
+    #[drive(skip)]
+    pub variance: Variance,
 }
 
 /// A region variable in a signature or binder.
@@ -122,6 +151,9 @@ pub struct RegionParam {
     /// Region name
     #[drive(skip)]
     pub name: Option<String>,
+    /// Variance of this parameter.
+    #[drive(skip)]
+    pub variance: Variance,
     /// Whether this lifetime is (recursively) used in a `&'a mut T` type. Only `true` if this
     /// lifetime parameter belongs to an ADT. This is a global analysis that looks even into opaque
     /// items. When unsure, err on the side of assuming mutability.
@@ -316,16 +348,21 @@ where
 }
 
 impl TypeParam {
-    pub fn new(index: TypeVarId, name: String) -> Self {
-        Self { index, name }
+    pub fn new(index: TypeVarId, name: String, variance: Variance) -> Self {
+        Self {
+            index,
+            name,
+            variance,
+        }
     }
 }
 
 impl RegionParam {
-    pub fn new(index: RegionId, name: Option<String>) -> Self {
+    pub fn new(index: RegionId, name: Option<String>, variance: Variance) -> Self {
         Self {
             index,
             name,
+            variance,
             mutability: LifetimeMutability::Unknown,
         }
     }

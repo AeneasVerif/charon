@@ -1106,11 +1106,18 @@ and region_param_of_json (ctx : of_json_ctx) (js : json) :
     (region_param, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("index", index); ("name", name); ("mutability", mutability) ] ->
+    | `Assoc
+        [
+          ("index", index);
+          ("name", name);
+          ("variance", variance);
+          ("mutability", mutability);
+        ] ->
         let* index = region_id_of_json ctx index in
         let* name = option_of_json string_of_json ctx name in
+        let* variance = variance_of_json ctx variance in
         let* mutability = lifetime_mutability_of_json ctx mutability in
-        Ok ({ index; name; mutability } : region_param)
+        Ok ({ index; name; variance; mutability } : region_param)
     | _ -> Error "")
 
 and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
@@ -1478,10 +1485,11 @@ and type_param_of_json (ctx : of_json_ctx) (js : json) :
     (type_param, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("index", index); ("name", name) ] ->
+    | `Assoc [ ("index", index); ("name", name); ("variance", variance) ] ->
         let* index = type_var_id_of_json ctx index in
         let* name = string_of_json ctx name in
-        Ok ({ index; name } : type_param)
+        let* variance = variance_of_json ctx variance in
+        Ok ({ index; name; variance } : type_param)
     | _ -> Error "")
 
 and type_pattern_of_json (ctx : of_json_ctx) (js : json) :
@@ -1546,6 +1554,17 @@ and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
         in
         Ok (MetaVTableUpcast v_table_upcast)
     | `String "Unknown" -> Ok MetaUnknown
+    | _ -> Error "")
+
+and variance_of_json (ctx : of_json_ctx) (js : json) : (variance, string) result
+    =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Covariant" -> Ok Covariant
+    | `String "Invariant" -> Ok Invariant
+    | `String "Contravariant" -> Ok Contravariant
+    | `String "Bivariant" -> Ok Bivariant
+    | `String "Unknown" -> Ok VaUnknown
     | _ -> Error "")
 
 and variant_id_of_json (ctx : of_json_ctx) (js : json) :
