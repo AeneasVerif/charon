@@ -61,6 +61,83 @@ fn type_decl() -> anyhow::Result<()> {
 }
 
 #[test]
+fn generic_parameter_variance() -> anyhow::Result<()> {
+    let crate_data = translate(
+        r#"
+        use std::marker::PhantomData;
+
+        struct Covariant<'a, T>(&'a T);
+        struct Invariant<'a, T>(&'a mut T);
+        struct Contravariant<'a, T>(PhantomData<fn(&'a T)>);
+        trait NoVarianceInformation<'a, T> {}
+        fn late_bound(x: &u8, y: &mut &u8) {}
+        fn nested<'a>(_: for<'b> fn(&'a u8, &'b u8)) {}
+        "#,
+    )?;
+    let items = items_by_name(&crate_data);
+
+    let variance = |item_name: &str| {
+        let generics = &items[item_name].generics;
+        (
+            generics
+                .regions
+                .iter()
+                .map(|param| param.variance)
+                .collect_vec(),
+            generics
+                .types
+                .iter()
+                .map(|param| param.variance)
+                .collect_vec(),
+        )
+    };
+
+    assert_eq!(
+        variance("test_crate::Covariant"),
+        (vec![Variance::Covariant], vec![Variance::Covariant])
+    );
+    assert_eq!(
+        variance("test_crate::Invariant"),
+        (vec![Variance::Covariant], vec![Variance::Invariant])
+    );
+    assert_eq!(
+        variance("test_crate::Contravariant"),
+        (vec![Variance::Contravariant], vec![Variance::Contravariant])
+    );
+    assert_eq!(
+        variance("test_crate::NoVarianceInformation"),
+        (
+            vec![Variance::Unknown],
+            vec![Variance::Unknown, Variance::Unknown]
+        )
+    );
+    assert_eq!(
+        variance("test_crate::late_bound"),
+        (
+            vec![
+                Variance::Covariant,
+                Variance::Covariant,
+                Variance::Invariant
+            ],
+            vec![]
+        )
+    );
+    assert_eq!(
+        variance("test_crate::nested"),
+        (vec![Variance::Contravariant], vec![])
+    );
+    let nested = items["test_crate::nested"].kind.as_fun().unwrap();
+    let TyKind::FnPtr(signature) = nested.signature.inputs[0].kind() else {
+        panic!("expected a function pointer")
+    };
+    assert_eq!(
+        signature.regions[RegionId::ZERO].variance,
+        Variance::Covariant
+    );
+    Ok(())
+}
+
+#[test]
 fn file_name() -> anyhow::Result<()> {
     let crate_data = translate(
         "

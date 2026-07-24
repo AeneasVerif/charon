@@ -580,6 +580,7 @@ and region_param = {
       (** Index identifying the variable among other variables bound at the same
           level. *)
   name : string option;  (** Region name *)
+  variance : variance;  (** Variance of this parameter. *)
   mutability : lifetime_mutability;
       (** Whether this lifetime is (recursively) used in a [&'a mut T] type.
           Only [true] if this lifetime parameter belongs to an ADT. This is a
@@ -838,6 +839,7 @@ and type_param = {
       (** Index identifying the variable among other variables bound at the same
           level. *)
   name : string;  (** Variable name *)
+  variance : variance;  (** Variance of this parameter. *)
 }
 
 (** A type-level pattern used by [[TyKind::Pattern]]. *)
@@ -860,6 +862,17 @@ and unsizing_metadata =
           Note that we cheat in one case: when upcasting to a marker trait (e.g.
           [dyn Trait -> dyn Sized]), we keep the current vtable. *)
   | MetaUnknown
+
+(** The variance of a lifetime or type parameter. *)
+and variance =
+  | Covariant
+  | Invariant
+  | Contravariant
+  | Bivariant
+  | VaUnknown
+      (** Variance was not sensible (e.g. on impls), not available (e.g. on
+          higher-kinded predicates), or not computed (e.g. on parameters that
+          Charon invents). *)
 
 and variant_id = (VariantId.id[@visitors.opaque])
 [@@deriving

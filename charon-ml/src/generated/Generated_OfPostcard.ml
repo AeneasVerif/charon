@@ -1027,8 +1027,9 @@ and region_param_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* index = region_id_of_postcard ctx st in
      let* name = option_of_postcard string_of_postcard ctx st in
+     let* variance = variance_of_postcard ctx st in
      let* mutability = lifetime_mutability_of_postcard ctx st in
-     Ok ({ index; name; mutability } : region_param))
+     Ok ({ index; name; variance; mutability } : region_param))
 
 and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (rvalue, string) result =
@@ -1327,7 +1328,8 @@ and type_param_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* index = type_var_id_of_postcard ctx st in
      let* name = string_of_postcard ctx st in
-     Ok ({ index; name } : type_param))
+     let* variance = variance_of_postcard ctx st in
+     Ok ({ index; name; variance } : type_param))
 
 and type_pattern_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (type_pattern, string) result =
@@ -1391,6 +1393,18 @@ and unsizing_metadata_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* x_0 = list_of_postcard field_id_of_postcard ctx st in
          Ok (MetaVTableUpcast x_0)
      | 3 -> Ok MetaUnknown
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and variance_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (variance, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok Covariant
+     | 1 -> Ok Invariant
+     | 2 -> Ok Contravariant
+     | 3 -> Ok Bivariant
+     | 4 -> Ok VaUnknown
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and variant_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

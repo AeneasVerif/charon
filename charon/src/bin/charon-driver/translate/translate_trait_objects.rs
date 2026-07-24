@@ -127,9 +127,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         self.binding_levels.push(BindingLevel::new());
 
         // Add the existentially quantified type.
-        let ty_id = self
-            .innermost_binder_mut()
-            .push_type_var(binder.existential_ty.index, binder.existential_ty.name);
+        let ty_id = self.innermost_binder_mut().push_type_var(
+            binder.existential_ty.index,
+            binder.existential_ty.name,
+            Variance::Unknown,
+        );
         let ty = TyKind::TypeVar(DeBruijnVar::new_at_zero(ty_id)).into_ty();
 
         self.register_predicates(&binder.predicates, PredicateOrigin::Dyn)?;
@@ -562,7 +564,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         .the_only_binder_mut()
                         .params
                         .types
-                        .push_with(|index| TypeParam { index, name });
+                        .push_with(|index| TypeParam::new(index, name, Variance::Invariant));
                     // Moving that type under two levels of binders: the `DynPredicate` binder and the
                     // type constraint binder.
                     let new_ty =
