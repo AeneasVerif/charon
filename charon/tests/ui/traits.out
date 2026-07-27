@@ -79,6 +79,7 @@ where
 unsafe fn impl_Destruct_for_Option::drop_glue<'_0, T>(_1: &'_0 mut Option<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::result::Result
@@ -100,6 +101,8 @@ pub opaque type String
 unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A, B>(_1: &'_0 mut (A, B))
 where
     TraitClause0: (A: Sized),
+    TypeOutlives0: A: '_0,
+    TypeOutlives1: B: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut (A, B); // arg #1
@@ -140,6 +143,7 @@ pub trait BoolTrait<Self>
 pub fn test_crate::BoolTrait::ret_true<'_0, Self>(self: &'_0 Self) -> bool
 where
     TraitClause0: (Self: BoolTrait),
+    TypeOutlives0: Self: '_0,
 {
     let _0: bool; // return
     let self: &'1 Self; // arg #1
@@ -222,6 +226,7 @@ pub fn test_bool_trait_bool(x: bool) -> bool
 pub fn impl_BoolTrait_for_Option::get_bool<'_0, T>(self: &'_0 Option<T>[TraitClause0]) -> bool
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: bool; // return
     let self: &'1 Option<T>[TraitClause0]; // arg #1
@@ -245,6 +250,7 @@ where
 pub fn impl_BoolTrait_for_Option::ret_true<'_0, T>(self: &'_0 Option<T>[TraitClause0]) -> bool
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: bool; // return
     let self: &'1 Option<T>[TraitClause0]; // arg #1
@@ -525,6 +531,7 @@ where
 unsafe fn impl_Destruct_for_Wrapper::drop_glue<'_0, T>(_1: &'_0 mut Wrapper<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut Wrapper<T>[TraitClause0]; // arg #1
@@ -785,6 +792,7 @@ pub fn test_crate::{TestType<T>[TraitClause0]}::test<'_0, T>(self: &'_0 TestType
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: ToU64),
+    TypeOutlives0: T: '_0,
 {
     let _0: bool; // return
     let self: &'1 TestType<T>[TraitClause0]; // arg #1
@@ -1108,6 +1116,7 @@ pub fn test_child_trait1<'_0, T>(x: &'_0 T) -> String
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: ChildTrait),
+    TypeOutlives0: T: '_0,
 {
     let _0: String; // return
     let x: &'1 T; // arg #1
@@ -1129,6 +1138,7 @@ pub fn test_child_trait2<'_0, T>(x: &'_0 T) -> TraitClause1::ImpliedClause1::W
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: ChildTrait),
+    TypeOutlives0: T: '_0,
 {
     let _0: TraitClause1::ImpliedClause1::W; // return
     let x: &'1 T; // arg #1
@@ -1336,6 +1346,7 @@ pub fn test_get_trait<'_0, T>(x: &'_0 T) -> TraitClause1::W
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: GetTrait),
+    TypeOutlives0: T: '_0,
 {
     let _0: TraitClause1::W; // return
     let x: &'1 T; // arg #1

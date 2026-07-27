@@ -59,6 +59,8 @@ unsafe fn impl_Destruct_for_ControlFlow::drop_glue<'_0, B, C>(_1: &'_0 mut Contr
 where
     TraitClause0: (B: Sized),
     TraitClause1: (C: Sized),
+    TypeOutlives0: B: '_0,
+    TypeOutlives1: C: '_0,
 = <opaque>
 
 // Full name: core::result::Result
@@ -77,6 +79,8 @@ unsafe fn impl_Destruct_for_Result::drop_glue<'_0, T, E>(_1: &'_0 mut Result<T, 
 where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: E: '_0,
 = <opaque>
 
 // Full name: core::result::{impl Try for Result<T, E>[TraitClause0, TraitClause1]}::branch

@@ -137,6 +137,7 @@ pub trait DestroyedState<Self>
 pub fn {impl DestroyedState for !}::register_dtor<'_0, T>(_1: &'_0 Storage<T, !>[TraitClause0, {built_in impl Sized for !}])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: std::sys::thread_local::native::lazy::{impl DestroyedState for !}
@@ -151,6 +152,7 @@ impl DestroyedState for ! {
 pub fn impl_DestroyedState_for_unit::register_dtor<'_0, T>(_1: &'_0 Storage<T, ()>[TraitClause0, {built_in impl Sized for ()}])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: std::sys::thread_local::native::lazy::{impl DestroyedState for ()}
@@ -176,6 +178,9 @@ where
     TraitClause2: (D: DestroyedState),
     TraitClause3: (T2: Sized),
     TraitClause4: (T2: FnOnce<()>),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: D: '_0,
+    TypeOutlives2: T: '_1,
     TypeConstraint0: TraitClause4::Output = T,
 = <opaque>
 
@@ -552,6 +557,8 @@ fn test_crate::FOO::{const}::closure#1::as_fn<'_0>(arg1: Option<&'_0 mut Option<
 
 // Full name: test_crate::FOO
 fn FOO() -> LocalKey<u32>[{built_in impl Sized for u32}]
+where
+    TypeOutlives0: u32: 'static,
 {
     let _0: LocalKey<u32>[{built_in impl Sized for u32}]; // return
     let _1: fn<'_0_1>(Option<&'_0_1 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0_1 mut Option<u32>[{built_in impl Sized for u32}]}]) -> *const u32; // anonymous local

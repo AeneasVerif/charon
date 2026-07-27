@@ -32,6 +32,7 @@ pub trait Drop<Self>
 pub fn core::ops::drop::Drop::drop<'_0, Self>(_1: &'_0 mut Self)
 where
     TraitClause0: (Self: Drop),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 // Full name: std::io::stdio::_print

@@ -79,6 +79,7 @@ pub fn to_string<'_0, T>(_1: &'_0 T) -> String
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (T: Display),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 struct test_crate::Super::{vtable}<T> {
@@ -359,6 +360,7 @@ fn to_dyn_obj<'_0, T>(arg: &'_0 T) -> &'_0 (dyn NoParam + '_0)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: NoParam),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'3 (dyn NoParam + '4); // return
     let arg: &'6 T; // arg #1
@@ -403,6 +405,7 @@ fn modify<'_0, '_1, T>(self: &'_0 mut i32, arg: &'_1 T) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
+    TypeOutlives0: T: '_1,
 {
     let _0: T; // return
     let self: &'1 mut i32; // arg #1
@@ -433,6 +436,8 @@ fn impl_Modifiable_for_i32::modify::{vtable_method}<'_0, '_1, T>(_1: &'_0 mut (d
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: T: '_1,
 {
     let _0: T; // return
     let _1: &'_0 mut (dyn Modifiable<T> + '0); // arg #1
@@ -458,6 +463,7 @@ unsafe fn impl_Modifiable_for_i32::{vtable_drop_shim}<'_0, T>(dyn_self: &'_0 mut
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
+    TypeOutlives0: T: '_0,
 {
     let ret: (); // return
     let dyn_self: &'_0 mut (dyn Modifiable<T> + '0); // arg #1
@@ -521,6 +527,7 @@ fn modify_trait_object<'_0, T>(arg: &'_0 T) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
+    TypeOutlives0: T: '_0,
 {
     let _0: T; // return
     let arg: &'1 T; // arg #1
@@ -597,6 +604,7 @@ trait Both32And64<Self>
 fn test_crate::Both32And64::both_operate<'_0, '_1, '_2, Self>(self: &'_0 Self, t32: &'_1 i32, t64: &'_2 i64)
 where
     TraitClause0: (Self: Both32And64),
+    TypeOutlives0: Self: '_0,
 {
     let _0: (); // return
     let self: &'1 Self; // arg #1

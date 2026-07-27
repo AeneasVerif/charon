@@ -316,6 +316,7 @@ where
 pub fn as_ptr<'_0, T>(_1: &'_0 [T]) -> *const T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: test_crate::main

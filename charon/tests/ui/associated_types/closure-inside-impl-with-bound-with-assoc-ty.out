@@ -110,6 +110,7 @@ unsafe fn drop_glue<'_0, F, Clause1_Repr>(_1: &'_0 mut closure<F, Clause1_Repr>[
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
+    TypeOutlives0: F: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut closure<F, Clause1_Repr>[TraitClause0, TraitClause1]; // arg #1
@@ -125,6 +126,7 @@ fn call<'_0, F, Clause1_Repr>(_1: &'_0 closure<F, Clause1_Repr>[TraitClause0, Tr
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
+    TypeOutlives0: F: '_0,
 {
     let _0: (); // return
     let _1: &'1 closure<F, Clause1_Repr>[TraitClause0, TraitClause1]; // arg #1
@@ -147,6 +149,7 @@ fn call_mut<'_0, F, Clause1_Repr>(state: &'_0 mut closure<F, Clause1_Repr>[Trait
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
+    TypeOutlives0: F: '_0,
 {
     let _0: (); // return
     let state: &'_0 mut closure<F, Clause1_Repr>[TraitClause0, TraitClause1]; // arg #1

@@ -57,6 +57,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait),
     TraitClause2: (T: Copy),
+    TypeOutlives0: TraitClause1::Type[TraitClause2]: '_0,
+    TypeOutlives1: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 TraitClause1::Type[TraitClause2]; // arg #1

@@ -24,6 +24,7 @@ pub trait BoolTrait<Self>
 pub fn test_crate::BoolTrait::ret_true<'_0, Self>(self: &'_0 Self) -> bool
 where
     TraitClause0: (Self: BoolTrait),
+    TypeOutlives0: Self: '_0,
 {
     let _0: bool; // return
     let self: &'1 Self; // arg #1

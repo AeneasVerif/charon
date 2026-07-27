@@ -124,6 +124,7 @@ pub trait Iterator<Self, Self_Item>
 pub fn next<'_0, A>(_1: &'_0 mut Range<A>) -> Option<A>
 where
     TraitClause0: (A: Step),
+    TypeOutlives0: A: '_0,
 = <opaque>
 
 // Full name: core::iter::range::{impl Iterator<A> for Range<A>}

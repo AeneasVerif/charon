@@ -38,6 +38,8 @@ pub opaque type VaList<'a>
 
 // Full name: core::ffi::va_list::VaList::{impl Destruct for VaList<'a>}::drop_glue
 unsafe fn drop_glue<'a, '_1>(_1: &'_1 mut VaList<'a>)
+where
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::ffi::va_list::sealed::Sealed
@@ -92,6 +94,7 @@ pub unsafe fn next_arg<'f, '_1, T>(_1: &'_1 mut VaList<'f>) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: VaArgSafe),
+    RegionOutlives0: 'f: '_1,
 = <opaque>
 
 // Full name: test_crate::sum

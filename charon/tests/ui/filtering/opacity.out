@@ -144,6 +144,7 @@ where
 pub fn is_some<'_0, T>(self: &'_0 Option<T>[TraitClause0]) -> bool
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: bool; // return
     let self: &'1 Option<T>[TraitClause0]; // arg #1

@@ -22,6 +22,7 @@ where
 unsafe fn drop_glue<'_0, T, const N : usize>(_1: &'_0 mut IntoIter<T, N>[TraitClause0])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::array::iter::{impl IntoIterator for [T; N]}::into_iter
@@ -661,12 +662,14 @@ pub trait Iterator<Self>
 pub unsafe fn impl_Iterator_for_IntoIter::__iterator_get_unchecked<'_0, T, const N : usize>(_1: &'_0 mut IntoIter<T, N>[TraitClause0], _2: usize) -> T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}::advance_by
 pub fn impl_Iterator_for_IntoIter::advance_by<'_0, T, const N : usize>(_1: &'_0 mut IntoIter<T, N>[TraitClause0], _2: usize) -> Result<(), NonZero<usize>[{built_in impl Sized for usize}, impl_ZeroablePrimitive_for_usize]>[{built_in impl Sized for ()}, {built_in impl Sized for NonZero<usize>[{built_in impl Sized for usize}, impl_ZeroablePrimitive_for_usize]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}::last
@@ -691,6 +694,7 @@ where
     TraitClause4: (IntoIter<T, N>[TraitClause0]: Sized),
     TraitClause5: (F: FnMut<(B, T)>),
     TraitClause6: (R: Try),
+    TypeOutlives0: T: '_0,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = R,
     TypeConstraint1: TraitClause6::Output = B,
 = <opaque>
@@ -709,12 +713,14 @@ where
 pub fn impl_Iterator_for_IntoIter::size_hint<'_0, T, const N : usize>(_1: &'_0 IntoIter<T, N>[TraitClause0]) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}::next
 pub fn impl_Iterator_for_IntoIter::next<'_0, T, const N : usize>(_1: &'_0 mut IntoIter<T, N>[TraitClause0]) -> Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}::is_sorted_by_key
@@ -1017,6 +1023,7 @@ where
     TraitClause3: (IntoIter<T, N>[TraitClause0]: Sized),
     TraitClause4: (IntoIter<T, N>[TraitClause0]: ExactSizeIterator),
     TraitClause5: (IntoIter<T, N>[TraitClause0]: DoubleEndedIterator),
+    TypeOutlives0: T: '_0,
     TypeConstraint0: TraitClause2::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -1027,6 +1034,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (IntoIter<T, N>[TraitClause0]: Sized),
     TraitClause3: (P: FnMut<(T,)>),
+    TypeOutlives0: T: '_0,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -1040,6 +1048,7 @@ where
     TraitClause4: (R: Try),
     TraitClause5: (TraitClause4::Residual: Residual<Option<T>[impl_Iterator_for_IntoIter<T, N>[TraitClause0]::ImpliedClause1]>),
     TraitClause6: for<'_0_1> (T2: FnMut<(&'_0_1 T,)>),
+    TypeOutlives0: T: '_0,
     TypeConstraint0: TraitClause4::Output = bool,
     TypeConstraint1: for<'_0_1> TraitClause6::ImpliedClause1::Output = R,
 = <opaque>
@@ -1052,6 +1061,7 @@ where
     TraitClause2: (F: Sized),
     TraitClause3: (IntoIter<T, N>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(T,)>),
+    TypeOutlives0: T: '_0,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = Option<B>[TraitClause1],
 = <opaque>
 
@@ -1062,6 +1072,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (IntoIter<T, N>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1> (P: FnMut<(&'_0_1 T,)>),
+    TypeOutlives0: T: '_0,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -1072,6 +1083,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (IntoIter<T, N>[TraitClause0]: Sized),
     TraitClause3: (F: FnMut<(T,)>),
+    TypeOutlives0: T: '_0,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -1082,6 +1094,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (IntoIter<T, N>[TraitClause0]: Sized),
     TraitClause3: (F: FnMut<(T,)>),
+    TypeOutlives0: T: '_0,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -1096,6 +1109,7 @@ where
     TraitClause5: (TraitClause4::Residual: Residual<Option<T>[impl_Iterator_for_IntoIter<T, N>[TraitClause0]::ImpliedClause1]>),
     TraitClause6: (T2: FnMut<(T, T)>),
     TraitClause7: (T2: Destruct),
+    TypeOutlives0: T: '_0,
     TypeConstraint0: TraitClause4::Output = T,
     TypeConstraint1: TraitClause6::ImpliedClause1::Output = R,
 = <opaque>
@@ -1121,6 +1135,7 @@ where
     TraitClause3: (IntoIter<T, N>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(T,)>),
     TraitClause5: (R: Try),
+    TypeOutlives0: T: '_0,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = R,
     TypeConstraint1: TraitClause5::Output = (),
 = <opaque>
@@ -1169,6 +1184,7 @@ where
     TraitClause1: (E: Sized),
     TraitClause2: (E: Extend<T>),
     TraitClause3: (IntoIter<T, N>[TraitClause0]: Sized),
+    TypeOutlives0: E: '_0,
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}::try_collect
@@ -1180,6 +1196,7 @@ where
     TraitClause3: (T: Try),
     TraitClause4: (TraitClause3::Residual: Residual<B>),
     TraitClause5: (B: FromIterator<TraitClause3::Output>),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}::collect
@@ -1197,6 +1214,7 @@ pub fn impl_Iterator_for_IntoIter::by_ref<'_0, T, const N : usize>(_1: &'_0 mut 
 where
     TraitClause0: (T: Sized),
     TraitClause1: (IntoIter<T, N>[TraitClause0]: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}::inspect
@@ -1411,6 +1429,7 @@ where
 pub fn impl_Iterator_for_IntoIter::nth<'_0, T, const N : usize>(_1: &'_0 mut IntoIter<T, N>[TraitClause0], _2: usize) -> Option<T>[impl_Iterator_for_IntoIter<T, N>[TraitClause0]::ImpliedClause1]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}::next_chunk
@@ -1418,6 +1437,7 @@ pub fn impl_Iterator_for_IntoIter::next_chunk<'_0, T, const N : usize, const N :
 where
     TraitClause0: (T: Sized),
     TraitClause1: (IntoIter<T, N>[TraitClause0]: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}
@@ -1512,12 +1532,16 @@ pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(_1: &'_0 mut Self, _2: &'_
 where
     TraitClause0: (Self: Clone),
     TraitClause1: (Self: Destruct),
+    TypeOutlives0: Self: '_0,
+    TypeOutlives1: Self: '_1,
 = <opaque>
 
 #[lang_item("cmp_partialeq_ne")]
 pub fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
     TraitClause0: (Self: PartialEq<Rhs>),
+    TypeOutlives0: Self: '_0,
+    TypeOutlives1: Rhs: '_1,
 = <opaque>
 
 // Full name: core::cmp::Eq::assert_receiver_is_total_eq
@@ -1525,12 +1549,14 @@ where
 pub fn assert_receiver_is_total_eq<'_0, Self>(_1: &'_0 Self)
 where
     TraitClause0: (Self: Eq),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 // Full name: core::cmp::Eq::assert_fields_are_eq
 pub fn assert_fields_are_eq<'_0, Self>(_1: &'_0 Self)
 where
     TraitClause0: (Self: Eq),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 #[lang_item("cmp_ord_max")]
@@ -1561,48 +1587,64 @@ where
 pub fn core::cmp::PartialOrd::lt<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
     TraitClause0: (Self: PartialOrd<Rhs>),
+    TypeOutlives0: Self: '_0,
+    TypeOutlives1: Rhs: '_1,
 = <opaque>
 
 #[lang_item("cmp_partialord_le")]
 pub fn core::cmp::PartialOrd::le<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
     TraitClause0: (Self: PartialOrd<Rhs>),
+    TypeOutlives0: Self: '_0,
+    TypeOutlives1: Rhs: '_1,
 = <opaque>
 
 #[lang_item("cmp_partialord_gt")]
 pub fn core::cmp::PartialOrd::gt<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
     TraitClause0: (Self: PartialOrd<Rhs>),
+    TypeOutlives0: Self: '_0,
+    TypeOutlives1: Rhs: '_1,
 = <opaque>
 
 #[lang_item("cmp_partialord_ge")]
 pub fn core::cmp::PartialOrd::ge<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
     TraitClause0: (Self: PartialOrd<Rhs>),
+    TypeOutlives0: Self: '_0,
+    TypeOutlives1: Rhs: '_1,
 = <opaque>
 
 // Full name: core::cmp::PartialOrd::__chaining_lt
 pub fn __chaining_lt<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> ControlFlow<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
 where
     TraitClause0: (Self: PartialOrd<Rhs>),
+    TypeOutlives0: Self: '_0,
+    TypeOutlives1: Rhs: '_1,
 = <opaque>
 
 // Full name: core::cmp::PartialOrd::__chaining_le
 pub fn __chaining_le<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> ControlFlow<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
 where
     TraitClause0: (Self: PartialOrd<Rhs>),
+    TypeOutlives0: Self: '_0,
+    TypeOutlives1: Rhs: '_1,
 = <opaque>
 
 // Full name: core::cmp::PartialOrd::__chaining_gt
 pub fn __chaining_gt<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> ControlFlow<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
 where
     TraitClause0: (Self: PartialOrd<Rhs>),
+    TypeOutlives0: Self: '_0,
+    TypeOutlives1: Rhs: '_1,
 = <opaque>
 
 // Full name: core::cmp::PartialOrd::__chaining_ge
 pub fn __chaining_ge<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> ControlFlow<bool, ()>[{built_in impl Sized for bool}, {built_in impl Sized for ()}]
 where
     TraitClause0: (Self: PartialOrd<Rhs>),
+    TypeOutlives0: Self: '_0,
+    TypeOutlives1: Rhs: '_1,
 = <opaque>
 
 // Full name: core::ops::arith::{impl AddAssign<&'_0 i32> for i32}::add_assign
@@ -1614,6 +1656,7 @@ pub fn size<'_0, Self>(_1: &'_0 Self) -> usize
 where
     TraitClause0: (Self: TrustedRandomAccessNoCoerce),
     TraitClause1: (Self: Iterator),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 // Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
@@ -1627,12 +1670,14 @@ where
 pub fn extend_one<'_0, Self, A>(_1: &'_0 mut Self, _2: A)
 where
     TraitClause0: (Self: Extend<A>),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 // Full name: core::iter::traits::collect::Extend::extend_reserve
 pub fn extend_reserve<'_0, Self, A>(_1: &'_0 mut Self, _2: usize)
 where
     TraitClause0: (Self: Extend<A>),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 // Full name: core::iter::traits::collect::Extend::extend_one_unchecked
@@ -1640,18 +1685,21 @@ pub unsafe fn extend_one_unchecked<'_0, Self, A>(_1: &'_0 mut Self, _2: A)
 where
     TraitClause0: (Self: Extend<A>),
     TraitClause1: (Self: Sized),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::advance_back_by
 pub fn advance_back_by<'_0, Self>(_1: &'_0 mut Self, _2: usize) -> Result<(), NonZero<usize>[{built_in impl Sized for usize}, impl_ZeroablePrimitive_for_usize]>[{built_in impl Sized for ()}, {built_in impl Sized for NonZero<usize>[{built_in impl Sized for usize}, impl_ZeroablePrimitive_for_usize]}]
 where
     TraitClause0: (Self: DoubleEndedIterator),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::nth_back
 pub fn nth_back<'_0, Self>(_1: &'_0 mut Self, _2: usize) -> Option<TraitClause0::ImpliedClause1::Item>[TraitClause0::ImpliedClause1::ImpliedClause1]
 where
     TraitClause0: (Self: DoubleEndedIterator),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::try_rfold
@@ -1665,6 +1713,7 @@ where
     TraitClause5: (F: FnMut<(B, TraitClause0::ImpliedClause1::Item)>),
     TraitClause6: (F: Destruct),
     TraitClause7: (R: Try),
+    TypeOutlives0: Self: '_0,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = R,
     TypeConstraint1: TraitClause7::Output = B,
 = <opaque>
@@ -1689,6 +1738,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Self: Sized),
     TraitClause3: for<'_0_1> (P: FnMut<(&'_0_1 TraitClause0::ImpliedClause1::Item,)>),
+    TypeOutlives0: Self: '_0,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -1696,23 +1746,27 @@ where
 pub fn len<'_0, Self>(_1: &'_0 Self) -> usize
 where
     TraitClause0: (Self: ExactSizeIterator),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 // Full name: core::iter::traits::exact_size::ExactSizeIterator::is_empty
 pub fn is_empty<'_0, Self>(_1: &'_0 Self) -> bool
 where
     TraitClause0: (Self: ExactSizeIterator),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 pub fn core::iter::traits::iterator::Iterator::next_chunk<'_0, Self, const N : usize>(_1: &'_0 mut Self) -> Result<[TraitClause0::Item; N], IntoIter<TraitClause0::Item, N>[TraitClause0::ImpliedClause1]>[{built_in impl Sized for [TraitClause0::Item; N]}, {built_in impl Sized for IntoIter<TraitClause0::Item, N>[TraitClause0::ImpliedClause1]}]
 where
     TraitClause0: (Self: Iterator),
     TraitClause1: (Self: Sized),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 pub fn core::iter::traits::iterator::Iterator::size_hint<'_0, Self>(_1: &'_0 Self) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 where
     TraitClause0: (Self: Iterator),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 pub fn core::iter::traits::iterator::Iterator::count<Self>(_1: Self) -> usize
@@ -1734,11 +1788,13 @@ where
 pub fn core::iter::traits::iterator::Iterator::advance_by<'_0, Self>(_1: &'_0 mut Self, _2: usize) -> Result<(), NonZero<usize>[{built_in impl Sized for usize}, impl_ZeroablePrimitive_for_usize]>[{built_in impl Sized for ()}, {built_in impl Sized for NonZero<usize>[{built_in impl Sized for usize}, impl_ZeroablePrimitive_for_usize]}]
 where
     TraitClause0: (Self: Iterator),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 pub fn core::iter::traits::iterator::Iterator::nth<'_0, Self>(_1: &'_0 mut Self, _2: usize) -> Option<TraitClause0::Item>[TraitClause0::ImpliedClause1]
 where
     TraitClause0: (Self: Iterator),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 pub fn core::iter::traits::iterator::Iterator::step_by<Self>(_1: Self, _2: usize) -> StepBy<Self>[TraitClause1]
@@ -1931,6 +1987,7 @@ pub fn core::iter::traits::iterator::Iterator::by_ref<'_0, Self>(_1: &'_0 mut Se
 where
     TraitClause0: (Self: Iterator),
     TraitClause1: (Self: Sized),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 #[lang_item("iterator_collect_fn")]
@@ -1950,6 +2007,7 @@ where
     TraitClause3: (TraitClause0::Item: Try),
     TraitClause4: (TraitClause3::Residual: Residual<B>),
     TraitClause5: (B: FromIterator<TraitClause3::Output>),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 pub fn core::iter::traits::iterator::Iterator::collect_into<'_0, Self, E>(_1: Self, _2: &'_0 mut E) -> &'_0 mut E
@@ -1958,6 +2016,7 @@ where
     TraitClause1: (E: Sized),
     TraitClause2: (E: Extend<TraitClause0::Item>),
     TraitClause3: (Self: Sized),
+    TypeOutlives0: E: '_0,
 = <opaque>
 
 pub fn core::iter::traits::iterator::Iterator::partition<Self, B, F>(_1: Self, _2: F) -> (B, B)
@@ -2004,6 +2063,7 @@ where
     TraitClause5: (F: FnMut<(B, TraitClause0::Item)>),
     TraitClause6: (F: Destruct),
     TraitClause7: (R: Try),
+    TypeOutlives0: Self: '_0,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = R,
     TypeConstraint1: TraitClause7::Output = B,
 = <opaque>
@@ -2016,6 +2076,7 @@ where
     TraitClause3: (Self: Sized),
     TraitClause4: (F: FnMut<(TraitClause0::Item,)>),
     TraitClause5: (R: Try),
+    TypeOutlives0: Self: '_0,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = R,
     TypeConstraint1: TraitClause5::Output = (),
 = <opaque>
@@ -2053,6 +2114,7 @@ where
     TraitClause5: (TraitClause4::Residual: Residual<Option<TraitClause0::Item>[TraitClause0::ImpliedClause1]>),
     TraitClause6: (T2: FnMut<(TraitClause0::Item, TraitClause0::Item)>),
     TraitClause7: (T2: Destruct),
+    TypeOutlives0: Self: '_0,
     TypeConstraint0: TraitClause4::Output = TraitClause0::Item,
     TypeConstraint1: TraitClause6::ImpliedClause1::Output = R,
 = <opaque>
@@ -2063,6 +2125,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (Self: Sized),
     TraitClause3: (F: FnMut<(TraitClause0::Item,)>),
+    TypeOutlives0: Self: '_0,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -2072,6 +2135,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (Self: Sized),
     TraitClause3: (F: FnMut<(TraitClause0::Item,)>),
+    TypeOutlives0: Self: '_0,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -2081,6 +2145,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Self: Sized),
     TraitClause3: for<'_0_1> (P: FnMut<(&'_0_1 TraitClause0::Item,)>),
+    TypeOutlives0: Self: '_0,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -2091,6 +2156,7 @@ where
     TraitClause2: (F: Sized),
     TraitClause3: (Self: Sized),
     TraitClause4: (F: FnMut<(TraitClause0::Item,)>),
+    TypeOutlives0: Self: '_0,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = Option<B>[TraitClause1],
 = <opaque>
 
@@ -2103,6 +2169,7 @@ where
     TraitClause4: (R: Try),
     TraitClause5: (TraitClause4::Residual: Residual<Option<TraitClause0::Item>[TraitClause0::ImpliedClause1]>),
     TraitClause6: for<'_0_1> (T2: FnMut<(&'_0_1 TraitClause0::Item,)>),
+    TypeOutlives0: Self: '_0,
     TypeConstraint0: TraitClause4::Output = bool,
     TypeConstraint1: for<'_0_1> TraitClause6::ImpliedClause1::Output = R,
 = <opaque>
@@ -2113,6 +2180,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Self: Sized),
     TraitClause3: (P: FnMut<(TraitClause0::Item,)>),
+    TypeOutlives0: Self: '_0,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -2124,6 +2192,7 @@ where
     TraitClause3: (Self: Sized),
     TraitClause4: (Self: ExactSizeIterator),
     TraitClause5: (Self: DoubleEndedIterator),
+    TypeOutlives0: Self: '_0,
     TypeConstraint0: TraitClause2::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -2394,6 +2463,7 @@ pub unsafe fn core::iter::traits::iterator::Iterator::__iterator_get_unchecked<'
 where
     TraitClause0: (Self: Iterator),
     TraitClause1: (Self: TrustedRandomAccessNoCoerce),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 // Full name: core::panicking::AssertKind
@@ -2418,6 +2488,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1, '_1_1> (F: FnMut<(&'_0_1 &'a T, &'_1_1 &'a T)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1, '_1_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -2425,6 +2496,9 @@ where
 pub unsafe fn impl_Iterator_for_Iter::__iterator_get_unchecked<'a, '_1, T>(_1: &'_1 mut Iter<'a, T>[TraitClause0], _2: usize) -> &'a T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::rposition
@@ -2436,6 +2510,9 @@ where
     TraitClause3: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause4: (Iter<'a, T>[TraitClause0]: ExactSizeIterator),
     TraitClause5: (Iter<'a, T>[TraitClause0]: DoubleEndedIterator),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause2::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -2446,6 +2523,9 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: (P: FnMut<(&'a T,)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -2457,6 +2537,9 @@ where
     TraitClause2: (F: Sized),
     TraitClause3: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(&'a T,)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = Option<B>[TraitClause1],
 = <opaque>
 
@@ -2467,6 +2550,9 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1> (P: FnMut<(&'_0_1 &'a T,)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -2477,6 +2563,9 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: (F: FnMut<(&'a T,)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -2487,6 +2576,9 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: (F: FnMut<(&'a T,)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -2497,6 +2589,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: (F: FnMut<(&'a T,)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = (),
 = <opaque>
 
@@ -2507,6 +2600,7 @@ where
     TraitClause1: (B: Sized),
     TraitClause2: (F: Sized),
     TraitClause3: (F: FnMut<(B, &'a T)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = B,
 = <opaque>
 
@@ -2514,42 +2608,59 @@ where
 pub fn impl_Iterator_for_Iter::last<'a, T>(_1: Iter<'a, T>[TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::advance_by
 pub fn impl_Iterator_for_Iter::advance_by<'a, '_1, T>(_1: &'_1 mut Iter<'a, T>[TraitClause0], _2: usize) -> Result<(), NonZero<usize>[{built_in impl Sized for usize}, impl_ZeroablePrimitive_for_usize]>[{built_in impl Sized for ()}, {built_in impl Sized for NonZero<usize>[{built_in impl Sized for usize}, impl_ZeroablePrimitive_for_usize]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::nth
 pub fn impl_Iterator_for_Iter::nth<'a, '_1, T>(_1: &'_1 mut Iter<'a, T>[TraitClause0], _2: usize) -> Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::count
 pub fn impl_Iterator_for_Iter::count<'a, T>(_1: Iter<'a, T>[TraitClause0]) -> usize
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::size_hint
 pub fn impl_Iterator_for_Iter::size_hint<'a, '_1, T>(_1: &'_1 Iter<'a, T>[TraitClause0]) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::next_chunk
 pub fn impl_Iterator_for_Iter::next_chunk<'a, '_1, T, const N : usize>(_1: &'_1 mut Iter<'a, T>[TraitClause0]) -> Result<[&'a T; N], IntoIter<&'a T, N>[{built_in impl Sized for &'a T}]>[{built_in impl Sized for [&'a T; N]}, {built_in impl Sized for IntoIter<&'a T, N>[{built_in impl Sized for &'a T}]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::next
 pub fn impl_Iterator_for_Iter::next<'a, '_1, T>(_1: &'_1 mut Iter<'a, T>[TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::is_sorted_by_key
@@ -2561,6 +2672,7 @@ where
     TraitClause3: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(&'a T,)>),
     TraitClause5: (K: PartialOrd<K>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = K,
 = <opaque>
 
@@ -2570,6 +2682,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause2: (&'a T: PartialOrd<&'a T>),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::ge
@@ -2580,6 +2693,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a T: PartialOrd<TraitClause2::Item>),
     TraitClause4: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::gt
@@ -2590,6 +2704,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a T: PartialOrd<TraitClause2::Item>),
     TraitClause4: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::le
@@ -2600,6 +2715,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a T: PartialOrd<TraitClause2::Item>),
     TraitClause4: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::lt
@@ -2610,6 +2726,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a T: PartialOrd<TraitClause2::Item>),
     TraitClause4: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::ne
@@ -2620,6 +2737,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a T: PartialEq<TraitClause2::Item>),
     TraitClause4: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::eq_by
@@ -2631,6 +2749,7 @@ where
     TraitClause3: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause4: (I: IntoIterator),
     TraitClause5: (F: FnMut<(&'a T, TraitClause4::Item)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -2642,6 +2761,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a T: PartialEq<TraitClause2::Item>),
     TraitClause4: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::partial_cmp_by
@@ -2653,6 +2773,7 @@ where
     TraitClause3: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause4: (I: IntoIterator),
     TraitClause5: (F: FnMut<(&'a T, TraitClause4::Item)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = Option<Ordering>[{built_in impl Sized for Ordering}],
 = <opaque>
 
@@ -2664,6 +2785,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a T: PartialOrd<TraitClause2::Item>),
     TraitClause4: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::cmp_by
@@ -2675,6 +2797,7 @@ where
     TraitClause3: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause4: (I: IntoIterator),
     TraitClause5: (F: FnMut<(&'a T, TraitClause4::Item)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = Ordering,
 = <opaque>
 
@@ -2686,6 +2809,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a T: Ord),
     TraitClause4: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause2::Item = &'a T,
 = <opaque>
 
@@ -2696,6 +2820,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: (P: Product<&'a T>),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::sum
@@ -2705,6 +2830,7 @@ where
     TraitClause1: (S: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: (S: Sum<&'a T>),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::array_chunks
@@ -2712,6 +2838,7 @@ pub fn impl_Iterator_for_Iter::array_chunks<'a, T, const N : usize>(_1: Iter<'a,
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::cycle
@@ -2720,6 +2847,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Clone),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::cloned
@@ -2732,6 +2860,7 @@ where
     TraitClause3: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause4: (Iter<'a, T>[TraitClause0]: Iterator),
     TypeOutlives0: T: 'a,
+    TypeOutlives1: T: 'a,
     TypeConstraint0: impl_Iterator_for_Iter<'a, T>[TraitClause0]::Item = &'a T,
 = <opaque>
 
@@ -2745,6 +2874,7 @@ where
     TraitClause3: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause4: (Iter<'a, T>[TraitClause0]: Iterator),
     TypeOutlives0: T: 'a,
+    TypeOutlives1: T: 'a,
     TypeConstraint0: impl_Iterator_for_Iter<'a, T>[TraitClause0]::Item = &'a T,
 = <opaque>
 
@@ -2762,6 +2892,7 @@ where
     TraitClause8: (FromB: Extend<B>),
     TraitClause9: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause10: (Iter<'a, T>[TraitClause0]: Iterator),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: impl_Iterator_for_Iter<'a, T>[TraitClause0]::Item = (A, B),
 = <opaque>
 
@@ -2771,6 +2902,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: DoubleEndedIterator),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::min_by
@@ -2780,6 +2912,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1, '_1_1> (F: FnMut<(&'_0_1 &'a T, &'_1_1 &'a T)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1, '_1_1> TraitClause3::ImpliedClause1::Output = Ordering,
 = <opaque>
 
@@ -2792,6 +2925,7 @@ where
     TraitClause3: (B: Ord),
     TraitClause4: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause5: for<'_0_1> (F: FnMut<(&'_0_1 &'a T,)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause5::ImpliedClause1::Output = B,
 = <opaque>
 
@@ -2802,6 +2936,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1, '_1_1> (F: FnMut<(&'_0_1 &'a T, &'_1_1 &'a T)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1, '_1_1> TraitClause3::ImpliedClause1::Output = Ordering,
 = <opaque>
 
@@ -2814,6 +2949,7 @@ where
     TraitClause3: (B: Ord),
     TraitClause4: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause5: for<'_0_1> (F: FnMut<(&'_0_1 &'a T,)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause5::ImpliedClause1::Output = B,
 = <opaque>
 
@@ -2823,6 +2959,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause2: (&'a T: Ord),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::max
@@ -2831,6 +2968,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause2: (&'a T: Ord),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::try_find
@@ -2843,6 +2981,9 @@ where
     TraitClause4: (R: Try),
     TraitClause5: (TraitClause4::Residual: Residual<Option<&'a T>[impl_Iterator_for_Iter<'a, T>[TraitClause0]::ImpliedClause1]>),
     TraitClause6: for<'_0_1> (T2: FnMut<(&'_0_1 &'a T,)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause4::Output = bool,
     TypeConstraint1: for<'_0_1> TraitClause6::ImpliedClause1::Output = R,
 = <opaque>
@@ -2858,6 +2999,9 @@ where
     TraitClause5: (TraitClause4::Residual: Residual<Option<&'a T>[impl_Iterator_for_Iter<'a, T>[TraitClause0]::ImpliedClause1]>),
     TraitClause6: (T2: FnMut<(&'a T, &'a T)>),
     TraitClause7: (T2: Destruct),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause4::Output = &'a T,
     TypeConstraint1: TraitClause6::ImpliedClause1::Output = R,
 = <opaque>
@@ -2871,6 +3015,7 @@ where
     TraitClause3: (Iter<'a, T>[TraitClause0]: Destruct),
     TraitClause4: (F: FnMut<(&'a T, &'a T)>),
     TraitClause5: (F: Destruct),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = &'a T,
 = <opaque>
 
@@ -2883,6 +3028,9 @@ where
     TraitClause3: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(&'a T,)>),
     TraitClause5: (R: Try),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = R,
     TypeConstraint1: TraitClause5::Output = (),
 = <opaque>
@@ -2898,6 +3046,9 @@ where
     TraitClause5: (F: FnMut<(B, &'a T)>),
     TraitClause6: (F: Destruct),
     TraitClause7: (R: Try),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = R,
     TypeConstraint1: TraitClause7::Output = B,
 = <opaque>
@@ -2909,6 +3060,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: (P: FnMut<(&'a T,)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -2922,6 +3074,7 @@ where
     TraitClause4: (Iter<'a, T>[TraitClause0]: DoubleEndedIterator),
     TraitClause5: for<'_0_1> (P: FnMut<(&'_0_1 T,)>),
     TypeOutlives0: T: 'a,
+    TypeOutlives1: T: 'a,
     TypeConstraint0: impl_Iterator_for_Iter<'a, T>[TraitClause0]::Item = &'a mut T,
     TypeConstraint1: for<'_0_1> TraitClause5::ImpliedClause1::Output = bool,
 = <opaque>
@@ -2936,6 +3089,7 @@ where
     TraitClause4: (B: Default),
     TraitClause5: (B: Extend<&'a T>),
     TraitClause6: for<'_0_1> (F: FnMut<(&'_0_1 &'a T,)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause6::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -2946,6 +3100,8 @@ where
     TraitClause1: (E: Sized),
     TraitClause2: (E: Extend<&'a T>),
     TraitClause3: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: E: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::try_collect
@@ -2957,6 +3113,9 @@ where
     TraitClause3: (&'a T: Try),
     TraitClause4: (TraitClause3::Residual: Residual<B>),
     TraitClause5: (B: FromIterator<TraitClause3::Output>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::collect
@@ -2967,6 +3126,7 @@ where
     TraitClause1: (B: Sized),
     TraitClause2: (B: FromIterator<&'a T>),
     TraitClause3: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::by_ref
@@ -2974,6 +3134,9 @@ pub fn impl_Iterator_for_Iter::by_ref<'a, '_1, T>(_1: &'_1 mut Iter<'a, T>[Trait
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::inspect
@@ -2983,6 +3146,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1> (F: FnMut<(&'_0_1 &'a T,)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = (),
 = <opaque>
 
@@ -2991,6 +3155,7 @@ pub fn impl_Iterator_for_Iter::fuse<'a, T>(_1: Iter<'a, T>[TraitClause0]) -> Fus
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::map_windows
@@ -3001,6 +3166,7 @@ where
     TraitClause2: (R: Sized),
     TraitClause3: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause4: for<'_0_1> (F: FnMut<(&'_0_1 [&'a T; N],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause4::ImpliedClause1::Output = R,
 = <opaque>
 
@@ -3010,6 +3176,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause2: (&'a T: IntoIterator),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::flat_map
@@ -3021,6 +3188,7 @@ where
     TraitClause3: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause4: (U: IntoIterator),
     TraitClause5: (F: FnMut<(&'a T,)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = U,
 = <opaque>
 
@@ -3033,6 +3201,7 @@ where
     TraitClause3: (F: Sized),
     TraitClause4: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause5: for<'_0_1> (F: FnMut<(&'_0_1 mut St, &'a T)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause5::ImpliedClause1::Output = Option<B>[TraitClause2],
 = <opaque>
 
@@ -3041,6 +3210,7 @@ pub fn impl_Iterator_for_Iter::take<'a, T>(_1: Iter<'a, T>[TraitClause0], _2: us
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::skip
@@ -3048,6 +3218,7 @@ pub fn impl_Iterator_for_Iter::skip<'a, T>(_1: Iter<'a, T>[TraitClause0], _2: us
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::map_while
@@ -3058,6 +3229,7 @@ where
     TraitClause2: (P: Sized),
     TraitClause3: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause4: (P: FnMut<(&'a T,)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = Option<B>[TraitClause1],
 = <opaque>
 
@@ -3068,6 +3240,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1> (P: FnMut<(&'_0_1 &'a T,)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -3078,6 +3251,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1> (P: FnMut<(&'_0_1 &'a T,)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -3086,6 +3260,7 @@ pub fn impl_Iterator_for_Iter::peekable<'a, T>(_1: Iter<'a, T>[TraitClause0]) ->
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::enumerate
@@ -3094,6 +3269,7 @@ pub fn impl_Iterator_for_Iter::enumerate<'a, T>(_1: Iter<'a, T>[TraitClause0]) -
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::filter_map
@@ -3104,6 +3280,7 @@ where
     TraitClause2: (F: Sized),
     TraitClause3: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(&'a T,)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = Option<B>[TraitClause1],
 = <opaque>
 
@@ -3115,6 +3292,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1> (P: FnMut<(&'_0_1 &'a T,)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -3127,6 +3305,7 @@ where
     TraitClause2: (F: Sized),
     TraitClause3: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(&'a T,)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = B,
 = <opaque>
 
@@ -3137,6 +3316,7 @@ where
     TraitClause1: (G: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: (G: FnMut<()>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = &'a T,
 = <opaque>
 
@@ -3146,6 +3326,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause2: (&'a T: Clone),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::zip
@@ -3155,6 +3336,7 @@ where
     TraitClause1: (U: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: (U: IntoIterator),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::chain
@@ -3164,6 +3346,7 @@ where
     TraitClause1: (U: Sized),
     TraitClause2: (Iter<'a, T>[TraitClause0]: Sized),
     TraitClause3: (U: IntoIterator),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause3::Item = &'a T,
 = <opaque>
 
@@ -3172,12 +3355,14 @@ pub fn impl_Iterator_for_Iter::step_by<'a, T>(_1: Iter<'a, T>[TraitClause0], _2:
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Iter<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}
 impl<'a, T> "impl_Iterator_for_Iter" Iterator for Iter<'a, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
     proof ImpliedClause0: (Iter<'a, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Iter<'a, T>[TraitClause0]}
     proof ImpliedClause1: (&'a T: Sized) = {built_in impl Sized for &'a T}
@@ -3273,36 +3458,50 @@ where
 pub unsafe fn impl_Iterator_for_Chunks::__iterator_get_unchecked<'a, '_1, T>(_1: &'_1 mut Chunks<'a, T>[TraitClause0], _2: usize) -> &'a [T]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::last
 pub fn impl_Iterator_for_Chunks::last<'a, T>(_1: Chunks<'a, T>[TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'a [T]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::nth
 pub fn impl_Iterator_for_Chunks::nth<'a, '_1, T>(_1: &'_1 mut Chunks<'a, T>[TraitClause0], _2: usize) -> Option<&'a [T]>[{built_in impl Sized for &'a [T]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::count
 pub fn impl_Iterator_for_Chunks::count<'a, T>(_1: Chunks<'a, T>[TraitClause0]) -> usize
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::size_hint
 pub fn impl_Iterator_for_Chunks::size_hint<'a, '_1, T>(_1: &'_1 Chunks<'a, T>[TraitClause0]) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::next
 pub fn impl_Iterator_for_Chunks::next<'a, '_1, T>(_1: &'_1 mut Chunks<'a, T>[TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'a [T]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::is_sorted_by_key
@@ -3314,6 +3513,7 @@ where
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(&'a [T],)>),
     TraitClause5: (K: PartialOrd<K>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = K,
 = <opaque>
 
@@ -3324,6 +3524,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1, '_1_1> (F: FnMut<(&'_0_1 &'a [T], &'_1_1 &'a [T])>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1, '_1_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -3333,6 +3534,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause2: (&'a [T]: PartialOrd<&'a [T]>),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::ge
@@ -3343,6 +3545,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a [T]: PartialOrd<TraitClause2::Item>),
     TraitClause4: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::gt
@@ -3353,6 +3556,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a [T]: PartialOrd<TraitClause2::Item>),
     TraitClause4: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::le
@@ -3363,6 +3567,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a [T]: PartialOrd<TraitClause2::Item>),
     TraitClause4: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::lt
@@ -3373,6 +3578,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a [T]: PartialOrd<TraitClause2::Item>),
     TraitClause4: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::ne
@@ -3383,6 +3589,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a [T]: PartialEq<TraitClause2::Item>),
     TraitClause4: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::eq_by
@@ -3394,6 +3601,7 @@ where
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause4: (I: IntoIterator),
     TraitClause5: (F: FnMut<(&'a [T], TraitClause4::Item)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -3405,6 +3613,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a [T]: PartialEq<TraitClause2::Item>),
     TraitClause4: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::partial_cmp_by
@@ -3416,6 +3625,7 @@ where
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause4: (I: IntoIterator),
     TraitClause5: (F: FnMut<(&'a [T], TraitClause4::Item)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = Option<Ordering>[{built_in impl Sized for Ordering}],
 = <opaque>
 
@@ -3427,6 +3637,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a [T]: PartialOrd<TraitClause2::Item>),
     TraitClause4: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::cmp_by
@@ -3438,6 +3649,7 @@ where
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause4: (I: IntoIterator),
     TraitClause5: (F: FnMut<(&'a [T], TraitClause4::Item)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = Ordering,
 = <opaque>
 
@@ -3449,6 +3661,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a [T]: Ord),
     TraitClause4: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause2::Item = &'a [T],
 = <opaque>
 
@@ -3459,6 +3672,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: (P: Product<&'a [T]>),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::sum
@@ -3468,6 +3682,7 @@ where
     TraitClause1: (S: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: (S: Sum<&'a [T]>),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::array_chunks
@@ -3475,6 +3690,7 @@ pub fn impl_Iterator_for_Chunks::array_chunks<'a, T, const N : usize>(_1: Chunks
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::cycle
@@ -3483,6 +3699,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Clone),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::cloned
@@ -3495,6 +3712,7 @@ where
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause4: (Chunks<'a, T>[TraitClause0]: Iterator),
     TypeOutlives0: T: 'a,
+    TypeOutlives1: T: 'a,
     TypeConstraint0: impl_Iterator_for_Chunks<'a, T>[TraitClause0]::Item = &'a T,
 = <opaque>
 
@@ -3508,6 +3726,7 @@ where
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause4: (Chunks<'a, T>[TraitClause0]: Iterator),
     TypeOutlives0: T: 'a,
+    TypeOutlives1: T: 'a,
     TypeConstraint0: impl_Iterator_for_Chunks<'a, T>[TraitClause0]::Item = &'a T,
 = <opaque>
 
@@ -3525,6 +3744,7 @@ where
     TraitClause8: (FromB: Extend<B>),
     TraitClause9: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause10: (Chunks<'a, T>[TraitClause0]: Iterator),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: impl_Iterator_for_Chunks<'a, T>[TraitClause0]::Item = (A, B),
 = <opaque>
 
@@ -3534,6 +3754,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: DoubleEndedIterator),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::min_by
@@ -3543,6 +3764,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1, '_1_1> (F: FnMut<(&'_0_1 &'a [T], &'_1_1 &'a [T])>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1, '_1_1> TraitClause3::ImpliedClause1::Output = Ordering,
 = <opaque>
 
@@ -3555,6 +3777,7 @@ where
     TraitClause3: (B: Ord),
     TraitClause4: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause5: for<'_0_1> (F: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause5::ImpliedClause1::Output = B,
 = <opaque>
 
@@ -3565,6 +3788,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1, '_1_1> (F: FnMut<(&'_0_1 &'a [T], &'_1_1 &'a [T])>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1, '_1_1> TraitClause3::ImpliedClause1::Output = Ordering,
 = <opaque>
 
@@ -3577,6 +3801,7 @@ where
     TraitClause3: (B: Ord),
     TraitClause4: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause5: for<'_0_1> (F: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause5::ImpliedClause1::Output = B,
 = <opaque>
 
@@ -3586,6 +3811,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause2: (&'a [T]: Ord),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::max
@@ -3594,6 +3820,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause2: (&'a [T]: Ord),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::rposition
@@ -3605,6 +3832,9 @@ where
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause4: (Chunks<'a, T>[TraitClause0]: ExactSizeIterator),
     TraitClause5: (Chunks<'a, T>[TraitClause0]: DoubleEndedIterator),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause2::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -3615,6 +3845,9 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: (P: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -3628,6 +3861,9 @@ where
     TraitClause4: (R: Try),
     TraitClause5: (TraitClause4::Residual: Residual<Option<&'a [T]>[impl_Iterator_for_Chunks<'a, T>[TraitClause0]::ImpliedClause1]>),
     TraitClause6: for<'_0_1> (T2: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause4::Output = bool,
     TypeConstraint1: for<'_0_1> TraitClause6::ImpliedClause1::Output = R,
 = <opaque>
@@ -3640,6 +3876,9 @@ where
     TraitClause2: (F: Sized),
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = Option<B>[TraitClause1],
 = <opaque>
 
@@ -3650,6 +3889,9 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1> (P: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -3660,6 +3902,9 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: (F: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -3670,6 +3915,9 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: (F: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -3684,6 +3932,9 @@ where
     TraitClause5: (TraitClause4::Residual: Residual<Option<&'a [T]>[impl_Iterator_for_Chunks<'a, T>[TraitClause0]::ImpliedClause1]>),
     TraitClause6: (T2: FnMut<(&'a [T], &'a [T])>),
     TraitClause7: (T2: Destruct),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause4::Output = &'a [T],
     TypeConstraint1: TraitClause6::ImpliedClause1::Output = R,
 = <opaque>
@@ -3697,6 +3948,7 @@ where
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Destruct),
     TraitClause4: (F: FnMut<(&'a [T], &'a [T])>),
     TraitClause5: (F: Destruct),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = &'a [T],
 = <opaque>
 
@@ -3710,6 +3962,7 @@ where
     TraitClause4: (Chunks<'a, T>[TraitClause0]: Destruct),
     TraitClause5: (F: FnMut<(B, &'a [T])>),
     TraitClause6: (F: Destruct),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = B,
 = <opaque>
 
@@ -3722,6 +3975,9 @@ where
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(&'a [T],)>),
     TraitClause5: (R: Try),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = R,
     TypeConstraint1: TraitClause5::Output = (),
 = <opaque>
@@ -3737,6 +3993,9 @@ where
     TraitClause5: (F: FnMut<(B, &'a [T])>),
     TraitClause6: (F: Destruct),
     TraitClause7: (R: Try),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = R,
     TypeConstraint1: TraitClause7::Output = B,
 = <opaque>
@@ -3748,6 +4007,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: (P: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -3761,6 +4021,7 @@ where
     TraitClause4: (Chunks<'a, T>[TraitClause0]: DoubleEndedIterator),
     TraitClause5: for<'_0_1> (P: FnMut<(&'_0_1 T,)>),
     TypeOutlives0: T: 'a,
+    TypeOutlives1: T: 'a,
     TypeConstraint0: impl_Iterator_for_Chunks<'a, T>[TraitClause0]::Item = &'a mut T,
     TypeConstraint1: for<'_0_1> TraitClause5::ImpliedClause1::Output = bool,
 = <opaque>
@@ -3775,6 +4036,7 @@ where
     TraitClause4: (B: Default),
     TraitClause5: (B: Extend<&'a [T]>),
     TraitClause6: for<'_0_1> (F: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause6::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -3785,6 +4047,8 @@ where
     TraitClause1: (E: Sized),
     TraitClause2: (E: Extend<&'a [T]>),
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: E: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::try_collect
@@ -3796,6 +4060,9 @@ where
     TraitClause3: (&'a [T]: Try),
     TraitClause4: (TraitClause3::Residual: Residual<B>),
     TraitClause5: (B: FromIterator<TraitClause3::Output>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::collect
@@ -3806,6 +4073,7 @@ where
     TraitClause1: (B: Sized),
     TraitClause2: (B: FromIterator<&'a [T]>),
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::by_ref
@@ -3813,6 +4081,9 @@ pub fn impl_Iterator_for_Chunks::by_ref<'a, '_1, T>(_1: &'_1 mut Chunks<'a, T>[T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::inspect
@@ -3822,6 +4093,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1> (F: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = (),
 = <opaque>
 
@@ -3830,6 +4102,7 @@ pub fn impl_Iterator_for_Chunks::fuse<'a, T>(_1: Chunks<'a, T>[TraitClause0]) ->
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::map_windows
@@ -3840,6 +4113,7 @@ where
     TraitClause2: (R: Sized),
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause4: for<'_0_1> (F: FnMut<(&'_0_1 [&'a [T]; N],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause4::ImpliedClause1::Output = R,
 = <opaque>
 
@@ -3849,6 +4123,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause2: (&'a [T]: IntoIterator),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::flat_map
@@ -3860,6 +4135,7 @@ where
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause4: (U: IntoIterator),
     TraitClause5: (F: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = U,
 = <opaque>
 
@@ -3872,6 +4148,7 @@ where
     TraitClause3: (F: Sized),
     TraitClause4: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause5: for<'_0_1> (F: FnMut<(&'_0_1 mut St, &'a [T])>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause5::ImpliedClause1::Output = Option<B>[TraitClause2],
 = <opaque>
 
@@ -3880,6 +4157,7 @@ pub fn impl_Iterator_for_Chunks::take<'a, T>(_1: Chunks<'a, T>[TraitClause0], _2
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::skip
@@ -3887,6 +4165,7 @@ pub fn impl_Iterator_for_Chunks::skip<'a, T>(_1: Chunks<'a, T>[TraitClause0], _2
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::map_while
@@ -3897,6 +4176,7 @@ where
     TraitClause2: (P: Sized),
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause4: (P: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = Option<B>[TraitClause1],
 = <opaque>
 
@@ -3907,6 +4187,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1> (P: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -3917,6 +4198,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1> (P: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -3925,6 +4207,7 @@ pub fn impl_Iterator_for_Chunks::peekable<'a, T>(_1: Chunks<'a, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::enumerate
@@ -3933,6 +4216,7 @@ pub fn impl_Iterator_for_Chunks::enumerate<'a, T>(_1: Chunks<'a, T>[TraitClause0
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::filter_map
@@ -3943,6 +4227,7 @@ where
     TraitClause2: (F: Sized),
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = Option<B>[TraitClause1],
 = <opaque>
 
@@ -3954,6 +4239,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1> (P: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -3964,6 +4250,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: (F: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = (),
 = <opaque>
 
@@ -3976,6 +4263,7 @@ where
     TraitClause2: (F: Sized),
     TraitClause3: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = B,
 = <opaque>
 
@@ -3986,6 +4274,7 @@ where
     TraitClause1: (G: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: (G: FnMut<()>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = &'a [T],
 = <opaque>
 
@@ -3995,6 +4284,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause2: (&'a [T]: Clone),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::zip
@@ -4004,6 +4294,7 @@ where
     TraitClause1: (U: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: (U: IntoIterator),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::chain
@@ -4013,6 +4304,7 @@ where
     TraitClause1: (U: Sized),
     TraitClause2: (Chunks<'a, T>[TraitClause0]: Sized),
     TraitClause3: (U: IntoIterator),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause3::Item = &'a [T],
 = <opaque>
 
@@ -4021,12 +4313,16 @@ pub fn impl_Iterator_for_Chunks::step_by<'a, T>(_1: Chunks<'a, T>[TraitClause0],
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::advance_by
 pub fn impl_Iterator_for_Chunks::advance_by<'a, '_1, T>(_1: &'_1 mut Chunks<'a, T>[TraitClause0], _2: usize) -> Result<(), NonZero<usize>[{built_in impl Sized for usize}, impl_ZeroablePrimitive_for_usize]>[{built_in impl Sized for ()}, {built_in impl Sized for NonZero<usize>[{built_in impl Sized for usize}, impl_ZeroablePrimitive_for_usize]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::next_chunk
@@ -4034,12 +4330,16 @@ pub fn impl_Iterator_for_Chunks::next_chunk<'a, '_1, T, const N : usize>(_1: &'_
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Chunks<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}
 impl<'a, T> "impl_Iterator_for_Chunks" Iterator for Chunks<'a, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
     proof ImpliedClause0: (Chunks<'a, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Chunks<'a, T>[TraitClause0]}
     proof ImpliedClause1: (&'a [T]: Sized) = {built_in impl Sized for &'a [T]}
@@ -4135,36 +4435,50 @@ where
 pub unsafe fn impl_Iterator_for_ChunksExact::__iterator_get_unchecked<'a, '_1, T>(_1: &'_1 mut ChunksExact<'a, T>[TraitClause0], _2: usize) -> &'a [T]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::last
 pub fn impl_Iterator_for_ChunksExact::last<'a, T>(_1: ChunksExact<'a, T>[TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'a [T]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::nth
 pub fn impl_Iterator_for_ChunksExact::nth<'a, '_1, T>(_1: &'_1 mut ChunksExact<'a, T>[TraitClause0], _2: usize) -> Option<&'a [T]>[{built_in impl Sized for &'a [T]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::count
 pub fn impl_Iterator_for_ChunksExact::count<'a, T>(_1: ChunksExact<'a, T>[TraitClause0]) -> usize
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::size_hint
 pub fn impl_Iterator_for_ChunksExact::size_hint<'a, '_1, T>(_1: &'_1 ChunksExact<'a, T>[TraitClause0]) -> (usize, Option<usize>[{built_in impl Sized for usize}])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::next
 pub fn impl_Iterator_for_ChunksExact::next<'a, '_1, T>(_1: &'_1 mut ChunksExact<'a, T>[TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'a [T]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::is_sorted_by_key
@@ -4176,6 +4490,7 @@ where
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(&'a [T],)>),
     TraitClause5: (K: PartialOrd<K>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = K,
 = <opaque>
 
@@ -4186,6 +4501,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1, '_1_1> (F: FnMut<(&'_0_1 &'a [T], &'_1_1 &'a [T])>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1, '_1_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -4195,6 +4511,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause2: (&'a [T]: PartialOrd<&'a [T]>),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::ge
@@ -4205,6 +4522,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a [T]: PartialOrd<TraitClause2::Item>),
     TraitClause4: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::gt
@@ -4215,6 +4533,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a [T]: PartialOrd<TraitClause2::Item>),
     TraitClause4: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::le
@@ -4225,6 +4544,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a [T]: PartialOrd<TraitClause2::Item>),
     TraitClause4: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::lt
@@ -4235,6 +4555,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a [T]: PartialOrd<TraitClause2::Item>),
     TraitClause4: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::ne
@@ -4245,6 +4566,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a [T]: PartialEq<TraitClause2::Item>),
     TraitClause4: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::eq_by
@@ -4256,6 +4578,7 @@ where
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause4: (I: IntoIterator),
     TraitClause5: (F: FnMut<(&'a [T], TraitClause4::Item)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -4267,6 +4590,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a [T]: PartialEq<TraitClause2::Item>),
     TraitClause4: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::partial_cmp_by
@@ -4278,6 +4602,7 @@ where
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause4: (I: IntoIterator),
     TraitClause5: (F: FnMut<(&'a [T], TraitClause4::Item)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = Option<Ordering>[{built_in impl Sized for Ordering}],
 = <opaque>
 
@@ -4289,6 +4614,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a [T]: PartialOrd<TraitClause2::Item>),
     TraitClause4: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::cmp_by
@@ -4300,6 +4626,7 @@ where
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause4: (I: IntoIterator),
     TraitClause5: (F: FnMut<(&'a [T], TraitClause4::Item)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = Ordering,
 = <opaque>
 
@@ -4311,6 +4638,7 @@ where
     TraitClause2: (I: IntoIterator),
     TraitClause3: (&'a [T]: Ord),
     TraitClause4: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause2::Item = &'a [T],
 = <opaque>
 
@@ -4321,6 +4649,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: (P: Product<&'a [T]>),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::sum
@@ -4330,6 +4659,7 @@ where
     TraitClause1: (S: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: (S: Sum<&'a [T]>),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::array_chunks
@@ -4337,6 +4667,7 @@ pub fn impl_Iterator_for_ChunksExact::array_chunks<'a, T, const N : usize>(_1: C
 where
     TraitClause0: (T: Sized),
     TraitClause1: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::cycle
@@ -4345,6 +4676,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Clone),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::cloned
@@ -4357,6 +4689,7 @@ where
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause4: (ChunksExact<'a, T>[TraitClause0]: Iterator),
     TypeOutlives0: T: 'a,
+    TypeOutlives1: T: 'a,
     TypeConstraint0: impl_Iterator_for_ChunksExact<'a, T>[TraitClause0]::Item = &'a T,
 = <opaque>
 
@@ -4370,6 +4703,7 @@ where
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause4: (ChunksExact<'a, T>[TraitClause0]: Iterator),
     TypeOutlives0: T: 'a,
+    TypeOutlives1: T: 'a,
     TypeConstraint0: impl_Iterator_for_ChunksExact<'a, T>[TraitClause0]::Item = &'a T,
 = <opaque>
 
@@ -4387,6 +4721,7 @@ where
     TraitClause8: (FromB: Extend<B>),
     TraitClause9: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause10: (ChunksExact<'a, T>[TraitClause0]: Iterator),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: impl_Iterator_for_ChunksExact<'a, T>[TraitClause0]::Item = (A, B),
 = <opaque>
 
@@ -4396,6 +4731,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: DoubleEndedIterator),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::min_by
@@ -4405,6 +4741,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1, '_1_1> (F: FnMut<(&'_0_1 &'a [T], &'_1_1 &'a [T])>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1, '_1_1> TraitClause3::ImpliedClause1::Output = Ordering,
 = <opaque>
 
@@ -4417,6 +4754,7 @@ where
     TraitClause3: (B: Ord),
     TraitClause4: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause5: for<'_0_1> (F: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause5::ImpliedClause1::Output = B,
 = <opaque>
 
@@ -4427,6 +4765,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1, '_1_1> (F: FnMut<(&'_0_1 &'a [T], &'_1_1 &'a [T])>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1, '_1_1> TraitClause3::ImpliedClause1::Output = Ordering,
 = <opaque>
 
@@ -4439,6 +4778,7 @@ where
     TraitClause3: (B: Ord),
     TraitClause4: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause5: for<'_0_1> (F: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause5::ImpliedClause1::Output = B,
 = <opaque>
 
@@ -4448,6 +4788,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause2: (&'a [T]: Ord),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::max
@@ -4456,6 +4797,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause2: (&'a [T]: Ord),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::rposition
@@ -4467,6 +4809,9 @@ where
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause4: (ChunksExact<'a, T>[TraitClause0]: ExactSizeIterator),
     TraitClause5: (ChunksExact<'a, T>[TraitClause0]: DoubleEndedIterator),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause2::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -4477,6 +4822,9 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: (P: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -4490,6 +4838,9 @@ where
     TraitClause4: (R: Try),
     TraitClause5: (TraitClause4::Residual: Residual<Option<&'a [T]>[impl_Iterator_for_ChunksExact<'a, T>[TraitClause0]::ImpliedClause1]>),
     TraitClause6: for<'_0_1> (T2: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause4::Output = bool,
     TypeConstraint1: for<'_0_1> TraitClause6::ImpliedClause1::Output = R,
 = <opaque>
@@ -4502,6 +4853,9 @@ where
     TraitClause2: (F: Sized),
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = Option<B>[TraitClause1],
 = <opaque>
 
@@ -4512,6 +4866,9 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1> (P: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -4522,6 +4879,9 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: (F: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -4532,6 +4892,9 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: (F: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -4546,6 +4909,9 @@ where
     TraitClause5: (TraitClause4::Residual: Residual<Option<&'a [T]>[impl_Iterator_for_ChunksExact<'a, T>[TraitClause0]::ImpliedClause1]>),
     TraitClause6: (T2: FnMut<(&'a [T], &'a [T])>),
     TraitClause7: (T2: Destruct),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause4::Output = &'a [T],
     TypeConstraint1: TraitClause6::ImpliedClause1::Output = R,
 = <opaque>
@@ -4559,6 +4925,7 @@ where
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Destruct),
     TraitClause4: (F: FnMut<(&'a [T], &'a [T])>),
     TraitClause5: (F: Destruct),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = &'a [T],
 = <opaque>
 
@@ -4572,6 +4939,7 @@ where
     TraitClause4: (ChunksExact<'a, T>[TraitClause0]: Destruct),
     TraitClause5: (F: FnMut<(B, &'a [T])>),
     TraitClause6: (F: Destruct),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = B,
 = <opaque>
 
@@ -4584,6 +4952,9 @@ where
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(&'a [T],)>),
     TraitClause5: (R: Try),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = R,
     TypeConstraint1: TraitClause5::Output = (),
 = <opaque>
@@ -4599,6 +4970,9 @@ where
     TraitClause5: (F: FnMut<(B, &'a [T])>),
     TraitClause6: (F: Destruct),
     TraitClause7: (R: Try),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = R,
     TypeConstraint1: TraitClause7::Output = B,
 = <opaque>
@@ -4610,6 +4984,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: (P: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -4623,6 +4998,7 @@ where
     TraitClause4: (ChunksExact<'a, T>[TraitClause0]: DoubleEndedIterator),
     TraitClause5: for<'_0_1> (P: FnMut<(&'_0_1 T,)>),
     TypeOutlives0: T: 'a,
+    TypeOutlives1: T: 'a,
     TypeConstraint0: impl_Iterator_for_ChunksExact<'a, T>[TraitClause0]::Item = &'a mut T,
     TypeConstraint1: for<'_0_1> TraitClause5::ImpliedClause1::Output = bool,
 = <opaque>
@@ -4637,6 +5013,7 @@ where
     TraitClause4: (B: Default),
     TraitClause5: (B: Extend<&'a [T]>),
     TraitClause6: for<'_0_1> (F: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause6::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -4647,6 +5024,8 @@ where
     TraitClause1: (E: Sized),
     TraitClause2: (E: Extend<&'a [T]>),
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: E: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::try_collect
@@ -4658,6 +5037,9 @@ where
     TraitClause3: (&'a [T]: Try),
     TraitClause4: (TraitClause3::Residual: Residual<B>),
     TraitClause5: (B: FromIterator<TraitClause3::Output>),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::collect
@@ -4668,6 +5050,7 @@ where
     TraitClause1: (B: Sized),
     TraitClause2: (B: FromIterator<&'a [T]>),
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::by_ref
@@ -4675,6 +5058,9 @@ pub fn impl_Iterator_for_ChunksExact::by_ref<'a, '_1, T>(_1: &'_1 mut ChunksExac
 where
     TraitClause0: (T: Sized),
     TraitClause1: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::inspect
@@ -4684,6 +5070,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1> (F: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = (),
 = <opaque>
 
@@ -4692,6 +5079,7 @@ pub fn impl_Iterator_for_ChunksExact::fuse<'a, T>(_1: ChunksExact<'a, T>[TraitCl
 where
     TraitClause0: (T: Sized),
     TraitClause1: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::map_windows
@@ -4702,6 +5090,7 @@ where
     TraitClause2: (R: Sized),
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause4: for<'_0_1> (F: FnMut<(&'_0_1 [&'a [T]; N],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause4::ImpliedClause1::Output = R,
 = <opaque>
 
@@ -4711,6 +5100,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause2: (&'a [T]: IntoIterator),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::flat_map
@@ -4722,6 +5112,7 @@ where
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause4: (U: IntoIterator),
     TraitClause5: (F: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause5::ImpliedClause1::Output = U,
 = <opaque>
 
@@ -4734,6 +5125,7 @@ where
     TraitClause3: (F: Sized),
     TraitClause4: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause5: for<'_0_1> (F: FnMut<(&'_0_1 mut St, &'a [T])>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause5::ImpliedClause1::Output = Option<B>[TraitClause2],
 = <opaque>
 
@@ -4742,6 +5134,7 @@ pub fn impl_Iterator_for_ChunksExact::take<'a, T>(_1: ChunksExact<'a, T>[TraitCl
 where
     TraitClause0: (T: Sized),
     TraitClause1: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::skip
@@ -4749,6 +5142,7 @@ pub fn impl_Iterator_for_ChunksExact::skip<'a, T>(_1: ChunksExact<'a, T>[TraitCl
 where
     TraitClause0: (T: Sized),
     TraitClause1: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::map_while
@@ -4759,6 +5153,7 @@ where
     TraitClause2: (P: Sized),
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause4: (P: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = Option<B>[TraitClause1],
 = <opaque>
 
@@ -4769,6 +5164,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1> (P: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -4779,6 +5175,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1> (P: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -4787,6 +5184,7 @@ pub fn impl_Iterator_for_ChunksExact::peekable<'a, T>(_1: ChunksExact<'a, T>[Tra
 where
     TraitClause0: (T: Sized),
     TraitClause1: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::enumerate
@@ -4795,6 +5193,7 @@ pub fn impl_Iterator_for_ChunksExact::enumerate<'a, T>(_1: ChunksExact<'a, T>[Tr
 where
     TraitClause0: (T: Sized),
     TraitClause1: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::filter_map
@@ -4805,6 +5204,7 @@ where
     TraitClause2: (F: Sized),
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = Option<B>[TraitClause1],
 = <opaque>
 
@@ -4816,6 +5216,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: for<'_0_1> (P: FnMut<(&'_0_1 &'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: for<'_0_1> TraitClause3::ImpliedClause1::Output = bool,
 = <opaque>
 
@@ -4826,6 +5227,7 @@ where
     TraitClause1: (F: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: (F: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = (),
 = <opaque>
 
@@ -4838,6 +5240,7 @@ where
     TraitClause2: (F: Sized),
     TraitClause3: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause4: (F: FnMut<(&'a [T],)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = B,
 = <opaque>
 
@@ -4848,6 +5251,7 @@ where
     TraitClause1: (G: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: (G: FnMut<()>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = &'a [T],
 = <opaque>
 
@@ -4857,6 +5261,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause2: (&'a [T]: Clone),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::zip
@@ -4866,6 +5271,7 @@ where
     TraitClause1: (U: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: (U: IntoIterator),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::chain
@@ -4875,6 +5281,7 @@ where
     TraitClause1: (U: Sized),
     TraitClause2: (ChunksExact<'a, T>[TraitClause0]: Sized),
     TraitClause3: (U: IntoIterator),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause3::Item = &'a [T],
 = <opaque>
 
@@ -4883,12 +5290,16 @@ pub fn impl_Iterator_for_ChunksExact::step_by<'a, T>(_1: ChunksExact<'a, T>[Trai
 where
     TraitClause0: (T: Sized),
     TraitClause1: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::advance_by
 pub fn impl_Iterator_for_ChunksExact::advance_by<'a, '_1, T>(_1: &'_1 mut ChunksExact<'a, T>[TraitClause0], _2: usize) -> Result<(), NonZero<usize>[{built_in impl Sized for usize}, impl_ZeroablePrimitive_for_usize]>[{built_in impl Sized for ()}, {built_in impl Sized for NonZero<usize>[{built_in impl Sized for usize}, impl_ZeroablePrimitive_for_usize]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::next_chunk
@@ -4896,12 +5307,16 @@ pub fn impl_Iterator_for_ChunksExact::next_chunk<'a, '_1, T, const N : usize>(_1
 where
     TraitClause0: (T: Sized),
     TraitClause1: (ChunksExact<'a, T>[TraitClause0]: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}
 impl<'a, T> "impl_Iterator_for_ChunksExact" Iterator for ChunksExact<'a, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
     proof ImpliedClause0: (ChunksExact<'a, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for ChunksExact<'a, T>[TraitClause0]}
     proof ImpliedClause1: (&'a [T]: Sized) = {built_in impl Sized for &'a [T]}
@@ -4991,18 +5406,21 @@ where
 pub fn iter<'_0, T>(_1: &'_0 [T]) -> Iter<'_0, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::{[T]}::chunks
 pub fn chunks<'_0, T>(_1: &'_0 [T], _2: usize) -> Chunks<'_0, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::{[T]}::chunks_exact
 pub fn chunks_exact<'_0, T>(_1: &'_0 [T], _2: usize) -> ChunksExact<'_0, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: test_crate::main

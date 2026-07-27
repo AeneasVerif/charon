@@ -96,6 +96,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (F: Sized),
     TraitClause2: (F: FnMut<(&'a T,)>),
+    TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause2::ImpliedClause1::Output = Ordering,
 {
     let _0: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // return

@@ -43,6 +43,7 @@ unsafe fn impl_Destruct_for_Direct::drop_glue<'_0, T>(_1: &'_0 mut Direct<T>[Tra
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasAssoc),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut Direct<T>[TraitClause0, TraitClause1]; // arg #1
@@ -97,6 +98,7 @@ unsafe fn impl_Destruct_for_Transitive::drop_glue<'_0, T>(_1: &'_0 mut Transitiv
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: DerivedNoAssoc),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut Transitive<T>[TraitClause0, TraitClause1]; // arg #1
@@ -145,6 +147,7 @@ unsafe fn impl_Destruct_for_Marker::drop_glue<'_0, T>(_1: &'_0 mut Marker<T>)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: MarkerChild),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut Marker<T>; // arg #1

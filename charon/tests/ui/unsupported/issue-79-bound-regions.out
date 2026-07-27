@@ -34,6 +34,9 @@ where
 pub fn next<'a, '_1, T>(_1: &'_1 mut Iter<'a, T>[TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::{[T]}::iter
@@ -41,6 +44,7 @@ where
 pub fn iter<'_0, T>(_1: &'_0 [T]) -> Iter<'_0, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: test_crate::main

@@ -84,6 +84,7 @@ unsafe fn drop_glue<'_0, T, const K : usize>(_1: &'_0 mut closure<T, K>[TraitCla
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut closure<T, K>[TraitClause0, TraitClause1]; // arg #1
@@ -109,6 +110,7 @@ fn call_mut<'_0, T, const K : usize>(_1: &'_0 mut closure<T, K>[TraitClause0, Tr
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
+    TypeOutlives0: T: '_0,
 {
     let _0: T; // return
     let _1: &'1 mut closure<T, K>[TraitClause0, TraitClause1]; // arg #1

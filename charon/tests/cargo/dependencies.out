@@ -60,6 +60,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (F: Sized),
     TraitClause2: (F: FnOnce<(T,)>),
+    TypeOutlives0: T: '_0,
     TypeConstraint0: TraitClause2::Output = T,
 = <opaque>
 

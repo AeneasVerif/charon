@@ -32,6 +32,7 @@ pub fn insert<'_0, T>(self: &'_0 mut AVLTree<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ord),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let self: &'1 mut AVLTree<T>[TraitClause0]; // arg #1

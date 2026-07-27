@@ -9,6 +9,8 @@ pub enum Option<T> {
 
 // Full name: test_crate::wrap_shared_in_option
 pub fn wrap_shared_in_option<'a, T>(x: &'a T) -> Option<&'a T>
+where
+    TypeOutlives0: T: 'a,
 {
     let _0: Option<&'2 T>; // return
     let x: &'3 T; // arg #1

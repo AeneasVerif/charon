@@ -39,6 +39,8 @@ unsafe fn drop_glue<'_0, T, A>(_1: &'_0 mut alloc::boxed::Box<T>[TraitClause0, T
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 = <opaque>
 
 // Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::deref
@@ -46,6 +48,8 @@ pub fn deref<'_0, T, A>(_1: &'_0 alloc::boxed::Box<T>[TraitClause0, TraitClause1
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 = <opaque>
 
 // Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}

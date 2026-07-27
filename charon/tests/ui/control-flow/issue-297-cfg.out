@@ -51,12 +51,16 @@ where
 pub fn next<'a, '_1, T>(_1: &'_1 mut Chunks<'a, T>[TraitClause0]) -> Option<&'a [T]>[{built_in impl Sized for &'a [T]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}
 impl<'a, T> "impl_Iterator_for_Chunks" Iterator for Chunks<'a, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
     proof ImpliedClause0: (Chunks<'a, T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Chunks<'a, T>[TraitClause0]}
     proof ImpliedClause1: (&'a [T]: Sized) = {built_in impl Sized for &'a [T]}
@@ -69,6 +73,7 @@ where
 pub fn chunks<'_0, T>(_1: &'_0 [T], _2: usize) -> Chunks<'_0, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: test_crate::f1

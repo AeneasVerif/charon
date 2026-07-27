@@ -72,6 +72,8 @@ struct closure<'_0> {
 
 // Full name: test_crate::call_fn_shared::{impl Fn<(usize,)> for closure<'_0>}::call
 fn call<'_0, '_1>(_1: &'_1 closure<'_0>, tupled_args: (usize,)) -> u8
+where
+    RegionOutlives0: '_0: '_1,
 {
     let _0: u8; // return
     let _1: &'1 closure<'_0>; // arg #1
@@ -142,6 +144,8 @@ pub fn call_fn_shared<'_0>(a: &'_0 [u8], i: usize) -> u8
 
 // Full name: test_crate::call_fn_shared::closure::{impl Destruct for closure<'_0>}::drop_glue
 unsafe fn drop_glue<'_0, '_1>(_1: &'_1 mut closure<'_0>)
+where
+    RegionOutlives0: '_0: '_1,
 {
     let _0: (); // return
     let _1: &'1 mut closure<'_0>; // arg #1
@@ -154,6 +158,8 @@ unsafe fn drop_glue<'_0, '_1>(_1: &'_1 mut closure<'_0>)
 
 // Full name: test_crate::call_fn_shared::{impl FnMut<(usize,)> for closure<'_0>}::call_mut
 fn call_mut<'_0, '_1>(state: &'_1 mut closure<'_0>, args: (usize,)) -> u8
+where
+    RegionOutlives0: '_0: '_1,
 {
     let _0: u8; // return
     let state: &'_1 mut closure<'_0>; // arg #1

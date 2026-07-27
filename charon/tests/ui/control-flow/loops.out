@@ -260,6 +260,7 @@ pub fn next<'_0, A>(_1: &'_0 mut Range<A>[TraitClause0]) -> Option<A>[TraitClaus
 where
     TraitClause0: (A: Sized),
     TraitClause1: (A: Step),
+    TypeOutlives0: A: '_0,
 = <opaque>
 
 // Full name: core::iter::range::{impl Iterator for Range<A>[TraitClause0]}
@@ -316,12 +317,14 @@ pub trait SliceIndex<Self, T>
 pub fn impl_SliceIndex_slice_for_usize::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index
 pub fn impl_SliceIndex_slice_for_usize::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked_mut
@@ -340,12 +343,14 @@ where
 pub fn get_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> Option<&'_0 mut T>[{built_in impl Sized for &'_0 mut T}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get
 pub fn get<'_0, T>(_1: usize, _2: &'_0 [T]) -> Option<&'_0 T>[{built_in impl Sized for &'_0 T}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}
@@ -382,6 +387,8 @@ pub fn alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::len<'_0, T, A>(_1: &'_0
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 = <opaque>
 
 // Full name: alloc::vec::{impl IndexMut<I> for Vec<T>[TraitClause0, TraitClause2]}::index_mut
@@ -391,6 +398,10 @@ where
     TraitClause1: (I: Sized),
     TraitClause2: (A: Sized),
     TraitClause3: (I: SliceIndex<[T]>),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
+    TypeOutlives2: TraitClause3::Output: '_0,
+    TypeOutlives3: I: '_0,
 = <opaque>
 
 // Full name: test_crate::test_loop1
@@ -1670,6 +1681,7 @@ pub fn get_elem_mut<'_0>(ls: &'_0 mut List<usize>[{built_in impl Sized for usize
 pub fn list_nth_mut_loop_with_id<'_0, T>(ls: &'_0 mut List<T>[TraitClause0], i: u32) -> &'_0 mut T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'1 mut T; // return
     let ls: &'3 mut List<T>[TraitClause0]; // arg #1

@@ -195,6 +195,7 @@ pub fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core:
 where
     TraitClause0: (A: core::marker::Sized),
     TraitClause1: (A: core::iter::range::Step),
+    TypeOutlives0: A: '_0,
 = <opaque>
 
 // Full name: core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[TraitClause0]}
@@ -222,11 +223,13 @@ pub fn core::num::{u16}::wrapping_add(_1: u16, _2: u16) -> u16
 pub fn core::slice::{[T]}::as_ptr<'_0, T>(_1: &'_0 [T]) -> *const T
 where
     TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 pub fn core::slice::{[T]}::as_mut_ptr<'_0, T>(_1: &'_0 mut [T]) -> *mut T
 where
     TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 trait test_crate::SimdOps<Self>

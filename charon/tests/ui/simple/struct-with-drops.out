@@ -33,6 +33,7 @@ pub trait Drop<Self>
 pub fn core::ops::drop::Drop::drop<'_0, Self>(_1: &'_0 mut Self)
 where
     TraitClause0: (Self: Drop),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -56,6 +57,8 @@ where
     TraitClause1: (A: Sized),
     TraitClause2: (T: Destruct),
     TraitClause3: (A: Destruct),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 = <opaque>
 
 // Full name: test_crate::B

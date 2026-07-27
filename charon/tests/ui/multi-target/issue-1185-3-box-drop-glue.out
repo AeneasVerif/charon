@@ -2,6 +2,9 @@
 pub struct alloc::alloc::Global {}
 
 unsafe fn alloc::boxed::Box::{impl core::marker::Destruct for alloc::boxed::Box<T>}::drop_glue<'_0, T, A>(_1: &'_0 mut alloc::boxed::Box<T>)
+where
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 = <opaque>
 
 pub fn test_crate::mono() -> u32

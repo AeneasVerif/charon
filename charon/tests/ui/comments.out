@@ -55,6 +55,7 @@ pub enum AssertKind {
 pub fn len<'_0, T>(_1: &'_0 [T]) -> usize
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: test_crate::function_call

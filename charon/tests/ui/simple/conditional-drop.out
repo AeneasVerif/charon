@@ -41,6 +41,8 @@ where
     TraitClause1: (A: Sized),
     TraitClause2: (T: Destruct),
     TraitClause3: (A: Destruct),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 = <opaque>
 
 // Full name: test_crate::use_box

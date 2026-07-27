@@ -58,6 +58,7 @@ pub fn test_crate::Trait::defaulted<'_0, Self>(self: &'_0 Self)
 where
     TraitClause0: (Self: Trait),
     TraitClause1: (Self: Copy),
+    TypeOutlives0: Self: '_0,
 {
     let _0: (); // return
     let self: &'1 Self; // arg #1
@@ -74,6 +75,7 @@ pub fn impl_Trait_for_Option::defaulted<'_0, T>(self: &'_0 Option<T>[TraitClause
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Option<T>[TraitClause0]: Copy),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let self: &'1 Option<T>[TraitClause0]; // arg #1

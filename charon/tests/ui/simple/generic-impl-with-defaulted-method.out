@@ -33,6 +33,7 @@ pub trait BoolTrait<Self>
 pub fn test_crate::BoolTrait::foo<'_0, Self>(self: &'_0 Self)
 where
     TraitClause0: (Self: BoolTrait),
+    TypeOutlives0: Self: '_0,
 {
     let _0: (); // return
     let self: &'1 Self; // arg #1
@@ -48,6 +49,7 @@ where
 pub fn impl_BoolTrait_for_Option::foo<'_0, T>(self: &'_0 Option<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let self: &'1 Option<T>[TraitClause0]; // arg #1

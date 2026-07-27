@@ -54,6 +54,8 @@ where
     TraitClause1: (B: core::marker::Sized),
     TraitClause2: (A: core::iter::traits::iterator::Iterator),
     TraitClause3: (B: core::iter::traits::iterator::Iterator),
+    TypeOutlives0: A: '_0,
+    TypeOutlives1: B: '_0,
 = <opaque>
 
 pub fn core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator for core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]}::zip<A, B, U>(_1: core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1], _2: U) -> core::iter::adapters::zip::Zip<core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1], TraitClause6::IntoIter>[TraitClause5, TraitClause6::ImpliedClause2]
@@ -122,6 +124,9 @@ where
 pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut core::slice::iter::IterMut<'a, T>[TraitClause0]) -> core::option::Option<&'a mut T>[{built_in impl core::marker::Sized for &'a mut T}]
 where
     TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::zip<'a, T, U>(_1: core::slice::iter::IterMut<'a, T>[TraitClause0], _2: U) -> core::iter::adapters::zip::Zip<core::slice::iter::IterMut<'a, T>[TraitClause0], TraitClause3::IntoIter>[TraitClause2, TraitClause3::ImpliedClause2]
@@ -130,12 +135,14 @@ where
     TraitClause1: (U: core::marker::Sized),
     TraitClause2: (core::slice::iter::IterMut<'a, T>[TraitClause0]: core::marker::Sized),
     TraitClause3: (U: core::iter::traits::collect::IntoIterator),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}
 impl<'a, T> core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]
 where
     TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: 'a,
 {
     proof ImpliedClause0: (core::slice::iter::IterMut<'a, T>[TraitClause0]: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for core::slice::iter::IterMut<'a, T>[TraitClause0]}
     proof ImpliedClause1: (&'a mut T: core::marker::Sized) = {built_in impl core::marker::Sized for &'a mut T}
@@ -155,6 +162,9 @@ where
 pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut core::slice::iter::Iter<'a, T>[TraitClause0]) -> core::option::Option<&'a T>[{built_in impl core::marker::Sized for &'a T}]
 where
     TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::zip<'a, T, U>(_1: core::slice::iter::Iter<'a, T>[TraitClause0], _2: U) -> core::iter::adapters::zip::Zip<core::slice::iter::Iter<'a, T>[TraitClause0], TraitClause3::IntoIter>[TraitClause2, TraitClause3::ImpliedClause2]
@@ -163,12 +173,14 @@ where
     TraitClause1: (U: core::marker::Sized),
     TraitClause2: (core::slice::iter::Iter<'a, T>[TraitClause0]: core::marker::Sized),
     TraitClause3: (U: core::iter::traits::collect::IntoIterator),
+    TypeOutlives0: T: 'a,
 = <opaque>
 
 // Full name: core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}
 impl<'a, T> core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]
 where
     TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: 'a,
 {
     proof ImpliedClause0: (core::slice::iter::Iter<'a, T>[TraitClause0]: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for core::slice::iter::Iter<'a, T>[TraitClause0]}
     proof ImpliedClause1: (&'a T: core::marker::Sized) = {built_in impl core::marker::Sized for &'a T}
@@ -182,11 +194,13 @@ where
 pub fn core::slice::{[T]}::iter<'_0, T>(_1: &'_0 [T]) -> core::slice::iter::Iter<'_0, T>[TraitClause0]
 where
     TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 pub fn core::slice::{[T]}::iter_mut<'_0, T>(_1: &'_0 mut [T]) -> core::slice::iter::IterMut<'_0, T>[TraitClause0]
 where
     TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 fn test_crate::f<'_0>(blocks: &'_0 mut [u8])

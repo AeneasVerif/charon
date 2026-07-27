@@ -22,6 +22,10 @@ impl "impl_PartialEq_u8_for_u8" PartialEq<u8> for u8 {
 pub fn {impl PartialEq<&'_0 B> for &'_1 A}::eq<'_0, '_1, '_2, '_3, A, B>(_1: &'_2 &'_1 A, _2: &'_3 &'_0 B) -> bool
 where
     TraitClause0: (A: PartialEq<B>),
+    TypeOutlives0: A: '_1,
+    TypeOutlives1: B: '_0,
+    RegionOutlives0: '_1: '_2,
+    RegionOutlives1: '_0: '_3,
 = <opaque>
 
 // Full name: core::marker::MetaSized
