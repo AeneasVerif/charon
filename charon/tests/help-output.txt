@@ -15,9 +15,6 @@ Options:
           
           Without this option, drops may be "conditional" and we may lack information about what code is run on drop in a given polymorphic function body.
 
-      --skip-borrowck
-          If activated, this skips borrow-checking of the crate
-
       --mir <MIR>
           The MIR stage to extract. This is only relevant for the current crate; for dependencies only MIR optimized is available
 
@@ -176,6 +173,11 @@ Options:
 
       --no-serialize
           Don't serialize the final (U)LLBC to a file
+
+      --skip-borrow-check
+          If activated, this skips borrow-checking of the crate
+          
+          [aliases: --no-borrow-check]
 
       --no-typecheck
           Skip the typecheck passes

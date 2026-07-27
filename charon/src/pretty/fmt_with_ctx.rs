@@ -248,7 +248,10 @@ impl Display for BinOp {
 impl<C: AstFormatter> FmtWithCtx<C> for llbc::Block {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for st in &self.statements {
-            writeln!(f, "{}", st.with_ctx(ctx))?;
+            write!(f, "{}", st.with_ctx(ctx))?;
+            if !st.kind.is_nop() {
+                writeln!(f)?;
+            }
         }
         Ok(())
     }
@@ -1841,6 +1844,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
         for line in &self.comments_before {
             writeln!(f, "{tab}// {line}")?;
         }
+        if self.kind.is_nop() {
+            return Ok(());
+        }
         write!(f, "{tab}")?;
         match &self.kind {
             StatementKind::Assign(place, rvalue) => {
@@ -1932,7 +1938,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             StatementKind::UnwindResume => write!(f, "unwind_continue"),
             StatementKind::Break(index) => write!(f, "break {index}"),
             StatementKind::Continue(index) => write!(f, "continue {index}"),
-            StatementKind::Nop => write!(f, "nop"),
             StatementKind::Switch(switch) => match switch {
                 Switch::If(discr, true_st, false_st) => {
                     let ctx = &ctx.increase_indent();
@@ -2004,6 +2009,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 write!(f, "loop {{\n{}{tab}}}", body.with_ctx(ctx))
             }
             StatementKind::Error(s) => write!(f, "@ERROR({})", s),
+            StatementKind::Nop => unreachable!(),
         }
     }
 }

@@ -20,6 +20,7 @@ pub trait Eq<Self>
 pub fn core::cmp::Eq::assert_fields_are_eq<'_0, Self>(_1: &'_0 Self)
 where
     TraitClause0: (Self: Eq),
+    TypeOutlives0: Self: '_0,
 = <opaque>
 
 // Full name: core::marker::MetaSized
@@ -149,6 +150,8 @@ impl "impl_ConstParamTy__for_Foo" ConstParamTy_ for Foo {
 
 // Full name: test_crate::{impl Debug for Foo}::fmt
 pub fn fmt<'_0, '_1, '_2>(self: &'_0 Foo, f: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+where
+    RegionOutlives0: '_2: '_1,
 {
     let _0: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // return
     let self: &'1 Foo; // arg #1

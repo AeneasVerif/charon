@@ -17,6 +17,7 @@ trait Trait<Self>
 fn test_crate::Trait::provided1<'_0, Self>(self: &'_0 Self)
 where
     TraitClause0: (Self: Trait),
+    TypeOutlives0: Self: '_0,
 {
     let _0: (); // return
     let self: &'1 Self; // arg #1
@@ -52,6 +53,7 @@ where
 fn provided2<'_0, Self>(self: &'_0 Self)
 where
     TraitClause0: (Self: Trait),
+    TypeOutlives0: Self: '_0,
 {
     let _0: (); // return
     let self: &'1 Self; // arg #1

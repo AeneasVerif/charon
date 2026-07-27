@@ -104,6 +104,7 @@ where
 pub fn discriminant<'_0, T>(v: &'_0 T) -> Discriminant<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: Discriminant<T>[TraitClause0]; // return
     let v: &'1 T; // arg #1
@@ -126,6 +127,7 @@ where
 pub fn f<'_0, T>(x: &'_0 T) -> Discriminant<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: Discriminant<T>[TraitClause0]; // return
     let x: &'1 T; // arg #1

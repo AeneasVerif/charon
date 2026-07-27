@@ -53,6 +53,7 @@ where
     TraitClause1: (P: Sized),
     TraitClause2: (P: Has<TraitClause3::ImpliedClause1::Item>),
     TraitClause3: (Empty<T>[TraitClause0]: Exact),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let self: &'1 mut Empty<T>[TraitClause0]; // arg #1

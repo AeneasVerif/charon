@@ -378,7 +378,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         let names = self
             .translated
             .assoc_item_names
-            .get_or_extend_and_insert(trait_id, Default::default);
+            .get_or_insert_with(trait_id, Default::default);
         for item in items {
             let name = TraitItemName(
                 item.name
@@ -398,7 +398,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             let method_name = TraitItemName("drop_glue".into());
             names.methods.push(method_name);
         }
-        self.method_status.get_or_extend_and_insert(trait_id, || {
+        self.method_status.get_or_insert_with(trait_id, || {
             names.methods.map_ref(|_| MethodStatus::default())
         });
         Ok(())

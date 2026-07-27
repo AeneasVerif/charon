@@ -71,6 +71,7 @@ pub fn call<'_0, F>(self: &'_0 F)
 where
     TraitClause0: (F: Fn<(), ()>),
     TraitClause1: (F: Sized),
+    TypeOutlives0: F: '_0,
 {
     let _0: (); // return
     let self: &'1 F; // arg #1

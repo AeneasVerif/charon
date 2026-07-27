@@ -2072,7 +2072,6 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         [
           ("ullbc", ullbc);
           ("precise_drops", precise_drops);
-          ("skip_borrowck", skip_borrowck);
           ("mir", mir);
           ("rustc_args", rustc_args);
           ("targets", targets);
@@ -2114,6 +2113,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("no_dedup_serialized_ast", no_dedup_serialized_ast);
           ("format", format);
           ("no_serialize", no_serialize);
+          ("skip_borrowck", skip_borrowck);
           ("no_typecheck", no_typecheck);
           ("no_normalize", no_normalize);
           ("no_reorder_decls", no_reorder_decls);
@@ -2123,7 +2123,6 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         ] ->
         let* ullbc = bool_of_json ctx ullbc in
         let* precise_drops = bool_of_json ctx precise_drops in
-        let* skip_borrowck = bool_of_json ctx skip_borrowck in
         let* mir = option_of_json mir_level_of_json ctx mir in
         let* rustc_args = list_of_json string_of_json ctx rustc_args in
         let* targets = list_of_json string_of_json ctx targets in
@@ -2185,6 +2184,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           option_of_json serialization_format_arg_of_json ctx format
         in
         let* no_serialize = bool_of_json ctx no_serialize in
+        let* skip_borrowck = bool_of_json ctx skip_borrowck in
         let* no_typecheck = bool_of_json ctx no_typecheck in
         let* no_normalize = bool_of_json ctx no_normalize in
         let* no_reorder_decls = bool_of_json ctx no_reorder_decls in
@@ -2195,7 +2195,6 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ({
              ullbc;
              precise_drops;
-             skip_borrowck;
              mir;
              rustc_args;
              targets;
@@ -2237,6 +2236,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              no_dedup_serialized_ast;
              format;
              no_serialize;
+             skip_borrowck;
              no_typecheck;
              no_normalize;
              no_reorder_decls;

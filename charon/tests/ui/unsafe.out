@@ -135,6 +135,7 @@ pub fn hash<'_0, '_1, H>(_1: &'_0 (), _2: &'_1 mut H)
 where
     TraitClause0: (H: Sized),
     TraitClause1: (H: Hasher),
+    TypeOutlives0: H: '_1,
 = <opaque>
 
 // Full name: core::hash::impls::{impl Hash for ()}

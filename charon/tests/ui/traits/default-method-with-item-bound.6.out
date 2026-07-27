@@ -42,6 +42,7 @@ fn test_crate::Trait::provided<'_0, Self>(self: &'_0 Self)
 where
     TraitClause0: (Self: Trait),
     TraitClause1: (Self: Trait),
+    TypeOutlives0: Self: '_0,
     TypeConstraint0: TraitClause0::Item = bool,
 {
     let _0: (); // return

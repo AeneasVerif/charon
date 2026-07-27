@@ -65,6 +65,7 @@ pub trait Trait<Self>
 pub fn test_crate::foo::Trait::defaulted<'_0, Self>(self: &'_0 Self)
 where
     TraitClause0: (Self: Trait),
+    TypeOutlives0: Self: '_0,
 {
     let _0: (); // return
     let self: &'1 Self; // arg #1

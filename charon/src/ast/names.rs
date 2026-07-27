@@ -1,6 +1,6 @@
 //! Defines some utilities for the variables
 use crate::ast::*;
-use derive_generic_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use macros::{EnumAsGetters, EnumIsA};
 use serde_state::{DeserializeState, SerializeState};
 
@@ -17,6 +17,7 @@ generate_index_type!(Disambiguator);
     DeserializeState,
     Drive,
     DriveMut,
+    DriveTwo,
     EnumIsA,
     EnumAsGetters,
 )]
@@ -54,6 +55,7 @@ pub enum PathElem {
     DeserializeState,
     Drive,
     DriveMut,
+    DriveTwo,
     EnumIsA,
     EnumAsGetters,
 )]
@@ -100,7 +102,17 @@ pub enum ImplElem {
 ///
 /// Also note that the first path element in the name is always the crate name.
 #[derive(
-    Debug, Default, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut,
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    DriveTwo,
 )]
 #[serde(transparent)]
 #[cfg_attr(feature = "charon_on_charon", charon::transparent)]

@@ -49,6 +49,7 @@ where
 pub fn try_borrow<'_0, T>(_1: &'_0 RefCell<T>[TraitClause0]) -> Result<Ref<'_0, T>[TraitClause0], BorrowError>[{built_in impl Sized for Ref<'_0, T>[TraitClause0]}, {built_in impl Sized for BorrowError}]
 where
     TraitClause0: (T: MetaSized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::clone::Clone
@@ -75,6 +76,8 @@ unsafe fn drop_glue<'_0, T, E>(_1: &'_0 mut Result<T, E>[TraitClause0, TraitClau
 where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: E: '_0,
 = <opaque>
 
 // Full name: test_crate::wrap

@@ -35,10 +35,16 @@ impl "impl_Clone_for_u32" Clone for u32 {
 // Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
 #[lang_item("noop_method_clone")]
 pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
+where
+    TypeOutlives0: T: '_0,
+    RegionOutlives0: '_0: '_1,
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for &'_0 T}
-impl<'_0, T> Clone for &'_0 T {
+impl<'_0, T> Clone for &'_0 T
+where
+    TypeOutlives0: T: '_0,
+{
     proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
     fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
     non-dyn-compatible
@@ -293,6 +299,7 @@ where
 fn call_once<'_0, U>(_1: closure<U>[TraitClause0], tupled_args: (&'_0 U,)) -> WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]
 where
     TraitClause0: (U: Sized),
+    TypeOutlives0: U: '_0,
 {
     let _0: WrapClone<&'8 U>[{built_in impl Sized for &'8 U}, {impl Clone for &'_0 T}<'8, U>]; // return
     let _1: closure<U>[TraitClause0]; // arg #1
@@ -331,6 +338,7 @@ where
 unsafe fn drop_glue<'_0, U>(_1: &'_0 mut closure<U>[TraitClause0])
 where
     TraitClause0: (U: Sized),
+    TypeOutlives0: U: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut closure<U>[TraitClause0]; // arg #1

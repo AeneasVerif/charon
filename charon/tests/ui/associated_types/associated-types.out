@@ -34,10 +34,16 @@ pub trait Clone<Self>
 // Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
 #[lang_item("noop_method_clone")]
 pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
+where
+    TypeOutlives0: T: '_0,
+    RegionOutlives0: '_0: '_1,
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for &'_0 T}
-impl<'_0, T> Clone for &'_0 T {
+impl<'_0, T> Clone for &'_0 T
+where
+    TypeOutlives0: T: '_0,
+{
     proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
     fn clone<'_0_1> = {impl Clone for &'_0 T}::clone<'_0, '_0_1, T>
     non-dyn-compatible
@@ -53,7 +59,10 @@ pub trait Copy<Self>
 }
 
 // Full name: core::marker::{impl Copy for &'_0 T}
-impl<'_0, T> Copy for &'_0 T {
+impl<'_0, T> Copy for &'_0 T
+where
+    TypeOutlives0: T: '_0,
+{
     proof ImpliedClause0: (&'_0 T: MetaSized) = {built_in impl MetaSized for &'_0 T}
     proof ImpliedClause1: (&'_0 T: Clone) = {impl Clone for &'_0 T}<'_, T>
     non-dyn-compatible
@@ -83,6 +92,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
     TraitClause2: (T: Destruct),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::option::{impl Clone for Option<T>[TraitClause0]}
@@ -150,6 +160,7 @@ where
 fn {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}::use_item_required<'a, T>(x: Option<&'a T>[{built_in impl Sized for &'a T}]) -> Option<&'a T>[{built_in impl Sized for &'a T}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
     let _0: Option<&'6 T>[{built_in impl Sized for &'6 T}]; // return
     let x: Option<&'9 T>[{built_in impl Sized for &'9 T}]; // arg #1
@@ -165,6 +176,7 @@ fn {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for
 where
     TraitClause0: (T: Sized),
     TraitClause1: (Option<&'a T>[{built_in impl Sized for &'a T}]: test_crate::Foo<'a, Clause1_Item>),
+    TypeOutlives0: T: 'a,
 {
     let _0: Option<&'a T>[{built_in impl Sized for &'a T}]; // return
     let x: Option<&'a T>[{built_in impl Sized for &'a T}]; // arg #1
@@ -179,6 +191,7 @@ where
 impl<'a, T> test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
     proof ImpliedClause0: (&'a T: MetaSized) = {built_in impl MetaSized for &'a T}
     proof ImpliedClause1: (&'a T: Copy) = {impl Copy for &'_0 T}<'_, T>

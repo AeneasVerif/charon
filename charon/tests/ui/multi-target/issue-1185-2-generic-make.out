@@ -10,6 +10,8 @@ pub struct test_crate::State<H> {
 }
 
 unsafe fn test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_glue<'_0, H>(_1: &'_0 mut test_crate::State<H>)
+where
+    TypeOutlives0: H: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::State<H>; // arg #1

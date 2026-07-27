@@ -34,6 +34,7 @@ fn foo<'_0, T>(x: &'_0 T) -> &'_0 (dyn Any + 'static)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Any),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'3 (dyn Any + '4); // return
     let x: &'6 T; // arg #1

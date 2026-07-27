@@ -669,6 +669,14 @@ impl<T> ItemBinder<CurrentItem, T> {
     }
 }
 
+macro_rules! static_type {
+    ($e:expr) => {{
+        use std::sync::LazyLock;
+        static TY: LazyLock<Ty> = LazyLock::new(|| $e.into_ty());
+        TY.clone()
+    }};
+}
+
 impl Ty {
     pub fn new(kind: TyKind) -> Self {
         Ty(HashConsed::new(kind))
@@ -684,15 +692,15 @@ impl Ty {
 
     /// Return the unit type
     pub fn mk_unit() -> Ty {
-        Self::mk_tuple(vec![])
+        static_type!(Ty::mk_tuple(vec![]).kind().clone())
     }
 
     pub fn mk_bool() -> Ty {
-        TyKind::Literal(LiteralTy::Bool).into()
+        static_type!(TyKind::Literal(LiteralTy::Bool))
     }
 
     pub fn mk_usize() -> Ty {
-        TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)).into()
+        static_type!(TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
     }
 
     pub fn mk_tuple(tys: Vec<Ty>) -> Ty {

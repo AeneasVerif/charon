@@ -293,6 +293,11 @@ impl<'s, I: Idx, T, V: VisitMut<'s, T>> DriveMut<'s, V> for IndexVec<I, T> {
         Continue(())
     }
 }
+impl<'s, I: Idx, T, V: VisitTwo<'s, T>> DriveTwo<'s, V> for IndexVec<I, T> {
+    fn drive_two_inner(&'s self, other: &'s Self, v: &mut V) -> ControlFlow<V::Break> {
+        derive_generic_visitor::drive_iter_two(self, other, v)
+    }
+}
 
 impl<I, T> From<Vec<T>> for IndexVec<I, T>
 where

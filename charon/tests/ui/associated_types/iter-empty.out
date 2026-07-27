@@ -55,6 +55,7 @@ where
     TraitClause1: (B: Sized),
     TraitClause2: (F: Sized),
     TraitClause3: (F: Apply<Clause0_Item, B>),
+    TypeOutlives0: Self: '_0,
 {
     let _0: (); // return
     let self: &'1 mut Self; // arg #1
@@ -87,6 +88,7 @@ where
     TraitClause1: (B: Sized),
     TraitClause2: (F: Sized),
     TraitClause3: (F: Apply<T, B>),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let self: &'1 mut Empty<T>[TraitClause0]; // arg #1

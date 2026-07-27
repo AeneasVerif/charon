@@ -29,6 +29,9 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (I: Sized),
     TraitClause2: ([T]: Index<I, Clause2_Output>),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: Clause2_Output: '_0,
+    TypeOutlives2: I: '_0,
 = <opaque>
 
 // Full name: core::ops::index::IndexMut
@@ -48,6 +51,9 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (I: Sized),
     TraitClause2: ([T]: IndexMut<I, Clause2_Clause1_Output>),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: Clause2_Clause1_Output: '_0,
+    TypeOutlives2: I: '_0,
 = <opaque>
 
 // Full name: core::marker::Destruct
@@ -82,6 +88,7 @@ where
 unsafe fn core::ptr::drop_glue<'_0, T>(_1: &'_0 mut T)
 where
     TraitClause0: (T: Destruct),
+    TypeOutlives0: T: '_0,
 {
     let ret: (); // return
     let _1: &'_0 mut T; // arg #1
@@ -125,6 +132,9 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (I: Sized),
     TraitClause2: (I: SliceIndex<[T], Clause2_Output>),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: Clause2_Output: '_0,
+    TypeOutlives2: I: '_0,
 = <opaque>
 
 // Full name: core::slice::index::{impl Index<I, Clause2_Output> for [T]}
@@ -147,6 +157,9 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (I: Sized),
     TraitClause2: (I: SliceIndex<[T], Clause2_Output>),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: Clause2_Output: '_0,
+    TypeOutlives2: I: '_0,
 = <opaque>
 
 // Full name: core::slice::index::{impl IndexMut<I, Clause2_Output> for [T]}
@@ -173,12 +186,14 @@ impl "impl_Sealed_for_Range_usize" Sealed for Range<usize>[{built_in impl Sized 
 pub fn impl_SliceIndex_slice_for_Range_usize::index_mut<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> &'_0 mut [T]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::index
 pub fn impl_SliceIndex_slice_for_Range_usize::index<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 [T]) -> &'_0 [T]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
@@ -197,12 +212,14 @@ where
 pub fn get_mut<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get
 pub fn get<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}
@@ -228,12 +245,14 @@ where
 pub fn len<'_0, T>(_1: &'_0 [T]) -> usize
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: test_crate::<slice>::{impl Destruct for [T]}::drop_glue
 unsafe fn impl_Destruct_for_slice::drop_glue<'_0, T>(_1: &'_0 mut [T])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut [T]; // arg #1
@@ -345,6 +364,7 @@ where
 unsafe fn impl_Destruct_for_array::drop_glue<'_0, T, const N : usize>(_1: &'_0 mut [T; N])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut [T; N]; // arg #1
@@ -401,6 +421,7 @@ pub fn incr<'_0>(x: &'_0 mut u32)
 pub fn array_to_shared_slice_<'_0, T>(s: &'_0 [T; 32usize]) -> &'_0 [T]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'1 [T]; // return
     let s: &'3 [T; 32usize]; // arg #1
@@ -420,6 +441,7 @@ where
 pub fn array_to_mut_slice_<'_0, T>(s: &'_0 mut [T; 32usize]) -> &'_0 mut [T]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'1 mut [T]; // return
     let s: &'3 mut [T; 32usize]; // arg #1
@@ -474,6 +496,7 @@ where
 pub fn shared_array_len<'_0, T>(s: &'_0 [T; 32usize]) -> usize
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: usize; // return
     let s: &'1 [T; 32usize]; // arg #1
@@ -499,6 +522,7 @@ where
 pub fn shared_slice_len<'_0, T>(s: &'_0 [T]) -> usize
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: usize; // return
     let s: &'1 [T]; // arg #1
@@ -519,6 +543,7 @@ where
 pub fn index_array_shared<'_0, T>(s: &'_0 [T; 32usize], i: usize) -> &'_0 T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'1 T; // return
     let s: &'3 [T; 32usize]; // arg #1
@@ -610,6 +635,7 @@ pub fn index_array_copy<'_0>(x: &'_0 [u32; 32usize]) -> u32
 pub fn index_mut_array<'_0, T>(s: &'_0 mut [T; 32usize], i: usize) -> &'_0 mut T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'1 mut T; // return
     let s: &'3 mut [T; 32usize]; // arg #1
@@ -649,6 +675,7 @@ where
 pub fn index_slice<'_0, T>(s: &'_0 [T], i: usize) -> &'_0 T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'1 T; // return
     let s: &'3 [T]; // arg #1
@@ -684,6 +711,7 @@ where
 pub fn index_mut_slice<'_0, T>(s: &'_0 mut [T], i: usize) -> &'_0 mut T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'1 mut T; // return
     let s: &'3 mut [T]; // arg #1
@@ -945,6 +973,7 @@ pub fn array_subslice_mut_<'_0>(x: &'_0 mut [u32; 32usize], y: usize, z: usize) 
 pub fn index_slice_0<'_0, T>(s: &'_0 [T]) -> &'_0 T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'1 T; // return
     let s: &'3 [T]; // arg #1
@@ -978,6 +1007,7 @@ where
 pub fn index_array_0<'_0, T>(s: &'_0 [T; 32usize]) -> &'_0 T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'1 T; // return
     let s: &'3 [T; 32usize]; // arg #1
@@ -2764,6 +2794,7 @@ fn slice_pattern_1(x: [(); 1usize])
 fn slice_pattern_2<'_0, T>(x: [&'_0 mut T; 3usize])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let x: [&'2 mut T; 3usize]; // arg #1

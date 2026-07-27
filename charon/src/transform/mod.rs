@@ -12,6 +12,7 @@ pub mod finish_translation {
 
 /// Passes that compute extra info to be stored in the crate.
 pub mod add_missing_info {
+    pub mod add_implied_outlives;
     pub mod add_missing_alias_clauses;
     pub mod compute_short_names;
     pub mod recover_body_comments;
@@ -103,6 +104,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         // Type aliases may use associated types without declaring the corresponding trait
         // such missing trait clauses.
         global(&add_missing_info::add_missing_alias_clauses::Transform),
+        // Make explicit the outlives predicates implied by item signatures.
+        global(&add_missing_info::add_implied_outlives::Transform),
     ]);
 
     // Body cleanup passes on the ullbc.

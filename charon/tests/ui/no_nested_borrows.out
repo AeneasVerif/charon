@@ -29,6 +29,8 @@ unsafe fn impl_Destruct_for_Box::drop_glue<'_0, T, A>(_1: &'_0 mut alloc::boxed:
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 = <opaque>
 
 // Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::deref
@@ -36,6 +38,8 @@ pub fn deref<'_0, T, A>(_1: &'_0 alloc::boxed::Box<T>[TraitClause0, TraitClause1
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 = <opaque>
 
 // Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::deref_mut
@@ -43,6 +47,8 @@ pub fn deref_mut<'_0, T, A>(_1: &'_0 mut alloc::boxed::Box<T>[TraitClause0, Trai
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 = <opaque>
 
 // Full name: test_crate::Pair
@@ -68,6 +74,7 @@ where
 unsafe fn impl_Destruct_for_List::drop_glue<'_0, T>(_1: &'_0 mut List<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut List<T>[TraitClause0]; // arg #1
@@ -216,6 +223,7 @@ where
 unsafe fn impl_Destruct_for_IdType::drop_glue<'_0, T>(_1: &'_0 mut IdType<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut IdType<T>[TraitClause0]; // arg #1
@@ -545,6 +553,7 @@ pub fn test_unreachable(b: bool)
 pub fn is_cons<'_0, T>(l: &'_0 List<T>[TraitClause0]) -> bool
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: bool; // return
     let l: &'1 List<T>[TraitClause0]; // arg #1

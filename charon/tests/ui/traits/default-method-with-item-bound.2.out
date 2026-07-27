@@ -45,6 +45,7 @@ where
     TraitClause0: (Self: Trait),
     TraitClause1: (TraitClause0::Item: HasAssoc1),
     TraitClause2: (TraitClause1::Assoc1: HasAssoc2),
+    TypeOutlives0: Self: '_0,
 {
     let _0: TraitClause2::Assoc2; // return
     let self: &'1 Self; // arg #1
@@ -69,6 +70,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasAssoc1),
     TraitClause2: (TraitClause1::Assoc1: HasAssoc2),
+    TypeOutlives0: T: '_0,
 {
     let _0: TraitClause2::Assoc2; // return
     let self: &'1 Empty<T>[TraitClause0]; // arg #1

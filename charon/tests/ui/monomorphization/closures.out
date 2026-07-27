@@ -82,6 +82,8 @@ struct test_crate::main::closure<'_0> {
 
 // Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure<'_0>}::drop_glue
 unsafe fn {impl Destruct for test_crate::main::closure<'_0>}::drop_glue<'_0, '_1>(_1: &'_1 mut test_crate::main::closure<'_0>)
+where
+    RegionOutlives0: '_0: '_1,
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::main::closure<'_0>; // arg #1
@@ -152,6 +154,8 @@ struct test_crate::main::closure#1<'_0> {
 
 // Full name: test_crate::main::closure#1::{impl Destruct for test_crate::main::closure#1<'_0>}::drop_glue
 unsafe fn {impl Destruct for test_crate::main::closure#1<'_0>}::drop_glue<'_0, '_1>(_1: &'_1 mut test_crate::main::closure#1<'_0>)
+where
+    RegionOutlives0: '_0: '_1,
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::main::closure#1<'_0>; // arg #1
@@ -360,6 +364,8 @@ fn {impl FnOnce<(u8,)> for test_crate::main::closure<'_0>}::call_once<'_0>(_1: t
 
 // Full name: test_crate::main::{impl Fn<(u8,)> for test_crate::main::closure<'_0>}::call
 fn call<'_0, '_1>(_1: &'_1 test_crate::main::closure<'_0>, tupled_args: (u8,)) -> u8
+where
+    RegionOutlives0: '_0: '_1,
 {
     let _0: u8; // return
     let _1: &'1 test_crate::main::closure<'_0>; // arg #1
@@ -390,6 +396,8 @@ fn call<'_0, '_1>(_1: &'_1 test_crate::main::closure<'_0>, tupled_args: (u8,)) -
 
 // Full name: test_crate::main::{impl FnMut<(u8,)> for test_crate::main::closure<'_0>}::call_mut
 fn {impl FnMut<(u8,)> for test_crate::main::closure<'_0>}::call_mut<'_0, '_1>(state: &'_1 mut test_crate::main::closure<'_0>, args: (u8,)) -> u8
+where
+    RegionOutlives0: '_0: '_1,
 {
     let _0: u8; // return
     let state: &'_1 mut test_crate::main::closure<'_0>; // arg #1
@@ -450,6 +458,8 @@ fn {impl FnOnce<(u8,)> for test_crate::main::closure#1<'_0>}::call_once<'_0>(_1:
 
 // Full name: test_crate::main::{impl FnMut<(u8,)> for test_crate::main::closure#1<'_0>}::call_mut
 fn {impl FnMut<(u8,)> for test_crate::main::closure#1<'_0>}::call_mut<'_0, '_1>(_1: &'_1 mut test_crate::main::closure#1<'_0>, tupled_args: (u8,)) -> u8
+where
+    RegionOutlives0: '_0: '_1,
 {
     let _0: u8; // return
     let _1: &'1 mut test_crate::main::closure#1<'_0>; // arg #1
