@@ -39,6 +39,7 @@ use derive_generic_visitor::*;
     // Defines the `Visit[Mut]` traits and the `drive[_mut]` method that drives them.
     visitor(drive(&VisitAst)),
     visitor(drive_mut(&mut VisitAstMut)),
+    visitor(drive_two(&two ZipAst)),
     // Types that we ignore.
     skip((), String, bool),
     // Types that we unconditionally explore.
@@ -119,6 +120,16 @@ impl<K: AstVisitable + Hash + Eq, T: AstVisitable> AstVisitable for SeqHashMap<K
             v.visit(&mut k)?;
             v.visit(&mut x)?;
             self.insert(k, x);
+        }
+        Continue(())
+    }
+    fn drive_two<V: ZipAst>(&self, other: &Self, v: &mut V) -> ControlFlow<V::Break> {
+        if self.len() != other.len() {
+            return Break(Default::default());
+        }
+        for ((key, value), (other_key, other_value)) in self.iter().zip(other) {
+            v.visit(key, other_key)?;
+            v.visit(value, other_value)?;
         }
         Continue(())
     }

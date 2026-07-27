@@ -8,7 +8,7 @@
 
 pub use super::llbc_ast_utils::*;
 pub use crate::ast::*;
-use derive_generic_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde_state::{DeserializeState, SerializeState};
 
@@ -27,6 +27,7 @@ generate_index_type!(StatementId);
     DeserializeState,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 pub enum StatementKind {
     /// Assigns an `Rvalue` to a `Place`. e.g. `let y = x;` could become
@@ -108,7 +109,7 @@ pub enum StatementKind {
     Error(String),
 }
 
-#[derive(Debug, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Statement {
     pub span: Span,
     /// Integer uniquely identifying this statement among the statmeents in the current body. To
@@ -131,7 +132,9 @@ impl PartialEq for Statement {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(
+    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
+)]
 #[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct Block {
     pub span: Span,
@@ -150,6 +153,7 @@ pub struct Block {
     DeserializeState,
     Drive,
     DriveMut,
+    DriveTwo,
     VariantName,
     VariantIndexArity,
 )]

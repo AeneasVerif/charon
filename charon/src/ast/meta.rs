@@ -2,7 +2,7 @@
 
 pub use super::meta_utils::*;
 use crate::names::Name;
-use derive_generic_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
@@ -23,6 +23,7 @@ generate_index_type!(FileId);
     Deserialize,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 #[drive(skip)]
 pub struct Loc {
@@ -33,7 +34,9 @@ pub struct Loc {
 }
 
 /// Span information
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, DriveTwo,
+)]
 pub struct SpanData {
     #[cfg_attr(feature = "charon_on_charon", charon::rename("file"))]
     pub file_id: FileId,
@@ -59,6 +62,7 @@ pub struct SpanData {
     DeserializeState,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 #[serde_state(stateless)]
 pub struct Span {
@@ -87,7 +91,7 @@ pub struct Span {
 }
 
 /// `#[inline]` built-in attribute.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub enum InlineAttr {
     /// `#[inline]`
     Hint,
@@ -110,6 +114,7 @@ pub enum InlineAttr {
     Deserialize,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Attr"))]
 pub enum Attribute {
@@ -137,7 +142,7 @@ pub enum Attribute {
 }
 
 /// A general attribute.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub struct RawAttribute {
     pub path: String,
     /// The arguments passed to the attribute, if any. We don't distinguish different delimiters or
@@ -146,7 +151,9 @@ pub struct RawAttribute {
 }
 
 /// Information about the attributes and visibility of an item, field or variant..
-#[derive(Debug, PartialEq, Eq, Default, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug, PartialEq, Eq, Default, Clone, Serialize, Deserialize, Drive, DriveMut, DriveTwo,
+)]
 pub struct AttrInfo {
     /// Attributes (`#[...]`).
     pub attributes: Vec<Attribute>,
@@ -189,6 +196,7 @@ pub struct AttrInfo {
     Deserialize,
     Drive,
     DriveMut,
+    DriveTwo,
     EnumIsA,
 )]
 pub enum ItemOpacity {
@@ -214,7 +222,9 @@ pub enum ItemOpacity {
 }
 
 /// Meta information about an item (function, trait decl, trait impl, type decl, global).
-#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(
+    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
+)]
 #[serde_state(stateless)]
 pub struct ItemMeta {
     #[serde_state(stateful)]
@@ -245,7 +255,18 @@ pub struct ItemMeta {
 
 /// A filename.
 #[derive(
-    Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Serialize, Deserialize, Drive, DriveMut,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Hash,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    DriveTwo,
 )]
 pub enum FileName {
     /// A remapped path (namely paths into stdlib)
@@ -259,7 +280,18 @@ pub enum FileName {
 }
 
 #[derive(
-    Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Serialize, Deserialize, Drive, DriveMut,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Hash,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    DriveTwo,
 )]
 pub struct File {
     /// The file identifier.

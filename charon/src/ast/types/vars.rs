@@ -5,7 +5,7 @@ use std::{
     ops::{Index, IndexMut},
 };
 
-use derive_generic_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use index_vec::Idx;
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
@@ -26,6 +26,7 @@ use crate::{ast::*, impl_from_enum};
     Deserialize,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 #[serde(transparent)]
 #[cfg_attr(feature = "charon_on_charon", charon::transparent)]
@@ -81,6 +82,7 @@ impl DeBruijnId {
     DeserializeState,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 pub enum DeBruijnVar<Id> {
     /// A variable attached to the nth binder, counting from the innermost.
@@ -114,6 +116,7 @@ generate_index_type!(TraitTypeConstraintId, "TraitTypeConstraint");
     Deserialize,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 pub enum Variance {
     Covariant,
@@ -128,7 +131,18 @@ pub enum Variance {
 
 /// A type variable in a signature or binder.
 #[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Drive, DriveMut,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    DriveTwo,
 )]
 pub struct TypeParam {
     /// Index identifying the variable among other variables bound at the same level.
@@ -143,7 +157,18 @@ pub struct TypeParam {
 
 /// A region variable in a signature or binder.
 #[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Drive, DriveMut,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    DriveTwo,
 )]
 pub struct RegionParam {
     /// Index identifying the variable among other variables bound at the same level.
@@ -174,6 +199,7 @@ pub struct RegionParam {
     DeserializeState,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 pub struct ConstGenericParam {
     /// Index identifying the variable among other variables bound at the same level.
@@ -187,7 +213,7 @@ pub struct ConstGenericParam {
 
 /// A trait predicate in a signature, of the form `Type: Trait<Args>`. This functions like a
 /// variable binder, to which variables of the form `TraitRefKind::Clause` can refer to.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct TraitParam {
     /// Index identifying the clause among other clauses bound at the same level.
     pub clause_id: TraitClauseId,

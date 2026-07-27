@@ -274,7 +274,7 @@ dependencies = [
  "index_vec",
  "indexmap",
  "indoc",
- "itertools",
+ "itertools 0.13.0",
  "lazy_static",
  "libtest-mimic",
  "log",
@@ -524,22 +524,23 @@ dependencies = [
 
 [[package]]
 name = "derive_generic_visitor"
-version = "0.2.0"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21588db07753dafe6460b13faad18bd7e46548ce91ee38f0bc0f7529b3864b82"
+checksum = "113505c87000bf21b0bce35e7b9a381c220aba032d4a99a37e4ff90bb47e0e40"
 dependencies = [
  "derive_generic_visitor_macros",
+ "itertools 0.14.0",
 ]
 
 [[package]]
 name = "derive_generic_visitor_macros"
-version = "0.2.0"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3aed1890235ebcf844a24263ecc395c4e57a970f13bcc9948989f22aa051aa7"
+checksum = "31474cd9f8a0a127e855afe40e8d9c6bd99c5e6538b3f8715214ee06036954ee"
 dependencies = [
  "convert_case",
  "darling",
- "itertools",
+ "itertools 0.13.0",
  "proc-macro2 1.0.96",
  "quote 1.0.40",
  "syn 2.0.104",
@@ -933,7 +934,7 @@ dependencies = [
 name = "hax-adt-into"
 version = "0.3.5"
 dependencies = [
- "itertools",
+ "itertools 0.13.0",
  "proc-macro2 1.0.96",
  "quote 1.0.40",
  "syn 1.0.109",
@@ -1277,6 +1278,15 @@ name = "itertools"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
+dependencies = [
+ "either",
+]
+
+[[package]]
+name = "itertools"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b192c782037fadd9cfa75548310488aabdbf3d2da73885b31bd0abd03351285"
 dependencies = [
  "either",
 ]
@@ -1990,7 +2000,7 @@ checksum = "94300abf3f1ae2e2b8ffb7b58043de3d399c73fa6f4b73826402a5c457614dbe"
 name = "rustc_trait_elaboration"
 version = "0.1.0"
 dependencies = [
- "itertools",
+ "itertools 0.13.0",
  "rustc-hash",
  "tracing",
 ]

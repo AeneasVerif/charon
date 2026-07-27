@@ -5,6 +5,7 @@
 //! leverage the type checker to prevent us from mixing them.
 
 use index_vec::{Idx, IdxSliceIndex, IndexVec};
+use itertools::Itertools;
 use serde::{Deserialize, Serialize, Serializer};
 use serde_state::{DeserializeState, SerializeState};
 use std::{
@@ -539,6 +540,21 @@ impl<'s, I: Idx, T, V: VisitMut<'s, T>> DriveMut<'s, V> for IndexMap<I, T> {
     fn drive_inner_mut(&'s mut self, v: &mut V) -> ControlFlow<V::Break> {
         for x in self {
             v.visit(x)?;
+        }
+        Continue(())
+    }
+}
+impl<'s, I: Idx, T, V: VisitTwo<'s, T>> DriveTwo<'s, V> for IndexMap<I, T> {
+    fn drive_two_inner(&'s self, other: &'s Self, v: &mut V) -> ControlFlow<V::Break> {
+        for x in self.iter_enumerated().zip_longest(other.iter_enumerated()) {
+            match x {
+                itertools::EitherOrBoth::Both((left_id, left), (right_id, right))
+                    if left_id == right_id =>
+                {
+                    v.visit(left, right)?;
+                }
+                _ => return Break(Default::default()),
+            }
         }
         Continue(())
     }

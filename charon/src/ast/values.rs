@@ -2,7 +2,7 @@
 
 use crate::ast::{FloatTy, IntTy, UIntTy};
 use core::hash::Hash;
-use derive_generic_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
@@ -32,6 +32,7 @@ generate_index_type!(LocalId, "");
     DeserializeState,
     Drive,
     DriveMut,
+    DriveTwo,
     Hash,
     PartialOrd,
     Ord,
@@ -69,6 +70,7 @@ pub enum Literal {
     Deserialize,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 #[drive(skip)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Scalar"))]
@@ -88,7 +90,18 @@ pub enum ScalarValue {
 /// the float value itself, we store its String representation. This allows
 /// to derive the Eq and Ord traits, which are not implemented for floats
 #[derive(
-    Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Hash, PartialOrd, Ord, Drive, DriveMut,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Serialize,
+    Deserialize,
+    Hash,
+    PartialOrd,
+    Ord,
+    Drive,
+    DriveMut,
+    DriveTwo,
 )]
 pub struct FloatValue {
     #[cfg_attr(feature = "charon_on_charon", charon::rename("float_value"))]
