@@ -5,5 +5,6 @@ open Generated_Expressions
 open Generated_Meta
 open Identifiers
 module StatementId = IdGen ()
+module BlockId = IdGen ()
 
 (* __REPLACE0__ *)

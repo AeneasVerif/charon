@@ -1,10 +1,11 @@
 //! Implementations for [crate::llbc_ast]
+use derive_generic_visitor::*;
+use std::mem;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use crate::llbc_ast::*;
 use crate::meta;
 use crate::meta::Span;
-use derive_generic_visitor::*;
-use std::mem;
 
 /// Combine the span information from a [Switch]
 pub fn combine_switch_targets_span(targets: &Switch) -> Span {
@@ -60,11 +61,17 @@ impl Switch {
 
 impl StatementId {
     pub fn fresh() -> StatementId {
-        use std::sync::atomic::AtomicUsize;
-        use std::sync::atomic::Ordering;
         static COUNTER: AtomicUsize = AtomicUsize::new(0);
         let id = COUNTER.fetch_add(1, Ordering::Relaxed);
         StatementId::new(id)
+    }
+}
+
+impl BlockId {
+    pub fn fresh() -> BlockId {
+        static COUNTER: AtomicUsize = AtomicUsize::new(0);
+        let id = COUNTER.fetch_add(1, Ordering::Relaxed);
+        BlockId::new(id)
     }
 }
 
@@ -83,14 +90,19 @@ impl Statement {
     }
 
     pub fn into_block(self) -> Block {
-        Block {
-            span: self.span,
-            statements: vec![self],
-        }
+        Block::new(self.span, vec![self])
     }
 }
 
 impl Block {
+    pub fn new(span: Span, statements: Vec<Statement>) -> Self {
+        Block {
+            span,
+            id: BlockId::fresh(),
+            statements,
+        }
+    }
+
     pub fn new_abort(span: Span, kind: AbortKind) -> Self {
         Statement::new(span, StatementKind::Abort(kind)).into_block()
     }
@@ -108,10 +120,7 @@ impl Block {
                 .map(|st| st.span)
                 .reduce(|a, b| meta::combine_span(&a, &b))
                 .unwrap();
-            Some(Block {
-                span,
-                statements: seq,
-            })
+            Some(Block::new(span, seq))
         }
     }
 

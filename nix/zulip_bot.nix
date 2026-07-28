@@ -89,7 +89,6 @@ in
   ADMIN_ROLES = {100, 200}
   MAX_SOURCE_BYTES = 64 * 1024
   MAX_OUTPUT_BYTES = 1024 * 1024
-  MAX_INLINE_OUTPUT = 6000
   ANSI_ESCAPE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
   RUST_BLOCK = re.compile(
       r"```(?:rust|rs)?[ \t]*\r?\n(.*?)\r?\n```", re.IGNORECASE | re.DOTALL
@@ -107,13 +106,15 @@ in
       def register(self, *args, **kwargs):
           result = super().register(*args, **kwargs)
           notify_socket = os.environ.get("NOTIFY_SOCKET")
-          if result.get("result") == "success" and notify_socket is not None:
-              if notify_socket.startswith("@"):
-                  notify_socket = "\0" + notify_socket[1:]
-              with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as notifier:
-                  notifier.connect(notify_socket)
-                  notifier.sendall(b"READY=1")
-              del os.environ["NOTIFY_SOCKET"]
+          if result.get("result") == "success":
+              self.max_message_length = result["max_message_length"]
+              if notify_socket is not None:
+                  if notify_socket.startswith("@"):
+                      notify_socket = "\0" + notify_socket[1:]
+                  with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as notifier:
+                      notifier.connect(notify_socket)
+                      notifier.sendall(b"READY=1")
+                  del os.environ["NOTIFY_SOCKET"]
           return result
 
 
@@ -284,9 +285,16 @@ in
 
           returncode, output = run_charon(source, args.timeout)
           heading = None if returncode == 0 else f"Charon failed (exit status {returncode}):"
-          if len(output) <= MAX_INLINE_OUTPUT:
-              content = fenced(output)
+
+          def format_output(preview, full_output_url=None):
+              content = fenced(preview)
+              if full_output_url is not None:
+                  content += f"\n\n[full output]({full_output_url})"
               return content if heading is None else f"{heading}\n\n{content}"
+
+          content = format_output(output)
+          if len(spoiler(content)) <= client.max_message_length:
+              return content
 
           with tempfile.NamedTemporaryFile(
               mode="w+", encoding="utf-8", suffix="-charon-output.txt"
@@ -297,8 +305,14 @@ in
               upload = client.upload_file(output_file)
           if upload.get("result") != "success":
               raise RuntimeError(upload.get("msg", "failed to upload Charon output"))
-          content = f"[full output]({upload['url']})"
-          return content if heading is None else f"{heading} {content}"
+
+          content = format_output(output, upload["url"])
+          excess = len(spoiler(content)) - client.max_message_length
+          preview_length = len(output) - excess
+          assert preview_length >= 0
+          content = format_output(output[:preview_length], upload["url"])
+          assert len(spoiler(content)) <= client.max_message_length
+          return content
 
       def handle_event(event):
           nonlocal handling_message

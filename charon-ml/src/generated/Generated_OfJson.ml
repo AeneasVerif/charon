@@ -1773,10 +1773,18 @@ module Llbc = struct
       (Generated_LlbcAst.block, string) result =
     combine_error_msgs js __FUNCTION__
       (match js with
-      | `Assoc [ ("span", span); ("statements", statements) ] ->
+      | `Assoc [ ("span", span); ("id", id); ("statements", statements) ] ->
           let* span = span_of_json ctx span in
+          let* block_id = block_id_of_json ctx id in
           let* statements = list_of_json statement_of_json ctx statements in
-          Ok ({ span; statements } : Generated_LlbcAst.block)
+          Ok ({ span; block_id; statements } : Generated_LlbcAst.block)
+      | _ -> Error "")
+
+  and block_id_of_json (ctx : of_json_ctx) (js : json) :
+      (Generated_LlbcAst.block_id, string) result =
+    combine_error_msgs js __FUNCTION__
+      (match js with
+      | x -> BlockId.id_of_json ctx x
       | _ -> Error "")
 
   and statement_of_json (ctx : of_json_ctx) (js : json) :

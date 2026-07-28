@@ -34,7 +34,7 @@ class ['self] map_statement =
     method! visit_block : 'env -> block -> block =
       fun env block ->
         let statements = self#visit_block_suffix env block.statements in
-        { span = block.span; statements }
+        { block with statements }
 
     (* Visit all the suffixes of the block, i.e. successive tails of the list of statements. *)
     method visit_block_suffix : 'env -> statement list -> statement list =
