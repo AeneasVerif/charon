@@ -12,7 +12,10 @@ use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde_state::{DeserializeState, SerializeState};
 
+// Globally-unique identifier for each statement.
 generate_index_type!(StatementId);
+// Globally-unique identifier for each block.
+generate_index_type!(BlockId);
 
 /// A raw statement: a statement without meta data.
 #[derive(
@@ -132,13 +135,22 @@ impl PartialEq for Statement {
     }
 }
 
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct Block {
     pub span: Span,
+    /// Integer uniquely identifying this block. To simplify things we generate globally-fresh ids
+    /// when creating a new `Block`.
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("block_id"))]
+    pub id: BlockId,
     pub statements: Vec<Statement>,
+}
+
+/// Ignores block ids.
+impl PartialEq for Block {
+    fn eq(&self, other: &Self) -> bool {
+        self.span == other.span && self.statements == other.statements
+    }
 }
 
 #[derive(

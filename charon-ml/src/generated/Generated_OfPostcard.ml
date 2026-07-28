@@ -1555,8 +1555,13 @@ module Llbc = struct
       (Generated_LlbcAst.block, string) result =
     combine_error_msgs st __FUNCTION__
       (let* span = span_of_postcard ctx st in
+       let* block_id = block_id_of_postcard ctx st in
        let* statements = list_of_postcard statement_of_postcard ctx st in
-       Ok ({ span; statements } : Generated_LlbcAst.block))
+       Ok ({ span; block_id; statements } : Generated_LlbcAst.block))
+
+  and block_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+      (Generated_LlbcAst.block_id, string) result =
+    combine_error_msgs st __FUNCTION__ (BlockId.id_of_postcard ctx st)
 
   and statement_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
       (Generated_LlbcAst.statement, string) result =
