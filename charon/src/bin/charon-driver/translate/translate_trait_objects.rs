@@ -604,8 +604,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             },
             kind,
             layout,
+            layout_guarantees: None,
             // A vtable struct is always sized
             ptr_metadata: PtrMetadata::None,
+            repr: ReprOptions::default(),
         })
     }
 }

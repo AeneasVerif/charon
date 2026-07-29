@@ -2500,6 +2500,18 @@ and error_of_json (ctx : of_json_ctx) (js : json) : (error, string) result =
         Ok ({ span; msg } : error)
     | _ -> Error "")
 
+and exact_size_expr_of_json (ctx : of_json_ctx) (js : json) :
+    (exact_size_expr, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Exact", exact) ] ->
+        let* exact = size_expr_of_json ctx exact in
+        Ok (Exact exact)
+    | `Assoc [ ("AtLeast", at_least) ] ->
+        let* at_least = size_expr_of_json ctx at_least in
+        Ok (AtLeast at_least)
+    | _ -> Error "")
+
 and field_of_json (ctx : of_json_ctx) (js : json) : (field, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -3101,7 +3113,6 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
           ("discriminator", discriminator);
           ("uninhabited", uninhabited);
           ("variant_layouts", variant_layouts);
-          ("repr", repr);
         ] ->
         let* size = option_of_json int_of_json ctx size in
         let* align = option_of_json int_of_json ctx align in
@@ -3114,10 +3125,52 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
             (option_of_json variant_layout_of_json)
             ctx variant_layouts
         in
-        let* repr = repr_options_of_json ctx repr in
         Ok
-          ({ size; align; discriminator; uninhabited; variant_layouts; repr }
+          ({ size; align; discriminator; uninhabited; variant_layouts }
             : layout)
+    | _ -> Error "")
+
+and layout_guarantees_of_json (ctx : of_json_ctx) (js : json) :
+    (layout_guarantees, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("size", size); ("align", align); ("offsets", offsets) ] ->
+        let* size = exact_size_expr_of_json ctx size in
+        let* align = exact_size_expr_of_json ctx align in
+        let* offsets = offset_guarantees_of_json ctx offsets in
+        Ok ({ size; align; offsets } : layout_guarantees)
+    | _ -> Error "")
+
+and layout_value_of_json (ctx : of_json_ctx) (js : json) :
+    (layout_value, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Constant", constant) ] ->
+        let* constant = constant_expr_of_json ctx constant in
+        Ok (LayoutValueConstant constant)
+    | `Assoc [ ("SizeOf", size_of) ] ->
+        let* size_of = ty_of_json ctx size_of in
+        Ok (ValueSizeOf size_of)
+    | `Assoc [ ("AlignOf", align_of) ] ->
+        let* align_of = ty_of_json ctx align_of in
+        Ok (ValueAlignOf align_of)
+    | `String "DynSize" -> Ok DynSize
+    | `String "DynAlign" -> Ok DynAlign
+    | `String "SliceLength" -> Ok SliceLength
+    | `String "TargetDiscrSize" -> Ok TargetDiscrSize
+    | `String "TargetDiscrAlign" -> Ok TargetDiscrAlign
+    | _ -> Error "")
+
+and layout_var_of_json (ctx : of_json_ctx) (js : json) :
+    (layout_var, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Size" -> Ok VarSize
+    | `String "Align" -> Ok VarAlign
+    | `Assoc [ ("FieldOffset", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = option_of_json variant_id_of_json ctx x_0 in
+        let* x_1 = field_id_of_json ctx x_1 in
+        Ok (VarFieldOffset (x_0, x_1))
     | _ -> Error "")
 
 and local_of_json (ctx : of_json_ctx) (js : json) : (local, string) result =
@@ -3168,6 +3221,54 @@ and rustc_optimize_attr_of_json (ctx : of_json_ctx) (js : json) :
     | `String "DoNotOptimize" -> Ok RustcOptimizeAttrDoNotOptimize
     | `String "Speed" -> Ok RustcOptimizeAttrSpeed
     | `String "Size" -> Ok RustcOptimizeAttrSize
+    | _ -> Error "")
+
+and offset_guarantee_of_json (ctx : of_json_ctx) (js : json) :
+    (offset_guarantee, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "AtOffsetZero" -> Ok AtOffsetZero
+    | `Assoc [ ("GuaranteedAlignment", guaranteed_alignment) ] ->
+        let* guaranteed_alignment =
+          size_expr_of_json ctx guaranteed_alignment
+        in
+        Ok (GuaranteedAlignment guaranteed_alignment)
+    | `Assoc
+        [
+          ( "ReprCField",
+            `Assoc
+              [
+                ("predecessor", predecessor);
+                ("predecessor_size", predecessor_size);
+                ("own_ty", own_ty);
+              ] );
+        ] ->
+        let* predecessor = option_of_json field_id_of_json ctx predecessor in
+        let* predecessor_size = layout_value_of_json ctx predecessor_size in
+        let* own_ty = ty_of_json ctx own_ty in
+        Ok (ReprCField (predecessor, predecessor_size, own_ty))
+    | _ -> Error "")
+
+and offset_guarantees_of_json (ctx : of_json_ctx) (js : json) :
+    (offset_guarantees, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Symbolic", symbolic) ] ->
+        let* symbolic = ty_of_json ctx symbolic in
+        Ok (OffsetGuaranteeSymbolic symbolic)
+    | `Assoc [ ("Variants", variants) ] ->
+        let* variants =
+          index_vec_of_json variant_id_of_json
+            (index_vec_of_json field_id_of_json offset_guarantee_of_json)
+            ctx variants
+        in
+        Ok (OffsetGuaranteeVariants variants)
+    | `Assoc [ ("Fields", fields) ] ->
+        let* fields =
+          index_vec_of_json field_id_of_json offset_guarantee_of_json ctx fields
+        in
+        Ok (OffsetGuaranteeFields fields)
+    | `String "None" -> Ok OffsetGuaranteeNone
     | _ -> Error "")
 
 and preset_of_json (ctx : of_json_ctx) (js : json) : (preset, string) result =
@@ -3230,7 +3331,9 @@ and repr_options_of_json (ctx : of_json_ctx) (js : json) :
           option_of_json alignment_modifier_of_json ctx align_modif
         in
         let* transparent = bool_of_json ctx transparent in
-        let* explicit_discr_type = bool_of_json ctx explicit_discr_type in
+        let* explicit_discr_type =
+          option_of_json ty_of_json ctx explicit_discr_type
+        in
         Ok
           ({ repr_algo; align_modif; transparent; explicit_discr_type }
             : repr_options)
@@ -3262,6 +3365,50 @@ and spec_kind_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `String "Precondition" -> Ok Precondition
     | `String "Postcondition" -> Ok Postcondition
+    | _ -> Error "")
+
+and size_expr_of_json (ctx : of_json_ctx) (js : json) :
+    (size_expr, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Var", var) ] ->
+        let* var = layout_var_of_json ctx var in
+        Ok (SizeVariable var)
+    | `Assoc [ ("Val", val_) ] ->
+        let* val_ = layout_value_of_json ctx val_ in
+        Ok (SizeValue val_)
+    | `Assoc [ ("Max", max) ] ->
+        let* max = list_of_json size_expr_of_json ctx max in
+        Ok (Max max)
+    | `Assoc [ ("Min", min) ] ->
+        let* min = list_of_json size_expr_of_json ctx min in
+        Ok (Min min)
+    | `Assoc [ ("Plus", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = box_of_json size_expr_of_json ctx x_0 in
+        let* x_1 = box_of_json size_expr_of_json ctx x_1 in
+        Ok (Plus (x_0, x_1))
+    | `Assoc [ ("Scale", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = box_of_json size_expr_of_json ctx x_0 in
+        let* x_1 = constant_expr_of_json ctx x_1 in
+        Ok (Scale (x_0, x_1))
+    | `Assoc
+        [
+          ("AlignTo", `Assoc [ ("base", base); ("target_align", target_align) ]);
+        ] ->
+        let* base = box_of_json size_expr_of_json ctx base in
+        let* target_align = box_of_json size_expr_of_json ctx target_align in
+        Ok (AlignTo (base, target_align))
+    | `Assoc
+        [
+          ( "IfInhabited",
+            `Assoc
+              [ ("ty", ty); ("then_size", then_size); ("else_size", else_size) ]
+          );
+        ] ->
+        let* ty = ty_of_json ctx ty in
+        let* then_size = box_of_json size_expr_of_json ctx then_size in
+        let* else_size = box_of_json size_expr_of_json ctx else_size in
+        Ok (IfInhabited (ty, then_size, else_size))
     | _ -> Error "")
 
 and target_info_of_json (ctx : of_json_ctx) (js : json) :
@@ -3592,7 +3739,9 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("src", src);
           ("kind", kind);
           ("layout", layout);
+          ("layout_guarantees", layout_guarantees);
           ("ptr_metadata", ptr_metadata);
+          ("repr", repr);
         ] ->
         let* def_id = type_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
@@ -3602,9 +3751,23 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* layout =
           index_map_of_json string_of_json layout_of_json int_of_json ctx layout
         in
+        let* layout_guarantees =
+          option_of_json layout_guarantees_of_json ctx layout_guarantees
+        in
         let* ptr_metadata = ptr_metadata_of_json ctx ptr_metadata in
+        let* repr = repr_options_of_json ctx repr in
         Ok
-          ({ def_id; item_meta; generics; src; kind; layout; ptr_metadata }
+          ({
+             def_id;
+             item_meta;
+             generics;
+             src;
+             kind;
+             layout;
+             layout_guarantees;
+             ptr_metadata;
+             repr;
+           }
             : type_decl)
     | _ -> Error "")
 

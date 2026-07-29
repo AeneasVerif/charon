@@ -38,6 +38,7 @@ pub fn make_ocaml_ident(name: &str) -> String {
             | "to"
             | "type"
             | "virtual"
+            | "val"
     ) {
         name += "_";
     }

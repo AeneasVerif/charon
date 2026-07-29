@@ -531,6 +531,16 @@ impl UIntTy {
             UIntTy::U128 => size_of::<u128>(),
         }
     }
+    pub fn of_bit_width(bytes: u64) -> Option<UIntTy> {
+        match bytes {
+            8 => Some(UIntTy::U8),
+            16 => Some(UIntTy::U16),
+            32 => Some(UIntTy::U32),
+            64 => Some(UIntTy::U64),
+            128 => Some(UIntTy::U128),
+            _ => None,
+        }
+    }
 }
 impl FloatTy {
     /// Important: this returns the target byte count for the types.
@@ -1526,10 +1536,6 @@ impl Layout {
             .as_ref()
             .is_none_or(|v| v.uninhabited)
     }
-
-    pub fn is_c_repr(&self) -> bool {
-        self.repr.repr_algo == ReprAlgorithm::C
-    }
 }
 
 impl ReprOptions {
@@ -1543,7 +1549,7 @@ impl ReprOptions {
     /// Cf. <https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.struct>
     /// and <https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.adt>.
     pub fn guarantees_fixed_field_order(&self) -> bool {
-        self.repr_algo == ReprAlgorithm::C || self.explicit_discr_type
+        self.repr_algo == ReprAlgorithm::C || self.explicit_discr_type.is_some()
     }
 }
 

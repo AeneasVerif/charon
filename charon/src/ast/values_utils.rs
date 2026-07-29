@@ -1,4 +1,9 @@
 //! Implementations for [crate::values]
+use std::{
+    cmp::Ordering,
+    ops::{Add, Mul, Rem, Sub},
+};
+
 use crate::ast::*;
 
 #[derive(Debug, Clone)]
@@ -144,6 +149,14 @@ impl ScalarValue {
         ScalarValue::from_uint(ptr_size, UIntTy::Usize, v as u128).unwrap()
     }
 
+    pub const fn mk_zero_usize() -> Self {
+        ScalarValue::Unsigned(UIntTy::Usize, 0)
+    }
+
+    pub const fn mk_one_usize() -> Self {
+        ScalarValue::Unsigned(UIntTy::Usize, 1)
+    }
+
     /// When computing the result of binary operations, we convert the values
     /// to i128 then back to the target type (while performing dynamic checks
     /// of course).
@@ -222,7 +235,7 @@ impl ScalarValue {
     }
 
     /// Increment the value, staying within the same integer type. Returns `None` on overflow.
-    pub fn add(self, n: u128) -> Option<Self> {
+    pub fn add_n(self, n: u128) -> Option<Self> {
         Some(match self {
             ScalarValue::Unsigned(ty, v) => ScalarValue::Unsigned(ty, v.checked_add(n)?),
             ScalarValue::Signed(ty, v) => {
@@ -239,6 +252,211 @@ impl ScalarValue {
         ConstantExpr {
             kind: ConstantExprKind::Literal(Literal::Scalar(self)),
             ty: TyKind::Literal(literal_ty).into_ty(),
+        }
+    }
+
+    pub fn is_multiple_of(&self, other: &Self) -> Option<bool> {
+        if self.is_signed() && other.is_signed() {
+            let self_val = self.as_int().unwrap();
+            let other_val = other.as_int().unwrap();
+            if other_val == 0 {
+                Some(self_val == 0)
+            } else {
+                Some(self_val % other_val == 0)
+            }
+        } else if self.is_unsigned() && other.is_unsigned() {
+            let self_val = self.as_uint().unwrap();
+            let other_val = other.as_uint().unwrap();
+            Some(self_val.is_multiple_of(other_val))
+        } else {
+            let self_val = if self.is_int() {
+                self.as_int().unwrap()
+            } else {
+                self.as_uint().unwrap().try_into().ok()?
+            };
+            let other_val = if other.is_int() {
+                other.as_int().unwrap()
+            } else {
+                other.as_uint().unwrap().try_into().ok()?
+            };
+            if other_val == 0 {
+                Some(self_val == 0)
+            } else {
+                Some(self_val % other_val == 0)
+            }
+        }
+    }
+}
+
+impl Add for ScalarValue {
+    type Output = Option<Self>;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        let (base_signed, base_i128) = if self.is_int() {
+            (true, self.as_int().unwrap())
+        } else {
+            (false, self.as_uint().unwrap().try_into().ok()?)
+        };
+        let (mult_signed, mult_i128) = if rhs.is_int() {
+            (true, rhs.as_int().unwrap())
+        } else {
+            (false, rhs.as_uint().unwrap().try_into().ok()?)
+        };
+        let raw_res = base_i128.checked_add(mult_i128)?;
+        let res = if base_signed || mult_signed {
+            let ty = if self.ty() == rhs.ty() {
+                *self.as_signed().unwrap().0
+            } else {
+                IntTy::Isize
+            };
+            ScalarValue::from_unchecked_int(ty, raw_res)
+        } else {
+            let ty = if self.ty() == rhs.ty() {
+                *self.as_unsigned().unwrap().0
+            } else {
+                UIntTy::Usize
+            };
+            ScalarValue::from_unchecked_uint(ty, raw_res.try_into().ok()?)
+        };
+        Some(res)
+    }
+}
+
+impl Sub for ScalarValue {
+    type Output = Option<Self>;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        let (base_signed, base_i128) = if self.is_int() {
+            (true, self.as_int().unwrap())
+        } else {
+            (false, self.as_uint().unwrap().try_into().ok()?)
+        };
+        let (mult_signed, mult_i128) = if rhs.is_int() {
+            (true, rhs.as_int().unwrap())
+        } else {
+            (false, rhs.as_uint().unwrap().try_into().ok()?)
+        };
+        let raw_res = base_i128.checked_sub(mult_i128)?;
+        let res = if base_signed || mult_signed {
+            let ty = if self.ty() == rhs.ty() {
+                *self.as_signed().unwrap().0
+            } else {
+                IntTy::Isize
+            };
+            ScalarValue::from_unchecked_int(ty, raw_res)
+        } else {
+            let ty = if self.ty() == rhs.ty() {
+                *self.as_unsigned().unwrap().0
+            } else {
+                UIntTy::Usize
+            };
+            ScalarValue::from_unchecked_uint(ty, raw_res.try_into().ok()?)
+        };
+        Some(res)
+    }
+}
+
+impl Mul for ScalarValue {
+    type Output = Option<Self>;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        let (base_signed, base_i128) = if self.is_int() {
+            (true, self.as_int().unwrap())
+        } else {
+            (false, self.as_uint().unwrap().try_into().ok()?)
+        };
+        let (mult_signed, mult_i128) = if rhs.is_int() {
+            (true, rhs.as_int().unwrap())
+        } else {
+            (false, rhs.as_uint().unwrap().try_into().ok()?)
+        };
+        let raw_res = base_i128.checked_mul(mult_i128)?;
+        let res = if base_signed || mult_signed {
+            let ty = if self.ty() == rhs.ty() {
+                *self.as_signed().unwrap().0
+            } else {
+                IntTy::Isize
+            };
+            ScalarValue::from_unchecked_int(ty, raw_res)
+        } else {
+            let ty = if self.ty() == rhs.ty() {
+                *self.as_unsigned().unwrap().0
+            } else {
+                UIntTy::Usize
+            };
+            ScalarValue::from_unchecked_uint(ty, raw_res.try_into().ok()?)
+        };
+        Some(res)
+    }
+}
+
+impl Rem for ScalarValue {
+    type Output = Option<Self>;
+
+    fn rem(self, rhs: Self) -> Self::Output {
+        let (base_signed, base_i128) = if self.is_int() {
+            (true, self.as_int().unwrap())
+        } else {
+            (false, self.as_uint().unwrap().try_into().ok()?)
+        };
+        let (mult_signed, mult_i128) = if rhs.is_int() {
+            (true, rhs.as_int().unwrap())
+        } else {
+            (false, rhs.as_uint().unwrap().try_into().ok()?)
+        };
+        let raw_res = base_i128.checked_rem(mult_i128)?;
+        let res = if base_signed || mult_signed {
+            let ty = if self.ty() == rhs.ty() {
+                *self.as_signed().unwrap().0
+            } else {
+                IntTy::Isize
+            };
+            ScalarValue::from_unchecked_int(ty, raw_res)
+        } else {
+            let ty = if self.ty() == rhs.ty() {
+                *self.as_unsigned().unwrap().0
+            } else {
+                UIntTy::Usize
+            };
+            ScalarValue::from_unchecked_uint(ty, raw_res.try_into().ok()?)
+        };
+        Some(res)
+    }
+}
+
+impl PartialOrd for ScalarValue {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for ScalarValue {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match (self, other) {
+            (ScalarValue::Unsigned(_, self_val), ScalarValue::Unsigned(_, other_val)) => {
+                self_val.cmp(other_val)
+            }
+            (ScalarValue::Unsigned(_, self_val), ScalarValue::Signed(_, other_val)) => {
+                if *self_val > i128::MAX as u128 {
+                    Ordering::Greater
+                } else if *other_val < 0i128 {
+                    Ordering::Less
+                } else {
+                    self_val.cmp(&(*other_val as u128))
+                }
+            }
+            (ScalarValue::Signed(_, self_val), ScalarValue::Unsigned(_, other_val)) => {
+                if *other_val > i128::MAX as u128 {
+                    Ordering::Less
+                } else if *self_val < 0i128 {
+                    Ordering::Greater
+                } else {
+                    other_val.cmp(&(*self_val as u128))
+                }
+            }
+            (ScalarValue::Signed(_, self_val), ScalarValue::Signed(_, other_val)) => {
+                self_val.cmp(other_val)
+            }
         }
     }
 }

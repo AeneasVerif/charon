@@ -919,6 +919,8 @@ and discriminator =
             the given [Discriminator]. The ranges are sorted.
           - [fallback]: Fallback if no range in [children] matches. *)
 
+and exact_size_expr = Exact of size_expr | AtLeast of size_expr
+
 and field = {
   span : span;
   attr_info : attr_info;
@@ -1359,10 +1361,38 @@ and layout = {
           don't have a meaningful layout due to being uninhabited (though an
           uninhabited variant may have a layout). Structs and unions are modeled
           as having exactly one variant. *)
-  repr : repr_options;
-      (** The representation options of this type declaration as annotated by
-          the user. *)
 }
+
+and layout_guarantees = {
+  size : exact_size_expr;
+  align : exact_size_expr;
+  offsets : offset_guarantees;
+}
+
+and layout_value =
+  | LayoutValueConstant of constant_expr
+  | ValueSizeOf of ty  (** The size of the given type. *)
+  | ValueAlignOf of ty  (** The alignment of the given type. *)
+  | DynSize
+      (** For a DST with [dyn Trait] metadata, this refers to the size found in
+          the metadata. *)
+  | DynAlign
+      (** For a DST with [dyn Trait] metadata, this refers to the alignment
+          found in the metadata. *)
+  | SliceLength
+      (** For a DST with slice metadata, this refers to the length found in the
+          metadata. *)
+  | TargetDiscrSize
+      (** The size of the default discriminant type for a target. *)
+  | TargetDiscrAlign
+      (** The alignment of the default discriminant type for a target. *)
+
+(** Variables representing layout information from the context. *)
+and layout_var =
+  | VarSize  (** The size of the whole type. *)
+  | VarAlign  (** The alignment of the whole type. *)
+  | VarFieldOffset of variant_id option * field_id
+      (** The offset of the given field. *)
 
 (** An item name/path
 
@@ -1402,6 +1432,30 @@ and layout = {
     Also note that the first path element in the name is always the crate name.
 *)
 and name = (path_elem list[@visitors.opaque])
+
+(** Represents the guarantees we can get about offsets of fields. *)
+and offset_guarantee =
+  | AtOffsetZero
+      (** Guaranteed to be at offset zero. This applies for [repr(transparent)]
+          and in some [repr(C)] cases. *)
+  | GuaranteedAlignment of size_expr
+      (** The only guarantee is that it is aligned to the given expression. *)
+  | ReprCField of field_id option * layout_value * ty
+      (** This offset has to be computed by the layout algorithm for C, taking
+          into consideration the fields before. Must not be the first field,
+          since that is [[OffsetGuarantee::AtOffsetZero]].
+
+          Fields:
+          - [predecessor]: If this is [None], then the field is directly behind
+            the tag.
+          - [predecessor_size]
+          - [own_ty] *)
+
+and offset_guarantees =
+  | OffsetGuaranteeSymbolic of ty
+  | OffsetGuaranteeVariants of offset_guarantee list list
+  | OffsetGuaranteeFields of offset_guarantee list
+  | OffsetGuaranteeNone
 
 (** See the comments for [Name] *)
 and path_elem =
@@ -1452,10 +1506,32 @@ and repr_options = {
   repr_algo : repr_algorithm;
   align_modif : alignment_modifier option;
   transparent : bool;
-  explicit_discr_type : bool;
+  explicit_discr_type : ty option;
 }
 
 and spec_kind = Precondition | Postcondition
+
+and size_expr =
+  | SizeVariable of layout_var
+  | SizeValue of layout_value
+  | Max of size_expr list
+  | Min of size_expr list
+  | Plus of size_expr * size_expr
+  | Scale of size_expr * constant_expr
+  | AlignTo of size_expr * size_expr
+      (** The next multiple of [target_align] from [base].
+
+          Fields:
+          - [base]
+          - [target_align] *)
+  | IfInhabited of ty * size_expr * size_expr
+      (** A size expression that changes its value based on whether an argument
+          type is inhabited.
+
+          Fields:
+          - [ty]
+          - [then_size]
+          - [else_size] *)
 
 (** A type declaration.
 
@@ -1482,8 +1558,13 @@ and type_decl = {
       (** The layout of the type for each target. Information may be partial
           because of generics or dynamically-sized types. If we cannot compute a
           layout, the target has no entry. *)
+  layout_guarantees : layout_guarantees option;
+      (** The guarantees about the type's size and alignment. *)
   ptr_metadata : ptr_metadata;
       (** The metadata associated with a pointer to the type. *)
+  repr : repr_options;
+      (** The representation options of this type declaration as annotated by
+          the user. *)
 }
 
 and type_decl_kind =

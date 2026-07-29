@@ -1,3 +1,4 @@
+use crate::ast::layout_guarantees::LayoutGuarantees;
 use crate::ast::*;
 use crate::common::serialize_map_to_array::SeqHashMapToArray;
 use crate::ids::IndexVec;
@@ -617,10 +618,6 @@ pub struct Layout {
     /// layout). Structs and unions are modeled as having exactly one variant.
     #[serde_state(stateless)]
     pub variant_layouts: IndexVec<VariantId, Option<VariantLayout>>,
-    /// The representation options of this type declaration as annotated by the user.
-    #[drive(skip)]
-    #[serde_state(stateless)]
-    pub repr: ReprOptions,
 }
 
 /// The metadata stored in a pointer. That's the information stored in pointers alongside
@@ -684,12 +681,14 @@ pub enum AlignmentModifier {
 /// or the compiler internal `#[repr(linear)]`. Similarly, enum discriminant representations
 /// are encoded in [`Variant::discriminant`] and [`Discriminator`] instead.
 /// This only stores whether the discriminant type was derived from an explicit annotation.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, SerializeState, DeserializeState)]
+#[serde_state(stateless)]
 pub struct ReprOptions {
     pub repr_algo: ReprAlgorithm,
     pub align_modif: Option<AlignmentModifier>,
     pub transparent: bool,
-    pub explicit_discr_type: bool,
+    #[serde_state(stateful)]
+    pub explicit_discr_type: Option<Ty>,
 }
 
 /// A type declaration.
@@ -722,8 +721,13 @@ pub struct TypeDecl {
     /// dynamically-sized types. If we cannot compute a layout, the target has no entry.
     #[serde(with = "SeqHashMapToArray::<TargetTriple, Layout>")]
     pub layout: SeqHashMap<TargetTriple, Layout>,
+    /// The guarantees about the type's size and alignment.
+    pub layout_guarantees: Option<LayoutGuarantees>,
     /// The metadata associated with a pointer to the type.
     pub ptr_metadata: PtrMetadata,
+    /// The representation options of this type declaration as annotated by the user.
+    #[drive(skip)]
+    pub repr: ReprOptions,
 }
 
 generate_index_type!(VariantId, "Variant");

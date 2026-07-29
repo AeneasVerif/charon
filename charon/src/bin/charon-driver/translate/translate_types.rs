@@ -704,18 +704,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             r_abi::Variants::Empty => (None, IndexVec::new()),
         };
 
-        let repr = match &def.kind {
-            hax::FullDefKind::Adt { repr: hax_repr, .. } => self.translate_repr_options(hax_repr),
-            _ => ReprOptions::default(),
-        };
-
         Some(Layout {
             size,
             align,
             discriminator,
             uninhabited: layout.is_uninhabited(),
             variant_layouts,
-            repr,
         })
     }
 
@@ -750,7 +744,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         tagger: vec![],
                         uninhabited: false,
                     })]),
-                    repr: ReprOptions::default(),
                 })
             }
             _ => raise_error!(
@@ -936,9 +929,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             None
         };
 
+        let explicit_discr_type = if hax_repr_options.int_specified {
+            Some(
+                self.translate_ty(Span::dummy(), &hax_repr_options.typ)
+                    .unwrap(),
+            )
+        } else {
+            None
+        };
+
         ReprOptions {
             transparent: hax_repr_options.flags.is_transparent,
-            explicit_discr_type: hax_repr_options.int_specified,
+            explicit_discr_type,
             repr_algo,
             align_modif: align_mod,
         }
