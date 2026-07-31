@@ -19,6 +19,7 @@ trait test_crate::Trait<Self>
 fn test_crate::Trait::method1<'_0, Self>(self: &'_0 Self)
 where
     TraitClause0: (Self: test_crate::Trait),
+    TypeOutlives0: Self: '_0,
 {
     let _0: (); // return
     let self: &'1 Self; // arg #1
@@ -33,6 +34,7 @@ where
 fn test_crate::Trait::method2<'_0, Self>(self: &'_0 Self)
 where
     TraitClause0: (Self: test_crate::Trait),
+    TypeOutlives0: Self: '_0,
 {
     let _0: (); // return
     let self: &'1 Self; // arg #1
@@ -48,6 +50,7 @@ fn test_crate::f<'_0, T0>(x: &'_0 T0)
 where
     TraitClause0: (T0: core::marker::Sized),
     TraitClause1: (T0: test_crate::Trait),
+    TypeOutlives0: T0: '_0,
 {
     let _0: (); // return
     let x: &'1 T0; // arg #1
@@ -69,6 +72,7 @@ fn test_crate::g<'_0, T0>(x: &'_0 T0)
 where
     TraitClause0: (T0: core::marker::Sized),
     TraitClause1: (T0: test_crate::Trait),
+    TypeOutlives0: T0: '_0,
 {
     let _0: (); // return
     let x: &'1 T0; // arg #1

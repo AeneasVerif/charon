@@ -25,6 +25,7 @@ unsafe fn core::ptr::drop_glue<'_0, T>(_1: &'_0 mut T)
 where
     TraitClause0: (T: Destruct),
     TraitClause1: (T: Destruct),
+    TypeOutlives0: T: '_0,
 {
     let ret: (); // return
     let _1: &'_0 mut T; // arg #1
@@ -59,6 +60,8 @@ where
     TraitClause1: (A: Sized),
     TraitClause2: (T: Destruct),
     TraitClause3: (A: Destruct),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 = <opaque>
 
 // Full name: alloc::string::String
@@ -80,6 +83,7 @@ unsafe fn impl_Destruct_for_slice::drop_glue<'_0, T>(_1: &'_0 mut [T])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Destruct),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut [T]; // arg #1
@@ -193,6 +197,7 @@ unsafe fn impl_Destruct_for_array::drop_glue<'_0, T, const N : usize>(_1: &'_0 m
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Destruct),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut [T; N]; // arg #1
@@ -228,6 +233,8 @@ where
     TraitClause0: (A: Sized),
     TraitClause1: (A: Destruct),
     TraitClause2: (B: Destruct),
+    TypeOutlives0: A: '_0,
+    TypeOutlives1: B: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut (A, B); // arg #1

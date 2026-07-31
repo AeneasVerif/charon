@@ -17,6 +17,7 @@ pub fn to_string<'_0, T>(_1: &'_0 T) -> String
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (T: Display),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: test_crate::FOO

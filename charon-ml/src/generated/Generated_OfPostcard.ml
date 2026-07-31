@@ -1027,8 +1027,9 @@ and region_param_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* index = region_id_of_postcard ctx st in
      let* name = option_of_postcard string_of_postcard ctx st in
+     let* variance = variance_of_postcard ctx st in
      let* mutability = lifetime_mutability_of_postcard ctx st in
-     Ok ({ index; name; mutability } : region_param))
+     Ok ({ index; name; variance; mutability } : region_param))
 
 and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (rvalue, string) result =
@@ -1327,7 +1328,8 @@ and type_param_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* index = type_var_id_of_postcard ctx st in
      let* name = string_of_postcard ctx st in
-     Ok ({ index; name } : type_param))
+     let* variance = variance_of_postcard ctx st in
+     Ok ({ index; name; variance } : type_param))
 
 and type_pattern_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (type_pattern, string) result =
@@ -1391,6 +1393,18 @@ and unsizing_metadata_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* x_0 = list_of_postcard field_id_of_postcard ctx st in
          Ok (MetaVTableUpcast x_0)
      | 3 -> Ok MetaUnknown
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and variance_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (variance, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok Covariant
+     | 1 -> Ok Invariant
+     | 2 -> Ok Contravariant
+     | 3 -> Ok Bivariant
+     | 4 -> Ok VaUnknown
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and variant_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1541,8 +1555,13 @@ module Llbc = struct
       (Generated_LlbcAst.block, string) result =
     combine_error_msgs st __FUNCTION__
       (let* span = span_of_postcard ctx st in
+       let* block_id = block_id_of_postcard ctx st in
        let* statements = list_of_postcard statement_of_postcard ctx st in
-       Ok ({ span; statements } : Generated_LlbcAst.block))
+       Ok ({ span; block_id; statements } : Generated_LlbcAst.block))
+
+  and block_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+      (Generated_LlbcAst.block_id, string) result =
+    combine_error_msgs st __FUNCTION__ (BlockId.id_of_postcard ctx st)
 
   and statement_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
       (Generated_LlbcAst.statement, string) result =
@@ -1788,7 +1807,6 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* ullbc = bool_of_postcard ctx st in
      let* precise_drops = bool_of_postcard ctx st in
-     let* skip_borrowck = bool_of_postcard ctx st in
      let* mir = option_of_postcard mir_level_of_postcard ctx st in
      let* rustc_args = list_of_postcard string_of_postcard ctx st in
      let* targets = list_of_postcard string_of_postcard ctx st in
@@ -1834,6 +1852,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        option_of_postcard serialization_format_arg_of_postcard ctx st
      in
      let* no_serialize = bool_of_postcard ctx st in
+     let* skip_borrowck = bool_of_postcard ctx st in
      let* no_typecheck = bool_of_postcard ctx st in
      let* no_normalize = bool_of_postcard ctx st in
      let* no_reorder_decls = bool_of_postcard ctx st in
@@ -1844,7 +1863,6 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        ({
           ullbc;
           precise_drops;
-          skip_borrowck;
           mir;
           rustc_args;
           targets;
@@ -1886,6 +1904,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           no_dedup_serialized_ast;
           format;
           no_serialize;
+          skip_borrowck;
           no_typecheck;
           no_normalize;
           no_reorder_decls;
@@ -2377,7 +2396,19 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* target_pointer_size = u64_of_postcard ctx st in
      let* is_little_endian = bool_of_postcard ctx st in
-     Ok ({ target_pointer_size; is_little_endian } : target_info))
+     let* c_enum_min_size = u64_of_postcard ctx st in
+     let* primitive_alignments =
+       index_map_of_postcard literal_type_of_postcard u64_of_postcard
+         int_of_postcard ctx st
+     in
+     Ok
+       ({
+          target_pointer_size;
+          is_little_endian;
+          c_enum_min_size;
+          primitive_alignments;
+        }
+         : target_info))
 
 and trait_assoc_const_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
     : (trait_assoc_const, string) result =

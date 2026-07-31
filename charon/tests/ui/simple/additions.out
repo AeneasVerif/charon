@@ -34,6 +34,8 @@ pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(self: &'_0 mut Self, sourc
 where
     TraitClause0: (Self: Clone),
     TraitClause1: (Self: Destruct),
+    TypeOutlives0: Self: '_0,
+    TypeOutlives1: Self: '_1,
 {
     let _0: (); // return
     let self: &'1 mut Self; // arg #1

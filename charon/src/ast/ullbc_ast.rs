@@ -2,7 +2,7 @@
 //! reconstruction. In effect, this is a cleaned up version of MIR.
 pub use crate::ast::*;
 use crate::ids::IndexVec;
-use derive_generic_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde_state::{DeserializeState, SerializeState};
 
@@ -29,6 +29,7 @@ pub type ExprBody = GExprBody<BodyContents>;
     DeserializeState,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 pub enum StatementKind {
     Assign(Place, Rvalue),
@@ -66,7 +67,9 @@ pub enum StatementKind {
     Nop,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(
+    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
+)]
 pub struct Statement {
     pub span: Span,
     pub kind: StatementKind,
@@ -89,6 +92,7 @@ pub struct Statement {
     DeserializeState,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("Switch"))]
 pub enum SwitchTargets {
@@ -112,6 +116,7 @@ pub enum SwitchTargets {
     DeserializeState,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 pub enum TerminatorKind {
     Goto {
@@ -161,7 +166,9 @@ pub enum TerminatorKind {
     UnwindResume,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(
+    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
+)]
 pub struct Terminator {
     pub span: Span,
     pub kind: TerminatorKind,
@@ -171,7 +178,9 @@ pub struct Terminator {
     pub comments_before: Vec<String>,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(
+    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
+)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("Block"))]
 pub struct BlockData {
     pub statements: Vec<Statement>,

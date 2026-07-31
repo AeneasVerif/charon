@@ -16,6 +16,7 @@ pub trait Sized<Self>
 fn choose<'a, T>(b: bool, x: &'a mut T, y: &'a mut T) -> &'a mut T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
     let _0: &'1 mut T; // return
     let b: bool; // arg #1

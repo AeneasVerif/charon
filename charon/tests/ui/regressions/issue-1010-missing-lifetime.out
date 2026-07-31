@@ -69,6 +69,7 @@ pub trait Fn<Self, Args>
 fn make_early<'a, T>(_1: fn(&'a T))
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
     let _0: (); // return
     let _1: fn(&'2 T); // arg #1

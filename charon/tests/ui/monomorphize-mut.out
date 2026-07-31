@@ -442,6 +442,7 @@ where
 fn mutable_identity<'_0, T>(x: &'_0 mut T) -> &'_0 mut T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'1 mut T; // return
     let x: &'2 mut T; // arg #1
@@ -754,6 +755,8 @@ where
 fn use_example<'a, 'b, T>(_1: test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[TraitClause3]><'a, 'b, 'a, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'a, 'b> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'a>[{built_in impl core::marker::Sized::<&_ mut _><'a> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'a> for bool}])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'b,
+    RegionOutlives0: 'b: 'a,
 {
     let _0: (); // return
     let _1: test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[TraitClause3]><'42, '43, '44, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'42, '43> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'44>[{built_in impl core::marker::Sized::<&_ mut _><'44> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'44> for bool}]; // arg #1
@@ -801,6 +804,8 @@ where
 
 // Full name: test_crate::use_list_mut
 fn use_list_mut<'_0, '_1>(_1: &'_0 test_crate::List::<&_ mut _><'_1, u32>[{built_in impl core::marker::Sized::<&_ mut _><'_1> for u32}])
+where
+    RegionOutlives0: '_1: '_0,
 {
     let _0: (); // return
     let _1: &'10 test_crate::List::<&_ mut _><'11, u32>[{built_in impl core::marker::Sized::<&_ mut _><'11> for u32}]; // arg #1
@@ -825,6 +830,7 @@ where
 fn use_iter<'a, 'b, T>(_1: core::option::Option::<Iter<_, _>[TraitClause1]><'a, bool>[{built_in impl core::marker::Sized::<Iter<_, _>[TraitClause0]><'a>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: bool: 'a,
 {
     let _0: (); // return
     let _1: core::option::Option::<Iter<_, _>[TraitClause1]><'6, bool>[{built_in impl core::marker::Sized::<Iter<_, _>[TraitClause0]><'6>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}]; // arg #1
@@ -840,6 +846,8 @@ where
 fn use_iter_mut<'a, 'b, T>(_1: test_crate::Iter::<_, &_ mut _><'a, 'b, T>[{built_in impl core::marker::Sized::<&_ mut _><'b> for T}])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: &'b mut T: 'a,
+    TypeOutlives1: T: 'b,
 {
     let _0: (); // return
     let _1: test_crate::Iter::<_, &_ mut _><'7, '8, T>[{built_in impl core::marker::Sized::<&_ mut _><'8> for T}]; // arg #1
@@ -855,6 +863,7 @@ where
 fn use_iter_wrapper<'a, 'b, T>(_1: core::option::Option::<IterWrapper<_, _>[TraitClause1]><'a, bool>[{built_in impl core::marker::Sized::<IterWrapper<_, _>[TraitClause0]><'a>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: bool: 'a,
 {
     let _0: (); // return
     let _1: core::option::Option::<IterWrapper<_, _>[TraitClause1]><'6, bool>[{built_in impl core::marker::Sized::<IterWrapper<_, _>[TraitClause0]><'6>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}]; // arg #1
@@ -907,6 +916,7 @@ fn use_const_generic<'_0, '_1>(_1: test_crate::ArrayWrapper::<&_ mut _, 1usize><
 fn use_opaque_iter<'a, 'b, T>(x: IterMut<'a, bool>[{built_in impl Sized for bool}])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: bool: 'a,
 {
     let _0: (); // return
     let x: IterMut<'1, bool>[{built_in impl Sized for bool}]; // arg #1

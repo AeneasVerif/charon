@@ -66,6 +66,7 @@ pub fn try_from<'_0, T, const N : usize>(_1: &'_0 [T]) -> Result<[T; N], TryFrom
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::array::{impl TryFrom<&'_0 [T]> for [T; N]}
@@ -73,6 +74,7 @@ impl<'_0, T, const N : usize> "impl_TryFrom_for_array" TryFrom<&'_0 [T]> for [T;
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
+    TypeOutlives0: T: '_0,
 {
     proof ImpliedClause0: ([T; N]: Sized) = {built_in impl Sized for [T; N]}
     proof ImpliedClause1: (&'_0 [T]: Sized) = {built_in impl Sized for &'_0 [T]}

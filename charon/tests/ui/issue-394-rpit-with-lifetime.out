@@ -82,6 +82,8 @@ struct closure<'a> {}
 
 // Full name: test_crate::sparse_transitions::{impl FnMut<()> for closure<'a>}::call_mut
 fn call_mut<'a, '_1>(_1: &'_1 mut closure<'a>, tupled_args: ()) -> Option<u8>[{built_in impl Sized for u8}]
+where
+    RegionOutlives0: 'a: '_1,
 {
     let _0: Option<u8>[{built_in impl Sized for u8}]; // return
     let _1: &'1 mut closure<'a>; // arg #1
@@ -96,6 +98,8 @@ fn call_mut<'a, '_1>(_1: &'_1 mut closure<'a>, tupled_args: ()) -> Option<u8>[{b
 
 // Full name: test_crate::sparse_transitions::closure::{impl Destruct for closure<'a>}::drop_glue
 unsafe fn drop_glue<'a, '_1>(_1: &'_1 mut closure<'a>)
+where
+    RegionOutlives0: 'a: '_1,
 {
     let _0: (); // return
     let _1: &'1 mut closure<'a>; // arg #1

@@ -62,6 +62,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
     TraitClause2: (T: Destruct),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::option::{impl Clone for Option<T>[TraitClause0]}

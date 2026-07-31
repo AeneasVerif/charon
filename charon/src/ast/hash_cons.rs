@@ -1,4 +1,4 @@
-use derive_generic_visitor::{Drive, DriveMut, Visit, VisitMut};
+use derive_generic_visitor::{Drive, DriveMut, DriveTwo, Visit, VisitMut, VisitTwo};
 use serde::{Deserialize, Serialize};
 use std::hash::Hash;
 use std::ops::{ControlFlow, Deref};
@@ -209,6 +209,11 @@ impl<T: std::fmt::Debug> std::fmt::Debug for HashConsed<T> {
 impl<'s, T, V: Visit<'s, T>> Drive<'s, V> for HashConsed<T> {
     fn drive_inner(&'s self, v: &mut V) -> ControlFlow<V::Break> {
         v.visit(self.inner())
+    }
+}
+impl<'s, T, V: VisitTwo<'s, T>> DriveTwo<'s, V> for HashConsed<T> {
+    fn drive_two_inner(&'s self, other: &'s Self, v: &mut V) -> ControlFlow<V::Break> {
+        v.visit(self.inner(), other.inner())
     }
 }
 /// Note: this explores the inner value mutably by cloning and re-hashing afterwards.

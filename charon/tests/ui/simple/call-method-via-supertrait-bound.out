@@ -48,6 +48,7 @@ fn method<'_0, T>(self: &'_0 T)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: OtherTrait),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let self: &'1 T; // arg #1

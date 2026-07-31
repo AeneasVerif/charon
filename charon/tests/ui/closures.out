@@ -110,10 +110,13 @@ where
 unsafe fn impl_Destruct_for_Option::drop_glue<'_0, T>(_1: &'_0 mut Option<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: test_crate::<tuple_1>::{impl Destruct for (A,)}::drop_glue
 unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A>(_1: &'_0 mut (A,))
+where
+    TypeOutlives0: A: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut (A,); // arg #1
@@ -286,6 +289,7 @@ pub fn map_option_pointer_ref<'a, T, F>(x_1: &'a Option<T>[TraitClause0], f: fn<
 where
     TraitClause0: (T: Sized),
     TraitClause1: (F: Sized),
+    TypeOutlives0: T: 'a,
 {
     let _0: Option<T>[TraitClause0]; // return
     let x_1: &'1 Option<T>[TraitClause0]; // arg #1
@@ -910,6 +914,7 @@ where
 unsafe fn {impl Destruct for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::drop_glue<'_0, T>(_1: &'_0 mut test_crate::test_closure_ref_param::closure<T>[TraitClause0])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::test_closure_ref_param::closure<T>[TraitClause0]; // arg #1
@@ -924,6 +929,8 @@ where
 fn {impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call<'_0, '_1, T>(_1: &'_1 test_crate::test_closure_ref_param::closure<T>[TraitClause0], tupled_args: (&'_0 T,)) -> &'_0 T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_1,
+    TypeOutlives1: T: '_0,
 {
     let _0: &'0 T; // return
     let _1: &'2 test_crate::test_closure_ref_param::closure<T>[TraitClause0]; // arg #1
@@ -944,6 +951,8 @@ where
 fn {impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call_mut<'_0, '_1, T>(state: &'_1 mut test_crate::test_closure_ref_param::closure<T>[TraitClause0], args: (&'_0 T,)) -> &'_0 T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_1,
+    TypeOutlives1: T: '_0,
 {
     let _0: &'_0 T; // return
     let state: &'_1 mut test_crate::test_closure_ref_param::closure<T>[TraitClause0]; // arg #1
@@ -968,6 +977,7 @@ where
 fn {impl FnOnce<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call_once<'_0, T>(_1: test_crate::test_closure_ref_param::closure<T>[TraitClause0], _2: (&'_0 T,)) -> &'_0 T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'0 T; // return
     let _1: test_crate::test_closure_ref_param::closure<T>[TraitClause0]; // arg #1
@@ -1001,6 +1011,7 @@ where
 fn test_crate::test_closure_ref_param::closure::as_fn<'_0, T>(arg1: &'_0 T) -> &'_0 T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'_0 T; // return
     let arg1: &'_0 T; // arg #1
@@ -1027,6 +1038,7 @@ where
 pub fn test_closure_ref_param<'_0, T>(x: &'_0 T) -> &'_0 T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'1 T; // return
     let x: &'2 T; // arg #1
@@ -1125,6 +1137,8 @@ unsafe fn {impl Destruct for test_crate::test_closure_ref_early_bound::closure<'
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait<'a>),
+    TypeOutlives0: T: '_1,
+    RegionOutlives0: 'a: '_1,
 {
     let _0: (); // return
     let _1: &'2 mut test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]; // arg #1
@@ -1140,6 +1154,9 @@ fn {impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closu
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait<'a>),
+    TypeOutlives0: T: '_2,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_2,
 {
     let _0: &'0 T; // return
     let _1: &'3 test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]; // arg #1
@@ -1161,6 +1178,9 @@ fn {impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::cl
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait<'a>),
+    TypeOutlives0: T: '_2,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_2,
 {
     let _0: &'_1 T; // return
     let state: &'_2 mut test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]; // arg #1
@@ -1186,6 +1206,7 @@ fn {impl FnOnce<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::c
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait<'a>),
+    TypeOutlives0: T: '_1,
 {
     let _0: &'0 T; // return
     let _1: test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]; // arg #1
@@ -1220,6 +1241,7 @@ fn test_crate::test_closure_ref_early_bound::closure::as_fn<'a, '_1, T>(arg1: &'
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait<'a>),
+    TypeOutlives0: T: '_1,
 {
     let _0: &'_1 T; // return
     let arg1: &'_1 T; // arg #1
@@ -1247,6 +1269,7 @@ pub fn test_closure_ref_early_bound<'a, T>(x: &'a T) -> &'a T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait<'a>),
+    TypeOutlives0: T: 'a,
 {
     let _0: &'1 T; // return
     let x: &'2 T; // arg #1
@@ -1840,6 +1863,8 @@ struct test_crate::test_regions::closure {}
 
 // Full name: test_crate::test_regions::{impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call
 fn {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::test_regions::closure, tupled_args: (&'_0 &'_1 u32,)) -> u32
+where
+    RegionOutlives0: '_1: '_0,
 {
     let _0: u32; // return
     let _1: &'1 test_crate::test_regions::closure; // arg #1
@@ -1904,6 +1929,8 @@ unsafe fn {impl Destruct for test_crate::test_regions::closure}::drop_glue<'_0>(
 
 // Full name: test_crate::test_regions::{impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_mut
 fn {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_mut<'_0, '_1, '_2>(state: &'_2 mut test_crate::test_regions::closure, args: (&'_0 &'_1 u32,)) -> u32
+where
+    RegionOutlives0: '_1: '_0,
 {
     let _0: u32; // return
     let state: &'_2 mut test_crate::test_regions::closure; // arg #1
@@ -1926,6 +1953,8 @@ fn {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call
 
 // Full name: test_crate::test_regions::{impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_once
 fn {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_once<'_0, '_1>(_1: test_crate::test_regions::closure, _2: (&'_0 &'_1 u32,)) -> u32
+where
+    RegionOutlives0: '_1: '_0,
 {
     let _0: u32; // return
     let _1: test_crate::test_regions::closure; // arg #1
@@ -2008,6 +2037,8 @@ unsafe fn {impl Destruct for test_crate::test_regions_casted::closure}::drop_glu
 
 // Full name: test_crate::test_regions_casted::{impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call
 fn {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::test_regions_casted::closure, tupled_args: (&'_0 &'_1 u32,)) -> u32
+where
+    RegionOutlives0: '_1: '_0,
 {
     let _0: u32; // return
     let _1: &'1 test_crate::test_regions_casted::closure; // arg #1
@@ -2026,6 +2057,8 @@ fn {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::
 
 // Full name: test_crate::test_regions_casted::{impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_mut
 fn {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_mut<'_0, '_1, '_2>(state: &'_2 mut test_crate::test_regions_casted::closure, args: (&'_0 &'_1 u32,)) -> u32
+where
+    RegionOutlives0: '_1: '_0,
 {
     let _0: u32; // return
     let state: &'_2 mut test_crate::test_regions_casted::closure; // arg #1
@@ -2048,6 +2081,8 @@ fn {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure
 
 // Full name: test_crate::test_regions_casted::{impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_once
 fn {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_once<'_0, '_1>(_1: test_crate::test_regions_casted::closure, _2: (&'_0 &'_1 u32,)) -> u32
+where
+    RegionOutlives0: '_1: '_0,
 {
     let _0: u32; // return
     let _1: test_crate::test_regions_casted::closure; // arg #1
@@ -2079,6 +2114,8 @@ fn {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closur
 }
 
 fn test_crate::test_regions_casted::closure::as_fn<'_0, '_1>(arg1: &'_0 &'_1 u32) -> u32
+where
+    RegionOutlives0: '_1: '_0,
 {
     let _0: u32; // return
     let arg1: &'_0 &'_1 u32; // arg #1
@@ -2178,6 +2215,9 @@ struct test_crate::test_closure_capture::closure<'_0, '_1> {
 
 // Full name: test_crate::test_closure_capture::{impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call
 fn {impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::test_closure_capture::closure<'_0, '_1>, tupled_args: (u32,)) -> u32
+where
+    RegionOutlives0: '_0: '_2,
+    RegionOutlives1: '_1: '_2,
 {
     let _0: u32; // return
     let _1: &'1 test_crate::test_closure_capture::closure<'_0, '_1>; // arg #1
@@ -2261,6 +2301,9 @@ pub fn test_closure_capture(x: u32, y: u32) -> u32
 
 // Full name: test_crate::test_closure_capture::closure::{impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}::drop_glue
 unsafe fn {impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}::drop_glue<'_0, '_1, '_2>(_1: &'_2 mut test_crate::test_closure_capture::closure<'_0, '_1>)
+where
+    RegionOutlives0: '_0: '_2,
+    RegionOutlives1: '_1: '_2,
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::test_closure_capture::closure<'_0, '_1>; // arg #1
@@ -2273,6 +2316,9 @@ unsafe fn {impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>
 
 // Full name: test_crate::test_closure_capture::{impl FnMut<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut
 fn {impl FnMut<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_2>(state: &'_2 mut test_crate::test_closure_capture::closure<'_0, '_1>, args: (u32,)) -> u32
+where
+    RegionOutlives0: '_0: '_2,
+    RegionOutlives1: '_1: '_2,
 {
     let _0: u32; // return
     let state: &'_2 mut test_crate::test_closure_capture::closure<'_0, '_1>; // arg #1
@@ -2372,6 +2418,7 @@ fn {impl Fn<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
+    TypeOutlives0: T: '_0,
 {
     let _0: T; // return
     let _1: &'1 test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]; // arg #1
@@ -2466,6 +2513,7 @@ unsafe fn {impl Destruct for test_crate::test_closure_clone::closure<T>[TraitCla
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]; // arg #1
@@ -2481,6 +2529,7 @@ fn {impl FnMut<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClau
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
+    TypeOutlives0: T: '_0,
 {
     let _0: T; // return
     let state: &'_0 mut test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]; // arg #1
@@ -2706,6 +2755,8 @@ struct test_crate::test_fnmut_with_ref::closure<'_0> {
 
 // Full name: test_crate::test_fnmut_with_ref::{impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut
 fn {impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_2>(_1: &'_2 mut test_crate::test_fnmut_with_ref::closure<'_0>, tupled_args: (&'_1 usize,))
+where
+    RegionOutlives0: '_0: '_2,
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::test_fnmut_with_ref::closure<'_0>; // arg #1
@@ -2795,6 +2846,8 @@ fn test_fnmut_with_ref()
 
 // Full name: test_crate::test_fnmut_with_ref::closure::{impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}::drop_glue
 unsafe fn {impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}::drop_glue<'_0, '_1>(_1: &'_1 mut test_crate::test_fnmut_with_ref::closure<'_0>)
+where
+    RegionOutlives0: '_0: '_1,
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::test_fnmut_with_ref::closure<'_0>; // arg #1

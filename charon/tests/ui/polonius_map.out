@@ -19,6 +19,7 @@ pub trait Borrow<Self, Borrowed>
 pub fn borrow<'_0, T>(_1: &'_0 T) -> &'_0 T
 where
     TraitClause0: (T: MetaSized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::borrow::{impl Borrow<T> for T}
@@ -106,6 +107,7 @@ pub fn hash<'_0, '_1, H>(_1: &'_0 u32, _2: &'_1 mut H)
 where
     TraitClause0: (H: Sized),
     TraitClause1: (H: Hasher),
+    TypeOutlives0: H: '_1,
 = <opaque>
 
 // Full name: core::hash::impls::{impl Hash for u32}
@@ -147,6 +149,11 @@ where
     TraitClause8: (K: Borrow<Q>),
     TraitClause9: (Q: Hash),
     TraitClause10: (Q: Eq),
+    TypeOutlives0: K: '_0,
+    TypeOutlives1: V: '_0,
+    TypeOutlives2: S: '_0,
+    TypeOutlives3: A: '_0,
+    TypeOutlives4: Q: '_1,
 = <opaque>
 
 // Full name: std::collections::hash::map::{HashMap<K, V, S, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::insert
@@ -160,6 +167,10 @@ where
     TraitClause4: (K: Eq),
     TraitClause5: (K: Hash),
     TraitClause6: (S: BuildHasher),
+    TypeOutlives0: K: '_0,
+    TypeOutlives1: V: '_0,
+    TypeOutlives2: S: '_0,
+    TypeOutlives3: A: '_0,
 = <opaque>
 
 // Full name: std::collections::hash::map::{impl Index<&'_0 Q> for HashMap<K, V, S, A>[TraitClause0, TraitClause2, TraitClause3, TraitClause4]}::index
@@ -176,6 +187,11 @@ where
     TraitClause8: (Q: Eq),
     TraitClause9: (Q: Hash),
     TraitClause10: (S: BuildHasher),
+    TypeOutlives0: K: '_1,
+    TypeOutlives1: V: '_1,
+    TypeOutlives2: S: '_1,
+    TypeOutlives3: A: '_1,
+    TypeOutlives4: Q: '_0,
 = <opaque>
 
 // Full name: std::hash::random::RandomState

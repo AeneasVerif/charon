@@ -103,6 +103,8 @@ unsafe fn drop_glue<'_0, F, T>(_1: &'_0 mut closure<F, T>[TraitClause0, TraitCla
 where
     TraitClause0: (F: Sized),
     TraitClause1: (T: Sized),
+    TypeOutlives0: F: '_0,
+    TypeOutlives1: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut closure<F, T>[TraitClause0, TraitClause1]; // arg #1
@@ -118,6 +120,8 @@ fn call<'_0, F, T>(_1: &'_0 closure<F, T>[TraitClause0, TraitClause1], tupled_ar
 where
     TraitClause0: (F: Sized),
     TraitClause1: (T: Sized),
+    TypeOutlives0: F: '_0,
+    TypeOutlives1: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 closure<F, T>[TraitClause0, TraitClause1]; // arg #1
@@ -140,6 +144,8 @@ fn call_mut<'_0, F, T>(state: &'_0 mut closure<F, T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (F: Sized),
     TraitClause1: (T: Sized),
+    TypeOutlives0: F: '_0,
+    TypeOutlives1: T: '_0,
 {
     let _0: (); // return
     let state: &'_0 mut closure<F, T>[TraitClause0, TraitClause1]; // arg #1

@@ -43,6 +43,7 @@ fn test_crate::Trait::method<'_0, Self>(self: &'_0 Self)
 where
     TraitClause0: (Self: Trait),
     TraitClause1: (Self: Copy),
+    TypeOutlives0: Self: '_0,
 {
     let _0: (); // return
     let self: &'1 Self; // arg #1

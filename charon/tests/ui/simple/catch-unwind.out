@@ -74,6 +74,8 @@ unsafe fn drop_glue<'_0, T, E>(_1: &'_0 mut Result<T, E>[TraitClause0, TraitClau
 where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: E: '_0,
 = <opaque>
 
 // Full name: alloc::alloc::Global

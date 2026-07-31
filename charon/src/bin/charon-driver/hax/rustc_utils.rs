@@ -1,11 +1,144 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use rustc_hir::def::DefKind as RDefKind;
+use rustc_middle::ty::relate::{
+    Relate, RelateResult, TypeRelation, relate_args_with_variances, structurally_relate_consts,
+    structurally_relate_tys,
+};
 use rustc_middle::{mir, ty};
 use rustc_span::kw;
 use rustc_type_ir::Interner;
 
 use crate::hax::prelude::*;
+
+/// Computes the variance of each region bound by `sig`.
+///
+/// This follows rustc's `FunctionalVariances` helper from the `impl_trait_overcaptures` lint.
+pub fn fn_sig_bound_region_variances<'tcx>(
+    tcx: ty::TyCtxt<'tcx>,
+    sig: ty::PolyFnSig<'tcx>,
+) -> HashMap<ty::BoundVar, ty::Variance> {
+    struct FunctionalVariances<'tcx> {
+        tcx: ty::TyCtxt<'tcx>,
+        variances: HashMap<ty::BoundVar, ty::Variance>,
+        ambient_variance: ty::Variance,
+        target_binder: ty::DebruijnIndex,
+    }
+
+    impl<'tcx> TypeRelation<ty::TyCtxt<'tcx>> for FunctionalVariances<'tcx> {
+        fn cx(&self) -> ty::TyCtxt<'tcx> {
+            self.tcx
+        }
+
+        fn relate_ty_args(
+            &mut self,
+            a_ty: ty::Ty<'tcx>,
+            _: ty::Ty<'tcx>,
+            def_id: rustc_hir::def_id::DefId,
+            a_args: ty::GenericArgsRef<'tcx>,
+            b_args: ty::GenericArgsRef<'tcx>,
+            _: impl FnOnce(ty::GenericArgsRef<'tcx>) -> ty::Ty<'tcx>,
+        ) -> RelateResult<'tcx, ty::Ty<'tcx>> {
+            relate_args_with_variances(self, self.tcx.variances_of(def_id), a_args, b_args)?;
+            Ok(a_ty)
+        }
+
+        fn relate_with_variance<T: Relate<ty::TyCtxt<'tcx>>>(
+            &mut self,
+            variance: ty::Variance,
+            _: ty::VarianceDiagInfo<ty::TyCtxt<'tcx>>,
+            a: T,
+            b: T,
+        ) -> RelateResult<'tcx, T> {
+            let old_variance = self.ambient_variance;
+            self.ambient_variance = self.ambient_variance.xform(variance);
+            let result = self.relate(a, b);
+            self.ambient_variance = old_variance;
+            result
+        }
+
+        fn tys(&mut self, a: ty::Ty<'tcx>, b: ty::Ty<'tcx>) -> RelateResult<'tcx, ty::Ty<'tcx>> {
+            structurally_relate_tys(self, a, b)
+        }
+
+        fn regions(
+            &mut self,
+            a: ty::Region<'tcx>,
+            _: ty::Region<'tcx>,
+        ) -> RelateResult<'tcx, ty::Region<'tcx>> {
+            if let ty::ReBound(ty::BoundVarIndexKind::Bound(binder), ty::BoundRegion { var, .. }) =
+                a.kind()
+                && binder == self.target_binder
+            {
+                self.variances
+                    .entry(var)
+                    .and_modify(|old| *old = unify_variances(*old, self.ambient_variance))
+                    .or_insert(self.ambient_variance);
+            }
+            Ok(a)
+        }
+
+        fn consts(
+            &mut self,
+            a: ty::Const<'tcx>,
+            b: ty::Const<'tcx>,
+        ) -> RelateResult<'tcx, ty::Const<'tcx>> {
+            structurally_relate_consts(self, a, b)
+        }
+
+        fn binders<T>(
+            &mut self,
+            a: ty::Binder<'tcx, T>,
+            b: ty::Binder<'tcx, T>,
+        ) -> RelateResult<'tcx, ty::Binder<'tcx, T>>
+        where
+            T: Relate<ty::TyCtxt<'tcx>>,
+        {
+            let old_target_binder = self.target_binder;
+            self.target_binder = self.target_binder.shifted_in(1);
+            let result = self.relate(a.skip_binder(), b.skip_binder());
+            self.target_binder = old_target_binder;
+            result?;
+            Ok(a)
+        }
+    }
+
+    fn unify_variances(a: ty::Variance, b: ty::Variance) -> ty::Variance {
+        match (a, b) {
+            (ty::Bivariant, other) | (other, ty::Bivariant) => other,
+            (ty::Invariant, _) | (_, ty::Invariant) => ty::Invariant,
+            (ty::Contravariant, ty::Covariant) | (ty::Covariant, ty::Contravariant) => {
+                ty::Invariant
+            }
+            (ty::Contravariant, ty::Contravariant) => ty::Contravariant,
+            (ty::Covariant, ty::Covariant) => ty::Covariant,
+        }
+    }
+
+    let mut relation = FunctionalVariances {
+        tcx,
+        variances: HashMap::new(),
+        // `Relate for FnSig` makes inputs contravariant. We are computing the variance of the
+        // signature's own bound parameters, so cancel that outer function-type variance. Nested
+        // function types still introduce their own contravariance as usual.
+        ambient_variance: ty::Contravariant,
+        target_binder: ty::INNERMOST,
+    };
+    relation
+        .relate(sig.skip_binder(), sig.skip_binder())
+        .expect("a signature must relate to itself");
+
+    // A bound region that does not occur in the signature is bivariant.
+    for (index, var) in sig.bound_vars().iter().enumerate() {
+        if matches!(var, ty::BoundVariableKind::Region(_)) {
+            relation
+                .variances
+                .entry(ty::BoundVar::from_usize(index))
+                .or_insert(ty::Bivariant);
+        }
+    }
+    relation.variances
+}
 
 pub fn inst_binder<'tcx, T>(
     tcx: ty::TyCtxt<'tcx>,

@@ -66,7 +66,8 @@ where
     TraitClause1: (B: ToOwned),
     TraitClause2: (B: Destruct),
     TypeOutlives0: B: 'a,
-    TypeOutlives1: B: 'a,
+    TypeOutlives1: B: '_1,
+    RegionOutlives0: 'a: '_1,
 {
     let _0: (); // return
     let _1: &'1 mut Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
@@ -95,7 +96,6 @@ where
     TraitClause1: (B: ToOwned),
     TraitClause2: (B: Destruct),
     TypeOutlives0: B: 'a,
-    TypeOutlives1: B: 'a,
 {
     fn drop_glue<'_0_1> = drop_glue<'a, '_0_1, B>[TraitClause0, TraitClause1, TraitClause2]
     non-dyn-compatible

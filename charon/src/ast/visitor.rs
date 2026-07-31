@@ -39,6 +39,7 @@ use derive_generic_visitor::*;
     // Defines the `Visit[Mut]` traits and the `drive[_mut]` method that drives them.
     visitor(drive(&VisitAst)),
     visitor(drive_mut(&mut VisitAstMut)),
+    visitor(drive_two(&two ZipAst)),
     // Types that we ignore.
     skip((), String, bool),
     // Types that we unconditionally explore.
@@ -50,7 +51,8 @@ use derive_generic_visitor::*;
         llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,
         Loc, Locals, NullOp, Operand, PathElem, PlaceKind, ConstantExprKind,
         RefKind, RegionId, RegionParam, ScalarValue, TraitItemName, TraitMethodId, AssocTypeId, AssocConstId, AssocItemId,
-        TranslatedCrate, TypeDeclKind, TypeId, TypeParam, TypePattern, TypeVarId, llbc_ast::StatementId,
+        TranslatedCrate, TypeDeclKind, TypeId, TypeParam, TypePattern, TypeVarId,
+        llbc_ast::BlockId, llbc_ast::StatementId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets,
         UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, CopyNonOverlapping, Layout, VariantLayout, PtrMetadata,
@@ -90,12 +92,18 @@ pub trait AstVisitable: Any {
         std::any::type_name::<Self>()
     }
     /// Visit all occurrences of that type inside `self`, in pre-order traversal.
-    fn dyn_visit<T: AstVisitable>(&self, f: impl FnMut(&T)) {
-        let _ = self.drive(&mut DynVisitor::new_shared::<T>(f));
+    fn dyn_visit<T: AstVisitable>(&self, f: impl FnMut(&T))
+    where
+        Self: Sized,
+    {
+        let _ = VisitAst::visit(&mut DynVisitor::new_shared::<T>(f), self);
     }
     /// Visit all occurrences of that type inside `self`, in pre-order traversal.
-    fn dyn_visit_mut<T: AstVisitable>(&mut self, f: impl FnMut(&mut T)) {
-        let _ = self.drive_mut(&mut DynVisitor::new_mut::<T>(f));
+    fn dyn_visit_mut<T: AstVisitable>(&mut self, f: impl FnMut(&mut T))
+    where
+        Self: Sized,
+    {
+        let _ = VisitAstMut::visit(&mut DynVisitor::new_mut::<T>(f), self);
     }
 }
 
@@ -113,6 +121,16 @@ impl<K: AstVisitable + Hash + Eq, T: AstVisitable> AstVisitable for SeqHashMap<K
             v.visit(&mut k)?;
             v.visit(&mut x)?;
             self.insert(k, x);
+        }
+        Continue(())
+    }
+    fn drive_two<V: ZipAst>(&self, other: &Self, v: &mut V) -> ControlFlow<V::Break> {
+        if self.len() != other.len() {
+            return Break(Default::default());
+        }
+        for ((key, value), (other_key, other_value)) in self.iter().zip(other) {
+            v.visit(key, other_key)?;
+            v.visit(value, other_value)?;
         }
         Continue(())
     }
@@ -164,7 +182,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
         llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,
         ullbc_ast::BlockData, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets, CopyNonOverlapping,
-        llbc_ast::StatementId,
+        llbc_ast::BlockId, llbc_ast::StatementId,
         Body, Local,
         for<T: BodyVisitable> Box<T>,
         for<T: BodyVisitable> Option<T>,
@@ -189,13 +207,19 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
 )]
 pub trait BodyVisitable: Any {
     /// Visit all occurrences of that type inside `self`, in pre-order traversal.
-    fn dyn_visit_in_body<T: BodyVisitable>(&self, f: impl FnMut(&T)) {
-        let _ = self.drive_body(&mut DynVisitor::new_shared::<T>(f));
+    fn dyn_visit_in_body<T: BodyVisitable>(&self, f: impl FnMut(&T))
+    where
+        Self: Sized,
+    {
+        let _ = VisitBody::visit(&mut DynVisitor::new_shared::<T>(f), self);
     }
 
     /// Visit all occurrences of that type inside `self`, in pre-order traversal.
-    fn dyn_visit_in_body_mut<T: BodyVisitable>(&mut self, f: impl FnMut(&mut T)) {
-        let _ = self.drive_body_mut(&mut DynVisitor::new_mut::<T>(f));
+    fn dyn_visit_in_body_mut<T: BodyVisitable>(&mut self, f: impl FnMut(&mut T))
+    where
+        Self: Sized,
+    {
+        let _ = VisitBodyMut::visit(&mut DynVisitor::new_mut::<T>(f), self);
     }
 }
 

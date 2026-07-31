@@ -192,6 +192,7 @@ fn generate_ml(
         ("charon_lib::ast::llbc_ast::StatementKind", ("Generated_LlbcAst", "Llbc")),
         ("charon_lib::ast::llbc_ast::Switch", ("Generated_LlbcAst", "Llbc")),
         ("charon_lib::ast::llbc_ast::Block", ("Generated_LlbcAst", "Llbc")),
+        ("charon_lib::ast::llbc_ast::BlockId", ("Generated_LlbcAst", "Llbc")),
     ];
 
     let mut ctx = GenerateCtx::new(&crate_data, ambiguous_types);

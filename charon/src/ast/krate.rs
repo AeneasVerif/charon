@@ -1,7 +1,7 @@
 use std::cmp::{Ord, PartialOrd};
 use std::fmt;
 
-use derive_generic_visitor::{ControlFlow, Drive, DriveMut};
+use derive_generic_visitor::{ControlFlow, Drive, DriveMut, DriveTwo};
 use index_vec::Idx;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
@@ -40,6 +40,7 @@ generate_index_type!(TraitImplId, "TraitImpl");
     DeserializeState,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Id"))]
 #[serde_state(stateless)]
@@ -70,6 +71,7 @@ pub enum ItemId {
     DeserializeState,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("AssocId"))]
 #[serde_state(stateless)]
@@ -124,7 +126,16 @@ wrap_unwrap_enum!(AssocItemId::Const(AssocConstId));
 
 /// A translated item.
 #[derive(
-    Debug, PartialEq, Eq, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut,
+    Debug,
+    PartialEq,
+    Eq,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    VariantIndexArity,
+    Drive,
+    DriveMut,
+    DriveTwo,
 )]
 pub enum ItemByVal {
     Type(TypeDecl),
@@ -136,7 +147,16 @@ pub enum ItemByVal {
 
 /// A reference to a translated item.
 #[derive(
-    Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut,
+    Debug,
+    Clone,
+    Copy,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    VariantIndexArity,
+    Drive,
+    DriveMut,
+    DriveTwo,
 )]
 pub enum ItemRef<'ctx> {
     Type(&'ctx TypeDecl),
@@ -148,7 +168,16 @@ pub enum ItemRef<'ctx> {
 
 /// A mutable reference to a translated item.
 #[derive(
-    Debug, PartialEq, Eq, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut,
+    Debug,
+    PartialEq,
+    Eq,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    VariantIndexArity,
+    Drive,
+    DriveMut,
+    DriveTwo,
 )]
 pub enum ItemRefMut<'ctx> {
     Type(&'ctx mut TypeDecl),
@@ -194,16 +223,21 @@ pub type DeclarationsGroups = Vec<DeclarationGroup>;
 /// A target triple, e.g. `x86_64-unknown-linux-gnu`.
 pub type TargetTriple = String;
 
-#[derive(Clone, Drive, DriveMut, SerializeState, DeserializeState)]
+#[derive(Clone, Drive, DriveMut, DriveTwo, SerializeState, DeserializeState)]
 #[serde_state(stateless)]
 pub struct TargetInfo {
     /// The pointer size of the target in bytes.
     pub target_pointer_size: types::ByteCount,
     /// Whether the target platform uses little endian byte order.
     pub is_little_endian: bool,
+    /// The minimum size of a [`repr(C)`] enum.
+    pub c_enum_min_size: types::ByteCount,
+    /// Alignments for primitive types.
+    #[serde(with = "SeqHashMapToArray::<LiteralTy, ByteCount>")]
+    pub primitive_alignments: SeqHashMap<LiteralTy, ByteCount>,
 }
 
-#[derive(Default, Clone, Drive, DriveMut, SerializeState, DeserializeState)]
+#[derive(Default, Clone, Drive, DriveMut, DriveTwo, SerializeState, DeserializeState)]
 pub struct AssocItemNames {
     pub types: IndexVec<AssocTypeId, TraitItemName>,
     pub methods: IndexVec<TraitMethodId, TraitItemName>,
@@ -225,7 +259,7 @@ pub struct AssocItemNames {
 ///
 /// To get a `TranslatedCrate`, run `charon cargo` inside a Rust crate, then deserialize
 /// the resulting `crate_name.llbc` file using [`crate::deserialize_llbc`].
-#[derive(Default, Clone, Drive, DriveMut, SerializeState, DeserializeState)]
+#[derive(Default, Clone, Drive, DriveMut, DriveTwo, SerializeState, DeserializeState)]
 #[serde_state(state_implements = HashConsSerializerState)]
 pub struct TranslatedCrate {
     /// The name of the crate.

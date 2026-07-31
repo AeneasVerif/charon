@@ -1106,11 +1106,18 @@ and region_param_of_json (ctx : of_json_ctx) (js : json) :
     (region_param, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("index", index); ("name", name); ("mutability", mutability) ] ->
+    | `Assoc
+        [
+          ("index", index);
+          ("name", name);
+          ("variance", variance);
+          ("mutability", mutability);
+        ] ->
         let* index = region_id_of_json ctx index in
         let* name = option_of_json string_of_json ctx name in
+        let* variance = variance_of_json ctx variance in
         let* mutability = lifetime_mutability_of_json ctx mutability in
-        Ok ({ index; name; mutability } : region_param)
+        Ok ({ index; name; variance; mutability } : region_param)
     | _ -> Error "")
 
 and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
@@ -1478,10 +1485,11 @@ and type_param_of_json (ctx : of_json_ctx) (js : json) :
     (type_param, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("index", index); ("name", name) ] ->
+    | `Assoc [ ("index", index); ("name", name); ("variance", variance) ] ->
         let* index = type_var_id_of_json ctx index in
         let* name = string_of_json ctx name in
-        Ok ({ index; name } : type_param)
+        let* variance = variance_of_json ctx variance in
+        Ok ({ index; name; variance } : type_param)
     | _ -> Error "")
 
 and type_pattern_of_json (ctx : of_json_ctx) (js : json) :
@@ -1546,6 +1554,17 @@ and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
         in
         Ok (MetaVTableUpcast v_table_upcast)
     | `String "Unknown" -> Ok MetaUnknown
+    | _ -> Error "")
+
+and variance_of_json (ctx : of_json_ctx) (js : json) : (variance, string) result
+    =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Covariant" -> Ok Covariant
+    | `String "Invariant" -> Ok Invariant
+    | `String "Contravariant" -> Ok Contravariant
+    | `String "Bivariant" -> Ok Bivariant
+    | `String "Unknown" -> Ok VaUnknown
     | _ -> Error "")
 
 and variant_id_of_json (ctx : of_json_ctx) (js : json) :
@@ -1754,10 +1773,18 @@ module Llbc = struct
       (Generated_LlbcAst.block, string) result =
     combine_error_msgs js __FUNCTION__
       (match js with
-      | `Assoc [ ("span", span); ("statements", statements) ] ->
+      | `Assoc [ ("span", span); ("id", id); ("statements", statements) ] ->
           let* span = span_of_json ctx span in
+          let* block_id = block_id_of_json ctx id in
           let* statements = list_of_json statement_of_json ctx statements in
-          Ok ({ span; statements } : Generated_LlbcAst.block)
+          Ok ({ span; block_id; statements } : Generated_LlbcAst.block)
+      | _ -> Error "")
+
+  and block_id_of_json (ctx : of_json_ctx) (js : json) :
+      (Generated_LlbcAst.block_id, string) result =
+    combine_error_msgs js __FUNCTION__
+      (match js with
+      | x -> BlockId.id_of_json ctx x
       | _ -> Error "")
 
   and statement_of_json (ctx : of_json_ctx) (js : json) :
@@ -2053,7 +2080,6 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         [
           ("ullbc", ullbc);
           ("precise_drops", precise_drops);
-          ("skip_borrowck", skip_borrowck);
           ("mir", mir);
           ("rustc_args", rustc_args);
           ("targets", targets);
@@ -2095,6 +2121,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("no_dedup_serialized_ast", no_dedup_serialized_ast);
           ("format", format);
           ("no_serialize", no_serialize);
+          ("skip_borrowck", skip_borrowck);
           ("no_typecheck", no_typecheck);
           ("no_normalize", no_normalize);
           ("no_reorder_decls", no_reorder_decls);
@@ -2104,7 +2131,6 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         ] ->
         let* ullbc = bool_of_json ctx ullbc in
         let* precise_drops = bool_of_json ctx precise_drops in
-        let* skip_borrowck = bool_of_json ctx skip_borrowck in
         let* mir = option_of_json mir_level_of_json ctx mir in
         let* rustc_args = list_of_json string_of_json ctx rustc_args in
         let* targets = list_of_json string_of_json ctx targets in
@@ -2166,6 +2192,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           option_of_json serialization_format_arg_of_json ctx format
         in
         let* no_serialize = bool_of_json ctx no_serialize in
+        let* skip_borrowck = bool_of_json ctx skip_borrowck in
         let* no_typecheck = bool_of_json ctx no_typecheck in
         let* no_normalize = bool_of_json ctx no_normalize in
         let* no_reorder_decls = bool_of_json ctx no_reorder_decls in
@@ -2176,7 +2203,6 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ({
              ullbc;
              precise_drops;
-             skip_borrowck;
              mir;
              rustc_args;
              targets;
@@ -2218,6 +2244,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              no_dedup_serialized_ast;
              format;
              no_serialize;
+             skip_borrowck;
              no_typecheck;
              no_normalize;
              no_reorder_decls;
@@ -2819,10 +2846,24 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
         [
           ("target_pointer_size", target_pointer_size);
           ("is_little_endian", is_little_endian);
+          ("c_enum_min_size", c_enum_min_size);
+          ("primitive_alignments", primitive_alignments);
         ] ->
         let* target_pointer_size = int_of_json ctx target_pointer_size in
         let* is_little_endian = bool_of_json ctx is_little_endian in
-        Ok ({ target_pointer_size; is_little_endian } : target_info)
+        let* c_enum_min_size = int_of_json ctx c_enum_min_size in
+        let* primitive_alignments =
+          index_map_of_json literal_type_of_json int_of_json int_of_json ctx
+            primitive_alignments
+        in
+        Ok
+          ({
+             target_pointer_size;
+             is_little_endian;
+             c_enum_min_size;
+             primitive_alignments;
+           }
+            : target_info)
     | _ -> Error "")
 
 and trait_assoc_const_of_json (ctx : of_json_ctx) (js : json) :

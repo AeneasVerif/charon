@@ -1,5 +1,7 @@
 //! Copies of the relevant type-level types. These are semantically-rich representations of
 //! type-level concepts such as types and trait references.
+use std::collections::HashMap;
+
 use crate::hax::prelude::*;
 use crate::hax::sinto_as_usize;
 use crate::hax::sinto_todo;
@@ -529,7 +531,7 @@ impl<S, U, T: SInto<S, U>> SInto<S, Vec<U>> for ty::List<T> {
 /// Reflects [`ty::Variance`]
 #[derive(AdtInto)]
 #[args(<S>, from: ty::Variance, state: S as _s)]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Variance {
     Covariant,
     Invariant,
@@ -1255,7 +1257,10 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Predicate> for ty::Predicate<'tcx>
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum BoundVariableKind {
     Ty(BoundTyKind),
-    Region(BoundRegionKind),
+    #[custom_arm(
+        &FROM_TYPE::Region(region) => TO_TYPE::Region(region.sinto(tcx), None),
+    )]
+    Region(BoundRegionKind, Option<Variance>),
     Const,
 }
 
@@ -1355,12 +1360,45 @@ impl GenericPredicates {
     }
 }
 
+/// Lets types declare how to compute the variance of bound parameters.
+trait BinderVariances<'tcx>: Sized {
+    fn variances(
+        _tcx: ty::TyCtxt<'tcx>,
+        _binder: &ty::Binder<'tcx, Self>,
+    ) -> HashMap<ty::BoundVar, ty::Variance> {
+        HashMap::new()
+    }
+}
+
+impl<'tcx> BinderVariances<'tcx> for ty::FnSig<'tcx> {
+    fn variances(
+        tcx: ty::TyCtxt<'tcx>,
+        binder: &ty::Binder<'tcx, Self>,
+    ) -> HashMap<ty::BoundVar, ty::Variance> {
+        fn_sig_bound_region_variances(tcx, *binder)
+    }
+}
+
+impl<'tcx> BinderVariances<'tcx> for ty::ClauseKind<'tcx> {}
+impl<'tcx> BinderVariances<'tcx> for ty::PredicateKind<'tcx> {}
+impl<'tcx> BinderVariances<'tcx> for ty::TraitRef<'tcx> {}
+impl<'tcx> BinderVariances<'tcx> for ty::TraitPredicate<'tcx> {}
+
 impl<'tcx, S: UnderOwnerState<'tcx>, T1, T2> SInto<S, Binder<T2>> for ty::Binder<'tcx, T1>
 where
-    T1: SInto<StateWithBinder<'tcx>, T2>,
+    T1: SInto<StateWithBinder<'tcx>, T2> + BinderVariances<'tcx>,
 {
     fn sinto(&self, s: &S) -> Binder<T2> {
-        let bound_vars = self.bound_vars().sinto(s);
+        let variances = T1::variances(s.base().tcx, self);
+        let mut bound_vars = self.bound_vars().sinto(s);
+        for (index, var) in bound_vars.iter_mut().enumerate() {
+            if let BoundVariableKind::Region(_, variance) = var {
+                *variance = variances
+                    .get(&ty::BoundVar::from_usize(index))
+                    .copied()
+                    .sinto(s);
+            }
+        }
         let value = {
             let under_binder_s = &s.with_binder(self.as_ref().map_bound(|_| ()));
             self.as_ref().skip_binder().sinto(under_binder_s)

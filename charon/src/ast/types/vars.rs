@@ -5,7 +5,7 @@ use std::{
     ops::{Index, IndexMut},
 };
 
-use derive_generic_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use index_vec::Idx;
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
@@ -26,6 +26,7 @@ use crate::{ast::*, impl_from_enum};
     Deserialize,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 #[serde(transparent)]
 #[cfg_attr(feature = "charon_on_charon", charon::transparent)]
@@ -81,6 +82,7 @@ impl DeBruijnId {
     DeserializeState,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 pub enum DeBruijnVar<Id> {
     /// A variable attached to the nth binder, counting from the innermost.
@@ -100,9 +102,47 @@ generate_index_type!(ConstGenericVarId, "Const");
 generate_index_type!(TraitClauseId, "TraitClause");
 generate_index_type!(TraitTypeConstraintId, "TraitTypeConstraint");
 
+/// The variance of a lifetime or type parameter.
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    DriveTwo,
+)]
+pub enum Variance {
+    Covariant,
+    Invariant,
+    Contravariant,
+    Bivariant,
+    /// Variance was not sensible (e.g. on impls), not available (e.g. on higher-kinded
+    /// predicates), or not computed (e.g. on parameters that Charon invents).
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("VaUnknown"))]
+    Unknown,
+}
+
 /// A type variable in a signature or binder.
 #[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Drive, DriveMut,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    DriveTwo,
 )]
 pub struct TypeParam {
     /// Index identifying the variable among other variables bound at the same level.
@@ -110,11 +150,25 @@ pub struct TypeParam {
     /// Variable name
     #[drive(skip)]
     pub name: String,
+    /// Variance of this parameter.
+    #[drive(skip)]
+    pub variance: Variance,
 }
 
 /// A region variable in a signature or binder.
 #[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Drive, DriveMut,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    DriveTwo,
 )]
 pub struct RegionParam {
     /// Index identifying the variable among other variables bound at the same level.
@@ -122,6 +176,9 @@ pub struct RegionParam {
     /// Region name
     #[drive(skip)]
     pub name: Option<String>,
+    /// Variance of this parameter.
+    #[drive(skip)]
+    pub variance: Variance,
     /// Whether this lifetime is (recursively) used in a `&'a mut T` type. Only `true` if this
     /// lifetime parameter belongs to an ADT. This is a global analysis that looks even into opaque
     /// items. When unsure, err on the side of assuming mutability.
@@ -142,6 +199,7 @@ pub struct RegionParam {
     DeserializeState,
     Drive,
     DriveMut,
+    DriveTwo,
 )]
 pub struct ConstGenericParam {
     /// Index identifying the variable among other variables bound at the same level.
@@ -155,7 +213,7 @@ pub struct ConstGenericParam {
 
 /// A trait predicate in a signature, of the form `Type: Trait<Args>`. This functions like a
 /// variable binder, to which variables of the form `TraitRefKind::Clause` can refer to.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct TraitParam {
     /// Index identifying the clause among other clauses bound at the same level.
     pub clause_id: TraitClauseId,
@@ -316,16 +374,21 @@ where
 }
 
 impl TypeParam {
-    pub fn new(index: TypeVarId, name: String) -> Self {
-        Self { index, name }
+    pub fn new(index: TypeVarId, name: String, variance: Variance) -> Self {
+        Self {
+            index,
+            name,
+            variance,
+        }
     }
 }
 
 impl RegionParam {
-    pub fn new(index: RegionId, name: Option<String>) -> Self {
+    pub fn new(index: RegionId, name: Option<String>, variance: Variance) -> Self {
         Self {
             index,
             name,
+            variance,
             mutability: LifetimeMutability::Unknown,
         }
     }

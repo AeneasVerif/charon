@@ -45,6 +45,8 @@ pub fn bar<'x, 'y, 'z, T>(x: TraitClause1::Type<'y>) -> &'x &'y &'z ()
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Bar<'x>),
+    RegionOutlives0: 'y: 'x,
+    RegionOutlives1: 'z: 'y,
 {
     let _0: &'6 &'7 &'8 (); // return
     let x: TraitClause1::Type<'12>; // arg #1

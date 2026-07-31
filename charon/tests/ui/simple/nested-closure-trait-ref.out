@@ -95,6 +95,7 @@ unsafe fn {impl Destruct for test_crate::foo::closure<T>[TraitClause0, TraitClau
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::foo::closure<T>[TraitClause0, TraitClause1]; // arg #1
@@ -206,6 +207,7 @@ unsafe fn {impl Destruct for test_crate::foo::closure::closure<T>[TraitClause0, 
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::foo::closure::closure<T>[TraitClause0, TraitClause1]; // arg #1
@@ -224,6 +226,7 @@ fn call<'_0, T>(_1: &'_0 test_crate::foo::closure::closure<T>[TraitClause0, Trai
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
+    TypeOutlives0: T: '_0,
 {
     let _0: T; // return
     let _1: &'1 test_crate::foo::closure::closure<T>[TraitClause0, TraitClause1]; // arg #1
@@ -248,6 +251,7 @@ fn call_mut<'_0, T>(state: &'_0 mut test_crate::foo::closure::closure<T>[TraitCl
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
+    TypeOutlives0: T: '_0,
 {
     let _0: T; // return
     let state: &'_0 mut test_crate::foo::closure::closure<T>[TraitClause0, TraitClause1]; // arg #1

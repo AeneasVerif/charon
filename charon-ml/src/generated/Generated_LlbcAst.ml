@@ -5,8 +5,17 @@ open Generated_Expressions
 open Generated_Meta
 open Identifiers
 module StatementId = IdGen ()
+module BlockId = IdGen ()
 
-type block = { span : span; statements : statement list }
+type block = {
+  span : span;
+  block_id : block_id;
+      (** Integer uniquely identifying this block. To simplify things we
+          generate globally-fresh ids when creating a new [Block]. *)
+  statements : statement list;
+}
+
+and block_id = (BlockId.id[@visitors.opaque])
 
 and statement = {
   span : span;

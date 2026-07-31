@@ -74,6 +74,8 @@ pub fn impl_PartialEq_Option_for_Option::eq<'_0, '_1, T>(_1: &'_0 Option<T>[Trai
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: PartialEq<T>),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: T: '_1,
 = <opaque>
 
 // Full name: test_crate::main

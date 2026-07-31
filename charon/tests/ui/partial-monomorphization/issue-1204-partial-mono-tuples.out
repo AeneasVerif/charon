@@ -75,6 +75,8 @@ fn call_id_pair_mut<'a, T, U>(x: (&'a mut T, &'a mut U)) -> (&'a mut T, &'a mut 
 where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: U: 'a,
 {
     let _0: (&'4 mut T, &'5 mut U); // return
     let x: (&'6 mut T, &'7 mut U); // arg #1

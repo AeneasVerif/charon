@@ -47,6 +47,7 @@ where
 unsafe fn drop_glue<'_0, S>(_1: &'_0 mut HashMap<S>[TraitClause0])
 where
     TraitClause0: (S: Sized),
+    TypeOutlives0: S: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut HashMap<S>[TraitClause0]; // arg #1

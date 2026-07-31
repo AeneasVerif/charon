@@ -573,6 +573,9 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (I: Sized),
     TraitClause2: (I: SliceIndex<[T]>),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: TraitClause2::Output: '_0,
+    TypeOutlives2: I: '_0,
 {
     let _0: &'1 TraitClause2::Output; // return
     let self: &'3 [T]; // arg #1
@@ -928,6 +931,7 @@ impl "impl_Sealed_for_RangeInclusive_usize" Sealed for RangeInclusive<usize>[{bu
 pub fn core::slice::{[T]}::len<'_0, T>(self: &'_0 [T]) -> usize
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: usize; // return
     let self: &'1 [T]; // arg #1
@@ -948,6 +952,7 @@ where
 pub fn impl_SliceIndex_slice_for_Range_usize::get<'_0, T>(self: Range<usize>[{built_in impl Sized for usize}], slice: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: Option<&'6 [T]>[{built_in impl Sized for &'6 [T]}]; // return
     let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
@@ -1047,6 +1052,7 @@ where
 pub fn impl_SliceIndex_slice_for_Range_usize::get_mut<'_0, T>(self: Range<usize>[{built_in impl Sized for usize}], slice: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: Option<&'6 mut [T]>[{built_in impl Sized for &'6 mut [T]}]; // return
     let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
@@ -1488,6 +1494,7 @@ where
 pub fn impl_SliceIndex_slice_for_RangeInclusive_usize::index_mut<'_0, T>(self: RangeInclusive<usize>[{built_in impl Sized for usize}], slice: &'_0 mut [T]) -> &'_0 mut [T]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'1 mut [T]; // return
     let self: RangeInclusive<usize>[{built_in impl Sized for usize}]; // arg #1
@@ -1675,6 +1682,7 @@ where
 pub fn impl_SliceIndex_slice_for_RangeInclusive_usize::index<'_0, T>(self: RangeInclusive<usize>[{built_in impl Sized for usize}], slice: &'_0 [T]) -> &'_0 [T]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: &'1 [T]; // return
     let self: RangeInclusive<usize>[{built_in impl Sized for usize}]; // arg #1
@@ -1930,6 +1938,7 @@ where
 pub fn impl_SliceIndex_slice_for_RangeInclusive_usize::get_mut<'_0, T>(self: RangeInclusive<usize>[{built_in impl Sized for usize}], slice: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: Option<&'6 mut [T]>[{built_in impl Sized for &'6 mut [T]}]; // return
     let self: RangeInclusive<usize>[{built_in impl Sized for usize}]; // arg #1
@@ -2005,6 +2014,7 @@ where
 pub fn impl_SliceIndex_slice_for_RangeInclusive_usize::get<'_0, T>(self: RangeInclusive<usize>[{built_in impl Sized for usize}], slice: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: Option<&'6 [T]>[{built_in impl Sized for &'6 [T]}]; // return
     let self: RangeInclusive<usize>[{built_in impl Sized for usize}]; // arg #1

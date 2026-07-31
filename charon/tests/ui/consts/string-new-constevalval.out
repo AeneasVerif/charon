@@ -67,6 +67,7 @@ where
 unsafe fn impl_Destruct_for_slice::drop_glue<'_0, T>(_1: &'_0 mut [T])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut [T]; // arg #1

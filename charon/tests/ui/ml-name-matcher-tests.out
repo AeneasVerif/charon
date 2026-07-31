@@ -43,6 +43,7 @@ where
 pub fn is_some<'_0, T>(_1: &'_0 Option<T>[TraitClause0]) -> bool
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::index::private_slice_index::Sealed
@@ -76,6 +77,9 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (I: Sized),
     TraitClause2: (I: SliceIndex<[T]>),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: TraitClause2::Output: '_0,
+    TypeOutlives2: I: '_0,
 = <opaque>
 
 // Full name: core::slice::index::private_slice_index::{impl Sealed for RangeFrom<usize>[{built_in impl Sized for usize}]}
@@ -88,12 +92,14 @@ impl "impl_Sealed_for_RangeFrom_usize" Sealed for RangeFrom<usize>[{built_in imp
 pub fn index_mut<'_0, T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> &'_0 mut [T]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index
 pub fn impl_SliceIndex_slice_for_RangeFrom_usize::index<'_0, T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: &'_0 [T]) -> &'_0 [T]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
@@ -112,12 +118,14 @@ where
 pub fn get_mut<'_0, T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::get
 pub fn impl_SliceIndex_slice_for_RangeFrom_usize::get<'_0, T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}
@@ -421,6 +429,7 @@ trait Get<'a, Self, T>
 fn {impl Get<'a, T> for &'a MonoContainer<T>[TraitClause0]}::get<'a, T>(self: &'a MonoContainer<T>[TraitClause0]) -> &'a T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
     let _0: &'1 T; // return
     let self: &'3 MonoContainer<T>[TraitClause0]; // arg #1
@@ -439,6 +448,7 @@ where
 impl<'a, T> Get<'a, T> for &'a MonoContainer<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
     proof ImpliedClause0: (&'a MonoContainer<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for &'a MonoContainer<T>[TraitClause0]}
     proof ImpliedClause1: (T: Sized) = TraitClause0

@@ -57,6 +57,8 @@ unsafe fn impl_Destruct_for_RawVec::drop_glue<'_0, T, A>(_1: &'_0 mut RawVec<T, 
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 = <opaque>
 
 fn alloc::raw_vec::{RawVec<T, A>[TraitClause0, TraitClause1]}::with_capacity_in<T, A>(_1: usize, _2: A) -> RawVec<T, A>[TraitClause0, TraitClause1]
@@ -71,6 +73,8 @@ fn ptr<'_0, T, A>(_1: &'_0 RawVec<T, A>[TraitClause0, TraitClause1]) -> *mut T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 = <opaque>
 
 // Full name: alloc::vec::Vec
@@ -88,6 +92,7 @@ where
 unsafe fn impl_Destruct_for_slice::drop_glue<'_0, T>(_1: &'_0 mut [T])
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut [T]; // arg #1
@@ -200,6 +205,8 @@ pub fn as_mut_ptr<'_0, T, A>(self: &'_0 mut Vec<T>[TraitClause0, TraitClause1]) 
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 {
     let _0: *mut T; // return
     let self: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
@@ -221,6 +228,8 @@ pub fn impl_Drop_for_Vec::drop<'_0, T, A>(self: &'_0 mut Vec<T>[TraitClause0, Tr
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 {
     let _0: (); // return
     let self: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1
@@ -259,6 +268,8 @@ unsafe fn impl_Destruct_for_Vec::drop_glue<'_0, T, A>(_1: &'_0 mut Vec<T>[TraitC
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut Vec<T>[TraitClause0, TraitClause1]; // arg #1

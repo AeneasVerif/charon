@@ -62,6 +62,7 @@ pub trait MyTrait<Self, T>
 pub fn test_crate::MyTrait::rows<'_0, Self, T>(self: &'_0 Self) -> Empty<T>[TraitClause0::ImpliedClause1]
 where
     TraitClause0: (Self: MyTrait<T>),
+    TypeOutlives0: Self: '_0,
 {
     let _0: Empty<T>[TraitClause0::ImpliedClause1]; // return
     let self: &'1 Self; // arg #1

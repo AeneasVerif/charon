@@ -20,6 +20,7 @@ pub struct Global {}
 pub fn choose<'a, T>(b: bool, x: &'a mut T, y: &'a mut T) -> &'a mut T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
     let _0: &'1 mut T; // return
     let b: bool; // arg #1
@@ -204,6 +205,7 @@ where
 pub fn list_nth<'a, T>(l: &'a CList<T>[TraitClause0], i: u32) -> &'a T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
     let _0: &'1 T; // return
     let l: &'3 CList<T>[TraitClause0]; // arg #1
@@ -282,6 +284,7 @@ where
 pub fn list_nth_mut<'a, T>(l: &'a mut CList<T>[TraitClause0], i: u32) -> &'a mut T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
     let _0: &'1 mut T; // return
     let l: &'3 mut CList<T>[TraitClause0]; // arg #1
@@ -373,6 +376,7 @@ where
 pub fn list_nth_mut1<'a, T>(l: &'a mut CList<T>[TraitClause0], i: u32) -> &'a mut T
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
     let _0: &'1 mut T; // return
     let l: &'3 mut CList<T>[TraitClause0]; // arg #1
@@ -490,6 +494,7 @@ pub fn i32_id(i: i32) -> i32
 pub fn list_tail<'a, T>(l: &'a mut CList<T>[TraitClause0]) -> &'a mut CList<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
 {
     let _0: &'1 mut CList<T>[TraitClause0]; // return
     let l: &'2 mut CList<T>[TraitClause0]; // arg #1
@@ -570,6 +575,7 @@ pub fn use_counter<'a, T>(cnt: &'a mut T) -> usize
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Counter),
+    TypeOutlives0: T: 'a,
 {
     let _0: usize; // return
     let cnt: &'1 mut T; // arg #1

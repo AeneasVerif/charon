@@ -264,6 +264,8 @@ where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 {
     let _0: (); // return
     let self: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
@@ -359,6 +361,8 @@ where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
 {
     let _0: (); // return
     let _1: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
@@ -730,6 +734,9 @@ where
     TraitClause3: (Args: Tuple),
     TraitClause4: (F: FnOnce<Args>),
     TraitClause5: (A: Allocator),
+    TypeOutlives0: Args: '_0,
+    TypeOutlives1: TraitClause4::Output: '_0,
+    TypeOutlives2: F: '_0,
 {
     let ret: (); // return
     let dyn_self: &'_0 mut (dyn FnOnce<Args, Output = TraitClause4::Output> + '0); // arg #1
