@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -13,7 +13,8 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[lang_item("clone")]
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -33,13 +34,13 @@ impl "impl_Clone_for_i32" Clone for i32 {
 }
 
 // Full name: core::mem::maybe_uninit::MaybeUninit
-#[lang_item("maybe_uninit")]
+#[lang_item(MaybeUninit)]
 pub opaque type MaybeUninit<T>
 where
     TraitClause0: (T: Sized),
 
 // Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
+#[lang_item(GlobalAlloc)]
 pub struct Global {}
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_glue
@@ -52,7 +53,7 @@ where
 = <opaque>
 
 // Full name: alloc::vec::Vec
-#[lang_item("Vec")]
+#[diagnostic_item("Vec")]
 pub opaque type Vec<T>
 where
     TraitClause0: (T: Sized),
@@ -75,7 +76,7 @@ where
 = <opaque>
 
 // Full name: alloc::vec::from_elem
-#[lang_item("vec_from_elem")]
+#[diagnostic_item("vec_from_elem")]
 pub fn from_elem<T>(_1: T, _2: usize) -> Vec<T>[TraitClause0, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),

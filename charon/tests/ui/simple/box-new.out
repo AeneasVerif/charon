@@ -1,18 +1,18 @@
 # Final LLBC before serialization:
 
 // Full name: core::alloc::layout::Layout
-#[lang_item("alloc_layout")]
+#[lang_item(AllocLayout)]
 pub opaque type Layout
 
 // Full name: core::alloc::AllocError
 pub struct AllocError {}
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -20,7 +20,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::result::Result
-#[lang_item("Result")]
+#[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
     TraitClause0: (T: Sized),
@@ -31,7 +31,7 @@ where
 }
 
 // Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
+#[diagnostic_item("NonNull")]
 pub opaque type NonNull<T>
 
 // Full name: core::alloc::Allocator
@@ -44,7 +44,7 @@ pub trait Allocator<Self>
 }
 
 // Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
+#[lang_item(GlobalAlloc)]
 pub struct Global {}
 
 // Full name: alloc::alloc::{impl Allocator for Global}::deallocate
@@ -64,7 +64,7 @@ impl "impl_Allocator_for_Global" Allocator for Global {
 }
 
 // Full name: alloc::boxed::Box
-#[lang_item("owned_box")]
+#[lang_item(OwnedBox)]
 pub opaque type Box<T, A>
 where
     TraitClause0: (T: MetaSized),
@@ -82,7 +82,7 @@ where
 = <opaque>
 
 // Full name: alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]}::new
-#[lang_item("box_new")]
+#[diagnostic_item("box_new")]
 pub fn new<T>(_1: T) -> Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]
 where
     TraitClause0: (T: Sized),

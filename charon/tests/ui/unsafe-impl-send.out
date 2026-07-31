@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::Send
-#[lang_item("Send")]
+#[diagnostic_item("Send")]
 pub trait Send<Self>
 
 // Full name: test_crate::Foo

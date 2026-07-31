@@ -1124,11 +1124,25 @@ let pp_item_intro (env : fmt_env) (indent : string) (keyword : string)
   let lang_item =
     match meta.lang_item with
     | None -> ""
-    | Some id -> indent ^ "#[lang_item(\"" ^ id ^ "\")]\n"
+    | Some id ->
+        let id = show_rustc_lang_item id in
+        (* The derived printer includes the generated OCaml module and variant prefix. *)
+        let prefix = "Generated_Types.RustcLangItem" in
+        assert (String.starts_with ~prefix id);
+        let id =
+          String.sub id (String.length prefix)
+            (String.length id - String.length prefix)
+        in
+        indent ^ "#[lang_item(" ^ id ^ ")]\n"
+  in
+  let diagnostic_item =
+    match meta.diagnostic_item with
+    | None -> ""
+    | Some id -> indent ^ "#[diagnostic_item(\"" ^ id ^ "\")]\n"
   in
   let public = if meta.attr_info.public then "pub " else "" in
-  Format.fprintf fmt "%s%s%s%s%s %s" full_name_comment lang_item indent public
-    keyword name
+  Format.fprintf fmt "%s%s%s%s%s%s %s" full_name_comment lang_item
+    diagnostic_item indent public keyword name
 
 let item_intro_to_string env indent keyword id meta =
   pp_to_string (fun fmt -> pp_item_intro env indent keyword id fmt meta)

@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -13,7 +13,8 @@ pub trait Sized<Self>
 }
 
 // Full name: core::option::Option
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option<T>
 where
     TraitClause0: (T: Sized),
@@ -23,7 +24,7 @@ where
 }
 
 // Full name: core::marker::Destruct
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
@@ -78,7 +79,8 @@ where
 }
 
 // Full name: core::cmp::PartialEq
-#[lang_item("eq")]
+#[lang_item(PartialEq)]
+#[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0_1, '_1_1>;
@@ -87,7 +89,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::PartialEq::ne
-#[lang_item("cmp_partialeq_ne")]
+#[diagnostic_item("cmp_partialeq_ne")]
 pub fn ne<'_0, '_1, Self, Rhs>(self: &'_0 Self, other: &'_1 Rhs) -> bool
 where
     TraitClause0: (Self: PartialEq<Rhs>),
@@ -253,7 +255,7 @@ pub fn from(small: i32) -> i64
 }
 
 // Full name: core::marker::PhantomData
-#[lang_item("phantom_data")]
+#[lang_item(PhantomData)]
 pub struct PhantomData<T> {}
 
 // Full name: core::num::niche_types::UsizeNoHighBit
@@ -273,7 +275,7 @@ pub fn core::num::{usize}::MAX() -> usize
 pub const core::num::{usize}::MAX: usize = core::num::{usize}::MAX()
 
 // Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
+#[diagnostic_item("NonNull")]
 pub struct NonNull<T> {
   pointer: *const T is !null,
 }
@@ -285,7 +287,7 @@ pub struct Unique<T> {
 }
 
 // Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
+#[lang_item(GlobalAlloc)]
 pub struct Global {}
 
 // Full name: alloc::raw_vec::RawVecInner
@@ -309,7 +311,7 @@ where
 }
 
 // Full name: alloc::vec::Vec
-#[lang_item("Vec")]
+#[diagnostic_item("Vec")]
 pub struct Vec<T>
 where
     TraitClause0: (T: Sized),

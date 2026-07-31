@@ -1,11 +1,11 @@
 # Final ULLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::ops::index::Index
-#[lang_item("index")]
+#[lang_item(Index)]
 pub trait Index<Self, Idx>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -17,7 +17,7 @@ pub trait Index<Self, Idx>
 }
 
 // Full name: core::ops::index::IndexMut
-#[lang_item("index_mut")]
+#[lang_item(IndexMut)]
 pub trait IndexMut<Self, Idx>
 {
     proof ImpliedClause0: (Self: MetaSized)

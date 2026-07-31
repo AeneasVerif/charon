@@ -4,7 +4,7 @@
 pub struct AllocError {}
 
 // Full name: core::result::Result
-#[lang_item("Result")]
+#[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
     TraitClause0: (T: Sized),
@@ -15,7 +15,7 @@ where
 }
 
 // Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
+#[diagnostic_item("NonNull")]
 pub struct NonNull<T> {
   pointer: *const T is !null,
 }
@@ -100,7 +100,7 @@ where
 }
 
 // Full name: core::ptr::metadata::Pointee
-#[lang_item("pointee_trait")]
+#[lang_item(PointeeTrait)]
 pub trait Pointee<Self>
 {
     proof ImpliedClause0: (Self::Metadata: Sized)
@@ -434,7 +434,8 @@ where
  = IS_ZST<Self>[TraitClause0]()
 
 // Full name: core::option::Option
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option<T>
 where
     TraitClause0: (T: Sized),
@@ -601,7 +602,7 @@ where
  = ALIGNMENT<Self>[TraitClause0]()
 
 // Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
+#[lang_item(AlignOf)]
 pub fn ALIGN<Self>() -> usize
 where
     TraitClause0: (Self: SizedTypeProperties),
@@ -615,14 +616,14 @@ where
 }
 
 // Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
+#[lang_item(AlignOf)]
 pub const ALIGN<Self>: usize
 where
     TraitClause0: (Self: SizedTypeProperties),
  = ALIGN<Self>[TraitClause0]()
 
 // Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
+#[lang_item(SizeOf)]
 pub fn SIZE<Self>() -> usize
 where
     TraitClause0: (Self: SizedTypeProperties),
@@ -636,7 +637,7 @@ where
 }
 
 // Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
+#[lang_item(SizeOf)]
 pub const SIZE<Self>: usize
 where
     TraitClause0: (Self: SizedTypeProperties),
@@ -657,7 +658,7 @@ where
     non-dyn-compatible
 }
 
-#[lang_item("mem_align_of")]
+#[diagnostic_item("mem_align_of")]
 pub fn core::mem::align_of<T>() -> usize
 where
     TraitClause0: (T: Sized),
@@ -669,7 +670,7 @@ where
     return
 }
 
-#[lang_item("ptr_write_bytes")]
+#[diagnostic_item("ptr_write_bytes")]
 pub unsafe fn core::ptr::write_bytes<T>(dst: *mut T, val: u8, count: usize)
 where
     TraitClause0: (T: Sized),
@@ -790,7 +791,7 @@ where
 }
 
 // Full name: core::ops::control_flow::ControlFlow
-#[lang_item("ControlFlow")]
+#[diagnostic_item("ControlFlow")]
 pub enum ControlFlow<B, C>
 where
     TraitClause0: (B: Sized),
@@ -1124,7 +1125,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut 
     return
 }
 
-#[lang_item("mem_size_of")]
+#[diagnostic_item("mem_size_of")]
 pub fn core::mem::size_of<T>() -> usize
 where
     TraitClause0: (T: Sized),
@@ -1137,7 +1138,7 @@ where
 }
 
 // Full name: core::ptr::copy_nonoverlapping
-#[lang_item("ptr_copy_nonoverlapping")]
+#[diagnostic_item("ptr_copy_nonoverlapping")]
 pub unsafe fn copy_nonoverlapping<T>(src: *const T, dst: *mut T, count: usize)
 where
     TraitClause0: (T: Sized),
@@ -1923,7 +1924,7 @@ where
     return
 }
 
-#[lang_item("const_ptr_cast")]
+#[diagnostic_item("const_ptr_cast")]
 pub fn core::ptr::const_ptr::{*const T}::cast<T, U>(self: *const T) -> *const U
 where
     TraitClause0: (U: Sized),
@@ -1990,7 +1991,7 @@ fn runtime(ptr: *const u8) -> bool
 }
 
 // Full name: core::marker::Destruct
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
@@ -1998,7 +1999,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::mem::maybe_dangling::MaybeDangling
-#[lang_item("maybe_dangling")]
+#[lang_item(MaybeDangling)]
 pub struct MaybeDangling<P>
 where
     TraitClause0: (P: MetaSized),
@@ -2007,7 +2008,7 @@ where
 }
 
 // Full name: core::mem::manually_drop::ManuallyDrop
-#[lang_item("manually_drop")]
+#[lang_item(ManuallyDrop)]
 pub struct ManuallyDrop<T>
 where
     TraitClause0: (T: MetaSized),
@@ -2153,7 +2154,7 @@ where
 }
 
 // Full name: core::mem::forget
-#[lang_item("mem_forget")]
+#[diagnostic_item("mem_forget")]
 pub fn forget<T>(t: T)
 where
     TraitClause0: (T: Sized),
@@ -2178,7 +2179,7 @@ where
     return
 }
 
-#[lang_item("ptr_const_is_null")]
+#[diagnostic_item("ptr_const_is_null")]
 pub fn core::ptr::const_ptr::{*const T}::is_null<T>(self: *const T) -> bool
 {
     let _0: bool; // return
@@ -2209,7 +2210,7 @@ pub fn core::ptr::const_ptr::{*const T}::is_null<T>(self: *const T) -> bool
 }
 
 // Full name: core::ptr::read
-#[lang_item("ptr_read")]
+#[diagnostic_item("ptr_read")]
 pub unsafe fn read<T>(src: *const T) -> T
 where
     TraitClause0: (T: Sized),
@@ -2228,7 +2229,7 @@ where
 }
 
 // Full name: core::ptr::mut_ptr::{*mut T}::cast_const
-#[lang_item("ptr_cast_const")]
+#[diagnostic_item("ptr_cast_const")]
 pub fn cast_const<T>(self: *mut T) -> *const T
 {
     let _0: *const T; // return
@@ -2252,7 +2253,7 @@ pub fn cast_const<T>(self: *mut T) -> *const T
     return
 }
 
-#[lang_item("ptr_is_null")]
+#[diagnostic_item("ptr_is_null")]
 pub fn core::ptr::mut_ptr::{*mut T}::is_null<T>(self: *mut T) -> bool
 {
     let _0: bool; // return
@@ -2479,7 +2480,7 @@ where
 }
 
 // Full name: alloc::boxed::Box
-#[lang_item("owned_box")]
+#[lang_item(OwnedBox)]
 pub struct Box<T, A>
 where
     TraitClause0: (T: MetaSized),
@@ -2756,7 +2757,7 @@ fn box_new_uninit(layout: Layout) -> *mut u8
     return
 }
 
-#[lang_item("box_new")]
+#[diagnostic_item("box_new")]
 pub fn alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl#0}]}::new<T>(x: T) -> Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl#0}]
 where
     TraitClause0: (T: Sized),

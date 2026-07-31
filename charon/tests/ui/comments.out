@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -13,7 +13,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::default::Default
-#[lang_item("Default")]
+#[diagnostic_item("Default")]
 pub trait Default<Self>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -26,7 +26,7 @@ pub fn impl_Default_for_u32::default() -> u32
 = <opaque>
 
 // Full name: core::marker::Destruct
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
@@ -34,7 +34,8 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::option::Option
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option<T>
 where
     TraitClause0: (T: Sized),
@@ -51,7 +52,7 @@ pub enum AssertKind {
 }
 
 // Full name: core::slice::{[T]}::len
-#[lang_item("slice_len_fn")]
+#[lang_item(SliceLen)]
 pub fn len<'_0, T>(_1: &'_0 [T]) -> usize
 where
     TraitClause0: (T: Sized),

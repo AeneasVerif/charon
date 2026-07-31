@@ -3,15 +3,15 @@
 opaque type core::any::Any::{vtable}
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::any::TypeId
-#[lang_item("type_id")]
+#[lang_item(TypeId)]
 pub opaque type TypeId
 
 // Full name: core::any::Any
-#[lang_item("Any")]
+#[diagnostic_item("Any")]
 pub trait Any<Self>
 where
     TypeOutlives0: Self: 'static,
@@ -22,11 +22,11 @@ where
 }
 
 // Full name: core::marker::Send
-#[lang_item("Send")]
+#[diagnostic_item("Send")]
 pub trait Send<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -34,7 +34,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::marker::Tuple
-#[lang_item("tuple_trait")]
+#[lang_item(Tuple)]
 pub trait Tuple<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -42,7 +42,7 @@ pub trait Tuple<Self>
 }
 
 // Full name: core::ops::function::FnOnce
-#[lang_item("fn_once")]
+#[lang_item(FnOnce)]
 pub trait FnOnce<Self, Args>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -55,11 +55,11 @@ pub trait FnOnce<Self, Args>
 }
 
 // Full name: core::panic::unwind_safe::UnwindSafe
-#[lang_item("unwind_safe_trait")]
+#[diagnostic_item("unwind_safe_trait")]
 pub trait UnwindSafe<Self>
 
 // Full name: core::result::Result
-#[lang_item("Result")]
+#[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
     TraitClause0: (T: Sized),
@@ -79,7 +79,7 @@ where
 = <opaque>
 
 // Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
+#[lang_item(GlobalAlloc)]
 pub struct Global {}
 
 // Full name: std::panic::catch_unwind

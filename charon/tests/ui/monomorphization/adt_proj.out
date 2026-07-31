@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::result::Result::<u32, u32>
-#[lang_item("Result")]
+#[diagnostic_item("Result")]
 pub enum Result::<u32, u32> {
   Ok(u32),
   Err(u32),

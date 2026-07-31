@@ -1,4 +1,4 @@
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait core::marker::Destruct<Self>
 {
     fn drop_glue<'_0_1>;

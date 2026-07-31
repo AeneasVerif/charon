@@ -2334,9 +2334,19 @@ and item_meta_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* attr_info = attr_info_of_postcard ctx st in
      let* is_local = bool_of_postcard ctx st in
      let* opacity = item_opacity_of_postcard ctx st in
-     let* lang_item = option_of_postcard string_of_postcard ctx st in
+     let* lang_item = option_of_postcard rustc_lang_item_of_postcard ctx st in
+     let* diagnostic_item = option_of_postcard string_of_postcard ctx st in
      Ok
-       ({ name; span; source_text; attr_info; is_local; opacity; lang_item }
+       ({
+          name;
+          span;
+          source_text;
+          attr_info;
+          is_local;
+          opacity;
+          lang_item;
+          diagnostic_item;
+        }
          : item_meta))
 
 and item_opacity_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -2393,6 +2403,227 @@ and item_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (VTableInstanceItem impl_ref)
      | 8 -> Ok VTableMethodShimItem
      | 9 -> Ok VTableInstanceMonoItem
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and rustc_lang_item_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (rustc_lang_item, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok RustcLangItemSized
+     | 1 -> Ok RustcLangItemMetaSized
+     | 2 -> Ok RustcLangItemPointeeSized
+     | 3 -> Ok RustcLangItemUnsize
+     | 4 -> Ok RustcLangItemAlignOf
+     | 5 -> Ok RustcLangItemSizeOf
+     | 6 -> Ok RustcLangItemOffsetOf
+     | 7 -> Ok RustcLangItemStructuralPeq
+     | 8 -> Ok RustcLangItemCopy
+     | 9 -> Ok RustcLangItemClone
+     | 10 -> Ok RustcLangItemCloneFn
+     | 11 -> Ok RustcLangItemUseCloned
+     | 12 -> Ok RustcLangItemTrivialClone
+     | 13 -> Ok RustcLangItemSync
+     | 14 -> Ok RustcLangItemDiscriminantKind
+     | 15 -> Ok RustcLangItemDiscriminant
+     | 16 -> Ok RustcLangItemPointeeTrait
+     | 17 -> Ok RustcLangItemMetadata
+     | 18 -> Ok RustcLangItemDynMetadata
+     | 19 -> Ok RustcLangItemFreeze
+     | 20 -> Ok RustcLangItemUnsafeUnpin
+     | 21 -> Ok RustcLangItemFnPtrTrait
+     | 22 -> Ok RustcLangItemFnPtrAddr
+     | 23 -> Ok RustcLangItemDrop
+     | 24 -> Ok RustcLangItemDestruct
+     | 25 -> Ok RustcLangItemAsyncDrop
+     | 26 -> Ok RustcLangItemAsyncDropInPlace
+     | 27 -> Ok RustcLangItemCoerceUnsized
+     | 28 -> Ok RustcLangItemDispatchFromDyn
+     | 29 -> Ok RustcLangItemTransmuteOpts
+     | 30 -> Ok RustcLangItemTransmuteTrait
+     | 31 -> Ok RustcLangItemAdd
+     | 32 -> Ok RustcLangItemSub
+     | 33 -> Ok RustcLangItemMul
+     | 34 -> Ok RustcLangItemDiv
+     | 35 -> Ok RustcLangItemRem
+     | 36 -> Ok RustcLangItemNeg
+     | 37 -> Ok RustcLangItemNot
+     | 38 -> Ok RustcLangItemBitXor
+     | 39 -> Ok RustcLangItemBitAnd
+     | 40 -> Ok RustcLangItemBitOr
+     | 41 -> Ok RustcLangItemShl
+     | 42 -> Ok RustcLangItemShr
+     | 43 -> Ok RustcLangItemAddAssign
+     | 44 -> Ok RustcLangItemSubAssign
+     | 45 -> Ok RustcLangItemMulAssign
+     | 46 -> Ok RustcLangItemDivAssign
+     | 47 -> Ok RustcLangItemRemAssign
+     | 48 -> Ok RustcLangItemBitXorAssign
+     | 49 -> Ok RustcLangItemBitAndAssign
+     | 50 -> Ok RustcLangItemBitOrAssign
+     | 51 -> Ok RustcLangItemShlAssign
+     | 52 -> Ok RustcLangItemShrAssign
+     | 53 -> Ok RustcLangItemIndex
+     | 54 -> Ok RustcLangItemIndexMut
+     | 55 -> Ok RustcLangItemUnsafeCell
+     | 56 -> Ok RustcLangItemUnsafePinned
+     | 57 -> Ok RustcLangItemVaArgSafe
+     | 58 -> Ok RustcLangItemVaList
+     | 59 -> Ok RustcLangItemDeref
+     | 60 -> Ok RustcLangItemDerefMut
+     | 61 -> Ok RustcLangItemDerefPure
+     | 62 -> Ok RustcLangItemDerefTarget
+     | 63 -> Ok RustcLangItemReceiver
+     | 64 -> Ok RustcLangItemReceiverTarget
+     | 65 -> Ok RustcLangItemLegacyReceiver
+     | 66 -> Ok RustcLangItemFn
+     | 67 -> Ok RustcLangItemFnMut
+     | 68 -> Ok RustcLangItemFnOnce
+     | 69 -> Ok RustcLangItemAsyncFn
+     | 70 -> Ok RustcLangItemAsyncFnMut
+     | 71 -> Ok RustcLangItemAsyncFnOnce
+     | 72 -> Ok RustcLangItemAsyncFnOnceOutput
+     | 73 -> Ok RustcLangItemCallOnceFuture
+     | 74 -> Ok RustcLangItemCallRefFuture
+     | 75 -> Ok RustcLangItemAsyncFnKindHelper
+     | 76 -> Ok RustcLangItemAsyncFnKindUpvars
+     | 77 -> Ok RustcLangItemFnOnceOutput
+     | 78 -> Ok RustcLangItemIterator
+     | 79 -> Ok RustcLangItemFusedIterator
+     | 80 -> Ok RustcLangItemFuture
+     | 81 -> Ok RustcLangItemFutureOutput
+     | 82 -> Ok RustcLangItemAsyncIterator
+     | 83 -> Ok RustcLangItemCoroutineState
+     | 84 -> Ok RustcLangItemCoroutine
+     | 85 -> Ok RustcLangItemCoroutineReturn
+     | 86 -> Ok RustcLangItemCoroutineYield
+     | 87 -> Ok RustcLangItemCoroutineResume
+     | 88 -> Ok RustcLangItemUnpin
+     | 89 -> Ok RustcLangItemPin
+     | 90 -> Ok RustcLangItemOrderingEnum
+     | 91 -> Ok RustcLangItemPartialEq
+     | 92 -> Ok RustcLangItemPartialOrd
+     | 93 -> Ok RustcLangItemCVoid
+     | 94 -> Ok RustcLangItemType
+     | 95 -> Ok RustcLangItemTypeId
+     | 96 -> Ok RustcLangItemPanic
+     | 97 -> Ok RustcLangItemPanicNounwind
+     | 98 -> Ok RustcLangItemPanicFmt
+     | 99 -> Ok RustcLangItemPanicDisplay
+     | 100 -> Ok RustcLangItemConstPanicFmt
+     | 101 -> Ok RustcLangItemPanicBoundsCheck
+     | 102 -> Ok RustcLangItemPanicMisalignedPointerDereference
+     | 103 -> Ok RustcLangItemPanicInfo
+     | 104 -> Ok RustcLangItemPanicLocation
+     | 105 -> Ok RustcLangItemPanicImpl
+     | 106 -> Ok RustcLangItemPanicCannotUnwind
+     | 107 -> Ok RustcLangItemPanicInCleanup
+     | 108 -> Ok RustcLangItemPanicAddOverflow
+     | 109 -> Ok RustcLangItemPanicSubOverflow
+     | 110 -> Ok RustcLangItemPanicMulOverflow
+     | 111 -> Ok RustcLangItemPanicDivOverflow
+     | 112 -> Ok RustcLangItemPanicRemOverflow
+     | 113 -> Ok RustcLangItemPanicNegOverflow
+     | 114 -> Ok RustcLangItemPanicShrOverflow
+     | 115 -> Ok RustcLangItemPanicShlOverflow
+     | 116 -> Ok RustcLangItemPanicDivZero
+     | 117 -> Ok RustcLangItemPanicRemZero
+     | 118 -> Ok RustcLangItemPanicCoroutineResumed
+     | 119 -> Ok RustcLangItemPanicAsyncFnResumed
+     | 120 -> Ok RustcLangItemPanicAsyncGenFnResumed
+     | 121 -> Ok RustcLangItemPanicGenFnNone
+     | 122 -> Ok RustcLangItemPanicCoroutineResumedPanic
+     | 123 -> Ok RustcLangItemPanicAsyncFnResumedPanic
+     | 124 -> Ok RustcLangItemPanicAsyncGenFnResumedPanic
+     | 125 -> Ok RustcLangItemPanicGenFnNonePanic
+     | 126 -> Ok RustcLangItemPanicNullPointerDereference
+     | 127 -> Ok RustcLangItemPanicInvalidEnumConstruction
+     | 128 -> Ok RustcLangItemPanicCoroutineResumedDrop
+     | 129 -> Ok RustcLangItemPanicAsyncFnResumedDrop
+     | 130 -> Ok RustcLangItemPanicAsyncGenFnResumedDrop
+     | 131 -> Ok RustcLangItemPanicGenFnNoneDrop
+     | 132 -> Ok RustcLangItemBeginPanic
+     | 133 -> Ok RustcLangItemFormatArgument
+     | 134 -> Ok RustcLangItemFormatArguments
+     | 135 -> Ok RustcLangItemDropGlue
+     | 136 -> Ok RustcLangItemAllocLayout
+     | 137 -> Ok RustcLangItemStart
+     | 138 -> Ok RustcLangItemEhPersonality
+     | 139 -> Ok RustcLangItemEhCatchTypeinfo
+     | 140 -> Ok RustcLangItemCompilerMove
+     | 141 -> Ok RustcLangItemCompilerCopy
+     | 142 -> Ok RustcLangItemOwnedBox
+     | 143 -> Ok RustcLangItemGlobalAlloc
+     | 144 -> Ok RustcLangItemPhantomData
+     | 145 -> Ok RustcLangItemManuallyDrop
+     | 146 -> Ok RustcLangItemMaybeDangling
+     | 147 -> Ok RustcLangItemBikeshedGuaranteedNoDrop
+     | 148 -> Ok RustcLangItemMaybeUninit
+     | 149 -> Ok RustcLangItemTermination
+     | 150 -> Ok RustcLangItemTry
+     | 151 -> Ok RustcLangItemTuple
+     | 152 -> Ok RustcLangItemSliceLen
+     | 153 -> Ok RustcLangItemTryTraitFromResidual
+     | 154 -> Ok RustcLangItemTryTraitFromOutput
+     | 155 -> Ok RustcLangItemTryTraitBranch
+     | 156 -> Ok RustcLangItemTryTraitFromYeet
+     | 157 -> Ok RustcLangItemResidualIntoTryType
+     | 158 -> Ok RustcLangItemCoercePointeeValidated
+     | 159 -> Ok RustcLangItemConstParamTy
+     | 160 -> Ok RustcLangItemPoll
+     | 161 -> Ok RustcLangItemPollReady
+     | 162 -> Ok RustcLangItemPollPending
+     | 163 -> Ok RustcLangItemAsyncGenReady
+     | 164 -> Ok RustcLangItemAsyncGenPending
+     | 165 -> Ok RustcLangItemAsyncGenFinished
+     | 166 -> Ok RustcLangItemResumeTy
+     | 167 -> Ok RustcLangItemGetContext
+     | 168 -> Ok RustcLangItemContext
+     | 169 -> Ok RustcLangItemFuturePoll
+     | 170 -> Ok RustcLangItemAsyncIteratorPollNext
+     | 171 -> Ok RustcLangItemIntoAsyncIterIntoIter
+     | 172 -> Ok RustcLangItemOption
+     | 173 -> Ok RustcLangItemOptionSome
+     | 174 -> Ok RustcLangItemOptionNone
+     | 175 -> Ok RustcLangItemResultOk
+     | 176 -> Ok RustcLangItemResultErr
+     | 177 -> Ok RustcLangItemControlFlowContinue
+     | 178 -> Ok RustcLangItemControlFlowBreak
+     | 179 -> Ok RustcLangItemIntoFutureIntoFuture
+     | 180 -> Ok RustcLangItemIntoIterIntoIter
+     | 181 -> Ok RustcLangItemIteratorNext
+     | 182 -> Ok RustcLangItemPinNewUnchecked
+     | 183 -> Ok RustcLangItemRangeFrom
+     | 184 -> Ok RustcLangItemRangeFull
+     | 185 -> Ok RustcLangItemRangeInclusiveStruct
+     | 186 -> Ok RustcLangItemRangeInclusiveNew
+     | 187 -> Ok RustcLangItemRange
+     | 188 -> Ok RustcLangItemRangeToInclusive
+     | 189 -> Ok RustcLangItemRangeTo
+     | 190 -> Ok RustcLangItemRangeMax
+     | 191 -> Ok RustcLangItemRangeMin
+     | 192 -> Ok RustcLangItemRangeSub
+     | 193 -> Ok RustcLangItemRangeFromCopy
+     | 194 -> Ok RustcLangItemRangeCopy
+     | 195 -> Ok RustcLangItemRangeInclusiveCopy
+     | 196 -> Ok RustcLangItemRangeToInclusiveCopy
+     | 197 -> Ok RustcLangItemString
+     | 198 -> Ok RustcLangItemCStr
+     | 199 -> Ok RustcLangItemContractBuildCheckEnsures
+     | 200 -> Ok RustcLangItemContractCheckRequires
+     | 201 -> Ok RustcLangItemDefaultTrait4
+     | 202 -> Ok RustcLangItemDefaultTrait3
+     | 203 -> Ok RustcLangItemDefaultTrait2
+     | 204 -> Ok RustcLangItemDefaultTrait1
+     | 205 -> Ok RustcLangItemContractCheckEnsures
+     | 206 -> Ok RustcLangItemReborrow
+     | 207 -> Ok RustcLangItemCoerceShared
+     | 208 -> Ok RustcLangItemFieldRepresentingType
+     | 209 -> Ok RustcLangItemField
+     | 210 -> Ok RustcLangItemFieldBase
+     | 211 -> Ok RustcLangItemFieldType
+     | 212 -> Ok RustcLangItemFieldOffset
+     | 213 -> Ok RustcLangItemFrom
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

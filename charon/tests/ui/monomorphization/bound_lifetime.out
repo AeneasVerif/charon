@@ -1,7 +1,8 @@
 # Final LLBC before serialization:
 
 // Full name: core::option::Option::<&'_ u32>
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option::<&'_ u32> {
   None,
   Some(&'_ u32),

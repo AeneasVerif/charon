@@ -296,8 +296,8 @@ pub trait BodyTransformCtx: Sized {
                             .get_crate()
                             .trait_decls
                             .get(tref.id)
-                            .and_then(|decl| decl.item_meta.lang_item.clone())
-                            == Some("sized".into())
+                            .and_then(|decl| decl.item_meta.lang_item.as_ref())
+                            == Some(&from_rustc::LangItem::Sized)
                     {
                         return true;
                     }

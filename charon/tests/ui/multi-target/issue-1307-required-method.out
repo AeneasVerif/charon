@@ -1,14 +1,15 @@
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait core::marker::MetaSized<Self>
 
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait core::marker::Sized<Self>
 {
     proof ImpliedClause0: (Self: core::marker::MetaSized)
     non-dyn-compatible
 }
 
-#[lang_item("clone")]
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
 pub trait core::clone::Clone<Self>
 {
     proof ImpliedClause0: (Self: core::marker::Sized)

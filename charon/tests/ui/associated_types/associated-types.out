@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::borrow::Borrow
-#[lang_item("Borrow")]
+#[diagnostic_item("Borrow")]
 pub trait Borrow<Self, Borrowed>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -15,7 +15,7 @@ pub trait Borrow<Self, Borrowed>
 }
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -23,7 +23,8 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[lang_item("clone")]
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -32,7 +33,7 @@ pub trait Clone<Self>
 }
 
 // Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
-#[lang_item("noop_method_clone")]
+#[diagnostic_item("noop_method_clone")]
 pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
 where
     TypeOutlives0: T: '_0,
@@ -50,7 +51,8 @@ where
 }
 
 // Full name: core::marker::Copy
-#[lang_item("copy")]
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
 pub trait Copy<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -69,7 +71,7 @@ where
 }
 
 // Full name: core::marker::Destruct
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
@@ -77,7 +79,8 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::option::Option
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option<T>
 where
     TraitClause0: (T: Sized),
@@ -119,7 +122,7 @@ where
 }
 
 // Full name: alloc::borrow::ToOwned
-#[lang_item("ToOwned")]
+#[diagnostic_item("ToOwned")]
 pub trait ToOwned<Self, Self_Owned>
 {
     proof ImpliedClause0: (Self: MetaSized)

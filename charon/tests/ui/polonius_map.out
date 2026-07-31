@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::borrow::Borrow
-#[lang_item("Borrow")]
+#[diagnostic_item("Borrow")]
 pub trait Borrow<Self, Borrowed>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -15,7 +15,7 @@ pub trait Borrow<Self, Borrowed>
 }
 
 // Full name: core::borrow::{impl Borrow<T> for T}::borrow
-#[lang_item("noop_method_borrow")]
+#[diagnostic_item("noop_method_borrow")]
 pub fn borrow<'_0, T>(_1: &'_0 T) -> &'_0 T
 where
     TraitClause0: (T: MetaSized),
@@ -34,7 +34,8 @@ where
 }
 
 // Full name: core::cmp::PartialEq
-#[lang_item("eq")]
+#[lang_item(PartialEq)]
+#[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0_1, '_1_1>;
@@ -42,7 +43,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
-#[lang_item("Eq")]
+#[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {
     proof ImpliedClause0: (Self: PartialEq<Self>)
@@ -66,7 +67,7 @@ impl "impl_Eq_for_u32" Eq for u32 {
 }
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -83,7 +84,7 @@ pub trait Hasher<Self>
 }
 
 // Full name: core::hash::Hash
-#[lang_item("Hash")]
+#[diagnostic_item("Hash")]
 pub trait Hash<Self>
 {
     fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)>;
@@ -91,7 +92,7 @@ pub trait Hash<Self>
 }
 
 // Full name: core::hash::BuildHasher
-#[lang_item("BuildHasher")]
+#[diagnostic_item("BuildHasher")]
 pub trait BuildHasher<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -117,7 +118,8 @@ impl "impl_Hash_for_u32" Hash for u32 {
 }
 
 // Full name: core::option::Option
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option<T>
 where
     TraitClause0: (T: Sized),
@@ -127,7 +129,7 @@ where
 }
 
 // Full name: std::collections::hash::map::HashMap
-#[lang_item("HashMap")]
+#[diagnostic_item("HashMap")]
 pub opaque type HashMap<K, V, S, A>
 where
     TraitClause0: (K: Sized),
@@ -157,7 +159,7 @@ where
 = <opaque>
 
 // Full name: std::collections::hash::map::{HashMap<K, V, S, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::insert
-#[lang_item("hashmap_insert")]
+#[diagnostic_item("hashmap_insert")]
 pub fn insert<'_0, K, V, S, A>(_1: &'_0 mut HashMap<K, V, S, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3], _2: K, _3: V) -> Option<V>[TraitClause1]
 where
     TraitClause0: (K: Sized),
@@ -231,7 +233,7 @@ impl "impl_BuildHasher_for_RandomState" BuildHasher for RandomState {
 }
 
 // Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
+#[lang_item(GlobalAlloc)]
 pub struct Global {}
 
 // Full name: test_crate::get_or_insert

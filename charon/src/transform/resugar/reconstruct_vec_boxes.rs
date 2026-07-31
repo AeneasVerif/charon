@@ -333,7 +333,8 @@ impl UllbcPass for Transform {
                     .translated
                     .type_decls
                     .get(maybe_uninit_array_ty.as_adt_id()?)?;
-                if mu_decl.item_meta.lang_item.as_deref() != Some("maybe_uninit") {
+                if mu_decl.item_meta.lang_item.as_ref() != Some(&from_rustc::LangItem::MaybeUninit)
+                {
                     return None;
                 };
                 let uninit_box_l = uninit_box.local_id()?;

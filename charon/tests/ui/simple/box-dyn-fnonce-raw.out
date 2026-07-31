@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::alloc::layout::Layout
-#[lang_item("alloc_layout")]
+#[lang_item(AllocLayout)]
 pub opaque type Layout
 
 // Full name: core::alloc::layout::{Layout}::size
@@ -11,7 +11,7 @@ pub fn size<'_0>(_1: &'_0 Layout) -> usize
 opaque type core::marker::MetaSized::{vtable}
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::alloc::layout::{Layout}::for_value_raw
@@ -24,7 +24,7 @@ where
 pub struct AllocError {}
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -32,7 +32,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::result::Result
-#[lang_item("Result")]
+#[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
     TraitClause0: (T: Sized),
@@ -43,7 +43,7 @@ where
 }
 
 // Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
+#[diagnostic_item("NonNull")]
 pub opaque type NonNull<T>
 
 // Full name: core::alloc::Allocator
@@ -56,7 +56,7 @@ pub trait Allocator<Self>
 }
 
 // Full name: core::marker::Destruct
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
@@ -64,7 +64,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Tuple
-#[lang_item("tuple_trait")]
+#[lang_item(Tuple)]
 pub trait Tuple<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -88,28 +88,28 @@ pub trait SizedTypeProperties<Self>
 }
 
 // Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
+#[lang_item(SizeOf)]
 pub fn SIZE<Self>() -> usize
 where
     TraitClause0: (Self: SizedTypeProperties),
 = <opaque>
 
 // Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
+#[lang_item(SizeOf)]
 pub const SIZE<Self>: usize
 where
     TraitClause0: (Self: SizedTypeProperties),
  = SIZE<Self>[TraitClause0]()
 
 // Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
+#[lang_item(AlignOf)]
 pub fn ALIGN<Self>() -> usize
 where
     TraitClause0: (Self: SizedTypeProperties),
 = <opaque>
 
 // Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
+#[lang_item(AlignOf)]
 pub const ALIGN<Self>: usize
 where
     TraitClause0: (Self: SizedTypeProperties),
@@ -187,7 +187,7 @@ struct core::ops::function::FnOnce::{vtable}<Args, Ty0> {
 }
 
 // Full name: core::ops::function::FnOnce
-#[lang_item("fn_once")]
+#[lang_item(FnOnce)]
 pub trait FnOnce<Self, Args>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -223,7 +223,7 @@ where
 = <opaque>
 
 // Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
+#[lang_item(GlobalAlloc)]
 pub struct Global {}
 
 // Full name: alloc::alloc::{impl Allocator for Global}::deallocate
@@ -247,7 +247,7 @@ pub fn handle_alloc_error(_1: Layout) -> !
 = <opaque>
 
 // Full name: alloc::boxed::Box
-#[lang_item("owned_box")]
+#[lang_item(OwnedBox)]
 pub struct Box<T, A>
 where
     TraitClause0: (T: MetaSized),
@@ -525,7 +525,7 @@ fn box_new_uninit(layout: Layout) -> *mut u8
 }
 
 // Full name: alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]}::new
-#[lang_item("box_new")]
+#[diagnostic_item("box_new")]
 pub fn new<T>(x: T) -> Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]
 where
     TraitClause0: (T: Sized),

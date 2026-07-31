@@ -462,12 +462,12 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
                 let Some(tdecl) = self.ctx.translated.trait_decls.get(trait_id) else {
                     return;
                 };
-                if tdecl
-                    .item_meta
-                    .lang_item
-                    .as_deref()
-                    .is_some_and(|s| matches!(s, "pointee_trait" | "discriminant_kind"))
-                {
+                if tdecl.item_meta.lang_item.as_ref().is_some_and(|item| {
+                    matches!(
+                        item,
+                        from_rustc::LangItem::PointeeTrait | from_rustc::LangItem::DiscriminantKind
+                    )
+                }) {
                     // These traits have builtin assoc types that we can't resolve.
                     return;
                 }

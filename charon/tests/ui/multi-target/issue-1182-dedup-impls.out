@@ -1,4 +1,4 @@
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait core::marker::MetaSized<Self>
 
 pub trait test_crate::Foo<Self>

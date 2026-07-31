@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::alloc::layout::Layout
-#[lang_item("alloc_layout")]
+#[lang_item(AllocLayout)]
 pub opaque type Layout
 
 // Full name: core::alloc::layout::{Layout}::from_size_align_unchecked
@@ -9,7 +9,7 @@ pub unsafe fn from_size_align_unchecked(_1: usize, _2: usize) -> Layout
 = <opaque>
 
 // Full name: core::marker::Destruct
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
@@ -17,11 +17,11 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -29,7 +29,8 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[lang_item("clone")]
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -133,17 +134,17 @@ pub fn abort() -> !
 = <intrinsic:abort>
 
 // Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
+#[diagnostic_item("NonNull")]
 pub struct NonNull<T> {
   pointer: *const T is !null,
 }
 
 // Full name: core::marker::PhantomData
-#[lang_item("phantom_data")]
+#[lang_item(PhantomData)]
 pub struct PhantomData<T> {}
 
 // Full name: core::panic::location::Location
-#[lang_item("panic_location")]
+#[lang_item(PanicLocation)]
 pub struct Location<'a> {
   filename: NonNull<str>,
   line: u32,
@@ -156,7 +157,8 @@ pub fn caller_location() -> &'static Location<'static>
 = <intrinsic:caller_location>
 
 // Full name: core::marker::Copy
-#[lang_item("copy")]
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
 pub trait Copy<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -181,7 +183,7 @@ fn core::ub_checks::check_language_ub::runtime() -> bool
 }
 
 // Full name: core::panic::panic_info::PanicInfo
-#[lang_item("panic_info")]
+#[lang_item(PanicInfo)]
 pub struct PanicInfo<'a>
 where
     RegionOutlives0: 'a: 'a,
@@ -424,7 +426,8 @@ pub struct Alignment {
 }
 
 // Full name: core::option::Option
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option<T>
 where
     TraitClause0: (T: Sized),
@@ -793,7 +796,7 @@ fn unwrap_failed() -> !
 }
 
 // Full name: core::option::{Option<T>[TraitClause0]}::unwrap
-#[lang_item("option_unwrap")]
+#[diagnostic_item("option_unwrap")]
 pub fn unwrap<T>(self: Option<T>[TraitClause0]) -> T
 where
     TraitClause0: (T: Sized),
@@ -852,7 +855,7 @@ where
  = ALIGNMENT<Self>[TraitClause0]()
 
 // Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
+#[lang_item(AlignOf)]
 pub fn ALIGN<Self>() -> usize
 where
     TraitClause0: (Self: SizedTypeProperties),
@@ -866,14 +869,14 @@ where
 }
 
 // Full name: core::mem::SizedTypeProperties::ALIGN
-#[lang_item("mem_align_const")]
+#[lang_item(AlignOf)]
 pub const ALIGN<Self>: usize
 where
     TraitClause0: (Self: SizedTypeProperties),
  = ALIGN<Self>[TraitClause0]()
 
 // Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
+#[lang_item(SizeOf)]
 pub fn SIZE<Self>() -> usize
 where
     TraitClause0: (Self: SizedTypeProperties),
@@ -887,7 +890,7 @@ where
 }
 
 // Full name: core::mem::SizedTypeProperties::SIZE
-#[lang_item("mem_size_const")]
+#[lang_item(SizeOf)]
 pub const SIZE<Self>: usize
 where
     TraitClause0: (Self: SizedTypeProperties),
@@ -908,7 +911,7 @@ where
     non-dyn-compatible
 }
 
-#[lang_item("mem_size_of")]
+#[diagnostic_item("mem_size_of")]
 pub fn core::mem::size_of<T>() -> usize
 where
     TraitClause0: (T: Sized),
@@ -920,7 +923,7 @@ where
     return
 }
 
-#[lang_item("mem_align_of")]
+#[diagnostic_item("mem_align_of")]
 pub fn core::mem::align_of<T>() -> usize
 where
     TraitClause0: (T: Sized),
@@ -936,7 +939,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(_1: *const (), _2: *mut ()
 = <opaque>
 
 // Full name: core::ptr::copy_nonoverlapping
-#[lang_item("ptr_copy_nonoverlapping")]
+#[diagnostic_item("ptr_copy_nonoverlapping")]
 pub unsafe fn copy_nonoverlapping<T>(src: *const T, dst: *mut T, count: usize)
 where
     TraitClause0: (T: Sized),

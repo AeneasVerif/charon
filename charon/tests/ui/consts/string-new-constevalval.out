@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: alloc::vec::Vec
-#[lang_item("Vec")]
+#[diagnostic_item("Vec")]
 pub struct Vec<T, A>
 where
     TraitClause0: (T: Sized),
@@ -13,7 +13,7 @@ where
 }
 
 // Full name: alloc::string::String
-#[lang_item("String")]
+#[lang_item(String)]
 pub struct String {
   vec: Vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {impl#1}],
 }
@@ -23,7 +23,7 @@ impl "impl_Destruct_for_String" Destruct for String {
     non-dyn-compatible
 }
 
-#[lang_item("vec_new")]
+#[diagnostic_item("vec_new")]
 pub fn alloc::vec::{Vec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]}::new<T>() -> Vec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]
 where
     TraitClause0: (T: Sized),
@@ -40,7 +40,7 @@ where
     return
 }
 
-#[lang_item("string_new")]
+#[diagnostic_item("string_new")]
 pub fn alloc::string::{String}::new() -> String
 {
     let _0: String; // return

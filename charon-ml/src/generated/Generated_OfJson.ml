@@ -2748,6 +2748,7 @@ and item_meta_of_json (ctx : of_json_ctx) (js : json) :
           ("is_local", is_local);
           ("opacity", opacity);
           ("lang_item", lang_item);
+          ("diagnostic_item", diagnostic_item);
         ] ->
         let* name = name_of_json ctx name in
         let* span = span_of_json ctx span in
@@ -2755,9 +2756,21 @@ and item_meta_of_json (ctx : of_json_ctx) (js : json) :
         let* attr_info = attr_info_of_json ctx attr_info in
         let* is_local = bool_of_json ctx is_local in
         let* opacity = item_opacity_of_json ctx opacity in
-        let* lang_item = option_of_json string_of_json ctx lang_item in
+        let* lang_item = option_of_json rustc_lang_item_of_json ctx lang_item in
+        let* diagnostic_item =
+          option_of_json string_of_json ctx diagnostic_item
+        in
         Ok
-          ({ name; span; source_text; attr_info; is_local; opacity; lang_item }
+          ({
+             name;
+             span;
+             source_text;
+             attr_info;
+             is_local;
+             opacity;
+             lang_item;
+             diagnostic_item;
+           }
             : item_meta)
     | _ -> Error "")
 
@@ -2835,6 +2848,237 @@ and item_source_of_json (ctx : of_json_ctx) (js : json) :
         Ok (VTableInstanceItem impl_ref)
     | `String "VTableMethodShim" -> Ok VTableMethodShimItem
     | `String "VTableInstanceMono" -> Ok VTableInstanceMonoItem
+    | _ -> Error "")
+
+and rustc_lang_item_of_json (ctx : of_json_ctx) (js : json) :
+    (rustc_lang_item, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Sized" -> Ok RustcLangItemSized
+    | `String "MetaSized" -> Ok RustcLangItemMetaSized
+    | `String "PointeeSized" -> Ok RustcLangItemPointeeSized
+    | `String "Unsize" -> Ok RustcLangItemUnsize
+    | `String "AlignOf" -> Ok RustcLangItemAlignOf
+    | `String "SizeOf" -> Ok RustcLangItemSizeOf
+    | `String "OffsetOf" -> Ok RustcLangItemOffsetOf
+    | `String "StructuralPeq" -> Ok RustcLangItemStructuralPeq
+    | `String "Copy" -> Ok RustcLangItemCopy
+    | `String "Clone" -> Ok RustcLangItemClone
+    | `String "CloneFn" -> Ok RustcLangItemCloneFn
+    | `String "UseCloned" -> Ok RustcLangItemUseCloned
+    | `String "TrivialClone" -> Ok RustcLangItemTrivialClone
+    | `String "Sync" -> Ok RustcLangItemSync
+    | `String "DiscriminantKind" -> Ok RustcLangItemDiscriminantKind
+    | `String "Discriminant" -> Ok RustcLangItemDiscriminant
+    | `String "PointeeTrait" -> Ok RustcLangItemPointeeTrait
+    | `String "Metadata" -> Ok RustcLangItemMetadata
+    | `String "DynMetadata" -> Ok RustcLangItemDynMetadata
+    | `String "Freeze" -> Ok RustcLangItemFreeze
+    | `String "UnsafeUnpin" -> Ok RustcLangItemUnsafeUnpin
+    | `String "FnPtrTrait" -> Ok RustcLangItemFnPtrTrait
+    | `String "FnPtrAddr" -> Ok RustcLangItemFnPtrAddr
+    | `String "Drop" -> Ok RustcLangItemDrop
+    | `String "Destruct" -> Ok RustcLangItemDestruct
+    | `String "AsyncDrop" -> Ok RustcLangItemAsyncDrop
+    | `String "AsyncDropInPlace" -> Ok RustcLangItemAsyncDropInPlace
+    | `String "CoerceUnsized" -> Ok RustcLangItemCoerceUnsized
+    | `String "DispatchFromDyn" -> Ok RustcLangItemDispatchFromDyn
+    | `String "TransmuteOpts" -> Ok RustcLangItemTransmuteOpts
+    | `String "TransmuteTrait" -> Ok RustcLangItemTransmuteTrait
+    | `String "Add" -> Ok RustcLangItemAdd
+    | `String "Sub" -> Ok RustcLangItemSub
+    | `String "Mul" -> Ok RustcLangItemMul
+    | `String "Div" -> Ok RustcLangItemDiv
+    | `String "Rem" -> Ok RustcLangItemRem
+    | `String "Neg" -> Ok RustcLangItemNeg
+    | `String "Not" -> Ok RustcLangItemNot
+    | `String "BitXor" -> Ok RustcLangItemBitXor
+    | `String "BitAnd" -> Ok RustcLangItemBitAnd
+    | `String "BitOr" -> Ok RustcLangItemBitOr
+    | `String "Shl" -> Ok RustcLangItemShl
+    | `String "Shr" -> Ok RustcLangItemShr
+    | `String "AddAssign" -> Ok RustcLangItemAddAssign
+    | `String "SubAssign" -> Ok RustcLangItemSubAssign
+    | `String "MulAssign" -> Ok RustcLangItemMulAssign
+    | `String "DivAssign" -> Ok RustcLangItemDivAssign
+    | `String "RemAssign" -> Ok RustcLangItemRemAssign
+    | `String "BitXorAssign" -> Ok RustcLangItemBitXorAssign
+    | `String "BitAndAssign" -> Ok RustcLangItemBitAndAssign
+    | `String "BitOrAssign" -> Ok RustcLangItemBitOrAssign
+    | `String "ShlAssign" -> Ok RustcLangItemShlAssign
+    | `String "ShrAssign" -> Ok RustcLangItemShrAssign
+    | `String "Index" -> Ok RustcLangItemIndex
+    | `String "IndexMut" -> Ok RustcLangItemIndexMut
+    | `String "UnsafeCell" -> Ok RustcLangItemUnsafeCell
+    | `String "UnsafePinned" -> Ok RustcLangItemUnsafePinned
+    | `String "VaArgSafe" -> Ok RustcLangItemVaArgSafe
+    | `String "VaList" -> Ok RustcLangItemVaList
+    | `String "Deref" -> Ok RustcLangItemDeref
+    | `String "DerefMut" -> Ok RustcLangItemDerefMut
+    | `String "DerefPure" -> Ok RustcLangItemDerefPure
+    | `String "DerefTarget" -> Ok RustcLangItemDerefTarget
+    | `String "Receiver" -> Ok RustcLangItemReceiver
+    | `String "ReceiverTarget" -> Ok RustcLangItemReceiverTarget
+    | `String "LegacyReceiver" -> Ok RustcLangItemLegacyReceiver
+    | `String "Fn" -> Ok RustcLangItemFn
+    | `String "FnMut" -> Ok RustcLangItemFnMut
+    | `String "FnOnce" -> Ok RustcLangItemFnOnce
+    | `String "AsyncFn" -> Ok RustcLangItemAsyncFn
+    | `String "AsyncFnMut" -> Ok RustcLangItemAsyncFnMut
+    | `String "AsyncFnOnce" -> Ok RustcLangItemAsyncFnOnce
+    | `String "AsyncFnOnceOutput" -> Ok RustcLangItemAsyncFnOnceOutput
+    | `String "CallOnceFuture" -> Ok RustcLangItemCallOnceFuture
+    | `String "CallRefFuture" -> Ok RustcLangItemCallRefFuture
+    | `String "AsyncFnKindHelper" -> Ok RustcLangItemAsyncFnKindHelper
+    | `String "AsyncFnKindUpvars" -> Ok RustcLangItemAsyncFnKindUpvars
+    | `String "FnOnceOutput" -> Ok RustcLangItemFnOnceOutput
+    | `String "Iterator" -> Ok RustcLangItemIterator
+    | `String "FusedIterator" -> Ok RustcLangItemFusedIterator
+    | `String "Future" -> Ok RustcLangItemFuture
+    | `String "FutureOutput" -> Ok RustcLangItemFutureOutput
+    | `String "AsyncIterator" -> Ok RustcLangItemAsyncIterator
+    | `String "CoroutineState" -> Ok RustcLangItemCoroutineState
+    | `String "Coroutine" -> Ok RustcLangItemCoroutine
+    | `String "CoroutineReturn" -> Ok RustcLangItemCoroutineReturn
+    | `String "CoroutineYield" -> Ok RustcLangItemCoroutineYield
+    | `String "CoroutineResume" -> Ok RustcLangItemCoroutineResume
+    | `String "Unpin" -> Ok RustcLangItemUnpin
+    | `String "Pin" -> Ok RustcLangItemPin
+    | `String "OrderingEnum" -> Ok RustcLangItemOrderingEnum
+    | `String "PartialEq" -> Ok RustcLangItemPartialEq
+    | `String "PartialOrd" -> Ok RustcLangItemPartialOrd
+    | `String "CVoid" -> Ok RustcLangItemCVoid
+    | `String "Type" -> Ok RustcLangItemType
+    | `String "TypeId" -> Ok RustcLangItemTypeId
+    | `String "Panic" -> Ok RustcLangItemPanic
+    | `String "PanicNounwind" -> Ok RustcLangItemPanicNounwind
+    | `String "PanicFmt" -> Ok RustcLangItemPanicFmt
+    | `String "PanicDisplay" -> Ok RustcLangItemPanicDisplay
+    | `String "ConstPanicFmt" -> Ok RustcLangItemConstPanicFmt
+    | `String "PanicBoundsCheck" -> Ok RustcLangItemPanicBoundsCheck
+    | `String "PanicMisalignedPointerDereference" ->
+        Ok RustcLangItemPanicMisalignedPointerDereference
+    | `String "PanicInfo" -> Ok RustcLangItemPanicInfo
+    | `String "PanicLocation" -> Ok RustcLangItemPanicLocation
+    | `String "PanicImpl" -> Ok RustcLangItemPanicImpl
+    | `String "PanicCannotUnwind" -> Ok RustcLangItemPanicCannotUnwind
+    | `String "PanicInCleanup" -> Ok RustcLangItemPanicInCleanup
+    | `String "PanicAddOverflow" -> Ok RustcLangItemPanicAddOverflow
+    | `String "PanicSubOverflow" -> Ok RustcLangItemPanicSubOverflow
+    | `String "PanicMulOverflow" -> Ok RustcLangItemPanicMulOverflow
+    | `String "PanicDivOverflow" -> Ok RustcLangItemPanicDivOverflow
+    | `String "PanicRemOverflow" -> Ok RustcLangItemPanicRemOverflow
+    | `String "PanicNegOverflow" -> Ok RustcLangItemPanicNegOverflow
+    | `String "PanicShrOverflow" -> Ok RustcLangItemPanicShrOverflow
+    | `String "PanicShlOverflow" -> Ok RustcLangItemPanicShlOverflow
+    | `String "PanicDivZero" -> Ok RustcLangItemPanicDivZero
+    | `String "PanicRemZero" -> Ok RustcLangItemPanicRemZero
+    | `String "PanicCoroutineResumed" -> Ok RustcLangItemPanicCoroutineResumed
+    | `String "PanicAsyncFnResumed" -> Ok RustcLangItemPanicAsyncFnResumed
+    | `String "PanicAsyncGenFnResumed" -> Ok RustcLangItemPanicAsyncGenFnResumed
+    | `String "PanicGenFnNone" -> Ok RustcLangItemPanicGenFnNone
+    | `String "PanicCoroutineResumedPanic" ->
+        Ok RustcLangItemPanicCoroutineResumedPanic
+    | `String "PanicAsyncFnResumedPanic" ->
+        Ok RustcLangItemPanicAsyncFnResumedPanic
+    | `String "PanicAsyncGenFnResumedPanic" ->
+        Ok RustcLangItemPanicAsyncGenFnResumedPanic
+    | `String "PanicGenFnNonePanic" -> Ok RustcLangItemPanicGenFnNonePanic
+    | `String "PanicNullPointerDereference" ->
+        Ok RustcLangItemPanicNullPointerDereference
+    | `String "PanicInvalidEnumConstruction" ->
+        Ok RustcLangItemPanicInvalidEnumConstruction
+    | `String "PanicCoroutineResumedDrop" ->
+        Ok RustcLangItemPanicCoroutineResumedDrop
+    | `String "PanicAsyncFnResumedDrop" ->
+        Ok RustcLangItemPanicAsyncFnResumedDrop
+    | `String "PanicAsyncGenFnResumedDrop" ->
+        Ok RustcLangItemPanicAsyncGenFnResumedDrop
+    | `String "PanicGenFnNoneDrop" -> Ok RustcLangItemPanicGenFnNoneDrop
+    | `String "BeginPanic" -> Ok RustcLangItemBeginPanic
+    | `String "FormatArgument" -> Ok RustcLangItemFormatArgument
+    | `String "FormatArguments" -> Ok RustcLangItemFormatArguments
+    | `String "DropGlue" -> Ok RustcLangItemDropGlue
+    | `String "AllocLayout" -> Ok RustcLangItemAllocLayout
+    | `String "Start" -> Ok RustcLangItemStart
+    | `String "EhPersonality" -> Ok RustcLangItemEhPersonality
+    | `String "EhCatchTypeinfo" -> Ok RustcLangItemEhCatchTypeinfo
+    | `String "CompilerMove" -> Ok RustcLangItemCompilerMove
+    | `String "CompilerCopy" -> Ok RustcLangItemCompilerCopy
+    | `String "OwnedBox" -> Ok RustcLangItemOwnedBox
+    | `String "GlobalAlloc" -> Ok RustcLangItemGlobalAlloc
+    | `String "PhantomData" -> Ok RustcLangItemPhantomData
+    | `String "ManuallyDrop" -> Ok RustcLangItemManuallyDrop
+    | `String "MaybeDangling" -> Ok RustcLangItemMaybeDangling
+    | `String "BikeshedGuaranteedNoDrop" ->
+        Ok RustcLangItemBikeshedGuaranteedNoDrop
+    | `String "MaybeUninit" -> Ok RustcLangItemMaybeUninit
+    | `String "Termination" -> Ok RustcLangItemTermination
+    | `String "Try" -> Ok RustcLangItemTry
+    | `String "Tuple" -> Ok RustcLangItemTuple
+    | `String "SliceLen" -> Ok RustcLangItemSliceLen
+    | `String "TryTraitFromResidual" -> Ok RustcLangItemTryTraitFromResidual
+    | `String "TryTraitFromOutput" -> Ok RustcLangItemTryTraitFromOutput
+    | `String "TryTraitBranch" -> Ok RustcLangItemTryTraitBranch
+    | `String "TryTraitFromYeet" -> Ok RustcLangItemTryTraitFromYeet
+    | `String "ResidualIntoTryType" -> Ok RustcLangItemResidualIntoTryType
+    | `String "CoercePointeeValidated" -> Ok RustcLangItemCoercePointeeValidated
+    | `String "ConstParamTy" -> Ok RustcLangItemConstParamTy
+    | `String "Poll" -> Ok RustcLangItemPoll
+    | `String "PollReady" -> Ok RustcLangItemPollReady
+    | `String "PollPending" -> Ok RustcLangItemPollPending
+    | `String "AsyncGenReady" -> Ok RustcLangItemAsyncGenReady
+    | `String "AsyncGenPending" -> Ok RustcLangItemAsyncGenPending
+    | `String "AsyncGenFinished" -> Ok RustcLangItemAsyncGenFinished
+    | `String "ResumeTy" -> Ok RustcLangItemResumeTy
+    | `String "GetContext" -> Ok RustcLangItemGetContext
+    | `String "Context" -> Ok RustcLangItemContext
+    | `String "FuturePoll" -> Ok RustcLangItemFuturePoll
+    | `String "AsyncIteratorPollNext" -> Ok RustcLangItemAsyncIteratorPollNext
+    | `String "IntoAsyncIterIntoIter" -> Ok RustcLangItemIntoAsyncIterIntoIter
+    | `String "Option" -> Ok RustcLangItemOption
+    | `String "OptionSome" -> Ok RustcLangItemOptionSome
+    | `String "OptionNone" -> Ok RustcLangItemOptionNone
+    | `String "ResultOk" -> Ok RustcLangItemResultOk
+    | `String "ResultErr" -> Ok RustcLangItemResultErr
+    | `String "ControlFlowContinue" -> Ok RustcLangItemControlFlowContinue
+    | `String "ControlFlowBreak" -> Ok RustcLangItemControlFlowBreak
+    | `String "IntoFutureIntoFuture" -> Ok RustcLangItemIntoFutureIntoFuture
+    | `String "IntoIterIntoIter" -> Ok RustcLangItemIntoIterIntoIter
+    | `String "IteratorNext" -> Ok RustcLangItemIteratorNext
+    | `String "PinNewUnchecked" -> Ok RustcLangItemPinNewUnchecked
+    | `String "RangeFrom" -> Ok RustcLangItemRangeFrom
+    | `String "RangeFull" -> Ok RustcLangItemRangeFull
+    | `String "RangeInclusiveStruct" -> Ok RustcLangItemRangeInclusiveStruct
+    | `String "RangeInclusiveNew" -> Ok RustcLangItemRangeInclusiveNew
+    | `String "Range" -> Ok RustcLangItemRange
+    | `String "RangeToInclusive" -> Ok RustcLangItemRangeToInclusive
+    | `String "RangeTo" -> Ok RustcLangItemRangeTo
+    | `String "RangeMax" -> Ok RustcLangItemRangeMax
+    | `String "RangeMin" -> Ok RustcLangItemRangeMin
+    | `String "RangeSub" -> Ok RustcLangItemRangeSub
+    | `String "RangeFromCopy" -> Ok RustcLangItemRangeFromCopy
+    | `String "RangeCopy" -> Ok RustcLangItemRangeCopy
+    | `String "RangeInclusiveCopy" -> Ok RustcLangItemRangeInclusiveCopy
+    | `String "RangeToInclusiveCopy" -> Ok RustcLangItemRangeToInclusiveCopy
+    | `String "String" -> Ok RustcLangItemString
+    | `String "CStr" -> Ok RustcLangItemCStr
+    | `String "ContractBuildCheckEnsures" ->
+        Ok RustcLangItemContractBuildCheckEnsures
+    | `String "ContractCheckRequires" -> Ok RustcLangItemContractCheckRequires
+    | `String "DefaultTrait4" -> Ok RustcLangItemDefaultTrait4
+    | `String "DefaultTrait3" -> Ok RustcLangItemDefaultTrait3
+    | `String "DefaultTrait2" -> Ok RustcLangItemDefaultTrait2
+    | `String "DefaultTrait1" -> Ok RustcLangItemDefaultTrait1
+    | `String "ContractCheckEnsures" -> Ok RustcLangItemContractCheckEnsures
+    | `String "Reborrow" -> Ok RustcLangItemReborrow
+    | `String "CoerceShared" -> Ok RustcLangItemCoerceShared
+    | `String "FieldRepresentingType" -> Ok RustcLangItemFieldRepresentingType
+    | `String "Field" -> Ok RustcLangItemField
+    | `String "FieldBase" -> Ok RustcLangItemFieldBase
+    | `String "FieldType" -> Ok RustcLangItemFieldType
+    | `String "FieldOffset" -> Ok RustcLangItemFieldOffset
+    | `String "From" -> Ok RustcLangItemFrom
     | _ -> Error "")
 
 and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =

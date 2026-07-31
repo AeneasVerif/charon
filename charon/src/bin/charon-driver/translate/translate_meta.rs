@@ -749,14 +749,22 @@ impl<'tcx> TranslateCtx<'tcx> {
         let span = def.source_span.as_ref().unwrap_or(&def.span);
         let span = self.translate_span(span);
         let is_local = def.def_id().is_local();
-        let (attr_info, lang_item) = if !item_src.is_derived_item()
+        let (attr_info, lang_item, diagnostic_item) = if !item_src.is_derived_item()
             || matches!(item_src.kind, TransItemSourceKind::ClosureMethod(..))
         {
             let attr_info = self.translate_attr_info(def);
-            let lang_item = def.lang_item.or(def.diagnostic_item).map(|s| s.to_string());
-            (attr_info, lang_item)
+            let lang_item = def
+                .def_id()
+                .as_real_def_id()
+                .and_then(|id| self.tcx.as_lang_item(id))
+                .map(|lang_item| {
+                    self.translate_rustc_lang_item(&lang_item)
+                        .expect("all rustc LangItem variants should be translated")
+                });
+            let diagnostic_item = def.diagnostic_item.map(|s| s.to_string());
+            (attr_info, lang_item, diagnostic_item)
         } else {
-            (AttrInfo::default(), None)
+            (AttrInfo::default(), None, None)
         };
 
         let opacity = if attr_info.attributes.iter().any(|attr| attr.is_exclude()) {
@@ -778,6 +786,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             is_local,
             opacity,
             lang_item,
+            diagnostic_item,
         };
         self.cached_item_metas
             .insert(item_src.clone(), item_meta.clone());

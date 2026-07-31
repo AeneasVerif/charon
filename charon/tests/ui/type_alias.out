@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::borrow::Borrow
-#[lang_item("Borrow")]
+#[diagnostic_item("Borrow")]
 pub trait Borrow<Self, Borrowed>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -15,7 +15,7 @@ pub trait Borrow<Self, Borrowed>
 }
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -23,7 +23,8 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[lang_item("clone")]
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -32,11 +33,11 @@ pub trait Clone<Self>
 }
 
 // Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
+#[lang_item(GlobalAlloc)]
 pub struct Global {}
 
 // Full name: alloc::borrow::ToOwned
-#[lang_item("ToOwned")]
+#[diagnostic_item("ToOwned")]
 pub trait ToOwned<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -48,7 +49,7 @@ pub trait ToOwned<Self>
 }
 
 // Full name: alloc::borrow::Cow
-#[lang_item("Cow")]
+#[diagnostic_item("Cow")]
 pub enum Cow<'a, B>
 where
     TraitClause0: (B: MetaSized),
@@ -61,7 +62,7 @@ where
 }
 
 // Full name: alloc::vec::Vec
-#[lang_item("Vec")]
+#[diagnostic_item("Vec")]
 pub opaque type Vec<T>
 where
     TraitClause0: (T: Sized),
