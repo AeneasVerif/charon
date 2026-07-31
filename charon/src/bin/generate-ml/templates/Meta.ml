@@ -8,9 +8,15 @@
     code-generation code is in `charon/src/bin/generate-ml`.
  *)
 
+open Identifiers
+
+module TypeDeclId = IdGen ()
+module GlobalDeclId = IdGen ()
+module TraitDeclId = IdGen ()
+module TraitImplId = IdGen ()
+module FunDeclId = IdGen ()
 
 type path_buf = string
 [@@deriving show, ord, eq]
 
 (* __REPLACE0__ *)
-[@@deriving show, ord, eq]

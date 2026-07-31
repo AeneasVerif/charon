@@ -15,6 +15,7 @@ pub mod add_missing_info {
     pub mod add_implied_outlives;
     pub mod add_missing_alias_clauses;
     pub mod compute_short_names;
+    pub mod link_specs;
     pub mod recover_body_comments;
     pub mod reorder_decls;
     pub mod sccs;
@@ -90,6 +91,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
 
     // Item and type cleanup passes.
     ctx.run_passes([
+        // Link specification items and the items they specify in both directions.
+        global(&add_missing_info::link_specs::Transform),
         // `--duplicate-defaulted-methods`: copy default method bodies into impls that use them.
         global(&simplify_output::duplicate_defaulted_methods::Transform),
         // Compute short names. We do it early to make pretty-printed output more legible in traces.

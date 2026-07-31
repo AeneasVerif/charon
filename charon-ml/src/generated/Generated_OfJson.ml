@@ -2025,6 +2025,18 @@ and attribute_of_json (ctx : of_json_ctx) (js : json) :
         let* variants_suffix = string_of_json ctx variants_suffix in
         Ok (AttrVariantsSuffix variants_suffix)
     | `String "Transparent" -> Ok AttrTransparent
+    | `Assoc [ ("IsPrecondition", is_precondition) ] ->
+        let* is_precondition = item_id_of_json ctx is_precondition in
+        Ok (AttrIsPrecondition is_precondition)
+    | `Assoc [ ("IsPostcondition", is_postcondition) ] ->
+        let* is_postcondition = item_id_of_json ctx is_postcondition in
+        Ok (AttrIsPostcondition is_postcondition)
+    | `Assoc [ ("HasPrecondition", has_precondition) ] ->
+        let* has_precondition = fun_decl_id_of_json ctx has_precondition in
+        Ok (AttrHasPrecondition has_precondition)
+    | `Assoc [ ("HasPostcondition", has_postcondition) ] ->
+        let* has_postcondition = fun_decl_id_of_json ctx has_postcondition in
+        Ok (AttrHasPostcondition has_postcondition)
     | `Assoc [ ("DocComment", doc_comment) ] ->
         let* doc_comment = string_of_json ctx doc_comment in
         Ok (AttrDocComment doc_comment)
@@ -2640,6 +2652,10 @@ and item_source_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Closure", `Assoc [ ("info", info) ]) ] ->
         let* info = closure_info_of_json ctx info in
         Ok (ClosureItem info)
+    | `Assoc [ ("Spec", `Assoc [ ("kind", kind); ("item", item) ]) ] ->
+        let* kind = spec_kind_of_json ctx kind in
+        let* item = item_id_of_json ctx item in
+        Ok (SpecItem (kind, item))
     | `Assoc
         [
           ( "TraitDecl",
@@ -2836,6 +2852,14 @@ and serialization_format_arg_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Json" -> Ok Json
     | `String "Postcard" -> Ok Postcard
     | `String "All" -> Ok AllFormats
+    | _ -> Error "")
+
+and spec_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (spec_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Precondition" -> Ok Precondition
+    | `String "Postcondition" -> Ok Postcondition
     | _ -> Error "")
 
 and target_info_of_json (ctx : of_json_ctx) (js : json) :

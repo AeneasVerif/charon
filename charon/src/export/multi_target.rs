@@ -638,6 +638,7 @@ fn remove_unmentioned_methods(krate: &mut TranslatedCrate) {
                     item_id: AssocItemId::Method(_),
                     ..
                 }
+                | ItemSource::Spec { .. }
                 | ItemSource::TargetDependent { .. } => {}
                 // Functions that aren't any of the above are reachable. target-dependent functions
                 // will be reachable if their dispatcher is.

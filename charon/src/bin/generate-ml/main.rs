@@ -252,7 +252,12 @@ fn generate_ml(
             template: template_dir.join("Meta.ml"),
             target: output_dir.join("Generated_Meta.ml"),
             markers: markers_from_children(&ctx, &[
-                (GenerationKind::TypeDecl(None), &[
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
+                    ancestors: &["BigInt.big_int"],
+                    name: "meta",
+                    reduce: true,
+                    extra_types: &["path_buf"],
+                })), &[
                     "File",
                     "Span",
                     "AttrInfo",
@@ -264,7 +269,7 @@ fn generate_ml(
             target: output_dir.join("Generated_Values.ml"),
             markers: markers_from_children(&ctx, &[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    ancestors: &["big_int"],
+                    ancestors: &["Generated_Meta.meta"],
                     name: "literal",
                     reduce: true,
                     extra_types: &["char_value"],
@@ -309,9 +314,7 @@ fn generate_ml(
                     ancestors: &["ty"],
                     name: "type_decl",
                     reduce: false,
-                    extra_types: &[
-                        "attr_info"
-                    ],
+                    extra_types: &[],
                 })), &[
                     "Binder",
                     "TypeDecl",

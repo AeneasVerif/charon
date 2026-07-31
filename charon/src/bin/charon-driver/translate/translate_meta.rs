@@ -461,6 +461,54 @@ impl<'tcx> TranslateCtx<'tcx> {
 
 // Attributes
 impl<'tcx> TranslateCtx<'tcx> {
+    fn condition_parent_id(&mut self, def_id: &hax::DefId) -> Result<ItemId, String> {
+        if !matches!(
+            def_id.kind,
+            hax::DefKind::Fn | hax::DefKind::AssocFn | hax::DefKind::Closure
+        ) {
+            return Err(
+                "pre/postcondition attributes can only be applied to functions".to_string(),
+            );
+        }
+        let Some(parent_def_id) = def_id.parent(&self.hax_state) else {
+            return Err(
+                "a pre/postcondition must be nested directly inside a function".to_string(),
+            );
+        };
+        let parent_def = self.poly_hax_def(&parent_def_id).map_err(|err| err.msg)?;
+        let kind = match parent_def.kind() {
+            hax::FullDefKind::Fn { .. } | hax::FullDefKind::AssocFn { .. } => {
+                TransItemSourceKind::Fun
+            }
+            hax::FullDefKind::Closure { args, .. } => TransItemSourceKind::ClosureMethod(
+                super::translate_closures::translate_closure_kind(&args.kind),
+            ),
+            _ => {
+                return Err(
+                    "a pre/postcondition must be nested directly inside a function".to_string(),
+                );
+            }
+        };
+        if self.options.monomorphize_with_hax && parent_def.this().has_non_lt_param {
+            return Err(
+                "pre/postconditions on generic functions are not supported with `--monomorphize`"
+                    .to_string(),
+            );
+        }
+        let parent_src = if self.options.monomorphize_with_hax {
+            TransItemSource::monomorphic(parent_def.this(), kind)
+        } else {
+            TransItemSource::polymorphic(&parent_def_id, kind)
+        };
+        if let Some(parent_id) = self.id_map.get(&parent_src) {
+            Ok(*parent_id)
+        } else {
+            self.register_and_enqueue(&None, parent_src).ok_or_else(|| {
+                "failed to register the pre/postcondition's parent function".to_string()
+            })
+        }
+    }
+
     /// Parse a raw attribute to recognize our special `charon::*`, `aeneas::*` and `verify::*` attributes.
     fn parse_attr_from_raw(
         &mut self,
@@ -499,6 +547,14 @@ impl<'tcx> TranslateCtx<'tcx> {
             "exclude" if args.is_none() => Attribute::Exclude,
             // `#[charon::transparent]`
             "transparent" if args.is_none() => Attribute::Transparent,
+            // `#[charon::precondition]`
+            "precondition" if args.is_none() => {
+                Attribute::IsPrecondition(self.condition_parent_id(def_id)?)
+            }
+            // `#[charon::postcondition]`
+            "postcondition" if args.is_none() => {
+                Attribute::IsPostcondition(self.condition_parent_id(def_id)?)
+            }
             // `#[charon::rename("new_name")]`
             "rename" if let Some(attr) = args => {
                 let Some(attr) = attr

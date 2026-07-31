@@ -10,17 +10,13 @@
  *)
 
 open Identifiers
-open Generated_Meta
+include Generated_Meta
 open Generated_Values
 
 module TypeVarId = IdGen ()
-module TypeDeclId = IdGen ()
 module VariantId = IdGen ()
 module FieldId = IdGen ()
-module GlobalDeclId = IdGen ()
 module ConstGenericVarId = IdGen ()
-module TraitDeclId = IdGen ()
-module TraitImplId = IdGen ()
 module TraitMethodId = IdGen ()
 module AssocTypeId = IdGen ()
 module AssocConstId = IdGen ()
@@ -29,7 +25,6 @@ module TraitTypeConstraintId = IdGen ()
 module UnsolvedTraitId = IdGen ()
 module RegionId = IdGen ()
 module Disambiguator = IdGen ()
-module FunDeclId = IdGen ()
 
 type integer_type = Values.integer_type [@@deriving show, ord, eq]
 type float_type = Values.float_type [@@deriving show, ord, eq]
@@ -58,7 +53,6 @@ and 'a assoc_const_id_map = 'a AssocConstId.Map.t [@@deriving show, eq, ord]
 class ['self] iter_ty_base =
   object (self : 'self)
     inherit [_] iter_type_vars
-    method visit_span : 'env -> span -> unit = fun _ _ -> ()
     method visit_range_inclusive : 'a. ('env -> 'a -> unit) -> 'env -> 'a range_inclusive -> unit =
       fun visit_elem env (x, y) ->
         visit_elem env x;
@@ -75,7 +69,6 @@ class ['self] iter_ty_base =
 class ['self] map_ty_base =
   object (self : 'self)
     inherit [_] map_type_vars
-    method visit_span : 'env -> span -> span = fun _ x -> x
     method visit_range_inclusive :
         'a 'b. ('env -> 'a -> 'b) -> 'env -> 'a range_inclusive -> 'b range_inclusive =
       fun visit_elem env (x, y) -> (visit_elem env x, visit_elem env y)

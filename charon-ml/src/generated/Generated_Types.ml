@@ -8,16 +8,12 @@
     code-generation code is in `charon/src/bin/generate-ml`. *)
 
 open Identifiers
-open Generated_Meta
+include Generated_Meta
 open Generated_Values
 module TypeVarId = IdGen ()
-module TypeDeclId = IdGen ()
 module VariantId = IdGen ()
 module FieldId = IdGen ()
-module GlobalDeclId = IdGen ()
 module ConstGenericVarId = IdGen ()
-module TraitDeclId = IdGen ()
-module TraitImplId = IdGen ()
 module TraitMethodId = IdGen ()
 module AssocTypeId = IdGen ()
 module AssocConstId = IdGen ()
@@ -26,7 +22,6 @@ module TraitTypeConstraintId = IdGen ()
 module UnsolvedTraitId = IdGen ()
 module RegionId = IdGen ()
 module Disambiguator = IdGen ()
-module FunDeclId = IdGen ()
 
 type integer_type = Values.integer_type [@@deriving show, ord, eq]
 type float_type = Values.float_type [@@deriving show, ord, eq]
@@ -93,21 +88,7 @@ and 'a0 de_bruijn_var =
           This is not used within Charon itself, instead ewe insert it at the
           end if [--unbind-item-vars] is set. *)
 
-and fun_decl_id = (FunDeclId.id[@visitors.opaque])
-and global_decl_id = (GlobalDeclId.id[@visitors.opaque])
-
-(** The id of a translated item. *)
-and item_id =
-  | IdType of type_decl_id
-  | IdTraitDecl of trait_decl_id
-  | IdTraitImpl of trait_impl_id
-  | IdFun of fun_decl_id
-  | IdGlobal of global_decl_id
-
 and trait_clause_id = (TraitClauseId.id[@visitors.opaque])
-and trait_decl_id = (TraitDeclId.id[@visitors.opaque])
-and trait_impl_id = (TraitImplId.id[@visitors.opaque])
-and type_decl_id = (TypeDeclId.id[@visitors.opaque])
 
 and type_var_id = (TypeVarId.id[@visitors.opaque])
 [@@deriving
@@ -150,7 +131,6 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
 class ['self] iter_ty_base =
   object (self : 'self)
     inherit [_] iter_type_vars
-    method visit_span : 'env -> span -> unit = fun _ _ -> ()
 
     method visit_range_inclusive :
         'a. ('env -> 'a -> unit) -> 'env -> 'a range_inclusive -> unit =
@@ -170,7 +150,6 @@ class ['self] iter_ty_base =
 class ['self] map_ty_base =
   object (self : 'self)
     inherit [_] map_type_vars
-    method visit_span : 'env -> span -> span = fun _ x -> x
 
     method visit_range_inclusive :
         'a 'b.
@@ -896,19 +875,6 @@ and variant_id = (VariantId.id[@visitors.opaque])
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
 
-(* Ancestors for the type_decl visitors *)
-class ['self] iter_type_decl_base =
-  object (self : 'self)
-    inherit [_] iter_ty
-    method visit_attr_info : 'env -> attr_info -> unit = fun _ _ -> ()
-  end
-
-class ['self] map_type_decl_base =
-  object (self : 'self)
-    inherit [_] map_ty
-    method visit_attr_info : 'env -> attr_info -> attr_info = fun _ x -> x
-  end
-
 (** Describes modifiers to the alignment and packing of the corresponding type.
     Represents [repr(align(n))] and [repr(packed(n))]. *)
 type alignment_modifier = Align of int | Pack of int
@@ -1053,6 +1019,13 @@ and item_source =
 
           Fields:
           - [info] *)
+  | SpecItem of spec_kind * item_id
+      (** This item is a specification attached to another item, via
+          [#[charon::precondition]]/[#[charon::postcondition]].
+
+          Fields:
+          - [kind]
+          - [item] *)
   | TraitDeclItem of trait_decl_ref * assoc_item_id
       (** This is the default value of an associated const or method in a trait
           declaration.
@@ -1218,6 +1191,8 @@ and repr_options = {
   explicit_discr_type : bool;
 }
 
+and spec_kind = Precondition | Postcondition
+
 (** A type declaration.
 
     Types can be opaque or transparent.
@@ -1304,7 +1279,7 @@ and variant_layout = {
       name = "iter_type_decl";
       monomorphic = [ "env" ];
       variety = "iter";
-      ancestors = [ "iter_type_decl_base" ];
+      ancestors = [ "iter_ty" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     },
   visitors
@@ -1312,6 +1287,6 @@ and variant_layout = {
       name = "map_type_decl";
       monomorphic = [ "env" ];
       variety = "map";
-      ancestors = [ "map_type_decl_base" ];
+      ancestors = [ "map_ty" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
