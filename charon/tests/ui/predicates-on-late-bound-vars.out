@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::cell::RefCell
-#[lang_item("RefCell")]
+#[diagnostic_item("RefCell")]
 pub opaque type RefCell<T>
 where
     TraitClause0: (T: MetaSized),
@@ -14,7 +14,7 @@ where
 pub struct BorrowError {}
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -28,7 +28,7 @@ where
 = <opaque>
 
 // Full name: core::result::Result
-#[lang_item("Result")]
+#[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
     TraitClause0: (T: Sized),
@@ -39,7 +39,7 @@ where
 }
 
 // Full name: core::cell::Ref
-#[lang_item("RefCellRef")]
+#[diagnostic_item("RefCellRef")]
 pub opaque type Ref<'b, T>
 where
     TraitClause0: (T: MetaSized),
@@ -53,7 +53,8 @@ where
 = <opaque>
 
 // Full name: core::clone::Clone
-#[lang_item("clone")]
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -62,7 +63,8 @@ pub trait Clone<Self>
 }
 
 // Full name: core::option::Option
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option<T>
 where
     TraitClause0: (T: Sized),

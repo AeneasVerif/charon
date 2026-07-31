@@ -1,4 +1,4 @@
-#[lang_item("global_alloc_ty")]
+#[lang_item(GlobalAlloc)]
 pub struct alloc::alloc::Global {}
 
 unsafe fn alloc::boxed::Box::{impl core::marker::Destruct for alloc::boxed::Box<T>}::drop_glue<'_0, T, A>(_1: &'_0 mut alloc::boxed::Box<T>)

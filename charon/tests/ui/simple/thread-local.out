@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -13,7 +13,8 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[lang_item("clone")]
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -33,7 +34,8 @@ impl Clone for ! {
 }
 
 // Full name: core::marker::Copy
-#[lang_item("copy")]
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
 pub trait Copy<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -49,7 +51,7 @@ impl Copy for ! {
 }
 
 // Full name: core::marker::Destruct
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
@@ -57,7 +59,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Tuple
-#[lang_item("tuple_trait")]
+#[lang_item(Tuple)]
 pub trait Tuple<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -65,14 +67,14 @@ pub trait Tuple<Self>
 }
 
 // Full name: core::mem::needs_drop
-#[lang_item("needs_drop")]
+#[diagnostic_item("needs_drop")]
 pub fn needs_drop<T>() -> bool
 where
     TraitClause0: (T: MetaSized),
 = <opaque>
 
 // Full name: core::ops::function::FnOnce
-#[lang_item("fn_once")]
+#[lang_item(FnOnce)]
 pub trait FnOnce<Self, Args>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -85,7 +87,7 @@ pub trait FnOnce<Self, Args>
 }
 
 // Full name: core::ops::function::FnMut
-#[lang_item("fn_mut")]
+#[lang_item(FnMut)]
 pub trait FnMut<Self, Args>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -97,7 +99,7 @@ pub trait FnMut<Self, Args>
 }
 
 // Full name: core::ops::function::Fn
-#[lang_item("fn")]
+#[lang_item(Fn)]
 pub trait Fn<Self, Args>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -109,7 +111,8 @@ pub trait Fn<Self, Args>
 }
 
 // Full name: core::option::Option
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option<T>
 where
     TraitClause0: (T: Sized),
@@ -185,7 +188,7 @@ where
 = <opaque>
 
 // Full name: std::thread::local::LocalKey
-#[lang_item("LocalKey")]
+#[diagnostic_item("LocalKey")]
 pub opaque type LocalKey<T>
 where
     TraitClause0: (T: Sized),

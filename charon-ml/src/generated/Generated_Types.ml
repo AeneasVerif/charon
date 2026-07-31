@@ -4,8 +4,8 @@
 
     `Types.template.ml` contains the manual definitions and some `(*
     __REPLACEn__ *)` comments. These comments are replaced by auto-generated
-    definitions by running `make generate-ml` in the crate root. The
-    code-generation code is in `charon/src/bin/generate-ml`. *)
+    definitions by running `make generate-asts` in the crate root. The
+    code-generation code is in `charon/src/bin/generate-asts`. *)
 
 open Identifiers
 include Generated_Meta
@@ -965,8 +965,11 @@ and item_meta = {
           This can happen either if the item was annotated with
           [#[charon::opaque]] or if it was declared opaque via a command-line
           argument. *)
-  lang_item : string option;
-      (** If the item is built-in, record its internal builtin identifier. *)
+  lang_item : rustc_lang_item option;
+      (** If the item is a rustc lang item, record which one it is. *)
+  diagnostic_item : string option;
+      (** If the item is a rustc diagnostic item, record its internal
+          identifier. *)
 }
 
 and item_opacity =
@@ -1073,6 +1076,267 @@ and item_source =
           function that takes [dyn Trait] as its [Self] type. This shim casts
           the receiver to the known concrete type and calls the real method. *)
   | VTableInstanceMonoItem
+
+(** A representation of all the valid lang items in Rust. *)
+and rustc_lang_item =
+  | RustcLangItemSized  (**The [sized] lang item. *)
+  | RustcLangItemMetaSized  (**The [meta_sized] lang item. *)
+  | RustcLangItemPointeeSized  (**The [pointee_sized] lang item. *)
+  | RustcLangItemUnsize  (**The [unsize] lang item. *)
+  | RustcLangItemAlignOf  (**The [mem_align_const] lang item. *)
+  | RustcLangItemSizeOf  (**The [mem_size_const] lang item. *)
+  | RustcLangItemOffsetOf  (**The [offset_of] lang item. *)
+  | RustcLangItemStructuralPeq
+      (** The [structural_peq] lang item. Trait injected by
+          [#[derive(PartialEq)]], (i.e. "Partial EQ"). *)
+  | RustcLangItemCopy  (**The [copy] lang item. *)
+  | RustcLangItemClone  (**The [clone] lang item. *)
+  | RustcLangItemCloneFn  (**The [clone_fn] lang item. *)
+  | RustcLangItemUseCloned  (**The [use_cloned] lang item. *)
+  | RustcLangItemTrivialClone  (**The [trivial_clone] lang item. *)
+  | RustcLangItemSync  (**The [sync] lang item. *)
+  | RustcLangItemDiscriminantKind  (**The [discriminant_kind] lang item. *)
+  | RustcLangItemDiscriminant
+      (** The [discriminant_type] lang item. The associated item of the
+          [DiscriminantKind] trait. *)
+  | RustcLangItemPointeeTrait  (**The [pointee_trait] lang item. *)
+  | RustcLangItemMetadata  (**The [metadata_type] lang item. *)
+  | RustcLangItemDynMetadata  (**The [dyn_metadata] lang item. *)
+  | RustcLangItemFreeze  (**The [freeze] lang item. *)
+  | RustcLangItemUnsafeUnpin  (**The [unsafe_unpin] lang item. *)
+  | RustcLangItemFnPtrTrait  (**The [fn_ptr_trait] lang item. *)
+  | RustcLangItemFnPtrAddr  (**The [fn_ptr_addr] lang item. *)
+  | RustcLangItemDrop  (**The [drop] lang item. *)
+  | RustcLangItemDestruct  (**The [destruct] lang item. *)
+  | RustcLangItemAsyncDrop  (**The [async_drop] lang item. *)
+  | RustcLangItemAsyncDropInPlace  (**The [async_drop_in_place] lang item. *)
+  | RustcLangItemCoerceUnsized  (**The [coerce_unsized] lang item. *)
+  | RustcLangItemDispatchFromDyn  (**The [dispatch_from_dyn] lang item. *)
+  | RustcLangItemTransmuteOpts  (**The [transmute_opts] lang item. *)
+  | RustcLangItemTransmuteTrait  (**The [transmute_trait] lang item. *)
+  | RustcLangItemAdd  (**The [add] lang item. *)
+  | RustcLangItemSub  (**The [sub] lang item. *)
+  | RustcLangItemMul  (**The [mul] lang item. *)
+  | RustcLangItemDiv  (**The [div] lang item. *)
+  | RustcLangItemRem  (**The [rem] lang item. *)
+  | RustcLangItemNeg  (**The [neg] lang item. *)
+  | RustcLangItemNot  (**The [not] lang item. *)
+  | RustcLangItemBitXor  (**The [bitxor] lang item. *)
+  | RustcLangItemBitAnd  (**The [bitand] lang item. *)
+  | RustcLangItemBitOr  (**The [bitor] lang item. *)
+  | RustcLangItemShl  (**The [shl] lang item. *)
+  | RustcLangItemShr  (**The [shr] lang item. *)
+  | RustcLangItemAddAssign  (**The [add_assign] lang item. *)
+  | RustcLangItemSubAssign  (**The [sub_assign] lang item. *)
+  | RustcLangItemMulAssign  (**The [mul_assign] lang item. *)
+  | RustcLangItemDivAssign  (**The [div_assign] lang item. *)
+  | RustcLangItemRemAssign  (**The [rem_assign] lang item. *)
+  | RustcLangItemBitXorAssign  (**The [bitxor_assign] lang item. *)
+  | RustcLangItemBitAndAssign  (**The [bitand_assign] lang item. *)
+  | RustcLangItemBitOrAssign  (**The [bitor_assign] lang item. *)
+  | RustcLangItemShlAssign  (**The [shl_assign] lang item. *)
+  | RustcLangItemShrAssign  (**The [shr_assign] lang item. *)
+  | RustcLangItemIndex  (**The [index] lang item. *)
+  | RustcLangItemIndexMut  (**The [index_mut] lang item. *)
+  | RustcLangItemUnsafeCell  (**The [unsafe_cell] lang item. *)
+  | RustcLangItemUnsafePinned  (**The [unsafe_pinned] lang item. *)
+  | RustcLangItemVaArgSafe  (**The [va_arg_safe] lang item. *)
+  | RustcLangItemVaList  (**The [va_list] lang item. *)
+  | RustcLangItemDeref  (**The [deref] lang item. *)
+  | RustcLangItemDerefMut  (**The [deref_mut] lang item. *)
+  | RustcLangItemDerefPure  (**The [deref_pure] lang item. *)
+  | RustcLangItemDerefTarget  (**The [deref_target] lang item. *)
+  | RustcLangItemReceiver  (**The [receiver] lang item. *)
+  | RustcLangItemReceiverTarget  (**The [receiver_target] lang item. *)
+  | RustcLangItemLegacyReceiver  (**The [legacy_receiver] lang item. *)
+  | RustcLangItemFn  (**The [Fn] lang item. *)
+  | RustcLangItemFnMut  (**The [fn_mut] lang item. *)
+  | RustcLangItemFnOnce  (**The [fn_once] lang item. *)
+  | RustcLangItemAsyncFn  (**The [async_fn] lang item. *)
+  | RustcLangItemAsyncFnMut  (**The [async_fn_mut] lang item. *)
+  | RustcLangItemAsyncFnOnce  (**The [async_fn_once] lang item. *)
+  | RustcLangItemAsyncFnOnceOutput  (**The [async_fn_once_output] lang item. *)
+  | RustcLangItemCallOnceFuture  (**The [call_once_future] lang item. *)
+  | RustcLangItemCallRefFuture  (**The [call_ref_future] lang item. *)
+  | RustcLangItemAsyncFnKindHelper  (**The [async_fn_kind_helper] lang item. *)
+  | RustcLangItemAsyncFnKindUpvars  (**The [async_fn_kind_upvars] lang item. *)
+  | RustcLangItemFnOnceOutput  (**The [fn_once_output] lang item. *)
+  | RustcLangItemIterator  (**The [iterator] lang item. *)
+  | RustcLangItemFusedIterator  (**The [fused_iterator] lang item. *)
+  | RustcLangItemFuture  (**The [future_trait] lang item. *)
+  | RustcLangItemFutureOutput  (**The [future_output] lang item. *)
+  | RustcLangItemAsyncIterator  (**The [async_iterator] lang item. *)
+  | RustcLangItemCoroutineState  (**The [coroutine_state] lang item. *)
+  | RustcLangItemCoroutine  (**The [coroutine] lang item. *)
+  | RustcLangItemCoroutineReturn  (**The [coroutine_return] lang item. *)
+  | RustcLangItemCoroutineYield  (**The [coroutine_yield] lang item. *)
+  | RustcLangItemCoroutineResume  (**The [coroutine_resume] lang item. *)
+  | RustcLangItemUnpin  (**The [unpin] lang item. *)
+  | RustcLangItemPin  (**The [pin] lang item. *)
+  | RustcLangItemOrderingEnum  (**The [Ordering] lang item. *)
+  | RustcLangItemPartialEq  (**The [eq] lang item. *)
+  | RustcLangItemPartialOrd  (**The [partial_ord] lang item. *)
+  | RustcLangItemCVoid  (**The [c_void] lang item. *)
+  | RustcLangItemType  (**The [type_info] lang item. *)
+  | RustcLangItemTypeId  (**The [type_id] lang item. *)
+  | RustcLangItemPanic  (**The [panic] lang item. *)
+  | RustcLangItemPanicNounwind  (**The [panic_nounwind] lang item. *)
+  | RustcLangItemPanicFmt  (**The [panic_fmt] lang item. *)
+  | RustcLangItemPanicDisplay  (**The [panic_display] lang item. *)
+  | RustcLangItemConstPanicFmt  (**The [const_panic_fmt] lang item. *)
+  | RustcLangItemPanicBoundsCheck  (**The [panic_bounds_check] lang item. *)
+  | RustcLangItemPanicMisalignedPointerDereference
+      (**The [panic_misaligned_pointer_dereference] lang item. *)
+  | RustcLangItemPanicInfo  (**The [panic_info] lang item. *)
+  | RustcLangItemPanicLocation  (**The [panic_location] lang item. *)
+  | RustcLangItemPanicImpl  (**The [panic_impl] lang item. *)
+  | RustcLangItemPanicCannotUnwind  (**The [panic_cannot_unwind] lang item. *)
+  | RustcLangItemPanicInCleanup  (**The [panic_in_cleanup] lang item. *)
+  | RustcLangItemPanicAddOverflow
+      (** The [panic_const_add_overflow] lang item. Constant panic messages,
+          used for codegen of MIR asserts. *)
+  | RustcLangItemPanicSubOverflow
+      (**The [panic_const_sub_overflow] lang item. *)
+  | RustcLangItemPanicMulOverflow
+      (**The [panic_const_mul_overflow] lang item. *)
+  | RustcLangItemPanicDivOverflow
+      (**The [panic_const_div_overflow] lang item. *)
+  | RustcLangItemPanicRemOverflow
+      (**The [panic_const_rem_overflow] lang item. *)
+  | RustcLangItemPanicNegOverflow
+      (**The [panic_const_neg_overflow] lang item. *)
+  | RustcLangItemPanicShrOverflow
+      (**The [panic_const_shr_overflow] lang item. *)
+  | RustcLangItemPanicShlOverflow
+      (**The [panic_const_shl_overflow] lang item. *)
+  | RustcLangItemPanicDivZero  (**The [panic_const_div_by_zero] lang item. *)
+  | RustcLangItemPanicRemZero  (**The [panic_const_rem_by_zero] lang item. *)
+  | RustcLangItemPanicCoroutineResumed
+      (**The [panic_const_coroutine_resumed] lang item. *)
+  | RustcLangItemPanicAsyncFnResumed
+      (**The [panic_const_async_fn_resumed] lang item. *)
+  | RustcLangItemPanicAsyncGenFnResumed
+      (**The [panic_const_async_gen_fn_resumed] lang item. *)
+  | RustcLangItemPanicGenFnNone  (**The [panic_const_gen_fn_none] lang item. *)
+  | RustcLangItemPanicCoroutineResumedPanic
+      (**The [panic_const_coroutine_resumed_panic] lang item. *)
+  | RustcLangItemPanicAsyncFnResumedPanic
+      (**The [panic_const_async_fn_resumed_panic] lang item. *)
+  | RustcLangItemPanicAsyncGenFnResumedPanic
+      (**The [panic_const_async_gen_fn_resumed_panic] lang item. *)
+  | RustcLangItemPanicGenFnNonePanic
+      (**The [panic_const_gen_fn_none_panic] lang item. *)
+  | RustcLangItemPanicNullPointerDereference
+      (**The [panic_null_pointer_dereference] lang item. *)
+  | RustcLangItemPanicInvalidEnumConstruction
+      (**The [panic_invalid_enum_construction] lang item. *)
+  | RustcLangItemPanicCoroutineResumedDrop
+      (**The [panic_const_coroutine_resumed_drop] lang item. *)
+  | RustcLangItemPanicAsyncFnResumedDrop
+      (**The [panic_const_async_fn_resumed_drop] lang item. *)
+  | RustcLangItemPanicAsyncGenFnResumedDrop
+      (**The [panic_const_async_gen_fn_resumed_drop] lang item. *)
+  | RustcLangItemPanicGenFnNoneDrop
+      (**The [panic_const_gen_fn_none_drop] lang item. *)
+  | RustcLangItemBeginPanic
+      (** The [begin_panic] lang item. libstd panic entry point. Necessary for
+          const eval to be able to catch it *)
+  | RustcLangItemFormatArgument  (**The [format_argument] lang item. *)
+  | RustcLangItemFormatArguments  (**The [format_arguments] lang item. *)
+  | RustcLangItemDropGlue  (**The [drop_glue] lang item. *)
+  | RustcLangItemAllocLayout  (**The [alloc_layout] lang item. *)
+  | RustcLangItemStart
+      (** The [start] lang item. For all binary crates without [#![no_main]],
+          Rust will generate a "main" function. The exact name and signature are
+          target-dependent. The "main" function will invoke this lang item,
+          passing it the [argc] and [argv] (or null, if those don't exist on the
+          current target) as well as the user-defined [fn main] from the binary
+          crate. *)
+  | RustcLangItemEhPersonality  (**The [eh_personality] lang item. *)
+  | RustcLangItemEhCatchTypeinfo  (**The [eh_catch_typeinfo] lang item. *)
+  | RustcLangItemCompilerMove  (**The [compiler_move] lang item. *)
+  | RustcLangItemCompilerCopy  (**The [compiler_copy] lang item. *)
+  | RustcLangItemOwnedBox  (**The [owned_box] lang item. *)
+  | RustcLangItemGlobalAlloc  (**The [global_alloc_ty] lang item. *)
+  | RustcLangItemPhantomData  (**The [phantom_data] lang item. *)
+  | RustcLangItemManuallyDrop  (**The [manually_drop] lang item. *)
+  | RustcLangItemMaybeDangling  (**The [maybe_dangling] lang item. *)
+  | RustcLangItemBikeshedGuaranteedNoDrop
+      (**The [bikeshed_guaranteed_no_drop] lang item. *)
+  | RustcLangItemMaybeUninit  (**The [maybe_uninit] lang item. *)
+  | RustcLangItemTermination  (**The [termination] lang item. *)
+  | RustcLangItemTry  (**The [Try] lang item. *)
+  | RustcLangItemTuple  (**The [tuple_trait] lang item. *)
+  | RustcLangItemSliceLen  (**The [slice_len_fn] lang item. *)
+  | RustcLangItemTryTraitFromResidual  (**The [from_residual] lang item. *)
+  | RustcLangItemTryTraitFromOutput  (**The [from_output] lang item. *)
+  | RustcLangItemTryTraitBranch  (**The [branch] lang item. *)
+  | RustcLangItemTryTraitFromYeet  (**The [from_yeet] lang item. *)
+  | RustcLangItemResidualIntoTryType  (**The [into_try_type] lang item. *)
+  | RustcLangItemCoercePointeeValidated
+      (**The [coerce_pointee_validated] lang item. *)
+  | RustcLangItemConstParamTy  (**The [const_param_ty] lang item. *)
+  | RustcLangItemPoll  (**The [Poll] lang item. *)
+  | RustcLangItemPollReady  (**The [Ready] lang item. *)
+  | RustcLangItemPollPending  (**The [Pending] lang item. *)
+  | RustcLangItemAsyncGenReady  (**The [AsyncGenReady] lang item. *)
+  | RustcLangItemAsyncGenPending  (**The [AsyncGenPending] lang item. *)
+  | RustcLangItemAsyncGenFinished  (**The [AsyncGenFinished] lang item. *)
+  | RustcLangItemResumeTy  (**The [ResumeTy] lang item. *)
+  | RustcLangItemGetContext  (**The [get_context] lang item. *)
+  | RustcLangItemContext  (**The [Context] lang item. *)
+  | RustcLangItemFuturePoll  (**The [poll] lang item. *)
+  | RustcLangItemAsyncIteratorPollNext
+      (**The [async_iterator_poll_next] lang item. *)
+  | RustcLangItemIntoAsyncIterIntoIter
+      (**The [into_async_iter_into_iter] lang item. *)
+  | RustcLangItemOption  (**The [Option] lang item. *)
+  | RustcLangItemOptionSome  (**The [Some] lang item. *)
+  | RustcLangItemOptionNone  (**The [None] lang item. *)
+  | RustcLangItemResultOk  (**The [Ok] lang item. *)
+  | RustcLangItemResultErr  (**The [Err] lang item. *)
+  | RustcLangItemControlFlowContinue  (**The [Continue] lang item. *)
+  | RustcLangItemControlFlowBreak  (**The [Break] lang item. *)
+  | RustcLangItemIntoFutureIntoFuture  (**The [into_future] lang item. *)
+  | RustcLangItemIntoIterIntoIter  (**The [into_iter] lang item. *)
+  | RustcLangItemIteratorNext  (**The [next] lang item. *)
+  | RustcLangItemPinNewUnchecked  (**The [new_unchecked] lang item. *)
+  | RustcLangItemRangeFrom  (**The [RangeFrom] lang item. *)
+  | RustcLangItemRangeFull  (**The [RangeFull] lang item. *)
+  | RustcLangItemRangeInclusiveStruct  (**The [RangeInclusive] lang item. *)
+  | RustcLangItemRangeInclusiveNew  (**The [range_inclusive_new] lang item. *)
+  | RustcLangItemRange  (**The [Range] lang item. *)
+  | RustcLangItemRangeToInclusive  (**The [RangeToInclusive] lang item. *)
+  | RustcLangItemRangeTo  (**The [RangeTo] lang item. *)
+  | RustcLangItemRangeMax  (**The [RangeMax] lang item. *)
+  | RustcLangItemRangeMin  (**The [RangeMin] lang item. *)
+  | RustcLangItemRangeSub  (**The [RangeSub] lang item. *)
+  | RustcLangItemRangeFromCopy  (**The [RangeFromCopy] lang item. *)
+  | RustcLangItemRangeCopy  (**The [RangeCopy] lang item. *)
+  | RustcLangItemRangeInclusiveCopy  (**The [RangeInclusiveCopy] lang item. *)
+  | RustcLangItemRangeToInclusiveCopy
+      (**The [RangeToInclusiveCopy] lang item. *)
+  | RustcLangItemString  (**The [String] lang item. *)
+  | RustcLangItemCStr  (**The [CStr] lang item. *)
+  | RustcLangItemContractBuildCheckEnsures
+      (**The [contract_build_check_ensures] lang item. *)
+  | RustcLangItemContractCheckRequires
+      (**The [contract_check_requires] lang item. *)
+  | RustcLangItemDefaultTrait4  (**The [default_trait4] lang item. *)
+  | RustcLangItemDefaultTrait3  (**The [default_trait3] lang item. *)
+  | RustcLangItemDefaultTrait2  (**The [default_trait2] lang item. *)
+  | RustcLangItemDefaultTrait1  (**The [default_trait1] lang item. *)
+  | RustcLangItemContractCheckEnsures
+      (**The [contract_check_ensures] lang item. *)
+  | RustcLangItemReborrow  (**The [reborrow] lang item. *)
+  | RustcLangItemCoerceShared  (**The [coerce_shared] lang item. *)
+  | RustcLangItemFieldRepresentingType
+      (**The [field_representing_type] lang item. *)
+  | RustcLangItemField  (**The [field] lang item. *)
+  | RustcLangItemFieldBase  (**The [field_base] lang item. *)
+  | RustcLangItemFieldType  (**The [field_type] lang item. *)
+  | RustcLangItemFieldOffset  (**The [field_offset] lang item. *)
+  | RustcLangItemFrom  (**The [From] lang item. *)
 
 (** Simplified type layout information.
 

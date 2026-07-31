@@ -1,6 +1,6 @@
 opaque type core::marker::MetaSized::{vtable}
 
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait core::marker::MetaSized<Self>
 
 trait test_crate::HasSize<Self>

@@ -820,8 +820,8 @@ impl<'a> ComputeItemModifications<'a> {
             // These traits carry a built-in associated type that we can't replace with
             // anything else than itself, so we keep it as an associated type.
             let has_builtin_assoc_ty = matches!(
-                tr.item_meta.lang_item.as_deref(),
-                Some("discriminant_kind" | "pointee_trait")
+                tr.item_meta.lang_item.as_ref(),
+                Some(from_rustc::LangItem::DiscriminantKind | from_rustc::LangItem::PointeeTrait)
             );
             let remove_assoc_type = !has_builtin_assoc_ty
                 && self

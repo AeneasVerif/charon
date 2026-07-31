@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::fmt::Arguments
-#[lang_item("format_arguments")]
+#[lang_item(FormatArguments)]
 pub opaque type Arguments<'a>
 
 // Full name: core::fmt::{Arguments<'a>}::from_str

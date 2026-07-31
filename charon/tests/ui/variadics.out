@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -13,7 +13,8 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[lang_item("clone")]
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -33,7 +34,7 @@ impl "impl_Clone_for_i32" Clone for i32 {
 }
 
 // Full name: core::ffi::va_list::VaList
-#[lang_item("va_list")]
+#[lang_item(VaList)]
 pub opaque type VaList<'a>
 
 // Full name: core::ffi::va_list::VaList::{impl Destruct for VaList<'a>}::drop_glue
@@ -56,7 +57,8 @@ impl "impl_Sealed_for_i32" Sealed for i32 {
 }
 
 // Full name: core::marker::Copy
-#[lang_item("copy")]
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
 pub trait Copy<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -65,7 +67,7 @@ pub trait Copy<Self>
 }
 
 // Full name: core::ffi::va_list::VaArgSafe
-#[lang_item("va_arg_safe")]
+#[lang_item(VaArgSafe)]
 pub trait VaArgSafe<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)

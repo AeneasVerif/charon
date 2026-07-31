@@ -1,7 +1,8 @@
 # Final LLBC before serialization:
 
 // Full name: core::clone::Clone
-#[lang_item("clone")]
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
 pub trait Clone<Self>
 {
     fn clone<'_0_1>;
@@ -19,7 +20,8 @@ impl "impl_Clone_for_usize" Clone for usize {
 }
 
 // Full name: core::cmp::PartialEq
-#[lang_item("eq")]
+#[lang_item(PartialEq)]
+#[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0_1, '_1_1>;
@@ -27,7 +29,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Ordering
-#[lang_item("Ordering")]
+#[lang_item(OrderingEnum)]
 pub enum Ordering {
   Less,
   Equal,
@@ -35,14 +37,16 @@ pub enum Ordering {
 }
 
 // Full name: core::option::Option
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option<T> {
   None,
   Some(T),
 }
 
 // Full name: core::cmp::PartialOrd
-#[lang_item("partial_ord")]
+#[lang_item(PartialOrd)]
+#[diagnostic_item("PartialOrd")]
 pub trait PartialOrd<Self, Rhs>
 {
     proof ImpliedClause0: (Self: PartialEq<Rhs>)
@@ -72,7 +76,7 @@ impl "impl_PartialOrd_usize_for_usize" PartialOrd<usize> for usize {
 }
 
 // Full name: core::iter::range::Step
-#[lang_item("range_step")]
+#[diagnostic_item("range_step")]
 pub trait Step<Self>
 {
     proof ImpliedClause0: (Self: Clone)
@@ -106,14 +110,15 @@ impl "impl_Step_for_usize" Step for usize {
 }
 
 // Full name: core::ops::range::Range
-#[lang_item("Range")]
+#[lang_item(Range)]
 pub struct Range<Idx> {
   start: Idx,
   end: Idx,
 }
 
 // Full name: core::iter::traits::iterator::Iterator
-#[lang_item("iterator")]
+#[lang_item(Iterator)]
+#[diagnostic_item("Iterator")]
 pub trait Iterator<Self, Self_Item>
 {
     fn next<'_0_1>;

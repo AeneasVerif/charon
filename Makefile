@@ -75,16 +75,20 @@ debug-ml-tests: build-charon-ml charon-tests
 	cd charon-ml && $(MAKE) copy-tests
 	rlwrap ocamldebug -cd _build/default/charon-ml/tests/ Tests.bc
 
-# Generate some of the ml code automatically from the rust definitions.
+# Generate some of the AST code automatically from the rust definitions.
+.PHONY: generate-asts
+generate-asts:
+	cd charon && $(MAKE) generate-asts
+
 .PHONY: generate-ml
 generate-ml:
-	cd charon && cargo build --release && cargo run --release --bin generate-ml
-	cd charon-ml && $(MAKE) format 2> /dev/null
+	@printf '%s\n' 'warning: `make generate-ml` is deprecated; use `make generate-asts` instead' >&2
+	@$(MAKE) generate-asts
 
-# Same as `generate-ml` but don't re-run charon on itself. Useful when developping.
-.PHONY: generate-ml-keep-llbc
-generate-ml-keep-llbc:
-	CHARON_ML_REUSE_LLBC=1 $(MAKE) generate-ml
+# Same as `generate-asts` but don't re-run charon on itself. Useful when developing.
+.PHONY: generate-asts-keep-llbc
+generate-asts-keep-llbc:
+	CHARON_GENERATE_REUSE_LLBC=1 $(MAKE) generate-asts
 
 .PHONY: toolchain-commit
 toolchain-commit:

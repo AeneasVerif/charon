@@ -1,21 +1,21 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>
 
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait core::marker::Sized::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>
 {
     proof ImpliedClause0: (T0: core::marker::MetaSized::<(&_ mut _, &_ mut _)><'_0, '_1, T1>)
@@ -23,14 +23,14 @@ pub trait core::marker::Sized::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>
 }
 
 // Full name: core::marker::Destruct
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait core::marker::Destruct::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>
 {
     fn drop_glue<'_0_1>;

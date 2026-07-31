@@ -1,11 +1,11 @@
 (** WARNING: this file is partially auto-generated. Do not edit `src/Meta.ml` by
-    hand. Edit `templates/Meta.ml` instead, or improve the code generation tool
-    so avoid the need for hand-writing things.
+    hand. Edit `generate_ml/templates/Meta.ml` instead, or improve the code
+    generation tool so avoid the need for hand-writing things.
 
-    `templates/Meta.ml` contains the manual definitions and some `(*
+    `generate_ml/templates/Meta.ml` contains the manual definitions and some `(*
     __REPLACEn__ *)` comments. These comments are replaced by auto-generated
-    definitions by running `make generate-ml` in the crate root. The
-    code-generation code is in `charon/src/bin/generate-ml`. *)
+    definitions by running `make generate-asts` in the crate root. The
+    code-generation code is in `charon/src/bin/generate-asts`. *)
 
 open Identifiers
 module TypeDeclId = IdGen ()
@@ -107,7 +107,146 @@ and attribute =
       (** An item that has a postcondition that applies to it. The referenced
           item is a function the specifies the condition. *)
   | AttrDocComment of string  (** A doc-comment such as [/// ...]. *)
-  | AttrUnknown of raw_attribute  (** A non-charon-specific attribute. *)
+  | AttrBuiltin of rustc_attribute_kind  (** A built-in attribute. *)
+  | AttrUnknown of raw_attribute  (** None of the above. *)
+
+(** Represents parsed *built-in* inert attributes.
+
+    ## Overview These attributes are markers that guide the compilation process
+    and are never expanded into other code. They persist throughout the
+    compilation phases, from AST to HIR and beyond.
+
+    ## Attribute Processing While attributes are initially parsed by
+    [[rustc_parse]] into [[ast::Attribute]], they still contain raw token
+    streams because different attributes have different internal structures.
+    This enum represents the final, fully parsed form of these attributes, where
+    each variant contains all the information and structure relevant for the
+    specific attribute.
+
+    Some attributes can be applied multiple times to the same item, and they are
+    "collapsed" into a single semantic attribute. For example:
+    {@rust[
+      rust
+      #[repr(C)]
+      #[repr(packed)]
+      struct S { }
+    ]}
+    This is equivalent to [#[repr(C, packed)]] and results in a single
+    [[AttributeKind::Repr]] containing both [C] and [packed] annotations. This
+    collapsing happens during parsing and is reflected in the data structures
+    defined in this enum.
+
+    ## Usage These parsed attributes are used throughout the compiler to:
+    - Control code generation (e.g., [#[repr]])
+    - Mark API stability ([#[stable]], [#[unstable]])
+    - Provide documentation ([#[doc]])
+    - Guide compiler behavior (e.g., [#[allow_internal_unstable]])
+
+    ## Note on Attribute Organization Some attributes like [InlineAttr],
+    [OptimizeAttr], and [InstructionSetAttr] are defined separately from this
+    enum because they are used in specific compiler phases (like code
+    generation) and don't need to persist throughout the entire compilation
+    process. They are typically processed and converted into their final form
+    earlier in the compilation pipeline.
+
+    For example:
+    - [InlineAttr] is used during code generation to control function inlining
+    - [OptimizeAttr] is used to control optimization levels
+    - [InstructionSetAttr] is used for target-specific code generation
+
+    These attributes are handled by their respective compiler passes in the
+    [[rustc_codegen_ssa]] crate and don't need to be preserved in the same way
+    as the attributes in this enum.
+
+    For more details on attribute parsing, see the [[rustc_attr_parsing]] crate.
+
+    [[rustc_parse]]:
+    https://doc.rust-lang.org/nightly/nightly-rustc/rustc_parse/index.html
+    [[rustc_codegen_ssa]]:
+    https://doc.rust-lang.org/nightly/nightly-rustc/rustc_codegen_ssa/index.html
+    [[rustc_attr_parsing]]:
+    https://doc.rust-lang.org/nightly/nightly-rustc/rustc_attr_parsing/index.html
+*)
+and rustc_attribute_kind =
+  | RustcAttributeKindAutomaticallyDerived
+      (** Represents [#[automatically_derived]] *)
+  | RustcAttributeKindCold  (** Represents [#[cold]]. *)
+  | RustcAttributeKindDeprecated of rustc_deprecation * span
+      (** Represents
+          [[#[deprecated]]](https://doc.rust-lang.org/stable/reference/attributes/diagnostics.html#the-deprecated-attribute).
+
+          Fields:
+          - [deprecation]
+          - [span] *)
+  | RustcAttributeKindFundamental  (** Represents [#[fundamental]]. *)
+  | RustcAttributeKindIgnore of span * string option
+      (** Represents [#[ignore]]
+
+          Fields:
+          - [span]
+          - [reason]: ignore can optionally have a reason:
+            [#[ignore = "reason this is ignored"]] *)
+  | RustcAttributeKindInline of rustc_inline_attr * span
+      (** Represents [#[inline]] and [#[rustc_force_inline]]. *)
+  | RustcAttributeKindMayDangle of span
+      (** Represents
+          [[#[may_dangle]]](https://std-dev-guide.rust-lang.org/tricky/may-dangle.html).
+      *)
+  | RustcAttributeKindNaked of span  (** Represents [#[naked]] *)
+  | RustcAttributeKindNoLink  (** Represents [#[no_link]] *)
+  | RustcAttributeKindNoMangle of span  (** Represents [#[no_mangle]] *)
+  | RustcAttributeKindNonExhaustive of span
+      (** Represents [#[non_exhaustive]] *)
+  | RustcAttributeKindOptimize of rustc_optimize_attr * span
+      (** Represents [#[optimize(size|speed)]] *)
+  | RustcAttributeKindRustcAlign of int * span
+      (** Represents [#[align(N)]].
+
+          Fields:
+          - [align]
+          - [span] *)
+  | RustcAttributeKindRustcDiagnosticItem of string
+      (** Represents [#[rustc_diagnostic_item]] *)
+  | RustcAttributeKindRustcIntrinsic  (** Represents [#[rustc_intrinsic]] *)
+  | RustcAttributeKindShouldPanic of string option
+      (** Represents [#[should_panic]]
+
+          Fields:
+          - [reason] *)
+  | RustcAttributeKindTargetFeature of (string * span) list * span * bool
+      (** Represents [#[target_feature(enable = "...")]] and
+          [#[unsafe(force_target_feature(enable = "...")]].
+
+          Fields:
+          - [features]
+          - [attr_span]
+          - [was_forced] *)
+  | RustcAttributeKindTrackCaller of span  (** Represents [#[track_caller]] *)
+
+(** Release in which an API is deprecated. *)
+and rustc_deprecated_since =
+  | RustcDeprecatedSinceRustcVersion of rustc_rustc_version
+  | RustcDeprecatedSinceFuture
+      (** Deprecated in the future ("to be determined"). *)
+  | RustcDeprecatedSinceNonStandard of string
+      (** [feature(staged_api)] is off. Deprecation versions outside the
+          standard library are allowed to be arbitrary strings, for better or
+          worse. *)
+  | RustcDeprecatedSinceUnspecified
+      (** Deprecation version is unspecified but optional. *)
+  | RustcDeprecatedSinceErr
+      (** Failed to parse a deprecation version, or the deprecation version is
+          unspecified and required. An error has already been emitted. *)
+
+and rustc_deprecation = {
+  since : rustc_deprecated_since;
+  note : rustc_ident option;  (** The note to issue a reason. *)
+  suggestion : string option;
+      (** A text snippet used to completely replace any use of the deprecated
+          item in an expression.
+
+          This is currently unstable. *)
+}
 
 and file = {
   name : file_name;  (** The path to the file. *)
@@ -129,11 +268,34 @@ and file_name =
 and fun_decl_id = (FunDeclId.id[@visitors.opaque])
 and global_decl_id = (GlobalDeclId.id[@visitors.opaque])
 
+and rustc_ident = {
+  name : string;
+      (** [name] should never be the empty symbol. If you are considering that,
+          you are probably conflating "empty identifier with "no identifier" and
+          you should use [Option<Ident>] instead. Trying to construct an [Ident]
+          with an empty name will trigger debug assertions." *)
+  span : span;
+}
+
 (** [#[inline]] built-in attribute. *)
 and inline_attr =
   | Hint  (** [#[inline]] *)
   | Never  (** [#[inline(never)]] *)
   | Always  (** [#[inline(always)]] *)
+
+and rustc_inline_attr =
+  | RustcInlineAttrNone
+  | RustcInlineAttrHint
+  | RustcInlineAttrAlways
+  | RustcInlineAttrNever
+  | RustcInlineAttrForce of span * string option
+      (** [#[rustc_force_inline]] forces inlining to happen in the MIR inliner -
+          it reports an error if the inlining cannot happen. It is limited to
+          only free functions so that the calls can always be resolved.
+
+          Fields:
+          - [attr_span]
+          - [reason] *)
 
 (** The id of a translated item. *)
 and item_id =
@@ -148,6 +310,12 @@ and loc = {
   col : int;  (** The (0-based) column offset. *)
 }
 
+and rustc_optimize_attr =
+  | RustcOptimizeAttrDefault  (** No [#[optimize(..)]] attribute *)
+  | RustcOptimizeAttrDoNotOptimize  (** [#[optimize(none)]] *)
+  | RustcOptimizeAttrSpeed  (** [#[optimize(speed)]] *)
+  | RustcOptimizeAttrSize  (** [#[optimize(size)]] *)
+
 (** A general attribute. *)
 and raw_attribute = {
   path : string;
@@ -155,6 +323,8 @@ and raw_attribute = {
       (** The arguments passed to the attribute, if any. We don't distinguish
           different delimiters or the [path = lit] case. *)
 }
+
+and rustc_rustc_version = { major : int; minor : int; patch : int }
 
 (** Meta information about a piece of code (block, statement, etc.) *)
 and span = {

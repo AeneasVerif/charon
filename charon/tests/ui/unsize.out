@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -13,7 +13,7 @@ pub trait Sized<Self>
 }
 
 // Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
+#[lang_item(GlobalAlloc)]
 pub struct Global {}
 
 // Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_glue
@@ -26,7 +26,7 @@ where
 = <opaque>
 
 // Full name: alloc::rc::Rc
-#[lang_item("Rc")]
+#[diagnostic_item("Rc")]
 pub opaque type Rc<T>
 where
     TraitClause0: (T: MetaSized),
@@ -47,14 +47,14 @@ where
 = <opaque>
 
 // Full name: alloc::string::String
-#[lang_item("String")]
+#[lang_item(String)]
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_glue
 unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
 = <opaque>
 
-#[lang_item("string_new")]
+#[diagnostic_item("string_new")]
 pub fn alloc::string::{String}::new() -> String
 = <opaque>
 

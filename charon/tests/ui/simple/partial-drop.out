@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::Destruct
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
@@ -9,7 +9,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::mem::drop
-#[lang_item("mem_drop")]
+#[diagnostic_item("mem_drop")]
 pub fn drop<T>(_1: T)
 where
     TraitClause0: (T: Destruct),
@@ -17,7 +17,7 @@ where
 = <opaque>
 
 // Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
+#[lang_item(GlobalAlloc)]
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_glue

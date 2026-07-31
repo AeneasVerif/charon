@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -13,7 +13,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::result::Result
-#[lang_item("Result")]
+#[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
     TraitClause0: (T: Sized),

@@ -1,7 +1,8 @@
 # Final LLBC before serialization:
 
 // Full name: core::cmp::PartialEq
-#[lang_item("eq")]
+#[lang_item(PartialEq)]
+#[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0_1, '_1_1>;
@@ -9,7 +10,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
-#[lang_item("Eq")]
+#[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {
     proof ImpliedClause0: (Self: PartialEq<Self>)
@@ -24,11 +25,11 @@ where
 = <opaque>
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -36,7 +37,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::marker::StructuralPartialEq
-#[lang_item("structural_peq")]
+#[lang_item(StructuralPeq)]
 pub trait StructuralPartialEq<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -44,7 +45,7 @@ pub trait StructuralPartialEq<Self>
 }
 
 // Full name: core::marker::ConstParamTy_
-#[lang_item("const_param_ty")]
+#[lang_item(ConstParamTy)]
 pub trait ConstParamTy_<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -54,7 +55,7 @@ pub trait ConstParamTy_<Self>
 }
 
 // Full name: core::result::Result
-#[lang_item("Result")]
+#[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
     TraitClause0: (T: Sized),

@@ -551,13 +551,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             Body::Intrinsic { name, arg_names }
         } else if let Some(name) = self.t_ctx.extern_item_symbol_name(def) {
             Body::Extern(name)
-        } else if item_meta.lang_item.as_deref() == Some(builtins::BOX_ASSUME_INIT_INTO_VEC_UNSAFE)
+        } else if item_meta.diagnostic_item.as_deref()
+            == Some(builtins::BOX_ASSUME_INIT_INTO_VEC_UNSAFE)
             && self.options.treat_box_as_builtin
         {
             // FIXME(#865): the MIR we get is unusably optimized. Instead we build our own body
             // here.
             self.build_box_assume_init_into_vec_unsafe(span, def)?
-        } else if item_meta.lang_item.as_deref() == Some("drop_glue") {
+        } else if item_meta.lang_item.as_ref() == Some(&from_rustc::LangItem::DropGlue) {
             self.build_drop_glue_body(span, def, &signature)?
         } else if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque

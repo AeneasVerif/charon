@@ -18,17 +18,17 @@ pub fn hello() -> u32
 pub struct Error {}
 
 // Full name: core::fmt::Formatter
-#[lang_item("Formatter")]
+#[diagnostic_item("Formatter")]
 pub opaque type Formatter<mut 'a>
 where
     RegionOutlives0: 'a: 'a,
 
 // Full name: core::fmt::Arguments
-#[lang_item("format_arguments")]
+#[lang_item(FormatArguments)]
 pub opaque type Arguments<'a>
 
 // Full name: core::fmt::rt::Argument
-#[lang_item("format_argument")]
+#[lang_item(FormatArgument)]
 pub opaque type Argument<'a>
 
 // Full name: core::fmt::{Arguments<'a>}::new
@@ -36,11 +36,11 @@ pub unsafe fn new<'a, const N : usize, const M : usize>(_1: &'a [u8; N], _2: &'a
 = <opaque>
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -48,7 +48,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::result::Result
-#[lang_item("Result")]
+#[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
     TraitClause0: (T: Sized),
@@ -59,7 +59,7 @@ where
 }
 
 // Full name: core::fmt::Display
-#[lang_item("Display")]
+#[diagnostic_item("Display")]
 pub trait Display<Self>
 {
     fn fmt<'_0_1, '_1_1, '_2_1>;

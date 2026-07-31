@@ -1,13 +1,14 @@
 # Final LLBC before serialization:
 
 // Full name: core::ops::range::RangeFrom::<usize>
-#[lang_item("RangeFrom")]
+#[lang_item(RangeFrom)]
 pub struct RangeFrom::<usize> {
   start: usize,
 }
 
 // Full name: core::option::Option::<i32>
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option::<i32> {
   None,
   Some(i32),

@@ -1,13 +1,13 @@
 # Final LLBC before serialization:
 
 // Full name: core::any::TypeId
-#[lang_item("type_id")]
+#[lang_item(TypeId)]
 pub struct TypeId {
   data: [*const (); 2usize],
 }
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::intrinsics::type_id
@@ -47,7 +47,7 @@ where
 }
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)

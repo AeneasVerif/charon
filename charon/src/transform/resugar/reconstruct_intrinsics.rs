@@ -18,7 +18,7 @@ impl UllbcPass for Transform {
             let Some(fun_decl) = ctx.ctx.translated.fun_decls.get(*fun_id) else {
                 return;
             };
-            if fun_decl.item_meta.lang_item.as_deref() == Some("offset_of")
+            if fun_decl.item_meta.lang_item.as_ref() == Some(&from_rustc::LangItem::OffsetOf)
                 && let generics = fn_ptr.pre_mono_generics(&ctx.ctx.translated)
                 && let Some(ty) = generics.types.get(TypeVarId::ZERO)
                 && let TyKind::Adt(tref) = ty.kind()

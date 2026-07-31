@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: alloc::string::String
-#[lang_item("String")]
+#[lang_item(String)]
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_glue
@@ -9,7 +9,7 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut String)
 = <opaque>
 
 // Full name: alloc::string::{String}::new
-#[lang_item("string_new")]
+#[diagnostic_item("string_new")]
 pub fn new() -> String
 = <opaque>
 

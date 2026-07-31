@@ -1146,7 +1146,10 @@ impl ItemMeta {
         }
 
         if let Some(id) = &self.lang_item {
-            writeln!(f, "{tab}#[lang_item(\"{id}\")]")?;
+            writeln!(f, "{tab}#[lang_item({id:?})]")?;
+        }
+        if let Some(id) = &self.diagnostic_item {
+            writeln!(f, "{tab}#[diagnostic_item(\"{id}\")]")?;
         }
         write!(f, "{tab}")?;
         if self.attr_info.public {

@@ -1,5 +1,6 @@
 //! Meta-information about programs (spans, etc.).
 
+use super::from_rustc::{self, LangItem};
 pub use super::meta_utils::*;
 use crate::ast::{FunDeclId, ItemId};
 use crate::names::Name;
@@ -150,7 +151,9 @@ pub enum Attribute {
     HasPostcondition(FunDeclId),
     /// A doc-comment such as `/// ...`.
     DocComment(String),
-    /// A non-charon-specific attribute.
+    /// A built-in attribute.
+    Builtin(#[drive(skip)] from_rustc::AttributeKind),
+    /// None of the above.
     Unknown(RawAttribute),
 }
 
@@ -260,9 +263,12 @@ pub struct ItemMeta {
     /// declared opaque via a command-line argument.
     #[drive(skip)]
     pub opacity: ItemOpacity,
-    /// If the item is built-in, record its internal builtin identifier.
+    /// If the item is a rustc lang item, record which one it is.
     #[drive(skip)]
-    pub lang_item: Option<String>,
+    pub lang_item: Option<LangItem>,
+    /// If the item is a rustc diagnostic item, record its internal identifier.
+    #[drive(skip)]
+    pub diagnostic_item: Option<String>,
 }
 
 /// A filename.

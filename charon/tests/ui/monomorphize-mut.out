@@ -1,43 +1,43 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<&_ mut _><'_0, T0>
 
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait core::marker::Sized::<&_ mut _><'_0, T0>
 {
     proof ImpliedClause0: (T0: core::marker::MetaSized::<&_ mut _><'_0>)
     non-dyn-compatible
 }
 
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<&_ mut &_ mut _><'_0, '_1, T0>
 
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait core::marker::Sized::<&_ mut &_ mut _><'_0, '_1, T0>
 {
     proof ImpliedClause0: (T0: core::marker::MetaSized::<&_ mut &_ mut _><'_0, '_1>)
     non-dyn-compatible
 }
 
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
@@ -46,13 +46,13 @@ where
     non-dyn-compatible
 }
 
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1]),
     TraitClause1: (T0: core::marker::Sized::<&_ mut _><'_0>),
 
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1]),
@@ -62,13 +62,13 @@ where
     non-dyn-compatible
 }
 
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<Iter<_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: Sized),
     TypeOutlives0: T0: '_0,
 
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait core::marker::Sized::<Iter<_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: Sized),
@@ -78,13 +78,13 @@ where
     non-dyn-compatible
 }
 
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<IterWrapper<_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: Sized),
     TypeOutlives0: T0: '_0,
 
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait core::marker::Sized::<IterWrapper<_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: Sized),
@@ -94,14 +94,14 @@ where
     non-dyn-compatible
 }
 
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<IterMut<_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: Sized),
     TypeOutlives0: T0: '_0,
     TypeOutlives1: T0: '_0,
 
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait core::marker::Sized::<IterMut<_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: Sized),
@@ -112,27 +112,28 @@ where
     non-dyn-compatible
 }
 
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<test_crate::List::<&_ mut _><_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 
 // Full name: core::marker::Destruct
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
 {
     fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum core::option::Option::<&_ mut _><'_0, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
@@ -141,7 +142,7 @@ where
   Some(&'_0 mut T0),
 }
 
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait core::marker::Destruct::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
@@ -150,7 +151,8 @@ where
     non-dyn-compatible
 }
 
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1]),
@@ -160,7 +162,7 @@ where
   Some(core::option::Option::<&_ mut _><'_0, T0>[TraitClause1]),
 }
 
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait core::marker::Destruct::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1]),
@@ -177,7 +179,7 @@ where
     TypeOutlives0: T: 'a,
     TypeOutlives1: T: 'a,
 
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait core::marker::Destruct::<IterMut<_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: Sized),
@@ -189,7 +191,7 @@ where
 }
 
 // Full name: core::marker::Tuple
-#[lang_item("tuple_trait")]
+#[lang_item(Tuple)]
 pub trait Tuple<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -197,7 +199,7 @@ pub trait Tuple<Self>
 }
 
 // Full name: core::ops::function::FnOnce
-#[lang_item("fn_once")]
+#[lang_item(FnOnce)]
 pub trait FnOnce<Self, Args>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -210,7 +212,8 @@ pub trait FnOnce<Self, Args>
 }
 
 // Full name: core::option::Option
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option<T>
 where
     TraitClause0: (T: Sized),
@@ -219,7 +222,8 @@ where
   Some(T),
 }
 
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum core::option::Option::<&_ mut &_ mut _><'_0, '_1, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut &_ mut _><'_0, '_1>),
@@ -238,7 +242,8 @@ where
   tail: core::option::Option::<&_ mut _><'a, T>[{built_in impl core::marker::Sized::<&_ mut _><'a> for T}],
 }
 
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum core::option::Option::<Iter<_, _>[TraitClause1]><'_0, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<Iter<_, _>[TraitClause0]><'_0>[TraitClause1]),
@@ -258,7 +263,8 @@ where
   Iter<'a, T>[TraitClause0],
 }
 
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum core::option::Option::<IterWrapper<_, _>[TraitClause1]><'_0, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<IterWrapper<_, _>[TraitClause0]><'_0>[TraitClause1]),
@@ -281,7 +287,7 @@ where
 = <opaque>
 
 // Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
+#[lang_item(GlobalAlloc)]
 pub struct Global {}
 
 // Full name: test_crate::option_mut

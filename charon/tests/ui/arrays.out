@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::ops::index::Index
-#[lang_item("index")]
+#[lang_item(Index)]
 pub trait Index<Self, Idx, Self_Output>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -16,7 +16,7 @@ pub trait Index<Self, Idx, Self_Output>
 }
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -35,7 +35,7 @@ where
 = <opaque>
 
 // Full name: core::ops::index::IndexMut
-#[lang_item("index_mut")]
+#[lang_item(IndexMut)]
 pub trait IndexMut<Self, Idx, Self_Clause1_Output>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -57,7 +57,7 @@ where
 = <opaque>
 
 // Full name: core::marker::Destruct
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
@@ -65,7 +65,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::ops::range::Range
-#[lang_item("Range")]
+#[lang_item(Range)]
 pub struct Range<Idx>
 where
     TraitClause0: (Idx: Sized),
@@ -75,7 +75,8 @@ where
 }
 
 // Full name: core::option::Option
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option<T>
 where
     TraitClause0: (T: Sized),
@@ -84,7 +85,7 @@ where
   Some(T),
 }
 
-#[lang_item("drop_glue")]
+#[lang_item(DropGlue)]
 unsafe fn core::ptr::drop_glue<'_0, T>(_1: &'_0 mut T)
 where
     TraitClause0: (T: Destruct),
@@ -110,7 +111,7 @@ pub trait Sealed<Self>
 }
 
 // Full name: core::slice::index::SliceIndex
-#[lang_item("SliceIndex")]
+#[diagnostic_item("SliceIndex")]
 pub trait SliceIndex<Self, T, Self_Output>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -241,7 +242,7 @@ where
 }
 
 // Full name: core::slice::{[T]}::len
-#[lang_item("slice_len_fn")]
+#[lang_item(SliceLen)]
 pub fn len<'_0, T>(_1: &'_0 [T]) -> usize
 where
     TraitClause0: (T: Sized),

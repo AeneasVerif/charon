@@ -3,7 +3,7 @@
 opaque type core::marker::MetaSized::{vtable}
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 struct test_crate::A::{vtable} {

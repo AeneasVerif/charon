@@ -9,11 +9,11 @@ impl "impl_Debug_for_TryFromSliceError" Debug for TryFromSliceError {
 }
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -21,7 +21,8 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[lang_item("clone")]
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -30,7 +31,8 @@ pub trait Clone<Self>
 }
 
 // Full name: core::marker::Copy
-#[lang_item("copy")]
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
 pub trait Copy<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -39,7 +41,7 @@ pub trait Copy<Self>
 }
 
 // Full name: core::result::Result
-#[lang_item("Result")]
+#[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
     TraitClause0: (T: Sized),
@@ -50,7 +52,7 @@ where
 }
 
 // Full name: core::convert::TryFrom
-#[lang_item("TryFrom")]
+#[diagnostic_item("TryFrom")]
 pub trait TryFrom<Self, T>
 {
     proof ImpliedClause0: (Self: Sized)

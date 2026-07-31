@@ -3,7 +3,7 @@ use convert_case::{Case, Casing};
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 
-use crate::GenerateCtx;
+use super::GenerateCtx;
 
 /// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
 pub fn repr_name(n: &Name) -> String {

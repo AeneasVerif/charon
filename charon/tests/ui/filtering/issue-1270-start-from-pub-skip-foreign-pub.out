@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -13,7 +13,8 @@ pub trait Sized<Self>
 }
 
 // Full name: core::convert::From
-#[lang_item("From")]
+#[lang_item(From)]
+#[diagnostic_item("From")]
 pub trait From<Self, T>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -44,7 +45,7 @@ pub enum Infallible {
 }
 
 // Full name: core::ops::control_flow::ControlFlow
-#[lang_item("ControlFlow")]
+#[diagnostic_item("ControlFlow")]
 pub enum ControlFlow<B, C>
 where
     TraitClause0: (B: Sized),
@@ -64,7 +65,7 @@ where
 = <opaque>
 
 // Full name: core::result::Result
-#[lang_item("Result")]
+#[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
     TraitClause0: (T: Sized),
@@ -100,7 +101,7 @@ where
 = <opaque>
 
 // Full name: alloc::string::String
-#[lang_item("String")]
+#[lang_item(String)]
 pub opaque type String
 
 // Full name: test_crate::example

@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -13,7 +13,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::marker::Destruct
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
@@ -21,7 +21,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::ops::range::RangeFrom
-#[lang_item("RangeFrom")]
+#[lang_item(RangeFrom)]
 pub struct RangeFrom<Idx>
 where
     TraitClause0: (Idx: Sized),
@@ -30,7 +30,8 @@ where
 }
 
 // Full name: core::option::Option
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option<T>
 where
     TraitClause0: (T: Sized),
@@ -54,7 +55,7 @@ pub trait Sealed<Self>
 }
 
 // Full name: core::slice::index::SliceIndex
-#[lang_item("SliceIndex")]
+#[diagnostic_item("SliceIndex")]
 pub trait SliceIndex<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -148,7 +149,7 @@ where
 }
 
 // Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
+#[lang_item(GlobalAlloc)]
 pub struct Global {}
 
 // Full name: test_crate::foo::bar

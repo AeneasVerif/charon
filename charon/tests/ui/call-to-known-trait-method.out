@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -13,7 +13,8 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[lang_item("clone")]
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -33,7 +34,8 @@ impl "impl_Clone_for_u8" Clone for u8 {
 }
 
 // Full name: core::cmp::PartialEq
-#[lang_item("eq")]
+#[lang_item(PartialEq)]
+#[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0_1, '_1_1>;
@@ -51,7 +53,7 @@ impl "impl_PartialEq_bool_for_bool" PartialEq<bool> for bool {
 }
 
 // Full name: core::default::Default
-#[lang_item("Default")]
+#[diagnostic_item("Default")]
 pub trait Default<Self>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -71,7 +73,7 @@ impl "impl_Default_for_bool" Default for bool {
 }
 
 // Full name: core::marker::Destruct
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
@@ -79,7 +81,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: alloc::string::String
-#[lang_item("String")]
+#[lang_item(String)]
 pub opaque type String
 
 // Full name: test_crate::Struct

@@ -50,6 +50,7 @@ impl Transform {
             source_text: fun_decl.item_meta.source_text,
             attr_info: fun_decl.item_meta.attr_info,
             lang_item: fun_decl.item_meta.lang_item,
+            diagnostic_item: fun_decl.item_meta.diagnostic_item,
         };
         fun_decl.src = ItemSource::TraitImpl {
             impl_ref: TraitImplRef {

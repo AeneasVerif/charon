@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -13,14 +13,14 @@ pub trait Sized<Self>
 }
 
 // Full name: core::marker::Destruct
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
-#[lang_item("drop_glue")]
+#[lang_item(DropGlue)]
 unsafe fn core::ptr::drop_glue<'_0, T>(_1: &'_0 mut T)
 where
     TraitClause0: (T: Destruct),
@@ -40,7 +40,7 @@ where
 }
 
 // Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
+#[lang_item(GlobalAlloc)]
 pub struct Global {}
 
 // Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_glue
@@ -65,7 +65,7 @@ where
 = <opaque>
 
 // Full name: alloc::string::String
-#[lang_item("String")]
+#[lang_item(String)]
 pub opaque type String
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_glue

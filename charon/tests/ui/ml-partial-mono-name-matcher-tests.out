@@ -1,31 +1,31 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<&_ mut _><'_0, T0>
 
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait core::marker::Sized::<&_ mut _><'_0, T0>
 {
     proof ImpliedClause0: (T0: core::marker::MetaSized::<&_ mut _><'_0>)
     non-dyn-compatible
 }
 
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<Option<&_ mut _>><'_0, T0>
 
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait core::marker::Sized::<Option<&_ mut _>><'_0, T0>
 {
     proof ImpliedClause0: (T0: core::marker::MetaSized::<Option<&_ mut _>><'_0>)
@@ -33,14 +33,14 @@ pub trait core::marker::Sized::<Option<&_ mut _>><'_0, T0>
 }
 
 // Full name: core::marker::Destruct
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
 
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
 {
     fn drop_glue<'_0_1>;
@@ -48,13 +48,14 @@ pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
 }
 
 // Full name: core::option::Option
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option<T> {
   None,
   Some(T),
 }
 
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait core::marker::Destruct::<Option<&_ mut _>><'_0, T0>
 {
     fn drop_glue<'_0_1>;

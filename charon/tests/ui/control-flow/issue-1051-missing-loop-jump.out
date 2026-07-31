@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -13,7 +13,8 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[lang_item("clone")]
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -33,7 +34,8 @@ impl "impl_Clone_for_i32" Clone for i32 {
 }
 
 // Full name: core::cmp::PartialEq
-#[lang_item("eq")]
+#[lang_item(PartialEq)]
+#[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0_1, '_1_1>;
@@ -41,7 +43,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Ordering
-#[lang_item("Ordering")]
+#[lang_item(OrderingEnum)]
 pub enum Ordering {
   Less,
   Equal,
@@ -49,7 +51,8 @@ pub enum Ordering {
 }
 
 // Full name: core::option::Option
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option<T>
 where
     TraitClause0: (T: Sized),
@@ -59,7 +62,8 @@ where
 }
 
 // Full name: core::cmp::PartialOrd
-#[lang_item("partial_ord")]
+#[lang_item(PartialOrd)]
+#[diagnostic_item("PartialOrd")]
 pub trait PartialOrd<Self, Rhs>
 {
     proof ImpliedClause0: (Self: PartialEq<Rhs>)
@@ -89,7 +93,7 @@ impl "impl_PartialOrd_i32_for_i32" PartialOrd<i32> for i32 {
 }
 
 // Full name: core::iter::range::Step
-#[lang_item("range_step")]
+#[diagnostic_item("range_step")]
 pub trait Step<Self>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -125,7 +129,7 @@ impl "impl_Step_for_i32" Step for i32 {
 }
 
 // Full name: core::ops::range::Range
-#[lang_item("Range")]
+#[lang_item(Range)]
 pub struct Range<Idx>
 where
     TraitClause0: (Idx: Sized),
@@ -135,7 +139,8 @@ where
 }
 
 // Full name: core::iter::traits::iterator::Iterator
-#[lang_item("iterator")]
+#[lang_item(Iterator)]
+#[diagnostic_item("Iterator")]
 pub trait Iterator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)

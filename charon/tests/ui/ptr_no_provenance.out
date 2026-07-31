@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -13,7 +13,8 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[lang_item("clone")]
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -22,7 +23,8 @@ pub trait Clone<Self>
 }
 
 // Full name: core::cmp::PartialEq
-#[lang_item("eq")]
+#[lang_item(PartialEq)]
+#[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0_1, '_1_1>;
@@ -30,7 +32,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
-#[lang_item("Eq")]
+#[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {
     proof ImpliedClause0: (Self: PartialEq<Self>)
@@ -38,7 +40,7 @@ pub trait Eq<Self>
 }
 
 // Full name: core::cmp::Ordering
-#[lang_item("Ordering")]
+#[lang_item(OrderingEnum)]
 pub enum Ordering {
   Less,
   Equal,
@@ -46,7 +48,8 @@ pub enum Ordering {
 }
 
 // Full name: core::option::Option
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option<T>
 where
     TraitClause0: (T: Sized),
@@ -56,7 +59,8 @@ where
 }
 
 // Full name: core::cmp::PartialOrd
-#[lang_item("partial_ord")]
+#[lang_item(PartialOrd)]
+#[diagnostic_item("PartialOrd")]
 pub trait PartialOrd<Self, Rhs>
 {
     proof ImpliedClause0: (Self: PartialEq<Rhs>)
@@ -65,7 +69,7 @@ pub trait PartialOrd<Self, Rhs>
 }
 
 // Full name: core::cmp::Ord
-#[lang_item("Ord")]
+#[diagnostic_item("Ord")]
 pub trait Ord<Self>
 {
     proof ImpliedClause0: (Self: Eq)
@@ -123,7 +127,7 @@ pub trait Hasher<Self>
 }
 
 // Full name: core::hash::Hash
-#[lang_item("Hash")]
+#[diagnostic_item("Hash")]
 pub trait Hash<Self>
 {
     fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)>;
@@ -145,11 +149,12 @@ impl "impl_Hash_for_unit" Hash for () {
 }
 
 // Full name: core::marker::Send
-#[lang_item("Send")]
+#[diagnostic_item("Send")]
 pub trait Send<Self>
 
 // Full name: core::marker::Copy
-#[lang_item("copy")]
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
 pub trait Copy<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -158,19 +163,20 @@ pub trait Copy<Self>
 }
 
 // Full name: core::marker::Sync
-#[lang_item("sync")]
+#[lang_item(Sync)]
+#[diagnostic_item("Sync")]
 pub trait Sync<Self>
 
 // Full name: core::marker::Freeze
-#[lang_item("freeze")]
+#[lang_item(Freeze)]
 pub trait Freeze<Self>
 
 // Full name: core::marker::Unpin
-#[lang_item("unpin")]
+#[lang_item(Unpin)]
 pub trait Unpin<Self>
 
 // Full name: core::ptr::metadata::Pointee
-#[lang_item("pointee_trait")]
+#[lang_item(PointeeTrait)]
 pub trait Pointee<Self>
 {
     proof ImpliedClause0: (Self::Metadata: Sized)
@@ -213,14 +219,14 @@ where
 = <opaque>
 
 // Full name: core::ptr::without_provenance
-#[lang_item("ptr_without_provenance")]
+#[diagnostic_item("ptr_without_provenance")]
 pub fn without_provenance<T>(_1: usize) -> *const T
 where
     TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::ptr::null
-#[lang_item("ptr_null")]
+#[diagnostic_item("ptr_null")]
 pub fn null<T>() -> *const T
 where
     TraitClause0: (T: Thin),

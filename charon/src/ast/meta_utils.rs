@@ -188,6 +188,7 @@ impl ItemMeta {
             is_local,
             opacity,
             lang_item: None,
+            diagnostic_item: None,
         }
     }
 }

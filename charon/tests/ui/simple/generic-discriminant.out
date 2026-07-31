@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -13,7 +13,8 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[lang_item("clone")]
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -22,7 +23,8 @@ pub trait Clone<Self>
 }
 
 // Full name: core::cmp::PartialEq
-#[lang_item("eq")]
+#[lang_item(PartialEq)]
+#[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0_1, '_1_1>;
@@ -30,7 +32,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
-#[lang_item("Eq")]
+#[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {
     proof ImpliedClause0: (Self: PartialEq<Self>)
@@ -47,7 +49,7 @@ pub trait Hasher<Self>
 }
 
 // Full name: core::hash::Hash
-#[lang_item("Hash")]
+#[diagnostic_item("Hash")]
 pub trait Hash<Self>
 {
     fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)>;
@@ -55,11 +57,12 @@ pub trait Hash<Self>
 }
 
 // Full name: core::marker::Send
-#[lang_item("Send")]
+#[diagnostic_item("Send")]
 pub trait Send<Self>
 
 // Full name: core::marker::Copy
-#[lang_item("copy")]
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
 pub trait Copy<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -68,15 +71,16 @@ pub trait Copy<Self>
 }
 
 // Full name: core::marker::Sync
-#[lang_item("sync")]
+#[lang_item(Sync)]
+#[diagnostic_item("Sync")]
 pub trait Sync<Self>
 
 // Full name: core::marker::Unpin
-#[lang_item("unpin")]
+#[lang_item(Unpin)]
 pub trait Unpin<Self>
 
 // Full name: core::marker::DiscriminantKind
-#[lang_item("discriminant_kind")]
+#[lang_item(DiscriminantKind)]
 pub trait DiscriminantKind<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -100,7 +104,7 @@ where
     TraitClause0: (T: Sized),
 
 // Full name: core::mem::discriminant
-#[lang_item("mem_discriminant")]
+#[diagnostic_item("mem_discriminant")]
 pub fn discriminant<'_0, T>(v: &'_0 T) -> Discriminant<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),

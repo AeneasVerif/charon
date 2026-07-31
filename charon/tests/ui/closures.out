@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Tuple
-#[lang_item("tuple_trait")]
+#[lang_item(Tuple)]
 pub trait Tuple<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -13,7 +13,7 @@ pub trait Tuple<Self>
 }
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -21,7 +21,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::ops::function::FnOnce
-#[lang_item("fn_once")]
+#[lang_item(FnOnce)]
 pub trait FnOnce<Self, Args, Self_Output>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -33,7 +33,7 @@ pub trait FnOnce<Self, Args, Self_Output>
 }
 
 // Full name: core::ops::function::FnMut
-#[lang_item("fn_mut")]
+#[lang_item(FnMut)]
 pub trait FnMut<Self, Args, Self_Clause1_Output>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -45,7 +45,7 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
 }
 
 // Full name: core::marker::Destruct
-#[lang_item("destruct")]
+#[lang_item(Destruct)]
 pub trait Destruct<Self>
 {
     fn drop_glue<'_0_1>;
@@ -65,7 +65,8 @@ where
 = <opaque>
 
 // Full name: core::clone::Clone
-#[lang_item("clone")]
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
 pub trait Clone<Self>
 {
     proof ImpliedClause0: (Self: Sized)
@@ -85,7 +86,7 @@ impl "impl_Clone_for_u32" Clone for u32 {
 }
 
 // Full name: core::ops::function::Fn
-#[lang_item("fn")]
+#[lang_item(Fn)]
 pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -97,7 +98,8 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
 }
 
 // Full name: core::option::Option
-#[lang_item("Option")]
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
 pub enum Option<T>
 where
     TraitClause0: (T: Sized),

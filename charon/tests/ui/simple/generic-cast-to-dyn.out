@@ -3,15 +3,15 @@
 opaque type core::any::Any::{vtable}
 
 // Full name: core::marker::MetaSized
-#[lang_item("meta_sized")]
+#[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::any::TypeId
-#[lang_item("type_id")]
+#[lang_item(TypeId)]
 pub opaque type TypeId
 
 // Full name: core::any::Any
-#[lang_item("Any")]
+#[diagnostic_item("Any")]
 pub trait Any<Self>
 where
     TypeOutlives0: Self: 'static,
@@ -22,7 +22,7 @@ where
 }
 
 // Full name: core::marker::Sized
-#[lang_item("sized")]
+#[lang_item(Sized)]
 pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
