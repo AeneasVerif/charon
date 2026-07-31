@@ -9,25 +9,25 @@ type char_value = (Uchar.t[@visitors.opaque]) [@@deriving show, eq, ord]
 (* Ancestors for the literal visitors *)
 class ['self] iter_literal_base =
   object (self : 'self)
-    inherit [_] iter_big_int
+    inherit [_] Generated_Meta.iter_meta
     method visit_char_value : 'env -> char_value -> unit = fun _ _ -> ()
   end
 
 class ['self] map_literal_base =
   object (self : 'self)
-    inherit [_] map_big_int
+    inherit [_] Generated_Meta.map_meta
     method visit_char_value : 'env -> char_value -> char_value = fun _ x -> x
   end
 
 class virtual ['self] reduce_literal_base =
   object (self : 'self)
-    inherit [_] reduce_big_int
+    inherit [_] Generated_Meta.reduce_meta
     method visit_char_value : 'env -> char_value -> 'a = fun _ _ -> self#zero
   end
 
 class virtual ['self] mapreduce_literal_base =
   object (self : 'self)
-    inherit [_] mapreduce_big_int
+    inherit [_] Generated_Meta.mapreduce_meta
 
     method visit_char_value : 'env -> char_value -> char_value * 'a =
       fun _ x -> (x, self#zero)

@@ -1316,6 +1316,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
         match kind {
             ItemSource::TopLevel
             | ItemSource::Closure { .. }
+            | ItemSource::Spec { .. }
             | ItemSource::TargetDependent { .. }
             | ItemSource::VTableTy { .. }
             | ItemSource::VTableInstance { .. }

@@ -167,6 +167,12 @@ pub enum ItemSource {
     Closure {
         info: ClosureInfo,
     },
+    /// This item is a specification attached to another item, via
+    /// `#[charon::precondition]`/`#[charon::postcondition]`.
+    Spec {
+        kind: SpecKind,
+        item: ItemId,
+    },
     /// This is the default value of an associated const or method in a trait declaration.
     TraitDecl {
         /// The trait declaration this item belongs to.
@@ -215,6 +221,14 @@ pub enum ItemSource {
     /// calls the real method.
     VTableMethodShim,
     VTableInstanceMono,
+}
+
+#[derive(
+    Debug, Clone, Copy, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo, PartialEq, Eq,
+)]
+pub enum SpecKind {
+    Precondition,
+    Postcondition,
 }
 
 #[derive(
@@ -431,7 +445,6 @@ pub struct TraitDecl {
 )]
 pub struct TraitAssocConst {
     pub name: TraitItemName,
-    #[drive(skip)]
     #[serde_state(stateless)]
     pub attr_info: AttrInfo,
     pub ty: Ty,
@@ -444,7 +457,6 @@ pub struct TraitAssocConst {
 )]
 pub struct TraitAssocTy {
     pub name: TraitItemName,
-    #[drive(skip)]
     #[serde_state(stateless)]
     pub attr_info: AttrInfo,
     pub default: Option<TraitAssocTyImpl>,

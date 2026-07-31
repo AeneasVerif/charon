@@ -1,0 +1,25 @@
+# Final LLBC before serialization:
+
+// Full name: test_crate::function
+fn function()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::function::precondition
+fn precondition() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+
+

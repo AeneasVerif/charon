@@ -289,9 +289,10 @@ impl VisitAst for DepsForItem<'_> {
         self.insert_edge(*id);
     }
 
-    fn visit_item_meta(&mut self, _: &ItemMeta) -> ControlFlow<Self::Break> {
-        // Don't look inside because trait impls contain their own id in their name.
-        Continue(())
+    fn visit_item_meta(&mut self, meta: &ItemMeta) -> ControlFlow<Self::Break> {
+        // Don't visit the name because trait impls contain their own id in it. Attributes however
+        // can contain genuine dependencies, notably between an item and its specifications.
+        meta.attr_info.drive(self)
     }
     fn visit_item_source(&mut self, _: &ItemSource) -> ControlFlow<Self::Break> {
         // Don't look inside to avoid recording a dependency from a method impl to the impl block
@@ -332,7 +333,7 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {
             ItemRef::Fun(d) => {
                 let FunDecl {
                     def_id,
-                    item_meta: _,
+                    item_meta,
                     generics,
                     signature,
                     src,
@@ -340,6 +341,7 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {
                     body,
                 } = d;
                 let _ = def_id.drive(&mut visitor); // For `seen_current_id`
+                let _ = item_meta.attr_info.drive(&mut visitor);
                 // Skip `d.is_global_initializer` to avoid incorrect mutual dependencies.
                 // TODO: add `is_global_initializer` to `ItemSource`.
                 let _ = generics.drive(&mut visitor);

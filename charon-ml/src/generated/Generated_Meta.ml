@@ -7,7 +7,41 @@
     definitions by running `make generate-ml` in the crate root. The
     code-generation code is in `charon/src/bin/generate-ml`. *)
 
+open Identifiers
+module TypeDeclId = IdGen ()
+module GlobalDeclId = IdGen ()
+module TraitDeclId = IdGen ()
+module TraitImplId = IdGen ()
+module FunDeclId = IdGen ()
+
 type path_buf = string [@@deriving show, ord, eq]
+
+(* Ancestors for the meta visitors *)
+class ['self] iter_meta_base =
+  object (self : 'self)
+    inherit [_] BigInt.iter_big_int
+    method visit_path_buf : 'env -> path_buf -> unit = fun _ _ -> ()
+  end
+
+class ['self] map_meta_base =
+  object (self : 'self)
+    inherit [_] BigInt.map_big_int
+    method visit_path_buf : 'env -> path_buf -> path_buf = fun _ x -> x
+  end
+
+class virtual ['self] reduce_meta_base =
+  object (self : 'self)
+    inherit [_] BigInt.reduce_big_int
+    method visit_path_buf : 'env -> path_buf -> 'a = fun _ _ -> self#zero
+  end
+
+class virtual ['self] mapreduce_meta_base =
+  object (self : 'self)
+    inherit [_] BigInt.mapreduce_big_int
+
+    method visit_path_buf : 'env -> path_buf -> path_buf * 'a =
+      fun _ x -> (x, self#zero)
+  end
 
 (** Information about the attributes and visibility of an item, field or
     variant.. *)
@@ -60,6 +94,18 @@ and attribute =
   | AttrTransparent
       (** The structure is treated as a transparent wrapper around its sole
           field. Written [#[charon::transparent]]. *)
+  | AttrIsPrecondition of item_id
+      (** An item annotated with [#[charon::precondition]]. This makes it a
+          precondition for its parent item. *)
+  | AttrIsPostcondition of item_id
+      (** An item annotated with [#[charon::postcondition]]. This makes it a
+          postcondition for its parent item. *)
+  | AttrHasPrecondition of fun_decl_id
+      (** An item that has a precondition that applies to it. The referenced
+          item is a function the specifies the condition. *)
+  | AttrHasPostcondition of fun_decl_id
+      (** An item that has a postcondition that applies to it. The referenced
+          item is a function the specifies the condition. *)
   | AttrDocComment of string  (** A doc-comment such as [/// ...]. *)
   | AttrUnknown of raw_attribute  (** A non-charon-specific attribute. *)
 
@@ -80,11 +126,22 @@ and file_name =
       (** A local path (a file coming from the current crate for instance) *)
   | NotReal of string  (** A "not real" file name (macro, query, etc.) *)
 
+and fun_decl_id = (FunDeclId.id[@visitors.opaque])
+and global_decl_id = (GlobalDeclId.id[@visitors.opaque])
+
 (** [#[inline]] built-in attribute. *)
 and inline_attr =
   | Hint  (** [#[inline]] *)
   | Never  (** [#[inline(never)]] *)
   | Always  (** [#[inline(always)]] *)
+
+(** The id of a translated item. *)
+and item_id =
+  | IdType of type_decl_id
+  | IdTraitDecl of trait_decl_id
+  | IdTraitImpl of trait_impl_id
+  | IdFun of fun_decl_id
+  | IdGlobal of global_decl_id
 
 and loc = {
   line : int;  (** The (1-based) line number. *)
@@ -128,4 +185,44 @@ and span = {
 
 (** Span information *)
 and span_data = { file : file_id; beg_loc : loc; end_loc : loc }
-[@@deriving show, ord, eq]
+
+and trait_decl_id = (TraitDeclId.id[@visitors.opaque])
+and trait_impl_id = (TraitImplId.id[@visitors.opaque])
+
+and type_decl_id = (TypeDeclId.id[@visitors.opaque])
+[@@deriving
+  show,
+  eq,
+  ord,
+  visitors
+    {
+      name = "iter_meta";
+      monomorphic = [ "env" ];
+      variety = "iter";
+      ancestors = [ "iter_meta_base" ];
+      nude = true (* Don't inherit VisitorsRuntime *);
+    },
+  visitors
+    {
+      name = "map_meta";
+      monomorphic = [ "env" ];
+      variety = "map";
+      ancestors = [ "map_meta_base" ];
+      nude = true (* Don't inherit VisitorsRuntime *);
+    },
+  visitors
+    {
+      name = "reduce_meta";
+      monomorphic = [ "env" ];
+      variety = "reduce";
+      ancestors = [ "reduce_meta_base" ];
+      nude = true (* Don't inherit VisitorsRuntime *);
+    },
+  visitors
+    {
+      name = "mapreduce_meta";
+      monomorphic = [ "env" ];
+      variety = "mapreduce";
+      ancestors = [ "mapreduce_meta_base" ];
+      nude = true (* Don't inherit VisitorsRuntime *);
+    }]
