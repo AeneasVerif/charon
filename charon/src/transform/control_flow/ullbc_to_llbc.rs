@@ -948,9 +948,6 @@ impl<'a> ReconstructCtx<'a> {
             src::StatementKind::SetDiscriminant(place, variant_id) => {
                 tgt::StatementKind::SetDiscriminant(place, variant_id)
             }
-            src::StatementKind::CopyNonOverlapping(copy) => {
-                tgt::StatementKind::CopyNonOverlapping(copy)
-            }
             src::StatementKind::StorageLive(var_id) => tgt::StatementKind::StorageLive(var_id),
             src::StatementKind::StorageDead(var_id) => tgt::StatementKind::StorageDead(var_id),
             src::StatementKind::Assert { assert, on_failure } => tgt::StatementKind::Assert {
@@ -959,6 +956,7 @@ impl<'a> ReconstructCtx<'a> {
                 on_unwind: tgt::Statement::new(span, tgt::StatementKind::UnwindResume).into_block(),
             },
             src::StatementKind::PlaceMention(place) => tgt::StatementKind::PlaceMention(place),
+            src::StatementKind::Borrowck(statement) => tgt::StatementKind::Borrowck(statement),
             src::StatementKind::Nop => tgt::StatementKind::Nop,
         };
         tgt::Statement::new(span, st)

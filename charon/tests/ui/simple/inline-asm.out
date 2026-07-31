@@ -36,8 +36,7 @@ fn multiple_targets(x: u32) -> u32
             return
         }
     }
-    ↳⚡ storage_dead(x)
-        undefined_behavior
+    ↳⚡ undefined_behavior
 }
 
 

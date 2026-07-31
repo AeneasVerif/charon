@@ -158,6 +158,7 @@ fn main()
     _0 = ()
     storage_live(f_1)
     f_1 = const Some<u8>[{built_in impl Sized for u8}]
+    fake_read(f_1)
     storage_live(_2)
     storage_live(_3)
     _3 = copy f_1
@@ -171,6 +172,8 @@ fn main()
     _5 = copy f_1
     f_4 = cast<Some<u8>[{built_in impl Sized for u8}], fn(u8) -> Option<u8>[{built_in impl Sized for u8}]>(move _5)
     storage_dead(_5)
+    fake_read(f_4)
+    set_type(typeof(f_4) == fn(u8) -> Option<u8>[{built_in impl Sized for u8}])
     storage_live(_6)
     storage_live(_7)
     _7 = copy f_4
@@ -181,6 +184,7 @@ fn main()
     storage_dead(_6)
     storage_live(f_8)
     f_8 = const Foo
+    fake_read(f_8)
     storage_live(_9)
     storage_live(_10)
     _10 = copy f_8
@@ -211,6 +215,7 @@ fn main()
     storage_dead(_9)
     storage_live(f_12)
     f_12 = const Variant<'12, i32>[{built_in impl Sized for i32}]
+    fake_read(f_12)
     storage_live(_13)
     storage_live(_14)
     _14 = copy f_12

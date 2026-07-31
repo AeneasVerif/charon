@@ -154,6 +154,7 @@ pub fn next(b: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in i
     storage_dead(x)
     vec = move ret
     storage_dead(_3)
+    fake_read(vec)
     storage_live(_7)
     _7 = move vec
     _0 = Option::Some { 0: move _7 }

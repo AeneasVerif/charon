@@ -22,6 +22,7 @@ fn main()
         _1 = [const 1i32, const 2i32, const 3i32];
         storage_live(_2);
         _2 = const 0usize;
+        fake_read(_1);
         _ = _1[copy _2];
         storage_dead(_2);
         storage_dead(_1);
@@ -31,6 +32,7 @@ fn main()
         storage_dead(_3);
         storage_live(x);
         x = const 127i8;
+        fake_read(x);
         storage_live(_6);
         storage_live(_7);
         _7 = copy x;

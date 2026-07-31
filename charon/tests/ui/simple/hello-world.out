@@ -30,6 +30,7 @@ fn main()
     a = to_string::<str><'5>(move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
+    fake_read(a)
     storage_dead(_3)
     _0 = ()
     conditional_drop[drop_glue<'6>] a

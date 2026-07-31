@@ -157,6 +157,7 @@ pub fn use_incr()
     _0 = ()
     storage_live(x)
     x = const 0u32
+    fake_read(x)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -554,6 +555,7 @@ pub fn impl_Counter_for_usize::incr<'_0>(self: &'_0 mut usize) -> usize
     storage_live(_3)
     storage_live(x)
     x = copy (*self)
+    fake_read(x)
     _3 = copy (*self) panic.+ const 1usize
     (*self) = move _3
     _0 = copy x

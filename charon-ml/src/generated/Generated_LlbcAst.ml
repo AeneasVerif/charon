@@ -37,9 +37,6 @@ and statement_kind =
           [Assign(y, Rvalue::Use(Operand::Move(x)))]. *)
   | SetDiscriminant of place * variant_id
       (** Not used today because we take MIR built. *)
-  | CopyNonOverlapping of copy_non_overlapping
-      (** Equivalent to std::intrinsics::copy_nonoverlapping; this is not
-          modelled as a function call as it cannot diverge *)
   | StorageLive of local_id
       (** Indicates that this local should be allocated; if it is already
           allocated, this frees the local and re-allocates it. The arguments do
@@ -58,6 +55,8 @@ and statement_kind =
           valid though, so this statement is not a no-op: it can trigger UB if
           the place's projections are not valid (e.g. because they go out of
           bounds). *)
+  | Borrowck of borrowck_statement
+      (** Statements that only affect borrow-checking. *)
   | Drop of place * fn_ptr * drop_kind * block
       (** Drop the value at the given place.
 

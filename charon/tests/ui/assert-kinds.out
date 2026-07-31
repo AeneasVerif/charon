@@ -42,6 +42,7 @@ fn main()
         _1 = [const 1i32, const 2i32, const 3i32];
         storage_live(_2);
         _2 = const 0usize;
+        fake_read(_1);
         _3 = copy _2 < const 3usize;
         assert assert(move _3 == true) (bounds_check) -> bb2 (unwind: bb1);
     }
@@ -75,6 +76,7 @@ fn main()
         storage_dead(_4);
         storage_live(x);
         x = const 127i8;
+        fake_read(x);
         storage_live(_7);
         storage_live(_8);
         _8 = copy x;

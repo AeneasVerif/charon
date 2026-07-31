@@ -193,6 +193,8 @@ fn main()
     _2 = closure {  }
     f = cast<as_fn, fn()>(const as_fn)
     storage_dead(_2)
+    fake_read(f)
+    set_type(typeof(f) == fn())
     storage_live(_3)
     storage_live(_4)
     _4 = copy f

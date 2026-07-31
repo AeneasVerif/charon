@@ -136,6 +136,7 @@ fn main()
         _0 = ();
         storage_live(f);
         f = Foo {  };
+        fake_read(f);
         storage_live(_2);
         _3 = const 255u8 checked.+ const 1u8;
         assert assert(move _3.1 == false) (overflow) -> bb2 (unwind: bb1);
@@ -150,6 +151,7 @@ fn main()
         storage_dead(_2);
         storage_live(f_ref);
         f_ref = &f;
+        fake_read(f_ref);
         _0 = ();
         storage_dead(f_ref);
         conditional_drop[drop_glue<'3>] f -> bb5 (unwind: bb3);

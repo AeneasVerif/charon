@@ -224,20 +224,7 @@ fn precondition_check(this: *const (), count: isize, size: usize)
             unwind_terminate
         storage_dead(_11)
         _9 = panic_nounwind_fmt<'8>(move _10, const false)
-        ↳⚡ storage_dead(_10)
-            storage_dead(_9)
-            storage_dead(msg)
-            storage_dead(size)
-            storage_dead(count)
-            storage_dead(this)
-            undefined_behavior
-        storage_dead(_10)
-        storage_dead(_9)
-        storage_dead(msg)
-        storage_dead(size)
-        storage_dead(count)
-        storage_dead(this)
-        undefined_behavior
+        ↳⚡ undefined_behavior
     }
     storage_dead(_7)
     storage_dead(_6)
@@ -291,9 +278,7 @@ where
             storage_dead(self)
             unwind_continue
         _4 = precondition_check(move _5, move _7, move _8)
-        ↳⚡ storage_dead(count)
-            storage_dead(self)
-            undefined_behavior
+        ↳⚡ undefined_behavior
         storage_dead(_8)
         storage_dead(_7)
         storage_dead(_5)
@@ -337,6 +322,7 @@ fn main()
     _0 = ()
     storage_live(s)
     s = [const 11i32, const 42i32]
+    fake_read(s)
     storage_live(ptr)
     storage_live(_3)
     storage_live(_4)
@@ -347,6 +333,7 @@ fn main()
     ptr = as_ptr<'6, i32>[{built_in impl Sized for i32}](move _3)
     ↳⚡ unwind_continue
     storage_dead(_3)
+    fake_read(ptr)
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)

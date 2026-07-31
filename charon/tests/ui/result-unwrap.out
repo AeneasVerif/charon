@@ -74,12 +74,6 @@ where
                 storage_dead(e)
                 storage_dead(self)
                 unwind_continue
-            storage_dead(_5)
-            storage_dead(_4)
-            storage_dead(_3)
-            storage_dead(e)
-            storage_dead(self)
-            undefined_behavior
         },
     }
     t = move (self as variant Result::Ok).0

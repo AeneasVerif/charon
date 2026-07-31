@@ -224,6 +224,28 @@ and borrow_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 4 -> Ok BUniqueImmutable
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and borrowck_statement_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
+    : (borrowck_statement, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* x_0 = place_of_postcard ctx st in
+         Ok (FakeRead x_0)
+     | 1 ->
+         let* place = place_of_postcard ctx st in
+         let* ty = ty_of_postcard ctx st in
+         let* variance = variance_of_postcard ctx st in
+         Ok (SetType (place, ty, variance))
+     | 2 ->
+         let* x_0 = ty_of_postcard ctx st in
+         let* x_1 = region_of_postcard ctx st in
+         Ok (SetOutlives (x_0, x_1))
+     | 3 ->
+         let* x_0 = trait_ref_of_postcard ctx st in
+         Ok (PredicateHolds x_0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and builtin_assert_kind_of_postcard (ctx : of_postcard_ctx)
     (st : postcard_state) : (builtin_assert_kind, string) result =
   combine_error_msgs st __FUNCTION__
@@ -460,14 +482,6 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* x_0 = string_of_postcard ctx st in
          Ok (COpaque x_0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
-and copy_non_overlapping_of_postcard (ctx : of_postcard_ctx)
-    (st : postcard_state) : (copy_non_overlapping, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* src = operand_of_postcard ctx st in
-     let* dst = operand_of_postcard ctx st in
-     let* count = operand_of_postcard ctx st in
-     Ok ({ src; dst; count } : copy_non_overlapping))
 
 and de_bruijn_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (de_bruijn_id, string) result =
@@ -1458,17 +1472,17 @@ module Ullbc = struct
            let* x_1 = variant_id_of_postcard ctx st in
            Ok (SetDiscriminant (x_0, x_1))
        | 2 ->
-           let* x_0 = box_of_postcard copy_non_overlapping_of_postcard ctx st in
-           Ok (CopyNonOverlapping x_0)
-       | 3 ->
            let* x_0 = local_id_of_postcard ctx st in
            Ok (StorageLive x_0)
-       | 4 ->
+       | 3 ->
            let* x_0 = local_id_of_postcard ctx st in
            Ok (StorageDead x_0)
-       | 5 ->
+       | 4 ->
            let* x_0 = place_of_postcard ctx st in
            Ok (PlaceMention x_0)
+       | 5 ->
+           let* x_0 = borrowck_statement_of_postcard ctx st in
+           Ok (Borrowck x_0)
        | 6 ->
            let* assert_ = assertion_of_postcard ctx st in
            let* on_failure = abort_kind_of_postcard ctx st in
@@ -1592,17 +1606,17 @@ module Llbc = struct
            let* x_1 = variant_id_of_postcard ctx st in
            Ok (SetDiscriminant (x_0, x_1))
        | 2 ->
-           let* x_0 = box_of_postcard copy_non_overlapping_of_postcard ctx st in
-           Ok (CopyNonOverlapping x_0)
-       | 3 ->
            let* x_0 = local_id_of_postcard ctx st in
            Ok (StorageLive x_0)
-       | 4 ->
+       | 3 ->
            let* x_0 = local_id_of_postcard ctx st in
            Ok (StorageDead x_0)
-       | 5 ->
+       | 4 ->
            let* x_0 = place_of_postcard ctx st in
            Ok (PlaceMention x_0)
+       | 5 ->
+           let* x_0 = borrowck_statement_of_postcard ctx st in
+           Ok (Borrowck x_0)
        | 6 ->
            let* place = place_of_postcard ctx st in
            let* fn_ptr = fn_ptr_of_postcard ctx st in

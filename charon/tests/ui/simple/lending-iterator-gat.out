@@ -142,6 +142,7 @@ where
     item_2 = &mut ((*self) as variant Option::Some).0
     storage_live(item_3)
     item_3 = &(*(*item_2))
+    fake_read(item_3)
     storage_live(_4)
     _4 = Option::None {  }
     (*self) = move _4
@@ -520,14 +521,17 @@ pub fn main()
     _0 = ()
     storage_live(x)
     x = const 42i32
+    fake_read(x)
     storage_live(iter)
     storage_live(_3)
     _25 = move _26
     _3 = &(*_25)
     iter = Option::Some { 0: move _3 }
     storage_dead(_3)
+    fake_read(iter)
     storage_live(sum)
     sum = const 0i32
+    fake_read(sum)
     storage_live(_5)
     storage_live(_6)
     _6 = copy iter
@@ -581,6 +585,7 @@ pub fn main()
         storage_dead(_15)
         storage_live(kind)
         kind = AssertKind::Eq {  }
+        fake_read(kind)
         storage_live(_18)
         _18 = move kind
         storage_live(_19)

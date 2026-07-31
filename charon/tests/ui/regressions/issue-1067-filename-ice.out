@@ -101,6 +101,8 @@ fn main()
     storage_live(buf)
     buf = new<u8>[{built_in impl Sized for u8}]()
     ↳⚡ unwind_continue
+    fake_read(buf)
+    set_type(typeof(buf) == Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}])
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -115,9 +117,7 @@ fn main()
     _7 = move _9
     _6 = &(*_7)
     _5 = @ArrayToSliceShared<'_, u8, 5usize>(move _6)
-    ↳⚡ storage_dead(_9)
-        storage_dead(_8)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     storage_dead(_6)
     _3 = impl_Write_for_Vec_u8::write_all<'11, '12, Global>[{built_in impl Sized for Global}](move _4, move _5)
     ↳⚡ conditional_drop[impl_Destruct_for_Vec::drop_glue<'13, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] buf

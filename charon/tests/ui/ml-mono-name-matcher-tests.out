@@ -50,9 +50,9 @@ fn foo()
     let _11: &'11 Option::<i32>; // anonymous local
     let _12: &'12 Option::<i32>; // anonymous local
     let _13: &'15 [bool; 1usize]; // anonymous local
-    let _14: &'19 Option::<i32>; // anonymous local
+    let _14: &'20 Option::<i32>; // anonymous local
     let _15: Option::<i32>; // anonymous local
-    let _16: &'20 [bool; 1usize]; // anonymous local
+    let _16: &'21 [bool; 1usize]; // anonymous local
     let _17: [bool; 1usize]; // anonymous local
 
     storage_live(_12)
@@ -88,14 +88,10 @@ fn foo()
     _5 = &(*_10)
     _4 = &(*_5)
     slice = @ArrayToSliceShared<'_, bool, 1usize>(move _4)
-    ↳⚡ storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(_15)
-        storage_dead(_14)
-        storage_dead(_13)
-        storage_dead(_12)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     storage_dead(_4)
+    fake_read(slice)
+    set_type(typeof(slice) == &'17 [bool])
     storage_dead(_5)
     storage_live(_6)
     storage_live(_7)
@@ -103,7 +99,7 @@ fn foo()
     _8 = &(*slice) with_metadata(copy slice.metadata)
     storage_live(_9)
     _9 = RangeFrom::<usize> { start: const 1usize }
-    _7 = index::<bool, RangeFrom::<usize>><'18>(move _8, move _9)
+    _7 = index::<bool, RangeFrom::<usize>><'19>(move _8, move _9)
     ↳⚡ storage_dead(_11)
         storage_dead(_10)
         unwind_continue
@@ -222,9 +218,11 @@ fn mono_usage()
     storage_live(_container1)
     _container1 = test_crate::{MonoContainer::<i32>}::create::<i32>(const 42i32)
     ↳⚡ unwind_continue
+    fake_read(_container1)
     storage_live(_container2)
     _container2 = test_crate::{MonoContainer::<&'_ str>}::create::<&'_ str>(const "test")
     ↳⚡ unwind_continue
+    fake_read(_container2)
     _0 = ()
     storage_dead(_container2)
     storage_dead(_container1)

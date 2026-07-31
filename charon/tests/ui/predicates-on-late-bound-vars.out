@@ -129,6 +129,7 @@ fn foo()
     storage_live(ref_b)
     ref_b = new<bool>[{built_in impl Sized for bool}](const false)
     ↳⚡ unwind_continue
+    fake_read(ref_b)
     storage_live(_2)
     storage_live(_3)
     // `try_borrow` has a type that includes predicates on late bound regions.

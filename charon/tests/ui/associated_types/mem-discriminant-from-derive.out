@@ -80,11 +80,13 @@ pub fn impl_PartialEq_Enum_for_Enum::eq<'_0, '_1>(self: &'_0 Enum, other: &'_1 E
     _4 = &(*self)
     __self_discr = @discriminant((*_4))
     storage_dead(_4)
+    fake_read(__self_discr)
     storage_live(__arg1_discr)
     storage_live(_6)
     _6 = &(*other)
     __arg1_discr = @discriminant((*_6))
     storage_dead(_6)
+    fake_read(__arg1_discr)
     storage_live(_7)
     storage_live(_8)
     _8 = copy __self_discr

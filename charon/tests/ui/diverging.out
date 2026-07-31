@@ -34,8 +34,6 @@ fn call_my_panic()
     _1 = my_panic(const 0u32)
     ↳⚡ storage_dead(_1)
         unwind_continue
-    storage_dead(_1)
-    undefined_behavior
 }
 
 

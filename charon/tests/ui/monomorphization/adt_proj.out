@@ -18,6 +18,8 @@ fn main()
     _0 = ()
     storage_live(res)
     res = Result::<u32, u32>::Ok { 0: const 0u32 }
+    fake_read(res)
+    set_type(typeof(res) == Result::<u32, u32>)
     match res {
         Result::<u32, u32>::Ok => {
         },

@@ -19,51 +19,29 @@ fn slice_pat1()
     _0 = ()
     storage_live(array)
     array = @ArrayRepeat<i32, 4usize>(const 0i32)
-    ↳⚡ storage_dead(_10)
-        storage_dead(_9)
-        storage_dead(_8)
-        storage_dead(_7)
-        storage_dead(_6)
-        storage_dead(_5)
-        undefined_behavior
+    ↳⚡ undefined_behavior
+    fake_read(array)
+    set_type(typeof(array) == [i32; 4usize])
     storage_live(_a)
     storage_live(_5)
     _5 = &array
     storage_live(_6)
     _6 = @ArrayIndexShared<'_, i32, 4usize>(move _5, const 0usize)
-    ↳⚡ storage_dead(_10)
-        storage_dead(_9)
-        storage_dead(_8)
-        storage_dead(_7)
-        storage_dead(_6)
-        storage_dead(_5)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _a = copy (*_6)
     storage_live(_b)
     storage_live(_7)
     _7 = &array
     storage_live(_8)
     _8 = @ArraySubSliceShared<'_, i32, 4usize>(move _7, const 1usize, const 3usize)
-    ↳⚡ storage_dead(_10)
-        storage_dead(_9)
-        storage_dead(_8)
-        storage_dead(_7)
-        storage_dead(_6)
-        storage_dead(_5)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _b = copy (*_8)
     storage_live(_c)
     storage_live(_9)
     _9 = &array
     storage_live(_10)
     _10 = @ArrayIndexShared<'_, i32, 4usize>(move _9, const 3usize)
-    ↳⚡ storage_dead(_10)
-        storage_dead(_9)
-        storage_dead(_8)
-        storage_dead(_7)
-        storage_dead(_6)
-        storage_dead(_5)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _c = copy (*_10)
     _0 = ()
     storage_dead(_c)
@@ -90,7 +68,7 @@ fn slice_pat2()
     let _c: &'7 i32; // local
     let _6: &'8 [i32; 4usize]; // anonymous local
     let _7: &'9 [i32; 4usize]; // anonymous local
-    let _8: &'10 [i32; 4usize]; // anonymous local
+    let _8: &'11 [i32; 4usize]; // anonymous local
     let _9: [i32; 4usize]; // anonymous local
     let _10: &'_ [i32; 4usize]; // anonymous local
     let _11: &'_ i32; // anonymous local
@@ -103,16 +81,7 @@ fn slice_pat2()
     storage_live(_8)
     storage_live(_9)
     _9 = @ArrayRepeat<i32, 4usize>(const 0i32)
-    ↳⚡ storage_dead(_15)
-        storage_dead(_14)
-        storage_dead(_13)
-        storage_dead(_12)
-        storage_dead(_11)
-        storage_dead(_10)
-        storage_dead(_9)
-        storage_dead(_8)
-        storage_dead(_7)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _8 = &_9
     _7 = move _8
     storage_live(_0)
@@ -123,54 +92,29 @@ fn slice_pat2()
     _6 = move _7
     _2 = &(*_6)
     array_ref = &(*_2)
+    fake_read(array_ref)
+    set_type(typeof(array_ref) == &'10 [i32; 4usize])
     storage_dead(_2)
     storage_live(_a)
     storage_live(_10)
     _10 = &(*array_ref)
     storage_live(_11)
     _11 = @ArrayIndexShared<'_, i32, 4usize>(move _10, const 0usize)
-    ↳⚡ storage_dead(_15)
-        storage_dead(_14)
-        storage_dead(_13)
-        storage_dead(_12)
-        storage_dead(_11)
-        storage_dead(_10)
-        storage_dead(_9)
-        storage_dead(_8)
-        storage_dead(_7)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _a = &(*_11)
     storage_live(_b)
     storage_live(_12)
     _12 = &(*array_ref)
     storage_live(_13)
     _13 = @ArraySubSliceShared<'_, i32, 4usize>(move _12, const 1usize, const 3usize)
-    ↳⚡ storage_dead(_15)
-        storage_dead(_14)
-        storage_dead(_13)
-        storage_dead(_12)
-        storage_dead(_11)
-        storage_dead(_10)
-        storage_dead(_9)
-        storage_dead(_8)
-        storage_dead(_7)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _b = &(*_13)
     storage_live(_c)
     storage_live(_14)
     _14 = &(*array_ref)
     storage_live(_15)
     _15 = @ArrayIndexShared<'_, i32, 4usize>(move _14, const 3usize)
-    ↳⚡ storage_dead(_15)
-        storage_dead(_14)
-        storage_dead(_13)
-        storage_dead(_12)
-        storage_dead(_11)
-        storage_dead(_10)
-        storage_dead(_9)
-        storage_dead(_8)
-        storage_dead(_7)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _c = &(*_15)
     _0 = ()
     storage_dead(_c)
@@ -209,7 +153,7 @@ fn slice_pat3()
     let _13: usize; // anonymous local
     let _14: usize; // anonymous local
     let _15: &'10 [i32; 4usize]; // anonymous local
-    let _16: &'12 [i32; 4usize]; // anonymous local
+    let _16: &'13 [i32; 4usize]; // anonymous local
     let _17: [i32; 4usize]; // anonymous local
     let _18: &'_ [i32]; // anonymous local
     let _19: &'_ i32; // anonymous local
@@ -226,18 +170,7 @@ fn slice_pat3()
     storage_live(_16)
     storage_live(_17)
     _17 = @ArrayRepeat<i32, 4usize>(const 0i32)
-    ↳⚡ storage_dead(_27)
-        storage_dead(_26)
-        storage_dead(_24)
-        storage_dead(_23)
-        storage_dead(_22)
-        storage_dead(_20)
-        storage_dead(_19)
-        storage_dead(_18)
-        storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(_15)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _16 = &_17
     _15 = move _16
     storage_live(_0)
@@ -254,19 +187,10 @@ fn slice_pat3()
     _3 = &(*_11)
     _2 = &(*_3)
     slice = @ArrayToSliceShared<'_, i32, 4usize>(move _2)
-    ↳⚡ storage_dead(_27)
-        storage_dead(_26)
-        storage_dead(_24)
-        storage_dead(_23)
-        storage_dead(_22)
-        storage_dead(_20)
-        storage_dead(_19)
-        storage_dead(_18)
-        storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(_15)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     storage_dead(_2)
+    fake_read(slice)
+    set_type(typeof(slice) == &'12 [i32])
     storage_dead(_3)
     _8 = copy slice.metadata
     _7 = move _8
@@ -279,18 +203,7 @@ fn slice_pat3()
     _18 = &(*slice) with_metadata(copy slice.metadata)
     storage_live(_19)
     _19 = @SliceIndexShared<'_, i32>(move _18, const 0usize)
-    ↳⚡ storage_dead(_27)
-        storage_dead(_26)
-        storage_dead(_24)
-        storage_dead(_23)
-        storage_dead(_22)
-        storage_dead(_20)
-        storage_dead(_19)
-        storage_dead(_18)
-        storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(_15)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _a = &(*_19)
     storage_live(_b)
     storage_live(_12)
@@ -309,18 +222,7 @@ fn slice_pat3()
     storage_dead(_21)
     storage_live(_23)
     _23 = @SliceSubSliceShared<'_, i32>(move _20, const 1usize, copy _22)
-    ↳⚡ storage_dead(_27)
-        storage_dead(_26)
-        storage_dead(_24)
-        storage_dead(_23)
-        storage_dead(_22)
-        storage_dead(_20)
-        storage_dead(_19)
-        storage_dead(_18)
-        storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(_15)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _b = &(*_23) with_metadata(copy _14)
     storage_live(_c)
     storage_live(_24)
@@ -332,18 +234,7 @@ fn slice_pat3()
     storage_dead(_25)
     storage_live(_27)
     _27 = @SliceIndexShared<'_, i32>(move _24, copy _26)
-    ↳⚡ storage_dead(_27)
-        storage_dead(_26)
-        storage_dead(_24)
-        storage_dead(_23)
-        storage_dead(_22)
-        storage_dead(_20)
-        storage_dead(_19)
-        storage_dead(_18)
-        storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(_15)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _c = &(*_27)
     _0 = ()
     storage_dead(_c)
@@ -411,9 +302,7 @@ fn slice_pat4<'_0>(x: &'_0 [u32])
     _7 = &(*x) with_metadata(copy x.metadata)
     storage_live(_8)
     _8 = @SliceIndexShared<'_, u32>(move _7, const 0usize)
-    ↳⚡ storage_dead(_8)
-        storage_dead(_7)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _y = &(*_8)
     _0 = ()
     storage_dead(_y)
@@ -477,9 +366,7 @@ fn slice_pat5<'_0>(x: &'_0 Unsized)
     _8 = &((*x)).0 with_metadata(copy x.metadata)
     storage_live(_9)
     _9 = @SliceIndexShared<'_, u32>(move _8, const 0usize)
-    ↳⚡ storage_dead(_9)
-        storage_dead(_8)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _y = copy (*_9)
     _0 = ()
     storage_dead(_y)

@@ -420,13 +420,12 @@ fn cbd(prf_input: [u8; 33usize])
         _9 = copy i
         storage_live(_10)
         _10 = const 0usize
+        fake_read(prf_input)
         storage_live(_11)
         _11 = &mut prf_input
         storage_live(_12)
         _12 = @ArrayIndexMut<'_, u8, 33usize>(move _11, copy _10)
-        ↳⚡ storage_dead(_12)
-            storage_dead(_11)
-            undefined_behavior
+        ↳⚡ undefined_behavior
         (*_12) = move _9
         storage_dead(_9)
         storage_dead(_10)
@@ -532,6 +531,7 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
             storage_dead(_14)
             storage_live(kind)
             kind = AssertKind::Eq {  }
+            fake_read(kind)
             storage_live(_17)
             _17 = move kind
             storage_live(_18)

@@ -199,9 +199,11 @@ fn use_generic()
     storage_live(_int_generic)
     _int_generic = new<i32>[{built_in impl Sized for i32}](const 42i32)
     ↳⚡ unwind_continue
+    fake_read(_int_generic)
     storage_live(_str_generic)
     _str_generic = new<&'14 str>[{built_in impl Sized for &'14 str}](const "hello")
     ↳⚡ unwind_continue
+    fake_read(_str_generic)
     storage_live(_3)
     storage_live(_4)
     _4 = &_int_generic

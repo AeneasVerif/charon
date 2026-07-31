@@ -171,6 +171,7 @@ fn main()
     _0 = ()
     storage_live(x)
     x = const 0u32
+    fake_read(x)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -220,6 +221,7 @@ fn main()
         storage_dead(_11)
         storage_live(kind)
         kind = AssertKind::Eq {  }
+        fake_read(kind)
         storage_live(_14)
         _14 = move kind
         storage_live(_15)

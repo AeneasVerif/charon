@@ -1,0 +1,73 @@
+# Final LLBC before serialization:
+
+// Full name: core::intrinsics::assume
+pub unsafe fn assume(b_1: bool)
+= <intrinsic:assume>
+
+// Full name: core::marker::MetaSized
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::intrinsics::copy_nonoverlapping
+pub unsafe fn copy_nonoverlapping<T>(src_1: *const T, dst_2: *mut T, count_3: usize)
+where
+    TraitClause0: (T: Sized),
+= <intrinsic:copy_nonoverlapping>
+
+// Full name: test_crate::intrinsic_statements
+unsafe fn intrinsic_statements<T>(condition: bool, src: *const T, dst: *mut T, count: usize)
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: (); // return
+    let condition: bool; // arg #1
+    let src: *const T; // arg #2
+    let dst: *mut T; // arg #3
+    let count: usize; // arg #4
+    let _5: bool; // anonymous local
+    let _6: *const T; // anonymous local
+    let _7: *mut T; // anonymous local
+    let _8: usize; // anonymous local
+    let _9: (); // anonymous local
+    let _10: (); // anonymous local
+
+    storage_live(_0)
+    storage_live(_9)
+    storage_live(_10)
+    _0 = ()
+    storage_live(_5)
+    _5 = copy condition
+    _9 = assume(move _5)
+    ↳⚡ undefined_behavior
+    storage_dead(_5)
+    storage_live(_6)
+    _6 = copy src
+    storage_live(_7)
+    _7 = copy dst
+    storage_live(_8)
+    _8 = copy count
+    _10 = copy_nonoverlapping<T>[TraitClause0](move _6, move _7, move _8)
+    ↳⚡ undefined_behavior
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_6)
+    _0 = ()
+    storage_dead(_10)
+    storage_dead(_9)
+    storage_dead(count)
+    storage_dead(dst)
+    storage_dead(src)
+    storage_dead(condition)
+    return
+}
+
+
+

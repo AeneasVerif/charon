@@ -309,30 +309,10 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
             storage_dead(force_no_backtrace)
             storage_dead(fmt)
             unwind_continue
-        storage_dead(_12)
-        storage_dead(_11)
-        storage_dead(pi)
-        storage_dead(_4)
-        storage_dead(force_no_backtrace)
-        storage_dead(fmt)
-        undefined_behavior
     }
     storage_live(_4)
     _4 = abort()
-    ↳⚡ storage_dead(_12)
-        storage_dead(_11)
-        storage_dead(pi)
-        storage_dead(_4)
-        storage_dead(force_no_backtrace)
-        storage_dead(fmt)
-        undefined_behavior
-    storage_dead(_12)
-    storage_dead(_11)
-    storage_dead(pi)
-    storage_dead(_4)
-    storage_dead(force_no_backtrace)
-    storage_dead(fmt)
-    undefined_behavior
+    ↳⚡ undefined_behavior
 }
 
 pub fn core::intrinsics::size_of<T>() -> usize
@@ -344,6 +324,11 @@ pub fn core::intrinsics::align_of<T>() -> usize
 where
     TraitClause0: (T: Sized),
 = <intrinsic:align_of>
+
+pub unsafe fn core::intrinsics::copy_nonoverlapping<T>(src_1: *const T, dst_2: *mut T, count_3: usize)
+where
+    TraitClause0: (T: Sized),
+= <intrinsic:copy_nonoverlapping>
 
 // Full name: core::marker::{impl Copy for usize}
 impl "impl_Copy_for_usize" Copy for usize {
@@ -447,8 +432,7 @@ pub fn count_ones(self: usize) -> u32
     storage_live(_2)
     _2 = copy self
     _0 = ctpop<usize>[{built_in impl Sized for usize}, impl_Copy_for_usize](move _2)
-    ↳⚡ storage_dead(self)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     storage_dead(_2)
     storage_dead(self)
     return
@@ -527,10 +511,6 @@ pub fn panic_nounwind_fmt<'_0>(fmt: Arguments<'_0>, force_no_backtrace: bool) ->
         storage_dead(force_no_backtrace)
         storage_dead(fmt)
         unwind_terminate
-    storage_dead(_3)
-    storage_dead(force_no_backtrace)
-    storage_dead(fmt)
-    undefined_behavior
 }
 
 fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: usize)
@@ -572,16 +552,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
             unwind_terminate
         storage_dead(_7)
         _5 = panic_nounwind_fmt<'8>(move _6, const false)
-        ↳⚡ storage_dead(_6)
-            storage_dead(_5)
-            storage_dead(msg)
-            storage_dead(align)
-            undefined_behavior
-        storage_dead(_6)
-        storage_dead(_5)
-        storage_dead(msg)
-        storage_dead(align)
-        undefined_behavior
+        ↳⚡ undefined_behavior
     }
     storage_dead(_3)
     _0 = ()
@@ -613,8 +584,7 @@ pub unsafe fn new_unchecked(align: usize) -> Alignment
         storage_live(_4)
         _4 = copy align
         _3 = core::mem::alignment::{Alignment}::new_unchecked::precondition_check(move _4)
-        ↳⚡ storage_dead(align)
-            undefined_behavior
+        ↳⚡ undefined_behavior
         storage_dead(_4)
         storage_dead(_3)
     } else {
@@ -825,9 +795,6 @@ where
     ↳⚡ storage_dead(_3)
         storage_dead(self)
         unwind_continue
-    storage_dead(_3)
-    storage_dead(self)
-    undefined_behavior
 }
 
 // Full name: core::mem::SizedTypeProperties::ALIGNMENT
@@ -938,9 +905,8 @@ where
 fn core::ptr::copy_nonoverlapping::precondition_check(_1: *const (), _2: *mut (), _3: usize, _4: usize, _5: usize)
 = <opaque>
 
-// Full name: core::ptr::copy_nonoverlapping
 #[diagnostic_item("ptr_copy_nonoverlapping")]
-pub unsafe fn copy_nonoverlapping<T>(src: *const T, dst: *mut T, count: usize)
+pub unsafe fn core::ptr::copy_nonoverlapping<T>(src: *const T, dst: *mut T, count: usize)
 where
     TraitClause0: (T: Sized),
 {
@@ -960,12 +926,15 @@ where
     let _13: *const T; // anonymous local
     let _14: *mut T; // anonymous local
     let _15: usize; // anonymous local
+    let _16: (); // anonymous local
 
     storage_live(_0)
+    storage_live(_16)
     _0 = ()
     storage_live(_4)
     _4 = check_language_ub()
-    ↳⚡ storage_dead(count)
+    ↳⚡ storage_dead(_16)
+        storage_dead(count)
         storage_dead(dst)
         storage_dead(src)
         unwind_continue
@@ -983,23 +952,22 @@ where
         storage_dead(_9)
         storage_live(_10)
         _10 = core::mem::size_of<T>[TraitClause0]()
-        ↳⚡ storage_dead(count)
+        ↳⚡ storage_dead(_16)
+            storage_dead(count)
             storage_dead(dst)
             storage_dead(src)
             unwind_continue
         storage_live(_11)
         _11 = core::mem::align_of<T>[TraitClause0]()
-        ↳⚡ storage_dead(count)
+        ↳⚡ storage_dead(_16)
+            storage_dead(count)
             storage_dead(dst)
             storage_dead(src)
             unwind_continue
         storage_live(_12)
         _12 = copy count
         _5 = core::ptr::copy_nonoverlapping::precondition_check(move _6, move _8, move _10, move _11, move _12)
-        ↳⚡ storage_dead(count)
-            storage_dead(dst)
-            storage_dead(src)
-            undefined_behavior
+        ↳⚡ undefined_behavior
         storage_dead(_12)
         storage_dead(_11)
         storage_dead(_10)
@@ -1015,10 +983,12 @@ where
     _14 = copy dst
     storage_live(_15)
     _15 = copy count
-    copy_nonoverlapping(move _13, move _14, move _15)
+    _16 = core::intrinsics::copy_nonoverlapping<T>[TraitClause0](move _13, move _14, move _15)
+    ↳⚡ undefined_behavior
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
+    storage_dead(_16)
     storage_dead(count)
     storage_dead(dst)
     storage_dead(src)
@@ -1046,7 +1016,7 @@ where
     _4 = &raw const (*y)
     storage_live(_5)
     _5 = &raw mut (*x)
-    _3 = copy_nonoverlapping<T>[TraitClause0](move _4, move _5, const 1usize)
+    _3 = core::ptr::copy_nonoverlapping<T>[TraitClause0](move _4, move _5, const 1usize)
     ↳⚡ storage_dead(y)
         storage_dead(x)
         unwind_continue

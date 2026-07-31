@@ -159,6 +159,7 @@ fn use_foo()
     storage_live(foo)
     foo = mk_foo()
     ↳⚡ unwind_continue
+    fake_read(foo)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -240,6 +241,7 @@ where
     storage_live(foo)
     foo = TraitClause1::make_foo()
     ↳⚡ unwind_continue
+    fake_read(foo)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -371,7 +373,7 @@ pub fn use_wrap()
     let _6: &'17 u32; // anonymous local
     let _7: &'18 u32; // anonymous local
     let _8: &'19 u32; // anonymous local
-    let _9: &'27 u32; // anonymous local
+    let _9: &'32 u32; // anonymous local
     let _10: u32; // anonymous local
 
     storage_live(_0)
@@ -387,6 +389,7 @@ pub fn use_wrap()
     _10 = const 42u32
     _9 = &_10
     _8 = move _9
+    fake_read(f)
     storage_live(_2)
     storage_live(_3)
     _3 = move f
@@ -404,7 +407,7 @@ pub fn use_wrap()
             storage_dead(_9)
             storage_dead(_8)
             unwind_terminate
-        conditional_drop[drop_glue<'26, u32>[{built_in impl Sized for u32}]] f
+        conditional_drop[drop_glue<'31, u32>[{built_in impl Sized for u32}]] f
         ↳⚡ storage_dead(_7)
             storage_dead(_10)
             storage_dead(_9)
@@ -415,10 +418,11 @@ pub fn use_wrap()
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
+    set_type(typeof(_2) <= WrapClone<&'25 u32>[{built_in impl Sized for &'25 u32}, {impl Clone for &'_0 T}<'25, u32>])
     storage_dead(_6)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[drop_glue<'25, u32>[{built_in impl Sized for u32}]] f
+    conditional_drop[drop_glue<'30, u32>[{built_in impl Sized for u32}]] f
     ↳⚡ storage_dead(_7)
         unwind_continue
     storage_dead(f)

@@ -239,6 +239,31 @@ and borrow_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `String "UniqueImmutable" -> Ok BUniqueImmutable
     | _ -> Error "")
 
+and borrowck_statement_of_json (ctx : of_json_ctx) (js : json) :
+    (borrowck_statement, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("FakeRead", fake_read) ] ->
+        let* fake_read = place_of_json ctx fake_read in
+        Ok (FakeRead fake_read)
+    | `Assoc
+        [
+          ( "SetType",
+            `Assoc [ ("place", place); ("ty", ty); ("variance", variance) ] );
+        ] ->
+        let* place = place_of_json ctx place in
+        let* ty = ty_of_json ctx ty in
+        let* variance = variance_of_json ctx variance in
+        Ok (SetType (place, ty, variance))
+    | `Assoc [ ("SetOutlives", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = ty_of_json ctx x_0 in
+        let* x_1 = region_of_json ctx x_1 in
+        Ok (SetOutlives (x_0, x_1))
+    | `Assoc [ ("PredicateHolds", predicate_holds) ] ->
+        let* predicate_holds = trait_ref_of_json ctx predicate_holds in
+        Ok (PredicateHolds predicate_holds)
+    | _ -> Error "")
+
 and builtin_assert_kind_of_json (ctx : of_json_ctx) (js : json) :
     (builtin_assert_kind, string) result =
   combine_error_msgs js __FUNCTION__
@@ -489,17 +514,6 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Opaque", opaque) ] ->
         let* opaque = string_of_json ctx opaque in
         Ok (COpaque opaque)
-    | _ -> Error "")
-
-and copy_non_overlapping_of_json (ctx : of_json_ctx) (js : json) :
-    (copy_non_overlapping, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("src", src); ("dst", dst); ("count", count) ] ->
-        let* src = operand_of_json ctx src in
-        let* dst = operand_of_json ctx dst in
-        let* count = operand_of_json ctx count in
-        Ok ({ src; dst; count } : copy_non_overlapping)
     | _ -> Error "")
 
 and de_bruijn_id_of_json (ctx : of_json_ctx) (js : json) :
@@ -1632,11 +1646,6 @@ module Ullbc = struct
           let* x_0 = place_of_json ctx x_0 in
           let* x_1 = variant_id_of_json ctx x_1 in
           Ok (SetDiscriminant (x_0, x_1))
-      | `Assoc [ ("CopyNonOverlapping", copy_non_overlapping) ] ->
-          let* copy_non_overlapping =
-            box_of_json copy_non_overlapping_of_json ctx copy_non_overlapping
-          in
-          Ok (CopyNonOverlapping copy_non_overlapping)
       | `Assoc [ ("StorageLive", storage_live) ] ->
           let* storage_live = local_id_of_json ctx storage_live in
           Ok (StorageLive storage_live)
@@ -1646,6 +1655,9 @@ module Ullbc = struct
       | `Assoc [ ("PlaceMention", place_mention) ] ->
           let* place_mention = place_of_json ctx place_mention in
           Ok (PlaceMention place_mention)
+      | `Assoc [ ("Borrowck", borrowck) ] ->
+          let* borrowck = borrowck_statement_of_json ctx borrowck in
+          Ok (Borrowck borrowck)
       | `Assoc
           [
             ( "Assert",
@@ -1828,11 +1840,6 @@ module Llbc = struct
           let* x_0 = place_of_json ctx x_0 in
           let* x_1 = variant_id_of_json ctx x_1 in
           Ok (SetDiscriminant (x_0, x_1))
-      | `Assoc [ ("CopyNonOverlapping", copy_non_overlapping) ] ->
-          let* copy_non_overlapping =
-            box_of_json copy_non_overlapping_of_json ctx copy_non_overlapping
-          in
-          Ok (CopyNonOverlapping copy_non_overlapping)
       | `Assoc [ ("StorageLive", storage_live) ] ->
           let* storage_live = local_id_of_json ctx storage_live in
           Ok (StorageLive storage_live)
@@ -1842,6 +1849,9 @@ module Llbc = struct
       | `Assoc [ ("PlaceMention", place_mention) ] ->
           let* place_mention = place_of_json ctx place_mention in
           Ok (PlaceMention place_mention)
+      | `Assoc [ ("Borrowck", borrowck) ] ->
+          let* borrowck = borrowck_statement_of_json ctx borrowck in
+          Ok (Borrowck borrowck)
       | `Assoc
           [
             ( "Drop",

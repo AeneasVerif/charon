@@ -143,6 +143,7 @@ fn multiple_adjacent()
     storage_dead(x_8)
     _a = move ret_7
     storage_dead(_2)
+    fake_read(_a)
     storage_live(_b)
     storage_live(_4)
     storage_live(_18)
@@ -185,6 +186,7 @@ fn multiple_adjacent()
     storage_dead(x_11)
     _b = move ret_10
     storage_dead(_4)
+    fake_read(_b)
     storage_live(_c)
     storage_live(_6)
     storage_live(_20)
@@ -237,6 +239,7 @@ fn multiple_adjacent()
     storage_dead(x_14)
     _c = move ret_13
     storage_dead(_6)
+    fake_read(_c)
     _0 = ()
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'8, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _c
     ↳⚡ conditional_drop[impl_Destruct_for_Vec::drop_glue<'5, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _b
@@ -310,6 +313,7 @@ fn multiple_values()
     storage_dead(x)
     _a = move ret
     storage_dead(_2)
+    fake_read(_a)
     _0 = ()
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'2, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a
     ↳⚡ unwind_continue
@@ -389,6 +393,7 @@ fn with_fn_calls()
     storage_dead(x)
     _a = move ret
     storage_dead(_2)
+    fake_read(_a)
     _0 = ()
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'3, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a
     ↳⚡ unwind_continue
@@ -408,6 +413,7 @@ fn repeated()
     storage_live(_a)
     _a = from_elem<u8>[{built_in impl Sized for u8}, impl_Clone_for_u8](const 1u8, const 3usize)
     ↳⚡ unwind_continue
+    fake_read(_a)
     _0 = ()
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'0, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a
     ↳⚡ unwind_continue

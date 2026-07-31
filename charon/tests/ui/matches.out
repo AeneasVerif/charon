@@ -133,11 +133,13 @@ pub fn test3(x: E2) -> u32
             y = const 0u32
         },
     }
+    fake_read(y)
     storage_live(z)
     z = id<u32>[{built_in impl Sized for u32}](const 3u32)
     ↳⚡ storage_dead(_7)
         storage_dead(x)
         unwind_continue
+    fake_read(z)
     storage_live(_5)
     _5 = copy y
     storage_live(_6)

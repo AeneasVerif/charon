@@ -166,7 +166,7 @@ fn main()
     let _3: &'7 (); // anonymous local
     let _4: &'8 (); // anonymous local
     let _5: &'9 (); // anonymous local
-    let _6: &'12 (); // anonymous local
+    let _6: &'14 (); // anonymous local
     let _7: (); // anonymous local
 
     storage_live(_5)
@@ -186,6 +186,8 @@ fn main()
     _2 = &(*_3)
     _m = unsize_cast<&'6 (), &'10 (dyn Broken<Assoc = ()> + '11), &impl_Broken_for_T::{vtable}<()>[{built_in impl Sized for ()}]>(move _2)
     storage_dead(_2)
+    fake_read(_m)
+    set_type(typeof(_m) == &'12 (dyn Broken<Assoc = ()> + '13))
     storage_dead(_3)
     _0 = ()
     storage_dead(_m)

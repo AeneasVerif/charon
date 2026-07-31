@@ -46,8 +46,10 @@ fn literal_float() -> f64
     storage_live(_0)
     storage_live(x)
     x = const 1f64
+    fake_read(x)
     storage_live(y)
     y = const 1.5f64
+    fake_read(y)
     storage_live(_3)
     _3 = copy x
     storage_live(_4)

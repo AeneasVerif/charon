@@ -302,12 +302,12 @@ pub(crate) fn generate(
                     extra_types: &[],
                 })), &[
                     "Call",
+                    "BorrowckStatement",
                     "DropKind",
                     "Assert",
                     "ItemSource",
                     "Locals",
                     "FunSig",
-                    "CopyNonOverlapping",
                     "Error",
                     "AbortKind",
                 ]),

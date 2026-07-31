@@ -88,6 +88,7 @@ fn move_values(flag: bool)
     _0 = ()
     storage_live(x_2)
     x_2 = NoCopy { 0: const 4u8 }
+    fake_read(x_2)
     storage_live(_v)
     storage_live(_4)
     storage_live(_5)
@@ -125,11 +126,13 @@ fn move_values(flag: bool)
     storage_dead(x_12)
     _v = move ret_11
     storage_dead(_4)
+    fake_read(_v)
     storage_live(_6)
     _6 = copy flag
     if move _6 {
         storage_live(y_7)
         y_7 = NoCopy { 0: const 5u8 }
+        fake_read(y_7)
         storage_live(_w)
         storage_live(_9)
         storage_live(_10)
@@ -177,6 +180,7 @@ fn move_values(flag: bool)
         storage_dead(x_15)
         _w = move ret_14
         storage_dead(_9)
+        fake_read(_w)
         _0 = ()
         conditional_drop[impl_Destruct_for_Vec::drop_glue<'6, NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]] _w
         ↳⚡ conditional_drop[impl_Destruct_for_Vec::drop_glue<'2, NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}]] _v

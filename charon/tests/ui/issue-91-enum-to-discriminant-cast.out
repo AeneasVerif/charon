@@ -110,6 +110,7 @@ fn main()
     _0 = ()
     storage_live(x_1)
     x_1 = Foo::A {  }
+    fake_read(x_1)
     storage_live(_2)
     storage_live(_3)
     _3 = copy x_1
@@ -126,6 +127,7 @@ fn main()
     storage_dead(_5)
     storage_live(x_8)
     x_8 = Ordering::Greater {  }
+    fake_read(x_8)
     storage_live(_9)
     storage_live(_10)
     _10 = move x_8

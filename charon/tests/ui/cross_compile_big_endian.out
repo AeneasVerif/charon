@@ -49,8 +49,12 @@ fn main()
     _0 = ()
     storage_live(x)
     x = const 52usize
+    fake_read(x)
+    set_type(typeof(x) == usize)
     storage_live(y)
     y = copy MAX
+    fake_read(y)
+    set_type(typeof(y) == usize)
     storage_live(z)
     storage_live(_4)
     _4 = copy y
@@ -60,10 +64,14 @@ fn main()
     z = move _6
     storage_dead(_5)
     storage_dead(_4)
+    fake_read(z)
     storage_live(a)
     a = const 102u128 panic.<< const 64i32
+    fake_read(a)
+    set_type(typeof(a) == u128)
     storage_live(b)
     b = HasBEDiscr::Second {  }
+    fake_read(b)
     _0 = ()
     storage_dead(b)
     storage_dead(a)

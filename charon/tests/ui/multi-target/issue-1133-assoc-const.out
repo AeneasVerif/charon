@@ -31,13 +31,12 @@ pub fn test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::x86_64
     _2 = copy test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::TABLE::x86_64-pc-windows-msvc
     storage_live(_3)
     _3 = const 0usize
+    fake_read(_2)
     storage_live(_4)
     _4 = &_2
     storage_live(_5)
     _5 = @ArrayIndexShared<'_, u32, 4usize>(move _4, copy _3)
-    ↳⚡ storage_dead(_5)
-        storage_dead(_4)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _0 = copy (*_5)
     storage_dead(_3)
     storage_dead(_2)
@@ -72,13 +71,12 @@ pub fn test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::i686-u
     _2 = copy test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::TABLE::i686-unknown-linux-gnu
     storage_live(_3)
     _3 = const 0usize
+    fake_read(_2)
     storage_live(_4)
     _4 = &_2
     storage_live(_5)
     _5 = @ArrayIndexShared<'_, u32, 4usize>(move _4, copy _3)
-    ↳⚡ storage_dead(_5)
-        storage_dead(_4)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _0 = copy (*_5)
     storage_dead(_3)
     storage_dead(_2)

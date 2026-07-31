@@ -103,11 +103,13 @@ pub fn eq<'_0, '_1>(self: &'_0 Foo, other: &'_1 Foo) -> bool
     _4 = &(*self)
     __self_discr = @discriminant((*_4))
     storage_dead(_4)
+    fake_read(__self_discr)
     storage_live(__arg1_discr)
     storage_live(_6)
     _6 = &(*other)
     __arg1_discr = @discriminant((*_6))
     storage_dead(_6)
+    fake_read(__arg1_discr)
     storage_live(_7)
     _7 = copy __self_discr
     storage_live(_8)
@@ -211,7 +213,7 @@ fn foo<const X : Foo>() -> Foo
 fn bar<const N : usize>()
 {
     let _0: (); // return
-    let _1: [(); {const}<N>]; // anonymous local
+    let _1: [(); test_crate::bar::{const}#2<N>]; // anonymous local
     let _2: (); // anonymous local
 
     storage_live(_0)
@@ -219,9 +221,10 @@ fn bar<const N : usize>()
     storage_live(_1)
     storage_live(_2)
     _2 = ()
-    _1 = @ArrayRepeat<(), {const}<N>>(move _2)
+    _1 = @ArrayRepeat<(), test_crate::bar::{const}#2<N>>(move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
+    set_type(typeof(_1) <= [(); test_crate::bar::{const}#1<N>])
     storage_dead(_1)
     _0 = ()
     return

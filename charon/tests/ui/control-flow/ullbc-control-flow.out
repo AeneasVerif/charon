@@ -277,6 +277,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_live(_28);
         storage_live(s);
         s = const 0usize;
+        fake_read(s);
         storage_live(_4);
         storage_live(_5);
         _5 = Range { start: const 0i32, end: const 128i32 };
@@ -339,13 +340,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     }
 
     bb7: {
-        storage_dead(_28);
-        storage_dead(_27);
-        storage_dead(_19);
-        storage_dead(_11);
-        storage_dead(_10);
-        storage_dead(step_in);
-        storage_dead(step_out);
+        fake_read(_7);
         undefined_behavior;
     }
 
@@ -400,13 +395,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     }
 
     bb13: {
-        storage_dead(_28);
-        storage_dead(_27);
-        storage_dead(_19);
-        storage_dead(_11);
-        storage_dead(_10);
-        storage_dead(step_in);
-        storage_dead(step_out);
+        fake_read(_16);
         undefined_behavior;
     }
 
@@ -458,13 +447,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     }
 
     bb19: {
-        storage_dead(_28);
-        storage_dead(_27);
-        storage_dead(_19);
-        storage_dead(_11);
-        storage_dead(_10);
-        storage_dead(step_in);
-        storage_dead(step_out);
+        fake_read(_24);
         undefined_behavior;
     }
 }

@@ -95,10 +95,13 @@ fn foo()
     _0 = ()
     storage_live(x)
     x = const 0i32
+    fake_read(x)
     storage_live(rx)
     rx = &mut x
+    fake_read(rx)
     storage_live(closure)
     closure = closure { 0: move rx }
+    fake_read(closure)
     storage_live(_4)
     storage_live(_5)
     _5 = &mut closure

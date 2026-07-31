@@ -89,8 +89,10 @@ fn copy_foo(x: Foo)
     _0 = ()
     storage_live(y)
     y = copy x
+    fake_read(y)
     storage_live(z)
     z = copy x
+    fake_read(z)
     _0 = ()
     storage_dead(z)
     storage_dead(y)
@@ -113,8 +115,10 @@ where
     _0 = ()
     storage_live(y)
     y = copy x
+    fake_read(y)
     storage_live(z)
     z = copy x
+    fake_read(z)
     _0 = ()
     storage_dead(z)
     storage_dead(y)
@@ -147,8 +151,10 @@ where
     _0 = ()
     storage_live(y)
     y = copy x
+    fake_read(y)
     storage_live(z)
     z = copy x
+    fake_read(z)
     _0 = ()
     storage_dead(z)
     storage_dead(y)

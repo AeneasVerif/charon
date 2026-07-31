@@ -110,14 +110,19 @@ fn main2()
     _0 = ()
     storage_live(x)
     x = const 0i32
+    fake_read(x)
     storage_live(a)
     a = const true
+    fake_read(a)
     storage_live(b)
     b = const true
+    fake_read(b)
     storage_live(c)
     c = const true
+    fake_read(c)
     storage_live(d)
     d = const true
+    fake_read(d)
     storage_live(_6)
     _6 = copy a
     if move _6 {

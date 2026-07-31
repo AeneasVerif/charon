@@ -56,6 +56,26 @@ and assertion = {
           instructions preceding the assert. *)
 }
 
+(** Statements that only affect borrow-checking. They are no-ops at runtime. *)
+and borrowck_statement =
+  | FakeRead of place  (** Acts like a read of the place. *)
+  | SetType of place * ty * variance
+      (** Relate the type of a place to the provided type. For example,
+          [let x: Self = value] produces [SetType] for [x] and [Self].
+
+          Fields:
+          - [place]
+          - [ty]
+          - [variance] *)
+  | SetOutlives of ty * region
+      (** Require a type to outlive a region. For example, the ['a] bound in
+          [let x: impl Copy + 'a = value] produces [SetOutlives(typeof(x), 'a)].
+      *)
+  | PredicateHolds of trait_ref
+      (** Require a trait predicate to hold. For example, the [Copy] bound in
+          [let x: impl Copy = value] produces [PredicateHolds(typeof(x): Copy)].
+      *)
+
 (** The kind of a built-in assertion, which may panic and unwind. These are
     removed by [reconstruct_fallible_operations] because they're implicit in the
     semantics of (U)LLBC. This kind should only be used for error-reporting
@@ -81,7 +101,6 @@ and builtin_assert_kind =
   | ResumedAfterDrop
 
 and call = { func : fn_operand; args : operand list; dest : place }
-and copy_non_overlapping = { src : operand; dst : operand; count : operand }
 
 (** A [Drop] statement/terminator can mean two things, depending on what MIR
     phase we retrieved from rustc: it could be a real drop, or it could be a

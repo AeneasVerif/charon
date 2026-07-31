@@ -286,6 +286,7 @@ fn main()
     _0 = ()
     storage_live(z_1)
     z_1 = const 1u8
+    fake_read(z_1)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -298,6 +299,7 @@ fn main()
     storage_dead(_2)
     storage_live(z_5)
     z_5 = const 3u8
+    fake_read(z_5)
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)
@@ -310,6 +312,7 @@ fn main()
     storage_dead(_6)
     storage_live(z_9)
     z_9 = Thing {  }
+    fake_read(z_9)
     storage_live(_10)
     storage_live(_11)
     _11 = test_crate::main::closure#2 { 0: move z_9 }

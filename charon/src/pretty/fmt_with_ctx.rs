@@ -1791,6 +1791,44 @@ impl Display for ScalarValue {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for BorrowckStatement {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            BorrowckStatement::FakeRead(place) => {
+                write!(f, "fake_read({})", place.with_ctx(ctx))
+            }
+            BorrowckStatement::SetType {
+                place,
+                ty,
+                variance,
+            } => {
+                let relation = match variance {
+                    Variance::Covariant => "<=",
+                    Variance::Contravariant => ">=",
+                    Variance::Invariant => "==",
+                    Variance::Bivariant => panic!("bivariant SetType statement"),
+                    Variance::Unknown => panic!("SetType statement with unknown variance"),
+                };
+                write!(
+                    f,
+                    "set_type(typeof({}) {relation} {})",
+                    place.with_ctx(ctx),
+                    ty.with_ctx(ctx)
+                )
+            }
+            BorrowckStatement::SetOutlives(ty, region) => write!(
+                f,
+                "set_outlives({}, {})",
+                ty.with_ctx(ctx),
+                region.with_ctx(ctx)
+            ),
+            BorrowckStatement::PredicateHolds(predicate) => {
+                write!(f, "predicate_holds({})", predicate.with_ctx(ctx))
+            }
+        }
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let tab = ctx.indent();
@@ -1802,22 +1840,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
             StatementKind::Assign(place, rvalue) => {
                 write!(f, "{tab}{} = {}", place.with_ctx(ctx), rvalue.with_ctx(ctx),)
             }
+            StatementKind::Borrowck(statement) => {
+                write!(f, "{tab}{}", statement.with_ctx(ctx))
+            }
             StatementKind::SetDiscriminant(place, variant_id) => write!(
                 f,
                 "{tab}@discriminant({}) = {}",
                 place.with_ctx(ctx),
                 variant_id
             ),
-            StatementKind::CopyNonOverlapping(cno) => {
-                write!(
-                    f,
-                    "{}copy_nonoverlapping({}, {}, {})",
-                    tab,
-                    cno.src.with_ctx(ctx),
-                    cno.dst.with_ctx(ctx),
-                    cno.count.with_ctx(ctx),
-                )
-            }
             StatementKind::StorageLive(var_id) => {
                 write!(f, "{tab}storage_live({})", var_id.with_ctx(ctx))
             }
@@ -1855,17 +1886,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             StatementKind::Assign(place, rvalue) => {
                 write!(f, "{} = {}", place.with_ctx(ctx), rvalue.with_ctx(ctx),)
             }
+            StatementKind::Borrowck(statement) => write!(f, "{}", statement.with_ctx(ctx)),
             StatementKind::SetDiscriminant(place, variant_id) => {
                 write!(f, "@discriminant({}) = {}", place.with_ctx(ctx), variant_id)
-            }
-            StatementKind::CopyNonOverlapping(cno) => {
-                write!(
-                    f,
-                    "copy_nonoverlapping({}, {}, {})",
-                    cno.src.with_ctx(ctx),
-                    cno.dst.with_ctx(ctx),
-                    cno.count.with_ctx(ctx),
-                )
             }
             StatementKind::StorageLive(var_id) => {
                 write!(f, "storage_live({})", var_id.with_ctx(ctx))

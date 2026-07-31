@@ -42,6 +42,8 @@ fn main()
     storage_live(list)
     list = new::<u8>()
     ↳⚡ unwind_continue
+    fake_read(list)
+    set_type(typeof(list) == LinkedList::<u8>)
     _0 = ()
     storage_dead(list)
     return

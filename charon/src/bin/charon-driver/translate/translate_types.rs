@@ -48,6 +48,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 Ok(var) => Region::Var(var),
                 Err(_) => Region::Erased,
             }),
+            ReLateParam(region) => Ok(Region::Var(self.lookup_late_param_region(span, region)?)),
             ReVar(..) | RePlaceholder(..) => {
                 // Shouldn't exist outside of type inference.
                 raise_error!(
@@ -56,7 +57,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     "Should not exist outside of type inference: {region:?}"
                 )
             }
-            ReBound(..) | ReLateParam(..) | ReError(..) => {
+            ReBound(..) | ReError(..) => {
                 raise_error!(self, span, "Unexpected region kind: {region:?}")
             }
         }

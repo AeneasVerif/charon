@@ -158,9 +158,7 @@ pub fn core::num::{u8}::saturating_add(self: u8, rhs: u8) -> u8
     storage_live(_4)
     _4 = copy rhs
     _0 = core::intrinsics::saturating_add<u8>[{built_in impl Sized for u8}, impl_Copy_for_u8](move _3, move _4)
-    ↳⚡ storage_dead(rhs)
-        storage_dead(self)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(rhs)

@@ -102,6 +102,7 @@ fn f1<'_0>(a: &'_0 [u8]) -> usize
     storage_live(_10)
     storage_live(sampled)
     sampled = const 0usize
+    fake_read(sampled)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
@@ -110,11 +111,7 @@ fn f1<'_0>(a: &'_0 [u8]) -> usize
     _13 = &(*a) with_metadata(copy a.metadata)
     storage_live(_14)
     _14 = @SliceIndexShared<'_, u8>(move _13, copy _5)
-    ↳⚡ storage_dead(_14)
-        storage_dead(_13)
-        storage_dead(_12)
-        storage_dead(_11)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _4 = copy (*_14)
     _3 = move _4 < const 42u8
     if move _3 {
@@ -128,11 +125,7 @@ fn f1<'_0>(a: &'_0 [u8]) -> usize
         _11 = &(*a) with_metadata(copy a.metadata)
         storage_live(_12)
         _12 = @SliceIndexShared<'_, u8>(move _11, copy _8)
-        ↳⚡ storage_dead(_14)
-            storage_dead(_13)
-            storage_dead(_12)
-            storage_dead(_11)
-            undefined_behavior
+        ↳⚡ undefined_behavior
         _7 = copy (*_12)
         _6 = move _7 < const 16u8
         if move _6 {
@@ -241,6 +234,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
     storage_live(_44)
     storage_live(sampled)
     sampled = const 0usize
+    fake_read(sampled)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
@@ -291,20 +285,11 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
         _49 = &(*bytes) with_metadata(copy bytes.metadata)
         storage_live(_50)
         _50 = @SliceIndexShared<'_, u8>(move _49, copy _14)
-        ↳⚡ storage_dead(_54)
-            storage_dead(_53)
-            storage_dead(_52)
-            storage_dead(_51)
-            storage_dead(_50)
-            storage_dead(_49)
-            storage_dead(_48)
-            storage_dead(_47)
-            storage_dead(_46)
-            storage_dead(_45)
-            undefined_behavior
+        ↳⚡ undefined_behavior
         _13 = copy (*_50)
         b1 = cast<u8, i16>(move _13)
         storage_dead(_13)
+        fake_read(b1)
         storage_dead(_14)
         storage_live(b2)
         storage_live(_16)
@@ -314,20 +299,11 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
         _51 = &(*bytes) with_metadata(copy bytes.metadata)
         storage_live(_52)
         _52 = @SliceIndexShared<'_, u8>(move _51, copy _17)
-        ↳⚡ storage_dead(_54)
-            storage_dead(_53)
-            storage_dead(_52)
-            storage_dead(_51)
-            storage_dead(_50)
-            storage_dead(_49)
-            storage_dead(_48)
-            storage_dead(_47)
-            storage_dead(_46)
-            storage_dead(_45)
-            undefined_behavior
+        ↳⚡ undefined_behavior
         _16 = copy (*_52)
         b2 = cast<u8, i16>(move _16)
         storage_dead(_16)
+        fake_read(b2)
         storage_dead(_17)
         storage_live(b3)
         storage_live(_19)
@@ -337,20 +313,11 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
         _53 = &(*bytes) with_metadata(copy bytes.metadata)
         storage_live(_54)
         _54 = @SliceIndexShared<'_, u8>(move _53, copy _20)
-        ↳⚡ storage_dead(_54)
-            storage_dead(_53)
-            storage_dead(_52)
-            storage_dead(_51)
-            storage_dead(_50)
-            storage_dead(_49)
-            storage_dead(_48)
-            storage_dead(_47)
-            storage_dead(_46)
-            storage_dead(_45)
-            undefined_behavior
+        ↳⚡ undefined_behavior
         _19 = copy (*_54)
         b3 = cast<u8, i16>(move _19)
         storage_dead(_19)
+        fake_read(b3)
         storage_dead(_20)
         storage_live(d1)
         storage_live(_22)
@@ -366,6 +333,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
         d1 = move _22 | move _25
         storage_dead(_25)
         storage_dead(_22)
+        fake_read(d1)
         storage_live(d2)
         storage_live(_27)
         storage_live(_28)
@@ -380,6 +348,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
         d2 = move _27 | move _29
         storage_dead(_29)
         storage_dead(_27)
+        fake_read(d2)
         storage_live(_31)
         storage_live(_32)
         _32 = copy d1
@@ -400,17 +369,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
                 _45 = &mut (*result) with_metadata(copy result.metadata)
                 storage_live(_46)
                 _46 = @SliceIndexMut<'_, i16>(move _45, copy _36)
-                ↳⚡ storage_dead(_54)
-                    storage_dead(_53)
-                    storage_dead(_52)
-                    storage_dead(_51)
-                    storage_dead(_50)
-                    storage_dead(_49)
-                    storage_dead(_48)
-                    storage_dead(_47)
-                    storage_dead(_46)
-                    storage_dead(_45)
-                    undefined_behavior
+                ↳⚡ undefined_behavior
                 (*_46) = move _35
                 storage_dead(_35)
                 storage_dead(_36)
@@ -444,17 +403,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
                 _47 = &mut (*result) with_metadata(copy result.metadata)
                 storage_live(_48)
                 _48 = @SliceIndexMut<'_, i16>(move _47, copy _43)
-                ↳⚡ storage_dead(_54)
-                    storage_dead(_53)
-                    storage_dead(_52)
-                    storage_dead(_51)
-                    storage_dead(_50)
-                    storage_dead(_49)
-                    storage_dead(_48)
-                    storage_dead(_47)
-                    storage_dead(_46)
-                    storage_dead(_45)
-                    undefined_behavior
+                ↳⚡ undefined_behavior
                 (*_48) = move _42
                 storage_dead(_42)
                 storage_dead(_43)

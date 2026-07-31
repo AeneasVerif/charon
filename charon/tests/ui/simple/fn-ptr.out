@@ -23,6 +23,8 @@ fn main()
     _0 = ()
     storage_live(f)
     f = cast<foo, fn()>(const foo)
+    fake_read(f)
+    set_type(typeof(f) == fn())
     storage_live(_2)
     storage_live(_3)
     _3 = copy f

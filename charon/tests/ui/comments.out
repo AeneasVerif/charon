@@ -112,11 +112,13 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
     storage_live(sum)
     // `let sum`
     sum = const 0u32
+    fake_read(sum)
     storage_live(i)
     // `let i`
     //  indented sub-comment
     // unindented sub-comment
     i = const 0usize
+    fake_read(i)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
@@ -167,9 +169,7 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
         _25 = &(*s) with_metadata(copy s.metadata)
         storage_live(_26)
         _26 = @SliceIndexShared<'_, u32>(move _25, copy _13)
-        ↳⚡ storage_dead(_26)
-            storage_dead(_25)
-            undefined_behavior
+        ↳⚡ undefined_behavior
         _12 = copy (*_26)
         _14 = copy sum panic.+ copy _12
         sum = move _14
@@ -452,17 +452,14 @@ fn foo()
     storage_live(a)
     // Build an array
     a = @ArrayRepeat<u32, 10usize>(const 0u32)
-    ↳⚡ storage_dead(_37)
-        storage_dead(_36)
-        storage_dead(_35)
-        storage_dead(_34)
-        storage_dead(_33)
-        undefined_behavior
+    ↳⚡ undefined_behavior
+    fake_read(a)
     storage_live(_16)
     storage_live(_17)
     storage_live(_18)
     // `assert_eq`
     _18 = const 9usize
+    fake_read(a)
     storage_live(_33)
     storage_live(_34)
     storage_live(_35)
@@ -473,12 +470,7 @@ fn foo()
     _36 = &a
     storage_live(_37)
     _37 = @ArrayIndexShared<'_, u32, 10usize>(move _36, copy _18)
-    ↳⚡ storage_dead(_37)
-        storage_dead(_36)
-        storage_dead(_35)
-        storage_dead(_34)
-        storage_dead(_33)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _17 = &(*_37)
     storage_live(_19)
     _32 = move _33
@@ -502,6 +494,7 @@ fn foo()
         storage_dead(_23)
         storage_live(kind)
         kind = AssertKind::Eq {  }
+        fake_read(kind)
         storage_live(_26)
         _26 = move kind
         storage_live(_27)
@@ -591,6 +584,7 @@ pub fn thing()
     _3 = copy _2 panic.+ const 12u32
     x = move _3
     storage_dead(_2)
+    fake_read(x)
     storage_live(_4)
     storage_live(_5)
     _5 = copy x

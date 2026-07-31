@@ -286,6 +286,8 @@ pub fn test_vec_push()
     storage_live(v)
     v = alloc::vec::{Vec<T>[TraitClause0, {built_in impl Sized for Global}]}::new<u32>[{built_in impl Sized for u32}]()
     ↳⚡ unwind_continue
+    fake_read(v)
+    set_type(typeof(v) == Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
     storage_live(_2)
     storage_live(_3)
     _3 = &two-phase-mut v

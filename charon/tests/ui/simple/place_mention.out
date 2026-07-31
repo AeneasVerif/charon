@@ -22,6 +22,7 @@ fn main()
     storage_live(x)
     _2 = move _3
     x = &(*_2)
+    fake_read(x)
     _ = (*x).0
     _0 = ()
     storage_dead(x)

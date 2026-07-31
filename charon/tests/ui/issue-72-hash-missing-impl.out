@@ -87,6 +87,7 @@ fn main()
     _0 = ()
     storage_live(hasher)
     hasher = DefaultHasher {  }
+    fake_read(hasher)
     storage_live(_2)
     storage_live(_3)
     _6 = move _7

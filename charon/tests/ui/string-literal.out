@@ -79,6 +79,7 @@ fn main()
     _s = to_string<'5, str>[{built_in impl MetaSized for str}, {impl#1}](move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
+    fake_read(_s)
     storage_dead(_3)
     _0 = ()
     conditional_drop[drop_glue<'6>] _s

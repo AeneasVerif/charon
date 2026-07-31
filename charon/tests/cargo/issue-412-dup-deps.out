@@ -98,6 +98,7 @@ fn main()
         storage_dead(kind)
         storage_dead(_8)
         unwind_continue
+    fake_read(a)
     storage_live(b)
     b = mydup#1::hello()
     ↳⚡ storage_dead(_22)
@@ -110,6 +111,7 @@ fn main()
         storage_dead(kind)
         storage_dead(_8)
         unwind_continue
+    fake_read(b)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
@@ -161,6 +163,7 @@ fn main()
         storage_dead(_13)
         storage_live(kind)
         kind = AssertKind::Eq {  }
+        fake_read(kind)
         storage_live(_16)
         _16 = move kind
         storage_live(_17)

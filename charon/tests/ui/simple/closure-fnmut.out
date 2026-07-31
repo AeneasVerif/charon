@@ -207,6 +207,7 @@ fn main()
     _0 = ()
     storage_live(z)
     z = const 3u8
+    fake_read(z)
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
