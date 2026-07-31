@@ -93,6 +93,7 @@ where
     _0 = ()
     storage_live(_closure)
     _closure = closure {  }
+    fake_read(_closure)
     _0 = ()
     storage_dead(_closure)
     return

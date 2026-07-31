@@ -1091,9 +1091,8 @@ where
     return
 }
 
-// Full name: core::ptr::copy_nonoverlapping
 #[diagnostic_item("ptr_copy_nonoverlapping")]
-pub unsafe fn copy_nonoverlapping<T>(src: *const T, dst: *mut T, count: usize)
+pub unsafe fn core::ptr::copy_nonoverlapping<T>(src: *const T, dst: *mut T, count: usize)
 where
     TraitClause0: (T: Sized),
 {
@@ -3079,5 +3078,6 @@ unsafe fn foo()
     storage_dead(_9)
     return
 }
+
 
 

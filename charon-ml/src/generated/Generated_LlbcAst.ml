@@ -55,6 +55,8 @@ and statement_kind =
           valid though, so this statement is not a no-op: it can trigger UB if
           the place's projections are not valid (e.g. because they go out of
           bounds). *)
+  | Borrowck of borrowck_statement
+      (** Statements that only affect borrow-checking. *)
   | Drop of place * fn_ptr * drop_kind * block
       (** Drop the value at the given place.
 

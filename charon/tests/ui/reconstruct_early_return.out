@@ -20,8 +20,10 @@ fn f() -> usize
     storage_live(_10)
     storage_live(i)
     i = const 0i32
+    fake_read(i)
     storage_live(j)
     j = const 0i32
+    fake_read(j)
     loop {
         storage_live(_3)
         storage_live(_4)

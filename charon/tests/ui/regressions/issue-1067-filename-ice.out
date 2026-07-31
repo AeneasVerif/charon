@@ -101,6 +101,8 @@ fn main()
     storage_live(buf)
     buf = new<u8>[{built_in impl Sized for u8}]()
     ↳⚡ unwind_continue
+    fake_read(buf)
+    set_type(typeof(buf) == Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}])
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)

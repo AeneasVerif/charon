@@ -302,6 +302,7 @@ pub(crate) fn generate(
                     extra_types: &[],
                 })), &[
                     "Call",
+                    "BorrowckStatement",
                     "DropKind",
                     "Assert",
                     "ItemSource",

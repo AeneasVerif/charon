@@ -129,6 +129,7 @@ where
     storage_live(_0)
     storage_live(f)
     f = test_crate::foo::closure { 0: copy x }
+    fake_read(f)
     storage_live(_3)
     _3 = &f
     storage_live(_4)

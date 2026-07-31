@@ -275,7 +275,7 @@ impl LlbcPass for Transform {
                 Assign(..) | SetDiscriminant(..) | Drop { .. } | Call { .. } => {
                     let _ = visitor.visit_inner_with_mutability(st, true);
                 }
-                Switch(..) | PlaceMention(..) => {
+                Switch(..) | PlaceMention(..) | Borrowck(..) => {
                     let _ = visitor.visit_inner_with_mutability(st, false);
                 }
                 Nop

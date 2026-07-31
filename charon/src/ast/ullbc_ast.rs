@@ -50,6 +50,8 @@ pub enum StatementKind {
     /// this statement is not a no-op: it can trigger UB if the place's projections are not valid
     /// (e.g. because they go out of bounds).
     PlaceMention(Place),
+    /// Statements that only affect borrow-checking.
+    Borrowck(BorrowckStatement),
     /// A non-diverging runtime check for a condition. This can be either:
     /// - Emitted for inlined "assumes" (which cause UB on failure)
     /// - Reconstructed from `if b { panic() }` if `--reconstruct-asserts` is set.

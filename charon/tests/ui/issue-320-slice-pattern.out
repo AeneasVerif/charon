@@ -20,6 +20,8 @@ fn slice_pat1()
     storage_live(array)
     array = @ArrayRepeat<i32, 4usize>(const 0i32)
     ↳⚡ undefined_behavior
+    fake_read(array)
+    set_type(typeof(array) == [i32; 4usize])
     storage_live(_a)
     storage_live(_5)
     _5 = &array
@@ -66,7 +68,7 @@ fn slice_pat2()
     let _c: &'7 i32; // local
     let _6: &'8 [i32; 4usize]; // anonymous local
     let _7: &'9 [i32; 4usize]; // anonymous local
-    let _8: &'10 [i32; 4usize]; // anonymous local
+    let _8: &'11 [i32; 4usize]; // anonymous local
     let _9: [i32; 4usize]; // anonymous local
     let _10: &'_ [i32; 4usize]; // anonymous local
     let _11: &'_ i32; // anonymous local
@@ -90,6 +92,8 @@ fn slice_pat2()
     _6 = move _7
     _2 = &(*_6)
     array_ref = &(*_2)
+    fake_read(array_ref)
+    set_type(typeof(array_ref) == &'10 [i32; 4usize])
     storage_dead(_2)
     storage_live(_a)
     storage_live(_10)
@@ -149,7 +153,7 @@ fn slice_pat3()
     let _13: usize; // anonymous local
     let _14: usize; // anonymous local
     let _15: &'10 [i32; 4usize]; // anonymous local
-    let _16: &'12 [i32; 4usize]; // anonymous local
+    let _16: &'13 [i32; 4usize]; // anonymous local
     let _17: [i32; 4usize]; // anonymous local
     let _18: &'_ [i32]; // anonymous local
     let _19: &'_ i32; // anonymous local
@@ -185,6 +189,8 @@ fn slice_pat3()
     slice = @ArrayToSliceShared<'_, i32, 4usize>(move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
+    fake_read(slice)
+    set_type(typeof(slice) == &'12 [i32])
     storage_dead(_3)
     _8 = copy slice.metadata
     _7 = move _8

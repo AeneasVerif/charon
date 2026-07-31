@@ -40,8 +40,12 @@ fn main()
     _0 = ()
     storage_live(x)
     x = const 52usize
+    fake_read(x)
+    set_type(typeof(x) == usize)
     storage_live(y)
     y = copy MAX
+    fake_read(y)
+    set_type(typeof(y) == usize)
     storage_live(z)
     storage_live(_4)
     _4 = copy y
@@ -51,6 +55,7 @@ fn main()
     z = move _6
     storage_dead(_5)
     storage_dead(_4)
+    fake_read(z)
     storage_live(a)
     storage_live(_8)
     storage_live(_9)
@@ -61,6 +66,7 @@ fn main()
     storage_dead(_9)
     a = HasPointerNiche::Second { 0: move _8 }
     storage_dead(_8)
+    fake_read(a)
     _0 = ()
     storage_dead(a)
     storage_dead(z)

@@ -39,6 +39,7 @@ fn f0()
     storage_dead(_2)
     storage_live(x)
     x = copy CONST
+    fake_read(x)
     _0 = ()
     storage_dead(x)
     storage_dead(_1)
@@ -65,8 +66,10 @@ fn f1<'_0>(serialized: &'_0 [u8; 1usize])
     _0 = ()
     storage_live(previous_true_hints_seen)
     previous_true_hints_seen = const 0usize
+    fake_read(previous_true_hints_seen)
     storage_live(i)
     i = const 0i32
+    fake_read(i)
     loop {
         storage_live(_4)
         storage_live(_5)
@@ -88,6 +91,7 @@ fn f1<'_0>(serialized: &'_0 [u8; 1usize])
             storage_dead(_6)
             storage_live(j)
             j = const 0i32
+            fake_read(j)
             loop {
                 storage_live(_9)
                 storage_live(_10)
@@ -97,6 +101,7 @@ fn f1<'_0>(serialized: &'_0 [u8; 1usize])
                     storage_dead(_10)
                     storage_live(x)
                     x = copy CONST
+                    fake_read(x)
                     storage_dead(x)
                     storage_dead(_9)
                     continue 0

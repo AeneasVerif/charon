@@ -118,6 +118,7 @@ where
         _12 = &x
         args_11 = (move _12,)
         storage_dead(_12)
+        fake_read(args_11)
         storage_live(args_13)
         storage_live(_14)
         storage_live(_15)
@@ -128,6 +129,7 @@ where
         storage_dead(_15)
         args_13 = [move _14]
         storage_dead(_14)
+        fake_read(args_13)
         storage_live(_16)
         storage_live(_17)
         storage_live(_20)

@@ -84,6 +84,8 @@ fn foo(opt: Option<u32>[{built_in impl Sized for u32}])
             if move _6 {
                 storage_dead(_7)
                 storage_dead(_6)
+                fake_read(_3)
+                fake_read(x_5)
                 storage_live(x_4)
                 x_4 = copy (opt as variant Option::Some).0
                 _2 = do_something()

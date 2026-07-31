@@ -224,6 +224,28 @@ and borrow_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 4 -> Ok BUniqueImmutable
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and borrowck_statement_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
+    : (borrowck_statement, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* x_0 = place_of_postcard ctx st in
+         Ok (FakeRead x_0)
+     | 1 ->
+         let* place = place_of_postcard ctx st in
+         let* ty = ty_of_postcard ctx st in
+         let* variance = variance_of_postcard ctx st in
+         Ok (SetType (place, ty, variance))
+     | 2 ->
+         let* x_0 = ty_of_postcard ctx st in
+         let* x_1 = region_of_postcard ctx st in
+         Ok (SetOutlives (x_0, x_1))
+     | 3 ->
+         let* x_0 = trait_ref_of_postcard ctx st in
+         Ok (PredicateHolds x_0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and builtin_assert_kind_of_postcard (ctx : of_postcard_ctx)
     (st : postcard_state) : (builtin_assert_kind, string) result =
   combine_error_msgs st __FUNCTION__
@@ -1459,10 +1481,13 @@ module Ullbc = struct
            let* x_0 = place_of_postcard ctx st in
            Ok (PlaceMention x_0)
        | 5 ->
+           let* x_0 = borrowck_statement_of_postcard ctx st in
+           Ok (Borrowck x_0)
+       | 6 ->
            let* assert_ = assertion_of_postcard ctx st in
            let* on_failure = abort_kind_of_postcard ctx st in
            Ok (Assert (assert_, on_failure))
-       | 6 -> Ok Nop
+       | 7 -> Ok Nop
        | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
   and switch_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1590,44 +1615,47 @@ module Llbc = struct
            let* x_0 = place_of_postcard ctx st in
            Ok (PlaceMention x_0)
        | 5 ->
+           let* x_0 = borrowck_statement_of_postcard ctx st in
+           Ok (Borrowck x_0)
+       | 6 ->
            let* place = place_of_postcard ctx st in
            let* fn_ptr = fn_ptr_of_postcard ctx st in
            let* kind = drop_kind_of_postcard ctx st in
            let* on_unwind = block_of_postcard ctx st in
            Ok (Drop (place, fn_ptr, kind, on_unwind))
-       | 6 ->
+       | 7 ->
            let* assert_ = assertion_of_postcard ctx st in
            let* on_failure = abort_kind_of_postcard ctx st in
            let* on_unwind = block_of_postcard ctx st in
            Ok (Assert (assert_, on_failure, on_unwind))
-       | 7 ->
+       | 8 ->
            let* asm = string_of_postcard ctx st in
            let* targets = list_of_postcard block_of_postcard ctx st in
            let* on_unwind = block_of_postcard ctx st in
            Ok (InlineAsm (asm, targets, on_unwind))
-       | 8 ->
+       | 9 ->
            let* call = call_of_postcard ctx st in
            let* on_unwind = block_of_postcard ctx st in
            Ok (Call (call, on_unwind))
-       | 9 ->
+       | 10 ->
            let* x_0 = abort_kind_of_postcard ctx st in
            Ok (Abort x_0)
-       | 10 -> Ok Return
-       | 11 -> Ok UnwindResume
-       | 12 ->
-           let* x_0 = usize_of_postcard ctx st in
-           Ok (Break x_0)
+       | 11 -> Ok Return
+       | 12 -> Ok UnwindResume
        | 13 ->
            let* x_0 = usize_of_postcard ctx st in
+           Ok (Break x_0)
+       | 14 ->
+           let* x_0 = usize_of_postcard ctx st in
            Ok (Continue x_0)
-       | 14 -> Ok Nop
-       | 15 ->
+       | 15 -> Ok Nop
+       | 16 ->
            let* x_0 = switch_of_postcard ctx st in
            Ok (Switch x_0)
-       | 16 ->
+       | 17 ->
            let* x_0 = block_of_postcard ctx st in
            Ok (Loop x_0)
-       | 17 ->
+       | 18 ->
            let* x_0 = string_of_postcard ctx st in
            Ok (Error x_0)
        | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))

@@ -550,6 +550,8 @@ where
     _3 = &mut (*_4)
     x = unsize_cast<&'8 mut i32, &'13 mut (dyn Modifiable<T> + '14), &impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]>(move _3)
     storage_dead(_3)
+    fake_read(x)
+    set_type(typeof(x) == &'15 mut (dyn Modifiable<T> + '16))
     storage_dead(_4)
     storage_live(_6)
     _6 = &two-phase-mut (*x) with_metadata(copy x.metadata)
@@ -1280,31 +1282,31 @@ fn main()
     let _84: &'111 i32; // anonymous local
     let _85: &'112 i32; // anonymous local
     let _86: &'113 i32; // anonymous local
-    let _87: &'140 i32; // anonymous local
-    let _88: &'143 i32; // anonymous local
-    let _89: &'158 i32; // anonymous local
-    let _90: &'162 i32; // anonymous local
-    let _91: &'163 i64; // anonymous local
-    let _92: &'169 i32; // anonymous local
-    let _93: &'175 i32; // anonymous local
-    let _94: &'180 i32; // anonymous local
-    let _95: &'188 i32; // anonymous local
+    let _87: &'144 i32; // anonymous local
+    let _88: &'147 i32; // anonymous local
+    let _89: &'164 i32; // anonymous local
+    let _90: &'170 i32; // anonymous local
+    let _91: &'171 i64; // anonymous local
+    let _92: &'177 i32; // anonymous local
+    let _93: &'185 i32; // anonymous local
+    let _94: &'190 i32; // anonymous local
+    let _95: &'198 i32; // anonymous local
     let _96: i32; // anonymous local
-    let _97: &'189 i32; // anonymous local
+    let _97: &'199 i32; // anonymous local
     let _98: i32; // anonymous local
-    let _99: &'190 i32; // anonymous local
+    let _99: &'200 i32; // anonymous local
     let _100: i32; // anonymous local
-    let _101: &'191 i32; // anonymous local
+    let _101: &'201 i32; // anonymous local
     let _102: i32; // anonymous local
-    let _103: &'192 i32; // anonymous local
+    let _103: &'202 i32; // anonymous local
     let _104: i32; // anonymous local
-    let _105: &'193 i64; // anonymous local
+    let _105: &'203 i64; // anonymous local
     let _106: i64; // anonymous local
-    let _107: &'194 i32; // anonymous local
+    let _107: &'204 i32; // anonymous local
     let _108: i32; // anonymous local
-    let _109: &'195 i32; // anonymous local
+    let _109: &'205 i32; // anonymous local
     let _110: i32; // anonymous local
-    let _111: &'196 i32; // anonymous local
+    let _111: &'206 i32; // anonymous local
     let _112: i32; // anonymous local
 
     storage_live(_86)
@@ -1332,6 +1334,8 @@ fn main()
     _2 = &(*_3)
     x = unsize_cast<&'6 i32, &'114 (dyn Checkable<i32> + '115), &impl_Checkable_i32_for_i32::{vtable}>(move _2)
     storage_dead(_2)
+    fake_read(x)
+    set_type(typeof(x) == &'116 (dyn Checkable<i32> + '117))
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
@@ -1372,8 +1376,10 @@ fn main()
     _9 = const 99i32
     _8 = &mut _9
     _7 = &mut (*_8)
-    y = unsize_cast<&'16 mut i32, &'120 mut (dyn Modifiable<i32> + '121), &impl_Modifiable_for_i32::{vtable}<i32>[{built_in impl Sized for i32}, impl_Clone_for_i32]>(move _7)
+    y = unsize_cast<&'16 mut i32, &'122 mut (dyn Modifiable<i32> + '123), &impl_Modifiable_for_i32::{vtable}<i32>[{built_in impl Sized for i32}, impl_Clone_for_i32]>(move _7)
     storage_dead(_7)
+    fake_read(y)
+    set_type(typeof(y) == &'124 mut (dyn Modifiable<i32> + '125))
     storage_dead(_8)
     storage_live(_10)
     storage_live(_11)
@@ -1385,7 +1391,7 @@ fn main()
     storage_live(_17)
     _17 = const "Hello"
     _16 = &(*_17) with_metadata(copy _17.metadata)
-    _15 = to_string<'124, str>[{built_in impl MetaSized for str}, {impl#10}](move _16)
+    _15 = to_string<'128, str>[{built_in impl MetaSized for str}, {impl#10}](move _16)
     ↳⚡ storage_dead(_85)
         storage_dead(_84)
         storage_dead(_83)
@@ -1413,8 +1419,8 @@ fn main()
     storage_dead(_16)
     _14 = &_15
     _13 = &(*_14)
-    _12 = modify_trait_object<'126, String>[{built_in impl Sized for String}, impl_Clone_for_String](move _13)
-    ↳⚡ conditional_drop[drop_glue<'127>] _15
+    _12 = modify_trait_object<'130, String>[{built_in impl Sized for String}, impl_Clone_for_String](move _13)
+    ↳⚡ conditional_drop[drop_glue<'131>] _15
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1492,8 +1498,8 @@ fn main()
         unwind_continue
     _11 = &_12
     storage_dead(_13)
-    _10 = is_empty<'129>(move _11)
-    ↳⚡ conditional_drop[drop_glue<'130>] _12
+    _10 = is_empty<'133>(move _11)
+    ↳⚡ conditional_drop[drop_glue<'134>] _12
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1545,7 +1551,7 @@ fn main()
             storage_dead(_87)
             storage_dead(_86)
             unwind_terminate
-        conditional_drop[drop_glue<'127>] _15
+        conditional_drop[drop_glue<'131>] _15
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1624,8 +1630,8 @@ fn main()
     if move _10 {
     } else {
         storage_dead(_11)
-        conditional_drop[drop_glue<'132>] _12
-        ↳⚡ conditional_drop[drop_glue<'127>] _15
+        conditional_drop[drop_glue<'136>] _12
+        ↳⚡ conditional_drop[drop_glue<'131>] _15
             ↳⚡ storage_dead(_85)
                 storage_dead(_84)
                 storage_dead(_83)
@@ -1701,7 +1707,7 @@ fn main()
             storage_dead(_32)
             storage_dead(kind_31)
             unwind_continue
-        conditional_drop[drop_glue<'134>] _15
+        conditional_drop[drop_glue<'138>] _15
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1798,6 +1804,7 @@ fn main()
             storage_dead(_29)
             storage_live(kind_31)
             kind_31 = AssertKind::Eq {  }
+            fake_read(kind_31)
             storage_live(_32)
             _32 = move kind_31
             storage_live(_33)
@@ -1885,7 +1892,7 @@ fn main()
         _83 = move _88
         _42 = &(*_83)
         _41 = &(*_42)
-        _40 = to_dyn_obj<'145, i32>[{built_in impl Sized for i32}, impl_NoParam_for_i32](move _41)
+        _40 = to_dyn_obj<'149, i32>[{built_in impl Sized for i32}, impl_NoParam_for_i32](move _41)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1911,9 +1918,11 @@ fn main()
             storage_dead(kind_31)
             unwind_continue
         _39 = &(*_40) with_metadata(copy _40.metadata)
-        z = unsize_cast<&'55 (dyn NoParam + '56), &'152 (dyn NoParam + '153),  at []>(move _39)
+        z = unsize_cast<&'55 (dyn NoParam + '56), &'156 (dyn NoParam + '157),  at []>(move _39)
         storage_dead(_41)
         storage_dead(_39)
+        fake_read(z)
+        set_type(typeof(z) == &'158 (dyn NoParam + '159))
         storage_dead(_42)
         storage_dead(_40)
         storage_live(_43)
@@ -1970,8 +1979,10 @@ fn main()
         _82 = move _89
         _47 = &(*_82)
         _46 = &(*_47)
-        a = unsize_cast<&'68 i32, &'159 (dyn Both32And64 + '160), &impl_Both32And64_for_i32::{vtable}>(move _46)
+        a = unsize_cast<&'68 i32, &'165 (dyn Both32And64 + '166), &impl_Both32And64_for_i32::{vtable}>(move _46)
         storage_dead(_46)
+        fake_read(a)
+        set_type(typeof(a) == &'167 (dyn Both32And64 + '168))
         storage_dead(_47)
         storage_live(_48)
         storage_live(_49)
@@ -2035,8 +2046,10 @@ fn main()
         _79 = move _92
         _56 = &(*_79)
         _55 = &(*_56)
-        b = unsize_cast<&'82 i32, &'170 (dyn LifetimeTrait<Ty = i32> + '171), &impl_LifetimeTrait_for_i32::{vtable}>(move _55)
+        b = unsize_cast<&'82 i32, &'178 (dyn LifetimeTrait<Ty = i32> + '179), &impl_LifetimeTrait_for_i32::{vtable}>(move _55)
         storage_dead(_55)
+        fake_read(b)
+        set_type(typeof(b) == &'180 (dyn LifetimeTrait<Ty = i32> + '181))
         storage_dead(_56)
         storage_live(_57)
         storage_live(_58)
@@ -2044,14 +2057,14 @@ fn main()
         storage_live(_60)
         storage_live(_61)
         _61 = &(*b) with_metadata(copy b.metadata)
-        _60 = unsize_cast<&'90 (dyn LifetimeTrait<Ty = i32> + '91), &'173 (dyn LifetimeTrait<Ty = i32> + '174),  at []>(move _61)
+        _60 = unsize_cast<&'90 (dyn LifetimeTrait<Ty = i32> + '91), &'183 (dyn LifetimeTrait<Ty = i32> + '184),  at []>(move _61)
         storage_dead(_61)
         storage_live(_62)
         storage_live(_63)
         _78 = move _93
         _63 = &(*_78)
         _62 = &(*_63)
-        _59 = use_lifetime_trait<'178, '179>(move _60, move _62)
+        _59 = use_lifetime_trait<'188, '189>(move _60, move _62)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -2107,6 +2120,7 @@ fn main()
             storage_dead(_68)
             storage_live(kind_70)
             kind_70 = AssertKind::Eq {  }
+            fake_read(kind_70)
             storage_live(_71)
             _71 = move kind_70
             storage_live(_72)
@@ -2239,8 +2253,8 @@ fn main()
         return
     }
     storage_dead(_11)
-    conditional_drop[drop_glue<'131>] _12
-    ↳⚡ conditional_drop[drop_glue<'127>] _15
+    conditional_drop[drop_glue<'135>] _12
+    ↳⚡ conditional_drop[drop_glue<'131>] _15
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -2316,7 +2330,7 @@ fn main()
         storage_dead(_32)
         storage_dead(kind_31)
         unwind_continue
-    conditional_drop[drop_glue<'133>] _15
+    conditional_drop[drop_glue<'137>] _15
     ↳⚡ storage_dead(_85)
         storage_dead(_84)
         storage_dead(_83)

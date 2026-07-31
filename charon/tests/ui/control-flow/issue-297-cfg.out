@@ -102,6 +102,7 @@ fn f1<'_0>(a: &'_0 [u8]) -> usize
     storage_live(_10)
     storage_live(sampled)
     sampled = const 0usize
+    fake_read(sampled)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
@@ -233,6 +234,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
     storage_live(_44)
     storage_live(sampled)
     sampled = const 0usize
+    fake_read(sampled)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
@@ -287,6 +289,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
         _13 = copy (*_50)
         b1 = cast<u8, i16>(move _13)
         storage_dead(_13)
+        fake_read(b1)
         storage_dead(_14)
         storage_live(b2)
         storage_live(_16)
@@ -300,6 +303,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
         _16 = copy (*_52)
         b2 = cast<u8, i16>(move _16)
         storage_dead(_16)
+        fake_read(b2)
         storage_dead(_17)
         storage_live(b3)
         storage_live(_19)
@@ -313,6 +317,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
         _19 = copy (*_54)
         b3 = cast<u8, i16>(move _19)
         storage_dead(_19)
+        fake_read(b3)
         storage_dead(_20)
         storage_live(d1)
         storage_live(_22)
@@ -328,6 +333,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
         d1 = move _22 | move _25
         storage_dead(_25)
         storage_dead(_22)
+        fake_read(d1)
         storage_live(d2)
         storage_live(_27)
         storage_live(_28)
@@ -342,6 +348,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
         d2 = move _27 | move _29
         storage_dead(_29)
         storage_dead(_27)
+        fake_read(d2)
         storage_live(_31)
         storage_live(_32)
         _32 = copy d1

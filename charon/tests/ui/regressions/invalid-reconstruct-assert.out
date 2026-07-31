@@ -739,6 +739,8 @@ fn main()
         _0 = ();
         storage_live(a);
         a = [const 1u32, const 2u32, const 3u32, const 4u32, const 5u32];
+        fake_read(a);
+        set_type(typeof(a) == [u32; 5usize]);
         storage_live(b);
         storage_live(_3);
         storage_live(_4);
@@ -746,16 +748,18 @@ fn main()
         _3 = &(*_4);
         b = unsize_cast<&'3 [u32; 5usize], &'7 [u32], 5usize>(move _3);
         storage_dead(_3);
+        fake_read(b);
+        set_type(typeof(b) == &'8 [u32]);
         storage_dead(_4);
         storage_live(res);
         storage_live(_6);
         storage_live(_7);
         _7 = &a;
-        _6 = unsize_cast<&'6 [u32; 5usize], &'8 [u32], 5usize>(move _7);
+        _6 = unsize_cast<&'6 [u32; 5usize], &'9 [u32], 5usize>(move _7);
         storage_dead(_7);
         storage_live(_8);
         _8 = closure {  };
-        res = binary_search_by<'9, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, impl_FnMut_tuple_for_closure<'13>](move _6, move _8) -> bb2 (unwind: bb1);
+        res = binary_search_by<'10, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, impl_FnMut_tuple_for_closure<'14>](move _6, move _8) -> bb2 (unwind: bb1);
     }
 
     bb1: {
@@ -765,6 +769,7 @@ fn main()
     bb2: {
         storage_dead(_8);
         storage_dead(_6);
+        fake_read(res);
         _0 = ();
         storage_dead(res);
         storage_dead(b);

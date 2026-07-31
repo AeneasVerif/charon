@@ -61,7 +61,7 @@ fn main()
     let _7: &'20 [i32]; // anonymous local
     let _8: &'21 [i32; 1usize]; // anonymous local
     let _9: &'22 [i32; 1usize]; // anonymous local
-    let _10: &'29 [i32; 1usize]; // anonymous local
+    let _10: &'30 [i32; 1usize]; // anonymous local
     let _11: [i32; 1usize]; // anonymous local
 
     storage_live(_9)
@@ -82,18 +82,20 @@ fn main()
     slice = @ArrayToSliceShared<'_, i32, 1usize>(move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
+    fake_read(slice)
+    set_type(typeof(slice) == &'24 [i32])
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
     _7 = &(*slice) with_metadata(copy slice.metadata)
-    _6 = iter<'25, i32>[{built_in impl Sized for i32}](move _7)
+    _6 = iter<'26, i32>[{built_in impl Sized for i32}](move _7)
     ↳⚡ storage_dead(_8)
         unwind_continue
     _5 = &two-phase-mut _6
     storage_dead(_7)
-    _4 = next<'26, '28, i32>[{built_in impl Sized for i32}](move _5)
+    _4 = next<'27, '29, i32>[{built_in impl Sized for i32}](move _5)
     ↳⚡ storage_dead(_8)
         unwind_continue
     storage_dead(_5)

@@ -181,6 +181,8 @@ fn foo::<()>(x: ())
     _0 = ()
     storage_live(f)
     f = move _5
+    fake_read(f)
+    set_type(typeof(f) == fn(()))
     storage_live(_3)
     _3 = copy f
     storage_live(_4)

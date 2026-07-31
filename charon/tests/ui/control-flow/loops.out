@@ -430,8 +430,10 @@ pub fn test_loop1(max: u32) -> u32
     storage_live(_10)
     storage_live(i)
     i = const 0u32
+    fake_read(i)
     storage_live(s)
     s = const 0u32
+    fake_read(s)
     loop {
         storage_live(_4)
         storage_live(_5)
@@ -491,8 +493,10 @@ pub fn test_loop2(max: u32) -> u32
     storage_live(_11)
     storage_live(i)
     i = const 0u32
+    fake_read(i)
     storage_live(s)
     s = const 0u32
+    fake_read(s)
     loop {
         storage_live(_4)
         storage_live(_5)
@@ -574,10 +578,13 @@ pub fn test_loop3(max: u32) -> u32
     storage_live(_21)
     storage_live(i)
     i = const 0u32
+    fake_read(i)
     storage_live(j)
     j = const 0u32
+    fake_read(j)
     storage_live(s)
     s = const 0u32
+    fake_read(s)
     loop {
         storage_live(_5)
         storage_live(_6)
@@ -699,10 +706,13 @@ pub fn test_loop4(max: u32) -> u32
     storage_live(_21)
     storage_live(i)
     i = const 1u32
+    fake_read(i)
     storage_live(j)
     j = const 0u32
+    fake_read(j)
     storage_live(s)
     s = const 0u32
+    fake_read(s)
     loop {
         storage_live(_5)
         storage_live(_6)
@@ -817,10 +827,13 @@ pub fn test_loop5(max: u32) -> u32
     storage_live(_16)
     storage_live(i)
     i = const 0u32
+    fake_read(i)
     storage_live(j)
     j = const 0u32
+    fake_read(j)
     storage_live(s)
     s = const 0u32
+    fake_read(s)
     loop {
         storage_live(_5)
         storage_live(_6)
@@ -908,8 +921,10 @@ pub fn test_loop6(max: u32) -> u32
     storage_live(_12)
     storage_live(i)
     i = const 0u32
+    fake_read(i)
     storage_live(s)
     s = const 0u32
+    fake_read(s)
     loop {
         storage_live(_4)
         storage_live(_5)
@@ -987,8 +1002,10 @@ pub fn test_loop7(max: u32) -> u32
     storage_live(_15)
     storage_live(i)
     i = const 0u32
+    fake_read(i)
     storage_live(s)
     s = const 0u32
+    fake_read(s)
     storage_live(_4)
     storage_live(_5)
     _5 = copy i
@@ -1082,6 +1099,7 @@ pub fn test_loops()
     storage_live(x_1)
     x_1 = test_loop1(const 2u32)
     ↳⚡ unwind_continue
+    fake_read(x_1)
     storage_live(_2)
     storage_live(_3)
     _3 = copy x_1
@@ -1093,6 +1111,7 @@ pub fn test_loops()
     storage_live(x_4)
     x_4 = test_loop2(const 2u32)
     ↳⚡ unwind_continue
+    fake_read(x_4)
     storage_live(_5)
     storage_live(_6)
     _6 = copy x_4
@@ -1104,6 +1123,7 @@ pub fn test_loops()
     storage_live(x_7)
     x_7 = test_loop3(const 2u32)
     ↳⚡ unwind_continue
+    fake_read(x_7)
     storage_live(_8)
     storage_live(_9)
     _9 = copy x_7
@@ -1115,6 +1135,7 @@ pub fn test_loops()
     storage_live(x_10)
     x_10 = test_loop4(const 20u32)
     ↳⚡ unwind_continue
+    fake_read(x_10)
     storage_live(_11)
     storage_live(_12)
     _12 = copy x_10
@@ -1126,6 +1147,7 @@ pub fn test_loops()
     storage_live(x_13)
     x_13 = test_loop5(const 2u32)
     ↳⚡ unwind_continue
+    fake_read(x_13)
     storage_live(_14)
     storage_live(_15)
     _15 = copy x_13
@@ -1137,6 +1159,7 @@ pub fn test_loops()
     storage_live(x_16)
     x_16 = test_loop6(const 2u32)
     ↳⚡ unwind_continue
+    fake_read(x_16)
     storage_live(_17)
     storage_live(_18)
     _18 = copy x_16
@@ -1190,6 +1213,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     storage_live(_25)
     storage_live(s)
     s = const 0usize
+    fake_read(s)
     storage_live(_4)
     storage_live(_5)
     _5 = Range { start: const 0i32, end: const 128i32 }
@@ -1363,6 +1387,7 @@ pub fn loop_inside_if(b: bool, n: u32) -> u32
     }
     storage_live(s)
     s = const 0u32
+    fake_read(s)
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
@@ -1441,8 +1466,10 @@ pub fn test_crate::sum(max: u32) -> u32
     storage_live(_10)
     storage_live(i)
     i = const 0u32
+    fake_read(i)
     storage_live(s)
     s = const 0u32
+    fake_read(s)
     loop {
         storage_live(_4)
         storage_live(_5)
@@ -1502,8 +1529,10 @@ pub fn sum_array<const N : usize>(a: [u32; N]) -> u32
     storage_live(_9)
     storage_live(i)
     i = const 0usize
+    fake_read(i)
     storage_live(s)
     s = const 0u32
+    fake_read(s)
     loop {
         storage_live(_4)
         storage_live(_5)
@@ -1514,6 +1543,7 @@ pub fn sum_array<const N : usize>(a: [u32; N]) -> u32
             storage_live(_6)
             storage_live(_7)
             _7 = copy i
+            fake_read(a)
             storage_live(_10)
             _10 = &a
             storage_live(_11)
@@ -1565,6 +1595,7 @@ pub fn clear<'_0>(v: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in 
     _0 = ()
     storage_live(i)
     i = const 0usize
+    fake_read(i)
     loop {
         storage_live(_3)
         storage_live(_4)
@@ -1755,6 +1786,7 @@ pub fn loop_break_1()
     _0 = ()
     storage_live(x)
     x = const 0i32
+    fake_read(x)
     loop {
         x = const 1i32
         storage_live(_2)
@@ -1786,6 +1818,7 @@ pub fn loop_break_2()
     _0 = ()
     storage_live(x)
     x = const 0i32
+    fake_read(x)
     loop {
         x = const 1i32
         storage_live(_2)
@@ -1818,6 +1851,7 @@ pub fn interleaved_loops()
     _0 = ()
     storage_live(x)
     x = const 0i32
+    fake_read(x)
     loop {
         x = const 1i32
         loop {
@@ -1864,6 +1898,7 @@ pub fn interleaved_loops2()
     _0 = ()
     storage_live(x)
     x = const 0i32
+    fake_read(x)
     loop {
         x = const 1i32
         loop {
@@ -1915,6 +1950,7 @@ pub fn loop_after_loop()
     _0 = ()
     storage_live(x)
     x = const 0i32
+    fake_read(x)
     loop {
         storage_live(_2)
         storage_live(_3)
@@ -1964,6 +2000,7 @@ pub fn trick_exit_computation()
     _0 = ()
     storage_live(x)
     x = const 0i32
+    fake_read(x)
     loop {
         x = const 1i32
         loop {

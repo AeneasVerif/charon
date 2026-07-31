@@ -358,8 +358,12 @@ pub fn test2()
     _0 = ()
     storage_live(x)
     x = const 23u32
+    fake_read(x)
+    set_type(typeof(x) == u32)
     storage_live(y)
     y = const 44u32
+    fake_read(y)
+    set_type(typeof(y) == u32)
     storage_live(z)
     storage_live(_4)
     _4 = copy x
@@ -369,6 +373,7 @@ pub fn test2()
     z = move _6
     storage_dead(_5)
     storage_dead(_4)
+    fake_read(z)
     storage_live(p)
     storage_live(_8)
     _8 = copy x
@@ -377,16 +382,25 @@ pub fn test2()
     p = Pair { x: move _8, y: move _9 }
     storage_dead(_9)
     storage_dead(_8)
+    fake_read(p)
+    set_type(typeof(p) == Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}])
     storage_live(s)
     s = Sum::Right { 0: const true }
+    fake_read(s)
+    set_type(typeof(s) == Sum<u32, bool>[{built_in impl Sized for u32}, {built_in impl Sized for bool}])
     storage_live(o)
     o = One::One { 0: const 3u64 }
+    fake_read(o)
+    set_type(typeof(o) == One<u64>[{built_in impl Sized for u64}])
     storage_live(e0)
     e0 = EmptyEnum::Empty {  }
+    fake_read(e0)
     storage_live(e1)
     e1 = move e0
+    fake_read(e1)
     storage_live(enum0)
     enum0 = Enum::Variant1 {  }
+    fake_read(enum0)
     _0 = ()
     storage_dead(enum0)
     storage_dead(e1)
@@ -460,6 +474,8 @@ pub fn test_list1()
     conditional_drop[impl_Destruct_for_Box::drop_glue<'1, List<i32>[{built_in impl Sized for i32}], Global>[{built_in impl MetaSized for List<i32>[{built_in impl Sized for i32}]}, {built_in impl Sized for Global}]] _2
     ↳⚡ unwind_continue
     storage_dead(_2)
+    fake_read(l)
+    set_type(typeof(l) == List<i32>[{built_in impl Sized for i32}])
     _0 = ()
     conditional_drop[impl_Destruct_for_List::drop_glue<'2, i32>[{built_in impl Sized for i32}]] l
     ↳⚡ unwind_continue
@@ -484,6 +500,8 @@ pub fn test_box1()
     storage_live(b)
     b = @BoxNew<i32>[{built_in impl Sized for i32}](const 0i32)
     ↳⚡ unwind_continue
+    fake_read(b)
+    set_type(typeof(b) == alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}])
     storage_live(x_2)
     storage_live(_3)
     _3 = &two-phase-mut b
@@ -492,6 +510,7 @@ pub fn test_box1()
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_3)
+    fake_read(x_2)
     (*x_2) = const 1i32
     storage_live(x_4)
     storage_live(_5)
@@ -501,6 +520,7 @@ pub fn test_box1()
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_5)
+    fake_read(x_4)
     storage_live(_6)
     storage_live(_7)
     _7 = copy (*x_4)
@@ -917,6 +937,7 @@ pub fn read_then_incr<'_0>(x: &'_0 mut u32) -> u32
     storage_live(_3)
     storage_live(r)
     r = copy (*x)
+    fake_read(r)
     _3 = copy (*x) panic.+ const 1u32
     (*x) = move _3
     _0 = copy r

@@ -70,6 +70,7 @@ fn main()
     _0 = ()
     storage_live(p)
     p = Point::<i32> { x: const 10i32, y: const 50u64, z: const 1i32 }
+    fake_read(p)
     storage_live(_2)
     storage_live(_3)
     _3 = &p

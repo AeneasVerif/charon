@@ -13,6 +13,7 @@ pub fn index_array_generic<const N : usize>(s: [u32; N], i: usize) -> u32
     storage_live(_0)
     storage_live(_3)
     _3 = copy i
+    fake_read(s)
     storage_live(_4)
     _4 = &s
     storage_live(_5)

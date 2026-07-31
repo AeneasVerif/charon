@@ -232,6 +232,7 @@ fn nested_vecs()
     storage_dead(x_15)
     _nested = move ret_14
     storage_dead(_2)
+    fake_read(_nested)
     _0 = ()
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'10, Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}], Global>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]] _nested
     ↳⚡ unwind_continue
@@ -341,6 +342,7 @@ fn nested_single()
     storage_dead(x_10)
     _nested = move ret_9
     storage_dead(_2)
+    fake_read(_nested)
     _0 = ()
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'6, Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}], Global>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}, {built_in impl Sized for Global}]] _nested
     ↳⚡ unwind_continue

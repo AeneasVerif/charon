@@ -126,12 +126,14 @@ fn foo()
     storage_dead(x)
     _v = move ret
     storage_dead(_2)
+    fake_read(_v)
     storage_live(_v2)
     _v2 = from_elem<i32>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 1i32, const 10usize)
     ↳⚡ conditional_drop[impl_Destruct_for_Vec::drop_glue<'2, i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _v
         ↳⚡ storage_dead(ret)
             unwind_terminate
         unwind_continue
+    fake_read(_v2)
     _0 = ()
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'3, i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _v2
     ↳⚡ conditional_drop[impl_Destruct_for_Vec::drop_glue<'2, i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _v

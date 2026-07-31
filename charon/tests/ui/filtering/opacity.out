@@ -217,6 +217,7 @@ fn foo()
     _14 = const 0i32
     _13 = &_14
     _10 = move _13
+    set_type(typeof(_3) <= u64)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)

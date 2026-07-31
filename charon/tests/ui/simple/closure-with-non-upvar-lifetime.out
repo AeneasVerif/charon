@@ -130,6 +130,7 @@ fn call_fn<'_0>(a: &'_0 [u8], i: usize) -> u8
     _4 = &a
     read = closure { 0: move _4 }
     storage_dead(_4)
+    fake_read(read)
     storage_live(_5)
     _5 = &read
     storage_live(_6)

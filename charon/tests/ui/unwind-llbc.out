@@ -106,6 +106,7 @@ fn main()
     _0 = ()
     storage_live(f)
     f = Foo {  }
+    fake_read(f)
     storage_live(_2)
     _2 = may_unwind()
     ↳⚡ conditional_drop[drop_glue<'2>] f

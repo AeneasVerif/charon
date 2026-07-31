@@ -118,6 +118,7 @@ fn main()
     _0 = ()
     storage_live(z)
     z = NotCopy {  }
+    fake_read(z)
     storage_live(_2)
     storage_live(_3)
     _3 = closure { 0: move z }

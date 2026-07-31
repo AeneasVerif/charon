@@ -94,6 +94,7 @@ fn takes_fn<'_0>(f: &'_0 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::Implied
     _0 = ()
     storage_live(counter)
     counter = const 0u32
+    fake_read(counter)
     storage_live(_3)
     storage_live(_4)
     _4 = &(*f) with_metadata(copy f.metadata)

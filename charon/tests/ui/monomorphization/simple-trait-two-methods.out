@@ -168,7 +168,7 @@ fn main()
     let _6: &'10 i32; // anonymous local
     let _7: unsafe fn(&'8 (dyn Trait + '9)); // anonymous local
     let _8: &'11 i32; // anonymous local
-    let _9: &'18 i32; // anonymous local
+    let _9: &'20 i32; // anonymous local
     let _10: i32; // anonymous local
 
     storage_live(_8)
@@ -188,6 +188,8 @@ fn main()
     _2 = &(*_3)
     b = unsize_cast<&'6 i32, &'12 (dyn Trait + '13), &impl_Trait_for_i32::{vtable}>(move _2)
     storage_dead(_2)
+    fake_read(b)
+    set_type(typeof(b) == &'14 (dyn Trait + '15))
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)

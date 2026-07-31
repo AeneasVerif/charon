@@ -654,7 +654,7 @@ fn main()
     let _5: &'8 (dyn Join<i32, ImpliedClause1::Left = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause2::Right = i32> + '9); // anonymous local
     let _6: &'10 i32; // anonymous local
     let _7: &'11 i32; // anonymous local
-    let _8: &'18 i32; // anonymous local
+    let _8: &'20 i32; // anonymous local
     let _9: i32; // anonymous local
 
     storage_live(_7)
@@ -674,6 +674,8 @@ fn main()
     _2 = &(*_3)
     v = unsize_cast<&'6 i32, &'12 (dyn Join<i32, ImpliedClause1::Left = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause2::Right = i32> + '13), &impl_Join_i32_for_i32::{vtable}>(move _2)
     storage_dead(_2)
+    fake_read(v)
+    set_type(typeof(v) == &'14 (dyn Join<i32, ImpliedClause1::Left = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause2::Right = i32> + '15))
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)

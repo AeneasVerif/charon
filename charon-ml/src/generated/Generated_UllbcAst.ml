@@ -40,6 +40,8 @@ and statement_kind =
           valid though, so this statement is not a no-op: it can trigger UB if
           the place's projections are not valid (e.g. because they go out of
           bounds). *)
+  | Borrowck of borrowck_statement
+      (** Statements that only affect borrow-checking. *)
   | Assert of assertion * abort_kind
       (** A non-diverging runtime check for a condition. This can be either:
           - Emitted for inlined "assumes" (which cause UB on failure)

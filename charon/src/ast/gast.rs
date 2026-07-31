@@ -57,6 +57,30 @@ pub struct Locals {
     pub locals: IndexVec<LocalId, Local>,
 }
 
+/// Statements that only affect borrow-checking. They are no-ops at runtime.
+#[derive(
+    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
+)]
+pub enum BorrowckStatement {
+    /// Acts like a read of the place.
+    FakeRead(Place),
+    /// Relate the type of a place to the provided type. For example, `let x: Self = value`
+    /// produces `SetType` for `x` and `Self`.
+    SetType {
+        place: Place,
+        ty: Ty,
+        #[drive(skip)]
+        #[serde_state(stateless)]
+        variance: Variance,
+    },
+    /// Require a type to outlive a region. For example, the `'a` bound in
+    /// `let x: impl Copy + 'a = value` produces `SetOutlives(typeof(x), 'a)`.
+    SetOutlives(Ty, Region),
+    /// Require a trait predicate to hold. For example, the `Copy` bound in
+    /// `let x: impl Copy = value` produces `PredicateHolds(typeof(x): Copy)`.
+    PredicateHolds(TraitRef),
+}
+
 /// An expression body.
 /// TODO: arg_count should be stored in GFunDecl below. But then,
 ///       the print is obfuscated and Aeneas may need some refactoring.

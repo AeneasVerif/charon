@@ -62,6 +62,7 @@ pub fn X2() -> u32
     storage_live(_0)
     storage_live(x)
     x = const 3u32
+    fake_read(x)
     _0 = copy x
     storage_dead(x)
     return

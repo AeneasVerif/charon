@@ -126,6 +126,8 @@ pub unsafe extern "C" fn sum(...) -> i32
         storage_dead(ap)
         unwind_continue
     storage_dead(_3)
+    fake_read(a)
+    set_type(typeof(a) == i32)
     storage_live(b)
     storage_live(_5)
     _5 = &two-phase-mut ap
@@ -138,6 +140,8 @@ pub unsafe extern "C" fn sum(...) -> i32
         storage_dead(ap)
         unwind_continue
     storage_dead(_5)
+    fake_read(b)
+    set_type(typeof(b) == i32)
     storage_live(_6)
     _6 = copy a
     storage_live(_7)
@@ -183,6 +187,8 @@ pub fn call()
     storage_dead(_2)
     storage_live(fn_ptr)
     fn_ptr = cast<foo, unsafe extern "C" fn(u32, u64, ...)>(const foo)
+    fake_read(fn_ptr)
+    set_type(typeof(fn_ptr) == unsafe extern "C" fn(u32, u64, ...))
     storage_live(_4)
     storage_live(_5)
     _5 = copy fn_ptr

@@ -146,6 +146,7 @@ where
     storage_live(_0)
     storage_live(f)
     f = test_crate::foo::closure { 0: move x }
+    fake_read(f)
     storage_live(_3)
     _3 = move f
     storage_live(_4)

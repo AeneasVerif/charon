@@ -215,8 +215,10 @@ fn main()
     _0 = ()
     storage_live(v)
     v = const 5u8
+    fake_read(v)
     storage_live(z)
     z = const 1u8
+    fake_read(z)
     storage_live(f)
     storage_live(_4)
     _4 = &v
@@ -225,6 +227,7 @@ fn main()
     f = closure { 0: move _4, 1: move _5 }
     storage_dead(_5)
     storage_dead(_4)
+    fake_read(f)
     storage_live(_6)
     storage_live(_7)
     _7 = &f

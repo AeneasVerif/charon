@@ -24,6 +24,7 @@ fn rej_sample<'_0>(a: &'_0 [u8]) -> usize
     storage_live(_10)
     storage_live(sampled)
     sampled = const 0usize
+    fake_read(sampled)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)

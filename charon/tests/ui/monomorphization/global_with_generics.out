@@ -52,6 +52,7 @@ fn main()
     _3 = &FooBool
     _2 = move _3
     _b = copy ((*_2)).value
+    fake_read(_b)
     storage_dead(_2)
     _0 = ()
     storage_dead(_b)

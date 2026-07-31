@@ -77,8 +77,10 @@ pub fn choose_test()
     _0 = ()
     storage_live(x)
     x = const 0i32
+    fake_read(x)
     storage_live(y)
     y = const 0i32
+    fake_read(y)
     storage_live(z)
     storage_live(_4)
     storage_live(_5)
@@ -93,6 +95,7 @@ pub fn choose_test()
         unwind_continue
     storage_dead(_6)
     storage_dead(_4)
+    fake_read(z)
     storage_dead(_7)
     storage_dead(_5)
     _8 = copy (*z) panic.+ const 1i32

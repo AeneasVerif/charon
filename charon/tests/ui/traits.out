@@ -827,8 +827,10 @@ where
         storage_dead(self)
         unwind_continue
     storage_dead(_4)
+    fake_read(x_3)
     storage_live(y)
     y = TestType1 { 0: const 0u64 }
+    fake_read(y)
     storage_live(_6)
     storage_live(_7)
     _7 = copy x_3

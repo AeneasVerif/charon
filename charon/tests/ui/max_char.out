@@ -23,6 +23,7 @@ fn main()
     _0 = ()
     storage_live(_max_char)
     _max_char = copy MAX
+    fake_read(_max_char)
     _0 = ()
     storage_dead(_max_char)
     return

@@ -5499,8 +5499,10 @@ fn main()
     _0 = ()
     storage_live(a)
     a = [const 0i32, const 1i32, const 2i32, const 3i32, const 4i32, const 5i32, const 6i32]
+    fake_read(a)
     storage_live(i)
     i = const 0i32
+    fake_read(i)
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
@@ -5886,6 +5888,7 @@ fn main()
     storage_dead(_34)
     storage_live(expected)
     expected = const 28i32
+    fake_read(expected)
     storage_live(_44)
     storage_live(_45)
     _45 = &i
@@ -5910,6 +5913,7 @@ fn main()
         storage_dead(_50)
         storage_live(kind)
         kind = AssertKind::Eq {  }
+        fake_read(kind)
         storage_live(_53)
         _53 = move kind
         storage_live(_54)

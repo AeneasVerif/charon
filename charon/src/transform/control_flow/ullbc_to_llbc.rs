@@ -956,6 +956,7 @@ impl<'a> ReconstructCtx<'a> {
                 on_unwind: tgt::Statement::new(span, tgt::StatementKind::UnwindResume).into_block(),
             },
             src::StatementKind::PlaceMention(place) => tgt::StatementKind::PlaceMention(place),
+            src::StatementKind::Borrowck(statement) => tgt::StatementKind::Borrowck(statement),
             src::StatementKind::Nop => tgt::StatementKind::Nop,
         };
         tgt::Statement::new(span, st)

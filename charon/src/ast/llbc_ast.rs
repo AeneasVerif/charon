@@ -53,6 +53,8 @@ pub enum StatementKind {
     /// this statement is not a no-op: it can trigger UB if the place's projections are not valid
     /// (e.g. because they go out of bounds).
     PlaceMention(Place),
+    /// Statements that only affect borrow-checking.
+    Borrowck(BorrowckStatement),
     /// Drop the value at the given place.
     ///
     /// Depending on `DropKind`, this may be a real call to `drop_glue`, or a conditional call

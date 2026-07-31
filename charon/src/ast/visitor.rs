@@ -45,7 +45,7 @@ use derive_generic_visitor::*;
     skip((), String, PathBuf, bool),
     // Types that we unconditionally explore.
     drive(
-        Assert, Attribute, AttrInfo, BinderKind, BinOp, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
+        Assert, Attribute, AttrInfo, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
         Call, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Disambiguator, DynPredicate, Field, FieldId, FieldProjKind, File, FloatTy, FloatValue,
         FnOperand, FunId, FnPtrKind, FunSig, InlineAttr, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
@@ -175,11 +175,11 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
         AbortKind, BinOp, BorrowKind, BuiltinAssertKind, ConstantExpr, FieldId, FieldProjKind,
         TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId,
-        TraitRef, LiteralTy, Literal, RegionId, (), String, PathBuf, bool,
+        TraitRef, LiteralTy, Literal, Region, RegionId, (), String, PathBuf, bool,
     ),
     // Types that we unconditionally explore.
     drive(
-        Assert, PlaceKind,
+        Assert, BorrowckStatement, PlaceKind,
         llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,
         ullbc_ast::BlockData, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets,

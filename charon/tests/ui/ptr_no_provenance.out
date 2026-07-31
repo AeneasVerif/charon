@@ -259,6 +259,8 @@ fn main()
     storage_live(ptr)
     ptr = null<()>[impl_Thin_for_T<()>[{built_in impl Pointee for () where Metadata  = ()}]]()
     ↳⚡ unwind_continue
+    fake_read(ptr)
+    set_type(typeof(ptr) == *const ())
     _0 = ()
     storage_dead(ptr)
     return

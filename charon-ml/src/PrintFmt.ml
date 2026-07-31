@@ -1525,6 +1525,26 @@ let pp_assertion (env : fmt_env) (fmt : Format.formatter) (a : assertion) : unit
     (Bool.to_string a.expected)
     check_kind
 
+let pp_borrowck_statement (env : fmt_env) (fmt : Format.formatter)
+    (statement : borrowck_statement) : unit =
+  match statement with
+  | FakeRead place -> Format.fprintf fmt "fake_read(%a)" (pp_place env) place
+  | SetType (place, ty, variance) ->
+      let relation =
+        match variance with
+        | Covariant -> "<="
+        | Contravariant -> ">="
+        | Invariant -> "=="
+        | Bivariant | VaUnknown -> assert false
+      in
+      Format.fprintf fmt "set_type(typeof(%a) %s %s)" (pp_place env) place
+        relation (ty_to_string env ty)
+  | SetOutlives (ty, region) ->
+      Format.fprintf fmt "set_outlives(%s, %s)" (ty_to_string env ty)
+        (region_to_string env region)
+  | PredicateHolds predicate ->
+      Format.fprintf fmt "predicate_holds(%a)" (pp_trait_ref env) predicate
+
 let pp_abort_kind (env : fmt_env) (fmt : Format.formatter) (a : abort_kind) :
     unit =
   match a with
@@ -1818,6 +1838,7 @@ module Llbc = struct
   let pp_print_fn_ptr = pp_fn_ptr
   let pp_print_rvalue = pp_rvalue
   let pp_print_assertion = pp_assertion
+  let pp_print_borrowck_statement = pp_borrowck_statement
   let pp_print_abort_kind = pp_abort_kind
 
   open LlbcAst
@@ -1859,6 +1880,10 @@ module Llbc = struct
     | Assign (p, rv) ->
         Format.fprintf fmt "%s%a = %a" indent (pp_print_place env) p
           (pp_print_rvalue env) rv
+    | Borrowck statement ->
+        Format.fprintf fmt "%s%a" indent
+          (pp_print_borrowck_statement env)
+          statement
     | SetDiscriminant (p, variant_id) ->
         Format.fprintf fmt "%s@discriminant(%s) = %s" indent
           (place_to_string env p)
@@ -2001,6 +2026,7 @@ module Ullbc = struct
   let pp_print_place = pp_place
   let pp_print_rvalue = pp_rvalue
   let pp_print_assertion = pp_assertion
+  let pp_print_borrowck_statement = pp_borrowck_statement
   let pp_print_abort_kind = pp_abort_kind
 
   open UllbcAst
@@ -2018,6 +2044,10 @@ module Ullbc = struct
     | Assign (p, rv) ->
         Format.fprintf fmt "%s%a = %a" indent (pp_print_place env) p
           (pp_print_rvalue env) rv
+    | Borrowck statement ->
+        Format.fprintf fmt "%s%a" indent
+          (pp_print_borrowck_statement env)
+          statement
     | SetDiscriminant (p, variant_id) ->
         Format.fprintf fmt "%s@discriminant(%s) = %s" indent
           (place_to_string env p)

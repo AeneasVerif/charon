@@ -33,6 +33,8 @@ pub(crate) struct BindingLevel {
     ///
     /// The map from rust early regions to translated region indices.
     pub early_region_vars: HashMap<hax::EarlyParamRegion, RegionId>,
+    /// The map from rust named region parameter ids to translated region indices.
+    pub region_vars_by_def_id: HashMap<hax::DefId, RegionId>,
     /// The map from rust late/bound regions to translated region indices.
     pub bound_region_vars: Vec<RegionId>,
     /// Region added for the lifetime bound in the signature of the `call`/`call_mut` methods.
@@ -87,6 +89,7 @@ impl BindingLevel {
     pub(crate) fn push_early_region(
         &mut self,
         region: hax::EarlyParamRegion,
+        def_id: hax::DefId,
         variance: Variance,
         mutability: LifetimeMutability,
     ) -> RegionId {
@@ -107,6 +110,7 @@ impl BindingLevel {
             mutability,
         });
         self.early_region_vars.insert(region, rid);
+        self.region_vars_by_def_id.insert(def_id, rid);
         rid
     }
 
@@ -117,16 +121,20 @@ impl BindingLevel {
         variance: Variance,
     ) -> RegionId {
         use crate::hax::BoundRegionKind::*;
-        let name = match region {
-            Anon => None,
-            NamedForPrinting(symbol) | Named(_, symbol) => translate_region_name(symbol),
-            ClosureEnv => Some("@env".to_owned()),
+        let (name, def_id) = match region {
+            Anon => (None, None),
+            NamedForPrinting(symbol) => (translate_region_name(symbol), None),
+            Named(def_id, symbol) => (translate_region_name(symbol), Some(def_id)),
+            ClosureEnv => (Some("@env".to_owned()), None),
         };
         let rid = self
             .params
             .regions
             .push_with(|index| RegionParam::new(index, name, variance));
         self.bound_region_vars.push(rid);
+        if let Some(def_id) = def_id {
+            self.region_vars_by_def_id.insert(def_id, rid);
+        }
         rid
     }
 
@@ -301,6 +309,21 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         )
     }
 
+    pub(crate) fn lookup_late_param_region(
+        &mut self,
+        span: Span,
+        region: &hax::LateParamRegion,
+    ) -> Result<RegionDbVar, Error> {
+        let hax::LateParamRegionKind::Named(def_id, _) = &region.kind else {
+            raise_error!(self, span, "Unexpected late-bound region: {region:?}")
+        };
+        self.lookup_param(
+            span,
+            |bl| bl.region_vars_by_def_id.get(def_id).copied(),
+            || format!("the late-bound region variable {region:?}"),
+        )
+    }
+
     pub(crate) fn lookup_type_var(
         &mut self,
         span: Span,
@@ -360,9 +383,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         self.item_src.def_id(),
                         param.index,
                     );
-                let _ = self
-                    .innermost_binder_mut()
-                    .push_early_region(region, variance, mutability);
+                let _ = self.innermost_binder_mut().push_early_region(
+                    region,
+                    param.def_id.clone(),
+                    variance,
+                    mutability,
+                );
             }
             hax::GenericParamDefKind::Type { .. } => {
                 let _ =

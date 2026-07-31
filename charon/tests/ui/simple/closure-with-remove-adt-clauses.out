@@ -110,6 +110,7 @@ where
     _3 = &(*x)
     _c = test_crate::f::closure { 0: move _3 }
     storage_dead(_3)
+    fake_read(_c)
     _0 = ()
     storage_dead(_c)
     storage_dead(x)
@@ -299,6 +300,7 @@ where
     _3 = &x
     _c = test_crate::g::closure { 0: move _3 }
     storage_dead(_3)
+    fake_read(_c)
     _0 = ()
     storage_dead(_c)
     storage_dead(x)

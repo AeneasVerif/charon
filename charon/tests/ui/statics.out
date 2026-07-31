@@ -37,13 +37,16 @@ fn constant()
     _0 = ()
     storage_live(_val)
     _val = copy CONST
+    fake_read(_val)
     storage_live(_ref)
     _5 = move _6
     _ref = &(*_5)
+    fake_read(_ref)
     storage_live(_ref_mut)
     storage_live(_4)
     _4 = copy CONST
     _ref_mut = &mut _4
+    fake_read(_ref_mut)
     _0 = ()
     storage_dead(_4)
     storage_dead(_ref_mut)
@@ -91,6 +94,7 @@ fn shared_static()
     _7 = &SHARED_STATIC
     _2 = move _7
     _val = copy (*_2)
+    fake_read(_val)
     storage_dead(_2)
     storage_live(_ref)
     storage_live(_4)
@@ -98,12 +102,14 @@ fn shared_static()
     _8 = &SHARED_STATIC
     _4 = move _8
     _ref = &(*_4)
+    fake_read(_ref)
     storage_live(_ptr)
     storage_live(_6)
     storage_live(_9)
     _9 = &SHARED_STATIC
     _6 = move _9
     _ptr = &raw const (*_6)
+    fake_read(_ptr)
     _0 = ()
     storage_dead(_6)
     storage_dead(_ptr)
@@ -157,6 +163,7 @@ fn mut_static()
     _11 = &raw mut MUT_STATIC
     _2 = move _11
     _val = copy (*_2)
+    fake_read(_val)
     storage_dead(_2)
     storage_live(_ref)
     storage_live(_4)
@@ -164,24 +171,28 @@ fn mut_static()
     _12 = &raw mut MUT_STATIC
     _4 = move _12
     _ref = &(*_4)
+    fake_read(_ref)
     storage_live(_ref_mut)
     storage_live(_6)
     storage_live(_13)
     _13 = &raw mut MUT_STATIC
     _6 = move _13
     _ref_mut = &mut (*_6)
+    fake_read(_ref_mut)
     storage_live(_ptr)
     storage_live(_8)
     storage_live(_14)
     _14 = &raw mut MUT_STATIC
     _8 = move _14
     _ptr = &raw const (*_8)
+    fake_read(_ptr)
     storage_live(_ptr_mut)
     storage_live(_10)
     storage_live(_15)
     _15 = &raw mut MUT_STATIC
     _10 = move _15
     _ptr_mut = &raw mut (*_10)
+    fake_read(_ptr_mut)
     _0 = ()
     storage_dead(_10)
     storage_dead(_ptr_mut)

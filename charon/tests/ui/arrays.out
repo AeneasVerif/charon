@@ -550,6 +550,7 @@ where
     storage_live(_3)
     storage_live(_4)
     _4 = copy i
+    fake_read((*s))
     storage_live(_5)
     _5 = &(*s)
     storage_live(_6)
@@ -579,6 +580,7 @@ pub fn index_array_u32(s: [u32; 32usize], i: usize) -> u32
     storage_live(_0)
     storage_live(_3)
     _3 = copy i
+    fake_read(s)
     storage_live(_4)
     _4 = &s
     storage_live(_5)
@@ -605,6 +607,7 @@ pub fn index_array_copy<'_0>(x: &'_0 [u32; 32usize]) -> u32
     storage_live(_0)
     storage_live(_2)
     _2 = const 0usize
+    fake_read((*x))
     storage_live(_3)
     _3 = &(*x)
     storage_live(_4)
@@ -638,6 +641,7 @@ where
     storage_live(_4)
     storage_live(_5)
     _5 = copy i
+    fake_read((*s))
     storage_live(_6)
     _6 = &mut (*s)
     storage_live(_7)
@@ -999,6 +1003,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = const 0usize
+    fake_read((*s))
     storage_live(_4)
     _4 = &(*s)
     storage_live(_5)
@@ -1025,12 +1030,15 @@ pub fn index_index_array(s: [[u32; 32usize]; 32usize], i: usize, j: usize) -> u3
     let _5: usize; // anonymous local
     let _6: &'_ [[u32; 32usize]; 32usize]; // anonymous local
     let _7: &'_ [u32; 32usize]; // anonymous local
-    let _8: &'_ [u32; 32usize]; // anonymous local
-    let _9: &'_ u32; // anonymous local
+    let _8: &'_ [[u32; 32usize]; 32usize]; // anonymous local
+    let _9: &'_ [u32; 32usize]; // anonymous local
+    let _10: &'_ [u32; 32usize]; // anonymous local
+    let _11: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_4)
     _4 = copy i
+    fake_read(s)
     storage_live(_5)
     _5 = copy j
     storage_live(_6)
@@ -1038,17 +1046,25 @@ pub fn index_index_array(s: [[u32; 32usize]; 32usize], i: usize, j: usize) -> u3
     storage_live(_7)
     _7 = @ArrayIndexShared<'_, [u32; 32usize], 32usize>(move _6, copy _4)
     ↳⚡ undefined_behavior
+    fake_read((*_7))
     storage_live(_8)
-    _8 = &(*_7)
+    _8 = &s
     storage_live(_9)
-    _9 = @ArrayIndexShared<'_, u32, 32usize>(move _8, copy _5)
+    _9 = @ArrayIndexShared<'_, [u32; 32usize], 32usize>(move _8, copy _4)
     ↳⚡ undefined_behavior
-    _0 = copy (*_9)
+    storage_live(_10)
+    _10 = &(*_9)
+    storage_live(_11)
+    _11 = @ArrayIndexShared<'_, u32, 32usize>(move _10, copy _5)
+    ↳⚡ undefined_behavior
+    _0 = copy (*_11)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(j)
     storage_dead(i)
     storage_dead(s)
+    storage_dead(_11)
+    storage_dead(_10)
     storage_dead(_9)
     storage_dead(_8)
     storage_dead(_7)
@@ -1065,34 +1081,45 @@ pub fn update_update_array(s: [[u32; 32usize]; 32usize], i: usize, j: usize)
     let j: usize; // arg #3
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
-    let _6: &'_ mut [[u32; 32usize]; 32usize]; // anonymous local
-    let _7: &'_ mut [u32; 32usize]; // anonymous local
-    let _8: &'_ mut [u32; 32usize]; // anonymous local
-    let _9: &'_ mut u32; // anonymous local
+    let _6: &'_ [[u32; 32usize]; 32usize]; // anonymous local
+    let _7: &'_ [u32; 32usize]; // anonymous local
+    let _8: &'_ mut [[u32; 32usize]; 32usize]; // anonymous local
+    let _9: &'_ mut [u32; 32usize]; // anonymous local
+    let _10: &'_ mut [u32; 32usize]; // anonymous local
+    let _11: &'_ mut u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_4)
     _4 = copy i
+    fake_read(s)
     storage_live(_5)
     _5 = copy j
     storage_live(_6)
-    _6 = &mut s
+    _6 = &s
     storage_live(_7)
-    _7 = @ArrayIndexMut<'_, [u32; 32usize], 32usize>(move _6, copy _4)
+    _7 = @ArrayIndexShared<'_, [u32; 32usize], 32usize>(move _6, copy _4)
     ↳⚡ undefined_behavior
+    fake_read((*_7))
     storage_live(_8)
-    _8 = &mut (*_7)
+    _8 = &mut s
     storage_live(_9)
-    _9 = @ArrayIndexMut<'_, u32, 32usize>(move _8, copy _5)
+    _9 = @ArrayIndexMut<'_, [u32; 32usize], 32usize>(move _8, copy _4)
     ↳⚡ undefined_behavior
-    (*_9) = const 0u32
+    storage_live(_10)
+    _10 = &mut (*_9)
+    storage_live(_11)
+    _11 = @ArrayIndexMut<'_, u32, 32usize>(move _10, copy _5)
+    ↳⚡ undefined_behavior
+    (*_11) = const 0u32
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()
     storage_dead(j)
     storage_dead(i)
     storage_dead(s)
+    storage_dead(_11)
+    storage_dead(_10)
     storage_dead(_9)
     storage_dead(_8)
     storage_dead(_7)
@@ -1117,6 +1144,7 @@ pub fn incr_array_self<'_0>(s: &'_0 mut [u32; 2usize])
     _0 = ()
     storage_live(_2)
     _2 = const 0usize
+    fake_read((*s))
     storage_live(_4)
     _4 = &(*s)
     storage_live(_5)
@@ -1191,6 +1219,7 @@ pub fn array_local_deep_copy<'_0>(x: &'_0 [u32; 32usize])
     _0 = ()
     storage_live(_y)
     _y = copy (*x)
+    fake_read(_y)
     _0 = ()
     storage_dead(_y)
     storage_dead(x)
@@ -1269,7 +1298,7 @@ pub fn const_slice()
     let _3: &'4 [u32; 2usize]; // anonymous local
     let _4: &'5 [u32; 2usize]; // anonymous local
     let _5: &'6 [u32; 2usize]; // anonymous local
-    let _6: &'8 [u32; 2usize]; // anonymous local
+    let _6: &'9 [u32; 2usize]; // anonymous local
     let _7: [u32; 2usize]; // anonymous local
 
     storage_live(_5)
@@ -1291,6 +1320,7 @@ pub fn const_slice()
     _1 = @ArrayToSliceShared<'_, u32, 2usize>(move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
+    set_type(typeof(_1) <= &'8 [u32])
     storage_dead(_3)
     storage_dead(_1)
     _0 = ()
@@ -1327,6 +1357,8 @@ pub fn take_all()
     storage_live(x)
     x = @ArrayRepeat<u32, 2usize>(const 0u32)
     ↳⚡ undefined_behavior
+    fake_read(x)
+    set_type(typeof(x) == [u32; 2usize])
     storage_live(_2)
     storage_live(_3)
     // x is deep copied (copy node appears in Charon, followed by a move)
@@ -1401,6 +1433,7 @@ pub fn index_array(x: [u32; 2usize]) -> u32
     storage_live(_0)
     storage_live(_2)
     _2 = const 0usize
+    fake_read(x)
     storage_live(_3)
     _3 = &x
     storage_live(_4)
@@ -1426,6 +1459,7 @@ pub fn index_array_borrow<'_0>(x: &'_0 [u32; 2usize]) -> u32
     storage_live(_0)
     storage_live(_2)
     _2 = const 0usize
+    fake_read((*x))
     storage_live(_3)
     _3 = &(*x)
     storage_live(_4)
@@ -1528,16 +1562,22 @@ pub fn index_all() -> u32
     storage_live(x)
     x = @ArrayRepeat<u32, 2usize>(const 0u32)
     ↳⚡ undefined_behavior
+    fake_read(x)
+    set_type(typeof(x) == [u32; 2usize])
     storage_live(_2)
     _2 = const true
     if move _2 {
         storage_live(_y)
         _y = @ArrayRepeat<u32, 2usize>(const 0u32)
         ↳⚡ undefined_behavior
+        fake_read(_y)
+        set_type(typeof(_y) == [u32; 2usize])
         storage_dead(_y)
     } else {
         storage_live(_z)
         _z = [const 0u32]
+        fake_read(_z)
+        set_type(typeof(_z) == [u32; 1usize])
         storage_dead(_z)
     }
     storage_dead(_2)
@@ -1648,6 +1688,7 @@ pub fn update_array(x: [u32; 2usize])
     _0 = ()
     storage_live(_2)
     _2 = const 0usize
+    fake_read(x)
     storage_live(_3)
     _3 = &mut x
     storage_live(_4)
@@ -1675,6 +1716,7 @@ pub fn update_array_mut_borrow<'_0>(x: &'_0 mut [u32; 2usize])
     _0 = ()
     storage_live(_2)
     _2 = const 0usize
+    fake_read((*x))
     storage_live(_3)
     _3 = &mut (*x)
     storage_live(_4)
@@ -1738,6 +1780,8 @@ pub fn update_all()
     storage_live(x)
     x = @ArrayRepeat<u32, 2usize>(const 0u32)
     ↳⚡ undefined_behavior
+    fake_read(x)
+    set_type(typeof(x) == [u32; 2usize])
     storage_live(_2)
     storage_live(_3)
     _3 = copy x
@@ -1798,6 +1842,8 @@ pub fn range_all()
     storage_live(x)
     x = @ArrayRepeat<u32, 4usize>(const 0u32)
     ↳⚡ undefined_behavior
+    fake_read(x)
+    set_type(typeof(x) == [u32; 4usize])
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
@@ -1837,8 +1883,11 @@ pub fn deref_array_borrow<'_0>(x_1: &'_0 [u32; 2usize]) -> u32
     storage_live(_0)
     storage_live(x_2)
     x_2 = copy (*x_1)
+    fake_read(x_2)
+    set_type(typeof(x_2) == [u32; 2usize])
     storage_live(_3)
     _3 = const 0usize
+    fake_read(x_2)
     storage_live(_4)
     _4 = &x_2
     storage_live(_5)
@@ -1866,8 +1915,11 @@ pub fn deref_array_mut_borrow<'_0>(x_1: &'_0 mut [u32; 2usize]) -> u32
     storage_live(_0)
     storage_live(x_2)
     x_2 = copy (*x_1)
+    fake_read(x_2)
+    set_type(typeof(x_2) == [u32; 2usize])
     storage_live(_3)
     _3 = const 0usize
+    fake_read(x_2)
     storage_live(_4)
     _4 = &x_2
     storage_live(_5)
@@ -1915,6 +1967,8 @@ pub fn non_copyable_array()
     x = [move _2, move _3]
     storage_dead(_3)
     storage_dead(_2)
+    fake_read(x)
+    set_type(typeof(x) == [AB; 2usize])
     storage_live(_4)
     storage_live(_5)
     // x is moved (not deep copied!)
@@ -1954,8 +2008,10 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
     storage_live(_11)
     storage_live(sum)
     sum = const 0u32
+    fake_read(sum)
     storage_live(i)
     i = const 0usize
+    fake_read(i)
     loop {
         storage_live(_4)
         storage_live(_5)
@@ -2044,6 +2100,7 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
     storage_live(_21)
     storage_live(sum)
     sum = const 0u32
+    fake_read(sum)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
@@ -2075,6 +2132,7 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
     storage_dead(_4)
     storage_live(i)
     i = const 0usize
+    fake_read(i)
     loop {
         storage_live(_10)
         storage_live(_11)
@@ -2172,6 +2230,8 @@ pub fn f0()
     s = @ArrayToSliceMut<'_, u32, 2usize>(move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
+    fake_read(s)
+    set_type(typeof(s) == &'6 mut [u32])
     storage_dead(_3)
     storage_live(_5)
     _5 = const 0usize
@@ -2203,8 +2263,11 @@ pub fn f1()
     _0 = ()
     storage_live(s)
     s = [const 1u32, const 2u32]
+    fake_read(s)
+    set_type(typeof(s) == [u32; 2usize])
     storage_live(_2)
     _2 = const 0usize
+    fake_read(s)
     storage_live(_3)
     _3 = &mut s
     storage_live(_4)
@@ -2298,10 +2361,13 @@ pub fn f3() -> u32
     storage_live(_0)
     storage_live(a)
     a = [const 1u32, const 2u32]
+    fake_read(a)
+    set_type(typeof(a) == [u32; 2usize])
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
     _4 = const 0usize
+    fake_read(a)
     storage_live(_13)
     _13 = &a
     storage_live(_14)
@@ -2316,6 +2382,7 @@ pub fn f3() -> u32
     storage_live(b)
     b = @ArrayRepeat<u32, 32usize>(const 0u32)
     ↳⚡ undefined_behavior
+    fake_read(b)
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)
@@ -2373,6 +2440,7 @@ pub fn f5<'_0>(x: &'_0 [u32; 32usize]) -> u32
     storage_live(_0)
     storage_live(_2)
     _2 = const 0usize
+    fake_read((*x))
     storage_live(_3)
     _3 = &(*x)
     storage_live(_4)
@@ -2407,6 +2475,8 @@ pub fn ite()
     storage_live(x)
     x = @ArrayRepeat<u32, 2usize>(const 0u32)
     ↳⚡ undefined_behavior
+    fake_read(x)
+    set_type(typeof(x) == [u32; 2usize])
     storage_live(_2)
     _2 = const true
     if move _2 {
@@ -2419,6 +2489,8 @@ pub fn ite()
     storage_live(y)
     y = @ArrayRepeat<u32, 2usize>(const 0u32)
     ↳⚡ undefined_behavior
+    fake_read(y)
+    set_type(typeof(y) == [u32; 2usize])
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
@@ -2475,6 +2547,8 @@ pub fn zero_slice<'_0>(a: &'_0 mut [u8])
     _0 = ()
     storage_live(i)
     i = const 0usize
+    fake_read(i)
+    set_type(typeof(i) == usize)
     storage_live(len)
     storage_live(_4)
     _4 = &(*a) with_metadata(copy a.metadata)
@@ -2483,6 +2557,7 @@ pub fn zero_slice<'_0>(a: &'_0 mut [u8])
         storage_dead(a)
         unwind_continue
     storage_dead(_4)
+    fake_read(len)
     loop {
         storage_live(_5)
         storage_live(_6)
@@ -2547,8 +2622,10 @@ pub fn iter_mut_slice<'_0>(a: &'_0 mut [u8])
         storage_dead(a)
         unwind_continue
     storage_dead(_3)
+    fake_read(len)
     storage_live(i)
     i = const 0usize
+    fake_read(i)
     loop {
         storage_live(_5)
         storage_live(_6)
@@ -2601,8 +2678,10 @@ pub fn sum_mut_slice<'_0>(a: &'_0 mut [u32]) -> u32
     storage_live(_11)
     storage_live(i)
     i = const 0usize
+    fake_read(i)
     storage_live(s)
     s = const 0u32
+    fake_read(s)
     loop {
         storage_live(_4)
         storage_live(_5)

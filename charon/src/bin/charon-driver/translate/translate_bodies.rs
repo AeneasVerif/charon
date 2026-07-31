@@ -34,6 +34,8 @@ pub(crate) struct BodyTransCtx<'tcx, 'tctx, 'ictx> {
     pub i_ctx: &'ictx mut ItemTransCtx<'tcx, 'tctx>,
     /// List of body locals.
     pub local_decls: &'ictx rustc_index::IndexVec<mir::Local, mir::LocalDecl<'tcx>>,
+    /// Types supplied explicitly by the user.
+    pub user_type_annotations: ty::CanonicalUserTypeAnnotations<'tcx>,
 
     /// What kind of drops we get in this body.
     pub drop_kind: DropKind,
@@ -60,9 +62,25 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
         drop_kind: DropKind,
     ) -> Self {
         i_ctx.lifetime_freshener = Some(IndexMap::new());
+        let mut user_type_annotations = body.user_type_annotations.clone();
+        if let RustcItem::Mono(item) = &i_ctx.item_src.item {
+            // `CanonicalUserTypeAnnotation::user_ty` is deliberately not folded when rustc
+            // instantiates a MIR body, so do the item substitution explicitly.
+            let item = item.clone();
+            let args = item.rustc_args(i_ctx.hax_state_with_id());
+            for annotation in &mut user_type_annotations {
+                annotation.user_ty.value = hax::substitute(
+                    i_ctx.tcx,
+                    hax::UnderOwnerState::typing_env(&i_ctx.hax_state),
+                    Some(args),
+                    annotation.user_ty.value,
+                );
+            }
+        }
         BodyTransCtx {
             i_ctx,
             local_decls: &body.local_decls,
+            user_type_annotations,
             drop_kind,
             locals: Default::default(),
             locals_map: Default::default(),
@@ -702,6 +720,149 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         }))
     }
 
+    fn apply_user_type_projection(
+        &mut self,
+        span: Span,
+        mut ty: Ty,
+        projections: &[mir::ProjectionElem<(), ()>],
+    ) -> Result<Ty, Error> {
+        let mut downcast = None;
+        for projection in projections {
+            let projection = match projection {
+                mir::ProjectionElem::Deref => ProjectionElem::Deref,
+                mir::ProjectionElem::Field(field, ()) => {
+                    let field = self.translate_field_id(*field);
+                    let TyKind::Adt(type_ref) = ty.kind() else {
+                        raise_error!(self, span, "field projection on unexpected type");
+                    };
+                    match type_ref.id {
+                        TypeId::Adt(type_id) => ProjectionElem::Field(
+                            FieldProjKind::Adt(type_id, downcast.take()),
+                            field,
+                        ),
+                        TypeId::Tuple => ProjectionElem::Field(
+                            FieldProjKind::Tuple(type_ref.generics.types.len()),
+                            field,
+                        ),
+                        TypeId::Builtin(BuiltinTy::Box) if field == FieldId::ZERO => {
+                            ProjectionElem::Deref
+                        }
+                        _ => raise_error!(self, span, "field projection on unexpected type"),
+                    }
+                }
+                mir::ProjectionElem::Index(()) => ProjectionElem::Index {
+                    offset: Box::new(Operand::mk_const_unit()),
+                    from_end: false,
+                },
+                mir::ProjectionElem::ConstantIndex { from_end, .. } => ProjectionElem::Index {
+                    offset: Box::new(Operand::mk_const_unit()),
+                    from_end: *from_end,
+                },
+                mir::ProjectionElem::Subslice { from_end, .. } => ProjectionElem::Subslice {
+                    from: Box::new(Operand::mk_const_unit()),
+                    to: Box::new(Operand::mk_const_unit()),
+                    from_end: *from_end,
+                },
+                mir::ProjectionElem::Downcast(_, variant) => {
+                    downcast = Some(self.translate_variant_id(*variant));
+                    continue;
+                }
+                mir::ProjectionElem::OpaqueCast(()) => {
+                    raise_error!(self, span, "unexpected opaque cast in user type projection");
+                }
+                mir::ProjectionElem::UnwrapUnsafeBinder(()) => {
+                    raise_error!(
+                        self,
+                        span,
+                        "unsupported unsafe binder in user type projection"
+                    );
+                }
+            };
+            let Some(next_ty) = projection.project_type(&self.translated, &ty) else {
+                raise_error!(self, span, "invalid user type projection");
+            };
+            ty = next_ty;
+        }
+        Ok(ty)
+    }
+
+    fn translate_user_type_projection(
+        &mut self,
+        span: Span,
+        user_ty: &mir::UserTypeProjection,
+    ) -> Result<(Ty, Vec<BorrowckStatement>), Error> {
+        use rustc_infer::infer::canonical::CanonicalExt;
+
+        let annotation = self.user_type_annotations[user_ty.base].clone();
+        let canonical = *annotation.user_ty;
+
+        let mut facts = Vec::new();
+        if !canonical.value.bounds.is_empty() {
+            let user_ty_before_inference = match canonical.value.kind {
+                ty::UserTypeKind::Ty(ty) => ty,
+                ty::UserTypeKind::TypeOf(def_id, user_args)
+                    if user_args.args.len() == self.tcx.generics_of(def_id).count() =>
+                {
+                    self.tcx
+                        .type_of(def_id)
+                        .instantiate(self.tcx, user_args.args)
+                        .skip_normalization()
+                }
+                // Inherent associated type consts use a special argument format; rustc reconstructs
+                // their impl arguments with inference. Their resulting type is already recorded here.
+                ty::UserTypeKind::TypeOf(..) => annotation.inferred_ty,
+            };
+
+            // Rustc discards the original canonicalization values when it stores this annotation.
+            // Recover just enough of that mapping to instantiate the explicit user bounds. The
+            // place relation below deliberately uses `inferred_ty` directly.
+            let Some(var_values) = hax::rustc::match_canonical_var_values(
+                self.tcx,
+                canonical.var_kinds,
+                user_ty_before_inference,
+                annotation.inferred_ty,
+            ) else {
+                raise_error!(
+                    self,
+                    span,
+                    "could not match a user type annotation with its inferred type"
+                )
+            };
+            let instantiated_user_ty = canonical.instantiate(self.tcx, &var_values);
+
+            for clause in instantiated_user_ty.bounds {
+                if let Some(trait_predicate) = clause.as_trait_clause() {
+                    if trait_predicate.skip_binder().polarity != ty::PredicatePolarity::Positive {
+                        raise_error!(self, span, "negative trait bound in a user type annotation")
+                    }
+                    let proof = hax::solve_trait(
+                        &self.hax_state,
+                        trait_predicate.map_bound(|predicate| predicate.trait_ref),
+                    );
+                    facts.push(BorrowckStatement::PredicateHolds(
+                        self.translate_trait_proof(span, &proof)?,
+                    ));
+                } else if let Some(outlives) = clause.as_type_outlives_clause() {
+                    let Some(ty::OutlivesPredicate(outlived_ty, region)) = outlives.no_bound_vars()
+                    else {
+                        raise_error!(self, span, "higher-ranked outlives user type bound")
+                    };
+                    let outlived_ty = self.translate_rustc_ty(span, &outlived_ty)?;
+                    let region = self.catch_sinto(span, &region)?;
+                    let region = self.translate_region(span, &region)?;
+                    facts.push(BorrowckStatement::SetOutlives(outlived_ty, region));
+                }
+            }
+        }
+
+        // This is the type rustc itself relates the MIR place against. In particular, it has
+        // already revealed local `impl Trait` types and performed type normalization.
+        let ty = self.translate_rustc_ty(span, &annotation.inferred_ty)?;
+        let ty = self.apply_user_type_projection(span, ty, &user_ty.projs)?;
+
+        Ok((ty, facts))
+    }
+
     fn translate_thread_local_ref(
         &mut self,
         span: Span,
@@ -1314,13 +1475,35 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     Some(StatementKind::PlaceMention(place))
                 }
             }
-            // These two are only there to make borrow-checking accept less code, and are removed
-            // in later MIRs.
-            mir::StatementKind::FakeRead(..) => None,
-            // There are user-provided type annotations with no semantic effect (since we get a
-            // fully-typechecked MIR (TODO: this isn't quite true with opaque types, we should
-            // really use promoted MIR)).
-            mir::StatementKind::AscribeUserType(..) => None,
+            mir::StatementKind::FakeRead((_, place)) => {
+                let place = self.translate_place(span, place)?;
+                Some(StatementKind::Borrowck(BorrowckStatement::FakeRead(place)))
+            }
+            mir::StatementKind::AscribeUserType((place, user_ty), variance) => {
+                let variance = match variance {
+                    ty::Variance::Covariant => Variance::Covariant,
+                    ty::Variance::Invariant => Variance::Invariant,
+                    ty::Variance::Contravariant => Variance::Contravariant,
+                    // Does nothing so we discard it.
+                    ty::Variance::Bivariant => return Ok(()),
+                };
+                let place = self.translate_place(span, place)?;
+                let (ty, facts) = self.translate_user_type_projection(span, user_ty)?;
+                self.statements.push(Statement::new(
+                    span,
+                    StatementKind::Borrowck(BorrowckStatement::SetType {
+                        place,
+                        ty,
+                        variance,
+                    }),
+                ));
+                self.statements.extend(
+                    facts
+                        .into_iter()
+                        .map(|fact| Statement::new(span, StatementKind::Borrowck(fact))),
+                );
+                None
+            }
             // Used for coverage instrumentation.
             mir::StatementKind::Coverage(_) => None,
             // Used in the interpreter to check that const code doesn't run for too long or even

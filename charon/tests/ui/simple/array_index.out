@@ -12,6 +12,7 @@ pub fn first(s: [u32; 0usize]) -> u32
     storage_live(_0)
     storage_live(_2)
     _2 = const 0usize
+    fake_read(s)
     storage_live(_3)
     _3 = &s
     storage_live(_4)

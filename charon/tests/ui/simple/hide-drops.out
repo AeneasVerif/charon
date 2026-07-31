@@ -40,6 +40,7 @@ fn main()
     storage_live(_s)
     _s = new()
     ↳⚡ unwind_continue
+    fake_read(_s)
     _0 = ()
     conditional_drop[drop_glue<'0>] _s
     ↳⚡ unwind_continue

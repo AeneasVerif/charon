@@ -362,6 +362,7 @@ fn vec()
     storage_live(_1)
     _1 = with_capacity<u32>[{built_in impl Sized for u32}](const 42usize)
     ↳⚡ unwind_continue
+    set_type(typeof(_1) <= Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'0, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] _1
     ↳⚡ unwind_continue
     storage_dead(_1)

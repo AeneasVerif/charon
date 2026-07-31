@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use rustc_hir::def::DefKind as RDefKind;
+use rustc_middle::infer::canonical::{CanonicalVarKinds, CanonicalVarValues};
 use rustc_middle::ty::relate::{
     Relate, RelateResult, TypeRelation, relate_args_with_variances, structurally_relate_consts,
     structurally_relate_tys,
@@ -10,6 +11,130 @@ use rustc_span::kw;
 use rustc_type_ir::Interner;
 
 use crate::hax::prelude::*;
+
+/// Structurally pairs a canonicalized type with its inferred type to recover the values rustc
+/// replaced with canonical variables. Inference regions are deliberately erased instead.
+pub fn match_canonical_var_values<'tcx>(
+    tcx: ty::TyCtxt<'tcx>,
+    var_kinds: CanonicalVarKinds<'tcx>,
+    canonical_ty: ty::Ty<'tcx>,
+    inferred_ty: ty::Ty<'tcx>,
+) -> Option<CanonicalVarValues<'tcx>> {
+    let values = var_kinds
+        .iter()
+        .map(|kind| match kind {
+            ty::CanonicalVarKind::Region(_) => Some(tcx.lifetimes.re_erased.into()),
+            _ => None,
+        })
+        .collect();
+    let mut matcher = CanonicalVarMatcher { tcx, values };
+    matcher.relate(canonical_ty, inferred_ty).ok()?;
+
+    // A canonical type variable may be equated to an earlier canonical root without occurring
+    // independently in the canonicalized type.
+    for (index, kind) in var_kinds.iter().enumerate() {
+        if matcher.values[index].is_none()
+            && let ty::CanonicalVarKind::Ty { sub_root, .. } = kind
+        {
+            matcher.values[index] = matcher.values[sub_root.as_usize()];
+        }
+    }
+    let values = matcher.values.into_iter().collect::<Option<Vec<_>>>()?;
+    Some(CanonicalVarValues {
+        var_values: tcx.mk_args(&values),
+    })
+}
+
+struct CanonicalVarMatcher<'tcx> {
+    tcx: ty::TyCtxt<'tcx>,
+    values: Vec<Option<ty::GenericArg<'tcx>>>,
+}
+
+impl<'tcx> CanonicalVarMatcher<'tcx> {
+    fn record<T>(
+        &mut self,
+        var: ty::BoundVar,
+        value: ty::GenericArg<'tcx>,
+        result: T,
+    ) -> RelateResult<'tcx, T> {
+        let slot = &mut self.values[var.as_usize()];
+        if slot.is_some_and(|old| old != value) {
+            Err(ty::error::TypeError::Mismatch)
+        } else {
+            *slot = Some(value);
+            Ok(result)
+        }
+    }
+}
+
+impl<'tcx> TypeRelation<ty::TyCtxt<'tcx>> for CanonicalVarMatcher<'tcx> {
+    fn cx(&self) -> ty::TyCtxt<'tcx> {
+        self.tcx
+    }
+
+    fn relate_ty_args(
+        &mut self,
+        a_ty: ty::Ty<'tcx>,
+        _: ty::Ty<'tcx>,
+        _: rustc_hir::def_id::DefId,
+        a_args: ty::GenericArgsRef<'tcx>,
+        b_args: ty::GenericArgsRef<'tcx>,
+        _: impl FnOnce(ty::GenericArgsRef<'tcx>) -> ty::Ty<'tcx>,
+    ) -> RelateResult<'tcx, ty::Ty<'tcx>> {
+        ty::relate::relate_args_invariantly(self, a_args, b_args)?;
+        Ok(a_ty)
+    }
+
+    fn relate_with_variance<T: Relate<ty::TyCtxt<'tcx>>>(
+        &mut self,
+        _: ty::Variance,
+        _: ty::VarianceDiagInfo<ty::TyCtxt<'tcx>>,
+        a: T,
+        b: T,
+    ) -> RelateResult<'tcx, T> {
+        self.relate(a, b)
+    }
+
+    fn tys(&mut self, a: ty::Ty<'tcx>, b: ty::Ty<'tcx>) -> RelateResult<'tcx, ty::Ty<'tcx>> {
+        if let ty::Bound(ty::BoundVarIndexKind::Canonical, bound) = *a.kind() {
+            self.record(bound.var, b.into(), a)
+        } else {
+            structurally_relate_tys(self, a, b)
+        }
+    }
+
+    fn regions(
+        &mut self,
+        a: ty::Region<'tcx>,
+        _: ty::Region<'tcx>,
+    ) -> RelateResult<'tcx, ty::Region<'tcx>> {
+        Ok(a)
+    }
+
+    fn consts(
+        &mut self,
+        a: ty::Const<'tcx>,
+        b: ty::Const<'tcx>,
+    ) -> RelateResult<'tcx, ty::Const<'tcx>> {
+        if let ty::ConstKind::Bound(ty::BoundVarIndexKind::Canonical, bound) = a.kind() {
+            self.record(bound.var, b.into(), a)
+        } else {
+            structurally_relate_consts(self, a, b)
+        }
+    }
+
+    fn binders<T>(
+        &mut self,
+        a: ty::Binder<'tcx, T>,
+        b: ty::Binder<'tcx, T>,
+    ) -> RelateResult<'tcx, ty::Binder<'tcx, T>>
+    where
+        T: Relate<ty::TyCtxt<'tcx>>,
+    {
+        self.relate(a.skip_binder(), b.skip_binder())?;
+        Ok(a)
+    }
+}
 
 /// Computes the variance of each region bound by `sig`.
 ///

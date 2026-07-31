@@ -112,11 +112,13 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
     storage_live(sum)
     // `let sum`
     sum = const 0u32
+    fake_read(sum)
     storage_live(i)
     // `let i`
     //  indented sub-comment
     // unindented sub-comment
     i = const 0usize
+    fake_read(i)
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
@@ -451,11 +453,13 @@ fn foo()
     // Build an array
     a = @ArrayRepeat<u32, 10usize>(const 0u32)
     ↳⚡ undefined_behavior
+    fake_read(a)
     storage_live(_16)
     storage_live(_17)
     storage_live(_18)
     // `assert_eq`
     _18 = const 9usize
+    fake_read(a)
     storage_live(_33)
     storage_live(_34)
     storage_live(_35)
@@ -490,6 +494,7 @@ fn foo()
         storage_dead(_23)
         storage_live(kind)
         kind = AssertKind::Eq {  }
+        fake_read(kind)
         storage_live(_26)
         _26 = move kind
         storage_live(_27)
@@ -579,6 +584,7 @@ pub fn thing()
     _3 = copy _2 panic.+ const 12u32
     x = move _3
     storage_dead(_2)
+    fake_read(x)
     storage_live(_4)
     storage_live(_5)
     _5 = copy x
