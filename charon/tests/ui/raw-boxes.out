@@ -233,20 +233,7 @@ fn core::ptr::write_bytes::precondition_check(addr: *const (), align: usize, zer
             unwind_terminate
         storage_dead(_11)
         _9 = panic_nounwind_fmt<'8>(move _10, const false)
-        ↳⚡ storage_dead(_10)
-            storage_dead(_9)
-            storage_dead(msg)
-            storage_dead(zero_size)
-            storage_dead(align)
-            storage_dead(addr)
-            undefined_behavior
-        storage_dead(_10)
-        storage_dead(_9)
-        storage_dead(msg)
-        storage_dead(zero_size)
-        storage_dead(align)
-        storage_dead(addr)
-        undefined_behavior
+        ↳⚡ undefined_behavior
     }
     storage_dead(_7)
     storage_dead(_6)
@@ -483,16 +470,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
             unwind_terminate
         storage_dead(_7)
         _5 = panic_nounwind_fmt<'8>(move _6, const false)
-        ↳⚡ storage_dead(_6)
-            storage_dead(_5)
-            storage_dead(msg)
-            storage_dead(align)
-            undefined_behavior
-        storage_dead(_6)
-        storage_dead(_5)
-        storage_dead(msg)
-        storage_dead(align)
-        undefined_behavior
+        ↳⚡ undefined_behavior
     }
     storage_dead(_3)
     _0 = ()
@@ -523,8 +501,7 @@ pub unsafe fn core::mem::alignment::{Alignment}::new_unchecked(align: usize) -> 
         storage_live(_4)
         _4 = copy align
         _3 = core::mem::alignment::{Alignment}::new_unchecked::precondition_check(move _4)
-        ↳⚡ storage_dead(align)
-            undefined_behavior
+        ↳⚡ undefined_behavior
         storage_dead(_4)
         storage_dead(_3)
     } else {
@@ -725,10 +702,7 @@ where
         }
         storage_dead(_10)
         _5 = core::ptr::write_bytes::precondition_check(move _6, move _8, move _9)
-        ↳⚡ storage_dead(count)
-            storage_dead(val)
-            storage_dead(dst)
-            undefined_behavior
+        ↳⚡ undefined_behavior
         storage_dead(_9)
         storage_dead(_8)
         storage_dead(_6)
@@ -743,10 +717,7 @@ where
     storage_live(_14)
     _14 = copy count
     _0 = core::intrinsics::write_bytes<T>[TraitClause0](move _12, move _13, move _14)
-    ↳⚡ storage_dead(count)
-        storage_dead(val)
-        storage_dead(dst)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     storage_dead(_14)
     storage_dead(_13)
     storage_dead(_12)
@@ -1093,24 +1064,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut 
             unwind_terminate
         storage_dead(_28)
         _26 = panic_nounwind_fmt<'8>(move _27, const false)
-        ↳⚡ storage_dead(_27)
-            storage_dead(_26)
-            storage_dead(msg)
-            storage_dead(count)
-            storage_dead(align)
-            storage_dead(size)
-            storage_dead(dst)
-            storage_dead(src)
-            undefined_behavior
-        storage_dead(_27)
-        storage_dead(_26)
-        storage_dead(msg)
-        storage_dead(count)
-        storage_dead(align)
-        storage_dead(size)
-        storage_dead(dst)
-        storage_dead(src)
-        undefined_behavior
+        ↳⚡ undefined_behavior
     }
     _0 = ()
     storage_dead(_6)
@@ -1200,11 +1154,7 @@ where
         storage_live(_12)
         _12 = copy count
         _5 = core::ptr::copy_nonoverlapping::precondition_check(move _6, move _8, move _10, move _11, move _12)
-        ↳⚡ storage_dead(_16)
-            storage_dead(count)
-            storage_dead(dst)
-            storage_dead(src)
-            undefined_behavior
+        ↳⚡ undefined_behavior
         storage_dead(_12)
         storage_dead(_11)
         storage_dead(_10)
@@ -1221,11 +1171,7 @@ where
     storage_live(_15)
     _15 = copy count
     _16 = core::intrinsics::copy_nonoverlapping<T>[TraitClause0](move _13, move _14, move _15)
-    ↳⚡ storage_dead(_16)
-        storage_dead(count)
-        storage_dead(dst)
-        storage_dead(src)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
@@ -2337,16 +2283,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mu
         unwind_terminate
     storage_dead(_7)
     _5 = panic_nounwind_fmt<'8>(move _6, const false)
-    ↳⚡ storage_dead(_6)
-        storage_dead(_5)
-        storage_dead(msg)
-        storage_dead(ptr)
-        undefined_behavior
-    storage_dead(_6)
-    storage_dead(_5)
-    storage_dead(msg)
-    storage_dead(ptr)
-    undefined_behavior
+    ↳⚡ undefined_behavior
 }
 
 pub unsafe fn core::ptr::non_null::{NonNull<T>}::new_unchecked<T>(ptr: *mut T) -> NonNull<T>
@@ -2372,8 +2309,7 @@ pub unsafe fn core::ptr::non_null::{NonNull<T>}::new_unchecked<T>(ptr: *mut T) -
         _4 = cast<*mut T, *mut ()>(move _5)
         storage_dead(_5)
         _3 = core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(move _4)
-        ↳⚡ storage_dead(ptr)
-            undefined_behavior
+        ↳⚡ undefined_behavior
         storage_dead(_4)
         storage_dead(_3)
     } else {
@@ -2736,14 +2672,6 @@ fn box_new_uninit(layout: Layout) -> *mut u8
                 storage_dead(_7)
                 storage_dead(layout)
                 unwind_continue
-            storage_dead(_9)
-            storage_dead(_8)
-            storage_dead(_7)
-            storage_dead(layout)
-            storage_dead(_12)
-            storage_dead(_11)
-            storage_dead(_10)
-            undefined_behavior
         },
     }
     storage_live(ptr)

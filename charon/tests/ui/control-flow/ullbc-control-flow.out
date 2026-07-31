@@ -339,13 +339,6 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     }
 
     bb7: {
-        storage_dead(_28);
-        storage_dead(_27);
-        storage_dead(_19);
-        storage_dead(_11);
-        storage_dead(_10);
-        storage_dead(step_in);
-        storage_dead(step_out);
         undefined_behavior;
     }
 
@@ -400,13 +393,6 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     }
 
     bb13: {
-        storage_dead(_28);
-        storage_dead(_27);
-        storage_dead(_19);
-        storage_dead(_11);
-        storage_dead(_10);
-        storage_dead(step_in);
-        storage_dead(step_out);
         undefined_behavior;
     }
 
@@ -458,13 +444,6 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     }
 
     bb19: {
-        storage_dead(_28);
-        storage_dead(_27);
-        storage_dead(_19);
-        storage_dead(_11);
-        storage_dead(_10);
-        storage_dead(step_in);
-        storage_dead(step_out);
         undefined_behavior;
     }
 }

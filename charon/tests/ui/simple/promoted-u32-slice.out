@@ -25,10 +25,7 @@ pub fn foo() -> &'static [u32]
     _2 = &(*_3)
     _1 = &(*_2)
     _0 = @ArrayToSliceShared<'_, u32, 4usize>(move _1)
-    ↳⚡ storage_dead(_6)
-        storage_dead(_5)
-        storage_dead(_4)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     storage_dead(_1)
     storage_dead(_2)
     storage_dead(_3)

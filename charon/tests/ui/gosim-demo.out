@@ -200,10 +200,7 @@ fn main()
     _4 = &(*_5)
     _3 = &(*_4)
     _2 = @ArrayToSliceShared<'_, i32, 3usize>(move _3)
-    ↳⚡ storage_dead(_8)
-        storage_dead(_7)
-        storage_dead(_6)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     storage_dead(_3)
     _1 = debug_slice<'9, i32>[{built_in impl Sized for i32}, {impl#3}](move _2)
     ↳⚡ storage_dead(_5)

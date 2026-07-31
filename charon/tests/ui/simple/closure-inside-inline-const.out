@@ -93,9 +93,7 @@ where
     storage_live(_f)
     _f = closure {  }
     _2 = size_of<T>[TraitClause0]()
-    ↳⚡ storage_dead(_2)
-        storage_dead(_1)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     storage_dead(_f)
     _1 = move _2
     storage_live(_0)

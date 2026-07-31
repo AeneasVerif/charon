@@ -491,14 +491,6 @@ fn box_new_uninit(layout: Layout) -> *mut u8
                 storage_dead(_7)
                 storage_dead(layout)
                 unwind_continue
-            storage_dead(_9)
-            storage_dead(_8)
-            storage_dead(_7)
-            storage_dead(layout)
-            storage_dead(_12)
-            storage_dead(_11)
-            storage_dead(_10)
-            undefined_behavior
         },
     }
     storage_live(ptr)

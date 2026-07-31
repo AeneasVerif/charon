@@ -450,10 +450,6 @@ fn core::slice::index::slice_index_fail::do_panic(start: usize, len: usize) -> !
         storage_dead(len)
         storage_dead(start)
         unwind_continue
-    storage_dead(_3)
-    storage_dead(len)
-    storage_dead(start)
-    undefined_behavior
 }
 
 fn core::slice::index::slice_index_fail::do_panic#1(end: usize, len: usize) -> !
@@ -479,10 +475,6 @@ fn core::slice::index::slice_index_fail::do_panic#1(end: usize, len: usize) -> !
         storage_dead(len)
         storage_dead(end)
         unwind_continue
-    storage_dead(_3)
-    storage_dead(len)
-    storage_dead(end)
-    undefined_behavior
 }
 
 fn core::slice::index::slice_index_fail::do_panic#2(start: usize, end: usize) -> !
@@ -508,10 +500,6 @@ fn core::slice::index::slice_index_fail::do_panic#2(start: usize, end: usize) ->
         storage_dead(end)
         storage_dead(start)
         unwind_continue
-    storage_dead(_3)
-    storage_dead(end)
-    storage_dead(start)
-    undefined_behavior
 }
 
 fn core::slice::index::slice_index_fail::do_panic#3(end: usize, len: usize) -> !
@@ -537,10 +525,6 @@ fn core::slice::index::slice_index_fail::do_panic#3(end: usize, len: usize) -> !
         storage_dead(len)
         storage_dead(end)
         unwind_continue
-    storage_dead(_3)
-    storage_dead(len)
-    storage_dead(end)
-    undefined_behavior
 }
 
 // Full name: core::slice::index::private_slice_index::Sealed
@@ -686,21 +670,6 @@ fn slice_index_fail(start: usize, end: usize, len: usize) -> !
                     storage_dead(end)
                     storage_dead(start)
                     unwind_continue
-                storage_dead(_23)
-                storage_dead(_22)
-                storage_dead(_21)
-                storage_dead(_20)
-                storage_dead(_19)
-                storage_dead(_15)
-                storage_dead(_14)
-                storage_dead(_13)
-                storage_dead(_9)
-                storage_dead(_8)
-                storage_dead(_7)
-                storage_dead(len)
-                storage_dead(end)
-                storage_dead(start)
-                undefined_behavior
             }
             storage_dead(_18)
             storage_dead(_17)
@@ -725,21 +694,6 @@ fn slice_index_fail(start: usize, end: usize, len: usize) -> !
                 storage_dead(end)
                 storage_dead(start)
                 unwind_continue
-            storage_dead(_23)
-            storage_dead(_22)
-            storage_dead(_21)
-            storage_dead(_20)
-            storage_dead(_19)
-            storage_dead(_15)
-            storage_dead(_14)
-            storage_dead(_13)
-            storage_dead(_9)
-            storage_dead(_8)
-            storage_dead(_7)
-            storage_dead(len)
-            storage_dead(end)
-            storage_dead(start)
-            undefined_behavior
         }
         storage_dead(_12)
         storage_dead(_11)
@@ -764,21 +718,6 @@ fn slice_index_fail(start: usize, end: usize, len: usize) -> !
             storage_dead(end)
             storage_dead(start)
             unwind_continue
-        storage_dead(_23)
-        storage_dead(_22)
-        storage_dead(_21)
-        storage_dead(_20)
-        storage_dead(_19)
-        storage_dead(_15)
-        storage_dead(_14)
-        storage_dead(_13)
-        storage_dead(_9)
-        storage_dead(_8)
-        storage_dead(_7)
-        storage_dead(len)
-        storage_dead(end)
-        storage_dead(start)
-        undefined_behavior
     }
     storage_dead(_6)
     storage_dead(_5)
@@ -803,21 +742,6 @@ fn slice_index_fail(start: usize, end: usize, len: usize) -> !
         storage_dead(end)
         storage_dead(start)
         unwind_continue
-    storage_dead(_23)
-    storage_dead(_22)
-    storage_dead(_21)
-    storage_dead(_20)
-    storage_dead(_19)
-    storage_dead(_15)
-    storage_dead(_14)
-    storage_dead(_13)
-    storage_dead(_9)
-    storage_dead(_8)
-    storage_dead(_7)
-    storage_dead(len)
-    storage_dead(end)
-    storage_dead(start)
-    undefined_behavior
 }
 
 // Full name: core::slice::index::get_offset_len_noubcheck
@@ -1221,20 +1145,7 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(star
         unwind_terminate
     storage_dead(_13)
     _11 = panic_nounwind_fmt<'8>(move _12, const false)
-    ↳⚡ storage_dead(_12)
-        storage_dead(_11)
-        storage_dead(msg)
-        storage_dead(len)
-        storage_dead(end)
-        storage_dead(start)
-        undefined_behavior
-    storage_dead(_12)
-    storage_dead(_11)
-    storage_dead(msg)
-    storage_dead(len)
-    storage_dead(end)
-    storage_dead(start)
-    undefined_behavior
+    ↳⚡ undefined_behavior
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked
@@ -1280,10 +1191,7 @@ where
             unwind_continue
         storage_dead(_8)
         _4 = impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(move _5, move _6, move _7)
-        ↳⚡ storage_dead(_15)
-            storage_dead(slice)
-            storage_dead(self)
-            undefined_behavior
+        ↳⚡ undefined_behavior
         storage_dead(_7)
         storage_dead(_6)
         storage_dead(_5)
@@ -1392,20 +1300,7 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(
         unwind_terminate
     storage_dead(_13)
     _11 = panic_nounwind_fmt<'8>(move _12, const false)
-    ↳⚡ storage_dead(_12)
-        storage_dead(_11)
-        storage_dead(msg)
-        storage_dead(len)
-        storage_dead(end)
-        storage_dead(start)
-        undefined_behavior
-    storage_dead(_12)
-    storage_dead(_11)
-    storage_dead(msg)
-    storage_dead(len)
-    storage_dead(end)
-    storage_dead(start)
-    undefined_behavior
+    ↳⚡ undefined_behavior
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
@@ -1451,10 +1346,7 @@ where
             unwind_continue
         storage_dead(_8)
         _4 = impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(move _5, move _6, move _7)
-        ↳⚡ storage_dead(_15)
-            storage_dead(slice)
-            storage_dead(self)
-            undefined_behavior
+        ↳⚡ undefined_behavior
         storage_dead(_7)
         storage_dead(_6)
         storage_dead(_5)
@@ -1669,14 +1561,6 @@ where
         storage_dead(slice)
         storage_dead(self)
         unwind_continue
-    storage_dead(_27)
-    storage_dead(_26)
-    storage_dead(_25)
-    storage_dead(_24)
-    storage_dead(_12)
-    storage_dead(slice)
-    storage_dead(self)
-    undefined_behavior
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::index
@@ -1857,14 +1741,6 @@ where
         storage_dead(slice)
         storage_dead(self)
         unwind_continue
-    storage_dead(_27)
-    storage_dead(_26)
-    storage_dead(_25)
-    storage_dead(_24)
-    storage_dead(_12)
-    storage_dead(slice)
-    storage_dead(self)
-    undefined_behavior
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeInclusive<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut

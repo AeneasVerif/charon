@@ -1518,9 +1518,7 @@ pub fn sum_array<const N : usize>(a: [u32; N]) -> u32
             _10 = &a
             storage_live(_11)
             _11 = @ArrayIndexShared<'_, u32, N>(move _10, copy _7)
-            ↳⚡ storage_dead(_11)
-                storage_dead(_10)
-                undefined_behavior
+            ↳⚡ undefined_behavior
             _6 = copy (*_11)
             _8 = copy s panic.+ copy _6
             s = move _8

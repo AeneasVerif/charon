@@ -291,26 +291,6 @@ where
     }
 
     bb11: {
-        storage_dead(_50);
-        storage_dead(_49);
-        storage_dead(_48);
-        storage_dead(_47);
-        storage_dead(_46);
-        storage_dead(_45);
-        storage_dead(_44);
-        storage_dead(_43);
-        storage_dead(_42);
-        storage_dead(_41);
-        storage_dead(_40);
-        storage_dead(_39);
-        storage_dead(_36);
-        storage_dead(_30);
-        storage_dead(_21);
-        storage_dead(_15);
-        storage_dead(base);
-        storage_dead(f);
-        storage_dead(self);
-        storage_dead(_51);
         undefined_behavior;
     }
 
@@ -329,26 +309,6 @@ where
     }
 
     bb14: {
-        storage_dead(_50);
-        storage_dead(_49);
-        storage_dead(_48);
-        storage_dead(_47);
-        storage_dead(_46);
-        storage_dead(_45);
-        storage_dead(_44);
-        storage_dead(_43);
-        storage_dead(_42);
-        storage_dead(_41);
-        storage_dead(_40);
-        storage_dead(_39);
-        storage_dead(_36);
-        storage_dead(_30);
-        storage_dead(_21);
-        storage_dead(_15);
-        storage_dead(base);
-        storage_dead(f);
-        storage_dead(self);
-        storage_dead(_51);
         undefined_behavior;
     }
 
@@ -369,26 +329,6 @@ where
     }
 
     bb17: {
-        storage_dead(_50);
-        storage_dead(_49);
-        storage_dead(_48);
-        storage_dead(_47);
-        storage_dead(_46);
-        storage_dead(_45);
-        storage_dead(_44);
-        storage_dead(_43);
-        storage_dead(_42);
-        storage_dead(_41);
-        storage_dead(_40);
-        storage_dead(_39);
-        storage_dead(_36);
-        storage_dead(_30);
-        storage_dead(_21);
-        storage_dead(_15);
-        storage_dead(base);
-        storage_dead(f);
-        storage_dead(self);
-        storage_dead(_51);
         undefined_behavior;
     }
 
@@ -408,26 +348,6 @@ where
     }
 
     bb20: {
-        storage_dead(_50);
-        storage_dead(_49);
-        storage_dead(_48);
-        storage_dead(_47);
-        storage_dead(_46);
-        storage_dead(_45);
-        storage_dead(_44);
-        storage_dead(_43);
-        storage_dead(_42);
-        storage_dead(_41);
-        storage_dead(_40);
-        storage_dead(_39);
-        storage_dead(_36);
-        storage_dead(_30);
-        storage_dead(_21);
-        storage_dead(_15);
-        storage_dead(base);
-        storage_dead(f);
-        storage_dead(self);
-        storage_dead(_51);
         undefined_behavior;
     }
 
@@ -542,26 +462,6 @@ where
     }
 
     bb31: {
-        storage_dead(_50);
-        storage_dead(_49);
-        storage_dead(_48);
-        storage_dead(_47);
-        storage_dead(_46);
-        storage_dead(_45);
-        storage_dead(_44);
-        storage_dead(_43);
-        storage_dead(_42);
-        storage_dead(_41);
-        storage_dead(_40);
-        storage_dead(_39);
-        storage_dead(_36);
-        storage_dead(_30);
-        storage_dead(_21);
-        storage_dead(_15);
-        storage_dead(base);
-        storage_dead(f);
-        storage_dead(self);
-        storage_dead(_51);
         undefined_behavior;
     }
 
@@ -572,26 +472,6 @@ where
     }
 
     bb33: {
-        storage_dead(_50);
-        storage_dead(_49);
-        storage_dead(_48);
-        storage_dead(_47);
-        storage_dead(_46);
-        storage_dead(_45);
-        storage_dead(_44);
-        storage_dead(_43);
-        storage_dead(_42);
-        storage_dead(_41);
-        storage_dead(_40);
-        storage_dead(_39);
-        storage_dead(_36);
-        storage_dead(_30);
-        storage_dead(_21);
-        storage_dead(_15);
-        storage_dead(base);
-        storage_dead(f);
-        storage_dead(self);
-        storage_dead(_51);
         undefined_behavior;
     }
 
@@ -602,26 +482,6 @@ where
     }
 
     bb35: {
-        storage_dead(_50);
-        storage_dead(_49);
-        storage_dead(_48);
-        storage_dead(_47);
-        storage_dead(_46);
-        storage_dead(_45);
-        storage_dead(_44);
-        storage_dead(_43);
-        storage_dead(_42);
-        storage_dead(_41);
-        storage_dead(_40);
-        storage_dead(_39);
-        storage_dead(_36);
-        storage_dead(_30);
-        storage_dead(_21);
-        storage_dead(_15);
-        storage_dead(base);
-        storage_dead(f);
-        storage_dead(self);
-        storage_dead(_51);
         undefined_behavior;
     }
 
@@ -633,26 +493,6 @@ where
     }
 
     bb37: {
-        storage_dead(_50);
-        storage_dead(_49);
-        storage_dead(_48);
-        storage_dead(_47);
-        storage_dead(_46);
-        storage_dead(_45);
-        storage_dead(_44);
-        storage_dead(_43);
-        storage_dead(_42);
-        storage_dead(_41);
-        storage_dead(_40);
-        storage_dead(_39);
-        storage_dead(_36);
-        storage_dead(_30);
-        storage_dead(_21);
-        storage_dead(_15);
-        storage_dead(base);
-        storage_dead(f);
-        storage_dead(self);
-        storage_dead(_51);
         undefined_behavior;
     }
 

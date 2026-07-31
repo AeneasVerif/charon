@@ -46,13 +46,7 @@ where
     storage_live(_5)
     _5 = copy condition
     _9 = assume(move _5)
-    ↳⚡ storage_dead(_10)
-        storage_dead(_9)
-        storage_dead(count)
-        storage_dead(dst)
-        storage_dead(src)
-        storage_dead(condition)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     storage_dead(_5)
     storage_live(_6)
     _6 = copy src
@@ -61,13 +55,7 @@ where
     storage_live(_8)
     _8 = copy count
     _10 = copy_nonoverlapping<T>[TraitClause0](move _6, move _7, move _8)
-    ↳⚡ storage_dead(_10)
-        storage_dead(_9)
-        storage_dead(count)
-        storage_dead(dst)
-        storage_dead(src)
-        storage_dead(condition)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     storage_dead(_8)
     storage_dead(_7)
     storage_dead(_6)

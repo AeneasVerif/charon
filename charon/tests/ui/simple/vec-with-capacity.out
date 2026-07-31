@@ -126,11 +126,7 @@ where
             _10 = &mut (*_1) with_metadata(copy _1.metadata)
             storage_live(_11)
             _11 = @SliceIndexMut<'_, T>(move _10, copy _3)
-            ↳⚡ storage_dead(_11)
-                storage_dead(_10)
-                storage_dead(_9)
-                storage_dead(_8)
-                undefined_behavior
+            ↳⚡ undefined_behavior
             _6 = &raw mut (*_11)
             _3 = move _3 wrap.+ const 1usize
             drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_6)
@@ -143,11 +139,7 @@ where
                         _8 = &mut (*_1) with_metadata(copy _1.metadata)
                         storage_live(_9)
                         _9 = @SliceIndexMut<'_, T>(move _8, copy _3)
-                        ↳⚡ storage_dead(_11)
-                            storage_dead(_10)
-                            storage_dead(_9)
-                            storage_dead(_8)
-                            undefined_behavior
+                        ↳⚡ undefined_behavior
                         _4 = &raw mut (*_9)
                         _3 = move _3 wrap.+ const 1usize
                         drop[{built_in impl Destruct for T}::drop_glue<'3>] (*_4)

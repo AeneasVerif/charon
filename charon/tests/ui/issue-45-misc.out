@@ -424,9 +424,7 @@ fn cbd(prf_input: [u8; 33usize])
         _11 = &mut prf_input
         storage_live(_12)
         _12 = @ArrayIndexMut<'_, u8, 33usize>(move _11, copy _10)
-        ↳⚡ storage_dead(_12)
-            storage_dead(_11)
-            undefined_behavior
+        ↳⚡ undefined_behavior
         (*_12) = move _9
         storage_dead(_9)
         storage_dead(_10)

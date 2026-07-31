@@ -17,9 +17,7 @@ pub fn index_array_generic<const N : usize>(s: [u32; N], i: usize) -> u32
     _4 = &s
     storage_live(_5)
     _5 = @ArrayIndexShared<'_, u32, N>(move _4, copy _3)
-    ↳⚡ storage_dead(_5)
-        storage_dead(_4)
-        undefined_behavior
+    ↳⚡ undefined_behavior
     _0 = copy (*_5)
     storage_dead(_3)
     storage_dead(i)
