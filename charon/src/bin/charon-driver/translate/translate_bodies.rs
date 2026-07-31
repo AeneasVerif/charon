@@ -6,6 +6,7 @@
 use itertools::Itertools;
 use std::collections::HashMap;
 use std::collections::VecDeque;
+use std::mem;
 use std::ops::Deref;
 use std::ops::DerefMut;
 use std::panic;
@@ -14,6 +15,7 @@ use std::rc::Rc;
 use crate::hax;
 use rustc_middle::mir;
 use rustc_middle::ty;
+use rustc_span::{Symbol, sym};
 
 use super::translate_crate::*;
 use super::translate_ctx::*;
@@ -87,16 +89,51 @@ impl<'tcx, 'tctx, 'ictx> DerefMut for BodyTransCtx<'tcx, 'tctx, 'ictx> {
 pub(crate) struct BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
     /// The translation context for the item.
     pub b_ctx: &'bctx mut BodyTransCtx<'tcx, 'tctx, 'ictx>,
+    /// Block onto which we're adding statements.
+    pub current_block: BlockId,
     /// List of currently translated statements
     pub statements: Vec<Statement>,
 }
 
 impl<'tcx, 'tctx, 'ictx, 'bctx> BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
-    pub(crate) fn new(b_ctx: &'bctx mut BodyTransCtx<'tcx, 'tctx, 'ictx>) -> Self {
+    pub(crate) fn new(
+        b_ctx: &'bctx mut BodyTransCtx<'tcx, 'tctx, 'ictx>,
+        current_block: BlockId,
+    ) -> Self {
         BlockTransCtx {
             b_ctx,
+            current_block,
             statements: Vec::new(),
         }
+    }
+
+    fn finish_current_block(self, terminator: Terminator) {
+        let block = BlockData {
+            statements: self.statements,
+            terminator,
+        };
+        self.b_ctx.blocks.set_slot(self.current_block, block);
+    }
+
+    /// Used for non-diverging intrinsics.
+    fn push_nounwind_call(&mut self, span: Span, call: Call) {
+        let target = self.blocks.reserve_slot();
+        let on_unwind = self.blocks.push(
+            Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior)).into_block(),
+        );
+        let block = BlockData {
+            statements: mem::take(&mut self.statements),
+            terminator: Terminator::new(
+                span,
+                TerminatorKind::Call {
+                    call,
+                    target,
+                    on_unwind,
+                },
+            ),
+        };
+        let current_block = mem::replace(&mut self.current_block, target);
+        self.blocks.set_slot(current_block, block);
     }
 }
 
@@ -558,11 +595,12 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
 
     fn translate_basic_block(
         &mut self,
+        block_id: BlockId,
         source_scopes: &rustc_index::IndexVec<mir::SourceScope, mir::SourceScopeData>,
         block: &mir::BasicBlockData<'tcx>,
-    ) -> Result<BlockData, Error> {
+    ) -> Result<(), Error> {
         // Translate the statements
-        let mut block_ctx = BlockTransCtx::new(self);
+        let mut block_ctx = BlockTransCtx::new(self, block_id);
         for statement in &block.statements {
             trace!("statement: {:?}", statement);
             block_ctx.translate_statement(source_scopes, statement)?;
@@ -570,12 +608,9 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
 
         // Translate the terminator
         let terminator = block.terminator.as_ref().unwrap();
-        let terminator = block_ctx.translate_terminator(source_scopes, terminator)?;
+        block_ctx.translate_terminator(source_scopes, terminator)?;
 
-        Ok(BlockData {
-            statements: block_ctx.statements,
-            terminator,
-        })
+        Ok(())
     }
 
     /// Gather all the lines that start with `//` inside the given span.
@@ -644,8 +679,7 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
         while let Some(mir_block_id) = self.blocks_stack.pop_front() {
             let mir_block = mir_body.basic_blocks.get(mir_block_id).unwrap();
             let block_id = self.translate_basic_block_id(mir_block_id);
-            let block = self.translate_basic_block(&mir_body.source_scopes, mir_block)?;
-            self.blocks.set_slot(block_id, block);
+            self.translate_basic_block(block_id, &mir_body.source_scopes, mir_block)?;
         }
 
         // Create the body
@@ -1210,9 +1244,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         }
     }
 
-    /// Translate a statement
-    ///
-    /// We return an option, because we ignore some statements (`Nop`, `StorageLive`...)
+    /// Translate a statement.
     fn translate_statement(
         &mut self,
         source_scopes: &rustc_index::IndexVec<mir::SourceScope, mir::SourceScopeData>,
@@ -1221,7 +1253,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         trace!("About to translate statement (MIR) {:?}", statement);
         let span = self.translate_span_from_source_info(source_scopes, &statement.source_info);
 
-        let t_statement: Option<StatementKind> = match &statement.kind {
+        let kind: Option<StatementKind> = match &statement.kind {
             mir::StatementKind::Assign((place, rvalue)) => {
                 let t_place = self.translate_place(span, place)?;
                 let t_rvalue = self.translate_mir_rvalue(span, rvalue, t_place.ty())?;
@@ -1243,27 +1275,34 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let var_id = self.translate_local(local).unwrap();
                 Some(StatementKind::StorageDead(var_id))
             }
-            // This asserts the operand true on pain of UB. We treat it like a normal assertion.
             mir::StatementKind::Intrinsic(mir::NonDivergingIntrinsic::Assume(op)) => {
                 let op = self.translate_operand(span, op)?;
-                Some(StatementKind::Assert {
-                    assert: Assert {
-                        cond: op,
-                        expected: true,
-                        check_kind: None,
-                    },
-                    on_failure: AbortKind::UndefinedBehavior,
-                })
+                self.translate_intrinsic_call(
+                    span,
+                    sym::assume,
+                    ty::GenericArgs::empty(),
+                    vec![op],
+                )?;
+                None
             }
             mir::StatementKind::Intrinsic(mir::NonDivergingIntrinsic::CopyNonOverlapping(
                 mir::CopyNonOverlapping { src, dst, count },
             )) => {
+                let pointee_ty = src
+                    .ty(self.local_decls, self.tcx)
+                    .builtin_deref(true)
+                    .unwrap();
+                let generic_args = self.tcx.mk_args(&[pointee_ty.into()]);
                 let src = self.translate_operand(span, src)?;
                 let dst = self.translate_operand(span, dst)?;
                 let count = self.translate_operand(span, count)?;
-                Some(StatementKind::CopyNonOverlapping(Box::new(
-                    CopyNonOverlapping { src, dst, count },
-                )))
+                self.translate_intrinsic_call(
+                    span,
+                    sym::copy_nonoverlapping,
+                    generic_args,
+                    vec![src, dst, count],
+                )?;
+                None
             }
             mir::StatementKind::PlaceMention(place) => {
                 let place = self.translate_place(span, place)?;
@@ -1292,27 +1331,49 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             mir::StatementKind::Nop => None,
         };
 
-        // Add the span information
-        let Some(t_statement) = t_statement else {
+        let Some(kind) = kind else {
             return Ok(());
         };
-        let statement = Statement::new(span, t_statement);
-        self.statements.push(statement);
+        self.statements.push(Statement::new(span, kind));
+        Ok(())
+    }
+
+    /// Translate a call to a non-diverging intrinsic.
+    fn translate_intrinsic_call(
+        &mut self,
+        span: Span,
+        name: Symbol,
+        generic_args: ty::GenericArgsRef<'tcx>,
+        args: Vec<Operand>,
+    ) -> Result<(), Error> {
+        // Sadly rustc doesn't expose a Symbol -> DefId map for intrinsics.
+        let path = NamePattern::parse(&format!("core::intrinsics::{name}")).unwrap();
+        let def_id = self
+            .resolve_path(span, &path, true)?
+            .into_iter()
+            .exactly_one()
+            .unwrap();
+        assert!(self.tcx.is_intrinsic(def_id, name));
+        let item = hax::ItemRef::translate(self.hax_state_with_id(), def_id, generic_args);
+        let func =
+            FnOperand::Regular(self.translate_fn_ptr(span, &item, TransItemSourceKind::Fun)?);
+        let dest = self.locals.new_var(None, Ty::mk_unit());
+        self.push_nounwind_call(span, Call { func, args, dest });
         Ok(())
     }
 
     /// Translate a terminator
     fn translate_terminator(
-        &mut self,
+        mut self,
         source_scopes: &rustc_index::IndexVec<mir::SourceScope, mir::SourceScopeData>,
         terminator: &mir::Terminator<'tcx>,
-    ) -> Result<Terminator, Error> {
+    ) -> Result<(), Error> {
         trace!("About to translate terminator (MIR) {:?}", terminator);
         let span = self.translate_span_from_source_info(source_scopes, &terminator.source_info);
 
         // Translate the terminator
         use mir::TerminatorKind;
-        let t_terminator: ullbc_ast::TerminatorKind = match &terminator.kind {
+        let kind: ullbc_ast::TerminatorKind = match &terminator.kind {
             TerminatorKind::Goto { target } => {
                 let target = self.translate_basic_block_id(*target);
                 ullbc_ast::TerminatorKind::Goto { target }
@@ -1411,8 +1472,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             }
         };
 
-        // Add the span information
-        Ok(Terminator::new(span, t_terminator))
+        self.finish_current_block(Terminator::new(span, kind));
+        Ok(())
     }
 
     /// Translate switch targets

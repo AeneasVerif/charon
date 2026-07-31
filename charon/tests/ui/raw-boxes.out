@@ -1159,12 +1159,15 @@ where
     let _13: *const T; // anonymous local
     let _14: *mut T; // anonymous local
     let _15: usize; // anonymous local
+    let _16: (); // anonymous local
 
     storage_live(_0)
+    storage_live(_16)
     _0 = ()
     storage_live(_4)
     _4 = check_language_ub()
-    ↳⚡ storage_dead(count)
+    ↳⚡ storage_dead(_16)
+        storage_dead(count)
         storage_dead(dst)
         storage_dead(src)
         unwind_continue
@@ -1182,20 +1185,23 @@ where
         storage_dead(_9)
         storage_live(_10)
         _10 = core::mem::size_of<T>[TraitClause0]()
-        ↳⚡ storage_dead(count)
+        ↳⚡ storage_dead(_16)
+            storage_dead(count)
             storage_dead(dst)
             storage_dead(src)
             unwind_continue
         storage_live(_11)
         _11 = core::mem::align_of<T>[TraitClause0]()
-        ↳⚡ storage_dead(count)
+        ↳⚡ storage_dead(_16)
+            storage_dead(count)
             storage_dead(dst)
             storage_dead(src)
             unwind_continue
         storage_live(_12)
         _12 = copy count
         _5 = core::ptr::copy_nonoverlapping::precondition_check(move _6, move _8, move _10, move _11, move _12)
-        ↳⚡ storage_dead(count)
+        ↳⚡ storage_dead(_16)
+            storage_dead(count)
             storage_dead(dst)
             storage_dead(src)
             undefined_behavior
@@ -1214,10 +1220,16 @@ where
     _14 = copy dst
     storage_live(_15)
     _15 = copy count
-    copy_nonoverlapping(move _13, move _14, move _15)
+    _16 = core::intrinsics::copy_nonoverlapping<T>[TraitClause0](move _13, move _14, move _15)
+    ↳⚡ storage_dead(_16)
+        storage_dead(count)
+        storage_dead(dst)
+        storage_dead(src)
+        undefined_behavior
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
+    storage_dead(_16)
     storage_dead(count)
     storage_dead(dst)
     storage_dead(src)
@@ -1410,7 +1422,7 @@ where
         storage_dead(self)
         unwind_continue
     storage_dead(_27)
-    _20 = copy_nonoverlapping<u8>[{built_in impl Sized for u8}](move _21, move _24, move _26)
+    _20 = core::ptr::copy_nonoverlapping<u8>[{built_in impl Sized for u8}](move _21, move _24, move _26)
     ↳⚡ storage_dead(_11)
         storage_dead(new_layout)
         storage_dead(old_layout)
@@ -1638,7 +1650,7 @@ where
         storage_dead(self)
         unwind_continue
     storage_dead(_27)
-    _20 = copy_nonoverlapping<u8>[{built_in impl Sized for u8}](move _21, move _24, move _26)
+    _20 = core::ptr::copy_nonoverlapping<u8>[{built_in impl Sized for u8}](move _21, move _24, move _26)
     ↳⚡ storage_dead(_11)
         storage_dead(new_layout)
         storage_dead(old_layout)
@@ -1866,7 +1878,7 @@ where
         storage_dead(self)
         unwind_continue
     storage_dead(_27)
-    _20 = copy_nonoverlapping<u8>[{built_in impl Sized for u8}](move _21, move _24, move _26)
+    _20 = core::ptr::copy_nonoverlapping<u8>[{built_in impl Sized for u8}](move _21, move _24, move _26)
     ↳⚡ storage_dead(_11)
         storage_dead(new_layout)
         storage_dead(old_layout)
@@ -3139,6 +3151,5 @@ unsafe fn foo()
     storage_dead(_9)
     return
 }
-
 
 

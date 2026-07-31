@@ -307,7 +307,6 @@ pub(crate) fn generate(
                     "ItemSource",
                     "Locals",
                     "FunSig",
-                    "CopyNonOverlapping",
                     "Error",
                     "AbortKind",
                 ]),

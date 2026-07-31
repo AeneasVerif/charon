@@ -1863,11 +1863,6 @@ module Llbc = struct
         Format.fprintf fmt "%s@discriminant(%s) = %s" indent
           (place_to_string env p)
           (VariantId.to_string variant_id)
-    | CopyNonOverlapping { src; dst; count } ->
-        Format.fprintf fmt "%scopy_nonoverlapping(%s, %s, %s)" indent
-          (operand_to_string env src)
-          (operand_to_string env dst)
-          (operand_to_string env count)
     | StorageLive var_id ->
         Format.fprintf fmt "%sstorage_live(%s)" indent
           (local_id_to_string env var_id)
@@ -2038,11 +2033,6 @@ module Ullbc = struct
           (local_id_to_string env var_id)
     | PlaceMention place ->
         Format.fprintf fmt "%s_ = %s" indent (place_to_string env place)
-    | CopyNonOverlapping { src; dst; count } ->
-        Format.fprintf fmt "%scopy_nonoverlapping(%s, %s, %s)" indent
-          (operand_to_string env src)
-          (operand_to_string env dst)
-          (operand_to_string env count)
     | Nop -> Format.fprintf fmt "%snop" indent
 
   let pp_switch (indent : string) (fmt : Format.formatter) (tgt : switch) : unit

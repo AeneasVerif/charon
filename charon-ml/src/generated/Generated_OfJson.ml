@@ -491,17 +491,6 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (COpaque opaque)
     | _ -> Error "")
 
-and copy_non_overlapping_of_json (ctx : of_json_ctx) (js : json) :
-    (copy_non_overlapping, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("src", src); ("dst", dst); ("count", count) ] ->
-        let* src = operand_of_json ctx src in
-        let* dst = operand_of_json ctx dst in
-        let* count = operand_of_json ctx count in
-        Ok ({ src; dst; count } : copy_non_overlapping)
-    | _ -> Error "")
-
 and de_bruijn_id_of_json (ctx : of_json_ctx) (js : json) :
     (de_bruijn_id, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1632,11 +1621,6 @@ module Ullbc = struct
           let* x_0 = place_of_json ctx x_0 in
           let* x_1 = variant_id_of_json ctx x_1 in
           Ok (SetDiscriminant (x_0, x_1))
-      | `Assoc [ ("CopyNonOverlapping", copy_non_overlapping) ] ->
-          let* copy_non_overlapping =
-            box_of_json copy_non_overlapping_of_json ctx copy_non_overlapping
-          in
-          Ok (CopyNonOverlapping copy_non_overlapping)
       | `Assoc [ ("StorageLive", storage_live) ] ->
           let* storage_live = local_id_of_json ctx storage_live in
           Ok (StorageLive storage_live)
@@ -1828,11 +1812,6 @@ module Llbc = struct
           let* x_0 = place_of_json ctx x_0 in
           let* x_1 = variant_id_of_json ctx x_1 in
           Ok (SetDiscriminant (x_0, x_1))
-      | `Assoc [ ("CopyNonOverlapping", copy_non_overlapping) ] ->
-          let* copy_non_overlapping =
-            box_of_json copy_non_overlapping_of_json ctx copy_non_overlapping
-          in
-          Ok (CopyNonOverlapping copy_non_overlapping)
       | `Assoc [ ("StorageLive", storage_live) ] ->
           let* storage_live = local_id_of_json ctx storage_live in
           Ok (StorageLive storage_live)

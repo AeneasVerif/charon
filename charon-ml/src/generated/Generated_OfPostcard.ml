@@ -461,14 +461,6 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          Ok (COpaque x_0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
-and copy_non_overlapping_of_postcard (ctx : of_postcard_ctx)
-    (st : postcard_state) : (copy_non_overlapping, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* src = operand_of_postcard ctx st in
-     let* dst = operand_of_postcard ctx st in
-     let* count = operand_of_postcard ctx st in
-     Ok ({ src; dst; count } : copy_non_overlapping))
-
 and de_bruijn_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (de_bruijn_id, string) result =
   combine_error_msgs st __FUNCTION__ (usize_of_postcard ctx st)
@@ -1458,22 +1450,19 @@ module Ullbc = struct
            let* x_1 = variant_id_of_postcard ctx st in
            Ok (SetDiscriminant (x_0, x_1))
        | 2 ->
-           let* x_0 = box_of_postcard copy_non_overlapping_of_postcard ctx st in
-           Ok (CopyNonOverlapping x_0)
-       | 3 ->
            let* x_0 = local_id_of_postcard ctx st in
            Ok (StorageLive x_0)
-       | 4 ->
+       | 3 ->
            let* x_0 = local_id_of_postcard ctx st in
            Ok (StorageDead x_0)
-       | 5 ->
+       | 4 ->
            let* x_0 = place_of_postcard ctx st in
            Ok (PlaceMention x_0)
-       | 6 ->
+       | 5 ->
            let* assert_ = assertion_of_postcard ctx st in
            let* on_failure = abort_kind_of_postcard ctx st in
            Ok (Assert (assert_, on_failure))
-       | 7 -> Ok Nop
+       | 6 -> Ok Nop
        | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
   and switch_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1592,56 +1581,53 @@ module Llbc = struct
            let* x_1 = variant_id_of_postcard ctx st in
            Ok (SetDiscriminant (x_0, x_1))
        | 2 ->
-           let* x_0 = box_of_postcard copy_non_overlapping_of_postcard ctx st in
-           Ok (CopyNonOverlapping x_0)
-       | 3 ->
            let* x_0 = local_id_of_postcard ctx st in
            Ok (StorageLive x_0)
-       | 4 ->
+       | 3 ->
            let* x_0 = local_id_of_postcard ctx st in
            Ok (StorageDead x_0)
-       | 5 ->
+       | 4 ->
            let* x_0 = place_of_postcard ctx st in
            Ok (PlaceMention x_0)
-       | 6 ->
+       | 5 ->
            let* place = place_of_postcard ctx st in
            let* fn_ptr = fn_ptr_of_postcard ctx st in
            let* kind = drop_kind_of_postcard ctx st in
            let* on_unwind = block_of_postcard ctx st in
            Ok (Drop (place, fn_ptr, kind, on_unwind))
-       | 7 ->
+       | 6 ->
            let* assert_ = assertion_of_postcard ctx st in
            let* on_failure = abort_kind_of_postcard ctx st in
            let* on_unwind = block_of_postcard ctx st in
            Ok (Assert (assert_, on_failure, on_unwind))
-       | 8 ->
+       | 7 ->
            let* asm = string_of_postcard ctx st in
            let* targets = list_of_postcard block_of_postcard ctx st in
            let* on_unwind = block_of_postcard ctx st in
            Ok (InlineAsm (asm, targets, on_unwind))
-       | 9 ->
+       | 8 ->
            let* call = call_of_postcard ctx st in
            let* on_unwind = block_of_postcard ctx st in
            Ok (Call (call, on_unwind))
-       | 10 ->
+       | 9 ->
            let* x_0 = abort_kind_of_postcard ctx st in
            Ok (Abort x_0)
-       | 11 -> Ok Return
-       | 12 -> Ok UnwindResume
-       | 13 ->
+       | 10 -> Ok Return
+       | 11 -> Ok UnwindResume
+       | 12 ->
            let* x_0 = usize_of_postcard ctx st in
            Ok (Break x_0)
-       | 14 ->
+       | 13 ->
            let* x_0 = usize_of_postcard ctx st in
            Ok (Continue x_0)
-       | 15 -> Ok Nop
-       | 16 ->
+       | 14 -> Ok Nop
+       | 15 ->
            let* x_0 = switch_of_postcard ctx st in
            Ok (Switch x_0)
-       | 17 ->
+       | 16 ->
            let* x_0 = block_of_postcard ctx st in
            Ok (Loop x_0)
-       | 18 ->
+       | 17 ->
            let* x_0 = string_of_postcard ctx st in
            Ok (Error x_0)
        | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))

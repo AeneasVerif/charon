@@ -555,15 +555,6 @@ pub struct Call {
     pub dest: Place,
 }
 
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
-pub struct CopyNonOverlapping {
-    pub src: Operand,
-    pub dst: Operand,
-    pub count: Operand,
-}
-
 /// The kind of a built-in assertion, which may panic and unwind. These are removed
 /// by `reconstruct_fallible_operations` because they're implicit in the semantics of (U)LLBC.
 /// This kind should only be used for error-reporting purposes, as the check itself
