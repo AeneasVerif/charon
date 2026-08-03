@@ -39,7 +39,7 @@ pub enum PatTy {
 }
 
 impl Pattern {
-    pub fn parse(i: &str) -> Result<Self, nom_supreme::error::ErrorTree<String>> {
+    pub fn parse(i: &str) -> Result<Self, nom::error::Error<String>> {
         use std::str::FromStr;
         Self::from_str(i)
     }

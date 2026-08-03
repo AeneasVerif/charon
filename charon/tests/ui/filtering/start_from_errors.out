@@ -1,4 +1,4 @@
-error: failed to parse pattern `std::iter:once` (expected eof at :once)
+error: failed to parse pattern `std::iter:once` (error Eof at: :once)
 
 error: failed to resolve item path `start_from_errors::module1`: path `start_from_errors` does not correspond to any item; did you mean `crate::start_from_errors`?
 
