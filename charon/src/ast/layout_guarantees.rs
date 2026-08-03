@@ -1,6 +1,6 @@
 use std::{collections::HashMap, ops::AddAssign};
 
-use derive_generic_visitor::{Drive, DriveMut};
+use derive_generic_visitor::*;
 use macros::{EnumAsGetters, EnumIsA, VariantName};
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
@@ -28,6 +28,7 @@ use crate::{
     EnumIsA,
     EnumAsGetters,
     VariantName,
+    DriveTwo,
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Var"))]
 pub enum LayoutVar {
@@ -52,6 +53,7 @@ pub enum LayoutVar {
     EnumIsA,
     EnumAsGetters,
     VariantName,
+    DriveTwo,
 )]
 pub enum OffsetGuarantee {
     /// Guaranteed to be at offset zero. This applies for `repr(transparent)` and in some  `repr(C)` cases.
@@ -80,6 +82,7 @@ pub enum OffsetGuarantee {
     EnumIsA,
     EnumAsGetters,
     VariantName,
+    DriveTwo,
 )]
 #[serde_state(state_implements = HashConsSerializerState)]
 pub enum LayoutValue {
@@ -115,6 +118,7 @@ pub enum LayoutValue {
     EnumIsA,
     EnumAsGetters,
     VariantName,
+    DriveTwo,
 )]
 #[serde_state(state_implements = HashConsSerializerState)]
 pub enum SizeExpr {
@@ -152,6 +156,7 @@ pub enum SizeExpr {
     EnumIsA,
     EnumAsGetters,
     VariantName,
+    DriveTwo,
 )]
 #[serde_state(state_implements = HashConsSerializerState)]
 pub enum SizeExprBound {
@@ -239,6 +244,7 @@ impl SizeExprBound {
     EnumIsA,
     EnumAsGetters,
     VariantName,
+    DriveTwo,
 )]
 #[serde_state(state_implements = HashConsSerializerState)]
 #[cfg_attr(
@@ -326,7 +332,9 @@ impl OffsetGuarantees {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
+)]
 #[serde_state(state_implements = HashConsSerializerState)]
 pub struct LayoutGuarantees {
     pub size: SizeExprBound,

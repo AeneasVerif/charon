@@ -3202,16 +3202,6 @@ and monomorphize_mut_of_json (ctx : of_json_ctx) (js : json) :
     | `String "ExceptTypes" -> Ok ExceptTypes
     | _ -> Error "")
 
-and rustc_optimize_attr_of_json (ctx : of_json_ctx) (js : json) :
-    (rustc_optimize_attr, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "Default" -> Ok RustcOptimizeAttrDefault
-    | `String "DoNotOptimize" -> Ok RustcOptimizeAttrDoNotOptimize
-    | `String "Speed" -> Ok RustcOptimizeAttrSpeed
-    | `String "Size" -> Ok RustcOptimizeAttrSize
-    | _ -> Error "")
-
 and offset_guarantee_of_json (ctx : of_json_ctx) (js : json) :
     (offset_guarantee, string) result =
   combine_error_msgs js __FUNCTION__
@@ -3248,6 +3238,16 @@ and offset_information_of_json (ctx : of_json_ctx) (js : json) :
           option_of_json offset_guarantee_of_json ctx guarantees
         in
         Ok ({ raw; guarantees } : offset_information)
+    | _ -> Error "")
+
+and rustc_optimize_attr_of_json (ctx : of_json_ctx) (js : json) :
+    (rustc_optimize_attr, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Default" -> Ok RustcOptimizeAttrDefault
+    | `String "DoNotOptimize" -> Ok RustcOptimizeAttrDoNotOptimize
+    | `String "Speed" -> Ok RustcOptimizeAttrSpeed
+    | `String "Size" -> Ok RustcOptimizeAttrSize
     | _ -> Error "")
 
 and preset_of_json (ctx : of_json_ctx) (js : json) : (preset, string) result =
@@ -3338,14 +3338,6 @@ and serialization_format_arg_of_json (ctx : of_json_ctx) (js : json) :
     | `String "All" -> Ok AllFormats
     | _ -> Error "")
 
-and spec_kind_of_json (ctx : of_json_ctx) (js : json) :
-    (spec_kind, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "Precondition" -> Ok Precondition
-    | `String "Postcondition" -> Ok Postcondition
-    | _ -> Error "")
-
 and size_expr_of_json (ctx : of_json_ctx) (js : json) :
     (size_expr, string) result =
   combine_error_msgs js __FUNCTION__
@@ -3400,6 +3392,14 @@ and size_expr_bound_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("LowerBound", lower_bound) ] ->
         let* lower_bound = size_expr_of_json ctx lower_bound in
         Ok (LowerBound lower_bound)
+    | _ -> Error "")
+
+and spec_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (spec_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Precondition" -> Ok Precondition
+    | `String "Postcondition" -> Ok Postcondition
     | _ -> Error "")
 
 and target_info_of_json (ctx : of_json_ctx) (js : json) :

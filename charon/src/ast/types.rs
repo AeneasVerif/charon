@@ -547,7 +547,9 @@ pub enum PredicateOrigin {
 // rustc counts bytes in layouts as u64
 pub type RawByteCount = u64;
 
-#[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
+)]
 pub struct ByteCount {
     #[serde_state(stateless)]
     #[drive(skip)]
@@ -567,9 +569,16 @@ pub struct OffsetInformation {
 ///
 /// Maps fields to their offset within the layout.
 #[derive(
-
-    Debug, Default, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-,
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    DriveTwo,
 )]
 pub struct VariantLayout {
     /// The offset of each field.

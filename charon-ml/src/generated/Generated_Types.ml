@@ -1505,8 +1505,6 @@ and repr_options = {
   explicit_discr_type : ty option;
 }
 
-and spec_kind = Precondition | Postcondition
-
 and size_expr =
   | SizeVariable of layout_var
   | SizeValue of layout_value
@@ -1530,6 +1528,7 @@ and size_expr =
           - [else_size] *)
 
 and size_expr_bound = ExactEq of size_expr | LowerBound of size_expr
+and spec_kind = Precondition | Postcondition
 
 (** A type declaration.
 

@@ -2736,17 +2736,6 @@ and monomorphize_mut_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 1 -> Ok ExceptTypes
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
-and rustc_optimize_attr_of_postcard (ctx : of_postcard_ctx)
-    (st : postcard_state) : (rustc_optimize_attr, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 -> Ok RustcOptimizeAttrDefault
-     | 1 -> Ok RustcOptimizeAttrDoNotOptimize
-     | 2 -> Ok RustcOptimizeAttrSpeed
-     | 3 -> Ok RustcOptimizeAttrSize
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
 and offset_guarantee_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (offset_guarantee, string) result =
   combine_error_msgs st __FUNCTION__
@@ -2769,6 +2758,17 @@ and offset_information_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
     (let* raw = option_of_postcard u64_of_postcard ctx st in
      let* guarantees = option_of_postcard offset_guarantee_of_postcard ctx st in
      Ok ({ raw; guarantees } : offset_information))
+
+and rustc_optimize_attr_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (rustc_optimize_attr, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok RustcOptimizeAttrDefault
+     | 1 -> Ok RustcOptimizeAttrDoNotOptimize
+     | 2 -> Ok RustcOptimizeAttrSpeed
+     | 3 -> Ok RustcOptimizeAttrSize
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and preset_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (preset, string) result =
@@ -2846,15 +2846,6 @@ and serialization_format_arg_of_postcard (ctx : of_postcard_ctx)
      | 2 -> Ok AllFormats
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
-and spec_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (spec_kind, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 -> Ok Precondition
-     | 1 -> Ok Postcondition
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
 and size_expr_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (size_expr, string) result =
   combine_error_msgs st __FUNCTION__
@@ -2902,6 +2893,15 @@ and size_expr_bound_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 1 ->
          let* x_0 = size_expr_of_postcard ctx st in
          Ok (LowerBound x_0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and spec_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (spec_kind, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok Precondition
+     | 1 -> Ok Postcondition
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
