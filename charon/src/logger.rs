@@ -25,6 +25,16 @@ pub fn initialize_logger() {
         .init();
 }
 
+#[macro_export]
+macro_rules! ansi_color {
+    (red) => {
+        "\x1b[31m"
+    };
+    (yellow) => {
+        "\x1b[33m"
+    };
+}
+
 /// This macro computes the name of the function in which it is called and the line number.
 /// We adapted it from:
 /// <https://stackoverflow.com/questions/38088067/equivalent-of-func-or-function-in-rust>
@@ -47,9 +57,8 @@ macro_rules! code_location {
 
         use std::io::IsTerminal;
         if std::io::stderr().is_terminal() {
-            use colored::Colorize;
-            name = name.$color().to_string();
-            location = location.dimmed().to_string();
+            name = format!("{}{name}\x1b[39m", $crate::ansi_color!($color));
+            location = format!("\x1b[2m{location}\x1b[22m");
         }
         format!("in {name} at {location}")
     }};
