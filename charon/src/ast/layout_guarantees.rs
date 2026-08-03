@@ -8,9 +8,9 @@ use serde_state::{DeserializeState, SerializeState};
 use crate::{
     ast::{
         AlignmentModifier, BuiltinTy, ConstantExpr, ConstantExprKind, Field, FieldId,
-        HashConsSerializerState, IntTy, IntegerTy, Literal, LiteralTy, ReprAlgorithm, ReprOptions,
-        ScalarValue, TargetTriple, TranslatedCrate, Ty, TyKind, TyVisitable, TypeDeclKind,
-        TypeDeclRef, TypeId, UIntTy, VariantId,
+        HashConsSerializerState, IntTy, IntegerTy, Layout, Literal, LiteralTy, ReprAlgorithm,
+        ReprOptions, ScalarValue, TargetTriple, TranslatedCrate, Ty, TyKind, TyVisitable,
+        TypeDeclKind, TypeDeclRef, TypeId, UIntTy, VariantId, VariantLayout,
     },
     ids::IndexVec,
 };
@@ -57,7 +57,7 @@ pub enum OffsetGuarantee {
     /// Guaranteed to be at offset zero. This applies for `repr(transparent)` and in some  `repr(C)` cases.
     AtOffsetZero,
     /// The only guarantee is that it is aligned to the given expression.
-    GuaranteedAlignment(SizeExpr),
+    GuaranteedAlignment(Box<SizeExpr>),
     /// This offset has to be computed by the layout algorithm for C, taking into consideration the fields before.
     /// Must not be the first field, since that is [`OffsetGuarantee::AtOffsetZero`].
     ReprCField {
@@ -154,73 +154,73 @@ pub enum SizeExpr {
     VariantName,
 )]
 #[serde_state(state_implements = HashConsSerializerState)]
-pub enum ExactSizeExpr {
-    Exact(SizeExpr),
-    AtLeast(SizeExpr),
+pub enum SizeExprBound {
+    ExactEq(SizeExpr),
+    LowerBound(SizeExpr),
 }
 
-impl ExactSizeExpr {
+impl SizeExprBound {
     pub fn map<F: Fn(SizeExpr) -> SizeExpr>(self, f: F) -> Self {
         match self {
-            Self::Exact(size_expr) => Self::Exact(f(size_expr)),
-            Self::AtLeast(size_expr) => Self::AtLeast(f(size_expr)),
+            Self::ExactEq(size_expr) => Self::ExactEq(f(size_expr)),
+            Self::LowerBound(size_expr) => Self::LowerBound(f(size_expr)),
         }
     }
 
     pub fn map_mut<F: Fn(&mut SizeExpr)>(&mut self, f: F) {
         match self {
-            Self::Exact(size_expr) | Self::AtLeast(size_expr) => f(size_expr),
+            Self::ExactEq(size_expr) | Self::LowerBound(size_expr) => f(size_expr),
         }
     }
 
     pub fn comb<F: Fn(SizeExpr, SizeExpr) -> SizeExpr>(self, other: Self, f: F) -> Self {
         match (self, other) {
-            (Self::Exact(size_expr1), Self::Exact(size_expr2)) => {
-                Self::Exact(f(size_expr1, size_expr2))
+            (Self::ExactEq(size_expr1), Self::ExactEq(size_expr2)) => {
+                Self::ExactEq(f(size_expr1, size_expr2))
             }
-            (Self::Exact(size_expr1), Self::AtLeast(size_expr2))
-            | (Self::AtLeast(size_expr1), Self::Exact(size_expr2))
-            | (Self::AtLeast(size_expr1), Self::AtLeast(size_expr2)) => {
-                Self::AtLeast(f(size_expr1, size_expr2))
+            (Self::ExactEq(size_expr1), Self::LowerBound(size_expr2))
+            | (Self::LowerBound(size_expr1), Self::ExactEq(size_expr2))
+            | (Self::LowerBound(size_expr1), Self::LowerBound(size_expr2)) => {
+                Self::LowerBound(f(size_expr1, size_expr2))
             }
         }
     }
 
     pub fn make(expr: SizeExpr, exact: bool) -> Self {
         if exact {
-            Self::Exact(expr)
+            Self::ExactEq(expr)
         } else {
-            Self::AtLeast(expr)
+            Self::LowerBound(expr)
         }
     }
 
     pub fn inner(&self) -> &SizeExpr {
         match self {
-            Self::Exact(size_expr) | Self::AtLeast(size_expr) => size_expr,
+            Self::ExactEq(size_expr) | Self::LowerBound(size_expr) => size_expr,
         }
     }
 
     pub fn inner_mut(&mut self) -> &mut SizeExpr {
         match self {
-            Self::Exact(size_expr) | Self::AtLeast(size_expr) => size_expr,
+            Self::ExactEq(size_expr) | Self::LowerBound(size_expr) => size_expr,
         }
     }
 
     pub fn take(self) -> SizeExpr {
         match self {
-            Self::Exact(size_expr) | Self::AtLeast(size_expr) => size_expr,
+            Self::ExactEq(size_expr) | Self::LowerBound(size_expr) => size_expr,
         }
     }
 
     pub fn add_exact_info(self, exact: bool) -> Self {
         match self {
-            Self::Exact(size_expr) if exact => Self::Exact(size_expr),
-            _ => Self::AtLeast(self.take()),
+            Self::ExactEq(size_expr) if exact => Self::ExactEq(size_expr),
+            _ => Self::LowerBound(self.take()),
         }
     }
 
     pub fn update<F: FnMut(&mut SizeExpr, bool) -> bool>(&mut self, mut f: F) {
-        let old_exact = self.is_exact();
+        let old_exact = self.is_exact_eq();
         let new_exact = f(self.inner_mut(), old_exact);
         // FIXME: Is there some sound unsafe code to make this possible without the clone?
         *self = Self::make(self.inner().clone(), old_exact && new_exact);
@@ -255,30 +255,82 @@ pub enum OffsetGuarantees {
 impl OffsetGuarantees {
     pub fn first_field(&self) -> Option<&OffsetGuarantee> {
         match self {
-            OffsetGuarantees::Variants(variants) => variants
+            Self::Variants(variants) => variants
                 .get(VariantId::ZERO)
                 .and_then(|fields| fields.get(FieldId::ZERO)),
-            OffsetGuarantees::Fields(fields) => fields.get(FieldId::ZERO),
+            Self::Fields(fields) => fields.get(FieldId::ZERO),
             _ => None,
         }
     }
 
     pub fn first_field_mut(&mut self) -> Option<&mut OffsetGuarantee> {
         match self {
-            OffsetGuarantees::Variants(variants) => variants
+            Self::Variants(variants) => variants
                 .get_mut(VariantId::ZERO)
                 .and_then(|fields| fields.get_mut(FieldId::ZERO)),
-            OffsetGuarantees::Fields(fields) => fields.get_mut(FieldId::ZERO),
+            Self::Fields(fields) => fields.get_mut(FieldId::ZERO),
             _ => None,
         }
+    }
+
+    pub fn get_variants(
+        self,
+        expected_variants: Option<usize>,
+        translated: &TranslatedCrate,
+    ) -> Option<IndexVec<VariantId, IndexVec<FieldId, OffsetGuarantee>>> {
+        match self {
+            Self::Variants(variants_guarantees) => Some(variants_guarantees),
+            Self::None if expected_variants.is_some() => Some(
+                (0..expected_variants.unwrap())
+                    .map(|_| vec![].into())
+                    .collect(),
+            ),
+            Self::Symbolic(ty) => {
+                let guarantees_for_ty = LayoutGuarantees::for_ty(&ty, translated)?;
+                if let OffsetGuarantees::Symbolic(ty2) = &guarantees_for_ty.offsets
+                    && ty == *ty2
+                {
+                    // Break cycles.
+                    None
+                } else {
+                    guarantees_for_ty
+                        .offsets
+                        .get_variants(expected_variants, translated)
+                }
+            }
+            Self::Fields(fields) => Some(vec![fields].into()),
+            _ => None,
+        }
+    }
+
+    pub fn from_layout(layout: &IndexVec<VariantId, Option<VariantLayout>>) -> Self {
+        let mut offsets = IndexVec::new();
+        for variant_layout in layout.iter() {
+            let fields: Option<IndexVec<FieldId, OffsetGuarantee>> =
+                if let Some(variant_layout) = variant_layout {
+                    variant_layout
+                        .field_offsets
+                        .iter()
+                        .map(|offset| offset.guarantees.clone())
+                        .collect()
+                } else {
+                    None
+                };
+            if let Some(fields) = fields {
+                offsets.push(fields);
+            } else {
+                return Self::None;
+            }
+        }
+        Self::Variants(offsets)
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
 #[serde_state(state_implements = HashConsSerializerState)]
 pub struct LayoutGuarantees {
-    pub size: ExactSizeExpr,
-    pub align: ExactSizeExpr,
+    pub size: SizeExprBound,
+    pub align: SizeExprBound,
     pub offsets: OffsetGuarantees,
 }
 
@@ -363,6 +415,16 @@ impl Default for SizeExpr {
 }
 
 impl SizeExpr {
+    pub fn mk_const_byte_count(bytes: u64) -> Self {
+        Self::Val(LayoutValue::Constant(ConstantExpr {
+            kind: ConstantExprKind::Literal(Literal::Scalar(ScalarValue::Unsigned(
+                UIntTy::U64,
+                bytes as u128,
+            ))),
+            ty: Ty::new(TyKind::Literal(LiteralTy::UInt(UIntTy::U64))),
+        }))
+    }
+
     pub fn is_constant(&self) -> Option<ConstantExpr> {
         match self {
             Self::Val(LayoutValue::Constant(c)) => Some(c.clone()),
@@ -429,10 +491,10 @@ impl AddAssign for SizeExpr {
 impl LayoutGuarantees {
     pub fn one_zst() -> Self {
         Self {
-            size: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::Constant(
+            size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::Constant(
                 ScalarValue::mk_zero_usize().to_constant(),
             ))),
-            align: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::Constant(
+            align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::Constant(
                 ScalarValue::mk_one_usize().to_constant(),
             ))),
             offsets: OffsetGuarantees::None,
@@ -443,10 +505,10 @@ impl LayoutGuarantees {
     pub fn mk_concrete(size: ScalarValue, alignment: ScalarValue) -> Self {
         if size.is_multiple_of(&alignment) == Some(true) {
             Self {
-                size: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::Constant(
+                size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::Constant(
                     size.to_constant(),
                 ))),
-                align: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::Constant(
+                align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::Constant(
                     alignment.to_constant(),
                 ))),
                 offsets: OffsetGuarantees::None,
@@ -462,11 +524,11 @@ impl LayoutGuarantees {
     /// Based on [https://doc.rust-lang.org/reference/type-layout.html#r-layout.array].
     pub fn mk_array(elem_ty: &Ty, elem_num: &ConstantExpr) -> Self {
         Self {
-            size: ExactSizeExpr::Exact(SizeExpr::Scale(
+            size: SizeExprBound::ExactEq(SizeExpr::Scale(
                 Box::new(SizeExpr::Val(LayoutValue::of_ty(elem_ty, true))),
                 elem_num.clone(),
             )),
-            align: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::of_ty(elem_ty, false))),
+            align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(elem_ty, false))),
             offsets: OffsetGuarantees::None,
         }
     }
@@ -479,8 +541,8 @@ impl LayoutGuarantees {
         let size = match primitive {
             LiteralTy::Int(IntTy::Isize) | LiteralTy::UInt(UIntTy::Usize) => {
                 return Self {
-                    size: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::mk_address_size())),
-                    align: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::mk_address_size())),
+                    size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::mk_address_size())),
+                    align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::mk_address_size())),
                     offsets: OffsetGuarantees::None,
                 };
             }
@@ -491,20 +553,33 @@ impl LayoutGuarantees {
             LiteralTy::Char => 4,
         };
         Self {
-            size: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::Constant(
+            size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::Constant(
                 ScalarValue::from_unchecked_uint(UIntTy::Usize, size as u128).to_constant(),
             ))),
-            align: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::AlignOf(Ty::from(*primitive)))),
+            align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::AlignOf(Ty::from(
+                *primitive,
+            )))),
             offsets: OffsetGuarantees::None,
         }
     }
 
     pub fn mk_symbolic(ty: Ty) -> Self {
         Self {
-            size: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::of_ty(&ty, true))),
-            align: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::of_ty(&ty, false))),
+            size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(&ty, true))),
+            align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(&ty, false))),
             offsets: OffsetGuarantees::Symbolic(ty),
         }
+    }
+
+    pub fn is_purely_symbolic(&self) -> bool {
+        matches!(
+            self,
+            Self {
+                size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::SizeOf(_))),
+                align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::AlignOf(_))),
+                offsets: OffsetGuarantees::Symbolic(_),
+            }
+        )
     }
 
     /// The layout of a pointer to `pointee`. Uses the symbolic size of meta-data.
@@ -519,7 +594,7 @@ impl LayoutGuarantees {
             SizeExpr::Val(ptr_size.clone()),
             SizeExpr::Val(LayoutValue::of_ty(&meta, true)),
         ]);
-        let size = ExactSizeExpr::make(
+        let size = SizeExprBound::make(
             SizeExpr::AlignTo {
                 base: Box::new(SizeExpr::Plus(
                     Box::new(SizeExpr::Val(ptr_size)),
@@ -531,7 +606,7 @@ impl LayoutGuarantees {
         );
         Self {
             size,
-            align: ExactSizeExpr::make(align, exact),
+            align: SizeExprBound::make(align, exact),
             // We have guarantee about the offsets of the pointer parts, especially since
             // the parts have no field IDs.
             offsets: OffsetGuarantees::None,
@@ -575,15 +650,16 @@ impl LayoutGuarantees {
             align_max.push(SizeExpr::Val(LayoutValue::of_ty(&ty, false)));
             // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.alignment.packed-fields
             // and https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.rust.layout, point 2.
-            let field_offset_guarantee =
-                OffsetGuarantee::GuaranteedAlignment(if let Some(packed) = &packed_align {
+            let field_offset_guarantee = OffsetGuarantee::GuaranteedAlignment(Box::new(
+                if let Some(packed) = &packed_align {
                     SizeExpr::Min(vec![
                         packed.clone(),
                         SizeExpr::Val(LayoutValue::of_ty(&ty, false)),
                     ])
                 } else {
                     SizeExpr::Val(LayoutValue::of_ty(&ty, false))
-                });
+                },
+            ));
             field_offsets.push(field_offset_guarantee);
         }
 
@@ -597,12 +673,12 @@ impl LayoutGuarantees {
             // The size is the end of the last field, i.e. the max of field ends, aligned.
             // This implicitly follows from
             // https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.rust.layout.struct
-            size: ExactSizeExpr::AtLeast(SizeExpr::AlignTo {
+            size: SizeExprBound::LowerBound(SizeExpr::AlignTo {
                 base: Box::new(SizeExpr::Max(size_max)),
                 target_align: Box::new(SizeExpr::Var(LayoutVar::Align)),
             }),
             // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.rust.layout, point 2.
-            align: ExactSizeExpr::AtLeast(SizeExpr::Max(align_max)),
+            align: SizeExprBound::LowerBound(SizeExpr::Max(align_max)),
             offsets: OffsetGuarantees::Fields(field_offsets),
         }
     }
@@ -677,11 +753,11 @@ impl LayoutGuarantees {
         }
 
         Self {
-            size: ExactSizeExpr::Exact(SizeExpr::AlignTo {
+            size: SizeExprBound::ExactEq(SizeExpr::AlignTo {
                 base: Box::new(size),
                 target_align: Box::new(SizeExpr::Var(LayoutVar::Align)),
             }),
-            align: ExactSizeExpr::Exact(SizeExpr::Max(align_max)),
+            align: SizeExprBound::ExactEq(SizeExpr::Max(align_max)),
             offsets: OffsetGuarantees::Fields(field_offsets),
         }
     }
@@ -690,7 +766,7 @@ impl LayoutGuarantees {
     /// NOTE: Assumes the type to be repr(C)!
     pub fn mk_tagged_union<V, F>(
         variants: V,
-        discr_layout_guarantee: Option<Self>,
+        tag_layout_guarantee: Option<Self>,
         translated: &TranslatedCrate,
         is_union: bool,
     ) -> Self
@@ -716,7 +792,7 @@ impl LayoutGuarantees {
                 LayoutGuarantees::mk_ordered_sequence_repr_c(
                     fields,
                     Some(VariantId::from_raw(id)),
-                    discr_layout_guarantee.clone(),
+                    tag_layout_guarantee.clone(),
                 )
             };
             max_size.max(variant_guarantees.size.take().unalign());
@@ -729,14 +805,14 @@ impl LayoutGuarantees {
             offsets.push(field_offsets);
         }
 
-        let size = ExactSizeExpr::Exact(SizeExpr::AlignTo {
+        let size = SizeExprBound::ExactEq(SizeExpr::AlignTo {
             base: Box::new(max_size),
             target_align: Box::new(SizeExpr::Var(LayoutVar::Align)),
         });
         // Since we assume repr(C), the guarantees are exact.
         LayoutGuarantees {
             size,
-            align: ExactSizeExpr::Exact(max_align),
+            align: SizeExprBound::ExactEq(max_align),
             offsets: OffsetGuarantees::Variants(offsets),
         }
     }
@@ -748,17 +824,33 @@ impl LayoutGuarantees {
         translated: &TranslatedCrate,
     ) -> Option<LayoutGuarantees> {
         let mut non_one_zst_ty = None;
+        let mut field_guarantees = IndexVec::new();
         for field in fields.iter() {
             let ty = &field.ty;
-            if let Some(layout) = LayoutGuarantees::for_ty(ty, translated)
-                && layout != LayoutGuarantees::one_zst()
-            {
+            let layout = LayoutGuarantees::for_ty(ty, translated)?;
+            if layout != LayoutGuarantees::one_zst() {
+                if non_one_zst_ty.is_some() {
+                    return None; // More than one non-1-ZST field!
+                }
                 non_one_zst_ty = Some(ty.clone());
+                if let SizeExprBound::ExactEq(align) = layout.align {
+                    field_guarantees.push(OffsetGuarantee::GuaranteedAlignment(Box::new(align)));
+                } else {
+                    field_guarantees.push(OffsetGuarantee::GuaranteedAlignment(Box::new(
+                        SizeExpr::Val(LayoutValue::AlignOf(ty.clone())),
+                    )));
+                }
+            } else {
+                field_guarantees.push(OffsetGuarantee::GuaranteedAlignment(Box::new(
+                    SizeExpr::Val(LayoutValue::AlignOf(ty.clone())),
+                )));
             }
         }
 
         if let Some(non_one_zst_ty) = non_one_zst_ty {
-            Some(LayoutGuarantees::mk_symbolic(non_one_zst_ty))
+            let mut single_field_layout = LayoutGuarantees::mk_symbolic(non_one_zst_ty);
+            single_field_layout.offsets = OffsetGuarantees::Fields(field_guarantees);
+            Some(single_field_layout)
         } else {
             // If there is no non-1-ZST field, the type is equivalent to unit.
             Some(LayoutGuarantees::one_zst())
@@ -766,6 +858,7 @@ impl LayoutGuarantees {
     }
 
     /// Constructs the layout guarantees for the type declaration.
+    #[tracing::instrument(skip(translated))]
     pub fn for_type_decl(
         td_kind: &TypeDeclKind,
         repr: &ReprOptions,
@@ -780,7 +873,8 @@ impl LayoutGuarantees {
                 let fields = fields.iter().map(|field| field.ty.clone());
 
                 if repr.repr_algo == ReprAlgorithm::C {
-                    return Some(Self::mk_ordered_sequence_repr_c(fields, None, None));
+                    let repr_c_guarantees = Self::mk_ordered_sequence_repr_c(fields, None, None);
+                    return Some(repr_c_guarantees);
                 }
 
                 let mut base_guarantees = Self::mk_unordered_sequence(fields, None, Some(repr));
@@ -795,7 +889,7 @@ impl LayoutGuarantees {
                         });
                     }
                     Some(AlignmentModifier::Pack(n)) => {
-                        base_guarantees.align = ExactSizeExpr::Exact(SizeExpr::Min(vec![
+                        base_guarantees.align = SizeExprBound::ExactEq(SizeExpr::Min(vec![
                             SizeExpr::Val(LayoutValue::Constant(
                                 ScalarValue::from_unchecked_uint(UIntTy::U64, n as u128)
                                     .to_constant(),
@@ -825,10 +919,10 @@ impl LayoutGuarantees {
                                 Self::for_ty(discr_ty, translated).unwrap()
                             } else {
                                 Self {
-                                    size: ExactSizeExpr::Exact(SizeExpr::Val(
+                                    size: SizeExprBound::ExactEq(SizeExpr::Val(
                                         LayoutValue::TargetDiscrSize,
                                     )),
-                                    align: ExactSizeExpr::Exact(SizeExpr::Val(
+                                    align: SizeExprBound::ExactEq(SizeExpr::Val(
                                         LayoutValue::TargetDiscrAlign,
                                     )),
                                     offsets: OffsetGuarantees::None,
@@ -882,14 +976,14 @@ impl LayoutGuarantees {
                             offsets.push(field_offsets);
                         }
 
-                        let size = ExactSizeExpr::AtLeast(SizeExpr::AlignTo {
+                        let size = SizeExprBound::LowerBound(SizeExpr::AlignTo {
                             base: Box::new(max_size),
                             target_align: Box::new(SizeExpr::Var(LayoutVar::Align)),
                         });
                         // Since we assume repr(C), the guarantees are exact.
                         Some(LayoutGuarantees {
                             size,
-                            align: ExactSizeExpr::AtLeast(max_align),
+                            align: SizeExprBound::LowerBound(max_align),
                             offsets: OffsetGuarantees::Variants(offsets),
                         })
                     }
@@ -914,6 +1008,14 @@ impl LayoutGuarantees {
         }
     }
 
+    pub fn from_layout(layout: &Layout) -> Self {
+        Self {
+            size: layout.size.guarantees.clone(),
+            align: layout.align.guarantees.clone(),
+            offsets: OffsetGuarantees::from_layout(&layout.variant_layouts),
+        }
+    }
+
     fn for_ty_inner(ty: &Ty, translated: &TranslatedCrate, force_repr_c: bool) -> Option<Self> {
         match ty.kind() {
             // True Adt's (i.e. structs and enums) should have layout guarantees stored in
@@ -922,12 +1024,11 @@ impl LayoutGuarantees {
                 id: TypeId::Adt(type_decl_id),
                 generics,
             }) => {
-                let td = translated.type_decls.get(*type_decl_id)?;
-                let op_poly = Self::for_type_decl(&td.kind, &td.repr, translated);
-                if let Some(poly_guarantees) = op_poly {
+                if let Some(td) = translated.type_decls.get(*type_decl_id) {
+                    let poly_guarantees = Self::from_layout(td.the_layout()?);
                     Some(poly_guarantees.substitute(generics))
                 } else {
-                    op_poly
+                    Some(Self::mk_symbolic(ty.clone()))
                 }
             }
             TyKind::Adt(TypeDeclRef {
@@ -958,8 +1059,8 @@ impl LayoutGuarantees {
             TyKind::FnPtr(_) => {
                 let ptr_size = SizeExpr::Val(LayoutValue::mk_address_size());
                 Some(Self {
-                    size: ExactSizeExpr::Exact(ptr_size.clone()),
-                    align: ExactSizeExpr::Exact(ptr_size.clone()),
+                    size: SizeExprBound::ExactEq(ptr_size.clone()),
+                    align: SizeExprBound::ExactEq(ptr_size.clone()),
                     offsets: OffsetGuarantees::None,
                 })
             }
@@ -975,21 +1076,21 @@ impl LayoutGuarantees {
             }) => {
                 Some(Self {
                     // Aligned to `u8`.
-                    align: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::of_ty(ty, false))),
-                    size: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::of_ty(ty, true))),
+                    align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(ty, false))),
+                    size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(ty, true))),
                     offsets: OffsetGuarantees::None,
                 })
             }
             // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.slice
             TyKind::Slice(_) => Some(Self {
-                align: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::of_ty(ty, false))),
-                size: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::of_ty(ty, true))),
+                align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(ty, false))),
+                size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(ty, true))),
                 offsets: OffsetGuarantees::None,
             }),
             // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.trait-object
             TyKind::DynTrait(_) => Some(Self {
-                size: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::DynSize)),
-                align: ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::DynAlign)),
+                size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::DynSize)),
+                align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::DynAlign)),
                 offsets: OffsetGuarantees::None,
             }),
             // For the purpose of layout computation, the never type is (I think)
@@ -1006,9 +1107,9 @@ impl LayoutGuarantees {
 
 #[derive(Default)]
 struct PartialLayoutGuarantees {
-    size: Option<ExactSizeExpr>,
-    align: Option<ExactSizeExpr>,
-    offsets: IndexVec<VariantId, IndexVec<FieldId, ExactSizeExpr>>,
+    size: Option<SizeExprBound>,
+    align: Option<SizeExprBound>,
+    offsets: IndexVec<VariantId, IndexVec<FieldId, SizeExprBound>>,
 }
 
 /// A structure that computes and stores originally symbolic layouts, which have been
@@ -1017,7 +1118,7 @@ pub struct LayoutComputer<'a> {
     krate: &'a TranslatedCrate,
     target: Option<&'a TargetTriple>,
     cache: HashMap<Ty, LayoutGuarantees>,
-    offset_cache: HashMap<Ty, IndexVec<VariantId, IndexVec<FieldId, ExactSizeExpr>>>,
+    offset_cache: HashMap<Ty, IndexVec<VariantId, IndexVec<FieldId, SizeExprBound>>>,
     /// Stack to bail on cycles in the computation.
     stack: Vec<(Ty, PartialLayoutGuarantees)>,
 }
@@ -1032,7 +1133,7 @@ impl<'a> LayoutComputer<'a> {
         }
     }
 
-    fn normalize_var(&mut self, var: &LayoutVar, parent_exact: bool) -> ExactSizeExpr {
+    fn normalize_var(&mut self, var: &LayoutVar, parent_exact: bool) -> SizeExprBound {
         match var {
             LayoutVar::FieldOffset(variant_id, field_id) => {
                 let (_, parts) = self.stack.last().unwrap();
@@ -1041,27 +1142,27 @@ impl<'a> LayoutComputer<'a> {
                 {
                     field_offset.clone().add_exact_info(parent_exact)
                 } else {
-                    ExactSizeExpr::make(SizeExpr::Var(var.clone()), parent_exact)
+                    SizeExprBound::make(SizeExpr::Var(var.clone()), parent_exact)
                 }
             }
             LayoutVar::Size => {
                 if let Some(size) = self.stack.last().and_then(|(_, part)| part.size.clone()) {
                     size.add_exact_info(parent_exact)
                 } else {
-                    ExactSizeExpr::make(SizeExpr::Var(LayoutVar::Size), parent_exact)
+                    SizeExprBound::make(SizeExpr::Var(LayoutVar::Size), parent_exact)
                 }
             }
             LayoutVar::Align => {
                 if let Some(align) = self.stack.last().and_then(|(_, part)| part.align.clone()) {
                     align.add_exact_info(parent_exact)
                 } else {
-                    ExactSizeExpr::make(SizeExpr::Var(LayoutVar::Align), parent_exact)
+                    SizeExprBound::make(SizeExpr::Var(LayoutVar::Align), parent_exact)
                 }
             }
         }
     }
 
-    fn normalize_val(&mut self, val: &LayoutValue, parent_exact: bool) -> ExactSizeExpr {
+    fn normalize_val(&mut self, val: &LayoutValue, parent_exact: bool) -> SizeExprBound {
         match val {
             LayoutValue::SizeOf(ty) => {
                 if ty == &Ty::mk_usize()
@@ -1069,11 +1170,11 @@ impl<'a> LayoutComputer<'a> {
                     && let Some(target_specific_val) =
                         LayoutValue::mk_address_size_for(self.krate, target)
                 {
-                    ExactSizeExpr::make(SizeExpr::Val(target_specific_val), parent_exact)
+                    SizeExprBound::make(SizeExpr::Val(target_specific_val), parent_exact)
                 } else if let Some(layout) = self.compute_layout_guarantees(ty.clone()) {
                     layout.size.add_exact_info(parent_exact)
                 } else {
-                    ExactSizeExpr::make(
+                    SizeExprBound::make(
                         SizeExpr::Val(LayoutValue::SizeOf(ty.clone())),
                         parent_exact,
                     )
@@ -1085,17 +1186,17 @@ impl<'a> LayoutComputer<'a> {
                     && let Some(target_specific_val) =
                         LayoutValue::make_primitive_align_for_target(literal_ty, self.krate, target)
                 {
-                    ExactSizeExpr::make(SizeExpr::Val(target_specific_val), parent_exact)
+                    SizeExprBound::make(SizeExpr::Val(target_specific_val), parent_exact)
                 } else if let Some(layout) = self.compute_layout_guarantees(ty.clone()) {
                     layout.align.add_exact_info(parent_exact)
                 } else {
-                    ExactSizeExpr::make(
+                    SizeExprBound::make(
                         SizeExpr::Val(LayoutValue::AlignOf(ty.clone())),
                         parent_exact,
                     )
                 }
             }
-            LayoutValue::Constant(c) => ExactSizeExpr::make(
+            LayoutValue::Constant(c) => SizeExprBound::make(
                 SizeExpr::Val(LayoutValue::Constant(c.clone())),
                 parent_exact,
             ),
@@ -1103,7 +1204,7 @@ impl<'a> LayoutComputer<'a> {
                 if let Some(target) = self.target
                     && let Some(info) = self.krate.target_information.get(target)
                 {
-                    ExactSizeExpr::make(
+                    SizeExprBound::make(
                         SizeExpr::Val(LayoutValue::Constant(
                             ScalarValue::from_unchecked_uint(
                                 UIntTy::U64,
@@ -1114,7 +1215,7 @@ impl<'a> LayoutComputer<'a> {
                         parent_exact,
                     )
                 } else {
-                    ExactSizeExpr::make(SizeExpr::Val(LayoutValue::TargetDiscrSize), parent_exact)
+                    SizeExprBound::make(SizeExpr::Val(LayoutValue::TargetDiscrSize), parent_exact)
                 }
             }
             LayoutValue::TargetDiscrAlign => {
@@ -1129,16 +1230,16 @@ impl<'a> LayoutComputer<'a> {
                         .unwrap();
                     target_discr_guarantees.align.add_exact_info(parent_exact)
                 } else {
-                    ExactSizeExpr::make(SizeExpr::Val(LayoutValue::TargetDiscrAlign), parent_exact)
+                    SizeExprBound::make(SizeExpr::Val(LayoutValue::TargetDiscrAlign), parent_exact)
                 }
             }
             LayoutValue::DynSize | LayoutValue::DynAlign | LayoutValue::SliceLength => {
-                ExactSizeExpr::make(SizeExpr::Val(val.clone()), parent_exact)
+                SizeExprBound::make(SizeExpr::Val(val.clone()), parent_exact)
             }
         }
     }
 
-    fn normalize_exact_size_expr(&mut self, size_expr: &mut ExactSizeExpr) {
+    fn normalize_exact_size_expr(&mut self, size_expr: &mut SizeExprBound) {
         size_expr
             .update(|size_expr, parent_exact| self.normalize_size_expr(size_expr, parent_exact));
     }
@@ -1150,7 +1251,7 @@ impl<'a> LayoutComputer<'a> {
         match size_expr {
             SizeExpr::Val(val) => {
                 let ex = self.normalize_val(val, exact_in);
-                let res = ex.is_exact();
+                let res = ex.is_exact_eq();
                 *size_expr = ex.take();
                 res
             }
@@ -1231,7 +1332,7 @@ impl<'a> LayoutComputer<'a> {
             }
             SizeExpr::Var(layout_var) => {
                 let ex = self.normalize_var(layout_var, exact_in);
-                let res = ex.is_exact();
+                let res = ex.is_exact_eq();
                 *size_expr = ex.take();
                 res
             }
@@ -1264,16 +1365,16 @@ impl<'a> LayoutComputer<'a> {
             OffsetGuarantee::AtOffsetZero => {
                 let (_, parts) = self.stack.last_mut().unwrap();
                 let fields = parts.offsets.last_mut().unwrap();
-                fields.push(ExactSizeExpr::Exact(SizeExpr::Val(LayoutValue::Constant(
-                    ScalarValue::mk_zero_usize().to_constant(),
-                ))));
+                fields.push(SizeExprBound::ExactEq(SizeExpr::Val(
+                    LayoutValue::Constant(ScalarValue::mk_zero_usize().to_constant()),
+                )));
             }
             OffsetGuarantee::GuaranteedAlignment(size_expr) => {
                 self.normalize_size_expr(size_expr, true);
             }
             OffsetGuarantee::ReprCField {
                 predecessor,
-                predecessor_size: predecessor_ty,
+                predecessor_size,
                 own_ty,
             } => {
                 let predecessor_end = if let Some(predecessor) = predecessor {
@@ -1282,10 +1383,10 @@ impl<'a> LayoutComputer<'a> {
                             Some(var_id),
                             *predecessor,
                         ))),
-                        Box::new(SizeExpr::Val(predecessor_ty.clone())),
+                        Box::new(SizeExpr::Val(predecessor_size.clone())),
                     )
                 } else {
-                    SizeExpr::Val(predecessor_ty.clone())
+                    SizeExpr::Val(predecessor_size.clone())
                 };
                 let mut offset_expr = SizeExpr::AlignTo {
                     base: Box::new(predecessor_end),
@@ -1294,7 +1395,7 @@ impl<'a> LayoutComputer<'a> {
                 self.normalize_size_expr(&mut offset_expr, true);
                 let (_, parts) = self.stack.last_mut().unwrap();
                 let fields = parts.offsets.last_mut().unwrap();
-                fields.push(ExactSizeExpr::Exact(offset_expr));
+                fields.push(SizeExprBound::ExactEq(offset_expr));
             }
         }
     }
@@ -1364,7 +1465,7 @@ impl<'a> LayoutComputer<'a> {
         ty: &Ty,
         variant_id: Option<VariantId>,
         field_id: FieldId,
-    ) -> Option<&ExactSizeExpr> {
+    ) -> Option<&SizeExprBound> {
         self.offset_cache.get(ty).and_then(|variants| {
             variants
                 .get(variant_id.unwrap_or(VariantId::ZERO))

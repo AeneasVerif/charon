@@ -884,6 +884,8 @@ and assoc_item_id =
   | AssocIdMethod of trait_method_id
   | AssocIdConst of assoc_const_id
 
+and byte_count = { raw : int option; guarantees : size_expr_bound }
+
 (** Additional information for closures. *)
 and closure_info = {
   kind : closure_kind;
@@ -918,8 +920,6 @@ and discriminator =
           - [children]: If the integer is in one of these ranges, continue with
             the given [Discriminator]. The ranges are sorted.
           - [fallback]: Fallback if no range in [children] matches. *)
-
-and exact_size_expr = Exact of size_expr | AtLeast of size_expr
 
 and field = {
   span : span;
@@ -1346,8 +1346,8 @@ and rustc_lang_item =
     known layout (e.g. it is ?Sized) some of the layout parts are not available.
 *)
 and layout = {
-  size : int option;  (** The size of the type in bytes. *)
-  align : int option;  (** The alignment, in bytes. *)
+  size : byte_count;  (** The size of the type in bytes. *)
+  align : byte_count;  (** The alignment, in bytes. *)
   discriminator : discriminator option;
       (** Decision tree that determines the active variant by reading memory.
           Only [Some] for enums. *)
@@ -1361,12 +1361,9 @@ and layout = {
           don't have a meaningful layout due to being uninhabited (though an
           uninhabited variant may have a layout). Structs and unions are modeled
           as having exactly one variant. *)
-}
-
-and layout_guarantees = {
-  size : exact_size_expr;
-  align : exact_size_expr;
-  offsets : offset_guarantees;
+  repr : repr_options;
+      (** The representation options of this type declaration as annotated by
+          the user. *)
 }
 
 and layout_value =
@@ -1451,11 +1448,10 @@ and offset_guarantee =
           - [predecessor_size]
           - [own_ty] *)
 
-and offset_guarantees =
-  | OffsetGuaranteeSymbolic of ty
-  | OffsetGuaranteeVariants of offset_guarantee list list
-  | OffsetGuaranteeFields of offset_guarantee list
-  | OffsetGuaranteeNone
+and offset_information = {
+  raw : int option;
+  guarantees : offset_guarantee option;
+}
 
 (** See the comments for [Name] *)
 and path_elem =
@@ -1533,6 +1529,8 @@ and size_expr =
           - [then_size]
           - [else_size] *)
 
+and size_expr_bound = ExactEq of size_expr | LowerBound of size_expr
+
 (** A type declaration.
 
     Types can be opaque or transparent.
@@ -1558,13 +1556,8 @@ and type_decl = {
       (** The layout of the type for each target. Information may be partial
           because of generics or dynamically-sized types. If we cannot compute a
           layout, the target has no entry. *)
-  layout_guarantees : layout_guarantees option;
-      (** The guarantees about the type's size and alignment. *)
   ptr_metadata : ptr_metadata;
       (** The metadata associated with a pointer to the type. *)
-  repr : repr_options;
-      (** The representation options of this type declaration as annotated by
-          the user. *)
 }
 
 and type_decl_kind =
@@ -1606,8 +1599,8 @@ and variant = {
 
     Maps fields to their offset within the layout. *)
 and variant_layout = {
-  field_offsets : int list;  (** The offset of each field. *)
-  uninhabited : bool;
+  field_offsets : offset_information list;  (** The offset of each field. *)
+  uninhabited : bool option;
       (** Whether the variant is uninhabited, i.e. has any valid possible value.
           Note that uninhabited types can have arbitrary layouts. *)
   tagger : (int * scalar_value) list;

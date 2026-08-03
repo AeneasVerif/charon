@@ -1,4 +1,5 @@
 //! This file groups everything which is linked to implementations about [crate::types]
+use crate::ast::layout_guarantees::{LayoutGuarantees, OffsetGuarantee, SizeExprBound};
 use crate::ast::*;
 use crate::ids::IndexVec;
 use derive_generic_visitor::*;
@@ -507,7 +508,7 @@ impl GenericArgs {
 impl IntTy {
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
-    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+    pub fn target_size(&self, ptr_size: RawByteCount) -> usize {
         match self {
             IntTy::Isize => ptr_size as usize,
             IntTy::I8 => size_of::<i8>(),
@@ -521,7 +522,7 @@ impl IntTy {
 impl UIntTy {
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
-    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+    pub fn target_size(&self, ptr_size: RawByteCount) -> usize {
         match self {
             UIntTy::Usize => ptr_size as usize,
             UIntTy::U8 => size_of::<u8>(),
@@ -570,7 +571,7 @@ impl IntegerTy {
 
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
-    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+    pub fn target_size(&self, ptr_size: RawByteCount) -> usize {
         match self {
             IntegerTy::Signed(ty) => ty.target_size(ptr_size),
             IntegerTy::Unsigned(ty) => ty.target_size(ptr_size),
@@ -589,7 +590,7 @@ impl LiteralTy {
 
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
-    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+    pub fn target_size(&self, ptr_size: RawByteCount) -> usize {
         match self {
             LiteralTy::Int(int_ty) => int_ty.target_size(ptr_size),
             LiteralTy::UInt(uint_ty) => uint_ty.target_size(ptr_size),
@@ -1486,6 +1487,10 @@ impl TypeDecl {
             .iter_enumerated()
             .find(|(_, field)| field.name.as_deref() == Some(field_name))
     }
+
+    pub fn the_layout(&self) -> Option<&Layout> {
+        self.layout.values().exactly_one().ok()
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -1507,7 +1512,7 @@ impl Discriminator {
     /// could not be read.
     pub fn read_discriminant(
         &self,
-        read: impl Fn(ByteCount, IntegerTy) -> Result<ScalarValue, DiscriminantReadError> + Copy,
+        read: impl Fn(RawByteCount, IntegerTy) -> Result<ScalarValue, DiscriminantReadError> + Copy,
     ) -> Result<VariantId, DiscriminantReadError> {
         match self {
             Discriminator::Known(id) => Ok(*id),
@@ -1530,11 +1535,66 @@ impl Discriminator {
     }
 }
 
+impl ByteCount {
+    pub fn only_guarantee(bound: SizeExprBound) -> Self {
+        Self {
+            raw: None,
+            guarantees: bound,
+        }
+    }
+}
+
+impl OffsetInformation {
+    pub fn only_guarantee(guarantees: OffsetGuarantee) -> Self {
+        Self {
+            raw: None,
+            guarantees: Some(guarantees),
+        }
+    }
+}
+
+impl VariantLayout {
+    pub fn only_guarantees(field_offsets: IndexVec<FieldId, OffsetGuarantee>) -> Self {
+        let field_offsets = field_offsets
+            .into_iter()
+            .map(OffsetInformation::only_guarantee)
+            .collect();
+        VariantLayout {
+            field_offsets,
+            uninhabited: None, // FIXME: we need inhabitedness predicates to correctly express this.
+            tagger: Vec::new(),
+        }
+    }
+}
+
 impl Layout {
-    pub fn is_variant_uninhabited(&self, variant_id: VariantId) -> bool {
-        self.variant_layouts[variant_id]
-            .as_ref()
-            .is_none_or(|v| v.uninhabited)
+    pub fn is_variant_uninhabited(&self, variant_id: VariantId) -> Option<bool> {
+        match self.variant_layouts[variant_id].as_ref() {
+            Some(v) => v.uninhabited,
+            None => Some(true),
+        }
+    }
+
+    pub fn only_guarantees(
+        guarantees: LayoutGuarantees,
+        repr: ReprOptions,
+        translated: &TranslatedCrate,
+    ) -> Self {
+        let mut variant_layouts = IndexVec::new();
+        if let Some(variants) = guarantees.offsets.get_variants(None, translated) {
+            for fields in variants {
+                variant_layouts.push(Some(VariantLayout::only_guarantees(fields)));
+            }
+        }
+
+        Self {
+            size: ByteCount::only_guarantee(guarantees.size),
+            align: ByteCount::only_guarantee(guarantees.align),
+            discriminator: None,
+            uninhabited: false, // FIXME: we need inhabitedness predicates to correctly express this.
+            variant_layouts,
+            repr,
+        }
     }
 }
 

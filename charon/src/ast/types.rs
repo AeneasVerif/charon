@@ -1,4 +1,4 @@
-use crate::ast::layout_guarantees::LayoutGuarantees;
+use crate::ast::layout_guarantees::{OffsetGuarantee, SizeExprBound};
 use crate::ast::*;
 use crate::common::serialize_map_to_array::SeqHashMapToArray;
 use crate::ids::IndexVec;
@@ -545,26 +545,46 @@ pub enum PredicateOrigin {
 }
 
 // rustc counts bytes in layouts as u64
-pub type ByteCount = u64;
+pub type RawByteCount = u64;
+
+#[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
+pub struct ByteCount {
+    #[serde_state(stateless)]
+    #[drive(skip)]
+    pub raw: Option<RawByteCount>,
+    pub guarantees: SizeExprBound, // TODO: do we need to make this optional?
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
+pub struct OffsetInformation {
+    #[serde_state(stateless)]
+    #[drive(skip)]
+    pub raw: Option<RawByteCount>,
+    pub guarantees: Option<OffsetGuarantee>,
+}
 
 /// Simplified layout of a single variant.
 ///
 /// Maps fields to their offset within the layout.
 #[derive(
-    Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo,
+
+    Debug, Default, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
+,
 )]
 pub struct VariantLayout {
     /// The offset of each field.
     #[drive(skip)]
-    pub field_offsets: IndexVec<FieldId, ByteCount>,
+    pub field_offsets: IndexVec<FieldId, OffsetInformation>,
     /// Whether the variant is uninhabited, i.e. has any valid possible value.
     /// Note that uninhabited types can have arbitrary layouts.
     #[drive(skip)]
-    pub uninhabited: bool,
+    #[serde_state(stateless)]
+    pub uninhabited: Option<bool>, // TODO: make predicate.
     /// How to write the tag when constructing this variant. Each entry means: write `value` at
     /// byte `offset`. Mirrors MiniRust's `Variant::tagger`.
     #[drive(skip)]
-    pub tagger: Vec<(ByteCount, ScalarValue)>,
+    #[serde_state(stateless)]
+    pub tagger: Vec<(RawByteCount, ScalarValue)>,
 }
 
 /// Decision tree used to determine the active variant by reading memory. Mirrors MiniRust's
@@ -578,7 +598,7 @@ pub enum Discriminator {
     /// Branch on an integer value read from memory at `offset`.
     Branch {
         /// Byte offset to read from.
-        offset: ByteCount,
+        offset: RawByteCount,
         /// Integer type to read.
         int_ty: IntegerTy,
         /// If the integer is in one of these ranges, continue with the given `Discriminator`. The
@@ -600,10 +620,10 @@ pub enum Discriminator {
 pub struct Layout {
     /// The size of the type in bytes.
     #[drive(skip)]
-    pub size: Option<ByteCount>,
+    pub size: ByteCount,
     /// The alignment, in bytes.
     #[drive(skip)]
-    pub align: Option<ByteCount>,
+    pub align: ByteCount,
     /// Decision tree that determines the active variant by reading memory. Only `Some` for enums.
     #[drive(skip)]
     #[serde_state(stateless)]
@@ -616,8 +636,10 @@ pub struct Layout {
     /// Map from `VariantId` to the corresponding field layouts. Some variants don't have a
     /// meaningful layout due to being uninhabited (though an uninhabited variant may have a
     /// layout). Structs and unions are modeled as having exactly one variant.
-    #[serde_state(stateless)]
     pub variant_layouts: IndexVec<VariantId, Option<VariantLayout>>,
+    /// The representation options of this type declaration as annotated by the user.
+    #[drive(skip)]
+    pub repr: ReprOptions,
 }
 
 /// The metadata stored in a pointer. That's the information stored in pointers alongside
@@ -671,8 +693,8 @@ pub enum ReprAlgorithm {
 /// Represents `repr(align(n))` and `repr(packed(n))`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AlignmentModifier {
-    Align(ByteCount),
-    Pack(ByteCount),
+    Align(RawByteCount),
+    Pack(RawByteCount),
 }
 
 /// The representation options as annotated by the user.
@@ -721,13 +743,8 @@ pub struct TypeDecl {
     /// dynamically-sized types. If we cannot compute a layout, the target has no entry.
     #[serde(with = "SeqHashMapToArray::<TargetTriple, Layout>")]
     pub layout: SeqHashMap<TargetTriple, Layout>,
-    /// The guarantees about the type's size and alignment.
-    pub layout_guarantees: Option<LayoutGuarantees>,
     /// The metadata associated with a pointer to the type.
     pub ptr_metadata: PtrMetadata,
-    /// The representation options of this type declaration as annotated by the user.
-    #[drive(skip)]
-    pub repr: ReprOptions,
 }
 
 generate_index_type!(VariantId, "Variant");

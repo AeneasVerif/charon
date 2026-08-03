@@ -15,8 +15,8 @@ use std::path::PathBuf;
 use std::{any::Any, hash::Hash};
 
 use crate::ast::layout_guarantees::{
-    ExactSizeExpr, LayoutGuarantees, LayoutValue, LayoutVar, OffsetGuarantee, OffsetGuarantees,
-    SizeExpr,
+    LayoutGuarantees, LayoutValue, LayoutVar, OffsetGuarantee, OffsetGuarantees, SizeExpr,
+    SizeExprBound,
 };
 use crate::ast::*;
 use crate::ids::{Idx, IndexVec};
@@ -61,8 +61,8 @@ use derive_generic_visitor::*;
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets,
         UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, Layout, VariantLayout, PtrMetadata,
-        SpanData, SpecKind, TraitAssocTy, TraitAssocConst, TraitMethod, TraitAssocTyImpl,
-        ItemByVal, VTableField, AssocItemNames, SizeExpr, LayoutVar, LayoutValue, LayoutGuarantees, OffsetGuarantee, ExactSizeExpr, OffsetGuarantees,
+        SpanData, SpecKind, TraitAssocTy, TraitAssocConst, TraitMethod, TraitAssocTyImpl,ByteCount,
+        ItemByVal, VTableField, AssocItemNames, SizeExpr, LayoutVar, LayoutValue, LayoutGuarantees, OffsetGuarantee, SizeExprBound, OffsetGuarantees,
         for<Id: AstVisitable> DeclRef<Id>, ItemId,
         for<T: AstVisitable> Box<T>,
         for<T: AstVisitable> Option<T>,

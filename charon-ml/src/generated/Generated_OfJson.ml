@@ -2169,6 +2169,16 @@ and body_of_json (ctx : of_json_ctx) (js : json) : (body, string) result =
         Ok (ErrorBody error)
     | _ -> Error "")
 
+and byte_count_of_json (ctx : of_json_ctx) (js : json) :
+    (byte_count, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("raw", raw); ("guarantees", guarantees) ] ->
+        let* raw = option_of_json int_of_json ctx raw in
+        let* guarantees = size_expr_bound_of_json ctx guarantees in
+        Ok ({ raw; guarantees } : byte_count)
+    | _ -> Error "")
+
 and cli_options_of_json (ctx : of_json_ctx) (js : json) :
     (cli_options, string) result =
   combine_error_msgs js __FUNCTION__
@@ -2498,18 +2508,6 @@ and error_of_json (ctx : of_json_ctx) (js : json) : (error, string) result =
         let* span = span_of_json ctx span in
         let* msg = string_of_json ctx msg in
         Ok ({ span; msg } : error)
-    | _ -> Error "")
-
-and exact_size_expr_of_json (ctx : of_json_ctx) (js : json) :
-    (exact_size_expr, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Exact", exact) ] ->
-        let* exact = size_expr_of_json ctx exact in
-        Ok (Exact exact)
-    | `Assoc [ ("AtLeast", at_least) ] ->
-        let* at_least = size_expr_of_json ctx at_least in
-        Ok (AtLeast at_least)
     | _ -> Error "")
 
 and field_of_json (ctx : of_json_ctx) (js : json) : (field, string) result =
@@ -3113,9 +3111,10 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
           ("discriminator", discriminator);
           ("uninhabited", uninhabited);
           ("variant_layouts", variant_layouts);
+          ("repr", repr);
         ] ->
-        let* size = option_of_json int_of_json ctx size in
-        let* align = option_of_json int_of_json ctx align in
+        let* size = byte_count_of_json ctx size in
+        let* align = byte_count_of_json ctx align in
         let* discriminator =
           option_of_json discriminator_of_json ctx discriminator
         in
@@ -3125,20 +3124,10 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
             (option_of_json variant_layout_of_json)
             ctx variant_layouts
         in
+        let* repr = repr_options_of_json ctx repr in
         Ok
-          ({ size; align; discriminator; uninhabited; variant_layouts }
+          ({ size; align; discriminator; uninhabited; variant_layouts; repr }
             : layout)
-    | _ -> Error "")
-
-and layout_guarantees_of_json (ctx : of_json_ctx) (js : json) :
-    (layout_guarantees, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("size", size); ("align", align); ("offsets", offsets) ] ->
-        let* size = exact_size_expr_of_json ctx size in
-        let* align = exact_size_expr_of_json ctx align in
-        let* offsets = offset_guarantees_of_json ctx offsets in
-        Ok ({ size; align; offsets } : layout_guarantees)
     | _ -> Error "")
 
 and layout_value_of_json (ctx : of_json_ctx) (js : json) :
@@ -3230,7 +3219,7 @@ and offset_guarantee_of_json (ctx : of_json_ctx) (js : json) :
     | `String "AtOffsetZero" -> Ok AtOffsetZero
     | `Assoc [ ("GuaranteedAlignment", guaranteed_alignment) ] ->
         let* guaranteed_alignment =
-          size_expr_of_json ctx guaranteed_alignment
+          box_of_json size_expr_of_json ctx guaranteed_alignment
         in
         Ok (GuaranteedAlignment guaranteed_alignment)
     | `Assoc
@@ -3249,26 +3238,16 @@ and offset_guarantee_of_json (ctx : of_json_ctx) (js : json) :
         Ok (ReprCField (predecessor, predecessor_size, own_ty))
     | _ -> Error "")
 
-and offset_guarantees_of_json (ctx : of_json_ctx) (js : json) :
-    (offset_guarantees, string) result =
+and offset_information_of_json (ctx : of_json_ctx) (js : json) :
+    (offset_information, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Symbolic", symbolic) ] ->
-        let* symbolic = ty_of_json ctx symbolic in
-        Ok (OffsetGuaranteeSymbolic symbolic)
-    | `Assoc [ ("Variants", variants) ] ->
-        let* variants =
-          index_vec_of_json variant_id_of_json
-            (index_vec_of_json field_id_of_json offset_guarantee_of_json)
-            ctx variants
+    | `Assoc [ ("raw", raw); ("guarantees", guarantees) ] ->
+        let* raw = option_of_json int_of_json ctx raw in
+        let* guarantees =
+          option_of_json offset_guarantee_of_json ctx guarantees
         in
-        Ok (OffsetGuaranteeVariants variants)
-    | `Assoc [ ("Fields", fields) ] ->
-        let* fields =
-          index_vec_of_json field_id_of_json offset_guarantee_of_json ctx fields
-        in
-        Ok (OffsetGuaranteeFields fields)
-    | `String "None" -> Ok OffsetGuaranteeNone
+        Ok ({ raw; guarantees } : offset_information)
     | _ -> Error "")
 
 and preset_of_json (ctx : of_json_ctx) (js : json) : (preset, string) result =
@@ -3409,6 +3388,18 @@ and size_expr_of_json (ctx : of_json_ctx) (js : json) :
         let* then_size = box_of_json size_expr_of_json ctx then_size in
         let* else_size = box_of_json size_expr_of_json ctx else_size in
         Ok (IfInhabited (ty, then_size, else_size))
+    | _ -> Error "")
+
+and size_expr_bound_of_json (ctx : of_json_ctx) (js : json) :
+    (size_expr_bound, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("ExactEq", exact_eq) ] ->
+        let* exact_eq = size_expr_of_json ctx exact_eq in
+        Ok (ExactEq exact_eq)
+    | `Assoc [ ("LowerBound", lower_bound) ] ->
+        let* lower_bound = size_expr_of_json ctx lower_bound in
+        Ok (LowerBound lower_bound)
     | _ -> Error "")
 
 and target_info_of_json (ctx : of_json_ctx) (js : json) :
@@ -3739,9 +3730,7 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("src", src);
           ("kind", kind);
           ("layout", layout);
-          ("layout_guarantees", layout_guarantees);
           ("ptr_metadata", ptr_metadata);
-          ("repr", repr);
         ] ->
         let* def_id = type_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
@@ -3751,23 +3740,9 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* layout =
           index_map_of_json string_of_json layout_of_json int_of_json ctx layout
         in
-        let* layout_guarantees =
-          option_of_json layout_guarantees_of_json ctx layout_guarantees
-        in
         let* ptr_metadata = ptr_metadata_of_json ctx ptr_metadata in
-        let* repr = repr_options_of_json ctx repr in
         Ok
-          ({
-             def_id;
-             item_meta;
-             generics;
-             src;
-             kind;
-             layout;
-             layout_guarantees;
-             ptr_metadata;
-             repr;
-           }
+          ({ def_id; item_meta; generics; src; kind; layout; ptr_metadata }
             : type_decl)
     | _ -> Error "")
 
@@ -3850,9 +3825,10 @@ and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
           ("tagger", tagger);
         ] ->
         let* field_offsets =
-          index_vec_of_json field_id_of_json int_of_json ctx field_offsets
+          index_vec_of_json field_id_of_json offset_information_of_json ctx
+            field_offsets
         in
-        let* uninhabited = bool_of_json ctx uninhabited in
+        let* uninhabited = option_of_json bool_of_json ctx uninhabited in
         let* tagger =
           list_of_json
             (pair_of_json int_of_json scalar_value_of_json)

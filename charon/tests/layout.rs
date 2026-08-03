@@ -2,7 +2,10 @@ use itertools::Itertools;
 use serde_state::WithState;
 use std::path::PathBuf;
 
-use charon_lib::{ast::*, ullbc_ast::layout_guarantees::LayoutComputer};
+use charon_lib::{
+    ast::*,
+    ullbc_ast::layout_guarantees::{LayoutComputer, LayoutGuarantees},
+};
 
 mod util;
 use util::*;
@@ -186,50 +189,57 @@ fn type_layout() -> anyhow::Result<()> {
         {
             let name = repr_name(&crate_data, &tdecl.item_meta.name);
             for (var_id, variant) in layout.variant_layouts.iter_enumerated() {
-                if layout.is_variant_uninhabited(var_id) {
-                    if let Some(variant) = variant {
-                        assert!(
-                            variant.tagger.is_empty(),
-                            "For type {name} with uninhabited variant {var_id} expected empty tagger",
+                let is_uninhab = layout.is_variant_uninhabited(var_id);
+                match is_uninhab {
+                    Some(true) | None => {
+                        if let Some(variant) = variant {
+                            assert!(
+                                variant.tagger.is_empty(),
+                                "For type {name} with uninhabited variant {var_id} expected empty tagger",
+                            );
+                        }
+                    }
+                    Some(false) => {
+                        let Some(variant) = variant else {
+                            panic!(
+                                "For type {name} with inhabited variant {var_id} expected a layout"
+                            );
+                        };
+                        let tagger = &variant.tagger;
+                        // Use the tagger entries to answer discriminator read queries. For bytes
+                        // not covered by the tagger (e.g. the untagged variant in niche encoding),
+                        // we need a value that doesn't match any tagged variant's range.
+                        let all_taggers = layout
+                            .variant_layouts
+                            .iter()
+                            .filter_map(|v| v.as_ref())
+                            .flat_map(|v| v.tagger.iter())
+                            .collect_vec();
+                        let result = discriminator.read_discriminant(|offset, int_ty| {
+                            Ok(tagger
+                                .iter()
+                                .find(|(off, val)| *off == offset && val.ty() == int_ty)
+                                .map(|(_, val)| *val)
+                                .unwrap_or_else(|| {
+                                    // Pick a value not used by any tagger at this offset.
+                                    let used_vals: Vec<_> = all_taggers
+                                        .iter()
+                                        .filter(|(off, _)| *off == offset)
+                                        .map(|(_, val)| val.to_bits())
+                                        .collect();
+                                    // Find a value not in the used set (try incrementing from the
+                                    // first used value).
+                                    let candidate =
+                                        used_vals.iter().copied().max().unwrap_or(0) + 1;
+                                    ScalarValue::from_bits(int_ty, candidate)
+                                }))
+                        });
+                        assert_eq!(
+                            Ok(var_id),
+                            result,
+                            "For type {name} variant {var_id}, tagger = {tagger:?}",
                         );
                     }
-                } else {
-                    let Some(variant) = variant else {
-                        panic!("For type {name} with inhabited variant {var_id} expected a layout");
-                    };
-                    let tagger = &variant.tagger;
-                    // Use the tagger entries to answer discriminator read queries. For bytes
-                    // not covered by the tagger (e.g. the untagged variant in niche encoding),
-                    // we need a value that doesn't match any tagged variant's range.
-                    let all_taggers = layout
-                        .variant_layouts
-                        .iter()
-                        .filter_map(|v| v.as_ref())
-                        .flat_map(|v| v.tagger.iter())
-                        .collect_vec();
-                    let result = discriminator.read_discriminant(|offset, int_ty| {
-                        Ok(tagger
-                            .iter()
-                            .find(|(off, val)| *off == offset && val.ty() == int_ty)
-                            .map(|(_, val)| *val)
-                            .unwrap_or_else(|| {
-                                // Pick a value not used by any tagger at this offset.
-                                let used_vals: Vec<_> = all_taggers
-                                    .iter()
-                                    .filter(|(off, _)| *off == offset)
-                                    .map(|(_, val)| val.to_bits())
-                                    .collect();
-                                // Find a value not in the used set (try incrementing from the
-                                // first used value).
-                                let candidate = used_vals.iter().copied().max().unwrap_or(0) + 1;
-                                ScalarValue::from_bits(int_ty, candidate)
-                            }))
-                    });
-                    assert_eq!(
-                        Ok(var_id),
-                        result,
-                        "For type {name} variant {var_id}, tagger = {tagger:?}",
-                    );
                 }
             }
         }
@@ -251,7 +261,7 @@ fn type_layout() -> anyhow::Result<()> {
     let layouts_str = serde_json::to_string_pretty(&layouts)?;
     compare_or_overwrite(layouts_str, &PathBuf::from("./tests/layout.json"))?;
 
-    fn byte_count_eq_scalar(byte_count: ByteCount, scalar: ScalarValue, ctx: String) {
+    fn byte_count_eq_scalar(byte_count: RawByteCount, scalar: ScalarValue, ctx: String) {
         if scalar.is_signed() {
             assert_eq!(byte_count as i128, *scalar.as_signed().unwrap().1, "{ctx}");
         } else {
@@ -272,7 +282,6 @@ fn type_layout() -> anyhow::Result<()> {
                 return None;
             }
             let name = repr_name(&crate_data, &tdecl.item_meta.name);
-            let opt_guarantee = &tdecl.layout_guarantees;
             let fake_ty = Ty::new(TyKind::Adt(TypeDeclRef {
                 id: TypeId::Adt(tdecl.def_id),
                 generics: Box::new(tdecl.generics.identity_args()),
@@ -282,10 +291,10 @@ fn type_layout() -> anyhow::Result<()> {
             // Check whether concretized layout guarantees always match known layouts.
             if let Some(layout) = tdecl.layout.get(&the_target)
                 && let Some(guarantees) = &opt_concretized
-                && let Some(size) = layout.size
-                && let Some(align) = layout.align
+                && let Some(size) = layout.size.raw
+                && let Some(align) = layout.align.raw
             {
-                if guarantees.size.is_exact()
+                if guarantees.size.is_exact_eq()
                     && let Some(ConstantExpr {
                         kind: ConstantExprKind::Literal(Literal::Scalar(size_guarantee)),
                         ..
@@ -293,7 +302,7 @@ fn type_layout() -> anyhow::Result<()> {
                 {
                     byte_count_eq_scalar(size, size_guarantee, format!("{name}.size"));
                 }
-                if guarantees.align.is_exact()
+                if guarantees.align.is_exact_eq()
                     && let Some(ConstantExpr {
                         kind: ConstantExprKind::Literal(Literal::Scalar(align_guarantee)),
                         ..
@@ -307,20 +316,24 @@ fn type_layout() -> anyhow::Result<()> {
                         for (f_id, offset) in variant.field_offsets.iter_enumerated() {
                             if let Some(offset_guarantee) = layout_computer
                                 .lookup_pre_computed_offset(&fake_ty, Some(v_id), f_id)
-                                && offset_guarantee.is_exact()
+                                && offset_guarantee.is_exact_eq()
                                 && let Some(ConstantExpr {
                                     kind: ConstantExprKind::Literal(Literal::Scalar(s)),
                                     ..
                                 }) = offset_guarantee.inner().is_constant()
+                                && let Some(offset) = offset.raw
                             {
-                                byte_count_eq_scalar(*offset, s, format!("{name}.{v_id}.{f_id}"));
+                                byte_count_eq_scalar(offset, s, format!("{name}.{v_id}.{f_id}"));
                             }
                         }
                     }
                 }
             }
 
-            let guarantee_serializable = opt_guarantee.clone().map(|l| WithState::new(l, &()));
+            let guarantee_serializable = tdecl
+                .layout
+                .get(&the_target)
+                .map(|l| WithState::new(LayoutGuarantees::from_layout(l), &()));
             let concretized_serializable = opt_concretized.map(|l| WithState::new(l, &()));
             Some((name, (guarantee_serializable, concretized_serializable)))
         })

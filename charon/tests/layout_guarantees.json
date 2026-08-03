@@ -2,7 +2,7 @@
   "test_crate::SimpleStruct": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -84,7 +84,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -123,52 +123,54 @@
         }
       },
       "offsets": {
-        "Fields": [
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "AlignOf": {
-                  "Untagged": {
-                    "Literal": {
-                      "UInt": "U32"
+        "Variants": [
+          [
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "AlignOf": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "AlignOf": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "AlignOf": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
                     }
                   }
                 }
               }
             }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "AlignOf": {
-                  "Untagged": {
-                    "Literal": {
-                      "UInt": "U32"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "AlignOf": {
-                  "Untagged": {
-                    "Literal": {
-                      "UInt": "U32"
-                    }
-                  }
-                }
-              }
-            }
-          }
+          ]
         ]
       }
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -306,7 +308,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Val": {
             "Constant": {
               "kind": {
@@ -331,82 +333,84 @@
         }
       },
       "offsets": {
-        "Fields": [
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "Constant": {
-                  "kind": {
-                    "Literal": {
-                      "Scalar": {
-                        "Unsigned": [
-                          "Usize",
-                          "4"
-                        ]
+        "Variants": [
+          [
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "Constant": {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": {
+                          "Unsigned": [
+                            "Usize",
+                            "4"
+                          ]
+                        }
+                      }
+                    },
+                    "ty": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "Usize"
+                        }
                       }
                     }
-                  },
-                  "ty": {
-                    "Untagged": {
+                  }
+                }
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "Constant": {
+                    "kind": {
                       "Literal": {
-                        "UInt": "Usize"
+                        "Scalar": {
+                          "Unsigned": [
+                            "Usize",
+                            "4"
+                          ]
+                        }
+                      }
+                    },
+                    "ty": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "Usize"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "Constant": {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": {
+                          "Unsigned": [
+                            "Usize",
+                            "4"
+                          ]
+                        }
+                      }
+                    },
+                    "ty": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "Usize"
+                        }
                       }
                     }
                   }
                 }
               }
             }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "Constant": {
-                  "kind": {
-                    "Literal": {
-                      "Scalar": {
-                        "Unsigned": [
-                          "Usize",
-                          "4"
-                        ]
-                      }
-                    }
-                  },
-                  "ty": {
-                    "Untagged": {
-                      "Literal": {
-                        "UInt": "Usize"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "Constant": {
-                  "kind": {
-                    "Literal": {
-                      "Scalar": {
-                        "Unsigned": [
-                          "Usize",
-                          "4"
-                        ]
-                      }
-                    }
-                  },
-                  "ty": {
-                    "Untagged": {
-                      "Literal": {
-                        "UInt": "Usize"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          ]
         ]
       }
     }
@@ -414,7 +418,7 @@
   "test_crate::GenericStruct": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -476,7 +480,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -507,42 +511,44 @@
         }
       },
       "offsets": {
-        "Fields": [
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "AlignOf": {
-                  "Untagged": {
-                    "Literal": {
-                      "UInt": "Usize"
+        "Variants": [
+          [
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "AlignOf": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "AlignOf": {
+                    "Untagged": {
+                      "TypeVar": {
+                        "Bound": [
+                          0,
+                          0
+                        ]
+                      }
                     }
                   }
                 }
               }
             }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "AlignOf": {
-                  "Untagged": {
-                    "TypeVar": {
-                      "Bound": [
-                        0,
-                        0
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          }
+          ]
         ]
       }
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -654,7 +660,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -697,48 +703,50 @@
         }
       },
       "offsets": {
-        "Fields": [
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "Constant": {
-                  "kind": {
-                    "Literal": {
-                      "Scalar": {
-                        "Unsigned": [
-                          "Usize",
-                          "8"
+        "Variants": [
+          [
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "Constant": {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": {
+                          "Unsigned": [
+                            "Usize",
+                            "8"
+                          ]
+                        }
+                      }
+                    },
+                    "ty": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "Usize"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "AlignOf": {
+                    "Untagged": {
+                      "TypeVar": {
+                        "Bound": [
+                          0,
+                          0
                         ]
                       }
                     }
-                  },
-                  "ty": {
-                    "Untagged": {
-                      "Literal": {
-                        "UInt": "Usize"
-                      }
-                    }
                   }
                 }
               }
             }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "AlignOf": {
-                  "Untagged": {
-                    "TypeVar": {
-                      "Bound": [
-                        0,
-                        0
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          }
+          ]
         ]
       }
     }
@@ -746,7 +754,7 @@
   "test_crate::UnsizedStruct": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -797,7 +805,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -825,39 +833,41 @@
         }
       },
       "offsets": {
-        "Fields": [
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "AlignOf": {
-                  "Untagged": {
-                    "Literal": {
-                      "UInt": "Usize"
+        "Variants": [
+          [
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "AlignOf": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "AlignOf": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
                     }
                   }
                 }
               }
             }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "AlignOf": {
-                  "Untagged": {
-                    "Literal": {
-                      "UInt": "Usize"
-                    }
-                  }
-                }
-              }
-            }
-          }
+          ]
         ]
       }
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -940,7 +950,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Val": {
             "Constant": {
               "kind": {
@@ -965,57 +975,59 @@
         }
       },
       "offsets": {
-        "Fields": [
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "Constant": {
-                  "kind": {
-                    "Literal": {
-                      "Scalar": {
-                        "Unsigned": [
-                          "Usize",
-                          "8"
-                        ]
+        "Variants": [
+          [
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "Constant": {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": {
+                          "Unsigned": [
+                            "Usize",
+                            "8"
+                          ]
+                        }
+                      }
+                    },
+                    "ty": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "Usize"
+                        }
                       }
                     }
-                  },
-                  "ty": {
-                    "Untagged": {
+                  }
+                }
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "Constant": {
+                    "kind": {
                       "Literal": {
-                        "UInt": "Usize"
+                        "Scalar": {
+                          "Unsigned": [
+                            "Usize",
+                            "8"
+                          ]
+                        }
+                      }
+                    },
+                    "ty": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "Usize"
+                        }
                       }
                     }
                   }
                 }
               }
             }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "Constant": {
-                  "kind": {
-                    "Literal": {
-                      "Scalar": {
-                        "Unsigned": [
-                          "Usize",
-                          "8"
-                        ]
-                      }
-                    }
-                  },
-                  "ty": {
-                    "Untagged": {
-                      "Literal": {
-                        "UInt": "Usize"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          ]
         ]
       }
     }
@@ -1023,7 +1035,7 @@
   "test_crate::SimpleEnum": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -1082,7 +1094,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -1142,7 +1154,7 @@
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "Val": {
             "Constant": {
               "kind": {
@@ -1167,7 +1179,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Val": {
             "Constant": {
               "kind": {
@@ -1202,7 +1214,7 @@
   "test_crate::SimpleAdt": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -1330,7 +1342,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -1466,7 +1478,7 @@
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -1662,7 +1674,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Val": {
             "Constant": {
               "kind": {
@@ -1800,7 +1812,7 @@
   "test_crate::NicheAdt": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -1974,7 +1986,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -2266,7 +2278,7 @@
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -2590,7 +2602,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -2884,7 +2896,7 @@
   "test_crate::IsAZST": [
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -2909,7 +2921,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -2933,11 +2945,15 @@
           }
         }
       },
-      "offsets": "None"
+      "offsets": {
+        "Variants": [
+          []
+        ]
+      }
     },
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -2962,7 +2978,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -2986,13 +3002,17 @@
           }
         }
       },
-      "offsets": "None"
+      "offsets": {
+        "Variants": [
+          []
+        ]
+      }
     }
   ],
   "test_crate::GenericWithKnownLayout": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -3275,7 +3295,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -3527,161 +3547,89 @@
         }
       },
       "offsets": {
-        "Fields": [
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "AlignOf": {
-                  "Untagged": {
-                    "Literal": {
-                      "UInt": "Usize"
+        "Variants": [
+          [
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "AlignOf": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "Usize"
+                      }
                     }
                   }
                 }
               }
-            }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "AlignOf": {
-                  "Untagged": {
-                    "Adt": {
-                      "id": {
-                        "Adt": 33
-                      },
-                      "generics": {
-                        "regions": [],
-                        "types": [
-                          {
-                            "Untagged": {
-                              "TypeVar": {
-                                "Bound": [
-                                  0,
-                                  0
-                                ]
-                              }
-                            }
-                          },
-                          {
-                            "Untagged": {
-                              "Adt": {
-                                "id": {
-                                  "Adt": 34
-                                },
-                                "generics": {
-                                  "regions": [],
-                                  "types": [],
-                                  "const_generics": [],
-                                  "trait_refs": []
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "AlignOf": {
+                    "Untagged": {
+                      "Adt": {
+                        "id": {
+                          "Adt": 33
+                        },
+                        "generics": {
+                          "regions": [],
+                          "types": [
+                            {
+                              "Untagged": {
+                                "TypeVar": {
+                                  "Bound": [
+                                    0,
+                                    0
+                                  ]
                                 }
                               }
-                            }
-                          }
-                        ],
-                        "const_generics": [],
-                        "trait_refs": [
-                          {
-                            "Untagged": {
-                              "kind": {
-                                "ParentClause": [
-                                  {
-                                    "Untagged": {
-                                      "kind": {
-                                        "Clause": {
-                                          "Bound": [
-                                            0,
-                                            0
-                                          ]
-                                        }
-                                      },
-                                      "trait_decl_ref": {
-                                        "regions": [],
-                                        "skip_binder": {
-                                          "id": 0,
-                                          "generics": {
-                                            "regions": [],
-                                            "types": [
-                                              {
-                                                "Untagged": {
-                                                  "TypeVar": {
-                                                    "Bound": [
-                                                      1,
-                                                      0
-                                                    ]
-                                                  }
-                                                }
-                                              }
-                                            ],
-                                            "const_generics": [],
-                                            "trait_refs": []
-                                          }
-                                        }
-                                      }
-                                    }
+                            },
+                            {
+                              "Untagged": {
+                                "Adt": {
+                                  "id": {
+                                    "Adt": 34
                                   },
-                                  0
-                                ]
-                              },
-                              "trait_decl_ref": {
-                                "regions": [],
-                                "skip_binder": {
-                                  "id": 1,
                                   "generics": {
                                     "regions": [],
-                                    "types": [
-                                      {
-                                        "Untagged": {
-                                          "TypeVar": {
-                                            "Bound": [
-                                              1,
-                                              0
-                                            ]
-                                          }
-                                        }
-                                      }
-                                    ],
+                                    "types": [],
                                     "const_generics": [],
                                     "trait_refs": []
                                   }
                                 }
                               }
                             }
-                          },
-                          {
-                            "Untagged": {
-                              "kind": {
-                                "BuiltinOrAuto": {
-                                  "builtin_data": "Sized",
-                                  "parent_trait_refs": [
+                          ],
+                          "const_generics": [],
+                          "trait_refs": [
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "ParentClause": [
                                     {
                                       "Untagged": {
                                         "kind": {
-                                          "BuiltinOrAuto": {
-                                            "builtin_data": "MetaSized",
-                                            "parent_trait_refs": [],
-                                            "types": []
+                                          "Clause": {
+                                            "Bound": [
+                                              0,
+                                              0
+                                            ]
                                           }
                                         },
                                         "trait_decl_ref": {
                                           "regions": [],
                                           "skip_binder": {
-                                            "id": 1,
+                                            "id": 0,
                                             "generics": {
                                               "regions": [],
                                               "types": [
                                                 {
                                                   "Untagged": {
-                                                    "Adt": {
-                                                      "id": {
-                                                        "Adt": 34
-                                                      },
-                                                      "generics": {
-                                                        "regions": [],
-                                                        "types": [],
-                                                        "const_generics": [],
-                                                        "trait_refs": []
-                                                      }
+                                                    "TypeVar": {
+                                                      "Bound": [
+                                                        1,
+                                                        0
+                                                      ]
                                                     }
                                                   }
                                                 }
@@ -3692,98 +3640,172 @@
                                           }
                                         }
                                       }
+                                    },
+                                    0
+                                  ]
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 1,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "TypeVar": {
+                                              "Bound": [
+                                                1,
+                                                0
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
                                     }
-                                  ],
-                                  "types": []
+                                  }
                                 }
-                              },
-                              "trait_decl_ref": {
-                                "regions": [],
-                                "skip_binder": {
-                                  "id": 0,
-                                  "generics": {
-                                    "regions": [],
-                                    "types": [
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "BuiltinOrAuto": {
+                                    "builtin_data": "Sized",
+                                    "parent_trait_refs": [
                                       {
                                         "Untagged": {
-                                          "Adt": {
-                                            "id": {
-                                              "Adt": 34
-                                            },
-                                            "generics": {
-                                              "regions": [],
-                                              "types": [],
-                                              "const_generics": [],
-                                              "trait_refs": []
+                                          "kind": {
+                                            "BuiltinOrAuto": {
+                                              "builtin_data": "MetaSized",
+                                              "parent_trait_refs": [],
+                                              "types": []
+                                            }
+                                          },
+                                          "trait_decl_ref": {
+                                            "regions": [],
+                                            "skip_binder": {
+                                              "id": 1,
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [
+                                                  {
+                                                    "Untagged": {
+                                                      "Adt": {
+                                                        "id": {
+                                                          "Adt": 34
+                                                        },
+                                                        "generics": {
+                                                          "regions": [],
+                                                          "types": [],
+                                                          "const_generics": [],
+                                                          "trait_refs": []
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
                                             }
                                           }
                                         }
                                       }
                                     ],
-                                    "const_generics": [],
-                                    "trait_refs": []
+                                    "types": []
                                   }
-                                }
-                              }
-                            }
-                          },
-                          {
-                            "Untagged": {
-                              "kind": {
-                                "TraitImpl": {
-                                  "id": 1,
-                                  "generics": {
-                                    "regions": [],
-                                    "types": [],
-                                    "const_generics": [],
-                                    "trait_refs": []
-                                  }
-                                }
-                              },
-                              "trait_decl_ref": {
-                                "regions": [],
-                                "skip_binder": {
-                                  "id": 3,
-                                  "generics": {
-                                    "regions": [],
-                                    "types": [
-                                      {
-                                        "Untagged": {
-                                          "Adt": {
-                                            "id": {
-                                              "Adt": 34
-                                            },
-                                            "generics": {
-                                              "regions": [],
-                                              "types": [],
-                                              "const_generics": [],
-                                              "trait_refs": []
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 0,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "Adt": {
+                                              "id": {
+                                                "Adt": 34
+                                              },
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
                                             }
                                           }
                                         }
-                                      }
-                                    ],
-                                    "const_generics": [],
-                                    "trait_refs": []
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "TraitImpl": {
+                                    "id": 1,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 3,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "Adt": {
+                                              "id": {
+                                                "Adt": 34
+                                              },
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
                                   }
                                 }
                               }
                             }
-                          }
-                        ]
+                          ]
+                        }
                       }
                     }
                   }
                 }
               }
             }
-          }
+          ]
         ]
       }
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -4337,7 +4359,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -4601,173 +4623,101 @@
         }
       },
       "offsets": {
-        "Fields": [
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "Constant": {
-                  "kind": {
-                    "Literal": {
-                      "Scalar": {
-                        "Unsigned": [
-                          "Usize",
-                          "8"
-                        ]
-                      }
-                    }
-                  },
-                  "ty": {
-                    "Untagged": {
+        "Variants": [
+          [
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "Constant": {
+                    "kind": {
                       "Literal": {
-                        "UInt": "Usize"
+                        "Scalar": {
+                          "Unsigned": [
+                            "Usize",
+                            "8"
+                          ]
+                        }
+                      }
+                    },
+                    "ty": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "Usize"
+                        }
                       }
                     }
                   }
                 }
               }
-            }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "AlignOf": {
-                  "Untagged": {
-                    "Adt": {
-                      "id": {
-                        "Adt": 33
-                      },
-                      "generics": {
-                        "regions": [],
-                        "types": [
-                          {
-                            "Untagged": {
-                              "TypeVar": {
-                                "Bound": [
-                                  0,
-                                  0
-                                ]
-                              }
-                            }
-                          },
-                          {
-                            "Untagged": {
-                              "Adt": {
-                                "id": {
-                                  "Adt": 34
-                                },
-                                "generics": {
-                                  "regions": [],
-                                  "types": [],
-                                  "const_generics": [],
-                                  "trait_refs": []
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "AlignOf": {
+                    "Untagged": {
+                      "Adt": {
+                        "id": {
+                          "Adt": 33
+                        },
+                        "generics": {
+                          "regions": [],
+                          "types": [
+                            {
+                              "Untagged": {
+                                "TypeVar": {
+                                  "Bound": [
+                                    0,
+                                    0
+                                  ]
                                 }
                               }
-                            }
-                          }
-                        ],
-                        "const_generics": [],
-                        "trait_refs": [
-                          {
-                            "Untagged": {
-                              "kind": {
-                                "ParentClause": [
-                                  {
-                                    "Untagged": {
-                                      "kind": {
-                                        "Clause": {
-                                          "Bound": [
-                                            0,
-                                            0
-                                          ]
-                                        }
-                                      },
-                                      "trait_decl_ref": {
-                                        "regions": [],
-                                        "skip_binder": {
-                                          "id": 0,
-                                          "generics": {
-                                            "regions": [],
-                                            "types": [
-                                              {
-                                                "Untagged": {
-                                                  "TypeVar": {
-                                                    "Bound": [
-                                                      1,
-                                                      0
-                                                    ]
-                                                  }
-                                                }
-                                              }
-                                            ],
-                                            "const_generics": [],
-                                            "trait_refs": []
-                                          }
-                                        }
-                                      }
-                                    }
+                            },
+                            {
+                              "Untagged": {
+                                "Adt": {
+                                  "id": {
+                                    "Adt": 34
                                   },
-                                  0
-                                ]
-                              },
-                              "trait_decl_ref": {
-                                "regions": [],
-                                "skip_binder": {
-                                  "id": 1,
                                   "generics": {
                                     "regions": [],
-                                    "types": [
-                                      {
-                                        "Untagged": {
-                                          "TypeVar": {
-                                            "Bound": [
-                                              1,
-                                              0
-                                            ]
-                                          }
-                                        }
-                                      }
-                                    ],
+                                    "types": [],
                                     "const_generics": [],
                                     "trait_refs": []
                                   }
                                 }
                               }
                             }
-                          },
-                          {
-                            "Untagged": {
-                              "kind": {
-                                "BuiltinOrAuto": {
-                                  "builtin_data": "Sized",
-                                  "parent_trait_refs": [
+                          ],
+                          "const_generics": [],
+                          "trait_refs": [
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "ParentClause": [
                                     {
                                       "Untagged": {
                                         "kind": {
-                                          "BuiltinOrAuto": {
-                                            "builtin_data": "MetaSized",
-                                            "parent_trait_refs": [],
-                                            "types": []
+                                          "Clause": {
+                                            "Bound": [
+                                              0,
+                                              0
+                                            ]
                                           }
                                         },
                                         "trait_decl_ref": {
                                           "regions": [],
                                           "skip_binder": {
-                                            "id": 1,
+                                            "id": 0,
                                             "generics": {
                                               "regions": [],
                                               "types": [
                                                 {
                                                   "Untagged": {
-                                                    "Adt": {
-                                                      "id": {
-                                                        "Adt": 34
-                                                      },
-                                                      "generics": {
-                                                        "regions": [],
-                                                        "types": [],
-                                                        "const_generics": [],
-                                                        "trait_refs": []
-                                                      }
+                                                    "TypeVar": {
+                                                      "Bound": [
+                                                        1,
+                                                        0
+                                                      ]
                                                     }
                                                   }
                                                 }
@@ -4778,92 +4728,166 @@
                                           }
                                         }
                                       }
+                                    },
+                                    0
+                                  ]
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 1,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "TypeVar": {
+                                              "Bound": [
+                                                1,
+                                                0
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
                                     }
-                                  ],
-                                  "types": []
+                                  }
                                 }
-                              },
-                              "trait_decl_ref": {
-                                "regions": [],
-                                "skip_binder": {
-                                  "id": 0,
-                                  "generics": {
-                                    "regions": [],
-                                    "types": [
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "BuiltinOrAuto": {
+                                    "builtin_data": "Sized",
+                                    "parent_trait_refs": [
                                       {
                                         "Untagged": {
-                                          "Adt": {
-                                            "id": {
-                                              "Adt": 34
-                                            },
-                                            "generics": {
-                                              "regions": [],
-                                              "types": [],
-                                              "const_generics": [],
-                                              "trait_refs": []
+                                          "kind": {
+                                            "BuiltinOrAuto": {
+                                              "builtin_data": "MetaSized",
+                                              "parent_trait_refs": [],
+                                              "types": []
+                                            }
+                                          },
+                                          "trait_decl_ref": {
+                                            "regions": [],
+                                            "skip_binder": {
+                                              "id": 1,
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [
+                                                  {
+                                                    "Untagged": {
+                                                      "Adt": {
+                                                        "id": {
+                                                          "Adt": 34
+                                                        },
+                                                        "generics": {
+                                                          "regions": [],
+                                                          "types": [],
+                                                          "const_generics": [],
+                                                          "trait_refs": []
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
                                             }
                                           }
                                         }
                                       }
                                     ],
-                                    "const_generics": [],
-                                    "trait_refs": []
+                                    "types": []
                                   }
-                                }
-                              }
-                            }
-                          },
-                          {
-                            "Untagged": {
-                              "kind": {
-                                "TraitImpl": {
-                                  "id": 1,
-                                  "generics": {
-                                    "regions": [],
-                                    "types": [],
-                                    "const_generics": [],
-                                    "trait_refs": []
-                                  }
-                                }
-                              },
-                              "trait_decl_ref": {
-                                "regions": [],
-                                "skip_binder": {
-                                  "id": 3,
-                                  "generics": {
-                                    "regions": [],
-                                    "types": [
-                                      {
-                                        "Untagged": {
-                                          "Adt": {
-                                            "id": {
-                                              "Adt": 34
-                                            },
-                                            "generics": {
-                                              "regions": [],
-                                              "types": [],
-                                              "const_generics": [],
-                                              "trait_refs": []
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 0,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "Adt": {
+                                              "id": {
+                                                "Adt": 34
+                                              },
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
                                             }
                                           }
                                         }
-                                      }
-                                    ],
-                                    "const_generics": [],
-                                    "trait_refs": []
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "Untagged": {
+                                "kind": {
+                                  "TraitImpl": {
+                                    "id": 1,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
+                                  }
+                                },
+                                "trait_decl_ref": {
+                                  "regions": [],
+                                  "skip_binder": {
+                                    "id": 3,
+                                    "generics": {
+                                      "regions": [],
+                                      "types": [
+                                        {
+                                          "Untagged": {
+                                            "Adt": {
+                                              "id": {
+                                                "Adt": 34
+                                              },
+                                              "generics": {
+                                                "regions": [],
+                                                "types": [],
+                                                "const_generics": [],
+                                                "trait_refs": []
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "const_generics": [],
+                                      "trait_refs": []
+                                    }
                                   }
                                 }
                               }
                             }
-                          }
-                        ]
+                          ]
+                        }
                       }
                     }
                   }
                 }
               }
             }
-          }
+          ]
         ]
       }
     }
@@ -4871,7 +4895,7 @@
   "test_crate::Reordered": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -4953,7 +4977,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -4992,52 +5016,54 @@
         }
       },
       "offsets": {
-        "Fields": [
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "AlignOf": {
-                  "Untagged": {
-                    "Literal": {
-                      "UInt": "U8"
+        "Variants": [
+          [
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "AlignOf": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "AlignOf": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "AlignOf": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
                     }
                   }
                 }
               }
             }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "AlignOf": {
-                  "Untagged": {
-                    "Literal": {
-                      "UInt": "U32"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "AlignOf": {
-                  "Untagged": {
-                    "Literal": {
-                      "UInt": "U8"
-                    }
-                  }
-                }
-              }
-            }
-          }
+          ]
         ]
       }
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -5175,7 +5201,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Val": {
             "Constant": {
               "kind": {
@@ -5200,82 +5226,84 @@
         }
       },
       "offsets": {
-        "Fields": [
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "Constant": {
-                  "kind": {
-                    "Literal": {
-                      "Scalar": {
-                        "Unsigned": [
-                          "Usize",
-                          "1"
-                        ]
+        "Variants": [
+          [
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "Constant": {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": {
+                          "Unsigned": [
+                            "Usize",
+                            "1"
+                          ]
+                        }
+                      }
+                    },
+                    "ty": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "Usize"
+                        }
                       }
                     }
-                  },
-                  "ty": {
-                    "Untagged": {
+                  }
+                }
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "Constant": {
+                    "kind": {
                       "Literal": {
-                        "UInt": "Usize"
+                        "Scalar": {
+                          "Unsigned": [
+                            "Usize",
+                            "4"
+                          ]
+                        }
+                      }
+                    },
+                    "ty": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "Usize"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "Constant": {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": {
+                          "Unsigned": [
+                            "Usize",
+                            "1"
+                          ]
+                        }
+                      }
+                    },
+                    "ty": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "Usize"
+                        }
                       }
                     }
                   }
                 }
               }
             }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "Constant": {
-                  "kind": {
-                    "Literal": {
-                      "Scalar": {
-                        "Unsigned": [
-                          "Usize",
-                          "4"
-                        ]
-                      }
-                    }
-                  },
-                  "ty": {
-                    "Untagged": {
-                      "Literal": {
-                        "UInt": "Usize"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "Constant": {
-                  "kind": {
-                    "Literal": {
-                      "Scalar": {
-                        "Unsigned": [
-                          "Usize",
-                          "1"
-                        ]
-                      }
-                    }
-                  },
-                  "ty": {
-                    "Untagged": {
-                      "Literal": {
-                        "UInt": "Usize"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          ]
         ]
       }
     }
@@ -5283,7 +5311,7 @@
   "test_crate::NotReordered": [
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "AlignTo": {
             "base": {
               "Plus": [
@@ -5315,7 +5343,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Max": [
             {
               "Val": {
@@ -5354,56 +5382,58 @@
         }
       },
       "offsets": {
-        "Fields": [
-          "AtOffsetZero",
-          {
-            "ReprCField": {
-              "predecessor": 0,
-              "predecessor_size": {
-                "SizeOf": {
-                  "Untagged": {
-                    "Literal": {
-                      "UInt": "U8"
+        "Variants": [
+          [
+            "AtOffsetZero",
+            {
+              "ReprCField": {
+                "predecessor": 0,
+                "predecessor_size": {
+                  "SizeOf": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
                     }
                   }
-                }
-              },
-              "own_ty": {
-                "Untagged": {
-                  "Literal": {
-                    "UInt": "U32"
-                  }
-                }
-              }
-            }
-          },
-          {
-            "ReprCField": {
-              "predecessor": 1,
-              "predecessor_size": {
-                "SizeOf": {
+                },
+                "own_ty": {
                   "Untagged": {
                     "Literal": {
                       "UInt": "U32"
                     }
                   }
                 }
-              },
-              "own_ty": {
-                "Untagged": {
-                  "Literal": {
-                    "UInt": "U8"
+              }
+            },
+            {
+              "ReprCField": {
+                "predecessor": 1,
+                "predecessor_size": {
+                  "SizeOf": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                },
+                "own_ty": {
+                  "Untagged": {
+                    "Literal": {
+                      "UInt": "U8"
+                    }
                   }
                 }
               }
             }
-          }
+          ]
         ]
       }
     },
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -5428,7 +5458,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -5453,50 +5483,52 @@
         }
       },
       "offsets": {
-        "Fields": [
-          "AtOffsetZero",
-          {
-            "ReprCField": {
-              "predecessor": 0,
-              "predecessor_size": {
-                "SizeOf": {
-                  "Untagged": {
-                    "Literal": {
-                      "UInt": "U8"
+        "Variants": [
+          [
+            "AtOffsetZero",
+            {
+              "ReprCField": {
+                "predecessor": 0,
+                "predecessor_size": {
+                  "SizeOf": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U8"
+                      }
                     }
                   }
-                }
-              },
-              "own_ty": {
-                "Untagged": {
-                  "Literal": {
-                    "UInt": "U32"
-                  }
-                }
-              }
-            }
-          },
-          {
-            "ReprCField": {
-              "predecessor": 1,
-              "predecessor_size": {
-                "SizeOf": {
+                },
+                "own_ty": {
                   "Untagged": {
                     "Literal": {
                       "UInt": "U32"
                     }
                   }
                 }
-              },
-              "own_ty": {
-                "Untagged": {
-                  "Literal": {
-                    "UInt": "U8"
+              }
+            },
+            {
+              "ReprCField": {
+                "predecessor": 1,
+                "predecessor_size": {
+                  "SizeOf": {
+                    "Untagged": {
+                      "Literal": {
+                        "UInt": "U32"
+                      }
+                    }
+                  }
+                },
+                "own_ty": {
+                  "Untagged": {
+                    "Literal": {
+                      "UInt": "U8"
+                    }
                   }
                 }
               }
             }
-          }
+          ]
         ]
       }
     }
@@ -5504,7 +5536,7 @@
   "test_crate::Packed": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -5586,7 +5618,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Min": [
             {
               "Val": {
@@ -5652,133 +5684,135 @@
         }
       },
       "offsets": {
-        "Fields": [
-          {
-            "GuaranteedAlignment": {
-              "Min": [
-                {
-                  "Val": {
-                    "Constant": {
-                      "kind": {
-                        "Literal": {
-                          "Scalar": {
-                            "Unsigned": [
-                              "U64",
-                              "1"
-                            ]
+        "Variants": [
+          [
+            {
+              "GuaranteedAlignment": {
+                "Min": [
+                  {
+                    "Val": {
+                      "Constant": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": {
+                              "Unsigned": [
+                                "U64",
+                                "1"
+                              ]
+                            }
+                          }
+                        },
+                        "ty": {
+                          "Untagged": {
+                            "Literal": {
+                              "UInt": "U64"
+                            }
                           }
                         }
-                      },
-                      "ty": {
+                      }
+                    }
+                  },
+                  {
+                    "Val": {
+                      "AlignOf": {
                         "Untagged": {
                           "Literal": {
-                            "UInt": "U64"
+                            "UInt": "U8"
                           }
                         }
                       }
                     }
                   }
-                },
-                {
-                  "Val": {
-                    "AlignOf": {
-                      "Untagged": {
-                        "Literal": {
-                          "UInt": "U8"
+                ]
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Min": [
+                  {
+                    "Val": {
+                      "Constant": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": {
+                              "Unsigned": [
+                                "U64",
+                                "1"
+                              ]
+                            }
+                          }
+                        },
+                        "ty": {
+                          "Untagged": {
+                            "Literal": {
+                              "UInt": "U64"
+                            }
+                          }
                         }
                       }
                     }
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Min": [
-                {
-                  "Val": {
-                    "Constant": {
-                      "kind": {
-                        "Literal": {
-                          "Scalar": {
-                            "Unsigned": [
-                              "U64",
-                              "1"
-                            ]
-                          }
-                        }
-                      },
-                      "ty": {
+                  },
+                  {
+                    "Val": {
+                      "AlignOf": {
                         "Untagged": {
                           "Literal": {
-                            "UInt": "U64"
+                            "UInt": "U32"
                           }
                         }
                       }
                     }
                   }
-                },
-                {
-                  "Val": {
-                    "AlignOf": {
-                      "Untagged": {
-                        "Literal": {
-                          "UInt": "U32"
+                ]
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Min": [
+                  {
+                    "Val": {
+                      "Constant": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": {
+                              "Unsigned": [
+                                "U64",
+                                "1"
+                              ]
+                            }
+                          }
+                        },
+                        "ty": {
+                          "Untagged": {
+                            "Literal": {
+                              "UInt": "U64"
+                            }
+                          }
                         }
                       }
                     }
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Min": [
-                {
-                  "Val": {
-                    "Constant": {
-                      "kind": {
-                        "Literal": {
-                          "Scalar": {
-                            "Unsigned": [
-                              "U64",
-                              "1"
-                            ]
-                          }
-                        }
-                      },
-                      "ty": {
+                  },
+                  {
+                    "Val": {
+                      "AlignOf": {
                         "Untagged": {
                           "Literal": {
-                            "UInt": "U64"
+                            "UInt": "U8"
                           }
                         }
                       }
                     }
                   }
-                },
-                {
-                  "Val": {
-                    "AlignOf": {
-                      "Untagged": {
-                        "Literal": {
-                          "UInt": "U8"
-                        }
-                      }
-                    }
-                  }
-                }
-              ]
+                ]
+              }
             }
-          }
+          ]
         ]
       }
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -5916,7 +5950,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -5941,82 +5975,84 @@
         }
       },
       "offsets": {
-        "Fields": [
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "Constant": {
-                  "kind": {
-                    "Literal": {
-                      "Scalar": {
-                        "Unsigned": [
-                          "U64",
-                          "1"
-                        ]
+        "Variants": [
+          [
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "Constant": {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": {
+                          "Unsigned": [
+                            "U64",
+                            "1"
+                          ]
+                        }
+                      }
+                    },
+                    "ty": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "U64"
+                        }
                       }
                     }
-                  },
-                  "ty": {
-                    "Untagged": {
+                  }
+                }
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "Constant": {
+                    "kind": {
                       "Literal": {
-                        "UInt": "U64"
+                        "Scalar": {
+                          "Unsigned": [
+                            "U64",
+                            "1"
+                          ]
+                        }
+                      }
+                    },
+                    "ty": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "U64"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "Constant": {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": {
+                          "Unsigned": [
+                            "U64",
+                            "1"
+                          ]
+                        }
+                      }
+                    },
+                    "ty": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "U64"
+                        }
                       }
                     }
                   }
                 }
               }
             }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "Constant": {
-                  "kind": {
-                    "Literal": {
-                      "Scalar": {
-                        "Unsigned": [
-                          "U64",
-                          "1"
-                        ]
-                      }
-                    }
-                  },
-                  "ty": {
-                    "Untagged": {
-                      "Literal": {
-                        "UInt": "U64"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "Constant": {
-                  "kind": {
-                    "Literal": {
-                      "Scalar": {
-                        "Unsigned": [
-                          "U64",
-                          "1"
-                        ]
-                      }
-                    }
-                  },
-                  "ty": {
-                    "Untagged": {
-                      "Literal": {
-                        "UInt": "U64"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          ]
         ]
       }
     }
@@ -6024,7 +6060,7 @@
   "test_crate::UninhabitedVariant": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -6079,7 +6115,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -6135,7 +6171,7 @@
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -6238,7 +6274,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Val": {
             "Constant": {
               "kind": {
@@ -6325,7 +6361,7 @@
   "test_crate::UninhabitedVariant2": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -6403,7 +6439,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -6483,7 +6519,7 @@
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -6621,7 +6657,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Val": {
             "Constant": {
               "kind": {
@@ -6733,7 +6769,7 @@
   "test_crate::UninhabitedVariantWithFields": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -6834,7 +6870,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -6936,7 +6972,7 @@
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -7097,7 +7133,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Val": {
             "Constant": {
               "kind": {
@@ -7208,7 +7244,7 @@
   "test_crate::Uninhabited": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -7240,7 +7276,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -7253,22 +7289,24 @@
         }
       },
       "offsets": {
-        "Fields": [
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "AlignOf": {
-                  "Untagged": "Never"
+        "Variants": [
+          [
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "AlignOf": {
+                    "Untagged": "Never"
+                  }
                 }
               }
             }
-          }
+          ]
         ]
       }
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -7336,7 +7374,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Val": {
             "Constant": {
               "kind": {
@@ -7361,32 +7399,34 @@
         }
       },
       "offsets": {
-        "Fields": [
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "Constant": {
-                  "kind": {
-                    "Literal": {
-                      "Scalar": {
-                        "Unsigned": [
-                          "Usize",
-                          "1"
-                        ]
-                      }
-                    }
-                  },
-                  "ty": {
-                    "Untagged": {
+        "Variants": [
+          [
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "Constant": {
+                    "kind": {
                       "Literal": {
-                        "UInt": "Usize"
+                        "Scalar": {
+                          "Unsigned": [
+                            "Usize",
+                            "1"
+                          ]
+                        }
+                      }
+                    },
+                    "ty": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "Usize"
+                        }
                       }
                     }
                   }
                 }
               }
             }
-          }
+          ]
         ]
       }
     }
@@ -7394,7 +7434,7 @@
   "test_crate::DiscriminantInNicheOfField": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -7492,7 +7532,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -7632,7 +7672,7 @@
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -7997,7 +8037,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -8191,7 +8231,7 @@
   "test_crate::NonZeroNiche": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -8271,7 +8311,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -8353,7 +8393,7 @@
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -8467,7 +8507,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Val": {
             "Constant": {
               "kind": {
@@ -8529,7 +8569,7 @@
   "test_crate::ArbitraryDiscriminants": [
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -8619,7 +8659,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Max": [
             {
               "Val": {
@@ -8733,7 +8773,7 @@
     },
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -8973,7 +9013,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Max": [
             {
               "Val": {
@@ -9137,7 +9177,7 @@
   "test_crate::MyOrder": [
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -9162,7 +9202,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "AlignOf": {
               "Untagged": {
@@ -9174,11 +9214,17 @@
           }
         }
       },
-      "offsets": "None"
+      "offsets": {
+        "Variants": [
+          [],
+          [],
+          []
+        ]
+      }
     },
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -9203,7 +9249,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -9227,13 +9273,19 @@
           }
         }
       },
-      "offsets": "None"
+      "offsets": {
+        "Variants": [
+          [],
+          [],
+          []
+        ]
+      }
     }
   ],
   "test_crate::WithNicheAndUninhabited": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -9426,7 +9478,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -9736,7 +9788,7 @@
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -10118,7 +10170,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -10462,7 +10514,7 @@
   "test_crate::GenericUnsized": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -10539,7 +10591,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -10637,7 +10689,7 @@
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -10848,7 +10900,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -10980,7 +11032,7 @@
   "test_crate::GenericButFixedSize": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -11057,7 +11109,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -11155,7 +11207,7 @@
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -11366,7 +11418,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -11498,7 +11550,7 @@
   "test_crate::MaxBitsDiscr": [
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -11523,7 +11575,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "AlignOf": {
               "Untagged": {
@@ -11535,11 +11587,16 @@
           }
         }
       },
-      "offsets": "None"
+      "offsets": {
+        "Variants": [
+          [],
+          []
+        ]
+      }
     },
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -11564,7 +11621,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -11588,13 +11645,18 @@
           }
         }
       },
-      "offsets": "None"
+      "offsets": {
+        "Variants": [
+          [],
+          []
+        ]
+      }
     }
   ],
   "test_crate::SingleVariantButNonZero": [
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "SizeOf": {
               "Untagged": {
@@ -11763,7 +11825,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "AlignOf": {
               "Untagged": {
@@ -11931,175 +11993,11 @@
           }
         }
       },
-      "offsets": {
-        "Symbolic": {
-          "Untagged": {
-            "Adt": {
-              "id": {
-                "Adt": 36
-              },
-              "generics": {
-                "regions": [],
-                "types": [
-                  {
-                    "Untagged": "Never"
-                  },
-                  {
-                    "Untagged": {
-                      "Adt": {
-                        "id": "Tuple",
-                        "generics": {
-                          "regions": [],
-                          "types": [],
-                          "const_generics": [],
-                          "trait_refs": []
-                        }
-                      }
-                    }
-                  }
-                ],
-                "const_generics": [],
-                "trait_refs": [
-                  {
-                    "Untagged": {
-                      "kind": {
-                        "BuiltinOrAuto": {
-                          "builtin_data": "Sized",
-                          "parent_trait_refs": [
-                            {
-                              "Untagged": {
-                                "kind": {
-                                  "BuiltinOrAuto": {
-                                    "builtin_data": "MetaSized",
-                                    "parent_trait_refs": [],
-                                    "types": []
-                                  }
-                                },
-                                "trait_decl_ref": {
-                                  "regions": [],
-                                  "skip_binder": {
-                                    "id": 1,
-                                    "generics": {
-                                      "regions": [],
-                                      "types": [
-                                        {
-                                          "Untagged": "Never"
-                                        }
-                                      ],
-                                      "const_generics": [],
-                                      "trait_refs": []
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          ],
-                          "types": []
-                        }
-                      },
-                      "trait_decl_ref": {
-                        "regions": [],
-                        "skip_binder": {
-                          "id": 0,
-                          "generics": {
-                            "regions": [],
-                            "types": [
-                              {
-                                "Untagged": "Never"
-                              }
-                            ],
-                            "const_generics": [],
-                            "trait_refs": []
-                          }
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "Untagged": {
-                      "kind": {
-                        "BuiltinOrAuto": {
-                          "builtin_data": "Sized",
-                          "parent_trait_refs": [
-                            {
-                              "Untagged": {
-                                "kind": {
-                                  "BuiltinOrAuto": {
-                                    "builtin_data": "MetaSized",
-                                    "parent_trait_refs": [],
-                                    "types": []
-                                  }
-                                },
-                                "trait_decl_ref": {
-                                  "regions": [],
-                                  "skip_binder": {
-                                    "id": 1,
-                                    "generics": {
-                                      "regions": [],
-                                      "types": [
-                                        {
-                                          "Untagged": {
-                                            "Adt": {
-                                              "id": "Tuple",
-                                              "generics": {
-                                                "regions": [],
-                                                "types": [],
-                                                "const_generics": [],
-                                                "trait_refs": []
-                                              }
-                                            }
-                                          }
-                                        }
-                                      ],
-                                      "const_generics": [],
-                                      "trait_refs": []
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          ],
-                          "types": []
-                        }
-                      },
-                      "trait_decl_ref": {
-                        "regions": [],
-                        "skip_binder": {
-                          "id": 0,
-                          "generics": {
-                            "regions": [],
-                            "types": [
-                              {
-                                "Untagged": {
-                                  "Adt": {
-                                    "id": "Tuple",
-                                    "generics": {
-                                      "regions": [],
-                                      "types": [],
-                                      "const_generics": [],
-                                      "trait_refs": []
-                                    }
-                                  }
-                                }
-                              }
-                            ],
-                            "const_generics": [],
-                            "trait_refs": []
-                          }
-                        }
-                      }
-                    }
-                  }
-                ]
-              }
-            }
-          }
-        }
-      }
+      "offsets": "None"
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -12202,7 +12100,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Val": {
             "Constant": {
               "kind": {
@@ -12226,55 +12124,178 @@
           }
         }
       },
+      "offsets": "None"
+    }
+  ],
+  "test_crate::NonAdtAlias": [
+    {
+      "size": {
+        "ExactEq": {
+          "Val": {
+            "SizeOf": {
+              "Untagged": {
+                "TypeVar": {
+                  "Bound": [
+                    0,
+                    0
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "align": {
+        "ExactEq": {
+          "Val": {
+            "AlignOf": {
+              "Untagged": {
+                "TypeVar": {
+                  "Bound": [
+                    0,
+                    0
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "offsets": {
+        "Variants": []
+      }
+    },
+    {
+      "size": {
+        "ExactEq": {
+          "Val": {
+            "SizeOf": {
+              "Untagged": {
+                "TypeVar": {
+                  "Bound": [
+                    0,
+                    0
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "align": {
+        "ExactEq": {
+          "Val": {
+            "AlignOf": {
+              "Untagged": {
+                "TypeVar": {
+                  "Bound": [
+                    0,
+                    0
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "offsets": {
+        "Variants": []
+      }
+    }
+  ],
+  "test_crate::Tuple": [
+    {
+      "size": {
+        "ExactEq": {
+          "Val": {
+            "SizeOf": {
+              "Untagged": {
+                "Adt": {
+                  "id": "Tuple",
+                  "generics": {
+                    "regions": [],
+                    "types": [
+                      {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "U32"
+                          }
+                        }
+                      },
+                      {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "U32"
+                          }
+                        }
+                      }
+                    ],
+                    "const_generics": [],
+                    "trait_refs": []
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "align": {
+        "ExactEq": {
+          "Val": {
+            "AlignOf": {
+              "Untagged": {
+                "Adt": {
+                  "id": "Tuple",
+                  "generics": {
+                    "regions": [],
+                    "types": [
+                      {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "U32"
+                          }
+                        }
+                      },
+                      {
+                        "Untagged": {
+                          "Literal": {
+                            "UInt": "U32"
+                          }
+                        }
+                      }
+                    ],
+                    "const_generics": [],
+                    "trait_refs": []
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "offsets": {
         "Variants": [
           [
             {
               "GuaranteedAlignment": {
                 "Val": {
-                  "Constant": {
-                    "kind": {
+                  "AlignOf": {
+                    "Untagged": {
                       "Literal": {
-                        "Scalar": {
-                          "Unsigned": [
-                            "Usize",
-                            "1"
-                          ]
-                        }
-                      }
-                    },
-                    "ty": {
-                      "Untagged": {
-                        "Literal": {
-                          "UInt": "Usize"
-                        }
+                        "UInt": "U32"
                       }
                     }
                   }
                 }
               }
-            }
-          ],
-          [
+            },
             {
               "GuaranteedAlignment": {
                 "Val": {
-                  "Constant": {
-                    "kind": {
+                  "AlignOf": {
+                    "Untagged": {
                       "Literal": {
-                        "Scalar": {
-                          "Unsigned": [
-                            "Usize",
-                            "1"
-                          ]
-                        }
-                      }
-                    },
-                    "ty": {
-                      "Untagged": {
-                        "Literal": {
-                          "UInt": "Usize"
-                        }
+                        "UInt": "U32"
                       }
                     }
                   }
@@ -12284,206 +12305,10 @@
           ]
         ]
       }
-    }
-  ],
-  "test_crate::NonAdtAlias": [
-    {
-      "size": {
-        "Exact": {
-          "Val": {
-            "SizeOf": {
-              "Untagged": {
-                "TypeVar": {
-                  "Bound": [
-                    0,
-                    0
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
-      "align": {
-        "Exact": {
-          "Val": {
-            "AlignOf": {
-              "Untagged": {
-                "TypeVar": {
-                  "Bound": [
-                    0,
-                    0
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
-      "offsets": {
-        "Symbolic": {
-          "Untagged": {
-            "TypeVar": {
-              "Bound": [
-                0,
-                0
-              ]
-            }
-          }
-        }
-      }
     },
     {
       "size": {
-        "Exact": {
-          "Val": {
-            "SizeOf": {
-              "Untagged": {
-                "TypeVar": {
-                  "Bound": [
-                    0,
-                    0
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
-      "align": {
-        "Exact": {
-          "Val": {
-            "AlignOf": {
-              "Untagged": {
-                "TypeVar": {
-                  "Bound": [
-                    0,
-                    0
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
-      "offsets": {
-        "Symbolic": {
-          "Untagged": {
-            "TypeVar": {
-              "Bound": [
-                0,
-                0
-              ]
-            }
-          }
-        }
-      }
-    }
-  ],
-  "test_crate::Tuple": [
-    {
-      "size": {
-        "Exact": {
-          "Val": {
-            "SizeOf": {
-              "Untagged": {
-                "Adt": {
-                  "id": "Tuple",
-                  "generics": {
-                    "regions": [],
-                    "types": [
-                      {
-                        "Untagged": {
-                          "Literal": {
-                            "UInt": "U32"
-                          }
-                        }
-                      },
-                      {
-                        "Untagged": {
-                          "Literal": {
-                            "UInt": "U32"
-                          }
-                        }
-                      }
-                    ],
-                    "const_generics": [],
-                    "trait_refs": []
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "align": {
-        "Exact": {
-          "Val": {
-            "AlignOf": {
-              "Untagged": {
-                "Adt": {
-                  "id": "Tuple",
-                  "generics": {
-                    "regions": [],
-                    "types": [
-                      {
-                        "Untagged": {
-                          "Literal": {
-                            "UInt": "U32"
-                          }
-                        }
-                      },
-                      {
-                        "Untagged": {
-                          "Literal": {
-                            "UInt": "U32"
-                          }
-                        }
-                      }
-                    ],
-                    "const_generics": [],
-                    "trait_refs": []
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "offsets": {
-        "Symbolic": {
-          "Untagged": {
-            "Adt": {
-              "id": "Tuple",
-              "generics": {
-                "regions": [],
-                "types": [
-                  {
-                    "Untagged": {
-                      "Literal": {
-                        "UInt": "U32"
-                      }
-                    }
-                  },
-                  {
-                    "Untagged": {
-                      "Literal": {
-                        "UInt": "U32"
-                      }
-                    }
-                  }
-                ],
-                "const_generics": [],
-                "trait_refs": []
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -12586,7 +12411,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Val": {
             "Constant": {
               "kind": {
@@ -12611,57 +12436,59 @@
         }
       },
       "offsets": {
-        "Fields": [
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "Constant": {
-                  "kind": {
-                    "Literal": {
-                      "Scalar": {
-                        "Unsigned": [
-                          "Usize",
-                          "4"
-                        ]
+        "Variants": [
+          [
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "Constant": {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": {
+                          "Unsigned": [
+                            "Usize",
+                            "4"
+                          ]
+                        }
+                      }
+                    },
+                    "ty": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "Usize"
+                        }
                       }
                     }
-                  },
-                  "ty": {
-                    "Untagged": {
+                  }
+                }
+              }
+            },
+            {
+              "GuaranteedAlignment": {
+                "Val": {
+                  "Constant": {
+                    "kind": {
                       "Literal": {
-                        "UInt": "Usize"
+                        "Scalar": {
+                          "Unsigned": [
+                            "Usize",
+                            "4"
+                          ]
+                        }
+                      }
+                    },
+                    "ty": {
+                      "Untagged": {
+                        "Literal": {
+                          "UInt": "Usize"
+                        }
                       }
                     }
                   }
                 }
               }
             }
-          },
-          {
-            "GuaranteedAlignment": {
-              "Val": {
-                "Constant": {
-                  "kind": {
-                    "Literal": {
-                      "Scalar": {
-                        "Unsigned": [
-                          "Usize",
-                          "4"
-                        ]
-                      }
-                    }
-                  },
-                  "ty": {
-                    "Untagged": {
-                      "Literal": {
-                        "UInt": "Usize"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          ]
         ]
       }
     }
@@ -12669,7 +12496,7 @@
   "test_crate::Usize": [
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "SizeOf": {
               "Untagged": {
@@ -12682,7 +12509,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "AlignOf": {
               "Untagged": {
@@ -12695,18 +12522,12 @@
         }
       },
       "offsets": {
-        "Symbolic": {
-          "Untagged": {
-            "Literal": {
-              "UInt": "Usize"
-            }
-          }
-        }
+        "Variants": []
       }
     },
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -12731,7 +12552,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -12755,18 +12576,20 @@
           }
         }
       },
-      "offsets": "None"
+      "offsets": {
+        "Variants": []
+      }
     }
   ],
   "test_crate::Str": [
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "Val": "SliceLength"
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "AlignOf": {
               "Untagged": {
@@ -12779,31 +12602,17 @@
         }
       },
       "offsets": {
-        "Symbolic": {
-          "Untagged": {
-            "Adt": {
-              "id": {
-                "Builtin": "Str"
-              },
-              "generics": {
-                "regions": [],
-                "types": [],
-                "const_generics": [],
-                "trait_refs": []
-              }
-            }
-          }
-        }
+        "Variants": []
       }
     },
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "Val": "SliceLength"
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -12827,13 +12636,15 @@
           }
         }
       },
-      "offsets": "None"
+      "offsets": {
+        "Variants": []
+      }
     }
   ],
   "test_crate::Ref": [
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "SizeOf": {
               "Untagged": {
@@ -12861,7 +12672,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "AlignOf": {
               "Untagged": {
@@ -12889,33 +12700,12 @@
         }
       },
       "offsets": {
-        "Symbolic": {
-          "Untagged": {
-            "Ref": [
-              {
-                "Var": {
-                  "Bound": [
-                    0,
-                    0
-                  ]
-                }
-              },
-              {
-                "Untagged": {
-                  "Literal": {
-                    "UInt": "U32"
-                  }
-                }
-              },
-              "Mut"
-            ]
-          }
-        }
+        "Variants": []
       }
     },
     {
       "size": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -12940,7 +12730,7 @@
         }
       },
       "align": {
-        "Exact": {
+        "ExactEq": {
           "Val": {
             "Constant": {
               "kind": {
@@ -12964,13 +12754,15 @@
           }
         }
       },
-      "offsets": "None"
+      "offsets": {
+        "Variants": []
+      }
     }
   ],
   "test_crate::HasInvalidDiscr": [
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -13050,7 +12842,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Max": [
             {
               "Val": {
@@ -13132,7 +12924,7 @@
     },
     {
       "size": {
-        "AtLeast": {
+        "LowerBound": {
           "AlignTo": {
             "base": {
               "Max": [
@@ -13246,7 +13038,7 @@
         }
       },
       "align": {
-        "AtLeast": {
+        "LowerBound": {
           "Val": {
             "Constant": {
               "kind": {

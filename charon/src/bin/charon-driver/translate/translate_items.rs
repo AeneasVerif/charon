@@ -450,18 +450,24 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             Ok(kind) => kind,
             Err(err) => TypeDeclKind::Error(err.msg),
         };
-        let layout = self
-            .translate_layout(def)
-            .into_iter()
-            .map(|l| (self.get_target_triple(), l))
-            .collect();
         let repr = match &def.kind {
             hax::FullDefKind::Adt { repr: hax_repr, .. } => self.translate_repr_options(hax_repr),
             _ => ReprOptions::default(),
         };
-        let ptr_metadata = self.translate_ptr_metadata(span, def.this())?;
         let layout_guarantees =
             LayoutGuarantees::for_type_decl(&kind, &repr, &self.t_ctx.translated);
+
+        let layout = layout_guarantees
+            .into_iter()
+            .map(|guarantees| {
+                (
+                    self.get_target_triple(),
+                    self.translate_layout(def, guarantees, repr.clone()),
+                )
+            })
+            .collect();
+
+        let ptr_metadata = self.translate_ptr_metadata(span, def.this())?;
         let type_def = TypeDecl {
             def_id: trans_id,
             item_meta,
@@ -469,9 +475,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             kind,
             src,
             layout,
-            layout_guarantees,
             ptr_metadata,
-            repr,
         };
 
         Ok(type_def)
