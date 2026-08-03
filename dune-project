@@ -41,6 +41,7 @@
   yojson
   zarith
   name_matcher_parser
+  (re :with-test)
   (ocamlformat :with-test)))
 
 (package

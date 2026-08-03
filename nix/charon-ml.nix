@@ -96,6 +96,7 @@ let
 
       passthru = { inherit charon-ml-tests charon-ml-check-fmt; };
     } // lib.optionalAttrs doCheck {
+      checkInputs = [ ocamlPackages.re ]; # Used by the tests only.
       CHARON_TESTS_DIR = "${charon}/tests-llbc"; # Tell the tests where to find the llbc files.
       CHARON_BIN = "${charon}/bin/charon";
     });
