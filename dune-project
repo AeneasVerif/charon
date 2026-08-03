@@ -37,7 +37,7 @@
   logs
   ppx_deriving
   unionFind
-  visitors
+  (visitors (>= 20260520))
   yojson
   zarith
   name_matcher_parser
@@ -52,5 +52,5 @@
   (menhir :build)
   menhirLib
   ppx_deriving
-  visitors
+  (visitors (>= 20260520))
   zarith))

@@ -1,24 +1,11 @@
 { lib
 , charon
-, fetchFromGitHub
 , ocaml-ng
 , ocamlPackages
 , runCommand
 , stdenv
 }:
 let
-  easy_logging = ocamlPackages.buildDunePackage rec {
-    pname = "easy_logging";
-    version = "0.8.2";
-    src = fetchFromGitHub {
-      owner = "sapristi";
-      repo = "easy_logging";
-      rev = "v${version}";
-      sha256 = "sha256-Xy6Rfef7r2K8DTok7AYa/9m3ZEV07LlUeMQSRayLBco=";
-    };
-    buildInputs = [ ocamlPackages.calendar ];
-  };
-
   # We need both `charon-ml` and the `dune-project` file.
   src = lib.cleanSourceWith {
     src = ./..;
@@ -53,7 +40,7 @@ let
     buildInputs = [
       ocamlPackages.dune_3
       ocamlPackages.ocaml
-      ocamlPackages.ocamlformat_0_27_0
+      ocaml-ng.ocamlPackages_5_3.ocamlformat_0_27_0
     ];
     buildPhase = ''
       if ! dune build @fmt; then
@@ -78,7 +65,6 @@ let
         logs
         zarith
         yojson
-        calendar
         charon-name_matcher_parser
         unionFind
         ocaml-ng.ocamlPackages_4_14.ppx_tools # to view the output of visitor derivation

@@ -26,7 +26,9 @@
 
         rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain;
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
-        ocamlformat = pkgs.ocamlPackages.ocamlformat_0_27_0;
+
+        # nixpkgs marks ocamlformat broken for OCaml 5.4, so build it with 5.3 instead
+        ocamlformat = pkgs.ocaml-ng.ocamlPackages_5_3.ocamlformat_0_27_0;
 
         # Glibc version that the Linux release binaries are lowered to after building
         # to ensure compatibility with older Linux systems
@@ -117,7 +119,19 @@
             exit 1
           fi
         '');
-        charon-ml = pkgs.callPackage ./nix/charon-ml.nix { inherit charon; };
+        ocamlPackages = pkgs.ocamlPackages.overrideScope (_: prev: {
+          visitors = (prev.visitors.override { version = "20260520"; }).overrideAttrs (_: {
+            src = pkgs.fetchFromGitLab {
+              owner = "fpottier";
+              repo = "visitors";
+              tag = "20260520";
+              domain = "gitlab.inria.fr";
+              hash = "sha256-QR/kxwojyFOFLeu1JKjBfgmq2xaGZHq8hB1YwVpRVYI=";
+            };
+          });
+        });
+
+        charon-ml = pkgs.callPackage ./nix/charon-ml.nix { inherit charon ocamlPackages; };
 
         # Check rust files are correctly formatted.
         charon-check-fmt = charon.passthru.check-fmt;
