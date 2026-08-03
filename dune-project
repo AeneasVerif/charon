@@ -34,7 +34,7 @@
  (description
   "\n   This library allows for manipulation of LLBC, the language output by\n   Charon. Charon acts as an interface between the rustc compiler and program\n   verification projects.  Its purpose is to process Rust .rs files and convert\n   them into files easy to handle by program verifiers.")
  (depends
-  easy_logging
+  logs
   ppx_deriving
   unionFind
   visitors

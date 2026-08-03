@@ -75,7 +75,7 @@ let
         core
         ppx_deriving
         visitors
-        easy_logging
+        logs
         zarith
         yojson
         calendar

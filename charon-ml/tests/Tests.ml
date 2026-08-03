@@ -1,16 +1,13 @@
-open Charon
-open Logging
-module EL = Easy_logging.Logging
-
 (* Set the log level - we use the environment variable "CHARON_LOG" *)
-let log = main_log
-
 let () =
   Printexc.record_backtrace true;
-  try
-    let _ = Unix.getenv "CHARON_LOG" in
-    log#set_level EL.Debug
-  with Not_found -> log#set_level EL.Info
+  let level =
+    try
+      let _ = Unix.getenv "CHARON_LOG" in
+      Logs.Debug
+    with Not_found -> Logs.Info
+  in
+  Logs.Src.set_level Charon.Logging.main_log (Some level)
 
 let llbc_dir =
   try Unix.getenv "CHARON_TESTS_DIR" with Not_found -> "../../charon/tests/ui"
