@@ -242,6 +242,10 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub reconstruct_asserts: bool,
+    /// Don't add extra `StorageDead`s that MIR omits for some locals before terminators.
+    #[clap(long)]
+    #[serde(default)]
+    pub no_insert_storage_deads: bool,
     /// Use `DeBruijnVar::Free` for the variables bound in item signatures, instead of
     /// `DeBruijnVar::Bound` everywhere. This simplifies the management of generics for projects
     /// that don't intend to manipulate them too much.
@@ -458,6 +462,7 @@ impl CliOpts {
                     self.no_reorder_decls = true;
                     self.hide_marker_traits = true;
                     self.raw_consts = true;
+                    self.no_insert_storage_deads = true;
                 }
                 Preset::Aeneas => {
                     self.lift_associated_types.push("*".to_owned());
@@ -495,6 +500,7 @@ impl CliOpts {
                     self.precise_drops = true;
                     self.consts = Some(ConstHandling::Values);
                     self.ullbc = true;
+                    self.no_insert_storage_deads = true;
                 }
                 Preset::Tests => {
                     self.no_dedup_serialized_ast = true; // Helps debug
@@ -664,6 +670,8 @@ pub struct TranslateOptions {
     pub reconstruct_fallible_operations: bool,
     /// Replace `if x { panic() }` with `assert(x)`.
     pub reconstruct_asserts: bool,
+    /// Don't insert the `StorageDead`s that MIR omits for some locals.
+    pub no_insert_storage_deads: bool,
     // Use `DeBruijnVar::Free` for the variables bound in item signatures.
     pub unbind_item_vars: bool,
     /// List of patterns to assign a given opacity to. Same as the corresponding `TranslateOptions`
@@ -820,6 +828,7 @@ impl TranslateOptions {
             unsized_strings: options.unsized_strings,
             reconstruct_fallible_operations: options.reconstruct_fallible_operations,
             reconstruct_asserts: options.reconstruct_asserts,
+            no_insert_storage_deads: options.no_insert_storage_deads,
             lift_associated_types,
             unbind_item_vars: options.unbind_item_vars,
             translate_all_methods: options.translate_all_methods,

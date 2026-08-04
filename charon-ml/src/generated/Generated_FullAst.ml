@@ -181,6 +181,9 @@ and cli_options = {
           information. *)
   reconstruct_asserts : bool;
       (** Replace [if x { panic() }] with [assert(x)]. *)
+  no_insert_storage_deads : bool;
+      (** Don't add extra [StorageDead]s that MIR omits for some locals before
+          terminators. *)
   unbind_item_vars : bool;
       (** Use [DeBruijnVar::Free] for the variables bound in item signatures,
           instead of [DeBruijnVar::Bound] everywhere. This simplifies the

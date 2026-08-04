@@ -174,10 +174,10 @@ impl Transform {
         }
     }
 
-    fn transform_function(&self, fun: &mut FunDecl) {
+    fn transform_function(&self, fun: &mut FunDecl, no_storage_deads: bool) {
         // Don't insert `StorageDead`s inside global initializers because the locals there are
-        // actually statics.
-        let insert_missing_storage_deads = fun.is_global_initializer.is_none();
+        // actually statics, or when the user asked us not to (see `--no-storage-deads`).
+        let insert_missing_storage_deads = fun.is_global_initializer.is_none() && !no_storage_deads;
         match &mut fun.body {
             Body::Unstructured(body) => {
                 self.transform_ullbc_body(body, insert_missing_storage_deads)
@@ -189,13 +189,14 @@ impl Transform {
 }
 
 impl UllbcPass for Transform {
-    fn transform_function(&self, _ctx: &mut TransformCtx, fun: &mut FunDecl) {
-        self.transform_function(fun)
+    fn transform_function(&self, ctx: &mut TransformCtx, fun: &mut FunDecl) {
+        self.transform_function(fun, ctx.options.no_insert_storage_deads)
     }
 }
 
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        ctx.for_each_fun_decl(|_ctx, fun| self.transform_function(fun));
+        let no_storage_deads = ctx.options.no_insert_storage_deads;
+        ctx.for_each_fun_decl(|_ctx, fun| self.transform_function(fun, no_storage_deads));
     }
 }
