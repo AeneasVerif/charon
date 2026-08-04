@@ -1,7 +1,7 @@
 //! Implementations for [crate::values]
 use std::{
     cmp::Ordering,
-    ops::{Add, Mul, Rem, Sub},
+    ops::{Add, Div, Mul, Rem, Sub},
 };
 
 use crate::ast::*;
@@ -255,35 +255,46 @@ impl ScalarValue {
         }
     }
 
-    pub fn is_multiple_of(&self, other: &Self) -> Option<bool> {
-        if self.is_signed() && other.is_signed() {
-            let self_val = self.as_int().unwrap();
-            let other_val = other.as_int().unwrap();
-            if other_val == 0 {
-                Some(self_val == 0)
+    pub fn is_multiple_of(&self, rhs: &Self) -> Option<bool> {
+        if self.ty() == rhs.ty() {
+            if self.is_signed() {
+                let self_val = self.as_int().unwrap();
+                let rhs_val = rhs.as_int().unwrap();
+                Some(if rhs_val == 0 {
+                    self_val == 0
+                } else {
+                    self_val % rhs_val == 0
+                })
             } else {
-                Some(self_val % other_val == 0)
+                let self_val = self.as_uint().unwrap();
+                let rhs_val = rhs.as_uint().unwrap();
+                Some(self_val.is_multiple_of(rhs_val))
             }
-        } else if self.is_unsigned() && other.is_unsigned() {
-            let self_val = self.as_uint().unwrap();
-            let other_val = other.as_uint().unwrap();
-            Some(self_val.is_multiple_of(other_val))
         } else {
-            let self_val = if self.is_int() {
-                self.as_int().unwrap()
+            None
+        }
+    }
+
+    /// Does typed arithmetic by checking whether both arguments encode the same
+    /// scalar type and operates on the raw values.
+    pub fn do_arith(
+        self,
+        rhs: Self,
+        fn_u: fn(u128, u128) -> Option<u128>,
+        fn_s: fn(i128, i128) -> Option<i128>,
+    ) -> Option<Self> {
+        if self.ty() == rhs.ty() {
+            if self.is_signed() {
+                let (ty, self_val) = self.as_signed().unwrap();
+                let rhs_val = rhs.as_int().unwrap();
+                fn_s(*self_val, rhs_val).map(|i| Self::from_unchecked_int(*ty, i))
             } else {
-                self.as_uint().unwrap().try_into().ok()?
-            };
-            let other_val = if other.is_int() {
-                other.as_int().unwrap()
-            } else {
-                other.as_uint().unwrap().try_into().ok()?
-            };
-            if other_val == 0 {
-                Some(self_val == 0)
-            } else {
-                Some(self_val % other_val == 0)
+                let (ty, self_val) = self.as_unsigned().unwrap();
+                let rhs_val = rhs.as_uint().unwrap();
+                fn_u(*self_val, rhs_val).map(|u| Self::from_unchecked_uint(*ty, u))
             }
+        } else {
+            None
         }
     }
 }
@@ -292,33 +303,7 @@ impl Add for ScalarValue {
     type Output = Option<Self>;
 
     fn add(self, rhs: Self) -> Self::Output {
-        let (base_signed, base_i128) = if self.is_int() {
-            (true, self.as_int().unwrap())
-        } else {
-            (false, self.as_uint().unwrap().try_into().ok()?)
-        };
-        let (mult_signed, mult_i128) = if rhs.is_int() {
-            (true, rhs.as_int().unwrap())
-        } else {
-            (false, rhs.as_uint().unwrap().try_into().ok()?)
-        };
-        let raw_res = base_i128.checked_add(mult_i128)?;
-        let res = if base_signed || mult_signed {
-            let ty = if self.ty() == rhs.ty() {
-                *self.as_signed().unwrap().0
-            } else {
-                IntTy::Isize
-            };
-            ScalarValue::from_unchecked_int(ty, raw_res)
-        } else {
-            let ty = if self.ty() == rhs.ty() {
-                *self.as_unsigned().unwrap().0
-            } else {
-                UIntTy::Usize
-            };
-            ScalarValue::from_unchecked_uint(ty, raw_res.try_into().ok()?)
-        };
-        Some(res)
+        self.do_arith(rhs, u128::checked_add, i128::checked_add)
     }
 }
 
@@ -326,33 +311,7 @@ impl Sub for ScalarValue {
     type Output = Option<Self>;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        let (base_signed, base_i128) = if self.is_int() {
-            (true, self.as_int().unwrap())
-        } else {
-            (false, self.as_uint().unwrap().try_into().ok()?)
-        };
-        let (mult_signed, mult_i128) = if rhs.is_int() {
-            (true, rhs.as_int().unwrap())
-        } else {
-            (false, rhs.as_uint().unwrap().try_into().ok()?)
-        };
-        let raw_res = base_i128.checked_sub(mult_i128)?;
-        let res = if base_signed || mult_signed {
-            let ty = if self.ty() == rhs.ty() {
-                *self.as_signed().unwrap().0
-            } else {
-                IntTy::Isize
-            };
-            ScalarValue::from_unchecked_int(ty, raw_res)
-        } else {
-            let ty = if self.ty() == rhs.ty() {
-                *self.as_unsigned().unwrap().0
-            } else {
-                UIntTy::Usize
-            };
-            ScalarValue::from_unchecked_uint(ty, raw_res.try_into().ok()?)
-        };
-        Some(res)
+        self.do_arith(rhs, u128::checked_sub, i128::checked_sub)
     }
 }
 
@@ -360,33 +319,15 @@ impl Mul for ScalarValue {
     type Output = Option<Self>;
 
     fn mul(self, rhs: Self) -> Self::Output {
-        let (base_signed, base_i128) = if self.is_int() {
-            (true, self.as_int().unwrap())
-        } else {
-            (false, self.as_uint().unwrap().try_into().ok()?)
-        };
-        let (mult_signed, mult_i128) = if rhs.is_int() {
-            (true, rhs.as_int().unwrap())
-        } else {
-            (false, rhs.as_uint().unwrap().try_into().ok()?)
-        };
-        let raw_res = base_i128.checked_mul(mult_i128)?;
-        let res = if base_signed || mult_signed {
-            let ty = if self.ty() == rhs.ty() {
-                *self.as_signed().unwrap().0
-            } else {
-                IntTy::Isize
-            };
-            ScalarValue::from_unchecked_int(ty, raw_res)
-        } else {
-            let ty = if self.ty() == rhs.ty() {
-                *self.as_unsigned().unwrap().0
-            } else {
-                UIntTy::Usize
-            };
-            ScalarValue::from_unchecked_uint(ty, raw_res.try_into().ok()?)
-        };
-        Some(res)
+        self.do_arith(rhs, u128::checked_mul, i128::checked_mul)
+    }
+}
+
+impl Div for ScalarValue {
+    type Output = Option<Self>;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        self.do_arith(rhs, u128::checked_div, i128::checked_div)
     }
 }
 
@@ -394,33 +335,11 @@ impl Rem for ScalarValue {
     type Output = Option<Self>;
 
     fn rem(self, rhs: Self) -> Self::Output {
-        let (base_signed, base_i128) = if self.is_int() {
-            (true, self.as_int().unwrap())
-        } else {
-            (false, self.as_uint().unwrap().try_into().ok()?)
-        };
-        let (mult_signed, mult_i128) = if rhs.is_int() {
-            (true, rhs.as_int().unwrap())
-        } else {
-            (false, rhs.as_uint().unwrap().try_into().ok()?)
-        };
-        let raw_res = base_i128.checked_rem(mult_i128)?;
-        let res = if base_signed || mult_signed {
-            let ty = if self.ty() == rhs.ty() {
-                *self.as_signed().unwrap().0
-            } else {
-                IntTy::Isize
-            };
-            ScalarValue::from_unchecked_int(ty, raw_res)
-        } else {
-            let ty = if self.ty() == rhs.ty() {
-                *self.as_unsigned().unwrap().0
-            } else {
-                UIntTy::Usize
-            };
-            ScalarValue::from_unchecked_uint(ty, raw_res.try_into().ok()?)
-        };
-        Some(res)
+        self.do_arith(
+            rhs,
+            |self_val, rhs| Some(self_val.rem(rhs)),
+            |self_val, rhs| Some(self_val.rem(rhs)),
+        )
     }
 }
 
