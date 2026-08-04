@@ -2951,7 +2951,7 @@
                     "Literal": {
                       "Scalar": {
                         "Unsigned": [
-                          "U64",
+                          "Usize",
                           "1"
                         ]
                       }
@@ -2960,7 +2960,7 @@
                   "ty": {
                     "Untagged": {
                       "Literal": {
-                        "UInt": "U64"
+                        "UInt": "Usize"
                       }
                     }
                   }
@@ -3027,7 +3027,7 @@
                           "Literal": {
                             "Scalar": {
                               "Unsigned": [
-                                "U64",
+                                "Usize",
                                 "1"
                               ]
                             }
@@ -3036,7 +3036,7 @@
                         "ty": {
                           "Untagged": {
                             "Literal": {
-                              "UInt": "U64"
+                              "UInt": "Usize"
                             }
                           }
                         }
@@ -3070,7 +3070,7 @@
                           "Literal": {
                             "Scalar": {
                               "Unsigned": [
-                                "U64",
+                                "Usize",
                                 "1"
                               ]
                             }
@@ -3079,7 +3079,7 @@
                         "ty": {
                           "Untagged": {
                             "Literal": {
-                              "UInt": "U64"
+                              "UInt": "Usize"
                             }
                           }
                         }
@@ -3113,7 +3113,7 @@
                           "Literal": {
                             "Scalar": {
                               "Unsigned": [
-                                "U64",
+                                "Usize",
                                 "1"
                               ]
                             }
@@ -3122,7 +3122,7 @@
                         "ty": {
                           "Untagged": {
                             "Literal": {
-                              "UInt": "U64"
+                              "UInt": "Usize"
                             }
                           }
                         }

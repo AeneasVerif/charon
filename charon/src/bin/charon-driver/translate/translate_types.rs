@@ -2,6 +2,7 @@ use charon_lib::ullbc_ast::layout_guarantees::{
     LayoutGuarantees, LayoutValue, OffsetGuarantee, SizeExpr, SizeExprBound,
 };
 use itertools::Itertools;
+use rustc_abi::Size;
 use rustc_middle::ty;
 use rustc_span::sym;
 
@@ -510,6 +511,28 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         layout_guarantees: LayoutGuarantees,
         repr: ReprOptions,
     ) -> Layout {
+        fn zip_opt<'a, L, R, I, T, M>(
+            lhs: impl Iterator<Item = L> + 'a,
+            rhs: Option<impl IntoIterator<Item = R, IntoIter = I>>,
+            mut map: M,
+        ) -> Box<dyn Iterator<Item = T> + 'a>
+        where
+            R: 'a,
+            L: 'a,
+            I: Iterator<Item = R> + 'a,
+            T: 'a,
+            M: FnMut(L, Option<R>) -> T + 'a,
+        {
+            if let Some(rhs) = rhs {
+                Box::new(
+                    lhs.zip(rhs.into_iter())
+                        .map(move |(lhs, rhs)| map(lhs, Some(rhs))),
+                )
+            } else {
+                Box::new(lhs.map(move |lhs| map(lhs, None)))
+            }
+        }
+
         let item = def.this();
         use rustc_abi as r_abi;
 
@@ -518,26 +541,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             tagger: Vec<(RawByteCount, ScalarValue)>,
             variant_guarantees: Option<IndexVec<FieldId, OffsetGuarantee>>,
         ) -> VariantLayout {
-            let field_offsets = if let Some(variant_guarantees) = variant_guarantees {
-                variant_layout
-                    .field_offsets
-                    .iter()
-                    .zip(variant_guarantees.into_iter())
-                    .map(|(o, guarantees)| OffsetInformation {
-                        raw: Some(o.bytes()),
-                        guarantees: Some(guarantees),
-                    })
-                    .collect()
-            } else {
-                variant_layout
-                    .field_offsets
-                    .iter()
-                    .map(|o| OffsetInformation {
-                        raw: Some(o.bytes()),
-                        guarantees: None,
-                    })
-                    .collect()
-            };
+            let field_offsets = zip_opt(
+                variant_layout.field_offsets.iter(),
+                variant_guarantees,
+                |o: &Size, guarantees| OffsetInformation {
+                    raw: Some(o.bytes()),
+                    guarantees,
+                },
+            )
+            .collect();
             VariantLayout {
                 field_offsets,
                 uninhabited: Some(variant_layout.is_uninhabited()),
@@ -552,47 +564,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         ) -> VariantLayout {
             let field_offsets = match &layout_data.fields {
                 r_abi::FieldsShape::Arbitrary { offsets, .. } => {
-                    if let Some(field_guarantees) = field_guarantees {
-                        debug_assert_eq!(offsets.len(), field_guarantees.len());
-                        offsets
-                            .iter()
-                            .zip(field_guarantees.into_iter())
-                            .map(|(o, guarantees)| OffsetInformation {
-                                raw: Some(o.bytes()),
-                                guarantees: Some(guarantees),
-                            })
-                            .collect()
-                    } else {
-                        offsets
-                            .iter()
-                            .map(|o| OffsetInformation {
-                                raw: Some(o.bytes()),
-                                guarantees: None,
-                            })
-                            .collect()
-                    }
+                    zip_opt(offsets.iter(), field_guarantees, |o: &Size, guarantees| {
+                        OffsetInformation {
+                            raw: Some(o.bytes()),
+                            guarantees,
+                        }
+                    })
+                    .collect()
                 }
-                r_abi::FieldsShape::Union(n) => {
-                    if let Some(field_guarantees) = field_guarantees {
-                        debug_assert_eq!(n.get(), field_guarantees.len());
-                        field_guarantees
-                            .into_iter()
-                            .map(|guarantees| OffsetInformation {
-                                raw: Some(0),
-                                guarantees: Some(guarantees),
-                            })
-                            .collect()
-                    } else {
-                        vec![
-                            OffsetInformation {
-                                raw: Some(0),
-                                guarantees: None,
-                            };
-                            n.get()
-                        ]
-                        .into()
-                    }
-                }
+                r_abi::FieldsShape::Union(n) => zip_opt(
+                    vec![0; n.get()].into_iter(),
+                    field_guarantees,
+                    |o, guarantees| OffsetInformation {
+                        raw: Some(o),
+                        guarantees,
+                    },
+                )
+                .collect(),
                 r_abi::FieldsShape::Primitive => IndexVec::default(),
                 r_abi::FieldsShape::Array { .. } => panic!("Unexpected layout shape"),
             };
@@ -702,15 +690,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     IndexVec::new();
                 let mut children = Vec::new();
 
-                if let Some(variants_guarantees) = layout_guarantees
-                    .offsets
-                    .get_variants(Some(variants.len()), &self.t_ctx.translated)
-                {
-                    debug_assert_eq!(variants.len(), variants_guarantees.len());
-                    for ((id, variant_layout), field_guarantees) in variants
-                        .iter_enumerated()
-                        .zip(variants_guarantees.into_iter())
-                    {
+                zip_opt(
+                    variants.iter_enumerated(),
+                    layout_guarantees
+                        .offsets
+                        .get_variants(Some(variants.len()), &self.t_ctx.translated),
+                    |(id, variant_layout), field_guarantees| {
                         let variant_id = self.translate_variant_id(id);
                         let tagger = if variant_layout.is_uninhabited() {
                             vec![]
@@ -724,28 +709,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         variant_layouts.push(Some(translate_variant_layout(
                             variant_layout,
                             tagger,
-                            Some(field_guarantees),
+                            field_guarantees,
                         )));
-                    }
-                } else {
-                    for (id, variant_layout) in variants.iter_enumerated() {
-                        let variant_id = self.translate_variant_id(id);
-                        let tagger = if variant_layout.is_uninhabited() {
-                            vec![]
-                        } else if let Some(val) = tag_for_variant(id) {
-                            children.push((val..=val, Discriminator::Known(variant_id)));
-                            vec![(tag_offset, val)]
-                        } else {
-                            // Niched variant
-                            vec![]
-                        };
-                        variant_layouts.push(Some(translate_variant_layout(
-                            variant_layout,
-                            tagger,
-                            None,
-                        )));
-                    }
-                }
+                    },
+                )
+                .for_each(drop);
 
                 let fallback = match tag_encoding {
                     r_abi::TagEncoding::Direct => Discriminator::Invalid,

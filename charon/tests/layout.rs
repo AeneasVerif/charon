@@ -1,9 +1,11 @@
 use itertools::Itertools;
 use serde_state::WithState;
-use std::path::PathBuf;
+use std::{borrow::Cow, fmt::Write, path::PathBuf};
 
 use charon_lib::{
     ast::*,
+    formatter::FmtCtx,
+    pretty::FmtWithCtx,
     ullbc_ast::layout_guarantees::{LayoutComputer, LayoutGuarantees},
 };
 
@@ -261,6 +263,9 @@ fn type_layout() -> anyhow::Result<()> {
     let layouts_str = serde_json::to_string_pretty(&layouts)?;
     compare_or_overwrite(layouts_str, &PathBuf::from("./tests/layout.json"))?;
 
+    let crate_str = serde_json::to_string_pretty(&WithState::new(&crate_data, &()))?;
+    compare_or_overwrite(crate_str, &PathBuf::from("./tests/layout.llbc"))?;
+
     fn byte_count_eq_scalar(byte_count: RawByteCount, scalar: ScalarValue, ctx: String) {
         if scalar.is_signed() {
             assert_eq!(byte_count as i128, *scalar.as_signed().unwrap().1, "{ctx}");
@@ -274,76 +279,84 @@ fn type_layout() -> anyhow::Result<()> {
     }
 
     let mut layout_computer = LayoutComputer::new(&crate_data, Some(&the_target));
-    let layouts: SeqHashMap<String, _> = crate_data
-        .type_decls
-        .iter()
-        .filter_map(|tdecl| {
-            if tdecl.item_meta.name.name[0].as_ident().unwrap().0 != "test_crate" {
-                return None;
-            }
-            let name = repr_name(&crate_data, &tdecl.item_meta.name);
-            let fake_ty = Ty::new(TyKind::Adt(TypeDeclRef {
-                id: TypeId::Adt(tdecl.def_id),
-                generics: Box::new(tdecl.generics.identity_args()),
-            }));
+    let mut buffer = String::new();
+    for tdecl in crate_data.type_decls.iter() {
+        if tdecl.item_meta.name.name[0].as_ident().unwrap().0 != "test_crate" {
+            continue;
+        }
+        let ctx = FmtCtx {
+            translated: Some(&crate_data),
+            generics: BindingStack::new(Cow::Borrowed(&tdecl.generics)),
+            indent_level: 1,
+            ..Default::default()
+        };
+        let name = repr_name(&crate_data, &tdecl.item_meta.name);
+        writeln!(&mut buffer, "{name}")?;
+        let fake_ty = Ty::new(TyKind::Adt(TypeDeclRef {
+            id: TypeId::Adt(tdecl.def_id),
+            generics: Box::new(tdecl.generics.identity_args()),
+        }));
 
-            let opt_concretized = layout_computer.compute_layout_guarantees(fake_ty.clone());
-            // Check whether concretized layout guarantees always match known layouts.
-            if let Some(layout) = tdecl.layout.get(&the_target)
-                && let Some(guarantees) = &opt_concretized
-                && let Some(size) = layout.size.raw
-                && let Some(align) = layout.align.raw
+        let opt_concretized = layout_computer.compute_layout_guarantees(fake_ty.clone());
+        // Check whether concretized layout guarantees always match known layouts.
+        if let Some(layout) = tdecl.layout.get(&the_target)
+            && let Some(guarantees) = &opt_concretized
+            && let Some(size) = layout.size.raw
+            && let Some(align) = layout.align.raw
+        {
+            if guarantees.size.is_exact_eq()
+                && let Some(ConstantExpr {
+                    kind: ConstantExprKind::Literal(Literal::Scalar(size_guarantee)),
+                    ..
+                }) = guarantees.size.inner().is_constant()
             {
-                if guarantees.size.is_exact_eq()
-                    && let Some(ConstantExpr {
-                        kind: ConstantExprKind::Literal(Literal::Scalar(size_guarantee)),
-                        ..
-                    }) = guarantees.size.inner().is_constant()
-                {
-                    byte_count_eq_scalar(size, size_guarantee, format!("{name}.size"));
-                }
-                if guarantees.align.is_exact_eq()
-                    && let Some(ConstantExpr {
-                        kind: ConstantExprKind::Literal(Literal::Scalar(align_guarantee)),
-                        ..
-                    }) = guarantees.align.inner().is_constant()
-                {
-                    byte_count_eq_scalar(align, align_guarantee, format!("{name}.align"));
-                }
+                byte_count_eq_scalar(size, size_guarantee, format!("{name}.size"));
+            }
+            if guarantees.align.is_exact_eq()
+                && let Some(ConstantExpr {
+                    kind: ConstantExprKind::Literal(Literal::Scalar(align_guarantee)),
+                    ..
+                }) = guarantees.align.inner().is_constant()
+            {
+                byte_count_eq_scalar(align, align_guarantee, format!("{name}.align"));
+            }
 
-                for (v_id, variant) in layout.variant_layouts.iter_enumerated() {
-                    if let Some(variant) = variant {
-                        for (f_id, offset) in variant.field_offsets.iter_enumerated() {
-                            if let Some(offset_guarantee) = layout_computer
-                                .lookup_pre_computed_offset(&fake_ty, Some(v_id), f_id)
-                                && offset_guarantee.is_exact_eq()
-                                && let Some(ConstantExpr {
-                                    kind: ConstantExprKind::Literal(Literal::Scalar(s)),
-                                    ..
-                                }) = offset_guarantee.inner().is_constant()
-                                && let Some(offset) = offset.raw
-                            {
-                                byte_count_eq_scalar(offset, s, format!("{name}.{v_id}.{f_id}"));
-                            }
+            for (v_id, variant) in layout.variant_layouts.iter_enumerated() {
+                if let Some(variant) = variant {
+                    for (f_id, offset) in variant.field_offsets.iter_enumerated() {
+                        if let Some(offset_guarantee) =
+                            layout_computer.lookup_pre_computed_offset(&fake_ty, Some(v_id), f_id)
+                            && offset_guarantee.is_exact_eq()
+                            && let Some(ConstantExpr {
+                                kind: ConstantExprKind::Literal(Literal::Scalar(s)),
+                                ..
+                            }) = offset_guarantee.inner().is_constant()
+                            && let Some(offset) = offset.raw
+                        {
+                            byte_count_eq_scalar(offset, s, format!("{name}.{v_id}.{f_id}"));
                         }
                     }
                 }
             }
+        }
 
-            let guarantee_serializable = tdecl
-                .layout
-                .get(&the_target)
-                .map(|l| WithState::new(LayoutGuarantees::from_layout(l), &()));
-            let concretized_serializable = opt_concretized.map(|l| WithState::new(l, &()));
-            Some((name, (guarantee_serializable, concretized_serializable)))
-        })
-        .collect();
-    let layouts_str = serde_json::to_string_pretty(&layouts)?;
+        if let Some(l) = tdecl.layout.get(&the_target) {
+            write!(
+                &mut buffer,
+                "original {}",
+                LayoutGuarantees::from_layout(l).with_ctx(&ctx)
+            )?;
+            if let Some(g) = LayoutGuarantees::for_type_decl(&tdecl.kind, &l.repr, &crate_data) {
+                write!(&mut buffer, "direct {}", g.with_ctx(&ctx))?;
+            }
+        }
+        if let Some(l) = opt_concretized {
+            write!(&mut buffer, "normalized {}", l.with_ctx(&ctx))?;
+        }
+        writeln!(&mut buffer)?;
+    }
 
-    compare_or_overwrite(
-        layouts_str,
-        &PathBuf::from("./tests/layout_guarantees.json"),
-    )?;
+    compare_or_overwrite(buffer, &PathBuf::from("./tests/layout_guarantees.txt"))?;
 
     Ok(())
 }

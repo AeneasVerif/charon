@@ -8,9 +8,9 @@ use serde_state::{DeserializeState, SerializeState};
 use crate::{
     ast::{
         AlignmentModifier, BuiltinTy, ConstantExpr, ConstantExprKind, Field, FieldId,
-        HashConsSerializerState, IntTy, IntegerTy, Layout, Literal, LiteralTy, ReprAlgorithm,
-        ReprOptions, ScalarValue, TargetTriple, TranslatedCrate, Ty, TyKind, TyVisitable,
-        TypeDeclKind, TypeDeclRef, TypeId, UIntTy, VariantId, VariantLayout,
+        HashConsSerializerState, IntTy, IntegerTy, Layout, Literal, LiteralTy, RawByteCount,
+        ReprAlgorithm, ReprOptions, ScalarValue, TargetTriple, TranslatedCrate, Ty, TyKind,
+        TyVisitable, TypeDeclKind, TypeDeclRef, TypeId, UIntTy, VariantId, VariantLayout,
     },
     ids::IndexVec,
 };
@@ -325,7 +325,7 @@ impl OffsetGuarantees {
             if let Some(fields) = fields {
                 offsets.push(fields);
             } else {
-                return Self::None;
+                offsets.push(IndexVec::new());
             }
         }
         Self::Variants(offsets)
@@ -423,13 +423,13 @@ impl Default for SizeExpr {
 }
 
 impl SizeExpr {
-    pub fn mk_const_byte_count(bytes: u64) -> Self {
+    pub fn mk_const_byte_count(bytes: RawByteCount) -> Self {
         Self::Val(LayoutValue::Constant(ConstantExpr {
             kind: ConstantExprKind::Literal(Literal::Scalar(ScalarValue::Unsigned(
-                UIntTy::U64,
+                UIntTy::Usize,
                 bytes as u128,
             ))),
-            ty: Ty::new(TyKind::Literal(LiteralTy::UInt(UIntTy::U64))),
+            ty: Ty::new(TyKind::Literal(LiteralTy::UInt(UIntTy::Usize))),
         }))
     }
 
@@ -641,7 +641,7 @@ impl LayoutGuarantees {
             && let Some(AlignmentModifier::Pack(p)) = &repr.align_modif
         {
             Some(SizeExpr::Val(LayoutValue::Constant(
-                ScalarValue::from_unchecked_uint(UIntTy::U64, *p as u128).to_constant(),
+                ScalarValue::from_unchecked_uint(UIntTy::Usize, *p as u128).to_constant(),
             )))
         } else {
             None
@@ -891,15 +891,18 @@ impl LayoutGuarantees {
                     Some(AlignmentModifier::Align(forced_align)) => {
                         base_guarantees.align.map_mut(|align| {
                             align.max(SizeExpr::Val(LayoutValue::Constant(
-                                ScalarValue::from_unchecked_uint(UIntTy::U64, forced_align as u128)
-                                    .to_constant(),
+                                ScalarValue::from_unchecked_uint(
+                                    UIntTy::Usize,
+                                    forced_align as u128,
+                                )
+                                .to_constant(),
                             )))
                         });
                     }
                     Some(AlignmentModifier::Pack(n)) => {
                         base_guarantees.align = SizeExprBound::ExactEq(SizeExpr::Min(vec![
                             SizeExpr::Val(LayoutValue::Constant(
-                                ScalarValue::from_unchecked_uint(UIntTy::U64, n as u128)
+                                ScalarValue::from_unchecked_uint(UIntTy::Usize, n as u128)
                                     .to_constant(),
                             )),
                             base_guarantees.align.take(),
@@ -1215,7 +1218,7 @@ impl<'a> LayoutComputer<'a> {
                     SizeExprBound::make(
                         SizeExpr::Val(LayoutValue::Constant(
                             ScalarValue::from_unchecked_uint(
-                                UIntTy::U64,
+                                UIntTy::Usize,
                                 info.c_enum_min_size as u128,
                             )
                             .to_constant(),
