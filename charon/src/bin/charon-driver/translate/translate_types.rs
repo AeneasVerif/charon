@@ -694,7 +694,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     variants.iter_enumerated(),
                     layout_guarantees
                         .offsets
-                        .get_variants(Some(variants.len()), &self.t_ctx.translated),
+                        .get_variants(Some(variants.len()), Some(&self.t_ctx.translated)),
                     |(id, variant_layout), field_guarantees| {
                         let variant_id = self.translate_variant_id(id);
                         let tagger = if variant_layout.is_uninhabited() {
@@ -763,7 +763,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         };
                         if let Some(variants_guarantees) = layout_guarantees
                             .offsets
-                            .get_variants(Some(n_variants), &self.t_ctx.translated)
+                            .get_variants(Some(n_variants), Some(&self.t_ctx.translated))
                         {
                             debug_assert_eq!(n_variants, variants_guarantees.len());
                             variants_guarantees
@@ -788,7 +788,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         // FIXME: differing levels of details in the model
                         let variants_guarantees = layout_guarantees
                             .offsets
-                            .get_variants(Some(n.get()), &self.t_ctx.translated)
+                            .get_variants(Some(n.get()), Some(&self.t_ctx.translated))
                             .unwrap();
                         let only_first_fields = variants_guarantees
                             .into_iter()

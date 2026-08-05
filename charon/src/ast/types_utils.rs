@@ -1581,7 +1581,7 @@ impl Layout {
         translated: &TranslatedCrate,
     ) -> Self {
         let mut variant_layouts = IndexVec::new();
-        if let Some(variants) = guarantees.offsets.get_variants(None, translated) {
+        if let Some(variants) = guarantees.offsets.get_variants(None, Some(translated)) {
             for fields in variants {
                 variant_layouts.push(Some(VariantLayout::only_guarantees(fields)));
             }
@@ -1594,6 +1594,24 @@ impl Layout {
             uninhabited: false, // FIXME: we need inhabitedness predicates to correctly express this.
             variant_layouts,
             repr,
+        }
+    }
+
+    pub fn update_guarantees(&mut self, guarantees: LayoutGuarantees) {
+        self.size.guarantees = guarantees.size;
+        self.align.guarantees = guarantees.align;
+
+        if let Some(variant_guarantees) = guarantees
+            .offsets
+            .get_variants(Some(self.variant_layouts.len()), None)
+        {
+            for (variant, guarantees) in self.variant_layouts.iter_mut().zip(variant_guarantees) {
+                if let Some(variant) = variant {
+                    for (offset, guarantee) in variant.field_offsets.iter_mut().zip(guarantees) {
+                        offset.guarantees = Some(guarantee);
+                    }
+                }
+            }
         }
     }
 }

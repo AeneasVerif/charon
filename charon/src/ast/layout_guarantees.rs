@@ -282,7 +282,7 @@ impl OffsetGuarantees {
     pub fn get_variants(
         self,
         expected_variants: Option<usize>,
-        translated: &TranslatedCrate,
+        translated: Option<&TranslatedCrate>,
     ) -> Option<IndexVec<VariantId, IndexVec<FieldId, OffsetGuarantee>>> {
         match self {
             Self::Variants(variants_guarantees) => Some(variants_guarantees),
@@ -292,7 +292,7 @@ impl OffsetGuarantees {
                     .collect(),
             ),
             Self::Symbolic(ty) => {
-                let guarantees_for_ty = LayoutGuarantees::for_ty(&ty, translated)?;
+                let guarantees_for_ty = LayoutGuarantees::for_ty(&ty, translated?)?;
                 if let OffsetGuarantees::Symbolic(ty2) = &guarantees_for_ty.offsets
                     && ty == *ty2
                 {
@@ -345,6 +345,10 @@ pub struct LayoutGuarantees {
 impl LayoutValue {
     pub fn mk_address_size() -> Self {
         Self::SizeOf(Ty::mk_usize())
+    }
+
+    pub fn mk_address_align() -> Self {
+        Self::AlignOf(Ty::mk_usize())
     }
 
     pub fn mk_address_size_for(
@@ -550,7 +554,7 @@ impl LayoutGuarantees {
             LiteralTy::Int(IntTy::Isize) | LiteralTy::UInt(UIntTy::Usize) => {
                 return Self {
                     size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::mk_address_size())),
-                    align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::mk_address_size())),
+                    align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::mk_address_align())),
                     offsets: OffsetGuarantees::None,
                 };
             }
@@ -598,9 +602,10 @@ impl LayoutGuarantees {
         // If we have no metadata, the pointer is exactly the address value.
         let exact = meta.is_unit();
         let ptr_size = LayoutValue::mk_address_size();
+        let ptr_align = LayoutValue::mk_address_align();
         let align = SizeExpr::Max(vec![
-            SizeExpr::Val(ptr_size.clone()),
-            SizeExpr::Val(LayoutValue::of_ty(&meta, true)),
+            SizeExpr::Val(ptr_align.clone()),
+            SizeExpr::Val(LayoutValue::of_ty(&meta, false)),
         ]);
         let size = SizeExprBound::make(
             SizeExpr::AlignTo {
