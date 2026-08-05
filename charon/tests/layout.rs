@@ -1,5 +1,4 @@
 use itertools::Itertools;
-use serde_state::WithState;
 use std::{borrow::Cow, fmt::Write, path::PathBuf};
 
 use charon_lib::{
@@ -247,24 +246,26 @@ fn type_layout() -> anyhow::Result<()> {
         }
     }
 
-    let layouts: SeqHashMap<String, Option<_>> = crate_data
-        .type_decls
-        .iter()
-        .filter_map(|tdecl| {
-            if tdecl.item_meta.name.name[0].as_ident().unwrap().0 != "test_crate" {
-                return None;
-            }
-            let name = repr_name(&crate_data, &tdecl.item_meta.name);
-            let opt_layout = tdecl.layout.get(&the_target).cloned();
-            let serializable = opt_layout.map(|l| WithState::new(l, &()));
-            Some((name, serializable))
-        })
-        .collect();
-    let layouts_str = serde_json::to_string_pretty(&layouts)?;
-    compare_or_overwrite(layouts_str, &PathBuf::from("./tests/layout.json"))?;
-
-    let crate_str = serde_json::to_string_pretty(&WithState::new(&crate_data, &()))?;
-    compare_or_overwrite(crate_str, &PathBuf::from("./tests/layout.llbc"))?;
+    let mut layouts_str = String::new();
+    for tdecl in crate_data.type_decls.iter() {
+        if tdecl.item_meta.name.name[0].as_ident().unwrap().0 != "test_crate" {
+            continue;
+        }
+        let ctx = FmtCtx {
+            translated: Some(&crate_data),
+            generics: BindingStack::new(Cow::Borrowed(&tdecl.generics)),
+            indent_level: 1,
+            ..Default::default()
+        };
+        let name = repr_name(&crate_data, &tdecl.item_meta.name);
+        writeln!(&mut layouts_str, "{name}")?;
+        let opt_layout = tdecl.layout.get(&the_target).cloned();
+        if let Some(layout) = opt_layout {
+            write!(&mut layouts_str, "{}", layout.with_ctx(&ctx))?;
+        }
+        writeln!(&mut layouts_str)?;
+    }
+    compare_or_overwrite(layouts_str, &PathBuf::from("./tests/layout.txt"))?;
 
     fn byte_count_eq_scalar(byte_count: RawByteCount, scalar: ScalarValue, ctx: String) {
         if scalar.is_signed() {
@@ -341,14 +342,14 @@ fn type_layout() -> anyhow::Result<()> {
         }
 
         if let Some(l) = tdecl.layout.get(&the_target) {
-            write!(
-                &mut buffer,
-                "original {}",
-                LayoutGuarantees::from_layout(l).with_ctx(&ctx)
-            )?;
             if let Some(g) = LayoutGuarantees::for_type_decl(&tdecl.kind, &l.repr, &crate_data) {
                 write!(&mut buffer, "direct {}", g.with_ctx(&ctx))?;
             }
+            write!(
+                &mut buffer,
+                "stored {}",
+                LayoutGuarantees::from_layout(l).with_ctx(&ctx)
+            )?;
         }
         if let Some(l) = opt_concretized {
             write!(&mut buffer, "normalized {}", l.with_ctx(&ctx))?;

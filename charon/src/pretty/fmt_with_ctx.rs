@@ -355,6 +355,19 @@ impl Display for BuiltinFunId {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for ByteCount {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(raw) = self.raw {
+            write!(f, "{raw}")?;
+        } else {
+            write!(f, "unk")?;
+        }
+        write!(f, " (guaranteed ")?;
+        self.guarantees.fmt_with_ctx(ctx, f)?;
+        write!(f, ")")
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for Call {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let dest = self.dest.with_ctx(ctx);
@@ -1163,14 +1176,45 @@ impl ItemMeta {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for Layout {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let tab = ctx.indent();
+        write!(f, "Layout: {{\n{tab}SIZE: ")?;
+        self.size.fmt_with_ctx(ctx, f)?;
+        write!(f, ",\n{tab}ALIGN: ")?;
+        self.align.fmt_with_ctx(ctx, f)?;
+        write!(f, ",\n{tab}discriminator: ")?;
+        match &self.discriminator {
+            Some(_discriminator) => {
+                write!(f, "omitted because tree-shaped")?;
+            }
+            None => {
+                write!(f, "None")?;
+            }
+        }
+        write!(f, ",\n{tab}uninhabited: {}", self.uninhabited)?;
+        writeln!(f, ",\n{tab}variant_layouts: ")?;
+        for (v_id, variant) in self.variant_layouts.iter_enumerated() {
+            write!(f, "{tab}{tab}{v_id}: ")?;
+            match variant {
+                Some(variant) => variant.fmt_with_ctx(ctx, f),
+                None => {
+                    writeln!(f, "None,")
+                }
+            }?;
+        }
+        write!(f, "{tab}repr: ")?;
+        self.repr.fmt_with_ctx(ctx, f)?;
+        writeln!(f, ",\n}}")
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for LayoutGuarantees {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let tab = ctx.indent();
-        writeln!(f, "Guarantees: {{")?;
-        write!(f, "{tab}SIZE ")?;
+        write!(f, "Guarantees: {{\n{tab}SIZE ")?;
         self.size.fmt_with_ctx(ctx, f)?;
-        writeln!(f, ",")?;
-        write!(f, "{tab}ALIGN ")?;
+        write!(f, ",\n{tab}ALIGN ")?;
         self.align.fmt_with_ctx(ctx, f)?;
         writeln!(f, ",")?;
         self.offsets.fmt_with_ctx(ctx, f)?;
@@ -1368,6 +1412,21 @@ impl<C: AstFormatter> FmtWithCtx<C> for OffsetGuarantees {
             }
             OffsetGuarantees::None => Ok(()),
         }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for OffsetInformation {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.raw {
+            Some(n) => write!(f, "{n}"),
+            None => write!(f, "unk"),
+        }?;
+        if let Some(guarantees) = &self.guarantees {
+            write!(f, " (guaranteed ")?;
+            guarantees.fmt_with_ctx(ctx, f)?;
+            write!(f, ")")?;
+        }
+        Ok(())
     }
 }
 
@@ -1765,6 +1824,32 @@ impl<C: AstFormatter> FmtWithCtx<C> for RegionParam {
                 Ok(())
             }
         }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for ReprOptions {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "repr(")?;
+        if let ReprAlgorithm::C = self.repr_algo {
+            write!(f, "C,")?;
+        }
+        if let Some(align_modif) = &self.align_modif {
+            match align_modif {
+                AlignmentModifier::Align(n) => {
+                    write!(f, "align({n}),")?;
+                }
+                AlignmentModifier::Pack(n) => {
+                    write!(f, "packed({n}),")?;
+                }
+            }
+        }
+        if self.transparent {
+            write!(f, "transparent,")?;
+        }
+        if let Some(ty) = &self.explicit_discr_type {
+            ty.fmt_with_ctx(ctx, f)?;
+        }
+        write!(f, ")")
     }
 }
 
@@ -2780,5 +2865,27 @@ impl<C: AstFormatter> FmtWithCtx<C> for Variant {
             write!(f, "({})", fields)?;
         }
         Ok(())
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for VariantLayout {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let tab = ctx.indent();
+        writeln!(f, "VariantLayout {{ ")?;
+        for (f_id, offset) in self.field_offsets.iter_enumerated() {
+            write!(f, "{tab}{tab}{tab}offset of {f_id}: ")?;
+            offset.fmt_with_ctx(ctx, f)?;
+            writeln!(f, ",")?;
+        }
+        write!(f, "{tab}{tab}{tab}uninhabited: ")?;
+        match self.uninhabited {
+            Some(uninhabited) => write!(f, "{uninhabited}"),
+            None => write!(f, "unk"),
+        }?;
+        write!(f, ",\n{tab}{tab}{tab}tagger: [")?;
+        for (offset, val) in self.tagger.iter() {
+            write!(f, "{offset}:{val}")?;
+        }
+        writeln!(f, "],\n{tab}{tab}}}")
     }
 }

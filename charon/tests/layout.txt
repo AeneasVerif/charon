@@ -1,0 +1,537 @@
+test_crate::SimpleStruct
+Layout: {
+    SIZE: 12 (guaranteed >= aligned_to(max(offset(0) + SizeOf<u32>, offset(1) + SizeOf<u32>, offset(2) + SizeOf<u32>), ALIGN)),
+    ALIGN: 4 (guaranteed >= max(AlignOf<u32>, AlignOf<u32>, AlignOf<u32>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            offset of 0: 0 (guaranteed aligned to AlignOf<u32>),
+            offset of 1: 4 (guaranteed aligned to AlignOf<u32>),
+            offset of 2: 8 (guaranteed aligned to AlignOf<u32>),
+            uninhabited: false,
+            tagger: [],
+        }
+    repr: repr(),
+}
+
+test_crate::GenericStruct
+Layout: {
+    SIZE: unk (guaranteed >= aligned_to(max(offset(0) + SizeOf<usize>, offset(1) + SizeOf<T>), ALIGN)),
+    ALIGN: unk (guaranteed >= max(AlignOf<usize>, AlignOf<T>)),
+    discriminator: None,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            offset of 0: unk (guaranteed aligned to AlignOf<usize>),
+            offset of 1: unk (guaranteed aligned to AlignOf<T>),
+            uninhabited: unk,
+            tagger: [],
+        }
+    repr: repr(),
+}
+
+test_crate::UnsizedStruct
+Layout: {
+    SIZE: unk (guaranteed >= aligned_to(max(offset(0) + SizeOf<usize>, offset(1) + SliceLength), ALIGN)),
+    ALIGN: unk (guaranteed >= max(AlignOf<usize>, AlignOf<usize>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            offset of 0: 0 (guaranteed aligned to AlignOf<usize>),
+            offset of 1: 8 (guaranteed aligned to AlignOf<usize>),
+            uninhabited: false,
+            tagger: [],
+        }
+    repr: repr(),
+}
+
+test_crate::SimpleEnum
+Layout: {
+    SIZE: 1 (guaranteed >= aligned_to(max(0usize, 0usize), ALIGN)),
+    ALIGN: 1 (guaranteed >= max(1usize, 1usize)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:0u8],
+        }
+        1: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:1u8],
+        }
+    repr: repr(),
+}
+
+test_crate::SimpleAdt
+Layout: {
+    SIZE: 24 (guaranteed >= aligned_to(max(0usize, offset(1.0) + SizeOf<usize>, offset(1.1) + SizeOf<usize>, offset(2.0) + SizeOf<u32>, offset(2.1) + SizeOf<u32>), ALIGN)),
+    ALIGN: 8 (guaranteed >= max(1usize, AlignOf<usize>, AlignOf<usize>, AlignOf<u32>, AlignOf<u32>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:0u32],
+        }
+        1: VariantLayout { 
+            offset of 0: 8 (guaranteed aligned to AlignOf<usize>),
+            offset of 1: 16 (guaranteed aligned to AlignOf<usize>),
+            uninhabited: false,
+            tagger: [0:1u32],
+        }
+        2: VariantLayout { 
+            offset of 0: 4 (guaranteed aligned to AlignOf<u32>),
+            offset of 1: 8 (guaranteed aligned to AlignOf<u32>),
+            uninhabited: false,
+            tagger: [0:2u32],
+        }
+    repr: repr(),
+}
+
+test_crate::NicheAdt
+Layout: {
+    SIZE: 4 (guaranteed >= aligned_to(max(0usize, offset(1.0) + SizeOf<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>), ALIGN)),
+    ALIGN: 4 (guaranteed >= max(1usize, AlignOf<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:0u32],
+        }
+        1: VariantLayout { 
+            offset of 0: 0 (guaranteed aligned to AlignOf<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>),
+            uninhabited: false,
+            tagger: [],
+        }
+    repr: repr(),
+}
+
+test_crate::IsAZST
+Layout: {
+    SIZE: 0 (guaranteed = 0usize),
+    ALIGN: 1 (guaranteed = 1usize),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            uninhabited: false,
+            tagger: [],
+        }
+    repr: repr(),
+}
+
+test_crate::GenericWithKnownLayout
+Layout: {
+    SIZE: 16 (guaranteed >= aligned_to(max(offset(0) + SizeOf<usize>, offset(1) + SizeOf<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>), ALIGN)),
+    ALIGN: 8 (guaranteed >= max(AlignOf<usize>, AlignOf<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            offset of 0: 8 (guaranteed aligned to AlignOf<usize>),
+            offset of 1: 0 (guaranteed aligned to AlignOf<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>),
+            uninhabited: false,
+            tagger: [],
+        }
+    repr: repr(),
+}
+
+test_crate::Reordered
+Layout: {
+    SIZE: 8 (guaranteed >= aligned_to(max(offset(0) + SizeOf<u8>, offset(1) + SizeOf<u32>, offset(2) + SizeOf<u8>), ALIGN)),
+    ALIGN: 4 (guaranteed >= max(AlignOf<u8>, AlignOf<u32>, AlignOf<u8>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            offset of 0: 4 (guaranteed aligned to AlignOf<u8>),
+            offset of 1: 0 (guaranteed aligned to AlignOf<u32>),
+            offset of 2: 5 (guaranteed aligned to AlignOf<u8>),
+            uninhabited: false,
+            tagger: [],
+        }
+    repr: repr(),
+}
+
+test_crate::NotReordered
+Layout: {
+    SIZE: 12 (guaranteed = aligned_to(offset(2) + SizeOf<u8>, ALIGN)),
+    ALIGN: 4 (guaranteed = max(AlignOf<u8>, AlignOf<u32>, AlignOf<u8>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            offset of 0: 0 (guaranteed 0),
+            offset of 1: 4 (guaranteed computed by repr(C) algorithm),
+            offset of 2: 8 (guaranteed computed by repr(C) algorithm),
+            uninhabited: false,
+            tagger: [],
+        }
+    repr: repr(C,),
+}
+
+test_crate::Packed
+Layout: {
+    SIZE: 6 (guaranteed >= aligned_to(max(offset(0) + SizeOf<u8>, offset(1) + SizeOf<u32>, offset(2) + SizeOf<u8>), ALIGN)),
+    ALIGN: 1 (guaranteed = min(1usize, max(AlignOf<u8>, AlignOf<u32>, AlignOf<u8>))),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            offset of 0: 0 (guaranteed aligned to min(1usize, AlignOf<u8>)),
+            offset of 1: 1 (guaranteed aligned to min(1usize, AlignOf<u32>)),
+            offset of 2: 5 (guaranteed aligned to min(1usize, AlignOf<u8>)),
+            uninhabited: false,
+            tagger: [],
+        }
+    repr: repr(packed(1),),
+}
+
+test_crate::UninhabitedVariant
+Layout: {
+    SIZE: 4 (guaranteed >= aligned_to(max(offset(0.0) + SizeOf<!>, offset(1.0) + SizeOf<u32>), ALIGN)),
+    ALIGN: 4 (guaranteed >= max(AlignOf<!>, AlignOf<u32>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            offset of 0: unk (guaranteed aligned to AlignOf<!>),
+            uninhabited: unk,
+            tagger: [],
+        }
+        1: VariantLayout { 
+            offset of 0: 0 (guaranteed aligned to AlignOf<u32>),
+            uninhabited: false,
+            tagger: [],
+        }
+    repr: repr(),
+}
+
+test_crate::UninhabitedVariant2
+Layout: {
+    SIZE: 8 (guaranteed >= aligned_to(max(offset(0.0) + SizeOf<!>, offset(0.1) + SizeOf<u32>, offset(1.0) + SizeOf<u32>), ALIGN)),
+    ALIGN: 4 (guaranteed >= max(AlignOf<!>, AlignOf<u32>, AlignOf<u32>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            offset of 0: 4 (guaranteed aligned to AlignOf<!>),
+            offset of 1: 4 (guaranteed aligned to AlignOf<u32>),
+            uninhabited: true,
+            tagger: [],
+        }
+        1: VariantLayout { 
+            offset of 0: 4 (guaranteed aligned to AlignOf<u32>),
+            uninhabited: false,
+            tagger: [0:1u32],
+        }
+    repr: repr(),
+}
+
+test_crate::UninhabitedVariantWithFields
+Layout: {
+    SIZE: 12 (guaranteed >= aligned_to(max(0usize, offset(1.0) + SizeOf<u32>, offset(1.1) + SizeOf<!>, offset(1.2) + SizeOf<u32>), ALIGN)),
+    ALIGN: 4 (guaranteed >= max(1usize, AlignOf<u32>, AlignOf<!>, AlignOf<u32>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:0u32],
+        }
+        1: VariantLayout { 
+            offset of 0: 4 (guaranteed aligned to AlignOf<u32>),
+            offset of 1: 4 (guaranteed aligned to AlignOf<!>),
+            offset of 2: 8 (guaranteed aligned to AlignOf<u32>),
+            uninhabited: true,
+            tagger: [],
+        }
+    repr: repr(),
+}
+
+test_crate::Uninhabited
+Layout: {
+    SIZE: 0 (guaranteed >= aligned_to(max(offset(0) + SizeOf<!>), ALIGN)),
+    ALIGN: 1 (guaranteed >= max(AlignOf<!>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: true,
+    variant_layouts: 
+        0: VariantLayout { 
+            offset of 0: 0 (guaranteed aligned to AlignOf<!>),
+            uninhabited: true,
+            tagger: [],
+        }
+    repr: repr(),
+}
+
+test_crate::DiscriminantInNicheOfField
+Layout: {
+    SIZE: 16 (guaranteed >= aligned_to(max(0usize, offset(1.0) + SizeOf<(usize, &'a T)>), ALIGN)),
+    ALIGN: 8 (guaranteed >= max(1usize, AlignOf<(usize, &'a T)>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            uninhabited: false,
+            tagger: [8:0isize],
+        }
+        1: VariantLayout { 
+            offset of 0: 0 (guaranteed aligned to AlignOf<(usize, &'a T)>),
+            uninhabited: false,
+            tagger: [],
+        }
+    repr: repr(),
+}
+
+test_crate::MaybeUninitInt
+
+test_crate::PackIntsUnion
+
+test_crate::NonZeroNiche
+Layout: {
+    SIZE: 4 (guaranteed >= aligned_to(max(offset(0.0) + SizeOf<char>, 0usize, 0usize), ALIGN)),
+    ALIGN: 4 (guaranteed >= max(AlignOf<char>, 1usize, 1usize)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            offset of 0: 0 (guaranteed aligned to AlignOf<char>),
+            uninhabited: false,
+            tagger: [],
+        }
+        1: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:1114112u32],
+        }
+        2: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:1114113u32],
+        }
+    repr: repr(),
+}
+
+test_crate::ArbitraryDiscriminants
+Layout: {
+    SIZE: 32 (guaranteed = aligned_to(max(offset(0.0) + SizeOf<String>, offset(1.0) + SizeOf<u32>, 4usize), ALIGN)),
+    ALIGN: 8 (guaranteed = max(AlignOf<i32>, AlignOf<String>, AlignOf<i32>, AlignOf<u32>, AlignOf<i32>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            offset of 0: 8 (guaranteed computed by repr(C) algorithm),
+            uninhabited: false,
+            tagger: [0:12i32],
+        }
+        1: VariantLayout { 
+            offset of 0: 4 (guaranteed computed by repr(C) algorithm),
+            uninhabited: false,
+            tagger: [0:43i32],
+        }
+        2: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:123456i32],
+        }
+    repr: repr(i32),
+}
+
+test_crate::MyOrder
+Layout: {
+    SIZE: 1 (guaranteed = 1usize),
+    ALIGN: 1 (guaranteed = AlignOf<i8>),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:-1i8],
+        }
+        1: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:0i8],
+        }
+        2: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:1i8],
+        }
+    repr: repr(i8),
+}
+
+test_crate::WithNicheAndUninhabited
+Layout: {
+    SIZE: 4 (guaranteed >= aligned_to(max(0usize, offset(1.0) + SizeOf<!>, offset(2.0) + SizeOf<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>), ALIGN)),
+    ALIGN: 4 (guaranteed >= max(1usize, AlignOf<!>, AlignOf<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:0u32],
+        }
+        1: VariantLayout { 
+            offset of 0: 0 (guaranteed aligned to AlignOf<!>),
+            uninhabited: true,
+            tagger: [],
+        }
+        2: VariantLayout { 
+            offset of 0: 0 (guaranteed aligned to AlignOf<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>),
+            uninhabited: false,
+            tagger: [],
+        }
+    repr: repr(),
+}
+
+test_crate::GenericUnsized
+Layout: {
+    SIZE: unk (guaranteed >= aligned_to(max(0usize, offset(1.0) + SizeOf<&'a T>), ALIGN)),
+    ALIGN: unk (guaranteed >= max(1usize, AlignOf<&'a T>)),
+    discriminator: None,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            uninhabited: unk,
+            tagger: [],
+        }
+        1: VariantLayout { 
+            offset of 0: unk (guaranteed aligned to AlignOf<&'a T>),
+            uninhabited: unk,
+            tagger: [],
+        }
+    repr: repr(),
+}
+
+test_crate::GenericButFixedSize
+Layout: {
+    SIZE: 8 (guaranteed >= aligned_to(max(0usize, offset(1.0) + SizeOf<&'a T>), ALIGN)),
+    ALIGN: 8 (guaranteed >= max(1usize, AlignOf<&'a T>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:0isize],
+        }
+        1: VariantLayout { 
+            offset of 0: 0 (guaranteed aligned to AlignOf<&'a T>),
+            uninhabited: false,
+            tagger: [],
+        }
+    repr: repr(),
+}
+
+test_crate::MaxBitsDiscr
+Layout: {
+    SIZE: 16 (guaranteed = 16usize),
+    ALIGN: 16 (guaranteed = AlignOf<u128>),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:42u128],
+        }
+        1: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:18446744073709551615u128],
+        }
+    repr: repr(u128),
+}
+
+test_crate::SingleVariantButNonZero
+Layout: {
+    SIZE: 0 (guaranteed >= aligned_to(max(offset(0.0) + SizeOf<!>, offset(1.0) + SizeOf<()>), ALIGN)),
+    ALIGN: 1 (guaranteed >= max(AlignOf<!>, AlignOf<()>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: None,
+        1: VariantLayout { 
+            offset of 0: 0 (guaranteed aligned to AlignOf<()>),
+            uninhabited: false,
+            tagger: [],
+        }
+    repr: repr(),
+}
+
+test_crate::NonAdtAlias
+Layout: {
+    SIZE: unk (guaranteed = SizeOf<T>),
+    ALIGN: unk (guaranteed = AlignOf<T>),
+    discriminator: None,
+    uninhabited: false,
+    variant_layouts: 
+    repr: repr(),
+}
+
+test_crate::Tuple
+Layout: {
+    SIZE: 8 (guaranteed >= aligned_to(max(offset(0) + SizeOf<u32>, offset(1) + SizeOf<u32>), ALIGN)),
+    ALIGN: 4 (guaranteed >= max(AlignOf<u32>, AlignOf<u32>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            offset of 0: 0 (guaranteed aligned to AlignOf<u32>),
+            offset of 1: 4 (guaranteed aligned to AlignOf<u32>),
+            uninhabited: false,
+            tagger: [],
+        }
+    repr: repr(),
+}
+
+test_crate::Usize
+Layout: {
+    SIZE: 8 (guaranteed = SizeOf<usize>),
+    ALIGN: 8 (guaranteed = AlignOf<usize>),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+    repr: repr(),
+}
+
+test_crate::Str
+Layout: {
+    SIZE: unk (guaranteed = SliceLength),
+    ALIGN: unk (guaranteed = AlignOf<u8>),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+    repr: repr(),
+}
+
+test_crate::Ref
+Layout: {
+    SIZE: 8 (guaranteed = aligned_to(SizeOf<usize> + SizeOf<()>, max(AlignOf<usize>, AlignOf<()>))),
+    ALIGN: 8 (guaranteed = max(AlignOf<usize>, AlignOf<()>)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+    repr: repr(),
+}
+
+test_crate::HasInvalidDiscr
+Layout: {
+    SIZE: 1 (guaranteed >= aligned_to(max(0usize, offset(1.0) + SizeOf<bool>, 0usize), ALIGN)),
+    ALIGN: 1 (guaranteed >= max(1usize, AlignOf<bool>, 1usize)),
+    discriminator: omitted because tree-shaped,
+    uninhabited: false,
+    variant_layouts: 
+        0: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:2u8],
+        }
+        1: VariantLayout { 
+            offset of 0: 0 (guaranteed aligned to AlignOf<bool>),
+            uninhabited: false,
+            tagger: [],
+        }
+        2: VariantLayout { 
+            uninhabited: false,
+            tagger: [0:4u8],
+        }
+    repr: repr(),
+}
+
