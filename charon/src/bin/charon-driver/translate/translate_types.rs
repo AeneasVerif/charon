@@ -1,6 +1,3 @@
-use charon_lib::ullbc_ast::layout_guarantees::{
-    LayoutGuarantees, LayoutValue, OffsetGuarantee, SizeExpr, SizeExprBound,
-};
 use itertools::Itertools;
 use rustc_abi::Size;
 use rustc_middle::ty;
@@ -11,6 +8,7 @@ use crate::hax::{self, UnderOwnerState};
 use crate::hax::{HasOwner, Visibility};
 use charon_lib::ast::*;
 use charon_lib::ids::IndexVec;
+use charon_lib::ullbc_ast::layout_guarantees::LayoutGuarantees;
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translate an erased region. If we're inside a body, this will return a fresh body region
@@ -621,13 +619,32 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             .instantiate(tcx, item.rustc_args(hax_state));
         let ty = hax::normalize(tcx, ty_env, ty);
         let pseudo_input = ty_env.as_query_input(ty);
-        let ptr_size = self.translated.the_target_information().target_pointer_size;
+        let the_target = self
+            .t_ctx
+            .translated
+            .target_information
+            .first()
+            .unwrap()
+            .0
+            .clone();
+        let ptr_size = self
+            .t_ctx
+            .translated
+            .target_information
+            .get(&the_target)
+            .unwrap()
+            .target_pointer_size;
 
         // If layout computation returns an error, we return `None`.
         let layout = if let Ok(layout_data) = tcx.layout_of(pseudo_input) {
             layout_data.layout
         } else {
-            return Layout::only_guarantees(layout_guarantees, repr, &self.t_ctx.translated);
+            return Layout::only_guarantees(
+                layout_guarantees,
+                repr,
+                &self.t_ctx.translated,
+                Some(&the_target),
+            );
         };
         let (size, align) = if layout.is_sized() {
             (
@@ -692,9 +709,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
                 zip_opt(
                     variants.iter_enumerated(),
-                    layout_guarantees
-                        .offsets
-                        .get_variants(Some(variants.len()), Some(&self.t_ctx.translated)),
+                    layout_guarantees.offsets.get_variants(
+                        Some(variants.len()),
+                        Some(&self.t_ctx.translated),
+                        Some(&the_target),
+                    ),
                     |(id, variant_layout), field_guarantees| {
                         let variant_id = self.translate_variant_id(id);
                         let tagger = if variant_layout.is_uninhabited() {
@@ -761,10 +780,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         } else {
                             1
                         };
-                        if let Some(variants_guarantees) = layout_guarantees
-                            .offsets
-                            .get_variants(Some(n_variants), Some(&self.t_ctx.translated))
-                        {
+                        if let Some(variants_guarantees) = layout_guarantees.offsets.get_variants(
+                            Some(n_variants),
+                            Some(&self.t_ctx.translated),
+                            Some(&the_target),
+                        ) {
                             debug_assert_eq!(n_variants, variants_guarantees.len());
                             variants_guarantees
                                 .into_iter_enumerated()
@@ -788,7 +808,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         // FIXME: differing levels of details in the model
                         let variants_guarantees = layout_guarantees
                             .offsets
-                            .get_variants(Some(n.get()), Some(&self.t_ctx.translated))
+                            .get_variants(
+                                Some(n.get()),
+                                Some(&self.t_ctx.translated),
+                                Some(&the_target),
+                            )
                             .unwrap();
                         let only_first_fields = variants_guarantees
                             .into_iter()

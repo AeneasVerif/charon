@@ -14,10 +14,7 @@ use std::mem;
 use std::path::PathBuf;
 use std::{any::Any, hash::Hash};
 
-use crate::ast::layout_guarantees::{
-    LayoutGuarantees, LayoutValue, LayoutVar, OffsetGuarantee, OffsetGuarantees, SizeExpr,
-    SizeExprBound,
-};
+use crate::ast::layout_guarantees::LayoutGuarantees;
 use crate::ast::*;
 use crate::ids::{Idx, IndexVec};
 use derive_generic_visitor::*;

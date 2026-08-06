@@ -2681,8 +2681,6 @@ and layout_value_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 3 -> Ok DynSize
      | 4 -> Ok DynAlign
      | 5 -> Ok SliceLength
-     | 6 -> Ok TargetDiscrSize
-     | 7 -> Ok TargetDiscrAlign
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and layout_var_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -2909,7 +2907,7 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* target_pointer_size = u64_of_postcard ctx st in
      let* is_little_endian = bool_of_postcard ctx st in
-     let* c_enum_min_size = u64_of_postcard ctx st in
+     let* c_enum_repr_ty = int_ty_of_postcard ctx st in
      let* primitive_alignments =
        index_map_of_postcard literal_type_of_postcard u64_of_postcard
          int_of_postcard ctx st
@@ -2918,7 +2916,7 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        ({
           target_pointer_size;
           is_little_endian;
-          c_enum_min_size;
+          c_enum_repr_ty;
           primitive_alignments;
         }
          : target_info))

@@ -1,9 +1,6 @@
 //! Utilities for pretty-printing (u)llbc.
 use crate::{
-    ast::layout_guarantees::{
-        LayoutGuarantees, LayoutValue, LayoutVar, OffsetGuarantee, OffsetGuarantees, SizeExpr,
-        SizeExprBound,
-    },
+    ast::layout_guarantees::LayoutGuarantees,
     common::{TAB_INCR, repeat_except_first},
     formatter::*,
     gast,
@@ -1239,8 +1236,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for LayoutValue {
             LayoutValue::DynSize => write!(f, "DynSize"),
             LayoutValue::DynAlign => write!(f, "DynAlign"),
             LayoutValue::SliceLength => write!(f, "SliceLength"),
-            LayoutValue::TargetDiscrSize => write!(f, "TargetDiscrSize"),
-            LayoutValue::TargetDiscrAlign => write!(f, "TargetDiscrAlign"),
         }
     }
 }

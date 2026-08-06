@@ -1,4 +1,3 @@
-use crate::ast::layout_guarantees::{OffsetGuarantee, SizeExprBound};
 use crate::ast::*;
 use crate::common::serialize_map_to_array::SeqHashMapToArray;
 use crate::ids::IndexVec;
@@ -542,6 +541,177 @@ pub enum PredicateOrigin {
     /// Clauses that are part of a `dyn Trait` type.
     #[cfg_attr(feature = "charon_on_charon", charon::rename("OriginDyn"))]
     Dyn,
+}
+
+/// Variables representing layout information from the context.
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    DriveTwo,
+)]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Var"))]
+pub enum LayoutVar {
+    /// The size of the whole type.
+    Size,
+    /// The alignment of the whole type.
+    Align,
+    /// The offset of the given field.
+    FieldOffset(Option<VariantId>, FieldId),
+}
+
+/// Represents the guarantees we can get about offsets of fields.
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    DriveTwo,
+)]
+pub enum OffsetGuarantee {
+    /// Guaranteed to be at offset zero. This applies for `repr(transparent)` and in some  `repr(C)` cases.
+    AtOffsetZero,
+    /// The only guarantee is that it is aligned to the given expression.
+    GuaranteedAlignment(Box<SizeExpr>),
+    /// This offset has to be computed by the layout algorithm for C, taking into consideration the fields before.
+    /// Must not be the first field, since that is [`OffsetGuarantee::AtOffsetZero`].
+    ReprCField {
+        /// If this is `None`, then the field is directly behind the tag.
+        predecessor: Option<FieldId>,
+        predecessor_size: LayoutValue,
+        own_ty: Ty,
+    },
+}
+
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    DriveTwo,
+)]
+#[serde_state(state_implements = HashConsSerializerState)]
+pub enum LayoutValue {
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("LayoutValueConstant"))]
+    Constant(ConstantExpr),
+    /// The size of the given type.
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("ValueSizeOf"))]
+    SizeOf(Ty),
+    /// The alignment of the given type.
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("ValueAlignOf"))]
+    AlignOf(Ty),
+    /// For a DST with `dyn Trait` metadata, this refers to the size found in the metadata.
+    DynSize,
+    /// For a DST with `dyn Trait` metadata, this refers to the alignment found in the metadata.
+    DynAlign,
+    /// For a DST with slice metadata, this refers to the length found in the metadata.
+    SliceLength,
+}
+
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    DriveTwo,
+)]
+#[serde_state(state_implements = HashConsSerializerState)]
+pub enum SizeExpr {
+    #[serde_state(stateless)]
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("SizeVariable"))]
+    Var(LayoutVar),
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("SizeValue"))]
+    Val(LayoutValue),
+    Max(Vec<SizeExpr>),
+    Min(Vec<SizeExpr>),
+    Plus(Box<SizeExpr>, Box<SizeExpr>),
+    Scale(Box<SizeExpr>, ConstantExpr),
+    /// The next multiple of `target_align` from `base`.
+    AlignTo {
+        base: Box<SizeExpr>,
+        target_align: Box<SizeExpr>,
+    },
+    /// A size expression that changes its value based on whether an argument type is inhabited.
+    IfInhabited {
+        ty: Ty,
+        then_size: Box<SizeExpr>,
+        else_size: Box<SizeExpr>,
+    },
+}
+
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    DriveTwo,
+)]
+#[serde_state(state_implements = HashConsSerializerState)]
+pub enum SizeExprBound {
+    ExactEq(SizeExpr),
+    LowerBound(SizeExpr),
+}
+
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    DriveTwo,
+)]
+#[serde_state(state_implements = HashConsSerializerState)]
+#[cfg_attr(
+    feature = "charon_on_charon",
+    charon::variants_prefix("OffsetGuarantee")
+)]
+pub enum OffsetGuarantees {
+    Symbolic(Ty),
+    Variants(IndexVec<VariantId, IndexVec<FieldId, OffsetGuarantee>>),
+    Fields(IndexVec<FieldId, OffsetGuarantee>),
+    None,
 }
 
 // rustc counts bytes in layouts as u64

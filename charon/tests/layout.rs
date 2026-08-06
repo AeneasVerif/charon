@@ -342,7 +342,7 @@ fn type_layout() -> anyhow::Result<()> {
         }
 
         if let Some(l) = tdecl.layout.get(&the_target) {
-            if let Some(g) = LayoutGuarantees::for_type_decl(&tdecl.kind, &l.repr, &crate_data) {
+            if let Some(g) = LayoutGuarantees::for_type_decl(&tdecl.kind, &crate_data, &l.repr) {
                 write!(&mut buffer, "direct {}", g.with_ctx(&ctx))?;
             }
             write!(

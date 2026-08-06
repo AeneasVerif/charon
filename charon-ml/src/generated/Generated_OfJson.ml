@@ -3146,8 +3146,6 @@ and layout_value_of_json (ctx : of_json_ctx) (js : json) :
     | `String "DynSize" -> Ok DynSize
     | `String "DynAlign" -> Ok DynAlign
     | `String "SliceLength" -> Ok SliceLength
-    | `String "TargetDiscrSize" -> Ok TargetDiscrSize
-    | `String "TargetDiscrAlign" -> Ok TargetDiscrAlign
     | _ -> Error "")
 
 and layout_var_of_json (ctx : of_json_ctx) (js : json) :
@@ -3410,12 +3408,12 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
         [
           ("target_pointer_size", target_pointer_size);
           ("is_little_endian", is_little_endian);
-          ("c_enum_min_size", c_enum_min_size);
+          ("c_enum_repr_ty", c_enum_repr_ty);
           ("primitive_alignments", primitive_alignments);
         ] ->
         let* target_pointer_size = int_of_json ctx target_pointer_size in
         let* is_little_endian = bool_of_json ctx is_little_endian in
-        let* c_enum_min_size = int_of_json ctx c_enum_min_size in
+        let* c_enum_repr_ty = int_ty_of_json ctx c_enum_repr_ty in
         let* primitive_alignments =
           index_map_of_json literal_type_of_json int_of_json int_of_json ctx
             primitive_alignments
@@ -3424,7 +3422,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
           ({
              target_pointer_size;
              is_little_endian;
-             c_enum_min_size;
+             c_enum_repr_ty;
              primitive_alignments;
            }
             : target_info)

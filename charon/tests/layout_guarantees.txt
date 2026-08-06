@@ -389,14 +389,14 @@ normalized Guarantees: {
 
 test_crate::ArbitraryDiscriminants
 direct Guarantees: {
-    SIZE = aligned_to(max(offset(0.0) + SizeOf<String>, offset(1.0) + SizeOf<u32>, 4usize), ALIGN),
+    SIZE = aligned_to(max(offset(0.0) + SizeOf<String>, offset(1.0) + SizeOf<u32>, SizeOf<i32>), ALIGN),
     ALIGN = max(AlignOf<i32>, AlignOf<String>, AlignOf<i32>, AlignOf<u32>, AlignOf<i32>),
     offset of 
         0.0 is computed by repr(C) algorithm,
         1.0 is computed by repr(C) algorithm,
 }
 stored Guarantees: {
-    SIZE = aligned_to(max(offset(0.0) + SizeOf<String>, offset(1.0) + SizeOf<u32>, 4usize), ALIGN),
+    SIZE = aligned_to(max(offset(0.0) + SizeOf<String>, offset(1.0) + SizeOf<u32>, SizeOf<i32>), ALIGN),
     ALIGN = max(AlignOf<i32>, AlignOf<String>, AlignOf<i32>, AlignOf<u32>, AlignOf<i32>),
     offset of 
         0.0 is computed by repr(C) algorithm,
@@ -412,11 +412,12 @@ normalized Guarantees: {
 
 test_crate::MyOrder
 direct Guarantees: {
-    SIZE = 1usize,
+    SIZE = SizeOf<i8>,
     ALIGN = AlignOf<i8>,
+    offsets of i8
 }
 stored Guarantees: {
-    SIZE = 1usize,
+    SIZE = SizeOf<i8>,
     ALIGN = AlignOf<i8>,
 }
 normalized Guarantees: {
@@ -489,11 +490,12 @@ normalized Guarantees: {
 
 test_crate::MaxBitsDiscr
 direct Guarantees: {
-    SIZE = 16usize,
+    SIZE = SizeOf<u128>,
     ALIGN = AlignOf<u128>,
+    offsets of u128
 }
 stored Guarantees: {
-    SIZE = 16usize,
+    SIZE = SizeOf<u128>,
     ALIGN = AlignOf<u128>,
 }
 normalized Guarantees: {

@@ -455,7 +455,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             _ => ReprOptions::default(),
         };
         let layout_guarantees =
-            LayoutGuarantees::for_type_decl(&kind, &repr, &self.t_ctx.translated);
+            LayoutGuarantees::for_type_decl(&kind, &self.t_ctx.translated, &repr);
 
         let layout = layout_guarantees
             .into_iter()

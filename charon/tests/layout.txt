@@ -316,7 +316,7 @@ Layout: {
 
 test_crate::ArbitraryDiscriminants
 Layout: {
-    SIZE: 32 (guaranteed = aligned_to(max(offset(0.0) + SizeOf<String>, offset(1.0) + SizeOf<u32>, 4usize), ALIGN)),
+    SIZE: 32 (guaranteed = aligned_to(max(offset(0.0) + SizeOf<String>, offset(1.0) + SizeOf<u32>, SizeOf<i32>), ALIGN)),
     ALIGN: 8 (guaranteed = max(AlignOf<i32>, AlignOf<String>, AlignOf<i32>, AlignOf<u32>, AlignOf<i32>)),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
@@ -340,7 +340,7 @@ Layout: {
 
 test_crate::MyOrder
 Layout: {
-    SIZE: 1 (guaranteed = 1usize),
+    SIZE: 1 (guaranteed = SizeOf<i8>),
     ALIGN: 1 (guaranteed = AlignOf<i8>),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
@@ -424,7 +424,7 @@ Layout: {
 
 test_crate::MaxBitsDiscr
 Layout: {
-    SIZE: 16 (guaranteed = 16usize),
+    SIZE: 16 (guaranteed = SizeOf<u128>),
     ALIGN: 16 (guaranteed = AlignOf<u128>),
     discriminator: omitted because tree-shaped,
     uninhabited: false,

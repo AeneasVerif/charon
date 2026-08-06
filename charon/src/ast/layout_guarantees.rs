@@ -1,336 +1,18 @@
-use std::{collections::HashMap, ops::AddAssign};
+use std::collections::HashMap;
 
 use derive_generic_visitor::*;
-use macros::{EnumAsGetters, EnumIsA, VariantName};
-use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
 use crate::{
     ast::{
         AlignmentModifier, BuiltinTy, ConstantExpr, ConstantExprKind, Field, FieldId,
-        HashConsSerializerState, IntTy, IntegerTy, Layout, Literal, LiteralTy, RawByteCount,
-        ReprAlgorithm, ReprOptions, ScalarValue, TargetTriple, TranslatedCrate, Ty, TyKind,
-        TyVisitable, TypeDeclKind, TypeDeclRef, TypeId, UIntTy, VariantId, VariantLayout,
+        HashConsSerializerState, IntTy, Layout, LayoutValue, LayoutVar, Literal, LiteralTy,
+        OffsetGuarantee, OffsetGuarantees, ReprAlgorithm, ReprOptions, ScalarValue, SizeExpr,
+        SizeExprBound, TargetInfo, TargetTriple, TranslatedCrate, Ty, TyKind, TyVisitable,
+        TypeDeclKind, TypeDeclRef, TypeId, UIntTy, VariantId,
     },
     ids::IndexVec,
 };
-
-/// Variables representing layout information from the context.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    DriveTwo,
-)]
-#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Var"))]
-pub enum LayoutVar {
-    /// The size of the whole type.
-    Size,
-    /// The alignment of the whole type.
-    Align,
-    /// The offset of the given field.
-    FieldOffset(Option<VariantId>, FieldId),
-}
-
-/// Represents the guarantees we can get about offsets of fields.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    DriveTwo,
-)]
-pub enum OffsetGuarantee {
-    /// Guaranteed to be at offset zero. This applies for `repr(transparent)` and in some  `repr(C)` cases.
-    AtOffsetZero,
-    /// The only guarantee is that it is aligned to the given expression.
-    GuaranteedAlignment(Box<SizeExpr>),
-    /// This offset has to be computed by the layout algorithm for C, taking into consideration the fields before.
-    /// Must not be the first field, since that is [`OffsetGuarantee::AtOffsetZero`].
-    ReprCField {
-        /// If this is `None`, then the field is directly behind the tag.
-        predecessor: Option<FieldId>,
-        predecessor_size: LayoutValue,
-        own_ty: Ty,
-    },
-}
-
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    DriveTwo,
-)]
-#[serde_state(state_implements = HashConsSerializerState)]
-pub enum LayoutValue {
-    #[cfg_attr(feature = "charon_on_charon", charon::rename("LayoutValueConstant"))]
-    Constant(ConstantExpr),
-    /// The size of the given type.
-    #[cfg_attr(feature = "charon_on_charon", charon::rename("ValueSizeOf"))]
-    SizeOf(Ty),
-    /// The alignment of the given type.
-    #[cfg_attr(feature = "charon_on_charon", charon::rename("ValueAlignOf"))]
-    AlignOf(Ty),
-    /// For a DST with `dyn Trait` metadata, this refers to the size found in the metadata.
-    DynSize,
-    /// For a DST with `dyn Trait` metadata, this refers to the alignment found in the metadata.
-    DynAlign,
-    /// For a DST with slice metadata, this refers to the length found in the metadata.
-    SliceLength,
-    /// The size of the default discriminant type for a target.
-    TargetDiscrSize,
-    /// The alignment of the default discriminant type for a target.
-    TargetDiscrAlign,
-}
-
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    DriveTwo,
-)]
-#[serde_state(state_implements = HashConsSerializerState)]
-pub enum SizeExpr {
-    #[serde_state(stateless)]
-    #[cfg_attr(feature = "charon_on_charon", charon::rename("SizeVariable"))]
-    Var(LayoutVar),
-    #[cfg_attr(feature = "charon_on_charon", charon::rename("SizeValue"))]
-    Val(LayoutValue),
-    Max(Vec<SizeExpr>),
-    Min(Vec<SizeExpr>),
-    Plus(Box<SizeExpr>, Box<SizeExpr>),
-    Scale(Box<SizeExpr>, ConstantExpr),
-    /// The next multiple of `target_align` from `base`.
-    AlignTo {
-        base: Box<SizeExpr>,
-        target_align: Box<SizeExpr>,
-    },
-    /// A size expression that changes its value based on whether an argument type is inhabited.
-    IfInhabited {
-        ty: Ty,
-        then_size: Box<SizeExpr>,
-        else_size: Box<SizeExpr>,
-    },
-}
-
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    DriveTwo,
-)]
-#[serde_state(state_implements = HashConsSerializerState)]
-pub enum SizeExprBound {
-    ExactEq(SizeExpr),
-    LowerBound(SizeExpr),
-}
-
-impl SizeExprBound {
-    pub fn map<F: Fn(SizeExpr) -> SizeExpr>(self, f: F) -> Self {
-        match self {
-            Self::ExactEq(size_expr) => Self::ExactEq(f(size_expr)),
-            Self::LowerBound(size_expr) => Self::LowerBound(f(size_expr)),
-        }
-    }
-
-    pub fn map_mut<F: Fn(&mut SizeExpr)>(&mut self, f: F) {
-        match self {
-            Self::ExactEq(size_expr) | Self::LowerBound(size_expr) => f(size_expr),
-        }
-    }
-
-    pub fn comb<F: Fn(SizeExpr, SizeExpr) -> SizeExpr>(self, other: Self, f: F) -> Self {
-        match (self, other) {
-            (Self::ExactEq(size_expr1), Self::ExactEq(size_expr2)) => {
-                Self::ExactEq(f(size_expr1, size_expr2))
-            }
-            (Self::ExactEq(size_expr1), Self::LowerBound(size_expr2))
-            | (Self::LowerBound(size_expr1), Self::ExactEq(size_expr2))
-            | (Self::LowerBound(size_expr1), Self::LowerBound(size_expr2)) => {
-                Self::LowerBound(f(size_expr1, size_expr2))
-            }
-        }
-    }
-
-    pub fn make(expr: SizeExpr, exact: bool) -> Self {
-        if exact {
-            Self::ExactEq(expr)
-        } else {
-            Self::LowerBound(expr)
-        }
-    }
-
-    pub fn inner(&self) -> &SizeExpr {
-        match self {
-            Self::ExactEq(size_expr) | Self::LowerBound(size_expr) => size_expr,
-        }
-    }
-
-    pub fn inner_mut(&mut self) -> &mut SizeExpr {
-        match self {
-            Self::ExactEq(size_expr) | Self::LowerBound(size_expr) => size_expr,
-        }
-    }
-
-    pub fn take(self) -> SizeExpr {
-        match self {
-            Self::ExactEq(size_expr) | Self::LowerBound(size_expr) => size_expr,
-        }
-    }
-
-    pub fn add_exact_info(self, exact: bool) -> Self {
-        match self {
-            Self::ExactEq(size_expr) if exact => Self::ExactEq(size_expr),
-            _ => Self::LowerBound(self.take()),
-        }
-    }
-
-    pub fn update<F: FnMut(&mut SizeExpr, bool) -> bool>(&mut self, mut f: F) {
-        let old_exact = self.is_exact_eq();
-        let new_exact = f(self.inner_mut(), old_exact);
-        // FIXME: Is there some sound unsafe code to make this possible without the clone?
-        *self = Self::make(self.inner().clone(), old_exact && new_exact);
-    }
-}
-
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    DriveTwo,
-)]
-#[serde_state(state_implements = HashConsSerializerState)]
-#[cfg_attr(
-    feature = "charon_on_charon",
-    charon::variants_prefix("OffsetGuarantee")
-)]
-pub enum OffsetGuarantees {
-    Symbolic(Ty),
-    Variants(IndexVec<VariantId, IndexVec<FieldId, OffsetGuarantee>>),
-    Fields(IndexVec<FieldId, OffsetGuarantee>),
-    None,
-}
-
-impl OffsetGuarantees {
-    pub fn first_field(&self) -> Option<&OffsetGuarantee> {
-        match self {
-            Self::Variants(variants) => variants
-                .get(VariantId::ZERO)
-                .and_then(|fields| fields.get(FieldId::ZERO)),
-            Self::Fields(fields) => fields.get(FieldId::ZERO),
-            _ => None,
-        }
-    }
-
-    pub fn first_field_mut(&mut self) -> Option<&mut OffsetGuarantee> {
-        match self {
-            Self::Variants(variants) => variants
-                .get_mut(VariantId::ZERO)
-                .and_then(|fields| fields.get_mut(FieldId::ZERO)),
-            Self::Fields(fields) => fields.get_mut(FieldId::ZERO),
-            _ => None,
-        }
-    }
-
-    pub fn get_variants(
-        self,
-        expected_variants: Option<usize>,
-        translated: Option<&TranslatedCrate>,
-    ) -> Option<IndexVec<VariantId, IndexVec<FieldId, OffsetGuarantee>>> {
-        match self {
-            Self::Variants(variants_guarantees) => Some(variants_guarantees),
-            Self::None if expected_variants.is_some() => Some(
-                (0..expected_variants.unwrap())
-                    .map(|_| vec![].into())
-                    .collect(),
-            ),
-            Self::Symbolic(ty) => {
-                let guarantees_for_ty = LayoutGuarantees::for_ty(&ty, translated?)?;
-                if let OffsetGuarantees::Symbolic(ty2) = &guarantees_for_ty.offsets
-                    && ty == *ty2
-                {
-                    // Break cycles.
-                    None
-                } else {
-                    guarantees_for_ty
-                        .offsets
-                        .get_variants(expected_variants, translated)
-                }
-            }
-            Self::Fields(fields) => Some(vec![fields].into()),
-            _ => None,
-        }
-    }
-
-    pub fn from_layout(layout: &IndexVec<VariantId, Option<VariantLayout>>) -> Self {
-        let mut offsets = IndexVec::new();
-        for variant_layout in layout.iter() {
-            let fields: Option<IndexVec<FieldId, OffsetGuarantee>> =
-                if let Some(variant_layout) = variant_layout {
-                    variant_layout
-                        .field_offsets
-                        .iter()
-                        .map(|offset| offset.guarantees.clone())
-                        .collect()
-                } else {
-                    None
-                };
-            if let Some(fields) = fields {
-                offsets.push(fields);
-            } else {
-                offsets.push(IndexVec::new());
-            }
-        }
-        Self::Variants(offsets)
-    }
-}
 
 #[derive(
     Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
@@ -342,263 +24,21 @@ pub struct LayoutGuarantees {
     pub offsets: OffsetGuarantees,
 }
 
-impl LayoutValue {
-    pub fn mk_address_size() -> Self {
-        Self::SizeOf(Ty::mk_usize())
-    }
-
-    pub fn mk_address_align() -> Self {
-        Self::AlignOf(Ty::mk_usize())
-    }
-
-    pub fn mk_address_size_for(
-        translated: &TranslatedCrate,
-        target: &TargetTriple,
-    ) -> Option<Self> {
-        translated
-            .target_information
-            .get(target)
-            .map(|target_info| {
-                Self::Constant(
-                    ScalarValue::mk_usize(
-                        target_info.target_pointer_size,
-                        target_info.target_pointer_size,
-                    )
-                    .to_constant(),
-                )
-            })
-    }
-
-    pub fn make_primitive_align_for_target(
-        ty: &LiteralTy,
-        translated: &TranslatedCrate,
-        target: &TargetTriple,
-    ) -> Option<Self> {
-        let target_info = translated.target_information.get(target)?;
-        let align = target_info.primitive_alignments.get(ty)?;
-        Some(Self::Constant(
-            ScalarValue::mk_usize(target_info.target_pointer_size, *align).to_constant(),
-        ))
-    }
-
-    pub fn of_ty(ty: &Ty, is_size: bool) -> Self {
-        match ty.kind() {
-            TyKind::Adt(TypeDeclRef {
-                id: TypeId::Builtin(BuiltinTy::Str),
-                ..
-            }) => {
-                if is_size {
-                    Self::SliceLength
-                } else {
-                    Self::AlignOf(Ty::new(TyKind::Literal(LiteralTy::UInt(UIntTy::U8))))
-                }
-            }
-            TyKind::DynTrait(_) => {
-                if is_size {
-                    Self::DynSize
-                } else {
-                    Self::DynAlign
-                }
-            }
-            TyKind::Slice(ty) => {
-                if is_size {
-                    Self::SliceLength
-                } else {
-                    Self::AlignOf(ty.clone())
-                }
-            }
-            _ => {
-                if is_size {
-                    Self::SizeOf(ty.clone())
-                } else {
-                    Self::AlignOf(ty.clone())
-                }
-            }
-        }
-    }
+struct LayoutGuaranteeComputer<'a, 'b> {
+    krate: &'a TranslatedCrate,
+    target: Option<&'b TargetTriple>,
 }
 
-impl Default for SizeExpr {
-    fn default() -> Self {
-        Self::Val(LayoutValue::Constant(ConstantExpr::mk_usize(
-            ScalarValue::mk_zero_usize(),
-        )))
-    }
-}
-
-impl SizeExpr {
-    pub fn mk_const_byte_count(bytes: RawByteCount) -> Self {
-        Self::Val(LayoutValue::Constant(ConstantExpr {
-            kind: ConstantExprKind::Literal(Literal::Scalar(ScalarValue::Unsigned(
-                UIntTy::Usize,
-                bytes as u128,
-            ))),
-            ty: Ty::new(TyKind::Literal(LiteralTy::UInt(UIntTy::Usize))),
-        }))
-    }
-
-    pub fn is_constant(&self) -> Option<ConstantExpr> {
-        match self {
-            Self::Val(LayoutValue::Constant(c)) => Some(c.clone()),
-            _ => None,
-        }
-    }
-
-    pub fn realign(&mut self, align_to: Self) {
-        match self {
-            Self::AlignTo { target_align, .. } => **target_align = align_to,
-            Self::Val(LayoutValue::Constant(ConstantExpr {
-                kind: ConstantExprKind::Literal(Literal::Scalar(s)),
-                ..
-            })) if align_to.is_constant().is_some() => {
-                let Some(ConstantExpr {
-                    kind: ConstantExprKind::Literal(Literal::Scalar(align_to)),
-                    ..
-                }) = align_to.is_constant()
-                else {
-                    unreachable!()
-                };
-                let (ty, c) = s.as_unsigned().unwrap();
-                let align_to = align_to.as_uint().unwrap();
-                if !c.is_multiple_of(align_to) {
-                    let aligned = c + align_to - (c % align_to);
-                    *s = ScalarValue::from_bits(IntegerTy::Unsigned(*ty), aligned);
-                }
-            }
-            _ => {
-                *self = Self::AlignTo {
-                    base: Box::new(self.clone()),
-                    target_align: Box::new(align_to),
-                }
-            }
-        }
-    }
-
-    pub fn unalign(self) -> Self {
-        match self {
-            SizeExpr::AlignTo { base, .. } => *base,
-            _ => self,
-        }
-    }
-
-    pub fn max(&mut self, rhs: Self) {
-        if let Self::Max(elems) = self {
-            if let Self::Max(rhs_max) = rhs {
-                elems.extend(rhs_max);
-            } else {
-                elems.push(rhs);
-            }
-        } else {
-            *self = Self::Max(vec![self.clone(), rhs]);
-        }
-    }
-}
-
-impl AddAssign for SizeExpr {
-    fn add_assign(&mut self, rhs: SizeExpr) {
-        *self = Self::Plus(Box::new(self.clone()), Box::new(rhs));
-    }
-}
-
-impl LayoutGuarantees {
-    pub fn one_zst() -> Self {
-        Self {
-            size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::Constant(
-                ScalarValue::mk_zero_usize().to_constant(),
-            ))),
-            align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::Constant(
-                ScalarValue::mk_one_usize().to_constant(),
-            ))),
-            offsets: OffsetGuarantees::None,
-        }
-    }
-
-    /// Does not set field offsets.
-    pub fn mk_concrete(size: ScalarValue, alignment: ScalarValue) -> Self {
-        if size.is_multiple_of(&alignment) == Some(true) {
-            Self {
-                size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::Constant(
-                    size.to_constant(),
-                ))),
-                align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::Constant(
-                    alignment.to_constant(),
-                ))),
-                offsets: OffsetGuarantees::None,
-            }
-        } else {
-            panic!(
-                "Type size {} not a multiple of alignment {}!",
-                size, alignment
-            )
-        }
-    }
-
-    /// Based on [https://doc.rust-lang.org/reference/type-layout.html#r-layout.array].
-    pub fn mk_array(elem_ty: &Ty, elem_num: &ConstantExpr) -> Self {
-        Self {
-            size: SizeExprBound::ExactEq(SizeExpr::Scale(
-                Box::new(SizeExpr::Val(LayoutValue::of_ty(elem_ty, true))),
-                elem_num.clone(),
-            )),
-            align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(elem_ty, false))),
-            offsets: OffsetGuarantees::None,
-        }
-    }
-
-    /// This is consistent with [`rustc_middle::ty::Ty::primitive_size`].
-    ///
-    /// However, currently it ignores potential inconsistencies with regard to
-    /// [https://doc.rust-lang.org/reference/type-layout.html#r-layout.primitive.size].
-    pub fn mk_primitive(primitive: &LiteralTy) -> Self {
-        let size = match primitive {
-            LiteralTy::Int(IntTy::Isize) | LiteralTy::UInt(UIntTy::Usize) => {
-                return Self {
-                    size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::mk_address_size())),
-                    align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::mk_address_align())),
-                    offsets: OffsetGuarantees::None,
-                };
-            }
-            LiteralTy::Int(int_ty) => int_ty.target_size(0),
-            LiteralTy::UInt(uint_ty) => uint_ty.target_size(0),
-            LiteralTy::Float(float_ty) => float_ty.target_size(),
-            LiteralTy::Bool => 1,
-            LiteralTy::Char => 4,
-        };
-        Self {
-            size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::Constant(
-                ScalarValue::from_unchecked_uint(UIntTy::Usize, size as u128).to_constant(),
-            ))),
-            align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::AlignOf(Ty::from(
-                *primitive,
-            )))),
-            offsets: OffsetGuarantees::None,
-        }
-    }
-
-    pub fn mk_symbolic(ty: Ty) -> Self {
-        Self {
-            size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(&ty, true))),
-            align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(&ty, false))),
-            offsets: OffsetGuarantees::Symbolic(ty),
-        }
-    }
-
-    pub fn is_purely_symbolic(&self) -> bool {
-        matches!(
-            self,
-            Self {
-                size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::SizeOf(_))),
-                align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::AlignOf(_))),
-                offsets: OffsetGuarantees::Symbolic(_),
-            }
-        )
+impl<'a, 'b> LayoutGuaranteeComputer<'a, 'b> {
+    pub(super) fn new(krate: &'a TranslatedCrate, target: Option<&'b TargetTriple>) -> Self {
+        Self { krate, target }
     }
 
     /// The layout of a pointer to `pointee`. Uses the symbolic size of meta-data.
     ///
     /// Based on [https://doc.rust-lang.org/reference/type-layout.html#r-layout.pointer.unsized].
-    fn mk_ptr(pointee: &Ty, translated: &TranslatedCrate) -> Self {
-        let meta = pointee.get_ptr_metadata(translated).into_type();
+    fn mk_ptr(&self, pointee: &Ty) -> LayoutGuarantees {
+        let meta = pointee.get_ptr_metadata(self.krate).into_type();
         // If we have no metadata, the pointer is exactly the address value.
         let exact = meta.is_unit();
         let ptr_size = LayoutValue::mk_address_size();
@@ -617,7 +57,7 @@ impl LayoutGuarantees {
             },
             exact,
         );
-        Self {
+        LayoutGuarantees {
             size,
             align: SizeExprBound::make(align, exact),
             // We have guarantee about the offsets of the pointer parts, especially since
@@ -626,12 +66,410 @@ impl LayoutGuarantees {
         }
     }
 
+    /// Generates the layout guarantees for a (tagged) union.
+    /// NOTE: Assumes the type to be repr(C)!
+    fn mk_tagged_union<V, F>(
+        &self,
+        variants: V,
+        tag_ty: Option<Ty>,
+        is_union: bool,
+    ) -> LayoutGuarantees
+    where
+        V: Iterator<Item = F>,
+        F: Iterator<Item = Ty>,
+    {
+        let mut max_size = SizeExpr::Max(Vec::new());
+        let mut max_align = SizeExpr::Max(Vec::new());
+        let mut offsets = IndexVec::new();
+
+        for (id, mut fields) in variants.enumerate() {
+            // Unions don't have an actual structure, but a single field, which needs to be
+            // handled as if it has the same repr annotation as the whole union.
+            let variant_guarantees = if is_union {
+                let mut guarantees = self.for_ty_inner(&fields.next().unwrap(), true).unwrap();
+                if let Some(first_field) = guarantees.offsets.first_field_mut() {
+                    *first_field = OffsetGuarantee::AtOffsetZero;
+                }
+                guarantees
+            } else {
+                LayoutGuarantees::mk_ordered_sequence_repr_c(
+                    fields,
+                    Some(VariantId::from_raw(id)),
+                    tag_ty.clone(),
+                )
+            };
+            max_size.max(variant_guarantees.size.take().unalign());
+            max_align.max(variant_guarantees.align.take());
+            let field_offsets = match variant_guarantees.offsets {
+                OffsetGuarantees::Variants(mut variants) => variants.pop().unwrap(),
+                OffsetGuarantees::Fields(fields) => fields,
+                _ => IndexVec::new(),
+            };
+            offsets.push(field_offsets);
+        }
+
+        let size = SizeExprBound::ExactEq(SizeExpr::AlignTo {
+            base: Box::new(max_size),
+            target_align: Box::new(SizeExpr::Var(LayoutVar::Align)),
+        });
+        // Since we assume repr(C), the guarantees are exact.
+        LayoutGuarantees {
+            size,
+            align: SizeExprBound::ExactEq(max_align),
+            offsets: OffsetGuarantees::Variants(offsets),
+        }
+    }
+
+    /// There must be at most one non-1-ZST field in the single variant.
+    /// Based on https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.transparent
+    fn mk_transparent_layout_guarantees(
+        &self,
+        fields: &IndexVec<FieldId, Field>,
+    ) -> Option<LayoutGuarantees> {
+        let mut non_one_zst_ty = None;
+        let mut field_guarantees = IndexVec::new();
+        for field in fields.iter() {
+            let ty = &field.ty;
+            let layout = self.for_ty(ty)?;
+            if layout != LayoutGuarantees::one_zst() {
+                if non_one_zst_ty.is_some() {
+                    return None; // More than one non-1-ZST field!
+                }
+                non_one_zst_ty = Some(ty.clone());
+                if let SizeExprBound::ExactEq(align) = layout.align {
+                    field_guarantees.push(OffsetGuarantee::GuaranteedAlignment(Box::new(align)));
+                } else {
+                    field_guarantees.push(OffsetGuarantee::GuaranteedAlignment(Box::new(
+                        SizeExpr::Val(LayoutValue::AlignOf(ty.clone())),
+                    )));
+                }
+            } else {
+                field_guarantees.push(OffsetGuarantee::GuaranteedAlignment(Box::new(
+                    SizeExpr::Val(LayoutValue::AlignOf(ty.clone())),
+                )));
+            }
+        }
+
+        if let Some(non_one_zst_ty) = non_one_zst_ty {
+            let mut single_field_layout = LayoutGuarantees::mk_symbolic(non_one_zst_ty);
+            single_field_layout.offsets = OffsetGuarantees::Fields(field_guarantees);
+            Some(single_field_layout)
+        } else {
+            // If there is no non-1-ZST field, the type is equivalent to unit.
+            Some(LayoutGuarantees::one_zst())
+        }
+    }
+
+    pub(super) fn for_type_decl(
+        &self,
+        td_kind: &TypeDeclKind,
+        repr: &ReprOptions,
+    ) -> Option<LayoutGuarantees> {
+        match td_kind {
+            TypeDeclKind::Struct(fields) => {
+                if repr.transparent {
+                    return self.mk_transparent_layout_guarantees(fields);
+                }
+
+                let fields = fields.iter().map(|field| field.ty.clone());
+
+                if repr.repr_algo == ReprAlgorithm::C {
+                    let repr_c_guarantees =
+                        LayoutGuarantees::mk_ordered_sequence_repr_c(fields, None, None);
+                    return Some(repr_c_guarantees);
+                }
+
+                let mut base_guarantees =
+                    LayoutGuarantees::mk_unordered_sequence(fields, None, Some(repr));
+                // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.align-packed
+                match repr.align_modif {
+                    Some(AlignmentModifier::Align(forced_align)) => {
+                        base_guarantees.align.map_mut(|align| {
+                            align.max(SizeExpr::Val(LayoutValue::Constant(
+                                ScalarValue::from_unchecked_uint(
+                                    UIntTy::Usize,
+                                    forced_align as u128,
+                                )
+                                .to_constant(),
+                            )))
+                        });
+                    }
+                    Some(AlignmentModifier::Pack(n)) => {
+                        base_guarantees.align = SizeExprBound::ExactEq(SizeExpr::Min(vec![
+                            SizeExpr::Val(LayoutValue::Constant(
+                                ScalarValue::from_unchecked_uint(UIntTy::Usize, n as u128)
+                                    .to_constant(),
+                            )),
+                            base_guarantees.align.take(),
+                        ]));
+                    }
+                    _ => (),
+                }
+                Some(base_guarantees)
+            }
+            TypeDeclKind::Enum(variants) => {
+                if repr.transparent {
+                    debug_assert_eq!(variants.len(), 1);
+                    let fields = &variants.iter().next()?.fields;
+                    self.mk_transparent_layout_guarantees(fields)
+                } else {
+                    // An explicit discriminant type implies that the enum has also C representation.
+                    // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.adt
+                    // Also, both cases imply that the discriminant type is guaranteed to be either the specified
+                    // type, or the default discriminant type for a target.
+                    if repr.guarantees_fixed_field_order() {
+                        let field_less = variants.iter().all(|variant| variant.fields.is_empty());
+
+                        let discr_ty = if let Some(discr_ty) = &repr.explicit_discr_type {
+                            discr_ty.clone()
+                        } else {
+                            Ty::new(TyKind::Literal(LiteralTy::Int(
+                                self.krate.the_target_information().c_enum_repr_ty,
+                            )))
+                        };
+
+                        if field_less {
+                            // For field-less enums with a guaranteed discriminant type, the whole layout is exactly the type.
+                            // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.enum
+                            Some(LayoutGuarantees::mk_symbolic(discr_ty))
+                        } else {
+                            // For enums with fields and #[repr(C)], the whole layout is a tagged union with the
+                            // specified discriminant and a union of each variant as a #[repr(C)] struct.
+                            // See https://doc.rust-lang.org/reference/type-layout.html#primitive-representation-of-enums-with-fields
+                            // and https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.adt
+                            let variants = variants
+                                .iter()
+                                .map(|variant| variant.fields.iter().map(|field| field.ty.clone()));
+                            Some(self.mk_tagged_union(variants, Some(discr_ty), false))
+                        }
+                    } else {
+                        // We only know the most basic guarantees, i.e. fields being aligned,
+                        // fields not overlapping inside each variant, and the alignment
+                        // being at least the maximum of the alignment of any field.
+                        // At the moment, we do not express any guarantees about niches
+                        // and thus need to over-approximate by saying that the size
+                        // and alignment do not mention the tag, in case it is niche-encoded.
+                        // Nonetheless, we also have no guarantee about the tag type
+                        // if it's not niche-encoded anyway, so we cannot get much better in general.
+                        let mut max_size = SizeExpr::Max(Vec::new());
+                        let mut max_align = SizeExpr::Max(Vec::new());
+                        let mut offsets = IndexVec::new();
+
+                        for (id, variant) in variants.iter_enumerated() {
+                            let fields = variant.fields.iter().map(|field| field.ty.clone());
+                            let variant_guarantees =
+                                LayoutGuarantees::mk_unordered_sequence(fields, Some(id), None);
+                            max_size.max(variant_guarantees.size.take().unalign());
+                            max_align.max(variant_guarantees.align.take());
+
+                            let field_offsets = match variant_guarantees.offsets {
+                                OffsetGuarantees::Variants(mut variants) => variants.pop().unwrap(),
+                                OffsetGuarantees::Fields(fields) => fields,
+                                _ => IndexVec::new(),
+                            };
+                            offsets.push(field_offsets);
+                        }
+
+                        let size = SizeExprBound::LowerBound(SizeExpr::AlignTo {
+                            base: Box::new(max_size),
+                            target_align: Box::new(SizeExpr::Var(LayoutVar::Align)),
+                        });
+                        // Since we assume repr(C), the guarantees are exact.
+                        Some(LayoutGuarantees {
+                            size,
+                            align: SizeExprBound::LowerBound(max_align),
+                            offsets: OffsetGuarantees::Variants(offsets),
+                        })
+                    }
+                }
+            }
+            TypeDeclKind::Union(fields) => {
+                // We get no guarantees for non-`repr(C)` unions.
+                // See https://doc.rust-lang.org/reference/types/union.html#r-type.union.layout
+                if repr.repr_algo != ReprAlgorithm::C {
+                    return None;
+                }
+
+                // The layout of a union is the max size and alignment among all its variants.
+                // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.union.size-align
+                let variants = fields
+                    .iter()
+                    .map(|field| Some(field.ty.clone()).into_iter());
+                Some(self.mk_tagged_union(variants, None, true))
+            }
+            TypeDeclKind::Alias(ty) => Some(LayoutGuarantees::mk_symbolic(ty.clone())),
+            _ => None,
+        }
+    }
+
+    fn for_ty_inner(&self, ty: &Ty, force_repr_c: bool) -> Option<LayoutGuarantees> {
+        match ty.kind() {
+            // True Adt's (i.e. structs and enums) should have layout guarantees stored in
+            // the corresponding type declaration.
+            TyKind::Adt(TypeDeclRef {
+                id: TypeId::Adt(type_decl_id),
+                generics,
+            }) => {
+                if let Some(td) = self.krate.type_decls.get(*type_decl_id)
+                    && let Some(target) = self.target
+                {
+                    let poly_guarantees = LayoutGuarantees::from_layout(td.layout.get(target)?);
+                    Some(poly_guarantees.substitute(generics))
+                } else {
+                    Some(LayoutGuarantees::mk_symbolic(ty.clone()))
+                }
+            }
+            TyKind::Adt(TypeDeclRef {
+                id: TypeId::Tuple,
+                generics,
+            }) => {
+                if force_repr_c {
+                    Some(LayoutGuarantees::mk_ordered_sequence_repr_c(
+                        generics.types.iter().cloned(),
+                        None,
+                        None,
+                    ))
+                } else {
+                    Some(LayoutGuarantees::mk_unordered_sequence(
+                        generics.types.iter().cloned(),
+                        None,
+                        None,
+                    ))
+                }
+            }
+            TyKind::TypeVar(_) => Some(LayoutGuarantees::mk_symbolic(ty.clone())),
+            TyKind::Literal(literal_ty) => Some(LayoutGuarantees::mk_primitive(
+                literal_ty,
+                self.krate.the_target_information(),
+            )),
+            TyKind::Adt(TypeDeclRef {
+                id: TypeId::Builtin(BuiltinTy::Box),
+                generics,
+            }) => Some(self.mk_ptr(generics.types.first()?)),
+            TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) => Some(self.mk_ptr(ty)),
+            TyKind::FnPtr(_) => {
+                let ptr_size = SizeExpr::Val(LayoutValue::mk_address_size());
+                Some(LayoutGuarantees {
+                    size: SizeExprBound::ExactEq(ptr_size.clone()),
+                    align: SizeExprBound::ExactEq(ptr_size.clone()),
+                    offsets: OffsetGuarantees::None,
+                })
+            }
+            TyKind::Array(elem_ty, elem_num) => Some(LayoutGuarantees::mk_array(elem_ty, elem_num)),
+            // For DSTs, we could think of a layout that is not only symbolic,
+            // but also parametric in some meta data value.
+            // For slice-like DSTs, we at least know that the alignment is the same as for the underlying array.
+            //
+            // See doc.rust-lang.org/reference/type-layout.html#r-layout.str
+            TyKind::Adt(TypeDeclRef {
+                id: TypeId::Builtin(BuiltinTy::Str),
+                ..
+            }) => {
+                Some(LayoutGuarantees {
+                    // Aligned to `u8`.
+                    align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(ty, false))),
+                    size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(ty, true))),
+                    offsets: OffsetGuarantees::None,
+                })
+            }
+            // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.slice
+            TyKind::Slice(_) => Some(LayoutGuarantees {
+                align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(ty, false))),
+                size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(ty, true))),
+                offsets: OffsetGuarantees::None,
+            }),
+            // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.trait-object
+            TyKind::DynTrait(_) => Some(LayoutGuarantees {
+                size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::DynSize)),
+                align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::DynAlign)),
+                offsets: OffsetGuarantees::None,
+            }),
+            // For the purpose of layout computation, the never type is (I think)
+            // guaranteed to be a 1-ZST.
+            TyKind::Never => Some(LayoutGuarantees::one_zst()),
+            _ => None,
+        }
+    }
+
+    /// Constructs the layout guarantees for the given type.
+    ///
+    /// NOTE: Must only ever be called in a context with a single target!
+    /// Will panic otherwise.
+    pub(super) fn for_ty(&self, ty: &Ty) -> Option<LayoutGuarantees> {
+        self.for_ty_inner(ty, false)
+    }
+}
+
+impl LayoutGuarantees {
+    pub(super) fn one_zst() -> Self {
+        Self {
+            size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::Constant(
+                ScalarValue::mk_zero_usize().to_constant(),
+            ))),
+            align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::Constant(
+                ScalarValue::mk_one_usize().to_constant(),
+            ))),
+            offsets: OffsetGuarantees::None,
+        }
+    }
+
+    /// Based on [https://doc.rust-lang.org/reference/type-layout.html#r-layout.array].
+    pub(super) fn mk_array(elem_ty: &Ty, elem_num: &ConstantExpr) -> Self {
+        Self {
+            size: SizeExprBound::ExactEq(SizeExpr::Scale(
+                Box::new(SizeExpr::Val(LayoutValue::of_ty(elem_ty, true))),
+                elem_num.clone(),
+            )),
+            align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(elem_ty, false))),
+            offsets: OffsetGuarantees::None,
+        }
+    }
+
+    /// This is consistent with [`rustc_middle::ty::Ty::primitive_size`].
+    ///
+    /// However, currently it ignores potential inconsistencies with regard to
+    /// [https://doc.rust-lang.org/reference/type-layout.html#r-layout.primitive.size].
+    pub(super) fn mk_primitive(primitive: &LiteralTy, target_info: &TargetInfo) -> Self {
+        let size = match primitive {
+            LiteralTy::Int(IntTy::Isize) | LiteralTy::UInt(UIntTy::Usize) => {
+                return Self {
+                    size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::mk_address_size())),
+                    align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::mk_address_align())),
+                    offsets: OffsetGuarantees::None,
+                };
+            }
+            LiteralTy::Int(int_ty) => int_ty.target_size(0),
+            LiteralTy::UInt(uint_ty) => uint_ty.target_size(0),
+            LiteralTy::Float(float_ty) => float_ty.target_size(),
+            LiteralTy::Bool => 1,
+            LiteralTy::Char => 4,
+        };
+        let align = target_info.primitive_alignments.get(primitive).unwrap();
+        Self {
+            size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::Constant(
+                ScalarValue::from_unchecked_uint(UIntTy::Usize, size as u128).to_constant(),
+            ))),
+            align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::Constant(
+                ScalarValue::mk_usize(target_info.target_pointer_size, *align).to_constant(),
+            ))),
+            offsets: OffsetGuarantees::None,
+        }
+    }
+
+    pub(super) fn mk_symbolic(ty: Ty) -> Self {
+        Self {
+            size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(&ty, true))),
+            align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(&ty, false))),
+            offsets: OffsetGuarantees::Symbolic(ty),
+        }
+    }
+
     /// Computes the layout of a fixed, but unordered sequence of elements of the given types.
     /// This covers the Rust representation of both tuples and structs.
     ///
     /// The returned [`LayoutGuarantees::offsets`] ignore the variant id and store the field
     /// offsets at index 0.
-    pub fn mk_unordered_sequence<I>(
+    pub(super) fn mk_unordered_sequence<I>(
         fields: I,
         variant_id: Option<VariantId>,
         repr: Option<&ReprOptions>,
@@ -701,25 +539,22 @@ impl LayoutGuarantees {
     ///
     /// The returned [`LayoutGuarantees::offsets`] ignore the variant id and store the field
     /// offsets at index 0.
-    pub fn mk_ordered_sequence_repr_c<I>(
+    pub(super) fn mk_ordered_sequence_repr_c<I>(
         fields: I,
         variant_id: Option<VariantId>,
-        prefix_tag_layout: Option<Self>,
+        tag_ty: Option<Ty>,
     ) -> Self
     where
         I: Iterator<Item = Ty>,
     {
-        let tag_exists = prefix_tag_layout.is_some();
+        let tag_exists = tag_ty.is_some();
         let mut align_max = Vec::new();
         let mut last_ty = None;
         // If there are no fields, the size will be just the tag or 0.
-        let mut size = if let Some(tag_guarantees) = prefix_tag_layout {
-            align_max.push(tag_guarantees.align.take());
-            let size = tag_guarantees.size.take();
-            if let SizeExpr::Val(LayoutValue::SizeOf(tag_ty)) = &size {
-                last_ty = Some(tag_ty.clone());
-            }
-            size
+        let mut size = if let Some(tag_ty) = &tag_ty {
+            last_ty = Some(tag_ty.clone());
+            align_max.push(SizeExpr::Val(LayoutValue::AlignOf(tag_ty.clone())));
+            SizeExpr::Val(LayoutValue::SizeOf(tag_ty.clone()))
         } else {
             SizeExpr::Val(LayoutValue::Constant(
                 ScalarValue::mk_zero_usize().to_constant(),
@@ -745,11 +580,7 @@ impl LayoutGuarantees {
                 if tag_exists {
                     field_offsets.push(OffsetGuarantee::ReprCField {
                         predecessor: None,
-                        predecessor_size: if let Some(ty) = last_ty {
-                            LayoutValue::of_ty(&ty, true)
-                        } else {
-                            LayoutValue::TargetDiscrSize
-                        },
+                        predecessor_size: LayoutValue::of_ty(&last_ty.unwrap(), true),
                         own_ty: ty.clone(),
                     });
                 } else {
@@ -775,255 +606,6 @@ impl LayoutGuarantees {
         }
     }
 
-    /// Generates the layout guarantees for a (tagged) union.
-    /// NOTE: Assumes the type to be repr(C)!
-    pub fn mk_tagged_union<V, F>(
-        variants: V,
-        tag_layout_guarantee: Option<Self>,
-        translated: &TranslatedCrate,
-        is_union: bool,
-    ) -> Self
-    where
-        V: Iterator<Item = F>,
-        F: Iterator<Item = Ty>,
-    {
-        let mut max_size = SizeExpr::Max(Vec::new());
-        let mut max_align = SizeExpr::Max(Vec::new());
-        let mut offsets = IndexVec::new();
-
-        for (id, mut fields) in variants.enumerate() {
-            // Unions don't have an actual structure, but a single field, which needs to be
-            // handled as if it has the same repr annotation as the whole union.
-            let variant_guarantees = if is_union {
-                let mut guarantees =
-                    Self::for_ty_inner(&fields.next().unwrap(), translated, true).unwrap();
-                if let Some(first_field) = guarantees.offsets.first_field_mut() {
-                    *first_field = OffsetGuarantee::AtOffsetZero;
-                }
-                guarantees
-            } else {
-                LayoutGuarantees::mk_ordered_sequence_repr_c(
-                    fields,
-                    Some(VariantId::from_raw(id)),
-                    tag_layout_guarantee.clone(),
-                )
-            };
-            max_size.max(variant_guarantees.size.take().unalign());
-            max_align.max(variant_guarantees.align.take());
-            let field_offsets = match variant_guarantees.offsets {
-                OffsetGuarantees::Variants(mut variants) => variants.pop().unwrap(),
-                OffsetGuarantees::Fields(fields) => fields,
-                _ => IndexVec::new(),
-            };
-            offsets.push(field_offsets);
-        }
-
-        let size = SizeExprBound::ExactEq(SizeExpr::AlignTo {
-            base: Box::new(max_size),
-            target_align: Box::new(SizeExpr::Var(LayoutVar::Align)),
-        });
-        // Since we assume repr(C), the guarantees are exact.
-        LayoutGuarantees {
-            size,
-            align: SizeExprBound::ExactEq(max_align),
-            offsets: OffsetGuarantees::Variants(offsets),
-        }
-    }
-
-    /// There must be at most one non-1-ZST field in the single variant.
-    /// Based on https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.transparent
-    fn mk_transparent_layout_guarantees(
-        fields: &IndexVec<FieldId, Field>,
-        translated: &TranslatedCrate,
-    ) -> Option<LayoutGuarantees> {
-        let mut non_one_zst_ty = None;
-        let mut field_guarantees = IndexVec::new();
-        for field in fields.iter() {
-            let ty = &field.ty;
-            let layout = LayoutGuarantees::for_ty(ty, translated)?;
-            if layout != LayoutGuarantees::one_zst() {
-                if non_one_zst_ty.is_some() {
-                    return None; // More than one non-1-ZST field!
-                }
-                non_one_zst_ty = Some(ty.clone());
-                if let SizeExprBound::ExactEq(align) = layout.align {
-                    field_guarantees.push(OffsetGuarantee::GuaranteedAlignment(Box::new(align)));
-                } else {
-                    field_guarantees.push(OffsetGuarantee::GuaranteedAlignment(Box::new(
-                        SizeExpr::Val(LayoutValue::AlignOf(ty.clone())),
-                    )));
-                }
-            } else {
-                field_guarantees.push(OffsetGuarantee::GuaranteedAlignment(Box::new(
-                    SizeExpr::Val(LayoutValue::AlignOf(ty.clone())),
-                )));
-            }
-        }
-
-        if let Some(non_one_zst_ty) = non_one_zst_ty {
-            let mut single_field_layout = LayoutGuarantees::mk_symbolic(non_one_zst_ty);
-            single_field_layout.offsets = OffsetGuarantees::Fields(field_guarantees);
-            Some(single_field_layout)
-        } else {
-            // If there is no non-1-ZST field, the type is equivalent to unit.
-            Some(LayoutGuarantees::one_zst())
-        }
-    }
-
-    /// Constructs the layout guarantees for the type declaration.
-    #[tracing::instrument(skip(translated))]
-    pub fn for_type_decl(
-        td_kind: &TypeDeclKind,
-        repr: &ReprOptions,
-        translated: &TranslatedCrate,
-    ) -> Option<Self> {
-        match td_kind {
-            TypeDeclKind::Struct(fields) => {
-                if repr.transparent {
-                    return Self::mk_transparent_layout_guarantees(fields, translated);
-                }
-
-                let fields = fields.iter().map(|field| field.ty.clone());
-
-                if repr.repr_algo == ReprAlgorithm::C {
-                    let repr_c_guarantees = Self::mk_ordered_sequence_repr_c(fields, None, None);
-                    return Some(repr_c_guarantees);
-                }
-
-                let mut base_guarantees = Self::mk_unordered_sequence(fields, None, Some(repr));
-                // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.align-packed
-                match repr.align_modif {
-                    Some(AlignmentModifier::Align(forced_align)) => {
-                        base_guarantees.align.map_mut(|align| {
-                            align.max(SizeExpr::Val(LayoutValue::Constant(
-                                ScalarValue::from_unchecked_uint(
-                                    UIntTy::Usize,
-                                    forced_align as u128,
-                                )
-                                .to_constant(),
-                            )))
-                        });
-                    }
-                    Some(AlignmentModifier::Pack(n)) => {
-                        base_guarantees.align = SizeExprBound::ExactEq(SizeExpr::Min(vec![
-                            SizeExpr::Val(LayoutValue::Constant(
-                                ScalarValue::from_unchecked_uint(UIntTy::Usize, n as u128)
-                                    .to_constant(),
-                            )),
-                            base_guarantees.align.take(),
-                        ]));
-                    }
-                    _ => (),
-                }
-                Some(base_guarantees)
-            }
-            TypeDeclKind::Enum(variants) => {
-                if repr.transparent {
-                    debug_assert_eq!(variants.len(), 1);
-                    let fields = &variants.iter().next()?.fields;
-                    Self::mk_transparent_layout_guarantees(fields, translated)
-                } else {
-                    // An explicit discriminant type implies that the enum has also C representation.
-                    // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.adt
-                    // Also, both cases imply that the discriminant type is guaranteed to be either the specified
-                    // type, or the default discriminant type for a target.
-                    if repr.guarantees_fixed_field_order() {
-                        let field_less = variants.iter().all(|variant| variant.fields.is_empty());
-
-                        let discr_layout_guarantee =
-                            if let Some(discr_ty) = &repr.explicit_discr_type {
-                                Self::for_ty(discr_ty, translated).unwrap()
-                            } else {
-                                Self {
-                                    size: SizeExprBound::ExactEq(SizeExpr::Val(
-                                        LayoutValue::TargetDiscrSize,
-                                    )),
-                                    align: SizeExprBound::ExactEq(SizeExpr::Val(
-                                        LayoutValue::TargetDiscrAlign,
-                                    )),
-                                    offsets: OffsetGuarantees::None,
-                                }
-                            };
-
-                        if field_less {
-                            // For field-less enums with a guaranteed discriminant type, the whole layout is exactly the type.
-                            // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.enum
-                            Some(discr_layout_guarantee)
-                        } else {
-                            // For enums with fields and #[repr(C)], the whole layout is a tagged union with the
-                            // specified discriminant and a union of each variant as a #[repr(C)] struct.
-                            // See https://doc.rust-lang.org/reference/type-layout.html#primitive-representation-of-enums-with-fields
-                            // and https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.adt
-                            let variants = variants
-                                .iter()
-                                .map(|variant| variant.fields.iter().map(|field| field.ty.clone()));
-                            Some(Self::mk_tagged_union(
-                                variants,
-                                Some(discr_layout_guarantee),
-                                translated,
-                                false,
-                            ))
-                        }
-                    } else {
-                        // We only know the most basic guarantees, i.e. fields being aligned,
-                        // fields not overlapping inside each variant, and the alignment
-                        // being at least the maximum of the alignment of any field.
-                        // At the moment, we do not express any guarantees about niches
-                        // and thus need to over-approximate by saying that the size
-                        // and alignment do not mention the tag, in case it is niche-encoded.
-                        // Nonetheless, we also have no guarantee about the tag type
-                        // if it's not niche-encoded anyway, so we cannot get much better in general.
-                        let mut max_size = SizeExpr::Max(Vec::new());
-                        let mut max_align = SizeExpr::Max(Vec::new());
-                        let mut offsets = IndexVec::new();
-
-                        for (id, variant) in variants.iter_enumerated() {
-                            let fields = variant.fields.iter().map(|field| field.ty.clone());
-                            let variant_guarantees =
-                                LayoutGuarantees::mk_unordered_sequence(fields, Some(id), None);
-                            max_size.max(variant_guarantees.size.take().unalign());
-                            max_align.max(variant_guarantees.align.take());
-
-                            let field_offsets = match variant_guarantees.offsets {
-                                OffsetGuarantees::Variants(mut variants) => variants.pop().unwrap(),
-                                OffsetGuarantees::Fields(fields) => fields,
-                                _ => IndexVec::new(),
-                            };
-                            offsets.push(field_offsets);
-                        }
-
-                        let size = SizeExprBound::LowerBound(SizeExpr::AlignTo {
-                            base: Box::new(max_size),
-                            target_align: Box::new(SizeExpr::Var(LayoutVar::Align)),
-                        });
-                        // Since we assume repr(C), the guarantees are exact.
-                        Some(LayoutGuarantees {
-                            size,
-                            align: SizeExprBound::LowerBound(max_align),
-                            offsets: OffsetGuarantees::Variants(offsets),
-                        })
-                    }
-                }
-            }
-            TypeDeclKind::Union(fields) => {
-                // We get no guarantees for non-`repr(C)` unions.
-                // See https://doc.rust-lang.org/reference/types/union.html#r-type.union.layout
-                if repr.repr_algo != ReprAlgorithm::C {
-                    return None;
-                }
-
-                // The layout of a union is the max size and alignment among all its variants.
-                // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.union.size-align
-                let variants = fields
-                    .iter()
-                    .map(|field| Some(field.ty.clone()).into_iter());
-                Some(Self::mk_tagged_union(variants, None, translated, true))
-            }
-            TypeDeclKind::Alias(ty) => Some(Self::mk_symbolic(ty.clone())),
-            _ => None,
-        }
-    }
-
     pub fn from_layout(layout: &Layout) -> Self {
         Self {
             size: layout.size.guarantees.clone(),
@@ -1032,92 +614,27 @@ impl LayoutGuarantees {
         }
     }
 
-    fn for_ty_inner(ty: &Ty, translated: &TranslatedCrate, force_repr_c: bool) -> Option<Self> {
-        match ty.kind() {
-            // True Adt's (i.e. structs and enums) should have layout guarantees stored in
-            // the corresponding type declaration.
-            TyKind::Adt(TypeDeclRef {
-                id: TypeId::Adt(type_decl_id),
-                generics,
-            }) => {
-                if let Some(td) = translated.type_decls.get(*type_decl_id) {
-                    let poly_guarantees = Self::from_layout(td.the_layout()?);
-                    Some(poly_guarantees.substitute(generics))
-                } else {
-                    Some(Self::mk_symbolic(ty.clone()))
-                }
-            }
-            TyKind::Adt(TypeDeclRef {
-                id: TypeId::Tuple,
-                generics,
-            }) => {
-                if force_repr_c {
-                    Some(Self::mk_ordered_sequence_repr_c(
-                        generics.types.iter().cloned(),
-                        None,
-                        None,
-                    ))
-                } else {
-                    Some(Self::mk_unordered_sequence(
-                        generics.types.iter().cloned(),
-                        None,
-                        None,
-                    ))
-                }
-            }
-            TyKind::TypeVar(_) => Some(Self::mk_symbolic(ty.clone())),
-            TyKind::Literal(literal_ty) => Some(Self::mk_primitive(literal_ty)),
-            TyKind::Adt(TypeDeclRef {
-                id: TypeId::Builtin(BuiltinTy::Box),
-                generics,
-            }) => Some(Self::mk_ptr(generics.types.first()?, translated)),
-            TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) => Some(Self::mk_ptr(ty, translated)),
-            TyKind::FnPtr(_) => {
-                let ptr_size = SizeExpr::Val(LayoutValue::mk_address_size());
-                Some(Self {
-                    size: SizeExprBound::ExactEq(ptr_size.clone()),
-                    align: SizeExprBound::ExactEq(ptr_size.clone()),
-                    offsets: OffsetGuarantees::None,
-                })
-            }
-            TyKind::Array(elem_ty, elem_num) => Some(Self::mk_array(elem_ty, elem_num)),
-            // For DSTs, we could think of a layout that is not only symbolic,
-            // but also parametric in some meta data value.
-            // For slice-like DSTs, we at least know that the alignment is the same as for the underlying array.
-            //
-            // See doc.rust-lang.org/reference/type-layout.html#r-layout.str
-            TyKind::Adt(TypeDeclRef {
-                id: TypeId::Builtin(BuiltinTy::Str),
-                ..
-            }) => {
-                Some(Self {
-                    // Aligned to `u8`.
-                    align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(ty, false))),
-                    size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(ty, true))),
-                    offsets: OffsetGuarantees::None,
-                })
-            }
-            // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.slice
-            TyKind::Slice(_) => Some(Self {
-                align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(ty, false))),
-                size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::of_ty(ty, true))),
-                offsets: OffsetGuarantees::None,
-            }),
-            // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.trait-object
-            TyKind::DynTrait(_) => Some(Self {
-                size: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::DynSize)),
-                align: SizeExprBound::ExactEq(SizeExpr::Val(LayoutValue::DynAlign)),
-                offsets: OffsetGuarantees::None,
-            }),
-            // For the purpose of layout computation, the never type is (I think)
-            // guaranteed to be a 1-ZST.
-            TyKind::Never => Some(Self::one_zst()),
-            _ => None,
-        }
+    /// Constructs the layout guarantees for the type declaration.
+    ///
+    /// NOTE: Must only ever be called in a context with a single target!
+    /// Will panic otherwise.
+    #[tracing::instrument(skip(krate))]
+    pub fn for_type_decl(
+        td_kind: &TypeDeclKind,
+        krate: &TranslatedCrate,
+        repr: &ReprOptions,
+    ) -> Option<LayoutGuarantees> {
+        let comp = LayoutGuaranteeComputer::new(krate, None);
+        comp.for_type_decl(td_kind, repr)
     }
 
-    pub fn for_ty(ty: &Ty, translated: &TranslatedCrate) -> Option<Self> {
-        Self::for_ty_inner(ty, translated, false)
+    /// Constructs the layout guarantees for the given type.
+    ///
+    /// NOTE: Must only ever be called in a context with a single target!
+    /// Will panic otherwise.
+    pub fn for_ty(ty: &Ty, krate: &TranslatedCrate, target: Option<&TargetTriple>) -> Option<Self> {
+        let comp = LayoutGuaranteeComputer::new(krate, target);
+        comp.for_ty(ty)
     }
 }
 
@@ -1216,39 +733,6 @@ impl<'a> LayoutComputer<'a> {
                 SizeExpr::Val(LayoutValue::Constant(c.clone())),
                 parent_exact,
             ),
-            LayoutValue::TargetDiscrSize => {
-                if let Some(target) = self.target
-                    && let Some(info) = self.krate.target_information.get(target)
-                {
-                    SizeExprBound::make(
-                        SizeExpr::Val(LayoutValue::Constant(
-                            ScalarValue::from_unchecked_uint(
-                                UIntTy::Usize,
-                                info.c_enum_min_size as u128,
-                            )
-                            .to_constant(),
-                        )),
-                        parent_exact,
-                    )
-                } else {
-                    SizeExprBound::make(SizeExpr::Val(LayoutValue::TargetDiscrSize), parent_exact)
-                }
-            }
-            LayoutValue::TargetDiscrAlign => {
-                if let Some(target) = self.target
-                    && let Some(info) = self.krate.target_information.get(target)
-                {
-                    let target_discr_uint_ty = UIntTy::of_bit_width(info.c_enum_min_size).unwrap();
-                    let target_discr_guarantees = self
-                        .compute_layout_guarantees(Ty::new(TyKind::Literal(LiteralTy::UInt(
-                            target_discr_uint_ty,
-                        ))))
-                        .unwrap();
-                    target_discr_guarantees.align.add_exact_info(parent_exact)
-                } else {
-                    SizeExprBound::make(SizeExpr::Val(LayoutValue::TargetDiscrAlign), parent_exact)
-                }
-            }
             LayoutValue::DynSize | LayoutValue::DynAlign | LayoutValue::SliceLength => {
                 SizeExprBound::make(SizeExpr::Val(val.clone()), parent_exact)
             }
@@ -1425,7 +909,7 @@ impl<'a> LayoutComputer<'a> {
             // stop computation for that branch.
             None
         } else {
-            let mut symbolic_layout = LayoutGuarantees::for_ty(&ty, self.krate)?;
+            let mut symbolic_layout = LayoutGuarantees::for_ty(&ty, self.krate, self.target)?;
             self.stack
                 .push((ty.clone(), PartialLayoutGuarantees::default()));
 

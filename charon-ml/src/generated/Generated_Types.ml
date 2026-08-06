@@ -1379,10 +1379,6 @@ and layout_value =
   | SliceLength
       (** For a DST with slice metadata, this refers to the length found in the
           metadata. *)
-  | TargetDiscrSize
-      (** The size of the default discriminant type for a target. *)
-  | TargetDiscrAlign
-      (** The alignment of the default discriminant type for a target. *)
 
 (** Variables representing layout information from the context. *)
 and layout_var =
