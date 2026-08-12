@@ -382,9 +382,9 @@ fn foo()
         storage_dead(kind)
         unwind_continue
     storage_live(x_1)
-    x_1 = copy (_3).x
+    x_1 = copy _3.x
     storage_live(y)
-    y = copy (_3).y
+    y = copy _3.y
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
@@ -422,9 +422,9 @@ fn foo()
         storage_dead(kind)
         unwind_continue
     storage_live(x_8)
-    x_8 = copy (_10).x
+    x_8 = copy _10.x
     storage_live(super_long_field_name)
-    super_long_field_name = copy (_10).super_long_field_name
+    super_long_field_name = copy _10.super_long_field_name
     storage_dead(_10)
     storage_live(_11)
     storage_live(_12)

@@ -101,7 +101,7 @@ where
 
     storage_live(_0)
     _0 = ()
-    drop[TraitClause1::drop_glue<'2>] ((*_1)).0
+    drop[TraitClause1::drop_glue<'2>] (*_1).0
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)
@@ -145,7 +145,7 @@ where
     storage_live(_0)
     _0 = ()
     storage_live(_3)
-    _3 = move (_1).0
+    _3 = move _1.0
     _0 = drop<T>[TraitClause0, TraitClause1, TraitClause1](move _3)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)

@@ -2259,9 +2259,9 @@ where
     z = move tupled_args.0
     storage_live(_4)
     storage_live(_5)
-    _5 = copy (*((*_1)).0)
+    _5 = copy (*(*_1).0)
     storage_live(_6)
-    _6 = copy (*((*_1)).1)
+    _6 = copy (*(*_1).1)
     _7 = copy _5 panic.+ copy _6
     _4 = move _7
     storage_dead(_6)
@@ -2796,8 +2796,8 @@ where
     x = move tupled_args.0
     storage_live(_4)
     _4 = copy (*x)
-    _5 = copy (*((*_1)).0) panic.+ copy _4
-    (*((*_1)).0) = move _5
+    _5 = copy (*(*_1).0) panic.+ copy _4
+    (*(*_1).0) = move _5
     _0 = ()
     storage_dead(_4)
     storage_dead(_5)

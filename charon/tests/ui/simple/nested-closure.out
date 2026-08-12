@@ -113,7 +113,7 @@ where
     storage_live(_z)
     _z = move tupled_args.0
     storage_live(_4)
-    _4 = &(*((*_1)).0)
+    _4 = &(*(*_1).0)
     _0 = TraitClause1::clone<'5>(move _4)
     ↳⚡ storage_dead(_z)
         storage_dead(tupled_args)
@@ -155,7 +155,7 @@ where
     storage_live(_y)
     _y = move tupled_args.0
     storage_live(_4)
-    _4 = &(*((*_1)).0)
+    _4 = &(*(*_1).0)
     _0 = test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure { 0: move _4 }
     storage_dead(_4)
     storage_dead(_y)
@@ -190,7 +190,7 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _3 = &(*((*_1)).0)
+    _3 = &(*(*_1).0)
     _0 = test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure { 0: move _3 }
     storage_dead(_3)
     storage_dead(tupled_args)

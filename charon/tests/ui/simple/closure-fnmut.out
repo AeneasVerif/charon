@@ -109,12 +109,12 @@ where
     storage_live(_4)
     storage_live(_7)
     x = move tupled_args.0
-    _4 = copy (*((*_1)).0) panic.+ const 1u8
-    (*((*_1)).0) = move _4
+    _4 = copy (*(*_1).0) panic.+ const 1u8
+    (*(*_1).0) = move _4
     storage_live(_5)
     _5 = copy x
     storage_live(_6)
-    _6 = copy (*((*_1)).0)
+    _6 = copy (*(*_1).0)
     _7 = copy _5 panic.+ copy _6
     _0 = move _7
     storage_dead(_6)

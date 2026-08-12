@@ -1264,7 +1264,7 @@ let rec pp_projection_elem (env : fmt_env) (sub : string)
         | None -> FieldId.to_string fid
       in
       match opt_variant_id with
-      | None -> Format.fprintf fmt "(%s).%s" sub field_name
+      | None -> Format.fprintf fmt "%s.%s" sub field_name
       | Some variant_id ->
           Format.fprintf fmt "(%s as variant %a).%s" sub
             (pp_adt_variant env adt_id)

@@ -342,7 +342,7 @@ where
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = copy (*((*_1)).0)
+    _7 = copy (*(*_1).0)
     storage_live(_8)
     _8 = copy x
     _9 = copy _7 panic.+ copy _8
@@ -356,7 +356,7 @@ where
     storage_dead(_10)
     storage_dead(_6)
     storage_live(_12)
-    _12 = copy (*((*_1)).1)
+    _12 = copy (*(*_1).1)
     _13 = copy _5 panic.+ copy _12
     _0 = move _13
     storage_dead(_12)

@@ -12,7 +12,7 @@ pub fn get_value<'_0>(g: &'_0 Generated) -> u32
     let g: &'1 Generated; // arg #1
 
     storage_live(_0)
-    _0 = copy ((*g)).value
+    _0 = copy (*g).value
     storage_dead(g)
     return
 }

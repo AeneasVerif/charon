@@ -2026,7 +2026,7 @@ where
 
     storage_live(_0)
     storage_live(_2)
-    _2 = &((*self)).0 with_metadata(copy self.metadata)
+    _2 = &(*self).0 with_metadata(copy self.metadata)
     _0 = &(*_2) with_metadata(copy _2.metadata)
     storage_dead(_2)
     storage_dead(self)
@@ -2047,7 +2047,7 @@ where
     storage_live(_0)
     storage_live(_2)
     storage_live(_3)
-    _3 = &((*self)).value with_metadata(copy self.metadata)
+    _3 = &(*self).value with_metadata(copy self.metadata)
     _2 = as_ref<'8, T>[TraitClause0](move _3)
     ↳⚡ storage_dead(self)
         unwind_continue
@@ -2072,7 +2072,7 @@ where
     storage_live(_0)
     storage_live(_2)
     storage_live(_3)
-    _3 = &mut ((*self)).0 with_metadata(copy self.metadata)
+    _3 = &mut (*self).0 with_metadata(copy self.metadata)
     _2 = &mut (*_3) with_metadata(copy _3.metadata)
     storage_dead(_3)
     _0 = &mut (*_2) with_metadata(copy _2.metadata)
@@ -2097,7 +2097,7 @@ where
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = &two-phase-mut ((*self)).value with_metadata(copy self.metadata)
+    _4 = &two-phase-mut (*self).value with_metadata(copy self.metadata)
     _3 = as_mut<'9, T>[TraitClause0](move _4)
     ↳⚡ storage_dead(self)
         unwind_continue
@@ -2334,7 +2334,7 @@ pub fn core::ptr::unique::{Unique<T>}::as_non_null_ptr<T>(self: Unique<T>) -> No
     let self: Unique<T>; // arg #1
 
     storage_live(_0)
-    _0 = copy (self).pointer
+    _0 = copy self.pointer
     storage_dead(self)
     return
 }
@@ -2390,7 +2390,7 @@ pub fn core::ptr::unique::{Unique<T>}::as_ptr<T>(self: Unique<T>) -> *mut T
 
     storage_live(_0)
     storage_live(_2)
-    _2 = copy (self).pointer
+    _2 = copy self.pointer
     _0 = core::ptr::non_null::{NonNull<T>}::as_ptr<T>(move _2)
     ↳⚡ storage_dead(self)
         unwind_continue
@@ -2412,7 +2412,7 @@ where
     storage_live(_0)
     storage_live(_2)
     storage_live(_3)
-    _3 = copy (self).pointer
+    _3 = copy self.pointer
     _2 = core::ptr::non_null::{NonNull<T>}::cast<T, U>[TraitClause0](move _3)
     ↳⚡ storage_dead(self)
         unwind_continue
@@ -2467,7 +2467,7 @@ where
     storage_live(_0)
     _0 = ()
     storage_live(ptr)
-    ptr = copy ((*self)).0
+    ptr = copy (*self).0
     storage_live(layout)
     storage_live(_4)
     storage_live(_5)
@@ -2505,7 +2505,7 @@ where
     storage_dead(_8)
     storage_live(_10)
     storage_live(_11)
-    _11 = &((*self)).1 with_metadata(copy self.metadata)
+    _11 = &(*self).1 with_metadata(copy self.metadata)
     storage_live(_12)
     storage_live(_13)
     storage_live(_14)
@@ -2559,7 +2559,7 @@ where
     storage_live(_5)
     storage_live(_6)
     _0 = ()
-    _6 = transmute<NonNull<T>, *const T>(copy (((*_1)).0).pointer)
+    _6 = transmute<NonNull<T>, *const T>(copy (*_1).0.pointer)
     drop[{built_in impl Destruct for T}::drop_glue<'4>] (*_6)
     ↳⚡ _4 = &mut (*_1)
         _5 = drop<'8, T, A>[TraitClause0, TraitClause1, TraitClause2](move _4)
@@ -2570,7 +2570,7 @@ where
             storage_dead(_2)
             storage_dead(_1)
             unwind_terminate
-        drop[{built_in impl Destruct for A}::drop_glue<'9>] ((*_1)).1
+        drop[{built_in impl Destruct for A}::drop_glue<'9>] (*_1).1
         ↳⚡ storage_dead(_6)
             storage_dead(_5)
             storage_dead(_4)
@@ -2587,7 +2587,7 @@ where
         unwind_continue
     _2 = &mut (*_1)
     _3 = drop<'6, T, A>[TraitClause0, TraitClause1, TraitClause2](move _2)
-    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'9>] ((*_1)).1
+    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'9>] (*_1).1
         ↳⚡ storage_dead(_6)
             storage_dead(_5)
             storage_dead(_4)
@@ -2602,7 +2602,7 @@ where
         storage_dead(_2)
         storage_dead(_1)
         unwind_continue
-    drop[{built_in impl Destruct for A}::drop_glue<'10>] ((*_1)).1
+    drop[{built_in impl Destruct for A}::drop_glue<'10>] (*_1).1
     ↳⚡ storage_dead(_6)
         storage_dead(_5)
         storage_dead(_4)
@@ -2848,7 +2848,7 @@ where
         unwind_continue
     storage_dead(_7)
     _8 = copy (*_6)
-    _9 = transmute<NonNull<T>, *const T>(copy ((_8).0).pointer)
+    _9 = transmute<NonNull<T>, *const T>(copy _8.0.pointer)
     _5 = &mut (*_9) with_metadata(copy _9.metadata)
     _4 = &raw mut (*_5) with_metadata(copy _5.metadata)
     _0 = copy _4
@@ -2909,7 +2909,7 @@ where
         unwind_continue
     storage_dead(_6)
     _14 = copy (*_5)
-    _15 = transmute<NonNull<T>, *const T>(copy ((_14).0).pointer)
+    _15 = transmute<NonNull<T>, *const T>(copy _14.0.pointer)
     ptr = &raw mut (*_15) with_metadata(copy _15.metadata)
     storage_live(alloc)
     storage_live(_8)
@@ -2923,7 +2923,7 @@ where
         storage_dead(b_1)
         unwind_continue
     storage_dead(_11)
-    _9 = &((*_10)).1 with_metadata(copy _10.metadata)
+    _9 = &(*_10).1 with_metadata(copy _10.metadata)
     _8 = &raw const (*_9) with_metadata(copy _9.metadata)
     alloc = read<A>[TraitClause1](move _8)
     ↳⚡ storage_dead(_15)
@@ -3061,9 +3061,9 @@ unsafe fn foo()
         unwind_continue
     storage_dead(_7)
     storage_live(i)
-    _9 = transmute<NonNull<i32>, *const i32>(copy ((b_6).0).pointer)
+    _9 = transmute<NonNull<i32>, *const i32>(copy b_6.0.pointer)
     i = copy (*_9)
-    _10 = transmute<NonNull<i32>, *const i32>(copy ((b_6).0).pointer)
+    _10 = transmute<NonNull<i32>, *const i32>(copy b_6.0.pointer)
     (*_10) = const 42i32
     _0 = ()
     storage_dead(i)

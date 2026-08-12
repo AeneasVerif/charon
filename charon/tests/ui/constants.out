@@ -271,7 +271,7 @@ pub fn unwrap_y() -> i32
     storage_live(_0)
     storage_live(_1)
     _1 = copy Y
-    _0 = copy (_1).value
+    _0 = copy _1.value
     storage_dead(_1)
     return
 }

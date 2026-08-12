@@ -394,8 +394,8 @@ where
     item = move tupled_args.0
     storage_live(_4)
     _4 = copy (*item)
-    _5 = copy (*((*_1)).0) panic.+ copy _4
-    (*((*_1)).0) = move _5
+    _5 = copy (*(*_1).0) panic.+ copy _4
+    (*(*_1).0) = move _5
     _0 = ()
     storage_dead(_4)
     storage_dead(_5)

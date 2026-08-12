@@ -46,8 +46,8 @@ pub fn index<'_0>(self: &'_0 Wrap, i: usize) -> &'_0 u64
         storage_live(_3);
         storage_live(_4);
         _4 = copy i;
-        fake_read(((*self)).0);
-        _3 = &((*self)).0[copy _4];
+        fake_read((*self).0);
+        _3 = &(*self).0[copy _4];
         _0 = &(*_3);
         storage_dead(_4);
         storage_dead(_3);
@@ -83,8 +83,8 @@ pub fn index_mut<'_0>(self: &'_0 mut Wrap, i: usize) -> &'_0 mut u64
         storage_live(_4);
         storage_live(_5);
         _5 = copy i;
-        fake_read(((*self)).0);
-        _4 = &mut ((*self)).0[copy _5];
+        fake_read((*self).0);
+        _4 = &mut (*self).0[copy _5];
         _3 = &mut (*_4);
         _0 = &mut (*_3);
         storage_dead(_5);

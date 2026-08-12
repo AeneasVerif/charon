@@ -1343,12 +1343,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                     }
                     ProjectionElem::Field(proj_kind, field_id) => match proj_kind {
                         FieldProjKind::Adt(adt_id, opt_variant_id) => {
-                            write!(f, "({sub}")?;
-                            if let Some(variant_id) = opt_variant_id {
-                                write!(f, " as variant ")?;
-                                ctx.format_enum_variant(f, *adt_id, *variant_id)?;
+                            match opt_variant_id {
+                                None => write!(f, "{sub}.")?,
+                                Some(variant_id) => {
+                                    write!(f, "({sub} as variant ")?;
+                                    ctx.format_enum_variant(f, *adt_id, *variant_id)?;
+                                    write!(f, ").")?;
+                                }
                             }
-                            write!(f, ").")?;
                             ctx.format_field_name(f, *adt_id, *opt_variant_id, *field_id)?;
                             Ok(())
                         }

@@ -539,7 +539,7 @@ where
 
     storage_live(_0)
     _0 = ()
-    drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1)).x
+    drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_1).x
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)
@@ -567,7 +567,7 @@ where
 
     storage_live(_0)
     storage_live(_2)
-    _2 = move (self).x
+    _2 = move self.x
     _0 = TraitClause1::to_u64(move _2)
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
         ↳⚡ storage_dead(self)
@@ -782,7 +782,7 @@ fn impl_TestTrait_for_TestType1::test<'_0>(self: &'_0 TestType1) -> bool
 
     storage_live(_0)
     storage_live(_2)
-    _2 = copy ((*self)).0
+    _2 = copy (*self).0
     _0 = move _2 > const 1u64
     storage_dead(_2)
     storage_dead(self)
@@ -896,7 +896,7 @@ where
 
     storage_live(_0)
     storage_live(_2)
-    _2 = copy (self).0
+    _2 = copy self.0
     _0 = TraitClause1::to_type(move _2)
     ↳⚡ storage_dead(self)
         unwind_continue

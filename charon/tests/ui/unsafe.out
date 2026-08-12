@@ -326,7 +326,7 @@ fn access_union_field()
     one = Foo { one: const 42u64 }
     fake_read(one)
     storage_live(_two)
-    _two = copy (one).two
+    _two = copy one.two
     fake_read(_two)
     _0 = ()
     storage_dead(_two)

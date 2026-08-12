@@ -23,19 +23,19 @@ fn some_method<'_0>(self: &'_0 Point::<i32>)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = copy ((*self)).x
+    _3 = copy (*self).x
     _2 = move _3 > const 0i32
     if move _2 {
         storage_dead(_3)
         storage_live(_4)
         storage_live(_5)
-        _5 = copy ((*self)).y
+        _5 = copy (*self).y
         _4 = move _5 < const 100u64
         if move _4 {
             storage_dead(_5)
             storage_live(_6)
             storage_live(_7)
-            _7 = copy ((*self)).z
+            _7 = copy (*self).z
             _6 = move _7 != const 0i32
             if move _6 {
                 storage_dead(_7)

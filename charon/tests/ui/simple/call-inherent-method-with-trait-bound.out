@@ -54,7 +54,7 @@ where
 
     storage_live(_0)
     _0 = ()
-    drop[{built_in impl Destruct for S}::drop_glue<'2>] ((*_1)).0
+    drop[{built_in impl Destruct for S}::drop_glue<'2>] (*_1).0
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)

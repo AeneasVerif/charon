@@ -287,7 +287,7 @@ where
     storage_live(_0)
     _0 = ()
     storage_live(ptr)
-    ptr = copy ((*self)).0
+    ptr = copy (*self).0
     storage_live(layout)
     storage_live(_4)
     storage_live(_5)
@@ -325,7 +325,7 @@ where
     storage_dead(_8)
     storage_live(_10)
     storage_live(_11)
-    _11 = &((*self)).1
+    _11 = &(*self).1
     storage_live(_12)
     storage_live(_13)
     storage_live(_14)
@@ -379,7 +379,7 @@ where
     storage_live(_5)
     storage_live(_6)
     _0 = ()
-    _6 = transmute<NonNull<T>, *const T>(copy (((*_1)).0).0)
+    _6 = transmute<NonNull<T>, *const T>(copy (*_1).0.0)
     drop[{built_in impl Destruct for T}::drop_glue<'4>] (*_6)
     ↳⚡ _4 = &mut (*_1)
         _5 = impl_Drop_for_Box::drop<'8, T, A>[TraitClause0, TraitClause1, TraitClause2](move _4)
@@ -390,7 +390,7 @@ where
             storage_dead(_2)
             storage_dead(_1)
             unwind_terminate
-        drop[{built_in impl Destruct for A}::drop_glue<'9>] ((*_1)).1
+        drop[{built_in impl Destruct for A}::drop_glue<'9>] (*_1).1
         ↳⚡ storage_dead(_6)
             storage_dead(_5)
             storage_dead(_4)
@@ -407,7 +407,7 @@ where
         unwind_continue
     _2 = &mut (*_1)
     _3 = impl_Drop_for_Box::drop<'6, T, A>[TraitClause0, TraitClause1, TraitClause2](move _2)
-    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'9>] ((*_1)).1
+    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'9>] (*_1).1
         ↳⚡ storage_dead(_6)
             storage_dead(_5)
             storage_dead(_4)
@@ -422,7 +422,7 @@ where
         storage_dead(_2)
         storage_dead(_1)
         unwind_continue
-    drop[{built_in impl Destruct for A}::drop_glue<'10>] ((*_1)).1
+    drop[{built_in impl Destruct for A}::drop_glue<'10>] (*_1).1
     ↳⚡ storage_dead(_6)
         storage_dead(_5)
         storage_dead(_4)
@@ -603,9 +603,9 @@ where
     _3 = move self
     storage_live(_4)
     _4 = move args
-    _11 = transmute<NonNull<F>, *const F>(copy ((_3).0).0)
+    _11 = transmute<NonNull<F>, *const F>(copy _3.0.0)
     _0 = TraitClause4::call_once(move (*_11), move _4)
-    ↳⚡ _10 = transmute<NonNull<F>, *const F>(copy ((_3).0).0)
+    ↳⚡ _10 = transmute<NonNull<F>, *const F>(copy _3.0.0)
         _8 = &mut _3
         _9 = impl_Drop_for_Box::drop<'5, F, A>[TraitClause1, TraitClause2, TraitClause5](move _8)
         ↳⚡ storage_dead(_11)
@@ -618,7 +618,7 @@ where
             storage_dead(args)
             storage_dead(self)
             unwind_terminate
-        drop[{built_in impl Destruct for A}::drop_glue<'8>] (_3).1
+        drop[{built_in impl Destruct for A}::drop_glue<'8>] _3.1
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
             storage_dead(_9)
@@ -640,10 +640,10 @@ where
         storage_dead(self)
         unwind_continue
     storage_dead(_4)
-    _7 = transmute<NonNull<F>, *const F>(copy ((_3).0).0)
+    _7 = transmute<NonNull<F>, *const F>(copy _3.0.0)
     _5 = &mut _3
     _6 = impl_Drop_for_Box::drop<'7, F, A>[TraitClause1, TraitClause2, TraitClause5](move _5)
-    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'9>] (_3).1
+    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'9>] _3.1
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
             storage_dead(_9)
@@ -664,7 +664,7 @@ where
         storage_dead(args)
         storage_dead(self)
         unwind_continue
-    drop[{built_in impl Destruct for A}::drop_glue<'10>] (_3).1
+    drop[{built_in impl Destruct for A}::drop_glue<'10>] _3.1
     ↳⚡ storage_dead(_11)
         storage_dead(_10)
         storage_dead(_9)

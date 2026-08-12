@@ -286,7 +286,7 @@ where
     _6 = &two-phase-mut (*x) with_metadata(copy x.metadata)
     storage_live(_7)
     _7 = &(*arg)
-    _0 = (copy ((*_6.metadata)).method_modify)(move _6, move _7)
+    _0 = (copy (*_6.metadata).method_modify)(move _6, move _7)
     ↳⚡ drop[impl_Destruct_for_Box::drop_glue<'20, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]] _5
         ↳⚡ storage_dead(arg)
             unwind_terminate

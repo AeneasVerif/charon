@@ -18,7 +18,7 @@ where
 
     storage_live(_0)
     _0 = ()
-    drop[{built_in impl core::marker::Destruct for H}::drop_glue<'2>] ((*_1))._h
+    drop[{built_in impl core::marker::Destruct for H}::drop_glue<'2>] (*_1)._h
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)

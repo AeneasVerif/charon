@@ -93,7 +93,7 @@ where
     storage_live(i)
     i = move tupled_args.0
     storage_live(_4)
-    _4 = &(*((*_1)).0)
+    _4 = &(*(*_1).0)
     storage_live(_5)
     _5 = copy i
     storage_live(_6)

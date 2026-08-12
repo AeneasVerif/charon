@@ -161,7 +161,7 @@ pub fn use_tuple_struct<'_0>(x: &'_0 mut Tuple<u32, u32>[{built_in impl Sized fo
 
     storage_live(_0)
     _0 = ()
-    ((*x)).0 = const 1u32
+    (*x).0 = const 1u32
     _0 = ()
     storage_dead(x)
     return
@@ -230,7 +230,7 @@ where
 
     storage_live(_0)
     _0 = ()
-    drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1)).0
+    drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_1).0
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)
@@ -255,7 +255,7 @@ where
     let x: IdType<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
-    _0 = move (x).0
+    _0 = move x.0
     conditional_drop[impl_Destruct_for_IdType::drop_glue<'0, T>[TraitClause0]] x
     ↳⚡ storage_dead(x)
         unwind_continue

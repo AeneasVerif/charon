@@ -115,7 +115,7 @@ where
     let tupled_args: (); // arg #2
 
     storage_live(_0)
-    _0 = &(*((*_1)).0)
+    _0 = &(*(*_1).0)
     storage_dead(tupled_args)
     storage_dead(_1)
     return

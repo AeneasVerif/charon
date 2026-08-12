@@ -206,7 +206,7 @@ where
 
     storage_live(_0)
     storage_live(_2)
-    _2 = &((*self)).buf
+    _2 = &(*self).buf
     _0 = ptr<'5, T, A>[TraitClause0, TraitClause1](move _2)
     ↳⚡ storage_dead(self)
         unwind_continue
@@ -241,7 +241,7 @@ where
         unwind_continue
     storage_dead(_4)
     storage_live(_5)
-    _5 = copy ((*self)).len
+    _5 = copy (*self).len
     _2 = cast_slice<T>[TraitClause0](move _3, move _5)
     ↳⚡ storage_dead(self)
         unwind_continue
@@ -274,7 +274,7 @@ where
     _0 = ()
     _2 = &mut (*_1)
     _3 = impl_Drop_for_Vec::drop<'4, T, A>[TraitClause0, TraitClause1](move _2)
-    ↳⚡ drop[impl_Destruct_for_RawVec::drop_glue<'5, T, A>[TraitClause0, TraitClause1]] ((*_1)).buf
+    ↳⚡ drop[impl_Destruct_for_RawVec::drop_glue<'5, T, A>[TraitClause0, TraitClause1]] (*_1).buf
         ↳⚡ storage_dead(_3)
             storage_dead(_2)
             storage_dead(_1)
@@ -283,7 +283,7 @@ where
         storage_dead(_2)
         storage_dead(_1)
         unwind_continue
-    drop[impl_Destruct_for_RawVec::drop_glue<'6, T, A>[TraitClause0, TraitClause1]] ((*_1)).buf
+    drop[impl_Destruct_for_RawVec::drop_glue<'6, T, A>[TraitClause0, TraitClause1]] (*_1).buf
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)

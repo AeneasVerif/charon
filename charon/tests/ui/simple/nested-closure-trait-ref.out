@@ -103,7 +103,7 @@ where
 
     storage_live(_0)
     _0 = ()
-    drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1)).0
+    drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_1).0
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)
@@ -121,7 +121,7 @@ where
     let tupled_args: (); // arg #2
 
     storage_live(_0)
-    _0 = test_crate::foo::closure::closure { 0: move (_1).0 }
+    _0 = test_crate::foo::closure::closure { 0: move _1.0 }
     conditional_drop[{impl Destruct for test_crate::foo::closure<T>[TraitClause0, TraitClause1]}::drop_glue<'0, T>[TraitClause0, TraitClause1]] _1
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
@@ -216,7 +216,7 @@ where
 
     storage_live(_0)
     _0 = ()
-    drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1)).0
+    drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_1).0
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)
@@ -237,7 +237,7 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _3 = &((*_1)).0
+    _3 = &(*_1).0
     _0 = TraitClause1::clone<'4>(move _3)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)

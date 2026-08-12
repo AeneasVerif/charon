@@ -71,8 +71,8 @@ where
     storage_live(_0)
     storage_live(_3)
     _0 = ()
-    _3 = copy (*((*_1)).0) panic.+ const 1i32
-    (*((*_1)).0) = move _3
+    _3 = copy (*(*_1).0) panic.+ const 1i32
+    (*(*_1).0) = move _3
     _0 = ()
     storage_dead(_3)
     storage_dead(tupled_args)

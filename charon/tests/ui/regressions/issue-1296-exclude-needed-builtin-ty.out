@@ -19,7 +19,7 @@ fn main()
     storage_live(_3)
     _3 = new_uninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]()
     ↳⚡ unwind_continue
-    ((((*_3)).1).0).0 = [const 42i32]
+    (*_3).1.0.0 = [const 42i32]
     _2 = move _3
     conditional_drop[{impl#0}<MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]::drop_glue<'0>] _3
     ↳⚡ conditional_drop[{impl#0}<MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]::drop_glue<'1>] _2

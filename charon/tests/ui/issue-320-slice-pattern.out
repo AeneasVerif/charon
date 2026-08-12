@@ -342,8 +342,8 @@ fn slice_pat5<'_0>(x: &'_0 Unsized)
     storage_live(_5)
     storage_live(_6)
     _0 = ()
-    _ = ((*x)).0
-    _3 = &raw const ((*x)).0 with_metadata(copy x.metadata)
+    _ = (*x).0
+    _3 = &raw const (*x).0 with_metadata(copy x.metadata)
     _4 = copy _3.metadata
     _2 = move _4
     _5 = const 1usize
@@ -363,7 +363,7 @@ fn slice_pat5<'_0>(x: &'_0 Unsized)
     }
     storage_live(_y)
     storage_live(_8)
-    _8 = &((*x)).0 with_metadata(copy x.metadata)
+    _8 = &(*x).0 with_metadata(copy x.metadata)
     storage_live(_9)
     _9 = @SliceIndexShared<'_, u32>(move _8, const 0usize)
     ↳⚡ undefined_behavior

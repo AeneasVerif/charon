@@ -128,7 +128,7 @@ fn call_once(_1: closure, tupled_args: (u8,)) -> u8
     x = move tupled_args.0
     storage_live(_4)
     storage_live(_5)
-    _5 = move (_1).0
+    _5 = move _1.0
     _4 = drop<NotCopy>[{built_in impl Sized for NotCopy}, impl_Destruct_for_NotCopy](move _5)
     ↳⚡ storage_dead(_7)
         storage_dead(x)

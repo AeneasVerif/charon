@@ -680,7 +680,7 @@ fn main()
     storage_live(_4)
     storage_live(_5)
     _5 = &(*v) with_metadata(copy v.metadata)
-    _4 = (copy ((*_5.metadata)).method_join_method)(move _5)
+    _4 = (copy (*_5.metadata).method_join_method)(move _5)
     ↳⚡ storage_dead(_6)
         unwind_continue
     storage_dead(_5)
