@@ -621,7 +621,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         Ok(Some(parsed))
     }
 
-    fn condition_target_name(args: Option<&str>) -> Result<&str, String> {
+    pub(super) fn condition_target_name(args: Option<&str>) -> Result<&str, String> {
         args.and_then(|args| args.strip_prefix("name = \""))
             .and_then(|args| args.strip_suffix('\"'))
             .filter(|name| !name.is_empty())

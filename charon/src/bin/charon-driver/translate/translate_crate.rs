@@ -276,6 +276,7 @@ impl<'tcx> TranslateCtx<'tcx> {
     /// exploring the whole crate.
     #[tracing::instrument(skip(self))]
     pub fn enqueue_module_item(&mut self, def_id: &hax::DefId) {
+        self.enqueue_fn_conditions(def_id);
         if let Some(trait_def_id) = self.is_method_decl_without_default(def_id) {
             // Don't translate the method itself as it doesn't correspond to an item, translate the
             // trait instead.
@@ -299,6 +300,59 @@ impl<'tcx> TranslateCtx<'tcx> {
             TransItemSource::polymorphic(def_id, kind)
         };
         let _: Option<ItemId> = self.register_and_enqueue(&None, item_src);
+    }
+
+    /// Enqueue any sibling pre/postconditions that specify this function.
+    fn enqueue_fn_conditions(&mut self, def_id: &hax::DefId) {
+        use rustc_hir as hir;
+
+        if !matches!(def_id.kind, hax::DefKind::Fn | hax::DefKind::AssocFn) {
+            return;
+        }
+        let Some(def_id) = def_id.as_real_def_id() else {
+            return;
+        };
+        let target_name = self.tcx.item_name(def_id);
+        let def_id = def_id.sinto(&self.hax_state);
+        let Some(parent_def_id) = def_id.parent(&self.hax_state) else {
+            return;
+        };
+        let Ok(parent_def) = self.poly_hax_def(&parent_def_id) else {
+            return;
+        };
+        for (_, sibling_def_id) in parent_def.nameable_children(&self.hax_state) {
+            if !matches!(
+                sibling_def_id.kind,
+                hax::DefKind::Fn | hax::DefKind::AssocFn,
+            ) {
+                continue;
+            }
+            let specifies_target = sibling_def_id.attrs(self.tcx).iter().any(|attr| {
+                let hir::Attribute::Unparsed(attr) = attr else {
+                    return false;
+                };
+                if !matches!(
+                    attr.path.to_string().as_str(),
+                    "charon::precondition" | "charon::postcondition",
+                ) {
+                    return false;
+                }
+                let args = match &attr.args {
+                    hir::AttrArgs::Empty => None,
+                    hir::AttrArgs::Delimited(args) => {
+                        Some(rustc_ast_pretty::pprust::tts_to_string(&args.tokens))
+                    }
+                    hir::AttrArgs::Eq { expr, .. } => {
+                        self.tcx.sess.source_map().span_to_snippet(expr.span).ok()
+                    }
+                };
+                Self::condition_target_name(args.as_deref())
+                    .is_ok_and(|name| name == target_name.as_str())
+            });
+            if specifies_target {
+                self.enqueue_module_item(&sibling_def_id);
+            }
+        }
     }
 
     pub(crate) fn register_no_enqueue<T: TryFrom<ItemId>>(

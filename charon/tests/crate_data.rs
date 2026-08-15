@@ -431,31 +431,19 @@ fn function_conditions() -> anyhow::Result<()> {
         #![feature(register_tool)]
         #![register_tool(charon)]
 
-        fn function() {
-            #[charon::precondition]
-            fn precondition() -> bool { true }
+        fn function() {}
 
-            #[charon::postcondition]
-            fn postcondition() -> bool { true }
+        #[charon::precondition(name = "function")]
+        fn precondition() -> bool { true }
 
-            let closure = || {
-                #[charon::precondition]
-                fn closure_precondition() -> bool { true }
-            };
-            closure();
-        }
+        #[charon::postcondition(name = "function")]
+        fn postcondition() -> bool { true }
         "#,
     )?;
     let items = items_by_name(&crate_data);
     let function = items["test_crate::function"].kind.as_fun().unwrap();
-    let precondition = items["test_crate::function::precondition"]
-        .kind
-        .as_fun()
-        .unwrap();
-    let postcondition = items["test_crate::function::postcondition"]
-        .kind
-        .as_fun()
-        .unwrap();
+    let precondition = items["test_crate::precondition"].kind.as_fun().unwrap();
+    let postcondition = items["test_crate::postcondition"].kind.as_fun().unwrap();
 
     assert_eq!(
         precondition.src,
@@ -484,37 +472,6 @@ fn function_conditions() -> anyhow::Result<()> {
             .attr_info
             .attributes
             .contains(&Attribute::HasPostcondition(postcondition.def_id))
-    );
-    let closure_precondition = crate_data
-        .fun_decls
-        .iter()
-        .find(|decl| {
-            decl.def_id != precondition.def_id
-                && decl
-                    .item_meta
-                    .attr_info
-                    .attributes
-                    .iter()
-                    .any(Attribute::is_is_precondition)
-        })
-        .unwrap();
-    let ItemSource::Spec {
-        kind: SpecKind::Precondition,
-        item: parent_id,
-    } = closure_precondition.src
-    else {
-        panic!("expected a precondition spec item")
-    };
-    let parent = crate_data.get_item(parent_id).unwrap();
-    let parent = parent.as_fun().unwrap();
-
-    assert!(matches!(parent.src, ItemSource::TraitImpl { .. }));
-    assert!(
-        parent
-            .item_meta
-            .attr_info
-            .attributes
-            .contains(&Attribute::HasPrecondition(closure_precondition.def_id))
     );
     Ok(())
 }
