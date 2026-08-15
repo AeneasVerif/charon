@@ -1,0 +1,55 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn function = function<Self>[Self]
+    fn precondition = precondition<Self>[Self]
+    fn postcondition = postcondition<Self>[Self]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Trait::function
+fn function<Self>()
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::Trait::precondition
+fn precondition<Self>() -> bool
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+// Full name: test_crate::Trait::postcondition
+fn postcondition<Self>() -> bool
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+
+

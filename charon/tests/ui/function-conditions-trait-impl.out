@@ -1,0 +1,83 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn function;
+    fn precondition = test_crate::Trait::precondition<Self>[Self]
+    fn postcondition = test_crate::Trait::postcondition<Self>[Self]
+    non-dyn-compatible
+}
+
+fn test_crate::Trait::precondition<Self>() -> bool
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+fn test_crate::Trait::postcondition<Self>() -> bool
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+// Full name: test_crate::Type
+struct Type {}
+
+// Full name: test_crate::{impl Trait for Type}::function
+fn impl_Trait_for_Type::function()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Trait for Type}::precondition
+fn impl_Trait_for_Type::precondition() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+// Full name: test_crate::{impl Trait for Type}::postcondition
+fn impl_Trait_for_Type::postcondition() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+// Full name: test_crate::{impl Trait for Type}
+impl "impl_Trait_for_Type" Trait for Type {
+    proof ImpliedClause0: (Type: MetaSized) = {built_in impl MetaSized for Type}
+    fn function = impl_Trait_for_Type::function
+    fn precondition = impl_Trait_for_Type::precondition
+    fn postcondition = impl_Trait_for_Type::postcondition
+    non-dyn-compatible
+}
+
+
+

@@ -1,0 +1,38 @@
+# Final LLBC before serialization:
+
+// Full name: test_crate::Type
+struct Type {}
+
+// Full name: test_crate::{Type}::function
+fn function()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{Type}::precondition
+fn precondition() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+// Full name: test_crate::{Type}::postcondition
+fn postcondition() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+
+
