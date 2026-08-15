@@ -461,50 +461,50 @@ impl<'tcx> TranslateCtx<'tcx> {
 
 // Attributes
 impl<'tcx> TranslateCtx<'tcx> {
-    fn condition_parent_id(&mut self, def_id: &hax::DefId) -> Result<ItemId, String> {
-        if !matches!(
-            def_id.kind,
-            hax::DefKind::Fn | hax::DefKind::AssocFn | hax::DefKind::Closure
-        ) {
+    fn condition_target_id(
+        &mut self,
+        def_id: &hax::DefId,
+        target_name: &str,
+    ) -> Result<ItemId, String> {
+        if !matches!(def_id.kind, hax::DefKind::Fn | hax::DefKind::AssocFn) {
             return Err(
                 "pre/postcondition attributes can only be applied to functions".to_string(),
             );
         }
         let Some(parent_def_id) = def_id.parent(&self.hax_state) else {
-            return Err(
-                "a pre/postcondition must be nested directly inside a function".to_string(),
-            );
+            return Err("a pre/postcondition function must be a sibling of its target".to_string());
         };
         let parent_def = self.poly_hax_def(&parent_def_id).map_err(|err| err.msg)?;
-        let kind = match parent_def.kind() {
-            hax::FullDefKind::Fn { .. } | hax::FullDefKind::AssocFn { .. } => {
-                TransItemSourceKind::Fun
-            }
-            hax::FullDefKind::Closure { args, .. } => TransItemSourceKind::ClosureMethod(
-                super::translate_closures::translate_closure_kind(&args.kind),
-            ),
-            _ => {
-                return Err(
-                    "a pre/postcondition must be nested directly inside a function".to_string(),
-                );
-            }
+        let Some((_, target_def_id)) = parent_def
+            .nameable_children(&self.hax_state)
+            .into_iter()
+            .find(|(name, _)| name.as_str() == target_name)
+        else {
+            return Err(format!("could not find sibling function `{target_name}`"));
         };
-        if self.options.monomorphize_with_hax && parent_def.this().has_non_lt_param {
+        let target_def = self.poly_hax_def(&target_def_id).map_err(|err| err.msg)?;
+        if !matches!(
+            target_def.kind(),
+            hax::FullDefKind::Fn { .. } | hax::FullDefKind::AssocFn { .. }
+        ) {
+            return Err(format!("`{target_name}` is not a function"));
+        }
+        if self.options.monomorphize_with_hax && target_def.this().has_non_lt_param {
             return Err(
                 "pre/postconditions on generic functions are not supported with `--monomorphize`"
                     .to_string(),
             );
         }
-        let parent_src = if self.options.monomorphize_with_hax {
-            TransItemSource::monomorphic(parent_def.this(), kind)
+        let target_src = if self.options.monomorphize_with_hax {
+            TransItemSource::monomorphic(target_def.this(), TransItemSourceKind::Fun)
         } else {
-            TransItemSource::polymorphic(&parent_def_id, kind)
+            TransItemSource::polymorphic(&target_def_id, TransItemSourceKind::Fun)
         };
-        if let Some(parent_id) = self.id_map.get(&parent_src) {
-            Ok(*parent_id)
+        if let Some(target_id) = self.id_map.get(&target_src) {
+            Ok(*target_id)
         } else {
-            self.register_and_enqueue(&None, parent_src).ok_or_else(|| {
-                "failed to register the pre/postcondition's parent function".to_string()
+            self.register_and_enqueue(&None, target_src).ok_or_else(|| {
+                "failed to register the function specified by the pre/postcondition".to_string()
             })
         }
     }
@@ -547,14 +547,14 @@ impl<'tcx> TranslateCtx<'tcx> {
             "exclude" if args.is_none() => Attribute::Exclude,
             // `#[charon::transparent]`
             "transparent" if args.is_none() => Attribute::Transparent,
-            // `#[charon::precondition]`
-            "precondition" if args.is_none() => {
-                Attribute::IsPrecondition(self.condition_parent_id(def_id)?)
-            }
-            // `#[charon::postcondition]`
-            "postcondition" if args.is_none() => {
-                Attribute::IsPostcondition(self.condition_parent_id(def_id)?)
-            }
+            // `#[charon::precondition(name = "function")]`
+            "precondition" => Attribute::IsPrecondition(
+                self.condition_target_id(def_id, Self::condition_target_name(args)?)?,
+            ),
+            // `#[charon::postcondition(name = "function")]`
+            "postcondition" => Attribute::IsPostcondition(
+                self.condition_target_id(def_id, Self::condition_target_name(args)?)?,
+            ),
             // `#[charon::rename("new_name")]`
             "rename" if let Some(attr) = args => {
                 let Some(attr) = attr
@@ -619,6 +619,16 @@ impl<'tcx> TranslateCtx<'tcx> {
             _ => return Ok(None),
         };
         Ok(Some(parsed))
+    }
+
+    fn condition_target_name(args: Option<&str>) -> Result<&str, String> {
+        args.and_then(|args| args.strip_prefix("name = \""))
+            .and_then(|args| args.strip_suffix('\"'))
+            .filter(|name| !name.is_empty())
+            .ok_or_else(|| {
+                "a pre/postcondition must have a non-empty `name = \"function\"` argument"
+                    .to_string()
+            })
     }
 
     /// Translates a rust attribute. Returns `None` if the attribute is a doc comment (rustc
