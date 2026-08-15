@@ -495,11 +495,11 @@ impl<'tcx> TranslateCtx<'tcx> {
                     .to_string(),
             );
         }
-        let target_src = if self.options.monomorphize_with_hax {
-            TransItemSource::monomorphic(target_def.this(), TransItemSourceKind::Fun)
-        } else {
-            TransItemSource::polymorphic(&target_def_id, TransItemSourceKind::Fun)
-        };
+        let target_src = TransItemSource::from_item(
+            target_def.this(),
+            TransItemSourceKind::Fun,
+            self.options.monomorphize_with_hax,
+        );
         if let Some(target_id) = self.id_map.get(&target_src) {
             Ok(*target_id)
         } else {
