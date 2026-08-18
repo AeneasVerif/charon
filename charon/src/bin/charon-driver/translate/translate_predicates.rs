@@ -53,6 +53,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     SolverTraitLangItem::Sized => BuiltinImplData::Sized,
                     SolverTraitLangItem::TransmuteTrait => BuiltinImplData::Transmute,
                     SolverTraitLangItem::TrivialClone => BuiltinImplData::Auto,
+                    SolverTraitLangItem::TryAsDyn => BuiltinImplData::TryAsDynCompatible,
                     SolverTraitLangItem::Tuple => BuiltinImplData::Tuple,
                     SolverTraitLangItem::Unpin => BuiltinImplData::Auto,
                     SolverTraitLangItem::Unsize => BuiltinImplData::Unsize,

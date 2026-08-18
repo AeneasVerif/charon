@@ -103,21 +103,13 @@ where
     return
 }
 
-// Full name: core::slice::index::private_slice_index::Sealed
-pub trait Sealed<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    vtable: core::slice::index::private_slice_index::Sealed::{vtable}
-}
-
 // Full name: core::slice::index::SliceIndex
 #[diagnostic_item("SliceIndex")]
 pub trait SliceIndex<Self, T, Self_Output>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Sealed)
-    proof ImpliedClause2: (T: MetaSized)
-    proof ImpliedClause3: (Self_Output: MetaSized)
+    proof ImpliedClause1: (T: MetaSized)
+    proof ImpliedClause2: (Self_Output: MetaSized)
     fn get<'_0_1>;
     fn get_mut<'_0_1>;
     fn get_unchecked;
@@ -147,7 +139,7 @@ where
 {
     proof ImpliedClause0: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
     proof ImpliedClause1: (I: MetaSized) = TraitClause1::ImpliedClause0
-    proof ImpliedClause2: (Clause2_Output: MetaSized) = TraitClause2::ImpliedClause3
+    proof ImpliedClause2: (Clause2_Output: MetaSized) = TraitClause2::ImpliedClause2
     fn index<'_0_1> = impl_Index_for_slice::index<'_0_1, T, I, Clause2_Output>[TraitClause0, TraitClause1, TraitClause2]
     vtable: impl_Index_for_slice::{vtable}<T, I>[TraitClause0, TraitClause1, TraitClause2]
 }
@@ -175,12 +167,6 @@ where
     proof ImpliedClause2: (I: MetaSized) = TraitClause1::ImpliedClause0
     fn index_mut<'_0_1> = impl_IndexMut_for_slice::index_mut<'_0_1, T, I, Clause2_Output>[TraitClause0, TraitClause1, TraitClause2]
     vtable: impl_IndexMut_for_slice::{vtable}<T, I>[TraitClause0, TraitClause1, TraitClause2]
-}
-
-// Full name: core::slice::index::private_slice_index::{impl Sealed for Range<usize>[{built_in impl Sized for usize}]}
-impl "impl_Sealed_for_Range_usize" Sealed for Range<usize>[{built_in impl Sized for usize}] {
-    proof ImpliedClause0: (Range<usize>[{built_in impl Sized for usize}]: MetaSized) = {built_in impl MetaSized for Range<usize>[{built_in impl Sized for usize}]}
-    vtable: impl_Sealed_for_Range_usize::{vtable}
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::index_mut
@@ -229,9 +215,8 @@ where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (Range<usize>[{built_in impl Sized for usize}]: MetaSized) = {built_in impl MetaSized for Range<usize>[{built_in impl Sized for usize}]}
-    proof ImpliedClause1: (Range<usize>[{built_in impl Sized for usize}]: Sealed) = impl_Sealed_for_Range_usize
+    proof ImpliedClause1: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
     proof ImpliedClause2: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
-    proof ImpliedClause3: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
     fn get<'_0_1> = get<'_0_1, T>[TraitClause0]
     fn get_mut<'_0_1> = get_mut<'_0_1, T>[TraitClause0]
     fn get_unchecked = get_unchecked<T>[TraitClause0]

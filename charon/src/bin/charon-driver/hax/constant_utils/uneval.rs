@@ -85,16 +85,13 @@ pub(crate) fn is_anon_const(
     did: rustc_span::def_id::DefId,
     tcx: rustc_middle::ty::TyCtxt<'_>,
 ) -> bool {
-    matches!(
-        tcx.def_kind(did),
-        rustc_hir::def::DefKind::AnonConst | rustc_hir::def::DefKind::InlineConst
-    )
+    matches!(tcx.def_kind(did), rustc_hir::def::DefKind::AnonConst)
 }
 
 /// Evaluate a `ty::Const`.
 pub fn eval_ty_constant<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
-    uv: rustc_middle::ty::UnevaluatedConst<'tcx>,
+    uv: rustc_middle::ty::AliasConst<'tcx>,
 ) -> Option<ty::Const<'tcx>> {
     use ty::TypeVisitableExt;
     let tcx = s.base().tcx;
@@ -102,13 +99,14 @@ pub fn eval_ty_constant<'tcx, S: UnderOwnerState<'tcx>>(
     if uv.has_non_region_param() {
         return None;
     }
-    let span = tcx.def_span(uv.def);
+    let def = uv.kind.opt_def_id().unwrap();
+    let span = tcx.def_span(def);
     let erased_uv = tcx.erase_and_anonymize_regions(uv);
     let val = tcx
         .const_eval_resolve_for_typeck(typing_env, erased_uv, span)
         .ok()?
         .ok()?;
-    let ty = tcx.type_of(uv.def).instantiate(tcx, uv.args);
+    let ty = tcx.type_of(def).instantiate(tcx, uv.args);
     let ty = normalize(tcx, typing_env, ty);
     Some(ty::Const::new_value(tcx, val, ty))
 }
@@ -128,20 +126,24 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Const<'tcx> 
                 fatal!(s[span], "ty::ConstKind::Infer node? {:#?}", self)
             }
 
-            ty::ConstKind::Unevaluated(ucv) => {
+            ty::ConstKind::Alias(_, ucv) => {
+                let def = ucv
+                    .kind
+                    .opt_def_id()
+                    .expect("AliasConstKind with no def id?");
                 if s.base().options.inline_anon_consts
-                    && is_anon_const(ucv.def, tcx)
+                    && is_anon_const(def, tcx)
                     && let Some(val) = eval_ty_constant(s, ucv)
                 {
                     val.sinto(s)
                 } else {
                     use rustc_middle::query::QueryKey;
                     let span = tcx
-                        .def_ident_span(ucv.def)
-                        .unwrap_or_else(|| ucv.def.default_span(tcx));
-                    let item = translate_item_ref(s, ucv.def, ucv.args);
+                        .def_ident_span(def)
+                        .unwrap_or_else(|| def.default_span(tcx));
+                    let item = translate_item_ref(s, def, ucv.args);
                     let kind = ConstantExprKind::NamedGlobal(item);
-                    let ty = tcx.type_of(ucv.def).instantiate(tcx, ucv.args);
+                    let ty = tcx.type_of(def).instantiate(tcx, ucv.args);
                     let ty = normalize(tcx, s.typing_env(), ty);
                     kind.decorate(ty.sinto(s), span.sinto(s))
                 }
@@ -335,6 +337,7 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
             ConstantExprKind::Literal(ConstantLiteral::Str(str.to_owned()))
         }
         ty::FnDef(def_id, args) => {
+            let args = args.no_bound_vars().expect("bound variables in FnDef");
             let item = translate_item_ref(s, *def_id, args);
             ConstantExprKind::FnDef(item)
         }

@@ -1,7 +1,6 @@
 //! Rust doesn't require bounds on type aliases to be well-formed. When a type alias mentions
 //! `<T as Trait>::Assoc` without a corresponding `T: Trait` clause, translation leaves an unknown
 //! trait ref. This pass tries to add these missing clauses.
-use derive_generic_visitor::*;
 
 use crate::ast::*;
 use crate::transform::{TransformCtx, ctx::TransformPass};

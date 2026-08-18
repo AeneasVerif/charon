@@ -153,9 +153,17 @@ pub trait core::iter::range::Step<Self>
     proof ImpliedClause2: (Self: core::cmp::PartialOrd<Self>)
     fn steps_between<'_0_1, '_1_1>;
     fn forward_checked;
+    fn forward_overflowing;
     fn backward_checked;
+    fn backward_overflowing;
     non-dyn-compatible
 }
+
+pub fn core::iter::range::{impl core::iter::range::Step for usize}::backward_overflowing(_1: usize, _2: usize) -> (usize, bool)
+= <opaque>
+
+pub fn core::iter::range::{impl core::iter::range::Step for usize}::forward_overflowing(_1: usize, _2: usize) -> (usize, bool)
+= <opaque>
 
 pub fn core::iter::range::{impl core::iter::range::Step for usize}::backward_checked(_1: usize, _2: usize) -> core::option::Option<usize>[{built_in impl core::marker::Sized for usize}]
 = <opaque>
@@ -173,7 +181,9 @@ impl core::iter::range::Step for usize {
     proof ImpliedClause2: (usize: core::cmp::PartialOrd<usize>) = core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}
     fn steps_between<'_0_1, '_1_1> = core::iter::range::{impl core::iter::range::Step for usize}::steps_between<'_0_1, '_1_1>
     fn forward_checked = core::iter::range::{impl core::iter::range::Step for usize}::forward_checked
+    fn forward_overflowing = core::iter::range::{impl core::iter::range::Step for usize}::forward_overflowing
     fn backward_checked = core::iter::range::{impl core::iter::range::Step for usize}::backward_checked
+    fn backward_overflowing = core::iter::range::{impl core::iter::range::Step for usize}::backward_overflowing
     non-dyn-compatible
 }
 

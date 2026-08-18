@@ -253,7 +253,6 @@ impl<'tcx> TranslateCtx<'tcx> {
             | Closure
             | ConstParam
             | Field
-            | InlineConst
             | PromotedConst
             | LifetimeParam
             | OpaqueTy

@@ -13,8 +13,8 @@
 use super::translate_ctx::TranslateCtx;
 use charon_lib::ast::from_rustc::{self, FromRustcError};
 use rustc_ast::attr::version::*;
+use rustc_attr_ir::lang_items::*;
 use rustc_hir::attrs::*;
-use rustc_hir::lang_items::*;
 use rustc_span::symbol::*;
 
 impl<'tcx> TranslateCtx<'tcx> {
@@ -150,6 +150,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             LangItem::AsyncDropInPlace => Ok(from_rustc::LangItem::AsyncDropInPlace),
             LangItem::CoerceUnsized => Ok(from_rustc::LangItem::CoerceUnsized),
             LangItem::DispatchFromDyn => Ok(from_rustc::LangItem::DispatchFromDyn),
+            LangItem::TryAsDyn => Ok(from_rustc::LangItem::TryAsDyn),
             LangItem::TransmuteOpts => Ok(from_rustc::LangItem::TransmuteOpts),
             LangItem::TransmuteTrait => Ok(from_rustc::LangItem::TransmuteTrait),
             LangItem::Add => Ok(from_rustc::LangItem::Add),
@@ -177,9 +178,11 @@ impl<'tcx> TranslateCtx<'tcx> {
             LangItem::Index => Ok(from_rustc::LangItem::Index),
             LangItem::IndexMut => Ok(from_rustc::LangItem::IndexMut),
             LangItem::UnsafeCell => Ok(from_rustc::LangItem::UnsafeCell),
+            LangItem::CovariantUnsafeCell => Ok(from_rustc::LangItem::CovariantUnsafeCell),
             LangItem::UnsafePinned => Ok(from_rustc::LangItem::UnsafePinned),
             LangItem::VaArgSafe => Ok(from_rustc::LangItem::VaArgSafe),
             LangItem::VaList => Ok(from_rustc::LangItem::VaList),
+            LangItem::Complex => Ok(from_rustc::LangItem::Complex),
             LangItem::Deref => Ok(from_rustc::LangItem::Deref),
             LangItem::DerefMut => Ok(from_rustc::LangItem::DerefMut),
             LangItem::DerefPure => Ok(from_rustc::LangItem::DerefPure),
@@ -216,6 +219,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             LangItem::PartialOrd => Ok(from_rustc::LangItem::PartialOrd),
             LangItem::CVoid => Ok(from_rustc::LangItem::CVoid),
             LangItem::Type => Ok(from_rustc::LangItem::Type),
+            LangItem::TypeGeneric => Ok(from_rustc::LangItem::TypeGeneric),
             LangItem::TypeId => Ok(from_rustc::LangItem::TypeId),
             LangItem::Panic => Ok(from_rustc::LangItem::Panic),
             LangItem::PanicNounwind => Ok(from_rustc::LangItem::PanicNounwind),
@@ -258,6 +262,9 @@ impl<'tcx> TranslateCtx<'tcx> {
             LangItem::PanicNullPointerDereference => {
                 Ok(from_rustc::LangItem::PanicNullPointerDereference)
             }
+            LangItem::PanicNullReferenceConstructed => {
+                Ok(from_rustc::LangItem::PanicNullReferenceConstructed)
+            }
             LangItem::PanicInvalidEnumConstruction => {
                 Ok(from_rustc::LangItem::PanicInvalidEnumConstruction)
             }
@@ -276,7 +283,6 @@ impl<'tcx> TranslateCtx<'tcx> {
             LangItem::AllocLayout => Ok(from_rustc::LangItem::AllocLayout),
             LangItem::Start => Ok(from_rustc::LangItem::Start),
             LangItem::EhPersonality => Ok(from_rustc::LangItem::EhPersonality),
-            LangItem::EhCatchTypeinfo => Ok(from_rustc::LangItem::EhCatchTypeinfo),
             LangItem::CompilerMove => Ok(from_rustc::LangItem::CompilerMove),
             LangItem::CompilerCopy => Ok(from_rustc::LangItem::CompilerCopy),
             LangItem::OwnedBox => Ok(from_rustc::LangItem::OwnedBox),
@@ -355,6 +361,9 @@ impl<'tcx> TranslateCtx<'tcx> {
             LangItem::FieldType => Ok(from_rustc::LangItem::FieldType),
             LangItem::FieldOffset => Ok(from_rustc::LangItem::FieldOffset),
             LangItem::From => Ok(from_rustc::LangItem::From),
+            LangItem::FromFn => Ok(from_rustc::LangItem::FromFn),
+            // If the below is reached, the code is not up-to-date with the rustc version
+            _ => Err(FromRustcError),
         }
     }
 
@@ -391,6 +400,8 @@ impl<'tcx> TranslateCtx<'tcx> {
                     .map(|value| Ok((value).to_string().into()))
                     .transpose()?,
             }),
+            // If the below is reached, the code is not up-to-date with the rustc version
+            _ => Err(FromRustcError),
         }
     }
 
@@ -403,6 +414,8 @@ impl<'tcx> TranslateCtx<'tcx> {
             OptimizeAttr::DoNotOptimize => Ok(from_rustc::OptimizeAttr::DoNotOptimize),
             OptimizeAttr::Speed => Ok(from_rustc::OptimizeAttr::Speed),
             OptimizeAttr::Size => Ok(from_rustc::OptimizeAttr::Size),
+            // If the below is reached, the code is not up-to-date with the rustc version
+            _ => Err(FromRustcError),
         }
     }
 
@@ -420,6 +433,8 @@ impl<'tcx> TranslateCtx<'tcx> {
             )),
             DeprecatedSince::Unspecified => Ok(from_rustc::DeprecatedSince::Unspecified),
             DeprecatedSince::Err => Ok(from_rustc::DeprecatedSince::Err),
+            // If the below is reached, the code is not up-to-date with the rustc version
+            _ => Err(FromRustcError),
         }
     }
 

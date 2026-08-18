@@ -843,7 +843,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         self.translate_trait_proof(span, &proof)?,
                     ));
                 } else if let Some(outlives) = clause.as_type_outlives_clause() {
-                    let Some(ty::OutlivesPredicate(outlived_ty, region)) = outlives.no_bound_vars()
+                    let Some(ty::OutlivesClause(outlived_ty, region)) = outlives.no_bound_vars()
                     else {
                         raise_error!(self, span, "higher-ranked outlives user type bound")
                     };
@@ -1256,7 +1256,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         | ty::adjustment::PointerCoercion::ReifyFnPointer(_),
                         ..,
                     ) => CastKind::FnPtr(src_ty, tgt_ty),
-                    mir::CastKind::Transmute => CastKind::Transmute(src_ty, tgt_ty),
+                    mir::CastKind::Transmute | mir::CastKind::BoxDerefTransmute => {
+                        CastKind::Transmute(src_ty, tgt_ty)
+                    }
                     // TODO
                     mir::CastKind::Subtype => CastKind::Transmute(src_ty, tgt_ty),
                     mir::CastKind::PointerCoercion(ty::adjustment::PointerCoercion::Unsize, ..) => {
@@ -1762,6 +1764,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             ty::TyKind::FnDef(def_id, generics) => {
                 // The type of the value is one of the singleton types that corresponds to each function,
                 // which is enough information.
+                let generics = generics.no_bound_vars().expect("bound variables in FnDef");
                 let item = &hax::translate_item_ref(&self.hax_state, *def_id, generics);
                 trace!("func: {:?}", item.def_id);
                 let fun_def = self.hax_def(item)?;
@@ -1898,6 +1901,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             }
             mir::AssertKind::NullPointerDereference => {
                 Ok(BuiltinAssertKind::NullPointerDereference)
+            }
+            mir::AssertKind::NullReferenceConstructed => {
+                Ok(BuiltinAssertKind::NullReferenceCreated)
             }
             mir::AssertKind::InvalidEnumConstruction(operand) => {
                 let operand = self.translate_operand(span, operand)?;

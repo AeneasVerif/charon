@@ -248,6 +248,7 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         let tcx = self.elab_ctx.tcx;
         // Note: We skip a binder but rebind it just after.
         let TyKind::Alias(
+            _is_rigid,
             alias @ ty::AliasTy {
                 kind: AliasTyKind::Projection { def_id, .. },
                 args,
@@ -279,7 +280,7 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             .iter_trait_clauses()
             // Substitute the item generics
             .map(|(_, tref)| {
-                EarlyBinder::bind(tref)
+                EarlyBinder::bind(tcx, tref)
                     .instantiate(tcx, args)
                     .skip_normalization()
             })
@@ -404,11 +405,20 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
                     .in_definition_order()
                     .filter(|assoc| matches!(assoc.kind, AssocKind::Type { .. }))
                     .filter_map(|assoc| {
-                        let ty =
-                            Ty::new_projection(tcx, assoc.def_id, erased_tref.skip_binder().args);
+                        let ty = Ty::new_projection(
+                            tcx,
+                            ty::IsRigid::No,
+                            assoc.def_id,
+                            erased_tref.skip_binder().args,
+                        );
                         let ty = crate::erase_and_norm(tcx, self.typing_env, Unnormalized::new(ty));
-                        if let TyKind::Alias(alias_ty) = ty.kind()
-                            && alias_ty.kind.def_id() == assoc.def_id
+                        if let TyKind::Alias(_is_rigid, alias_ty) = ty.kind()
+                            && match alias_ty.kind {
+                                ty::AliasTyKind::Projection { def_id }
+                                | ty::AliasTyKind::Inherent { def_id }
+                                | ty::AliasTyKind::Opaque { def_id }
+                                | ty::AliasTyKind::Free { def_id } => def_id == assoc.def_id,
+                            }
                         {
                             // Couldn't normalize the type to anything different than itself;
                             // this must be a built-in associated type such as
@@ -554,7 +564,7 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             .iter_trait_clauses()
             // Substitute the item generics
             .map(|(_, trait_ref)| {
-                EarlyBinder::bind(trait_ref)
+                EarlyBinder::bind(tcx, trait_ref)
                     .instantiate(tcx, generics)
                     .skip_normalization()
             })
@@ -610,7 +620,7 @@ fn shallow_resolve_trait_ref<'tcx>(
     });
 
     let errors = ocx.evaluate_obligations_error_on_ambiguity();
-    if !errors.is_empty() {
+    if errors.has_errors() {
         return Err(CodegenObligationError::Ambiguity);
     }
 

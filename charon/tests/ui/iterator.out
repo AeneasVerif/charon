@@ -166,21 +166,13 @@ where
   Err { _0: E },
 }
 
-// Full name: core::num::nonzero::private::Sealed
-pub trait Sealed<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    vtable: core::num::nonzero::private::Sealed::{vtable}
-}
-
 // Full name: core::num::nonzero::ZeroablePrimitive
 pub trait ZeroablePrimitive<Self>
 {
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (Self: Copy)
-    proof ImpliedClause2: (Self: Sealed)
-    proof ImpliedClause3: (Self::NonZeroInner: Sized)
-    proof ImpliedClause4: (Self::NonZeroInner: Copy)
+    proof ImpliedClause2: (Self::NonZeroInner: Sized)
+    proof ImpliedClause3: (Self::NonZeroInner: Copy)
     type NonZeroInner
     non-dyn-compatible
 }
@@ -191,12 +183,6 @@ pub opaque type NonZero<T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: ZeroablePrimitive),
-
-// Full name: core::num::nonzero::{impl Sealed for usize}
-impl "impl_Sealed_for_usize" Sealed for usize {
-    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
-    vtable: impl_Sealed_for_usize::{vtable}
-}
 
 // Full name: core::num::niche_types::NonZeroUsizeInner
 pub opaque type NonZeroUsizeInner
@@ -255,9 +241,8 @@ impl "impl_Copy_for_usize" Copy for usize {
 impl "impl_ZeroablePrimitive_for_usize" ZeroablePrimitive for usize {
     proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
     proof ImpliedClause1: (usize: Copy) = impl_Copy_for_usize
-    proof ImpliedClause2: (usize: Sealed) = impl_Sealed_for_usize
-    proof ImpliedClause3: (NonZeroUsizeInner: Sized) = {built_in impl Sized for NonZeroUsizeInner}
-    proof ImpliedClause4: (NonZeroUsizeInner: Copy) = impl_Copy_for_NonZeroUsizeInner
+    proof ImpliedClause2: (NonZeroUsizeInner: Sized) = {built_in impl Sized for NonZeroUsizeInner}
+    proof ImpliedClause3: (NonZeroUsizeInner: Copy) = impl_Copy_for_NonZeroUsizeInner
     type NonZeroInner = NonZeroUsizeInner
     non-dyn-compatible
 }
@@ -558,6 +543,7 @@ pub trait DoubleEndedIterator<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Iterator)
     fn next_back<'_0_1>;
+    fn next_chunk_back<'_0_1, const N : usize, TraitClause0_1: (Self: Sized)> = next_chunk_back<'_0_1, Self, N>[Self, TraitClause0_1]
     fn advance_back_by<'_0_1> = advance_back_by<'_0_1, Self>[Self]
     fn nth_back<'_0_1> = nth_back<'_0_1, Self>[Self]
     fn try_rfold<'_0_1, B, F, R, TraitClause0_1: (B: Sized), TraitClause1_1: (F: Sized), TraitClause2_1: (R: Sized), TraitClause3_1: (Self: Sized), TraitClause4_1: (F: FnMut<(B, Self::ImpliedClause1::Item)>), TraitClause5_1: (F: Destruct), TraitClause6_1: (R: Try), TypeConstraint0: TraitClause4_1::ImpliedClause1::Output = R, TypeConstraint1: TraitClause6_1::Output = B> = try_rfold<'_0_1, Self, B, F, R>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1, TraitClause5_1, TraitClause6_1]
@@ -1690,6 +1676,14 @@ where
 pub unsafe fn extend_one_unchecked<'_0, Self, A>(_1: &'_0 mut Self, _2: A)
 where
     TraitClause0: (Self: Extend<A>),
+    TraitClause1: (Self: Sized),
+    TypeOutlives0: Self: '_0,
+= <opaque>
+
+// Full name: core::iter::traits::double_ended::DoubleEndedIterator::next_chunk_back
+pub fn next_chunk_back<'_0, Self, const N : usize>(_1: &'_0 mut Self) -> Result<[TraitClause0::ImpliedClause1::Item; N], IntoIter<TraitClause0::ImpliedClause1::Item, N>[TraitClause0::ImpliedClause1::ImpliedClause1]>[{built_in impl Sized for [TraitClause0::ImpliedClause1::Item; N]}, {built_in impl Sized for IntoIter<TraitClause0::ImpliedClause1::Item, N>[TraitClause0::ImpliedClause1::ImpliedClause1]}]
+where
+    TraitClause0: (Self: DoubleEndedIterator),
     TraitClause1: (Self: Sized),
     TypeOutlives0: Self: '_0,
 = <opaque>

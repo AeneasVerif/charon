@@ -1504,6 +1504,7 @@ let pp_assertion (env : fmt_env) (fmt : Format.formatter) (a : assertion) : unit
     | Some (MisalignedPointerDereference _) ->
         " (misaligned_pointer_dereference)"
     | Some NullPointerDereference -> " (null_pointer_dereference)"
+    | Some NullReferenceCreated -> " (null_reference_created)"
     | Some (InvalidEnumConstruction _) -> " (invalid_enum_construction)"
     | Some ResumedAfterReturn -> " (resumed_after_return)"
     | Some ResumedAfterPanic -> " (resumed_after_panic)"

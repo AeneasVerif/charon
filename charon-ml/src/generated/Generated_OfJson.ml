@@ -295,6 +295,7 @@ and builtin_assert_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* found = operand_of_json ctx found in
         Ok (MisalignedPointerDereference (required, found))
     | `String "NullPointerDereference" -> Ok NullPointerDereference
+    | `String "NullReferenceCreated" -> Ok NullReferenceCreated
     | `Assoc [ ("InvalidEnumConstruction", _0) ] ->
         let* _0 = operand_of_json ctx _0 in
         Ok (InvalidEnumConstruction _0)
@@ -343,6 +344,7 @@ and builtin_impl_data_of_json (ctx : of_json_ctx) (js : json) :
     | `String "AsyncFnOnce" -> Ok BuiltinAsyncFnOnce
     | `String "Coroutine" -> Ok BuiltinCoroutine
     | `String "Future" -> Ok BuiltinFuture
+    | `String "TryAsDynCompatible" -> Ok BuiltinTryAsDynCompatible
     | `String "NoopDestruct" -> Ok BuiltinNoopDestruct
     | `String "UntrackedDestruct" -> Ok BuiltinUntrackedDestruct
     | `String "RemovedAdtClause" -> Ok BuiltinRemovedAdtClause
@@ -2863,6 +2865,7 @@ and rustc_lang_item_of_json (ctx : of_json_ctx) (js : json) :
     | `String "AsyncDropInPlace" -> Ok RustcLangItemAsyncDropInPlace
     | `String "CoerceUnsized" -> Ok RustcLangItemCoerceUnsized
     | `String "DispatchFromDyn" -> Ok RustcLangItemDispatchFromDyn
+    | `String "TryAsDyn" -> Ok RustcLangItemTryAsDyn
     | `String "TransmuteOpts" -> Ok RustcLangItemTransmuteOpts
     | `String "TransmuteTrait" -> Ok RustcLangItemTransmuteTrait
     | `String "Add" -> Ok RustcLangItemAdd
@@ -2890,9 +2893,11 @@ and rustc_lang_item_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Index" -> Ok RustcLangItemIndex
     | `String "IndexMut" -> Ok RustcLangItemIndexMut
     | `String "UnsafeCell" -> Ok RustcLangItemUnsafeCell
+    | `String "CovariantUnsafeCell" -> Ok RustcLangItemCovariantUnsafeCell
     | `String "UnsafePinned" -> Ok RustcLangItemUnsafePinned
     | `String "VaArgSafe" -> Ok RustcLangItemVaArgSafe
     | `String "VaList" -> Ok RustcLangItemVaList
+    | `String "Complex" -> Ok RustcLangItemComplex
     | `String "Deref" -> Ok RustcLangItemDeref
     | `String "DerefMut" -> Ok RustcLangItemDerefMut
     | `String "DerefPure" -> Ok RustcLangItemDerefPure
@@ -2929,6 +2934,7 @@ and rustc_lang_item_of_json (ctx : of_json_ctx) (js : json) :
     | `String "PartialOrd" -> Ok RustcLangItemPartialOrd
     | `String "CVoid" -> Ok RustcLangItemCVoid
     | `String "Type" -> Ok RustcLangItemType
+    | `String "TypeGeneric" -> Ok RustcLangItemTypeGeneric
     | `String "TypeId" -> Ok RustcLangItemTypeId
     | `String "Panic" -> Ok RustcLangItemPanic
     | `String "PanicNounwind" -> Ok RustcLangItemPanicNounwind
@@ -2966,6 +2972,8 @@ and rustc_lang_item_of_json (ctx : of_json_ctx) (js : json) :
     | `String "PanicGenFnNonePanic" -> Ok RustcLangItemPanicGenFnNonePanic
     | `String "PanicNullPointerDereference" ->
         Ok RustcLangItemPanicNullPointerDereference
+    | `String "PanicNullReferenceConstructed" ->
+        Ok RustcLangItemPanicNullReferenceConstructed
     | `String "PanicInvalidEnumConstruction" ->
         Ok RustcLangItemPanicInvalidEnumConstruction
     | `String "PanicCoroutineResumedDrop" ->
@@ -2982,7 +2990,6 @@ and rustc_lang_item_of_json (ctx : of_json_ctx) (js : json) :
     | `String "AllocLayout" -> Ok RustcLangItemAllocLayout
     | `String "Start" -> Ok RustcLangItemStart
     | `String "EhPersonality" -> Ok RustcLangItemEhPersonality
-    | `String "EhCatchTypeinfo" -> Ok RustcLangItemEhCatchTypeinfo
     | `String "CompilerMove" -> Ok RustcLangItemCompilerMove
     | `String "CompilerCopy" -> Ok RustcLangItemCompilerCopy
     | `String "OwnedBox" -> Ok RustcLangItemOwnedBox
@@ -3059,6 +3066,7 @@ and rustc_lang_item_of_json (ctx : of_json_ctx) (js : json) :
     | `String "FieldType" -> Ok RustcLangItemFieldType
     | `String "FieldOffset" -> Ok RustcLangItemFieldOffset
     | `String "From" -> Ok RustcLangItemFrom
+    | `String "FromFn" -> Ok RustcLangItemFromFn
     | _ -> Error "")
 
 and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =

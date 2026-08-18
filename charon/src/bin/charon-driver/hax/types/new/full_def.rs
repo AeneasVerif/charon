@@ -255,10 +255,8 @@ impl ParamEnv {
 pub enum ConstKind {
     /// Top-level constant: `const CONST: usize = 42;`
     TopLevel,
-    /// Anonymous constant, e.g. the `1 + 2` in `[u8; 1 + 2]`
+    /// Anonymous constant, e.g. the `1 + 2` in `[u8; 1 + 2]`, or `const { 1 + 2 }`
     AnonConst,
-    /// An inline constant, e.g. `const { 1 + 2 }`
-    InlineConst,
     /// A promoted constant, e.g. the `1 + 2` in `&(1 + 2)`
     PromotedConst,
 }
@@ -809,7 +807,7 @@ where
         RDefKind::Fn { .. } => FullDefKind::Fn {
             param_env: get_param_env(s, args),
             inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
-            is_const: tcx.constness(def_id) == rustc_hir::Constness::Const,
+            is_const: matches!(tcx.constness(def_id), rustc_hir::Constness::Const { .. }),
             sig: inst_binder(tcx, s.typing_env(), args, tcx.fn_sig(def_id)).sinto(s),
         },
         RDefKind::AssocFn { .. } => {
@@ -818,7 +816,7 @@ where
                 param_env: get_param_env(s, args),
                 associated_item: AssocItem::sfrom_instantiated(s, &item, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
-                is_const: tcx.constness(def_id) == rustc_hir::Constness::Const,
+                is_const: matches!(tcx.constness(def_id), rustc_hir::Constness::Const { .. }),
                 vtable_sig: gen_vtable_sig(s, args),
                 sig: get_method_sig(tcx, s.typing_env(), def_id, args).sinto(s),
             }
@@ -846,7 +844,7 @@ where
 
             FullDefKind::Closure {
                 param_env: get_param_env(s, args),
-                is_const: tcx.constness(def_id) == rustc_hir::Constness::Const,
+                is_const: matches!(tcx.constness(def_id), rustc_hir::Constness::Const { .. }),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 args: ClosureArgs::sfrom(s, def_id, closure_args),
                 destruct_impl: virtual_impl_for(
@@ -863,17 +861,15 @@ where
                 call_sig: gen_closure_sig(s, fn_tref, false),
             }
         }
-        kind @ (RDefKind::Const { .. }
-        | RDefKind::AnonConst { .. }
-        | RDefKind::InlineConst { .. }) => {
+        kind @ (RDefKind::Const { .. } | RDefKind::AnonConst { .. }) => {
             let kind = match kind {
                 RDefKind::Const { .. } => ConstKind::TopLevel,
                 RDefKind::AnonConst { .. } => ConstKind::AnonConst,
-                RDefKind::InlineConst { .. } => ConstKind::InlineConst,
                 _ => unreachable!(),
             };
 
-            let self_ty = if matches!(kind, ConstKind::InlineConst)
+            let self_ty = if matches!(kind, ConstKind::AnonConst)
+                && tcx.anon_const_kind(def_id) == ty::AnonConstKind::NonTypeSystemInline
                 && let get_ret_ty = (|body: &mir::Body<'tcx>| body.local_decls[mir::Local::ZERO].ty)
                 && let Some(ret_ty) = mir_kinds::CTFE::get_mir(tcx, def_id, get_ret_ty)
                     .or_else(|| mir_kinds::Optimized::get_mir(tcx, def_id, get_ret_ty))
@@ -881,7 +877,12 @@ where
                 // Inline consts have a special `<const_ty>` param added to them for type inference
                 // purposes. `tcx.type_of` returns that, which is not useful to us. Instead, we get
                 // the real type from the MIR body which is sad but works.
-                inst_binder(tcx, s.typing_env(), args, ty::EarlyBinder::bind(ret_ty))
+                inst_binder(
+                    tcx,
+                    s.typing_env(),
+                    args,
+                    ty::EarlyBinder::bind(tcx, ret_ty),
+                )
             } else {
                 type_of_self()
             };
@@ -1054,9 +1055,11 @@ impl<'tcx> FullDef<'tcx> {
             _ => panic!("expected a Const or AssocConst definition"),
         }
         let s = &s.with_hax_owner(self.def_id());
+        let tcx = s.base().tcx;
         let def_id = self.def_id().as_real_def_id()?;
         let args = self.this().rustc_args(s);
-        let uneval = ty::UnevaluatedConst::new(def_id, args);
+        let kind = ty::AliasConstKind::new_from_def_id(tcx, def_id);
+        let uneval = ty::AliasConst::new(tcx, kind, args);
         let c = eval_ty_constant(s, uneval)?;
         match c.kind() {
             ty::ConstKind::Error(..) => None,
@@ -1121,7 +1124,7 @@ impl<'tcx> FullDef<'tcx> {
             | AssocFn { .. }
             | AssocConst { .. }
             | Const {
-                kind: ConstKind::AnonConst | ConstKind::InlineConst | ConstKind::PromotedConst,
+                kind: ConstKind::AnonConst | ConstKind::PromotedConst,
                 ..
             } => self.param_env().unwrap().parent.clone(),
             Closure { .. } | Ctor { .. } | Variant { .. } => {
@@ -1291,7 +1294,8 @@ where
         .map(|assoc| {
             // This assumes non-GAT because this is for builtin-trait (that don't
             // have GATs).
-            let ty = ty::Ty::new_projection(tcx, assoc.def_id, trait_ref.args).sinto(s);
+            let ty =
+                ty::Ty::new_projection(tcx, ty::IsRigid::No, assoc.def_id, trait_ref.args).sinto(s);
             // Trait proofs required by the type.
             let required_trait_proofs = solve_item_implied_traits(s, assoc.def_id, trait_ref.args);
             (ty, required_trait_proofs)

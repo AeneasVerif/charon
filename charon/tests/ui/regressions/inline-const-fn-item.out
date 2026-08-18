@@ -8,7 +8,10 @@ error[E9999]: Supposely unreachable place in the Rust AST. The label is "valtree
               )
                - ty: FnDef(
                   test_crate::main,
-                  [],
+                  Binder {
+                      value: [],
+                      bound_vars: [],
+                  },
               )
               
 

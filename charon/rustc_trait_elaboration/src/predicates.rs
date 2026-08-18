@@ -29,7 +29,7 @@
 use itertools::Itertools;
 use std::collections::HashSet;
 
-use rustc_hir::LangItem;
+use rustc_attr_ir::LangItem;
 use rustc_hir::def::DefKind;
 use rustc_middle::ty::{self, *};
 use rustc_span::def_id::DefId;
@@ -199,10 +199,10 @@ impl<'tcx, Id: ItemId> ItemPredicates<'tcx, Id> {
     ) -> Self {
         use DefKind::*;
         let id = Id::from_rust_def_id(state, def_id);
-        let explicit_predicates_of = || {
+        let explicit_clauses_of = || {
             let predicates = tcx
-                .explicit_predicates_of(def_id)
-                .predicates
+                .explicit_clauses_of(def_id)
+                .clauses
                 .iter()
                 .copied()
                 .chain(
@@ -230,12 +230,10 @@ impl<'tcx, Id: ItemId> ItemPredicates<'tcx, Id> {
             | Union
                 if direction == PredicateDirection::Required =>
             {
-                explicit_predicates_of()
+                explicit_clauses_of()
             }
             // We consider all predicates on traits to be outputs
-            Trait | TraitAlias if direction == PredicateDirection::Implied => {
-                explicit_predicates_of()
-            }
+            Trait | TraitAlias if direction == PredicateDirection::Implied => explicit_clauses_of(),
             AssocTy
                 if direction == PredicateDirection::Implied
                     && matches!(tcx.def_kind(tcx.parent(def_id)), DefKind::Trait) =>
@@ -249,7 +247,7 @@ impl<'tcx, Id: ItemId> ItemPredicates<'tcx, Id> {
                         .copied(),
                 )
             }
-            // `explicit_predicates_of` ICEs on other def kinds.
+            // `explicit_clauses_of` ICEs on other def kinds.
             _ => Default::default(),
         }
     }
@@ -420,7 +418,7 @@ impl<'tcx, Id: Clone> ItemPredicates<'tcx, Id> {
     /// Substitute all the predicates with these args.
     pub fn instantiate(mut self, tcx: TyCtxt<'tcx>, args: ty::GenericArgsRef<'tcx>) -> Self {
         for predicate in self.iter_mut() {
-            predicate.clause = ty::EarlyBinder::bind(predicate.clause)
+            predicate.clause = ty::EarlyBinder::bind(tcx, predicate.clause)
                 .instantiate(tcx, args)
                 .skip_norm_wip();
         }
@@ -438,13 +436,6 @@ pub fn inherits_parent_clauses<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> bool {
     use DefKind::*;
     matches!(
         tcx.def_kind(def_id),
-        AnonConst
-            | AssocConst { .. }
-            | AssocFn
-            | AssocTy
-            | Closure
-            | Ctor(..)
-            | InlineConst
-            | Variant
+        AnonConst | AssocConst { .. } | AssocFn | AssocTy | Closure | Ctor(..) | Variant
     )
 }

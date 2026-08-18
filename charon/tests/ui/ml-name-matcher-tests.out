@@ -47,21 +47,13 @@ where
     TypeOutlives0: T: '_0,
 = <opaque>
 
-// Full name: core::slice::index::private_slice_index::Sealed
-pub trait Sealed<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    vtable: core::slice::index::private_slice_index::Sealed::{vtable}
-}
-
 // Full name: core::slice::index::SliceIndex
 #[diagnostic_item("SliceIndex")]
 pub trait SliceIndex<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Sealed)
-    proof ImpliedClause2: (T: MetaSized)
-    proof ImpliedClause3: (Self::Output: MetaSized)
+    proof ImpliedClause1: (T: MetaSized)
+    proof ImpliedClause2: (Self::Output: MetaSized)
     type Output
     fn get<'_0_1>;
     fn get_mut<'_0_1>;
@@ -82,12 +74,6 @@ where
     TypeOutlives1: TraitClause2::Output: '_0,
     TypeOutlives2: I: '_0,
 = <opaque>
-
-// Full name: core::slice::index::private_slice_index::{impl Sealed for RangeFrom<usize>[{built_in impl Sized for usize}]}
-impl "impl_Sealed_for_RangeFrom_usize" Sealed for RangeFrom<usize>[{built_in impl Sized for usize}] {
-    proof ImpliedClause0: (RangeFrom<usize>[{built_in impl Sized for usize}]: MetaSized) = {built_in impl MetaSized for RangeFrom<usize>[{built_in impl Sized for usize}]}
-    vtable: impl_Sealed_for_RangeFrom_usize::{vtable}
-}
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for RangeFrom<usize>[{built_in impl Sized for usize}]}::index_mut
 pub fn index_mut<'_0, T>(_1: RangeFrom<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> &'_0 mut [T]
@@ -135,9 +121,8 @@ where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (RangeFrom<usize>[{built_in impl Sized for usize}]: MetaSized) = {built_in impl MetaSized for RangeFrom<usize>[{built_in impl Sized for usize}]}
-    proof ImpliedClause1: (RangeFrom<usize>[{built_in impl Sized for usize}]: Sealed) = impl_Sealed_for_RangeFrom_usize
+    proof ImpliedClause1: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
     proof ImpliedClause2: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
-    proof ImpliedClause3: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
     type Output = [T]
     fn get<'_0_1> = impl_SliceIndex_slice_for_RangeFrom_usize::get<'_0_1, T>[TraitClause0]
     fn get_mut<'_0_1> = get_mut<'_0_1, T>[TraitClause0]

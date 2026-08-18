@@ -1,5 +1,13 @@
 # Final LLBC before serialization:
 
+// Full name: core::io::error::Error
+pub opaque type Error
+
+// Full name: core::io::error::{impl Debug for Error}
+impl "impl_Debug_for_Error" Debug for Error {
+    vtable: impl_Debug_for_Error::{vtable}
+}
+
 // Full name: core::marker::MetaSized
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
@@ -40,13 +48,9 @@ where
     TraitClause2: (E: Debug),
 = <opaque>
 
-// Full name: std::io::error::Error
-pub opaque type Error
-
-// Full name: std::io::error::{impl Debug for Error}
-impl "impl_Debug_for_Error" Debug for Error {
-    vtable: impl_Debug_for_Error::{vtable}
-}
+// Full name: alloc::alloc::Global
+#[lang_item(GlobalAlloc)]
+pub struct Global {}
 
 // Full name: alloc::vec::Vec
 #[diagnostic_item("Vec")]
@@ -55,16 +59,12 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (type_error("removed allocator parameter"): Sized),
 
-// Full name: std::io::impls::{impl Write for Vec<u8>[{built_in impl Sized for u8}, TraitClause0]}::write_all
+// Full name: alloc::io::impls::{impl Write for Vec<u8>[{built_in impl Sized for u8}, TraitClause0]}::write_all
 pub fn impl_Write_for_Vec_u8::write_all<'_0, '_1, A>(_1: &'_0 mut Vec<u8>[{built_in impl Sized for u8}, TraitClause0], _2: &'_1 [u8]) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     TraitClause0: (A: Sized),
     TypeOutlives0: A: '_0,
 = <opaque>
-
-// Full name: alloc::alloc::Global
-#[lang_item(GlobalAlloc)]
-pub struct Global {}
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_glue
 unsafe fn impl_Destruct_for_Vec::drop_glue<'_0, T, A>(_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1])

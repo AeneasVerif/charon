@@ -1,7 +1,7 @@
-error: internal compiler error: /rustc-dev/14210df0e27ccd7d9e6a05b8085cbd438e4bbc65/compiler/rustc_infer/src/infer/region_constraints/mod.rs:492:21: cannot relate bound region: '{erased} == '^1_0.Named(test_crate::dyn_fn_arg::'a)
+error: internal compiler error: /rustc-dev/8fa1c96cfd489e4c27654c144ae871ce2c4db6c6/compiler/rustc_infer/src/infer/region_constraints/mod.rs:494:21: cannot relate bound region: '{erased} == '^1_0.Named(test_crate::dyn_fn_arg::'a)
 
 
-thread 'rustc' panicked at /rustc-dev/14210df0e27ccd7d9e6a05b8085cbd438e4bbc65/compiler/rustc_infer/src/infer/region_constraints/mod.rs:492:21:
+thread 'rustc' panicked at /rustc-dev/8fa1c96cfd489e4c27654c144ae871ce2c4db6c6/compiler/rustc_infer/src/infer/region_constraints/mod.rs:494:21:
 Box<dyn Any>
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Hax panicked when translating `test_crate::dyn_fn_arg`.
@@ -10,10 +10,10 @@ error: Hax panicked when translating `test_crate::dyn_fn_arg`.
 3 | pub fn dyn_fn_arg<'a>(_: &dyn Fn(&'a i32)) {}
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: internal compiler error: /rustc-dev/14210df0e27ccd7d9e6a05b8085cbd438e4bbc65/compiler/rustc_infer/src/infer/region_constraints/mod.rs:492:21: cannot relate bound region: '{erased} == '^1_0.Named(test_crate::hrtb_fn_pointer::'a)
+error: internal compiler error: /rustc-dev/8fa1c96cfd489e4c27654c144ae871ce2c4db6c6/compiler/rustc_infer/src/infer/region_constraints/mod.rs:494:21: cannot relate bound region: '{erased} == '^1_0.Named(test_crate::hrtb_fn_pointer::'a)
 
 
-thread 'rustc' panicked at /rustc-dev/14210df0e27ccd7d9e6a05b8085cbd438e4bbc65/compiler/rustc_infer/src/infer/region_constraints/mod.rs:492:21:
+thread 'rustc' panicked at /rustc-dev/8fa1c96cfd489e4c27654c144ae871ce2c4db6c6/compiler/rustc_infer/src/infer/region_constraints/mod.rs:494:21:
 Box<dyn Any>
 error: Hax panicked when translating `test_crate::hrtb_fn_pointer`.
  --> tests/ui/regressions/dyn-hrtb-ice.rs:5:1
@@ -21,10 +21,10 @@ error: Hax panicked when translating `test_crate::hrtb_fn_pointer`.
 5 | pub fn hrtb_fn_pointer(_: for<'a> fn(&'a dyn Fn(&'a u8))) {}
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: internal compiler error: /rustc-dev/14210df0e27ccd7d9e6a05b8085cbd438e4bbc65/compiler/rustc_infer/src/infer/region_constraints/mod.rs:492:21: cannot relate bound region: '{erased} == '^1_0.Named(test_crate::hrtb_dyn_fn::'a)
+error: internal compiler error: /rustc-dev/8fa1c96cfd489e4c27654c144ae871ce2c4db6c6/compiler/rustc_infer/src/infer/region_constraints/mod.rs:494:21: cannot relate bound region: '{erased} == '^1_0.Named(test_crate::hrtb_dyn_fn::'a)
 
 
-thread 'rustc' panicked at /rustc-dev/14210df0e27ccd7d9e6a05b8085cbd438e4bbc65/compiler/rustc_infer/src/infer/region_constraints/mod.rs:492:21:
+thread 'rustc' panicked at /rustc-dev/8fa1c96cfd489e4c27654c144ae871ce2c4db6c6/compiler/rustc_infer/src/infer/region_constraints/mod.rs:494:21:
 Box<dyn Any>
 error: Hax panicked when translating `test_crate::hrtb_dyn_fn`.
  --> tests/ui/regressions/dyn-hrtb-ice.rs:7:1
@@ -32,10 +32,10 @@ error: Hax panicked when translating `test_crate::hrtb_dyn_fn`.
 7 | pub fn hrtb_dyn_fn(_: &dyn for<'a> Fn(&dyn Fn(&'a i32))) {}
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: internal compiler error: /rustc-dev/14210df0e27ccd7d9e6a05b8085cbd438e4bbc65/compiler/rustc_infer/src/infer/region_constraints/mod.rs:492:21: cannot relate bound region: '{erased} == '^1_0.Named(test_crate::f::'a)
+error: internal compiler error: /rustc-dev/8fa1c96cfd489e4c27654c144ae871ce2c4db6c6/compiler/rustc_infer/src/infer/region_constraints/mod.rs:494:21: cannot relate bound region: '{erased} == '^1_0.Named(test_crate::f::'a)
 
 
-thread 'rustc' panicked at /rustc-dev/14210df0e27ccd7d9e6a05b8085cbd438e4bbc65/compiler/rustc_infer/src/infer/region_constraints/mod.rs:492:21:
+thread 'rustc' panicked at /rustc-dev/8fa1c96cfd489e4c27654c144ae871ce2c4db6c6/compiler/rustc_infer/src/infer/region_constraints/mod.rs:494:21:
 Box<dyn Any>
 error: Hax panicked when translating `test_crate::f`.
   --> tests/ui/regressions/dyn-hrtb-ice.rs:13:1
@@ -44,7 +44,7 @@ error: Hax panicked when translating `test_crate::f`.
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-thread 'rustc' panicked at /rustc-dev/14210df0e27ccd7d9e6a05b8085cbd438e4bbc65/compiler/rustc_infer/src/infer/region_constraints/mod.rs:492:21:
+thread 'rustc' panicked at /rustc-dev/8fa1c96cfd489e4c27654c144ae871ce2c4db6c6/compiler/rustc_infer/src/infer/region_constraints/mod.rs:494:21:
 Box<dyn Any>
 error: Hax panicked when translating `test_crate::dyn_fn_arg`.
  --> tests/ui/regressions/dyn-hrtb-ice.rs:3:1
@@ -59,7 +59,7 @@ error: Item `test_crate::dyn_fn_arg` caused errors; ignoring.
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-thread 'rustc' panicked at /rustc-dev/14210df0e27ccd7d9e6a05b8085cbd438e4bbc65/compiler/rustc_infer/src/infer/region_constraints/mod.rs:492:21:
+thread 'rustc' panicked at /rustc-dev/8fa1c96cfd489e4c27654c144ae871ce2c4db6c6/compiler/rustc_infer/src/infer/region_constraints/mod.rs:494:21:
 Box<dyn Any>
 error: Hax panicked when translating `test_crate::hrtb_fn_pointer`.
  --> tests/ui/regressions/dyn-hrtb-ice.rs:5:1
@@ -74,7 +74,7 @@ error: Item `test_crate::hrtb_fn_pointer` caused errors; ignoring.
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-thread 'rustc' panicked at /rustc-dev/14210df0e27ccd7d9e6a05b8085cbd438e4bbc65/compiler/rustc_infer/src/infer/region_constraints/mod.rs:492:21:
+thread 'rustc' panicked at /rustc-dev/8fa1c96cfd489e4c27654c144ae871ce2c4db6c6/compiler/rustc_infer/src/infer/region_constraints/mod.rs:494:21:
 Box<dyn Any>
 error: Hax panicked when translating `test_crate::hrtb_dyn_fn`.
  --> tests/ui/regressions/dyn-hrtb-ice.rs:7:1
@@ -89,7 +89,7 @@ error: Item `test_crate::hrtb_dyn_fn` caused errors; ignoring.
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-thread 'rustc' panicked at /rustc-dev/14210df0e27ccd7d9e6a05b8085cbd438e4bbc65/compiler/rustc_infer/src/infer/region_constraints/mod.rs:492:21:
+thread 'rustc' panicked at /rustc-dev/8fa1c96cfd489e4c27654c144ae871ce2c4db6c6/compiler/rustc_infer/src/infer/region_constraints/mod.rs:494:21:
 Box<dyn Any>
 error: Hax panicked when translating `test_crate::f`.
   --> tests/ui/regressions/dyn-hrtb-ice.rs:13:1

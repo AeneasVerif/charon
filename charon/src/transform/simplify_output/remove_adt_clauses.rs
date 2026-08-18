@@ -8,8 +8,6 @@
 
 use std::collections::HashSet;
 
-use derive_generic_visitor::*;
-
 use crate::ast::*;
 use crate::common::CycleDetector;
 use crate::ids::{IndexMap, IndexVec};

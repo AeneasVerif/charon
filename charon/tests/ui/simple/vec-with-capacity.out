@@ -220,6 +220,8 @@ pub fn impl_Drop_for_Vec::drop<'_0, T, A>(self: &'_0 mut Vec<T>[TraitClause0, Tr
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
+    TraitClause2: (T: Destruct),
+    TraitClause3: (A: Destruct),
     TypeOutlives0: T: '_0,
     TypeOutlives1: A: '_0,
 {
@@ -273,7 +275,7 @@ where
     storage_live(_3)
     _0 = ()
     _2 = &mut (*_1)
-    _3 = impl_Drop_for_Vec::drop<'4, T, A>[TraitClause0, TraitClause1](move _2)
+    _3 = impl_Drop_for_Vec::drop<'4, T, A>[TraitClause0, TraitClause1, {built_in impl Destruct for T}, {built_in impl Destruct for A}](move _2)
     ↳⚡ drop[impl_Destruct_for_RawVec::drop_glue<'5, T, A>[TraitClause0, TraitClause1]] (*_1).buf
         ↳⚡ storage_dead(_3)
             storage_dead(_2)

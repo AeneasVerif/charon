@@ -283,7 +283,7 @@ impl FieldDef {
         FieldDef {
             did: fdef.did.sinto(s),
             name,
-            vis: fdef.vis.sinto(s),
+            vis: fdef.vis.map_id(|mod_id| mod_id.to_def_id()).sinto(s),
             ty,
             span: tcx.def_span(fdef.did).sinto(s),
         }
@@ -344,7 +344,7 @@ pub struct EarlyParamRegion {
 /// Reflects [`ty::LateParamRegion`]
 
 #[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::LateParamRegion, state: S as s)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::LateParamRegion<'tcx>, state: S as s)]
 pub struct LateParamRegion {
     pub scope: DefId,
     pub kind: LateParamRegionKind,
@@ -624,6 +624,15 @@ pub enum AliasKind {
     Free,
 }
 
+pub fn alias_ty_kind_def_id<'tcx>(kind: ty::AliasTyKind<'tcx>) -> RDefId {
+    match kind {
+        ty::AliasTyKind::Projection { def_id }
+        | ty::AliasTyKind::Inherent { def_id }
+        | ty::AliasTyKind::Opaque { def_id }
+        | ty::AliasTyKind::Free { def_id } => def_id,
+    }
+}
+
 impl Alias {
     #[tracing::instrument(level = "trace", skip(s))]
     fn from<'tcx, S: UnderOwnerState<'tcx>>(s: &S, alias_ty: &ty::AliasTy<'tcx>) -> TyKind {
@@ -632,9 +641,9 @@ impl Alias {
         use rustc_type_ir::AliasTyKind as RustAliasKind;
 
         // Try to normalize the alias first.
-        let ty = ty::Ty::new_alias(tcx, *alias_ty);
+        let ty = ty::Ty::new_alias(tcx, ty::IsRigid::No, *alias_ty);
         let ty = normalize(tcx, typing_env, ty::Unnormalized::new(ty));
-        let ty::Alias(alias_ty) = ty.kind() else {
+        let ty::Alias(_is_rigid, alias_ty) = ty.kind() else {
             let ty: Ty = ty.sinto(s);
             return ty.kind().clone();
         };
@@ -657,7 +666,7 @@ impl Alias {
         TyKind::Alias(Alias {
             kind,
             args: alias_ty.args.sinto(s),
-            def_id: alias_ty.kind.def_id().sinto(s),
+            def_id: alias_ty_kind_def_id(alias_ty.kind).sinto(s),
         })
     }
 }
@@ -713,6 +722,7 @@ pub enum TyKind {
 
     #[custom_arm(
         ty::TyKind::FnDef(fun_id, generics) => {
+            let generics = generics.no_bound_vars().expect("bound variables in FnDef");
             let item = translate_item_ref(s, *fun_id, generics);
             let tcx = s.base().tcx;
             let fn_sig = tcx.fn_sig(*fun_id).instantiate(tcx, generics);
@@ -728,11 +738,7 @@ pub enum TyKind {
 
     #[custom_arm(
         ty::TyKind::FnPtr(tys, header) => {
-            let fn_sig_kind = ty::FnSigKind::new(header.abi(), header.safety(), header.c_variadic());
-            let sig = tys.map_bound(|tys| ty::FnSig {
-                inputs_and_output: tys.inputs_and_output,
-                fn_sig_kind,
-            });
+            let sig = tys.with(*header);
             TyKind::Arrow(Box::new(sig.sinto(s)))
         },
     )]
@@ -777,7 +783,7 @@ pub enum TyKind {
     #[custom_arm(FROM_TYPE::Coroutine(def_id, generics) => TO_TYPE::Coroutine(translate_item_ref(s, *def_id, generics)),)]
     Coroutine(ItemRef),
     Never,
-    #[custom_arm(FROM_TYPE::Alias(alias_ty) => Alias::from(s, alias_ty),)]
+    #[custom_arm(FROM_TYPE::Alias(_is_rigid, alias_ty) => Alias::from(s, alias_ty),)]
     Alias(Alias),
     Param(ParamTy),
     Bound(BoundVarIndexKind, BoundTy),
@@ -864,7 +870,7 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
                 Some(proj) => {
                     let bound_vars = proj.bound_vars().sinto(s);
                     let proj = {
-                        let alias_ty = &proj.skip_binder().projection_term.expect_ty(tcx);
+                        let alias_ty = &proj.skip_binder().projection_term.expect_ty();
                         let trait_proof = {
                             let poly_trait_ref = proj.rebind(alias_ty.trait_ref(tcx));
                             predicate_searcher
@@ -874,7 +880,7 @@ fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
                         let Term::Ty(ty) = proj.skip_binder().term.sinto(s) else {
                             unreachable!()
                         };
-                        let item = tcx.associated_item(alias_ty.kind.def_id());
+                        let item = tcx.associated_item(alias_ty_kind_def_id(alias_ty.kind));
                         ProjectionPredicate {
                             trait_proof,
                             assoc_item: AssocItem::sfrom(s, &item),
@@ -1124,7 +1130,7 @@ pub struct OutlivesPredicate<T> {
 }
 
 impl<'tcx, S: UnderOwnerState<'tcx>, T, U> SInto<S, OutlivesPredicate<U>>
-    for ty::OutlivesPredicate<'tcx, T>
+    for ty::OutlivesClause<'tcx, T>
 where
     T: SInto<S, U>,
 {
@@ -1183,12 +1189,12 @@ impl<'tcx, S: UnderBinderState<'tcx>> SInto<S, ProjectionPredicate>
 {
     fn sinto(&self, s: &S) -> ProjectionPredicate {
         let tcx = s.base().tcx;
-        let alias_ty = &self.projection_term.expect_ty(tcx);
+        let alias_ty = &self.projection_term.expect_ty();
         let poly_trait_ref = s.binder().rebind(alias_ty.trait_ref(tcx));
         let Term::Ty(ty) = self.term.sinto(s) else {
             unreachable!()
         };
-        let item = tcx.associated_item(alias_ty.kind.def_id());
+        let item = tcx.associated_item(alias_ty_kind_def_id(alias_ty.kind));
         ProjectionPredicate {
             trait_proof: solve_trait(s, poly_trait_ref),
             assoc_item: AssocItem::sfrom(s, &item),
@@ -1209,11 +1215,11 @@ pub enum ClauseKind {
     ConstArgHasType(ConstantExpr, Ty),
     WellFormed(Term),
     ConstEvaluatable(ConstantExpr),
-    HostEffect(HostEffectPredicate),
+    HostEffect(HostEffectClause),
     UnstableFeature(Symbol),
 }
 
-sinto_todo!(rustc_middle::ty, HostEffectPredicate<'tcx>);
+sinto_todo!(rustc_middle::ty, HostEffectClause<'tcx>);
 
 /// Reflects [`ty::Clause`] and adds a hash-consed predicate identifier.
 
@@ -1426,15 +1432,6 @@ pub struct CoercePredicate {
     pub b: Ty,
 }
 
-/// Reflects [`ty::AliasRelationDirection`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::AliasRelationDirection, state: S as _tcx)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub enum AliasRelationDirection {
-    Equate,
-    Subtype,
-}
-
 /// Reflects [`ty::ClosureArgs`]
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 
@@ -1575,7 +1572,6 @@ pub enum PredicateKind {
     Coerce(CoercePredicate),
     ConstEquate(ConstantExpr, ConstantExpr),
     Ambiguous,
-    AliasRelate(Term, Term, AliasRelationDirection),
     NormalizesTo(NormalizesTo),
 }
 

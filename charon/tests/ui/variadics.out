@@ -1,38 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
-#[lang_item(MetaSized)]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-// Full name: core::clone::Clone
-#[lang_item(Clone)]
-#[diagnostic_item("Clone")]
-pub trait Clone<Self>
-{
-    proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
-    non-dyn-compatible
-}
-
-// Full name: core::clone::impls::{impl Clone for i32}::clone
-pub fn clone<'_0>(_1: &'_0 i32) -> i32
-= <opaque>
-
-// Full name: core::clone::impls::{impl Clone for i32}
-impl "impl_Clone_for_i32" Clone for i32 {
-    proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
-    fn clone<'_0_1> = clone<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: core::ffi::va_list::VaList
 #[lang_item(VaList)]
 pub opaque type VaList<'a>
@@ -43,51 +10,29 @@ where
     RegionOutlives0: 'a: '_1,
 = <opaque>
 
-// Full name: core::ffi::va_list::sealed::Sealed
-pub trait Sealed<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    vtable: core::ffi::va_list::sealed::Sealed::{vtable}
-}
-
-// Full name: core::ffi::va_list::sealed::{impl Sealed for i32}
-impl "impl_Sealed_for_i32" Sealed for i32 {
-    proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
-    vtable: impl_Sealed_for_i32::{vtable}
-}
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
+// Full name: core::marker::MetaSized
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
 
 // Full name: core::ffi::va_list::VaArgSafe
 #[lang_item(VaArgSafe)]
 pub trait VaArgSafe<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Copy)
-    proof ImpliedClause2: (Self: Sealed)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for i32}
-impl "impl_Copy_for_i32" Copy for i32 {
-    proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
-    proof ImpliedClause1: (i32: Clone) = impl_Clone_for_i32
-    non-dyn-compatible
+    vtable: core::ffi::va_list::VaArgSafe::{vtable}
 }
 
 // Full name: core::ffi::va_list::{impl VaArgSafe for i32}
 impl "impl_VaArgSafe_for_i32" VaArgSafe for i32 {
     proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
-    proof ImpliedClause1: (i32: Copy) = impl_Copy_for_i32
-    proof ImpliedClause2: (i32: Sealed) = impl_Sealed_for_i32
+    vtable: impl_VaArgSafe_for_i32::{vtable}
+}
+
+// Full name: core::marker::Sized
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 

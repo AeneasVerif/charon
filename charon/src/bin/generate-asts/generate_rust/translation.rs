@@ -32,8 +32,8 @@ impl Generator<'_> {
             "use charon_lib::ast::from_rustc::{{self, FromRustcError}};"
         )?;
         writeln!(f, "use rustc_ast::attr::version::*;")?;
+        writeln!(f, "use rustc_attr_ir::lang_items::*;")?;
         writeln!(f, "use rustc_hir::attrs::*;")?;
-        writeln!(f, "use rustc_hir::lang_items::*;")?;
         writeln!(f, "use rustc_span::symbol::*;")?;
         writeln!(f)?;
         writeln!(f, "impl<'tcx> TranslateCtx<'tcx> {{")?;
@@ -144,9 +144,13 @@ impl Generator<'_> {
         for variant in self.variants(decl) {
             self.fmt_translate_variant(f, decl.def_id, variant)?;
         }
-        if self.variant_filters.contains_key(&decl.def_id) {
-            writeln!(f, "_ => Err(FromRustcError),")?;
+        if !self.variant_filters.contains_key(&decl.def_id) {
+            writeln!(
+                f,
+                "// If the below is reached, the code is not up-to-date with the rustc version"
+            )?;
         }
+        writeln!(f, "_ => Err(FromRustcError),")?;
         writeln!(f, "}} }}")?;
         writeln!(f)
     }

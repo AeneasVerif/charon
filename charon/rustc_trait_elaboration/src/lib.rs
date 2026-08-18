@@ -8,6 +8,7 @@
 )]
 
 extern crate rustc_arena;
+extern crate rustc_attr_ir;
 extern crate rustc_data_structures;
 extern crate rustc_hir;
 extern crate rustc_infer;

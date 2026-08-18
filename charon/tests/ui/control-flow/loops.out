@@ -165,9 +165,19 @@ pub trait Step<Self>
     proof ImpliedClause2: (Self: PartialOrd<Self>)
     fn steps_between<'_0_1, '_1_1>;
     fn forward_checked;
+    fn forward_overflowing;
     fn backward_checked;
+    fn backward_overflowing;
     non-dyn-compatible
 }
+
+// Full name: core::iter::range::{impl Step for usize}::backward_overflowing
+pub fn impl_Step_for_usize::backward_overflowing(_1: usize, _2: usize) -> (usize, bool)
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for usize}::forward_overflowing
+pub fn impl_Step_for_usize::forward_overflowing(_1: usize, _2: usize) -> (usize, bool)
+= <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::backward_checked
 pub fn impl_Step_for_usize::backward_checked(_1: usize, _2: usize) -> Option<usize>[{built_in impl Sized for usize}]
@@ -188,9 +198,19 @@ impl "impl_Step_for_usize" Step for usize {
     proof ImpliedClause2: (usize: PartialOrd<usize>) = impl_PartialOrd_usize_for_usize
     fn steps_between<'_0_1, '_1_1> = impl_Step_for_usize::steps_between<'_0_1, '_1_1>
     fn forward_checked = impl_Step_for_usize::forward_checked
+    fn forward_overflowing = impl_Step_for_usize::forward_overflowing
     fn backward_checked = impl_Step_for_usize::backward_checked
+    fn backward_overflowing = impl_Step_for_usize::backward_overflowing
     non-dyn-compatible
 }
+
+// Full name: core::iter::range::{impl Step for u32}::backward_overflowing
+pub fn impl_Step_for_u32::backward_overflowing(_1: u32, _2: usize) -> (u32, bool)
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for u32}::forward_overflowing
+pub fn impl_Step_for_u32::forward_overflowing(_1: u32, _2: usize) -> (u32, bool)
+= <opaque>
 
 // Full name: core::iter::range::{impl Step for u32}::backward_checked
 pub fn impl_Step_for_u32::backward_checked(_1: u32, _2: usize) -> Option<u32>[{built_in impl Sized for u32}]
@@ -211,9 +231,19 @@ impl "impl_Step_for_u32" Step for u32 {
     proof ImpliedClause2: (u32: PartialOrd<u32>) = impl_PartialOrd_u32_for_u32
     fn steps_between<'_0_1, '_1_1> = impl_Step_for_u32::steps_between<'_0_1, '_1_1>
     fn forward_checked = impl_Step_for_u32::forward_checked
+    fn forward_overflowing = impl_Step_for_u32::forward_overflowing
     fn backward_checked = impl_Step_for_u32::backward_checked
+    fn backward_overflowing = impl_Step_for_u32::backward_overflowing
     non-dyn-compatible
 }
+
+// Full name: core::iter::range::{impl Step for i32}::backward_overflowing
+pub fn impl_Step_for_i32::backward_overflowing(_1: i32, _2: usize) -> (i32, bool)
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for i32}::forward_overflowing
+pub fn impl_Step_for_i32::forward_overflowing(_1: i32, _2: usize) -> (i32, bool)
+= <opaque>
 
 // Full name: core::iter::range::{impl Step for i32}::backward_checked
 pub fn impl_Step_for_i32::backward_checked(_1: i32, _2: usize) -> Option<i32>[{built_in impl Sized for i32}]
@@ -234,7 +264,9 @@ impl "impl_Step_for_i32" Step for i32 {
     proof ImpliedClause2: (i32: PartialOrd<i32>) = impl_PartialOrd_i32_for_i32
     fn steps_between<'_0_1, '_1_1> = impl_Step_for_i32::steps_between<'_0_1, '_1_1>
     fn forward_checked = impl_Step_for_i32::forward_checked
+    fn forward_overflowing = impl_Step_for_i32::forward_overflowing
     fn backward_checked = impl_Step_for_i32::backward_checked
+    fn backward_overflowing = impl_Step_for_i32::backward_overflowing
     non-dyn-compatible
 }
 
@@ -288,26 +320,13 @@ where
     TraitClause1: (I: Iterator),
 = <opaque>
 
-pub trait core::slice::index::private_slice_index::Sealed<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    vtable: core::slice::index::private_slice_index::Sealed::{vtable}
-}
-
-// Full name: core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for usize}
-impl core::slice::index::private_slice_index::Sealed for usize {
-    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
-    vtable: {impl core::slice::index::private_slice_index::Sealed for usize}::{vtable}
-}
-
 // Full name: core::slice::index::SliceIndex
 #[diagnostic_item("SliceIndex")]
 pub trait SliceIndex<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: core::slice::index::private_slice_index::Sealed)
-    proof ImpliedClause2: (T: MetaSized)
-    proof ImpliedClause3: (Self::Output: MetaSized)
+    proof ImpliedClause1: (T: MetaSized)
+    proof ImpliedClause2: (Self::Output: MetaSized)
     type Output
     fn get<'_0_1>;
     fn get_mut<'_0_1>;
@@ -364,9 +383,8 @@ where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
-    proof ImpliedClause1: (usize: core::slice::index::private_slice_index::Sealed) = {impl core::slice::index::private_slice_index::Sealed for usize}
-    proof ImpliedClause2: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
-    proof ImpliedClause3: (T: MetaSized) = TraitClause0::ImpliedClause0
+    proof ImpliedClause1: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
+    proof ImpliedClause2: (T: MetaSized) = TraitClause0::ImpliedClause0
     type Output = T
     fn get<'_0_1> = get<'_0_1, T>[TraitClause0]
     fn get_mut<'_0_1> = get_mut<'_0_1, T>[TraitClause0]

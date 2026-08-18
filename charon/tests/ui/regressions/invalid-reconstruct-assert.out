@@ -100,6 +100,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (F: Sized),
     TraitClause2: (F: FnMut<(&'a T,)>),
+    TraitClause3: (F: Destruct),
     TypeOutlives0: T: 'a,
     TypeConstraint0: TraitClause2::ImpliedClause1::Output = Ordering,
 {
@@ -184,7 +185,7 @@ where
         _51 = Result::Err { _0: const 0usize };
         _0 = move _51;
         storage_dead(size);
-        drop[{built_in impl Destruct for F}::drop_glue<'15>] f -> bb39 (unwind: bb3);
+        drop[TraitClause3::drop_glue<'15>] f -> bb39 (unwind: bb3);
     }
 
     bb2: {
@@ -313,7 +314,7 @@ where
     }
 
     bb15: {
-        drop[{built_in impl Destruct for F}::drop_glue<'24>] f -> bb22 (unwind: bb23);
+        drop[TraitClause3::drop_glue<'24>] f -> bb22 (unwind: bb23);
     }
 
     bb16: {
@@ -478,7 +479,7 @@ where
     bb34: {
         storage_dead(cmp_18);
         storage_dead(size);
-        drop[{built_in impl Destruct for F}::drop_glue<'25>] f -> bb40 (unwind: bb38);
+        drop[TraitClause3::drop_glue<'25>] f -> bb40 (unwind: bb38);
     }
 
     bb35: {
@@ -572,6 +573,26 @@ where
 // Full name: test_crate::main::closure
 struct closure {}
 
+// Full name: test_crate::main::closure::{impl Destruct for closure}::drop_glue
+unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
+{
+    let _0: (); // return
+    let _1: &'1 mut closure; // arg #1
+
+    bb0: {
+        storage_live(_0);
+        _0 = ();
+        storage_dead(_1);
+        return;
+    }
+}
+
+// Full name: test_crate::main::closure::{impl Destruct for closure}
+impl "impl_Destruct_for_closure" Destruct for closure {
+    fn drop_glue<'_0_1> = drop_glue<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: test_crate::main::{impl FnMut<(&'_ u32,)> for closure}::call_mut
 fn call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled_args: (&'_0 u32,)) -> Ordering
 {
@@ -630,20 +651,6 @@ fn call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled_args: (&'_0 u32,)) -> Orderin
         storage_dead(_10);
         storage_dead(_9);
         storage_dead(_8);
-        return;
-    }
-}
-
-// Full name: test_crate::main::closure::{impl Destruct for closure}::drop_glue
-unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
-{
-    let _0: (); // return
-    let _1: &'1 mut closure; // arg #1
-
-    bb0: {
-        storage_live(_0);
-        _0 = ();
-        storage_dead(_1);
         return;
     }
 }
@@ -759,7 +766,7 @@ fn main()
         storage_dead(_7);
         storage_live(_8);
         _8 = closure {  };
-        res = binary_search_by<'10, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, impl_FnMut_tuple_for_closure<'14>](move _6, move _8) -> bb2 (unwind: bb1);
+        res = binary_search_by<'10, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, impl_FnMut_tuple_for_closure<'14>, impl_Destruct_for_closure](move _6, move _8) -> bb2 (unwind: bb1);
     }
 
     bb1: {
@@ -776,12 +783,6 @@ fn main()
         storage_dead(a);
         return;
     }
-}
-
-// Full name: test_crate::main::closure::{impl Destruct for closure}
-impl "impl_Destruct_for_closure" Destruct for closure {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1>
-    non-dyn-compatible
 }
 
 
