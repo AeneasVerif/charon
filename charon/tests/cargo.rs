@@ -234,6 +234,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             Success,
         ),
         issue_1298,
+        mktest(
+            "test-attributes",
+            root.join("test-attributes"),
+            &[],
+            &["--tests".to_owned()],
+            Success,
+        ),
     ];
 
     let args = libtest_mimic::Arguments::from_args();
