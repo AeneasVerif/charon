@@ -2196,7 +2196,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("unsized_strings", unsized_strings);
           ("reconstruct_fallible_operations", reconstruct_fallible_operations);
           ("reconstruct_asserts", reconstruct_asserts);
-          ("no_insert_storage_deads", no_insert_storage_deads);
+          ("deallocate_all_locals", deallocate_all_locals);
           ("unbind_item_vars", unbind_item_vars);
           ("print_original_ullbc", print_original_ullbc);
           ("print_ullbc", print_ullbc);
@@ -2264,9 +2264,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           bool_of_json ctx reconstruct_fallible_operations
         in
         let* reconstruct_asserts = bool_of_json ctx reconstruct_asserts in
-        let* no_insert_storage_deads =
-          bool_of_json ctx no_insert_storage_deads
-        in
+        let* deallocate_all_locals = bool_of_json ctx deallocate_all_locals in
         let* unbind_item_vars = bool_of_json ctx unbind_item_vars in
         let* print_original_ullbc = bool_of_json ctx print_original_ullbc in
         let* print_ullbc = bool_of_json ctx print_ullbc in
@@ -2323,7 +2321,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              unsized_strings;
              reconstruct_fallible_operations;
              reconstruct_asserts;
-             no_insert_storage_deads;
+             deallocate_all_locals;
              unbind_item_vars;
              print_original_ullbc;
              print_ullbc;

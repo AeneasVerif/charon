@@ -13,7 +13,6 @@ pub fn get_value<'_0>(g: &'_0 Generated) -> u32
 
     storage_live(_0)
     _0 = copy (*g).value
-    storage_dead(g)
     return
 }
 

@@ -181,9 +181,11 @@ and cli_options = {
           information. *)
   reconstruct_asserts : bool;
       (** Replace [if x { panic() }] with [assert(x)]. *)
-  no_insert_storage_deads : bool;
-      (** Don't add extra [StorageDead]s that MIR omits for some locals before
-          terminators. *)
+  deallocate_all_locals : bool;
+      (** Ensure all local deallocations are made explicit with [StorageDead]
+          statements. If this flag is not passed, every non-return local is
+          implicitly deallocated on function return. Note this can add a lot of
+          statements (quadratically-many, because of unwind paths). *)
   unbind_item_vars : bool;
       (** Use [DeBruijnVar::Free] for the variables bound in item signatures,
           instead of [DeBruijnVar::Bound] everywhere. This simplifies the

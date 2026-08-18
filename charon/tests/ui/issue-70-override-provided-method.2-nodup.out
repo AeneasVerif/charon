@@ -32,20 +32,17 @@ where
     storage_live(_3)
     _3 = &(*self) with_metadata(copy self.metadata)
     _2 = TraitClause0::required<'4>(move _3)
-    ↳⚡ storage_dead(self)
-        unwind_continue
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*self) with_metadata(copy self.metadata)
     _4 = TraitClause0::provided2<'5>(move _5)
-    ↳⚡ storage_dead(self)
-        unwind_continue
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()
-    storage_dead(self)
     return
 }
 
@@ -68,20 +65,17 @@ where
     storage_live(_3)
     _3 = &(*self) with_metadata(copy self.metadata)
     _2 = TraitClause0::required<'4>(move _3)
-    ↳⚡ storage_dead(self)
-        unwind_continue
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     storage_live(_4)
     storage_live(_5)
     _5 = &(*self) with_metadata(copy self.metadata)
     _4 = TraitClause0::provided1<'5>(move _5)
-    ↳⚡ storage_dead(self)
-        unwind_continue
+    ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()
-    storage_dead(self)
     return
 }
 
@@ -102,12 +96,10 @@ fn impl_Trait_for_Foo::required<'_0>(self: &'_0 Foo)
     storage_live(_3)
     _3 = &(*self)
     _2 = test_crate::Trait::provided1<'4, Foo>[impl_Trait_for_Foo](move _3)
-    ↳⚡ storage_dead(self)
-        unwind_continue
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
-    storage_dead(self)
     return
 }
 
@@ -137,12 +129,10 @@ fn impl_Trait_for_Bar::provided1<'_0>(self: &'_0 Bar)
     storage_live(_3)
     _3 = &(*self)
     _2 = provided2<'4, Bar>[impl_Trait_for_Bar](move _3)
-    ↳⚡ storage_dead(self)
-        unwind_continue
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
-    storage_dead(self)
     return
 }
 
@@ -160,12 +150,10 @@ fn impl_Trait_for_Bar::required<'_0>(self: &'_0 Bar)
     storage_live(_3)
     _3 = &(*self)
     _2 = provided2<'4, Bar>[impl_Trait_for_Bar](move _3)
-    ↳⚡ storage_dead(self)
-        unwind_continue
+    ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
-    storage_dead(self)
     return
 }
 
