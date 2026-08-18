@@ -9,6 +9,7 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut String)
 = <opaque>
 
 // Full name: alloc::string::{String}::new
+#[rustc_diagnostic_item = "string_new"]
 #[diagnostic_item("string_new")]
 pub fn new() -> String
 = <opaque>

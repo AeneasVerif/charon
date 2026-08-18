@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -13,6 +15,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
+#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -32,6 +35,7 @@ pub trait TrivialClone<Self>
 }
 
 // Full name: core::marker::Copy
+#[rustc_diagnostic_item = "Copy"]
 #[lang_item(Copy)]
 #[diagnostic_item("Copy")]
 pub trait Copy<Self>
@@ -48,6 +52,7 @@ enum Foo {
 }
 
 // Full name: test_crate::{impl Clone for Foo}::clone
+#[inline(hint)]
 pub fn clone<'_0>(self: &'_0 Foo) -> Foo
 {
     let _0: Foo; // return

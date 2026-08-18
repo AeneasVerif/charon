@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -13,6 +15,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::array::iter::IntoIter
+#[rustc_diagnostic_item = "ArrayIntoIter"]
 #[diagnostic_item("ArrayIntoIter")]
 pub opaque type IntoIter<T, const N : usize>
 where
@@ -32,6 +35,7 @@ where
 = <opaque>
 
 // Full name: core::option::Option
+#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -43,6 +47,7 @@ where
 }
 
 // Full name: core::ops::try_trait::FromResidual
+#[rustc_diagnostic_item = "FromResidual"]
 #[diagnostic_item("FromResidual")]
 pub trait FromResidual<Self, R>
 {
@@ -53,6 +58,7 @@ pub trait FromResidual<Self, R>
 }
 
 // Full name: core::ops::control_flow::ControlFlow
+#[rustc_diagnostic_item = "ControlFlow"]
 #[diagnostic_item("ControlFlow")]
 pub enum ControlFlow<B, C>
 where
@@ -94,6 +100,7 @@ where
 }
 
 // Full name: core::marker::Tuple
+#[fundamental]
 #[lang_item(Tuple)]
 pub trait Tuple<Self>
 {
@@ -102,6 +109,7 @@ pub trait Tuple<Self>
 }
 
 // Full name: core::ops::function::FnOnce
+#[fundamental]
 #[lang_item(FnOnce)]
 pub trait FnOnce<Self, Args>
 {
@@ -115,6 +123,7 @@ pub trait FnOnce<Self, Args>
 }
 
 // Full name: core::ops::function::FnMut
+#[fundamental]
 #[lang_item(FnMut)]
 pub trait FnMut<Self, Args>
 {
@@ -135,6 +144,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::clone::Clone
+#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -146,6 +156,7 @@ pub trait Clone<Self>
 }
 
 // Full name: core::marker::Copy
+#[rustc_diagnostic_item = "Copy"]
 #[lang_item(Copy)]
 #[diagnostic_item("Copy")]
 pub trait Copy<Self>
@@ -156,6 +167,7 @@ pub trait Copy<Self>
 }
 
 // Full name: core::result::Result
+#[rustc_diagnostic_item = "Result"]
 #[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
@@ -178,6 +190,7 @@ pub trait ZeroablePrimitive<Self>
 }
 
 // Full name: core::num::nonzero::NonZero
+#[rustc_diagnostic_item = "NonZero"]
 #[diagnostic_item("NonZero")]
 pub opaque type NonZero<T>
 where
@@ -328,6 +341,7 @@ where
     TraitClause1: (P: Sized),
 
 // Full name: core::iter::adapters::enumerate::Enumerate
+#[rustc_diagnostic_item = "Enumerate"]
 #[diagnostic_item("Enumerate")]
 pub opaque type Enumerate<I>
 where
@@ -355,6 +369,7 @@ where
     TraitClause1: (B: Sized),
 
 // Full name: core::default::Default
+#[rustc_diagnostic_item = "Default"]
 #[diagnostic_item("Default")]
 pub trait Default<Self>
 {
@@ -372,6 +387,7 @@ pub enum Ordering {
 }
 
 // Full name: core::cmp::PartialEq
+#[rustc_diagnostic_item = "PartialEq"]
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
@@ -382,6 +398,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::PartialOrd
+#[rustc_diagnostic_item = "PartialOrd"]
 #[lang_item(PartialOrd)]
 #[diagnostic_item("PartialOrd")]
 pub trait PartialOrd<Self, Rhs>
@@ -400,6 +417,7 @@ pub trait PartialOrd<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
+#[rustc_diagnostic_item = "Eq"]
 #[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {
@@ -410,6 +428,7 @@ pub trait Eq<Self>
 }
 
 // Full name: core::cmp::Ord
+#[rustc_diagnostic_item = "Ord"]
 #[diagnostic_item("Ord")]
 pub trait Ord<Self>
 {
@@ -465,6 +484,7 @@ where
     TraitClause2: (I: Iterator),
 
 // Full name: core::iter::adapters::peekable::Peekable
+#[rustc_diagnostic_item = "IterPeekable"]
 #[diagnostic_item("IterPeekable")]
 pub opaque type Peekable<I>
 where
@@ -499,6 +519,7 @@ pub trait Product<Self, A>
 }
 
 // Full name: core::iter::traits::collect::FromIterator
+#[rustc_diagnostic_item = "FromIterator"]
 #[diagnostic_item("FromIterator")]
 pub trait FromIterator<Self, A>
 {
@@ -509,6 +530,7 @@ pub trait FromIterator<Self, A>
 }
 
 // Full name: core::iter::traits::collect::IntoIterator
+#[rustc_diagnostic_item = "IntoIterator"]
 #[diagnostic_item("IntoIterator")]
 pub trait IntoIterator<Self>
 where
@@ -537,6 +559,7 @@ pub trait Extend<Self, A>
 }
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator
+#[rustc_diagnostic_item = "DoubleEndedIterator"]
 #[diagnostic_item("DoubleEndedIterator")]
 pub trait DoubleEndedIterator<Self>
 {
@@ -563,6 +586,7 @@ pub trait ExactSizeIterator<Self>
 }
 
 // Full name: core::iter::traits::iterator::Iterator
+#[rustc_diagnostic_item = "Iterator"]
 #[lang_item(Iterator)]
 #[diagnostic_item("Iterator")]
 pub trait Iterator<Self>
@@ -881,6 +905,7 @@ where
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}::array_chunks
+#[track_caller]
 pub fn impl_Iterator_for_IntoIter::array_chunks<T, const N : usize, const N : usize>(_1: IntoIter<T, N>[TraitClause0]) -> ArrayChunks<IntoIter<T, N>[TraitClause0], N>[TraitClause1, impl_Iterator_for_IntoIter<T, N>[TraitClause0]]
 where
     TraitClause0: (T: Sized),
@@ -896,6 +921,7 @@ where
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}::cloned
+#[rustc_diagnostic_item = "iter_cloned"]
 #[diagnostic_item("iter_cloned")]
 pub fn impl_Iterator_for_IntoIter::cloned<'a, T, T, const N : usize>(_1: IntoIter<T, N>[TraitClause0]) -> Cloned<IntoIter<T, N>[TraitClause0]>[TraitClause3]
 where
@@ -909,6 +935,7 @@ where
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}::copied
+#[rustc_diagnostic_item = "iter_copied"]
 #[diagnostic_item("iter_copied")]
 pub fn impl_Iterator_for_IntoIter::copied<'a, T, T, const N : usize>(_1: IntoIter<T, N>[TraitClause0]) -> Copied<IntoIter<T, N>[TraitClause0]>[TraitClause3]
 where
@@ -1192,6 +1219,7 @@ where
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}::collect
+#[rustc_diagnostic_item = "iterator_collect_fn"]
 #[diagnostic_item("iterator_collect_fn")]
 pub fn impl_Iterator_for_IntoIter::collect<T, B, const N : usize>(_1: IntoIter<T, N>[TraitClause0]) -> B
 where
@@ -1322,6 +1350,7 @@ where
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}::enumerate
+#[rustc_diagnostic_item = "enumerate_method"]
 #[diagnostic_item("enumerate_method")]
 pub fn impl_Iterator_for_IntoIter::enumerate<T, const N : usize>(_1: IntoIter<T, N>[TraitClause0]) -> Enumerate<IntoIter<T, N>[TraitClause0]>[TraitClause1]
 where
@@ -1341,6 +1370,7 @@ where
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}::filter
+#[rustc_diagnostic_item = "iter_filter"]
 #[diagnostic_item("iter_filter")]
 pub fn impl_Iterator_for_IntoIter::filter<T, P, const N : usize>(_1: IntoIter<T, N>[TraitClause0], _2: P) -> Filter<IntoIter<T, N>[TraitClause0], P>[TraitClause2, TraitClause1]
 where
@@ -1362,6 +1392,7 @@ where
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}::map
+#[rustc_diagnostic_item = "IteratorMap"]
 #[diagnostic_item("IteratorMap")]
 pub fn impl_Iterator_for_IntoIter::map<T, B, F, const N : usize>(_1: IntoIter<T, N>[TraitClause0], _2: F) -> Map<IntoIter<T, N>[TraitClause0], F>[TraitClause3, TraitClause2]
 where
@@ -1528,6 +1559,7 @@ where
     TypeOutlives1: Self: '_1,
 = <opaque>
 
+#[rustc_diagnostic_item = "cmp_partialeq_ne"]
 #[diagnostic_item("cmp_partialeq_ne")]
 pub fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
@@ -1537,6 +1569,8 @@ where
 = <opaque>
 
 // Full name: core::cmp::Eq::assert_receiver_is_total_eq
+#[rustc_diagnostic_item = "assert_receiver_is_total_eq"]
+#[deprecated(since = "1.95.0", note = "implementation detail of `#[derive(Eq)]`")]
 #[diagnostic_item("assert_receiver_is_total_eq")]
 pub fn assert_receiver_is_total_eq<'_0, Self>(_1: &'_0 Self)
 where
@@ -1551,6 +1585,7 @@ where
     TypeOutlives0: Self: '_0,
 = <opaque>
 
+#[rustc_diagnostic_item = "cmp_ord_max"]
 #[diagnostic_item("cmp_ord_max")]
 pub fn core::cmp::Ord::max<Self>(_1: Self, _2: Self) -> Self
 where
@@ -1559,6 +1594,7 @@ where
     TraitClause2: (Self: Destruct),
 = <opaque>
 
+#[rustc_diagnostic_item = "cmp_ord_min"]
 #[diagnostic_item("cmp_ord_min")]
 pub fn core::cmp::Ord::min<Self>(_1: Self, _2: Self) -> Self
 where
@@ -1575,6 +1611,7 @@ where
     TraitClause2: (Self: Destruct),
 = <opaque>
 
+#[rustc_diagnostic_item = "cmp_partialord_lt"]
 #[diagnostic_item("cmp_partialord_lt")]
 pub fn core::cmp::PartialOrd::lt<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
@@ -1583,6 +1620,7 @@ where
     TypeOutlives1: Rhs: '_1,
 = <opaque>
 
+#[rustc_diagnostic_item = "cmp_partialord_le"]
 #[diagnostic_item("cmp_partialord_le")]
 pub fn core::cmp::PartialOrd::le<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
@@ -1591,6 +1629,7 @@ where
     TypeOutlives1: Rhs: '_1,
 = <opaque>
 
+#[rustc_diagnostic_item = "cmp_partialord_gt"]
 #[diagnostic_item("cmp_partialord_gt")]
 pub fn core::cmp::PartialOrd::gt<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
@@ -1599,6 +1638,7 @@ where
     TypeOutlives1: Rhs: '_1,
 = <opaque>
 
+#[rustc_diagnostic_item = "cmp_partialord_ge"]
 #[diagnostic_item("cmp_partialord_ge")]
 pub fn core::cmp::PartialOrd::ge<'_0, '_1, Self, Rhs>(_1: &'_0 Self, _2: &'_1 Rhs) -> bool
 where
@@ -1640,6 +1680,7 @@ where
 = <opaque>
 
 // Full name: core::ops::arith::{impl AddAssign<&'_0 i32> for i32}::add_assign
+#[track_caller]
 pub fn add_assign<'_0, '_1>(_1: &'_1 mut i32, _2: &'_0 i32)
 = <opaque>
 
@@ -1836,6 +1877,7 @@ where
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = TraitClause0::Item,
 = <opaque>
 
+#[rustc_diagnostic_item = "IteratorMap"]
 #[diagnostic_item("IteratorMap")]
 pub fn core::iter::traits::iterator::Iterator::map<Self, B, F>(_1: Self, _2: F) -> Map<Self, F>[TraitClause3, TraitClause2]
 where
@@ -1856,6 +1898,7 @@ where
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = (),
 = <opaque>
 
+#[rustc_diagnostic_item = "iter_filter"]
 #[diagnostic_item("iter_filter")]
 pub fn core::iter::traits::iterator::Iterator::filter<Self, P>(_1: Self, _2: P) -> Filter<Self, P>[TraitClause2, TraitClause1]
 where
@@ -1876,6 +1919,7 @@ where
     TypeConstraint0: TraitClause4::ImpliedClause1::Output = Option<B>[TraitClause1],
 = <opaque>
 
+#[rustc_diagnostic_item = "enumerate_method"]
 #[diagnostic_item("enumerate_method")]
 pub fn core::iter::traits::iterator::Iterator::enumerate<Self>(_1: Self) -> Enumerate<Self>[TraitClause1]
 where
@@ -1990,6 +2034,7 @@ where
     TypeOutlives0: Self: '_0,
 = <opaque>
 
+#[rustc_diagnostic_item = "iterator_collect_fn"]
 #[diagnostic_item("iterator_collect_fn")]
 pub fn core::iter::traits::iterator::Iterator::collect<Self, B>(_1: Self) -> B
 where
@@ -2273,6 +2318,7 @@ where
     TypeConstraint0: TraitClause0::Item = (A, B),
 = <opaque>
 
+#[rustc_diagnostic_item = "iter_copied"]
 #[diagnostic_item("iter_copied")]
 pub fn core::iter::traits::iterator::Iterator::copied<'a, Self, T>(_1: Self) -> Copied<Self>[TraitClause3]
 where
@@ -2285,6 +2331,7 @@ where
     TypeConstraint0: TraitClause0::Item = &'a T,
 = <opaque>
 
+#[rustc_diagnostic_item = "iter_cloned"]
 #[diagnostic_item("iter_cloned")]
 pub fn core::iter::traits::iterator::Iterator::cloned<'a, Self, T>(_1: Self) -> Cloned<Self>[TraitClause3]
 where
@@ -2304,6 +2351,7 @@ where
     TraitClause2: (Self: Clone),
 = <opaque>
 
+#[track_caller]
 pub fn core::iter::traits::iterator::Iterator::array_chunks<Self, const N : usize>(_1: Self) -> ArrayChunks<Self, N>[TraitClause1, TraitClause0]
 where
     TraitClause0: (Self: Iterator),
@@ -2474,6 +2522,7 @@ pub enum AssertKind {
 }
 
 // Full name: core::slice::iter::Iter
+#[rustc_diagnostic_item = "SliceIter"]
 #[diagnostic_item("SliceIter")]
 pub opaque type Iter<'a, T>
 where
@@ -2834,6 +2883,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::array_chunks
+#[track_caller]
 pub fn impl_Iterator_for_Iter::array_chunks<'a, T, const N : usize>(_1: Iter<'a, T>[TraitClause0]) -> ArrayChunks<Iter<'a, T>[TraitClause0], N>[TraitClause1, impl_Iterator_for_Iter<'a, T>[TraitClause0]]
 where
     TraitClause0: (T: Sized),
@@ -2851,6 +2901,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::cloned
+#[rustc_diagnostic_item = "iter_cloned"]
 #[diagnostic_item("iter_cloned")]
 pub fn impl_Iterator_for_Iter::cloned<'a, 'a, T, T>(_1: Iter<'a, T>[TraitClause0]) -> Cloned<Iter<'a, T>[TraitClause0]>[TraitClause3]
 where
@@ -2865,6 +2916,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::copied
+#[rustc_diagnostic_item = "iter_copied"]
 #[diagnostic_item("iter_copied")]
 pub fn impl_Iterator_for_Iter::copied<'a, 'a, T, T>(_1: Iter<'a, T>[TraitClause0]) -> Copied<Iter<'a, T>[TraitClause0]>[TraitClause3]
 where
@@ -3119,6 +3171,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::collect
+#[rustc_diagnostic_item = "iterator_collect_fn"]
 #[diagnostic_item("iterator_collect_fn")]
 pub fn impl_Iterator_for_Iter::collect<'a, T, B>(_1: Iter<'a, T>[TraitClause0]) -> B
 where
@@ -3264,6 +3317,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::enumerate
+#[rustc_diagnostic_item = "enumerate_method"]
 #[diagnostic_item("enumerate_method")]
 pub fn impl_Iterator_for_Iter::enumerate<'a, T>(_1: Iter<'a, T>[TraitClause0]) -> Enumerate<Iter<'a, T>[TraitClause0]>[TraitClause1]
 where
@@ -3285,6 +3339,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::filter
+#[rustc_diagnostic_item = "iter_filter"]
 #[diagnostic_item("iter_filter")]
 pub fn impl_Iterator_for_Iter::filter<'a, T, P>(_1: Iter<'a, T>[TraitClause0], _2: P) -> Filter<Iter<'a, T>[TraitClause0], P>[TraitClause2, TraitClause1]
 where
@@ -3297,6 +3352,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::map
+#[rustc_diagnostic_item = "IteratorMap"]
 #[diagnostic_item("IteratorMap")]
 pub fn impl_Iterator_for_Iter::map<'a, T, B, F>(_1: Iter<'a, T>[TraitClause0], _2: F) -> Map<Iter<'a, T>[TraitClause0], F>[TraitClause3, TraitClause2]
 where
@@ -3686,6 +3742,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::array_chunks
+#[track_caller]
 pub fn impl_Iterator_for_Chunks::array_chunks<'a, T, const N : usize>(_1: Chunks<'a, T>[TraitClause0]) -> ArrayChunks<Chunks<'a, T>[TraitClause0], N>[TraitClause1, impl_Iterator_for_Chunks<'a, T>[TraitClause0]]
 where
     TraitClause0: (T: Sized),
@@ -3703,6 +3760,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::cloned
+#[rustc_diagnostic_item = "iter_cloned"]
 #[diagnostic_item("iter_cloned")]
 pub fn impl_Iterator_for_Chunks::cloned<'a, 'a, T, T>(_1: Chunks<'a, T>[TraitClause0]) -> Cloned<Chunks<'a, T>[TraitClause0]>[TraitClause3]
 where
@@ -3717,6 +3775,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::copied
+#[rustc_diagnostic_item = "iter_copied"]
 #[diagnostic_item("iter_copied")]
 pub fn impl_Iterator_for_Chunks::copied<'a, 'a, T, T>(_1: Chunks<'a, T>[TraitClause0]) -> Copied<Chunks<'a, T>[TraitClause0]>[TraitClause3]
 where
@@ -4066,6 +4125,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::collect
+#[rustc_diagnostic_item = "iterator_collect_fn"]
 #[diagnostic_item("iterator_collect_fn")]
 pub fn impl_Iterator_for_Chunks::collect<'a, T, B>(_1: Chunks<'a, T>[TraitClause0]) -> B
 where
@@ -4211,6 +4271,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::enumerate
+#[rustc_diagnostic_item = "enumerate_method"]
 #[diagnostic_item("enumerate_method")]
 pub fn impl_Iterator_for_Chunks::enumerate<'a, T>(_1: Chunks<'a, T>[TraitClause0]) -> Enumerate<Chunks<'a, T>[TraitClause0]>[TraitClause1]
 where
@@ -4232,6 +4293,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::filter
+#[rustc_diagnostic_item = "iter_filter"]
 #[diagnostic_item("iter_filter")]
 pub fn impl_Iterator_for_Chunks::filter<'a, T, P>(_1: Chunks<'a, T>[TraitClause0], _2: P) -> Filter<Chunks<'a, T>[TraitClause0], P>[TraitClause2, TraitClause1]
 where
@@ -4255,6 +4317,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::map
+#[rustc_diagnostic_item = "IteratorMap"]
 #[diagnostic_item("IteratorMap")]
 pub fn impl_Iterator_for_Chunks::map<'a, T, B, F>(_1: Chunks<'a, T>[TraitClause0], _2: F) -> Map<Chunks<'a, T>[TraitClause0], F>[TraitClause3, TraitClause2]
 where
@@ -4663,6 +4726,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::array_chunks
+#[track_caller]
 pub fn impl_Iterator_for_ChunksExact::array_chunks<'a, T, const N : usize>(_1: ChunksExact<'a, T>[TraitClause0]) -> ArrayChunks<ChunksExact<'a, T>[TraitClause0], N>[TraitClause1, impl_Iterator_for_ChunksExact<'a, T>[TraitClause0]]
 where
     TraitClause0: (T: Sized),
@@ -4680,6 +4744,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::cloned
+#[rustc_diagnostic_item = "iter_cloned"]
 #[diagnostic_item("iter_cloned")]
 pub fn impl_Iterator_for_ChunksExact::cloned<'a, 'a, T, T>(_1: ChunksExact<'a, T>[TraitClause0]) -> Cloned<ChunksExact<'a, T>[TraitClause0]>[TraitClause3]
 where
@@ -4694,6 +4759,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::copied
+#[rustc_diagnostic_item = "iter_copied"]
 #[diagnostic_item("iter_copied")]
 pub fn impl_Iterator_for_ChunksExact::copied<'a, 'a, T, T>(_1: ChunksExact<'a, T>[TraitClause0]) -> Copied<ChunksExact<'a, T>[TraitClause0]>[TraitClause3]
 where
@@ -5043,6 +5109,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::collect
+#[rustc_diagnostic_item = "iterator_collect_fn"]
 #[diagnostic_item("iterator_collect_fn")]
 pub fn impl_Iterator_for_ChunksExact::collect<'a, T, B>(_1: ChunksExact<'a, T>[TraitClause0]) -> B
 where
@@ -5188,6 +5255,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::enumerate
+#[rustc_diagnostic_item = "enumerate_method"]
 #[diagnostic_item("enumerate_method")]
 pub fn impl_Iterator_for_ChunksExact::enumerate<'a, T>(_1: ChunksExact<'a, T>[TraitClause0]) -> Enumerate<ChunksExact<'a, T>[TraitClause0]>[TraitClause1]
 where
@@ -5209,6 +5277,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::filter
+#[rustc_diagnostic_item = "iter_filter"]
 #[diagnostic_item("iter_filter")]
 pub fn impl_Iterator_for_ChunksExact::filter<'a, T, P>(_1: ChunksExact<'a, T>[TraitClause0], _2: P) -> Filter<ChunksExact<'a, T>[TraitClause0], P>[TraitClause2, TraitClause1]
 where
@@ -5232,6 +5301,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::map
+#[rustc_diagnostic_item = "IteratorMap"]
 #[diagnostic_item("IteratorMap")]
 pub fn impl_Iterator_for_ChunksExact::map<'a, T, B, F>(_1: ChunksExact<'a, T>[TraitClause0], _2: F) -> Map<ChunksExact<'a, T>[TraitClause0], F>[TraitClause3, TraitClause2]
 where
@@ -5402,6 +5472,7 @@ where
 }
 
 // Full name: core::slice::{[T]}::iter
+#[rustc_diagnostic_item = "slice_iter"]
 #[diagnostic_item("slice_iter")]
 pub fn iter<'_0, T>(_1: &'_0 [T]) -> Iter<'_0, T>[TraitClause0]
 where
@@ -5410,6 +5481,7 @@ where
 = <opaque>
 
 // Full name: core::slice::{[T]}::chunks
+#[track_caller]
 pub fn chunks<'_0, T>(_1: &'_0 [T], _2: usize) -> Chunks<'_0, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
@@ -5417,6 +5489,7 @@ where
 = <opaque>
 
 // Full name: core::slice::{[T]}::chunks_exact
+#[track_caller]
 pub fn chunks_exact<'_0, T>(_1: &'_0 [T], _2: usize) -> ChunksExact<'_0, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),

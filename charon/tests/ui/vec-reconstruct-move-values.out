@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -32,6 +34,7 @@ where
 = <opaque>
 
 // Full name: alloc::vec::Vec
+#[rustc_diagnostic_item = "Vec"]
 #[diagnostic_item("Vec")]
 pub opaque type Vec<T>
 where

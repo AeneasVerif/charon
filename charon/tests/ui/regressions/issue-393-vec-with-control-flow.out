@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -19,6 +21,7 @@ where
     TraitClause0: (T: Sized),
 
 // Full name: core::option::Option
+#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -43,6 +46,7 @@ where
 = <opaque>
 
 // Full name: alloc::boxed::{alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new_uninit
+#[track_caller]
 pub fn new_uninit<T>() -> alloc::boxed::Box<MaybeUninit<T>[TraitClause0]>[{built_in impl MetaSized for MaybeUninit<T>[TraitClause0]}, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
@@ -56,6 +60,7 @@ where
 = <opaque>
 
 // Full name: alloc::vec::Vec
+#[rustc_diagnostic_item = "Vec"]
 #[diagnostic_item("Vec")]
 pub opaque type Vec<T>
 where

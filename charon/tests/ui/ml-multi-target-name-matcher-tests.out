@@ -1,3 +1,6 @@
+#[pattern::pass("test_crate::x86_only")]
+#[pattern::fail("test_crate::x86_only::aarch64-apple-darwin")]
+#[pattern::fail("test_crate::x86_only::x86_64-apple-darwin")]
 fn test_crate::x86_only() -> u64
 {
     let _0: u64; // return
@@ -7,6 +10,9 @@ fn test_crate::x86_only() -> u64
     return
 }
 
+#[pattern::pass("test_crate::arm_only")]
+#[pattern::fail("test_crate::arm_only::aarch64-apple-darwin")]
+#[pattern::fail("test_crate::arm_only::x86_64-apple-darwin")]
 fn test_crate::arm_only() -> u64
 {
     let _0: u64; // return
@@ -16,6 +22,7 @@ fn test_crate::arm_only() -> u64
     return
 }
 
+#[pattern::pass("test_crate::shared_fn")]
 fn test_crate::shared_fn() -> u64
 {
     let _0: u64; // return

@@ -9,9 +9,11 @@ pub unsafe fn core::core_arch::aarch64::neon::generated::vst1q_u16(_1: *mut u16,
 pub unsafe fn core::core_arch::arm_shared::neon::generated::vaddq_u16(_1: core::core_arch::arm_shared::neon::uint16x8_t, _2: core::core_arch::arm_shared::neon::uint16x8_t) -> core::core_arch::arm_shared::neon::uint16x8_t
 = <opaque>
 
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized<Self>
 
+#[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized<Self>
 {
@@ -19,6 +21,7 @@ pub trait core::marker::Sized<Self>
     non-dyn-compatible
 }
 
+#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait core::clone::Clone<Self>
@@ -28,6 +31,7 @@ pub trait core::clone::Clone<Self>
     non-dyn-compatible
 }
 
+#[rustc_diagnostic_item = "Copy"]
 #[lang_item(Copy)]
 #[diagnostic_item("Copy")]
 pub trait core::marker::Copy<Self>
@@ -92,6 +96,7 @@ impl core::clone::Clone for usize {
     non-dyn-compatible
 }
 
+#[rustc_diagnostic_item = "PartialEq"]
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
 pub trait core::cmp::PartialEq<Self, Rhs>
@@ -107,6 +112,7 @@ pub enum core::cmp::Ordering {
   Greater,
 }
 
+#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum core::option::Option<T>
@@ -117,6 +123,7 @@ where
   Some { _0: T },
 }
 
+#[rustc_diagnostic_item = "PartialOrd"]
 #[lang_item(PartialOrd)]
 #[diagnostic_item("PartialOrd")]
 pub trait core::cmp::PartialOrd<Self, Rhs>
@@ -145,6 +152,7 @@ impl core::cmp::PartialOrd<usize> for usize {
     vtable: core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}::{vtable}
 }
 
+#[rustc_diagnostic_item = "range_step"]
 #[diagnostic_item("range_step")]
 pub trait core::iter::range::Step<Self>
 {
@@ -196,6 +204,7 @@ where
   end: Idx,
 }
 
+#[rustc_diagnostic_item = "Iterator"]
 #[lang_item(Iterator)]
 #[diagnostic_item("Iterator")]
 pub trait core::iter::traits::iterator::Iterator::x86_64-apple-darwin<Self>
@@ -227,6 +236,7 @@ where
     vtable: core::iter::range::{impl core::iter::traits::iterator::Iterator::x86_64-apple-darwin for core::ops::range::Range<A>[TraitClause0]}::{vtable}<A>[TraitClause0, TraitClause1]
 }
 
+#[rustc_diagnostic_item = "Iterator"]
 #[lang_item(Iterator)]
 #[diagnostic_item("Iterator")]
 pub trait core::iter::traits::iterator::Iterator::aarch64-apple-darwin<Self>

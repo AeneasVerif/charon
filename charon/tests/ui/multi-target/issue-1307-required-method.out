@@ -1,6 +1,8 @@
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized<Self>
 
+#[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized<Self>
 {
@@ -8,6 +10,7 @@ pub trait core::marker::Sized<Self>
     non-dyn-compatible
 }
 
+#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait core::clone::Clone<Self>

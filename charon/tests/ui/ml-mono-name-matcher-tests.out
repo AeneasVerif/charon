@@ -7,6 +7,7 @@ pub struct RangeFrom::<usize> {
 }
 
 // Full name: core::option::Option::<i32>
+#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option::<i32> {
@@ -23,6 +24,9 @@ pub fn index::<bool, RangeFrom::<usize>><'_0>(_1: &'_0 [bool], _2: RangeFrom::<u
 = <opaque>
 
 // Full name: test_crate::foo::bar
+#[pattern::pass("test_crate::foo::bar")]
+#[pattern::fail("crate::foo::bar")]
+#[pattern::fail("foo::bar")]
 fn bar()
 {
     let _0: (); // return
@@ -34,6 +38,15 @@ fn bar()
 }
 
 // Full name: test_crate::foo
+#[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some<'_, i32>")]
+#[pattern::fail(call[0], "core::option::{core::option::Option<@T>}::is_some<_, i32>")]
+#[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some<'_, @T>")]
+#[pattern::pass(call[1], "ArrayToSliceShared<'_, bool, 1>")]
+#[pattern::pass(call[2],
+"core::ops::index::Index<[bool], core::ops::range::RangeFrom<usize>>::index")]
+#[pattern::pass(call[2], "core::ops::index::Index<[@T], @I>::index")]
+#[pattern::fail(call[2],
+"core::slice::index::{core::ops::index::Index<[@T], @I>}::index<bool, core::ops::range::RangeFrom<usize>>")]
 fn foo()
 {
     let _0: (); // return
@@ -128,6 +141,12 @@ fn test_crate::funs_with_disambiguator::f() -> u32
 }
 
 // Full name: test_crate::funs_with_disambiguator
+#[pattern::pass(call[0], "test_crate::funs_with_disambiguator::f#1")]
+#[pattern::fail(call[0], "test_crate::funs_with_disambiguator::f#0")]
+#[pattern::fail(call[0], "test_crate::funs_with_disambiguator::f")]
+#[pattern::pass(call[1], "test_crate::funs_with_disambiguator::f")]
+#[pattern::pass(call[1], "test_crate::funs_with_disambiguator::f#0")]
+#[pattern::fail(call[1], "test_crate::funs_with_disambiguator::f#1")]
 fn funs_with_disambiguator(b: bool) -> u32
 {
     let _0: u32; // return
@@ -160,6 +179,8 @@ struct MonoContainer::<&'_ str> {
   item: &'_ str,
 }
 
+#[pattern::pass("test_crate::{test_crate::MonoContainer<@T>}::create<@T>")]
+#[pattern::pass("test_crate::_::create<@T>")]
 fn test_crate::{MonoContainer::<i32>}::create::<i32>(item: i32) -> MonoContainer::<i32>
 {
     let _0: MonoContainer::<i32>; // return
@@ -174,6 +195,8 @@ fn test_crate::{MonoContainer::<i32>}::create::<i32>(item: i32) -> MonoContainer
     return
 }
 
+#[pattern::pass("test_crate::{test_crate::MonoContainer<@T>}::create<@T>")]
+#[pattern::pass("test_crate::_::create<@T>")]
 fn test_crate::{MonoContainer::<&'_ str>}::create::<&'_ str>(item: &'_ str) -> MonoContainer::<&'_ str>
 {
     let _0: MonoContainer::<&'_ str>; // return
@@ -189,6 +212,7 @@ fn test_crate::{MonoContainer::<&'_ str>}::create::<&'_ str>(item: &'_ str) -> M
 }
 
 // Full name: test_crate::mono_usage
+#[pattern::pass("test_crate::mono_usage")]
 fn mono_usage()
 {
     let _0: (); // return

@@ -9,10 +9,12 @@ impl "impl_Debug_for_Error" Debug for Error {
 }
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -21,6 +23,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::result::Result
+#[rustc_diagnostic_item = "Result"]
 #[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
@@ -41,6 +44,7 @@ where
 = <opaque>
 
 // Full name: core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap
+#[track_caller]
 pub fn unwrap<T, E>(_1: Result<T, E>[TraitClause0, TraitClause1]) -> T
 where
     TraitClause0: (T: Sized),
@@ -53,6 +57,7 @@ where
 pub struct Global {}
 
 // Full name: alloc::vec::Vec
+#[rustc_diagnostic_item = "Vec"]
 #[diagnostic_item("Vec")]
 pub opaque type Vec<T>
 where
@@ -76,6 +81,7 @@ where
 = <opaque>
 
 // Full name: alloc::vec::{Vec<T>[TraitClause0, {built_in impl Sized for Global}]}::new
+#[rustc_diagnostic_item = "vec_new"]
 #[diagnostic_item("vec_new")]
 pub fn new<T>() -> Vec<T>[TraitClause0, {built_in impl Sized for Global}]
 where

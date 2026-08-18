@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::result::Result::<u32, u32>
+#[rustc_diagnostic_item = "Result"]
 #[diagnostic_item("Result")]
 pub enum Result::<u32, u32> {
   Ok { _0: u32 },

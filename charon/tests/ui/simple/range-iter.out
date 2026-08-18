@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::clone::Clone
+#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -20,6 +21,7 @@ impl "impl_Clone_for_usize" Clone for usize {
 }
 
 // Full name: core::cmp::PartialEq
+#[rustc_diagnostic_item = "PartialEq"]
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
@@ -37,6 +39,7 @@ pub enum Ordering {
 }
 
 // Full name: core::option::Option
+#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T> {
@@ -45,6 +48,7 @@ pub enum Option<T> {
 }
 
 // Full name: core::cmp::PartialOrd
+#[rustc_diagnostic_item = "PartialOrd"]
 #[lang_item(PartialOrd)]
 #[diagnostic_item("PartialOrd")]
 pub trait PartialOrd<Self, Rhs>
@@ -76,6 +80,7 @@ impl "impl_PartialOrd_usize_for_usize" PartialOrd<usize> for usize {
 }
 
 // Full name: core::iter::range::Step
+#[rustc_diagnostic_item = "range_step"]
 #[diagnostic_item("range_step")]
 pub trait Step<Self>
 {
@@ -129,6 +134,7 @@ pub struct Range<Idx> {
 }
 
 // Full name: core::iter::traits::iterator::Iterator
+#[rustc_diagnostic_item = "Iterator"]
 #[lang_item(Iterator)]
 #[diagnostic_item("Iterator")]
 pub trait Iterator<Self, Self_Item>

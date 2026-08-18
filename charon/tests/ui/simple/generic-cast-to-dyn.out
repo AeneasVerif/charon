@@ -3,6 +3,7 @@
 opaque type core::any::Any::{vtable}
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
@@ -11,6 +12,7 @@ pub trait MetaSized<Self>
 pub opaque type TypeId
 
 // Full name: core::any::Any
+#[rustc_diagnostic_item = "Any"]
 #[diagnostic_item("Any")]
 pub trait Any<Self>
 where
@@ -22,6 +24,7 @@ where
 }
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {

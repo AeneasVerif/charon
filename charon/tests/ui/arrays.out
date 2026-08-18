@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
@@ -16,6 +17,7 @@ pub trait Index<Self, Idx, Self_Output>
 }
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -75,6 +77,7 @@ where
 }
 
 // Full name: core::option::Option
+#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -104,6 +107,7 @@ where
 }
 
 // Full name: core::slice::index::SliceIndex
+#[rustc_diagnostic_item = "SliceIndex"]
 #[diagnostic_item("SliceIndex")]
 pub trait SliceIndex<Self, T, Self_Output>
 {
@@ -184,12 +188,14 @@ where
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
+#[track_caller]
 pub unsafe fn get_unchecked_mut<T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: *mut [T]) -> *mut [T]
 where
     TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked
+#[track_caller]
 pub unsafe fn get_unchecked<T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: *const [T]) -> *const [T]
 where
     TraitClause0: (T: Sized),

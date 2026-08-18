@@ -1,3 +1,4 @@
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized<Self>
 

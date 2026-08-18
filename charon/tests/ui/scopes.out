@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
@@ -13,6 +14,7 @@ trait Trait<'a, Self>
 }
 
 // Full name: test_crate::{impl Trait<'a> for &'a ()}::method
+#[charon::opaque]
 fn method<'a, 'b>(_1: &'b &'a ()) -> &'b ()
 where
     RegionOutlives0: 'a: 'b,
@@ -26,21 +28,26 @@ impl<'a> Trait<'a> for &'a () {
 }
 
 // Full name: test_crate::Foo
+#[charon::opaque]
 opaque type Foo<'a>
 
+#[charon::opaque]
 fn test_crate::{Foo<'_0>}::bar<'_0, '_1>(_1: &'_1 Foo<'_0>) -> &'_1 ()
 where
     RegionOutlives0: '_0: '_1,
 = <opaque>
 
 // Full name: test_crate::foo
+#[charon::opaque]
 fn foo<'_0>(_1: &'_0 fn<'_0_1>(&'_0_1 u32) -> u32)
 = <opaque>
 
+#[charon::opaque]
 fn test_crate::bar<'_0>(_1: &'_0 fn<'_0_1>(&'_0_1 fn<'_0_2>(&'_0_2 u32) -> u32))
 = <opaque>
 
 // Full name: test_crate::baz
+#[charon::opaque]
 fn baz<'a>(_1: &'a fn<'b>(&'a u32, &'b fn<'c>(&'a u32, &'b u32, &'c u32) -> u32))
 = <opaque>
 

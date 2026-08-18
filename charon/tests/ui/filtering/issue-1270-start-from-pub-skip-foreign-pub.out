@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -13,6 +15,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::convert::From
+#[rustc_diagnostic_item = "From"]
 #[lang_item(From)]
 #[diagnostic_item("From")]
 pub trait From<Self, T>
@@ -45,6 +48,7 @@ pub enum Infallible {
 }
 
 // Full name: core::ops::control_flow::ControlFlow
+#[rustc_diagnostic_item = "ControlFlow"]
 #[diagnostic_item("ControlFlow")]
 pub enum ControlFlow<B, C>
 where
@@ -65,6 +69,7 @@ where
 = <opaque>
 
 // Full name: core::result::Result
+#[rustc_diagnostic_item = "Result"]
 #[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
@@ -92,6 +97,7 @@ where
 = <opaque>
 
 // Full name: core::result::{impl FromResidual<Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1]> for Result<T, F>[TraitClause0, TraitClause2]}::from_residual
+#[track_caller]
 pub fn from_residual<T, E, F>(_1: Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1]) -> Result<T, F>[TraitClause0, TraitClause2]
 where
     TraitClause0: (T: Sized),

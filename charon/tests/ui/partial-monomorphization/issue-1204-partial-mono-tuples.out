@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -12,9 +14,11 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>
 
+#[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>
 {

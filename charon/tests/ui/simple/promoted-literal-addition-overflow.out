@@ -8,6 +8,7 @@ pub fn MAX() -> u32
 pub const MAX: u32 = MAX()
 
 // Full name: test_crate::overflow
+#[allow(arithmetic_overflow)]
 fn overflow() -> &'static u32
 {
     let _0: &'1 u32; // return

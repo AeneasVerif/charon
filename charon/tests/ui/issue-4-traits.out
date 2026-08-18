@@ -9,10 +9,12 @@ impl "impl_Debug_for_TryFromSliceError" Debug for TryFromSliceError {
 }
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -21,6 +23,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
+#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -31,6 +34,7 @@ pub trait Clone<Self>
 }
 
 // Full name: core::marker::Copy
+#[rustc_diagnostic_item = "Copy"]
 #[lang_item(Copy)]
 #[diagnostic_item("Copy")]
 pub trait Copy<Self>
@@ -41,6 +45,7 @@ pub trait Copy<Self>
 }
 
 // Full name: core::result::Result
+#[rustc_diagnostic_item = "Result"]
 #[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
@@ -52,6 +57,7 @@ where
 }
 
 // Full name: core::convert::TryFrom
+#[rustc_diagnostic_item = "TryFrom"]
 #[diagnostic_item("TryFrom")]
 pub trait TryFrom<Self, T>
 {
@@ -113,6 +119,7 @@ impl "impl_Copy_for_u8" Copy for u8 {
 }
 
 // Full name: core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap
+#[track_caller]
 pub fn unwrap<T, E>(_1: Result<T, E>[TraitClause0, TraitClause1]) -> T
 where
     TraitClause0: (T: Sized),

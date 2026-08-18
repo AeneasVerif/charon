@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::option::Option::<&'_ u32>
+#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option::<&'_ u32> {

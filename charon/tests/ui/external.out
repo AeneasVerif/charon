@@ -1,16 +1,19 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::cell::Cell
+#[rustc_diagnostic_item = "Cell"]
 #[diagnostic_item("Cell")]
 pub opaque type Cell<T>
 where
     TraitClause0: (T: MetaSized),
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -19,6 +22,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
+#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -29,6 +33,7 @@ pub trait Clone<Self>
 }
 
 // Full name: core::marker::Copy
+#[rustc_diagnostic_item = "Copy"]
 #[lang_item(Copy)]
 #[diagnostic_item("Copy")]
 pub trait Copy<Self>
@@ -79,6 +84,7 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+#[rustc_diagnostic_item = "mem_swap"]
 #[diagnostic_item("mem_swap")]
 pub fn core::mem::swap<'_0, '_1, T>(_1: &'_0 mut T, _2: &'_1 mut T)
 where
@@ -130,6 +136,7 @@ impl "impl_ZeroablePrimitive_for_u32" ZeroablePrimitive for u32 {
 }
 
 // Full name: core::num::nonzero::NonZero
+#[rustc_diagnostic_item = "NonZero"]
 #[diagnostic_item("NonZero")]
 pub opaque type NonZero<T>
 where
@@ -137,6 +144,7 @@ where
     TraitClause1: (T: ZeroablePrimitive),
 
 // Full name: core::option::Option
+#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -154,6 +162,8 @@ where
 = <opaque>
 
 // Full name: core::option::{Option<T>[TraitClause0]}::unwrap
+#[track_caller]
+#[rustc_diagnostic_item = "option_unwrap"]
 #[diagnostic_item("option_unwrap")]
 pub fn unwrap<T>(_1: Option<T>[TraitClause0]) -> T
 where
@@ -175,6 +185,7 @@ impl "impl_Destruct_for_Global" Destruct for Global {
 }
 
 // Full name: alloc::vec::Vec
+#[rustc_diagnostic_item = "Vec"]
 #[diagnostic_item("Vec")]
 pub opaque type Vec<T>
 where
@@ -190,6 +201,7 @@ where
     TypeOutlives1: A: '_0,
 = <opaque>
 
+#[rustc_diagnostic_item = "vec_new"]
 #[diagnostic_item("vec_new")]
 pub fn alloc::vec::{Vec<T>[TraitClause0, {built_in impl Sized for Global}]}::new<T>() -> Vec<T>[TraitClause0, {built_in impl Sized for Global}]
 where
@@ -259,6 +271,7 @@ pub fn test_new_non_zero_u32(x: u32) -> NonZero<u32>[{built_in impl Sized for u3
 }
 
 // Full name: test_crate::test_vec_push
+#[allow(clippy::vec_init_then_push)]
 pub fn test_vec_push()
 {
     let _0: (); // return

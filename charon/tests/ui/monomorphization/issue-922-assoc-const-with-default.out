@@ -4,10 +4,12 @@
 opaque type {vtable}
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -16,6 +18,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::mem::size_of::<()>
+#[rustc_diagnostic_item = "mem_size_of"]
 #[diagnostic_item("mem_size_of")]
 pub fn size_of::<()>() -> usize
 = <opaque>

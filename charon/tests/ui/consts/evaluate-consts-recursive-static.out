@@ -1,16 +1,19 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::cell::Cell
+#[rustc_diagnostic_item = "Cell"]
 #[diagnostic_item("Cell")]
 pub opaque type Cell<T>
 where
     TraitClause0: (T: MetaSized),
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -25,6 +28,7 @@ where
 = <opaque>
 
 // Full name: core::marker::Sync
+#[rustc_diagnostic_item = "Sync"]
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
 pub trait Sync<Self>

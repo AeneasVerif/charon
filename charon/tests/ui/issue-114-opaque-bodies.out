@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -13,6 +15,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::option::Option
+#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -79,6 +82,7 @@ where
 }
 
 // Full name: core::cmp::PartialEq
+#[rustc_diagnostic_item = "PartialEq"]
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
@@ -89,6 +93,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::PartialEq::ne
+#[rustc_diagnostic_item = "cmp_partialeq_ne"]
 #[diagnostic_item("cmp_partialeq_ne")]
 pub fn ne<'_0, '_1, Self, Rhs>(self: &'_0 Self, other: &'_1 Rhs) -> bool
 where
@@ -275,6 +280,7 @@ pub fn core::num::{usize}::MAX() -> usize
 pub const core::num::{usize}::MAX: usize = core::num::{usize}::MAX()
 
 // Full name: core::ptr::non_null::NonNull
+#[rustc_diagnostic_item = "NonNull"]
 #[diagnostic_item("NonNull")]
 pub struct NonNull<T> {
   pointer: *const T is !null,
@@ -311,6 +317,7 @@ where
 }
 
 // Full name: alloc::vec::Vec
+#[rustc_diagnostic_item = "Vec"]
 #[diagnostic_item("Vec")]
 pub struct Vec<T>
 where

@@ -75,6 +75,7 @@ impl RustcDatatypes {
                     "RustcAlign",
                     "RustcDiagnosticItem",
                     "RustcIntrinsic",
+                    "RustcTestEntrypointMarker",
                     "ShouldPanic",
                     "TargetFeature",
                     "TrackCaller",

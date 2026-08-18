@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -335,6 +337,7 @@ pub fn cast_bool_to_bool(x: bool) -> bool
 }
 
 // Full name: test_crate::test2
+#[allow(unused_variables)]
 pub fn test2()
 {
     let _0: (); // return
@@ -452,6 +455,7 @@ pub fn get_max(x: u32, y: u32) -> u32
 }
 
 // Full name: test_crate::test_list1
+#[allow(unused_variables)]
 pub fn test_list1()
 {
     let _0: (); // return

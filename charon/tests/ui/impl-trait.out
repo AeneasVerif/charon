@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -13,6 +15,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
+#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -34,6 +37,7 @@ impl "impl_Clone_for_u32" Clone for u32 {
 }
 
 // Full name: core::clone::impls::{impl Clone for &'_0 T}::clone
+#[rustc_diagnostic_item = "noop_method_clone"]
 #[diagnostic_item("noop_method_clone")]
 pub fn {impl Clone for &'_0 T}::clone<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_0 T
 where
@@ -60,6 +64,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Tuple
+#[fundamental]
 #[lang_item(Tuple)]
 pub trait Tuple<Self>
 {
@@ -68,6 +73,7 @@ pub trait Tuple<Self>
 }
 
 // Full name: core::ops::function::FnOnce
+#[fundamental]
 #[lang_item(FnOnce)]
 pub trait FnOnce<Self, Args>
 {

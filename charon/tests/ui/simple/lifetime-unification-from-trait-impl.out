@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -21,6 +23,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::ptr::const_ptr::{*const T}::cast
+#[rustc_diagnostic_item = "const_ptr_cast"]
 #[diagnostic_item("const_ptr_cast")]
 pub fn cast<T, U>(_1: *const T) -> *const U
 where

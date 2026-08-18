@@ -9,10 +9,12 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -21,6 +23,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
+#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -122,6 +125,7 @@ impl "impl_Clone_for_u8" Clone for u8 {
 }
 
 // Full name: core::marker::Copy
+#[rustc_diagnostic_item = "Copy"]
 #[lang_item(Copy)]
 #[diagnostic_item("Copy")]
 pub trait Copy<Self>
@@ -131,6 +135,7 @@ pub trait Copy<Self>
     non-dyn-compatible
 }
 
+#[rustc_intrinsic]
 pub fn core::intrinsics::saturating_add<T>(a_1: T, b_2: T) -> T
 where
     TraitClause0: (T: Sized),

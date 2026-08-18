@@ -8,10 +8,12 @@ pub opaque type Layout
 pub struct AllocError {}
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -20,6 +22,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::result::Result
+#[rustc_diagnostic_item = "Result"]
 #[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
@@ -31,6 +34,7 @@ where
 }
 
 // Full name: core::ptr::non_null::NonNull
+#[rustc_diagnostic_item = "NonNull"]
 #[diagnostic_item("NonNull")]
 pub opaque type NonNull<T>
 
@@ -44,6 +48,7 @@ pub trait Allocator<Self>
 }
 
 // Full name: core::borrow::Borrow
+#[rustc_diagnostic_item = "Borrow"]
 #[diagnostic_item("Borrow")]
 pub trait Borrow<Self, Borrowed>
 {
@@ -62,6 +67,7 @@ pub fn from_str<'a>(_1: &'static str) -> Arguments<'a>
 = <opaque>
 
 // Full name: core::marker::Send
+#[rustc_diagnostic_item = "Send"]
 #[diagnostic_item("Send")]
 pub trait Send<Self>
 
@@ -74,6 +80,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Tuple
+#[fundamental]
 #[lang_item(Tuple)]
 pub trait Tuple<Self>
 {
@@ -86,6 +93,7 @@ opaque type core::ops::function::Fn::{vtable}<Args, Ty0>
 opaque type core::ops::function::FnOnce::{vtable}<Args, Ty0>
 
 // Full name: core::ops::function::FnOnce
+#[fundamental]
 #[lang_item(FnOnce)]
 pub trait FnOnce<Self, Args>
 {
@@ -99,6 +107,7 @@ pub trait FnOnce<Self, Args>
 }
 
 // Full name: core::ops::function::FnMut
+#[fundamental]
 #[lang_item(FnMut)]
 pub trait FnMut<Self, Args>
 {
@@ -111,6 +120,7 @@ pub trait FnMut<Self, Args>
 }
 
 // Full name: core::ops::function::Fn
+#[fundamental]
 #[lang_item(Fn)]
 pub trait Fn<Self, Args>
 {
@@ -123,6 +133,7 @@ pub trait Fn<Self, Args>
 }
 
 // Full name: core::option::Option
+#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -161,10 +172,12 @@ impl "impl_Termination_for_unit" Termination for () {
 pub struct Global {}
 
 // Full name: alloc::alloc::{impl Allocator for Global}::deallocate
+#[track_caller]
 pub unsafe fn deallocate<'_0>(_1: &'_0 Global, _2: NonNull<u8>, _3: Layout)
 = <opaque>
 
 // Full name: alloc::alloc::{impl Allocator for Global}::allocate
+#[track_caller]
 pub fn allocate<'_0>(_1: &'_0 Global, _2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 = <opaque>
 
@@ -177,6 +190,7 @@ impl "impl_Allocator_for_Global" Allocator for Global {
 }
 
 // Full name: alloc::borrow::ToOwned
+#[rustc_diagnostic_item = "ToOwned"]
 #[diagnostic_item("ToOwned")]
 pub trait ToOwned<Self>
 {
@@ -189,6 +203,7 @@ pub trait ToOwned<Self>
 }
 
 // Full name: alloc::borrow::Cow
+#[rustc_diagnostic_item = "Cow"]
 #[diagnostic_item("Cow")]
 pub enum Cow<'a, B>
 where
@@ -202,6 +217,7 @@ where
 }
 
 // Full name: alloc::boxed::Box
+#[fundamental]
 #[lang_item(OwnedBox)]
 pub opaque type Box<T, A>
 where
@@ -351,6 +367,8 @@ unsafe fn {impl Destruct for test_attributes::tests::test_ignore::closure}::drop
     return
 }
 
+#[ignore]
+#[rustc_test_entrypoint_marker]
 fn test_attributes::tests::test_ignore#1()
 {
     let _0: (); // return
@@ -497,6 +515,8 @@ unsafe fn {impl Destruct for test_attributes::tests::test_should_panic::closure}
     return
 }
 
+#[should_panic]
+#[rustc_test_entrypoint_marker]
 fn test_attributes::tests::test_should_panic#1()
 {
     let _0: (); // return
@@ -646,6 +666,7 @@ unsafe fn {impl Destruct for test_attributes::tests::test_foo::closure}::drop_gl
     return
 }
 
+#[rustc_test_entrypoint_marker]
 fn test_attributes::tests::test_foo#1()
 {
     let _0: (); // return

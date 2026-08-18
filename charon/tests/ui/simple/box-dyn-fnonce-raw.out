@@ -11,6 +11,7 @@ pub fn size<'_0>(_1: &'_0 Layout) -> usize
 opaque type core::marker::MetaSized::{vtable}
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
@@ -24,6 +25,7 @@ where
 pub struct AllocError {}
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -32,6 +34,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::result::Result
+#[rustc_diagnostic_item = "Result"]
 #[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
@@ -43,6 +46,7 @@ where
 }
 
 // Full name: core::ptr::non_null::NonNull
+#[rustc_diagnostic_item = "NonNull"]
 #[diagnostic_item("NonNull")]
 pub opaque type NonNull<T>
 
@@ -64,6 +68,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Tuple
+#[fundamental]
 #[lang_item(Tuple)]
 pub trait Tuple<Self>
 {
@@ -187,6 +192,7 @@ struct core::ops::function::FnOnce::{vtable}<Args, Ty0> {
 }
 
 // Full name: core::ops::function::FnOnce
+#[fundamental]
 #[lang_item(FnOnce)]
 pub trait FnOnce<Self, Args>
 {
@@ -227,10 +233,12 @@ where
 pub struct Global {}
 
 // Full name: alloc::alloc::{impl Allocator for Global}::deallocate
+#[track_caller]
 pub unsafe fn deallocate<'_0>(_1: &'_0 Global, _2: NonNull<u8>, _3: Layout)
 = <opaque>
 
 // Full name: alloc::alloc::{impl Allocator for Global}::allocate
+#[track_caller]
 pub fn allocate<'_0>(_1: &'_0 Global, _2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 = <opaque>
 
@@ -247,6 +255,7 @@ pub fn handle_alloc_error(_1: Layout) -> !
 = <opaque>
 
 // Full name: alloc::boxed::Box
+#[fundamental]
 #[lang_item(OwnedBox)]
 pub struct Box<T, A>
 where
@@ -390,6 +399,7 @@ where
 }
 
 // Full name: alloc::boxed::box_new_uninit
+#[track_caller]
 fn box_new_uninit(layout: Layout) -> *mut u8
 {
     let _0: *mut u8; // return
@@ -448,6 +458,8 @@ fn box_new_uninit(layout: Layout) -> *mut u8
 }
 
 // Full name: alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]}::new
+#[rustc_diagnostic_item = "box_new"]
+#[track_caller]
 #[diagnostic_item("box_new")]
 pub fn new<T>(x: T) -> Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]
 where

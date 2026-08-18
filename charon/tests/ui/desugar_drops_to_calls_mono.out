@@ -3,10 +3,12 @@
 opaque type core::marker::MetaSized::{vtable}
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -64,6 +66,7 @@ unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
 = <opaque>
 
 // Full name: alloc::vec::Vec::<i32>
+#[rustc_diagnostic_item = "Vec"]
 #[diagnostic_item("Vec")]
 pub opaque type Vec::<i32, Global>
 

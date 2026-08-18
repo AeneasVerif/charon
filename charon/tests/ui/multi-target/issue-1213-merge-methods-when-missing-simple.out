@@ -1,6 +1,8 @@
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized<Self>
 
+#[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized<Self>
 {
@@ -8,6 +10,7 @@ pub trait core::marker::Sized<Self>
     non-dyn-compatible
 }
 
+#[charon::opaque]
 trait test_crate::Trait<Self>
 {
     proof ImpliedClause0: (Self: core::marker::MetaSized)

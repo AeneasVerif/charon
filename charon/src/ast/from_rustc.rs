@@ -108,6 +108,8 @@ pub enum AttributeKind {
     RustcDiagnosticItem(Ustr),
     /// Represents `#[rustc_intrinsic]`
     RustcIntrinsic,
+    /// Represents `#[rustc_test_entrypoint_marker]`
+    RustcTestEntrypointMarker,
     /// Represents `#[should_panic]`
     ShouldPanic { reason: Option<Ustr> },
     /// Represents `#[target_feature(enable = "...")]` and

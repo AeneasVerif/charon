@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -13,6 +15,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
+#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -23,6 +26,7 @@ pub trait Clone<Self>
 }
 
 // Full name: core::cmp::PartialEq
+#[rustc_diagnostic_item = "PartialEq"]
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
@@ -32,6 +36,7 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
+#[rustc_diagnostic_item = "Eq"]
 #[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {
@@ -48,6 +53,7 @@ pub enum Ordering {
 }
 
 // Full name: core::option::Option
+#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -59,6 +65,7 @@ where
 }
 
 // Full name: core::cmp::PartialOrd
+#[rustc_diagnostic_item = "PartialOrd"]
 #[lang_item(PartialOrd)]
 #[diagnostic_item("PartialOrd")]
 pub trait PartialOrd<Self, Rhs>
@@ -69,6 +76,7 @@ pub trait PartialOrd<Self, Rhs>
 }
 
 // Full name: core::cmp::Ord
+#[rustc_diagnostic_item = "Ord"]
 #[diagnostic_item("Ord")]
 pub trait Ord<Self>
 {
@@ -127,6 +135,7 @@ pub trait Hasher<Self>
 }
 
 // Full name: core::hash::Hash
+#[rustc_diagnostic_item = "Hash"]
 #[diagnostic_item("Hash")]
 pub trait Hash<Self>
 {
@@ -149,10 +158,12 @@ impl "impl_Hash_for_unit" Hash for () {
 }
 
 // Full name: core::marker::Send
+#[rustc_diagnostic_item = "Send"]
 #[diagnostic_item("Send")]
 pub trait Send<Self>
 
 // Full name: core::marker::Copy
+#[rustc_diagnostic_item = "Copy"]
 #[lang_item(Copy)]
 #[diagnostic_item("Copy")]
 pub trait Copy<Self>
@@ -163,6 +174,7 @@ pub trait Copy<Self>
 }
 
 // Full name: core::marker::Sync
+#[rustc_diagnostic_item = "Sync"]
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
 pub trait Sync<Self>
@@ -219,6 +231,7 @@ where
 = <opaque>
 
 // Full name: core::ptr::without_provenance
+#[rustc_diagnostic_item = "ptr_without_provenance"]
 #[diagnostic_item("ptr_without_provenance")]
 pub fn without_provenance<T>(_1: usize) -> *const T
 where
@@ -226,6 +239,7 @@ where
 = <opaque>
 
 // Full name: core::ptr::null
+#[rustc_diagnostic_item = "ptr_null"]
 #[diagnostic_item("ptr_null")]
 pub fn null<T>() -> *const T
 where

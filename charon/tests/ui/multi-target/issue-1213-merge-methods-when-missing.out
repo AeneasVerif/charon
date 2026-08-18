@@ -1,6 +1,8 @@
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized<Self>
 
+#[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized<Self>
 {
@@ -13,6 +15,7 @@ where
     TraitClause0: (A: core::marker::Sized),
     TraitClause1: (B: core::marker::Sized),
 
+#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum core::option::Option<T>
@@ -23,6 +26,7 @@ where
   Some { _0: T },
 }
 
+#[rustc_diagnostic_item = "IntoIterator"]
 #[diagnostic_item("IntoIterator")]
 pub trait core::iter::traits::collect::IntoIterator<Self>
 where
@@ -38,6 +42,7 @@ where
     vtable: core::iter::traits::collect::IntoIterator::{vtable}<Self::Item, Self::IntoIter>
 }
 
+#[rustc_diagnostic_item = "Iterator"]
 #[lang_item(Iterator)]
 #[diagnostic_item("Iterator")]
 pub trait core::iter::traits::iterator::Iterator<Self>
@@ -154,6 +159,7 @@ where
     vtable: core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::{vtable}<'a, T>[TraitClause0]
 }
 
+#[rustc_diagnostic_item = "SliceIter"]
 #[diagnostic_item("SliceIter")]
 pub opaque type core::slice::iter::Iter<'a, T>
 where
@@ -192,6 +198,7 @@ where
     vtable: core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::{vtable}<'a, T>[TraitClause0]
 }
 
+#[rustc_diagnostic_item = "slice_iter"]
 #[diagnostic_item("slice_iter")]
 pub fn core::slice::{[T]}::iter<'_0, T>(_1: &'_0 [T]) -> core::slice::iter::Iter<'_0, T>[TraitClause0]
 where

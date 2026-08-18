@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: alloc::vec::Vec
+#[rustc_diagnostic_item = "Vec"]
 #[diagnostic_item("Vec")]
 pub struct Vec<T, A>
 where
@@ -23,6 +24,7 @@ impl "impl_Destruct_for_String" Destruct for String {
     non-dyn-compatible
 }
 
+#[rustc_diagnostic_item = "vec_new"]
 #[diagnostic_item("vec_new")]
 pub fn alloc::vec::{Vec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]}::new<T>() -> Vec<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#1}]
 where
@@ -40,6 +42,7 @@ where
     return
 }
 
+#[rustc_diagnostic_item = "string_new"]
 #[diagnostic_item("string_new")]
 pub fn alloc::string::{String}::new() -> String
 {

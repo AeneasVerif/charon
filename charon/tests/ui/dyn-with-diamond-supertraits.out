@@ -1,16 +1,19 @@
 # Final LLBC before serialization:
 
 // Full name: core::ops::arith::{impl Add<i32> for &'_0 i32}::add
+#[track_caller]
 pub fn add<'_0>(_1: &'_0 i32, _2: i32) -> i32
 = <opaque>
 
 opaque type core::marker::MetaSized::{vtable}
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {

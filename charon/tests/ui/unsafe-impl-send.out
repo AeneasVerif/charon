@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::Send
+#[rustc_diagnostic_item = "Send"]
 #[diagnostic_item("Send")]
 pub trait Send<Self>
 

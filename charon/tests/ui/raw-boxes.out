@@ -4,6 +4,7 @@
 pub struct AllocError {}
 
 // Full name: core::result::Result
+#[rustc_diagnostic_item = "Result"]
 #[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
@@ -15,6 +16,7 @@ where
 }
 
 // Full name: core::ptr::non_null::NonNull
+#[rustc_diagnostic_item = "NonNull"]
 #[diagnostic_item("NonNull")]
 pub struct NonNull<T> {
   pointer: *const T is !null,
@@ -168,6 +170,7 @@ where
     return
 }
 
+#[track_caller]
 fn core::ptr::write_bytes::precondition_check(addr: *const (), align: usize, zero_size: bool)
 {
     let _0: (); // return
@@ -391,6 +394,7 @@ where
  = IS_ZST<Self>[TraitClause0]()
 
 // Full name: core::option::Option
+#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -401,6 +405,7 @@ where
   Some { _0: T },
 }
 
+#[track_caller]
 fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: usize)
 {
     let _0: (); // return
@@ -440,6 +445,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
     return
 }
 
+#[track_caller]
 pub unsafe fn core::mem::alignment::{Alignment}::new_unchecked(align: usize) -> Alignment
 {
     let _0: Alignment; // return
@@ -587,6 +593,7 @@ where
     non-dyn-compatible
 }
 
+#[rustc_diagnostic_item = "mem_align_of"]
 #[diagnostic_item("mem_align_of")]
 pub fn core::mem::align_of<T>() -> usize
 where
@@ -599,6 +606,8 @@ where
     return
 }
 
+#[track_caller]
+#[rustc_diagnostic_item = "ptr_write_bytes"]
 #[diagnostic_item("ptr_write_bytes")]
 pub unsafe fn core::ptr::write_bytes<T>(dst: *mut T, val: u8, count: usize)
 where
@@ -670,6 +679,7 @@ where
     return
 }
 
+#[track_caller]
 pub unsafe fn core::ptr::mut_ptr::{*mut T}::write_bytes<T>(self: *mut T, val: u8, count: usize)
 where
     TraitClause0: (T: Sized),
@@ -699,6 +709,7 @@ where
 }
 
 // Full name: core::ops::control_flow::ControlFlow
+#[rustc_diagnostic_item = "ControlFlow"]
 #[diagnostic_item("ControlFlow")]
 pub enum ControlFlow<B, C>
 where
@@ -824,6 +835,7 @@ where
     return
 }
 
+#[track_caller]
 fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut (), size: usize, align: usize, count: usize)
 {
     let _0: (); // return
@@ -955,6 +967,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut 
     return
 }
 
+#[rustc_diagnostic_item = "mem_size_of"]
 #[diagnostic_item("mem_size_of")]
 pub fn core::mem::size_of<T>() -> usize
 where
@@ -967,6 +980,8 @@ where
     return
 }
 
+#[track_caller]
+#[rustc_diagnostic_item = "ptr_copy_nonoverlapping"]
 #[diagnostic_item("ptr_copy_nonoverlapping")]
 pub unsafe fn core::ptr::copy_nonoverlapping<T>(src: *const T, dst: *mut T, count: usize)
 where
@@ -1515,6 +1530,7 @@ where
     return
 }
 
+#[rustc_diagnostic_item = "const_ptr_cast"]
 #[diagnostic_item("const_ptr_cast")]
 pub fn core::ptr::const_ptr::{*const T}::cast<T, U>(self: *const T) -> *const U
 where
@@ -1731,6 +1747,7 @@ where
 }
 
 // Full name: core::mem::forget
+#[rustc_diagnostic_item = "mem_forget"]
 #[diagnostic_item("mem_forget")]
 pub fn forget<T>(t: T)
 where
@@ -1754,6 +1771,7 @@ where
     return
 }
 
+#[rustc_diagnostic_item = "ptr_const_is_null"]
 #[diagnostic_item("ptr_const_is_null")]
 pub fn core::ptr::const_ptr::{*const T}::is_null<T>(self: *const T) -> bool
 {
@@ -1783,6 +1801,8 @@ pub fn core::ptr::const_ptr::{*const T}::is_null<T>(self: *const T) -> bool
 }
 
 // Full name: core::ptr::read
+#[track_caller]
+#[rustc_diagnostic_item = "ptr_read"]
 #[diagnostic_item("ptr_read")]
 pub unsafe fn read<T>(src: *const T) -> T
 where
@@ -1801,6 +1821,7 @@ where
 }
 
 // Full name: core::ptr::mut_ptr::{*mut T}::cast_const
+#[rustc_diagnostic_item = "ptr_cast_const"]
 #[diagnostic_item("ptr_cast_const")]
 pub fn cast_const<T>(self: *mut T) -> *const T
 {
@@ -1824,6 +1845,7 @@ pub fn cast_const<T>(self: *mut T) -> *const T
     return
 }
 
+#[rustc_diagnostic_item = "ptr_is_null"]
 #[diagnostic_item("ptr_is_null")]
 pub fn core::ptr::mut_ptr::{*mut T}::is_null<T>(self: *mut T) -> bool
 {
@@ -1845,6 +1867,7 @@ pub fn core::ptr::mut_ptr::{*mut T}::is_null<T>(self: *mut T) -> bool
     return
 }
 
+#[track_caller]
 fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mut ())
 {
     let _0: (); // return
@@ -1884,6 +1907,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mu
     ↳⚡ undefined_behavior
 }
 
+#[track_caller]
 pub unsafe fn core::ptr::non_null::{NonNull<T>}::new_unchecked<T>(ptr: *mut T) -> NonNull<T>
 {
     let _0: NonNull<T>; // return
@@ -2015,6 +2039,7 @@ where
 }
 
 // Full name: alloc::boxed::Box
+#[fundamental]
 #[lang_item(OwnedBox)]
 pub struct Box<T, A>
 where
@@ -2158,6 +2183,7 @@ where
 }
 
 // Full name: alloc::boxed::box_new_uninit
+#[track_caller]
 fn box_new_uninit(layout: Layout) -> *mut u8
 {
     let _0: *mut u8; // return
@@ -2215,6 +2241,8 @@ fn box_new_uninit(layout: Layout) -> *mut u8
     return
 }
 
+#[rustc_diagnostic_item = "box_new"]
+#[track_caller]
 #[diagnostic_item("box_new")]
 pub fn alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl#0}]}::new<T>(x: T) -> Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl#0}]
 where

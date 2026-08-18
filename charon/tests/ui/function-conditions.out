@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: test_crate::function
+// precondition: precondition
 fn function()
 {
     let _0: (); // return
@@ -12,6 +13,7 @@ fn function()
 }
 
 // Full name: test_crate::function::precondition
+#[charon::precondition] // of function
 fn precondition() -> bool
 {
     let _0: bool; // return

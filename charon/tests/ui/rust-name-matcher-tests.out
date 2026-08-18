@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -21,6 +23,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::option::Option
+#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -36,6 +39,16 @@ where
 pub struct Global {}
 
 // Full name: test_crate::foo::bar
+#[pattern::fail("test_crate::foo::bar::_")]
+#[pattern::pass("test_crate::foo::bar")]
+#[pattern::pass("test_crate::foo::_")]
+#[pattern::pass("test_crate::foo")]
+#[pattern::pass("test_crate")]
+#[pattern::pass("test_crate::_")]
+#[pattern::pass("test_crate::_::bar")]
+#[pattern::fail("test_crate::_::lsdkfjs")]
+#[pattern::pass("crate::foo::bar")]
+#[pattern::fail("foo::bar")]
 fn bar()
 {
     let _0: (); // return
@@ -47,6 +60,9 @@ fn bar()
 }
 
 // Full name: test_crate::Trait
+#[pattern::pass("test_crate::Trait")]
+#[pattern::fail("test_crate::Trait<_>")]
+#[pattern::pass("test_crate::Trait<_, _>")]
 trait Trait<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -56,6 +72,12 @@ trait Trait<Self, T>
 }
 
 // Full name: test_crate::{impl Trait<Option<T>[TraitClause0]> for alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::method
+#[pattern::pass("test_crate::{impl test_crate::Trait<_> for _}::method")]
+#[pattern::pass("{impl test_crate::Trait<_> for _}::method")]
+#[pattern::pass("test_crate::{impl test_crate::Trait<_> for _}::_")]
+#[pattern::pass("test_crate::{impl test_crate::Trait<_> for _}")]
+#[pattern::pass("test_crate::{impl test_crate::Trait<_, _>}"::method)]
+#[pattern::fail("test_crate::Trait<_>::method")]
 fn impl_Trait_Option_for_Box_Global::method<T, U>()
 where
     TraitClause0: (T: Sized),
@@ -140,6 +162,8 @@ where
 }
 
 // Full name: test_crate::{Generic<T>[TraitClause0]}::new
+#[pattern::pass("test_crate::_::new")]
+#[pattern::pass("_::_::new")]
 fn new<T>(value: T) -> Generic<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
@@ -163,6 +187,7 @@ where
 }
 
 // Full name: test_crate::{Generic<T>[TraitClause0]}::get
+#[pattern::pass("test_crate::_::get")]
 fn get<'_0, T>(self: &'_0 Generic<T>[TraitClause0]) -> &'_0 T
 where
     TraitClause0: (T: Sized),
@@ -181,6 +206,7 @@ where
 }
 
 // Full name: test_crate::use_generic
+#[pattern::pass("test_crate::use_generic")]
 fn use_generic()
 {
     let _0: (); // return

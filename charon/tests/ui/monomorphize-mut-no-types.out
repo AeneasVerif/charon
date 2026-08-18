@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -12,9 +14,11 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<&_ mut _><'_0, T0>
 
+#[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized::<&_ mut _><'_0, T0>
 {
@@ -22,9 +26,11 @@ pub trait core::marker::Sized::<&_ mut _><'_0, T0>
     non-dyn-compatible
 }
 
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<Option<&_ mut _>><'_0, T0>
 
+#[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized::<Option<&_ mut _>><'_0, T0>
 {
@@ -32,9 +38,11 @@ pub trait core::marker::Sized::<Option<&_ mut _>><'_0, T0>
     non-dyn-compatible
 }
 
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<Option<Option<&_ mut _>>><'_0, T0>
 
+#[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized::<Option<Option<&_ mut _>>><'_0, T0>
 {
@@ -58,6 +66,7 @@ pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
 }
 
 // Full name: core::option::Option
+#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T> {

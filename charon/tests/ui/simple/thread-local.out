@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -13,6 +15,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
+#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -34,6 +37,7 @@ impl Clone for ! {
 }
 
 // Full name: core::marker::Copy
+#[rustc_diagnostic_item = "Copy"]
 #[lang_item(Copy)]
 #[diagnostic_item("Copy")]
 pub trait Copy<Self>
@@ -59,6 +63,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Tuple
+#[fundamental]
 #[lang_item(Tuple)]
 pub trait Tuple<Self>
 {
@@ -67,6 +72,7 @@ pub trait Tuple<Self>
 }
 
 // Full name: core::mem::needs_drop
+#[rustc_diagnostic_item = "needs_drop"]
 #[diagnostic_item("needs_drop")]
 pub fn needs_drop<T>() -> bool
 where
@@ -74,6 +80,7 @@ where
 = <opaque>
 
 // Full name: core::ops::function::FnOnce
+#[fundamental]
 #[lang_item(FnOnce)]
 pub trait FnOnce<Self, Args>
 {
@@ -87,6 +94,7 @@ pub trait FnOnce<Self, Args>
 }
 
 // Full name: core::ops::function::FnMut
+#[fundamental]
 #[lang_item(FnMut)]
 pub trait FnMut<Self, Args>
 {
@@ -99,6 +107,7 @@ pub trait FnMut<Self, Args>
 }
 
 // Full name: core::ops::function::Fn
+#[fundamental]
 #[lang_item(Fn)]
 pub trait Fn<Self, Args>
 {
@@ -111,6 +120,7 @@ pub trait Fn<Self, Args>
 }
 
 // Full name: core::option::Option
+#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -188,6 +198,7 @@ where
 = <opaque>
 
 // Full name: std::thread::local::LocalKey
+#[rustc_diagnostic_item = "LocalKey"]
 #[diagnostic_item("LocalKey")]
 pub opaque type LocalKey<T>
 where
@@ -201,6 +212,7 @@ where
 = <opaque>
 
 // Full name: test_crate::FOO::__rust_std_internal_init_fn
+#[inline(hint)]
 fn __rust_std_internal_init_fn() -> u32
 {
     let _0: u32; // return
