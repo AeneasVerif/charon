@@ -30,7 +30,7 @@ TODO: explain syntax and behavior.
 
 Note: for well-known built-in items, you can often use `ItemMeta.lang_item` instead; it contains an
 identifier meant for this purpose, documented
-[here](https://doc.rust-lang.org/nightly/nightly-rustc/rustc_hir/lang_items/enum.LangItem.html).
+[here](https://doc.rust-lang.org/nightly/nightly-rustc/rustc_attr_ir/lang_items/enum.LangItem.html).
 
 ## CLI options
 
