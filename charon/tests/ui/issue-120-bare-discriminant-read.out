@@ -28,7 +28,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 // Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_glue
@@ -46,7 +46,7 @@ where
         Option::None => {
         },
         _ => {
-            drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant Option::Some).0
+            drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant Option::Some)._0
             ↳⚡ storage_dead(_1)
                 unwind_continue
             storage_dead(_1)

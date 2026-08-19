@@ -200,7 +200,7 @@ fn main()
         storage_live(_6);
         _6 = &(*some_foo) with_metadata(copy some_foo.metadata);
         storage_live(_7);
-        _7 = cast<*const (), unsafe fn(&'8 (dyn Foo + '9))>(copy ((*_6.metadata)).method_foo);
+        _7 = cast<*const (), unsafe fn(&'8 (dyn Foo + '9))>(copy (*_6.metadata).method_foo);
         _5 = (copy _7)(move _6) -> bb2 (unwind: bb1);
     }
 

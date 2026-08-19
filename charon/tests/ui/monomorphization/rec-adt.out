@@ -9,7 +9,7 @@ pub opaque type NonNull::<Node::<u8>>
 #[diagnostic_item("Option")]
 pub enum Option::<NonNull::<Node::<u8>>> {
   None,
-  Some(NonNull::<Node::<u8>>),
+  Some { _0: NonNull::<Node::<u8>> },
 }
 
 // Full name: test_crate::LinkedList::<u8>

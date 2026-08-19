@@ -20,7 +20,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 // Full name: core::option::{Option<T>[TraitClause0]}::is_some
@@ -62,7 +62,7 @@ pub fn run()
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = Option::Some { 0: const false }
+    _6 = Option::Some { _0: const false }
     _5 = &_6
     _4 = move _5
     storage_live(_0)

@@ -39,7 +39,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 // Full name: core::ops::try_trait::FromResidual
@@ -59,8 +59,8 @@ where
     TraitClause0: (B: Sized),
     TraitClause1: (C: Sized),
 {
-  Continue(C),
-  Break(B),
+  Continue { _0: C },
+  Break { _0: B },
 }
 
 // Full name: core::ops::try_trait::Try
@@ -162,8 +162,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 {
-  Ok(T),
-  Err(E),
+  Ok { _0: T },
+  Err { _0: E },
 }
 
 // Full name: core::num::nonzero::private::Sealed
@@ -5598,7 +5598,7 @@ fn main()
             },
         }
         storage_live(v_10)
-        v_10 = copy (_7 as variant Option::Some).0
+        v_10 = copy (_7 as variant Option::Some)._0
         storage_live(_11)
         _11 = copy v_10
         _12 = copy i panic.+ copy _11
@@ -5712,7 +5712,7 @@ fn main()
             },
         }
         storage_live(v_21)
-        v_21 = copy (_18 as variant Option::Some).0
+        v_21 = copy (_18 as variant Option::Some)._0
         storage_live(_22)
         storage_live(_23)
         _23 = &two-phase-mut i

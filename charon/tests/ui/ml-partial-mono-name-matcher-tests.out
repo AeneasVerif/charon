@@ -52,7 +52,7 @@ pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
 #[diagnostic_item("Option")]
 pub enum Option<T> {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 #[lang_item(Destruct)]
@@ -141,7 +141,7 @@ where
     storage_live(_5)
     storage_live(_6)
     _6 = &mut x
-    _5 = Option::Some { 0: move _6 }
+    _5 = Option::Some { _0: move _6 }
     storage_dead(_6)
     _4 = test_crate::identity::<Option<&_ mut _>><'33, A>[{built_in impl core::marker::Sized::<Option<&_ mut _>><'33> for A}](move _5)
     ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'21>] x

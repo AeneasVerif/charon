@@ -20,7 +20,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 // Full name: test_crate::get
@@ -33,7 +33,7 @@ pub fn get<'a>(x: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
     storage_live(_0)
     storage_live(_2)
     _2 = &(*x)
-    _0 = Option::Some { 0: move _2 }
+    _0 = Option::Some { _0: move _2 }
     storage_dead(_2)
     storage_dead(x)
     return

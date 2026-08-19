@@ -20,7 +20,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 // Full name: core::slice::iter::Iter
@@ -110,7 +110,7 @@ where
             },
         }
         storage_live(x)
-        x = copy (_5 as variant Option::Some).0
+        x = copy (_5 as variant Option::Some)._0
         storage_live(_9)
         storage_live(_10)
         storage_live(args_11)

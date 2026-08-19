@@ -3,7 +3,7 @@
 // Full name: test_crate::Foo
 enum Foo {
   A,
-  B(usize),
+  B { _0: usize },
 }
 
 // Full name: test_crate::{Foo}::b
@@ -12,7 +12,7 @@ pub fn b() -> Foo
     let _0: Foo; // return
 
     storage_live(_0)
-    _0 = Foo::B { 0: const 0usize }
+    _0 = Foo::B { _0: const 0usize }
     return
 }
 

@@ -171,17 +171,14 @@ impl<'a> GenerateCtx<'a> {
                 format!("{ty} {opaque}")
             }
             TypeDeclKind::Struct(fields) if fields.is_empty() => "unit".to_string(),
-            TypeDeclKind::Struct(fields)
-                if fields.len() == 1
-                    && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
-            {
+            TypeDeclKind::Struct(fields) if fields.len() == 1 && fields[0].name == "_raw" => {
                 // These are the special strongly-typed integers.
                 let short_name = decl.item_meta.name.short_str().unwrap();
                 format!("{short_name}.id [@visitors.opaque]")
             }
             TypeDeclKind::Struct(fields)
                 if fields.len() == 1
-                    && (fields[0].name.is_none()
+                    && (fields[0].is_positional
                         || decl
                             .item_meta
                             .attr_info
@@ -192,20 +189,22 @@ impl<'a> GenerateCtx<'a> {
                 let ty = self.type_to_ocaml_name(&fields[0].ty);
                 format!("{ty} {opaque}")
             }
-            TypeDeclKind::Struct(fields) if fields.iter().all(|f| f.name.is_none()) => fields
-                .iter()
-                .filter(|f| !f.is_opaque())
-                .map(|f| {
-                    let ty = self.type_to_ocaml_name(&f.ty);
-                    format!("{ty} {opaque}")
-                })
-                .join("*"),
+            TypeDeclKind::Struct(fields) if fields.iter().all(|field| field.is_positional) => {
+                fields
+                    .iter()
+                    .filter(|f| !f.is_opaque())
+                    .map(|f| {
+                        let ty = self.type_to_ocaml_name(&f.ty);
+                        format!("{ty} {opaque}")
+                    })
+                    .join("*")
+            }
             TypeDeclKind::Struct(fields) => {
                 let fields = fields
                     .iter()
                     .filter(|f| !f.is_opaque())
                     .map(|f| {
-                        let name = f.renamed_name().unwrap();
+                        let name = f.renamed_name();
                         let ty = self.type_to_ocaml_name(&f.ty);
                         let comment = self.extract_doc_comments(&f.attr_info);
                         let comment = self.build_doc_comment(comment, 2);
@@ -225,7 +224,7 @@ impl<'a> GenerateCtx<'a> {
                             // Unit variant
                             String::new()
                         } else {
-                            if variant.fields.iter().all(|f| f.name.is_some()) {
+                            if variant.fields.iter().all(|field| !field.is_positional) {
                                 let fields = variant
                                     .fields
                                     .iter()
@@ -236,7 +235,7 @@ impl<'a> GenerateCtx<'a> {
                                         } else {
                                             format!(": {comment}")
                                         };
-                                        format!("\n - [{}]{description}", f.name.as_ref().unwrap())
+                                        format!("\n - [{}]{description}", f.name)
                                     })
                                     .join("");
                                 let field_descriptions = format!("\n Fields:{fields}");

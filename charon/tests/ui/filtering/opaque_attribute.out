@@ -20,7 +20,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 // Full name: test_crate::BoolTrait
@@ -68,7 +68,7 @@ where
         },
         Option::Some => {
             storage_live(x)
-            x = &((*self) as variant Option::Some).0
+            x = &((*self) as variant Option::Some)._0
             storage_live(_3)
             _3 = &(*x)
             _0 = TraitClause1::get_bool<'5>(move _3)

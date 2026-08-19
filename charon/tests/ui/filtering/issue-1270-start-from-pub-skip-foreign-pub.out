@@ -51,8 +51,8 @@ where
     TraitClause0: (B: Sized),
     TraitClause1: (C: Sized),
 {
-  Continue(C),
-  Break(B),
+  Continue { _0: C },
+  Break { _0: B },
 }
 
 // Full name: core::ops::control_flow::ControlFlow::{impl Destruct for ControlFlow<B, C>[TraitClause0, TraitClause1]}::drop_glue
@@ -71,8 +71,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 {
-  Ok(T),
-  Err(E),
+  Ok { _0: T },
+  Err { _0: E },
 }
 
 // Full name: core::result::Result::{impl Destruct for Result<T, E>[TraitClause0, TraitClause1]}::drop_glue
@@ -136,7 +136,7 @@ pub fn example(x: Result<u32, String>[{built_in impl Sized for u32}, {built_in i
         },
         ControlFlow::Break => {
             storage_live(residual)
-            residual = move (_3 as variant ControlFlow::Break).0
+            residual = move (_3 as variant ControlFlow::Break)._0
             storage_live(_6)
             _6 = move residual
             _0 = from_residual<u32, String, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}, {built_in impl Sized for String}, impl_From_for_T<String>[{built_in impl Sized for String}]](move _6)
@@ -181,10 +181,10 @@ pub fn example(x: Result<u32, String>[{built_in impl Sized for u32}, {built_in i
         },
     }
     storage_live(val)
-    val = copy (_3 as variant ControlFlow::Continue).0
+    val = copy (_3 as variant ControlFlow::Continue)._0
     _2 = copy val
     storage_dead(val)
-    _0 = Result::Ok { 0: move _2 }
+    _0 = Result::Ok { _0: move _2 }
     storage_dead(_2)
     conditional_drop[impl_Destruct_for_ControlFlow::drop_glue<'2, Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]] _3
     ↳⚡ conditional_drop[impl_Destruct_for_Result::drop_glue<'1, u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]] x

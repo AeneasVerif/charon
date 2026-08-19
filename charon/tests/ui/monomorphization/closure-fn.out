@@ -70,8 +70,8 @@ pub trait Fn<Self, Args>
 
 // Full name: test_crate::main::closure
 struct closure<'_0, '_1> {
-  &'_0 u8,
-  &'_1 u8,
+  _0: &'_0 u8,
+  _1: &'_1 u8,
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8, u8)> for closure<'_0, '_1>}
@@ -224,7 +224,7 @@ fn main()
     _4 = &v
     storage_live(_5)
     _5 = &z
-    f = closure { 0: move _4, 1: move _5 }
+    f = closure { _0: move _4, _1: move _5 }
     storage_dead(_5)
     storage_dead(_4)
     fake_read(f)
@@ -342,7 +342,7 @@ where
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = copy (*((*_1)).0)
+    _7 = copy (*(*_1)._0)
     storage_live(_8)
     _8 = copy x
     _9 = copy _7 panic.+ copy _8
@@ -356,7 +356,7 @@ where
     storage_dead(_10)
     storage_dead(_6)
     storage_live(_12)
-    _12 = copy (*((*_1)).1)
+    _12 = copy (*(*_1)._1)
     _13 = copy _5 panic.+ copy _12
     _0 = move _13
     storage_dead(_12)

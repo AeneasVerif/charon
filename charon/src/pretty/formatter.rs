@@ -139,10 +139,10 @@ pub trait AstFormatter: Sized {
         {
             match (&def.kind, opt_variant_id) {
                 (TypeDeclKind::Enum(variants), Some(variant_id)) => {
-                    variants[variant_id].fields[field_id].name.as_ref()
+                    Some(&variants[variant_id].fields[field_id].name)
                 }
                 (TypeDeclKind::Struct(fields) | TypeDeclKind::Union(fields), None) => {
-                    fields[field_id].name.as_ref()
+                    Some(&fields[field_id].name)
                 }
                 _ => None,
             }

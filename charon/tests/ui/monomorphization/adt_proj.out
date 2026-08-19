@@ -3,8 +3,8 @@
 // Full name: core::result::Result::<u32, u32>
 #[diagnostic_item("Result")]
 pub enum Result::<u32, u32> {
-  Ok(u32),
-  Err(u32),
+  Ok { _0: u32 },
+  Err { _0: u32 },
 }
 
 // Full name: test_crate::main
@@ -17,7 +17,7 @@ fn main()
     storage_live(_0)
     _0 = ()
     storage_live(res)
-    res = Result::<u32, u32>::Ok { 0: const 0u32 }
+    res = Result::<u32, u32>::Ok { _0: const 0u32 }
     fake_read(res)
     set_type(typeof(res) == Result::<u32, u32>)
     match res {
@@ -28,7 +28,7 @@ fn main()
         },
     }
     storage_live(n)
-    n = copy (res as variant Result::<u32, u32>::Ok).0
+    n = copy (res as variant Result::<u32, u32>::Ok)._0
     _0 = ()
     storage_dead(n)
     storage_dead(res)

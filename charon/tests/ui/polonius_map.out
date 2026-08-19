@@ -125,7 +125,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 // Full name: std::collections::hash::map::HashMap
@@ -291,7 +291,7 @@ pub fn get_or_insert<'_0>(map: &'_0 mut HashMap<u32, u32, RandomState, Global>[{
         },
         Option::Some => {
             storage_live(v)
-            v = copy (_2 as variant Option::Some).0
+            v = copy (_2 as variant Option::Some)._0
             _0 = &(*v)
             storage_dead(v)
             storage_dead(_5)

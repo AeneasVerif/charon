@@ -81,7 +81,7 @@ where
     TraitClause1: (T: Clone),
     TypeOutlives0: T: '_0,
 {
-  &'_0 T,
+  _0: &'_0 T,
 }
 
 struct test_crate::foo::closure<'_0, T>
@@ -90,7 +90,7 @@ where
     TraitClause1: (T: Clone),
     TypeOutlives0: T: '_0,
 {
-  &'_0 T,
+  _0: &'_0 T,
 }
 
 // Full name: test_crate::foo::{impl Fn<()> for test_crate::foo::closure<'_0, T>[TraitClause0, TraitClause1]}::call
@@ -107,7 +107,7 @@ where
     let tupled_args: (); // arg #2
 
     storage_live(_0)
-    _0 = test_crate::foo::closure::closure { 0: copy ((*_1)).0 }
+    _0 = test_crate::foo::closure::closure { _0: copy (*_1)._0 }
     storage_dead(tupled_args)
     storage_dead(_1)
     return
@@ -128,7 +128,7 @@ where
 
     storage_live(_0)
     storage_live(f)
-    f = test_crate::foo::closure { 0: copy x }
+    f = test_crate::foo::closure { _0: copy x }
     fake_read(f)
     storage_live(_3)
     _3 = &f
@@ -316,7 +316,7 @@ where
     let tupled_args: (); // arg #2
 
     storage_live(_0)
-    _0 = copy ((*_1)).0
+    _0 = copy (*_1)._0
     storage_dead(tupled_args)
     storage_dead(_1)
     return

@@ -28,7 +28,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 // Full name: alloc::alloc::Global
@@ -178,7 +178,7 @@ where
 
     storage_live(_0)
     storage_live(_2)
-    _2 = &((*self)).value
+    _2 = &(*self).value
     _0 = &(*_2)
     storage_dead(_2)
     storage_dead(self)
