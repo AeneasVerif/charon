@@ -25,9 +25,9 @@ fn normalize_default_method_call_on_known_impl(
 ) -> Option<FnPtr> {
     let fun_id = fn_ptr.kind.as_ref().as_fun()?.as_regular()?;
     let fun_decl = ctx.translated.fun_decls.get(*fun_id)?;
-    let ItemSource::TraitDecl {
+    let FunSource::TraitDefault {
         trait_ref,
-        item_id: AssocItemId::Method(method_id),
+        item_id: method_id,
     } = &fun_decl.src
     else {
         return None;

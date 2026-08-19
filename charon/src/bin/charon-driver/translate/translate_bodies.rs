@@ -297,7 +297,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         && let Ok(ItemRef::Type(vtable_decl)) =
                             self.get_or_translate(vtable_decl_id.into())
                     {
-                        let ItemSource::VTableTy { supertrait_map, .. } = &vtable_decl.src else {
+                        let TypeSource::VTable { supertrait_map, .. } = &vtable_decl.src else {
                             unreachable!()
                         };
                         field_path.push(supertrait_map[clause_id].unwrap());

@@ -29,7 +29,7 @@ impl TransformPass for Transform {
             let Some(ItemRefMut::Fun(spec)) = ctx.translated.get_item_mut(spec_id.into()) else {
                 continue;
             };
-            spec.src = ItemSource::Spec {
+            spec.src = FunSource::Spec {
                 kind,
                 item: parent_id,
             };

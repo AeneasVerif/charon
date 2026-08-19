@@ -652,7 +652,7 @@ impl TransformPass for Check {
             let accept_type_errors = matches!(
                 &item,
                 ItemRefMut::Fun(FunDecl {
-                    src: ItemSource::TraitImpl {
+                    src: FunSource::TraitImpl {
                         reuses_default: true,
                         ..
                     },

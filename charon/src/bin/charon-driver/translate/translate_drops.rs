@@ -57,7 +57,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         def_id: FunDeclId,
         item_meta: ItemMeta,
         def: &hax::FullDef<'tcx>,
-        impl_kind: TraitImplSource,
+        impl_kind: TransImplSource,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
         let borrow_region = self.drop_glue_region();
@@ -65,16 +65,15 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let trait_pred = match def.kind() {
             // Charon-generated `Destruct` impl for an ADT.
             FullDefKind::Adt { destruct_impl, .. } | FullDefKind::Closure { destruct_impl, .. } => {
-                assert_eq!(impl_kind, TraitImplSource::ImplicitDestruct);
+                assert_eq!(impl_kind, TransImplSource::ImplicitDestruct);
                 &destruct_impl.trait_pred
             }
             _ => unreachable!(),
         };
 
         let implemented_trait = self.translate_trait_predicate(span, trait_pred)?;
-        let item_id: AssocItemId = self
-            .translate_drop_glue_method_id(&trait_pred.trait_ref.def_id, implemented_trait.id)?
-            .into();
+        let item_id =
+            self.translate_drop_glue_method_id(&trait_pred.trait_ref.def_id, implemented_trait.id)?;
         let self_ty = implemented_trait
             .self_ty(&self.t_ctx.translated)
             .unwrap()
@@ -93,7 +92,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 id: destruct_impl_id,
                 generics: Box::new(impl_generics),
             };
-            ItemSource::TraitImpl {
+            FunSource::TraitImpl {
                 impl_ref,
                 trait_ref: implemented_trait,
                 item_id,
@@ -113,7 +112,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             generics: self.into_generics(),
             signature: Box::new(signature),
             src,
-            is_global_initializer: None,
             body,
         })
     }
@@ -176,7 +174,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         else {
             unreachable!("{:?}", def.def_id())
         };
-        let mut timpl = self.translate_virtual_trait_impl(impl_id, item_meta, destruct_impl)?;
+        let mut timpl = self.translate_virtual_trait_impl(
+            impl_id,
+            item_meta,
+            TraitImplSource::Destruct,
+            destruct_impl,
+        )?;
 
         // Add the `drop_glue(&mut self)` method.
         let destruct_trait_id = timpl.impl_trait.id;
@@ -187,7 +190,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             let fun_id = self.register_item(
                 span,
                 def.this(),
-                TransItemSourceKind::DropGlueMethod(TraitImplSource::ImplicitDestruct),
+                TransItemSourceKind::DropGlueMethod(TransImplSource::ImplicitDestruct),
             );
             let method_params = Self::drop_glue_params();
             let generics = self

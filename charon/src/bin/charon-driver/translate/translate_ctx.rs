@@ -1,6 +1,6 @@
 //! The translation contexts.
 use super::translate_crate::RustcItem;
-pub use super::translate_crate::{TraitImplSource, TransItemSource, TransItemSourceKind};
+pub use super::translate_crate::{TransImplSource, TransItemSource, TransItemSourceKind};
 use super::translate_generics::{BindingLevel, LifetimeMutabilityComputer};
 use crate::hax;
 use crate::hax::SInto;

@@ -714,8 +714,8 @@ pub struct TypeDecl {
     /// Meta information associated with the item.
     pub item_meta: ItemMeta,
     pub generics: GenericParams,
-    /// The context of the type: distinguishes top-level items from closure-related items.
-    pub src: ItemSource,
+    /// The context of the type: distinguishes top-level items from closure-related items etc.
+    pub src: TypeSource,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
     /// The layout of the type for each target. Information may be partial because of generics or
@@ -724,6 +724,28 @@ pub struct TypeDecl {
     pub layout: SeqHashMap<TargetTriple, Layout>,
     /// The metadata associated with a pointer to the type.
     pub ptr_metadata: PtrMetadata,
+}
+
+/// Where a given type came from.
+#[derive(
+    Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo, PartialEq, Eq,
+)]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Type"))]
+pub enum TypeSource {
+    /// A normal type declaration.
+    Normal,
+    /// The struct that carries the captured variables of a closure.
+    Closure { info: ClosureInfo },
+    /// Defines the vtable struct for a trait.
+    VTable {
+        /// The `dyn Trait` predicate implemented by this vtable.
+        dyn_predicate: DynPredicate,
+        /// Record what each vtable field means.
+        field_map: IndexVec<FieldId, VTableField>,
+        /// For each implied clause that is also a supertrait clause, records which field of the
+        /// vtable corresponds to it.
+        supertrait_map: IndexVec<TraitClauseId, Option<FieldId>>,
+    },
 }
 
 generate_index_type!(VariantId, "Variant");

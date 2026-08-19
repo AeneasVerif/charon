@@ -76,13 +76,15 @@ use derive_generic_visitor::*;
     override(
         DeBruijnId, Ty, TyKind, Region, TraitRef, TraitRefContents, TraitRefKind,
         TypeDeclRef, FunDeclRef, GlobalDeclRef, TraitDeclRef, TraitImplRef, ImplElem,
+        TypeSource, FunSource, GlobalSource, TraitDeclSource, TraitImplSource,
         GenericArgs, GenericParams, TraitParam, TraitClauseId, TraitTypeConstraint, Place, Rvalue, Body,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,
         for<T: AstVisitable> RegionBinder<T>,
         for<T: AstVisitable> Binder<T>,
         llbc_block: llbc_ast::Block, llbc_statement: llbc_ast::Statement,
         ullbc_statement: ullbc_ast::Statement, ullbc_terminator: ullbc_ast::Terminator,
-        AbortKind, AggregateKind, FnPtr, ItemSource, ItemMeta, Name, Span, ConstantExpr, ProjectionElem,
+        AbortKind, AggregateKind, FnPtr, ItemMeta, Name, Span,
+        ConstantExpr, ProjectionElem,
         FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId, FileId,
         FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
     )

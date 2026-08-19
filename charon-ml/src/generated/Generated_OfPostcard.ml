@@ -1709,22 +1709,6 @@ and alignment_modifier_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          Ok (Pack _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
-and assoc_item_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (assoc_item_id, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 ->
-         let* _0 = assoc_type_id_of_postcard ctx st in
-         Ok (AssocIdType _0)
-     | 1 ->
-         let* _0 = trait_method_id_of_postcard ctx st in
-         Ok (AssocIdMethod _0)
-     | 2 ->
-         let* _0 = assoc_const_id_of_postcard ctx st in
-         Ok (AssocIdConst _0)
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
 and assoc_item_names_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (assoc_item_names, string) result =
   combine_error_msgs st __FUNCTION__
@@ -2177,22 +2161,38 @@ and fun_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* item_meta = item_meta_of_postcard ctx st in
      let* generics = generic_params_of_postcard ctx st in
      let* signature = box_of_postcard fun_sig_of_postcard ctx st in
-     let* src = item_source_of_postcard ctx st in
-     let* is_global_initializer =
-       option_of_postcard global_decl_id_of_postcard ctx st
-     in
+     let* src = fun_source_of_postcard ctx st in
      let* body = body_of_postcard ctx st in
-     Ok
-       ({
-          def_id;
-          item_meta;
-          generics;
-          signature;
-          src;
-          is_global_initializer;
-          body;
-        }
-         : fun_decl))
+     Ok ({ def_id; item_meta; generics; signature; src; body } : fun_decl))
+
+and fun_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (fun_source, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok NormalFun
+     | 1 ->
+         let* trait_ref = trait_decl_ref_of_postcard ctx st in
+         let* item_id = trait_method_id_of_postcard ctx st in
+         Ok (TraitDefaultFun (trait_ref, item_id))
+     | 2 ->
+         let* impl_ref = trait_impl_ref_of_postcard ctx st in
+         let* trait_ref = trait_decl_ref_of_postcard ctx st in
+         let* item_id = trait_method_id_of_postcard ctx st in
+         let* reuses_default = bool_of_postcard ctx st in
+         Ok (TraitImplFun (impl_ref, trait_ref, item_id, reuses_default))
+     | 3 -> Ok VTableShimFun
+     | 4 ->
+         let* _0 = global_decl_ref_of_postcard ctx st in
+         Ok (GlobalInitializerFun _0)
+     | 5 ->
+         let* dispatcher = fun_decl_ref_of_postcard ctx st in
+         Ok (TargetDependentFun dispatcher)
+     | 6 ->
+         let* kind = spec_kind_of_postcard ctx st in
+         let* item = item_id_of_postcard ctx st in
+         Ok (SpecFun (kind, item))
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and g_declaration_group_of_postcard :
     'a0.
@@ -2239,7 +2239,7 @@ and global_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* item_meta = item_meta_of_postcard ctx st in
      let* generics = generic_params_of_postcard ctx st in
      let* ty = ty_of_postcard ctx st in
-     let* src = item_source_of_postcard ctx st in
+     let* src = global_source_of_postcard ctx st in
      let* global_kind = global_kind_of_postcard ctx st in
      let* value = constant_expr_of_postcard ctx st in
      Ok
@@ -2255,6 +2255,27 @@ and global_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 1 -> Ok ThreadLocal
      | 2 -> Ok NamedConst
      | 3 -> Ok AnonConst
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and global_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (global_source, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok NormalGlobal
+     | 1 ->
+         let* trait_ref = trait_decl_ref_of_postcard ctx st in
+         let* item_id = assoc_const_id_of_postcard ctx st in
+         Ok (TraitDefaultGlobal (trait_ref, item_id))
+     | 2 ->
+         let* impl_ref = trait_impl_ref_of_postcard ctx st in
+         let* trait_ref = trait_decl_ref_of_postcard ctx st in
+         let* item_id = assoc_const_id_of_postcard ctx st in
+         let* reuses_default = bool_of_postcard ctx st in
+         Ok (TraitImplGlobal (impl_ref, trait_ref, item_id, reuses_default))
+     | 3 ->
+         let* impl_ref = option_of_postcard trait_impl_ref_of_postcard ctx st in
+         Ok (VTableInstanceGlobal impl_ref)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and rustc_ident_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -2371,51 +2392,6 @@ and item_opacity_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 1 -> Ok Foreign
      | 2 -> Ok ItemOpaque
      | 3 -> Ok Invisible
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
-and item_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (item_source, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 -> Ok TopLevelItem
-     | 1 ->
-         let* info = closure_info_of_postcard ctx st in
-         Ok (ClosureItem info)
-     | 2 ->
-         let* kind = spec_kind_of_postcard ctx st in
-         let* item = item_id_of_postcard ctx st in
-         Ok (SpecItem (kind, item))
-     | 3 ->
-         let* trait_ref = trait_decl_ref_of_postcard ctx st in
-         let* item_id = assoc_item_id_of_postcard ctx st in
-         Ok (TraitDeclItem (trait_ref, item_id))
-     | 4 ->
-         let* impl_ref = trait_impl_ref_of_postcard ctx st in
-         let* trait_ref = trait_decl_ref_of_postcard ctx st in
-         let* item_id = assoc_item_id_of_postcard ctx st in
-         let* reuses_default = bool_of_postcard ctx st in
-         Ok (TraitImplItem (impl_ref, trait_ref, item_id, reuses_default))
-     | 5 ->
-         let* dispatcher = fun_decl_ref_of_postcard ctx st in
-         Ok (TargetDependentItem dispatcher)
-     | 6 ->
-         let* dyn_predicate = dyn_predicate_of_postcard ctx st in
-         let* field_map =
-           index_vec_of_postcard field_id_of_postcard v_table_field_of_postcard
-             ctx st
-         in
-         let* supertrait_map =
-           index_vec_of_postcard trait_clause_id_of_postcard
-             (option_of_postcard field_id_of_postcard)
-             ctx st
-         in
-         Ok (VTableTyItem (dyn_predicate, field_map, supertrait_map))
-     | 7 ->
-         let* impl_ref = trait_impl_ref_of_postcard ctx st in
-         Ok (VTableInstanceItem impl_ref)
-     | 8 -> Ok VTableMethodShimItem
-     | 9 -> Ok VTableInstanceMonoItem
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and rustc_lang_item_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -2835,6 +2811,7 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* def_id = trait_decl_id_of_postcard ctx st in
      let* item_meta = item_meta_of_postcard ctx st in
+     let* src = trait_decl_source_of_postcard ctx st in
      let* generics = generic_params_of_postcard ctx st in
      let* implied_clauses =
        index_vec_of_postcard trait_clause_id_of_postcard trait_param_of_postcard
@@ -2868,6 +2845,7 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        ({
           def_id;
           item_meta;
+          src;
           generics;
           implied_clauses;
           consts;
@@ -2877,11 +2855,21 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
         }
          : trait_decl))
 
+and trait_decl_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
+    : (trait_decl_source, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok NormalTraitDecl
+     | 1 -> Ok TraitAliasTraitDecl
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and trait_impl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (trait_impl, string) result =
   combine_error_msgs st __FUNCTION__
     (let* def_id = trait_impl_id_of_postcard ctx st in
      let* item_meta = item_meta_of_postcard ctx st in
+     let* src = trait_impl_source_of_postcard ctx st in
      let* impl_trait = trait_decl_ref_of_postcard ctx st in
      let* generics = generic_params_of_postcard ctx st in
      let* implied_trait_refs =
@@ -2916,6 +2904,7 @@ and trait_impl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        ({
           def_id;
           item_meta;
+          src;
           impl_trait;
           generics;
           implied_trait_refs;
@@ -2925,6 +2914,19 @@ and trait_impl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           vtable;
         }
          : trait_impl))
+
+and trait_impl_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
+    : (trait_impl_source, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok NormalTraitImpl
+     | 1 -> Ok TraitAliasTraitImpl
+     | 2 ->
+         let* kind = closure_kind_of_postcard ctx st in
+         Ok (ClosureTraitImpl kind)
+     | 3 -> Ok DestructTraitImpl
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and trait_item_name_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (trait_item_name, string) result =
@@ -3030,7 +3032,7 @@ and type_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* def_id = type_decl_id_of_postcard ctx st in
      let* item_meta = item_meta_of_postcard ctx st in
      let* generics = generic_params_of_postcard ctx st in
-     let* src = item_source_of_postcard ctx st in
+     let* src = type_source_of_postcard ctx st in
      let* kind = type_decl_kind_of_postcard ctx st in
      let* layout =
        index_map_of_postcard string_of_postcard layout_of_postcard
@@ -3069,6 +3071,29 @@ and type_decl_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 5 ->
          let* _0 = string_of_postcard ctx st in
          Ok (TDeclError _0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and type_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (type_source, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok NormalType
+     | 1 ->
+         let* info = closure_info_of_postcard ctx st in
+         Ok (ClosureType info)
+     | 2 ->
+         let* dyn_predicate = dyn_predicate_of_postcard ctx st in
+         let* field_map =
+           index_vec_of_postcard field_id_of_postcard v_table_field_of_postcard
+             ctx st
+         in
+         let* supertrait_map =
+           index_vec_of_postcard trait_clause_id_of_postcard
+             (option_of_postcard field_id_of_postcard)
+             ctx st
+         in
+         Ok (VTableType (dyn_predicate, field_map, supertrait_map))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and v_table_field_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
