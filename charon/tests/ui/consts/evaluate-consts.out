@@ -29,14 +29,14 @@ pub static STATIC: u32 = 100u32
 
 // Full name: test_crate::Node
 pub struct Node {
-  0: &'static Node,
+  _0: &'static Node,
 }
 
 // Full name: test_crate::REC_A
-pub static REC_A: Node = Node { 0: &REC_B }
+pub static REC_A: Node = Node { _0: &REC_B }
 
 // Full name: test_crate::REC_B
-pub static REC_B: Node = Node { 0: &REC_A }
+pub static REC_B: Node = Node { _0: &REC_A }
 
 // Full name: test_crate::HasLen
 trait HasLen<Self>

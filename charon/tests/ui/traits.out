@@ -73,7 +73,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 // Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_glue
@@ -90,8 +90,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 {
-  Ok { 0: T },
-  Err { 0: E },
+  Ok { _0: T },
+  Err { _0: E },
 }
 
 // Full name: alloc::string::String
@@ -765,12 +765,12 @@ pub struct TestType<T>
 where
     TraitClause0: (T: Sized),
 {
-  0: T,
+  _0: T,
 }
 
 // Full name: test_crate::{TestType<T>[TraitClause0]}::test::TestType1
 struct TestType1 {
-  0: u64,
+  _0: u64,
 }
 
 // Full name: test_crate::{TestType<T>[TraitClause0]}::test::{impl TestTrait for TestType1}::test
@@ -782,7 +782,7 @@ fn impl_TestTrait_for_TestType1::test<'_0>(self: &'_0 TestType1) -> bool
 
     storage_live(_0)
     storage_live(_2)
-    _2 = copy (*self).0
+    _2 = copy (*self)._0
     _0 = move _2 > const 1u64
     storage_dead(_2)
     storage_dead(self)
@@ -829,7 +829,7 @@ where
     storage_dead(_4)
     fake_read(x_3)
     storage_live(y)
-    y = TestType1 { 0: const 0u64 }
+    y = TestType1 { _0: const 0u64 }
     fake_read(y)
     storage_live(_6)
     storage_live(_7)
@@ -881,7 +881,7 @@ impl "impl_TestTrait_for_TestType1" TestTrait for TestType1 {
 
 // Full name: test_crate::BoolWrapper
 pub struct BoolWrapper {
-  0: bool,
+  _0: bool,
 }
 
 // Full name: test_crate::{impl ToType<T> for BoolWrapper}::to_type
@@ -896,7 +896,7 @@ where
 
     storage_live(_0)
     storage_live(_2)
-    _2 = copy self.0
+    _2 = copy self._0
     _0 = TraitClause1::to_type(move _2)
     ↳⚡ storage_dead(self)
         unwind_continue
@@ -1466,7 +1466,7 @@ where
     let _0: Result<T, i32>[TraitClause0, {built_in impl Sized for i32}]; // return
 
     storage_live(_0)
-    _0 = Result::Err { 0: const 0i32 }
+    _0 = Result::Err { _0: const 0i32 }
     return
 }
 

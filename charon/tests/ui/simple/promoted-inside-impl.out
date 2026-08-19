@@ -17,7 +17,7 @@ pub struct Foo<F>
 where
     TraitClause0: (F: Sized),
 {
-  0: F,
+  _0: F,
 }
 
 // Full name: test_crate::{Foo<F>[TraitClause0]}::method

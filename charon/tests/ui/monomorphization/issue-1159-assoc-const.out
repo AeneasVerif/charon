@@ -27,7 +27,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 // Full name: core::option::Option::<&'_ [u64]>
@@ -35,7 +35,7 @@ where
 #[diagnostic_item("Option")]
 pub enum Option::<&'_ [u64]> {
   None,
-  Some { 0: &'_ [u64] },
+  Some { _0: &'_ [u64] },
 }
 
 // Full name: test_crate::MyConfig
@@ -102,7 +102,7 @@ pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option::<&'_ [u64]>
     _1 = @ArrayToSliceShared<'_, u64, 1usize>(move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
-    _0 = Option::<&'_ [u64]>::Some { 0: move _1 }
+    _0 = Option::<&'_ [u64]>::Some { _0: move _1 }
     storage_dead(_1)
     storage_dead(_3)
     return
@@ -150,7 +150,7 @@ pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option<&'static [u64]>[{b
     _1 = @ArrayToSliceShared<'_, u64, 1usize>(move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
-    _0 = Option::Some { 0: move _1 }
+    _0 = Option::Some { _0: move _1 }
     storage_dead(_1)
     storage_dead(_3)
     return

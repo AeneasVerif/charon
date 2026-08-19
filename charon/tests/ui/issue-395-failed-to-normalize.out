@@ -20,7 +20,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 // Full name: core::iter::traits::iterator::Iterator
@@ -68,8 +68,8 @@ where
     TraitClause2: (I: Iterator),
     TraitClause3: (F: C<TraitClause2::Item>),
 {
-  0: I,
-  1: F,
+  _0: I,
+  _1: F,
 }
 
 // Full name: test_crate::S2

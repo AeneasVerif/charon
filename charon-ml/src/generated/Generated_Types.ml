@@ -925,7 +925,8 @@ and field = {
   field_name : string;
   is_positional : bool;
       (** Whether this field is positional, as in a tuple struct, tuple variant,
-          or closure. *)
+          or closure. If so, its name is based on its position, such as [_0];
+          otherwise, it is a user-provided name. *)
   field_ty : ty;
 }
 

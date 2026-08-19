@@ -459,7 +459,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 // Full name: core::num::{usize}::checked_sub
@@ -990,7 +990,7 @@ where
     match _5 {
         Option::Some => {
             storage_live(new_len)
-            new_len = copy (_5 as variant Option::Some).0
+            new_len = copy (_5 as variant Option::Some)._0
             storage_live(_9)
             storage_live(_10)
             _10 = copy self.end
@@ -1137,7 +1137,7 @@ where
     match _3 {
         Option::Some => {
             storage_live(new_len)
-            new_len = copy (_3 as variant Option::Some).0
+            new_len = copy (_3 as variant Option::Some)._0
             storage_live(_7)
             storage_live(_8)
             _8 = copy self.end
@@ -1576,7 +1576,7 @@ where
     match _3 {
         Option::Some => {
             storage_live(new_len)
-            new_len = copy (_3 as variant Option::Some).0
+            new_len = copy (_3 as variant Option::Some)._0
             storage_live(_7)
             storage_live(_8)
             _8 = copy self.end
@@ -1610,7 +1610,7 @@ where
                 storage_dead(_14)
                 _12 = &mut (*_13) with_metadata(copy _13.metadata)
                 _11 = &two-phase-mut (*_12) with_metadata(copy _12.metadata)
-                _0 = Option::Some { 0: move _11 }
+                _0 = Option::Some { _0: move _11 }
                 storage_dead(_13)
                 storage_dead(_12)
                 storage_dead(_11)
@@ -1676,7 +1676,7 @@ where
     match _3 {
         Option::Some => {
             storage_live(new_len)
-            new_len = copy (_3 as variant Option::Some).0
+            new_len = copy (_3 as variant Option::Some)._0
             storage_live(_7)
             storage_live(_8)
             _8 = copy self.end
@@ -1710,7 +1710,7 @@ where
                 storage_dead(_14)
                 _12 = &(*_13) with_metadata(copy _13.metadata)
                 _11 = &(*_12) with_metadata(copy _12.metadata)
-                _0 = Option::Some { 0: move _11 }
+                _0 = Option::Some { _0: move _11 }
                 storage_dead(_13)
                 storage_dead(_12)
                 storage_dead(_11)

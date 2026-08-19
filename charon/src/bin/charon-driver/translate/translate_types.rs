@@ -832,7 +832,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let is_positional = field_def.name.is_none();
                 let field_name = field_def
                     .name
-                    .map_or_else(|| j.to_string(), |name| name.to_string());
+                    .map_or_else(|| format!("_{j}"), |name| name.to_string());
 
                 // Store the field
                 let field = Field {

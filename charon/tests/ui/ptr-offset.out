@@ -24,7 +24,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 // Full name: core::num::{usize}::overflowing_add_signed
@@ -83,7 +83,7 @@ fn runtime(this: *const (), count: isize, size: usize) -> bool
         },
     }
     storage_live(byte_offset)
-    byte_offset = copy (_5 as variant Option::Some).0
+    byte_offset = copy (_5 as variant Option::Some)._0
     storage_dead(_5)
     storage_live(_10)
     storage_live(_11)

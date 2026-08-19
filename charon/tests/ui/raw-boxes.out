@@ -10,8 +10,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 {
-  Ok { 0: T },
-  Err { 0: E },
+  Ok { _0: T },
+  Err { _0: E },
 }
 
 // Full name: core::ptr::non_null::NonNull
@@ -428,7 +428,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: usize)
@@ -547,7 +547,7 @@ pub fn core::mem::alignment::{Alignment}::new(align: usize) -> Option<Alignment>
     ↳⚡ storage_dead(align)
         unwind_continue
     storage_dead(_5)
-    _0 = Option::Some { 0: move _4 }
+    _0 = Option::Some { _0: move _4 }
     storage_dead(_4)
     storage_dead(_2)
     storage_dead(align)
@@ -768,8 +768,8 @@ where
     TraitClause0: (B: Sized),
     TraitClause1: (C: Sized),
 {
-  Continue { 0: C },
-  Break { 0: B },
+  Continue { _0: C },
+  Break { _0: B },
 }
 
 // Full name: core::alloc::Allocator::allocate_zeroed
@@ -821,7 +821,7 @@ where
         },
         ControlFlow::Break => {
             storage_live(residual)
-            residual = copy (_4 as variant ControlFlow::Break).0
+            residual = copy (_4 as variant ControlFlow::Break)._0
             storage_live(_9)
             _9 = copy residual
             _0 = from_residual<NonNull<[u8]>, AllocError, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}, {built_in impl Sized for AllocError}, {impl#6}<AllocError>[{built_in impl Sized for AllocError}]](move _9)
@@ -838,7 +838,7 @@ where
         },
     }
     storage_live(val)
-    val = copy (_4 as variant ControlFlow::Continue).0
+    val = copy (_4 as variant ControlFlow::Continue)._0
     ptr = copy val
     storage_dead(val)
     storage_dead(_4)
@@ -874,7 +874,7 @@ where
     storage_dead(_11)
     storage_live(_17)
     _17 = copy ptr
-    _0 = Result::Ok { 0: move _17 }
+    _0 = Result::Ok { _0: move _17 }
     storage_dead(_17)
     storage_dead(ptr)
     storage_dead(layout)
@@ -1303,7 +1303,7 @@ where
         },
         ControlFlow::Break => {
             storage_live(residual)
-            residual = copy (_13 as variant ControlFlow::Break).0
+            residual = copy (_13 as variant ControlFlow::Break)._0
             storage_live(_18)
             _18 = copy residual
             _0 = from_residual<NonNull<[u8]>, AllocError, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}, {built_in impl Sized for AllocError}, {impl#6}<AllocError>[{built_in impl Sized for AllocError}]](move _18)
@@ -1326,7 +1326,7 @@ where
         },
     }
     storage_live(val)
-    val = copy (_13 as variant ControlFlow::Continue).0
+    val = copy (_13 as variant ControlFlow::Continue)._0
     new_ptr = copy val
     storage_dead(val)
     storage_dead(_13)
@@ -1398,7 +1398,7 @@ where
     storage_dead(_28)
     storage_live(_32)
     _32 = copy new_ptr
-    _0 = Result::Ok { 0: move _32 }
+    _0 = Result::Ok { _0: move _32 }
     storage_dead(_32)
     storage_dead(new_ptr)
     storage_dead(_11)
@@ -1531,7 +1531,7 @@ where
         },
         ControlFlow::Break => {
             storage_live(residual)
-            residual = copy (_13 as variant ControlFlow::Break).0
+            residual = copy (_13 as variant ControlFlow::Break)._0
             storage_live(_18)
             _18 = copy residual
             _0 = from_residual<NonNull<[u8]>, AllocError, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}, {built_in impl Sized for AllocError}, {impl#6}<AllocError>[{built_in impl Sized for AllocError}]](move _18)
@@ -1554,7 +1554,7 @@ where
         },
     }
     storage_live(val)
-    val = copy (_13 as variant ControlFlow::Continue).0
+    val = copy (_13 as variant ControlFlow::Continue)._0
     new_ptr = copy val
     storage_dead(val)
     storage_dead(_13)
@@ -1626,7 +1626,7 @@ where
     storage_dead(_28)
     storage_live(_32)
     _32 = copy new_ptr
-    _0 = Result::Ok { 0: move _32 }
+    _0 = Result::Ok { _0: move _32 }
     storage_dead(_32)
     storage_dead(new_ptr)
     storage_dead(_11)
@@ -1759,7 +1759,7 @@ where
         },
         ControlFlow::Break => {
             storage_live(residual)
-            residual = copy (_13 as variant ControlFlow::Break).0
+            residual = copy (_13 as variant ControlFlow::Break)._0
             storage_live(_18)
             _18 = copy residual
             _0 = from_residual<NonNull<[u8]>, AllocError, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}, {built_in impl Sized for AllocError}, {impl#6}<AllocError>[{built_in impl Sized for AllocError}]](move _18)
@@ -1782,7 +1782,7 @@ where
         },
     }
     storage_live(val)
-    val = copy (_13 as variant ControlFlow::Continue).0
+    val = copy (_13 as variant ControlFlow::Continue)._0
     new_ptr = copy val
     storage_dead(val)
     storage_dead(_13)
@@ -1854,7 +1854,7 @@ where
     storage_dead(_28)
     storage_live(_32)
     _32 = copy new_ptr
-    _0 = Result::Ok { 0: move _32 }
+    _0 = Result::Ok { _0: move _32 }
     storage_dead(_32)
     storage_dead(new_ptr)
     storage_dead(_11)
@@ -1961,7 +1961,7 @@ pub struct MaybeDangling<P>
 where
     TraitClause0: (P: MetaSized),
 {
-  0: P,
+  _0: P,
 }
 
 // Full name: core::mem::manually_drop::ManuallyDrop
@@ -1985,7 +1985,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = move x
-    _0 = MaybeDangling { 0: move _2 }
+    _0 = MaybeDangling { _0: move _2 }
     storage_dead(_2)
     storage_dead(x)
     return
@@ -2026,7 +2026,7 @@ where
 
     storage_live(_0)
     storage_live(_2)
-    _2 = &(*self).0 with_metadata(copy self.metadata)
+    _2 = &(*self)._0 with_metadata(copy self.metadata)
     _0 = &(*_2) with_metadata(copy _2.metadata)
     storage_dead(_2)
     storage_dead(self)
@@ -2072,7 +2072,7 @@ where
     storage_live(_0)
     storage_live(_2)
     storage_live(_3)
-    _3 = &mut (*self).0 with_metadata(copy self.metadata)
+    _3 = &mut (*self)._0 with_metadata(copy self.metadata)
     _2 = &mut (*_3) with_metadata(copy _3.metadata)
     storage_dead(_3)
     _0 = &mut (*_2) with_metadata(copy _2.metadata)
@@ -2434,8 +2434,8 @@ where
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
 {
-  0: Unique<T>,
-  1: A,
+  _0: Unique<T>,
+  _1: A,
 }
 
 // Full name: alloc::boxed::{impl Drop for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop
@@ -2467,7 +2467,7 @@ where
     storage_live(_0)
     _0 = ()
     storage_live(ptr)
-    ptr = copy (*self).0
+    ptr = copy (*self)._0
     storage_live(layout)
     storage_live(_4)
     storage_live(_5)
@@ -2505,7 +2505,7 @@ where
     storage_dead(_8)
     storage_live(_10)
     storage_live(_11)
-    _11 = &(*self).1 with_metadata(copy self.metadata)
+    _11 = &(*self)._1 with_metadata(copy self.metadata)
     storage_live(_12)
     storage_live(_13)
     storage_live(_14)
@@ -2559,7 +2559,7 @@ where
     storage_live(_5)
     storage_live(_6)
     _0 = ()
-    _6 = transmute<NonNull<T>, *const T>(copy (*_1).0.pointer)
+    _6 = transmute<NonNull<T>, *const T>(copy (*_1)._0.pointer)
     drop[{built_in impl Destruct for T}::drop_glue<'4>] (*_6)
     ↳⚡ _4 = &mut (*_1)
         _5 = drop<'8, T, A>[TraitClause0, TraitClause1, TraitClause2](move _4)
@@ -2570,7 +2570,7 @@ where
             storage_dead(_2)
             storage_dead(_1)
             unwind_terminate
-        drop[{built_in impl Destruct for A}::drop_glue<'9>] (*_1).1
+        drop[{built_in impl Destruct for A}::drop_glue<'9>] (*_1)._1
         ↳⚡ storage_dead(_6)
             storage_dead(_5)
             storage_dead(_4)
@@ -2587,7 +2587,7 @@ where
         unwind_continue
     _2 = &mut (*_1)
     _3 = drop<'6, T, A>[TraitClause0, TraitClause1, TraitClause2](move _2)
-    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'9>] (*_1).1
+    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'9>] (*_1)._1
         ↳⚡ storage_dead(_6)
             storage_dead(_5)
             storage_dead(_4)
@@ -2602,7 +2602,7 @@ where
         storage_dead(_2)
         storage_dead(_1)
         unwind_continue
-    drop[{built_in impl Destruct for A}::drop_glue<'10>] (*_1).1
+    drop[{built_in impl Destruct for A}::drop_glue<'10>] (*_1)._1
     ↳⚡ storage_dead(_6)
         storage_dead(_5)
         storage_dead(_4)
@@ -2674,7 +2674,7 @@ fn box_new_uninit(layout: Layout) -> *mut u8
         },
     }
     storage_live(ptr)
-    ptr = copy (_2 as variant Result::Ok).0
+    ptr = copy (_2 as variant Result::Ok)._0
     storage_live(_6)
     _6 = copy ptr
     _0 = as_mut_ptr<u8>[{built_in impl Sized for u8}](move _6)
@@ -2776,7 +2776,7 @@ where
     storage_dead(_4)
     storage_live(_5)
     _5 = move alloc
-    _0 = Box { 0: move _3, 1: move _5 }
+    _0 = Box { _0: move _3, _1: move _5 }
     storage_dead(_5)
     storage_dead(_3)
     storage_dead(alloc)
@@ -2848,7 +2848,7 @@ where
         unwind_continue
     storage_dead(_7)
     _8 = copy (*_6)
-    _9 = transmute<NonNull<T>, *const T>(copy _8.0.pointer)
+    _9 = transmute<NonNull<T>, *const T>(copy _8._0.pointer)
     _5 = &mut (*_9) with_metadata(copy _9.metadata)
     _4 = &raw mut (*_5) with_metadata(copy _5.metadata)
     _0 = copy _4
@@ -2909,7 +2909,7 @@ where
         unwind_continue
     storage_dead(_6)
     _14 = copy (*_5)
-    _15 = transmute<NonNull<T>, *const T>(copy _14.0.pointer)
+    _15 = transmute<NonNull<T>, *const T>(copy _14._0.pointer)
     ptr = &raw mut (*_15) with_metadata(copy _15.metadata)
     storage_live(alloc)
     storage_live(_8)
@@ -2923,7 +2923,7 @@ where
         storage_dead(b_1)
         unwind_continue
     storage_dead(_11)
-    _9 = &(*_10).1 with_metadata(copy _10.metadata)
+    _9 = &(*_10)._1 with_metadata(copy _10.metadata)
     _8 = &raw const (*_9) with_metadata(copy _9.metadata)
     alloc = read<A>[TraitClause1](move _8)
     ↳⚡ storage_dead(_15)
@@ -3061,9 +3061,9 @@ unsafe fn foo()
         unwind_continue
     storage_dead(_7)
     storage_live(i)
-    _9 = transmute<NonNull<i32>, *const i32>(copy b_6.0.pointer)
+    _9 = transmute<NonNull<i32>, *const i32>(copy b_6._0.pointer)
     i = copy (*_9)
-    _10 = transmute<NonNull<i32>, *const i32>(copy b_6.0.pointer)
+    _10 = transmute<NonNull<i32>, *const i32>(copy b_6._0.pointer)
     (*_10) = const 42i32
     _0 = ()
     storage_dead(i)

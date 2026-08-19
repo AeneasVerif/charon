@@ -70,7 +70,7 @@ struct closure<'_0, '_1>
 where
     RegionOutlives0: '_1: '_0,
 {
-  0: &'_0 &'_1 [u8],
+  _0: &'_0 &'_1 [u8],
 }
 
 // Full name: test_crate::call_fn::{impl Fn<(usize,)> for closure<'_0, '_1>}::call
@@ -93,7 +93,7 @@ where
     storage_live(i)
     i = move tupled_args.0
     storage_live(_4)
-    _4 = &(*(*_1).0)
+    _4 = &(*(*_1)._0)
     storage_live(_5)
     _5 = copy i
     storage_live(_6)
@@ -128,7 +128,7 @@ fn call_fn<'_0>(a: &'_0 [u8], i: usize) -> u8
     storage_live(read)
     storage_live(_4)
     _4 = &a
-    read = closure { 0: move _4 }
+    read = closure { _0: move _4 }
     storage_dead(_4)
     fake_read(read)
     storage_live(_5)

@@ -31,7 +31,7 @@ pub trait Trait<Self>
 
 // Full name: test_crate::Pattern::<'_>
 pub struct Pattern::<'_> {
-  0: &'_ str,
+  _0: &'_ str,
 }
 
 // Full name: test_crate::Pattern::{impl Destruct for Pattern::<'_>}::drop_glue::<'_>

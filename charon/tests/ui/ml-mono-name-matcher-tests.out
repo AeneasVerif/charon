@@ -11,7 +11,7 @@ pub struct RangeFrom::<usize> {
 #[diagnostic_item("Option")]
 pub enum Option::<i32> {
   None,
-  Some { 0: i32 },
+  Some { _0: i32 },
 }
 
 // Full name: core::option::{Option::<i32>}::is_some::<i32>
@@ -58,7 +58,7 @@ fn foo()
     storage_live(_12)
     storage_live(_14)
     storage_live(_15)
-    _15 = Option::<i32>::Some { 0: const 0i32 }
+    _15 = Option::<i32>::Some { _0: const 0i32 }
     _14 = &_15
     _12 = move _14
     storage_live(_0)

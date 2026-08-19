@@ -19,6 +19,7 @@ impl Generator<'_> {
         writeln!(f)?;
         writeln!(f, "#![allow(")?;
         writeln!(f, "clippy::deref_addrof,")?;
+        writeln!(f, "clippy::just_underscores_and_digits,")?;
         writeln!(f, "clippy::large_enum_variant,")?;
         writeln!(f, "clippy::needless_borrow,")?;
         writeln!(f, "clippy::needless_question_mark,")?;
@@ -123,12 +124,10 @@ impl Generator<'_> {
             write!(
                 f,
                 "{}",
-                fields
-                    .iter_enumerated()
-                    .format_with(", ", |(field_id, field), f| {
-                        let value = format!("&value.{field_id}");
-                        f(&self.translation_expr(&field.ty, &value))
-                    })
+                fields.iter().format_with(", ", |field, f| {
+                    let value = format!("&value.{}", field.name);
+                    f(&self.translation_expr(&field.ty, &value))
+                })
             )?;
             write!(f, ")")
         }
@@ -180,25 +179,14 @@ impl Generator<'_> {
             writeln!(f, "}}),")
         } else {
             write!(f, "{rust_ty}::{variant_name}(")?;
-            write!(
-                f,
-                "{}",
-                fields
-                    .iter_enumerated()
-                    .format_with(", ", |(field_id, _), f| {
-                        f(&format_args!("field_{field_id}"))
-                    })
-            )?;
+            write!(f, "{}", fields.iter().map(|field| &field.name).format(", "))?;
             write!(f, ") => Ok(from_rustc::{output_ty}::{variant_name}(")?;
             write!(
                 f,
                 "{}",
-                fields
-                    .iter_enumerated()
-                    .format_with(", ", |(field_id, field), f| {
-                        let value = format!("field_{field_id}");
-                        f(&self.translation_expr(&field.ty, &value))
-                    })
+                fields.iter().format_with(", ", |field, f| {
+                    f(&self.translation_expr(&field.ty, &field.name))
+                })
             )?;
             writeln!(f, ")),")
         }

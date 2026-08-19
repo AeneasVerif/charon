@@ -29,7 +29,7 @@ impl "impl_Trait_for_u32" Trait<bool> for u32 {
 
 // Full name: test_crate::Foo
 struct Foo<T, Clause1_Type> {
-  0: Clause1_Type,
+  _0: Clause1_Type,
 }
 
 // Full name: test_crate::foo

@@ -257,7 +257,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             .map(|(field_id, ty)| Field {
                 span,
                 attr_info: AttrInfo::dummy_private(),
-                name: field_id.to_string(),
+                name: format!("_{field_id}"),
                 is_positional: true,
                 ty,
             })

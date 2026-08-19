@@ -47,7 +47,7 @@ where
     TraitClause0: (A: Sized),
     TraitClause1: (A: HasType1<Clause1_Type1>),
 {
-  0: A,
+  _0: A,
 }
 
 // Full name: test_crate::{impl HasType2<Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, impl_HasType1_for_Witness1]> for Witness2}

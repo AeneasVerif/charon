@@ -35,7 +35,7 @@ where
 
 // Full name: test_crate::Thing
 pub enum Thing {
-  A { 0: alloc::boxed::Box<()>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}] },
+  A { _0: alloc::boxed::Box<()>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}] },
 }
 
 // Full name: test_crate::Thing::{impl Destruct for Thing}::drop_glue
@@ -50,7 +50,7 @@ unsafe fn impl_Destruct_for_Thing::drop_glue<'_0>(_1: &'_0 mut Thing)
         _ => {
         },
     }
-    drop[impl_Destruct_for_Box::drop_glue<'2, (), Global>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}]] ((*_1) as variant Thing::A).0
+    drop[impl_Destruct_for_Box::drop_glue<'2, (), Global>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}]] ((*_1) as variant Thing::A)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)

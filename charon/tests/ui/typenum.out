@@ -2,8 +2,8 @@
 
 // Full name: test_crate::UInt
 pub struct UInt<U, B> {
-  0: U,
-  1: B,
+  _0: U,
+  _1: B,
 }
 
 // Full name: test_crate::UTerm

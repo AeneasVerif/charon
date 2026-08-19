@@ -52,7 +52,7 @@ pub trait FnOnce<Self, Args>
 
 // Full name: test_crate::main::closure
 struct closure {
-  0: NotCopy,
+  _0: NotCopy,
 }
 
 // Full name: test_crate::main::closure::{impl Destruct for closure}::drop_glue
@@ -121,7 +121,7 @@ fn main()
     fake_read(z)
     storage_live(_2)
     storage_live(_3)
-    _3 = closure { 0: move z }
+    _3 = closure { _0: move z }
     _2 = apply_to_zero_once::<closure>(move _3)
     ↳⚡ unwind_continue
     storage_dead(_3)
@@ -155,7 +155,7 @@ fn call_once(_1: closure, tupled_args: (u8,)) -> u8
     x = move tupled_args.0
     storage_live(_4)
     storage_live(_5)
-    _5 = move _1.0
+    _5 = move _1._0
     _4 = drop::<NotCopy>(move _5)
     ↳⚡ storage_dead(_7)
         storage_dead(x)

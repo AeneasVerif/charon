@@ -78,7 +78,7 @@ struct Empty<T>
 where
     TraitClause0: (T: Sized),
 {
-  0: [T; 0usize],
+  _0: [T; 0usize],
 }
 
 // Full name: test_crate::{impl Iter<T> for Empty<T>[TraitClause0]}::map
@@ -134,7 +134,7 @@ fn g()
     storage_live(_3)
     storage_live(_4)
     _4 = []
-    _3 = Empty { 0: move _4 }
+    _3 = Empty { _0: move _4 }
     _2 = &two-phase-mut _3
     storage_dead(_4)
     storage_live(_5)

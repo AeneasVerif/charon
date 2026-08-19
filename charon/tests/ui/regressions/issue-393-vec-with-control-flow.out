@@ -26,7 +26,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 // Full name: alloc::alloc::Global
@@ -157,7 +157,7 @@ pub fn next(b: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in i
     fake_read(vec)
     storage_live(_7)
     _7 = move vec
-    _0 = Option::Some { 0: move _7 }
+    _0 = Option::Some { _0: move _7 }
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'3, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _7
     ↳⚡ conditional_drop[impl_Destruct_for_Vec::drop_glue<'5, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] vec
         ↳⚡ storage_dead(b)

@@ -20,7 +20,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 // Full name: core::iter::traits::iterator::Iterator
@@ -276,7 +276,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
             },
         }
         storage_live(bytes)
-        bytes = copy (_8 as variant Option::Some).0
+        bytes = copy (_8 as variant Option::Some)._0
         storage_live(b1)
         storage_live(_13)
         storage_live(_14)

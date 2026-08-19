@@ -248,11 +248,7 @@ impl<'a> GenerateCtx<'a> {
                 format!("{call} ctx st")
             }
             TypeDeclKind::Struct(fields) if fields.iter().all(|field| field.is_positional) => {
-                let mut fields = fields.clone();
-                for (i, f) in fields.iter_mut().enumerate() {
-                    f.name = format!("x{i}");
-                }
-                let convert = self.convert_postcard_vars(&fields);
+                let convert = self.convert_postcard_vars(fields);
                 let construct = fields
                     .iter()
                     .map(Field::renamed_name)
@@ -283,13 +279,8 @@ impl<'a> GenerateCtx<'a> {
                         if variant.fields.is_empty() {
                             Some(format!("| {idx} -> Ok {rename}"))
                         } else {
-                            let mut fields = variant.fields.clone();
-                            if fields.iter().all(|field| field.is_positional) {
-                                for (j, f) in fields.iter_mut().enumerate() {
-                                    f.name = format!("x_{j}");
-                                }
-                            }
-                            let convert = self.convert_postcard_vars(&fields);
+                            let fields = &variant.fields;
+                            let convert = self.convert_postcard_vars(fields);
                             let construct_fields = fields
                                 .iter()
                                 .map(|f| f.name.as_str())

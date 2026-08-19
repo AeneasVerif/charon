@@ -80,7 +80,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 // Full name: core::cmp::PartialOrd
@@ -1422,7 +1422,7 @@ pub fn loop_inside_if(b: bool, n: u32) -> u32
             },
         }
         storage_live(i)
-        i = copy (_9 as variant Option::Some).0
+        i = copy (_9 as variant Option::Some)._0
         storage_live(_13)
         _13 = copy i
         _14 = copy s panic.+ copy _13
@@ -1648,7 +1648,7 @@ pub enum List<T>
 where
     TraitClause0: (T: Sized),
 {
-  Cons { 0: T, 1: alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}] },
+  Cons { _0: T, _1: alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}] },
   Nil,
 }
 
@@ -1670,9 +1670,9 @@ pub fn get_elem_mut<'_0>(ls: &'_0 mut List<usize>[{built_in impl Sized for usize
         match (*ls) {
             List::Cons => {
                 storage_live(y)
-                y = &mut ((*ls) as variant List::Cons).0
+                y = &mut ((*ls) as variant List::Cons)._0
                 storage_live(tl)
-                tl = &mut ((*ls) as variant List::Cons).1
+                tl = &mut ((*ls) as variant List::Cons)._1
                 storage_live(_5)
                 storage_live(_6)
                 _6 = copy (*y)
@@ -1733,9 +1733,9 @@ where
         match (*ls) {
             List::Cons => {
                 storage_live(x)
-                x = &mut ((*ls) as variant List::Cons).0
+                x = &mut ((*ls) as variant List::Cons)._0
                 storage_live(tl)
-                tl = &mut ((*ls) as variant List::Cons).1
+                tl = &mut ((*ls) as variant List::Cons)._1
                 storage_live(_5)
                 storage_live(_6)
                 _6 = copy i

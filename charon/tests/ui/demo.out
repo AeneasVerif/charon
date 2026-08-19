@@ -198,7 +198,7 @@ pub enum CList<T>
 where
     TraitClause0: (T: Sized),
 {
-  CCons { 0: T, 1: alloc::boxed::Box<CList<T>[TraitClause0]>[{built_in impl MetaSized for CList<T>[TraitClause0]}, {built_in impl Sized for Global}] },
+  CCons { _0: T, _1: alloc::boxed::Box<CList<T>[TraitClause0]>[{built_in impl MetaSized for CList<T>[TraitClause0]}, {built_in impl Sized for Global}] },
   CNil,
 }
 
@@ -234,9 +234,9 @@ where
         },
     }
     storage_live(x)
-    x = &((*l) as variant CList::CCons).0
+    x = &((*l) as variant CList::CCons)._0
     storage_live(tl)
-    tl = &((*l) as variant CList::CCons).1
+    tl = &((*l) as variant CList::CCons)._1
     storage_live(_5)
     storage_live(_6)
     _6 = copy i
@@ -320,9 +320,9 @@ where
         },
     }
     storage_live(x)
-    x = &mut ((*l) as variant CList::CCons).0
+    x = &mut ((*l) as variant CList::CCons)._0
     storage_live(tl)
-    tl = &mut ((*l) as variant CList::CCons).1
+    tl = &mut ((*l) as variant CList::CCons)._1
     storage_live(_7)
     storage_live(_8)
     storage_live(_9)
@@ -395,9 +395,9 @@ where
         match (*l) {
             CList::CCons => {
                 storage_live(x)
-                x = &mut ((*l) as variant CList::CCons).0
+                x = &mut ((*l) as variant CList::CCons)._0
                 storage_live(tl)
-                tl = &mut ((*l) as variant CList::CCons).1
+                tl = &mut ((*l) as variant CList::CCons)._1
                 storage_live(_5)
                 storage_live(_6)
                 _6 = copy i
@@ -511,7 +511,7 @@ where
     match (*l) {
         CList::CCons => {
             storage_live(tl)
-            tl = &mut ((*l) as variant CList::CCons).1
+            tl = &mut ((*l) as variant CList::CCons)._1
             storage_live(_5)
             storage_live(_6)
             _6 = &two-phase-mut (*(*tl))

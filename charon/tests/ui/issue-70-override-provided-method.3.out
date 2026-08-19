@@ -57,7 +57,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 // Full name: core::option::{impl Clone for Option<T>[TraitClause0]}::clone
@@ -167,7 +167,7 @@ struct Override<T>
 where
     TraitClause0: (T: Sized),
 {
-  0: T,
+  _0: T,
 }
 
 // Full name: test_crate::{impl GenericTrait<Option<T>[TraitClause0]> for Override<T>[TraitClause0]}::other_method
@@ -259,7 +259,7 @@ struct NoOverride<T>
 where
     TraitClause0: (T: Sized),
 {
-  0: T,
+  _0: T,
 }
 
 // Full name: test_crate::{impl GenericTrait<Option<T>[TraitClause0]> for NoOverride<T>[TraitClause0]}::other_method

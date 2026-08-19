@@ -262,10 +262,6 @@ impl<'a> GenerateCtx<'a> {
                 format!("| x -> {call} ctx x")
             }
             TypeDeclKind::Struct(fields) if fields.iter().all(|field| field.is_positional) => {
-                let mut fields = fields.clone();
-                for (i, f) in fields.iter_mut().enumerate() {
-                    f.name = format!("x{i}");
-                }
                 let pat: String = fields
                     .iter()
                     .map(|f| f.name.as_str())
@@ -278,7 +274,7 @@ impl<'a> GenerateCtx<'a> {
                     .map(make_ocaml_ident)
                     .join(", ");
                 let construct = format!("( {construct} )");
-                self.build_branch(&pat, &fields, &construct)
+                self.build_branch(&pat, fields, &construct)
             }
             TypeDeclKind::Struct(fields) => {
                 let pat: String = fields
@@ -315,17 +311,12 @@ impl<'a> GenerateCtx<'a> {
                             let pat = format!("`String \"{name}\"");
                             self.build_branch(&pat, &variant.fields, rename)
                         } else {
-                            let mut fields = variant.fields.clone();
+                            let fields = &variant.fields;
                             let inner_pat = if fields.iter().all(|field| field.is_positional) {
                                 // Tuple variant
-                                if variant.fields.len() == 1 {
-                                    let var = make_ocaml_ident(&variant.name);
-                                    fields[0].name = var.clone();
-                                    var
+                                if fields.len() == 1 {
+                                    make_ocaml_ident(&fields[0].name)
                                 } else {
-                                    for (i, f) in fields.iter_mut().enumerate() {
-                                        f.name = format!("x_{i}");
-                                    }
                                     let pat = fields.iter().map(|f| f.name.as_str()).join("; ");
                                     format!("`List [ {pat} ]")
                                 }
@@ -352,7 +343,7 @@ impl<'a> GenerateCtx<'a> {
                                 .map(make_ocaml_ident)
                                 .join(", ");
                             let construct = format!("{rename} ({construct_fields})");
-                            self.build_branch(&pat, &fields, &construct)
+                            self.build_branch(&pat, fields, &construct)
                         }
                     })
                     .join("\n")

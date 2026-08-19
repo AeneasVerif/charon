@@ -114,7 +114,7 @@ where
     TraitClause0: (T: core::marker::Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 #[lang_item(PartialOrd)]
@@ -557,7 +557,7 @@ fn test_crate::ntt_layer_generic::x86_64-apple-darwin<'_0, '_1>(a: &'_0 mut [u16
             },
         }
         storage_live(i)
-        i = copy (_6 as variant core::option::Option::Some).0
+        i = copy (_6 as variant core::option::Option::Some)._0
         storage_live(_10)
         storage_live(_11)
         storage_live(_12)
@@ -675,7 +675,7 @@ fn test_crate::ntt_layer_generic::aarch64-apple-darwin<'_0, '_1>(a: &'_0 mut [u1
             },
         }
         storage_live(i)
-        i = copy (_6 as variant core::option::Option::Some).0
+        i = copy (_6 as variant core::option::Option::Some)._0
         storage_live(_10)
         storage_live(_11)
         storage_live(_12)

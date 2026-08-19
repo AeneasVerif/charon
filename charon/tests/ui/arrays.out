@@ -82,7 +82,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 #[lang_item(DropGlue)]

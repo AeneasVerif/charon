@@ -105,7 +105,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 // Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_glue
@@ -181,7 +181,7 @@ where
         },
         Option::Some => {
             storage_live(x_3)
-            x_3 = move (x_1 as variant Option::Some).0
+            x_3 = move (x_1 as variant Option::Some)._0
             storage_live(_4)
             storage_live(_5)
             _5 = &f
@@ -236,7 +236,7 @@ where
             storage_dead(_7)
             storage_dead(_6)
             storage_dead(_5)
-            _0 = Option::Some { 0: move _4 }
+            _0 = Option::Some { _0: move _4 }
             conditional_drop[{built_in impl Destruct for T}::drop_glue<'7>] _4
             ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'11>] x_3
                 ↳⚡ storage_dead(f)
@@ -307,7 +307,7 @@ where
         },
         Option::Some => {
             storage_live(x_3)
-            x_3 = &((*x_1) as variant Option::Some).0
+            x_3 = &((*x_1) as variant Option::Some)._0
             storage_live(_4)
             storage_live(_5)
             _5 = copy f
@@ -319,7 +319,7 @@ where
                 unwind_continue
             storage_dead(_6)
             storage_dead(_5)
-            _0 = Option::Some { 0: move _4 }
+            _0 = Option::Some { _0: move _4 }
             conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] _4
             ↳⚡ storage_dead(f)
                 storage_dead(x_1)
@@ -2231,8 +2231,8 @@ impl Destruct for test_crate::test_regions_casted::closure {
 }
 
 struct test_crate::test_closure_capture::closure<'_0, '_1> {
-  0: &'_0 u32,
-  1: &'_1 u32,
+  _0: &'_0 u32,
+  _1: &'_1 u32,
 }
 
 // Full name: test_crate::test_closure_capture::{impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call
@@ -2259,9 +2259,9 @@ where
     z = move tupled_args.0
     storage_live(_4)
     storage_live(_5)
-    _5 = copy (*(*_1).0)
+    _5 = copy (*(*_1)._0)
     storage_live(_6)
-    _6 = copy (*(*_1).1)
+    _6 = copy (*(*_1)._1)
     _7 = copy _5 panic.+ copy _6
     _4 = move _7
     storage_dead(_6)
@@ -2300,7 +2300,7 @@ pub fn test_closure_capture(x: u32, y: u32) -> u32
     _5 = &x
     storage_live(_6)
     _6 = &y
-    _4 = test_crate::test_closure_capture::closure { 0: move _5, 1: move _6 }
+    _4 = test_crate::test_closure_capture::closure { _0: move _5, _1: move _6 }
     storage_dead(_6)
     storage_dead(_5)
     f = &_4
@@ -2774,7 +2774,7 @@ pub fn test_array_map(x: [i32; 256usize]) -> [i32; 256usize]
 }
 
 struct test_crate::test_fnmut_with_ref::closure<'_0> {
-  0: &'_0 mut usize,
+  _0: &'_0 mut usize,
 }
 
 // Full name: test_crate::test_fnmut_with_ref::{impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut
@@ -2796,8 +2796,8 @@ where
     x = move tupled_args.0
     storage_live(_4)
     _4 = copy (*x)
-    _5 = copy (*(*_1).0) panic.+ copy _4
-    (*(*_1).0) = move _5
+    _5 = copy (*(*_1)._0) panic.+ copy _4
+    (*(*_1)._0) = move _5
     _0 = ()
     storage_dead(_4)
     storage_dead(_5)
@@ -2839,7 +2839,7 @@ fn test_fnmut_with_ref()
     storage_live(closure)
     storage_live(_3)
     _3 = &mut sum
-    closure = test_crate::test_fnmut_with_ref::closure { 0: move _3 }
+    closure = test_crate::test_fnmut_with_ref::closure { _0: move _3 }
     storage_dead(_3)
     fake_read(closure)
     storage_live(_4)

@@ -61,7 +61,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 // Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_glue
@@ -139,7 +139,7 @@ where
         },
     }
     storage_live(item_2)
-    item_2 = &mut ((*self) as variant Option::Some).0
+    item_2 = &mut ((*self) as variant Option::Some)._0
     storage_live(item_3)
     item_3 = &(*(*item_2))
     fake_read(item_3)
@@ -149,7 +149,7 @@ where
     storage_dead(_4)
     storage_live(_5)
     _5 = &(*item_3)
-    _0 = Option::Some { 0: move _5 }
+    _0 = Option::Some { _0: move _5 }
     storage_dead(_5)
     storage_dead(item_3)
     storage_dead(item_2)
@@ -223,7 +223,7 @@ where
             },
         }
         storage_live(item)
-        item = move (_4 as variant Option::Some).0
+        item = move (_4 as variant Option::Some)._0
         storage_live(_7)
         _7 = &mut f
         storage_live(_8)
@@ -372,7 +372,7 @@ where
 
 // Full name: test_crate::main::closure
 struct closure<'_0> {
-  0: &'_0 mut i32,
+  _0: &'_0 mut i32,
 }
 
 // Full name: test_crate::main::{impl FnMut<(&'_ i32,)> for closure<'_0>}::call_mut
@@ -394,8 +394,8 @@ where
     item = move tupled_args.0
     storage_live(_4)
     _4 = copy (*item)
-    _5 = copy (*(*_1).0) panic.+ copy _4
-    (*(*_1).0) = move _5
+    _5 = copy (*(*_1)._0) panic.+ copy _4
+    (*(*_1)._0) = move _5
     _0 = ()
     storage_dead(_4)
     storage_dead(_5)
@@ -526,7 +526,7 @@ pub fn main()
     storage_live(_3)
     _25 = move _26
     _3 = &(*_25)
-    iter = Option::Some { 0: move _3 }
+    iter = Option::Some { _0: move _3 }
     storage_dead(_3)
     fake_read(iter)
     storage_live(sum)
@@ -538,7 +538,7 @@ pub fn main()
     storage_live(_7)
     storage_live(_8)
     _8 = &mut sum
-    _7 = closure { 0: move _8 }
+    _7 = closure { _0: move _8 }
     storage_dead(_8)
     _5 = for_each<Option<&'55 i32>[{built_in impl Sized for &'55 i32}], closure<'57>>[{built_in impl Sized for Option<&'55 i32>[{built_in impl Sized for &'55 i32}]}, {built_in impl Sized for closure<'57>}, impl_LendingIterator_for_Option<'55, i32>[{built_in impl Sized for i32}], impl_FnMut_tuple_for_closure<'57, '93>](move _6, move _7)
     ↳⚡ storage_dead(_25)

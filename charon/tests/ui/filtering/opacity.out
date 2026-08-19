@@ -139,7 +139,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 // Full name: core::option::{Option<T>[TraitClause0]}::is_some
@@ -189,7 +189,7 @@ fn foo()
     storage_live(_9)
     storage_live(_11)
     storage_live(_12)
-    _12 = Option::Some { 0: const 0i32 }
+    _12 = Option::Some { _0: const 0i32 }
     _11 = &_12
     _9 = move _11
     storage_live(_0)

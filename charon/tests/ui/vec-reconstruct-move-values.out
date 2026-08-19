@@ -56,7 +56,7 @@ where
 
 // Full name: test_crate::NoCopy
 struct NoCopy {
-  0: u8,
+  _0: u8,
 }
 
 // Full name: test_crate::move_values
@@ -87,7 +87,7 @@ fn move_values(flag: bool)
     storage_live(_0)
     _0 = ()
     storage_live(x_2)
-    x_2 = NoCopy { 0: const 4u8 }
+    x_2 = NoCopy { _0: const 4u8 }
     fake_read(x_2)
     storage_live(_v)
     storage_live(_4)
@@ -131,7 +131,7 @@ fn move_values(flag: bool)
     _6 = copy flag
     if move _6 {
         storage_live(y_7)
-        y_7 = NoCopy { 0: const 5u8 }
+        y_7 = NoCopy { _0: const 5u8 }
         fake_read(y_7)
         storage_live(_w)
         storage_live(_9)

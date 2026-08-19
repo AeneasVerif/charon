@@ -5,7 +5,7 @@
 #[diagnostic_item("Option")]
 pub enum Option::<u8> {
   None,
-  Some { 0: u8 },
+  Some { _0: u8 },
 }
 
 // Full name: test_crate::init_option
@@ -23,7 +23,7 @@ fn init_option()
     _0 = ()
     storage_live(a)
     storage_live(_2)
-    _2 = Option::<u8>::Some { 0: const 4u8 }
+    _2 = Option::<u8>::Some { _0: const 4u8 }
     a = @ArrayRepeat<Option::<u8>, 6usize>(move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)

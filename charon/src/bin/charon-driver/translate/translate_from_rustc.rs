@@ -3,6 +3,7 @@
 
 #![allow(
     clippy::deref_addrof,
+    clippy::just_underscores_and_digits,
     clippy::large_enum_variant,
     clippy::needless_borrow,
     clippy::needless_question_mark,
@@ -54,26 +55,26 @@ impl<'tcx> TranslateCtx<'tcx> {
                     .map(|value| Ok((value).to_string().into()))
                     .transpose()?,
             }),
-            AttributeKind::Inline(field_0, field_1) => Ok(from_rustc::AttributeKind::Inline(
-                self.translate_inline_attr_from_rustc(field_0)?,
-                self.translate_span(field_1),
+            AttributeKind::Inline(_0, _1) => Ok(from_rustc::AttributeKind::Inline(
+                self.translate_inline_attr_from_rustc(_0)?,
+                self.translate_span(_1),
             )),
-            AttributeKind::MayDangle(field_0) => Ok(from_rustc::AttributeKind::MayDangle(
-                self.translate_span(field_0),
+            AttributeKind::MayDangle(_0) => Ok(from_rustc::AttributeKind::MayDangle(
+                self.translate_span(_0),
             )),
-            AttributeKind::Naked(field_0) => Ok(from_rustc::AttributeKind::Naked(
-                self.translate_span(field_0),
-            )),
+            AttributeKind::Naked(_0) => {
+                Ok(from_rustc::AttributeKind::Naked(self.translate_span(_0)))
+            }
             AttributeKind::NoLink => Ok(from_rustc::AttributeKind::NoLink),
-            AttributeKind::NoMangle(field_0) => Ok(from_rustc::AttributeKind::NoMangle(
-                self.translate_span(field_0),
+            AttributeKind::NoMangle(_0) => {
+                Ok(from_rustc::AttributeKind::NoMangle(self.translate_span(_0)))
+            }
+            AttributeKind::NonExhaustive(_0) => Ok(from_rustc::AttributeKind::NonExhaustive(
+                self.translate_span(_0),
             )),
-            AttributeKind::NonExhaustive(field_0) => Ok(from_rustc::AttributeKind::NonExhaustive(
-                self.translate_span(field_0),
-            )),
-            AttributeKind::Optimize(field_0, field_1) => Ok(from_rustc::AttributeKind::Optimize(
-                self.translate_optimize_attr_from_rustc(field_0)?,
-                self.translate_span(field_1),
+            AttributeKind::Optimize(_0, _1) => Ok(from_rustc::AttributeKind::Optimize(
+                self.translate_optimize_attr_from_rustc(_0)?,
+                self.translate_span(_1),
             )),
             AttributeKind::RustcAlign { align, span } => {
                 Ok(from_rustc::AttributeKind::RustcAlign {
@@ -81,8 +82,8 @@ impl<'tcx> TranslateCtx<'tcx> {
                     span: self.translate_span(span),
                 })
             }
-            AttributeKind::RustcDiagnosticItem(field_0) => Ok(
-                from_rustc::AttributeKind::RustcDiagnosticItem((field_0).to_string().into()),
+            AttributeKind::RustcDiagnosticItem(_0) => Ok(
+                from_rustc::AttributeKind::RustcDiagnosticItem((_0).to_string().into()),
             ),
             AttributeKind::RustcIntrinsic => Ok(from_rustc::AttributeKind::RustcIntrinsic),
             AttributeKind::ShouldPanic { reason } => Ok(from_rustc::AttributeKind::ShouldPanic {
@@ -108,8 +109,8 @@ impl<'tcx> TranslateCtx<'tcx> {
                 attr_span: self.translate_span(attr_span),
                 was_forced: *(was_forced),
             }),
-            AttributeKind::TrackCaller(field_0) => Ok(from_rustc::AttributeKind::TrackCaller(
-                self.translate_span(field_0),
+            AttributeKind::TrackCaller(_0) => Ok(from_rustc::AttributeKind::TrackCaller(
+                self.translate_span(_0),
             )),
             _ => Err(FromRustcError),
         }
@@ -410,14 +411,12 @@ impl<'tcx> TranslateCtx<'tcx> {
         value: &DeprecatedSince,
     ) -> Result<from_rustc::DeprecatedSince, FromRustcError> {
         match value {
-            DeprecatedSince::RustcVersion(field_0) => {
-                Ok(from_rustc::DeprecatedSince::RustcVersion(
-                    self.translate_rustc_version_from_rustc(field_0)?,
-                ))
-            }
+            DeprecatedSince::RustcVersion(_0) => Ok(from_rustc::DeprecatedSince::RustcVersion(
+                self.translate_rustc_version_from_rustc(_0)?,
+            )),
             DeprecatedSince::Future => Ok(from_rustc::DeprecatedSince::Future),
-            DeprecatedSince::NonStandard(field_0) => Ok(from_rustc::DeprecatedSince::NonStandard(
-                (field_0).to_string().into(),
+            DeprecatedSince::NonStandard(_0) => Ok(from_rustc::DeprecatedSince::NonStandard(
+                (_0).to_string().into(),
             )),
             DeprecatedSince::Unspecified => Ok(from_rustc::DeprecatedSince::Unspecified),
             DeprecatedSince::Err => Ok(from_rustc::DeprecatedSince::Err),

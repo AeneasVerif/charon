@@ -66,7 +66,7 @@ pub enum List<T>
 where
     TraitClause0: (T: Sized),
 {
-  Cons { 0: T, 1: alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}] },
+  Cons { _0: T, _1: alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}] },
   Nil,
 }
 
@@ -89,13 +89,13 @@ where
             return
         },
     }
-    drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant List::Cons).0
-    ↳⚡ drop[impl_Destruct_for_Box::drop_glue<'4, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] ((*_1) as variant List::Cons).1
+    drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1) as variant List::Cons)._0
+    ↳⚡ drop[impl_Destruct_for_Box::drop_glue<'4, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] ((*_1) as variant List::Cons)._1
         ↳⚡ storage_dead(_1)
             unwind_terminate
         storage_dead(_1)
         unwind_continue
-    drop[impl_Destruct_for_Box::drop_glue<'3, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] ((*_1) as variant List::Cons).1
+    drop[impl_Destruct_for_Box::drop_glue<'3, List<T>[TraitClause0], Global>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]] ((*_1) as variant List::Cons)._1
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)
@@ -116,7 +116,7 @@ pub enum One<T1>
 where
     TraitClause0: (T1: Sized),
 {
-  One { 0: T1 },
+  One { _0: T1 },
 }
 
 // Full name: test_crate::EmptyEnum
@@ -139,8 +139,8 @@ where
     TraitClause0: (T1: Sized),
     TraitClause1: (T2: Sized),
 {
-  Left { 0: T1 },
-  Right { 0: T2 },
+  Left { _0: T1 },
+  Right { _0: T2 },
 }
 
 // Full name: test_crate::Tuple
@@ -149,8 +149,8 @@ where
     TraitClause0: (T1: Sized),
     TraitClause1: (T2: Sized),
 {
-  0: T1,
-  1: T2,
+  _0: T1,
+  _1: T2,
 }
 
 // Full name: test_crate::use_tuple_struct
@@ -161,7 +161,7 @@ pub fn use_tuple_struct<'_0>(x: &'_0 mut Tuple<u32, u32>[{built_in impl Sized fo
 
     storage_live(_0)
     _0 = ()
-    (*x).0 = const 1u32
+    (*x)._0 = const 1u32
     _0 = ()
     storage_dead(x)
     return
@@ -181,7 +181,7 @@ pub fn create_tuple_struct(x: u32, y: u64) -> Tuple<u32, u64>[{built_in impl Siz
     _3 = copy x
     storage_live(_4)
     _4 = copy y
-    _0 = Tuple { 0: move _3, 1: move _4 }
+    _0 = Tuple { _0: move _3, _1: move _4 }
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(y)
@@ -216,7 +216,7 @@ pub struct IdType<T>
 where
     TraitClause0: (T: Sized),
 {
-  0: T,
+  _0: T,
 }
 
 // Full name: test_crate::IdType::{impl Destruct for IdType<T>[TraitClause0]}::drop_glue
@@ -230,7 +230,7 @@ where
 
     storage_live(_0)
     _0 = ()
-    drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_1).0
+    drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)
@@ -255,7 +255,7 @@ where
     let x: IdType<T>[TraitClause0]; // arg #1
 
     storage_live(_0)
-    _0 = move x.0
+    _0 = move x._0
     conditional_drop[impl_Destruct_for_IdType::drop_glue<'0, T>[TraitClause0]] x
     ↳⚡ storage_dead(x)
         unwind_continue
@@ -275,7 +275,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = move x
-    _0 = IdType { 0: move _2 }
+    _0 = IdType { _0: move _2 }
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'2>] x
         ↳⚡ storage_dead(x)
@@ -385,11 +385,11 @@ pub fn test2()
     fake_read(p)
     set_type(typeof(p) == Pair<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}])
     storage_live(s)
-    s = Sum::Right { 0: const true }
+    s = Sum::Right { _0: const true }
     fake_read(s)
     set_type(typeof(s) == Sum<u32, bool>[{built_in impl Sized for u32}, {built_in impl Sized for bool}])
     storage_live(o)
-    o = One::One { 0: const 3u64 }
+    o = One::One { _0: const 3u64 }
     fake_read(o)
     set_type(typeof(o) == One<u64>[{built_in impl Sized for u64}])
     storage_live(e0)
@@ -470,7 +470,7 @@ pub fn test_list1()
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_3)
-    l = List::Cons { 0: const 0i32, 1: move _2 }
+    l = List::Cons { _0: const 0i32, _1: move _2 }
     conditional_drop[impl_Destruct_for_Box::drop_glue<'1, List<i32>[{built_in impl Sized for i32}], Global>[{built_in impl MetaSized for List<i32>[{built_in impl Sized for i32}]}, {built_in impl Sized for Global}]] _2
     ↳⚡ unwind_continue
     storage_dead(_2)
@@ -615,9 +615,9 @@ where
         },
     }
     storage_live(hd)
-    hd = move (l as variant List::Cons).0
+    hd = move (l as variant List::Cons)._0
     storage_live(tl)
-    tl = move (l as variant List::Cons).1
+    tl = move (l as variant List::Cons)._1
     storage_live(_4)
     _4 = move hd
     storage_live(_5)
@@ -691,8 +691,8 @@ pub enum Tree<T>
 where
     TraitClause0: (T: Sized),
 {
-  Leaf { 0: T },
-  Node { 0: T, 1: NodeElem<T>[TraitClause0], 2: alloc::boxed::Box<Tree<T>[TraitClause0]>[{built_in impl MetaSized for Tree<T>[TraitClause0]}, {built_in impl Sized for Global}] },
+  Leaf { _0: T },
+  Node { _0: T, _1: NodeElem<T>[TraitClause0], _2: alloc::boxed::Box<Tree<T>[TraitClause0]>[{built_in impl MetaSized for Tree<T>[TraitClause0]}, {built_in impl Sized for Global}] },
 }
 
 // Full name: test_crate::NodeElem
@@ -700,7 +700,7 @@ pub enum NodeElem<T>
 where
     TraitClause0: (T: Sized),
 {
-  Cons { 0: alloc::boxed::Box<Tree<T>[TraitClause0]>[{built_in impl MetaSized for Tree<T>[TraitClause0]}, {built_in impl Sized for Global}], 1: alloc::boxed::Box<NodeElem<T>[TraitClause0]>[{built_in impl MetaSized for NodeElem<T>[TraitClause0]}, {built_in impl Sized for Global}] },
+  Cons { _0: alloc::boxed::Box<Tree<T>[TraitClause0]>[{built_in impl MetaSized for Tree<T>[TraitClause0]}, {built_in impl Sized for Global}], _1: alloc::boxed::Box<NodeElem<T>[TraitClause0]>[{built_in impl MetaSized for NodeElem<T>[TraitClause0]}, {built_in impl Sized for Global}] },
   Nil,
 }
 

@@ -19,8 +19,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 {
-  Ok { 0: T },
-  Err { 0: E },
+  Ok { _0: T },
+  Err { _0: E },
 }
 
 // Full name: test_crate::MyTryFrom
@@ -44,7 +44,7 @@ pub fn from<'_0>(v: &'_0 bool) -> Result<bool, ()>[{built_in impl Sized for bool
     storage_live(_0)
     storage_live(_2)
     _2 = copy (*v)
-    _0 = Result::Ok { 0: move _2 }
+    _0 = Result::Ok { _0: move _2 }
     storage_dead(_2)
     storage_dead(v)
     return

@@ -77,7 +77,7 @@ pub struct SqrtTables<F>
 where
     TraitClause0: (F: Sized),
 {
-  0: F,
+  _0: F,
 }
 
 // Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::closure

@@ -52,7 +52,7 @@ where
     TraitClause1: (T: HasBlockSize<Clause1_BlockSize, Clause1_Clause2_Output>),
     TraitClause2: (Clause1_Clause2_Output: Bound),
 {
-  0: T,
+  _0: T,
 }
 
 // Full name: test_crate::foo

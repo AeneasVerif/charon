@@ -153,7 +153,7 @@ pub enum Either<T>
 where
     TraitClause0: (T: Sized),
 {
-  Left { 0: T },
+  Left { _0: T },
   Right,
 }
 
@@ -179,7 +179,7 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
     }
     set_type(typeof(_3) <= &'6 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}])
     storage_live(x)
-    x = &((*_3) as variant Either::Left).0.0
+    x = &((*_3) as variant Either::Left)._0.0
     storage_dead(_3)
     _0 = &(*x)
     storage_dead(x)
@@ -360,7 +360,7 @@ where
 
 // Full name: test_crate::Foo
 pub struct Foo<'a> {
-  0: &'a u32,
+  _0: &'a u32,
 }
 
 // Full name: test_crate::{Foo<'_0>}::set_type_self

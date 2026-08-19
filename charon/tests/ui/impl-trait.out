@@ -277,7 +277,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
 {
-  0: T,
+  _0: T,
 }
 
 // Full name: test_crate::wrap::closure
@@ -315,7 +315,7 @@ where
     x = move tupled_args.0
     storage_live(_4)
     _4 = &(*x)
-    _0 = WrapClone { 0: move _4 }
+    _0 = WrapClone { _0: move _4 }
     storage_dead(_4)
     storage_dead(x)
     storage_dead(tupled_args)

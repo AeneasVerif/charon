@@ -20,7 +20,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 // Full name: test_crate::do_something
@@ -75,7 +75,7 @@ fn foo(opt: Option<u32>[{built_in impl Sized for u32}])
     match opt {
         Option::Some => {
             storage_live(x_5)
-            x_5 = &(opt as variant Option::Some).0
+            x_5 = &(opt as variant Option::Some)._0
             _3 = &shallow opt
             storage_live(_6)
             storage_live(_7)
@@ -87,7 +87,7 @@ fn foo(opt: Option<u32>[{built_in impl Sized for u32}])
                 fake_read(_3)
                 fake_read(x_5)
                 storage_live(x_4)
-                x_4 = copy (opt as variant Option::Some).0
+                x_4 = copy (opt as variant Option::Some)._0
                 _2 = do_something()
                 ↳⚡ storage_dead(_3)
                     storage_dead(opt)

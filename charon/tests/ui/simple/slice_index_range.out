@@ -424,7 +424,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some { 0: T },
+  Some { _0: T },
 }
 
 fn core::slice::index::slice_index_fail::do_panic(start: usize, len: usize) -> !
@@ -912,7 +912,7 @@ where
     match _3 {
         Option::Some => {
             storage_live(new_len)
-            new_len = copy (_3 as variant Option::Some).0
+            new_len = copy (_3 as variant Option::Some)._0
             storage_live(_7)
             storage_live(_8)
             _8 = copy self.1
@@ -946,7 +946,7 @@ where
                 storage_dead(_14)
                 _12 = &(*_13) with_metadata(copy _13.metadata)
                 _11 = &(*_12) with_metadata(copy _12.metadata)
-                _0 = Option::Some { 0: move _11 }
+                _0 = Option::Some { _0: move _11 }
                 storage_dead(_13)
                 storage_dead(_12)
                 storage_dead(_11)
@@ -1012,7 +1012,7 @@ where
     match _3 {
         Option::Some => {
             storage_live(new_len)
-            new_len = copy (_3 as variant Option::Some).0
+            new_len = copy (_3 as variant Option::Some)._0
             storage_live(_7)
             storage_live(_8)
             _8 = copy self.1
@@ -1046,7 +1046,7 @@ where
                 storage_dead(_14)
                 _12 = &mut (*_13) with_metadata(copy _13.metadata)
                 _11 = &two-phase-mut (*_12) with_metadata(copy _12.metadata)
-                _0 = Option::Some { 0: move _11 }
+                _0 = Option::Some { _0: move _11 }
                 storage_dead(_13)
                 storage_dead(_12)
                 storage_dead(_11)
@@ -1484,7 +1484,7 @@ where
         match _15 {
             Option::Some => {
                 storage_live(new_len)
-                new_len = copy (_15 as variant Option::Some).0
+                new_len = copy (_15 as variant Option::Some)._0
                 storage_live(_19)
                 storage_live(_20)
                 storage_live(_21)
@@ -1664,7 +1664,7 @@ where
         match _15 {
             Option::Some => {
                 storage_live(new_len)
-                new_len = copy (_15 as variant Option::Some).0
+                new_len = copy (_15 as variant Option::Some)._0
                 storage_live(_19)
                 storage_live(_20)
                 storage_live(_21)
