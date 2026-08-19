@@ -142,7 +142,7 @@ impl<'a> ClosureOutlivesComputer<'a> {
     fn new(type_decls: &'a mut IndexMap<TypeDeclId, TypeDecl>) -> Self {
         let closure_tys = type_decls
             .iter()
-            .filter(|decl| matches!(decl.src, ItemSource::Closure { .. }))
+            .filter(|decl| matches!(decl.src, TypeSource::Closure { .. }))
             .map(|decl| (decl.def_id, CycleDetector::Unprocessed))
             .collect();
         Self {

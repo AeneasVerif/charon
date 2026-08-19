@@ -259,12 +259,9 @@ and fun_decl = {
   generics : generic_params;
   signature : fun_sig;
       (** The signature contains the inputs/output types and ABI details. *)
-  src : item_source;
+  src : fun_source;
       (** The function kind: "regular" function, trait method declaration, etc.
       *)
-  is_global_initializer : global_decl_id option;
-      (** Whether this function is in fact the body of a constant/static that we
-          turned into an initializer function. *)
   body : body;  (** The function body. *)
 }
 

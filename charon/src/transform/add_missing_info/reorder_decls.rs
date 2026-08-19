@@ -219,13 +219,23 @@ impl Deps {
         };
 
         // Add the id of the impl/trait this item belongs to, if necessary
-        match item.parent_info() {
-            ItemSource::TraitDecl { trait_ref, .. } => {
-                for_item.parent_trait_decl = Some(trait_ref.id)
-            }
-            ItemSource::TraitImpl { impl_ref, .. } => {
-                for_item.parent_trait_impl = Some(impl_ref.id)
-            }
+        match item {
+            ItemRef::Fun(FunDecl {
+                src: FunSource::TraitDefault { trait_ref, .. },
+                ..
+            })
+            | ItemRef::Global(GlobalDecl {
+                src: GlobalSource::TraitDefault { trait_ref, .. },
+                ..
+            }) => for_item.parent_trait_decl = Some(trait_ref.id),
+            ItemRef::Fun(FunDecl {
+                src: FunSource::TraitImpl { impl_ref, .. },
+                ..
+            })
+            | ItemRef::Global(GlobalDecl {
+                src: GlobalSource::TraitImpl { impl_ref, .. },
+                ..
+            }) => for_item.parent_trait_impl = Some(impl_ref.id),
             _ => {}
         }
 
@@ -294,9 +304,15 @@ impl VisitAst for DepsForItem<'_> {
         // can contain genuine dependencies, notably between an item and its specifications.
         meta.attr_info.drive(self)
     }
-    fn visit_item_source(&mut self, _: &ItemSource) -> ControlFlow<Self::Break> {
-        // Don't look inside to avoid recording a dependency from a method impl to the impl block
-        // it belongs to.
+
+    // Sources are reverse dependencies; exploring them is likely to create dependency cycles.
+    fn visit_type_source(&mut self, _: &TypeSource) -> ControlFlow<Self::Break> {
+        Continue(())
+    }
+    fn visit_fun_source(&mut self, _: &FunSource) -> ControlFlow<Self::Break> {
+        Continue(())
+    }
+    fn visit_global_source(&mut self, _: &GlobalSource) -> ControlFlow<Self::Break> {
         Continue(())
     }
 }
@@ -337,17 +353,14 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {
                     generics,
                     signature,
                     src,
-                    is_global_initializer: _,
                     body,
                 } = d;
                 let _ = def_id.drive(&mut visitor); // For `seen_current_id`
                 let _ = item_meta.attr_info.drive(&mut visitor);
-                // Skip `d.is_global_initializer` to avoid incorrect mutual dependencies.
-                // TODO: add `is_global_initializer` to `ItemSource`.
                 let _ = generics.drive(&mut visitor);
                 let _ = signature.drive(&mut visitor);
                 let _ = body.drive(&mut visitor);
-                if let ItemSource::TraitDecl { trait_ref, .. } = src {
+                if let FunSource::TraitDefault { trait_ref, .. } = src {
                     visitor.insert_edge(trait_ref.id);
                 }
             }
@@ -355,6 +368,7 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {
                 let TraitDecl {
                     def_id,
                     item_meta: _,
+                    src: _,
                     generics,
                     implied_clauses: parent_clauses,
                     consts,

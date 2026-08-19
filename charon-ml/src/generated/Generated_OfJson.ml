@@ -1956,21 +1956,6 @@ and alignment_modifier_of_json (ctx : of_json_ctx) (js : json) :
         Ok (Pack _0)
     | _ -> Error "")
 
-and assoc_item_id_of_json (ctx : of_json_ctx) (js : json) :
-    (assoc_item_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Type", _0) ] ->
-        let* _0 = assoc_type_id_of_json ctx _0 in
-        Ok (AssocIdType _0)
-    | `Assoc [ ("Method", _0) ] ->
-        let* _0 = trait_method_id_of_json ctx _0 in
-        Ok (AssocIdMethod _0)
-    | `Assoc [ ("Const", _0) ] ->
-        let* _0 = assoc_const_id_of_json ctx _0 in
-        Ok (AssocIdConst _0)
-    | _ -> Error "")
-
 and assoc_item_names_of_json (ctx : of_json_ctx) (js : json) :
     (assoc_item_names, string) result =
   combine_error_msgs js __FUNCTION__
@@ -2550,29 +2535,57 @@ and fun_decl_of_json (ctx : of_json_ctx) (js : json) : (fun_decl, string) result
           ("generics", generics);
           ("signature", signature);
           ("src", src);
-          ("is_global_initializer", is_global_initializer);
           ("body", body);
         ] ->
         let* def_id = fun_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
         let* signature = box_of_json fun_sig_of_json ctx signature in
-        let* src = item_source_of_json ctx src in
-        let* is_global_initializer =
-          option_of_json global_decl_id_of_json ctx is_global_initializer
-        in
+        let* src = fun_source_of_json ctx src in
         let* body = body_of_json ctx body in
-        Ok
-          ({
-             def_id;
-             item_meta;
-             generics;
-             signature;
-             src;
-             is_global_initializer;
-             body;
-           }
-            : fun_decl)
+        Ok ({ def_id; item_meta; generics; signature; src; body } : fun_decl)
+    | _ -> Error "")
+
+and fun_source_of_json (ctx : of_json_ctx) (js : json) :
+    (fun_source, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Normal" -> Ok NormalFun
+    | `Assoc
+        [
+          ( "TraitDefault",
+            `Assoc [ ("trait_ref", trait_ref); ("item_id", item_id) ] );
+        ] ->
+        let* trait_ref = trait_decl_ref_of_json ctx trait_ref in
+        let* item_id = trait_method_id_of_json ctx item_id in
+        Ok (TraitDefaultFun (trait_ref, item_id))
+    | `Assoc
+        [
+          ( "TraitImpl",
+            `Assoc
+              [
+                ("impl_ref", impl_ref);
+                ("trait_ref", trait_ref);
+                ("item_id", item_id);
+                ("reuses_default", reuses_default);
+              ] );
+        ] ->
+        let* impl_ref = trait_impl_ref_of_json ctx impl_ref in
+        let* trait_ref = trait_decl_ref_of_json ctx trait_ref in
+        let* item_id = trait_method_id_of_json ctx item_id in
+        let* reuses_default = bool_of_json ctx reuses_default in
+        Ok (TraitImplFun (impl_ref, trait_ref, item_id, reuses_default))
+    | `String "VTableShim" -> Ok VTableShimFun
+    | `Assoc [ ("GlobalInitializer", _0) ] ->
+        let* _0 = global_decl_ref_of_json ctx _0 in
+        Ok (GlobalInitializerFun _0)
+    | `Assoc [ ("TargetDependent", `Assoc [ ("dispatcher", dispatcher) ]) ] ->
+        let* dispatcher = fun_decl_ref_of_json ctx dispatcher in
+        Ok (TargetDependentFun dispatcher)
+    | `Assoc [ ("Spec", `Assoc [ ("kind", kind); ("item", item) ]) ] ->
+        let* kind = spec_kind_of_json ctx kind in
+        let* item = item_id_of_json ctx item in
+        Ok (SpecFun (kind, item))
     | _ -> Error "")
 
 and g_declaration_group_of_json :
@@ -2634,7 +2647,7 @@ and global_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
         let* ty = ty_of_json ctx ty in
-        let* src = item_source_of_json ctx src in
+        let* src = global_source_of_json ctx src in
         let* global_kind = global_kind_of_json ctx global_kind in
         let* value = constant_expr_of_json ctx value in
         Ok
@@ -2650,6 +2663,40 @@ and global_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `String "ThreadLocal" -> Ok ThreadLocal
     | `String "NamedConst" -> Ok NamedConst
     | `String "AnonConst" -> Ok AnonConst
+    | _ -> Error "")
+
+and global_source_of_json (ctx : of_json_ctx) (js : json) :
+    (global_source, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Normal" -> Ok NormalGlobal
+    | `Assoc
+        [
+          ( "TraitDefault",
+            `Assoc [ ("trait_ref", trait_ref); ("item_id", item_id) ] );
+        ] ->
+        let* trait_ref = trait_decl_ref_of_json ctx trait_ref in
+        let* item_id = assoc_const_id_of_json ctx item_id in
+        Ok (TraitDefaultGlobal (trait_ref, item_id))
+    | `Assoc
+        [
+          ( "TraitImpl",
+            `Assoc
+              [
+                ("impl_ref", impl_ref);
+                ("trait_ref", trait_ref);
+                ("item_id", item_id);
+                ("reuses_default", reuses_default);
+              ] );
+        ] ->
+        let* impl_ref = trait_impl_ref_of_json ctx impl_ref in
+        let* trait_ref = trait_decl_ref_of_json ctx trait_ref in
+        let* item_id = assoc_const_id_of_json ctx item_id in
+        let* reuses_default = bool_of_json ctx reuses_default in
+        Ok (TraitImplGlobal (impl_ref, trait_ref, item_id, reuses_default))
+    | `Assoc [ ("VTableInstance", `Assoc [ ("impl_ref", impl_ref) ]) ] ->
+        let* impl_ref = option_of_json trait_impl_ref_of_json ctx impl_ref in
+        Ok (VTableInstanceGlobal impl_ref)
     | _ -> Error "")
 
 and rustc_ident_of_json (ctx : of_json_ctx) (js : json) :
@@ -2781,72 +2828,6 @@ and item_opacity_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Foreign" -> Ok Foreign
     | `String "Opaque" -> Ok ItemOpaque
     | `String "Invisible" -> Ok Invisible
-    | _ -> Error "")
-
-and item_source_of_json (ctx : of_json_ctx) (js : json) :
-    (item_source, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "TopLevel" -> Ok TopLevelItem
-    | `Assoc [ ("Closure", `Assoc [ ("info", info) ]) ] ->
-        let* info = closure_info_of_json ctx info in
-        Ok (ClosureItem info)
-    | `Assoc [ ("Spec", `Assoc [ ("kind", kind); ("item", item) ]) ] ->
-        let* kind = spec_kind_of_json ctx kind in
-        let* item = item_id_of_json ctx item in
-        Ok (SpecItem (kind, item))
-    | `Assoc
-        [
-          ( "TraitDecl",
-            `Assoc [ ("trait_ref", trait_ref); ("item_id", item_id) ] );
-        ] ->
-        let* trait_ref = trait_decl_ref_of_json ctx trait_ref in
-        let* item_id = assoc_item_id_of_json ctx item_id in
-        Ok (TraitDeclItem (trait_ref, item_id))
-    | `Assoc
-        [
-          ( "TraitImpl",
-            `Assoc
-              [
-                ("impl_ref", impl_ref);
-                ("trait_ref", trait_ref);
-                ("item_id", item_id);
-                ("reuses_default", reuses_default);
-              ] );
-        ] ->
-        let* impl_ref = trait_impl_ref_of_json ctx impl_ref in
-        let* trait_ref = trait_decl_ref_of_json ctx trait_ref in
-        let* item_id = assoc_item_id_of_json ctx item_id in
-        let* reuses_default = bool_of_json ctx reuses_default in
-        Ok (TraitImplItem (impl_ref, trait_ref, item_id, reuses_default))
-    | `Assoc [ ("TargetDependent", `Assoc [ ("dispatcher", dispatcher) ]) ] ->
-        let* dispatcher = fun_decl_ref_of_json ctx dispatcher in
-        Ok (TargetDependentItem dispatcher)
-    | `Assoc
-        [
-          ( "VTableTy",
-            `Assoc
-              [
-                ("dyn_predicate", dyn_predicate);
-                ("field_map", field_map);
-                ("supertrait_map", supertrait_map);
-              ] );
-        ] ->
-        let* dyn_predicate = dyn_predicate_of_json ctx dyn_predicate in
-        let* field_map =
-          index_vec_of_json field_id_of_json v_table_field_of_json ctx field_map
-        in
-        let* supertrait_map =
-          index_vec_of_json trait_clause_id_of_json
-            (option_of_json field_id_of_json)
-            ctx supertrait_map
-        in
-        Ok (VTableTyItem (dyn_predicate, field_map, supertrait_map))
-    | `Assoc [ ("VTableInstance", `Assoc [ ("impl_ref", impl_ref) ]) ] ->
-        let* impl_ref = trait_impl_ref_of_json ctx impl_ref in
-        Ok (VTableInstanceItem impl_ref)
-    | `String "VTableMethodShim" -> Ok VTableMethodShimItem
-    | `String "VTableInstanceMono" -> Ok VTableInstanceMonoItem
     | _ -> Error "")
 
 and rustc_lang_item_of_json (ctx : of_json_ctx) (js : json) :
@@ -3328,6 +3309,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
         [
           ("def_id", def_id);
           ("item_meta", item_meta);
+          ("src", src);
           ("generics", generics);
           ("implied_clauses", implied_clauses);
           ("consts", consts);
@@ -3337,6 +3319,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
         ] ->
         let* def_id = trait_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
+        let* src = trait_decl_source_of_json ctx src in
         let* generics = generic_params_of_json ctx generics in
         let* implied_clauses =
           index_vec_of_json trait_clause_id_of_json trait_param_of_json ctx
@@ -3370,6 +3353,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
           ({
              def_id;
              item_meta;
+             src;
              generics;
              implied_clauses;
              consts;
@@ -3380,6 +3364,14 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
             : trait_decl)
     | _ -> Error "")
 
+and trait_decl_source_of_json (ctx : of_json_ctx) (js : json) :
+    (trait_decl_source, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Normal" -> Ok NormalTraitDecl
+    | `String "TraitAlias" -> Ok TraitAliasTraitDecl
+    | _ -> Error "")
+
 and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
     (trait_impl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -3388,6 +3380,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
         [
           ("def_id", def_id);
           ("item_meta", item_meta);
+          ("src", src);
           ("impl_trait", impl_trait);
           ("generics", generics);
           ("implied_trait_refs", implied_trait_refs);
@@ -3398,6 +3391,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
         ] ->
         let* def_id = trait_impl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
+        let* src = trait_impl_source_of_json ctx src in
         let* impl_trait = trait_decl_ref_of_json ctx impl_trait in
         let* generics = generic_params_of_json ctx generics in
         let* implied_trait_refs =
@@ -3432,6 +3426,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
           ({
              def_id;
              item_meta;
+             src;
              impl_trait;
              generics;
              implied_trait_refs;
@@ -3441,6 +3436,18 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
              vtable;
            }
             : trait_impl)
+    | _ -> Error "")
+
+and trait_impl_source_of_json (ctx : of_json_ctx) (js : json) :
+    (trait_impl_source, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Normal" -> Ok NormalTraitImpl
+    | `String "TraitAlias" -> Ok TraitAliasTraitImpl
+    | `Assoc [ ("Closure", `Assoc [ ("kind", kind) ]) ] ->
+        let* kind = closure_kind_of_json ctx kind in
+        Ok (ClosureTraitImpl kind)
+    | `String "Destruct" -> Ok DestructTraitImpl
     | _ -> Error "")
 
 and trait_item_name_of_json (ctx : of_json_ctx) (js : json) :
@@ -3586,7 +3593,7 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* def_id = type_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
-        let* src = item_source_of_json ctx src in
+        let* src = type_source_of_json ctx src in
         let* kind = type_decl_kind_of_json ctx kind in
         let* layout =
           index_map_of_json string_of_json layout_of_json int_of_json ctx layout
@@ -3617,6 +3624,36 @@ and type_decl_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Error", _0) ] ->
         let* _0 = string_of_json ctx _0 in
         Ok (TDeclError _0)
+    | _ -> Error "")
+
+and type_source_of_json (ctx : of_json_ctx) (js : json) :
+    (type_source, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Normal" -> Ok NormalType
+    | `Assoc [ ("Closure", `Assoc [ ("info", info) ]) ] ->
+        let* info = closure_info_of_json ctx info in
+        Ok (ClosureType info)
+    | `Assoc
+        [
+          ( "VTable",
+            `Assoc
+              [
+                ("dyn_predicate", dyn_predicate);
+                ("field_map", field_map);
+                ("supertrait_map", supertrait_map);
+              ] );
+        ] ->
+        let* dyn_predicate = dyn_predicate_of_json ctx dyn_predicate in
+        let* field_map =
+          index_vec_of_json field_id_of_json v_table_field_of_json ctx field_map
+        in
+        let* supertrait_map =
+          index_vec_of_json trait_clause_id_of_json
+            (option_of_json field_id_of_json)
+            ctx supertrait_map
+        in
+        Ok (VTableType (dyn_predicate, field_map, supertrait_map))
     | _ -> Error "")
 
 and v_table_field_of_json (ctx : of_json_ctx) (js : json) :

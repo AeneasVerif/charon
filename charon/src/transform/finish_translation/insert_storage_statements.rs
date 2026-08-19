@@ -178,7 +178,7 @@ impl Transform {
         // Don't insert `StorageDead`s inside global initializers because the locals there are
         // actually statics.
         let insert_missing_storage_deads =
-            deallocate_all_locals && fun.is_global_initializer.is_none();
+            deallocate_all_locals && !matches!(fun.src, FunSource::GlobalInitializer(_));
         match &mut fun.body {
             Body::Unstructured(body) => {
                 self.transform_ullbc_body(body, insert_missing_storage_deads)

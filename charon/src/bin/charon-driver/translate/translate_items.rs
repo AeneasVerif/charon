@@ -150,14 +150,14 @@ impl<'tcx> TranslateCtx<'tcx> {
                 };
                 // In Mono mode, only user-defined trait is supported for now.
                 let trait_impl = match kind {
-                    TraitImplSource::Normal => bt_ctx.translate_trait_impl(id, item_meta, &def)?,
-                    TraitImplSource::TraitAlias => {
+                    TransImplSource::Normal => bt_ctx.translate_trait_impl(id, item_meta, &def)?,
+                    TransImplSource::TraitAlias => {
                         bt_ctx.translate_trait_alias_blanket_impl(id, item_meta, &def)?
                     }
-                    &TraitImplSource::Closure(kind) => {
+                    &TransImplSource::Closure(kind) => {
                         bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?
                     }
-                    TraitImplSource::ImplicitDestruct => {
+                    TransImplSource::ImplicitDestruct => {
                         bt_ctx.translate_implicit_destruct_impl(id, item_meta, &def)?
                     }
                 };
@@ -303,6 +303,19 @@ impl<'tcx> TranslateCtx<'tcx> {
     }
 }
 
+enum TraitItemSource {
+    Default {
+        trait_ref: TraitDeclRef,
+        item_id: AssocItemId,
+    },
+    Impl {
+        impl_ref: TraitImplRef,
+        trait_ref: TraitDeclRef,
+        item_id: AssocItemId,
+        reuses_default: bool,
+    },
+}
+
 impl<'tcx> ItemTransCtx<'tcx, '_> {
     /// Register the items inside this module or inherent impl.
     // TODO: we may want to accumulate the set of modules we found, to check that all
@@ -332,35 +345,28 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         }
     }
 
-    pub(crate) fn get_item_source(
+    fn get_trait_item_source(
         &mut self,
         span: Span,
         def: &hax::FullDef<'tcx>,
-    ) -> Result<ItemSource, Error> {
+    ) -> Result<Option<TraitItemSource>, Error> {
         let assoc = match def.kind() {
-            hax::FullDefKind::AssocTy {
-                associated_item, ..
-            }
-            | hax::FullDefKind::AssocConst {
+            hax::FullDefKind::AssocConst {
                 associated_item, ..
             }
             | hax::FullDefKind::AssocFn {
                 associated_item, ..
             } => associated_item,
-            hax::FullDefKind::Closure { args, .. } => {
-                let info = self.translate_closure_info(span, args)?;
-                return Ok(ItemSource::Closure { info });
-            }
-            _ => return Ok(ItemSource::TopLevel),
+            _ => return Ok(None),
         };
-        Ok(match &assoc.container {
+        Ok(Some(match &assoc.container {
             // E.g.:
             // ```
             // impl<T> List<T> {
             //   fn new() -> Self { ... } <- inherent method
             // }
             // ```
-            hax::AssocItemContainer::InherentImplContainer { .. } => ItemSource::TopLevel,
+            hax::AssocItemContainer::InherentImplContainer { .. } => return Ok(None),
             // E.g.:
             // ```
             // impl Foo for Bar {
@@ -374,7 +380,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 ..
             } => {
                 let impl_ref =
-                    self.translate_trait_impl_ref(span, impl_, TraitImplSource::Normal)?;
+                    self.translate_trait_impl_ref(span, impl_, TransImplSource::Normal)?;
                 let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
                 let item_id = self.translate_assoc_item_id(trait_ref.id, def.def_id())?;
                 if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
@@ -383,7 +389,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     let method_id = *item_id.as_method().unwrap();
                     self.mark_method_as_used(trait_ref.id, method_id);
                 }
-                ItemSource::TraitImpl {
+                TraitItemSource::Impl {
                     impl_ref,
                     trait_ref,
                     item_id,
@@ -409,9 +415,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     self.mark_method_as_used(trait_ref.id, method_id);
                 }
                 debug_assert!(assoc.has_value);
-                ItemSource::TraitDecl { trait_ref, item_id }
+                TraitItemSource::Default { trait_ref, item_id }
             }
-        })
+        }))
     }
 
     /// Translate a type definition.
@@ -428,8 +434,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<TypeDecl, Error> {
         let span = item_meta.span;
 
-        // Get the kind of the type decl -- is it a closure?
-        let src = self.get_item_source(span, def)?;
+        // Get the kind of the type decl.
+        let src = match def.kind() {
+            hax::FullDefKind::Closure { args, .. } => {
+                let info = self.translate_closure_info(span, args)?;
+                TypeSource::Closure { info }
+            }
+            _ => TypeSource::Normal,
+        };
 
         // Translate type body
         let kind = match &def.kind {
@@ -478,7 +490,37 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
 
-        let src = self.get_item_source(span, def)?;
+        let src = if matches!(
+            def.kind(),
+            hax::FullDefKind::Const { .. }
+                | hax::FullDefKind::AssocConst { .. }
+                | hax::FullDefKind::Static { .. }
+        ) {
+            let global_id = self.register_item(span, def.this(), TransItemSourceKind::Global);
+            FunSource::GlobalInitializer(GlobalDeclRef {
+                id: global_id,
+                generics: Box::new(self.outermost_generics().identity_args()),
+            })
+        } else {
+            match self.get_trait_item_source(span, def)? {
+                None => FunSource::Normal,
+                Some(TraitItemSource::Default { trait_ref, item_id }) => FunSource::TraitDefault {
+                    trait_ref,
+                    item_id: *item_id.as_method().unwrap(),
+                },
+                Some(TraitItemSource::Impl {
+                    impl_ref,
+                    trait_ref,
+                    item_id,
+                    reuses_default,
+                }) => FunSource::TraitImpl {
+                    impl_ref,
+                    trait_ref,
+                    item_id: *item_id.as_method().unwrap(),
+                    reuses_default,
+                },
+            }
+        };
 
         if let hax::FullDefKind::Ctor {
             fields, output_ty, ..
@@ -506,7 +548,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 generics: self.into_generics(),
                 signature: Box::new(signature),
                 src,
-                is_global_initializer: None,
                 body,
             });
         }
@@ -534,15 +575,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             .as_real_def_id()
             .and_then(|id| self.tcx.intrinsic(id))
             .map(|i| i.name.to_ident_string());
-
-        let is_global_initializer = matches!(
-            def.kind(),
-            hax::FullDefKind::Const { .. }
-                | hax::FullDefKind::AssocConst { .. }
-                | hax::FullDefKind::Static { .. }
-        );
-        let is_global_initializer = is_global_initializer
-            .then(|| self.register_item(span, def.this(), TransItemSourceKind::Global));
 
         let body = if intrinsic_name.as_deref() == Some("type_id") {
             self.build_type_id_body(span, def, &signature)?
@@ -572,7 +604,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             generics: self.into_generics(),
             signature: Box::new(signature),
             src,
-            is_global_initializer,
             body,
         })
     }
@@ -588,7 +619,24 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let span = item_meta.span;
 
         // Retrieve the kind
-        let item_source = self.get_item_source(span, def)?;
+        let item_source = match self.get_trait_item_source(span, def)? {
+            None => GlobalSource::Normal,
+            Some(TraitItemSource::Default { trait_ref, item_id }) => GlobalSource::TraitDefault {
+                trait_ref,
+                item_id: *item_id.as_const().unwrap(),
+            },
+            Some(TraitItemSource::Impl {
+                impl_ref,
+                trait_ref,
+                item_id,
+                reuses_default,
+            }) => GlobalSource::TraitImpl {
+                impl_ref,
+                trait_ref,
+                item_id: *item_id.as_const().unwrap(),
+                reuses_default,
+            },
+        };
 
         trace!("Translating global type");
         let ty = match &def.kind {
@@ -666,6 +714,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         else {
             raise_error!(self, span, "Unexpected definition: {def:?}");
         };
+        let src = match def.kind() {
+            hax::FullDefKind::Trait { .. } => TraitDeclSource::Normal,
+            hax::FullDefKind::TraitAlias { .. } => TraitDeclSource::TraitAlias,
+            _ => unreachable!(),
+        };
 
         // Register implied predicates. We gather the clauses and consider the other predicates as
         // required since the distinction doesn't matter for non-trait-clauses.
@@ -683,6 +736,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             return Ok(TraitDecl {
                 def_id: trait_decl_id,
                 item_meta,
+                src,
                 implied_clauses,
                 generics: self.into_generics(),
                 consts: Default::default(),
@@ -762,6 +816,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             return Ok(TraitDecl {
                 def_id: trait_decl_id,
                 item_meta,
+                src,
                 implied_clauses,
                 generics: self.into_generics(),
                 consts,
@@ -980,6 +1035,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         Ok(TraitDecl {
             def_id: trait_decl_id,
             item_meta,
+            src,
             implied_clauses,
             generics: self.into_generics(),
             consts,
@@ -1059,6 +1115,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             return Ok(TraitImpl {
                 def_id,
                 item_meta,
+                src: TraitImplSource::Normal,
                 impl_trait: implemented_trait,
                 generics: self.into_generics(),
                 implied_trait_refs,
@@ -1230,6 +1287,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         Ok(TraitImpl {
             def_id,
             item_meta,
+            src: TraitImplSource::Normal,
             impl_trait: implemented_trait,
             generics: self.into_generics(),
             implied_trait_refs,
@@ -1281,6 +1339,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let mut timpl = TraitImpl {
             def_id,
             item_meta,
+            src: TraitImplSource::TraitAlias,
             impl_trait: implemented_trait,
             generics: self.the_only_binder().params.clone(),
             implied_trait_refs,
@@ -1353,6 +1412,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         def_id: TraitImplId,
         item_meta: ItemMeta,
+        src: TraitImplSource,
         vimpl: &hax::VirtualTraitImpl,
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
@@ -1389,6 +1449,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         Ok(TraitImpl {
             def_id,
             item_meta,
+            src,
             impl_trait: implemented_trait,
             generics,
             implied_trait_refs,

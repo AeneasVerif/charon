@@ -879,11 +879,6 @@ and variant_id = (VariantId.id[@visitors.opaque])
     Represents [repr(align(n))] and [repr(packed(n))]. *)
 type alignment_modifier = Align of int | Pack of int
 
-and assoc_item_id =
-  | AssocIdType of assoc_type_id
-  | AssocIdMethod of trait_method_id
-  | AssocIdConst of assoc_const_id
-
 (** Additional information for closures. *)
 and closure_info = {
   kind : closure_kind;
@@ -997,89 +992,6 @@ and item_opacity =
       (** Translate nothing of this item. The corresponding map will not have an
           entry for the [ItemId]. Useful when even the signature of the item
           causes errors. *)
-
-(** Item kind: whether this function/const is part of a trait declaration, trait
-    implementation, or neither.
-
-    Example:
-    {@rust[
-      trait Foo {
-          fn bar(x : u32) -> u32; // trait item decl without default
-
-          fn baz(x : bool) -> bool { x } // trait item decl with default
-      }
-
-      impl Foo for ... {
-          fn bar(x : u32) -> u32 { x } // trait item implementation
-      }
-
-      fn test(...) { ... } // regular
-
-      impl Type {
-          fn test(...) { ... } // regular
-      }
-    ]} *)
-and item_source =
-  | TopLevelItem  (** This item stands on its own. *)
-  | ClosureItem of closure_info
-      (** This is a closure in a function body.
-
-          Fields:
-          - [info] *)
-  | SpecItem of spec_kind * item_id
-      (** This item is a specification attached to another item, via
-          [#[charon::precondition]]/[#[charon::postcondition]].
-
-          Fields:
-          - [kind]
-          - [item] *)
-  | TraitDeclItem of trait_decl_ref * assoc_item_id
-      (** This is the default value of an associated const or method in a trait
-          declaration.
-
-          Fields:
-          - [trait_ref]: The trait declaration this item belongs to.
-          - [item_id]: The associated item this corresponds to. Note that a
-            function could have [AssocItemId::Const] if it's the initializer of
-            a trait const. *)
-  | TraitImplItem of trait_impl_ref * trait_decl_ref * assoc_item_id * bool
-      (** This is an associated const or method in a trait implementation.
-
-          Fields:
-          - [impl_ref]: The trait implementation the method belongs to.
-          - [trait_ref]: The trait declaration that the impl block implements.
-          - [item_id]: The associated item this corresponds to. Note that a
-            function could have [AssocItemId::Const] if it's the initializer of
-            a trait const.
-          - [reuses_default]: True if the trait decl had a default
-            implementation for this function/const and this item is a copy of
-            the default item. *)
-  | TargetDependentItem of fun_decl_ref
-      (** This function is a target-specific variant behind a [TargetDispatch]
-          façade. The dispatcher is the function with the [Body::TargetDispatch]
-          body that dispatches to this function.
-
-          Fields:
-          - [dispatcher] *)
-  | VTableTyItem of dyn_predicate * v_table_field list * field_id option list
-      (** This is a vtable struct for a trait.
-
-          Fields:
-          - [dyn_predicate]: The [dyn Trait] predicate implemented by this
-            vtable.
-          - [field_map]: Record what each vtable field means.
-          - [supertrait_map]: For each implied clause that is also a supertrait
-            clause, reords which field id corresponds to it. *)
-  | VTableInstanceItem of trait_impl_ref
-      (** This is a vtable value for an impl.
-
-          Fields:
-          - [impl_ref] *)
-  | VTableMethodShimItem
-      (** The method shim wraps a concrete implementation of a method into a
-          function that takes [dyn Trait] as its [Self] type. This shim casts
-          the receiver to the known concrete type and calls the real method. *)
-  | VTableInstanceMonoItem
 
 (** A representation of all the valid lang items in Rust. *)
 and rustc_lang_item =
@@ -1459,8 +1371,6 @@ and repr_options = {
   explicit_discr_type : bool;
 }
 
-and spec_kind = Precondition | Postcondition
-
 (** A type declaration.
 
     Types can be opaque or transparent.
@@ -1478,9 +1388,9 @@ and type_decl = {
   def_id : type_decl_id;
   item_meta : item_meta;  (** Meta information associated with the item. *)
   generics : generic_params;
-  src : item_source;
+  src : type_source;
       (** The context of the type: distinguishes top-level items from
-          closure-related items. *)
+          closure-related items etc. *)
   kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)
   layout : (string * layout) list;
       (** The layout of the type for each target. Information may be partial
@@ -1504,6 +1414,24 @@ and type_decl_kind =
   | TDeclError of string
       (** Used if an error happened during the extraction, and we don't panic on
           error. *)
+
+(** Where a given type came from. *)
+and type_source =
+  | NormalType  (** A normal type declaration. *)
+  | ClosureType of closure_info
+      (** The struct that carries the captured variables of a closure.
+
+          Fields:
+          - [info] *)
+  | VTableType of dyn_predicate * v_table_field list * field_id option list
+      (** Defines the vtable struct for a trait.
+
+          Fields:
+          - [dyn_predicate]: The [dyn Trait] predicate implemented by this
+            vtable.
+          - [field_map]: Record what each vtable field means.
+          - [supertrait_map]: For each implied clause that is also a supertrait
+            clause, records which field of the vtable corresponds to it. *)
 
 and v_table_field =
   | VTableSize

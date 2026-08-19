@@ -252,7 +252,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                         let impl_id = {
                             let item_src = TransItemSource::new(
                                 item.clone(),
-                                TransItemSourceKind::TraitImpl(TraitImplSource::Normal),
+                                TransItemSourceKind::TraitImpl(TransImplSource::Normal),
                             );
                             self.register_and_enqueue(&None, item_src).unwrap()
                         };
@@ -378,17 +378,17 @@ impl<'tcx> TranslateCtx<'tcx> {
             TransItemSourceKind::Type
             | TransItemSourceKind::Fun
             | TransItemSourceKind::Global
-            | TransItemSourceKind::TraitImpl(TraitImplSource::Normal)
+            | TransItemSourceKind::TraitImpl(TransImplSource::Normal)
             | TransItemSourceKind::TraitDecl
             | TransItemSourceKind::InherentImpl
             | TransItemSourceKind::Module => {}
 
             TransItemSourceKind::TraitImpl(
-                kind @ (TraitImplSource::Closure(..)
-                | TraitImplSource::ImplicitDestruct
-                | TraitImplSource::TraitAlias),
+                kind @ (TransImplSource::Closure(..)
+                | TransImplSource::ImplicitDestruct
+                | TransImplSource::TraitAlias),
             ) => {
-                if let TraitImplSource::Closure(..) = kind {
+                if let TransImplSource::Closure(..) = kind {
                     let _ = name.name.pop(); // Pop the `{closure}`
                 }
                 let impl_id = self.register_and_enqueue(&None, src.clone()).unwrap();
