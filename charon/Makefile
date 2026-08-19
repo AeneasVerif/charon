@@ -30,7 +30,7 @@ clippy:
 
 .PHONY: test-popular-crates
 test-popular-crates:
-	cargo test --release --features popular-crates-test --test popular-crates -- --test-threads 8
+	cargo test --release --features popular-crates-test --test popular-crates -- --test-threads 4
 
 # Build the doc.
 # For some reason, I don't manage to build all the packages in one command.
