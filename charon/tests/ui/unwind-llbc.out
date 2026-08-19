@@ -39,7 +39,6 @@ pub fn impl_Drop_for_Foo::drop<'_0>(self: &'_0 mut Foo)
     storage_live(_0)
     _0 = ()
     _0 = ()
-    storage_dead(self)
     return
 }
 
@@ -57,13 +56,7 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut Foo)
     _0 = ()
     _2 = &mut (*_1)
     _3 = impl_Drop_for_Foo::drop<'4>(move _2)
-    ↳⚡ storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    storage_dead(_3)
-    storage_dead(_2)
-    storage_dead(_1)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -110,18 +103,14 @@ fn main()
     storage_live(_2)
     _2 = may_unwind()
     ↳⚡ conditional_drop[drop_glue<'2>] f
-        ↳⚡ storage_dead(_4)
-            unwind_terminate
-        storage_dead(_4)
+        ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_2)
     storage_live(_3)
     _4 = const 255u8 checked.+ const 1u8
     assert(move _4.1 == false) (overflow) else panic
     ↳⚡ conditional_drop[drop_glue<'2>] f
-        ↳⚡ storage_dead(_4)
-            unwind_terminate
-        storage_dead(_4)
+        ↳⚡ unwind_terminate
         unwind_continue
     _3 = move _4.0
     storage_dead(_3)
@@ -130,10 +119,8 @@ fn main()
     storage_dead(_5)
     _0 = ()
     conditional_drop[drop_glue<'3>] f
-    ↳⚡ storage_dead(_4)
-        unwind_continue
+    ↳⚡ unwind_continue
     storage_dead(f)
-    storage_dead(_4)
     return
 }
 

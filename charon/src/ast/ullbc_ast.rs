@@ -40,11 +40,10 @@ pub enum StatementKind {
     /// the micro-pass `insert_storage_statements` that all other locals have a `StorageLive`
     /// associated with them.
     StorageLive(LocalId),
-    /// Indicates that this local should be deallocated; if it is already deallocated, this is
-    /// a no-op. A local may not have a `StorageDead` in the function's body, in which case it
-    /// is implicitly deallocated at the end of the function. The return local does not receive a
-    /// `StorageDead`. We ensure in the micro-pass `insert_storage_statements` that all other locals
-    /// have a `StorageDead` before function exits.
+    /// Deallocates the given local; if it is already deallocated, this is
+    /// a no-op. Not all local deallocations are explicit: if a non-return local is still live at
+    /// function end (return or unwind), it is implicitly deallocated.
+    /// If `--deallocate-all-locals` is set, all local deallocations are made explicit.
     StorageDead(LocalId),
     /// A place is mentioned, but not accessed. The place itself must still be valid though, so
     /// this statement is not a no-op: it can trigger UB if the place's projections are not valid

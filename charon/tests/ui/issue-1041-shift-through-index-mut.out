@@ -51,8 +51,6 @@ pub fn index<'_0>(self: &'_0 Wrap, i: usize) -> &'_0 u64
         _0 = &(*_3);
         storage_dead(_4);
         storage_dead(_3);
-        storage_dead(i);
-        storage_dead(self);
         return;
     }
 }
@@ -90,8 +88,6 @@ pub fn index_mut<'_0>(self: &'_0 mut Wrap, i: usize) -> &'_0 mut u64
         storage_dead(_5);
         storage_dead(_4);
         storage_dead(_3);
-        storage_dead(i);
-        storage_dead(self);
         return;
     }
 }
@@ -130,9 +126,6 @@ pub fn shr_into_index<'_0>(x: u64, out: &'_0 mut Wrap)
     }
 
     bb1: {
-        storage_dead(out);
-        storage_dead(x);
-        storage_dead(_6);
         unwind_continue;
     }
 
@@ -142,9 +135,6 @@ pub fn shr_into_index<'_0>(x: u64, out: &'_0 mut Wrap)
         storage_dead(_3);
         storage_dead(_4);
         _0 = ();
-        storage_dead(out);
-        storage_dead(x);
-        storage_dead(_6);
         return;
     }
 }
@@ -178,10 +168,6 @@ pub fn shl_into_index_by_var<'_0>(x: u64, n: u32, out: &'_0 mut Wrap)
     }
 
     bb1: {
-        storage_dead(out);
-        storage_dead(n);
-        storage_dead(x);
-        storage_dead(_8);
         unwind_continue;
     }
 
@@ -192,10 +178,6 @@ pub fn shl_into_index_by_var<'_0>(x: u64, n: u32, out: &'_0 mut Wrap)
         storage_dead(_4);
         storage_dead(_6);
         _0 = ();
-        storage_dead(out);
-        storage_dead(n);
-        storage_dead(x);
-        storage_dead(_8);
         return;
     }
 }

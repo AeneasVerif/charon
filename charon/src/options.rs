@@ -242,6 +242,12 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub reconstruct_asserts: bool,
+    /// Ensure all local deallocations are made explicit with `StorageDead` statements. If this flag is not passed,
+    /// every non-return local is implicitly deallocated on function return.
+    /// Note this can add a lot of statements (quadratically-many, because of unwind paths).
+    #[clap(long)]
+    #[serde(default)]
+    pub deallocate_all_locals: bool,
     /// Use `DeBruijnVar::Free` for the variables bound in item signatures, instead of
     /// `DeBruijnVar::Bound` everywhere. This simplifies the management of generics for projects
     /// that don't intend to manipulate them too much.
@@ -471,6 +477,7 @@ impl CliOpts {
                     self.remove_unused_self_clauses = true;
                     self.remove_adt_clauses = true;
                     self.unbind_item_vars = true;
+                    self.deallocate_all_locals = true;
                 }
                 Preset::Eurydice => {
                     self.hide_allocator = true;
@@ -505,6 +512,7 @@ impl CliOpts {
                     self.ops_to_function_calls = true;
                     self.index_to_function_calls = true;
                     self.duplicate_defaulted_methods = true;
+                    self.deallocate_all_locals = true;
                     self.rustc_args.push("--edition=2021".to_owned());
                     self.rustc_args
                         .push("-Zcrate-attr=feature(register_tool)".to_owned());
@@ -664,6 +672,8 @@ pub struct TranslateOptions {
     pub reconstruct_fallible_operations: bool,
     /// Replace `if x { panic() }` with `assert(x)`.
     pub reconstruct_asserts: bool,
+    /// Insert the `StorageDead`s that MIR omits for some locals.
+    pub deallocate_all_locals: bool,
     // Use `DeBruijnVar::Free` for the variables bound in item signatures.
     pub unbind_item_vars: bool,
     /// List of patterns to assign a given opacity to. Same as the corresponding `TranslateOptions`
@@ -820,6 +830,7 @@ impl TranslateOptions {
             unsized_strings: options.unsized_strings,
             reconstruct_fallible_operations: options.reconstruct_fallible_operations,
             reconstruct_asserts: options.reconstruct_asserts,
+            deallocate_all_locals: options.deallocate_all_locals,
             lift_associated_types,
             unbind_item_vars: options.unbind_item_vars,
             translate_all_methods: options.translate_all_methods,
