@@ -377,6 +377,10 @@ class ['self] map_crate_with_span =
       in
       super#visit_expr_body decl_span_info body
 
+    method! visit_type_decl (_ : (item_id * span) option) (decl : type_decl) =
+      let decl_span_info = Some (IdType decl.def_id, decl.item_meta.span) in
+      super#visit_type_decl decl_span_info decl
+
     method! visit_fun_decl (_ : (item_id * span) option) (decl : fun_decl) :
         fun_decl =
       let decl_span_info = Some (IdFun decl.def_id, decl.item_meta.span) in
@@ -445,6 +449,10 @@ class ['self] iter_crate_with_span =
         Option.map (fun (decl_id, _) -> (decl_id, body.span)) decl_span_info
       in
       super#visit_expr_body decl_span_info body
+
+    method! visit_type_decl (_ : (item_id * span) option) (decl : type_decl) =
+      let decl_span_info = Some (IdType decl.def_id, decl.item_meta.span) in
+      super#visit_type_decl decl_span_info decl
 
     method! visit_fun_decl (_ : (item_id * span) option) (decl : fun_decl) :
         unit =
