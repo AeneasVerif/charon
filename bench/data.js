@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787154310809,
+  "lastUpdate": 1787155765242,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -8786,6 +8786,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 329.7,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.8,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ee838658f900745d4534d29b11ebe0f6017810d8",
+          "message": "Merge pull request #1357 from Nadrieril/revamp-itemsource\n\nSplit `ItemSource` into one enum for each item kind",
+          "timestamp": "2026-08-19T16:06:03Z",
+          "tree_id": "82874839992b445014a3a0f1e356911241a8ff6f",
+          "url": "https://github.com/AeneasVerif/charon/commit/ee838658f900745d4534d29b11ebe0f6017810d8"
+        },
+        "date": 1787155733714,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 66806779337,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 9.16,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 453.8,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 24.8,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 53523476409,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 8.33,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 329.6,
             "unit": "max-rss(MB)"
           },
           {
