@@ -884,6 +884,8 @@ and assoc_item_id =
   | AssocIdMethod of trait_method_id
   | AssocIdConst of assoc_const_id
 
+and byte_count = { raw : int option; guarantees : size_expr_bound }
+
 (** Additional information for closures. *)
 and closure_info = {
   kind : closure_kind;
@@ -1344,8 +1346,8 @@ and rustc_lang_item =
     known layout (e.g. it is ?Sized) some of the layout parts are not available.
 *)
 and layout = {
-  size : int option;  (** The size of the type in bytes. *)
-  align : int option;  (** The alignment, in bytes. *)
+  size : byte_count;  (** The size of the type in bytes. *)
+  align : byte_count;  (** The alignment, in bytes. *)
   discriminator : discriminator option;
       (** Decision tree that determines the active variant by reading memory.
           Only [Some] for enums. *)
@@ -1363,6 +1365,27 @@ and layout = {
       (** The representation options of this type declaration as annotated by
           the user. *)
 }
+
+and layout_value =
+  | LayoutValueConstant of constant_expr
+  | ValueSizeOf of ty  (** The size of the given type. *)
+  | ValueAlignOf of ty  (** The alignment of the given type. *)
+  | DynSize
+      (** For a DST with [dyn Trait] metadata, this refers to the size found in
+          the metadata. *)
+  | DynAlign
+      (** For a DST with [dyn Trait] metadata, this refers to the alignment
+          found in the metadata. *)
+  | SliceLength
+      (** For a DST with slice metadata, this refers to the length found in the
+          metadata. *)
+
+(** Variables representing layout information from the context. *)
+and layout_var =
+  | VarSize  (** The size of the whole type. *)
+  | VarAlign  (** The alignment of the whole type. *)
+  | VarFieldOffset of variant_id option * field_id
+      (** The offset of the given field. *)
 
 (** An item name/path
 
@@ -1402,6 +1425,29 @@ and layout = {
     Also note that the first path element in the name is always the crate name.
 *)
 and name = (path_elem list[@visitors.opaque])
+
+(** Represents the guarantees we can get about offsets of fields. *)
+and offset_guarantee =
+  | AtOffsetZero
+      (** Guaranteed to be at offset zero. This applies for [repr(transparent)]
+          and in some [repr(C)] cases. *)
+  | GuaranteedAlignment of size_expr
+      (** The only guarantee is that it is aligned to the given expression. *)
+  | ReprCField of field_id option * layout_value * ty
+      (** This offset has to be computed by the layout algorithm for C, taking
+          into consideration the fields before. Must not be the first field,
+          since that is [[OffsetGuarantee::AtOffsetZero]].
+
+          Fields:
+          - [predecessor]: If this is [None], then the field is directly behind
+            the tag.
+          - [predecessor_size]
+          - [own_ty] *)
+
+and offset_information = {
+  raw : int option;
+  guarantees : offset_guarantee option;
+}
 
 (** See the comments for [Name] *)
 and path_elem =
@@ -1452,9 +1498,32 @@ and repr_options = {
   repr_algo : repr_algorithm;
   align_modif : alignment_modifier option;
   transparent : bool;
-  explicit_discr_type : bool;
+  explicit_discr_type : ty option;
 }
 
+and size_expr =
+  | SizeVariable of layout_var
+  | SizeValue of layout_value
+  | Max of size_expr list
+  | Min of size_expr list
+  | Plus of size_expr * size_expr
+  | Scale of size_expr * constant_expr
+  | AlignTo of size_expr * size_expr
+      (** The next multiple of [target_align] from [base].
+
+          Fields:
+          - [base]
+          - [target_align] *)
+  | IfInhabited of ty * size_expr * size_expr
+      (** A size expression that changes its value based on whether an argument
+          type is inhabited.
+
+          Fields:
+          - [ty]
+          - [then_size]
+          - [else_size] *)
+
+and size_expr_bound = ExactEq of size_expr | LowerBound of size_expr
 and spec_kind = Precondition | Postcondition
 
 (** A type declaration.
@@ -1525,8 +1594,8 @@ and variant = {
 
     Maps fields to their offset within the layout. *)
 and variant_layout = {
-  field_offsets : int list;  (** The offset of each field. *)
-  uninhabited : bool;
+  field_offsets : offset_information list;  (** The offset of each field. *)
+  uninhabited : bool option;
       (** Whether the variant is uninhabited, i.e. has any valid possible value.
           Note that uninhabited types can have arbitrary layouts. *)
   tagger : (int * scalar_value) list;

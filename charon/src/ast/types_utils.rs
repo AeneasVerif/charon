@@ -1,4 +1,5 @@
 //! This file groups everything which is linked to implementations about [crate::types]
+use crate::ast::layout_guarantees::LayoutGuarantees;
 use crate::ast::*;
 use crate::ids::IndexVec;
 use derive_generic_visitor::*;
@@ -10,6 +11,7 @@ use std::convert::Infallible;
 use std::fmt::Debug;
 use std::iter::Iterator;
 use std::mem;
+use std::ops::AddAssign;
 
 impl TraitParam {
     /// Constructs the trait ref that refers to this clause.
@@ -507,7 +509,7 @@ impl GenericArgs {
 impl IntTy {
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
-    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+    pub fn target_size(&self, ptr_size: RawByteCount) -> usize {
         match self {
             IntTy::Isize => ptr_size as usize,
             IntTy::I8 => size_of::<i8>(),
@@ -521,7 +523,7 @@ impl IntTy {
 impl UIntTy {
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
-    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+    pub fn target_size(&self, ptr_size: RawByteCount) -> usize {
         match self {
             UIntTy::Usize => ptr_size as usize,
             UIntTy::U8 => size_of::<u8>(),
@@ -529,6 +531,16 @@ impl UIntTy {
             UIntTy::U32 => size_of::<u32>(),
             UIntTy::U64 => size_of::<u64>(),
             UIntTy::U128 => size_of::<u128>(),
+        }
+    }
+    pub fn of_bit_width(bytes: u64) -> Option<UIntTy> {
+        match bytes {
+            8 => Some(UIntTy::U8),
+            16 => Some(UIntTy::U16),
+            32 => Some(UIntTy::U32),
+            64 => Some(UIntTy::U64),
+            128 => Some(UIntTy::U128),
+            _ => None,
         }
     }
 }
@@ -560,7 +572,7 @@ impl IntegerTy {
 
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
-    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+    pub fn target_size(&self, ptr_size: RawByteCount) -> usize {
         match self {
             IntegerTy::Signed(ty) => ty.target_size(ptr_size),
             IntegerTy::Unsigned(ty) => ty.target_size(ptr_size),
@@ -579,7 +591,7 @@ impl LiteralTy {
 
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
-    pub fn target_size(&self, ptr_size: ByteCount) -> usize {
+    pub fn target_size(&self, ptr_size: RawByteCount) -> usize {
         match self {
             LiteralTy::Int(int_ty) => int_ty.target_size(ptr_size),
             LiteralTy::UInt(uint_ty) => uint_ty.target_size(ptr_size),
@@ -1476,6 +1488,10 @@ impl TypeDecl {
             .iter_enumerated()
             .find(|(_, field)| field.name.as_deref() == Some(field_name))
     }
+
+    pub fn the_layout(&self) -> Option<&Layout> {
+        self.layout.values().exactly_one().ok()
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -1497,7 +1513,7 @@ impl Discriminator {
     /// could not be read.
     pub fn read_discriminant(
         &self,
-        read: impl Fn(ByteCount, IntegerTy) -> Result<ScalarValue, DiscriminantReadError> + Copy,
+        read: impl Fn(RawByteCount, IntegerTy) -> Result<ScalarValue, DiscriminantReadError> + Copy,
     ) -> Result<VariantId, DiscriminantReadError> {
         match self {
             Discriminator::Known(id) => Ok(*id),
@@ -1520,15 +1536,93 @@ impl Discriminator {
     }
 }
 
+impl ByteCount {
+    pub fn only_guarantee(bound: SizeExprBound) -> Self {
+        Self {
+            raw: None,
+            guarantees: bound,
+        }
+    }
+}
+
+impl OffsetInformation {
+    pub fn only_guarantee(guarantees: OffsetGuarantee) -> Self {
+        Self {
+            raw: None,
+            guarantees: Some(guarantees),
+        }
+    }
+}
+
+impl VariantLayout {
+    pub fn only_guarantees(field_offsets: IndexVec<FieldId, OffsetGuarantee>) -> Self {
+        let field_offsets = field_offsets
+            .into_iter()
+            .map(OffsetInformation::only_guarantee)
+            .collect();
+        VariantLayout {
+            field_offsets,
+            uninhabited: None, // FIXME: we need inhabitedness predicates to correctly express this.
+            tagger: Vec::new(),
+        }
+    }
+}
+
 impl Layout {
-    pub fn is_variant_uninhabited(&self, variant_id: VariantId) -> bool {
-        self.variant_layouts[variant_id]
-            .as_ref()
-            .is_none_or(|v| v.uninhabited)
+    pub fn is_variant_uninhabited(&self, variant_id: VariantId) -> Option<bool> {
+        match self.variant_layouts[variant_id].as_ref() {
+            Some(v) => v.uninhabited,
+            None => Some(true),
+        }
     }
 
-    pub fn is_c_repr(&self) -> bool {
-        self.repr.repr_algo == ReprAlgorithm::C
+    pub fn only_guarantees(
+        guarantees: LayoutGuarantees,
+        repr: ReprOptions,
+        translated: &TranslatedCrate,
+        target: Option<&TargetTriple>,
+    ) -> Self {
+        let mut variant_layouts = IndexVec::new();
+        if let Some(variants) = guarantees
+            .offsets
+            .get_variants(None, Some(translated), target)
+        {
+            for fields in variants {
+                variant_layouts.push(Some(VariantLayout::only_guarantees(fields)));
+            }
+        }
+
+        Self {
+            size: ByteCount::only_guarantee(guarantees.size),
+            align: ByteCount::only_guarantee(guarantees.align),
+            discriminator: None,
+            uninhabited: false, // FIXME: we need inhabitedness predicates to correctly express this.
+            variant_layouts,
+            repr,
+        }
+    }
+
+    pub fn update_guarantees(
+        &mut self,
+        guarantees: LayoutGuarantees,
+        target: Option<&TargetTriple>,
+    ) {
+        self.size.guarantees = guarantees.size;
+        self.align.guarantees = guarantees.align;
+
+        if let Some(variant_guarantees) =
+            guarantees
+                .offsets
+                .get_variants(Some(self.variant_layouts.len()), None, target)
+        {
+            for (variant, guarantees) in self.variant_layouts.iter_mut().zip(variant_guarantees) {
+                if let Some(variant) = variant {
+                    for (offset, guarantee) in variant.field_offsets.iter_mut().zip(guarantees) {
+                        offset.guarantees = Some(guarantee);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -1543,7 +1637,304 @@ impl ReprOptions {
     /// Cf. <https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.struct>
     /// and <https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.adt>.
     pub fn guarantees_fixed_field_order(&self) -> bool {
-        self.repr_algo == ReprAlgorithm::C || self.explicit_discr_type
+        self.repr_algo == ReprAlgorithm::C || self.explicit_discr_type.is_some()
+    }
+}
+
+impl SizeExprBound {
+    pub fn map<F: Fn(SizeExpr) -> SizeExpr>(self, f: F) -> Self {
+        match self {
+            Self::ExactEq(size_expr) => Self::ExactEq(f(size_expr)),
+            Self::LowerBound(size_expr) => Self::LowerBound(f(size_expr)),
+        }
+    }
+
+    pub fn map_mut<F: Fn(&mut SizeExpr)>(&mut self, f: F) {
+        match self {
+            Self::ExactEq(size_expr) | Self::LowerBound(size_expr) => f(size_expr),
+        }
+    }
+
+    pub fn comb<F: Fn(SizeExpr, SizeExpr) -> SizeExpr>(self, other: Self, f: F) -> Self {
+        match (self, other) {
+            (Self::ExactEq(size_expr1), Self::ExactEq(size_expr2)) => {
+                Self::ExactEq(f(size_expr1, size_expr2))
+            }
+            (Self::ExactEq(size_expr1), Self::LowerBound(size_expr2))
+            | (Self::LowerBound(size_expr1), Self::ExactEq(size_expr2))
+            | (Self::LowerBound(size_expr1), Self::LowerBound(size_expr2)) => {
+                Self::LowerBound(f(size_expr1, size_expr2))
+            }
+        }
+    }
+
+    pub fn make(expr: SizeExpr, exact: bool) -> Self {
+        if exact {
+            Self::ExactEq(expr)
+        } else {
+            Self::LowerBound(expr)
+        }
+    }
+
+    pub fn inner(&self) -> &SizeExpr {
+        match self {
+            Self::ExactEq(size_expr) | Self::LowerBound(size_expr) => size_expr,
+        }
+    }
+
+    pub fn inner_mut(&mut self) -> &mut SizeExpr {
+        match self {
+            Self::ExactEq(size_expr) | Self::LowerBound(size_expr) => size_expr,
+        }
+    }
+
+    pub fn take(self) -> SizeExpr {
+        match self {
+            Self::ExactEq(size_expr) | Self::LowerBound(size_expr) => size_expr,
+        }
+    }
+
+    pub fn add_exact_info(self, exact: bool) -> Self {
+        match self {
+            Self::ExactEq(size_expr) if exact => Self::ExactEq(size_expr),
+            _ => Self::LowerBound(self.take()),
+        }
+    }
+
+    pub fn update<F: FnMut(&mut SizeExpr, bool) -> bool>(&mut self, mut f: F) {
+        let old_exact = self.is_exact_eq();
+        let new_exact = f(self.inner_mut(), old_exact);
+        // FIXME: Is there some sound unsafe code to make this possible without the clone?
+        *self = Self::make(self.inner().clone(), old_exact && new_exact);
+    }
+}
+
+impl OffsetGuarantees {
+    pub fn first_field(&self) -> Option<&OffsetGuarantee> {
+        match self {
+            Self::Variants(variants) => variants
+                .get(VariantId::ZERO)
+                .and_then(|fields| fields.get(FieldId::ZERO)),
+            Self::Fields(fields) => fields.get(FieldId::ZERO),
+            _ => None,
+        }
+    }
+
+    pub fn first_field_mut(&mut self) -> Option<&mut OffsetGuarantee> {
+        match self {
+            Self::Variants(variants) => variants
+                .get_mut(VariantId::ZERO)
+                .and_then(|fields| fields.get_mut(FieldId::ZERO)),
+            Self::Fields(fields) => fields.get_mut(FieldId::ZERO),
+            _ => None,
+        }
+    }
+
+    pub fn get_variants(
+        self,
+        expected_variants: Option<usize>,
+        translated: Option<&TranslatedCrate>,
+        target: Option<&TargetTriple>,
+    ) -> Option<IndexVec<VariantId, IndexVec<FieldId, OffsetGuarantee>>> {
+        match self {
+            Self::Variants(variants_guarantees) => Some(variants_guarantees),
+            Self::None if expected_variants.is_some() => Some(
+                (0..expected_variants.unwrap())
+                    .map(|_| vec![].into())
+                    .collect(),
+            ),
+            Self::Symbolic(ty) => {
+                let guarantees_for_ty = LayoutGuarantees::for_ty(&ty, translated?, target)?;
+                if let OffsetGuarantees::Symbolic(ty2) = &guarantees_for_ty.offsets
+                    && ty == *ty2
+                {
+                    // Break cycles.
+                    None
+                } else {
+                    guarantees_for_ty
+                        .offsets
+                        .get_variants(expected_variants, translated, target)
+                }
+            }
+            Self::Fields(fields) => Some(vec![fields].into()),
+            _ => None,
+        }
+    }
+
+    pub fn from_layout(layout: &IndexVec<VariantId, Option<VariantLayout>>) -> Self {
+        let mut offsets = IndexVec::new();
+        for variant_layout in layout.iter() {
+            let fields: Option<IndexVec<FieldId, OffsetGuarantee>> =
+                if let Some(variant_layout) = variant_layout {
+                    variant_layout
+                        .field_offsets
+                        .iter()
+                        .map(|offset| offset.guarantees.clone())
+                        .collect()
+                } else {
+                    None
+                };
+            if let Some(fields) = fields {
+                offsets.push(fields);
+            } else {
+                offsets.push(IndexVec::new());
+            }
+        }
+        Self::Variants(offsets)
+    }
+}
+
+impl LayoutValue {
+    pub fn mk_address_size() -> Self {
+        Self::SizeOf(Ty::mk_usize())
+    }
+
+    pub fn mk_address_align() -> Self {
+        Self::AlignOf(Ty::mk_usize())
+    }
+
+    pub fn mk_address_size_for(
+        translated: &TranslatedCrate,
+        target: &TargetTriple,
+    ) -> Option<Self> {
+        let target_info = translated.target_information.get(target)?;
+        Some(Self::Constant(
+            ScalarValue::mk_usize(
+                target_info.target_pointer_size,
+                target_info.target_pointer_size,
+            )
+            .to_constant(),
+        ))
+    }
+
+    pub fn make_primitive_align_for_target(
+        ty: &LiteralTy,
+        translated: &TranslatedCrate,
+        target: &TargetTriple,
+    ) -> Option<Self> {
+        let target_info = translated.target_information.get(target)?;
+        let align = target_info.primitive_alignments.get(ty)?;
+        Some(Self::Constant(
+            ScalarValue::mk_usize(target_info.target_pointer_size, *align).to_constant(),
+        ))
+    }
+
+    pub fn of_ty(ty: &Ty, is_size: bool) -> Self {
+        match ty.kind() {
+            TyKind::Adt(TypeDeclRef {
+                id: TypeId::Builtin(BuiltinTy::Str),
+                ..
+            }) => {
+                if is_size {
+                    Self::SliceLength
+                } else {
+                    Self::AlignOf(Ty::new(TyKind::Literal(LiteralTy::UInt(UIntTy::U8))))
+                }
+            }
+            TyKind::DynTrait(_) => {
+                if is_size {
+                    Self::DynSize
+                } else {
+                    Self::DynAlign
+                }
+            }
+            TyKind::Slice(ty) => {
+                if is_size {
+                    Self::SliceLength
+                } else {
+                    Self::AlignOf(ty.clone())
+                }
+            }
+            _ => {
+                if is_size {
+                    Self::SizeOf(ty.clone())
+                } else {
+                    Self::AlignOf(ty.clone())
+                }
+            }
+        }
+    }
+}
+
+impl Default for SizeExpr {
+    fn default() -> Self {
+        Self::Val(LayoutValue::Constant(ConstantExpr::mk_usize(
+            ScalarValue::mk_zero_usize(),
+        )))
+    }
+}
+
+impl SizeExpr {
+    pub fn mk_const_byte_count(bytes: RawByteCount) -> Self {
+        Self::Val(LayoutValue::Constant(ConstantExpr {
+            kind: ConstantExprKind::Literal(Literal::Scalar(ScalarValue::Unsigned(
+                UIntTy::Usize,
+                bytes as u128,
+            ))),
+            ty: Ty::new(TyKind::Literal(LiteralTy::UInt(UIntTy::Usize))),
+        }))
+    }
+
+    pub fn is_constant(&self) -> Option<ConstantExpr> {
+        match self {
+            Self::Val(LayoutValue::Constant(c)) => Some(c.clone()),
+            _ => None,
+        }
+    }
+
+    pub fn realign(&mut self, align_to: Self) {
+        match self {
+            Self::AlignTo { target_align, .. } => **target_align = align_to,
+            Self::Val(LayoutValue::Constant(ConstantExpr {
+                kind: ConstantExprKind::Literal(Literal::Scalar(s)),
+                ..
+            })) if align_to.is_constant().is_some() => {
+                let Some(ConstantExpr {
+                    kind: ConstantExprKind::Literal(Literal::Scalar(align_to)),
+                    ..
+                }) = align_to.is_constant()
+                else {
+                    unreachable!()
+                };
+                let (ty, c) = s.as_unsigned().unwrap();
+                let align_to = align_to.as_uint().unwrap();
+                if !c.is_multiple_of(align_to) {
+                    let aligned = c + align_to - (c % align_to);
+                    *s = ScalarValue::from_bits(IntegerTy::Unsigned(*ty), aligned);
+                }
+            }
+            _ => {
+                *self = Self::AlignTo {
+                    base: Box::new(self.clone()),
+                    target_align: Box::new(align_to),
+                }
+            }
+        }
+    }
+
+    pub fn unalign(self) -> Self {
+        match self {
+            SizeExpr::AlignTo { base, .. } => *base,
+            _ => self,
+        }
+    }
+
+    pub fn max(&mut self, rhs: Self) {
+        if let Self::Max(elems) = self {
+            if let Self::Max(rhs_max) = rhs {
+                elems.extend(rhs_max);
+            } else {
+                elems.push(rhs);
+            }
+        } else {
+            *self = Self::Max(vec![self.clone(), rhs]);
+        }
+    }
+}
+
+impl AddAssign for SizeExpr {
+    fn add_assign(&mut self, rhs: SizeExpr) {
+        *self = Self::Plus(Box::new(self.clone()), Box::new(rhs));
     }
 }
 

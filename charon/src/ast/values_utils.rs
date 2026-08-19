@@ -1,4 +1,9 @@
 //! Implementations for [crate::values]
+use std::{
+    cmp::Ordering,
+    ops::{Add, Div, Mul, Rem, Sub},
+};
+
 use crate::ast::*;
 
 #[derive(Debug, Clone)]
@@ -49,7 +54,7 @@ impl Literal {
 }
 
 impl ScalarValue {
-    fn ptr_size_max(ptr_size: ByteCount, signed: bool) -> ScalarResult<u128> {
+    fn ptr_size_max(ptr_size: RawByteCount, signed: bool) -> ScalarResult<u128> {
         match ptr_size {
             2 => Ok(if signed {
                 i16::MAX as u128
@@ -70,7 +75,7 @@ impl ScalarValue {
         }
     }
 
-    fn ptr_size_min(ptr_size: ByteCount, signed: bool) -> ScalarResult<i128> {
+    fn ptr_size_min(ptr_size: RawByteCount, signed: bool) -> ScalarResult<i128> {
         match ptr_size {
             2 => Ok(if signed {
                 i16::MIN as i128
@@ -116,7 +121,7 @@ impl ScalarValue {
         }
     }
 
-    pub fn uint_is_in_bounds(ptr_size: ByteCount, ty: UIntTy, v: u128) -> bool {
+    pub fn uint_is_in_bounds(ptr_size: RawByteCount, ty: UIntTy, v: u128) -> bool {
         match ty {
             UIntTy::Usize => v <= Self::ptr_size_max(ptr_size, false).unwrap(),
             UIntTy::U8 => v <= (u8::MAX as u128),
@@ -131,7 +136,7 @@ impl ScalarValue {
         ScalarValue::Unsigned(ty, v)
     }
 
-    pub fn from_uint(ptr_size: ByteCount, ty: UIntTy, v: u128) -> ScalarResult<Self> {
+    pub fn from_uint(ptr_size: RawByteCount, ty: UIntTy, v: u128) -> ScalarResult<Self> {
         if !ScalarValue::uint_is_in_bounds(ptr_size, ty, v) {
             trace!("Not in bounds for {:?}: {}", ty, v);
             Err(ScalarError::OutOfBounds)
@@ -140,8 +145,16 @@ impl ScalarValue {
         }
     }
 
-    pub fn mk_usize(ptr_size: ByteCount, v: u64) -> Self {
+    pub fn mk_usize(ptr_size: RawByteCount, v: u64) -> Self {
         ScalarValue::from_uint(ptr_size, UIntTy::Usize, v as u128).unwrap()
+    }
+
+    pub const fn mk_zero_usize() -> Self {
+        ScalarValue::Unsigned(UIntTy::Usize, 0)
+    }
+
+    pub const fn mk_one_usize() -> Self {
+        ScalarValue::Unsigned(UIntTy::Usize, 1)
     }
 
     /// When computing the result of binary operations, we convert the values
@@ -154,7 +167,7 @@ impl ScalarValue {
         }
     }
 
-    pub fn int_is_in_bounds(ptr_size: ByteCount, ty: IntTy, v: i128) -> bool {
+    pub fn int_is_in_bounds(ptr_size: RawByteCount, ty: IntTy, v: i128) -> bool {
         match ty {
             IntTy::Isize => {
                 v >= Self::ptr_size_min(ptr_size, true).unwrap()
@@ -213,7 +226,7 @@ impl ScalarValue {
     /// **Warning**: most constants are stored as u128 by rustc. When converting
     /// to i128, it is not correct to do `v as i128`, we must reinterpret the
     /// bits (see [ScalarValue::from_le_bytes]).
-    pub fn from_int(ptr_size: ByteCount, ty: IntTy, v: i128) -> ScalarResult<ScalarValue> {
+    pub fn from_int(ptr_size: RawByteCount, ty: IntTy, v: i128) -> ScalarResult<ScalarValue> {
         if !ScalarValue::int_is_in_bounds(ptr_size, ty, v) {
             Err(ScalarError::OutOfBounds)
         } else {
@@ -222,7 +235,7 @@ impl ScalarValue {
     }
 
     /// Increment the value, staying within the same integer type. Returns `None` on overflow.
-    pub fn add(self, n: u128) -> Option<Self> {
+    pub fn add_n(self, n: u128) -> Option<Self> {
         Some(match self {
             ScalarValue::Unsigned(ty, v) => ScalarValue::Unsigned(ty, v.checked_add(n)?),
             ScalarValue::Signed(ty, v) => {
@@ -239,6 +252,130 @@ impl ScalarValue {
         ConstantExpr {
             kind: ConstantExprKind::Literal(Literal::Scalar(self)),
             ty: TyKind::Literal(literal_ty).into_ty(),
+        }
+    }
+
+    pub fn is_multiple_of(&self, rhs: &Self) -> Option<bool> {
+        if self.ty() == rhs.ty() {
+            if self.is_signed() {
+                let self_val = self.as_int().unwrap();
+                let rhs_val = rhs.as_int().unwrap();
+                Some(if rhs_val == 0 {
+                    self_val == 0
+                } else {
+                    self_val % rhs_val == 0
+                })
+            } else {
+                let self_val = self.as_uint().unwrap();
+                let rhs_val = rhs.as_uint().unwrap();
+                Some(self_val.is_multiple_of(rhs_val))
+            }
+        } else {
+            None
+        }
+    }
+
+    /// Does typed arithmetic by checking whether both arguments encode the same
+    /// scalar type and operates on the raw values.
+    pub fn do_arith(
+        self,
+        rhs: Self,
+        fn_u: fn(u128, u128) -> Option<u128>,
+        fn_s: fn(i128, i128) -> Option<i128>,
+    ) -> Option<Self> {
+        if self.ty() == rhs.ty() {
+            if self.is_signed() {
+                let (ty, self_val) = self.as_signed().unwrap();
+                let rhs_val = rhs.as_int().unwrap();
+                fn_s(*self_val, rhs_val).map(|i| Self::from_unchecked_int(*ty, i))
+            } else {
+                let (ty, self_val) = self.as_unsigned().unwrap();
+                let rhs_val = rhs.as_uint().unwrap();
+                fn_u(*self_val, rhs_val).map(|u| Self::from_unchecked_uint(*ty, u))
+            }
+        } else {
+            None
+        }
+    }
+}
+
+impl Add for ScalarValue {
+    type Output = Option<Self>;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        self.do_arith(rhs, u128::checked_add, i128::checked_add)
+    }
+}
+
+impl Sub for ScalarValue {
+    type Output = Option<Self>;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        self.do_arith(rhs, u128::checked_sub, i128::checked_sub)
+    }
+}
+
+impl Mul for ScalarValue {
+    type Output = Option<Self>;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        self.do_arith(rhs, u128::checked_mul, i128::checked_mul)
+    }
+}
+
+impl Div for ScalarValue {
+    type Output = Option<Self>;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        self.do_arith(rhs, u128::checked_div, i128::checked_div)
+    }
+}
+
+impl Rem for ScalarValue {
+    type Output = Option<Self>;
+
+    fn rem(self, rhs: Self) -> Self::Output {
+        self.do_arith(
+            rhs,
+            |self_val, rhs| Some(self_val.rem(rhs)),
+            |self_val, rhs| Some(self_val.rem(rhs)),
+        )
+    }
+}
+
+impl PartialOrd for ScalarValue {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for ScalarValue {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match (self, other) {
+            (ScalarValue::Unsigned(_, self_val), ScalarValue::Unsigned(_, other_val)) => {
+                self_val.cmp(other_val)
+            }
+            (ScalarValue::Unsigned(_, self_val), ScalarValue::Signed(_, other_val)) => {
+                if *self_val > i128::MAX as u128 {
+                    Ordering::Greater
+                } else if *other_val < 0i128 {
+                    Ordering::Less
+                } else {
+                    self_val.cmp(&(*other_val as u128))
+                }
+            }
+            (ScalarValue::Signed(_, self_val), ScalarValue::Unsigned(_, other_val)) => {
+                if *other_val > i128::MAX as u128 {
+                    Ordering::Less
+                } else if *self_val < 0i128 {
+                    Ordering::Greater
+                } else {
+                    other_val.cmp(&(*self_val as u128))
+                }
+            }
+            (ScalarValue::Signed(_, self_val), ScalarValue::Signed(_, other_val)) => {
+                self_val.cmp(other_val)
+            }
         }
     }
 }

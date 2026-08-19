@@ -64,8 +64,6 @@ pub enum Literal {
     VariantName,
     VariantIndexArity,
     Hash,
-    PartialOrd,
-    Ord,
     Serialize,
     Deserialize,
     Drive,

@@ -543,27 +543,227 @@ pub enum PredicateOrigin {
     Dyn,
 }
 
+/// Variables representing layout information from the context.
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    DriveTwo,
+)]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Var"))]
+pub enum LayoutVar {
+    /// The size of the whole type.
+    Size,
+    /// The alignment of the whole type.
+    Align,
+    /// The offset of the given field.
+    FieldOffset(Option<VariantId>, FieldId),
+}
+
+/// Represents the guarantees we can get about offsets of fields.
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    DriveTwo,
+)]
+pub enum OffsetGuarantee {
+    /// Guaranteed to be at offset zero. This applies for `repr(transparent)` and in some  `repr(C)` cases.
+    AtOffsetZero,
+    /// The only guarantee is that it is aligned to the given expression.
+    GuaranteedAlignment(Box<SizeExpr>),
+    /// This offset has to be computed by the layout algorithm for C, taking into consideration the fields before.
+    /// Must not be the first field, since that is [`OffsetGuarantee::AtOffsetZero`].
+    ReprCField {
+        /// If this is `None`, then the field is directly behind the tag.
+        predecessor: Option<FieldId>,
+        predecessor_size: LayoutValue,
+        own_ty: Ty,
+    },
+}
+
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    DriveTwo,
+)]
+#[serde_state(state_implements = HashConsSerializerState)]
+pub enum LayoutValue {
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("LayoutValueConstant"))]
+    Constant(ConstantExpr),
+    /// The size of the given type.
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("ValueSizeOf"))]
+    SizeOf(Ty),
+    /// The alignment of the given type.
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("ValueAlignOf"))]
+    AlignOf(Ty),
+    /// For a DST with `dyn Trait` metadata, this refers to the size found in the metadata.
+    DynSize,
+    /// For a DST with `dyn Trait` metadata, this refers to the alignment found in the metadata.
+    DynAlign,
+    /// For a DST with slice metadata, this refers to the length found in the metadata.
+    SliceLength,
+}
+
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    DriveTwo,
+)]
+#[serde_state(state_implements = HashConsSerializerState)]
+pub enum SizeExpr {
+    #[serde_state(stateless)]
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("SizeVariable"))]
+    Var(LayoutVar),
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("SizeValue"))]
+    Val(LayoutValue),
+    Max(Vec<SizeExpr>),
+    Min(Vec<SizeExpr>),
+    Plus(Box<SizeExpr>, Box<SizeExpr>),
+    Scale(Box<SizeExpr>, ConstantExpr),
+    /// The next multiple of `target_align` from `base`.
+    AlignTo {
+        base: Box<SizeExpr>,
+        target_align: Box<SizeExpr>,
+    },
+    /// A size expression that changes its value based on whether an argument type is inhabited.
+    IfInhabited {
+        ty: Ty,
+        then_size: Box<SizeExpr>,
+        else_size: Box<SizeExpr>,
+    },
+}
+
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    DriveTwo,
+)]
+#[serde_state(state_implements = HashConsSerializerState)]
+pub enum SizeExprBound {
+    ExactEq(SizeExpr),
+    LowerBound(SizeExpr),
+}
+
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    DriveTwo,
+)]
+#[serde_state(state_implements = HashConsSerializerState)]
+#[cfg_attr(
+    feature = "charon_on_charon",
+    charon::variants_prefix("OffsetGuarantee")
+)]
+pub enum OffsetGuarantees {
+    Symbolic(Ty),
+    Variants(IndexVec<VariantId, IndexVec<FieldId, OffsetGuarantee>>),
+    Fields(IndexVec<FieldId, OffsetGuarantee>),
+    None,
+}
+
 // rustc counts bytes in layouts as u64
-pub type ByteCount = u64;
+pub type RawByteCount = u64;
+
+#[derive(
+    Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
+)]
+pub struct ByteCount {
+    #[serde_state(stateless)]
+    #[drive(skip)]
+    pub raw: Option<RawByteCount>,
+    pub guarantees: SizeExprBound, // TODO: do we need to make this optional?
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut)]
+pub struct OffsetInformation {
+    #[serde_state(stateless)]
+    #[drive(skip)]
+    pub raw: Option<RawByteCount>,
+    pub guarantees: Option<OffsetGuarantee>,
+}
 
 /// Simplified layout of a single variant.
 ///
 /// Maps fields to their offset within the layout.
 #[derive(
-    Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo,
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    DriveTwo,
 )]
 pub struct VariantLayout {
     /// The offset of each field.
     #[drive(skip)]
-    pub field_offsets: IndexVec<FieldId, ByteCount>,
+    pub field_offsets: IndexVec<FieldId, OffsetInformation>,
     /// Whether the variant is uninhabited, i.e. has any valid possible value.
     /// Note that uninhabited types can have arbitrary layouts.
     #[drive(skip)]
-    pub uninhabited: bool,
+    #[serde_state(stateless)]
+    pub uninhabited: Option<bool>, // TODO: make predicate.
     /// How to write the tag when constructing this variant. Each entry means: write `value` at
     /// byte `offset`. Mirrors MiniRust's `Variant::tagger`.
     #[drive(skip)]
-    pub tagger: Vec<(ByteCount, ScalarValue)>,
+    #[serde_state(stateless)]
+    pub tagger: Vec<(RawByteCount, ScalarValue)>,
 }
 
 /// Decision tree used to determine the active variant by reading memory. Mirrors MiniRust's
@@ -577,7 +777,7 @@ pub enum Discriminator {
     /// Branch on an integer value read from memory at `offset`.
     Branch {
         /// Byte offset to read from.
-        offset: ByteCount,
+        offset: RawByteCount,
         /// Integer type to read.
         int_ty: IntegerTy,
         /// If the integer is in one of these ranges, continue with the given `Discriminator`. The
@@ -599,10 +799,10 @@ pub enum Discriminator {
 pub struct Layout {
     /// The size of the type in bytes.
     #[drive(skip)]
-    pub size: Option<ByteCount>,
+    pub size: ByteCount,
     /// The alignment, in bytes.
     #[drive(skip)]
-    pub align: Option<ByteCount>,
+    pub align: ByteCount,
     /// Decision tree that determines the active variant by reading memory. Only `Some` for enums.
     #[drive(skip)]
     #[serde_state(stateless)]
@@ -615,11 +815,9 @@ pub struct Layout {
     /// Map from `VariantId` to the corresponding field layouts. Some variants don't have a
     /// meaningful layout due to being uninhabited (though an uninhabited variant may have a
     /// layout). Structs and unions are modeled as having exactly one variant.
-    #[serde_state(stateless)]
     pub variant_layouts: IndexVec<VariantId, Option<VariantLayout>>,
     /// The representation options of this type declaration as annotated by the user.
     #[drive(skip)]
-    #[serde_state(stateless)]
     pub repr: ReprOptions,
 }
 
@@ -674,8 +872,8 @@ pub enum ReprAlgorithm {
 /// Represents `repr(align(n))` and `repr(packed(n))`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AlignmentModifier {
-    Align(ByteCount),
-    Pack(ByteCount),
+    Align(RawByteCount),
+    Pack(RawByteCount),
 }
 
 /// The representation options as annotated by the user.
@@ -684,12 +882,14 @@ pub enum AlignmentModifier {
 /// or the compiler internal `#[repr(linear)]`. Similarly, enum discriminant representations
 /// are encoded in [`Variant::discriminant`] and [`Discriminator`] instead.
 /// This only stores whether the discriminant type was derived from an explicit annotation.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, SerializeState, DeserializeState)]
+#[serde_state(stateless)]
 pub struct ReprOptions {
     pub repr_algo: ReprAlgorithm,
     pub align_modif: Option<AlignmentModifier>,
     pub transparent: bool,
-    pub explicit_discr_type: bool,
+    #[serde_state(stateful)]
+    pub explicit_discr_type: Option<Ty>,
 }
 
 /// A type declaration.

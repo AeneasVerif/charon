@@ -227,14 +227,15 @@ pub type TargetTriple = String;
 #[serde_state(stateless)]
 pub struct TargetInfo {
     /// The pointer size of the target in bytes.
-    pub target_pointer_size: types::ByteCount,
+    pub target_pointer_size: types::RawByteCount,
     /// Whether the target platform uses little endian byte order.
     pub is_little_endian: bool,
-    /// The minimum size of a [`repr(C)`] enum.
-    pub c_enum_min_size: types::ByteCount,
+    /// The signed integer type used by default for [`repr(C)`] enum.
+    /// This is obtained from the minimum size as specific in the rustc target information.
+    pub c_enum_repr_ty: types::IntTy,
     /// Alignments for primitive types.
-    #[serde(with = "SeqHashMapToArray::<LiteralTy, ByteCount>")]
-    pub primitive_alignments: SeqHashMap<LiteralTy, ByteCount>,
+    #[serde(with = "SeqHashMapToArray::<LiteralTy, RawByteCount>")]
+    pub primitive_alignments: SeqHashMap<LiteralTy, RawByteCount>,
 }
 
 #[derive(Default, Clone, Drive, DriveMut, DriveTwo, SerializeState, DeserializeState)]

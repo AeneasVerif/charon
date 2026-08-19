@@ -1893,6 +1893,13 @@ and body_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (ErrorBody x_0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and byte_count_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (byte_count, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* raw = option_of_postcard u64_of_postcard ctx st in
+     let* guarantees = size_expr_bound_of_postcard ctx st in
+     Ok ({ raw; guarantees } : byte_count))
+
 and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (cli_options, string) result =
   combine_error_msgs st __FUNCTION__
@@ -2643,8 +2650,8 @@ and rustc_lang_item_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
 and layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (layout, string) result =
   combine_error_msgs st __FUNCTION__
-    (let* size = option_of_postcard u64_of_postcard ctx st in
-     let* align = option_of_postcard u64_of_postcard ctx st in
+    (let* size = byte_count_of_postcard ctx st in
+     let* align = byte_count_of_postcard ctx st in
      let* discriminator = option_of_postcard discriminator_of_postcard ctx st in
      let* uninhabited = bool_of_postcard ctx st in
      let* variant_layouts =
@@ -2656,6 +2663,38 @@ and layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      Ok
        ({ size; align; discriminator; uninhabited; variant_layouts; repr }
          : layout))
+
+and layout_value_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (layout_value, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* x_0 = constant_expr_of_postcard ctx st in
+         Ok (LayoutValueConstant x_0)
+     | 1 ->
+         let* x_0 = ty_of_postcard ctx st in
+         Ok (ValueSizeOf x_0)
+     | 2 ->
+         let* x_0 = ty_of_postcard ctx st in
+         Ok (ValueAlignOf x_0)
+     | 3 -> Ok DynSize
+     | 4 -> Ok DynAlign
+     | 5 -> Ok SliceLength
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and layout_var_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (layout_var, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok VarSize
+     | 1 -> Ok VarAlign
+     | 2 ->
+         let* x_0 = option_of_postcard variant_id_of_postcard ctx st in
+         let* x_1 = field_id_of_postcard ctx st in
+         Ok (VarFieldOffset (x_0, x_1))
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and local_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (local, string) result =
@@ -2694,6 +2733,29 @@ and monomorphize_mut_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 0 -> Ok All
      | 1 -> Ok ExceptTypes
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and offset_guarantee_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (offset_guarantee, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok AtOffsetZero
+     | 1 ->
+         let* x_0 = box_of_postcard size_expr_of_postcard ctx st in
+         Ok (GuaranteedAlignment x_0)
+     | 2 ->
+         let* predecessor = option_of_postcard field_id_of_postcard ctx st in
+         let* predecessor_size = layout_value_of_postcard ctx st in
+         let* own_ty = ty_of_postcard ctx st in
+         Ok (ReprCField (predecessor, predecessor_size, own_ty))
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and offset_information_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
+    : (offset_information, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* raw = option_of_postcard u64_of_postcard ctx st in
+     let* guarantees = option_of_postcard offset_guarantee_of_postcard ctx st in
+     Ok ({ raw; guarantees } : offset_information))
 
 and rustc_optimize_attr_of_postcard (ctx : of_postcard_ctx)
     (st : postcard_state) : (rustc_optimize_attr, string) result =
@@ -2759,7 +2821,7 @@ and repr_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        option_of_postcard alignment_modifier_of_postcard ctx st
      in
      let* transparent = bool_of_postcard ctx st in
-     let* explicit_discr_type = bool_of_postcard ctx st in
+     let* explicit_discr_type = option_of_postcard ty_of_postcard ctx st in
      Ok
        ({ repr_algo; align_modif; transparent; explicit_discr_type }
          : repr_options))
@@ -2782,6 +2844,55 @@ and serialization_format_arg_of_postcard (ctx : of_postcard_ctx)
      | 2 -> Ok AllFormats
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and size_expr_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (size_expr, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* x_0 = layout_var_of_postcard ctx st in
+         Ok (SizeVariable x_0)
+     | 1 ->
+         let* x_0 = layout_value_of_postcard ctx st in
+         Ok (SizeValue x_0)
+     | 2 ->
+         let* x_0 = list_of_postcard size_expr_of_postcard ctx st in
+         Ok (Max x_0)
+     | 3 ->
+         let* x_0 = list_of_postcard size_expr_of_postcard ctx st in
+         Ok (Min x_0)
+     | 4 ->
+         let* x_0 = box_of_postcard size_expr_of_postcard ctx st in
+         let* x_1 = box_of_postcard size_expr_of_postcard ctx st in
+         Ok (Plus (x_0, x_1))
+     | 5 ->
+         let* x_0 = box_of_postcard size_expr_of_postcard ctx st in
+         let* x_1 = constant_expr_of_postcard ctx st in
+         Ok (Scale (x_0, x_1))
+     | 6 ->
+         let* base = box_of_postcard size_expr_of_postcard ctx st in
+         let* target_align = box_of_postcard size_expr_of_postcard ctx st in
+         Ok (AlignTo (base, target_align))
+     | 7 ->
+         let* ty = ty_of_postcard ctx st in
+         let* then_size = box_of_postcard size_expr_of_postcard ctx st in
+         let* else_size = box_of_postcard size_expr_of_postcard ctx st in
+         Ok (IfInhabited (ty, then_size, else_size))
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and size_expr_bound_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (size_expr_bound, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* x_0 = size_expr_of_postcard ctx st in
+         Ok (ExactEq x_0)
+     | 1 ->
+         let* x_0 = size_expr_of_postcard ctx st in
+         Ok (LowerBound x_0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and spec_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (spec_kind, string) result =
   combine_error_msgs st __FUNCTION__
@@ -2796,7 +2907,7 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* target_pointer_size = u64_of_postcard ctx st in
      let* is_little_endian = bool_of_postcard ctx st in
-     let* c_enum_min_size = u64_of_postcard ctx st in
+     let* c_enum_repr_ty = int_ty_of_postcard ctx st in
      let* primitive_alignments =
        index_map_of_postcard literal_type_of_postcard u64_of_postcard
          int_of_postcard ctx st
@@ -2805,7 +2916,7 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        ({
           target_pointer_size;
           is_little_endian;
-          c_enum_min_size;
+          c_enum_repr_ty;
           primitive_alignments;
         }
          : target_info))
@@ -3105,9 +3216,10 @@ and variant_layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (variant_layout, string) result =
   combine_error_msgs st __FUNCTION__
     (let* field_offsets =
-       index_vec_of_postcard field_id_of_postcard u64_of_postcard ctx st
+       index_vec_of_postcard field_id_of_postcard offset_information_of_postcard
+         ctx st
      in
-     let* uninhabited = bool_of_postcard ctx st in
+     let* uninhabited = option_of_postcard bool_of_postcard ctx st in
      let* tagger =
        list_of_postcard
          (pair_of_postcard u64_of_postcard scalar_value_of_postcard)
