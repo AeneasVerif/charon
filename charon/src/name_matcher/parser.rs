@@ -2,23 +2,22 @@ use std::{fmt, str::FromStr};
 
 use itertools::Itertools;
 use nom::{
-    Parser,
+    Finish, Parser,
     bytes::complete::{tag, take_while},
     character::complete::{multispace0, multispace1},
-    combinator::{map_res, success},
-    error::ParseError,
+    combinator::{all_consuming, cut, map_res, opt, success},
+    error::{Error, ParseError},
     multi::separated_list0,
-    sequence::{delimited, preceded},
+    sequence::{delimited, preceded, terminated},
 };
-use nom_supreme::{ParserExt, error::ErrorTree};
 
 use super::{PatElem, PatTy, Pattern};
 use crate::ast::RefKind;
 
-type ParseResult<'a, T> = nom::IResult<&'a str, T, ErrorTree<&'a str>>;
+type ParseResult<'a, T> = nom::IResult<&'a str, T, Error<&'a str>>;
 
 /// Extra methods on parsers.
-trait ParserExtExt<I, O, E>: Parser<I, O, E> + Sized
+trait ParserExt<I, O, E>: Parser<I, O, E> + Sized
 where
     I: Clone,
     E: ParseError<I>,
@@ -27,10 +26,25 @@ where
     where
         F: Parser<I, O2, E>,
     {
-        self.terminated(suffix)
+        terminated(self, suffix)
+    }
+
+    fn precedes<F, O2>(self, next: F) -> impl Parser<I, O2, E>
+    where
+        F: Parser<I, O2, E>,
+    {
+        preceded(self, next)
+    }
+
+    fn opt(self) -> impl Parser<I, Option<O>, E> {
+        opt(self)
+    }
+
+    fn cut(self) -> impl Parser<I, O, E> {
+        cut(self)
     }
 }
-impl<I, O, E, P> ParserExtExt<I, O, E> for P
+impl<I, O, E, P> ParserExt<I, O, E> for P
 where
     I: Clone,
     E: ParseError<I>,
@@ -40,15 +54,18 @@ where
 
 /// The entry point for this module: parses a string into a `Pattern`.
 impl FromStr for Pattern {
-    type Err = ErrorTree<String>;
+    type Err = Error<String>;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         parse_pattern_complete(s)
     }
 }
 
-fn parse_pattern_complete(i: &str) -> Result<Pattern, ErrorTree<String>> {
-    nom_supreme::final_parser::final_parser(parse_pattern)(i)
-        .map_err(|e: ErrorTree<_>| e.map_locations(|s: &str| s.to_string()))
+fn parse_pattern_complete(i: &str) -> Result<Pattern, Error<String>> {
+    all_consuming(parse_pattern)
+        .parse(i)
+        .finish()
+        .map(|(_, pattern)| pattern)
+        .map_err(|e| Error::new(e.input.to_string(), e.code))
 }
 
 fn parse_pattern(i: &str) -> ParseResult<'_, Pattern> {

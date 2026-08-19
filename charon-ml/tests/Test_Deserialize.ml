@@ -1,8 +1,6 @@
 open Charon
 open Logging
-module EL = Easy_logging.Logging
-
-let log = main_log
+module Log = (val Logs.src_log main_log : Logs.LOG)
 
 (** [dir_is_empty dir] is true, if [dir] contains no files except * "." and ".."
 *)
@@ -126,11 +124,9 @@ let test_cross_format_errors json postcard =
   | Error e ->
       assert_contains ~msg:"Wrong error for Postcard fed to JSON"
         ~sub:"looks like Postcard" e);
-  log#linfo
-    (lazy
-      (Printf.sprintf
-         "Cross-format error tests passed for JSON file %s and Postcard file %s"
-         json postcard))
+  Log.info (fun m ->
+      m "Cross-format error tests passed for JSON file %s and Postcard file %s"
+        json postcard)
 
 (* Run the tests *)
 let run_tests (folder : string) : unit =
@@ -157,32 +153,33 @@ let run_tests (folder : string) : unit =
   let () =
     List.iter
       (fun file ->
-        log#ldebug (lazy ("Deserializing JSON file: " ^ file));
+        Log.debug (fun m -> m "Deserializing JSON file: %s" file);
         (* Load the module *)
         let start_time = Unix.gettimeofday () in
         match OfJson.crate_of_json_file file with
         | Error s ->
-            log#error "Error when deserializing file %s: %s\n" file s;
+            Log.err (fun m -> m "Error when deserializing file %s: %s" file s);
             exit 1
         | Ok _ ->
             json_time := !json_time +. (Unix.gettimeofday () -. start_time);
-            log#linfo (lazy ("Deserialized: " ^ file)))
+            Log.info (fun m -> m "Deserialized: %s" file))
       json_files
   in
   let () =
     List.iter
       (fun file ->
-        log#ldebug (lazy ("Deserializing postcard file: " ^ file));
+        Log.debug (fun m -> m "Deserializing postcard file: %s" file);
         (* Load the module *)
         let start_time = Unix.gettimeofday () in
         match OfPostcard.crate_of_postcard_file file with
         | Error s ->
-            log#error "Error when deserializing postcard file %s: %s\n" file s;
+            Log.err (fun m ->
+                m "Error when deserializing postcard file %s: %s" file s);
             exit 1
         | Ok m ->
             postcard_time :=
               !postcard_time +. (Unix.gettimeofday () -. start_time);
-            log#linfo (lazy ("Deserialized postcard: " ^ file));
+            Log.info (fun m -> m "Deserialized postcard: %s" file);
             let printed = Print.crate_to_string m in
             assert_pretty_matches_rust file printed)
       postcard_files
@@ -194,14 +191,13 @@ let run_tests (folder : string) : unit =
   in
   let avg_json_time = avg_of json_time json_files in
   let avg_postcard_time = avg_of postcard_time postcard_files in
-  log#linfo
-    (lazy
-      (Printf.sprintf
-         "Average deserialization time: JSON: %f seconds, Postcard: %f seconds \
-          (%f times faster)"
-         avg_json_time avg_postcard_time
-         (if avg_postcard_time > 0.0 then avg_json_time /. avg_postcard_time
-          else 0.0)));
+  Log.info (fun m ->
+      m
+        "Average deserialization time: JSON: %f seconds, Postcard: %f seconds \
+         (%f times faster)"
+        avg_json_time avg_postcard_time
+        (if avg_postcard_time > 0.0 then avg_json_time /. avg_postcard_time
+         else 0.0));
 
   (* for each JSON and Postcard file pair, check the size of the file and print the ratio *)
   let ratios = ref [] in
@@ -233,17 +229,15 @@ let run_tests (folder : string) : unit =
         let mid = List.length sorted_ratios / 2 in
         (List.nth sorted_ratios mid +. List.nth sorted_ratios (mid - 1)) /. 2.0
     in
-    log#linfo
-      (lazy
-        (Printf.sprintf
-           "Size ratio (JSON/Postcard): min: %f, max: %f, avg: %f, med: %f"
-           min_ratio max_ratio avg_ratio med_ratio));
+    Log.info (fun m ->
+        m "Size ratio (JSON/Postcard): min: %f, max: %f, avg: %f, med: %f"
+          min_ratio max_ratio avg_ratio med_ratio);
 
     match (json_files, postcard_files) with
     | json :: _, postcard :: _ -> test_cross_format_errors json postcard
     | _ ->
-        log#linfo
-          (lazy "No JSON or Postcard files found, skipping cross-format tests.");
+        Log.info (fun m ->
+            m "No JSON or Postcard files found, skipping cross-format tests.");
 
         (* Done *)
         ()
