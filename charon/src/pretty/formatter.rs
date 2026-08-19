@@ -6,9 +6,9 @@ use std::fmt::Display;
 use index_vec::Idx;
 
 use crate::ast::*;
-use crate::common::TAB_INCR;
 use crate::ids::IndexVec;
 use crate::pretty::FmtWithCtx;
+use crate::utils::TAB_INCR;
 
 pub trait IntoFormatter {
     type C: AstFormatter;

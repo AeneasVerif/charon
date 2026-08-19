@@ -74,8 +74,8 @@ use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 
 use crate::{
-    ast::*, common::CycleDetector, formatter::IntoFormatter, ids::IndexMap, pretty::FmtWithCtx,
-    register_error,
+    ast::*, formatter::IntoFormatter, ids::IndexMap, pretty::FmtWithCtx, register_error,
+    utils::CycleDetector,
 };
 
 use crate::transform::{TransformCtx, ctx::TransformPass, utils::GenericsSource};

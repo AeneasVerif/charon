@@ -4,8 +4,8 @@ use itertools::Itertools;
 use std::mem;
 
 use crate::ast::*;
-use crate::common::CycleDetector;
 use crate::transform::{TransformCtx, ctx::TransformPass};
+use crate::utils::CycleDetector;
 
 type BoundRegionOutlives = RegionBinder<RegionOutlives>;
 type BoundTypeOutlives = RegionBinder<TypeOutlives>;

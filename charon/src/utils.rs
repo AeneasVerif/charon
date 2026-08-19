@@ -1,6 +1,9 @@
 use itertools::Itertools;
 use macros::EnumAsGetters;
 
+pub mod hash_cons;
+pub use hash_cons::*;
+
 pub static TAB_INCR: &str = "    ";
 
 /// Custom function to pretty-print elements from an iterator

@@ -6,13 +6,9 @@
 
 use std::collections::HashSet;
 
-use crate::ast::ullbc_ast_utils::StmtLoc;
-use crate::ast::*;
-use crate::ids::IndexVec;
 use crate::transform::TransformCtx;
-use crate::ullbc_ast::{BlockId, ExprBody, Statement, StatementKind};
-
 use crate::transform::ctx::UllbcPass;
+use crate::ullbc_ast::*;
 
 type LocalUses = IndexVec<BlockId, HashSet<LocalId>>;
 

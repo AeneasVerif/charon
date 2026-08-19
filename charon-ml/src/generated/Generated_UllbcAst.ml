@@ -6,17 +6,20 @@ open Generated_GAst
 open Identifiers
 module BlockId = IdGen ()
 
+(** A "basic block", which contains a linear sequence of statements, followed by
+    a terminator, which is where non-linear control-flow happens. *)
 type block = { statements : statement list; terminator : terminator }
+
 and block_id = (BlockId.id[@visitors.opaque])
 and blocks = block list
 
+(** A statement. *)
 and statement = {
   span : span;
   kind : statement_kind;
   comments_before : string list;  (** Comments that precede this statement. *)
 }
 
-(** A raw statement: a statement without meta data. *)
 and statement_kind =
   | Assign of place * rvalue
   | SetDiscriminant of place * variant_id
@@ -62,13 +65,14 @@ and switch =
           the otherwise block. Note that matches over enumerations are performed
           by switching over the discriminant, which is an integer. *)
 
+(** A terminator: instruction to execute at the end of a block, which may jump
+    to other blocks. *)
 and terminator = {
   span : span;
   kind : terminator_kind;
   comments_before : string list;  (** Comments that precede this terminator. *)
 }
 
-(** A raw terminator: a terminator without meta data. *)
 and terminator_kind =
   | Goto of block_id
       (** Fields:

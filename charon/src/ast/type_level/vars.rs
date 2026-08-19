@@ -7,6 +7,7 @@ use std::{
 
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use index_vec::Idx;
+use macros::EnumIsA;
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
@@ -186,6 +187,21 @@ pub struct RegionParam {
     pub mutability: LifetimeMutability,
 }
 
+/// The nature of locations where a given lifetime parameter is used. If this lifetime ever flows
+/// to be used as the lifetime of a mutable reference `&'a mut` then we consider it mutable.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, EnumIsA,
+)]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Lt"))]
+pub enum LifetimeMutability {
+    /// A lifetime that is used for a mutable reference.
+    Mutable,
+    /// A lifetime used only in shared references.
+    Shared,
+    /// A lifetime for which we couldn't/didn't compute mutability.
+    Unknown,
+}
+
 /// A const generic variable in a signature or binder.
 #[derive(
     Debug,
@@ -227,12 +243,116 @@ pub struct TraitParam {
     pub trait_: PolyTraitDeclRef,
 }
 
+/// Where a given predicate came from.
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    DriveTwo,
+)]
+pub enum PredicateOrigin {
+    // Note: we use this for globals too, but that's only available with an unstable feature.
+    // ```
+    // fn function<T: Clone>() {}
+    // fn function<T>() where T: Clone {}
+    // const NONE<T: Copy>: Option<T> = None;
+    // ```
+    WhereClauseOnFn,
+    // ```
+    // struct Struct<T: Clone> {}
+    // struct Struct<T> where T: Clone {}
+    // type TypeAlias<T: Clone> = ...;
+    // ```
+    WhereClauseOnType,
+    // Note: this is both trait impls and inherent impl blocks.
+    // ```
+    // impl<T: Clone> Type<T> {}
+    // impl<T> Type<T> where T: Clone {}
+    // impl<T> Trait for Type<T> where T: Clone {}
+    // ```
+    WhereClauseOnImpl,
+    // The special `Self: Trait` clause which is in scope inside the definition of `Foo` or an
+    // implementation of it.
+    // ```
+    // trait Trait {}
+    // ```
+    TraitSelf,
+    // Note: this also includes supertrait constraints.
+    // ```
+    // trait Trait<T: Clone> {}
+    // trait Trait<T> where T: Clone {}
+    // trait Trait: Clone {}
+    // ```
+    WhereClauseOnTrait,
+    // ```
+    // trait Trait {
+    //     type AssocType: Clone;
+    // }
+    // ```
+    TraitItem(AssocTypeId),
+    /// Clauses that are part of a `dyn Trait` type.
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("OriginDyn"))]
+    Dyn,
+}
+
+impl TypeParam {
+    pub fn new(index: TypeVarId, name: String, variance: Variance) -> Self {
+        Self {
+            index,
+            name,
+            variance,
+        }
+    }
+}
+
+impl RegionParam {
+    pub fn new(index: RegionId, name: Option<String>, variance: Variance) -> Self {
+        Self {
+            index,
+            name,
+            variance,
+            mutability: LifetimeMutability::Unknown,
+        }
+    }
+}
+
+impl ConstGenericParam {
+    pub fn new(index: ConstGenericVarId, name: String, ty: Ty) -> Self {
+        Self { index, name, ty }
+    }
+}
+
+impl TraitParam {
+    /// Constructs the trait ref that refers to this clause.
+    pub fn identity_tref(&self) -> TraitRef {
+        self.identity_tref_at_depth(DeBruijnId::zero())
+    }
+
+    /// Like `identity_tref` but uses variables bound at the given depth.
+    pub fn identity_tref_at_depth(&self, depth: DeBruijnId) -> TraitRef {
+        TraitRef::new(
+            TraitRefKind::Clause(DeBruijnVar::bound(depth, self.clause_id)),
+            self.trait_.clone().move_under_binders(depth),
+        )
+    }
+}
+
 impl PartialEq for TraitParam {
     fn eq(&self, other: &Self) -> bool {
         // Skip `span` and `origin`
         self.clause_id == other.clause_id && self.trait_ == other.trait_
     }
 }
+
+impl Eq for TraitParam {}
 
 impl PartialOrd for TraitParam {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
@@ -370,33 +490,6 @@ where
             DeBruijnVar::Bound(dbid, varid) => DeBruijnVar::Bound(dbid.plus(depth), varid),
             DeBruijnVar::Free(_) => *self,
         }
-    }
-}
-
-impl TypeParam {
-    pub fn new(index: TypeVarId, name: String, variance: Variance) -> Self {
-        Self {
-            index,
-            name,
-            variance,
-        }
-    }
-}
-
-impl RegionParam {
-    pub fn new(index: RegionId, name: Option<String>, variance: Variance) -> Self {
-        Self {
-            index,
-            name,
-            variance,
-            mutability: LifetimeMutability::Unknown,
-        }
-    }
-}
-
-impl ConstGenericParam {
-    pub fn new(index: ConstGenericVarId, name: String, ty: Ty) -> Self {
-        Self { index, name, ty }
     }
 }
 

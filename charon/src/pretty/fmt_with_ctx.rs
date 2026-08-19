@@ -1,12 +1,12 @@
 //! Utilities for pretty-printing (u)llbc.
 use crate::{
-    common::{TAB_INCR, repeat_except_first},
+    ast,
     formatter::*,
-    gast,
     ids::IndexVec,
     llbc_ast::{self as llbc, *},
     transform::utils::GenericsSource,
     ullbc_ast::{self as ullbc, *},
+    utils::{TAB_INCR, repeat_except_first},
 };
 use either::Either;
 use itertools::Itertools;
@@ -289,7 +289,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::BlockData {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for gast::Body {
+impl<C: AstFormatter> FmtWithCtx<C> for ast::Body {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let tab = ctx.indent();
         write!(f, "\n{tab}")?;

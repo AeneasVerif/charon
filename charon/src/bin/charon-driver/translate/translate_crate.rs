@@ -535,7 +535,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         // https://doc.rust-lang.org/1.97.1/nightly-rustc/src/rustc_ty_utils/layout.rs.html#391
         primitive_alignments.insert(LiteralTy::Char, target_data.i32_align.bytes());
 
-        let info = krate::TargetInfo {
+        let info = TargetInfo {
             target_pointer_size: target_data.pointer_size().bytes(),
             is_little_endian: matches!(target_data.endian, rustc_abi::Endian::Little),
             c_enum_min_size: target_data.c_enum_min_size.size().bytes(),

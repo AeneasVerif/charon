@@ -4,8 +4,8 @@ use std::hash::Hash;
 use std::ops::{ControlFlow, Deref};
 use std::sync::Arc;
 
-use crate::common::hash_by_addr::HashByAddr;
-use crate::common::type_map::Mappable;
+use crate::utils::hash_by_addr::HashByAddr;
+use crate::utils::type_map::Mappable;
 
 /// Hash-consed data structure: a reference-counted wrapper that guarantees that two equal
 /// value will be stored at the same address. This makes it possible to use the pointer address
@@ -58,8 +58,8 @@ mod intern_table {
     use std::sync::{Arc, LazyLock, RwLock};
 
     use super::{HashConsId, HashConsable, HashConsed};
-    use crate::common::hash_by_addr::HashByAddr;
-    use crate::common::type_map::{Mappable, Mapper, TypeMap};
+    use crate::utils::hash_by_addr::HashByAddr;
+    use crate::utils::type_map::{Mappable, Mapper, TypeMap};
 
     type SeqHashMap<K, V> = indexmap::IndexMap<K, V, FxBuildHasher>;
 
@@ -243,7 +243,7 @@ mod serialize {
     use std::collections::HashSet;
 
     use super::{HashConsId, HashConsable, HashConsed};
-    use crate::common::type_map::{Mappable, Mapper, TypeMap};
+    use crate::utils::type_map::{Mappable, Mapper, TypeMap};
 
     pub trait HashConsSerializerState: Sized {
         /// Record that this type is being serialized. Return `None` if we're not deduplicating

@@ -7,6 +7,7 @@ open Identifiers
 module StatementId = IdGen ()
 module BlockId = IdGen ()
 
+(** A sequence of statements. *)
 type block = {
   span : span;
   block_id : block_id;
@@ -17,6 +18,8 @@ type block = {
 
 and block_id = (BlockId.id[@visitors.opaque])
 
+(** A statement, which can contain nested statements inside loops or switchers.
+*)
 and statement = {
   span : span;
   statement_id : statement_id;
@@ -29,7 +32,6 @@ and statement = {
 
 and statement_id = (StatementId.id[@visitors.opaque])
 
-(** A raw statement: a statement without meta data. *)
 and statement_kind =
   | Assign of place * rvalue
       (** Assigns an [Rvalue] to a [Place]. e.g. [let y = x;] could become

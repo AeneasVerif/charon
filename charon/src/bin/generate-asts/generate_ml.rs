@@ -139,16 +139,16 @@ pub(crate) fn generate(
 
     #[rustfmt::skip]
     let ambiguous_types = &[
-        ("charon_lib::ast::ullbc_ast::Statement", ("Generated_UllbcAst", "Ullbc")),
-        ("charon_lib::ast::ullbc_ast::StatementKind", ("Generated_UllbcAst", "Ullbc")),
-        ("charon_lib::ast::ullbc_ast::SwitchTargets", ("Generated_UllbcAst", "Ullbc")),
-        ("charon_lib::ast::ullbc_ast::BlockData", ("Generated_UllbcAst", "Ullbc")),
-        ("charon_lib::ast::ullbc_ast::BlockId", ("Generated_UllbcAst", "Ullbc")),
-        ("charon_lib::ast::llbc_ast::Statement", ("Generated_LlbcAst", "Llbc")),
-        ("charon_lib::ast::llbc_ast::StatementKind", ("Generated_LlbcAst", "Llbc")),
-        ("charon_lib::ast::llbc_ast::Switch", ("Generated_LlbcAst", "Llbc")),
-        ("charon_lib::ast::llbc_ast::Block", ("Generated_LlbcAst", "Llbc")),
-        ("charon_lib::ast::llbc_ast::BlockId", ("Generated_LlbcAst", "Llbc")),
+        ("charon_lib::ast::bodies::unstructured::Statement", ("Generated_UllbcAst", "Ullbc")),
+        ("charon_lib::ast::bodies::unstructured::StatementKind", ("Generated_UllbcAst", "Ullbc")),
+        ("charon_lib::ast::bodies::unstructured::SwitchTargets", ("Generated_UllbcAst", "Ullbc")),
+        ("charon_lib::ast::bodies::unstructured::BlockData", ("Generated_UllbcAst", "Ullbc")),
+        ("charon_lib::ast::bodies::unstructured::BlockId", ("Generated_UllbcAst", "Ullbc")),
+        ("charon_lib::ast::bodies::structured::Statement", ("Generated_LlbcAst", "Llbc")),
+        ("charon_lib::ast::bodies::structured::StatementKind", ("Generated_LlbcAst", "Llbc")),
+        ("charon_lib::ast::bodies::structured::Switch", ("Generated_LlbcAst", "Llbc")),
+        ("charon_lib::ast::bodies::structured::Block", ("Generated_LlbcAst", "Llbc")),
+        ("charon_lib::ast::bodies::structured::BlockId", ("Generated_LlbcAst", "Llbc")),
     ];
 
     let mut ctx = GenerateCtx::new(crate_data, ambiguous_types);
@@ -163,10 +163,10 @@ pub(crate) fn generate(
         all_types.insert(ctx.id_from_name("indexmap::map::IndexMap")); // Add this one foreign type
         all_types.remove(&ctx.id_from_name("charon_lib::ids::index_map::IndexMap"));
         let all_llbc_types: HashSet<_> =
-            ctx.children_of_many(&["charon_lib::ast::llbc_ast::Block"]);
+            ctx.children_of_many(&["charon_lib::ast::bodies::structured::Block"]);
         let all_ullbc_types: HashSet<_> = ctx.children_of_many(&[
-            "charon_lib::ast::ullbc_ast::BlockData",
-            "charon_lib::ast::ullbc_ast::BlockId",
+            "charon_lib::ast::bodies::unstructured::BlockData",
+            "charon_lib::ast::bodies::unstructured::BlockId",
         ]);
         all_types.into_iter().for_each(|ty| {
             let in_llbc = all_llbc_types.contains(&ty);
@@ -351,7 +351,7 @@ pub(crate) fn generate(
                     reduce: false,
                     extra_types: &[],
                 })), &[
-                    "charon_lib::ast::llbc_ast::Statement",
+                    "charon_lib::ast::bodies::structured::Statement",
                 ]),
             ]),
         },
@@ -365,7 +365,7 @@ pub(crate) fn generate(
                     reduce: false,
                     extra_types: &[],
                 })), &[
-                    "charon_lib::ast::ullbc_ast::BodyContents",
+                    "charon_lib::ast::bodies::unstructured::BodyContents",
                 ]),
             ]),
         },

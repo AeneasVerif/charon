@@ -22,7 +22,6 @@
 use itertools::Itertools;
 use std::collections::HashSet;
 
-use crate::ast::ullbc_ast_utils::StmtLoc;
 use crate::name_matcher::NamePattern;
 use crate::transform::ctx::UllbcPass;
 use crate::transform::{CowBox, TransformCtx};
@@ -278,7 +277,7 @@ fn is_new_uninit_call(ctx: &TransformCtx, call: &Call) -> bool {
 
 impl Transform {
     pub fn new(ctx: &mut TransformCtx) -> CowBox<dyn UllbcPass> {
-        let pat = NamePattern::parse(crate::builtins::BOX_WRITE_PATTERN).unwrap();
+        let pat = NamePattern::parse(names::BOX_WRITE_PATTERN).unwrap();
         let box_write = ctx
             .translated
             .item_names

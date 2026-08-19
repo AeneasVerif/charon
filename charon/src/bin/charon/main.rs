@@ -31,10 +31,10 @@
 //! callbacks.
 use anyhow::{Context, Result};
 use charon_lib::{
-    common::arg_value,
     export::{CrateData, multi_target},
     logger,
     options::{CHARON_ARGS, CliOpts, SerializationFormat, SerializationFormatArg},
+    utils::arg_value,
 };
 use clap::Parser;
 use cli::{Charon, Cli};

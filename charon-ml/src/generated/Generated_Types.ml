@@ -205,8 +205,8 @@ and binder_kind =
   | BKDyn  (** Binder used for [dyn Trait] existential predicates. *)
   | BKOther  (** Some other use of a binder outside the main Charon ast. *)
 
-(** An built-in function identifier, identifying a function coming from a
-    standard library. *)
+(** A built-in function, representing a specific built-in function that's part
+    of the LLBC semantics. *)
 and builtin_fun_id =
   | BoxNew
       (** Used instead of [alloc::boxed::Box::new] when [--treat-box-as-builtin]
@@ -328,36 +328,10 @@ and const_generic_param = {
 }
 
 and const_generic_var_id = (ConstGenericVarId.id[@visitors.opaque])
+
+(** A constant expression. *)
 and constant_expr = { kind : constant_expr_kind; ty : ty }
 
-(** A constant expression.
-
-    Only the [[ConstantExprKind::Literal]] and [[ConstantExprKind::Var]] cases
-    are left in the final LLBC.
-
-    The other cases come from a straight translation from the MIR:
-
-    [[ConstantExprKind::Adt]] case: It is a bit annoying, but rustc treats some
-    ADT and tuple instances as constants when generating MIR:
-    - an enumeration with one variant and no fields is a constant.
-    - a structure with no field is a constant.
-    - sometimes, Rust stores the initialization of an ADT as a constant (if all
-      the fields are constant) rather than as an aggregated value
-
-    We later desugar those to regular ADTs, see [regularize_constant_adts.rs].
-
-    [[ConstantExprKind::Global]] case: access to a global variable. We later
-    desugar it to a copy of a place global.
-
-    [[ConstantExprKind::Ref]] case: reference to a constant value. We later
-    desugar it to a separate statement.
-
-    [[ConstantExprKind::FnPtr]] case: a function pointer (to a top-level
-    function).
-
-    Remark: MIR seems to forbid more complex expressions like paths. For
-    instance, reading the constant [a.b] is translated to
-    [{ _1 = const a; _2 = (_1.0) }]. *)
 and constant_expr_kind =
   | CLiteral of literal
   | CAdt of variant_id option * constant_expr list
@@ -443,6 +417,8 @@ and dyn_predicate = {
 }
 
 and field_id = (FieldId.id[@visitors.opaque])
+
+(** Reference to a function, possibly indirected via a trait. *)
 and fn_ptr = { kind : fn_ptr_kind; generics : generic_args }
 
 and fn_ptr_kind =
@@ -457,7 +433,7 @@ and fun_decl_ref = {
   generics : generic_args;  (** Generic arguments passed to the function. *)
 }
 
-(** A function identifier. See [crate::ullbc_ast::Terminator] *)
+(** A regular or builtin function. *)
 and fun_id =
   | FRegular of fun_decl_id
       (** A "regular" function (function local to the crate, external function
@@ -974,6 +950,7 @@ and item_meta = {
           identifier. *)
 }
 
+(** How much to translate for a given item. *)
 and item_opacity =
   | Transparent  (** Translate the item fully. *)
   | Foreign
@@ -1264,7 +1241,7 @@ and rustc_lang_item =
   | RustcLangItemFrom  (**The [From] lang item. *)
   | RustcLangItemFromFn  (**The [from] lang item. *)
 
-(** Simplified type layout information.
+(** Type layout information.
 
     Does not include information about niches. If the type does not have a fully
     known layout (e.g. it is ?Sized) some of the layout parts are not available.

@@ -8,8 +8,8 @@ use rustc_middle::ty;
 
 use super::translate_ctx::{ItemTransCtx, TransImplSource, TransItemSourceKind};
 use charon_lib::ast::*;
-use charon_lib::common::CycleDetector;
 use charon_lib::ids::IndexVec;
+use charon_lib::utils::CycleDetector;
 
 /// A level of binding for type-level variables. Each item has a top-level binding level
 /// corresponding to the parameters and clauses to the items. We may then encounter inner binding
