@@ -109,10 +109,10 @@ impl Generator<'_> {
     ) -> fmt::Result {
         if fields.is_empty() {
             write!(f, "from_rustc::{output_ty}")
-        } else if fields.iter().all(|field| field.name.is_some()) {
+        } else if fields.iter().all(|field| !field.is_positional) {
             writeln!(f, "from_rustc::{output_ty} {{")?;
             for field in fields {
-                let name = field.name.as_ref().unwrap();
+                let name = &field.name;
                 write!(f, "{name}: ")?;
                 self.fmt_translation_expr(f, &field.ty, &format!("&value.{name}"))?;
                 writeln!(f, ",")?;
@@ -167,19 +167,12 @@ impl Generator<'_> {
                 f,
                 "{rust_ty}::{variant_name} => Ok(from_rustc::{output_ty}::{variant_name}),"
             )
-        } else if fields.iter().all(|field| field.name.is_some()) {
+        } else if fields.iter().all(|field| !field.is_positional) {
             write!(f, "{rust_ty}::{variant_name} {{ ")?;
-            write!(
-                f,
-                "{}",
-                fields
-                    .iter()
-                    .map(|field| field.name.as_ref().unwrap())
-                    .format(", ")
-            )?;
+            write!(f, "{}", fields.iter().map(|field| &field.name).format(", "))?;
             writeln!(f, " }} => Ok(from_rustc::{output_ty}::{variant_name} {{")?;
             for field in fields {
-                let name = field.name.as_ref().unwrap();
+                let name = &field.name;
                 write!(f, "{name}: ")?;
                 self.fmt_translation_expr(f, &field.ty, name)?;
                 writeln!(f, ",")?;

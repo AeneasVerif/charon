@@ -66,7 +66,7 @@ impl Generator<'_> {
         self.fmt_type_attrs(f, &self.crate_data[id], false)?;
         if fields.is_empty() {
             writeln!(f, "pub struct {name};")
-        } else if fields.iter().all(|field| field.name.is_some()) {
+        } else if fields.iter().all(|field| !field.is_positional) {
             writeln!(f, "pub struct {name} {{")?;
             for field in fields {
                 self.fmt_named_field(f, field, "pub ")?;
@@ -96,7 +96,7 @@ impl Generator<'_> {
         let fields = &variant.fields;
         if fields.is_empty() {
             writeln!(f, "{name},")
-        } else if fields.iter().all(|field| field.name.is_some()) {
+        } else if fields.iter().all(|field| !field.is_positional) {
             writeln!(f, "{name} {{")?;
             for field in fields {
                 self.fmt_named_field(f, field, "")?;
@@ -121,7 +121,7 @@ impl Generator<'_> {
         writeln!(
             f,
             "{visibility}{}: {},",
-            field.name.as_ref().unwrap(),
+            field.name,
             self.generated_type(&field.ty),
         )
     }

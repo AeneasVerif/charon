@@ -43,7 +43,7 @@ pub trait StructuralPartialEq<Self>
 
 // Full name: test_crate::Enum
 enum Enum {
-  Some(u8),
+  Some { 0: u8 },
   None,
 }
 

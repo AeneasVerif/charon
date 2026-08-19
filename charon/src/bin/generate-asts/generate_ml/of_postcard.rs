@@ -203,7 +203,7 @@ impl<'a> GenerateCtx<'a> {
                 let rename = if f.is_opaque() {
                     "_".to_string()
                 } else {
-                    make_ocaml_ident(f.renamed_name().unwrap())
+                    make_ocaml_ident(f.renamed_name())
                 };
                 let convert = self.type_to_ocaml_postcard_call(&f.ty);
                 format!("let* {rename} = {convert} ctx st in")
@@ -226,16 +226,13 @@ impl<'a> GenerateCtx<'a> {
         let body = match &decl.kind {
             _ if let Some(def) = manual_impls.get(&decl.def_id) => def.clone(),
             TypeDeclKind::Struct(fields) if fields.is_empty() => "Ok ()".to_string(),
-            TypeDeclKind::Struct(fields)
-                if fields.len() == 1
-                    && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
-            {
+            TypeDeclKind::Struct(fields) if fields.len() == 1 && fields[0].name == "_raw" => {
                 let short_name = &decl.item_meta.name.short_str().unwrap();
                 format!("{short_name}.id_of_postcard ctx st")
             }
             TypeDeclKind::Struct(fields)
                 if fields.len() == 1
-                    && (fields[0].name.is_none()
+                    && (fields[0].is_positional
                         || decl
                             .item_meta
                             .attr_info
@@ -250,15 +247,15 @@ impl<'a> GenerateCtx<'a> {
                 let call = self.type_to_ocaml_postcard_call(ty);
                 format!("{call} ctx st")
             }
-            TypeDeclKind::Struct(fields) if fields.iter().all(|f| f.name.is_none()) => {
+            TypeDeclKind::Struct(fields) if fields.iter().all(|field| field.is_positional) => {
                 let mut fields = fields.clone();
                 for (i, f) in fields.iter_mut().enumerate() {
-                    f.name = Some(format!("x{i}"));
+                    f.name = format!("x{i}");
                 }
                 let convert = self.convert_postcard_vars(&fields);
                 let construct = fields
                     .iter()
-                    .map(|f| f.renamed_name().unwrap())
+                    .map(Field::renamed_name)
                     .map(make_ocaml_ident)
                     .join(", ");
                 format!("{convert}\nOk ({construct})")
@@ -268,7 +265,7 @@ impl<'a> GenerateCtx<'a> {
                 let construct = fields
                     .iter()
                     .filter(|f| !f.is_opaque())
-                    .map(|f| f.renamed_name().unwrap())
+                    .map(Field::renamed_name)
                     .map(make_ocaml_ident)
                     .join("; ");
                 format!("{convert}\nOk (({{ {construct} }} : {return_ty}))")
@@ -287,16 +284,16 @@ impl<'a> GenerateCtx<'a> {
                             Some(format!("| {idx} -> Ok {rename}"))
                         } else {
                             let mut fields = variant.fields.clone();
-                            if fields.iter().all(|f| f.name.is_none()) {
+                            if fields.iter().all(|field| field.is_positional) {
                                 for (j, f) in fields.iter_mut().enumerate() {
-                                    f.name = Some(format!("x_{j}"));
+                                    f.name = format!("x_{j}");
                                 }
                             }
                             let convert = self.convert_postcard_vars(&fields);
                             let construct_fields = fields
                                 .iter()
-                                .map(|f| f.name.as_ref().unwrap())
-                                .map(|n| make_ocaml_ident(n))
+                                .map(|f| f.name.as_str())
+                                .map(make_ocaml_ident)
                                 .join(", ");
                             let construct = format!("{rename} ({construct_fields})");
                             Some(format!("| {idx} -> {convert}\n  Ok ({construct})"))

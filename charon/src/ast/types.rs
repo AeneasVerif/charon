@@ -788,7 +788,9 @@ pub struct Field {
     pub attr_info: AttrInfo,
     #[cfg_attr(feature = "charon_on_charon", charon::rename("field_name"))]
     #[drive(skip)]
-    pub name: Option<String>,
+    pub name: String,
+    /// Whether this field is positional, as in a tuple struct, tuple variant, or closure.
+    pub is_positional: bool,
     #[cfg_attr(feature = "charon_on_charon", charon::rename("field_ty"))]
     #[serde_state(stateful)]
     pub ty: Ty,

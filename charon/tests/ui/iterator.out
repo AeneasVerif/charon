@@ -39,7 +39,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { 0: T },
 }
 
 // Full name: core::ops::try_trait::FromResidual
@@ -59,8 +59,8 @@ where
     TraitClause0: (B: Sized),
     TraitClause1: (C: Sized),
 {
-  Continue(C),
-  Break(B),
+  Continue { 0: C },
+  Break { 0: B },
 }
 
 // Full name: core::ops::try_trait::Try
@@ -162,8 +162,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 {
-  Ok(T),
-  Err(E),
+  Ok { 0: T },
+  Err { 0: E },
 }
 
 // Full name: core::num::nonzero::private::Sealed

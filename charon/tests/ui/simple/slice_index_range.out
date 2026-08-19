@@ -424,7 +424,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { 0: T },
 }
 
 fn core::slice::index::slice_index_fail::do_panic(start: usize, len: usize) -> !

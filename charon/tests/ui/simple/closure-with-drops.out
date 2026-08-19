@@ -86,7 +86,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Destruct),
 {
-  T,
+  0: T,
 }
 
 // Full name: test_crate::foo::closure::{impl Destruct for test_crate::foo::closure<T>[TraitClause0, TraitClause1]}::drop_glue

@@ -28,7 +28,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { 0: T },
 }
 
 // Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_glue

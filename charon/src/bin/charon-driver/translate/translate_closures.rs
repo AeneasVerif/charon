@@ -253,10 +253,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             .unwrap()
             .iter()
             .cloned()
-            .map(|ty| Field {
+            .enumerate()
+            .map(|(field_id, ty)| Field {
                 span,
                 attr_info: AttrInfo::dummy_private(),
-                name: None,
+                name: field_id.to_string(),
+                is_positional: true,
                 ty,
             })
             .collect();

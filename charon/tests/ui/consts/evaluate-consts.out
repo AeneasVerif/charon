@@ -29,7 +29,7 @@ pub static STATIC: u32 = 100u32
 
 // Full name: test_crate::Node
 pub struct Node {
-  &'static Node,
+  0: &'static Node,
 }
 
 // Full name: test_crate::REC_A

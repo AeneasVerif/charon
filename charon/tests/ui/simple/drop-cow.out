@@ -55,8 +55,8 @@ where
     TypeOutlives0: B: 'a,
     TypeOutlives1: B: 'a,
 {
-  Borrowed(&'a B),
-  Owned(TraitClause1::Owned),
+  Borrowed { 0: &'a B },
+  Owned { 0: TraitClause1::Owned },
 }
 
 // Full name: test_crate::Cow::{impl Destruct for Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]}::drop_glue

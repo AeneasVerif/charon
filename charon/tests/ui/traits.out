@@ -73,7 +73,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { 0: T },
 }
 
 // Full name: core::option::Option::{impl Destruct for Option<T>[TraitClause0]}::drop_glue
@@ -90,8 +90,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 {
-  Ok(T),
-  Err(E),
+  Ok { 0: T },
+  Err { 0: E },
 }
 
 // Full name: alloc::string::String
@@ -765,12 +765,12 @@ pub struct TestType<T>
 where
     TraitClause0: (T: Sized),
 {
-  T,
+  0: T,
 }
 
 // Full name: test_crate::{TestType<T>[TraitClause0]}::test::TestType1
 struct TestType1 {
-  u64,
+  0: u64,
 }
 
 // Full name: test_crate::{TestType<T>[TraitClause0]}::test::{impl TestTrait for TestType1}::test
@@ -881,7 +881,7 @@ impl "impl_TestTrait_for_TestType1" TestTrait for TestType1 {
 
 // Full name: test_crate::BoolWrapper
 pub struct BoolWrapper {
-  bool,
+  0: bool,
 }
 
 // Full name: test_crate::{impl ToType<T> for BoolWrapper}::to_type

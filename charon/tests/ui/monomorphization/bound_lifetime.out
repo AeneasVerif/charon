@@ -5,7 +5,7 @@
 #[diagnostic_item("Option")]
 pub enum Option::<&'_ u32> {
   None,
-  Some(&'_ u32),
+  Some { 0: &'_ u32 },
 }
 
 // Full name: test_crate::foo

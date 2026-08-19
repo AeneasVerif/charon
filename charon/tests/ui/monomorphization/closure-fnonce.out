@@ -52,7 +52,7 @@ pub trait FnOnce<Self, Args>
 
 // Full name: test_crate::main::closure
 struct closure {
-  NotCopy,
+  0: NotCopy,
 }
 
 // Full name: test_crate::main::closure::{impl Destruct for closure}::drop_glue

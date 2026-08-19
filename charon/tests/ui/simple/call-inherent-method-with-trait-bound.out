@@ -40,7 +40,7 @@ pub struct HashMap<S>
 where
     TraitClause0: (S: Sized),
 {
-  S,
+  0: S,
 }
 
 // Full name: test_crate::HashMap::{impl Destruct for HashMap<S>[TraitClause0]}::drop_glue

@@ -437,7 +437,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             fields.push(Field {
                 span,
                 attr_info: AttrInfo::dummy_public(),
-                name: Some(name),
+                name,
+                is_positional: false,
                 ty,
             });
         }

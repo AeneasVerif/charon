@@ -77,7 +77,7 @@ pub trait Fn<Self, Args>
 }
 
 struct test_crate::main::closure<'_0> {
-  &'_0 u8,
+  0: &'_0 u8,
 }
 
 // Full name: test_crate::main::closure::{impl Destruct for test_crate::main::closure<'_0>}::drop_glue
@@ -149,7 +149,7 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(f: test_crate::main::closure<'
 }
 
 struct test_crate::main::closure#1<'_0> {
-  &'_0 mut u8,
+  0: &'_0 mut u8,
 }
 
 // Full name: test_crate::main::closure#1::{impl Destruct for test_crate::main::closure#1<'_0>}::drop_glue
@@ -212,7 +212,7 @@ fn apply_to_zero_mut::<test_crate::main::closure#1<'_>>(f: test_crate::main::clo
 }
 
 struct test_crate::main::closure#2 {
-  Thing,
+  0: Thing,
 }
 
 // Full name: test_crate::main::closure#2::{impl Destruct for test_crate::main::closure#2}::drop_glue

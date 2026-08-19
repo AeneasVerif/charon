@@ -57,8 +57,8 @@ where
     TypeOutlives0: B: 'a,
     TypeOutlives1: B: 'a,
 {
-  Borrowed(&'a B),
-  Owned(TraitClause1::Owned),
+  Borrowed { 0: &'a B },
+  Owned { 0: TraitClause1::Owned },
 }
 
 // Full name: alloc::vec::Vec

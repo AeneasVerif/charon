@@ -922,7 +922,10 @@ and discriminator =
 and field = {
   span : span;
   attr_info : attr_info;
-  field_name : string option;
+  field_name : string;
+  is_positional : bool;
+      (** Whether this field is positional, as in a tuple struct, tuple variant,
+          or closure. *)
   field_ty : ty;
 }
 

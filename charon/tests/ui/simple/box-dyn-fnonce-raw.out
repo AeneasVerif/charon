@@ -38,8 +38,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 {
-  Ok(T),
-  Err(E),
+  Ok { 0: T },
+  Err { 0: E },
 }
 
 // Full name: core::ptr::non_null::NonNull
@@ -254,8 +254,8 @@ where
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
 {
-  Unique<T>,
-  A,
+  0: Unique<T>,
+  1: A,
 }
 
 // Full name: alloc::boxed::{impl Drop for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop

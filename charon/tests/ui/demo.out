@@ -198,7 +198,7 @@ pub enum CList<T>
 where
     TraitClause0: (T: Sized),
 {
-  CCons(T, alloc::boxed::Box<CList<T>[TraitClause0]>[{built_in impl MetaSized for CList<T>[TraitClause0]}, {built_in impl Sized for Global}]),
+  CCons { 0: T, 1: alloc::boxed::Box<CList<T>[TraitClause0]>[{built_in impl MetaSized for CList<T>[TraitClause0]}, {built_in impl Sized for Global}] },
   CNil,
 }
 

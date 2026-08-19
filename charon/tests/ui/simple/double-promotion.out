@@ -18,7 +18,7 @@ where
     TraitClause0: (B: Sized),
     TypeOutlives0: B: 'a,
 {
-  &'a B,
+  0: &'a B,
 }
 
 // Full name: test_crate::main

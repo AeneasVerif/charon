@@ -56,7 +56,7 @@ where
 
 // Full name: test_crate::NoCopy
 struct NoCopy {
-  u8,
+  0: u8,
 }
 
 // Full name: test_crate::move_values

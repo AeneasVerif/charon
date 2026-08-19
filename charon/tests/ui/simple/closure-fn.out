@@ -156,8 +156,8 @@ where
 
 // Full name: test_crate::main::closure
 struct closure<'_0, '_1> {
-  &'_0 u8,
-  &'_1 u8,
+  0: &'_0 u8,
+  1: &'_1 u8,
 }
 
 // Full name: test_crate::main::{impl Fn<(u8, u8)> for closure<'_0, '_1>}::call

@@ -89,7 +89,7 @@ struct Struct<A>
 where
     TraitClause0: (A: Sized),
 {
-  A,
+  0: A,
 }
 
 // Full name: test_crate::{impl Default for Struct<A>[TraitClause0]}::default

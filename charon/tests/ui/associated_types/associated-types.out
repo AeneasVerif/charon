@@ -86,7 +86,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { 0: T },
 }
 
 // Full name: core::option::{impl Clone for Option<T>[TraitClause0]}::clone
@@ -441,8 +441,8 @@ where
     TypeOutlives0: B: 'a,
     TypeOutlives1: B: 'a,
 {
-  Borrowed(&'a B),
-  Owned(Clause1_Owned),
+  Borrowed { 0: &'a B },
+  Owned { 0: Clause1_Owned },
 }
 
 trait test_crate::params::Foo<'a, Self, T, Self_X, Self_Item>

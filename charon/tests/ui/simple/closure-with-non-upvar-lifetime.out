@@ -70,7 +70,7 @@ struct closure<'_0, '_1>
 where
     RegionOutlives0: '_1: '_0,
 {
-  &'_0 &'_1 [u8],
+  0: &'_0 &'_1 [u8],
 }
 
 // Full name: test_crate::call_fn::{impl Fn<(usize,)> for closure<'_0, '_1>}::call

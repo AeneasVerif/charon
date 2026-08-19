@@ -37,7 +37,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { 0: T },
 }
 
 // Full name: core::cmp::PartialOrd
@@ -141,7 +141,7 @@ fn main()
 
 // Full name: test_crate::Foo
 struct Foo {
-  u32,
+  0: u32,
 }
 
 // Full name: test_crate::{impl StructuralPartialEq for Foo}

@@ -6,8 +6,8 @@ enum Never {
 
 // Full name: test_crate::MyResult::<Never, u8>
 enum MyResult::<Never, u8> {
-  Ok(Never),
-  Err(u8),
+  Ok { 0: Never },
+  Err { 0: u8 },
 }
 
 // Full name: test_crate::use_result

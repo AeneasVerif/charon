@@ -2140,9 +2140,10 @@ and field_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* span = span_of_postcard ctx st in
      let* attr_info = attr_info_of_postcard ctx st in
-     let* field_name = option_of_postcard string_of_postcard ctx st in
+     let* field_name = string_of_postcard ctx st in
+     let* is_positional = bool_of_postcard ctx st in
      let* field_ty = ty_of_postcard ctx st in
-     Ok ({ span; attr_info; field_name; field_ty } : field))
+     Ok ({ span; attr_info; field_name; is_positional; field_ty } : field))
 
 and file_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (file, string) result =

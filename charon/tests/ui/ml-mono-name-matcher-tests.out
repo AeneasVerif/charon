@@ -11,7 +11,7 @@ pub struct RangeFrom::<usize> {
 #[diagnostic_item("Option")]
 pub enum Option::<i32> {
   None,
-  Some(i32),
+  Some { 0: i32 },
 }
 
 // Full name: core::option::{Option::<i32>}::is_some::<i32>

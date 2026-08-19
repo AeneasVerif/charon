@@ -83,8 +83,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 {
-  Ok(T),
-  Err(E),
+  Ok { 0: T },
+  Err { 0: E },
 }
 
 fn core::hint::assert_unchecked::precondition_check(_1: bool)

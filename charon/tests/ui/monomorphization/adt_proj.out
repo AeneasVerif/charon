@@ -3,8 +3,8 @@
 // Full name: core::result::Result::<u32, u32>
 #[diagnostic_item("Result")]
 pub enum Result::<u32, u32> {
-  Ok(u32),
-  Err(u32),
+  Ok { 0: u32 },
+  Err { 0: u32 },
 }
 
 // Full name: test_crate::main

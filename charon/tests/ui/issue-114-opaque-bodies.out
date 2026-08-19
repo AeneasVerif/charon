@@ -20,7 +20,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { 0: T },
 }
 
 // Full name: core::marker::Destruct
@@ -260,7 +260,7 @@ pub struct PhantomData<T> {}
 
 // Full name: core::num::niche_types::UsizeNoHighBit
 pub struct UsizeNoHighBit {
-  usize is 0usize..=9223372036854775807usize,
+  0: usize is 0usize..=9223372036854775807usize,
 }
 
 pub fn core::num::{usize}::MAX() -> usize

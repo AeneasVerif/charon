@@ -5,7 +5,7 @@
 #[diagnostic_item("Option")]
 pub enum Option<T> {
   None,
-  Some(T),
+  Some { 0: T },
 }
 
 // Full name: test_crate::wrap_shared_in_option

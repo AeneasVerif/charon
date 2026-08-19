@@ -542,10 +542,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
 impl_display_via_ctx!(Field);
 impl<C: AstFormatter> FmtWithCtx<C> for Field {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(name) = &self.name {
-            write!(f, "{}: ", name)?
-        }
-        write!(f, "{}", self.ty.with_ctx(ctx))
+        write!(f, "{}: {}", self.name, self.ty.with_ctx(ctx))
     }
 }
 
@@ -2617,7 +2614,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Variant {
         write!(f, "{}", self.name)?;
         if !self.fields.is_empty() {
             let fields = self.fields.iter().map(|f| f.with_ctx(ctx)).format(", ");
-            write!(f, "({})", fields)?;
+            write!(f, " {{ {} }}", fields)?;
         }
         Ok(())
     }

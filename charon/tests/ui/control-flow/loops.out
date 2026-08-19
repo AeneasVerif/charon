@@ -80,7 +80,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { 0: T },
 }
 
 // Full name: core::cmp::PartialOrd
@@ -1648,7 +1648,7 @@ pub enum List<T>
 where
     TraitClause0: (T: Sized),
 {
-  Cons(T, alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]),
+  Cons { 0: T, 1: alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}] },
   Nil,
 }
 

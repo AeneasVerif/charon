@@ -29,7 +29,7 @@ pub trait IndexMut<Self, Idx>
 
 // Full name: test_crate::Wrap
 pub struct Wrap {
-  [u64; 2usize],
+  0: [u64; 2usize],
 }
 
 // Full name: test_crate::{impl Index<usize> for Wrap}::index

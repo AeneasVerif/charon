@@ -88,7 +88,7 @@ struct test_crate::f::closure<'_0, T>
 where
     TypeOutlives0: T: '_0,
 {
-  &'_0 T,
+  0: &'_0 T,
 }
 
 // Full name: test_crate::f
@@ -279,7 +279,7 @@ struct test_crate::g::closure<'_0, T>
 where
     TypeOutlives0: T: '_0,
 {
-  &'_0 T,
+  0: &'_0 T,
 }
 
 // Full name: test_crate::g

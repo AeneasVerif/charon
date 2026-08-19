@@ -24,7 +24,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { 0: T },
 }
 
 // Full name: core::num::{usize}::overflowing_add_signed

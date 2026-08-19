@@ -78,7 +78,7 @@ struct Empty<T>
 where
     TraitClause0: (T: Sized),
 {
-  [T; 0usize],
+  0: [T; 0usize],
 }
 
 // Full name: test_crate::{impl Iter<T> for Empty<T>[TraitClause0]}::map

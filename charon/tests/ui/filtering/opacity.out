@@ -139,7 +139,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { 0: T },
 }
 
 // Full name: core::option::{Option<T>[TraitClause0]}::is_some

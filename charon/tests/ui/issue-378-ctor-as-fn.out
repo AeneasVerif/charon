@@ -28,7 +28,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { 0: T },
 }
 
 // Full name: core::option::Option::Some
@@ -65,8 +65,8 @@ static F: fn(u8) -> Option<u8>[{built_in impl Sized for u8}] = F()
 
 // Full name: test_crate::Foo
 struct Foo {
-  u32,
-  String,
+  0: u32,
+  1: String,
 }
 
 // Full name: test_crate::Foo::{impl Destruct for Foo}::drop_glue
@@ -110,7 +110,7 @@ where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: 'a,
 {
-  Variant(&'a T),
+  Variant { 0: &'a T },
 }
 
 // Full name: test_crate::Bar::Variant

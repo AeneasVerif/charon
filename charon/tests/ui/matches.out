@@ -67,8 +67,8 @@ where
 
 // Full name: test_crate::E2
 pub enum E2 {
-  V1(u32),
-  V2(u32),
+  V1 { 0: u32 },
+  V2 { 0: u32 },
   V3,
 }
 

@@ -54,8 +54,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 {
-  Ok(T),
-  Err(E),
+  Ok { 0: T },
+  Err { 0: E },
 }
 
 // Full name: core::fmt::Display

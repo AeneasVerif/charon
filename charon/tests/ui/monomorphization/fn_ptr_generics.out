@@ -5,7 +5,7 @@
 #[diagnostic_item("Option")]
 pub enum Option::<u8> {
   None,
-  Some(u8),
+  Some { 0: u8 },
 }
 
 // Full name: test_crate::init_option

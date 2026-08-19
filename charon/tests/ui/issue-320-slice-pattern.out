@@ -318,7 +318,7 @@ fn slice_pat4<'_0>(x: &'_0 [u32])
 
 // Full name: test_crate::Unsized
 struct Unsized {
-  [u32],
+  0: [u32],
 }
 
 // Full name: test_crate::slice_pat5

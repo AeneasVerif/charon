@@ -994,26 +994,15 @@ and adt_field_names (env : fmt_env) (def_id : TypeDeclId.id)
   | Some { kind = Opaque; _ } -> None
   | Some def ->
       let fields = type_decl_get_fields def opt_variant_id in
-      (* There are two cases: either all the fields have names, or none
-         of them has names *)
-      let has_names =
-        List.exists (fun f -> Option.is_some f.field_name) fields
-      in
-      if has_names then
-        let fields = List.map (fun f -> Option.get f.field_name) fields in
-        Some fields
-      else None
+      Some (List.map (fun f -> f.field_name) fields)
 
 let pp_field (env : fmt_env) (fmt : Format.formatter) (f : field) : unit =
-  match f.field_name with
-  | Some field_name ->
-      Format.fprintf fmt "%s: %s" field_name (ty_to_string env f.field_ty)
-  | None -> pp_string fmt (ty_to_string env f.field_ty)
+  Format.fprintf fmt "%s: %s" f.field_name (ty_to_string env f.field_ty)
 
 let pp_variant (env : fmt_env) (fmt : Format.formatter) (v : variant) : unit =
   if v.fields = [] then pp_string fmt v.variant_name
   else
-    Format.fprintf fmt "%s(%a)" v.variant_name
+    Format.fprintf fmt "%s { %a }" v.variant_name
       (pp_sep_list ", " (pp_field env))
       v.fields
 
@@ -1205,7 +1194,7 @@ let adt_field_to_string (env : fmt_env) (def_id : TypeDeclId.id)
   | Some def ->
       let fields = type_decl_get_fields def opt_variant_id in
       let field = FieldId.nth fields field_id in
-      field.field_name
+      Some field.field_name
 
 let local_id_to_pretty_string (id : local_id) : string =
   "_" ^ LocalId.to_string id

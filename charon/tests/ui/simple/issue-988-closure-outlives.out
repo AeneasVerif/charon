@@ -67,7 +67,7 @@ pub trait Fn<Self, Args>
 
 // Full name: test_crate::call_fn_shared::closure
 struct closure<'_0> {
-  &'_0 [u8],
+  0: &'_0 [u8],
 }
 
 // Full name: test_crate::call_fn_shared::{impl Fn<(usize,)> for closure<'_0>}::call

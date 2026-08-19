@@ -69,7 +69,7 @@ where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: 'a,
 {
-  &'a T,
+  0: &'a T,
 }
 
 // Full name: test_crate::{impl Iterator for Iter<'a, T>[TraitClause0]}::rposition

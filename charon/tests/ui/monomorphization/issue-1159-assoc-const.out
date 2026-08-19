@@ -27,7 +27,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { 0: T },
 }
 
 // Full name: core::option::Option::<&'_ [u64]>
@@ -35,7 +35,7 @@ where
 #[diagnostic_item("Option")]
 pub enum Option::<&'_ [u64]> {
   None,
-  Some(&'_ [u64]),
+  Some { 0: &'_ [u64] },
 }
 
 // Full name: test_crate::MyConfig

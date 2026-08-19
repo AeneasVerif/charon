@@ -35,7 +35,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasAssoc),
 {
-  T,
+  0: T,
 }
 
 // Full name: test_crate::Direct::{impl Destruct for Direct<T>[TraitClause0, TraitClause1]}::drop_glue
@@ -90,7 +90,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: DerivedNoAssoc),
 {
-  T,
+  0: T,
 }
 
 // Full name: test_crate::Transitive::{impl Destruct for Transitive<T>[TraitClause0, TraitClause1]}::drop_glue
@@ -139,7 +139,7 @@ trait MarkerChild<Self>
 
 // Full name: test_crate::Marker
 struct Marker<T> {
-  T,
+  0: T,
 }
 
 // Full name: test_crate::Marker::{impl Destruct for Marker<T>}::drop_glue

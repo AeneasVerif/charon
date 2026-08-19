@@ -107,7 +107,7 @@ impl "impl_Destruct_for_NotCopy" Destruct for NotCopy {
 
 // Full name: test_crate::main::closure
 struct closure {
-  NotCopy,
+  0: NotCopy,
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for closure}::call_once

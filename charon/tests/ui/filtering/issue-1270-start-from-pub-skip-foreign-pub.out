@@ -51,8 +51,8 @@ where
     TraitClause0: (B: Sized),
     TraitClause1: (C: Sized),
 {
-  Continue(C),
-  Break(B),
+  Continue { 0: C },
+  Break { 0: B },
 }
 
 // Full name: core::ops::control_flow::ControlFlow::{impl Destruct for ControlFlow<B, C>[TraitClause0, TraitClause1]}::drop_glue
@@ -71,8 +71,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 {
-  Ok(T),
-  Err(E),
+  Ok { 0: T },
+  Err { 0: E },
 }
 
 // Full name: core::result::Result::{impl Destruct for Result<T, E>[TraitClause0, TraitClause1]}::drop_glue

@@ -20,7 +20,7 @@ where
     TraitClause0: (T: core::marker::Sized),
 {
   None,
-  Some(T),
+  Some { 0: T },
 }
 
 #[diagnostic_item("IntoIterator")]

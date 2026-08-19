@@ -277,7 +277,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
 {
-  T,
+  0: T,
 }
 
 // Full name: test_crate::wrap::closure

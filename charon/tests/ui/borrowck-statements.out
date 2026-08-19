@@ -153,7 +153,7 @@ pub enum Either<T>
 where
     TraitClause0: (T: Sized),
 {
-  Left(T),
+  Left { 0: T },
   Right,
 }
 
@@ -360,7 +360,7 @@ where
 
 // Full name: test_crate::Foo
 pub struct Foo<'a> {
-  &'a u32,
+  0: &'a u32,
 }
 
 // Full name: test_crate::{Foo<'_0>}::set_type_self

@@ -87,7 +87,7 @@ where
 
 // Full name: test_crate::main::closure
 struct closure<'_0> {
-  &'_0 mut u8,
+  0: &'_0 mut u8,
 }
 
 // Full name: test_crate::main::{impl FnMut<(u8,)> for closure<'_0>}::call_mut

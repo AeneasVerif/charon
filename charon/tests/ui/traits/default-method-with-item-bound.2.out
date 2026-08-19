@@ -61,7 +61,7 @@ pub struct Empty<T>
 where
     TraitClause0: (T: Sized),
 {
-  T,
+  0: T,
 }
 
 // Full name: test_crate::{impl Trait for Empty<T>[TraitClause0]}::defaulted

@@ -6,7 +6,7 @@ pub trait Send<Self>
 
 // Full name: test_crate::Foo
 struct Foo {
-  *const (),
+  0: *const (),
 }
 
 // Full name: test_crate::{impl Send for Foo}

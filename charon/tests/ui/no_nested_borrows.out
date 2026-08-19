@@ -66,7 +66,7 @@ pub enum List<T>
 where
     TraitClause0: (T: Sized),
 {
-  Cons(T, alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]),
+  Cons { 0: T, 1: alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}] },
   Nil,
 }
 
@@ -116,7 +116,7 @@ pub enum One<T1>
 where
     TraitClause0: (T1: Sized),
 {
-  One(T1),
+  One { 0: T1 },
 }
 
 // Full name: test_crate::EmptyEnum
@@ -139,8 +139,8 @@ where
     TraitClause0: (T1: Sized),
     TraitClause1: (T2: Sized),
 {
-  Left(T1),
-  Right(T2),
+  Left { 0: T1 },
+  Right { 0: T2 },
 }
 
 // Full name: test_crate::Tuple
@@ -149,8 +149,8 @@ where
     TraitClause0: (T1: Sized),
     TraitClause1: (T2: Sized),
 {
-  T1,
-  T2,
+  0: T1,
+  1: T2,
 }
 
 // Full name: test_crate::use_tuple_struct
@@ -216,7 +216,7 @@ pub struct IdType<T>
 where
     TraitClause0: (T: Sized),
 {
-  T,
+  0: T,
 }
 
 // Full name: test_crate::IdType::{impl Destruct for IdType<T>[TraitClause0]}::drop_glue
@@ -691,8 +691,8 @@ pub enum Tree<T>
 where
     TraitClause0: (T: Sized),
 {
-  Leaf(T),
-  Node(T, NodeElem<T>[TraitClause0], alloc::boxed::Box<Tree<T>[TraitClause0]>[{built_in impl MetaSized for Tree<T>[TraitClause0]}, {built_in impl Sized for Global}]),
+  Leaf { 0: T },
+  Node { 0: T, 1: NodeElem<T>[TraitClause0], 2: alloc::boxed::Box<Tree<T>[TraitClause0]>[{built_in impl MetaSized for Tree<T>[TraitClause0]}, {built_in impl Sized for Global}] },
 }
 
 // Full name: test_crate::NodeElem
@@ -700,7 +700,7 @@ pub enum NodeElem<T>
 where
     TraitClause0: (T: Sized),
 {
-  Cons(alloc::boxed::Box<Tree<T>[TraitClause0]>[{built_in impl MetaSized for Tree<T>[TraitClause0]}, {built_in impl Sized for Global}], alloc::boxed::Box<NodeElem<T>[TraitClause0]>[{built_in impl MetaSized for NodeElem<T>[TraitClause0]}, {built_in impl Sized for Global}]),
+  Cons { 0: alloc::boxed::Box<Tree<T>[TraitClause0]>[{built_in impl MetaSized for Tree<T>[TraitClause0]}, {built_in impl Sized for Global}], 1: alloc::boxed::Box<NodeElem<T>[TraitClause0]>[{built_in impl MetaSized for NodeElem<T>[TraitClause0]}, {built_in impl Sized for Global}] },
   Nil,
 }
 

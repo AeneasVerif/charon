@@ -10,8 +10,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 {
-  Ok(T),
-  Err(E),
+  Ok { 0: T },
+  Err { 0: E },
 }
 
 // Full name: core::ptr::non_null::NonNull
@@ -428,7 +428,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { 0: T },
 }
 
 fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: usize)
@@ -768,8 +768,8 @@ where
     TraitClause0: (B: Sized),
     TraitClause1: (C: Sized),
 {
-  Continue(C),
-  Break(B),
+  Continue { 0: C },
+  Break { 0: B },
 }
 
 // Full name: core::alloc::Allocator::allocate_zeroed
@@ -1961,7 +1961,7 @@ pub struct MaybeDangling<P>
 where
     TraitClause0: (P: MetaSized),
 {
-  P,
+  0: P,
 }
 
 // Full name: core::mem::manually_drop::ManuallyDrop
@@ -2434,8 +2434,8 @@ where
     TraitClause1: (A: Sized),
     TraitClause2: (A: Allocator),
 {
-  Unique<T>,
-  A,
+  0: Unique<T>,
+  1: A,
 }
 
 // Full name: alloc::boxed::{impl Drop for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop

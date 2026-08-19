@@ -3,7 +3,7 @@
 // Full name: test_crate::Foo
 enum Foo {
   A,
-  B(usize),
+  B { 0: usize },
 }
 
 // Full name: test_crate::{Foo}::b

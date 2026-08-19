@@ -2504,13 +2504,19 @@ and field_of_json (ctx : of_json_ctx) (js : json) : (field, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
-        [ ("span", span); ("attr_info", attr_info); ("name", name); ("ty", ty) ]
-      ->
+        [
+          ("span", span);
+          ("attr_info", attr_info);
+          ("name", name);
+          ("is_positional", is_positional);
+          ("ty", ty);
+        ] ->
         let* span = span_of_json ctx span in
         let* attr_info = attr_info_of_json ctx attr_info in
-        let* field_name = option_of_json string_of_json ctx name in
+        let* field_name = string_of_json ctx name in
+        let* is_positional = bool_of_json ctx is_positional in
         let* field_ty = ty_of_json ctx ty in
-        Ok ({ span; attr_info; field_name; field_ty } : field)
+        Ok ({ span; attr_info; field_name; is_positional; field_ty } : field)
     | _ -> Error "")
 
 and file_of_json (ctx : of_json_ctx) (js : json) : (file, string) result =

@@ -47,7 +47,7 @@ struct Wrapper<T>
 where
     TraitClause0: (T: Sized),
 {
-  T,
+  0: T,
 }
 
 // Full name: test_crate::{impl HasOutput<Clause1_Output> for Wrapper<T>[TraitClause0]}

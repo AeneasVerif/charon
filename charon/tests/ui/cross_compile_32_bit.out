@@ -18,7 +18,7 @@ pub unsafe fn new_unchecked<T>(_1: *mut T) -> NonNull<T>
 // Full name: test_crate::HasPointerNiche
 enum HasPointerNiche {
   First,
-  Second(NonNull<usize>),
+  Second { 0: NonNull<usize> },
 }
 
 // Full name: test_crate::main
