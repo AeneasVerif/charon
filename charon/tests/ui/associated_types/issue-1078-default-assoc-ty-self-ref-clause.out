@@ -23,30 +23,66 @@ where
   Some { _0: T },
 }
 
-// Full name: test_crate::Foo
-trait Foo<'a, Self, T, Self_X, Self_Item>
+// Full name: test_crate::Tuple
+struct Tuple<A, B>
 where
-    TypeOutlives0: T: 'a,
-    TypeOutlives1: Self_X: 'a,
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: MetaSized),
+{
+  _0: A,
+  _1: B,
+}
+
+// Full name: test_crate::ProveWithParentClause
+trait ProveWithParentClause<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: Sized)
-    proof ImpliedClause2: (Self_X: Sized)
-    proof ImpliedClause3: (Self_Item: Sized)
-    vtable: test_crate::Foo::{vtable}<'a, T, Self_X, Self_Item>
+    proof ImpliedClause2: (Self::X: Sized)
+    proof ImpliedClause3: (Self::Item: Sized)
+    type X
+    type Item = Tuple<T, Self::X>[Self::ImpliedClause1, Self::ImpliedClause2::ImpliedClause0]
+    vtable: test_crate::ProveWithParentClause::{vtable}<T, Self::X, Self::Item>
 }
 
-// Full name: test_crate::{impl Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()}
-impl<'a, T> "impl_Foo_Option_for_unit" Foo<'a, Option<T>[TraitClause0], &'a (), &'a (Option<T>[TraitClause0], &'a ())> for ()
+// Full name: test_crate::{impl ProveWithParentClause<Option<T>[TraitClause0]> for ()}
+impl<T> "impl_ProveWithParentClause_Option_for_unit" ProveWithParentClause<Option<T>[TraitClause0]> for ()
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
 {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
-    proof ImpliedClause2: (&'a (): Sized) = {built_in impl Sized for &'a ()}
-    proof ImpliedClause3: (&'a (Option<T>[TraitClause0], &'a ()): Sized) = impl_Foo_Option_for_unit<'a, T>[TraitClause0]::ImpliedClause3
-    vtable: impl_Foo_Option_for_unit::{vtable}<'a, T>[TraitClause0]
+    proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause3: (Tuple<Option<T>[TraitClause0], ()>[impl_ProveWithParentClause_Option_for_unit<T>[TraitClause0]::ImpliedClause1, impl_ProveWithParentClause_Option_for_unit<T>[TraitClause0]::ImpliedClause2::ImpliedClause0]: Sized) = impl_ProveWithParentClause_Option_for_unit<T>[TraitClause0]::ImpliedClause3
+    type X = ()
+    type Item = Tuple<Option<T>[TraitClause0], ()>[impl_ProveWithParentClause_Option_for_unit<T>[TraitClause0]::ImpliedClause1, impl_ProveWithParentClause_Option_for_unit<T>[TraitClause0]::ImpliedClause2::ImpliedClause0]
+    vtable: impl_ProveWithParentClause_Option_for_unit::{vtable}<T>[TraitClause0]
+}
+
+// Full name: test_crate::ProveWithItemClause
+trait ProveWithItemClause<Self, T>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
+    proof ImpliedClause2: (Self::X: Sized)
+    proof ImpliedClause3: (Self::Item: Sized)
+    type X
+    type Item = Tuple<Self::X, T>[Self::ImpliedClause2, Self::ImpliedClause1::ImpliedClause0]
+    vtable: test_crate::ProveWithItemClause::{vtable}<T, Self::X, Self::Item>
+}
+
+// Full name: test_crate::{impl ProveWithItemClause<Option<T>[TraitClause0]> for ()}
+impl<T> "impl_ProveWithItemClause_Option_for_unit" ProveWithItemClause<Option<T>[TraitClause0]> for ()
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
+    proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause3: (Tuple<(), Option<T>[TraitClause0]>[impl_ProveWithItemClause_Option_for_unit<T>[TraitClause0]::ImpliedClause2, impl_ProveWithItemClause_Option_for_unit<T>[TraitClause0]::ImpliedClause1::ImpliedClause0]: Sized) = impl_ProveWithItemClause_Option_for_unit<T>[TraitClause0]::ImpliedClause3
+    type X = ()
+    type Item = Tuple<(), Option<T>[TraitClause0]>[impl_ProveWithItemClause_Option_for_unit<T>[TraitClause0]::ImpliedClause2, impl_ProveWithItemClause_Option_for_unit<T>[TraitClause0]::ImpliedClause1::ImpliedClause0]
+    vtable: impl_ProveWithItemClause_Option_for_unit::{vtable}<T>[TraitClause0]
 }
 
 

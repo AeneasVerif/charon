@@ -1,0 +1,49 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::option::Option
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some { _0: T },
+}
+
+// Full name: test_crate::Foo
+trait Foo<Self, T, Self_X, Self_Item>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
+    proof ImpliedClause2: (Self_X: Sized)
+    proof ImpliedClause3: (Self_Item: Sized)
+    vtable: test_crate::Foo::{vtable}<T, Self_X, Self_Item>
+}
+
+// Full name: test_crate::{impl Foo<Option<T>[TraitClause0], (), (Option<T>[TraitClause0], ())> for ()}
+impl<T> "impl_Foo_Option_for_unit" Foo<Option<T>[TraitClause0], (), (Option<T>[TraitClause0], ())> for ()
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
+    proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause3: ((Option<T>[TraitClause0], ()): Sized) = impl_Foo_Option_for_unit<T>[TraitClause0]::ImpliedClause3
+    vtable: impl_Foo_Option_for_unit::{vtable}<T>[TraitClause0]
+}
+
+
+
