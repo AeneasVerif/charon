@@ -732,14 +732,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         raise_error!(self, span, "field projection on unexpected type");
                     };
                     match type_ref.id {
-                        TypeId::Adt(type_id) => ProjectionElem::Field(
-                            FieldProjKind::Adt(type_id, downcast.take()),
-                            field,
-                        ),
-                        TypeId::Tuple => ProjectionElem::Field(
-                            FieldProjKind::Tuple(type_ref.generics.types.len()),
-                            field,
-                        ),
+                        TypeId::Adt(_) => ProjectionElem::Field(downcast.take(), field),
+                        TypeId::Tuple => ProjectionElem::Field(None, field),
                         TypeId::Builtin(BuiltinTy::Box) if field == FieldId::ZERO => {
                             ProjectionElem::Deref
                         }
@@ -982,21 +976,19 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                             let variant_id = variant.map(|id| self.translate_variant_id(id));
                             let generics = &tref.generics;
                             match tref.id {
-                                TypeId::Adt(type_id) => {
+                                TypeId::Adt(_) => {
                                     assert!(
                                         ((adt_def.is_struct() || adt_def.is_union())
                                             && variant.is_none())
                                             || (adt_def.is_enum() && variant.is_some())
                                     );
-                                    let field_proj = FieldProjKind::Adt(type_id, variant_id);
-                                    ProjectionElem::Field(field_proj, field_id)
+                                    ProjectionElem::Field(variant_id, field_id)
                                 }
                                 TypeId::Tuple => {
                                     assert!(generics.regions.is_empty());
                                     assert!(variant.is_none());
                                     assert!(generics.const_generics.is_empty());
-                                    let field_proj = FieldProjKind::Tuple(generics.types.len());
-                                    ProjectionElem::Field(field_proj, field_id)
+                                    ProjectionElem::Field(None, field_id)
                                 }
                                 TypeId::Builtin(BuiltinTy::Box) => {
                                     // Some sanity checks
@@ -1020,16 +1012,12 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                                 }
                             }
                         }
-                        ty::Tuple(_types) => {
-                            let field_proj = FieldProjKind::Tuple(tref.generics.types.len());
-                            ProjectionElem::Field(field_proj, field_id)
-                        }
-                        // We get there when we access one of the fields of the the state
-                        // captured by a closure.
+                        ty::Tuple(_types) => ProjectionElem::Field(None, field_id),
+                        // We get there when we access one of the fields of the state captured by a
+                        // closure.
                         ty::Closure(..) => {
-                            let type_id = *tref.id.as_adt().unwrap();
-                            let field_proj = FieldProjKind::Adt(type_id, None);
-                            ProjectionElem::Field(field_proj, field_id)
+                            assert!(matches!(tref.id, TypeId::Adt(_)));
+                            ProjectionElem::Field(None, field_id)
                         }
                         _ => panic!(),
                     }

@@ -47,7 +47,7 @@ use derive_generic_visitor::*;
     drive(
         Assert, Attribute, AttrInfo, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
         Call, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
-        Disambiguator, DynPredicate, Field, FieldId, FieldProjKind, File, FloatTy, FloatValue,
+        Disambiguator, DynPredicate, Field, FieldId, File, FloatTy, FloatValue,
         FnOperand, FunId, FnPtrKind, FunSig, InlineAttr, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
         llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,
         Loc, Locals, NullOp, Operand, PathElem, PlaceKind, ConstantExprKind,
@@ -174,7 +174,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
     visitor(drive_body_mut(&mut VisitBodyMut)),
     // Types that are ignored when encountered.
     skip(
-        AbortKind, BinOp, BorrowKind, BuiltinAssertKind, ConstantExpr, FieldId, FieldProjKind,
+        AbortKind, BinOp, BorrowKind, BuiltinAssertKind, ConstantExpr, FieldId,
         TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId,
         TraitRef, LiteralTy, Literal, Region, RegionId, (), String, PathBuf, bool,

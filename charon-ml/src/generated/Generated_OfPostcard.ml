@@ -531,20 +531,6 @@ and field_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (field_id, string) result =
   combine_error_msgs st __FUNCTION__ (FieldId.id_of_postcard ctx st)
 
-and field_proj_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (field_proj_kind, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 ->
-         let* _0 = type_decl_id_of_postcard ctx st in
-         let* _1 = option_of_postcard variant_id_of_postcard ctx st in
-         Ok (ProjAdt (_0, _1))
-     | 1 ->
-         let* _0 = usize_of_postcard ctx st in
-         Ok (ProjTuple _0)
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
 and file_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (file_id, string) result =
   combine_error_msgs st __FUNCTION__
@@ -964,7 +950,7 @@ and projection_elem_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      match __tag with
      | 0 -> Ok Deref
      | 1 ->
-         let* _0 = field_proj_kind_of_postcard ctx st in
+         let* _0 = option_of_postcard variant_id_of_postcard ctx st in
          let* _1 = field_id_of_postcard ctx st in
          Ok (Field (_0, _1))
      | 2 -> Ok PtrMetadata

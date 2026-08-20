@@ -1346,29 +1346,25 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
             PlaceKind::Projection(subplace, projection) => {
                 let sub = subplace.with_ctx(ctx);
                 match projection {
-                    ProjectionElem::Deref => {
-                        write!(f, "(*{sub})")
-                    }
-                    ProjectionElem::Field(proj_kind, field_id) => match proj_kind {
-                        FieldProjKind::Adt(adt_id, opt_variant_id) => {
-                            match opt_variant_id {
-                                None => write!(f, "{sub}.")?,
-                                Some(variant_id) => {
-                                    write!(f, "({sub} as variant ")?;
-                                    ctx.format_enum_variant(f, *adt_id, *variant_id)?;
-                                    write!(f, ").")?;
+                    ProjectionElem::Deref => write!(f, "(*{sub})"),
+                    ProjectionElem::Field(variant_id, field_id) => {
+                        match subplace.ty().as_adt().unwrap().id {
+                            TypeId::Adt(adt_id) => {
+                                match variant_id {
+                                    None => write!(f, "{sub}.")?,
+                                    Some(variant_id) => {
+                                        write!(f, "({sub} as variant ")?;
+                                        ctx.format_enum_variant(f, adt_id, *variant_id)?;
+                                        write!(f, ").")?;
+                                    }
                                 }
+                                ctx.format_field_name(f, adt_id, *variant_id, *field_id)
                             }
-                            ctx.format_field_name(f, *adt_id, *opt_variant_id, *field_id)?;
-                            Ok(())
+                            TypeId::Tuple => write!(f, "{sub}.{field_id}"),
+                            TypeId::Builtin(_) => unreachable!("field projection on builtin type"),
                         }
-                        FieldProjKind::Tuple(_) => {
-                            write!(f, "{sub}.{field_id}")
-                        }
-                    },
-                    ProjectionElem::PtrMetadata => {
-                        write!(f, "{sub}.metadata")
                     }
+                    ProjectionElem::PtrMetadata => write!(f, "{sub}.metadata"),
                     ProjectionElem::Index {
                         offset,
                         from_end: true,

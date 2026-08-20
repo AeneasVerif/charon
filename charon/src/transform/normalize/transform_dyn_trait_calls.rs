@@ -114,10 +114,7 @@ fn transform_dyn_trait_call(
         .clone()
         .project(ProjectionElem::PtrMetadata, ptr_to_vtable_ty)
         .project(ProjectionElem::Deref, vtable_ty)
-        .project(
-            ProjectionElem::Field(FieldProjKind::Adt(vtable_decl_id, None), method_field_id),
-            method_ty,
-        );
+        .project(ProjectionElem::Field(None, method_field_id), method_ty);
 
     let fn_ptr_place = if ctx.ctx.options.monomorphize_with_hax {
         // In mono mode, the vtable contains erased function pointers, cast to `*const ()`.

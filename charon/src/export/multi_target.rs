@@ -792,13 +792,6 @@ impl VisitAstMut for IdRefMapperVisitor<'_> {
         self.map(&mut x.id);
     }
 
-    fn enter_projection_elem(&mut self, x: &mut ProjectionElem) {
-        if let ProjectionElem::Field(proj, _) = x
-            && let FieldProjKind::Adt(id, _) = proj
-        {
-            self.map(id);
-        }
-    }
     fn enter_fn_ptr(&mut self, x: &mut FnPtr) {
         if let FnPtrKind::Fun(FunId::Regular(id)) = x.kind.as_mut() {
             self.map(id)

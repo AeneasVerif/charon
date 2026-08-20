@@ -1356,8 +1356,9 @@ let local_id_to_string (env : fmt_env) (id : LocalId.id) : string =
   | Some (_, None) -> local_id_to_pretty_string id
   | Some (_, Some name) -> name
 
-let rec pp_projection_elem (env : fmt_env) (sub : string)
+let rec pp_projection_elem (env : fmt_env) (subplace : place)
     (fmt : Format.formatter) (pe : projection_elem) : unit =
+  let sub = place_to_string env subplace in
   match pe with
   | Deref -> Format.fprintf fmt "(*%s)" sub
   | ProjIndex (off, from_end) ->
@@ -1369,28 +1370,28 @@ let rec pp_projection_elem (env : fmt_env) (sub : string)
         else operand_to_string env to_
       in
       Format.fprintf fmt "%s[%s..%s]" sub (operand_to_string env from) to_
-  | Field (ProjTuple _, fid) ->
-      Format.fprintf fmt "%s.%s" sub (FieldId.to_string fid)
-  | Field (ProjAdt (adt_id, opt_variant_id), fid) -> (
-      let field_name =
-        match adt_field_to_string env adt_id opt_variant_id fid with
-        | Some field_name -> field_name
-        | None -> FieldId.to_string fid
-      in
-      match opt_variant_id with
-      | None -> Format.fprintf fmt "%s.%s" sub field_name
-      | Some variant_id ->
-          Format.fprintf fmt "(%s as variant %a).%s" sub
-            (pp_adt_variant env adt_id)
-            variant_id field_name)
+  | Field (opt_variant_id, fid) -> (
+      match fst (ty_as_adt subplace.ty) with
+      | TTuple -> Format.fprintf fmt "%s.%s" sub (FieldId.to_string fid)
+      | TAdtId adt_id -> (
+          let field_name =
+            match adt_field_to_string env adt_id opt_variant_id fid with
+            | Some field_name -> field_name
+            | None -> FieldId.to_string fid
+          in
+          match opt_variant_id with
+          | None -> Format.fprintf fmt "%s.%s" sub field_name
+          | Some variant_id ->
+              Format.fprintf fmt "(%s as variant %a).%s" sub
+                (pp_adt_variant env adt_id)
+                variant_id field_name)
+      | TBuiltin _ -> raise (Failure "Unreachable"))
   | PtrMetadata -> Format.fprintf fmt "%s.metadata" sub
 
 and pp_place (env : fmt_env) (fmt : Format.formatter) (p : place) : unit =
   match p.kind with
   | PlaceLocal var_id -> pp_string fmt (local_id_to_string env var_id)
-  | PlaceProjection (subplace, pe) ->
-      let subplace = place_to_string env subplace in
-      pp_projection_elem env subplace fmt pe
+  | PlaceProjection (subplace, pe) -> pp_projection_elem env subplace fmt pe
   | PlaceGlobal global_ref ->
       Format.fprintf fmt "%a%a" (pp_global_decl_id env) global_ref.id
         (pp_generic_args env) global_ref.generics
