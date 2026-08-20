@@ -396,6 +396,18 @@ impl TypeDeclRef {
             generics: Box::new(generics),
         }
     }
+
+    pub fn is_box(&self) -> bool {
+        matches!(self.id, TypeId::Builtin(BuiltinTy::Box))
+    }
+
+    pub fn is_tuple(&self) -> bool {
+        matches!(self.id, TypeId::Tuple)
+    }
+
+    pub fn is_str(&self) -> bool {
+        matches!(self.id, TypeId::Builtin(BuiltinTy::Str))
+    }
 }
 
 impl TraitDeclRef {

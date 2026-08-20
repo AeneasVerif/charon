@@ -1016,7 +1016,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         // We get there when we access one of the fields of the state captured by a
                         // closure.
                         ty::Closure(..) => {
-                            assert!(matches!(tref.id, TypeId::Adt(_)));
+                            assert!(tref.id.as_adt().is_some());
                             ProjectionElem::Field(None, field_id)
                         }
                         _ => panic!(),

@@ -150,9 +150,7 @@ impl Place {
         use TyKind::*;
         let proj_ty = match self.ty.kind() {
             Ref(_, ty, _) | RawPtr(ty, _) => ty.clone(),
-            Adt(tref) if matches!(tref.id, TypeId::Builtin(BuiltinTy::Box)) => {
-                tref.generics.types[0].clone()
-            }
+            Adt(tref) if tref.is_box() => tref.generics.types[0].clone(),
             Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(..)
             | FnPtr(..) | FnDef(..) | PtrMetadata(..) | Array(..) | Slice(_) | Pattern(..)
             | Error(..) => {
@@ -184,9 +182,7 @@ impl ProjectionElem {
                 use TyKind::*;
                 match ty.kind() {
                     Ref(_, ty, _) | RawPtr(ty, _) => ty.clone(),
-                    Adt(tref) if matches!(tref.id, TypeId::Builtin(BuiltinTy::Box)) => {
-                        tref.generics.types[0].clone()
-                    }
+                    Adt(tref) if tref.is_box() => tref.generics.types[0].clone(),
                     Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(..)
                     | Array(..) | Slice(..) | FnPtr(..) | FnDef(..) | PtrMetadata(..)
                     | Pattern(..) | Error(..) => {

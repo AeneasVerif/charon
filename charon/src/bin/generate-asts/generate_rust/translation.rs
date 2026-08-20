@@ -204,7 +204,7 @@ impl Generator<'_> {
     ) -> fmt::Result {
         match ty.kind() {
             TyKind::Literal(_) => write!(f, "*({value})"),
-            TyKind::Adt(tref) => self.fmt_adt_translation_expr(f, &tref.id, &tref.generics, value),
+            TyKind::Adt(tref) => self.fmt_adt_translation_expr(f, tref, value),
             TyKind::Array(ty, _) | TyKind::Slice(ty) => {
                 write!(f, "({value}).iter().map(|value| ")?;
                 self.fmt_result_translation_expr(f, ty, "value")?;
@@ -219,24 +219,23 @@ impl Generator<'_> {
     fn fmt_adt_translation_expr(
         &self,
         f: &mut fmt::Formatter<'_>,
-        id: &TypeId,
-        generics: &GenericArgs,
+        tref: &TypeDeclRef,
         value: &str,
     ) -> fmt::Result {
-        match id {
-            TypeId::Adt(id) => match self.datatype_for(*id) {
+        match tref.id {
+            TypeId::Adt(id) => match self.datatype_for(id) {
                 Some(RustcDatatype::Special {
                     fmt_translation: translation_expr,
                     ..
-                }) => translation_expr(self, f, generics, value),
-                _ if self.enqueue(*id) => {
-                    write!(f, "self.{}({value})?", self.translate_fn_name(*id))
+                }) => translation_expr(self, f, &tref.generics, value),
+                _ if self.enqueue(id) => {
+                    write!(f, "self.{}({value})?", self.translate_fn_name(id))
                 }
-                _ => self.unsupported_type(self.debug_type_name(*id)),
+                _ => self.unsupported_type(self.debug_type_name(id)),
             },
-            TypeId::Tuple => self.fmt_tuple_translation_expr(f, &generics.types, value),
+            TypeId::Tuple => self.fmt_tuple_translation_expr(f, &tref.generics.types, value),
             TypeId::Builtin(BuiltinTy::Box) => {
-                let ty = generics.types.iter().next().unwrap();
+                let ty = tref.generics.types.iter().next().unwrap();
                 write!(f, "Box::new(")?;
                 self.fmt_translation_expr(f, ty, &format!("({value}).as_ref()"))?;
                 write!(f, ")")

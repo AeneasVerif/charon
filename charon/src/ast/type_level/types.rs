@@ -460,7 +460,7 @@ impl Ty {
 
     pub fn is_str(&self) -> bool {
         match self.kind() {
-            TyKind::Adt(ty_ref) if let TypeId::Builtin(BuiltinTy::Str) = ty_ref.id => true,
+            TyKind::Adt(ty_ref) => ty_ref.is_str(),
             _ => false,
         }
     }
@@ -468,16 +468,14 @@ impl Ty {
     /// Return true if the type is Box
     pub fn is_box(&self) -> bool {
         match self.kind() {
-            TyKind::Adt(ty_ref) if let TypeId::Builtin(BuiltinTy::Box) = ty_ref.id => true,
+            TyKind::Adt(ty_ref) => ty_ref.is_box(),
             _ => false,
         }
     }
 
     pub fn as_box(&self) -> Option<&Ty> {
         match self.kind() {
-            TyKind::Adt(ty_ref) if let TypeId::Builtin(BuiltinTy::Box) = ty_ref.id => {
-                Some(&ty_ref.generics.types[0])
-            }
+            TyKind::Adt(ty_ref) if ty_ref.is_box() => Some(&ty_ref.generics.types[0]),
             _ => None,
         }
     }
@@ -557,7 +555,7 @@ impl Ty {
 
     pub fn as_tuple(&self) -> Option<&IndexVec<TypeVarId, Ty>> {
         match self.kind() {
-            TyKind::Adt(ty_ref) if let TypeId::Tuple = ty_ref.id => Some(&ty_ref.generics.types),
+            TyKind::Adt(ty_ref) if ty_ref.is_tuple() => Some(&ty_ref.generics.types),
             _ => None,
         }
     }
