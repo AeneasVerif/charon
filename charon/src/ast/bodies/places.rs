@@ -193,10 +193,10 @@ impl ProjectionElem {
             }
             Field(variant_id, field_id) => {
                 let tref = ty.as_adt()?;
-                match tref.id {
-                    TypeId::Adt(type_decl_id) => {
+                match tref.as_builtin() {
+                    None => {
                         // Can fail if the type declaration was not translated.
-                        let type_decl = krate.type_decls.get(type_decl_id)?;
+                        let type_decl = krate.type_decls.get(tref.adt_id())?;
                         use TypeDeclKind::*;
                         match &type_decl.kind {
                             Struct(fields) | Union(fields) => {
@@ -218,12 +218,12 @@ impl ProjectionElem {
                             Opaque | Alias(_) | Error(_) => return None,
                         }
                     }
-                    TypeId::Builtin(BuiltinTy::Tuple) => tref
+                    Some(BuiltinTy::Tuple) => tref
                         .generics
                         .types
                         .get(TypeVarId::from(usize::from(*field_id)))?
                         .clone(),
-                    TypeId::Builtin(_) => return None,
+                    Some(_) => return None,
                 }
             }
             PtrMetadata => ty.get_ptr_metadata(krate).into_type(),

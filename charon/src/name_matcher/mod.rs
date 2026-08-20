@@ -147,18 +147,11 @@ impl Pattern {
         }
         match ty.kind() {
             TyKind::Adt(tref) => {
-                let args = &tref.generics;
-                match tref.id {
-                    TypeId::Adt(type_id) => {
-                        let type_name = ctx.item_name(type_id);
-                        self.matches_with_generics(ctx, type_name, Some(args))
-                    }
-                    TypeId::Builtin(BuiltinTy::Tuple) => false,
-                    TypeId::Builtin(builtin_ty) => {
-                        let name = builtin_ty.get_name();
-                        self.matches_with_generics(ctx, &name, Some(args))
-                    }
-                }
+                let name = match tref.as_builtin() {
+                    Some(builtin_ty) => &builtin_ty.get_name(),
+                    None => ctx.item_name(tref.adt_id()),
+                };
+                self.matches_with_generics(ctx, name, Some(&tref.generics))
             }
             TyKind::Array(ty, len) => {
                 let type_name = Name::from_path(&["Array"]);

@@ -158,21 +158,24 @@ impl Generator<'_> {
         f: &mut fmt::Formatter<'_>,
         tref: &TypeDeclRef,
     ) -> fmt::Result {
-        match tref.id {
-            TypeId::Adt(id) => match self.datatype_for(id) {
-                Some(RustcDatatype::Special {
-                    fmt_type: generated_type,
-                    ..
-                }) => generated_type(self, f, &tref.generics),
-                _ if self.enqueue(id) => write!(f, "{}", self.type_name(id)),
-                _ => self.unsupported_type(self.debug_type_name(id)),
-            },
-            TypeId::Builtin(BuiltinTy::Tuple) => self.fmt_tuple_type(f, &tref.generics.types),
-            TypeId::Builtin(BuiltinTy::Box) => {
+        match tref.as_builtin() {
+            None => {
+                let id = tref.adt_id();
+                match self.datatype_for(id) {
+                    Some(RustcDatatype::Special {
+                        fmt_type: generated_type,
+                        ..
+                    }) => generated_type(self, f, &tref.generics),
+                    _ if self.enqueue(id) => write!(f, "{}", self.type_name(id)),
+                    _ => self.unsupported_type(self.debug_type_name(id)),
+                }
+            }
+            Some(BuiltinTy::Tuple) => self.fmt_tuple_type(f, &tref.generics.types),
+            Some(BuiltinTy::Box) => {
                 let ty = tref.generics.types.iter().next().unwrap();
                 write!(f, "Box<{}>", self.generated_type(ty))
             }
-            TypeId::Builtin(BuiltinTy::Str) => write!(f, "Ustr"),
+            Some(BuiltinTy::Str) => write!(f, "Ustr"),
         }
     }
 

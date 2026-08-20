@@ -396,16 +396,34 @@ impl TypeDeclRef {
         }
     }
 
+    pub fn as_builtin(&self) -> Option<BuiltinTy> {
+        self.id.as_builtin().copied()
+    }
+
+    pub fn as_adt(&self) -> Option<TypeDeclId> {
+        self.id.as_adt().copied()
+    }
+
+    pub fn as_adt_mut(&mut self) -> Option<&mut TypeDeclId> {
+        self.id.as_adt_mut()
+    }
+
+    #[track_caller]
+    pub fn adt_id(&self) -> TypeDeclId {
+        self.as_adt()
+            .expect("called `TypeDeclRef::adt_id` on a builtin type")
+    }
+
     pub fn is_box(&self) -> bool {
-        matches!(self.id, TypeId::Builtin(BuiltinTy::Box))
+        self.as_builtin() == Some(BuiltinTy::Box)
     }
 
     pub fn is_tuple(&self) -> bool {
-        matches!(self.id, TypeId::Builtin(BuiltinTy::Tuple))
+        self.as_builtin() == Some(BuiltinTy::Tuple)
     }
 
     pub fn is_str(&self) -> bool {
-        matches!(self.id, TypeId::Builtin(BuiltinTy::Str))
+        self.as_builtin() == Some(BuiltinTy::Str)
     }
 }
 

@@ -22,7 +22,7 @@ impl UllbcPass for Transform {
                 && let generics = fn_ptr.pre_mono_generics(&ctx.ctx.translated)
                 && let Some(ty) = generics.types.get(TypeVarId::ZERO)
                 && let TyKind::Adt(tref) = ty.kind()
-                && let TypeId::Adt(type_id) = tref.id
+                && let Some(type_id) = tref.as_adt()
                 && let [Operand::Const(arg0), Operand::Const(arg1)] = call.args.as_slice()
                 && let ConstantExprKind::Literal(Literal::Scalar(ScalarValue::Unsigned(
                     UIntTy::U32,

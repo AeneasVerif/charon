@@ -122,13 +122,16 @@ fn trait_impl_short_name(
             TyKind::Literal(literal) => literal.to_string(),
             TyKind::Slice(..) => "slice".to_owned(),
             TyKind::Array(..) => "array".to_owned(),
-            TyKind::Adt(tref) => match tref.id {
-                TypeId::Adt(id) => item_to_ident(item_names, ItemId::Type(id))?,
-                TypeId::Builtin(BuiltinTy::Tuple) if tref.generics.types.is_empty() => {
-                    "unit".to_owned()
-                }
-                TypeId::Builtin(BuiltinTy::Tuple) => "tuple".to_owned(),
-                TypeId::Builtin(builtin) => builtin.get_name().short_str()?.to_owned(),
+            TyKind::Adt(tref) => match tref.as_adt() {
+                None if tref.is_tuple() && tref.generics.types.is_empty() => "unit".to_owned(),
+                None if tref.is_tuple() => "tuple".to_owned(),
+                Some(id) => item_to_ident(item_names, ItemId::Type(id))?,
+                None => tref
+                    .as_builtin()
+                    .unwrap()
+                    .get_name()
+                    .short_str()?
+                    .to_owned(),
             },
             _ => return None,
         })

@@ -775,7 +775,7 @@ impl<'a> IdRefMapperVisitor<'a> {
 
 impl VisitAstMut for IdRefMapperVisitor<'_> {
     fn enter_type_decl_ref(&mut self, x: &mut TypeDeclRef) {
-        if let TypeId::Adt(id) = &mut x.id {
+        if let Some(id) = x.as_adt_mut() {
             self.map(id);
         }
     }

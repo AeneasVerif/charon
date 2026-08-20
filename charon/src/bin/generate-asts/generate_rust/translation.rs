@@ -222,27 +222,30 @@ impl Generator<'_> {
         tref: &TypeDeclRef,
         value: &str,
     ) -> fmt::Result {
-        match tref.id {
-            TypeId::Adt(id) => match self.datatype_for(id) {
-                Some(RustcDatatype::Special {
-                    fmt_translation: translation_expr,
-                    ..
-                }) => translation_expr(self, f, &tref.generics, value),
-                _ if self.enqueue(id) => {
-                    write!(f, "self.{}({value})?", self.translate_fn_name(id))
+        match tref.as_builtin() {
+            None => {
+                let id = tref.adt_id();
+                match self.datatype_for(id) {
+                    Some(RustcDatatype::Special {
+                        fmt_translation: translation_expr,
+                        ..
+                    }) => translation_expr(self, f, &tref.generics, value),
+                    _ if self.enqueue(id) => {
+                        write!(f, "self.{}({value})?", self.translate_fn_name(id))
+                    }
+                    _ => self.unsupported_type(self.debug_type_name(id)),
                 }
-                _ => self.unsupported_type(self.debug_type_name(id)),
-            },
-            TypeId::Builtin(BuiltinTy::Tuple) => {
+            }
+            Some(BuiltinTy::Tuple) => {
                 self.fmt_tuple_translation_expr(f, &tref.generics.types, value)
             }
-            TypeId::Builtin(BuiltinTy::Box) => {
+            Some(BuiltinTy::Box) => {
                 let ty = tref.generics.types.iter().next().unwrap();
                 write!(f, "Box::new(")?;
                 self.fmt_translation_expr(f, ty, &format!("({value}).as_ref()"))?;
                 write!(f, ")")
             }
-            TypeId::Builtin(BuiltinTy::Str) => write!(f, "({value}).to_string().into()"),
+            Some(BuiltinTy::Str) => write!(f, "({value}).to_string().into()"),
         }
     }
 

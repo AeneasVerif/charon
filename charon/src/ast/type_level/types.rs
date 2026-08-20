@@ -484,7 +484,7 @@ impl Ty {
     }
 
     pub fn as_adt_id(&self) -> Option<TypeDeclId> {
-        self.kind().as_adt().and_then(|a| a.id.as_adt().cloned())
+        self.kind().as_adt()?.as_adt()
     }
 
     pub fn get_ptr_metadata(&self, translated: &TranslatedCrate) -> PtrMetadata {
@@ -495,9 +495,9 @@ impl Ty {
                 // there are two cases:
                 // 1. if the declared type has a fixed metadata, just returns it
                 // 2. if it depends on some other types or the generic itself
-                match ty_ref.id {
-                    TypeId::Adt(type_decl_id) => {
-                        let Some(decl) = ty_decls.get(type_decl_id) else {
+                match ty_ref.as_builtin() {
+                    None => {
+                        let Some(decl) = ty_decls.get(ty_ref.adt_id()) else {
                             return PtrMetadata::InheritFrom(self.clone());
                         };
                         match decl.ptr_metadata.clone().substitute(&ty_ref.generics) {
@@ -508,7 +508,7 @@ impl Ty {
                         }
                     }
                     // the metadata of a tuple is simply the last field
-                    TypeId::Builtin(BuiltinTy::Tuple) => {
+                    Some(BuiltinTy::Tuple) => {
                         match ty_ref.generics.types.iter().last() {
                             // `None` refers to the unit type `()`
                             None => PtrMetadata::None,
@@ -517,9 +517,9 @@ impl Ty {
                         }
                     }
                     // Box is a pointer like ref & raw ptr, hence no metadata
-                    TypeId::Builtin(BuiltinTy::Box) => PtrMetadata::None,
+                    Some(BuiltinTy::Box) => PtrMetadata::None,
                     // `str` has metadata length
-                    TypeId::Builtin(BuiltinTy::Str) => PtrMetadata::Length,
+                    Some(BuiltinTy::Str) => PtrMetadata::Length,
                 }
             }
             TyKind::DynTrait(pred) => match pred.vtable_ref(translated) {
