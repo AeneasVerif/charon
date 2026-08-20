@@ -26,6 +26,7 @@ pub mod normalize {
     pub mod desugar_drops;
     pub mod expand_associated_types;
     pub mod filter_unreachable_blocks;
+    pub mod normalize_trait_refs;
     pub mod partial_monomorphization;
     pub mod skip_trait_refs_when_known;
     pub mod transform_dyn_trait_calls;
@@ -219,6 +220,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
     ctx.run_passes([
         // Body passes may introduce fresh locals; make their storage markers explicit.
         mixed_body(&finish_translation::insert_storage_statements::Transform),
+        // Normalize trait refs.
+        global(&normalize::normalize_trait_refs::Transform),
         // Change trait associated types to be type parameters instead. See the module for details.
         // This also normalizes any use of an associated type that we can resolve.
         global(&normalize::expand_associated_types::Transform),

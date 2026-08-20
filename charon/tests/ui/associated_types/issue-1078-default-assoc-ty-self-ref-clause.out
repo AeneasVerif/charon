@@ -53,9 +53,9 @@ where
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
-    proof ImpliedClause3: (Tuple<Option<T>[TraitClause0], ()>[impl_ProveWithParentClause_Option_for_unit<T>[TraitClause0]::ImpliedClause1, impl_ProveWithParentClause_Option_for_unit<T>[TraitClause0]::ImpliedClause2::ImpliedClause0]: Sized) = impl_ProveWithParentClause_Option_for_unit<T>[TraitClause0]::ImpliedClause3
+    proof ImpliedClause3: (Tuple<Option<T>[TraitClause0], ()>[{built_in impl Sized for Option<T>[TraitClause0]}, {built_in impl MetaSized for ()}]: Sized) = impl_ProveWithParentClause_Option_for_unit<T>[TraitClause0]::ImpliedClause3
     type X = ()
-    type Item = Tuple<Option<T>[TraitClause0], ()>[impl_ProveWithParentClause_Option_for_unit<T>[TraitClause0]::ImpliedClause1, impl_ProveWithParentClause_Option_for_unit<T>[TraitClause0]::ImpliedClause2::ImpliedClause0]
+    type Item = Tuple<Option<T>[TraitClause0], ()>[{built_in impl Sized for Option<T>[TraitClause0]}, {built_in impl MetaSized for ()}]
     vtable: impl_ProveWithParentClause_Option_for_unit::{vtable}<T>[TraitClause0]
 }
 
@@ -79,9 +79,9 @@ where
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
-    proof ImpliedClause3: (Tuple<(), Option<T>[TraitClause0]>[impl_ProveWithItemClause_Option_for_unit<T>[TraitClause0]::ImpliedClause2, impl_ProveWithItemClause_Option_for_unit<T>[TraitClause0]::ImpliedClause1::ImpliedClause0]: Sized) = impl_ProveWithItemClause_Option_for_unit<T>[TraitClause0]::ImpliedClause3
+    proof ImpliedClause3: (Tuple<(), Option<T>[TraitClause0]>[{built_in impl Sized for ()}, {built_in impl MetaSized for Option<T>[TraitClause0]}]: Sized) = impl_ProveWithItemClause_Option_for_unit<T>[TraitClause0]::ImpliedClause3
     type X = ()
-    type Item = Tuple<(), Option<T>[TraitClause0]>[impl_ProveWithItemClause_Option_for_unit<T>[TraitClause0]::ImpliedClause2, impl_ProveWithItemClause_Option_for_unit<T>[TraitClause0]::ImpliedClause1::ImpliedClause0]
+    type Item = Tuple<(), Option<T>[TraitClause0]>[{built_in impl Sized for ()}, {built_in impl MetaSized for Option<T>[TraitClause0]}]
     vtable: impl_ProveWithItemClause_Option_for_unit::{vtable}<T>[TraitClause0]
 }
 
