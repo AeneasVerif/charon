@@ -27,8 +27,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 {
-  Ok(T),
-  Err(E),
+  Ok { _0: T },
+  Err { _0: E },
 }
 
 // Full name: core::result::unwrap_failed
@@ -55,7 +55,7 @@ where
         },
         Result::Err => {
             storage_live(e)
-            e = move (self as variant Result::Err).0
+            e = move (self as variant Result::Err)._0
             storage_live(_4)
             storage_live(_5)
             _5 = &e
@@ -76,7 +76,7 @@ where
                 unwind_continue
         },
     }
-    t = move (self as variant Result::Ok).0
+    t = move (self as variant Result::Ok)._0
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)

@@ -160,7 +160,7 @@ fn field(b: alloc::boxed::Box<Struct>[{built_in impl MetaSized for Struct}, {bui
     storage_live(_0)
     storage_live(_2)
     storage_live(_3)
-    _0 = move ((*b)).b
+    _0 = move (*b).b
     _2 = &mut b
     _3 = impl_Drop_for_Box::drop<'4, Struct, Global>[{built_in impl MetaSized for Struct}, {built_in impl Sized for Global}](move _2)
     ↳⚡ storage_dead(_3)

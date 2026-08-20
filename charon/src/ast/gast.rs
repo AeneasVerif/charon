@@ -159,92 +159,85 @@ pub enum Body {
     Error(Error),
 }
 
-/// Item kind: whether this function/const is part of a trait declaration, trait implementation, or
-/// neither.
-///
-/// Example:
-/// ```text
-/// trait Foo {
-///     fn bar(x : u32) -> u32; // trait item decl without default
-///
-///     fn baz(x : bool) -> bool { x } // trait item decl with default
-/// }
-///
-/// impl Foo for ... {
-///     fn bar(x : u32) -> u32 { x } // trait item implementation
-/// }
-///
-/// fn test(...) { ... } // regular
-///
-/// impl Type {
-///     fn test(...) { ... } // regular
-/// }
-/// ```
+/// Where a given function came from.
 #[derive(
     Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo, PartialEq, Eq,
 )]
-#[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Item"))]
-pub enum ItemSource {
-    /// This item stands on its own.
-    TopLevel,
-    /// This is a closure in a function body.
-    Closure {
-        info: ClosureInfo,
-    },
-    /// This item is a specification attached to another item, via
-    /// `#[charon::precondition]`/`#[charon::postcondition]`.
-    Spec {
-        kind: SpecKind,
-        item: ItemId,
-    },
-    /// This is the default value of an associated const or method in a trait declaration.
-    TraitDecl {
+#[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Fun"))]
+pub enum FunSource {
+    /// A normal function.
+    Normal,
+    /// A default method in a trait declaration.
+    TraitDefault {
         /// The trait declaration this item belongs to.
         trait_ref: TraitDeclRef,
-        /// The associated item this corresponds to. Note that a function could have
-        /// `AssocItemId::Const` if it's the initializer of a trait const.
+        /// The method this corresponds to.
         // TODO: also include method generics so we can recover a full `FnPtr::TraitMethod`
-        item_id: AssocItemId,
+        item_id: TraitMethodId,
     },
-    /// This is an associated const or method in a trait implementation.
+    /// A method in a trait implementation.
     TraitImpl {
         /// The trait implementation the method belongs to.
         impl_ref: TraitImplRef,
         /// The trait declaration that the impl block implements.
         trait_ref: TraitDeclRef,
-        /// The associated item this corresponds to. Note that a function could have
-        /// `AssocItemId::Const` if it's the initializer of a trait const.
+        /// The method this corresponds to.
         // TODO: also include method generics so we can recover a full `FnPtr::TraitMethod`
-        item_id: AssocItemId,
-        /// True if the trait decl had a default implementation for this function/const and this
-        /// item is a copy of the default item.
+        item_id: TraitMethodId,
+        /// True if the trait decl had a default implementation for this method and this item is a
+        /// copy of the default item.
         #[drive(skip)]
         reuses_default: bool,
     },
-    /// This function is a target-specific variant behind a `TargetDispatch` façade. The dispatcher
-    /// is the function with the `Body::TargetDispatch` body that dispatches to this function.
-    TargetDependent {
-        dispatcher: FunDeclRef,
+    /// Wraps a concrete implementation of a method into a function that takes `dyn Trait` as its
+    /// `Self` type. This shim casts the receiver to the known concrete type and calls the real
+    /// method.
+    VTableShim,
+    /// The initializer for a global.
+    GlobalInitializer(GlobalDeclRef),
+    /// A target-specific variant behind a `TargetDispatch` façade. The dispatcher is the function
+    /// with the `Body::TargetDispatch` body that dispatches to this function.
+    TargetDependent { dispatcher: FunDeclRef },
+    /// A specification attached to another item, via
+    /// `#[charon::precondition]`/`#[charon::postcondition]`.
+    Spec { kind: SpecKind, item: ItemId },
+}
+
+/// Where a given global came from.
+#[derive(
+    Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo, PartialEq, Eq,
+)]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Global"))]
+pub enum GlobalSource {
+    /// A normal global.
+    Normal,
+    /// A default assoc const in a trait declaration.
+    TraitDefault {
+        /// The trait declaration the const belongs to.
+        trait_ref: TraitDeclRef,
+        /// The associated const this corresponds to.
+        item_id: AssocConstId,
     },
-    /// This is a vtable struct for a trait.
-    VTableTy {
-        /// The `dyn Trait` predicate implemented by this vtable.
-        dyn_predicate: DynPredicate,
-        /// Record what each vtable field means.
-        field_map: IndexVec<FieldId, VTableField>,
-        /// For each implied clause that is also a supertrait clause, reords which field id
-        /// corresponds to it.
-        supertrait_map: IndexVec<TraitClauseId, Option<FieldId>>,
-    },
-    /// This is a vtable value for an impl.
-    VTableInstance {
+    /// An associated const in a trait implementation.
+    TraitImpl {
+        /// The trait implementation the const belongs to.
         impl_ref: TraitImplRef,
+        /// The trait declaration that the impl block implements.
+        trait_ref: TraitDeclRef,
+        /// The associated const this corresponds to.
+        item_id: AssocConstId,
+        /// True if the trait decl had a default value for this const and this item is a copy of
+        /// the default item.
+        #[drive(skip)]
+        reuses_default: bool,
     },
-    /// The method shim wraps a concrete implementation of a method into a function that takes `dyn
-    /// Trait` as its `Self` type. This shim casts the receiver to the known concrete type and
-    /// calls the real method.
-    VTableMethodShim,
-    VTableInstanceMono,
+    /// Defines the vtable for a trait impl.
+    VTableInstance {
+        /// The originating impl. This is `None` in monomorphized mode: the vtable global itself
+        /// identifies the concrete instantiation, so we don't translate an impl reference solely
+        /// to record its provenance.
+        impl_ref: Option<TraitImplRef>,
+    },
 }
 
 #[derive(
@@ -279,10 +272,7 @@ pub struct FunDecl {
     /// The signature contains the inputs/output types and ABI details.
     pub signature: Box<FunSig>,
     /// The function kind: "regular" function, trait method declaration, etc.
-    pub src: ItemSource,
-    /// Whether this function is in fact the body of a constant/static that we turned into an
-    /// initializer function.
-    pub is_global_initializer: Option<GlobalDeclId>,
+    pub src: FunSource,
     /// The function body.
     pub body: Body,
 }
@@ -335,8 +325,9 @@ pub struct GlobalDecl {
     pub item_meta: ItemMeta,
     pub generics: GenericParams,
     pub ty: Ty,
-    /// The context of the global: distinguishes top-level items from trait-associated items.
-    pub src: ItemSource,
+    /// The context of the global: distinguishes normal items from trait-associated items and
+    /// vtable instances.
+    pub src: GlobalSource,
     /// The kind of global (static or const).
     #[drive(skip)]
     pub global_kind: GlobalKind,
@@ -429,6 +420,8 @@ generate_index_type!(AssocConstId, "AssocConst");
 pub struct TraitDecl {
     pub def_id: TraitDeclId,
     pub item_meta: ItemMeta,
+    /// Distinguishes normal traits from trait aliases.
+    pub src: TraitDeclSource,
     pub generics: GenericParams,
     /// The "parent" clauses: the supertraits.
     ///
@@ -461,6 +454,18 @@ pub struct TraitDecl {
     /// The virtual table struct for this trait, if it has one.
     /// It is guaranteed that the trait has a vtable iff it is dyn-compatible.
     pub vtable: Option<TypeDeclRef>,
+}
+
+/// Where the trait comes from.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
+)]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("TraitDecl"))]
+pub enum TraitDeclSource {
+    /// A regular trait.
+    Normal,
+    /// The trait declaration coming from a trait alias.
+    TraitAlias,
 }
 
 /// An associated constant in a trait.
@@ -516,6 +521,7 @@ pub struct TraitMethod {
 pub struct TraitImpl {
     pub def_id: TraitImplId,
     pub item_meta: ItemMeta,
+    pub src: TraitImplSource,
     /// The information about the implemented trait.
     /// Note that this contains the instantiation of the "parent"
     /// clauses.
@@ -532,6 +538,25 @@ pub struct TraitImpl {
     /// The virtual table instance for this trait implementation. This is `Some` iff the trait is
     /// dyn-compatible.
     pub vtable: Option<GlobalDeclRef>,
+}
+
+/// Where the impl comes from.
+#[derive(
+    Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
+)]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("TraitImpl"))]
+pub enum TraitImplSource {
+    /// A regular trait implementation.
+    Normal,
+    /// The blanket implementation generated for a trait alias.
+    TraitAlias,
+    /// An implementation of one of the `Fn*` traits, generated for a closure.
+    Closure {
+        #[serde_state(stateless)]
+        kind: ClosureKind,
+    },
+    /// The `Destruct` implementation generated for an ADT or closure.
+    Destruct,
 }
 
 /// The value of a trait associated type.

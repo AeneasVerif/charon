@@ -55,7 +55,7 @@ pub trait FnMut<Self, Args>
 
 // Full name: test_crate::foo::closure
 struct closure<'_0> {
-  &'_0 mut i32,
+  _0: &'_0 mut i32,
 }
 
 // Full name: test_crate::foo::{impl FnMut<()> for closure<'_0>}::call_mut
@@ -71,8 +71,8 @@ where
     storage_live(_0)
     storage_live(_3)
     _0 = ()
-    _3 = copy (*((*_1)).0) panic.+ const 1i32
-    (*((*_1)).0) = move _3
+    _3 = copy (*(*_1)._0) panic.+ const 1i32
+    (*(*_1)._0) = move _3
     _0 = ()
     storage_dead(_3)
     storage_dead(tupled_args)
@@ -100,7 +100,7 @@ fn foo()
     rx = &mut x
     fake_read(rx)
     storage_live(closure)
-    closure = closure { 0: move rx }
+    closure = closure { _0: move rx }
     fake_read(closure)
     storage_live(_4)
     storage_live(_5)

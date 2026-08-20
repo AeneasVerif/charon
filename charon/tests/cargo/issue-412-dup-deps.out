@@ -24,7 +24,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 // Full name: core::panicking::AssertKind
@@ -88,29 +88,11 @@ fn main()
     _0 = ()
     storage_live(a)
     a = mydup::hello()
-    ↳⚡ storage_dead(_22)
-        storage_dead(_21)
-        storage_dead(_20)
-        storage_dead(_19)
-        storage_dead(_18)
-        storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(kind)
-        storage_dead(_8)
-        unwind_continue
+    ↳⚡ unwind_continue
     fake_read(a)
     storage_live(b)
     b = mydup#1::hello()
-    ↳⚡ storage_dead(_22)
-        storage_dead(_21)
-        storage_dead(_20)
-        storage_dead(_19)
-        storage_dead(_18)
-        storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(kind)
-        storage_dead(_8)
-        unwind_continue
+    ↳⚡ unwind_continue
     fake_read(b)
     storage_live(_3)
     storage_live(_4)
@@ -121,16 +103,7 @@ fn main()
     _7 = copy b
     _8 = copy _6 checked.+ copy _7
     assert(move _8.1 == false) (overflow) else panic
-    ↳⚡ storage_dead(_22)
-        storage_dead(_21)
-        storage_dead(_20)
-        storage_dead(_19)
-        storage_dead(_18)
-        storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(kind)
-        storage_dead(_8)
-        unwind_continue
+    ↳⚡ unwind_continue
     storage_live(_23)
     storage_live(_24)
     storage_live(_25)
@@ -176,18 +149,6 @@ fn main()
         _19 = &(*_20)
         storage_live(_21)
         _21 = Option::None {  }
-        storage_dead(_22)
-        storage_dead(_21)
-        storage_dead(_20)
-        storage_dead(_19)
-        storage_dead(_18)
-        storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(kind)
-        storage_dead(_8)
-        storage_dead(_25)
-        storage_dead(_24)
-        storage_dead(_23)
         panic(core::panicking::assert_failed)
     }
     storage_dead(_14)
@@ -200,18 +161,6 @@ fn main()
     _0 = ()
     storage_dead(b)
     storage_dead(a)
-    storage_dead(_22)
-    storage_dead(_21)
-    storage_dead(_20)
-    storage_dead(_19)
-    storage_dead(_18)
-    storage_dead(_17)
-    storage_dead(_16)
-    storage_dead(kind)
-    storage_dead(_8)
-    storage_dead(_25)
-    storage_dead(_24)
-    storage_dead(_23)
     return
 }
 

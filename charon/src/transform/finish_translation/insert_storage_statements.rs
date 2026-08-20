@@ -1,8 +1,8 @@
 //! Add missing storage markers -- in MIR, some locals are considered "always" initialised, and have
 //! no StorageLive and StorageDead instructions associated; this always includes the arguments
 //! and the return local, but also sometimes includes other locals. We make sure these additional
-//! locals get initialised at the start of the function and deallocated before function exits if
-//! they're used anywhere.
+//! locals get initialised at the start of the function if they're used anywhere.
+//! With `--deallocate-all-locals`, we also deallocate them before every function exit.
 use derive_generic_visitor::Visitor;
 
 use crate::ast::*;
@@ -174,10 +174,11 @@ impl Transform {
         }
     }
 
-    fn transform_function(&self, fun: &mut FunDecl) {
+    fn transform_function(&self, fun: &mut FunDecl, deallocate_all_locals: bool) {
         // Don't insert `StorageDead`s inside global initializers because the locals there are
         // actually statics.
-        let insert_missing_storage_deads = fun.is_global_initializer.is_none();
+        let insert_missing_storage_deads =
+            deallocate_all_locals && !matches!(fun.src, FunSource::GlobalInitializer(_));
         match &mut fun.body {
             Body::Unstructured(body) => {
                 self.transform_ullbc_body(body, insert_missing_storage_deads)
@@ -189,13 +190,14 @@ impl Transform {
 }
 
 impl UllbcPass for Transform {
-    fn transform_function(&self, _ctx: &mut TransformCtx, fun: &mut FunDecl) {
-        self.transform_function(fun)
+    fn transform_function(&self, ctx: &mut TransformCtx, fun: &mut FunDecl) {
+        self.transform_function(fun, ctx.options.deallocate_all_locals)
     }
 }
 
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        ctx.for_each_fun_decl(|_ctx, fun| self.transform_function(fun));
+        let deallocate_all_locals = ctx.options.deallocate_all_locals;
+        ctx.for_each_fun_decl(|_ctx, fun| self.transform_function(fun, deallocate_all_locals));
     }
 }

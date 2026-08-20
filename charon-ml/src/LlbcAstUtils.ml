@@ -78,25 +78,12 @@ class ['self] map_crate =
       { span; locals; bound_body_regions; body }
 
     method visit_fun_decl env (decl : fun_decl) : fun_decl =
-      let {
-        def_id;
-        item_meta;
-        generics;
-        signature;
-        src;
-        is_global_initializer;
-        body;
-      } =
-        decl
-      in
+      let { def_id; item_meta; generics; signature; src; body } = decl in
       let def_id = self#visit_fun_decl_id env def_id in
       let item_meta = self#visit_item_meta env item_meta in
       let generics = self#visit_generic_params env generics in
       let signature = self#visit_fun_sig env signature in
-      let src = self#visit_item_source env src in
-      let is_global_initializer =
-        self#visit_option self#visit_global_decl_id env is_global_initializer
-      in
+      let src = self#visit_fun_source env src in
       let body =
         match body with
         | StructuredBody body ->
@@ -119,15 +106,7 @@ class ['self] map_crate =
         | MissingBody -> MissingBody
         | ErrorBody err -> ErrorBody (self#visit_error env err)
       in
-      {
-        def_id;
-        item_meta;
-        generics;
-        signature;
-        src;
-        is_global_initializer;
-        body;
-      }
+      { def_id; item_meta; generics; signature; src; body }
 
     method visit_declaration_group env (g : declaration_group) :
         declaration_group =
@@ -231,23 +210,12 @@ class ['self] iter_crate =
       self#visit_block env body
 
     method visit_fun_decl env (decl : fun_decl) : unit =
-      let {
-        def_id;
-        item_meta;
-        generics;
-        signature;
-        src;
-        is_global_initializer;
-        body;
-      } =
-        decl
-      in
+      let { def_id; item_meta; generics; signature; src; body } = decl in
       self#visit_fun_decl_id env def_id;
       self#visit_item_meta env item_meta;
       self#visit_generic_params env generics;
       self#visit_fun_sig env signature;
-      self#visit_item_source env src;
-      self#visit_option self#visit_global_decl_id env is_global_initializer;
+      self#visit_fun_source env src;
       match body with
       | StructuredBody body -> self#visit_expr_body env body
       | UnstructuredBody body -> (* ULLBC in LLBC visitor: ignore *) ()
@@ -377,6 +345,10 @@ class ['self] map_crate_with_span =
       in
       super#visit_expr_body decl_span_info body
 
+    method! visit_type_decl (_ : (item_id * span) option) (decl : type_decl) =
+      let decl_span_info = Some (IdType decl.def_id, decl.item_meta.span) in
+      super#visit_type_decl decl_span_info decl
+
     method! visit_fun_decl (_ : (item_id * span) option) (decl : fun_decl) :
         fun_decl =
       let decl_span_info = Some (IdFun decl.def_id, decl.item_meta.span) in
@@ -445,6 +417,10 @@ class ['self] iter_crate_with_span =
         Option.map (fun (decl_id, _) -> (decl_id, body.span)) decl_span_info
       in
       super#visit_expr_body decl_span_info body
+
+    method! visit_type_decl (_ : (item_id * span) option) (decl : type_decl) =
+      let decl_span_info = Some (IdType decl.def_id, decl.item_meta.span) in
+      super#visit_type_decl decl_span_info decl
 
     method! visit_fun_decl (_ : (item_id * span) option) (decl : fun_decl) :
         unit =

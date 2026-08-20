@@ -35,7 +35,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasAssoc),
 {
-  T,
+  _0: T,
 }
 
 // Full name: test_crate::Direct::{impl Destruct for Direct<T>[TraitClause0, TraitClause1]}::drop_glue
@@ -50,7 +50,7 @@ where
 
     storage_live(_0)
     _0 = ()
-    drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1)).0
+    drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)
@@ -90,7 +90,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: DerivedNoAssoc),
 {
-  T,
+  _0: T,
 }
 
 // Full name: test_crate::Transitive::{impl Destruct for Transitive<T>[TraitClause0, TraitClause1]}::drop_glue
@@ -105,7 +105,7 @@ where
 
     storage_live(_0)
     _0 = ()
-    drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1)).0
+    drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)
@@ -139,7 +139,7 @@ trait MarkerChild<Self>
 
 // Full name: test_crate::Marker
 struct Marker<T> {
-  T,
+  _0: T,
 }
 
 // Full name: test_crate::Marker::{impl Destruct for Marker<T>}::drop_glue
@@ -154,7 +154,7 @@ where
 
     storage_live(_0)
     _0 = ()
-    drop[{built_in impl Destruct for T}::drop_glue<'2>] ((*_1)).0
+    drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)

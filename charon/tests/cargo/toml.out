@@ -20,7 +20,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 // Full name: core::option::{Option<T>[TraitClause0]}::is_some
@@ -39,12 +39,10 @@ where
         },
         _ => {
             _0 = const false
-            storage_dead(self)
             return
         },
     }
     _0 = const true
-    storage_dead(self)
     return
 }
 
@@ -62,7 +60,7 @@ pub fn run()
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = Option::Some { 0: const false }
+    _6 = Option::Some { _0: const false }
     _5 = &_6
     _4 = move _5
     storage_live(_0)
@@ -73,15 +71,10 @@ pub fn run()
     _3 = move _4
     _2 = &(*_3)
     _1 = is_some<'5, bool>[{built_in impl Sized for bool}](move _2)
-    ↳⚡ storage_dead(_3)
-        unwind_continue
+    ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()
-    storage_dead(_3)
-    storage_dead(_6)
-    storage_dead(_5)
-    storage_dead(_4)
     return
 }
 

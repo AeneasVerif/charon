@@ -22,15 +22,12 @@ pub fn extra_random_number() -> u32
     storage_live(_1)
     // Even more random.
     _1 = random_number()
-    ↳⚡ storage_dead(_2)
-        unwind_continue
+    ↳⚡ unwind_continue
     _2 = copy _1 checked.+ const 1u32
     assert(move _2.1 == false) (overflow) else panic
-    ↳⚡ storage_dead(_2)
-        unwind_continue
+    ↳⚡ unwind_continue
     _0 = move _2.0
     storage_dead(_1)
-    storage_dead(_2)
     return
 }
 

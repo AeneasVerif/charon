@@ -41,7 +41,7 @@ pub enum Ordering {
 #[diagnostic_item("Option")]
 pub enum Option<T> {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 // Full name: core::cmp::PartialOrd
@@ -193,7 +193,7 @@ fn iter(n: usize)
             },
         }
         storage_live(i)
-        i = copy (_6 as variant Option::Some).0
+        i = copy (_6 as variant Option::Some)._0
         storage_dead(i)
         storage_dead(_8)
         storage_dead(_6)

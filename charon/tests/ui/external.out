@@ -159,7 +159,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 pub fn core::num::nonzero::{NonZero<T>[TraitClause0, TraitClause1]}::new<T>(_1: T) -> Option<NonZero<T>[TraitClause0, TraitClause1]>[{built_in impl Sized for NonZero<T>[TraitClause0, TraitClause1]}]

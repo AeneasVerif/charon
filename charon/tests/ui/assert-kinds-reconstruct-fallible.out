@@ -47,7 +47,6 @@ fn main()
         storage_dead(_9);
         _0 = ();
         storage_dead(x);
-        storage_dead(_4);
         return;
     }
 }

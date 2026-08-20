@@ -14,7 +14,7 @@ impl Transform {
     ) -> Option<(FunDecl, Binder<GenericArgs>)> {
         let original_method_id = method.skip_binder.id;
         let original_method = ctx.translated.fun_decls.get(original_method_id)?;
-        let ItemSource::TraitDecl { item_id, .. } = &original_method.src else {
+        let FunSource::TraitDefault { item_id, .. } = &original_method.src else {
             return None;
         };
         let item_id = *item_id;
@@ -38,7 +38,7 @@ impl Transform {
         .flatten();
         let mut fun_decl = original_method.substitute_params(subst.map(|x| *x.generics));
 
-        let ItemSource::TraitDecl { trait_ref, .. } = fun_decl.src else {
+        let FunSource::TraitDefault { trait_ref, .. } = fun_decl.src else {
             unreachable!()
         };
         fun_decl.def_id = FunDeclId::MAX; // We fix it up on insertion
@@ -52,7 +52,7 @@ impl Transform {
             lang_item: fun_decl.item_meta.lang_item,
             diagnostic_item: fun_decl.item_meta.diagnostic_item,
         };
-        fun_decl.src = ItemSource::TraitImpl {
+        fun_decl.src = FunSource::TraitImpl {
             impl_ref: TraitImplRef {
                 id: trait_impl.def_id,
                 generics: Box::new(trait_impl.generics.identity_args()),

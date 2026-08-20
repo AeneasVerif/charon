@@ -447,14 +447,14 @@ fn function_conditions() -> anyhow::Result<()> {
 
     assert_eq!(
         precondition.src,
-        ItemSource::Spec {
+        FunSource::Spec {
             kind: SpecKind::Precondition,
             item: function.def_id.into(),
         }
     );
     assert_eq!(
         postcondition.src,
-        ItemSource::Spec {
+        FunSource::Spec {
             kind: SpecKind::Postcondition,
             item: function.def_id.into(),
         }
@@ -472,6 +472,37 @@ fn function_conditions() -> anyhow::Result<()> {
             .attr_info
             .attributes
             .contains(&Attribute::HasPostcondition(postcondition.def_id))
+    );
+    let closure_precondition = crate_data
+        .fun_decls
+        .iter()
+        .find(|decl| {
+            decl.def_id != precondition.def_id
+                && decl
+                    .item_meta
+                    .attr_info
+                    .attributes
+                    .iter()
+                    .any(Attribute::is_is_precondition)
+        })
+        .unwrap();
+    let FunSource::Spec {
+        kind: SpecKind::Precondition,
+        item: parent_id,
+    } = closure_precondition.src
+    else {
+        panic!("expected a precondition spec item")
+    };
+    let parent = crate_data.get_item(parent_id).unwrap();
+    let parent = parent.as_fun().unwrap();
+
+    assert!(matches!(parent.src, FunSource::TraitImpl { .. }));
+    assert!(
+        parent
+            .item_meta
+            .attr_info
+            .attributes
+            .contains(&Attribute::HasPrecondition(closure_precondition.def_id))
     );
     Ok(())
 }
@@ -749,6 +780,21 @@ fn declaration_groups() -> anyhow::Result<()> {
 
     // There are 2 function items: one for `foo`, and one for the initializer of `Trait::FOO`.
     assert_eq!(crate_data.fun_decls.iter().count(), 2);
+    let initializer = crate_data
+        .fun_decls
+        .iter()
+        .find_map(|fun| match &fun.src {
+            FunSource::GlobalInitializer(global) => Some(global),
+            _ => None,
+        })
+        .unwrap();
+    let global = &crate_data.global_decls[initializer.id];
+    assert_eq!(
+        initializer.generics.as_ref(),
+        &global.generics.identity_args()
+    );
+    assert!(matches!(global.src, GlobalSource::TraitDefault { .. }));
+
     let decl_groups = crate_data.ordered_decls.unwrap();
     assert_eq!(decl_groups.len(), 6);
 
@@ -832,7 +878,7 @@ fn known_trait_method_call() -> anyhow::Result<()> {
         repr_name(&crate_data, &function.item_meta.name),
         "test_crate::<impl Default for ??>::default"
     );
-    let ItemSource::TraitImpl { .. } = &function.src else {
+    let FunSource::TraitImpl { .. } = &function.src else {
         panic!()
     };
     Ok(())
@@ -862,10 +908,10 @@ fn target_dispatch_source() -> anyhow::Result<()> {
     };
 
     // Each target in the dispatch map should point to a function with
-    // `ItemSource::TargetDependent` whose `dispatcher` points back to the facade.
+    // `FunSource::TargetDependent` whose `dispatcher` points back to the facade.
     for (_target, fun_ref) in dispatch_map {
         let target_fun = &crate_data.fun_decls[fun_ref.id];
-        let ItemSource::TargetDependent { dispatcher } = &target_fun.src else {
+        let FunSource::TargetDependent { dispatcher } = &target_fun.src else {
             panic!("expected TargetDependent source, got {:?}", target_fun.src)
         };
         assert_eq!(dispatcher.id, real_dispatcher.def_id);
@@ -915,7 +961,7 @@ fn issue_1184_target_dispatch_unbound_item_generics() -> anyhow::Result<()> {
     for (_target, fun_ref) in dispatch_map {
         assert_single_free_type_arg(fun_ref.generics.as_ref());
         let target_fun = &crate_data.fun_decls[fun_ref.id];
-        let ItemSource::TargetDependent { dispatcher } = &target_fun.src else {
+        let FunSource::TargetDependent { dispatcher } = &target_fun.src else {
             panic!("expected TargetDependent source, got {:?}", target_fun.src)
         };
         assert_single_free_type_arg(dispatcher.generics.as_ref());

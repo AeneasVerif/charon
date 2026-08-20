@@ -984,8 +984,8 @@ impl PtrMetadata {
 
 impl Field {
     /// The new name for this field, as suggested by the `#[charon::rename]` attribute.
-    pub fn renamed_name(&self) -> Option<&str> {
-        self.attr_info.rename.as_deref().or(self.name.as_deref())
+    pub fn renamed_name(&self) -> &str {
+        self.attr_info.rename.as_deref().unwrap_or(&self.name)
     }
 
     /// Whether this field has a `#[charon::opaque]` annotation.
@@ -1474,7 +1474,7 @@ impl TypeDecl {
         };
         fields
             .iter_enumerated()
-            .find(|(_, field)| field.name.as_deref() == Some(field_name))
+            .find(|(_, field)| field.name == field_name)
     }
 }
 

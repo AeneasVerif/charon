@@ -25,7 +25,7 @@ struct A<mut 'a, mut 'b> {
 
 // Full name: test_crate::B
 struct B<mut 'a, mut 'b> {
-  A<'a, 'b>,
+  _0: A<'a, 'b>,
 }
 
 

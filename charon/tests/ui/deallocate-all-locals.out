@@ -1,0 +1,85 @@
+# Final ULLBC before serialization:
+
+// Full name: test_crate::sum
+fn sum(x: u32, y: u32) -> u32
+{
+    let _0: u32; // return
+    let x: u32; // arg #1
+    let y: u32; // arg #2
+    let z: u32; // local
+    let _4: u32; // anonymous local
+    let _5: u32; // anonymous local
+    let _6: (u32, bool); // anonymous local
+    let _7: u32; // anonymous local
+    let _8: (u32, bool); // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        storage_live(_6);
+        storage_live(_8);
+        storage_live(z);
+        storage_live(_4);
+        _4 = copy x;
+        storage_live(_5);
+        _5 = copy y;
+        _6 = copy _4 checked.+ copy _5;
+        assert assert(move _6.1 == false) (overflow) -> bb2 (unwind: bb1);
+    }
+
+    bb1: {
+        storage_dead(_8);
+        storage_dead(_6);
+        storage_dead(y);
+        storage_dead(x);
+        unwind_continue;
+    }
+
+    bb2: {
+        z = move _6.0;
+        storage_dead(_5);
+        storage_dead(_4);
+        fake_read(z);
+        storage_live(_7);
+        _7 = copy z;
+        _8 = copy _7 checked.+ const 1u32;
+        assert assert(move _8.1 == false) (overflow) -> bb3 (unwind: bb1);
+    }
+
+    bb3: {
+        _0 = move _8.0;
+        storage_dead(_7);
+        storage_dead(z);
+        storage_dead(_8);
+        storage_dead(_6);
+        storage_dead(y);
+        storage_dead(x);
+        return;
+    }
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let _1: u32; // anonymous local
+
+    bb0: {
+        storage_live(_0);
+        _0 = ();
+        storage_live(_1);
+        _1 = sum(const 1u32, const 2u32) -> bb2 (unwind: bb1);
+    }
+
+    bb1: {
+        unwind_continue;
+    }
+
+    bb2: {
+        storage_dead(_1);
+        _0 = ();
+        return;
+    }
+}
+
+
+

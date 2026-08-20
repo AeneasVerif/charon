@@ -58,27 +58,27 @@ pub enum RustcItem {
 pub enum TransItemSourceKind {
     Global,
     TraitDecl,
-    TraitImpl(TraitImplSource),
+    TraitImpl(TransImplSource),
     Fun,
     Type,
     /// We don't translate these as proper items, but we translate them a bit in names.
     InherentImpl,
     /// We don't translate these as proper items, but we use them to explore the crate.
     Module,
-    /// The `call_*` method of the appropriate `TraitImplSource::Closure` impl.
+    /// The `call_*` method of the appropriate `TransImplSource::Closure` impl.
     ClosureMethod(ClosureKind),
     /// A cast of a state-less closure as a function pointer.
     ClosureAsFnCast,
     /// The `drop_glue` method of a `Destruct` impl. It contains the drop glue that calls
     /// `Drop::drop` for the type and then drops its fields. This is a method implementation (and
     /// the DefId is that of the ADT or closure for which to generate the drop glue).
-    DropGlueMethod(TraitImplSource),
+    DropGlueMethod(TransImplSource),
     /// The virtual table struct definition for a trait. The `DefId` is that of the trait.
     VTable,
     /// The static vtable value for a specific impl.
-    VTableInstance(TraitImplSource),
+    VTableInstance(TransImplSource),
     /// The initializer function of the `VTableInstance`.
-    VTableInstanceInitializer(TraitImplSource),
+    VTableInstanceInitializer(TransImplSource),
     /// Shim function to store a method in a vtable; give a method with `self: Ptr<Self>` argument,
     /// this takes a `Ptr<dyn Trait>` and forwards to the method. The `DefId` refers to the method
     /// implementation.
@@ -89,15 +89,15 @@ pub enum TransItemSourceKind {
 
 /// The kind of a [`TransItemSourceKind::TraitImpl`].
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
-pub enum TraitImplSource {
+pub enum TransImplSource {
     /// A user-written trait impl with a `DefId`.
     Normal,
     /// The blanket impl we generate for a trait alias. The `DefId` is that of the trait alias.
     TraitAlias,
     /// An impl of the appropriate `Fn*` trait for a closure. The `DefId` is that of the closure.
     Closure(ClosureKind),
-    /// A fictitious `impl Destruct for T` that contains the drop glue code for the given ADT. The
-    /// `DefId` is that of the ADT.
+    /// A fictitious `impl Destruct for T` that contains the drop glue code for the given ADT or
+    /// closure. The `DefId` is that of the ADT or closure.
     ImplicitDestruct,
 }
 
@@ -160,7 +160,7 @@ impl TransItemSource {
     pub(crate) fn parent(&self) -> Option<Self> {
         let parent_kind = match self.kind {
             TransItemSourceKind::ClosureMethod(kind) => {
-                TransItemSourceKind::TraitImpl(TraitImplSource::Closure(kind))
+                TransItemSourceKind::TraitImpl(TransImplSource::Closure(kind))
             }
             TransItemSourceKind::DropGlueMethod(impl_kind)
             | TransItemSourceKind::VTableInstance(impl_kind)
@@ -180,7 +180,7 @@ impl TransItemSource {
             self.kind,
             Global
                 | TraitDecl
-                | TraitImpl(TraitImplSource::Normal)
+                | TraitImpl(TransImplSource::Normal)
                 | InherentImpl
                 | Module
                 | Fun
@@ -238,7 +238,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             Fn | AssocFn => TransItemSourceKind::Fun,
             Const { .. } | Static { .. } | AssocConst { .. } => TransItemSourceKind::Global,
             Trait | TraitAlias => TransItemSourceKind::TraitDecl,
-            Impl { of_trait: true } => TransItemSourceKind::TraitImpl(TraitImplSource::Normal),
+            Impl { of_trait: true } => TransItemSourceKind::TraitImpl(TransImplSource::Normal),
             Impl { of_trait: false } => TransItemSourceKind::InherentImpl,
             Mod | ForeignMod => TransItemSourceKind::Module,
 
@@ -737,7 +737,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     generics
                         .regions
                         .extend((0..upvar_regions).map(|_| self.translate_erased_region()));
-                    if let TransItemSourceKind::TraitImpl(TraitImplSource::Closure(..))
+                    if let TransItemSourceKind::TraitImpl(TransImplSource::Closure(..))
                     | TransItemSourceKind::ClosureMethod(..)
                     | TransItemSourceKind::ClosureAsFnCast = kind
                     {
@@ -993,7 +993,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         item: &hax::ItemRef,
-        kind: TraitImplSource,
+        kind: TransImplSource,
     ) -> Result<TraitImplRef, Error> {
         self.translate_item(span, item, TransItemSourceKind::TraitImpl(kind))
     }

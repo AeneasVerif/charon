@@ -111,7 +111,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 // Full name: core::cmp::PartialOrd
@@ -415,7 +415,7 @@ fn cbd(prf_input: [u8; 33usize])
             },
         }
         storage_live(i)
-        i = copy (_5 as variant Option::Some).0
+        i = copy (_5 as variant Option::Some)._0
         storage_live(_9)
         _9 = copy i
         storage_live(_10)

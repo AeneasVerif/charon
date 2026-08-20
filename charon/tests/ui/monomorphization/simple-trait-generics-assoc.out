@@ -162,7 +162,7 @@ fn main()
     storage_live(_5)
     _5 = &(*a) with_metadata(copy a.metadata)
     storage_live(_7)
-    _7 = cast<*const (), unsafe fn(&'8 (dyn Trait<usize, Item = bool> + '9))>(copy ((*_5.metadata)).method_comsume)
+    _7 = cast<*const (), unsafe fn(&'8 (dyn Trait<usize, Item = bool> + '9))>(copy (*_5.metadata).method_comsume)
     _4 = (copy _7)(move _5)
     ↳⚡ storage_dead(_6)
         unwind_continue

@@ -67,7 +67,7 @@ pub trait Fn<Self, Args>
 
 // Full name: test_crate::foo::closure
 struct closure<'_0> {
-  &'_0 u8,
+  _0: &'_0 u8,
 }
 
 // Full name: test_crate::foo
@@ -83,7 +83,7 @@ pub fn foo<'_0>(s: &'_0 u8)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*s)
-    _2 = closure { 0: move _3 }
+    _2 = closure { _0: move _3 }
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
@@ -115,7 +115,7 @@ where
     let tupled_args: (); // arg #2
 
     storage_live(_0)
-    _0 = &(*((*_1)).0)
+    _0 = &(*(*_1)._0)
     storage_dead(tupled_args)
     storage_dead(_1)
     return

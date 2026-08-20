@@ -18,7 +18,7 @@ pub unsafe fn new_unchecked<T>(_1: *mut T) -> NonNull<T>
 // Full name: test_crate::HasPointerNiche
 enum HasPointerNiche {
   First,
-  Second(NonNull<usize>),
+  Second { _0: NonNull<usize> },
 }
 
 // Full name: test_crate::main
@@ -64,7 +64,7 @@ fn main()
     ↳⚡ storage_dead(_6)
         unwind_continue
     storage_dead(_9)
-    a = HasPointerNiche::Second { 0: move _8 }
+    a = HasPointerNiche::Second { _0: move _8 }
     storage_dead(_8)
     fake_read(a)
     _0 = ()

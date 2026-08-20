@@ -181,6 +181,11 @@ and cli_options = {
           information. *)
   reconstruct_asserts : bool;
       (** Replace [if x { panic() }] with [assert(x)]. *)
+  deallocate_all_locals : bool;
+      (** Ensure all local deallocations are made explicit with [StorageDead]
+          statements. If this flag is not passed, every non-return local is
+          implicitly deallocated on function return. Note this can add a lot of
+          statements (quadratically-many, because of unwind paths). *)
   unbind_item_vars : bool;
       (** Use [DeBruijnVar::Free] for the variables bound in item signatures,
           instead of [DeBruijnVar::Bound] everywhere. This simplifies the
@@ -254,12 +259,9 @@ and fun_decl = {
   generics : generic_params;
   signature : fun_sig;
       (** The signature contains the inputs/output types and ABI details. *)
-  src : item_source;
+  src : fun_source;
       (** The function kind: "regular" function, trait method declaration, etc.
       *)
-  is_global_initializer : global_decl_id option;
-      (** Whether this function is in fact the body of a constant/static that we
-          turned into an initializer function. *)
   body : body;  (** The function body. *)
 }
 

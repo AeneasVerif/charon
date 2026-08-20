@@ -4,8 +4,7 @@ open Charon.Meta
 open Charon.GAstUtils
 open Logging
 open NameMatcher
-
-let log = main_log
+module Log = (val Logs.src_log main_log : Logs.LOG)
 
 let parse_tests () =
   let patterns : string list =
@@ -194,25 +193,28 @@ module PatternTest = struct
         try fn_ptr_to_pattern env.ctx env.to_pat_config decl.generics fn_ptr
         with _ -> [ PIdent ("ERROR", 0, []) ]
       in
-      log#error "Pattern %s failed to match function %s (in `%s`)\n"
-        (pattern_to_string env.print_config (Option.get test.pattern))
-        (pattern_to_string env.print_config fn_ptr)
-        env.file_name;
+      Log.err (fun m ->
+          m "Pattern %s failed to match function %s (in `%s`)"
+            (pattern_to_string env.print_config (Option.get test.pattern))
+            (pattern_to_string env.print_config fn_ptr)
+            env.file_name);
       false)
     else if (not test.success) && match_success then (
-      log#error "Pattern %s matches function %s but shouldn't\n"
-        (pattern_to_string env.print_config (Option.get test.pattern))
-        (Print.name_to_string env.fmt_env decl.item_meta.name);
+      Log.err (fun m ->
+          m "Pattern %s matches function %s but shouldn't"
+            (pattern_to_string env.print_config (Option.get test.pattern))
+            (Print.name_to_string env.fmt_env decl.item_meta.name));
       false)
     else if test.success && not pattern_to_name_success then (
       let pattern, name = Option.get pattern_name in
-      log#error
-        "Pattern '%s' converted to name is '%s' but is expected to be '%s' (in \
-         %s)\n"
-        (pattern_to_string env.print_config pattern)
-        name
-        (Option.get test.pattern_to_name)
-        env.file_name;
+      Log.err (fun m ->
+          m
+            "Pattern '%s' converted to name is '%s' but is expected to be '%s' \
+             (in %s)"
+            (pattern_to_string env.print_config pattern)
+            name
+            (Option.get test.pattern_to_name)
+            env.file_name);
       false)
     else true
 end
@@ -223,11 +225,11 @@ end
    annotations are available. *)
 let annotated_rust_tests test_file =
   (* We read the llbc file generated from the annotated rust file. *)
-  log#ldebug (lazy ("Deserializing LLBC file: " ^ test_file));
+  Log.debug (fun m -> m "Deserializing LLBC file: %s" test_file);
   let (crate : crate) =
     match OfJson.crate_of_json_file test_file with
     | Error s ->
-        log#error "Error when deserializing file %s: %s\n" test_file s;
+        Log.err (fun m -> m "Error when deserializing file %s: %s" test_file s);
         exit 1
     | Ok crate -> crate
   in
@@ -253,7 +255,8 @@ let annotated_rust_tests test_file =
       crate.fun_decls
   in
 
-  if all_pass then log#linfo (lazy "Name matcher tests: success") else exit 1
+  if all_pass then Log.info (fun m -> m "Name matcher tests: success")
+  else exit 1
 
 let run_tests test_file =
   parse_tests ();

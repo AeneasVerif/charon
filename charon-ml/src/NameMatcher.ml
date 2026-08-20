@@ -38,8 +38,7 @@ include Name_matcher_parser.Ast
 include Name_matcher_parser.Interface
 module T = Types
 module E = Expressions
-
-let log = Logging.name_matcher_logger
+module Log = (val Logs.src_log Logging.name_matcher_logger : Logs.LOG)
 
 (*
  * Convert patterns to strings
@@ -505,10 +504,8 @@ let rec match_name_with_generics (ctx : ctx) (c : match_config)
         "match_name_with_generics: attempt to match empty names and patterns"
       (* We shouldn't get there: the names/patterns should be non empty *)
   | [ PIdent (pid, pd, pg) ], [ PeIdent (id, d) ] ->
-      log#ldebug
-        (lazy
-          ("match_name_with_generics: last ident:" ^ "\n- pid: " ^ pid
-         ^ "\n- id: " ^ id));
+      Log.debug (fun m ->
+          m "match_name_with_generics: last ident:\n- pid: %s\n- id: %s" pid id);
       (* We reached the end: match the generics.
          We have to generate an empty map. *)
       pid = id
@@ -671,7 +668,7 @@ and match_trait_decl_ref (ctx : ctx) (c : match_config) (m : maps)
 
 and match_trait_decl_ref_item (ctx : ctx) (c : match_config) (m : maps)
     (pid : pattern) (tr : T.trait_decl_ref T.region_binder)
-    (item_id : T.assoc_item_id) (generics : T.generic_args) : bool =
+    (item_id : GAstUtils.assoc_item_id) (generics : T.generic_args) : bool =
   if c.match_with_trait_decl_refs then
     (* We match the trait decl ref *)
     (* We split the pattern between the trait decl ref and the associated item name *)
@@ -694,18 +691,16 @@ and match_trait_decl_ref_item (ctx : ctx) (c : match_config) (m : maps)
 and match_trait_type (ctx : ctx) (c : match_config) (m : maps) (pid : pattern)
     (tr : T.trait_ref) (type_id : T.assoc_type_id) (generics : T.generic_args) :
     bool =
-  match_trait_decl_ref_item ctx c m pid tr.trait_decl_ref (AssocIdType type_id)
-    generics
+  match_trait_decl_ref_item ctx c m pid tr.trait_decl_ref
+    (GAstUtils.AssocIdType type_id) generics
 
 and match_generic_args (ctx : ctx) (c : match_config) (m : maps)
     (pgenerics : generic_args) (generics : T.generic_args) : bool =
-  log#ldebug
-    (lazy
-      (let fmt_env = ctx_to_fmt_env ctx in
-       "match_generic_args: " ^ "\n- pgenerics: "
-       ^ generic_args_to_string { tgt = TkPattern } pgenerics
-       ^ "\n- generics: "
-       ^ Print.generic_args_to_string fmt_env generics));
+  Log.debug (fun m ->
+      let fmt_env = ctx_to_fmt_env ctx in
+      m "match_generic_args:\n- pgenerics: %s\n- generics: %s"
+        (generic_args_to_string { tgt = TkPattern } pgenerics)
+        (Print.generic_args_to_string fmt_env generics));
   let merged_generics =
     List.concat
       [
@@ -720,11 +715,10 @@ and match_generic_args (ctx : ctx) (c : match_config) (m : maps)
 
 and match_generic_arg (ctx : ctx) (c : match_config) (m : maps)
     (pg : generic_arg) (g : mexpr) : bool =
-  log#ldebug
-    (lazy
-      ("match_generic_arg: " ^ "\n- pg: "
-      ^ generic_arg_to_string { tgt = TkPattern } pg
-      ^ "\n- g: " ^ show_mexpr g));
+  Log.debug (fun m ->
+      m "match_generic_arg:\n- pg: %s\n- g: %a"
+        (generic_arg_to_string { tgt = TkPattern } pg)
+        pp_mexpr g);
   match (pg, g) with
   | GRegion pr, MRegion r -> match_region c m pr r
   | GExpr e, MTy ty -> match_expr_with_ty ctx c m e ty
@@ -806,7 +800,7 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : T.fn_ptr)
       (* Match the pattern on the trait implementation and method name, if applicable. *)
       let match_trait_ref =
         match d.src with
-        | TraitImplItem (_, trait_ref, item_id, _)
+        | TraitImplFun (_, trait_ref, item_id, _)
           when c.match_with_trait_decl_refs ->
             let subst =
               Substitute.make_subst_from_generics d.generics func.generics Self
@@ -818,13 +812,13 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : T.fn_ptr)
             let method_generics = TypesUtils.empty_generic_args in
             match_trait_decl_ref_item ctx c (mk_empty_maps ()) p
               { binder_value = trait_ref; binder_regions = [] }
-              item_id method_generics
+              (GAstUtils.AssocIdMethod item_id) method_generics
         | _ -> false
       in
       match_function_name || match_trait_ref
   | TraitMethod (tr, method_id) ->
       match_trait_decl_ref_item ctx c (mk_empty_maps ()) p tr.trait_decl_ref
-        (AssocIdMethod method_id) func.generics
+        (GAstUtils.AssocIdMethod method_id) func.generics
 
 let mk_name_with_generics_matcher (ctx : ctx) (c : match_config) (pat : string)
     : T.name -> T.generic_args -> bool =
@@ -1237,13 +1231,12 @@ let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
           func.generics
   in
   (* Sanity check *)
-  log#ldebug
-    (lazy
-      (let fmt_env = ctx_to_fmt_env ctx in
-       "fn_ptr_to_pattern:" ^ "\n- fn_ptr: "
-       ^ Print.fn_ptr_to_string fmt_env func
-       ^ "\n- pattern: "
-       ^ pattern_to_string { tgt = TkPattern } pat));
+  Log.debug (fun m ->
+      let fmt_env = ctx_to_fmt_env ctx in
+      m "fn_ptr_to_pattern:\n- fn_ptr: %a\n- pattern: %s"
+        (PrintFmt.pp_fn_ptr fmt_env)
+        func
+        (pattern_to_string { tgt = TkPattern } pat));
   assert (
     c.tgt = TkName
     || match_fn_ptr ctx

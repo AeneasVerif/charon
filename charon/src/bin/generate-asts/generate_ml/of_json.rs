@@ -201,8 +201,8 @@ impl<'a> GenerateCtx<'a> {
             .into_iter()
             .filter(|f| !f.is_opaque())
             .map(|f| {
-                let name = make_ocaml_ident(f.name.as_deref().unwrap());
-                let rename = make_ocaml_ident(f.renamed_name().unwrap());
+                let name = make_ocaml_ident(&f.name);
+                let rename = make_ocaml_ident(f.renamed_name());
                 let convert = self.type_to_ocaml_call(&f.ty);
                 format!("let* {rename} = {convert} ctx {name} in")
             })
@@ -238,17 +238,14 @@ impl<'a> GenerateCtx<'a> {
             TypeDeclKind::Struct(fields) if fields.is_empty() => {
                 self.build_branch("`Null", fields, "()")
             }
-            TypeDeclKind::Struct(fields)
-                if fields.len() == 1
-                    && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
-            {
+            TypeDeclKind::Struct(fields) if fields.len() == 1 && fields[0].name == "_raw" => {
                 // These are the special strongly-typed integers.
                 let short_name = decl.item_meta.name.short_str().unwrap();
                 format!("| x -> {short_name}.id_of_json ctx x")
             }
             TypeDeclKind::Struct(fields)
                 if fields.len() == 1
-                    && (fields[0].name.is_none()
+                    && (fields[0].is_positional
                         || decl
                             .item_meta
                             .attr_info
@@ -264,30 +261,26 @@ impl<'a> GenerateCtx<'a> {
                 let call = self.type_to_ocaml_call(ty);
                 format!("| x -> {call} ctx x")
             }
-            TypeDeclKind::Struct(fields) if fields.iter().all(|f| f.name.is_none()) => {
-                let mut fields = fields.clone();
-                for (i, f) in fields.iter_mut().enumerate() {
-                    f.name = Some(format!("x{i}"));
-                }
+            TypeDeclKind::Struct(fields) if fields.iter().all(|field| field.is_positional) => {
                 let pat: String = fields
                     .iter()
-                    .map(|f| f.name.as_deref().unwrap())
+                    .map(|f| f.name.as_str())
                     .map(make_ocaml_ident)
                     .join(";");
                 let pat = format!("`List [ {pat} ]");
                 let construct = fields
                     .iter()
-                    .map(|f| f.renamed_name().unwrap())
+                    .map(Field::renamed_name)
                     .map(make_ocaml_ident)
                     .join(", ");
                 let construct = format!("( {construct} )");
-                self.build_branch(&pat, &fields, &construct)
+                self.build_branch(&pat, fields, &construct)
             }
             TypeDeclKind::Struct(fields) => {
                 let pat: String = fields
                     .iter()
                     .map(|f| {
-                        let name = f.name.as_ref().unwrap();
+                        let name = &f.name;
                         let var = if f.is_opaque() {
                             "_"
                         } else {
@@ -300,7 +293,7 @@ impl<'a> GenerateCtx<'a> {
                 let construct = fields
                     .iter()
                     .filter(|f| !f.is_opaque())
-                    .map(|f| f.renamed_name().unwrap())
+                    .map(Field::renamed_name)
                     .map(make_ocaml_ident)
                     .join("; ");
                 let construct = format!("({{ {construct} }} : {return_ty})");
@@ -318,19 +311,13 @@ impl<'a> GenerateCtx<'a> {
                             let pat = format!("`String \"{name}\"");
                             self.build_branch(&pat, &variant.fields, rename)
                         } else {
-                            let mut fields = variant.fields.clone();
-                            let inner_pat = if fields.iter().all(|f| f.name.is_none()) {
+                            let fields = &variant.fields;
+                            let inner_pat = if fields.iter().all(|field| field.is_positional) {
                                 // Tuple variant
-                                if variant.fields.len() == 1 {
-                                    let var = make_ocaml_ident(&variant.name);
-                                    fields[0].name = Some(var.clone());
-                                    var
+                                if fields.len() == 1 {
+                                    make_ocaml_ident(&fields[0].name)
                                 } else {
-                                    for (i, f) in fields.iter_mut().enumerate() {
-                                        f.name = Some(format!("x_{i}"));
-                                    }
-                                    let pat =
-                                        fields.iter().map(|f| f.name.as_ref().unwrap()).join("; ");
+                                    let pat = fields.iter().map(|f| f.name.as_str()).join("; ");
                                     format!("`List [ {pat} ]")
                                 }
                             } else {
@@ -338,7 +325,7 @@ impl<'a> GenerateCtx<'a> {
                                 let pat = fields
                                     .iter()
                                     .map(|f| {
-                                        let name = f.name.as_ref().unwrap();
+                                        let name = &f.name;
                                         let var = if f.is_opaque() {
                                             "_"
                                         } else {
@@ -352,11 +339,11 @@ impl<'a> GenerateCtx<'a> {
                             let pat = format!("`Assoc [ (\"{name}\", {inner_pat}) ]");
                             let construct_fields = fields
                                 .iter()
-                                .map(|f| f.name.as_ref().unwrap())
-                                .map(|n| make_ocaml_ident(n))
+                                .map(|f| f.name.as_str())
+                                .map(make_ocaml_ident)
                                 .join(", ");
                             let construct = format!("{rename} ({construct_fields})");
-                            self.build_branch(&pat, &fields, &construct)
+                            self.build_branch(&pat, fields, &construct)
                         }
                     })
                     .join("\n")

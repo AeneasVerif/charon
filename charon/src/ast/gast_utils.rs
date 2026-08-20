@@ -108,7 +108,6 @@ impl FunDecl {
             generics: _,
             signature,
             src,
-            is_global_initializer,
             body,
         } = self;
         let signature = signature.substitute(&subst.skip_binder);
@@ -120,7 +119,6 @@ impl FunDecl {
             generics: subst.params,
             signature,
             src,
-            is_global_initializer,
             body,
         }
     }

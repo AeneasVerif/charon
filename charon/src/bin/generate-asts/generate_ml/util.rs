@@ -19,7 +19,8 @@ pub fn repr_name(n: &Name) -> String {
 }
 
 pub fn make_ocaml_ident(name: &str) -> String {
-    let mut name = name.to_case(Case::Snake);
+    let leading_underscores = name.len() - name.trim_start_matches('_').len();
+    let mut name = "_".repeat(leading_underscores) + &name.to_case(Case::Snake);
     if matches!(
         &*name,
         "assert"

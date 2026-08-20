@@ -52,7 +52,7 @@ pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
 #[diagnostic_item("Option")]
 pub enum Option<T> {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 #[lang_item(Destruct)]
@@ -73,9 +73,7 @@ where
     storage_live(_0)
     _0 = move x
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x
-    ↳⚡ storage_dead(x)
-        unwind_continue
-    storage_dead(x)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -89,9 +87,7 @@ where
     storage_live(_0)
     _0 = move x
     conditional_drop[{built_in impl core::marker::Destruct::<&_ mut _><'_0> for T0}::drop_glue<'0>] x
-    ↳⚡ storage_dead(x)
-        unwind_continue
-    storage_dead(x)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -105,9 +101,7 @@ where
     storage_live(_0)
     _0 = move x
     conditional_drop[{built_in impl core::marker::Destruct::<Option<&_ mut _>><'_0> for T0}::drop_glue<'0>] x
-    ↳⚡ storage_dead(x)
-        unwind_continue
-    storage_dead(x)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -131,9 +125,7 @@ where
     _3 = &mut x
     _2 = test_crate::identity::<&_ mut _><'16, A>[{built_in impl core::marker::Sized::<&_ mut _><'16> for A}](move _3)
     ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'21>] x
-        ↳⚡ storage_dead(x)
-            unwind_terminate
-        storage_dead(x)
+        ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_3)
     storage_dead(_2)
@@ -141,21 +133,17 @@ where
     storage_live(_5)
     storage_live(_6)
     _6 = &mut x
-    _5 = Option::Some { 0: move _6 }
+    _5 = Option::Some { _0: move _6 }
     storage_dead(_6)
     _4 = test_crate::identity::<Option<&_ mut _>><'33, A>[{built_in impl core::marker::Sized::<Option<&_ mut _>><'33> for A}](move _5)
     ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'21>] x
-        ↳⚡ storage_dead(x)
-            unwind_terminate
-        storage_dead(x)
+        ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()
     conditional_drop[{built_in impl Destruct for A}::drop_glue<'54>] x
-    ↳⚡ storage_dead(x)
-        unwind_continue
-    storage_dead(x)
+    ↳⚡ unwind_continue
     return
 }
 

@@ -424,7 +424,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 fn core::slice::index::slice_index_fail::do_panic(start: usize, len: usize) -> !
@@ -900,9 +900,9 @@ where
     storage_live(_0)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy (self).1
+    _4 = copy self.1
     storage_live(_5)
-    _5 = copy (self).0
+    _5 = copy self.0
     _3 = checked_sub(move _4, move _5)
     ↳⚡ storage_dead(slice)
         storage_dead(self)
@@ -912,10 +912,10 @@ where
     match _3 {
         Option::Some => {
             storage_live(new_len)
-            new_len = copy (_3 as variant Option::Some).0
+            new_len = copy (_3 as variant Option::Some)._0
             storage_live(_7)
             storage_live(_8)
-            _8 = copy (self).1
+            _8 = copy self.1
             storage_live(_9)
             storage_live(_10)
             _10 = &(*slice) with_metadata(copy slice.metadata)
@@ -934,7 +934,7 @@ where
                 storage_live(_14)
                 _14 = &raw const (*slice) with_metadata(copy slice.metadata)
                 storage_live(_15)
-                _15 = copy (self).0
+                _15 = copy self.0
                 storage_live(_16)
                 _16 = copy new_len
                 _13 = get_offset_len_noubcheck<T>[TraitClause0](move _14, move _15, move _16)
@@ -946,7 +946,7 @@ where
                 storage_dead(_14)
                 _12 = &(*_13) with_metadata(copy _13.metadata)
                 _11 = &(*_12) with_metadata(copy _12.metadata)
-                _0 = Option::Some { 0: move _11 }
+                _0 = Option::Some { _0: move _11 }
                 storage_dead(_13)
                 storage_dead(_12)
                 storage_dead(_11)
@@ -1000,9 +1000,9 @@ where
     storage_live(_0)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy (self).1
+    _4 = copy self.1
     storage_live(_5)
-    _5 = copy (self).0
+    _5 = copy self.0
     _3 = checked_sub(move _4, move _5)
     ↳⚡ storage_dead(slice)
         storage_dead(self)
@@ -1012,10 +1012,10 @@ where
     match _3 {
         Option::Some => {
             storage_live(new_len)
-            new_len = copy (_3 as variant Option::Some).0
+            new_len = copy (_3 as variant Option::Some)._0
             storage_live(_7)
             storage_live(_8)
-            _8 = copy (self).1
+            _8 = copy self.1
             storage_live(_9)
             storage_live(_10)
             _10 = &(*slice) with_metadata(copy slice.metadata)
@@ -1034,7 +1034,7 @@ where
                 storage_live(_14)
                 _14 = &raw mut (*slice) with_metadata(copy slice.metadata)
                 storage_live(_15)
-                _15 = copy (self).0
+                _15 = copy self.0
                 storage_live(_16)
                 _16 = copy new_len
                 _13 = get_offset_len_mut_noubcheck<T>[TraitClause0](move _14, move _15, move _16)
@@ -1046,7 +1046,7 @@ where
                 storage_dead(_14)
                 _12 = &mut (*_13) with_metadata(copy _13.metadata)
                 _11 = &two-phase-mut (*_12) with_metadata(copy _12.metadata)
-                _0 = Option::Some { 0: move _11 }
+                _0 = Option::Some { _0: move _11 }
                 storage_dead(_13)
                 storage_dead(_12)
                 storage_dead(_11)
@@ -1178,9 +1178,9 @@ where
     if move _3 {
         storage_live(_4)
         storage_live(_5)
-        _5 = copy (self).0
+        _5 = copy self.0
         storage_live(_6)
-        _6 = copy (self).1
+        _6 = copy self.1
         storage_live(_7)
         storage_live(_8)
         _8 = copy slice
@@ -1201,16 +1201,16 @@ where
     storage_dead(_3)
     storage_live(new_len)
     storage_live(_10)
-    _10 = copy (self).1
+    _10 = copy self.1
     storage_live(_11)
-    _11 = copy (self).0
+    _11 = copy self.0
     new_len = move _10 ub.- move _11
     storage_dead(_11)
     storage_dead(_10)
     storage_live(_12)
     _12 = copy slice
     storage_live(_13)
-    _13 = copy (self).0
+    _13 = copy self.0
     storage_live(_14)
     _14 = copy new_len
     _0 = get_offset_len_noubcheck<T>[TraitClause0](move _12, move _13, move _14)
@@ -1333,9 +1333,9 @@ where
     if move _3 {
         storage_live(_4)
         storage_live(_5)
-        _5 = copy (self).0
+        _5 = copy self.0
         storage_live(_6)
-        _6 = copy (self).1
+        _6 = copy self.1
         storage_live(_7)
         storage_live(_8)
         _8 = copy slice
@@ -1356,16 +1356,16 @@ where
     storage_dead(_3)
     storage_live(new_len)
     storage_live(_10)
-    _10 = copy (self).1
+    _10 = copy self.1
     storage_live(_11)
-    _11 = copy (self).0
+    _11 = copy self.0
     new_len = move _10 ub.- move _11
     storage_dead(_11)
     storage_dead(_10)
     storage_live(_12)
     _12 = copy slice
     storage_live(_13)
-    _13 = copy (self).0
+    _13 = copy self.0
     storage_live(_14)
     _14 = copy new_len
     _0 = get_offset_len_mut_noubcheck<T>[TraitClause0](move _12, move _13, move _14)
@@ -1422,11 +1422,11 @@ where
     storage_live(_0)
     storage_live(_12)
     storage_live(start)
-    start = copy (self).0
+    start = copy self.0
     storage_live(end)
-    end = copy (self).1
+    end = copy self.1
     storage_live(exhausted)
-    exhausted = copy (self).2
+    exhausted = copy self.2
     storage_live(len)
     storage_live(_7)
     _7 = &(*slice) with_metadata(copy slice.metadata)
@@ -1484,7 +1484,7 @@ where
         match _15 {
             Option::Some => {
                 storage_live(new_len)
-                new_len = copy (_15 as variant Option::Some).0
+                new_len = copy (_15 as variant Option::Some)._0
                 storage_live(_19)
                 storage_live(_20)
                 storage_live(_21)
@@ -1602,11 +1602,11 @@ where
     storage_live(_0)
     storage_live(_12)
     storage_live(start)
-    start = copy (self).0
+    start = copy self.0
     storage_live(end)
-    end = copy (self).1
+    end = copy self.1
     storage_live(exhausted)
-    exhausted = copy (self).2
+    exhausted = copy self.2
     storage_live(len)
     storage_live(_7)
     _7 = &(*slice) with_metadata(copy slice.metadata)
@@ -1664,7 +1664,7 @@ where
         match _15 {
             Option::Some => {
                 storage_live(new_len)
-                new_len = copy (_15 as variant Option::Some).0
+                new_len = copy (_15 as variant Option::Some)._0
                 storage_live(_19)
                 storage_live(_20)
                 storage_live(_21)

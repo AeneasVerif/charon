@@ -418,7 +418,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 // Full name: core::num::{usize}::count_ones
@@ -630,7 +630,7 @@ pub fn core::mem::alignment::{Alignment}::new(align: usize) -> Option<Alignment>
     ↳⚡ storage_dead(align)
         unwind_continue
     storage_dead(_5)
-    _0 = Option::Some { 0: move _4 }
+    _0 = Option::Some { _0: move _4 }
     storage_dead(_4)
     storage_dead(_2)
     storage_dead(align)
@@ -782,7 +782,7 @@ where
         },
         Option::Some => {
             storage_live(val)
-            val = move (self as variant Option::Some).0
+            val = move (self as variant Option::Some)._0
             _0 = move val
             storage_dead(val)
             storage_dead(_3)

@@ -18,7 +18,7 @@ where
     TraitClause0: (B: Sized),
     TypeOutlives0: B: 'a,
 {
-  &'a B,
+  _0: &'a B,
 }
 
 // Full name: test_crate::main
@@ -43,7 +43,7 @@ fn main()
     _8 = ()
     _7 = &_8
     _6 = &(*_7)
-    _5 = Ref { 0: move _6 }
+    _5 = Ref { _0: move _6 }
     _4 = &_5
     _3 = move _4
     storage_live(_0)

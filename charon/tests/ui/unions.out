@@ -18,9 +18,9 @@ fn use_union()
     storage_live(one)
     one = Foo { one: const 42u64 }
     fake_read(one)
-    (one).one = const 43u64
+    one.one = const 43u64
     storage_live(_two)
-    _two = copy (one).two
+    _two = copy one.two
     fake_read(_two)
     _0 = ()
     storage_dead(_two)

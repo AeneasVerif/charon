@@ -72,7 +72,7 @@ fn transform_dyn_trait_call(
     let TypeDeclKind::Struct(fields) = &vtable_decl.kind else {
         return Ok(()); // Missing data
     };
-    let ItemSource::VTableTy { field_map, .. } = &vtable_decl.src else {
+    let TypeSource::VTable { field_map, .. } = &vtable_decl.src else {
         return Ok(()); // Weird
     };
     // Retrieve the method field from the vtable struct definition.

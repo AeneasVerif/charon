@@ -54,8 +54,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 {
-  Ok(T),
-  Err(E),
+  Ok { _0: T },
+  Err { _0: E },
 }
 
 // Full name: core::fmt::Display
@@ -168,8 +168,6 @@ fn main()
     storage_dead(args_3)
     storage_dead(_1)
     _0 = ()
-    storage_dead(_14)
-    storage_dead(_13)
     return
 }
 

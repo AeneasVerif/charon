@@ -5,7 +5,7 @@
  (public_name charon) ;; The name as revealed to the projects importing this library
  (preprocess
   (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq visitors.ppx))
- (libraries yojson zarith easy_logging name_matcher_parser unionFind))
+ (libraries yojson zarith logs name_matcher_parser unionFind))
 
 (documentation
  (package charon))

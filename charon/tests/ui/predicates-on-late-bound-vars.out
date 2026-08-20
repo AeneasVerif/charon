@@ -34,8 +34,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 {
-  Ok(T),
-  Err(E),
+  Ok { _0: T },
+  Err { _0: E },
 }
 
 // Full name: core::cell::Ref
@@ -70,7 +70,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 // Full name: core::result::Result::{impl Destruct for Result<T, E>[TraitClause0, TraitClause1]}::drop_glue
@@ -92,7 +92,7 @@ fn wrap<'a>(x: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
     storage_live(_0)
     storage_live(_2)
     _2 = &(*x)
-    _0 = Option::Some { 0: move _2 }
+    _0 = Option::Some { _0: move _2 }
     storage_dead(_2)
     storage_dead(x)
     return
@@ -110,7 +110,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = &(*x)
-    _0 = Option::Some { 0: move _2 }
+    _0 = Option::Some { _0: move _2 }
     storage_dead(_2)
     storage_dead(x)
     return

@@ -232,7 +232,7 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
     _2 = &mut (*_1)
     _3 = impl_Drop_for_Point::drop<'4>(move _2)
     ↳⚡ storage_live(drop_arg_4)
-        drop_arg_4 = &mut ((*_1)).x
+        drop_arg_4 = &mut (*_1).x
         storage_live(drop_ret_5)
         drop_ret_5 = impl_Destruct_for_Box::drop_glue<'5, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_4)
         ↳⚡ storage_dead(_3)
@@ -248,7 +248,7 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
             storage_dead(drop_arg_4)
             unwind_terminate
         storage_live(drop_arg_8)
-        drop_arg_8 = &mut ((*_1)).y
+        drop_arg_8 = &mut (*_1).y
         storage_live(drop_ret_9)
         drop_ret_9 = impl_Destruct_for_Box::drop_glue<'7, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_8)
         ↳⚡ storage_dead(_3)
@@ -268,11 +268,11 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
         storage_dead(_1)
         unwind_continue
     storage_live(drop_arg_6)
-    drop_arg_6 = &mut ((*_1)).x
+    drop_arg_6 = &mut (*_1).x
     storage_live(drop_ret_7)
     drop_ret_7 = impl_Destruct_for_Box::drop_glue<'6, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_6)
     ↳⚡ storage_live(drop_arg_8)
-        drop_arg_8 = &mut ((*_1)).y
+        drop_arg_8 = &mut (*_1).y
         storage_live(drop_ret_9)
         drop_ret_9 = impl_Destruct_for_Box::drop_glue<'7, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_8)
         ↳⚡ storage_dead(_3)
@@ -292,7 +292,7 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
         storage_dead(_1)
         unwind_continue
     storage_live(drop_arg_10)
-    drop_arg_10 = &mut ((*_1)).y
+    drop_arg_10 = &mut (*_1).y
     storage_live(drop_ret_11)
     drop_ret_11 = impl_Destruct_for_Box::drop_glue<'8, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_10)
     ↳⚡ storage_dead(_3)

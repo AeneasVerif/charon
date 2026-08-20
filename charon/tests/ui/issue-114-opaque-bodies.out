@@ -20,7 +20,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 // Full name: core::marker::Destruct
@@ -54,7 +54,7 @@ where
         storage_live(_4)
         _5 = const false
         _4 = move t
-        _0 = Option::Some { 0: move _4 }
+        _0 = Option::Some { _0: move _4 }
         storage_dead(_4)
     } else {
         _0 = Option::None {  }
@@ -260,7 +260,7 @@ pub struct PhantomData<T> {}
 
 // Full name: core::num::niche_types::UsizeNoHighBit
 pub struct UsizeNoHighBit {
-  usize is 0usize..=9223372036854775807usize,
+  _0: usize is 0usize..=9223372036854775807usize,
 }
 
 pub fn core::num::{usize}::MAX() -> usize

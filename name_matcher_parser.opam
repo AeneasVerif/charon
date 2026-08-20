@@ -15,7 +15,7 @@ depends: [
   "menhir" {build}
   "menhirLib"
   "ppx_deriving"
-  "visitors"
+  "visitors" {>= "20260520"}
   "zarith"
   "odoc" {with-doc}
 ]

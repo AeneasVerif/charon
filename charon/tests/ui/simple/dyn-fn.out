@@ -104,7 +104,7 @@ fn takes_fn<'_0>(f: &'_0 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::Implied
     _7 = &mut counter
     _6 = &two-phase-mut (*_7)
     _5 = (move _6,)
-    _3 = (copy ((*_4.metadata)).method_call)(move _4, move _5)
+    _3 = (copy (*_4.metadata).method_call)(move _4, move _5)
     ↳⚡ storage_dead(f)
         unwind_continue
     if move _3 {

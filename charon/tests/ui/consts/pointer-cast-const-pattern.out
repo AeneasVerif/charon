@@ -34,12 +34,10 @@ pub fn pointer_pattern()
     } else {
         _0 = const ()
         storage_dead(_1)
-        storage_dead(_2)
         return
     }
     _0 = const ()
     storage_dead(_1)
-    storage_dead(_2)
     return
 }
 

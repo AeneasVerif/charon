@@ -87,7 +87,7 @@ where
 
 // Full name: test_crate::main::closure
 struct closure<'_0> {
-  &'_0 mut u8,
+  _0: &'_0 mut u8,
 }
 
 // Full name: test_crate::main::{impl FnMut<(u8,)> for closure<'_0>}::call_mut
@@ -109,12 +109,12 @@ where
     storage_live(_4)
     storage_live(_7)
     x = move tupled_args.0
-    _4 = copy (*((*_1)).0) panic.+ const 1u8
-    (*((*_1)).0) = move _4
+    _4 = copy (*(*_1)._0) panic.+ const 1u8
+    (*(*_1)._0) = move _4
     storage_live(_5)
     _5 = copy x
     storage_live(_6)
-    _6 = copy (*((*_1)).0)
+    _6 = copy (*(*_1)._0)
     _7 = copy _5 panic.+ copy _6
     _0 = move _7
     storage_dead(_6)
@@ -212,7 +212,7 @@ fn main()
     storage_live(_3)
     storage_live(_4)
     _4 = &mut z
-    _3 = closure { 0: move _4 }
+    _3 = closure { _0: move _4 }
     storage_dead(_4)
     _2 = apply_to_zero_mut<closure<'6>>[{built_in impl Sized for closure<'6>}, impl_FnMut_tuple_for_closure<'6>](move _3)
     ↳⚡ unwind_continue

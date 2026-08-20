@@ -542,10 +542,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
 impl_display_via_ctx!(Field);
 impl<C: AstFormatter> FmtWithCtx<C> for Field {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(name) = &self.name {
-            write!(f, "{}: ", name)?
-        }
-        write!(f, "{}", self.ty.with_ctx(ctx))
+        write!(f, "{}: {}", self.name, self.ty.with_ctx(ctx))
     }
 }
 
@@ -1346,12 +1343,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                     }
                     ProjectionElem::Field(proj_kind, field_id) => match proj_kind {
                         FieldProjKind::Adt(adt_id, opt_variant_id) => {
-                            write!(f, "({sub}")?;
-                            if let Some(variant_id) = opt_variant_id {
-                                write!(f, " as variant ")?;
-                                ctx.format_enum_variant(f, *adt_id, *variant_id)?;
+                            match opt_variant_id {
+                                None => write!(f, "{sub}.")?,
+                                Some(variant_id) => {
+                                    write!(f, "({sub} as variant ")?;
+                                    ctx.format_enum_variant(f, *adt_id, *variant_id)?;
+                                    write!(f, ").")?;
+                                }
                             }
-                            write!(f, ").")?;
                             ctx.format_field_name(f, *adt_id, *opt_variant_id, *field_id)?;
                             Ok(())
                         }
@@ -2617,7 +2616,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Variant {
         write!(f, "{}", self.name)?;
         if !self.fields.is_empty() {
             let fields = self.fields.iter().map(|f| f.with_ctx(ctx)).format(", ");
-            write!(f, "({})", fields)?;
+            write!(f, " {{ {} }}", fields)?;
         }
         Ok(())
     }

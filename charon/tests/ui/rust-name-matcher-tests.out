@@ -28,7 +28,7 @@ where
     TraitClause0: (T: Sized),
 {
   None,
-  Some(T),
+  Some { _0: T },
 }
 
 // Full name: alloc::alloc::Global
@@ -154,15 +154,11 @@ where
     _0 = Generic { value: move _2 }
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'2>] value
-        ↳⚡ storage_dead(value)
-            unwind_terminate
-        storage_dead(value)
+        ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_2)
     conditional_drop[{built_in impl Destruct for T}::drop_glue<'1>] value
-    ↳⚡ storage_dead(value)
-        unwind_continue
-    storage_dead(value)
+    ↳⚡ unwind_continue
     return
 }
 
@@ -178,10 +174,9 @@ where
 
     storage_live(_0)
     storage_live(_2)
-    _2 = &((*self)).value
+    _2 = &(*self).value
     _0 = &(*_2)
     storage_dead(_2)
-    storage_dead(self)
     return
 }
 

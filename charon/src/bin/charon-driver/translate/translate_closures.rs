@@ -170,7 +170,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         closure: &hax::ClosureArgs,
         target_kind: ClosureKind,
     ) -> Result<RegionBinder<TraitImplRef>, Error> {
-        let kind = TransItemSourceKind::TraitImpl(TraitImplSource::Closure(target_kind));
+        let kind = TransItemSourceKind::TraitImpl(TransImplSource::Closure(target_kind));
         let bound_dref = self.translate_closure_bound_ref_with_late_bound(span, closure, kind)?;
         Ok(bound_dref.map(|dref| dref.try_into().unwrap()))
     }
@@ -185,7 +185,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         self.translate_item(
             span,
             &closure.item,
-            TransItemSourceKind::TraitImpl(TraitImplSource::Closure(target_kind)),
+            TransItemSourceKind::TraitImpl(TransImplSource::Closure(target_kind)),
         )
     }
 
@@ -253,10 +253,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             .unwrap()
             .iter()
             .cloned()
-            .map(|ty| Field {
+            .enumerate()
+            .map(|(field_id, ty)| Field {
                 span,
                 attr_info: AttrInfo::dummy_private(),
-                name: None,
+                name: format!("_{field_id}"),
+                is_positional: true,
                 ty,
             })
             .collect();
@@ -497,10 +499,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let method_id = self.translate_trait_method_id(implemented_trait.id, &vimpl.methods[0])?;
 
         let impl_ref = self.translate_closure_impl_ref(span, args, target_kind)?;
-        let src = ItemSource::TraitImpl {
+        let src = FunSource::TraitImpl {
             impl_ref,
             trait_ref: implemented_trait,
-            item_id: method_id.into(),
+            item_id: method_id,
             reuses_default: false,
         };
 
@@ -527,7 +529,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             generics: self.into_generics(),
             signature: Box::new(signature),
             src,
-            is_global_initializer: None,
             body,
         })
     }
@@ -558,7 +559,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             ClosureKind::FnMut => fn_mut_impl.as_ref().unwrap(),
             ClosureKind::Fn => fn_impl.as_ref().unwrap(),
         };
-        let mut timpl = self.translate_virtual_trait_impl(def_id, item_meta, vimpl)?;
+        let mut timpl = self.translate_virtual_trait_impl(
+            def_id,
+            item_meta,
+            TraitImplSource::Closure { kind: target_kind },
+            vimpl,
+        )?;
 
         // Construct the `call_*` method reference.
         let trait_decl_id = timpl.impl_trait.id;
@@ -672,8 +678,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             item_meta,
             generics: self.into_generics(),
             signature: Box::new(signature),
-            src: ItemSource::TopLevel,
-            is_global_initializer: None,
+            src: FunSource::Normal,
             body,
         })
     }

@@ -142,6 +142,73 @@ and fn_operand =
       (** Regular case: call to a top-level function, trait method, etc. *)
   | FnOpDynamic of operand  (** Use of a function pointer. *)
 
+(** Where a given function came from. *)
+and fun_source =
+  | NormalFun  (** A normal function. *)
+  | TraitDefaultFun of trait_decl_ref * trait_method_id
+      (** A default method in a trait declaration.
+
+          Fields:
+          - [trait_ref]: The trait declaration this item belongs to.
+          - [item_id]: The method this corresponds to. *)
+  | TraitImplFun of trait_impl_ref * trait_decl_ref * trait_method_id * bool
+      (** A method in a trait implementation.
+
+          Fields:
+          - [impl_ref]: The trait implementation the method belongs to.
+          - [trait_ref]: The trait declaration that the impl block implements.
+          - [item_id]: The method this corresponds to.
+          - [reuses_default]: True if the trait decl had a default
+            implementation for this method and this item is a copy of the
+            default item. *)
+  | VTableShimFun
+      (** Wraps a concrete implementation of a method into a function that takes
+          [dyn Trait] as its [Self] type. This shim casts the receiver to the
+          known concrete type and calls the real method. *)
+  | GlobalInitializerFun of global_decl_ref
+      (** The initializer for a global. *)
+  | TargetDependentFun of fun_decl_ref
+      (** A target-specific variant behind a [TargetDispatch] façade. The
+          dispatcher is the function with the [Body::TargetDispatch] body that
+          dispatches to this function.
+
+          Fields:
+          - [dispatcher] *)
+  | SpecFun of spec_kind * item_id
+      (** A specification attached to another item, via
+          [#[charon::precondition]]/[#[charon::postcondition]].
+
+          Fields:
+          - [kind]
+          - [item] *)
+
+(** Where a given global came from. *)
+and global_source =
+  | NormalGlobal  (** A normal global. *)
+  | TraitDefaultGlobal of trait_decl_ref * assoc_const_id
+      (** A default assoc const in a trait declaration.
+
+          Fields:
+          - [trait_ref]: The trait declaration the const belongs to.
+          - [item_id]: The associated const this corresponds to. *)
+  | TraitImplGlobal of trait_impl_ref * trait_decl_ref * assoc_const_id * bool
+      (** An associated const in a trait implementation.
+
+          Fields:
+          - [impl_ref]: The trait implementation the const belongs to.
+          - [trait_ref]: The trait declaration that the impl block implements.
+          - [item_id]: The associated const this corresponds to.
+          - [reuses_default]: True if the trait decl had a default value for
+            this const and this item is a copy of the default item. *)
+  | VTableInstanceGlobal of trait_impl_ref option
+      (** Defines the vtable for a trait impl.
+
+          Fields:
+          - [impl_ref]: The originating impl. This is [None] in monomorphized
+            mode: the vtable global itself identifies the concrete
+            instantiation, so we don't translate an impl reference solely to
+            record its provenance. *)
+
 (** A variable *)
 and local = {
   index : local_id;  (** Unique index identifying the variable *)
@@ -162,6 +229,8 @@ and locals = {
           - the [arg_count] input arguments
           - the remaining locals, used for the intermediate computations *)
 }
+
+and spec_kind = Precondition | Postcondition
 [@@deriving
   show,
   eq,
@@ -189,9 +258,9 @@ type global_decl = {
   item_meta : item_meta;  (** The meta data associated with the declaration. *)
   generics : generic_params;
   ty : ty;
-  src : item_source;
-      (** The context of the global: distinguishes top-level items from
-          trait-associated items. *)
+  src : global_source;
+      (** The context of the global: distinguishes normal items from
+          trait-associated items and vtable instances. *)
   global_kind : global_kind;  (** The kind of global (static or const). *)
   value : constant_expr;
       (** The value of this constant/static. By default this is a
@@ -306,6 +375,8 @@ and trait_assoc_ty = {
 and trait_decl = {
   def_id : trait_decl_id;
   item_meta : item_meta;
+  src : trait_decl_source;
+      (** Distinguishes normal traits from trait aliases. *)
   generics : generic_params;
   implied_clauses : trait_param list;
       (** The "parent" clauses: the supertraits.
@@ -341,6 +412,11 @@ and trait_decl = {
       (** The virtual table struct for this trait, if it has one. It is
           guaranteed that the trait has a vtable iff it is dyn-compatible. *)
 }
+
+(** Where the trait comes from. *)
+and trait_decl_source =
+  | NormalTraitDecl  (** A regular trait. *)
+  | TraitAliasTraitDecl  (** The trait declaration coming from a trait alias. *)
 
 and trait_item_name = string
 
@@ -398,6 +474,7 @@ type 'a0 gexpr_body = {
 and trait_impl = {
   def_id : trait_impl_id;
   item_meta : item_meta;
+  src : trait_impl_source;
   impl_trait : trait_decl_ref;
       (** The information about the implemented trait. Note that this contains
           the instantiation of the "parent" clauses. *)
@@ -414,6 +491,19 @@ and trait_impl = {
       (** The virtual table instance for this trait implementation. This is
           [Some] iff the trait is dyn-compatible. *)
 }
+
+(** Where the impl comes from. *)
+and trait_impl_source =
+  | NormalTraitImpl  (** A regular trait implementation. *)
+  | TraitAliasTraitImpl
+      (** The blanket implementation generated for a trait alias. *)
+  | ClosureTraitImpl of closure_kind
+      (** An implementation of one of the [Fn*] traits, generated for a closure.
+
+          Fields:
+          - [kind] *)
+  | DestructTraitImpl
+      (** The [Destruct] implementation generated for an ADT or closure. *)
 [@@deriving
   show,
   eq,

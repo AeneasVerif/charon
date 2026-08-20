@@ -207,7 +207,7 @@ where
     _6 = &two-phase-mut (*x) with_metadata(copy x.metadata)
     storage_live(_7)
     _7 = &(*arg)
-    _0 = (copy ((*_6.metadata)).method_modify)(move _6, move _7)
+    _0 = (copy (*_6.metadata).method_modify)(move _6, move _7)
     ↳⚡ storage_dead(arg)
         unwind_continue
     storage_dead(_7)
