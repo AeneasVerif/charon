@@ -37,7 +37,6 @@ pub trait Tuple<Self>
 struct NotCopy {}
 
 // Full name: core::mem::drop::<NotCopy>
-#[rustc_diagnostic_item = "mem_drop"]
 #[diagnostic_item("mem_drop")]
 pub fn drop::<NotCopy>(_1: NotCopy)
 = <opaque>

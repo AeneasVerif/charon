@@ -2079,10 +2079,9 @@ and rustc_attribute_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* align = int_of_json ctx align in
         let* span = span_of_json ctx span in
         Ok (RustcAttributeKindRustcAlign (align, span))
-    | `Assoc [ ("RustcDiagnosticItem", _0) ] ->
-        let* _0 = string_of_json ctx _0 in
-        Ok (RustcAttributeKindRustcDiagnosticItem _0)
     | `String "RustcIntrinsic" -> Ok RustcAttributeKindRustcIntrinsic
+    | `String "RustcTestEntrypointMarker" ->
+        Ok RustcAttributeKindRustcTestEntrypointMarker
     | `Assoc [ ("ShouldPanic", `Assoc [ ("reason", reason) ]) ] ->
         let* reason = option_of_json string_of_json ctx reason in
         Ok (RustcAttributeKindShouldPanic reason)

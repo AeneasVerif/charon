@@ -32,7 +32,6 @@ where
 }
 
 // Full name: core::option::Option
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -51,7 +50,6 @@ where
 = <opaque>
 
 // Full name: core::slice::index::SliceIndex
-#[rustc_diagnostic_item = "SliceIndex"]
 #[diagnostic_item("SliceIndex")]
 pub trait SliceIndex<Self, T>
 {

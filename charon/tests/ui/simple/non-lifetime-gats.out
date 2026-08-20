@@ -23,7 +23,6 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::ops::deref::Deref
-#[rustc_diagnostic_item = "Deref"]
 #[lang_item(Deref)]
 #[diagnostic_item("Deref")]
 pub trait Deref<Self>

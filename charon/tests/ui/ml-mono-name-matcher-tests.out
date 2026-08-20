@@ -7,7 +7,6 @@ pub struct RangeFrom::<usize> {
 }
 
 // Full name: core::option::Option::<i32>
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option::<i32> {

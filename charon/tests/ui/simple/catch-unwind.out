@@ -12,7 +12,6 @@ pub trait MetaSized<Self>
 pub opaque type TypeId
 
 // Full name: core::any::Any
-#[rustc_diagnostic_item = "Any"]
 #[diagnostic_item("Any")]
 pub trait Any<Self>
 where
@@ -24,7 +23,6 @@ where
 }
 
 // Full name: core::marker::Send
-#[rustc_diagnostic_item = "Send"]
 #[diagnostic_item("Send")]
 pub trait Send<Self>
 
@@ -61,12 +59,10 @@ pub trait FnOnce<Self, Args>
 }
 
 // Full name: core::panic::unwind_safe::UnwindSafe
-#[rustc_diagnostic_item = "unwind_safe_trait"]
 #[diagnostic_item("unwind_safe_trait")]
 pub trait UnwindSafe<Self>
 
 // Full name: core::result::Result
-#[rustc_diagnostic_item = "Result"]
 #[diagnostic_item("Result")]
 pub enum Result<T, E>
 where

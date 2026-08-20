@@ -15,7 +15,6 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -26,7 +25,6 @@ pub trait Clone<Self>
 }
 
 // Full name: core::cmp::PartialEq
-#[rustc_diagnostic_item = "PartialEq"]
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
@@ -36,7 +34,6 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
-#[rustc_diagnostic_item = "Eq"]
 #[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {
@@ -54,7 +51,6 @@ pub trait Hasher<Self>
 }
 
 // Full name: core::hash::Hash
-#[rustc_diagnostic_item = "Hash"]
 #[diagnostic_item("Hash")]
 pub trait Hash<Self>
 {
@@ -63,12 +59,10 @@ pub trait Hash<Self>
 }
 
 // Full name: core::marker::Send
-#[rustc_diagnostic_item = "Send"]
 #[diagnostic_item("Send")]
 pub trait Send<Self>
 
 // Full name: core::marker::Copy
-#[rustc_diagnostic_item = "Copy"]
 #[lang_item(Copy)]
 #[diagnostic_item("Copy")]
 pub trait Copy<Self>
@@ -79,7 +73,6 @@ pub trait Copy<Self>
 }
 
 // Full name: core::marker::Sync
-#[rustc_diagnostic_item = "Sync"]
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
 pub trait Sync<Self>
@@ -113,7 +106,6 @@ where
     TraitClause0: (T: Sized),
 
 // Full name: core::mem::discriminant
-#[rustc_diagnostic_item = "mem_discriminant"]
 #[track_caller]
 #[diagnostic_item("mem_discriminant")]
 pub fn discriminant<'_0, T>(v: &'_0 T) -> Discriminant<T>[TraitClause0]

@@ -6,7 +6,6 @@
 pub trait MetaSized<Self>
 
 // Full name: core::borrow::Borrow
-#[rustc_diagnostic_item = "Borrow"]
 #[diagnostic_item("Borrow")]
 pub trait Borrow<Self, Borrowed>
 {
@@ -26,7 +25,6 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -41,7 +39,6 @@ pub trait Clone<Self>
 pub struct Global {}
 
 // Full name: alloc::borrow::ToOwned
-#[rustc_diagnostic_item = "ToOwned"]
 #[diagnostic_item("ToOwned")]
 pub trait ToOwned<Self>
 {
@@ -54,7 +51,6 @@ pub trait ToOwned<Self>
 }
 
 // Full name: alloc::borrow::Cow
-#[rustc_diagnostic_item = "Cow"]
 #[diagnostic_item("Cow")]
 pub enum Cow<'a, B>
 where
@@ -68,7 +64,6 @@ where
 }
 
 // Full name: alloc::vec::Vec
-#[rustc_diagnostic_item = "Vec"]
 #[diagnostic_item("Vec")]
 pub opaque type Vec<T>
 where

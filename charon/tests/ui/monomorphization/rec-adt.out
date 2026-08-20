@@ -1,12 +1,10 @@
 # Final LLBC before serialization:
 
 // Full name: core::ptr::non_null::NonNull::<Node::<u8>>
-#[rustc_diagnostic_item = "NonNull"]
 #[diagnostic_item("NonNull")]
 pub opaque type NonNull::<Node::<u8>>
 
 // Full name: core::option::Option::<NonNull::<Node::<u8>>>
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option::<NonNull::<Node::<u8>>> {

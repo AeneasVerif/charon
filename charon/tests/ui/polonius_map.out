@@ -6,7 +6,6 @@
 pub trait MetaSized<Self>
 
 // Full name: core::borrow::Borrow
-#[rustc_diagnostic_item = "Borrow"]
 #[diagnostic_item("Borrow")]
 pub trait Borrow<Self, Borrowed>
 {
@@ -17,7 +16,6 @@ pub trait Borrow<Self, Borrowed>
 }
 
 // Full name: core::borrow::{impl Borrow<T> for T}::borrow
-#[rustc_diagnostic_item = "noop_method_borrow"]
 #[diagnostic_item("noop_method_borrow")]
 pub fn borrow<'_0, T>(_1: &'_0 T) -> &'_0 T
 where
@@ -37,7 +35,6 @@ where
 }
 
 // Full name: core::cmp::PartialEq
-#[rustc_diagnostic_item = "PartialEq"]
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
@@ -47,7 +44,6 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::cmp::Eq
-#[rustc_diagnostic_item = "Eq"]
 #[diagnostic_item("Eq")]
 pub trait Eq<Self>
 {
@@ -90,7 +86,6 @@ pub trait Hasher<Self>
 }
 
 // Full name: core::hash::Hash
-#[rustc_diagnostic_item = "Hash"]
 #[diagnostic_item("Hash")]
 pub trait Hash<Self>
 {
@@ -99,7 +94,6 @@ pub trait Hash<Self>
 }
 
 // Full name: core::hash::BuildHasher
-#[rustc_diagnostic_item = "BuildHasher"]
 #[diagnostic_item("BuildHasher")]
 pub trait BuildHasher<Self>
 {
@@ -126,7 +120,6 @@ impl "impl_Hash_for_u32" Hash for u32 {
 }
 
 // Full name: core::option::Option
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -138,7 +131,6 @@ where
 }
 
 // Full name: std::collections::hash::map::HashMap
-#[rustc_diagnostic_item = "HashMap"]
 #[diagnostic_item("HashMap")]
 pub opaque type HashMap<K, V, S, A>
 where
@@ -169,7 +161,6 @@ where
 = <opaque>
 
 // Full name: std::collections::hash::map::{HashMap<K, V, S, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::insert
-#[rustc_diagnostic_item = "hashmap_insert"]
 #[diagnostic_item("hashmap_insert")]
 pub fn insert<'_0, K, V, S, A>(_1: &'_0 mut HashMap<K, V, S, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3], _2: K, _3: V) -> Option<V>[TraitClause1]
 where

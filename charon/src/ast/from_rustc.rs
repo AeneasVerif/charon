@@ -104,8 +104,6 @@ pub enum AttributeKind {
     Optimize(OptimizeAttr, Span),
     /// Represents `#[align(N)]`.
     RustcAlign { align: u64, span: Span },
-    /// Represents `#[rustc_diagnostic_item]`
-    RustcDiagnosticItem(Ustr),
     /// Represents `#[rustc_intrinsic]`
     RustcIntrinsic,
     /// Represents `#[rustc_test_entrypoint_marker]`

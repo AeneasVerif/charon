@@ -18,7 +18,6 @@ pub fn hello() -> u32
 pub struct Error {}
 
 // Full name: core::fmt::Formatter
-#[rustc_diagnostic_item = "Formatter"]
 #[diagnostic_item("Formatter")]
 pub opaque type Formatter<mut 'a>
 where
@@ -51,7 +50,6 @@ pub trait Sized<Self>
 }
 
 // Full name: core::result::Result
-#[rustc_diagnostic_item = "Result"]
 #[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
@@ -63,7 +61,6 @@ where
 }
 
 // Full name: core::fmt::Display
-#[rustc_diagnostic_item = "Display"]
 #[diagnostic_item("Display")]
 pub trait Display<Self>
 {

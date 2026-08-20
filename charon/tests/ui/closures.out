@@ -70,7 +70,6 @@ where
 = <opaque>
 
 // Full name: core::clone::Clone
-#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -105,7 +104,6 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
 }
 
 // Full name: core::option::Option
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>

@@ -21,7 +21,6 @@ where
     TraitClause0: (T: Sized),
 
 // Full name: core::option::Option
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -60,7 +59,6 @@ where
 = <opaque>
 
 // Full name: alloc::vec::Vec
-#[rustc_diagnostic_item = "Vec"]
 #[diagnostic_item("Vec")]
 pub opaque type Vec<T>
 where

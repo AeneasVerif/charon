@@ -23,7 +23,6 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::ptr::const_ptr::{*const T}::cast
-#[rustc_diagnostic_item = "const_ptr_cast"]
 #[diagnostic_item("const_ptr_cast")]
 pub fn cast<T, U>(_1: *const T) -> *const U
 where

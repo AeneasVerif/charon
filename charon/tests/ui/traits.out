@@ -72,7 +72,6 @@ pub trait Fn<Self, Args>
 }
 
 // Full name: core::option::Option
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -91,7 +90,6 @@ where
 = <opaque>
 
 // Full name: core::result::Result
-#[rustc_diagnostic_item = "Result"]
 #[diagnostic_item("Result")]
 pub enum Result<T, E>
 where

@@ -15,7 +15,6 @@ pub trait Sized<Self>
 }
 
 // Full name: core::convert::From
-#[rustc_diagnostic_item = "From"]
 #[lang_item(From)]
 #[diagnostic_item("From")]
 pub trait From<Self, T>
@@ -136,7 +135,6 @@ impl "impl_From_u32_for_u64" From<u32> for u64 {
 }
 
 // Full name: core::option::Option
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>

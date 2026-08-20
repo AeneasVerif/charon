@@ -83,7 +83,6 @@ pub trait FnMut<Self, Args>
 }
 
 // Full name: core::result::Result
-#[rustc_diagnostic_item = "Result"]
 #[diagnostic_item("Result")]
 pub enum Result<T, E>
 where

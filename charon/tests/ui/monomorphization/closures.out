@@ -37,7 +37,6 @@ pub trait Tuple<Self>
 struct Thing {}
 
 // Full name: core::mem::drop::<Thing>
-#[rustc_diagnostic_item = "mem_drop"]
 #[diagnostic_item("mem_drop")]
 pub fn drop::<Thing>(_1: Thing)
 = <opaque>

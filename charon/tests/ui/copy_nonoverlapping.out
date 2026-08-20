@@ -32,7 +32,6 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -139,7 +138,6 @@ pub fn abort() -> !
 = <intrinsic:abort>
 
 // Full name: core::ptr::non_null::NonNull
-#[rustc_diagnostic_item = "NonNull"]
 #[diagnostic_item("NonNull")]
 pub struct NonNull<T> {
   pointer: *const T is !null,
@@ -164,7 +162,6 @@ pub fn caller_location() -> &'static Location<'static>
 = <intrinsic:caller_location>
 
 // Full name: core::marker::Copy
-#[rustc_diagnostic_item = "Copy"]
 #[lang_item(Copy)]
 #[diagnostic_item("Copy")]
 pub trait Copy<Self>
@@ -421,7 +418,6 @@ pub struct Alignment {
 }
 
 // Full name: core::option::Option
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -782,7 +778,6 @@ fn unwrap_failed() -> !
 
 // Full name: core::option::{Option<T>[TraitClause0]}::unwrap
 #[track_caller]
-#[rustc_diagnostic_item = "option_unwrap"]
 #[diagnostic_item("option_unwrap")]
 pub fn unwrap<T>(self: Option<T>[TraitClause0]) -> T
 where
@@ -895,7 +890,6 @@ where
     non-dyn-compatible
 }
 
-#[rustc_diagnostic_item = "mem_size_of"]
 #[diagnostic_item("mem_size_of")]
 pub fn core::mem::size_of<T>() -> usize
 where
@@ -908,7 +902,6 @@ where
     return
 }
 
-#[rustc_diagnostic_item = "mem_align_of"]
 #[diagnostic_item("mem_align_of")]
 pub fn core::mem::align_of<T>() -> usize
 where
@@ -926,7 +919,6 @@ fn core::ptr::copy_nonoverlapping::precondition_check(_1: *const (), _2: *mut ()
 = <opaque>
 
 #[track_caller]
-#[rustc_diagnostic_item = "ptr_copy_nonoverlapping"]
 #[diagnostic_item("ptr_copy_nonoverlapping")]
 pub unsafe fn core::ptr::copy_nonoverlapping<T>(src: *const T, dst: *mut T, count: usize)
 where

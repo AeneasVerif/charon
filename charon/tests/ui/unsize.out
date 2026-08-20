@@ -28,7 +28,6 @@ where
 = <opaque>
 
 // Full name: alloc::rc::Rc
-#[rustc_diagnostic_item = "Rc"]
 #[diagnostic_item("Rc")]
 pub opaque type Rc<T>
 where
@@ -57,7 +56,6 @@ pub opaque type String
 unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
 = <opaque>
 
-#[rustc_diagnostic_item = "string_new"]
 #[diagnostic_item("string_new")]
 pub fn alloc::string::{String}::new() -> String
 = <opaque>

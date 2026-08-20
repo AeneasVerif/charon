@@ -3,7 +3,6 @@
 opaque type core::cmp::PartialEq::{vtable}<Rhs>
 
 // Full name: core::cmp::PartialEq
-#[rustc_diagnostic_item = "PartialEq"]
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
@@ -78,7 +77,6 @@ pub trait Fn<Self, Args>
 }
 
 // Full name: core::option::Option
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>

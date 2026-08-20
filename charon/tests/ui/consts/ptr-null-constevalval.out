@@ -21,7 +21,6 @@ pub fn from_raw_parts::<u8, ()>(data_pointer: *const (), metadata: ()) -> *const
 }
 
 // Full name: core::ptr::without_provenance_mut::<()>
-#[rustc_diagnostic_item = "ptr_without_provenance_mut"]
 #[diagnostic_item("ptr_without_provenance_mut")]
 pub fn without_provenance_mut::<()>(addr: usize) -> *mut ()
 {
@@ -38,7 +37,6 @@ pub fn without_provenance_mut::<()>(addr: usize) -> *mut ()
 }
 
 // Full name: core::ptr::without_provenance::<()>
-#[rustc_diagnostic_item = "ptr_without_provenance"]
 #[diagnostic_item("ptr_without_provenance")]
 pub fn without_provenance::<()>(addr: usize) -> *const ()
 {
@@ -60,7 +58,6 @@ pub fn without_provenance::<()>(addr: usize) -> *const ()
 }
 
 // Full name: core::ptr::null::<u8>
-#[rustc_diagnostic_item = "ptr_null"]
 #[diagnostic_item("ptr_null")]
 pub fn null::<u8>() -> *const u8
 {

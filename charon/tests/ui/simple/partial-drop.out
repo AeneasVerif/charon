@@ -9,7 +9,6 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::mem::drop
-#[rustc_diagnostic_item = "mem_drop"]
 #[diagnostic_item("mem_drop")]
 pub fn drop<T>(_1: T)
 where

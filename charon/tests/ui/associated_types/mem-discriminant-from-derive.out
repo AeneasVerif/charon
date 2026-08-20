@@ -1,7 +1,6 @@
 # Final LLBC before serialization:
 
 // Full name: core::cmp::PartialEq
-#[rustc_diagnostic_item = "PartialEq"]
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>

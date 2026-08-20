@@ -73,7 +73,6 @@ impl RustcDatatypes {
                     "NonExhaustive",
                     "Optimize",
                     "RustcAlign",
-                    "RustcDiagnosticItem",
                     "RustcIntrinsic",
                     "RustcTestEntrypointMarker",
                     "ShouldPanic",

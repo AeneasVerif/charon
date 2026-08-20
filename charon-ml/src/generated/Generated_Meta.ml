@@ -205,9 +205,9 @@ and rustc_attribute_kind =
           Fields:
           - [align]
           - [span] *)
-  | RustcAttributeKindRustcDiagnosticItem of string
-      (** Represents [#[rustc_diagnostic_item]] *)
   | RustcAttributeKindRustcIntrinsic  (** Represents [#[rustc_intrinsic]] *)
+  | RustcAttributeKindRustcTestEntrypointMarker
+      (** Represents [#[rustc_test_entrypoint_marker]] *)
   | RustcAttributeKindShouldPanic of string option
       (** Represents [#[should_panic]]
 

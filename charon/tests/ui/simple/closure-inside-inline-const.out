@@ -32,7 +32,6 @@ pub trait Tuple<Self>
 }
 
 // Full name: core::mem::size_of
-#[rustc_diagnostic_item = "mem_size_of"]
 #[diagnostic_item("mem_size_of")]
 pub fn size_of<T>() -> usize
 where

@@ -37,7 +37,6 @@ impl "impl_Destruct_for_Global" Destruct for Global {
 }
 
 // Full name: alloc::vec::Vec
-#[rustc_diagnostic_item = "Vec"]
 #[diagnostic_item("Vec")]
 pub opaque type Vec<T>
 where
@@ -79,7 +78,6 @@ unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
 }
 
 // Full name: alloc::string::{String}::new
-#[rustc_diagnostic_item = "string_new"]
 #[diagnostic_item("string_new")]
 pub fn new() -> String
 = <opaque>

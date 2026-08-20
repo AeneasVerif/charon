@@ -23,7 +23,6 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::option::Option
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -49,7 +48,6 @@ unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
 = <opaque>
 
 // Full name: alloc::string::{String}::new
-#[rustc_diagnostic_item = "string_new"]
 #[diagnostic_item("string_new")]
 pub fn new() -> String
 = <opaque>

@@ -1,11 +1,9 @@
-#[rustc_diagnostic_item = "cstr_type"]
 #[lang_item(CStr)]
 #[diagnostic_item("cstr_type")]
 pub struct core::ffi::c_str::CStr::x86_64-unknown-linux-gnu {
   inner: [i8],
 }
 
-#[rustc_diagnostic_item = "cstr_type"]
 #[lang_item(CStr)]
 #[diagnostic_item("cstr_type")]
 pub struct core::ffi::c_str::CStr::powerpc64-unknown-linux-gnu {

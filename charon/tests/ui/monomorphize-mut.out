@@ -149,7 +149,6 @@ pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
     non-dyn-compatible
 }
 
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum core::option::Option::<&_ mut _><'_0, T0>
@@ -169,7 +168,6 @@ where
     non-dyn-compatible
 }
 
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><'_0, T0>
@@ -233,7 +231,6 @@ pub trait FnOnce<Self, Args>
 }
 
 // Full name: core::option::Option
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -244,7 +241,6 @@ where
   Some { _0: T },
 }
 
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum core::option::Option::<&_ mut &_ mut _><'_0, '_1, T0>
@@ -265,7 +261,6 @@ where
   tail: core::option::Option::<&_ mut _><'a, T>[{built_in impl core::marker::Sized::<&_ mut _><'a> for T}],
 }
 
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum core::option::Option::<Iter<_, _>[TraitClause1]><'_0, T0>
@@ -287,7 +282,6 @@ where
   _0: Iter<'a, T>[TraitClause0],
 }
 
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum core::option::Option::<IterWrapper<_, _>[TraitClause1]><'_0, T0>

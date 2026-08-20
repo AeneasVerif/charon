@@ -8,7 +8,6 @@ pub fn MAX() -> usize
 pub const MAX: usize = MAX()
 
 // Full name: core::ptr::non_null::NonNull
-#[rustc_diagnostic_item = "NonNull"]
 #[diagnostic_item("NonNull")]
 pub opaque type NonNull<T>
 

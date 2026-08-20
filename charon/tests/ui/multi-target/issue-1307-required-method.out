@@ -10,7 +10,6 @@ pub trait core::marker::Sized<Self>
     non-dyn-compatible
 }
 
-#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait core::clone::Clone<Self>

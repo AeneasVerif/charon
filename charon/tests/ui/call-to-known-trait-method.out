@@ -15,7 +15,6 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -37,7 +36,6 @@ impl "impl_Clone_for_u8" Clone for u8 {
 }
 
 // Full name: core::cmp::PartialEq
-#[rustc_diagnostic_item = "PartialEq"]
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
 pub trait PartialEq<Self, Rhs>
@@ -57,7 +55,6 @@ impl "impl_PartialEq_bool_for_bool" PartialEq<bool> for bool {
 }
 
 // Full name: core::default::Default
-#[rustc_diagnostic_item = "Default"]
 #[diagnostic_item("Default")]
 pub trait Default<Self>
 {

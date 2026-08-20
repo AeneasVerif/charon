@@ -32,7 +32,6 @@ pub trait Tuple<Self>
 }
 
 // Full name: core::mem::size_of
-#[rustc_diagnostic_item = "mem_size_of"]
 #[diagnostic_item("mem_size_of")]
 pub fn size_of<T>() -> usize
 where
@@ -40,7 +39,6 @@ where
 = <opaque>
 
 // Full name: core::mem::align_of
-#[rustc_diagnostic_item = "mem_align_of"]
 #[diagnostic_item("mem_align_of")]
 pub fn align_of<T>() -> usize
 where

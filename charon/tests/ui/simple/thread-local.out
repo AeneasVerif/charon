@@ -15,7 +15,6 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -37,7 +36,6 @@ impl Clone for ! {
 }
 
 // Full name: core::marker::Copy
-#[rustc_diagnostic_item = "Copy"]
 #[lang_item(Copy)]
 #[diagnostic_item("Copy")]
 pub trait Copy<Self>
@@ -72,7 +70,6 @@ pub trait Tuple<Self>
 }
 
 // Full name: core::mem::needs_drop
-#[rustc_diagnostic_item = "needs_drop"]
 #[diagnostic_item("needs_drop")]
 pub fn needs_drop<T>() -> bool
 where
@@ -120,7 +117,6 @@ pub trait Fn<Self, Args>
 }
 
 // Full name: core::option::Option
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -198,7 +194,6 @@ where
 = <opaque>
 
 // Full name: std::thread::local::LocalKey
-#[rustc_diagnostic_item = "LocalKey"]
 #[diagnostic_item("LocalKey")]
 pub opaque type LocalKey<T>
 where

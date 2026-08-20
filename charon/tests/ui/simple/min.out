@@ -23,7 +23,6 @@ pub trait Sized<Self>
 }
 
 // Full name: core::cmp::impls::{impl Ord for u64}::min
-#[rustc_diagnostic_item = "cmp_ord_min"]
 #[diagnostic_item("cmp_ord_min")]
 pub fn impl_Ord_for_u64::min(_1: u64, _2: u64) -> u64
 where

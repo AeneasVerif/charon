@@ -23,7 +23,6 @@ opaque type {vtable}
 pub trait MetaSized<Self>
 
 // Full name: core::option::Option
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>
@@ -35,7 +34,6 @@ where
 }
 
 // Full name: core::option::Option::<&'_ [u64]>
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option::<&'_ [u64]> {

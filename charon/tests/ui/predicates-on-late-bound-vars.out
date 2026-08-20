@@ -6,7 +6,6 @@
 pub trait MetaSized<Self>
 
 // Full name: core::cell::RefCell
-#[rustc_diagnostic_item = "RefCell"]
 #[diagnostic_item("RefCell")]
 pub opaque type RefCell<T>
 where
@@ -32,7 +31,6 @@ where
 = <opaque>
 
 // Full name: core::result::Result
-#[rustc_diagnostic_item = "Result"]
 #[diagnostic_item("Result")]
 pub enum Result<T, E>
 where
@@ -44,7 +42,6 @@ where
 }
 
 // Full name: core::cell::Ref
-#[rustc_diagnostic_item = "RefCellRef"]
 #[diagnostic_item("RefCellRef")]
 pub opaque type Ref<'b, T>
 where
@@ -59,7 +56,6 @@ where
 = <opaque>
 
 // Full name: core::clone::Clone
-#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -70,7 +66,6 @@ pub trait Clone<Self>
 }
 
 // Full name: core::option::Option
-#[rustc_diagnostic_item = "Option"]
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option<T>

@@ -34,7 +34,6 @@ where
 = <opaque>
 
 // Full name: alloc::vec::Vec
-#[rustc_diagnostic_item = "Vec"]
 #[diagnostic_item("Vec")]
 pub opaque type Vec<T>
 where

@@ -15,7 +15,6 @@ pub trait Sized<Self>
 }
 
 // Full name: core::clone::Clone
-#[rustc_diagnostic_item = "Clone"]
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
 pub trait Clone<Self>
@@ -56,7 +55,6 @@ where
 = <opaque>
 
 // Full name: alloc::vec::Vec
-#[rustc_diagnostic_item = "Vec"]
 #[diagnostic_item("Vec")]
 pub opaque type Vec<T>
 where
@@ -80,7 +78,6 @@ where
 = <opaque>
 
 // Full name: alloc::vec::from_elem
-#[rustc_diagnostic_item = "vec_from_elem"]
 #[diagnostic_item("vec_from_elem")]
 pub fn from_elem<T>(_1: T, _2: usize) -> Vec<T>[TraitClause0, {built_in impl Sized for Global}]
 where
