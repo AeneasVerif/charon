@@ -78,15 +78,15 @@ where
 }
 
 // Full name: test_crate::{impl MyTrait<T> for ()}::rows
-pub fn impl_MyTrait_for_unit::rows<'_0, T>(self: &'_0 ()) -> Empty<T>[impl_MyTrait_for_unit<T>[TraitClause0]::ImpliedClause1]
+pub fn impl_MyTrait_for_unit::rows<'_0, T>(self: &'_0 ()) -> Empty<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {
-    let _0: Empty<T>[impl_MyTrait_for_unit<T>[TraitClause0]::ImpliedClause1]; // return
+    let _0: Empty<T>[TraitClause0]; // return
     let self: &'1 (); // arg #1
 
     storage_live(_0)
-    _0 = empty<T>[impl_MyTrait_for_unit<T>[TraitClause0]::ImpliedClause1]()
+    _0 = empty<T>[TraitClause0]()
     ↳⚡ storage_dead(self)
         unwind_continue
     storage_dead(self)
@@ -100,7 +100,7 @@ where
 {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (T: Sized) = TraitClause0
-    type rows_ty<'_0_1> = Empty<T>[impl_MyTrait_for_unit<T>[TraitClause0]::ImpliedClause1]
+    type rows_ty<'_0_1> = Empty<T>[TraitClause0]
     where
         TypeConstraint0: impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty::ImpliedClause1::Item = T,
         proof ImpliedClause0: (impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty<'_0_1>: Sized) = impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty::ImpliedClause0,
