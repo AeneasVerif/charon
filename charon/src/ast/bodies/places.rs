@@ -218,7 +218,7 @@ impl ProjectionElem {
                             Opaque | Alias(_) | Error(_) => return None,
                         }
                     }
-                    TypeId::Tuple => tref
+                    TypeId::Builtin(BuiltinTy::Tuple) => tref
                         .generics
                         .types
                         .get(TypeVarId::from(usize::from(*field_id)))?

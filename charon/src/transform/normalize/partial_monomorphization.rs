@@ -349,7 +349,7 @@ impl<'a> PartialMonomorphizer<'a> {
                     };
                     ty_infected || args_infected
                 }
-                TypeId::Tuple | TypeId::Builtin(_) => {
+                TypeId::Builtin(_) => {
                     // Builtin types have no declaration to specialize, so infected arguments stay
                     // visible inside them.
                     tref.generics.types.iter().any(|ty| self.is_infected(ty))

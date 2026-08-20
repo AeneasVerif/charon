@@ -575,7 +575,7 @@ mod wrappers {
         fn visit_type_decl_ref(&mut self, x: &TypeDeclRef) -> ControlFlow<Self::Break> {
             match x.id {
                 TypeId::Adt(id) => self.0.visit_item_ref(ItemId::Type(id), &x.generics),
-                TypeId::Tuple | TypeId::Builtin(_) => self.visit_inner(x),
+                TypeId::Builtin(_) => self.visit_inner(x),
             }
         }
         fn visit_fun_decl_ref(&mut self, x: &FunDeclRef) -> ControlFlow<Self::Break> {
@@ -609,7 +609,7 @@ mod wrappers {
         fn visit_type_decl_ref(&mut self, x: &mut TypeDeclRef) -> ControlFlow<Self::Break> {
             match x.id {
                 TypeId::Adt(id) => self.0.visit_item_ref(ItemId::Type(id), &mut x.generics),
-                TypeId::Tuple | TypeId::Builtin(_) => self.visit_inner(x),
+                TypeId::Builtin(_) => self.visit_inner(x),
             }
         }
         fn visit_fun_decl_ref(&mut self, x: &mut FunDeclRef) -> ControlFlow<Self::Break> {

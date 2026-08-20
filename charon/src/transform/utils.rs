@@ -51,7 +51,7 @@ impl TypeId {
     pub fn generics_target(&self) -> GenericsSource {
         match *self {
             TypeId::Adt(decl_id) => GenericsSource::item(decl_id),
-            TypeId::Tuple | TypeId::Builtin(..) => GenericsSource::Builtin,
+            TypeId::Builtin(..) => GenericsSource::Builtin,
         }
     }
 }

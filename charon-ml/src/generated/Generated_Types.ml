@@ -304,6 +304,7 @@ and builtin_index_op = {
     TODO: update to not hardcode the types (except [Box] maybe) and be more
     modular. TODO: move to builtins.rs? *)
 and builtin_ty =
+  | TTuple  (** Tuple type. *)
   | TBox  (** Boxes are de facto a primitive type. *)
   | TStr  (** Primitive type *)
 
@@ -775,14 +776,13 @@ and type_decl_ref = { id : type_id; generics : generic_args }
 
 (** Type identifier.
 
-    Allows us to factorize the code for built-in types, adts and tuples *)
+    Allows us to factorize the code for built-in types and ADTs. *)
 and type_id =
   | TAdtId of type_decl_id
       (** A "regular" ADT type.
 
           Includes transparent ADTs and opaque ADTs (local ADTs marked as
           opaque, and external ADTs). *)
-  | TTuple
   | TBuiltin of builtin_ty
       (** Built-in type. Either a primitive type like array or slice, or a
           non-primitive type coming from a standard library and that we handle

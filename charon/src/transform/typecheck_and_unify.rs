@@ -508,7 +508,7 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
         match x.id {
             TypeId::Adt(id) => self.assert_matches_item(id, &mut x.generics),
             // TODO: check builtin generics.
-            TypeId::Tuple => {}
+            TypeId::Builtin(BuiltinTy::Tuple) => {}
             TypeId::Builtin(_) => {}
         }
     }

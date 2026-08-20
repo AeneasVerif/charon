@@ -172,7 +172,7 @@ impl<'a> GenerateCtx<'a> {
                         expr.insert(0, first + "_of_json");
                     }
                     TypeId::Builtin(BuiltinTy::Box) => expr.insert(0, "box_of_json".to_owned()),
-                    TypeId::Tuple => {
+                    TypeId::Builtin(BuiltinTy::Tuple) => {
                         let name = match tref.generics.types.len() {
                             2 => "pair_of_json".to_string(),
                             3 => "triple_of_json".to_string(),

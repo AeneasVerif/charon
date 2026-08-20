@@ -285,6 +285,8 @@ pub enum LiteralTy {
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("T"))]
 pub enum BuiltinTy {
+    /// Tuple type.
+    Tuple,
     /// Boxes are de facto a primitive type.
     Box,
     /// Primitive type
@@ -296,6 +298,7 @@ impl BuiltinTy {
         let name: &[_] = match self {
             BuiltinTy::Box => &["alloc", "boxed", "Box"],
             BuiltinTy::Str => &["str"],
+            BuiltinTy::Tuple => &["Tuple"],
         };
         Name::from_path(name)
     }
@@ -412,7 +415,7 @@ impl Ty {
 
     pub fn mk_tuple(tys: Vec<Ty>) -> Ty {
         TyKind::Adt(TypeDeclRef {
-            id: TypeId::Tuple,
+            id: TypeId::Builtin(BuiltinTy::Tuple),
             generics: Box::new(GenericArgs::new_types(tys.into())),
         })
         .into_ty()
@@ -505,7 +508,7 @@ impl Ty {
                         }
                     }
                     // the metadata of a tuple is simply the last field
-                    TypeId::Tuple => {
+                    TypeId::Builtin(BuiltinTy::Tuple) => {
                         match ty_ref.generics.types.iter().last() {
                             // `None` refers to the unit type `()`
                             None => PtrMetadata::None,

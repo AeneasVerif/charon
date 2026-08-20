@@ -1360,7 +1360,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                                 }
                                 ctx.format_field_name(f, adt_id, *variant_id, *field_id)
                             }
-                            TypeId::Tuple => write!(f, "{sub}.{field_id}"),
+                            TypeId::Builtin(BuiltinTy::Tuple) => {
+                                write!(f, "{sub}.{field_id}")
+                            }
                             TypeId::Builtin(_) => unreachable!("field projection on builtin type"),
                         }
                     }
@@ -1588,7 +1590,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
                 let values = values.iter().map(|v| v.with_ctx(ctx));
                 match self.ty.as_adt() {
                     Some(ty_ref) => match ty_ref.id {
-                        TypeId::Tuple => {
+                        TypeId::Builtin(BuiltinTy::Tuple) => {
                             let trailing_comma = if values.len() == 1 { "," } else { "" };
                             let values = values.format(", ");
                             write!(f, "({values}{trailing_comma})")
@@ -1858,7 +1860,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                 match kind {
                     AggregateKind::Adt(ty_ref, variant_id, field_id) => {
                         match ty_ref.id {
-                            TypeId::Tuple => {
+                            TypeId::Builtin(BuiltinTy::Tuple) => {
                                 let trailing_comma = if ops.len() == 1 { "," } else { "" };
                                 write!(f, "({ops_s}{trailing_comma})")
                             }
@@ -2560,7 +2562,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.kind() {
             TyKind::Adt(tref) => match tref.id {
-                TypeId::Tuple => {
+                TypeId::Builtin(BuiltinTy::Tuple) => {
                     let generics = tref.generics.fmt_explicits(ctx).format(", ");
                     let trailing_comma = if tref.generics.types.len() == 1 {
                         ","
@@ -2718,7 +2720,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDeclRef {
 impl<C: AstFormatter> FmtWithCtx<C> for TypeId {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            TypeId::Tuple => Ok(()),
+            TypeId::Builtin(BuiltinTy::Tuple) => Ok(()),
             TypeId::Adt(def_id) => write!(f, "{}", def_id.with_ctx(ctx)),
             TypeId::Builtin(aty) => write!(f, "{}", aty.get_name().with_ctx(ctx)),
         }

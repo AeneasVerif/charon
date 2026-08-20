@@ -733,7 +733,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     };
                     match type_ref.id {
                         TypeId::Adt(_) => ProjectionElem::Field(downcast.take(), field),
-                        TypeId::Tuple => ProjectionElem::Field(None, field),
+                        TypeId::Builtin(BuiltinTy::Tuple) => ProjectionElem::Field(None, field),
                         TypeId::Builtin(BuiltinTy::Box) if field == FieldId::ZERO => {
                             ProjectionElem::Deref
                         }
@@ -984,7 +984,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                                     );
                                     ProjectionElem::Field(variant_id, field_id)
                                 }
-                                TypeId::Tuple => {
+                                TypeId::Builtin(BuiltinTy::Tuple) => {
                                     assert!(generics.regions.is_empty());
                                     assert!(variant.is_none());
                                     assert!(generics.const_generics.is_empty());
@@ -1323,7 +1323,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         ))
                     }
                     mir::AggregateKind::Tuple => {
-                        let tref = TypeDeclRef::new(TypeId::Tuple, GenericArgs::empty());
+                        let tref = TypeDeclRef::new(
+                            TypeId::Builtin(BuiltinTy::Tuple),
+                            GenericArgs::empty(),
+                        );
                         Ok(Rvalue::Aggregate(
                             AggregateKind::Adt(tref, None, None),
                             operands_t,

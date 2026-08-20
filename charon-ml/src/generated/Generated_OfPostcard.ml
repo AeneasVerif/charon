@@ -344,8 +344,9 @@ and builtin_ty_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* __tag = int_of_postcard ctx st in
      match __tag with
-     | 0 -> Ok TBox
-     | 1 -> Ok TStr
+     | 0 -> Ok TTuple
+     | 1 -> Ok TBox
+     | 2 -> Ok TStr
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and byte_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1317,8 +1318,7 @@ and type_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 0 ->
          let* _0 = type_decl_id_of_postcard ctx st in
          Ok (TAdtId _0)
-     | 1 -> Ok TTuple
-     | 2 ->
+     | 1 ->
          let* _0 = builtin_ty_of_postcard ctx st in
          Ok (TBuiltin _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))

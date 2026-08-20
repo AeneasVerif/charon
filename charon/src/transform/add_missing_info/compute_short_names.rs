@@ -124,9 +124,11 @@ fn trait_impl_short_name(
             TyKind::Array(..) => "array".to_owned(),
             TyKind::Adt(tref) => match tref.id {
                 TypeId::Adt(id) => item_to_ident(item_names, ItemId::Type(id))?,
+                TypeId::Builtin(BuiltinTy::Tuple) if tref.generics.types.is_empty() => {
+                    "unit".to_owned()
+                }
+                TypeId::Builtin(BuiltinTy::Tuple) => "tuple".to_owned(),
                 TypeId::Builtin(builtin) => builtin.get_name().short_str()?.to_owned(),
-                TypeId::Tuple if tref.generics.types.is_empty() => "unit".to_owned(),
-                TypeId::Tuple => "tuple".to_owned(),
             },
             _ => return None,
         })

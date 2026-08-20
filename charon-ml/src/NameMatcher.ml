@@ -563,7 +563,7 @@ and match_pattern_with_type_id (ctx : ctx) (c : match_config) (m : maps)
       (* Lookup the type decl and match the name *)
       let d = T.TypeDeclId.Map.find id ctx.crate.type_decls in
       match_name_with_generics ctx c ~m pid d.item_meta.name generics
-  | TTuple -> false
+  | TBuiltin TTuple -> false
   | TBuiltin id -> (
       match (id, pid) with
       | ( TBox,
@@ -614,7 +614,7 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
           in
           match_generic_args ctx c m pgenerics generics
       | TTuple, TAdt tref ->
-          tref.id == TTuple
+          tref.id = TBuiltin TTuple
           && match_generic_args ctx c m pgenerics tref.generics
       | _ -> false
     end
@@ -1040,7 +1040,7 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
           EComp
             (name_with_generic_args_to_pattern_aux ctx c d.item_meta.name
                (Some generics))
-      | TTuple -> EPrimAdt (TTuple, generics)
+      | TBuiltin TTuple -> EPrimAdt (TTuple, generics)
       | TBuiltin TBox -> EComp [ PIdent ("Box", 0, generics) ]
       | TBuiltin TStr -> EComp [ PIdent ("str", 0, generics) ])
   | TVar v -> EVar (type_var_to_pattern m v)

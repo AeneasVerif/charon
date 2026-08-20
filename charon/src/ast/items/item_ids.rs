@@ -96,7 +96,7 @@ pub struct TypeDeclRef {
 
 /// Type identifier.
 ///
-/// Allows us to factorize the code for built-in types, adts and tuples
+/// Allows us to factorize the code for built-in types and ADTs.
 #[derive(
     Debug,
     PartialEq,
@@ -123,7 +123,6 @@ pub enum TypeId {
     /// and external ADTs).
     #[cfg_attr(feature = "charon_on_charon", charon::rename("TAdtId"))]
     Adt(TypeDeclId),
-    Tuple,
     /// Built-in type. Either a primitive type like array or slice, or a
     /// non-primitive type coming from a standard library
     /// and that we handle like a primitive type. Types falling into this
@@ -402,7 +401,7 @@ impl TypeDeclRef {
     }
 
     pub fn is_tuple(&self) -> bool {
-        matches!(self.id, TypeId::Tuple)
+        matches!(self.id, TypeId::Builtin(BuiltinTy::Tuple))
     }
 
     pub fn is_str(&self) -> bool {

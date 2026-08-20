@@ -387,9 +387,9 @@ let rec pp_type_id (env : fmt_env) (fmt : Format.formatter) (id : type_id) :
     unit =
   match id with
   | TAdtId id -> pp_type_decl_id env fmt id
-  | TTuple -> ()
   | TBuiltin aty -> (
       match aty with
+      | TTuple -> ()
       | TBox -> pp_string fmt "alloc::boxed::Box"
       | TStr -> pp_string fmt "str")
 
@@ -401,7 +401,7 @@ and pp_type_decl_id env fmt def_id =
 and pp_type_decl_ref (env : fmt_env) (fmt : Format.formatter)
     (tref : type_decl_ref) : unit =
   match tref.id with
-  | TTuple ->
+  | TBuiltin TTuple ->
       let params, _trait_refs = generic_args_to_strings env tref.generics in
       let trailing_comma = if List.length params = 1 then "," else "" in
       Format.fprintf fmt "(%a%s)"
@@ -477,7 +477,7 @@ and pp_unsizing_metadata (env : fmt_env) (fmt : Format.formatter)
 and pp_const_aggregate (env : fmt_env) (tref : type_decl_ref) opt_variant_id
     (fmt : Format.formatter) (fields : constant_expr list) : unit =
   match tref.id with
-  | TTuple ->
+  | TBuiltin TTuple ->
       let trailing_comma = if List.length fields = 1 then "," else "" in
       Format.fprintf fmt "(%a%s)"
         (pp_sep_list ", " (pp_constant_expr env))
@@ -500,7 +500,8 @@ and pp_const_aggregate (env : fmt_env) (tref : type_decl_ref) opt_variant_id
         (pp_sep_list ", " (fun fmt (field, value) ->
              Format.fprintf fmt "%s: %a" field (pp_constant_expr env) value))
         fields
-  | TBuiltin _ -> raise (Failure "Unreachable")
+  | TBuiltin TBox -> raise (Failure "Unexpected Box constant aggregate")
+  | TBuiltin TStr -> raise (Failure "Unexpected str constant aggregate")
 
 and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
     (cv : constant_expr) : unit =
@@ -1372,7 +1373,8 @@ let rec pp_projection_elem (env : fmt_env) (subplace : place)
       Format.fprintf fmt "%s[%s..%s]" sub (operand_to_string env from) to_
   | Field (opt_variant_id, fid) -> (
       match fst (ty_as_adt subplace.ty) with
-      | TTuple -> Format.fprintf fmt "%s.%s" sub (FieldId.to_string fid)
+      | TBuiltin TTuple ->
+          Format.fprintf fmt "%s.%s" sub (FieldId.to_string fid)
       | TAdtId adt_id -> (
           let field_name =
             match adt_field_to_string env adt_id opt_variant_id fid with
@@ -1502,7 +1504,7 @@ and pp_aggregate (env : fmt_env) (agg : aggregate_kind) (fmt : Format.formatter)
   match agg with
   | AggregatedAdt (tref, opt_variant_id, opt_field_id) -> (
       match tref.id with
-      | TTuple ->
+      | TBuiltin TTuple ->
           let trailing_comma = if List.length fields = 1 then "," else "" in
           Format.fprintf fmt "(%a%s)"
             (pp_sep_list ", " pp_string)

@@ -153,11 +153,11 @@ impl Pattern {
                         let type_name = ctx.item_name(type_id);
                         self.matches_with_generics(ctx, type_name, Some(args))
                     }
+                    TypeId::Builtin(BuiltinTy::Tuple) => false,
                     TypeId::Builtin(builtin_ty) => {
                         let name = builtin_ty.get_name();
                         self.matches_with_generics(ctx, &name, Some(args))
                     }
-                    TypeId::Tuple => false,
                 }
             }
             TyKind::Array(ty, len) => {

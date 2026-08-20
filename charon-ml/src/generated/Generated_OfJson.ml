@@ -370,6 +370,7 @@ and builtin_ty_of_json (ctx : of_json_ctx) (js : json) :
     (builtin_ty, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
+    | `String "Tuple" -> Ok TTuple
     | `String "Box" -> Ok TBox
     | `String "Str" -> Ok TStr
     | _ -> Error "")
@@ -1470,7 +1471,6 @@ and type_id_of_json (ctx : of_json_ctx) (js : json) : (type_id, string) result =
     | `Assoc [ ("Adt", _0) ] ->
         let* _0 = type_decl_id_of_json ctx _0 in
         Ok (TAdtId _0)
-    | `String "Tuple" -> Ok TTuple
     | `Assoc [ ("Builtin", _0) ] ->
         let* _0 = builtin_ty_of_json ctx _0 in
         Ok (TBuiltin _0)

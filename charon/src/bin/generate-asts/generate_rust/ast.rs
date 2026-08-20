@@ -167,7 +167,7 @@ impl Generator<'_> {
                 _ if self.enqueue(id) => write!(f, "{}", self.type_name(id)),
                 _ => self.unsupported_type(self.debug_type_name(id)),
             },
-            TypeId::Tuple => self.fmt_tuple_type(f, &tref.generics.types),
+            TypeId::Builtin(BuiltinTy::Tuple) => self.fmt_tuple_type(f, &tref.generics.types),
             TypeId::Builtin(BuiltinTy::Box) => {
                 let ty = tref.generics.types.iter().next().unwrap();
                 write!(f, "Box<{}>", self.generated_type(ty))
