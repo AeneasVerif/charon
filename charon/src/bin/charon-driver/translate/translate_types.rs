@@ -130,15 +130,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::TyKind::Uint(uint_ty) => {
                 TyKind::Literal(LiteralTy::UInt(Self::translate_hax_uint_ty(uint_ty)))
             }
-            hax::TyKind::Float(float_ty) => {
-                use crate::hax::FloatTy;
-                TyKind::Literal(LiteralTy::Float(match float_ty {
-                    FloatTy::F16 => types::FloatTy::F16,
-                    FloatTy::F32 => types::FloatTy::F32,
-                    FloatTy::F64 => types::FloatTy::F64,
-                    FloatTy::F128 => types::FloatTy::F128,
-                }))
-            }
+            hax::TyKind::Float(float_ty) => TyKind::Literal(LiteralTy::Float(match float_ty {
+                hax::FloatTy::F16 => FloatTy::F16,
+                hax::FloatTy::F32 => FloatTy::F32,
+                hax::FloatTy::F64 => FloatTy::F64,
+                hax::FloatTy::F128 => FloatTy::F128,
+            })),
             hax::TyKind::Never => TyKind::Never,
 
             hax::TyKind::Alias(alias) => match &alias.kind {

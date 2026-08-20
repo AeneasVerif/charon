@@ -19,11 +19,7 @@ use rustc_span::{Symbol, sym};
 
 use super::translate_crate::*;
 use super::translate_ctx::*;
-use charon_lib::ast::ullbc_ast::StatementKind;
-use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
-use charon_lib::ast::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter, compute_local_names};
-use charon_lib::ids::IndexMap;
 use charon_lib::name_matcher::NamePattern;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
@@ -417,7 +413,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         if !self.monomorphize() {
             // Make `Box::write` available to a later construction pass.
-            let path = NamePattern::parse(builtins::BOX_WRITE).unwrap();
+            let path = NamePattern::parse(names::BOX_WRITE).unwrap();
             let box_write_def_id = self
                 .resolve_path(span, &path, true)?
                 .into_iter()

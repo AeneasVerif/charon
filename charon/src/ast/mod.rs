@@ -1,39 +1,33 @@
-pub mod builtins;
-pub mod expressions;
-pub mod expressions_utils;
+pub mod bodies;
 pub mod from_rustc;
-pub mod gast;
-pub mod gast_utils;
-pub mod hash_cons;
+pub mod items;
 pub mod krate;
-pub mod llbc_ast;
-pub mod llbc_ast_utils;
 pub mod meta;
-pub mod meta_utils;
-pub mod names;
-pub mod names_utils;
-pub mod types;
-pub mod types_utils;
-pub mod ullbc_ast;
-pub mod ullbc_ast_utils;
-pub mod values;
-pub mod values_utils;
+pub mod type_level;
 pub mod visitor;
 
-// Re-export everything except llbc/ullbc, for convenience.
-pub use crate::errors::Error;
-pub use crate::ids::IndexMap;
-pub use builtins::*;
+pub mod llbc_ast {
+    pub use crate::ast::bodies::structured::*;
+    pub use crate::ast::*;
+}
+pub mod ullbc_ast {
+    pub use crate::ast::bodies::unstructured::*;
+    pub use crate::ast::*;
+}
+
+// Re-export everything except llbc/ullbc.
 pub use derive_generic_visitor::Visitor;
-pub use expressions::*;
-pub use gast::*;
-pub use hash_cons::*;
+pub use index_vec::Idx;
 pub use indexmap::{IndexMap as SeqHashMap, IndexSet as SeqHashSet};
+pub use std::ops::ControlFlow;
+
+pub use crate::errors::Error;
+pub use crate::ids::{IndexMap, IndexVec};
+pub use crate::utils::hash_cons::*;
+
+pub use bodies::*;
+pub use items::*;
 pub use krate::*;
 pub use meta::*;
-pub use names::*;
-pub use std::ops::ControlFlow;
-pub use types::*;
-pub use types_utils::*;
-pub use values::*;
+pub use type_level::*;
 pub use visitor::*;

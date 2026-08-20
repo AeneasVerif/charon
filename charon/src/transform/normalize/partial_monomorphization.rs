@@ -17,10 +17,8 @@ use std::mem;
 use derive_generic_visitor::Visitor;
 use index_vec::Idx;
 
-use crate::ast::types_utils::TyVisitable;
 use crate::ast::visitor::{VisitWithBinderDepth, VisitorWithBinderDepth};
 use crate::formatter::IntoFormatter;
-use crate::ids::IndexVec;
 use crate::options::MonomorphizeMut;
 use crate::pretty::FmtWithCtx;
 use crate::register_error;

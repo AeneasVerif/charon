@@ -241,10 +241,8 @@ and projection_elem =
           - [to]
           - [from_end] *)
 
-(** TODO: we could factor out [Rvalue] and function calls (for LLBC, not ULLBC).
-    We can also factor out the unops, binops with the function calls. TODO: move
-    the aggregate kind to operands TODO: we should prefix the type variants with
-    "R" or "Rv", this would avoid collisions *)
+(** An expression that evaluates to a value. This is the RHS of an assignment.
+*)
 and rvalue =
   | Use of operand * with_retag  (** Lifts an operand as an rvalue. *)
   | RvRef of place * borrow_kind * operand

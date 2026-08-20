@@ -6,10 +6,10 @@
 //! Aeneas needs this because proof assistant languages are sensitive to declaration order and need
 //! to be explicit about mutual recursion. This should come useful for translation to any other
 //! language with these properties.
-use crate::common::*;
 use crate::options::TranslateOptions;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
+use crate::utils::*;
 use derive_generic_visitor::*;
 use itertools::Itertools;
 use petgraph::graphmap::DiGraphMap;
@@ -416,7 +416,7 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {
     deps.graph
 }
 
-fn compute_reordered_decls(ctx: &mut TransformCtx) -> DeclarationsGroups {
+fn compute_reordered_decls(ctx: &mut TransformCtx) -> Vec<DeclarationGroup> {
     // Build the graph of dependencies between items.
     let graph = compute_declarations_graph(ctx);
 

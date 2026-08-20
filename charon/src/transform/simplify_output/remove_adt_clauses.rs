@@ -9,9 +9,9 @@
 use std::collections::HashSet;
 
 use crate::ast::*;
-use crate::common::CycleDetector;
 use crate::ids::{IndexMap, IndexVec};
 use crate::transform::{TransformCtx, ctx::TransformPass};
+use crate::utils::CycleDetector;
 
 /// Compute whether a trait has associated types, even through supertraits.
 fn has_assoc_types(

@@ -1,205 +1,20 @@
-//! Meta-information about programs (spans, etc.).
-
-use super::from_rustc::{self, LangItem};
-pub use super::meta_utils::*;
-use crate::ast::{FunDeclId, ItemId};
-use crate::names::Name;
+//! Meta information about programs (spans, etc.).
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
-use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
+use macros::EnumIsA;
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
-use std::path::PathBuf;
 
-generate_index_type!(FileId);
+use super::from_rustc::LangItem;
 
-#[derive(
-    Debug,
-    Copy,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
-#[drive(skip)]
-pub struct Loc {
-    /// The (1-based) line number.
-    pub line: usize,
-    /// The (0-based) column offset.
-    pub col: usize,
-}
+pub mod attrs;
+pub mod names;
+pub mod spans;
 
-/// Span information
-#[derive(
-    Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, DriveTwo,
-)]
-pub struct SpanData {
-    #[cfg_attr(feature = "charon_on_charon", charon::rename("file"))]
-    pub file_id: FileId,
-    #[cfg_attr(feature = "charon_on_charon", charon::rename("beg_loc"))]
-    pub beg: Loc,
-    #[cfg_attr(feature = "charon_on_charon", charon::rename("end_loc"))]
-    pub end: Loc,
-}
+pub use attrs::*;
+pub use names::*;
+pub use spans::*;
 
-/// Meta information about a piece of code (block, statement, etc.)
-#[derive(
-    Debug,
-    Copy,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Serialize,
-    Deserialize,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
-#[serde_state(stateless)]
-pub struct Span {
-    /// The source code span.
-    ///
-    /// If this meta information is for a statement/terminator coming from a macro
-    /// expansion/inlining/etc., this span is (in case of macros) for the macro
-    /// before expansion (i.e., the location the code where the user wrote the call
-    /// to the macro).
-    ///
-    /// Ex:
-    /// ```text
-    /// // Below, we consider the spans for the statements inside `test`
-    ///
-    /// //   the statement we consider, which gets inlined in `test`
-    ///                          VV
-    /// macro_rules! macro { ... st ... } // `generated_from_span` refers to this location
-    ///
-    /// fn test() {
-    ///     macro!(); // <-- `span` refers to this location
-    /// }
-    /// ```
-    pub data: SpanData,
-    /// Where the code actually comes from, in case of macro expansion/inlining/etc.
-    pub generated_from_span: Option<SpanData>,
-}
-
-/// `#[inline]` built-in attribute.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
-pub enum InlineAttr {
-    /// `#[inline]`
-    Hint,
-    /// `#[inline(never)]`
-    Never,
-    /// `#[inline(always)]`
-    Always,
-}
-
-/// Attributes (`#[...]`).
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    EnumIsA,
-    EnumAsGetters,
-    EnumToGetters,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
-#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Attr"))]
-pub enum Attribute {
-    /// Do not translate the body of this item.
-    /// Written `#[charon::opaque]`
-    Opaque,
-    /// Do not translate this item at all.
-    /// Written `#[charon::exclude]`
-    Exclude,
-    /// Provide a new name that consumers of the llbc can use.
-    /// Written `#[charon::rename("new_name")]`
-    Rename(String),
-    /// For enums only: rename the variants by pre-pending their names with the given prefix.
-    /// Written `#[charon::variants_prefix("prefix_")]`.
-    VariantsPrefix(String),
-    /// Same as `VariantsPrefix`, but appends to the name instead of pre-pending.
-    VariantsSuffix(String),
-    /// The structure is treated as a transparent wrapper around its sole field.
-    /// Written `#[charon::transparent]`.
-    Transparent,
-    /// An item annotated with `#[charon::precondition]`. This makes it a precondition for its
-    /// parent item.
-    IsPrecondition(ItemId),
-    /// An item annotated with `#[charon::postcondition]`. This makes it a postcondition for its
-    /// parent item.
-    IsPostcondition(ItemId),
-    /// An item that has a precondition that applies to it. The referenced item is a function the
-    /// specifies the condition.
-    HasPrecondition(FunDeclId),
-    /// An item that has a postcondition that applies to it. The referenced item is a function the
-    /// specifies the condition.
-    HasPostcondition(FunDeclId),
-    /// A doc-comment such as `/// ...`.
-    DocComment(String),
-    /// A built-in attribute.
-    Builtin(#[drive(skip)] from_rustc::AttributeKind),
-    /// None of the above.
-    Unknown(RawAttribute),
-}
-
-/// A general attribute.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
-pub struct RawAttribute {
-    pub path: String,
-    /// The arguments passed to the attribute, if any. We don't distinguish different delimiters or
-    /// the `path = lit` case.
-    pub args: Option<String>,
-}
-
-/// Information about the attributes and visibility of an item, field or variant..
-#[derive(
-    Debug, PartialEq, Eq, Default, Clone, Serialize, Deserialize, Drive, DriveMut, DriveTwo,
-)]
-pub struct AttrInfo {
-    /// Attributes (`#[...]`).
-    pub attributes: Vec<Attribute>,
-    /// Inline hints (on functions only).
-    pub inline: Option<InlineAttr>,
-    /// The name computed from `charon::rename` and `charon::variants_prefix` attributes, if any.
-    /// This provides a custom name that can be used by consumers of llbc. E.g. Aeneas uses this to
-    /// rename definitions in the extracted code.
-    pub rename: Option<String>,
-    /// Whether this item is declared public. Impl blocks and closures don't have visibility
-    /// modifiers; we arbitrarily set this to `false` for them.
-    ///
-    /// Note that this is different from being part of the crate's public API: to be part of the
-    /// public API, an item has to also be reachable from public items in the crate root. For
-    /// example:
-    /// ```rust,ignore
-    /// mod foo {
-    ///     pub struct X;
-    /// }
-    /// mod bar {
-    ///     pub fn something(_x: super::foo::X) {}
-    /// }
-    /// pub use bar::something; // exposes `X`
-    /// ```
-    /// Without the `pub use ...`, neither `X` nor `something` would be part of the crate's public
-    /// API (this is called "pub-in-priv" items). With or without the `pub use`, we set `public =
-    /// true`; computing item reachability is harder.
-    pub public: bool,
-}
-
+/// How much to translate for a given item.
 #[derive(
     Debug,
     Copy,
@@ -271,56 +86,42 @@ pub struct ItemMeta {
     pub diagnostic_item: Option<String>,
 }
 
-/// A filename.
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    Hash,
-    PartialOrd,
-    Ord,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
-pub enum FileName {
-    /// A remapped path (namely paths into stdlib)
-    #[drive(skip)] // drive is not implemented for `PathBuf`
-    Virtual(PathBuf),
-    /// A local path (a file coming from the current crate for instance)
-    #[drive(skip)] // drive is not implemented for `PathBuf`
-    Local(PathBuf),
-    /// A "not real" file name (macro, query, etc.)
-    NotReal(String),
+impl ItemOpacity {
+    pub fn with_content_visibility(self, contents_are_public: bool) -> Self {
+        use ItemOpacity::*;
+        match self {
+            Invisible => Invisible,
+            Transparent => Transparent,
+            Foreign if contents_are_public => Transparent,
+            Foreign => Opaque,
+            Opaque => Opaque,
+        }
+    }
+
+    pub fn with_private_contents(self) -> Self {
+        self.with_content_visibility(false)
+    }
 }
 
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    Hash,
-    PartialOrd,
-    Ord,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
-pub struct File {
-    /// The file identifier.
-    #[cfg_attr(feature = "charon_on_charon", charon::opaque)]
-    pub id: FileId,
-    /// The path to the file.
-    #[drive(skip)]
-    pub name: FileName,
-    /// Name of the crate this file comes from.
-    pub crate_name: String,
-    /// The contents of the source file, as seen by rustc at the time of translation.
-    /// Some files don't have contents.
-    pub contents: Option<String>,
+impl ItemMeta {
+    pub fn renamed_name(&self) -> Name {
+        let mut name = self.name.clone();
+        if let Some(rename) = self.attr_info.rename.clone() {
+            *name.name.last_mut().unwrap() = PathElem::Ident(rename, Disambiguator::new(0));
+        }
+        name
+    }
+
+    pub fn dummy_public(span: Span, name: Name, is_local: bool, opacity: ItemOpacity) -> Self {
+        ItemMeta {
+            name,
+            span,
+            source_text: None,
+            attr_info: AttrInfo::dummy_public(),
+            is_local,
+            opacity,
+            lang_item: None,
+            diagnostic_item: None,
+        }
+    }
 }

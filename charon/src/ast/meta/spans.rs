@@ -1,10 +1,143 @@
-//! This file groups everything which is linked to implementations about [crate::meta]
-use crate::meta::*;
-use crate::names::{Disambiguator, Name, PathElem};
-use std::borrow::Cow;
-use std::cmp::Ordering;
-use std::iter::Iterator;
-use std::ops::Range;
+use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
+use serde::{Deserialize, Serialize};
+use serde_state::{DeserializeState, SerializeState};
+use std::{borrow::Cow, cmp::Ordering, ops::Range, path::PathBuf};
+
+generate_index_type!(FileId);
+
+/// A filename.
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Hash,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    DriveTwo,
+)]
+pub enum FileName {
+    /// A remapped path (namely paths into stdlib)
+    #[drive(skip)] // drive is not implemented for `PathBuf`
+    Virtual(PathBuf),
+    /// A local path (a file coming from the current crate for instance)
+    #[drive(skip)] // drive is not implemented for `PathBuf`
+    Local(PathBuf),
+    /// A "not real" file name (macro, query, etc.)
+    NotReal(String),
+}
+
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Hash,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    DriveTwo,
+)]
+pub struct File {
+    /// The file identifier.
+    #[cfg_attr(feature = "charon_on_charon", charon::opaque)]
+    pub id: FileId,
+    /// The path to the file.
+    #[drive(skip)]
+    pub name: FileName,
+    /// Name of the crate this file comes from.
+    pub crate_name: String,
+    /// The contents of the source file, as seen by rustc at the time of translation.
+    /// Some files don't have contents.
+    pub contents: Option<String>,
+}
+
+#[derive(
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    DriveTwo,
+)]
+#[drive(skip)]
+pub struct Loc {
+    /// The (1-based) line number.
+    pub line: usize,
+    /// The (0-based) column offset.
+    pub col: usize,
+}
+
+/// A snippet of source code within a file.
+#[derive(
+    Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, DriveTwo,
+)]
+pub struct SpanData {
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("file"))]
+    pub file_id: FileId,
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("beg_loc"))]
+    pub beg: Loc,
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("end_loc"))]
+    pub end: Loc,
+}
+
+/// A snippet of source code within a file.
+#[derive(
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    DriveTwo,
+)]
+#[serde_state(stateless)]
+pub struct Span {
+    /// The source code span.
+    ///
+    /// If this meta information is for a statement/terminator coming from a macro
+    /// expansion/inlining/etc., this span is (in case of macros) for the macro
+    /// before expansion (i.e., the location the code where the user wrote the call
+    /// to the macro).
+    ///
+    /// Ex:
+    /// ```text
+    /// // Below, we consider the spans for the statements inside `test`
+    ///
+    /// //   the statement we consider, which gets inlined in `test`
+    ///                          VV
+    /// macro_rules! macro { ... st ... } // `generated_from_span` refers to this location
+    ///
+    /// fn test() {
+    ///     macro!(); // <-- `data` refers to this location
+    /// }
+    /// ```
+    pub data: SpanData,
+    /// Where the code actually comes from, in case of macro expansion/inlining/etc.
+    pub generated_from_span: Option<SpanData>,
+}
 
 /// Given a line number within a source file, get the byte of the start of the line. Obviously not
 /// efficient to do many times, but this is used is diagnostic paths only. The line numer is
@@ -133,62 +266,6 @@ impl FileName {
         match self {
             FileName::Virtual(path_buf) | FileName::Local(path_buf) => path_buf.to_string_lossy(),
             FileName::NotReal(path) => Cow::Borrowed(path),
-        }
-    }
-}
-
-impl AttrInfo {
-    pub fn dummy_private() -> Self {
-        AttrInfo {
-            public: false,
-            ..Default::default()
-        }
-    }
-
-    pub fn dummy_public() -> Self {
-        AttrInfo {
-            public: true,
-            ..Default::default()
-        }
-    }
-}
-
-impl ItemOpacity {
-    pub fn with_content_visibility(self, contents_are_public: bool) -> Self {
-        use ItemOpacity::*;
-        match self {
-            Invisible => Invisible,
-            Transparent => Transparent,
-            Foreign if contents_are_public => Transparent,
-            Foreign => Opaque,
-            Opaque => Opaque,
-        }
-    }
-
-    pub fn with_private_contents(self) -> Self {
-        self.with_content_visibility(false)
-    }
-}
-
-impl ItemMeta {
-    pub fn renamed_name(&self) -> Name {
-        let mut name = self.name.clone();
-        if let Some(rename) = self.attr_info.rename.clone() {
-            *name.name.last_mut().unwrap() = PathElem::Ident(rename, Disambiguator::new(0));
-        }
-        name
-    }
-
-    pub fn dummy_public(span: Span, name: Name, is_local: bool, opacity: ItemOpacity) -> Self {
-        ItemMeta {
-            name,
-            span,
-            source_text: None,
-            attr_info: AttrInfo::dummy_public(),
-            is_local,
-            opacity,
-            lang_item: None,
-            diagnostic_item: None,
         }
     }
 }

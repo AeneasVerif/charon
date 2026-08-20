@@ -17,8 +17,8 @@ fn run_charon(charon_llbc: &Path, rustc_datatypes: &generate_rust::RustcDatatype
     cmd.arg("--treat-box-as-builtin");
     cmd.arg("--ullbc");
     cmd.arg("--start-from=charon_lib::ast::krate::TranslatedCrate");
-    cmd.arg("--start-from=charon_lib::ast::ullbc_ast::BodyContents");
-    cmd.arg("--exclude=charon_lib::common::hash_by_addr::HashByAddr");
+    cmd.arg("--start-from=charon_lib::ast::bodies::unstructured::BodyContents");
+    cmd.arg("--exclude=charon_lib::utils::hash_by_addr::HashByAddr");
     for path in rustc_datatypes.paths_to_start_from() {
         cmd.arg(format!("--start-from={path}"));
     }

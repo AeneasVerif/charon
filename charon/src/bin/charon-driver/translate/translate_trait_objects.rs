@@ -1,6 +1,3 @@
-use crate::hax;
-use crate::hax::TraitPredicate;
-use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
 use itertools::Itertools;
 use rustc_span::kw;
 use std::mem;
@@ -8,8 +5,9 @@ use std::mem;
 use super::{
     translate_crate::TransItemSourceKind, translate_ctx::*, translate_generics::BindingLevel,
 };
+use crate::hax;
+use crate::hax::TraitPredicate;
 use charon_lib::formatter::IntoFormatter;
-use charon_lib::ids::IndexVec;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 

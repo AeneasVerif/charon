@@ -10,7 +10,7 @@ pub struct Transform {
 
 impl Transform {
     pub fn new(ctx: &mut TransformCtx) -> CowBox<dyn UllbcPass> {
-        let panic_name = Name::from_path(builtins::EXPLICIT_PANIC_NAME);
+        let panic_name = Name::from_path(names::EXPLICIT_PANIC_NAME);
         let panic_terminator = TerminatorKind::Abort(AbortKind::Panic(Some(panic_name)));
 
         // Collect and remove the functions that we want to inline.
@@ -36,7 +36,7 @@ impl Transform {
                         false
                     };
                     let is_vec_construction_fn = decl.item_meta.diagnostic_item.as_deref()
-                        == Some(builtins::BOX_ASSUME_INIT_INTO_VEC_UNSAFE);
+                        == Some(names::BOX_ASSUME_INIT_INTO_VEC_UNSAFE);
                     is_local_panic_fn
                         || (is_anon_const_initializer && !ctx.options.raw_consts)
                         || (is_vec_construction_fn && ctx.options.treat_box_as_builtin)

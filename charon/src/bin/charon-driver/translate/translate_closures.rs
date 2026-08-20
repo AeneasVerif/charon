@@ -44,9 +44,6 @@ use std::mem;
 
 use super::translate_crate::TransItemSourceKind;
 use super::translate_ctx::*;
-use charon_lib::ast::ullbc_ast_utils::BodyBuilder;
-use charon_lib::ast::*;
-use charon_lib::ids::IndexVec;
 use charon_lib::ullbc_ast::*;
 
 pub fn translate_closure_kind(kind: &hax::ClosureKind) -> ClosureKind {

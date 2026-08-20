@@ -1,10 +1,10 @@
 //! Run the rustc compiler with our custom options and hooks.
 use crate::CharonFailure;
 use crate::translate::translate_crate;
-use charon_lib::common::arg_value;
 use charon_lib::errors::ErrorCtx;
 use charon_lib::options::{self, CliOpts};
 use charon_lib::transform::TransformCtx;
+use charon_lib::utils::arg_value;
 use itertools::Itertools;
 use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::Config;

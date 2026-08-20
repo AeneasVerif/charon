@@ -326,7 +326,7 @@ and raw_attribute = {
 
 and rustc_rustc_version = { major : int; minor : int; patch : int }
 
-(** Meta information about a piece of code (block, statement, etc.) *)
+(** A snippet of source code within a file. *)
 and span = {
   data : span_data;
       (** The source code span.
@@ -345,7 +345,7 @@ and span = {
             macro_rules! macro { ... st ... } // [generated_from_span] refers to this location
 
             fn test() {
-                macro!(); // <-- [span] refers to this location
+                macro!(); // <-- [data] refers to this location
             }
           ]} *)
   generated_from_span : span_data option;
@@ -353,7 +353,7 @@ and span = {
           expansion/inlining/etc. *)
 }
 
-(** Span information *)
+(** A snippet of source code within a file. *)
 and span_data = { file : file_id; beg_loc : loc; end_loc : loc }
 
 and trait_decl_id = (TraitDeclId.id[@visitors.opaque])

@@ -23,13 +23,12 @@ use std::cmp::Reverse;
 use std::collections::{HashMap, HashSet};
 use std::mem;
 
-use crate::common::ensure_sufficient_stack;
 use crate::ids::IndexVec;
 use crate::llbc_ast::{self as tgt, StatementId};
-use crate::meta::{Span, combine_span};
 use crate::transform::TransformCtx;
 use crate::transform::ctx::TransformPass;
 use crate::ullbc_ast::{self as src, BlockId};
+use crate::utils::ensure_sufficient_stack;
 use crate::{ast::*, register_error};
 
 pub enum StackAction<N> {
@@ -1147,7 +1146,7 @@ impl<'a> ReconstructCtx<'a> {
                 };
 
                 // Return
-                let span = tgt::combine_switch_targets_span(&switch);
+                let span = switch.combine_targets_span();
                 let span = combine_span(&src_span, &span);
                 let st = tgt::StatementKind::Switch(switch);
                 tgt::Statement::new(span, st).into_block()
@@ -1381,8 +1380,8 @@ fn remove_useless_jump_blocks(body: &mut tgt::ExprBody) {
     body.body.drive_body_mut(&mut v);
 }
 
-fn translate_body(ctx: &mut TransformCtx, body: &mut gast::Body) {
-    use gast::Body::{Structured, Unstructured};
+fn translate_body(ctx: &mut TransformCtx, body: &mut Body) {
+    use Body::{Structured, Unstructured};
     let Unstructured(src_body) = body else {
         panic!("Called `ullbc_to_llbc` on an already restructured body")
     };

@@ -4,12 +4,9 @@
 //! `--treat-box-as-builtin`, we convert these back to derefs on the box.
 use std::ops::ControlFlow;
 
-use crate::ast::ullbc_ast_utils::StmtLoc;
-use crate::ast::*;
-use crate::ids::IndexVec;
 use crate::transform::TransformCtx;
 use crate::transform::ctx::UllbcPass;
-use crate::ullbc_ast::{ExprBody, StatementKind};
+use crate::ullbc_ast::*;
 
 pub struct Transform;
 
