@@ -122,6 +122,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for BuiltinAssertKind {
                 write!(f, "misaligned_pointer_dereference")
             }
             BuiltinAssertKind::NullPointerDereference => write!(f, "null_pointer_dereference"),
+            BuiltinAssertKind::NullReferenceCreated => write!(f, "null_reference_created"),
             BuiltinAssertKind::InvalidEnumConstruction(..) => {
                 write!(f, "invalid_enum_construction")
             }

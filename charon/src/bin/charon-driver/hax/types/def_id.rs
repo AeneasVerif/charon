@@ -59,7 +59,6 @@ pub enum DefKind {
     Use,
     ForeignMod,
     AnonConst,
-    InlineConst,
     #[disable_mapping]
     /// Added by hax: promoted constants don't have def_ids in rustc but they do in hax.
     PromotedConst,
@@ -565,7 +564,7 @@ impl DefId {
                 let item_args = id.identity_args_for_item_decl(s);
                 let impl_predicates = tcx.param_env(id.trait_impl_id).caller_bounds().iter();
                 let item_predicates = tcx
-                    .predicates_of(id.item_decl_id)
+                    .clauses_of(id.item_decl_id)
                     .instantiate_own(tcx, item_args)
                     .map(|(predicate, _)| predicate.skip_normalization());
                 param_env_from_clauses(tcx, impl_predicates.chain(item_predicates))
@@ -639,7 +638,6 @@ impl DefId {
             | ForeignMod
             | GlobalAsm
             | Impl { .. }
-            | InlineConst
             | PromotedConst
             | LifetimeParam
             | OpaqueTy
@@ -653,11 +651,15 @@ impl DefId {
         use DefKind::*;
         match self.kind {
             // These kinds cause `get_attrs` to panic.
-            ConstParam | LifetimeParam | TyParam | ForeignMod | InlineConst => &[],
+            ConstParam | LifetimeParam | TyParam | ForeignMod => &[],
             _ => {
                 if let Some(def_id) = self.as_real_def_id() {
                     if let Some(ldid) = def_id.as_local() {
                         tcx.hir_attrs(tcx.local_def_id_to_hir_id(ldid))
+                    } else if matches!(self.kind, AnonConst) {
+                        // Rustc doesn't store the attributes of anonymous constants in crate
+                        // metadata; asking for them panics.
+                        &[]
                     } else {
                         tcx.attrs_for_def(def_id)
                     }

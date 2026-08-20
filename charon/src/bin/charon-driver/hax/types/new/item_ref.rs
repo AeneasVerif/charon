@@ -211,7 +211,7 @@ impl ItemRef {
         let tref = ty::TraitRef::new(tcx, def_id, generics);
         rustc_utils::assoc_tys_for_trait(tcx, typing_env, tref)
             .into_iter()
-            .map(|alias_ty| ty::Ty::new_alias(tcx, alias_ty))
+            .map(|alias_ty| ty::Ty::new_alias(tcx, ty::IsRigid::No, alias_ty))
             .map(|ty| normalize(tcx, typing_env, ty::Unnormalized::new(ty)))
             .map(|ty| ty.sinto(s))
             .collect()

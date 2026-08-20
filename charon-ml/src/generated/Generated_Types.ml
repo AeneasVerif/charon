@@ -267,6 +267,9 @@ and builtin_impl_data =
   | BuiltinAsyncFnOnce
   | BuiltinCoroutine
   | BuiltinFuture
+  | BuiltinTryAsDynCompatible
+      (** Auto-trait used for [try_as_dyn] (see
+          https://github.com/rust-lang/rust/issues/144361) *)
   | BuiltinNoopDestruct
       (** An impl of [Destruct] for a type with no drop glue. *)
   | BuiltinUntrackedDestruct
@@ -1028,6 +1031,7 @@ and rustc_lang_item =
   | RustcLangItemAsyncDropInPlace  (**The [async_drop_in_place] lang item. *)
   | RustcLangItemCoerceUnsized  (**The [coerce_unsized] lang item. *)
   | RustcLangItemDispatchFromDyn  (**The [dispatch_from_dyn] lang item. *)
+  | RustcLangItemTryAsDyn  (**The [try_as_dyn] lang item. *)
   | RustcLangItemTransmuteOpts  (**The [transmute_opts] lang item. *)
   | RustcLangItemTransmuteTrait  (**The [transmute_trait] lang item. *)
   | RustcLangItemAdd  (**The [add] lang item. *)
@@ -1055,9 +1059,12 @@ and rustc_lang_item =
   | RustcLangItemIndex  (**The [index] lang item. *)
   | RustcLangItemIndexMut  (**The [index_mut] lang item. *)
   | RustcLangItemUnsafeCell  (**The [unsafe_cell] lang item. *)
+  | RustcLangItemCovariantUnsafeCell
+      (**The [covariant_unsafe_cell] lang item. *)
   | RustcLangItemUnsafePinned  (**The [unsafe_pinned] lang item. *)
   | RustcLangItemVaArgSafe  (**The [va_arg_safe] lang item. *)
   | RustcLangItemVaList  (**The [va_list] lang item. *)
+  | RustcLangItemComplex  (**The [complex] lang item. *)
   | RustcLangItemDeref  (**The [deref] lang item. *)
   | RustcLangItemDerefMut  (**The [deref_mut] lang item. *)
   | RustcLangItemDerefPure  (**The [deref_pure] lang item. *)
@@ -1094,6 +1101,7 @@ and rustc_lang_item =
   | RustcLangItemPartialOrd  (**The [partial_ord] lang item. *)
   | RustcLangItemCVoid  (**The [c_void] lang item. *)
   | RustcLangItemType  (**The [type_info] lang item. *)
+  | RustcLangItemTypeGeneric  (**The [type_info_generic] lang item. *)
   | RustcLangItemTypeId  (**The [type_id] lang item. *)
   | RustcLangItemPanic  (**The [panic] lang item. *)
   | RustcLangItemPanicNounwind  (**The [panic_nounwind] lang item. *)
@@ -1144,6 +1152,8 @@ and rustc_lang_item =
       (**The [panic_const_gen_fn_none_panic] lang item. *)
   | RustcLangItemPanicNullPointerDereference
       (**The [panic_null_pointer_dereference] lang item. *)
+  | RustcLangItemPanicNullReferenceConstructed
+      (**The [panic_null_reference_constructed] lang item. *)
   | RustcLangItemPanicInvalidEnumConstruction
       (**The [panic_invalid_enum_construction] lang item. *)
   | RustcLangItemPanicCoroutineResumedDrop
@@ -1169,7 +1179,6 @@ and rustc_lang_item =
           current target) as well as the user-defined [fn main] from the binary
           crate. *)
   | RustcLangItemEhPersonality  (**The [eh_personality] lang item. *)
-  | RustcLangItemEhCatchTypeinfo  (**The [eh_catch_typeinfo] lang item. *)
   | RustcLangItemCompilerMove  (**The [compiler_move] lang item. *)
   | RustcLangItemCompilerCopy  (**The [compiler_copy] lang item. *)
   | RustcLangItemOwnedBox  (**The [owned_box] lang item. *)
@@ -1253,6 +1262,7 @@ and rustc_lang_item =
   | RustcLangItemFieldType  (**The [field_type] lang item. *)
   | RustcLangItemFieldOffset  (**The [field_offset] lang item. *)
   | RustcLangItemFrom  (**The [From] lang item. *)
+  | RustcLangItemFromFn  (**The [from] lang item. *)
 
 (** Simplified type layout information.
 

@@ -83,9 +83,19 @@ pub trait Step<Self>
     proof ImpliedClause1: (Self: PartialOrd<Self>)
     fn steps_between<'_0_1, '_1_1>;
     fn forward_checked;
+    fn forward_overflowing;
     fn backward_checked;
+    fn backward_overflowing;
     non-dyn-compatible
 }
+
+// Full name: core::iter::range::{impl Step for usize}::backward_overflowing
+pub fn backward_overflowing(_1: usize, _2: usize) -> (usize, bool)
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for usize}::forward_overflowing
+pub fn forward_overflowing(_1: usize, _2: usize) -> (usize, bool)
+= <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::backward_checked
 pub fn backward_checked(_1: usize, _2: usize) -> Option<usize>
@@ -105,7 +115,9 @@ impl "impl_Step_for_usize" Step for usize {
     proof ImpliedClause1: (usize: PartialOrd<usize>) = impl_PartialOrd_usize_for_usize
     fn steps_between<'_0_1, '_1_1> = steps_between<'_0_1, '_1_1>
     fn forward_checked = forward_checked
+    fn forward_overflowing = forward_overflowing
     fn backward_checked = backward_checked
+    fn backward_overflowing = backward_overflowing
     non-dyn-compatible
 }
 

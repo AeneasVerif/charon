@@ -214,7 +214,7 @@ fn solve_item_traits_inner<'tcx, S: UnderOwnerState<'tcx>>(
     predicates
         .iter_trait_clauses()
         // Substitute the item generics
-        .map(|(_, trait_ref)| ty::EarlyBinder::bind(trait_ref).instantiate(tcx, generics))
+        .map(|(_, trait_ref)| ty::EarlyBinder::bind(tcx, trait_ref).instantiate(tcx, generics))
         .map(|trait_ref| normalize(tcx, typing_env, trait_ref))
         // Resolve
         .map(|trait_ref| solve_trait(s, trait_ref))
@@ -234,7 +234,7 @@ pub fn self_clause_for_item<'tcx, S: UnderOwnerState<'tcx>>(
     let self_pred = self_predicate(tcx, tr_def_id);
     // Substitute to be in the context of the current item.
     let generics = generics.truncate_to(tcx, tcx.generics_of(tr_def_id));
-    let self_pred = ty::EarlyBinder::bind(self_pred)
+    let self_pred = ty::EarlyBinder::bind(tcx, self_pred)
         .instantiate(tcx, generics)
         .skip_normalization();
 

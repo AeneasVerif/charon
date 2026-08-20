@@ -31,6 +31,7 @@
     clippy::mem_replace_with_default,
     clippy::new_ret_no_self,
     clippy::new_without_default,
+    clippy::redundant_field_names,
     clippy::should_implement_trait,
     clippy::useless_format
 )]

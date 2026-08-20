@@ -4,8 +4,6 @@
 //! `--treat-box-as-builtin`, we convert these back to derefs on the box.
 use std::ops::ControlFlow;
 
-use derive_generic_visitor::*;
-
 use crate::ast::ullbc_ast_utils::StmtLoc;
 use crate::ast::*;
 use crate::ids::IndexVec;
@@ -17,6 +15,7 @@ pub struct Transform;
 
 /// Look for
 /// ```ignore
+/// transmute::<Unique<T>, *const T>(copy (*b))
 /// transmute::<NonNull<T>, *const T>(copy (*b).0)
 /// ```
 /// Returns `*b`
@@ -28,11 +27,11 @@ fn box_pointee_pointer_assignment(rvalue: &Rvalue) -> Option<Place> {
     else {
         return None;
     };
-    let (field_base, ProjectionElem::Field(_, FieldId::ZERO)) = hidden_pointer.as_projection()?
-    else {
-        return None;
+    let unique_place = match hidden_pointer.as_projection()? {
+        (field_base, ProjectionElem::Field(_, FieldId::ZERO)) => field_base,
+        _ => hidden_pointer,
     };
-    let (box_place, ProjectionElem::Deref) = field_base.as_projection()? else {
+    let (box_place, ProjectionElem::Deref) = unique_place.as_projection()? else {
         return None;
     };
     let TyKind::Adt(TypeDeclRef {

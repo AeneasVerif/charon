@@ -8,7 +8,6 @@ use rustc_middle::ty::relate::{
 };
 use rustc_middle::{mir, ty};
 use rustc_span::kw;
-use rustc_type_ir::Interner;
 
 use crate::hax::prelude::*;
 
@@ -289,7 +288,7 @@ pub fn substitute<'tcx, T>(
 where
     T: ty::TypeFoldable<ty::TyCtxt<'tcx>>,
 {
-    inst_binder(tcx, typing_env, args, ty::EarlyBinder::bind(x))
+    inst_binder(tcx, typing_env, args, ty::EarlyBinder::bind(tcx, x))
 }
 
 /// Make a new `ParamEnv` from a list of clauses.
@@ -309,7 +308,7 @@ impl<'tcx, T: ty::TypeFoldable<ty::TyCtxt<'tcx>>> ty::Binder<'tcx, T> {
         tcx: ty::TyCtxt<'tcx>,
         generics: &[ty::GenericArg<'tcx>],
     ) -> ty::Binder<'tcx, T> {
-        ty::EarlyBinder::bind(self)
+        ty::EarlyBinder::bind(tcx, self)
             .instantiate(tcx, generics)
             .skip_normalization()
     }
@@ -482,14 +481,17 @@ pub fn assoc_tys_for_trait<'tcx>(
                 .filter(|assoc| matches!(assoc.kind, ty::AssocKind::Type { .. }))
                 .filter(|assoc| {
                     tcx.generics_of(assoc.def_id).own_params.is_empty()
-                        && tcx.predicates_of(assoc.def_id).predicates.is_empty()
+                        && tcx.clauses_of(assoc.def_id).clauses.is_empty()
                 })
                 .map(|assoc| {
-                    ty::AliasTy::new(tcx, tcx.alias_ty_kind_from_def_id(assoc.def_id), tref.args)
+                    let alias_ty = ty::AliasTyKind::Projection {
+                        def_id: assoc.def_id,
+                    };
+                    ty::AliasTy::new(tcx, alias_ty, tref.args)
                 }),
         );
         for clause in tcx
-            .explicit_super_predicates_of(tref.def_id)
+            .explicit_super_clauses_of(tref.def_id)
             .map_bound(|clauses| clauses.iter().map(|(clause, _span)| *clause))
             .iter_instantiated(tcx, tref.args)
         {
@@ -525,7 +527,7 @@ pub fn dyn_self_ty<'tcx>(
         .map(|alias_ty| {
             let proj = ty::ProjectionPredicate {
                 projection_term: alias_ty.into(),
-                term: ty::Ty::new_alias(tcx, alias_ty).into(),
+                term: ty::Ty::new_alias(tcx, ty::IsRigid::No, alias_ty).into(),
             };
             let proj = ty::ExistentialProjection::erase_self_ty(tcx, proj);
             ty::Binder::dummy(ty::ExistentialPredicate::Projection(proj))
@@ -559,7 +561,7 @@ pub fn closure_once_shim<'tcx>(
         ty::ClosureKind::FnOnce => return None,
     };
     let mir = tcx.instance_mir(instance.def).clone();
-    let mir = ty::EarlyBinder::bind(mir)
+    let mir = ty::EarlyBinder::bind(tcx, mir)
         .instantiate(tcx, instance.args)
         .skip_normalization();
     Some(mir)
@@ -571,7 +573,7 @@ pub fn drop_glue_shim<'tcx>(
     instantiate: Option<ty::GenericArgsRef<'tcx>>,
 ) -> mir::Body<'tcx> {
     let tcx = s.base().tcx;
-    let drop_glue = tcx.require_lang_item(rustc_hir::LangItem::DropGlue, rustc_span::DUMMY_SP);
+    let drop_glue = tcx.require_lang_item(rustc_attr_ir::LangItem::DropGlue, rustc_span::DUMMY_SP);
     let ty = inst_binder(tcx, s.typing_env(), instantiate, def_id.type_of(s));
     let mut body = rustc_mir_transform::build_drop_shim(tcx, drop_glue, Some(ty), s.typing_env());
     // Set the mir phase so that charon knows the contained drops are precise.

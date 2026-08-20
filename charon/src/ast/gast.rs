@@ -619,6 +619,7 @@ pub enum BuiltinAssertKind {
     RemainderByZero(Operand),
     MisalignedPointerDereference { required: Operand, found: Operand },
     NullPointerDereference,
+    NullReferenceCreated,
     InvalidEnumConstruction(Operand),
     ResumedAfterReturn,
     ResumedAfterPanic,

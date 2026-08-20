@@ -13,6 +13,7 @@ use rustc_middle::ty::{InstanceKind, TyCtxt};
 use rustc_middle::util::Providers;
 use rustc_session::config::{OutputType, OutputTypes};
 use rustc_span::ErrorGuaranteed;
+use std::num::NonZero;
 use std::path::PathBuf;
 use std::process::Command;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -44,14 +45,13 @@ fn set_mir_options(config: &mut Config) {
 
 /// Enable rustc's parallel front-end.
 fn set_parallel_frontend(config: &mut Config) {
-    if config.opts.unstable_opts.threads.is_none_or(|t| t <= 1) {
-        // Match rustc's `-Zthreads=0` behavior.
-        const RUSTC_MAX_THREADS_CAP: usize = 256;
-        config.opts.unstable_opts.threads = Some(
-            std::thread::available_parallelism()
-                .map_or(1, |n| n.get())
-                .min(RUSTC_MAX_THREADS_CAP),
-        );
+    if config.opts.jobs.frontend.is_none() {
+        // Match rustc's `--jobs-frontend=0` behavior.
+        const RUSTC_MAX_THREADS_CAP: usize = u8::MAX as usize;
+        let threads = std::thread::available_parallelism()
+            .map_or(1, |n| n.get())
+            .min(RUSTC_MAX_THREADS_CAP);
+        config.opts.jobs.frontend = NonZero::new(threads).filter(|n| n.get() > 1);
     }
 }
 
@@ -123,7 +123,9 @@ fn precheck_rustc_errors(tcx: TyCtxt<'_>) -> bool {
 
     tcx.par_hir_body_owners(|def_id| {
         let def_kind = tcx.def_kind(def_id);
-        if !matches!(def_kind, rustc_hir::def::DefKind::AnonConst) && !def_kind.is_typeck_child() {
+        if !matches!(def_kind, rustc_hir::def::DefKind::AnonConst)
+            && !tcx.is_typeck_child(def_id.to_def_id())
+        {
             tcx.ensure_ok().typeck(def_id);
         }
     });

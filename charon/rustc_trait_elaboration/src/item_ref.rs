@@ -88,7 +88,12 @@ impl ItemId for DefId {
         (matches!(tcx.def_kind(*self), DefKind::AssocTy)
             && matches!(tcx.def_kind(tcx.parent(*self)), DefKind::Trait))
         .then(|| {
-            ty::Ty::new_projection(*tcx, *self, ty::GenericArgs::identity_for_item(*tcx, *self))
+            ty::Ty::new_projection(
+                *tcx,
+                ty::IsRigid::No,
+                *self,
+                ty::GenericArgs::identity_for_item(*tcx, *self),
+            )
         })
     }
 
@@ -217,7 +222,7 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         {
             // Substitute to be in the context of the current item.
             let generics = generics.truncate_to(tcx, tr_def_id.generics_of(state));
-            let self_pred = ty::EarlyBinder::bind(self_pred)
+            let self_pred = ty::EarlyBinder::bind(tcx, self_pred)
                 .instantiate(tcx, generics)
                 .skip_norm_wip();
             let num_trait_req_clauses =

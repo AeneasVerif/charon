@@ -154,9 +154,19 @@ pub trait Step<Self>
     proof ImpliedClause2: (Self: PartialOrd<Self>)
     fn steps_between<'_0_1, '_1_1>;
     fn forward_checked;
+    fn forward_overflowing;
     fn backward_checked;
+    fn backward_overflowing;
     non-dyn-compatible
 }
+
+// Full name: core::iter::range::{impl Step for u8}::backward_overflowing
+pub fn backward_overflowing(_1: u8, _2: usize) -> (u8, bool)
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for u8}::forward_overflowing
+pub fn forward_overflowing(_1: u8, _2: usize) -> (u8, bool)
+= <opaque>
 
 // Full name: core::iter::range::{impl Step for u8}::backward_checked
 pub fn backward_checked(_1: u8, _2: usize) -> Option<u8>[{built_in impl Sized for u8}]
@@ -177,7 +187,9 @@ impl "impl_Step_for_u8" Step for u8 {
     proof ImpliedClause2: (u8: PartialOrd<u8>) = impl_PartialOrd_u8_for_u8
     fn steps_between<'_0_1, '_1_1> = steps_between<'_0_1, '_1_1>
     fn forward_checked = forward_checked
+    fn forward_overflowing = forward_overflowing
     fn backward_checked = backward_checked
+    fn backward_overflowing = backward_overflowing
     non-dyn-compatible
 }
 

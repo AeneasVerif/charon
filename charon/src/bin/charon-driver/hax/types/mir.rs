@@ -178,10 +178,11 @@ fn translate_mir_const<'tcx, S: UnderOwnerState<'tcx>>(
                     Promoted(item)
                 }
                 None => {
-                    let ucv = ucv.shrink();
+                    let ucv = ucv.shrink(tcx);
                     // We go through a `ty::Const`. This loses info that `ValTree`s don't capture
                     // such as data in padding bytes.
-                    let val = ty::Const::new(tcx, ty::ConstKind::Unevaluated(ucv)).sinto(s);
+                    let val =
+                        ty::Const::new(tcx, ty::ConstKind::Alias(ty::IsRigid::No, ucv)).sinto(s);
                     Value(val)
                 }
             }

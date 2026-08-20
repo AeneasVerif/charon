@@ -358,7 +358,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         assert!(
             tref.def_id
                 .as_real_def_id()
-                .is_some_and(|id| self.tcx.is_lang_item(id, rustc_hir::LangItem::Destruct)),
+                .is_some_and(|id| self.tcx.is_lang_item(id, rustc_attr_ir::LangItem::Destruct)),
             "unexpected non-dyn compatible supertrait: {:?}",
             tref.def_id
         );

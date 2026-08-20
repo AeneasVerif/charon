@@ -40,7 +40,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     storage_live(_9)
     _16 = copy args_4.0
     _9 = &(*_16)
-    _8 = new_display<'28, '30, usize>[{built_in impl Sized for usize}, {impl#5}](move _9)
+    _8 = new_display<'28, '30, usize>[{built_in impl Sized for usize}, {impl#3}](move _9)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -54,7 +54,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     storage_live(_11)
     _17 = copy args_4.1
     _11 = &(*_17)
-    _10 = new_display<'32, '34, usize>[{built_in impl Sized for usize}, {impl#5}](move _11)
+    _10 = new_display<'32, '34, usize>[{built_in impl Sized for usize}, {impl#3}](move _11)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -144,7 +144,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     storage_live(_9)
     _16 = copy args_4.0
     _9 = &(*_16)
-    _8 = new_display<'28, '30, usize>[{built_in impl Sized for usize}, {impl#5}](move _9)
+    _8 = new_display<'28, '30, usize>[{built_in impl Sized for usize}, {impl#3}](move _9)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -158,7 +158,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     storage_live(_11)
     _17 = copy args_4.1
     _11 = &(*_17)
-    _10 = new_display<'32, '34, usize>[{built_in impl Sized for usize}, {impl#5}](move _11)
+    _10 = new_display<'32, '34, usize>[{built_in impl Sized for usize}, {impl#3}](move _11)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -248,7 +248,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     storage_live(_9)
     _16 = copy args_4.0
     _9 = &(*_16)
-    _8 = new_display<'28, '30, usize>[{built_in impl Sized for usize}, {impl#5}](move _9)
+    _8 = new_display<'28, '30, usize>[{built_in impl Sized for usize}, {impl#3}](move _9)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -262,7 +262,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     storage_live(_11)
     _17 = copy args_4.1
     _11 = &(*_17)
-    _10 = new_display<'32, '34, usize>[{built_in impl Sized for usize}, {impl#5}](move _11)
+    _10 = new_display<'32, '34, usize>[{built_in impl Sized for usize}, {impl#3}](move _11)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -352,7 +352,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     storage_live(_9)
     _16 = copy args_4.0
     _9 = &(*_16)
-    _8 = new_display<'28, '30, usize>[{built_in impl Sized for usize}, {impl#5}](move _9)
+    _8 = new_display<'28, '30, usize>[{built_in impl Sized for usize}, {impl#3}](move _9)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -366,7 +366,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     storage_live(_11)
     _17 = copy args_4.1
     _11 = &(*_17)
-    _10 = new_display<'32, '34, usize>[{built_in impl Sized for usize}, {impl#5}](move _11)
+    _10 = new_display<'32, '34, usize>[{built_in impl Sized for usize}, {impl#3}](move _11)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -527,21 +527,13 @@ fn core::slice::index::slice_index_fail::do_panic#3(end: usize, len: usize) -> !
         unwind_continue
 }
 
-// Full name: core::slice::index::private_slice_index::Sealed
-pub trait Sealed<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    vtable: core::slice::index::private_slice_index::Sealed::{vtable}
-}
-
 // Full name: core::slice::index::SliceIndex
 #[diagnostic_item("SliceIndex")]
 pub trait SliceIndex<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Sealed)
-    proof ImpliedClause2: (T: MetaSized)
-    proof ImpliedClause3: (Self::Output: MetaSized)
+    proof ImpliedClause1: (T: MetaSized)
+    proof ImpliedClause2: (Self::Output: MetaSized)
     type Output
     fn get<'_0_1>;
     fn get_mut<'_0_1>;
@@ -844,12 +836,6 @@ where
     storage_dead(offset)
     storage_dead(ptr_1)
     return
-}
-
-// Full name: core::slice::index::private_slice_index::{impl Sealed for RangeInclusive<usize>[{built_in impl Sized for usize}]}
-impl "impl_Sealed_for_RangeInclusive_usize" Sealed for RangeInclusive<usize>[{built_in impl Sized for usize}] {
-    proof ImpliedClause0: (RangeInclusive<usize>[{built_in impl Sized for usize}]: MetaSized) = {built_in impl MetaSized for RangeInclusive<usize>[{built_in impl Sized for usize}]}
-    vtable: impl_Sealed_for_RangeInclusive_usize::{vtable}
 }
 
 #[lang_item(SliceLen)]
@@ -1969,9 +1955,8 @@ where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (RangeInclusive<usize>[{built_in impl Sized for usize}]: MetaSized) = {built_in impl MetaSized for RangeInclusive<usize>[{built_in impl Sized for usize}]}
-    proof ImpliedClause1: (RangeInclusive<usize>[{built_in impl Sized for usize}]: Sealed) = impl_Sealed_for_RangeInclusive_usize
+    proof ImpliedClause1: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
     proof ImpliedClause2: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
-    proof ImpliedClause3: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
     type Output = [T]
     fn get<'_0_1> = impl_SliceIndex_slice_for_RangeInclusive_usize::get<'_0_1, T>[TraitClause0]
     fn get_mut<'_0_1> = impl_SliceIndex_slice_for_RangeInclusive_usize::get_mut<'_0_1, T>[TraitClause0]

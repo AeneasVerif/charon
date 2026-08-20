@@ -6,8 +6,6 @@
 
 use std::collections::HashSet;
 
-use derive_generic_visitor::*;
-
 use crate::ast::ullbc_ast_utils::StmtLoc;
 use crate::ast::*;
 use crate::ids::IndexVec;

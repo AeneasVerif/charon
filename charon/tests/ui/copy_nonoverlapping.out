@@ -189,7 +189,7 @@ where
     RegionOutlives0: 'a: 'a,
 {
   message: &'a Arguments<'a>,
-  location: &'a Location<'a>,
+  location: &'static Location<'static>,
   can_unwind: bool,
   force_no_backtrace: bool,
 }
@@ -200,7 +200,7 @@ where
     RegionOutlives0: '_1: '_0,
 = <extern:panic_impl>
 
-fn core::panic::panic_info::{PanicInfo<'a>}::new<'a>(message: &'a Arguments<'a>, location: &'a Location<'a>, can_unwind: bool, force_no_backtrace: bool) -> PanicInfo<'a>
+fn core::panic::panic_info::{PanicInfo<'a>}::new<'a>(message: &'a Arguments<'a>, location: &'static Location<'static>, can_unwind: bool, force_no_backtrace: bool) -> PanicInfo<'a>
 {
     let _0: PanicInfo<'1>; // return
     let message: &'5 Arguments<'6>; // arg #1
@@ -214,7 +214,7 @@ fn core::panic::panic_info::{PanicInfo<'a>}::new<'a>(message: &'a Arguments<'a>,
 
     storage_live(_0)
     storage_live(_5)
-    _5 = &(*location)
+    _5 = copy location
     storage_live(_6)
     _6 = &(*message) with_metadata(copy message.metadata)
     storage_live(_7)
@@ -255,10 +255,9 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
     let _6: &'6 Arguments<'7>; // anonymous local
     let _7: &'8 Arguments<'9>; // anonymous local
     let _8: &'13 Location<'14>; // anonymous local
-    let _9: &'15 Location<'16>; // anonymous local
-    let _10: bool; // anonymous local
+    let _9: bool; // anonymous local
+    let _10: &'17 PanicInfo<'18>; // anonymous local
     let _11: &'19 PanicInfo<'20>; // anonymous local
-    let _12: &'21 PanicInfo<'22>; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -272,38 +271,35 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
         _7 = &fmt
         _6 = &(*_7) with_metadata(copy _7.metadata)
         storage_live(_8)
+        _8 = caller<'22>()
+        ↳⚡ storage_dead(_11)
+            storage_dead(_10)
+            storage_dead(pi)
+            storage_dead(_4)
+            storage_dead(force_no_backtrace)
+            storage_dead(fmt)
+            unwind_continue
         storage_live(_9)
-        _9 = caller<'24>()
-        ↳⚡ storage_dead(_12)
-            storage_dead(_11)
+        _9 = copy force_no_backtrace
+        pi = core::panic::panic_info::{PanicInfo<'a>}::new<'23>(move _6, move _8, const false, move _9)
+        ↳⚡ storage_dead(_11)
+            storage_dead(_10)
             storage_dead(pi)
             storage_dead(_4)
             storage_dead(force_no_backtrace)
             storage_dead(fmt)
             unwind_continue
-        _8 = &(*_9)
-        storage_live(_10)
-        _10 = copy force_no_backtrace
-        pi = core::panic::panic_info::{PanicInfo<'a>}::new<'26>(move _6, move _8, const false, move _10)
-        ↳⚡ storage_dead(_12)
-            storage_dead(_11)
-            storage_dead(pi)
-            storage_dead(_4)
-            storage_dead(force_no_backtrace)
-            storage_dead(fmt)
-            unwind_continue
-        storage_dead(_10)
+        storage_dead(_9)
         storage_dead(_8)
         storage_dead(_6)
-        storage_dead(_9)
         storage_dead(_7)
+        storage_live(_10)
         storage_live(_11)
-        storage_live(_12)
-        _12 = &pi
-        _11 = &(*_12)
-        _0 = panic_impl<'30, '31>(move _11)
-        ↳⚡ storage_dead(_12)
-            storage_dead(_11)
+        _11 = &pi
+        _10 = &(*_11)
+        _0 = panic_impl<'27, '28>(move _10)
+        ↳⚡ storage_dead(_11)
+            storage_dead(_10)
             storage_dead(pi)
             storage_dead(_4)
             storage_dead(force_no_backtrace)

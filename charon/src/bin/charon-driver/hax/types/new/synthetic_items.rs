@@ -135,7 +135,7 @@ impl SyntheticItem {
                 ty::Ty::new_tup(tcx, tys)
             }
         };
-        ty::EarlyBinder::bind(type_of)
+        ty::EarlyBinder::bind(tcx, type_of)
     }
 
     fn data<'tcx>(&self, s: &impl BaseState<'tcx>) -> SyntheticItemData<'tcx> {

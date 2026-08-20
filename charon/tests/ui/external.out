@@ -108,38 +108,23 @@ impl "impl_Copy_for_NonZeroU32Inner" Copy for NonZeroU32Inner {
     non-dyn-compatible
 }
 
-// Full name: core::num::nonzero::private::Sealed
-pub trait Sealed<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    vtable: core::num::nonzero::private::Sealed::{vtable}
-}
-
 // Full name: core::num::nonzero::ZeroablePrimitive
 pub trait ZeroablePrimitive<Self>
 {
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (Self: Copy)
-    proof ImpliedClause2: (Self: Sealed)
-    proof ImpliedClause3: (Self::NonZeroInner: Sized)
-    proof ImpliedClause4: (Self::NonZeroInner: Copy)
+    proof ImpliedClause2: (Self::NonZeroInner: Sized)
+    proof ImpliedClause3: (Self::NonZeroInner: Copy)
     type NonZeroInner
     non-dyn-compatible
-}
-
-// Full name: core::num::nonzero::{impl Sealed for u32}
-impl "impl_Sealed_for_u32" Sealed for u32 {
-    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
-    vtable: impl_Sealed_for_u32::{vtable}
 }
 
 // Full name: core::num::nonzero::{impl ZeroablePrimitive for u32}
 impl "impl_ZeroablePrimitive_for_u32" ZeroablePrimitive for u32 {
     proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
     proof ImpliedClause1: (u32: Copy) = impl_Copy_for_u32
-    proof ImpliedClause2: (u32: Sealed) = impl_Sealed_for_u32
-    proof ImpliedClause3: (NonZeroU32Inner: Sized) = {built_in impl Sized for NonZeroU32Inner}
-    proof ImpliedClause4: (NonZeroU32Inner: Copy) = impl_Copy_for_NonZeroU32Inner
+    proof ImpliedClause2: (NonZeroU32Inner: Sized) = {built_in impl Sized for NonZeroU32Inner}
+    proof ImpliedClause3: (NonZeroU32Inner: Copy) = impl_Copy_for_NonZeroU32Inner
     type NonZeroInner = NonZeroU32Inner
     non-dyn-compatible
 }

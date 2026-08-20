@@ -95,6 +95,7 @@ and builtin_assert_kind =
           - [required]
           - [found] *)
   | NullPointerDereference
+  | NullReferenceCreated
   | InvalidEnumConstruction of operand
   | ResumedAfterReturn
   | ResumedAfterPanic

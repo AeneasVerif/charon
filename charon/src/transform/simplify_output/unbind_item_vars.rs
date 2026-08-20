@@ -1,6 +1,6 @@
 //! Replace variables bound at the top-level with `Free` vars. This is for convenience for
 //! consumers of the charon ast.
-use derive_generic_visitor::*;
+
 use index_vec::Idx;
 
 use crate::ast::*;

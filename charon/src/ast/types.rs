@@ -196,6 +196,9 @@ pub enum BuiltinImplData {
     Coroutine,
     Future,
 
+    /// Auto-trait used for `try_as_dyn` (see https://github.com/rust-lang/rust/issues/144361)
+    TryAsDynCompatible,
+
     /// An impl of `Destruct` for a type with no drop glue.
     NoopDestruct,
     /// An impl of `Destruct` for a type parameter, which we could not resolve because

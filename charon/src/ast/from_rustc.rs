@@ -186,6 +186,8 @@ pub enum LangItem {
     CoerceUnsized,
     ///The `dispatch_from_dyn` lang item.
     DispatchFromDyn,
+    ///The `try_as_dyn` lang item.
+    TryAsDyn,
     ///The `transmute_opts` lang item.
     TransmuteOpts,
     ///The `transmute_trait` lang item.
@@ -240,12 +242,16 @@ pub enum LangItem {
     IndexMut,
     ///The `unsafe_cell` lang item.
     UnsafeCell,
+    ///The `covariant_unsafe_cell` lang item.
+    CovariantUnsafeCell,
     ///The `unsafe_pinned` lang item.
     UnsafePinned,
     ///The `va_arg_safe` lang item.
     VaArgSafe,
     ///The `va_list` lang item.
     VaList,
+    ///The `complex` lang item.
+    Complex,
     ///The `deref` lang item.
     Deref,
     ///The `deref_mut` lang item.
@@ -318,6 +324,8 @@ pub enum LangItem {
     CVoid,
     ///The `type_info` lang item.
     Type,
+    ///The `type_info_generic` lang item.
+    TypeGeneric,
     ///The `type_id` lang item.
     TypeId,
     ///The `panic` lang item.
@@ -383,6 +391,8 @@ pub enum LangItem {
     PanicGenFnNonePanic,
     ///The `panic_null_pointer_dereference` lang item.
     PanicNullPointerDereference,
+    ///The `panic_null_reference_constructed` lang item.
+    PanicNullReferenceConstructed,
     ///The `panic_invalid_enum_construction` lang item.
     PanicInvalidEnumConstruction,
     ///The `panic_const_coroutine_resumed_drop` lang item.
@@ -412,8 +422,6 @@ pub enum LangItem {
     Start,
     ///The `eh_personality` lang item.
     EhPersonality,
-    ///The `eh_catch_typeinfo` lang item.
-    EhCatchTypeinfo,
     ///The `compiler_move` lang item.
     CompilerMove,
     ///The `compiler_copy` lang item.
@@ -562,6 +570,8 @@ pub enum LangItem {
     FieldOffset,
     ///The `From` lang item.
     From,
+    ///The `from` lang item.
+    FromFn,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
