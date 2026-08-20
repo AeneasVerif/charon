@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
@@ -114,6 +115,7 @@ fn inner4()
 }
 
 // Full name: test_crate::module::opaque
+#[charon::opaque]
 fn opaque()
 = <opaque>
 

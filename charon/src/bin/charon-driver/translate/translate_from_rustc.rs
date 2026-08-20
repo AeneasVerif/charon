@@ -82,10 +82,10 @@ impl<'tcx> TranslateCtx<'tcx> {
                     span: self.translate_span(span),
                 })
             }
-            AttributeKind::RustcDiagnosticItem(_0) => Ok(
-                from_rustc::AttributeKind::RustcDiagnosticItem((_0).to_string().into()),
-            ),
             AttributeKind::RustcIntrinsic => Ok(from_rustc::AttributeKind::RustcIntrinsic),
+            AttributeKind::RustcTestEntrypointMarker => {
+                Ok(from_rustc::AttributeKind::RustcTestEntrypointMarker)
+            }
             AttributeKind::ShouldPanic { reason } => Ok(from_rustc::AttributeKind::ShouldPanic {
                 reason: (reason)
                     .as_ref()

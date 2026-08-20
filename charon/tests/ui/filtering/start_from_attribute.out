@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: test_crate::module2::do_translate
+#[verify::start_from]
 fn do_translate()
 {
     let _0: (); // return
@@ -16,6 +18,7 @@ fn do_translate()
 }
 
 // Full name: test_crate::module2::also_translate
+#[foobar::haha]
 fn also_translate()
 {
     let _0: (); // return
@@ -30,6 +33,7 @@ fn also_translate()
 struct Type1 {}
 
 // Full name: test_crate::module2::{impl Trait1 for Type1}::method
+#[verify::start_from]
 fn method()
 {
     let _0: (); // return

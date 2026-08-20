@@ -1143,6 +1143,13 @@ impl ItemMeta {
             writeln!(f, "// Full name: {}", self.name.full_name(ctx))?;
         }
 
+        for attr in &self.attr_info.attributes {
+            // Doc-comments are long and don't affect the semantics; skip them.
+            if attr.is_doc_comment() {
+                continue;
+            }
+            writeln!(f, "{tab}{}", attr.with_ctx(ctx))?;
+        }
         if let Some(id) = &self.lang_item {
             writeln!(f, "{tab}#[lang_item({id:?})]")?;
         }
@@ -1426,6 +1433,133 @@ impl PolyTraitDeclRef {
             }
             write!(f, "({})", self.skip_binder.format_as_pred(ctx))
         })
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for Attribute {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut attr = String::new();
+        self.fmt_unindented(ctx, &mut attr)?;
+        let sep = format!("\n{}", ctx.indent());
+        write!(f, "{}", attr.lines().format(sep.as_str()))
+    }
+}
+
+impl Attribute {
+    fn fmt_unindented<C: AstFormatter>(&self, ctx: &C, f: &mut impl fmt::Write) -> fmt::Result {
+        match self {
+            Attribute::Opaque => write!(f, "#[charon::opaque]"),
+            Attribute::Exclude => write!(f, "#[charon::exclude]"),
+            Attribute::Rename(name) => write!(f, "#[charon::rename(\"{name}\")]"),
+            Attribute::VariantsPrefix(prefix) => {
+                write!(f, "#[charon::variants_prefix(\"{prefix}\")]")
+            }
+            Attribute::VariantsSuffix(suffix) => {
+                write!(f, "#[charon::variants_suffix(\"{suffix}\")]")
+            }
+            Attribute::Transparent => write!(f, "#[charon::transparent]"),
+            Attribute::IsPrecondition(id) => {
+                write!(f, "#[charon::precondition] // of {}", id.with_ctx(ctx))
+            }
+            Attribute::IsPostcondition(id) => {
+                write!(f, "#[charon::postcondition] // of {}", id.with_ctx(ctx))
+            }
+            Attribute::HasPrecondition(id) => {
+                let id = ItemId::Fun(*id);
+                write!(f, "// precondition: {}", id.with_ctx(ctx))
+            }
+            Attribute::HasPostcondition(id) => {
+                let id = ItemId::Fun(*id);
+                write!(f, "// postcondition: {}", id.with_ctx(ctx))
+            }
+            Attribute::DocComment(comment) => {
+                write!(
+                    f,
+                    "{}",
+                    comment
+                        .lines()
+                        .map(|line| format!("///{line}"))
+                        .format("\n")
+                )
+            }
+            Attribute::Builtin(kind) => write!(f, "#[{kind}]"),
+            Attribute::Unknown(attr) => write!(f, "#[{attr}]"),
+        }
+    }
+}
+
+/// Print a built-in attribute the way it is written in the source.
+impl Display for from_rustc::AttributeKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use from_rustc::AttributeKind;
+        match self {
+            AttributeKind::AutomaticallyDerived => write!(f, "automatically_derived"),
+            AttributeKind::Cold => write!(f, "cold"),
+            AttributeKind::Deprecated { deprecation, .. } => {
+                write!(f, "deprecated")?;
+                let since = match &deprecation.since {
+                    from_rustc::DeprecatedSince::RustcVersion(v) => {
+                        Some(format!("{}.{}.{}", v.major, v.minor, v.patch))
+                    }
+                    from_rustc::DeprecatedSince::Future => Some("future".to_owned()),
+                    from_rustc::DeprecatedSince::NonStandard(since) => Some(since.to_string()),
+                    from_rustc::DeprecatedSince::Unspecified | from_rustc::DeprecatedSince::Err => {
+                        None
+                    }
+                };
+                let since = since.map(|since| format!("since = \"{since}\""));
+                let note = deprecation
+                    .note
+                    .as_ref()
+                    .map(|note| format!("note = \"{}\"", note.name));
+                let args = since.into_iter().chain(note).format(", ").to_string();
+                if !args.is_empty() {
+                    write!(f, "({args})")?;
+                }
+                Ok(())
+            }
+            AttributeKind::Fundamental => write!(f, "fundamental"),
+            AttributeKind::Ignore { reason, .. } => {
+                write!(f, "ignore")?;
+                if let Some(reason) = reason {
+                    write!(f, " = \"{reason}\"")?;
+                }
+                Ok(())
+            }
+            AttributeKind::Inline(inline, _) => match inline {
+                from_rustc::InlineAttr::None => write!(f, "inline"),
+                from_rustc::InlineAttr::Hint => write!(f, "inline(hint)"),
+                from_rustc::InlineAttr::Always => write!(f, "inline(always)"),
+                from_rustc::InlineAttr::Never => write!(f, "inline(never)"),
+                from_rustc::InlineAttr::Force { .. } => write!(f, "rustc_force_inline"),
+            },
+            AttributeKind::MayDangle(_) => write!(f, "may_dangle"),
+            AttributeKind::Naked(_) => write!(f, "naked"),
+            AttributeKind::NoLink => write!(f, "no_link"),
+            AttributeKind::NoMangle(_) => write!(f, "no_mangle"),
+            AttributeKind::NonExhaustive(_) => write!(f, "non_exhaustive"),
+            AttributeKind::Optimize(optimize, _) => match optimize {
+                from_rustc::OptimizeAttr::Default => write!(f, "optimize(default)"),
+                from_rustc::OptimizeAttr::DoNotOptimize => write!(f, "optimize(none)"),
+                from_rustc::OptimizeAttr::Speed => write!(f, "optimize(speed)"),
+                from_rustc::OptimizeAttr::Size => write!(f, "optimize(size)"),
+            },
+            AttributeKind::RustcAlign { align, .. } => write!(f, "rustc_align({align})"),
+            AttributeKind::RustcIntrinsic => write!(f, "rustc_intrinsic"),
+            AttributeKind::RustcTestEntrypointMarker => write!(f, "rustc_test_entrypoint_marker"),
+            AttributeKind::ShouldPanic { reason } => {
+                write!(f, "should_panic")?;
+                if let Some(reason) = reason {
+                    write!(f, "(expected = \"{reason}\")")?;
+                }
+                Ok(())
+            }
+            AttributeKind::TargetFeature { features, .. } => {
+                let features = features.iter().map(|(feature, _)| feature).format(",");
+                write!(f, "target_feature(enable = \"{features}\")")
+            }
+            AttributeKind::TrackCaller(_) => write!(f, "track_caller"),
+        }
     }
 }
 

@@ -3,10 +3,12 @@
 opaque type core::marker::MetaSized::{vtable}
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -23,6 +25,7 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::Tuple
+#[fundamental]
 #[lang_item(Tuple)]
 pub trait Tuple<Self>
 {
@@ -41,6 +44,7 @@ pub fn drop::<NotCopy>(_1: NotCopy)
 opaque type core::ops::function::FnOnce::{vtable}
 
 // Full name: core::ops::function::FnOnce
+#[fundamental]
 #[lang_item(FnOnce)]
 pub trait FnOnce<Self, Args>
 {

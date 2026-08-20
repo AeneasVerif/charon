@@ -1,5 +1,6 @@
 # Final LLBC before serialization:
 
+#[track_caller]
 fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: usize) -> !
 {
     let _0: !; // return
@@ -104,6 +105,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     panic(core::panicking::panic_fmt)
 }
 
+#[track_caller]
 fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: usize) -> !
 {
     let _0: !; // return
@@ -208,6 +210,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     panic(core::panicking::panic_fmt)
 }
 
+#[track_caller]
 fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: usize) -> !
 {
     let _0: !; // return
@@ -312,6 +315,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     panic(core::panicking::panic_fmt)
 }
 
+#[track_caller]
 fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: usize) -> !
 {
     let _0: !; // return
@@ -427,6 +431,7 @@ where
   Some { _0: T },
 }
 
+#[track_caller]
 fn core::slice::index::slice_index_fail::do_panic(start: usize, len: usize) -> !
 {
     let _0: !; // return
@@ -452,6 +457,7 @@ fn core::slice::index::slice_index_fail::do_panic(start: usize, len: usize) -> !
         unwind_continue
 }
 
+#[track_caller]
 fn core::slice::index::slice_index_fail::do_panic#1(end: usize, len: usize) -> !
 {
     let _0: !; // return
@@ -477,6 +483,7 @@ fn core::slice::index::slice_index_fail::do_panic#1(end: usize, len: usize) -> !
         unwind_continue
 }
 
+#[track_caller]
 fn core::slice::index::slice_index_fail::do_panic#2(start: usize, end: usize) -> !
 {
     let _0: !; // return
@@ -502,6 +509,7 @@ fn core::slice::index::slice_index_fail::do_panic#2(start: usize, end: usize) ->
         unwind_continue
 }
 
+#[track_caller]
 fn core::slice::index::slice_index_fail::do_panic#3(end: usize, len: usize) -> !
 {
     let _0: !; // return
@@ -581,6 +589,7 @@ where
 }
 
 // Full name: core::slice::index::slice_index_fail
+#[track_caller]
 fn slice_index_fail(start: usize, end: usize, len: usize) -> !
 {
     let _0: !; // return
@@ -1060,6 +1069,7 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check
+#[track_caller]
 fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(start: usize, end: usize, len: usize)
 {
     let _0: (); // return
@@ -1135,6 +1145,7 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(star
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked
+#[track_caller]
 pub unsafe fn impl_SliceIndex_slice_for_Range_usize::get_unchecked<T>(self: Range<usize>[{built_in impl Sized for usize}], slice: *const [T]) -> *const [T]
 where
     TraitClause0: (T: Sized),
@@ -1215,6 +1226,7 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check
+#[track_caller]
 fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(start: usize, end: usize, len: usize)
 {
     let _0: (); // return
@@ -1290,6 +1302,7 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
+#[track_caller]
 pub unsafe fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut<T>(self: Range<usize>[{built_in impl Sized for usize}], slice: *mut [T]) -> *mut [T]
 where
     TraitClause0: (T: Sized),

@@ -9,6 +9,7 @@ pub fn from_str<'a>(_1: &'static str) -> Arguments<'a>
 = <opaque>
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 

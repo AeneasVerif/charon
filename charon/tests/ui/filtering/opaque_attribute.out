@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -24,6 +26,7 @@ where
 }
 
 // Full name: test_crate::BoolTrait
+#[charon::opaque]
 pub trait BoolTrait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -97,6 +100,7 @@ where
 }
 
 // Full name: test_crate::test_bool_trait_option
+#[charon::opaque]
 pub fn test_bool_trait_option<T>(_1: Option<T>[TraitClause0]) -> bool
 where
     TraitClause0: (T: Sized),
@@ -104,19 +108,24 @@ where
 = <opaque>
 
 // Full name: test_crate::Test
+#[charon::opaque]
 opaque type Test
 
 // Full name: test_crate::SIX_SIX_SIX
+#[charon::opaque]
 fn SIX_SIX_SIX() -> u32
 = <opaque>
 
 // Full name: test_crate::SIX_SIX_SIX
+#[charon::opaque]
 const SIX_SIX_SIX: u32 = SIX_SIX_SIX()
 
 // Full name: test_crate::Test2
+#[charon::opaque]
 opaque type Test2
 
 // Full name: test_crate::Test3
+#[charon::opaque]
 opaque type Test3
 
 // Full name: test_crate::opaque::fn_in_opaque_module

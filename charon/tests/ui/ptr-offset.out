@@ -5,10 +5,12 @@ pub fn addr<T>(_1: *const T) -> usize
 = <opaque>
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -127,6 +129,7 @@ where
 = <opaque>
 
 // Full name: core::panicking::panic_nounwind_fmt
+#[track_caller]
 pub fn panic_nounwind_fmt<'_0>(_1: Arguments<'_0>, _2: bool) -> !
 = <opaque>
 
@@ -171,6 +174,7 @@ fn runtime_offset_nowrap(this: *const (), count: isize, size: usize) -> bool
 }
 
 // Full name: core::ptr::const_ptr::{*const T}::offset::precondition_check
+#[track_caller]
 fn precondition_check(this: *const (), count: isize, size: usize)
 {
     let _0: (); // return
@@ -241,6 +245,7 @@ fn precondition_check(this: *const (), count: isize, size: usize)
 }
 
 // Full name: core::ptr::const_ptr::{*const T}::offset
+#[track_caller]
 pub unsafe fn offset<T>(self: *const T, count: isize) -> *const T
 where
     TraitClause0: (T: Sized),

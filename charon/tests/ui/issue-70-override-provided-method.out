@@ -18,10 +18,12 @@ pub enum Ordering {
 }
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -151,6 +153,7 @@ impl "impl_StructuralPartialEq_for_Foo" StructuralPartialEq for Foo {
 }
 
 // Full name: test_crate::{impl PartialEq<Foo> for Foo}::eq
+#[inline(hint)]
 pub fn impl_PartialEq_Foo_for_Foo::eq<'_0, '_1>(self: &'_0 Foo, other: &'_1 Foo) -> bool
 {
     let _0: bool; // return
@@ -179,6 +182,7 @@ impl "impl_PartialEq_Foo_for_Foo" PartialEq<Foo> for Foo {
 }
 
 // Full name: test_crate::{impl PartialOrd<Foo> for Foo}::partial_cmp
+#[inline(hint)]
 pub fn impl_PartialOrd_Foo_for_Foo::partial_cmp<'_0, '_1>(self: &'_0 Foo, other: &'_1 Foo) -> Option<Ordering>[{built_in impl Sized for Ordering}]
 {
     let _0: Option<Ordering>[{built_in impl Sized for Ordering}]; // return

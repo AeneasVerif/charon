@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::char::MAX
+#[deprecated(since = "future", note = "replaced by the `MAX` associated constant on `char`")]
 pub fn MAX() -> char
 {
     let _0: char; // return
@@ -11,6 +12,7 @@ pub fn MAX() -> char
 }
 
 // Full name: core::char::MAX
+#[deprecated(since = "future", note = "replaced by the `MAX` associated constant on `char`")]
 pub const MAX: char = MAX()
 
 // Full name: test_crate::main

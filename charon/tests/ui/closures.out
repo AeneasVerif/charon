@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Tuple
+#[fundamental]
 #[lang_item(Tuple)]
 pub trait Tuple<Self>
 {
@@ -13,6 +15,7 @@ pub trait Tuple<Self>
 }
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -21,6 +24,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::ops::function::FnOnce
+#[fundamental]
 #[lang_item(FnOnce)]
 pub trait FnOnce<Self, Args, Self_Output>
 {
@@ -33,6 +37,7 @@ pub trait FnOnce<Self, Args, Self_Output>
 }
 
 // Full name: core::ops::function::FnMut
+#[fundamental]
 #[lang_item(FnMut)]
 pub trait FnMut<Self, Args, Self_Clause1_Output>
 {
@@ -86,6 +91,7 @@ impl "impl_Clone_for_u32" Clone for u32 {
 }
 
 // Full name: core::ops::function::Fn
+#[fundamental]
 #[lang_item(Fn)]
 pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
 {
@@ -159,6 +165,7 @@ pub fn incr_u32(x: u32) -> u32
 }
 
 // Full name: test_crate::map_option
+#[allow(clippy::manual_map)]
 pub fn map_option<T, F>(x_1: Option<T>[TraitClause0], f: F) -> Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
@@ -287,6 +294,7 @@ where
 }
 
 // Full name: test_crate::map_option_pointer_ref
+#[allow(clippy::manual_map, clippy::needless_lifetimes)]
 pub fn map_option_pointer_ref<'a, T, F>(x_1: &'a Option<T>[TraitClause0], f: fn<'_0_1>(&'_0_1 T) -> T) -> Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
@@ -842,6 +850,7 @@ fn test_crate::test_closure_ref_u32::closure::as_fn<'_0>(arg1: &'_0 u32) -> &'_0
 }
 
 // Full name: test_crate::test_closure_ref_u32
+#[allow(clippy::needless_lifetimes)]
 pub fn test_closure_ref_u32<'a>(x: &'a u32) -> &'a u32
 {
     let _0: &'1 u32; // return
@@ -1614,6 +1623,7 @@ pub fn test_map_option_id2(x: Option<u32>[{built_in impl Sized for u32}]) -> Opt
 }
 
 // Full name: test_crate::id_clone
+#[allow(clippy::redundant_clone)]
 pub fn id_clone<T>(x: T) -> T
 where
     TraitClause0: (T: Sized),

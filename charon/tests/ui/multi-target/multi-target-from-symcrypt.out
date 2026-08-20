@@ -9,9 +9,11 @@ pub unsafe fn core::core_arch::aarch64::neon::generated::vst1q_u16(_1: *mut u16,
 pub unsafe fn core::core_arch::arm_shared::neon::generated::vaddq_u16(_1: core::core_arch::arm_shared::neon::uint16x8_t, _2: core::core_arch::arm_shared::neon::uint16x8_t) -> core::core_arch::arm_shared::neon::uint16x8_t
 = <opaque>
 
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized<Self>
 
+#[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized<Self>
 {

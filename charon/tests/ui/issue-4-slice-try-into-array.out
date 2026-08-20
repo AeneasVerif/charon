@@ -9,10 +9,12 @@ impl "impl_Debug_for_TryFromSliceError" Debug for TryFromSliceError {
 }
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -113,6 +115,7 @@ impl "impl_Copy_for_u8" Copy for u8 {
 }
 
 // Full name: core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap
+#[track_caller]
 pub fn unwrap<T, E>(_1: Result<T, E>[TraitClause0, TraitClause1]) -> T
 where
     TraitClause0: (T: Sized),

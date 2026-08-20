@@ -5,6 +5,7 @@
 pub opaque type Layout
 
 // Full name: core::alloc::layout::{Layout}::from_size_align_unchecked
+#[track_caller]
 pub unsafe fn from_size_align_unchecked(_1: usize, _2: usize) -> Layout
 = <opaque>
 
@@ -17,10 +18,12 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -130,6 +133,7 @@ impl "impl_Clone_for_usize" Clone for usize {
 }
 
 // Full name: core::intrinsics::abort
+#[rustc_intrinsic]
 pub fn abort() -> !
 = <intrinsic:abort>
 
@@ -153,6 +157,7 @@ pub struct Location<'a> {
 }
 
 // Full name: core::intrinsics::caller_location
+#[rustc_intrinsic]
 pub fn caller_location() -> &'static Location<'static>
 = <intrinsic:caller_location>
 
@@ -167,6 +172,7 @@ pub trait Copy<Self>
 }
 
 // Full name: core::intrinsics::ctpop
+#[rustc_intrinsic]
 pub fn ctpop<T>(x_1: T) -> u32
 where
     TraitClause0: (T: Sized),
@@ -234,6 +240,7 @@ fn core::panic::panic_info::{PanicInfo<'a>}::new<'a>(message: &'a Arguments<'a>,
 }
 
 // Full name: core::panic::location::{Location<'a>}::caller
+#[track_caller]
 pub fn caller<'a>() -> &'static Location<'static>
 {
     let _0: &'3 Location<'4>; // return
@@ -244,6 +251,7 @@ pub fn caller<'a>() -> &'static Location<'static>
     return
 }
 
+#[track_caller]
 fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_no_backtrace: bool) -> !
 {
     let _0: !; // return
@@ -311,16 +319,19 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
     ↳⚡ undefined_behavior
 }
 
+#[rustc_intrinsic]
 pub fn core::intrinsics::size_of<T>() -> usize
 where
     TraitClause0: (T: Sized),
 = <intrinsic:size_of>
 
+#[rustc_intrinsic]
 pub fn core::intrinsics::align_of<T>() -> usize
 where
     TraitClause0: (T: Sized),
 = <intrinsic:align_of>
 
+#[rustc_intrinsic]
 pub unsafe fn core::intrinsics::copy_nonoverlapping<T>(src_1: *const T, dst_2: *mut T, count_3: usize)
 where
     TraitClause0: (T: Sized),
@@ -484,6 +495,7 @@ fn check_language_ub() -> bool
 }
 
 // Full name: core::panicking::panic_nounwind_fmt
+#[track_caller]
 pub fn panic_nounwind_fmt<'_0>(fmt: Arguments<'_0>, force_no_backtrace: bool) -> !
 {
     let _0: !; // return
@@ -509,6 +521,7 @@ pub fn panic_nounwind_fmt<'_0>(fmt: Arguments<'_0>, force_no_backtrace: bool) ->
         unwind_terminate
 }
 
+#[track_caller]
 fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: usize)
 {
     let _0: (); // return
@@ -561,6 +574,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
 }
 
 // Full name: core::mem::alignment::{Alignment}::new_unchecked
+#[track_caller]
 pub unsafe fn new_unchecked(align: usize) -> Alignment
 {
     let _0: Alignment; // return
@@ -753,6 +767,7 @@ where
  = IS_ZST<Self>[TraitClause0]()
 
 // Full name: core::option::unwrap_failed
+#[track_caller]
 fn unwrap_failed() -> !
 {
     let _0: !; // return
@@ -762,6 +777,7 @@ fn unwrap_failed() -> !
 }
 
 // Full name: core::option::{Option<T>[TraitClause0]}::unwrap
+#[track_caller]
 #[diagnostic_item("option_unwrap")]
 pub fn unwrap<T>(self: Option<T>[TraitClause0]) -> T
 where
@@ -898,9 +914,11 @@ where
     return
 }
 
+#[track_caller]
 fn core::ptr::copy_nonoverlapping::precondition_check(_1: *const (), _2: *mut (), _3: usize, _4: usize, _5: usize)
 = <opaque>
 
+#[track_caller]
 #[diagnostic_item("ptr_copy_nonoverlapping")]
 pub unsafe fn core::ptr::copy_nonoverlapping<T>(src: *const T, dst: *mut T, count: usize)
 where

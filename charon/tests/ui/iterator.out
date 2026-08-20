@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -94,6 +96,7 @@ where
 }
 
 // Full name: core::marker::Tuple
+#[fundamental]
 #[lang_item(Tuple)]
 pub trait Tuple<Self>
 {
@@ -102,6 +105,7 @@ pub trait Tuple<Self>
 }
 
 // Full name: core::ops::function::FnOnce
+#[fundamental]
 #[lang_item(FnOnce)]
 pub trait FnOnce<Self, Args>
 {
@@ -115,6 +119,7 @@ pub trait FnOnce<Self, Args>
 }
 
 // Full name: core::ops::function::FnMut
+#[fundamental]
 #[lang_item(FnMut)]
 pub trait FnMut<Self, Args>
 {
@@ -881,6 +886,7 @@ where
 = <opaque>
 
 // Full name: core::array::iter::{impl Iterator for IntoIter<T, N>[TraitClause0]}::array_chunks
+#[track_caller]
 pub fn impl_Iterator_for_IntoIter::array_chunks<T, const N : usize, const N : usize>(_1: IntoIter<T, N>[TraitClause0]) -> ArrayChunks<IntoIter<T, N>[TraitClause0], N>[TraitClause1, impl_Iterator_for_IntoIter<T, N>[TraitClause0]]
 where
     TraitClause0: (T: Sized),
@@ -1537,6 +1543,7 @@ where
 = <opaque>
 
 // Full name: core::cmp::Eq::assert_receiver_is_total_eq
+#[deprecated(since = "1.95.0", note = "implementation detail of `#[derive(Eq)]`")]
 #[diagnostic_item("assert_receiver_is_total_eq")]
 pub fn assert_receiver_is_total_eq<'_0, Self>(_1: &'_0 Self)
 where
@@ -1640,6 +1647,7 @@ where
 = <opaque>
 
 // Full name: core::ops::arith::{impl AddAssign<&'_0 i32> for i32}::add_assign
+#[track_caller]
 pub fn add_assign<'_0, '_1>(_1: &'_1 mut i32, _2: &'_0 i32)
 = <opaque>
 
@@ -2304,6 +2312,7 @@ where
     TraitClause2: (Self: Clone),
 = <opaque>
 
+#[track_caller]
 pub fn core::iter::traits::iterator::Iterator::array_chunks<Self, const N : usize>(_1: Self) -> ArrayChunks<Self, N>[TraitClause1, TraitClause0]
 where
     TraitClause0: (Self: Iterator),
@@ -2834,6 +2843,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::array_chunks
+#[track_caller]
 pub fn impl_Iterator_for_Iter::array_chunks<'a, T, const N : usize>(_1: Iter<'a, T>[TraitClause0]) -> ArrayChunks<Iter<'a, T>[TraitClause0], N>[TraitClause1, impl_Iterator_for_Iter<'a, T>[TraitClause0]]
 where
     TraitClause0: (T: Sized),
@@ -3686,6 +3696,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for Chunks<'a, T>[TraitClause0]}::array_chunks
+#[track_caller]
 pub fn impl_Iterator_for_Chunks::array_chunks<'a, T, const N : usize>(_1: Chunks<'a, T>[TraitClause0]) -> ArrayChunks<Chunks<'a, T>[TraitClause0], N>[TraitClause1, impl_Iterator_for_Chunks<'a, T>[TraitClause0]]
 where
     TraitClause0: (T: Sized),
@@ -4663,6 +4674,7 @@ where
 = <opaque>
 
 // Full name: core::slice::iter::{impl Iterator for ChunksExact<'a, T>[TraitClause0]}::array_chunks
+#[track_caller]
 pub fn impl_Iterator_for_ChunksExact::array_chunks<'a, T, const N : usize>(_1: ChunksExact<'a, T>[TraitClause0]) -> ArrayChunks<ChunksExact<'a, T>[TraitClause0], N>[TraitClause1, impl_Iterator_for_ChunksExact<'a, T>[TraitClause0]]
 where
     TraitClause0: (T: Sized),
@@ -5410,6 +5422,7 @@ where
 = <opaque>
 
 // Full name: core::slice::{[T]}::chunks
+#[track_caller]
 pub fn chunks<'_0, T>(_1: &'_0 [T], _2: usize) -> Chunks<'_0, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
@@ -5417,6 +5430,7 @@ where
 = <opaque>
 
 // Full name: core::slice::{[T]}::chunks_exact
+#[track_caller]
 pub fn chunks_exact<'_0, T>(_1: &'_0 [T], _2: usize) -> ChunksExact<'_0, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),

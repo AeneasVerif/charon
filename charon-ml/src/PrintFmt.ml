@@ -1101,6 +1101,106 @@ let pp_generic_params_single_line (env : fmt_env) (fmt : Format.formatter)
 let generic_params_to_string_single_line env generics =
   pp_to_string (fun fmt -> pp_generic_params_single_line env fmt generics)
 
+(** Print a built-in attribute the way it is written in the source. *)
+let pp_rustc_attribute_kind (fmt : Format.formatter)
+    (kind : rustc_attribute_kind) : unit =
+  match kind with
+  | RustcAttributeKindAutomaticallyDerived ->
+      pp_string fmt "automatically_derived"
+  | RustcAttributeKindCold -> pp_string fmt "cold"
+  | RustcAttributeKindDeprecated (deprecation, _) ->
+      pp_string fmt "deprecated";
+      let since =
+        match deprecation.since with
+        | RustcDeprecatedSinceRustcVersion v ->
+            Some (Printf.sprintf "%d.%d.%d" v.major v.minor v.patch)
+        | RustcDeprecatedSinceFuture -> Some "future"
+        | RustcDeprecatedSinceNonStandard since -> Some since
+        | RustcDeprecatedSinceUnspecified | RustcDeprecatedSinceErr -> None
+      in
+      let since = Option.map (fun since -> "since = \"" ^ since ^ "\"") since in
+      let note =
+        Option.map
+          (fun (note : rustc_ident) -> "note = \"" ^ note.name ^ "\"")
+          deprecation.note
+      in
+      let args = List.filter_map (fun x -> x) [ since; note ] in
+      if args <> [] then Format.fprintf fmt "(%s)" (String.concat ", " args)
+  | RustcAttributeKindFundamental -> pp_string fmt "fundamental"
+  | RustcAttributeKindIgnore (_, reason) ->
+      pp_string fmt "ignore";
+      Option.iter (fun reason -> Format.fprintf fmt " = \"%s\"" reason) reason
+  | RustcAttributeKindInline (inline, _) -> (
+      match inline with
+      | RustcInlineAttrNone -> pp_string fmt "inline"
+      | RustcInlineAttrHint -> pp_string fmt "inline(hint)"
+      | RustcInlineAttrAlways -> pp_string fmt "inline(always)"
+      | RustcInlineAttrNever -> pp_string fmt "inline(never)"
+      | RustcInlineAttrForce _ -> pp_string fmt "rustc_force_inline")
+  | RustcAttributeKindMayDangle _ -> pp_string fmt "may_dangle"
+  | RustcAttributeKindNaked _ -> pp_string fmt "naked"
+  | RustcAttributeKindNoLink -> pp_string fmt "no_link"
+  | RustcAttributeKindNoMangle _ -> pp_string fmt "no_mangle"
+  | RustcAttributeKindNonExhaustive _ -> pp_string fmt "non_exhaustive"
+  | RustcAttributeKindOptimize (optimize, _) -> (
+      match optimize with
+      | RustcOptimizeAttrDefault -> pp_string fmt "optimize(default)"
+      | RustcOptimizeAttrDoNotOptimize -> pp_string fmt "optimize(none)"
+      | RustcOptimizeAttrSpeed -> pp_string fmt "optimize(speed)"
+      | RustcOptimizeAttrSize -> pp_string fmt "optimize(size)")
+  | RustcAttributeKindRustcAlign (align, _) ->
+      Format.fprintf fmt "rustc_align(%d)" align
+  | RustcAttributeKindRustcIntrinsic -> pp_string fmt "rustc_intrinsic"
+  | RustcAttributeKindRustcTestEntrypointMarker ->
+      pp_string fmt "rustc_test_entrypoint_marker"
+  | RustcAttributeKindShouldPanic reason ->
+      pp_string fmt "should_panic";
+      Option.iter
+        (fun reason -> Format.fprintf fmt "(expected = \"%s\")" reason)
+        reason
+  | RustcAttributeKindTargetFeature (features, _, _) ->
+      let features = List.map (fun (feature, _) -> feature) features in
+      Format.fprintf fmt "target_feature(enable = \"%s\")"
+        (String.concat "," features)
+  | RustcAttributeKindTrackCaller _ -> pp_string fmt "track_caller"
+
+let pp_item_id (env : fmt_env) (fmt : Format.formatter) (id : item_id) : unit =
+  match find_short_name env id with
+  | Some name -> pp_name env fmt name
+  | None -> pp_string fmt (item_id_to_pretty_string id)
+
+let pp_attribute_unindented (env : fmt_env) (fmt : Format.formatter)
+    (attr : attribute) : unit =
+  match attr with
+  | AttrOpaque -> pp_string fmt "#[charon::opaque]"
+  | AttrExclude -> pp_string fmt "#[charon::exclude]"
+  | AttrRename name -> Format.fprintf fmt "#[charon::rename(\"%s\")]" name
+  | AttrVariantsPrefix prefix ->
+      Format.fprintf fmt "#[charon::variants_prefix(\"%s\")]" prefix
+  | AttrVariantsSuffix suffix ->
+      Format.fprintf fmt "#[charon::variants_suffix(\"%s\")]" suffix
+  | AttrTransparent -> pp_string fmt "#[charon::transparent]"
+  | AttrIsPrecondition id ->
+      Format.fprintf fmt "#[charon::precondition] // of %a" (pp_item_id env) id
+  | AttrIsPostcondition id ->
+      Format.fprintf fmt "#[charon::postcondition] // of %a" (pp_item_id env) id
+  | AttrHasPrecondition id ->
+      Format.fprintf fmt "// precondition: %a" (pp_item_id env) (IdFun id)
+  | AttrHasPostcondition id ->
+      Format.fprintf fmt "// postcondition: %a" (pp_item_id env) (IdFun id)
+  | AttrDocComment comment ->
+      let lines = String.split_on_char '\n' comment in
+      pp_sep_list "\n" pp_string fmt (List.map (fun line -> "///" ^ line) lines)
+  | AttrBuiltin kind -> Format.fprintf fmt "#[%a]" pp_rustc_attribute_kind kind
+  | AttrUnknown attr -> Format.fprintf fmt "#[%a]" pp_raw_attribute attr
+
+let pp_attribute (env : fmt_env) (indent : string) (fmt : Format.formatter)
+    (attr : attribute) : unit =
+  (* An attribute may span several lines: the caller indents the first line, we
+     indent the subsequent ones ourselves. *)
+  let attr = pp_to_string (fun fmt -> pp_attribute_unindented env fmt attr) in
+  pp_sep_list ("\n" ^ indent) pp_string fmt (String.split_on_char '\n' attr)
+
 let pp_item_intro (env : fmt_env) (indent : string) (keyword : string)
     (id : item_id) (fmt : Format.formatter) (meta : item_meta) : unit =
   let full_name = full_name_to_string env meta.name in
@@ -1109,6 +1209,20 @@ let pp_item_intro (env : fmt_env) (indent : string) (keyword : string)
     | Some short_name ->
         (name_to_string env short_name, "// Full name: " ^ full_name ^ "\n")
     | None -> (full_name, "")
+  in
+  let attributes =
+    List.filter_map
+      (fun attr ->
+        (* Doc-comments are long and don't affect the semantics; skip them. *)
+        match attr with
+        | AttrDocComment _ -> None
+        | _ ->
+            Some
+              (indent
+              ^ pp_to_string (fun fmt -> pp_attribute env indent fmt attr)
+              ^ "\n"))
+      meta.attr_info.attributes
+    |> String.concat ""
   in
   let lang_item =
     match meta.lang_item with
@@ -1130,7 +1244,7 @@ let pp_item_intro (env : fmt_env) (indent : string) (keyword : string)
     | Some id -> indent ^ "#[diagnostic_item(\"" ^ id ^ "\")]\n"
   in
   let public = if meta.attr_info.public then "pub " else "" in
-  Format.fprintf fmt "%s%s%s%s%s%s %s" full_name_comment lang_item
+  Format.fprintf fmt "%s%s%s%s%s%s%s %s" full_name_comment attributes lang_item
     diagnostic_item indent public keyword name
 
 let item_intro_to_string env indent keyword id meta =

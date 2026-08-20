@@ -1818,10 +1818,8 @@ and rustc_attribute_kind_of_postcard (ctx : of_postcard_ctx)
          let* align = u64_of_postcard ctx st in
          let* span = span_of_postcard ctx st in
          Ok (RustcAttributeKindRustcAlign (align, span))
-     | 13 ->
-         let* _0 = string_of_postcard ctx st in
-         Ok (RustcAttributeKindRustcDiagnosticItem _0)
-     | 14 -> Ok RustcAttributeKindRustcIntrinsic
+     | 13 -> Ok RustcAttributeKindRustcIntrinsic
+     | 14 -> Ok RustcAttributeKindRustcTestEntrypointMarker
      | 15 ->
          let* reason = option_of_postcard string_of_postcard ctx st in
          Ok (RustcAttributeKindShouldPanic reason)

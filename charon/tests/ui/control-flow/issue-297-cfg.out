@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -72,6 +74,7 @@ where
 }
 
 // Full name: core::slice::{[T]}::chunks
+#[track_caller]
 pub fn chunks<'_0, T>(_1: &'_0 [T], _2: usize) -> Chunks<'_0, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),

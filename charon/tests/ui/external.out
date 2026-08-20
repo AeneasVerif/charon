@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
@@ -11,6 +12,7 @@ where
     TraitClause0: (T: MetaSized),
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -154,6 +156,7 @@ where
 = <opaque>
 
 // Full name: core::option::{Option<T>[TraitClause0]}::unwrap
+#[track_caller]
 #[diagnostic_item("option_unwrap")]
 pub fn unwrap<T>(_1: Option<T>[TraitClause0]) -> T
 where
@@ -259,6 +262,7 @@ pub fn test_new_non_zero_u32(x: u32) -> NonZero<u32>[{built_in impl Sized for u3
 }
 
 // Full name: test_crate::test_vec_push
+#[allow(clippy::vec_init_then_push)]
 pub fn test_vec_push()
 {
     let _0: (); // return

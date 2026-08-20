@@ -9,6 +9,7 @@ pub trait Send<Self>
 opaque type core::marker::MetaSized::{vtable}
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 

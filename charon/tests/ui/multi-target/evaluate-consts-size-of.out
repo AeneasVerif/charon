@@ -1,5 +1,6 @@
 opaque type core::marker::MetaSized::{vtable}
 
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized<Self>
 

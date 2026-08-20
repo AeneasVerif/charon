@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -104,6 +106,7 @@ where
     TraitClause0: (T: Sized),
 
 // Full name: core::mem::discriminant
+#[track_caller]
 #[diagnostic_item("mem_discriminant")]
 pub fn discriminant<'_0, T>(v: &'_0 T) -> Discriminant<T>[TraitClause0]
 where

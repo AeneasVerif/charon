@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -148,6 +150,7 @@ impl "impl_Hash_for_unit" Hash for () {
     non-dyn-compatible
 }
 
+#[rustc_intrinsic]
 pub unsafe fn core::intrinsics::assume(b_1: bool)
 = <intrinsic:assume>
 
@@ -179,6 +182,7 @@ pub trait Freeze<Self>
 pub trait Unpin<Self>
 
 // Full name: core::ptr::const_ptr::{*const T}::read
+#[track_caller]
 pub unsafe fn read<T>(_1: *const T) -> T
 where
     TraitClause0: (T: Sized),

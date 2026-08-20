@@ -8,10 +8,12 @@ pub opaque type Layout
 pub struct AllocError {}
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -48,10 +50,12 @@ pub trait Allocator<Self>
 pub struct Global {}
 
 // Full name: alloc::alloc::{impl Allocator for Global}::deallocate
+#[track_caller]
 pub unsafe fn deallocate<'_0>(_1: &'_0 Global, _2: NonNull<u8>, _3: Layout)
 = <opaque>
 
 // Full name: alloc::alloc::{impl Allocator for Global}::allocate
+#[track_caller]
 pub fn allocate<'_0>(_1: &'_0 Global, _2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 = <opaque>
 
@@ -64,6 +68,7 @@ impl "impl_Allocator_for_Global" Allocator for Global {
 }
 
 // Full name: alloc::boxed::Box
+#[fundamental]
 #[lang_item(OwnedBox)]
 pub opaque type Box<T, A>
 where
@@ -82,6 +87,7 @@ where
 = <opaque>
 
 // Full name: alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]}::new
+#[track_caller]
 #[diagnostic_item("box_new")]
 pub fn new<T>(_1: T) -> Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]
 where

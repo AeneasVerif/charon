@@ -11,6 +11,7 @@ where
 = <opaque>
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
@@ -29,6 +30,7 @@ impl "impl_VaArgSafe_for_i32" VaArgSafe for i32 {
 }
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -37,6 +39,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::ffi::va_list::{VaList<'f>}::next_arg
+#[track_caller]
 pub unsafe fn next_arg<'f, '_1, T>(_1: &'_1 mut VaList<'f>) -> T
 where
     TraitClause0: (T: Sized),

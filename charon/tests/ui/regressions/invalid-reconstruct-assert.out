@@ -21,10 +21,12 @@ pub trait Destruct<Self>
 }
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -40,10 +42,12 @@ where
 = <opaque>
 
 // Full name: core::intrinsics::assume
+#[rustc_intrinsic]
 pub unsafe fn assume(b_1: bool)
 = <intrinsic:assume>
 
 // Full name: core::marker::Tuple
+#[fundamental]
 #[lang_item(Tuple)]
 pub trait Tuple<Self>
 {
@@ -52,6 +56,7 @@ pub trait Tuple<Self>
 }
 
 // Full name: core::ops::function::FnOnce
+#[fundamental]
 #[lang_item(FnOnce)]
 pub trait FnOnce<Self, Args>
 {
@@ -65,6 +70,7 @@ pub trait FnOnce<Self, Args>
 }
 
 // Full name: core::ops::function::FnMut
+#[fundamental]
 #[lang_item(FnMut)]
 pub trait FnMut<Self, Args>
 {
@@ -87,10 +93,12 @@ where
   Err { _0: E },
 }
 
+#[track_caller]
 fn core::hint::assert_unchecked::precondition_check(_1: bool)
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked::precondition_check
+#[track_caller]
 fn impl_SliceIndex_slice_for_usize::get_unchecked::precondition_check(_1: usize, _2: usize)
 = <opaque>
 

@@ -12,10 +12,12 @@ pub trait PartialEq<Self, Rhs>
 }
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -24,6 +26,7 @@ pub trait Sized<Self>
 }
 
 // Full name: core::marker::Tuple
+#[fundamental]
 #[lang_item(Tuple)]
 pub trait Tuple<Self>
 {
@@ -34,6 +37,7 @@ pub trait Tuple<Self>
 opaque type core::ops::function::Fn::{vtable}<Args, Ty0>
 
 // Full name: core::ops::function::FnOnce
+#[fundamental]
 #[lang_item(FnOnce)]
 pub trait FnOnce<Self, Args>
 {
@@ -47,6 +51,7 @@ pub trait FnOnce<Self, Args>
 }
 
 // Full name: core::ops::function::FnMut
+#[fundamental]
 #[lang_item(FnMut)]
 pub trait FnMut<Self, Args>
 {
@@ -59,6 +64,7 @@ pub trait FnMut<Self, Args>
 }
 
 // Full name: core::ops::function::Fn
+#[fundamental]
 #[lang_item(Fn)]
 pub trait Fn<Self, Args>
 {
@@ -98,6 +104,7 @@ where
 = <opaque>
 
 // Full name: test_crate::construct
+#[charon::opaque]
 fn construct<T>(_1: T) -> alloc::boxed::Box<(dyn Display + 'static)>[{built_in impl MetaSized for (dyn Display + 'static)}, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
@@ -124,6 +131,7 @@ fn destruct<'_0>(x: &'_0 (dyn Display + '_0)) -> String
 }
 
 // Full name: test_crate::combine
+#[charon::opaque]
 fn combine()
 = <opaque>
 

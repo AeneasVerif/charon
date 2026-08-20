@@ -168,6 +168,7 @@ where
     return
 }
 
+#[track_caller]
 fn core::ptr::write_bytes::precondition_check(addr: *const (), align: usize, zero_size: bool)
 {
     let _0: (); // return
@@ -401,6 +402,7 @@ where
   Some { _0: T },
 }
 
+#[track_caller]
 fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: usize)
 {
     let _0: (); // return
@@ -440,6 +442,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
     return
 }
 
+#[track_caller]
 pub unsafe fn core::mem::alignment::{Alignment}::new_unchecked(align: usize) -> Alignment
 {
     let _0: Alignment; // return
@@ -599,6 +602,7 @@ where
     return
 }
 
+#[track_caller]
 #[diagnostic_item("ptr_write_bytes")]
 pub unsafe fn core::ptr::write_bytes<T>(dst: *mut T, val: u8, count: usize)
 where
@@ -670,6 +674,7 @@ where
     return
 }
 
+#[track_caller]
 pub unsafe fn core::ptr::mut_ptr::{*mut T}::write_bytes<T>(self: *mut T, val: u8, count: usize)
 where
     TraitClause0: (T: Sized),
@@ -824,6 +829,7 @@ where
     return
 }
 
+#[track_caller]
 fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut (), size: usize, align: usize, count: usize)
 {
     let _0: (); // return
@@ -967,6 +973,7 @@ where
     return
 }
 
+#[track_caller]
 #[diagnostic_item("ptr_copy_nonoverlapping")]
 pub unsafe fn core::ptr::copy_nonoverlapping<T>(src: *const T, dst: *mut T, count: usize)
 where
@@ -1783,6 +1790,7 @@ pub fn core::ptr::const_ptr::{*const T}::is_null<T>(self: *const T) -> bool
 }
 
 // Full name: core::ptr::read
+#[track_caller]
 #[diagnostic_item("ptr_read")]
 pub unsafe fn read<T>(src: *const T) -> T
 where
@@ -1845,6 +1853,7 @@ pub fn core::ptr::mut_ptr::{*mut T}::is_null<T>(self: *mut T) -> bool
     return
 }
 
+#[track_caller]
 fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mut ())
 {
     let _0: (); // return
@@ -1884,6 +1893,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mu
     ↳⚡ undefined_behavior
 }
 
+#[track_caller]
 pub unsafe fn core::ptr::non_null::{NonNull<T>}::new_unchecked<T>(ptr: *mut T) -> NonNull<T>
 {
     let _0: NonNull<T>; // return
@@ -2015,6 +2025,7 @@ where
 }
 
 // Full name: alloc::boxed::Box
+#[fundamental]
 #[lang_item(OwnedBox)]
 pub struct Box<T, A>
 where
@@ -2158,6 +2169,7 @@ where
 }
 
 // Full name: alloc::boxed::box_new_uninit
+#[track_caller]
 fn box_new_uninit(layout: Layout) -> *mut u8
 {
     let _0: *mut u8; // return
@@ -2215,6 +2227,7 @@ fn box_new_uninit(layout: Layout) -> *mut u8
     return
 }
 
+#[track_caller]
 #[diagnostic_item("box_new")]
 pub fn alloc::boxed::{Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl#0}]}::new<T>(x: T) -> Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl#0}]
 where

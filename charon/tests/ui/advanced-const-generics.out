@@ -25,10 +25,12 @@ where
 = <opaque>
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -72,6 +74,7 @@ enum Foo {
 }
 
 // Full name: test_crate::{impl Eq for Foo}::assert_fields_are_eq
+#[inline(hint)]
 pub fn impl_Eq_for_Foo::assert_fields_are_eq<'_0>(self: &'_0 Foo)
 {
     let _0: (); // return
@@ -85,6 +88,7 @@ pub fn impl_Eq_for_Foo::assert_fields_are_eq<'_0>(self: &'_0 Foo)
 }
 
 // Full name: test_crate::{impl PartialEq<Foo> for Foo}::eq
+#[inline(hint)]
 pub fn eq<'_0, '_1>(self: &'_0 Foo, other: &'_1 Foo) -> bool
 {
     let _0: bool; // return
@@ -152,6 +156,7 @@ impl "impl_ConstParamTy__for_Foo" ConstParamTy_ for Foo {
 }
 
 // Full name: test_crate::{impl Debug for Foo}::fmt
+#[inline(hint)]
 pub fn fmt<'_0, '_1, '_2>(self: &'_0 Foo, f: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     RegionOutlives0: '_2: '_1,

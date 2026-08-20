@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -352,12 +354,14 @@ where
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked_mut
+#[track_caller]
 pub unsafe fn get_unchecked_mut<T>(_1: usize, _2: *mut [T]) -> *mut T
 where
     TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked
+#[track_caller]
 pub unsafe fn get_unchecked<T>(_1: usize, _2: *const [T]) -> *const T
 where
     TraitClause0: (T: Sized),
@@ -691,6 +695,7 @@ pub fn test_loop3(max: u32) -> u32
 }
 
 // Full name: test_crate::test_loop4
+#[allow(unused_assignments)]
 pub fn test_loop4(max: u32) -> u32
 {
     let _0: u32; // return

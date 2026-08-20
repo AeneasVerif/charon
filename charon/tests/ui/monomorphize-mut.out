@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -12,9 +14,11 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<&_ mut _><'_0, T0>
 
+#[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized::<&_ mut _><'_0, T0>
 {
@@ -22,9 +26,11 @@ pub trait core::marker::Sized::<&_ mut _><'_0, T0>
     non-dyn-compatible
 }
 
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<&_ mut &_ mut _><'_0, '_1, T0>
 
+#[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized::<&_ mut &_ mut _><'_0, '_1, T0>
 {
@@ -32,11 +38,13 @@ pub trait core::marker::Sized::<&_ mut &_ mut _><'_0, '_1, T0>
     non-dyn-compatible
 }
 
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 
+#[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0, T0>
 where
@@ -46,12 +54,14 @@ where
     non-dyn-compatible
 }
 
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause1]),
     TraitClause1: (T0: core::marker::Sized::<&_ mut _><'_0>),
 
+#[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized::<core::option::Option::<core::option::Option::<&_ mut _><_, _>[TraitClause1]><_, _>[TraitClause0, TraitClause1]><'_0, T0>
 where
@@ -62,12 +72,14 @@ where
     non-dyn-compatible
 }
 
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<Iter<_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: Sized),
     TypeOutlives0: T0: '_0,
 
+#[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized::<Iter<_, _>[TraitClause0]><'_0, T0>
 where
@@ -78,12 +90,14 @@ where
     non-dyn-compatible
 }
 
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<IterWrapper<_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: Sized),
     TypeOutlives0: T0: '_0,
 
+#[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized::<IterWrapper<_, _>[TraitClause0]><'_0, T0>
 where
@@ -94,6 +108,7 @@ where
     non-dyn-compatible
 }
 
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<IterMut<_, _>[TraitClause0]><'_0, T0>
 where
@@ -101,6 +116,7 @@ where
     TypeOutlives0: T0: '_0,
     TypeOutlives1: T0: '_0,
 
+#[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized::<IterMut<_, _>[TraitClause0]><'_0, T0>
 where
@@ -112,6 +128,7 @@ where
     non-dyn-compatible
 }
 
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized::<test_crate::List::<&_ mut _><_, _>[TraitClause0]><'_0, T0>
 where
@@ -191,6 +208,7 @@ where
 }
 
 // Full name: core::marker::Tuple
+#[fundamental]
 #[lang_item(Tuple)]
 pub trait Tuple<Self>
 {
@@ -199,6 +217,7 @@ pub trait Tuple<Self>
 }
 
 // Full name: core::ops::function::FnOnce
+#[fundamental]
 #[lang_item(FnOnce)]
 pub trait FnOnce<Self, Args>
 {

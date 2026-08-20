@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -54,6 +56,7 @@ pub fn X1() -> u32
 pub const X1: u32 = X1()
 
 // Full name: test_crate::X2
+#[allow(clippy::let_and_return)]
 pub fn X2() -> u32
 {
     let _0: u32; // return
@@ -69,6 +72,7 @@ pub fn X2() -> u32
 }
 
 // Full name: test_crate::X2
+#[allow(clippy::let_and_return)]
 pub const X2: u32 = X2()
 
 // Full name: test_crate::incr

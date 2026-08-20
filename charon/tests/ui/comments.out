@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -247,6 +249,7 @@ struct Foo {
 }
 
 // Full name: test_crate::{impl Default for Foo}::default
+#[inline(hint)]
 pub fn impl_Default_for_Foo::default() -> Foo
 {
     let _0: Foo; // return
@@ -280,6 +283,7 @@ struct Bar {
 }
 
 // Full name: test_crate::{impl Default for Bar}::default
+#[inline(hint)]
 pub fn impl_Default_for_Bar::default() -> Bar
 {
     let _0: Bar; // return

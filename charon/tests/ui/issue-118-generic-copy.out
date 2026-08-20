@@ -1,10 +1,12 @@
 # Final LLBC before serialization:
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 // Full name: core::marker::Sized
+#[fundamental]
 #[lang_item(Sized)]
 pub trait Sized<Self>
 {
@@ -45,6 +47,7 @@ pub trait Copy<Self>
 struct Foo {}
 
 // Full name: test_crate::{impl Clone for Foo}::clone
+#[inline(hint)]
 pub fn clone<'_0>(self: &'_0 Foo) -> Foo
 {
     let _0: Foo; // return

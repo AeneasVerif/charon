@@ -30,6 +30,7 @@ where
 = <opaque>
 
 // Full name: core::marker::MetaSized
+#[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
@@ -54,6 +55,7 @@ impl "impl_StructuralPartialEq_for_Enum" StructuralPartialEq for Enum {
 }
 
 // Full name: test_crate::{impl PartialEq<Enum> for Enum}::eq
+#[inline(hint)]
 pub fn impl_PartialEq_Enum_for_Enum::eq<'_0, '_1>(self: &'_0 Enum, other: &'_1 Enum) -> bool
 {
     let _0: bool; // return
