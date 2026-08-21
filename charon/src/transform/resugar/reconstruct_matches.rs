@@ -34,7 +34,7 @@ impl Transform {
                     let TyKind::Adt(tdecl_ref) = p.ty().kind() else {
                         continue;
                     };
-                    let TypeId::Adt(adt_id) = tdecl_ref.id else {
+                    let Some(adt_id) = tdecl_ref.as_adt() else {
                         continue;
                     };
 

@@ -1350,10 +1350,8 @@ impl VisitAstMut for UpdateItemBody<'_> {
 
     // Update item generics.
     fn enter_type_decl_ref(&mut self, x: &mut TypeDeclRef) {
-        match x.id {
-            TypeId::Adt(id) => self.update_item_generics(id, &mut x.generics),
-            TypeId::Tuple => {}
-            TypeId::Builtin(_) => {}
+        if let Some(id) = x.as_adt() {
+            self.update_item_generics(id, &mut x.generics)
         }
     }
     fn enter_fun_decl_ref(&mut self, x: &mut FunDeclRef) {

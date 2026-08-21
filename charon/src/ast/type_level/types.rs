@@ -285,6 +285,8 @@ pub enum LiteralTy {
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("T"))]
 pub enum BuiltinTy {
+    /// Tuple type.
+    Tuple,
     /// Boxes are de facto a primitive type.
     Box,
     /// Primitive type
@@ -296,6 +298,7 @@ impl BuiltinTy {
         let name: &[_] = match self {
             BuiltinTy::Box => &["alloc", "boxed", "Box"],
             BuiltinTy::Str => &["str"],
+            BuiltinTy::Tuple => &["Tuple"],
         };
         Name::from_path(name)
     }
@@ -412,7 +415,7 @@ impl Ty {
 
     pub fn mk_tuple(tys: Vec<Ty>) -> Ty {
         TyKind::Adt(TypeDeclRef {
-            id: TypeId::Tuple,
+            id: TypeId::Builtin(BuiltinTy::Tuple),
             generics: Box::new(GenericArgs::new_types(tys.into())),
         })
         .into_ty()
@@ -460,7 +463,7 @@ impl Ty {
 
     pub fn is_str(&self) -> bool {
         match self.kind() {
-            TyKind::Adt(ty_ref) if let TypeId::Builtin(BuiltinTy::Str) = ty_ref.id => true,
+            TyKind::Adt(ty_ref) => ty_ref.is_str(),
             _ => false,
         }
     }
@@ -468,22 +471,20 @@ impl Ty {
     /// Return true if the type is Box
     pub fn is_box(&self) -> bool {
         match self.kind() {
-            TyKind::Adt(ty_ref) if let TypeId::Builtin(BuiltinTy::Box) = ty_ref.id => true,
+            TyKind::Adt(ty_ref) => ty_ref.is_box(),
             _ => false,
         }
     }
 
     pub fn as_box(&self) -> Option<&Ty> {
         match self.kind() {
-            TyKind::Adt(ty_ref) if let TypeId::Builtin(BuiltinTy::Box) = ty_ref.id => {
-                Some(&ty_ref.generics.types[0])
-            }
+            TyKind::Adt(ty_ref) if ty_ref.is_box() => Some(&ty_ref.generics.types[0]),
             _ => None,
         }
     }
 
     pub fn as_adt_id(&self) -> Option<TypeDeclId> {
-        self.kind().as_adt().and_then(|a| a.id.as_adt().cloned())
+        self.kind().as_adt()?.as_adt()
     }
 
     pub fn get_ptr_metadata(&self, translated: &TranslatedCrate) -> PtrMetadata {
@@ -494,9 +495,9 @@ impl Ty {
                 // there are two cases:
                 // 1. if the declared type has a fixed metadata, just returns it
                 // 2. if it depends on some other types or the generic itself
-                match ty_ref.id {
-                    TypeId::Adt(type_decl_id) => {
-                        let Some(decl) = ty_decls.get(type_decl_id) else {
+                match ty_ref.as_builtin() {
+                    None => {
+                        let Some(decl) = ty_decls.get(ty_ref.adt_id()) else {
                             return PtrMetadata::InheritFrom(self.clone());
                         };
                         match decl.ptr_metadata.clone().substitute(&ty_ref.generics) {
@@ -507,7 +508,7 @@ impl Ty {
                         }
                     }
                     // the metadata of a tuple is simply the last field
-                    TypeId::Tuple => {
+                    Some(BuiltinTy::Tuple) => {
                         match ty_ref.generics.types.iter().last() {
                             // `None` refers to the unit type `()`
                             None => PtrMetadata::None,
@@ -516,9 +517,9 @@ impl Ty {
                         }
                     }
                     // Box is a pointer like ref & raw ptr, hence no metadata
-                    TypeId::Builtin(BuiltinTy::Box) => PtrMetadata::None,
+                    Some(BuiltinTy::Box) => PtrMetadata::None,
                     // `str` has metadata length
-                    TypeId::Builtin(BuiltinTy::Str) => PtrMetadata::Length,
+                    Some(BuiltinTy::Str) => PtrMetadata::Length,
                 }
             }
             TyKind::DynTrait(pred) => match pred.vtable_ref(translated) {
@@ -557,7 +558,7 @@ impl Ty {
 
     pub fn as_tuple(&self) -> Option<&IndexVec<TypeVarId, Ty>> {
         match self.kind() {
-            TyKind::Adt(ty_ref) if let TypeId::Tuple = ty_ref.id => Some(&ty_ref.generics.types),
+            TyKind::Adt(ty_ref) if ty_ref.is_tuple() => Some(&ty_ref.generics.types),
             _ => None,
         }
     }

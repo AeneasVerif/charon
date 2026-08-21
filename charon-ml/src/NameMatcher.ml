@@ -563,7 +563,7 @@ and match_pattern_with_type_id (ctx : ctx) (c : match_config) (m : maps)
       (* Lookup the type decl and match the name *)
       let d = T.TypeDeclId.Map.find id ctx.crate.type_decls in
       match_name_with_generics ctx c ~m pid d.item_meta.name generics
-  | TTuple -> false
+  | TBuiltin TTuple -> false
   | TBuiltin id -> (
       match (id, pid) with
       | ( TBox,
@@ -614,7 +614,7 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
           in
           match_generic_args ctx c m pgenerics generics
       | TTuple, TAdt tref ->
-          tref.id == TTuple
+          tref.id = TBuiltin TTuple
           && match_generic_args ctx c m pgenerics tref.generics
       | _ -> false
     end
@@ -986,7 +986,19 @@ let rec name_with_generic_args_to_pattern_aux (ctx : ctx) (c : to_pat_config)
       @ name_with_generic_args_to_pattern_aux ctx c n generics
 
 and name_to_pattern_aux (ctx : ctx) (c : to_pat_config) (n : T.name) : pattern =
-  name_with_generic_args_to_pattern_aux ctx c n None
+  name_with_generics_to_pattern_aux ctx c empty_constraints n
+    TypesUtils.empty_generic_args
+
+and name_with_generics_to_pattern_aux (ctx : ctx) (c : to_pat_config)
+    (m : constraints) (n : T.name) (generics : T.generic_args) : pattern =
+  let n, generics =
+    match List.rev n with
+    | PeInstantiated binder :: rest_rev ->
+        (List.rev rest_rev, instantiate_name_generics binder generics)
+    | _ -> (n, generics)
+  in
+  let generics = generic_args_to_pattern ctx c m generics in
+  name_with_generic_args_to_pattern_aux ctx c n (Some generics)
 
 and path_elem_with_generic_args_to_pattern (ctx : ctx) (c : to_pat_config)
     (e : T.path_elem) (generics : generic_args option) : pattern_elem list =
@@ -1021,28 +1033,27 @@ and trait_decl_ref_to_pattern (ctx : ctx) (c : to_pat_config)
     (params : T.generic_params) (tr : T.trait_decl_ref) : expr =
   (* Compute the constraints map *)
   let m = compute_constraints_map params in
-  let generics = generic_args_to_pattern ctx c m tr.generics in
   (* Lookup the declaration *)
   let d = T.TraitDeclId.Map.find tr.id ctx.crate.trait_decls in
-  EComp
-    (name_with_generic_args_to_pattern_aux ctx c d.item_meta.name
-       (Some generics))
+  EComp (name_with_generics_to_pattern_aux ctx c m d.item_meta.name tr.generics)
 
 and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
     (ty : T.ty) : expr =
   match ty with
   | TAdt tref -> (
-      let generics = generic_args_to_pattern ctx c m tref.generics in
       match tref.id with
       | TAdtId id ->
           (* Lookup the declaration *)
           let d = T.TypeDeclId.Map.find id ctx.crate.type_decls in
           EComp
-            (name_with_generic_args_to_pattern_aux ctx c d.item_meta.name
-               (Some generics))
-      | TTuple -> EPrimAdt (TTuple, generics)
-      | TBuiltin TBox -> EComp [ PIdent ("Box", 0, generics) ]
-      | TBuiltin TStr -> EComp [ PIdent ("str", 0, generics) ])
+            (name_with_generics_to_pattern_aux ctx c m d.item_meta.name
+               tref.generics)
+      | TBuiltin id -> (
+          let generics = generic_args_to_pattern ctx c m tref.generics in
+          match id with
+          | TTuple -> EPrimAdt (TTuple, generics)
+          | TBox -> EComp [ PIdent ("Box", 0, generics) ]
+          | TStr -> EComp [ PIdent ("str", 0, generics) ]))
   | TVar v -> EVar (type_var_to_pattern m v)
   | TLiteral lit -> literal_type_to_pattern c lit
   | TRef (r, ty, rk) ->
@@ -1107,11 +1118,9 @@ and trait_ref_item_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
       constraints_map_push_regions_map_if_nonempty m
         trait_decl_ref.binder_regions
     in
-    let g =
-      generic_args_to_pattern ctx c m trait_decl_ref.binder_value.generics
-    in
     let name =
-      name_with_generic_args_to_pattern_aux ctx c d.item_meta.name (Some g)
+      name_with_generics_to_pattern_aux ctx c m d.item_meta.name
+        trait_decl_ref.binder_value.generics
     in
     let item_generics = generic_args_to_pattern ctx c m item_generics in
     let name = name @ [ PIdent (item_name, 0, item_generics) ] in
@@ -1132,7 +1141,9 @@ and constant_expr_to_pattern (ctx : ctx) (c : to_pat_config) (m : constraints)
   | CLiteral v -> GValue (literal_to_pattern c v)
   | CGlobal gref ->
       let d = T.GlobalDeclId.Map.find gref.id ctx.crate.global_decls in
-      let n = name_to_pattern_aux ctx c d.item_meta.name in
+      let n =
+        name_with_generics_to_pattern_aux ctx c m d.item_meta.name gref.generics
+      in
       GExpr (EComp n)
   | _ -> raise (Failure "TODO")
 
@@ -1175,8 +1186,7 @@ let name_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
   (* Convert the name to a pattern *)
   let pat =
     let m = compute_constraints_map params in
-    let args = generic_args_to_pattern ctx c m args in
-    name_with_generic_args_to_pattern_aux ctx c n (Some args)
+    name_with_generics_to_pattern_aux ctx c m n args
   in
   (* Sanity check: the name should match the pattern *)
   assert (
@@ -1221,7 +1231,7 @@ let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
             [ PIdent (fid, 0, args) ])
     | FunId (FRegular fid) ->
         let d = Types.FunDeclId.Map.find fid ctx.crate.fun_decls in
-        name_with_generic_args_to_pattern_aux ctx c d.item_meta.name (Some args)
+        name_with_generics_to_pattern_aux ctx c m d.item_meta.name func.generics
     | TraitMethod (tr, method_id) ->
         let method_name =
           GAstUtils.get_method_name ctx.crate tr.trait_decl_ref.binder_value.id

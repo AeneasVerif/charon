@@ -31,13 +31,13 @@ fn box_pointee_pointer_assignment(rvalue: &Rvalue) -> Option<Place> {
     let (box_place, ProjectionElem::Deref) = unique_place.as_projection()? else {
         return None;
     };
-    let TyKind::Adt(TypeDeclRef {
-        id: TypeId::Builtin(BuiltinTy::Box),
-        generics: box_generics,
-    }) = box_place.ty().kind()
-    else {
+    let TyKind::Adt(tref) = box_place.ty().kind() else {
         return None;
     };
+    if !tref.is_box() {
+        return None;
+    }
+    let box_generics = &tref.generics;
     if &box_generics.types[0] != raw_ptr_ty.as_raw_ptr()?.0 {
         return None;
     }

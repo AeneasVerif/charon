@@ -289,7 +289,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 let mut field_path = vec![];
                 for &(trait_id, clause_id) in &clause_path {
                     if let Ok(ItemRef::TraitDecl(tdecl)) = self.get_or_translate(trait_id.into())
-                        && let &vtable_decl_id = tdecl.vtable.as_ref().unwrap().id.as_adt().unwrap()
+                        && let vtable_decl_id = tdecl.vtable.as_ref().unwrap().adt_id()
                         && let Ok(ItemRef::Type(vtable_decl)) =
                             self.get_or_translate(vtable_decl_id.into())
                     {
@@ -731,18 +731,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     let TyKind::Adt(type_ref) = ty.kind() else {
                         raise_error!(self, span, "field projection on unexpected type");
                     };
-                    match type_ref.id {
-                        TypeId::Adt(type_id) => ProjectionElem::Field(
-                            FieldProjKind::Adt(type_id, downcast.take()),
-                            field,
-                        ),
-                        TypeId::Tuple => ProjectionElem::Field(
-                            FieldProjKind::Tuple(type_ref.generics.types.len()),
-                            field,
-                        ),
-                        TypeId::Builtin(BuiltinTy::Box) if field == FieldId::ZERO => {
-                            ProjectionElem::Deref
-                        }
+                    match type_ref.as_builtin() {
+                        None => ProjectionElem::Field(downcast.take(), field),
+                        Some(BuiltinTy::Tuple) => ProjectionElem::Field(None, field),
+                        Some(BuiltinTy::Box) if field == FieldId::ZERO => ProjectionElem::Deref,
                         _ => raise_error!(self, span, "field projection on unexpected type"),
                     }
                 }
@@ -981,24 +973,22 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                             let variant = place_ty.variant_index;
                             let variant_id = variant.map(|id| self.translate_variant_id(id));
                             let generics = &tref.generics;
-                            match tref.id {
-                                TypeId::Adt(type_id) => {
+                            match tref.as_builtin() {
+                                None => {
                                     assert!(
                                         ((adt_def.is_struct() || adt_def.is_union())
                                             && variant.is_none())
                                             || (adt_def.is_enum() && variant.is_some())
                                     );
-                                    let field_proj = FieldProjKind::Adt(type_id, variant_id);
-                                    ProjectionElem::Field(field_proj, field_id)
+                                    ProjectionElem::Field(variant_id, field_id)
                                 }
-                                TypeId::Tuple => {
+                                Some(BuiltinTy::Tuple) => {
                                     assert!(generics.regions.is_empty());
                                     assert!(variant.is_none());
                                     assert!(generics.const_generics.is_empty());
-                                    let field_proj = FieldProjKind::Tuple(generics.types.len());
-                                    ProjectionElem::Field(field_proj, field_id)
+                                    ProjectionElem::Field(None, field_id)
                                 }
-                                TypeId::Builtin(BuiltinTy::Box) => {
+                                Some(BuiltinTy::Box) => {
                                     // Some sanity checks
                                     assert!(generics.regions.is_empty());
                                     assert!(generics.types.len() == 2);
@@ -1015,22 +1005,15 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                                         )
                                     }
                                 }
-                                _ => {
+                                Some(_) => {
                                     raise_error!(self, span, "Unexpected field projection")
                                 }
                             }
                         }
-                        ty::Tuple(_types) => {
-                            let field_proj = FieldProjKind::Tuple(tref.generics.types.len());
-                            ProjectionElem::Field(field_proj, field_id)
-                        }
-                        // We get there when we access one of the fields of the the state
-                        // captured by a closure.
-                        ty::Closure(..) => {
-                            let type_id = *tref.id.as_adt().unwrap();
-                            let field_proj = FieldProjKind::Adt(type_id, None);
-                            ProjectionElem::Field(field_proj, field_id)
-                        }
+                        ty::Tuple(_types) => ProjectionElem::Field(None, field_id),
+                        // We get there when we access one of the fields of the state captured by a
+                        // closure.
+                        ty::Closure(..) => ProjectionElem::Field(None, field_id),
                         _ => panic!(),
                     }
                 }
@@ -1335,7 +1318,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         ))
                     }
                     mir::AggregateKind::Tuple => {
-                        let tref = TypeDeclRef::new(TypeId::Tuple, GenericArgs::empty());
+                        let tref = TypeDeclRef::new(
+                            TypeId::Builtin(BuiltinTy::Tuple),
+                            GenericArgs::empty(),
+                        );
                         Ok(Rvalue::Aggregate(
                             AggregateKind::Adt(tref, None, None),
                             operands_t,

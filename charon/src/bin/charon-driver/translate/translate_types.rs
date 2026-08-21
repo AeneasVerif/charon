@@ -188,7 +188,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             hax::TyKind::Tuple(item_ref) => {
                 let args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
-                let tref = TypeDeclRef::new(TypeId::Tuple, args);
+                let tref = TypeDeclRef::new(TypeId::Builtin(BuiltinTy::Tuple), args);
                 TyKind::Adt(tref)
             }
             hax::TyKind::Ref(region, ty, mutability) => {

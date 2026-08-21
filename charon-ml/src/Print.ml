@@ -294,8 +294,9 @@ let (var_id_to_string
 let (var_to_string [@ocaml.alert deprecated "use [local_to_string] instead"]) =
   local_to_string
 
-let projection_elem_to_string env sub pe =
-  PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_projection_elem env sub fmt pe)
+let projection_elem_to_string env subplace pe =
+  PrintFmt.pp_to_string (fun fmt ->
+      PrintFmt.pp_projection_elem env subplace fmt pe)
 
 let place_to_string env p =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_place env fmt p)

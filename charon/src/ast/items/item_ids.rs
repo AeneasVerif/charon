@@ -96,7 +96,7 @@ pub struct TypeDeclRef {
 
 /// Type identifier.
 ///
-/// Allows us to factorize the code for built-in types, adts and tuples
+/// Allows us to factorize the code for built-in types and ADTs.
 #[derive(
     Debug,
     PartialEq,
@@ -123,7 +123,6 @@ pub enum TypeId {
     /// and external ADTs).
     #[cfg_attr(feature = "charon_on_charon", charon::rename("TAdtId"))]
     Adt(TypeDeclId),
-    Tuple,
     /// Built-in type. Either a primitive type like array or slice, or a
     /// non-primitive type coming from a standard library
     /// and that we handle like a primitive type. Types falling into this
@@ -395,6 +394,36 @@ impl TypeDeclRef {
             id,
             generics: Box::new(generics),
         }
+    }
+
+    pub fn as_builtin(&self) -> Option<BuiltinTy> {
+        self.id.as_builtin().copied()
+    }
+
+    pub fn as_adt(&self) -> Option<TypeDeclId> {
+        self.id.as_adt().copied()
+    }
+
+    pub fn as_adt_mut(&mut self) -> Option<&mut TypeDeclId> {
+        self.id.as_adt_mut()
+    }
+
+    #[track_caller]
+    pub fn adt_id(&self) -> TypeDeclId {
+        self.as_adt()
+            .expect("called `TypeDeclRef::adt_id` on a builtin type")
+    }
+
+    pub fn is_box(&self) -> bool {
+        self.as_builtin() == Some(BuiltinTy::Box)
+    }
+
+    pub fn is_tuple(&self) -> bool {
+        self.as_builtin() == Some(BuiltinTy::Tuple)
+    }
+
+    pub fn is_str(&self) -> bool {
+        self.as_builtin() == Some(BuiltinTy::Str)
     }
 }
 

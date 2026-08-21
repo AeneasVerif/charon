@@ -77,7 +77,7 @@ let ty_is_unit (ty : ty) : bool =
   match ty with
   | TAdt
       {
-        id = TTuple;
+        id = TBuiltin TTuple;
         generics =
           { regions = []; types = []; const_generics = []; trait_refs = _ };
       } -> true
@@ -237,7 +237,8 @@ let generic_args_of_params span (generics : generic_params) : generic_args =
   { regions; types; const_generics; trait_refs }
 
 (** The unit type *)
-let mk_unit_ty : ty = TAdt { id = TTuple; generics = empty_generic_args }
+let mk_unit_ty : ty =
+  TAdt { id = TBuiltin TTuple; generics = empty_generic_args }
 
 (** The usize type *)
 let mk_usize_ty : ty = TLiteral (TUInt Usize)

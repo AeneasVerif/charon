@@ -362,15 +362,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 }));
 
                 let untupled_args = tupled_ty.as_tuple().unwrap();
-                let closure_arg_count = untupled_args.len();
                 let new_stts = untupled_args.iter().cloned().enumerate().map(|(i, ty)| {
-                    let nth_field = tupled_arg.clone().project(
-                        ProjectionElem::Field(
-                            FieldProjKind::Tuple(closure_arg_count),
-                            FieldId::new(i),
-                        ),
-                        ty,
-                    );
+                    let nth_field = tupled_arg
+                        .clone()
+                        .project(ProjectionElem::Field(None, FieldId::new(i)), ty);
                     let local_id = LocalId::new(i + 3);
                     Statement::new(
                         span,

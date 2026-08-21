@@ -370,6 +370,7 @@ and builtin_ty_of_json (ctx : of_json_ctx) (js : json) :
     (builtin_ty, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
+    | `String "Tuple" -> Ok TTuple
     | `String "Box" -> Ok TBox
     | `String "Str" -> Ok TStr
     | _ -> Error "")
@@ -570,19 +571,6 @@ and field_id_of_json (ctx : of_json_ctx) (js : json) : (field_id, string) result
   combine_error_msgs js __FUNCTION__
     (match js with
     | x -> FieldId.id_of_json ctx x
-    | _ -> Error "")
-
-and field_proj_kind_of_json (ctx : of_json_ctx) (js : json) :
-    (field_proj_kind, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Adt", `List [ _0; _1 ]) ] ->
-        let* _0 = type_decl_id_of_json ctx _0 in
-        let* _1 = option_of_json variant_id_of_json ctx _1 in
-        Ok (ProjAdt (_0, _1))
-    | `Assoc [ ("Tuple", _0) ] ->
-        let* _0 = int_of_json ctx _0 in
-        Ok (ProjTuple _0)
     | _ -> Error "")
 
 and file_id_of_json (ctx : of_json_ctx) (js : json) : (file_id, string) result =
@@ -1036,7 +1024,7 @@ and projection_elem_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `String "Deref" -> Ok Deref
     | `Assoc [ ("Field", `List [ _0; _1 ]) ] ->
-        let* _0 = field_proj_kind_of_json ctx _0 in
+        let* _0 = option_of_json variant_id_of_json ctx _0 in
         let* _1 = field_id_of_json ctx _1 in
         Ok (Field (_0, _1))
     | `String "PtrMetadata" -> Ok PtrMetadata
@@ -1483,7 +1471,6 @@ and type_id_of_json (ctx : of_json_ctx) (js : json) : (type_id, string) result =
     | `Assoc [ ("Adt", _0) ] ->
         let* _0 = type_decl_id_of_json ctx _0 in
         Ok (TAdtId _0)
-    | `String "Tuple" -> Ok TTuple
     | `Assoc [ ("Builtin", _0) ] ->
         let* _0 = builtin_ty_of_json ctx _0 in
         Ok (TBuiltin _0)

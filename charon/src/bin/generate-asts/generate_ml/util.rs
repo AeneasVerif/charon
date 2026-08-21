@@ -118,7 +118,7 @@ impl<'a> GenerateCtx<'a> {
 
     /// For a type that refers to an ADT, return the name of that ADT.
     pub fn type_to_rust_name(&self, ty: &Ty) -> Option<&str> {
-        let index_ty: TypeDeclId = *ty.as_adt()?.id.as_adt()?;
+        let index_ty = ty.as_adt()?.as_adt()?;
         self.crate_data.item_name(index_ty).short_str()
     }
 
@@ -153,8 +153,9 @@ impl<'a> GenerateCtx<'a> {
                         }
                     })
                     .collect_vec();
-                match tref.id {
-                    TypeId::Adt(id) => {
+                match tref.as_builtin() {
+                    None => {
+                        let id = tref.adt_id();
                         let mut base_ty = if let Some(tdecl) = self.crate_data.type_decls.get(id) {
                             self.type_to_ocaml_ident(tdecl)
                         } else {
@@ -188,8 +189,8 @@ impl<'a> GenerateCtx<'a> {
                         };
                         format!("{args}{base_ty}")
                     }
-                    TypeId::Builtin(BuiltinTy::Box) => args[0].clone(),
-                    TypeId::Tuple => args.iter().join("*"),
+                    Some(BuiltinTy::Box) => args[0].clone(),
+                    Some(BuiltinTy::Tuple) => args.iter().join("*"),
                     _ => unimplemented!("{ty:?}"),
                 }
             }

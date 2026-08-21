@@ -64,7 +64,7 @@ fn transform_dyn_trait_call(
         };
         vtable_ty.clone().substitute_with_tref(trait_ref)
     };
-    let vtable_decl_id = *vtable_decl_ref.id.as_adt().unwrap();
+    let vtable_decl_id = vtable_decl_ref.adt_id();
     let Some(vtable_decl) = ctx.ctx.translated.type_decls.get(vtable_decl_id) else {
         return Ok(()); // Missing data
     };
@@ -80,7 +80,7 @@ fn transform_dyn_trait_call(
         .iter_enumerated()
         .find(|(_, field)| **field == VTableField::Method(*method_id))
     else {
-        let vtable_name = vtable_decl_ref.id.with_ctx(fmt_ctx).to_string();
+        let vtable_name = vtable_decl_id.with_ctx(fmt_ctx).to_string();
         raise_error!(
             ctx.ctx,
             ctx.span,
@@ -114,10 +114,7 @@ fn transform_dyn_trait_call(
         .clone()
         .project(ProjectionElem::PtrMetadata, ptr_to_vtable_ty)
         .project(ProjectionElem::Deref, vtable_ty)
-        .project(
-            ProjectionElem::Field(FieldProjKind::Adt(vtable_decl_id, None), method_field_id),
-            method_ty,
-        );
+        .project(ProjectionElem::Field(None, method_field_id), method_ty);
 
     let fn_ptr_place = if ctx.ctx.options.monomorphize_with_hax {
         // In mono mode, the vtable contains erased function pointers, cast to `*const ()`.

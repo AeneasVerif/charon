@@ -38,14 +38,7 @@ pub enum PlaceKind {
     Global(GlobalDeclRef),
 }
 
-/// Note that we don't have the equivalent of "downcasts".
-/// Downcasts are actually necessary, for instance when initializing enumeration
-/// values: the value is initially `Bottom`, and we need a way of knowing the
-/// variant.
-/// For example:
-/// `((_0 as Right).0: T2) = move _1;`
-/// In MIR, downcasts always happen before field projections: in our internal
-/// language, we thus merge downcasts and field projections.
+/// Projects a place to a subplace.
 #[derive(
     Debug,
     PartialEq,
@@ -64,11 +57,8 @@ pub enum PlaceKind {
 pub enum ProjectionElem {
     /// Dereference a shared/mutable reference, a box, or a raw pointer.
     Deref,
-    /// Projection from ADTs (variants, structures).
-    /// We allow projections to be used as left-values and right-values.
-    /// We should never have projections to fields of symbolic variants (they
-    /// should have been expanded before through a match).
-    Field(FieldProjKind, FieldId),
+    /// Project to the field of an ADT (struct, union, or enum).
+    Field(Option<VariantId>, FieldId),
     /// A built-in pointer (a reference, raw pointer, or `Box`) in Rust is always a fat pointer: it
     /// contains an address and metadata for the pointed-to place. This metadata is empty for sized
     /// types, it's the length for slices, and the vtable for `dyn Trait`.
@@ -94,28 +84,6 @@ pub enum ProjectionElem {
         #[drive(skip)]
         from_end: bool,
     },
-}
-
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Copy,
-    Clone,
-    EnumIsA,
-    EnumAsGetters,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
-#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Proj"))]
-pub enum FieldProjKind {
-    Adt(TypeDeclId, Option<VariantId>),
-    /// If we project from a tuple, the projection kind gives the arity of the tuple.
-    #[drive(skip)]
-    Tuple(usize),
 }
 
 impl Place {
@@ -182,9 +150,7 @@ impl Place {
         use TyKind::*;
         let proj_ty = match self.ty.kind() {
             Ref(_, ty, _) | RawPtr(ty, _) => ty.clone(),
-            Adt(tref) if matches!(tref.id, TypeId::Builtin(BuiltinTy::Box)) => {
-                tref.generics.types[0].clone()
-            }
+            Adt(tref) if tref.is_box() => tref.generics.types[0].clone(),
             Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(..)
             | FnPtr(..) | FnDef(..) | PtrMetadata(..) | Array(..) | Slice(_) | Pattern(..)
             | Error(..) => {
@@ -216,9 +182,7 @@ impl ProjectionElem {
                 use TyKind::*;
                 match ty.kind() {
                     Ref(_, ty, _) | RawPtr(ty, _) => ty.clone(),
-                    Adt(tref) if matches!(tref.id, TypeId::Builtin(BuiltinTy::Box)) => {
-                        tref.generics.types[0].clone()
-                    }
+                    Adt(tref) if tref.is_box() => tref.generics.types[0].clone(),
                     Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(..)
                     | Array(..) | Slice(..) | FnPtr(..) | FnDef(..) | PtrMetadata(..)
                     | Pattern(..) | Error(..) => {
@@ -227,15 +191,12 @@ impl ProjectionElem {
                     }
                 }
             }
-            Field(pkind, field_id) => {
-                // Lookup the type decl
-                use FieldProjKind::*;
-                match pkind {
-                    Adt(type_decl_id, variant_id) => {
+            Field(variant_id, field_id) => {
+                let tref = ty.as_adt()?;
+                match tref.as_builtin() {
+                    None => {
                         // Can fail if the type declaration was not translated.
-                        let type_decl = krate.type_decls.get(*type_decl_id)?;
-                        let tref = ty.as_adt()?;
-                        assert!(TypeId::Adt(*type_decl_id) == tref.id);
+                        let type_decl = krate.type_decls.get(tref.adt_id())?;
                         use TypeDeclKind::*;
                         match &type_decl.kind {
                             Struct(fields) | Union(fields) => {
@@ -257,10 +218,12 @@ impl ProjectionElem {
                             Opaque | Alias(_) | Error(_) => return None,
                         }
                     }
-                    Tuple(_) => ty
-                        .as_tuple()?
+                    Some(BuiltinTy::Tuple) => tref
+                        .generics
+                        .types
                         .get(TypeVarId::from(usize::from(*field_id)))?
                         .clone(),
+                    Some(_) => return None,
                 }
             }
             PtrMetadata => ty.get_ptr_metadata(krate).into_type(),

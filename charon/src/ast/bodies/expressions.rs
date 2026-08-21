@@ -414,7 +414,7 @@ impl Rvalue {
         Rvalue::Aggregate(
             AggregateKind::Adt(
                 TypeDeclRef {
-                    id: TypeId::Tuple,
+                    id: TypeId::Builtin(BuiltinTy::Tuple),
                     generics: Box::new(GenericArgs::empty()),
                 },
                 None,

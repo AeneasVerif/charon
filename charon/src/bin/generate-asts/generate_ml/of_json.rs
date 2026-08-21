@@ -139,8 +139,9 @@ impl<'a> GenerateCtx<'a> {
                     expr.push(self.type_to_ocaml_call(ty))
                 }
                 let mut wrap_in_map = false;
-                match tref.id {
-                    TypeId::Adt(id) => {
+                match tref.as_builtin() {
+                    None => {
+                        let id = tref.adt_id();
                         let mut first = if let Some(tdecl) = self.crate_data.type_decls.get(id) {
                             let (name, module) = self.type_to_ocaml_ident_raw(tdecl);
                             match module {
@@ -171,8 +172,8 @@ impl<'a> GenerateCtx<'a> {
 
                         expr.insert(0, first + "_of_json");
                     }
-                    TypeId::Builtin(BuiltinTy::Box) => expr.insert(0, "box_of_json".to_owned()),
-                    TypeId::Tuple => {
+                    Some(BuiltinTy::Box) => expr.insert(0, "box_of_json".to_owned()),
+                    Some(BuiltinTy::Tuple) => {
                         let name = match tref.generics.types.len() {
                             2 => "pair_of_json".to_string(),
                             3 => "triple_of_json".to_string(),
