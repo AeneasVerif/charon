@@ -115,17 +115,6 @@ pub enum FunSource {
     /// A target-specific variant behind a `TargetDispatch` façade. The dispatcher is the function
     /// with the `Body::TargetDispatch` body that dispatches to this function.
     TargetDependent { dispatcher: FunDeclRef },
-    /// A specification attached to another item, via
-    /// `#[charon::precondition]`/`#[charon::postcondition]`.
-    Spec { kind: SpecKind, item: ItemId },
-}
-
-#[derive(
-    Debug, Clone, Copy, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo, PartialEq, Eq,
-)]
-pub enum SpecKind {
-    Precondition,
-    Postcondition,
 }
 
 impl FunDecl {

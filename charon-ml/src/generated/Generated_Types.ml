@@ -14,9 +14,6 @@ module TypeVarId = IdGen ()
 module VariantId = IdGen ()
 module FieldId = IdGen ()
 module ConstGenericVarId = IdGen ()
-module TraitMethodId = IdGen ()
-module AssocTypeId = IdGen ()
-module AssocConstId = IdGen ()
 module TraitClauseId = IdGen ()
 module TraitTypeConstraintId = IdGen ()
 module UnsolvedTraitId = IdGen ()
@@ -178,9 +175,6 @@ type abi =
   | AbiC
   | AbiOther of string
       (** Rust's spelling for the ABI, e.g. "C-unwind" or "system". *)
-
-and assoc_const_id = (AssocConstId.id[@visitors.opaque])
-and assoc_type_id = (AssocTypeId.id[@visitors.opaque])
 
 (** A value of type [T] bound by generic parameters. Used in any context where
     we're adding generic parameters that aren't on the top-level item, e.g.
@@ -567,8 +561,6 @@ and trait_decl_ref = { id : trait_decl_id; generics : generic_args }
 
 (** A reference to a tait impl, using the provided arguments. *)
 and trait_impl_ref = { id : trait_impl_id; generics : generic_args }
-
-and trait_method_id = (TraitMethodId.id[@visitors.opaque])
 
 (** A trait predicate in a signature, of the form [Type: Trait<Args>]. This
     functions like a variable binder, to which variables of the form

@@ -26,7 +26,7 @@ tracing = { version = "0.1", features = ["max_level_trace"] }
 
 [package]
 name = "charon"
-version = "0.1.238"
+version = "0.1.240"
 authors.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -104,6 +104,7 @@ serde = { version = "1.0.152", features = ["derive", "rc"] }
 smallvec = "1.15.1"
 stacker = "0.1"
 strip-ansi-escapes = "0.2.1"
+syn.workspace = true
 take_mut = "0.2.2"
 tar = { version = "0.4.42", optional = true }
 tempfile = "3"

@@ -45,6 +45,7 @@ pub enum ItemId {
     Global(GlobalDeclId),
 }
 
+/// The id of an associated item within a trait.
 #[derive(
     Copy,
     Clone,
@@ -72,6 +73,35 @@ pub enum AssocItemId {
     Type(AssocTypeId),
     Method(TraitMethodId),
     Const(AssocConstId),
+}
+
+/// The id of a translated item or associated item definition.
+#[derive(
+    Copy,
+    Clone,
+    Debug,
+    PartialOrd,
+    Ord,
+    PartialEq,
+    Eq,
+    Hash,
+    EnumIsA,
+    EnumAsGetters,
+    VariantName,
+    VariantIndexArity,
+    Serialize,
+    Deserialize,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    DriveTwo,
+)]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Item"))]
+#[serde_state(stateless)]
+pub enum MaybeAssocItemId {
+    Free(ItemId),
+    Assoc(TraitDeclId, AssocItemId),
 }
 
 /// Reference to a type declaration or builtin type.

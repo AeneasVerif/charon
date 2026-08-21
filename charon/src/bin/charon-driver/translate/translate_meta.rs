@@ -12,7 +12,7 @@ use super::translate_crate::RustcItem;
 use super::translate_ctx::*;
 use crate::hax;
 use crate::hax::{DefPathItem, SInto};
-use charon_lib::ast::*;
+use charon_lib::{ast::*, name_matcher::NamePattern};
 
 // Spans
 impl<'tcx> TranslateCtx<'tcx> {
@@ -459,53 +459,154 @@ impl<'tcx> TranslateCtx<'tcx> {
     }
 }
 
+enum ContractTarget {
+    Parent,
+    Path(String),
+}
+
 // Attributes
 impl<'tcx> TranslateCtx<'tcx> {
-    fn condition_parent_id(&mut self, def_id: &hax::DefId) -> Result<ItemId, String> {
+    fn resolve_contract_target(
+        &mut self,
+        def_id: &hax::DefId,
+        target: ContractTarget,
+    ) -> Result<MaybeAssocItemId, String> {
         if !matches!(
             def_id.kind,
             hax::DefKind::Fn | hax::DefKind::AssocFn | hax::DefKind::Closure
         ) {
-            return Err(
-                "pre/postcondition attributes can only be applied to functions".to_string(),
-            );
+            return Err("contract attributes can only be applied to functions".to_string());
         }
-        let Some(parent_def_id) = def_id.parent(&self.hax_state) else {
-            return Err(
-                "a pre/postcondition must be nested directly inside a function".to_string(),
-            );
-        };
-        let parent_def = self.poly_hax_def(&parent_def_id).map_err(|err| err.msg)?;
-        let kind = match parent_def.kind() {
-            hax::FullDefKind::Fn { .. } | hax::FullDefKind::AssocFn { .. } => {
-                TransItemSourceKind::Fun
+
+        let parent_id = def_id.parent(&self.hax_state);
+        let target_def_id = match &target {
+            ContractTarget::Parent => parent_id.ok_or_else(|| {
+                "#[charon::contract(..., parent)] is invalid at the crate root".to_string()
+            })?,
+            ContractTarget::Path(target_name) => {
+                let mut siblings = Vec::new();
+                if let Some(parent_id) = &parent_id {
+                    let parent_def = self.poly_hax_def(parent_id).map_err(|err| err.msg)?;
+                    siblings.extend(
+                        parent_def
+                            .nameable_children(&self.hax_state)
+                            .into_iter()
+                            .map(|(_, id)| id),
+                    );
+
+                    // Free items inside a function body aren't in the `nameable_children`.
+                    if matches!(
+                        parent_def.kind(),
+                        hax::FullDefKind::Fn { .. }
+                            | hax::FullDefKind::AssocFn { .. }
+                            | hax::FullDefKind::Closure { .. }
+                    ) && let Some(parent_local_id) =
+                        parent_id.as_real_def_id().and_then(|id| id.as_local())
+                        && let Some(body_id) =
+                            self.tcx.hir_node_by_def_id(parent_local_id).body_id()
+                    {
+                        use rustc_hir::intravisit;
+
+                        struct NestedItems(Vec<rustc_hir::def_id::LocalDefId>);
+                        impl<'tcx> intravisit::Visitor<'tcx> for NestedItems {
+                            fn visit_nested_item(&mut self, id: rustc_hir::ItemId) {
+                                self.0.push(id.owner_id.def_id);
+                            }
+                        }
+
+                        let mut nested_items = NestedItems(Vec::new());
+                        intravisit::walk_body(&mut nested_items, self.tcx.hir_body(body_id));
+                        siblings.extend(
+                            nested_items
+                                .0
+                                .into_iter()
+                                .map(|id| id.to_def_id().sinto(&self.hax_state)),
+                        );
+                    }
+                }
+                let siblings = siblings
+                    .into_iter()
+                    .filter(|sibling| sibling != def_id)
+                    .filter(|sibling| match sibling.path_item(&self.hax_state).data {
+                        DefPathItem::ValueNs(name)
+                        | DefPathItem::TypeNs(name)
+                        | DefPathItem::MacroNs(name) => name.as_str() == target_name.as_str(),
+                        _ => false,
+                    })
+                    .collect_vec();
+                match siblings.as_slice() {
+                    [sibling] => sibling.clone(),
+                    [] => {
+                        // Fall back to full path search.
+                        let path = NamePattern::parse(target_name)
+                            .map_err(|err| format!("invalid item path `{target_name}`: {err}"))?;
+                        let targets =
+                            super::resolve_path::def_path_def_ids(&self.hax_state, &path, true)
+                                .map_err(|err| {
+                                    format!("failed to resolve item path `{target_name}`: {err}")
+                                })?;
+                        let [target] = targets.as_slice() else {
+                            return Err(format!(
+                                "item path `{target_name}` resolved to {} items; expected exactly one",
+                                targets.len()
+                            ));
+                        };
+                        target.sinto(&self.hax_state)
+                    }
+                    _ => {
+                        return Err(format!(
+                            "found several sibling items named `{target_name}`; expected exactly one"
+                        ));
+                    }
+                }
             }
-            hax::FullDefKind::Closure { args, .. } => TransItemSourceKind::ClosureMethod(
-                super::translate_closures::translate_closure_kind(&args.kind),
-            ),
-            _ => {
-                return Err(
-                    "a pre/postcondition must be nested directly inside a function".to_string(),
-                );
-            }
         };
-        if self.options.monomorphize_with_hax && parent_def.this().has_non_lt_param {
-            return Err(
-                "pre/postconditions on generic functions are not supported with `--monomorphize`"
-                    .to_string(),
-            );
+
+        let target_def = self.poly_hax_def(&target_def_id).map_err(|err| err.msg)?;
+        if self.options.monomorphize_with_hax && target_def.this().has_non_lt_param {
+            return Err("contracts on generic items are not supported \
+                with `--monomorphize`"
+                .to_string());
         }
-        let parent_src = if self.options.monomorphize_with_hax {
-            TransItemSource::monomorphic(parent_def.this(), kind)
+
+        if let ContractTarget::Path(_) = target
+            && let hax::FullDefKind::AssocFn {
+                associated_item, ..
+            }
+            | hax::FullDefKind::AssocConst {
+                associated_item, ..
+            }
+            | hax::FullDefKind::AssocTy {
+                associated_item, ..
+            } = target_def.kind()
+            && let hax::AssocItemContainer::TraitContainer { trait_ref } =
+                &associated_item.container
+        {
+            let kind = TransItemSourceKind::TraitDecl;
+            let trait_src =
+                TransItemSource::from_item(trait_ref, kind, self.options.monomorphize_with_hax);
+            let trait_id = self.register_and_enqueue(&None, trait_src).unwrap();
+            let item_id = self
+                .translate_assoc_item_id(trait_id, &target_def_id)
+                .map_err(|err| err.msg)?;
+            Ok(MaybeAssocItemId::Assoc(trait_id, item_id))
         } else {
-            TransItemSource::polymorphic(&parent_def_id, kind)
-        };
-        if let Some(parent_id) = self.id_map.get(&parent_src) {
-            Ok(*parent_id)
-        } else {
-            self.register_and_enqueue(&None, parent_src).ok_or_else(|| {
-                "failed to register the pre/postcondition's parent function".to_string()
-            })
+            let kind = match target_def.kind() {
+                // Point at the method that contains the closure code.
+                hax::FullDefKind::Closure { args, .. } => TransItemSourceKind::ClosureMethod(
+                    super::translate_closures::translate_closure_kind(&args.kind),
+                ),
+                _ => self
+                    .base_kind_for_item(&target_def_id)
+                    .ok_or_else(|| format!("`{target_def_id:?}` is not a translatable item"))?,
+            };
+            let target_src = TransItemSource::from_item(
+                target_def.this(),
+                kind,
+                self.options.monomorphize_with_hax,
+            );
+            let item_id: ItemId = self.register_and_enqueue(&None, target_src).unwrap();
+            Ok(MaybeAssocItemId::Free(item_id))
         }
     }
 
@@ -547,13 +648,82 @@ impl<'tcx> TranslateCtx<'tcx> {
             "exclude" if args.is_none() => Attribute::Exclude,
             // `#[charon::transparent]`
             "transparent" if args.is_none() => Attribute::Transparent,
-            // `#[charon::precondition]`
-            "precondition" if args.is_none() => {
-                Attribute::IsPrecondition(self.condition_parent_id(def_id)?)
-            }
-            // `#[charon::postcondition]`
-            "postcondition" if args.is_none() => {
-                Attribute::IsPostcondition(self.condition_parent_id(def_id)?)
+            // `#[charon::contract(kind = "...", parent)]` or
+            // `#[charon::contract(kind = "...", for = "path")]`
+            "contract" if let Some(args) = args => {
+                use syn::{ext::IdentExt, parse::Parser};
+
+                let parser = |input: syn::parse::ParseStream<'_>| {
+                    let mut kind = None;
+                    let mut target = None;
+                    while !input.is_empty() {
+                        let key = input.call(syn::Ident::parse_any)?;
+                        let key_name = key.to_string();
+                        if key_name == "parent" && !input.peek(syn::Token![=]) {
+                            if target.is_some() {
+                                return Err(syn::Error::new(
+                                    key.span(),
+                                    "duplicate contract target",
+                                ));
+                            }
+                            target = Some(ContractTarget::Parent);
+                        } else {
+                            input.parse::<syn::Token![=]>()?;
+                            let value = input.parse::<syn::LitStr>()?.value();
+                            match key_name.as_str() {
+                                "kind" => {
+                                    if kind.is_some() {
+                                        return Err(syn::Error::new(
+                                            key.span(),
+                                            "duplicate contract argument `kind`",
+                                        ));
+                                    }
+                                    kind = Some(value);
+                                }
+                                "for" => {
+                                    if target.is_some() {
+                                        return Err(syn::Error::new(
+                                            key.span(),
+                                            "duplicate contract target",
+                                        ));
+                                    }
+                                    target = Some(ContractTarget::Path(value));
+                                }
+                                "parent" => {
+                                    return Err(syn::Error::new(
+                                        key.span(),
+                                        "contract argument `parent` does not take a value",
+                                    ));
+                                }
+                                _ => {
+                                    return Err(syn::Error::new(
+                                        key.span(),
+                                        format!("unknown contract argument `{key}`"),
+                                    ));
+                                }
+                            }
+                        }
+                        if !input.is_empty() {
+                            input.parse::<syn::Token![,]>()?;
+                        }
+                    }
+                    let kind =
+                        kind.ok_or_else(|| input.error("missing contract argument `kind`"))?;
+                    let target = target
+                        .ok_or_else(|| input.error("missing contract target `parent` or `for`"))?;
+                    Ok((kind, target))
+                };
+                let (kind, target) = parser.parse_str(args).map_err(|err| {
+                    format!(
+                        "invalid contract syntax: {err}; expected \
+                         `#[charon::contract(kind = \"...\", parent)]` or \
+                         `#[charon::contract(kind = \"...\", for = \"item path\")]`"
+                    )
+                })?;
+                Attribute::IsContract {
+                    kind,
+                    target: self.resolve_contract_target(def_id, target)?,
+                }
             }
             // `#[charon::rename("new_name")]`
             "rename" if let Some(attr) = args => {

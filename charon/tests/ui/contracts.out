@@ -1,0 +1,360 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Tuple
+#[fundamental]
+#[lang_item(Tuple)]
+pub trait Tuple<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::ops::function::FnOnce
+#[fundamental]
+#[lang_item(FnOnce)]
+pub trait FnOnce<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self::Output: Sized)
+    type Output
+    fn call_once;
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+}
+
+// Full name: core::ops::function::FnMut
+#[fundamental]
+#[lang_item(FnMut)]
+pub trait FnMut<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnOnce<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    fn call_mut<'_0_1>;
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
+}
+
+// Full name: core::ops::function::Fn
+#[fundamental]
+#[lang_item(Fn)]
+pub trait Fn<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnMut<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    fn call<'_0_1>;
+    vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
+}
+
+// Full name: test_crate::function::closure::closure_precondition
+#[charon::contract(kind = "pre", for = "call")]
+fn closure_precondition() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+// Full name: test_crate::function::closure
+struct closure {}
+
+// Full name: test_crate::function::{impl Fn<()> for closure}::call
+#[charon::has_contract(kind = "pre", contract = closure_precondition)]
+fn call<'_0>(_1: &'_0 closure, tupled_args: ())
+{
+    let _0: (); // return
+    let _1: &'1 closure; // arg #1
+    let tupled_args: (); // arg #2
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::function::postcondition
+#[charon::contract(kind = "post", for = "function")]
+fn postcondition() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+// Full name: test_crate::function::precondition
+#[charon::contract(kind = "pre", for = "function")]
+fn precondition() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+// Full name: test_crate::function
+#[charon::has_contract(kind = "pre", contract = precondition)]
+#[charon::has_contract(kind = "post", contract = postcondition)]
+fn function()
+{
+    let _0: (); // return
+    let closure: closure; // local
+    let _2: (); // anonymous local
+    let _3: &'1 closure; // anonymous local
+    let _4: (); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(closure)
+    closure = closure {  }
+    fake_read(closure)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &closure
+    storage_live(_4)
+    _4 = ()
+    _2 = call<'2>(move _3, move _4)
+    ↳⚡ unwind_continue
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 = ()
+    storage_dead(closure)
+    return
+}
+
+// Full name: test_crate::function::sibling_precondition
+#[charon::contract(kind = "pre", for = "sibling")]
+fn sibling_precondition() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+// Full name: test_crate::function::sibling
+#[charon::has_contract(kind = "pre", contract = sibling_precondition)]
+fn sibling()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::function::closure::{impl Destruct for closure}::drop_glue
+unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
+{
+    let _0: (); // return
+    let _1: &'1 mut closure; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::function::{impl FnMut<()> for closure}::call_mut
+fn call_mut<'_0>(state: &'_0 mut closure, args: ())
+{
+    let _0: (); // return
+    let state: &'_0 mut closure; // arg #1
+    let args: (); // arg #2
+    let _3: &'0 closure; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_3)
+    _3 = &(*state)
+    _0 = call<'2>(move _3, move args)
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::function::{impl FnOnce<()> for closure}::call_once
+fn call_once(_1: closure, _2: ())
+{
+    let _0: (); // return
+    let _1: closure; // arg #1
+    let _2: (); // arg #2
+    let _3: &'1 mut closure; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _0 = ()
+    _3 = &mut _1
+    _0 = call_mut<'2>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'3>] _1
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    drop[drop_glue<'4>] _1
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::function::{impl FnOnce<()> for closure}
+impl "impl_FnOnce_unit_for_closure" FnOnce<()> for closure {
+    proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
+    proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
+    proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
+    type Output = ()
+    fn call_once = call_once
+    non-dyn-compatible
+}
+
+// Full name: test_crate::function::{impl FnMut<()> for closure}
+impl "impl_FnMut_unit_for_closure" FnMut<()> for closure {
+    proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
+    proof ImpliedClause1: (closure: FnOnce<()>) = impl_FnOnce_unit_for_closure
+    proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
+    fn call_mut<'_0_1> = call_mut<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::function::{impl Fn<()> for closure}
+impl "impl_Fn_unit_for_closure" Fn<()> for closure {
+    proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
+    proof ImpliedClause1: (closure: FnMut<()>) = impl_FnMut_unit_for_closure
+    proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
+    fn call<'_0_1> = call<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::function::closure::{impl Destruct for closure}
+impl "impl_Destruct_for_closure" Destruct for closure {
+    fn drop_glue<'_0_1> = drop_glue<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::path_postcondition
+#[charon::contract(kind = "post", for = "path_target")]
+fn path_postcondition() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+// Full name: test_crate::other::path_target
+#[charon::has_contract(kind = "post", contract = path_postcondition)]
+pub fn path_target()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::trait_contract
+#[charon::contract(kind = "invariant", for = "Trait")]
+fn trait_contract() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+// Full name: test_crate::Trait
+#[charon::has_contract(kind = "invariant", contract = trait_contract)]
+trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    #[charon::has_contract(kind = "pre", contract = method_precondition)]
+    fn method;
+    #[charon::contract(kind = "pre", for = "Trait::method")]
+    fn method_precondition = method_precondition<Self>[Self]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Trait::method_precondition
+#[charon::contract(kind = "pre", for = "Trait::method")]
+fn method_precondition<Self>() -> bool
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+// Full name: test_crate::type_invariant
+#[charon::contract(kind = "invariant", for = "MyType")]
+fn type_invariant() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+// Full name: test_crate::MyType
+#[charon::has_contract(kind = "invariant", contract = type_invariant)]
+struct MyType {}
+
+
+

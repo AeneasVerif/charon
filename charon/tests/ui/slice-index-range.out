@@ -13,6 +13,7 @@ pub trait Index<Self, Idx>
     proof ImpliedClause1: (Idx: MetaSized)
     proof ImpliedClause2: (Self::Output: MetaSized)
     type Output
+    #[track_caller]
     fn index<'_0_1>;
     vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
 }
@@ -613,7 +614,9 @@ pub trait SliceIndex<Self, T>
     fn get_mut<'_0_1>;
     fn get_unchecked;
     fn get_unchecked_mut;
+    #[track_caller]
     fn index<'_0_1>;
+    #[track_caller]
     fn index_mut<'_0_1>;
     vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
 }

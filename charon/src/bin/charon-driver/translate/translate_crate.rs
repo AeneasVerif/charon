@@ -122,7 +122,11 @@ impl TransItemSource {
     /// and polymorphic versions of the item.
     pub fn from_item(item: &hax::ItemRef, kind: TransItemSourceKind, monomorphize: bool) -> Self {
         if monomorphize {
-            Self::monomorphic(item, kind)
+            if kind.is_for_trait() {
+                Self::monomorphic_trait(&item.def_id, kind)
+            } else {
+                Self::monomorphic(item, kind)
+            }
         } else {
             Self::polymorphic(&item.def_id, kind)
         }
@@ -185,6 +189,15 @@ impl TransItemSource {
                 | Module
                 | Fun
                 | Type
+        )
+    }
+}
+
+impl TransItemSourceKind {
+    pub fn is_for_trait(&self) -> bool {
+        matches!(
+            self,
+            TransItemSourceKind::TraitDecl | TransItemSourceKind::VTable
         )
     }
 }
@@ -592,19 +605,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         //   2. Otherwise, if the current `item_trans_ctx` is under a `trait decl`
         //      or a `vtable`, we construct a `poly` item.
         //   3. In all other cases, we construct a `mono` item.
-        let item_src = if self.monomorphize() && matches!(kind, TransItemSourceKind::TraitDecl) {
-            TransItemSource::monomorphic_trait(&item.def_id, kind)
-        } else {
-            TransItemSource::from_item(
-                &item,
-                kind,
-                self.monomorphize()
-                    && !matches!(
-                        self.item_src.kind,
-                        TransItemSourceKind::TraitDecl | TransItemSourceKind::VTable
-                    ),
-            )
-        };
+        let mono =
+            self.monomorphize() && (kind.is_for_trait() || !self.item_src.kind.is_for_trait());
+        let item_src = TransItemSource::from_item(&item, kind, mono);
         if enqueue {
             self.register_and_enqueue(span, item_src)
         } else {

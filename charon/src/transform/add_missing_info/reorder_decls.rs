@@ -299,20 +299,74 @@ impl VisitAst for DepsForItem<'_> {
         self.insert_edge(*id);
     }
 
+    fn visit_trait_assoc_const(
+        &mut self,
+        assoc_const: &TraitAssocConst,
+    ) -> ControlFlow<Self::Break> {
+        let TraitAssocConst {
+            name: _,
+            attr_info: _,
+            ty,
+            default,
+        } = assoc_const;
+        ty.drive(self)?;
+        // We consider that a trait decl only contains the method/constant signatures.
+        // Therefore we don't explore the default method/const ids.
+        if let Some(gref) = default {
+            self.insert_node(gref.id); // Still count the item as reachable.
+            gref.generics.drive(self)?;
+        }
+        Continue(())
+    }
+
+    fn visit_trait_method(&mut self, method: &TraitMethod) -> ControlFlow<Self::Break> {
+        let TraitMethod {
+            name: _,
+            item_meta: _,
+            signature,
+            default,
+        } = method;
+        // We consider that a trait decl only contains the method/constant signatures.
+        // Therefore we don't explore the default method/const ids.
+        signature.drive(self)?;
+        if let Some(funref) = default {
+            self.insert_node(funref.id); // Still count the item as reachable.
+            funref.generics.drive(self)?;
+        }
+        Continue(())
+    }
+
     fn visit_item_meta(&mut self, meta: &ItemMeta) -> ControlFlow<Self::Break> {
         // Don't visit the name because trait impls contain their own id in it. Attributes however
         // can contain genuine dependencies, notably between an item and its specifications.
         meta.attr_info.drive(self)
     }
 
+    fn visit_attribute(&mut self, attr: &Attribute) -> ControlFlow<Self::Break> {
+        // An item depends on its contracts, not the other way around.
+        match attr {
+            Attribute::IsContract { .. } => Continue(()),
+            _ => self.visit_inner(attr),
+        }
+    }
+
     // Sources are reverse dependencies; exploring them is likely to create dependency cycles.
     fn visit_type_source(&mut self, _: &TypeSource) -> ControlFlow<Self::Break> {
         Continue(())
     }
-    fn visit_fun_source(&mut self, _: &FunSource) -> ControlFlow<Self::Break> {
+    fn visit_fun_source(&mut self, src: &FunSource) -> ControlFlow<Self::Break> {
+        if let FunSource::TraitDefault { trait_ref, .. } = src {
+            self.insert_edge(trait_ref.id);
+        }
         Continue(())
     }
     fn visit_global_source(&mut self, _: &GlobalSource) -> ControlFlow<Self::Break> {
+        Continue(())
+    }
+    fn visit_trait_decl_source(&mut self, _: &TraitDeclSource) -> ControlFlow<Self::Break> {
+        Continue(())
+    }
+    fn visit_trait_impl_source(&mut self, _: &TraitImplSource) -> ControlFlow<Self::Break> {
         Continue(())
     }
 }
@@ -335,82 +389,11 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {
 
     // Explore reachable items.
     while let Some(id) = deps.unprocessed.pop() {
-        if !deps.visited.insert(id) {
-            continue;
-        }
-        let Some(item) = ctx.translated.get_item(id) else {
-            continue;
-        };
-        let mut visitor = deps.visitor_for_item(ctx, item);
-        match item {
-            ItemRef::Type(..) | ItemRef::TraitImpl(..) | ItemRef::Global(..) => {
-                let _ = item.drive(&mut visitor);
-            }
-            ItemRef::Fun(d) => {
-                let FunDecl {
-                    def_id,
-                    item_meta,
-                    generics,
-                    signature,
-                    src,
-                    body,
-                } = d;
-                let _ = def_id.drive(&mut visitor); // For `seen_current_id`
-                let _ = item_meta.attr_info.drive(&mut visitor);
-                let _ = generics.drive(&mut visitor);
-                let _ = signature.drive(&mut visitor);
-                let _ = body.drive(&mut visitor);
-                if let FunSource::TraitDefault { trait_ref, .. } = src {
-                    visitor.insert_edge(trait_ref.id);
-                }
-            }
-            ItemRef::TraitDecl(d) => {
-                let TraitDecl {
-                    def_id,
-                    item_meta: _,
-                    src: _,
-                    generics,
-                    implied_clauses: parent_clauses,
-                    consts,
-                    types,
-                    methods,
-                    vtable,
-                } = d;
-                let _ = def_id.drive(&mut visitor); // For `seen_current_id`
-                // Visit the traits referenced in the generics
-                let _ = generics.drive(&mut visitor);
-
-                // Visit the parent clauses
-                let _ = parent_clauses.drive(&mut visitor);
-
-                // Visit the items
-                let _ = types.drive(&mut visitor);
-                let _ = vtable.drive(&mut visitor);
-
-                // We consider that a trait decl only contains the function/constant signatures.
-                // Therefore we don't explore the default const/method ids.
-                for assoc_const in consts {
-                    let TraitAssocConst {
-                        name: _,
-                        attr_info: _,
-                        ty,
-                        default,
-                    } = assoc_const;
-                    let _ = ty.drive(&mut visitor);
-                    if let Some(gref) = default {
-                        visitor.insert_node(gref.id); // Still count the item as reachable.
-                        let _ = gref.generics.drive(&mut visitor);
-                    }
-                }
-                for bound_method in methods {
-                    let _ = bound_method.params.drive(&mut visitor);
-                    let _ = bound_method.skip_binder.signature.drive(&mut visitor);
-                    if let Some(funref) = &bound_method.skip_binder.default {
-                        visitor.insert_node(funref.id); // Still count the item as reachable.
-                        let _ = funref.generics.drive(&mut visitor);
-                    }
-                }
-            }
+        if deps.visited.insert(id)
+            && let Some(item) = ctx.translated.get_item(id)
+        {
+            let mut visitor = deps.visitor_for_item(ctx, item);
+            item.drive(&mut visitor);
         }
     }
     deps.graph

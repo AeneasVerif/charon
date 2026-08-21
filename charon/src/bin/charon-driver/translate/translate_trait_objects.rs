@@ -252,19 +252,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             return Ok(None);
         }
 
-        // In mono mode we keep a single opaque vtable per trait declaration.
-        if self.monomorphize() {
-            let item_src =
-                TransItemSource::monomorphic_trait(&tref.def_id, TransItemSourceKind::VTable);
-            let id: ItemId = self.register_and_enqueue(span, item_src);
-            let id = id
-                .try_into()
-                .expect("translated trait decl should be a trait decl id");
-            return Ok(Some(TypeDeclRef {
-                id,
-                generics: Box::new(GenericArgs::empty()),
-            }));
-        }
+        // FIXME: preserve legacy behavior, maybe undesired.
+        let enqueue = enqueue || self.monomorphize();
 
         // Don't enqueue the vtable for translation by default. It will be enqueued if used in a
         // `dyn Trait`.
@@ -276,13 +265,15 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             .types
             .remove_and_shift_ids(TypeVarId::ZERO);
 
-        // The vtable type also takes associated types as parameters.
-        let assoc_tys: Vec<_> = tref
-            .trait_associated_types(self.hax_state_with_id())
-            .iter()
-            .map(|ty| self.translate_ty(span, ty))
-            .try_collect()?;
-        vtable_ref.generics.types.extend(assoc_tys);
+        if !self.monomorphize() {
+            // The vtable type also takes associated types as parameters.
+            let assoc_tys: Vec<_> = tref
+                .trait_associated_types(self.hax_state_with_id())
+                .iter()
+                .map(|ty| self.translate_ty(span, ty))
+                .try_collect()?;
+            vtable_ref.generics.types.extend(assoc_tys);
+        }
 
         Ok(Some(vtable_ref))
     }

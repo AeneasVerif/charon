@@ -175,13 +175,6 @@ and fun_source =
 
           Fields:
           - [dispatcher] *)
-  | SpecFun of spec_kind * item_id
-      (** A specification attached to another item, via
-          [#[charon::precondition]]/[#[charon::postcondition]].
-
-          Fields:
-          - [kind]
-          - [item] *)
 
 (** Where a given global came from. *)
 and global_source =
@@ -230,8 +223,6 @@ and locals = {
           - the [arg_count] input arguments
           - the remaining locals, used for the intermediate computations *)
 }
-
-and spec_kind = Precondition | Postcondition
 [@@deriving
   show,
   eq,

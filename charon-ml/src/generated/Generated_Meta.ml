@@ -13,6 +13,9 @@ module GlobalDeclId = IdGen ()
 module TraitDeclId = IdGen ()
 module TraitImplId = IdGen ()
 module FunDeclId = IdGen ()
+module TraitMethodId = IdGen ()
+module AssocTypeId = IdGen ()
+module AssocConstId = IdGen ()
 
 type path_buf = string [@@deriving show, ord, eq]
 
@@ -43,9 +46,19 @@ class virtual ['self] mapreduce_meta_base =
       fun _ x -> (x, self#zero)
   end
 
+type assoc_const_id = (AssocConstId.id[@visitors.opaque])
+
+(** The id of an associated item within a trait. *)
+and assoc_item_id =
+  | AssocIdType of assoc_type_id
+  | AssocIdMethod of trait_method_id
+  | AssocIdConst of assoc_const_id
+
+and assoc_type_id = (AssocTypeId.id[@visitors.opaque])
+
 (** Information about the attributes and visibility of an item, field or
     variant.. *)
-type attr_info = {
+and attr_info = {
   attributes : attribute list;  (** Attributes ([#[...]]). *)
   inline : inline_attr option;  (** Inline hints (on functions only). *)
   rename : string option;
@@ -94,18 +107,21 @@ and attribute =
   | AttrTransparent
       (** The structure is treated as a transparent wrapper around its sole
           field. Written [#[charon::transparent]]. *)
-  | AttrIsPrecondition of item_id
-      (** An item annotated with [#[charon::precondition]]. This makes it a
-          precondition for its parent item. *)
-  | AttrIsPostcondition of item_id
-      (** An item annotated with [#[charon::postcondition]]. This makes it a
-          postcondition for its parent item. *)
-  | AttrHasPrecondition of fun_decl_id
-      (** An item that has a precondition that applies to it. The referenced
-          item is a function the specifies the condition. *)
-  | AttrHasPostcondition of fun_decl_id
-      (** An item that has a postcondition that applies to it. The referenced
-          item is a function the specifies the condition. *)
+  | AttrIsContract of string * maybe_assoc_item_id
+      (** An item annotated with [#[charon::contract(kind = "...", parent)]] or
+          [#[charon::contract(kind = "...", for = "...")]]. This makes it a
+          contract for the target item.
+
+          Fields:
+          - [kind]
+          - [target] *)
+  | AttrHasContract of string * fun_decl_id
+      (** An item that has a contract that applies to it. The referenced item is
+          the function that specifies the contract.
+
+          Fields:
+          - [kind]
+          - [contract] *)
   | AttrDocComment of string  (** A doc-comment such as [/// ...]. *)
   | AttrBuiltin of rustc_attribute_kind  (** A built-in attribute. *)
   | AttrUnknown of raw_attribute  (** None of the above. *)
@@ -310,6 +326,11 @@ and loc = {
   col : int;  (** The (0-based) column offset. *)
 }
 
+(** The id of a translated item or associated item definition. *)
+and maybe_assoc_item_id =
+  | ItemFree of item_id
+  | ItemAssoc of trait_decl_id * assoc_item_id
+
 and rustc_optimize_attr =
   | RustcOptimizeAttrDefault  (** No [#[optimize(..)]] attribute *)
   | RustcOptimizeAttrDoNotOptimize  (** [#[optimize(none)]] *)
@@ -358,6 +379,7 @@ and span_data = { file : file_id; beg_loc : loc; end_loc : loc }
 
 and trait_decl_id = (TraitDeclId.id[@visitors.opaque])
 and trait_impl_id = (TraitImplId.id[@visitors.opaque])
+and trait_method_id = (TraitMethodId.id[@visitors.opaque])
 
 and type_decl_id = (TypeDeclId.id[@visitors.opaque])
 [@@deriving

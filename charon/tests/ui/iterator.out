@@ -409,6 +409,7 @@ pub trait PartialOrd<Self, Rhs>
 pub trait Eq<Self>
 {
     proof ImpliedClause0: (Self: PartialEq<Self>)
+    #[deprecated(since = "1.95.0", note = "implementation detail of `#[derive(Eq)]`")]
     fn assert_receiver_is_total_eq<'_0_1> = assert_receiver_is_total_eq<'_0_1, Self>[Self]
     fn assert_fields_are_eq<'_0_1> = assert_fields_are_eq<'_0_1, Self>[Self]
     non-dyn-compatible
@@ -634,6 +635,7 @@ pub trait Iterator<Self>
     fn copied<'a, T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: Copy), TraitClause2_1: (Self: Sized), TraitClause3_1: (Self: Iterator), TypeOutlives0: T: 'a, TypeConstraint0: Self::Item = &'a T> = core::iter::traits::iterator::Iterator::copied<'a, Self, T>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1]
     fn cloned<'a, T, TraitClause0_1: (T: Sized), TraitClause1_1: (T: Clone), TraitClause2_1: (Self: Sized), TraitClause3_1: (Self: Iterator), TypeOutlives0: T: 'a, TypeConstraint0: Self::Item = &'a T> = core::iter::traits::iterator::Iterator::cloned<'a, Self, T>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1]
     fn cycle<TraitClause0_1: (Self: Sized), TraitClause1_1: (Self: Clone)> = core::iter::traits::iterator::Iterator::cycle<Self>[Self, TraitClause0_1, TraitClause1_1]
+    #[track_caller]
     fn array_chunks<const N : usize, TraitClause0_1: (Self: Sized)> = core::iter::traits::iterator::Iterator::array_chunks<Self, N>[Self, TraitClause0_1]
     fn sum<S, TraitClause0_1: (S: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: (S: Sum<Self::Item>)> = core::iter::traits::iterator::Iterator::sum<Self, S>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     fn product<P, TraitClause0_1: (P: Sized), TraitClause1_1: (Self: Sized), TraitClause2_1: (P: Product<Self::Item>)> = core::iter::traits::iterator::Iterator::product<Self, P>[Self, TraitClause0_1, TraitClause1_1, TraitClause2_1]

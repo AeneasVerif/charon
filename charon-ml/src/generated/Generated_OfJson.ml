@@ -1945,6 +1945,21 @@ and alignment_modifier_of_json (ctx : of_json_ctx) (js : json) :
         Ok (Pack _0)
     | _ -> Error "")
 
+and assoc_item_id_of_json (ctx : of_json_ctx) (js : json) :
+    (assoc_item_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Type", _0) ] ->
+        let* _0 = assoc_type_id_of_json ctx _0 in
+        Ok (AssocIdType _0)
+    | `Assoc [ ("Method", _0) ] ->
+        let* _0 = trait_method_id_of_json ctx _0 in
+        Ok (AssocIdMethod _0)
+    | `Assoc [ ("Const", _0) ] ->
+        let* _0 = assoc_const_id_of_json ctx _0 in
+        Ok (AssocIdConst _0)
+    | _ -> Error "")
+
 and assoc_item_names_of_json (ctx : of_json_ctx) (js : json) :
     (assoc_item_names, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1999,18 +2014,17 @@ and attribute_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = string_of_json ctx _0 in
         Ok (AttrVariantsSuffix _0)
     | `String "Transparent" -> Ok AttrTransparent
-    | `Assoc [ ("IsPrecondition", _0) ] ->
-        let* _0 = item_id_of_json ctx _0 in
-        Ok (AttrIsPrecondition _0)
-    | `Assoc [ ("IsPostcondition", _0) ] ->
-        let* _0 = item_id_of_json ctx _0 in
-        Ok (AttrIsPostcondition _0)
-    | `Assoc [ ("HasPrecondition", _0) ] ->
-        let* _0 = fun_decl_id_of_json ctx _0 in
-        Ok (AttrHasPrecondition _0)
-    | `Assoc [ ("HasPostcondition", _0) ] ->
-        let* _0 = fun_decl_id_of_json ctx _0 in
-        Ok (AttrHasPostcondition _0)
+    | `Assoc [ ("IsContract", `Assoc [ ("kind", kind); ("target", target) ]) ]
+      ->
+        let* kind = string_of_json ctx kind in
+        let* target = maybe_assoc_item_id_of_json ctx target in
+        Ok (AttrIsContract (kind, target))
+    | `Assoc
+        [ ("HasContract", `Assoc [ ("kind", kind); ("contract", contract) ]) ]
+      ->
+        let* kind = string_of_json ctx kind in
+        let* contract = fun_decl_id_of_json ctx contract in
+        Ok (AttrHasContract (kind, contract))
     | `Assoc [ ("DocComment", _0) ] ->
         let* _0 = string_of_json ctx _0 in
         Ok (AttrDocComment _0)
@@ -2570,10 +2584,6 @@ and fun_source_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("TargetDependent", `Assoc [ ("dispatcher", dispatcher) ]) ] ->
         let* dispatcher = fun_decl_ref_of_json ctx dispatcher in
         Ok (TargetDependentFun dispatcher)
-    | `Assoc [ ("Spec", `Assoc [ ("kind", kind); ("item", item) ]) ] ->
-        let* kind = spec_kind_of_json ctx kind in
-        let* item = item_id_of_json ctx item in
-        Ok (SpecFun (kind, item))
     | _ -> Error "")
 
 and g_declaration_group_of_json :
@@ -3106,6 +3116,19 @@ and locals_of_json (ctx : of_json_ctx) (js : json) : (locals, string) result =
         Ok ({ arg_count; locals } : locals)
     | _ -> Error "")
 
+and maybe_assoc_item_id_of_json (ctx : of_json_ctx) (js : json) :
+    (maybe_assoc_item_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Free", _0) ] ->
+        let* _0 = item_id_of_json ctx _0 in
+        Ok (ItemFree _0)
+    | `Assoc [ ("Assoc", `List [ _0; _1 ]) ] ->
+        let* _0 = trait_decl_id_of_json ctx _0 in
+        let* _1 = assoc_item_id_of_json ctx _1 in
+        Ok (ItemAssoc (_0, _1))
+    | _ -> Error "")
+
 and mir_level_of_json (ctx : of_json_ctx) (js : json) :
     (mir_level, string) result =
   combine_error_msgs js __FUNCTION__
@@ -3218,14 +3241,6 @@ and serialization_format_arg_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Json" -> Ok Json
     | `String "Postcard" -> Ok Postcard
     | `String "All" -> Ok AllFormats
-    | _ -> Error "")
-
-and spec_kind_of_json (ctx : of_json_ctx) (js : json) :
-    (spec_kind, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "Precondition" -> Ok Precondition
-    | `String "Postcondition" -> Ok Postcondition
     | _ -> Error "")
 
 and target_info_of_json (ctx : of_json_ctx) (js : json) :

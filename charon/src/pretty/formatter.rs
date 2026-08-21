@@ -100,6 +100,19 @@ pub trait AstFormatter: Sized {
             write!(f, "{}", const_id.to_pretty_string())
         }
     }
+    fn format_assoc_item_name(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        trait_id: TraitDeclId,
+        item_id: AssocItemId,
+    ) -> fmt::Result {
+        match item_id {
+            AssocItemId::Type(id) => self.format_assoc_type_name(f, trait_id, id),
+            AssocItemId::Method(id) => self.format_method_name(f, trait_id, id),
+            AssocItemId::Const(id) => self.format_assoc_const_name(f, trait_id, id),
+        }
+    }
+
     fn format_enum_variant_name(
         &self,
         f: &mut fmt::Formatter<'_>,

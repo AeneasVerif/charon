@@ -1697,6 +1697,22 @@ and alignment_modifier_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          Ok (Pack _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and assoc_item_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (assoc_item_id, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* _0 = assoc_type_id_of_postcard ctx st in
+         Ok (AssocIdType _0)
+     | 1 ->
+         let* _0 = trait_method_id_of_postcard ctx st in
+         Ok (AssocIdMethod _0)
+     | 2 ->
+         let* _0 = assoc_const_id_of_postcard ctx st in
+         Ok (AssocIdConst _0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and assoc_item_names_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (assoc_item_names, string) result =
   combine_error_msgs st __FUNCTION__
@@ -1741,24 +1757,20 @@ and attribute_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (AttrVariantsSuffix _0)
      | 5 -> Ok AttrTransparent
      | 6 ->
-         let* _0 = item_id_of_postcard ctx st in
-         Ok (AttrIsPrecondition _0)
+         let* kind = string_of_postcard ctx st in
+         let* target = maybe_assoc_item_id_of_postcard ctx st in
+         Ok (AttrIsContract (kind, target))
      | 7 ->
-         let* _0 = item_id_of_postcard ctx st in
-         Ok (AttrIsPostcondition _0)
+         let* kind = string_of_postcard ctx st in
+         let* contract = fun_decl_id_of_postcard ctx st in
+         Ok (AttrHasContract (kind, contract))
      | 8 ->
-         let* _0 = fun_decl_id_of_postcard ctx st in
-         Ok (AttrHasPrecondition _0)
-     | 9 ->
-         let* _0 = fun_decl_id_of_postcard ctx st in
-         Ok (AttrHasPostcondition _0)
-     | 10 ->
          let* _0 = string_of_postcard ctx st in
          Ok (AttrDocComment _0)
-     | 11 ->
+     | 9 ->
          let* _0 = rustc_attribute_kind_of_postcard ctx st in
          Ok (AttrBuiltin _0)
-     | 12 ->
+     | 10 ->
          let* _0 = raw_attribute_of_postcard ctx st in
          Ok (AttrUnknown _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
@@ -2174,10 +2186,6 @@ and fun_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 5 ->
          let* dispatcher = fun_decl_ref_of_postcard ctx st in
          Ok (TargetDependentFun dispatcher)
-     | 6 ->
-         let* kind = spec_kind_of_postcard ctx st in
-         let* item = item_id_of_postcard ctx st in
-         Ok (SpecFun (kind, item))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and g_declaration_group_of_postcard :
@@ -2641,6 +2649,20 @@ and locals_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      in
      Ok ({ arg_count; locals } : locals))
 
+and maybe_assoc_item_id_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (maybe_assoc_item_id, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* _0 = item_id_of_postcard ctx st in
+         Ok (ItemFree _0)
+     | 1 ->
+         let* _0 = trait_decl_id_of_postcard ctx st in
+         let* _1 = assoc_item_id_of_postcard ctx st in
+         Ok (ItemAssoc (_0, _1))
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and mir_level_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (mir_level, string) result =
   combine_error_msgs st __FUNCTION__
@@ -2746,15 +2768,6 @@ and serialization_format_arg_of_postcard (ctx : of_postcard_ctx)
      | 0 -> Ok Json
      | 1 -> Ok Postcard
      | 2 -> Ok AllFormats
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
-and spec_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (spec_kind, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 -> Ok Precondition
-     | 1 -> Ok Postcondition
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

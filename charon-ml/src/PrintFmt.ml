@@ -1170,6 +1170,14 @@ let pp_item_id (env : fmt_env) (fmt : Format.formatter) (id : item_id) : unit =
   | Some name -> pp_name env fmt name
   | None -> pp_string fmt (item_id_to_pretty_string id)
 
+let pp_maybe_assoc_item_id (env : fmt_env) (fmt : Format.formatter)
+    (id : maybe_assoc_item_id) : unit =
+  match id with
+  | ItemFree id -> pp_item_id env fmt id
+  | ItemAssoc (trait_id, item_id) ->
+      Format.fprintf fmt "%a::%s" (pp_trait_decl_id env) trait_id
+        (GAstUtils.get_assoc_item_name env.crate trait_id item_id)
+
 let pp_attribute_unindented (env : fmt_env) (fmt : Format.formatter)
     (attr : attribute) : unit =
   match attr with
@@ -1181,14 +1189,14 @@ let pp_attribute_unindented (env : fmt_env) (fmt : Format.formatter)
   | AttrVariantsSuffix suffix ->
       Format.fprintf fmt "#[charon::variants_suffix(\"%s\")]" suffix
   | AttrTransparent -> pp_string fmt "#[charon::transparent]"
-  | AttrIsPrecondition id ->
-      Format.fprintf fmt "#[charon::precondition] // of %a" (pp_item_id env) id
-  | AttrIsPostcondition id ->
-      Format.fprintf fmt "#[charon::postcondition] // of %a" (pp_item_id env) id
-  | AttrHasPrecondition id ->
-      Format.fprintf fmt "// precondition: %a" (pp_item_id env) (IdFun id)
-  | AttrHasPostcondition id ->
-      Format.fprintf fmt "// postcondition: %a" (pp_item_id env) (IdFun id)
+  | AttrIsContract (kind, id) ->
+      let target =
+        pp_to_string (fun fmt -> pp_maybe_assoc_item_id env fmt id)
+      in
+      Format.fprintf fmt "#[charon::contract(kind = %S, for = %S)]" kind target
+  | AttrHasContract (kind, contract) ->
+      Format.fprintf fmt "#[charon::has_contract(kind = %S, contract = %a)]"
+        kind (pp_item_id env) (IdFun contract)
   | AttrDocComment comment ->
       let lines = String.split_on_char '\n' comment in
       pp_sep_list "\n" pp_string fmt (List.map (fun line -> "///" ^ line) lines)
@@ -1823,6 +1831,14 @@ let pp_trait_decl (env : fmt_env) (indent : string) (indent_incr : string)
     List.iter
       (fun (m : trait_method binder) ->
         let env = fmt_env_push_generics_and_preds env m.binder_params in
+        List.iter
+          (function
+            | AttrDocComment _ -> ()
+            | attr ->
+                Format.fprintf fmt "%s%a\n" indent1
+                  (pp_attribute_unindented env)
+                  attr)
+          m.binder_value.item_meta.attr_info.attributes;
         let params = generic_params_to_string_single_line env m.binder_params in
         Format.fprintf fmt "%sfn %s%s" indent1 m.binder_value.name params;
         (match m.binder_value.default with

@@ -155,6 +155,18 @@ impl Display for ItemId {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for MaybeAssocItemId {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            MaybeAssocItemId::Free(id) => id.fmt_with_ctx(ctx, f),
+            MaybeAssocItemId::Assoc(trait_id, item_id) => {
+                write!(f, "{}::", ItemId::TraitDecl(*trait_id).with_ctx(ctx),)?;
+                ctx.format_assoc_item_name(f, *trait_id, *item_id)
+            }
+        }
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for ItemRef<'_> {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -1455,19 +1467,17 @@ impl Attribute {
                 write!(f, "#[charon::variants_suffix(\"{suffix}\")]")
             }
             Attribute::Transparent => write!(f, "#[charon::transparent]"),
-            Attribute::IsPrecondition(id) => {
-                write!(f, "#[charon::precondition] // of {}", id.with_ctx(ctx))
+            Attribute::IsContract { kind, target } => {
+                let target = target.with_ctx(ctx).to_string();
+                write!(f, "#[charon::contract(kind = {kind:?}, for = {target:?})]")
             }
-            Attribute::IsPostcondition(id) => {
-                write!(f, "#[charon::postcondition] // of {}", id.with_ctx(ctx))
-            }
-            Attribute::HasPrecondition(id) => {
-                let id = ItemId::Fun(*id);
-                write!(f, "// precondition: {}", id.with_ctx(ctx))
-            }
-            Attribute::HasPostcondition(id) => {
-                let id = ItemId::Fun(*id);
-                write!(f, "// postcondition: {}", id.with_ctx(ctx))
+            Attribute::HasContract { kind, contract } => {
+                let contract = ItemId::Fun(*contract);
+                write!(
+                    f,
+                    "#[charon::has_contract(kind = {kind:?}, contract = {})]",
+                    contract.with_ctx(ctx)
+                )
             }
             Attribute::DocComment(comment) => {
                 write!(
@@ -2326,6 +2336,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
                 writeln!(f)?;
             }
             for method in self.methods() {
+                for attr in &method.skip_binder.item_meta.attr_info.attributes {
+                    if !attr.is_doc_comment() {
+                        writeln!(f, "{TAB_INCR}{}", attr.with_ctx(ctx))?;
+                    }
+                }
                 let name = method.name();
                 let (params, method) =
                     method.fmt_split_with(ctx, |ctx, method| match &method.default {

@@ -668,7 +668,7 @@ and match_trait_decl_ref (ctx : ctx) (c : match_config) (m : maps)
 
 and match_trait_decl_ref_item (ctx : ctx) (c : match_config) (m : maps)
     (pid : pattern) (tr : T.trait_decl_ref T.region_binder)
-    (item_id : GAstUtils.assoc_item_id) (generics : T.generic_args) : bool =
+    (item_id : T.assoc_item_id) (generics : T.generic_args) : bool =
   if c.match_with_trait_decl_refs then
     (* We match the trait decl ref *)
     (* We split the pattern between the trait decl ref and the associated item name *)
@@ -692,7 +692,7 @@ and match_trait_type (ctx : ctx) (c : match_config) (m : maps) (pid : pattern)
     (tr : T.trait_ref) (type_id : T.assoc_type_id) (generics : T.generic_args) :
     bool =
   match_trait_decl_ref_item ctx c m pid tr.trait_decl_ref
-    (GAstUtils.AssocIdType type_id) generics
+    (T.AssocIdType type_id) generics
 
 and match_generic_args (ctx : ctx) (c : match_config) (m : maps)
     (pgenerics : generic_args) (generics : T.generic_args) : bool =
@@ -812,13 +812,13 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : T.fn_ptr)
             let method_generics = TypesUtils.empty_generic_args in
             match_trait_decl_ref_item ctx c (mk_empty_maps ()) p
               { binder_value = trait_ref; binder_regions = [] }
-              (GAstUtils.AssocIdMethod item_id) method_generics
+              (T.AssocIdMethod item_id) method_generics
         | _ -> false
       in
       match_function_name || match_trait_ref
   | TraitMethod (tr, method_id) ->
       match_trait_decl_ref_item ctx c (mk_empty_maps ()) p tr.trait_decl_ref
-        (GAstUtils.AssocIdMethod method_id) func.generics
+        (T.AssocIdMethod method_id) func.generics
 
 let mk_name_with_generics_matcher (ctx : ctx) (c : match_config) (pat : string)
     : T.name -> T.generic_args -> bool =
