@@ -5,6 +5,17 @@
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -27,6 +38,14 @@ where
     TraitClause0: (Self: Drop),
     TypeOutlives0: Self: '_0,
 = <opaque>
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
 
 // Full name: test_crate::Foo
 struct Foo {}
@@ -109,11 +128,11 @@ fn main()
     storage_dead(_2)
     storage_live(_3)
     _4 = const 255u8 checked.+ const 1u8
-    assert(move _4.1 == false) (overflow) else panic
+    assert(move _4._1 == false) (overflow) else panic
     ↳⚡ conditional_drop[drop_glue<'2>] f
         ↳⚡ unwind_terminate
         unwind_continue
-    _3 = move _4.0
+    _3 = move _4._0
     storage_dead(_3)
     storage_live(_5)
     _5 = &f

@@ -3,6 +3,8 @@
 // Full name: core::io::io_slice::IoSlice
 pub opaque type IoSlice<'a>
 
+struct () {}
+
 // Full name: core::io::io_slice::{IoSlice<'a>}::advance_slices
 pub fn advance_slices<'a, '_1, '_2>(_1: &'_1 mut &'_2 mut [IoSlice<'a>], _2: usize)
 where

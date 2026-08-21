@@ -41,6 +41,8 @@ pub trait Eq<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::hash::Hasher
 pub trait Hasher<Self>
 {
@@ -128,6 +130,10 @@ where
     storage_dead(_2)
     storage_dead(v)
     return
+}
+
+struct str {
+  _0: [u8],
 }
 
 // Full name: test_crate::f

@@ -22,6 +22,8 @@ pub trait Sized<Self>
 pub fn size_of::<()>() -> usize
 = <opaque>
 
+struct () {}
+
 // Full name: test_crate::SizedTypeProperties
 pub trait SizedTypeProperties<Self>
 {

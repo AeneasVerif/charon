@@ -1,3 +1,5 @@
+struct () {}
+
 #[lang_item(Destruct)]
 pub trait core::marker::Destruct<Self>
 {

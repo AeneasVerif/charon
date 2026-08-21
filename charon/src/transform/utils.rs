@@ -47,12 +47,9 @@ impl GenericsSource {
     }
 }
 
-impl TypeId {
+impl TypeDeclId {
     pub fn generics_target(&self) -> GenericsSource {
-        match *self {
-            TypeId::Adt(decl_id) => GenericsSource::item(decl_id),
-            TypeId::Builtin(..) => GenericsSource::Builtin,
-        }
+        GenericsSource::item(*self)
     }
 }
 impl FunId {

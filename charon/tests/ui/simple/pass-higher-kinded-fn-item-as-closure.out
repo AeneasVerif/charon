@@ -14,6 +14,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -70,6 +72,10 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
     vtable: core::ops::function::Fn::{vtable}<Args, Self_Clause1_Clause1_Output>
 }
 
+struct (_,)<A> {
+  _0: A,
+}
+
 // Full name: test_crate::flabada
 pub fn flabada<'a>(x: &'a ()) -> &'a ()
 {
@@ -90,7 +96,7 @@ pub fn {impl Fn<(&'a (),), &'a ()> for for<'a> flabada<'a>}::call<'a, '_1>(state
     let args: (&'a (),); // arg #2
 
     storage_live(_0)
-    _0 = flabada<'a>(move args.0)
+    _0 = flabada<'a>(move args._0)
     ↳⚡ storage_dead(args)
         storage_dead(state)
         unwind_continue
@@ -107,7 +113,7 @@ pub fn call_mut<'a, '_1>(state: &'_1 mut for<'a> flabada<'a>, args: (&'a (),)) -
     let args: (&'a (),); // arg #2
 
     storage_live(_0)
-    _0 = flabada<'a>(move args.0)
+    _0 = flabada<'a>(move args._0)
     ↳⚡ storage_dead(args)
         storage_dead(state)
         unwind_continue
@@ -124,7 +130,7 @@ pub fn call_once<'a>(state: for<'a> flabada<'a>, args: (&'a (),)) -> &'a ()
     let args: (&'a (),); // arg #2
 
     storage_live(_0)
-    _0 = flabada<'a>(move args.0)
+    _0 = flabada<'a>(move args._0)
     ↳⚡ storage_dead(args)
         storage_dead(state)
         unwind_continue

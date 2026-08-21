@@ -1,4 +1,5 @@
 {
+  "<tuple_0>": "None",
   "test_crate::Alias": "Length",
   "test_crate::StrDst": "Length",
   "test_crate::SliceDst": "Length",
@@ -22,6 +23,7 @@
   "test_crate::GenericBehindIndirection": "None",
   "test_crate::GenericBehindIndirectionUnsized": "None",
   "test_crate::ThinGeneric": "None",
+  "<str>": "Length",
   "alloc::boxed::Box": "None",
   "alloc::alloc::Global": "None",
   "core::alloc::layout::Layout": "None",

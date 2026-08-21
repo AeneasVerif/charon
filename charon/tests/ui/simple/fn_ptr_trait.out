@@ -34,6 +34,8 @@ pub trait Copy<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::FnPtr
 #[fundamental]
 #[lang_item(FnPtrTrait)]

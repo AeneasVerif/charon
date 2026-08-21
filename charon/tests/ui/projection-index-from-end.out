@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: test_crate::slice_pattern_end
 fn slice_pattern_end<'_0>(x: &'_0 [()])
 {

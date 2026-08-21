@@ -18,8 +18,18 @@ pub trait Sized<Self>
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
 
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn impl_Destruct_for_Box::drop_glue<'_0, T, A>(_1: &'_0 mut alloc::boxed::Box<T>[TraitClause0, TraitClause1])
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
+
+struct () {}
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box<T>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn impl_Destruct_for_Box::drop_glue<'_0, T, A>(_1: &'_0 mut Box<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
@@ -29,7 +39,7 @@ where
 
 #[track_caller]
 #[diagnostic_item("box_new")]
-pub fn alloc::boxed::{alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<T>(_1: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
+pub fn alloc::boxed::{Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<T>(_1: T) -> Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
 = <opaque>
@@ -91,8 +101,8 @@ fn foo()
     let _2: &'1 [i32]; // anonymous local
     let _3: &'3 [i32; 2usize]; // anonymous local
     let _4: &'4 [i32; 2usize]; // anonymous local
-    let _5: alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // anonymous local
-    let _6: alloc::boxed::Box<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]; // anonymous local
+    let _5: Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // anonymous local
+    let _6: Box<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]; // anonymous local
     let _7: [i32; 2usize]; // anonymous local
     let _8: Rc<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // anonymous local
     let _9: Rc<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]; // anonymous local
@@ -101,8 +111,8 @@ fn foo()
     let _12: &'8 (dyn Display + '9); // anonymous local
     let _13: &'11 String; // anonymous local
     let _14: &'12 String; // anonymous local
-    let _15: alloc::boxed::Box<(dyn Display + '17)>[{built_in impl MetaSized for (dyn Display + '19)}, {built_in impl Sized for Global}]; // anonymous local
-    let _16: alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
+    let _15: Box<(dyn Display + '17)>[{built_in impl MetaSized for (dyn Display + '19)}, {built_in impl Sized for Global}]; // anonymous local
+    let _16: Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]; // anonymous local
     let _17: String; // anonymous local
     let _18: &'20 String; // anonymous local
     let _19: Rc<(dyn Display + '25)>[{built_in impl MetaSized for (dyn Display + '27)}, {built_in impl Sized for Global}]; // anonymous local
@@ -132,16 +142,16 @@ fn foo()
     storage_live(_6)
     storage_live(_7)
     _7 = copy array
-    _6 = alloc::boxed::{alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<[i32; 2usize]>[{built_in impl Sized for [i32; 2usize]}](move _7)
+    _6 = alloc::boxed::{Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<[i32; 2usize]>[{built_in impl Sized for [i32; 2usize]}](move _7)
     ↳⚡ unwind_continue
-    _5 = unsize_cast<alloc::boxed::Box<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 2usize>(move _6)
+    _5 = unsize_cast<Box<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}], Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 2usize>(move _6)
     conditional_drop[impl_Destruct_for_Box::drop_glue<'31, [i32; 2usize], Global>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]] _6
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'33, [i32], Global>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]] _5
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_7)
     storage_dead(_6)
-    set_type(typeof(_5) <= alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}])
+    set_type(typeof(_5) <= Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}])
     conditional_drop[impl_Destruct_for_Box::drop_glue<'32, [i32], Global>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]] _5
     ↳⚡ unwind_continue
     storage_dead(_5)
@@ -186,13 +196,13 @@ fn foo()
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_18)
-    _16 = alloc::boxed::{alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<String>[{built_in impl Sized for String}](move _17)
+    _16 = alloc::boxed::{Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<String>[{built_in impl Sized for String}](move _17)
     ↳⚡ conditional_drop[impl_Destruct_for_String::drop_glue<'44>] _17
         ↳⚡ unwind_terminate
         conditional_drop[impl_Destruct_for_String::drop_glue<'43>] string
         ↳⚡ unwind_terminate
         unwind_continue
-    _15 = unsize_cast<alloc::boxed::Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], alloc::boxed::Box<(dyn Display + '45)>[{built_in impl MetaSized for (dyn Display + '47)}, {built_in impl Sized for Global}], &impl_Display_for_String::{vtable}>(move _16)
+    _15 = unsize_cast<Box<String>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}], Box<(dyn Display + '45)>[{built_in impl MetaSized for (dyn Display + '47)}, {built_in impl Sized for Global}], &impl_Display_for_String::{vtable}>(move _16)
     conditional_drop[impl_Destruct_for_Box::drop_glue<'48, String, Global>[{built_in impl MetaSized for String}, {built_in impl Sized for Global}]] _16
     ↳⚡ conditional_drop[impl_Destruct_for_String::drop_glue<'65>] _17
         ↳⚡ unwind_terminate
@@ -203,7 +213,7 @@ fn foo()
         unwind_continue
     storage_dead(_17)
     storage_dead(_16)
-    set_type(typeof(_15) <= alloc::boxed::Box<(dyn Display + '49)>[{built_in impl MetaSized for (dyn Display + '51)}, {built_in impl Sized for Global}])
+    set_type(typeof(_15) <= Box<(dyn Display + '49)>[{built_in impl MetaSized for (dyn Display + '51)}, {built_in impl Sized for Global}])
     conditional_drop[impl_Destruct_for_Box::drop_glue<'64, (dyn Display + '60), Global>[{built_in impl MetaSized for (dyn Display + '60)}, {built_in impl Sized for Global}]] _15
     ↳⚡ conditional_drop[impl_Destruct_for_String::drop_glue<'43>] string
         ↳⚡ unwind_terminate

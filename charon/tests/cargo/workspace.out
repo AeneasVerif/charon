@@ -1,5 +1,19 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
 // Full name: crate1::random_number
 pub fn random_number() -> u32
 {
@@ -8,6 +22,14 @@ pub fn random_number() -> u32
     storage_live(_0)
     _0 = const 4u32
     return
+}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
 }
 
 // Full name: crate2::extra_random_number
@@ -24,9 +46,9 @@ pub fn extra_random_number() -> u32
     _1 = random_number()
     ↳⚡ unwind_continue
     _2 = copy _1 checked.+ const 1u32
-    assert(move _2.1 == false) (overflow) else panic
+    assert(move _2._1 == false) (overflow) else panic
     ↳⚡ unwind_continue
-    _0 = move _2.0
+    _0 = move _2._0
     storage_dead(_1)
     return
 }

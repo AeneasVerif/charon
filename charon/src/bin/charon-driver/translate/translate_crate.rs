@@ -514,6 +514,20 @@ impl<'tcx> TranslateCtx<'tcx> {
         Ok(*item_id.as_const().unwrap())
     }
 
+    /// Claim the first type id for the declaration of the unit type.
+    pub(crate) fn reserve_unit_decl(&mut self) {
+        let def_id = hax::DefId::make_synthetic(&self.hax_state, hax::SyntheticItem::Tuple(0));
+        let item_src = if self.options.monomorphize_with_hax
+            && let Ok(def) = self.poly_hax_def(&def_id)
+        {
+            TransItemSource::monomorphic(def.this(), TransItemSourceKind::Type)
+        } else {
+            TransItemSource::polymorphic(&def_id, TransItemSourceKind::Type)
+        };
+        let id: Option<TypeDeclId> = self.register_no_enqueue(&None, &item_src);
+        assert_eq!(id, Some(TypeDeclId::UNIT), "the unit type must come first");
+    }
+
     pub(crate) fn register_target_info(&mut self) {
         let target_data = &self.tcx.data_layout;
         let triple = self.get_target_triple();
@@ -798,17 +812,30 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<TypeDeclRef, Error> {
-        match self.recognize_builtin_type(item)? {
-            Some(id) => {
-                let generics =
-                    self.translate_generic_args(span, &item.generic_args, &item.trait_proofs)?;
-                Ok(TypeDeclRef {
-                    id: TypeId::Builtin(id),
-                    generics: Box::new(generics),
-                })
-            }
-            None => self.translate_item(span, item, TransItemSourceKind::Type),
-        }
+        self.translate_type_decl_ref_maybe_enqueue(span, item, TransItemSourceKind::Type, true)
+    }
+
+    /// Register a type item and maybe enqueue it for translation. Use this to
+    /// obtain a `TypeDeclRef`, don't construct one manually.
+    pub(crate) fn translate_type_decl_ref_maybe_enqueue(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef,
+        kind: TransItemSourceKind,
+        enqueue: bool,
+    ) -> Result<TypeDeclRef, Error> {
+        let item_ref: DeclRef<ItemId> =
+            self.translate_item_maybe_enqueue(span, item, kind, enqueue)?;
+        assert!(item_ref.trait_ref.is_none());
+        let builtin = match kind {
+            TransItemSourceKind::Type => self.recognize_builtin_type(item),
+            _ => None,
+        };
+        Ok(TypeDeclRef {
+            id: item_ref.id.try_into().unwrap(),
+            generics: item_ref.generics,
+            builtin,
+        })
     }
 
     /// Translate a reference to a trait method declaration without registering the declaration as
@@ -1028,6 +1055,7 @@ pub fn translate<'tcx>(
         lt_mutability_computer: Default::default(),
     };
     ctx.register_target_info();
+    ctx.reserve_unit_decl();
 
     // Start translating from the selected items.
     for start_from in ctx.options.start_from.clone() {

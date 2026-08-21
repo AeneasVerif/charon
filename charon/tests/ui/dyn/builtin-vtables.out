@@ -16,6 +16,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -99,6 +101,10 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 
+struct (_,)<A> {
+  _0: A,
+}
+
 // Full name: test_crate::takes_fn
 fn takes_fn<'_0>(_1: &'_0 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '_0))
 {
@@ -132,7 +138,7 @@ fn {impl Fn<(u32,)> for some_fn}::call<'_0>(state: &'_0 some_fn, args: (u32,)) -
     let args: (u32,); // arg #2
 
     storage_live(_0)
-    _0 = some_fn(move args.0)
+    _0 = some_fn(move args._0)
     ↳⚡ storage_dead(args)
         storage_dead(state)
         unwind_continue
@@ -149,7 +155,7 @@ fn {impl FnMut<(u32,)> for some_fn}::call_mut<'_0>(state: &'_0 mut some_fn, args
     let args: (u32,); // arg #2
 
     storage_live(_0)
-    _0 = some_fn(move args.0)
+    _0 = some_fn(move args._0)
     ↳⚡ storage_dead(args)
         storage_dead(state)
         unwind_continue
@@ -166,7 +172,7 @@ fn {impl FnOnce<(u32,)> for some_fn}::call_once(state: some_fn, args: (u32,)) ->
     let args: (u32,); // arg #2
 
     storage_live(_0)
-    _0 = some_fn(move args.0)
+    _0 = some_fn(move args._0)
     ↳⚡ storage_dead(args)
         storage_dead(state)
         unwind_continue
@@ -219,7 +225,7 @@ fn impl_Fn_tuple_for_closure::call<'_0>(_1: &'_0 closure, tupled_args: (u32,)) -
 
     storage_live(_0)
     storage_live(_3)
-    _3 = move tupled_args.0
+    _3 = move tupled_args._0
     _0 = const 42u32
     storage_dead(_3)
     storage_dead(tupled_args)

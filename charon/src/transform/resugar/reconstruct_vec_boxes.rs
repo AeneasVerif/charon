@@ -85,13 +85,7 @@ fn assume_init_fn_ptr<'a>(ctx: &TransformCtx, call: &'a Call) -> Option<&'a FnPt
 }
 
 fn box_inner(ty: &Ty) -> Option<Ty> {
-    let TyKind::Adt(TypeDeclRef {
-        id: TypeId::Builtin(BuiltinTy::Box),
-        generics,
-    }) = ty.kind()
-    else {
-        return None;
-    };
+    let TypeDeclRef { generics, .. } = ty.as_adt().filter(|tref| tref.is_box())?;
     Some(generics.types[TypeVarId::from_usize(0)].clone())
 }
 
@@ -331,7 +325,7 @@ impl UllbcPass for Transform {
                 let uninit_box = call.dest.clone();
                 let maybe_uninit_array_ty = box_inner(uninit_box.ty())?;
                 let maybe_uninit_ref = maybe_uninit_array_ty.as_adt()?;
-                let mu_decl = &ctx.translated.type_decls.get(maybe_uninit_ref.as_adt()?)?;
+                let mu_decl = &ctx.translated.type_decls.get(maybe_uninit_ref.id)?;
                 if mu_decl.item_meta.lang_item.as_ref() != Some(&from_rustc::LangItem::MaybeUninit)
                 {
                     return None;

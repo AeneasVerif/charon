@@ -63,6 +63,8 @@ enum Callable<'a> {
     FnDef {
         item: &'a hax::ItemRef,
         sig: &'a hax::PolyFnSig,
+        /// The arguments, tupled as the `Fn*` traits take them. Binds the same variables as `sig`.
+        tupled_args_ty: &'a hax::Binder<hax::Ty>,
     },
 }
 
@@ -78,6 +80,15 @@ impl<'a> Callable<'a> {
         match self {
             Callable::Closure(args) => &args.fn_sig,
             Callable::FnDef { sig, .. } => sig,
+        }
+    }
+
+    /// The arguments, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`. This is under the
+    /// same binder as `sig`.
+    fn tupled_args_ty(self) -> &'a hax::Ty {
+        match self {
+            Callable::Closure(args) => args.tupled_args_ty.hax_skip_binder_ref(),
+            Callable::FnDef { tupled_args_ty, .. } => tupled_args_ty.hax_skip_binder_ref(),
         }
     }
 }
@@ -107,6 +118,7 @@ impl<'a> CallableFnImpls<'a> {
             }),
             hax::FullDefKind::Fn {
                 sig,
+                tupled_args_ty,
                 fn_once_impl,
                 fn_mut_impl,
                 fn_impl,
@@ -114,6 +126,7 @@ impl<'a> CallableFnImpls<'a> {
             }
             | hax::FullDefKind::AssocFn {
                 sig,
+                tupled_args_ty,
                 fn_once_impl,
                 fn_mut_impl,
                 fn_impl,
@@ -121,6 +134,7 @@ impl<'a> CallableFnImpls<'a> {
             }
             | hax::FullDefKind::Ctor {
                 sig,
+                tupled_args_ty,
                 fn_once_impl,
                 fn_mut_impl,
                 fn_impl,
@@ -129,6 +143,7 @@ impl<'a> CallableFnImpls<'a> {
                 callable: Callable::FnDef {
                     item: def.this(),
                     sig,
+                    tupled_args_ty: tupled_args_ty.as_ref()?,
                 },
                 fn_once_impl: fn_once_impl.as_deref(),
                 fn_mut_impl: fn_mut_impl.as_deref(),
@@ -235,7 +250,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         span: Span,
         closure: &hax::ClosureArgs,
     ) -> Result<TypeDeclRef, Error> {
-        self.translate_item(span, &closure.item, TransItemSourceKind::Type)
+        self.translate_type_decl_ref(span, &closure.item)
     }
 
     /// For stateless closures, translate a function reference to the top-level function that
@@ -407,10 +422,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             }
         };
 
-        // The types that the closure takes as input.
-        let input_tys: Vec<Ty> = mem::take(&mut fun_sig.inputs);
-        // The method takes `self` and the closure inputs as a tuple.
-        fun_sig.inputs = vec![state_ty, Ty::mk_tuple(input_tys)];
+        let tupled_args_ty = self
+            .translate_ty(span, callable.tupled_args_ty())?
+            .move_under_binder();
+        fun_sig.inputs = vec![state_ty, tupled_args_ty];
 
         Ok(RegionBinder {
             regions: bound_regions,
@@ -476,6 +491,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     }
                 });
 
+                // Remember how many arguments there are
+                let closure_arg_count = locals.arg_count - 1;
                 let mut old_locals = mem::take(&mut locals.locals).into_iter();
                 locals.arg_count = 2;
                 locals.locals.push(old_locals.next().unwrap()); // ret
@@ -486,8 +503,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     l
                 }));
 
-                let untupled_args = tupled_ty.as_tuple().unwrap();
-                let new_stts = untupled_args.iter().cloned().enumerate().map(|(i, ty)| {
+                let untupled_args = locals
+                    .locals
+                    .iter()
+                    .skip(3)
+                    .take(closure_arg_count)
+                    .map(|l| &l.ty)
+                    .cloned();
+                let new_stts = untupled_args.enumerate().map(|(i, ty)| {
                     let nth_field = tupled_arg
                         .clone()
                         .project(ProjectionElem::Field(None, FieldId::new(i)), ty);
@@ -605,11 +628,17 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let output = builder.new_var(None, signature.output.clone());
         let _state = builder.new_var(Some("state".to_string()), signature.inputs[0].clone());
-        let tupled_args = builder.new_var(Some("args".to_string()), signature.inputs[1].clone());
-        let arg_tys = signature.inputs[1].as_tuple().unwrap();
+        let tupled_args_ty = &signature.inputs[1];
+        let tupled_args = builder.new_var(Some("args".to_string()), tupled_args_ty.clone());
+
+        // We need the type declaration to have been translated to get the fields (since in monomorphic)
+        // mode they aren't in the generics. So ensure it's been translated!
+        let tuple_id = tupled_args_ty.as_adt().unwrap().id;
+        let _ = self.get_or_translate(ItemId::Type(tuple_id))?;
+        let arg_tys = tupled_args_ty.as_tuple_fields(&self.t_ctx.translated);
+
         let args = arg_tys
-            .iter()
-            .cloned()
+            .into_iter()
             .enumerate()
             .map(|(i, ty)| {
                 let nth_field = tupled_args
@@ -650,7 +679,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let impl_ref = self.translate_callable_impl_ref(span, callable.item(), target_kind)?;
         let src = FunSource::TraitImpl {
             impl_ref,
-            trait_ref: implemented_trait,
+            trait_ref: implemented_trait.clone(),
             item_id: method_id,
             reuses_default: false,
         };
@@ -790,7 +819,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 .enumerate()
                 .map(|(i, ty)| builder.new_var(Some(format!("arg{}", i + 1)), ty.clone()))
                 .collect();
-            let args_tupled_ty = Ty::mk_tuple(signature.inputs.clone());
+            let args_tupled_ty =
+                self.translate_ty(span, closure.tupled_args_ty.hax_skip_binder_ref())?;
             let args_tupled = builder.new_var(Some("args".to_string()), args_tupled_ty.clone());
             let state = builder.new_var(Some("state".to_string()), state_ty.clone());
 

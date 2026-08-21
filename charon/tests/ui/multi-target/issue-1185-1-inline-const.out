@@ -3,6 +3,8 @@ pub fn core::num::{u32}::MAX() -> u32
 
 pub const core::num::{u32}::MAX: u32 = core::num::{u32}::MAX()
 
+struct () {}
+
 pub fn test_crate::const_time_array_copy_mwe<'_0, const N : usize>(_a: &'_0 mut [u8; N])
 {
     let _0: (); // return

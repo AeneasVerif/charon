@@ -34,6 +34,11 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+struct (_, _)<A, B> {
+  _0: A,
+  _1: B,
+}
+
 #[lang_item(Destruct)]
 pub trait core::marker::Destruct::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>
 {
@@ -82,14 +87,14 @@ where
     TypeOutlives0: T: 'a,
     TypeOutlives1: U: 'a,
 {
-    let _0: (&'4 mut T, &'5 mut U); // return
-    let x: (&'6 mut T, &'7 mut U); // arg #1
-    let _2: (&'8 mut T, &'9 mut U); // anonymous local
+    let _0: (&'8 mut T, &'9 mut U); // return
+    let x: (&'13 mut T, &'14 mut U); // arg #1
+    let _2: (&'18 mut T, &'19 mut U); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
     _2 = move x
-    _0 = test_crate::id::<(&_ mut _, &_ mut _)><'14, '15, T, U>[{built_in impl core::marker::Sized::<(&_ mut _, &_ mut _)><'14, '15, U> for T}](move _2)
+    _0 = test_crate::id::<(&_ mut _, &_ mut _)><'32, '33, T, U>[{built_in impl core::marker::Sized::<(&_ mut _, &_ mut _)><'32, '33, U> for T}](move _2)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)

@@ -14,6 +14,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -71,6 +73,10 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 
+struct (_,)<A> {
+  _0: A,
+}
+
 // Full name: test_crate::call_fn_shared::closure
 struct closure<'_0> {
   _0: &'_0 [u8],
@@ -91,7 +97,7 @@ where
 
     storage_live(_0)
     storage_live(i)
-    i = move tupled_args.0
+    i = move tupled_args._0
     storage_live(_4)
     _4 = copy i
     storage_live(_5)

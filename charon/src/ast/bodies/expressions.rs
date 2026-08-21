@@ -406,8 +406,9 @@ impl Rvalue {
         Rvalue::Aggregate(
             AggregateKind::Adt(
                 TypeDeclRef {
-                    id: TypeId::Builtin(BuiltinTy::Tuple),
+                    id: TypeDeclId::UNIT,
                     generics: Box::new(GenericArgs::empty()),
+                    builtin: Some(BuiltinTy::Tuple),
                 },
                 None,
                 None,

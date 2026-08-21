@@ -88,8 +88,7 @@ impl VisitAst for OutlivesGatherer<'_> {
                 }
             }
             TyKind::Adt(type_ref)
-                if let Some(type_id) = type_ref.as_adt()
-                    && let Some(decl) = self.type_decls.get(type_id)
+                if let Some(decl) = self.type_decls.get(type_ref.id)
                     && let Some(generics) = type_ref
                         .generics
                         .clone()
@@ -163,10 +162,8 @@ impl<'a> ClosureOutlivesComputer<'a> {
             self.type_decls[type_id]
                 .kind
                 .dyn_visit(|type_ref: &TypeDeclRef| {
-                    if let Some(type_id) = type_ref.as_adt()
-                        && self.closure_tys.get(&type_id).is_some()
-                    {
-                        dependencies.push(type_id);
+                    if self.closure_tys.get(&type_ref.id).is_some() {
+                        dependencies.push(type_ref.id);
                     }
                 });
             for dependency in dependencies {

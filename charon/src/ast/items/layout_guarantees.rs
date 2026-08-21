@@ -181,8 +181,7 @@ impl ExactSizeExpr {
                                 }
                                 _ => {
                                     if let Some(ty_ref) = ty.as_adt()
-                                        && let Some(id) = ty_ref.as_adt()
-                                        && let Some(decl) = self.krate.type_decls.get(id)
+                                        && let Some(decl) = self.krate.type_decls.get(ty_ref.id)
                                         && let Some(layout) = decl.layout.get(self.target)
                                         && let Some(value) = exact_guarantee(&layout.size)
                                     {
@@ -207,8 +206,7 @@ impl ExactSizeExpr {
                                 }
                                 _ => {
                                     if let Some(ty_ref) = ty.as_adt()
-                                        && let Some(id) = ty_ref.as_adt()
-                                        && let Some(decl) = self.krate.type_decls.get(id)
+                                        && let Some(decl) = self.krate.type_decls.get(ty_ref.id)
                                         && let Some(layout) = decl.layout.get(self.target)
                                         && let Some(value) = exact_guarantee(&layout.align)
                                     {
@@ -568,12 +566,13 @@ mod tests {
             },
         );
         let ty = TyKind::Adt(TypeDeclRef::new(
-            TypeId::Adt(id),
+            id,
             GenericArgs::new_types(
                 [TyKind::Literal(LiteralTy::UInt(UIntTy::U16)).into_ty()]
                     .into_iter()
                     .collect(),
             ),
+            None,
         ))
         .into_ty();
         let size_of = || {

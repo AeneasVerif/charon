@@ -1,5 +1,12 @@
 # Final LLBC before serialization:
 
+struct () {}
+
+struct (_, _)::<usize, bool> {
+  _0: usize,
+  _1: bool,
+}
+
 // Full name: test_crate::other
 fn other()
 {
@@ -98,7 +105,7 @@ fn can_erase_check()
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy z.0
+    _4 = copy z._0
     _3 = sink_int(move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
@@ -127,7 +134,7 @@ fn must_preserve_overflow_flag()
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy z.1
+    _4 = copy z._1
     _3 = sink_bool(move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
@@ -154,7 +161,7 @@ fn mixed_field0_and_cross_block_tuple()
     z = const 0usize checked.+ const 0usize
     storage_live(_2)
     storage_live(_3)
-    _3 = copy z.0
+    _3 = copy z._0
     _2 = sink_int(move _3)
     ↳⚡ unwind_continue
     storage_dead(_3)
@@ -197,7 +204,7 @@ fn can_erase_check_multi_block()
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy z.0
+    _4 = copy z._0
     _3 = sink_int(move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
@@ -208,7 +215,7 @@ fn can_erase_check_multi_block()
     storage_dead(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = copy z.0
+    _7 = copy z._0
     _6 = sink_int(move _7)
     ↳⚡ unwind_continue
     storage_dead(_7)

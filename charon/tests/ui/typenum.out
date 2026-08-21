@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: test_crate::UInt
 pub struct UInt<U, B> {
   _0: U,

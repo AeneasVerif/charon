@@ -18,6 +18,24 @@ pub trait Sized<Self>
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
 
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
+
+struct () {}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
 // Full name: test_crate::choose
 pub fn choose<'a, T>(b: bool, x: &'a mut T, y: &'a mut T) -> &'a mut T
 where
@@ -200,7 +218,7 @@ pub enum CList<T>
 where
     TraitClause0: (T: Sized),
 {
-  CCons { _0: T, _1: alloc::boxed::Box<CList<T>[TraitClause0]>[{built_in impl MetaSized for CList<T>[TraitClause0]}, {built_in impl Sized for Global}] },
+  CCons { _0: T, _1: Box<CList<T>[TraitClause0]>[{built_in impl MetaSized for CList<T>[TraitClause0]}, {built_in impl Sized for Global}] },
   CNil,
 }
 
@@ -214,7 +232,7 @@ where
     let l: &'3 CList<T>[TraitClause0]; // arg #1
     let i: u32; // arg #2
     let x: &'4 T; // local
-    let tl: &'6 alloc::boxed::Box<CList<T>[TraitClause0]>[{built_in impl MetaSized for CList<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
+    let tl: &'6 Box<CList<T>[TraitClause0]>[{built_in impl MetaSized for CList<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
     let _5: bool; // anonymous local
     let _6: u32; // anonymous local
     let _7: &'7 T; // anonymous local
@@ -295,7 +313,7 @@ where
     let _3: &'4 mut T; // anonymous local
     let _4: &'5 mut T; // anonymous local
     let x: &'6 mut T; // local
-    let tl: &'8 mut alloc::boxed::Box<CList<T>[TraitClause0]>[{built_in impl MetaSized for CList<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
+    let tl: &'8 mut Box<CList<T>[TraitClause0]>[{built_in impl MetaSized for CList<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
     let _7: &'9 mut T; // anonymous local
     let _8: &'10 mut T; // anonymous local
     let _9: bool; // anonymous local
@@ -385,7 +403,7 @@ where
     let l: &'3 mut CList<T>[TraitClause0]; // arg #1
     let i: u32; // arg #2
     let x: &'4 mut T; // local
-    let tl: &'6 mut alloc::boxed::Box<CList<T>[TraitClause0]>[{built_in impl MetaSized for CList<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
+    let tl: &'6 mut Box<CList<T>[TraitClause0]>[{built_in impl MetaSized for CList<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
     let _5: bool; // anonymous local
     let _6: u32; // anonymous local
     let _7: u32; // anonymous local
@@ -503,7 +521,7 @@ where
     let l: &'2 mut CList<T>[TraitClause0]; // arg #1
     let _2: &'3 mut CList<T>[TraitClause0]; // anonymous local
     let _3: &'4 mut CList<T>[TraitClause0]; // anonymous local
-    let tl: &'6 mut alloc::boxed::Box<CList<T>[TraitClause0]>[{built_in impl MetaSized for CList<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
+    let tl: &'6 mut Box<CList<T>[TraitClause0]>[{built_in impl MetaSized for CList<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
     let _5: &'7 mut CList<T>[TraitClause0]; // anonymous local
     let _6: &'8 mut CList<T>[TraitClause0]; // anonymous local
 

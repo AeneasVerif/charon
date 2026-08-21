@@ -505,10 +505,7 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
 
     // Check that generics match the parameters of the target item.
     fn enter_type_decl_ref(&mut self, x: &mut TypeDeclRef) {
-        // TODO: check builtin generics.
-        if let Some(id) = x.as_adt() {
-            self.assert_matches_item(id, &mut x.generics)
-        }
+        self.assert_matches_item(x.id, &mut x.generics)
     }
     fn enter_fun_decl_ref(&mut self, x: &mut FunDeclRef) {
         self.assert_matches_item(x.id, &mut x.generics);

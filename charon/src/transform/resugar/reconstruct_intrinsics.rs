@@ -22,7 +22,6 @@ impl UllbcPass for Transform {
                 && let generics = fn_ptr.pre_mono_generics(&ctx.ctx.translated)
                 && let Some(ty) = generics.types.get(TypeVarId::ZERO)
                 && let TyKind::Adt(tref) = ty.kind()
-                && let Some(type_id) = tref.as_adt()
                 && let [Operand::Const(arg0), Operand::Const(arg1)] = call.args.as_slice()
                 && let ConstantExprKind::Literal(Literal::Scalar(ScalarValue::Unsigned(
                     UIntTy::U32,
@@ -32,7 +31,7 @@ impl UllbcPass for Transform {
                     UIntTy::U32,
                     field_id,
                 ))) = arg1.kind()
-                && let Some(tdecl) = ctx.ctx.translated.type_decls.get(type_id)
+                && let Some(tdecl) = ctx.ctx.translated.type_decls.get(tref.id)
             {
                 // TODO: move into a pass, maybe also size_of/align_of? or remove the nullops.
                 // maybe this is a constant also.

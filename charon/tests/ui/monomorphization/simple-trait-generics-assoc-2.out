@@ -26,6 +26,8 @@ fn core::marker::MetaSized::{vtable}::<bool>() -> core::marker::MetaSized::{vtab
 
 static core::marker::MetaSized::{vtable}::<bool>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<bool>()
 
+struct () {}
+
 struct test_crate::Trait::{vtable} {
   size: usize,
   align: usize,

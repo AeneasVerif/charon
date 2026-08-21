@@ -775,7 +775,12 @@ pub enum TyKind {
         ItemRef::translate_synthetic(s, SyntheticItem::Tuple(tys.len()), args)
     }),)]
     Tuple(ItemRef),
-    Str,
+    /// The `ItemRef` uses the fake `Str` def_id.
+    #[custom_arm(FROM_TYPE::Str => TO_TYPE::Str({
+        let args = s.base().tcx.mk_args(&[]);
+        ItemRef::translate_synthetic(s, SyntheticItem::Str, args)
+    }),)]
+    Str(ItemRef),
     RawPtr(Box<Ty>, Mutability),
     Ref(Region, Box<Ty>, Mutability),
     #[custom_arm(FROM_TYPE::Dynamic(preds, region) => TyKind::Dynamic(resolve_for_dyn(s, preds, |_, _| ()), region.sinto(s)),)]
@@ -915,8 +920,10 @@ pub enum AdtKind {
     Array,
     /// We sometimes pretend slices are an ADT and generate a `FullDef` for them.
     Slice,
-    /// We sometimes pretend tuples are an ADT and generate a `FullDef` for them.
+    /// Tuples get a type declaration of their own, we always generate a `FullDef` for them.
     Tuple,
+    /// `str` gets a type declaration of its own, we always generate a `FullDef` for it.
+    Str,
 }
 
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, AdtKind> for ty::AdtKind {
@@ -1352,6 +1359,7 @@ impl<'tcx> BinderVariances<'tcx> for ty::FnSig<'tcx> {
     }
 }
 
+impl<'tcx> BinderVariances<'tcx> for ty::Ty<'tcx> {}
 impl<'tcx> BinderVariances<'tcx> for ty::ClauseKind<'tcx> {}
 impl<'tcx> BinderVariances<'tcx> for ty::PredicateKind<'tcx> {}
 impl<'tcx> BinderVariances<'tcx> for ty::TraitRef<'tcx> {}
@@ -1399,6 +1407,17 @@ pub struct CoercePredicate {
     pub b: Ty,
 }
 
+/// The arguments of the given signature, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
+/// The result binds the same variables as the signature it comes from, so that the two agree on
+/// the regions they use.
+pub fn tupled_args_ty<'tcx>(
+    s: &impl UnderOwnerState<'tcx>,
+    sig: ty::PolyFnSig<'tcx>,
+) -> ty::Binder<'tcx, ty::Ty<'tcx>> {
+    let tcx = s.base().tcx;
+    sig.map_bound(|sig| ty::Ty::new_tup(tcx, sig.inputs()))
+}
+
 /// Reflects [`ty::ClosureArgs`]
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 
@@ -1409,6 +1428,9 @@ pub struct ClosureArgs {
     pub kind: ClosureKind,
     /// The signature of the function that the closure implements, e.g. `fn(A, B, C) -> D`.
     pub fn_sig: PolyFnSig,
+    /// The arguments of the closure, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
+    /// Binds the same variables as `fn_sig`.
+    pub tupled_args_ty: Binder<Ty>,
     /// The set of captured variables. Together they form the state of the closure.
     pub upvar_tys: Vec<Ty>,
 }
@@ -1510,6 +1532,7 @@ impl ClosureArgs {
         ClosureArgs {
             item,
             kind: closure.kind().sinto(s),
+            tupled_args_ty: tupled_args_ty(s, sig).sinto(s),
             fn_sig: sig.sinto(s),
             upvar_tys: closure.upvar_tys().sinto(s),
         }

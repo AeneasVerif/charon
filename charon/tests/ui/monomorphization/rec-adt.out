@@ -12,6 +12,8 @@ pub enum Option::<NonNull::<Node::<u8>>> {
   Some { _0: NonNull::<Node::<u8>> },
 }
 
+struct () {}
+
 // Full name: test_crate::LinkedList::<u8>
 pub struct LinkedList::<u8> {
   head: Option::<NonNull::<Node::<u8>>>,

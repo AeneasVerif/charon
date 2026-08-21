@@ -257,8 +257,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Don't enqueue the vtable for translation by default. It will be enqueued if used in a
         // `dyn Trait`.
-        let mut vtable_ref: TypeDeclRef =
-            self.translate_item_maybe_enqueue(span, tref, TransItemSourceKind::VTable, enqueue)?;
+        let mut vtable_ref = self.translate_type_decl_ref_maybe_enqueue(
+            span,
+            tref,
+            TransItemSourceKind::VTable,
+            enqueue,
+        )?;
         // Remove the `Self` type variable from the generic parameters.
         vtable_ref
             .generics
@@ -936,8 +940,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Retrieve the expected field types from the struct definition. This avoids complicated
         // substitutions.
         let field_tys = {
-            let vtable_decl_id = vtable_struct_ref.adt_id();
-            let ItemRef::Type(vtable_def) = self.t_ctx.get_or_translate(vtable_decl_id.into())?
+            let ItemRef::Type(vtable_def) =
+                self.t_ctx.get_or_translate(vtable_struct_ref.id.into())?
             else {
                 unreachable!()
             };

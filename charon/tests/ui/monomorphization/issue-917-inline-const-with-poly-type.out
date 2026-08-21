@@ -16,6 +16,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -72,6 +74,10 @@ pub trait Fn<Self, Args>
     proof ImpliedClause2: (Args: Sized)
     proof ImpliedClause3: (Args: Tuple)
     vtable: core::ops::function::Fn::{vtable}
+}
+
+struct (_,)::<()> {
+  _0: (),
 }
 
 // Full name: test_crate::foo::{const}::closure::<()>
@@ -231,7 +237,7 @@ fn call::<()><'_0>(_1: &'_0 closure::<()>, tupled_args: ((),))
     storage_live(_0)
     storage_live(x)
     _0 = ()
-    x = move tupled_args.0
+    x = move tupled_args._0
     _0 = ()
     storage_dead(x)
     storage_dead(tupled_args)

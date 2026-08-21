@@ -49,6 +49,8 @@ where
 #[lang_item(String)]
 pub opaque type String
 
+struct () {}
+
 // Full name: test_crate::Trait
 pub trait Trait<Self>
 {

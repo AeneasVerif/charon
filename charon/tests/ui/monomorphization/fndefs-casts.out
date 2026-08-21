@@ -66,6 +66,12 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}
 }
 
+struct () {}
+
+struct (_,)::<&'_ u32> {
+  _0: &'_ u32,
+}
+
 // Full name: test_crate::foo::<u32>
 fn foo::<u32><'a>(x: &'a u32)
 {
@@ -79,30 +85,30 @@ fn foo::<u32><'a>(x: &'a u32)
     return
 }
 
-// Full name: test_crate::{impl FnOnce<(&'a u32,)> for for<'a> foo::<u32><'a>}
-impl<'a> FnOnce<(&'a u32,)> for for<'a> foo::<u32><'a> {
+// Full name: test_crate::{impl FnOnce<(&'_ u32,)> for for<'a> foo::<u32><'a>}
+impl<'a> FnOnce<(&'_ u32,)> for for<'a> foo::<u32><'a> {
     proof ImpliedClause0: (for<'a> foo::<u32><'a>: MetaSized) = {built_in impl MetaSized for for<'a> foo::<u32><'a>}
-    proof ImpliedClause1: ((&'a u32,): Sized) = {built_in impl Sized for (&'a u32,)}
-    proof ImpliedClause2: ((&'a u32,): Tuple) = {built_in impl Tuple for (&'a u32,)}
-    vtable: {impl FnOnce<(&'a u32,)> for for<'a> foo::<u32><'a>}::{vtable}::<u32><'a>
+    proof ImpliedClause1: ((&'_ u32,): Sized) = {built_in impl Sized for (&'_ u32,)}
+    proof ImpliedClause2: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
+    vtable: {impl FnOnce<(&'_ u32,)> for for<'a> foo::<u32><'a>}::{vtable}::<u32><'a>
 }
 
-// Full name: test_crate::{impl FnMut<(&'a u32,)> for for<'a> foo::<u32><'a>}
-impl<'a> FnMut<(&'a u32,)> for for<'a> foo::<u32><'a> {
+// Full name: test_crate::{impl FnMut<(&'_ u32,)> for for<'a> foo::<u32><'a>}
+impl<'a> FnMut<(&'_ u32,)> for for<'a> foo::<u32><'a> {
     proof ImpliedClause0: (for<'a> foo::<u32><'a>: MetaSized) = {built_in impl MetaSized for for<'a> foo::<u32><'a>}
-    proof ImpliedClause1: (for<'a> foo::<u32><'a>: FnOnce<(&'a u32,)>) = {impl FnOnce<(&'a u32,)> for for<'a> foo::<u32><'a>}<'a>
-    proof ImpliedClause2: ((&'a u32,): Sized) = {built_in impl Sized for (&'a u32,)}
-    proof ImpliedClause3: ((&'a u32,): Tuple) = {built_in impl Tuple for (&'a u32,)}
-    vtable: {impl FnMut<(&'a u32,)> for for<'a> foo::<u32><'a>}::{vtable}::<u32><'a>
+    proof ImpliedClause1: (for<'a> foo::<u32><'a>: FnOnce<(&'_ u32,)>) = {impl FnOnce<(&'_ u32,)> for for<'a> foo::<u32><'a>}<'a>
+    proof ImpliedClause2: ((&'_ u32,): Sized) = {built_in impl Sized for (&'_ u32,)}
+    proof ImpliedClause3: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
+    vtable: {impl FnMut<(&'_ u32,)> for for<'a> foo::<u32><'a>}::{vtable}::<u32><'a>
 }
 
-// Full name: test_crate::{impl Fn<(&'a u32,)> for for<'a> foo::<u32><'a>}
-impl<'a> Fn<(&'a u32,)> for for<'a> foo::<u32><'a> {
+// Full name: test_crate::{impl Fn<(&'_ u32,)> for for<'a> foo::<u32><'a>}
+impl<'a> Fn<(&'_ u32,)> for for<'a> foo::<u32><'a> {
     proof ImpliedClause0: (for<'a> foo::<u32><'a>: MetaSized) = {built_in impl MetaSized for for<'a> foo::<u32><'a>}
-    proof ImpliedClause1: (for<'a> foo::<u32><'a>: FnMut<(&'a u32,)>) = {impl FnMut<(&'a u32,)> for for<'a> foo::<u32><'a>}<'a>
-    proof ImpliedClause2: ((&'a u32,): Sized) = {built_in impl Sized for (&'a u32,)}
-    proof ImpliedClause3: ((&'a u32,): Tuple) = {built_in impl Tuple for (&'a u32,)}
-    vtable: {impl Fn<(&'a u32,)> for for<'a> foo::<u32><'a>}::{vtable}::<u32><'a>
+    proof ImpliedClause1: (for<'a> foo::<u32><'a>: FnMut<(&'_ u32,)>) = {impl FnMut<(&'_ u32,)> for for<'a> foo::<u32><'a>}<'a>
+    proof ImpliedClause2: ((&'_ u32,): Sized) = {built_in impl Sized for (&'_ u32,)}
+    proof ImpliedClause3: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
+    vtable: {impl Fn<(&'_ u32,)> for for<'a> foo::<u32><'a>}::{vtable}::<u32><'a>
 }
 
 // Full name: test_crate::foo::<u8>
@@ -137,12 +143,12 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(c: for<'a> foo::<u32><'a>)
     let _0: (); // return
     let c: for<'a> foo::<u32><'a>; // arg #1
     let _2: &'1 for<'a> foo::<u32><'a>; // anonymous local
-    let _3: (&'4 u32,); // anonymous local
-    let _4: &'5 u32; // anonymous local
-    let _5: &'6 u32; // anonymous local
-    let _6: &'7 u32; // anonymous local
-    let _7: &'8 u32; // anonymous local
-    let _8: &'19 u32; // anonymous local
+    let _3: (&'_ u32,); // anonymous local
+    let _4: &'3 u32; // anonymous local
+    let _5: &'4 u32; // anonymous local
+    let _6: &'5 u32; // anonymous local
+    let _7: &'6 u32; // anonymous local
+    let _8: &'14 u32; // anonymous local
     let _9: u32; // anonymous local
 
     storage_live(_7)
@@ -163,7 +169,7 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(c: for<'a> foo::<u32><'a>)
     _5 = &(*_6)
     _4 = &(*_5)
     _3 = (move _4,)
-    _0 = {impl Fn<(&'a u32,)> for for<'a> foo::<u32><'a>}<'13>::call<'14>(move _2, move _3)
+    _0 = {impl Fn<(&'_ u32,)> for for<'a> foo::<u32><'a>}<'8>::call<'9>(move _2, move _3)
     ↳⚡ storage_dead(_6)
         storage_dead(c)
         unwind_continue

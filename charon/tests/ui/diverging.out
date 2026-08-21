@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: test_crate::my_panic
 fn my_panic(_x: u32) -> !
 {

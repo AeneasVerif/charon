@@ -1,0 +1,219 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait core::marker::MetaSized::<&_ mut _><'_0, T0>
+
+#[fundamental]
+#[lang_item(Sized)]
+pub trait core::marker::Sized::<&_ mut _><'_0, T0>
+{
+    proof ImpliedClause0: (T0: core::marker::MetaSized::<&_ mut _><'_0>)
+    non-dyn-compatible
+}
+
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait core::marker::MetaSized::<(&_ mut _, _)><'_0, T0, T1>
+where
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
+
+#[fundamental]
+#[lang_item(Sized)]
+pub trait core::marker::Sized::<(&_ mut _, _)><'_0, T0, T1>
+where
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
+{
+    proof ImpliedClause0: (T0: core::marker::MetaSized::<(&_ mut _, _)><'_0, T1>[TraitClause0])
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+struct (_, _)::<&_ mut _, _><'_0, T0, T1>
+where
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
+{
+  _0: &'_0 mut T0,
+  _1: T1,
+}
+
+#[lang_item(Destruct)]
+pub trait core::marker::Destruct::<(&_ mut _, _)><'_0, T0, T1>
+where
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+#[lang_item(Destruct)]
+pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+// Full name: (_, _)::{impl Destruct for (A, B)}::drop_glue
+unsafe fn drop_glue<'_0, A, B>(_1: &'_0 mut (A, B))
+where
+    TraitClause0: (A: Sized),
+    TypeOutlives0: A: '_0,
+    TypeOutlives1: B: '_0,
+{
+    let _0: (); // return
+    let _1: &'1 mut (A, B); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
+    ↳⚡ drop[{built_in impl Destruct for B}::drop_glue<'4>] (*_1)._1
+        ↳⚡ storage_dead(_1)
+            unwind_terminate
+        storage_dead(_1)
+        unwind_continue
+    drop[{built_in impl Destruct for B}::drop_glue<'3>] (*_1)._1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: (_, _)::{impl Destruct for (A, B)}
+impl<A, B> "impl_Destruct_for_tuple" Destruct for (A, B)
+where
+    TraitClause0: (A: Sized),
+{
+    fn drop_glue<'_0_1> = drop_glue<'_0_1, A, B>[TraitClause0]
+    non-dyn-compatible
+}
+
+// Full name: (_, _)::{impl Destruct for (A, B)}::drop_glue::<_, &_ mut _, _>
+unsafe fn (_, _)::impl_Destruct_for_tuple::drop_glue::<_, &_ mut _, _><'_0, '_1, T0, T1>(_1: &'_0 mut (&'_1 mut T0, T1))
+where
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_1>),
+    TypeOutlives0: &'_1 mut T0: '_0,
+    TypeOutlives1: T1: '_0,
+{
+    let _0: (); // return
+    let _1: &'1 mut (&'_1 mut T0, T1); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    drop[{built_in impl core::marker::Destruct::<&_ mut _><'_1> for T0}::drop_glue<'2>] (*_1)._0
+    ↳⚡ drop[{built_in impl Destruct for T1}::drop_glue<'4>] (*_1)._1
+        ↳⚡ storage_dead(_1)
+            unwind_terminate
+        storage_dead(_1)
+        unwind_continue
+    drop[{built_in impl Destruct for T1}::drop_glue<'3>] (*_1)._1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: (_, _)::{impl Destruct for (A, B)}::<&_ mut _, _>
+impl<'_0, T0, T1> core::marker::Destruct::<(&_ mut _, _)><'_0, T1>[TraitClause0] for T0
+where
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
+{
+    fn drop_glue<'_0_1> = (_, _)::impl_Destruct_for_tuple::drop_glue::<_, &_ mut _, _><'_0_1, '_0, T0, T1>[TraitClause0]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::id
+fn id<T>(x: T) -> T
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: T; // return
+    let x: T; // arg #1
+
+    storage_live(_0)
+    _0 = move x
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
+    return
+}
+
+fn test_crate::id::<(&_ mut _, _)><'_0, T0, T1>(x: (&'_0 mut T0, T1)) -> (&'_0 mut T0, T1)
+where
+    TraitClause0: (T0: core::marker::Sized::<(&_ mut _, _)><'_0, T1>[TraitClause1]),
+    TraitClause1: (T0: core::marker::Sized::<&_ mut _><'_0>),
+{
+    let _0: (&'_0 mut T0, T1); // return
+    let x: (&'_0 mut T0, T1); // arg #1
+
+    storage_live(_0)
+    _0 = move x
+    conditional_drop[{built_in impl core::marker::Destruct::<(&_ mut _, _)><'_0, T1>[TraitClause1] for T0}::drop_glue<'0>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::call
+fn call<'a, T>(x: (&'a mut u32, T)) -> (&'a mut u32, T)
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: (&'6 mut u32, T); // return
+    let x: (&'10 mut u32, T); // arg #1
+    let _2: (&'14 mut u32, T); // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = move x
+    _0 = test_crate::id::<(&_ mut _, _)><'25, u32, T>[{built_in impl core::marker::Sized::<(&_ mut _, _)><'25, T>[{built_in impl core::marker::Sized::<&_ mut _><'25> for u32}] for u32}, {built_in impl core::marker::Sized::<&_ mut _><'25> for u32}](move _2)
+    ↳⚡ conditional_drop[(_, _)::impl_Destruct_for_tuple::drop_glue::<_, &_ mut _, _><'72, '66, u32, T>[{built_in impl core::marker::Sized::<&_ mut _><'66> for u32}]] _2
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        conditional_drop[(_, _)::impl_Destruct_for_tuple::drop_glue::<_, &_ mut _, _><'108, '102, u32, T>[{built_in impl core::marker::Sized::<&_ mut _><'102> for u32}]] x
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    conditional_drop[(_, _)::impl_Destruct_for_tuple::drop_glue::<_, &_ mut _, _><'90, '84, u32, T>[{built_in impl core::marker::Sized::<&_ mut _><'84> for u32}]] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
+    return
+}
+
+
+

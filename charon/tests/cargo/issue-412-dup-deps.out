@@ -36,6 +36,16 @@ pub enum AssertKind {
   Match,
 }
 
+struct () {}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
 pub fn mydup::hello() -> u32
 {
     let _0: u32; // return
@@ -60,28 +70,28 @@ fn main()
     let _0: (); // return
     let a: u32; // local
     let b: u32; // local
-    let _3: (&'3 u32, &'4 u32); // anonymous local
-    let _4: &'5 u32; // anonymous local
+    let _3: (&'8 u32, &'9 u32); // anonymous local
+    let _4: &'13 u32; // anonymous local
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
     let _7: u32; // anonymous local
     let _8: (u32, bool); // anonymous local
-    let _9: &'6 u32; // anonymous local
-    let left_val: &'7 u32; // local
-    let right_val: &'8 u32; // local
+    let _9: &'14 u32; // anonymous local
+    let left_val: &'15 u32; // local
+    let right_val: &'16 u32; // local
     let _12: bool; // anonymous local
     let _13: u32; // anonymous local
     let _14: u32; // anonymous local
     let kind: AssertKind; // local
     let _16: AssertKind; // anonymous local
-    let _17: &'9 u32; // anonymous local
-    let _18: &'10 u32; // anonymous local
-    let _19: &'11 u32; // anonymous local
-    let _20: &'12 u32; // anonymous local
-    let _21: Option<Arguments<'20>>[{built_in impl Sized for Arguments<'20>}]; // anonymous local
-    let _22: &'24 u32; // anonymous local
-    let _23: &'25 u32; // anonymous local
-    let _24: &'34 u32; // anonymous local
+    let _17: &'17 u32; // anonymous local
+    let _18: &'18 u32; // anonymous local
+    let _19: &'19 u32; // anonymous local
+    let _20: &'20 u32; // anonymous local
+    let _21: Option<Arguments<'28>>[{built_in impl Sized for Arguments<'28>}]; // anonymous local
+    let _22: &'32 u32; // anonymous local
+    let _23: &'33 u32; // anonymous local
+    let _24: &'47 u32; // anonymous local
     let _25: u32; // anonymous local
 
     storage_live(_0)
@@ -104,7 +114,7 @@ fn main()
     storage_live(_7)
     _7 = copy b
     _8 = copy _6 checked.+ copy _7
-    assert(move _8.1 == false) (overflow) else panic
+    assert(move _8._1 == false) (overflow) else panic
     ↳⚡ unwind_continue
     storage_live(_23)
     storage_live(_24)
@@ -112,7 +122,7 @@ fn main()
     _25 = const 3u32
     _24 = &_25
     _23 = move _24
-    _5 = move _8.0
+    _5 = move _8._0
     storage_dead(_7)
     storage_dead(_6)
     _4 = &_5
@@ -123,9 +133,9 @@ fn main()
     storage_dead(_9)
     storage_dead(_4)
     storage_live(left_val)
-    left_val = copy _3.0
+    left_val = copy _3._0
     storage_live(right_val)
-    right_val = copy _3.1
+    right_val = copy _3._1
     storage_live(_12)
     storage_live(_13)
     _13 = copy (*left_val)

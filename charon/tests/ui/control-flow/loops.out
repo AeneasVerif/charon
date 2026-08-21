@@ -158,6 +158,14 @@ impl "impl_PartialOrd_u32_for_u32" PartialOrd<u32> for u32 {
     vtable: impl_PartialOrd_u32_for_u32::{vtable}
 }
 
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
 // Full name: core::iter::range::Step
 #[diagnostic_item("range_step")]
 pub trait Step<Self>
@@ -405,6 +413,14 @@ where
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
 
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
+
 // Full name: alloc::vec::Vec
 #[diagnostic_item("Vec")]
 pub opaque type Vec<T>
@@ -432,6 +448,12 @@ where
     TypeOutlives2: TraitClause3::Output: '_0,
     TypeOutlives3: I: '_0,
 = <opaque>
+
+struct () {}
+
+struct (_,)<A> {
+  _0: A,
+}
 
 // Full name: test_crate::test_loop1
 pub fn test_loop1(max: u32) -> u32
@@ -1673,7 +1695,7 @@ pub enum List<T>
 where
     TraitClause0: (T: Sized),
 {
-  Cons { _0: T, _1: alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}] },
+  Cons { _0: T, _1: Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}] },
   Nil,
 }
 
@@ -1684,7 +1706,7 @@ pub fn get_elem_mut<'_0>(ls: &'_0 mut List<usize>[{built_in impl Sized for usize
     let ls: &'3 mut List<usize>[{built_in impl Sized for usize}]; // arg #1
     let x: usize; // arg #2
     let y: &'4 mut usize; // local
-    let tl: &'6 mut alloc::boxed::Box<List<usize>[{built_in impl Sized for usize}]>[{built_in impl MetaSized for List<usize>[{built_in impl Sized for usize}]}, {built_in impl Sized for Global}]; // local
+    let tl: &'6 mut Box<List<usize>[{built_in impl Sized for usize}]>[{built_in impl MetaSized for List<usize>[{built_in impl Sized for usize}]}, {built_in impl Sized for Global}]; // local
     let _5: bool; // anonymous local
     let _6: usize; // anonymous local
     let _7: usize; // anonymous local
@@ -1746,7 +1768,7 @@ where
     let ls: &'3 mut List<T>[TraitClause0]; // arg #1
     let i: u32; // arg #2
     let x: &'4 mut T; // local
-    let tl: &'6 mut alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
+    let tl: &'6 mut Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}]; // local
     let _5: bool; // anonymous local
     let _6: u32; // anonymous local
     let _7: &'7 mut List<T>[TraitClause0]; // anonymous local

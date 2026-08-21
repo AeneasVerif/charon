@@ -164,8 +164,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let tref = self.translate_type_decl_ref(span, item)?;
                 TyKind::Adt(tref)
             }
-            hax::TyKind::Str => {
-                let tref = TypeDeclRef::new(TypeId::Builtin(BuiltinTy::Str), GenericArgs::empty());
+            hax::TyKind::Str(item_ref) => {
+                let tref = self.translate_type_decl_ref(span, item_ref)?;
                 TyKind::Adt(tref)
             }
             hax::TyKind::Array(item_ref) => {
@@ -187,8 +187,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Slice(args.types.pop().unwrap())
             }
             hax::TyKind::Tuple(item_ref) => {
-                let args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
-                let tref = TypeDeclRef::new(TypeId::Builtin(BuiltinTy::Tuple), args);
+                let tref = self.translate_type_decl_ref(span, item_ref)?;
                 TyKind::Adt(tref)
             }
             hax::TyKind::Ref(region, ty, mutability) => {
@@ -402,19 +401,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
-    /// Checks whether the given id corresponds to a built-in type.
-    pub(crate) fn recognize_builtin_type(
-        &mut self,
-        item: &hax::ItemRef,
-    ) -> Result<Option<BuiltinTy>, Error> {
-        let def = self.hax_def(item)?;
-        let ty = if def.lang_item == Some(sym::owned_box) && self.t_ctx.options.treat_box_as_builtin
-        {
-            Some(BuiltinTy::Box)
-        } else {
-            None
-        };
-        Ok(ty)
+    /// Whether Rust treats this type specially, i.e. whether it is a tuple, `str` or `Box`.
+    pub(crate) fn recognize_builtin_type(&mut self, item: &hax::ItemRef) -> Option<BuiltinTy> {
+        item.def_id
+            .as_synthetic(self.hax_state())
+            .and_then(|synthetic| match synthetic {
+                hax::SyntheticItem::Tuple(_) => Some(BuiltinTy::Tuple),
+                hax::SyntheticItem::Str => Some(BuiltinTy::Str),
+                hax::SyntheticItem::Array | hax::SyntheticItem::Slice => None,
+            })
+            .or_else(|| {
+                (self.hax_def(item).ok()?.lang_item? == sym::owned_box).then_some(BuiltinTy::Box)
+            })
     }
 
     /// Translate a Dynamically Sized Type metadata kind.
@@ -775,6 +773,34 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         if item_meta.opacity.is_opaque() {
             return Ok(TypeDeclKind::Opaque);
+        }
+
+        // hax's synthetic ADTs have no variants; we must construct the fields ourselves
+        let synthetic_fields = match adt_kind {
+            AdtKind::Tuple => {
+                let item = def.this();
+                let args = self.translate_generic_args(def_span, &item.generic_args, &[])?;
+                Some(args.types.into_iter().collect_vec())
+            }
+            AdtKind::Str => {
+                let u8_ty = TyKind::Literal(LiteralTy::UInt(UIntTy::U8)).into_ty();
+                Some(vec![Ty::mk_slice(u8_ty)])
+            }
+            _ => None,
+        };
+        if let Some(tys) = synthetic_fields {
+            let fields = tys
+                .into_iter()
+                .enumerate()
+                .map(|(field_id, ty)| Field {
+                    span: def_span,
+                    attr_info: AttrInfo::dummy_public(),
+                    name: format!("_{field_id}"),
+                    is_positional: true,
+                    ty,
+                })
+                .collect();
+            return Ok(TypeDeclKind::Struct(fields));
         }
 
         trace!("{}", trans_id);

@@ -17,6 +17,8 @@ fn core::marker::MetaSized::{vtable}::<usize>() -> core::marker::MetaSized::{vta
 
 static core::marker::MetaSized::{vtable}::<usize>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<usize>()
 
+struct () {}
+
 struct test_crate::Trait::{vtable} {
   size: usize,
   align: usize,

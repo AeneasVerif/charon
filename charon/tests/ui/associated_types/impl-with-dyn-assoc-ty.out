@@ -16,6 +16,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 struct test_crate::DynableTrait::{vtable}<Ty0> {
   size: usize,
   align: usize,

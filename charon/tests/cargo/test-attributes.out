@@ -7,6 +7,8 @@ pub opaque type Layout
 // Full name: core::alloc::AllocError
 pub struct AllocError {}
 
+struct () {}
+
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -58,6 +60,10 @@ pub trait Borrow<Self, Borrowed>
 // Full name: core::fmt::Arguments
 #[lang_item(FormatArguments)]
 pub opaque type Arguments<'a>
+
+struct str {
+  _0: [u8],
+}
 
 // Full name: core::fmt::{Arguments<'a>}::from_str
 pub fn from_str<'a>(_1: &'static str) -> Arguments<'a>
@@ -293,6 +299,10 @@ pub struct TestDesc {
   compile_fail: bool,
   no_run: bool,
   test_type: TestType,
+}
+
+struct (_,)<A> {
+  _0: A,
 }
 
 // Full name: test::types::TestFn

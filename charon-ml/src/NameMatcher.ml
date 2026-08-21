@@ -449,41 +449,6 @@ let match_literal (pl : literal) (l : Values.literal) : bool =
   | LChar pv, VChar v -> Uchar.of_char pv = v
   | _ -> false
 
-let generic_args_match_params (params : T.generic_params)
-    (args : T.generic_args) : bool =
-  let pr, pt, pc, ptr = TypesUtils.generic_params_lengths params in
-  let ar, at, ac, atr = TypesUtils.generic_args_lengths args in
-  pr = ar && pt = at && pc = ac && ptr = atr
-
-(* Instantiate the provided generics with the given binder, if any. *)
-let instantiate_name_generics (binder : T.generic_args T.binder)
-    (g : T.generic_args) : T.generic_args =
-  if binder.binder_params = TypesUtils.empty_generic_params then begin
-    (* HACK: Monomorphization doesn't handle late-bound regions properly, so we
-       append them here manually. *)
-    let regions_count, types_count, const_generics_count, trait_refs_count =
-      TypesUtils.generic_args_lengths g
-    in
-    (* We additionally append the regions from `g` to the monomorphized args, so that we can match against them. *)
-    assert (types_count = 0 && const_generics_count = 0 && trait_refs_count = 0);
-    {
-      binder.binder_value with
-      (* Late-bound regions are appended after the monomorphized ones. *)
-      regions = binder.binder_value.regions @ g.regions;
-    }
-  end
-  else if g = TypesUtils.empty_generic_args then
-    (* The caller did not provide generics for the instantiated item, we keep that so. *)
-    g
-  else begin
-    if not (generic_args_match_params binder.binder_params g) then
-      failwith
-        "(partially) monomorphized generic parameters do not match the \
-         supplied generic arguments";
-    Substitute.apply_args_to_binder g
-      Substitute.st_substitute_visitor#visit_generic_args binder
-  end
-
 let rec match_name_with_generics (ctx : ctx) (c : match_config)
     ?(m : maps = mk_empty_maps ()) (p : pattern) (n : T.name)
     (g : T.generic_args) : bool =
@@ -494,7 +459,7 @@ let rec match_name_with_generics (ctx : ctx) (c : match_config)
   let n, g =
     match List.rev n with
     | PeInstantiated binder :: rest_rev ->
-        let g = instantiate_name_generics binder g in
+        let g = Substitute.instantiate_name_generics binder g in
         (List.rev rest_rev, g)
     | _ -> (n, g)
   in
@@ -513,6 +478,8 @@ let rec match_name_with_generics (ctx : ctx) (c : match_config)
       && match_generic_args ctx c m pg g
   | [ PIdent (pid, pd, pg) ], [ PeTarget target ] ->
       pid = target && pd = 0 && match_generic_args ctx c m pg g
+  | [ PIdent ("str", 0, pg) ], [ PeBuiltin PeStr ] ->
+      match_generic_args ctx c m pg g
   | [ PImpl pty ], [ PeImpl impl ] -> (
       (* We can get there when matching a prefix of the name with a pattern *)
       (* We have to distinguish two cases:
@@ -556,26 +523,24 @@ and match_name (ctx : ctx) (c : match_config) (p : pattern) (n : T.name) : bool
     =
   match_name_with_generics ctx c p n TypesUtils.empty_generic_args
 
-and match_pattern_with_type_id (ctx : ctx) (c : match_config) (m : maps)
-    (pid : pattern) (id : T.type_id) (generics : T.generic_args) : bool =
-  match id with
-  | TAdtId id ->
-      (* Lookup the type decl and match the name *)
+and match_pattern_with_type_decl_id (ctx : ctx) (c : match_config) (m : maps)
+    (pid : pattern) (id : T.type_decl_id) (builtin : T.builtin_ty option)
+    (generics : T.generic_args) : bool =
+  match (builtin, pid) with
+  | None, _ ->
       let d = T.TypeDeclId.Map.find id ctx.crate.type_decls in
       match_name_with_generics ctx c ~m pid d.item_meta.name generics
-  | TBuiltin TTuple -> false
-  | TBuiltin id -> (
-      match (id, pid) with
-      | ( TBox,
-          ( [ PIdent ("Box", _, pgenerics) ]
-          | [
-              PIdent ("alloc", _, []);
-              PIdent ("boxed", _, []);
-              PIdent ("Box", _, pgenerics);
-            ] ) ) -> match_generic_args ctx c m pgenerics generics
-      | TStr, [ PIdent ("str", _, []) ] ->
-          generics = TypesUtils.empty_generic_args
-      | _ -> false)
+  | Some TTuple, _ -> false
+  | ( Some TBox,
+      ( [ PIdent ("Box", _, pgenerics) ]
+      | [
+          PIdent ("alloc", _, []);
+          PIdent ("boxed", _, []);
+          PIdent ("Box", _, pgenerics);
+        ] ) ) -> match_generic_args ctx c m pgenerics generics
+  | Some TStr, [ PIdent ("str", _, []) ] ->
+      generics = TypesUtils.empty_generic_args
+  | Some _, _ -> false
 
 and match_pattern_with_literal_type (pty : pattern) (ty : T.literal_type) : bool
     =
@@ -589,7 +554,8 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
     (ty : T.ty) : bool =
   match (pty, ty) with
   | EComp pid, TAdt tref ->
-      match_pattern_with_type_id ctx c m pid tref.id tref.generics
+      match_pattern_with_type_decl_id ctx c m pid tref.id tref.builtin
+        tref.generics
   | EComp pid, TLiteral lit -> match_pattern_with_literal_type pid lit
   | EPrimAdt (pid, pgenerics), ty -> begin
       match (pid, ty) with
@@ -613,9 +579,9 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
             }
           in
           match_generic_args ctx c m pgenerics generics
-      | TTuple, TAdt tref ->
-          tref.id = TBuiltin TTuple
-          && match_generic_args ctx c m pgenerics tref.generics
+      | TTuple, TAdt ({ builtin = Some TTuple; _ } as tref) ->
+          match_generic_args ctx c m pgenerics
+            (Substitute.type_decl_ref_generics ctx.crate.type_decls tref)
       | _ -> false
     end
   | ERef (pr, pty, prk), TRef (r, ty, rk) ->
@@ -966,7 +932,7 @@ and name_with_generics_to_pattern_aux (ctx : ctx) (c : to_pat_config)
   let n, generics =
     match List.rev n with
     | PeInstantiated binder :: rest_rev ->
-        (List.rev rest_rev, instantiate_name_generics binder generics)
+        (List.rev rest_rev, Substitute.instantiate_name_generics binder generics)
     | _ -> (n, generics)
   in
   let generics = generic_args_to_pattern ctx c m generics in
@@ -991,6 +957,13 @@ and path_elem_with_generic_args_to_pattern (ctx : ctx) (c : to_pat_config)
       (* In pattern generation, we skip monomorphized elements since patterns
          are meant to match the logical structure, not the instantiation details *)
       []
+  | PeBuiltin PeStr -> begin
+      match generics with
+      | None -> [ PIdent ("str", 0, []) ]
+      | Some args -> [ PIdent ("str", 0, args) ]
+    end
+  | PeBuiltin (PeTuple _) ->
+      failwith "Can't convert the name of a tuple to a pattern"
 
 and impl_elem_to_pattern (ctx : ctx) (c : to_pat_config) (impl : T.impl_elem) :
     pattern_elem =
@@ -1013,19 +986,25 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
     (ty : T.ty) : expr =
   match ty with
   | TAdt tref -> (
-      match tref.id with
-      | TAdtId id ->
+      match tref.builtin with
+      | None ->
           (* Lookup the declaration *)
-          let d = T.TypeDeclId.Map.find id ctx.crate.type_decls in
+          let d = T.TypeDeclId.Map.find tref.id ctx.crate.type_decls in
           EComp
             (name_with_generics_to_pattern_aux ctx c m d.item_meta.name
                tref.generics)
-      | TBuiltin id -> (
-          let generics = generic_args_to_pattern ctx c m tref.generics in
-          match id with
-          | TTuple -> EPrimAdt (TTuple, generics)
-          | TBox -> EComp [ PIdent ("Box", 0, generics) ]
-          | TStr -> EComp [ PIdent ("str", 0, generics) ]))
+      | Some TTuple ->
+          let args =
+            Substitute.type_decl_ref_generics ctx.crate.type_decls tref
+          in
+          EPrimAdt (TTuple, generic_args_to_pattern ctx c m args)
+      | Some TBox ->
+          EComp
+            [ PIdent ("Box", 0, generic_args_to_pattern ctx c m tref.generics) ]
+      | Some TStr ->
+          EComp
+            [ PIdent ("str", 0, generic_args_to_pattern ctx c m tref.generics) ]
+      )
   | TVar v -> EVar (type_var_to_pattern m v)
   | TLiteral lit -> literal_type_to_pattern c lit
   | TRef (r, ty, rk) ->

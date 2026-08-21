@@ -16,6 +16,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -74,6 +76,16 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}
 }
 
+struct (_, _)::<u8, u8> {
+  _0: u8,
+  _1: u8,
+}
+
+struct (_, _)::<u8, bool> {
+  _0: u8,
+  _1: bool,
+}
+
 // Full name: test_crate::main::closure
 struct closure<'_0, '_1> {
   _0: &'_0 u8,
@@ -81,29 +93,29 @@ struct closure<'_0, '_1> {
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8, u8)> for closure<'_0, '_1>}
-impl<'_0, '_1> "impl_FnOnce_tuple_for_closure" FnOnce<(u8, u8)> for closure<'_0, '_1> {
+impl<'_0, '_1> "impl_FnOnce_for_closure" FnOnce<(u8, u8)> for closure<'_0, '_1> {
     proof ImpliedClause0: (closure<'_0, '_1>: MetaSized) = {built_in impl MetaSized for closure<'_0, '_1>}
     proof ImpliedClause1: ((u8, u8): Sized) = {built_in impl Sized for (u8, u8)}
     proof ImpliedClause2: ((u8, u8): Tuple) = {built_in impl Tuple for (u8, u8)}
-    vtable: impl_FnOnce_tuple_for_closure::{vtable}<'_0, '_1>
+    vtable: impl_FnOnce_for_closure::{vtable}<'_0, '_1>
 }
 
 // Full name: test_crate::main::{impl FnMut<(u8, u8)> for closure<'_0, '_1>}
-impl<'_0, '_1> "impl_FnMut_tuple_for_closure" FnMut<(u8, u8)> for closure<'_0, '_1> {
+impl<'_0, '_1> "impl_FnMut_for_closure" FnMut<(u8, u8)> for closure<'_0, '_1> {
     proof ImpliedClause0: (closure<'_0, '_1>: MetaSized) = {built_in impl MetaSized for closure<'_0, '_1>}
-    proof ImpliedClause1: (closure<'_0, '_1>: FnOnce<(u8, u8)>) = impl_FnOnce_tuple_for_closure<'_0, '_1>
+    proof ImpliedClause1: (closure<'_0, '_1>: FnOnce<(u8, u8)>) = impl_FnOnce_for_closure<'_0, '_1>
     proof ImpliedClause2: ((u8, u8): Sized) = {built_in impl Sized for (u8, u8)}
     proof ImpliedClause3: ((u8, u8): Tuple) = {built_in impl Tuple for (u8, u8)}
-    vtable: impl_FnMut_tuple_for_closure::{vtable}<'_0, '_1>
+    vtable: impl_FnMut_for_closure::{vtable}<'_0, '_1>
 }
 
 // Full name: test_crate::main::{impl Fn<(u8, u8)> for closure<'_0, '_1>}
-impl<'_0, '_1> "impl_Fn_tuple_for_closure" Fn<(u8, u8)> for closure<'_0, '_1> {
+impl<'_0, '_1> "impl_Fn_for_closure" Fn<(u8, u8)> for closure<'_0, '_1> {
     proof ImpliedClause0: (closure<'_0, '_1>: MetaSized) = {built_in impl MetaSized for closure<'_0, '_1>}
-    proof ImpliedClause1: (closure<'_0, '_1>: FnMut<(u8, u8)>) = impl_FnMut_tuple_for_closure<'_0, '_1>
+    proof ImpliedClause1: (closure<'_0, '_1>: FnMut<(u8, u8)>) = impl_FnMut_for_closure<'_0, '_1>
     proof ImpliedClause2: ((u8, u8): Sized) = {built_in impl Sized for (u8, u8)}
     proof ImpliedClause3: ((u8, u8): Tuple) = {built_in impl Tuple for (u8, u8)}
-    vtable: impl_Fn_tuple_for_closure::{vtable}<'_0, '_1>
+    vtable: impl_Fn_for_closure::{vtable}<'_0, '_1>
 }
 
 // Full name: test_crate::apply_to::<closure<'_, '_>>
@@ -119,7 +131,7 @@ fn apply_to::<closure<'_, '_>><'_0>(f: &'_0 closure<'_, '_>) -> u8
     _2 = &(*f)
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
-    _0 = impl_Fn_tuple_for_closure<'15, '16>::call<'17>(move _2, move _3)
+    _0 = impl_Fn_for_closure<'15, '16>::call<'17>(move _2, move _3)
     ↳⚡ storage_dead(f)
         unwind_continue
     storage_dead(_3)
@@ -141,7 +153,7 @@ fn apply_to_mut::<closure<'_, '_>><'_0>(f: &'_0 mut closure<'_, '_>) -> u8
     _2 = &mut (*f)
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
-    _0 = impl_FnMut_tuple_for_closure<'15, '16>::call_mut<'17>(move _2, move _3)
+    _0 = impl_FnMut_for_closure<'15, '16>::call_mut<'17>(move _2, move _3)
     ↳⚡ storage_dead(f)
         unwind_continue
     storage_dead(_3)
@@ -178,7 +190,7 @@ fn apply_to_once::<closure<'_, '_>>(f: closure<'_, '_>) -> u8
     _2 = move f
     storage_live(_3)
     _3 = (const 10u8, const 20u8)
-    _0 = impl_FnOnce_tuple_for_closure<'8, '9>::call_once(move _2, move _3)
+    _0 = impl_FnOnce_for_closure<'8, '9>::call_once(move _2, move _3)
     ↳⚡ conditional_drop[drop_glue<'14, '15, '16>] _2
         ↳⚡ storage_dead(f)
             unwind_terminate
@@ -239,7 +251,7 @@ fn main()
     _7 = &f
     storage_live(_8)
     _8 = (const 10u8, const 20u8)
-    _6 = impl_Fn_tuple_for_closure<'36, '37>::call<'38>(move _7, move _8)
+    _6 = impl_Fn_for_closure<'36, '37>::call<'38>(move _7, move _8)
     ↳⚡ unwind_continue
     storage_dead(_8)
     storage_dead(_7)
@@ -295,7 +307,7 @@ fn call_once<'_0, '_1>(_1: closure<'_0, '_1>, _2: (u8, u8)) -> u8
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = impl_FnMut_tuple_for_closure<'_0, '_1>::call_mut<'6>(move _3, move _2)
+    _0 = impl_FnMut_for_closure<'_0, '_1>::call_mut<'6>(move _3, move _2)
     ↳⚡ drop[drop_glue<'_0, '_1, '11>] _1
         ↳⚡ storage_dead(_3)
             storage_dead(_2)
@@ -343,8 +355,8 @@ where
     storage_live(_9)
     storage_live(_11)
     storage_live(_13)
-    x = move tupled_args.0
-    y = move tupled_args.1
+    x = move tupled_args._0
+    y = move tupled_args._1
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)

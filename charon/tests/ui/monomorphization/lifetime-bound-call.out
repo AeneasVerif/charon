@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: test_crate::callee::<'_>
 fn callee::<'_>()
 {

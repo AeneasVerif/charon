@@ -14,6 +14,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -43,6 +45,10 @@ pub trait FnOnce<Self, Args>
     type Output
     fn call_once;
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+}
+
+struct (_,)<A> {
+  _0: A,
 }
 
 // Full name: test_crate::Wrapper
@@ -77,7 +83,7 @@ where
     let args: (T,); // arg #2
 
     storage_live(_0)
-    _0 = Value<T>[TraitClause0](move args.0)
+    _0 = Value<T>[TraitClause0](move args._0)
     ↳⚡ storage_dead(args)
         storage_dead(state)
         unwind_continue

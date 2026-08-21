@@ -9,6 +9,8 @@ pub trait MetaSized<Self>
 #[lang_item(String)]
 pub opaque type String
 
+struct () {}
+
 // Full name: alloc::string::String::{impl Destruct for String}::drop_glue
 unsafe fn drop_glue<'_0>(_1: &'_0 mut String)
 = <opaque>
@@ -20,6 +22,10 @@ where
     TraitClause1: (T: Display),
     TypeOutlives0: T: '_0,
 = <opaque>
+
+struct str {
+  _0: [u8],
+}
 
 // Full name: test_crate::FOO
 fn FOO() -> &'static str

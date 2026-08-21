@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: test_crate::DISGUISED_INT
 fn DISGUISED_INT() -> *const ()
 {

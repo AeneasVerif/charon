@@ -138,7 +138,17 @@ pub enum PtrMetadata {
 }
 
 /// Where a given type came from.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(
+    Debug,
+    Clone,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    DriveTwo,
+    EnumIsA,
+    EnumAsGetters,
+)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Type"))]
 pub enum TypeSource {
     /// A normal type declaration.
@@ -155,6 +165,8 @@ pub enum TypeSource {
         /// vtable corresponds to it.
         supertrait_map: IndexVec<TraitClauseId, Option<FieldId>>,
     },
+    /// A type declaration synthesised for a builtin type.
+    Builtin(BuiltinTy),
 }
 
 #[derive(
