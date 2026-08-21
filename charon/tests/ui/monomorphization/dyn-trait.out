@@ -4,6 +4,8 @@
 #[lang_item(String)]
 pub opaque type String
 
+struct () {}
+
 // Full name: alloc::string::String::{impl Destruct for String}::drop_glue
 unsafe fn drop_glue<'_0>(_1: &'_0 mut String)
 = <opaque>
@@ -18,6 +20,10 @@ static impl_Display_for_String::{vtable}: core::fmt::Display::{vtable} = impl_Di
 // Full name: alloc::string::{impl Display for String}
 impl "impl_Display_for_String" Display for String {
     vtable: impl_Display_for_String::{vtable}
+}
+
+struct str {
+  _0: [u8],
 }
 
 // Full name: alloc::string::{impl ToString for str}::to_string::<str>

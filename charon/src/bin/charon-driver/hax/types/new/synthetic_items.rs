@@ -11,9 +11,10 @@ use {
 
 /// We create some extra `DefId`s to represent things that rustc doesn't have a `DefId` for. This
 /// makes the pipeline much easier to have "real" def_ids for them.
-/// We generate fake struct-like items for each of: arrays, slices, and tuples. This makes it
-/// easier to emit trait impls for these types, especially with monomorphization. This enum tracks
-/// identifies these builtin types.
+/// We generate fake struct-like items for each of: arrays, slices, tuples and `str`. This makes it
+/// easier to emit trait impls for these types, especially with monomorphization, and it lets
+/// tuples and `str` have a type declaration like other ADTs. This enum identifies these builtin
+/// types.
 #[derive(Debug, Hash, Clone, Copy, PartialEq, Eq)]
 pub enum SyntheticItem {
     /// Fake ADT representing the `[T; N]` type.
@@ -22,6 +23,8 @@ pub enum SyntheticItem {
     Slice,
     /// Fake ADT representing the length-n tuple `(A, B, ...)`.
     Tuple(usize),
+    /// Fake ADT representing `str`, which wraps a `[u8]`.
+    Str,
 }
 
 #[derive(Clone, Copy)]
@@ -74,6 +77,7 @@ impl SyntheticItem {
             SyntheticItem::Array => "<array>".to_string(),
             SyntheticItem::Slice => "<slice>".to_string(),
             SyntheticItem::Tuple(n) => format!("<tuple_{n}>"),
+            SyntheticItem::Str => "<str>".to_string(),
         }
     }
 
@@ -134,6 +138,7 @@ impl SyntheticItem {
                 let tys = tcx.arena.alloc_from_iter(tys);
                 ty::Ty::new_tup(tcx, tys)
             }
+            SyntheticItem::Str => tcx.types.str_,
         };
         ty::EarlyBinder::bind(tcx, type_of)
     }
@@ -251,6 +256,7 @@ impl<'tcx> GlobalCache<'tcx> {
                     clauses.push(ty_is_sized.upcast(tcx));
                 }
             }
+            SyntheticItem::Str => {}
         }
 
         let clauses = tcx.arena.alloc_from_iter(clauses);

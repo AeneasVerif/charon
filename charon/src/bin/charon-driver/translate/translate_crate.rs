@@ -501,6 +501,20 @@ impl<'tcx> TranslateCtx<'tcx> {
         Ok(*item_id.as_const().unwrap())
     }
 
+    /// Claim the first type id for the declaration of the unit type.
+    pub(crate) fn reserve_unit_decl(&mut self) {
+        let def_id = hax::DefId::make_synthetic(&self.hax_state, hax::SyntheticItem::Tuple(0));
+        let item_src = if self.options.monomorphize_with_hax
+            && let Ok(def) = self.poly_hax_def(&def_id)
+        {
+            TransItemSource::monomorphic(def.this(), TransItemSourceKind::Type)
+        } else {
+            TransItemSource::polymorphic(&def_id, TransItemSourceKind::Type)
+        };
+        let id: Option<TypeDeclId> = self.register_no_enqueue(&None, &item_src);
+        assert_eq!(id, Some(TypeDeclId::UNIT), "the unit type must come first");
+    }
+
     pub(crate) fn register_target_info(&mut self) {
         let target_data = &self.tcx.data_layout;
         let triple = self.get_target_triple();
@@ -760,17 +774,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         item: &hax::ItemRef,
     ) -> Result<TypeDeclRef, Error> {
-        match self.recognize_builtin_type(item)? {
-            Some(id) => {
-                let generics =
-                    self.translate_generic_args(span, &item.generic_args, &item.trait_proofs)?;
-                Ok(TypeDeclRef {
-                    id: TypeId::Builtin(id),
-                    generics: Box::new(generics),
-                })
-            }
-            None => self.translate_item(span, item, TransItemSourceKind::Type),
-        }
+        let mut tref: TypeDeclRef = self.translate_item(span, item, TransItemSourceKind::Type)?;
+        tref.builtin = self.recognize_builtin_type(item);
+        Ok(tref)
     }
 
     pub(crate) fn translate_fun_item_maybe_enqueue(
@@ -1009,6 +1015,7 @@ pub fn translate<'tcx>(
         lt_mutability_computer: Default::default(),
     };
     ctx.register_target_info();
+    ctx.reserve_unit_decl();
 
     // Start translating from the selected items.
     for start_from in ctx.options.start_from.clone() {

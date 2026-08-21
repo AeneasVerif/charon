@@ -113,6 +113,8 @@ where
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: test_crate::Usize
 pub type Usize = usize
 

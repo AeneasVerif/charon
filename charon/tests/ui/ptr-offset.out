@@ -1,9 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::ptr::const_ptr::{*const T}::addr
-pub fn addr<T>(_1: *const T) -> usize
-= <opaque>
-
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -17,6 +13,20 @@ pub trait Sized<Self>
     proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+struct () {}
+
+// Full name: core::ptr::const_ptr::{*const T}::addr
+pub fn addr<T>(_1: *const T) -> usize
+= <opaque>
 
 // Full name: core::option::Option
 #[lang_item(Option)]
@@ -107,7 +117,7 @@ fn runtime(this: *const (), count: isize, size: usize) -> bool
     storage_dead(_13)
     storage_dead(_11)
     storage_live(overflow)
-    overflow = copy _10.1
+    overflow = copy _10._1
     storage_dead(_10)
     storage_live(_14)
     _14 = copy overflow
@@ -137,6 +147,20 @@ pub fn panic_nounwind_fmt<'_0>(_1: Arguments<'_0>, _2: bool) -> !
 fn check_language_ub() -> bool
 = <opaque>
 
+struct str {
+  _0: [u8],
+}
+
+struct (_, _, _)<A, B, C>
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+  _0: A,
+  _1: B,
+  _2: C,
+}
+
 // Full name: core::ptr::const_ptr::{*const T}::offset::runtime_offset_nowrap
 fn runtime_offset_nowrap(this: *const (), count: isize, size: usize) -> bool
 {
@@ -161,7 +185,7 @@ fn runtime_offset_nowrap(this: *const (), count: isize, size: usize) -> bool
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
-    _0 = runtime(move _4.0, move _4.1, move _4.2)
+    _0 = runtime(move _4._0, move _4._1, move _4._2)
     ↳⚡ storage_dead(size)
         storage_dead(count)
         storage_dead(this)

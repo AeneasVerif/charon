@@ -21,6 +21,8 @@ where
     TraitClause0: (T: Sized),
 = <opaque>
 
+struct () {}
+
 // Full name: test_crate::f
 fn f<T>()
 where

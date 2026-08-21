@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: core::ptr::metadata::from_raw_parts::<u8, ()>
 pub fn from_raw_parts::<u8, ()>(data_pointer: *const (), metadata: ()) -> *const u8
 {

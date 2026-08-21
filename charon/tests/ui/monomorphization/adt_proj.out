@@ -7,6 +7,8 @@ pub enum Result::<u32, u32> {
   Err { _0: u32 },
 }
 
+struct () {}
+
 // Full name: test_crate::main
 fn main()
 {

@@ -10,6 +10,8 @@ pub trait core::marker::Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 #[charon::opaque]
 trait test_crate::Trait<Self>
 {

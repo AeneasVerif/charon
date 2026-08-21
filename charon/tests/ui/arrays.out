@@ -60,6 +60,8 @@ where
     TypeOutlives2: I: '_0,
 = <opaque>
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -242,7 +244,15 @@ where
     TypeOutlives0: T: '_0,
 = <opaque>
 
-// Full name: test_crate::<slice>::{impl Destruct for [T]}::drop_glue
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+// Full name: {impl Destruct for [T]}::drop_glue
 unsafe fn impl_Destruct_for_slice::drop_glue<'_0, T>(_1: &'_0 mut [T])
 where
     TraitClause0: (T: Sized),
@@ -337,7 +347,7 @@ where
     return
 }
 
-// Full name: test_crate::<slice>::{impl Destruct for [T]}
+// Full name: {impl Destruct for [T]}
 impl<T> "impl_Destruct_for_slice" Destruct for [T]
 where
     TraitClause0: (T: Sized),
@@ -346,7 +356,7 @@ where
     non-dyn-compatible
 }
 
-// Full name: test_crate::<array>::{impl Destruct for [T; N]}::drop_glue
+// Full name: {impl Destruct for [T; N]}::drop_glue
 unsafe fn impl_Destruct_for_array::drop_glue<'_0, T, const N : usize>(_1: &'_0 mut [T; N])
 where
     TraitClause0: (T: Sized),
@@ -370,7 +380,7 @@ where
     return
 }
 
-// Full name: test_crate::<array>::{impl Destruct for [T; N]}
+// Full name: {impl Destruct for [T; N]}
 impl<T, const N : usize> "impl_Destruct_for_array" Destruct for [T; N]
 where
     TraitClause0: (T: Sized),

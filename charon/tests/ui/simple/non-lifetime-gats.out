@@ -14,6 +14,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -37,8 +39,16 @@ pub trait Deref<Self>
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
 
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn drop_glue<'_0, T, A>(_1: &'_0 mut alloc::boxed::Box<T>[TraitClause0, TraitClause1])
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box<T>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn drop_glue<'_0, T, A>(_1: &'_0 mut Box<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
@@ -46,8 +56,8 @@ where
     TypeOutlives1: A: '_0,
 = <opaque>
 
-// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::deref
-pub fn deref<'_0, T, A>(_1: &'_0 alloc::boxed::Box<T>[TraitClause0, TraitClause1]) -> &'_0 T
+// Full name: alloc::boxed::{impl Deref for Box<T>[TraitClause0, TraitClause1]}::deref
+pub fn deref<'_0, T, A>(_1: &'_0 Box<T>[TraitClause0, TraitClause1]) -> &'_0 T
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
@@ -55,8 +65,8 @@ where
     TypeOutlives1: A: '_0,
 = <opaque>
 
-// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}
-impl<T, A> "impl_Deref_for_Box" Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]
+// Full name: alloc::boxed::{impl Deref for Box<T>[TraitClause0, TraitClause1]}
+impl<T, A> "impl_Deref_for_Box" Deref for Box<T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
@@ -85,11 +95,11 @@ pub trait PointerFamily<Self>
 pub struct BoxFamily {}
 
 // Full name: test_crate::{impl PointerFamily for BoxFamily}::new
-pub fn new<T>(value: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
+pub fn new<T>(value: T) -> Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
 {
-    let _0: alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]; // return
+    let _0: Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]; // return
     let value: T; // arg #1
     let _2: T; // anonymous local
 
@@ -116,11 +126,11 @@ where
 // Full name: test_crate::{impl PointerFamily for BoxFamily}
 impl "impl_PointerFamily_for_BoxFamily" PointerFamily for BoxFamily {
     proof ImpliedClause0: (BoxFamily: MetaSized) = {built_in impl MetaSized for BoxFamily}
-    type Pointer<T> = alloc::boxed::Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]
+    type Pointer<T> = Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]
     where
         TraitClause0_1: (T: Sized),
-        proof ImpliedClause0: (alloc::boxed::Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]: Sized) = {built_in impl Sized for alloc::boxed::Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]},
-        proof ImpliedClause1: (alloc::boxed::Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]: Deref) = impl_Deref_for_Box<T, Global>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}];
+        proof ImpliedClause0: (Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]: Sized) = {built_in impl Sized for Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]},
+        proof ImpliedClause1: (Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]: Deref) = impl_Deref_for_Box<T, Global>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}];
     fn new<T, TraitClause0_1: (T: Sized)> = new<T>[TraitClause0_1]
     non-dyn-compatible
 }
@@ -160,14 +170,14 @@ where
 pub fn main()
 {
     let _0: (); // return
-    let _1: alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]; // anonymous local
+    let _1: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
     _1 = make_pointer<BoxFamily, i32>[{built_in impl Sized for BoxFamily}, {built_in impl Sized for i32}, impl_PointerFamily_for_BoxFamily](const 42i32)
     ↳⚡ unwind_continue
-    set_type(typeof(_1) <= alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}])
+    set_type(typeof(_1) <= Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}])
     conditional_drop[drop_glue<'0, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}]] _1
     ↳⚡ unwind_continue
     storage_dead(_1)

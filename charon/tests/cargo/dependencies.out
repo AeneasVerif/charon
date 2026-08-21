@@ -59,6 +59,12 @@ pub enum AssertKind {
   Match,
 }
 
+struct (_,)<A> {
+  _0: A,
+}
+
+struct () {}
+
 // Full name: take_mut::take
 pub fn take<'_0, T, F>(_1: &'_0 mut T, _2: F)
 where
@@ -68,6 +74,14 @@ where
     TypeOutlives0: T: '_0,
     TypeConstraint0: TraitClause2::Output = T,
 = <opaque>
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
 
 // Full name: test_cargo_dependencies::main::silly_incr::closure
 struct closure {}
@@ -85,13 +99,13 @@ fn call_once(_1: closure, tupled_args: (u32,)) -> u32
     storage_live(_0)
     storage_live(y)
     storage_live(_5)
-    y = move tupled_args.0
+    y = move tupled_args._0
     storage_live(_4)
     _4 = copy y
     _5 = copy _4 checked.+ const 1u32
-    assert(move _5.1 == false) (overflow) else panic
+    assert(move _5._1 == false) (overflow) else panic
     ↳⚡ unwind_continue
-    _0 = move _5.0
+    _0 = move _5._0
     storage_dead(_4)
     return
 }
@@ -140,24 +154,24 @@ fn main()
     let _2: (); // anonymous local
     let _3: &'1 mut u32; // anonymous local
     let _4: &'2 mut u32; // anonymous local
-    let _5: (&'6 u32, &'7 u32); // anonymous local
-    let _6: &'8 u32; // anonymous local
-    let _7: &'9 u32; // anonymous local
-    let left_val: &'10 u32; // local
-    let right_val: &'11 u32; // local
+    let _5: (&'10 u32, &'11 u32); // anonymous local
+    let _6: &'14 u32; // anonymous local
+    let _7: &'15 u32; // anonymous local
+    let left_val: &'16 u32; // local
+    let right_val: &'17 u32; // local
     let _10: bool; // anonymous local
     let _11: u32; // anonymous local
     let _12: u32; // anonymous local
     let kind: AssertKind; // local
     let _14: AssertKind; // anonymous local
-    let _15: &'12 u32; // anonymous local
-    let _16: &'13 u32; // anonymous local
-    let _17: &'14 u32; // anonymous local
-    let _18: &'15 u32; // anonymous local
-    let _19: Option<Arguments<'22>>[{built_in impl Sized for Arguments<'22>}]; // anonymous local
-    let _20: &'25 u32; // anonymous local
-    let _21: &'28 u32; // anonymous local
-    let _22: &'36 u32; // anonymous local
+    let _15: &'18 u32; // anonymous local
+    let _16: &'19 u32; // anonymous local
+    let _17: &'20 u32; // anonymous local
+    let _18: &'21 u32; // anonymous local
+    let _19: Option<Arguments<'28>>[{built_in impl Sized for Arguments<'28>}]; // anonymous local
+    let _20: &'31 u32; // anonymous local
+    let _21: &'34 u32; // anonymous local
+    let _22: &'46 u32; // anonymous local
     let _23: u32; // anonymous local
 
     storage_live(_0)
@@ -171,7 +185,7 @@ fn main()
     storage_live(_4)
     _4 = &mut x
     _3 = &two-phase-mut (*_4)
-    _2 = silly_incr<'27>(move _3)
+    _2 = silly_incr<'33>(move _3)
     ↳⚡ unwind_continue
     storage_live(_21)
     storage_live(_22)
@@ -192,9 +206,9 @@ fn main()
     storage_dead(_7)
     storage_dead(_6)
     storage_live(left_val)
-    left_val = copy _5.0
+    left_val = copy _5._0
     storage_live(right_val)
-    right_val = copy _5.1
+    right_val = copy _5._1
     storage_live(_10)
     storage_live(_11)
     _11 = copy (*left_val)

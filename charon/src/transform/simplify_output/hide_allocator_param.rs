@@ -7,7 +7,7 @@ use crate::transform::{TransformCtx, ctx::TransformPass};
 
 #[derive(Visitor)]
 struct RemoveLastParamVisitor {
-    types: HashSet<TypeId>,
+    types: HashSet<TypeDeclId>,
 }
 
 impl VisitAstMut for RemoveLastParamVisitor {
@@ -36,21 +36,17 @@ impl TransformPass for Transform {
             .iter()
             .map(|s| NamePattern::parse(s).unwrap())
             .collect_vec();
-        let types: HashSet<TypeId> = ctx
+        let types: HashSet<TypeDeclId> = ctx
             .translated
             .item_names
             .iter()
             .filter(|(_, name)| types.iter().any(|p| p.matches(&ctx.translated, name)))
             .filter_map(|(id, _)| id.as_type())
             .copied()
-            .map(TypeId::Adt)
-            .chain([TypeId::Builtin(BuiltinTy::Box)])
             .collect();
 
         for &id in &types {
-            if let Some(&id) = id.as_adt()
-                && let Some(tdecl) = ctx.translated.type_decls.get_mut(id)
-            {
+            if let Some(tdecl) = ctx.translated.type_decls.get_mut(id) {
                 if tdecl.generics.types.is_empty() {
                     // We monomorpohized this type.
                     let args = tdecl.item_meta.name.mono_args_mut().unwrap();

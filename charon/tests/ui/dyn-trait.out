@@ -91,6 +91,14 @@ where
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
 
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
+
 // Full name: alloc::string::String
 #[lang_item(String)]
 pub opaque type String
@@ -103,9 +111,15 @@ where
     TypeOutlives0: T: '_0,
 = <opaque>
 
+struct () {}
+
+struct (_,)<A> {
+  _0: A,
+}
+
 // Full name: test_crate::construct
 #[charon::opaque]
-fn construct<T>(_1: T) -> alloc::boxed::Box<(dyn Display + 'static)>[{built_in impl MetaSized for (dyn Display + 'static)}, {built_in impl Sized for Global}]
+fn construct<T>(_1: T) -> Box<(dyn Display + 'static)>[{built_in impl MetaSized for (dyn Display + 'static)}, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Display),

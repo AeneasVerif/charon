@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 struct test_crate::main::AssertIsAsBytes {}
 
 struct test_crate::main::AssertIsAsBytes#1 {}

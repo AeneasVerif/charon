@@ -30,6 +30,8 @@ pub trait IndexMut<Self, Idx>
     vtable: core::ops::index::IndexMut::{vtable}<Idx, Self::ImpliedClause1::Output>
 }
 
+struct () {}
+
 // Full name: test_crate::Wrap
 pub struct Wrap {
   _0: [u64; 2usize],

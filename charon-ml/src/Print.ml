@@ -124,9 +124,6 @@ let region_binder_to_string value_to_string env rb =
           Format.pp_print_string fmt (value_to_string env value))
         env fmt rb)
 
-let type_id_to_string env id =
-  PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_type_id env fmt id)
-
 let type_decl_id_to_string env def_id =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_type_decl_id env fmt def_id)
 
@@ -163,9 +160,9 @@ let byte_to_string env cv =
 let unsizing_metadata_to_string env meta =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_unsizing_metadata env fmt meta)
 
-let const_aggregate_to_string env tref opt_variant_id fields =
+let const_aggregate_to_string env tref builtin opt_variant_id fields =
   PrintFmt.pp_to_string (fun fmt ->
-      PrintFmt.pp_const_aggregate env tref opt_variant_id fmt fields)
+      PrintFmt.pp_const_aggregate env tref builtin opt_variant_id fmt fields)
 
 let constant_expr_to_string env cv =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_constant_expr env fmt cv)

@@ -8,6 +8,8 @@ pub enum Option::<u8> {
   Some { _0: u8 },
 }
 
+struct () {}
+
 // Full name: test_crate::init_option
 fn init_option()
 {

@@ -22,6 +22,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: test_crate::Ord
 trait Ord<Self>
 {

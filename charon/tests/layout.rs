@@ -239,7 +239,12 @@ fn type_layout() -> anyhow::Result<()> {
         .type_decls
         .iter()
         .filter_map(|tdecl| {
-            if tdecl.item_meta.name.name[0].as_ident().unwrap().0 != "test_crate" {
+            // Skips the builtin types too, whose names start with a `PathElem::Builtin`.
+            let is_local = matches!(
+                tdecl.item_meta.name.name.first().and_then(|e| e.as_ident()),
+                Some((crate_name, _)) if crate_name == "test_crate"
+            );
+            if !is_local {
                 return None;
             }
             let name = repr_name(&crate_data, &tdecl.item_meta.name);

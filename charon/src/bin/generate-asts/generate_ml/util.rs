@@ -14,6 +14,8 @@ pub fn repr_name(n: &Name) -> String {
             PathElem::Impl(..) => "<impl>".to_string(),
             PathElem::Instantiated(..) => "<mono>".to_string(),
             PathElem::Target(target) => target.clone(),
+            PathElem::Builtin(BuiltinPathElem::Tuple(n)) => format!("<tuple_{n}>"),
+            PathElem::Builtin(BuiltinPathElem::Str) => "<str>".to_string(),
         })
         .join("::")
 }
@@ -118,7 +120,7 @@ impl<'a> GenerateCtx<'a> {
 
     /// For a type that refers to an ADT, return the name of that ADT.
     pub fn type_to_rust_name(&self, ty: &Ty) -> Option<&str> {
-        let index_ty = ty.as_adt()?.as_adt()?;
+        let index_ty = ty.as_adt()?.id;
         self.crate_data.item_name(index_ty).short_str()
     }
 
@@ -155,14 +157,14 @@ impl<'a> GenerateCtx<'a> {
                     .collect_vec();
                 match tref.as_builtin() {
                     None => {
-                        let id = tref.adt_id();
-                        let mut base_ty = if let Some(tdecl) = self.crate_data.type_decls.get(id) {
-                            self.type_to_ocaml_ident(tdecl)
-                        } else {
-                            let name = self.crate_data.item_name(id);
-                            eprintln!("Warning: type {} missing from llbc", repr_name(name));
-                            name.short_str().unwrap().to_lowercase()
-                        };
+                        let mut base_ty =
+                            if let Some(tdecl) = self.crate_data.type_decls.get(tref.id) {
+                                self.type_to_ocaml_ident(tdecl)
+                            } else {
+                                let name = self.crate_data.item_name(tref.id);
+                                eprintln!("Warning: type {} missing from llbc", repr_name(name));
+                                name.short_str().unwrap().to_lowercase()
+                            };
                         if base_ty == "vec" {
                             base_ty = "list".to_string();
                         }

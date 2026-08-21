@@ -49,9 +49,23 @@ where
     TypeOutlives0: T: 'a,
 = <opaque>
 
+struct () {}
+
 // Full name: std::io::stdio::_eprint
 pub fn _eprint<'_0>(_1: Arguments<'_0>)
 = <opaque>
+
+struct (_,)<A> {
+  _0: A,
+}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
 
 // Full name: test_crate::debug_slice
 fn debug_slice<'_0, T>(slice: &'_0 [T])
@@ -81,7 +95,7 @@ where
     let _18: &'43 [Argument<'44>; 1usize]; // anonymous local
     let _19: &'45 [Argument<'46>; 1usize]; // anonymous local
     let _20: [u8; 7usize]; // anonymous local
-    let _21: &'72 [u8; 7usize]; // anonymous local
+    let _21: &'74 [u8; 7usize]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -124,8 +138,8 @@ where
         storage_live(args_13)
         storage_live(_14)
         storage_live(_15)
-        _15 = &(*args_11.0)
-        _14 = new_debug<'59, '70, &'61 T>[{built_in impl Sized for &'63 T}, {impl#2}<'68, T>[TraitClause1]](move _15)
+        _15 = &(*args_11._0)
+        _14 = new_debug<'61, '72, &'63 T>[{built_in impl Sized for &'65 T}, {impl#2}<'70, T>[TraitClause1]](move _15)
         ↳⚡ storage_dead(slice)
             unwind_continue
         storage_dead(_15)
@@ -144,14 +158,14 @@ where
         storage_live(_19)
         _19 = &args_13
         _18 = &(*_19)
-        _10 = new<'74, 7usize, 1usize>(move _16, move _18)
+        _10 = new<'76, 7usize, 1usize>(move _16, move _18)
         ↳⚡ storage_dead(slice)
             unwind_continue
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(_17)
         storage_dead(_16)
-        _9 = _eprint<'76>(move _10)
+        _9 = _eprint<'78>(move _10)
         ↳⚡ storage_dead(slice)
             unwind_continue
         storage_dead(_10)

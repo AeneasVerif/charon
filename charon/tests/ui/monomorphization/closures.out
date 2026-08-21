@@ -16,6 +16,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -82,6 +84,15 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}
 }
 
+struct (_,)::<u8> {
+  _0: u8,
+}
+
+struct (_, _)::<u8, bool> {
+  _0: u8,
+  _1: bool,
+}
+
 struct test_crate::main::closure<'_0> {
   _0: &'_0 u8,
 }
@@ -118,7 +129,7 @@ impl<'_0> FnMut<(u8,)> for test_crate::main::closure<'_0> {
 }
 
 // Full name: test_crate::main::{impl Fn<(u8,)> for test_crate::main::closure<'_0>}
-impl<'_0> "impl_Fn_tuple_for_closure" Fn<(u8,)> for test_crate::main::closure<'_0> {
+impl<'_0> "impl_Fn_for_closure" Fn<(u8,)> for test_crate::main::closure<'_0> {
     proof ImpliedClause0: (test_crate::main::closure<'_0>: MetaSized) = {built_in impl MetaSized for test_crate::main::closure<'_0>}
     proof ImpliedClause1: (test_crate::main::closure<'_0>: FnMut<(u8,)>) = {impl FnMut<(u8,)> for test_crate::main::closure<'_0>}<'_0>
     proof ImpliedClause2: ((u8,): Sized) = {built_in impl Sized for (u8,)}
@@ -139,7 +150,7 @@ fn apply_to_zero::<test_crate::main::closure<'_>>(f: test_crate::main::closure<'
     _2 = &f
     storage_live(_3)
     _3 = (const 0u8,)
-    _0 = impl_Fn_tuple_for_closure<'7>::call<'8>(move _2, move _3)
+    _0 = impl_Fn_for_closure<'7>::call<'8>(move _2, move _3)
     ↳⚡ conditional_drop[{impl Destruct for test_crate::main::closure<'_0>}::drop_glue<'11, '12>] f
         ↳⚡ storage_dead(f)
             unwind_terminate
@@ -387,7 +398,7 @@ where
     storage_live(_0)
     storage_live(x)
     storage_live(_6)
-    x = move tupled_args.0
+    x = move tupled_args._0
     storage_live(_4)
     _4 = copy x
     storage_live(_5)
@@ -483,7 +494,7 @@ where
     storage_live(x)
     storage_live(_4)
     storage_live(_7)
-    x = move tupled_args.0
+    x = move tupled_args._0
     _4 = copy (*(*_1)._0) panic.+ const 1u8
     (*(*_1)._0) = move _4
     storage_live(_5)
@@ -523,7 +534,7 @@ fn {impl FnOnce<(u8,)> for test_crate::main::closure#2}::call_once(_1: test_crat
     storage_live(_0)
     storage_live(x)
     storage_live(_7)
-    x = move tupled_args.0
+    x = move tupled_args._0
     storage_live(_4)
     storage_live(_5)
     _5 = move _1._0

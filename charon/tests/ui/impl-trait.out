@@ -53,6 +53,8 @@ where
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -82,6 +84,10 @@ pub trait FnOnce<Self, Args>
     type Output
     fn call_once;
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+}
+
+struct (_,)<A> {
+  _0: A,
 }
 
 // Full name: test_crate::Foo
@@ -316,7 +322,7 @@ where
 
     storage_live(_0)
     storage_live(x)
-    x = move tupled_args.0
+    x = move tupled_args._0
     storage_live(_4)
     _4 = &(*x)
     _0 = WrapClone { _0: move _4 }
@@ -377,7 +383,7 @@ pub fn use_wrap()
     let _6: &'17 u32; // anonymous local
     let _7: &'18 u32; // anonymous local
     let _8: &'19 u32; // anonymous local
-    let _9: &'32 u32; // anonymous local
+    let _9: &'33 u32; // anonymous local
     let _10: u32; // anonymous local
 
     storage_live(_0)
@@ -404,14 +410,14 @@ pub fn use_wrap()
     _6 = &(*_7)
     _5 = &(*_6)
     _4 = (move _5,)
-    _2 = call_once<'23, u32>[{built_in impl Sized for u32}](move _3, move _4)
-    ↳⚡ conditional_drop[drop_glue<'24, u32>[{built_in impl Sized for u32}]] _3
+    _2 = call_once<'24, u32>[{built_in impl Sized for u32}](move _3, move _4)
+    ↳⚡ conditional_drop[drop_glue<'25, u32>[{built_in impl Sized for u32}]] _3
         ↳⚡ storage_dead(_7)
             storage_dead(_10)
             storage_dead(_9)
             storage_dead(_8)
             unwind_terminate
-        conditional_drop[drop_glue<'31, u32>[{built_in impl Sized for u32}]] f
+        conditional_drop[drop_glue<'32, u32>[{built_in impl Sized for u32}]] f
         ↳⚡ storage_dead(_7)
             storage_dead(_10)
             storage_dead(_9)
@@ -422,11 +428,11 @@ pub fn use_wrap()
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
-    set_type(typeof(_2) <= WrapClone<&'25 u32>[{built_in impl Sized for &'25 u32}, {impl Clone for &'_0 T}<'25, u32>])
+    set_type(typeof(_2) <= WrapClone<&'26 u32>[{built_in impl Sized for &'26 u32}, {impl Clone for &'_0 T}<'26, u32>])
     storage_dead(_6)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[drop_glue<'30, u32>[{built_in impl Sized for u32}]] f
+    conditional_drop[drop_glue<'31, u32>[{built_in impl Sized for u32}]] f
     ↳⚡ storage_dead(_7)
         unwind_continue
     storage_dead(f)

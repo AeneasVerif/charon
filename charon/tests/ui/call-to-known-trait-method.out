@@ -74,6 +74,8 @@ impl "impl_Default_for_bool" Default for bool {
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -85,6 +87,14 @@ pub trait Destruct<Self>
 // Full name: alloc::string::String
 #[lang_item(String)]
 pub opaque type String
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
 
 // Full name: test_crate::Struct
 struct Struct<A>

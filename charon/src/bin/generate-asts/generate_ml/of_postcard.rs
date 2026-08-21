@@ -68,8 +68,9 @@ const MANUAL_IMPLS: &[(&str, &str)] = &[
 impl<'a> GenerateCtx<'a> {
     fn build_postcard_function(&self, decl: &TypeDecl, body: &str) -> String {
         let ty = TyKind::Adt(TypeDeclRef {
-            id: TypeId::Adt(decl.def_id),
+            id: decl.def_id,
             generics: decl.generics.identity_args().into(),
+            builtin: decl.src.as_builtin().cloned(),
         })
         .into_ty();
         let (ty_name, _) = self.type_to_ocaml_ident_raw(decl);
@@ -143,17 +144,17 @@ impl<'a> GenerateCtx<'a> {
                 let mut wrap_in_map = false;
                 match tref.as_builtin() {
                     None => {
-                        let id = tref.adt_id();
-                        let mut first = if let Some(tdecl) = self.crate_data.type_decls.get(id) {
+                        let mut first = if let Some(tdecl) = self.crate_data.type_decls.get(tref.id)
+                        {
                             let (name, module) = self.type_to_ocaml_ident_raw(tdecl);
                             match module {
-                                Some((_, short)) if !self.current_ids.contains(&id) => {
+                                Some((_, short)) if !self.current_ids.contains(&tref.id) => {
                                     format!("{short}.{name}")
                                 }
                                 _ => name,
                             }
                         } else {
-                            format!("missing_type_{id}")
+                            format!("missing_type_{}", tref.id)
                         };
                         if first == "vec" {
                             first = "list".to_string();

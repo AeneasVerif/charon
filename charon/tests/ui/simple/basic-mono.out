@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: test_crate::foo::<10usize>
 fn foo::<10usize>()
 {

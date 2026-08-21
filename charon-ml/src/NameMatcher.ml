@@ -513,6 +513,8 @@ let rec match_name_with_generics (ctx : ctx) (c : match_config)
       && match_generic_args ctx c m pg g
   | [ PIdent (pid, pd, pg) ], [ PeTarget target ] ->
       pid = target && pd = 0 && match_generic_args ctx c m pg g
+  | [ PIdent ("str", 0, pg) ], [ PeBuiltin PeStr ] ->
+      match_generic_args ctx c m pg g
   | [ PImpl pty ], [ PeImpl impl ] -> (
       (* We can get there when matching a prefix of the name with a pattern *)
       (* We have to distinguish two cases:
@@ -556,26 +558,22 @@ and match_name (ctx : ctx) (c : match_config) (p : pattern) (n : T.name) : bool
     =
   match_name_with_generics ctx c p n TypesUtils.empty_generic_args
 
-and match_pattern_with_type_id (ctx : ctx) (c : match_config) (m : maps)
-    (pid : pattern) (id : T.type_id) (generics : T.generic_args) : bool =
-  match id with
-  | TAdtId id ->
-      (* Lookup the type decl and match the name *)
-      let d = T.TypeDeclId.Map.find id ctx.crate.type_decls in
-      match_name_with_generics ctx c ~m pid d.item_meta.name generics
-  | TBuiltin TTuple -> false
-  | TBuiltin id -> (
-      match (id, pid) with
-      | ( TBox,
-          ( [ PIdent ("Box", _, pgenerics) ]
-          | [
-              PIdent ("alloc", _, []);
-              PIdent ("boxed", _, []);
-              PIdent ("Box", _, pgenerics);
-            ] ) ) -> match_generic_args ctx c m pgenerics generics
-      | TStr, [ PIdent ("str", _, []) ] ->
-          generics = TypesUtils.empty_generic_args
-      | _ -> false)
+and match_pattern_with_type_decl_id (ctx : ctx) (c : match_config) (m : maps)
+    (pid : pattern) (id : T.type_decl_id) (builtin : T.builtin_ty option)
+    (generics : T.generic_args) : bool =
+  match (builtin, pid) with
+  (* `Box` is special: it can be abbreviated. *)
+  | Some TBox, [ PIdent ("Box", _, pgenerics) ] ->
+      match_generic_args ctx c m pgenerics generics
+  (* A tuple's name has no spelling a pattern could produce. *)
+  | Some TTuple, _ -> false
+  | _ -> (
+      (* Builtin types are declared like any other, so we match on their name
+         like any other. *)
+      match T.TypeDeclId.Map.find_opt id ctx.crate.type_decls with
+      | Some d ->
+          match_name_with_generics ctx c ~m pid d.item_meta.name generics
+      | None -> false)
 
 and match_pattern_with_literal_type (pty : pattern) (ty : T.literal_type) : bool
     =
@@ -589,7 +587,8 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
     (ty : T.ty) : bool =
   match (pty, ty) with
   | EComp pid, TAdt tref ->
-      match_pattern_with_type_id ctx c m pid tref.id tref.generics
+      match_pattern_with_type_decl_id ctx c m pid tref.id tref.builtin
+        tref.generics
   | EComp pid, TLiteral lit -> match_pattern_with_literal_type pid lit
   | EPrimAdt (pid, pgenerics), ty -> begin
       match (pid, ty) with
@@ -613,9 +612,20 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
             }
           in
           match_generic_args ctx c m pgenerics generics
-      | TTuple, TAdt tref ->
-          tref.id = TBuiltin TTuple
-          && match_generic_args ctx c m pgenerics tref.generics
+      | TTuple, TAdt { builtin = Some TTuple; _ } -> begin
+          (* The fields come from the declaration, not from the arguments:
+             monomorphization moves them there. *)
+          match Substitute.ty_as_tuple_fields ctx.crate.type_decls ty with
+          | Some fields ->
+              List.length pgenerics = List.length fields
+              && List.for_all2
+                   (fun pty ty ->
+                     match pty with
+                     | GExpr e -> match_expr_with_ty ctx c m e ty
+                     | GRegion _ | GValue _ -> false)
+                   pgenerics fields
+          | None -> false
+        end
       | _ -> false
     end
   | ERef (pr, pty, prk), TRef (r, ty, rk) ->
@@ -1019,6 +1029,15 @@ and path_elem_with_generic_args_to_pattern (ctx : ctx) (c : to_pat_config)
       (* In pattern generation, we skip monomorphized elements since patterns
          are meant to match the logical structure, not the instantiation details *)
       []
+  | PeBuiltin PeStr -> begin
+      match generics with
+      | None -> [ PIdent ("str", 0, []) ]
+      | Some args -> [ PIdent ("str", 0, args) ]
+    end
+  | PeBuiltin (PeTuple _) ->
+      (* A tuple has no spelling a pattern could produce; `ty_to_pattern_aux`
+         builds an `EPrimAdt` for them instead of going through the name. *)
+      []
 
 and impl_elem_to_pattern (ctx : ctx) (c : to_pat_config) (impl : T.impl_elem) :
     pattern_elem =
@@ -1041,19 +1060,29 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
     (ty : T.ty) : expr =
   match ty with
   | TAdt tref -> (
-      match tref.id with
-      | TAdtId id ->
+      let generics = generic_args_to_pattern ctx c m tref.generics in
+      match tref.builtin with
+      | Some TTuple ->
+          (* The fields come from the declaration, like those of any other
+             struct: monomorphization moves them there. *)
+          let fields =
+            match Substitute.ty_as_tuple_fields ctx.crate.type_decls ty with
+            | Some fields -> fields
+            | None ->
+                raise (Failure "Can't find the declaration of a tuple type")
+          in
+          EPrimAdt
+            ( TTuple,
+              List.map (fun ty -> GExpr (ty_to_pattern_aux ctx c m ty)) fields
+            )
+      (* `Box` is special: patterns may abbreviate it. *)
+      | Some TBox -> EComp [ PIdent ("Box", 0, generics) ]
+      | _ ->
           (* Lookup the declaration *)
-          let d = T.TypeDeclId.Map.find id ctx.crate.type_decls in
+          let d = T.TypeDeclId.Map.find tref.id ctx.crate.type_decls in
           EComp
             (name_with_generics_to_pattern_aux ctx c m d.item_meta.name
-               tref.generics)
-      | TBuiltin id -> (
-          let generics = generic_args_to_pattern ctx c m tref.generics in
-          match id with
-          | TTuple -> EPrimAdt (TTuple, generics)
-          | TBox -> EComp [ PIdent ("Box", 0, generics) ]
-          | TStr -> EComp [ PIdent ("str", 0, generics) ]))
+               tref.generics))
   | TVar v -> EVar (type_var_to_pattern m v)
   | TLiteral lit -> literal_type_to_pattern c lit
   | TRef (r, ty, rk) ->

@@ -73,6 +73,8 @@ impl "impl_Copy_for_u32" Copy for u32 {
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -208,6 +210,14 @@ where
     TypeOutlives0: T: '_0,
     TypeOutlives1: A: '_0,
 = <opaque>
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
 
 pub fn test_crate::swap<'a, T>(x: &'a mut T, y: &'a mut T)
 where

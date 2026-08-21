@@ -16,6 +16,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -54,6 +56,15 @@ pub trait FnOnce<Self, Args>
     vtable: core::ops::function::FnOnce::{vtable}
 }
 
+struct (_,)::<u8> {
+  _0: u8,
+}
+
+struct (_, _)::<u8, bool> {
+  _0: u8,
+  _1: bool,
+}
+
 // Full name: test_crate::main::closure
 struct closure {
   _0: NotCopy,
@@ -72,7 +83,7 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for closure}
-impl "impl_FnOnce_tuple_for_closure" FnOnce<(u8,)> for closure {
+impl "impl_FnOnce_for_closure" FnOnce<(u8,)> for closure {
     proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
     proof ImpliedClause1: ((u8,): Sized) = {built_in impl Sized for (u8,)}
     proof ImpliedClause2: ((u8,): Tuple) = {built_in impl Tuple for (u8,)}
@@ -92,7 +103,7 @@ fn apply_to_zero_once::<closure>(f: closure) -> u8
     _2 = move f
     storage_live(_3)
     _3 = (const 0u8,)
-    _0 = impl_FnOnce_tuple_for_closure::call_once(move _2, move _3)
+    _0 = impl_FnOnce_for_closure::call_once(move _2, move _3)
     ↳⚡ conditional_drop[drop_glue<'0>] _2
         ↳⚡ storage_dead(f)
             unwind_terminate
@@ -156,7 +167,7 @@ fn call_once(_1: closure, tupled_args: (u8,)) -> u8
     storage_live(_0)
     storage_live(x)
     storage_live(_7)
-    x = move tupled_args.0
+    x = move tupled_args._0
     storage_live(_4)
     storage_live(_5)
     _5 = move _1._0

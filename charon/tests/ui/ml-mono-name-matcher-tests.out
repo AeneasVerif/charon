@@ -22,6 +22,12 @@ pub fn is_some::<i32><'_0>(_1: &'_0 Option::<i32>) -> bool
 pub fn index::<bool, RangeFrom::<usize>><'_0>(_1: &'_0 [bool], _2: RangeFrom::<usize>) -> &'_0 [bool]
 = <opaque>
 
+struct () {}
+
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::foo::bar
 #[pattern::pass("test_crate::foo::bar")]
 #[pattern::fail("crate::foo::bar")]

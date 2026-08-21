@@ -205,6 +205,13 @@ impl<'tcx> TranslateCtx<'tcx> {
         item: &RustcItem,
     ) -> Result<Option<PathElem>, Error> {
         let def_id = item.def_id();
+        if let Some(synthetic) = def_id.as_synthetic(&self.hax_state) {
+            return Ok(match synthetic {
+                hax::SyntheticItem::Tuple(n) => Some(PathElem::Builtin(BuiltinPathElem::Tuple(n))),
+                hax::SyntheticItem::Str => Some(PathElem::Builtin(BuiltinPathElem::Str)),
+                hax::SyntheticItem::Array | hax::SyntheticItem::Slice => None,
+            });
+        }
         let path_elem = def_id.path_item(&self.hax_state);
         // Disambiguator disambiguates identically-named (but distinct) identifiers. This happens
         // notably with macros and inherent impl blocks.
@@ -342,7 +349,8 @@ impl<'tcx> TranslateCtx<'tcx> {
         let def_id = item.def_id();
         trace!("Computing name for `{def_id:?}`");
 
-        let parent_name = if let Some(parent_id) = def_id.parent(&self.hax_state) {
+        let is_builtin = def_id.as_synthetic(&self.hax_state).is_some();
+        let parent_name = if !is_builtin && let Some(parent_id) = def_id.parent(&self.hax_state) {
             let def = self.hax_def_for_item(item)?;
             if matches!(item, RustcItem::Mono(..))
                 && let Some(parent_item) = def.typing_parent(&self.hax_state)

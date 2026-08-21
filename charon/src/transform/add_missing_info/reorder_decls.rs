@@ -379,10 +379,12 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {
         .translated
         .all_items()
         .filter(|item| {
-            ctx.options
-                .start_from
-                .iter()
-                .any(|pat| pat.matches(&ctx.translated, item.item_meta()))
+            item.item_meta().name.is_builtin()
+                || ctx
+                    .options
+                    .start_from
+                    .iter()
+                    .any(|pat| pat.matches(&ctx.translated, item.item_meta()))
         })
         .map(|item| item.id())
         .collect();

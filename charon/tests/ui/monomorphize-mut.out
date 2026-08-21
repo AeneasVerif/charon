@@ -134,6 +134,8 @@ pub trait core::marker::MetaSized::<test_crate::List::<&_ mut _><_, _>[TraitClau
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -294,6 +296,10 @@ where
   Some { _0: IterWrapper<'_0, T0>[TraitClause1] },
 }
 
+struct (_,)<A> {
+  _0: A,
+}
+
 // Full name: core::option::{Option<T>[TraitClause0]}::map
 pub fn map<T, U, F>(_1: Option<T>[TraitClause0], _2: F) -> Option<U>[TraitClause1]
 where
@@ -308,6 +314,22 @@ where
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
+
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
+
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type alloc::boxed::Box::<test_crate::List::<&_ mut _><_, _>[TraitClause2]><'_0, T0>
+where
+    TraitClause0: (T0: core::marker::MetaSized::<test_crate::List::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause2]),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
+    TraitClause2: (T0: core::marker::Sized::<&_ mut _><'_0>),
 
 // Full name: test_crate::option_mut
 fn option_mut<X, A>(x: A)
@@ -808,7 +830,15 @@ where
     TraitClause0: (T: Sized),
 {
   val: T,
-  next: alloc::boxed::Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}],
+  next: Box<List<T>[TraitClause0]>[{built_in impl MetaSized for List<T>[TraitClause0]}, {built_in impl Sized for Global}],
+}
+
+struct test_crate::ListNode::<&_ mut _><'_0, T0>
+where
+    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
+{
+  val: &'_0 mut T0,
+  next: alloc::boxed::Box::<test_crate::List::<&_ mut _><_, _>[TraitClause2]><'_0, T0>[{built_in impl core::marker::MetaSized::<test_crate::List::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause0] for T0}, {built_in impl Sized for Global}, TraitClause0],
 }
 
 enum test_crate::List::<&_ mut _><'_0, T0>
@@ -817,14 +847,6 @@ where
 {
   Nil,
   Cons { _0: test_crate::ListNode::<&_ mut _><'_0, T0>[TraitClause0] },
-}
-
-struct test_crate::ListNode::<&_ mut _><'_0, T0>
-where
-    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
-{
-  val: &'_0 mut T0,
-  next: alloc::boxed::Box<test_crate::List::<&_ mut _><'_0, T0>[TraitClause0]>[{built_in impl core::marker::MetaSized::<test_crate::List::<&_ mut _><_, _>[TraitClause0]><'_0>[TraitClause0] for T0}, {built_in impl Sized for Global}],
 }
 
 // Full name: test_crate::use_list_mut

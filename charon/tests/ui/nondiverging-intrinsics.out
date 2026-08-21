@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: core::intrinsics::assume
 #[rustc_intrinsic]
 pub unsafe fn assume(b_1: bool)

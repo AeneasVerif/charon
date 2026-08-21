@@ -3,6 +3,8 @@ pub opaque type core::core_arch::arm_shared::neon::uint16x8_t
 pub unsafe fn core::core_arch::aarch64::neon::generated::vld1q_u16(_1: *const u16) -> core::core_arch::arm_shared::neon::uint16x8_t
 = <opaque>
 
+struct () {}
+
 pub unsafe fn core::core_arch::aarch64::neon::generated::vst1q_u16(_1: *mut u16, _2: core::core_arch::arm_shared::neon::uint16x8_t)
 = <opaque>
 
@@ -147,6 +149,14 @@ impl core::cmp::PartialOrd<usize> for usize {
     vtable: core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}::{vtable}
 }
 
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: core::marker::Sized),
+{
+  _0: A,
+  _1: B,
+}
+
 #[diagnostic_item("range_step")]
 pub trait core::iter::range::Step<Self>
 {
@@ -286,6 +296,10 @@ where
     TraitClause0: (T: core::marker::Sized),
     TypeOutlives0: T: '_0,
 = <opaque>
+
+struct (_,)<A> {
+  _0: A,
+}
 
 trait test_crate::NttIntrinsicsInterface<Self>
 {

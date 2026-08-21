@@ -3,6 +3,8 @@
 // Full name: core::alloc::AllocError
 pub struct AllocError {}
 
+struct () {}
+
 // Full name: core::result::Result
 #[diagnostic_item("Result")]
 pub enum Result<T, E>
@@ -166,6 +168,10 @@ where
     ↳⚡ unwind_continue
     storage_dead(_2)
     return
+}
+
+struct str {
+  _0: [u8],
 }
 
 #[track_caller]
@@ -1761,6 +1767,10 @@ where
     return
 }
 
+struct (_,)<A> {
+  _0: A,
+}
+
 #[diagnostic_item("ptr_const_is_null")]
 pub fn core::ptr::const_ptr::{*const T}::is_null<T>(self: *const T) -> bool
 {
@@ -1782,7 +1792,7 @@ pub fn core::ptr::const_ptr::{*const T}::is_null<T>(self: *const T) -> bool
     _5 = copy ptr
     _4 = (move _5,)
     storage_dead(_5)
-    _0 = runtime(move _4.0)
+    _0 = runtime(move _4._0)
     ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(ptr)
@@ -2371,6 +2381,14 @@ where
     return
 }
 
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
 // Full name: alloc::boxed::{Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::into_raw_with_allocator
 pub fn into_raw_with_allocator<T, A>(b_1: Box<T, A>[TraitClause0, TraitClause1, TraitClause2]) -> (*mut T, A)
 where
@@ -2474,9 +2492,9 @@ where
     ↳⚡ unwind_continue
     storage_dead(_6)
     storage_live(ptr)
-    ptr = copy _5.0
+    ptr = copy _5._0
     storage_live(alloc)
-    alloc = move _5.1
+    alloc = move _5._1
     storage_dead(_5)
     storage_live(_7)
     storage_live(_8)

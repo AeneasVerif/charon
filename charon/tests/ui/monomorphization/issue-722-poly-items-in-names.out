@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: test_crate::Point::<i32>
 struct Point::<i32> {
   x: i32,

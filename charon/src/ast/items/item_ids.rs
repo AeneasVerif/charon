@@ -9,6 +9,11 @@ use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 
 generate_index_type!(FunDeclId, "Fun");
 generate_index_type!(TypeDeclId, "Adt");
+
+impl TypeDeclId {
+    /// The declaration of the unit type `()`
+    pub const UNIT: Self = Self::ZERO;
+}
 generate_index_type!(GlobalDeclId, "Global");
 generate_index_type!(TraitDeclId, "TraitDecl");
 generate_index_type!(TraitImplId, "TraitImpl");
@@ -104,7 +109,11 @@ pub enum MaybeAssocItemId {
     Assoc(TraitDeclId, AssocItemId),
 }
 
-/// Reference to a type declaration or builtin type.
+/// Reference to a type declaration.
+///
+/// This includes user-defined ADTs (structs, enums, unions), but also tuples,
+/// boxes, and `str`, which we translate as `struct str([u8])`. "Builtin" boxes
+/// only occur when `--treat-box-as-builtin` is set.
 #[derive(
     Debug,
     Clone,
@@ -120,49 +129,9 @@ pub enum MaybeAssocItemId {
     DriveTwo,
 )]
 pub struct TypeDeclRef {
-    pub id: TypeId,
+    pub id: TypeDeclId,
     pub generics: BoxedArgs,
-}
-
-/// Type identifier.
-///
-/// Allows us to factorize the code for built-in types and ADTs.
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    Copy,
-    VariantName,
-    EnumAsGetters,
-    EnumIsA,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-    Hash,
-    Ord,
-    PartialOrd,
-)]
-#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("T"))]
-pub enum TypeId {
-    /// A "regular" ADT type.
-    ///
-    /// Includes transparent ADTs and opaque ADTs (local ADTs marked as opaque,
-    /// and external ADTs).
-    #[cfg_attr(feature = "charon_on_charon", charon::rename("TAdtId"))]
-    Adt(TypeDeclId),
-    /// Built-in type. Either a primitive type like array or slice, or a
-    /// non-primitive type coming from a standard library
-    /// and that we handle like a primitive type. Types falling into this
-    /// category include: Box, Vec, Cell...
-    /// The Array and Slice types were initially modelled as primitive in
-    /// the [Ty] type. We decided to move them to built-in types as it allows
-    /// for more uniform treatment throughout the codebase.
-    #[cfg_attr(feature = "charon_on_charon", charon::rename("TBuiltin"))]
-    #[serde_state(stateless)]
-    Builtin(BuiltinTy),
+    pub builtin: Option<BuiltinTy>,
 }
 
 /// Reference to a function declaration.
@@ -419,41 +388,31 @@ pub struct TraitImplRef {
 }
 
 impl TypeDeclRef {
-    pub fn new(id: TypeId, generics: GenericArgs) -> Self {
+    pub fn new(id: TypeDeclId, generics: GenericArgs, builtin: Option<BuiltinTy>) -> Self {
         Self {
             id,
             generics: Box::new(generics),
+            builtin,
         }
     }
 
     pub fn as_builtin(&self) -> Option<BuiltinTy> {
-        self.id.as_builtin().copied()
+        self.builtin
     }
 
-    pub fn as_adt(&self) -> Option<TypeDeclId> {
-        self.id.as_adt().copied()
-    }
-
-    pub fn as_adt_mut(&mut self) -> Option<&mut TypeDeclId> {
-        self.id.as_adt_mut()
-    }
-
-    #[track_caller]
-    pub fn adt_id(&self) -> TypeDeclId {
-        self.as_adt()
-            .expect("called `TypeDeclRef::adt_id` on a builtin type")
-    }
-
+    /// Whether this refers to `Box`.
     pub fn is_box(&self) -> bool {
-        self.as_builtin() == Some(BuiltinTy::Box)
+        matches!(self.builtin, Some(BuiltinTy::Box))
     }
 
+    /// Whether this refers to a tuple.
     pub fn is_tuple(&self) -> bool {
-        self.as_builtin() == Some(BuiltinTy::Tuple)
+        matches!(self.builtin, Some(BuiltinTy::Tuple))
     }
 
+    /// Whether this refers to `str`.
     pub fn is_str(&self) -> bool {
-        self.as_builtin() == Some(BuiltinTy::Str)
+        matches!(self.builtin, Some(BuiltinTy::Str))
     }
 }
 
@@ -549,7 +508,27 @@ macro_rules! convert_item_ref {
         }
     };
 }
-convert_item_ref!(TypeDeclRef(TypeId));
+impl TryFrom<DeclRef<ItemId>> for TypeDeclRef {
+    type Error = ();
+    fn try_from(item: DeclRef<ItemId>) -> Result<Self, ()> {
+        assert!(item.trait_ref.is_none());
+        Ok(TypeDeclRef {
+            id: item.id.try_into()?,
+            generics: item.generics,
+            builtin: None,
+        })
+    }
+}
+impl From<DeclRef<TypeDeclId>> for TypeDeclRef {
+    fn from(item: DeclRef<TypeDeclId>) -> Self {
+        assert!(item.trait_ref.is_none());
+        TypeDeclRef {
+            id: item.id,
+            generics: item.generics,
+            builtin: None,
+        }
+    }
+}
 convert_item_ref!(FunDeclRef(FunDeclId));
 convert_item_ref!(GlobalDeclRef(GlobalDeclId));
 convert_item_ref!(TraitDeclRef(TraitDeclId));
@@ -618,12 +597,6 @@ wrap_unwrap_enum!(AssocItemId::Type(AssocTypeId));
 wrap_unwrap_enum!(AssocItemId::Method(TraitMethodId));
 wrap_unwrap_enum!(AssocItemId::Const(AssocConstId));
 
-impl TryFrom<ItemId> for TypeId {
-    type Error = ();
-    fn try_from(x: ItemId) -> Result<Self, Self::Error> {
-        Ok(TypeId::Adt(x.try_into()?))
-    }
-}
 impl TryFrom<ItemId> for FunId {
     type Error = ();
     fn try_from(x: ItemId) -> Result<Self, Self::Error> {

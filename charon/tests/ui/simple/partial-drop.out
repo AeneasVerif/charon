@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -30,8 +32,16 @@ impl "impl_Destruct_for_Global" Destruct for Global {
     non-dyn-compatible
 }
 
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn impl_Destruct_for_Box::drop_glue<'_0, T, A>(_1: &'_0 mut alloc::boxed::Box<T>[TraitClause0, TraitClause1])
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T>
+where
+    TraitClause0: (T: Destruct),
+    TraitClause1: (type_error("removed allocator parameter"): Destruct),
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box<T>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn impl_Destruct_for_Box::drop_glue<'_0, T, A>(_1: &'_0 mut Box<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Destruct),
     TraitClause1: (A: Destruct),
@@ -39,8 +49,8 @@ where
     TypeOutlives1: A: '_0,
 = <opaque>
 
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}
-impl<T, A> "impl_Destruct_for_Box" Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]
+// Full name: alloc::boxed::Box::{impl Destruct for Box<T>[TraitClause0, TraitClause1]}
+impl<T, A> "impl_Destruct_for_Box" Destruct for Box<T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Destruct),
     TraitClause1: (A: Destruct),
@@ -51,9 +61,9 @@ where
 
 // Full name: test_crate::Foo
 struct Foo {
-  x: alloc::boxed::Box<u32>[{built_in impl Destruct for u32}, impl_Destruct_for_Global],
-  y: alloc::boxed::Box<u32>[{built_in impl Destruct for u32}, impl_Destruct_for_Global],
-  z: alloc::boxed::Box<u32>[{built_in impl Destruct for u32}, impl_Destruct_for_Global],
+  x: Box<u32>[{built_in impl Destruct for u32}, impl_Destruct_for_Global],
+  y: Box<u32>[{built_in impl Destruct for u32}, impl_Destruct_for_Global],
+  z: Box<u32>[{built_in impl Destruct for u32}, impl_Destruct_for_Global],
 }
 
 // Full name: test_crate::foo
@@ -62,14 +72,14 @@ fn foo(f: Foo)
     let _0: (); // return
     let f: Foo; // arg #1
     let _2: (); // anonymous local
-    let _3: alloc::boxed::Box<u32>[{built_in impl Destruct for u32}, impl_Destruct_for_Global]; // anonymous local
+    let _3: Box<u32>[{built_in impl Destruct for u32}, impl_Destruct_for_Global]; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = move f.x
-    _2 = drop<alloc::boxed::Box<u32>[{built_in impl Destruct for u32}, impl_Destruct_for_Global]>[impl_Destruct_for_Box<u32, Global>[{built_in impl Destruct for u32}, impl_Destruct_for_Global], impl_Destruct_for_Box<u32, Global>[{built_in impl Destruct for u32}, impl_Destruct_for_Global]](move _3)
+    _2 = drop<Box<u32>[{built_in impl Destruct for u32}, impl_Destruct_for_Global]>[impl_Destruct_for_Box<u32, Global>[{built_in impl Destruct for u32}, impl_Destruct_for_Global], impl_Destruct_for_Box<u32, Global>[{built_in impl Destruct for u32}, impl_Destruct_for_Global]](move _3)
     ↳⚡ // Only `y` and `z` should be dropped here
         drop[impl_Destruct_for_Box::drop_glue<'0, u32, Global>[{built_in impl Destruct for u32}, impl_Destruct_for_Global]] f.y
         ↳⚡ storage_dead(f)

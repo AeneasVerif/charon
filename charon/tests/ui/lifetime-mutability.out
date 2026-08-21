@@ -18,11 +18,19 @@ pub trait Sized<Self>
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
 
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
+
 // Full name: test_crate::A
 struct A<mut 'a, mut 'b> {
   x: &'a mut u32,
   y: &'b u32,
-  z: alloc::boxed::Box<&'b mut u32>[{built_in impl MetaSized for &'b mut u32}, {built_in impl Sized for Global}],
+  z: Box<&'b mut u32>[{built_in impl MetaSized for &'b mut u32}, {built_in impl Sized for Global}],
 }
 
 // Full name: test_crate::B

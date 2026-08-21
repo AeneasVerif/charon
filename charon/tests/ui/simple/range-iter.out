@@ -75,6 +75,11 @@ impl "impl_PartialOrd_usize_for_usize" PartialOrd<usize> for usize {
     vtable: impl_PartialOrd_usize_for_usize::{vtable}
 }
 
+struct (_, _)<A, B> {
+  _0: A,
+  _1: B,
+}
+
 // Full name: core::iter::range::Step
 #[diagnostic_item("range_step")]
 pub trait Step<Self>
@@ -158,6 +163,12 @@ pub fn into_iter<I, Clause0_Item>(_1: I) -> I
 where
     TraitClause0: (I: Iterator<Clause0_Item>),
 = <opaque>
+
+struct () {}
+
+struct (_,)<A> {
+  _0: A,
+}
 
 // Full name: test_crate::iter
 fn iter(n: usize)
