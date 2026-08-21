@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787240049566,
+  "lastUpdate": 1787304696177,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -9106,6 +9106,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 273.5,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.8,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ac4c583f8ce1288d45294a37edb1e9862c21dcbc",
+          "message": "Merge pull request #1360 from Nadrieril/prepare-builtin-typedecl\n\nPrepare for adding `TypeDecl`s for builtins",
+          "timestamp": "2026-08-21T09:28:48Z",
+          "tree_id": "268ef6208d7c14db1bdfa99d7da07df352eab02b",
+          "url": "https://github.com/AeneasVerif/charon/commit/ac4c583f8ce1288d45294a37edb1e9862c21dcbc"
+        },
+        "date": 1787304694524,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 61401658908,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 8.85,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 393.2,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 24.8,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 50729595306,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 7.68,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 272.2,
             "unit": "max-rss(MB)"
           },
           {
