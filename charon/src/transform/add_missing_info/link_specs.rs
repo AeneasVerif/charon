@@ -7,14 +7,14 @@ impl TransformPass for Transform {
         let mut attrs = Vec::new();
         for (spec_id, fdecl) in ctx.translated.fun_decls.iter_mut_enumerated() {
             for attr in &fdecl.item_meta.attr_info.attributes {
-                match attr {
-                    Attribute::IsPrecondition(target_id) => {
-                        attrs.push((*target_id, Attribute::HasPrecondition(spec_id)));
-                    }
-                    Attribute::IsPostcondition(target_id) => {
-                        attrs.push((*target_id, Attribute::HasPostcondition(spec_id)));
-                    }
-                    _ => {}
+                if let Attribute::IsContract { kind, target } = attr {
+                    attrs.push((
+                        *target,
+                        Attribute::HasContract {
+                            kind: kind.clone(),
+                            contract: spec_id,
+                        },
+                    ));
                 }
             }
         }

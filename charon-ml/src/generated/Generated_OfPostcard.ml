@@ -1757,24 +1757,20 @@ and attribute_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (AttrVariantsSuffix _0)
      | 5 -> Ok AttrTransparent
      | 6 ->
-         let* _0 = maybe_assoc_item_id_of_postcard ctx st in
-         Ok (AttrIsPrecondition _0)
+         let* kind = string_of_postcard ctx st in
+         let* target = maybe_assoc_item_id_of_postcard ctx st in
+         Ok (AttrIsContract (kind, target))
      | 7 ->
-         let* _0 = maybe_assoc_item_id_of_postcard ctx st in
-         Ok (AttrIsPostcondition _0)
+         let* kind = string_of_postcard ctx st in
+         let* contract = fun_decl_id_of_postcard ctx st in
+         Ok (AttrHasContract (kind, contract))
      | 8 ->
-         let* _0 = fun_decl_id_of_postcard ctx st in
-         Ok (AttrHasPrecondition _0)
-     | 9 ->
-         let* _0 = fun_decl_id_of_postcard ctx st in
-         Ok (AttrHasPostcondition _0)
-     | 10 ->
          let* _0 = string_of_postcard ctx st in
          Ok (AttrDocComment _0)
-     | 11 ->
+     | 9 ->
          let* _0 = rustc_attribute_kind_of_postcard ctx st in
          Ok (AttrBuiltin _0)
-     | 12 ->
+     | 10 ->
          let* _0 = raw_attribute_of_postcard ctx st in
          Ok (AttrUnknown _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))

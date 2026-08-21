@@ -1189,20 +1189,14 @@ let pp_attribute_unindented (env : fmt_env) (fmt : Format.formatter)
   | AttrVariantsSuffix suffix ->
       Format.fprintf fmt "#[charon::variants_suffix(\"%s\")]" suffix
   | AttrTransparent -> pp_string fmt "#[charon::transparent]"
-  | AttrIsPrecondition id ->
-      Format.fprintf fmt "#[charon::precondition(for = %a)]"
-        (pp_maybe_assoc_item_id env)
-        id
-  | AttrIsPostcondition id ->
-      Format.fprintf fmt "#[charon::postcondition(for = %a)]"
-        (pp_maybe_assoc_item_id env)
-        id
-  | AttrHasPrecondition id ->
-      Format.fprintf fmt "#[charon::has_precondition(%a)]" (pp_item_id env)
-        (IdFun id)
-  | AttrHasPostcondition id ->
-      Format.fprintf fmt "#[charon::has_postcondition(%a)]" (pp_item_id env)
-        (IdFun id)
+  | AttrIsContract (kind, id) ->
+      let target =
+        pp_to_string (fun fmt -> pp_maybe_assoc_item_id env fmt id)
+      in
+      Format.fprintf fmt "#[charon::contract(kind = %S, for = %S)]" kind target
+  | AttrHasContract (kind, contract) ->
+      Format.fprintf fmt "#[charon::has_contract(kind = %S, contract = %a)]"
+        kind (pp_item_id env) (IdFun contract)
   | AttrDocComment comment ->
       let lines = String.split_on_char '\n' comment in
       pp_sep_list "\n" pp_string fmt (List.map (fun line -> "///" ^ line) lines)

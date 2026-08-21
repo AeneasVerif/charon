@@ -1467,19 +1467,17 @@ impl Attribute {
                 write!(f, "#[charon::variants_suffix(\"{suffix}\")]")
             }
             Attribute::Transparent => write!(f, "#[charon::transparent]"),
-            Attribute::IsPrecondition(id) => {
-                write!(f, "#[charon::precondition(for = {})]", id.with_ctx(ctx))
+            Attribute::IsContract { kind, target } => {
+                let target = target.with_ctx(ctx).to_string();
+                write!(f, "#[charon::contract(kind = {kind:?}, for = {target:?})]")
             }
-            Attribute::IsPostcondition(id) => {
-                write!(f, "#[charon::postcondition(for = {})]", id.with_ctx(ctx))
-            }
-            Attribute::HasPrecondition(id) => {
-                let id = ItemId::Fun(*id);
-                write!(f, "#[charon::has_precondition({})]", id.with_ctx(ctx))
-            }
-            Attribute::HasPostcondition(id) => {
-                let id = ItemId::Fun(*id);
-                write!(f, "#[charon::has_postcondition({})]", id.with_ctx(ctx))
+            Attribute::HasContract { kind, contract } => {
+                let contract = ItemId::Fun(*contract);
+                write!(
+                    f,
+                    "#[charon::has_contract(kind = {kind:?}, contract = {})]",
+                    contract.with_ctx(ctx)
+                )
             }
             Attribute::DocComment(comment) => {
                 write!(

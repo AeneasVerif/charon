@@ -2014,18 +2014,17 @@ and attribute_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = string_of_json ctx _0 in
         Ok (AttrVariantsSuffix _0)
     | `String "Transparent" -> Ok AttrTransparent
-    | `Assoc [ ("IsPrecondition", _0) ] ->
-        let* _0 = maybe_assoc_item_id_of_json ctx _0 in
-        Ok (AttrIsPrecondition _0)
-    | `Assoc [ ("IsPostcondition", _0) ] ->
-        let* _0 = maybe_assoc_item_id_of_json ctx _0 in
-        Ok (AttrIsPostcondition _0)
-    | `Assoc [ ("HasPrecondition", _0) ] ->
-        let* _0 = fun_decl_id_of_json ctx _0 in
-        Ok (AttrHasPrecondition _0)
-    | `Assoc [ ("HasPostcondition", _0) ] ->
-        let* _0 = fun_decl_id_of_json ctx _0 in
-        Ok (AttrHasPostcondition _0)
+    | `Assoc [ ("IsContract", `Assoc [ ("kind", kind); ("target", target) ]) ]
+      ->
+        let* kind = string_of_json ctx kind in
+        let* target = maybe_assoc_item_id_of_json ctx target in
+        Ok (AttrIsContract (kind, target))
+    | `Assoc
+        [ ("HasContract", `Assoc [ ("kind", kind); ("contract", contract) ]) ]
+      ->
+        let* kind = string_of_json ctx kind in
+        let* contract = fun_decl_id_of_json ctx contract in
+        Ok (AttrHasContract (kind, contract))
     | `Assoc [ ("DocComment", _0) ] ->
         let* _0 = string_of_json ctx _0 in
         Ok (AttrDocComment _0)

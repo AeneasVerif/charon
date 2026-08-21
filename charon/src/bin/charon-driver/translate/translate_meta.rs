@@ -459,57 +459,31 @@ impl<'tcx> TranslateCtx<'tcx> {
     }
 }
 
+enum ContractTarget {
+    Parent,
+    Path(String),
+}
+
 // Attributes
 impl<'tcx> TranslateCtx<'tcx> {
-    fn condition_target_id(
+    fn resolve_contract_target(
         &mut self,
         def_id: &hax::DefId,
-        args: &str,
+        target: ContractTarget,
     ) -> Result<MaybeAssocItemId, String> {
         if !matches!(
             def_id.kind,
             hax::DefKind::Fn | hax::DefKind::AssocFn | hax::DefKind::Closure
         ) {
-            return Err(
-                "pre/postcondition attributes can only be applied to functions".to_string(),
-            );
+            return Err("contract attributes can only be applied to functions".to_string());
         }
-
-        enum Parsed<'a> {
-            Parent,
-            For(&'a str),
-        }
-
-        let parsed = if args == "parent" {
-            Parsed::Parent
-        } else if let Some(target_name) = args
-            .strip_prefix("for")
-            .map(str::trim_start)
-            .and_then(|args| args.strip_prefix('='))
-            .map(str::trim)
-            .and_then(|args| args.strip_prefix('"'))
-            .and_then(|args| args.strip_suffix('"'))
-            .filter(|name| !name.is_empty())
-        {
-            Parsed::For(target_name)
-        } else {
-            return Err(
-                "invalid syntax: expected `#[pre/postcondition(parent)]` or `#[pre/postcondition(for = \"item path\")]`"
-                    .to_string(),
-            );
-        };
 
         let parent_id = def_id.parent(&self.hax_state);
-        let target_def_id = match parsed {
-            Parsed::Parent => {
-                let Some(parent_id) = parent_id else {
-                    return Err(
-                        "#[pre/postcondition(parent)] is invalid at the crate root".to_string()
-                    );
-                };
-                parent_id
-            }
-            Parsed::For(target_name) => {
+        let target_def_id = match &target {
+            ContractTarget::Parent => parent_id.ok_or_else(|| {
+                "#[charon::contract(..., parent)] is invalid at the crate root".to_string()
+            })?,
+            ContractTarget::Path(target_name) => {
                 let mut siblings = Vec::new();
                 if let Some(parent_id) = &parent_id {
                     let parent_def = self.poly_hax_def(parent_id).map_err(|err| err.msg)?;
@@ -556,11 +530,11 @@ impl<'tcx> TranslateCtx<'tcx> {
                     .filter(|sibling| match sibling.path_item(&self.hax_state).data {
                         DefPathItem::ValueNs(name)
                         | DefPathItem::TypeNs(name)
-                        | DefPathItem::MacroNs(name) => name.as_str() == target_name,
+                        | DefPathItem::MacroNs(name) => name.as_str() == target_name.as_str(),
                         _ => false,
                     })
                     .collect_vec();
-                let target = match siblings.as_slice() {
+                match siblings.as_slice() {
                     [sibling] => sibling.clone(),
                     [] => {
                         // Fall back to full path search.
@@ -584,19 +558,18 @@ impl<'tcx> TranslateCtx<'tcx> {
                             "found several sibling items named `{target_name}`; expected exactly one"
                         ));
                     }
-                };
-                target
+                }
             }
         };
 
         let target_def = self.poly_hax_def(&target_def_id).map_err(|err| err.msg)?;
         if self.options.monomorphize_with_hax && target_def.this().has_non_lt_param {
-            return Err("pre/postconditions on generic items are not supported \
+            return Err("contracts on generic items are not supported \
                 with `--monomorphize`"
                 .to_string());
         }
 
-        if let Parsed::For(_) = parsed
+        if let ContractTarget::Path(_) = target
             && let hax::FullDefKind::AssocFn {
                 associated_item, ..
             }
@@ -675,13 +648,82 @@ impl<'tcx> TranslateCtx<'tcx> {
             "exclude" if args.is_none() => Attribute::Exclude,
             // `#[charon::transparent]`
             "transparent" if args.is_none() => Attribute::Transparent,
-            // `#[charon::precondition(parent)]` or `#[charon::precondition(for = "path")]`
-            "precondition" if let Some(args) = args => {
-                Attribute::IsPrecondition(self.condition_target_id(def_id, args)?)
-            }
-            // `#[charon::postcondition(parent)]` or `#[charon::postcondition(for = "path")]`
-            "postcondition" if let Some(args) = args => {
-                Attribute::IsPostcondition(self.condition_target_id(def_id, args)?)
+            // `#[charon::contract(kind = "...", parent)]` or
+            // `#[charon::contract(kind = "...", for = "path")]`
+            "contract" if let Some(args) = args => {
+                use syn::{ext::IdentExt, parse::Parser};
+
+                let parser = |input: syn::parse::ParseStream<'_>| {
+                    let mut kind = None;
+                    let mut target = None;
+                    while !input.is_empty() {
+                        let key = input.call(syn::Ident::parse_any)?;
+                        let key_name = key.to_string();
+                        if key_name == "parent" && !input.peek(syn::Token![=]) {
+                            if target.is_some() {
+                                return Err(syn::Error::new(
+                                    key.span(),
+                                    "duplicate contract target",
+                                ));
+                            }
+                            target = Some(ContractTarget::Parent);
+                        } else {
+                            input.parse::<syn::Token![=]>()?;
+                            let value = input.parse::<syn::LitStr>()?.value();
+                            match key_name.as_str() {
+                                "kind" => {
+                                    if kind.is_some() {
+                                        return Err(syn::Error::new(
+                                            key.span(),
+                                            "duplicate contract argument `kind`",
+                                        ));
+                                    }
+                                    kind = Some(value);
+                                }
+                                "for" => {
+                                    if target.is_some() {
+                                        return Err(syn::Error::new(
+                                            key.span(),
+                                            "duplicate contract target",
+                                        ));
+                                    }
+                                    target = Some(ContractTarget::Path(value));
+                                }
+                                "parent" => {
+                                    return Err(syn::Error::new(
+                                        key.span(),
+                                        "contract argument `parent` does not take a value",
+                                    ));
+                                }
+                                _ => {
+                                    return Err(syn::Error::new(
+                                        key.span(),
+                                        format!("unknown contract argument `{key}`"),
+                                    ));
+                                }
+                            }
+                        }
+                        if !input.is_empty() {
+                            input.parse::<syn::Token![,]>()?;
+                        }
+                    }
+                    let kind =
+                        kind.ok_or_else(|| input.error("missing contract argument `kind`"))?;
+                    let target = target
+                        .ok_or_else(|| input.error("missing contract target `parent` or `for`"))?;
+                    Ok((kind, target))
+                };
+                let (kind, target) = parser.parse_str(args).map_err(|err| {
+                    format!(
+                        "invalid contract syntax: {err}; expected \
+                         `#[charon::contract(kind = \"...\", parent)]` or \
+                         `#[charon::contract(kind = \"...\", for = \"item path\")]`"
+                    )
+                })?;
+                Attribute::IsContract {
+                    kind,
+                    target: self.resolve_contract_target(def_id, target)?,
+                }
             }
             // `#[charon::rename("new_name")]`
             "rename" if let Some(attr) = args => {

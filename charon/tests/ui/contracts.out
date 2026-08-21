@@ -75,7 +75,7 @@ pub trait Fn<Self, Args>
 struct closure {}
 
 // Full name: test_crate::function::{impl Fn<()> for closure}::call
-#[charon::has_precondition(closure_precondition)]
+#[charon::has_contract(kind = "pre", contract = closure_precondition)]
 fn call<'_0>(_1: &'_0 closure, tupled_args: ())
 {
     let _0: (); // return
@@ -91,7 +91,7 @@ fn call<'_0>(_1: &'_0 closure, tupled_args: ())
 }
 
 // Full name: test_crate::function::closure::closure_precondition
-#[charon::precondition(for = call)]
+#[charon::contract(kind = "pre", for = "call")]
 fn closure_precondition() -> bool
 {
     let _0: bool; // return
@@ -102,8 +102,8 @@ fn closure_precondition() -> bool
 }
 
 // Full name: test_crate::function
-#[charon::has_precondition(precondition)]
-#[charon::has_postcondition(postcondition)]
+#[charon::has_contract(kind = "pre", contract = precondition)]
+#[charon::has_contract(kind = "post", contract = postcondition)]
 fn function()
 {
     let _0: (); // return
@@ -133,7 +133,7 @@ fn function()
 }
 
 // Full name: test_crate::function::precondition
-#[charon::precondition(for = function)]
+#[charon::contract(kind = "pre", for = "function")]
 fn precondition() -> bool
 {
     let _0: bool; // return
@@ -144,7 +144,7 @@ fn precondition() -> bool
 }
 
 // Full name: test_crate::function::postcondition
-#[charon::postcondition(for = function)]
+#[charon::contract(kind = "post", for = "function")]
 fn postcondition() -> bool
 {
     let _0: bool; // return
@@ -155,7 +155,7 @@ fn postcondition() -> bool
 }
 
 // Full name: test_crate::function::sibling
-#[charon::has_precondition(sibling_precondition)]
+#[charon::has_contract(kind = "pre", contract = sibling_precondition)]
 fn sibling()
 {
     let _0: (); // return
@@ -167,7 +167,7 @@ fn sibling()
 }
 
 // Full name: test_crate::function::sibling_precondition
-#[charon::precondition(for = sibling)]
+#[charon::contract(kind = "pre", for = "sibling")]
 fn sibling_precondition() -> bool
 {
     let _0: bool; // return
@@ -283,7 +283,7 @@ impl "impl_Destruct_for_closure" Destruct for closure {
 }
 
 // Full name: test_crate::other::path_target
-#[charon::has_postcondition(path_postcondition)]
+#[charon::has_contract(kind = "post", contract = path_postcondition)]
 pub fn path_target()
 {
     let _0: (); // return
@@ -295,7 +295,7 @@ pub fn path_target()
 }
 
 // Full name: test_crate::path_postcondition
-#[charon::postcondition(for = path_target)]
+#[charon::contract(kind = "post", for = "path_target")]
 fn path_postcondition() -> bool
 {
     let _0: bool; // return
@@ -305,19 +305,31 @@ fn path_postcondition() -> bool
     return
 }
 
+// Full name: test_crate::trait_contract
+#[charon::contract(kind = "invariant", for = "Trait")]
+fn trait_contract() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
 // Full name: test_crate::Trait
+#[charon::has_contract(kind = "invariant", contract = trait_contract)]
 trait Trait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    #[charon::has_precondition(method_precondition)]
+    #[charon::has_contract(kind = "pre", contract = method_precondition)]
     fn method;
-    #[charon::precondition(for = Trait::method)]
+    #[charon::contract(kind = "pre", for = "Trait::method")]
     fn method_precondition = method_precondition<Self>[Self]
     non-dyn-compatible
 }
 
 // Full name: test_crate::Trait::method_precondition
-#[charon::precondition(for = Trait::method)]
+#[charon::contract(kind = "pre", for = "Trait::method")]
 fn method_precondition<Self>() -> bool
 where
     TraitClause0: (Self: Trait),
@@ -329,9 +341,9 @@ where
     return
 }
 
-// Full name: test_crate::type_postcondition
-#[charon::postcondition(for = MyType)]
-fn type_postcondition() -> bool
+// Full name: test_crate::type_invariant
+#[charon::contract(kind = "invariant", for = "MyType")]
+fn type_invariant() -> bool
 {
     let _0: bool; // return
 
@@ -341,7 +353,7 @@ fn type_postcondition() -> bool
 }
 
 // Full name: test_crate::MyType
-#[charon::has_postcondition(type_postcondition)]
+#[charon::has_contract(kind = "invariant", contract = type_invariant)]
 struct MyType {}
 
 
