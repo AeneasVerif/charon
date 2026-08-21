@@ -2326,6 +2326,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
                 writeln!(f)?;
             }
             for method in self.methods() {
+                for attr in &method.skip_binder.item_meta.attr_info.attributes {
+                    if !attr.is_doc_comment() {
+                        writeln!(f, "{TAB_INCR}{}", attr.with_ctx(ctx))?;
+                    }
+                }
                 let name = method.name();
                 let (params, method) =
                     method.fmt_split_with(ctx, |ctx, method| match &method.default {

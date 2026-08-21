@@ -30,6 +30,7 @@ where
 pub trait BoolTrait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
+    #[charon::opaque]
     fn get_bool<'_0_1>;
     vtable: test_crate::BoolTrait::{vtable}
 }

@@ -66,6 +66,8 @@ trait Trait<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: Sized)
+    #[pattern::pass("test_crate::Trait::method")]
+    #[pattern::pass("test_crate::Trait<_>::method")]
     fn method<U, TraitClause0_1: (U: Sized)>;
     non-dyn-compatible
 }

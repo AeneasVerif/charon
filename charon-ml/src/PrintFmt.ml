@@ -1827,6 +1827,14 @@ let pp_trait_decl (env : fmt_env) (indent : string) (indent_incr : string)
     List.iter
       (fun (m : trait_method binder) ->
         let env = fmt_env_push_generics_and_preds env m.binder_params in
+        List.iter
+          (function
+            | AttrDocComment _ -> ()
+            | attr ->
+                Format.fprintf fmt "%s%a\n" indent1
+                  (pp_attribute_unindented env)
+                  attr)
+          m.binder_value.item_meta.attr_info.attributes;
         let params = generic_params_to_string_single_line env m.binder_params in
         Format.fprintf fmt "%sfn %s%s" indent1 m.binder_value.name params;
         (match m.binder_value.default with
