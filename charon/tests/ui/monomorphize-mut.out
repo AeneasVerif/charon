@@ -393,6 +393,39 @@ where
     return
 }
 
+// Full name: test_crate::{impl FnOnce<(T,)> for identity<T>[TraitClause0]}::call_once
+fn call_once<T>(state: identity<T>[TraitClause0], args: (T,)) -> T
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: T; // return
+    let state: identity<T>[TraitClause0]; // arg #1
+    let args: (T,); // arg #2
+
+    storage_live(_0)
+    _0 = identity<T>[TraitClause0](move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnOnce<(T,)> for identity<T>[TraitClause0]}
+impl<T> FnOnce<(T,)> for identity<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (identity<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for identity<T>[TraitClause0]}
+    proof ImpliedClause1: ((T,): Sized) = {built_in impl Sized for (T,)}
+    proof ImpliedClause2: ((T,): Tuple) = {built_in impl Tuple for (T,)}
+    proof ImpliedClause3: (T: Sized) = TraitClause0
+    type Output = T
+    fn call_once = call_once<T>[TraitClause0]
+    non-dyn-compatible
+}
+
 fn test_crate::identity::<&_ mut _><'_0, T0>(x: &'_0 mut T0) -> &'_0 mut T0
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
@@ -520,9 +553,9 @@ where
     let _19: &'80 u32; // anonymous local
     let _20: &'81 u32; // anonymous local
     let _21: &'261 u32; // anonymous local
-    let _22: &'368 u32; // anonymous local
+    let _22: &'348 u32; // anonymous local
     let _23: u32; // anonymous local
-    let _24: &'369 u32; // anonymous local
+    let _24: &'349 u32; // anonymous local
     let _25: u32; // anonymous local
 
     storage_live(_20)
@@ -653,7 +686,7 @@ where
     _17 = &(*_18)
     _16 = Option::Some { _0: move _17 }
     storage_dead(_17)
-    _15 = map<&'268 u32, &'269 u32, identity<&'276 u32>[{built_in impl Sized for &'276 u32}]>[{built_in impl Sized for &'268 u32}, {built_in impl Sized for &'269 u32}, {built_in impl Sized for identity<&'293 u32>[{built_in impl Sized for &'293 u32}]}, {built_in impl FnOnce<(&'268 u32,)> for identity<&'311 u32>[{built_in impl Sized for &'311 u32}] where Output  = &'338 u32}, {built_in impl Destruct for identity<&'349 u32>[{built_in impl Sized for &'349 u32}]}](move _16, const identity<&'362 u32>[{built_in impl Sized for &'362 u32}])
+    _15 = map<&'268 u32, &'269 u32, identity<&'276 u32>[{built_in impl Sized for &'276 u32}]>[{built_in impl Sized for &'268 u32}, {built_in impl Sized for &'269 u32}, {built_in impl Sized for identity<&'293 u32>[{built_in impl Sized for &'293 u32}]}, {impl FnOnce<(T,)> for identity<T>[TraitClause0]}<&'268 u32>[{built_in impl Sized for &'268 u32}], {built_in impl Destruct for identity<&'329 u32>[{built_in impl Sized for &'329 u32}]}](move _16, const identity<&'342 u32>[{built_in impl Sized for &'342 u32}])
     ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'88>] x
         ↳⚡ storage_dead(_19)
             storage_dead(_18)
@@ -672,7 +705,7 @@ where
     storage_dead(_16)
     storage_dead(_15)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for A}::drop_glue<'367>] x
+    conditional_drop[{built_in impl Destruct for A}::drop_glue<'347>] x
     ↳⚡ storage_dead(_19)
         storage_dead(_18)
         storage_dead(x)

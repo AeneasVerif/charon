@@ -1,8 +1,11 @@
 //! In rust, closures behave like ADTs that implement the FnOnce/FnMut/Fn traits automatically.
+//! Function item types also implement those traits automatically.
 //!
 //! Here we convert closures to a struct containing the closure's state (upvars), along with
 //! matching trait impls and fun decls (e.g. a Fn closure will have a trait impl for Fn, FnMut and
 //! FnOnce, along with 3 matching method implementations for call, call_mut and call_once).
+//! Function item types reuse the same generated trait impls and methods, with an empty state that
+//! forwards to the original function item.
 //!
 //! For example, given the following Rust code:
 //! ```ignore
@@ -54,17 +57,100 @@ pub fn translate_closure_kind(kind: &hax::ClosureKind) -> ClosureKind {
     }
 }
 
-/// References to closure items are subtle because there are three sources of lifetimes on top of
-/// the normal generics: the upvars, the higher-kindedness of the closure itself, and the
+#[derive(Clone, Copy)]
+enum Callable<'a> {
+    Closure(&'a hax::ClosureArgs),
+    FnDef {
+        item: &'a hax::ItemRef,
+        sig: &'a hax::PolyFnSig,
+    },
+}
+
+impl<'a> Callable<'a> {
+    fn item(self) -> &'a hax::ItemRef {
+        match self {
+            Callable::Closure(args) => &args.item,
+            Callable::FnDef { item, .. } => item,
+        }
+    }
+
+    fn sig(self) -> &'a hax::PolyFnSig {
+        match self {
+            Callable::Closure(args) => &args.fn_sig,
+            Callable::FnDef { sig, .. } => sig,
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+struct CallableFnImpls<'a> {
+    callable: Callable<'a>,
+    fn_once_impl: Option<&'a hax::VirtualTraitImpl>,
+    fn_mut_impl: Option<&'a hax::VirtualTraitImpl>,
+    fn_impl: Option<&'a hax::VirtualTraitImpl>,
+}
+
+impl<'a> CallableFnImpls<'a> {
+    fn from_def(def: &'a hax::FullDef<'_>) -> Option<Self> {
+        match def.kind() {
+            hax::FullDefKind::Closure {
+                args,
+                fn_once_impl,
+                fn_mut_impl,
+                fn_impl,
+                ..
+            } => Some(Self {
+                callable: Callable::Closure(args),
+                fn_once_impl: Some(fn_once_impl),
+                fn_mut_impl: fn_mut_impl.as_deref(),
+                fn_impl: fn_impl.as_deref(),
+            }),
+            hax::FullDefKind::Fn {
+                sig,
+                fn_once_impl,
+                fn_mut_impl,
+                fn_impl,
+                ..
+            }
+            | hax::FullDefKind::AssocFn {
+                sig,
+                fn_once_impl,
+                fn_mut_impl,
+                fn_impl,
+                ..
+            } => Some(Self {
+                callable: Callable::FnDef {
+                    item: def.this(),
+                    sig,
+                },
+                fn_once_impl: fn_once_impl.as_deref(),
+                fn_mut_impl: fn_mut_impl.as_deref(),
+                fn_impl: fn_impl.as_deref(),
+            }),
+            _ => None,
+        }
+    }
+
+    fn vimpl(self, target_kind: ClosureKind) -> Option<&'a hax::VirtualTraitImpl> {
+        match target_kind {
+            ClosureKind::FnOnce => self.fn_once_impl,
+            ClosureKind::FnMut => self.fn_mut_impl,
+            ClosureKind::Fn => self.fn_impl,
+        }
+    }
+}
+
+/// References to callable items are subtle because there are three sources of lifetimes on top of
+/// the normal generics: closure upvars, the higher-kindedness of the callable itself, and the
 /// late-bound generics of the `call`/`call_mut` methods. One must be careful to choose the right
 /// method from these.
 impl<'tcx> ItemTransCtx<'tcx, '_> {
-    /// Translate a reference to a closure item that takes late-bound lifetimes. The binder binds
-    /// the late-bound lifetimes of the closure itself, if it is higher-kinded.
-    fn translate_closure_bound_ref_with_late_bound(
+    /// Translate a reference to a callable item that takes late-bound lifetimes. The binder binds
+    /// the late-bound lifetimes of the callable itself, if it is higher-kinded.
+    fn translate_callable_bound_ref_with_late_bound(
         &mut self,
         span: Span,
-        closure: &hax::ClosureArgs,
+        callable: Callable<'_>,
         kind: TransItemSourceKind,
     ) -> Result<RegionBinder<DeclRef<ItemId>>, Error> {
         if !matches!(
@@ -74,13 +160,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             raise_error!(
                 self,
                 span,
-                "Called `translate_closure_bound_ref_with_late_bound` on a `{kind:?}`; \
+                "Called `translate_callable_bound_ref_with_late_bound` on a `{kind:?}`; \
                 use `translate_closure_ref_with_upvars` \
-                or `translate_closure_bound_ref_with_method_bound` instead"
+                or `translate_callable_bound_ref_with_method_bound` instead"
             )
         }
-        let dref: DeclRef<ItemId> = self.translate_item(span, &closure.item, kind)?;
-        self.translate_region_binder(span, &closure.fn_sig, |ctx, _| {
+        let dref: DeclRef<ItemId> = self.translate_item(span, callable.item(), kind)?;
+        self.translate_region_binder(span, callable.sig(), |ctx, _| {
             let mut dref = dref.move_under_binder();
             // The regions for these item kinds have the fn late bound regions at the end.
             for (a, b) in dref.generics.regions.iter_mut().rev().zip(
@@ -97,13 +183,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         })
     }
 
-    /// Translate a reference to a closure item that takes late-bound lifetimes and method
+    /// Translate a reference to a callable item that takes late-bound lifetimes and method
     /// lifetimes. The binder binds the late-bound lifetimes of the `call`/`call_mut` method
     /// (specified by `target_kind`).
-    fn translate_closure_bound_ref_with_method_bound(
+    fn translate_callable_bound_ref_with_method_bound(
         &mut self,
         span: Span,
-        closure: &hax::ClosureArgs,
+        item: &hax::ItemRef,
         kind: TransItemSourceKind,
         target_kind: ClosureKind,
     ) -> Result<RegionBinder<DeclRef<ItemId>>, Error> {
@@ -111,12 +197,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             raise_error!(
                 self,
                 span,
-                "Called `translate_closure_bound_ref_with_method_bound` on a `{kind:?}`; \
+                "Called `translate_callable_bound_ref_with_method_bound` on a `{kind:?}`; \
                 use `translate_closure_ref_with_upvars` \
-                or `translate_closure_bound_ref_with_late_bound` instead"
+                or `translate_callable_bound_ref_with_late_bound` instead"
             )
         }
-        let dref: DeclRef<ItemId> = self.translate_item(span, &closure.item, kind)?;
+        let dref: DeclRef<ItemId> = self.translate_item(span, item, kind)?;
         let mut dref = dref.move_under_binder();
         let mut regions = IndexVec::new();
         match target_kind {
@@ -154,7 +240,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         closure: &hax::ClosureArgs,
     ) -> Result<RegionBinder<FunDeclRef>, Error> {
         let kind = TransItemSourceKind::ClosureAsFnCast;
-        let bound_dref = self.translate_closure_bound_ref_with_late_bound(span, closure, kind)?;
+        let bound_dref = self.translate_callable_bound_ref_with_late_bound(
+            span,
+            Callable::Closure(closure),
+            kind,
+        )?;
         Ok(bound_dref.map(|dref| dref.try_into().unwrap()))
     }
 
@@ -168,20 +258,24 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         target_kind: ClosureKind,
     ) -> Result<RegionBinder<TraitImplRef>, Error> {
         let kind = TransItemSourceKind::TraitImpl(TransImplSource::Closure(target_kind));
-        let bound_dref = self.translate_closure_bound_ref_with_late_bound(span, closure, kind)?;
+        let bound_dref = self.translate_callable_bound_ref_with_late_bound(
+            span,
+            Callable::Closure(closure),
+            kind,
+        )?;
         Ok(bound_dref.map(|dref| dref.try_into().unwrap()))
     }
 
-    /// Translate a reference to the chosen closure impl.
-    pub fn translate_closure_impl_ref(
+    /// Translate a reference to the chosen callable impl.
+    pub fn translate_callable_impl_ref(
         &mut self,
         span: Span,
-        closure: &hax::ClosureArgs,
+        item: &hax::ItemRef,
         target_kind: ClosureKind,
     ) -> Result<TraitImplRef, Error> {
         self.translate_item(
             span,
-            &closure.item,
+            item,
             TransItemSourceKind::TraitImpl(TransImplSource::Closure(target_kind)),
         )
     }
@@ -215,13 +309,17 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         })
     }
 
-    pub fn get_closure_state_ty(
-        &mut self,
-        span: Span,
-        args: &hax::ClosureArgs,
-    ) -> Result<Ty, Error> {
-        let tref = self.translate_closure_type_ref(span, args)?;
-        Ok(TyKind::Adt(tref).into_ty())
+    fn get_callable_state_ty(&mut self, span: Span, callable: Callable<'_>) -> Result<Ty, Error> {
+        Ok(match callable {
+            Callable::Closure(args) => {
+                let tref = self.translate_closure_type_ref(span, args)?;
+                TyKind::Adt(tref).into_ty()
+            }
+            Callable::FnDef { item, .. } => {
+                let fn_ref = self.translate_bound_fn_ptr(span, item, TransItemSourceKind::Fun)?;
+                TyKind::FnDef(fn_ref).into_ty()
+            }
+        })
     }
 
     /// Translate the types of the captured variables. Should be called only in
@@ -262,18 +360,18 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         Ok(TypeDeclKind::Struct(fields))
     }
 
-    /// Given an item that is a closure, generate the signature of the
+    /// Given an item that is callable, generate the signature of the
     /// `call_once`/`call_mut`/`call` method (depending on `target_kind`).
-    fn translate_closure_method_sig(
+    fn translate_callable_method_sig(
         &mut self,
         def: &hax::FullDef<'tcx>,
         span: Span,
-        args: &hax::ClosureArgs,
+        callable: Callable,
         target_kind: ClosureKind,
     ) -> Result<RegionBinder<FunSig>, Error> {
-        let signature = &args.fn_sig;
+        let signature = callable.sig();
         trace!(
-            "signature of closure {:?}:\n{:?}",
+            "signature of callable {:?}:\n{:?}",
             def.def_id(),
             signature.value,
         );
@@ -282,7 +380,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let mut fun_sig = self
             .translate_fun_sig(span, signature.hax_skip_binder_ref())?
             .move_under_binder();
-        let state_ty = self.get_closure_state_ty(span, args)?.move_under_binder();
+        let state_ty = self
+            .get_callable_state_ty(span, callable)?
+            .move_under_binder();
 
         // Depending on the kind of the closure generated, add a reference
         let state_ty = match target_kind {
@@ -309,6 +409,24 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             regions: bound_regions,
             skip_binder: fun_sig,
         })
+    }
+
+    fn translate_callable_method_body(
+        &mut self,
+        span: Span,
+        def: &hax::FullDef<'tcx>,
+        target_kind: ClosureKind,
+        callable: Callable,
+        signature: &FunSig,
+    ) -> Result<Body, Error> {
+        match callable {
+            Callable::Closure(args) => {
+                self.translate_closure_method_body(span, def, target_kind, args, signature)
+            }
+            Callable::FnDef { item, .. } => {
+                self.translate_fn_def_method_body(span, item, signature)
+            }
+        }
     }
 
     fn translate_closure_method_body(
@@ -407,7 +525,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     def.this(),
                     TransItemSourceKind::ClosureMethod(closure_kind),
                 );
-                let impl_ref = self.translate_closure_impl_ref(span, args, closure_kind)?;
+                let impl_ref = self.translate_callable_impl_ref(span, &args.item, closure_kind)?;
                 // TODO: make a trait call to avoid needing to concatenate things ourselves.
                 // TODO: can we ask hax for the trait ref?
                 let fn_op = FnOperand::Regular(FnPtr::new(
@@ -459,6 +577,50 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         })
     }
 
+    fn translate_fn_def_method_body(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef,
+        signature: &FunSig,
+    ) -> Result<Body, Error> {
+        let late_bound_regions = self
+            .innermost_binder()
+            .bound_region_vars
+            .iter()
+            .map(|rid| Region::Var(DeBruijnVar::new_at_zero(*rid)))
+            .collect();
+        let fn_ptr = self
+            .translate_bound_fn_ptr(span, item, TransItemSourceKind::Fun)?
+            .apply(late_bound_regions);
+        let fn_op = FnOperand::Regular(fn_ptr);
+
+        let mut builder = BodyBuilder::new(span, 2);
+
+        let output = builder.new_var(None, signature.output.clone());
+        let _state = builder.new_var(Some("state".to_string()), signature.inputs[0].clone());
+        let tupled_args = builder.new_var(Some("args".to_string()), signature.inputs[1].clone());
+        let arg_tys = signature.inputs[1].as_tuple().unwrap();
+        let args = arg_tys
+            .iter()
+            .cloned()
+            .enumerate()
+            .map(|(i, ty)| {
+                let nth_field = tupled_args
+                    .clone()
+                    .project(ProjectionElem::Field(None, FieldId::new(i)), ty);
+                Operand::Move(nth_field)
+            })
+            .collect();
+
+        builder.call(Call {
+            func: fn_op,
+            args,
+            dest: output,
+        });
+
+        Ok(Body::Unstructured(builder.build()))
+    }
+
     /// Given an item that is a closure, generate the `call_once`/`call_mut`/`call` method
     /// (depending on `target_kind`).
     #[tracing::instrument(skip(self, item_meta))]
@@ -470,27 +632,15 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         target_kind: ClosureKind,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        let hax::FullDefKind::Closure {
-            args,
-            fn_once_impl,
-            fn_mut_impl,
-            fn_impl,
-            ..
-        } = &def.kind
-        else {
-            unreachable!()
-        };
+        let callable_impls = CallableFnImpls::from_def(def).unwrap();
+        let callable = callable_impls.callable;
 
         // Hax gives us trait-related information for the impl we're building.
-        let vimpl = match target_kind {
-            ClosureKind::FnOnce => fn_once_impl,
-            ClosureKind::FnMut => fn_mut_impl.as_ref().unwrap(),
-            ClosureKind::Fn => fn_impl.as_ref().unwrap(),
-        };
+        let vimpl = callable_impls.vimpl(target_kind).unwrap();
         let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
         let method_id = self.translate_trait_method_id(implemented_trait.id, &vimpl.methods[0])?;
 
-        let impl_ref = self.translate_closure_impl_ref(span, args, target_kind)?;
+        let impl_ref = self.translate_callable_impl_ref(span, callable.item(), target_kind)?;
         let src = FunSource::TraitImpl {
             impl_ref,
             trait_ref: implemented_trait,
@@ -499,7 +649,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
 
         // Translate the function signature
-        let bound_sig = self.translate_closure_method_sig(def, span, args, target_kind)?;
+        let bound_sig = self.translate_callable_method_sig(def, span, callable, target_kind)?;
         // We give it the lifetime parameter we had prepared for that purpose.
         let signature = bound_sig.apply(
             self.the_only_binder()
@@ -512,7 +662,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
         } else {
-            self.translate_closure_method_body(span, def, target_kind, args, &signature)?
+            self.translate_callable_method_body(span, def, target_kind, callable, &signature)?
         };
 
         Ok(FunDecl {
@@ -534,23 +684,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         target_kind: ClosureKind,
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
-        let hax::FullDefKind::Closure {
-            args,
-            fn_once_impl,
-            fn_mut_impl,
-            fn_impl,
-            ..
-        } = def.kind()
-        else {
-            unreachable!()
-        };
+        let callable_impls = CallableFnImpls::from_def(def).unwrap();
+        let callable = callable_impls.callable;
 
         // Hax gives us trait-related information for the impl we're building.
-        let vimpl = match target_kind {
-            ClosureKind::FnOnce => fn_once_impl,
-            ClosureKind::FnMut => fn_mut_impl.as_ref().unwrap(),
-            ClosureKind::Fn => fn_impl.as_ref().unwrap(),
-        };
+        let vimpl = callable_impls.vimpl(target_kind).unwrap();
         let mut timpl = self.translate_virtual_trait_impl(
             def_id,
             item_meta,
@@ -563,8 +701,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let trait_method_id = self.translate_trait_method_id(trait_decl_id, &vimpl.methods[0])?;
         let call_fn_binder = {
             let kind = TransItemSourceKind::ClosureMethod(target_kind);
-            let bound_method_ref: RegionBinder<DeclRef<ItemId>> =
-                self.translate_closure_bound_ref_with_method_bound(span, args, kind, target_kind)?;
+            let bound_method_ref: RegionBinder<DeclRef<ItemId>> = self
+                .translate_callable_bound_ref_with_method_bound(
+                    span,
+                    callable.item(),
+                    kind,
+                    target_kind,
+                )?;
             let params = GenericParams {
                 regions: bound_method_ref.regions,
                 ..GenericParams::empty()
@@ -609,7 +752,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Translate the function signature
         let signature = self.translate_fun_sig(span, closure.fn_sig.hax_skip_binder_ref())?;
-        let state_ty = self.get_closure_state_ty(span, closure)?;
+        let state_ty = self.get_callable_state_ty(span, Callable::Closure(closure))?;
 
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
@@ -626,7 +769,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 def.this(),
                 TransItemSourceKind::ClosureMethod(ClosureKind::FnOnce),
             );
-            let impl_ref = self.translate_closure_impl_ref(span, closure, ClosureKind::FnOnce)?;
+            let impl_ref =
+                self.translate_callable_impl_ref(span, &closure.item, ClosureKind::FnOnce)?;
             let fn_op = FnOperand::Regular(FnPtr::new(fun_id.into(), impl_ref.generics.clone()));
 
             let mut builder = BodyBuilder::new(span, signature.inputs.len());

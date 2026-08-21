@@ -528,15 +528,20 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 self.the_only_binder_mut()
                     .push_params_from_binder(args.fn_sig.rebind(()))?;
             }
-            if let TransItemSourceKind::ClosureMethod(ClosureKind::Fn | ClosureKind::FnMut) = kind {
-                // Add the lifetime generics coming from the method itself.
-                let rid = self
-                    .the_only_binder_mut()
-                    .params
-                    .regions
-                    .push_with(|index| RegionParam::new(index, None, Variance::Covariant));
-                self.the_only_binder_mut().closure_call_method_region = Some(rid);
-            }
+        }
+
+        if let hax::FullDefKind::Fn { .. }
+        | hax::FullDefKind::AssocFn { .. }
+        | hax::FullDefKind::Closure { .. } = def.kind()
+            && let TransItemSourceKind::ClosureMethod(ClosureKind::Fn | ClosureKind::FnMut) = kind
+        {
+            // Add the lifetime generics coming from the method itself.
+            let rid = self
+                .the_only_binder_mut()
+                .params
+                .regions
+                .push_with(|index| RegionParam::new(index, None, Variance::Covariant));
+            self.the_only_binder_mut().closure_call_method_region = Some(rid);
         }
 
         if matches!(
