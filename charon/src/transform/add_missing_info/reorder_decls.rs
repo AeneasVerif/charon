@@ -342,6 +342,14 @@ impl VisitAst for DepsForItem<'_> {
         meta.attr_info.drive(self)
     }
 
+    fn visit_attribute(&mut self, attr: &Attribute) -> ControlFlow<Self::Break> {
+        // An item depends on its contracts, not the other way around.
+        match attr {
+            Attribute::IsContract { .. } => Continue(()),
+            _ => self.visit_inner(attr),
+        }
+    }
+
     // Sources are reverse dependencies; exploring them is likely to create dependency cycles.
     fn visit_type_source(&mut self, _: &TypeSource) -> ControlFlow<Self::Break> {
         Continue(())

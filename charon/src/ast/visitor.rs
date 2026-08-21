@@ -45,7 +45,7 @@ use derive_generic_visitor::*;
     skip((), String, PathBuf, bool),
     // Types that we unconditionally explore.
     drive(
-        Assert, Attribute, AttrInfo, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
+        Assert, AttrInfo, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
         Call, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Disambiguator, DynPredicate, Field, FieldId, File, FloatTy, FloatValue,
         FnOperand, FunId, FnPtrKind, FunSig, InlineAttr, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
@@ -77,7 +77,7 @@ use derive_generic_visitor::*;
         FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId, FileId,
         TypeDeclRef, FunDeclRef, GlobalDeclRef, TraitDeclRef, TraitImplRef, ImplElem,
         FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
-        ItemMeta, Name, Span,
+        ItemMeta, Name, Span, Attribute,
         TypeSource, FunSource, GlobalSource, TraitDeclSource, TraitImplSource,
         TraitAssocTy, TraitAssocConst, TraitMethod, TraitAssocTyImpl,
         DeBruijnId, Ty, TyKind, Region, TraitRef, TraitRefContents, TraitRefKind,
