@@ -75,7 +75,7 @@ pub trait Fn<Self, Args>
 struct closure {}
 
 // Full name: test_crate::function::{impl Fn<()> for closure}::call
-// precondition: closure_precondition
+#[charon::has_precondition(closure_precondition)]
 fn call<'_0>(_1: &'_0 closure, tupled_args: ())
 {
     let _0: (); // return
@@ -91,7 +91,7 @@ fn call<'_0>(_1: &'_0 closure, tupled_args: ())
 }
 
 // Full name: test_crate::function::closure::closure_precondition
-#[charon::precondition] // of call
+#[charon::precondition(for = call)]
 fn closure_precondition() -> bool
 {
     let _0: bool; // return
@@ -102,8 +102,8 @@ fn closure_precondition() -> bool
 }
 
 // Full name: test_crate::function
-// precondition: precondition
-// postcondition: postcondition
+#[charon::has_precondition(precondition)]
+#[charon::has_postcondition(postcondition)]
 fn function()
 {
     let _0: (); // return
@@ -133,7 +133,7 @@ fn function()
 }
 
 // Full name: test_crate::function::precondition
-#[charon::precondition] // of function
+#[charon::precondition(for = function)]
 fn precondition() -> bool
 {
     let _0: bool; // return
@@ -144,7 +144,7 @@ fn precondition() -> bool
 }
 
 // Full name: test_crate::function::postcondition
-#[charon::postcondition] // of function
+#[charon::postcondition(for = function)]
 fn postcondition() -> bool
 {
     let _0: bool; // return

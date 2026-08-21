@@ -1456,18 +1456,18 @@ impl Attribute {
             }
             Attribute::Transparent => write!(f, "#[charon::transparent]"),
             Attribute::IsPrecondition(id) => {
-                write!(f, "#[charon::precondition] // of {}", id.with_ctx(ctx))
+                write!(f, "#[charon::precondition(for = {})]", id.with_ctx(ctx))
             }
             Attribute::IsPostcondition(id) => {
-                write!(f, "#[charon::postcondition] // of {}", id.with_ctx(ctx))
+                write!(f, "#[charon::postcondition(for = {})]", id.with_ctx(ctx))
             }
             Attribute::HasPrecondition(id) => {
                 let id = ItemId::Fun(*id);
-                write!(f, "// precondition: {}", id.with_ctx(ctx))
+                write!(f, "#[charon::has_precondition({})]", id.with_ctx(ctx))
             }
             Attribute::HasPostcondition(id) => {
                 let id = ItemId::Fun(*id);
-                write!(f, "// postcondition: {}", id.with_ctx(ctx))
+                write!(f, "#[charon::has_postcondition({})]", id.with_ctx(ctx))
             }
             Attribute::DocComment(comment) => {
                 write!(
