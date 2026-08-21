@@ -5,6 +5,8 @@
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
+struct () {}
+
 // Full name: test_crate::module2::do_translate
 #[verify::start_from]
 fn do_translate()

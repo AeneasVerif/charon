@@ -60,6 +60,7 @@ where
                 SyntheticItem::Array => AdtKind::Array,
                 SyntheticItem::Slice => AdtKind::Slice,
                 SyntheticItem::Tuple(..) => AdtKind::Tuple,
+                SyntheticItem::Str => AdtKind::Str,
             };
             let param_env = get_param_env(s, args);
             let destruct_impl = {

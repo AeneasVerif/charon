@@ -95,6 +95,22 @@ let subst_free_vars (subst : single_binder_subst) : subst =
     tr_self = subst.tr_sb_self;
   }
 
+(** Substitute the variables that an item binds, along with its free variables
+    (which appear when [--unbind-item-vars] is used). *)
+let subst_item_vars (subst : single_binder_subst) : subst =
+  let subst_item subst nosubst = function
+    | Free id -> subst id
+    | Bound (dbid, id) when dbid = 0 -> subst id
+    | var -> nosubst var
+  in
+  {
+    r_subst = subst_item subst.r_sb_subst empty_subst.r_subst;
+    ty_subst = subst_item subst.ty_sb_subst empty_subst.ty_subst;
+    cg_subst = subst_item subst.cg_sb_subst empty_subst.cg_subst;
+    tr_subst = subst_item subst.tr_sb_subst empty_subst.tr_subst;
+    tr_self = subst.tr_sb_self;
+  }
+
 (** Substitute the variables bound by the currently innermost (level 0) binder.
 *)
 let subst_at_binder_zero (subst : single_binder_subst) : subst =
@@ -391,6 +407,24 @@ let type_decl_get_instantiated_field_types (def : type_decl)
   let subst = make_subst_from_generics def.generics generics Self in
   let fields = type_decl_get_fields def opt_variant_id in
   List.map (fun f -> ty_substitute subst f.field_ty) fields
+
+(** The field types of a tuple, in order. *)
+let ty_as_tuple_fields (type_decls : type_decl TypeDeclId.Map.t) (ty : ty) :
+    ty list option =
+  let tref =
+    match ty with
+    | TAdt ({ builtin = Some TTuple; _ } as tref) -> tref
+    | _ -> failwith "ty_as_tuple_fields: not a tuple"
+  in
+  match TypeDeclId.Map.find_opt tref.id type_decls with
+  | Some decl when not (type_decl_is_specialized decl) ->
+      Some tref.generics.types
+  | Some { kind = Struct fields; generics = params; _ } ->
+      let subst =
+        subst_item_vars (make_sb_subst_from_generics params tref.generics Self)
+      in
+      Some (List.map (fun f -> ty_substitute subst f.field_ty) fields)
+  | _ -> None
 
 (** Same as [type_decl_get_instantiated_field_types], but also erases the
     regions *)

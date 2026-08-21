@@ -1,6 +1,10 @@
 #[lang_item(GlobalAlloc)]
 pub struct alloc::alloc::Global {}
 
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type alloc::boxed::Box<T>
+
 unsafe fn alloc::boxed::Box::{impl core::marker::Destruct for alloc::boxed::Box<T>}::drop_glue<'_0, T, A>(_1: &'_0 mut alloc::boxed::Box<T>)
 where
     TypeOutlives0: T: '_0,

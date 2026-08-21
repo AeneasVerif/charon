@@ -26,7 +26,9 @@ impl<T> Trait<Option<T>> for Box<T> {
         "test_crate::{test_crate::Trait<alloc::boxed::Box<@T>, core::option::Option<@T>>}::method<@T, @U>"
     )]
     // `Box` is special: it can be abbreviated.
-    #[pattern::pass("test_crate::{test_crate::Trait<Box<@T>, core::option::Option<@T>>}::method<@T, @U>")]
+    #[pattern::pass(
+        "test_crate::{test_crate::Trait<Box<@T>, core::option::Option<@T>>}::method<@T, @U>"
+    )]
     // Can't abbreviate `Option`, only `Box` is special like that.
     #[pattern::fail("test_crate::{test_crate::Trait<Box<@T>, Option<@T>>}::method<@T, @U>")]
     // More general patterns work too.
@@ -50,6 +52,16 @@ impl<T, U> Trait<Box<T>> for Option<U> {
         "test_crate::{test_crate::Trait<core::option::Option<@U>, alloc::boxed::Box<@T>>}::method<@T, @U, @V>"
     )]
     fn method<V>() {}
+}
+
+// Tuples are spelled like in Rust.
+impl Trait<u32> for (u8, bool) {
+    #[pattern::pass("test_crate::{test_crate::Trait<(u8, bool), u32>}::method<@U>")]
+    #[pattern::pass("test_crate::{test_crate::Trait<(@T, @U), u32>}::method<@V>")]
+    #[pattern::fail("test_crate::{test_crate::Trait<(u8, u8), u32>}::method<@U>")]
+    #[pattern::fail("test_crate::{test_crate::Trait<(u8), u32>}::method<@U>")]
+    #[pattern::fail("test_crate::{test_crate::Trait<(u8, bool, bool), u32>}::method<@U>")]
+    fn method<U>() {}
 }
 
 // `call[i]` is a hack to be able to refer to `Call` statements inside the function body.

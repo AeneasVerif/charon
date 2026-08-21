@@ -59,6 +59,8 @@ impl "impl_Copy_for_u8" Copy for u8 {
     non-dyn-compatible
 }
 
+struct () {}
+
 #[rustc_intrinsic]
 #[inline(hint)]
 pub fn test_crate::first::nested::wrapping_add<T>(lhs_1: T, rhs_2: T) -> T

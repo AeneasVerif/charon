@@ -38,6 +38,8 @@ pub trait core::marker::Sized::<Option<&_ mut _>><'_0, T0>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>

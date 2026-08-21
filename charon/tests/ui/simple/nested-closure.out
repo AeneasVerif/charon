@@ -24,6 +24,8 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -81,6 +83,10 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 
+struct (_,)<A> {
+  _0: A,
+}
+
 // Full name: test_crate::Foo
 struct Foo<'a, T>
 where
@@ -117,7 +123,7 @@ where
 
     storage_live(_0)
     storage_live(_z)
-    _z = move tupled_args.0
+    _z = move tupled_args._0
     storage_live(_4)
     _4 = &(*(*_1)._0)
     _0 = TraitClause1::clone<'5>(move _4)
@@ -159,7 +165,7 @@ where
 
     storage_live(_0)
     storage_live(_y)
-    _y = move tupled_args.0
+    _y = move tupled_args._0
     storage_live(_4)
     _4 = &(*(*_1)._0)
     _0 = test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure { _0: move _4 }
@@ -231,10 +237,10 @@ where
     let _16: &'44 u32; // anonymous local
     let _17: &'45 u32; // anonymous local
     let _18: &'61 u32; // anonymous local
-    let _19: &'76 u32; // anonymous local
-    let _20: &'88 u32; // anonymous local
+    let _19: &'77 u32; // anonymous local
+    let _20: &'90 u32; // anonymous local
     let _21: u32; // anonymous local
-    let _22: &'89 u32; // anonymous local
+    let _22: &'91 u32; // anonymous local
     let _23: u32; // anonymous local
 
     storage_live(_0)
@@ -275,7 +281,7 @@ where
     _12 = &(*_17)
     _11 = &(*_12)
     _10 = (move _11,)
-    _5 = {impl Fn<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call<'69, '70, '71, '72, '73, '74, T>[TraitClause0, TraitClause1](move _6, move _10)
+    _5 = {impl Fn<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call<'70, '71, '72, '73, '74, '75, T>[TraitClause0, TraitClause1](move _6, move _10)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(x)
@@ -297,7 +303,7 @@ where
     _15 = &(*_16)
     _14 = &(*_15)
     _13 = (move _14,)
-    _0 = {impl Fn<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call<'84, '85, '86, '87, T>[TraitClause0, TraitClause1](move _4, move _13)
+    _0 = {impl Fn<(&'_ u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>[TraitClause0, TraitClause1]}::call<'86, '87, '88, '89, T>[TraitClause0, TraitClause1](move _4, move _13)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(x)

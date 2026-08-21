@@ -66,6 +66,8 @@ pub fn wrapping_mul(self: u8, rhs: u8) -> u8
     return
 }
 
+struct () {}
+
 // Full name: test_crate::main
 fn main()
 {

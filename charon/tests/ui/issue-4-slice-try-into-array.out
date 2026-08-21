@@ -123,6 +123,8 @@ where
     TraitClause2: (E: Debug),
 = <opaque>
 
+struct () {}
+
 // Full name: test_crate::trait_error
 pub fn trait_error<'_0>(s: &'_0 [u8])
 {

@@ -43,6 +43,8 @@ pub trait Copy<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: test_crate::Foo
 struct Foo {}
 

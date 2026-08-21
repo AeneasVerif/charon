@@ -14,6 +14,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -26,8 +28,16 @@ pub trait Destruct<Self>
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
 
-// Full name: alloc::boxed::Box::{impl Destruct for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn impl_Destruct_for_Box::drop_glue<'_0, T, A>(_1: &'_0 mut alloc::boxed::Box<T>[TraitClause0, TraitClause1])
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box<T>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn impl_Destruct_for_Box::drop_glue<'_0, T, A>(_1: &'_0 mut Box<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: MetaSized),
     TraitClause1: (A: Sized),
@@ -37,7 +47,7 @@ where
 
 // Full name: test_crate::Thing
 pub enum Thing {
-  A { _0: alloc::boxed::Box<()>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}] },
+  A { _0: Box<()>[{built_in impl MetaSized for ()}, {built_in impl Sized for Global}] },
 }
 
 // Full name: test_crate::Thing::{impl Destruct for Thing}::drop_glue

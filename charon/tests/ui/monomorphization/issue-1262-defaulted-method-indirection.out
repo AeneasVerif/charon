@@ -8,6 +8,8 @@ opaque type {vtable}
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
+struct () {}
+
 // Full name: test_crate::Foo
 pub trait Foo<Self>
 {

@@ -17,6 +17,16 @@ fn translate(code: impl std::fmt::Display) -> anyhow::Result<TranslatedCrate> {
     util::translate_rust_text(code, &[])
 }
 
+/// The type declarations written by the user, in order. Every crate also declares the types Rust
+/// treats specially -- tuples, starting with `()` -- which these tests aren't about.
+fn user_type_decls(crate_data: &TranslatedCrate) -> Vec<&TypeDecl> {
+    crate_data
+        .type_decls
+        .iter()
+        .filter(|decl| decl.src.is_normal())
+        .collect()
+}
+
 /// A general item, with information shared by all items.
 struct Item<'c> {
     name_str: String,
@@ -54,8 +64,9 @@ fn type_decl() -> anyhow::Result<()> {
         fn main() {}
         ",
     )?;
+    let type_decls = user_type_decls(&crate_data);
     assert_eq!(
-        repr_name(&crate_data, &crate_data.type_decls[0].item_meta.name),
+        repr_name(&crate_data, &type_decls[0].item_meta.name),
         "test_crate::Struct"
     );
     Ok(())
@@ -145,15 +156,16 @@ fn file_name() -> anyhow::Result<()> {
         type Foo = Option<()>;
         ",
     )?;
+    let type_decls = user_type_decls(&crate_data);
     assert_eq!(
-        repr_name(&crate_data, &crate_data.type_decls[0].item_meta.name),
+        repr_name(&crate_data, &type_decls[0].item_meta.name),
         "test_crate::Foo"
     );
     assert_eq!(
-        repr_name(&crate_data, &crate_data.type_decls[1].item_meta.name),
+        repr_name(&crate_data, &type_decls[1].item_meta.name),
         "core::option::Option"
     );
-    let file_id = crate_data.type_decls[1].item_meta.span.data.file_id;
+    let file_id = type_decls[1].item_meta.span.data.file_id;
     let file = &crate_data.files[file_id];
     assert_eq!(file.name.to_string(), "/rustc/library/core/src/option.rs");
     Ok(())
@@ -380,11 +392,12 @@ fn attributes() -> anyhow::Result<()> {
         }
         "#,
     )?;
+    let type_decls = user_type_decls(&crate_data);
     assert_eq!(
-        unknown_attrs(&crate_data.type_decls[0].item_meta),
+        unknown_attrs(&type_decls[0].item_meta),
         vec!["clippy::foo", "clippy::foo(arg)", "clippy::foo(\"arg\")"]
     );
-    assert!(unknown_attrs(&crate_data.type_decls[1].item_meta).is_empty());
+    assert!(unknown_attrs(&type_decls[1].item_meta).is_empty());
     assert_eq!(
         unknown_attrs(&crate_data.trait_decls[0].item_meta),
         vec!["clippy::foo"]
@@ -436,23 +449,24 @@ fn visibility() -> anyhow::Result<()> {
         }
         "#,
     )?;
+    let type_decls = user_type_decls(&crate_data);
     assert_eq!(
-        repr_name(&crate_data, &crate_data.type_decls[0].item_meta.name),
+        repr_name(&crate_data, &type_decls[0].item_meta.name),
         "test_crate::Pub"
     );
-    assert!(crate_data.type_decls[0].item_meta.attr_info.public);
+    assert!(type_decls[0].item_meta.attr_info.public);
     assert_eq!(
-        repr_name(&crate_data, &crate_data.type_decls[1].item_meta.name),
+        repr_name(&crate_data, &type_decls[1].item_meta.name),
         "test_crate::Priv"
     );
-    assert!(!crate_data.type_decls[1].item_meta.attr_info.public);
+    assert!(!type_decls[1].item_meta.attr_info.public);
     // Note how we think `PubInPriv` is public. It kind of is but there is no path to it. This is
     // probably fine.
     assert_eq!(
-        repr_name(&crate_data, &crate_data.type_decls[2].item_meta.name),
+        repr_name(&crate_data, &type_decls[2].item_meta.name),
         "test_crate::private::PubInPriv"
     );
-    assert!(crate_data.type_decls[2].item_meta.attr_info.public);
+    assert!(type_decls[2].item_meta.attr_info.public);
     Ok(())
 }
 
@@ -471,6 +485,7 @@ fn discriminants() -> anyhow::Result<()> {
         }
         "#,
     )?;
+    let type_decls = user_type_decls(&crate_data);
     fn get_enum_discriminants(ty: &TypeDecl) -> Vec<Literal> {
         ty.kind
             .as_enum()
@@ -480,14 +495,14 @@ fn discriminants() -> anyhow::Result<()> {
             .collect()
     }
     assert_eq!(
-        get_enum_discriminants(&crate_data.type_decls[0]),
+        get_enum_discriminants(type_decls[0]),
         vec![
             Literal::Scalar(ScalarValue::Signed(IntTy::Isize, 0)),
             Literal::Scalar(ScalarValue::Signed(IntTy::Isize, 1))
         ]
     );
     assert_eq!(
-        get_enum_discriminants(&crate_data.type_decls[1]),
+        get_enum_discriminants(type_decls[1]),
         vec![
             Literal::Scalar(ScalarValue::Unsigned(UIntTy::U32, 3)),
             Literal::Scalar(ScalarValue::Unsigned(UIntTy::U32, 42))
@@ -563,6 +578,7 @@ fn rename_attribute() -> anyhow::Result<()> {
         type Test2 = u32;
         "#,
     )?;
+    let type_decls = user_type_decls(&crate_data);
 
     assert_eq!(
         crate_data.trait_decls[0]
@@ -618,38 +634,26 @@ fn rename_attribute() -> anyhow::Result<()> {
     );
 
     assert_eq!(
-        crate_data.type_decls[0]
-            .item_meta
-            .attr_info
-            .rename
-            .as_deref(),
+        type_decls[0].item_meta.attr_info.rename.as_deref(),
         Some("TypeTest")
     );
 
     assert_eq!(
-        crate_data.type_decls[1]
-            .item_meta
-            .attr_info
-            .rename
-            .as_deref(),
+        type_decls[1].item_meta.attr_info.rename.as_deref(),
         Some("VariantsTest")
     );
 
     assert_eq!(
-        crate_data.type_decls[1].kind.as_enum().unwrap()[0].renamed_name(),
+        type_decls[1].kind.as_enum().unwrap()[0].renamed_name(),
         "Variant1"
     );
     assert_eq!(
-        crate_data.type_decls[1].kind.as_enum().unwrap()[1].renamed_name(),
+        type_decls[1].kind.as_enum().unwrap()[1].renamed_name(),
         "SimpleSecondVariant_"
     );
 
     assert_eq!(
-        crate_data.type_decls[2]
-            .item_meta
-            .attr_info
-            .rename
-            .as_deref(),
+        type_decls[2].item_meta.attr_info.rename.as_deref(),
         Some("StructTest")
     );
 
@@ -663,16 +667,12 @@ fn rename_attribute() -> anyhow::Result<()> {
     );
 
     assert_eq!(
-        crate_data.type_decls[3]
-            .item_meta
-            .attr_info
-            .rename
-            .as_deref(),
+        type_decls[3].item_meta.attr_info.rename.as_deref(),
         Some("_TypeAeneas36")
     );
 
     assert_eq!(
-        crate_data.type_decls[2].kind.as_struct().unwrap()[0]
+        type_decls[2].kind.as_struct().unwrap()[0]
             .attr_info
             .rename
             .as_deref(),
@@ -713,7 +713,8 @@ fn declaration_groups() -> anyhow::Result<()> {
     assert!(matches!(global.src, GlobalSource::TraitDefault { .. }));
 
     let decl_groups = crate_data.ordered_decls.unwrap();
-    assert_eq!(decl_groups.len(), 6);
+    // One of the groups is the declaration of `()`, which every crate has.
+    assert_eq!(decl_groups.len(), 7);
 
     Ok(())
 }

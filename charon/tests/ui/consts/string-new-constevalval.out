@@ -55,7 +55,9 @@ pub fn alloc::string::{String}::new() -> String
     return
 }
 
-// Full name: test_crate::<slice>::{impl Destruct for [T]}
+struct () {}
+
+// Full name: {impl Destruct for [T]}
 impl<T> "impl_Destruct_for_slice" Destruct for [T]
 where
     TraitClause0: (T: Sized),
@@ -63,7 +65,7 @@ where
     non-dyn-compatible
 }
 
-// Full name: test_crate::<slice>::{impl Destruct for [T]}::drop_glue
+// Full name: {impl Destruct for [T]}::drop_glue
 unsafe fn impl_Destruct_for_slice::drop_glue<'_0, T>(_1: &'_0 mut [T])
 where
     TraitClause0: (T: Sized),

@@ -66,6 +66,12 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}
 }
 
+struct () {}
+
+struct (_,)::<&'_ u32> {
+  _0: &'_ u32,
+}
+
 // Full name: test_crate::foo::<u8>
 fn foo::<u8><'a>(x: &'a u8)
 {
@@ -111,12 +117,12 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(c: for<'a> foo::<u32><'a>)
     let _0: (); // return
     let c: for<'a> foo::<u32><'a>; // arg #1
     let _2: &'1 for<'a> foo::<u32><'a>; // anonymous local
-    let _3: (&'4 u32,); // anonymous local
-    let _4: &'5 u32; // anonymous local
-    let _5: &'6 u32; // anonymous local
-    let _6: &'7 u32; // anonymous local
-    let _7: &'8 u32; // anonymous local
-    let _8: &'65 u32; // anonymous local
+    let _3: (&'_ u32,); // anonymous local
+    let _4: &'3 u32; // anonymous local
+    let _5: &'4 u32; // anonymous local
+    let _6: &'5 u32; // anonymous local
+    let _7: &'6 u32; // anonymous local
+    let _8: &'18 u32; // anonymous local
     let _9: u32; // anonymous local
 
     storage_live(_7)
@@ -137,7 +143,7 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(c: for<'a> foo::<u32><'a>)
     _5 = &(*_6)
     _4 = &(*_5)
     _3 = (move _4,)
-    _0 = {built_in impl Fn<(&'12 u32,)> for for<'a> foo::<u32><'a>}::call<'60>(move _2, move _3)
+    _0 = {built_in impl Fn<(&'_ u32,)> for for<'a> foo::<u32><'a>}::call<'13>(move _2, move _3)
     ↳⚡ storage_dead(_6)
         storage_dead(c)
         unwind_continue

@@ -775,7 +775,12 @@ pub enum TyKind {
         ItemRef::translate_synthetic(s, SyntheticItem::Tuple(tys.len()), args)
     }),)]
     Tuple(ItemRef),
-    Str,
+    /// The `ItemRef` uses the fake `Str` def_id.
+    #[custom_arm(FROM_TYPE::Str => TO_TYPE::Str({
+        let args = s.base().tcx.mk_args(&[]);
+        ItemRef::translate_synthetic(s, SyntheticItem::Str, args)
+    }),)]
+    Str(ItemRef),
     RawPtr(Box<Ty>, Mutability),
     Ref(Region, Box<Ty>, Mutability),
     #[custom_arm(FROM_TYPE::Dynamic(preds, region) => TyKind::Dynamic(resolve_for_dyn(s, preds, |_, _| ()), region.sinto(s)),)]
@@ -948,8 +953,10 @@ pub enum AdtKind {
     Array,
     /// We sometimes pretend slices are an ADT and generate a `FullDef` for them.
     Slice,
-    /// We sometimes pretend tuples are an ADT and generate a `FullDef` for them.
+    /// Tuples get a type declaration of their own, we always generate a `FullDef` for them.
     Tuple,
+    /// `str` gets a type declaration of its own, we always generate a `FullDef` for it.
+    Str,
 }
 
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, AdtKind> for ty::AdtKind {

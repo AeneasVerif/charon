@@ -1,5 +1,9 @@
 # Final LLBC before serialization:
 
+struct (_,)<A> {
+  _0: A,
+}
+
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -49,6 +53,8 @@ pub trait FnMut<Self, Args>
     fn call_mut<'_0_1>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
+
+struct () {}
 
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
@@ -125,7 +131,7 @@ where
 
     storage_live(_0)
     storage_live(i)
-    i = move tupled_args.0
+    i = move tupled_args._0
     storage_live(_4)
     _4 = copy i
     _0 = TraitClause1::of_usize(move _4)

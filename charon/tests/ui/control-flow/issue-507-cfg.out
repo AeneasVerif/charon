@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: test_crate::CONST
 fn CONST() -> u8
 {

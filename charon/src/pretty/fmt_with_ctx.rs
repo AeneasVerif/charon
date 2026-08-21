@@ -1260,13 +1260,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for NullOp {
             NullOp::SizeOf => "size_of",
             NullOp::AlignOf => "align_of",
             &NullOp::OffsetOf(ref ty, variant, field) => {
-                let tid = ty.adt_id();
                 write!(f, "offset_of({}.", ty.with_ctx(ctx))?;
                 if let Some(variant) = variant {
-                    ctx.format_enum_variant_name(f, tid, variant)?;
+                    ctx.format_enum_variant_name(f, ty.id, variant)?;
                     write!(f, ".")?;
                 }
-                ctx.format_field_name(f, tid, variant, field)?;
+                ctx.format_field_name(f, ty.id, variant, field)?;
                 write!(f, ")")?;
                 return Ok(());
             }
@@ -1317,6 +1316,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
                 }
                 write!(f, "{}", impl_elem.with_ctx(ctx))
             }
+            PathElem::Builtin(BuiltinPathElem::Tuple(n)) => {
+                let fields = std::iter::repeat_n("_", *n).format(", ");
+                let trailing_comma = if *n == 1 { "," } else { "" };
+                write!(f, "({fields}{trailing_comma})")
+            }
+            PathElem::Builtin(BuiltinPathElem::Str) => write!(f, "str"),
             PathElem::Instantiated(binder) => {
                 // Anonymize all parameters.
                 let underscore = "_".to_string();
@@ -1361,21 +1366,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                     ProjectionElem::Deref => write!(f, "(*{sub})"),
                     ProjectionElem::Field(variant_id, field_id) => {
                         let tref = subplace.ty().as_adt().unwrap();
-                        match tref.as_adt() {
-                            Some(adt_id) => {
-                                match variant_id {
-                                    None => write!(f, "{sub}.")?,
-                                    Some(variant_id) => {
-                                        write!(f, "({sub} as variant ")?;
-                                        ctx.format_enum_variant(f, adt_id, *variant_id)?;
-                                        write!(f, ").")?;
-                                    }
-                                }
-                                ctx.format_field_name(f, adt_id, *variant_id, *field_id)
+                        match variant_id {
+                            None => write!(f, "{sub}.")?,
+                            Some(variant_id) => {
+                                write!(f, "({sub} as variant ")?;
+                                ctx.format_enum_variant(f, tref.id, *variant_id)?;
+                                write!(f, ").")?;
                             }
-                            None if tref.is_tuple() => write!(f, "{sub}.{field_id}"),
-                            None => unreachable!("field projection on builtin type"),
                         }
+                        ctx.format_field_name(f, tref.id, *variant_id, *field_id)
                     }
                     ProjectionElem::PtrMetadata => write!(f, "{sub}.metadata"),
                     ProjectionElem::Index {
@@ -1597,42 +1596,37 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
             ConstantExprKind::Literal(c) => write!(f, "{}", c),
             ConstantExprKind::Adt(variant_id, values) => {
                 let values = values.iter().map(|v| v.with_ctx(ctx));
-                match self.ty.as_adt() {
-                    Some(ty_ref) => match ty_ref.as_builtin() {
-                        Some(BuiltinTy::Tuple) => {
-                            let trailing_comma = if values.len() == 1 { "," } else { "" };
-                            let values = values.format(", ");
-                            write!(f, "({values}{trailing_comma})")
-                        }
-                        Some(BuiltinTy::Box) => {
-                            let values = values.format(", ");
-                            write!(f, "Box({values})")
-                        }
-                        Some(BuiltinTy::Str) => {
-                            let values = values.format(", ");
-                            write!(f, "[{values}]")
-                        }
-                        None => {
-                            let ty_id = ty_ref.adt_id();
-                            match variant_id {
-                                None => ty_id.fmt_with_ctx(ctx, f)?,
-                                Some(variant_id) => {
-                                    ctx.format_enum_variant(f, ty_id, *variant_id)?
-                                }
+                match self.ty.kind() {
+                    TyKind::Adt(tref) if tref.is_tuple() => {
+                        let trailing_comma = if values.len() == 1 { "," } else { "" };
+                        let values = values.format(", ");
+                        write!(f, "({values}{trailing_comma})")
+                    }
+                    TyKind::Adt(tref) if tref.is_box() => {
+                        let values = values.format(", ");
+                        write!(f, "Box({values})")
+                    }
+                    TyKind::Adt(tref) if tref.is_str() => {
+                        let values = values.format(", ");
+                        write!(f, "[{values}]")
+                    }
+                    TyKind::Adt(ty_ref) if ty_ref.builtin.is_none() => {
+                        match variant_id {
+                            None => ty_ref.id.fmt_with_ctx(ctx, f)?,
+                            Some(variant_id) => {
+                                ctx.format_enum_variant(f, ty_ref.id, *variant_id)?
                             }
-                            write!(f, " {{ ")?;
-                            for (comma, (i, val)) in
-                                repeat_except_first(", ").zip(values.enumerate())
-                            {
-                                write!(f, "{}", comma.unwrap_or_default())?;
-                                let field_id = FieldId::new(i);
-                                ctx.format_field_name(f, ty_id, *variant_id, field_id)?;
-                                write!(f, ": {}", val)?;
-                            }
-                            write!(f, " }}")
                         }
-                    },
-                    None => {
+                        write!(f, " {{ ")?;
+                        for (comma, (i, val)) in repeat_except_first(", ").zip(values.enumerate()) {
+                            write!(f, "{}", comma.unwrap_or_default())?;
+                            let field_id = FieldId::new(i);
+                            ctx.format_field_name(f, ty_ref.id, *variant_id, field_id)?;
+                            write!(f, ": {}", val)?;
+                        }
+                        write!(f, " }}")
+                    }
+                    _ => {
                         let values = values.format(", ");
                         write!(f, "ConstAdt [{values}]")
                     }
@@ -1869,7 +1863,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                 let ops_s = ops.iter().map(|op| op.with_ctx(ctx)).format(", ");
                 match kind {
                     AggregateKind::Adt(ty_ref, variant_id, field_id) => {
-                        match ty_ref.as_builtin() {
+                        let builtin = ctx
+                            .get_crate()
+                            .and_then(|krate| krate.type_decls.get(ty_ref.id))
+                            .and_then(|decl| decl.src.as_builtin());
+                        match builtin {
                             Some(BuiltinTy::Tuple) => {
                                 let trailing_comma = if ops.len() == 1 { "," } else { "" };
                                 write!(f, "({ops_s}{trailing_comma})")
@@ -1879,11 +1877,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                                 write!(f, "[{}]", ops_s)
                             }
                             None => {
-                                let ty_id = ty_ref.adt_id();
                                 match variant_id {
-                                    None => ty_id.fmt_with_ctx(ctx, f)?,
+                                    None => ty_ref.id.fmt_with_ctx(ctx, f)?,
                                     Some(variant_id) => {
-                                        ctx.format_enum_variant(f, ty_id, *variant_id)?
+                                        ctx.format_enum_variant(f, ty_ref.id, *variant_id)?
                                     }
                                 }
                                 write!(f, " {{ ")?;
@@ -1898,7 +1895,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                                             field_id
                                         }
                                     };
-                                    ctx.format_field_name(f, ty_id, *variant_id, field_id)?;
+                                    ctx.format_field_name(f, ty_ref.id, *variant_id, field_id)?;
                                     write!(f, ": {}", op.with_ctx(ctx))?;
                                 }
                                 write!(f, " }}")
@@ -2145,7 +2142,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                     let ctx1 = &ctx.increase_indent();
                     let inner_tab1 = ctx1.indent();
                     let ctx2 = &ctx1.increase_indent();
-                    let discr_type = discr.ty.as_adt_id();
+                    let discr_type: Option<TypeDeclId> =
+                        discr.ty.kind().as_adt().map(|tref| tref.id);
                     for (cases, st) in maps {
                         write!(f, "{inner_tab1}",)?;
                         // Note that there may be several pattern values
@@ -2572,18 +2570,18 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitTypeConstraint {
 impl<C: AstFormatter> FmtWithCtx<C> for Ty {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.kind() {
-            TyKind::Adt(tref) => match tref.as_builtin() {
-                Some(BuiltinTy::Tuple) => {
-                    let generics = tref.generics.fmt_explicits(ctx).format(", ");
-                    let trailing_comma = if tref.generics.types.len() == 1 {
-                        ","
-                    } else {
-                        ""
-                    };
-                    write!(f, "({generics}{trailing_comma})")
-                }
-                _ => write!(f, "{}", tref.with_ctx(ctx)),
-            },
+            // Print tuples as `(T1, T2, ...)` instead of `(_, _, ...)<T1, T2, ...>`.
+            TyKind::Adt(tref)
+                if tref.is_tuple()
+                    && let Some(krate) = ctx.get_crate() =>
+            {
+                let fields = self.as_tuple_fields(krate);
+                let trailing_comma = if fields.len() == 1 { "," } else { "" };
+                let fields = fields.iter().map(|ty| ty.with_ctx(ctx)).format(", ");
+                write!(f, "({fields}{trailing_comma})",)
+            }
+            TyKind::Adt(tref) if tref.is_str() => write!(f, "str"),
+            TyKind::Adt(tref) => write!(f, "{}", tref.with_ctx(ctx)),
             TyKind::TypeVar(id) => write!(f, "{}", id.with_ctx(ctx)),
             TyKind::Literal(kind) => write!(f, "{kind}"),
             TyKind::Never => write!(f, "!"),
@@ -2725,16 +2723,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDeclRef {
         let id = self.id.with_ctx(ctx);
         let generics = self.generics.with_ctx(ctx);
         write!(f, "{id}{generics}")
-    }
-}
-
-impl<C: AstFormatter> FmtWithCtx<C> for TypeId {
-    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            TypeId::Builtin(BuiltinTy::Tuple) => Ok(()),
-            TypeId::Adt(def_id) => write!(f, "{}", def_id.with_ctx(ctx)),
-            TypeId::Builtin(aty) => write!(f, "{}", aty.get_name().with_ctx(ctx)),
-        }
     }
 }
 

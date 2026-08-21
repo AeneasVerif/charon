@@ -16,6 +16,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -82,6 +84,18 @@ pub trait Fn<Self, Args>
     proof ImpliedClause3: (Args: Tuple)
     fn call<'_0_1>;
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
+}
+
+struct (_,)<A> {
+  _0: A,
+}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
 }
 
 // Full name: test_crate::takes_fn
@@ -151,7 +165,7 @@ fn call<'_0, '_1>(_1: &'_1 closure, tupled_args: (&'_0 mut u32,)) -> bool
     storage_live(_0)
     storage_live(counter)
     storage_live(_4)
-    counter = move tupled_args.0
+    counter = move tupled_args._0
     _4 = copy (*counter) panic.+ const 1u32
     (*counter) = move _4
     _0 = const true

@@ -847,6 +847,10 @@ impl TranslateOptions {
     /// `#[charon::opaque]` annotations, only cli parameters.
     #[tracing::instrument(skip(self, krate), ret)]
     pub fn opacity_for_name(&self, krate: &TranslatedCrate, name: &Name) -> ItemOpacity {
+        // Builtin names (str, tuples) are always transparent.
+        if name.is_builtin() {
+            return ItemOpacity::Transparent;
+        }
         // Find the most precise pattern that matches this name. There is always one since
         // the list contains the `_` pattern. If there are conflicting settings for this item, we
         // err on the side of being more opaque.

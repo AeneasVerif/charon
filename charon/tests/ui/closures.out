@@ -1,5 +1,9 @@
 # Final LLBC before serialization:
 
+struct (_,)<A> {
+  _0: A,
+}
+
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -48,6 +52,8 @@ pub trait FnMut<Self, Args, Self_Clause1_Output>
     fn call_mut<'_0_1>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self_Clause1_Output>
 }
+
+struct () {}
 
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
@@ -121,7 +127,15 @@ where
     TypeOutlives0: T: '_0,
 = <opaque>
 
-// Full name: test_crate::<tuple_1>::{impl Destruct for (A,)}::drop_glue
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+// Full name: (_,)::{impl Destruct for (A,)}::drop_glue
 unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A>(_1: &'_0 mut (A,))
 where
     TypeOutlives0: A: '_0,
@@ -131,14 +145,14 @@ where
 
     storage_live(_0)
     _0 = ()
-    drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1).0
+    drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)
     return
 }
 
-// Full name: test_crate::<tuple_1>::{impl Destruct for (A,)}
+// Full name: (_,)::{impl Destruct for (A,)}
 impl<A> "impl_Destruct_for_tuple" Destruct for (A,) {
     fn drop_glue<'_0_1> = impl_Destruct_for_tuple::drop_glue<'_0_1, A>
     non-dyn-compatible
@@ -387,7 +401,7 @@ fn {impl Fn<(u32,), u32> for test_crate::test_closure_u32::closure}::call<'_0>(_
 
     storage_live(_0)
     storage_live(x)
-    x = move tupled_args.0
+    x = move tupled_args._0
     _0 = copy x
     storage_dead(x)
     storage_dead(tupled_args)
@@ -570,8 +584,8 @@ fn {impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call<'
     storage_live(x)
     storage_live(y)
     storage_live(_7)
-    x = move tupled_args.0
-    y = move tupled_args.1
+    x = move tupled_args._0
+    y = move tupled_args._1
     storage_live(_5)
     _5 = copy x
     storage_live(_6)
@@ -764,7 +778,7 @@ fn {impl Fn<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}:
 
     storage_live(_0)
     storage_live(y)
-    y = move tupled_args.0
+    y = move tupled_args._0
     _0 = copy y
     storage_dead(y)
     storage_dead(tupled_args)
@@ -956,7 +970,7 @@ where
 
     storage_live(_0)
     storage_live(x)
-    x = move tupled_args.0
+    x = move tupled_args._0
     _0 = copy x
     storage_dead(x)
     storage_dead(tupled_args)
@@ -1184,7 +1198,7 @@ where
 
     storage_live(_0)
     storage_live(y)
-    y = move tupled_args.0
+    y = move tupled_args._0
     _0 = copy y
     storage_dead(y)
     storage_dead(tupled_args)
@@ -1402,7 +1416,7 @@ fn {impl Fn<(u32,), u32> for test_crate::test_map_option2::closure}::call<'_0>(_
     storage_live(_0)
     storage_live(x)
     storage_live(_5)
-    x = move tupled_args.0
+    x = move tupled_args._0
     storage_live(_4)
     _4 = copy x
     _5 = copy _4 panic.+ const 1u32
@@ -1751,7 +1765,7 @@ fn {impl Fn<(u32,), u32> for test_crate::test_map_option3::closure}::call<'_0>(_
     storage_live(_0)
     storage_live(x)
     storage_live(_5)
-    x = move tupled_args.0
+    x = move tupled_args._0
     storage_live(_4)
     _4 = copy x
     _5 = copy _4 panic.+ const 1u32
@@ -1902,7 +1916,7 @@ where
 
     storage_live(_0)
     storage_live(x)
-    x = move tupled_args.0
+    x = move tupled_args._0
     _0 = copy (*(*x))
     storage_dead(x)
     storage_dead(tupled_args)
@@ -1933,7 +1947,7 @@ pub fn test_regions<'a>(x: &'a u32) -> u32
     _6 = &x
     _5 = &(*_6)
     _4 = (move _5,)
-    _0 = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'22, '23, '24>(move _3, move _4)
+    _0 = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'24, '25, '26>(move _3, move _4)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_5)
@@ -2077,7 +2091,7 @@ where
 
     storage_live(_0)
     storage_live(x)
-    x = move tupled_args.0
+    x = move tupled_args._0
     _0 = copy (*(*x))
     storage_dead(x)
     storage_dead(tupled_args)
@@ -2266,7 +2280,7 @@ where
     storage_live(z)
     storage_live(_7)
     storage_live(_9)
-    z = move tupled_args.0
+    z = move tupled_args._0
     storage_live(_4)
     storage_live(_5)
     _5 = copy (*(*_1)._0)
@@ -2461,7 +2475,7 @@ where
 
     storage_live(_0)
     storage_live(x)
-    x = move tupled_args.0
+    x = move tupled_args._0
     storage_live(_4)
     _4 = &x
     _0 = TraitClause1::clone<'4>(move _4)
@@ -2701,7 +2715,7 @@ fn {impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}::call_mut<'
 
     storage_live(_0)
     storage_live(v)
-    v = move tupled_args.0
+    v = move tupled_args._0
     _0 = copy v
     storage_dead(v)
     storage_dead(tupled_args)
@@ -2803,7 +2817,7 @@ where
     storage_live(x)
     storage_live(_5)
     _0 = ()
-    x = move tupled_args.0
+    x = move tupled_args._0
     storage_live(_4)
     _4 = copy (*x)
     _5 = copy (*(*_1)._0) panic.+ copy _4
@@ -2831,7 +2845,7 @@ fn test_fnmut_with_ref()
     let _8: &'12 usize; // anonymous local
     let _9: &'13 usize; // anonymous local
     let _10: &'15 usize; // anonymous local
-    let _11: &'24 usize; // anonymous local
+    let _11: &'25 usize; // anonymous local
     let _12: usize; // anonymous local
 
     storage_live(_10)
@@ -2862,7 +2876,7 @@ fn test_fnmut_with_ref()
     _8 = &(*_9)
     _7 = &(*_8)
     _6 = (move _7,)
-    _4 = {impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'21, '22, '23>(move _5, move _6)
+    _4 = {impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'22, '23, '24>(move _5, move _6)
     ↳⚡ storage_dead(_9)
         unwind_continue
     storage_dead(_7)

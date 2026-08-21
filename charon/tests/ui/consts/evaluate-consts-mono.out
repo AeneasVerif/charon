@@ -8,6 +8,11 @@ opaque type {vtable}
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
+struct (_, _)::<usize, bool> {
+  _0: usize,
+  _1: bool,
+}
+
 // Full name: test_crate::HasLen
 trait HasLen<Self>
 {

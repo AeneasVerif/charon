@@ -12,6 +12,8 @@ pub enum Ordering {
 pub fn cmp<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> Ordering
 = <opaque>
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -91,6 +93,10 @@ where
 {
   Ok { _0: T },
   Err { _0: E },
+}
+
+struct (_,)<A> {
+  _0: A,
 }
 
 #[track_caller]
@@ -314,7 +320,7 @@ where
         _15 = &(*_29);
         storage_dead(_29);
         _14 = (copy _15,);
-        cmp_12 = TraitClause2::call_mut<'19>(move _13, move _14) -> bb16 (unwind: bb15);
+        cmp_12 = TraitClause2::call_mut<'20>(move _13, move _14) -> bb16 (unwind: bb15);
     }
 
     bb14: {
@@ -322,7 +328,7 @@ where
     }
 
     bb15: {
-        drop[TraitClause3::drop_glue<'24>] f -> bb22 (unwind: bb23);
+        drop[TraitClause3::drop_glue<'26>] f -> bb22 (unwind: bb23);
     }
 
     bb16: {
@@ -353,7 +359,7 @@ where
         storage_dead(_35);
         storage_dead(index);
         _20 = (copy _21,);
-        cmp_18 = TraitClause2::call_mut<'23>(move _19, move _20) -> bb21 (unwind: bb15);
+        cmp_18 = TraitClause2::call_mut<'25>(move _19, move _20) -> bb21 (unwind: bb15);
     }
 
     bb20: {
@@ -487,7 +493,7 @@ where
     bb34: {
         storage_dead(cmp_18);
         storage_dead(size);
-        drop[TraitClause3::drop_glue<'25>] f -> bb40 (unwind: bb38);
+        drop[TraitClause3::drop_glue<'27>] f -> bb40 (unwind: bb38);
     }
 
     bb35: {
@@ -626,7 +632,7 @@ fn call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled_args: (&'_0 u32,)) -> Orderin
         storage_live(_0);
         storage_live(x);
         storage_live(_7);
-        x = move tupled_args.0;
+        x = move tupled_args._0;
         storage_live(_4);
         _4 = &(*x);
         storage_live(_5);

@@ -33,6 +33,10 @@ where
   Err { _0: E },
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: core::result::unwrap_failed
 #[track_caller]
 fn unwrap_failed<'_0, '_1>(_1: &'_0 str, _2: &'_1 (dyn Debug + '_1)) -> !

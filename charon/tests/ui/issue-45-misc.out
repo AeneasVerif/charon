@@ -1,5 +1,9 @@
 # Final LLBC before serialization:
 
+struct (_,)<A> {
+  _0: A,
+}
+
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -49,6 +53,8 @@ pub trait FnMut<Self, Args>
     fn call_mut<'_0_1>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
+
+struct () {}
 
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
@@ -148,6 +154,14 @@ impl "impl_PartialOrd_u8_for_u8" PartialOrd<u8> for u8 {
     proof ImpliedClause0: (u8: PartialEq<u8>) = impl_PartialEq_u8_for_u8
     fn partial_cmp<'_0_1, '_1_1> = impl_PartialOrd_u8_for_u8::partial_cmp<'_0_1, '_1_1>
     vtable: impl_PartialOrd_u8_for_u8::{vtable}
+}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
 }
 
 // Full name: core::iter::range::Step
@@ -293,7 +307,7 @@ fn call_mut<'_0>(_1: &'_0 mut closure, tupled_args: (i32,)) -> i32
 
     storage_live(_0)
     storage_live(v)
-    v = move tupled_args.0
+    v = move tupled_args._0
     _0 = copy v
     storage_dead(v)
     storage_dead(tupled_args)
@@ -469,25 +483,25 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
     let lhs: &'1 [u8]; // arg #1
     let rhs: &'2 [u8]; // arg #2
     let _3: bool; // anonymous local
-    let _4: (&'6 usize, &'7 usize); // anonymous local
-    let _5: &'8 usize; // anonymous local
+    let _4: (&'10 usize, &'11 usize); // anonymous local
+    let _5: &'14 usize; // anonymous local
     let _6: usize; // anonymous local
-    let _7: &'9 [u8]; // anonymous local
-    let _8: &'10 usize; // anonymous local
+    let _7: &'15 [u8]; // anonymous local
+    let _8: &'16 usize; // anonymous local
     let _9: usize; // anonymous local
-    let _10: &'11 [u8]; // anonymous local
-    let left_val: &'12 usize; // local
-    let right_val: &'13 usize; // local
+    let _10: &'17 [u8]; // anonymous local
+    let left_val: &'18 usize; // local
+    let right_val: &'19 usize; // local
     let _13: bool; // anonymous local
     let _14: usize; // anonymous local
     let _15: usize; // anonymous local
     let kind: AssertKind; // local
     let _17: AssertKind; // anonymous local
-    let _18: &'14 usize; // anonymous local
-    let _19: &'15 usize; // anonymous local
-    let _20: &'16 usize; // anonymous local
-    let _21: &'17 usize; // anonymous local
-    let _22: Option<Arguments<'24>>[{built_in impl Sized for Arguments<'24>}]; // anonymous local
+    let _18: &'20 usize; // anonymous local
+    let _19: &'21 usize; // anonymous local
+    let _20: &'22 usize; // anonymous local
+    let _21: &'23 usize; // anonymous local
+    let _22: Option<Arguments<'30>>[{built_in impl Sized for Arguments<'30>}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -499,7 +513,7 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
         storage_live(_6)
         storage_live(_7)
         _7 = &(*lhs) with_metadata(copy lhs.metadata)
-        _6 = core::slice::{[T]}::len<'28, u8>[{built_in impl Sized for u8}](move _7)
+        _6 = core::slice::{[T]}::len<'34, u8>[{built_in impl Sized for u8}](move _7)
         ↳⚡ storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)
@@ -516,7 +530,7 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
         storage_live(_9)
         storage_live(_10)
         _10 = &(*rhs) with_metadata(copy rhs.metadata)
-        _9 = core::slice::{[T]}::len<'30, u8>[{built_in impl Sized for u8}](move _10)
+        _9 = core::slice::{[T]}::len<'36, u8>[{built_in impl Sized for u8}](move _10)
         ↳⚡ storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)
@@ -533,9 +547,9 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
         storage_dead(_8)
         storage_dead(_5)
         storage_live(left_val)
-        left_val = copy _4.0
+        left_val = copy _4._0
         storage_live(right_val)
-        right_val = copy _4.1
+        right_val = copy _4._1
         storage_live(_13)
         storage_live(_14)
         _14 = copy (*left_val)

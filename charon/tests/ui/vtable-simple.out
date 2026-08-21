@@ -37,6 +37,16 @@ impl "impl_Clone_for_i32" Clone for i32 {
     non-dyn-compatible
 }
 
+struct () {}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
 struct test_crate::Modifiable::{vtable}<T> {
   size: usize,
   align: usize,

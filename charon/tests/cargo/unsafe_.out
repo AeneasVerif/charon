@@ -4,9 +4,15 @@
 #[lang_item(FormatArguments)]
 pub opaque type Arguments<'a>
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: core::fmt::{Arguments<'a>}::from_str
 pub fn from_str<'a>(_1: &'static str) -> Arguments<'a>
 = <opaque>
+
+struct () {}
 
 // Full name: std::io::stdio::_print
 pub fn _print<'_0>(_1: Arguments<'_0>)

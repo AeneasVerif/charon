@@ -894,8 +894,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Retrieve the expected field types from the struct definition. This avoids complicated
         // substitutions.
         let field_tys = {
-            let vtable_decl_id = vtable_struct_ref.adt_id();
-            let ItemRef::Type(vtable_def) = self.t_ctx.get_or_translate(vtable_decl_id.into())?
+            let ItemRef::Type(vtable_def) =
+                self.t_ctx.get_or_translate(vtable_struct_ref.id.into())?
             else {
                 unreachable!()
             };

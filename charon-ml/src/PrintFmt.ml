@@ -383,33 +383,29 @@ let abi_prefix (abi : abi) : string =
   | AbiRust -> ""
   | _ -> "extern \"" ^ abi_name abi ^ "\" "
 
-let rec pp_type_id (env : fmt_env) (fmt : Format.formatter) (id : type_id) :
-    unit =
-  match id with
-  | TAdtId id -> pp_type_decl_id env fmt id
-  | TBuiltin aty -> (
-      match aty with
-      | TTuple -> ()
-      | TBox -> pp_string fmt "alloc::boxed::Box"
-      | TStr -> pp_string fmt "str")
-
-and pp_type_decl_id env fmt def_id =
+let rec pp_type_decl_id env fmt def_id =
   match find_short_name env (IdType def_id) with
   | Some name -> pp_name env fmt name
   | None -> pp_string fmt (type_decl_id_to_pretty_string def_id)
 
 and pp_type_decl_ref (env : fmt_env) (fmt : Format.formatter)
     (tref : type_decl_ref) : unit =
-  match tref.id with
-  | TBuiltin TTuple ->
-      let params, _trait_refs = generic_args_to_strings env tref.generics in
-      let trailing_comma = if List.length params = 1 then "," else "" in
-      Format.fprintf fmt "(%a%s)"
-        (pp_sep_list ", " pp_string)
-        params trailing_comma
-  | id ->
-      Format.fprintf fmt "%a%a" (pp_type_id env) id (pp_generic_args env)
-        tref.generics
+  Format.fprintf fmt "%a%a" (pp_type_decl_id env) tref.id (pp_generic_args env)
+    tref.generics
+
+(** Whether Rust treats the declaration this refers to specially. We only use
+    this to print such types the way they're spelled in Rust. *)
+and type_decl_ref_builtin (env : fmt_env) (tref : type_decl_ref) :
+    builtin_ty option =
+  match TypeDeclId.Map.find_opt tref.id env.crate.type_decls with
+  | Some { src = BuiltinType builtin; _ } -> Some builtin
+  | _ -> None
+
+(** Whether this refers to a declaration that monomorphization specialized. *)
+and type_decl_ref_is_specialized (env : fmt_env) (tref : type_decl_ref) : bool =
+  match TypeDeclId.Map.find_opt tref.id env.crate.type_decls with
+  | Some decl -> type_decl_is_specialized decl
+  | None -> false
 
 and pp_fun_decl_id (env : fmt_env) (fmt : Format.formatter) (id : FunDeclId.id)
     : unit =
@@ -474,15 +470,23 @@ and pp_unsizing_metadata (env : fmt_env) (fmt : Format.formatter)
         fields
   | MetaUnknown -> pp_string fmt "?"
 
-and pp_const_aggregate (env : fmt_env) (tref : type_decl_ref) opt_variant_id
-    (fmt : Format.formatter) (fields : constant_expr list) : unit =
-  match tref.id with
-  | TBuiltin TTuple ->
+and pp_const_aggregate (env : fmt_env) (tref : type_decl_ref)
+    (builtin : builtin_ty option) opt_variant_id (fmt : Format.formatter)
+    (fields : constant_expr list) : unit =
+  match builtin with
+  | Some TTuple ->
       let trailing_comma = if List.length fields = 1 then "," else "" in
       Format.fprintf fmt "(%a%s)"
         (pp_sep_list ", " (pp_constant_expr env))
         fields trailing_comma
-  | TAdtId def_id ->
+  | Some TBox ->
+      Format.fprintf fmt "Box(%a)"
+        (pp_sep_list ", " (pp_constant_expr env))
+        fields
+  | Some TStr ->
+      Format.fprintf fmt "[%a]" (pp_sep_list ", " (pp_constant_expr env)) fields
+  | None ->
+      let def_id = tref.id in
       let fields =
         match adt_field_names env def_id opt_variant_id with
         | None ->
@@ -500,8 +504,6 @@ and pp_const_aggregate (env : fmt_env) (tref : type_decl_ref) opt_variant_id
         (pp_sep_list ", " (fun fmt (field, value) ->
              Format.fprintf fmt "%s: %a" field (pp_constant_expr env) value))
         fields
-  | TBuiltin TBox -> raise (Failure "Unexpected Box constant aggregate")
-  | TBuiltin TStr -> raise (Failure "Unexpected str constant aggregate")
 
 and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
     (cv : constant_expr) : unit =
@@ -528,7 +530,8 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
   | COpaque reason -> Format.fprintf fmt "Opaque(%s)" reason
   | CAdt (variant_id, fields) -> begin
       match cv.ty with
-      | TAdt tref -> pp_const_aggregate env tref variant_id fmt fields
+      | TAdt tref ->
+          pp_const_aggregate env tref tref.builtin variant_id fmt fields
       | _ -> pp_string fmt "malformed constant"
     end
   | CArray fields ->
@@ -593,6 +596,16 @@ and pp_fn_ptr (env : fmt_env) (fmt : Format.formatter) (ptr : fn_ptr) : unit =
 
 and pp_ty (env : fmt_env) (fmt : Format.formatter) (ty : ty) : unit =
   match ty with
+  | TAdt ({ builtin = Some TTuple; _ } as tref) -> (
+      (* Print tuples as `(T1, T2, ...)` instead of `(_, _, ...)<T1, T2, ...>`. *)
+      match Substitute.ty_as_tuple_fields env.crate.type_decls ty with
+      | Some fields ->
+          let trailing_comma = if List.length fields = 1 then "," else "" in
+          Format.fprintf fmt "(%a%s)"
+            (pp_sep_list ", " (pp_ty env))
+            fields trailing_comma
+      | None -> pp_type_decl_ref env fmt tref)
+  | TAdt { builtin = Some TStr; _ } -> pp_string fmt "str"
   | TAdt tref -> pp_type_decl_ref env fmt tref
   | TVar tv -> pp_string fmt (type_db_var_to_string env tv)
   | TNever -> pp_string fmt "!"
@@ -920,6 +933,15 @@ and pp_path_elem (env : fmt_env) (fmt : Format.formatter) (e : path_elem) : unit
       let explicits, _ = generic_args_to_strings env binder.binder_value in
       Format.fprintf fmt "<%a>" (pp_sep_list ", " pp_string) explicits
   | PeTarget target -> pp_string fmt target
+  (* Written the same way as the types themselves, trailing comma included, so
+     that a declaration and its uses don't look like different types. *)
+  | PeBuiltin (PeTuple n) ->
+      let trailing_comma = if n = 1 then "," else "" in
+      Format.fprintf fmt "(%a%s)"
+        (pp_sep_list ", " pp_string)
+        (List.init n (fun _ -> "_"))
+        trailing_comma
+  | PeBuiltin PeStr -> pp_string fmt "str"
 
 and pp_name (env : fmt_env) (fmt : Format.formatter) (n : name) : unit =
   let env = { env with generics = [] } in
@@ -1217,7 +1239,18 @@ let pp_item_intro (env : fmt_env) (indent : string) (keyword : string)
     match has_short_name env id with
     | Some short_name ->
         (name_to_string env short_name, "// Full name: " ^ full_name ^ "\n")
-    | None -> (full_name, "")
+    | None ->
+        let shortens =
+          List.exists
+            (function
+              | PeImpl (ImplElemTrait impl_id) ->
+                  Option.is_some (trait_impl_short_name env impl_id)
+              | _ -> false)
+            meta.name
+        in
+        if shortens then
+          (name_to_string env meta.name, "// Full name: " ^ full_name ^ "\n")
+        else (full_name, "")
   in
   let attributes =
     List.filter_map
@@ -1380,22 +1413,27 @@ let rec pp_projection_elem (env : fmt_env) (subplace : place)
       in
       Format.fprintf fmt "%s[%s..%s]" sub (operand_to_string env from) to_
   | Field (opt_variant_id, fid) -> (
-      match fst (ty_as_adt subplace.ty) with
-      | TBuiltin TTuple ->
-          Format.fprintf fmt "%s.%s" sub (FieldId.to_string fid)
-      | TAdtId adt_id -> (
-          let field_name =
-            match adt_field_to_string env adt_id opt_variant_id fid with
-            | Some field_name -> field_name
-            | None -> FieldId.to_string fid
-          in
-          match opt_variant_id with
-          | None -> Format.fprintf fmt "%s.%s" sub field_name
-          | Some variant_id ->
-              Format.fprintf fmt "(%s as variant %a).%s" sub
-                (pp_adt_variant env adt_id)
-                variant_id field_name)
-      | TBuiltin _ -> raise (Failure "Unreachable"))
+      (* The type of the sub-place tells us which declaration the field comes
+         from. *)
+      let adt_id = Option.map fst (ty_as_opt_adt subplace.ty) in
+      let field_name =
+        match
+          Option.bind adt_id (fun adt_id ->
+              adt_field_to_string env adt_id opt_variant_id fid)
+        with
+        | Some field_name -> field_name
+        | None -> FieldId.to_string fid
+      in
+      match (opt_variant_id, adt_id) with
+      | None, _ -> Format.fprintf fmt "%s.%s" sub field_name
+      | Some variant_id, Some adt_id ->
+          Format.fprintf fmt "(%s as variant %a).%s" sub
+            (pp_adt_variant env adt_id)
+            variant_id field_name
+      | Some variant_id, None ->
+          Format.fprintf fmt "(%s as variant %s).%s" sub
+            (variant_id_to_pretty_string variant_id)
+            field_name)
   | PtrMetadata -> Format.fprintf fmt "%s.metadata" sub
 
 and pp_place (env : fmt_env) (fmt : Format.formatter) (p : place) : unit =
@@ -1428,11 +1466,7 @@ and pp_nullop (env : fmt_env) (fmt : Format.formatter) (op : nullop) : unit =
   | SizeOf -> pp_string fmt "size_of"
   | AlignOf -> pp_string fmt "align_of"
   | OffsetOf (ty, opt_variant_id, field_id) ->
-      let def_id =
-        match ty.id with
-        | TAdtId def_id -> Some def_id
-        | _ -> None
-      in
+      let def_id = Some ty.id in
       let variant_name =
         match (def_id, opt_variant_id) with
         | Some def_id, Some variant_id -> (
@@ -1511,17 +1545,18 @@ and pp_aggregate (env : fmt_env) (agg : aggregate_kind) (fmt : Format.formatter)
   let fields = List.map (operand_to_string env) fields in
   match agg with
   | AggregatedAdt (tref, opt_variant_id, opt_field_id) -> (
-      match tref.id with
-      | TBuiltin TTuple ->
+      match type_decl_ref_builtin env tref with
+      | Some TTuple ->
           let trailing_comma = if List.length fields = 1 then "," else "" in
           Format.fprintf fmt "(%a%s)"
             (pp_sep_list ", " pp_string)
             fields trailing_comma
-      | TBuiltin TBox ->
+      | Some TBox ->
           Format.fprintf fmt "Box(%a)" (pp_sep_list ", " pp_string) fields
-      | TBuiltin TStr ->
+      | Some TStr ->
           Format.fprintf fmt "[%a]" (pp_sep_list ", " pp_string) fields
-      | TAdtId def_id ->
+      | None ->
+          let def_id = tref.id in
           let pp_variant fmt =
             match opt_variant_id with
             | None -> pp_type_decl_id env fmt def_id
@@ -2093,7 +2128,7 @@ module Llbc = struct
             let p = place_to_string env place in
             let discr_type =
               match place.ty with
-              | TAdt { id = TAdtId type_id; _ } -> Some type_id
+              | TAdt tref -> Some tref.id
               | _ -> None
             in
             let indent1 = indent ^ indent_incr in

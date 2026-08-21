@@ -76,6 +76,8 @@ where
   Some { _0: T },
 }
 
+struct () {}
+
 // Full name: core::result::Result::{impl Destruct for Result<T, E>[TraitClause0, TraitClause1]}::drop_glue
 unsafe fn drop_glue<'_0, T, E>(_1: &'_0 mut Result<T, E>[TraitClause0, TraitClause1])
 where

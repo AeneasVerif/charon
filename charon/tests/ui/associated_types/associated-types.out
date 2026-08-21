@@ -72,6 +72,8 @@ where
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -132,6 +134,14 @@ pub trait ToOwned<Self, Self_Owned>
     proof ImpliedClause2: (Self_Owned: Borrow<Self>)
     fn to_owned<'_0_1>;
     non-dyn-compatible
+}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
 }
 
 trait test_crate::Foo<'a, Self, Self_Item>

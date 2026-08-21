@@ -24,6 +24,8 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: test_crate::Trait
 trait Trait<Self>
 {
