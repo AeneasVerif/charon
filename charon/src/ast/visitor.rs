@@ -57,7 +57,7 @@ use derive_generic_visitor::*;
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets,
         UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, Layout, VariantLayout, PtrMetadata,
-        SpanData, TraitAssocTy, TraitAssocConst, TraitMethod, TraitAssocTyImpl,
+        SpanData,
         ItemByVal, VTableField, AssocItemNames,
         for<Id: AstVisitable> DeclRef<Id>, ItemId,
         for<T: AstVisitable> Box<T>,
@@ -74,19 +74,21 @@ use derive_generic_visitor::*;
     // Types for which we call the corresponding `visit_$ty` method, which by default explores the
     // type but can be overridden.
     override(
-        DeBruijnId, Ty, TyKind, Region, TraitRef, TraitRefContents, TraitRefKind,
+        FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId, FileId,
         TypeDeclRef, FunDeclRef, GlobalDeclRef, TraitDeclRef, TraitImplRef, ImplElem,
+        FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
+        ItemMeta, Name, Span,
         TypeSource, FunSource, GlobalSource, TraitDeclSource, TraitImplSource,
-        GenericArgs, GenericParams, TraitParam, TraitClauseId, TraitTypeConstraint, Place, Rvalue, Body,
+        TraitAssocTy, TraitAssocConst, TraitMethod, TraitAssocTyImpl,
+        DeBruijnId, Ty, TyKind, Region, TraitRef, TraitRefContents, TraitRefKind,
+        GenericArgs, GenericParams, TraitParam, TraitClauseId, TraitTypeConstraint,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,
         for<T: AstVisitable> RegionBinder<T>,
         for<T: AstVisitable> Binder<T>,
         llbc_block: llbc_ast::Block, llbc_statement: llbc_ast::Statement,
         ullbc_statement: ullbc_ast::Statement, ullbc_terminator: ullbc_ast::Terminator,
-        AbortKind, AggregateKind, FnPtr, ItemMeta, Name, Span,
-        ConstantExpr, ProjectionElem,
-        FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId, FileId,
-        FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
+        AbortKind, AggregateKind, FnPtr,
+        ConstantExpr, Place, ProjectionElem, Rvalue, Body,
     )
 )]
 pub trait AstVisitable: Any {
