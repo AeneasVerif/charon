@@ -154,6 +154,29 @@ fn postcondition() -> bool
     return
 }
 
+// Full name: test_crate::function::sibling
+#[charon::has_precondition(sibling_precondition)]
+fn sibling()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::function::sibling_precondition
+#[charon::precondition(for = sibling)]
+fn sibling_precondition() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
 // Full name: test_crate::function::closure::{impl Destruct for closure}::drop_glue
 unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
 {
@@ -258,6 +281,68 @@ impl "impl_Destruct_for_closure" Destruct for closure {
     fn drop_glue<'_0_1> = drop_glue<'_0_1>
     non-dyn-compatible
 }
+
+// Full name: test_crate::other::path_target
+#[charon::has_postcondition(path_postcondition)]
+pub fn path_target()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::path_postcondition
+#[charon::postcondition(for = path_target)]
+fn path_postcondition() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    #[charon::has_precondition(method_precondition)]
+    fn method;
+    #[charon::precondition(for = Trait::method)]
+    fn method_precondition = method_precondition<Self>[Self]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Trait::method_precondition
+#[charon::precondition(for = Trait::method)]
+fn method_precondition<Self>() -> bool
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+// Full name: test_crate::type_postcondition
+#[charon::postcondition(for = MyType)]
+fn type_postcondition() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const true
+    return
+}
+
+// Full name: test_crate::MyType
+#[charon::has_postcondition(type_postcondition)]
+struct MyType {}
 
 
 

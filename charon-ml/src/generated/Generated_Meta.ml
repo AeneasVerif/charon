@@ -108,11 +108,11 @@ and attribute =
       (** The structure is treated as a transparent wrapper around its sole
           field. Written [#[charon::transparent]]. *)
   | AttrIsPrecondition of maybe_assoc_item_id
-      (** An item annotated with [#[charon::precondition]]. This makes it a
-          precondition for its parent item. *)
+      (** An item annotated with [#[charon::precondition(...)]]. This makes it a
+          precondition for the target item. *)
   | AttrIsPostcondition of maybe_assoc_item_id
-      (** An item annotated with [#[charon::postcondition]]. This makes it a
-          postcondition for its parent item. *)
+      (** An item annotated with [#[charon::postcondition(...)]]. This makes it
+          a postcondition for the target item. *)
   | AttrHasPrecondition of fun_decl_id
       (** An item that has a precondition that applies to it. The referenced
           item is a function the specifies the condition. *)

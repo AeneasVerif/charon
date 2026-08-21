@@ -48,11 +48,11 @@ pub enum Attribute {
     /// The structure is treated as a transparent wrapper around its sole field.
     /// Written `#[charon::transparent]`.
     Transparent,
-    /// An item annotated with `#[charon::precondition]`. This makes it a precondition for its
-    /// parent item.
+    /// An item annotated with `#[charon::precondition(...)]`. This makes it a precondition for the
+    /// target item.
     IsPrecondition(MaybeAssocItemId),
-    /// An item annotated with `#[charon::postcondition]`. This makes it a postcondition for its
-    /// parent item.
+    /// An item annotated with `#[charon::postcondition(...)]`. This makes it a postcondition for
+    /// the target item.
     IsPostcondition(MaybeAssocItemId),
     /// An item that has a precondition that applies to it. The referenced item is a function the
     /// specifies the condition.
