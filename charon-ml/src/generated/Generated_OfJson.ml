@@ -2570,10 +2570,6 @@ and fun_source_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("TargetDependent", `Assoc [ ("dispatcher", dispatcher) ]) ] ->
         let* dispatcher = fun_decl_ref_of_json ctx dispatcher in
         Ok (TargetDependentFun dispatcher)
-    | `Assoc [ ("Spec", `Assoc [ ("kind", kind); ("item", item) ]) ] ->
-        let* kind = spec_kind_of_json ctx kind in
-        let* item = item_id_of_json ctx item in
-        Ok (SpecFun (kind, item))
     | _ -> Error "")
 
 and g_declaration_group_of_json :
@@ -3218,14 +3214,6 @@ and serialization_format_arg_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Json" -> Ok Json
     | `String "Postcard" -> Ok Postcard
     | `String "All" -> Ok AllFormats
-    | _ -> Error "")
-
-and spec_kind_of_json (ctx : of_json_ctx) (js : json) :
-    (spec_kind, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "Precondition" -> Ok Precondition
-    | `String "Postcondition" -> Ok Postcondition
     | _ -> Error "")
 
 and target_info_of_json (ctx : of_json_ctx) (js : json) :

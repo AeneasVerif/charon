@@ -2174,10 +2174,6 @@ and fun_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 5 ->
          let* dispatcher = fun_decl_ref_of_postcard ctx st in
          Ok (TargetDependentFun dispatcher)
-     | 6 ->
-         let* kind = spec_kind_of_postcard ctx st in
-         let* item = item_id_of_postcard ctx st in
-         Ok (SpecFun (kind, item))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and g_declaration_group_of_postcard :
@@ -2746,15 +2742,6 @@ and serialization_format_arg_of_postcard (ctx : of_postcard_ctx)
      | 0 -> Ok Json
      | 1 -> Ok Postcard
      | 2 -> Ok AllFormats
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
-and spec_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (spec_kind, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 -> Ok Precondition
-     | 1 -> Ok Postcondition
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

@@ -457,20 +457,6 @@ fn function_conditions() -> anyhow::Result<()> {
         .as_fun()
         .unwrap();
 
-    assert_eq!(
-        precondition.src,
-        FunSource::Spec {
-            kind: SpecKind::Precondition,
-            item: function.def_id.into(),
-        }
-    );
-    assert_eq!(
-        postcondition.src,
-        FunSource::Spec {
-            kind: SpecKind::Postcondition,
-            item: function.def_id.into(),
-        }
-    );
     assert!(
         function
             .item_meta
@@ -498,13 +484,16 @@ fn function_conditions() -> anyhow::Result<()> {
                     .any(Attribute::is_is_precondition)
         })
         .unwrap();
-    let FunSource::Spec {
-        kind: SpecKind::Precondition,
-        item: parent_id,
-    } = closure_precondition.src
-    else {
-        panic!("expected a precondition spec item")
-    };
+    let parent_id = closure_precondition
+        .item_meta
+        .attr_info
+        .attributes
+        .iter()
+        .find_map(|attr| match attr {
+            Attribute::IsPrecondition(parent_id) => Some(*parent_id),
+            _ => None,
+        })
+        .unwrap();
     let parent = crate_data.get_item(parent_id).unwrap();
     let parent = parent.as_fun().unwrap();
 

@@ -1316,7 +1316,6 @@ impl VisitAstMut for UpdateItemBody<'_> {
         match kind {
             FunSource::Normal
             | FunSource::GlobalInitializer(_)
-            | FunSource::Spec { .. }
             | FunSource::TargetDependent { .. }
             | FunSource::VTableShim => {}
             // Inside method declarations, the implicit `Self` clause is the first clause.

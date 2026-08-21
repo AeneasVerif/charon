@@ -630,7 +630,6 @@ fn remove_unmentioned_methods(krate: &mut TranslatedCrate) {
             match &fun.src {
                 FunSource::TraitDefault { .. }
                 | FunSource::TraitImpl { .. }
-                | FunSource::Spec { .. }
                 | FunSource::TargetDependent { .. } => {}
                 // Functions that aren't any of the above are reachable. target-dependent functions
                 // will be reachable if their dispatcher is.
