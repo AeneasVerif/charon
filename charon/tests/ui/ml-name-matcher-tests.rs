@@ -70,6 +70,15 @@ fn foo() {
     let _ = &slice[1..];
 }
 
+#[pattern::pass(
+    call[0],
+    "core::ops::function::Fn<@Closure, @Args>::call"
+)]
+fn tuple_closure_call() {
+    let closure = |x: usize| x;
+    let _ = closure(0);
+}
+
 #[pattern::pass(call[0], "test_crate::funs_with_disambiguator::f#1")]
 #[pattern::fail(call[0], "test_crate::funs_with_disambiguator::f#0")]
 #[pattern::fail(call[0], "test_crate::funs_with_disambiguator::f")]

@@ -172,6 +172,9 @@ module PatternTest = struct
           in
           List.nth fn_ptrs idx
     in
+    (* Exercise the round-trip assertions in both pattern conversion functions. *)
+    let _ = name_to_pattern env.ctx env.to_pat_config decl.item_meta.name in
+    let _ = fn_ptr_to_pattern env.ctx env.to_pat_config decl.generics fn_ptr in
     let match_success =
       match test.pattern with
       | Some pattern -> match_fn_ptr env.ctx env.match_config pattern fn_ptr
