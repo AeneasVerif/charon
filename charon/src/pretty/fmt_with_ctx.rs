@@ -155,6 +155,18 @@ impl Display for ItemId {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for MaybeAssocItemId {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            MaybeAssocItemId::Free(id) => id.fmt_with_ctx(ctx, f),
+            MaybeAssocItemId::Assoc(trait_id, item_id) => {
+                write!(f, "{}::", ItemId::TraitDecl(*trait_id).with_ctx(ctx),)?;
+                ctx.format_assoc_item_name(f, *trait_id, *item_id)
+            }
+        }
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for ItemRef<'_> {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

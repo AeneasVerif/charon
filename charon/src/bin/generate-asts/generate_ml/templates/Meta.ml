@@ -15,6 +15,9 @@ module GlobalDeclId = IdGen ()
 module TraitDeclId = IdGen ()
 module TraitImplId = IdGen ()
 module FunDeclId = IdGen ()
+module TraitMethodId = IdGen ()
+module AssocTypeId = IdGen ()
+module AssocConstId = IdGen ()
 
 type path_buf = string
 [@@deriving show, ord, eq]

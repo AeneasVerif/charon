@@ -5,28 +5,42 @@ pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         let mut attrs = Vec::new();
-        for (spec_id, item) in ctx.translated.all_items_with_ids() {
-            let ItemId::Fun(spec_id) = spec_id else {
-                continue;
-            };
-            for attr in &item.item_meta().attr_info.attributes {
+        for (spec_id, fdecl) in ctx.translated.fun_decls.iter_mut_enumerated() {
+            for attr in &fdecl.item_meta.attr_info.attributes {
                 match attr {
-                    Attribute::IsPrecondition(parent_id) => {
-                        attrs.push((*parent_id, Attribute::HasPrecondition(spec_id)));
+                    Attribute::IsPrecondition(target_id) => {
+                        attrs.push((*target_id, Attribute::HasPrecondition(spec_id)));
                     }
-                    Attribute::IsPostcondition(parent_id) => {
-                        attrs.push((*parent_id, Attribute::HasPostcondition(spec_id)));
+                    Attribute::IsPostcondition(target_id) => {
+                        attrs.push((*target_id, Attribute::HasPostcondition(spec_id)));
                     }
                     _ => {}
                 }
             }
         }
 
-        for (parent_id, attr) in attrs {
-            let Some(mut parent) = ctx.translated.get_item_mut(parent_id) else {
-                continue;
-            };
-            parent.item_meta().attr_info.attributes.push(attr);
+        for (target_id, attr) in attrs {
+            match target_id {
+                MaybeAssocItemId::Free(item_id) => {
+                    let Some(mut item) = ctx.translated.get_item_mut(item_id) else {
+                        continue;
+                    };
+                    item.item_meta().attr_info.attributes.push(attr);
+                }
+                MaybeAssocItemId::Assoc(trait_id, item_id) => {
+                    let Some(trait_decl) = ctx.translated.trait_decls.get_mut(trait_id) else {
+                        continue;
+                    };
+                    let attr_info = match item_id {
+                        AssocItemId::Type(id) => &mut trait_decl.types[id].skip_binder.attr_info,
+                        AssocItemId::Method(id) => {
+                            &mut trait_decl.methods[id].skip_binder.item_meta.attr_info
+                        }
+                        AssocItemId::Const(id) => &mut trait_decl.consts[id].attr_info,
+                    };
+                    attr_info.attributes.push(attr);
+                }
+            }
         }
     }
 }

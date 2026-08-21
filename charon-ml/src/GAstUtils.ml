@@ -90,12 +90,6 @@ let lookup_trait_impl_method (timpl : trait_impl) (id : trait_method_id) :
       { item_binder_params = timpl.generics; item_binder_value = bound_fn })
     (TraitMethodId.Map.find_opt id timpl.methods)
 
-(** An id for any kind of item in a trait declaration. *)
-type assoc_item_id =
-  | AssocIdType of assoc_type_id
-  | AssocIdMethod of trait_method_id
-  | AssocIdConst of assoc_const_id
-
 (** Resolve an [assoc_item_id] to a name. *)
 let get_assoc_item_name (crate : crate) (trait_id : trait_decl_id)
     (id : assoc_item_id) : trait_item_name =

@@ -1945,6 +1945,21 @@ and alignment_modifier_of_json (ctx : of_json_ctx) (js : json) :
         Ok (Pack _0)
     | _ -> Error "")
 
+and assoc_item_id_of_json (ctx : of_json_ctx) (js : json) :
+    (assoc_item_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Type", _0) ] ->
+        let* _0 = assoc_type_id_of_json ctx _0 in
+        Ok (AssocIdType _0)
+    | `Assoc [ ("Method", _0) ] ->
+        let* _0 = trait_method_id_of_json ctx _0 in
+        Ok (AssocIdMethod _0)
+    | `Assoc [ ("Const", _0) ] ->
+        let* _0 = assoc_const_id_of_json ctx _0 in
+        Ok (AssocIdConst _0)
+    | _ -> Error "")
+
 and assoc_item_names_of_json (ctx : of_json_ctx) (js : json) :
     (assoc_item_names, string) result =
   combine_error_msgs js __FUNCTION__
@@ -2000,10 +2015,10 @@ and attribute_of_json (ctx : of_json_ctx) (js : json) :
         Ok (AttrVariantsSuffix _0)
     | `String "Transparent" -> Ok AttrTransparent
     | `Assoc [ ("IsPrecondition", _0) ] ->
-        let* _0 = item_id_of_json ctx _0 in
+        let* _0 = maybe_assoc_item_id_of_json ctx _0 in
         Ok (AttrIsPrecondition _0)
     | `Assoc [ ("IsPostcondition", _0) ] ->
-        let* _0 = item_id_of_json ctx _0 in
+        let* _0 = maybe_assoc_item_id_of_json ctx _0 in
         Ok (AttrIsPostcondition _0)
     | `Assoc [ ("HasPrecondition", _0) ] ->
         let* _0 = fun_decl_id_of_json ctx _0 in
@@ -3100,6 +3115,19 @@ and locals_of_json (ctx : of_json_ctx) (js : json) : (locals, string) result =
           index_vec_of_json local_id_of_json local_of_json ctx locals
         in
         Ok ({ arg_count; locals } : locals)
+    | _ -> Error "")
+
+and maybe_assoc_item_id_of_json (ctx : of_json_ctx) (js : json) :
+    (maybe_assoc_item_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Free", _0) ] ->
+        let* _0 = item_id_of_json ctx _0 in
+        Ok (ItemFree _0)
+    | `Assoc [ ("Assoc", `List [ _0; _1 ]) ] ->
+        let* _0 = trait_decl_id_of_json ctx _0 in
+        let* _1 = assoc_item_id_of_json ctx _1 in
+        Ok (ItemAssoc (_0, _1))
     | _ -> Error "")
 
 and mir_level_of_json (ctx : of_json_ctx) (js : json) :

@@ -50,10 +50,10 @@ pub enum Attribute {
     Transparent,
     /// An item annotated with `#[charon::precondition]`. This makes it a precondition for its
     /// parent item.
-    IsPrecondition(ItemId),
+    IsPrecondition(MaybeAssocItemId),
     /// An item annotated with `#[charon::postcondition]`. This makes it a postcondition for its
     /// parent item.
-    IsPostcondition(ItemId),
+    IsPostcondition(MaybeAssocItemId),
     /// An item that has a precondition that applies to it. The referenced item is a function the
     /// specifies the condition.
     HasPrecondition(FunDeclId),

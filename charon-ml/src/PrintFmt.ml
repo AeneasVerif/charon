@@ -1170,6 +1170,14 @@ let pp_item_id (env : fmt_env) (fmt : Format.formatter) (id : item_id) : unit =
   | Some name -> pp_name env fmt name
   | None -> pp_string fmt (item_id_to_pretty_string id)
 
+let pp_maybe_assoc_item_id (env : fmt_env) (fmt : Format.formatter)
+    (id : maybe_assoc_item_id) : unit =
+  match id with
+  | ItemFree id -> pp_item_id env fmt id
+  | ItemAssoc (trait_id, item_id) ->
+      Format.fprintf fmt "%a::%s" (pp_trait_decl_id env) trait_id
+        (GAstUtils.get_assoc_item_name env.crate trait_id item_id)
+
 let pp_attribute_unindented (env : fmt_env) (fmt : Format.formatter)
     (attr : attribute) : unit =
   match attr with
@@ -1182,10 +1190,12 @@ let pp_attribute_unindented (env : fmt_env) (fmt : Format.formatter)
       Format.fprintf fmt "#[charon::variants_suffix(\"%s\")]" suffix
   | AttrTransparent -> pp_string fmt "#[charon::transparent]"
   | AttrIsPrecondition id ->
-      Format.fprintf fmt "#[charon::precondition(for = %a)]" (pp_item_id env)
+      Format.fprintf fmt "#[charon::precondition(for = %a)]"
+        (pp_maybe_assoc_item_id env)
         id
   | AttrIsPostcondition id ->
-      Format.fprintf fmt "#[charon::postcondition(for = %a)]" (pp_item_id env)
+      Format.fprintf fmt "#[charon::postcondition(for = %a)]"
+        (pp_maybe_assoc_item_id env)
         id
   | AttrHasPrecondition id ->
       Format.fprintf fmt "#[charon::has_precondition(%a)]" (pp_item_id env)

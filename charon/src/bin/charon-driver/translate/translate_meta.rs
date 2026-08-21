@@ -461,7 +461,7 @@ impl<'tcx> TranslateCtx<'tcx> {
 
 // Attributes
 impl<'tcx> TranslateCtx<'tcx> {
-    fn condition_parent_id(&mut self, def_id: &hax::DefId) -> Result<ItemId, String> {
+    fn condition_parent_id(&mut self, def_id: &hax::DefId) -> Result<MaybeAssocItemId, String> {
         if !matches!(
             def_id.kind,
             hax::DefKind::Fn | hax::DefKind::AssocFn | hax::DefKind::Closure
@@ -501,11 +501,13 @@ impl<'tcx> TranslateCtx<'tcx> {
             TransItemSource::polymorphic(&parent_def_id, kind)
         };
         if let Some(parent_id) = self.id_map.get(&parent_src) {
-            Ok(*parent_id)
+            Ok(MaybeAssocItemId::Free(*parent_id))
         } else {
-            self.register_and_enqueue(&None, parent_src).ok_or_else(|| {
-                "failed to register the pre/postcondition's parent function".to_string()
-            })
+            self.register_and_enqueue(&None, parent_src)
+                .map(MaybeAssocItemId::Free)
+                .ok_or_else(|| {
+                    "failed to register the pre/postcondition's parent function".to_string()
+                })
         }
     }
 
