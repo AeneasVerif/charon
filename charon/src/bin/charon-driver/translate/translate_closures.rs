@@ -193,7 +193,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         kind: TransItemSourceKind,
         target_kind: ClosureKind,
     ) -> Result<RegionBinder<DeclRef<ItemId>>, Error> {
-        if !matches!(kind, TransItemSourceKind::ClosureMethod(..)) {
+        if !matches!(kind, TransItemSourceKind::CallableMethod(..)) {
             raise_error!(
                 self,
                 span,
@@ -257,7 +257,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         closure: &hax::ClosureArgs,
         target_kind: ClosureKind,
     ) -> Result<RegionBinder<TraitImplRef>, Error> {
-        let kind = TransItemSourceKind::TraitImpl(TransImplSource::Closure(target_kind));
+        let kind = TransItemSourceKind::TraitImpl(TransImplSource::Callable(target_kind));
         let bound_dref = self.translate_callable_bound_ref_with_late_bound(
             span,
             Callable::Closure(closure),
@@ -276,7 +276,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         self.translate_item(
             span,
             item,
-            TransItemSourceKind::TraitImpl(TransImplSource::Closure(target_kind)),
+            TransItemSourceKind::TraitImpl(TransImplSource::Callable(target_kind)),
         )
     }
 
@@ -523,7 +523,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 let fun_id: FunDeclId = self.register_item(
                     span,
                     def.this(),
-                    TransItemSourceKind::ClosureMethod(closure_kind),
+                    TransItemSourceKind::CallableMethod(closure_kind),
                 );
                 let impl_ref = self.translate_callable_impl_ref(span, &args.item, closure_kind)?;
                 // TODO: make a trait call to avoid needing to concatenate things ourselves.
@@ -700,7 +700,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let trait_decl_id = timpl.impl_trait.id;
         let trait_method_id = self.translate_trait_method_id(trait_decl_id, &vimpl.methods[0])?;
         let call_fn_binder = {
-            let kind = TransItemSourceKind::ClosureMethod(target_kind);
+            let kind = TransItemSourceKind::CallableMethod(target_kind);
             let bound_method_ref: RegionBinder<DeclRef<ItemId>> = self
                 .translate_callable_bound_ref_with_method_bound(
                     span,
@@ -767,7 +767,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             let fun_id: FunDeclId = self.register_item(
                 span,
                 def.this(),
-                TransItemSourceKind::ClosureMethod(ClosureKind::FnOnce),
+                TransItemSourceKind::CallableMethod(ClosureKind::FnOnce),
             );
             let impl_ref =
                 self.translate_callable_impl_ref(span, &closure.item, ClosureKind::FnOnce)?;

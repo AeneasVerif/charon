@@ -66,8 +66,8 @@ pub enum TransItemSourceKind {
     /// We don't translate these as proper items, but we use them to explore the crate.
     Module,
     /// The `call_*` method of the generated `Fn*` impl for a closure or fn item.
-    ClosureMethod(ClosureKind),
-    /// A cast of a state-less closure as a function pointer.
+    CallableMethod(ClosureKind),
+    /// A cast of a stateless closure to a function pointer.
     ClosureAsFnCast,
     /// The `drop_glue` method of a `Destruct` impl. It contains the drop glue that calls
     /// `Drop::drop` for the type and then drops its fields. This is a method implementation (and
@@ -95,7 +95,7 @@ pub enum TransImplSource {
     /// The blanket impl we generate for a trait alias. The `DefId` is that of the trait alias.
     TraitAlias,
     /// An impl of the appropriate `Fn*` trait for a closure or function item.
-    Closure(ClosureKind),
+    Callable(ClosureKind),
     /// A fictitious `impl Destruct for T` that contains the drop glue code for the given ADT or
     /// closure. The `DefId` is that of the ADT or closure.
     ImplicitDestruct,
@@ -163,8 +163,8 @@ impl TransItemSource {
     /// not attempt to generally compute the parent of an item. Used to compute names.
     pub(crate) fn parent(&self) -> Option<Self> {
         let parent_kind = match self.kind {
-            TransItemSourceKind::ClosureMethod(kind) => {
-                TransItemSourceKind::TraitImpl(TransImplSource::Closure(kind))
+            TransItemSourceKind::CallableMethod(kind) => {
+                TransItemSourceKind::TraitImpl(TransImplSource::Callable(kind))
             }
             TransItemSourceKind::DropGlueMethod(impl_kind)
             | TransItemSourceKind::VTableInstance(impl_kind)
@@ -330,7 +330,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                         ItemId::Global(self.translated.global_decls.reserve_slot())
                     }
                     Fun
-                    | ClosureMethod(..)
+                    | CallableMethod(..)
                     | ClosureAsFnCast
                     | DropGlueMethod(..)
                     | VTableInstanceInitializer(..)
@@ -685,8 +685,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     generics
                         .regions
                         .extend((0..upvar_regions).map(|_| self.translate_erased_region()));
-                    if let TransItemSourceKind::TraitImpl(TransImplSource::Closure(..))
-                    | TransItemSourceKind::ClosureMethod(..)
+                    if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
+                    | TransItemSourceKind::CallableMethod(..)
                     | TransItemSourceKind::ClosureAsFnCast = kind
                     {
                         generics.regions.extend(
@@ -699,7 +699,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
                 _ => {}
             }
-            if let TransItemSourceKind::ClosureMethod(ClosureKind::FnMut | ClosureKind::Fn) = kind {
+            if let TransItemSourceKind::CallableMethod(ClosureKind::FnMut | ClosureKind::Fn) = kind
+            {
                 generics.regions.push(self.translate_erased_region());
             }
             // If we're in the process of translating this same item (possibly with a

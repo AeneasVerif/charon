@@ -521,8 +521,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             self.the_only_binder_mut().closure_upvar_tys = Some(upvar_tys);
 
             // Add the lifetime generics coming from the higher-kindedness of the signature.
-            if let TransItemSourceKind::TraitImpl(TransImplSource::Closure(..))
-            | TransItemSourceKind::ClosureMethod(..)
+            if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
+            | TransItemSourceKind::CallableMethod(..)
             | TransItemSourceKind::ClosureAsFnCast = kind
             {
                 self.the_only_binder_mut()
@@ -533,7 +533,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         if let hax::FullDefKind::Fn { .. }
         | hax::FullDefKind::AssocFn { .. }
         | hax::FullDefKind::Closure { .. } = def.kind()
-            && let TransItemSourceKind::ClosureMethod(ClosureKind::Fn | ClosureKind::FnMut) = kind
+            && let TransItemSourceKind::CallableMethod(ClosureKind::Fn | ClosureKind::FnMut) = kind
         {
             // Add the lifetime generics coming from the method itself.
             let rid = self
