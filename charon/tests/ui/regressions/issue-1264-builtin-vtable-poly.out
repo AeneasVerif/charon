@@ -1,0 +1,56 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::Send::{vtable}
+struct {vtable} {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn Send)),
+}
+
+// Full name: core::marker::Send
+#[diagnostic_item("Send")]
+pub trait Send<Self>
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let _x: &'3 (dyn Send + '4); // local
+    let _2: &'6 i32; // anonymous local
+    let _3: &'7 i32; // anonymous local
+    let _4: &'8 i32; // anonymous local
+    let _5: &'9 i32; // anonymous local
+    let _6: &'14 i32; // anonymous local
+    let _7: i32; // anonymous local
+
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = const 0i32
+    _6 = &_7
+    _5 = move _6
+    storage_live(_0)
+    storage_live(_4)
+    _0 = ()
+    storage_live(_x)
+    storage_live(_2)
+    storage_live(_3)
+    _4 = move _5
+    _3 = &(*_4)
+    _2 = &(*_3)
+    _x = unsize_cast<&'6 i32, &'10 (dyn Send + '11), &vtable_of({built_in impl Send for i32})>(move _2)
+    storage_dead(_2)
+    fake_read(_x)
+    set_type(typeof(_x) == &'12 (dyn Send + '13))
+    storage_dead(_3)
+    _0 = ()
+    storage_dead(_x)
+    storage_dead(_4)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    return
+}
+
+
+
