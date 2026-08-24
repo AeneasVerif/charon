@@ -49,9 +49,6 @@ jobs:
           - os: ubuntu-24.04-arm
             artifact_name: charon-linux-aarch64
             nix_machine: false
-          - os: macos-15-intel
-            artifact_name: charon-macos-x86_64
-            nix_machine: false
           - os: macos-latest
             artifact_name: charon-macos-aarch64
             nix_machine: false
