@@ -1542,8 +1542,89 @@ pub fn flabada<'a>(_x: &'a ()) -> Wrapper<(bool, &'a ())>[{built_in impl Sized f
     panic(core::panicking::panic)
 }
 
-// Full name: test_crate::call
-pub fn call<'a, F>(_1: F)
+// Full name: test_crate::{impl Fn<(&'a (),)> for for<'a> flabada<'a>}::call
+pub fn {impl Fn<(&'a (),)> for for<'a> flabada<'a>}::call<'a, '_1>(state: &'_1 for<'a> flabada<'a>, args: (&'a (),)) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
+{
+    let _0: Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]; // return
+    let state: &'_1 for<'a> flabada<'a>; // arg #1
+    let args: (&'a (),); // arg #2
+
+    storage_live(_0)
+    _0 = flabada<'a>(move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnMut<(&'a (),)> for for<'a> flabada<'a>}::call_mut
+pub fn call_mut<'a, '_1>(state: &'_1 mut for<'a> flabada<'a>, args: (&'a (),)) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
+{
+    let _0: Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]; // return
+    let state: &'_1 mut for<'a> flabada<'a>; // arg #1
+    let args: (&'a (),); // arg #2
+
+    storage_live(_0)
+    _0 = flabada<'a>(move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnOnce<(&'a (),)> for for<'a> flabada<'a>}::call_once
+pub fn call_once<'a>(state: for<'a> flabada<'a>, args: (&'a (),)) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
+{
+    let _0: Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]; // return
+    let state: for<'a> flabada<'a>; // arg #1
+    let args: (&'a (),); // arg #2
+
+    storage_live(_0)
+    _0 = flabada<'a>(move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnOnce<(&'a (),)> for for<'a> flabada<'a>}
+impl<'a> FnOnce<(&'a (),)> for for<'a> flabada<'a> {
+    proof ImpliedClause0: (for<'a> flabada<'a>: MetaSized) = {built_in impl MetaSized for for<'a> flabada<'a>}
+    proof ImpliedClause1: ((&'a (),): Sized) = {built_in impl Sized for (&'a (),)}
+    proof ImpliedClause2: ((&'a (),): Tuple) = {built_in impl Tuple for (&'a (),)}
+    proof ImpliedClause3: (Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]: Sized) = {built_in impl Sized for Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]}
+    type Output = Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
+    fn call_once = call_once<'a>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl FnMut<(&'a (),)> for for<'a> flabada<'a>}
+impl<'a> FnMut<(&'a (),)> for for<'a> flabada<'a> {
+    proof ImpliedClause0: (for<'a> flabada<'a>: MetaSized) = {built_in impl MetaSized for for<'a> flabada<'a>}
+    proof ImpliedClause1: (for<'a> flabada<'a>: FnOnce<(&'a (),)>) = {impl FnOnce<(&'a (),)> for for<'a> flabada<'a>}<'a>
+    proof ImpliedClause2: ((&'a (),): Sized) = {built_in impl Sized for (&'a (),)}
+    proof ImpliedClause3: ((&'a (),): Tuple) = {built_in impl Tuple for (&'a (),)}
+    fn call_mut<'_0_1> = call_mut<'a, '_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Fn<(&'a (),)> for for<'a> flabada<'a>}
+impl<'a> Fn<(&'a (),)> for for<'a> flabada<'a> {
+    proof ImpliedClause0: (for<'a> flabada<'a>: MetaSized) = {built_in impl MetaSized for for<'a> flabada<'a>}
+    proof ImpliedClause1: (for<'a> flabada<'a>: FnMut<(&'a (),)>) = {impl FnMut<(&'a (),)> for for<'a> flabada<'a>}<'a>
+    proof ImpliedClause2: ((&'a (),): Sized) = {built_in impl Sized for (&'a (),)}
+    proof ImpliedClause3: ((&'a (),): Tuple) = {built_in impl Tuple for (&'a (),)}
+    fn call<'_0_1> = {impl Fn<(&'a (),)> for for<'a> flabada<'a>}::call<'a, '_0_1>
+    non-dyn-compatible
+}
+
+pub fn test_crate::call<'a, F>(_1: F)
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: Fn<(&'a (),)>),
@@ -1571,7 +1652,7 @@ pub fn flibidi()
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'0 (),)> for for<'a> flabada<'a>}](const flabada<'93>)
+    _1 = test_crate::call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {impl Fn<(&'a (),)> for for<'a> flabada<'a>}<'0>](const flabada<'11>)
     ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()

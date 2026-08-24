@@ -217,6 +217,35 @@ fn __rust_std_internal_init_fn() -> u32
     return
 }
 
+// Full name: test_crate::FOO::{impl FnOnce<()> for __rust_std_internal_init_fn}::call_once
+#[inline(hint)]
+fn {impl FnOnce<()> for __rust_std_internal_init_fn}::call_once(state: __rust_std_internal_init_fn, args: ()) -> u32
+{
+    let _0: u32; // return
+    let state: __rust_std_internal_init_fn; // arg #1
+    let args: (); // arg #2
+
+    storage_live(_0)
+    _0 = __rust_std_internal_init_fn()
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::FOO::{impl FnOnce<()> for __rust_std_internal_init_fn}
+impl FnOnce<()> for __rust_std_internal_init_fn {
+    proof ImpliedClause0: (__rust_std_internal_init_fn: MetaSized) = {built_in impl MetaSized for __rust_std_internal_init_fn}
+    proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
+    proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
+    type Output = u32
+    fn call_once = {impl FnOnce<()> for __rust_std_internal_init_fn}::call_once
+    non-dyn-compatible
+}
+
 struct test_crate::FOO::{const}::closure {}
 
 // Full name: test_crate::FOO::{const}::closure::{impl Destruct for test_crate::FOO::{const}::closure}::drop_glue
@@ -263,7 +292,7 @@ fn {impl Fn<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_i
     _4 = &(*_5)
     storage_live(_6)
     _6 = move __rust_std_internal_init
-    _0 = get_or_init<'13, '14, u32, (), __rust_std_internal_init_fn>[{built_in impl Sized for u32}, {built_in impl Sized for ()}, impl_DestroyedState_for_unit, {built_in impl Sized for __rust_std_internal_init_fn}, {built_in impl FnOnce<()> for __rust_std_internal_init_fn where Output  = u32}](move _4, move _6, const __rust_std_internal_init_fn)
+    _0 = get_or_init<'13, '14, u32, (), __rust_std_internal_init_fn>[{built_in impl Sized for u32}, {built_in impl Sized for ()}, impl_DestroyedState_for_unit, {built_in impl Sized for __rust_std_internal_init_fn}, {impl FnOnce<()> for __rust_std_internal_init_fn}](move _4, move _6, const __rust_std_internal_init_fn)
     ↳⚡ storage_dead(__rust_std_internal_init)
         storage_dead(tupled_args)
         storage_dead(_1)
@@ -437,7 +466,7 @@ fn {impl Fn<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_i
     _4 = &(*_5)
     storage_live(_6)
     _6 = move __rust_std_internal_init
-    _0 = get_or_init<'13, '14, u32, !, __rust_std_internal_init_fn>[{built_in impl Sized for u32}, {built_in impl Sized for !}, {impl DestroyedState for !}, {built_in impl Sized for __rust_std_internal_init_fn}, {built_in impl FnOnce<()> for __rust_std_internal_init_fn where Output  = u32}](move _4, move _6, const __rust_std_internal_init_fn)
+    _0 = get_or_init<'13, '14, u32, !, __rust_std_internal_init_fn>[{built_in impl Sized for u32}, {built_in impl Sized for !}, {impl DestroyedState for !}, {built_in impl Sized for __rust_std_internal_init_fn}, {impl FnOnce<()> for __rust_std_internal_init_fn}](move _4, move _6, const __rust_std_internal_init_fn)
     ↳⚡ storage_dead(__rust_std_internal_init)
         storage_dead(tupled_args)
         storage_dead(_1)

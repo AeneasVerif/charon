@@ -82,8 +82,88 @@ pub fn flabada<'a>(x: &'a ()) -> &'a ()
     return
 }
 
-// Full name: test_crate::call
-pub fn call<'b, F>(_1: F)
+// Full name: test_crate::{impl Fn<(&'a (),), &'a ()> for for<'a> flabada<'a>}::call
+pub fn {impl Fn<(&'a (),), &'a ()> for for<'a> flabada<'a>}::call<'a, '_1>(state: &'_1 for<'a> flabada<'a>, args: (&'a (),)) -> &'a ()
+{
+    let _0: &'a (); // return
+    let state: &'_1 for<'a> flabada<'a>; // arg #1
+    let args: (&'a (),); // arg #2
+
+    storage_live(_0)
+    _0 = flabada<'a>(move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnMut<(&'a (),), &'a ()> for for<'a> flabada<'a>}::call_mut
+pub fn call_mut<'a, '_1>(state: &'_1 mut for<'a> flabada<'a>, args: (&'a (),)) -> &'a ()
+{
+    let _0: &'a (); // return
+    let state: &'_1 mut for<'a> flabada<'a>; // arg #1
+    let args: (&'a (),); // arg #2
+
+    storage_live(_0)
+    _0 = flabada<'a>(move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnOnce<(&'a (),), &'a ()> for for<'a> flabada<'a>}::call_once
+pub fn call_once<'a>(state: for<'a> flabada<'a>, args: (&'a (),)) -> &'a ()
+{
+    let _0: &'a (); // return
+    let state: for<'a> flabada<'a>; // arg #1
+    let args: (&'a (),); // arg #2
+
+    storage_live(_0)
+    _0 = flabada<'a>(move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnOnce<(&'a (),), &'a ()> for for<'a> flabada<'a>}
+impl<'a> FnOnce<(&'a (),), &'a ()> for for<'a> flabada<'a> {
+    proof ImpliedClause0: (for<'a> flabada<'a>: MetaSized) = {built_in impl MetaSized for for<'a> flabada<'a>}
+    proof ImpliedClause1: ((&'a (),): Sized) = {built_in impl Sized for (&'a (),)}
+    proof ImpliedClause2: ((&'a (),): Tuple) = {built_in impl Tuple for (&'a (),)}
+    proof ImpliedClause3: (&'a (): Sized) = {built_in impl Sized for &'a ()}
+    fn call_once = call_once<'a>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl FnMut<(&'a (),), &'a ()> for for<'a> flabada<'a>}
+impl<'a> FnMut<(&'a (),), &'a ()> for for<'a> flabada<'a> {
+    proof ImpliedClause0: (for<'a> flabada<'a>: MetaSized) = {built_in impl MetaSized for for<'a> flabada<'a>}
+    proof ImpliedClause1: (for<'a> flabada<'a>: FnOnce<(&'a (),), &'a ()>) = {impl FnOnce<(&'a (),), &'a ()> for for<'a> flabada<'a>}<'a>
+    proof ImpliedClause2: ((&'a (),): Sized) = {built_in impl Sized for (&'a (),)}
+    proof ImpliedClause3: ((&'a (),): Tuple) = {built_in impl Tuple for (&'a (),)}
+    fn call_mut<'_0_1> = call_mut<'a, '_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Fn<(&'a (),), &'a ()> for for<'a> flabada<'a>}
+impl<'a> Fn<(&'a (),), &'a ()> for for<'a> flabada<'a> {
+    proof ImpliedClause0: (for<'a> flabada<'a>: MetaSized) = {built_in impl MetaSized for for<'a> flabada<'a>}
+    proof ImpliedClause1: (for<'a> flabada<'a>: FnMut<(&'a (),), &'a ()>) = {impl FnMut<(&'a (),), &'a ()> for for<'a> flabada<'a>}<'a>
+    proof ImpliedClause2: ((&'a (),): Sized) = {built_in impl Sized for (&'a (),)}
+    proof ImpliedClause3: ((&'a (),): Tuple) = {built_in impl Tuple for (&'a (),)}
+    fn call<'_0_1> = {impl Fn<(&'a (),), &'a ()> for for<'a> flabada<'a>}::call<'a, '_0_1>
+    non-dyn-compatible
+}
+
+pub fn test_crate::call<'b, F>(_1: F)
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: Fn<(&'b (),), &'b ()>),
@@ -110,7 +190,7 @@ pub fn flibidi()
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {built_in impl Fn<(&'0 (),), &'0 ()> for for<'a> flabada<'a>}](const flabada<'63>)
+    _1 = test_crate::call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {impl Fn<(&'a (),), &'a ()> for for<'a> flabada<'a>}<'0>](const flabada<'11>)
     ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()

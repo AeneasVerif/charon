@@ -154,7 +154,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     TransImplSource::TraitAlias => {
                         bt_ctx.translate_trait_alias_blanket_impl(id, item_meta, &def)?
                     }
-                    &TransImplSource::Closure(kind) => {
+                    &TransImplSource::Callable(kind) => {
                         bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?
                     }
                     TransImplSource::ImplicitDestruct => {
@@ -163,7 +163,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                 };
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
-            &TransItemSourceKind::ClosureMethod(kind) => {
+            &TransItemSourceKind::CallableMethod(kind) => {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };

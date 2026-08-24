@@ -367,16 +367,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             trait_def.lang_item,
                         )
                     };
-                    // TODO: here, if closure_ty is a FnDef, we need to generate the matching trait
-                    // impls, with an empty state as the first argument.
                     if let Some(closure_kind) = builtin_data.as_closure_kind()
                         && let Some(hax::GenericArg::Type(closure_ty)) =
                             impl_source.pred.hax_skip_binder_ref().generic_args.first()
-                        && let hax::TyKind::Closure(closure_args) = closure_ty.kind()
+                        && let Some(item) = match closure_ty.kind() {
+                            hax::TyKind::Closure(closure_args) => Some(&closure_args.item),
+                            hax::TyKind::FnDef { item, .. } => Some(item),
+                            _ => None,
+                        }
                     {
                         let binder =
                             self.translate_region_binder(span, &impl_source.pred, |ctx, _tref| {
-                                ctx.translate_closure_impl_ref(span, closure_args, closure_kind)
+                                ctx.translate_callable_impl_ref(span, item, closure_kind)
                             })?;
                         TraitRefKind::TraitImpl(self.erase_region_binder(binder))
                     } else {

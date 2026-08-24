@@ -164,6 +164,87 @@ pub fn incr_u32(x: u32) -> u32
     return
 }
 
+// Full name: test_crate::{impl Fn<(u32,), u32> for incr_u32}::call
+pub fn {impl Fn<(u32,), u32> for incr_u32}::call<'_0>(state: &'_0 incr_u32, args: (u32,)) -> u32
+{
+    let _0: u32; // return
+    let state: &'_0 incr_u32; // arg #1
+    let args: (u32,); // arg #2
+
+    storage_live(_0)
+    _0 = incr_u32(move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnMut<(u32,), u32> for incr_u32}::call_mut
+pub fn {impl FnMut<(u32,), u32> for incr_u32}::call_mut<'_0>(state: &'_0 mut incr_u32, args: (u32,)) -> u32
+{
+    let _0: u32; // return
+    let state: &'_0 mut incr_u32; // arg #1
+    let args: (u32,); // arg #2
+
+    storage_live(_0)
+    _0 = incr_u32(move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnOnce<(u32,), u32> for incr_u32}::call_once
+pub fn {impl FnOnce<(u32,), u32> for incr_u32}::call_once(state: incr_u32, args: (u32,)) -> u32
+{
+    let _0: u32; // return
+    let state: incr_u32; // arg #1
+    let args: (u32,); // arg #2
+
+    storage_live(_0)
+    _0 = incr_u32(move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnOnce<(u32,), u32> for incr_u32}
+impl FnOnce<(u32,), u32> for incr_u32 {
+    proof ImpliedClause0: (incr_u32: MetaSized) = {built_in impl MetaSized for incr_u32}
+    proof ImpliedClause1: ((u32,): Sized) = {built_in impl Sized for (u32,)}
+    proof ImpliedClause2: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
+    proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
+    fn call_once = {impl FnOnce<(u32,), u32> for incr_u32}::call_once
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl FnMut<(u32,), u32> for incr_u32}
+impl FnMut<(u32,), u32> for incr_u32 {
+    proof ImpliedClause0: (incr_u32: MetaSized) = {built_in impl MetaSized for incr_u32}
+    proof ImpliedClause1: (incr_u32: FnOnce<(u32,), u32>) = {impl FnOnce<(u32,), u32> for incr_u32}
+    proof ImpliedClause2: ((u32,): Sized) = {built_in impl Sized for (u32,)}
+    proof ImpliedClause3: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
+    fn call_mut<'_0_1> = {impl FnMut<(u32,), u32> for incr_u32}::call_mut<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Fn<(u32,), u32> for incr_u32}
+impl Fn<(u32,), u32> for incr_u32 {
+    proof ImpliedClause0: (incr_u32: MetaSized) = {built_in impl MetaSized for incr_u32}
+    proof ImpliedClause1: (incr_u32: FnMut<(u32,), u32>) = {impl FnMut<(u32,), u32> for incr_u32}
+    proof ImpliedClause2: ((u32,): Sized) = {built_in impl Sized for (u32,)}
+    proof ImpliedClause3: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
+    fn call<'_0_1> = {impl Fn<(u32,), u32> for incr_u32}::call<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: test_crate::map_option
 #[allow(clippy::manual_map)]
 pub fn map_option<T, F>(x_1: Option<T>[TraitClause0], f: F) -> Option<T>[TraitClause0]
@@ -355,7 +436,7 @@ pub fn test_map_option1(x: Option<u32>[{built_in impl Sized for u32}]) -> Option
     storage_live(_0)
     storage_live(_2)
     _2 = copy x
-    _0 = map_option<u32, incr_u32>[{built_in impl Sized for u32}, {built_in impl Sized for incr_u32}, {built_in impl Fn<(u32,), u32> for incr_u32}](move _2, const incr_u32)
+    _0 = map_option<u32, incr_u32>[{built_in impl Sized for u32}, {built_in impl Sized for incr_u32}, {impl Fn<(u32,), u32> for incr_u32}](move _2, const incr_u32)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)
@@ -1577,6 +1658,104 @@ where
     return
 }
 
+// Full name: test_crate::{impl Fn<(T,), T> for id<T>[TraitClause0]}::call
+pub fn {impl Fn<(T,), T> for id<T>[TraitClause0]}::call<'_0, T>(state: &'_0 id<T>[TraitClause0], args: (T,)) -> T
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+{
+    let _0: T; // return
+    let state: &'_0 id<T>[TraitClause0]; // arg #1
+    let args: (T,); // arg #2
+
+    storage_live(_0)
+    _0 = id<T>[TraitClause0](move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnMut<(T,), T> for id<T>[TraitClause0]}::call_mut
+pub fn {impl FnMut<(T,), T> for id<T>[TraitClause0]}::call_mut<'_0, T>(state: &'_0 mut id<T>[TraitClause0], args: (T,)) -> T
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+{
+    let _0: T; // return
+    let state: &'_0 mut id<T>[TraitClause0]; // arg #1
+    let args: (T,); // arg #2
+
+    storage_live(_0)
+    _0 = id<T>[TraitClause0](move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnOnce<(T,), T> for id<T>[TraitClause0]}::call_once
+pub fn {impl FnOnce<(T,), T> for id<T>[TraitClause0]}::call_once<T>(state: id<T>[TraitClause0], args: (T,)) -> T
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: T; // return
+    let state: id<T>[TraitClause0]; // arg #1
+    let args: (T,); // arg #2
+
+    storage_live(_0)
+    _0 = id<T>[TraitClause0](move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnOnce<(T,), T> for id<T>[TraitClause0]}
+impl<T> FnOnce<(T,), T> for id<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (id<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for id<T>[TraitClause0]}
+    proof ImpliedClause1: ((T,): Sized) = {built_in impl Sized for (T,)}
+    proof ImpliedClause2: ((T,): Tuple) = {built_in impl Tuple for (T,)}
+    proof ImpliedClause3: (T: Sized) = TraitClause0
+    fn call_once = {impl FnOnce<(T,), T> for id<T>[TraitClause0]}::call_once<T>[TraitClause0]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl FnMut<(T,), T> for id<T>[TraitClause0]}
+impl<T> FnMut<(T,), T> for id<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (id<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for id<T>[TraitClause0]}
+    proof ImpliedClause1: (id<T>[TraitClause0]: FnOnce<(T,), T>) = {impl FnOnce<(T,), T> for id<T>[TraitClause0]}<T>[TraitClause0]
+    proof ImpliedClause2: ((T,): Sized) = {built_in impl Sized for (T,)}
+    proof ImpliedClause3: ((T,): Tuple) = {built_in impl Tuple for (T,)}
+    fn call_mut<'_0_1> = {impl FnMut<(T,), T> for id<T>[TraitClause0]}::call_mut<'_0_1, T>[TraitClause0]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Fn<(T,), T> for id<T>[TraitClause0]}
+impl<T> Fn<(T,), T> for id<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (id<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for id<T>[TraitClause0]}
+    proof ImpliedClause1: (id<T>[TraitClause0]: FnMut<(T,), T>) = {impl FnMut<(T,), T> for id<T>[TraitClause0]}<T>[TraitClause0]
+    proof ImpliedClause2: ((T,): Sized) = {built_in impl Sized for (T,)}
+    proof ImpliedClause3: ((T,): Tuple) = {built_in impl Tuple for (T,)}
+    fn call<'_0_1> = {impl Fn<(T,), T> for id<T>[TraitClause0]}::call<'_0_1, T>[TraitClause0]
+    non-dyn-compatible
+}
+
 // Full name: test_crate::test_map_option_id1
 pub fn test_map_option_id1(x: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>[{built_in impl Sized for u32}]
 {
@@ -1587,7 +1766,7 @@ pub fn test_map_option_id1(x: Option<u32>[{built_in impl Sized for u32}]) -> Opt
     storage_live(_0)
     storage_live(_2)
     _2 = copy x
-    _0 = map_option<u32, id<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for u32}, {built_in impl Sized for id<u32>[{built_in impl Sized for u32}]}, {built_in impl Fn<(u32,), u32> for id<u32>[{built_in impl Sized for u32}]}](move _2, const id<u32>[{built_in impl Sized for u32}])
+    _0 = map_option<u32, id<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for u32}, {built_in impl Sized for id<u32>[{built_in impl Sized for u32}]}, {impl Fn<(T,), T> for id<T>[TraitClause0]}<u32>[{built_in impl Sized for u32}]](move _2, const id<u32>[{built_in impl Sized for u32}])
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)
@@ -1612,7 +1791,7 @@ pub fn test_map_option_id2(x: Option<u32>[{built_in impl Sized for u32}]) -> Opt
     _3 = copy x
     storage_live(_4)
     _4 = copy f
-    _0 = map_option<u32, id<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for u32}, {built_in impl Sized for id<u32>[{built_in impl Sized for u32}]}, {built_in impl Fn<(u32,), u32> for id<u32>[{built_in impl Sized for u32}]}](move _3, move _4)
+    _0 = map_option<u32, id<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for u32}, {built_in impl Sized for id<u32>[{built_in impl Sized for u32}]}, {impl Fn<(T,), T> for id<T>[TraitClause0]}<u32>[{built_in impl Sized for u32}]](move _3, move _4)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_4)
@@ -1648,6 +1827,113 @@ where
         unwind_continue
     storage_dead(x)
     return
+}
+
+// Full name: test_crate::{impl Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call
+#[allow(clippy::redundant_clone)]
+pub fn {impl Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call<'_0, T>(state: &'_0 id_clone<T>[TraitClause0, TraitClause1], args: (T,)) -> T
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+    TypeOutlives0: T: '_0,
+{
+    let _0: T; // return
+    let state: &'_0 id_clone<T>[TraitClause0, TraitClause1]; // arg #1
+    let args: (T,); // arg #2
+
+    storage_live(_0)
+    _0 = id_clone<T>[TraitClause0, TraitClause1](move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_mut
+#[allow(clippy::redundant_clone)]
+pub fn {impl FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_mut<'_0, T>(state: &'_0 mut id_clone<T>[TraitClause0, TraitClause1], args: (T,)) -> T
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+    TypeOutlives0: T: '_0,
+{
+    let _0: T; // return
+    let state: &'_0 mut id_clone<T>[TraitClause0, TraitClause1]; // arg #1
+    let args: (T,); // arg #2
+
+    storage_live(_0)
+    _0 = id_clone<T>[TraitClause0, TraitClause1](move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnOnce<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_once
+#[allow(clippy::redundant_clone)]
+pub fn {impl FnOnce<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_once<T>(state: id_clone<T>[TraitClause0, TraitClause1], args: (T,)) -> T
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+{
+    let _0: T; // return
+    let state: id_clone<T>[TraitClause0, TraitClause1]; // arg #1
+    let args: (T,); // arg #2
+
+    storage_live(_0)
+    _0 = id_clone<T>[TraitClause0, TraitClause1](move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnOnce<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}
+impl<T> FnOnce<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+{
+    proof ImpliedClause0: (id_clone<T>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for id_clone<T>[TraitClause0, TraitClause1]}
+    proof ImpliedClause1: ((T,): Sized) = {built_in impl Sized for (T,)}
+    proof ImpliedClause2: ((T,): Tuple) = {built_in impl Tuple for (T,)}
+    proof ImpliedClause3: (T: Sized) = TraitClause0
+    fn call_once = {impl FnOnce<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_once<T>[TraitClause0, TraitClause1]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}
+impl<T> FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+{
+    proof ImpliedClause0: (id_clone<T>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for id_clone<T>[TraitClause0, TraitClause1]}
+    proof ImpliedClause1: (id_clone<T>[TraitClause0, TraitClause1]: FnOnce<(T,), T>) = {impl FnOnce<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}<T>[TraitClause0, TraitClause1]
+    proof ImpliedClause2: ((T,): Sized) = {built_in impl Sized for (T,)}
+    proof ImpliedClause3: ((T,): Tuple) = {built_in impl Tuple for (T,)}
+    fn call_mut<'_0_1> = {impl FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_mut<'_0_1, T>[TraitClause0, TraitClause1]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}
+impl<T> Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+{
+    proof ImpliedClause0: (id_clone<T>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for id_clone<T>[TraitClause0, TraitClause1]}
+    proof ImpliedClause1: (id_clone<T>[TraitClause0, TraitClause1]: FnMut<(T,), T>) = {impl FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}<T>[TraitClause0, TraitClause1]
+    proof ImpliedClause2: ((T,): Sized) = {built_in impl Sized for (T,)}
+    proof ImpliedClause3: ((T,): Tuple) = {built_in impl Tuple for (T,)}
+    fn call<'_0_1> = {impl Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call<'_0_1, T>[TraitClause0, TraitClause1]
+    non-dyn-compatible
 }
 
 // Full name: test_crate::test_id_clone
@@ -1728,7 +2014,7 @@ pub fn test_map_option_id_clone(x: Option<u32>[{built_in impl Sized for u32}]) -
     storage_live(_0)
     storage_live(_2)
     _2 = copy x
-    _0 = map_option<u32, id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32]>[{built_in impl Sized for u32}, {built_in impl Sized for id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32]}, {built_in impl Fn<(u32,), u32> for id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32]}](move _2, const id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32])
+    _0 = map_option<u32, id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32]>[{built_in impl Sized for u32}, {built_in impl Sized for id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32]}, {impl Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32]](move _2, const id_clone<u32>[{built_in impl Sized for u32}, impl_Clone_for_u32])
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)
