@@ -82,13 +82,13 @@ pub enum Discriminator {
 /// NOTE: This does not include less common/unstable representations such as `#[repr(simd)]`
 /// or the compiler internal `#[repr(linear)]`. Similarly, enum discriminant representations
 /// are encoded in [`Variant::discriminant`] and [`Discriminator`] instead.
-/// This only stores whether the discriminant type was derived from an explicit annotation.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ReprOptions {
     pub repr_algo: ReprAlgorithm,
     pub align_modif: Option<AlignmentModifier>,
     pub transparent: bool,
-    pub explicit_discr_type: bool,
+    /// The type supplied to `repr(..)`, if any.
+    pub explicit_discr_type: Option<LiteralTy>,
 }
 
 /// Describes which layout algorithm is used for representing the corresponding type.
@@ -118,7 +118,7 @@ pub struct TargetInfo {
     /// Whether the target platform uses little endian byte order.
     pub is_little_endian: bool,
     /// The minimum size of a [`repr(C)`] enum.
-    pub c_enum_min_size: ByteCount,
+    pub c_enum_smallest_repr_ty: IntTy,
     /// Alignments for primitive types.
     #[serde(with = "SeqHashMapToArray::<LiteralTy, ByteCount>")]
     pub primitive_alignments: SeqHashMap<LiteralTy, ByteCount>,
@@ -189,7 +189,7 @@ impl ReprOptions {
     /// Cf. <https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.struct>
     /// and <https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.adt>.
     pub fn guarantees_fixed_field_order(&self) -> bool {
-        self.repr_algo == ReprAlgorithm::C || self.explicit_discr_type
+        self.repr_algo == ReprAlgorithm::C || self.explicit_discr_type.is_some()
     }
 }
 

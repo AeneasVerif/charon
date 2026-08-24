@@ -3218,7 +3218,9 @@ and repr_options_of_json (ctx : of_json_ctx) (js : json) :
           option_of_json alignment_modifier_of_json ctx align_modif
         in
         let* transparent = bool_of_json ctx transparent in
-        let* explicit_discr_type = bool_of_json ctx explicit_discr_type in
+        let* explicit_discr_type =
+          option_of_json literal_type_of_json ctx explicit_discr_type
+        in
         Ok
           ({ repr_algo; align_modif; transparent; explicit_discr_type }
             : repr_options)
@@ -3252,12 +3254,14 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
         [
           ("target_pointer_size", target_pointer_size);
           ("is_little_endian", is_little_endian);
-          ("c_enum_min_size", c_enum_min_size);
+          ("c_enum_smallest_repr_ty", c_enum_smallest_repr_ty);
           ("primitive_alignments", primitive_alignments);
         ] ->
         let* target_pointer_size = int_of_json ctx target_pointer_size in
         let* is_little_endian = bool_of_json ctx is_little_endian in
-        let* c_enum_min_size = int_of_json ctx c_enum_min_size in
+        let* c_enum_smallest_repr_ty =
+          int_ty_of_json ctx c_enum_smallest_repr_ty
+        in
         let* primitive_alignments =
           index_map_of_json literal_type_of_json int_of_json int_of_json ctx
             primitive_alignments
@@ -3266,7 +3270,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
           ({
              target_pointer_size;
              is_little_endian;
-             c_enum_min_size;
+             c_enum_smallest_repr_ty;
              primitive_alignments;
            }
             : target_info)

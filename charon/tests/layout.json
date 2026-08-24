@@ -21,7 +21,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::GenericStruct": null,
@@ -46,7 +46,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::SimpleEnum": {
@@ -138,7 +138,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::SimpleAdt": {
@@ -270,7 +270,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::NicheAdt": {
@@ -337,7 +337,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::IsAZST": {
@@ -358,7 +358,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::GenericWithKnownLayout": {
@@ -382,7 +382,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::Reordered": {
@@ -407,7 +407,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::NotReordered": {
@@ -432,7 +432,7 @@
       "repr_algo": "C",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::Packed": {
@@ -459,7 +459,7 @@
         "Pack": 1
       },
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::UninhabitedVariant": {
@@ -483,7 +483,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::UninhabitedVariant2": {
@@ -551,7 +551,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::UninhabitedVariantWithFields": {
@@ -618,7 +618,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::Uninhabited": {
@@ -641,7 +641,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::DiscriminantInNicheOfField": {
@@ -708,7 +708,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::MaybeUninitInt": {
@@ -732,7 +732,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::PackIntsUnion": {
@@ -756,7 +756,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::NonZeroNiche": {
@@ -857,7 +857,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::ArbitraryDiscriminants": {
@@ -987,7 +987,9 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": true
+      "explicit_discr_type": {
+        "Int": "I32"
+      }
     }
   },
   "test_crate::MyOrder": {
@@ -1113,7 +1115,9 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": true
+      "explicit_discr_type": {
+        "Int": "I8"
+      }
     }
   },
   "test_crate::WithNicheAndUninhabited": {
@@ -1187,7 +1191,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::GenericUnsized": null,
@@ -1255,7 +1259,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::MaxBitsDiscr": {
@@ -1347,7 +1351,9 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": true
+      "explicit_discr_type": {
+        "UInt": "U128"
+      }
     }
   },
   "test_crate::SingleVariantButNonZero": {
@@ -1371,7 +1377,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::NonAdtAlias": null,
@@ -1396,7 +1402,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::Usize": {
@@ -1411,7 +1417,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::Str": {
@@ -1426,7 +1432,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::Ref": {
@@ -1441,7 +1447,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   },
   "test_crate::HasInvalidDiscr": {
@@ -1569,7 +1575,7 @@
       "repr_algo": "Rust",
       "align_modif": null,
       "transparent": false,
-      "explicit_discr_type": false
+      "explicit_discr_type": null
     }
   }
 }

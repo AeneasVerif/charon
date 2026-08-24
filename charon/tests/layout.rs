@@ -180,6 +180,10 @@ fn type_layout() -> anyhow::Result<()> {
     // Check whether discriminator/tagger roundtrips are correct: use each variant's tagger
     // to answer the discriminator's read queries, and verify we get back the same variant.
     let the_target = crate_data.target_information.keys().next().unwrap().clone();
+    assert_eq!(
+        crate_data.target_information[&the_target].c_enum_smallest_repr_ty,
+        IntTy::I32,
+    );
     for tdecl in crate_data.type_decls.iter() {
         if let Some(layout) = tdecl.layout.get(&the_target)
             && let Some(discriminator) = &layout.discriminator

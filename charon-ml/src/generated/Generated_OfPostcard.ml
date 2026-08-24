@@ -2747,7 +2747,9 @@ and repr_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        option_of_postcard alignment_modifier_of_postcard ctx st
      in
      let* transparent = bool_of_postcard ctx st in
-     let* explicit_discr_type = bool_of_postcard ctx st in
+     let* explicit_discr_type =
+       option_of_postcard literal_type_of_postcard ctx st
+     in
      Ok
        ({ repr_algo; align_modif; transparent; explicit_discr_type }
          : repr_options))
@@ -2775,7 +2777,7 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* target_pointer_size = u64_of_postcard ctx st in
      let* is_little_endian = bool_of_postcard ctx st in
-     let* c_enum_min_size = u64_of_postcard ctx st in
+     let* c_enum_smallest_repr_ty = int_ty_of_postcard ctx st in
      let* primitive_alignments =
        index_map_of_postcard literal_type_of_postcard u64_of_postcard
          int_of_postcard ctx st
@@ -2784,7 +2786,7 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        ({
           target_pointer_size;
           is_little_endian;
-          c_enum_min_size;
+          c_enum_smallest_repr_ty;
           primitive_alignments;
         }
          : target_info))

@@ -1343,13 +1343,13 @@ and repr_algorithm =
     NOTE: This does not include less common/unstable representations such as
     [#[repr(simd)]] or the compiler internal [#[repr(linear)]]. Similarly, enum
     discriminant representations are encoded in [[Variant::discriminant]] and
-    [[Discriminator]] instead. This only stores whether the discriminant type
-    was derived from an explicit annotation. *)
+    [[Discriminator]] instead. *)
 and repr_options = {
   repr_algo : repr_algorithm;
   align_modif : alignment_modifier option;
   transparent : bool;
-  explicit_discr_type : bool;
+  explicit_discr_type : literal_type option;
+      (** The type supplied to [repr(..)], if any. *)
 }
 
 (** A type declaration.
