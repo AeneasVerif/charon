@@ -114,14 +114,11 @@ pub enum ConstantExprKind {
     /// A pointer with no provenance (e.g. 0 for the null pointer)
     ///
     /// We eliminate this case in a micro-pass.
-    #[drive(skip)]
     PtrNoProvenance(#[serde(with = "scalar_value_ser_de")] u128),
     /// Raw memory value obtained from constant evaluation. Used when a more structured
     /// representation isn't possible (e.g. for unions) or just isn't implemented yet.
-    #[drive(skip)]
     RawMemory(Vec<Byte>),
     /// A constant expression that Charon still doesn't handle, along with the reason why.
-    #[drive(skip)]
     Opaque(String),
 }
 
@@ -152,13 +149,9 @@ pub enum ConstantExprKind {
 pub enum Literal {
     Scalar(ScalarValue),
     Float(FloatValue),
-    #[drive(skip)]
     Bool(bool),
-    #[drive(skip)]
     Char(char),
-    #[drive(skip)]
     ByteStr(Vec<u8>),
-    #[drive(skip)]
     Str(String),
 }
 
@@ -182,7 +175,6 @@ pub enum Literal {
     DriveMut,
     DriveTwo,
 )]
-#[drive(skip)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Scalar"))]
 pub enum ScalarValue {
     Unsigned(UIntTy, #[serde(with = "scalar_value_ser_de")] u128),
@@ -208,7 +200,6 @@ pub enum ScalarValue {
 )]
 pub struct FloatValue {
     #[cfg_attr(feature = "charon_on_charon", charon::rename("float_value"))]
-    #[drive(skip)]
     pub value: String,
     #[cfg_attr(feature = "charon_on_charon", charon::rename("float_ty"))]
     pub ty: FloatTy,

@@ -31,7 +31,6 @@ use crate::{ast::*, impl_from_enum};
 )]
 #[serde(transparent)]
 #[cfg_attr(feature = "charon_on_charon", charon::transparent)]
-#[drive(skip)]
 pub struct DeBruijnId {
     pub index: usize,
 }
@@ -149,10 +148,8 @@ pub struct TypeParam {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: TypeVarId,
     /// Variable name
-    #[drive(skip)]
     pub name: String,
     /// Variance of this parameter.
-    #[drive(skip)]
     pub variance: Variance,
 }
 
@@ -175,15 +172,12 @@ pub struct RegionParam {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: RegionId,
     /// Region name
-    #[drive(skip)]
     pub name: Option<String>,
     /// Variance of this parameter.
-    #[drive(skip)]
     pub variance: Variance,
     /// Whether this lifetime is (recursively) used in a `&'a mut T` type. Only `true` if this
     /// lifetime parameter belongs to an ADT. This is a global analysis that looks even into opaque
     /// items. When unsure, err on the side of assuming mutability.
-    #[drive(skip)]
     pub mutability: LifetimeMutability,
 }
 
@@ -221,7 +215,6 @@ pub struct ConstGenericParam {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: ConstGenericVarId,
     /// Const generic name
-    #[drive(skip)]
     pub name: String,
     /// Type of the const generic
     pub ty: Ty,
@@ -236,7 +229,6 @@ pub struct TraitParam {
     // TODO: does not need to be an option.
     pub span: Option<Span>,
     /// Where the predicate was written, relative to the item that requires it.
-    #[drive(skip)]
     pub origin: PredicateOrigin,
     /// The trait that is implemented.
     #[cfg_attr(feature = "charon_on_charon", charon::rename("trait"))]

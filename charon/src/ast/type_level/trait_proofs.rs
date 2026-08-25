@@ -138,7 +138,6 @@ pub enum TraitRefKind {
     /// `BuiltinOrAuto { builtin_data: RemovedAdtClause, .. }`. See
     /// [`BuiltinImplData::RemovedAdtClause`].
     BuiltinOrAuto {
-        #[drive(skip)]
         builtin_data: BuiltinImplData,
         /// Exactly like the same field on `TraitImpl`: the `TraitRef`s required to satisfy the
         /// implied predicates on the trait declaration. E.g. since `FnMut: FnOnce`, a built-in `T:
@@ -153,7 +152,6 @@ pub enum TraitRefKind {
 
     /// For error reporting.
     #[cfg_attr(feature = "charon_on_charon", charon::rename("UnknownTrait"))]
-    #[drive(skip)]
     Unknown(String),
 }
 

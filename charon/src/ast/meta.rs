@@ -62,12 +62,10 @@ pub struct ItemMeta {
     pub name: Name,
     pub span: Span,
     /// The source code that corresponds to this item.
-    #[drive(skip)]
     pub source_text: Option<String>,
     /// Attributes and visibility.
     pub attr_info: AttrInfo,
     /// `true` if the type decl is a local type decl, `false` if it comes from an external crate.
-    #[drive(skip)]
     pub is_local: bool,
     /// Whether this item is considered opaque. For function and globals, this means we don't
     /// translate the body (the code); for ADTs, this means we don't translate the fields/variants.
@@ -76,13 +74,10 @@ pub struct ItemMeta {
     ///
     /// This can happen either if the item was annotated with `#[charon::opaque]` or if it was
     /// declared opaque via a command-line argument.
-    #[drive(skip)]
     pub opacity: ItemOpacity,
     /// If the item is a rustc lang item, record which one it is.
-    #[drive(skip)]
     pub lang_item: Option<LangItem>,
     /// If the item is a rustc diagnostic item, record its internal identifier.
-    #[drive(skip)]
     pub diagnostic_item: Option<String>,
 }
 

@@ -23,7 +23,7 @@ use std::vec::Vec;
 )]
 pub enum Rvalue {
     /// Lifts an operand as an rvalue.
-    Use(Operand, #[drive(skip)] WithRetag),
+    Use(Operand, WithRetag),
     /// Takes a reference to the given place.
     /// The `Operand` refers to the init value of the metadata, it is `()` if no metadata
     #[cfg_attr(feature = "charon_on_charon", charon::rename("RvRef"))]
@@ -165,15 +165,10 @@ pub enum BinOp {
     Ne,
     Ge,
     Gt,
-    #[drive(skip)]
     Add(OverflowMode),
-    #[drive(skip)]
     Sub(OverflowMode),
-    #[drive(skip)]
     Mul(OverflowMode),
-    #[drive(skip)]
     Div(OverflowMode),
-    #[drive(skip)]
     Rem(OverflowMode),
     /// Returns `(result, did_overflow)`, where `result` is the result of the operation with
     /// wrapping semantics, and `did_overflow` is a boolean that indicates whether the operation
@@ -184,10 +179,8 @@ pub enum BinOp {
     /// Like `AddChecked`.
     MulChecked,
     /// Fails if the shift is bigger than the bit-size of the type.
-    #[drive(skip)]
     Shl(OverflowMode),
     /// Fails if the shift is bigger than the bit-size of the type.
-    #[drive(skip)]
     Shr(OverflowMode),
     /// `BinOp(Offset, ptr, n)` for `ptr` a pointer to type `T` offsets `ptr` by `n * size_of::<T>()`.
     Offset,
@@ -213,7 +206,6 @@ pub enum BinOp {
 pub enum UnOp {
     Not,
     /// This can overflow, for `-i::MIN`.
-    #[drive(skip)]
     #[serde_state(stateless)]
     Neg(OverflowMode),
     /// Casts are rvalues in MIR, but we treat them as unops.

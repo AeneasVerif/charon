@@ -41,7 +41,6 @@ pub struct Statement {
     pub kind: StatementKind,
     /// Comments that precede this statement.
     // This is filled in a late pass after all the control-flow manipulation.
-    #[drive(skip)]
     pub comments_before: Vec<String>,
 }
 
@@ -150,7 +149,6 @@ pub enum TerminatorKind {
     /// that should only happen if the place has not been moved out of. See the docs of `DropKind`
     /// for more details; to get precise drops use `--precise-drops`.
     Drop {
-        #[drive(skip)]
         kind: DropKind,
         place: Place,
         /// Reference to the `drop_glue` code to call on drop.
@@ -188,7 +186,6 @@ pub struct Terminator {
     pub kind: TerminatorKind,
     /// Comments that precede this terminator.
     // This is filled in a late pass after all the control-flow manipulation.
-    #[drive(skip)]
     pub comments_before: Vec<String>,
 }
 

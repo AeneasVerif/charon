@@ -39,13 +39,10 @@ pub struct FunDecl {
 )]
 pub struct FunSig {
     /// Is the function unsafe or not
-    #[drive(skip)]
     pub is_unsafe: bool,
     /// The calling convention of this function.
-    #[drive(skip)]
     pub abi: Abi,
     /// Whether this is a C-variadic function (its last parameter is `...`).
-    #[drive(skip)]
     pub is_variadic: bool,
     pub inputs: Vec<Ty>,
     pub output: Ty,
@@ -73,7 +70,7 @@ pub enum Abi {
     Rust,
     C,
     /// Rust's spelling for the ABI, e.g. "C-unwind" or "system".
-    Other(#[drive(skip)] ustr::Ustr),
+    Other(ustr::Ustr),
 }
 
 /// Where a given function came from.
@@ -103,7 +100,6 @@ pub enum FunSource {
         item_id: TraitMethodId,
         /// True if the trait decl had a default implementation for this method and this item is a
         /// copy of the default item.
-        #[drive(skip)]
         reuses_default: bool,
     },
     /// Wraps a concrete implementation of a method into a function that takes `dyn Trait` as its

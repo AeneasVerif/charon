@@ -19,7 +19,6 @@ use serde_state::SerializeState;
     PartialOrd,
     Ord,
 )]
-#[drive(skip)]
 #[serde_state(stateless)]
 pub struct TraitItemName(pub ustr::Ustr);
 

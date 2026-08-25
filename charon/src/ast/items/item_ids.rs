@@ -285,7 +285,6 @@ pub enum BuiltinFunId {
 )]
 pub struct BuiltinIndexOp {
     /// Whether this is a slice or array.
-    #[drive(skip)]
     pub is_array: bool,
     /// Whether we're indexing mutably or not. Determines the type ofreference of the input and
     /// output.
@@ -293,7 +292,6 @@ pub struct BuiltinIndexOp {
     /// Whether we're indexing a single element or a subrange. If `true`, the function takes
     /// two indices and the output is a slice; otherwise, the function take one index and the
     /// output is a reference to a single element.
-    #[drive(skip)]
     pub is_range: bool,
 }
 

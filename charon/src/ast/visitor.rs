@@ -14,6 +14,7 @@ use std::mem;
 use std::path::PathBuf;
 use std::{any::Any, hash::Hash};
 
+use crate::ast::from_rustc::{AttributeKind, LangItem};
 use crate::ast::*;
 use crate::ids::{Idx, IndexVec};
 use derive_generic_visitor::*;
@@ -42,7 +43,13 @@ use derive_generic_visitor::*;
     visitor(drive_mut(&mut VisitAstMut)),
     visitor(drive_two(&two ZipAst)),
     // Types that we ignore.
-    skip((), String, PathBuf, bool),
+    skip(
+        (), String, PathBuf, bool, char, i128, u8, u64, u128, usize, ustr::Ustr,
+        crate::options::CliOpts,
+        Abi, AttributeKind, BuiltinImplData, Byte, DeclarationGroup, Discriminator, DropKind, Error,
+        FileName, GlobalKind, ItemOpacity, LangItem, LifetimeMutability, OverflowMode,
+        PredicateOrigin, ReprOptions, TargetInfo, Variance, WithRetag,
+    ),
     // Types that we unconditionally explore.
     drive(
         Assert, AttrInfo, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
@@ -179,7 +186,8 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
         AbortKind, BinOp, BorrowKind, BuiltinAssertKind, ConstantExpr, FieldId,
         TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId,
-        TraitRef, LiteralTy, Literal, Region, RegionId, (), String, PathBuf, bool,
+        TraitRef, LiteralTy, Literal, Region, RegionId, (), String, PathBuf, bool, usize,
+        DropKind, Error, Variance, WithRetag,
     ),
     // Types that we unconditionally explore.
     drive(

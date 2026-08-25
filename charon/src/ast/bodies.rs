@@ -51,14 +51,12 @@ pub enum Body {
         SeqHashMap<TargetTriple, FunDeclRef>,
     ),
     /// Function declared in an `extern { ... }` block. The string is the foreign symbol name.
-    Extern(#[drive(skip)] String),
+    Extern(String),
     /// Rust intrinsic function.
     Intrinsic {
         /// The intrinsic name.
-        #[drive(skip)]
         name: String,
         /// The argument names, None if not available.
-        #[drive(skip)]
         arg_names: Vec<Option<String>>,
     },
     /// A body that the user chose not to translate, based on opacity settings like
@@ -69,7 +67,6 @@ pub enum Body {
     /// `.rmeta` file shipped with a rust toolchain.
     Missing,
     /// We encountered an error while translating this body.
-    #[drive(skip)]
     #[serde_state(stateless)]
     Error(Error),
 }
@@ -91,7 +88,6 @@ generate_index_type!(LocalId, "");
 )]
 pub struct Locals {
     /// The number of local variables used for the input arguments.
-    #[drive(skip)]
     pub arg_count: usize,
     /// The local variables.
     /// We always have, in the following order:
@@ -110,7 +106,6 @@ pub struct Local {
     pub index: LocalId,
     /// Variable name - may be `None` if the variable was introduced by Rust
     /// through desugaring.
-    #[drive(skip)]
     pub name: Option<String>,
     /// Span of the variable declaration.
     pub span: Span,
@@ -130,7 +125,6 @@ pub struct GExprBody<T> {
     pub span: Span,
     /// The number of regions existentially bound in this body. We introduce fresh such regions
     /// during translation instead of the erased regions that rustc gives us.
-    #[drive(skip)]
     pub bound_body_regions: usize,
     /// The local variables.
     pub locals: Locals,
@@ -139,7 +133,6 @@ pub struct GExprBody<T> {
     /// For each line inside the body, we record any whole-line `//` comments found before it. They
     /// are added to statements in the late `recover_body_comments` pass.
     #[cfg_attr(feature = "charon_on_charon", charon::opaque)]
-    #[drive(skip)]
     pub comments: Vec<(usize, Vec<String>)>,
 }
 
@@ -178,7 +171,6 @@ pub enum BorrowckStatement {
     SetType {
         place: Place,
         ty: Ty,
-        #[drive(skip)]
         #[serde_state(stateless)]
         variance: Variance,
     },
@@ -252,7 +244,6 @@ pub enum DropKind {
 pub struct Assert {
     pub cond: Operand,
     /// The value that the operand should evaluate to for the assert to succeed.
-    #[drive(skip)]
     pub expected: bool,
     /// The kind of check performed by this assert. This is only used for error reporting, as the check
     /// is actually performed by the instructions preceding the assert.

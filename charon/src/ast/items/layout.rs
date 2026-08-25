@@ -18,19 +18,15 @@ pub type ByteCount = u64;
 )]
 pub struct Layout {
     /// The size of the type in bytes.
-    #[drive(skip)]
     pub size: Option<ByteCount>,
     /// The alignment, in bytes.
-    #[drive(skip)]
     pub align: Option<ByteCount>,
     /// Decision tree that determines the active variant by reading memory. Only `Some` for enums.
-    #[drive(skip)]
     #[serde_state(stateless)]
     pub discriminator: Option<Discriminator>,
     /// Whether the type is uninhabited, i.e. has any valid value at all.
     /// Note that uninhabited types can have arbitrary layouts: `(u32, !)` has space for the `u32`
     /// and `enum E2 { A, B(!), C(i32, !) }` may have space for a discriminant.
-    #[drive(skip)]
     pub uninhabited: bool,
     /// Map from `VariantId` to the corresponding field layouts. Some variants don't have a
     /// meaningful layout due to being uninhabited (though an uninhabited variant may have a
@@ -38,7 +34,6 @@ pub struct Layout {
     #[serde_state(stateless)]
     pub variant_layouts: IndexVec<VariantId, Option<VariantLayout>>,
     /// The representation options of this type declaration as annotated by the user.
-    #[drive(skip)]
     #[serde_state(stateless)]
     pub repr: ReprOptions,
 }
@@ -51,15 +46,12 @@ pub struct Layout {
 )]
 pub struct VariantLayout {
     /// The offset of each field.
-    #[drive(skip)]
     pub field_offsets: IndexVec<FieldId, ByteCount>,
     /// Whether the variant is uninhabited, i.e. has any valid possible value.
     /// Note that uninhabited types can have arbitrary layouts.
-    #[drive(skip)]
     pub uninhabited: bool,
     /// How to write the tag when constructing this variant. Each entry means: write `value` at
     /// byte `offset`. Mirrors MiniRust's `Variant::tagger`.
-    #[drive(skip)]
     pub tagger: Vec<(ByteCount, ScalarValue)>,
 }
 

@@ -35,19 +35,16 @@ pub type TargetTriple = String;
 #[serde_state(state_implements = HashConsSerializerState)]
 pub struct TranslatedCrate {
     /// The name of the crate.
-    #[drive(skip)]
     pub crate_name: String,
 
     /// The options used when calling Charon. Can be used to check that Charon was called with the
     /// options that a given consumer requires.
-    #[drive(skip)]
     #[serde_state(stateless)]
     pub options: crate::options::CliOpts,
 
     /// Information about each target platform for which the crate was translated. When translating
     /// a crate normally this will have a single entry; when using `--targets` this will have one
     /// entry per chosen target.
-    #[drive(skip)]
     #[serde(with = "SeqHashMapToArray::<TargetTriple, TargetInfo>")]
     pub target_information: SeqHashMap<TargetTriple, TargetInfo>,
 
@@ -97,7 +94,6 @@ pub struct TranslatedCrate {
     /// them around to be able to tell method implementations apart.
     ///
     /// `Some` after translation unless `--no-reorder-decls` is passed.
-    #[drive(skip)]
     #[serde_state(stateless)]
     pub ordered_decls: Option<Vec<DeclarationGroup>>,
 }
