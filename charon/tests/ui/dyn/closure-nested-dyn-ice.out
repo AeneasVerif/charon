@@ -5,7 +5,7 @@ thread 'rustc' panicked at /rustc-dev/8fa1c96cfd489e4c27654c144ae871ce2c4db6c6/c
 Box<dyn Any>
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Hax panicked when translating `Closure(test_crate::closure::{closure#0}, [i8, Binder { value: extern "RustCall" fn((&'^0.Named(test_crate::closure::'_) dyn [Binder { value: Trait(std::ops::Fn<(std::boxed::Box<dyn std::marker::Send>,)>), bound_vars: [] }, Binder { value: Projection(ExistentialProjection { def_id: core::ops::function::FnOnce::Output, args: [(std::boxed::Box<dyn [Binder { value: AutoTrait(core::marker::Send), bound_vars: [] }] + '{erased}, std::alloc::Global>,)], term: Term::Ty(()), .. }), bound_vars: [] }] + '^0.Named(test_crate::closure::'_),)), bound_vars: [Region(BrNamed(test_crate::closure::'_))] }, ()])`.
- --> tests/ui/regressions/closure-nested-dyn-ice.rs:3:13
+ --> tests/ui/dyn/closure-nested-dyn-ice.rs:3:13
   |
 3 |     let _ = |_: &dyn Fn(Box<dyn Send + 'static>)| ();
   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
