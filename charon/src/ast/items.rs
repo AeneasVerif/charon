@@ -1,5 +1,5 @@
 use crate::ast::*;
-use derive_generic_visitor::{ControlFlow, Drive, DriveMut, DriveTwo};
+use derive_generic_visitor::{ControlFlow, Drive, DriveMut, DriveTwo, VisitTwo, Visitor};
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 
 pub mod fun_decl;
@@ -140,6 +140,24 @@ impl<'ctx> ItemRef<'ctx> {
             ItemRef::TraitDecl(d) => visitor.visit(d),
             ItemRef::TraitImpl(d) => visitor.visit(d),
         }
+    }
+
+    /// Visit two items in lockstep.
+    pub fn drive_two<V: ZipAst>(&self, other: &Self, visitor: &mut V) -> ControlFlow<V::Break> {
+        /// Adapter needed because `ZipAst => Any => 'static` so `&'ctx X` can't be `ZipAst`.
+        struct ItemRefZipVisitor<'a, V>(&'a mut V);
+
+        impl<V: Visitor> Visitor for ItemRefZipVisitor<'_, V> {
+            type Break = V::Break;
+        }
+
+        impl<'s, 'ctx, T: AstVisitable, V: ZipAst> VisitTwo<'s, &'ctx T> for ItemRefZipVisitor<'_, V> {
+            fn visit(&mut self, left: &'s &'ctx T, right: &'s &'ctx T) -> ControlFlow<Self::Break> {
+                self.0.visit(*left, *right)
+            }
+        }
+
+        DriveTwo::drive_two_inner(self, other, &mut ItemRefZipVisitor(visitor))
     }
 
     /// Visit all occurrences of that type inside `self`, in pre-order traversal.

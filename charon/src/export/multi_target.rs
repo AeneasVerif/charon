@@ -221,14 +221,192 @@ enum MergeDecision {
     Facade,
 }
 
-struct ItemComparer;
+/// Compares items modulo the target-specific differences we want to ignore.
+struct ItemComparer<'a> {
+    remap: &'a HashMap<ItemId, ItemId>,
+}
 
-impl Visitor for ItemComparer {
+impl Visitor for ItemComparer<'_> {
     type Break = ();
 }
 
+impl<'a, T: AstVisitable> derive_generic_visitor::VisitTwo<'a, T> for ItemComparer<'_> {
+    fn visit(&mut self, left: &'a T, right: &'a T) -> ControlFlow<Self::Break> {
+        ZipAst::visit(self, left, right)
+    }
+}
+
+impl ItemComparer<'_> {
+    fn compare_items(&mut self, left: ItemRef<'_>, right: ItemRef<'_>) -> ControlFlow<()> {
+        left.drive_two(&right, self)
+    }
+
+    fn compare_fun_interface(&mut self, left: &FunDecl, right: &FunDecl) -> ControlFlow<()> {
+        self.visit(&left.item_meta.name, &right.item_meta.name)?;
+        self.visit(&left.generics, &right.generics)?;
+        self.visit(&left.signature, &right.signature)
+    }
+
+    fn compare_ids<Id: Copy + Into<ItemId>>(&self, left: &Id, right: &Id) -> ControlFlow<()> {
+        let remap = |id: &Id| {
+            let id = (*id).into();
+            self.remap.get(&id).copied().unwrap_or(id)
+        };
+        if remap(left) == remap(right) {
+            ControlFlow::Continue(())
+        } else {
+            ControlFlow::Break(())
+        }
+    }
+
+    fn compare_iters<'a, T: AstVisitable + 'a>(
+        &mut self,
+        left: impl Iterator<Item = &'a T>,
+        right: impl Iterator<Item = &'a T>,
+    ) -> ControlFlow<()> {
+        derive_generic_visitor::drive_iter_two(left, right, self)
+    }
+}
+
 // Use lockstep visitation for "equality modulo" comparison.
-impl ZipAst for ItemComparer {}
+impl ZipAst for ItemComparer<'_> {
+    fn visit_type_decl_id(
+        &mut self,
+        left: &TypeDeclId,
+        right: &TypeDeclId,
+    ) -> ControlFlow<Self::Break> {
+        self.compare_ids(left, right)
+    }
+
+    fn visit_fun_decl_id(
+        &mut self,
+        left: &FunDeclId,
+        right: &FunDeclId,
+    ) -> ControlFlow<Self::Break> {
+        self.compare_ids(left, right)
+    }
+
+    fn visit_global_decl_id(
+        &mut self,
+        left: &GlobalDeclId,
+        right: &GlobalDeclId,
+    ) -> ControlFlow<Self::Break> {
+        self.compare_ids(left, right)
+    }
+
+    fn visit_trait_decl_id(
+        &mut self,
+        left: &TraitDeclId,
+        right: &TraitDeclId,
+    ) -> ControlFlow<Self::Break> {
+        self.compare_ids(left, right)
+    }
+
+    fn visit_trait_impl_id(
+        &mut self,
+        left: &TraitImplId,
+        right: &TraitImplId,
+    ) -> ControlFlow<Self::Break> {
+        self.compare_ids(left, right)
+    }
+
+    fn visit_name(&mut self, left: &Name, right: &Name) -> ControlFlow<Self::Break> {
+        let without_target = |elem: &&PathElem| !matches!(elem, PathElem::Target(_));
+        self.compare_iters(
+            left.name.iter().filter(without_target),
+            right.name.iter().filter(without_target),
+        )
+    }
+
+    fn visit_span(&mut self, _left: &Span, _right: &Span) -> ControlFlow<Self::Break> {
+        ControlFlow::Continue(())
+    }
+
+    fn visit_attr_info(&mut self, left: &AttrInfo, right: &AttrInfo) -> ControlFlow<Self::Break> {
+        let AttrInfo {
+            attributes: left_attributes,
+            inline: left_inline,
+            rename: left_rename,
+            public: left_public,
+        } = left;
+        let AttrInfo {
+            attributes: right_attributes,
+            inline: right_inline,
+            rename: right_rename,
+            public: right_public,
+        } = right;
+
+        let is_stable = |attr: &&Attribute| !matches!(attr, Attribute::Unknown(attr) if attr.path.starts_with("rustc_"));
+        self.compare_iters(
+            left_attributes.iter().filter(is_stable),
+            right_attributes.iter().filter(is_stable),
+        )?;
+        self.visit(left_inline, right_inline)?;
+        self.visit(left_rename, right_rename)?;
+        self.visit(left_public, right_public)
+    }
+
+    fn visit_item_meta(&mut self, left: &ItemMeta, right: &ItemMeta) -> ControlFlow<Self::Break> {
+        let ItemMeta {
+            name: left_name,
+            span: left_span,
+            // Source text isn't relevant to cross-target identity.
+            source_text: _,
+            attr_info: left_attr_info,
+            is_local: left_is_local,
+            opacity: left_opacity,
+            lang_item: left_lang_item,
+            diagnostic_item: left_diagnostic_item,
+        } = left;
+        let ItemMeta {
+            name: right_name,
+            span: right_span,
+            source_text: _,
+            attr_info: right_attr_info,
+            is_local: right_is_local,
+            opacity: right_opacity,
+            lang_item: right_lang_item,
+            diagnostic_item: right_diagnostic_item,
+        } = right;
+
+        self.visit(left_name, right_name)?;
+        self.visit(left_span, right_span)?;
+        self.visit(left_attr_info, right_attr_info)?;
+        self.visit(left_is_local, right_is_local)?;
+        self.visit(left_opacity, right_opacity)?;
+        self.visit(left_lang_item, right_lang_item)?;
+        self.visit(left_diagnostic_item, right_diagnostic_item)
+    }
+
+    fn visit_type_decl(&mut self, left: &TypeDecl, right: &TypeDecl) -> ControlFlow<Self::Break> {
+        let TypeDecl {
+            def_id: left_def_id,
+            item_meta: left_item_meta,
+            generics: left_generics,
+            src: left_src,
+            kind: left_kind,
+            // Layouts are allowed to differ per target.
+            layout: _,
+            ptr_metadata: left_ptr_metadata,
+        } = left;
+        let TypeDecl {
+            def_id: right_def_id,
+            item_meta: right_item_meta,
+            generics: right_generics,
+            src: right_src,
+            kind: right_kind,
+            layout: _,
+            ptr_metadata: right_ptr_metadata,
+        } = right;
+
+        self.visit(left_def_id, right_def_id)?;
+        self.visit(left_item_meta, right_item_meta)?;
+        self.visit(left_generics, right_generics)?;
+        self.visit(left_src, right_src)?;
+        self.visit(left_kind, right_kind)?;
+        self.visit(left_ptr_metadata, right_ptr_metadata)
+    }
+}
 
 impl TargetGroup {
     /// Deterministically chosen representative id.
@@ -247,15 +425,10 @@ impl TargetGroup {
         krate: &TranslatedCrate,
         remap: &HashMap<ItemId, ItemId>,
     ) -> MergeDecision {
-        let canonical_id = self.canonical_id();
-        let items: Vec<Option<ItemByVal>> = self
+        let items: Vec<Option<ItemRef<'_>>> = self
             .ids
             .values()
-            .map(|&id| {
-                krate
-                    .get_item(id)
-                    .map(|item| normalize_item(item.to_owned(), canonical_id, remap))
-            })
+            .map(|&id| krate.get_item(id))
             .collect_vec();
 
         // Items that don't exist in the crate can't be compared; if they're all missing we can
@@ -268,20 +441,19 @@ impl TargetGroup {
             None => return MergeDecision::Skip,
         };
 
-        let mut comparer = ItemComparer;
-        let mut is_eq = |left, right| ZipAst::visit(&mut comparer, left, right).is_continue();
+        let mut comparer = ItemComparer { remap };
         if items
             .iter()
             .tuple_windows()
-            .all(|(left, right)| is_eq(left, right))
+            .all(|(&left, &right)| comparer.compare_items(left, right).is_continue())
         {
             MergeDecision::Dedup
         } else if self.is_function_group()
             && items
                 .iter()
                 .map(|item| item.as_fun().unwrap())
-                .map(|d| (&d.item_meta.name, &d.generics, &d.signature))
-                .all_equal()
+                .tuple_windows()
+                .all(|(left, right)| comparer.compare_fun_interface(left, right).is_continue())
         {
             MergeDecision::Facade
         } else {
@@ -713,56 +885,6 @@ fn remove_unmentioned_methods(krate: &mut TranslatedCrate) {
 // =============================================================================================
 // Utilities
 // =============================================================================================
-
-/// Normalize an item for cross-target comparison.
-fn normalize_item(
-    mut item: ItemByVal,
-    canonical_id: ItemId,
-    remap: &HashMap<ItemId, ItemId>,
-) -> ItemByVal {
-    item.as_mut().drive_mut(&mut IdRefMapperVisitor::new(remap));
-    item.as_mut().set_id(canonical_id);
-    item.as_mut().dyn_visit_mut(|name: &mut Name| {
-        name.name
-            .retain(|elem| !matches!(elem, PathElem::Target(_)))
-    });
-
-    strip_unstable_attributes(&mut item);
-    // Ignore source text and spans: if the items are otherwise identical, it's ok to just pick one
-    // of the identical instances wrt spans/source.
-    item.as_mut()
-        .dyn_visit_mut(|span: &mut Span| *span = Span::dummy());
-    item.as_mut().item_meta().source_text = None;
-    if let ItemByVal::Type(ty_decl) = &mut item {
-        // Layouts are allowed to differ per-target.
-        ty_decl.layout.clear();
-    }
-    item
-}
-
-/// Strip attributes such as `rustc_diagnostic_item` whose arguments can vary across targets in a
-/// way that doesn't matter to us.
-fn strip_unstable_attributes(item: &mut ItemByVal) {
-    fn strip_in_vec(attr_info: &mut AttrInfo) {
-        attr_info.attributes.retain(
-            |attr| !matches!(attr, Attribute::Unknown(attr) if attr.path.starts_with("rustc_")),
-        );
-    }
-
-    strip_in_vec(&mut item.as_mut().item_meta().attr_info);
-
-    if let ItemByVal::TraitDecl(d) = item {
-        for method in &mut d.methods {
-            strip_in_vec(&mut method.skip_binder.item_meta.attr_info);
-        }
-        for cst in &mut d.consts {
-            strip_in_vec(&mut cst.attr_info);
-        }
-        for ty in &mut d.types {
-            strip_in_vec(&mut ty.skip_binder.attr_info);
-        }
-    }
-}
 
 /// Visitor that remaps references to the given items.
 #[derive(Visitor)]
