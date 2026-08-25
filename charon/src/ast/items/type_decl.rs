@@ -71,7 +71,6 @@ pub enum TypeDeclKind {
     /// Used if an error happened during the extraction, and we don't panic
     /// on error.
     #[cfg_attr(feature = "charon_on_charon", charon::rename("TDeclError"))]
-    #[drive(skip)]
     Error(String),
 }
 
@@ -84,7 +83,6 @@ pub struct Variant {
     pub span: Span,
     pub attr_info: AttrInfo,
     #[cfg_attr(feature = "charon_on_charon", charon::rename("variant_name"))]
-    #[drive(skip)]
     pub name: String,
     #[serde_state(stateful)]
     pub fields: IndexVec<FieldId, Field>,
@@ -102,7 +100,6 @@ pub struct Field {
     pub span: Span,
     pub attr_info: AttrInfo,
     #[cfg_attr(feature = "charon_on_charon", charon::rename("field_name"))]
-    #[drive(skip)]
     pub name: String,
     /// Whether this field is positional, as in a tuple struct, tuple variant, or closure. If so,
     /// its name is based on its position, such as `_0`; otherwise, it is a user-provided name.

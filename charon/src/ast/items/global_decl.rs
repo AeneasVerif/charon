@@ -17,7 +17,6 @@ pub struct GlobalDecl {
     /// vtable instances.
     pub src: GlobalSource,
     /// The kind of global (static or const).
-    #[drive(skip)]
     pub global_kind: GlobalKind,
     /// The value of this constant/static. By default this is a [`ConstantExprKind::Call`] to the
     /// initializer function that computes the value (the function uses the same generic parameters
@@ -67,7 +66,6 @@ pub enum GlobalSource {
         item_id: AssocConstId,
         /// True if the trait decl had a default value for this const and this item is a copy of
         /// the default item.
-        #[drive(skip)]
         reuses_default: bool,
     },
     /// Defines the vtable for a trait impl.

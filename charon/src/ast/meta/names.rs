@@ -31,7 +31,7 @@ pub static BOX_WRITE_PATTERN: &str = "alloc::boxed::_::write"; // `_` matches an
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Pe"))]
 pub enum PathElem {
     #[serde_state(stateless)]
-    Ident(#[drive(skip)] String, Disambiguator),
+    Ident(String, Disambiguator),
     Impl(ImplElem),
     /// This item was obtained by instantiating its parent with the given args. The binder binds
     /// the parameters of the new items. If the binder binds nothing then this is a
@@ -39,7 +39,7 @@ pub enum PathElem {
     Instantiated(Box<Binder<GenericArgs>>),
     /// This item is only available on the given target. Only appears in multi-target mode.
     #[serde_state(stateless)]
-    Target(#[drive(skip)] TargetTriple),
+    Target(TargetTriple),
 }
 
 /// There are two kinds of `impl` blocks:

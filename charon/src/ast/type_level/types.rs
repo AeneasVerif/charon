@@ -118,7 +118,6 @@ pub enum TyKind {
     /// the pattern.
     Pattern(Ty, TypePattern),
     /// A type that could not be computed or was incorrect.
-    #[drive(skip)]
     Error(String),
 }
 

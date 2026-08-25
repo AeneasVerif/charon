@@ -40,7 +40,6 @@ pub struct Statement {
     pub kind: StatementKind,
     /// Comments that precede this statement.
     // This is filled in a late pass after all the control-flow manipulation.
-    #[drive(skip)]
     pub comments_before: Vec<String>,
 }
 
@@ -89,7 +88,6 @@ pub enum StatementKind {
         place: Place,
         /// Reference to the `drop_glue` code to call on drop.
         fn_ptr: FnPtr,
-        #[drive(skip)]
         kind: DropKind,
         on_unwind: Block,
     },
@@ -119,20 +117,17 @@ pub enum StatementKind {
     /// * 0: break to first outer loop (the current loop)
     /// * 1: break to second outer loop
     /// * ...
-    #[drive(skip)]
     Break(usize),
     /// Continue to outer loops.
     /// The `usize` gives the index of the outer loop to continue to:
     /// * 0: continue to first outer loop (the current loop)
     /// * 1: continue to second outer loop
     /// * ...
-    #[drive(skip)]
     Continue(usize),
     /// No-op.
     Nop,
     Switch(Switch),
     Loop(Block),
-    #[drive(skip)]
     Error(String),
 }
 

@@ -22,10 +22,8 @@ generate_index_type!(FileId);
 )]
 pub enum FileName {
     /// A remapped path (namely paths into stdlib)
-    #[drive(skip)] // drive is not implemented for `PathBuf`
     Virtual(PathBuf),
     /// A local path (a file coming from the current crate for instance)
-    #[drive(skip)] // drive is not implemented for `PathBuf`
     Local(PathBuf),
     /// A "not real" file name (macro, query, etc.)
     NotReal(String),
@@ -50,7 +48,6 @@ pub struct File {
     #[cfg_attr(feature = "charon_on_charon", charon::opaque)]
     pub id: FileId,
     /// The path to the file.
-    #[drive(skip)]
     pub name: FileName,
     /// Name of the crate this file comes from.
     pub crate_name: String,
@@ -74,7 +71,6 @@ pub struct File {
     DriveMut,
     DriveTwo,
 )]
-#[drive(skip)]
 pub struct Loc {
     /// The (1-based) line number.
     pub line: usize,

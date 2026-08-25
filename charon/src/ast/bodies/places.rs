@@ -72,7 +72,6 @@ pub enum ProjectionElem {
     #[cfg_attr(feature = "charon_on_charon", charon::rename("ProjIndex"))]
     Index {
         offset: Box<Operand>,
-        #[drive(skip)]
         from_end: bool,
     },
     /// Take a subslice of a slice or array. If `from_end` is `true` this is
@@ -81,7 +80,6 @@ pub enum ProjectionElem {
     Subslice {
         from: Box<Operand>,
         to: Box<Operand>,
-        #[drive(skip)]
         from_end: bool,
     },
 }

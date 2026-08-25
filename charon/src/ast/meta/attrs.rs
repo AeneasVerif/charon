@@ -61,7 +61,7 @@ pub enum Attribute {
     /// A doc-comment such as `/// ...`.
     DocComment(String),
     /// A built-in attribute.
-    Builtin(#[drive(skip)] from_rustc::AttributeKind),
+    Builtin(from_rustc::AttributeKind),
     /// None of the above.
     Unknown(RawAttribute),
 }
