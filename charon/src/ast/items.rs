@@ -20,16 +20,7 @@ pub use type_decl::*;
 
 /// A translated item.
 #[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    VariantIndexArity,
-    Drive,
-    DriveMut,
-    DriveTwo,
+    Debug, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut, DriveTwo,
 )]
 pub enum ItemByVal {
     Type(TypeDecl),
@@ -62,16 +53,7 @@ pub enum ItemRef<'ctx> {
 
 /// A mutable reference to a translated item.
 #[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    VariantIndexArity,
-    Drive,
-    DriveMut,
-    DriveTwo,
+    Debug, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut, DriveTwo,
 )]
 pub enum ItemRefMut<'ctx> {
     Type(&'ctx mut TypeDecl),

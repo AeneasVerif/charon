@@ -4,9 +4,7 @@ use serde_state::DeserializeState;
 use serde_state::SerializeState;
 
 /// A global variable definition (constant or static).
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct GlobalDecl {
     pub def_id: GlobalDeclId,
     /// The meta data associated with the declaration.
@@ -42,9 +40,7 @@ pub enum GlobalKind {
 }
 
 /// Where a given global came from.
-#[derive(
-    Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo, PartialEq, Eq,
-)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Global"))]
 pub enum GlobalSource {
     /// A normal global.

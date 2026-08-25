@@ -20,9 +20,7 @@ use crate::utils::serialize_map_to_array::SeqHashMapToArray;
 ///
 /// A type can only be an ADT (structure or enumeration), as type aliases are
 /// inlined in MIR.
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(state_implements = HashConsSerializerState)]
 pub struct TypeDecl {
     pub def_id: TypeDeclId,
@@ -46,8 +44,6 @@ generate_index_type!(FieldId, "Field");
 
 #[derive(
     Debug,
-    PartialEq,
-    Eq,
     Clone,
     EnumIsA,
     EnumAsGetters,
@@ -74,9 +70,7 @@ pub enum TypeDeclKind {
     Error(String),
 }
 
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(stateless)]
 pub struct Variant {
     pub id: VariantId,
@@ -92,9 +86,7 @@ pub struct Variant {
     pub discriminant: Literal,
 }
 
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(stateless)]
 pub struct Field {
     pub span: Span,
@@ -146,9 +138,7 @@ pub enum PtrMetadata {
 }
 
 /// Where a given type came from.
-#[derive(
-    Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo, PartialEq, Eq,
-)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Type"))]
 pub enum TypeSource {
     /// A normal type declaration.

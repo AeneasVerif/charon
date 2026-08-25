@@ -76,9 +76,7 @@ pub struct RawAttribute {
 }
 
 /// Information about the attributes and visibility of an item, field or variant..
-#[derive(
-    Debug, PartialEq, Eq, Default, Clone, Serialize, Deserialize, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub struct AttrInfo {
     /// Attributes (`#[...]`).
     pub attributes: Vec<Attribute>,

@@ -53,9 +53,7 @@ pub enum ItemOpacity {
 }
 
 /// Meta information about an item (function, trait decl, trait impl, type decl, global).
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(stateless)]
 pub struct ItemMeta {
     #[serde_state(stateful)]

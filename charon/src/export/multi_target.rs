@@ -221,6 +221,15 @@ enum MergeDecision {
     Facade,
 }
 
+struct ItemComparer;
+
+impl Visitor for ItemComparer {
+    type Break = ();
+}
+
+// Use lockstep visitation for "equality modulo" comparison.
+impl ZipAst for ItemComparer {}
+
 impl TargetGroup {
     /// Deterministically chosen representative id.
     fn canonical_id(&self) -> ItemId {
@@ -259,7 +268,13 @@ impl TargetGroup {
             None => return MergeDecision::Skip,
         };
 
-        if items.iter().all_equal() {
+        let mut comparer = ItemComparer;
+        let mut is_eq = |left, right| ZipAst::visit(&mut comparer, left, right).is_continue();
+        if items
+            .iter()
+            .tuple_windows()
+            .all(|(left, right)| is_eq(left, right))
+        {
             MergeDecision::Dedup
         } else if self.is_function_group()
             && items

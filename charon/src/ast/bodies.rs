@@ -23,8 +23,6 @@ pub use values::*;
 /// The body of a function.
 #[derive(
     Debug,
-    PartialEq,
-    Eq,
     Clone,
     SerializeState,
     DeserializeState,
@@ -74,18 +72,7 @@ pub enum Body {
 generate_index_type!(LocalId, "");
 
 /// The local variables of a body.
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Default,
-    Clone,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Default, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Locals {
     /// The number of local variables used for the input arguments.
     pub arg_count: usize,
@@ -98,9 +85,7 @@ pub struct Locals {
 }
 
 /// A variable
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Local {
     /// Unique index identifying the variable
     pub index: LocalId,
@@ -117,9 +102,7 @@ pub struct Local {
 /// An expression body.
 /// TODO: arg_count should be stored in GFunDecl below. But then,
 ///       the print is obfuscated and Aeneas may need some refactoring.
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("GexprBody"))]
 pub struct GExprBody<T> {
     pub span: Span,

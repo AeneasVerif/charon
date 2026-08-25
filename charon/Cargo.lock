@@ -499,9 +499,9 @@ dependencies = [
 
 [[package]]
 name = "derive_generic_visitor"
-version = "1.1.0"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "113505c87000bf21b0bce35e7b9a381c220aba032d4a99a37e4ff90bb47e0e40"
+checksum = "39b33555faa5eba9aeec762080cad4c9debd88f36e085829993a4376e4577e81"
 dependencies = [
  "derive_generic_visitor_macros",
  "itertools 0.14.0",
@@ -509,9 +509,9 @@ dependencies = [
 
 [[package]]
 name = "derive_generic_visitor_macros"
-version = "1.1.0"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31474cd9f8a0a127e855afe40e8d9c6bd99c5e6538b3f8715214ee06036954ee"
+checksum = "99c627c3a2729eea79e71c31482abb026752df6d09bce92c3b2c1e9e5b6fde9c"
 dependencies = [
  "convert_case",
  "darling",
