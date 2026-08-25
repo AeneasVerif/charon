@@ -501,7 +501,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let field_offsets = variant_layout
                 .field_offsets
                 .iter()
-                .map(|o| o.bytes())
+                .map(|o| OffsetExpr::new(o.bytes()))
                 .collect();
             Some(VariantLayout {
                 field_offsets,
@@ -516,9 +516,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         ) -> Option<VariantLayout> {
             let field_offsets = match &layout_data.fields {
                 r_abi::FieldsShape::Arbitrary { offsets, .. } => {
-                    offsets.iter().map(|o| o.bytes()).collect()
+                    offsets.iter().map(|o| OffsetExpr::new(o.bytes())).collect()
                 }
-                r_abi::FieldsShape::Union(n) => vec![0; n.get()].into(),
+                r_abi::FieldsShape::Union(n) => (0..n.get()).map(|_| OffsetExpr::new(0)).collect(),
                 r_abi::FieldsShape::Primitive => IndexVec::default(),
                 r_abi::FieldsShape::Array { .. } => panic!("Unexpected layout shape"),
             };
@@ -571,6 +571,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         } else {
             (None, None)
         };
+        let size = SizeExpr::new(size);
+        let align = SizeExpr::new(align);
 
         // Build the discriminator tree and variant layouts.
         let (discriminator, variant_layouts) = match layout.variants() {
@@ -589,6 +591,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .get(*tag_field)
                     .map(|s| r_abi::Size::bytes(*s))
                     .expect("No tag field offset for enum?");
+                let tag_offset_expr = OffsetExpr::new(tag_offset);
 
                 let tag_ty = match tag.primitive() {
                     r_abi::Primitive::Int(int_ty, signed) => {
@@ -647,7 +650,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             // happens if we encounter a discriminant that would have been the
                             // niched variant.
                             let discriminator = Discriminator::Branch {
-                                offset: tag_offset,
+                                offset: tag_offset_expr.clone(),
                                 int_ty: tag_ty,
                                 fallback: Box::new(Discriminator::Invalid),
                                 children,
@@ -659,7 +662,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 };
 
                 let discriminator = Discriminator::Branch {
-                    offset: tag_offset,
+                    offset: tag_offset_expr,
                     int_ty: tag_ty,
                     fallback: Box::new(fallback),
                     children,
@@ -726,12 +729,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     size += size_of_ty;
                     // For these types, align == size is good enough.
                     align = std::cmp::max(align, size);
-                    offset
+                    OffsetExpr::new(offset)
                 });
 
                 Ok(Layout {
-                    size: Some(size),
-                    align: Some(align),
+                    size: SizeExpr::new(size),
+                    align: SizeExpr::new(align),
                     discriminator: None,
                     uninhabited: false,
                     variant_layouts: IndexVec::from([Some(VariantLayout {

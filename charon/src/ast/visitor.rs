@@ -49,9 +49,11 @@ use derive_generic_visitor::*;
     skip_but_eq(
         (), String, PathBuf, bool, char, i128, u8, u64, u128, usize, ustr::Ustr,
         crate::options::CliOpts,
-        Abi, BuiltinImplData, Byte, DeprecatedSince, Discriminator, DropKind, Error, FileName,
+        Abi, BuiltinImplData, Byte, DeprecatedSince, DropKind, Error, FileName,
         GlobalKind, ItemOpacity, LangItem, LifetimeMutability, OptimizeAttr, OverflowMode,
-        ReprOptions, Variance, WithRetag,
+        ReprOptions, Variance,
+        std::ops::RangeInclusive<ScalarValue>,
+        WithRetag,
     ),
     // Types that are completely skipped, even by `ZipAst`.
     skip(
@@ -71,7 +73,10 @@ use derive_generic_visitor::*;
         TranslatedCrate, TypeDeclKind, TypeId, TypeParam, TypePattern, TypeVarId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets,
-        UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, Layout, VariantLayout, PtrMetadata,
+        UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, Layout, VariantLayout,
+        Discriminator,
+        SizeExpr, OffsetExpr, SizeGuarantee, OffsetGuarantee, MetadataValue,
+        PtrMetadata,
         SpanData,
         ItemByVal, VTableField, AssocItemNames,
         for<Id: AstVisitable> DeclRef<Id>, ItemId,
@@ -103,7 +108,7 @@ use derive_generic_visitor::*;
         llbc_block: llbc_ast::Block, llbc_statement: llbc_ast::Statement,
         ullbc_statement: ullbc_ast::Statement, ullbc_terminator: ullbc_ast::Terminator,
         AbortKind, AggregateKind, FnPtr,
-        ConstantExpr, Place, ProjectionElem, Rvalue, Body,
+        ConstantExpr, ExactSizeExpr, Place, ProjectionElem, Rvalue, Body,
     )
 )]
 pub trait AstVisitable: Any {

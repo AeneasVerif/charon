@@ -13,16 +13,13 @@ pub type ByteCount = u64;
 /// Does not include information about niches.
 /// If the type does not have a fully known layout (e.g. it is ?Sized)
 /// some of the layout parts are not available.
-#[derive(
-    Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Layout {
     /// The size of the type in bytes.
-    pub size: Option<ByteCount>,
+    pub size: SizeExpr,
     /// The alignment, in bytes.
-    pub align: Option<ByteCount>,
+    pub align: SizeExpr,
     /// Decision tree that determines the active variant by reading memory. Only `Some` for enums.
-    #[serde_state(stateless)]
     pub discriminator: Option<Discriminator>,
     /// Whether the type is uninhabited, i.e. has any valid value at all.
     /// Note that uninhabited types can have arbitrary layouts: `(u32, !)` has space for the `u32`
@@ -31,7 +28,6 @@ pub struct Layout {
     /// Map from `VariantId` to the corresponding field layouts. Some variants don't have a
     /// meaningful layout due to being uninhabited (though an uninhabited variant may have a
     /// layout). Structs and unions are modeled as having exactly one variant.
-    #[serde_state(stateless)]
     pub variant_layouts: IndexVec<VariantId, Option<VariantLayout>>,
     /// The representation options of this type declaration as annotated by the user.
     #[serde_state(stateless)]
@@ -41,23 +37,23 @@ pub struct Layout {
 /// Simplified layout of a single variant.
 ///
 /// Maps fields to their offset within the layout.
-#[derive(
-    Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Default, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct VariantLayout {
     /// The offset of each field.
-    pub field_offsets: IndexVec<FieldId, ByteCount>,
+    pub field_offsets: IndexVec<FieldId, OffsetExpr>,
     /// Whether the variant is uninhabited, i.e. has any valid possible value.
     /// Note that uninhabited types can have arbitrary layouts.
     pub uninhabited: bool,
     /// How to write the tag when constructing this variant. Each entry means: write `value` at
     /// byte `offset`. Mirrors MiniRust's `Variant::tagger`.
+    #[serde_state(stateless)]
     pub tagger: Vec<(ByteCount, ScalarValue)>,
 }
 
 /// Decision tree used to determine the active variant by reading memory. Mirrors MiniRust's
 /// `Discriminator`.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[serde_state(state_implements = HashConsSerializerState)]
 pub enum Discriminator {
     /// The variant is known.
     Known(VariantId),
@@ -66,8 +62,9 @@ pub enum Discriminator {
     /// Branch on an integer value read from memory at `offset`.
     Branch {
         /// Byte offset to read from.
-        offset: ByteCount,
+        offset: OffsetExpr,
         /// Integer type to read.
+        #[serde_state(stateless)]
         int_ty: IntegerTy,
         /// If the integer is in one of these ranges, continue with the given `Discriminator`. The
         /// ranges are sorted.
@@ -75,6 +72,42 @@ pub enum Discriminator {
         /// Fallback if no range in `children` matches.
         fallback: Box<Discriminator>,
     },
+}
+
+/// An expression denoting a size in bytes.
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+pub struct SizeExpr {
+    /// The guarantees about this size that can be relied on according to the Rust Reference.
+    pub guarantee: Option<SizeGuarantee>,
+    /// The size chosen by this rustc run. `None` for unsized types.
+    pub chosen: Option<ByteCount>,
+}
+
+/// An expression denoting an offset in bytes.
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+pub struct OffsetExpr {
+    /// The guarantees about this offset that can be relied on according to the Rust Reference.
+    pub guarantee: Option<OffsetGuarantee>,
+    /// The offset chosen by this rustc run. `None` for unsized fields.
+    pub chosen: Option<ByteCount>,
+}
+
+impl SizeExpr {
+    pub fn new(chosen: impl Into<Option<ByteCount>>) -> Self {
+        Self {
+            guarantee: None,
+            chosen: chosen.into(),
+        }
+    }
+}
+
+impl OffsetExpr {
+    pub fn new(chosen: impl Into<Option<ByteCount>>) -> Self {
+        Self {
+            guarantee: None,
+            chosen: chosen.into(),
+        }
+    }
 }
 
 /// The representation options as annotated by the user.
@@ -166,7 +199,10 @@ impl Discriminator {
                 fallback,
                 children,
             } => {
-                let val = read(*offset, *int_ty)?;
+                let offset = offset
+                    .chosen
+                    .expect("a discriminator must have a concrete offset");
+                let val = read(offset, *int_ty)?;
                 for (range, child) in children {
                     if range.contains(&val) {
                         return child.read_discriminant(read);

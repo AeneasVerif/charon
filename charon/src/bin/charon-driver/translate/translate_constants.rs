@@ -126,20 +126,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let mut val = self.translate_constant_expr(span, v)?;
                 let metadata = match (v.contents.as_ref(), val.ty.kind()) {
                     (hax::ConstantExprKind::Array { fields }, TyKind::Slice(subty)) => {
-                        let len = ConstantExpr::mk_usize(ScalarValue::Unsigned(
-                            UIntTy::Usize,
-                            fields.len() as u128,
-                        ));
+                        let len = ConstantExpr::mk_usize(fields.len() as u128);
                         // the sub-constant is an array, that has it's reference unsized
                         val.ty = Ty::mk_array(subty.clone(), len.clone());
                         Some(UnsizingMetadata::Length(Box::new(len)))
                     }
 
                     (hax::ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)), _) => {
-                        let len = ConstantExpr::mk_usize(ScalarValue::Unsigned(
-                            UIntTy::Usize,
-                            s.len() as u128,
-                        ));
+                        let len = ConstantExpr::mk_usize(s.len() as u128);
                         // the sub-constant is an array, that has it's reference unsized
                         let subty = TyKind::Literal(LiteralTy::UInt(UIntTy::U8)).into();
                         val.ty = Ty::mk_array(subty, len.clone());

@@ -412,6 +412,10 @@ impl Ty {
         static_type!(TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
     }
 
+    pub fn is_usize(&self) -> bool {
+        matches!(self.kind(), TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
+    }
+
     pub fn mk_tuple(tys: Vec<Ty>) -> Ty {
         TyKind::Adt(TypeDeclRef {
             id: TypeId::Builtin(BuiltinTy::Tuple),

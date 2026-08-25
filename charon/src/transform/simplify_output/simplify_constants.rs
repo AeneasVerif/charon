@@ -114,8 +114,7 @@ fn transform_constant_expr(
                 .into_iter()
                 .map(|x| transform_constant_expr(ctx, Box::new(x)))
                 .collect_vec();
-            let len =
-                ConstantExpr::mk_usize(ScalarValue::Unsigned(UIntTy::Usize, fields.len() as u128));
+            let len = ConstantExpr::mk_usize(fields.len() as u128);
             Rvalue::Aggregate(AggregateKind::Array(ty.clone(), Box::new(len)), fields)
         }
         ConstantExprKind::FnPtr(fptr) if let TyKind::FnPtr(sig) = val.ty.kind() => {

@@ -383,6 +383,8 @@ and constant_expr_kind =
           that function item.
 
           We eliminate this case in a micro-pass. *)
+  | CSizeOf of ty  (** The size of the given type. *)
+  | CAlignOf of ty  (** The alignment of the given type. *)
   | CTypeId of ty  (** The [TypeId] value for a type. *)
   | CPtrNoProvenance of big_int
       (** A pointer with no provenance (e.g. 0 for the null pointer)
@@ -874,7 +876,7 @@ and discriminator =
   | Known of variant_id  (** The variant is known. *)
   | Invalid  (** No valid variant (e.g., invalid tag value). *)
   | Branch of
-      int
+      offset_expr
       * integer_type
       * (scalar_value range_inclusive * discriminator) list
       * discriminator
@@ -886,6 +888,30 @@ and discriminator =
           - [children]: If the integer is in one of these ranges, continue with
             the given [Discriminator]. The ranges are sorted.
           - [fallback]: Fallback if no range in [children] matches. *)
+
+(** An expression that represents a size in bytes. *)
+and exact_size_expr =
+  | ExactSizeExprConstant of constant_expr
+      (** An arbitrary constant of type [usize]. *)
+  | ExactSizeExprFromMetadata of metadata_value
+      (** Layout information stored in the pointer metadata to this object. *)
+  | ExactSizeExprMax of exact_size_expr list
+  | ExactSizeExprMin of exact_size_expr list
+  | ExactSizeExprPlus of exact_size_expr * exact_size_expr
+  | ExactSizeExprScale of exact_size_expr * constant_expr
+  | ExactSizeExprAlignTo of exact_size_expr * exact_size_expr
+      (** The next multiple of [target_align] from [base].
+
+          Fields:
+          - [base]
+          - [target_align] *)
+  | ExactSizeExprIfInhabited of ty * exact_size_expr * exact_size_expr
+      (** A size expression that depens on whether the given type is inhabited.
+
+          Fields:
+          - [ty]
+          - [then_size]
+          - [else_size] *)
 
 and field = {
   span : span;
@@ -1241,8 +1267,8 @@ and rustc_lang_item =
     known layout (e.g. it is ?Sized) some of the layout parts are not available.
 *)
 and layout = {
-  size : int option;  (** The size of the type in bytes. *)
-  align : int option;  (** The alignment, in bytes. *)
+  size : size_expr;  (** The size of the type in bytes. *)
+  align : size_expr;  (** The alignment, in bytes. *)
   discriminator : discriminator option;
       (** Decision tree that determines the active variant by reading memory.
           Only [Some] for enums. *)
@@ -1260,6 +1286,18 @@ and layout = {
       (** The representation options of this type declaration as annotated by
           the user. *)
 }
+
+(** Layout information given by the metadata of an unsized type. *)
+and metadata_value =
+  | DynSize
+      (** For a DST with [dyn Trait] metadata, this refers to the size found in
+          the metadata. *)
+  | DynAlign
+      (** For a DST with [dyn Trait] metadata, this refers to the alignment
+          found in the metadata. *)
+  | SliceLength
+      (** For a DST with slice metadata, this refers to the length found in the
+          metadata. *)
 
 (** An item name/path
 
@@ -1299,6 +1337,31 @@ and layout = {
     Also note that the first path element in the name is always the crate name.
 *)
 and name = (path_elem list[@visitors.opaque])
+
+(** An expression denoting an offset in bytes. *)
+and offset_expr = {
+  guarantee : offset_guarantee option;
+      (** The guarantees about this offset that can be relied on according to
+          the Rust Reference. *)
+  chosen : int option;
+      (** The offset chosen by this rustc run. [None] for unsized fields. *)
+}
+
+(** Guaranteed facts about a field offset. *)
+and offset_guarantee =
+  | AtOffsetZero
+      (** Guaranteed to be at offset zero. This applies for [repr(transparent)]
+          and in some [repr(C)] cases. *)
+  | GuaranteedAlignment of exact_size_expr
+      (** Guaranteed only to be aligned to the given expression. *)
+  | ReprCField of field_id option
+      (** This offset is computed by the layout algorithm for C: take the
+          previous field offset, add the previous field size, and align to the
+          current field alignment.
+
+          Fields:
+          - [predecessor]: If this is [None], then the field is directly after
+            the enum tag. *)
 
 (** See the comments for [Name] *)
 and path_elem =
@@ -1351,6 +1414,18 @@ and repr_options = {
   explicit_discr_type : literal_type option;
       (** The type supplied to [repr(..)], if any. *)
 }
+
+(** An expression denoting a size in bytes. *)
+and size_expr = {
+  guarantee : size_guarantee option;
+      (** The guarantees about this size that can be relied on according to the
+          Rust Reference. *)
+  chosen : int option;
+      (** The size chosen by this rustc run. [None] for unsized types. *)
+}
+
+(** Guaranteed facts about a layout size. *)
+and size_guarantee = Equals of exact_size_expr | AtLeast of exact_size_expr
 
 (** A type declaration.
 
@@ -1438,7 +1513,7 @@ and variant = {
 
     Maps fields to their offset within the layout. *)
 and variant_layout = {
-  field_offsets : int list;  (** The offset of each field. *)
+  field_offsets : offset_expr list;  (** The offset of each field. *)
   uninhabited : bool;
       (** Whether the variant is uninhabited, i.e. has any valid possible value.
           Note that uninhabited types can have arbitrary layouts. *)

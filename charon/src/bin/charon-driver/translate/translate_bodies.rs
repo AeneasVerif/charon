@@ -951,8 +951,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
 
         let tcx = self.hax_state.base().tcx;
         let local_decls = self.local_decls;
-        let ptr_size = self.translated.the_target_information().target_pointer_size;
-
         let mut place_ty: mir::PlaceTy = mir::Place::from(mir_place.local).ty(local_decls, tcx);
         let var_id = self.translate_local(&mir_place.local).unwrap();
         let mut place = self.locals.place_for_var(var_id);
@@ -1041,7 +1039,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     offset, from_end, ..
                 } => {
                     let offset = Operand::Const(Box::new(
-                        ScalarValue::mk_usize(ptr_size, offset).to_constant(),
+                        ScalarValue::mk_usize(offset as u128).to_constant(),
                     ));
                     ProjectionElem::Index {
                         offset: Box::new(offset),
@@ -1049,11 +1047,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     }
                 }
                 &Subslice { from, to, from_end } => {
-                    let from = Operand::Const(Box::new(
-                        ScalarValue::mk_usize(ptr_size, from).to_constant(),
-                    ));
+                    let from =
+                        Operand::Const(Box::new(ScalarValue::mk_usize(from as u128).to_constant()));
                     let to =
-                        Operand::Const(Box::new(ScalarValue::mk_usize(ptr_size, to).to_constant()));
+                        Operand::Const(Box::new(ScalarValue::mk_usize(to as u128).to_constant()));
                     ProjectionElem::Subslice {
                         from: Box::new(from),
                         to: Box::new(to),
@@ -1310,19 +1307,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     .iter()
                     .map(|op| self.translate_operand(span, op))
                     .try_collect()?;
-                let ptr_size = self.translated.the_target_information().target_pointer_size;
-
                 match aggregate_kind {
                     mir::AggregateKind::Array(ty) => {
                         let t_ty = self.translate_rustc_ty(span, ty)?;
-                        let c = ConstantExpr::mk_usize(
-                            ScalarValue::from_uint(
-                                ptr_size,
-                                UIntTy::Usize,
-                                operands_t.len() as u128,
-                            )
-                            .unwrap(),
-                        );
+                        let c = ConstantExpr::mk_usize(operands_t.len() as u128);
                         Ok(Rvalue::Aggregate(
                             AggregateKind::Array(t_ty, Box::new(c)),
                             operands_t,

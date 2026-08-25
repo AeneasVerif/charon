@@ -1,7 +1,13 @@
 {
   "test_crate::SimpleStruct": {
-    "size": 12,
-    "align": 4,
+    "size": {
+      "guarantee": null,
+      "chosen": 12
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 4
+    },
     "discriminator": {
       "Known": 0
     },
@@ -9,9 +15,18 @@
     "variant_layouts": [
       {
         "field_offsets": [
-          0,
-          4,
-          8
+          {
+            "guarantee": null,
+            "chosen": 0
+          },
+          {
+            "guarantee": null,
+            "chosen": 4
+          },
+          {
+            "guarantee": null,
+            "chosen": 8
+          }
         ],
         "uninhabited": false,
         "tagger": []
@@ -26,8 +41,14 @@
   },
   "test_crate::GenericStruct": null,
   "test_crate::UnsizedStruct": {
-    "size": null,
-    "align": null,
+    "size": {
+      "guarantee": null,
+      "chosen": null
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": null
+    },
     "discriminator": {
       "Known": 0
     },
@@ -35,8 +56,14 @@
     "variant_layouts": [
       {
         "field_offsets": [
-          0,
-          8
+          {
+            "guarantee": null,
+            "chosen": 0
+          },
+          {
+            "guarantee": null,
+            "chosen": 8
+          }
         ],
         "uninhabited": false,
         "tagger": []
@@ -50,11 +77,20 @@
     }
   },
   "test_crate::SimpleEnum": {
-    "size": 1,
-    "align": 1,
+    "size": {
+      "guarantee": null,
+      "chosen": 1
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 1
+    },
     "discriminator": {
       "Branch": {
-        "offset": 0,
+        "offset": {
+          "guarantee": null,
+          "chosen": 0
+        },
         "int_ty": {
           "Unsigned": "U8"
         },
@@ -142,11 +178,20 @@
     }
   },
   "test_crate::SimpleAdt": {
-    "size": 24,
-    "align": 8,
+    "size": {
+      "guarantee": null,
+      "chosen": 24
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 8
+    },
     "discriminator": {
       "Branch": {
-        "offset": 0,
+        "offset": {
+          "guarantee": null,
+          "chosen": 0
+        },
         "int_ty": {
           "Unsigned": "U32"
         },
@@ -231,8 +276,14 @@
       },
       {
         "field_offsets": [
-          8,
-          16
+          {
+            "guarantee": null,
+            "chosen": 8
+          },
+          {
+            "guarantee": null,
+            "chosen": 16
+          }
         ],
         "uninhabited": false,
         "tagger": [
@@ -249,8 +300,14 @@
       },
       {
         "field_offsets": [
-          4,
-          8
+          {
+            "guarantee": null,
+            "chosen": 4
+          },
+          {
+            "guarantee": null,
+            "chosen": 8
+          }
         ],
         "uninhabited": false,
         "tagger": [
@@ -274,11 +331,20 @@
     }
   },
   "test_crate::NicheAdt": {
-    "size": 4,
-    "align": 4,
+    "size": {
+      "guarantee": null,
+      "chosen": 4
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 4
+    },
     "discriminator": {
       "Branch": {
-        "offset": 0,
+        "offset": {
+          "guarantee": null,
+          "chosen": 0
+        },
         "int_ty": {
           "Unsigned": "U32"
         },
@@ -327,7 +393,10 @@
       },
       {
         "field_offsets": [
-          0
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
         ],
         "uninhabited": false,
         "tagger": []
@@ -341,8 +410,14 @@
     }
   },
   "test_crate::IsAZST": {
-    "size": 0,
-    "align": 1,
+    "size": {
+      "guarantee": null,
+      "chosen": 0
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 1
+    },
     "discriminator": {
       "Known": 0
     },
@@ -362,8 +437,14 @@
     }
   },
   "test_crate::GenericWithKnownLayout": {
-    "size": 16,
-    "align": 8,
+    "size": {
+      "guarantee": null,
+      "chosen": 16
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 8
+    },
     "discriminator": {
       "Known": 0
     },
@@ -371,8 +452,14 @@
     "variant_layouts": [
       {
         "field_offsets": [
-          8,
-          0
+          {
+            "guarantee": null,
+            "chosen": 8
+          },
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
         ],
         "uninhabited": false,
         "tagger": []
@@ -386,8 +473,14 @@
     }
   },
   "test_crate::Reordered": {
-    "size": 8,
-    "align": 4,
+    "size": {
+      "guarantee": null,
+      "chosen": 8
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 4
+    },
     "discriminator": {
       "Known": 0
     },
@@ -395,9 +488,18 @@
     "variant_layouts": [
       {
         "field_offsets": [
-          4,
-          0,
-          5
+          {
+            "guarantee": null,
+            "chosen": 4
+          },
+          {
+            "guarantee": null,
+            "chosen": 0
+          },
+          {
+            "guarantee": null,
+            "chosen": 5
+          }
         ],
         "uninhabited": false,
         "tagger": []
@@ -411,8 +513,14 @@
     }
   },
   "test_crate::NotReordered": {
-    "size": 12,
-    "align": 4,
+    "size": {
+      "guarantee": null,
+      "chosen": 12
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 4
+    },
     "discriminator": {
       "Known": 0
     },
@@ -420,9 +528,18 @@
     "variant_layouts": [
       {
         "field_offsets": [
-          0,
-          4,
-          8
+          {
+            "guarantee": null,
+            "chosen": 0
+          },
+          {
+            "guarantee": null,
+            "chosen": 4
+          },
+          {
+            "guarantee": null,
+            "chosen": 8
+          }
         ],
         "uninhabited": false,
         "tagger": []
@@ -436,8 +553,14 @@
     }
   },
   "test_crate::Packed": {
-    "size": 6,
-    "align": 1,
+    "size": {
+      "guarantee": null,
+      "chosen": 6
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 1
+    },
     "discriminator": {
       "Known": 0
     },
@@ -445,9 +568,18 @@
     "variant_layouts": [
       {
         "field_offsets": [
-          0,
-          1,
-          5
+          {
+            "guarantee": null,
+            "chosen": 0
+          },
+          {
+            "guarantee": null,
+            "chosen": 1
+          },
+          {
+            "guarantee": null,
+            "chosen": 5
+          }
         ],
         "uninhabited": false,
         "tagger": []
@@ -463,8 +595,14 @@
     }
   },
   "test_crate::UninhabitedVariant": {
-    "size": 4,
-    "align": 4,
+    "size": {
+      "guarantee": null,
+      "chosen": 4
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 4
+    },
     "discriminator": {
       "Known": 1
     },
@@ -473,7 +611,10 @@
       null,
       {
         "field_offsets": [
-          0
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
         ],
         "uninhabited": false,
         "tagger": []
@@ -487,11 +628,20 @@
     }
   },
   "test_crate::UninhabitedVariant2": {
-    "size": 8,
-    "align": 4,
+    "size": {
+      "guarantee": null,
+      "chosen": 8
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 4
+    },
     "discriminator": {
       "Branch": {
-        "offset": 0,
+        "offset": {
+          "guarantee": null,
+          "chosen": 0
+        },
         "int_ty": {
           "Unsigned": "U32"
         },
@@ -523,15 +673,24 @@
     "variant_layouts": [
       {
         "field_offsets": [
-          4,
-          4
+          {
+            "guarantee": null,
+            "chosen": 4
+          },
+          {
+            "guarantee": null,
+            "chosen": 4
+          }
         ],
         "uninhabited": true,
         "tagger": []
       },
       {
         "field_offsets": [
-          4
+          {
+            "guarantee": null,
+            "chosen": 4
+          }
         ],
         "uninhabited": false,
         "tagger": [
@@ -555,11 +714,20 @@
     }
   },
   "test_crate::UninhabitedVariantWithFields": {
-    "size": 12,
-    "align": 4,
+    "size": {
+      "guarantee": null,
+      "chosen": 12
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 4
+    },
     "discriminator": {
       "Branch": {
-        "offset": 0,
+        "offset": {
+          "guarantee": null,
+          "chosen": 0
+        },
         "int_ty": {
           "Unsigned": "U32"
         },
@@ -606,9 +774,18 @@
       },
       {
         "field_offsets": [
-          4,
-          4,
-          8
+          {
+            "guarantee": null,
+            "chosen": 4
+          },
+          {
+            "guarantee": null,
+            "chosen": 4
+          },
+          {
+            "guarantee": null,
+            "chosen": 8
+          }
         ],
         "uninhabited": true,
         "tagger": []
@@ -622,8 +799,14 @@
     }
   },
   "test_crate::Uninhabited": {
-    "size": 0,
-    "align": 1,
+    "size": {
+      "guarantee": null,
+      "chosen": 0
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 1
+    },
     "discriminator": {
       "Known": 0
     },
@@ -631,7 +814,10 @@
     "variant_layouts": [
       {
         "field_offsets": [
-          0
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
         ],
         "uninhabited": true,
         "tagger": []
@@ -645,11 +831,20 @@
     }
   },
   "test_crate::DiscriminantInNicheOfField": {
-    "size": 16,
-    "align": 8,
+    "size": {
+      "guarantee": null,
+      "chosen": 16
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 8
+    },
     "discriminator": {
       "Branch": {
-        "offset": 8,
+        "offset": {
+          "guarantee": null,
+          "chosen": 8
+        },
         "int_ty": {
           "Signed": "Isize"
         },
@@ -698,7 +893,10 @@
       },
       {
         "field_offsets": [
-          0
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
         ],
         "uninhabited": false,
         "tagger": []
@@ -712,8 +910,14 @@
     }
   },
   "test_crate::MaybeUninitInt": {
-    "size": 4,
-    "align": 4,
+    "size": {
+      "guarantee": null,
+      "chosen": 4
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 4
+    },
     "discriminator": {
       "Known": 0
     },
@@ -721,8 +925,14 @@
     "variant_layouts": [
       {
         "field_offsets": [
-          0,
-          0
+          {
+            "guarantee": null,
+            "chosen": 0
+          },
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
         ],
         "uninhabited": false,
         "tagger": []
@@ -736,8 +946,14 @@
     }
   },
   "test_crate::PackIntsUnion": {
-    "size": 8,
-    "align": 8,
+    "size": {
+      "guarantee": null,
+      "chosen": 8
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 8
+    },
     "discriminator": {
       "Known": 0
     },
@@ -745,8 +961,14 @@
     "variant_layouts": [
       {
         "field_offsets": [
-          0,
-          0
+          {
+            "guarantee": null,
+            "chosen": 0
+          },
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
         ],
         "uninhabited": false,
         "tagger": []
@@ -760,11 +982,20 @@
     }
   },
   "test_crate::NonZeroNiche": {
-    "size": 4,
-    "align": 4,
+    "size": {
+      "guarantee": null,
+      "chosen": 4
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 4
+    },
     "discriminator": {
       "Branch": {
-        "offset": 0,
+        "offset": {
+          "guarantee": null,
+          "chosen": 0
+        },
         "int_ty": {
           "Unsigned": "U32"
         },
@@ -817,7 +1048,10 @@
     "variant_layouts": [
       {
         "field_offsets": [
-          0
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
         ],
         "uninhabited": false,
         "tagger": []
@@ -861,11 +1095,20 @@
     }
   },
   "test_crate::ArbitraryDiscriminants": {
-    "size": 32,
-    "align": 8,
+    "size": {
+      "guarantee": null,
+      "chosen": 32
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 8
+    },
     "discriminator": {
       "Branch": {
-        "offset": 0,
+        "offset": {
+          "guarantee": null,
+          "chosen": 0
+        },
         "int_ty": {
           "Signed": "I32"
         },
@@ -935,7 +1178,10 @@
     "variant_layouts": [
       {
         "field_offsets": [
-          8
+          {
+            "guarantee": null,
+            "chosen": 8
+          }
         ],
         "uninhabited": false,
         "tagger": [
@@ -952,7 +1198,10 @@
       },
       {
         "field_offsets": [
-          4
+          {
+            "guarantee": null,
+            "chosen": 4
+          }
         ],
         "uninhabited": false,
         "tagger": [
@@ -993,11 +1242,20 @@
     }
   },
   "test_crate::MyOrder": {
-    "size": 1,
-    "align": 1,
+    "size": {
+      "guarantee": null,
+      "chosen": 1
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 1
+    },
     "discriminator": {
       "Branch": {
-        "offset": 0,
+        "offset": {
+          "guarantee": null,
+          "chosen": 0
+        },
         "int_ty": {
           "Signed": "I8"
         },
@@ -1121,11 +1379,20 @@
     }
   },
   "test_crate::WithNicheAndUninhabited": {
-    "size": 4,
-    "align": 4,
+    "size": {
+      "guarantee": null,
+      "chosen": 4
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 4
+    },
     "discriminator": {
       "Branch": {
-        "offset": 0,
+        "offset": {
+          "guarantee": null,
+          "chosen": 0
+        },
         "int_ty": {
           "Unsigned": "U32"
         },
@@ -1174,14 +1441,20 @@
       },
       {
         "field_offsets": [
-          0
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
         ],
         "uninhabited": true,
         "tagger": []
       },
       {
         "field_offsets": [
-          0
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
         ],
         "uninhabited": false,
         "tagger": []
@@ -1196,11 +1469,20 @@
   },
   "test_crate::GenericUnsized": null,
   "test_crate::GenericButFixedSize": {
-    "size": 8,
-    "align": 8,
+    "size": {
+      "guarantee": null,
+      "chosen": 8
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 8
+    },
     "discriminator": {
       "Branch": {
-        "offset": 0,
+        "offset": {
+          "guarantee": null,
+          "chosen": 0
+        },
         "int_ty": {
           "Signed": "Isize"
         },
@@ -1249,7 +1531,10 @@
       },
       {
         "field_offsets": [
-          0
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
         ],
         "uninhabited": false,
         "tagger": []
@@ -1263,11 +1548,20 @@
     }
   },
   "test_crate::MaxBitsDiscr": {
-    "size": 16,
-    "align": 16,
+    "size": {
+      "guarantee": null,
+      "chosen": 16
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 16
+    },
     "discriminator": {
       "Branch": {
-        "offset": 0,
+        "offset": {
+          "guarantee": null,
+          "chosen": 0
+        },
         "int_ty": {
           "Unsigned": "U128"
         },
@@ -1357,8 +1651,14 @@
     }
   },
   "test_crate::SingleVariantButNonZero": {
-    "size": 0,
-    "align": 1,
+    "size": {
+      "guarantee": null,
+      "chosen": 0
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 1
+    },
     "discriminator": {
       "Known": 1
     },
@@ -1367,7 +1667,10 @@
       null,
       {
         "field_offsets": [
-          0
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
         ],
         "uninhabited": false,
         "tagger": []
@@ -1382,8 +1685,14 @@
   },
   "test_crate::NonAdtAlias": null,
   "test_crate::Tuple": {
-    "size": 8,
-    "align": 4,
+    "size": {
+      "guarantee": null,
+      "chosen": 8
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 4
+    },
     "discriminator": {
       "Known": 0
     },
@@ -1391,8 +1700,14 @@
     "variant_layouts": [
       {
         "field_offsets": [
-          0,
-          4
+          {
+            "guarantee": null,
+            "chosen": 0
+          },
+          {
+            "guarantee": null,
+            "chosen": 4
+          }
         ],
         "uninhabited": false,
         "tagger": []
@@ -1406,8 +1721,14 @@
     }
   },
   "test_crate::Usize": {
-    "size": 8,
-    "align": 8,
+    "size": {
+      "guarantee": null,
+      "chosen": 8
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 8
+    },
     "discriminator": {
       "Known": 0
     },
@@ -1421,8 +1742,14 @@
     }
   },
   "test_crate::Str": {
-    "size": null,
-    "align": null,
+    "size": {
+      "guarantee": null,
+      "chosen": null
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": null
+    },
     "discriminator": {
       "Known": 0
     },
@@ -1436,8 +1763,14 @@
     }
   },
   "test_crate::Ref": {
-    "size": 8,
-    "align": 8,
+    "size": {
+      "guarantee": null,
+      "chosen": 8
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 8
+    },
     "discriminator": {
       "Known": 0
     },
@@ -1451,11 +1784,20 @@
     }
   },
   "test_crate::HasInvalidDiscr": {
-    "size": 1,
-    "align": 1,
+    "size": {
+      "guarantee": null,
+      "chosen": 1
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 1
+    },
     "discriminator": {
       "Branch": {
-        "offset": 0,
+        "offset": {
+          "guarantee": null,
+          "chosen": 0
+        },
         "int_ty": {
           "Unsigned": "U8"
         },
@@ -1477,7 +1819,10 @@
             },
             {
               "Branch": {
-                "offset": 0,
+                "offset": {
+                  "guarantee": null,
+                  "chosen": 0
+                },
                 "int_ty": {
                   "Unsigned": "U8"
                 },
@@ -1550,7 +1895,10 @@
       },
       {
         "field_offsets": [
-          0
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
         ],
         "uninhabited": false,
         "tagger": []
