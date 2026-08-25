@@ -122,7 +122,7 @@ impl "impl_FnOnce_unit_for_closure" FnOnce<()> for closure {
     proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
     type Output = ()
     fn call_once = call_once
-    non-dyn-compatible
+    vtable: impl_FnOnce_unit_for_closure::{vtable}
 }
 
 // Full name: test_crate::main

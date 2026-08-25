@@ -402,7 +402,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         let vtable = self.translate_vtable_instance_ref_no_enqueue(
                             span,
                             tref.hax_skip_binder_ref(),
-                            None,
+                            tref.hax_skip_binder_ref(),
+                            TransImplSource::Marker,
                         )?;
                         TraitRefKind::BuiltinOrAuto {
                             builtin_data,

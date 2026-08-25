@@ -84,7 +84,7 @@ impl<'a> FnOnce<(&'a u32,)> for for<'a> foo::<u32><'a> {
     proof ImpliedClause0: (for<'a> foo::<u32><'a>: MetaSized) = {built_in impl MetaSized for for<'a> foo::<u32><'a>}
     proof ImpliedClause1: ((&'a u32,): Sized) = {built_in impl Sized for (&'a u32,)}
     proof ImpliedClause2: ((&'a u32,): Tuple) = {built_in impl Tuple for (&'a u32,)}
-    non-dyn-compatible
+    vtable: {impl FnOnce<(&'a u32,)> for for<'a> foo::<u32><'a>}::{vtable}::<u32><'a>
 }
 
 // Full name: test_crate::{impl FnMut<(&'a u32,)> for for<'a> foo::<u32><'a>}
@@ -93,7 +93,7 @@ impl<'a> FnMut<(&'a u32,)> for for<'a> foo::<u32><'a> {
     proof ImpliedClause1: (for<'a> foo::<u32><'a>: FnOnce<(&'a u32,)>) = {impl FnOnce<(&'a u32,)> for for<'a> foo::<u32><'a>}<'a>
     proof ImpliedClause2: ((&'a u32,): Sized) = {built_in impl Sized for (&'a u32,)}
     proof ImpliedClause3: ((&'a u32,): Tuple) = {built_in impl Tuple for (&'a u32,)}
-    non-dyn-compatible
+    vtable: {impl FnMut<(&'a u32,)> for for<'a> foo::<u32><'a>}::{vtable}::<u32><'a>
 }
 
 // Full name: test_crate::{impl Fn<(&'a u32,)> for for<'a> foo::<u32><'a>}
@@ -102,7 +102,7 @@ impl<'a> Fn<(&'a u32,)> for for<'a> foo::<u32><'a> {
     proof ImpliedClause1: (for<'a> foo::<u32><'a>: FnMut<(&'a u32,)>) = {impl FnMut<(&'a u32,)> for for<'a> foo::<u32><'a>}<'a>
     proof ImpliedClause2: ((&'a u32,): Sized) = {built_in impl Sized for (&'a u32,)}
     proof ImpliedClause3: ((&'a u32,): Tuple) = {built_in impl Tuple for (&'a u32,)}
-    non-dyn-compatible
+    vtable: {impl Fn<(&'a u32,)> for for<'a> foo::<u32><'a>}::{vtable}::<u32><'a>
 }
 
 // Full name: test_crate::foo::<u8>

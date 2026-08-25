@@ -641,15 +641,17 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 ..
             } => ConstantExprKind::VTableRef(self.translate_trait_proof(span, trait_proof)?),
             hax::TraitProofKind::Concrete { .. } | hax::TraitProofKind::Builtin { .. } => {
-                let impl_item = match &trait_proof.kind {
-                    hax::TraitProofKind::Concrete(impl_item) => Some(impl_item),
-                    _ => None,
-                };
                 // We could return `VTableRef` but we need to enqueue the translation of the static
                 // so may as well reuse that to normalize a bit.
                 let vtable_instance =
                     self.translate_region_binder(span, &trait_proof.pred, |ctx, tref| {
-                        ctx.translate_vtable_instance_ref(span, tref, impl_item)
+                        let (impl_item, impl_kind) = match &trait_proof.kind {
+                            hax::TraitProofKind::Concrete(impl_item) => {
+                                (impl_item, TransImplSource::Normal)
+                            }
+                            _ => (tref, TransImplSource::Marker),
+                        };
+                        ctx.translate_vtable_instance_ref(span, tref, impl_item, impl_kind)
                     })?;
                 let vtable_instance = self.erase_region_binder(vtable_instance);
                 let vtable_instance = Box::new(ConstantExpr {
@@ -669,11 +671,17 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         span: Span,
         trait_ref: &hax::TraitRef,
-        // `None` if we're translating for a marker trait, which has no concret impl
-        impl_ref: Option<&hax::ItemRef>,
+        vtable_item: &hax::ItemRef,
+        impl_kind: TransImplSource,
     ) -> Result<GlobalDeclRef, Error> {
         Ok(self
-            .translate_vtable_instance_ref_maybe_enqueue(true, span, trait_ref, impl_ref)?
+            .translate_vtable_instance_ref_maybe_enqueue(
+                true,
+                span,
+                trait_ref,
+                vtable_item,
+                impl_kind,
+            )?
             .expect("trait should be dyn-compatible"))
     }
 
@@ -681,10 +689,16 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         span: Span,
         trait_ref: &hax::TraitRef,
-        // `None` if we're translating for a marker trait, which has no concret impl
-        impl_ref: Option<&hax::ItemRef>,
+        vtable_item: &hax::ItemRef,
+        impl_kind: TransImplSource,
     ) -> Result<Option<GlobalDeclRef>, Error> {
-        self.translate_vtable_instance_ref_maybe_enqueue(false, span, trait_ref, impl_ref)
+        self.translate_vtable_instance_ref_maybe_enqueue(
+            false,
+            span,
+            trait_ref,
+            vtable_item,
+            impl_kind,
+        )
     }
 
     pub fn translate_vtable_instance_ref_maybe_enqueue(
@@ -692,8 +706,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         enqueue: bool,
         span: Span,
         trait_ref: &hax::TraitRef,
-        // `None` if we're translating for a marker trait, which has no concret impl
-        impl_ref: Option<&hax::ItemRef>,
+        vtable_item: &hax::ItemRef,
+        impl_kind: TransImplSource,
     ) -> Result<Option<GlobalDeclRef>, Error> {
         if !self.trait_is_dyn_compatible(&trait_ref.def_id)? {
             return Ok(None);
@@ -702,13 +716,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // `dyn Trait` coercion.
         // TODO(dyn): To do this properly we'd need to know for each clause whether it ultimately
         // ends up used in a vtable cast.
-        let (item_ref, impl_kind) = match impl_ref {
-            Some(impl_ref) => (impl_ref, TransImplSource::Normal),
-            None => (trait_ref, TransImplSource::Marker),
-        };
         let vtable_ref: GlobalDeclRef = self.translate_item_maybe_enqueue(
             span,
-            item_ref,
+            vtable_item,
             TransItemSourceKind::VTableInstance(impl_kind),
             enqueue,
         )?;

@@ -341,7 +341,7 @@ impl "impl_FnOnce_tuple_for_closure" FnOnce<(i32,)> for closure {
     proof ImpliedClause3: (i32: Sized) = {built_in impl Sized for i32}
     type Output = i32
     fn call_once = call_once
-    non-dyn-compatible
+    vtable: impl_FnOnce_tuple_for_closure::{vtable}
 }
 
 // Full name: test_crate::map::{impl FnMut<(i32,)> for closure}
@@ -351,7 +351,7 @@ impl "impl_FnMut_tuple_for_closure" FnMut<(i32,)> for closure {
     proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
     proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
     fn call_mut<'_0_1> = call_mut<'_0_1>
-    non-dyn-compatible
+    vtable: impl_FnMut_tuple_for_closure::{vtable}
 }
 
 pub fn test_crate::map(x: [i32; 256usize]) -> [i32; 256usize]

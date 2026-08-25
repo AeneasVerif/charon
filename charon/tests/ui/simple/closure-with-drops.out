@@ -187,7 +187,7 @@ where
     proof ImpliedClause6: ((): Destruct) = {built_in impl Destruct for ()}
     type Output = ()
     fn call_once = {impl FnOnce<()> for test_crate::foo::closure<T>[TraitClause0, TraitClause1]}::call_once<T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: {impl FnOnce<()> for test_crate::foo::closure<T>[TraitClause0, TraitClause1]}::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 struct test_crate::bar::closure {}
@@ -307,7 +307,7 @@ impl FnOnce<()> for test_crate::bar::closure {
     proof ImpliedClause6: ((): Destruct) = {built_in impl Destruct for ()}
     type Output = ()
     fn call_once = {impl FnOnce<()> for test_crate::bar::closure}::call_once
-    non-dyn-compatible
+    vtable: {impl FnOnce<()> for test_crate::bar::closure}::{vtable}
 }
 
 // Full name: test_crate::bar::{impl FnMut<()> for test_crate::bar::closure}
@@ -319,7 +319,7 @@ impl "impl_FnMut_unit_for_closure" FnMut<()> for test_crate::bar::closure {
     proof ImpliedClause4: (test_crate::bar::closure: Destruct) = {impl Destruct for test_crate::bar::closure}
     proof ImpliedClause5: ((): Destruct) = {built_in impl Destruct for ()}
     fn call_mut<'_0_1> = call_mut<'_0_1>
-    non-dyn-compatible
+    vtable: impl_FnMut_unit_for_closure::{vtable}
 }
 
 // Full name: test_crate::bar::{impl Fn<()> for test_crate::bar::closure}
@@ -331,7 +331,7 @@ impl "impl_Fn_unit_for_closure" Fn<()> for test_crate::bar::closure {
     proof ImpliedClause4: (test_crate::bar::closure: Destruct) = {impl Destruct for test_crate::bar::closure}
     proof ImpliedClause5: ((): Destruct) = {built_in impl Destruct for ()}
     fn call<'_0_1> = call<'_0_1>
-    non-dyn-compatible
+    vtable: impl_Fn_unit_for_closure::{vtable}
 }
 
 

@@ -423,7 +423,7 @@ where
     proof ImpliedClause3: (T: Sized) = TraitClause0
     type Output = T
     fn call_once = call_once<T>[TraitClause0]
-    non-dyn-compatible
+    vtable: {impl FnOnce<(T,)> for identity<T>[TraitClause0]}::{vtable}<T>[TraitClause0]
 }
 
 fn test_crate::identity::<&_ mut _><'_0, T0>(x: &'_0 mut T0) -> &'_0 mut T0

@@ -695,6 +695,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .regions
                         .extend((0..upvar_regions).map(|_| self.translate_erased_region()));
                     if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
+                    | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))
+                    | TransItemSourceKind::VTableInstanceInitializer(
+                        TransImplSource::Callable(..),
+                    )
+                    | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))
                     | TransItemSourceKind::CallableMethod(..)
                     | TransItemSourceKind::ClosureAsFnCast = kind
                     {

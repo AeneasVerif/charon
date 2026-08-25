@@ -1601,7 +1601,7 @@ impl<'a> FnOnce<(&'a (),)> for for<'a> flabada<'a> {
     proof ImpliedClause3: (Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]: Sized) = {built_in impl Sized for Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]}
     type Output = Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
     fn call_once = call_once<'a>
-    non-dyn-compatible
+    vtable: {impl FnOnce<(&'a (),)> for for<'a> flabada<'a>}::{vtable}<'a>
 }
 
 // Full name: test_crate::{impl FnMut<(&'a (),)> for for<'a> flabada<'a>}
@@ -1611,7 +1611,7 @@ impl<'a> FnMut<(&'a (),)> for for<'a> flabada<'a> {
     proof ImpliedClause2: ((&'a (),): Sized) = {built_in impl Sized for (&'a (),)}
     proof ImpliedClause3: ((&'a (),): Tuple) = {built_in impl Tuple for (&'a (),)}
     fn call_mut<'_0_1> = call_mut<'a, '_0_1>
-    non-dyn-compatible
+    vtable: {impl FnMut<(&'a (),)> for for<'a> flabada<'a>}::{vtable}<'a>
 }
 
 // Full name: test_crate::{impl Fn<(&'a (),)> for for<'a> flabada<'a>}
@@ -1621,7 +1621,7 @@ impl<'a> Fn<(&'a (),)> for for<'a> flabada<'a> {
     proof ImpliedClause2: ((&'a (),): Sized) = {built_in impl Sized for (&'a (),)}
     proof ImpliedClause3: ((&'a (),): Tuple) = {built_in impl Tuple for (&'a (),)}
     fn call<'_0_1> = {impl Fn<(&'a (),)> for for<'a> flabada<'a>}::call<'a, '_0_1>
-    non-dyn-compatible
+    vtable: {impl Fn<(&'a (),)> for for<'a> flabada<'a>}::{vtable}<'a>
 }
 
 pub fn test_crate::call<'a, F>(_1: F)

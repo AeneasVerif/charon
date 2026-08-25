@@ -161,7 +161,7 @@ impl "impl_FnOnce_tuple_for_closure" FnOnce<(u8,)> for closure {
     proof ImpliedClause3: (u8: Sized) = {built_in impl Sized for u8}
     type Output = u8
     fn call_once = call_once
-    non-dyn-compatible
+    vtable: impl_FnOnce_tuple_for_closure::{vtable}
 }
 
 // Full name: test_crate::main

@@ -236,7 +236,7 @@ impl<'_0> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_ mut u32,)> for closure {
     proof ImpliedClause3: (bool: Sized) = {built_in impl Sized for bool}
     type Output = bool
     fn call_once = call_once<'_0>
-    non-dyn-compatible
+    vtable: impl_FnOnce_tuple_for_closure::{vtable}<'_0>
 }
 
 // Full name: test_crate::gives_fn::{impl FnMut<(&'_ mut u32,)> for closure}
@@ -246,7 +246,7 @@ impl<'_0> "impl_FnMut_tuple_for_closure" FnMut<(&'_ mut u32,)> for closure {
     proof ImpliedClause2: ((&'_ mut u32,): Sized) = {built_in impl Sized for (&'_ mut u32,)}
     proof ImpliedClause3: ((&'_ mut u32,): Tuple) = {built_in impl Tuple for (&'_ mut u32,)}
     fn call_mut<'_0_1> = call_mut<'_0, '_0_1>
-    non-dyn-compatible
+    vtable: impl_FnMut_tuple_for_closure::{vtable}<'_0>
 }
 
 // Full name: test_crate::gives_fn::{impl Fn<(&'_ mut u32,)> for closure}
@@ -256,7 +256,7 @@ impl<'_0> "impl_Fn_tuple_for_closure" Fn<(&'_ mut u32,)> for closure {
     proof ImpliedClause2: ((&'_ mut u32,): Sized) = {built_in impl Sized for (&'_ mut u32,)}
     proof ImpliedClause3: ((&'_ mut u32,): Tuple) = {built_in impl Tuple for (&'_ mut u32,)}
     fn call<'_0_1> = call<'_0, '_0_1>
-    non-dyn-compatible
+    vtable: impl_Fn_tuple_for_closure::{vtable}<'_0>
 }
 
 // Full name: test_crate::gives_fn

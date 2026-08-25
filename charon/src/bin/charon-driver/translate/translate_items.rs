@@ -1082,7 +1082,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let vtable = self.translate_vtable_instance_ref_no_enqueue(
             span,
             &trait_pred.trait_ref,
-            Some(def.this()),
+            def.this(),
+            TransImplSource::Normal,
         )?;
 
         // The trait refs which implement the parent clauses of the implemented trait decl.
@@ -1418,10 +1419,16 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         def_id: TraitImplId,
         item_meta: ItemMeta,
-        src: TraitImplSource,
+        vtable_item: &hax::ItemRef,
+        impl_kind: TransImplSource,
         vimpl: &hax::VirtualTraitImpl,
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
+        let src = match impl_kind {
+            TransImplSource::Callable(kind) => TraitImplSource::Closure { kind },
+            TransImplSource::ImplicitDestruct => TraitImplSource::Destruct,
+            _ => unreachable!("not a virtual impl source: {impl_kind:?}"),
+        };
         let trait_def = self.hax_def(&vimpl.trait_pred.trait_ref)?;
         let hax::FullDefKind::Trait {
             items: trait_items, ..
@@ -1432,6 +1439,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
         let implied_trait_refs = self.translate_trait_proofs(span, &vimpl.implied_trait_proofs)?;
+        let vtable = self.translate_vtable_instance_ref_no_enqueue(
+            span,
+            &vimpl.trait_pred.trait_ref,
+            vtable_item,
+            impl_kind,
+        )?;
 
         let mut types: IndexMap<AssocTypeId, _> = IndexMap::new();
         // Monomorphic traits have no associated types.
@@ -1462,8 +1475,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             consts: IndexMap::new(),
             types,
             methods: IndexMap::new(),
-            // TODO(dyn): generate vtable instances for builtin traits
-            vtable: None,
+            vtable,
         })
     }
 }

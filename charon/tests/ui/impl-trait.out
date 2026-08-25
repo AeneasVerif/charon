@@ -338,7 +338,7 @@ where
     proof ImpliedClause3: (WrapClone<&'_ U>[{built_in impl Sized for &'_ U}, {impl Clone for &'_0 T}<'_, U>]: Sized) = {built_in impl Sized for WrapClone<&'_ U>[{built_in impl Sized for &'_ U}, {impl Clone for &'_0 T}<'_, U>]}
     type Output = WrapClone<&'_ U>[{built_in impl Sized for &'_ U}, {impl Clone for &'_0 T}<'_, U>]
     fn call_once = call_once<'_0, U>[TraitClause0]
-    non-dyn-compatible
+    vtable: impl_FnOnce_tuple_for_closure::{vtable}<'_0, U>[TraitClause0]
 }
 
 // Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[TraitClause0]}::drop_glue

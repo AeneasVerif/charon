@@ -118,7 +118,7 @@ where
     proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
     proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
     fn call_once = call_once<T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: impl_FnOnce_unit_for_closure::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 
