@@ -6,9 +6,7 @@ use serde_state::DeserializeState;
 use serde_state::SerializeState;
 
 /// A function definition
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct FunDecl {
     pub def_id: FunDeclId,
     /// The meta data associated with the declaration.
@@ -74,9 +72,7 @@ pub enum Abi {
 }
 
 /// Where a given function came from.
-#[derive(
-    Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo, PartialEq, Eq,
-)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Fun"))]
 pub enum FunSource {
     /// A normal function.

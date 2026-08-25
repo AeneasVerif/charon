@@ -42,17 +42,22 @@ use derive_generic_visitor::*;
     visitor(drive(&VisitAst)),
     visitor(drive_mut(&mut VisitAstMut)),
     visitor(drive_two(&two ZipAst)),
-    // Types that we ignore.
-    skip(
+    // Types that are skipped by normal visitors but compared for equality by `ZipAst`.
+    skip_but_eq(
         (), String, PathBuf, bool, char, i128, u8, u64, u128, usize, ustr::Ustr,
         crate::options::CliOpts,
-        Abi, AttributeKind, BuiltinImplData, Byte, DeclarationGroup, Discriminator, DropKind, Error,
-        FileName, GlobalKind, ItemOpacity, LangItem, LifetimeMutability, OverflowMode,
-        PredicateOrigin, ReprOptions, TargetInfo, Variance, WithRetag,
+        Abi, AttributeKind, BuiltinImplData, Byte, Discriminator, DropKind, Error, FileName,
+        GlobalKind, ItemOpacity, LangItem, LifetimeMutability, OverflowMode, ReprOptions, Variance,
+        WithRetag,
+    ),
+    // Types that are completely skipped, even by `ZipAst`.
+    skip(
+        DeclarationGroup, PredicateOrigin, TargetInfo,
+        llbc_ast::BlockId, llbc_ast::StatementId,
     ),
     // Types that we unconditionally explore.
     drive(
-        Assert, AttrInfo, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
+        Assert, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
         Call, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Disambiguator, DynPredicate, Field, FieldId, File, FloatTy, FloatValue,
         FnOperand, FunId, FnPtrKind, FunSig, InlineAttr, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
@@ -60,7 +65,6 @@ use derive_generic_visitor::*;
         Loc, Locals, NullOp, Operand, PathElem, PlaceKind, ConstantExprKind,
         RawAttribute, RefKind, RegionId, RegionParam, ScalarValue, TraitItemName, TraitMethodId, AssocTypeId, AssocConstId, AssocItemId, MaybeAssocItemId,
         TranslatedCrate, TypeDeclKind, TypeId, TypeParam, TypePattern, TypeVarId,
-        llbc_ast::BlockId, llbc_ast::StatementId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets,
         UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, Layout, VariantLayout, PtrMetadata,
@@ -84,7 +88,7 @@ use derive_generic_visitor::*;
         FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId, FileId,
         TypeDeclRef, FunDeclRef, GlobalDeclRef, TraitDeclRef, TraitImplRef, ImplElem,
         FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
-        ItemMeta, Name, Span, Attribute,
+        ItemMeta, Name, Span, Attribute, AttrInfo,
         TypeSource, FunSource, GlobalSource, TraitDeclSource, TraitImplSource,
         TraitAssocTy, TraitAssocConst, TraitMethod, TraitAssocTyImpl,
         DeBruijnId, Ty, TyKind, Region, TraitRef, TraitRefContents, TraitRefKind,
@@ -188,6 +192,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId,
         TraitRef, LiteralTy, Literal, Region, RegionId, (), String, PathBuf, bool, usize,
         DropKind, Error, Variance, WithRetag,
+        llbc_ast::BlockId, llbc_ast::StatementId,
     ),
     // Types that we unconditionally explore.
     drive(
@@ -195,7 +200,6 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
         llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,
         ullbc_ast::BlockData, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets,
-        llbc_ast::BlockId, llbc_ast::StatementId,
         Body, Local,
         for<T: BodyVisitable> Box<T>,
         for<T: BodyVisitable> Option<T>,

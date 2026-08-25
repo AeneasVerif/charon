@@ -14,9 +14,7 @@ use serde_state::SerializeState;
 ///   fn baz(...) { ... }
 /// }
 /// ```
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct TraitImpl {
     pub def_id: TraitImplId,
     pub item_meta: ItemMeta,
@@ -62,9 +60,7 @@ pub struct TraitAssocTyImpl {
 }
 
 /// Where the impl comes from.
-#[derive(
-    Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("TraitImpl"))]
 pub enum TraitImplSource {
     /// A regular trait implementation.
