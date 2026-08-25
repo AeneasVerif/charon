@@ -463,7 +463,8 @@ impl TargetGroup {
 
     /// Yields `(non_canonical_id, canonical_id)` pairs for building an ID remap.
     fn remap_entries<'a>(&'a self) -> impl Iterator<Item = (ItemId, ItemId)> + 'a {
-        self.ids.values().map(|&id| (id, self.canonical_id()))
+        let canonical_id = self.canonical_id();
+        self.ids.values().map(move |&id| (id, canonical_id))
     }
     fn into_remap_entries(self) -> impl Iterator<Item = (ItemId, ItemId)> {
         let canonical_id = self.canonical_id();
@@ -471,7 +472,7 @@ impl TargetGroup {
     }
 
     /// Build a façade `FunDecl` for a group of functions with matching signatures but different
-    /// bodies. The `def_id` is set to a placeholder and must be fixed up on insertion.
+    /// bodies.
     fn build_facade_decl(&self, def_id: FunDeclId, krate: &TranslatedCrate) -> FunDecl {
         let canonical_fun_id = *self.canonical_id().as_fun().unwrap();
         let canonical = krate.fun_decls.get(canonical_fun_id).unwrap();
@@ -511,7 +512,7 @@ fn normalize_name_for_grouping(
     let (mut name, target) = name.strip_target_suffix()?;
     for elem in &mut name.name {
         if let PathElem::Impl(ImplElem::Trait(id)) = elem {
-            // Replace ipl block references with something that contains the implemented trait
+            // Replace impl block references with something that contains the implemented trait
             // predicate instead. That way, comparing names for equality compares trait predicates
             // instead.
             if let Some(timpl) = krate.trait_impls.get(*id) {
@@ -658,13 +659,13 @@ impl<'a> ItemDeduplicator<'a> {
         let mut remap = HashMap::new();
         let mut facade_decls: Vec<FunDecl> = Vec::new();
         for &(idx, decision) in &decisions {
-            let mut group = &self.groups[idx];
+            let group = &self.groups[idx];
             let target_id = match decision {
                 MergeDecision::Skip => unreachable!(),
                 MergeDecision::Dedup => {
-                    self.dedup_group(idx); // takes mutable borrow; invalidates `group`
-                    group = &self.groups[idx];
-                    group.canonical_id()
+                    let canonical_id = group.canonical_id();
+                    self.dedup_group(idx);
+                    canonical_id
                 }
                 MergeDecision::Facade => {
                     let facade_id = self.krate.fun_decls.reserve_slot();
@@ -686,6 +687,7 @@ impl<'a> ItemDeduplicator<'a> {
                     ItemId::Fun(facade_id)
                 }
             };
+            let group = &self.groups[idx];
             for &id in group.ids.values() {
                 if id != target_id {
                     remap.insert(id, target_id);
