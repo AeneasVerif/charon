@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787669727052,
+  "lastUpdate": 1787672376440,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -9362,6 +9362,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 255.9,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.8,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "df133d3f9618641d52f49d046d91cc12eb383635",
+          "message": "Merge pull request #1366 from Nadrieril/eq-modulo\n\nUse zipping visitors instead of `PartialEq` for AST comparisons",
+          "timestamp": "2026-08-25T15:36:49Z",
+          "tree_id": "b84339d4b05d1d24eae4b2420a434833e34f097e",
+          "url": "https://github.com/AeneasVerif/charon/commit/df133d3f9618641d52f49d046d91cc12eb383635"
+        },
+        "date": 1787672374645,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 61821321800,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 8.39,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 382.7,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 24.9,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 50846179584,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 6.8,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 256.1,
             "unit": "max-rss(MB)"
           },
           {
