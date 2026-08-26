@@ -138,15 +138,16 @@ pub enum TraitRefKind {
     /// `BuiltinOrAuto { builtin_data: RemovedAdtClause, .. }`. See
     /// [`BuiltinImplData::RemovedAdtClause`].
     BuiltinOrAuto {
+        /// Metadata that identifies this impl.
         builtin_data: BuiltinImplData,
-        /// The vtable value for this builtin implementation, if we generated one.
-        vtable: Option<GlobalDeclRef>,
         /// Exactly like the same field on `TraitImpl`: the `TraitRef`s required to satisfy the
         /// implied predicates on the trait declaration. E.g. since `FnMut: FnOnce`, a built-in `T:
         /// FnMut` impl would have a `TraitRef` for `T: FnOnce`.
         parent_trait_refs: IndexVec<TraitClauseId, TraitRef>,
         /// The values of the associated types for this trait.
         types: IndexMap<AssocTypeId, TraitAssocTyImpl>,
+        /// The vtable value for this builtin implementation, if we generated one.
+        vtable: Option<GlobalDeclRef>,
     },
 
     /// The automatically-generated implementation for `dyn Trait`.

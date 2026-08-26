@@ -653,9 +653,9 @@ and trait_ref_kind =
           implementations as we can use [TraitImpl] intead. *)
   | BuiltinOrAuto of
       builtin_impl_data
-      * global_decl_ref option
       * trait_ref list
       * trait_assoc_ty_impl assoc_type_id_map
+      * global_decl_ref option
       (** A trait implementation that is computed by the compiler, such as for
           built-in trait [Sized]. This morally points to an invisible [impl]
           block; as such it contains the information we may need from one.
@@ -667,14 +667,14 @@ and trait_ref_kind =
           [[BuiltinImplData::RemovedAdtClause]].
 
           Fields:
-          - [builtin_data]
-          - [vtable]: The vtable value for this builtin implementation, if we
-            generated one.
+          - [builtin_data]: Metadata that identifies this impl.
           - [parent_trait_refs]: Exactly like the same field on [TraitImpl]: the
             [TraitRef]s required to satisfy the implied predicates on the trait
             declaration. E.g. since [FnMut: FnOnce], a built-in [T: FnMut] impl
             would have a [TraitRef] for [T: FnOnce].
-          - [types]: The values of the associated types for this trait. *)
+          - [types]: The values of the associated types for this trait.
+          - [vtable]: The vtable value for this builtin implementation, if we
+            generated one. *)
   | Dyn  (** The automatically-generated implementation for [dyn Trait]. *)
   | UnknownTrait of string  (** For error reporting. *)
 

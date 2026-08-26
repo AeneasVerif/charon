@@ -1206,7 +1206,6 @@ and trait_ref_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 4 -> Ok Self
      | 5 ->
          let* builtin_data = builtin_impl_data_of_postcard ctx st in
-         let* vtable = option_of_postcard global_decl_ref_of_postcard ctx st in
          let* parent_trait_refs =
            index_vec_of_postcard trait_clause_id_of_postcard
              trait_ref_of_postcard ctx st
@@ -1218,7 +1217,8 @@ and trait_ref_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
                   trait_assoc_ty_impl_of_postcard ctx st))
              ctx st
          in
-         Ok (BuiltinOrAuto (builtin_data, vtable, parent_trait_refs, types))
+         let* vtable = option_of_postcard global_decl_ref_of_postcard ctx st in
+         Ok (BuiltinOrAuto (builtin_data, parent_trait_refs, types, vtable))
      | 6 -> Ok Dyn
      | 7 ->
          let* _0 = string_of_postcard ctx st in

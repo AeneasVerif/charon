@@ -1345,13 +1345,12 @@ and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
             `Assoc
               [
                 ("builtin_data", builtin_data);
-                ("vtable", vtable);
                 ("parent_trait_refs", parent_trait_refs);
                 ("types", types);
+                ("vtable", vtable);
               ] );
         ] ->
         let* builtin_data = builtin_impl_data_of_json ctx builtin_data in
-        let* vtable = option_of_json global_decl_ref_of_json ctx vtable in
         let* parent_trait_refs =
           index_vec_of_json trait_clause_id_of_json trait_ref_of_json ctx
             parent_trait_refs
@@ -1363,7 +1362,8 @@ and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
                  trait_assoc_ty_impl_of_json ctx json))
             ctx types
         in
-        Ok (BuiltinOrAuto (builtin_data, vtable, parent_trait_refs, types))
+        let* vtable = option_of_json global_decl_ref_of_json ctx vtable in
+        Ok (BuiltinOrAuto (builtin_data, parent_trait_refs, types, vtable))
     | `String "Dyn" -> Ok Dyn
     | `Assoc [ ("Unknown", _0) ] ->
         let* _0 = string_of_json ctx _0 in
