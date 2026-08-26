@@ -28,6 +28,7 @@ use crate::transform::{CowBox, TransformCtx};
 use crate::ullbc_ast::*;
 
 pub struct Transform {
+    box_new: Option<FunDeclId>,
     box_write: Option<FunDeclId>,
 }
 
@@ -46,7 +47,7 @@ struct Rewrite {
     uninit_box: Place,
     branched_before_payload: bool,
     box_array: Place,
-    box_array_generics: GenericArgs,
+    box_new_generics: GenericArgs,
     assume_init_generics: GenericArgs,
     drop_on_unwind: BlockId,
     assume_init_target: BlockId,
@@ -92,17 +93,6 @@ fn box_inner(ty: &Ty) -> Option<Ty> {
         return None;
     };
     Some(generics.types[TypeVarId::from_usize(0)].clone())
-}
-
-fn box_generics(ty: &Ty) -> Option<GenericArgs> {
-    let TyKind::Adt(TypeDeclRef {
-        id: TypeId::Builtin(BuiltinTy::Box),
-        generics,
-    }) = ty.kind()
-    else {
-        return None;
-    };
-    Some((**generics).clone())
 }
 
 /// Given `src`, find the unique statement of the form `src = [elems...]`
@@ -277,6 +267,14 @@ fn is_new_uninit_call(ctx: &TransformCtx, call: &Call) -> bool {
 
 impl Transform {
     pub fn new(ctx: &mut TransformCtx) -> CowBox<dyn UllbcPass> {
+        let box_new = ctx
+            .translated
+            .fun_decls
+            .iter()
+            .filter(|decl| decl.item_meta.diagnostic_item.as_deref() == Some("box_new"))
+            .map(|decl| decl.def_id)
+            .exactly_one()
+            .ok();
         let pat = NamePattern::parse(names::BOX_WRITE_PATTERN).unwrap();
         let box_write = ctx
             .translated
@@ -287,17 +285,21 @@ impl Transform {
             .copied()
             .exactly_one()
             .ok();
-        CowBox::Owned(Box::new(Transform { box_write }))
+        CowBox::Owned(Box::new(Transform { box_new, box_write }))
     }
 }
 
 impl UllbcPass for Transform {
     fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
-        options.treat_box_as_builtin && !options.monomorphize_with_hax && self.box_write.is_some()
+        options.treat_box_as_builtin
+            && !options.monomorphize_with_hax
+            && self.box_new.is_some()
+            && self.box_write.is_some()
     }
 
     fn transform_body(&self, ctx: &mut TransformCtx, body: &mut ExprBody) {
         // Checked in `should_run`
+        let box_new = self.box_new.unwrap();
         let box_write = self.box_write.unwrap();
 
         // We are looking for, in (flattened) ULLBC:
@@ -328,14 +330,14 @@ impl UllbcPass for Transform {
                 // check uninit_box: Box<MaybeUninit<_>>
                 let uninit_box = call.dest.clone();
                 let maybe_uninit_array_ty = box_inner(uninit_box.ty())?;
-                let mu_decl = &ctx
-                    .translated
-                    .type_decls
-                    .get(maybe_uninit_array_ty.as_adt_id()?)?;
+                let maybe_uninit_ref = maybe_uninit_array_ty.as_adt()?;
+                let mu_decl = &ctx.translated.type_decls.get(maybe_uninit_ref.as_adt()?)?;
                 if mu_decl.item_meta.lang_item.as_ref() != Some(&from_rustc::LangItem::MaybeUninit)
                 {
                     return None;
                 };
+                // `MaybeUninit<T>` and `Box::new<T>` have the same generic parameters (`T: Sized`).
+                let box_new_generics = maybe_uninit_ref.generics.as_ref().clone();
                 let uninit_box_l = uninit_box.local_id()?;
 
                 // (*uninit_box).1.0.0 = [payload_elems...]: [elem_ty; len]
@@ -343,8 +345,6 @@ impl UllbcPass for Transform {
 
                 // assume_init(uninit_box2)
                 let tail = find_assume_init_tail(ctx, body, payload.loc.after(), &uninit_box)?;
-                let box_array_generics = box_generics(tail.box_array.ty())?;
-
                 Some(Rewrite {
                     new_uninit_bid,
                     new_uninit_target: *new_uninit_target,
@@ -359,7 +359,7 @@ impl UllbcPass for Transform {
                     len: payload.len,
                     uninit_box,
                     branched_before_payload: payload.branched_before_payload,
-                    box_array_generics,
+                    box_new_generics,
                     assume_init_generics: tail.assume_init_generics,
                     drop_on_unwind: tail.drop_on_unwind,
                     box_array: tail.box_array,
@@ -409,13 +409,8 @@ impl UllbcPass for Transform {
                 body.body[rw.new_uninit_bid].terminator.kind = TerminatorKind::Goto {
                     target: rw.new_uninit_target,
                 };
-                let mut box_new_generics = rw.box_array_generics.clone();
-                box_new_generics.types.pop(); // pop the allocator param
                 (
-                    FnPtr::new(
-                        FnPtrKind::Fun(FunId::Builtin(BuiltinFunId::BoxNew)),
-                        box_new_generics,
-                    ),
+                    FnPtr::new(FnPtrKind::Fun(FunId::Regular(box_new)), rw.box_new_generics),
                     vec![Operand::Move(array_local.clone())],
                 )
             };

@@ -202,9 +202,6 @@ and binder_kind =
 (** A built-in function, representing a specific built-in function that's part
     of the LLBC semantics. *)
 and builtin_fun_id =
-  | BoxNew
-      (** Used instead of [alloc::boxed::Box::new] when [--treat-box-as-builtin]
-          is set. *)
   | ArrayToSliceShared
       (** Cast [&[T; N]] to [&[T]].
 

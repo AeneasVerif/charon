@@ -308,7 +308,6 @@ and builtin_fun_id_of_json (ctx : of_json_ctx) (js : json) :
     (builtin_fun_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `String "BoxNew" -> Ok BoxNew
     | `String "ArrayToSliceShared" -> Ok ArrayToSliceShared
     | `String "ArrayToSliceMut" -> Ok ArrayToSliceMut
     | `String "ArrayRepeat" -> Ok ArrayRepeat

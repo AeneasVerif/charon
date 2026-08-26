@@ -785,27 +785,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn translate_fun_item_maybe_enqueue(
-        &mut self,
-        span: Span,
-        item: &hax::ItemRef,
-        kind: TransItemSourceKind,
-        enqueue: bool,
-    ) -> Result<MaybeBuiltinFunDeclRef, Error> {
-        match self.recognize_builtin_fun(item)? {
-            Some(id) => {
-                let generics =
-                    self.translate_generic_args(span, &item.generic_args, &item.trait_proofs)?;
-                Ok(MaybeBuiltinFunDeclRef {
-                    id: FunId::Builtin(id),
-                    generics: Box::new(generics),
-                    trait_ref: None,
-                })
-            }
-            None => self.translate_item_maybe_enqueue(span, item, kind, enqueue),
-        }
-    }
-
     /// Translate a reference to a trait method declaration without registering the declaration as
     /// a `FunDecl`. `TraitDecl.methods` contains the declaration signature and metadata; only
     /// default implementations give rise to a real function item.
@@ -855,10 +834,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
         enqueue: bool,
     ) -> Result<FnPtr, Error> {
-        let fun_item = self.translate_fun_item_maybe_enqueue(span, item, kind, enqueue)?;
+        let fun_item: DeclRef<ItemId> =
+            self.translate_item_maybe_enqueue(span, item, kind, enqueue)?;
+        let fun_item: DeclRef<FunDeclId> = fun_item.try_convert_id().unwrap();
         let fun_id = match fun_item.trait_ref {
             // Direct function call
-            None => FnPtrKind::Fun(fun_item.id),
+            None => FnPtrKind::Fun(FunId::Regular(fun_item.id)),
             // Trait method
             Some(trait_ref) => {
                 let trait_decl_id = trait_ref.trait_id();

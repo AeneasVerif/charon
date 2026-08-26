@@ -27,6 +27,13 @@ where
     TypeOutlives1: A: '_0,
 = <opaque>
 
+#[track_caller]
+#[diagnostic_item("box_new")]
+pub fn alloc::boxed::{alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<T>(_1: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
 // Full name: alloc::rc::Rc
 #[diagnostic_item("Rc")]
 pub opaque type Rc<T>
@@ -125,7 +132,7 @@ fn foo()
     storage_live(_6)
     storage_live(_7)
     _7 = copy array
-    _6 = @BoxNew<[i32; 2usize]>[{built_in impl Sized for [i32; 2usize]}](move _7)
+    _6 = alloc::boxed::{alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<[i32; 2usize]>[{built_in impl Sized for [i32; 2usize]}](move _7)
     ↳⚡ unwind_continue
     _5 = unsize_cast<alloc::boxed::Box<[i32; 2usize]>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}], alloc::boxed::Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 2usize>(move _6)
     conditional_drop[impl_Destruct_for_Box::drop_glue<'31, [i32; 2usize], Global>[{built_in impl MetaSized for [i32; 2usize]}, {built_in impl Sized for Global}]] _6
@@ -179,7 +186,7 @@ fn foo()
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_18)
-    _16 = @BoxNew<String>[{built_in impl Sized for String}](move _17)
+    _16 = alloc::boxed::{alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<String>[{built_in impl Sized for String}](move _17)
     ↳⚡ conditional_drop[impl_Destruct_for_String::drop_glue<'44>] _17
         ↳⚡ unwind_terminate
         conditional_drop[impl_Destruct_for_String::drop_glue<'43>] string

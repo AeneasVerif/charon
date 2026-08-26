@@ -89,6 +89,15 @@ where
     non-dyn-compatible
 }
 
+// Full name: alloc::boxed::{alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, TraitClause1, impl_Destruct_for_Global]}::new
+#[track_caller]
+#[diagnostic_item("box_new")]
+pub fn new<T>(_1: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, TraitClause1, impl_Destruct_for_Global]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Destruct),
+= <opaque>
+
 struct test_crate::Modifiable::{vtable}<T> {
   size: usize,
   align: usize,
@@ -284,7 +293,7 @@ where
     storage_live(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = @BoxNew<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const 199i32)
+    _5 = new<i32>[{built_in impl Sized for i32}, {built_in impl Destruct for i32}](const 199i32)
     ↳⚡ storage_dead(arg)
         unwind_continue
     _4 = &mut _5

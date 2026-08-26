@@ -237,8 +237,6 @@ pub enum FunId {
     DriveTwo,
 )]
 pub enum BuiltinFunId {
-    /// Used instead of `alloc::boxed::Box::new` when `--treat-box-as-builtin` is set.
-    BoxNew,
     /// Cast `&[T; N]` to `&[T]`.
     ///
     /// This is used instead of unsizing coercions when `--ops-to-function-calls` is set.
@@ -336,17 +334,6 @@ pub enum FnPtrKind {
 pub struct FnPtr {
     pub kind: Box<FnPtrKind>,
     pub generics: BoxedArgs,
-}
-
-/// Reference to a function, possibly indirected via a trait.
-/// Used to convert from `DeclRef`.
-#[derive(
-    Debug, Clone, SerializeState, DeserializeState, PartialEq, Eq, Hash, Drive, DriveMut, DriveTwo,
-)]
-pub struct MaybeBuiltinFunDeclRef {
-    pub id: FunId,
-    pub generics: BoxedArgs,
-    pub trait_ref: Option<TraitRef>,
 }
 
 /// Reference to a global declaration.
@@ -568,21 +555,6 @@ impl TryFrom<DeclRef<ItemId>> for FnPtr {
 impl From<FunDeclRef> for FnPtr {
     fn from(fn_ref: FunDeclRef) -> Self {
         FnPtr::new(fn_ref.id.into(), fn_ref.generics)
-    }
-}
-impl TryFrom<DeclRef<ItemId>> for MaybeBuiltinFunDeclRef {
-    type Error = ();
-    fn try_from(item: DeclRef<ItemId>) -> Result<Self, ()> {
-        Ok(item.try_convert_id::<FunId>()?.into())
-    }
-}
-impl From<DeclRef<FunId>> for MaybeBuiltinFunDeclRef {
-    fn from(item: DeclRef<FunId>) -> Self {
-        MaybeBuiltinFunDeclRef {
-            id: item.id,
-            generics: item.generics,
-            trait_ref: item.trait_ref,
-        }
     }
 }
 
