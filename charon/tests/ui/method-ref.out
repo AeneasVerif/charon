@@ -30,8 +30,8 @@ trait Ord<Self>
     non-dyn-compatible
 }
 
-// Full name: test_crate::min
-fn min<T>()
+// Full name: test_crate::method_ref
+fn method_ref<T>()
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ord),
@@ -45,6 +45,7 @@ where
     _1 = const TraitClause1::cmp<'0, '1>
     storage_dead(_1)
     _0 = ()
+    // use_fn::<T, _>(T::cmp);
     return
 }
 

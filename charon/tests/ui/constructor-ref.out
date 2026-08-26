@@ -1,0 +1,110 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Tuple
+#[fundamental]
+#[lang_item(Tuple)]
+pub trait Tuple<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::ops::function::FnOnce
+#[fundamental]
+#[lang_item(FnOnce)]
+pub trait FnOnce<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self::Output: Sized)
+    type Output
+    fn call_once;
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+}
+
+// Full name: test_crate::Wrapper
+enum Wrapper<T>
+where
+    TraitClause0: (T: Sized),
+{
+  Value { _0: T },
+}
+
+// Full name: test_crate::Wrapper::Value
+fn Value<T>(_1: T) -> Wrapper<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: Wrapper<T>[TraitClause0]; // return
+    let _1: T; // arg #1
+
+    storage_live(_0)
+    _0 = Wrapper::Value { _0: move _1 }
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::use_constructor
+fn use_constructor<T, F>(_1: F)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (F: Sized),
+    TraitClause2: (F: FnOnce<(T,)>),
+    TypeConstraint0: TraitClause2::Output = Wrapper<T>[TraitClause0],
+{
+    let _0: (); // return
+    let _1: F; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'0>] _1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::constructor_ref
+fn constructor_ref<T>()
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: (); // return
+    let _1: (); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = use_constructor<T, Value<T>[TraitClause0]>[TraitClause0, {built_in impl Sized for Value<T>[TraitClause0]}, {impl#0}<T>[TraitClause0]](const Value<T>[TraitClause0])
+    ↳⚡ unwind_continue
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+
+
