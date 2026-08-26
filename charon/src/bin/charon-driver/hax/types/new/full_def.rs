@@ -481,6 +481,13 @@ pub enum FullDefKind<'tcx> {
         variant_id: VariantIdx,
         fields: IndexVec<FieldIdx, FieldDef>,
         output_ty: Ty,
+        sig: PolyFnSig,
+        /// Info required to construct a virtual `FnOnce` impl for this constructor.
+        fn_once_impl: Option<Box<VirtualTraitImpl>>,
+        /// Info required to construct a virtual `FnMut` impl for this constructor.
+        fn_mut_impl: Option<Box<VirtualTraitImpl>>,
+        /// Info required to construct a virtual `Fn` impl for this constructor.
+        fn_impl: Option<Box<VirtualTraitImpl>>,
     },
     /// A field in a struct, enum or union. e.g.
     /// - `bar` in `struct Foo { bar: u8 }`
@@ -984,6 +991,8 @@ where
         RDefKind::Ctor(ctor_of, _) => {
             let args = args_or_default();
             let ctor_of = ctor_of.sinto(s);
+            let sig = tcx.fn_sig(def_id);
+            let fn_trait_impls = fn_def_trait_impls(def_id, sig);
 
             // The def_id of the adt this ctor belongs to.
             let adt_def_id = match ctor_of {
@@ -1005,6 +1014,10 @@ where
                 variant_id: variant_id.sinto(s),
                 fields,
                 output_ty,
+                sig: inst_binder(tcx, s.typing_env(), Some(args), sig).sinto(s),
+                fn_once_impl: fn_trait_impls.as_ref().map(|(vimpl, _, _)| vimpl.clone()),
+                fn_mut_impl: fn_trait_impls.as_ref().map(|(_, vimpl, _)| vimpl.clone()),
+                fn_impl: fn_trait_impls.map(|(_, _, vimpl)| vimpl),
             }
         }
         RDefKind::Field => FullDefKind::Field,

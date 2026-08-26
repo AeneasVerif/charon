@@ -118,6 +118,13 @@ impl<'a> CallableFnImpls<'a> {
                 fn_mut_impl,
                 fn_impl,
                 ..
+            }
+            | hax::FullDefKind::Ctor {
+                sig,
+                fn_once_impl,
+                fn_mut_impl,
+                fn_impl,
+                ..
             } => Some(Self {
                 callable: Callable::FnDef {
                     item: def.this(),

@@ -324,6 +324,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             variant_id,
             fields,
             output_ty,
+            ..
         } = def.kind()
         else {
             unreachable!()

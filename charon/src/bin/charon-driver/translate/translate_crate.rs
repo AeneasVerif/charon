@@ -188,9 +188,15 @@ impl TransItemSource {
     /// Whether this item is the "main" item for this def_id or not (e.g. Destruct impl/methods are not
     /// the main item).
     pub(crate) fn is_derived_item(&self) -> bool {
+        self.kind.is_derived_item()
+    }
+}
+
+impl TransItemSourceKind {
+    fn is_derived_item(self) -> bool {
         use TransItemSourceKind::*;
         !matches!(
-            self.kind,
+            self,
             Global
                 | TraitDecl
                 | TraitImpl(TransImplSource::Normal)
@@ -200,9 +206,7 @@ impl TransItemSource {
                 | Type
         )
     }
-}
 
-impl TransItemSourceKind {
     pub fn is_for_trait(&self) -> bool {
         matches!(
             self,
@@ -661,6 +665,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
         enqueue: bool,
     ) -> Result<T, Error> {
+        let hax_item = if kind.is_derived_item() {
+            // If the original item is an associated item we should ignore that and refer to it
+            // like a top-level item.
+            &hax_item.re_resolve(self.hax_state_with_id(), hax::AssocItemResolution::None)
+        } else {
+            hax_item
+        };
+
         let id: ItemId = self.register_item_maybe_enqueue(span, enqueue, hax_item, kind);
         // In mono mode, we keep trait decls generic.
         let mut generics = if self.monomorphize() && !matches!(kind, TransItemSourceKind::TraitDecl)
@@ -674,11 +686,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // `translate_item_generics`.
         if matches!(
             hax_item.def_id.kind,
-            hax::DefKind::Fn | hax::DefKind::AssocFn | hax::DefKind::Closure
+            hax::DefKind::Fn
+                | hax::DefKind::AssocFn
+                | hax::DefKind::Closure
+                | hax::DefKind::Ctor(..)
         ) {
             let def = self.hax_def(hax_item)?;
             match def.kind() {
-                hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
+                hax::FullDefKind::Fn { sig, .. }
+                | hax::FullDefKind::AssocFn { sig, .. }
+                | hax::FullDefKind::Ctor { sig, .. } => {
                     generics.regions.extend(
                         sig.bound_vars
                             .iter()
@@ -752,6 +769,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             .as_ref()
             .map(|trait_proof| self.translate_trait_proof(span, trait_proof))
             .transpose()?;
+
         let item = DeclRef {
             id,
             generics: Box::new(generics),

@@ -421,7 +421,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         _span: Span,
         def: &hax::FullDef<'tcx>,
     ) -> Result<(), Error> {
-        if let hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } = def.kind()
+        if let hax::FullDefKind::Fn { sig, .. }
+        | hax::FullDefKind::AssocFn { sig, .. }
+        | hax::FullDefKind::Ctor { sig, .. } = def.kind()
         {
             let innermost_binder = self.innermost_binder_mut();
             assert!(innermost_binder.bound_region_vars.is_empty());
@@ -535,7 +537,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         if let hax::FullDefKind::Fn { .. }
         | hax::FullDefKind::AssocFn { .. }
-        | hax::FullDefKind::Closure { .. } = def.kind()
+        | hax::FullDefKind::Closure { .. }
+        | hax::FullDefKind::Ctor { .. } = def.kind()
             && let TransItemSourceKind::CallableMethod(ClosureKind::Fn | ClosureKind::FnMut) = kind
         {
             // Add the lifetime generics coming from the method itself.

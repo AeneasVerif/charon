@@ -1,0 +1,143 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Tuple
+#[fundamental]
+#[lang_item(Tuple)]
+pub trait Tuple<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::ops::function::FnOnce
+#[fundamental]
+#[lang_item(FnOnce)]
+pub trait FnOnce<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self::Output: Sized)
+    type Output
+    fn call_once;
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+}
+
+// Full name: test_crate::Wrapper
+enum Wrapper<T>
+where
+    TraitClause0: (T: Sized),
+{
+  Value { _0: T },
+}
+
+// Full name: test_crate::Wrapper::Value
+fn Value<T>(_1: T) -> Wrapper<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: Wrapper<T>[TraitClause0]; // return
+    let _1: T; // arg #1
+
+    storage_live(_0)
+    _0 = Wrapper::Value { _0: move _1 }
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::Wrapper::{impl FnOnce<(T,)> for Value<T>[TraitClause0]}::call_once
+fn call_once<T>(state: Value<T>[TraitClause0], args: (T,)) -> Wrapper<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: Wrapper<T>[TraitClause0]; // return
+    let state: Value<T>[TraitClause0]; // arg #1
+    let args: (T,); // arg #2
+
+    storage_live(_0)
+    _0 = Value<T>[TraitClause0](move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::Wrapper::{impl FnOnce<(T,)> for Value<T>[TraitClause0]}
+impl<T> FnOnce<(T,)> for Value<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (Value<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Value<T>[TraitClause0]}
+    proof ImpliedClause1: ((T,): Sized) = {built_in impl Sized for (T,)}
+    proof ImpliedClause2: ((T,): Tuple) = {built_in impl Tuple for (T,)}
+    proof ImpliedClause3: (Wrapper<T>[TraitClause0]: Sized) = {built_in impl Sized for Wrapper<T>[TraitClause0]}
+    type Output = Wrapper<T>[TraitClause0]
+    fn call_once = call_once<T>[TraitClause0]
+    vtable: {impl FnOnce<(T,)> for Value<T>[TraitClause0]}::{vtable}<T>[TraitClause0]
+}
+
+// Full name: test_crate::use_constructor
+fn use_constructor<T, F>(_1: F)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (F: Sized),
+    TraitClause2: (F: FnOnce<(T,)>),
+    TypeConstraint0: TraitClause2::Output = Wrapper<T>[TraitClause0],
+{
+    let _0: (); // return
+    let _1: F; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'0>] _1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::constructor_ref
+fn constructor_ref<T>()
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: (); // return
+    let _1: (); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = use_constructor<T, Value<T>[TraitClause0]>[TraitClause0, {built_in impl Sized for Value<T>[TraitClause0]}, {impl FnOnce<(T,)> for Value<T>[TraitClause0]}<T>[TraitClause0]](const Value<T>[TraitClause0])
+    ↳⚡ unwind_continue
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+
+
