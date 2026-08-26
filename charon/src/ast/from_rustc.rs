@@ -8,7 +8,7 @@
 )]
 
 use crate::ast::meta::Span;
-use derive_generic_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use serde::{Deserialize, Serialize};
 use ustr::Ustr;
 
@@ -64,7 +64,7 @@ pub struct FromRustcError;
 /// [`rustc_parse`]: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_parse/index.html
 /// [`rustc_codegen_ssa`]: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_codegen_ssa/index.html
 /// [`rustc_attr_parsing`]: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_attr_parsing/index.html
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcAttributeKind"))]
 #[cfg_attr(
     feature = "charon_on_charon",
@@ -122,7 +122,7 @@ pub enum AttributeKind {
 }
 
 /// A representation of all the valid lang items in Rust.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcLangItem"))]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("RustcLangItem"))]
 pub enum LangItem {
@@ -574,7 +574,7 @@ pub enum LangItem {
     FromFn,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcDeprecation"))]
 pub struct Deprecation {
     pub since: DeprecatedSince,
@@ -586,7 +586,7 @@ pub struct Deprecation {
     pub suggestion: Option<Ustr>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcInlineAttr"))]
 #[cfg_attr(
     feature = "charon_on_charon",
@@ -606,7 +606,7 @@ pub enum InlineAttr {
     },
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcOptimizeAttr"))]
 #[cfg_attr(
     feature = "charon_on_charon",
@@ -624,7 +624,7 @@ pub enum OptimizeAttr {
 }
 
 /// Release in which an API is deprecated.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcDeprecatedSince"))]
 #[cfg_attr(
     feature = "charon_on_charon",
@@ -644,7 +644,7 @@ pub enum DeprecatedSince {
     Err,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcIdent"))]
 pub struct Ident {
     /// `name` should never be the empty symbol. If you are considering that,
@@ -655,7 +655,7 @@ pub struct Ident {
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcRustcVersion"))]
 pub struct RustcVersion {
     pub major: u16,
