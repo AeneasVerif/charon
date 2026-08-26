@@ -63,6 +63,9 @@ pub use pretty::formatter;
 /// The version of the crate, as defined in `Cargo.toml`.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
+/// The Git commit from which Charon was built.
+pub const COMMIT_ID: &str = env!("CHARON_GIT_COMMIT");
+
 /// Read a `.llbc` file.
 pub fn deserialize_llbc(path: &std::path::Path) -> anyhow::Result<ast::TranslatedCrate> {
     deserialize_llbc_with_format(path, options::SerializationFormat::Json)

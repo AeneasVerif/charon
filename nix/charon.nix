@@ -1,4 +1,5 @@
 { cargoLock ? ../charon/Cargo.lock
+, charonCommit
 , craneLib
 , lib
 , miriSysroots ? null
@@ -28,6 +29,7 @@ in
 craneLib.buildPackage (
   craneArgs
     // rec {
+    CHARON_GIT_COMMIT = charonCommit;
     buildInputs = [
       zlib
     ];

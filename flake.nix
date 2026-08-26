@@ -38,6 +38,7 @@
         fullMirSysroots = pkgs.callPackage ./nix/full-mir-sysroots.nix { inherit rustToolchain; };
         charon-unwrapped = pkgs.callPackage ./nix/charon.nix {
           inherit craneLib;
+          charonCommit = self.rev or (lib.removeSuffix "-dirty" (self.dirtyRev or "unknown"));
           miriSysroots = fullMirSysroots;
         };
         charon = pkgs.runCommand "charon"

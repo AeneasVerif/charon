@@ -54,7 +54,7 @@ fn charon_pretty_print() -> Result<()> {
 #[test]
 fn charon_version() -> Result<()> {
     charon(&["version"], ".", |stdout, cmd| {
-        let version = charon_lib::VERSION;
+        let version = format!("{} ({})", charon_lib::VERSION, charon_lib::COMMIT_ID);
         ensure!(
             stdout.trim() == version,
             "Output of `{cmd}` is:\n{stdout:?}\nIt should be {version}."
