@@ -101,7 +101,7 @@ pub fn main() -> Result<()> {
             ExitStatus::default()
         }
         Charon::Version => {
-            println!("{}", charon_lib::VERSION);
+            println!("{} ({})", charon_lib::VERSION, charon_lib::COMMIT_ID);
             ExitStatus::default()
         }
     };
