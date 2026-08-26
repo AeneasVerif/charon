@@ -228,6 +228,20 @@ impl ItemRef {
         Self::translate_from_hax_def_id(s, self.def_id.clone(), args)
     }
 
+    /// Reconstruct this item reference with the requested associated item resolution.
+    pub fn re_resolve<'tcx, S: UnderOwnerState<'tcx>>(
+        &self,
+        s: &S,
+        assoc_item_resolution: AssocItemResolution,
+    ) -> Self {
+        Self::translate_from_hax_def_id_maybe_resolve(
+            s,
+            self.def_id.clone(),
+            self.rustc_args(s),
+            assoc_item_resolution,
+        )
+    }
+
     pub fn contents(&self) -> &ItemRefContents {
         &self.contents
     }
