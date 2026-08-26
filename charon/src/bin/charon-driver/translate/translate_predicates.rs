@@ -312,7 +312,31 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     }
                 }
             }
-            TraitProofKind::Dyn => TraitRefKind::Dyn,
+            TraitProofKind::Dyn(proof) => {
+                // Translate the proof in the context of the clauses bound by the dyn type.
+                let bound_proof = self.translate_dyn_binder(span, proof, |ctx, _, proof| {
+                    ctx.translate_trait_proof(span, proof)
+                })?;
+
+                // Instantiate the fake type with the actual `dyn Trait` and a `TraitRefKind::Dyn`
+                // for each base clause. That way, `TraitRefKind::Dyn` is only used for clauses
+                // directly in the `dyn Trait1 + Trait2` type.
+                let args = {
+                    let dyn_ty = trait_decl_ref.clone().erase().generics.types[0].clone();
+                    assert!(dyn_ty.is_dyn_trait());
+                    let mut args = GenericArgs::new_types([dyn_ty].into_iter().collect());
+                    args.trait_refs = bound_proof
+                        .params
+                        .trait_clauses
+                        .clone()
+                        .substitute(&args)
+                        .map(|clause| TraitRef::new(TraitRefKind::Dyn, clause.trait_));
+                    args
+                };
+                let trait_ref = bound_proof.apply(&args);
+                assert_eq!(trait_ref.trait_id(), trait_decl_ref.skip_binder.id);
+                trait_ref.kind.clone()
+            }
             TraitProofKind::Builtin {
                 trait_data,
                 proofs: trait_proofs,

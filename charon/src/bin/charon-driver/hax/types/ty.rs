@@ -811,7 +811,7 @@ pub struct DynBinder<T> {
 }
 
 /// Do trait resolution in the context of the clauses of a `dyn Trait` type.
-fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
+pub(in crate::hax) fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
     s: &S,
     // The predicates in the context.
     epreds: &'tcx ty::List<ty::Binder<'tcx, ty::ExistentialPredicate<'tcx>>>,

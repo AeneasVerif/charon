@@ -49,7 +49,7 @@ pub fn call_super<'_0>(obj: &'_0 (dyn Subtrait + '_0)) -> u32
     storage_live(_0)
     storage_live(_2)
     _2 = &(*obj) with_metadata(copy obj.metadata)
-    _0 = (copy (*_2.metadata).method_super_method)(move _2)
+    _0 = (copy (*(*_2.metadata).super_trait_1).method_super_method)(move _2)
     ↳⚡ storage_dead(obj)
         unwind_continue
     storage_dead(_2)
