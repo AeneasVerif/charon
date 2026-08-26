@@ -27,11 +27,11 @@ impl UllbcPass for Transform {
                 && let ConstantExprKind::Literal(Literal::Scalar(ScalarValue::Unsigned(
                     UIntTy::U32,
                     variant_id,
-                ))) = &arg0.kind
+                ))) = arg0.kind()
                 && let ConstantExprKind::Literal(Literal::Scalar(ScalarValue::Unsigned(
                     UIntTy::U32,
                     field_id,
-                ))) = &arg1.kind
+                ))) = arg1.kind()
                 && let Some(tdecl) = ctx.ctx.translated.type_decls.get(type_id)
             {
                 // TODO: move into a pass, maybe also size_of/align_of? or remove the nullops.

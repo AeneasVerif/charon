@@ -31,6 +31,8 @@ type of_postcard_ctx = {
   id_to_file_map : file FileTbl.t;
   ty_hashcons_map : ty HashConsId.Map.t ref;
   tref_hashcons_map : trait_ref HashConsId.Map.t ref;
+  constant_expr_hashcons_map : constant_expr HashConsId.Map.t ref;
+  exact_size_expr_hashcons_map : exact_size_expr HashConsId.Map.t ref;
 }
 
 let empty_of_postcard_ctx : of_postcard_ctx =
@@ -38,6 +40,8 @@ let empty_of_postcard_ctx : of_postcard_ctx =
     id_to_file_map = FileTbl.create 8;
     ty_hashcons_map = ref HashConsId.Map.empty;
     tref_hashcons_map = ref HashConsId.Map.empty;
+    constant_expr_hashcons_map = ref HashConsId.Map.empty;
+    exact_size_expr_hashcons_map = ref HashConsId.Map.empty;
   }
 
 let hash_consed_val_of_postcard (map : 'a HashConsId.Map.t ref)

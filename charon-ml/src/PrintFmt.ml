@@ -522,6 +522,8 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
         args
   | CFnDef fn_ptr -> pp_fn_ptr env fmt fn_ptr
   | CFnPtr fn_ptr -> Format.fprintf fmt "fnptr(%a)" (pp_fn_ptr env) fn_ptr
+  | CSizeOf ty -> Format.fprintf fmt "size_of::<%a>()" (pp_ty env) ty
+  | CAlignOf ty -> Format.fprintf fmt "align_of::<%a>()" (pp_ty env) ty
   | CTypeId ty -> Format.fprintf fmt "TypeId(%a)" (pp_ty env) ty
   | CRawMemory bytes ->
       Format.fprintf fmt "RawMemory(%a)" (pp_sep_list ", " (pp_byte env)) bytes

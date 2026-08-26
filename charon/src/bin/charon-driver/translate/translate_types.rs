@@ -173,7 +173,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 assert!(args.types.len() == 1 && args.const_generics.len() == 1);
                 TyKind::Array(
                     args.types.pop().unwrap(),
-                    Box::new(args.const_generics.pop().unwrap()),
+                    args.const_generics.pop().unwrap(),
                 )
             }
             hax::TyKind::Pat(ty, pat) => {
@@ -313,8 +313,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<TypePattern, Error> {
         Ok(match pat {
             hax::Pattern::Range { start, end } => TypePattern::Range(
-                Box::new(self.translate_constant_expr(span, start)?),
-                Box::new(self.translate_constant_expr(span, end)?),
+                self.translate_constant_expr(span, start)?,
+                self.translate_constant_expr(span, end)?,
             ),
             hax::Pattern::Or(patterns) => TypePattern::OrPattern(
                 patterns
@@ -501,7 +501,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let field_offsets = variant_layout
                 .field_offsets
                 .iter()
-                .map(|o| o.bytes())
+                .map(|o| OffsetExpr::new(o.bytes()))
                 .collect();
             Some(VariantLayout {
                 field_offsets,
@@ -516,9 +516,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         ) -> Option<VariantLayout> {
             let field_offsets = match &layout_data.fields {
                 r_abi::FieldsShape::Arbitrary { offsets, .. } => {
-                    offsets.iter().map(|o| o.bytes()).collect()
+                    offsets.iter().map(|o| OffsetExpr::new(o.bytes())).collect()
                 }
-                r_abi::FieldsShape::Union(n) => vec![0; n.get()].into(),
+                r_abi::FieldsShape::Union(n) => (0..n.get()).map(|_| OffsetExpr::new(0)).collect(),
                 r_abi::FieldsShape::Primitive => IndexVec::default(),
                 r_abi::FieldsShape::Array { .. } => panic!("Unexpected layout shape"),
             };
@@ -571,6 +571,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         } else {
             (None, None)
         };
+        let size = SizeExpr::new(size);
+        let align = SizeExpr::new(align);
 
         // Build the discriminator tree and variant layouts.
         let (discriminator, variant_layouts) = match layout.variants() {
@@ -589,6 +591,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .get(*tag_field)
                     .map(|s| r_abi::Size::bytes(*s))
                     .expect("No tag field offset for enum?");
+                let tag_offset_expr = OffsetExpr::new(tag_offset);
 
                 let tag_ty = match tag.primitive() {
                     r_abi::Primitive::Int(int_ty, signed) => {
@@ -647,7 +650,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             // happens if we encounter a discriminant that would have been the
                             // niched variant.
                             let discriminator = Discriminator::Branch {
-                                offset: tag_offset,
+                                offset: tag_offset_expr.clone(),
                                 int_ty: tag_ty,
                                 fallback: Box::new(Discriminator::Invalid),
                                 children,
@@ -659,7 +662,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 };
 
                 let discriminator = Discriminator::Branch {
-                    offset: tag_offset,
+                    offset: tag_offset_expr,
                     int_ty: tag_ty,
                     fallback: Box::new(fallback),
                     children,
@@ -726,12 +729,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     size += size_of_ty;
                     // For these types, align == size is good enough.
                     align = std::cmp::max(align, size);
-                    offset
+                    OffsetExpr::new(offset)
                 });
 
                 Ok(Layout {
-                    size: Some(size),
-                    align: Some(align),
+                    size: SizeExpr::new(size),
+                    align: SizeExpr::new(align),
                     discriminator: None,
                     uninhabited: false,
                     variant_layouts: IndexVec::from([Some(VariantLayout {
@@ -914,9 +917,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             None
         };
 
+        let explicit_discr_type =
+            hax_repr_options
+                .int_specified
+                .then(|| match hax_repr_options.typ.kind() {
+                    hax::TyKind::Int(ty) => LiteralTy::Int(Self::translate_hax_int_ty(ty)),
+                    hax::TyKind::Uint(ty) => LiteralTy::UInt(Self::translate_hax_uint_ty(ty)),
+                    ty => unreachable!("explicit enum discriminant type is not an integer: {ty:?}"),
+                });
+
         ReprOptions {
             transparent: hax_repr_options.flags.is_transparent,
-            explicit_discr_type: hax_repr_options.int_specified,
+            explicit_discr_type,
             repr_algo,
             align_modif: align_mod,
         }

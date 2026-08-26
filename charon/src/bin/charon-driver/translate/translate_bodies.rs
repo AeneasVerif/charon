@@ -212,10 +212,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             // the value. See the `trait-default-const-cross-crate` test.
             let c = self.translate_constant_expr(span, &value)?;
             let mut bb = BodyBuilder::new(span, 0);
-            let ret = bb.new_var(None, c.ty.clone());
+            let ret = bb.new_var(None, c.ty().clone());
             bb.push_statement(StatementKind::Assign(
                 ret,
-                Rvalue::Use(Operand::Const(Box::new(c)), WithRetag::No),
+                Rvalue::Use(Operand::Const(c), WithRetag::No),
             ));
             Ok(Body::Unstructured(bb.build()))
         } else {
@@ -263,7 +263,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         Ok(match &meta {
             hax::UnsizingMetadata::Length(len) => {
                 let len = self.translate_constant_expr(span, len)?;
-                UnsizingMetadata::Length(Box::new(len))
+                UnsizingMetadata::Length(len)
             }
             hax::UnsizingMetadata::DirectVTable(trait_proof) => {
                 let tref = self.translate_trait_proof(span, trait_proof)?;
@@ -530,13 +530,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let mut builder = BodyBuilder::new(span, signature.inputs.len());
         let return_place = builder.new_var(Some("ret".to_string()), signature.output.clone());
-        let type_id = ConstantExpr {
-            kind: ConstantExprKind::TypeId(type_id_ty),
-            ty: signature.output.clone(),
-        };
+        let type_id = ConstantExpr::new(
+            ConstantExprKind::TypeId(type_id_ty),
+            signature.output.clone(),
+        );
         builder.push_statement(StatementKind::Assign(
             return_place,
-            Rvalue::Use(Operand::Const(Box::new(type_id)), WithRetag::No),
+            Rvalue::Use(Operand::Const(type_id), WithRetag::No),
         ));
         Ok(Body::Unstructured(builder.build()))
     }
@@ -721,10 +721,10 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
 
 impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
     fn missing_ptr_metadata() -> Operand {
-        Operand::Const(Box::new(ConstantExpr {
-            kind: ConstantExprKind::Opaque("Missing metadata".to_string()),
-            ty: Ty::mk_unit(),
-        }))
+        Operand::Const(ConstantExpr::new(
+            ConstantExprKind::Opaque("Missing metadata".to_string()),
+            Ty::mk_unit(),
+        ))
     }
 
     fn apply_user_type_projection(
@@ -951,8 +951,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
 
         let tcx = self.hax_state.base().tcx;
         let local_decls = self.local_decls;
-        let ptr_size = self.translated.the_target_information().target_pointer_size;
-
         let mut place_ty: mir::PlaceTy = mir::Place::from(mir_place.local).ty(local_decls, tcx);
         let var_id = self.translate_local(&mir_place.local).unwrap();
         let mut place = self.locals.place_for_var(var_id);
@@ -1040,20 +1038,16 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 &ConstantIndex {
                     offset, from_end, ..
                 } => {
-                    let offset = Operand::Const(Box::new(
-                        ScalarValue::mk_usize(ptr_size, offset).to_constant(),
-                    ));
+                    let offset =
+                        Operand::Const(ScalarValue::mk_usize(offset as u128).to_constant());
                     ProjectionElem::Index {
                         offset: Box::new(offset),
                         from_end,
                     }
                 }
                 &Subslice { from, to, from_end } => {
-                    let from = Operand::Const(Box::new(
-                        ScalarValue::mk_usize(ptr_size, from).to_constant(),
-                    ));
-                    let to =
-                        Operand::Const(Box::new(ScalarValue::mk_usize(ptr_size, to).to_constant()));
+                    let from = Operand::Const(ScalarValue::mk_usize(from as u128).to_constant());
+                    let to = Operand::Const(ScalarValue::mk_usize(to as u128).to_constant());
                     ProjectionElem::Subslice {
                         from: Box::new(from),
                         to: Box::new(to),
@@ -1099,16 +1093,16 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 match &const_op.kind {
                     hax::ConstOperandKind::Value(constant) => {
                         let constant = self.translate_constant_expr(span, constant)?;
-                        Operand::Const(Box::new(constant))
+                        Operand::Const(constant)
                     }
                     hax::ConstOperandKind::Promoted(item) => {
                         // A promoted constant that could not be evaluated.
                         let global_ref = self.translate_global_decl_ref(span, item)?;
-                        let constant = ConstantExpr {
-                            kind: ConstantExprKind::Global(global_ref),
-                            ty: self.translate_ty(span, &const_op.ty)?,
-                        };
-                        Operand::Const(Box::new(constant))
+                        let constant = ConstantExpr::new(
+                            ConstantExprKind::Global(global_ref),
+                            self.translate_ty(span, &const_op.ty)?,
+                        );
+                        Operand::Const(constant)
                     }
                 }
             }
@@ -1163,7 +1157,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let op = self.translate_operand(span, operand)?;
                 let ty = op.ty().clone();
                 // Remark: we could desugar this into a function call later.
-                Ok(Rvalue::Repeat(op, ty, Box::new(c)))
+                Ok(Rvalue::Repeat(op, ty, c))
             }
             mir::Rvalue::Ref(_region, borrow_kind, place) => {
                 let place = self.translate_place(span, place)?;
@@ -1235,10 +1229,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         let fn_ptr_bound: RegionBinder<FnPtr> = fn_ref.map(FunDeclRef::into);
                         let fn_ptr: FnPtr = self.erase_region_binder(fn_ptr_bound.clone());
                         let src_ty = TyKind::FnDef(fn_ptr_bound).into_ty();
-                        operand = Operand::Const(Box::new(ConstantExpr {
-                            kind: ConstantExprKind::FnDef(fn_ptr),
-                            ty: src_ty.clone(),
-                        }));
+                        operand = Operand::Const(ConstantExpr::new(
+                            ConstantExprKind::FnDef(fn_ptr),
+                            src_ty.clone(),
+                        ));
                         CastKind::FnPtr(src_ty, tgt_ty)
                     }
                     mir::CastKind::PointerCoercion(
@@ -1310,23 +1304,11 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     .iter()
                     .map(|op| self.translate_operand(span, op))
                     .try_collect()?;
-                let ptr_size = self.translated.the_target_information().target_pointer_size;
-
                 match aggregate_kind {
                     mir::AggregateKind::Array(ty) => {
                         let t_ty = self.translate_rustc_ty(span, ty)?;
-                        let c = ConstantExpr::mk_usize(
-                            ScalarValue::from_uint(
-                                ptr_size,
-                                UIntTy::Usize,
-                                operands_t.len() as u128,
-                            )
-                            .unwrap(),
-                        );
-                        Ok(Rvalue::Aggregate(
-                            AggregateKind::Array(t_ty, Box::new(c)),
-                            operands_t,
-                        ))
+                        let c = ConstantExpr::mk_usize(operands_t.len() as u128);
+                        Ok(Rvalue::Aggregate(AggregateKind::Array(t_ty, c), operands_t))
                     }
                     mir::AggregateKind::Tuple => {
                         let tref = TypeDeclRef::new(

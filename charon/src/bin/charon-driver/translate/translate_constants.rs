@@ -124,36 +124,37 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
             hax::ConstantExprKind::Borrow(v) => {
                 let mut val = self.translate_constant_expr(span, v)?;
-                let metadata = match (v.contents.as_ref(), val.ty.kind()) {
+                let (metadata, new_ty) = match (v.contents.as_ref(), val.ty().kind()) {
                     (hax::ConstantExprKind::Array { fields }, TyKind::Slice(subty)) => {
-                        let len = ConstantExpr::mk_usize(ScalarValue::Unsigned(
-                            UIntTy::Usize,
-                            fields.len() as u128,
-                        ));
+                        let len = ConstantExpr::mk_usize(fields.len() as u128);
                         // the sub-constant is an array, that has it's reference unsized
-                        val.ty = Ty::mk_array(subty.clone(), len.clone());
-                        Some(UnsizingMetadata::Length(Box::new(len)))
+                        (
+                            Some(UnsizingMetadata::Length(len.clone())),
+                            Some(Ty::mk_array(subty.clone(), len)),
+                        )
                     }
 
                     (hax::ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)), _) => {
-                        let len = ConstantExpr::mk_usize(ScalarValue::Unsigned(
-                            UIntTy::Usize,
-                            s.len() as u128,
-                        ));
+                        let len = ConstantExpr::mk_usize(s.len() as u128);
                         // the sub-constant is an array, that has it's reference unsized
                         let subty = TyKind::Literal(LiteralTy::UInt(UIntTy::U8)).into();
-                        val.ty = Ty::mk_array(subty, len.clone());
-                        Some(UnsizingMetadata::Length(Box::new(len)))
+                        (
+                            Some(UnsizingMetadata::Length(len.clone())),
+                            Some(Ty::mk_array(subty, len)),
+                        )
                     }
 
-                    _ => None,
+                    _ => (None, None),
                 };
-                ConstantExprKind::Ref(Box::new(val), metadata)
+                if let Some(new_ty) = new_ty {
+                    val.with_contents_mut(|_, ty| *ty = new_ty);
+                }
+                ConstantExprKind::Ref(val, metadata)
             }
             hax::ConstantExprKind::RawBorrow { mutability, arg } => {
                 let arg = self.translate_constant_expr(span, arg)?;
                 let rk = RefKind::mutable(mutability.is_mut());
-                ConstantExprKind::Ptr(rk, Box::new(arg), None)
+                ConstantExprKind::Ptr(rk, arg, None)
             }
             hax::ConstantExprKind::ConstRef { id } => {
                 match self.lookup_const_generic_var(span, id) {
@@ -178,7 +179,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
         };
 
-        Ok(ConstantExpr { kind, ty })
+        Ok(ConstantExpr::new(kind, ty))
     }
 
     pub(crate) fn translate_ty_constant_expr(

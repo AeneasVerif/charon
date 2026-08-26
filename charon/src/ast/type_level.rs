@@ -384,9 +384,11 @@ impl GenericParams {
             types: self
                 .types
                 .map_ref_indexed(|id, _| TyKind::TypeVar(DeBruijnVar::bound(depth, id)).into_ty()),
-            const_generics: self.const_generics.map_ref_indexed(|id, c| ConstantExpr {
-                ty: c.ty.clone(),
-                kind: ConstantExprKind::Var(DeBruijnVar::bound(depth, id)),
+            const_generics: self.const_generics.map_ref_indexed(|id, c| {
+                ConstantExpr::new(
+                    ConstantExprKind::Var(DeBruijnVar::bound(depth, id)),
+                    c.ty.clone(),
+                )
             }),
             trait_refs: self
                 .trait_clauses
@@ -549,8 +551,8 @@ impl<T: AstVisitable> Binder<Binder<T>> {
                     *id += self.shift_by.types.len();
                 }
             }
-            fn enter_constant_expr(&mut self, x: &mut ConstantExpr) {
-                if let ConstantExprKind::Var(ref mut var) = x.kind
+            fn enter_constant_expr_kind(&mut self, kind: &mut ConstantExprKind) {
+                if let ConstantExprKind::Var(var) = kind
                     && let Some(id) = var.bound_at_depth_mut(self.binder_depth)
                 {
                     *id += self.shift_by.const_generics.len();

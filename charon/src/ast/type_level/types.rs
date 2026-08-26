@@ -5,9 +5,6 @@ use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
 /// A type.
-///
-/// Warning: the `DriveMut` impls of `Ty` needs to clone and re-hash the modified type to maintain
-/// the hash-consing invariant. This is expensive, avoid visiting types mutably when not needed.
 #[derive(
     Debug,
     Clone,
@@ -111,7 +108,7 @@ pub enum TyKind {
     /// The internal type is assumed to be a type variable
     PtrMetadata(Ty),
     /// An array type `[T; N]`
-    Array(Ty, Box<ConstantExpr>),
+    Array(Ty, ConstantExpr),
     /// A slice type `[T]`
     Slice(Ty),
     /// A pattern type. This is a newtype over the first type whose valid values are restricted by
@@ -373,7 +370,7 @@ pub struct DynPredicate {
 )]
 #[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
 pub enum TypePattern {
-    Range(Box<ConstantExpr>, Box<ConstantExpr>),
+    Range(ConstantExpr, ConstantExpr),
     OrPattern(Vec<TypePattern>),
     NotNull,
 }
@@ -412,6 +409,10 @@ impl Ty {
         static_type!(TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
     }
 
+    pub fn is_usize(&self) -> bool {
+        matches!(self.kind(), TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
+    }
+
     pub fn mk_tuple(tys: Vec<Ty>) -> Ty {
         TyKind::Adt(TypeDeclRef {
             id: TypeId::Builtin(BuiltinTy::Tuple),
@@ -421,7 +422,7 @@ impl Ty {
     }
 
     pub fn mk_array(ty: Ty, len: ConstantExpr) -> Ty {
-        TyKind::Array(ty, Box::new(len)).into_ty()
+        TyKind::Array(ty, len).into_ty()
     }
 
     pub fn mk_slice(ty: Ty) -> Ty {

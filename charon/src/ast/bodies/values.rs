@@ -24,10 +24,7 @@ use crate::ast::*;
     DriveTwo,
 )]
 #[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
-pub struct ConstantExpr {
-    pub kind: ConstantExprKind,
-    pub ty: Ty,
-}
+pub struct ConstantExpr(pub HashConsed<(ConstantExprKind, Ty)>);
 
 #[derive(
     Debug,
@@ -94,11 +91,11 @@ pub enum ConstantExprKind {
     /// A shared reference to a constant value.
     ///
     /// We eliminate this case in a micro-pass.
-    Ref(Box<ConstantExpr>, Option<UnsizingMetadata>),
+    Ref(ConstantExpr, Option<UnsizingMetadata>),
     /// A pointer to a mutable static.
     ///
     /// We eliminate this case in a micro-pass.
-    Ptr(RefKind, Box<ConstantExpr>, Option<UnsizingMetadata>),
+    Ptr(RefKind, ConstantExpr, Option<UnsizingMetadata>),
     /// A const generic var
     Var(ConstGenericDbVar),
     /// A call to a `const fn` or a constant's initializer.
@@ -109,6 +106,10 @@ pub enum ConstantExprKind {
     ///
     /// We eliminate this case in a micro-pass.
     FnPtr(FnPtr),
+    /// The size of the given type.
+    SizeOf(Ty),
+    /// The alignment of the given type.
+    AlignOf(Ty),
     /// The `TypeId` value for a type.
     TypeId(Ty),
     /// A pointer with no provenance (e.g. 0 for the null pointer)
@@ -171,11 +172,14 @@ pub enum Literal {
     Ord,
     Serialize,
     Deserialize,
+    SerializeState,
+    DeserializeState,
     Drive,
     DriveMut,
     DriveTwo,
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Scalar"))]
+#[serde_state(stateless)]
 pub enum ScalarValue {
     Unsigned(UIntTy, #[serde(with = "scalar_value_ser_de")] u128),
     Signed(IntTy, #[serde(with = "scalar_value_ser_de")] i128),
@@ -253,18 +257,56 @@ pub enum Byte {
     Provenance(Provenance, u8),
 }
 
+macro_rules! static_constant {
+    ($e:expr) => {{
+        use std::sync::LazyLock;
+        static CONSTANT: LazyLock<ConstantExpr> = LazyLock::new(|| $e);
+        CONSTANT.clone()
+    }};
+}
+
 impl ConstantExpr {
+    pub fn new(kind: ConstantExprKind, ty: Ty) -> Self {
+        Self(HashConsed::new((kind, ty)))
+    }
+
+    pub fn kind(&self) -> &ConstantExprKind {
+        &self.0.inner().0
+    }
+
+    pub fn ty(&self) -> &Ty {
+        &self.0.inner().1
+    }
+
+    pub fn with_contents_mut<R>(
+        &mut self,
+        f: impl FnOnce(&mut ConstantExprKind, &mut Ty) -> R,
+    ) -> R {
+        self.0.with_inner_mut(|(kind, ty)| f(kind, ty))
+    }
+
     pub fn mk_unit() -> Self {
-        ConstantExpr {
-            kind: ConstantExprKind::Adt(None, Vec::new()),
-            ty: Ty::mk_unit(),
+        static_constant!(ConstantExpr::new(
+            ConstantExprKind::Adt(None, Vec::new()),
+            Ty::mk_unit(),
+        ))
+    }
+
+    pub fn mk_usize(value: u128) -> Self {
+        if value == 0 {
+            static_constant!(ScalarValue::mk_usize(0).to_constant())
+        } else {
+            ScalarValue::mk_usize(value).to_constant()
         }
     }
 
-    pub fn mk_usize(scalar: ScalarValue) -> Self {
-        ConstantExpr {
-            kind: ConstantExprKind::Literal(Literal::Scalar(scalar)),
-            ty: Ty::mk_usize(),
+    pub fn as_usize_literal(&self) -> Option<u128> {
+        match self.kind() {
+            ConstantExprKind::Literal(Literal::Scalar(ScalarValue::Unsigned(
+                UIntTy::Usize,
+                value,
+            ))) => Some(*value),
+            _ => None,
         }
     }
 }
@@ -394,8 +436,8 @@ impl ScalarValue {
         }
     }
 
-    pub fn mk_usize(ptr_size: ByteCount, v: u64) -> Self {
-        ScalarValue::from_uint(ptr_size, UIntTy::Usize, v as u128).unwrap()
+    pub fn mk_usize(value: u128) -> Self {
+        ScalarValue::Unsigned(UIntTy::Usize, value)
     }
 
     /// When computing the result of binary operations, we convert the values
@@ -504,10 +546,10 @@ impl ScalarValue {
             ScalarValue::Signed(int_ty, _) => LiteralTy::Int(int_ty),
             ScalarValue::Unsigned(uint_ty, _) => LiteralTy::UInt(uint_ty),
         };
-        ConstantExpr {
-            kind: ConstantExprKind::Literal(Literal::Scalar(self)),
-            ty: TyKind::Literal(literal_ty).into_ty(),
-        }
+        ConstantExpr::new(
+            ConstantExprKind::Literal(Literal::Scalar(self)),
+            TyKind::Literal(literal_ty).into_ty(),
+        )
     }
 }
 

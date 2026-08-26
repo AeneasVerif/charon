@@ -33,10 +33,10 @@ impl UllbcPass for Transform {
             let mut new_calls: Vec<(LocalId, Call)> = vec![];
             block.dyn_visit_in_body_mut(|op: &mut Operand| {
                 if let Operand::Const(c) = op
-                    && let ConstantExprKind::Global(gref) = &mut c.kind
+                    && let ConstantExprKind::Global(gref) = c.kind()
                     && let Some(initializer) = self.anon_consts.get(&gref.id)
                 {
-                    let return_place = body.locals.new_var(None, c.ty.clone());
+                    let return_place = body.locals.new_var(None, c.ty().clone());
                     new_calls.push((
                         return_place.as_local().unwrap(),
                         Call {

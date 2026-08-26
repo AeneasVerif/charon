@@ -81,11 +81,11 @@ pub enum Rvalue {
     ///     }
     /// }
     /// ```
-    Len(Place, Ty, Option<Box<ConstantExpr>>),
+    Len(Place, Ty, Option<ConstantExpr>),
     /// `Repeat(x, n)` creates an array where `x` is copied `n` times.
     ///
     /// We translate this to a function call for LLBC.
-    Repeat(Operand, Ty, Box<ConstantExpr>),
+    Repeat(Operand, Ty, ConstantExpr),
 }
 
 #[derive(
@@ -109,7 +109,7 @@ pub enum Operand {
     Move(Place),
     /// Constant value (including constant and static variables)
     #[cfg_attr(feature = "charon_on_charon", charon::rename("Constant"))]
-    Const(Box<ConstantExpr>),
+    Const(ConstantExpr),
 }
 
 /// Used for [`Rvalue::Use`] to indicate whether the operand should be retagged (this is used
@@ -340,10 +340,10 @@ pub enum BorrowKind {
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Meta"))]
 pub enum UnsizingMetadata {
     /// Cast from `[T; N]` to `[T]`.
-    Length(Box<ConstantExpr>),
+    Length(ConstantExpr),
     /// Cast from a sized value to a `dyn Trait` value. The `TraitRef` is the proof of the `dyn
     /// Trait` predicate; the constant expression is a reference to the vtable `static` value.
-    VTable(TraitRef, Box<ConstantExpr>),
+    VTable(TraitRef, ConstantExpr),
     /// Cast from `dyn Trait` to `dyn OtherTrait`. The fields indicate how to retreive the vtable:
     /// it's always either the same we already had, or the vtable for a (possibly nested) supertrait.
     ///
@@ -394,7 +394,7 @@ pub enum AggregateKind {
     /// We don't put this with the ADT cas because this is the only built-in type
     /// with aggregates, and it is a primitive type. In particular, it makes
     /// sense to treat it differently because it has a variable number of fields.
-    Array(Ty, Box<ConstantExpr>),
+    Array(Ty, ConstantExpr),
     /// Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
     /// a thin pointer). The type is the type of the pointee.
     /// We lower this to a builtin function call for LLBC in [crate::transform::simplify_output::ops_to_function_calls].
@@ -419,13 +419,13 @@ impl Rvalue {
 
 impl Operand {
     pub fn mk_const_unit() -> Self {
-        Operand::Const(Box::new(ConstantExpr::mk_unit()))
+        Operand::Const(ConstantExpr::mk_unit())
     }
 
     pub fn ty(&self) -> &Ty {
         match self {
             Operand::Copy(place) | Operand::Move(place) => place.ty(),
-            Operand::Const(constant_expr) => &constant_expr.ty,
+            Operand::Const(constant_expr) => constant_expr.ty(),
         }
     }
 }

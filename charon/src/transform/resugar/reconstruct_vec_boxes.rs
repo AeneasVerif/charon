@@ -43,7 +43,7 @@ struct Rewrite {
     span: Span,
     payload_elems: Vec<Operand>,
     elem_ty: Ty,
-    len: Box<ConstantExpr>,
+    len: ConstantExpr,
     uninit_box: Place,
     branched_before_payload: bool,
     box_array: Place,
@@ -58,7 +58,7 @@ struct PayloadAssign {
     span: Span,
     payload_elems: Vec<Operand>,
     elem_ty: Ty,
-    len: Box<ConstantExpr>,
+    len: ConstantExpr,
     branched_before_payload: bool,
 }
 
@@ -368,7 +368,7 @@ impl UllbcPass for Transform {
             });
 
         for rw in rewrites.collect::<Vec<_>>() {
-            let array_ty = Ty::mk_array(rw.elem_ty.clone(), *rw.len.clone());
+            let array_ty = Ty::mk_array(rw.elem_ty.clone(), rw.len.clone());
             let array_local = body.locals.new_var(None, array_ty.clone());
             let box_array_ty = rw.box_array.ty().clone();
             let box_array_local = body.locals.new_var(None, box_array_ty.clone());
