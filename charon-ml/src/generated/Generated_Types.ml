@@ -690,11 +690,7 @@ and trait_type_constraint = {
   ty : ty;
 }
 
-(** A type.
-
-    Warning: the [DriveMut] impls of [Ty] needs to clone and re-hash the
-    modified type to maintain the hash-consing invariant. This is expensive,
-    avoid visiting types mutably when not needed. *)
+(** A type. *)
 and ty = ty_kind hash_consed
 
 and ty_kind =
@@ -889,11 +885,7 @@ and discriminator =
             the given [Discriminator]. The ranges are sorted.
           - [fallback]: Fallback if no range in [children] matches. *)
 
-(** An expression that represents a size in bytes.
-
-    Warning: the [DriveMut] impl of [ExactSizeExpr] needs to clone and re-hash
-    the modified expression to maintain the hash-consing invariant. Avoid
-    visiting these mutably when possible. *)
+(** An expression that represents a size in bytes. *)
 and exact_size_expr = exact_size_expr_kind hash_consed
 
 and exact_size_expr_kind =

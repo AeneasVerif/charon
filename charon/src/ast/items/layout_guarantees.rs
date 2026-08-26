@@ -66,9 +66,6 @@ pub enum MetadataValue {
 }
 
 /// An expression that represents a size in bytes.
-///
-/// Warning: the `DriveMut` impl of `ExactSizeExpr` needs to clone and re-hash the modified
-/// expression to maintain the hash-consing invariant. Avoid visiting these mutably when possible.
 #[derive(
     Debug,
     Clone,
@@ -162,12 +159,12 @@ impl ExactSizeExpr {
             fn exit_exact_size_expr_kind(&mut self, expr: &mut ExactSizeExprKind) {
                 *expr = match expr {
                     ExactSizeExprKind::Constant(constant) => {
-                        debug_assert!(constant.ty.is_usize());
+                        debug_assert!(constant.ty().is_usize());
                         let exact_guarantee = |size: &SizeExpr| match &size.guarantee {
                             Some(SizeGuarantee::Equals(value)) => Some(value.clone()),
                             Some(SizeGuarantee::AtLeast(_)) | None => None,
                         };
-                        let mut guaranteed = match &constant.kind {
+                        let mut guaranteed = match constant.kind() {
                             ConstantExprKind::SizeOf(ty) => match ty.kind() {
                                 TyKind::Never => ExactSizeExpr::from_usize(0),
                                 TyKind::Literal(literal_ty) => {
@@ -503,22 +500,22 @@ mod tests {
         let target_a = "a".to_owned();
         let target_b = "b".to_owned();
 
-        let size = ExactSizeExprKind::Constant(ConstantExpr {
-            kind: ConstantExprKind::SizeOf(TyKind::Literal(literal_ty).into_ty()),
-            ty: Ty::mk_usize(),
-        })
+        let size = ExactSizeExprKind::Constant(ConstantExpr::new(
+            ConstantExprKind::SizeOf(TyKind::Literal(literal_ty).into_ty()),
+            Ty::mk_usize(),
+        ))
         .into_expr()
         .normalize(&krate, &target_a);
-        let align = ExactSizeExprKind::Constant(ConstantExpr {
-            kind: ConstantExprKind::AlignOf(TyKind::Literal(literal_ty).into_ty()),
-            ty: Ty::mk_usize(),
-        })
+        let align = ExactSizeExprKind::Constant(ConstantExpr::new(
+            ConstantExprKind::AlignOf(TyKind::Literal(literal_ty).into_ty()),
+            Ty::mk_usize(),
+        ))
         .into_expr()
         .normalize(&krate, &target_a);
-        let pointer_size = ExactSizeExprKind::Constant(ConstantExpr {
-            kind: ConstantExprKind::SizeOf(Ty::mk_usize()),
-            ty: Ty::mk_usize(),
-        })
+        let pointer_size = ExactSizeExprKind::Constant(ConstantExpr::new(
+            ConstantExprKind::SizeOf(Ty::mk_usize()),
+            Ty::mk_usize(),
+        ))
         .into_expr();
         let pointer_size_a = pointer_size.clone().normalize(&krate, &target_a);
         let pointer_size_b = pointer_size.normalize(&krate, &target_b);
@@ -580,29 +577,27 @@ mod tests {
         ))
         .into_ty();
         let size_of = || {
-            ExactSizeExprKind::Constant(ConstantExpr {
-                kind: ConstantExprKind::SizeOf(ty.clone()),
-                ty: Ty::mk_usize(),
-            })
+            ExactSizeExprKind::Constant(ConstantExpr::new(
+                ConstantExprKind::SizeOf(ty.clone()),
+                Ty::mk_usize(),
+            ))
             .into_expr()
         };
 
         let without_guarantee = size_of().normalize(&krate, &target);
         assert!(matches!(
             without_guarantee.kind(),
-            ExactSizeExprKind::Constant(ConstantExpr {
-                kind: ConstantExprKind::SizeOf(_),
-                ..
-            })
+            ExactSizeExprKind::Constant(constant)
+                if matches!(constant.kind(), ConstantExprKind::SizeOf(_))
         ));
 
         let size = &mut krate.type_decls.get_mut(id).unwrap().layout[&target].size;
         size.guarantee = Some(SizeGuarantee::Equals(
             ExactSizeExprKind::Plus(
-                ExactSizeExprKind::Constant(ConstantExpr {
-                    kind: ConstantExprKind::SizeOf(generic_ty),
-                    ty: Ty::mk_usize(),
-                })
+                ExactSizeExprKind::Constant(ConstantExpr::new(
+                    ConstantExprKind::SizeOf(generic_ty),
+                    Ty::mk_usize(),
+                ))
                 .into_expr(),
                 ExactSizeExpr::from_usize(5),
             )

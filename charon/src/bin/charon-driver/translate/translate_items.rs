@@ -675,16 +675,16 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             // Default: the value is a call to the initializer function, which uses the same
             // generic parameters as the global.
             let initializer = self.register_item(span, def.this(), TransItemSourceKind::Fun);
-            ConstantExpr {
-                kind: ConstantExprKind::Call(
+            ConstantExpr::new(
+                ConstantExprKind::Call(
                     FnPtr::new(
                         FnPtrKind::Fun(FunId::Regular(initializer)),
                         self.outermost_generics().identity_args(),
                     ),
                     vec![],
                 ),
-                ty: ty.clone(),
-            }
+                ty.clone(),
+            )
         };
 
         Ok(GlobalDecl {

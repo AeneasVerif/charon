@@ -441,7 +441,7 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
         }
     }
     fn enter_constant_expr(&mut self, x: &mut ConstantExpr) {
-        if let ConstantExprKind::Var(var) = &x.kind
+        if let ConstantExprKind::Var(var) = x.kind()
             && self.binder_stack.get_var(*var).is_none()
         {
             self.error(format!("Found incorrect const-generic var: {var}"));

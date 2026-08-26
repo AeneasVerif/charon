@@ -1592,11 +1592,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for Byte {
 impl_display_via_ctx!(ConstantExpr);
 impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self.kind {
+        match self.kind() {
             ConstantExprKind::Literal(c) => write!(f, "{}", c),
             ConstantExprKind::Adt(variant_id, values) => {
                 let values = values.iter().map(|v| v.with_ctx(ctx));
-                match self.ty.as_adt() {
+                match self.ty().as_adt() {
                     Some(ty_ref) => match ty_ref.as_builtin() {
                         Some(BuiltinTy::Tuple) => {
                             let trailing_comma = if values.len() == 1 { "," } else { "" };

@@ -173,7 +173,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 assert!(args.types.len() == 1 && args.const_generics.len() == 1);
                 TyKind::Array(
                     args.types.pop().unwrap(),
-                    Box::new(args.const_generics.pop().unwrap()),
+                    args.const_generics.pop().unwrap(),
                 )
             }
             hax::TyKind::Pat(ty, pat) => {
@@ -313,8 +313,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<TypePattern, Error> {
         Ok(match pat {
             hax::Pattern::Range { start, end } => TypePattern::Range(
-                Box::new(self.translate_constant_expr(span, start)?),
-                Box::new(self.translate_constant_expr(span, end)?),
+                self.translate_constant_expr(span, start)?,
+                self.translate_constant_expr(span, end)?,
             ),
             hax::Pattern::Or(patterns) => TypePattern::OrPattern(
                 patterns

@@ -30,6 +30,8 @@ type of_postcard_ctx = {
   id_to_file_map : file FileTbl.t;
   ty_hashcons_map : ty HashConsId.Map.t ref;
   tref_hashcons_map : trait_ref HashConsId.Map.t ref;
+  constant_expr_hashcons_map : constant_expr HashConsId.Map.t ref;
+  exact_size_expr_hashcons_map : exact_size_expr HashConsId.Map.t ref;
 }
 
 let empty_of_postcard_ctx : of_postcard_ctx =
@@ -37,6 +39,8 @@ let empty_of_postcard_ctx : of_postcard_ctx =
     id_to_file_map = FileTbl.create 8;
     ty_hashcons_map = ref HashConsId.Map.empty;
     tref_hashcons_map = ref HashConsId.Map.empty;
+    constant_expr_hashcons_map = ref HashConsId.Map.empty;
+    exact_size_expr_hashcons_map = ref HashConsId.Map.empty;
   }
 
 let hash_consed_val_of_postcard (map : 'a HashConsId.Map.t ref)
@@ -113,7 +117,7 @@ and aggregate_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (AggregatedAdt (_0, _1, _2))
      | 1 ->
          let* _0 = ty_of_postcard ctx st in
-         let* _1 = box_of_postcard constant_expr_of_postcard ctx st in
+         let* _1 = constant_expr_of_postcard ctx st in
          Ok (AggregatedArray (_0, _1))
      | 2 ->
          let* _0 = ty_of_postcard ctx st in
@@ -418,9 +422,14 @@ and const_generic_var_id_of_postcard (ctx : of_postcard_ctx)
 and constant_expr_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (constant_expr, string) result =
   combine_error_msgs st __FUNCTION__
-    (let* kind = constant_expr_kind_of_postcard ctx st in
-     let* ty = ty_of_postcard ctx st in
-     Ok ({ kind; ty } : constant_expr))
+    (hash_consed_val_of_postcard ctx.constant_expr_hashcons_map
+       (fun ctx st ->
+         let* contents =
+           pair_of_postcard constant_expr_kind_of_postcard ty_of_postcard ctx st
+         in
+         let kind, ty = contents in
+         Ok ({ kind; ty } : constant_expr))
+       ctx st)
 
 and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
     : (constant_expr_kind, string) result =
@@ -448,12 +457,12 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* _0 = trait_ref_of_postcard ctx st in
          Ok (CVTableRef _0)
      | 6 ->
-         let* _0 = box_of_postcard constant_expr_of_postcard ctx st in
+         let* _0 = constant_expr_of_postcard ctx st in
          let* _1 = option_of_postcard unsizing_metadata_of_postcard ctx st in
          Ok (CRef (_0, _1))
      | 7 ->
          let* _0 = ref_kind_of_postcard ctx st in
-         let* _1 = box_of_postcard constant_expr_of_postcard ctx st in
+         let* _1 = constant_expr_of_postcard ctx st in
          let* _2 = option_of_postcard unsizing_metadata_of_postcard ctx st in
          Ok (CPtr (_0, _1, _2))
      | 8 ->
@@ -860,7 +869,7 @@ and operand_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _0 = place_of_postcard ctx st in
          Ok (Move _0)
      | 2 ->
-         let* _0 = box_of_postcard constant_expr_of_postcard ctx st in
+         let* _0 = constant_expr_of_postcard ctx st in
          Ok (Constant _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
@@ -1079,14 +1088,12 @@ and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 8 ->
          let* _0 = place_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
-         let* _2 =
-           option_of_postcard (box_of_postcard constant_expr_of_postcard) ctx st
-         in
+         let* _2 = option_of_postcard constant_expr_of_postcard ctx st in
          Ok (Len (_0, _1, _2))
      | 9 ->
          let* _0 = operand_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
-         let* _2 = box_of_postcard constant_expr_of_postcard ctx st in
+         let* _2 = constant_expr_of_postcard ctx st in
          Ok (Repeat (_0, _1, _2))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
@@ -1291,7 +1298,7 @@ and ty_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (TPtrMetadata _0)
      | 11 ->
          let* _0 = ty_of_postcard ctx st in
-         let* _1 = box_of_postcard constant_expr_of_postcard ctx st in
+         let* _1 = constant_expr_of_postcard ctx st in
          Ok (TArray (_0, _1))
      | 12 ->
          let* _0 = ty_of_postcard ctx st in
@@ -1343,8 +1350,8 @@ and type_pattern_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* __tag = int_of_postcard ctx st in
      match __tag with
      | 0 ->
-         let* _0 = box_of_postcard constant_expr_of_postcard ctx st in
-         let* _1 = box_of_postcard constant_expr_of_postcard ctx st in
+         let* _0 = constant_expr_of_postcard ctx st in
+         let* _1 = constant_expr_of_postcard ctx st in
          Ok (Range (_0, _1))
      | 1 ->
          let* _0 = list_of_postcard type_pattern_of_postcard ctx st in
@@ -1389,11 +1396,11 @@ and unsizing_metadata_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
     (let* __tag = int_of_postcard ctx st in
      match __tag with
      | 0 ->
-         let* _0 = box_of_postcard constant_expr_of_postcard ctx st in
+         let* _0 = constant_expr_of_postcard ctx st in
          Ok (MetaLength _0)
      | 1 ->
          let* _0 = trait_ref_of_postcard ctx st in
-         let* _1 = box_of_postcard constant_expr_of_postcard ctx st in
+         let* _1 = constant_expr_of_postcard ctx st in
          Ok (MetaVTable (_0, _1))
      | 2 ->
          let* _0 = list_of_postcard field_id_of_postcard ctx st in
@@ -2124,7 +2131,8 @@ and error_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
 and exact_size_expr_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (exact_size_expr, string) result =
   combine_error_msgs st __FUNCTION__
-    (hash_consed_of_postcard exact_size_expr_kind_of_postcard ctx st)
+    (hash_consed_val_of_postcard ctx.exact_size_expr_hashcons_map
+       exact_size_expr_kind_of_postcard ctx st)
 
 and exact_size_expr_kind_of_postcard (ctx : of_postcard_ctx)
     (st : postcard_state) : (exact_size_expr_kind, string) result =

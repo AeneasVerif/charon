@@ -34,6 +34,8 @@ type of_json_ctx = {
   id_to_file_map : file FileTbl.t;
   ty_hashcons_map : ty HashConsId.Map.t ref;
   tref_hashcons_map : trait_ref HashConsId.Map.t ref;
+  constant_expr_hashcons_map : constant_expr HashConsId.Map.t ref;
+  exact_size_expr_hashcons_map : exact_size_expr HashConsId.Map.t ref;
 }
 
 let empty_of_json_ctx : of_json_ctx =
@@ -41,6 +43,8 @@ let empty_of_json_ctx : of_json_ctx =
     id_to_file_map = FileTbl.create 8;
     ty_hashcons_map = ref HashConsId.Map.empty;
     tref_hashcons_map = ref HashConsId.Map.empty;
+    constant_expr_hashcons_map = ref HashConsId.Map.empty;
+    exact_size_expr_hashcons_map = ref HashConsId.Map.empty;
   }
 
 let hash_consed_val_of_json (map : 'a HashConsId.Map.t ref)
@@ -118,7 +122,7 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (AggregatedAdt (_0, _1, _2))
     | `Assoc [ ("Array", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
-        let* _1 = box_of_json constant_expr_of_json ctx _1 in
+        let* _1 = constant_expr_of_json ctx _1 in
         Ok (AggregatedArray (_0, _1))
     | `Assoc [ ("RawPtr", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
@@ -450,10 +454,15 @@ and constant_expr_of_json (ctx : of_json_ctx) (js : json) :
     (constant_expr, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("kind", kind); ("ty", ty) ] ->
-        let* kind = constant_expr_kind_of_json ctx kind in
-        let* ty = ty_of_json ctx ty in
-        Ok ({ kind; ty } : constant_expr)
+    | json ->
+        hash_consed_val_of_json ctx.constant_expr_hashcons_map
+          (fun ctx json ->
+            let* contents =
+              pair_of_json constant_expr_kind_of_json ty_of_json ctx json
+            in
+            let kind, ty = contents in
+            Ok ({ kind; ty } : constant_expr))
+          ctx json
     | _ -> Error "")
 
 and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -481,12 +490,12 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = trait_ref_of_json ctx _0 in
         Ok (CVTableRef _0)
     | `Assoc [ ("Ref", `List [ _0; _1 ]) ] ->
-        let* _0 = box_of_json constant_expr_of_json ctx _0 in
+        let* _0 = constant_expr_of_json ctx _0 in
         let* _1 = option_of_json unsizing_metadata_of_json ctx _1 in
         Ok (CRef (_0, _1))
     | `Assoc [ ("Ptr", `List [ _0; _1; _2 ]) ] ->
         let* _0 = ref_kind_of_json ctx _0 in
-        let* _1 = box_of_json constant_expr_of_json ctx _1 in
+        let* _1 = constant_expr_of_json ctx _1 in
         let* _2 = option_of_json unsizing_metadata_of_json ctx _2 in
         Ok (CPtr (_0, _1, _2))
     | `Assoc [ ("Var", _0) ] ->
@@ -935,7 +944,7 @@ and operand_of_json (ctx : of_json_ctx) (js : json) : (operand, string) result =
         let* _0 = place_of_json ctx _0 in
         Ok (Move _0)
     | `Assoc [ ("Const", _0) ] ->
-        let* _0 = box_of_json constant_expr_of_json ctx _0 in
+        let* _0 = constant_expr_of_json ctx _0 in
         Ok (Constant _0)
     | _ -> Error "")
 
@@ -1179,12 +1188,12 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
     | `Assoc [ ("Len", `List [ _0; _1; _2 ]) ] ->
         let* _0 = place_of_json ctx _0 in
         let* _1 = ty_of_json ctx _1 in
-        let* _2 = option_of_json (box_of_json constant_expr_of_json) ctx _2 in
+        let* _2 = option_of_json constant_expr_of_json ctx _2 in
         Ok (Len (_0, _1, _2))
     | `Assoc [ ("Repeat", `List [ _0; _1; _2 ]) ] ->
         let* _0 = operand_of_json ctx _0 in
         let* _1 = ty_of_json ctx _1 in
-        let* _2 = box_of_json constant_expr_of_json ctx _2 in
+        let* _2 = constant_expr_of_json ctx _2 in
         Ok (Repeat (_0, _1, _2))
     | _ -> Error "")
 
@@ -1441,7 +1450,7 @@ and ty_kind_of_json (ctx : of_json_ctx) (js : json) : (ty_kind, string) result =
         Ok (TPtrMetadata _0)
     | `Assoc [ ("Array", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
-        let* _1 = box_of_json constant_expr_of_json ctx _1 in
+        let* _1 = constant_expr_of_json ctx _1 in
         Ok (TArray (_0, _1))
     | `Assoc [ ("Slice", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
@@ -1499,8 +1508,8 @@ and type_pattern_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Range", `List [ _0; _1 ]) ] ->
-        let* _0 = box_of_json constant_expr_of_json ctx _0 in
-        let* _1 = box_of_json constant_expr_of_json ctx _1 in
+        let* _0 = constant_expr_of_json ctx _0 in
+        let* _1 = constant_expr_of_json ctx _1 in
         Ok (Range (_0, _1))
     | `Assoc [ ("OrPattern", _0) ] ->
         let* _0 = list_of_json type_pattern_of_json ctx _0 in
@@ -1544,11 +1553,11 @@ and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Length", _0) ] ->
-        let* _0 = box_of_json constant_expr_of_json ctx _0 in
+        let* _0 = constant_expr_of_json ctx _0 in
         Ok (MetaLength _0)
     | `Assoc [ ("VTable", `List [ _0; _1 ]) ] ->
         let* _0 = trait_ref_of_json ctx _0 in
-        let* _1 = box_of_json constant_expr_of_json ctx _1 in
+        let* _1 = constant_expr_of_json ctx _1 in
         Ok (MetaVTable (_0, _1))
     | `Assoc [ ("VTableUpcast", _0) ] ->
         let* _0 = list_of_json field_id_of_json ctx _0 in
@@ -2481,7 +2490,9 @@ and exact_size_expr_of_json (ctx : of_json_ctx) (js : json) :
     (exact_size_expr, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | x -> hash_consed_of_json exact_size_expr_kind_of_json ctx x
+    | json ->
+        hash_consed_val_of_json ctx.exact_size_expr_hashcons_map
+          exact_size_expr_kind_of_json ctx json
     | _ -> Error "")
 
 and exact_size_expr_kind_of_json (ctx : of_json_ctx) (js : json) :

@@ -63,6 +63,23 @@ const MANUAL_IMPLS: &[(&str, &str)] = &[
         "TraitRef",
         "hash_consed_val_of_postcard ctx.tref_hashcons_map trait_ref_contents_of_postcard ctx st",
     ),
+    (
+        "ConstantExpr",
+        indoc!(
+            r#"
+            hash_consed_val_of_postcard ctx.constant_expr_hashcons_map
+              (fun ctx st ->
+                let* contents = pair_of_postcard constant_expr_kind_of_postcard ty_of_postcard ctx st in
+                let kind, ty = contents in
+                Ok ({ kind; ty } : constant_expr))
+              ctx st
+            "#
+        ),
+    ),
+    (
+        "ExactSizeExpr",
+        "hash_consed_val_of_postcard ctx.exact_size_expr_hashcons_map exact_size_expr_kind_of_postcard ctx st",
+    ),
 ];
 
 impl<'a> GenerateCtx<'a> {

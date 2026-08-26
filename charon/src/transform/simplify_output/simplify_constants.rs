@@ -24,38 +24,36 @@ use crate::ullbc_ast::*;
 /// The function is recursively called on the aggregate fields (e.g. here x and y).
 fn transform_constant_expr(
     ctx: &mut UllbcStatementTransformCtx<'_>,
-    mut val: Box<ConstantExpr>,
+    mut val: ConstantExpr,
 ) -> Operand {
-    let rval = match val.kind {
+    let rval = match val.kind() {
         // Here we use a copy, rather than a move -- moving a global would leave it uninitialized.
         ConstantExprKind::Global(global_ref) => {
-            return Operand::Copy(Place::new_global(global_ref, val.ty));
+            return Operand::Copy(Place::new_global(global_ref.clone(), val.ty().clone()));
         }
         ConstantExprKind::PtrNoProvenance(ptr) => {
             let usize_ty = TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)).into_ty();
             let ptr_usize = ConstantExprKind::Literal(Literal::Scalar(ScalarValue::Unsigned(
                 UIntTy::Usize,
-                ptr,
+                *ptr,
             )));
-            let cast = UnOp::Cast(CastKind::RawPtr(usize_ty.clone(), val.ty.clone()));
-            Rvalue::UnaryOp(
-                cast,
-                Operand::Const(Box::new(ConstantExpr {
-                    kind: ptr_usize,
-                    ty: usize_ty,
-                })),
-            )
+            let cast = UnOp::Cast(CastKind::RawPtr(usize_ty.clone(), val.ty().clone()));
+            Rvalue::UnaryOp(cast, Operand::Const(ConstantExpr::new(ptr_usize, usize_ty)))
         }
         cexpr @ (ConstantExprKind::Ref(..) | ConstantExprKind::Ptr(..)) => {
             let (rk, bval, metadata) = match cexpr {
-                ConstantExprKind::Ref(bval, metadata) => (None, bval, metadata),
-                ConstantExprKind::Ptr(rk, bval, metadata) => (Some(rk), bval, metadata),
+                ConstantExprKind::Ref(bval, metadata) => (None, bval.clone(), metadata.clone()),
+                ConstantExprKind::Ptr(rk, bval, metadata) => {
+                    (Some(*rk), bval.clone(), metadata.clone())
+                }
                 _ => unreachable!(),
             };
 
             // As the value is originally an argument, it must be Sized, hence no metadata
-            let place = match bval.kind {
-                ConstantExprKind::Global(global_ref) => Place::new_global(global_ref, bval.ty),
+            let place = match bval.kind() {
+                ConstantExprKind::Global(global_ref) => {
+                    Place::new_global(global_ref.clone(), bval.ty().clone())
+                }
                 _ => {
                     // Recurse on the borrowed value
                     let bval = transform_constant_expr(ctx, bval);
@@ -75,7 +73,7 @@ fn transform_constant_expr(
                     Rvalue::UnaryOp(
                         UnOp::Cast(CastKind::Unsize(
                             sized_ref.ty.clone(),
-                            val.ty.clone(),
+                            val.ty().clone(),
                             metadata,
                         )),
                         Operand::Move(sized_ref),
@@ -86,7 +84,7 @@ fn transform_constant_expr(
                     Rvalue::UnaryOp(
                         UnOp::Cast(CastKind::Unsize(
                             sized_raw_ref.ty.clone(),
-                            val.ty.clone(),
+                            val.ty().clone(),
                             metadata,
                         )),
                         Operand::Move(sized_raw_ref),
@@ -94,56 +92,58 @@ fn transform_constant_expr(
                 }
             }
         }
-        ConstantExprKind::Adt(..) if val.ty.is_unit() => {
+        ConstantExprKind::Adt(..) if val.ty().is_unit() => {
             // Keep unit constants to avoid adding countless unit locals.
             return Operand::Const(val);
         }
         ConstantExprKind::Adt(variant, fields) => {
             let fields = fields
-                .into_iter()
-                .map(|x| transform_constant_expr(ctx, Box::new(x)))
+                .iter()
+                .cloned()
+                .map(|x| transform_constant_expr(ctx, x))
                 .collect();
 
             // Build an `Aggregate` rvalue.
-            let tref = val.ty.kind().as_adt().unwrap();
-            let aggregate_kind = AggregateKind::Adt(tref.clone(), variant, None);
+            let tref = val.ty().kind().as_adt().unwrap();
+            let aggregate_kind = AggregateKind::Adt(tref.clone(), *variant, None);
             Rvalue::Aggregate(aggregate_kind, fields)
         }
-        ConstantExprKind::Array(fields) if let TyKind::Array(ty, _) = val.ty.kind() => {
+        ConstantExprKind::Array(fields) if let TyKind::Array(ty, _) = val.ty().kind() => {
             let fields = fields
-                .into_iter()
-                .map(|x| transform_constant_expr(ctx, Box::new(x)))
+                .iter()
+                .cloned()
+                .map(|x| transform_constant_expr(ctx, x))
                 .collect_vec();
             let len = ConstantExpr::mk_usize(fields.len() as u128);
-            Rvalue::Aggregate(AggregateKind::Array(ty.clone(), Box::new(len)), fields)
+            Rvalue::Aggregate(AggregateKind::Array(ty.clone(), len), fields)
         }
-        ConstantExprKind::FnPtr(fptr) if let TyKind::FnPtr(sig) = val.ty.kind() => {
+        ConstantExprKind::FnPtr(fptr) if let TyKind::FnPtr(sig) = val.ty().kind() => {
             let from_ty =
                 TyKind::FnDef(sig.clone().map(|_| fptr.clone().move_under_binder())).into_ty();
             let to_ty = TyKind::FnPtr(sig.clone()).into_ty();
             Rvalue::UnaryOp(
                 UnOp::Cast(CastKind::FnPtr(from_ty.clone(), to_ty)),
-                Operand::Const(Box::new(ConstantExpr {
-                    kind: ConstantExprKind::FnDef(fptr),
-                    ty: from_ty,
-                })),
+                Operand::Const(ConstantExpr::new(
+                    ConstantExprKind::FnDef(fptr.clone()),
+                    from_ty,
+                )),
             )
         }
-        ConstantExprKind::VTableRef(ref tref)
+        ConstantExprKind::VTableRef(tref)
             if let Some(vtable_ref) = tref.vtable_ref(&ctx.ctx.translated)
-                && let TyKind::Ref(_, vtable_ty, _) = val.ty.kind() =>
+                && let TyKind::Ref(_, vtable_ty, _) = val.ty().kind() =>
         {
-            let inner = Box::new(ConstantExpr {
-                kind: ConstantExprKind::Global(vtable_ref.clone()),
-                ty: vtable_ty.clone(),
-            });
-            val.kind = ConstantExprKind::Ref(inner, None);
+            let inner = ConstantExpr::new(
+                ConstantExprKind::Global(vtable_ref.clone()),
+                vtable_ty.clone(),
+            );
+            val.with_contents_mut(|kind, _| *kind = ConstantExprKind::Ref(inner, None));
             // Normalize further into a place access.
             return transform_constant_expr(ctx, val);
         }
         _ => return Operand::Const(val),
     };
-    Operand::Move(ctx.rval_to_place(rval, val.ty.clone()))
+    Operand::Move(ctx.rval_to_place(rval, val.ty().clone()))
 }
 
 fn transform_operand(ctx: &mut UllbcStatementTransformCtx<'_>, op: &mut Operand) {
@@ -177,7 +177,9 @@ impl UllbcPass for Transform {
                         {
                             Rvalue::Repeat(op.clone(), ty.clone(), len)
                         }
-                        Rvalue::Use(Operand::Const(e), _) if e.kind.is_adt() && e.ty.is_unit() => {
+                        Rvalue::Use(Operand::Const(e), _)
+                            if e.kind().is_adt() && e.ty().is_unit() =>
+                        {
                             Rvalue::unit_value()
                         }
                         _ => rvalue,

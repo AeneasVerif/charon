@@ -102,7 +102,7 @@ impl VarsVisitor for SubstVisitor<'_> {
     }
     fn visit_const_generic_var(&mut self, v: ConstGenericDbVar) -> Option<ConstantExprKind> {
         self.process_var(v, |id| {
-            self.generics.const_generics.get(id).map(|c| &c.kind)
+            self.generics.const_generics.get(id).map(|c| c.kind())
         })
     }
     fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
@@ -168,12 +168,12 @@ pub trait TyVisitable: Sized + AstVisitable {
                     *ty = new_ty.move_under_binders(self.depth);
                 }
             }
-            fn exit_constant_expr(&mut self, ce: &mut ConstantExpr) {
-                if let ConstantExprKind::Var(var) = &mut ce.kind
+            fn exit_constant_expr_kind(&mut self, kind: &mut ConstantExprKind) {
+                if let ConstantExprKind::Var(var) = kind
                     && let Some(var) = var.move_out_from_depth(self.depth)
                     && let Some(new_cg) = self.v.visit_const_generic_var(var)
                 {
-                    ce.kind = new_cg.move_under_binders(self.depth);
+                    *kind = new_cg.move_under_binders(self.depth);
                 }
             }
             fn exit_trait_ref_kind(&mut self, kind: &mut TraitRefKind) {

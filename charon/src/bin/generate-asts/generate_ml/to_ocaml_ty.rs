@@ -8,6 +8,8 @@ use std::fmt::Write;
 const MANUAL_IMPLS: &[(&str, &str)] = &[
     // Hand-written because we replace the `FileId` with the corresponding file.
     ("FileId", "file"),
+    // Keep the public OCaml representation independent from Rust's hash-consing wrapper.
+    ("ConstantExpr", "{ kind : constant_expr_kind; ty : ty }"),
     (
         "HashConsed",
         "'a0 (* Not actually hash-consed on the OCaml side *)",

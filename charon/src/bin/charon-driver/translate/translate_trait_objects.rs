@@ -607,7 +607,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         span: Span,
         trait_proof: &hax::TraitProof,
-    ) -> Result<Box<ConstantExpr>, Error> {
+    ) -> Result<ConstantExpr, Error> {
         let tref = trait_proof.pred.hax_skip_binder_ref();
         if !self.trait_is_dyn_compatible(&tref.def_id)? {
             raise_error!(
@@ -654,16 +654,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         ctx.translate_vtable_instance_ref(span, tref, impl_item, impl_kind)
                     })?;
                 let vtable_instance = self.erase_region_binder(vtable_instance);
-                let vtable_instance = Box::new(ConstantExpr {
-                    kind: ConstantExprKind::Global(vtable_instance),
-                    ty: vtbl_ty,
-                });
+                let vtable_instance =
+                    ConstantExpr::new(ConstantExprKind::Global(vtable_instance), vtbl_ty);
                 ConstantExprKind::Ref(vtable_instance, None)
             }
             _ => ConstantExprKind::VTableRef(self.translate_trait_proof(span, trait_proof)?),
         };
 
-        Ok(Box::new(ConstantExpr { kind, ty }))
+        Ok(ConstantExpr::new(kind, ty))
     }
 
     /// You may want `translate_vtable_instance_const` instead.
@@ -790,16 +788,16 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             TransItemSourceKind::VTableInstanceInitializer(impl_kind),
         );
         let ty = Ty::new(TyKind::Adt(vtable_struct_ref));
-        let value = ConstantExpr {
-            kind: ConstantExprKind::Call(
+        let value = ConstantExpr::new(
+            ConstantExprKind::Call(
                 FnPtr::new(
                     FnPtrKind::Fun(FunId::Regular(init)),
                     self.outermost_generics().identity_args(),
                 ),
                 vec![],
             ),
-            ty: ty.clone(),
-        };
+            ty.clone(),
+        );
 
         Ok(GlobalDecl {
             def_id: global_id,
@@ -962,12 +960,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let mut items_iter = impl_items.iter();
         for (field, ty) in vtable_data.fields.into_iter().zip(field_tys) {
             // In poly mode, all fields of vtables can be filled with const values.
-            let mk_const = |kind| {
-                Operand::Const(Box::new(ConstantExpr {
-                    kind,
-                    ty: ty.clone(),
-                }))
-            };
+            let mk_const = |kind| Operand::Const(ConstantExpr::new(kind, ty.clone()));
             // In mono mode, we need to additioanlly cast shim function pointers to opaque ones before filling them.
             // Therefore, `mk_cast` receives `(method_name, method_ty, method_shim)` to construct casting statements.
             // For example, for the trait declaration and trait implementation in Rust:
@@ -994,10 +987,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             let mut mk_cast = |(method_name, method_ty, method_shim): (String, Ty, FnPtr)| {
                 let method_local = builder.new_var(Some(method_name.clone()), method_ty.clone());
                 let shim = Rvalue::Use(
-                    Operand::Const(Box::new(ConstantExpr {
-                        kind: ConstantExprKind::FnPtr(method_shim.clone()),
-                        ty: method_ty.clone(),
-                    })),
+                    Operand::Const(ConstantExpr::new(
+                        ConstantExprKind::FnPtr(method_shim.clone()),
+                        method_ty.clone(),
+                    )),
                     WithRetag::No,
                 );
                 let cast_local = builder.new_var(

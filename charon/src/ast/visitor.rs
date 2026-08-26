@@ -68,7 +68,7 @@ use derive_generic_visitor::*;
         FnOperand, FunId, FnPtrKind, FunSig, InlineAttr, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
         Ident, from_rustc::InlineAttr,
         llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,
-        Loc, Locals, NullOp, Operand, PathElem, PlaceKind, ConstantExprKind,
+        Loc, Locals, NullOp, Operand, PathElem, PlaceKind,
         RawAttribute, RefKind, RegionId, RegionParam, ScalarValue, TraitItemName, TraitMethodId, AssocTypeId, AssocConstId, AssocItemId, MaybeAssocItemId,
         TranslatedCrate, TypeDeclKind, TypeId, TypeParam, TypePattern, TypeVarId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
@@ -108,7 +108,7 @@ use derive_generic_visitor::*;
         llbc_block: llbc_ast::Block, llbc_statement: llbc_ast::Statement,
         ullbc_statement: ullbc_ast::Statement, ullbc_terminator: ullbc_ast::Terminator,
         AbortKind, AggregateKind, FnPtr,
-        ConstantExpr, ExactSizeExpr, ExactSizeExprKind, Place, ProjectionElem, Rvalue, Body,
+        ConstantExpr, ConstantExprKind, ExactSizeExpr, ExactSizeExprKind, Place, ProjectionElem, Rvalue, Body,
     )
 )]
 pub trait AstVisitable: Any {

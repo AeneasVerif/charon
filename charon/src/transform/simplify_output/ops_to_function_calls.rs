@@ -37,7 +37,7 @@ fn transform_st(s: &mut Statement) {
                 let generics = GenericArgs::new(
                     [Region::Erased].into(),
                     [arr_ty.clone()].into(),
-                    [*len.clone()].into(),
+                    [len.clone()].into(),
                     [].into(),
                 );
                 s.kind = StatementKind::Call {
@@ -59,7 +59,7 @@ fn transform_st(s: &mut Statement) {
             let generics = GenericArgs::new(
                 [].into(),
                 [ty.clone()].into(),
-                [*cg.clone()].into(),
+                [cg.clone()].into(),
                 [].into(),
             );
             s.kind = StatementKind::Call {
