@@ -55,8 +55,7 @@ pub enum TraitProofKind {
     /// `dyn Trait` implements `Trait` using a built-in implementation; this refers to that
     /// built-in implementation.
     /// The proof describes how to prove the current predicate in the context of the `dyn Trait`
-    /// self type, e.g. `<dyn Trait as Supertrait>`.
-    #[custom_arm(FROM_TYPE::Dyn => unreachable!("dyn proofs are translated with their predicate"),)]
+    /// self type, e.g. for `<dyn Trait as Supertrait>`.
     Dyn(DynBinder<TraitProof>),
     /// A built-in trait whose implementation is computed by the compiler, such as `FnMut`. This
     /// morally points to an invisible `impl` block; as such it contains the information we may
@@ -134,28 +133,7 @@ pub struct TraitProofContents {
 
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TraitProof> for elaboration::TraitProof<'tcx, DefId> {
     fn sinto(&self, s: &S) -> TraitProof {
-        let contents = self.contents();
-        let kind = match contents.kind {
-            elaboration::TraitProofKind::Dyn => {
-                let tcx = s.base().tcx;
-                let self_ty = contents.pred.skip_binder().self_ty();
-                let ty::Dynamic(predicates, _) = self_ty.kind() else {
-                    panic!("a dyn trait proof should have a dyn Self type")
-                };
-                let proof = super::types::resolve_for_dyn(s, predicates, |searcher, fresh_ty| {
-                    let target = contents
-                        .pred
-                        .map_bound(|tref| tref.with_replaced_self_ty(tcx, fresh_ty));
-                    searcher.resolve(&s.base_state(), &target).sinto(s)
-                });
-                TraitProofKind::Dyn(proof)
-            }
-            _ => contents.kind.sinto(s),
-        };
-        HashConsed::new(TraitProofContents {
-            pred: contents.pred.sinto(s),
-            kind,
-        })
+        HashConsed::new(self.contents().sinto(s))
     }
 }
 

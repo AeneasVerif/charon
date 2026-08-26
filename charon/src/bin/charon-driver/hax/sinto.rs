@@ -108,6 +108,6 @@ macro_rules! sinto_clone {
     () => {};
 }
 
-sinto_clone!(bool, String, char);
+sinto_clone!((), bool, String, char);
 sinto_clone!(u8, u16, u32, u64, u128, usize);
 sinto_clone!(i8, i16, i32, i64, i128, isize);

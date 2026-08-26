@@ -85,7 +85,7 @@ impl<Id> ItemPredicateId<Id> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct ItemPredicate<'tcx, Id = DefId> {
     pub id: ItemPredicateId<Id>,
     pub clause: Clause<'tcx>,

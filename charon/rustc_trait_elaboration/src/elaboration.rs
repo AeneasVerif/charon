@@ -7,6 +7,7 @@ use std::collections::{HashMap, hash_map::Entry};
 use rustc_hir::def_id::DefId;
 use rustc_middle::traits::CodegenObligationError;
 use rustc_middle::ty::{self, *};
+use rustc_span::{DUMMY_SP, Symbol};
 use rustc_trait_selection::traits::ImplSource;
 use rustc_type_ir::Interner;
 
@@ -101,6 +102,7 @@ impl<'tcx, Id: ItemId> Candidate<'tcx, Id> {
 #[derive(Clone)]
 pub struct PredicateSearcher<'tcx, Id: ItemId = DefId> {
     pub(crate) elab_ctx: ElaborationCtx<'tcx, Id>,
+    owner: Id,
     pub(crate) typing_env: rustc_middle::ty::TypingEnv<'tcx>,
     /// Local clauses available in the current context.
     candidates: HashMap<PolyTraitRef<'tcx>, Candidate<'tcx, Id>>,
@@ -124,6 +126,7 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         let initial_self_pred = initial_self_pred(state, &owner_id);
         let mut out = Self {
             elab_ctx,
+            owner: owner_id.clone(),
             typing_env: TypingEnv::new(owner_id.param_env(state), TypingMode::PostAnalysis),
             candidates: Default::default(),
             implicit_self_clause: initial_self_pred.is_some(),
@@ -163,10 +166,69 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         );
     }
 
-    /// Override the param env; we use this when resolving `dyn` predicates to add more clauses to
-    /// the scope.
-    pub fn set_param_env(&mut self, param_env: ParamEnv<'tcx>) {
-        self.typing_env.param_env = param_env;
+    /// Do trait resolution in the context of the clauses of a `dyn Trait` type.
+    pub fn resolve_for_dyn<R>(
+        &self,
+        state: &Id::State<'tcx>,
+        epreds: &'tcx List<Binder<'tcx, ExistentialPredicate<'tcx>>>,
+        f: impl FnOnce(&mut PredicateSearcher<'tcx, Id>, Ty<'tcx>) -> R,
+    ) -> DynBinder<'tcx, R, Id> {
+        let tcx = self.elab_ctx.tcx;
+
+        // Pretend there is an extra type parameter in the environment, and use it as `Self` in
+        // the dyn predicates.
+        let param_count = self.owner.generics_of(state).count();
+        let existential_ty = ParamTy::new(param_count as u32 + 1, Symbol::intern("_dyn"));
+        let self_ty = existential_ty.to_ty(tcx);
+        let predicates = epreds.iter().map(|pred| pred.with_self_ty(tcx, self_ty));
+        let predicates = ItemPredicates::new_unmapped(DUMMY_SP, predicates);
+
+        let mut searcher = self.clone();
+        searcher.insert_bound_predicates(state, predicates.iter());
+        searcher.typing_env.param_env = param_env_from_clauses(
+            tcx,
+            self.typing_env
+                .param_env
+                .caller_bounds()
+                .iter()
+                .chain(predicates.iter().map(|pred| pred.clause)),
+        );
+        let val = f(&mut searcher, self_ty);
+        let predicates = predicates
+            .iter()
+            .map(|predicate| {
+                let projection_trait_proof = predicate.clause.as_projection_clause().map(|proj| {
+                    let alias_ty = proj.skip_binder().projection_term.expect_ty();
+                    let trait_ref = proj.rebind(alias_ty.trait_ref(tcx));
+                    searcher.resolve(state, &trait_ref)
+                });
+                DynPredicate {
+                    predicate,
+                    projection_trait_proof,
+                }
+            })
+            .collect();
+
+        DynBinder {
+            existential_ty,
+            predicates,
+            val,
+        }
+    }
+
+    fn resolve_dyn_trait(
+        &self,
+        state: &Id::State<'tcx>,
+        target: PolyTraitRef<'tcx>,
+    ) -> DynBinder<'tcx, TraitProof<'tcx, Id>, Id> {
+        let tcx = self.elab_ctx.tcx;
+        let Dynamic(predicates, _) = target.skip_binder().self_ty().kind() else {
+            panic!("a dyn trait proof should have a dyn Self type")
+        };
+        self.resolve_for_dyn(state, predicates, |searcher, self_ty| {
+            let target = target.map_bound(|tref| tref.with_replaced_self_ty(tcx, self_ty));
+            searcher.resolve(state, &target)
+        })
     }
 
     /// Insert annotated predicates in the search context. Prefer inserting them all at once as
@@ -390,7 +452,9 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
                     return error(msg);
                 }
             },
-            ImplSource::Builtin(BuiltinImplSource::Object { .. }, _) => TraitProofKind::Dyn,
+            ImplSource::Builtin(BuiltinImplSource::Object { .. }, _) => {
+                TraitProofKind::Dyn(self.resolve_dyn_trait(state, *tref))
+            }
             ImplSource::Builtin(_, _) => {
                 // Resolve the predicates implied by the trait.
                 // If we wanted to not skip this binder, we'd have to instantiate the bound
@@ -470,7 +534,9 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
                         | ty::CoroutineWitness(..) => Either::Left(DestructData::Glue { ty }),
                         // Every `dyn` has a `drop_in_place` in its vtable, ergo we pretend that every
                         // `dyn` has `Destruct` in its list of traits.
-                        ty::Dynamic(..) => Either::Right(TraitProofKind::Dyn),
+                        ty::Dynamic(..) => {
+                            Either::Right(TraitProofKind::Dyn(self.resolve_dyn_trait(state, *tref)))
+                        }
                         ty::Param(..) | ty::Alias(..) | ty::Bound(..) => {
                             if self.elab_ctx.bounds_options().add_destruct_bounds {
                                 // We've added `Destruct` impls on everything, we should be able to resolve

@@ -28,6 +28,18 @@
 //! implied are subtle. We may change this if this proves to be a problem.
 use rustc_middle::ty::*;
 
+/// Make a new `ParamEnv` from a list of clauses.
+pub(crate) fn param_env_from_clauses<'tcx>(
+    tcx: TyCtxt<'tcx>,
+    predicates: impl Iterator<Item = Clause<'tcx>>,
+) -> ParamEnv<'tcx> {
+    use rustc_middle::traits::ObligationCause;
+    use rustc_trait_selection::traits::normalize_param_env_or_error;
+
+    let param_env = ParamEnv::new(tcx.mk_clauses_from_iter(predicates));
+    normalize_param_env_or_error(tcx, param_env, ObligationCause::dummy())
+}
+
 /// Normalize a value.
 pub fn normalize<'tcx, T>(
     tcx: TyCtxt<'tcx>,

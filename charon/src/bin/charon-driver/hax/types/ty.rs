@@ -798,7 +798,6 @@ pub enum TyKind {
 /// A representation of `exists<T: Trait1 + Trait2>(value)`: we create a fresh type id and the
 /// appropriate trait clauses. The contained value may refer to the fresh ty and the in-scope trait
 /// clauses. This is used to represent types related to `dyn Trait`.
-
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct DynBinder<T> {
     /// Fresh type parameter that we use as the `Self` type in the prediates below.
@@ -810,104 +809,72 @@ pub struct DynBinder<T> {
     pub val: T,
 }
 
-/// Do trait resolution in the context of the clauses of a `dyn Trait` type.
-pub(in crate::hax) fn resolve_for_dyn<'tcx, S: UnderOwnerState<'tcx>, R>(
-    s: &S,
-    // The predicates in the context.
-    epreds: &'tcx ty::List<ty::Binder<'tcx, ty::ExistentialPredicate<'tcx>>>,
-    f: impl FnOnce(&mut PredicateSearcher<'tcx>, ty::Ty<'tcx>) -> R,
-) -> DynBinder<R> {
-    fn searcher_for_traits<'tcx, S: UnderOwnerState<'tcx>>(
-        s: &S,
-        preds: &ItemPredicates<'tcx, DefId>,
-    ) -> PredicateSearcher<'tcx> {
+impl<'tcx, S, T, U> SInto<S, DynBinder<U>> for rustc_trait_elaboration::DynBinder<'tcx, T, DefId>
+where
+    S: UnderOwnerState<'tcx>,
+    T: SInto<S, U>,
+{
+    fn sinto(&self, s: &S) -> DynBinder<U> {
+        DynBinder {
+            existential_ty: self.existential_ty.sinto(s),
+            predicates: GenericPredicates {
+                predicates: self.predicates.sinto(s),
+            },
+            val: self.val.sinto(s),
+        }
+    }
+}
+
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, GenericPredicate>
+    for rustc_trait_elaboration::DynPredicate<'tcx, DefId>
+{
+    fn sinto(&self, s: &S) -> GenericPredicate {
         let tcx = s.base().tcx;
-        // Populate a predicate searcher that knows about the `dyn` clauses.
-        let mut predicate_searcher = s.with_predicate_searcher(|ps, _| ps.clone());
-        predicate_searcher.insert_bound_predicates(&s.base_state(), preds.iter());
-        predicate_searcher.set_param_env(param_env_from_clauses(
-            tcx,
-            s.param_env()
-                .caller_bounds()
-                .iter()
-                .chain(preds.iter().map(|pred| pred.clause)),
-        ));
-        predicate_searcher
-    }
-
-    fn fresh_param_ty<'tcx, S: UnderOwnerState<'tcx>>(s: &S) -> ty::ParamTy {
-        let generics = s.owner().generics_of(s);
-        let param_count = generics.count();
-        ty::ParamTy::new(param_count as u32 + 1, rustc_span::Symbol::intern("_dyn"))
-    }
-
-    let tcx = s.base().tcx;
-    let span = rustc_span::DUMMY_SP.sinto(s);
-
-    // Pretend there's an extra type in the environment.
-    let new_param_ty = fresh_param_ty(s);
-    let new_ty = new_param_ty.to_ty(tcx);
-
-    // Set the new type as the `Self` parameter of our predicates.
-    let predicates = epreds.iter().map(|epred| epred.with_self_ty(tcx, new_ty));
-    let predicates: ItemPredicates<'_, DefId> = ItemPredicates::new_unmapped(span, predicates);
-
-    // Populate a predicate searcher that knows about the `dyn` clauses.
-    let mut predicate_searcher = searcher_for_traits(s, &predicates);
-    let val = f(&mut predicate_searcher, new_ty);
-
-    // Using the predicate searcher, translate the predicates. Only the projection predicates need
-    // to be handled specially.
-    let predicates = predicates
-        .iter()
-        .map(|pred| {
-            match pred.clause.as_projection_clause() {
-                // Translate normally
-                None => pred.sinto(s),
-                // Translate by hand using our predicate searcher. This does the same as
-                // `clause.sinto(s)` except that it uses our predicate searcher to resolve the
-                // projection `TraitProof`.
-                Some(proj) => {
-                    let bound_vars = proj.bound_vars().sinto(s);
-                    let proj = {
-                        let alias_ty = &proj.skip_binder().projection_term.expect_ty();
-                        let trait_proof = {
-                            let poly_trait_ref = proj.rebind(alias_ty.trait_ref(tcx));
-                            predicate_searcher
-                                .resolve(&s.base_state(), &poly_trait_ref)
-                                .sinto(s)
-                        };
-                        let Term::Ty(ty) = proj.skip_binder().term.sinto(s) else {
-                            unreachable!()
-                        };
-                        let item = tcx.associated_item(alias_ty_kind_def_id(alias_ty.kind));
-                        ProjectionPredicate {
+        let pred = &self.predicate;
+        if let Some(projection) = pred.clause.as_projection_clause() {
+            let trait_proof = self
+                .projection_trait_proof
+                .expect("projection predicates should have a trait proof")
+                .sinto(s);
+            let bound_vars = projection.bound_vars().sinto(s);
+            let projection = projection.skip_binder();
+            let alias_ty = projection.projection_term.expect_ty();
+            let Term::Ty(ty) = projection.term.sinto(s) else {
+                unreachable!()
+            };
+            let item = tcx.associated_item(alias_ty_kind_def_id(alias_ty.kind));
+            GenericPredicate {
+                id: pred.id.sinto(s),
+                clause: Clause {
+                    kind: Binder {
+                        value: ClauseKind::Projection(ProjectionPredicate {
                             trait_proof,
                             assoc_item: AssocItem::sfrom(s, &item),
                             ty,
-                        }
-                    };
-                    let kind = Binder {
-                        value: ClauseKind::Projection(proj),
+                        }),
                         bound_vars,
-                    };
-                    let clause = Clause { kind };
-                    GenericPredicate {
-                        id: pred.id.sinto(s),
-                        clause,
-                        span,
-                    }
-                }
+                    },
+                },
+                span: pred.span.sinto(s),
             }
-        })
-        .collect();
-
-    let predicates = GenericPredicates { predicates };
-    DynBinder {
-        existential_ty: new_param_ty.sinto(s),
-        predicates,
-        val,
+        } else {
+            assert!(self.projection_trait_proof.is_none());
+            pred.sinto(s)
+        }
     }
+}
+
+fn resolve_for_dyn<'tcx, S, T, U>(
+    s: &S,
+    epreds: &'tcx ty::List<ty::Binder<'tcx, ty::ExistentialPredicate<'tcx>>>,
+    f: impl FnOnce(&mut PredicateSearcher<'tcx>, ty::Ty<'tcx>) -> T,
+) -> DynBinder<U>
+where
+    S: UnderOwnerState<'tcx>,
+    T: SInto<S, U>,
+{
+    s.with_predicate_searcher(|searcher, state| searcher.resolve_for_dyn(state, epreds, f))
+        .sinto(s)
 }
 
 #[derive(AdtInto)]
@@ -1056,7 +1023,7 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
                         .expect("expected a trait predicate in dyn upcast target");
                     ty::Binder::dummy(ty::TraitRef::new(tcx, def_id, [fresh_ty]))
                 };
-                searcher.resolve(&s.base_state(), &to_pred).sinto(s)
+                searcher.resolve(&s.base_state(), &to_pred)
             });
             UnsizingMetadata::NestedVTable(trait_proof)
         }
