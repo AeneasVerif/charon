@@ -28,6 +28,7 @@ pub trait VarsVisitor {
     fn visit_self_clause(&mut self) -> Option<TraitRefKind> {
         None
     }
+    fn visit_metadata_value(&mut self, _value: &MetadataValue) {}
 }
 
 /// Visitor for the [TyVisitable::substitute] function.
@@ -118,6 +119,9 @@ impl VarsVisitor for SubstVisitor<'_> {
             use `substitute_with_self` or `substitute_inner_binder` instead.",
         ))
     }
+    fn visit_metadata_value(&mut self, _value: &MetadataValue) {
+        self.had_error = true;
+    }
 }
 
 #[derive(Debug)]
@@ -192,6 +196,9 @@ pub trait TyVisitable: Sized + AstVisitable {
                     }
                     _ => {}
                 }
+            }
+            fn enter_metadata_value(&mut self, value: &mut MetadataValue) {
+                self.v.visit_metadata_value(value);
             }
         }
         Wrap {
