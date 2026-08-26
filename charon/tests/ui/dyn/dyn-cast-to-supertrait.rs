@@ -21,9 +21,12 @@ impl Cat for HouseCat {
     fn meow(&self) {}
 }
 
+fn takes_pettable<T: Pettable + ?Sized>(_: &T) {}
+
 fn main() {
     let cat = HouseCat;
     let dyn_cat: &dyn Cat = &cat;
     let dyn_feline: &dyn Feline = dyn_cat;
     let dyn_pettable: &dyn Pettable = dyn_cat;
+    takes_pettable(dyn_cat);
 }
