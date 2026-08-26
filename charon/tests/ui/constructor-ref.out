@@ -67,6 +67,39 @@ where
     return
 }
 
+// Full name: test_crate::Wrapper::{impl FnOnce<(T,)> for Value<T>[TraitClause0]}::call_once
+fn call_once<T>(state: Value<T>[TraitClause0], args: (T,)) -> Wrapper<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: Wrapper<T>[TraitClause0]; // return
+    let state: Value<T>[TraitClause0]; // arg #1
+    let args: (T,); // arg #2
+
+    storage_live(_0)
+    _0 = Value<T>[TraitClause0](move args.0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::Wrapper::{impl FnOnce<(T,)> for Value<T>[TraitClause0]}
+impl<T> FnOnce<(T,)> for Value<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (Value<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Value<T>[TraitClause0]}
+    proof ImpliedClause1: ((T,): Sized) = {built_in impl Sized for (T,)}
+    proof ImpliedClause2: ((T,): Tuple) = {built_in impl Tuple for (T,)}
+    proof ImpliedClause3: (Wrapper<T>[TraitClause0]: Sized) = {built_in impl Sized for Wrapper<T>[TraitClause0]}
+    type Output = Wrapper<T>[TraitClause0]
+    fn call_once = call_once<T>[TraitClause0]
+    vtable: {impl FnOnce<(T,)> for Value<T>[TraitClause0]}::{vtable}<T>[TraitClause0]
+}
+
 // Full name: test_crate::use_constructor
 fn use_constructor<T, F>(_1: F)
 where
@@ -99,7 +132,7 @@ where
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = use_constructor<T, Value<T>[TraitClause0]>[TraitClause0, {built_in impl Sized for Value<T>[TraitClause0]}, {impl#0}<T>[TraitClause0]](const Value<T>[TraitClause0])
+    _1 = use_constructor<T, Value<T>[TraitClause0]>[TraitClause0, {built_in impl Sized for Value<T>[TraitClause0]}, {impl FnOnce<(T,)> for Value<T>[TraitClause0]}<T>[TraitClause0]](const Value<T>[TraitClause0])
     ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()

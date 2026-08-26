@@ -666,11 +666,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // `translate_item_generics`.
         if matches!(
             hax_item.def_id.kind,
-            hax::DefKind::Fn | hax::DefKind::AssocFn | hax::DefKind::Closure
+            hax::DefKind::Fn
+                | hax::DefKind::AssocFn
+                | hax::DefKind::Closure
+                | hax::DefKind::Ctor(..)
         ) {
             let def = self.hax_def(hax_item)?;
             match def.kind() {
-                hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
+                hax::FullDefKind::Fn { sig, .. }
+                | hax::FullDefKind::AssocFn { sig, .. }
+                | hax::FullDefKind::Ctor { sig, .. } => {
                     generics.regions.extend(
                         sig.bound_vars
                             .iter()
