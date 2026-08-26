@@ -1,0 +1,53 @@
+pub fn core::num::{u32}::wrapping_add(_1: u32, _2: u32) -> u32
+= <opaque>
+
+pub fn core::num::{u32}::wrapping_mul(_1: u32, _2: u32) -> u32
+= <opaque>
+
+#[inline(always)]
+pub fn multi_target_attribute_spans::common::identical(x: u32) -> u32
+{
+    let _0: u32; // return
+    let x: u32; // arg #1
+    let _2: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = copy x
+    _0 = move _2 ^ const 3735928559u32
+    storage_dead(_2)
+    return
+}
+
+#[track_caller]
+pub fn multi_target_attribute_spans::common::also_identical(x: u32) -> u32
+{
+    let _0: u32; // return
+    let x: u32; // arg #1
+    let _2: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = copy x
+    _0 = core::num::{u32}::wrapping_mul(move _2, const 3u32)
+    ↳⚡ unwind_continue
+    storage_dead(_2)
+    return
+}
+
+pub fn multi_target_attribute_spans::only_on_x86(x: u32) -> u32
+{
+    let _0: u32; // return
+    let x: u32; // arg #1
+    let _2: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = copy x
+    _0 = core::num::{u32}::wrapping_add(move _2, const 1u32)
+    ↳⚡ unwind_continue
+    storage_dead(_2)
+    return
+}
+
+

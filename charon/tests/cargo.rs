@@ -233,6 +233,16 @@ fn main() -> Result<(), Box<dyn Error>> {
             &[],
             Success,
         ),
+        mktest(
+            "multi-target-attribute-spans",
+            root.join("multi-target-attribute-spans"),
+            &[
+                "--targets=i686-unknown-linux-gnu,x86_64-apple-darwin,riscv64gc-unknown-none-elf"
+                    .to_owned(),
+            ],
+            &[],
+            Success,
+        ),
         issue_1298,
         mktest(
             "test-attributes",

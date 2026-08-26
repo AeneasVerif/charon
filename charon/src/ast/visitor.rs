@@ -14,7 +14,10 @@ use std::mem;
 use std::path::PathBuf;
 use std::{any::Any, hash::Hash};
 
-use crate::ast::from_rustc::{AttributeKind, LangItem};
+use crate::ast::from_rustc;
+use crate::ast::from_rustc::{
+    AttributeKind, DeprecatedSince, Deprecation, Ident, LangItem, OptimizeAttr,
+};
 use crate::ast::*;
 use crate::ids::{Idx, IndexVec};
 use derive_generic_visitor::*;
@@ -46,9 +49,9 @@ use derive_generic_visitor::*;
     skip_but_eq(
         (), String, PathBuf, bool, char, i128, u8, u64, u128, usize, ustr::Ustr,
         crate::options::CliOpts,
-        Abi, AttributeKind, BuiltinImplData, Byte, Discriminator, DropKind, Error, FileName,
-        GlobalKind, ItemOpacity, LangItem, LifetimeMutability, OverflowMode, ReprOptions, Variance,
-        WithRetag,
+        Abi, BuiltinImplData, Byte, DeprecatedSince, Discriminator, DropKind, Error, FileName,
+        GlobalKind, ItemOpacity, LangItem, LifetimeMutability, OptimizeAttr, OverflowMode,
+        ReprOptions, Variance, WithRetag,
     ),
     // Types that are completely skipped, even by `ZipAst`.
     skip(
@@ -57,7 +60,8 @@ use derive_generic_visitor::*;
     ),
     // Types that we unconditionally explore.
     drive(
-        Assert, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
+        Assert, AttributeKind, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
+        Deprecation, Ident, from_rustc::InlineAttr,
         Call, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Disambiguator, DynPredicate, Field, FieldId, File, FloatTy, FloatValue,
         FnOperand, FunId, FnPtrKind, FunSig, InlineAttr, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
