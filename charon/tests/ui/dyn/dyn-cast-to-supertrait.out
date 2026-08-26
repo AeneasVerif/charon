@@ -365,6 +365,23 @@ impl "impl_Cat_for_HouseCat" Cat for HouseCat {
     vtable: impl_Cat_for_HouseCat::{vtable}
 }
 
+// Full name: test_crate::takes_pettable
+fn takes_pettable<'_0, T>(_1: &'_0 T)
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (T: Pettable),
+    TypeOutlives0: T: '_0,
+{
+    let _0: (); // return
+    let _1: &'1 T; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
 // Full name: test_crate::main
 fn main()
 {
@@ -377,6 +394,8 @@ fn main()
     let _6: &'13 (dyn Cat + '14); // anonymous local
     let dyn_pettable: &'18 (dyn Pettable + '19); // local
     let _8: &'20 (dyn Cat + '21); // anonymous local
+    let _9: (); // anonymous local
+    let _10: &'22 (dyn Cat + '23); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -388,25 +407,32 @@ fn main()
     storage_live(_4)
     _4 = &cat
     _3 = &(*_4)
-    dyn_cat = unsize_cast<&'6 HouseCat, &'22 (dyn Cat + '23), &impl_Cat_for_HouseCat::{vtable}>(move _3)
+    dyn_cat = unsize_cast<&'6 HouseCat, &'24 (dyn Cat + '25), &impl_Cat_for_HouseCat::{vtable}>(move _3)
     storage_dead(_3)
     fake_read(dyn_cat)
-    set_type(typeof(dyn_cat) == &'24 (dyn Cat + '25))
+    set_type(typeof(dyn_cat) == &'26 (dyn Cat + '27))
     storage_dead(_4)
     storage_live(dyn_feline)
     storage_live(_6)
     _6 = &(*dyn_cat) with_metadata(copy dyn_cat.metadata)
-    dyn_feline = unsize_cast<&'13 (dyn Cat + '14), &'27 (dyn Feline + '28),  at [5]>(move _6)
+    dyn_feline = unsize_cast<&'13 (dyn Cat + '14), &'29 (dyn Feline + '30),  at [5]>(move _6)
     storage_dead(_6)
     fake_read(dyn_feline)
-    set_type(typeof(dyn_feline) == &'29 (dyn Feline + '30))
+    set_type(typeof(dyn_feline) == &'31 (dyn Feline + '32))
     storage_live(dyn_pettable)
     storage_live(_8)
     _8 = &(*dyn_cat) with_metadata(copy dyn_cat.metadata)
-    dyn_pettable = unsize_cast<&'20 (dyn Cat + '21), &'32 (dyn Pettable + '33),  at [6]>(move _8)
+    dyn_pettable = unsize_cast<&'20 (dyn Cat + '21), &'34 (dyn Pettable + '35),  at [6]>(move _8)
     storage_dead(_8)
     fake_read(dyn_pettable)
-    set_type(typeof(dyn_pettable) == &'34 (dyn Pettable + '35))
+    set_type(typeof(dyn_pettable) == &'36 (dyn Pettable + '37))
+    storage_live(_9)
+    storage_live(_10)
+    _10 = &(*dyn_cat) with_metadata(copy dyn_cat.metadata)
+    _9 = takes_pettable<'47, (dyn Cat + '40)>[{built_in impl MetaSized for (dyn Cat + '42)}, Cat<(dyn Cat + '45)>::ImpliedClause2](move _10)
+    ↳⚡ unwind_continue
+    storage_dead(_10)
+    storage_dead(_9)
     _0 = ()
     storage_dead(dyn_pettable)
     storage_dead(dyn_feline)

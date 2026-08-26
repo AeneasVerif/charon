@@ -43,9 +43,16 @@ fn transform_dyn_trait_call(
     let FnPtrKind::Trait(trait_ref, method_id) = fn_ptr.kind.as_ref() else {
         return Ok(()); // Not a trait method call
     };
-    let TraitRefKind::Dyn = &trait_ref.kind else {
+    let mut dyn_proof = trait_ref;
+    let mut supertrait_path = vec![];
+    while let TraitRefKind::ParentClause(parent, clause_id) = &dyn_proof.kind {
+        supertrait_path.push(*clause_id);
+        dyn_proof = parent;
+    }
+    let TraitRefKind::Dyn = &dyn_proof.kind else {
         return Ok(()); // Not a dyn trait trait call
     };
+    supertrait_path.reverse();
 
     // Get the type of the vtable struct.
     let vtable_decl_ref: TypeDeclRef = {
@@ -107,14 +114,60 @@ fn transform_dyn_trait_call(
         }
     };
 
-    // Construct the `(*ptr.ptr_metadata).method_field` place.
-    let vtable_ty = TyKind::Adt(vtable_decl_ref).into_ty();
-    let ptr_to_vtable_ty = Ty::new(TyKind::RawPtr(vtable_ty.clone(), RefKind::Shared));
-    let method_field_place = dyn_trait_place
+    let dyn_ty = dyn_trait_place
+        .ty()
+        .as_ref_or_ptr()
+        .or_else(|| dyn_trait_place.ty().as_box())
+        .expect("dyn trait receiver should be behind a pointer");
+    let PtrMetadata::VTable(receiver_vtable_ref) = dyn_ty.get_ptr_metadata(&ctx.ctx.translated)
+    else {
+        raise_error!(
+            ctx.ctx,
+            ctx.span,
+            "Dyn trait receiver does not have vtable metadata"
+        );
+    };
+    let receiver_vtable_ty = TyKind::Adt(receiver_vtable_ref).into_ty();
+    let ptr_to_vtable_ty = Ty::new(TyKind::RawPtr(receiver_vtable_ty.clone(), RefKind::Shared));
+    let mut method_vtable_place = dyn_trait_place
         .clone()
         .project(ProjectionElem::PtrMetadata, ptr_to_vtable_ty)
-        .project(ProjectionElem::Deref, vtable_ty)
-        .project(ProjectionElem::Field(None, method_field_id), method_ty);
+        .project(ProjectionElem::Deref, receiver_vtable_ty);
+
+    for clause_id in supertrait_path {
+        let current_vtable_ref = method_vtable_place
+            .ty()
+            .as_adt()
+            .expect("vtable place should have an ADT type");
+        let current_vtable = ctx
+            .ctx
+            .translated
+            .type_decls
+            .get(current_vtable_ref.adt_id())
+            .expect("vtable declaration should have been translated");
+        let TypeDeclKind::Struct(fields) = &current_vtable.kind else {
+            panic!("vtable declaration should be a struct")
+        };
+        let TypeSource::VTable { supertrait_map, .. } = &current_vtable.src else {
+            panic!("vtable declaration should have a vtable source")
+        };
+        let Some(supertrait_field_id) = supertrait_map[clause_id] else {
+            raise_error!(
+                ctx.ctx,
+                ctx.span,
+                "Dyn trait proof uses a parent clause without a vtable"
+            );
+        };
+        let field_ty = fields[supertrait_field_id]
+            .ty
+            .clone()
+            .substitute(&current_vtable_ref.generics);
+        method_vtable_place = method_vtable_place
+            .project(ProjectionElem::Field(None, supertrait_field_id), field_ty)
+            .deref();
+    }
+    let method_field_place =
+        method_vtable_place.project(ProjectionElem::Field(None, method_field_id), method_ty);
 
     let fn_ptr_place = if ctx.ctx.options.monomorphize_with_hax {
         // In mono mode, the vtable contains erased function pointers, cast to `*const ()`.

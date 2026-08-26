@@ -54,7 +54,9 @@ pub enum TraitProofKind {
     /// instance of type `Trait`.
     /// `dyn Trait` implements `Trait` using a built-in implementation; this refers to that
     /// built-in implementation.
-    Dyn,
+    /// The proof describes how to prove the current predicate in the context of the `dyn Trait`
+    /// self type, e.g. for `<dyn Trait as Supertrait>`.
+    Dyn(DynBinder<TraitProof>),
     /// A built-in trait whose implementation is computed by the compiler, such as `FnMut`. This
     /// morally points to an invisible `impl` block; as such it contains the information we may
     /// need from one.
