@@ -7,6 +7,11 @@ opaque type core::marker::MetaSized::{vtable}
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
+fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
+= <opaque>
+
+static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -149,6 +154,7 @@ fn impl_Feline_for_HouseCat::{vtable}() -> test_crate::Feline::{vtable}
     let align: usize; // local
     let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn Feline + '1)); // anonymous local
     let _4: fn<'_0_1>(&'_0_1 (dyn Feline + '3)); // anonymous local
+    let _5: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
     storage_live(size)
@@ -159,7 +165,9 @@ fn impl_Feline_for_HouseCat::{vtable}() -> test_crate::Feline::{vtable}
     _3 = cast<for<'_0_1> impl_Feline_for_HouseCat::{vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Feline + '1))>(const impl_Feline_for_HouseCat::{vtable_drop_shim}<'0>)
     storage_live(_4)
     _4 = cast<for<'_0_1> impl_Feline_for_HouseCat::hunt::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Feline + '3))>(const impl_Feline_for_HouseCat::hunt::{vtable_method}<'2>)
-    ret = test_crate::Feline::{vtable} { size: move size, align: move align, drop: move _3, method_hunt: move _4, super_trait_0: const &vtable_of({built_in impl MetaSized for HouseCat}) }
+    storage_live(_5)
+    _5 = &core::marker::MetaSized::{vtable}<HouseCat>
+    ret = test_crate::Feline::{vtable} { size: move size, align: move align, drop: move _3, method_hunt: move _4, super_trait_0: move _5 }
     return
 }
 
@@ -234,6 +242,7 @@ fn impl_Pettable_for_HouseCat::{vtable}() -> test_crate::Pettable::{vtable}
     let align: usize; // local
     let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn Pettable + '1)); // anonymous local
     let _4: fn<'_0_1>(&'_0_1 (dyn Pettable + '3)); // anonymous local
+    let _5: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
     storage_live(size)
@@ -244,7 +253,9 @@ fn impl_Pettable_for_HouseCat::{vtable}() -> test_crate::Pettable::{vtable}
     _3 = cast<for<'_0_1> impl_Pettable_for_HouseCat::{vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Pettable + '1))>(const impl_Pettable_for_HouseCat::{vtable_drop_shim}<'0>)
     storage_live(_4)
     _4 = cast<for<'_0_1> impl_Pettable_for_HouseCat::pet::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Pettable + '3))>(const impl_Pettable_for_HouseCat::pet::{vtable_method}<'2>)
-    ret = test_crate::Pettable::{vtable} { size: move size, align: move align, drop: move _3, method_pet: move _4, super_trait_0: const &vtable_of({built_in impl MetaSized for HouseCat}) }
+    storage_live(_5)
+    _5 = &core::marker::MetaSized::{vtable}<HouseCat>
+    ret = test_crate::Pettable::{vtable} { size: move size, align: move align, drop: move _3, method_pet: move _4, super_trait_0: move _5 }
     return
 }
 
@@ -319,8 +330,9 @@ fn impl_Cat_for_HouseCat::{vtable}() -> test_crate::Cat::{vtable}
     let align: usize; // local
     let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn Cat + '1)); // anonymous local
     let _4: fn<'_0_1>(&'_0_1 (dyn Cat + '3)); // anonymous local
-    let _5: &'static test_crate::Feline::{vtable}; // anonymous local
-    let _6: &'static test_crate::Pettable::{vtable}; // anonymous local
+    let _5: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _6: &'static test_crate::Feline::{vtable}; // anonymous local
+    let _7: &'static test_crate::Pettable::{vtable}; // anonymous local
 
     storage_live(ret)
     storage_live(size)
@@ -332,10 +344,12 @@ fn impl_Cat_for_HouseCat::{vtable}() -> test_crate::Cat::{vtable}
     storage_live(_4)
     _4 = cast<for<'_0_1> impl_Cat_for_HouseCat::meow::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Cat + '3))>(const impl_Cat_for_HouseCat::meow::{vtable_method}<'2>)
     storage_live(_5)
-    _5 = &impl_Feline_for_HouseCat::{vtable}
+    _5 = &core::marker::MetaSized::{vtable}<HouseCat>
     storage_live(_6)
-    _6 = &impl_Pettable_for_HouseCat::{vtable}
-    ret = test_crate::Cat::{vtable} { size: move size, align: move align, drop: move _3, method_meow: move _4, super_trait_0: const &vtable_of({built_in impl MetaSized for HouseCat}), super_trait_1: move _5, super_trait_2: move _6 }
+    _6 = &impl_Feline_for_HouseCat::{vtable}
+    storage_live(_7)
+    _7 = &impl_Pettable_for_HouseCat::{vtable}
+    ret = test_crate::Cat::{vtable} { size: move size, align: move align, drop: move _3, method_meow: move _4, super_trait_0: move _5, super_trait_1: move _6, super_trait_2: move _7 }
     return
 }
 

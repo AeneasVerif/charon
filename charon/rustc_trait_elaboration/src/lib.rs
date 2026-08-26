@@ -32,6 +32,7 @@ pub use utils::*;
 use rustc_data_structures::intern::Interned;
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty;
+use rustc_type_ir::lang_items::SolverTraitLangItem;
 use std::hash::Hash;
 use std::ops::Deref;
 
@@ -58,11 +59,12 @@ pub enum BuiltinTraitData<'tcx> {
     /// the information about `drop_in_place` to that trait. This data tells us what kind of
     /// `drop_in_place` the target type has.
     Destruct(DestructData<'tcx>),
+    /// A trait alias.
+    Alias,
     /// An auto-trait.
     Auto,
     /// Some other builtin trait.
-    // FIXME: carry the SolverTraitLangItem here directly
-    Other,
+    Other(SolverTraitLangItem),
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]

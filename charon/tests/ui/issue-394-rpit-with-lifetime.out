@@ -156,7 +156,7 @@ impl<'a> "impl_FnOnce_unit_for_closure" FnOnce<()> for closure<'a> {
     proof ImpliedClause3: (Option<u8>[{built_in impl Sized for u8}]: Sized) = {built_in impl Sized for Option<u8>[{built_in impl Sized for u8}]}
     type Output = Option<u8>[{built_in impl Sized for u8}]
     fn call_once = call_once<'a>
-    non-dyn-compatible
+    vtable: impl_FnOnce_unit_for_closure::{vtable}<'a>
 }
 
 // Full name: test_crate::sparse_transitions::{impl FnMut<()> for closure<'a>}
@@ -166,19 +166,19 @@ impl<'a> "impl_FnMut_unit_for_closure" FnMut<()> for closure<'a> {
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
     fn call_mut<'_0_1> = call_mut<'a, '_0_1>
-    non-dyn-compatible
+    vtable: impl_FnMut_unit_for_closure::{vtable}<'a>
 }
 
 // Full name: test_crate::sparse_transitions
 fn sparse_transitions<'a>() -> FromFn<closure<'a>>[{built_in impl Sized for closure<'a>}]
 {
     let _0: FromFn<closure<'6>>[{built_in impl Sized for closure<'6>}]; // return
-    let _1: closure<'9>; // anonymous local
+    let _1: closure<'10>; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
     _1 = closure {  }
-    _0 = from_fn<u8, closure<'12>>[{built_in impl Sized for u8}, {built_in impl Sized for closure<'12>}, impl_FnMut_unit_for_closure<'12>](move _1)
+    _0 = from_fn<u8, closure<'13>>[{built_in impl Sized for u8}, {built_in impl Sized for closure<'13>}, impl_FnMut_unit_for_closure<'13>](move _1)
     ↳⚡ unwind_continue
     storage_dead(_1)
     return

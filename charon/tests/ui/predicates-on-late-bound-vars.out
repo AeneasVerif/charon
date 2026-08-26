@@ -89,8 +89,8 @@ where
 fn wrap<'a>(x: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
 {
     let _0: Option<&'6 u32>[{built_in impl Sized for &'6 u32}]; // return
-    let x: &'9 u32; // arg #1
-    let _2: &'10 u32; // anonymous local
+    let x: &'10 u32; // arg #1
+    let _2: &'11 u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -107,8 +107,8 @@ where
     TraitClause0: (&'a (): Clone),
 {
     let _0: Option<&'6 u32>[{built_in impl Sized for &'6 u32}]; // return
-    let x: &'9 u32; // arg #1
-    let _2: &'10 u32; // anonymous local
+    let x: &'10 u32; // arg #1
+    let _2: &'11 u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -124,8 +124,8 @@ fn foo()
 {
     let _0: (); // return
     let ref_b: RefCell<bool>[{built_in impl MetaSized for bool}]; // local
-    let _2: Result<Ref<'6, bool>[{built_in impl MetaSized for bool}], BorrowError>[{built_in impl Sized for Ref<'6, bool>[{built_in impl MetaSized for bool}]}, {built_in impl Sized for BorrowError}]; // anonymous local
-    let _3: &'10 RefCell<bool>[{built_in impl MetaSized for bool}]; // anonymous local
+    let _2: Result<Ref<'7, bool>[{built_in impl MetaSized for bool}], BorrowError>[{built_in impl Sized for Ref<'7, bool>[{built_in impl MetaSized for bool}]}, {built_in impl Sized for BorrowError}]; // anonymous local
+    let _3: &'12 RefCell<bool>[{built_in impl MetaSized for bool}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -137,10 +137,10 @@ fn foo()
     storage_live(_3)
     // `try_borrow` has a type that includes predicates on late bound regions.
     _3 = &ref_b
-    _2 = try_borrow<'12, bool>[{built_in impl MetaSized for bool}](move _3)
+    _2 = try_borrow<'14, bool>[{built_in impl MetaSized for bool}](move _3)
     ↳⚡ unwind_continue
     storage_dead(_3)
-    conditional_drop[drop_glue<'27, Ref<'22, bool>[{built_in impl MetaSized for bool}], BorrowError>[{built_in impl Sized for Ref<'22, bool>[{built_in impl MetaSized for bool}]}, {built_in impl Sized for BorrowError}]] _2
+    conditional_drop[drop_glue<'32, Ref<'26, bool>[{built_in impl MetaSized for bool}], BorrowError>[{built_in impl Sized for Ref<'26, bool>[{built_in impl MetaSized for bool}]}, {built_in impl Sized for BorrowError}]] _2
     ↳⚡ unwind_continue
     storage_dead(_2)
     _0 = ()

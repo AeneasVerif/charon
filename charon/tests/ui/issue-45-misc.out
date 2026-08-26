@@ -341,7 +341,7 @@ impl "impl_FnOnce_tuple_for_closure" FnOnce<(i32,)> for closure {
     proof ImpliedClause3: (i32: Sized) = {built_in impl Sized for i32}
     type Output = i32
     fn call_once = call_once
-    non-dyn-compatible
+    vtable: impl_FnOnce_tuple_for_closure::{vtable}
 }
 
 // Full name: test_crate::map::{impl FnMut<(i32,)> for closure}
@@ -351,7 +351,7 @@ impl "impl_FnMut_tuple_for_closure" FnMut<(i32,)> for closure {
     proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
     proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
     fn call_mut<'_0_1> = call_mut<'_0_1>
-    non-dyn-compatible
+    vtable: impl_FnMut_tuple_for_closure::{vtable}
 }
 
 pub fn test_crate::map(x: [i32; 256usize]) -> [i32; 256usize]
@@ -487,7 +487,7 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
     let _19: &'15 usize; // anonymous local
     let _20: &'16 usize; // anonymous local
     let _21: &'17 usize; // anonymous local
-    let _22: Option<Arguments<'24>>[{built_in impl Sized for Arguments<'24>}]; // anonymous local
+    let _22: Option<Arguments<'25>>[{built_in impl Sized for Arguments<'25>}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -499,7 +499,7 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
         storage_live(_6)
         storage_live(_7)
         _7 = &(*lhs) with_metadata(copy lhs.metadata)
-        _6 = core::slice::{[T]}::len<'28, u8>[{built_in impl Sized for u8}](move _7)
+        _6 = core::slice::{[T]}::len<'30, u8>[{built_in impl Sized for u8}](move _7)
         ↳⚡ storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)
@@ -516,7 +516,7 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
         storage_live(_9)
         storage_live(_10)
         _10 = &(*rhs) with_metadata(copy rhs.metadata)
-        _9 = core::slice::{[T]}::len<'30, u8>[{built_in impl Sized for u8}](move _10)
+        _9 = core::slice::{[T]}::len<'32, u8>[{built_in impl Sized for u8}](move _10)
         ↳⚡ storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)

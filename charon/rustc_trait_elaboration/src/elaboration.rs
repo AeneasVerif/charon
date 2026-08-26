@@ -8,6 +8,7 @@ use rustc_hir::def_id::DefId;
 use rustc_middle::traits::CodegenObligationError;
 use rustc_middle::ty::{self, *};
 use rustc_trait_selection::traits::ImplSource;
+use rustc_type_ir::Interner;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 struct ItemClause<'tcx, Id = DefId> {
@@ -500,8 +501,13 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
                 } else {
                     Either::Left(if tcx.trait_is_auto(trait_def_id) {
                         BuiltinTraitData::Auto
+                    } else if tcx.trait_is_alias(trait_def_id) {
+                        BuiltinTraitData::Alias
+                    } else if let Some(li) = tcx.as_trait_lang_item(trait_def_id) {
+                        BuiltinTraitData::Other(li)
                     } else {
-                        BuiltinTraitData::Other
+                        let msg = format!("`{tref:?}` implements an unknown builtin trait");
+                        return error(msg);
                     })
                 };
                 match trait_data {

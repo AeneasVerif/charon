@@ -222,7 +222,7 @@ impl FnOnce<(u32,), u32> for incr_u32 {
     proof ImpliedClause2: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
     fn call_once = {impl FnOnce<(u32,), u32> for incr_u32}::call_once
-    non-dyn-compatible
+    vtable: {impl FnOnce<(u32,), u32> for incr_u32}::{vtable}
 }
 
 // Full name: test_crate::{impl FnMut<(u32,), u32> for incr_u32}
@@ -232,7 +232,7 @@ impl FnMut<(u32,), u32> for incr_u32 {
     proof ImpliedClause2: ((u32,): Sized) = {built_in impl Sized for (u32,)}
     proof ImpliedClause3: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     fn call_mut<'_0_1> = {impl FnMut<(u32,), u32> for incr_u32}::call_mut<'_0_1>
-    non-dyn-compatible
+    vtable: {impl FnMut<(u32,), u32> for incr_u32}::{vtable}
 }
 
 // Full name: test_crate::{impl Fn<(u32,), u32> for incr_u32}
@@ -242,7 +242,7 @@ impl Fn<(u32,), u32> for incr_u32 {
     proof ImpliedClause2: ((u32,): Sized) = {built_in impl Sized for (u32,)}
     proof ImpliedClause3: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     fn call<'_0_1> = {impl Fn<(u32,), u32> for incr_u32}::call<'_0_1>
-    non-dyn-compatible
+    vtable: {impl Fn<(u32,), u32> for incr_u32}::{vtable}
 }
 
 // Full name: test_crate::map_option
@@ -592,7 +592,7 @@ impl FnOnce<(u32,), u32> for test_crate::test_closure_u32::closure {
     proof ImpliedClause2: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
     fn call_once = {impl FnOnce<(u32,), u32> for test_crate::test_closure_u32::closure}::call_once
-    non-dyn-compatible
+    vtable: {impl FnOnce<(u32,), u32> for test_crate::test_closure_u32::closure}::{vtable}
 }
 
 // Full name: test_crate::test_closure_u32::{impl FnMut<(u32,), u32> for test_crate::test_closure_u32::closure}
@@ -602,7 +602,7 @@ impl FnMut<(u32,), u32> for test_crate::test_closure_u32::closure {
     proof ImpliedClause2: ((u32,): Sized) = {built_in impl Sized for (u32,)}
     proof ImpliedClause3: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     fn call_mut<'_0_1> = {impl FnMut<(u32,), u32> for test_crate::test_closure_u32::closure}::call_mut<'_0_1>
-    non-dyn-compatible
+    vtable: {impl FnMut<(u32,), u32> for test_crate::test_closure_u32::closure}::{vtable}
 }
 
 // Full name: test_crate::test_closure_u32::{impl Fn<(u32,), u32> for test_crate::test_closure_u32::closure}
@@ -612,7 +612,7 @@ impl Fn<(u32,), u32> for test_crate::test_closure_u32::closure {
     proof ImpliedClause2: ((u32,): Sized) = {built_in impl Sized for (u32,)}
     proof ImpliedClause3: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     fn call<'_0_1> = {impl Fn<(u32,), u32> for test_crate::test_closure_u32::closure}::call<'_0_1>
-    non-dyn-compatible
+    vtable: {impl Fn<(u32,), u32> for test_crate::test_closure_u32::closure}::{vtable}
 }
 
 // Full name: test_crate::test_closure_u32::closure::{impl Destruct for test_crate::test_closure_u32::closure}
@@ -792,7 +792,7 @@ impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::closure {
     proof ImpliedClause2: ((u32, u32): Tuple) = {built_in impl Tuple for (u32, u32)}
     proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
     fn call_once = {impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call_once
-    non-dyn-compatible
+    vtable: {impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::{vtable}
 }
 
 // Full name: test_crate::test_closure_u32s::{impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure}
@@ -802,7 +802,7 @@ impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure {
     proof ImpliedClause2: ((u32, u32): Sized) = {built_in impl Sized for (u32, u32)}
     proof ImpliedClause3: ((u32, u32): Tuple) = {built_in impl Tuple for (u32, u32)}
     fn call_mut<'_0_1> = {impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call_mut<'_0_1>
-    non-dyn-compatible
+    vtable: {impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::{vtable}
 }
 
 // Full name: test_crate::test_closure_u32s::{impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure}
@@ -812,7 +812,7 @@ impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure {
     proof ImpliedClause2: ((u32, u32): Sized) = {built_in impl Sized for (u32, u32)}
     proof ImpliedClause3: ((u32, u32): Tuple) = {built_in impl Tuple for (u32, u32)}
     fn call<'_0_1> = {impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::call<'_0_1>
-    non-dyn-compatible
+    vtable: {impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::closure}::{vtable}
 }
 
 // Full name: test_crate::test_closure_u32s::closure::{impl Destruct for test_crate::test_closure_u32s::closure}
@@ -974,7 +974,7 @@ impl<'_0> FnOnce<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::clos
     proof ImpliedClause2: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
     proof ImpliedClause3: (&'_ u32: Sized) = {built_in impl Sized for &'_ u32}
     fn call_once = {impl FnOnce<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::call_once<'_0>
-    non-dyn-compatible
+    vtable: {impl FnOnce<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::{vtable}<'_0>
 }
 
 // Full name: test_crate::test_closure_ref_u32::{impl FnMut<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}
@@ -984,7 +984,7 @@ impl<'_0> FnMut<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closu
     proof ImpliedClause2: ((&'_ u32,): Sized) = {built_in impl Sized for (&'_ u32,)}
     proof ImpliedClause3: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
     fn call_mut<'_0_1> = {impl FnMut<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::call_mut<'_0, '_0_1>
-    non-dyn-compatible
+    vtable: {impl FnMut<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::{vtable}<'_0>
 }
 
 // Full name: test_crate::test_closure_ref_u32::{impl Fn<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}
@@ -994,7 +994,7 @@ impl<'_0> Fn<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure 
     proof ImpliedClause2: ((&'_ u32,): Sized) = {built_in impl Sized for (&'_ u32,)}
     proof ImpliedClause3: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
     fn call<'_0_1> = {impl Fn<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::call<'_0, '_0_1>
-    non-dyn-compatible
+    vtable: {impl Fn<(&'_ u32,), &'_ u32> for test_crate::test_closure_ref_u32::closure}::{vtable}<'_0>
 }
 
 // Full name: test_crate::test_closure_ref_u32::closure::{impl Destruct for test_crate::test_closure_ref_u32::closure}
@@ -1181,7 +1181,7 @@ where
     proof ImpliedClause2: ((&'_ T,): Tuple) = {built_in impl Tuple for (&'_ T,)}
     proof ImpliedClause3: (&'_ T: Sized) = {built_in impl Sized for &'_ T}
     fn call_once = {impl FnOnce<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call_once<'_0, T>[TraitClause0]
-    non-dyn-compatible
+    vtable: {impl FnOnce<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::{vtable}<'_0, T>[TraitClause0]
 }
 
 // Full name: test_crate::test_closure_ref_param::{impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}
@@ -1194,7 +1194,7 @@ where
     proof ImpliedClause2: ((&'_ T,): Sized) = {built_in impl Sized for (&'_ T,)}
     proof ImpliedClause3: ((&'_ T,): Tuple) = {built_in impl Tuple for (&'_ T,)}
     fn call_mut<'_0_1> = {impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call_mut<'_0, '_0_1, T>[TraitClause0]
-    non-dyn-compatible
+    vtable: {impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::{vtable}<'_0, T>[TraitClause0]
 }
 
 // Full name: test_crate::test_closure_ref_param::{impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}
@@ -1207,7 +1207,7 @@ where
     proof ImpliedClause2: ((&'_ T,): Sized) = {built_in impl Sized for (&'_ T,)}
     proof ImpliedClause3: ((&'_ T,): Tuple) = {built_in impl Tuple for (&'_ T,)}
     fn call<'_0_1> = {impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::call<'_0, '_0_1, T>[TraitClause0]
-    non-dyn-compatible
+    vtable: {impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}::{vtable}<'_0, T>[TraitClause0]
 }
 
 // Full name: test_crate::test_closure_ref_param::closure::{impl Destruct for test_crate::test_closure_ref_param::closure<T>[TraitClause0]}
@@ -1415,7 +1415,7 @@ where
     proof ImpliedClause2: ((&'_ T,): Tuple) = {built_in impl Tuple for (&'_ T,)}
     proof ImpliedClause3: (&'_ T: Sized) = {built_in impl Sized for &'_ T}
     fn call_once = {impl FnOnce<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::call_once<'a, '_1, T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: {impl FnOnce<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::{vtable}<'a, '_1, T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::test_closure_ref_early_bound::{impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}
@@ -1429,7 +1429,7 @@ where
     proof ImpliedClause2: ((&'_ T,): Sized) = {built_in impl Sized for (&'_ T,)}
     proof ImpliedClause3: ((&'_ T,): Tuple) = {built_in impl Tuple for (&'_ T,)}
     fn call_mut<'_0_1> = {impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::call_mut<'a, '_1, '_0_1, T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: {impl FnMut<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::{vtable}<'a, '_1, T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::test_closure_ref_early_bound::{impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}
@@ -1443,7 +1443,7 @@ where
     proof ImpliedClause2: ((&'_ T,): Sized) = {built_in impl Sized for (&'_ T,)}
     proof ImpliedClause3: ((&'_ T,): Tuple) = {built_in impl Tuple for (&'_ T,)}
     fn call<'_0_1> = {impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_0_1, T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: {impl Fn<(&'_ T,), &'_ T> for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}::{vtable}<'a, '_1, T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::test_closure_ref_early_bound::closure::{impl Destruct for test_crate::test_closure_ref_early_bound::closure<'a, T>[TraitClause0, TraitClause1]}
@@ -1612,7 +1612,7 @@ impl FnOnce<(u32,), u32> for test_crate::test_map_option2::closure {
     proof ImpliedClause2: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
     fn call_once = {impl FnOnce<(u32,), u32> for test_crate::test_map_option2::closure}::call_once
-    non-dyn-compatible
+    vtable: {impl FnOnce<(u32,), u32> for test_crate::test_map_option2::closure}::{vtable}
 }
 
 // Full name: test_crate::test_map_option2::{impl FnMut<(u32,), u32> for test_crate::test_map_option2::closure}
@@ -1622,7 +1622,7 @@ impl FnMut<(u32,), u32> for test_crate::test_map_option2::closure {
     proof ImpliedClause2: ((u32,): Sized) = {built_in impl Sized for (u32,)}
     proof ImpliedClause3: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     fn call_mut<'_0_1> = {impl FnMut<(u32,), u32> for test_crate::test_map_option2::closure}::call_mut<'_0_1>
-    non-dyn-compatible
+    vtable: {impl FnMut<(u32,), u32> for test_crate::test_map_option2::closure}::{vtable}
 }
 
 // Full name: test_crate::test_map_option2::{impl Fn<(u32,), u32> for test_crate::test_map_option2::closure}
@@ -1632,7 +1632,7 @@ impl Fn<(u32,), u32> for test_crate::test_map_option2::closure {
     proof ImpliedClause2: ((u32,): Sized) = {built_in impl Sized for (u32,)}
     proof ImpliedClause3: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     fn call<'_0_1> = {impl Fn<(u32,), u32> for test_crate::test_map_option2::closure}::call<'_0_1>
-    non-dyn-compatible
+    vtable: {impl Fn<(u32,), u32> for test_crate::test_map_option2::closure}::{vtable}
 }
 
 // Full name: test_crate::test_map_option2::closure::{impl Destruct for test_crate::test_map_option2::closure}
@@ -1727,7 +1727,7 @@ where
     proof ImpliedClause2: ((T,): Tuple) = {built_in impl Tuple for (T,)}
     proof ImpliedClause3: (T: Sized) = TraitClause0
     fn call_once = {impl FnOnce<(T,), T> for id<T>[TraitClause0]}::call_once<T>[TraitClause0]
-    non-dyn-compatible
+    vtable: {impl FnOnce<(T,), T> for id<T>[TraitClause0]}::{vtable}<T>[TraitClause0]
 }
 
 // Full name: test_crate::{impl FnMut<(T,), T> for id<T>[TraitClause0]}
@@ -1740,7 +1740,7 @@ where
     proof ImpliedClause2: ((T,): Sized) = {built_in impl Sized for (T,)}
     proof ImpliedClause3: ((T,): Tuple) = {built_in impl Tuple for (T,)}
     fn call_mut<'_0_1> = {impl FnMut<(T,), T> for id<T>[TraitClause0]}::call_mut<'_0_1, T>[TraitClause0]
-    non-dyn-compatible
+    vtable: {impl FnMut<(T,), T> for id<T>[TraitClause0]}::{vtable}<T>[TraitClause0]
 }
 
 // Full name: test_crate::{impl Fn<(T,), T> for id<T>[TraitClause0]}
@@ -1753,7 +1753,7 @@ where
     proof ImpliedClause2: ((T,): Sized) = {built_in impl Sized for (T,)}
     proof ImpliedClause3: ((T,): Tuple) = {built_in impl Tuple for (T,)}
     fn call<'_0_1> = {impl Fn<(T,), T> for id<T>[TraitClause0]}::call<'_0_1, T>[TraitClause0]
-    non-dyn-compatible
+    vtable: {impl Fn<(T,), T> for id<T>[TraitClause0]}::{vtable}<T>[TraitClause0]
 }
 
 // Full name: test_crate::test_map_option_id1
@@ -1905,7 +1905,7 @@ where
     proof ImpliedClause2: ((T,): Tuple) = {built_in impl Tuple for (T,)}
     proof ImpliedClause3: (T: Sized) = TraitClause0
     fn call_once = {impl FnOnce<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_once<T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: {impl FnOnce<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::{impl FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}
@@ -1919,7 +1919,7 @@ where
     proof ImpliedClause2: ((T,): Sized) = {built_in impl Sized for (T,)}
     proof ImpliedClause3: ((T,): Tuple) = {built_in impl Tuple for (T,)}
     fn call_mut<'_0_1> = {impl FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_mut<'_0_1, T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: {impl FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::{impl Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}
@@ -1933,7 +1933,7 @@ where
     proof ImpliedClause2: ((T,): Sized) = {built_in impl Sized for (T,)}
     proof ImpliedClause3: ((T,): Tuple) = {built_in impl Tuple for (T,)}
     fn call<'_0_1> = {impl Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call<'_0_1, T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: {impl Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::test_id_clone
@@ -2123,7 +2123,7 @@ impl FnOnce<(u32,), u32> for test_crate::test_map_option3::closure {
     proof ImpliedClause2: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
     fn call_once = {impl FnOnce<(u32,), u32> for test_crate::test_map_option3::closure}::call_once
-    non-dyn-compatible
+    vtable: {impl FnOnce<(u32,), u32> for test_crate::test_map_option3::closure}::{vtable}
 }
 
 // Full name: test_crate::test_map_option3::{impl FnMut<(u32,), u32> for test_crate::test_map_option3::closure}
@@ -2133,7 +2133,7 @@ impl FnMut<(u32,), u32> for test_crate::test_map_option3::closure {
     proof ImpliedClause2: ((u32,): Sized) = {built_in impl Sized for (u32,)}
     proof ImpliedClause3: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     fn call_mut<'_0_1> = {impl FnMut<(u32,), u32> for test_crate::test_map_option3::closure}::call_mut<'_0_1>
-    non-dyn-compatible
+    vtable: {impl FnMut<(u32,), u32> for test_crate::test_map_option3::closure}::{vtable}
 }
 
 // Full name: test_crate::test_map_option3::{impl Fn<(u32,), u32> for test_crate::test_map_option3::closure}
@@ -2143,7 +2143,7 @@ impl Fn<(u32,), u32> for test_crate::test_map_option3::closure {
     proof ImpliedClause2: ((u32,): Sized) = {built_in impl Sized for (u32,)}
     proof ImpliedClause3: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     fn call<'_0_1> = {impl Fn<(u32,), u32> for test_crate::test_map_option3::closure}::call<'_0_1>
-    non-dyn-compatible
+    vtable: {impl Fn<(u32,), u32> for test_crate::test_map_option3::closure}::{vtable}
 }
 
 // Full name: test_crate::test_map_option3
@@ -2308,7 +2308,7 @@ impl<'_0, '_1> FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure
     proof ImpliedClause2: ((&'_ &'_ u32,): Tuple) = {built_in impl Tuple for (&'_ &'_ u32,)}
     proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
     fn call_once = {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_once<'_0, '_1>
-    non-dyn-compatible
+    vtable: {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::{vtable}<'_0, '_1>
 }
 
 // Full name: test_crate::test_regions::{impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}
@@ -2318,7 +2318,7 @@ impl<'_0, '_1> FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure 
     proof ImpliedClause2: ((&'_ &'_ u32,): Sized) = {built_in impl Sized for (&'_ &'_ u32,)}
     proof ImpliedClause3: ((&'_ &'_ u32,): Tuple) = {built_in impl Tuple for (&'_ &'_ u32,)}
     fn call_mut<'_0_1> = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call_mut<'_0, '_1, '_0_1>
-    non-dyn-compatible
+    vtable: {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::{vtable}<'_0, '_1>
 }
 
 // Full name: test_crate::test_regions::{impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}
@@ -2328,7 +2328,7 @@ impl<'_0, '_1> Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure {
     proof ImpliedClause2: ((&'_ &'_ u32,): Sized) = {built_in impl Sized for (&'_ &'_ u32,)}
     proof ImpliedClause3: ((&'_ &'_ u32,): Tuple) = {built_in impl Tuple for (&'_ &'_ u32,)}
     fn call<'_0_1> = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::call<'_0, '_1, '_0_1>
-    non-dyn-compatible
+    vtable: {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions::closure}::{vtable}<'_0, '_1>
 }
 
 // Full name: test_crate::test_regions::closure::{impl Destruct for test_crate::test_regions::closure}
@@ -2497,7 +2497,7 @@ impl<'_0, '_1> FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::
     proof ImpliedClause2: ((&'_ &'_ u32,): Tuple) = {built_in impl Tuple for (&'_ &'_ u32,)}
     proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
     fn call_once = {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_once<'_0, '_1>
-    non-dyn-compatible
+    vtable: {impl FnOnce<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::{vtable}<'_0, '_1>
 }
 
 // Full name: test_crate::test_regions_casted::{impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}
@@ -2507,7 +2507,7 @@ impl<'_0, '_1> FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::c
     proof ImpliedClause2: ((&'_ &'_ u32,): Sized) = {built_in impl Sized for (&'_ &'_ u32,)}
     proof ImpliedClause3: ((&'_ &'_ u32,): Tuple) = {built_in impl Tuple for (&'_ &'_ u32,)}
     fn call_mut<'_0_1> = {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call_mut<'_0, '_1, '_0_1>
-    non-dyn-compatible
+    vtable: {impl FnMut<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::{vtable}<'_0, '_1>
 }
 
 // Full name: test_crate::test_regions_casted::{impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}
@@ -2517,7 +2517,7 @@ impl<'_0, '_1> Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::clos
     proof ImpliedClause2: ((&'_ &'_ u32,): Sized) = {built_in impl Sized for (&'_ &'_ u32,)}
     proof ImpliedClause3: ((&'_ &'_ u32,): Tuple) = {built_in impl Tuple for (&'_ &'_ u32,)}
     fn call<'_0_1> = {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::call<'_0, '_1, '_0_1>
-    non-dyn-compatible
+    vtable: {impl Fn<(&'_ &'_ u32,), u32> for test_crate::test_regions_casted::closure}::{vtable}<'_0, '_1>
 }
 
 // Full name: test_crate::test_regions_casted::closure::{impl Destruct for test_crate::test_regions_casted::closure}
@@ -2697,7 +2697,7 @@ impl<'_0, '_1> FnOnce<(u32,), u32> for test_crate::test_closure_capture::closure
     proof ImpliedClause2: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
     fn call_once = {impl FnOnce<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_once<'_0, '_1>
-    non-dyn-compatible
+    vtable: {impl FnOnce<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::{vtable}<'_0, '_1>
 }
 
 // Full name: test_crate::test_closure_capture::{impl FnMut<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}
@@ -2707,7 +2707,7 @@ impl<'_0, '_1> FnMut<(u32,), u32> for test_crate::test_closure_capture::closure<
     proof ImpliedClause2: ((u32,): Sized) = {built_in impl Sized for (u32,)}
     proof ImpliedClause3: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     fn call_mut<'_0_1> = {impl FnMut<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_0_1>
-    non-dyn-compatible
+    vtable: {impl FnMut<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::{vtable}<'_0, '_1>
 }
 
 // Full name: test_crate::test_closure_capture::{impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}
@@ -2717,7 +2717,7 @@ impl<'_0, '_1> Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0
     proof ImpliedClause2: ((u32,): Sized) = {built_in impl Sized for (u32,)}
     proof ImpliedClause3: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     fn call<'_0_1> = {impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'_0, '_1, '_0_1>
-    non-dyn-compatible
+    vtable: {impl Fn<(u32,), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::{vtable}<'_0, '_1>
 }
 
 // Full name: test_crate::test_closure_capture::closure::{impl Destruct for test_crate::test_closure_capture::closure<'_0, '_1>}
@@ -2916,7 +2916,7 @@ where
     proof ImpliedClause2: ((T,): Tuple) = {built_in impl Tuple for (T,)}
     proof ImpliedClause3: (T: Sized) = TraitClause0
     fn call_once = {impl FnOnce<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call_once<T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: {impl FnOnce<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::test_closure_clone::{impl FnMut<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}
@@ -2930,7 +2930,7 @@ where
     proof ImpliedClause2: ((T,): Sized) = {built_in impl Sized for (T,)}
     proof ImpliedClause3: ((T,): Tuple) = {built_in impl Tuple for (T,)}
     fn call_mut<'_0_1> = {impl FnMut<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call_mut<'_0_1, T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: {impl FnMut<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::test_closure_clone::{impl Fn<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}
@@ -2944,7 +2944,7 @@ where
     proof ImpliedClause2: ((T,): Sized) = {built_in impl Sized for (T,)}
     proof ImpliedClause3: ((T,): Tuple) = {built_in impl Tuple for (T,)}
     fn call<'_0_1> = {impl Fn<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::call<'_0_1, T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: {impl Fn<(T,), T> for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::test_closure_clone::closure::{impl Destruct for test_crate::test_closure_clone::closure<T>[TraitClause0, TraitClause1]}
@@ -3034,7 +3034,7 @@ impl FnOnce<(i32,), i32> for test_crate::test_array_map::closure {
     proof ImpliedClause2: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
     proof ImpliedClause3: (i32: Sized) = {built_in impl Sized for i32}
     fn call_once = {impl FnOnce<(i32,), i32> for test_crate::test_array_map::closure}::call_once
-    non-dyn-compatible
+    vtable: {impl FnOnce<(i32,), i32> for test_crate::test_array_map::closure}::{vtable}
 }
 
 // Full name: test_crate::test_array_map::{impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}
@@ -3044,7 +3044,7 @@ impl FnMut<(i32,), i32> for test_crate::test_array_map::closure {
     proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
     proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
     fn call_mut<'_0_1> = {impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}::call_mut<'_0_1>
-    non-dyn-compatible
+    vtable: {impl FnMut<(i32,), i32> for test_crate::test_array_map::closure}::{vtable}
 }
 
 // Full name: test_crate::test_array_map
@@ -3220,7 +3220,7 @@ impl<'_0, '_1> FnOnce<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::clo
     proof ImpliedClause2: ((&'_ usize,): Tuple) = {built_in impl Tuple for (&'_ usize,)}
     proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
     fn call_once = {impl FnOnce<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_once<'_0, '_1>
-    non-dyn-compatible
+    vtable: {impl FnOnce<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::{vtable}<'_0, '_1>
 }
 
 // Full name: test_crate::test_fnmut_with_ref::{impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}
@@ -3230,7 +3230,7 @@ impl<'_0, '_1> FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::clos
     proof ImpliedClause2: ((&'_ usize,): Sized) = {built_in impl Sized for (&'_ usize,)}
     proof ImpliedClause3: ((&'_ usize,): Tuple) = {built_in impl Tuple for (&'_ usize,)}
     fn call_mut<'_0_1> = {impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_0_1>
-    non-dyn-compatible
+    vtable: {impl FnMut<(&'_ usize,), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::{vtable}<'_0, '_1>
 }
 
 // Full name: test_crate::test_fnmut_with_ref::closure::{impl Destruct for test_crate::test_fnmut_with_ref::closure<'_0>}

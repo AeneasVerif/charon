@@ -104,7 +104,7 @@ impl "impl_FnOnce_tuple_for_closure" FnOnce<(u32,)> for closure {
     proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
     type Output = u32
     fn call_once = call_once
-    non-dyn-compatible
+    vtable: impl_FnOnce_tuple_for_closure::{vtable}
 }
 
 // Full name: test_cargo_dependencies::main::silly_incr
@@ -154,10 +154,10 @@ fn main()
     let _16: &'13 u32; // anonymous local
     let _17: &'14 u32; // anonymous local
     let _18: &'15 u32; // anonymous local
-    let _19: Option<Arguments<'22>>[{built_in impl Sized for Arguments<'22>}]; // anonymous local
-    let _20: &'25 u32; // anonymous local
-    let _21: &'28 u32; // anonymous local
-    let _22: &'36 u32; // anonymous local
+    let _19: Option<Arguments<'23>>[{built_in impl Sized for Arguments<'23>}]; // anonymous local
+    let _20: &'27 u32; // anonymous local
+    let _21: &'30 u32; // anonymous local
+    let _22: &'39 u32; // anonymous local
     let _23: u32; // anonymous local
 
     storage_live(_0)
@@ -171,7 +171,7 @@ fn main()
     storage_live(_4)
     _4 = &mut x
     _3 = &two-phase-mut (*_4)
-    _2 = silly_incr<'27>(move _3)
+    _2 = silly_incr<'29>(move _3)
     ↳⚡ unwind_continue
     storage_live(_21)
     storage_live(_22)

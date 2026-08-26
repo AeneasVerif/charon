@@ -222,7 +222,7 @@ where
     proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
     type Output = ()
     fn call_once = call_once<F, T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: impl_FnOnce_tuple_for_closure::{vtable}<F, T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::{Foo<F>[TraitClause0]}::method::{impl FnMut<((),)> for closure<F, T>[TraitClause0, TraitClause1]}
@@ -236,7 +236,7 @@ where
     proof ImpliedClause2: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause3: (((),): Tuple) = {built_in impl Tuple for ((),)}
     fn call_mut<'_0_1> = call_mut<'_0_1, F, T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: impl_FnMut_tuple_for_closure::{vtable}<F, T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::{Foo<F>[TraitClause0]}::method::{impl Fn<((),)> for closure<F, T>[TraitClause0, TraitClause1]}
@@ -250,7 +250,7 @@ where
     proof ImpliedClause2: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause3: (((),): Tuple) = {built_in impl Tuple for ((),)}
     fn call<'_0_1> = call<'_0_1, F, T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: impl_Fn_tuple_for_closure::{vtable}<F, T>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::{Foo<F>[TraitClause0]}::method::closure::{impl Destruct for closure<F, T>[TraitClause0, TraitClause1]}

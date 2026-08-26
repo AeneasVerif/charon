@@ -110,7 +110,7 @@ where
     proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
     type Output = ()
     fn call_once = call_once<T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: impl_FnOnce_unit_for_closure::{vtable}<T>[TraitClause0, TraitClause1]
 }
 
 

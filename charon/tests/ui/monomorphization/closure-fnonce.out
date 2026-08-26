@@ -76,7 +76,7 @@ impl "impl_FnOnce_tuple_for_closure" FnOnce<(u8,)> for closure {
     proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
     proof ImpliedClause1: ((u8,): Sized) = {built_in impl Sized for (u8,)}
     proof ImpliedClause2: ((u8,): Tuple) = {built_in impl Tuple for (u8,)}
-    non-dyn-compatible
+    vtable: impl_FnOnce_tuple_for_closure::{vtable}
 }
 
 // Full name: test_crate::apply_to_zero_once::<closure>

@@ -86,11 +86,15 @@ pub enum BuiltinTraitData {
     /// the information about `drop_glue` to that trait. This data tells us what kind of
     /// `drop_glue` the target type has.
     Destruct(DestructData),
+    /// A trait alias.
+    Alias,
     /// An auto-trait.
     Auto,
     /// Some other builtin trait.
-    Other,
+    Other(SolverTraitLangItem),
 }
+
+sinto_reexport!(rustc_type_ir::lang_items::SolverTraitLangItem);
 
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::DestructData<'tcx>, state: S as s)]

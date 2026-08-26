@@ -187,7 +187,7 @@ where
     proof ImpliedClause3: (T: Sized) = TraitClause0
     type Output = T
     fn call_once = call_once<T, K>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: impl_FnOnce_tuple_for_closure::{vtable}<T, K>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::test::{impl FnMut<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}
@@ -201,7 +201,7 @@ where
     proof ImpliedClause2: ((usize,): Sized) = {built_in impl Sized for (usize,)}
     proof ImpliedClause3: ((usize,): Tuple) = {built_in impl Tuple for (usize,)}
     fn call_mut<'_0_1> = call_mut<'_0_1, T, K>[TraitClause0, TraitClause1]
-    non-dyn-compatible
+    vtable: impl_FnMut_tuple_for_closure::{vtable}<T, K>[TraitClause0, TraitClause1]
 }
 
 // Full name: test_crate::test

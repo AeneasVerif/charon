@@ -22,6 +22,7 @@ enum ClauseNode {
 #[derive(Visitor)]
 struct BuildGraphVisitor<'a> {
     graph: &'a mut DiGraphMap<ClauseNode, ()>,
+    translated: &'a TranslatedCrate,
     /// The item we're visiting.
     current_item: ItemId,
     /// The node currently using the part of the AST we're visiting.
@@ -51,8 +52,14 @@ impl VisitorWithItemRef for BuildGraphVisitor<'_> {
         self.visit(types)?;
         self.visit(const_generics)?;
         let old_context = self.current_context;
+        let is_translated = self.translated.get_item(item_id).is_some();
         for (clause_id, trait_ref) in trait_refs.iter_enumerated() {
-            self.current_context = ClauseNode::Clause(item_id, clause_id);
+            let clause = ClauseNode::Clause(item_id, clause_id);
+            if !is_translated {
+                // Missing items conservatively use all their clauses.
+                self.graph.add_edge(ClauseNode::Root, clause, ());
+            }
+            self.current_context = clause;
             self.visit(trait_ref)?;
         }
         self.current_context = old_context;
@@ -168,6 +175,7 @@ impl TransformPass for Transform {
 
                 let mut visitor = BuildGraphVisitor {
                     graph: &mut graph,
+                    translated: &ctx.translated,
                     current_item: item_id,
                     binder_depth: DeBruijnId::ZERO,
                     current_context: ClauseNode::Root,

@@ -177,7 +177,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let mut timpl = self.translate_virtual_trait_impl(
             impl_id,
             item_meta,
-            TraitImplSource::Destruct,
+            def.this(),
+            TransImplSource::ImplicitDestruct,
             destruct_impl,
         )?;
 

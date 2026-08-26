@@ -394,6 +394,9 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let impl_id = self.register_and_enqueue(&None, src.clone()).unwrap();
                 name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
             }
+            TransItemSourceKind::TraitImpl(TransImplSource::Marker) => {
+                unreachable!("marker impls are only used as vtable item sources")
+            }
             TransItemSourceKind::CallableMethod(kind) => {
                 let fn_name = kind.method_name().to_string();
                 name.name
@@ -421,7 +424,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     Disambiguator::ZERO,
                 ));
             }
-            TransItemSourceKind::VTableDropShim => {
+            TransItemSourceKind::VTableDropShim(..) => {
                 name.name.push(PathElem::Ident(
                     "{vtable_drop_shim}".into(),
                     Disambiguator::ZERO,

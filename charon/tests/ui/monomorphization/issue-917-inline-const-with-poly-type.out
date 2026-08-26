@@ -94,7 +94,7 @@ impl FnOnce<((),)> for closure::<()> {
     proof ImpliedClause0: (closure::<()>: MetaSized) = {built_in impl MetaSized for closure::<()>}
     proof ImpliedClause1: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause2: (((),): Tuple) = {built_in impl Tuple for ((),)}
-    non-dyn-compatible
+    vtable: {impl FnOnce<((),)> for closure::<()>}::{vtable}::<()>
 }
 
 // Full name: test_crate::foo::{const}::{impl FnMut<((),)> for closure::<()>}
@@ -103,7 +103,7 @@ impl FnMut<((),)> for closure::<()> {
     proof ImpliedClause1: (closure::<()>: FnOnce<((),)>) = {impl FnOnce<((),)> for closure::<()>}
     proof ImpliedClause2: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause3: (((),): Tuple) = {built_in impl Tuple for ((),)}
-    non-dyn-compatible
+    vtable: {impl FnMut<((),)> for closure::<()>}::{vtable}::<()>
 }
 
 // Full name: test_crate::foo::{const}::{impl FnOnce<((),)> for closure::<()>}::call_once::<()>
@@ -211,7 +211,7 @@ impl Fn<((),)> for closure::<()> {
     proof ImpliedClause1: (closure::<()>: FnMut<((),)>) = {impl FnMut<((),)> for closure::<()>}
     proof ImpliedClause2: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause3: (((),): Tuple) = {built_in impl Tuple for ((),)}
-    non-dyn-compatible
+    vtable: {impl Fn<((),)> for closure::<()>}::{vtable}::<()>
 }
 
 // Full name: test_crate::foo::{const}::closure::{impl Destruct for closure::<()>}

@@ -692,7 +692,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let mut timpl = self.translate_virtual_trait_impl(
             def_id,
             item_meta,
-            TraitImplSource::Closure { kind: target_kind },
+            callable.item(),
+            TransImplSource::Callable(target_kind),
             vimpl,
         )?;
 

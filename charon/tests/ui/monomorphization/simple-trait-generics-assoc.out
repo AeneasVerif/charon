@@ -16,6 +16,11 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+fn core::marker::MetaSized::{vtable}::<i32>() -> core::marker::MetaSized::{vtable}
+= <opaque>
+
+static core::marker::MetaSized::{vtable}::<i32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<i32>()
+
 struct test_crate::Trait::{vtable} {
   size: usize,
   align: usize,
@@ -93,6 +98,7 @@ fn impl_Trait_usize_for_i32::{vtable}() -> test_crate::Trait::{vtable}
     let erased_comsume: *const (); // local
     let _7: unsafe fn(*mut (dyn Trait<usize, Item = bool> + '4)); // anonymous local
     let _8: fn<'_0_1>(&'_0_1 (dyn Trait<usize, Item = bool> + '9)); // anonymous local
+    let _9: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
     storage_live(size)
@@ -111,7 +117,9 @@ fn impl_Trait_usize_for_i32::{vtable}() -> test_crate::Trait::{vtable}
     _8 = cast<for<'_0_1> {vtable_method}<'8>, fn<'_0_1>(&'_0_1 (dyn Trait<usize, Item = bool> + '9))>(const {vtable_method}<'8>)
     comsume = move _8
     erased_comsume = cast<fn<'_0_1>(&'_0_1 (dyn Trait<usize, Item = bool> + '10)), *const ()>(move comsume)
-    ret = test_crate::Trait::{vtable} { size: move size, align: move align, drop: move erased_drop, method_comsume: move erased_comsume, super_trait_0: const &vtable_of({built_in impl MetaSized for i32}) }
+    storage_live(_9)
+    _9 = &core::marker::MetaSized::{vtable}::<i32>
+    ret = test_crate::Trait::{vtable} { size: move size, align: move align, drop: move erased_drop, method_comsume: move erased_comsume, super_trait_0: move _9 }
     return
 }
 

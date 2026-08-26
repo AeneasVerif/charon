@@ -447,7 +447,7 @@ pub fn test_attributes::tests::test_ignore() -> TestDescAndFn
     let _0: TestDescAndFn; // return
     let _1: TestDesc; // anonymous local
     let _2: TestName; // anonymous local
-    let _3: Option<&'6 str>[{built_in impl Sized for &'6 str}]; // anonymous local
+    let _3: Option<&'7 str>[{built_in impl Sized for &'7 str}]; // anonymous local
     let _4: ShouldPanic; // anonymous local
     let _5: TestType; // anonymous local
     let _6: TestFn; // anonymous local
@@ -468,8 +468,8 @@ pub fn test_attributes::tests::test_ignore() -> TestDescAndFn
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
-    conditional_drop[impl_Destruct_for_TestName::drop_glue<'16>] _2
-    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'18>] _1
+    conditional_drop[impl_Destruct_for_TestName::drop_glue<'19>] _2
+    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'21>] _1
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_2)
@@ -482,12 +482,12 @@ pub fn test_attributes::tests::test_ignore() -> TestDescAndFn
     _6 = TestFn::StaticTestFn { _0: move _7 }
     storage_dead(_7)
     _0 = TestDescAndFn { desc: move _1, testfn: move _6 }
-    conditional_drop[impl_Destruct_for_TestFn::drop_glue<'17>] _6
-    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'18>] _1
+    conditional_drop[impl_Destruct_for_TestFn::drop_glue<'20>] _6
+    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'21>] _1
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_6)
-    conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'19>] _1
+    conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'22>] _1
     ↳⚡ unwind_continue
     storage_dead(_1)
     return
@@ -598,7 +598,7 @@ pub fn test_attributes::tests::test_should_panic() -> TestDescAndFn
     let _0: TestDescAndFn; // return
     let _1: TestDesc; // anonymous local
     let _2: TestName; // anonymous local
-    let _3: Option<&'6 str>[{built_in impl Sized for &'6 str}]; // anonymous local
+    let _3: Option<&'7 str>[{built_in impl Sized for &'7 str}]; // anonymous local
     let _4: ShouldPanic; // anonymous local
     let _5: TestType; // anonymous local
     let _6: TestFn; // anonymous local
@@ -619,8 +619,8 @@ pub fn test_attributes::tests::test_should_panic() -> TestDescAndFn
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
-    conditional_drop[impl_Destruct_for_TestName::drop_glue<'16>] _2
-    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'18>] _1
+    conditional_drop[impl_Destruct_for_TestName::drop_glue<'19>] _2
+    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'21>] _1
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_2)
@@ -633,12 +633,12 @@ pub fn test_attributes::tests::test_should_panic() -> TestDescAndFn
     _6 = TestFn::StaticTestFn { _0: move _7 }
     storage_dead(_7)
     _0 = TestDescAndFn { desc: move _1, testfn: move _6 }
-    conditional_drop[impl_Destruct_for_TestFn::drop_glue<'17>] _6
-    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'18>] _1
+    conditional_drop[impl_Destruct_for_TestFn::drop_glue<'20>] _6
+    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'21>] _1
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_6)
-    conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'19>] _1
+    conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'22>] _1
     ↳⚡ unwind_continue
     storage_dead(_1)
     return
@@ -750,7 +750,7 @@ pub fn test_attributes::tests::test_foo() -> TestDescAndFn
     let _0: TestDescAndFn; // return
     let _1: TestDesc; // anonymous local
     let _2: TestName; // anonymous local
-    let _3: Option<&'6 str>[{built_in impl Sized for &'6 str}]; // anonymous local
+    let _3: Option<&'7 str>[{built_in impl Sized for &'7 str}]; // anonymous local
     let _4: ShouldPanic; // anonymous local
     let _5: TestType; // anonymous local
     let _6: TestFn; // anonymous local
@@ -771,8 +771,8 @@ pub fn test_attributes::tests::test_foo() -> TestDescAndFn
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
-    conditional_drop[impl_Destruct_for_TestName::drop_glue<'16>] _2
-    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'18>] _1
+    conditional_drop[impl_Destruct_for_TestName::drop_glue<'19>] _2
+    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'21>] _1
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_2)
@@ -785,12 +785,12 @@ pub fn test_attributes::tests::test_foo() -> TestDescAndFn
     _6 = TestFn::StaticTestFn { _0: move _7 }
     storage_dead(_7)
     _0 = TestDescAndFn { desc: move _1, testfn: move _6 }
-    conditional_drop[impl_Destruct_for_TestFn::drop_glue<'17>] _6
-    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'18>] _1
+    conditional_drop[impl_Destruct_for_TestFn::drop_glue<'20>] _6
+    ↳⚡ conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'21>] _1
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_6)
-    conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'19>] _1
+    conditional_drop[impl_Destruct_for_TestDesc::drop_glue<'22>] _1
     ↳⚡ unwind_continue
     storage_dead(_1)
     return
@@ -869,7 +869,7 @@ impl FnOnce<()> for test_attributes::tests::test_foo::closure {
     proof ImpliedClause3: (Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]: Sized) = {built_in impl Sized for Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]}
     type Output = Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
     fn call_once = {impl FnOnce<()> for test_attributes::tests::test_foo::closure}::call_once
-    non-dyn-compatible
+    vtable: {impl FnOnce<()> for test_attributes::tests::test_foo::closure}::{vtable}
 }
 
 // Full name: test_attributes::tests::test_foo::{impl FnMut<()> for test_attributes::tests::test_foo::closure}
@@ -879,7 +879,7 @@ impl FnMut<()> for test_attributes::tests::test_foo::closure {
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
     fn call_mut<'_0_1> = {impl FnMut<()> for test_attributes::tests::test_foo::closure}::call_mut<'_0_1>
-    non-dyn-compatible
+    vtable: {impl FnMut<()> for test_attributes::tests::test_foo::closure}::{vtable}
 }
 
 // Full name: test_attributes::tests::test_foo::{impl Fn<()> for test_attributes::tests::test_foo::closure}
@@ -889,7 +889,7 @@ impl Fn<()> for test_attributes::tests::test_foo::closure {
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
     fn call<'_0_1> = {impl Fn<()> for test_attributes::tests::test_foo::closure}::call<'_0_1>
-    non-dyn-compatible
+    vtable: {impl Fn<()> for test_attributes::tests::test_foo::closure}::{vtable}
 }
 
 // Full name: test_attributes::tests::test_foo::closure::{impl Destruct for test_attributes::tests::test_foo::closure}
@@ -906,7 +906,7 @@ impl FnOnce<()> for test_attributes::tests::test_should_panic::closure {
     proof ImpliedClause3: (Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]: Sized) = {built_in impl Sized for Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]}
     type Output = Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
     fn call_once = {impl FnOnce<()> for test_attributes::tests::test_should_panic::closure}::call_once
-    non-dyn-compatible
+    vtable: {impl FnOnce<()> for test_attributes::tests::test_should_panic::closure}::{vtable}
 }
 
 // Full name: test_attributes::tests::test_should_panic::{impl FnMut<()> for test_attributes::tests::test_should_panic::closure}
@@ -916,7 +916,7 @@ impl FnMut<()> for test_attributes::tests::test_should_panic::closure {
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
     fn call_mut<'_0_1> = {impl FnMut<()> for test_attributes::tests::test_should_panic::closure}::call_mut<'_0_1>
-    non-dyn-compatible
+    vtable: {impl FnMut<()> for test_attributes::tests::test_should_panic::closure}::{vtable}
 }
 
 // Full name: test_attributes::tests::test_should_panic::{impl Fn<()> for test_attributes::tests::test_should_panic::closure}
@@ -926,7 +926,7 @@ impl Fn<()> for test_attributes::tests::test_should_panic::closure {
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
     fn call<'_0_1> = {impl Fn<()> for test_attributes::tests::test_should_panic::closure}::call<'_0_1>
-    non-dyn-compatible
+    vtable: {impl Fn<()> for test_attributes::tests::test_should_panic::closure}::{vtable}
 }
 
 // Full name: test_attributes::tests::test_should_panic::closure::{impl Destruct for test_attributes::tests::test_should_panic::closure}
@@ -943,7 +943,7 @@ impl FnOnce<()> for test_attributes::tests::test_ignore::closure {
     proof ImpliedClause3: (Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]: Sized) = {built_in impl Sized for Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]}
     type Output = Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
     fn call_once = {impl FnOnce<()> for test_attributes::tests::test_ignore::closure}::call_once
-    non-dyn-compatible
+    vtable: {impl FnOnce<()> for test_attributes::tests::test_ignore::closure}::{vtable}
 }
 
 // Full name: test_attributes::tests::test_ignore::{impl FnMut<()> for test_attributes::tests::test_ignore::closure}
@@ -953,7 +953,7 @@ impl FnMut<()> for test_attributes::tests::test_ignore::closure {
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
     fn call_mut<'_0_1> = {impl FnMut<()> for test_attributes::tests::test_ignore::closure}::call_mut<'_0_1>
-    non-dyn-compatible
+    vtable: {impl FnMut<()> for test_attributes::tests::test_ignore::closure}::{vtable}
 }
 
 // Full name: test_attributes::tests::test_ignore::{impl Fn<()> for test_attributes::tests::test_ignore::closure}
@@ -963,7 +963,7 @@ impl Fn<()> for test_attributes::tests::test_ignore::closure {
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
     fn call<'_0_1> = {impl Fn<()> for test_attributes::tests::test_ignore::closure}::call<'_0_1>
-    non-dyn-compatible
+    vtable: {impl Fn<()> for test_attributes::tests::test_ignore::closure}::{vtable}
 }
 
 // Full name: test_attributes::tests::test_ignore::closure::{impl Destruct for test_attributes::tests::test_ignore::closure}

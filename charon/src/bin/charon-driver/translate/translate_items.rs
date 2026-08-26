@@ -160,6 +160,9 @@ impl<'tcx> TranslateCtx<'tcx> {
                     TransImplSource::ImplicitDestruct => {
                         bt_ctx.translate_implicit_destruct_impl(id, item_meta, &def)?
                     }
+                    TransImplSource::Marker => {
+                        unreachable!("marker impls are only used as vtable item sources")
+                    }
                 };
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
@@ -191,7 +194,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let ty_decl = bt_ctx.translate_vtable_struct(id, item_meta, &def)?;
                 self.translated.type_decls.set_slot(id, ty_decl);
             }
-            TransItemSourceKind::VTableInstance(impl_kind) => {
+            &TransItemSourceKind::VTableInstance(impl_kind) => {
                 let Some(ItemId::Global(id)) = trans_id else {
                     unreachable!()
                 };
@@ -199,7 +202,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     bt_ctx.translate_vtable_instance(id, item_meta, &def, impl_kind)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
-            TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
+            &TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
@@ -214,11 +217,11 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let fun_decl = bt_ctx.translate_vtable_shim(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            TransItemSourceKind::VTableDropShim => {
+            &TransItemSourceKind::VTableDropShim(impl_kind) => {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = bt_ctx.translate_vtable_drop_shim(id, item_meta, &def)?;
+                let fun_decl = bt_ctx.translate_vtable_drop_shim(id, item_meta, &def, impl_kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
         }
@@ -1076,8 +1079,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             RegionBinder::empty(implemented_trait.clone()),
         );
 
-        let vtable =
-            self.translate_vtable_instance_ref_no_enqueue(span, &trait_pred.trait_ref, def.this())?;
+        let vtable = self.translate_vtable_instance_ref_no_enqueue(
+            span,
+            &trait_pred.trait_ref,
+            def.this(),
+            TransImplSource::Normal,
+        )?;
 
         // The trait refs which implement the parent clauses of the implemented trait decl.
         let implied_trait_refs = self.translate_trait_proofs(span, implied_trait_proofs)?;
@@ -1412,10 +1419,16 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         def_id: TraitImplId,
         item_meta: ItemMeta,
-        src: TraitImplSource,
+        vtable_item: &hax::ItemRef,
+        impl_kind: TransImplSource,
         vimpl: &hax::VirtualTraitImpl,
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
+        let src = match impl_kind {
+            TransImplSource::Callable(kind) => TraitImplSource::Closure { kind },
+            TransImplSource::ImplicitDestruct => TraitImplSource::Destruct,
+            _ => unreachable!("not a virtual impl source: {impl_kind:?}"),
+        };
         let trait_def = self.hax_def(&vimpl.trait_pred.trait_ref)?;
         let hax::FullDefKind::Trait {
             items: trait_items, ..
@@ -1426,6 +1439,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
         let implied_trait_refs = self.translate_trait_proofs(span, &vimpl.implied_trait_proofs)?;
+        let vtable = self.translate_vtable_instance_ref_no_enqueue(
+            span,
+            &vimpl.trait_pred.trait_ref,
+            vtable_item,
+            impl_kind,
+        )?;
 
         let mut types: IndexMap<AssocTypeId, _> = IndexMap::new();
         // Monomorphic traits have no associated types.
@@ -1456,8 +1475,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             consts: IndexMap::new(),
             types,
             methods: IndexMap::new(),
-            // TODO(dyn): generate vtable instances for builtin traits
-            vtable: None,
+            vtable,
         })
     }
 }

@@ -362,10 +362,10 @@ fn foo()
     let _28: &'10 u32; // anonymous local
     let _29: &'11 u32; // anonymous local
     let _30: &'12 u32; // anonymous local
-    let _31: Option<Arguments<'19>>[{built_in impl Sized for Arguments<'19>}]; // anonymous local
-    let _32: &'22 u32; // anonymous local
-    let _33: &'23 u32; // anonymous local
-    let _34: &'31 u32; // anonymous local
+    let _31: Option<Arguments<'20>>[{built_in impl Sized for Arguments<'20>}]; // anonymous local
+    let _32: &'24 u32; // anonymous local
+    let _33: &'25 u32; // anonymous local
+    let _34: &'34 u32; // anonymous local
     let _35: u32; // anonymous local
     let _36: &'_ [u32; 10usize]; // anonymous local
     let _37: &'_ u32; // anonymous local

@@ -78,10 +78,10 @@ fn main()
     let _18: &'10 u32; // anonymous local
     let _19: &'11 u32; // anonymous local
     let _20: &'12 u32; // anonymous local
-    let _21: Option<Arguments<'19>>[{built_in impl Sized for Arguments<'19>}]; // anonymous local
-    let _22: &'22 u32; // anonymous local
-    let _23: &'23 u32; // anonymous local
-    let _24: &'31 u32; // anonymous local
+    let _21: Option<Arguments<'20>>[{built_in impl Sized for Arguments<'20>}]; // anonymous local
+    let _22: &'24 u32; // anonymous local
+    let _23: &'25 u32; // anonymous local
+    let _24: &'34 u32; // anonymous local
     let _25: u32; // anonymous local
 
     storage_live(_0)
