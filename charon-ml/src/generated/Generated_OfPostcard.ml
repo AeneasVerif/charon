@@ -2124,6 +2124,11 @@ and error_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
 and exact_size_expr_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (exact_size_expr, string) result =
   combine_error_msgs st __FUNCTION__
+    (hash_consed_of_postcard exact_size_expr_kind_of_postcard ctx st)
+
+and exact_size_expr_kind_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (exact_size_expr_kind, string) result =
+  combine_error_msgs st __FUNCTION__
     (let* __tag = int_of_postcard ctx st in
      match __tag with
      | 0 ->
@@ -2139,23 +2144,21 @@ and exact_size_expr_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _0 = list_of_postcard exact_size_expr_of_postcard ctx st in
          Ok (ExactSizeExprMin _0)
      | 4 ->
-         let* _0 = box_of_postcard exact_size_expr_of_postcard ctx st in
-         let* _1 = box_of_postcard exact_size_expr_of_postcard ctx st in
+         let* _0 = exact_size_expr_of_postcard ctx st in
+         let* _1 = exact_size_expr_of_postcard ctx st in
          Ok (ExactSizeExprPlus (_0, _1))
      | 5 ->
-         let* _0 = box_of_postcard exact_size_expr_of_postcard ctx st in
+         let* _0 = exact_size_expr_of_postcard ctx st in
          let* _1 = constant_expr_of_postcard ctx st in
          Ok (ExactSizeExprScale (_0, _1))
      | 6 ->
-         let* base = box_of_postcard exact_size_expr_of_postcard ctx st in
-         let* target_align =
-           box_of_postcard exact_size_expr_of_postcard ctx st
-         in
+         let* base = exact_size_expr_of_postcard ctx st in
+         let* target_align = exact_size_expr_of_postcard ctx st in
          Ok (ExactSizeExprAlignTo (base, target_align))
      | 7 ->
          let* ty = ty_of_postcard ctx st in
-         let* then_size = box_of_postcard exact_size_expr_of_postcard ctx st in
-         let* else_size = box_of_postcard exact_size_expr_of_postcard ctx st in
+         let* then_size = exact_size_expr_of_postcard ctx st in
+         let* else_size = exact_size_expr_of_postcard ctx st in
          Ok (ExactSizeExprIfInhabited (ty, then_size, else_size))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
@@ -2751,7 +2754,7 @@ and offset_guarantee_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      match __tag with
      | 0 -> Ok AtOffsetZero
      | 1 ->
-         let* _0 = box_of_postcard exact_size_expr_of_postcard ctx st in
+         let* _0 = exact_size_expr_of_postcard ctx st in
          Ok (GuaranteedAlignment _0)
      | 2 ->
          let* predecessor = option_of_postcard field_id_of_postcard ctx st in

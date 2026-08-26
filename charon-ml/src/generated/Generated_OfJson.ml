@@ -2481,6 +2481,13 @@ and exact_size_expr_of_json (ctx : of_json_ctx) (js : json) :
     (exact_size_expr, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
+    | x -> hash_consed_of_json exact_size_expr_kind_of_json ctx x
+    | _ -> Error "")
+
+and exact_size_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (exact_size_expr_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
     | `Assoc [ ("Constant", _0) ] ->
         let* _0 = constant_expr_of_json ctx _0 in
         Ok (ExactSizeExprConstant _0)
@@ -2494,21 +2501,19 @@ and exact_size_expr_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = list_of_json exact_size_expr_of_json ctx _0 in
         Ok (ExactSizeExprMin _0)
     | `Assoc [ ("Plus", `List [ _0; _1 ]) ] ->
-        let* _0 = box_of_json exact_size_expr_of_json ctx _0 in
-        let* _1 = box_of_json exact_size_expr_of_json ctx _1 in
+        let* _0 = exact_size_expr_of_json ctx _0 in
+        let* _1 = exact_size_expr_of_json ctx _1 in
         Ok (ExactSizeExprPlus (_0, _1))
     | `Assoc [ ("Scale", `List [ _0; _1 ]) ] ->
-        let* _0 = box_of_json exact_size_expr_of_json ctx _0 in
+        let* _0 = exact_size_expr_of_json ctx _0 in
         let* _1 = constant_expr_of_json ctx _1 in
         Ok (ExactSizeExprScale (_0, _1))
     | `Assoc
         [
           ("AlignTo", `Assoc [ ("base", base); ("target_align", target_align) ]);
         ] ->
-        let* base = box_of_json exact_size_expr_of_json ctx base in
-        let* target_align =
-          box_of_json exact_size_expr_of_json ctx target_align
-        in
+        let* base = exact_size_expr_of_json ctx base in
+        let* target_align = exact_size_expr_of_json ctx target_align in
         Ok (ExactSizeExprAlignTo (base, target_align))
     | `Assoc
         [
@@ -2518,8 +2523,8 @@ and exact_size_expr_of_json (ctx : of_json_ctx) (js : json) :
           );
         ] ->
         let* ty = ty_of_json ctx ty in
-        let* then_size = box_of_json exact_size_expr_of_json ctx then_size in
-        let* else_size = box_of_json exact_size_expr_of_json ctx else_size in
+        let* then_size = exact_size_expr_of_json ctx then_size in
+        let* else_size = exact_size_expr_of_json ctx else_size in
         Ok (ExactSizeExprIfInhabited (ty, then_size, else_size))
     | _ -> Error "")
 
@@ -3227,7 +3232,7 @@ and offset_guarantee_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `String "AtOffsetZero" -> Ok AtOffsetZero
     | `Assoc [ ("GuaranteedAlignment", _0) ] ->
-        let* _0 = box_of_json exact_size_expr_of_json ctx _0 in
+        let* _0 = exact_size_expr_of_json ctx _0 in
         Ok (GuaranteedAlignment _0)
     | `Assoc [ ("ReprCField", `Assoc [ ("predecessor", predecessor) ]) ] ->
         let* predecessor = option_of_json field_id_of_json ctx predecessor in
