@@ -46,6 +46,13 @@ where
     TypeOutlives1: A: '_0,
 = <opaque>
 
+#[track_caller]
+#[diagnostic_item("box_new")]
+pub fn alloc::boxed::{alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<T>(_1: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
 // Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::deref
 pub fn deref<'_0, T, A>(_1: &'_0 alloc::boxed::Box<T>[TraitClause0, TraitClause1]) -> &'_0 T
 where
@@ -85,7 +92,7 @@ pub trait PointerFamily<Self>
 pub struct BoxFamily {}
 
 // Full name: test_crate::{impl PointerFamily for BoxFamily}::new
-pub fn new<T>(value: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
+pub fn impl_PointerFamily_for_BoxFamily::new<T>(value: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
 where
     TraitClause0: (T: Sized),
 {
@@ -96,7 +103,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = move value
-    _0 = @BoxNew<T>[TraitClause0](move _2)
+    _0 = alloc::boxed::{alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new<T>[TraitClause0](move _2)
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _2
         ↳⚡ storage_dead(value)
             unwind_terminate
@@ -121,7 +128,7 @@ impl "impl_PointerFamily_for_BoxFamily" PointerFamily for BoxFamily {
         TraitClause0_1: (T: Sized),
         proof ImpliedClause0: (alloc::boxed::Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]: Sized) = {built_in impl Sized for alloc::boxed::Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]},
         proof ImpliedClause1: (alloc::boxed::Box<T>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}]: Deref) = impl_Deref_for_Box<T, Global>[TraitClause0_1::ImpliedClause0, {built_in impl Sized for Global}];
-    fn new<T, TraitClause0_1: (T: Sized)> = new<T>[TraitClause0_1]
+    fn new<T, TraitClause0_1: (T: Sized)> = impl_PointerFamily_for_BoxFamily::new<T>[TraitClause0_1]
     non-dyn-compatible
 }
 

@@ -33,6 +33,14 @@ where
     TypeOutlives1: A: '_0,
 = <opaque>
 
+// Full name: alloc::boxed::{alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new
+#[track_caller]
+#[diagnostic_item("box_new")]
+pub fn new<T>(_1: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
 // Full name: alloc::vec::Vec
 #[diagnostic_item("Vec")]
 pub opaque type Vec<T>
@@ -99,7 +107,7 @@ fn move_values(flag: bool)
     _17 = [move _5]
     storage_dead(_5)
     storage_live(_18)
-    _18 = @BoxNew<[NoCopy; 1usize]>[{built_in impl MetaSized for [NoCopy; 1usize]}, {built_in impl Sized for Global}](move _17)
+    _18 = new<[NoCopy; 1usize]>[{built_in impl Sized for [NoCopy; 1usize]}](move _17)
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'1, MaybeUninit<[NoCopy; 1usize]>[{built_in impl Sized for [NoCopy; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[NoCopy; 1usize]>[{built_in impl Sized for [NoCopy; 1usize]}]}, {built_in impl Sized for Global}]] _4
         ↳⚡ storage_dead(flag)
             storage_dead(ret_14)
@@ -143,7 +151,7 @@ fn move_values(flag: bool)
         _19 = [move _10]
         storage_dead(_10)
         storage_live(_20)
-        _20 = @BoxNew<[NoCopy; 1usize]>[{built_in impl MetaSized for [NoCopy; 1usize]}, {built_in impl Sized for Global}](move _19)
+        _20 = new<[NoCopy; 1usize]>[{built_in impl Sized for [NoCopy; 1usize]}](move _19)
         ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'5, MaybeUninit<[NoCopy; 1usize]>[{built_in impl Sized for [NoCopy; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[NoCopy; 1usize]>[{built_in impl Sized for [NoCopy; 1usize]}]}, {built_in impl Sized for Global}]] _9
             ↳⚡ storage_dead(flag)
                 storage_dead(ret_14)

@@ -54,6 +54,14 @@ where
     TypeOutlives1: A: '_0,
 = <opaque>
 
+// Full name: alloc::boxed::{alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new
+#[track_caller]
+#[diagnostic_item("box_new")]
+pub fn new<T>(_1: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
 // Full name: alloc::vec::Vec
 #[diagnostic_item("Vec")]
 pub opaque type Vec<T>
@@ -118,7 +126,7 @@ fn multiple_adjacent()
     storage_live(_16)
     _16 = [const 1u8]
     storage_live(_17)
-    _17 = @BoxNew<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}](move _16)
+    _17 = new<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}](move _16)
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'1, MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]}, {built_in impl Sized for Global}]] _2
         ↳⚡ storage_dead(ret_13)
             storage_dead(ret_10)
@@ -151,7 +159,7 @@ fn multiple_adjacent()
     storage_live(_18)
     _18 = [const 2u8]
     storage_live(_19)
-    _19 = @BoxNew<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}](move _18)
+    _19 = new<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}](move _18)
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'4, MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]}, {built_in impl Sized for Global}]] _4
         ↳⚡ storage_dead(ret_13)
             storage_dead(ret_10)
@@ -194,7 +202,7 @@ fn multiple_adjacent()
     storage_live(_20)
     _20 = [const 3u8]
     storage_live(_21)
-    _21 = @BoxNew<[u8; 1usize]>[{built_in impl MetaSized for [u8; 1usize]}, {built_in impl Sized for Global}](move _20)
+    _21 = new<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}](move _20)
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'7, MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}]}, {built_in impl Sized for Global}]] _6
         ↳⚡ storage_dead(ret_13)
             storage_dead(ret_10)
@@ -292,7 +300,7 @@ fn multiple_values()
     storage_live(_6)
     _6 = [const 1u8, const 2u8, const 3u8]
     storage_live(_7)
-    _7 = @BoxNew<[u8; 3usize]>[{built_in impl MetaSized for [u8; 3usize]}, {built_in impl Sized for Global}](move _6)
+    _7 = new<[u8; 3usize]>[{built_in impl Sized for [u8; 3usize]}](move _6)
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'1, MaybeUninit<[u8; 3usize]>[{built_in impl Sized for [u8; 3usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 3usize]>[{built_in impl Sized for [u8; 3usize]}]}, {built_in impl Sized for Global}]] _2
         ↳⚡ storage_dead(ret)
             unwind_terminate
@@ -371,7 +379,7 @@ fn with_fn_calls()
     storage_dead(_5)
     storage_dead(_4)
     storage_live(_10)
-    _10 = @BoxNew<[u8; 2usize]>[{built_in impl MetaSized for [u8; 2usize]}, {built_in impl Sized for Global}](move _9)
+    _10 = new<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}](move _9)
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'2, MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}]}, {built_in impl Sized for Global}]] _2
         ↳⚡ storage_dead(ret)
             unwind_terminate

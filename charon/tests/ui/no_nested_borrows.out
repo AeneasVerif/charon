@@ -35,6 +35,14 @@ where
     TypeOutlives1: A: '_0,
 = <opaque>
 
+// Full name: alloc::boxed::{alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new
+#[track_caller]
+#[diagnostic_item("box_new")]
+pub fn new<T>(_1: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
 // Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[TraitClause0, TraitClause1]}::deref
 pub fn deref<'_0, T, A>(_1: &'_0 alloc::boxed::Box<T>[TraitClause0, TraitClause1]) -> &'_0 T
 where
@@ -469,7 +477,7 @@ pub fn test_list1()
     storage_live(_2)
     storage_live(_3)
     _3 = List::Nil {  }
-    _2 = @BoxNew<List<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for List<i32>[{built_in impl Sized for i32}]}](move _3)
+    _2 = new<List<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for List<i32>[{built_in impl Sized for i32}]}](move _3)
     ↳⚡ conditional_drop[impl_Destruct_for_List::drop_glue<'0, i32>[{built_in impl Sized for i32}]] _3
         ↳⚡ unwind_terminate
         unwind_continue
@@ -502,7 +510,7 @@ pub fn test_box1()
     storage_live(_0)
     _0 = ()
     storage_live(b)
-    b = @BoxNew<i32>[{built_in impl Sized for i32}](const 0i32)
+    b = new<i32>[{built_in impl Sized for i32}](const 0i32)
     ↳⚡ unwind_continue
     fake_read(b)
     set_type(typeof(b) == alloc::boxed::Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}])

@@ -412,7 +412,18 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let box_slice_ty = self.translate_rustc_ty(span, &box_slice_rust_ty)?;
 
         if !self.monomorphize() {
-            // Make `Box::write` available to a later construction pass.
+            // Make `Box::new` and `Box::write` available to a later construction pass.
+            let path = NamePattern::parse(names::BOX_NEW).unwrap();
+            let box_new_def_id = self
+                .resolve_path(span, &path, true)?
+                .into_iter()
+                .exactly_one()
+                .unwrap();
+            let box_new_args = tcx.mk_args(&[array_rust_ty.into()]);
+            let box_new_item =
+                hax::ItemRef::translate(self.hax_state_with_id(), box_new_def_id, box_new_args);
+            let _ = self.translate_fn_ptr(span, &box_new_item, TransItemSourceKind::Fun)?;
+
             let path = NamePattern::parse(names::BOX_WRITE).unwrap();
             let box_write_def_id = self
                 .resolve_path(span, &path, true)?

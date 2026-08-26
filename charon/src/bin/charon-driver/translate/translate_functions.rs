@@ -4,28 +4,11 @@
 //! independently.
 
 use crate::hax;
-use rustc_span::sym;
 
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 
 impl<'tcx> ItemTransCtx<'tcx, '_> {
-    /// Checks whether the given id corresponds to a built-in type.
-    pub(crate) fn recognize_builtin_fun(
-        &mut self,
-        item: &hax::ItemRef,
-    ) -> Result<Option<BuiltinFunId>, Error> {
-        let def = self.hax_def(item)?;
-        let fun_id = if def.diagnostic_item == Some(sym::box_new)
-            && self.t_ctx.options.treat_box_as_builtin
-        {
-            Some(BuiltinFunId::BoxNew)
-        } else {
-            None
-        };
-        Ok(fun_id)
-    }
-
     /// Translate the names of the arguments of this definition, if they are available,
     /// otherwise naming arguments `arg0`, `arg1`, etc.
     /// Note that the names of the arguments are not always available, even when

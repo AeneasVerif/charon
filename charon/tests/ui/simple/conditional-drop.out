@@ -47,6 +47,15 @@ where
     TypeOutlives1: A: '_0,
 = <opaque>
 
+// Full name: alloc::boxed::{alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, TraitClause1, impl_Destruct_for_Global]}::new
+#[track_caller]
+#[diagnostic_item("box_new")]
+pub fn new<T>(_1: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, TraitClause1, impl_Destruct_for_Global]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Destruct),
+= <opaque>
+
 // Full name: test_crate::use_box
 fn use_box(_1: alloc::boxed::Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global])
 {
@@ -79,7 +88,7 @@ fn main()
     _5 = const false
     storage_live(b)
     _5 = const true
-    b = @BoxNew<u32>[{built_in impl Sized for u32}, {built_in impl Destruct for u32}](const 1u32)
+    b = new<u32>[{built_in impl Sized for u32}, {built_in impl Destruct for u32}](const 1u32)
     ↳⚡ storage_dead(_5)
         unwind_continue
     storage_live(_2)

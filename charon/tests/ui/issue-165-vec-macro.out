@@ -54,6 +54,14 @@ where
     TypeOutlives1: A: '_0,
 = <opaque>
 
+// Full name: alloc::boxed::{alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new
+#[track_caller]
+#[diagnostic_item("box_new")]
+pub fn new<T>(_1: T) -> alloc::boxed::Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
 // Full name: alloc::vec::Vec
 #[diagnostic_item("Vec")]
 pub opaque type Vec<T>
@@ -105,7 +113,7 @@ fn foo()
     storage_live(_7)
     _7 = [const 1i32]
     storage_live(_8)
-    _8 = @BoxNew<[i32; 1usize]>[{built_in impl MetaSized for [i32; 1usize]}, {built_in impl Sized for Global}](move _7)
+    _8 = new<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}](move _7)
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'1, MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 1usize]>[{built_in impl Sized for [i32; 1usize]}]}, {built_in impl Sized for Global}]] _2
         ↳⚡ storage_dead(ret)
             unwind_terminate
@@ -176,7 +184,7 @@ pub fn bar()
     _7 = [move _3]
     storage_dead(_3)
     storage_live(_8)
-    _8 = @BoxNew<[Foo; 1usize]>[{built_in impl MetaSized for [Foo; 1usize]}, {built_in impl Sized for Global}](move _7)
+    _8 = new<[Foo; 1usize]>[{built_in impl Sized for [Foo; 1usize]}](move _7)
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'1, MaybeUninit<[Foo; 1usize]>[{built_in impl Sized for [Foo; 1usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[Foo; 1usize]>[{built_in impl Sized for [Foo; 1usize]}]}, {built_in impl Sized for Global}]] _2
         ↳⚡ storage_dead(ret)
             unwind_terminate

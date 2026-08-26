@@ -560,7 +560,6 @@ and constant_expr_to_string env cv =
 
 and pp_builtin_fun_id (fmt : Format.formatter) (aid : builtin_fun_id) : unit =
   match aid with
-  | BoxNew -> pp_string fmt "BoxNew"
   | ArrayToSliceShared -> pp_string fmt "ArrayToSliceShared"
   | ArrayToSliceMut -> pp_string fmt "ArrayToSliceMut"
   | ArrayRepeat -> pp_string fmt "ArrayRepeat"
