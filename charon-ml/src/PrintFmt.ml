@@ -1971,28 +1971,6 @@ let pp_global_decl (env : fmt_env) (indent : string) (indent_incr : string)
     (if clauses = "" then " " else "\n ")
     (pp_constant_expr env) def.value
 
-let switch_as_if (data : switch_data) : (branch_id * branch_id) option =
-  match data.scrutinee with
-  | SwitchValue op when operand_ty op = TLiteral TBool ->
-      let branch_for value =
-        match
-          List.find_map
-            (fun ((case : constant_expr), branch_id) ->
-              match case.kind with
-              | CLiteral (VBool case_value) when case_value = value ->
-                  Some branch_id
-              | _ -> None)
-            data.branches
-        with
-        | Some branch_id -> Some branch_id
-        | None -> data.fallback
-      in
-      Option.bind (branch_for true) (fun then_branch ->
-          Option.map
-            (fun else_branch -> (then_branch, else_branch))
-            (branch_for false))
-  | _ -> None
-
 module Llbc = struct
   (** Pretty-printing for LLBC AST (generic functions) *)
 
@@ -2105,16 +2083,13 @@ module Llbc = struct
         let pp_multiway keyword scrutinee pp_case =
           let indent1 = indent ^ indent_incr in
           let indent2 = indent1 ^ indent_incr in
+          let cases_by_branch = switch_group_by_branch data in
           Format.fprintf fmt "%s%s %s {\n" indent keyword scrutinee;
           let first = ref true in
           List.iteri
             (fun i be ->
               let branch_id = BranchId.of_int i in
-              let cases =
-                List.filter_map
-                  (fun (case, id) -> if id = branch_id then Some case else None)
-                  data.branches
-              in
+              let cases = BranchId.nth cases_by_branch branch_id in
               let cases =
                 if cases = [] then "_"
                 else
