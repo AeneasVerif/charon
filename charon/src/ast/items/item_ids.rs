@@ -11,7 +11,8 @@ generate_index_type!(FunDeclId, "Fun");
 generate_index_type!(TypeDeclId, "Adt");
 
 impl TypeDeclId {
-    /// The declaration of the unit type `()`
+    /// The declaration of the unit type `()`. With `--no-gen-tuple-structs`, this is the
+    /// declaration of every tuple.
     pub const UNIT: Self = Self::ZERO;
 }
 generate_index_type!(GlobalDeclId, "Global");

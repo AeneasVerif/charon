@@ -2197,6 +2197,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("ops_to_function_calls", ops_to_function_calls);
           ("index_to_function_calls", index_to_function_calls);
           ("treat_box_as_builtin", treat_box_as_builtin);
+          ("no_gen_tuple_structs", no_gen_tuple_structs);
           ("raw_consts", raw_consts);
           ("consts", consts);
           ("unsized_strings", unsized_strings);
@@ -2263,6 +2264,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           bool_of_json ctx index_to_function_calls
         in
         let* treat_box_as_builtin = bool_of_json ctx treat_box_as_builtin in
+        let* no_gen_tuple_structs = bool_of_json ctx no_gen_tuple_structs in
         let* raw_consts = bool_of_json ctx raw_consts in
         let* consts = option_of_json const_handling_of_json ctx consts in
         let* unsized_strings = bool_of_json ctx unsized_strings in
@@ -2322,6 +2324,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              ops_to_function_calls;
              index_to_function_calls;
              treat_box_as_builtin;
+             no_gen_tuple_structs;
              raw_consts;
              consts;
              unsized_strings;

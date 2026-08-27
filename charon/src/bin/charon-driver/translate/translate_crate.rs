@@ -524,7 +524,11 @@ impl<'tcx> TranslateCtx<'tcx> {
         } else {
             TransItemSource::polymorphic(&def_id, TransItemSourceKind::Type)
         };
-        let id: Option<TypeDeclId> = self.register_no_enqueue(&None, &item_src);
+        let id: Option<TypeDeclId> = if self.options.no_gen_tuple_structs {
+            self.register_and_enqueue(&None, item_src)
+        } else {
+            self.register_no_enqueue(&None, &item_src)
+        };
         assert_eq!(id, Some(TypeDeclId::UNIT), "the unit type must come first");
     }
 
@@ -824,13 +828,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
         enqueue: bool,
     ) -> Result<TypeDeclRef, Error> {
-        let item_ref: DeclRef<ItemId> =
-            self.translate_item_maybe_enqueue(span, item, kind, enqueue)?;
-        assert!(item_ref.trait_ref.is_none());
         let builtin = match kind {
             TransItemSourceKind::Type => self.recognize_builtin_type(item),
             _ => None,
         };
+        if builtin == Some(BuiltinTy::Tuple) && self.t_ctx.options.no_gen_tuple_structs {
+            let mut generics = self.translate_generic_args(span, &item.generic_args, &[])?;
+            // The declaration has no clauses, so we drop the `Sized` proofs of the fields.
+            generics.trait_refs.clear();
+            return Ok(TypeDeclRef {
+                id: TypeDeclId::UNIT,
+                generics: Box::new(generics),
+                builtin,
+            });
+        }
+        let item_ref: DeclRef<ItemId> =
+            self.translate_item_maybe_enqueue(span, item, kind, enqueue)?;
+        assert!(item_ref.trait_ref.is_none());
         Ok(TypeDeclRef {
             id: item_ref.id.try_into().unwrap(),
             generics: item_ref.generics,

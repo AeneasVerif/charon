@@ -485,6 +485,9 @@ impl VisitAstMut for PartialMonomorphizer<'_> {
     }
 
     fn exit_type_decl_ref(&mut self, x: &mut TypeDeclRef) {
+        if x.is_tuple() && self.ctx.options.no_gen_tuple_structs {
+            return;
+        }
         if self.specialize_adts
             && let Some(new_decl_ref) = self.process_generics(x.id.into(), &x.generics)
         {

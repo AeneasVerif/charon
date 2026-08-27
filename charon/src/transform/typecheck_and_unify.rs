@@ -505,6 +505,11 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
 
     // Check that generics match the parameters of the target item.
     fn enter_type_decl_ref(&mut self, x: &mut TypeDeclRef) {
+        // With `--no-gen-tuple-structs`, a tuple stores its field types in its generics while
+        // pointing to the parameter-less opaque unit declaration, so the two don't match.
+        if x.is_tuple() && self.ctx.options.no_gen_tuple_structs {
+            return;
+        }
         self.assert_matches_item(x.id, &mut x.generics)
     }
     fn enter_fun_decl_ref(&mut self, x: &mut FunDeclRef) {

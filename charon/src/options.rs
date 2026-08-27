@@ -217,6 +217,14 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub treat_box_as_builtin: bool,
+    /// Don't generate a type declaration per tuple arity. Instead, every tuple type refers to the
+    /// single opaque declaration with id `TypeDeclId::UNIT`, and stores its field types in its
+    /// generic arguments. This is meant for consumers that build tuples of arbitrary arity on the
+    /// fly and don't care about their declaration. Note that this makes tuple types ill-typed with
+    /// respect to their declaration; it is also incompatible with `--monomorphize`.
+    #[clap(long)]
+    #[serde(default)]
+    pub no_gen_tuple_structs: bool,
     /// Do not inline or evaluate constants.
     #[clap(long)]
     #[serde(default)]
@@ -478,6 +486,7 @@ impl CliOpts {
                     self.remove_adt_clauses = true;
                     self.unbind_item_vars = true;
                     self.deallocate_all_locals = true;
+                    self.no_gen_tuple_structs = true;
                 }
                 Preset::Eurydice => {
                     self.hide_allocator = true;
@@ -545,6 +554,12 @@ impl CliOpts {
             anyhow::bail!(
                 "`--monomorphize-mut=except-types` should be used with `--remove-adt-clauses` \
                 to avoid generics mismatches"
+            )
+        }
+        if self.no_gen_tuple_structs && self.monomorphize {
+            anyhow::bail!(
+                "`--no-gen-tuple-structs` is not compatible with `--monomorphize`, as \
+                monomorphization requires each tuple to have its own type declaration"
             )
         }
         if self.no_serialize && self.format.is_some() {
@@ -659,6 +674,9 @@ pub struct TranslateOptions {
     pub print_built_llbc: bool,
     /// Treat `Box<T>` as if it was a built-in type.
     pub treat_box_as_builtin: bool,
+    /// Make all tuples refer to the single opaque `TypeDeclId::UNIT` declaration, and store their
+    /// field types in their generic arguments.
+    pub no_gen_tuple_structs: bool,
     /// Don't inline or evaluate constants.
     pub raw_consts: bool,
     /// Whether to evaluate the value of named constants and statics, or to keep a call
@@ -825,6 +843,7 @@ impl TranslateOptions {
             print_built_llbc: options.print_built_llbc,
             item_opacities,
             treat_box_as_builtin: options.treat_box_as_builtin,
+            no_gen_tuple_structs: options.no_gen_tuple_structs,
             raw_consts: options.raw_consts,
             consts: options.consts.unwrap_or_default(),
             unsized_strings: options.unsized_strings,

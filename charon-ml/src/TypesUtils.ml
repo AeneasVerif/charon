@@ -74,7 +74,8 @@ let type_decl_is_enum (def : type_decl) : bool =
 
 (** The declaration of the unit type [()]. Tuples get one declaration per arity;
     charon reserves the very first id for the 0-tuple so that we can name it
-    without looking at the crate. *)
+    without looking at the crate. With [--no-gen-tuple-structs], this is instead
+    the (opaque) declaration of every tuple. *)
 let unit_type_decl_id : type_decl_id = TypeDeclId.of_int 0
 
 (** The unit type *)

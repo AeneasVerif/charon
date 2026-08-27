@@ -164,6 +164,14 @@ and cli_options = {
           normally created, including when indexing behind a raw pointer. *)
   treat_box_as_builtin : bool;
       (** Treat [Box<T>] as if it was a built-in type. *)
+  no_gen_tuple_structs : bool;
+      (** Don't generate a type declaration per tuple arity. Instead, every
+          tuple type refers to the single opaque declaration with id
+          [TypeDeclId::UNIT], and stores its field types in its generic
+          arguments. This is meant for consumers that build tuples of arbitrary
+          arity on the fly and don't care about their declaration. Note that
+          this makes tuple types ill-typed with respect to their declaration; it
+          is also incompatible with [--monomorphize]. *)
   raw_consts : bool;  (** Do not inline or evaluate constants. *)
   consts : const_handling option;
       (** How to handle constants and statics: whether they should be

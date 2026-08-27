@@ -775,6 +775,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             return Ok(TypeDeclKind::Opaque);
         }
 
+        if matches!(adt_kind, AdtKind::Tuple) && self.t_ctx.options.no_gen_tuple_structs {
+            return Ok(TypeDeclKind::Opaque);
+        }
+
         // hax's synthetic ADTs have no variants; we must construct the fields ourselves
         let synthetic_fields = match adt_kind {
             AdtKind::Tuple => {
