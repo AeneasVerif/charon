@@ -73,6 +73,10 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::function::closure::closure_precondition
 #[charon::contract(kind = "pre", for = "call")]
 fn closure_precondition() -> bool

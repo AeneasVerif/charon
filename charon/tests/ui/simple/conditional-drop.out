@@ -24,6 +24,14 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index_mut
+pub fn impl_SliceIndex_slice_for_usize::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Destruct),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
@@ -67,6 +75,116 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Destruct),
 = <opaque>
+
+struct str {
+  _0: [u8],
+}
+
+// Full name: {impl Destruct for [T]}::drop_glue
+unsafe fn impl_Destruct_for_slice::drop_glue<'_0, T>(_1: &'_0 mut [T])
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Destruct),
+    TypeOutlives0: T: '_0,
+{
+    let _0: (); // return
+    let _1: &'1 mut [T]; // arg #1
+    let _2: usize; // anonymous local
+    let _3: usize; // anonymous local
+    let _4: *mut T; // anonymous local
+    let _5: bool; // anonymous local
+    let _6: *mut T; // anonymous local
+    let _7: bool; // anonymous local
+    let _8: &'_ mut [T]; // anonymous local
+    let _9: &'_ mut T; // anonymous local
+    let _10: &'_ mut [T]; // anonymous local
+    let _11: &'_ mut T; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _0 = ()
+    _2 = copy _1.metadata
+    _3 = const 0usize
+    loop {
+        _7 = copy _3 == copy _2
+        if move _7 {
+            break 0
+        } else {
+            storage_live(_10)
+            _10 = &mut (*_1) with_metadata(copy _1.metadata)
+            storage_live(_11)
+            _11 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](copy _3, move _10)
+            ↳⚡ undefined_behavior
+            _6 = &raw mut (*_11)
+            _3 = move _3 wrap.+ const 1usize
+            drop[TraitClause1::drop_glue<'2>] (*_6)
+            ↳⚡ loop {
+                    _5 = copy _3 == copy _2
+                    if move _5 {
+                        break 0
+                    } else {
+                        storage_live(_8)
+                        _8 = &mut (*_1) with_metadata(copy _1.metadata)
+                        storage_live(_9)
+                        _9 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](copy _3, move _8)
+                        ↳⚡ undefined_behavior
+                        _4 = &raw mut (*_9)
+                        _3 = move _3 wrap.+ const 1usize
+                        drop[TraitClause1::drop_glue<'3>] (*_4)
+                        ↳⚡ storage_dead(_7)
+                            storage_dead(_6)
+                            storage_dead(_5)
+                            storage_dead(_4)
+                            storage_dead(_3)
+                            storage_dead(_2)
+                            storage_dead(_1)
+                            storage_dead(_11)
+                            storage_dead(_10)
+                            storage_dead(_9)
+                            storage_dead(_8)
+                            unwind_terminate
+                        continue 0
+                    }
+                }
+                storage_dead(_7)
+                storage_dead(_6)
+                storage_dead(_5)
+                storage_dead(_4)
+                storage_dead(_3)
+                storage_dead(_2)
+                storage_dead(_1)
+                unwind_continue
+            continue 0
+        }
+    }
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_dead(_9)
+    storage_dead(_8)
+    return
+}
+
+// Full name: {impl Destruct for [T]}
+impl<T> "impl_Destruct_for_slice" Destruct for [T]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Destruct),
+{
+    fn drop_glue<'_0_1> = impl_Destruct_for_slice::drop_glue<'_0_1, T>[TraitClause0, TraitClause1]
+    non-dyn-compatible
+}
 
 // Full name: test_crate::use_box
 fn use_box(_1: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global])

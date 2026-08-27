@@ -33,6 +33,10 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+struct str {
+  _0: [u8],
+}
+
 struct test_crate::MyTrait::{vtable} {
   size: usize,
   align: usize,

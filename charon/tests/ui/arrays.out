@@ -5,6 +5,32 @@
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::array::repeat
+pub fn repeat<T, const N : usize>(_1: T) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+= <opaque>
+
 // Full name: core::ops::index::Index
 #[lang_item(Index)]
 pub trait Index<Self, Idx, Self_Output>
@@ -15,15 +41,6 @@ pub trait Index<Self, Idx, Self_Output>
     #[track_caller]
     fn index<'_0_1>;
     vtable: core::ops::index::Index::{vtable}<Idx, Self_Output>
-}
-
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
 }
 
 // Full name: core::array::{impl Index<I, Clause2_Output> for [T; N]}::index
@@ -58,6 +75,20 @@ where
     TypeOutlives0: T: '_0,
     TypeOutlives1: Clause2_Clause1_Output: '_0,
     TypeOutlives2: I: '_0,
+= <opaque>
+
+// Full name: core::array::{[T; N]}::as_slice
+pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::array::{[T; N]}::as_mut_slice
+pub fn as_mut_slice<'_0, T, const N : usize>(_1: &'_0 mut [T; N]) -> &'_0 mut [T]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
 = <opaque>
 
 struct () {}
@@ -177,6 +208,20 @@ where
     vtable: impl_IndexMut_for_slice::{vtable}<T, I>[TraitClause0, TraitClause1, TraitClause2]
 }
 
+// Full name: core::slice::index::{impl SliceIndex<[T], T> for usize}::index
+pub fn impl_SliceIndex_slice_for_usize::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T], T> for usize}::index_mut
+pub fn impl_SliceIndex_slice_for_usize::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
 // Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::index_mut
 pub fn impl_SliceIndex_slice_for_Range_usize::index_mut<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> &'_0 mut [T]
 where
@@ -193,27 +238,27 @@ where
 
 // Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
 #[track_caller]
-pub unsafe fn get_unchecked_mut<T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: *mut [T]) -> *mut [T]
+pub unsafe fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut<T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: *mut [T]) -> *mut [T]
 where
     TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked
 #[track_caller]
-pub unsafe fn get_unchecked<T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: *const [T]) -> *const [T]
+pub unsafe fn impl_SliceIndex_slice_for_Range_usize::get_unchecked<T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: *const [T]) -> *const [T]
 where
     TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get_mut
-pub fn get_mut<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
+pub fn impl_SliceIndex_slice_for_Range_usize::get_mut<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T], [T]> for Range<usize>[{built_in impl Sized for usize}]}::get
-pub fn get<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
+pub fn impl_SliceIndex_slice_for_Range_usize::get<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,
@@ -227,10 +272,10 @@ where
     proof ImpliedClause0: (Range<usize>[{built_in impl Sized for usize}]: MetaSized) = {built_in impl MetaSized for Range<usize>[{built_in impl Sized for usize}]}
     proof ImpliedClause1: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
     proof ImpliedClause2: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
-    fn get<'_0_1> = get<'_0_1, T>[TraitClause0]
-    fn get_mut<'_0_1> = get_mut<'_0_1, T>[TraitClause0]
-    fn get_unchecked = get_unchecked<T>[TraitClause0]
-    fn get_unchecked_mut = get_unchecked_mut<T>[TraitClause0]
+    fn get<'_0_1> = impl_SliceIndex_slice_for_Range_usize::get<'_0_1, T>[TraitClause0]
+    fn get_mut<'_0_1> = impl_SliceIndex_slice_for_Range_usize::get_mut<'_0_1, T>[TraitClause0]
+    fn get_unchecked = impl_SliceIndex_slice_for_Range_usize::get_unchecked<T>[TraitClause0]
+    fn get_unchecked_mut = impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut<T>[TraitClause0]
     fn index<'_0_1> = impl_SliceIndex_slice_for_Range_usize::index<'_0_1, T>[TraitClause0]
     fn index_mut<'_0_1> = impl_SliceIndex_slice_for_Range_usize::index_mut<'_0_1, T>[TraitClause0]
     vtable: impl_SliceIndex_slice_for_Range_usize::{vtable}<T>[TraitClause0]
@@ -250,6 +295,10 @@ where
 {
   _0: A,
   _1: B,
+}
+
+struct str {
+  _0: [u8],
 }
 
 // Full name: {impl Destruct for [T]}::drop_glue
@@ -289,7 +338,7 @@ where
             storage_live(_10)
             _10 = &mut (*_1) with_metadata(copy _1.metadata)
             storage_live(_11)
-            _11 = @SliceIndexMut<'_, T>(move _10, copy _3)
+            _11 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[UNKNOWN(missing proof for builtin operation)](copy _3, move _10)
             ↳⚡ undefined_behavior
             _6 = &raw mut (*_11)
             _3 = move _3 wrap.+ const 1usize
@@ -302,7 +351,7 @@ where
                         storage_live(_8)
                         _8 = &mut (*_1) with_metadata(copy _1.metadata)
                         storage_live(_9)
-                        _9 = @SliceIndexMut<'_, T>(move _8, copy _3)
+                        _9 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[UNKNOWN(missing proof for builtin operation)](copy _3, move _8)
                         ↳⚡ undefined_behavior
                         _4 = &raw mut (*_9)
                         _3 = move _3 wrap.+ const 1usize
@@ -369,7 +418,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _0 = ()
-    _2 = @ArrayToSliceMut<'_, T, N>(move _1)
+    _2 = as_mut_slice<'_, T, N>[UNKNOWN(missing proof for builtin operation)](move _1)
     ↳⚡ undefined_behavior
     _0 = core::ptr::drop_glue<'6, [T]>[impl_Destruct_for_slice<T>[TraitClause0]](move _2)
     ↳⚡ storage_dead(_2)
@@ -426,7 +475,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = &(*s)
-    _0 = @ArrayToSliceShared<'_, T, 32usize>(move _2)
+    _0 = as_slice<'_, T, 32usize>[UNKNOWN(missing proof for builtin operation)](move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
     storage_dead(s)
@@ -448,7 +497,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &mut (*s)
-    _2 = @ArrayToSliceMut<'_, T, 32usize>(move _3)
+    _2 = as_mut_slice<'_, T, 32usize>[UNKNOWN(missing proof for builtin operation)](move _3)
     ↳⚡ undefined_behavior
     storage_dead(_3)
     _0 = &mut (*_2) with_metadata(copy _2.metadata)
@@ -471,7 +520,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &s
-    _2 = @ArrayToSliceShared<'_, T, 32usize>(move _3)
+    _2 = as_slice<'_, T, 32usize>[UNKNOWN(missing proof for builtin operation)](move _3)
     ↳⚡ undefined_behavior
     storage_dead(_3)
     _0 = len<'6, T>[TraitClause0](move _2)
@@ -503,7 +552,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &(*s)
-    _2 = @ArrayToSliceShared<'_, T, 32usize>(move _3)
+    _2 = as_slice<'_, T, 32usize>[UNKNOWN(missing proof for builtin operation)](move _3)
     ↳⚡ undefined_behavior
     storage_dead(_3)
     _0 = len<'7, T>[TraitClause0](move _2)
@@ -547,7 +596,8 @@ where
     let _3: &'4 T; // anonymous local
     let _4: usize; // anonymous local
     let _5: &'_ [T; 32usize]; // anonymous local
-    let _6: &'_ T; // anonymous local
+    let _6: &'_ [T]; // anonymous local
+    let _7: &'_ T; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -557,14 +607,18 @@ where
     storage_live(_5)
     _5 = &(*s)
     storage_live(_6)
-    _6 = @ArrayIndexShared<'_, T, 32usize>(move _5, copy _4)
+    _6 = as_slice<'_, T, 32usize>[UNKNOWN(missing proof for builtin operation)](move _5)
     ↳⚡ undefined_behavior
-    _3 = &(*_6)
+    storage_live(_7)
+    _7 = impl_SliceIndex_slice_for_usize::index<'_, T>[UNKNOWN(missing proof for builtin operation)](copy _4, move _6)
+    ↳⚡ undefined_behavior
+    _3 = &(*_7)
     _0 = &(*_3)
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(i)
     storage_dead(s)
+    storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
     return
@@ -578,7 +632,8 @@ pub fn index_array_u32(s: [u32; 32usize], i: usize) -> u32
     let i: usize; // arg #2
     let _3: usize; // anonymous local
     let _4: &'_ [u32; 32usize]; // anonymous local
-    let _5: &'_ u32; // anonymous local
+    let _5: &'_ [u32]; // anonymous local
+    let _6: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -587,12 +642,16 @@ pub fn index_array_u32(s: [u32; 32usize], i: usize) -> u32
     storage_live(_4)
     _4 = &s
     storage_live(_5)
-    _5 = @ArrayIndexShared<'_, u32, 32usize>(move _4, copy _3)
+    _5 = as_slice<'_, u32, 32usize>[UNKNOWN(missing proof for builtin operation)](move _4)
     ↳⚡ undefined_behavior
-    _0 = copy (*_5)
+    storage_live(_6)
+    _6 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _3, move _5)
+    ↳⚡ undefined_behavior
+    _0 = copy (*_6)
     storage_dead(_3)
     storage_dead(i)
     storage_dead(s)
+    storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
     return
@@ -605,7 +664,8 @@ pub fn index_array_copy<'_0>(x: &'_0 [u32; 32usize]) -> u32
     let x: &'1 [u32; 32usize]; // arg #1
     let _2: usize; // anonymous local
     let _3: &'_ [u32; 32usize]; // anonymous local
-    let _4: &'_ u32; // anonymous local
+    let _4: &'_ [u32]; // anonymous local
+    let _5: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -614,11 +674,15 @@ pub fn index_array_copy<'_0>(x: &'_0 [u32; 32usize]) -> u32
     storage_live(_3)
     _3 = &(*x)
     storage_live(_4)
-    _4 = @ArrayIndexShared<'_, u32, 32usize>(move _3, copy _2)
+    _4 = as_slice<'_, u32, 32usize>[UNKNOWN(missing proof for builtin operation)](move _3)
     ↳⚡ undefined_behavior
-    _0 = copy (*_4)
+    storage_live(_5)
+    _5 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _2, move _4)
+    ↳⚡ undefined_behavior
+    _0 = copy (*_5)
     storage_dead(_2)
     storage_dead(x)
+    storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -637,7 +701,8 @@ where
     let _4: &'5 mut T; // anonymous local
     let _5: usize; // anonymous local
     let _6: &'_ mut [T; 32usize]; // anonymous local
-    let _7: &'_ mut T; // anonymous local
+    let _7: &'_ mut [T]; // anonymous local
+    let _8: &'_ mut T; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -648,9 +713,12 @@ where
     storage_live(_6)
     _6 = &mut (*s)
     storage_live(_7)
-    _7 = @ArrayIndexMut<'_, T, 32usize>(move _6, copy _5)
+    _7 = as_mut_slice<'_, T, 32usize>[UNKNOWN(missing proof for builtin operation)](move _6)
     ↳⚡ undefined_behavior
-    _4 = &mut (*_7)
+    storage_live(_8)
+    _8 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[UNKNOWN(missing proof for builtin operation)](copy _5, move _7)
+    ↳⚡ undefined_behavior
+    _4 = &mut (*_8)
     _3 = &mut (*_4)
     _0 = &mut (*_3)
     storage_dead(_5)
@@ -658,6 +726,7 @@ where
     storage_dead(_3)
     storage_dead(i)
     storage_dead(s)
+    storage_dead(_8)
     storage_dead(_7)
     storage_dead(_6)
     return
@@ -684,7 +753,7 @@ where
     storage_live(_5)
     _5 = &(*s) with_metadata(copy s.metadata)
     storage_live(_6)
-    _6 = @SliceIndexShared<'_, T>(move _5, copy _4)
+    _6 = impl_SliceIndex_slice_for_usize::index<'_, T>[UNKNOWN(missing proof for builtin operation)](copy _4, move _5)
     ↳⚡ undefined_behavior
     _3 = &(*_6)
     _0 = &(*_3)
@@ -720,7 +789,7 @@ where
     storage_live(_6)
     _6 = &mut (*s) with_metadata(copy s.metadata)
     storage_live(_7)
-    _7 = @SliceIndexMut<'_, T>(move _6, copy _5)
+    _7 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[UNKNOWN(missing proof for builtin operation)](copy _5, move _6)
     ↳⚡ undefined_behavior
     _4 = &mut (*_7)
     _3 = &mut (*_4)
@@ -837,7 +906,7 @@ pub fn array_to_slice_shared_<'_0>(x: &'_0 [u32; 32usize]) -> &'_0 [u32]
     storage_live(_0)
     storage_live(_2)
     _2 = &(*x)
-    _0 = @ArrayToSliceShared<'_, u32, 32usize>(move _2)
+    _0 = as_slice<'_, u32, 32usize>[UNKNOWN(missing proof for builtin operation)](move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
     storage_dead(x)
@@ -856,7 +925,7 @@ pub fn array_to_slice_mut_<'_0>(x: &'_0 mut [u32; 32usize]) -> &'_0 mut [u32]
     storage_live(_2)
     storage_live(_3)
     _3 = &mut (*x)
-    _2 = @ArrayToSliceMut<'_, u32, 32usize>(move _3)
+    _2 = as_mut_slice<'_, u32, 32usize>[UNKNOWN(missing proof for builtin operation)](move _3)
     ↳⚡ undefined_behavior
     storage_dead(_3)
     _0 = &mut (*_2) with_metadata(copy _2.metadata)
@@ -977,7 +1046,7 @@ where
     storage_live(_4)
     _4 = &(*s) with_metadata(copy s.metadata)
     storage_live(_5)
-    _5 = @SliceIndexShared<'_, T>(move _4, copy _3)
+    _5 = impl_SliceIndex_slice_for_usize::index<'_, T>[UNKNOWN(missing proof for builtin operation)](copy _3, move _4)
     ↳⚡ undefined_behavior
     _2 = &(*_5)
     _0 = &(*_2)
@@ -1000,7 +1069,8 @@ where
     let _2: &'4 T; // anonymous local
     let _3: usize; // anonymous local
     let _4: &'_ [T; 32usize]; // anonymous local
-    let _5: &'_ T; // anonymous local
+    let _5: &'_ [T]; // anonymous local
+    let _6: &'_ T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1010,13 +1080,17 @@ where
     storage_live(_4)
     _4 = &(*s)
     storage_live(_5)
-    _5 = @ArrayIndexShared<'_, T, 32usize>(move _4, copy _3)
+    _5 = as_slice<'_, T, 32usize>[UNKNOWN(missing proof for builtin operation)](move _4)
     ↳⚡ undefined_behavior
-    _2 = &(*_5)
+    storage_live(_6)
+    _6 = impl_SliceIndex_slice_for_usize::index<'_, T>[UNKNOWN(missing proof for builtin operation)](copy _3, move _5)
+    ↳⚡ undefined_behavior
+    _2 = &(*_6)
     _0 = &(*_2)
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(s)
+    storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
     return
@@ -1032,11 +1106,14 @@ pub fn index_index_array(s: [[u32; 32usize]; 32usize], i: usize, j: usize) -> u3
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
     let _6: &'_ [[u32; 32usize]; 32usize]; // anonymous local
-    let _7: &'_ [u32; 32usize]; // anonymous local
-    let _8: &'_ [[u32; 32usize]; 32usize]; // anonymous local
-    let _9: &'_ [u32; 32usize]; // anonymous local
-    let _10: &'_ [u32; 32usize]; // anonymous local
-    let _11: &'_ u32; // anonymous local
+    let _7: &'_ [[u32; 32usize]]; // anonymous local
+    let _8: &'_ [u32; 32usize]; // anonymous local
+    let _9: &'_ [[u32; 32usize]; 32usize]; // anonymous local
+    let _10: &'_ [[u32; 32usize]]; // anonymous local
+    let _11: &'_ [u32; 32usize]; // anonymous local
+    let _12: &'_ [u32; 32usize]; // anonymous local
+    let _13: &'_ [u32]; // anonymous local
+    let _14: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_4)
@@ -1047,25 +1124,37 @@ pub fn index_index_array(s: [[u32; 32usize]; 32usize], i: usize, j: usize) -> u3
     storage_live(_6)
     _6 = &s
     storage_live(_7)
-    _7 = @ArrayIndexShared<'_, [u32; 32usize], 32usize>(move _6, copy _4)
+    _7 = as_slice<'_, [u32; 32usize], 32usize>[UNKNOWN(missing proof for builtin operation)](move _6)
     ↳⚡ undefined_behavior
-    fake_read((*_7))
     storage_live(_8)
-    _8 = &s
+    _8 = impl_SliceIndex_slice_for_usize::index<'_, [u32; 32usize]>[UNKNOWN(missing proof for builtin operation)](copy _4, move _7)
+    ↳⚡ undefined_behavior
+    fake_read((*_8))
     storage_live(_9)
-    _9 = @ArrayIndexShared<'_, [u32; 32usize], 32usize>(move _8, copy _4)
-    ↳⚡ undefined_behavior
+    _9 = &s
     storage_live(_10)
-    _10 = &(*_9)
-    storage_live(_11)
-    _11 = @ArrayIndexShared<'_, u32, 32usize>(move _10, copy _5)
+    _10 = as_slice<'_, [u32; 32usize], 32usize>[UNKNOWN(missing proof for builtin operation)](move _9)
     ↳⚡ undefined_behavior
-    _0 = copy (*_11)
+    storage_live(_11)
+    _11 = impl_SliceIndex_slice_for_usize::index<'_, [u32; 32usize]>[UNKNOWN(missing proof for builtin operation)](copy _4, move _10)
+    ↳⚡ undefined_behavior
+    storage_live(_12)
+    _12 = &(*_11)
+    storage_live(_13)
+    _13 = as_slice<'_, u32, 32usize>[UNKNOWN(missing proof for builtin operation)](move _12)
+    ↳⚡ undefined_behavior
+    storage_live(_14)
+    _14 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _5, move _13)
+    ↳⚡ undefined_behavior
+    _0 = copy (*_14)
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(j)
     storage_dead(i)
     storage_dead(s)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
@@ -1085,11 +1174,14 @@ pub fn update_update_array(s: [[u32; 32usize]; 32usize], i: usize, j: usize)
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
     let _6: &'_ [[u32; 32usize]; 32usize]; // anonymous local
-    let _7: &'_ [u32; 32usize]; // anonymous local
-    let _8: &'_ mut [[u32; 32usize]; 32usize]; // anonymous local
-    let _9: &'_ mut [u32; 32usize]; // anonymous local
-    let _10: &'_ mut [u32; 32usize]; // anonymous local
-    let _11: &'_ mut u32; // anonymous local
+    let _7: &'_ [[u32; 32usize]]; // anonymous local
+    let _8: &'_ [u32; 32usize]; // anonymous local
+    let _9: &'_ mut [[u32; 32usize]; 32usize]; // anonymous local
+    let _10: &'_ mut [[u32; 32usize]]; // anonymous local
+    let _11: &'_ mut [u32; 32usize]; // anonymous local
+    let _12: &'_ mut [u32; 32usize]; // anonymous local
+    let _13: &'_ mut [u32]; // anonymous local
+    let _14: &'_ mut u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1101,26 +1193,38 @@ pub fn update_update_array(s: [[u32; 32usize]; 32usize], i: usize, j: usize)
     storage_live(_6)
     _6 = &s
     storage_live(_7)
-    _7 = @ArrayIndexShared<'_, [u32; 32usize], 32usize>(move _6, copy _4)
+    _7 = as_slice<'_, [u32; 32usize], 32usize>[UNKNOWN(missing proof for builtin operation)](move _6)
     ↳⚡ undefined_behavior
-    fake_read((*_7))
     storage_live(_8)
-    _8 = &mut s
+    _8 = impl_SliceIndex_slice_for_usize::index<'_, [u32; 32usize]>[UNKNOWN(missing proof for builtin operation)](copy _4, move _7)
+    ↳⚡ undefined_behavior
+    fake_read((*_8))
     storage_live(_9)
-    _9 = @ArrayIndexMut<'_, [u32; 32usize], 32usize>(move _8, copy _4)
-    ↳⚡ undefined_behavior
+    _9 = &mut s
     storage_live(_10)
-    _10 = &mut (*_9)
-    storage_live(_11)
-    _11 = @ArrayIndexMut<'_, u32, 32usize>(move _10, copy _5)
+    _10 = as_mut_slice<'_, [u32; 32usize], 32usize>[UNKNOWN(missing proof for builtin operation)](move _9)
     ↳⚡ undefined_behavior
-    (*_11) = const 0u32
+    storage_live(_11)
+    _11 = impl_SliceIndex_slice_for_usize::index_mut<'_, [u32; 32usize]>[UNKNOWN(missing proof for builtin operation)](copy _4, move _10)
+    ↳⚡ undefined_behavior
+    storage_live(_12)
+    _12 = &mut (*_11)
+    storage_live(_13)
+    _13 = as_mut_slice<'_, u32, 32usize>[UNKNOWN(missing proof for builtin operation)](move _12)
+    ↳⚡ undefined_behavior
+    storage_live(_14)
+    _14 = impl_SliceIndex_slice_for_usize::index_mut<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _5, move _13)
+    ↳⚡ undefined_behavior
+    (*_14) = const 0u32
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()
     storage_dead(j)
     storage_dead(i)
     storage_dead(s)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
@@ -1138,9 +1242,11 @@ pub fn incr_array_self<'_0>(s: &'_0 mut [u32; 2usize])
     let _2: usize; // anonymous local
     let _3: u32; // anonymous local
     let _4: &'_ [u32; 2usize]; // anonymous local
-    let _5: &'_ u32; // anonymous local
-    let _6: &'_ mut [u32; 2usize]; // anonymous local
-    let _7: &'_ mut u32; // anonymous local
+    let _5: &'_ [u32]; // anonymous local
+    let _6: &'_ u32; // anonymous local
+    let _7: &'_ mut [u32; 2usize]; // anonymous local
+    let _8: &'_ mut [u32]; // anonymous local
+    let _9: &'_ mut u32; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -1151,19 +1257,27 @@ pub fn incr_array_self<'_0>(s: &'_0 mut [u32; 2usize])
     storage_live(_4)
     _4 = &(*s)
     storage_live(_5)
-    _5 = @ArrayIndexShared<'_, u32, 2usize>(move _4, copy _2)
+    _5 = as_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _4)
     ↳⚡ undefined_behavior
-    _3 = copy (*_5) panic.+ const 1u32
     storage_live(_6)
-    _6 = &mut (*s)
-    storage_live(_7)
-    _7 = @ArrayIndexMut<'_, u32, 2usize>(move _6, copy _2)
+    _6 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _2, move _5)
     ↳⚡ undefined_behavior
-    (*_7) = move _3
+    _3 = copy (*_6) panic.+ const 1u32
+    storage_live(_7)
+    _7 = &mut (*s)
+    storage_live(_8)
+    _8 = as_mut_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _7)
+    ↳⚡ undefined_behavior
+    storage_live(_9)
+    _9 = impl_SliceIndex_slice_for_usize::index_mut<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _2, move _8)
+    ↳⚡ undefined_behavior
+    (*_9) = move _3
     storage_dead(_2)
     _0 = ()
     storage_dead(_3)
     storage_dead(s)
+    storage_dead(_9)
+    storage_dead(_8)
     storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
@@ -1191,13 +1305,13 @@ pub fn incr_slice_self<'_0>(s: &'_0 mut [u32])
     storage_live(_4)
     _4 = &(*s) with_metadata(copy s.metadata)
     storage_live(_5)
-    _5 = @SliceIndexShared<'_, u32>(move _4, copy _2)
+    _5 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _2, move _4)
     ↳⚡ undefined_behavior
     _3 = copy (*_5) panic.+ const 1u32
     storage_live(_6)
     _6 = &mut (*s) with_metadata(copy s.metadata)
     storage_live(_7)
-    _7 = @SliceIndexMut<'_, u32>(move _6, copy _2)
+    _7 = impl_SliceIndex_slice_for_usize::index_mut<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _2, move _6)
     ↳⚡ undefined_behavior
     (*_7) = move _3
     storage_dead(_2)
@@ -1287,8 +1401,7 @@ pub fn const_array() -> [u32; 2usize]
     let _0: [u32; 2usize]; // return
 
     storage_live(_0)
-    _0 = @ArrayRepeat<u32, 2usize>(const 0u32)
-    ↳⚡ undefined_behavior
+    _0 = [const 0u32, const 0u32]
     return
 }
 
@@ -1307,8 +1420,7 @@ pub fn const_slice()
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = @ArrayRepeat<u32, 2usize>(const 0u32)
-    ↳⚡ undefined_behavior
+    _7 = [const 0u32, const 0u32]
     _6 = &_7
     _5 = move _6
     storage_live(_0)
@@ -1320,7 +1432,7 @@ pub fn const_slice()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _1 = @ArrayToSliceShared<'_, u32, 2usize>(move _2)
+    _1 = as_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
     set_type(typeof(_1) <= &'8 [u32])
@@ -1358,8 +1470,7 @@ pub fn take_all()
     storage_live(_0)
     _0 = ()
     storage_live(x)
-    x = @ArrayRepeat<u32, 2usize>(const 0u32)
-    ↳⚡ undefined_behavior
+    x = [const 0u32, const 0u32]
     fake_read(x)
     set_type(typeof(x) == [u32; 2usize])
     storage_live(_2)
@@ -1395,7 +1506,7 @@ pub fn take_all()
     // automatic cast from array to slice (spanning entire array)
     _12 = &x
     _11 = &(*_12)
-    _10 = @ArrayToSliceShared<'_, u32, 2usize>(move _11)
+    _10 = as_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _11)
     ↳⚡ undefined_behavior
     storage_dead(_11)
     _9 = take_slice<'16>(move _10)
@@ -1411,7 +1522,7 @@ pub fn take_all()
     // mut and non-mut cases
     _16 = &mut x
     _15 = &mut (*_16)
-    _14 = @ArrayToSliceMut<'_, u32, 2usize>(move _15)
+    _14 = as_mut_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _15)
     ↳⚡ undefined_behavior
     storage_dead(_15)
     _13 = take_mut_slice<'19>(move _14)
@@ -1431,7 +1542,8 @@ pub fn index_array(x: [u32; 2usize]) -> u32
     let x: [u32; 2usize]; // arg #1
     let _2: usize; // anonymous local
     let _3: &'_ [u32; 2usize]; // anonymous local
-    let _4: &'_ u32; // anonymous local
+    let _4: &'_ [u32]; // anonymous local
+    let _5: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1440,11 +1552,15 @@ pub fn index_array(x: [u32; 2usize]) -> u32
     storage_live(_3)
     _3 = &x
     storage_live(_4)
-    _4 = @ArrayIndexShared<'_, u32, 2usize>(move _3, copy _2)
+    _4 = as_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _3)
     ↳⚡ undefined_behavior
-    _0 = copy (*_4)
+    storage_live(_5)
+    _5 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _2, move _4)
+    ↳⚡ undefined_behavior
+    _0 = copy (*_5)
     storage_dead(_2)
     storage_dead(x)
+    storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -1457,7 +1573,8 @@ pub fn index_array_borrow<'_0>(x: &'_0 [u32; 2usize]) -> u32
     let x: &'1 [u32; 2usize]; // arg #1
     let _2: usize; // anonymous local
     let _3: &'_ [u32; 2usize]; // anonymous local
-    let _4: &'_ u32; // anonymous local
+    let _4: &'_ [u32]; // anonymous local
+    let _5: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -1466,11 +1583,15 @@ pub fn index_array_borrow<'_0>(x: &'_0 [u32; 2usize]) -> u32
     storage_live(_3)
     _3 = &(*x)
     storage_live(_4)
-    _4 = @ArrayIndexShared<'_, u32, 2usize>(move _3, copy _2)
+    _4 = as_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _3)
     ↳⚡ undefined_behavior
-    _0 = copy (*_4)
+    storage_live(_5)
+    _5 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _2, move _4)
+    ↳⚡ undefined_behavior
+    _0 = copy (*_5)
     storage_dead(_2)
     storage_dead(x)
+    storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -1491,7 +1612,7 @@ pub fn index_slice_u32_0<'_0>(x: &'_0 [u32]) -> u32
     storage_live(_3)
     _3 = &(*x) with_metadata(copy x.metadata)
     storage_live(_4)
-    _4 = @SliceIndexShared<'_, u32>(move _3, copy _2)
+    _4 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _2, move _3)
     ↳⚡ undefined_behavior
     _0 = copy (*_4)
     storage_dead(_2)
@@ -1516,7 +1637,7 @@ pub fn index_mut_slice_u32_0<'_0>(x: &'_0 mut [u32]) -> u32
     storage_live(_3)
     _3 = &(*x) with_metadata(copy x.metadata)
     storage_live(_4)
-    _4 = @SliceIndexShared<'_, u32>(move _3, copy _2)
+    _4 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _2, move _3)
     ↳⚡ undefined_behavior
     _0 = copy (*_4)
     storage_dead(_2)
@@ -1563,16 +1684,14 @@ pub fn index_all() -> u32
     storage_live(_21)
     storage_live(_26)
     storage_live(x)
-    x = @ArrayRepeat<u32, 2usize>(const 0u32)
-    ↳⚡ undefined_behavior
+    x = [const 0u32, const 0u32]
     fake_read(x)
     set_type(typeof(x) == [u32; 2usize])
     storage_live(_2)
     _2 = const true
     if move _2 {
         storage_live(_y)
-        _y = @ArrayRepeat<u32, 2usize>(const 0u32)
-        ↳⚡ undefined_behavior
+        _y = [const 0u32, const 0u32]
         fake_read(_y)
         set_type(typeof(_y) == [u32; 2usize])
         storage_dead(_y)
@@ -1633,7 +1752,7 @@ pub fn index_all() -> u32
     storage_live(_20)
     _20 = &x
     _19 = &(*_20)
-    _18 = @ArrayToSliceShared<'_, u32, 2usize>(move _19)
+    _18 = as_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _19)
     ↳⚡ undefined_behavior
     storage_dead(_19)
     _17 = index_slice_u32_0<'16>(move _18)
@@ -1653,7 +1772,7 @@ pub fn index_all() -> u32
     storage_live(_25)
     _25 = &mut x
     _24 = &mut (*_25)
-    _23 = @ArrayToSliceMut<'_, u32, 2usize>(move _24)
+    _23 = as_mut_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _24)
     ↳⚡ undefined_behavior
     storage_dead(_24)
     _22 = index_mut_slice_u32_0<'19>(move _23)
@@ -1685,7 +1804,8 @@ pub fn update_array(x: [u32; 2usize])
     let x: [u32; 2usize]; // arg #1
     let _2: usize; // anonymous local
     let _3: &'_ mut [u32; 2usize]; // anonymous local
-    let _4: &'_ mut u32; // anonymous local
+    let _4: &'_ mut [u32]; // anonymous local
+    let _5: &'_ mut u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1695,12 +1815,16 @@ pub fn update_array(x: [u32; 2usize])
     storage_live(_3)
     _3 = &mut x
     storage_live(_4)
-    _4 = @ArrayIndexMut<'_, u32, 2usize>(move _3, copy _2)
+    _4 = as_mut_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _3)
     ↳⚡ undefined_behavior
-    (*_4) = const 1u32
+    storage_live(_5)
+    _5 = impl_SliceIndex_slice_for_usize::index_mut<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _2, move _4)
+    ↳⚡ undefined_behavior
+    (*_5) = const 1u32
     _0 = ()
     storage_dead(_2)
     storage_dead(x)
+    storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -1713,7 +1837,8 @@ pub fn update_array_mut_borrow<'_0>(x: &'_0 mut [u32; 2usize])
     let x: &'1 mut [u32; 2usize]; // arg #1
     let _2: usize; // anonymous local
     let _3: &'_ mut [u32; 2usize]; // anonymous local
-    let _4: &'_ mut u32; // anonymous local
+    let _4: &'_ mut [u32]; // anonymous local
+    let _5: &'_ mut u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1723,12 +1848,16 @@ pub fn update_array_mut_borrow<'_0>(x: &'_0 mut [u32; 2usize])
     storage_live(_3)
     _3 = &mut (*x)
     storage_live(_4)
-    _4 = @ArrayIndexMut<'_, u32, 2usize>(move _3, copy _2)
+    _4 = as_mut_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _3)
     ↳⚡ undefined_behavior
-    (*_4) = const 1u32
+    storage_live(_5)
+    _5 = impl_SliceIndex_slice_for_usize::index_mut<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _2, move _4)
+    ↳⚡ undefined_behavior
+    (*_5) = const 1u32
     _0 = ()
     storage_dead(_2)
     storage_dead(x)
+    storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -1750,7 +1879,7 @@ pub fn update_mut_slice<'_0>(x: &'_0 mut [u32])
     storage_live(_3)
     _3 = &mut (*x) with_metadata(copy x.metadata)
     storage_live(_4)
-    _4 = @SliceIndexMut<'_, u32>(move _3, copy _2)
+    _4 = impl_SliceIndex_slice_for_usize::index_mut<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _2, move _3)
     ↳⚡ undefined_behavior
     (*_4) = const 1u32
     _0 = ()
@@ -1781,8 +1910,7 @@ pub fn update_all()
     storage_live(_0)
     _0 = ()
     storage_live(x)
-    x = @ArrayRepeat<u32, 2usize>(const 0u32)
-    ↳⚡ undefined_behavior
+    x = [const 0u32, const 0u32]
     fake_read(x)
     set_type(typeof(x) == [u32; 2usize])
     storage_live(_2)
@@ -1815,7 +1943,7 @@ pub fn update_all()
     storage_live(_12)
     _12 = &mut x
     _11 = &mut (*_12)
-    _10 = @ArrayToSliceMut<'_, u32, 2usize>(move _11)
+    _10 = as_mut_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _11)
     ↳⚡ undefined_behavior
     storage_dead(_11)
     _9 = update_mut_slice<'11>(move _10)
@@ -1843,8 +1971,7 @@ pub fn range_all()
     storage_live(_0)
     _0 = ()
     storage_live(x)
-    x = @ArrayRepeat<u32, 4usize>(const 0u32)
-    ↳⚡ undefined_behavior
+    x = [const 0u32, const 0u32, const 0u32, const 0u32]
     fake_read(x)
     set_type(typeof(x) == [u32; 4usize])
     storage_live(_2)
@@ -1881,7 +2008,8 @@ pub fn deref_array_borrow<'_0>(x_1: &'_0 [u32; 2usize]) -> u32
     let x_2: [u32; 2usize]; // local
     let _3: usize; // anonymous local
     let _4: &'_ [u32; 2usize]; // anonymous local
-    let _5: &'_ u32; // anonymous local
+    let _5: &'_ [u32]; // anonymous local
+    let _6: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(x_2)
@@ -1894,12 +2022,16 @@ pub fn deref_array_borrow<'_0>(x_1: &'_0 [u32; 2usize]) -> u32
     storage_live(_4)
     _4 = &x_2
     storage_live(_5)
-    _5 = @ArrayIndexShared<'_, u32, 2usize>(move _4, copy _3)
+    _5 = as_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _4)
     ↳⚡ undefined_behavior
-    _0 = copy (*_5)
+    storage_live(_6)
+    _6 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _3, move _5)
+    ↳⚡ undefined_behavior
+    _0 = copy (*_6)
     storage_dead(x_2)
     storage_dead(_3)
     storage_dead(x_1)
+    storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
     return
@@ -1913,7 +2045,8 @@ pub fn deref_array_mut_borrow<'_0>(x_1: &'_0 mut [u32; 2usize]) -> u32
     let x_2: [u32; 2usize]; // local
     let _3: usize; // anonymous local
     let _4: &'_ [u32; 2usize]; // anonymous local
-    let _5: &'_ u32; // anonymous local
+    let _5: &'_ [u32]; // anonymous local
+    let _6: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(x_2)
@@ -1926,12 +2059,16 @@ pub fn deref_array_mut_borrow<'_0>(x_1: &'_0 mut [u32; 2usize]) -> u32
     storage_live(_4)
     _4 = &x_2
     storage_live(_5)
-    _5 = @ArrayIndexShared<'_, u32, 2usize>(move _4, copy _3)
+    _5 = as_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _4)
     ↳⚡ undefined_behavior
-    _0 = copy (*_5)
+    storage_live(_6)
+    _6 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _3, move _5)
+    ↳⚡ undefined_behavior
+    _0 = copy (*_6)
     storage_dead(x_2)
     storage_dead(_3)
     storage_dead(x_1)
+    storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
     return
@@ -2041,7 +2178,7 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
         storage_live(_12)
         _12 = &(*s) with_metadata(copy s.metadata)
         storage_live(_13)
-        _13 = @SliceIndexShared<'_, u32>(move _12, copy _9)
+        _13 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _9, move _12)
         ↳⚡ undefined_behavior
         _8 = copy (*_13)
         _10 = copy sum panic.+ copy _8
@@ -2165,7 +2302,7 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
         storage_live(_22)
         _22 = &(*s) with_metadata(copy s.metadata)
         storage_live(_23)
-        _23 = @SliceIndexShared<'_, u32>(move _22, copy _16)
+        _23 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _16, move _22)
         ↳⚡ undefined_behavior
         _15 = copy (*_23)
         storage_live(_17)
@@ -2174,7 +2311,7 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
         storage_live(_24)
         _24 = &(*s2) with_metadata(copy s2.metadata)
         storage_live(_25)
-        _25 = @SliceIndexShared<'_, u32>(move _24, copy _18)
+        _25 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _18, move _24)
         ↳⚡ undefined_behavior
         _17 = copy (*_25)
         _19 = copy _15 panic.+ copy _17
@@ -2230,7 +2367,7 @@ pub fn f0()
     _4 = [const 1u32, const 2u32]
     _3 = &mut _4
     _2 = &mut (*_3)
-    s = @ArrayToSliceMut<'_, u32, 2usize>(move _2)
+    s = as_mut_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
     fake_read(s)
@@ -2241,7 +2378,7 @@ pub fn f0()
     storage_live(_6)
     _6 = &mut (*s) with_metadata(copy s.metadata)
     storage_live(_7)
-    _7 = @SliceIndexMut<'_, u32>(move _6, copy _5)
+    _7 = impl_SliceIndex_slice_for_usize::index_mut<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _5, move _6)
     ↳⚡ undefined_behavior
     (*_7) = const 1u32
     storage_dead(_5)
@@ -2260,7 +2397,8 @@ pub fn f1()
     let s: [u32; 2usize]; // local
     let _2: usize; // anonymous local
     let _3: &'_ mut [u32; 2usize]; // anonymous local
-    let _4: &'_ mut u32; // anonymous local
+    let _4: &'_ mut [u32]; // anonymous local
+    let _5: &'_ mut u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -2274,12 +2412,16 @@ pub fn f1()
     storage_live(_3)
     _3 = &mut s
     storage_live(_4)
-    _4 = @ArrayIndexMut<'_, u32, 2usize>(move _3, copy _2)
+    _4 = as_mut_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _3)
     ↳⚡ undefined_behavior
-    (*_4) = const 1u32
+    storage_live(_5)
+    _5 = impl_SliceIndex_slice_for_usize::index_mut<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _2, move _4)
+    ↳⚡ undefined_behavior
+    (*_5) = const 1u32
     storage_dead(_2)
     _0 = ()
     storage_dead(s)
+    storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -2359,7 +2501,8 @@ pub fn f3() -> u32
     let _11: &'8 [u32; 32usize]; // anonymous local
     let _12: &'9 [u32; 32usize]; // anonymous local
     let _13: &'_ [u32; 2usize]; // anonymous local
-    let _14: &'_ u32; // anonymous local
+    let _14: &'_ [u32]; // anonymous local
+    let _15: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(a)
@@ -2374,16 +2517,19 @@ pub fn f3() -> u32
     storage_live(_13)
     _13 = &a
     storage_live(_14)
-    _14 = @ArrayIndexShared<'_, u32, 2usize>(move _13, copy _4)
+    _14 = as_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _13)
     ↳⚡ undefined_behavior
-    _3 = copy (*_14)
+    storage_live(_15)
+    _15 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _4, move _14)
+    ↳⚡ undefined_behavior
+    _3 = copy (*_15)
     _2 = f2(move _3)
     ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_4)
     storage_dead(_2)
     storage_live(b)
-    b = @ArrayRepeat<u32, 32usize>(const 0u32)
+    b = repeat<u32, 32usize>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](const 0u32)
     ↳⚡ undefined_behavior
     fake_read(b)
     storage_live(_6)
@@ -2391,7 +2537,7 @@ pub fn f3() -> u32
     storage_live(_8)
     _8 = &a
     _7 = &(*_8)
-    _6 = @ArrayToSliceShared<'_, u32, 2usize>(move _7)
+    _6 = as_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _7)
     ↳⚡ undefined_behavior
     storage_dead(_7)
     storage_live(_9)
@@ -2413,6 +2559,7 @@ pub fn f3() -> u32
     storage_dead(_12)
     storage_dead(_10)
     storage_dead(_8)
+    storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
     return
@@ -2438,7 +2585,8 @@ pub fn f5<'_0>(x: &'_0 [u32; 32usize]) -> u32
     let x: &'1 [u32; 32usize]; // arg #1
     let _2: usize; // anonymous local
     let _3: &'_ [u32; 32usize]; // anonymous local
-    let _4: &'_ u32; // anonymous local
+    let _4: &'_ [u32]; // anonymous local
+    let _5: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -2447,11 +2595,15 @@ pub fn f5<'_0>(x: &'_0 [u32; 32usize]) -> u32
     storage_live(_3)
     _3 = &(*x)
     storage_live(_4)
-    _4 = @ArrayIndexShared<'_, u32, 32usize>(move _3, copy _2)
+    _4 = as_slice<'_, u32, 32usize>[UNKNOWN(missing proof for builtin operation)](move _3)
     ↳⚡ undefined_behavior
-    _0 = copy (*_4)
+    storage_live(_5)
+    _5 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _2, move _4)
+    ↳⚡ undefined_behavior
+    _0 = copy (*_5)
     storage_dead(_2)
     storage_dead(x)
+    storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -2476,8 +2628,7 @@ pub fn ite()
     storage_live(_0)
     _0 = ()
     storage_live(x)
-    x = @ArrayRepeat<u32, 2usize>(const 0u32)
-    ↳⚡ undefined_behavior
+    x = [const 0u32, const 0u32]
     fake_read(x)
     set_type(typeof(x) == [u32; 2usize])
     storage_live(_2)
@@ -2490,8 +2641,7 @@ pub fn ite()
         return
     }
     storage_live(y)
-    y = @ArrayRepeat<u32, 2usize>(const 0u32)
-    ↳⚡ undefined_behavior
+    y = [const 0u32, const 0u32]
     fake_read(y)
     set_type(typeof(y) == [u32; 2usize])
     storage_live(_4)
@@ -2500,7 +2650,7 @@ pub fn ite()
     storage_live(_7)
     _7 = &mut x
     _6 = &mut (*_7)
-    _5 = @ArrayToSliceMut<'_, u32, 2usize>(move _6)
+    _5 = as_mut_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _6)
     ↳⚡ undefined_behavior
     storage_dead(_6)
     _4 = index_mut_slice_u32_0<'10>(move _5)
@@ -2514,7 +2664,7 @@ pub fn ite()
     storage_live(_11)
     _11 = &mut y
     _10 = &mut (*_11)
-    _9 = @ArrayToSliceMut<'_, u32, 2usize>(move _10)
+    _9 = as_mut_slice<'_, u32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _10)
     ↳⚡ undefined_behavior
     storage_dead(_10)
     _8 = index_mut_slice_u32_0<'13>(move _9)
@@ -2576,7 +2726,7 @@ pub fn zero_slice<'_0>(a: &'_0 mut [u8])
             storage_live(_10)
             _10 = &mut (*a) with_metadata(copy a.metadata)
             storage_live(_11)
-            _11 = @SliceIndexMut<'_, u8>(move _10, copy _8)
+            _11 = impl_SliceIndex_slice_for_usize::index_mut<'_, u8>[UNKNOWN(missing proof for builtin operation)](copy _8, move _10)
             ↳⚡ undefined_behavior
             (*_11) = const 0u8
             storage_dead(_8)
@@ -2711,7 +2861,7 @@ pub fn sum_mut_slice<'_0>(a: &'_0 mut [u32]) -> u32
         storage_live(_12)
         _12 = &(*a) with_metadata(copy a.metadata)
         storage_live(_13)
-        _13 = @SliceIndexShared<'_, u32>(move _12, copy _9)
+        _13 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _9, move _12)
         ↳⚡ undefined_behavior
         _8 = copy (*_13)
         _10 = copy s panic.+ copy _8
@@ -2744,7 +2894,8 @@ fn slice_pattern_1(x: [(); 1usize])
     let x: [(); 1usize]; // arg #1
     let _named: (); // local
     let _3: &'_ [(); 1usize]; // anonymous local
-    let _4: &'_ (); // anonymous local
+    let _4: &'_ [()]; // anonymous local
+    let _5: &'_ (); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -2752,12 +2903,16 @@ fn slice_pattern_1(x: [(); 1usize])
     storage_live(_3)
     _3 = &x
     storage_live(_4)
-    _4 = @ArrayIndexShared<'_, (), 1usize>(move _3, const 0usize)
+    _4 = as_slice<'_, (), 1usize>[UNKNOWN(missing proof for builtin operation)](move _3)
     ↳⚡ undefined_behavior
-    _named = copy (*_4)
+    storage_live(_5)
+    _5 = impl_SliceIndex_slice_for_usize::index<'_, ()>[UNKNOWN(missing proof for builtin operation)](const 0usize, move _4)
+    ↳⚡ undefined_behavior
+    _named = copy (*_5)
     _0 = ()
     storage_dead(_named)
     storage_dead(x)
+    storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -2775,11 +2930,14 @@ where
     let _b: &'4 mut T; // local
     let _c: &'5 mut T; // local
     let _5: &'_ mut [&'2 mut T; 3usize]; // anonymous local
-    let _6: &'_ mut &'2 mut T; // anonymous local
-    let _7: &'_ mut [&'2 mut T; 3usize]; // anonymous local
-    let _8: &'_ mut &'2 mut T; // anonymous local
-    let _9: &'_ mut [&'2 mut T; 3usize]; // anonymous local
+    let _6: &'_ mut [&'2 mut T]; // anonymous local
+    let _7: &'_ mut &'2 mut T; // anonymous local
+    let _8: &'_ mut [&'2 mut T; 3usize]; // anonymous local
+    let _9: &'_ mut [&'2 mut T]; // anonymous local
     let _10: &'_ mut &'2 mut T; // anonymous local
+    let _11: &'_ mut [&'2 mut T; 3usize]; // anonymous local
+    let _12: &'_ mut [&'2 mut T]; // anonymous local
+    let _13: &'_ mut &'2 mut T; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -2787,28 +2945,40 @@ where
     storage_live(_5)
     _5 = &mut x
     storage_live(_6)
-    _6 = @ArrayIndexMut<'_, &'2 mut T, 3usize>(move _5, const 0usize)
+    _6 = as_mut_slice<'_, &'2 mut T, 3usize>[UNKNOWN(missing proof for builtin operation)](move _5)
     ↳⚡ undefined_behavior
-    _a = move (*_6)
-    storage_live(_b)
     storage_live(_7)
-    _7 = &mut x
+    _7 = impl_SliceIndex_slice_for_usize::index_mut<'_, &'2 mut T>[UNKNOWN(missing proof for builtin operation)](const 0usize, move _6)
+    ↳⚡ undefined_behavior
+    _a = move (*_7)
+    storage_live(_b)
     storage_live(_8)
-    _8 = @ArrayIndexMut<'_, &'2 mut T, 3usize>(move _7, const 1usize)
-    ↳⚡ undefined_behavior
-    _b = move (*_8)
-    storage_live(_c)
+    _8 = &mut x
     storage_live(_9)
-    _9 = &mut x
-    storage_live(_10)
-    _10 = @ArrayIndexMut<'_, &'2 mut T, 3usize>(move _9, const 2usize)
+    _9 = as_mut_slice<'_, &'2 mut T, 3usize>[UNKNOWN(missing proof for builtin operation)](move _8)
     ↳⚡ undefined_behavior
-    _c = move (*_10)
+    storage_live(_10)
+    _10 = impl_SliceIndex_slice_for_usize::index_mut<'_, &'2 mut T>[UNKNOWN(missing proof for builtin operation)](const 1usize, move _9)
+    ↳⚡ undefined_behavior
+    _b = move (*_10)
+    storage_live(_c)
+    storage_live(_11)
+    _11 = &mut x
+    storage_live(_12)
+    _12 = as_mut_slice<'_, &'2 mut T, 3usize>[UNKNOWN(missing proof for builtin operation)](move _11)
+    ↳⚡ undefined_behavior
+    storage_live(_13)
+    _13 = impl_SliceIndex_slice_for_usize::index_mut<'_, &'2 mut T>[UNKNOWN(missing proof for builtin operation)](const 2usize, move _12)
+    ↳⚡ undefined_behavior
+    _c = move (*_13)
     _0 = ()
     storage_dead(_c)
     storage_dead(_b)
     storage_dead(_a)
     storage_dead(x)
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
     storage_dead(_8)
@@ -2825,7 +2995,8 @@ fn slice_pattern_3<'_0>(x: &'_0 [(); 1usize])
     let x: &'1 [(); 1usize]; // arg #1
     let _named: &'3 (); // local
     let _3: &'_ [(); 1usize]; // anonymous local
-    let _4: &'_ (); // anonymous local
+    let _4: &'_ [()]; // anonymous local
+    let _5: &'_ (); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -2833,12 +3004,16 @@ fn slice_pattern_3<'_0>(x: &'_0 [(); 1usize])
     storage_live(_3)
     _3 = &(*x)
     storage_live(_4)
-    _4 = @ArrayIndexShared<'_, (), 1usize>(move _3, const 0usize)
+    _4 = as_slice<'_, (), 1usize>[UNKNOWN(missing proof for builtin operation)](move _3)
     ↳⚡ undefined_behavior
-    _named = &(*_4)
+    storage_live(_5)
+    _5 = impl_SliceIndex_slice_for_usize::index<'_, ()>[UNKNOWN(missing proof for builtin operation)](const 0usize, move _4)
+    ↳⚡ undefined_behavior
+    _named = &(*_5)
     _0 = ()
     storage_dead(_named)
     storage_dead(x)
+    storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
     return
@@ -2883,7 +3058,7 @@ fn slice_pattern_4<'_0>(x: &'_0 [()])
     storage_live(_7)
     _7 = &(*x) with_metadata(copy x.metadata)
     storage_live(_8)
-    _8 = @SliceIndexShared<'_, ()>(move _7, const 0usize)
+    _8 = impl_SliceIndex_slice_for_usize::index<'_, ()>[UNKNOWN(missing proof for builtin operation)](const 0usize, move _7)
     ↳⚡ undefined_behavior
     _named = &(*_8)
     _0 = ()

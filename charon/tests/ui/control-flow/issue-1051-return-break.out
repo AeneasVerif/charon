@@ -24,6 +24,10 @@ where
   _1: B,
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::f
 pub fn f(y: u32) -> bool
 {

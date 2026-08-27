@@ -15,6 +15,10 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut String)
 pub fn new() -> String
 = <opaque>
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::use_string
 fn use_string(_1: String)
 {

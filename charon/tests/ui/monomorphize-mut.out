@@ -331,6 +331,10 @@ where
     TraitClause1: (type_error("removed allocator parameter"): Sized),
     TraitClause2: (T0: core::marker::Sized::<&_ mut _><'_0>),
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::option_mut
 fn option_mut<X, A>(x: A)
 where

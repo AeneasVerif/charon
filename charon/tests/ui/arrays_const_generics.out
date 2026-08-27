@@ -1,5 +1,56 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::array::repeat
+pub fn repeat<T, const N : usize>(_1: T) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+= <opaque>
+
+// Full name: core::array::{[T; N]}::as_slice
+pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index
+pub fn impl_SliceIndex_slice_for_usize::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+struct () {}
+
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::index_array_generic
 pub fn index_array_generic<const N : usize>(s: [u32; N], i: usize) -> u32
 {
@@ -8,7 +59,8 @@ pub fn index_array_generic<const N : usize>(s: [u32; N], i: usize) -> u32
     let i: usize; // arg #2
     let _3: usize; // anonymous local
     let _4: &'_ [u32; N]; // anonymous local
-    let _5: &'_ u32; // anonymous local
+    let _5: &'_ [u32]; // anonymous local
+    let _6: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -17,12 +69,16 @@ pub fn index_array_generic<const N : usize>(s: [u32; N], i: usize) -> u32
     storage_live(_4)
     _4 = &s
     storage_live(_5)
-    _5 = @ArrayIndexShared<'_, u32, N>(move _4, copy _3)
+    _5 = as_slice<'_, u32, N>[UNKNOWN(missing proof for builtin operation)](move _4)
     ↳⚡ undefined_behavior
-    _0 = copy (*_5)
+    storage_live(_6)
+    _6 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _3, move _5)
+    ↳⚡ undefined_behavior
+    _0 = copy (*_6)
     storage_dead(_3)
     storage_dead(i)
     storage_dead(s)
+    storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
     return
@@ -69,7 +125,7 @@ pub fn init_array_variable_len<const LEN : usize>() -> [u8; LEN]
     let _0: [u8; LEN]; // return
 
     storage_live(_0)
-    _0 = @ArrayRepeat<u8, LEN>(const 0u8)
+    _0 = repeat<u8, LEN>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](const 0u8)
     ↳⚡ undefined_behavior
     return
 }

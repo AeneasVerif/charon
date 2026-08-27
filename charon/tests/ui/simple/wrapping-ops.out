@@ -68,6 +68,10 @@ pub fn wrapping_mul(self: u8, rhs: u8) -> u8
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::main
 fn main()
 {

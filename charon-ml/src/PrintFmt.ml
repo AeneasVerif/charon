@@ -551,21 +551,9 @@ and pp_match_pattern (env : fmt_env) (fmt : Format.formatter)
 and constant_expr_to_string env cv =
   pp_to_string (fun fmt -> pp_constant_expr env fmt cv)
 
-and pp_builtin_fun_id (fmt : Format.formatter) (aid : builtin_fun_id) : unit =
-  match aid with
-  | ArrayToSliceShared -> pp_string fmt "ArrayToSliceShared"
-  | ArrayToSliceMut -> pp_string fmt "ArrayToSliceMut"
-  | ArrayRepeat -> pp_string fmt "ArrayRepeat"
-  | Index { is_array; mutability; is_range } ->
-      let ty = if is_array then "Array" else "Slice" in
-      let op = if is_range then "SubSlice" else "Index" in
-      Format.fprintf fmt "%s%s%a" ty op pp_ref_kind mutability
-  | PtrFromParts mut -> Format.fprintf fmt "PtrFromParts%a" pp_ref_kind mut
-
 and pp_fun_id (env : fmt_env) (fmt : Format.formatter) (fid : fun_id) : unit =
   match fid with
   | FRegular fid -> pp_fun_decl_id env fmt fid
-  | FBuiltin aid -> Format.fprintf fmt "@%a" pp_builtin_fun_id aid
 
 and pp_fn_ptr_kind (env : fmt_env) (fmt : Format.formatter) (r : fn_ptr_kind) :
     unit =

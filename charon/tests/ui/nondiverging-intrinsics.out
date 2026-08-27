@@ -28,6 +28,10 @@ where
     TraitClause0: (T: Sized),
 = <intrinsic:copy_nonoverlapping>
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::intrinsic_statements
 unsafe fn intrinsic_statements<T>(condition: bool, src: *const T, dst: *mut T, count: usize)
 where

@@ -1349,7 +1349,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     mir::AggregateKind::RawPtr(ty, mutability) => {
-                        // TODO: replace with a call to `ptr::from_raw_parts`.
                         let t_ty = self.translate_rustc_ty(span, ty)?;
                         let mutability = if mutability.is_mut() {
                             RefKind::Mut

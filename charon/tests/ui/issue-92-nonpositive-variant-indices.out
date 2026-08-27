@@ -2,8 +2,11 @@
 
 struct () {}
 
-// Full name: test_crate::Ordering
-enum Ordering {
+struct str {
+  _0: [u8],
+}
+
+enum test_crate::Ordering {
   Less,
   Equal,
   Greater,
@@ -13,21 +16,21 @@ enum Ordering {
 fn main()
 {
     let _0: (); // return
-    let _1: Ordering; // anonymous local
+    let _1: test_crate::Ordering; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = Ordering::Less {  }
+    _1 = test_crate::Ordering::Less {  }
     match _1 {
-        Ordering::Less => {
+        test_crate::Ordering::Less => {
         },
-        Ordering::Equal => {
+        test_crate::Ordering::Equal => {
             _0 = ()
             storage_dead(_1)
             return
         },
-        Ordering::Greater => {
+        test_crate::Ordering::Greater => {
             _0 = ()
             storage_dead(_1)
             return

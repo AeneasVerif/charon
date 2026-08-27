@@ -69,7 +69,7 @@ impl Trait<u32> for (u8, bool) {
 #[pattern::fail(call[0], "core::option::{core::option::Option<@T>}::is_some<_, @T>")]
 #[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some<'_, @U>")]
 #[pattern::fail(call[0], "core::option::{core::option::Option<i32>}::is_some<_, i32>")]
-#[pattern::pass(call[1], "ArrayToSliceShared<'_, bool, 1>")]
+#[pattern::pass(call[1], "core::array::{[@T; @N]}::as_slice<'_, bool, 1>")]
 // This is a trait instance call.
 #[pattern::pass(call[2], "core::ops::index::Index<[bool], core::ops::range::RangeFrom<usize>>::index")]
 #[pattern::pass(call[2], "core::ops::index::Index<[@T], @I>::index")]

@@ -291,22 +291,6 @@ and builtin_assert_kind_of_postcard (ctx : of_postcard_ctx)
      | 11 -> Ok ResumedAfterDrop
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
-and builtin_fun_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (builtin_fun_id, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 -> Ok ArrayToSliceShared
-     | 1 -> Ok ArrayToSliceMut
-     | 2 -> Ok ArrayRepeat
-     | 3 ->
-         let* _0 = builtin_index_op_of_postcard ctx st in
-         Ok (Index _0)
-     | 4 ->
-         let* _0 = ref_kind_of_postcard ctx st in
-         Ok (PtrFromParts _0)
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
 and builtin_impl_data_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
     : (builtin_impl_data, string) result =
   combine_error_msgs st __FUNCTION__
@@ -337,14 +321,6 @@ and builtin_impl_data_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
      | 22 -> Ok BuiltinUntrackedDestruct
      | 23 -> Ok BuiltinRemovedAdtClause
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
-and builtin_index_op_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (builtin_index_op, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* is_array = bool_of_postcard ctx st in
-     let* mutability = ref_kind_of_postcard ctx st in
-     let* is_range = bool_of_postcard ctx st in
-     Ok ({ is_array; mutability; is_range } : builtin_index_op))
 
 and builtin_path_elem_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
     : (builtin_path_elem, string) result =
@@ -651,9 +627,6 @@ and fun_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 0 ->
          let* _0 = fun_decl_id_of_postcard ctx st in
          Ok (FRegular _0)
-     | 1 ->
-         let* _0 = builtin_fun_id_of_postcard ctx st in
-         Ok (FBuiltin _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and fun_sig_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

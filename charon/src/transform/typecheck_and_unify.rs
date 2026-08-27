@@ -520,8 +520,6 @@ impl VisitAst for TypeCheckVisitor<'_> {
     fn enter_fn_ptr(&mut self, x: &FnPtr) {
         match x.kind.as_ref() {
             FnPtrKind::Fun(FunId::Regular(id)) => self.assert_matches_item(*id, &x.generics),
-            // TODO: check builtin generics.
-            FnPtrKind::Fun(FunId::Builtin(_)) => {}
             FnPtrKind::Trait(trait_ref, method_id) => {
                 self.assert_matches_method(trait_ref, *method_id, &x.generics);
             }

@@ -25,8 +25,13 @@ where
   Some { _0: T },
 }
 
-// Full name: test_crate::get
-pub fn get<'a>(x: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
+struct () {}
+
+struct str {
+  _0: [u8],
+}
+
+pub fn test_crate::get<'a>(x: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
 {
     let _0: Option<&'6 u32>[{built_in impl Sized for &'6 u32}]; // return
     let x: &'10 u32; // arg #1

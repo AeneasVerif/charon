@@ -222,9 +222,8 @@ where
     return
 }
 
-// Full name: test_crate::{Generic<T>[TraitClause0]}::get
 #[pattern::pass("test_crate::_::get")]
-fn get<'_0, T>(self: &'_0 Generic<T>[TraitClause0]) -> &'_0 T
+fn test_crate::{Generic<T>[TraitClause0]}::get<'_0, T>(self: &'_0 Generic<T>[TraitClause0]) -> &'_0 T
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,
@@ -264,7 +263,7 @@ fn use_generic()
     storage_live(_3)
     storage_live(_4)
     _4 = &_int_generic
-    _3 = get<'24, i32>[{built_in impl Sized for i32}](move _4)
+    _3 = test_crate::{Generic<T>[TraitClause0]}::get<'24, i32>[{built_in impl Sized for i32}](move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)

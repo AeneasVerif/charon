@@ -45,6 +45,10 @@ where
   Some { _0: T },
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::Trait
 trait Trait<Self, T, Self_Item>
 {

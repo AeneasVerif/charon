@@ -31,6 +31,12 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::foo
 fn foo<'_0, T>(x: &'_0 T) -> &'_0 (dyn Any + 'static)
 where

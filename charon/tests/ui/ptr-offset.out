@@ -14,6 +14,13 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::array::{[T; N]}::as_slice
+pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
 struct (_, _)<A, B>
 where
     TraitClause0: (A: Sized),
@@ -356,7 +363,7 @@ fn main()
     storage_live(_3)
     storage_live(_4)
     _4 = &s
-    _3 = @ArrayToSliceShared<'_, i32, 2usize>(move _4)
+    _3 = as_slice<'_, i32, 2usize>[UNKNOWN(missing proof for builtin operation)](move _4)
     ↳⚡ undefined_behavior
     storage_dead(_4)
     ptr = as_ptr<'6, i32>[{built_in impl Sized for i32}](move _3)

@@ -7,6 +7,10 @@ pub trait MetaSized<Self>
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 opaque type test_crate::x::Trait::{vtable}
 
 // Full name: test_crate::x::Trait

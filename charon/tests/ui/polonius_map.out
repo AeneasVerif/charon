@@ -141,8 +141,7 @@ where
     TraitClause2: (S: Sized),
     TraitClause3: (A: Sized),
 
-// Full name: std::collections::hash::map::{HashMap<K, V, S, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::get
-pub fn get<'_0, '_1, K, V, S, A, Q>(_1: &'_0 HashMap<K, V, S, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3], _2: &'_1 Q) -> Option<&'_0 V>[{built_in impl Sized for &'_0 V}]
+pub fn std::collections::hash::map::{HashMap<K, V, S, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::get<'_0, '_1, K, V, S, A, Q>(_1: &'_0 HashMap<K, V, S, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3], _2: &'_1 Q) -> Option<&'_0 V>[{built_in impl Sized for &'_0 V}]
 where
     TraitClause0: (K: Sized),
     TraitClause1: (V: Sized),
@@ -180,7 +179,7 @@ where
 = <opaque>
 
 // Full name: std::collections::hash::map::{impl Index<&'_0 Q> for HashMap<K, V, S, A>[TraitClause0, TraitClause2, TraitClause3, TraitClause4]}::index
-pub fn index<'_0, '_1, K, Q, V, S, A>(_1: &'_1 HashMap<K, V, S, A>[TraitClause0, TraitClause2, TraitClause3, TraitClause4], _2: &'_0 Q) -> &'_1 V
+pub fn impl_Index_for_HashMap::index<'_0, '_1, K, Q, V, S, A>(_1: &'_1 HashMap<K, V, S, A>[TraitClause0, TraitClause2, TraitClause3, TraitClause4], _2: &'_0 Q) -> &'_1 V
 where
     TraitClause0: (K: Sized),
     TraitClause1: (Q: MetaSized),
@@ -287,7 +286,7 @@ pub fn get_or_insert<'_0>(map: &'_0 mut HashMap<u32, u32, RandomState, Global>[{
     _15 = move _16
     _5 = &(*_15)
     _4 = &(*_5)
-    _2 = get<'30, '31, u32, u32, RandomState, Global, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, impl_Eq_for_u32, impl_Hash_for_u32, impl_BuildHasher_for_RandomState, {built_in impl MetaSized for u32}, impl_Borrow_for_T<u32>[{built_in impl MetaSized for u32}], impl_Hash_for_u32, impl_Eq_for_u32](move _3, move _4)
+    _2 = std::collections::hash::map::{HashMap<K, V, S, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::get<'30, '31, u32, u32, RandomState, Global, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, impl_Eq_for_u32, impl_Hash_for_u32, impl_BuildHasher_for_RandomState, {built_in impl MetaSized for u32}, impl_Borrow_for_T<u32>[{built_in impl MetaSized for u32}], impl_Hash_for_u32, impl_Eq_for_u32](move _3, move _4)
     ↳⚡ storage_dead(_15)
         storage_dead(_14)
         storage_dead(map)
@@ -341,7 +340,7 @@ pub fn get_or_insert<'_0>(map: &'_0 mut HashMap<u32, u32, RandomState, Global>[{
     _14 = move _17
     _13 = &(*_14)
     _12 = &(*_13)
-    _10 = index<'35, '37, u32, u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl MetaSized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, impl_Eq_for_u32, impl_Hash_for_u32, impl_Borrow_for_T<u32>[{built_in impl MetaSized for u32}], impl_Eq_for_u32, impl_Hash_for_u32, impl_BuildHasher_for_RandomState](move _11, move _12)
+    _10 = impl_Index_for_HashMap::index<'35, '37, u32, u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl MetaSized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}, impl_Eq_for_u32, impl_Hash_for_u32, impl_Borrow_for_T<u32>[{built_in impl MetaSized for u32}], impl_Eq_for_u32, impl_Hash_for_u32, impl_BuildHasher_for_RandomState](move _11, move _12)
     ↳⚡ storage_dead(_15)
         storage_dead(_14)
         storage_dead(map)

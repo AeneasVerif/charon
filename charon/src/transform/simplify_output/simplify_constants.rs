@@ -171,7 +171,8 @@ impl UllbcPass for Transform {
                 block.dyn_visit_in_body_mut(|rvalue: &mut Rvalue| {
                     take_mut::take(rvalue, |rvalue| match rvalue {
                         Rvalue::Aggregate(AggregateKind::Array(ty, len), ref fields)
-                            if fields.len() >= 2
+                            if !ctx.options.ops_to_function_calls
+                                && fields.len() >= 2
                                 && fields.iter().all(|x| x.is_const())
                                 && let Ok(op) = fields.iter().dedup().exactly_one() =>
                         {

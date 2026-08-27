@@ -14,6 +14,23 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::array::repeat
+pub fn repeat<T, const N : usize>(_1: T) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+= <opaque>
+
 struct () {}
 
 struct (_, _)<A, B>
@@ -22,6 +39,10 @@ where
 {
   _0: A,
   _1: B,
+}
+
+struct str {
+  _0: [u8],
 }
 
 // Full name: test_crate::SLICE
@@ -33,7 +54,7 @@ fn SLICE() -> [(); 4usize]
     storage_live(_0)
     storage_live(_1)
     _1 = ()
-    _0 = @ArrayRepeat<(), 4usize>(move _1)
+    _0 = repeat<(), 4usize>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](move _1)
     ↳⚡ undefined_behavior
     storage_dead(_1)
     return
@@ -65,7 +86,7 @@ fn BAR() -> [(); 42usize]
     storage_live(_0)
     storage_live(_1)
     _1 = ()
-    _0 = @ArrayRepeat<(), 42usize>(move _1)
+    _0 = repeat<(), 42usize>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](move _1)
     ↳⚡ undefined_behavior
     storage_dead(_1)
     return

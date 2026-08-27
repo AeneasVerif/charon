@@ -24,6 +24,10 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::Trait
 pub trait Trait<Self, Self_Type>
 {
@@ -74,8 +78,7 @@ where
     non-dyn-compatible
 }
 
-// Full name: test_crate::{HashMap<S>[TraitClause0]}::get
-pub fn get<S, Q, Clause2_Type>(_x: HashMap<S>[TraitClause0], _k: Q)
+pub fn test_crate::{HashMap<S>[TraitClause0]}::get<S, Q, Clause2_Type>(_x: HashMap<S>[TraitClause0], _k: Q)
 where
     TraitClause0: (S: Sized),
     TraitClause1: (Q: Sized),
@@ -179,7 +182,7 @@ pub fn test2(map: HashMap<()>[{built_in impl Sized for ()}])
     _3 = move map
     storage_live(_4)
     _4 = ()
-    _2 = get<(), (), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, impl_Trait_for_unit](move _3, move _4)
+    _2 = test_crate::{HashMap<S>[TraitClause0]}::get<(), (), ()>[{built_in impl Sized for ()}, {built_in impl Sized for ()}, impl_Trait_for_unit](move _3, move _4)
     ↳⚡ storage_dead(map)
         unwind_continue
     storage_dead(_4)

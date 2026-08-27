@@ -16,6 +16,10 @@ pub trait Sized<Self>
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::Trait1
 pub trait Trait1<Self>
 {

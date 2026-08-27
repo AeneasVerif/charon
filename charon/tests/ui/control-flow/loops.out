@@ -14,6 +14,13 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::array::{[T; N]}::as_slice
+pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
 // Full name: core::clone::Clone
 #[lang_item(Clone)]
 #[diagnostic_item("Clone")]
@@ -365,27 +372,27 @@ where
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked_mut
 #[track_caller]
-pub unsafe fn get_unchecked_mut<T>(_1: usize, _2: *mut [T]) -> *mut T
+pub unsafe fn impl_SliceIndex_slice_for_usize::get_unchecked_mut<T>(_1: usize, _2: *mut [T]) -> *mut T
 where
     TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked
 #[track_caller]
-pub unsafe fn get_unchecked<T>(_1: usize, _2: *const [T]) -> *const T
+pub unsafe fn impl_SliceIndex_slice_for_usize::get_unchecked<T>(_1: usize, _2: *const [T]) -> *const T
 where
     TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_mut
-pub fn get_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> Option<&'_0 mut T>[{built_in impl Sized for &'_0 mut T}]
+pub fn impl_SliceIndex_slice_for_usize::get_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> Option<&'_0 mut T>[{built_in impl Sized for &'_0 mut T}]
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get
-pub fn get<'_0, T>(_1: usize, _2: &'_0 [T]) -> Option<&'_0 T>[{built_in impl Sized for &'_0 T}]
+pub fn impl_SliceIndex_slice_for_usize::get<'_0, T>(_1: usize, _2: &'_0 [T]) -> Option<&'_0 T>[{built_in impl Sized for &'_0 T}]
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,
@@ -400,10 +407,10 @@ where
     proof ImpliedClause1: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
     proof ImpliedClause2: (T: MetaSized) = TraitClause0::ImpliedClause0
     type Output = T
-    fn get<'_0_1> = get<'_0_1, T>[TraitClause0]
-    fn get_mut<'_0_1> = get_mut<'_0_1, T>[TraitClause0]
-    fn get_unchecked = get_unchecked<T>[TraitClause0]
-    fn get_unchecked_mut = get_unchecked_mut<T>[TraitClause0]
+    fn get<'_0_1> = impl_SliceIndex_slice_for_usize::get<'_0_1, T>[TraitClause0]
+    fn get_mut<'_0_1> = impl_SliceIndex_slice_for_usize::get_mut<'_0_1, T>[TraitClause0]
+    fn get_unchecked = impl_SliceIndex_slice_for_usize::get_unchecked<T>[TraitClause0]
+    fn get_unchecked_mut = impl_SliceIndex_slice_for_usize::get_unchecked_mut<T>[TraitClause0]
     fn index<'_0_1> = impl_SliceIndex_slice_for_usize::index<'_0_1, T>[TraitClause0]
     fn index_mut<'_0_1> = impl_SliceIndex_slice_for_usize::index_mut<'_0_1, T>[TraitClause0]
     vtable: impl_SliceIndex_slice_for_usize::{vtable}<T>[TraitClause0]
@@ -453,6 +460,10 @@ struct () {}
 
 struct (_,)<A> {
   _0: A,
+}
+
+struct str {
+  _0: [u8],
 }
 
 // Full name: test_crate::test_loop1
@@ -1569,7 +1580,8 @@ pub fn sum_array<const N : usize>(a: [u32; N]) -> u32
     let _8: u32; // anonymous local
     let _9: usize; // anonymous local
     let _10: &'_ [u32; N]; // anonymous local
-    let _11: &'_ u32; // anonymous local
+    let _11: &'_ [u32]; // anonymous local
+    let _12: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_8)
@@ -1594,9 +1606,12 @@ pub fn sum_array<const N : usize>(a: [u32; N]) -> u32
             storage_live(_10)
             _10 = &a
             storage_live(_11)
-            _11 = @ArrayIndexShared<'_, u32, N>(move _10, copy _7)
+            _11 = as_slice<'_, u32, N>[UNKNOWN(missing proof for builtin operation)](move _10)
             ↳⚡ undefined_behavior
-            _6 = copy (*_11)
+            storage_live(_12)
+            _12 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _7, move _11)
+            ↳⚡ undefined_behavior
+            _6 = copy (*_12)
             _8 = copy s panic.+ copy _6
             s = move _8
             storage_dead(_6)
@@ -1617,6 +1632,7 @@ pub fn sum_array<const N : usize>(a: [u32; N]) -> u32
     storage_dead(_9)
     storage_dead(_8)
     storage_dead(a)
+    storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
     return

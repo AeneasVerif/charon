@@ -2,6 +2,10 @@
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::my_panic
 fn my_panic(_x: u32) -> !
 {

@@ -81,6 +81,10 @@ where
   _1: B,
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::apply_to
 fn apply_to<'_0, T0>(f: &'_0 T0) -> u8
 where

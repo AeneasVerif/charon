@@ -115,6 +115,10 @@ where
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: type_alias::Usize
 pub type Usize = usize
 

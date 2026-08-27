@@ -156,7 +156,7 @@ pub struct FunDeclRef {
     pub generics: BoxedArgs,
 }
 
-/// A regular or builtin function.
+/// A regular function.
 #[derive(
     Debug,
     Clone,
@@ -180,87 +180,6 @@ pub enum FunId {
     /// A "regular" function (function local to the crate, external function
     /// not treated as a primitive one).
     Regular(FunDeclId),
-    /// A primitive function, coming from a standard library (for instance:
-    /// `alloc::boxed::Box::new`).
-    /// TODO: rename to "Primitive"
-    #[cfg_attr(feature = "charon_on_charon", charon::rename("FBuiltin"))]
-    Builtin(BuiltinFunId),
-}
-
-/// A built-in function, representing a specific built-in function that's part of the LLBC semantics.
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
-pub enum BuiltinFunId {
-    /// Cast `&[T; N]` to `&[T]`.
-    ///
-    /// This is used instead of unsizing coercions when `--ops-to-function-calls` is set.
-    ArrayToSliceShared,
-    /// Cast `&mut [T; N]` to `&mut [T]`.
-    ///
-    /// This is used instead of unsizing coercions when `--ops-to-function-calls` is set.
-    ArrayToSliceMut,
-    /// `repeat(n, x)` returns an array where `x` has been replicated `n` times.
-    ///
-    /// This is used instead of `Rvalue::ArrayRepeat` when `--ops-to-function-calls` is set.
-    ArrayRepeat,
-    /// A built-in funciton introduced instead of array/slice place indexing when
-    /// `--index-to-function-calls` is set. The signature depends on the parameters. It could look
-    /// like:
-    /// - `fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T`
-    /// - `fn SliceIndexShared<T>(&[T], usize) -> &T`
-    /// - `fn ArraySubSliceShared<T,N>(&[T;N], usize, usize) -> &[T]`
-    /// - `fn SliceSubSliceMut<T>(&mut [T], usize, usize) -> &mut [T]`
-    /// - etc
-    Index(BuiltinIndexOp),
-    /// Build a raw pointer, from a data pointer and metadata. The metadata can be unit, if
-    /// building a thin pointer.
-    ///
-    /// This is used instead of `AggregateKind::RawPtr` when `--ops-to-function-calls` is set.
-    PtrFromParts(RefKind),
-}
-
-/// One of 8 built-in indexing operations.
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
-pub struct BuiltinIndexOp {
-    /// Whether this is a slice or array.
-    pub is_array: bool,
-    /// Whether we're indexing mutably or not. Determines the type ofreference of the input and
-    /// output.
-    pub mutability: RefKind,
-    /// Whether we're indexing a single element or a subrange. If `true`, the function takes
-    /// two indices and the output is a slice; otherwise, the function take one index and the
-    /// output is a reference to a single element.
-    pub is_range: bool,
 }
 
 #[derive(
@@ -431,17 +350,9 @@ impl FnPtr {
                 .item_name(fun_id)
                 .mono_args()
                 .unwrap_or(&self.generics),
-            //  We don't mono builtins.
-            FnPtrKind::Fun(FunId::Builtin(..)) => &self.generics,
             // Can't happen in mono mode.
             FnPtrKind::Trait(..) => &self.generics,
         }
-    }
-}
-
-impl FnPtrKind {
-    pub fn mk_builtin(aid: BuiltinFunId) -> Self {
-        Self::Fun(FunId::Builtin(aid))
     }
 }
 
@@ -558,11 +469,6 @@ impl TryFrom<ItemId> for FunId {
 impl From<FunDeclId> for FunId {
     fn from(id: FunDeclId) -> Self {
         Self::Regular(id)
-    }
-}
-impl From<BuiltinFunId> for FunId {
-    fn from(id: BuiltinFunId) -> Self {
-        Self::Builtin(id)
     }
 }
 impl From<FunDeclId> for FnPtrKind {

@@ -7,6 +7,10 @@ pub trait MetaSized<Self>
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::module2::do_translate
 #[verify::start_from]
 fn do_translate()

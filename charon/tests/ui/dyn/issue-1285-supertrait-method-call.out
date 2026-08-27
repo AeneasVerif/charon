@@ -7,6 +7,12 @@ opaque type core::marker::MetaSized::{vtable}
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
+struct () {}
+
+struct str {
+  _0: [u8],
+}
+
 struct test_crate::Supertrait::{vtable} {
   size: usize,
   align: usize,

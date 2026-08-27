@@ -2,6 +2,10 @@
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 struct test_crate::main::AssertIsAsBytes {}
 
 struct test_crate::main::AssertIsAsBytes#1 {}

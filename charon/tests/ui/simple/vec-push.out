@@ -302,6 +302,10 @@ where
     return
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::vec
 fn vec<'_0>(x: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl Sized for Global}])
 {

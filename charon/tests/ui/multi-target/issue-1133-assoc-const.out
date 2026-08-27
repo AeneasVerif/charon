@@ -1,3 +1,33 @@
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait core::marker::MetaSized<Self>
+
+#[fundamental]
+#[lang_item(Sized)]
+pub trait core::marker::Sized<Self>
+{
+    proof ImpliedClause0: (Self: core::marker::MetaSized)
+    non-dyn-compatible
+}
+
+pub fn core::array::{[T; N]}::as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
+where
+    TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
+where
+    TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+struct () {}
+
+struct str {
+  _0: [u8],
+}
+
 pub struct test_crate::Foo::x86_64-pc-windows-msvc {
   x: u64,
 }
@@ -24,7 +54,8 @@ pub fn test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::x86_64
     let _2: [u32; 4usize]; // anonymous local
     let _3: usize; // anonymous local
     let _4: &'_ [u32; 4usize]; // anonymous local
-    let _5: &'_ u32; // anonymous local
+    let _5: &'_ [u32]; // anonymous local
+    let _6: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -35,12 +66,16 @@ pub fn test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::x86_64
     storage_live(_4)
     _4 = &_2
     storage_live(_5)
-    _5 = @ArrayIndexShared<'_, u32, 4usize>(move _4, copy _3)
+    _5 = core::array::{[T; N]}::as_slice<'_, u32, 4usize>[UNKNOWN(missing proof for builtin operation)](move _4)
     ↳⚡ undefined_behavior
-    _0 = copy (*_5)
+    storage_live(_6)
+    _6 = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _3, move _5)
+    ↳⚡ undefined_behavior
+    _0 = copy (*_6)
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(self)
+    storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
     return
@@ -64,7 +99,8 @@ pub fn test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::i686-u
     let _2: [u32; 4usize]; // anonymous local
     let _3: usize; // anonymous local
     let _4: &'_ [u32; 4usize]; // anonymous local
-    let _5: &'_ u32; // anonymous local
+    let _5: &'_ [u32]; // anonymous local
+    let _6: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -75,12 +111,16 @@ pub fn test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::i686-u
     storage_live(_4)
     _4 = &_2
     storage_live(_5)
-    _5 = @ArrayIndexShared<'_, u32, 4usize>(move _4, copy _3)
+    _5 = core::array::{[T; N]}::as_slice<'_, u32, 4usize>[UNKNOWN(missing proof for builtin operation)](move _4)
     ↳⚡ undefined_behavior
-    _0 = copy (*_5)
+    storage_live(_6)
+    _6 = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _3, move _5)
+    ↳⚡ undefined_behavior
+    _0 = copy (*_6)
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(self)
+    storage_dead(_6)
     storage_dead(_5)
     storage_dead(_4)
     return

@@ -1,3 +1,9 @@
+struct () {}
+
+struct str {
+  _0: [u8],
+}
+
 pub struct test_crate::Inner {
   x: u32,
 }

@@ -16,6 +16,10 @@ pub trait Sized<Self>
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 struct (_, _)<A, B>
 where
     TraitClause0: (A: Sized),

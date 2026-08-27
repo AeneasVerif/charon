@@ -118,6 +118,10 @@ struct (_,)<A> {
   _0: A,
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: (_, _)::{impl Destruct for (A, B)}::drop_glue
 unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A, B>(_1: &'_0 mut (A, B))
 where
@@ -1673,8 +1677,7 @@ pub fn flibidi()
     return
 }
 
-// Full name: test_crate::assoc_ty_trait_ref::SliceIndex
-trait SliceIndex<Self>
+trait test_crate::assoc_ty_trait_ref::SliceIndex<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self::Output: Sized)
@@ -1682,11 +1685,10 @@ trait SliceIndex<Self>
     vtable: test_crate::assoc_ty_trait_ref::SliceIndex::{vtable}<Self::Output>
 }
 
-// Full name: test_crate::assoc_ty_trait_ref::index
-fn index<I>() -> TraitClause1::Output
+fn test_crate::assoc_ty_trait_ref::index<I>() -> TraitClause1::Output
 where
     TraitClause0: (I: Sized),
-    TraitClause1: (I: SliceIndex),
+    TraitClause1: (I: test_crate::assoc_ty_trait_ref::SliceIndex),
 {
     let _0: TraitClause1::Output; // return
 

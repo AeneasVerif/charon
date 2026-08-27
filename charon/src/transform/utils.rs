@@ -56,7 +56,6 @@ impl FunId {
     pub fn generics_target(&self) -> GenericsSource {
         match *self {
             FunId::Regular(fun_id) => GenericsSource::item(fun_id),
-            FunId::Builtin(..) => GenericsSource::Builtin,
         }
     }
 }

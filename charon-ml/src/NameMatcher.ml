@@ -702,29 +702,9 @@ and match_expr_with_const_generic (ctx : ctx) (c : match_config) (m : maps)
       match_name ctx c pat d.item_meta.name
   | _ -> false
 
-let builtin_fun_id_to_string (fid : T.builtin_fun_id) : string =
-  match fid with
-  | ArrayToSliceShared -> "ArrayToSliceShared"
-  | ArrayToSliceMut -> "ArrayToSliceMut"
-  | ArrayRepeat -> "ArrayRepeat"
-  | Index { is_array; mutability; is_range } ->
-      let ty = if is_array then "Array" else "Slice" in
-      let op = if is_range then "SubSlice" else "Index" in
-      let mutability = Print.ref_kind_to_string mutability in
-      ty ^ op ^ mutability
-  | PtrFromParts mut ->
-      let mut = if mut = RMut then "_mut" else "" in
-      "std::ptr::from_raw_parts" ^ mut
-
 let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : T.fn_ptr)
     : bool =
   match func.kind with
-  | FunId (FBuiltin fid) ->
-      let to_name (s : string list) : T.name =
-        List.map (fun s -> T.PeIdent (s, T.Disambiguator.of_int 0)) s
-      in
-      let name = builtin_fun_id_to_string fid in
-      match_name_with_generics ctx c p (to_name [ name ]) func.generics
   | FunId (FRegular fid) ->
       (* Lookup the function decl *)
       let d = Types.FunDeclId.Map.find fid ctx.crate.fun_decls in
@@ -1160,9 +1140,6 @@ let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
   let args = generic_args_to_pattern ctx c m func.generics in
   let pat =
     match func.kind with
-    | FunId (FBuiltin fid) ->
-        let fid = builtin_fun_id_to_string fid in
-        [ PIdent (fid, 0, args) ]
     | FunId (FRegular fid) ->
         let d = Types.FunDeclId.Map.find fid ctx.crate.fun_decls in
         name_with_generics_to_pattern_aux ctx c m d.item_meta.name func.generics

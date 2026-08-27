@@ -29,10 +29,6 @@ unsafe fn impl_Destruct_for_slice::drop_glue::<String><'_0>(_1: &'_0 mut [String
     let _5: bool; // anonymous local
     let _6: *mut String; // anonymous local
     let _7: bool; // anonymous local
-    let _8: &'_ mut [String]; // anonymous local
-    let _9: &'_ mut String; // anonymous local
-    let _10: &'_ mut [String]; // anonymous local
-    let _11: &'_ mut String; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -49,12 +45,7 @@ unsafe fn impl_Destruct_for_slice::drop_glue::<String><'_0>(_1: &'_0 mut [String
         if move _7 {
             break 0
         } else {
-            storage_live(_10)
-            _10 = &mut (*_1) with_metadata(copy _1.metadata)
-            storage_live(_11)
-            _11 = @SliceIndexMut<'_, String>(move _10, copy _3)
-            ↳⚡ undefined_behavior
-            _6 = &raw mut (*_11)
+            _6 = &raw mut (*_1)[copy _3]
             _3 = move _3 wrap.+ const 1usize
             drop[impl_Destruct_for_String::drop_glue<'2>] (*_6)
             ↳⚡ loop {
@@ -62,12 +53,7 @@ unsafe fn impl_Destruct_for_slice::drop_glue::<String><'_0>(_1: &'_0 mut [String
                     if move _5 {
                         break 0
                     } else {
-                        storage_live(_8)
-                        _8 = &mut (*_1) with_metadata(copy _1.metadata)
-                        storage_live(_9)
-                        _9 = @SliceIndexMut<'_, String>(move _8, copy _3)
-                        ↳⚡ undefined_behavior
-                        _4 = &raw mut (*_9)
+                        _4 = &raw mut (*_1)[copy _3]
                         _3 = move _3 wrap.+ const 1usize
                         drop[impl_Destruct_for_String::drop_glue<'3>] (*_4)
                         ↳⚡ storage_dead(_7)
@@ -77,10 +63,6 @@ unsafe fn impl_Destruct_for_slice::drop_glue::<String><'_0>(_1: &'_0 mut [String
                             storage_dead(_3)
                             storage_dead(_2)
                             storage_dead(_1)
-                            storage_dead(_11)
-                            storage_dead(_10)
-                            storage_dead(_9)
-                            storage_dead(_8)
                             unwind_terminate
                         continue 0
                     }
@@ -103,10 +85,6 @@ unsafe fn impl_Destruct_for_slice::drop_glue::<String><'_0>(_1: &'_0 mut [String
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(_1)
-    storage_dead(_11)
-    storage_dead(_10)
-    storage_dead(_9)
-    storage_dead(_8)
     return
 }
 
@@ -144,8 +122,7 @@ unsafe fn impl_Destruct_for_array::drop_glue::<String, 4usize><'_0>(_1: &'_0 mut
     storage_live(_0)
     storage_live(_2)
     _0 = ()
-    _2 = @ArrayToSliceMut<'_, String, 4usize>(move _1)
-    ↳⚡ undefined_behavior
+    _2 = unsize_cast<&'1 mut [String; 4usize], &'4 mut [String], 4usize>(move _1)
     _0 = core::ptr::drop_glue::<[String]><'6>(move _2)
     ↳⚡ storage_dead(_2)
         storage_dead(_1)

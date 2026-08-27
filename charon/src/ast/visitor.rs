@@ -62,7 +62,7 @@ use derive_generic_visitor::*;
     ),
     // Types that we unconditionally explore.
     drive(
-        Assert, AttributeKind, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAssertKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy,
+        Assert, AttributeKind, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAssertKind, BuiltinTy,
         Call, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Deprecation, Disambiguator, DynPredicate, Field, FieldId, File, FloatTy, FloatValue,
         FnOperand, FunId, FnPtrKind, FunSig, InlineAttr, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
@@ -615,7 +615,7 @@ mod wrappers {
                 FnPtrKind::Fun(FunId::Regular(id)) => {
                     self.0.visit_item_ref(ItemId::Fun(*id), &x.generics)
                 }
-                FnPtrKind::Fun(FunId::Builtin(_)) | FnPtrKind::Trait(..) => self.visit_inner(x),
+                FnPtrKind::Trait(..) => self.visit_inner(x),
             }
         }
     }
@@ -648,7 +648,7 @@ mod wrappers {
                 FnPtrKind::Fun(FunId::Regular(id)) => {
                     self.0.visit_item_ref(ItemId::Fun(*id), &mut x.generics)
                 }
-                FnPtrKind::Fun(FunId::Builtin(_)) | FnPtrKind::Trait(..) => self.visit_inner(x),
+                FnPtrKind::Trait(..) => self.visit_inner(x),
             }
         }
     }

@@ -14,6 +14,29 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::array::repeat
+pub fn repeat<T, const N : usize>(_1: T) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+= <opaque>
+
+struct () {}
+
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::Foo
 pub trait Foo<Self>
 {
@@ -32,7 +55,7 @@ where
     let _0: [u8; N]; // return
 
     storage_live(_0)
-    _0 = @ArrayRepeat<u8, N>(const 0u8)
+    _0 = repeat<u8, N>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](const 0u8)
     ↳⚡ undefined_behavior
     return
 }
@@ -46,7 +69,7 @@ pub fn impl_Foo_for_S::bar<const N : usize>() -> [u8; N]
     let _0: [u8; N]; // return
 
     storage_live(_0)
-    _0 = @ArrayRepeat<u8, N>(const 0u8)
+    _0 = repeat<u8, N>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](const 0u8)
     ↳⚡ undefined_behavior
     return
 }

@@ -1,5 +1,11 @@
 # Final LLBC before serialization:
 
+struct () {}
+
+struct str {
+  _0: [u8],
+}
+
 unsafe extern "C" fn test_crate::same_name(_1: i32) -> i32
 = <extern:same_name>
 

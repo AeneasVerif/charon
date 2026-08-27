@@ -4,6 +4,10 @@ pub trait core::marker::MetaSized<Self>
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 trait test_crate::Trait<Self>
 {
     proof ImpliedClause0: (Self: core::marker::MetaSized)

@@ -84,6 +84,10 @@ where
   _1: B,
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: (_, _)::{impl Destruct for (A, B)}::drop_glue
 unsafe fn drop_glue<'_0, A, B>(_1: &'_0 mut (A, B))
 where

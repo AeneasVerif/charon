@@ -21,6 +21,10 @@ pub trait core::clone::Clone<Self>
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 pub struct test_crate::Foo {}
 
 pub fn test_crate::{impl core::clone::Clone for test_crate::Foo}::clone<'_0>(self: &'_0 test_crate::Foo) -> test_crate::Foo

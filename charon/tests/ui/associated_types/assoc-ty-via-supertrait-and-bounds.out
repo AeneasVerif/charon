@@ -16,6 +16,10 @@ pub trait Sized<Self>
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::HasOutput
 pub trait HasOutput<Self, Self_Output>
 {

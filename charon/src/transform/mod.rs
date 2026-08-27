@@ -212,8 +212,9 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         let pass = Pass::FusedStructuredBody(Box::new([
             // Cleanup the cfg.
             CowBox::Borrowed(&control_flow::prettify_cfg::Transform),
-            // Replace some operations and array/slice indexing with function calls.
-            CowBox::Borrowed(&simplify_output::builtins_to_function_calls::Transform),
+            // Replace some operations and array/slice indexing with standard library function
+            // calls.
+            simplify_output::builtins_to_function_calls::Transform::new(ctx),
         ]));
         ctx.run_pass(pass);
     }

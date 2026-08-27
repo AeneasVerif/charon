@@ -32,6 +32,10 @@ where
     TraitClause1: (u64: Destruct),
 = <opaque>
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::main
 fn main()
 {

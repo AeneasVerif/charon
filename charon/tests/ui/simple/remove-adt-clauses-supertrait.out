@@ -46,6 +46,10 @@ pub trait FnOnce<Self, Args, Self_Output>
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self_Output>
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::GrandParent
 trait GrandParent<Self>
 {

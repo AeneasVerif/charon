@@ -60,6 +60,10 @@ pub trait FnMut<Self, Args>
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::Rng
 struct Rng {}
 

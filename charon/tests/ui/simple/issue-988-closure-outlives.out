@@ -73,8 +73,19 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index
+pub fn impl_SliceIndex_slice_for_usize::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
 struct (_,)<A> {
   _0: A,
+}
+
+struct str {
+  _0: [u8],
 }
 
 // Full name: test_crate::call_fn_shared::closure
@@ -103,7 +114,7 @@ where
     storage_live(_5)
     _5 = &(*(*_1)._0) with_metadata(copy (*_1)._0.metadata)
     storage_live(_6)
-    _6 = @SliceIndexShared<'_, u8>(move _5, copy _4)
+    _6 = impl_SliceIndex_slice_for_usize::index<'_, u8>[UNKNOWN(missing proof for builtin operation)](copy _4, move _5)
     ↳⚡ undefined_behavior
     _0 = copy (*_6)
     storage_dead(_4)

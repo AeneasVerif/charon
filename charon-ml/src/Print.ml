@@ -133,6 +133,9 @@ let type_decl_ref_to_string env tref =
 let fun_decl_id_to_string env id =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_fun_decl_id env fmt id)
 
+let fun_id_to_string env id =
+  PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_fun_id env fmt id)
+
 let fun_decl_ref_to_string env fn =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_fun_decl_ref env fmt fn)
 
@@ -166,12 +169,6 @@ let const_aggregate_to_string env tref opt_variant_id fields =
 
 let constant_expr_to_string env cv =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_constant_expr env fmt cv)
-
-let builtin_fun_id_to_string aid =
-  PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_builtin_fun_id fmt aid)
-
-let fun_id_to_string env fid =
-  PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_fun_id env fmt fid)
 
 let fn_ptr_kind_to_string env kind =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_fn_ptr_kind env fmt kind)

@@ -199,41 +199,6 @@ and binder_kind =
   | BKDyn  (** Binder used for [dyn Trait] existential predicates. *)
   | BKOther  (** Some other use of a binder outside the main Charon ast. *)
 
-(** A built-in function, representing a specific built-in function that's part
-    of the LLBC semantics. *)
-and builtin_fun_id =
-  | ArrayToSliceShared
-      (** Cast [&[T; N]] to [&[T]].
-
-          This is used instead of unsizing coercions when
-          [--ops-to-function-calls] is set. *)
-  | ArrayToSliceMut
-      (** Cast [&mut [T; N]] to [&mut [T]].
-
-          This is used instead of unsizing coercions when
-          [--ops-to-function-calls] is set. *)
-  | ArrayRepeat
-      (** [repeat(n, x)] returns an array where [x] has been replicated [n]
-          times.
-
-          This is used instead of [Rvalue::ArrayRepeat] when
-          [--ops-to-function-calls] is set. *)
-  | Index of builtin_index_op
-      (** A built-in funciton introduced instead of array/slice place indexing
-          when [--index-to-function-calls] is set. The signature depends on the
-          parameters. It could look like:
-          - [fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T]
-          - [fn SliceIndexShared<T>(&[T], usize) -> &T]
-          - [fn ArraySubSliceShared<T,N>(&[T;N], usize, usize) -> &[T]]
-          - [fn SliceSubSliceMut<T>(&mut [T], usize, usize) -> &mut [T]]
-          - etc *)
-  | PtrFromParts of ref_kind
-      (** Build a raw pointer, from a data pointer and metadata. The metadata
-          can be unit, if building a thin pointer.
-
-          This is used instead of [AggregateKind::RawPtr] when
-          [--ops-to-function-calls] is set. *)
-
 (** Describes a built-in impl. Mostly lists the implemented trait, sometimes
     with more details about the contents of the implementation. *)
 and builtin_impl_data =
@@ -271,19 +236,6 @@ and builtin_impl_data =
           trait clause from a type declaration. References to the removed clause
           are rewritten as
           [BuiltinOrAuto { builtin_data: RemovedAdtClause, .. }]. *)
-
-(** One of 8 built-in indexing operations. *)
-and builtin_index_op = {
-  is_array : bool;  (** Whether this is a slice or array. *)
-  mutability : ref_kind;
-      (** Whether we're indexing mutably or not. Determines the type ofreference
-          of the input and output. *)
-  is_range : bool;
-      (** Whether we're indexing a single element or a subrange. If [true], the
-          function takes two indices and the output is a slice; otherwise, the
-          function take one index and the output is a reference to a single
-          element. *)
-}
 
 (** Builtin types identifiers.
 
@@ -433,14 +385,11 @@ and fun_decl_ref = {
   generics : generic_args;  (** Generic arguments passed to the function. *)
 }
 
-(** A regular or builtin function. *)
+(** A regular function. *)
 and fun_id =
   | FRegular of fun_decl_id
       (** A "regular" function (function local to the crate, external function
           not treated as a primitive one). *)
-  | FBuiltin of builtin_fun_id
-      (** A primitive function, coming from a standard library (for instance:
-          [alloc::boxed::Box::new]). TODO: rename to "Primitive" *)
 
 (** A function signature. *)
 and fun_sig = {

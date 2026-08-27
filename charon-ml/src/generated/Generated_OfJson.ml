@@ -315,21 +315,6 @@ and builtin_assert_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `String "ResumedAfterDrop" -> Ok ResumedAfterDrop
     | _ -> Error "")
 
-and builtin_fun_id_of_json (ctx : of_json_ctx) (js : json) :
-    (builtin_fun_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "ArrayToSliceShared" -> Ok ArrayToSliceShared
-    | `String "ArrayToSliceMut" -> Ok ArrayToSliceMut
-    | `String "ArrayRepeat" -> Ok ArrayRepeat
-    | `Assoc [ ("Index", _0) ] ->
-        let* _0 = builtin_index_op_of_json ctx _0 in
-        Ok (Index _0)
-    | `Assoc [ ("PtrFromParts", _0) ] ->
-        let* _0 = ref_kind_of_json ctx _0 in
-        Ok (PtrFromParts _0)
-    | _ -> Error "")
-
 and builtin_impl_data_of_json (ctx : of_json_ctx) (js : json) :
     (builtin_impl_data, string) result =
   combine_error_msgs js __FUNCTION__
@@ -358,22 +343,6 @@ and builtin_impl_data_of_json (ctx : of_json_ctx) (js : json) :
     | `String "NoopDestruct" -> Ok BuiltinNoopDestruct
     | `String "UntrackedDestruct" -> Ok BuiltinUntrackedDestruct
     | `String "RemovedAdtClause" -> Ok BuiltinRemovedAdtClause
-    | _ -> Error "")
-
-and builtin_index_op_of_json (ctx : of_json_ctx) (js : json) :
-    (builtin_index_op, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc
-        [
-          ("is_array", is_array);
-          ("mutability", mutability);
-          ("is_range", is_range);
-        ] ->
-        let* is_array = bool_of_json ctx is_array in
-        let* mutability = ref_kind_of_json ctx mutability in
-        let* is_range = bool_of_json ctx is_range in
-        Ok ({ is_array; mutability; is_range } : builtin_index_op)
     | _ -> Error "")
 
 and builtin_path_elem_of_json (ctx : of_json_ctx) (js : json) :
@@ -694,9 +663,6 @@ and fun_id_of_json (ctx : of_json_ctx) (js : json) : (fun_id, string) result =
     | `Assoc [ ("Regular", _0) ] ->
         let* _0 = fun_decl_id_of_json ctx _0 in
         Ok (FRegular _0)
-    | `Assoc [ ("Builtin", _0) ] ->
-        let* _0 = builtin_fun_id_of_json ctx _0 in
-        Ok (FBuiltin _0)
     | _ -> Error "")
 
 and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =

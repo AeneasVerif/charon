@@ -9,6 +9,10 @@ pub trait MetaSized<Self>
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 struct test_crate::Trait::{vtable} {
   size: usize,
   align: usize,

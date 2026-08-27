@@ -106,6 +106,10 @@ where
     TypeConstraint0: TraitClause2::Output = R,
 = <opaque>
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::main::closure
 struct closure {}
 

@@ -74,6 +74,10 @@ where
     TypeOutlives1: A: '_0,
 = <opaque>
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::main
 fn main()
 {

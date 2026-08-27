@@ -45,6 +45,10 @@ pub trait Copy<Self>
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::Foo
 enum Foo {
   A,
@@ -85,8 +89,7 @@ impl "impl_TrivialClone_for_Foo" TrivialClone for Foo {
     non-dyn-compatible
 }
 
-// Full name: test_crate::Ordering
-enum Ordering {
+enum test_crate::Ordering {
   Less,
   Equal,
   Greater,
@@ -103,9 +106,9 @@ fn main()
     let _5: u8; // anonymous local
     let _6: Foo; // anonymous local
     let _7: isize; // anonymous local
-    let x_8: Ordering; // local
+    let x_8: test_crate::Ordering; // local
     let _9: isize; // anonymous local
-    let _10: Ordering; // anonymous local
+    let _10: test_crate::Ordering; // anonymous local
     let _11: isize; // anonymous local
 
     storage_live(_0)
@@ -131,7 +134,7 @@ fn main()
     storage_dead(_6)
     storage_dead(_5)
     storage_live(x_8)
-    x_8 = Ordering::Greater {  }
+    x_8 = test_crate::Ordering::Greater {  }
     fake_read(x_8)
     storage_live(_9)
     storage_live(_10)
