@@ -111,41 +111,6 @@ mod intern_table {
         HashConsed(HashByAddr(arc))
     }
 
-    /// Mutate the contents in-place if possible.
-    pub fn mutate_in_place<T: HashConsable, R, F: FnOnce(&mut T) -> R>(
-        x: &mut HashConsed<T>,
-        f: F,
-    ) -> Result<R, F> {
-        let arc = &mut x.0.0;
-        // Every value has at least two pointers: the current value and the one stored in the
-        // global map. If there are exactly two, we may mutate directly by discarding the one in
-        // the global map temporarily.
-        if Arc::strong_count(arc) != 2 {
-            return Err(f);
-        }
-        {
-            // Take the write guard just long enough to drop the other `Arc` to this value.
-            let mut write_guard = INTERNED.write().unwrap();
-            if let Some((other_arc, _)) = write_guard.or_default::<T>().swap_remove_entry(&*arc) {
-                drop(other_arc);
-            } else {
-                // Nothing was removed, early return.
-                return Err(f);
-            }
-            // The Arc was removed from the map; `x` is invalid as interning the same value would
-            // result in a different pointer. NO MORE EARLY RETURN until we fix that.
-        }
-        // If we are still the sole owner, we can now mutate in-place.
-        let ret = match Arc::get_mut(arc) {
-            Some(val) => Ok(f(val)),
-            None => Err(f),
-        };
-        // Re-establish the interning invariant. If the same value was added to the map in the
-        // meantime, we'll get a pointer to that.
-        *x = HashConsed::from_arc(arc.clone());
-        ret
-    }
-
     /// Identify this value uniquely amongst values of its type. The id depends on insertion
     /// order into the interning table which makes them in principle deterministic.
     pub fn id<T: HashConsable>(x: &HashConsed<T>) -> HashConsId {
@@ -172,19 +137,16 @@ where
         intern_table::intern(inner)
     }
 
-    /// Clones if needed to get mutable access to the inner value.
+    /// Clones the value to give mutable access to it, and re-interns it if it changed.
     pub fn with_inner_mut<R>(&mut self, f: impl FnOnce(&mut T) -> R) -> R {
-        match intern_table::mutate_in_place(self, f) {
-            Ok(r) => r,
-            Err(f) => {
-                // The value is behind a shared `Arc`, we clone it in order to mutate it.
-                let mut value = self.inner().clone();
-                let ret = f(&mut value);
-                // Re-intern the new value.
-                *self = Self::new(value);
-                ret
-            }
+        let mut value = self.inner().clone();
+        let ret = f(&mut value);
+        // Most of the time nothing changed, in which case we can keep the `Arc`
+        // we have instead of interning again.
+        if &value != self.inner() {
+            *self = Self::new(value);
         }
+        ret
     }
 
     pub fn id(&self) -> HashConsId {
