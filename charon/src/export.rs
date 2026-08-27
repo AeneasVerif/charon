@@ -117,7 +117,7 @@ impl CrateData {
             return Err(());
         };
         // Write to the file.
-        let mut writer = BufWriter::new(outfile);
+        let mut writer = BufWriter::with_capacity(4 * 1024 * 1024, outfile);
         match format {
             SerializationFormat::Json => {
                 if let Err(err) = serde_json::to_writer(&mut writer, self) {
