@@ -89,9 +89,38 @@ where
     }
 }
 
-/// Arbitrary-precision numbers
-type BigUint = fraction::DynaInt<u64, fraction::BigUint>;
-type BigRational = fraction::Ratio<BigUint>;
+/// The amount of "flow" reaching a block.
+#[derive(Debug, Clone, Copy, Default)]
+struct Flow(f64);
+
+impl Ord for Flow {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.total_cmp(&other.0)
+    }
+}
+impl PartialOrd for Flow {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl PartialEq for Flow {
+    fn eq(&self, other: &Self) -> bool {
+        self.cmp(other).is_eq()
+    }
+}
+impl Eq for Flow {}
+impl std::ops::AddAssign<Flow> for Flow {
+    fn add_assign(&mut self, other: Flow) {
+        self.0 += other.0;
+    }
+}
+impl Flow {
+    const ZERO: Flow = Flow(0.);
+    const ONE: Flow = Flow(1.);
+    fn divided_by(self, n: usize) -> Flow {
+        Flow(self.0 / (n as f64))
+    }
+}
 
 /// Control-Flow Graph
 type Cfg = DiGraphMap<src::BlockId, ()>;
@@ -182,7 +211,7 @@ struct BlockData {
     /// This is exactly this problems:
     /// <https://stackoverflow.com/questions/78221666/algorithm-for-total-flow-through-weighted-directed-acyclic-graph>
     /// TODO: the way I compute this is not efficient.
-    pub flow: IndexVec<BlockId, BigRational>,
+    pub flow: IndexVec<BlockId, Flow>,
     /// Reconstructed information about loops and switches.
     pub exit_info: ExitInfo,
 }
@@ -207,7 +236,7 @@ impl CfgInfo {
         // previous one.
         let start_block = BlockId::ZERO;
 
-        let empty_flow = body.map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
+        let empty_flow = body.map_ref(|_| Flow::ZERO);
         let mut block_data: IndexVec<BlockId, _> = body.map_ref_indexed(|id, contents| {
             Box::new(BlockData {
                 id,
@@ -321,10 +350,9 @@ impl CfgInfo {
             }
 
             // Compute the flows between each pair of nodes.
-            let mut flow: IndexVec<src::BlockId, BigRational> =
-                mem::take(&mut block_data[block_id].flow);
+            let mut flow: IndexVec<src::BlockId, Flow> = mem::take(&mut block_data[block_id].flow);
             // The flow to self is 1.
-            flow[block_id] = BigRational::new(1u64.into(), 1u64.into());
+            flow[block_id] = Flow::ONE;
             // If a block has both regular and unwind targets, don't let the unwind path dilute
             // the normal-control-flow heuristic used to pick switch exits. Unwind-only subgraphs
             // still flow through their own targets.
@@ -339,11 +367,11 @@ impl CfgInfo {
             // Divide the flow from each child to a given target block by the number of children.
             // This is a sparse matrix multiplication and could be implemented using a linalg
             // library.
-            let num_children: BigUint = flow_targets.len().into();
+            let num_children = flow_targets.len();
             for child in flow_targets {
                 for grandchild in block_data[child].reachable_including_self() {
                     // Flow from `child` to `grandchild`
-                    flow[grandchild] += &block_data[child].flow[grandchild] / &num_children;
+                    flow[grandchild] += block_data[child].flow[grandchild].divided_by(num_children);
                 }
             }
             block_data[block_id].flow = flow;
