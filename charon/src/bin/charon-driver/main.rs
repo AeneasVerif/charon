@@ -50,6 +50,9 @@ extern crate charon_lib;
 mod driver;
 #[macro_use]
 pub mod hax;
+#[allow(unused)]
+#[path = "../charon/toolchain.rs"]
+mod toolchain;
 mod translate;
 
 use charon_lib::{export, logger, transform::run_transformation_passes};
