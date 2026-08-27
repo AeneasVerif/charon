@@ -54,6 +54,7 @@ pub mod export;
 pub mod name_matcher;
 pub mod options;
 pub mod pretty;
+pub mod timing;
 pub mod transform;
 pub mod utils;
 

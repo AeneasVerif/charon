@@ -18,6 +18,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         item_ref: &hax::ItemRef,
         span: Span,
     ) -> Result<Option<mir::Body<'tcx>>, Error> {
+        let _guard = charon_lib::timing::scope("get-mir");
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut *self);
         let res = panic::catch_unwind(move || this.get_mir_inner(item_ref));
