@@ -24,6 +24,20 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+// Full name: core::array::repeat
+pub fn repeat<T, const N : usize>(_1: T) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+= <opaque>
+
+// Full name: core::array::{[T; N]}::as_slice
+pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
 // Full name: core::clone::impls::{impl Clone for i32}::clone
 pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
 = <opaque>
@@ -32,23 +46,6 @@ pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
 impl "impl_Clone_for_i32" Clone for i32 {
     proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
     fn clone<'_0_1> = impl_Clone_for_i32::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for i32}
-impl "impl_Copy_for_i32" Copy for i32 {
-    proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
-    proof ImpliedClause1: (i32: Clone) = impl_Clone_for_i32
     non-dyn-compatible
 }
 
@@ -338,7 +335,7 @@ fn foo()
     storage_live(_0)
     _0 = ()
     storage_live(array)
-    array = @ArrayRepeat<i32, 2usize>[impl_Copy_for_i32](const 0i32)
+    array = repeat<i32, 2usize>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 0i32)
     ↳⚡ undefined_behavior
     fake_read(array)
     set_type(typeof(array) == [i32; 2usize])
@@ -347,7 +344,7 @@ fn foo()
     storage_live(_4)
     _4 = &array
     _3 = &(*_4)
-    _2 = @ArrayToSliceShared<'_, i32, 2usize>[{built_in impl Sized for i32}](move _3)
+    _2 = as_slice<'_, i32, 2usize>[{built_in impl Sized for i32}](move _3)
     ↳⚡ undefined_behavior
     storage_dead(_3)
     set_type(typeof(_2) <= &'46 [i32])

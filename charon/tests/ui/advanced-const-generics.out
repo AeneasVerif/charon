@@ -24,6 +24,13 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+// Full name: core::array::repeat
+pub fn repeat<T, const N : usize>(_1: T) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+= <opaque>
+
 // Full name: core::cmp::PartialEq
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
@@ -56,16 +63,6 @@ pub trait StructuralPartialEq<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     vtable: core::marker::StructuralPartialEq::{vtable}
-}
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
 }
 
 // Full name: core::marker::ConstParamTy_
@@ -260,7 +257,7 @@ fn bar<const N : usize>()
     storage_live(_1)
     storage_live(_2)
     _2 = ()
-    _1 = @ArrayRepeat<(), test_crate::bar::{const#2}<N>>[{built_in impl Copy for ()}](move _2)
+    _1 = repeat<(), test_crate::bar::{const#2}<N>>[{built_in impl Sized for ()}, {built_in impl Clone for ()}](move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
     set_type(typeof(_1) <= [(); test_crate::bar::{const#1}<N>])

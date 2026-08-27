@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: test_crate::rust_id
 pub fn rust_id(x: u32) -> u32
 {

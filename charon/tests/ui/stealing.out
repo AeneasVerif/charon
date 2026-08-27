@@ -24,15 +24,12 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
+// Full name: core::array::repeat
+pub fn repeat<T, const N : usize>(_1: T) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+= <opaque>
 
 struct () {}
 
@@ -53,7 +50,7 @@ fn SLICE() -> [(); 4usize]
     storage_live(_0)
     storage_live(_1)
     _1 = ()
-    _0 = @ArrayRepeat<(), 4usize>[{built_in impl Copy for ()}](move _1)
+    _0 = repeat<(), 4usize>[{built_in impl Sized for ()}, {built_in impl Clone for ()}](move _1)
     ↳⚡ undefined_behavior
     storage_dead(_1)
     return
@@ -85,7 +82,7 @@ fn BAR() -> [(); 42usize]
     storage_live(_0)
     storage_live(_1)
     _1 = ()
-    _0 = @ArrayRepeat<(), 42usize>[{built_in impl Copy for ()}](move _1)
+    _0 = repeat<(), 42usize>[{built_in impl Sized for ()}, {built_in impl Clone for ()}](move _1)
     ↳⚡ undefined_behavior
     storage_dead(_1)
     return

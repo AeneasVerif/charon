@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: test_crate::Positive
 pub type Positive = i32 is 1i32..=2147483647i32
 

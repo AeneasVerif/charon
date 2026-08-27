@@ -24,6 +24,13 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+// Full name: core::array::repeat
+pub fn repeat<T, const N : usize>(_1: T) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+= <opaque>
+
 // Full name: core::clone::impls::{impl Clone for u32}::clone
 pub fn clone<'_0>(_1: &'_0 u32) -> u32
 = <opaque>
@@ -163,6 +170,10 @@ impl "impl_Hash_for_unit" Hash for () {
     non-dyn-compatible
 }
 
+// Full name: core::marker::Send
+#[diagnostic_item("Send")]
+pub trait Send<Self>
+
 // Full name: core::marker::Copy
 #[lang_item(Copy)]
 #[diagnostic_item("Copy")]
@@ -172,17 +183,6 @@ pub trait Copy<Self>
     proof ImpliedClause1: (Self: Clone)
     non-dyn-compatible
 }
-
-// Full name: core::marker::{impl Copy for u32}
-impl "impl_Copy_for_u32" Copy for u32 {
-    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
-    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Send
-#[diagnostic_item("Send")]
-pub trait Send<Self>
 
 // Full name: core::marker::Sync
 #[lang_item(Sync)]
@@ -237,13 +237,13 @@ fn main()
     storage_live(_0)
     _0 = ()
     storage_live(a)
-    a = @ArrayRepeat<u32, 2usize>[impl_Copy_for_u32](const 1u32)
+    a = repeat<u32, 2usize>[{built_in impl Sized for u32}, impl_Clone_for_u32](const 1u32)
     ↳⚡ undefined_behavior
     fake_read(a)
     storage_live(_2)
     storage_live(_3)
     _3 = &raw const a
-    _2 = from_raw_parts<[u32], [u32; 2usize]>[{built_in impl Sized for [u32; 2usize]}, {impl#1}<[u32; 2usize]>[{built_in impl Pointee for [u32; 2usize] where Metadata  = ()}]](move _3, const 2usize)
+    _2 = from_raw_parts<[u32], [u32; 2usize]>[{built_in impl Sized for [u32; 2usize]}, {impl#7}<[u32; 2usize]>[{built_in impl Pointee for [u32; 2usize] where Metadata  = ()}]](move _3, const 2usize)
     ↳⚡ unwind_continue
     storage_dead(_3)
     set_type(typeof(_2) <= *const [u32])

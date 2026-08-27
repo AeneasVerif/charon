@@ -226,7 +226,7 @@ where
 
     storage_live(_0)
     _0 = ()
-    _0 = test<T, bool>[TraitClause0, {built_in impl Sized for bool}, TraitClause3, impl_Right_for_T<T, bool>[TraitClause0, {built_in impl Sized for bool}, impl_Default_for_bool, {impl#4}], impl_Default_for_bool, {impl#4}]()
+    _0 = test<T, bool>[TraitClause0, {built_in impl Sized for bool}, TraitClause3, impl_Right_for_T<T, bool>[TraitClause0, {built_in impl Sized for bool}, impl_Default_for_bool, {impl#10}], impl_Default_for_bool, {impl#10}]()
     ↳⚡ unwind_continue
     return
 }

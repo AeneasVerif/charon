@@ -20,4 +20,6 @@ pub fn core::ascii::escape_default(c: u8) -> core::ascii::EscapeDefault
     return
 }
 
+struct () {}
+
 

@@ -51,7 +51,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     storage_live(_9)
     _16 = copy args_4._0
     _9 = &(*_16)
-    _8 = new_display<'58, '60, usize>[{built_in impl Sized for usize}, {impl#3}](move _9)
+    _8 = new_display<'58, '60, usize>[{built_in impl Sized for usize}, {impl#7}](move _9)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -65,7 +65,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     storage_live(_11)
     _17 = copy args_4._1
     _11 = &(*_17)
-    _10 = new_display<'62, '64, usize>[{built_in impl Sized for usize}, {impl#3}](move _11)
+    _10 = new_display<'62, '64, usize>[{built_in impl Sized for usize}, {impl#7}](move _11)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -156,7 +156,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     storage_live(_9)
     _16 = copy args_4._0
     _9 = &(*_16)
-    _8 = new_display<'58, '60, usize>[{built_in impl Sized for usize}, {impl#3}](move _9)
+    _8 = new_display<'58, '60, usize>[{built_in impl Sized for usize}, {impl#7}](move _9)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -170,7 +170,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     storage_live(_11)
     _17 = copy args_4._1
     _11 = &(*_17)
-    _10 = new_display<'62, '64, usize>[{built_in impl Sized for usize}, {impl#3}](move _11)
+    _10 = new_display<'62, '64, usize>[{built_in impl Sized for usize}, {impl#7}](move _11)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -261,7 +261,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     storage_live(_9)
     _16 = copy args_4._0
     _9 = &(*_16)
-    _8 = new_display<'58, '60, usize>[{built_in impl Sized for usize}, {impl#3}](move _9)
+    _8 = new_display<'58, '60, usize>[{built_in impl Sized for usize}, {impl#7}](move _9)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -275,7 +275,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     storage_live(_11)
     _17 = copy args_4._1
     _11 = &(*_17)
-    _10 = new_display<'62, '64, usize>[{built_in impl Sized for usize}, {impl#3}](move _11)
+    _10 = new_display<'62, '64, usize>[{built_in impl Sized for usize}, {impl#7}](move _11)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -366,7 +366,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     storage_live(_9)
     _16 = copy args_4._0
     _9 = &(*_16)
-    _8 = new_display<'58, '60, usize>[{built_in impl Sized for usize}, {impl#3}](move _9)
+    _8 = new_display<'58, '60, usize>[{built_in impl Sized for usize}, {impl#7}](move _9)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -380,7 +380,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     storage_live(_11)
     _17 = copy args_4._1
     _11 = &(*_17)
-    _10 = new_display<'62, '64, usize>[{built_in impl Sized for usize}, {impl#3}](move _11)
+    _10 = new_display<'62, '64, usize>[{built_in impl Sized for usize}, {impl#7}](move _11)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)

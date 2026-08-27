@@ -26,6 +26,8 @@ where
     TraitClause0: (T: MetaSized),
     TraitClause1: (type_error("removed allocator parameter"): Sized),
 
+struct () {}
+
 // Full name: test_crate::test_static
 fn test_static(x: &'static u32) -> &'static u32
 {

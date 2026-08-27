@@ -6,7 +6,7 @@ struct () {}
 trait HasAssoc<Self>
 {
     type Assoc
-    vtable: {vtable}<Self::Assoc>
+    vtable: test_crate::HasAssoc::{vtable}<Self::Assoc>
 }
 
 // Full name: test_crate::Trait

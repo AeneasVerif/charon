@@ -7,6 +7,8 @@ pub fn CONSTANT() -> u8
 // Full name: foreign_constant_aux::CONSTANT
 pub const CONSTANT: u8 = CONSTANT()
 
+struct () {}
+
 // Full name: test_crate::foo
 fn foo() -> u8
 {
