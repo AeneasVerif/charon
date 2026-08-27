@@ -1588,6 +1588,20 @@ impl<C: AstFormatter> FmtWithCtx<C> for Byte {
     }
 }
 
+impl ConstantExpr {
+    fn format_as_match_pattern<'a, C: AstFormatter + 'a>(
+        &'a self,
+        ctx: &'a C,
+    ) -> impl Display + 'a {
+        std::fmt::from_fn(move |f| match self.kind() {
+            ConstantExprKind::Discriminant(type_ref, variant_id) => {
+                ctx.format_enum_variant(f, type_ref.id, *variant_id)
+            }
+            _ => self.fmt_with_ctx(ctx, f),
+        })
+    }
+}
+
 impl_display_via_ctx!(ConstantExpr);
 impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -1629,6 +1643,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
             }
             ConstantExprKind::VTableRef(trait_ref) => {
                 write!(f, "&vtable_of({})", trait_ref.with_ctx(ctx),)
+            }
+            ConstantExprKind::Discriminant(type_ref, variant_id) => {
+                write!(f, "discriminant_of(")?;
+                ctx.format_enum_variant(f, type_ref.id, *variant_id)?;
+                write!(f, ")")
             }
             ConstantExprKind::Ref(cv, meta) => {
                 if let Some(meta) = meta {
@@ -2082,8 +2101,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             StatementKind::UnwindResume => write!(f, "unwind_continue"),
             StatementKind::Break(index) => write!(f, "break {index}"),
             StatementKind::Continue(index) => write!(f, "continue {index}"),
-            StatementKind::Switch(switch) => match switch {
-                Switch::If(discr, true_st, false_st) => {
+            StatementKind::Switch { data, branches } => match &data.scrutinee {
+                SwitchScrutinee::Value(discr)
+                    if let Some((then_branch, else_branch)) = data.as_if() =>
+                {
+                    let true_st = &branches[then_branch];
+                    let false_st = &branches[else_branch];
                     let ctx = &ctx.increase_indent();
                     write!(
                         f,
@@ -2093,51 +2116,55 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                         false_st.with_ctx(ctx),
                     )
                 }
-                Switch::SwitchInt(discr, _ty, maps, otherwise) => {
+                SwitchScrutinee::Value(discr) => {
                     writeln!(f, "switch {} {{", discr.with_ctx(ctx))?;
                     let ctx1 = &ctx.increase_indent();
                     let inner_tab1 = ctx1.indent();
                     let ctx2 = &ctx1.increase_indent();
-                    for (pvl, st) in maps {
-                        // Note that there may be several pattern values
-                        let pvl = pvl.iter().format(" | ");
+                    let cases_by_branch = data.group_by_branch();
+                    for (branch_id, st) in branches.iter_enumerated() {
+                        let cases = &cases_by_branch[branch_id];
+                        let cases = if cases.is_empty() && data.fallback != Some(branch_id) {
+                            "_".to_owned()
+                        } else {
+                            cases
+                                .iter()
+                                .map(|value| value.to_string_with_ctx(ctx))
+                                .chain((data.fallback == Some(branch_id)).then_some("_".to_owned()))
+                                .format(" | ")
+                                .to_string()
+                        };
                         writeln!(
                             f,
                             "{inner_tab1}{} => {{\n{}{inner_tab1}}},",
-                            pvl,
+                            cases,
                             st.with_ctx(ctx2),
                         )?;
                     }
-                    writeln!(
-                        f,
-                        "{inner_tab1}_ => {{\n{}{inner_tab1}}},",
-                        otherwise.with_ctx(ctx2),
-                    )?;
                     write!(f, "{tab}}}")
                 }
-                Switch::Match(discr, maps, otherwise) => {
+                SwitchScrutinee::Discriminant(discr) => {
                     writeln!(f, "match {} {{", discr.with_ctx(ctx))?;
                     let ctx1 = &ctx.increase_indent();
                     let inner_tab1 = ctx1.indent();
                     let ctx2 = &ctx1.increase_indent();
-                    let discr_type = discr.ty.as_adt_id();
-                    for (cases, st) in maps {
-                        write!(f, "{inner_tab1}",)?;
-                        // Note that there may be several pattern values
-                        for (bar, v) in repeat_except_first(" | ").zip(cases.iter()) {
-                            write!(f, "{}", bar.unwrap_or_default())?;
-                            match discr_type {
-                                Some(type_id) => ctx.format_enum_variant(f, type_id, *v)?,
-                                None => write!(f, "{}", v.to_pretty_string())?,
-                            }
-                        }
-                        writeln!(f, " => {{\n{}{inner_tab1}}},", st.with_ctx(ctx2),)?;
-                    }
-                    if let Some(otherwise) = otherwise {
+                    let cases_by_branch = data.group_by_branch();
+                    for (branch_id, st) in branches.iter_enumerated() {
+                        let cases = &cases_by_branch[branch_id];
+                        let cases = if cases.is_empty() && data.fallback != Some(branch_id) {
+                            "_".to_owned()
+                        } else {
+                            cases
+                                .iter()
+                                .map(|value| value.format_as_match_pattern(ctx).to_string())
+                                .chain((data.fallback == Some(branch_id)).then_some("_".to_owned()))
+                                .format(" | ")
+                                .to_string()
+                        };
                         writeln!(
                             f,
-                            "{inner_tab1}_ => {{\n{}{inner_tab1}}},",
-                            otherwise.with_ctx(ctx2),
+                            "{inner_tab1}{cases} => {{\n{}{inner_tab1}}},",
+                            st.with_ctx(ctx2),
                         )?;
                     }
                     write!(f, "{tab}}}")
@@ -2153,6 +2180,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for SwitchScrutinee {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            SwitchScrutinee::Value(operand) => operand.fmt_with_ctx(ctx, f),
+            SwitchScrutinee::Discriminant(place) => place.fmt_with_ctx(ctx, f),
+        }
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let tab = ctx.indent();
@@ -2162,23 +2198,43 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
         write!(f, "{tab}")?;
         match &self.kind {
             TerminatorKind::Goto { target } => write!(f, "goto bb{target}"),
-            TerminatorKind::Switch { discr, targets } => match targets {
-                SwitchTargets::If(true_block, false_block) => write!(
-                    f,
-                    "if {} -> bb{} else -> bb{}",
-                    discr.with_ctx(ctx),
-                    true_block,
-                    false_block
-                ),
-                SwitchTargets::SwitchInt(_ty, maps, otherwise) => {
-                    let maps = maps
+            TerminatorKind::Switch { data, branches } => {
+                if let Some((then_branch, else_branch)) = data.as_if() {
+                    let true_block = branches[then_branch];
+                    let false_block = branches[else_branch];
+                    write!(
+                        f,
+                        "if {} -> bb{} else -> bb{}",
+                        data.scrutinee.with_ctx(ctx),
+                        true_block,
+                        false_block
+                    )
+                } else {
+                    let maps = data
+                        .branches
                         .iter()
-                        .map(|(v, bid)| format!("{}: bb{}", v, bid))
-                        .chain([format!("otherwise: bb{otherwise}")])
+                        .map(|(value, branch_id)| {
+                            format!(
+                                "{}: bb{}",
+                                value.format_as_match_pattern(ctx),
+                                branches[*branch_id]
+                            )
+                        })
+                        .chain(
+                            data.fallback
+                                .map(|branch_id| format!("otherwise: bb{}", branches[branch_id])),
+                        )
                         .format(", ");
-                    write!(f, "switch {} -> {}", discr.with_ctx(ctx), maps)
+                    match &data.scrutinee {
+                        SwitchScrutinee::Value(discr) => {
+                            write!(f, "switch {} -> {}", discr.with_ctx(ctx), maps)
+                        }
+                        SwitchScrutinee::Discriminant(place) => {
+                            write!(f, "match {} -> {}", place.with_ctx(ctx), maps)
+                        }
+                    }
                 }
-            },
+            }
             TerminatorKind::Call {
                 call,
                 target,

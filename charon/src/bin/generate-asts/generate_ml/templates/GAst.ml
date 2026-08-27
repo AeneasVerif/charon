@@ -11,12 +11,14 @@
 open Generated_Types
 open Generated_Meta
 open Generated_Expressions
+open Identifiers
 
 module FunDeclId = Expressions.FunDeclId
 module GlobalDeclId = Expressions.GlobalDeclId
 module TraitDeclId = Types.TraitDeclId
 module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
+module BranchId = IdGen ()
 
 (* Imports *)
 type builtin_fun_id = Types.builtin_fun_id [@@deriving show, ord]

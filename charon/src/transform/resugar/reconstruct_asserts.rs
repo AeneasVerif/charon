@@ -21,29 +21,28 @@ impl UllbcPass for Transform {
         let panics = b.as_abort_map();
 
         for block in b.body.iter_mut() {
-            if let TerminatorKind::Switch {
-                discr: _,
-                targets: SwitchTargets::If(bid0, bid1),
-            } = &block.terminator.kind
+            if let TerminatorKind::Switch { data, branches } = &block.terminator.kind
+                && let Some((true_id, false_id)) = data.as_if()
+                && let SwitchScrutinee::Value(discr) = data.scrutinee.clone()
             {
-                let (nbid, expected, abort) = if let Some(abort) = panics.get(bid0) {
-                    (*bid1, false, abort)
-                } else if let Some(abort) = panics.get(bid1) {
-                    (*bid0, true, abort)
+                let (true_bid, false_bid) = (branches[true_id], branches[false_id]);
+                let (nbid, expected, abort) = if let Some(abort) = panics.get(&true_bid) {
+                    (false_bid, false, abort)
+                } else if let Some(abort) = panics.get(&false_bid) {
+                    (true_bid, true, abort)
                 } else {
                     continue;
                 };
 
-                let kind = std::mem::replace(
+                let _ = std::mem::replace(
                     &mut block.terminator.kind,
                     TerminatorKind::Goto { target: nbid },
                 );
-                let (discr, _) = kind.as_switch().unwrap();
                 block.statements.push(Statement::new(
                     block.terminator.span,
                     StatementKind::Assert {
                         assert: Assert {
-                            cond: discr.clone(),
+                            cond: discr,
                             expected,
                             check_kind: None,
                         },

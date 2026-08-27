@@ -850,8 +850,8 @@ fn iter_tail_statements(block: &mut tgt::Block, f: &mut impl FnMut(&mut tgt::Sta
     else {
         return;
     };
-    if let tgt::StatementKind::Switch(switch) = &mut st.kind {
-        for block in switch.iter_targets_mut() {
+    if let tgt::StatementKind::Switch { branches, .. } = &mut st.kind {
+        for block in branches {
             iter_tail_statements(block, f);
         }
     } else {
@@ -1082,73 +1082,19 @@ impl<'a> ReconstructCtx<'a> {
                 tgt::Statement::new(src_span, st).into_block()
             }
             src::TerminatorKind::Goto { target } => self.translate_jump(terminator.span, *target),
-            src::TerminatorKind::Switch { discr, targets } => {
-                // Translate the target expressions
-                let switch = match &targets {
-                    src::SwitchTargets::If(then_tgt, else_tgt) => {
-                        let then_block = self.translate_jump(terminator.span, *then_tgt);
-                        let else_block = self.translate_jump(terminator.span, *else_tgt);
-                        tgt::Switch::If(discr.clone(), then_block, else_block)
-                    }
-                    src::SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
-                        // Note that some branches can be grouped together, like
-                        // here:
-                        // ```
-                        // match e {
-                        //   E::V1 | E::V2 => ..., // Grouped
-                        //   E::V3 => ...
-                        // }
-                        // ```
-                        // We detect this by checking if a block has already been
-                        // translated as one of the branches of the switch.
-                        //
-                        // Rk.: note there may be intermediate gotos depending
-                        // on the MIR we use. Typically, we manage to detect the
-                        // grouped branches with Optimized MIR, but not with Promoted
-                        // MIR. See the comment in "tests/src/matches.rs".
-
-                        // We link block ids to:
-                        // - vector of matched integer values
-                        // - translated blocks
-                        let mut branches: SeqHashMap<src::BlockId, (Vec<Literal>, tgt::Block)> =
-                            SeqHashMap::new();
-
-                        // Translate the children expressions
-                        for (v, bid) in targets.iter() {
-                            // Check if the block has already been translated:
-                            // if yes, it means we need to group branches
-                            if branches.contains_key(bid) {
-                                // Already translated: add the matched value to
-                                // the list of values
-                                let branch = branches.get_mut(bid).unwrap();
-                                branch.0.push(v.clone());
-                            } else {
-                                // Not translated: translate it
-                                let block = self.translate_jump(terminator.span, *bid);
-                                // We use the terminator span information in case then
-                                // then statement is `None`
-                                branches.insert(*bid, (vec![v.clone()], block));
-                            }
-                        }
-                        let targets_blocks: Vec<(Vec<Literal>, tgt::Block)> =
-                            branches.into_iter().map(|(_, x)| x).collect();
-
-                        let otherwise_block = self.translate_jump(terminator.span, *otherwise);
-
-                        // Translate
-                        tgt::Switch::SwitchInt(
-                            discr.clone(),
-                            *int_ty,
-                            targets_blocks,
-                            otherwise_block,
-                        )
-                    }
-                };
+            src::TerminatorKind::Switch { data, branches } => {
+                let branches = branches
+                    .iter()
+                    .map(|target| self.translate_jump(terminator.span, *target))
+                    .collect::<IndexVec<BranchId, _>>();
 
                 // Return
-                let span = switch.combine_targets_span();
+                let span = combine_span_iter(branches.iter().map(|branch| &branch.span));
                 let span = combine_span(&src_span, &span);
-                let st = tgt::StatementKind::Switch(switch);
+                let st = tgt::StatementKind::Switch {
+                    data: data.clone(),
+                    branches,
+                };
                 tgt::Statement::new(span, st).into_block()
             }
         }

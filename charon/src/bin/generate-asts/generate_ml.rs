@@ -142,12 +142,10 @@ pub(crate) fn generate(
     let ambiguous_types = &[
         ("charon_lib::ast::bodies::unstructured::Statement", ("Generated_UllbcAst", "Ullbc")),
         ("charon_lib::ast::bodies::unstructured::StatementKind", ("Generated_UllbcAst", "Ullbc")),
-        ("charon_lib::ast::bodies::unstructured::SwitchTargets", ("Generated_UllbcAst", "Ullbc")),
         ("charon_lib::ast::bodies::unstructured::BlockData", ("Generated_UllbcAst", "Ullbc")),
         ("charon_lib::ast::bodies::unstructured::BlockId", ("Generated_UllbcAst", "Ullbc")),
         ("charon_lib::ast::bodies::structured::Statement", ("Generated_LlbcAst", "Llbc")),
         ("charon_lib::ast::bodies::structured::StatementKind", ("Generated_LlbcAst", "Llbc")),
-        ("charon_lib::ast::bodies::structured::Switch", ("Generated_LlbcAst", "Llbc")),
         ("charon_lib::ast::bodies::structured::Block", ("Generated_LlbcAst", "Llbc")),
         ("charon_lib::ast::bodies::structured::BlockId", ("Generated_LlbcAst", "Llbc")),
     ];
@@ -310,6 +308,7 @@ pub(crate) fn generate(
                     "FunSource",
                     "GlobalSource",
                     "Locals",
+                    "SwitchData",
                     "FunSig",
                     "Error",
                     "AbortKind",

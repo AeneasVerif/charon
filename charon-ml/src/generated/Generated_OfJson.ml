@@ -268,6 +268,13 @@ and borrowck_statement_of_json (ctx : of_json_ctx) (js : json) :
         Ok (PredicateHolds _0)
     | _ -> Error "")
 
+and branch_id_of_json (ctx : of_json_ctx) (js : json) :
+    (branch_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> BranchId.id_of_json ctx x
+    | _ -> Error "")
+
 and builtin_assert_kind_of_json (ctx : of_json_ctx) (js : json) :
     (builtin_assert_kind, string) result =
   combine_error_msgs js __FUNCTION__
@@ -499,6 +506,10 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("VTableRef", _0) ] ->
         let* _0 = trait_ref_of_json ctx _0 in
         Ok (CVTableRef _0)
+    | `Assoc [ ("Discriminant", `List [ _0; _1 ]) ] ->
+        let* _0 = type_decl_ref_of_json ctx _0 in
+        let* _1 = variant_id_of_json ctx _1 in
+        Ok (CDiscriminant (_0, _1))
     | `Assoc [ ("Ref", `List [ _0; _1 ]) ] ->
         let* _0 = constant_expr_of_json ctx _0 in
         let* _1 = option_of_json unsizing_metadata_of_json ctx _1 in
@@ -1246,6 +1257,38 @@ and span_data_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ file; beg_loc; end_loc } : span_data)
     | _ -> Error "")
 
+and switch_data_of_json (ctx : of_json_ctx) (js : json) :
+    (switch_data, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("scrutinee", scrutinee);
+          ("branches", branches);
+          ("fallback", fallback);
+        ] ->
+        let* scrutinee = switch_scrutinee_of_json ctx scrutinee in
+        let* branches =
+          list_of_json
+            (pair_of_json constant_expr_of_json branch_id_of_json)
+            ctx branches
+        in
+        let* fallback = option_of_json branch_id_of_json ctx fallback in
+        Ok ({ scrutinee; branches; fallback } : switch_data)
+    | _ -> Error "")
+
+and switch_scrutinee_of_json (ctx : of_json_ctx) (js : json) :
+    (switch_scrutinee, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Value", _0) ] ->
+        let* _0 = operand_of_json ctx _0 in
+        Ok (SwitchValue _0)
+    | `Assoc [ ("Discriminant", _0) ] ->
+        let* _0 = place_of_json ctx _0 in
+        Ok (SwitchDiscriminant _0)
+    | _ -> Error "")
+
 and trait_assoc_ty_impl_of_json (ctx : of_json_ctx) (js : json) :
     (trait_assoc_ty_impl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1667,23 +1710,6 @@ module Ullbc = struct
       | `String "Nop" -> Ok Nop
       | _ -> Error "")
 
-  and switch_of_json (ctx : of_json_ctx) (js : json) :
-      (Generated_UllbcAst.switch, string) result =
-    combine_error_msgs js __FUNCTION__
-      (match js with
-      | `Assoc [ ("If", `List [ _0; _1 ]) ] ->
-          let* _0 = block_id_of_json ctx _0 in
-          let* _1 = block_id_of_json ctx _1 in
-          Ok (If (_0, _1))
-      | `Assoc [ ("SwitchInt", `List [ _0; _1; _2 ]) ] ->
-          let* _0 = literal_type_of_json ctx _0 in
-          let* _1 =
-            list_of_json (pair_of_json literal_of_json block_id_of_json) ctx _1
-          in
-          let* _2 = block_id_of_json ctx _2 in
-          Ok (SwitchInt (_0, _1, _2))
-      | _ -> Error "")
-
   and terminator_of_json (ctx : of_json_ctx) (js : json) :
       (terminator, string) result =
     combine_error_msgs js __FUNCTION__
@@ -1707,11 +1733,13 @@ module Ullbc = struct
       | `Assoc [ ("Goto", `Assoc [ ("target", target) ]) ] ->
           let* target = block_id_of_json ctx target in
           Ok (Goto target)
-      | `Assoc [ ("Switch", `Assoc [ ("discr", discr); ("targets", targets) ]) ]
+      | `Assoc [ ("Switch", `Assoc [ ("data", data); ("branches", branches) ]) ]
         ->
-          let* discr = operand_of_json ctx discr in
-          let* targets = switch_of_json ctx targets in
-          Ok (Switch (discr, targets))
+          let* data = switch_data_of_json ctx data in
+          let* branches =
+            index_vec_of_json branch_id_of_json block_id_of_json ctx branches
+          in
+          Ok (Switch (data, branches))
       | `Assoc
           [
             ( "Call",
@@ -1908,45 +1936,19 @@ module Llbc = struct
           let* _0 = int_of_json ctx _0 in
           Ok (Continue _0)
       | `String "Nop" -> Ok Nop
-      | `Assoc [ ("Switch", _0) ] ->
-          let* _0 = switch_of_json ctx _0 in
-          Ok (Switch _0)
+      | `Assoc [ ("Switch", `Assoc [ ("data", data); ("branches", branches) ]) ]
+        ->
+          let* data = switch_data_of_json ctx data in
+          let* branches =
+            index_vec_of_json branch_id_of_json block_of_json ctx branches
+          in
+          Ok (Switch (data, branches))
       | `Assoc [ ("Loop", _0) ] ->
           let* _0 = block_of_json ctx _0 in
           Ok (Loop _0)
       | `Assoc [ ("Error", _0) ] ->
           let* _0 = string_of_json ctx _0 in
           Ok (Error _0)
-      | _ -> Error "")
-
-  and switch_of_json (ctx : of_json_ctx) (js : json) :
-      (Generated_LlbcAst.switch, string) result =
-    combine_error_msgs js __FUNCTION__
-      (match js with
-      | `Assoc [ ("If", `List [ _0; _1; _2 ]) ] ->
-          let* _0 = operand_of_json ctx _0 in
-          let* _1 = block_of_json ctx _1 in
-          let* _2 = block_of_json ctx _2 in
-          Ok (If (_0, _1, _2))
-      | `Assoc [ ("SwitchInt", `List [ _0; _1; _2; _3 ]) ] ->
-          let* _0 = operand_of_json ctx _0 in
-          let* _1 = literal_type_of_json ctx _1 in
-          let* _2 =
-            list_of_json
-              (pair_of_json (list_of_json literal_of_json) block_of_json)
-              ctx _2
-          in
-          let* _3 = block_of_json ctx _3 in
-          Ok (SwitchInt (_0, _1, _2, _3))
-      | `Assoc [ ("Match", `List [ _0; _1; _2 ]) ] ->
-          let* _0 = place_of_json ctx _0 in
-          let* _1 =
-            list_of_json
-              (pair_of_json (list_of_json variant_id_of_json) block_of_json)
-              ctx _1
-          in
-          let* _2 = option_of_json block_of_json ctx _2 in
-          Ok (Match (_0, _1, _2))
       | _ -> Error "")
 end
 

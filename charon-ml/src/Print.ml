@@ -398,8 +398,9 @@ module Ullbc = struct
     PrintFmt.pp_to_string (fun fmt ->
         PrintFmt.Ullbc.pp_statement_kind env indent fmt st)
 
-  let switch_to_string indent tgt =
-    PrintFmt.pp_to_string (fun fmt -> PrintFmt.Ullbc.pp_switch indent fmt tgt)
+  let switch_to_string env indent data branches =
+    PrintFmt.pp_to_string (fun fmt ->
+        PrintFmt.Ullbc.pp_switch env indent fmt data branches)
 
   let terminator_to_string env indent st =
     PrintFmt.pp_to_string (fun fmt ->

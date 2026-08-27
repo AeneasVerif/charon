@@ -1,16 +1,16 @@
 //! The way to match on enums in MIR is in two steps: first read the discriminant, then switch on
-//! the resulting integer. This pass merges the two into a `SwitchKind::Match` that directly
-//! mentions enum variants.
+//! the resulting integer. This pass records the enum place as the switch scrutinee and replaces
+//! the integer cases with symbolic enum discriminants.
+use itertools::Itertools;
+use std::collections::{HashMap, HashSet};
+
 use crate::formatter::IntoFormatter;
 use crate::llbc_ast::*;
 use crate::name_matcher::NamePattern;
 use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
-use crate::{errors::register_error, transform::CowBox};
-use itertools::Itertools;
-use std::collections::{HashMap, HashSet};
-
 use crate::transform::ctx::LlbcPass;
+use crate::{errors::register_error, transform::CowBox};
 
 pub struct Transform {
     discriminant_intrinsics: HashSet<FunDeclId>,
@@ -67,18 +67,20 @@ impl Transform {
                         return;
                     };
 
-                    // We look for a `SwitchInt` just after the discriminant read.
+                    // We look for a switch on the temporary just after the discriminant read.
                     match rest {
                         [
                             Statement {
-                                kind:
-                                    StatementKind::Switch(
-                                        switch @ Switch::SwitchInt(Operand::Move(_), ..),
-                                    ),
+                                kind: StatementKind::Switch { data, branches },
                                 ..
                             },
                             ..,
-                        ] => {
+                        ] if let SwitchScrutinee::Value(Operand::Move(op_p)) = &data.scrutinee
+                            && op_p.is_local()
+                            && op_p.local_id() == dest.local_id() =>
+                        {
+                            data.scrutinee = SwitchScrutinee::Discriminant(p.clone());
+
                             // Convert between discriminants and variant indices. Remark: the discriminant can
                             // be of any *signed* integer type (`isize`, `i8`, etc.).
                             let discr_to_id: HashMap<Literal, VariantId> = variants
@@ -86,52 +88,53 @@ impl Transform {
                                 .map(|(id, variant)| (variant.discriminant.clone(), id))
                                 .collect();
 
-                            take_mut::take(switch, |switch| {
-                                let (Operand::Move(op_p), _, targets, otherwise) =
-                                    switch.to_switch_int().unwrap()
-                                else {
-                                    unreachable!()
-                                };
-                                assert!(op_p.is_local() && op_p.local_id() == dest.local_id());
+                            let mut covered_discriminants: HashSet<Literal> = HashSet::default();
+                            for (value, _) in &mut data.branches {
+                                if let ConstantExprKind::Literal(discr) = value.kind()
+                                    && let Some(variant_id) = discr_to_id.get(discr).copied()
+                                {
+                                    covered_discriminants.insert(discr.clone());
+                                    *value = ConstantExpr::new(
+                                        ConstantExprKind::Discriminant(
+                                            tdecl_ref.clone(),
+                                            variant_id,
+                                        ),
+                                        value.ty().clone(),
+                                    );
+                                } else {
+                                    register_error!(
+                                        ctx,
+                                        block.span,
+                                        "Found incorrect discriminant {value} for enum {}",
+                                        tdecl_ref.id
+                                    );
+                                }
+                            }
 
-                                let mut covered_discriminants: HashSet<Literal> =
-                                    HashSet::default();
-                                let targets = targets
-                                    .into_iter()
-                                    .map(|(v, e)| {
-                                        let targets = v
-                                            .into_iter()
-                                            .filter_map(|discr| {
-                                                covered_discriminants.insert(discr.clone());
-                                                discr_to_id.get(&discr).or_else(|| {
-                                                    register_error!(
-                                                        ctx,
-                                                        block.span,
-                                                        "Found incorrect discriminant \
-                                                        {discr} for enum {}",
-                                                        tdecl_ref.id
-                                                    );
-                                                    None
-                                                })
-                                            })
-                                            .copied()
-                                            .collect_vec();
-                                        (targets, e)
-                                    })
-                                    .collect_vec();
-                                // Filter the otherwise branch if it is not necessary.
-                                let covers_all = covered_discriminants.len() == discr_to_id.len();
-                                let otherwise = if covers_all { None } else { Some(otherwise) };
-
-                                // Replace the old switch with a match.
-                                Switch::Match(p.clone(), targets, otherwise)
-                            });
+                            // The fallback is unnecessary if the explicit cases cover every
+                            // variant.
+                            if covered_discriminants.len() == discr_to_id.len() {
+                                let fallback_id = data
+                                    .fallback
+                                    .take()
+                                    .expect("MIR switches always have a fallback branch");
+                                // Remove the fallback branch if nothing else points to it.
+                                if !data
+                                    .branches
+                                    .iter()
+                                    .map(|(_, branch_id)| *branch_id)
+                                    .contains(&fallback_id)
+                                {
+                                    assert_eq!(fallback_id.index(), branches.len() - 1);
+                                    branches.pop();
+                                }
+                            }
                             // `Nop` the discriminant read.
                             block.statements[i].kind = StatementKind::Nop;
                         }
                         _ => {
-                            // The discriminant read is not followed by a `SwitchInt`. This can happen
-                            // in optimized MIR.
+                            // The discriminant read is not followed by a switch on its result. This
+                            // can happen in optimized MIR.
                             continue;
                         }
                     }

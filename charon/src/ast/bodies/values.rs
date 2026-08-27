@@ -88,6 +88,8 @@ pub enum ConstantExprKind {
     /// cases where we do emit a vtable item. That's not always the case for builtin traits, e.g.
     /// for `MetaSized`.
     VTableRef(TraitRef),
+    /// The integer discriminant value corresponding to this enum variant.
+    Discriminant(TypeDeclRef, VariantId),
     /// A shared reference to a constant value.
     ///
     /// We eliminate this case in a micro-pass.
@@ -327,8 +329,13 @@ impl Literal {
                 IntegerTy::Unsigned(uint_ty),
                 bits,
             ))),
+            LiteralTy::Bool => match bits {
+                0 => Some(Literal::Bool(false)),
+                1 => Some(Literal::Bool(true)),
+                _ => None,
+            },
             LiteralTy::Char => Some(Literal::char_from_le_bytes(bits)),
-            _ => None,
+            LiteralTy::Float(_) => None,
         }
     }
 }

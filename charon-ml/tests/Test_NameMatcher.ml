@@ -146,8 +146,14 @@ module PatternTest = struct
           let rec list_stmt_calls (statement : statement) : call list =
             match statement.kind with
             | Call (call, _) -> [ call ]
-            | Switch (If (_, st1, st2)) ->
-                list_block_calls st1 @ list_block_calls st2
+            | Switch
+                ({ scrutinee = SwitchValue _; branches = cases; _ }, branches)
+              when List.exists
+                     (fun ((case : Charon.Types.constant_expr), _) ->
+                       match case.kind with
+                       | CLiteral (VBool _) -> true
+                       | _ -> false)
+                     cases -> List.concat_map list_block_calls branches
             | Switch _ ->
                 failwith
                   "Only `if then else` are supported in name matcher tests, \

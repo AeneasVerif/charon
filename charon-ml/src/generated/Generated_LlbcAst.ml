@@ -102,40 +102,12 @@ and statement_kind =
           to continue to: * 0: continue to first outer loop (the current loop) *
           1: continue to second outer loop * ... *)
   | Nop  (** No-op. *)
-  | Switch of switch
+  | Switch of switch_data * block list
+      (** Fields:
+          - [data]
+          - [branches] *)
   | Loop of block
   | Error of string
-
-and switch =
-  | If of operand * block * block
-      (** Gives the [if] block and the [else] block. The [Operand] is the
-          condition of the [if], e.g. [if (y == 0)] could become
-          {@rust[
-            v@3 := copy y; // Represented as [Assign(v@3, Use(Copy(y))]
-            v@2 := move v@3 == 0; // Represented as [Assign(v@2, BinOp(BinOp::Eq, Move(y), Const(0)))]
-            if (move v@2) { // Represented as [If(Move(v@2), <then branch>, <else branch>)]
-          ]} *)
-  | SwitchInt of operand * literal_type * (literal list * block) list * block
-      (** Gives the integer type, a map linking values to switch branches, and
-          the otherwise block. Note that matches over enumerations are performed
-          by switching over the discriminant, which is an integer. Also, we use
-          a [Vec] to make sure the order of the switch branches is preserved.
-
-          Rk.: we use a vector of values, because some of the branches may be
-          grouped together, like for the following code:
-          {@rust[
-            match e {
-              E::V1 | E::V2 => ..., // Grouped
-              E::V3 => ...
-            }
-          ]} *)
-  | Match of place * (variant_id list * block) list * block option
-      (** A match over an ADT.
-
-          The match statement is introduced in
-          [crate::transform::resugar::reconstruct_matches] (whenever we find a
-          discriminant read, we merge it with the subsequent switch into a
-          match). *)
 [@@deriving
   show,
   eq,
