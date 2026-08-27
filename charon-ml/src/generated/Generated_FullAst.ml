@@ -189,6 +189,10 @@ and cli_options = {
           information. *)
   reconstruct_asserts : bool;
       (** Replace [if x { panic() }] with [assert(x)]. *)
+  reconstruct_matches : bool;
+      (** Recombine a [read_discriminant(place)] followed by a [switch] into a
+          single operation that uses enum variants instead of their
+          discriminants. *)
   deallocate_all_locals : bool;
       (** Ensure all local deallocations are made explicit with [StorageDead]
           statements. If this flag is not passed, every non-return local is

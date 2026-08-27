@@ -1542,8 +1542,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             }
             TerminatorKind::SwitchInt { discr, targets, .. } => {
                 let discr = self.translate_operand(span, discr)?;
-                let targets = self.translate_switch_targets(span, discr.ty(), targets)?;
-                ullbc_ast::TerminatorKind::Switch { discr, targets }
+                let (data, branches) = self.translate_switch_targets(span, discr, targets)?;
+                ullbc_ast::TerminatorKind::Switch { data, branches }
             }
             TerminatorKind::UnwindResume => ullbc_ast::TerminatorKind::UnwindResume,
             TerminatorKind::UnwindTerminate { .. } => {
@@ -1642,77 +1642,49 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
     fn translate_switch_targets(
         &mut self,
         span: Span,
-        switch_ty: &Ty,
+        discr: Operand,
         targets: &mir::SwitchTargets,
-    ) -> Result<SwitchTargets, Error> {
+    ) -> Result<(SwitchData, IndexVec<BranchId, BlockId>), Error> {
         // Convert all the test values to the proper values.
         let otherwise = targets.otherwise();
-        let targets = targets.iter().collect_vec();
-        let switch_ty = *switch_ty.kind().as_literal().unwrap();
-        match switch_ty {
-            LiteralTy::Bool => {
-                assert_eq!(targets.len(), 1);
-                let (val, target) = targets.first().unwrap();
-                // It seems the block targets are inverted
-                assert_eq!(*val, 0);
-                let if_block = self.translate_basic_block_id(otherwise);
-                let then_block = self.translate_basic_block_id(*target);
-                Ok(SwitchTargets::If(if_block, then_block))
-            }
-            LiteralTy::Char => {
-                let targets: Vec<(Literal, BlockId)> = targets
-                    .iter()
-                    .copied()
-                    .map(|(v, tgt)| {
-                        let v = Literal::char_from_le_bytes(v);
-                        let tgt = self.translate_basic_block_id(tgt);
-                        (v, tgt)
-                    })
-                    .collect();
-                let otherwise = self.translate_basic_block_id(otherwise);
-                Ok(SwitchTargets::SwitchInt(
-                    LiteralTy::Char,
-                    targets,
-                    otherwise,
-                ))
-            }
-            LiteralTy::Int(int_ty) => {
-                let targets: Vec<(Literal, BlockId)> = targets
-                    .iter()
-                    .copied()
-                    .map(|(v, tgt)| {
-                        let v = Literal::Scalar(ScalarValue::from_le_bytes(
-                            IntegerTy::Signed(int_ty),
-                            v.to_le_bytes(),
-                        ));
-                        let tgt = self.translate_basic_block_id(tgt);
-                        (v, tgt)
-                    })
-                    .collect();
-                let otherwise = self.translate_basic_block_id(otherwise);
-                Ok(SwitchTargets::SwitchInt(switch_ty, targets, otherwise))
-            }
-            LiteralTy::UInt(uint_ty) => {
-                let targets: Vec<(Literal, BlockId)> = targets
-                    .iter()
-                    .map(|(v, tgt)| {
-                        let v = Literal::Scalar(ScalarValue::from_le_bytes(
-                            IntegerTy::Unsigned(uint_ty),
-                            v.to_le_bytes(),
-                        ));
-                        let tgt = self.translate_basic_block_id(*tgt);
-                        (v, tgt)
-                    })
-                    .collect();
-                let otherwise = self.translate_basic_block_id(otherwise);
-                Ok(SwitchTargets::SwitchInt(
-                    LiteralTy::UInt(uint_ty),
-                    targets,
-                    otherwise,
-                ))
-            }
-            _ => raise_error!(self, span, "Can't match on type {switch_ty}"),
+        let switch_ty = discr.ty();
+        let switch_literal_ty = *switch_ty.as_literal().unwrap();
+        let mut branch_targets: IndexVec<BranchId, BlockId> = IndexVec::new();
+        let mut target_to_branch: SeqHashMap<BlockId, BranchId> = SeqHashMap::new();
+        let mut switch_branches = Vec::with_capacity(targets.iter().count());
+
+        // Keep the historical true-then-false traversal order for boolean switches.
+        let bool_fallback = (switch_literal_ty == LiteralTy::Bool).then(|| {
+            let target = self.translate_basic_block_id(otherwise);
+            *target_to_branch
+                .entry(target)
+                .or_insert_with(|| branch_targets.push(target))
+        });
+
+        for (bits, target) in targets.iter() {
+            let Some(literal) = Literal::from_bits(&switch_literal_ty, bits) else {
+                raise_error!(self, span, "Can't match on type {switch_literal_ty}")
+            };
+            let target = self.translate_basic_block_id(target);
+            let branch_id = *target_to_branch
+                .entry(target)
+                .or_insert_with(|| branch_targets.push(target));
+            let value = ConstantExpr::new(ConstantExprKind::Literal(literal), switch_ty.clone());
+            switch_branches.push((value, branch_id));
         }
+
+        let fallback = bool_fallback.unwrap_or_else(|| {
+            let target = self.translate_basic_block_id(otherwise);
+            *target_to_branch
+                .entry(target)
+                .or_insert_with(|| branch_targets.push(target))
+        });
+        let data = SwitchData {
+            scrutinee: SwitchScrutinee::Value(discr),
+            branches: switch_branches,
+            fallback: Some(fallback),
+        };
+        Ok((data, branch_targets))
     }
 
     /// Translate a function call statement.

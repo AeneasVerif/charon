@@ -10,11 +10,13 @@
 open Generated_Types
 open Generated_Meta
 open Generated_Expressions
+open Identifiers
 module FunDeclId = Expressions.FunDeclId
 module GlobalDeclId = Expressions.GlobalDeclId
 module TraitDeclId = Types.TraitDeclId
 module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
+module BranchId = IdGen ()
 
 (* Imports *)
 type builtin_fun_id = Types.builtin_fun_id [@@deriving show, ord]
@@ -75,6 +77,8 @@ and borrowck_statement =
       (** Require a trait predicate to hold. For example, the [Copy] bound in
           [let x: impl Copy = value] produces [PredicateHolds(typeof(x): Copy)].
       *)
+
+and branch_id = (BranchId.id[@visitors.opaque])
 
 (** The kind of a built-in assertion, which may panic and unwind. These are
     removed by [reconstruct_fallible_operations] because they're implicit in the
@@ -223,6 +227,27 @@ and locals = {
           - the [arg_count] input arguments
           - the remaining locals, used for the intermediate computations *)
 }
+
+(** A branching operation. *)
+and switch_data = {
+  scrutinee : switch_scrutinee;  (** The value to branch over. *)
+  branches : (constant_expr * branch_id) list;
+      (** Which branch to take for each value of the scrutinee. Several values
+          may point to the same branch, and not all values may be accounted for.
+
+          If the scrutinee is an operand, the constant expressions are literal
+          values. If the scrutinee is a discriminant read, the expressions are
+          of the form [ConstantExprKind::Discriminant]. *)
+  fallback : branch_id option;
+      (** Branch to use if the scrutinee didn't match any of the values above.
+          [None] if the set of branch values is known to be exhaustive. *)
+}
+
+(** The value inspected by a switch. Must be of integer, bool or char type. *)
+and switch_scrutinee =
+  | SwitchValue of operand  (** Inspect the value produced by an operand. *)
+  | SwitchDiscriminant of place
+      (** Inspect the discriminant of an enum place. *)
 [@@deriving
   show,
   eq,

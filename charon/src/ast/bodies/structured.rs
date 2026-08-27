@@ -3,7 +3,7 @@
 //!
 //! We reconstruct this structure from the unstructured ast in an optional translation pass.
 use derive_generic_visitor::*;
-use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
+use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
 use serde_state::{DeserializeState, SerializeState};
 use std::mem;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -126,56 +126,12 @@ pub enum StatementKind {
     Continue(usize),
     /// No-op.
     Nop,
-    Switch(Switch),
+    Switch {
+        data: SwitchData,
+        branches: IndexVec<BranchId, Block>,
+    },
     Loop(Block),
     Error(String),
-}
-
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    EnumIsA,
-    EnumToGetters,
-    EnumAsGetters,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-    VariantName,
-    VariantIndexArity,
-)]
-pub enum Switch {
-    /// Gives the `if` block and the `else` block. The `Operand` is the condition of the `if`, e.g. `if (y == 0)` could become
-    /// ```text
-    /// v@3 := copy y; // Represented as `Assign(v@3, Use(Copy(y))`
-    /// v@2 := move v@3 == 0; // Represented as `Assign(v@2, BinOp(BinOp::Eq, Move(y), Const(0)))`
-    /// if (move v@2) { // Represented as `If(Move(v@2), <then branch>, <else branch>)`
-    /// ```
-    If(Operand, Block, Block),
-    /// Gives the integer type, a map linking values to switch branches, and the
-    /// otherwise block. Note that matches over enumerations are performed by
-    /// switching over the discriminant, which is an integer.
-    /// Also, we use a `Vec` to make sure the order of the switch
-    /// branches is preserved.
-    ///
-    /// Rk.: we use a vector of values, because some of the branches may
-    /// be grouped together, like for the following code:
-    /// ```text
-    /// match e {
-    ///   E::V1 | E::V2 => ..., // Grouped
-    ///   E::V3 => ...
-    /// }
-    /// ```
-    SwitchInt(Operand, LiteralTy, Vec<(Vec<Literal>, Block)>, Block),
-    /// A match over an ADT.
-    ///
-    /// The match statement is introduced in [crate::transform::resugar::reconstruct_matches]
-    /// (whenever we find a discriminant read, we merge it with the subsequent
-    /// switch into a match).
-    Match(Place, Vec<(Vec<VariantId>, Block)>, Option<Block>),
 }
 
 /// Ignores statement ids.
@@ -351,57 +307,5 @@ impl StatementId {
         static COUNTER: AtomicUsize = AtomicUsize::new(0);
         let id = COUNTER.fetch_add(1, Ordering::Relaxed);
         StatementId::new(id)
-    }
-}
-
-impl Switch {
-    pub fn iter_targets(&self) -> impl Iterator<Item = &Block> {
-        use itertools::Either;
-        match self {
-            Switch::If(_, exp1, exp2) => Either::Left([exp1, exp2].into_iter()),
-            Switch::SwitchInt(_, _, targets, otherwise) => Either::Right(Either::Left(
-                targets.iter().map(|(_, tgt)| tgt).chain([otherwise]),
-            )),
-            Switch::Match(_, targets, otherwise) => Either::Right(Either::Right(
-                targets.iter().map(|(_, tgt)| tgt).chain(otherwise.as_ref()),
-            )),
-        }
-    }
-
-    pub fn iter_targets_mut(&mut self) -> impl Iterator<Item = &mut Block> {
-        use itertools::Either;
-        match self {
-            Switch::If(_, exp1, exp2) => Either::Left([exp1, exp2].into_iter()),
-            Switch::SwitchInt(_, _, targets, otherwise) => Either::Right(Either::Left(
-                targets.iter_mut().map(|(_, tgt)| tgt).chain([otherwise]),
-            )),
-            Switch::Match(_, targets, otherwise) => Either::Right(Either::Right(
-                targets
-                    .iter_mut()
-                    .map(|(_, tgt)| tgt)
-                    .chain(otherwise.as_mut()),
-            )),
-        }
-    }
-
-    /// Combine the span information from a [Switch]
-    pub fn combine_targets_span(&self) -> Span {
-        match self {
-            Switch::If(_, st1, st2) => meta::combine_span(&st1.span, &st2.span),
-            Switch::SwitchInt(_, _, branches, otherwise) => {
-                let branches = branches.iter().map(|b| &b.1.span);
-                let mbranches = meta::combine_span_iter(branches);
-                meta::combine_span(&mbranches, &otherwise.span)
-            }
-            Switch::Match(_, branches, otherwise) => {
-                let branches = branches.iter().map(|b| &b.1.span);
-                let mbranches = meta::combine_span_iter(branches);
-                if let Some(otherwise) = otherwise {
-                    meta::combine_span(&mbranches, &otherwise.span)
-                } else {
-                    mbranches
-                }
-            }
-        }
     }
 }

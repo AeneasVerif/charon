@@ -370,6 +370,8 @@ and constant_expr_kind =
       (** A reference to the vtable [static] item for this trait ref. This can
           be normalized for cases where we do emit a vtable item. That's not
           always the case for builtin traits, e.g. for [MetaSized]. *)
+  | CDiscriminant of type_decl_ref * variant_id
+      (** The integer discriminant value corresponding to this enum variant. *)
   | CRef of constant_expr * unsizing_metadata option
       (** A shared reference to a constant value.
 

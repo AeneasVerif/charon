@@ -58,13 +58,6 @@ and statement_kind =
           - [on_failure] *)
   | Nop  (** Does nothing. Useful for passes. *)
 
-and switch =
-  | If of block_id * block_id  (** Gives the [if] block and the [else] block *)
-  | SwitchInt of literal_type * (literal * block_id) list * block_id
-      (** Gives the integer type, a map linking values to switch branches, and
-          the otherwise block. Note that matches over enumerations are performed
-          by switching over the discriminant, which is an integer. *)
-
 (** A terminator: instruction to execute at the end of a block, which may jump
     to other blocks. *)
 and terminator = {
@@ -77,10 +70,10 @@ and terminator_kind =
   | Goto of block_id
       (** Fields:
           - [target] *)
-  | Switch of operand * switch
+  | Switch of switch_data * block_id list
       (** Fields:
-          - [discr]
-          - [targets] *)
+          - [data]
+          - [branches] *)
   | Call of call * block_id * block_id
       (** Fields:
           - [call]

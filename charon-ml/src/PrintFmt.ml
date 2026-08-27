@@ -487,6 +487,10 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
     (cv : constant_expr) : unit =
   match cv.kind with
   | CLiteral lit -> pp_literal fmt lit
+  | CDiscriminant ({ id = type_id; _ }, variant_id) ->
+      Format.fprintf fmt "discriminant_of(%a)"
+        (pp_adt_variant env type_id)
+        variant_id
   | CVar var -> pp_string fmt (const_generic_db_var_to_string env var)
   | CTraitConst (trait_ref, const_id) ->
       let name =
@@ -536,6 +540,13 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
           Format.fprintf fmt " with_metadata(%a)" (pp_unsizing_metadata env)
             meta)
         meta
+
+and pp_match_pattern (env : fmt_env) (fmt : Format.formatter)
+    (cv : constant_expr) : unit =
+  match cv.kind with
+  | CDiscriminant ({ id = type_id; _ }, variant_id) ->
+      pp_adt_variant env type_id fmt variant_id
+  | _ -> pp_constant_expr env fmt cv
 
 and constant_expr_to_string env cv =
   pp_to_string (fun fmt -> pp_constant_expr env fmt cv)
@@ -1964,7 +1975,6 @@ module Llbc = struct
   (** Pretty-printing for LLBC AST (generic functions) *)
 
   let pp_print_call = pp_call
-  let pp_print_literal = pp_literal
   let pp_print_place = pp_place
   let pp_print_fn_ptr = pp_fn_ptr
   let pp_print_rvalue = pp_rvalue
@@ -2068,9 +2078,39 @@ module Llbc = struct
     | Break i -> Format.fprintf fmt "%sbreak %d" indent i
     | Continue i -> Format.fprintf fmt "%scontinue %d" indent i
     | Nop -> Format.fprintf fmt "%snop" indent
-    | Switch switch -> (
-        match switch with
-        | If (op, true_st, false_st) ->
+    | Switch (data, branches) -> (
+        let branch branch_id = List.nth branches (BranchId.to_int branch_id) in
+        let pp_multiway keyword scrutinee pp_case =
+          let indent1 = indent ^ indent_incr in
+          let indent2 = indent1 ^ indent_incr in
+          let cases_by_branch = switch_group_by_branch data in
+          Format.fprintf fmt "%s%s %s {\n" indent keyword scrutinee;
+          let first = ref true in
+          List.iteri
+            (fun i be ->
+              let branch_id = BranchId.of_int i in
+              let cases = BranchId.nth cases_by_branch branch_id in
+              let cases =
+                if cases = [] then "_"
+                else
+                  let cases =
+                    pp_to_string (fun fmt ->
+                        pp_sep_list " | " (pp_case env) fmt cases)
+                  in
+                  if data.fallback = Some branch_id then cases ^ " | _"
+                  else cases
+              in
+              if !first then first := false else pp_string fmt "\n";
+              Format.fprintf fmt "%s%s => {\n%a%s}," indent1 cases
+                (pp_block env indent2 indent_incr)
+                be indent1)
+            branches;
+          Format.fprintf fmt "\n%s}" indent
+        in
+        match (data.scrutinee, switch_as_if data) with
+        | SwitchValue op, Some (then_branch, else_branch) ->
+            let true_st = branch then_branch in
+            let false_st = branch else_branch in
             let op = operand_to_string env op in
             let inner_indent = indent ^ indent_incr in
             Format.fprintf fmt "%sif %s {\n%a%s} else {\n%a%s}" indent op
@@ -2078,59 +2118,11 @@ module Llbc = struct
               true_st indent
               (pp_block env inner_indent indent_incr)
               false_st indent
-        | SwitchInt (op, _ty, branches, otherwise) ->
-            let op = operand_to_string env op in
-            let indent1 = indent ^ indent_incr in
-            let indent2 = indent1 ^ indent_incr in
-            Format.fprintf fmt "%sswitch %s {\n" indent op;
-            let first = ref true in
-            List.iter
-              (fun (svl, be) ->
-                if !first then first := false else pp_string fmt "\n";
-                Format.fprintf fmt "%s%a => {\n%a%s}," indent1
-                  (pp_sep_list " | " pp_print_literal)
-                  svl
-                  (pp_block env indent2 indent_incr)
-                  be indent1)
-              branches;
-            if not !first then pp_string fmt "\n";
-            Format.fprintf fmt "%s_ => {\n%a%s},\n%s}" indent1
-              (pp_block env indent2 indent_incr)
-              otherwise indent1 indent
-        | Match (place, branches, otherwise) ->
-            let p = place_to_string env place in
-            let discr_type =
-              match place.ty with
-              | TAdt tref -> Some tref.id
-              | _ -> None
-            in
-            let indent1 = indent ^ indent_incr in
-            let indent2 = indent1 ^ indent_incr in
-            Format.fprintf fmt "%smatch %s {\n" indent p;
-            let first = ref true in
-            let pp_variant_id fmt variant_id =
-              match discr_type with
-              | Some type_id -> pp_adt_variant env type_id fmt variant_id
-              | None -> pp_string fmt (variant_id_to_pretty_string variant_id)
-            in
-            List.iter
-              (fun (svl, be) ->
-                if !first then first := false else pp_string fmt "\n";
-                Format.fprintf fmt "%s%a => {\n%a%s}," indent1
-                  (pp_sep_list " | " pp_variant_id)
-                  svl
-                  (pp_block env indent2 indent_incr)
-                  be indent1)
-              branches;
-            Option.iter
-              (fun otherwise ->
-                if not !first then pp_string fmt "\n";
-                first := false;
-                Format.fprintf fmt "%s_ => {\n%a%s}," indent1
-                  (pp_block env indent2 indent_incr)
-                  otherwise indent1)
-              otherwise;
-            Format.fprintf fmt "\n%s}" indent)
+        | SwitchValue op, None ->
+            pp_multiway "switch" (operand_to_string env op) pp_constant_expr
+        | SwitchDiscriminant place, None ->
+            pp_multiway "match" (place_to_string env place) pp_match_pattern
+        | SwitchDiscriminant _, Some _ -> assert false)
     | Loop loop_blk ->
         Format.fprintf fmt "%sloop {\n%a%s}" indent
           (pp_block env (indent ^ indent_incr) indent_incr)
@@ -2153,7 +2145,6 @@ end
 
 module Ullbc = struct
   let pp_print_call = pp_call
-  let pp_print_literal = pp_literal
   let pp_print_place = pp_place
   let pp_print_rvalue = pp_rvalue
   let pp_print_assertion = pp_assertion
@@ -2196,22 +2187,41 @@ module Ullbc = struct
         Format.fprintf fmt "%s_ = %s" indent (place_to_string env place)
     | Nop -> Format.fprintf fmt "%snop" indent
 
-  let pp_switch (indent : string) (fmt : Format.formatter) (tgt : switch) : unit
-      =
-    match tgt with
-    | If (b0, b1) ->
-        Format.fprintf fmt "%strue -> %s else -> %s" indent
-          (block_id_to_string b0) (block_id_to_string b1)
-    | SwitchInt (_int_ty, branches, otherwise) ->
+  let pp_switch (env : fmt_env) (indent : string) (fmt : Format.formatter)
+      (data : switch_data) (branches : block_id list) : unit =
+    let branch branch_id = List.nth branches (BranchId.to_int branch_id) in
+    match (data.scrutinee, switch_as_if data) with
+    | SwitchValue op, Some (then_branch, else_branch) ->
+        let true_block = branch then_branch in
+        let false_block = branch else_branch in
+        Format.fprintf fmt "%sif %s -> %s else -> %s" indent
+          (operand_to_string env op)
+          (block_id_to_string true_block)
+          (block_id_to_string false_block)
+    | ((SwitchValue _ | SwitchDiscriminant _) as scrutinee), None ->
+        let keyword, scrutinee =
+          match scrutinee with
+          | SwitchValue op -> ("switch", operand_to_string env op)
+          | SwitchDiscriminant place -> ("match", place_to_string env place)
+        in
+        let fallback =
+          data.fallback
+          |> Option.map (fun branch_id ->
+                 "otherwise: " ^ block_id_to_string (branch branch_id))
+          |> Option.to_list
+        in
         let targets =
           List.map
-            (fun (sv, bid) ->
-              pp_to_string (fun fmt -> pp_print_literal fmt sv)
-              ^ ": " ^ block_id_to_string bid)
-            branches
-          @ [ "otherwise: " ^ block_id_to_string otherwise ]
+            (fun (case, branch_id) ->
+              pp_to_string (fun fmt -> pp_match_pattern env fmt case)
+              ^ ": "
+              ^ block_id_to_string (branch branch_id))
+            data.branches
+          @ fallback
         in
-        Format.fprintf fmt "%s%s" indent (String.concat ", " targets)
+        Format.fprintf fmt "%s%s %s -> %s" indent keyword scrutinee
+          (String.concat ", " targets)
+    | SwitchDiscriminant _, Some _ -> assert false
 
   let rec pp_terminator (env : fmt_env) (indent : string)
       (fmt : Format.formatter) (st : terminator) : unit =
@@ -2224,22 +2234,7 @@ module Ullbc = struct
       (fmt : Format.formatter) (st : terminator_kind) : unit =
     match st with
     | Goto bid -> Format.fprintf fmt "%sgoto %s" indent (block_id_to_string bid)
-    | Switch (op, If (true_block, false_block)) ->
-        Format.fprintf fmt "%sif %s -> %s else -> %s" indent
-          (operand_to_string env op)
-          (block_id_to_string true_block)
-          (block_id_to_string false_block)
-    | Switch (op, SwitchInt (_int_ty, branches, otherwise)) ->
-        let targets =
-          List.map
-            (fun (sv, bid) ->
-              pp_to_string (fun fmt -> pp_print_literal fmt sv)
-              ^ ": " ^ block_id_to_string bid)
-            branches
-          @ [ "otherwise: " ^ block_id_to_string otherwise ]
-        in
-        Format.fprintf fmt "%sswitch %s -> %s" indent (operand_to_string env op)
-          (String.concat ", " targets)
+    | Switch (data, branches) -> pp_switch env indent fmt data branches
     | Call (call, tgt, unwind) ->
         Format.fprintf fmt "%a -> %s (unwind: %s)" (pp_print_call env indent)
           call (block_id_to_string tgt)

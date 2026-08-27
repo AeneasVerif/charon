@@ -412,51 +412,57 @@ fn box_new_uninit(layout: Layout) -> *mut u8
     let _2: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
     let _3: &'1 Global; // anonymous local
     let _4: Layout; // anonymous local
+    let _5: isize; // anonymous local
     let ptr: NonNull<[u8]>; // local
-    let _6: NonNull<[u8]>; // anonymous local
-    let _7: !; // anonymous local
-    let _8: Layout; // anonymous local
-    let _9: &'2 Global; // anonymous local
-    let _10: &'3 Global; // anonymous local
-    let _11: &'6 Global; // anonymous local
-    let _12: Global; // anonymous local
+    let _7: NonNull<[u8]>; // anonymous local
+    let _8: !; // anonymous local
+    let _9: Layout; // anonymous local
+    let _10: &'2 Global; // anonymous local
+    let _11: &'3 Global; // anonymous local
+    let _12: &'6 Global; // anonymous local
+    let _13: Global; // anonymous local
 
-    storage_live(_10)
     storage_live(_11)
     storage_live(_12)
-    _12 = Global {  }
-    _11 = &_12
-    _10 = move _11
+    storage_live(_13)
+    _13 = Global {  }
+    _12 = &_13
+    _11 = move _12
     storage_live(_0)
-    storage_live(_9)
+    storage_live(_5)
+    storage_live(_10)
     storage_live(_2)
     storage_live(_3)
-    _9 = move _10
-    _3 = &(*_9)
+    _10 = move _11
+    _3 = &(*_10)
     storage_live(_4)
     _4 = copy layout
     _2 = allocate<'5>(move _3, move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)
-    match _2 {
-        Result::Ok => {
+    _5 = @discriminant(_2)
+    switch move _5 {
+        0isize => {
         },
-        Result::Err => {
-            storage_live(_7)
+        1isize => {
             storage_live(_8)
-            _8 = copy layout
-            _7 = handle_alloc_error(move _8)
+            storage_live(_9)
+            _9 = copy layout
+            _8 = handle_alloc_error(move _9)
             ↳⚡ unwind_continue
+        },
+        _ => {
+            undefined_behavior
         },
     }
     storage_live(ptr)
     ptr = copy (_2 as variant Result::Ok)._0
-    storage_live(_6)
-    _6 = copy ptr
-    _0 = as_mut_ptr<u8>[{built_in impl Sized for u8}](move _6)
+    storage_live(_7)
+    _7 = copy ptr
+    _0 = as_mut_ptr<u8>[{built_in impl Sized for u8}](move _7)
     ↳⚡ unwind_continue
-    storage_dead(_6)
+    storage_dead(_7)
     storage_dead(ptr)
     storage_dead(_2)
     return

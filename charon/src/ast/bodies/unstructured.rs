@@ -2,7 +2,7 @@
 //!
 //! In effect, this is a cleaned up version of MIR.
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
-use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
+use macros::{EnumAsGetters, EnumIsA, VariantName};
 use serde_state::{DeserializeState, SerializeState};
 use smallvec::{SmallVec, smallvec};
 use std::collections::HashMap;
@@ -99,31 +99,6 @@ pub enum StatementKind {
     Clone,
     EnumIsA,
     EnumAsGetters,
-    VariantName,
-    VariantIndexArity,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
-#[cfg_attr(feature = "charon_on_charon", charon::rename("Switch"))]
-pub enum SwitchTargets {
-    /// Gives the `if` block and the `else` block
-    If(BlockId, BlockId),
-    /// Gives the integer type, a map linking values to switch branches, and the
-    /// otherwise block. Note that matches over enumerations are performed by
-    /// switching over the discriminant, which is an integer.
-    SwitchInt(LiteralTy, Vec<(Literal, BlockId)>, BlockId),
-}
-
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    EnumIsA,
-    EnumAsGetters,
     SerializeState,
     DeserializeState,
     Drive,
@@ -135,8 +110,8 @@ pub enum TerminatorKind {
         target: BlockId,
     },
     Switch {
-        discr: Operand,
-        targets: SwitchTargets,
+        data: SwitchData,
+        branches: IndexVec<BranchId, BlockId>,
     },
     Call {
         call: Call,
@@ -413,7 +388,7 @@ impl Terminator {
             TerminatorKind::Goto { target } => {
                 smallvec![*target]
             }
-            TerminatorKind::Switch { targets, .. } => targets.targets(),
+            TerminatorKind::Switch { branches, .. } => branches.iter().copied().collect(),
             TerminatorKind::InlineAsm {
                 targets, on_unwind, ..
             } => targets.iter().copied().chain([*on_unwind]).collect(),
@@ -436,7 +411,7 @@ impl Terminator {
             TerminatorKind::Goto { target } => {
                 smallvec![target]
             }
-            TerminatorKind::Switch { targets, .. } => targets.targets_mut(),
+            TerminatorKind::Switch { branches, .. } => branches.iter_mut().collect(),
             TerminatorKind::InlineAsm {
                 targets, on_unwind, ..
             } => targets.iter_mut().chain([on_unwind]).collect(),
@@ -460,7 +435,7 @@ impl Terminator {
             TerminatorKind::Goto { target } => {
                 smallvec![*target]
             }
-            TerminatorKind::Switch { targets, .. } => targets.targets(),
+            TerminatorKind::Switch { branches, .. } => branches.iter().copied().collect(),
             TerminatorKind::InlineAsm { targets, .. } => targets.iter().copied().collect(),
             TerminatorKind::Call { target, .. }
             | TerminatorKind::Drop { target, .. }
@@ -470,34 +445,6 @@ impl Terminator {
             TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
                 smallvec![]
             }
-        }
-    }
-}
-
-impl SwitchTargets {
-    pub fn targets(&self) -> SmallVec<[BlockId; 2]> {
-        match self {
-            SwitchTargets::If(then_tgt, else_tgt) => {
-                smallvec![*then_tgt, *else_tgt]
-            }
-            SwitchTargets::SwitchInt(_, targets, otherwise) => targets
-                .iter()
-                .map(|(_, t)| t)
-                .chain([otherwise])
-                .copied()
-                .collect(),
-        }
-    }
-    pub fn targets_mut(&mut self) -> SmallVec<[&mut BlockId; 2]> {
-        match self {
-            SwitchTargets::If(then_tgt, else_tgt) => {
-                smallvec![then_tgt, else_tgt]
-            }
-            SwitchTargets::SwitchInt(_, targets, otherwise) => targets
-                .iter_mut()
-                .map(|(_, t)| t)
-                .chain([otherwise])
-                .collect(),
         }
     }
 }

@@ -177,6 +177,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         CowBox::Borrowed(&simplify_output::remove_unit_locals::Transform),
         // Duplicate the return blocks
         CowBox::Borrowed(&control_flow::duplicate_return::Transform),
+        // Reconstruct matches on enum variants.
+        resugar::reconstruct_matches::Transform::new(ctx),
         // Remove the locals which are never used.
         CowBox::Borrowed(&simplify_output::remove_unused_locals::Transform),
         // Another round.
@@ -202,8 +204,6 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         ctx.run_pass(mixed_body(&control_flow::ullbc_to_llbc::Transform));
         // Body cleanup passes after control flow reconstruction.
         let pass = Pass::FusedStructuredBody(Box::new([
-            // Reconstruct matches on enum variants.
-            resugar::reconstruct_matches::Transform::new(ctx),
             // Cleanup the cfg.
             CowBox::Borrowed(&control_flow::prettify_cfg::Transform),
             // Replace some unops/binops and the array aggregates with

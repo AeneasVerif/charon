@@ -53,7 +53,7 @@ use derive_generic_visitor::*;
         GlobalKind, ItemOpacity, LangItem, LifetimeMutability, OptimizeAttr, OverflowMode,
         ReprOptions, Variance,
         std::ops::RangeInclusive<ScalarValue>,
-        WithRetag, BuiltinPathElem
+        WithRetag, BuiltinPathElem, BranchId,
     ),
     // Types that are completely skipped, even by `ZipAst`.
     skip(
@@ -67,12 +67,12 @@ use derive_generic_visitor::*;
         Deprecation, Disambiguator, DynPredicate, Field, FieldId, File, FloatTy, FloatValue,
         FnOperand, FunId, FnPtrKind, FunSig, InlineAttr, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
         Ident, from_rustc::InlineAttr,
-        llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,
+        llbc_ast::ExprBody, llbc_ast::StatementKind,
         Loc, Locals, NullOp, Operand, PathElem, PlaceKind,
         RawAttribute, RefKind, RegionId, RegionParam, ScalarValue, TraitItemName, TraitMethodId, AssocTypeId, AssocConstId, AssocItemId, MaybeAssocItemId,
         TranslatedCrate, TypeDeclKind, TypeParam, TypePattern, TypeVarId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
-        ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets,
+        ullbc_ast::TerminatorKind, SwitchData, SwitchScrutinee,
         UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, Layout, VariantLayout,
         Discriminator,
         SizeExpr, OffsetExpr, SizeGuarantee, OffsetGuarantee,
@@ -196,7 +196,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
     visitor(drive_body_mut(&mut VisitBodyMut)),
     // Types that are ignored when encountered.
     skip(
-        AbortKind, BinOp, BorrowKind, BuiltinAssertKind, ConstantExpr, FieldId,
+        AbortKind, BinOp, BorrowKind, BranchId, BuiltinAssertKind, ConstantExpr, FieldId,
         TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId,  UnOp, VariantId,
         TraitRef, LiteralTy, Literal, Region, RegionId, (), String, PathBuf, bool, usize,
@@ -206,9 +206,9 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
     // Types that we unconditionally explore.
     drive(
         Assert, BorrowckStatement, PlaceKind,
-        llbc_ast::ExprBody, llbc_ast::StatementKind, llbc_ast::Switch,
+        llbc_ast::ExprBody, llbc_ast::StatementKind,
         ullbc_ast::BlockData, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
-        ullbc_ast::TerminatorKind, ullbc_ast::SwitchTargets,
+        ullbc_ast::TerminatorKind, SwitchData, SwitchScrutinee,
         Body, Local,
         for<T: BodyVisitable> Box<T>,
         for<T: BodyVisitable> Option<T>,

@@ -119,6 +119,39 @@ pub struct GExprBody<T> {
     pub comments: Vec<(usize, Vec<String>)>,
 }
 
+generate_index_type!(BranchId, "Branch");
+
+/// The value inspected by a switch. Must be of integer, bool or char type.
+#[derive(
+    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
+)]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Switch"))]
+pub enum SwitchScrutinee {
+    /// Inspect the value produced by an operand.
+    Value(Operand),
+    /// Inspect the discriminant of an enum place.
+    Discriminant(Place),
+}
+
+/// A branching operation.
+#[derive(
+    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
+)]
+pub struct SwitchData {
+    /// The value to branch over.
+    pub scrutinee: SwitchScrutinee,
+    /// Which branch to take for each value of the scrutinee. Several values may point to the same
+    /// branch, and not all values may be accounted for.
+    ///
+    /// If the scrutinee is an operand, the constant expressions are literal values. If the
+    /// scrutinee is a discriminant read, the expressions are of the form
+    /// `ConstantExprKind::Discriminant`.
+    pub branches: Vec<(ConstantExpr, BranchId)>,
+    /// Branch to use if the scrutinee didn't match any of the values above. `None` if the set of
+    /// branch values is known to be exhaustive.
+    pub fallback: Option<BranchId>,
+}
+
 /// A function operand is used in function calls.
 /// It either designates a top-level function, or a place in case
 /// we are using function pointers stored in local variables.
@@ -318,6 +351,47 @@ impl Locals {
     /// Locals that aren't arguments or return values.
     pub fn non_argument_locals(&self) -> impl Iterator<Item = (LocalId, &Local)> {
         self.locals.iter_enumerated().skip(1 + self.arg_count)
+    }
+}
+
+impl SwitchData {
+    /// If this is a switch over a boolean, return its `then` and `else` branches.
+    pub fn as_if(&self) -> Option<(BranchId, BranchId)> {
+        let SwitchScrutinee::Value(scrutinee) = &self.scrutinee else {
+            return None;
+        };
+        if !matches!(scrutinee.ty().kind(), TyKind::Literal(LiteralTy::Bool)) {
+            return None;
+        }
+
+        let branch_for = |value| {
+            self.branches
+                .iter()
+                .find_map(|(case, branch_id)| match case.kind() {
+                    ConstantExprKind::Literal(Literal::Bool(case_value))
+                        if *case_value == value =>
+                    {
+                        Some(*branch_id)
+                    }
+                    _ => None,
+                })
+                .or(self.fallback)
+        };
+        Some((branch_for(true)?, branch_for(false)?))
+    }
+
+    /// Group the explicit switch values by the branch they select.
+    pub fn group_by_branch(&self) -> IndexVec<BranchId, Vec<ConstantExpr>> {
+        let mut grouped = IndexVec::new();
+        if let Some(branch_id) = self.fallback {
+            grouped.get_or_extend_and_insert(branch_id, Vec::new);
+        }
+        for (value, branch_id) in &self.branches {
+            grouped
+                .get_or_extend_and_insert(*branch_id, Vec::new)
+                .push(value.clone());
+        }
+        grouped
     }
 }
 

@@ -51,6 +51,58 @@ let locals_get_input_vars (locals : locals) : local list =
 let fun_body_get_input_vars (fbody : 'body gexpr_body) : local list =
   locals_get_input_vars fbody.locals
 
+(** If this is a switch over a boolean, return its [then] and [else] branches.
+*)
+let switch_as_if (data : switch_data) : (branch_id * branch_id) option =
+  match data.scrutinee with
+  | SwitchValue op ->
+      let ty =
+        match op with
+        | Expressions.Copy p | Expressions.Move p -> p.ty
+        | Expressions.Constant cv -> cv.ty
+      in
+      if ty <> TLiteral TBool then None
+      else
+        let branch_for value =
+          match
+            List.find_map
+              (fun ((case : constant_expr), branch_id) ->
+                match case.kind with
+                | CLiteral (Values.VBool case_value) when case_value = value ->
+                    Some branch_id
+                | _ -> None)
+              data.branches
+          with
+          | Some branch_id -> Some branch_id
+          | None -> data.fallback
+        in
+        Option.bind (branch_for true) (fun then_branch ->
+            Option.map
+              (fun else_branch -> (then_branch, else_branch))
+              (branch_for false))
+  | SwitchDiscriminant _ -> None
+
+(** Group the explicit switch values by the branch they select. *)
+let switch_group_by_branch (data : switch_data) : constant_expr list list =
+  let num_branches =
+    match data.fallback with
+    | None -> 0
+    | Some branch_id -> BranchId.to_int branch_id + 1
+  in
+  let num_branches =
+    List.fold_left
+      (fun num_branches (_, branch_id) ->
+        Int.max num_branches (BranchId.to_int branch_id + 1))
+      num_branches data.branches
+  in
+  let grouped = Array.make num_branches [] in
+  List.iter
+    (fun (value, branch_id) ->
+      let i = BranchId.to_int branch_id in
+      grouped.(i) <- value :: grouped.(i))
+    data.branches;
+  grouped |> Array.map List.rev |> Array.to_list
+
 (** Get the signature of this function as a bound value, i.e. including its
     generics parameters. *)
 let bound_fun_sig_of_decl (def : fun_decl) : bound_fun_sig =

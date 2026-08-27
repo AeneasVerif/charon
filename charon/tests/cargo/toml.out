@@ -33,11 +33,14 @@ where
 {
     let _0: bool; // return
     let self: &'1 Option<T>[TraitClause0]; // arg #1
+    let _2: isize; // anonymous local
 
     storage_live(_0)
+    storage_live(_2)
     _ = (*self)
-    match (*self) {
-        Option::Some => {
+    _2 = @discriminant((*self))
+    switch move _2 {
+        1isize => {
         },
         _ => {
             _0 = const false

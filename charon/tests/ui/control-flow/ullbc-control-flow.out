@@ -284,35 +284,29 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     let _7: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
     let _8: &'1 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
     let _9: &'2 mut Range<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _10: isize; // anonymous local
-    let _11: usize; // anonymous local
+    let _10: usize; // anonymous local
+    let _11: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _12: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _13: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _14: usize; // anonymous local
-    let iter_15: Range<usize>[{built_in impl Sized for usize}]; // local
-    let _16: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _17: &'4 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _18: &'5 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _19: isize; // anonymous local
-    let _20: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _21: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _22: usize; // anonymous local
-    let iter_23: Range<usize>[{built_in impl Sized for usize}]; // local
-    let _24: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _25: &'6 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _26: &'7 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _27: isize; // anonymous local
-    let _28: usize; // anonymous local
-    let _29: bool; // anonymous local
-    let _30: usize; // anonymous local
+    let _13: usize; // anonymous local
+    let iter_14: Range<usize>[{built_in impl Sized for usize}]; // local
+    let _15: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _16: &'4 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _17: &'5 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _18: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _19: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _20: usize; // anonymous local
+    let iter_21: Range<usize>[{built_in impl Sized for usize}]; // local
+    let _22: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _23: &'6 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _24: &'7 mut Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _25: usize; // anonymous local
+    let _26: bool; // anonymous local
+    let _27: usize; // anonymous local
 
     bb0: {
         storage_live(_0);
         storage_live(_10);
-        storage_live(_11);
-        storage_live(_19);
-        storage_live(_27);
-        storage_live(_28);
+        storage_live(_25);
         storage_live(s);
         s = const 0usize;
         fake_read(s);
@@ -323,10 +317,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     }
 
     bb1: {
-        storage_dead(_28);
-        storage_dead(_27);
-        storage_dead(_19);
-        storage_dead(_11);
+        storage_dead(_25);
         storage_dead(_10);
         storage_dead(step_in);
         storage_dead(step_out);
@@ -351,8 +342,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
 
     bb4: {
         storage_dead(_8);
-        _10 = @discriminant(_7);
-        switch move _10 -> 0isize: bb5, 1isize: bb6, otherwise: bb7;
+        match _7 -> Option::None: bb5, Option::Some: bb6;
     }
 
     bb5: {
@@ -360,18 +350,18 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         storage_dead(_7);
         storage_dead(iter_6);
         storage_dead(_4);
+        storage_live(_11);
         storage_live(_12);
         storage_live(_13);
-        storage_live(_14);
-        _14 = copy step_out;
-        _13 = Range { start: const 0usize, end: move _14 };
-        storage_dead(_14);
-        _12 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _13) -> bb8 (unwind: bb1);
+        _13 = copy step_out;
+        _12 = Range { start: const 0usize, end: move _13 };
+        storage_dead(_13);
+        _11 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _12) -> bb8 (unwind: bb1);
     }
 
     bb6: {
-        _11 = copy s panic.+ const 1usize;
-        s = move _11;
+        _10 = copy s panic.+ const 1usize;
+        s = move _10;
         storage_dead(_9);
         storage_dead(_7);
         goto bb3;
@@ -383,39 +373,35 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     }
 
     bb8: {
-        storage_dead(_13);
-        storage_live(iter_15);
-        iter_15 = move _12;
+        storage_dead(_12);
+        storage_live(iter_14);
+        iter_14 = move _11;
         goto bb9;
     }
 
     bb9: {
+        storage_live(_15);
         storage_live(_16);
         storage_live(_17);
-        storage_live(_18);
-        _18 = &mut iter_15;
-        _17 = &two-phase-mut (*_18);
-        _16 = next<'11, usize>[{built_in impl Sized for usize}, impl_Step_for_usize](move _17) -> bb10 (unwind: bb1);
+        _17 = &mut iter_14;
+        _16 = &two-phase-mut (*_17);
+        _15 = next<'11, usize>[{built_in impl Sized for usize}, impl_Step_for_usize](move _16) -> bb10 (unwind: bb1);
     }
 
     bb10: {
-        storage_dead(_17);
-        _19 = @discriminant(_16);
-        switch move _19 -> 0isize: bb11, 1isize: bb12, otherwise: bb13;
+        storage_dead(_16);
+        match _15 -> Option::None: bb11, Option::Some: bb12;
     }
 
     bb11: {
         // Test comment
-        storage_dead(_18);
-        storage_dead(_16);
-        storage_dead(iter_15);
-        storage_dead(_12);
+        storage_dead(_17);
+        storage_dead(_15);
+        storage_dead(iter_14);
+        storage_dead(_11);
         _0 = copy s;
         storage_dead(s);
-        storage_dead(_28);
-        storage_dead(_27);
-        storage_dead(_19);
-        storage_dead(_11);
+        storage_dead(_25);
         storage_dead(_10);
         storage_dead(step_in);
         storage_dead(step_out);
@@ -423,69 +409,68 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
     }
 
     bb12: {
+        storage_live(_18);
+        storage_live(_19);
         storage_live(_20);
-        storage_live(_21);
-        storage_live(_22);
-        _22 = copy step_in;
-        _21 = Range { start: const 0usize, end: move _22 };
-        storage_dead(_22);
-        _20 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _21) -> bb14 (unwind: bb1);
+        _20 = copy step_in;
+        _19 = Range { start: const 0usize, end: move _20 };
+        storage_dead(_20);
+        _18 = into_iter<Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Iterator_for_Range<usize>[{built_in impl Sized for usize}, impl_Step_for_usize]](move _19) -> bb14 (unwind: bb1);
     }
 
     bb13: {
-        fake_read(_16);
+        fake_read(_15);
         undefined_behavior;
     }
 
     bb14: {
-        storage_dead(_21);
-        storage_live(iter_23);
-        iter_23 = move _20;
+        storage_dead(_19);
+        storage_live(iter_21);
+        iter_21 = move _18;
         goto bb15;
     }
 
     bb15: {
+        storage_live(_22);
+        storage_live(_23);
         storage_live(_24);
-        storage_live(_25);
-        storage_live(_26);
-        _26 = &mut iter_23;
-        _25 = &two-phase-mut (*_26);
-        _24 = next<'13, usize>[{built_in impl Sized for usize}, impl_Step_for_usize](move _25) -> bb16 (unwind: bb1);
+        _24 = &mut iter_21;
+        _23 = &two-phase-mut (*_24);
+        _22 = next<'13, usize>[{built_in impl Sized for usize}, impl_Step_for_usize](move _23) -> bb16 (unwind: bb1);
     }
 
     bb16: {
-        storage_dead(_25);
-        _27 = @discriminant(_24);
-        switch move _27 -> 0isize: bb17, 1isize: bb18, otherwise: bb19;
+        storage_dead(_23);
+        match _22 -> Option::None: bb17, Option::Some: bb18;
     }
 
     bb17: {
-        storage_dead(_26);
         storage_dead(_24);
-        storage_dead(iter_23);
-        storage_dead(_20);
+        storage_dead(_22);
+        storage_dead(iter_21);
         storage_dead(_18);
-        storage_dead(_16);
+        storage_dead(_17);
+        storage_dead(_15);
         goto bb9;
     }
 
     bb18: {
-        _28 = copy s panic.+ const 1usize;
-        s = move _28;
-        storage_live(_29);
-        storage_live(_30);
-        _30 = copy s;
-        _29 = move _30 >= const 1usize;
-        assert(move _29 == true) else panic(core::panicking::panic);
-        storage_dead(_30);
-        storage_dead(_29);
+        _25 = copy s panic.+ const 1usize;
+        s = move _25;
+        storage_live(_26);
+        storage_live(_27);
+        _27 = copy s;
+        _26 = move _27 >= const 1usize;
+        assert(move _26 == true) else panic(core::panicking::panic);
+        storage_dead(_27);
         storage_dead(_26);
         storage_dead(_24);
+        storage_dead(_22);
         goto bb15;
     }
 
     bb19: {
-        fake_read(_24);
+        fake_read(_22);
         undefined_behavior;
     }
 }
