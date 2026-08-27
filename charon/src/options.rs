@@ -250,6 +250,11 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub reconstruct_asserts: bool,
+    /// Recombine a `read_discriminant(place)` followed by a `switch` into a single operation that
+    /// uses enum variants instead of their discriminants.
+    #[clap(long)]
+    #[serde(default)]
+    pub reconstruct_matches: bool,
     /// Ensure all local deallocations are made explicit with `StorageDead` statements. If this flag is not passed,
     /// every non-return local is implicitly deallocated on function return.
     /// Note this can add a lot of statements (quadratically-many, because of unwind paths).
@@ -457,6 +462,7 @@ impl CliOpts {
                     self.index_to_function_calls = true;
                     self.reconstruct_fallible_operations = true;
                     self.reconstruct_asserts = true;
+                    self.reconstruct_matches = true;
                     self.unbind_item_vars = true;
                     self.duplicate_defaulted_methods = true;
                 }
@@ -480,6 +486,7 @@ impl CliOpts {
                     self.index_to_function_calls = true;
                     self.reconstruct_fallible_operations = true;
                     self.reconstruct_asserts = true;
+                    self.reconstruct_matches = true;
                     self.hide_marker_traits = true;
                     self.hide_allocator = true;
                     self.remove_unused_self_clauses = true;
@@ -495,6 +502,7 @@ impl CliOpts {
                     self.index_to_function_calls = true;
                     self.reconstruct_fallible_operations = true;
                     self.reconstruct_asserts = true;
+                    self.reconstruct_matches = true;
                     self.lift_associated_types.push("*".to_owned());
                     self.unbind_item_vars = true;
                     self.duplicate_defaulted_methods = true;
@@ -518,6 +526,7 @@ impl CliOpts {
                     self.hide_allocator = true;
                     self.reconstruct_fallible_operations = true;
                     self.reconstruct_asserts = true;
+                    self.reconstruct_matches = true;
                     self.ops_to_function_calls = true;
                     self.index_to_function_calls = true;
                     self.duplicate_defaulted_methods = true;
@@ -690,6 +699,8 @@ pub struct TranslateOptions {
     pub reconstruct_fallible_operations: bool,
     /// Replace `if x { panic() }` with `assert(x)`.
     pub reconstruct_asserts: bool,
+    /// Reconstruct matches on enum variants.
+    pub reconstruct_matches: bool,
     /// Insert the `StorageDead`s that MIR omits for some locals.
     pub deallocate_all_locals: bool,
     // Use `DeBruijnVar::Free` for the variables bound in item signatures.
@@ -849,6 +860,7 @@ impl TranslateOptions {
             unsized_strings: options.unsized_strings,
             reconstruct_fallible_operations: options.reconstruct_fallible_operations,
             reconstruct_asserts: options.reconstruct_asserts,
+            reconstruct_matches: options.reconstruct_matches,
             deallocate_all_locals: options.deallocate_all_locals,
             lift_associated_types,
             unbind_item_vars: options.unbind_item_vars,

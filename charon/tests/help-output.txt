@@ -145,6 +145,9 @@ Options:
       --reconstruct-asserts
           Replace `if x { panic() }` with `assert(x)`
 
+      --reconstruct-matches
+          Recombine a `read_discriminant(place)` followed by a `switch` into a single operation that uses enum variants instead of their discriminants
+
       --deallocate-all-locals
           Ensure all local deallocations are made explicit with `StorageDead` statements. If this flag is not passed, every non-return local is implicitly deallocated on function return. Note this can add a lot of statements (quadratically-many, because of unwind paths)
 

@@ -186,6 +186,10 @@ impl Transform {
 }
 
 impl LlbcPass for Transform {
+    fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
+        options.reconstruct_matches
+    }
+
     fn transform_body(&self, ctx: &mut TransformCtx, body: &mut llbc_ast::ExprBody) {
         body.body.visit_blocks_bwd(|block: &mut Block| {
             self.update_block(ctx, block);
