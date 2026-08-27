@@ -18,9 +18,9 @@ use petgraph::graphmap::DiGraphMap;
 use petgraph::visit::{
     Dfs, DfsPostOrder, EdgeFiltered, EdgeRef, GraphRef, IntoNeighbors, VisitMap, Visitable, Walker,
 };
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use smallvec::SmallVec;
 use std::cmp::Reverse;
-use std::collections::{HashMap, HashSet};
 use std::mem;
 
 use crate::ids::IndexVec;
@@ -123,7 +123,7 @@ impl Flow {
 }
 
 /// Control-Flow Graph
-type Cfg = DiGraphMap<src::BlockId, ()>;
+type Cfg = DiGraphMap<src::BlockId, (), rustc_hash::FxBuildHasher>;
 
 /// Information precomputed about a function's CFG.
 #[derive(Debug)]
@@ -286,8 +286,8 @@ impl CfgInfo {
 
         // Compute the forward graph (without backward edges).
         let mut fwd_cfg = Cfg::new();
-        let mut loop_entries = HashSet::new();
-        let mut switch_blocks = HashSet::new();
+        let mut loop_entries = HashSet::default();
+        let mut switch_blocks = HashSet::default();
         for block_id in Dfs::new(&cfg, start_block).iter(&cfg) {
             fwd_cfg.add_node(block_id);
 
@@ -783,7 +783,7 @@ impl ExitInfo {
     fn compute_switch_exits(cfg: &mut CfgInfo) {
         // We need to give precedence to the outer switches: we thus iterate
         // over the switch blocks in topological order.
-        let mut exits_set = HashSet::new();
+        let mut exits_set = HashSet::default();
         for bid in cfg
             .switch_blocks
             .iter()
