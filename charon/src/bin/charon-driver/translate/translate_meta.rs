@@ -56,6 +56,8 @@ impl<'tcx> TranslateCtx<'tcx> {
                         // Find the cargo home directory: according to cargo docs and having a
                         // look at the cargo source, it's either the `$CARGO_HOME` var or
                         // `$HOME/.cargo`
+                        static CURRENT_DIR: LazyLock<Option<PathBuf>> =
+                            LazyLock::new(|| std::env::current_dir().ok());
                         static CARGO_HOME: LazyLock<Option<PathBuf>> = LazyLock::new(|| {
                             std::env::var("CARGO_HOME")
                                 .map(PathBuf::from)
@@ -85,7 +87,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                             let mut rewritten_path: PathBuf = "/cargo".into();
                             rewritten_path.extend(path);
                             rewritten_path
-                        } else if let Ok(current_dir) = std::env::current_dir()
+                        } else if let Some(current_dir) = &*CURRENT_DIR
                             && let Ok(path) = path.strip_prefix(current_dir)
                         {
                             path.to_path_buf()
