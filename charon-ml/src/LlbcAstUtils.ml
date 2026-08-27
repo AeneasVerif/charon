@@ -167,7 +167,7 @@ class ['self] map_crate =
           target_information
       in
       let declarations =
-        List.map (self#visit_declaration_group env) declarations
+        Option.map (List.map (self#visit_declaration_group env)) declarations
       in
       let type_decls =
         TypeDeclId.Map.map (self#visit_type_decl env) type_decls
@@ -291,7 +291,7 @@ class ['self] iter_crate =
       in
       self#visit_string env name;
       self#visit_cli_options env options;
-      List.iter (self#visit_declaration_group env) declarations;
+      Option.iter (List.iter (self#visit_declaration_group env)) declarations;
       TypeDeclId.Map.iter (fun _ -> self#visit_type_decl env) type_decls;
       FunDeclId.Map.iter (fun _ -> self#visit_fun_decl env) fun_decls;
       GlobalDeclId.Map.iter (fun _ -> self#visit_global_decl env) global_decls;

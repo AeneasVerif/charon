@@ -2437,34 +2437,39 @@ let pp_crate (fmt : Format.formatter) (m : crate) : unit =
     | NonRecGroup id -> [ id ]
     | RecGroup ids -> ids
   in
-  if m.declarations = [] then (
-    TypeDeclId.Map.iter
-      (fun _ d -> emit (fun fmt -> pp_type_decl env fmt d))
-      m.type_decls;
-    GlobalDeclId.Map.iter
-      (fun _ d -> emit (fun fmt -> pp_global_decl env "" tab_incr fmt d))
-      m.global_decls;
-    TraitDeclId.Map.iter
-      (fun _ d -> emit (fun fmt -> pp_trait_decl env "" tab_incr fmt d))
-      m.trait_decls;
-    TraitImplId.Map.iter
-      (fun _ d -> emit (fun fmt -> pp_trait_impl env "" tab_incr fmt d))
-      m.trait_impls;
-    FunDeclId.Map.iter
-      (fun _ d -> emit (fun fmt -> pp_fun_decl env "" tab_incr fmt d))
-      m.fun_decls)
-  else
-    m.declarations
-    |> List.iter (function
-         | TypeGroup g ->
-             List.iter (fun id -> format_item (IdType id)) (ids_of_group g)
-         | FunGroup g ->
-             List.iter (fun id -> format_item (IdFun id)) (ids_of_group g)
-         | GlobalGroup g ->
-             List.iter (fun id -> format_item (IdGlobal id)) (ids_of_group g)
-         | TraitDeclGroup g ->
-             List.iter (fun id -> format_item (IdTraitDecl id)) (ids_of_group g)
-         | TraitImplGroup g ->
-             List.iter (fun id -> format_item (IdTraitImpl id)) (ids_of_group g)
-         | MixedGroup g -> List.iter format_item (ids_of_group g));
+  (match m.declarations with
+  | None ->
+      TypeDeclId.Map.iter
+        (fun _ d -> emit (fun fmt -> pp_type_decl env fmt d))
+        m.type_decls;
+      GlobalDeclId.Map.iter
+        (fun _ d -> emit (fun fmt -> pp_global_decl env "" tab_incr fmt d))
+        m.global_decls;
+      TraitDeclId.Map.iter
+        (fun _ d -> emit (fun fmt -> pp_trait_decl env "" tab_incr fmt d))
+        m.trait_decls;
+      TraitImplId.Map.iter
+        (fun _ d -> emit (fun fmt -> pp_trait_impl env "" tab_incr fmt d))
+        m.trait_impls;
+      FunDeclId.Map.iter
+        (fun _ d -> emit (fun fmt -> pp_fun_decl env "" tab_incr fmt d))
+        m.fun_decls
+  | Some declarations ->
+      declarations
+      |> List.iter (function
+           | TypeGroup g ->
+               List.iter (fun id -> format_item (IdType id)) (ids_of_group g)
+           | FunGroup g ->
+               List.iter (fun id -> format_item (IdFun id)) (ids_of_group g)
+           | GlobalGroup g ->
+               List.iter (fun id -> format_item (IdGlobal id)) (ids_of_group g)
+           | TraitDeclGroup g ->
+               List.iter
+                 (fun id -> format_item (IdTraitDecl id))
+                 (ids_of_group g)
+           | TraitImplGroup g ->
+               List.iter
+                 (fun id -> format_item (IdTraitImpl id))
+                 (ids_of_group g)
+           | MixedGroup g -> List.iter format_item (ids_of_group g)));
   if not !first then pp_string fmt "\n\n"
