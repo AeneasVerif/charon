@@ -47,10 +47,7 @@ pub enum TyKind {
     /// Note that here ADTs are very general. They can be:
     /// - user-defined ADTs
     /// - tuples (including `unit`, which is a 0-tuple)
-    /// - built-in types (includes some primitive types, e.g., arrays or slices)
-    ///
-    /// The information on the nature of the ADT is stored in (`TypeId`)[TypeId].
-    /// The last list is used encode const generics, e.g., the size of an array
+    /// - built-in types, namely `Box` and `str`
     ///
     /// Note: this is incorrectly named: this can refer to any valid `TypeDecl` including extern
     /// types.
@@ -270,8 +267,8 @@ pub enum LiteralTy {
     EnumIsA,
     EnumAsGetters,
     VariantName,
-    Serialize,
-    Deserialize,
+    SerializeState,
+    DeserializeState,
     Drive,
     DriveMut,
     DriveTwo,
@@ -281,23 +278,12 @@ pub enum LiteralTy {
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("T"))]
 pub enum BuiltinTy {
-    /// Tuple type.
+    /// A tuple `(A, B, ...)`, including `unit`.
     Tuple,
-    /// Boxes are de facto a primitive type.
+    /// Boxes; always detected, though they are only treated as primitives with `--treat-box-as-builtin`
     Box,
-    /// Primitive type
+    /// The `str` type, which corresponds to a `[u8]` that encodes a string with UTF-8.
     Str,
-}
-
-impl BuiltinTy {
-    pub fn get_name(self) -> Name {
-        let name: &[_] = match self {
-            BuiltinTy::Box => &["alloc", "boxed", "Box"],
-            BuiltinTy::Str => &["str"],
-            BuiltinTy::Tuple => &["Tuple"],
-        };
-        Name::from_path(name)
-    }
 }
 
 #[derive(
@@ -398,7 +384,11 @@ impl Ty {
 
     /// Return the unit type
     pub fn mk_unit() -> Ty {
-        static_type!(Ty::mk_tuple(vec![]).kind().clone())
+        static_type!(TyKind::Adt(TypeDeclRef {
+            id: TypeDeclId::UNIT,
+            generics: Box::new(GenericArgs::empty()),
+            builtin: Some(BuiltinTy::Tuple),
+        }))
     }
 
     pub fn mk_bool() -> Ty {
@@ -413,14 +403,6 @@ impl Ty {
         matches!(self.kind(), TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
     }
 
-    pub fn mk_tuple(tys: Vec<Ty>) -> Ty {
-        TyKind::Adt(TypeDeclRef {
-            id: TypeId::Builtin(BuiltinTy::Tuple),
-            generics: Box::new(GenericArgs::new_types(tys.into())),
-        })
-        .into_ty()
-    }
-
     pub fn mk_array(ty: Ty, len: ConstantExpr) -> Ty {
         TyKind::Array(ty, len).into_ty()
     }
@@ -430,10 +412,7 @@ impl Ty {
     }
     /// Return true if it is actually unit (i.e.: 0-tuple)
     pub fn is_unit(&self) -> bool {
-        match self.as_tuple() {
-            Some(tys) => tys.is_empty(),
-            None => false,
-        }
+        *self == Ty::mk_unit()
     }
 
     /// Return true if this is a scalar type
@@ -476,6 +455,13 @@ impl Ty {
         }
     }
 
+    pub fn is_tuple(&self) -> bool {
+        match self.kind() {
+            TyKind::Adt(ty_ref) => ty_ref.is_tuple(),
+            _ => false,
+        }
+    }
+
     pub fn as_box(&self) -> Option<&Ty> {
         match self.kind() {
             TyKind::Adt(ty_ref) if ty_ref.is_box() => Some(&ty_ref.generics.types[0]),
@@ -484,7 +470,7 @@ impl Ty {
     }
 
     pub fn as_adt_id(&self) -> Option<TypeDeclId> {
-        self.kind().as_adt()?.as_adt()
+        self.kind().as_adt().map(|a| a.id)
     }
 
     pub fn get_ptr_metadata(&self, translated: &TranslatedCrate) -> PtrMetadata {
@@ -495,31 +481,14 @@ impl Ty {
                 // there are two cases:
                 // 1. if the declared type has a fixed metadata, just returns it
                 // 2. if it depends on some other types or the generic itself
-                match ty_ref.as_builtin() {
-                    None => {
-                        let Some(decl) = ty_decls.get(ty_ref.adt_id()) else {
-                            return PtrMetadata::InheritFrom(self.clone());
-                        };
-                        match decl.ptr_metadata.clone().substitute(&ty_ref.generics) {
-                            // if it depends on some type, recursion with the binding env
-                            PtrMetadata::InheritFrom(ty) => ty.get_ptr_metadata(translated),
-                            // otherwise, simply return it
-                            meta => meta,
-                        }
-                    }
-                    // the metadata of a tuple is simply the last field
-                    Some(BuiltinTy::Tuple) => {
-                        match ty_ref.generics.types.iter().last() {
-                            // `None` refers to the unit type `()`
-                            None => PtrMetadata::None,
-                            // Otherwise, simply recurse
-                            Some(ty) => ty.get_ptr_metadata(translated),
-                        }
-                    }
-                    // Box is a pointer like ref & raw ptr, hence no metadata
-                    Some(BuiltinTy::Box) => PtrMetadata::None,
-                    // `str` has metadata length
-                    Some(BuiltinTy::Str) => PtrMetadata::Length,
+                let Some(decl) = ty_decls.get(ty_ref.id) else {
+                    return PtrMetadata::InheritFrom(self.clone());
+                };
+                match decl.ptr_metadata.clone().substitute(&ty_ref.generics) {
+                    // if it depends on some type, recursion with the binding env
+                    PtrMetadata::InheritFrom(ty) => ty.get_ptr_metadata(translated),
+                    // otherwise, simply return it
+                    meta => meta,
                 }
             }
             TyKind::DynTrait(pred) => match pred.vtable_ref(translated) {
@@ -556,11 +525,33 @@ impl Ty {
         }
     }
 
-    pub fn as_tuple(&self) -> Option<&IndexVec<TypeVarId, Ty>> {
-        match self.kind() {
-            TyKind::Adt(ty_ref) if ty_ref.is_tuple() => Some(&ty_ref.generics.types),
-            _ => None,
+    /// The field types of a tuple, in order. Panics if the type is not a tuple,
+    /// or if the type declaration is not found in the crate.
+    pub fn as_tuple_fields(&self, translated: &TranslatedCrate) -> Vec<Ty> {
+        let Some(tref) = self.as_adt().filter(|tref| tref.is_tuple()) else {
+            unreachable!("as_tuple_fields called on non-tuple type {:?}", self);
+        };
+
+        // Avoid doing a substitution if the tuple is polymorphic and we can just
+        // retrieve the fields from the generics, since substitutions won't work
+        // in case `--unbind-item-vars` is set.
+        let is_instantiated = translated
+            .item_names
+            .get(&ItemId::Type(tref.id))
+            .map(|name| name.name.iter().any(|elem| elem.is_instantiated()))
+            .unwrap_or(false);
+        if !is_instantiated {
+            return tref.generics.types.as_vec().clone();
         }
+
+        translated
+            .type_decls
+            .get(tref.id)
+            .and_then(|decl| decl.kind.as_struct())
+            .expect("the declaration of specialized tuple {tref:?} is missing")
+            .iter()
+            .map(|f| f.ty.clone().substitute(&tref.generics))
+            .collect()
     }
 
     pub fn as_adt(&self) -> Option<&TypeDeclRef> {

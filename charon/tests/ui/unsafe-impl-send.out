@@ -4,6 +4,8 @@
 #[diagnostic_item("Send")]
 pub trait Send<Self>
 
+struct () {}
+
 // Full name: test_crate::Foo
 struct Foo {
   _0: *const (),

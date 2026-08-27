@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: test_crate::foo
 unsafe extern "C" fn foo(_1: i32)
 = <extern:foo>

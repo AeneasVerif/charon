@@ -52,6 +52,8 @@ where
     return
 }
 
+struct () {}
+
 // Full name: test_crate::bar
 fn bar<T>()
 where

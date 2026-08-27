@@ -1,5 +1,11 @@
 # Final LLBC before serialization:
 
+struct () {}
+
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::main
 fn main()
 {

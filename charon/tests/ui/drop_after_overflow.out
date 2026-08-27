@@ -4,6 +4,10 @@
 #[lang_item(FormatArguments)]
 pub opaque type Arguments<'a>
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: core::fmt::{Arguments<'a>}::from_str
 pub fn from_str<'a>(_1: &'static str) -> Arguments<'a>
 = <opaque>
@@ -12,6 +16,17 @@ pub fn from_str<'a>(_1: &'static str) -> Arguments<'a>
 #[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
 
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
@@ -39,6 +54,14 @@ where
 // Full name: std::io::stdio::_print
 pub fn _print<'_0>(_1: Arguments<'_0>)
 = <opaque>
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
 
 // Full name: test_crate::Foo
 struct Foo {}
@@ -132,7 +155,7 @@ fn main()
         fake_read(f);
         storage_live(_2);
         _3 = const 255u8 checked.+ const 1u8;
-        assert assert(move _3.1 == false) (overflow) -> bb2 (unwind: bb1);
+        assert assert(move _3._1 == false) (overflow) -> bb2 (unwind: bb1);
     }
 
     bb1: {
@@ -140,7 +163,7 @@ fn main()
     }
 
     bb2: {
-        _2 = move _3.0;
+        _2 = move _3._0;
         storage_dead(_2);
         storage_live(f_ref);
         f_ref = &f;

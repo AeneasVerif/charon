@@ -369,6 +369,16 @@ and builtin_index_op_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ is_array; mutability; is_range } : builtin_index_op)
     | _ -> Error "")
 
+and builtin_path_elem_of_json (ctx : of_json_ctx) (js : json) :
+    (builtin_path_elem, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Tuple", _0) ] ->
+        let* _0 = int_of_json ctx _0 in
+        Ok (PeTuple _0)
+    | `String "Str" -> Ok PeStr
+    | _ -> Error "")
+
 and builtin_ty_of_json (ctx : of_json_ctx) (js : json) :
     (builtin_ty, string) result =
   combine_error_msgs js __FUNCTION__
@@ -990,6 +1000,9 @@ and path_elem_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Target", _0) ] ->
         let* _0 = string_of_json ctx _0 in
         Ok (PeTarget _0)
+    | `Assoc [ ("Builtin", _0) ] ->
+        let* _0 = builtin_path_elem_of_json ctx _0 in
+        Ok (PeBuiltin _0)
     | _ -> Error "")
 
 and place_of_json (ctx : of_json_ctx) (js : json) : (place, string) result =
@@ -1475,21 +1488,11 @@ and type_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
     (type_decl_ref, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("id", id); ("generics", generics) ] ->
-        let* id = type_id_of_json ctx id in
+    | `Assoc [ ("id", id); ("generics", generics); ("builtin", builtin) ] ->
+        let* id = type_decl_id_of_json ctx id in
         let* generics = box_of_json generic_args_of_json ctx generics in
-        Ok ({ id; generics } : type_decl_ref)
-    | _ -> Error "")
-
-and type_id_of_json (ctx : of_json_ctx) (js : json) : (type_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Adt", _0) ] ->
-        let* _0 = type_decl_id_of_json ctx _0 in
-        Ok (TAdtId _0)
-    | `Assoc [ ("Builtin", _0) ] ->
-        let* _0 = builtin_ty_of_json ctx _0 in
-        Ok (TBuiltin _0)
+        let* builtin = option_of_json builtin_ty_of_json ctx builtin in
+        Ok ({ id; generics; builtin } : type_decl_ref)
     | _ -> Error "")
 
 and type_param_of_json (ctx : of_json_ctx) (js : json) :
@@ -2194,6 +2197,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("ops_to_function_calls", ops_to_function_calls);
           ("index_to_function_calls", index_to_function_calls);
           ("treat_box_as_builtin", treat_box_as_builtin);
+          ("no_gen_tuple_structs", no_gen_tuple_structs);
           ("raw_consts", raw_consts);
           ("consts", consts);
           ("unsized_strings", unsized_strings);
@@ -2260,6 +2264,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           bool_of_json ctx index_to_function_calls
         in
         let* treat_box_as_builtin = bool_of_json ctx treat_box_as_builtin in
+        let* no_gen_tuple_structs = bool_of_json ctx no_gen_tuple_structs in
         let* raw_consts = bool_of_json ctx raw_consts in
         let* consts = option_of_json const_handling_of_json ctx consts in
         let* unsized_strings = bool_of_json ctx unsized_strings in
@@ -2319,6 +2324,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              ops_to_function_calls;
              index_to_function_calls;
              treat_box_as_builtin;
+             no_gen_tuple_structs;
              raw_consts;
              consts;
              unsized_strings;
@@ -3792,6 +3798,9 @@ and type_source_of_json (ctx : of_json_ctx) (js : json) :
             ctx supertrait_map
         in
         Ok (VTableType (dyn_predicate, field_map, supertrait_map))
+    | `Assoc [ ("Builtin", _0) ] ->
+        let* _0 = builtin_ty_of_json ctx _0 in
+        Ok (BuiltinType _0)
     | _ -> Error "")
 
 and v_table_field_of_json (ctx : of_json_ctx) (js : json) :

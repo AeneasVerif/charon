@@ -24,6 +24,8 @@ where
 // Full name: core::alloc::AllocError
 pub struct AllocError {}
 
+struct () {}
+
 // Full name: core::marker::Sized
 #[fundamental]
 #[lang_item(Sized)]

@@ -14,6 +14,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -104,7 +106,19 @@ where
 #[lang_item(String)]
 pub opaque type String
 
-// Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}::drop_glue
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+struct (_,)<A> {
+  _0: A,
+}
+
+// Full name: (_, _)::{impl Destruct for (A, B)}::drop_glue
 unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A, B>(_1: &'_0 mut (A, B))
 where
     TraitClause0: (A: Sized),
@@ -116,20 +130,20 @@ where
 
     storage_live(_0)
     _0 = ()
-    drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1).0
-    ↳⚡ drop[{built_in impl Destruct for B}::drop_glue<'4>] (*_1).1
+    drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
+    ↳⚡ drop[{built_in impl Destruct for B}::drop_glue<'4>] (*_1)._1
         ↳⚡ storage_dead(_1)
             unwind_terminate
         storage_dead(_1)
         unwind_continue
-    drop[{built_in impl Destruct for B}::drop_glue<'3>] (*_1).1
+    drop[{built_in impl Destruct for B}::drop_glue<'3>] (*_1)._1
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)
     return
 }
 
-// Full name: test_crate::<tuple_2>::{impl Destruct for (A, B)}
+// Full name: (_, _)::{impl Destruct for (A, B)}
 impl<A, B> "impl_Destruct_for_tuple" Destruct for (A, B)
 where
     TraitClause0: (A: Sized),
@@ -395,7 +409,7 @@ where
     storage_live(_6)
     storage_live(_2)
     storage_live(_3)
-    _3 = move self.0
+    _3 = move self._0
     _2 = TraitClause1::to_u64(move _3)
     ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'0>] _3
         ↳⚡ storage_dead(_6)
@@ -411,7 +425,7 @@ where
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
-    _5 = move self.1
+    _5 = move self._1
     _4 = TraitClause1::to_u64(move _5)
     ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'2>] _5
         ↳⚡ storage_dead(_6)
@@ -1550,7 +1564,7 @@ pub fn {impl Fn<(&'a (),)> for for<'a> flabada<'a>}::call<'a, '_1>(state: &'_1 f
     let args: (&'a (),); // arg #2
 
     storage_live(_0)
-    _0 = flabada<'a>(move args.0)
+    _0 = flabada<'a>(move args._0)
     ↳⚡ storage_dead(args)
         storage_dead(state)
         unwind_continue
@@ -1567,7 +1581,7 @@ pub fn call_mut<'a, '_1>(state: &'_1 mut for<'a> flabada<'a>, args: (&'a (),)) -
     let args: (&'a (),); // arg #2
 
     storage_live(_0)
-    _0 = flabada<'a>(move args.0)
+    _0 = flabada<'a>(move args._0)
     ↳⚡ storage_dead(args)
         storage_dead(state)
         unwind_continue
@@ -1584,7 +1598,7 @@ pub fn call_once<'a>(state: for<'a> flabada<'a>, args: (&'a (),)) -> Wrapper<(bo
     let args: (&'a (),); // arg #2
 
     storage_live(_0)
-    _0 = flabada<'a>(move args.0)
+    _0 = flabada<'a>(move args._0)
     ↳⚡ storage_dead(args)
         storage_dead(state)
         unwind_continue

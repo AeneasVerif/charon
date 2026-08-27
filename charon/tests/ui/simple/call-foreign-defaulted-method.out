@@ -5,6 +5,8 @@
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
+struct () {}
+
 // Full name: test_crate::foo::{impl Trait for ()}::defaulted
 pub fn impl_Trait_for_unit::defaulted<'_0>(self: &'_0 ())
 {

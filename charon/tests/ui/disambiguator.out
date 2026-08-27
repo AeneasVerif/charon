@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 fn test_crate::nonzero_disambiguator::my_function#1()
 {
     let _0: (); // return

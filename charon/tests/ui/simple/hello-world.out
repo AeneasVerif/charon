@@ -4,9 +4,15 @@
 #[lang_item(String)]
 pub opaque type String
 
+struct () {}
+
 // Full name: alloc::string::String::{impl Destruct for String}::drop_glue
 unsafe fn drop_glue<'_0>(_1: &'_0 mut String)
 = <opaque>
+
+struct str {
+  _0: [u8],
+}
 
 // Full name: alloc::string::{impl ToString for str}::to_string::<str>
 pub fn to_string::<str><'_0>(_1: &'_0 str) -> String

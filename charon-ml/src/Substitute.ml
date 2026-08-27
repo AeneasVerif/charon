@@ -479,6 +479,53 @@ let apply_args_to_item_binder (tr_self : trait_ref_kind) (args : generic_args)
   in
   substitutor (subst_free_vars subst) binder.item_binder_value
 
+let generic_args_match_params (params : Types.generic_params)
+    (args : Types.generic_args) : bool =
+  let pr, pt, pc, ptr = TypesUtils.generic_params_lengths params in
+  let ar, at, ac, atr = TypesUtils.generic_args_lengths args in
+  pr = ar && pt = at && pc = ac && ptr = atr
+
+(* Instantiate the provided generics with the given binder, if any. *)
+let instantiate_name_generics (binder : Types.generic_args Types.binder)
+    (g : Types.generic_args) : Types.generic_args =
+  if binder.binder_params = TypesUtils.empty_generic_params then begin
+    (* HACK: Monomorphization doesn't handle late-bound regions properly, so we
+       append them here manually. *)
+    let regions_count, types_count, const_generics_count, trait_refs_count =
+      TypesUtils.generic_args_lengths g
+    in
+    (* We additionally append the regions from `g` to the monomorphized args, so that we can match against them. *)
+    assert (types_count = 0 && const_generics_count = 0 && trait_refs_count = 0);
+    {
+      binder.binder_value with
+      (* Late-bound regions are appended after the monomorphized ones. *)
+      regions = binder.binder_value.regions @ g.regions;
+    }
+  end
+  else if g = TypesUtils.empty_generic_args then
+    (* The caller did not provide generics for the instantiated item, we keep that so. *)
+    g
+  else begin
+    if not (generic_args_match_params binder.binder_params g) then
+      failwith
+        "(partially) monomorphized generic parameters do not match the \
+         supplied generic arguments";
+    apply_args_to_binder g st_substitute_visitor#visit_generic_args binder
+  end
+
+(** The arguments this type was declared with, i.e. the ones it had before
+    (partial) monomorphization: monomorphization moves the arguments of an item
+    into its name, so we look for them there. *)
+let type_decl_ref_generics (type_decls : type_decl TypeDeclId.Map.t)
+    (tref : type_decl_ref) : generic_args =
+  match TypeDeclId.Map.find_opt tref.id type_decls with
+  | Some decl -> (
+      match List.rev decl.item_meta.name with
+      | PeInstantiated binder :: _ ->
+          instantiate_name_generics binder tref.generics
+      | _ -> tref.generics)
+  | None -> tref.generics
+
 (** Merge two levels of binders into a single one that binds the concatenated
     params. Useful for consumers that don't want to have to handle method
     binders. *)

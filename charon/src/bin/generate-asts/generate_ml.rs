@@ -42,9 +42,10 @@ impl<'a> GenerateCtx<'a> {
         let mut type_tree = HashMap::default();
         for ty in &crate_data.type_decls {
             let long_name = repr_name(&ty.item_meta.name);
-            if long_name.starts_with("charon_lib") {
-                let short_name = ty.item_meta.name.short_str().unwrap().to_string();
-                name_to_type.insert(short_name, ty);
+            if long_name.starts_with("charon_lib")
+                && let Some(short_name) = ty.item_meta.name.short_str()
+            {
+                name_to_type.insert(short_name.to_string(), ty);
             }
             name_to_type.insert(long_name, ty);
 

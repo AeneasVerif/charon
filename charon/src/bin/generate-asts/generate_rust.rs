@@ -387,6 +387,8 @@ impl<'a> Generator<'a> {
                 PathElem::Impl(_) => "<impl>".to_string(),
                 PathElem::Instantiated(_) => "<mono>".to_string(),
                 PathElem::Target(target) => target.clone(),
+                PathElem::Builtin(BuiltinPathElem::Tuple(n)) => format!("<tuple_{n}>"),
+                PathElem::Builtin(BuiltinPathElem::Str) => "<str>".to_string(),
             })
             .join("::")
     }

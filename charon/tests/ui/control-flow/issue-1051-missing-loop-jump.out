@@ -94,6 +94,14 @@ impl "impl_PartialOrd_i32_for_i32" PartialOrd<i32> for i32 {
     vtable: impl_PartialOrd_i32_for_i32::{vtable}
 }
 
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
 // Full name: core::iter::range::Step
 #[diagnostic_item("range_step")]
 pub trait Step<Self>
@@ -191,6 +199,12 @@ where
     TraitClause0: (I: Sized),
     TraitClause1: (I: Iterator),
 = <opaque>
+
+struct () {}
+
+struct (_,)<A> {
+  _0: A,
+}
 
 // Full name: test_crate::f
 pub fn f()

@@ -48,6 +48,8 @@ where
     return
 }
 
+struct () {}
+
 // Full name: test_cargo_toml::included::run
 pub fn run()
 {

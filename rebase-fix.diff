@@ -1,0 +1,197 @@
+diff --git a/charon/src/bin/charon-driver/hax/types/new/full_def.rs b/charon/src/bin/charon-driver/hax/types/new/full_def.rs
+index e10088088..218b61f4d 100644
+--- a/charon/src/bin/charon-driver/hax/types/new/full_def.rs
++++ b/charon/src/bin/charon-driver/hax/types/new/full_def.rs
+@@ -365,6 +365,9 @@ pub enum FullDefKind<'tcx> {
+         inline: InlineAttr,
+         is_const: bool,
+         sig: PolyFnSig,
++        /// The arguments of this function, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
++        /// Binds the same variables as `sig`. `None` if this function doesn't implement `Fn*`.
++        tupled_args_ty: Option<Binder<Ty>>,
+         /// Info required to construct a virtual `FnOnce` impl for this function, if compatible.
+         fn_once_impl: Option<Box<VirtualTraitImpl>>,
+         /// Info required to construct a virtual `FnMut` impl for this function, if compatible.
+@@ -384,6 +387,9 @@ pub enum FullDefKind<'tcx> {
+         /// signature with `Self` replaced by `dyn Trait` and associated types normalized.
+         vtable_sig: Option<PolyFnSig>,
+         sig: PolyFnSig,
++        /// The arguments of this function, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
++        /// Binds the same variables as `sig`. `None` if this function doesn't implement `Fn*`.
++        tupled_args_ty: Option<Binder<Ty>>,
+         /// Info required to construct a virtual `FnOnce` impl for this function, if compatible.
+         fn_once_impl: Option<Box<VirtualTraitImpl>>,
+         /// Info required to construct a virtual `FnMut` impl for this function, if compatible.
+@@ -848,11 +854,15 @@ where
+         RDefKind::Fn { .. } => {
+             let sig = tcx.fn_sig(def_id);
+             let fn_trait_impls = fn_def_trait_impls(def_id, sig);
++            let sig = inst_binder(tcx, s.typing_env(), args, sig);
+             FullDefKind::Fn {
+                 param_env: get_param_env(s, args),
+                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
+                 is_const: matches!(tcx.constness(def_id), rustc_hir::Constness::Const { .. }),
+-                sig: inst_binder(tcx, s.typing_env(), args, sig).sinto(s),
++                tupled_args_ty: fn_trait_impls
++                    .is_some()
++                    .then(|| tupled_args_ty(s, sig).sinto(s)),
++                sig: sig.sinto(s),
+                 fn_once_impl: fn_trait_impls.as_ref().map(|(vimpl, _, _)| vimpl.clone()),
+                 fn_mut_impl: fn_trait_impls.as_ref().map(|(_, vimpl, _)| vimpl.clone()),
+                 fn_impl: fn_trait_impls.map(|(_, _, vimpl)| vimpl),
+@@ -861,13 +871,17 @@ where
+         RDefKind::AssocFn { .. } => {
+             let item = tcx.associated_item(def_id);
+             let fn_trait_impls = fn_def_trait_impls(def_id, tcx.fn_sig(def_id));
++            let sig = get_method_sig(tcx, s.typing_env(), def_id, args);
+             FullDefKind::AssocFn {
+                 param_env: get_param_env(s, args),
+                 associated_item: AssocItem::sfrom_instantiated(s, &item, args),
+                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
+                 is_const: matches!(tcx.constness(def_id), rustc_hir::Constness::Const { .. }),
+                 vtable_sig: gen_vtable_sig(s, args),
+-                sig: get_method_sig(tcx, s.typing_env(), def_id, args).sinto(s),
++                tupled_args_ty: fn_trait_impls
++                    .is_some()
++                    .then(|| tupled_args_ty(s, sig).sinto(s)),
++                sig: sig.sinto(s),
+                 fn_once_impl: fn_trait_impls.as_ref().map(|(vimpl, _, _)| vimpl.clone()),
+                 fn_mut_impl: fn_trait_impls.as_ref().map(|(_, vimpl, _)| vimpl.clone()),
+                 fn_impl: fn_trait_impls.map(|(_, _, vimpl)| vimpl),
+diff --git a/charon/src/bin/charon-driver/hax/types/ty.rs b/charon/src/bin/charon-driver/hax/types/ty.rs
+index b65e76f1b..4209dbd80 100644
+--- a/charon/src/bin/charon-driver/hax/types/ty.rs
++++ b/charon/src/bin/charon-driver/hax/types/ty.rs
+@@ -1440,6 +1440,17 @@ pub struct CoercePredicate {
+     pub b: Ty,
+ }
+ 
++/// The arguments of the given signature, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
++/// The result binds the same variables as the signature it comes from, so that the two agree on
++/// the regions they use.
++pub fn tupled_args_ty<'tcx>(
++    s: &impl UnderOwnerState<'tcx>,
++    sig: ty::PolyFnSig<'tcx>,
++) -> ty::Binder<'tcx, ty::Ty<'tcx>> {
++    let tcx = s.base().tcx;
++    sig.map_bound(|sig| ty::Ty::new_tup(tcx, sig.inputs()))
++}
++
+ /// Reflects [`ty::ClosureArgs`]
+ #[derive(Clone, Debug, Hash, PartialEq, Eq)]
+ 
+@@ -1541,7 +1552,7 @@ impl ClosureArgs {
+         let sig = closure.sig();
+         let sig = tcx.signature_unclosure(sig, rustc_hir::Safety::Safe);
+         // Add bound variables for each erased region in the signature.
+-        let (sig, tupled_args_ty) = {
++        let sig = {
+             let mut visitor = RegionUnEraserVisitor {
+                 tcx,
+                 depth: 0,
+@@ -1549,17 +1560,13 @@ impl ClosureArgs {
+             };
+             let unbound_sig = sig.skip_binder().fold_with(&mut visitor);
+             let bound_vars = tcx.mk_bound_variable_kinds(&visitor.bound_vars);
+-            let tupled_args_ty = ty::Ty::new_tup(tcx, unbound_sig.inputs());
+-            (
+-                ty::Binder::bind_with_vars(unbound_sig, bound_vars),
+-                ty::Binder::bind_with_vars(tupled_args_ty, bound_vars),
+-            )
++            ty::Binder::bind_with_vars(unbound_sig, bound_vars)
+         };
+         ClosureArgs {
+             item,
+             kind: closure.kind().sinto(s),
++            tupled_args_ty: tupled_args_ty(s, sig).sinto(s),
+             fn_sig: sig.sinto(s),
+-            tupled_args_ty: tupled_args_ty.sinto(s),
+             upvar_tys: closure.upvar_tys().sinto(s),
+         }
+     }
+diff --git a/charon/src/bin/charon-driver/translate/translate_closures.rs b/charon/src/bin/charon-driver/translate/translate_closures.rs
+index e79538441..e1ee3ab11 100644
+--- a/charon/src/bin/charon-driver/translate/translate_closures.rs
++++ b/charon/src/bin/charon-driver/translate/translate_closures.rs
+@@ -63,6 +63,8 @@ enum Callable<'a> {
+     FnDef {
+         item: &'a hax::ItemRef,
+         sig: &'a hax::PolyFnSig,
++        /// The arguments, tupled as the `Fn*` traits take them. Binds the same variables as `sig`.
++        tupled_args_ty: &'a hax::Binder<hax::Ty>,
+     },
+ }
+ 
+@@ -80,6 +82,15 @@ impl<'a> Callable<'a> {
+             Callable::FnDef { sig, .. } => sig,
+         }
+     }
++
++    /// The arguments, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`. This is under the
++    /// same binder as `sig`.
++    fn tupled_args_ty(self) -> &'a hax::Ty {
++        match self {
++            Callable::Closure(args) => args.tupled_args_ty.hax_skip_binder_ref(),
++            Callable::FnDef { tupled_args_ty, .. } => tupled_args_ty.hax_skip_binder_ref(),
++        }
++    }
+ }
+ 
+ #[derive(Clone, Copy)]
+@@ -107,6 +118,7 @@ impl<'a> CallableFnImpls<'a> {
+             }),
+             hax::FullDefKind::Fn {
+                 sig,
++                tupled_args_ty,
+                 fn_once_impl,
+                 fn_mut_impl,
+                 fn_impl,
+@@ -114,6 +126,7 @@ impl<'a> CallableFnImpls<'a> {
+             }
+             | hax::FullDefKind::AssocFn {
+                 sig,
++                tupled_args_ty,
+                 fn_once_impl,
+                 fn_mut_impl,
+                 fn_impl,
+@@ -122,6 +135,9 @@ impl<'a> CallableFnImpls<'a> {
+                 callable: Callable::FnDef {
+                     item: def.this(),
+                     sig,
++                    // `None` if the function doesn't implement the `Fn*` traits, in which case
++                    // there's no callable method to translate.
++                    tupled_args_ty: tupled_args_ty.as_ref()?,
+                 },
+                 fn_once_impl: fn_once_impl.as_deref(),
+                 fn_mut_impl: fn_mut_impl.as_deref(),
+@@ -400,8 +416,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
+             }
+         };
+ 
++        // The method takes `self` and the callable's inputs as a tuple.
+         let tupled_args_ty = self
+-            .translate_ty(span, args.tupled_args_ty.hax_skip_binder_ref())?
++            .translate_ty(span, callable.tupled_args_ty())?
+             .move_under_binder();
+         fun_sig.inputs = vec![state_ty, tupled_args_ty];
+ 
+@@ -606,11 +623,15 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
+ 
+         let output = builder.new_var(None, signature.output.clone());
+         let _state = builder.new_var(Some("state".to_string()), signature.inputs[0].clone());
+-        let tupled_args = builder.new_var(Some("args".to_string()), signature.inputs[1].clone());
+-        let arg_tys = signature.inputs[1].as_tuple().unwrap();
++        let tupled_args_ty = &signature.inputs[1];
++        let tupled_args = builder.new_var(Some("args".to_string()), tupled_args_ty.clone());
++        // The tuple declaration is where we find the field types when it was monomorphized, so
++        // make sure it is translated.
++        let tuple_id = tupled_args_ty.as_adt().unwrap().id;
++        let _ = self.get_or_translate(ItemId::Type(tuple_id))?;
++        let arg_tys = tupled_args_ty.as_tuple_fields(&self.t_ctx.translated);
+         let args = arg_tys
+-            .iter()
+-            .cloned()
++            .into_iter()
+             .enumerate()
+             .map(|(i, ty)| {
+                 let nth_field = tupled_args

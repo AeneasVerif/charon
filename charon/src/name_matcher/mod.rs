@@ -147,11 +147,8 @@ impl Pattern {
         }
         match ty.kind() {
             TyKind::Adt(tref) => {
-                let name = match tref.as_builtin() {
-                    Some(builtin_ty) => &builtin_ty.get_name(),
-                    None => ctx.item_name(tref.adt_id()),
-                };
-                self.matches_with_generics(ctx, name, Some(&tref.generics))
+                let type_name = ctx.item_name(tref.id);
+                self.matches_with_generics(ctx, type_name, Some(&tref.generics))
             }
             TyKind::Array(ty, len) => {
                 let type_name = Name::from_path(&["Array"]);
@@ -258,6 +255,14 @@ impl PatElem {
                     pat_ident == ident || (pat_ident == "crate" && ident == &ctx.crate_name);
                 same_ident && PatTy::matches_generics(ctx, generics, args)
             }
+            (
+                PatElem::Ident {
+                    name: pat_ident,
+                    generics,
+                    ..
+                },
+                PathElem::Builtin(BuiltinPathElem::Str),
+            ) => pat_ident == "str" && PatTy::matches_generics(ctx, generics, args),
             (PatElem::Impl(_pat), PathElem::Impl(ImplElem::Ty(..))) => {
                 // TODO
                 false

@@ -2,6 +2,7 @@
 use crate::ast::*;
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use macros::{EnumAsGetters, EnumIsA};
+use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
 generate_index_type!(Disambiguator);
@@ -41,6 +42,22 @@ pub enum PathElem {
     /// This item is only available on the given target. Only appears in multi-target mode.
     #[serde_state(stateless)]
     Target(TargetTriple),
+    /// A path element for a builtin, like tuples
+    #[serde_state(stateless)]
+    Builtin(BuiltinPathElem),
+}
+
+/// Used for builtin items, rather than hardcoding these as strings.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, EnumIsA, EnumAsGetters,
+)]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Pe"))]
+pub enum BuiltinPathElem {
+    /// The tuple of the given arity.
+    Tuple(usize),
+    /// `str`, which is a struct containing a `[u8]` the standard library expects
+    /// to be valid UTF-8.
+    Str,
 }
 
 /// There are two kinds of `impl` blocks:
@@ -228,9 +245,33 @@ impl Name {
         self
     }
 
+    /// Whether this names one of the items Rust builds into the language (tuples, `str`, arrays,
+    /// slices) or an item we generate for one, such as its drop glue. They belong to no crate, so
+    /// their name starts either with the builtin itself or with the `impl` block we generated for them.
+    pub fn is_builtin(&self) -> bool {
+        matches!(
+            self.name.first(),
+            Some(PathElem::Builtin(_) | PathElem::Impl(_))
+        )
+    }
+
     /// Get the last identifier of the name, if any. This is useful for error messages and such.
-    /// Panics if the name is empty or if the last element is not an identifier.
+    /// Returns `None` if the name is empty or if the last element has no identifier to give.
     pub fn short_str(&self) -> Option<&str> {
-        Some(self.name.last()?.as_ident()?.0)
+        match self.name.last()? {
+            PathElem::Builtin(builtin) => Some(builtin.ident()),
+            PathElem::Ident(str, _) => Some(str),
+            _ => None,
+        }
+    }
+}
+
+impl BuiltinPathElem {
+    pub fn ident(self) -> &'static str {
+        match self {
+            BuiltinPathElem::Tuple(0) => "unit",
+            BuiltinPathElem::Tuple(_) => "tuple",
+            BuiltinPathElem::Str => "str",
+        }
     }
 }

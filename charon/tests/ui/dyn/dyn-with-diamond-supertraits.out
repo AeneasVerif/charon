@@ -26,6 +26,16 @@ fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable
 
 static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
+struct () {}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
 struct test_crate::Super::{vtable}<T> {
   size: usize,
   align: usize,

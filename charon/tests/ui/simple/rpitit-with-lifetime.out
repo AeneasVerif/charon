@@ -37,6 +37,20 @@ pub trait Iterator<Self>
     vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
 }
 
+struct () {}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+struct (_,)<A> {
+  _0: A,
+}
+
 // Full name: test_crate::Foo
 trait Foo<Self, T>
 {

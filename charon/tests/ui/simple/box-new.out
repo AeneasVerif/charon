@@ -7,6 +7,8 @@ pub opaque type Layout
 // Full name: core::alloc::AllocError
 pub struct AllocError {}
 
+struct () {}
+
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]

@@ -14,6 +14,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -71,6 +73,10 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 
+struct (_,)<A> {
+  _0: A,
+}
+
 // Full name: test_crate::make_early
 fn make_early<'a, T>(_1: fn(&'a T))
 where
@@ -112,7 +118,7 @@ fn {impl Fn<(&'_ u16,)> for test_crate::main::closure#1}::call<'_0, '_1>(_1: &'_
     storage_live(_0)
     storage_live(_3)
     _0 = ()
-    _3 = move tupled_args.0
+    _3 = move tupled_args._0
     _0 = ()
     storage_dead(_3)
     storage_dead(tupled_args)
@@ -254,7 +260,7 @@ fn {impl Fn<(&'_ u8,)> for test_crate::main::closure}::call<'_0, '_1>(_1: &'_1 t
     storage_live(_0)
     storage_live(_3)
     _0 = ()
-    _3 = move tupled_args.0
+    _3 = move tupled_args._0
     _0 = ()
     storage_dead(_3)
     storage_dead(tupled_args)

@@ -50,6 +50,12 @@ pub trait FnMut<Self, Args>
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
 }
 
+struct () {}
+
+struct (_,)<A> {
+  _0: A,
+}
+
 // Full name: test_crate::Iterator
 trait Iterator<Self>
 {

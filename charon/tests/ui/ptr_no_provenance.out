@@ -80,6 +80,8 @@ pub trait Ord<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::cmp::impls::{impl PartialEq<()> for ()}::eq
 pub fn eq<'_0, '_1>(_1: &'_0 (), _2: &'_1 ()) -> bool
 = <opaque>
@@ -248,6 +250,10 @@ where
     storage_dead(_2)
     storage_dead(_1)
     return
+}
+
+struct str {
+  _0: [u8],
 }
 
 // Full name: test_crate::main

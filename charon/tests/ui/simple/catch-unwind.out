@@ -73,6 +73,8 @@ where
   Err { _0: E },
 }
 
+struct () {}
+
 // Full name: core::result::Result::{impl Destruct for Result<T, E>[TraitClause0, TraitClause1]}::drop_glue
 unsafe fn drop_glue<'_0, T, E>(_1: &'_0 mut Result<T, E>[TraitClause0, TraitClause1])
 where
@@ -82,12 +84,20 @@ where
     TypeOutlives1: E: '_0,
 = <opaque>
 
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
+
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
 
 // Full name: std::panic::catch_unwind
-pub fn catch_unwind<F, R>(_1: F) -> Result<R, alloc::boxed::Box<(dyn Any + Send + 'static)>[{built_in impl MetaSized for (dyn Any + Send + 'static)}, {built_in impl Sized for Global}]>[TraitClause1, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send + 'static)>[{built_in impl MetaSized for (dyn Any + Send + 'static)}, {built_in impl Sized for Global}]}]
+pub fn catch_unwind<F, R>(_1: F) -> Result<R, Box<(dyn Any + Send + 'static)>[{built_in impl MetaSized for (dyn Any + Send + 'static)}, {built_in impl Sized for Global}]>[TraitClause1, {built_in impl Sized for Box<(dyn Any + Send + 'static)>[{built_in impl MetaSized for (dyn Any + Send + 'static)}, {built_in impl Sized for Global}]}]
 where
     TraitClause0: (F: Sized),
     TraitClause1: (R: Sized),
@@ -129,7 +139,7 @@ impl "impl_FnOnce_unit_for_closure" FnOnce<()> for closure {
 fn main()
 {
     let _0: (); // return
-    let _1: Result<(), alloc::boxed::Box<(dyn Any + Send + '27)>[{built_in impl MetaSized for (dyn Any + Send + '29)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send + '36)>[{built_in impl MetaSized for (dyn Any + Send + '38)}, {built_in impl Sized for Global}]}]; // anonymous local
+    let _1: Result<(), Box<(dyn Any + Send + '27)>[{built_in impl MetaSized for (dyn Any + Send + '29)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for Box<(dyn Any + Send + '36)>[{built_in impl MetaSized for (dyn Any + Send + '38)}, {built_in impl Sized for Global}]}]; // anonymous local
     let _2: closure; // anonymous local
 
     storage_live(_0)
@@ -140,7 +150,7 @@ fn main()
     _1 = catch_unwind<closure, ()>[{built_in impl Sized for closure}, {built_in impl Sized for ()}, impl_FnOnce_unit_for_closure, {built_in impl UnwindSafe for closure}](move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
-    conditional_drop[drop_glue<'100, (), alloc::boxed::Box<(dyn Any + Send + '78)>[{built_in impl MetaSized for (dyn Any + Send + '80)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for alloc::boxed::Box<(dyn Any + Send + '78)>[{built_in impl MetaSized for (dyn Any + Send + '80)}, {built_in impl Sized for Global}]}]] _1
+    conditional_drop[drop_glue<'100, (), Box<(dyn Any + Send + '78)>[{built_in impl MetaSized for (dyn Any + Send + '80)}, {built_in impl Sized for Global}]>[{built_in impl Sized for ()}, {built_in impl Sized for Box<(dyn Any + Send + '78)>[{built_in impl MetaSized for (dyn Any + Send + '80)}, {built_in impl Sized for Global}]}]] _1
     ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()

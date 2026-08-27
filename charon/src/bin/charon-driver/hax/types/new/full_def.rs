@@ -60,6 +60,7 @@ where
                 SyntheticItem::Array => AdtKind::Array,
                 SyntheticItem::Slice => AdtKind::Slice,
                 SyntheticItem::Tuple(..) => AdtKind::Tuple,
+                SyntheticItem::Str => AdtKind::Str,
             };
             let param_env = get_param_env(s, args);
             let destruct_impl = {
@@ -370,6 +371,9 @@ pub enum FullDefKind<'tcx> {
         inline: InlineAttr,
         is_const: bool,
         sig: PolyFnSig,
+        /// The arguments of this function, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
+        /// Binds the same variables as `sig`. `None` if this function doesn't implement `Fn*`.
+        tupled_args_ty: Option<Binder<Ty>>,
         /// Info required to construct a virtual `FnOnce` impl for this function, if compatible.
         fn_once_impl: Option<Box<VirtualTraitImpl>>,
         /// Info required to construct a virtual `FnMut` impl for this function, if compatible.
@@ -389,6 +393,9 @@ pub enum FullDefKind<'tcx> {
         /// signature with `Self` replaced by `dyn Trait` and associated types normalized.
         vtable_sig: Option<PolyFnSig>,
         sig: PolyFnSig,
+        /// The arguments of this function, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
+        /// Binds the same variables as `sig`. `None` if this function doesn't implement `Fn*`.
+        tupled_args_ty: Option<Binder<Ty>>,
         /// Info required to construct a virtual `FnOnce` impl for this function, if compatible.
         fn_once_impl: Option<Box<VirtualTraitImpl>>,
         /// Info required to construct a virtual `FnMut` impl for this function, if compatible.
@@ -482,6 +489,9 @@ pub enum FullDefKind<'tcx> {
         fields: IndexVec<FieldIdx, FieldDef>,
         output_ty: Ty,
         sig: PolyFnSig,
+        /// The arguments of this constructor, tupled as the `Fn*` traits take them, e.g. `(A, B,
+        /// C)`. Binds the same variables as `sig`. Always `Somes`.
+        tupled_args_ty: Option<Binder<Ty>>,
         /// Info required to construct a virtual `FnOnce` impl for this constructor.
         fn_once_impl: Option<Box<VirtualTraitImpl>>,
         /// Info required to construct a virtual `FnMut` impl for this constructor.
@@ -862,11 +872,15 @@ where
         RDefKind::Fn { .. } => {
             let sig = tcx.fn_sig(def_id);
             let fn_trait_impls = fn_def_trait_impls(def_id, sig);
+            let sig = inst_binder(tcx, s.typing_env(), args, sig);
             FullDefKind::Fn {
                 param_env: get_param_env(s, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 is_const: matches!(tcx.constness(def_id), rustc_hir::Constness::Const { .. }),
-                sig: inst_binder(tcx, s.typing_env(), args, sig).sinto(s),
+                tupled_args_ty: fn_trait_impls
+                    .is_some()
+                    .then(|| tupled_args_ty(s, sig).sinto(s)),
+                sig: sig.sinto(s),
                 fn_once_impl: fn_trait_impls.as_ref().map(|(vimpl, _, _)| vimpl.clone()),
                 fn_mut_impl: fn_trait_impls.as_ref().map(|(_, vimpl, _)| vimpl.clone()),
                 fn_impl: fn_trait_impls.map(|(_, _, vimpl)| vimpl),
@@ -875,13 +889,17 @@ where
         RDefKind::AssocFn { .. } => {
             let item = tcx.associated_item(def_id);
             let fn_trait_impls = fn_def_trait_impls(def_id, tcx.fn_sig(def_id));
+            let sig = get_method_sig(tcx, s.typing_env(), def_id, args);
             FullDefKind::AssocFn {
                 param_env: get_param_env(s, args),
                 associated_item: AssocItem::sfrom_instantiated(s, &item, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 is_const: matches!(tcx.constness(def_id), rustc_hir::Constness::Const { .. }),
                 vtable_sig: gen_vtable_sig(s, args),
-                sig: get_method_sig(tcx, s.typing_env(), def_id, args).sinto(s),
+                tupled_args_ty: fn_trait_impls
+                    .is_some()
+                    .then(|| tupled_args_ty(s, sig).sinto(s)),
+                sig: sig.sinto(s),
                 fn_once_impl: fn_trait_impls.as_ref().map(|(vimpl, _, _)| vimpl.clone()),
                 fn_mut_impl: fn_trait_impls.as_ref().map(|(_, vimpl, _)| vimpl.clone()),
                 fn_impl: fn_trait_impls.map(|(_, _, vimpl)| vimpl),
@@ -1008,13 +1026,15 @@ where
                 .map(|f| FieldDef::sfrom(s, f, args))
                 .collect();
             let output_ty = ty::Ty::new_adt(tcx, adt_def, args).sinto(s);
+            let sig = inst_binder(tcx, s.typing_env(), Some(args), sig);
             FullDefKind::Ctor {
                 adt_def_id: adt_def_id.sinto(s),
                 ctor_of,
                 variant_id: variant_id.sinto(s),
                 fields,
                 output_ty,
-                sig: inst_binder(tcx, s.typing_env(), Some(args), sig).sinto(s),
+                tupled_args_ty: Some(tupled_args_ty(s, sig).sinto(s)),
+                sig: sig.sinto(s),
                 fn_once_impl: fn_trait_impls.as_ref().map(|(vimpl, _, _)| vimpl.clone()),
                 fn_mut_impl: fn_trait_impls.as_ref().map(|(_, vimpl, _)| vimpl.clone()),
                 fn_impl: fn_trait_impls.map(|(_, _, vimpl)| vimpl),

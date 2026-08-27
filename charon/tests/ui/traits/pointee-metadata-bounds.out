@@ -80,6 +80,8 @@ pub trait Ord<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::hash::Hasher
 pub trait Hasher<Self>
 {
@@ -139,6 +141,10 @@ pub trait Pointee<Self>
     proof ImpliedClause8: (Self::Metadata: Freeze)
     type Metadata
     non-dyn-compatible
+}
+
+struct str {
+  _0: [u8],
 }
 
 // Full name: test_crate::assert_copy

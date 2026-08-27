@@ -52,6 +52,8 @@ impl Copy for ! {
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -206,6 +208,10 @@ where
     TypeOutlives0: T: 'static,
 = <opaque>
 
+struct (_,)<A> {
+  _0: A,
+}
+
 // Full name: test_crate::FOO::__rust_std_internal_init_fn
 #[inline(hint)]
 fn __rust_std_internal_init_fn() -> u32
@@ -285,7 +291,7 @@ fn {impl Fn<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_i
 
     storage_live(_0)
     storage_live(__rust_std_internal_init)
-    __rust_std_internal_init = move tupled_args.0
+    __rust_std_internal_init = move tupled_args._0
     storage_live(_4)
     storage_live(_5)
     _5 = &test_crate::FOO::{const}::closure::__RUST_STD_INTERNAL_VAL
@@ -459,7 +465,7 @@ fn {impl Fn<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_i
 
     storage_live(_0)
     storage_live(__rust_std_internal_init)
-    __rust_std_internal_init = move tupled_args.0
+    __rust_std_internal_init = move tupled_args._0
     storage_live(_4)
     storage_live(_5)
     _5 = &test_crate::FOO::{const}::closure#1::__RUST_STD_INTERNAL_VAL

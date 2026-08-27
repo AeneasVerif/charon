@@ -123,6 +123,9 @@ Options:
       --treat-box-as-builtin
           Treat `Box<T>` as if it was a built-in type
 
+      --no-gen-tuple-structs
+          Don't generate a type declaration per tuple arity. Instead, every tuple type refers to the single opaque declaration with id `TypeDeclId::UNIT`, and stores its field types in its generic arguments. This is meant for consumers that build tuples of arbitrary arity on the fly and don't care about their declaration. Note that this makes tuple types ill-typed with respect to their declaration; it is also incompatible with `--monomorphize`
+
       --raw-consts
           Do not inline or evaluate constants
 

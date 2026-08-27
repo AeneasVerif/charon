@@ -438,12 +438,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let span = item_meta.span;
 
         // Get the kind of the type decl.
-        let src = match def.kind() {
-            hax::FullDefKind::Closure { args, .. } => {
-                let info = self.translate_closure_info(span, args)?;
-                TypeSource::Closure { info }
-            }
-            _ => TypeSource::Normal,
+        let src = if let hax::FullDefKind::Closure { args, .. } = def.kind() {
+            let info = self.translate_closure_info(span, args)?;
+            TypeSource::Closure { info }
+        } else if let Some(builtin) = self.recognize_builtin_type(def.this()) {
+            TypeSource::Builtin(builtin)
+        } else {
+            TypeSource::Normal
         };
 
         // Translate type body

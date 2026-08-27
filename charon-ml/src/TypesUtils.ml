@@ -72,32 +72,42 @@ let type_decl_is_enum (def : type_decl) : bool =
   | Enum _ -> true
   | _ -> false
 
-(** Return [true] if a {!type:Charon.Types.ty} is actually [unit] *)
-let ty_is_unit (ty : ty) : bool =
-  match ty with
-  | TAdt
-      {
-        id = TBuiltin TTuple;
-        generics =
-          { regions = []; types = []; const_generics = []; trait_refs = _ };
-      } -> true
-  | _ -> false
+(** The declaration of the unit type [()]. Tuples get one declaration per arity;
+    charon reserves the very first id for the 0-tuple so that we can name it
+    without looking at the crate. With [--no-gen-tuple-structs], this is instead
+    the (opaque) declaration of every tuple. *)
+let unit_type_decl_id : type_decl_id = TypeDeclId.of_int 0
 
-let ty_as_opt_adt (ty : ty) : (type_id * generic_args) option =
+(** The unit type *)
+let mk_unit_ty : ty =
+  TAdt
+    {
+      id = unit_type_decl_id;
+      generics =
+        { regions = []; types = []; const_generics = []; trait_refs = [] };
+      builtin = Some TTuple;
+    }
+
+(** Return [true] if a {!type:Charon.Types.ty} is actually [unit]. The 0-tuple
+    takes no arguments, so it is the same type before and after
+    monomorphization. *)
+let ty_is_unit (ty : ty) : bool = ty = mk_unit_ty
+
+let ty_as_opt_adt (ty : ty) : type_decl_ref option =
   match ty with
-  | TAdt tref -> Some (tref.id, tref.generics)
+  | TAdt tref -> Some tref
   | _ -> None
 
 let ty_is_adt (ty : ty) : bool = Option.is_some (ty_as_opt_adt ty)
 
-let ty_as_adt (ty : ty) : type_id * generic_args =
+let ty_as_adt (ty : ty) : type_decl_ref =
   match ty_as_opt_adt ty with
-  | Some (id, generics) -> (id, generics)
+  | Some tref -> tref
   | None -> raise (Failure "Unreachable")
 
 let ty_as_builtin_adt_opt (ty : ty) : (builtin_ty * generic_args) option =
   match ty with
-  | TAdt { id = TBuiltin id; generics } -> Some (id, generics)
+  | TAdt { builtin = Some id; generics; _ } -> Some (id, generics)
   | _ -> None
 
 let ty_is_builtin_adt (ty : ty) : bool =
@@ -139,12 +149,12 @@ let ty_as_ref (ty : ty) : region * ty * ref_kind =
 
 let ty_is_custom_adt (ty : ty) : bool =
   match ty with
-  | TAdt { id = TAdtId _; _ } -> true
+  | TAdt { builtin = None; _ } -> true
   | _ -> false
 
 let ty_as_custom_adt (ty : ty) : TypeDeclId.id * generic_args =
   match ty with
-  | TAdt { id = TAdtId id; generics } -> (id, generics)
+  | TAdt { id; generics; builtin = None } -> (id, generics)
   | _ -> raise (Failure "Unreachable")
 
 let ty_as_literal (ty : ty) : literal_type =
@@ -236,16 +246,12 @@ let generic_args_of_params span (generics : generic_params) : generic_args =
   in
   { regions; types; const_generics; trait_refs }
 
-(** The unit type *)
-let mk_unit_ty : ty =
-  TAdt { id = TBuiltin TTuple; generics = empty_generic_args }
-
 (** The usize type *)
 let mk_usize_ty : ty = TLiteral (TUInt Usize)
 
 let ty_as_opt_box (box_ty : ty) : ty option =
   match box_ty with
-  | TAdt { id = TBuiltin TBox; generics = { types = [ boxed_ty ]; _ } } ->
+  | TAdt { generics = { types = [ boxed_ty ]; _ }; builtin = Some TBox; _ } ->
       Some boxed_ty
   | _ -> None
 
@@ -267,9 +273,15 @@ let ty_get_ref (ty : ty) : region * ty * ref_kind =
 let mk_ref_ty (r : region) (ty : ty) (ref_kind : ref_kind) : ty =
   TRef (r, ty, ref_kind)
 
-(** Make a box type *)
-let mk_box_ty (ty : ty) : ty =
-  TAdt { id = TBuiltin TBox; generics = mk_generic_args_from_types [ ty ] }
+(** Make a box type. [Box] is declared like any other ADT, so the caller has to
+    supply the id of its declaration. *)
+let mk_box_ty (box_id : type_decl_id) (ty : ty) : ty =
+  TAdt
+    {
+      id = box_id;
+      generics = mk_generic_args_from_types [ ty ];
+      builtin = Some TBox;
+    }
 
 (* TODO: move region set manipulation to aeneas *)
 

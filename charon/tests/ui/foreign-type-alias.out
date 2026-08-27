@@ -113,6 +113,8 @@ where
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: type_alias::Usize
 pub type Usize = usize
 

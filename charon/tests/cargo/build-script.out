@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: test_cargo_build_script::FOO
 pub fn FOO() -> u8
 {

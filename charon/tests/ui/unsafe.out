@@ -80,6 +80,8 @@ pub trait Ord<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::cmp::impls::{impl PartialEq<()> for ()}::eq
 pub fn eq<'_0, '_1>(_1: &'_0 (), _2: &'_1 ()) -> bool
 = <opaque>
@@ -211,6 +213,18 @@ pub fn null<T>() -> *const T
 where
     TraitClause0: (T: Thin),
 = <opaque>
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+struct str {
+  _0: [u8],
+}
 
 // Full name: test_crate::call_unsafe_fn
 fn call_unsafe_fn()

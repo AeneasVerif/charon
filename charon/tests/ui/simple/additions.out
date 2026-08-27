@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -191,6 +193,14 @@ pub fn wrapping_add(self: u8, rhs: u8) -> u8
     return
 }
 
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
 // Full name: core::num::{u8}::overflowing_add
 pub fn overflowing_add(self: u8, rhs: u8) -> (u8, bool)
 {
@@ -215,9 +225,9 @@ pub fn overflowing_add(self: u8, rhs: u8) -> (u8, bool)
     storage_dead(_7)
     storage_dead(_6)
     storage_live(a)
-    a = copy _5.0
+    a = copy _5._0
     storage_live(b)
-    b = copy _5.1
+    b = copy _5._1
     storage_dead(_5)
     storage_live(_8)
     _8 = copy a

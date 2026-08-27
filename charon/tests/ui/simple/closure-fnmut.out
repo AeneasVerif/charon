@@ -14,6 +14,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -56,6 +58,18 @@ pub trait FnMut<Self, Args>
     proof ImpliedClause3: (Args: Tuple)
     fn call_mut<'_0_1>;
     vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
+}
+
+struct (_,)<A> {
+  _0: A,
+}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
 }
 
 // Full name: test_crate::apply_to_zero_mut
@@ -113,7 +127,7 @@ where
     storage_live(x)
     storage_live(_4)
     storage_live(_7)
-    x = move tupled_args.0
+    x = move tupled_args._0
     _4 = copy (*(*_1)._0) panic.+ const 1u8
     (*(*_1)._0) = move _4
     storage_live(_5)

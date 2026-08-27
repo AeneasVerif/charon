@@ -295,9 +295,13 @@ and builtin_index_op = {
     TODO: update to not hardcode the types (except [Box] maybe) and be more
     modular. TODO: move to builtins.rs? *)
 and builtin_ty =
-  | TTuple  (** Tuple type. *)
-  | TBox  (** Boxes are de facto a primitive type. *)
-  | TStr  (** Primitive type *)
+  | TTuple  (** A tuple [(A, B, ...)], including [unit]. *)
+  | TBox
+      (** Boxes; always detected, though they are only treated as primitives
+          with [--treat-box-as-builtin] *)
+  | TStr
+      (** The [str] type, which corresponds to a [[u8]] that encodes a string
+          with UTF-8. *)
 
 (** A byte, in the MiniRust sense: it can either be uninitialized, a concrete u8
     value, or part of a pointer with provenance (e.g. to a global or a function)
@@ -698,12 +702,7 @@ and ty_kind =
       (** An ADT. Note that here ADTs are very general. They can be:
           - user-defined ADTs
           - tuples (including [unit], which is a 0-tuple)
-          - built-in types (includes some primitive types, e.g., arrays or
-            slices)
-
-          The information on the nature of the ADT is stored in
-          ([TypeId])[TypeId]. The last list is used encode const generics, e.g.,
-          the size of an array
+          - built-in types, namely [Box] and [str]
 
           Note: this is incorrectly named: this can refer to any valid
           [TypeDecl] including extern types. *)
@@ -763,25 +762,17 @@ and ty_kind =
           values are restricted by the pattern. *)
   | TError of string  (** A type that could not be computed or was incorrect. *)
 
-(** Reference to a type declaration or builtin type. *)
-and type_decl_ref = { id : type_id; generics : generic_args }
+(** Reference to a type declaration.
 
-(** Type identifier.
-
-    Allows us to factorize the code for built-in types and ADTs. *)
-and type_id =
-  | TAdtId of type_decl_id
-      (** A "regular" ADT type.
-
-          Includes transparent ADTs and opaque ADTs (local ADTs marked as
-          opaque, and external ADTs). *)
-  | TBuiltin of builtin_ty
-      (** Built-in type. Either a primitive type like array or slice, or a
-          non-primitive type coming from a standard library and that we handle
-          like a primitive type. Types falling into this category include: Box,
-          Vec, Cell... The Array and Slice types were initially modelled as
-          primitive in the [Ty] type. We decided to move them to built-in types
-          as it allows for more uniform treatment throughout the codebase. *)
+    This includes user-defined ADTs (structs, enums, unions), but also tuples,
+    boxes, and [str], which we translate as [struct str([u8])]. *)
+and type_decl_ref = {
+  id : type_decl_id;
+  generics : generic_args;
+  builtin : builtin_ty option;
+      (** If this points to a built-in type, it is recorded here for easier
+          identification. *)
+}
 
 (** A type variable in a signature or binder. *)
 and type_param = {
@@ -849,6 +840,13 @@ and variant_id = (VariantId.id[@visitors.opaque])
 (** Describes modifiers to the alignment and packing of the corresponding type.
     Represents [repr(align(n))] and [repr(packed(n))]. *)
 type alignment_modifier = Align of int | Pack of int
+
+(** Used for builtin items, rather than hardcoding these as strings. *)
+and builtin_path_elem =
+  | PeTuple of int  (** The tuple of the given arity. *)
+  | PeStr
+      (** [str], which is a struct containing a [[u8]] the standard library
+          expects to be valid UTF-8. *)
 
 (** Additional information for closures. *)
 and closure_info = {
@@ -1372,6 +1370,8 @@ and path_elem =
   | PeTarget of string
       (** This item is only available on the given target. Only appears in
           multi-target mode. *)
+  | PeBuiltin of builtin_path_elem
+      (** A path element for a builtin, like tuples *)
 
 (** The metadata stored in a pointer. That's the information stored in pointers
     alongside their address. It's empty for [Sized] types, and interesting for
@@ -1486,6 +1486,8 @@ and type_source =
           - [field_map]: Record what each vtable field means.
           - [supertrait_map]: For each implied clause that is also a supertrait
             clause, records which field of the vtable corresponds to it. *)
+  | BuiltinType of builtin_ty
+      (** A type declaration synthesised for a builtin type. *)
 
 and v_table_field =
   | VTableSize

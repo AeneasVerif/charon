@@ -5,6 +5,8 @@
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
+struct () {}
+
 opaque type test_crate::x::Trait::{vtable}
 
 // Full name: test_crate::x::Trait

@@ -110,9 +110,10 @@ fn test_partial_mono_name_matcher() -> anyhow::Result<()> {
         let Ok(ty) = instantiation.skip_binder.types.iter().exactly_one() else {
             return false;
         };
-        let Some(fields) = ty.as_tuple() else {
+        if !ty.is_tuple() {
             return false;
-        };
+        }
+        let fields = ty.as_tuple_fields(&crate_data);
         fields.len() == 2
             && fields
                 .iter()

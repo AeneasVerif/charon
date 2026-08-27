@@ -4,6 +4,8 @@
 pub fn eq<'_0, '_1>(_1: &'_0 bool, _2: &'_1 bool) -> bool
 = <opaque>
 
+struct () {}
+
 // Full name: test_crate::do_test::<bool>
 fn do_test::<bool>(init: bool, expected: bool)
 {

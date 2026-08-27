@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: test_crate::{impl Trait for bool}::method
 pub fn method<'_0>(self: &'_0 bool)
 {

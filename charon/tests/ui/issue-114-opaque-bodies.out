@@ -25,6 +25,8 @@ where
   Some { _0: T },
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -372,6 +374,14 @@ where
     storage_live(_0)
     _0 = const 42u32
     return
+}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
 }
 
 // Full name: test_crate::use_inlines

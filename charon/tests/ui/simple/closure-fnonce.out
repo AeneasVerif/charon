@@ -14,6 +14,8 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -51,6 +53,18 @@ pub trait FnOnce<Self, Args>
     type Output
     fn call_once;
     vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+}
+
+struct (_,)<A> {
+  _0: A,
+}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
 }
 
 // Full name: test_crate::apply_to_zero_once
@@ -129,7 +143,7 @@ fn call_once(_1: closure, tupled_args: (u8,)) -> u8
     storage_live(_0)
     storage_live(x)
     storage_live(_7)
-    x = move tupled_args.0
+    x = move tupled_args._0
     storage_live(_4)
     storage_live(_5)
     _5 = move _1._0

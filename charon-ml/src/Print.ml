@@ -124,9 +124,6 @@ let region_binder_to_string value_to_string env rb =
           Format.pp_print_string fmt (value_to_string env value))
         env fmt rb)
 
-let type_id_to_string env id =
-  PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_type_id env fmt id)
-
 let type_decl_id_to_string env def_id =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_type_decl_id env fmt def_id)
 

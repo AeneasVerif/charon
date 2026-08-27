@@ -25,6 +25,8 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (type_error("removed allocator parameter"): Sized),
 
+struct () {}
+
 // Full name: test_crate::Collection
 trait Collection<Self>
 {

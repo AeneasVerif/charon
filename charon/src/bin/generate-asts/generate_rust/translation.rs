@@ -223,19 +223,16 @@ impl Generator<'_> {
         value: &str,
     ) -> fmt::Result {
         match tref.as_builtin() {
-            None => {
-                let id = tref.adt_id();
-                match self.datatype_for(id) {
-                    Some(RustcDatatype::Special {
-                        fmt_translation: translation_expr,
-                        ..
-                    }) => translation_expr(self, f, &tref.generics, value),
-                    _ if self.enqueue(id) => {
-                        write!(f, "self.{}({value})?", self.translate_fn_name(id))
-                    }
-                    _ => self.unsupported_type(self.debug_type_name(id)),
+            None => match self.datatype_for(tref.id) {
+                Some(RustcDatatype::Special {
+                    fmt_translation: translation_expr,
+                    ..
+                }) => translation_expr(self, f, &tref.generics, value),
+                _ if self.enqueue(tref.id) => {
+                    write!(f, "self.{}({value})?", self.translate_fn_name(tref.id))
                 }
-            }
+                _ => self.unsupported_type(self.debug_type_name(tref.id)),
+            },
             Some(BuiltinTy::Tuple) => {
                 self.fmt_tuple_translation_expr(f, &tref.generics.types, value)
             }

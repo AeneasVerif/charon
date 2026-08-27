@@ -289,7 +289,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 let mut field_path = vec![];
                 for &(trait_id, clause_id) in &clause_path {
                     if let Ok(ItemRef::TraitDecl(tdecl)) = self.get_or_translate(trait_id.into())
-                        && let vtable_decl_id = tdecl.vtable.as_ref().unwrap().adt_id()
+                        && let vtable_decl_id = tdecl.vtable.as_ref().unwrap().id
                         && let Ok(ItemRef::Type(vtable_decl)) =
                             self.get_or_translate(vtable_decl_id.into())
                     {
@@ -998,7 +998,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                                     assert!(generics.const_generics.is_empty());
                                     ProjectionElem::Field(None, field_id)
                                 }
-                                Some(BuiltinTy::Box) => {
+                                Some(BuiltinTy::Box) if self.t_ctx.options.treat_box_as_builtin => {
                                     // Some sanity checks
                                     assert!(generics.regions.is_empty());
                                     assert!(generics.types.len() == 2);
@@ -1015,6 +1015,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                                         )
                                     }
                                 }
+                                Some(BuiltinTy::Box) => ProjectionElem::Field(None, field_id),
                                 Some(_) => {
                                     raise_error!(self, span, "Unexpected field projection")
                                 }
@@ -1312,10 +1313,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         Ok(Rvalue::Aggregate(AggregateKind::Array(t_ty, c), operands_t))
                     }
                     mir::AggregateKind::Tuple => {
-                        let tref = TypeDeclRef::new(
-                            TypeId::Builtin(BuiltinTy::Tuple),
-                            GenericArgs::empty(),
-                        );
+                        let tys = operands.iter().map(|op| op.ty(self.local_decls, self.tcx));
+                        let ty = ty::Ty::new_tup_from_iter(self.tcx, tys);
+                        let ty = self.translate_rustc_ty(span, &ty)?;
+                        let tref = ty.as_adt().unwrap().clone();
                         Ok(Rvalue::Aggregate(
                             AggregateKind::Adt(tref, None, None),
                             operands_t,

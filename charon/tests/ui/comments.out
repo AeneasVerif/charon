@@ -27,6 +27,8 @@ pub trait Default<Self>
 pub fn impl_Default_for_u32::default() -> u32
 = <opaque>
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -60,6 +62,18 @@ where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,
 = <opaque>
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+struct str {
+  _0: [u8],
+}
 
 // Full name: test_crate::function_call
 fn function_call(_1: u32)
@@ -347,25 +361,25 @@ fn foo()
     let _13: u32; // anonymous local
     let _14: u32; // anonymous local
     let a: [u32; 10usize]; // local
-    let _16: (&'3 u32, &'4 u32); // anonymous local
-    let _17: &'5 u32; // anonymous local
+    let _16: (&'8 u32, &'9 u32); // anonymous local
+    let _17: &'13 u32; // anonymous local
     let _18: usize; // anonymous local
-    let _19: &'6 u32; // anonymous local
-    let left_val: &'7 u32; // local
-    let right_val: &'8 u32; // local
+    let _19: &'14 u32; // anonymous local
+    let left_val: &'15 u32; // local
+    let right_val: &'16 u32; // local
     let _22: bool; // anonymous local
     let _23: u32; // anonymous local
     let _24: u32; // anonymous local
     let kind: AssertKind; // local
     let _26: AssertKind; // anonymous local
-    let _27: &'9 u32; // anonymous local
-    let _28: &'10 u32; // anonymous local
-    let _29: &'11 u32; // anonymous local
-    let _30: &'12 u32; // anonymous local
-    let _31: Option<Arguments<'20>>[{built_in impl Sized for Arguments<'20>}]; // anonymous local
-    let _32: &'24 u32; // anonymous local
-    let _33: &'25 u32; // anonymous local
-    let _34: &'34 u32; // anonymous local
+    let _27: &'17 u32; // anonymous local
+    let _28: &'18 u32; // anonymous local
+    let _29: &'19 u32; // anonymous local
+    let _30: &'20 u32; // anonymous local
+    let _31: Option<Arguments<'28>>[{built_in impl Sized for Arguments<'28>}]; // anonymous local
+    let _32: &'32 u32; // anonymous local
+    let _33: &'33 u32; // anonymous local
+    let _34: &'47 u32; // anonymous local
     let _35: u32; // anonymous local
     let _36: &'_ [u32; 10usize]; // anonymous local
     let _37: &'_ u32; // anonymous local
@@ -483,9 +497,9 @@ fn foo()
     storage_dead(_19)
     storage_dead(_17)
     storage_live(left_val)
-    left_val = copy _16.0
+    left_val = copy _16._0
     storage_live(right_val)
-    right_val = copy _16.1
+    right_val = copy _16._1
     storage_live(_22)
     storage_live(_23)
     _23 = copy (*left_val)
