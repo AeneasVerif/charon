@@ -1064,8 +1064,9 @@ pub fn translate<'tcx>(
         items_to_translate: Default::default(),
         processed: Default::default(),
         translate_stack: Default::default(),
-        cached_item_metas: Default::default(),
+        cached_spans: Default::default(),
         cached_names: Default::default(),
+        cached_item_metas: Default::default(),
         lt_mutability_computer: Default::default(),
     };
     ctx.register_target_info();
