@@ -130,6 +130,15 @@ impl<'tcx> TranslateCtx<'tcx> {
     }
 
     pub fn translate_span_data(&mut self, span: rustc_span::Span) -> meta::SpanData {
+        if let Some(data) = self.cached_spans.get(&span) {
+            return *data;
+        }
+        let data = self.translate_span_data_uncached(span);
+        self.cached_spans.insert(span, data);
+        data
+    }
+
+    fn translate_span_data_uncached(&mut self, span: rustc_span::Span) -> meta::SpanData {
         let smap: &rustc_span::source_map::SourceMap = self.tcx.sess.psess.source_map();
         let filename = smap.span_to_filename(span);
         let filename = self.translate_filename(filename);

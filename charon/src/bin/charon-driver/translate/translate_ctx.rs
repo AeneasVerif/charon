@@ -56,6 +56,8 @@ pub struct TranslateCtx<'tcx> {
     pub assoc_item_id_map: HashMap<hax::DefId, AssocItemId>,
     /// The reverse filename map.
     pub file_to_id: HashMap<FileName, FileId>,
+    /// Cache of the translated span, as translating one is costly
+    pub cached_spans: HashMap<rustc_span::Span, meta::SpanData>,
 
     /// Context for tracking and reporting errors.
     pub errors: RefCell<ErrorCtx>,
