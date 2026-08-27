@@ -41,6 +41,11 @@ struct TypeCheckVisitor<'a> {
     /// Remember the names of the types visited up to here.
     visit_stack: Vec<&'static str>,
     body_lt_unifier: Option<UnionFind<RegionId>>,
+    /// Whether `body_lt_unifier` merged anything, i.e. whether the body needs rewriting.
+    did_unify_lifetimes: bool,
+    /// The unifiers computed for each body we visited, in visit order. `None` for the bodies that
+    /// don't need rewriting.
+    body_lt_unifiers: Vec<Option<UnionFind<RegionId>>>,
     /// Copies of default methods may have contradictory premises like `Self::Item = bool` and
     /// `Self::Item = u32` which may equate entirely different types. We don't try to reason about
     /// this and instead accept this fact. It's fine because the original methods will be
@@ -84,7 +89,7 @@ impl TypeCheckVisitor<'_> {
         if let (Region::Body(a), Region::Body(b)) = (a, b)
             && let Some(unifier) = &mut self.body_lt_unifier
         {
-            unifier.union(*a, *b);
+            self.did_unify_lifetimes |= unifier.union(*a, *b);
         }
         Ok(())
     }
@@ -320,7 +325,7 @@ impl TypeCheckVisitor<'_> {
         &mut self,
         params_fmt: &FmtCtx<'_>,
         params: &GenericParams,
-        args: &mut GenericArgs,
+        args: &GenericArgs,
         target: &GenericsSource,
     ) -> ControlFlow<()> {
         self.zip_assert_match(
@@ -357,7 +362,7 @@ impl TypeCheckVisitor<'_> {
         ControlFlow::Continue(())
     }
 
-    fn assert_matches_item(&mut self, id: impl Into<ItemId>, args: &mut GenericArgs) {
+    fn assert_matches_item(&mut self, id: impl Into<ItemId>, args: &GenericArgs) {
         let id = id.into();
         let Some(item) = self.ctx.translated.get_item(id) else {
             return;
@@ -372,7 +377,7 @@ impl TypeCheckVisitor<'_> {
         &mut self,
         trait_ref: &TraitRef,
         method_id: TraitMethodId,
-        args: &mut GenericArgs,
+        args: &GenericArgs,
     ) {
         let trait_id = trait_ref.trait_decl_ref.skip_binder.id;
         let target = &GenericsSource::Method(trait_id, method_id);
@@ -394,7 +399,7 @@ impl TypeCheckVisitor<'_> {
         &mut self,
         trait_ref: &TraitRef,
         type_id: AssocTypeId,
-        args: &mut GenericArgs,
+        args: &GenericArgs,
     ) {
         let trait_id = trait_ref.trait_id();
         let target = &GenericsSource::TraitType(trait_id, type_id);
@@ -413,8 +418,8 @@ impl TypeCheckVisitor<'_> {
     }
 }
 
-impl VisitAstMut for TypeCheckVisitor<'_> {
-    fn visit<T: AstVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
+impl VisitAst for TypeCheckVisitor<'_> {
+    fn visit<T: AstVisitable>(&mut self, x: &T) -> ControlFlow<Self::Break> {
         self.visit_stack.push(x.name());
         VisitWithSpan::new(VisitWithBinderStack::new(self)).visit(x)?;
         self.visit_stack.pop();
@@ -422,14 +427,14 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
     }
 
     // Check that generics are correctly bound.
-    fn enter_region(&mut self, x: &mut Region) {
+    fn enter_region(&mut self, x: &Region) {
         if let Region::Var(var) = x
             && self.binder_stack.get_var(*var).is_none()
         {
             self.error(format!("Found incorrect region var: {var}"));
         }
     }
-    fn enter_ty_kind(&mut self, x: &mut TyKind) {
+    fn enter_ty_kind(&mut self, x: &TyKind) {
         match x {
             TyKind::TypeVar(var) if self.binder_stack.get_var(*var).is_none() => {
                 self.error(format!("Found incorrect type var: {var}"));
@@ -440,14 +445,14 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
             _ => {}
         }
     }
-    fn enter_constant_expr(&mut self, x: &mut ConstantExpr) {
+    fn enter_constant_expr(&mut self, x: &ConstantExpr) {
         if let ConstantExprKind::Var(var) = x.kind()
             && self.binder_stack.get_var(*var).is_none()
         {
             self.error(format!("Found incorrect const-generic var: {var}"));
         }
     }
-    fn enter_trait_ref(&mut self, x: &mut TraitRef) {
+    fn enter_trait_ref(&mut self, x: &TraitRef) {
         match &x.kind {
             TraitRefKind::Clause(var) if self.binder_stack.get_var(*var).is_none() => {
                 self.error(format!("Found incorrect clause var: {var}"));
@@ -504,34 +509,34 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
     }
 
     // Check that generics match the parameters of the target item.
-    fn enter_type_decl_ref(&mut self, x: &mut TypeDeclRef) {
+    fn enter_type_decl_ref(&mut self, x: &TypeDeclRef) {
         // With `--no-gen-tuple-structs`, a tuple stores its field types in its generics while
         // pointing to the parameter-less opaque unit declaration, so the two don't match.
         if x.is_tuple() && self.ctx.options.no_gen_tuple_structs {
             return;
         }
-        self.assert_matches_item(x.id, &mut x.generics)
+        self.assert_matches_item(x.id, &x.generics)
     }
-    fn enter_fun_decl_ref(&mut self, x: &mut FunDeclRef) {
-        self.assert_matches_item(x.id, &mut x.generics);
+    fn enter_fun_decl_ref(&mut self, x: &FunDeclRef) {
+        self.assert_matches_item(x.id, &x.generics);
     }
-    fn enter_fn_ptr(&mut self, x: &mut FnPtr) {
+    fn enter_fn_ptr(&mut self, x: &FnPtr) {
         match x.kind.as_ref() {
-            FnPtrKind::Fun(FunId::Regular(id)) => self.assert_matches_item(*id, &mut x.generics),
+            FnPtrKind::Fun(FunId::Regular(id)) => self.assert_matches_item(*id, &x.generics),
             // TODO: check builtin generics.
             FnPtrKind::Fun(FunId::Builtin(_)) => {}
             FnPtrKind::Trait(trait_ref, method_id) => {
-                self.assert_matches_method(trait_ref, *method_id, &mut x.generics);
+                self.assert_matches_method(trait_ref, *method_id, &x.generics);
             }
         }
     }
-    fn visit_rvalue(&mut self, x: &mut Rvalue) -> ::std::ops::ControlFlow<Self::Break> {
+    fn visit_rvalue(&mut self, x: &Rvalue) -> ::std::ops::ControlFlow<Self::Break> {
         if let Rvalue::UnaryOp(UnOp::Cast(CastKind::Concretize(src, tar)), _) = x {
             self.check_concretization_ty_match(src, tar);
         }
         Continue(())
     }
-    fn visit_body(&mut self, body: &mut Body) -> ControlFlow<Self::Break> {
+    fn visit_body(&mut self, body: &Body) -> ControlFlow<Self::Break> {
         self.body_lt_unifier = match body {
             Body::Unstructured(GExprBody {
                 bound_body_regions, ..
@@ -544,26 +549,23 @@ impl VisitAstMut for TypeCheckVisitor<'_> {
 
         self.visit_inner(body)?;
 
-        if let Some(mut unifier) = self.body_lt_unifier.take() {
-            body.dyn_visit_mut(|r: &mut Region| {
-                if let Region::Body(body_id) = r {
-                    *body_id = unifier.find_mut(*body_id);
-                }
-            });
-        }
+        let unifier = self.body_lt_unifier.take();
+        self.body_lt_unifiers
+            .push(unifier.filter(|_| self.did_unify_lifetimes));
+        self.did_unify_lifetimes = false;
         Continue(())
     }
-    fn enter_global_decl_ref(&mut self, x: &mut GlobalDeclRef) {
-        self.assert_matches_item(x.id, &mut x.generics);
+    fn enter_global_decl_ref(&mut self, x: &GlobalDeclRef) {
+        self.assert_matches_item(x.id, &x.generics);
     }
-    fn enter_trait_decl_ref(&mut self, x: &mut TraitDeclRef) {
+    fn enter_trait_decl_ref(&mut self, x: &TraitDeclRef) {
         // TODO: don't we need to pass the trait_self for correctness here?
-        self.assert_matches_item(x.id, &mut x.generics);
+        self.assert_matches_item(x.id, &x.generics);
     }
-    fn enter_trait_impl_ref(&mut self, x: &mut TraitImplRef) {
-        self.assert_matches_item(x.id, &mut x.generics);
+    fn enter_trait_impl_ref(&mut self, x: &TraitImplRef) {
+        self.assert_matches_item(x.id, &x.generics);
     }
-    fn enter_trait_impl(&mut self, timpl: &mut TraitImpl) {
+    fn enter_trait_impl(&mut self, timpl: &TraitImpl) {
         let Some(tdecl) = self.ctx.translated.trait_decls.get(timpl.impl_trait.id) else {
             return;
         };
@@ -666,9 +668,25 @@ impl TransformPass for Check {
                 binder_stack: BindingStack::empty(),
                 visit_stack: Default::default(),
                 body_lt_unifier: None,
+                did_unify_lifetimes: false,
+                body_lt_unifiers: Default::default(),
                 accept_type_errors,
             };
-            let _ = item.drive_mut(&mut visitor);
+            // Check the item without touching it, to avoid useless re-internings.
+            let _ = item.as_ref().drive(&mut visitor);
+            // Apply the lifetime unifications we computed, if any.
+            if visitor.body_lt_unifiers.iter().any(|u| u.is_some()) {
+                let mut unifiers = visitor.body_lt_unifiers.into_iter();
+                item.dyn_visit_mut(|body: &mut Body| {
+                    if let Some(Some(mut unifier)) = unifiers.next() {
+                        body.dyn_visit_mut(|r: &mut Region| {
+                            if let Region::Body(body_id) = r {
+                                *body_id = unifier.find_mut(*body_id);
+                            }
+                        });
+                    }
+                });
+            }
         });
     }
 }
