@@ -47,14 +47,13 @@ pub mod resugar {
 /// Passes that make the output simpler/easier to consume.
 pub mod simplify_output {
     pub mod anon_const_to_call;
+    pub mod builtins_to_function_calls;
     pub mod duplicate_defaulted_methods;
     pub mod filter_trivial_drops;
     pub mod hide_allocator_param;
     pub mod index_intermediate_assigns;
-    pub mod index_to_function_calls;
     pub mod inline_selected_functions;
     pub mod lift_associated_item_clauses;
-    pub mod ops_to_function_calls;
     pub mod remove_adt_clauses;
     pub mod remove_nops;
     pub mod remove_unit_locals;
@@ -177,7 +176,7 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         CowBox::Borrowed(&resugar::reconstruct_asserts::Transform),
         // Desugar the constants to other values/operands as much as possible.
         CowBox::Borrowed(&simplify_output::simplify_constants::Transform),
-        // Introduce intermediate assignments in preparation of the [`index_to_function_calls`]
+        // Introduce intermediate assignments in preparation of the [`builtins_to_function_calls`]
         // pass.
         CowBox::Borrowed(&simplify_output::index_intermediate_assigns::Transform),
         // Remove locals of type `()` which show up a lot.
@@ -213,13 +212,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         let pass = Pass::FusedStructuredBody(Box::new([
             // Cleanup the cfg.
             CowBox::Borrowed(&control_flow::prettify_cfg::Transform),
-            // Replace some unops/binops and the array aggregates with
-            // function calls (introduces: ArrayToSlice, etc.)
-            CowBox::Borrowed(&simplify_output::ops_to_function_calls::Transform),
-            // Replace the arrays/slices index operations with function
-            // calls.
-            // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
-            CowBox::Borrowed(&simplify_output::index_to_function_calls::Transform),
+            // Replace some operations and array/slice indexing with function calls.
+            CowBox::Borrowed(&simplify_output::builtins_to_function_calls::Transform),
         ]));
         ctx.run_pass(pass);
     }

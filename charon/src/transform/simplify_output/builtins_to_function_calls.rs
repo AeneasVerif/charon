@@ -1,4 +1,4 @@
-//! Desugar array/slice index operations to function calls.
+//! Desugar built-in operations and array/slice indexing to function calls.
 
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
@@ -6,6 +6,94 @@ use crate::transform::ctx::{BodyTransformCtx, LlbcStatementTransformCtx};
 use derive_generic_visitor::*;
 
 use crate::transform::ctx::LlbcPass;
+
+fn transform_operation(statement: &mut Statement) {
+    match &statement.kind {
+        // Transform the ArrayToSlice unop.
+        StatementKind::Assign(
+            place,
+            Rvalue::UnaryOp(
+                UnOp::Cast(CastKind::Unsize(src_ty, tgt_ty, UnsizingMetadata::Length(_))),
+                operand,
+            ),
+        ) => {
+            if let (TyKind::Ref(_, src_ty, src_kind), TyKind::Ref(_, tgt_ty, tgt_kind)) =
+                (src_ty.kind(), tgt_ty.kind())
+                && let TyKind::Array(elem_ty, len) = src_ty.kind()
+                && let TyKind::Slice(..) = tgt_ty.kind()
+            {
+                // In MIR terminology, we go from &[T; l] to &[T] which means we
+                // effectively "unsize" the type, as `l` no longer appears in the
+                // destination type. At runtime, the converse happens: the length
+                // materializes into the fat pointer.
+                assert!(src_kind == tgt_kind);
+                // We could avoid the clone operations below if we take the content of
+                // the statement. In practice, this shouldn't have much impact.
+                let id = match *src_kind {
+                    RefKind::Mut => BuiltinFunId::ArrayToSliceMut,
+                    RefKind::Shared => BuiltinFunId::ArrayToSliceShared,
+                };
+                let func = FnPtrKind::mk_builtin(id);
+                let generics = GenericArgs::new(
+                    [Region::Erased].into(),
+                    [elem_ty.clone()].into(),
+                    [len.clone()].into(),
+                    [].into(),
+                );
+                statement.kind = StatementKind::Call {
+                    call: Call {
+                        func: FnOperand::Regular(FnPtr::new(func, generics)),
+                        args: vec![operand.clone()],
+                        dest: place.clone(),
+                    },
+                    on_unwind: Block::new_unreachable(statement.span),
+                };
+            }
+        }
+        // Transform the array aggregates to function calls.
+        StatementKind::Assign(place, Rvalue::Repeat(operand, ty, len)) => {
+            // We could avoid the clone operations below if we take the content of
+            // the statement. In practice, this shouldn't have much impact.
+            let func = FnPtrKind::mk_builtin(BuiltinFunId::ArrayRepeat);
+            let generics = GenericArgs::new(
+                [].into(),
+                [ty.clone()].into(),
+                [len.clone()].into(),
+                [].into(),
+            );
+            statement.kind = StatementKind::Call {
+                call: Call {
+                    func: FnOperand::Regular(FnPtr::new(func, generics)),
+                    args: vec![operand.clone()],
+                    dest: place.clone(),
+                },
+                on_unwind: Block::new_unreachable(statement.span),
+            };
+        }
+        // Transform the raw pointer aggregate to a function call.
+        StatementKind::Assign(
+            place,
+            Rvalue::Aggregate(AggregateKind::RawPtr(ty, is_mut), operands),
+        ) => {
+            let func = FnPtrKind::mk_builtin(BuiltinFunId::PtrFromParts(*is_mut));
+            let generics = GenericArgs::new(
+                [Region::Erased].into(),
+                [ty.clone()].into(),
+                [].into(),
+                [].into(),
+            );
+            statement.kind = StatementKind::Call {
+                call: Call {
+                    func: FnOperand::Regular(FnPtr::new(func, generics)),
+                    args: operands.clone(),
+                    dest: place.clone(),
+                },
+                on_unwind: Block::new_unreachable(statement.span),
+            };
+        }
+        _ => {}
+    }
+}
 
 /// We replace some place constructors with function calls. To do that, we explore all the places
 /// in a body and deconstruct a given place access into intermediate assignments.
@@ -261,38 +349,44 @@ impl VisitBodyMut for IndexVisitor<'_, '_> {
 pub struct Transform;
 impl LlbcPass for Transform {
     fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
-        options.index_to_function_calls
+        options.ops_to_function_calls || options.index_to_function_calls
     }
 
     fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
-        decl.transform_llbc_statements(ctx, |ctx, st: &mut Statement| {
-            let mut visitor = IndexVisitor {
-                ctx,
-                place_mutability_stack: Vec::new(),
-            };
-            use StatementKind::*;
-            match &mut st.kind {
-                Assign(..) | SetDiscriminant(..) | Drop { .. } | Call { .. } => {
-                    let _ = visitor.visit_inner_with_mutability(st, true);
+        let body = decl.body.as_structured_mut().unwrap();
+        if ctx.options.ops_to_function_calls {
+            body.body.visit_statements(&mut transform_operation);
+        }
+        if ctx.options.index_to_function_calls {
+            decl.transform_llbc_statements(ctx, |ctx, st: &mut Statement| {
+                let mut visitor = IndexVisitor {
+                    ctx,
+                    place_mutability_stack: Vec::new(),
+                };
+                use StatementKind::*;
+                match &mut st.kind {
+                    Assign(..) | SetDiscriminant(..) | Drop { .. } | Call { .. } => {
+                        let _ = visitor.visit_inner_with_mutability(st, true);
+                    }
+                    Switch { .. } | PlaceMention(..) | Borrowck(..) => {
+                        let _ = visitor.visit_inner_with_mutability(st, false);
+                    }
+                    Nop
+                    | UnwindResume
+                    | Error(..)
+                    | InlineAsm { .. }
+                    | Assert { .. }
+                    | Abort(..)
+                    | StorageDead(..)
+                    | StorageLive(..)
+                    | Return
+                    | Break(..)
+                    | Continue(..)
+                    | Loop(..) => {
+                        let _ = st.drive_body_mut(&mut visitor);
+                    }
                 }
-                Switch { .. } | PlaceMention(..) | Borrowck(..) => {
-                    let _ = visitor.visit_inner_with_mutability(st, false);
-                }
-                Nop
-                | UnwindResume
-                | Error(..)
-                | InlineAsm { .. }
-                | Assert { .. }
-                | Abort(..)
-                | StorageDead(..)
-                | StorageLive(..)
-                | Return
-                | Break(..)
-                | Continue(..)
-                | Loop(..) => {
-                    let _ = st.drive_body_mut(&mut visitor);
-                }
-            }
-        })
+            })
+        }
     }
 }

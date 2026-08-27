@@ -397,7 +397,7 @@ pub enum AggregateKind {
     Array(Ty, ConstantExpr),
     /// Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
     /// a thin pointer). The type is the type of the pointee.
-    /// We lower this to a builtin function call for LLBC in [crate::transform::simplify_output::ops_to_function_calls].
+    /// We lower this to a builtin function call for LLBC in [crate::transform::simplify_output::builtins_to_function_calls].
     RawPtr(Ty, RefKind),
 }
 
