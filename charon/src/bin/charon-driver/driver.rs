@@ -301,7 +301,9 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
             error_ctx: Some(error_ctx),
             transform_ctx: None,
         };
-        run_compiler_with_callbacks(compiler_args, &mut callback)?;
+        charon_lib::timing::time("rustc-driver", || {
+            run_compiler_with_callbacks(compiler_args, &mut callback)
+        })?;
         // If `transform_ctx` is not set here, there was a fatal error.
         let ctx = callback.transform_ctx.ok_or(CharonFailure::RustcError)?;
         Some((ctx, options))
@@ -343,23 +345,25 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
         rustc_hir::def_id::DEF_ID_DEBUG
             .swap(&(def_id_debug as fn(_, &mut fmt::Formatter<'_>) -> _));
 
-        if precheck_rustc_errors(tcx) {
+        if charon_lib::timing::time("rustc-precheck-errors", || precheck_rustc_errors(tcx)) {
             return Compilation::Continue;
         }
 
-        self.transform_ctx = translate_crate::translate(
-            tcx,
-            self.options,
-            self.error_ctx.take().unwrap(),
-            compiler.sess.opts.sysroot.path().to_owned(),
-        )
+        self.transform_ctx = charon_lib::timing::time("translate-crate", || {
+            translate_crate::translate(
+                tcx,
+                self.options,
+                self.error_ctx.take().unwrap(),
+                compiler.sess.opts.sysroot.path().to_owned(),
+            )
+        })
         .ok();
 
         Compilation::Continue
     }
     fn after_analysis<'tcx>(&mut self, _compiler: &Compiler, tcx: TyCtxt<'tcx>) -> Compilation {
         if !self.emit_artifacts {
-            check_late_rustc_errors(tcx);
+            charon_lib::timing::time("rustc-late-checks", || check_late_rustc_errors(tcx));
         }
         Compilation::Continue
     }

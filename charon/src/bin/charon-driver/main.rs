@@ -88,16 +88,21 @@ fn run_charon() -> Result<usize, CharonFailure> {
 
     // The bulk of the translation is done, we no longer need to interact with rustc internals. We
     // run several passes that simplify the items and cleanup the bodies.
-    run_transformation_passes(&options, &mut ctx);
+    charon_lib::timing::time("transformation-passes", || {
+        run_transformation_passes(&options, &mut ctx)
+    });
 
     let error_count = ctx.errors.borrow().error_count;
 
     // # Final step: generate the files.
     let targets = options.targets(&ctx.translated.crate_name);
     trace!("Targets: {:?}", targets);
-    export::CrateData::new(ctx)
-        .serialize_to_files(targets)
-        .map_err(|()| CharonFailure::Serialize)?;
+    let crate_name = ctx.translated.crate_name.clone();
+    charon_lib::timing::time("serialize", || {
+        export::CrateData::new(ctx).serialize_to_files(targets)
+    })
+    .map_err(|()| CharonFailure::Serialize)?;
+    charon_lib::timing::report(&crate_name);
 
     if options.error_on_warnings && error_count != 0 {
         return Err(CharonFailure::CharonError(error_count));

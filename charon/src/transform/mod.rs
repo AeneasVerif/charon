@@ -78,6 +78,13 @@ use ctx::{LlbcPass, TransformPass, UllbcPass};
 
 use crate::options::CliOpts;
 
+/// Shorten a pass name for display: `charon_lib::transform::foo::bar::Transform` -> `foo::bar`.
+fn short_pass_name(name: &str) -> String {
+    let name = name.strip_prefix("charon_lib::transform::").unwrap_or(name);
+    let name = name.strip_suffix("::Transform").unwrap_or(name);
+    name.to_owned()
+}
+
 /// Run transformation passes on the crate before outputting it.
 pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
     // Passes that apply to the whole crate at once, typically those that change item signatures.
@@ -295,6 +302,8 @@ impl TransformCtx {
             Pass::NonBody(pass) => {
                 if pass.should_run(&self.options) {
                     trace!("# Starting pass {}", pass.name());
+                    let _guard =
+                        crate::timing::scope_lazy("transform", || short_pass_name(pass.name()));
                     pass.transform_ctx(self)
                 }
             }
@@ -312,6 +321,9 @@ impl TransformCtx {
                     for pass in passes.iter() {
                         if pass.should_run(&ctx.options) {
                             trace!("# Starting pass {}", pass.name());
+                            let _guard = crate::timing::scope_lazy("transform", || {
+                                short_pass_name(pass.name())
+                            });
                             pass.transform_item(ctx, item.reborrow());
                         }
                     }
@@ -325,6 +337,9 @@ impl TransformCtx {
                     for pass in passes.iter() {
                         if pass.should_run(&ctx.options) {
                             trace!("# Starting pass {}", pass.name());
+                            let _guard = crate::timing::scope_lazy("transform", || {
+                                short_pass_name(pass.name())
+                            });
                             pass.transform_function(ctx, decl);
                         }
                     }

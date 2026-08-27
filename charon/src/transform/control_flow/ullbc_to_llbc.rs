@@ -1342,6 +1342,13 @@ fn translate_body(ctx: &mut TransformCtx, body: &mut Body) {
         panic!("Called `ullbc_to_llbc` on an already restructured body")
     };
     trace!("About to translate to ullbc: {:?}", src_body.span);
+    // Report the time spent per body size, since this pass is superlinear in the number of blocks.
+    let _guard = crate::timing::scope_lazy("ullbc_to_llbc-body", || {
+        format!(
+            "{:05} blocks or less",
+            src_body.body.len().next_power_of_two()
+        )
+    });
 
     // Calculate info about the graph and heuristically determine loop and switch exit blocks.
     let start_block = BlockId::ZERO;
