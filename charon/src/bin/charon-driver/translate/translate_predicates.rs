@@ -324,7 +324,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let args = {
                     let dyn_ty = trait_decl_ref.clone().erase().generics.types[0].clone();
                     assert!(dyn_ty.is_dyn_trait());
-                    let mut args = GenericArgs::new_types([dyn_ty].into_iter().collect());
+                    let mut args = GenericArgs::new_types([dyn_ty].into());
                     args.trait_refs = bound_proof
                         .params
                         .trait_clauses

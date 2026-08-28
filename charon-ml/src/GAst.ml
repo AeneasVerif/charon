@@ -37,7 +37,7 @@ type crate = {
   item_names : (item_id * name) list;
   assoc_item_names : assoc_item_names TraitDeclId.Map.t;
   short_names : (item_id * name) list;
-  declarations : declaration_group list;
+  declarations : declaration_group list option;
   type_decls : type_decl TypeDeclId.Map.t;
   fun_decls : fun_decl FunDeclId.Map.t;
   global_decls : global_decl GlobalDeclId.Map.t;
