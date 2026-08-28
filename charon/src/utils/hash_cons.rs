@@ -126,6 +126,10 @@ mod intern_table {
         {
             // Take the write guard just long enough to drop the other `Arc` to this value.
             let mut write_guard = INTERNED.write().unwrap();
+            // Check the count again, it could have changed concurrently.
+            if Arc::strong_count(arc) != 2 {
+                return Err(f);
+            }
             if let Some((other_arc, _)) = write_guard.or_default::<T>().swap_remove_entry(&*arc) {
                 drop(other_arc);
             } else {
