@@ -1229,11 +1229,11 @@ and trait_ref_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          in
          Ok (Clause _0)
      | 2 ->
-         let* _0 = box_of_postcard trait_ref_of_postcard ctx st in
+         let* _0 = trait_ref_of_postcard ctx st in
          let* _1 = trait_clause_id_of_postcard ctx st in
          Ok (ParentClause (_0, _1))
      | 3 ->
-         let* _0 = box_of_postcard trait_ref_of_postcard ctx st in
+         let* _0 = trait_ref_of_postcard ctx st in
          let* _1 = assoc_type_id_of_postcard ctx st in
          let* _2 = trait_clause_id_of_postcard ctx st in
          Ok (ItemClause (_0, _1, _2))

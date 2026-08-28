@@ -518,7 +518,7 @@ impl ToString for UintTy {
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::TypeAndMut<'tcx>, state: S as gstate)]
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct TypeAndMut {
-    pub ty: Box<Ty>,
+    pub ty: Ty,
     pub mutbl: Mutability,
 }
 
@@ -671,12 +671,6 @@ impl Alias {
     }
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Box<Ty>> for ty::Ty<'tcx> {
-    fn sinto(&self, s: &S) -> Box<Ty> {
-        Box::new(self.sinto(s))
-    }
-}
-
 /// Reflects [`rustc_middle::ty::Ty`]
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -781,8 +775,8 @@ pub enum TyKind {
         ItemRef::translate_synthetic(s, SyntheticItem::Str, args)
     }),)]
     Str(ItemRef),
-    RawPtr(Box<Ty>, Mutability),
-    Ref(Region, Box<Ty>, Mutability),
+    RawPtr(Ty, Mutability),
+    Ref(Region, Ty, Mutability),
     #[custom_arm(FROM_TYPE::Dynamic(preds, region) => TyKind::Dynamic(resolve_for_dyn(s, preds, |_, _| ()), region.sinto(s)),)]
     Dynamic(DynBinder<()>, Region),
     #[custom_arm(FROM_TYPE::Coroutine(def_id, generics) => TO_TYPE::Coroutine(translate_item_ref(s, *def_id, generics)),)]

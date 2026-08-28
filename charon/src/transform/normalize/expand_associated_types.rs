@@ -190,7 +190,7 @@ mod trait_ref_path {
                 let tdecl = tdecl.as_trait_decl()?;
                 let clause = &tdecl.implied_clauses[parent_id];
                 let pred = clause.trait_.clone().try_substitute_with_tref(&tref).ok()?;
-                tref = TraitRef::new(TraitRefKind::ParentClause(Box::new(tref), parent_id), pred);
+                tref = TraitRef::new(TraitRefKind::ParentClause(tref, parent_id), pred);
             }
             Some(tref)
         }
@@ -844,7 +844,7 @@ impl<'a> ComputeItemModifications<'a> {
                 // Inherit known constraints from implied clauses.
                 for (clause_id, clause) in tr.implied_clauses.iter_enumerated() {
                     let tref = TraitRef::new(
-                        TraitRefKind::ParentClause(Box::new(self_tref.clone()), clause_id),
+                        TraitRefKind::ParentClause(self_tref.clone(), clause_id),
                         clause.trait_.clone(),
                     );
                     self.add_constraints_for_tref(&mut type_constraints, &tref);
@@ -1288,7 +1288,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
             }),
         );
         for (clause_id, clause) in tdecl.implied_clauses.iter_mut_enumerated() {
-            let self_path = TraitRefKind::ParentClause(Box::new(self_tref.clone()), clause_id);
+            let self_path = TraitRefKind::ParentClause(self_tref.clone(), clause_id);
             self.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
         }
         for (type_id, assoc_ty) in tdecl.types.iter_mut_enumerated() {
@@ -1299,8 +1299,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
                 for (clause_id, clause) in
                     assoc_ty.skip_binder.implied_clauses.iter_mut_enumerated()
                 {
-                    let self_path =
-                        TraitRefKind::ItemClause(Box::new(self_tref.clone()), type_id, clause_id);
+                    let self_path = TraitRefKind::ItemClause(self_tref.clone(), type_id, clause_id);
                     this.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
                 }
             });

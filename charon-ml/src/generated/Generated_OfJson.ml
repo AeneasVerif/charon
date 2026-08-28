@@ -1368,11 +1368,11 @@ and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = de_bruijn_var_of_json trait_clause_id_of_json ctx _0 in
         Ok (Clause _0)
     | `Assoc [ ("ParentClause", `List [ _0; _1 ]) ] ->
-        let* _0 = box_of_json trait_ref_of_json ctx _0 in
+        let* _0 = trait_ref_of_json ctx _0 in
         let* _1 = trait_clause_id_of_json ctx _1 in
         Ok (ParentClause (_0, _1))
     | `Assoc [ ("ItemClause", `List [ _0; _1; _2 ]) ] ->
-        let* _0 = box_of_json trait_ref_of_json ctx _0 in
+        let* _0 = trait_ref_of_json ctx _0 in
         let* _1 = assoc_type_id_of_json ctx _1 in
         let* _2 = trait_clause_id_of_json ctx _2 in
         Ok (ItemClause (_0, _1, _2))

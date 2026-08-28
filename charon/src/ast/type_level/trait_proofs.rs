@@ -101,7 +101,7 @@ pub enum TraitRefKind {
     ///                     parent clause 1 of clause 0
     /// }
     /// ```
-    ParentClause(Box<TraitRef>, TraitClauseId),
+    ParentClause(TraitRef, TraitClauseId),
 
     /// A clause defined on an associated type. This variant is only used during translation; after
     /// the `lift_associated_item_clauses` pass, clauses on items become `ParentClause`s.
@@ -122,7 +122,7 @@ pub enum TraitRefKind {
     ///                         clause 1 from item W (from local clause 0)
     /// }
     /// ```
-    ItemClause(Box<TraitRef>, AssocTypeId, TraitClauseId),
+    ItemClause(TraitRef, AssocTypeId, TraitClauseId),
 
     /// The implicit `Self: Trait` clause. Present inside trait declarations, including trait
     /// method declarations. Not present in trait implementations as we can use `TraitImpl` intead.
@@ -250,7 +250,7 @@ impl TraitRef {
             .clone()
             .substitute_with_tref(&self);
         Some(Self::new(
-            TraitRefKind::ParentClause(Box::new(self), clause_id),
+            TraitRefKind::ParentClause(self, clause_id),
             trait_decl_ref,
         ))
     }
