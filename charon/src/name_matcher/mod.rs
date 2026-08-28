@@ -171,8 +171,12 @@ impl Pattern {
                 self.matches_with_generics(ctx, &type_name, Some(&args))
             }
             TyKind::Pattern(ty, _) => self.matches_ty(ctx, ty),
+            TyKind::Literal(ty) => matches!(
+                self.elems.as_slice(),
+                [PatElem::Ident { name, generics, .. }]
+                    if generics.is_empty() && name == &ty.to_string()
+            ),
             TyKind::TypeVar(..)
-            | TyKind::Literal(..)
             | TyKind::Never
             | TyKind::Ref(..)
             | TyKind::RawPtr(..)

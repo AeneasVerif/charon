@@ -71,6 +71,12 @@ impl<T> Trait<T> for &[T] {
     fn method<U>() {}
 }
 
+#[pattern::pass("test_crate::{impl test_crate::Trait<_> for usize}")]
+#[pattern::fail("test_crate::{impl test_crate::Trait<_> for bool}")]
+impl Trait<bool> for usize {
+    fn method<U>() {}
+}
+
 struct Generic<T> {
     value: T,
 }

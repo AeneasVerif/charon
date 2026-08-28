@@ -168,6 +168,27 @@ where
     non-dyn-compatible
 }
 
+// Full name: test_crate::{impl Trait<bool> for usize}::method
+fn impl_Trait_bool_for_usize::method<U>()
+where
+    TraitClause0: (U: Sized),
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Trait<bool> for usize}
+impl "impl_Trait_bool_for_usize" Trait<bool> for usize {
+    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
+    proof ImpliedClause1: (bool: Sized) = {built_in impl Sized for bool}
+    fn method<U, TraitClause0_1: (U: Sized)> = impl_Trait_bool_for_usize::method<U>[TraitClause0_1]
+    non-dyn-compatible
+}
+
 // Full name: test_crate::Generic
 struct Generic<T>
 where
