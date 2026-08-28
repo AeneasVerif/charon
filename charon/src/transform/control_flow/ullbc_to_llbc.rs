@@ -18,9 +18,9 @@ use petgraph::graphmap::DiGraphMap;
 use petgraph::visit::{
     Dfs, DfsPostOrder, EdgeFiltered, EdgeRef, GraphRef, IntoNeighbors, VisitMap, Visitable, Walker,
 };
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use smallvec::SmallVec;
 use std::cmp::Reverse;
-use std::collections::{HashMap, HashSet};
 use std::mem;
 
 use crate::ids::IndexVec;
@@ -89,12 +89,41 @@ where
     }
 }
 
-/// Arbitrary-precision numbers
-type BigUint = fraction::DynaInt<u64, fraction::BigUint>;
-type BigRational = fraction::Ratio<BigUint>;
+/// The amount of "flow" reaching a block.
+#[derive(Debug, Clone, Copy, Default)]
+struct Flow(f64);
+
+impl Ord for Flow {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.total_cmp(&other.0)
+    }
+}
+impl PartialOrd for Flow {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl PartialEq for Flow {
+    fn eq(&self, other: &Self) -> bool {
+        self.cmp(other).is_eq()
+    }
+}
+impl Eq for Flow {}
+impl std::ops::AddAssign<Flow> for Flow {
+    fn add_assign(&mut self, other: Flow) {
+        self.0 += other.0;
+    }
+}
+impl Flow {
+    const ZERO: Flow = Flow(0.);
+    const ONE: Flow = Flow(1.);
+    fn divided_by(self, n: usize) -> Flow {
+        Flow(self.0 / (n as f64))
+    }
+}
 
 /// Control-Flow Graph
-type Cfg = DiGraphMap<src::BlockId, ()>;
+type Cfg = DiGraphMap<src::BlockId, (), rustc_hash::FxBuildHasher>;
 
 /// Information precomputed about a function's CFG.
 #[derive(Debug)]
@@ -182,7 +211,7 @@ struct BlockData {
     /// This is exactly this problems:
     /// <https://stackoverflow.com/questions/78221666/algorithm-for-total-flow-through-weighted-directed-acyclic-graph>
     /// TODO: the way I compute this is not efficient.
-    pub flow: IndexVec<BlockId, BigRational>,
+    pub flow: IndexVec<BlockId, Flow>,
     /// Reconstructed information about loops and switches.
     pub exit_info: ExitInfo,
 }
@@ -207,7 +236,7 @@ impl CfgInfo {
         // previous one.
         let start_block = BlockId::ZERO;
 
-        let empty_flow = body.map_ref(|_| BigRational::new(0u64.into(), 1u64.into()));
+        let empty_flow = body.map_ref(|_| Flow::ZERO);
         let mut block_data: IndexVec<BlockId, _> = body.map_ref_indexed(|id, contents| {
             Box::new(BlockData {
                 id,
@@ -257,8 +286,8 @@ impl CfgInfo {
 
         // Compute the forward graph (without backward edges).
         let mut fwd_cfg = Cfg::new();
-        let mut loop_entries = HashSet::new();
-        let mut switch_blocks = HashSet::new();
+        let mut loop_entries = HashSet::default();
+        let mut switch_blocks = HashSet::default();
         for block_id in Dfs::new(&cfg, start_block).iter(&cfg) {
             fwd_cfg.add_node(block_id);
 
@@ -321,10 +350,9 @@ impl CfgInfo {
             }
 
             // Compute the flows between each pair of nodes.
-            let mut flow: IndexVec<src::BlockId, BigRational> =
-                mem::take(&mut block_data[block_id].flow);
+            let mut flow: IndexVec<src::BlockId, Flow> = mem::take(&mut block_data[block_id].flow);
             // The flow to self is 1.
-            flow[block_id] = BigRational::new(1u64.into(), 1u64.into());
+            flow[block_id] = Flow::ONE;
             // If a block has both regular and unwind targets, don't let the unwind path dilute
             // the normal-control-flow heuristic used to pick switch exits. Unwind-only subgraphs
             // still flow through their own targets.
@@ -339,11 +367,11 @@ impl CfgInfo {
             // Divide the flow from each child to a given target block by the number of children.
             // This is a sparse matrix multiplication and could be implemented using a linalg
             // library.
-            let num_children: BigUint = flow_targets.len().into();
+            let num_children = flow_targets.len();
             for child in flow_targets {
                 for grandchild in block_data[child].reachable_including_self() {
                     // Flow from `child` to `grandchild`
-                    flow[grandchild] += &block_data[child].flow[grandchild] / &num_children;
+                    flow[grandchild] += block_data[child].flow[grandchild].divided_by(num_children);
                 }
             }
             block_data[block_id].flow = flow;
@@ -755,7 +783,7 @@ impl ExitInfo {
     fn compute_switch_exits(cfg: &mut CfgInfo) {
         // We need to give precedence to the outer switches: we thus iterate
         // over the switch blocks in topological order.
-        let mut exits_set = HashSet::new();
+        let mut exits_set = HashSet::default();
         for bid in cfg
             .switch_blocks
             .iter()
@@ -1342,6 +1370,13 @@ fn translate_body(ctx: &mut TransformCtx, body: &mut Body) {
         panic!("Called `ullbc_to_llbc` on an already restructured body")
     };
     trace!("About to translate to ullbc: {:?}", src_body.span);
+    // Report the time spent per body size, since this pass is superlinear in the number of blocks.
+    let _guard = crate::timing::scope_lazy("ullbc_to_llbc-body", || {
+        format!(
+            "{:05} blocks or less",
+            src_body.body.len().next_power_of_two()
+        )
+    });
 
     // Calculate info about the graph and heuristically determine loop and switch exit blocks.
     let start_block = BlockId::ZERO;

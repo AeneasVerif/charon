@@ -65,6 +65,8 @@ pub struct TranslateCtx<'tcx> {
     pub processed: HashSet<TransItemSource>,
     /// Stack of the translations currently happening. Used to avoid accidental cycles.
     pub translate_stack: Vec<ItemId>,
+    /// Cache of the translated span, as translating one is costly
+    pub cached_spans: HashMap<rustc_span::Span, meta::SpanData>,
     /// Cache the names to compute them only once each.
     pub cached_names: HashMap<RustcItem, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
@@ -178,6 +180,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             raise_error!(self, span, "Item is not monomorphic: {item:?}")
         }
         // Hax takes care of caching the translation.
+        let _guard = charon_lib::timing::scope("hax-full-def");
         let unwind_safe_s = std::panic::AssertUnwindSafe(&self.hax_state);
         std::panic::catch_unwind(move || match item {
             RustcItem::Poly(def_id) => def_id.full_def(*unwind_safe_s),

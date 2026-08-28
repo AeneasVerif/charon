@@ -71,7 +71,7 @@
 //!   with an existing trait impl. See the `dictionary_passing_style_woes.rs` test file.
 use derive_generic_visitor::*;
 use itertools::Itertools;
-use std::collections::{HashMap, HashSet};
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
 use crate::{
     ast::*, formatter::IntoFormatter, ids::IndexMap, pretty::FmtWithCtx, register_error,
@@ -381,7 +381,7 @@ mod trait_ref_path {
 /// Efficient representation of a set of `<Type as Trait>::Type = T` constraints.
 use type_constraint_set::*;
 mod type_constraint_set {
-    use std::collections::HashMap;
+    use rustc_hash::FxHashMap as HashMap;
 
     use super::trait_ref_path::*;
     use crate::{ast::*, ids::IndexVec};
@@ -1420,7 +1420,7 @@ impl TransformPass for Transform {
         // types.
         let item_modifications: HashMap<GenericsSource, ItemModifications> = {
             let mut computer = ComputeItemModifications::new(ctx);
-            let mut item_modifications = HashMap::new();
+            let mut item_modifications = HashMap::default();
             for (id, item) in ctx.translated.all_items_with_ids() {
                 let modifications = computer.compute_item_modifications(item);
                 item_modifications.insert(GenericsSource::Item(id), modifications);

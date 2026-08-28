@@ -1,5 +1,6 @@
 //! Run the rustc compiler with our custom options and hooks.
 use crate::CharonFailure;
+use crate::toolchain::toolchain_version;
 use crate::translate::translate_crate;
 use charon_lib::errors::ErrorCtx;
 use charon_lib::options::{self, CliOpts};
@@ -145,12 +146,40 @@ fn check_late_rustc_errors(tcx: TyCtxt<'_>) {
     }
 }
 
+/// Whether this sysroot provides libraries for the given target.
+fn sysroot_has_target(sysroot: &std::path::Path, target: &str) -> bool {
+    sysroot.join("lib").join("rustlib").join(target).is_dir()
+}
+
+/// Where we remember the sysroot that `cargo miri setup` computed.
+fn miri_sysroot_cache_file(target: &str) -> Option<PathBuf> {
+    let toolchain = toolchain_version();
+    let cache_dir = match env::var_os("CHARON_CACHE_DIR") {
+        Some(dir) => PathBuf::from(dir),
+        None => env::home_dir()?.join(".cache").join("charon"),
+    };
+    Some(
+        cache_dir
+            .join("full-mir-sysroot-cache")
+            .join(format!("{toolchain}-{target}")),
+    )
+}
+
 /// `cargo miri setup` sets up a sysroot containing a standard library built with
 /// `-Zalways-encode-mir`.
 fn setup_miri_sysroot(target: &str) -> Option<PathBuf> {
     if let Some(root) = env::var_os("CHARON_MIRI_SYSROOTS")
         && let sysroot = PathBuf::from(root)
-        && sysroot.join("lib").join("rustlib").join(target).is_dir()
+        && sysroot_has_target(&sysroot, target)
+    {
+        return Some(sysroot);
+    }
+
+    // Checked if we have this path in cache.
+    if let Some(cache_file) = miri_sysroot_cache_file(target)
+        && let Ok(contents) = std::fs::read_to_string(&cache_file)
+        && let sysroot = PathBuf::from(contents.trim())
+        && sysroot_has_target(&sysroot, target)
     {
         return Some(sysroot);
     }
@@ -187,7 +216,16 @@ fn setup_miri_sysroot(target: &str) -> Option<PathBuf> {
     let stdout = String::from_utf8_lossy(&output.stdout);
     let sysroot = stdout.lines().map(str::trim).find(|line| !line.is_empty());
     match sysroot {
-        Some(sysroot) => Some(PathBuf::from(sysroot)),
+        Some(sysroot) => {
+            // Memoise where the sysroot is, to avoid a subprocess call for all tests.
+            if let Some(cache_file) = miri_sysroot_cache_file(target)
+                && let Some(cache_dir) = cache_file.parent()
+                && std::fs::create_dir_all(cache_dir).is_ok()
+            {
+                let _ = std::fs::write(&cache_file, sysroot);
+            }
+            Some(PathBuf::from(sysroot))
+        }
         None => {
             eprintln!(
                 "warning: `cargo miri setup --print-sysroot` printed no sysroot for target \
@@ -301,7 +339,9 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
             error_ctx: Some(error_ctx),
             transform_ctx: None,
         };
-        run_compiler_with_callbacks(compiler_args, &mut callback)?;
+        charon_lib::timing::time("rustc-driver", || {
+            run_compiler_with_callbacks(compiler_args, &mut callback)
+        })?;
         // If `transform_ctx` is not set here, there was a fatal error.
         let ctx = callback.transform_ctx.ok_or(CharonFailure::RustcError)?;
         Some((ctx, options))
@@ -343,23 +383,25 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
         rustc_hir::def_id::DEF_ID_DEBUG
             .swap(&(def_id_debug as fn(_, &mut fmt::Formatter<'_>) -> _));
 
-        if precheck_rustc_errors(tcx) {
+        if charon_lib::timing::time("rustc-precheck-errors", || precheck_rustc_errors(tcx)) {
             return Compilation::Continue;
         }
 
-        self.transform_ctx = translate_crate::translate(
-            tcx,
-            self.options,
-            self.error_ctx.take().unwrap(),
-            compiler.sess.opts.sysroot.path().to_owned(),
-        )
+        self.transform_ctx = charon_lib::timing::time("translate-crate", || {
+            translate_crate::translate(
+                tcx,
+                self.options,
+                self.error_ctx.take().unwrap(),
+                compiler.sess.opts.sysroot.path().to_owned(),
+            )
+        })
         .ok();
 
         Compilation::Continue
     }
     fn after_analysis<'tcx>(&mut self, _compiler: &Compiler, tcx: TyCtxt<'tcx>) -> Compilation {
         if !self.emit_artifacts {
-            check_late_rustc_errors(tcx);
+            charon_lib::timing::time("rustc-late-checks", || check_late_rustc_errors(tcx));
         }
         Compilation::Continue
     }

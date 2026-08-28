@@ -231,6 +231,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         body: mir::Body<'tcx>,
         source_text: &Option<String>,
     ) -> Body {
+        let _guard = charon_lib::timing::scope("translate-body");
         let drop_kind = match body.phase {
             mir::MirPhase::Built | mir::MirPhase::Analysis(..) => DropKind::Conditional,
             mir::MirPhase::Runtime(..) => DropKind::Precise,

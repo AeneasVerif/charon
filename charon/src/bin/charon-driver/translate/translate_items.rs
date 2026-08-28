@@ -14,6 +14,10 @@ use std::ops::ControlFlow;
 
 impl<'tcx> TranslateCtx<'tcx> {
     pub(crate) fn translate_item(&mut self, item_src: &TransItemSource) {
+        let _guard = charon_lib::timing::scope_lazy("translate-item", || {
+            let kind = format!("{:?}", item_src.kind);
+            kind.split('(').next().unwrap().to_owned()
+        });
         let trans_id = self.register_no_enqueue(&None, item_src);
         let def_id = item_src.def_id();
         if let Some(trans_id) = trans_id {

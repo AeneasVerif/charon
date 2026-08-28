@@ -13,7 +13,7 @@ use crate::utils::*;
 use derive_generic_visitor::*;
 use itertools::Itertools;
 use petgraph::graphmap::DiGraphMap;
-use std::collections::{HashMap, HashSet};
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use std::fmt::{Debug, Display, Error};
 use std::vec::Vec;
 
