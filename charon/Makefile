@@ -32,6 +32,10 @@ clippy:
 test-popular-crates:
 	cargo test --release --features popular-crates-test --test popular-crates -- --test-threads 4
 
+.PHONY: bench-popular-crates
+bench-popular-crates:
+	cargo test --release --features popular-crates-test --test bench-popular-crates -- --nocapture
+
 # Build the doc.
 # For some reason, I don't manage to build all the packages in one command.
 .PHONY: doc
