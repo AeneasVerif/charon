@@ -498,8 +498,6 @@ impl CliOpts {
                 Preset::Eurydice => {
                     self.hide_allocator = true;
                     self.treat_box_as_builtin = true;
-                    self.ops_to_function_calls = true;
-                    self.index_to_function_calls = true;
                     self.reconstruct_fallible_operations = true;
                     self.reconstruct_asserts = true;
                     self.reconstruct_matches = true;
