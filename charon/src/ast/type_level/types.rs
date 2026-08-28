@@ -626,7 +626,7 @@ impl DynPredicate {
             .trait_
             .clone()
             .erase()
-            .substitute(&GenericArgs::new_types([dyn_ty].into_iter().collect()));
+            .substitute(&GenericArgs::new_types([dyn_ty].into()));
 
         // Get the vtable ref from the trait decl
         let trait_decl = translated.trait_decls.get(relevant_tref.id)?;
