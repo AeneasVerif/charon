@@ -38,91 +38,6 @@ where
     TypeOutlives2: I: '_0,
 = <opaque>
 
-// Full name: core::clone::Clone
-#[lang_item(Clone)]
-#[diagnostic_item("Clone")]
-pub trait Clone<Self>
-{
-    proof ImpliedClause0: (Self: Sized)
-    fn clone<'_0_1>;
-    non-dyn-compatible
-}
-
-// Full name: core::cmp::PartialEq
-#[lang_item(PartialEq)]
-#[diagnostic_item("PartialEq")]
-pub trait PartialEq<Self, Rhs>
-{
-    fn eq<'_0_1, '_1_1>;
-    vtable: core::cmp::PartialEq::{vtable}<Rhs>
-}
-
-// Full name: core::cmp::Eq
-#[diagnostic_item("Eq")]
-pub trait Eq<Self>
-{
-    proof ImpliedClause0: (Self: PartialEq<Self>)
-    non-dyn-compatible
-}
-
-// Full name: core::cmp::Ordering
-#[lang_item(OrderingEnum)]
-pub enum Ordering {
-  Less,
-  Equal,
-  Greater,
-}
-
-// Full name: core::option::Option
-#[lang_item(Option)]
-#[diagnostic_item("Option")]
-pub enum Option<T>
-where
-    TraitClause0: (T: Sized),
-{
-  None,
-  Some { _0: T },
-}
-
-// Full name: core::cmp::PartialOrd
-#[lang_item(PartialOrd)]
-#[diagnostic_item("PartialOrd")]
-pub trait PartialOrd<Self, Rhs>
-{
-    proof ImpliedClause0: (Self: PartialEq<Rhs>)
-    fn partial_cmp<'_0_1, '_1_1>;
-    vtable: core::cmp::PartialOrd::{vtable}<Rhs>
-}
-
-// Full name: core::cmp::Ord
-#[diagnostic_item("Ord")]
-pub trait Ord<Self>
-{
-    proof ImpliedClause0: (Self: Eq)
-    proof ImpliedClause1: (Self: PartialOrd<Self>)
-    fn cmp<'_0_1, '_1_1>;
-    non-dyn-compatible
-}
-
-struct () {}
-
-// Full name: core::hash::Hasher
-pub trait Hasher<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    fn finish<'_0_1>;
-    fn write<'_0_1, '_1_1>;
-    vtable: core::hash::Hasher::{vtable}
-}
-
-// Full name: core::hash::Hash
-#[diagnostic_item("Hash")]
-pub trait Hash<Self>
-{
-    fn hash<'_0_1, '_1_1, H, TraitClause0_1: (H: Sized), TraitClause1_1: (H: Hasher)>;
-    non-dyn-compatible
-}
-
 struct (_, _)<A, B>
 where
     TraitClause0: (A: Sized),
@@ -130,6 +45,8 @@ where
   _0: A,
   _1: B,
 }
+
+struct () {}
 
 #[track_caller]
 fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: usize) -> !
@@ -551,32 +468,16 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     panic(core::panicking::panic_fmt)
 }
 
-// Full name: core::marker::Send
-#[diagnostic_item("Send")]
-pub trait Send<Self>
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
+// Full name: core::option::Option
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
 {
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
+  None,
+  Some { _0: T },
 }
-
-// Full name: core::marker::Sync
-#[lang_item(Sync)]
-#[diagnostic_item("Sync")]
-pub trait Sync<Self>
-
-// Full name: core::marker::Freeze
-#[lang_item(Freeze)]
-pub trait Freeze<Self>
-
-// Full name: core::marker::Unpin
-#[lang_item(Unpin)]
-pub trait Unpin<Self>
 
 // Full name: core::num::{usize}::checked_sub
 pub fn checked_sub(_1: usize, _2: usize) -> Option<usize>[{built_in impl Sized for usize}]
@@ -704,46 +605,6 @@ pub fn panic_nounwind_fmt<'_0>(_1: Arguments<'_0>, _2: bool) -> !
 pub fn core::ptr::const_ptr::{*const [T]}::len<T>(_1: *const [T]) -> usize
 where
     TraitClause0: (T: Sized),
-= <opaque>
-
-// Full name: core::ptr::metadata::Pointee
-#[lang_item(PointeeTrait)]
-pub trait Pointee<Self>
-{
-    proof ImpliedClause0: (Self::Metadata: Sized)
-    proof ImpliedClause1: (Self::Metadata: Debug)
-    proof ImpliedClause2: (Self::Metadata: Copy)
-    proof ImpliedClause3: (Self::Metadata: Send)
-    proof ImpliedClause4: (Self::Metadata: Sync)
-    proof ImpliedClause5: (Self::Metadata: Ord)
-    proof ImpliedClause6: (Self::Metadata: Hash)
-    proof ImpliedClause7: (Self::Metadata: Unpin)
-    proof ImpliedClause8: (Self::Metadata: Freeze)
-    type Metadata
-    non-dyn-compatible
-}
-
-// Full name: core::ptr::metadata::Thin
-pub trait Thin<Self>
-where
-    TypeConstraint0: Self::ImpliedClause0::Metadata = (),
-{
-    proof ImpliedClause0: (Self: Pointee)
-    non-dyn-compatible
-}
-
-// Full name: core::ptr::metadata::from_raw_parts
-pub fn from_raw_parts<T, T1>(_1: *const T1, _2: {built_in impl Pointee for T}::Metadata) -> *const T
-where
-    TraitClause0: (T1: Sized),
-    TraitClause1: (T1: Thin),
-= <opaque>
-
-// Full name: core::ptr::metadata::from_raw_parts_mut
-pub fn from_raw_parts_mut<T, T1>(_1: *mut T1, _2: {built_in impl Pointee for T}::Metadata) -> *mut T
-where
-    TraitClause0: (T1: Sized),
-    TraitClause1: (T1: Thin),
 = <opaque>
 
 pub fn core::ptr::mut_ptr::{*mut [T]}::len<T>(_1: *mut [T]) -> usize
@@ -1017,8 +878,7 @@ where
     _10 = copy ptr_7
     storage_live(_11)
     _11 = copy len
-    _0 = from_raw_parts<[T], T>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](move _10, move _11)
-    ↳⚡ undefined_behavior
+    _0 = *const (move _10, move _11)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(ptr_7)
@@ -1068,8 +928,7 @@ where
     _10 = copy ptr_7
     storage_live(_11)
     _11 = copy len
-    _0 = from_raw_parts_mut<[T], T>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](move _10, move _11)
-    ↳⚡ undefined_behavior
+    _0 = *mut  (move _10, move _11)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(ptr_7)

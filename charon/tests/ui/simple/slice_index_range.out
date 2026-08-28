@@ -796,8 +796,7 @@ where
     _10 = copy ptr_7
     storage_live(_11)
     _11 = copy len
-    _0 = from_raw_parts<[T], T>(move _10, move _11)
-    ↳⚡ undefined_behavior
+    _0 = *const (move _10, move _11)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(ptr_7)
@@ -847,8 +846,7 @@ where
     _10 = copy ptr_7
     storage_live(_11)
     _11 = copy len
-    _0 = from_raw_parts_mut<[T], T>(move _10, move _11)
-    ↳⚡ undefined_behavior
+    _0 = *mut  (move _10, move _11)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(ptr_7)

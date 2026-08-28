@@ -128,40 +128,6 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
                 on_unwind: Block::new_unreachable(statement.span),
             };
         }
-        // Transform the raw pointer aggregate to a function call.
-        StatementKind::Assign(
-            place,
-            Rvalue::Aggregate(AggregateKind::RawPtr(ty, is_mut), operands),
-        ) => {
-            let TyKind::RawPtr(data_ty, _) = operands[0].ty().kind() else {
-                return;
-            };
-            let item = match is_mut {
-                RefKind::Shared => StdItem::PtrFromRawParts,
-                RefKind::Mut => StdItem::PtrFromRawPartsMut,
-            };
-            let Some(&fun_id) = std_items.item_map.get(&item) else {
-                return;
-            };
-            let generics = GenericArgs::new(
-                [].into(),
-                [ty.clone(), data_ty.clone()].into(),
-                [].into(),
-                [].into(),
-            );
-            statement.kind = StatementKind::Call {
-                call: Call {
-                    func: FnOperand::Regular(fn_ptr_with_dummy_trait_refs(
-                        &ctx.translated,
-                        fun_id,
-                        generics,
-                    )),
-                    args: operands.clone(),
-                    dest: place.clone(),
-                },
-                on_unwind: Block::new_unreachable(statement.span),
-            };
-        }
         _ => {}
     }
 }
@@ -490,8 +456,6 @@ enum StdItem {
     ArrayAsSlice,
     ArrayAsMutSlice,
     ArrayRepeat,
-    PtrFromRawParts,
-    PtrFromRawPartsMut,
     SliceIndex,
     SliceIndexMut,
     RangeIndex,
@@ -512,11 +476,6 @@ impl Transform {
             (ArrayAsSlice, "core::array::_::as_slice"),
             (ArrayAsMutSlice, "core::array::_::as_mut_slice"),
             (ArrayRepeat, "core::array::repeat"),
-            (PtrFromRawParts, "core::ptr::metadata::from_raw_parts"),
-            (
-                PtrFromRawPartsMut,
-                "core::ptr::metadata::from_raw_parts_mut",
-            ),
             (
                 SliceIndex,
                 "core::slice::index::{impl core::slice::index::SliceIndex<_> for usize}::index",
