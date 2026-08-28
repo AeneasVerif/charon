@@ -255,6 +255,14 @@ impl<'tcx> TranslateCtx<'tcx> {
         })
     }
 
+    /// Resolve a path that is expected to name exactly one item.
+    pub fn resolve_single_path(&self, span: Span, pat: &NamePattern) -> Result<DefId, Error> {
+        self.resolve_path(span, pat, true)?
+            .into_iter()
+            .exactly_one()
+            .map_err(|_| register_error!(self, span, "expected exactly one item for path `{pat}`"))
+    }
+
     fn register_polymorphic_function(&mut self, def_id: DefId) -> FunDeclId {
         let def_id = def_id.sinto(&self.hax_state);
         let item = TransItemSource::polymorphic(&def_id, TransItemSourceKind::Fun);
@@ -263,11 +271,7 @@ impl<'tcx> TranslateCtx<'tcx> {
 
     fn register_poly_function_by_path(&mut self, path: &str) -> Result<FunDeclId, Error> {
         let path = NamePattern::parse(path).unwrap();
-        let def_id = self
-            .resolve_path(Span::dummy(), &path, true)?
-            .into_iter()
-            .exactly_one()
-            .unwrap();
+        let def_id = self.resolve_single_path(Span::dummy(), &path)?;
         Ok(self.register_polymorphic_function(def_id))
     }
 

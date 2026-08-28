@@ -416,22 +416,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         if !self.monomorphize() {
             // Make `Box::new` and `Box::write` available to a later construction pass.
             let path = NamePattern::parse(names::BOX_NEW).unwrap();
-            let box_new_def_id = self
-                .resolve_path(span, &path, true)?
-                .into_iter()
-                .exactly_one()
-                .unwrap();
+            let box_new_def_id = self.resolve_single_path(span, &path)?;
             let box_new_args = tcx.mk_args(&[array_rust_ty.into()]);
             let box_new_item =
                 hax::ItemRef::translate(self.hax_state_with_id(), box_new_def_id, box_new_args);
             let _ = self.translate_fn_ptr(span, &box_new_item, TransItemSourceKind::Fun)?;
 
             let path = NamePattern::parse(names::BOX_WRITE).unwrap();
-            let box_write_def_id = self
-                .resolve_path(span, &path, true)?
-                .into_iter()
-                .exactly_one()
-                .unwrap();
+            let box_write_def_id = self.resolve_single_path(span, &path)?;
             let box_write_args = tcx.mk_args(&[array_rust_ty.into(), alloc_rust_ty.into()]);
             let box_write_item =
                 hax::ItemRef::translate(self.hax_state_with_id(), box_write_def_id, box_write_args);
@@ -495,11 +487,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             builder.call({
                 let into_vec_fn = {
                     let path = NamePattern::parse("slice::into_vec").unwrap();
-                    let into_vec_def_id = self
-                        .resolve_path(span, &path, true)?
-                        .into_iter()
-                        .exactly_one()
-                        .unwrap();
+                    let into_vec_def_id = self.resolve_single_path(span, &path)?;
                     let into_vec_args = tcx.mk_args(&[elem_rust_ty.into(), alloc_rust_ty.into()]);
                     let into_vec_item = hax::ItemRef::translate(
                         self.hax_state_with_id(),
@@ -1510,11 +1498,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
     ) -> Result<(), Error> {
         // Sadly rustc doesn't expose a Symbol -> DefId map for intrinsics.
         let path = NamePattern::parse(&format!("core::intrinsics::{name}")).unwrap();
-        let def_id = self
-            .resolve_path(span, &path, true)?
-            .into_iter()
-            .exactly_one()
-            .unwrap();
+        let def_id = self.resolve_single_path(span, &path)?;
         assert!(self.tcx.is_intrinsic(def_id, name));
         let item = hax::ItemRef::translate(self.hax_state_with_id(), def_id, generic_args);
         let func =
