@@ -51,10 +51,10 @@ pub fn first(s: [u32; 0usize]) -> u32
     storage_live(_3)
     _3 = &s
     storage_live(_4)
-    _4 = as_slice<'_, u32, 0usize>[UNKNOWN(missing proof for builtin operation)](move _3)
+    _4 = as_slice<'_, u32, 0usize>[{built_in impl Sized for u32}](move _3)
     ↳⚡ undefined_behavior
     storage_live(_5)
-    _5 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _2, move _4)
+    _5 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _2, move _4)
     ↳⚡ undefined_behavior
     _0 = copy (*_5)
     storage_dead(_2)

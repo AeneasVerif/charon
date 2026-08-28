@@ -635,9 +635,9 @@ and pp_ty (env : fmt_env) (fmt : Format.formatter) (ty : ty) : unit =
           f.binder_regions;
       pp_fn_ptr env fmt f.binder_value
   | TDynTrait pred -> Format.fprintf fmt "(dyn %a)" (pp_dyn_predicate env) pred
-  | TArray (ty, len) ->
+  | TArray (ty, len, _) ->
       Format.fprintf fmt "[%a; %a]" (pp_ty env) ty (pp_constant_expr env) len
-  | TSlice ty -> Format.fprintf fmt "[%a]" (pp_ty env) ty
+  | TSlice (ty, _) -> Format.fprintf fmt "[%a]" (pp_ty env) ty
   | TPtrMetadata ty -> Format.fprintf fmt "PtrMetadata<%a>" (pp_ty env) ty
   | TError msg -> Format.fprintf fmt "type_error(\"%s\")" msg
 
@@ -1554,7 +1554,7 @@ and pp_aggregate (env : fmt_env) (agg : aggregate_kind) (fmt : Format.formatter)
         Format.fprintf fmt "%t { %a }" pp_variant
           (pp_sep_list ", " pp_string)
           fields
-  | AggregatedArray (_ty, _cg) ->
+  | AggregatedArray (_ty, _cg, _) ->
       Format.fprintf fmt "[%a]" (pp_sep_list ", " pp_string) fields
   | AggregatedRawPtr (_, refk) ->
       let refk =
@@ -1605,7 +1605,7 @@ and pp_rvalue (env : fmt_env) (fmt : Format.formatter) (rv : rvalue) : unit =
       Format.fprintf fmt "@discriminant(%s)" (place_to_string env p)
   | Len (place, _, _) ->
       Format.fprintf fmt "len(%s)" (place_to_string env place)
-  | Repeat (v, _, len) ->
+  | Repeat (v, _, len, _) ->
       Format.fprintf fmt "[%s; %s]" (operand_to_string env v)
         (constant_expr_to_string env len)
   | Aggregate (akind, ops) -> pp_aggregate env akind fmt ops

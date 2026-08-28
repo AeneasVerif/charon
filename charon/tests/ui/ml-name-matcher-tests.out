@@ -394,7 +394,7 @@ fn foo()
     _10 = move _13
     _5 = &(*_10)
     _4 = &(*_5)
-    slice = as_slice<'_, bool, 1usize>[UNKNOWN(missing proof for builtin operation)](move _4)
+    slice = as_slice<'_, bool, 1usize>[{built_in impl Sized for bool}](move _4)
     ↳⚡ undefined_behavior
     storage_dead(_4)
     fake_read(slice)

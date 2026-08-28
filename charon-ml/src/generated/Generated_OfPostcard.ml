@@ -118,7 +118,8 @@ and aggregate_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 1 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = constant_expr_of_postcard ctx st in
-         Ok (AggregatedArray (_0, _1))
+         let* _2 = option_of_postcard trait_ref_of_postcard ctx st in
+         Ok (AggregatedArray (_0, _1, _2))
      | 2 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = ref_kind_of_postcard ctx st in
@@ -1089,7 +1090,8 @@ and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _0 = operand_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
          let* _2 = constant_expr_of_postcard ctx st in
-         Ok (Repeat (_0, _1, _2))
+         let* _3 = trait_ref_of_postcard ctx st in
+         Ok (Repeat (_0, _1, _2, _3))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and scalar_value_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1319,10 +1321,12 @@ and ty_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 11 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = constant_expr_of_postcard ctx st in
-         Ok (TArray (_0, _1))
+         let* _2 = option_of_postcard trait_ref_of_postcard ctx st in
+         Ok (TArray (_0, _1, _2))
      | 12 ->
          let* _0 = ty_of_postcard ctx st in
-         Ok (TSlice _0)
+         let* _1 = option_of_postcard trait_ref_of_postcard ctx st in
+         Ok (TSlice (_0, _1))
      | 13 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = type_pattern_of_postcard ctx st in

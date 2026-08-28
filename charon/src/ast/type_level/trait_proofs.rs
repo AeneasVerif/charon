@@ -237,6 +237,24 @@ impl TraitRef {
         self.0.with_inner_mut(f)
     }
 
+    /// Construct a proof of the chosen parent clause. Returns `None` if the crate is missing the
+    /// data we need.
+    pub fn project_parent_clause(
+        self,
+        krate: &TranslatedCrate,
+        clause_id: TraitClauseId,
+    ) -> Option<Self> {
+        let trait_decl = krate.trait_decls.get(self.trait_id())?;
+        let trait_decl_ref = trait_decl.implied_clauses[clause_id]
+            .trait_
+            .clone()
+            .substitute_with_tref(&self);
+        Some(Self::new(
+            TraitRefKind::ParentClause(Box::new(self), clause_id),
+            trait_decl_ref,
+        ))
+    }
+
     pub fn vtable_ref<'a>(&'a self, krate: &'a TranslatedCrate) -> Option<&'a GlobalDeclRef> {
         match &self.kind {
             TraitRefKind::TraitImpl(impl_ref) => krate

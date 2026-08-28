@@ -66,10 +66,10 @@ pub fn test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::x86_64
     storage_live(_4)
     _4 = &_2
     storage_live(_5)
-    _5 = core::array::{[T; N]}::as_slice<'_, u32, 4usize>[UNKNOWN(missing proof for builtin operation)](move _4)
+    _5 = core::array::{[T; N]}::as_slice<'_, u32, 4usize>[{built_in impl core::marker::Sized for u32}](move _4)
     ↳⚡ undefined_behavior
     storage_live(_6)
-    _6 = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _3, move _5)
+    _6 = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_, u32>[{built_in impl core::marker::Sized for u32}](copy _3, move _5)
     ↳⚡ undefined_behavior
     _0 = copy (*_6)
     storage_dead(_3)
@@ -111,10 +111,10 @@ pub fn test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::i686-u
     storage_live(_4)
     _4 = &_2
     storage_live(_5)
-    _5 = core::array::{[T; N]}::as_slice<'_, u32, 4usize>[UNKNOWN(missing proof for builtin operation)](move _4)
+    _5 = core::array::{[T; N]}::as_slice<'_, u32, 4usize>[{built_in impl core::marker::Sized for u32}](move _4)
     ↳⚡ undefined_behavior
     storage_live(_6)
-    _6 = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _3, move _5)
+    _6 = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_, u32>[{built_in impl core::marker::Sized for u32}](copy _3, move _5)
     ↳⚡ undefined_behavior
     _0 = copy (*_6)
     storage_dead(_3)

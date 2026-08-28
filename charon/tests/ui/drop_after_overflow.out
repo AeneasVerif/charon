@@ -4,14 +4,6 @@
 #[lang_item(FormatArguments)]
 pub opaque type Arguments<'a>
 
-struct str {
-  _0: [u8],
-}
-
-// Full name: core::fmt::{Arguments<'a>}::from_str
-pub fn from_str<'a>(_1: &'static str) -> Arguments<'a>
-= <opaque>
-
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -25,6 +17,14 @@ pub trait Sized<Self>
     proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
+
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::fmt::{Arguments<'a>}::from_str
+pub fn from_str<'a>(_1: &'static str) -> Arguments<'a>
+= <opaque>
 
 struct () {}
 

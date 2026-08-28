@@ -106,7 +106,7 @@ fn main()
     _8 = move _9
     _3 = &(*_8)
     _2 = &(*_3)
-    slice = as_slice<'_, i32, 1usize>[UNKNOWN(missing proof for builtin operation)](move _2)
+    slice = as_slice<'_, i32, 1usize>[{built_in impl Sized for i32}](move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
     fake_read(slice)

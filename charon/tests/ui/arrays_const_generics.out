@@ -38,6 +38,17 @@ where
     TypeOutlives0: T: '_0,
 = <opaque>
 
+// Full name: core::clone::impls::{impl Clone for u8}::clone
+pub fn clone<'_0>(_1: &'_0 u8) -> u8
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u8}
+impl "impl_Clone_for_u8" Clone for u8 {
+    proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
+    fn clone<'_0_1> = clone<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index
 pub fn impl_SliceIndex_slice_for_usize::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
 where
@@ -69,10 +80,10 @@ pub fn index_array_generic<const N : usize>(s: [u32; N], i: usize) -> u32
     storage_live(_4)
     _4 = &s
     storage_live(_5)
-    _5 = as_slice<'_, u32, N>[UNKNOWN(missing proof for builtin operation)](move _4)
+    _5 = as_slice<'_, u32, N>[{built_in impl Sized for u32}](move _4)
     ↳⚡ undefined_behavior
     storage_live(_6)
-    _6 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _3, move _5)
+    _6 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _3, move _5)
     ↳⚡ undefined_behavior
     _0 = copy (*_6)
     storage_dead(_3)
@@ -125,7 +136,7 @@ pub fn init_array_variable_len<const LEN : usize>() -> [u8; LEN]
     let _0: [u8; LEN]; // return
 
     storage_live(_0)
-    _0 = repeat<u8, LEN>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](const 0u8)
+    _0 = repeat<u8, LEN>[{built_in impl Sized for u8}, impl_Clone_for_u8](const 0u8)
     ↳⚡ undefined_behavior
     return
 }

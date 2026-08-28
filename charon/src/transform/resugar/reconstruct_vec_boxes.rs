@@ -43,6 +43,7 @@ struct Rewrite {
     span: Span,
     payload_elems: Vec<Operand>,
     elem_ty: Ty,
+    elem_ty_is_sized: Option<TraitRef>,
     len: ConstantExpr,
     uninit_box: Place,
     branched_before_payload: bool,
@@ -58,6 +59,7 @@ struct PayloadAssign {
     span: Span,
     payload_elems: Vec<Operand>,
     elem_ty: Ty,
+    elem_ty_is_sized: Option<TraitRef>,
     len: ConstantExpr,
     branched_before_payload: bool,
 }
@@ -99,8 +101,10 @@ fn find_array_assign(body: &ExprBody, start: BlockId, src_local: LocalId) -> Opt
     let mut out = None;
     for (bid, block) in body.body.iter_enumerated() {
         for (idx, st) in block.statements.iter().enumerate() {
-            let Some((place, Rvalue::Aggregate(AggregateKind::Array(elem_ty, len), elems))) =
-                st.kind.as_assign()
+            let Some((
+                place,
+                Rvalue::Aggregate(AggregateKind::Array(elem_ty, len, elem_ty_is_sized), elems),
+            )) = st.kind.as_assign()
             else {
                 continue;
             };
@@ -110,13 +114,13 @@ fn find_array_assign(body: &ExprBody, start: BlockId, src_local: LocalId) -> Opt
             if out.is_some() {
                 return None;
             }
-
             let loc = StmtLoc::new(bid, idx);
             out = Some(PayloadAssign {
                 loc,
                 span: st.span,
                 payload_elems: elems.clone(),
                 elem_ty: elem_ty.clone(),
+                elem_ty_is_sized: elem_ty_is_sized.clone(),
                 len: len.clone(),
                 branched_before_payload: branched_before(body, start, loc.block)?,
             });
@@ -350,6 +354,7 @@ impl UllbcPass for Transform {
                     span: payload.span,
                     payload_elems: payload.payload_elems,
                     elem_ty: payload.elem_ty,
+                    elem_ty_is_sized: payload.elem_ty_is_sized,
                     len: payload.len,
                     uninit_box,
                     branched_before_payload: payload.branched_before_payload,
@@ -362,7 +367,11 @@ impl UllbcPass for Transform {
             });
 
         for rw in rewrites.collect::<Vec<_>>() {
-            let array_ty = Ty::mk_array(rw.elem_ty.clone(), rw.len.clone());
+            let array_ty = Ty::mk_array(
+                rw.elem_ty.clone(),
+                rw.len.clone(),
+                rw.elem_ty_is_sized.clone(),
+            );
             let array_local = body.locals.new_var(None, array_ty.clone());
             let box_array_ty = rw.box_array.ty().clone();
             let box_array_local = body.locals.new_var(None, box_array_ty.clone());
@@ -380,7 +389,11 @@ impl UllbcPass for Transform {
                     StatementKind::Assign(
                         array_local.clone(),
                         Rvalue::Aggregate(
-                            AggregateKind::Array(rw.elem_ty.clone(), rw.len.clone()),
+                            AggregateKind::Array(
+                                rw.elem_ty.clone(),
+                                rw.len.clone(),
+                                rw.elem_ty_is_sized,
+                            ),
                             rw.payload_elems,
                         ),
                     ),

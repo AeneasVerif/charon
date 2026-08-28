@@ -38,6 +38,17 @@ where
     TypeOutlives0: T: '_0,
 = <opaque>
 
+// Full name: core::clone::impls::{impl Clone for i32}::clone
+pub fn clone<'_0>(_1: &'_0 i32) -> i32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for i32}
+impl "impl_Clone_for_i32" Clone for i32 {
+    proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
+    fn clone<'_0_1> = clone<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: core::ops::range::Range
 #[lang_item(Range)]
 pub struct Range<Idx>
@@ -81,7 +92,7 @@ fn slice_pat1()
     let _7: &'_ i32; // anonymous local
     let _8: &'_ [i32; 4usize]; // anonymous local
     let _9: &'_ [i32]; // anonymous local
-    let _10: Range<usize>[UNKNOWN(missing proof for builtin operation)]; // anonymous local
+    let _10: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _11: &'_ [i32]; // anonymous local
     let _12: &'_ [i32; 4usize]; // anonymous local
     let _13: &'_ [i32]; // anonymous local
@@ -90,7 +101,7 @@ fn slice_pat1()
     storage_live(_0)
     _0 = ()
     storage_live(array)
-    array = repeat<i32, 4usize>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](const 0i32)
+    array = repeat<i32, 4usize>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 0i32)
     ↳⚡ undefined_behavior
     fake_read(array)
     set_type(typeof(array) == [i32; 4usize])
@@ -98,32 +109,32 @@ fn slice_pat1()
     storage_live(_5)
     _5 = &array
     storage_live(_6)
-    _6 = as_slice<'_, i32, 4usize>[UNKNOWN(missing proof for builtin operation)](move _5)
+    _6 = as_slice<'_, i32, 4usize>[{built_in impl Sized for i32}](move _5)
     ↳⚡ undefined_behavior
     storage_live(_7)
-    _7 = impl_SliceIndex_slice_for_usize::index<'_, i32>[UNKNOWN(missing proof for builtin operation)](const 0usize, move _6)
+    _7 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](const 0usize, move _6)
     ↳⚡ undefined_behavior
     _a = copy (*_7)
     storage_live(_b)
     storage_live(_8)
     _8 = &array
     storage_live(_9)
-    _9 = as_slice<'_, i32, 4usize>[UNKNOWN(missing proof for builtin operation)](move _8)
+    _9 = as_slice<'_, i32, 4usize>[{built_in impl Sized for i32}](move _8)
     ↳⚡ undefined_behavior
     storage_live(_10)
     _10 = Range { start: const 1usize, end: const 3usize }
     storage_live(_11)
-    _11 = impl_SliceIndex_slice_for_Range_usize::index<'_, i32>[UNKNOWN(missing proof for builtin operation)](move _10, move _9)
+    _11 = impl_SliceIndex_slice_for_Range_usize::index<'_, i32>[{built_in impl Sized for i32}](move _10, move _9)
     ↳⚡ undefined_behavior
     _b = copy (*_11)
     storage_live(_c)
     storage_live(_12)
     _12 = &array
     storage_live(_13)
-    _13 = as_slice<'_, i32, 4usize>[UNKNOWN(missing proof for builtin operation)](move _12)
+    _13 = as_slice<'_, i32, 4usize>[{built_in impl Sized for i32}](move _12)
     ↳⚡ undefined_behavior
     storage_live(_14)
-    _14 = impl_SliceIndex_slice_for_usize::index<'_, i32>[UNKNOWN(missing proof for builtin operation)](const 3usize, move _13)
+    _14 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](const 3usize, move _13)
     ↳⚡ undefined_behavior
     _c = copy (*_14)
     _0 = ()
@@ -162,7 +173,7 @@ fn slice_pat2()
     let _12: &'_ i32; // anonymous local
     let _13: &'_ [i32; 4usize]; // anonymous local
     let _14: &'_ [i32]; // anonymous local
-    let _15: Range<usize>[UNKNOWN(missing proof for builtin operation)]; // anonymous local
+    let _15: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _16: &'_ [i32]; // anonymous local
     let _17: &'_ [i32; 4usize]; // anonymous local
     let _18: &'_ [i32]; // anonymous local
@@ -171,7 +182,7 @@ fn slice_pat2()
     storage_live(_7)
     storage_live(_8)
     storage_live(_9)
-    _9 = repeat<i32, 4usize>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](const 0i32)
+    _9 = repeat<i32, 4usize>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 0i32)
     ↳⚡ undefined_behavior
     _8 = &_9
     _7 = move _8
@@ -190,32 +201,32 @@ fn slice_pat2()
     storage_live(_10)
     _10 = &(*array_ref)
     storage_live(_11)
-    _11 = as_slice<'_, i32, 4usize>[UNKNOWN(missing proof for builtin operation)](move _10)
+    _11 = as_slice<'_, i32, 4usize>[{built_in impl Sized for i32}](move _10)
     ↳⚡ undefined_behavior
     storage_live(_12)
-    _12 = impl_SliceIndex_slice_for_usize::index<'_, i32>[UNKNOWN(missing proof for builtin operation)](const 0usize, move _11)
+    _12 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](const 0usize, move _11)
     ↳⚡ undefined_behavior
     _a = &(*_12)
     storage_live(_b)
     storage_live(_13)
     _13 = &(*array_ref)
     storage_live(_14)
-    _14 = as_slice<'_, i32, 4usize>[UNKNOWN(missing proof for builtin operation)](move _13)
+    _14 = as_slice<'_, i32, 4usize>[{built_in impl Sized for i32}](move _13)
     ↳⚡ undefined_behavior
     storage_live(_15)
     _15 = Range { start: const 1usize, end: const 3usize }
     storage_live(_16)
-    _16 = impl_SliceIndex_slice_for_Range_usize::index<'_, i32>[UNKNOWN(missing proof for builtin operation)](move _15, move _14)
+    _16 = impl_SliceIndex_slice_for_Range_usize::index<'_, i32>[{built_in impl Sized for i32}](move _15, move _14)
     ↳⚡ undefined_behavior
     _b = &(*_16)
     storage_live(_c)
     storage_live(_17)
     _17 = &(*array_ref)
     storage_live(_18)
-    _18 = as_slice<'_, i32, 4usize>[UNKNOWN(missing proof for builtin operation)](move _17)
+    _18 = as_slice<'_, i32, 4usize>[{built_in impl Sized for i32}](move _17)
     ↳⚡ undefined_behavior
     storage_live(_19)
-    _19 = impl_SliceIndex_slice_for_usize::index<'_, i32>[UNKNOWN(missing proof for builtin operation)](const 3usize, move _18)
+    _19 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](const 3usize, move _18)
     ↳⚡ undefined_behavior
     _c = &(*_19)
     _0 = ()
@@ -266,7 +277,7 @@ fn slice_pat3()
     let _20: &'_ [i32]; // anonymous local
     let _21: usize; // anonymous local
     let _22: usize; // anonymous local
-    let _23: Range<usize>[UNKNOWN(missing proof for builtin operation)]; // anonymous local
+    let _23: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _24: &'_ [i32]; // anonymous local
     let _25: &'_ [i32]; // anonymous local
     let _26: usize; // anonymous local
@@ -276,7 +287,7 @@ fn slice_pat3()
     storage_live(_15)
     storage_live(_16)
     storage_live(_17)
-    _17 = repeat<i32, 4usize>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](const 0i32)
+    _17 = repeat<i32, 4usize>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 0i32)
     ↳⚡ undefined_behavior
     _16 = &_17
     _15 = move _16
@@ -293,7 +304,7 @@ fn slice_pat3()
     _11 = move _15
     _3 = &(*_11)
     _2 = &(*_3)
-    slice = as_slice<'_, i32, 4usize>[UNKNOWN(missing proof for builtin operation)](move _2)
+    slice = as_slice<'_, i32, 4usize>[{built_in impl Sized for i32}](move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
     fake_read(slice)
@@ -309,7 +320,7 @@ fn slice_pat3()
     storage_live(_18)
     _18 = &(*slice) with_metadata(copy slice.metadata)
     storage_live(_19)
-    _19 = impl_SliceIndex_slice_for_usize::index<'_, i32>[UNKNOWN(missing proof for builtin operation)](const 0usize, move _18)
+    _19 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](const 0usize, move _18)
     ↳⚡ undefined_behavior
     _a = &(*_19)
     storage_live(_b)
@@ -330,7 +341,7 @@ fn slice_pat3()
     storage_live(_23)
     _23 = Range { start: const 1usize, end: copy _22 }
     storage_live(_24)
-    _24 = impl_SliceIndex_slice_for_Range_usize::index<'_, i32>[UNKNOWN(missing proof for builtin operation)](move _23, move _20)
+    _24 = impl_SliceIndex_slice_for_Range_usize::index<'_, i32>[{built_in impl Sized for i32}](move _23, move _20)
     ↳⚡ undefined_behavior
     _b = &(*_24) with_metadata(copy _14)
     storage_live(_c)
@@ -342,7 +353,7 @@ fn slice_pat3()
     _27 = copy _26 ub.- const 1usize
     storage_dead(_26)
     storage_live(_28)
-    _28 = impl_SliceIndex_slice_for_usize::index<'_, i32>[UNKNOWN(missing proof for builtin operation)](copy _27, move _25)
+    _28 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](copy _27, move _25)
     ↳⚡ undefined_behavior
     _c = &(*_28)
     _0 = ()
@@ -411,7 +422,7 @@ fn slice_pat4<'_0>(x: &'_0 [u32])
     storage_live(_7)
     _7 = &(*x) with_metadata(copy x.metadata)
     storage_live(_8)
-    _8 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](const 0usize, move _7)
+    _8 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](const 0usize, move _7)
     ↳⚡ undefined_behavior
     _y = &(*_8)
     _0 = ()
@@ -475,7 +486,7 @@ fn slice_pat5<'_0>(x: &'_0 Unsized)
     storage_live(_8)
     _8 = &(*x)._0 with_metadata(copy x.metadata)
     storage_live(_9)
-    _9 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](const 0usize, move _8)
+    _9 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](const 0usize, move _8)
     ↳⚡ undefined_behavior
     _y = copy (*_9)
     _0 = ()

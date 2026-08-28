@@ -54,7 +54,7 @@ fn SLICE() -> [(); 4usize]
     storage_live(_0)
     storage_live(_1)
     _1 = ()
-    _0 = repeat<(), 4usize>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](move _1)
+    _0 = repeat<(), 4usize>[{built_in impl Sized for ()}, {built_in impl Clone for ()}](move _1)
     ↳⚡ undefined_behavior
     storage_dead(_1)
     return
@@ -86,7 +86,7 @@ fn BAR() -> [(); 42usize]
     storage_live(_0)
     storage_live(_1)
     _1 = ()
-    _0 = repeat<(), 42usize>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](move _1)
+    _0 = repeat<(), 42usize>[{built_in impl Sized for ()}, {built_in impl Clone for ()}](move _1)
     ↳⚡ undefined_behavior
     storage_dead(_1)
     return

@@ -150,7 +150,7 @@ impl Pattern {
                 let type_name = ctx.item_name(tref.id);
                 self.matches_with_generics(ctx, type_name, Some(&tref.generics))
             }
-            TyKind::Array(ty, len) => {
+            TyKind::Array(ty, len, _) => {
                 let type_name = Name::from_path(&["Array"]);
                 let args = GenericArgs {
                     regions: [].into(),
@@ -160,7 +160,7 @@ impl Pattern {
                 };
                 self.matches_with_generics(ctx, &type_name, Some(&args))
             }
-            TyKind::Slice(ty) => {
+            TyKind::Slice(ty, _) => {
                 let type_name = Name::from_path(&["Slice"]);
                 let args = GenericArgs {
                     regions: [].into(),

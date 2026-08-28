@@ -74,7 +74,7 @@ fn slice_pattern_end<'_0>(x: &'_0 [()])
     _9 = copy _8 ub.- const 1usize
     storage_dead(_8)
     storage_live(_10)
-    _10 = impl_SliceIndex_slice_for_usize::index<'_, ()>[UNKNOWN(missing proof for builtin operation)](copy _9, move _7)
+    _10 = impl_SliceIndex_slice_for_usize::index<'_, ()>[{built_in impl Sized for ()}](copy _9, move _7)
     ↳⚡ undefined_behavior
     _named = &(*_10)
     _0 = ()

@@ -420,7 +420,7 @@ pub fn array<const LEN : usize>() -> [u8; LEN]
     let _0: [u8; LEN]; // return
 
     storage_live(_0)
-    _0 = repeat<u8, LEN>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](const 0u8)
+    _0 = repeat<u8, LEN>[{built_in impl Sized for u8}, impl_Clone_for_u8](const 0u8)
     ↳⚡ undefined_behavior
     return
 }
@@ -481,10 +481,10 @@ fn cbd(prf_input: [u8; 33usize])
         storage_live(_11)
         _11 = &mut prf_input
         storage_live(_12)
-        _12 = as_mut_slice<'_, u8, 33usize>[UNKNOWN(missing proof for builtin operation)](move _11)
+        _12 = as_mut_slice<'_, u8, 33usize>[{built_in impl Sized for u8}](move _11)
         ↳⚡ undefined_behavior
         storage_live(_13)
-        _13 = impl_SliceIndex_slice_for_usize::index_mut<'_, u8>[UNKNOWN(missing proof for builtin operation)](copy _10, move _12)
+        _13 = impl_SliceIndex_slice_for_usize::index_mut<'_, u8>[{built_in impl Sized for u8}](copy _10, move _12)
         ↳⚡ undefined_behavior
         (*_13) = move _9
         storage_dead(_9)

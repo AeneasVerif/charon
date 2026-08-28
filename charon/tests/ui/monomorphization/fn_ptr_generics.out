@@ -1,11 +1,60 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized::{vtable}
+opaque type {vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
 // Full name: core::option::Option::<u8>
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
 pub enum Option::<u8> {
   None,
   Some { _0: u8 },
+}
+
+// Full name: core::option::{impl Clone for Option::<u8>}
+impl Clone for Option::<u8> {
+    proof ImpliedClause0: (Option::<u8>: Sized) = {built_in impl Sized for Option::<u8>}
+    non-dyn-compatible
+}
+
+// Full name: core::option::{impl Copy for Option::<u8>}
+impl Copy for Option::<u8> {
+    proof ImpliedClause0: (Option::<u8>: MetaSized) = {built_in impl MetaSized for Option::<u8>}
+    proof ImpliedClause1: (Option::<u8>: Clone) = {impl Clone for Option::<u8>}
+    non-dyn-compatible
 }
 
 struct () {}

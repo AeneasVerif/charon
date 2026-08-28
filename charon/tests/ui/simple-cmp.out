@@ -12,6 +12,20 @@ pub enum Ordering {
 pub fn cmp<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> Ordering
 = <opaque>
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
 struct () {}
 
 struct str {

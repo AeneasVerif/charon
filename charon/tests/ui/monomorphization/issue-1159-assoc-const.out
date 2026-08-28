@@ -1,5 +1,8 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized::{vtable}
+opaque type {vtable}
+
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -14,13 +17,19 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::MetaSized::{vtable}
-opaque type {vtable}
-
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
 
 // Full name: core::option::Option
 #[lang_item(Option)]

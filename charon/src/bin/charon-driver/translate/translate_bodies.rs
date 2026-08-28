@@ -717,6 +717,41 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         ))
     }
 
+    /// If all the input constants are identical and copyable, return an `Rvalue::Repeat`. This
+    /// simplifies some giant array constants.
+    fn try_reconstruct_array_repeat(
+        &mut self,
+        span: Span,
+        array_ty: &hax::Ty,
+        fields: impl ExactSizeIterator<Item = ConstantExpr>,
+    ) -> Result<Option<Rvalue>, Error> {
+        if fields.len() >= 2
+            && let Ok(field) = fields.dedup().exactly_one()
+        {
+            let hax::TyKind::Array(item_ref) = array_ty.kind() else {
+                panic!("expected an array type")
+            };
+            let translated_array_ty = self.translate_ty(span, array_ty)?;
+            let TyKind::Array(elem_ty, len, _) = translated_array_ty.kind() else {
+                unreachable!()
+            };
+            let rust_elem_ty = item_ref.rustc_args(&self.hax_state).type_at(0);
+            let copy_proof = hax::solve_copy(&self.hax_state, rust_elem_ty);
+            if matches!(&copy_proof.kind, hax::TraitProofKind::Error(_)) {
+                return Ok(None);
+            }
+            let ty_is_copy = self.translate_trait_proof(span, &copy_proof)?;
+            Ok(Some(Rvalue::Repeat(
+                Operand::Const(field),
+                elem_ty.clone(),
+                len.clone(),
+                ty_is_copy,
+            )))
+        } else {
+            Ok(None)
+        }
+    }
+
     fn apply_user_type_projection(
         &mut self,
         span: Span,
@@ -1084,6 +1119,26 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 match &const_op.kind {
                     hax::ConstOperandKind::Value(constant) => {
                         let constant = self.translate_constant_expr(span, constant)?;
+                        // Avoid large array constant.
+                        if let ConstantExprKind::Array(fields) = constant.kind()
+                            && matches!(const_op.ty.kind(), hax::TyKind::Array(_))
+                            && let Some(repeat) = self.try_reconstruct_array_repeat(
+                                span,
+                                &const_op.ty,
+                                fields.iter().cloned(),
+                            )?
+                        {
+                            let local = self.locals.new_var(None, constant.ty().clone());
+                            self.statements.push(Statement::new(
+                                span,
+                                StatementKind::StorageLive(local.as_local().unwrap()),
+                            ));
+                            self.statements.push(Statement::new(
+                                span,
+                                StatementKind::Assign(local.clone(), repeat),
+                            ));
+                            return Ok(Operand::Move(local));
+                        }
                         Operand::Const(constant)
                     }
                     hax::ConstOperandKind::Promoted(item) => {
@@ -1144,11 +1199,16 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 Ok(Rvalue::Use(Operand::Copy(place), WithRetag::No))
             }
             mir::Rvalue::Repeat(operand, cnst) => {
+                let ty_is_copy = {
+                    let rust_ty = operand.ty(self.local_decls, self.tcx);
+                    let proof = hax::solve_copy(&self.hax_state, rust_ty);
+                    self.translate_trait_proof(span, &proof)?
+                };
                 let c = self.translate_ty_constant_expr(span, cnst)?;
                 let op = self.translate_operand(span, operand)?;
                 let ty = op.ty().clone();
                 // Remark: we could desugar this into a function call later.
-                Ok(Rvalue::Repeat(op, ty, c))
+                Ok(Rvalue::Repeat(op, ty, c, ty_is_copy))
             }
             mir::Rvalue::Ref(_region, borrow_kind, place) => {
                 let place = self.translate_place(span, place)?;
@@ -1298,8 +1358,28 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 match aggregate_kind {
                     mir::AggregateKind::Array(ty) => {
                         let t_ty = self.translate_rustc_ty(span, ty)?;
+                        if operands_t.iter().all(Operand::is_const) {
+                            let rust_array_ty =
+                                ty::Ty::new_array(self.tcx, *ty, operands_t.len() as u64);
+                            let hax_array_ty = self.catch_sinto(span, &rust_array_ty)?;
+                            let fields = operands_t
+                                .iter()
+                                .map(|operand| operand.as_const().unwrap())
+                                .cloned();
+                            if let Some(repeat) =
+                                self.try_reconstruct_array_repeat(span, &hax_array_ty, fields)?
+                            {
+                                return Ok(repeat);
+                            }
+                        }
                         let c = ConstantExpr::mk_usize(operands_t.len() as u128);
-                        Ok(Rvalue::Aggregate(AggregateKind::Array(t_ty, c), operands_t))
+                        let TyKind::Array(_, _, ty_is_sized) = tgt_ty.kind() else {
+                            raise_error!(self, span, "array aggregate has non-array type")
+                        };
+                        Ok(Rvalue::Aggregate(
+                            AggregateKind::Array(t_ty, c, ty_is_sized.clone()),
+                            operands_t,
+                        ))
                     }
                     mir::AggregateKind::Tuple => {
                         let tys = operands.iter().map(|op| op.ty(self.local_decls, self.tcx));

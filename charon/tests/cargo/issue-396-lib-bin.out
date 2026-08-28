@@ -27,16 +27,6 @@ where
 #[lang_item(FormatArguments)]
 pub opaque type Arguments<'a>
 
-// Full name: core::fmt::rt::Argument
-#[lang_item(FormatArgument)]
-pub opaque type Argument<'a>
-
-// Full name: core::fmt::{Arguments<'a>}::new
-pub unsafe fn new<'a, const N : usize, const M : usize>(_1: &'a [u8; N], _2: &'a [Argument<'a>; M]) -> Arguments<'a>
-= <opaque>
-
-struct () {}
-
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -50,6 +40,16 @@ pub trait Sized<Self>
     proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
+
+// Full name: core::fmt::rt::Argument
+#[lang_item(FormatArgument)]
+pub opaque type Argument<'a>
+
+// Full name: core::fmt::{Arguments<'a>}::new
+pub unsafe fn new<'a, const N : usize, const M : usize>(_1: &'a [u8; N], _2: &'a [Argument<'a>; M]) -> Arguments<'a>
+= <opaque>
+
+struct () {}
 
 // Full name: core::result::Result
 #[diagnostic_item("Result")]
@@ -117,15 +117,15 @@ fn main()
     let args_3: (&'4 u32,); // local
     let _4: &'5 u32; // anonymous local
     let _5: u32; // anonymous local
-    let args_6: [Argument<'8>; 1usize]; // local
-    let _7: Argument<'9>; // anonymous local
-    let _8: &'10 u32; // anonymous local
-    let _9: &'12 [u8; 4usize]; // anonymous local
-    let _10: &'13 [u8; 4usize]; // anonymous local
-    let _11: &'16 [Argument<'17>; 1usize]; // anonymous local
-    let _12: &'18 [Argument<'19>; 1usize]; // anonymous local
+    let args_6: [Argument<'13>; 1usize]; // local
+    let _7: Argument<'17>; // anonymous local
+    let _8: &'18 u32; // anonymous local
+    let _9: &'20 [u8; 4usize]; // anonymous local
+    let _10: &'21 [u8; 4usize]; // anonymous local
+    let _11: &'27 [Argument<'28>; 1usize]; // anonymous local
+    let _12: &'32 [Argument<'33>; 1usize]; // anonymous local
     let _13: [u8; 4usize]; // anonymous local
-    let _14: &'26 [u8; 4usize]; // anonymous local
+    let _14: &'43 [u8; 4usize]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -144,7 +144,7 @@ fn main()
     storage_live(_7)
     storage_live(_8)
     _8 = &(*args_3._0)
-    _7 = new_display<'22, '24, u32>[{built_in impl Sized for u32}, impl_Display_for_u32](move _8)
+    _7 = new_display<'39, '41, u32>[{built_in impl Sized for u32}, impl_Display_for_u32](move _8)
     ↳⚡ unwind_continue
     storage_dead(_8)
     args_6 = [move _7]
@@ -162,13 +162,13 @@ fn main()
     storage_live(_12)
     _12 = &args_6
     _11 = &(*_12)
-    _2 = new<'28, 4usize, 1usize>(move _9, move _11)
+    _2 = new<'48, 4usize, 1usize>(move _9, move _11)
     ↳⚡ unwind_continue
     storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
-    _1 = _print<'30>(move _2)
+    _1 = _print<'50>(move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(args_6)

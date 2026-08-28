@@ -83,7 +83,7 @@ fn BAR() -> &'static [u8]
     _4 = &_3
     _2 = move _4
     _1 = &(*_2)
-    _0 = as_slice<'_, u8, 5usize>[UNKNOWN(missing proof for builtin operation)](move _1)
+    _0 = as_slice<'_, u8, 5usize>[{built_in impl Sized for u8}](move _1)
     ↳⚡ undefined_behavior
     storage_dead(_2)
     storage_dead(_1)

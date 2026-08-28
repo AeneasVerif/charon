@@ -257,6 +257,15 @@ pub fn solve_sized<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> T
     solve_trait(s, tref)
 }
 
+/// Solve the `T: Copy` predicate.
+pub fn solve_copy<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> TraitProof {
+    let tcx = s.base().tcx;
+    let copy_trait = tcx.lang_items().copy_trait().unwrap();
+    let ty = erase_free_regions(tcx, ty);
+    let tref = ty::Binder::dummy(ty::TraitRef::new(tcx, copy_trait, [ty]));
+    solve_trait(s, tref)
+}
+
 /// Solve the `T: Destruct` predicate.
 pub fn solve_destruct<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> TraitProof {
     let tcx = s.base().tcx;

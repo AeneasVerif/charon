@@ -249,8 +249,8 @@ pub trait BodyTransformCtx: Sized {
             // `len_var = len(p)`
             let len_var = self.fresh_var(None, Ty::mk_usize());
             let len = match len_place.ty().kind() {
-                TyKind::Array(_, len) => Some(len.clone()),
-                TyKind::Slice(_) => None,
+                TyKind::Array(_, len, _) => Some(len.clone()),
+                TyKind::Slice(..) => None,
                 _ => panic!(
                     "called `compute_subslice_end_idx` on something that isn't an array or slice: {:?}",
                     len_place.ty()

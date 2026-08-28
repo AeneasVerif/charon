@@ -1886,8 +1886,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                 }
             }
             Rvalue::Len(place, ..) => write!(f, "len({})", place.with_ctx(ctx)),
-            Rvalue::Repeat(op, _ty, cg) => {
-                write!(f, "[{}; {}]", op.with_ctx(ctx), cg.with_ctx(ctx))
+            Rvalue::Repeat(operand, _, len, _) => {
+                write!(f, "[{}; {}]", operand.with_ctx(ctx), len.with_ctx(ctx))
             }
         }
     }
@@ -2608,10 +2608,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 }
                 write!(f, " {}", ty.with_ctx(ctx))
             }
-            TyKind::Array(ty, len) => {
+            TyKind::Array(ty, len, _) => {
                 write!(f, "[{}; {}]", ty.with_ctx(ctx), len.with_ctx(ctx))
             }
-            TyKind::Slice(ty) => {
+            TyKind::Slice(ty, _) => {
                 write!(f, "[{}]", ty.with_ctx(ctx))
             }
             TyKind::TraitType(trait_ref, type_id, generics) => {

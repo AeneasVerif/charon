@@ -348,7 +348,7 @@ fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::store<
     storage_live(_5)
     storage_live(_6)
     _6 = &two-phase-mut (*dst)
-    _5 = core::array::{[T; N]}::as_mut_slice<'_, u16, 8usize>[UNKNOWN(missing proof for builtin operation)](move _6)
+    _5 = core::array::{[T; N]}::as_mut_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _6)
     ↳⚡ undefined_behavior
     storage_dead(_6)
     _4 = core::slice::{[T]}::as_mut_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _5)
@@ -386,7 +386,7 @@ fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::load<'
     storage_live(_4)
     storage_live(_5)
     _5 = &(*src)
-    _4 = core::array::{[T; N]}::as_slice<'_, u16, 8usize>[UNKNOWN(missing proof for builtin operation)](move _5)
+    _4 = core::array::{[T; N]}::as_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _5)
     ↳⚡ undefined_behavior
     storage_dead(_5)
     _3 = core::slice::{[T]}::as_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _4)
@@ -457,7 +457,7 @@ fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::store<
     storage_live(_4)
     storage_live(_5)
     _5 = &two-phase-mut (*dst)
-    _4 = core::array::{[T; N]}::as_mut_slice<'_, u16, 8usize>[UNKNOWN(missing proof for builtin operation)](move _5)
+    _4 = core::array::{[T; N]}::as_mut_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _5)
     ↳⚡ undefined_behavior
     storage_dead(_5)
     _3 = core::slice::{[T]}::as_mut_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _4)
@@ -491,7 +491,7 @@ fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::load<'
     storage_live(_3)
     storage_live(_4)
     _4 = &(*src)
-    _3 = core::array::{[T; N]}::as_slice<'_, u16, 8usize>[UNKNOWN(missing proof for builtin operation)](move _4)
+    _3 = core::array::{[T; N]}::as_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _4)
     ↳⚡ undefined_behavior
     storage_dead(_4)
     _2 = core::slice::{[T]}::as_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _3)
@@ -653,10 +653,10 @@ fn test_crate::add_scalar<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8us
         storage_live(_16)
         _16 = &(*a)
         storage_live(_17)
-        _17 = core::array::{[T; N]}::as_slice<'_, u16, 8usize>[UNKNOWN(missing proof for builtin operation)](move _16)
+        _17 = core::array::{[T; N]}::as_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _16)
         ↳⚡ undefined_behavior
         storage_live(_18)
-        _18 = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_, u16>[UNKNOWN(missing proof for builtin operation)](copy _12, move _17)
+        _18 = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_, u16>[{built_in impl core::marker::Sized for u16}](copy _12, move _17)
         ↳⚡ undefined_behavior
         _11 = copy (*_18)
         storage_live(_13)
@@ -666,10 +666,10 @@ fn test_crate::add_scalar<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8us
         storage_live(_19)
         _19 = &(*b)
         storage_live(_20)
-        _20 = core::array::{[T; N]}::as_slice<'_, u16, 8usize>[UNKNOWN(missing proof for builtin operation)](move _19)
+        _20 = core::array::{[T; N]}::as_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _19)
         ↳⚡ undefined_behavior
         storage_live(_21)
-        _21 = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_, u16>[UNKNOWN(missing proof for builtin operation)](copy _14, move _20)
+        _21 = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_, u16>[{built_in impl core::marker::Sized for u16}](copy _14, move _20)
         ↳⚡ undefined_behavior
         _13 = copy (*_21)
         _10 = core::num::{u16}::wrapping_add(move _11, move _13)
@@ -684,10 +684,10 @@ fn test_crate::add_scalar<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8us
         storage_live(_22)
         _22 = &mut (*a)
         storage_live(_23)
-        _23 = core::array::{[T; N]}::as_mut_slice<'_, u16, 8usize>[UNKNOWN(missing proof for builtin operation)](move _22)
+        _23 = core::array::{[T; N]}::as_mut_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _22)
         ↳⚡ undefined_behavior
         storage_live(_24)
-        _24 = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index_mut<'_, u16>[UNKNOWN(missing proof for builtin operation)](copy _15, move _23)
+        _24 = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index_mut<'_, u16>[{built_in impl core::marker::Sized for u16}](copy _15, move _23)
         ↳⚡ undefined_behavior
         (*_24) = move _10
         storage_dead(_10)

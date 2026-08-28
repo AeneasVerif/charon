@@ -11,46 +11,31 @@ use itertools::Itertools;
 
 use crate::transform::ctx::LlbcPass;
 
-/// MIR operations don't carry the trait proofs we'd need, so we add dummy ones.
-fn add_dummy_trait_refs(
-    krate: &TranslatedCrate,
-    id: ItemId,
-    mut generics: GenericArgs,
-) -> GenericArgs {
-    let Some(item) = krate.get_item(id) else {
-        return generics;
-    };
-    let params = item.generic_params();
-    generics.trait_refs = params
-        .trait_clauses
-        .iter()
-        .map(|clause| {
-            let trait_decl_ref = clause.trait_.clone().substitute(&generics);
-            let kind = TraitRefKind::Unknown("missing proof for builtin operation".to_owned());
-            TraitRef::new(kind, trait_decl_ref)
-        })
-        .collect();
-    generics
-}
-
-fn fn_ptr_with_dummy_trait_refs(
-    krate: &TranslatedCrate,
-    id: ItemId,
-    generics: GenericArgs,
-) -> FnPtr {
+fn mk_fn_ptr(ctx: &TransformCtx, id: ItemId, mut generics: GenericArgs) -> FnPtr {
+    if ctx.options.add_destruct_bounds
+        && let Some(item) = ctx.translated.get_item(id)
+    {
+        // Charon adds `Destruct` as the last trait clause of every generic item.
+        let trait_decl_ref = item
+            .generic_params()
+            .trait_clauses
+            .last()
+            .unwrap()
+            .trait_
+            .clone()
+            .substitute(&generics);
+        let kind = TraitRefKind::BuiltinOrAuto {
+            builtin_data: BuiltinImplData::UntrackedDestruct,
+            parent_trait_refs: Default::default(),
+            types: Default::default(),
+            vtable: None,
+        };
+        generics
+            .trait_refs
+            .push(TraitRef::new(kind, trait_decl_ref));
+    }
     let fun_id = *id.as_fun().unwrap();
-    let generics = add_dummy_trait_refs(krate, id, generics);
     FnPtr::new(FnPtrKind::Fun(FunId::Regular(fun_id)), generics)
-}
-
-fn type_ref_with_dummy_trait_refs(
-    krate: &TranslatedCrate,
-    id: ItemId,
-    generics: GenericArgs,
-) -> TypeDeclRef {
-    let type_id = *id.as_type().unwrap();
-    let generics = add_dummy_trait_refs(krate, id, generics);
-    TypeDeclRef::new(type_id, generics, None)
 }
 
 fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mut Statement) {
@@ -65,7 +50,7 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
         ) => {
             if let (TyKind::Ref(_, src_ty, src_kind), TyKind::Ref(_, tgt_ty, tgt_kind)) =
                 (src_ty.kind(), tgt_ty.kind())
-                && let TyKind::Array(elem_ty, len) = src_ty.kind()
+                && let TyKind::Array(elem_ty, len, elem_ty_is_sized) = src_ty.kind()
                 && let TyKind::Slice(..) = tgt_ty.kind()
             {
                 // In MIR terminology, we go from &[T; l] to &[T] which means we
@@ -86,15 +71,11 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
                     [Region::Erased].into(),
                     [elem_ty.clone()].into(),
                     [len.clone()].into(),
-                    [].into(),
+                    elem_ty_is_sized.iter().cloned().collect(),
                 );
                 statement.kind = StatementKind::Call {
                     call: Call {
-                        func: FnOperand::Regular(fn_ptr_with_dummy_trait_refs(
-                            &ctx.translated,
-                            fun_id,
-                            generics,
-                        )),
+                        func: FnOperand::Regular(mk_fn_ptr(ctx, fun_id, generics)),
                         args: vec![operand.clone()],
                         dest: place.clone(),
                     },
@@ -103,25 +84,33 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
             }
         }
         // Transform the array aggregates to function calls.
-        StatementKind::Assign(place, Rvalue::Repeat(operand, ty, len)) => {
+        StatementKind::Assign(place, Rvalue::Repeat(operand, ty, len, ty_is_copy)) => {
             // We could avoid the clone operations below if we take the content of
             // the statement. In practice, this shouldn't have much impact.
             let Some(&fun_id) = std_items.item_map.get(&StdItem::ArrayRepeat) else {
+                return;
+            };
+            let TyKind::Array(_, _, ty_is_sized) = place.ty().kind() else {
+                return;
+            };
+            // `Copy`'s explicit `Clone` supertrait follows its optional implicit marker clause.
+            // `array::repeat` has the corresponding `Clone` bound at the same position.
+            let clone_clause_id = TraitClauseId::new(usize::from(ty_is_sized.is_some()));
+            let Some(ty_is_clone) = ty_is_copy
+                .clone()
+                .project_parent_clause(&ctx.translated, clone_clause_id)
+            else {
                 return;
             };
             let generics = GenericArgs::new(
                 [].into(),
                 [ty.clone()].into(),
                 [len.clone()].into(),
-                [].into(),
+                ty_is_sized.iter().cloned().chain([ty_is_clone]).collect(),
             );
             statement.kind = StatementKind::Call {
                 call: Call {
-                    func: FnOperand::Regular(fn_ptr_with_dummy_trait_refs(
-                        &ctx.translated,
-                        fun_id,
-                        generics,
-                    )),
+                    func: FnOperand::Regular(mk_fn_ptr(ctx, fun_id, generics)),
                     args: vec![operand.clone()],
                     dest: place.clone(),
                 },
@@ -158,9 +147,9 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
             return;
         };
 
-        let (ty, len) = match subplace.ty.kind() {
-            TyKind::Array(ty, len) => (ty.clone(), Some(len.clone())),
-            TyKind::Slice(ty) => (ty.clone(), None),
+        let (ty, len, ty_is_sized) = match subplace.ty.kind() {
+            TyKind::Array(ty, len, ty_is_sized) => (ty.clone(), Some(len.clone()), ty_is_sized),
+            TyKind::Slice(ty, ty_is_sized) => (ty.clone(), None, ty_is_sized),
             _ => unreachable!("Indexing can only be done on arrays or slices"),
         };
 
@@ -178,7 +167,7 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
         let output_inner_ty = if matches!(pe, Index { .. }) {
             ty.clone()
         } else {
-            TyKind::Slice(ty.clone()).into_ty()
+            TyKind::Slice(ty.clone(), ty_is_sized.clone()).into_ty()
         };
         let output_ty = {
             TyKind::Ref(
@@ -207,7 +196,7 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
             };
             let slice_ty = TyKind::Ref(
                 Region::Erased,
-                TyKind::Slice(ty.clone()).into_ty(),
+                TyKind::Slice(ty.clone(), ty_is_sized.clone()).into_ty(),
                 mutability,
             )
             .into_ty();
@@ -216,14 +205,10 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
                 [Region::Erased].into(),
                 [ty.clone()].into(),
                 [len].into(),
-                [].into(),
+                ty_is_sized.iter().cloned().collect(),
             );
             let call = Call {
-                func: FnOperand::Regular(fn_ptr_with_dummy_trait_refs(
-                    &self.ctx.ctx.translated,
-                    array_to_slice,
-                    generics,
-                )),
+                func: FnOperand::Regular(mk_fn_ptr(self.ctx.ctx, array_to_slice, generics)),
                 args: vec![Operand::Move(input_var)],
                 dest: slice_var.clone(),
             };
@@ -254,17 +239,25 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
         let to_idx = self
             .ctx
             .compute_subslice_end_idx(subplace, last_arg, from_end);
+        let generics = GenericArgs::new(
+            [Region::Erased].into(),
+            [ty.clone()].into(),
+            [].into(),
+            ty_is_sized.iter().cloned().collect(),
+        );
         let index = match &pe {
             Index { .. } => to_idx,
             Subslice { from, .. } => {
-                let Some(&range_id) = self.std_items.item_map.get(&StdItem::Range) else {
+                let Some(index_fun_id) = index_fun_id.as_fun() else {
                     return;
                 };
-                let range_ref = type_ref_with_dummy_trait_refs(
-                    &self.ctx.ctx.translated,
-                    range_id,
-                    GenericArgs::new_types([Ty::mk_usize()].into()),
-                );
+                let Some(index_fun) = self.ctx.ctx.translated.fun_decls.get(*index_fun_id) else {
+                    return;
+                };
+                let Some(range_ref) = index_fun.signature.inputs[0].as_adt().cloned() else {
+                    return;
+                };
+                let range_ref = range_ref.substitute(&generics);
                 let range_ty = TyKind::Adt(range_ref.clone()).into_ty();
                 let range_var = self.ctx.fresh_var(None, range_ty);
                 self.ctx.insert_assn_stmt(
@@ -285,18 +278,8 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
         // `tmp1 = {Array,Slice}{Mut,Shared}{Index,SubSlice}(move tmp0, <other args>)`
         let output_var = {
             let output_var = self.ctx.fresh_var(None, output_ty);
-            let generics = GenericArgs::new(
-                [Region::Erased].into(),
-                [ty.clone()].into(),
-                [].into(),
-                [].into(),
-            );
             let index_call = Call {
-                func: FnOperand::Regular(fn_ptr_with_dummy_trait_refs(
-                    &self.ctx.ctx.translated,
-                    index_fun_id,
-                    generics,
-                )),
+                func: FnOperand::Regular(mk_fn_ptr(self.ctx.ctx, index_fun_id, generics)),
                 args,
                 dest: output_var.clone(),
             };
@@ -460,7 +443,6 @@ enum StdItem {
     SliceIndexMut,
     RangeIndex,
     RangeIndexMut,
-    Range,
 }
 
 pub struct Transform {
@@ -492,7 +474,6 @@ impl Transform {
                 RangeIndexMut,
                 "core::slice::index::{impl core::slice::index::SliceIndex<_> for core::ops::range::Range<usize>}::index_mut",
             ),
-            (Range, "core::ops::range::Range"),
         ]
         .map(|(item, path)| (item, NamePattern::parse(path).unwrap(), Vec::new()));
 

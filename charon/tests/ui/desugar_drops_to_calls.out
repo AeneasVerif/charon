@@ -170,7 +170,7 @@ where
             storage_live(_14)
             _14 = &mut (*_1) with_metadata(copy _1.metadata)
             storage_live(_15)
-            _15 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](copy _3, move _14)
+            _15 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[TraitClause0, {built_in impl Destruct for T}](copy _3, move _14)
             ↳⚡ undefined_behavior
             _6 = &raw mut (*_15)
             _3 = move _3 wrap.+ const 1usize
@@ -186,7 +186,7 @@ where
                         storage_live(_12)
                         _12 = &mut (*_1) with_metadata(copy _1.metadata)
                         storage_live(_13)
-                        _13 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](copy _3, move _12)
+                        _13 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[TraitClause0, {built_in impl Destruct for T}](copy _3, move _12)
                         ↳⚡ undefined_behavior
                         _4 = &raw mut (*_13)
                         _3 = move _3 wrap.+ const 1usize

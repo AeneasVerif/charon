@@ -51,7 +51,7 @@ pub fn foo() -> &'static [u32]
     _3 = move _4
     _2 = &(*_3)
     _1 = &(*_2)
-    _0 = as_slice<'_, u32, 4usize>[UNKNOWN(missing proof for builtin operation)](move _1)
+    _0 = as_slice<'_, u32, 4usize>[{built_in impl Sized for u32}](move _1)
     ↳⚡ undefined_behavior
     storage_dead(_1)
     storage_dead(_2)

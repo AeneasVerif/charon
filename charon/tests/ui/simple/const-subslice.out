@@ -48,7 +48,7 @@ fn main()
     storage_live(_7)
     _7 = &_6
     storage_live(_8)
-    _8 = as_slice<'_, u8, 3usize>[UNKNOWN(missing proof for builtin operation)](move _7)
+    _8 = as_slice<'_, u8, 3usize>[{built_in impl Sized for u8}](move _7)
     ↳⚡ undefined_behavior
     y = move _8
     storage_live(z)

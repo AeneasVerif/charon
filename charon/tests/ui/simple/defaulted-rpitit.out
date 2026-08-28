@@ -31,6 +31,17 @@ where
     TraitClause1: (T: Clone),
 = <opaque>
 
+// Full name: core::clone::impls::{impl Clone for u8}::clone
+pub fn clone<'_0>(_1: &'_0 u8) -> u8
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u8}
+impl "impl_Clone_for_u8" Clone for u8 {
+    proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
+    fn clone<'_0_1> = clone<'_0_1>
+    non-dyn-compatible
+}
+
 struct () {}
 
 struct str {
@@ -55,7 +66,7 @@ where
     let _0: [u8; N]; // return
 
     storage_live(_0)
-    _0 = repeat<u8, N>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](const 0u8)
+    _0 = repeat<u8, N>[{built_in impl Sized for u8}, impl_Clone_for_u8](const 0u8)
     ↳⚡ undefined_behavior
     return
 }
@@ -69,7 +80,7 @@ pub fn impl_Foo_for_S::bar<const N : usize>() -> [u8; N]
     let _0: [u8; N]; // return
 
     storage_live(_0)
-    _0 = repeat<u8, N>[UNKNOWN(missing proof for builtin operation), UNKNOWN(missing proof for builtin operation)](const 0u8)
+    _0 = repeat<u8, N>[{built_in impl Sized for u8}, impl_Clone_for_u8](const 0u8)
     ↳⚡ undefined_behavior
     return
 }

@@ -132,7 +132,7 @@ fn main()
     _9 = &_8
     _7 = move _9
     _6 = &(*_7)
-    _5 = as_slice<'_, u8, 5usize>[UNKNOWN(missing proof for builtin operation)](move _6)
+    _5 = as_slice<'_, u8, 5usize>[{built_in impl Sized for u8}](move _6)
     ↳⚡ undefined_behavior
     storage_dead(_6)
     _3 = impl_Write_for_Vec_u8::write_all<'11, '12, Global>[{built_in impl Sized for Global}](move _4, move _5)

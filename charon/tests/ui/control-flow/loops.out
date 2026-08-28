@@ -1606,10 +1606,10 @@ pub fn sum_array<const N : usize>(a: [u32; N]) -> u32
             storage_live(_10)
             _10 = &a
             storage_live(_11)
-            _11 = as_slice<'_, u32, N>[UNKNOWN(missing proof for builtin operation)](move _10)
+            _11 = as_slice<'_, u32, N>[{built_in impl Sized for u32}](move _10)
             ↳⚡ undefined_behavior
             storage_live(_12)
-            _12 = impl_SliceIndex_slice_for_usize::index<'_, u32>[UNKNOWN(missing proof for builtin operation)](copy _7, move _11)
+            _12 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _7, move _11)
             ↳⚡ undefined_behavior
             _6 = copy (*_12)
             _8 = copy s panic.+ copy _6

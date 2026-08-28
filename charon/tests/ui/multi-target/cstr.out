@@ -1,3 +1,15 @@
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait core::marker::MetaSized<Self>
+
+#[fundamental]
+#[lang_item(Sized)]
+pub trait core::marker::Sized<Self>
+{
+    proof ImpliedClause0: (Self: core::marker::MetaSized)
+    non-dyn-compatible
+}
+
 #[lang_item(CStr)]
 #[diagnostic_item("cstr_type")]
 pub struct core::ffi::c_str::CStr::x86_64-unknown-linux-gnu {
