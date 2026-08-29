@@ -20,8 +20,8 @@ let literal_type_to_string ty =
 let big_int_to_string bi =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_big_int fmt bi)
 
-let scalar_value_to_string sv =
-  PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_scalar_value fmt sv)
+let integer_value_to_string v =
+  PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_integer_value fmt v)
 
 let float_value_to_string fv =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_float_value fmt fv)

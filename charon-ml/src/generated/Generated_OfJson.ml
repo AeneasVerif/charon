@@ -481,7 +481,7 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = bool_of_json ctx _0 in
         Ok (CBool _0)
     | `Assoc [ ("Integer", _0) ] ->
-        let* _0 = scalar_value_of_json ctx _0 in
+        let* _0 = integer_value_of_json ctx _0 in
         Ok (CInteger _0)
     | `Assoc [ ("Char", _0) ] ->
         let* _0 = char_of_json ctx _0 in
@@ -872,6 +872,20 @@ and int_ty_of_json (ctx : of_json_ctx) (js : json) : (int_ty, string) result =
     | `String "I128" -> Ok I128
     | _ -> Error "")
 
+and integer_value_of_json (ctx : of_json_ctx) (js : json) :
+    (integer_value, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Unsigned", `List [ _0; _1 ]) ] ->
+        let* _0 = u_int_ty_of_json ctx _0 in
+        let* _1 = big_int_of_json ctx _1 in
+        Ok (UnsignedInteger (_0, _1))
+    | `Assoc [ ("Signed", `List [ _0; _1 ]) ] ->
+        let* _0 = int_ty_of_json ctx _0 in
+        let* _1 = big_int_of_json ctx _1 in
+        Ok (SignedInteger (_0, _1))
+    | _ -> Error "")
+
 and lifetime_mutability_of_json (ctx : of_json_ctx) (js : json) :
     (lifetime_mutability, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1201,20 +1215,6 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         let* _2 = constant_expr_of_json ctx _2 in
         let* _3 = trait_ref_of_json ctx _3 in
         Ok (Repeat (_0, _1, _2, _3))
-    | _ -> Error "")
-
-and scalar_value_of_json (ctx : of_json_ctx) (js : json) :
-    (scalar_value, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Unsigned", `List [ _0; _1 ]) ] ->
-        let* _0 = u_int_ty_of_json ctx _0 in
-        let* _1 = big_int_of_json ctx _1 in
-        Ok (UnsignedScalar (_0, _1))
-    | `Assoc [ ("Signed", `List [ _0; _1 ]) ] ->
-        let* _0 = int_ty_of_json ctx _0 in
-        let* _1 = big_int_of_json ctx _1 in
-        Ok (SignedScalar (_0, _1))
     | _ -> Error "")
 
 and span_of_json (ctx : of_json_ctx) (js : json) : (span, string) result =
@@ -2470,7 +2470,7 @@ and discriminator_of_json (ctx : of_json_ctx) (js : json) :
         let* children =
           list_of_json
             (pair_of_json
-               (range_inclusive_of_json scalar_value_of_json)
+               (range_inclusive_of_json integer_value_of_json)
                discriminator_of_json)
             ctx children
         in
@@ -3833,7 +3833,7 @@ and variant_of_json (ctx : of_json_ctx) (js : json) : (variant, string) result =
         let* fields =
           index_vec_of_json field_id_of_json field_of_json ctx fields
         in
-        let* discriminant = scalar_value_of_json ctx discriminant in
+        let* discriminant = integer_value_of_json ctx discriminant in
         Ok
           ({ id; span; attr_info; variant_name; fields; discriminant }
             : variant)
@@ -3856,7 +3856,7 @@ and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
         let* uninhabited = bool_of_json ctx uninhabited in
         let* tagger =
           list_of_json
-            (pair_of_json int_of_json scalar_value_of_json)
+            (pair_of_json int_of_json integer_value_of_json)
             ctx tagger
         in
         Ok ({ field_offsets; uninhabited; tagger } : variant_layout)

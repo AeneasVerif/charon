@@ -49,7 +49,7 @@ pub enum ConstantExprKind {
     Bool(bool),
     /// Integer value.
     #[serde_state(stateless)]
-    Integer(ScalarValue),
+    Integer(IntegerValue),
     /// Char value.
     Char(char),
     /// Float value.
@@ -146,9 +146,9 @@ pub enum ConstantExprKind {
     DriveMut,
     DriveTwo,
 )]
-#[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Scalar"))]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Integer"))]
 #[serde_state(stateless)]
-pub enum ScalarValue {
+pub enum IntegerValue {
     Unsigned(UIntTy, #[serde(with = "scalar_value_ser_de")] u128),
     Signed(IntTy, #[serde(with = "scalar_value_ser_de")] i128),
 }
@@ -262,15 +262,15 @@ impl ConstantExpr {
 
     pub fn mk_usize(value: u128) -> Self {
         if value == 0 {
-            static_constant!(ScalarValue::mk_usize(0).to_constant())
+            static_constant!(IntegerValue::mk_usize(0).to_constant())
         } else {
-            ScalarValue::mk_usize(value).to_constant()
+            IntegerValue::mk_usize(value).to_constant()
         }
     }
 
     pub fn as_usize_literal(&self) -> Option<u128> {
         match self.kind() {
-            ConstantExprKind::Integer(ScalarValue::Unsigned(UIntTy::Usize, value)) => Some(*value),
+            ConstantExprKind::Integer(IntegerValue::Unsigned(UIntTy::Usize, value)) => Some(*value),
             _ => None,
         }
     }
@@ -279,11 +279,11 @@ impl ConstantExpr {
 impl ConstantExprKind {
     pub fn from_bits(lit_ty: &LiteralTy, bits: u128) -> Option<Self> {
         match *lit_ty {
-            LiteralTy::Int(int_ty) => Some(Self::Integer(ScalarValue::from_bits(
+            LiteralTy::Int(int_ty) => Some(Self::Integer(IntegerValue::from_bits(
                 IntegerTy::Signed(int_ty),
                 bits,
             ))),
-            LiteralTy::UInt(uint_ty) => Some(Self::Integer(ScalarValue::from_bits(
+            LiteralTy::UInt(uint_ty) => Some(Self::Integer(IntegerValue::from_bits(
                 IntegerTy::Unsigned(uint_ty),
                 bits,
             ))),
@@ -303,7 +303,7 @@ impl ConstantExprKind {
     }
 }
 
-impl ScalarValue {
+impl IntegerValue {
     fn ptr_size_max(ptr_size: ByteCount, signed: bool) -> u128 {
         match ptr_size {
             2 => {
@@ -360,17 +360,17 @@ impl ScalarValue {
 
     pub fn ty(&self) -> IntegerTy {
         match self {
-            ScalarValue::Signed(ty, _) => IntegerTy::Signed(*ty),
-            ScalarValue::Unsigned(ty, _) => IntegerTy::Unsigned(*ty),
+            IntegerValue::Signed(ty, _) => IntegerTy::Signed(*ty),
+            IntegerValue::Unsigned(ty, _) => IntegerTy::Unsigned(*ty),
         }
     }
 
     pub fn is_int(&self) -> bool {
-        matches!(self, ScalarValue::Signed(_, _))
+        matches!(self, IntegerValue::Signed(_, _))
     }
 
     pub fn is_uint(&self) -> bool {
-        matches!(self, ScalarValue::Unsigned(_, _))
+        matches!(self, IntegerValue::Unsigned(_, _))
     }
 
     /// When computing the result of binary operations, we convert the values
@@ -378,7 +378,7 @@ impl ScalarValue {
     /// of course).
     pub fn as_uint(&self) -> Option<u128> {
         match self {
-            ScalarValue::Unsigned(_, v) => Some(*v),
+            IntegerValue::Unsigned(_, v) => Some(*v),
             _ => None,
         }
     }
@@ -394,20 +394,20 @@ impl ScalarValue {
         }
     }
 
-    pub fn from_unchecked_uint(ty: UIntTy, v: u128) -> ScalarValue {
-        ScalarValue::Unsigned(ty, v)
+    pub fn from_unchecked_uint(ty: UIntTy, v: u128) -> IntegerValue {
+        IntegerValue::Unsigned(ty, v)
     }
 
     pub fn from_uint(ptr_size: ByteCount, ty: UIntTy, v: u128) -> Option<Self> {
-        if !ScalarValue::uint_is_in_bounds(ptr_size, ty, v) {
+        if !IntegerValue::uint_is_in_bounds(ptr_size, ty, v) {
             None
         } else {
-            Some(ScalarValue::from_unchecked_uint(ty, v))
+            Some(IntegerValue::from_unchecked_uint(ty, v))
         }
     }
 
     pub fn mk_usize(value: u128) -> Self {
-        ScalarValue::Unsigned(UIntTy::Usize, value)
+        IntegerValue::Unsigned(UIntTy::Usize, value)
     }
 
     /// When computing the result of binary operations, we convert the values
@@ -415,7 +415,7 @@ impl ScalarValue {
     /// of course).
     pub fn as_int(&self) -> Option<i128> {
         match self {
-            ScalarValue::Signed(_, v) => Some(*v),
+            IntegerValue::Signed(_, v) => Some(*v),
             _ => None,
         }
     }
@@ -434,19 +434,19 @@ impl ScalarValue {
         }
     }
 
-    pub fn from_unchecked_int(ty: IntTy, v: i128) -> ScalarValue {
-        ScalarValue::Signed(ty, v)
+    pub fn from_unchecked_int(ty: IntTy, v: i128) -> IntegerValue {
+        IntegerValue::Signed(ty, v)
     }
 
     /// Most integers are represented as `u128` by rustc. We must be careful not to sign-extend.
     pub fn to_bits(&self) -> u128 {
         match *self {
-            ScalarValue::Unsigned(_, v) => v,
-            ScalarValue::Signed(_, v) => u128::from_le_bytes(v.to_le_bytes()),
+            IntegerValue::Unsigned(_, v) => v,
+            IntegerValue::Signed(_, v) => u128::from_le_bytes(v.to_le_bytes()),
         }
     }
 
-    /// Translates little endian bytes into a corresponding `ScalarValue`.
+    /// Translates little endian bytes into a corresponding `IntegerValue`.
     /// This needs to do the round-trip to the correct integer type to guarantee
     /// that the values are correctly sign-extended (e.g. if the bytes encode -1i8, taking all 16 bytes
     /// would lead to the value 255i128 instead of -1i128).
@@ -458,7 +458,7 @@ impl ScalarValue {
                         IntegerTy::$s(<$i_ty>::$i) => {
                             let n = size_of::<$n_ty>();
                             let b: [u8; _] = $b[0..n].try_into().unwrap();
-                            ScalarValue::$s(<$i_ty>::$i, <$n_ty>::from_le_bytes(b) as $t)
+                            IntegerValue::$s(<$i_ty>::$i, <$n_ty>::from_le_bytes(b) as $t)
                         }
                     )*
                 }
@@ -492,29 +492,29 @@ impl ScalarValue {
 
     /// **Warning**: most constants are stored as u128 by rustc. When converting
     /// to i128, it is not correct to do `v as i128`, we must reinterpret the
-    /// bits (see [ScalarValue::from_le_bytes]).
-    pub fn from_int(ptr_size: ByteCount, ty: IntTy, v: i128) -> Option<ScalarValue> {
-        if !ScalarValue::int_is_in_bounds(ptr_size, ty, v) {
+    /// bits (see [IntegerValue::from_le_bytes]).
+    pub fn from_int(ptr_size: ByteCount, ty: IntTy, v: i128) -> Option<IntegerValue> {
+        if !IntegerValue::int_is_in_bounds(ptr_size, ty, v) {
             None
         } else {
-            Some(ScalarValue::from_unchecked_int(ty, v))
+            Some(IntegerValue::from_unchecked_int(ty, v))
         }
     }
 
     /// Increment the value, staying within the same integer type. Returns `None` on overflow.
     pub fn add(self, n: u128) -> Option<Self> {
         Some(match self {
-            ScalarValue::Unsigned(ty, v) => ScalarValue::Unsigned(ty, v.checked_add(n)?),
-            ScalarValue::Signed(ty, v) => {
-                ScalarValue::Signed(ty, v.checked_add(n.try_into().unwrap())?)
+            IntegerValue::Unsigned(ty, v) => IntegerValue::Unsigned(ty, v.checked_add(n)?),
+            IntegerValue::Signed(ty, v) => {
+                IntegerValue::Signed(ty, v.checked_add(n.try_into().unwrap())?)
             }
         })
     }
 
     pub fn to_constant(self) -> ConstantExpr {
         let literal_ty = match self {
-            ScalarValue::Signed(int_ty, _) => LiteralTy::Int(int_ty),
-            ScalarValue::Unsigned(uint_ty, _) => LiteralTy::UInt(uint_ty),
+            IntegerValue::Signed(int_ty, _) => LiteralTy::Int(int_ty),
+            IntegerValue::Unsigned(uint_ty, _) => LiteralTy::UInt(uint_ty),
         };
         ConstantExpr::new(
             ConstantExprKind::Integer(self),
@@ -565,7 +565,7 @@ pub(crate) mod scalar_value_ser_de {
         {
             type Value = V;
             fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(f, "ScalarValue value")
+                write!(f, "IntegerValue value")
             }
             fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
             where
@@ -601,12 +601,12 @@ mod test {
         let u128 = 0x12345678901234567890123456789012u128;
         let le_bytes = u128.to_le_bytes();
 
-        let le_scalar = ScalarValue::from_le_bytes(IntegerTy::Unsigned(UIntTy::U128), le_bytes);
-        assert_eq!(le_scalar, ScalarValue::Unsigned(UIntTy::U128, u128));
+        let le_scalar = IntegerValue::from_le_bytes(IntegerTy::Unsigned(UIntTy::U128), le_bytes);
+        assert_eq!(le_scalar, IntegerValue::Unsigned(UIntTy::U128, u128));
 
         let i64 = 0x1234567890123456i64;
         let le_bytes = (i64 as i128).to_le_bytes();
-        let le_scalar = ScalarValue::from_le_bytes(IntegerTy::Signed(IntTy::I64), le_bytes);
-        assert_eq!(le_scalar, ScalarValue::Signed(IntTy::I64, i64 as i128));
+        let le_scalar = IntegerValue::from_le_bytes(IntegerTy::Signed(IntTy::I64), le_bytes);
+        assert_eq!(le_scalar, IntegerValue::Signed(IntTy::I64, i64 as i128));
     }
 }

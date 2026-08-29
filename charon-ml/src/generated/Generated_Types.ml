@@ -282,7 +282,7 @@ and constant_expr = { kind : constant_expr_kind; ty : ty }
 
 and constant_expr_kind =
   | CBool of bool  (** Boolean value. *)
-  | CInteger of scalar_value  (** Integer value. *)
+  | CInteger of integer_value  (** Integer value. *)
   | CChar of char_value  (** Char value. *)
   | CFloat of float_value  (** Float value. *)
   | CAdt of variant_id option * constant_expr list
@@ -831,7 +831,7 @@ and discriminator =
   | Branch of
       offset_expr
       * integer_type
-      * (scalar_value range_inclusive * discriminator) list
+      * (integer_value range_inclusive * discriminator) list
       * discriminator
       (** Branch on an integer value read from memory at [offset].
 
@@ -1463,7 +1463,7 @@ and variant = {
   attr_info : attr_info;
   variant_name : string;
   fields : field list;
-  discriminant : scalar_value;
+  discriminant : integer_value;
       (** The discriminant value outputted by [std::mem::discriminant] for this
           variant. This can be different than the value stored in memory (called
           [tag]); that one is described by [[Discriminator]] and
@@ -1478,7 +1478,7 @@ and variant_layout = {
   uninhabited : bool;
       (** Whether the variant is uninhabited, i.e. has any valid possible value.
           Note that uninhabited types can have arbitrary layouts. *)
-  tagger : (int * scalar_value) list;
+  tagger : (int * integer_value) list;
       (** How to write the tag when constructing this variant. Each entry means:
           write [value] at byte [offset]. Mirrors MiniRust's [Variant::tagger].
       *)

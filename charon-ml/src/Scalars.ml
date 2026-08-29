@@ -93,28 +93,27 @@ let scalar_max ptr_size (int_ty : integer_type) : big_int =
 let check_int_in_range ptr_size (int_ty : integer_type) (i : big_int) : bool =
   Z.leq (scalar_min ptr_size int_ty) i && Z.leq i (scalar_max ptr_size int_ty)
 
-let get_val (scalar : scalar_value) =
-  match scalar with
-  | SignedScalar (_, v) | UnsignedScalar (_, v) -> v
+let get_val (integer : integer_value) =
+  match integer with
+  | SignedInteger (_, v) | UnsignedInteger (_, v) -> v
 
-let get_ty (scalar : scalar_value) =
-  match scalar with
-  | SignedScalar (int_ty, _) -> Signed int_ty
-  | UnsignedScalar (uint_ty, _) -> Unsigned uint_ty
+let get_ty (integer : integer_value) =
+  match integer with
+  | SignedInteger (int_ty, _) -> Signed int_ty
+  | UnsignedInteger (uint_ty, _) -> Unsigned uint_ty
 
-(** Check that a scalar value is correct (the integer value it contains is in
-    range) *)
-let check_scalar_value_in_range ptr_size (v : scalar_value) : bool =
+(** Check that an integer value is in range *)
+let check_integer_value_in_range ptr_size (v : integer_value) : bool =
   check_int_in_range ptr_size (get_ty v) (get_val v)
 
-(** Make a scalar value, while checking the value is in range *)
-let mk_scalar ptr_size (int_ty : integer_type) (i : big_int) :
-    (scalar_value, unit) result =
+(** Make an integer value, while checking the value is in range *)
+let mk_integer_value ptr_size (int_ty : integer_type) (i : big_int) :
+    (integer_value, unit) result =
   if check_int_in_range ptr_size int_ty i then
     Ok
       (match int_ty with
-      | Signed int_ty -> SignedScalar (int_ty, i)
-      | Unsigned uint_ty -> UnsignedScalar (uint_ty, i))
+      | Signed int_ty -> SignedInteger (int_ty, i)
+      | Unsigned uint_ty -> UnsignedInteger (uint_ty, i))
   else Error ()
 
 let integer_type_is_signed (int_ty : integer_type) : bool =

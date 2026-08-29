@@ -1066,15 +1066,15 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     offset, from_end, ..
                 } => {
                     let offset =
-                        Operand::Const(ScalarValue::mk_usize(offset as u128).to_constant());
+                        Operand::Const(IntegerValue::mk_usize(offset as u128).to_constant());
                     ProjectionElem::Index {
                         offset: Box::new(offset),
                         from_end,
                     }
                 }
                 &Subslice { from, to, from_end } => {
-                    let from = Operand::Const(ScalarValue::mk_usize(from as u128).to_constant());
-                    let to = Operand::Const(ScalarValue::mk_usize(to as u128).to_constant());
+                    let from = Operand::Const(IntegerValue::mk_usize(from as u128).to_constant());
+                    let to = Operand::Const(IntegerValue::mk_usize(to as u128).to_constant());
                     ProjectionElem::Subslice {
                         from: Box::new(from),
                         to: Box::new(to),

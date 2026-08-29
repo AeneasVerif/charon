@@ -30,11 +30,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let scalar = match i {
                     ConstantInt::Int(v, int_type) => {
                         let ty = Self::translate_hax_int_ty(int_type);
-                        ScalarValue::Signed(ty, *v)
+                        IntegerValue::Signed(ty, *v)
                     }
                     ConstantInt::Uint(v, uint_type) => {
                         let ty = Self::translate_hax_uint_ty(uint_type);
-                        ScalarValue::Unsigned(ty, *v)
+                        IntegerValue::Unsigned(ty, *v)
                     }
                 };
                 ConstantExprKind::Integer(scalar)

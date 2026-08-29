@@ -63,9 +63,9 @@ let pp_literal_type (fmt : Format.formatter) (ty : literal_type) : unit =
 let pp_big_int (fmt : Format.formatter) (bi : big_int) : unit =
   pp_string fmt (Z.to_string bi)
 
-let pp_scalar_value (fmt : Format.formatter) (sv : scalar_value) : unit =
-  Format.fprintf fmt "%a%a" pp_big_int (Scalars.get_val sv) pp_integer_type
-    (Scalars.get_ty sv)
+let pp_integer_value (fmt : Format.formatter) (v : integer_value) : unit =
+  Format.fprintf fmt "%a%a" pp_big_int (Scalars.get_val v) pp_integer_type
+    (Scalars.get_ty v)
 
 let pp_float_value (fmt : Format.formatter) (fv : float_value) : unit =
   Format.fprintf fmt "%s%a" fv.float_value pp_float_type fv.float_ty
@@ -474,7 +474,7 @@ and pp_const_aggregate (env : fmt_env) (tref : type_decl_ref) opt_variant_id
 and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
     (cv : constant_expr) : unit =
   match cv.kind with
-  | CInteger sv -> pp_scalar_value fmt sv
+  | CInteger v -> pp_integer_value fmt v
   | CFloat fv -> pp_float_value fmt fv
   | CBool b -> pp_string fmt (Bool.to_string b)
   | CChar c -> Format.fprintf fmt "'%s'" (escape_char_debug c)

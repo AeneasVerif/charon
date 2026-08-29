@@ -47,7 +47,7 @@ pub struct VariantLayout {
     /// How to write the tag when constructing this variant. Each entry means: write `value` at
     /// byte `offset`. Mirrors MiniRust's `Variant::tagger`.
     #[serde_state(stateless)]
-    pub tagger: Vec<(ByteCount, ScalarValue)>,
+    pub tagger: Vec<(ByteCount, IntegerValue)>,
 }
 
 /// Decision tree used to determine the active variant by reading memory. Mirrors MiniRust's
@@ -68,7 +68,7 @@ pub enum Discriminator {
         int_ty: IntegerTy,
         /// If the integer is in one of these ranges, continue with the given `Discriminator`. The
         /// ranges are sorted.
-        children: Vec<(std::ops::RangeInclusive<ScalarValue>, Discriminator)>,
+        children: Vec<(std::ops::RangeInclusive<IntegerValue>, Discriminator)>,
         /// Fallback if no range in `children` matches.
         fallback: Box<Discriminator>,
     },
@@ -188,7 +188,7 @@ impl Discriminator {
     /// could not be read.
     pub fn read_discriminant(
         &self,
-        read: impl Fn(ByteCount, IntegerTy) -> Result<ScalarValue, DiscriminantReadError> + Copy,
+        read: impl Fn(ByteCount, IntegerTy) -> Result<IntegerValue, DiscriminantReadError> + Copy,
     ) -> Result<VariantId, DiscriminantReadError> {
         match self {
             Discriminator::Known(id) => Ok(*id),

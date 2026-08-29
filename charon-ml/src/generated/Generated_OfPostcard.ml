@@ -455,7 +455,7 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* _0 = bool_of_postcard ctx st in
          Ok (CBool _0)
      | 1 ->
-         let* _0 = scalar_value_of_postcard ctx st in
+         let* _0 = integer_value_of_postcard ctx st in
          Ok (CInteger _0)
      | 2 ->
          let* _0 = char_of_postcard ctx st in
@@ -802,6 +802,21 @@ and int_ty_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 5 -> Ok I128
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and integer_value_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (integer_value, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* _0 = u_int_ty_of_postcard ctx st in
+         let* _1 = big_uint_of_postcard ctx st in
+         Ok (UnsignedInteger (_0, _1))
+     | 1 ->
+         let* _0 = int_ty_of_postcard ctx st in
+         let* _1 = big_int_of_postcard ctx st in
+         Ok (SignedInteger (_0, _1))
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and lifetime_mutability_of_postcard (ctx : of_postcard_ctx)
     (st : postcard_state) : (lifetime_mutability, string) result =
   combine_error_msgs st __FUNCTION__
@@ -1106,21 +1121,6 @@ and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _2 = constant_expr_of_postcard ctx st in
          let* _3 = trait_ref_of_postcard ctx st in
          Ok (Repeat (_0, _1, _2, _3))
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
-and scalar_value_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (scalar_value, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 ->
-         let* _0 = u_int_ty_of_postcard ctx st in
-         let* _1 = big_uint_of_postcard ctx st in
-         Ok (UnsignedScalar (_0, _1))
-     | 1 ->
-         let* _0 = int_ty_of_postcard ctx st in
-         let* _1 = big_int_of_postcard ctx st in
-         Ok (SignedScalar (_0, _1))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and span_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -2098,7 +2098,7 @@ and discriminator_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* children =
            list_of_postcard
              (pair_of_postcard
-                (range_inclusive_of_postcard scalar_value_of_postcard)
+                (range_inclusive_of_postcard integer_value_of_postcard)
                 discriminator_of_postcard)
              ctx st
          in
@@ -3223,7 +3223,7 @@ and variant_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* fields =
        index_vec_of_postcard field_id_of_postcard field_of_postcard ctx st
      in
-     let* discriminant = scalar_value_of_postcard ctx st in
+     let* discriminant = integer_value_of_postcard ctx st in
      Ok ({ id; span; attr_info; variant_name; fields; discriminant } : variant))
 
 and variant_layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -3235,7 +3235,7 @@ and variant_layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* uninhabited = bool_of_postcard ctx st in
      let* tagger =
        list_of_postcard
-         (pair_of_postcard u64_of_postcard scalar_value_of_postcard)
+         (pair_of_postcard u64_of_postcard integer_value_of_postcard)
          ctx st
      in
      Ok ({ field_offsets; uninhabited; tagger } : variant_layout))

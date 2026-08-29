@@ -96,13 +96,13 @@ impl Transform {
         };
 
         // Map from discriminants to variant indices. The discriminant can be of any integer type.
-        let discr_to_id: HashMap<ScalarValue, VariantId> = variants
+        let discr_to_id: HashMap<IntegerValue, VariantId> = variants
             .iter_enumerated()
             .map(|(id, variant)| (variant.discriminant, id))
             .collect();
 
         // Replace the branch values with discriminant constants.
-        let mut covered_discriminants: HashSet<ScalarValue> = HashSet::default();
+        let mut covered_discriminants: HashSet<IntegerValue> = HashSet::default();
         for (value, _) in &mut data.branches {
             if let ConstantExprKind::Integer(discr) = value.kind()
                 && let Some(variant_id) = discr_to_id.get(discr).copied()

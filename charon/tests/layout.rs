@@ -226,7 +226,7 @@ fn type_layout() -> anyhow::Result<()> {
                                 // Find a value not in the used set (try incrementing from the
                                 // first used value).
                                 let candidate = used_vals.iter().copied().max().unwrap_or(0) + 1;
-                                ScalarValue::from_bits(int_ty, candidate)
+                                IntegerValue::from_bits(int_ty, candidate)
                             }))
                     });
                     assert_eq!(

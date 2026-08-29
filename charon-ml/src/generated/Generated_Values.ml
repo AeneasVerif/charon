@@ -43,6 +43,11 @@ and float_value = { float_value : string; float_ty : float_type }
 and int_ty = Isize | I8 | I16 | I32 | I64 | I128
 and integer_type = Signed of int_ty | Unsigned of u_int_ty
 
+(** A scalar value. *)
+and integer_value =
+  | UnsignedInteger of u_int_ty * big_int
+  | SignedInteger of int_ty * big_int
+
 (** Types of primitive values. Either an integer, bool, char *)
 and literal_type =
   | TInt of int_ty
@@ -50,11 +55,6 @@ and literal_type =
   | TFloat of float_type
   | TBool
   | TChar
-
-(** A scalar value. *)
-and scalar_value =
-  | UnsignedScalar of u_int_ty * big_int
-  | SignedScalar of int_ty * big_int
 
 and u_int_ty = Usize | U8 | U16 | U32 | U64 | U128
 [@@deriving

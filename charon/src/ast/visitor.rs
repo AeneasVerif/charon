@@ -52,7 +52,7 @@ use derive_generic_visitor::*;
         Abi, BuiltinImplData, Byte, DeprecatedSince, DropKind, Error, FileName,
         GlobalKind, ItemOpacity, LangItem, LifetimeMutability, OptimizeAttr, OverflowMode,
         ReprOptions, Variance,
-        std::ops::RangeInclusive<ScalarValue>,
+        std::ops::RangeInclusive<IntegerValue>,
         WithRetag, BuiltinPathElem, BranchId,
     ),
     // Types that are completely skipped, even by `ZipAst`.
@@ -69,7 +69,7 @@ use derive_generic_visitor::*;
         Ident, from_rustc::InlineAttr,
         llbc_ast::ExprBody, llbc_ast::StatementKind,
         Loc, Locals, NullOp, Operand, PathElem, PlaceKind,
-        RawAttribute, RefKind, RegionId, RegionParam, ScalarValue, TraitItemName, TraitMethodId, AssocTypeId, AssocConstId, AssocItemId, MaybeAssocItemId,
+        RawAttribute, RefKind, RegionId, RegionParam, IntegerValue, TraitItemName, TraitMethodId, AssocTypeId, AssocConstId, AssocItemId, MaybeAssocItemId,
         TranslatedCrate, TypeDeclKind, TypeParam, TypePattern, TypeVarId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, SwitchData, SwitchScrutinee,
@@ -198,7 +198,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
     skip(
         AbortKind, BinOp, BorrowKind, BranchId, BuiltinAssertKind, ConstantExpr, FieldId,
         TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
-        NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId,  UnOp, VariantId,
+        NullOp, RefKind, IntegerValue, Span, Ty, TypeDeclId,  UnOp, VariantId,
         TraitRef, LiteralTy, Region, RegionId, (), String, PathBuf, bool, u32, usize,
         DropKind, Error, Variance, WithRetag, BuiltinTy, BuiltinPathElem,
         llbc_ast::BlockId, llbc_ast::StatementId,

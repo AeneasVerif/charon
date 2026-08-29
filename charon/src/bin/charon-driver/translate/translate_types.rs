@@ -519,7 +519,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         fn translate_variant_layout(
             variant_layout: &r_abi::VariantLayout<r_abi::FieldIdx>,
-            tagger: Vec<(ByteCount, ScalarValue)>,
+            tagger: Vec<(ByteCount, IntegerValue)>,
         ) -> Option<VariantLayout> {
             let field_offsets = variant_layout
                 .field_offsets
@@ -535,7 +535,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         fn translate_layout_data(
             layout_data: &r_abi::LayoutData<r_abi::FieldIdx, r_abi::VariantIdx>,
-            tagger: Vec<(ByteCount, ScalarValue)>,
+            tagger: Vec<(ByteCount, IntegerValue)>,
         ) -> Option<VariantLayout> {
             let field_offsets = match &layout_data.fields {
                 r_abi::FieldsShape::Arbitrary { offsets, .. } => {
@@ -628,10 +628,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     tcx.tag_for_variant(ty_env.as_query_input((ty, id)))
                         .map(|s| match tag_ty {
                             IntegerTy::Signed(int_ty) => {
-                                ScalarValue::from_int(ptr_size, int_ty, s.to_int(tag_size)).unwrap()
+                                IntegerValue::from_int(ptr_size, int_ty, s.to_int(tag_size))
+                                    .unwrap()
                             }
                             IntegerTy::Unsigned(uint_ty) => {
-                                ScalarValue::from_uint(ptr_size, uint_ty, s.to_uint(tag_size))
+                                IntegerValue::from_uint(ptr_size, uint_ty, s.to_uint(tag_size))
                                     .unwrap()
                             }
                         })
@@ -949,11 +950,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         def_span: Span,
         discr: &hax::DiscriminantValue,
-    ) -> Result<ScalarValue, Error> {
+    ) -> Result<IntegerValue, Error> {
         let ty = self.translate_ty(def_span, &discr.ty)?;
         let lit_ty = ty.kind().as_literal().unwrap();
         match lit_ty.to_integer_ty() {
-            Some(int_ty) => Ok(ScalarValue::from_bits(int_ty, discr.val)),
+            Some(int_ty) => Ok(IntegerValue::from_bits(int_ty, discr.val)),
             None => raise_error!(self, def_span, "unexpected discriminant type: {ty:?}",),
         }
     }
