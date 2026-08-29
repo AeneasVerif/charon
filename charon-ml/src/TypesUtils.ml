@@ -122,7 +122,7 @@ let ty_as_adt (ty : ty) : type_decl_ref =
   | Some tref -> tref
   | None -> raise (Failure "Unreachable")
 
-let ty_as_builtin_adt_opt (ty : ty) : (builtin_ty * generic_args) option =
+let ty_as_builtin_adt_opt (ty : ty) : (builtin_adt * generic_args) option =
   match ty with
   | TAdt { builtin = Some id; generics; _ } -> Some (id, generics)
   | _ -> None
@@ -130,7 +130,7 @@ let ty_as_builtin_adt_opt (ty : ty) : (builtin_ty * generic_args) option =
 let ty_is_builtin_adt (ty : ty) : bool =
   Option.is_some (ty_as_builtin_adt_opt ty)
 
-let ty_as_builtin_adt (ty : ty) : builtin_ty * generic_args =
+let ty_as_builtin_adt (ty : ty) : builtin_adt * generic_args =
   match ty_as_builtin_adt_opt ty with
   | Some (id, generics) -> (id, generics)
   | None -> raise (Failure "Unreachable")

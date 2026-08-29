@@ -770,8 +770,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     };
                     match type_ref.as_builtin() {
                         None => ProjectionElem::Field(downcast.take(), field),
-                        Some(BuiltinTy::Tuple) => ProjectionElem::Field(None, field),
-                        Some(BuiltinTy::Box) if field == FieldId::ZERO => ProjectionElem::Deref,
+                        Some(BuiltinAdt::Tuple) => ProjectionElem::Field(None, field),
+                        Some(BuiltinAdt::Box) if field == FieldId::ZERO => ProjectionElem::Deref,
                         _ => raise_error!(self, span, "field projection on unexpected type"),
                     }
                 }
@@ -1017,13 +1017,15 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                                     );
                                     ProjectionElem::Field(variant_id, field_id)
                                 }
-                                Some(BuiltinTy::Tuple) => {
+                                Some(BuiltinAdt::Tuple) => {
                                     assert!(generics.regions.is_empty());
                                     assert!(variant.is_none());
                                     assert!(generics.const_generics.is_empty());
                                     ProjectionElem::Field(None, field_id)
                                 }
-                                Some(BuiltinTy::Box) if self.t_ctx.options.treat_box_as_builtin => {
+                                Some(BuiltinAdt::Box)
+                                    if self.t_ctx.options.treat_box_as_builtin =>
+                                {
                                     // Some sanity checks
                                     assert!(generics.regions.is_empty());
                                     assert!(generics.types.len() == 2);
@@ -1040,7 +1042,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                                         )
                                     }
                                 }
-                                Some(BuiltinTy::Box) => ProjectionElem::Field(None, field_id),
+                                Some(BuiltinAdt::Box) => ProjectionElem::Field(None, field_id),
                                 Some(_) => {
                                     raise_error!(self, span, "Unexpected field projection")
                                 }

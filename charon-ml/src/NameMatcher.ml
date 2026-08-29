@@ -537,7 +537,7 @@ and match_name (ctx : ctx) (c : match_config) (p : pattern) (n : T.name) : bool
   match_name_with_generics ctx c p n TypesUtils.empty_generic_args
 
 and match_pattern_with_type_decl_id (ctx : ctx) (c : match_config) (m : maps)
-    (pid : pattern) (id : T.type_decl_id) (builtin : T.builtin_ty option)
+    (pid : pattern) (id : T.type_decl_id) (builtin : T.builtin_adt option)
     (generics : T.generic_args) : bool =
   match (builtin, pid) with
   | None, _ ->

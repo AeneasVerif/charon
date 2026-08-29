@@ -233,16 +233,16 @@ impl Generator<'_> {
                 }
                 _ => self.unsupported_type(self.debug_type_name(tref.id)),
             },
-            Some(BuiltinTy::Tuple) => {
+            Some(BuiltinAdt::Tuple) => {
                 self.fmt_tuple_translation_expr(f, &tref.generics.types, value)
             }
-            Some(BuiltinTy::Box) => {
+            Some(BuiltinAdt::Box) => {
                 let ty = tref.generics.types.iter().next().unwrap();
                 write!(f, "Box::new(")?;
                 self.fmt_translation_expr(f, ty, &format!("({value}).as_ref()"))?;
                 write!(f, ")")
             }
-            Some(BuiltinTy::Str) => write!(f, "({value}).to_string().into()"),
+            Some(BuiltinAdt::Str) => write!(f, "({value}).to_string().into()"),
         }
     }
 

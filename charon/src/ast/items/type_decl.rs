@@ -165,8 +165,8 @@ pub enum TypeSource {
         /// vtable corresponds to it.
         supertrait_map: IndexVec<TraitClauseId, Option<FieldId>>,
     },
-    /// A type declaration synthesised for a builtin type.
-    Builtin(BuiltinTy),
+    /// A type declaration synthesised for a builtin ADT.
+    Builtin(BuiltinAdt),
 }
 
 #[derive(

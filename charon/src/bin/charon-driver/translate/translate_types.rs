@@ -427,16 +427,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Whether Rust treats this type specially, i.e. whether it is a tuple, `str` or `Box`.
-    pub(crate) fn recognize_builtin_type(&mut self, item: &hax::ItemRef) -> Option<BuiltinTy> {
+    pub(crate) fn recognize_builtin_adt(&mut self, item: &hax::ItemRef) -> Option<BuiltinAdt> {
         item.def_id
             .as_synthetic(self.hax_state())
             .and_then(|synthetic| match synthetic {
-                hax::SyntheticItem::Tuple(_) => Some(BuiltinTy::Tuple),
-                hax::SyntheticItem::Str => Some(BuiltinTy::Str),
+                hax::SyntheticItem::Tuple(_) => Some(BuiltinAdt::Tuple),
+                hax::SyntheticItem::Str => Some(BuiltinAdt::Str),
                 hax::SyntheticItem::Array | hax::SyntheticItem::Slice => None,
             })
             .or_else(|| {
-                (self.hax_def(item).ok()?.lang_item? == sym::owned_box).then_some(BuiltinTy::Box)
+                (self.hax_def(item).ok()?.lang_item? == sym::owned_box).then_some(BuiltinAdt::Box)
             })
     }
 

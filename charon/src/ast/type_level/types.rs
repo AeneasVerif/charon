@@ -46,8 +46,7 @@ pub enum TyKind {
     /// An ADT.
     /// Note that here ADTs are very general. They can be:
     /// - user-defined ADTs
-    /// - tuples (including `unit`, which is a 0-tuple)
-    /// - built-in types, namely `Box` and `str`
+    /// - built-in ADTs: tuples (including `unit`), `Box` and `str`
     ///
     /// Note: this is incorrectly named: this can refer to any valid `TypeDecl` including extern
     /// types.
@@ -250,16 +249,7 @@ pub enum LiteralTy {
     Char,
 }
 
-/// Builtin types identifiers.
-///
-/// WARNING: for now, all the built-in types are covariant in the generic
-/// parameters (if there are). Adding types which don't satisfy this
-/// will require to update the code abstracting the signatures (to properly
-/// take into account the lifetime constraints).
-///
-/// TODO: update to not hardcode the types (except `Box` maybe) and be more
-/// modular.
-/// TODO: move to builtins.rs?
+/// Builtin ADT identifiers.
 #[derive(
     Debug,
     PartialEq,
@@ -279,7 +269,7 @@ pub enum LiteralTy {
     PartialOrd,
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("T"))]
-pub enum BuiltinTy {
+pub enum BuiltinAdt {
     /// A tuple `(A, B, ...)`, including `unit`.
     Tuple,
     /// Boxes; always detected, though they are only treated as primitives with `--treat-box-as-builtin`
@@ -389,7 +379,7 @@ impl Ty {
         static_type!(TyKind::Adt(TypeDeclRef {
             id: TypeDeclId::UNIT,
             generics: Box::new(GenericArgs::empty()),
-            builtin: Some(BuiltinTy::Tuple),
+            builtin: Some(BuiltinAdt::Tuple),
         }))
     }
 

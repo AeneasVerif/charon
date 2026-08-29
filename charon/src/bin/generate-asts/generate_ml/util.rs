@@ -179,8 +179,8 @@ impl<'a> GenerateCtx<'a> {
                         };
                         format!("{args}{base_ty}")
                     }
-                    Some(BuiltinTy::Box) => args[0].clone(),
-                    Some(BuiltinTy::Tuple) => args.iter().join("*"),
+                    Some(BuiltinAdt::Box) => args[0].clone(),
+                    Some(BuiltinAdt::Tuple) => args.iter().join("*"),
                     _ => unimplemented!("{ty:?}"),
                 }
             }

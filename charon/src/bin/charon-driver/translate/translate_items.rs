@@ -445,7 +445,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let src = if let hax::FullDefKind::Closure { args, .. } = def.kind() {
             let info = self.translate_closure_info(span, args)?;
             TypeSource::Closure { info }
-        } else if let Some(builtin) = self.recognize_builtin_type(def.this()) {
+        } else if let Some(builtin) = self.recognize_builtin_adt(def.this()) {
             TypeSource::Builtin(builtin)
         } else {
             TypeSource::Normal

@@ -42,7 +42,7 @@ let region_var_groups_to_string gl =
 let ref_kind_to_string rk =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_ref_kind fmt rk)
 
-let builtin_ty_to_string _ = "Box"
+let builtin_adt_to_string _ = "Box"
 
 let de_bruijn_var_to_pretty_string show_varid var =
   PrintFmt.de_bruijn_var_to_pretty_string show_varid var

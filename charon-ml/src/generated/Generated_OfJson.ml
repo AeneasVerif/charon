@@ -288,6 +288,15 @@ and branch_id_of_json (ctx : of_json_ctx) (js : json) :
     | x -> BranchId.id_of_json ctx x
     | _ -> Error "")
 
+and builtin_adt_of_json (ctx : of_json_ctx) (js : json) :
+    (builtin_adt, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Tuple" -> Ok TTuple
+    | `String "Box" -> Ok TBox
+    | `String "Str" -> Ok TStr
+    | _ -> Error "")
+
 and builtin_assert_kind_of_json (ctx : of_json_ctx) (js : json) :
     (builtin_assert_kind, string) result =
   combine_error_msgs js __FUNCTION__
@@ -375,15 +384,6 @@ and builtin_path_elem_of_json (ctx : of_json_ctx) (js : json) :
     | `String "VTable" -> Ok PeVTable
     | `String "VTableMethod" -> Ok PeVTableMethod
     | `String "VTableDropShim" -> Ok PeVTableDropShim
-    | _ -> Error "")
-
-and builtin_ty_of_json (ctx : of_json_ctx) (js : json) :
-    (builtin_ty, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "Tuple" -> Ok TTuple
-    | `String "Box" -> Ok TBox
-    | `String "Str" -> Ok TStr
     | _ -> Error "")
 
 and byte_of_json (ctx : of_json_ctx) (js : json) : (byte, string) result =
@@ -1524,7 +1524,7 @@ and type_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("id", id); ("generics", generics); ("builtin", builtin) ] ->
         let* id = type_decl_id_of_json ctx id in
         let* generics = box_of_json generic_args_of_json ctx generics in
-        let* builtin = option_of_json builtin_ty_of_json ctx builtin in
+        let* builtin = option_of_json builtin_adt_of_json ctx builtin in
         Ok ({ id; generics; builtin } : type_decl_ref)
     | _ -> Error "")
 
@@ -3795,7 +3795,7 @@ and type_source_of_json (ctx : of_json_ctx) (js : json) :
         in
         Ok (VTableType (dyn_predicate, field_map, supertrait_map))
     | `Assoc [ ("Builtin", _0) ] ->
-        let* _0 = builtin_ty_of_json ctx _0 in
+        let* _0 = builtin_adt_of_json ctx _0 in
         Ok (BuiltinType _0)
     | _ -> Error "")
 

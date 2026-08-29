@@ -62,7 +62,7 @@ use derive_generic_visitor::*;
     ),
     // Types that we unconditionally explore.
     drive(
-        Assert, AttributeKind, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAssertKind, BuiltinTy,
+        Assert, AttributeKind, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAdt, BuiltinAssertKind,
         Call, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Deprecation, Disambiguator, DynPredicate, Field, FieldId, File, FloatTy, FloatValue,
         FnOperand, FunId, FnPtrKind, FunSig, InlineAttr, IntegerTy, IntTy, UIntTy, LiteralTy,
@@ -200,7 +200,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
         TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, IntegerValue, Span, Ty, TypeDeclId,  UnOp, VariantId,
         TraitRef, LiteralTy, Region, RegionId, (), String, PathBuf, bool, u32, usize,
-        DropKind, Error, Variance, WithRetag, BuiltinTy, BuiltinPathElem,
+        DropKind, Error, Variance, WithRetag, BuiltinAdt, BuiltinPathElem,
         llbc_ast::BlockId, llbc_ast::StatementId,
     ),
     // Types that we unconditionally explore.

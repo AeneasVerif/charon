@@ -131,8 +131,8 @@ pub enum MaybeAssocItemId {
 pub struct TypeDeclRef {
     pub id: TypeDeclId,
     pub generics: BoxedArgs,
-    /// If this points to a built-in type, it is recorded here for easier identification.
-    pub builtin: Option<BuiltinTy>,
+    /// If this points to a builtin ADT, it is recorded here for easier identification.
+    pub builtin: Option<BuiltinAdt>,
 }
 
 /// Reference to a function declaration.
@@ -293,7 +293,7 @@ pub struct TraitImplRef {
 }
 
 impl TypeDeclRef {
-    pub fn new(id: TypeDeclId, generics: GenericArgs, builtin: Option<BuiltinTy>) -> Self {
+    pub fn new(id: TypeDeclId, generics: GenericArgs, builtin: Option<BuiltinAdt>) -> Self {
         Self {
             id,
             generics: Box::new(generics),
@@ -301,23 +301,23 @@ impl TypeDeclRef {
         }
     }
 
-    pub fn as_builtin(&self) -> Option<BuiltinTy> {
+    pub fn as_builtin(&self) -> Option<BuiltinAdt> {
         self.builtin
     }
 
     /// Whether this refers to `Box`.
     pub fn is_box(&self) -> bool {
-        matches!(self.builtin, Some(BuiltinTy::Box))
+        matches!(self.builtin, Some(BuiltinAdt::Box))
     }
 
     /// Whether this refers to a tuple.
     pub fn is_tuple(&self) -> bool {
-        matches!(self.builtin, Some(BuiltinTy::Tuple))
+        matches!(self.builtin, Some(BuiltinAdt::Tuple))
     }
 
     /// Whether this refers to `str`.
     pub fn is_str(&self) -> bool {
-        matches!(self.builtin, Some(BuiltinTy::Str))
+        matches!(self.builtin, Some(BuiltinAdt::Str))
     }
 }
 

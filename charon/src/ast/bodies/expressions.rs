@@ -410,7 +410,7 @@ impl Rvalue {
                 TypeDeclRef {
                     id: TypeDeclId::UNIT,
                     generics: Box::new(GenericArgs::empty()),
-                    builtin: Some(BuiltinTy::Tuple),
+                    builtin: Some(BuiltinAdt::Tuple),
                 },
                 None,
                 None,

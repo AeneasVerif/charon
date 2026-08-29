@@ -880,7 +880,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ///
     /// Note: for `FnPtr`s use `translate_fn_ptr` instead, as this handles late-bound variables
     /// correctly. For `TypeDeclRef`s use `translate_type_decl_ref` instead, as this correctly
-    /// recognizes built-in types.
+    /// recognizes built-in ADTs.
     pub(crate) fn translate_item<T: TryFrom<DeclRef<ItemId>>>(
         &mut self,
         span: Span,
@@ -909,10 +909,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         enqueue: bool,
     ) -> Result<TypeDeclRef, Error> {
         let builtin = match kind {
-            TransItemSourceKind::Type => self.recognize_builtin_type(item),
+            TransItemSourceKind::Type => self.recognize_builtin_adt(item),
             _ => None,
         };
-        if builtin == Some(BuiltinTy::Tuple) && self.t_ctx.options.no_gen_tuple_structs {
+        if builtin == Some(BuiltinAdt::Tuple) && self.t_ctx.options.no_gen_tuple_structs {
             let mut generics = self.translate_generic_args(span, &item.generic_args, &[])?;
             // The declaration has no clauses, so we drop the `Sized` proofs of the fields.
             generics.trait_refs.clear();

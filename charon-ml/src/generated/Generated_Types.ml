@@ -199,6 +199,16 @@ and binder_kind =
   | BKDyn  (** Binder used for [dyn Trait] existential predicates. *)
   | BKOther  (** Some other use of a binder outside the main Charon ast. *)
 
+(** Builtin ADT identifiers. *)
+and builtin_adt =
+  | TTuple  (** A tuple [(A, B, ...)], including [unit]. *)
+  | TBox
+      (** Boxes; always detected, though they are only treated as primitives
+          with [--treat-box-as-builtin] *)
+  | TStr
+      (** The [str] type, which corresponds to a [[u8]] that encodes a string
+          with UTF-8. *)
+
 (** Describes a built-in impl. Mostly lists the implemented trait, sometimes
     with more details about the contents of the implementation. *)
 and builtin_impl_data =
@@ -236,24 +246,6 @@ and builtin_impl_data =
           trait clause from a type declaration. References to the removed clause
           are rewritten as
           [BuiltinOrAuto { builtin_data: RemovedAdtClause, .. }]. *)
-
-(** Builtin types identifiers.
-
-    WARNING: for now, all the built-in types are covariant in the generic
-    parameters (if there are). Adding types which don't satisfy this will
-    require to update the code abstracting the signatures (to properly take into
-    account the lifetime constraints).
-
-    TODO: update to not hardcode the types (except [Box] maybe) and be more
-    modular. TODO: move to builtins.rs? *)
-and builtin_ty =
-  | TTuple  (** A tuple [(A, B, ...)], including [unit]. *)
-  | TBox
-      (** Boxes; always detected, though they are only treated as primitives
-          with [--treat-box-as-builtin] *)
-  | TStr
-      (** The [str] type, which corresponds to a [[u8]] that encodes a string
-          with UTF-8. *)
 
 (** A byte, in the MiniRust sense: it can either be uninitialized, a concrete u8
     value, or part of a pointer with provenance (e.g. to a global or a function)
@@ -643,8 +635,7 @@ and ty_kind =
   | TAdt of type_decl_ref
       (** An ADT. Note that here ADTs are very general. They can be:
           - user-defined ADTs
-          - tuples (including [unit], which is a 0-tuple)
-          - built-in types, namely [Box] and [str]
+          - built-in ADTs: tuples (including [unit]), [Box] and [str]
 
           Note: this is incorrectly named: this can refer to any valid
           [TypeDecl] including extern types. *)
@@ -715,8 +706,8 @@ and ty_kind =
 and type_decl_ref = {
   id : type_decl_id;
   generics : generic_args;
-  builtin : builtin_ty option;
-      (** If this points to a built-in type, it is recorded here for easier
+  builtin : builtin_adt option;
+      (** If this points to a builtin ADT, it is recorded here for easier
           identification. *)
 }
 
@@ -1447,8 +1438,8 @@ and type_source =
           - [field_map]: Record what each vtable field means.
           - [supertrait_map]: For each implied clause that is also a supertrait
             clause, records which field of the vtable corresponds to it. *)
-  | BuiltinType of builtin_ty
-      (** A type declaration synthesised for a builtin type. *)
+  | BuiltinType of builtin_adt
+      (** A type declaration synthesised for a builtin ADT. *)
 
 and v_table_field =
   | VTableSize
