@@ -57,6 +57,50 @@ pub fn translate_closure_kind(kind: &hax::ClosureKind) -> ClosureKind {
     }
 }
 
+/// If this trait proof is the built-in impl of a `Fn*` trait for a closure or function item,
+/// return the callable item and the kind of the implemented trait.
+pub fn recognize_callable_impl_proof(
+    trait_proof: &hax::TraitProof,
+) -> Option<(&hax::ItemRef, ClosureKind)> {
+    let hax::TraitProofKind::Builtin {
+        trait_data: hax::BuiltinTraitData::Other(lang_item),
+        ..
+    } = &trait_proof.kind
+    else {
+        return None;
+    };
+    let target_kind = match lang_item {
+        hax::SolverTraitLangItem::FnOnce => ClosureKind::FnOnce,
+        hax::SolverTraitLangItem::FnMut => ClosureKind::FnMut,
+        hax::SolverTraitLangItem::Fn => ClosureKind::Fn,
+        _ => return None,
+    };
+    let hax::GenericArg::Type(callable_ty) = trait_proof
+        .pred
+        .hax_skip_binder_ref()
+        .generic_args
+        .first()?
+    else {
+        return None;
+    };
+    let item = match callable_ty.kind() {
+        hax::TyKind::Closure(closure_args) => &closure_args.item,
+        hax::TyKind::FnDef { item, .. } => item,
+        _ => return None,
+    };
+    Some((item, target_kind))
+}
+
+/// The built-in `Fn*` impl of the given kind that we generate for this closure or function item.
+pub fn callable_virtual_impl<'a>(
+    def: &'a hax::FullDef<'_>,
+    target_kind: ClosureKind,
+) -> &'a hax::VirtualTraitImpl {
+    CallableFnImpls::from_def(def)
+        .and_then(|impls| impls.vimpl(target_kind))
+        .expect("expected a callable with a Fn* impl")
+}
+
 #[derive(Clone, Copy)]
 enum Callable<'a> {
     Closure(&'a hax::ClosureArgs),
@@ -328,6 +372,29 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             fn_mut_impl,
             fn_impl,
             signature,
+        })
+    }
+
+    /// The type of the `self` argument of the `call_*` method of the `Fn*` impl of this callable,
+    /// i.e. `&closure`, `&mut closure` or `closure` depending on the trait.
+    pub(crate) fn translate_callable_method_receiver_ty(
+        &mut self,
+        span: Span,
+        def: &hax::FullDef<'tcx>,
+        target_kind: ClosureKind,
+    ) -> Result<Ty, Error> {
+        let callable = CallableFnImpls::from_def(def)
+            .expect("callable expected")
+            .callable;
+        let state_ty = self.get_callable_state_ty(span, callable)?;
+        Ok(match target_kind {
+            ClosureKind::FnOnce => state_ty,
+            ClosureKind::Fn | ClosureKind::FnMut => {
+                let rid = self.the_only_binder().closure_call_method_region.unwrap();
+                let region = Region::Var(DeBruijnVar::new_at_zero(rid));
+                let mutability = RefKind::mutable(target_kind == ClosureKind::FnMut);
+                TyKind::Ref(region, state_ty, mutability).into_ty()
+            }
         })
     }
 

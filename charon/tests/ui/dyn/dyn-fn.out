@@ -16,6 +16,11 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
+= <opaque>
+
+static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+
 struct () {}
 
 // Full name: core::marker::Destruct
@@ -150,6 +155,13 @@ fn takes_fn<'_0>(f: &'_0 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::Implied
     return
 }
 
+// Full name: test_crate::gives_fn::{impl FnMut<(&'_ mut u32,)> for closure}::{vtable}
+fn impl_FnMut_tuple_for_closure::{vtable}<'_0>() -> core::ops::function::FnMut::{vtable}<(&'_ mut u32,), bool>
+= <opaque>
+
+// Full name: test_crate::gives_fn::{impl FnMut<(&'_ mut u32,)> for closure}::{vtable}
+static impl_FnMut_tuple_for_closure::{vtable}<'_0>: core::ops::function::FnMut::{vtable}<(&'_ mut u32,), bool> = impl_FnMut_tuple_for_closure::{vtable}<'_0>()
+
 // Full name: test_crate::gives_fn::closure
 struct closure {}
 
@@ -176,6 +188,91 @@ fn call<'_0, '_1>(_1: &'_1 closure, tupled_args: (&'_0 mut u32,)) -> bool
     return
 }
 
+// Full name: test_crate::gives_fn::{impl Fn<(&'_ mut u32,)> for closure}::{vtable_method}
+extern "rust-call" fn {vtable_method}<'_0, '_1>(_1: &'_1 (dyn Fn<(&'_ mut u32,), ImpliedClause1::ImpliedClause1::Output = bool>), _2: (&'_ mut u32,)) -> bool
+{
+    let _0: bool; // return
+    let _1: &'_1 (dyn Fn<(&'0 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '1); // arg #1
+    let _2: (&'5 mut u32,); // arg #2
+    let _3: &'_1 closure; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = concretize<&'_1 (dyn Fn<(&'6 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '7), &'_1 closure>(move _1)
+    _0 = call<'_0, '_1>(move _3, move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::gives_fn::closure::{impl Destruct for closure}::drop_glue
+unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
+{
+    let _0: (); // return
+    let _1: &'1 mut closure; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::gives_fn::{impl Fn<(&'_ mut u32,)> for closure}::{vtable_drop_shim}
+unsafe fn {vtable_drop_shim}<'_0, '_1>(dyn_self: &'_1 mut (dyn Fn<(&'_ mut u32,), ImpliedClause1::ImpliedClause1::Output = bool>))
+{
+    let ret: (); // return
+    let dyn_self: &'_1 mut (dyn Fn<(&'0 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '1); // arg #1
+    let target_self: &'_1 mut closure; // local
+
+    storage_live(ret)
+    ret = ()
+    storage_live(target_self)
+    target_self = concretize<&'_1 mut (dyn Fn<(&'5 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '6), &'_1 mut closure>(move dyn_self)
+    drop[drop_glue<'15>] (*target_self)
+    ↳⚡ storage_dead(target_self)
+        storage_dead(dyn_self)
+        unwind_continue
+    storage_dead(target_self)
+    storage_dead(dyn_self)
+    return
+}
+
+// Full name: test_crate::gives_fn::{impl Fn<(&'_ mut u32,)> for closure}::{vtable}
+fn impl_Fn_tuple_for_closure::{vtable}<'_0>() -> core::ops::function::Fn::{vtable}<(&'_ mut u32,), bool>
+{
+    let ret: core::ops::function::Fn::{vtable}<(&'0 mut u32,), bool>; // return
+    let size: usize; // local
+    let align: usize; // local
+    let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn Fn<(&'4 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '5)); // anonymous local
+    let _4: extern "rust-call" fn<'_0_1>(&'_0_1 (dyn Fn<(&'10 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '11), (&'15 mut u32,)) -> bool; // anonymous local
+    let _5: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _6: &'static core::ops::function::FnMut::{vtable}<(&'35 mut u32,), bool>; // anonymous local
+
+    storage_live(ret)
+    storage_live(size)
+    size = size_of<closure>
+    storage_live(align)
+    align = align_of<closure>
+    storage_live(_3)
+    _3 = cast<for<'_0_1> {vtable_drop_shim}<'_0, '3>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Fn<(&'4 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '5))>(const {vtable_drop_shim}<'_0, '3>)
+    storage_live(_4)
+    _4 = cast<for<'_0_1> {vtable_method}<'_0, '9>, extern "rust-call" fn<'_0_1>(&'_0_1 (dyn Fn<(&'10 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '11), (&'15 mut u32,)) -> bool>(const {vtable_method}<'_0, '9>)
+    storage_live(_5)
+    _5 = &core::marker::MetaSized::{vtable}<closure>
+    storage_live(_6)
+    _6 = &impl_FnMut_tuple_for_closure::{vtable}<'_0>
+    ret = core::ops::function::Fn::{vtable} { size: move size, align: move align, drop: move _3, method_call: move _4, super_trait_0: move _5, super_trait_1: move _6 }
+    return
+}
+
+// Full name: test_crate::gives_fn::{impl Fn<(&'_ mut u32,)> for closure}::{vtable}
+static impl_Fn_tuple_for_closure::{vtable}<'_0>: core::ops::function::Fn::{vtable}<(&'_ mut u32,), bool> = impl_Fn_tuple_for_closure::{vtable}<'_0>()
+
 // Full name: test_crate::gives_fn::{impl FnMut<(&'_ mut u32,)> for closure}::call_mut
 fn call_mut<'_0, '_1>(state: &'_1 mut closure, args: (&'_0 mut u32,)) -> bool
 {
@@ -195,18 +292,6 @@ fn call_mut<'_0, '_1>(state: &'_1 mut closure, args: (&'_0 mut u32,)) -> bool
     storage_dead(_3)
     storage_dead(args)
     storage_dead(state)
-    return
-}
-
-// Full name: test_crate::gives_fn::closure::{impl Destruct for closure}::drop_glue
-unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
-{
-    let _0: (); // return
-    let _1: &'1 mut closure; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
     return
 }
 
@@ -300,7 +385,7 @@ fn gives_fn()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _1 = unsize_cast<&'11 closure, &'15 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '16), &vtable_of(impl_Fn_tuple_for_closure<'21>)>(move _2)
+    _1 = unsize_cast<&'11 closure, &'15 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '16), &impl_Fn_tuple_for_closure::{vtable}<'21>>(move _2)
     storage_dead(_2)
     _0 = takes_fn<'24>(move _1)
     ↳⚡ storage_dead(_4)
