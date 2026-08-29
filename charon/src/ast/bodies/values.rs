@@ -45,9 +45,16 @@ pub struct ConstantExpr(pub HashConsed<(ConstantExprKind, Ty)>);
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("C"))]
 pub enum ConstantExprKind {
-    /// Literal value (integer, boolean, etc).
+    /// Boolean value.
+    Bool(bool),
+    /// Integer value.
     #[serde_state(stateless)]
-    Literal(Literal),
+    Integer(ScalarValue),
+    /// Char value.
+    Char(char),
+    /// Float value.
+    #[serde_state(stateless)]
+    Float(FloatValue),
     /// Value of an ADT (struct or enum).
     ///
     /// This is eliminated inside functions if `--raw-consts` is off.
@@ -64,6 +71,10 @@ pub enum ConstantExprKind {
     ///
     /// This is eliminated inside functions if `--raw-consts` is off.
     Ptr(RefKind, ConstantExpr, Option<UnsizingMetadata>),
+    /// `str` value.
+    Str(String),
+    /// Byte string value.
+    ByteStr(Vec<u8>),
     /// ZST constant corresponding to the unique value of the type of a function item.
     FnDef(FnPtr),
     /// A function pointer value; this is a pointer (i.e. an address).
@@ -111,39 +122,6 @@ pub enum ConstantExprKind {
 
     /// A constant expression that Charon doesn't handle, along with the reason why.
     Opaque(String),
-}
-
-/// A primitive value.
-///
-/// Those are for instance used for the constant operands [crate::expressions::Operand::Const]
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    VariantName,
-    EnumIsA,
-    EnumAsGetters,
-    Serialize,
-    Deserialize,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-    Hash,
-    PartialOrd,
-    Ord,
-)]
-#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("V"))]
-#[serde_state(stateless)]
-pub enum Literal {
-    Scalar(ScalarValue),
-    Float(FloatValue),
-    Bool(bool),
-    Char(char),
-    ByteStr(Vec<u8>),
-    Str(String),
 }
 
 /// A scalar value.
@@ -292,37 +270,34 @@ impl ConstantExpr {
 
     pub fn as_usize_literal(&self) -> Option<u128> {
         match self.kind() {
-            ConstantExprKind::Literal(Literal::Scalar(ScalarValue::Unsigned(
-                UIntTy::Usize,
-                value,
-            ))) => Some(*value),
+            ConstantExprKind::Integer(ScalarValue::Unsigned(UIntTy::Usize, value)) => Some(*value),
             _ => None,
         }
     }
 }
 
-impl Literal {
-    pub fn char_from_le_bytes(bits: u128) -> Self {
-        let b: [u8; 4] = bits.to_le_bytes()[0..4].try_into().unwrap();
-        Literal::Char(std::char::from_u32(u32::from_le_bytes(b)).unwrap())
-    }
-
+impl ConstantExprKind {
     pub fn from_bits(lit_ty: &LiteralTy, bits: u128) -> Option<Self> {
         match *lit_ty {
-            LiteralTy::Int(int_ty) => Some(Literal::Scalar(ScalarValue::from_bits(
+            LiteralTy::Int(int_ty) => Some(Self::Integer(ScalarValue::from_bits(
                 IntegerTy::Signed(int_ty),
                 bits,
             ))),
-            LiteralTy::UInt(uint_ty) => Some(Literal::Scalar(ScalarValue::from_bits(
+            LiteralTy::UInt(uint_ty) => Some(Self::Integer(ScalarValue::from_bits(
                 IntegerTy::Unsigned(uint_ty),
                 bits,
             ))),
             LiteralTy::Bool => match bits {
-                0 => Some(Literal::Bool(false)),
-                1 => Some(Literal::Bool(true)),
+                0 => Some(Self::Bool(false)),
+                1 => Some(Self::Bool(true)),
                 _ => None,
             },
-            LiteralTy::Char => Some(Literal::char_from_le_bytes(bits)),
+            LiteralTy::Char => {
+                let bytes: [u8; 4] = bits.to_le_bytes()[0..4].try_into().unwrap();
+                Some(Self::Char(
+                    std::char::from_u32(u32::from_le_bytes(bytes)).unwrap(),
+                ))
+            }
             LiteralTy::Float(_) => None,
         }
     }
@@ -542,7 +517,7 @@ impl ScalarValue {
             ScalarValue::Unsigned(uint_ty, _) => LiteralTy::UInt(uint_ty),
         };
         ConstantExpr::new(
-            ConstantExprKind::Literal(Literal::Scalar(self)),
+            ConstantExprKind::Integer(self),
             TyKind::Literal(literal_ty).into_ty(),
         )
     }

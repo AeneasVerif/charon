@@ -281,7 +281,10 @@ and const_generic_var_id = (ConstGenericVarId.id[@visitors.opaque])
 and constant_expr = { kind : constant_expr_kind; ty : ty }
 
 and constant_expr_kind =
-  | CLiteral of literal  (** Literal value (integer, boolean, etc). *)
+  | CBool of bool  (** Boolean value. *)
+  | CInteger of scalar_value  (** Integer value. *)
+  | CChar of char_value  (** Char value. *)
+  | CFloat of float_value  (** Float value. *)
   | CAdt of variant_id option * constant_expr list
       (** Value of an ADT (struct or enum).
 
@@ -298,6 +301,8 @@ and constant_expr_kind =
       (** A pointer to a static.
 
           This is eliminated inside functions if [--raw-consts] is off. *)
+  | CStr of string  (** [str] value. *)
+  | CByteStr of int list  (** Byte string value. *)
   | CFnDef of fn_ptr
       (** ZST constant corresponding to the unique value of the type of a
           function item. *)
@@ -1458,7 +1463,7 @@ and variant = {
   attr_info : attr_info;
   variant_name : string;
   fields : field list;
-  discriminant : literal;
+  discriminant : scalar_value;
       (** The discriminant value outputted by [std::mem::discriminant] for this
           variant. This can be different than the value stored in memory (called
           [tag]); that one is described by [[Discriminator]] and

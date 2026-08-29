@@ -1149,19 +1149,6 @@ impl ItemMeta {
     }
 }
 
-impl Display for Literal {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
-        match self {
-            Literal::Scalar(v) => write!(f, "{v}"),
-            Literal::Float(v) => write!(f, "{v}"),
-            Literal::Bool(v) => write!(f, "{v}"),
-            Literal::Char(v) => write!(f, "'{}'", v.escape_debug()),
-            Literal::Str(v) => write!(f, "\"{}\"", v.replace("\\", "\\\\").replace("\n", "\\n")),
-            Literal::ByteStr(v) => write!(f, "{v:?}"),
-        }
-    }
-}
-
 impl Display for LiteralTy {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -1592,7 +1579,14 @@ impl_display_via_ctx!(ConstantExpr);
 impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.kind() {
-            ConstantExprKind::Literal(c) => write!(f, "{}", c),
+            ConstantExprKind::Integer(v) => write!(f, "{v}"),
+            ConstantExprKind::Float(v) => write!(f, "{v}"),
+            ConstantExprKind::Bool(v) => write!(f, "{v}"),
+            ConstantExprKind::Char(v) => write!(f, "'{}'", v.escape_debug()),
+            ConstantExprKind::Str(v) => {
+                write!(f, "\"{}\"", v.replace("\\", "\\\\").replace("\n", "\\n"))
+            }
+            ConstantExprKind::ByteStr(v) => write!(f, "{v:?}"),
             ConstantExprKind::Adt(variant_id, values) => {
                 let values = values.iter().map(|v| v.with_ctx(ctx));
                 let ty_ref = self.ty().as_adt().unwrap();

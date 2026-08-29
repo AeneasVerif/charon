@@ -228,9 +228,10 @@ pub(crate) fn generate(
                     reduce: true,
                     extra_types: &["char_value"],
                 })), &[
-                    "Literal",
+                    "FloatValue",
                     "IntegerTy",
                     "LiteralTy",
+                    "ScalarValue",
                 ]),
             ]),
         },

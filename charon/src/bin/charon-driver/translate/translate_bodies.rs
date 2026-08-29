@@ -1727,14 +1727,14 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         });
 
         for (bits, target) in targets.iter() {
-            let Some(literal) = Literal::from_bits(&switch_literal_ty, bits) else {
+            let Some(kind) = ConstantExprKind::from_bits(&switch_literal_ty, bits) else {
                 raise_error!(self, span, "Can't match on type {switch_literal_ty}")
             };
             let target = self.translate_basic_block_id(target);
             let branch_id = *target_to_branch
                 .entry(target)
                 .or_insert_with(|| branch_targets.push(target));
-            let value = ConstantExpr::new(ConstantExprKind::Literal(literal), switch_ty.clone());
+            let value = ConstantExpr::new(kind, switch_ty.clone());
             switch_branches.push((value, branch_id));
         }
 

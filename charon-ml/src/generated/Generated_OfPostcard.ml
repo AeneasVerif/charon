@@ -452,69 +452,84 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
     (let* __tag = int_of_postcard ctx st in
      match __tag with
      | 0 ->
-         let* _0 = literal_of_postcard ctx st in
-         Ok (CLiteral _0)
+         let* _0 = bool_of_postcard ctx st in
+         Ok (CBool _0)
      | 1 ->
+         let* _0 = scalar_value_of_postcard ctx st in
+         Ok (CInteger _0)
+     | 2 ->
+         let* _0 = char_of_postcard ctx st in
+         Ok (CChar _0)
+     | 3 ->
+         let* _0 = float_value_of_postcard ctx st in
+         Ok (CFloat _0)
+     | 4 ->
          let* _0 = option_of_postcard variant_id_of_postcard ctx st in
          let* _1 = list_of_postcard constant_expr_of_postcard ctx st in
          Ok (CAdt (_0, _1))
-     | 2 ->
+     | 5 ->
          let* _0 = list_of_postcard constant_expr_of_postcard ctx st in
          Ok (CArray _0)
-     | 3 ->
+     | 6 ->
          let* _0 = constant_expr_of_postcard ctx st in
          let* _1 = option_of_postcard unsizing_metadata_of_postcard ctx st in
          Ok (CRef (_0, _1))
-     | 4 ->
+     | 7 ->
          let* _0 = ref_kind_of_postcard ctx st in
          let* _1 = constant_expr_of_postcard ctx st in
          let* _2 = option_of_postcard unsizing_metadata_of_postcard ctx st in
          Ok (CPtr (_0, _1, _2))
-     | 5 ->
+     | 8 ->
+         let* _0 = string_of_postcard ctx st in
+         Ok (CStr _0)
+     | 9 ->
+         let* _0 = list_of_postcard u8_of_postcard ctx st in
+         Ok (CByteStr _0)
+     | 10 ->
          let* _0 = fn_ptr_of_postcard ctx st in
          Ok (CFnDef _0)
-     | 6 ->
+     | 11 ->
          let* _0 = fn_ptr_of_postcard ctx st in
          Ok (CFnPtr _0)
-     | 7 ->
+     | 12 ->
          let* _0 = big_uint_of_postcard ctx st in
          Ok (CPtrNoProvenance _0)
-     | 8 ->
+     | 13 ->
          let* _0 = ty_of_postcard ctx st in
          Ok (CTypeId _0)
-     | 9 ->
+     | 14 ->
          let* _0 = list_of_postcard byte_of_postcard ctx st in
          Ok (CRawMemory _0)
-     | 10 ->
+     | 15 ->
          let* _0 =
            de_bruijn_var_of_postcard const_generic_var_id_of_postcard ctx st
          in
          Ok (CVar _0)
-     | 11 ->
+     | 16 ->
          let* _0 = global_decl_ref_of_postcard ctx st in
          Ok (CGlobal _0)
-     | 12 ->
+     | 17 ->
          let* _0 = fn_ptr_of_postcard ctx st in
          let* _1 = list_of_postcard constant_expr_of_postcard ctx st in
          Ok (CCall (_0, _1))
-     | 13 ->
+     | 18 ->
          let* _0 = trait_ref_of_postcard ctx st in
          let* _1 = assoc_const_id_of_postcard ctx st in
          Ok (CTraitConst (_0, _1))
-     | 14 ->
+     | 19 ->
          let* _0 = trait_ref_of_postcard ctx st in
          Ok (CVTableRef _0)
-     | 15 ->
+     | 20 ->
          let* _0 = type_decl_ref_of_postcard ctx st in
          let* _1 = variant_id_of_postcard ctx st in
          Ok (CDiscriminant (_0, _1))
-     | 16 ->
+     | 21 ->
          let* _0 = ty_of_postcard ctx st in
          Ok (CSizeOf _0)
-     | 17 ->
+     | 22 ->
          let* _0 = ty_of_postcard ctx st in
          Ok (CAlignOf _0)
-     | 18 ->
+     | 23 ->
          let* _0 = string_of_postcard ctx st in
          Ok (COpaque _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
@@ -795,31 +810,6 @@ and lifetime_mutability_of_postcard (ctx : of_postcard_ctx)
      | 0 -> Ok LtMutable
      | 1 -> Ok LtShared
      | 2 -> Ok LtUnknown
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
-and literal_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (literal, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 ->
-         let* _0 = scalar_value_of_postcard ctx st in
-         Ok (VScalar _0)
-     | 1 ->
-         let* _0 = float_value_of_postcard ctx st in
-         Ok (VFloat _0)
-     | 2 ->
-         let* _0 = bool_of_postcard ctx st in
-         Ok (VBool _0)
-     | 3 ->
-         let* _0 = char_of_postcard ctx st in
-         Ok (VChar _0)
-     | 4 ->
-         let* _0 = list_of_postcard u8_of_postcard ctx st in
-         Ok (VByteStr _0)
-     | 5 ->
-         let* _0 = string_of_postcard ctx st in
-         Ok (VStr _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and literal_type_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -3233,7 +3223,7 @@ and variant_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* fields =
        index_vec_of_postcard field_id_of_postcard field_of_postcard ctx st
      in
-     let* discriminant = literal_of_postcard ctx st in
+     let* discriminant = scalar_value_of_postcard ctx st in
      Ok ({ id; span; attr_info; variant_name; fields; discriminant } : variant))
 
 and variant_layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

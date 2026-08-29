@@ -114,18 +114,6 @@ let escape_char_debug (c : Uchar.t) : string =
   | _ when i >= 0x20 && i <= 0x7e -> uchar_to_utf8 c
   | _ -> Printf.sprintf "\\u{%x}" i
 
-let pp_literal (fmt : Format.formatter) (lit : literal) : unit =
-  match lit with
-  | VScalar sv -> pp_scalar_value fmt sv
-  | VFloat fv -> pp_float_value fmt fv
-  | VBool b -> pp_string fmt (Bool.to_string b)
-  | VChar c -> Format.fprintf fmt "'%s'" (escape_char_debug c)
-  | VStr s -> Format.fprintf fmt "\"%s\"" (escape_string s)
-  | VByteStr bs ->
-      Format.fprintf fmt "[%a]"
-        (pp_sep_list ", " (fun fmt b -> pp_string fmt (string_of_int b)))
-        bs
-
 let pp_g_region_group (pp_rid : Format.formatter -> 'rid -> unit)
     (pp_id : Format.formatter -> 'id -> unit) (fmt : Format.formatter)
     (gr : ('rid, 'id) g_region_group) : unit =
@@ -486,7 +474,15 @@ and pp_const_aggregate (env : fmt_env) (tref : type_decl_ref) opt_variant_id
 and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
     (cv : constant_expr) : unit =
   match cv.kind with
-  | CLiteral lit -> pp_literal fmt lit
+  | CInteger sv -> pp_scalar_value fmt sv
+  | CFloat fv -> pp_float_value fmt fv
+  | CBool b -> pp_string fmt (Bool.to_string b)
+  | CChar c -> Format.fprintf fmt "'%s'" (escape_char_debug c)
+  | CStr s -> Format.fprintf fmt "\"%s\"" (escape_string s)
+  | CByteStr bs ->
+      Format.fprintf fmt "[%a]"
+        (pp_sep_list ", " (fun fmt b -> pp_string fmt (string_of_int b)))
+        bs
   | CDiscriminant ({ id = type_id; _ }, variant_id) ->
       Format.fprintf fmt "discriminant_of(%a)"
         (pp_adt_variant env type_id)

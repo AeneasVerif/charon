@@ -949,11 +949,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         def_span: Span,
         discr: &hax::DiscriminantValue,
-    ) -> Result<Literal, Error> {
+    ) -> Result<ScalarValue, Error> {
         let ty = self.translate_ty(def_span, &discr.ty)?;
         let lit_ty = ty.kind().as_literal().unwrap();
-        match Literal::from_bits(lit_ty, discr.val) {
-            Some(lit) => Ok(lit),
+        match lit_ty.to_integer_ty() {
+            Some(int_ty) => Ok(ScalarValue::from_bits(int_ty, discr.val)),
             None => raise_error!(self, def_span, "unexpected discriminant type: {ty:?}",),
         }
     }

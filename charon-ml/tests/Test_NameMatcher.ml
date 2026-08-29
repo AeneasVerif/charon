@@ -151,7 +151,7 @@ module PatternTest = struct
               when List.exists
                      (fun ((case : Charon.Types.constant_expr), _) ->
                        match case.kind with
-                       | CLiteral (VBool _) -> true
+                       | CBool _ -> true
                        | _ -> false)
                      cases -> List.concat_map list_block_calls branches
             | Switch _ ->

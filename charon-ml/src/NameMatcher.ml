@@ -442,11 +442,11 @@ let match_ref_kind (prk : ref_kind) (rk : T.ref_kind) : bool =
   | RMut, RMut | RShared, RShared -> true
   | _ -> false
 
-let match_literal (pl : literal) (l : Values.literal) : bool =
-  match (pl, l) with
-  | LInt pv, VScalar v -> pv = Scalars.get_val v
-  | LBool pv, VBool v -> pv = v
-  | LChar pv, VChar v -> Uchar.of_char pv = v
+let match_literal (pl : literal) (kind : T.constant_expr_kind) : bool =
+  match (pl, kind) with
+  | LInt pv, CInteger v -> pv = Scalars.get_val v
+  | LBool pv, CBool v -> pv = v
+  | LChar pv, CChar v -> Uchar.of_char pv = v
   | _ -> false
 
 let rec match_name_with_generics (ctx : ctx) (c : match_config)
@@ -702,7 +702,7 @@ and match_generic_arg (ctx : ctx) (c : match_config) (m : maps)
   | GRegion pr, MRegion r -> match_region c m pr r
   | GExpr e, MTy ty -> match_expr_with_ty ctx c m e ty
   | GExpr e, MCg cg -> match_expr_with_const_generic ctx c m e cg
-  | GValue v, MCg { kind = CLiteral cg; _ } -> match_literal v cg
+  | GValue v, MCg { kind; _ } -> match_literal v kind
   | _ -> false
 
 and match_expr_with_const_generic (ctx : ctx) (c : match_config) (m : maps)
@@ -896,17 +896,6 @@ let literal_type_to_pattern (c : to_pat_config) (lit : T.literal_type) : expr =
   in
   EComp [ PIdent (lit, 0, []) ]
 
-let literal_to_pattern (_c : to_pat_config) (lit : Values.literal) : literal =
-  match lit with
-  | VScalar sv -> LInt (Scalars.get_val sv)
-  | VBool v -> LBool v
-  | VChar v when Uchar.is_char v -> LChar (Uchar.to_char v)
-  | VChar _ ->
-      raise (Failure "Can't convert non-ASCII character literal to pattern")
-  | VFloat _ | VStr _ | VByteStr _ ->
-      raise
-        (Failure "Float, string and byte string literals are not valid in names")
-
 let rec name_with_generic_args_to_pattern_aux (ctx : ctx) (c : to_pat_config)
     (n : T.name) (generics : generic_args option) : pattern =
   match n with
@@ -1084,7 +1073,14 @@ and constant_expr_to_pattern (ctx : ctx) (c : to_pat_config) (m : constraints)
     (cg : T.constant_expr) : generic_arg =
   match cg.kind with
   | CVar v -> GExpr (EVar (const_generic_var_to_pattern m v))
-  | CLiteral v -> GValue (literal_to_pattern c v)
+  | CInteger sv -> GValue (LInt (Scalars.get_val sv))
+  | CBool v -> GValue (LBool v)
+  | CChar v when Uchar.is_char v -> GValue (LChar (Uchar.to_char v))
+  | CChar _ ->
+      raise (Failure "Can't convert non-ASCII character literal to pattern")
+  | CFloat _ | CStr _ | CByteStr _ ->
+      raise
+        (Failure "Float, string and byte string literals are not valid in names")
   | CGlobal gref ->
       let d = T.GlobalDeclId.Map.find gref.id ctx.crate.global_decls in
       let n =

@@ -193,11 +193,6 @@ let integer_as_literal (int_ty : integer_type) : literal_type =
   | Signed int_ty -> TInt int_ty
   | Unsigned int_ty -> TUInt int_ty
 
-let constant_expr_as_literal (c : constant_expr) : Values.literal =
-  match c.kind with
-  | CLiteral v -> v
-  | _ -> raise (Failure "Unreachable")
-
 let trait_instance_id_as_trait_impl (id : trait_ref_kind) :
     trait_impl_id * generic_args =
   match id with

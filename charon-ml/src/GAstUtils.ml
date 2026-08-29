@@ -68,8 +68,7 @@ let switch_as_if (data : switch_data) : (branch_id * branch_id) option =
             List.find_map
               (fun ((case : constant_expr), branch_id) ->
                 match case.kind with
-                | CLiteral (Values.VBool case_value) when case_value = value ->
-                    Some branch_id
+                | CBool case_value when case_value = value -> Some branch_id
                 | _ -> None)
               data.branches
           with

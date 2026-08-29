@@ -83,7 +83,7 @@ pub struct Variant {
     /// The discriminant value outputted by `std::mem::discriminant` for this variant. This can be
     /// different than the value stored in memory (called `tag`); that one is described by
     /// [`Discriminator`] and [`VariantLayout::tagger`].
-    pub discriminant: Literal,
+    pub discriminant: ScalarValue,
 }
 
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]

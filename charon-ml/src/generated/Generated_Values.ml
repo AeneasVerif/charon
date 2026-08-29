@@ -43,18 +43,6 @@ and float_value = { float_value : string; float_ty : float_type }
 and int_ty = Isize | I8 | I16 | I32 | I64 | I128
 and integer_type = Signed of int_ty | Unsigned of u_int_ty
 
-(** A primitive value.
-
-    Those are for instance used for the constant operands
-    [crate::expressions::Operand::Const] *)
-and literal =
-  | VScalar of scalar_value
-  | VFloat of float_value
-  | VBool of bool
-  | VChar of char_value
-  | VByteStr of int list
-  | VStr of string
-
 (** Types of primitive values. Either an integer, bool, char *)
 and literal_type =
   | TInt of int_ty

@@ -368,11 +368,7 @@ impl SwitchData {
             self.branches
                 .iter()
                 .find_map(|(case, branch_id)| match case.kind() {
-                    ConstantExprKind::Literal(Literal::Bool(case_value))
-                        if *case_value == value =>
-                    {
-                        Some(*branch_id)
-                    }
+                    ConstantExprKind::Bool(case_value) if *case_value == value => Some(*branch_id),
                     _ => None,
                 })
                 .or(self.fallback)

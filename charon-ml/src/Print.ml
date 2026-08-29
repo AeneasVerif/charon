@@ -26,9 +26,6 @@ let scalar_value_to_string sv =
 let float_value_to_string fv =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_float_value fmt fv)
 
-let literal_to_string lit =
-  PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_literal fmt lit)
-
 let g_region_group_to_string rid_to_string id_to_string gr =
   PrintFmt.pp_to_string (fun fmt ->
       PrintFmt.pp_g_region_group

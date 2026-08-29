@@ -95,20 +95,19 @@ impl Transform {
             return;
         };
 
-        // Map from discriminants to variant indices. Remark: the discriminant can be of any
-        // *signed* integer type (`isize`, `i8`, etc.).
-        let discr_to_id: HashMap<Literal, VariantId> = variants
+        // Map from discriminants to variant indices. The discriminant can be of any integer type.
+        let discr_to_id: HashMap<ScalarValue, VariantId> = variants
             .iter_enumerated()
-            .map(|(id, variant)| (variant.discriminant.clone(), id))
+            .map(|(id, variant)| (variant.discriminant, id))
             .collect();
 
         // Replace the branch values with discriminant constants.
-        let mut covered_discriminants: HashSet<Literal> = HashSet::default();
+        let mut covered_discriminants: HashSet<ScalarValue> = HashSet::default();
         for (value, _) in &mut data.branches {
-            if let ConstantExprKind::Literal(discr) = value.kind()
+            if let ConstantExprKind::Integer(discr) = value.kind()
                 && let Some(variant_id) = discr_to_id.get(discr).copied()
             {
-                covered_discriminants.insert(discr.clone());
+                covered_discriminants.insert(*discr);
                 *value = ConstantExpr::new(
                     ConstantExprKind::Discriminant(tdecl_ref.clone(), variant_id),
                     value.ty().clone(),

@@ -488,26 +488,26 @@ fn discriminants() -> anyhow::Result<()> {
         "#,
     )?;
     let type_decls = user_type_decls(&crate_data);
-    fn get_enum_discriminants(ty: &TypeDecl) -> Vec<Literal> {
+    fn get_enum_discriminants(ty: &TypeDecl) -> Vec<ScalarValue> {
         ty.kind
             .as_enum()
             .unwrap()
             .iter()
-            .map(|v| v.discriminant.clone())
+            .map(|v| v.discriminant)
             .collect()
     }
     assert_eq!(
         get_enum_discriminants(type_decls[0]),
         vec![
-            Literal::Scalar(ScalarValue::Signed(IntTy::Isize, 0)),
-            Literal::Scalar(ScalarValue::Signed(IntTy::Isize, 1))
+            ScalarValue::Signed(IntTy::Isize, 0),
+            ScalarValue::Signed(IntTy::Isize, 1)
         ]
     );
     assert_eq!(
         get_enum_discriminants(type_decls[1]),
         vec![
-            Literal::Scalar(ScalarValue::Unsigned(UIntTy::U32, 3)),
-            Literal::Scalar(ScalarValue::Unsigned(UIntTy::U32, 42))
+            ScalarValue::Unsigned(UIntTy::U32, 3),
+            ScalarValue::Unsigned(UIntTy::U32, 42)
         ]
     );
     Ok(())

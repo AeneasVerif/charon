@@ -477,9 +477,18 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     (constant_expr_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Literal", _0) ] ->
-        let* _0 = literal_of_json ctx _0 in
-        Ok (CLiteral _0)
+    | `Assoc [ ("Bool", _0) ] ->
+        let* _0 = bool_of_json ctx _0 in
+        Ok (CBool _0)
+    | `Assoc [ ("Integer", _0) ] ->
+        let* _0 = scalar_value_of_json ctx _0 in
+        Ok (CInteger _0)
+    | `Assoc [ ("Char", _0) ] ->
+        let* _0 = char_of_json ctx _0 in
+        Ok (CChar _0)
+    | `Assoc [ ("Float", _0) ] ->
+        let* _0 = float_value_of_json ctx _0 in
+        Ok (CFloat _0)
     | `Assoc [ ("Adt", `List [ _0; _1 ]) ] ->
         let* _0 = option_of_json variant_id_of_json ctx _0 in
         let* _1 = list_of_json constant_expr_of_json ctx _1 in
@@ -496,6 +505,12 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _1 = constant_expr_of_json ctx _1 in
         let* _2 = option_of_json unsizing_metadata_of_json ctx _2 in
         Ok (CPtr (_0, _1, _2))
+    | `Assoc [ ("Str", _0) ] ->
+        let* _0 = string_of_json ctx _0 in
+        Ok (CStr _0)
+    | `Assoc [ ("ByteStr", _0) ] ->
+        let* _0 = list_of_json int_of_json ctx _0 in
+        Ok (CByteStr _0)
     | `Assoc [ ("FnDef", _0) ] ->
         let* _0 = fn_ptr_of_json ctx _0 in
         Ok (CFnDef _0)
@@ -864,29 +879,6 @@ and lifetime_mutability_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Mutable" -> Ok LtMutable
     | `String "Shared" -> Ok LtShared
     | `String "Unknown" -> Ok LtUnknown
-    | _ -> Error "")
-
-and literal_of_json (ctx : of_json_ctx) (js : json) : (literal, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Scalar", _0) ] ->
-        let* _0 = scalar_value_of_json ctx _0 in
-        Ok (VScalar _0)
-    | `Assoc [ ("Float", _0) ] ->
-        let* _0 = float_value_of_json ctx _0 in
-        Ok (VFloat _0)
-    | `Assoc [ ("Bool", _0) ] ->
-        let* _0 = bool_of_json ctx _0 in
-        Ok (VBool _0)
-    | `Assoc [ ("Char", _0) ] ->
-        let* _0 = char_of_json ctx _0 in
-        Ok (VChar _0)
-    | `Assoc [ ("ByteStr", _0) ] ->
-        let* _0 = list_of_json int_of_json ctx _0 in
-        Ok (VByteStr _0)
-    | `Assoc [ ("Str", _0) ] ->
-        let* _0 = string_of_json ctx _0 in
-        Ok (VStr _0)
     | _ -> Error "")
 
 and literal_type_of_json (ctx : of_json_ctx) (js : json) :
@@ -3841,7 +3833,7 @@ and variant_of_json (ctx : of_json_ctx) (js : json) : (variant, string) result =
         let* fields =
           index_vec_of_json field_id_of_json field_of_json ctx fields
         in
-        let* discriminant = literal_of_json ctx discriminant in
+        let* discriminant = scalar_value_of_json ctx discriminant in
         Ok
           ({ id; span; attr_info; variant_name; fields; discriminant }
             : variant)
