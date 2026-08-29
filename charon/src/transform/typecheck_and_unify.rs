@@ -211,6 +211,8 @@ impl TypeCheckVisitor<'_> {
             }
             // Can happen with `Box`, where the RHS is `Box`. FIXME(#1163): check for Box here.
             (TyKind::DynTrait(..), TyKind::Adt(..)) => {}
+            // The vtable shim of the `Fn*` impl of a function item concretizes to the function item type.
+            (TyKind::DynTrait(..), TyKind::FnDef(..)) => {}
             _ => {
                 let fmt = &self.ctx.into_fmt();
                 self.error(format!(
