@@ -487,9 +487,40 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Array", _0) ] ->
         let* _0 = list_of_json constant_expr_of_json ctx _0 in
         Ok (CArray _0)
+    | `Assoc [ ("Ref", `List [ _0; _1 ]) ] ->
+        let* _0 = constant_expr_of_json ctx _0 in
+        let* _1 = option_of_json unsizing_metadata_of_json ctx _1 in
+        Ok (CRef (_0, _1))
+    | `Assoc [ ("Ptr", `List [ _0; _1; _2 ]) ] ->
+        let* _0 = ref_kind_of_json ctx _0 in
+        let* _1 = constant_expr_of_json ctx _1 in
+        let* _2 = option_of_json unsizing_metadata_of_json ctx _2 in
+        Ok (CPtr (_0, _1, _2))
+    | `Assoc [ ("FnDef", _0) ] ->
+        let* _0 = fn_ptr_of_json ctx _0 in
+        Ok (CFnDef _0)
+    | `Assoc [ ("FnPtr", _0) ] ->
+        let* _0 = fn_ptr_of_json ctx _0 in
+        Ok (CFnPtr _0)
+    | `Assoc [ ("PtrNoProvenance", _0) ] ->
+        let* _0 = big_int_of_json ctx _0 in
+        Ok (CPtrNoProvenance _0)
+    | `Assoc [ ("TypeId", _0) ] ->
+        let* _0 = ty_of_json ctx _0 in
+        Ok (CTypeId _0)
+    | `Assoc [ ("RawMemory", _0) ] ->
+        let* _0 = list_of_json byte_of_json ctx _0 in
+        Ok (CRawMemory _0)
+    | `Assoc [ ("Var", _0) ] ->
+        let* _0 = de_bruijn_var_of_json const_generic_var_id_of_json ctx _0 in
+        Ok (CVar _0)
     | `Assoc [ ("Global", _0) ] ->
         let* _0 = global_decl_ref_of_json ctx _0 in
         Ok (CGlobal _0)
+    | `Assoc [ ("Call", `List [ _0; _1 ]) ] ->
+        let* _0 = fn_ptr_of_json ctx _0 in
+        let* _1 = list_of_json constant_expr_of_json ctx _1 in
+        Ok (CCall (_0, _1))
     | `Assoc [ ("TraitConst", `List [ _0; _1 ]) ] ->
         let* _0 = trait_ref_of_json ctx _0 in
         let* _1 = assoc_const_id_of_json ctx _1 in
@@ -501,43 +532,12 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = type_decl_ref_of_json ctx _0 in
         let* _1 = variant_id_of_json ctx _1 in
         Ok (CDiscriminant (_0, _1))
-    | `Assoc [ ("Ref", `List [ _0; _1 ]) ] ->
-        let* _0 = constant_expr_of_json ctx _0 in
-        let* _1 = option_of_json unsizing_metadata_of_json ctx _1 in
-        Ok (CRef (_0, _1))
-    | `Assoc [ ("Ptr", `List [ _0; _1; _2 ]) ] ->
-        let* _0 = ref_kind_of_json ctx _0 in
-        let* _1 = constant_expr_of_json ctx _1 in
-        let* _2 = option_of_json unsizing_metadata_of_json ctx _2 in
-        Ok (CPtr (_0, _1, _2))
-    | `Assoc [ ("Var", _0) ] ->
-        let* _0 = de_bruijn_var_of_json const_generic_var_id_of_json ctx _0 in
-        Ok (CVar _0)
-    | `Assoc [ ("Call", `List [ _0; _1 ]) ] ->
-        let* _0 = fn_ptr_of_json ctx _0 in
-        let* _1 = list_of_json constant_expr_of_json ctx _1 in
-        Ok (CCall (_0, _1))
-    | `Assoc [ ("FnDef", _0) ] ->
-        let* _0 = fn_ptr_of_json ctx _0 in
-        Ok (CFnDef _0)
-    | `Assoc [ ("FnPtr", _0) ] ->
-        let* _0 = fn_ptr_of_json ctx _0 in
-        Ok (CFnPtr _0)
     | `Assoc [ ("SizeOf", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CSizeOf _0)
     | `Assoc [ ("AlignOf", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CAlignOf _0)
-    | `Assoc [ ("TypeId", _0) ] ->
-        let* _0 = ty_of_json ctx _0 in
-        Ok (CTypeId _0)
-    | `Assoc [ ("PtrNoProvenance", _0) ] ->
-        let* _0 = big_int_of_json ctx _0 in
-        Ok (CPtrNoProvenance _0)
-    | `Assoc [ ("RawMemory", _0) ] ->
-        let* _0 = list_of_json byte_of_json ctx _0 in
-        Ok (CRawMemory _0)
     | `Assoc [ ("Opaque", _0) ] ->
         let* _0 = string_of_json ctx _0 in
         Ok (COpaque _0)

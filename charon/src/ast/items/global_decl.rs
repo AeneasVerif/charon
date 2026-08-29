@@ -9,6 +9,20 @@ pub struct GlobalDecl {
     pub def_id: GlobalDeclId,
     /// The meta data associated with the declaration.
     pub item_meta: ItemMeta,
+    /// Remark: constants can actually have generic parameters.
+    /// ```text
+    /// struct V<const N: usize, T> {
+    ///     x: [T; N],
+    /// }
+    ///
+    /// impl<const N: usize, T> V<N, T> {
+    ///     const LEN: usize = N; // This has generics <N, T>
+    /// }
+    ///
+    /// fn use_v<const N: usize, T>(v: V<N, T>) {
+    ///     let l = V::<N, T>::LEN; // We need to provided a substitution here
+    /// }
+    /// ```
     pub generics: GenericParams,
     pub ty: Ty,
     /// The context of the global: distinguishes normal items from trait-associated items and

@@ -45,83 +45,71 @@ pub struct ConstantExpr(pub HashConsed<(ConstantExprKind, Ty)>);
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("C"))]
 pub enum ConstantExprKind {
+    /// Literal value (integer, boolean, etc).
     #[serde_state(stateless)]
     Literal(Literal),
-    /// In most situations:
-    /// Enumeration with one variant with no fields, structure with
-    /// no fields, unit (encoded as a 0-tuple).
+    /// Value of an ADT (struct or enum).
     ///
-    /// Less frequently: arbitrary ADT values.
-    ///
-    /// We eliminate this case in a micro-pass.
+    /// This is eliminated inside functions if `--raw-consts` is off.
     Adt(Option<VariantId>, Vec<ConstantExpr>),
+    /// Array value.
+    ///
+    /// This is eliminated inside functions if `--raw-consts` is off.
     Array(Vec<ConstantExpr>),
-    /// The value is a top-level constant/static.
+    /// A shared reference to a constant value.
     ///
-    /// We eliminate this case in a micro-pass.
+    /// This is eliminated inside functions if `--raw-consts` is off.
+    Ref(ConstantExpr, Option<UnsizingMetadata>),
+    /// A pointer to a static.
     ///
-    /// Remark: constants can actually have generic parameters.
-    /// ```text
-    /// struct V<const N: usize, T> {
-    ///   x: [T; N],
-    /// }
+    /// This is eliminated inside functions if `--raw-consts` is off.
+    Ptr(RefKind, ConstantExpr, Option<UnsizingMetadata>),
+    /// ZST constant corresponding to the unique value of the type of a function item.
+    FnDef(FnPtr),
+    /// A function pointer value; this is a pointer (i.e. an address).
     ///
-    /// impl<const N: usize, T> V<N, T> {
-    ///   const LEN: usize = N; // This has generics <N, T>
-    /// }
+    /// This is eliminated inside functions if `--raw-consts` is off.
+    FnPtr(FnPtr),
+    /// A pointer with no provenance (e.g. 0 for the null pointer)
     ///
-    /// fn use_v<const N: usize, T>(v: V<N, T>) {
-    ///   let l = V::<N, T>::LEN; // We need to provided a substitution here
-    /// }
-    /// ```
+    /// This is eliminated inside functions if `--raw-consts` is off.
+    PtrNoProvenance(#[serde(with = "scalar_value_ser_de")] u128),
+    /// The `TypeId` value for a type.
+    TypeId(Ty),
+    /// Raw memory value obtained from constant evaluation. Used when a more structured
+    /// representation isn't possible (e.g. for unions) or just isn't implemented yet.
+    RawMemory(Vec<Byte>),
+
+    /// A const generic var
+    Var(ConstGenericDbVar),
+    /// The value of a constant/static.
+    ///
+    /// This is eliminated inside functions if `--raw-consts` is off.
     Global(GlobalDeclRef),
+    /// A call to a `const fn`.
+    Call(FnPtr, Vec<ConstantExpr>),
     /// A trait associated constant.
     ///
-    /// Ex.:
+    /// E.g.:
     /// ```text
     /// impl Foo for Bar {
     ///   const C : usize = 32; // <-
     /// }
     /// ```
     TraitConst(TraitRef, AssocConstId),
-    /// A reference to the vtable `static` item for this trait ref. This can be normalized for
-    /// cases where we do emit a vtable item. That's not always the case for builtin traits, e.g.
-    /// for `MetaSized`.
+    /// A reference to the vtable `static` item for this trait ref. This can be normalized if we
+    /// emitted a vtable item.
+    ///
+    /// This is eliminated if `--raw-consts` is off.
     VTableRef(TraitRef),
     /// The integer discriminant value corresponding to this enum variant.
     Discriminant(TypeDeclRef, VariantId),
-    /// A shared reference to a constant value.
-    ///
-    /// We eliminate this case in a micro-pass.
-    Ref(ConstantExpr, Option<UnsizingMetadata>),
-    /// A pointer to a mutable static.
-    ///
-    /// We eliminate this case in a micro-pass.
-    Ptr(RefKind, ConstantExpr, Option<UnsizingMetadata>),
-    /// A const generic var
-    Var(ConstGenericDbVar),
-    /// A call to a `const fn` or a constant's initializer.
-    Call(FnPtr, Vec<ConstantExpr>),
-    /// Function definition -- this is a ZST constant
-    FnDef(FnPtr),
-    /// A function pointer to a function item; this is an actual pointer to that function item.
-    ///
-    /// We eliminate this case in a micro-pass.
-    FnPtr(FnPtr),
     /// The size of the given type.
     SizeOf(Ty),
     /// The alignment of the given type.
     AlignOf(Ty),
-    /// The `TypeId` value for a type.
-    TypeId(Ty),
-    /// A pointer with no provenance (e.g. 0 for the null pointer)
-    ///
-    /// We eliminate this case in a micro-pass.
-    PtrNoProvenance(#[serde(with = "scalar_value_ser_de")] u128),
-    /// Raw memory value obtained from constant evaluation. Used when a more structured
-    /// representation isn't possible (e.g. for unions) or just isn't implemented yet.
-    RawMemory(Vec<Byte>),
-    /// A constant expression that Charon still doesn't handle, along with the reason why.
+
+    /// A constant expression that Charon doesn't handle, along with the reason why.
     Opaque(String),
 }
 

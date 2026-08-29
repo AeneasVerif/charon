@@ -281,38 +281,49 @@ and const_generic_var_id = (ConstGenericVarId.id[@visitors.opaque])
 and constant_expr = { kind : constant_expr_kind; ty : ty }
 
 and constant_expr_kind =
-  | CLiteral of literal
+  | CLiteral of literal  (** Literal value (integer, boolean, etc). *)
   | CAdt of variant_id option * constant_expr list
-      (** In most situations: Enumeration with one variant with no fields,
-          structure with no fields, unit (encoded as a 0-tuple).
+      (** Value of an ADT (struct or enum).
 
-          Less frequently: arbitrary ADT values.
-
-          We eliminate this case in a micro-pass. *)
+          This is eliminated inside functions if [--raw-consts] is off. *)
   | CArray of constant_expr list
+      (** Array value.
+
+          This is eliminated inside functions if [--raw-consts] is off. *)
+  | CRef of constant_expr * unsizing_metadata option
+      (** A shared reference to a constant value.
+
+          This is eliminated inside functions if [--raw-consts] is off. *)
+  | CPtr of ref_kind * constant_expr * unsizing_metadata option
+      (** A pointer to a static.
+
+          This is eliminated inside functions if [--raw-consts] is off. *)
+  | CFnDef of fn_ptr
+      (** ZST constant corresponding to the unique value of the type of a
+          function item. *)
+  | CFnPtr of fn_ptr
+      (** A function pointer value; this is a pointer (i.e. an address).
+
+          This is eliminated inside functions if [--raw-consts] is off. *)
+  | CPtrNoProvenance of big_int
+      (** A pointer with no provenance (e.g. 0 for the null pointer)
+
+          This is eliminated inside functions if [--raw-consts] is off. *)
+  | CTypeId of ty  (** The [TypeId] value for a type. *)
+  | CRawMemory of byte list
+      (** Raw memory value obtained from constant evaluation. Used when a more
+          structured representation isn't possible (e.g. for unions) or just
+          isn't implemented yet. *)
+  | CVar of const_generic_var_id de_bruijn_var  (** A const generic var *)
   | CGlobal of global_decl_ref
-      (** The value is a top-level constant/static.
+      (** The value of a constant/static.
 
-          We eliminate this case in a micro-pass.
-
-          Remark: constants can actually have generic parameters.
-          {@rust[
-            struct V<const N: usize, T> {
-              x: [T; N],
-            }
-
-            impl<const N: usize, T> V<N, T> {
-              const LEN: usize = N; // This has generics <N, T>
-            }
-
-            fn use_v<const N: usize, T>(v: V<N, T>) {
-              let l = V::<N, T>::LEN; // We need to provided a substitution here
-            }
-          ]} *)
+          This is eliminated inside functions if [--raw-consts] is off. *)
+  | CCall of fn_ptr * constant_expr list  (** A call to a [const fn]. *)
   | CTraitConst of trait_ref * assoc_const_id
       (** A trait associated constant.
 
-          Ex.:
+          E.g.:
           {@rust[
             impl Foo for Bar {
               const C : usize = 32; // <-
@@ -320,40 +331,15 @@ and constant_expr_kind =
           ]} *)
   | CVTableRef of trait_ref
       (** A reference to the vtable [static] item for this trait ref. This can
-          be normalized for cases where we do emit a vtable item. That's not
-          always the case for builtin traits, e.g. for [MetaSized]. *)
+          be normalized if we emitted a vtable item.
+
+          This is eliminated if [--raw-consts] is off. *)
   | CDiscriminant of type_decl_ref * variant_id
       (** The integer discriminant value corresponding to this enum variant. *)
-  | CRef of constant_expr * unsizing_metadata option
-      (** A shared reference to a constant value.
-
-          We eliminate this case in a micro-pass. *)
-  | CPtr of ref_kind * constant_expr * unsizing_metadata option
-      (** A pointer to a mutable static.
-
-          We eliminate this case in a micro-pass. *)
-  | CVar of const_generic_var_id de_bruijn_var  (** A const generic var *)
-  | CCall of fn_ptr * constant_expr list
-      (** A call to a [const fn] or a constant's initializer. *)
-  | CFnDef of fn_ptr  (** Function definition -- this is a ZST constant *)
-  | CFnPtr of fn_ptr
-      (** A function pointer to a function item; this is an actual pointer to
-          that function item.
-
-          We eliminate this case in a micro-pass. *)
   | CSizeOf of ty  (** The size of the given type. *)
   | CAlignOf of ty  (** The alignment of the given type. *)
-  | CTypeId of ty  (** The [TypeId] value for a type. *)
-  | CPtrNoProvenance of big_int
-      (** A pointer with no provenance (e.g. 0 for the null pointer)
-
-          We eliminate this case in a micro-pass. *)
-  | CRawMemory of byte list
-      (** Raw memory value obtained from constant evaluation. Used when a more
-          structured representation isn't possible (e.g. for unions) or just
-          isn't implemented yet. *)
   | COpaque of string
-      (** A constant expression that Charon still doesn't handle, along with the
+      (** A constant expression that Charon doesn't handle, along with the
           reason why. *)
 
 (** The contents of a [dyn Trait] type. *)
