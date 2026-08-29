@@ -121,7 +121,7 @@ pub struct ReprOptions {
     pub align_modif: Option<AlignmentModifier>,
     pub transparent: bool,
     /// The type supplied to `repr(..)`, if any.
-    pub explicit_discr_type: Option<ScalarTy>,
+    pub explicit_discr_type: Option<IntegerTy>,
 }
 
 /// Describes which layout algorithm is used for representing the corresponding type.

@@ -979,12 +979,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax_repr_options
                 .int_specified
                 .then(|| match hax_repr_options.typ.kind() {
-                    hax::TyKind::Int(ty) => {
-                        ScalarTy::Integer(IntegerTy::Signed(Self::translate_hax_int_ty(ty)))
-                    }
-                    hax::TyKind::Uint(ty) => {
-                        ScalarTy::Integer(IntegerTy::Unsigned(Self::translate_hax_uint_ty(ty)))
-                    }
+                    hax::TyKind::Int(ty) => IntegerTy::Signed(Self::translate_hax_int_ty(ty)),
+                    hax::TyKind::Uint(ty) => IntegerTy::Unsigned(Self::translate_hax_uint_ty(ty)),
                     ty => unreachable!("explicit enum discriminant type is not an integer: {ty:?}"),
                 });
 

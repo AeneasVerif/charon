@@ -1361,7 +1361,7 @@ and repr_options = {
   repr_algo : repr_algorithm;
   align_modif : alignment_modifier option;
   transparent : bool;
-  explicit_discr_type : scalar_type option;
+  explicit_discr_type : integer_type option;
       (** The type supplied to [repr(..)], if any. *)
 }
 

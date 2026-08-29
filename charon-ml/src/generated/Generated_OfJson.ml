@@ -3320,7 +3320,7 @@ and repr_options_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* transparent = bool_of_json ctx transparent in
         let* explicit_discr_type =
-          option_of_json scalar_type_of_json ctx explicit_discr_type
+          option_of_json integer_type_of_json ctx explicit_discr_type
         in
         Ok
           ({ repr_algo; align_modif; transparent; explicit_discr_type }

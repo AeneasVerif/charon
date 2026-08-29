@@ -2817,7 +2817,7 @@ and repr_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      in
      let* transparent = bool_of_postcard ctx st in
      let* explicit_discr_type =
-       option_of_postcard scalar_type_of_postcard ctx st
+       option_of_postcard integer_type_of_postcard ctx st
      in
      Ok
        ({ repr_algo; align_modif; transparent; explicit_discr_type }
