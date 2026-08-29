@@ -582,6 +582,56 @@ fn gen_vtable_sig<'tcx>(
     Some(normalized_sig.sinto(s))
 }
 
+/// The `dyn Trait<..>` type for this trait ref, i.e. its `Self` type made existential. Same as the
+/// `dyn_self` field of a `TraitImpl`, for the virtual impls we generate ourselves.
+///
+/// Only call this for a trait ref we're building a vtable for, hence a real, dyn-compatible trait;
+/// panics otherwise.
+pub fn trait_ref_dyn_self<'tcx, S: UnderOwnerState<'tcx>>(s: &S, trait_ref: &TraitRef) -> Ty {
+    let tcx = s.base().tcx;
+    let trait_def_id = trait_ref.def_id.real_rust_def_id();
+    let trait_ref = ty::TraitRef::new_from_args(tcx, trait_def_id, trait_ref.rustc_args(s));
+    rustc_utils::dyn_self_ty(tcx, s.typing_env(), trait_ref)
+        .expect("the trait of a vtable must be dyn-compatible")
+        .sinto(s)
+}
+
+/// The signatures the methods of this trait ref must have to be stored in a vtable, i.e. with
+/// `Self` replaced by the corresponding `dyn Trait` type; `None` for the methods that aren't
+/// vtable-safe. Same as `vtable_sig` in `AssocFn`, but for the virtual impls we generate ourselves,
+/// whose methods have no `AssocFn` of their own.
+///
+/// The order matches `VirtualTraitImpl::methods`. Only call this for a trait ref that holds and is
+/// used as a `dyn Trait`: computing the `dyn Trait` type requires resolving the associated types of
+/// the trait ref.
+pub fn virtual_impl_vtable_sigs<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    trait_ref: &TraitRef,
+) -> Vec<Option<PolyFnSig>> {
+    let tcx = s.base().tcx;
+    let Some(trait_def_id) = trait_ref.def_id.as_real_def_id() else {
+        return vec![];
+    };
+    let trait_ref = ty::TraitRef::new_from_args(tcx, trait_def_id, trait_ref.rustc_args(s));
+    tcx.associated_items(trait_def_id)
+        .in_definition_order()
+        .filter(|assoc| matches!(assoc.kind, ty::AssocKind::Fn { .. }))
+        .map(|assoc| {
+            if !rustc_trait_selection::traits::is_vtable_safe_method(tcx, trait_def_id, *assoc) {
+                return None;
+            }
+            let dyn_self = rustc_utils::dyn_self_ty(tcx, s.typing_env(), trait_ref)?;
+            // `trait_ref.args[0]` is `Self`, which we replace with `dyn Trait`.
+            let mut full_args = vec![ty::GenericArg::from(dyn_self)];
+            full_args.extend(trait_ref.args[1..].iter());
+            let sig = tcx
+                .fn_sig(assoc.def_id)
+                .instantiate(tcx, tcx.mk_args(&full_args));
+            Some(normalize(tcx, s.typing_env(), sig).sinto(s))
+        })
+        .collect()
+}
+
 fn gen_closure_sig<'tcx>(
     // The state that owns the method DefId
     s: &impl UnderOwnerState<'tcx>,
