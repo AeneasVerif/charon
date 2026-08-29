@@ -1465,42 +1465,9 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
 and ty_kind_of_json (ctx : of_json_ctx) (js : json) : (ty_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Adt", _0) ] ->
-        let* _0 = type_decl_ref_of_json ctx _0 in
-        Ok (TAdt _0)
-    | `Assoc [ ("TypeVar", _0) ] ->
-        let* _0 = de_bruijn_var_of_json type_var_id_of_json ctx _0 in
-        Ok (TVar _0)
     | `Assoc [ ("Scalar", _0) ] ->
         let* _0 = scalar_type_of_json ctx _0 in
         Ok (TScalar _0)
-    | `String "Never" -> Ok TNever
-    | `Assoc [ ("Ref", `List [ _0; _1; _2 ]) ] ->
-        let* _0 = region_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        let* _2 = ref_kind_of_json ctx _2 in
-        Ok (TRef (_0, _1, _2))
-    | `Assoc [ ("RawPtr", `List [ _0; _1 ]) ] ->
-        let* _0 = ty_of_json ctx _0 in
-        let* _1 = ref_kind_of_json ctx _1 in
-        Ok (TRawPtr (_0, _1))
-    | `Assoc [ ("TraitType", `List [ _0; _1; _2 ]) ] ->
-        let* _0 = trait_ref_of_json ctx _0 in
-        let* _1 = assoc_type_id_of_json ctx _1 in
-        let* _2 = generic_args_of_json ctx _2 in
-        Ok (TTraitType (_0, _1, _2))
-    | `Assoc [ ("DynTrait", _0) ] ->
-        let* _0 = dyn_predicate_of_json ctx _0 in
-        Ok (TDynTrait _0)
-    | `Assoc [ ("FnPtr", _0) ] ->
-        let* _0 = region_binder_of_json fun_sig_of_json ctx _0 in
-        Ok (TFnPtr _0)
-    | `Assoc [ ("FnDef", _0) ] ->
-        let* _0 = region_binder_of_json fn_ptr_of_json ctx _0 in
-        Ok (TFnDef _0)
-    | `Assoc [ ("PtrMetadata", _0) ] ->
-        let* _0 = ty_of_json ctx _0 in
-        Ok (TPtrMetadata _0)
     | `Assoc [ ("Array", `List [ _0; _1; _2 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
         let* _1 = constant_expr_of_json ctx _1 in
@@ -1510,10 +1477,43 @@ and ty_kind_of_json (ctx : of_json_ctx) (js : json) : (ty_kind, string) result =
         let* _0 = ty_of_json ctx _0 in
         let* _1 = option_of_json trait_ref_of_json ctx _1 in
         Ok (TSlice (_0, _1))
+    | `Assoc [ ("Adt", _0) ] ->
+        let* _0 = type_decl_ref_of_json ctx _0 in
+        Ok (TAdt _0)
+    | `Assoc [ ("Ref", `List [ _0; _1; _2 ]) ] ->
+        let* _0 = region_of_json ctx _0 in
+        let* _1 = ty_of_json ctx _1 in
+        let* _2 = ref_kind_of_json ctx _2 in
+        Ok (TRef (_0, _1, _2))
+    | `Assoc [ ("RawPtr", `List [ _0; _1 ]) ] ->
+        let* _0 = ty_of_json ctx _0 in
+        let* _1 = ref_kind_of_json ctx _1 in
+        Ok (TRawPtr (_0, _1))
+    | `Assoc [ ("FnDef", _0) ] ->
+        let* _0 = region_binder_of_json fn_ptr_of_json ctx _0 in
+        Ok (TFnDef _0)
+    | `Assoc [ ("FnPtr", _0) ] ->
+        let* _0 = region_binder_of_json fun_sig_of_json ctx _0 in
+        Ok (TFnPtr _0)
+    | `Assoc [ ("DynTrait", _0) ] ->
+        let* _0 = dyn_predicate_of_json ctx _0 in
+        Ok (TDynTrait _0)
     | `Assoc [ ("Pattern", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
         let* _1 = type_pattern_of_json ctx _1 in
         Ok (TPattern (_0, _1))
+    | `String "Never" -> Ok TNever
+    | `Assoc [ ("TypeVar", _0) ] ->
+        let* _0 = de_bruijn_var_of_json type_var_id_of_json ctx _0 in
+        Ok (TVar _0)
+    | `Assoc [ ("TraitType", `List [ _0; _1; _2 ]) ] ->
+        let* _0 = trait_ref_of_json ctx _0 in
+        let* _1 = assoc_type_id_of_json ctx _1 in
+        let* _2 = generic_args_of_json ctx _2 in
+        Ok (TTraitType (_0, _1, _2))
+    | `Assoc [ ("PtrMetadata", _0) ] ->
+        let* _0 = ty_of_json ctx _0 in
+        Ok (TPtrMetadata _0)
     | `Assoc [ ("Error", _0) ] ->
         let* _0 = string_of_json ctx _0 in
         Ok (TError _0)

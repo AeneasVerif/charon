@@ -1310,15 +1310,20 @@ and ty_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* __tag = int_of_postcard ctx st in
      match __tag with
      | 0 ->
-         let* _0 = type_decl_ref_of_postcard ctx st in
-         Ok (TAdt _0)
-     | 1 ->
-         let* _0 = de_bruijn_var_of_postcard type_var_id_of_postcard ctx st in
-         Ok (TVar _0)
-     | 2 ->
          let* _0 = scalar_type_of_postcard ctx st in
          Ok (TScalar _0)
-     | 3 -> Ok TNever
+     | 1 ->
+         let* _0 = ty_of_postcard ctx st in
+         let* _1 = constant_expr_of_postcard ctx st in
+         let* _2 = option_of_postcard trait_ref_of_postcard ctx st in
+         Ok (TArray (_0, _1, _2))
+     | 2 ->
+         let* _0 = ty_of_postcard ctx st in
+         let* _1 = option_of_postcard trait_ref_of_postcard ctx st in
+         Ok (TSlice (_0, _1))
+     | 3 ->
+         let* _0 = type_decl_ref_of_postcard ctx st in
+         Ok (TAdt _0)
      | 4 ->
          let* _0 = region_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
@@ -1329,35 +1334,30 @@ and ty_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _1 = ref_kind_of_postcard ctx st in
          Ok (TRawPtr (_0, _1))
      | 6 ->
+         let* _0 = region_binder_of_postcard fn_ptr_of_postcard ctx st in
+         Ok (TFnDef _0)
+     | 7 ->
+         let* _0 = region_binder_of_postcard fun_sig_of_postcard ctx st in
+         Ok (TFnPtr _0)
+     | 8 ->
+         let* _0 = dyn_predicate_of_postcard ctx st in
+         Ok (TDynTrait _0)
+     | 9 ->
+         let* _0 = ty_of_postcard ctx st in
+         let* _1 = type_pattern_of_postcard ctx st in
+         Ok (TPattern (_0, _1))
+     | 10 -> Ok TNever
+     | 11 ->
+         let* _0 = de_bruijn_var_of_postcard type_var_id_of_postcard ctx st in
+         Ok (TVar _0)
+     | 12 ->
          let* _0 = trait_ref_of_postcard ctx st in
          let* _1 = assoc_type_id_of_postcard ctx st in
          let* _2 = generic_args_of_postcard ctx st in
          Ok (TTraitType (_0, _1, _2))
-     | 7 ->
-         let* _0 = dyn_predicate_of_postcard ctx st in
-         Ok (TDynTrait _0)
-     | 8 ->
-         let* _0 = region_binder_of_postcard fun_sig_of_postcard ctx st in
-         Ok (TFnPtr _0)
-     | 9 ->
-         let* _0 = region_binder_of_postcard fn_ptr_of_postcard ctx st in
-         Ok (TFnDef _0)
-     | 10 ->
-         let* _0 = ty_of_postcard ctx st in
-         Ok (TPtrMetadata _0)
-     | 11 ->
-         let* _0 = ty_of_postcard ctx st in
-         let* _1 = constant_expr_of_postcard ctx st in
-         let* _2 = option_of_postcard trait_ref_of_postcard ctx st in
-         Ok (TArray (_0, _1, _2))
-     | 12 ->
-         let* _0 = ty_of_postcard ctx st in
-         let* _1 = option_of_postcard trait_ref_of_postcard ctx st in
-         Ok (TSlice (_0, _1))
      | 13 ->
          let* _0 = ty_of_postcard ctx st in
-         let* _1 = type_pattern_of_postcard ctx st in
-         Ok (TPattern (_0, _1))
+         Ok (TPtrMetadata _0)
      | 14 ->
          let* _0 = string_of_postcard ctx st in
          Ok (TError _0)
