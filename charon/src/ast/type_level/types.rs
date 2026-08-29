@@ -53,7 +53,7 @@ pub enum TyKind {
     Adt(TypeDeclRef),
     #[cfg_attr(feature = "charon_on_charon", charon::rename("TVar"))]
     TypeVar(TypeDbVar),
-    Literal(LiteralTy),
+    Scalar(ScalarTy),
     /// The never type, for computations which don't return. It is sometimes
     /// necessary for intermediate variables. For instance, if we do (coming
     /// from the rust documentation):
@@ -216,7 +216,7 @@ pub enum FloatTy {
     F128,
 }
 
-/// Types of primitive values. Either an integer, bool, char
+/// Types of primitive scalar values.
 #[derive(
     Debug,
     PartialEq,
@@ -238,12 +238,11 @@ pub enum FloatTy {
     Ord,
     PartialOrd,
 )]
-#[cfg_attr(feature = "charon_on_charon", charon::rename("LiteralType"))]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("ScalarType"))]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("T"))]
 #[serde_state(stateless)]
-pub enum LiteralTy {
-    Int(IntTy),
-    UInt(UIntTy),
+pub enum ScalarTy {
+    Integer(IntegerTy),
     Float(FloatTy),
     Bool,
     Char,
@@ -384,15 +383,20 @@ impl Ty {
     }
 
     pub fn mk_bool() -> Ty {
-        static_type!(TyKind::Literal(LiteralTy::Bool))
+        static_type!(TyKind::Scalar(ScalarTy::Bool))
     }
 
     pub fn mk_usize() -> Ty {
-        static_type!(TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
+        static_type!(TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(
+            UIntTy::Usize
+        ))))
     }
 
     pub fn is_usize(&self) -> bool {
-        matches!(self.kind(), TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
+        matches!(
+            self.kind(),
+            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::Usize)))
+        )
     }
 
     pub fn mk_array(ty: Ty, len: ConstantExpr, ty_is_sized: Option<TraitRef>) -> Ty {
@@ -410,7 +414,7 @@ impl Ty {
     /// Return true if this is a scalar type
     pub fn is_scalar(&self) -> bool {
         match self.kind() {
-            TyKind::Literal(kind) => kind.is_int() || kind.is_uint(),
+            TyKind::Scalar(_) => true,
             TyKind::Pattern(ty, _) => ty.is_scalar(),
             _ => false,
         }
@@ -418,7 +422,7 @@ impl Ty {
 
     pub fn is_unsigned_scalar(&self) -> bool {
         match self.kind() {
-            TyKind::Literal(LiteralTy::UInt(_)) => true,
+            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(_))) => true,
             TyKind::Pattern(ty, _) => ty.is_unsigned_scalar(),
             _ => false,
         }
@@ -426,7 +430,7 @@ impl Ty {
 
     pub fn is_signed_scalar(&self) -> bool {
         match self.kind() {
-            TyKind::Literal(LiteralTy::Int(_)) => true,
+            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Signed(_))) => true,
             TyKind::Pattern(ty, _) => ty.is_signed_scalar(),
             _ => false,
         }
@@ -483,7 +487,7 @@ impl Ty {
             // `[T]` has metadata length
             TyKind::Slice(..) => PtrMetadata::Length,
             TyKind::TraitType(..) | TyKind::TypeVar(_) => PtrMetadata::InheritFrom(self.clone()),
-            TyKind::Literal(_)
+            TyKind::Scalar(_)
             | TyKind::Never
             | TyKind::Ref(..)
             | TyKind::RawPtr(..)
@@ -573,24 +577,15 @@ impl IntegerTy {
     }
 }
 
-impl LiteralTy {
-    pub fn to_integer_ty(&self) -> Option<IntegerTy> {
-        match self {
-            Self::Int(int_ty) => Some(IntegerTy::Signed(*int_ty)),
-            Self::UInt(uint_ty) => Some(IntegerTy::Unsigned(*uint_ty)),
-            _ => None,
-        }
-    }
-
+impl ScalarTy {
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
     pub fn target_size(&self, ptr_size: ByteCount) -> usize {
         match self {
-            LiteralTy::Int(int_ty) => int_ty.target_size(ptr_size),
-            LiteralTy::UInt(uint_ty) => uint_ty.target_size(ptr_size),
-            LiteralTy::Float(float_ty) => float_ty.target_size(),
-            LiteralTy::Char => 4,
-            LiteralTy::Bool => 1,
+            ScalarTy::Integer(int_ty) => int_ty.target_size(ptr_size),
+            ScalarTy::Float(float_ty) => float_ty.target_size(),
+            ScalarTy::Char => 4,
+            ScalarTy::Bool => 1,
         }
     }
 }
@@ -623,9 +618,9 @@ impl DynPredicate {
     }
 }
 
-impl From<LiteralTy> for Ty {
-    fn from(value: LiteralTy) -> Self {
-        TyKind::Literal(value).into_ty()
+impl From<ScalarTy> for Ty {
+    fn from(value: ScalarTy) -> Self {
+        TyKind::Scalar(value).into_ty()
     }
 }
 

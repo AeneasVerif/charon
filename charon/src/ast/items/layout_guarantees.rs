@@ -167,12 +167,12 @@ impl ExactSizeExpr {
                         let mut guaranteed = match constant.kind() {
                             ConstantExprKind::SizeOf(ty) => match ty.kind() {
                                 TyKind::Never => ExactSizeExpr::from_usize(0),
-                                TyKind::Literal(literal_ty) => {
+                                TyKind::Scalar(scalar_ty) => {
                                     if let Some(target) =
                                         self.krate.target_information.get(self.target)
                                     {
                                         ExactSizeExpr::from_usize(
-                                            literal_ty.target_size(target.target_pointer_size)
+                                            scalar_ty.target_size(target.target_pointer_size)
                                                 as u128,
                                         )
                                     } else {
@@ -193,11 +193,11 @@ impl ExactSizeExpr {
                             },
                             ConstantExprKind::AlignOf(ty) => match ty.kind() {
                                 TyKind::Never => ExactSizeExpr::from_usize(1),
-                                TyKind::Literal(literal_ty) => {
+                                TyKind::Scalar(scalar_ty) => {
                                     if let Some(target) =
                                         self.krate.target_information.get(self.target)
                                         && let Some(value) =
-                                            target.primitive_alignments.get(literal_ty)
+                                            target.primitive_alignments.get(scalar_ty)
                                     {
                                         ExactSizeExpr::from_usize(u128::from(*value))
                                     } else {
@@ -481,10 +481,10 @@ mod tests {
     #[test]
     fn normalize_for_the_selected_target() {
         let mut krate = TranslatedCrate::default();
-        let literal_ty = LiteralTy::UInt(UIntTy::U64);
+        let scalar_ty = ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::U64));
         for (triple, pointer_size, alignment) in [("a", 4, 4), ("b", 8, 8)] {
             let mut primitive_alignments = SeqHashMap::new();
-            primitive_alignments.insert(literal_ty, alignment);
+            primitive_alignments.insert(scalar_ty, alignment);
             krate.target_information.insert(
                 triple.to_owned(),
                 TargetInfo {
@@ -499,13 +499,13 @@ mod tests {
         let target_b = "b".to_owned();
 
         let size = ExactSizeExprKind::Constant(ConstantExpr::new(
-            ConstantExprKind::SizeOf(TyKind::Literal(literal_ty).into_ty()),
+            ConstantExprKind::SizeOf(TyKind::Scalar(scalar_ty).into_ty()),
             Ty::mk_usize(),
         ))
         .into_expr()
         .normalize(&krate, &target_a);
         let align = ExactSizeExprKind::Constant(ConstantExpr::new(
-            ConstantExprKind::AlignOf(TyKind::Literal(literal_ty).into_ty()),
+            ConstantExprKind::AlignOf(TyKind::Scalar(scalar_ty).into_ty()),
             Ty::mk_usize(),
         ))
         .into_expr()
@@ -568,7 +568,7 @@ mod tests {
         let ty = TyKind::Adt(TypeDeclRef::new(
             id,
             GenericArgs::new_types(
-                [TyKind::Literal(LiteralTy::UInt(UIntTy::U16)).into_ty()]
+                [TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::U16))).into_ty()]
                     .into_iter()
                     .collect(),
             ),

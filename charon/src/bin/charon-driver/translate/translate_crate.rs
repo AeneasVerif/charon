@@ -617,47 +617,57 @@ impl<'tcx> TranslateCtx<'tcx> {
         let triple = self.get_target_triple();
 
         let mut primitive_alignments = SeqHashMap::new();
-        primitive_alignments.insert(LiteralTy::Bool, target_data.i8_align.bytes());
-        primitive_alignments.insert(LiteralTy::Int(IntTy::I8), target_data.i8_align.bytes());
-        primitive_alignments.insert(LiteralTy::Int(IntTy::I16), target_data.i16_align.bytes());
-        primitive_alignments.insert(LiteralTy::Int(IntTy::I32), target_data.i32_align.bytes());
-        primitive_alignments.insert(LiteralTy::Int(IntTy::I64), target_data.i64_align.bytes());
-        primitive_alignments.insert(LiteralTy::Int(IntTy::I128), target_data.i128_align.bytes());
+        primitive_alignments.insert(ScalarTy::Bool, target_data.i8_align.bytes());
+        for (ty, alignment) in [
+            (IntegerTy::Signed(IntTy::I8), target_data.i8_align.bytes()),
+            (IntegerTy::Signed(IntTy::I16), target_data.i16_align.bytes()),
+            (IntegerTy::Signed(IntTy::I32), target_data.i32_align.bytes()),
+            (IntegerTy::Signed(IntTy::I64), target_data.i64_align.bytes()),
+            (
+                IntegerTy::Signed(IntTy::I128),
+                target_data.i128_align.bytes(),
+            ),
+            (
+                IntegerTy::Signed(IntTy::Isize),
+                target_data.pointer_align().bytes(),
+            ),
+            (
+                IntegerTy::Unsigned(UIntTy::U8),
+                target_data.i8_align.bytes(),
+            ),
+            (
+                IntegerTy::Unsigned(UIntTy::U16),
+                target_data.i16_align.bytes(),
+            ),
+            (
+                IntegerTy::Unsigned(UIntTy::U32),
+                target_data.i32_align.bytes(),
+            ),
+            (
+                IntegerTy::Unsigned(UIntTy::U64),
+                target_data.i64_align.bytes(),
+            ),
+            (
+                IntegerTy::Unsigned(UIntTy::U128),
+                target_data.i128_align.bytes(),
+            ),
+            (
+                IntegerTy::Unsigned(UIntTy::Usize),
+                target_data.pointer_align().bytes(),
+            ),
+        ] {
+            primitive_alignments.insert(ScalarTy::Integer(ty), alignment);
+        }
+        primitive_alignments.insert(ScalarTy::Float(FloatTy::F16), target_data.f16_align.bytes());
+        primitive_alignments.insert(ScalarTy::Float(FloatTy::F32), target_data.f32_align.bytes());
+        primitive_alignments.insert(ScalarTy::Float(FloatTy::F64), target_data.f64_align.bytes());
         primitive_alignments.insert(
-            LiteralTy::Int(IntTy::Isize),
-            target_data.pointer_align().bytes(),
-        );
-        primitive_alignments.insert(LiteralTy::UInt(UIntTy::U8), target_data.i8_align.bytes());
-        primitive_alignments.insert(LiteralTy::UInt(UIntTy::U16), target_data.i16_align.bytes());
-        primitive_alignments.insert(LiteralTy::UInt(UIntTy::U32), target_data.i32_align.bytes());
-        primitive_alignments.insert(LiteralTy::UInt(UIntTy::U64), target_data.i64_align.bytes());
-        primitive_alignments.insert(
-            LiteralTy::UInt(UIntTy::U128),
-            target_data.i128_align.bytes(),
-        );
-        primitive_alignments.insert(
-            LiteralTy::UInt(UIntTy::Usize),
-            target_data.pointer_align().bytes(),
-        );
-        primitive_alignments.insert(
-            LiteralTy::Float(FloatTy::F16),
-            target_data.f16_align.bytes(),
-        );
-        primitive_alignments.insert(
-            LiteralTy::Float(FloatTy::F32),
-            target_data.f32_align.bytes(),
-        );
-        primitive_alignments.insert(
-            LiteralTy::Float(FloatTy::F64),
-            target_data.f64_align.bytes(),
-        );
-        primitive_alignments.insert(
-            LiteralTy::Float(FloatTy::F128),
+            ScalarTy::Float(FloatTy::F128),
             target_data.f128_align.bytes(),
         );
         // INFO: This is not explicitly guaranteed by the reference, but by the implementation of rustc.
         // https://doc.rust-lang.org/1.97.1/nightly-rustc/src/rustc_ty_utils/layout.rs.html#391
-        primitive_alignments.insert(LiteralTy::Char, target_data.i32_align.bytes());
+        primitive_alignments.insert(ScalarTy::Char, target_data.i32_align.bytes());
 
         let c_enum_smallest_repr_ty = match target_data.c_enum_min_size {
             rustc_abi::Integer::I8 => IntTy::I8,

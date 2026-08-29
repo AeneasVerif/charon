@@ -134,15 +134,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn translate_ty_inner(&mut self, span: Span, ty: &hax::Ty) -> Result<Ty, Error> {
         trace!("{:?}", ty);
         let kind = match ty.kind() {
-            hax::TyKind::Bool => TyKind::Literal(LiteralTy::Bool),
-            hax::TyKind::Char => TyKind::Literal(LiteralTy::Char),
-            hax::TyKind::Int(int_ty) => {
-                TyKind::Literal(LiteralTy::Int(Self::translate_hax_int_ty(int_ty)))
-            }
-            hax::TyKind::Uint(uint_ty) => {
-                TyKind::Literal(LiteralTy::UInt(Self::translate_hax_uint_ty(uint_ty)))
-            }
-            hax::TyKind::Float(float_ty) => TyKind::Literal(LiteralTy::Float(match float_ty {
+            hax::TyKind::Bool => TyKind::Scalar(ScalarTy::Bool),
+            hax::TyKind::Char => TyKind::Scalar(ScalarTy::Char),
+            hax::TyKind::Int(int_ty) => TyKind::Scalar(ScalarTy::Integer(IntegerTy::Signed(
+                Self::translate_hax_int_ty(int_ty),
+            ))),
+            hax::TyKind::Uint(uint_ty) => TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(
+                Self::translate_hax_uint_ty(uint_ty),
+            ))),
+            hax::TyKind::Float(float_ty) => TyKind::Scalar(ScalarTy::Float(match float_ty {
                 hax::FloatTy::F16 => FloatTy::F16,
                 hax::FloatTy::F32 => FloatTy::F32,
                 hax::FloatTy::F64 => FloatTy::F64,
@@ -745,7 +745,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let field_offsets = fields.map_ref(|field| {
                     let offset = size;
                     let size_of_ty = match field.ty.kind() {
-                        TyKind::Literal(literal_ty) => literal_ty.target_size(ptr_size) as u64,
+                        TyKind::Scalar(scalar_ty) => scalar_ty.target_size(ptr_size) as u64,
                         // This is a lie, the pointers could be fat...
                         TyKind::Ref(..) | TyKind::RawPtr(..) | TyKind::FnPtr(..) => ptr_size,
                         _ => panic!("Unsupported type for `generate_naive_layout`: {ty:?}"),
@@ -813,7 +813,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 Some(args.types.into_iter().collect_vec())
             }
             AdtKind::Str => {
-                let u8_ty = TyKind::Literal(LiteralTy::UInt(UIntTy::U8)).into_ty();
+                let u8_ty =
+                    TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::U8))).into_ty();
                 let u8_is_sized = self.translate_sized_proof(def_span, self.tcx.types.u8)?;
                 Some(vec![Ty::mk_slice(u8_ty, u8_is_sized)])
             }
@@ -952,9 +953,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         discr: &hax::DiscriminantValue,
     ) -> Result<IntegerValue, Error> {
         let ty = self.translate_ty(def_span, &discr.ty)?;
-        let lit_ty = ty.kind().as_literal().unwrap();
-        match lit_ty.to_integer_ty() {
-            Some(int_ty) => Ok(IntegerValue::from_bits(int_ty, discr.val)),
+        let scalar_ty = ty.kind().as_scalar().unwrap();
+        match scalar_ty.as_integer() {
+            Some(int_ty) => Ok(IntegerValue::from_bits(*int_ty, discr.val)),
             None => raise_error!(self, def_span, "unexpected discriminant type: {ty:?}",),
         }
     }
@@ -978,8 +979,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax_repr_options
                 .int_specified
                 .then(|| match hax_repr_options.typ.kind() {
-                    hax::TyKind::Int(ty) => LiteralTy::Int(Self::translate_hax_int_ty(ty)),
-                    hax::TyKind::Uint(ty) => LiteralTy::UInt(Self::translate_hax_uint_ty(ty)),
+                    hax::TyKind::Int(ty) => {
+                        ScalarTy::Integer(IntegerTy::Signed(Self::translate_hax_int_ty(ty)))
+                    }
+                    hax::TyKind::Uint(ty) => {
+                        ScalarTy::Integer(IntegerTy::Unsigned(Self::translate_hax_uint_ty(ty)))
+                    }
                     ty => unreachable!("explicit enum discriminant type is not an integer: {ty:?}"),
                 });
 

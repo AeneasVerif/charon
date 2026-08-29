@@ -1149,14 +1149,13 @@ impl ItemMeta {
     }
 }
 
-impl Display for LiteralTy {
+impl Display for ScalarTy {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            LiteralTy::Int(ty) => write!(f, "{ty}"),
-            LiteralTy::UInt(ty) => write!(f, "{ty}"),
-            LiteralTy::Float(ty) => write!(f, "{ty}"),
-            LiteralTy::Char => write!(f, "char"),
-            LiteralTy::Bool => write!(f, "bool"),
+            ScalarTy::Integer(ty) => write!(f, "{ty}"),
+            ScalarTy::Float(ty) => write!(f, "{ty}"),
+            ScalarTy::Char => write!(f, "char"),
+            ScalarTy::Bool => write!(f, "bool"),
         }
     }
 }
@@ -2596,7 +2595,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
             TyKind::Adt(tref) if tref.is_str() => write!(f, "str"),
             TyKind::Adt(tref) => write!(f, "{}", tref.with_ctx(ctx)),
             TyKind::TypeVar(id) => write!(f, "{}", id.with_ctx(ctx)),
-            TyKind::Literal(kind) => write!(f, "{kind}"),
+            TyKind::Scalar(kind) => write!(f, "{kind}"),
             TyKind::Never => write!(f, "!"),
             TyKind::Pattern(ty, pat) => write!(f, "{} is {}", ty.with_ctx(ctx), pat.with_ctx(ctx)),
             TyKind::Ref(r, ty, kind) => {

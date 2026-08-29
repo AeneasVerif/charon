@@ -414,8 +414,8 @@ and cast_kind_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Scalar", `List [ _0; _1 ]) ] ->
-        let* _0 = literal_type_of_json ctx _0 in
-        let* _1 = literal_type_of_json ctx _1 in
+        let* _0 = scalar_type_of_json ctx _0 in
+        let* _1 = scalar_type_of_json ctx _1 in
         Ok (CastScalar (_0, _1))
     | `Assoc [ ("RawPtr", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
@@ -872,6 +872,18 @@ and int_ty_of_json (ctx : of_json_ctx) (js : json) : (int_ty, string) result =
     | `String "I128" -> Ok I128
     | _ -> Error "")
 
+and integer_type_of_json (ctx : of_json_ctx) (js : json) :
+    (integer_type, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Signed", _0) ] ->
+        let* _0 = int_ty_of_json ctx _0 in
+        Ok (Signed _0)
+    | `Assoc [ ("Unsigned", _0) ] ->
+        let* _0 = u_int_ty_of_json ctx _0 in
+        Ok (Unsigned _0)
+    | _ -> Error "")
+
 and integer_value_of_json (ctx : of_json_ctx) (js : json) :
     (integer_value, string) result =
   combine_error_msgs js __FUNCTION__
@@ -893,23 +905,6 @@ and lifetime_mutability_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Mutable" -> Ok LtMutable
     | `String "Shared" -> Ok LtShared
     | `String "Unknown" -> Ok LtUnknown
-    | _ -> Error "")
-
-and literal_type_of_json (ctx : of_json_ctx) (js : json) :
-    (literal_type, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Int", _0) ] ->
-        let* _0 = int_ty_of_json ctx _0 in
-        Ok (TInt _0)
-    | `Assoc [ ("UInt", _0) ] ->
-        let* _0 = u_int_ty_of_json ctx _0 in
-        Ok (TUInt _0)
-    | `Assoc [ ("Float", _0) ] ->
-        let* _0 = float_type_of_json ctx _0 in
-        Ok (TFloat _0)
-    | `String "Bool" -> Ok TBool
-    | `String "Char" -> Ok TChar
     | _ -> Error "")
 
 and loc_of_json (ctx : of_json_ctx) (js : json) : (loc, string) result =
@@ -1217,6 +1212,20 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         Ok (Repeat (_0, _1, _2, _3))
     | _ -> Error "")
 
+and scalar_type_of_json (ctx : of_json_ctx) (js : json) :
+    (scalar_type, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Integer", _0) ] ->
+        let* _0 = integer_type_of_json ctx _0 in
+        Ok (TInteger _0)
+    | `Assoc [ ("Float", _0) ] ->
+        let* _0 = float_type_of_json ctx _0 in
+        Ok (TFloat _0)
+    | `String "Bool" -> Ok TBool
+    | `String "Char" -> Ok TChar
+    | _ -> Error "")
+
 and span_of_json (ctx : of_json_ctx) (js : json) : (span, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -1462,9 +1471,9 @@ and ty_kind_of_json (ctx : of_json_ctx) (js : json) : (ty_kind, string) result =
     | `Assoc [ ("TypeVar", _0) ] ->
         let* _0 = de_bruijn_var_of_json type_var_id_of_json ctx _0 in
         Ok (TVar _0)
-    | `Assoc [ ("Literal", _0) ] ->
-        let* _0 = literal_type_of_json ctx _0 in
-        Ok (TLiteral _0)
+    | `Assoc [ ("Scalar", _0) ] ->
+        let* _0 = scalar_type_of_json ctx _0 in
+        Ok (TScalar _0)
     | `String "Never" -> Ok TNever
     | `Assoc [ ("Ref", `List [ _0; _1; _2 ]) ] ->
         let* _0 = region_of_json ctx _0 in
@@ -2818,18 +2827,6 @@ and rustc_inline_attr_of_json (ctx : of_json_ctx) (js : json) :
         Ok (RustcInlineAttrForce (attr_span, reason))
     | _ -> Error "")
 
-and integer_type_of_json (ctx : of_json_ctx) (js : json) :
-    (integer_type, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Signed", _0) ] ->
-        let* _0 = int_ty_of_json ctx _0 in
-        Ok (Signed _0)
-    | `Assoc [ ("Unsigned", _0) ] ->
-        let* _0 = u_int_ty_of_json ctx _0 in
-        Ok (Unsigned _0)
-    | _ -> Error "")
-
 and item_id_of_json (ctx : of_json_ctx) (js : json) : (item_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -3323,7 +3320,7 @@ and repr_options_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* transparent = bool_of_json ctx transparent in
         let* explicit_discr_type =
-          option_of_json literal_type_of_json ctx explicit_discr_type
+          option_of_json scalar_type_of_json ctx explicit_discr_type
         in
         Ok
           ({ repr_algo; align_modif; transparent; explicit_discr_type }
@@ -3389,7 +3386,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
           int_ty_of_json ctx c_enum_smallest_repr_ty
         in
         let* primitive_alignments =
-          index_map_of_json literal_type_of_json int_of_json int_of_json ctx
+          index_map_of_json scalar_type_of_json int_of_json int_of_json ctx
             primitive_alignments
         in
         Ok

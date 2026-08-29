@@ -1250,8 +1250,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     | mir::CastKind::IntToFloat
                     | mir::CastKind::FloatToInt
                     | mir::CastKind::FloatToFloat => {
-                        let tgt_ty = *tgt_ty.kind().as_literal().unwrap();
-                        let src_ty = *src_ty.kind().as_literal().unwrap();
+                        let tgt_ty = *tgt_ty.kind().as_scalar().unwrap();
+                        let src_ty = *src_ty.kind().as_scalar().unwrap();
                         CastKind::Scalar(src_ty, tgt_ty)
                     }
                     mir::CastKind::PtrToPtr
@@ -1715,13 +1715,13 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         // Convert all the test values to the proper values.
         let otherwise = targets.otherwise();
         let switch_ty = discr.ty();
-        let switch_literal_ty = *switch_ty.as_literal().unwrap();
+        let switch_scalar_ty = *switch_ty.as_scalar().unwrap();
         let mut branch_targets: IndexVec<BranchId, BlockId> = IndexVec::new();
         let mut target_to_branch: SeqHashMap<BlockId, BranchId> = SeqHashMap::new();
         let mut switch_branches = Vec::with_capacity(targets.iter().count());
 
         // Keep the historical true-then-false traversal order for boolean switches.
-        let bool_fallback = (switch_literal_ty == LiteralTy::Bool).then(|| {
+        let bool_fallback = (switch_scalar_ty == ScalarTy::Bool).then(|| {
             let target = self.translate_basic_block_id(otherwise);
             *target_to_branch
                 .entry(target)
@@ -1729,8 +1729,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         });
 
         for (bits, target) in targets.iter() {
-            let Some(kind) = ConstantExprKind::from_bits(&switch_literal_ty, bits) else {
-                raise_error!(self, span, "Can't match on type {switch_literal_ty}")
+            let Some(kind) = ConstantExprKind::from_bits(&switch_scalar_ty, bits) else {
+                raise_error!(self, span, "Can't match on type {switch_scalar_ty}")
             };
             let target = self.translate_basic_block_id(target);
             let branch_id = *target_to_branch

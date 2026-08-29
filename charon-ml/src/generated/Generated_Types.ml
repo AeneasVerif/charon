@@ -22,7 +22,7 @@ module Disambiguator = IdGen ()
 
 type integer_type = Values.integer_type [@@deriving show, ord, eq]
 type float_type = Values.float_type [@@deriving show, ord, eq]
-type literal_type = Values.literal_type [@@deriving show, ord, eq]
+type scalar_type = Values.scalar_type [@@deriving show, ord, eq]
 
 (* A range that includes both endpoints. *)
 type 'a range_inclusive = 'a * 'a [@@deriving show, ord, eq]
@@ -97,7 +97,7 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
       name = "iter_type_vars";
       monomorphic = [ "env" ];
       variety = "iter";
-      ancestors = [ "iter_literal" ];
+      ancestors = [ "iter_scalar" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     },
   visitors
@@ -105,7 +105,7 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
       name = "map_type_vars";
       monomorphic = [ "env" ];
       variety = "map";
-      ancestors = [ "map_literal" ];
+      ancestors = [ "map_scalar" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     },
   visitors
@@ -113,7 +113,7 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
       name = "reduce_type_vars";
       monomorphic = [ "env" ];
       variety = "reduce";
-      ancestors = [ "reduce_literal" ];
+      ancestors = [ "reduce_scalar" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     },
   visitors
@@ -121,7 +121,7 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
       name = "mapreduce_type_vars";
       monomorphic = [ "env" ];
       variety = "mapreduce";
-      ancestors = [ "mapreduce_literal" ];
+      ancestors = [ "mapreduce_scalar" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
 
@@ -640,7 +640,7 @@ and ty_kind =
           Note: this is incorrectly named: this can refer to any valid
           [TypeDecl] including extern types. *)
   | TVar of type_var_id de_bruijn_var
-  | TLiteral of literal_type
+  | TScalar of scalar_type
   | TNever
       (** The never type, for computations which don't return. It is sometimes
           necessary for intermediate variables. For instance, if we do (coming
@@ -1361,7 +1361,7 @@ and repr_options = {
   repr_algo : repr_algorithm;
   align_modif : alignment_modifier option;
   transparent : bool;
-  explicit_discr_type : literal_type option;
+  explicit_discr_type : scalar_type option;
       (** The type supplied to [repr(..)], if any. *)
 }
 

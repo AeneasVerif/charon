@@ -943,11 +943,11 @@ fn multiple_deserialize() -> anyhow::Result<()> {
     let ty1_2 = krate1.fun_decls[1].signature.inputs[0].clone();
     let ty2_1 = krate2.fun_decls[0].signature.inputs[0].clone();
     let ty2_2 = krate2.fun_decls[1].signature.inputs[0].clone();
-    assert_eq!(ty1_1.kind().as_literal(), Some(&LiteralTy::Bool));
+    assert_eq!(ty1_1.kind().as_scalar(), Some(&ScalarTy::Bool));
     assert_eq!(ty1_2, ty1_1);
     assert_eq!(
-        ty2_1.kind().as_literal(),
-        Some(&LiteralTy::UInt(UIntTy::U32))
+        ty2_1.kind().as_scalar(),
+        Some(&ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::U32)))
     );
     assert_eq!(ty2_2, ty2_1);
     Ok(())

@@ -277,28 +277,21 @@ impl ConstantExpr {
 }
 
 impl ConstantExprKind {
-    pub fn from_bits(lit_ty: &LiteralTy, bits: u128) -> Option<Self> {
-        match *lit_ty {
-            LiteralTy::Int(int_ty) => Some(Self::Integer(IntegerValue::from_bits(
-                IntegerTy::Signed(int_ty),
-                bits,
-            ))),
-            LiteralTy::UInt(uint_ty) => Some(Self::Integer(IntegerValue::from_bits(
-                IntegerTy::Unsigned(uint_ty),
-                bits,
-            ))),
-            LiteralTy::Bool => match bits {
+    pub fn from_bits(scalar_ty: &ScalarTy, bits: u128) -> Option<Self> {
+        match *scalar_ty {
+            ScalarTy::Integer(int_ty) => Some(Self::Integer(IntegerValue::from_bits(int_ty, bits))),
+            ScalarTy::Bool => match bits {
                 0 => Some(Self::Bool(false)),
                 1 => Some(Self::Bool(true)),
                 _ => None,
             },
-            LiteralTy::Char => {
+            ScalarTy::Char => {
                 let bytes: [u8; 4] = bits.to_le_bytes()[0..4].try_into().unwrap();
                 Some(Self::Char(
                     std::char::from_u32(u32::from_le_bytes(bytes)).unwrap(),
                 ))
             }
-            LiteralTy::Float(_) => None,
+            ScalarTy::Float(_) => None,
         }
     }
 }
@@ -512,13 +505,10 @@ impl IntegerValue {
     }
 
     pub fn to_constant(self) -> ConstantExpr {
-        let literal_ty = match self {
-            IntegerValue::Signed(int_ty, _) => LiteralTy::Int(int_ty),
-            IntegerValue::Unsigned(uint_ty, _) => LiteralTy::UInt(uint_ty),
-        };
+        let scalar_ty = ScalarTy::Integer(self.ty());
         ConstantExpr::new(
             ConstantExprKind::Integer(self),
-            TyKind::Literal(literal_ty).into_ty(),
+            TyKind::Scalar(scalar_ty).into_ty(),
         )
     }
 }

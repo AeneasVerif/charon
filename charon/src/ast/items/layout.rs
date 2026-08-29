@@ -121,7 +121,7 @@ pub struct ReprOptions {
     pub align_modif: Option<AlignmentModifier>,
     pub transparent: bool,
     /// The type supplied to `repr(..)`, if any.
-    pub explicit_discr_type: Option<LiteralTy>,
+    pub explicit_discr_type: Option<ScalarTy>,
 }
 
 /// Describes which layout algorithm is used for representing the corresponding type.
@@ -153,8 +153,8 @@ pub struct TargetInfo {
     /// The minimum size of a [`repr(C)`] enum.
     pub c_enum_smallest_repr_ty: IntTy,
     /// Alignments for primitive types.
-    #[serde(with = "SeqHashMapToArray::<LiteralTy, ByteCount>")]
-    pub primitive_alignments: SeqHashMap<LiteralTy, ByteCount>,
+    #[serde(with = "SeqHashMapToArray::<ScalarTy, ByteCount>")]
+    pub primitive_alignments: SeqHashMap<ScalarTy, ByteCount>,
 }
 
 impl Layout {

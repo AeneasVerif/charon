@@ -113,19 +113,19 @@ impl<'a> GenerateCtx<'a> {
     /// parameters.
     pub fn type_to_ocaml_name(&self, ty: &Ty) -> String {
         match ty.kind() {
-            TyKind::Literal(LiteralTy::Bool) => "bool".to_string(),
-            TyKind::Literal(LiteralTy::Char) => "char_value".to_string(),
-            TyKind::Literal(LiteralTy::Int(int_ty)) => match int_ty {
+            TyKind::Scalar(ScalarTy::Bool) => "bool".to_string(),
+            TyKind::Scalar(ScalarTy::Char) => "char_value".to_string(),
+            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Signed(int_ty))) => match int_ty {
                 // Even though OCaml ints are only 63 bits, only scalars with their 128 bits should be able to become too large
                 IntTy::I128 => "big_int".to_string(),
                 _ => "int".to_string(),
             },
-            TyKind::Literal(LiteralTy::UInt(uint_ty)) => match uint_ty {
+            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(uint_ty))) => match uint_ty {
                 // Even though OCaml ints are only 63 bits, only scalars with their 128 bits should be able to become too large
                 UIntTy::U128 => "big_int".to_string(),
                 _ => "int".to_string(),
             },
-            TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
+            TyKind::Scalar(ScalarTy::Float(_)) => "float_of_json".to_string(),
             TyKind::Adt(tref) => {
                 let mut args = tref
                     .generics

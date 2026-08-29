@@ -140,7 +140,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         let len = ConstantExpr::mk_usize(s.len() as u128);
                         let ty_is_sized = self.translate_sized_proof(span, self.tcx.types.u8)?;
                         // the sub-constant is an array, that has it's reference unsized
-                        let subty = TyKind::Literal(LiteralTy::UInt(UIntTy::U8)).into();
+                        let subty =
+                            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::U8)))
+                                .into();
                         (
                             Some(UnsizingMetadata::Length(len.clone())),
                             Some(Ty::mk_array(subty, len, ty_is_sized)),

@@ -360,7 +360,7 @@ impl SwitchData {
         let SwitchScrutinee::Value(scrutinee) = &self.scrutinee else {
             return None;
         };
-        if !matches!(scrutinee.ty().kind(), TyKind::Literal(LiteralTy::Bool)) {
+        if !matches!(scrutinee.ty().kind(), TyKind::Scalar(ScalarTy::Bool)) {
             return None;
         }
 

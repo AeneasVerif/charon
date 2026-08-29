@@ -1237,7 +1237,9 @@
       "align_modif": null,
       "transparent": false,
       "explicit_discr_type": {
-        "Int": "I32"
+        "Integer": {
+          "Signed": "I32"
+        }
       }
     }
   },
@@ -1374,7 +1376,9 @@
       "align_modif": null,
       "transparent": false,
       "explicit_discr_type": {
-        "Int": "I8"
+        "Integer": {
+          "Signed": "I8"
+        }
       }
     }
   },
@@ -1646,7 +1650,9 @@
       "align_modif": null,
       "transparent": false,
       "explicit_discr_type": {
-        "UInt": "U128"
+        "Integer": {
+          "Unsigned": "U128"
+        }
       }
     }
   },

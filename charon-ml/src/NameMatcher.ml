@@ -392,14 +392,14 @@ let opt_update_cmap (c : match_config) (m : maps) (id : var option)
 
 (** Pay attention when updating the names because we use this function for
     several purposes:
-    - to match patterns with literal types
+    - to match patterns with scalar types
     - to convert patterns to strings which can be parsed as patterns
     - to convert patterns to string for printing/name generation *)
-let literal_type_to_string (ty : T.literal_type) : string =
+let scalar_type_to_string (ty : T.scalar_type) : string =
   match ty with
   | TBool -> "bool"
   | TChar -> "char"
-  | TInt ty -> (
+  | TInteger (Signed ty) -> (
       match ty with
       | Isize -> "isize"
       | I8 -> "i8"
@@ -407,7 +407,7 @@ let literal_type_to_string (ty : T.literal_type) : string =
       | I32 -> "i32"
       | I64 -> "i64"
       | I128 -> "i128")
-  | TUInt ty -> (
+  | TInteger (Unsigned ty) -> (
       match ty with
       | Usize -> "usize"
       | U8 -> "u8"
@@ -555,9 +555,8 @@ and match_pattern_with_type_decl_id (ctx : ctx) (c : match_config) (m : maps)
       generics = TypesUtils.empty_generic_args
   | Some _, _ -> false
 
-and match_pattern_with_literal_type (pty : pattern) (ty : T.literal_type) : bool
-    =
-  let ty = literal_type_to_string ty in
+and match_pattern_with_scalar_type (pty : pattern) (ty : T.scalar_type) : bool =
+  let ty = scalar_type_to_string ty in
   match pty with
   | [ PIdent (ty', _, []) ] when ty = ty' -> true
   | [ PWild ] -> true
@@ -569,7 +568,7 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
   | EComp pid, TAdt tref ->
       match_pattern_with_type_decl_id ctx c m pid tref.id tref.builtin
         tref.generics
-  | EComp pid, TLiteral lit -> match_pattern_with_literal_type pid lit
+  | EComp pid, TScalar scalar -> match_pattern_with_scalar_type pid scalar
   | EPrimAdt (pid, pgenerics), ty -> begin
       match (pid, ty) with
       | TArray, TArray (ty, len, _) ->
@@ -887,14 +886,14 @@ type to_pat_config = {
   use_trait_decl_refs : bool;  (** See {!match_with_trait_decl_refs} *)
 }
 
-let literal_type_to_pattern (c : to_pat_config) (lit : T.literal_type) : expr =
-  let lit = literal_type_to_string lit in
-  let lit =
+let scalar_type_to_pattern (c : to_pat_config) (scalar : T.scalar_type) : expr =
+  let scalar = scalar_type_to_string scalar in
+  let scalar =
     match c.tgt with
-    | TkPattern | TkPretty -> lit
-    | TkName -> StringUtils.capitalize_first_letter lit
+    | TkPattern | TkPretty -> scalar
+    | TkName -> StringUtils.capitalize_first_letter scalar
   in
-  EComp [ PIdent (lit, 0, []) ]
+  EComp [ PIdent (scalar, 0, []) ]
 
 let rec name_with_generic_args_to_pattern_aux (ctx : ctx) (c : to_pat_config)
     (n : T.name) (generics : generic_args option) : pattern =
@@ -990,7 +989,7 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
             [ PIdent ("str", 0, generic_args_to_pattern ctx c m tref.generics) ]
       )
   | TVar v -> EVar (type_var_to_pattern m v)
-  | TLiteral lit -> literal_type_to_pattern c lit
+  | TScalar scalar -> scalar_type_to_pattern c scalar
   | TRef (r, ty, rk) ->
       ERef
         ( region_to_pattern m r,

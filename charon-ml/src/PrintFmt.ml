@@ -52,10 +52,9 @@ let pp_float_type (fmt : Format.formatter) = function
   | F64 -> pp_string fmt "f64"
   | F128 -> pp_string fmt "f128"
 
-let pp_literal_type (fmt : Format.formatter) (ty : literal_type) : unit =
+let pp_scalar_type (fmt : Format.formatter) (ty : scalar_type) : unit =
   match ty with
-  | TInt ity -> pp_integer_type fmt (Signed ity)
-  | TUInt uty -> pp_integer_type fmt (Unsigned uty)
+  | TInteger ity -> pp_integer_type fmt ity
   | TFloat fty -> pp_float_type fmt fty
   | TBool -> pp_string fmt "bool"
   | TChar -> pp_string fmt "char"
@@ -582,7 +581,7 @@ and pp_ty (env : fmt_env) (fmt : Format.formatter) (ty : ty) : unit =
   | TAdt tref -> pp_type_decl_ref env fmt tref
   | TVar tv -> pp_string fmt (type_db_var_to_string env tv)
   | TNever -> pp_string fmt "!"
-  | TLiteral lit_ty -> pp_literal_type fmt lit_ty
+  | TScalar scalar_ty -> pp_scalar_type fmt scalar_ty
   | TPattern (ty, pat) ->
       Format.fprintf fmt "%a is %a" (pp_ty env) ty (pp_type_pattern env) pat
   | TTraitType (trait_ref, type_id, generics) ->
@@ -1429,7 +1428,7 @@ and pp_cast_kind (env : fmt_env) (fmt : Format.formatter) (cast : cast_kind) :
     unit =
   match cast with
   | CastScalar (src, tgt) ->
-      Format.fprintf fmt "cast<%a, %a>" pp_literal_type src pp_literal_type tgt
+      Format.fprintf fmt "cast<%a, %a>" pp_scalar_type src pp_scalar_type tgt
   | CastFnPtr (src, tgt) | CastRawPtr (src, tgt) ->
       Format.fprintf fmt "cast<%a, %a>" (pp_ty env) src (pp_ty env) tgt
   | CastTransmute (src, tgt) ->

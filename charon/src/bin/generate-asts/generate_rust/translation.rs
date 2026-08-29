@@ -203,7 +203,7 @@ impl Generator<'_> {
         value: &str,
     ) -> fmt::Result {
         match ty.kind() {
-            TyKind::Literal(_) => write!(f, "*({value})"),
+            TyKind::Scalar(_) => write!(f, "*({value})"),
             TyKind::Adt(tref) => self.fmt_adt_translation_expr(f, tref, value),
             TyKind::Array(ty, ..) | TyKind::Slice(ty, _) => {
                 write!(f, "({value}).iter().map(|value| ")?;

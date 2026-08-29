@@ -357,7 +357,7 @@ impl<'a> PartialMonomorphizer<'a> {
                 false
             }
             TyKind::TypeVar(..)
-            | TyKind::Literal(..)
+            | TyKind::Scalar(..)
             | TyKind::Never
             | TyKind::TraitType(..)
             | TyKind::PtrMetadata(..)

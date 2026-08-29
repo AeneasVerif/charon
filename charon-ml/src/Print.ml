@@ -14,8 +14,8 @@ let integer_type_to_string ty =
 let float_type_to_string ty =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_float_type fmt ty)
 
-let literal_type_to_string ty =
-  PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_literal_type fmt ty)
+let scalar_type_to_string ty =
+  PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_scalar_type fmt ty)
 
 let big_int_to_string bi =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_big_int fmt bi)

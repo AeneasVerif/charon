@@ -145,7 +145,7 @@ impl Generator<'_> {
 
     pub(super) fn fmt_generated_type(&self, f: &mut fmt::Formatter<'_>, ty: &Ty) -> fmt::Result {
         match ty.kind() {
-            TyKind::Literal(lit) => write!(f, "{lit}"),
+            TyKind::Scalar(scalar) => write!(f, "{scalar}"),
             TyKind::Adt(tref) => self.fmt_generated_adt_type(f, tref),
             TyKind::Array(ty, ..) | TyKind::Slice(ty, _) => {
                 write!(f, "Vec<{}>", self.generated_type(ty))

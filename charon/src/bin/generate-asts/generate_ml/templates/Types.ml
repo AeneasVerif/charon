@@ -25,7 +25,7 @@ module Disambiguator = IdGen ()
 
 type integer_type = Values.integer_type [@@deriving show, ord, eq]
 type float_type = Values.float_type [@@deriving show, ord, eq]
-type literal_type = Values.literal_type [@@deriving show, ord, eq]
+type scalar_type = Values.scalar_type [@@deriving show, ord, eq]
 
 (* A range that includes both endpoints. *)
 type 'a range_inclusive = 'a * 'a [@@deriving show, ord, eq]
