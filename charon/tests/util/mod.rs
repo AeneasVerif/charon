@@ -15,6 +15,9 @@ use std::{fs::File, process::Command};
 use charon_lib::ast::*;
 use charon_lib::{export::CrateData, logger, options::SerializationFormat};
 
+#[cfg(feature = "popular-crates-test")]
+pub mod popular_crates;
+
 #[derive(Clone, Copy)]
 pub enum Action {
     Verify,

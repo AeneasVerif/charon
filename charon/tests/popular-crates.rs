@@ -3,49 +3,22 @@
 //!
 //! This test requires a feature flag. To run, call `make test-popular-crates`.
 #![cfg(feature = "popular-crates-test")]
-use anyhow::{Context, Result, bail};
+mod util;
+
+use anyhow::{Result, bail};
 use assert_cmd::prelude::CommandCargoExt;
-use crates_io_api::Version;
-use flate2::read::GzDecoder;
 use itertools::Itertools;
 use std::{
-    fs::File,
-    path::{Path, PathBuf},
+    path::Path,
     process::{Command, Stdio},
     sync::Arc,
     time::Duration,
 };
-use tar::Archive;
+use util::popular_crates::{client, extract_crate, limit_memory_usage};
 use wait_timeout::ChildExt;
-
-static TESTS_DIR: &str = "tests/popular-crates";
 
 const NUMBER_OF_CRATES: u64 = 500;
 const CRATES_PER_PAGE: u64 = 100;
-
-#[cfg(target_os = "linux")]
-fn limit_memory_usage(command: &mut Command) {
-    use std::os::unix::process::CommandExt;
-
-    const MEMORY_LIMIT: libc::rlim_t = 4 * 1024 * 1024 * 1024;
-
-    unsafe {
-        command.pre_exec(|| {
-            let limit = libc::rlimit {
-                rlim_cur: MEMORY_LIMIT,
-                rlim_max: MEMORY_LIMIT,
-            };
-            if libc::setrlimit(libc::RLIMIT_AS, &limit) == 0 {
-                Ok(())
-            } else {
-                Err(std::io::Error::last_os_error())
-            }
-        });
-    }
-}
-
-#[cfg(not(target_os = "linux"))]
-fn limit_memory_usage(_: &mut Command) {}
 
 /// Crates that don't `cargo build` on my machine.
 static BUILD_FAILURES: &[&str] = &[
@@ -82,45 +55,7 @@ static CHARON_FAILURES: &[&str] = &[
     "generic-array",
 ];
 
-/// Downloads and extracts the crate into a subdirectory of `TESTS_DIR` and returns the path to
-/// that directory.
-fn extract_crate(version: &Version) -> Result<PathBuf> {
-    let full_name = &format!("{}-{}", version.crate_name, version.num);
-    let download_url = format!("https://crates.io{}", version.dl_path);
-    let directory = PathBuf::from(format!("{}/{}", TESTS_DIR, full_name));
-    if directory.exists() {
-        // Assuùe the directory already contains the extracted crate.
-        return Ok(directory);
-    }
-
-    let archive_path = {
-        let mut path = directory.clone();
-        path.add_extension("tar.gz");
-        path
-    };
-    {
-        // Download the crate archive
-        let mut temp_file = File::create(&archive_path)
-            .with_context(|| format!("while creating `{}`", archive_path.display()))?;
-        reqwest::blocking::get(download_url)?.copy_to(&mut temp_file)?;
-    }
-    {
-        // Extract the crate archive
-        let temp_file = File::open(&archive_path)?;
-        let mut archive = Archive::new(GzDecoder::new(temp_file));
-        // This assumes that the archive always contains exactly one folder named
-        // `{crate_name}-{version}`, which seems to be the case. Worst case we get unexpected files
-        // inside the `popular-crates` subfolder.
-        archive
-            .unpack(TESTS_DIR)
-            .with_context(|| "while extracting archive")?;
-    }
-    std::fs::remove_file(archive_path)?;
-
-    Ok(directory)
-}
-
-fn process_crate(version: &Version) -> Result<()> {
+fn process_crate(version: &crates_io_api::Version) -> Result<()> {
     let crate_dir = extract_crate(version)?;
     let llbc_path = {
         // Relative to the crate directory
@@ -169,13 +104,7 @@ fn process_crate(version: &Version) -> Result<()> {
 #[test] // Only include in release mode
 pub fn test_popular_crates() -> Result<()> {
     use crates_io_api::*;
-    let client = Arc::new(
-        SyncClient::new(
-            "charon-test-runner (Nadrieril@users.noreply.github.com)",
-            std::time::Duration::from_millis(1000),
-        )
-        .unwrap(),
-    );
+    let client = Arc::new(client());
 
     let mut crates = Vec::new();
     for page in 1..=NUMBER_OF_CRATES.div_ceil(CRATES_PER_PAGE) {
