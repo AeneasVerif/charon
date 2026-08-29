@@ -282,7 +282,7 @@ fn gives_fn()
     let _3: &'12 closure; // anonymous local
     let _4: &'13 closure; // anonymous local
     let _5: &'14 closure; // anonymous local
-    let _6: &'25 closure; // anonymous local
+    let _6: &'23 closure; // anonymous local
     let _7: closure; // anonymous local
 
     storage_live(_5)
@@ -300,9 +300,9 @@ fn gives_fn()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _1 = unsize_cast<&'11 closure, &'15 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '16), &vtable_of(impl_Fn_tuple_for_closure<'21>)>(move _2)
+    _1 = unsize_cast<&'11 closure, &'15 (dyn for<'a> Fn<(&'a mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '16), &vtable_of(impl_Fn_tuple_for_closure<'20>)>(move _2)
     storage_dead(_2)
-    _0 = takes_fn<'24>(move _1)
+    _0 = takes_fn<'22>(move _1)
     ↳⚡ storage_dead(_4)
         unwind_continue
     storage_dead(_1)

@@ -1,75 +1,22 @@
 # Final LLBC before serialization:
 
-opaque type core::marker::MetaSized::{vtable}
-
-// Full name: core::marker::MetaSized
-#[fundamental]
-#[lang_item(MetaSized)]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Tuple
-#[fundamental]
-#[lang_item(Tuple)]
-pub trait Tuple<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-opaque type core::ops::function::Fn::{vtable}
-
-opaque type core::ops::function::FnOnce::{vtable}
-
-// Full name: core::ops::function::FnOnce
-#[fundamental]
-#[lang_item(FnOnce)]
-pub trait FnOnce<Self, Args>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Args: Sized)
-    proof ImpliedClause2: (Args: Tuple)
-    vtable: core::ops::function::FnOnce::{vtable}
-}
-
-opaque type core::ops::function::FnMut::{vtable}
-
-// Full name: core::ops::function::FnMut
-#[fundamental]
-#[lang_item(FnMut)]
-pub trait FnMut<Self, Args>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: FnOnce<Args>)
-    proof ImpliedClause2: (Args: Sized)
-    proof ImpliedClause3: (Args: Tuple)
-    vtable: core::ops::function::FnMut::{vtable}
-}
-
-// Full name: core::ops::function::Fn
-#[fundamental]
-#[lang_item(Fn)]
-pub trait Fn<Self, Args>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: FnMut<Args>)
-    proof ImpliedClause2: (Args: Sized)
-    proof ImpliedClause3: (Args: Tuple)
-    vtable: core::ops::function::Fn::{vtable}
-}
-
 struct () {}
 
 struct (_,)::<&'_ u32> {
   _0: &'_ u32,
+}
+
+// Full name: test_crate::foo::<u8>
+fn foo::<u8><'a>(x: &'a u8)
+{
+    let _0: (); // return
+    let x: &'1 u8; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(x)
+    return
 }
 
 // Full name: test_crate::foo::<u32>
@@ -85,42 +32,21 @@ fn foo::<u32><'a>(x: &'a u32)
     return
 }
 
-// Full name: test_crate::{impl FnOnce<(&'_ u32,)> for for<'a> foo::<u32><'a>}
-impl<'a> FnOnce<(&'_ u32,)> for for<'a> foo::<u32><'a> {
-    proof ImpliedClause0: (for<'a> foo::<u32><'a>: MetaSized) = {built_in impl MetaSized for for<'a> foo::<u32><'a>}
-    proof ImpliedClause1: ((&'_ u32,): Sized) = {built_in impl Sized for (&'_ u32,)}
-    proof ImpliedClause2: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
-    vtable: {impl FnOnce<(&'_ u32,)> for for<'a> foo::<u32><'a>}::{vtable}::<u32><'a>
-}
-
-// Full name: test_crate::{impl FnMut<(&'_ u32,)> for for<'a> foo::<u32><'a>}
-impl<'a> FnMut<(&'_ u32,)> for for<'a> foo::<u32><'a> {
-    proof ImpliedClause0: (for<'a> foo::<u32><'a>: MetaSized) = {built_in impl MetaSized for for<'a> foo::<u32><'a>}
-    proof ImpliedClause1: (for<'a> foo::<u32><'a>: FnOnce<(&'_ u32,)>) = {impl FnOnce<(&'_ u32,)> for for<'a> foo::<u32><'a>}<'a>
-    proof ImpliedClause2: ((&'_ u32,): Sized) = {built_in impl Sized for (&'_ u32,)}
-    proof ImpliedClause3: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
-    vtable: {impl FnMut<(&'_ u32,)> for for<'a> foo::<u32><'a>}::{vtable}::<u32><'a>
-}
-
-// Full name: test_crate::{impl Fn<(&'_ u32,)> for for<'a> foo::<u32><'a>}
-impl<'a> Fn<(&'_ u32,)> for for<'a> foo::<u32><'a> {
-    proof ImpliedClause0: (for<'a> foo::<u32><'a>: MetaSized) = {built_in impl MetaSized for for<'a> foo::<u32><'a>}
-    proof ImpliedClause1: (for<'a> foo::<u32><'a>: FnMut<(&'_ u32,)>) = {impl FnMut<(&'_ u32,)> for for<'a> foo::<u32><'a>}<'a>
-    proof ImpliedClause2: ((&'_ u32,): Sized) = {built_in impl Sized for (&'_ u32,)}
-    proof ImpliedClause3: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
-    vtable: {impl Fn<(&'_ u32,)> for for<'a> foo::<u32><'a>}::{vtable}::<u32><'a>
-}
-
-// Full name: test_crate::foo::<u8>
-fn foo::<u8><'a>(x: &'a u8)
+// Full name: test_crate::{impl Fn<(&'_ u32,)> for for<'a> foo::<u32><'a>}::call::<u32>
+fn call::<u32><'a, '_1>(state: &'_1 for<'a> foo::<u32><'a>, args: (&'_ u32,))
 {
     let _0: (); // return
-    let x: &'1 u8; // arg #1
+    let state: &'_1 for<'a> foo::<u32><'a>; // arg #1
+    let args: (&'_ u32,); // arg #2
 
     storage_live(_0)
     _0 = ()
-    _0 = ()
-    storage_dead(x)
+    _0 = foo::<u32><'a>(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
     return
 }
 
@@ -169,7 +95,7 @@ fn takes_closure::<for<'a> foo::<u32><'a>>(c: for<'a> foo::<u32><'a>)
     _5 = &(*_6)
     _4 = &(*_5)
     _3 = (move _4,)
-    _0 = {impl Fn<(&'_ u32,)> for for<'a> foo::<u32><'a>}<'8>::call<'9>(move _2, move _3)
+    _0 = call::<u32><'7, '9>(move _2, move _3)
     ↳⚡ storage_dead(_6)
         storage_dead(c)
         unwind_continue

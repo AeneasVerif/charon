@@ -380,29 +380,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             TransImplSource::ImplicitDestruct,
                         )?)
                     }
-                    hax::BuiltinTraitData::Other(
-                        li @ (hax::SolverTraitLangItem::FnOnce
-                        | hax::SolverTraitLangItem::FnMut
-                        | hax::SolverTraitLangItem::Fn),
-                    ) if let Some(hax::GenericArg::Type(callable_ty)) =
-                        impl_source.pred.hax_skip_binder_ref().generic_args.first()
-                        && let Some(item) = match callable_ty.kind() {
-                            hax::TyKind::Closure(closure_args) => Some(&closure_args.item),
-                            hax::TyKind::FnDef { item, .. } => Some(item),
-                            _ => None,
-                        } =>
+                    _ if let Some((item, closure_kind)) =
+                        self.recognize_callable_impl_proof(impl_source) =>
                     {
-                        let closure_kind = match li {
-                            hax::SolverTraitLangItem::FnOnce => ClosureKind::FnOnce,
-                            hax::SolverTraitLangItem::FnMut => ClosureKind::FnMut,
-                            hax::SolverTraitLangItem::Fn => ClosureKind::Fn,
-                            _ => unreachable!(),
-                        };
-                        let binder =
-                            self.translate_region_binder(span, &impl_source.pred, |ctx, _tref| {
-                                ctx.translate_callable_impl_ref(span, item, closure_kind)
-                            })?;
-                        TraitRefKind::TraitImpl(self.erase_region_binder(binder))
+                        TraitRefKind::TraitImpl(self.translate_callable_impl_ref(
+                            span,
+                            &item,
+                            closure_kind,
+                        )?)
                     }
                     _ if let Some(builtin_data) = self.recognize_builtin_impl(trait_data) => {
                         let parent_trait_refs = self.translate_trait_proofs(span, trait_proofs)?;

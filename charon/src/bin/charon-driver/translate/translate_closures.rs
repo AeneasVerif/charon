@@ -241,6 +241,70 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             skip_binder: dref,
         })
     }
+
+    /// If this trait proof is the built-in impl of a `Fn*` trait for a closure or function item,
+    /// return the callable item and the kind of the implemented trait. The returned item has its
+    /// regions erased.
+    pub fn recognize_callable_impl_proof(
+        &self,
+        trait_proof: &hax::TraitProof,
+    ) -> Option<(hax::ItemRef, ClosureKind)> {
+        let hax::TraitProofKind::Builtin {
+            trait_data: hax::BuiltinTraitData::Other(lang_item),
+            ..
+        } = &trait_proof.kind
+        else {
+            return None;
+        };
+        let target_kind = match lang_item {
+            hax::SolverTraitLangItem::FnOnce => ClosureKind::FnOnce,
+            hax::SolverTraitLangItem::FnMut => ClosureKind::FnMut,
+            hax::SolverTraitLangItem::Fn => ClosureKind::Fn,
+            _ => return None,
+        };
+        // We skip the binder and erase regions to avoid bound vars escaping.
+        let hax::GenericArg::Type(callable_ty) = trait_proof
+            .pred
+            .hax_skip_binder_ref()
+            .generic_args
+            .first()?
+        else {
+            return None;
+        };
+        let item = match callable_ty.kind() {
+            hax::TyKind::Closure(closure_args) => &closure_args.item,
+            hax::TyKind::FnDef { item, .. } => item,
+            _ => return None,
+        };
+        Some((item.erase(self.hax_state_with_id()), target_kind))
+    }
+
+    pub(crate) fn translate_callable_method_fn_ptr(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef,
+    ) -> Result<Option<RegionBinder<FnPtr>>, Error> {
+        if !self.monomorphize() {
+            return Ok(None);
+        }
+        let Some(in_trait) = &item.in_trait else {
+            return Ok(None);
+        };
+        let Some((callable, target_kind)) = self.recognize_callable_impl_proof(in_trait) else {
+            return Ok(None);
+        };
+        let kind = TransItemSourceKind::CallableMethod(target_kind);
+        let bound_ref = self.translate_callable_bound_ref_with_method_bound(
+            span,
+            &callable,
+            kind,
+            target_kind,
+        )?;
+        Ok(Some(bound_ref.map(|dref| {
+            let fn_ref: FunDeclRef = dref.try_into().unwrap();
+            FnPtr::new(FnPtrKind::Fun(FunId::Regular(fn_ref.id)), fn_ref.generics)
+        })))
+    }
 }
 
 impl<'tcx> ItemTransCtx<'tcx, '_> {
