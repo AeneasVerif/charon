@@ -83,12 +83,27 @@ jobs:
           nix build -L .#charon-release
           mkdir dist_staging
           cp -R result/. dist_staging/
+          rm result
           chmod -R +w dist_staging
 
           cd dist_staging
           # Remove existing archive to avoid overwrite failures on macOS.
           rm -f "../${{ matrix.artifact_name }}.tar.gz"
           tar -czf "../${{ matrix.artifact_name }}.tar.gz" -- *
+
+      - name: Save Nix Cache
+        if: ${{ always() && ! matrix.nix_machine }}
+        uses: nix-community/cache-nix-action/save@v6
+        with:
+          primary-key: ${{ steps.restore-nix-cache.outputs.primary-key }}
+          gc-max-store-size: 2G
+          purge: true
+          purge-created: 604800 # 7 * 24 * 3600 = 7 days in seconds
+
+      # Remove nix paths so that the smoke test fails if it references a nix path.
+      - name: Clear Nix Store
+        if: ${{ always() && ! matrix.nix_machine }}
+        run: nix-collect-garbage
 
       # Verify the binary is functional and still links to `rustc_driver.so` on Linux.
       - name: Smoke Test
@@ -109,15 +124,6 @@ jobs:
         with:
           tag_name: ${{ needs.prepare.outputs.tag_name }}
           files: ${{ matrix.artifact_name }}.tar.gz
-
-      - name: Save Nix Cache
-        if: ${{ always() && ! matrix.nix_machine }}
-        uses: nix-community/cache-nix-action/save@v6
-        with:
-          primary-key: ${{ steps.restore-nix-cache.outputs.primary-key }}
-          gc-max-store-size: 2G
-          purge: true
-          purge-created: 604800 # 7 * 24 * 3600 = 7 days in seconds
 
   notify:
     name: Notify Zulip
