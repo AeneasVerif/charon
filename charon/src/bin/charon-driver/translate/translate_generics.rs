@@ -540,9 +540,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         | hax::FullDefKind::AssocFn { .. }
         | hax::FullDefKind::Closure { .. }
         | hax::FullDefKind::Ctor { .. } = def.kind()
-            && let TransItemSourceKind::CallableMethod(closure)
-            | TransItemSourceKind::VTableMethod(TransImplSource::Callable(closure)) = kind
-            && matches!(closure, ClosureKind::Fn | ClosureKind::FnMut)
+            && let TransItemSourceKind::CallableMethod(ClosureKind::Fn | ClosureKind::FnMut)
+            | TransItemSourceKind::VTableMethod(TransImplSource::Callable(
+                ClosureKind::Fn | ClosureKind::FnMut,
+            )) = kind
         {
             // Add the lifetime generics coming from the method itself.
             let rid = self

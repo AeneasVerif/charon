@@ -57,11 +57,11 @@ pub fn translate_closure_kind(kind: &hax::ClosureKind) -> ClosureKind {
     }
 }
 
-/// If this trait proof is the built-in impl of a `Fn*` trait for a closure or function item,
-/// return the callable item and the kind of the implemented trait.
-pub fn recognize_callable_impl_proof(
+/// If this trait proof is a built-in impl of a `Fn*` trait, return the `Self` type it is
+/// implemented for and the kind of the implemented trait.
+pub fn recognize_fn_trait_impl_proof(
     trait_proof: &hax::TraitProof,
-) -> Option<(&hax::ItemRef, ClosureKind)> {
+) -> Option<(&hax::Ty, ClosureKind)> {
     let hax::TraitProofKind::Builtin {
         trait_data: hax::BuiltinTraitData::Other(lang_item),
         ..
@@ -75,20 +75,12 @@ pub fn recognize_callable_impl_proof(
         hax::SolverTraitLangItem::Fn => ClosureKind::Fn,
         _ => return None,
     };
-    let hax::GenericArg::Type(callable_ty) = trait_proof
-        .pred
-        .hax_skip_binder_ref()
-        .generic_args
-        .first()?
+    let Some(hax::GenericArg::Type(self_ty)) =
+        trait_proof.pred.hax_skip_binder_ref().generic_args.first()
     else {
-        return None;
+        unreachable!("no Self type arg on Fn trait?");
     };
-    let item = match callable_ty.kind() {
-        hax::TyKind::Closure(closure_args) => &closure_args.item,
-        hax::TyKind::FnDef { item, .. } => item,
-        _ => return None,
-    };
-    Some((item, target_kind))
+    Some((self_ty, target_kind))
 }
 
 /// The built-in `Fn*` impl of the given kind that we generate for this closure or function item.
@@ -99,34 +91,6 @@ pub fn callable_virtual_impl<'a>(
     CallableFnImpls::from_def(def)
         .and_then(|impls| impls.vimpl(target_kind))
         .expect("expected a callable with a Fn* impl")
-}
-
-/// Whether this proof is the builtin `Fn*` impl of a function *pointer* type (`fn(..) -> _`).
-/// Such an impl has no item behind it, so it can't go through `Callable`; the vtable method is
-/// built as an indirect call instead. See `recognize_callable_impl_proof` for the item case.
-pub fn recognize_fn_pointer_impl_proof(trait_proof: &hax::TraitProof) -> Option<ClosureKind> {
-    let hax::TraitProofKind::Builtin {
-        trait_data: hax::BuiltinTraitData::Other(lang_item),
-        ..
-    } = &trait_proof.kind
-    else {
-        return None;
-    };
-    let target_kind = match lang_item {
-        hax::SolverTraitLangItem::FnOnce => ClosureKind::FnOnce,
-        hax::SolverTraitLangItem::FnMut => ClosureKind::FnMut,
-        hax::SolverTraitLangItem::Fn => ClosureKind::Fn,
-        _ => return None,
-    };
-    let hax::GenericArg::Type(callable_ty) = trait_proof
-        .pred
-        .hax_skip_binder_ref()
-        .generic_args
-        .first()?
-    else {
-        return None;
-    };
-    matches!(callable_ty.kind(), hax::TyKind::Arrow(_)).then_some(target_kind)
 }
 
 #[derive(Clone, Copy)]

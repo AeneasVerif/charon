@@ -416,7 +416,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             TransItemSourceKind::TraitImpl(
                 TransImplSource::Marker | TransImplSource::FnPointer(..),
             ) => {
-                unreachable!("marker impls are only used as vtable item sources")
+                unreachable!("these impls are only used as vtable item sources")
             }
             TransItemSourceKind::CallableMethod(kind) => {
                 let fn_name = kind.method_name().to_string();
