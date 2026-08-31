@@ -1,0 +1,97 @@
+# Final LLBC before serialization:
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+struct test_crate::T::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::T
+trait T<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Destruct)
+    vtable: test_crate::T::{vtable}
+}
+
+// Full name: core::ptr::drop_glue::<(dyn T)>
+#[lang_item(DropGlue)]
+unsafe fn drop_glue::<(dyn T)><'_0>(_1: &'_0 mut (dyn T))
+{
+    let ret: (); // return
+    let _1: &'_0 mut (dyn T + '0); // arg #1
+    let drop_arg: &'_ mut (dyn T + '2); // local
+    let drop_ret: (); // local
+    let _4: unsafe fn(&'_ mut (dyn T + '2)); // anonymous local
+
+    storage_live(ret)
+    ret = ()
+    storage_live(drop_arg)
+    drop_arg = &mut (*_1) with_metadata(copy _1.metadata)
+    storage_live(drop_ret)
+    storage_live(_4)
+    _4 = cast<*const (), unsafe fn(&'_ mut (dyn T + '2))>(copy (*drop_arg.metadata).drop)
+    drop_ret = (copy _4)(move drop_arg)
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: core::ptr::drop_in_place::<(dyn T)>
+#[diagnostic_item("ptr_drop_in_place")]
+pub unsafe fn drop_in_place::<(dyn T)>(to_drop: *mut (dyn T))
+{
+    let _0: (); // return
+    let to_drop: *mut (dyn T + '0); // arg #1
+    let _2: &'3 mut (dyn T + '4); // anonymous local
+    let _3: &'5 mut (dyn T + '6); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &mut (*to_drop) with_metadata(copy to_drop.metadata)
+    _2 = &two-phase-mut (*_3) with_metadata(copy _3.metadata)
+    _0 = drop_glue::<(dyn T)><'10>(move _2)
+    ↳⚡ unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    return
+}
+
+// Full name: test_crate::f
+unsafe fn f(p: *mut (dyn T + 'static))
+{
+    let _0: (); // return
+    let p: *mut (dyn T + '2); // arg #1
+    let _2: *mut (dyn T + '3); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = copy p
+    _0 = drop_in_place::<(dyn T)>(move _2)
+    ↳⚡ unwind_continue
+    storage_dead(_2)
+    return
+}
+
+
+
