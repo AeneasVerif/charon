@@ -54,10 +54,27 @@ fn transform_dyn_trait_call(
     };
     supertrait_path.reverse();
 
+    // The drop glue of the `Destruct` implied clause is the drop function, which
+    // we must manually desugar, because `Destruct` is not dyn-compatible.
+    let is_drop_glue = ctx
+        .ctx
+        .translated
+        .trait_decls
+        .get(trait_ref.trait_id())
+        .and_then(|decl| decl.item_meta.lang_item.as_ref())
+        == Some(&from_rustc::LangItem::Destruct);
+
+    let (vtable_tref, target_field) = if is_drop_glue {
+        supertrait_path.clear(); // we actually don't need to go up; the drop is here!
+        (dyn_proof, VTableField::Drop)
+    } else {
+        (trait_ref, VTableField::Method(*method_id))
+    };
+
     // Get the type of the vtable struct.
     let vtable_decl_ref: TypeDeclRef = {
         // Get the trait declaration by its ID
-        let Some(trait_decl) = ctx.ctx.translated.trait_decls.get(trait_ref.trait_id()) else {
+        let Some(trait_decl) = ctx.ctx.translated.trait_decls.get(vtable_tref.trait_id()) else {
             return Ok(()); // Unknown trait
         };
         // Get vtable ref from definition for correct ID.
@@ -66,10 +83,10 @@ fn transform_dyn_trait_call(
                 ctx.ctx,
                 ctx.span,
                 "Found a `dyn Trait` method call for non-dyn-compatible trait `{}`!",
-                trait_ref.trait_id().with_ctx(fmt_ctx)
+                vtable_tref.trait_id().with_ctx(fmt_ctx)
             );
         };
-        vtable_ty.clone().substitute_with_tref(trait_ref)
+        vtable_ty.clone().substitute_with_tref(vtable_tref)
     };
 
     let Some(vtable_decl) = ctx.ctx.translated.type_decls.get(vtable_decl_ref.id) else {
@@ -82,10 +99,10 @@ fn transform_dyn_trait_call(
     let TypeSource::VTable { field_map, .. } = &vtable_decl.src else {
         return Ok(()); // Weird
     };
-    // Retrieve the method field from the vtable struct definition.
+    // Retrieve the target field from the vtable struct definition.
     let Some((method_field_id, _)) = field_map
         .iter_enumerated()
-        .find(|(_, field)| **field == VTableField::Method(*method_id))
+        .find(|(_, field)| **field == target_field)
     else {
         let vtable_name = vtable_decl_ref.id.with_ctx(fmt_ctx).to_string();
         raise_error!(
