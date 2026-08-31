@@ -413,7 +413,9 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let impl_id = self.register_and_enqueue(&None, src.clone()).unwrap();
                 name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
             }
-            TransItemSourceKind::TraitImpl(TransImplSource::Marker) => {
+            TransItemSourceKind::TraitImpl(
+                TransImplSource::Marker | TransImplSource::FnPointer(..),
+            ) => {
                 unreachable!("marker impls are only used as vtable item sources")
             }
             TransItemSourceKind::CallableMethod(kind) => {

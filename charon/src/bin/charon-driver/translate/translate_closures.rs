@@ -101,6 +101,34 @@ pub fn callable_virtual_impl<'a>(
         .expect("expected a callable with a Fn* impl")
 }
 
+/// Whether this proof is the builtin `Fn*` impl of a function *pointer* type (`fn(..) -> _`).
+/// Such an impl has no item behind it, so it can't go through `Callable`; the vtable method is
+/// built as an indirect call instead. See `recognize_callable_impl_proof` for the item case.
+pub fn recognize_fn_pointer_impl_proof(trait_proof: &hax::TraitProof) -> Option<ClosureKind> {
+    let hax::TraitProofKind::Builtin {
+        trait_data: hax::BuiltinTraitData::Other(lang_item),
+        ..
+    } = &trait_proof.kind
+    else {
+        return None;
+    };
+    let target_kind = match lang_item {
+        hax::SolverTraitLangItem::FnOnce => ClosureKind::FnOnce,
+        hax::SolverTraitLangItem::FnMut => ClosureKind::FnMut,
+        hax::SolverTraitLangItem::Fn => ClosureKind::Fn,
+        _ => return None,
+    };
+    let hax::GenericArg::Type(callable_ty) = trait_proof
+        .pred
+        .hax_skip_binder_ref()
+        .generic_args
+        .first()?
+    else {
+        return None;
+    };
+    matches!(callable_ty.kind(), hax::TyKind::Arrow(_)).then_some(target_kind)
+}
+
 #[derive(Clone, Copy)]
 enum Callable<'a> {
     Closure(&'a hax::ClosureArgs),

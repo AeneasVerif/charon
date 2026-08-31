@@ -97,6 +97,10 @@ pub enum TransImplSource {
     TraitAlias,
     /// An impl of the appropriate `Fn*` trait for a closure or function item.
     Callable(ClosureKind),
+    /// The builtin impl of the appropriate `Fn*` trait for a function pointer type. Unlike
+    /// `Callable`, there is no item to hang this off: the `DefId` is that of the trait, and the
+    /// concrete `Self` (the `fn(..)` type) comes from the trait ref's generics.
+    FnPointer(ClosureKind),
     /// A fictitious `impl Destruct for T` that contains the drop glue code for the given ADT or
     /// closure. The `DefId` is that of the ADT or closure.
     ImplicitDestruct,
@@ -171,12 +175,18 @@ impl TransItemSource {
                 TransItemSourceKind::TraitImpl(TransImplSource::Callable(kind))
             }
             TransItemSourceKind::VTableMethod(..) => return None,
-            TransItemSourceKind::DropGlueMethod(TransImplSource::Marker)
-            | TransItemSourceKind::VTableInstance(TransImplSource::Marker)
-            | TransItemSourceKind::VTableInstanceInitializer(TransImplSource::Marker)
-            | TransItemSourceKind::VTableDropShim(TransImplSource::Marker) => {
-                TransItemSourceKind::TraitDecl
-            }
+            TransItemSourceKind::DropGlueMethod(
+                TransImplSource::Marker | TransImplSource::FnPointer(..),
+            )
+            | TransItemSourceKind::VTableInstance(
+                TransImplSource::Marker | TransImplSource::FnPointer(..),
+            )
+            | TransItemSourceKind::VTableInstanceInitializer(
+                TransImplSource::Marker | TransImplSource::FnPointer(..),
+            )
+            | TransItemSourceKind::VTableDropShim(
+                TransImplSource::Marker | TransImplSource::FnPointer(..),
+            ) => TransItemSourceKind::TraitDecl,
             TransItemSourceKind::DropGlueMethod(impl_kind)
             | TransItemSourceKind::VTableInstance(impl_kind)
             | TransItemSourceKind::VTableInstanceInitializer(impl_kind)
