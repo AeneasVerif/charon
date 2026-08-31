@@ -1,0 +1,34 @@
+error: vtable shims for function pointers need monomorphized arguments, got `Args`
+ --> /rustc/library/core/src/ops/function.rs:76:1
+
+note: the error occurred when translating `core::ops::function::Fn::{vtable_method}`, which is (transitively) used at the following location(s):
+  --> tests/ui/dyn/fn-pointer-vtable.rs:20:34
+   |
+20 |     let f: &dyn Fn(u32) -> u32 = &(foo as fn(u32) -> u32);
+   |                                  ------------------------
+error: Item `core::ops::function::Fn` caused errors; ignoring.
+ --> /rustc/library/core/src/ops/function.rs:76:1
+
+error: vtable shims for function pointers need monomorphized arguments, got `Args`
+ --> /rustc/library/core/src/ops/function.rs:163:1
+
+note: the error occurred when translating `core::ops::function::FnMut::{vtable_method}`, which is (transitively) used at the following location(s):
+  --> tests/ui/dyn/fn-pointer-vtable.rs:22:41
+   |
+22 |     let g: &mut dyn FnMut(u32) -> u32 = &mut (foo as fn(u32) -> u32);
+   |                                         ----------------------------
+error: Item `core::ops::function::FnMut` caused errors; ignoring.
+ --> /rustc/library/core/src/ops/function.rs:163:1
+
+error: vtable shims for function pointers need monomorphized arguments, got `Args`
+ --> /rustc/library/core/src/ops/function.rs:242:1
+
+note: the error occurred when translating `core::ops::function::FnOnce::{vtable_method}`, which is (transitively) used at the following location(s):
+  --> tests/ui/dyn/fn-pointer-vtable.rs:25:43
+   |
+25 |     let _h: Box<dyn FnOnce(u32) -> u32> = Box::new(foo as fn(u32) -> u32);
+   |                                           -------------------------------
+error: Item `core::ops::function::FnOnce` caused errors; ignoring.
+ --> /rustc/library/core/src/ops/function.rs:242:1
+
+ERROR Charon failed to translate this code (6 errors)
