@@ -1,0 +1,274 @@
+# Final LLBC before serialization:
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+fn core::marker::MetaSized::{vtable}::<Struct>() -> core::marker::MetaSized::{vtable}
+= <opaque>
+
+static core::marker::MetaSized::{vtable}::<Struct>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<Struct>()
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+struct (_, _)::<i32, bool> {
+  _0: i32,
+  _1: bool,
+}
+
+struct test_crate::Trait::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  method_base: *const (),
+  method_dflt: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::Trait
+pub trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Trait::{vtable}
+}
+
+// Full name: test_crate::Struct
+pub struct Struct {}
+
+// Full name: test_crate::{impl Trait for Struct}::base
+pub fn base<'_0>(self: &'_0 Struct) -> i32
+{
+    let _0: i32; // return
+    let self: &'1 Struct; // arg #1
+
+    storage_live(_0)
+    _0 = const 1i32
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::Trait::dflt::<Struct>
+pub fn dflt::<Struct><'_0>(self: &'_0 Struct) -> i32
+{
+    let _0: i32; // return
+    let self: &'1 Struct; // arg #1
+    let _2: i32; // anonymous local
+    let _3: &'2 Struct; // anonymous local
+    let _4: i32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_4)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &(*self)
+    _2 = base<'4>(move _3)
+    ↳⚡ storage_dead(_4)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_3)
+    _4 = copy _2 panic.+ const 1i32
+    _0 = move _4
+    storage_dead(_2)
+    storage_dead(_4)
+    storage_dead(self)
+    return
+}
+
+fn test_crate::Trait::dflt::{vtable_method}::<Struct><'_0>(_1: &'_0 (dyn Trait)) -> i32
+{
+    let _0: i32; // return
+    let _1: &'_0 (dyn Trait + '0); // arg #1
+    let _2: &'_0 Struct; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = concretize<&'_0 (dyn Trait + '1), &'_0 Struct>(move _1)
+    _0 = dflt::<Struct><'_0>(move _2)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::Struct::{impl Destruct for Struct}::drop_glue
+unsafe fn drop_glue<'_0>(_1: &'_0 mut Struct)
+{
+    let _0: (); // return
+    let _1: &'1 mut Struct; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::Struct::{impl Destruct for Struct}
+impl "impl_Destruct_for_Struct" Destruct for Struct {
+    fn drop_glue<'_0_1> = drop_glue<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Trait for Struct}::base::{vtable_method}
+fn impl_Trait_for_Struct::base::{vtable_method}<'_0>(_1: &'_0 (dyn Trait)) -> i32
+{
+    let _0: i32; // return
+    let _1: &'_0 (dyn Trait + '0); // arg #1
+    let _2: &'_0 Struct; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = concretize<&'_0 (dyn Trait + '1), &'_0 Struct>(move _1)
+    _0 = base<'_0>(move _2)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::{impl Trait for Struct}::{vtable_drop_shim}
+unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Trait))
+{
+    let ret: (); // return
+    let dyn_self: &'_0 mut (dyn Trait + '0); // arg #1
+    let target_self: &'_0 mut Struct; // local
+
+    storage_live(ret)
+    ret = ()
+    storage_live(target_self)
+    target_self = concretize<&'_0 mut (dyn Trait + '1), &'_0 mut Struct>(move dyn_self)
+    drop[drop_glue<'3>] (*target_self)
+    ↳⚡ storage_dead(target_self)
+        storage_dead(dyn_self)
+        unwind_continue
+    storage_dead(target_self)
+    storage_dead(dyn_self)
+    return
+}
+
+// Full name: test_crate::{impl Trait for Struct}::{vtable}
+fn impl_Trait_for_Struct::{vtable}() -> test_crate::Trait::{vtable}
+{
+    let ret: test_crate::Trait::{vtable}; // return
+    let size: usize; // local
+    let align: usize; // local
+    let drop: unsafe fn(*mut (dyn Trait + '0)); // local
+    let erased_drop: *const (); // local
+    let base: fn<'_0_1>(&'_0_1 (dyn Trait + '1)) -> i32; // local
+    let erased_base: *const (); // local
+    let dflt: fn<'_0_1>(&'_0_1 (dyn Trait + '2)) -> i32; // local
+    let erased_dflt: *const (); // local
+    let _9: unsafe fn(*mut (dyn Trait + '5)); // anonymous local
+    let _10: fn<'_0_1>(&'_0_1 (dyn Trait + '10)) -> i32; // anonymous local
+    let _11: fn<'_0_1>(&'_0_1 (dyn Trait + '15)) -> i32; // anonymous local
+    let _12: &'static core::marker::MetaSized::{vtable}; // anonymous local
+
+    storage_live(ret)
+    storage_live(size)
+    size = size_of<Struct>
+    storage_live(align)
+    align = align_of<Struct>
+    storage_live(drop)
+    storage_live(erased_drop)
+    storage_live(_9)
+    _9 = cast<{vtable_drop_shim}<'4>, unsafe fn(*mut (dyn Trait + '5))>(const {vtable_drop_shim}<'4>)
+    drop = move _9
+    erased_drop = cast<unsafe fn(*mut (dyn Trait + '6)), *const ()>(move drop)
+    storage_live(base)
+    storage_live(erased_base)
+    storage_live(_10)
+    _10 = cast<for<'_0_1> impl_Trait_for_Struct::base::{vtable_method}<'9>, fn<'_0_1>(&'_0_1 (dyn Trait + '10)) -> i32>(const impl_Trait_for_Struct::base::{vtable_method}<'9>)
+    base = move _10
+    erased_base = cast<fn<'_0_1>(&'_0_1 (dyn Trait + '11)) -> i32, *const ()>(move base)
+    storage_live(dflt)
+    storage_live(erased_dflt)
+    storage_live(_11)
+    _11 = cast<for<'_0_1> test_crate::Trait::dflt::{vtable_method}::<Struct><'14>, fn<'_0_1>(&'_0_1 (dyn Trait + '15)) -> i32>(const test_crate::Trait::dflt::{vtable_method}::<Struct><'14>)
+    dflt = move _11
+    erased_dflt = cast<fn<'_0_1>(&'_0_1 (dyn Trait + '16)) -> i32, *const ()>(move dflt)
+    storage_live(_12)
+    _12 = &core::marker::MetaSized::{vtable}::<Struct>
+    ret = test_crate::Trait::{vtable} { size: move size, align: move align, drop: move erased_drop, method_base: move erased_base, method_dflt: move erased_dflt, super_trait_0: move _12 }
+    return
+}
+
+// Full name: test_crate::{impl Trait for Struct}::{vtable}
+static impl_Trait_for_Struct::{vtable}: test_crate::Trait::{vtable} = impl_Trait_for_Struct::{vtable}()
+
+// Full name: test_crate::{impl Trait for Struct}
+impl "impl_Trait_for_Struct" Trait for Struct {
+    proof ImpliedClause0: (Struct: MetaSized) = {built_in impl MetaSized for Struct}
+    vtable: impl_Trait_for_Struct::{vtable}
+}
+
+// Full name: test_crate::main
+pub fn main()
+{
+    let _0: (); // return
+    let b: &'3 (dyn Trait + '4); // local
+    let _2: &'6 Struct; // anonymous local
+    let _3: &'7 Struct; // anonymous local
+    let _4: i32; // anonymous local
+    let _5: &'8 (dyn Trait + '9); // anonymous local
+    let _6: &'10 Struct; // anonymous local
+    let _7: unsafe fn(&'8 (dyn Trait + '9)) -> i32; // anonymous local
+    let _8: &'11 Struct; // anonymous local
+    let _9: &'20 Struct; // anonymous local
+    let _10: Struct; // anonymous local
+
+    storage_live(_8)
+    storage_live(_9)
+    storage_live(_10)
+    _10 = Struct {  }
+    _9 = &_10
+    _8 = move _9
+    storage_live(_0)
+    storage_live(_6)
+    _0 = ()
+    storage_live(b)
+    storage_live(_2)
+    storage_live(_3)
+    _6 = move _8
+    _3 = &(*_6)
+    _2 = &(*_3)
+    b = unsize_cast<&'6 Struct, &'12 (dyn Trait + '13), &impl_Trait_for_Struct::{vtable}>(move _2)
+    storage_dead(_2)
+    fake_read(b)
+    set_type(typeof(b) == &'14 (dyn Trait + '15))
+    storage_dead(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &(*b) with_metadata(copy b.metadata)
+    storage_live(_7)
+    _7 = cast<*const (), unsafe fn(&'8 (dyn Trait + '9)) -> i32>(copy (*_5.metadata).method_dflt)
+    _4 = (copy _7)(move _5)
+    ↳⚡ storage_dead(_6)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = ()
+    storage_dead(b)
+    storage_dead(_6)
+    storage_dead(_10)
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(_7)
+    return
+}
+
+
+
