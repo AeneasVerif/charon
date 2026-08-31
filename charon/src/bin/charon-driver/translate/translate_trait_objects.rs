@@ -1571,7 +1571,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
 
-        let hax::FullDefKind::Trait { self_predicate, .. } = def.kind() else {
+        let hax::FullDefKind::Trait {
+            self_predicate,
+            items,
+            ..
+        } = def.kind()
+        else {
             unreachable!("a fn-pointer vtable shim is registered against its trait")
         };
         let vtable_sig = self.callable_vtable_method_sig(&self_predicate.trait_ref)?;
@@ -1598,13 +1603,34 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
-        } else {
+        } else if self.monomorphize() {
             self.translate_fn_pointer_vtable_shim_body(
                 span,
                 &target_receiver,
                 &signature,
                 target_kind,
             )?
+        } else {
+            // In polymorphic mode the shim is keyed on the trait, so `Self` and `Args` are still
+            // generic: we can neither see that the receiver is a function pointer nor untuple
+            // `Args` to call it directly. Instead we forward to `<Self as Fn*<Args>>::call*` via
+            // the `Self: Fn*<Args>` clause, passing the tupled args along unchanged; the clause
+            // resolves to the builtin fn-pointer impl at instantiation time.
+            let method_item = items
+                .iter()
+                .find(|item| matches!(item.kind, hax::AssocKind::Fn { .. }))
+                .expect("the `Fn*` traits each have a method");
+            let trait_decl_ref =
+                RegionBinder::empty(self.translate_trait_predicate(span, self_predicate)?);
+            let tref = TraitRef::new(TraitRefKind::SelfId, trait_decl_ref);
+            let method_id = self.translate_trait_method_id(tref.trait_id(), &method_item.def_id)?;
+            let mut generics = GenericArgs::empty();
+            if matches!(target_kind, ClosureKind::Fn | ClosureKind::FnMut) {
+                // `call`/`call_mut` have a late-bound region for the `&self`/`&mut self` receiver.
+                generics.regions.push(self.translate_erased_region());
+            }
+            let target_fn = FnPtr::new(FnPtrKind::Trait(tref, method_id), generics);
+            self.translate_vtable_shim_body(span, &target_receiver, &signature, target_fn)?
         };
 
         Ok(FunDecl {
