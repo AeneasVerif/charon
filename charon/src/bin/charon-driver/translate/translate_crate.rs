@@ -174,25 +174,15 @@ impl TransItemSource {
             | TransItemSourceKind::VTableMethod(TransImplSource::Callable(kind)) => {
                 TransItemSourceKind::TraitImpl(TransImplSource::Callable(kind))
             }
-            TransItemSourceKind::VTableMethod(..) => return None,
-            TransItemSourceKind::DropGlueMethod(
-                TransImplSource::Marker | TransImplSource::FnPointer(..),
-            )
-            | TransItemSourceKind::VTableInstance(
-                TransImplSource::Marker | TransImplSource::FnPointer(..),
-            )
-            | TransItemSourceKind::VTableInstanceInitializer(
-                TransImplSource::Marker | TransImplSource::FnPointer(..),
-            )
-            | TransItemSourceKind::VTableDropShim(
-                TransImplSource::Marker | TransImplSource::FnPointer(..),
-            ) => TransItemSourceKind::TraitDecl,
             TransItemSourceKind::DropGlueMethod(impl_kind)
             | TransItemSourceKind::VTableInstance(impl_kind)
             | TransItemSourceKind::VTableInstanceInitializer(impl_kind)
-            | TransItemSourceKind::VTableDropShim(impl_kind) => {
-                TransItemSourceKind::TraitImpl(impl_kind)
-            }
+            | TransItemSourceKind::VTableDropShim(impl_kind) => match impl_kind {
+                TransImplSource::Marker | TransImplSource::FnPointer(..) => {
+                    TransItemSourceKind::TraitDecl
+                }
+                _ => TransItemSourceKind::TraitImpl(impl_kind),
+            },
             _ => return None,
         };
         Some(self.with_kind(parent_kind))

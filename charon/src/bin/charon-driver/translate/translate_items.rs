@@ -165,7 +165,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                         bt_ctx.translate_implicit_destruct_impl(id, item_meta, &def)?
                     }
                     TransImplSource::Marker | TransImplSource::FnPointer(..) => {
-                        unreachable!("marker impls are only used as vtable item sources")
+                        unreachable!("these impls are only used as vtable item sources")
                     }
                 };
                 self.translated.trait_impls.set_slot(id, trait_impl);
@@ -219,11 +219,11 @@ impl<'tcx> TranslateCtx<'tcx> {
                     unreachable!()
                 };
                 let fun_decl = match impl_kind {
-                    TransImplSource::Callable(target_kind) => {
-                        bt_ctx.translate_callable_vtable_shim(id, item_meta, &def, target_kind)?
+                    TransImplSource::Callable(kind) => {
+                        bt_ctx.translate_callable_vtable_shim(id, item_meta, &def, kind)?
                     }
-                    TransImplSource::FnPointer(target_kind) => {
-                        bt_ctx.translate_fn_pointer_vtable_shim(id, item_meta, &def, target_kind)?
+                    TransImplSource::FnPointer(kind) => {
+                        bt_ctx.translate_fn_pointer_vtable_shim(id, item_meta, &def, kind)?
                     }
                     _ => bt_ctx.translate_vtable_shim(id, item_meta, &def)?,
                 };
