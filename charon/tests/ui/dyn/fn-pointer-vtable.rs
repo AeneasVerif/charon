@@ -1,4 +1,3 @@
-//@ known-failure
 //@ charon-args=--include=core::ops::function
 //! Polymorphic counterpart of `mono-fn-pointer-vtable.rs`: function *pointers* coerced to
 //! `dyn Fn`/`dyn FnMut`/`dyn FnOnce`.
@@ -6,12 +5,12 @@
 //! Unlike a closure or fn item, a `fn(..)` type has no item to hang its builtin `Fn*` impl off,
 //! so we key the vtable method shim on the `Fn*` trait itself. In poly mode items are keyed by
 //! `DefId` alone, so we only get one shim for the whole trait, with `Self` and `Args` still type
-//! variables: we can neither see that the receiver is a function pointer nor untuple `Args` to
-//! build the call. Supporting this would need the shim to be keyed on the trait ref rather than
-//! the trait, so `--monomorphize` is required for now.
+//! variables: we cannot untuple `Args` to call the function pointer directly, so the shim instead
+//! forwards to `<Self as Fn*<Args>>::call*` through the `Self: Fn*<Args>` clause, which resolves
+//! to the builtin fn-pointer impl at instantiation time.
 //!
-//! `issue-1264-closure-vtable-poly.rs` covers the closure case, which works in poly mode because
-//! the shim hangs off the closure, where both are concrete.
+//! `issue-1264-closure-vtable-poly.rs` covers the closure case, where the shim hangs off the
+//! closure and both `Self` and `Args` are concrete.
 fn foo(x: u32) -> u32 {
     x
 }

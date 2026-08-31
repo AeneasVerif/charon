@@ -4,8 +4,8 @@
 //! from, so the shim concretizes the receiver to the `fn(..)` type and calls
 //! through it, untupling the arguments itself.
 //!
-//! `builtin-vtables.rs` covers the fn *item* and closure cases; `fn-pointer-vtable.rs` shows why
-//! this needs `--monomorphize`.
+//! `builtin-vtables.rs` covers the fn *item* and closure cases; `fn-pointer-vtable.rs` covers the
+//! polymorphic mode, where the shim forwards through the `Self: Fn*<Args>` clause instead.
 fn foo(x: u32) -> u32 {
     x
 }
