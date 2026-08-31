@@ -819,6 +819,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         span: Span,
         trait_id: TraitDeclId,
+        implemented_trait: &hax::TraitRef,
         item: &hax::ImplAssocItem,
     ) -> Result<Option<VtableMethodValue>, Error> {
         // Exit if the item isn't a vtable safe method.
@@ -832,58 +833,58 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
 
         // The method is vtable safe so it has no generics, hence we can skip the binder.
-        let vtable_value = match &item.value {
-            Some(value) => {
-                let item_ref = &value.skip_binder.item;
-                let shim_ref =
-                    self.translate_fn_ptr(span, item_ref, TransItemSourceKind::VTableMethod)?;
-                // In mono mode, we cannot get real types of shim functions by looking up the ones in `struct vtable`
-                // because they are erased function pointers.
-                // Therefore, below we compute real types that are used for casting.
-                if self.monomorphize() {
-                    // Manually translate region params for dyn trait.
-                    // We create a new binding level by `translate_item_generics`
-                    // and restore the orginal one after computing `method_ty`.
-                    assert!(self.binding_levels.len() == 1);
-                    let orginal_binding = self.binding_levels.pop();
-                    let assoc_fun_def = self.hax_def(item_ref)?;
-                    self.translate_item_generics(
-                        span,
-                        &assoc_fun_def,
-                        &TransItemSourceKind::VTableMethod,
-                    )?;
-                    let vtable_sig = match assoc_fun_def.kind() {
-                        hax::FullDefKind::AssocFn {
-                            vtable_sig: Some(vtable_sig),
-                            ..
-                        } => vtable_sig.clone(),
-                        _ => unreachable!("MONO: only assoc fun is supported"),
-                    };
-
-                    let signature = self.translate_fun_sig(span, &vtable_sig.value)?;
-                    // Add regions. this is ad-hoc...
-                    let method_ty = Ty::new(TyKind::FnPtr(RegionBinder {
-                        regions: self.outermost_generics().regions.clone(),
-                        skip_binder: signature,
-                    }));
-
-                    // Restore the orignal binding_levels.
-                    self.binding_levels.pop();
-                    if let Some(binding_level) = orginal_binding {
-                        self.binding_levels.push(binding_level);
-                    }
-
-                    let method_id = self.translate_trait_method_id(trait_id, item.decl_def_id())?;
-                    let method_name = self.translated.assoc_item_name(trait_id, method_id);
-
-                    VtableMethodValue::Cast((method_name.to_string(), method_ty, shim_ref))
-                } else {
-                    VtableMethodValue::Const(ConstantExprKind::FnPtr(shim_ref))
-                }
+        let item_ref = match &item.value {
+            Some(value) => value.skip_binder.item.clone(),
+            // The impl doesn't provide this method, so we get the trait's default.
+            None => {
+                let hax_state = self.hax_state_with_id();
+                let trait_args = implemented_trait.rustc_args(hax_state);
+                hax::ItemRef::translate_from_hax_def_id(
+                    hax_state,
+                    item.decl_def_id.clone(),
+                    trait_args,
+                )
             }
-            None => VtableMethodValue::Const(ConstantExprKind::Opaque(
-                "shim for default methods aren't yet supported".into(),
-            )),
+        };
+        let shim_ref = self.translate_fn_ptr(span, &item_ref, TransItemSourceKind::VTableMethod)?;
+        // In mono mode, we cannot get real types of shim functions by looking up the ones in
+        // `struct vtable` because they are erased function pointers.
+        // Therefore, below we compute real types that are used for casting.
+        let vtable_value = if self.monomorphize() {
+            // Manually translate region params for dyn trait.
+            // We create a new binding level by `translate_item_generics`
+            // and restore the orginal one after computing `method_ty`.
+            assert!(self.binding_levels.len() == 1);
+            let orginal_binding = self.binding_levels.pop();
+            let assoc_fun_def = self.hax_def(&item_ref)?;
+            self.translate_item_generics(span, &assoc_fun_def, &TransItemSourceKind::VTableMethod)?;
+            let vtable_sig = match assoc_fun_def.kind() {
+                hax::FullDefKind::AssocFn {
+                    vtable_sig: Some(vtable_sig),
+                    ..
+                } => vtable_sig.clone(),
+                _ => unreachable!("MONO: only assoc fun is supported"),
+            };
+
+            let signature = self.translate_fun_sig(span, &vtable_sig.value)?;
+            // Add regions. this is ad-hoc...
+            let method_ty = Ty::new(TyKind::FnPtr(RegionBinder {
+                regions: self.outermost_generics().regions.clone(),
+                skip_binder: signature,
+            }));
+
+            // Restore the orignal binding_levels.
+            self.binding_levels.pop();
+            if let Some(binding_level) = orginal_binding {
+                self.binding_levels.push(binding_level);
+            }
+
+            let method_id = self.translate_trait_method_id(trait_id, item.decl_def_id())?;
+            let method_name = self.translated.assoc_item_name(trait_id, method_id);
+
+            VtableMethodValue::Cast((method_name.to_string(), method_ty, shim_ref))
+        } else {
+            VtableMethodValue::Const(ConstantExprKind::FnPtr(shim_ref))
         };
 
         Ok(Some(vtable_value))
@@ -1068,7 +1069,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     // Bit of a hack: we know the methods are in the right order. This is easier
                     // than trying to index into the items list by name.
                     for item in items_iter.by_ref() {
-                        if let Some(kind) = self.add_method_to_vtable_value(span, trait_id, item)? {
+                        if let Some(kind) = self.add_method_to_vtable_value(
+                            span,
+                            trait_id,
+                            &implemented_trait_ref,
+                            item,
+                        )? {
                             match kind {
                                 VtableMethodValue::Const(const_kind) => {
                                     break 'a mk_const(const_kind);
