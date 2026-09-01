@@ -262,7 +262,7 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
         // Detect statics
         _ if let Some(place) = op.as_mplace_or_imm().left()
             && let ptr = place.ptr()
-            && let (alloc_id, _, _) = ecx.ptr_get_alloc_id(ptr, 0)?
+            && let Some((alloc_id, _, _)) = ecx.ptr_get_alloc_id(ptr, 0).discard_err()
             && let interpret::GlobalAlloc::Static(did) = tcx.global_alloc(alloc_id) =>
         {
             let item = translate_item_ref(s, did, ty::GenericArgsRef::default());
@@ -350,7 +350,11 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
             ConstantExprKind::FnPtr(fun)
         }
         ty::RawPtr(..) | ty::Ref(..) => {
-            if let Some(op) = ecx.deref_pointer(&op).discard_err() {
+            // Make sure we only read through if it's not dangling!
+            let place_dangling = ecx.deref_pointer(&op).discard_err();
+            let place = place_dangling
+                .filter(|place| ecx.ptr_get_alloc_id(place.ptr(), 0).discard_err().is_some());
+            if let Some(op) = place {
                 // Valid pointer case
                 let val = op_to_const(s, span, ecx, op.into())?;
                 match ty.kind() {

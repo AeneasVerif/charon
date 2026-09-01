@@ -1,0 +1,117 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: issue_1393_foreign_static_aux::MUTABLE
+pub fn MUTABLE() -> u8
+{
+    let _0: u8; // return
+
+    storage_live(_0)
+    _0 = const 42u8
+    return
+}
+
+// Full name: issue_1393_foreign_static_aux::MUTABLE
+pub static MUTABLE: u8 = MUTABLE()
+
+// Full name: issue_1393_foreign_static_aux::Wrapper
+pub struct Wrapper {
+  _0: *const u8,
+}
+
+// Full name: issue_1393_foreign_static_aux::DANGLING
+pub fn DANGLING() -> Wrapper
+{
+    let _0: Wrapper; // return
+    let _1: *const u8; // anonymous local
+    let _2: Wrapper; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = cast<usize, *const u8>(const 4usize)
+    storage_live(_2)
+    _2 = Wrapper { _0: move _1 }
+    _0 = move _2
+    return
+}
+
+// Full name: issue_1393_foreign_static_aux::DANGLING
+pub static DANGLING: Wrapper = DANGLING()
+
+// Full name: issue_1393_foreign_static_aux::{Generic<T, N>[TraitClause0]}::TRIVIAL
+pub fn TRIVIAL<T, const N : usize>() -> u8
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: u8; // return
+
+    storage_live(_0)
+    _0 = const 128u8
+    return
+}
+
+// Full name: issue_1393_foreign_static_aux::{Generic<T, N>[TraitClause0]}::TRIVIAL
+pub const TRIVIAL<T, const N : usize>: u8
+where
+    TraitClause0: (T: Sized),
+ = TRIVIAL<T, N>[TraitClause0]()
+
+struct (_, _, _)<A, B, C>
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+  _0: A,
+  _1: B,
+  _2: C,
+}
+
+// Full name: test_crate::foo
+fn foo() -> (u8, *const u8, u8)
+{
+    let _0: (u8, *const u8, u8); // return
+    let _1: u8; // anonymous local
+    let _2: *mut u8; // anonymous local
+    let _3: *const u8; // anonymous local
+    let _4: &'1 Wrapper; // anonymous local
+    let _5: *mut u8; // anonymous local
+    let _6: &'2 Wrapper; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_5)
+    _5 = &raw mut MUTABLE
+    _2 = move _5
+    _1 = copy (*_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_6)
+    _6 = &DANGLING
+    _4 = move _6
+    _3 = copy (*_4)._0
+    _0 = (move _1, move _3, copy TRIVIAL<bool, 3usize>[{built_in impl Sized for bool}])
+    storage_dead(_3)
+    storage_dead(_1)
+    storage_dead(_4)
+    storage_dead(_2)
+    storage_dead(_6)
+    storage_dead(_5)
+    return
+}
+
+
+

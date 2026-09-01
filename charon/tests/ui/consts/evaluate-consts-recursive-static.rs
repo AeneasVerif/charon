@@ -1,6 +1,7 @@
 //@ charon-args=--consts=values
 
-// A constant/static that genuinely cannot be evaluated to a value because of recursiveness.
+// Mutually-recursive statics. Evaluation terminates because a pointer to another static is
+// recorded as a reference to that static, not by following it.
 
 use core::cell::Cell;
 

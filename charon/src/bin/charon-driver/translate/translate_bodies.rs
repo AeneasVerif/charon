@@ -206,10 +206,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         if let Some(body) = self.get_mir(def.this(), span)? {
             Ok(self.translate_body(span, body, &def.source_text))
         } else if let Some(value) = self.evaluate_const_def(def) {
-            // For globals without MIR, generate a body by evaluating the global.
-            // TODO: we lost the MIR of some consts on a rustc update. A trait assoc const
-            // default value no longer has a cross-crate MIR so it's unclear how to retreive
-            // the value. See the `trait-default-const-cross-crate` test.
+            // For globals without MIR, generate a body by evaluating the global. This is how we
+            // get the value of statics (which have no cross-crate MIR at all) and of "trivial"
+            // consts (whose value rustc stores directly instead of encoding MIR for it).
             let c = self.translate_constant_expr(span, &value)?;
             let mut bb = BodyBuilder::new(span, 0);
             let ret = bb.new_var(None, c.ty().clone());
