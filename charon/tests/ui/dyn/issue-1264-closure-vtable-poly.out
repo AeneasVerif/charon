@@ -44,7 +44,7 @@ struct core::ops::function::FnOnce::{vtable}<Args, Ty0> {
   size: usize,
   align: usize,
   drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<Args, Output = Ty0>)),
-  method_call_once: extern "rust-call" fn((dyn FnOnce<Args, Output = Ty0>), Args) -> Ty0,
+  method_call_once: extern "rust-call" fn(*mut (dyn FnOnce<Args, Output = Ty0>), Args) -> Ty0,
   super_trait_0: &'static core::marker::MetaSized::{vtable},
 }
 
@@ -214,17 +214,17 @@ fn call_once(_1: closure, _2: (u32,)) -> u32
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u32,)> for closure}::{vtable_method}
-extern "rust-call" fn impl_FnOnce_tuple_for_closure::{vtable_method}(_1: (dyn FnOnce<(u32,), Output = u32>), _2: (u32,)) -> u32
+extern "rust-call" fn impl_FnOnce_tuple_for_closure::{vtable_method}(_1: *mut (dyn FnOnce<(u32,), Output = u32>), _2: (u32,)) -> u32
 {
     let _0: u32; // return
-    let _1: (dyn FnOnce<(u32,), Output = u32> + '0); // arg #1
+    let _1: *mut (dyn FnOnce<(u32,), Output = u32> + '0); // arg #1
     let _2: (u32,); // arg #2
-    let _3: closure; // anonymous local
+    let _3: *mut closure; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<(dyn FnOnce<(u32,), Output = u32> + '1), closure>(move _1)
-    _0 = call_once(move _3, move _2)
+    _3 = concretize<*mut (dyn FnOnce<(u32,), Output = u32> + '1), *mut closure>(move _1)
+    _0 = call_once(move (*_3), move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -262,7 +262,7 @@ fn impl_FnOnce_tuple_for_closure::{vtable}() -> core::ops::function::FnOnce::{vt
     let size: usize; // local
     let align: usize; // local
     let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<(u32,), Output = u32> + '1)); // anonymous local
-    let _4: extern "rust-call" fn((dyn FnOnce<(u32,), Output = u32> + '2), (u32,)) -> u32; // anonymous local
+    let _4: extern "rust-call" fn(*mut (dyn FnOnce<(u32,), Output = u32> + '2), (u32,)) -> u32; // anonymous local
     let _5: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
@@ -273,7 +273,7 @@ fn impl_FnOnce_tuple_for_closure::{vtable}() -> core::ops::function::FnOnce::{vt
     storage_live(_3)
     _3 = cast<for<'_0_1> impl_FnOnce_tuple_for_closure::{vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<(u32,), Output = u32> + '1))>(const impl_FnOnce_tuple_for_closure::{vtable_drop_shim}<'0>)
     storage_live(_4)
-    _4 = cast<impl_FnOnce_tuple_for_closure::{vtable_method}, extern "rust-call" fn((dyn FnOnce<(u32,), Output = u32> + '2), (u32,)) -> u32>(const impl_FnOnce_tuple_for_closure::{vtable_method})
+    _4 = cast<impl_FnOnce_tuple_for_closure::{vtable_method}, extern "rust-call" fn(*mut (dyn FnOnce<(u32,), Output = u32> + '2), (u32,)) -> u32>(const impl_FnOnce_tuple_for_closure::{vtable_method})
     storage_live(_5)
     _5 = &core::marker::MetaSized::{vtable}<closure>
     ret = core::ops::function::FnOnce::{vtable} { size: move size, align: move align, drop: move _3, method_call_once: move _4, super_trait_0: move _5 }

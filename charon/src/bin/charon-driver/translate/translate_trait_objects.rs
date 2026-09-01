@@ -413,12 +413,22 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                 .insert(hax::GenericPredicateId::TraitSelf, TraitClauseId::ZERO);
                             ctx.translate_poly_fun_sig(span, sig)
                         })?;
-                        let sig = bound_sig.apply(&{
+                        // A `self: Self` receiver would be unsized once `Self` becomes `dyn Trait`,
+                        // so takes it via `*mut Self` instead (like rustc)
+                        let receiver_is_by_value = matches!(
+                            sig.value.inputs[0].kind(),
+                            hax::TyKind::Param(param) if param.index == 0
+                        );
+                        let mut sig = bound_sig.apply(&{
                             let mut generics = GenericArgs::empty();
                             // Provide the `Self` clause.
                             generics.trait_refs.push(self_trait_ref.clone());
                             generics
                         });
+                        if receiver_is_by_value {
+                            let receiver = &mut sig.skip_binder.inputs[0];
+                            *receiver = TyKind::RawPtr(receiver.clone(), RefKind::Mut).into_ty();
+                        }
                         let ty = TyKind::FnPtr(sig).into_ty();
                         (field_name, ty)
                     }
@@ -1290,6 +1300,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     /// // call the impl function and assign the result to ret@0
     /// ret@0 := impl_func(target_self@(N+1), arg1@2, ..., argN@N);
     /// ```
+    ///
+    /// For a method that takes `self: Self` by value, the shim receiver is `*mut dyn Trait`, so
+    /// we concretize the pointer and move out of it:
+    /// ```ignore
+    /// target_self@(N+1) := concretize_cast<*mut dyn Trait, *mut TargetReceiverTy>(shim_self@1);
+    /// ret@0 := impl_func(move (*target_self@(N+1)), arg1@2, ..., argN@N);
+    /// ```
     fn translate_vtable_shim_body(
         &mut self,
         span: Span,
@@ -1305,10 +1322,25 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             .iter()
             .map(|ty| builder.new_var(None, ty.clone()))
             .collect_vec();
-        let target_self = builder.new_var(None, target_receiver.clone());
+
+        // The target function takes the receiver by value but the shim receives it via `*mut Self`;
+        // concretize the pointer and dereference it to call the target.
+        let receiver_is_by_value = matches!(shim_signature.inputs[0].kind(), TyKind::RawPtr(..))
+            && !matches!(target_receiver.kind(), TyKind::RawPtr(..));
+        let cast_target_ty = if receiver_is_by_value {
+            TyKind::RawPtr(target_receiver.clone(), RefKind::Mut).into_ty()
+        } else {
+            target_receiver.clone()
+        };
+        let target_self = builder.new_var(None, cast_target_ty);
 
         // Replace the `dyn Trait` receiver with the concrete one.
-        let shim_self = mem::replace(&mut method_args[0], target_self.clone());
+        let receiver_arg = if receiver_is_by_value {
+            target_self.clone().deref()
+        } else {
+            target_self.clone()
+        };
+        let shim_self = mem::replace(&mut method_args[0], receiver_arg);
 
         // Perform the core concretization cast.
         // FIXME: need to unpack & re-pack the structure for cases like `Rc`, `Arc`, `Pin` and
@@ -1551,8 +1583,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             TyKind::Ref(region, _, mutability) => {
                 TyKind::Ref(*region, fn_ptr_ty, *mutability).into_ty()
             }
-            // `FnOnce` takes the receiver by value, so it is the bare `dyn Trait`.
-            TyKind::DynTrait(_) => fn_ptr_ty,
+            // `FnOnce`'s shim receives `Self` as `*mut dyn Trait`
+            TyKind::RawPtr(..) => fn_ptr_ty,
             _ => unreachable!(),
         };
 
@@ -1621,7 +1653,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         );
         let tupled_args_ty = &shim_signature.inputs[1];
         let tupled_args = builder.new_var(Some("args".to_string()), tupled_args_ty.clone());
-        let target_self = builder.new_var(Some("target_self".to_string()), target_receiver.clone());
+        let cast_target_ty = match target_kind {
+            ClosureKind::Fn | ClosureKind::FnMut => target_receiver.clone(),
+            ClosureKind::FnOnce => TyKind::RawPtr(target_receiver.clone(), RefKind::Mut).into_ty(),
+        };
+        let target_self = builder.new_var(Some("target_self".to_string()), cast_target_ty);
 
         // Replace the `dyn Trait` receiver with the concrete `fn(..)` one.
         let rval = Rvalue::UnaryOp(
@@ -1649,11 +1685,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             })
             .collect();
 
-        // `FnOnce` takes the fn pointer by value; the others through a reference.
-        let callee = match target_kind {
-            ClosureKind::FnOnce => target_self,
-            ClosureKind::Fn | ClosureKind::FnMut => target_self.deref(),
-        };
+        // Dereference the pointer/reference to get the fn pointer to call.
+        let callee = target_self.deref();
         builder.call(Call {
             func: FnOperand::Dynamic(Operand::Copy(callee)),
             args,

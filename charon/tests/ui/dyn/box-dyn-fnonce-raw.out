@@ -192,7 +192,7 @@ struct core::ops::function::FnOnce::{vtable}<Args, Ty0> {
   size: usize,
   align: usize,
   drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<Args, Output = Ty0>)),
-  method_call_once: extern "rust-call" fn((dyn FnOnce<Args, Output = Ty0>), Args) -> Ty0,
+  method_call_once: extern "rust-call" fn(*mut (dyn FnOnce<Args, Output = Ty0>), Args) -> Ty0,
   super_trait_0: &'static core::marker::MetaSized::{vtable},
 }
 
@@ -573,7 +573,7 @@ where
 }
 
 // Full name: alloc::boxed::{impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}::call_once::{vtable_method}
-extern "rust-call" fn {vtable_method}<Args, F, A>(_1: (dyn FnOnce<Args, Output = TraitClause4::Output>), _2: Args) -> TraitClause4::Output
+extern "rust-call" fn {vtable_method}<Args, F, A>(_1: *mut (dyn FnOnce<Args, Output = TraitClause4::Output>), _2: Args) -> TraitClause4::Output
 where
     TraitClause0: (Args: Sized),
     TraitClause1: (F: MetaSized),
@@ -583,14 +583,14 @@ where
     TraitClause5: (A: Allocator),
 {
     let _0: TraitClause4::Output; // return
-    let _1: (dyn FnOnce<Args, Output = TraitClause4::Output> + '0); // arg #1
+    let _1: *mut (dyn FnOnce<Args, Output = TraitClause4::Output> + '0); // arg #1
     let _2: Args; // arg #2
-    let _3: Box<F, A>[TraitClause1, TraitClause2, TraitClause5]; // anonymous local
+    let _3: *mut Box<F, A>[TraitClause1, TraitClause2, TraitClause5]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<(dyn FnOnce<Args, Output = TraitClause4::Output> + '1), Box<F, A>[TraitClause1, TraitClause2, TraitClause5]>(move _1)
-    _0 = call_once<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5](move _3, move _2)
+    _3 = concretize<*mut (dyn FnOnce<Args, Output = TraitClause4::Output> + '1), *mut Box<F, A>[TraitClause1, TraitClause2, TraitClause5]>(move _1)
+    _0 = call_once<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5](move (*_3), move _2)
     ↳⚡ unwind_continue
     return
 }
@@ -635,7 +635,7 @@ where
     let size: usize; // local
     let align: usize; // local
     let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<Args, Output = TraitClause4::Output> + '1)); // anonymous local
-    let _4: extern "rust-call" fn((dyn FnOnce<Args, Output = TraitClause4::Output> + '2), Args) -> TraitClause4::Output; // anonymous local
+    let _4: extern "rust-call" fn(*mut (dyn FnOnce<Args, Output = TraitClause4::Output> + '2), Args) -> TraitClause4::Output; // anonymous local
     let _5: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
@@ -646,7 +646,7 @@ where
     storage_live(_3)
     _3 = cast<for<'_0_1> {vtable_drop_shim}<'0, Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5], unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<Args, Output = TraitClause4::Output> + '1))>(const {vtable_drop_shim}<'0, Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5])
     storage_live(_4)
-    _4 = cast<{vtable_method}<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5], extern "rust-call" fn((dyn FnOnce<Args, Output = TraitClause4::Output> + '2), Args) -> TraitClause4::Output>(const {vtable_method}<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5])
+    _4 = cast<{vtable_method}<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5], extern "rust-call" fn(*mut (dyn FnOnce<Args, Output = TraitClause4::Output> + '2), Args) -> TraitClause4::Output>(const {vtable_method}<Args, F, A>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5])
     storage_live(_5)
     _5 = &core::marker::MetaSized::{vtable}<Box<F, A>[TraitClause1, TraitClause2, TraitClause5]>
     ret = core::ops::function::FnOnce::{vtable} { size: move size, align: move align, drop: move _3, method_call_once: move _4, super_trait_0: move _5 }

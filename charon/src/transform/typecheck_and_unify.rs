@@ -209,13 +209,6 @@ impl TypeCheckVisitor<'_> {
             ) => {
                 assert_eq!(src_id, tar_id);
             }
-            // Can happen with `Box`, where the RHS is `Box`. FIXME(#1163): check for Box here.
-            (TyKind::DynTrait(..), TyKind::Adt(..)) => {}
-            // The vtable shim of the `Fn*` impl of a function item/pointer concretizes to that type.
-            (TyKind::DynTrait(..), TyKind::FnDef(..) | TyKind::FnPtr(..)) => {}
-            // In polymorphic mode, the vtable shim for the `Fn*` impl of a function pointer is
-            // keyed on the trait, so it concretizes `dyn Fn*<Args>` to the generic `Self`.
-            (TyKind::DynTrait(..), TyKind::TypeVar(..)) => {}
             _ => {
                 let fmt = &self.ctx.into_fmt();
                 self.error(format!(

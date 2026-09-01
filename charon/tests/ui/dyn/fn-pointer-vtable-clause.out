@@ -39,7 +39,7 @@ struct core::ops::function::FnOnce::{vtable}<Args, Ty0> {
   size: usize,
   align: usize,
   drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<Args, Output = Ty0>)),
-  method_call_once: extern "rust-call" fn((dyn FnOnce<Args, Output = Ty0>), Args) -> Ty0,
+  method_call_once: extern "rust-call" fn(*mut (dyn FnOnce<Args, Output = Ty0>), Args) -> Ty0,
   super_trait_0: &'static core::marker::MetaSized::{vtable},
 }
 
@@ -235,17 +235,17 @@ fn core::ops::function::FnMut::{vtable}<Self, Args>() -> core::ops::function::Fn
 
 static core::ops::function::FnMut::{vtable}<Self, Args>: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output> = core::ops::function::FnMut::{vtable}<Self, Args>()
 
-extern "rust-call" fn core::ops::function::FnOnce::{vtable_method}<Self, Args>(_1: (dyn FnOnce<Args, Output = Self::Output>), _2: Args) -> Self::Output
+extern "rust-call" fn core::ops::function::FnOnce::{vtable_method}<Self, Args>(_1: *mut (dyn FnOnce<Args, Output = Self::Output>), _2: Args) -> Self::Output
 {
     let _0: Self::Output; // return
-    let _1: (dyn FnOnce<Args, Output = Self::Output> + '0); // arg #1
+    let _1: *mut (dyn FnOnce<Args, Output = Self::Output> + '0); // arg #1
     let _2: Args; // arg #2
-    let _3: Self; // anonymous local
+    let _3: *mut Self; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<(dyn FnOnce<Args, Output = Self::Output> + '1), Self>(move _1)
-    _0 = Self::call_once(move _3, move _2)
+    _3 = concretize<*mut (dyn FnOnce<Args, Output = Self::Output> + '1), *mut Self>(move _1)
+    _0 = Self::call_once(move (*_3), move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -285,7 +285,7 @@ fn core::ops::function::FnOnce::{vtable}<Self, Args>() -> core::ops::function::F
     let size: usize; // local
     let align: usize; // local
     let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<Args, Output = Self::Output> + '1)); // anonymous local
-    let _4: extern "rust-call" fn((dyn FnOnce<Args, Output = Self::Output> + '2), Args) -> Self::Output; // anonymous local
+    let _4: extern "rust-call" fn(*mut (dyn FnOnce<Args, Output = Self::Output> + '2), Args) -> Self::Output; // anonymous local
 
     storage_live(ret)
     storage_live(size)
@@ -295,7 +295,7 @@ fn core::ops::function::FnOnce::{vtable}<Self, Args>() -> core::ops::function::F
     storage_live(_3)
     _3 = cast<for<'_0_1> core::ops::function::FnOnce::{vtable_drop_shim}<'0, Self, Args>, unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<Args, Output = Self::Output> + '1))>(const core::ops::function::FnOnce::{vtable_drop_shim}<'0, Self, Args>)
     storage_live(_4)
-    _4 = cast<core::ops::function::FnOnce::{vtable_method}<Self, Args>, extern "rust-call" fn((dyn FnOnce<Args, Output = Self::Output> + '2), Args) -> Self::Output>(const core::ops::function::FnOnce::{vtable_method}<Self, Args>)
+    _4 = cast<core::ops::function::FnOnce::{vtable_method}<Self, Args>, extern "rust-call" fn(*mut (dyn FnOnce<Args, Output = Self::Output> + '2), Args) -> Self::Output>(const core::ops::function::FnOnce::{vtable_method}<Self, Args>)
     ret = core::ops::function::FnOnce::{vtable} { size: move size, align: move align, drop: move _3, method_call_once: move _4, super_trait_0: const &vtable_of(Self::ImpliedClause0) }
     return
 }
