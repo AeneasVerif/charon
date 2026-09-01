@@ -203,11 +203,16 @@ impl TypeCheckVisitor<'_> {
             (TyKind::RawPtr(.., src_kind), TyKind::RawPtr(.., tar_kind)) => {
                 assert_eq!(src_kind, tar_kind);
             }
-            (
-                TyKind::Adt(TypeDeclRef { id: src_id, .. }),
-                TyKind::Adt(TypeDeclRef { id: tar_id, .. }),
-            ) => {
-                assert_eq!(src_id, tar_id);
+            (TyKind::Adt(src), TyKind::Adt(tar)) => {
+                if !self.ctx.options.monomorphize_with_hax {
+                    assert_eq!(src.id, tar.id);
+                } else {
+                    // In mono `Box<dyn Trait> -> Box<T>`, have different declarations,
+                    // so we compare names instead.
+                    let instantiated_from =
+                        |id| self.ctx.translated.item_name(id).as_slice_uninstantiated();
+                    assert_eq!(instantiated_from(src.id), instantiated_from(tar.id));
+                }
             }
             // Can happen with `Box`, where the RHS is `Box`. FIXME(#1163): check for Box here.
             (TyKind::DynTrait(..), TyKind::Adt(..)) => {}

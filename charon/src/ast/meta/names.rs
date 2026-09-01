@@ -205,6 +205,14 @@ impl Name {
         }
     }
 
+    /// Returns this name with the `PathElem::Instantiated` part removed, if it has one.
+    pub fn as_slice_uninstantiated(&self) -> &[PathElem] {
+        match self.name.as_slice() {
+            [name @ .., PathElem::Instantiated(_)] => name,
+            name => name,
+        }
+    }
+
     /// Compare the name to a constant array.
     /// This ignores disambiguators.
     ///
