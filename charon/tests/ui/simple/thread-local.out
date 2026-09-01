@@ -345,8 +345,8 @@ fn {impl FnOnce<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{bui
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_ mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::closure}::call_mut<'_0, '22>(move _3, move _2)
-    ↳⚡ drop[{impl Destruct for test_crate::FOO::{const}::closure}::drop_glue<'23>] _1
+    _0 = {impl FnMut<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_ mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::closure}::call_mut<'_0, '23>(move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_crate::FOO::{const}::closure}::drop_glue<'24>] _1
         ↳⚡ storage_dead(_3)
             storage_dead(_2)
             storage_dead(_1)
@@ -355,7 +355,7 @@ fn {impl FnOnce<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{bui
         storage_dead(_2)
         storage_dead(_1)
         unwind_continue
-    drop[{impl Destruct for test_crate::FOO::{const}::closure}::drop_glue<'24>] _1
+    drop[{impl Destruct for test_crate::FOO::{const}::closure}::drop_glue<'25>] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -519,8 +519,8 @@ fn {impl FnOnce<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{bui
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_ mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::closure#1}::call_mut<'_0, '22>(move _3, move _2)
-    ↳⚡ drop[{impl Destruct for test_crate::FOO::{const}::closure#1}::drop_glue<'23>] _1
+    _0 = {impl FnMut<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_ mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::closure#1}::call_mut<'_0, '23>(move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_crate::FOO::{const}::closure#1}::drop_glue<'24>] _1
         ↳⚡ storage_dead(_3)
             storage_dead(_2)
             storage_dead(_1)
@@ -529,7 +529,7 @@ fn {impl FnOnce<(Option<&'_ mut Option<u32>[{built_in impl Sized for u32}]>[{bui
         storage_dead(_2)
         storage_dead(_1)
         unwind_continue
-    drop[{impl Destruct for test_crate::FOO::{const}::closure#1}::drop_glue<'24>] _1
+    drop[{impl Destruct for test_crate::FOO::{const}::closure#1}::drop_glue<'25>] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)

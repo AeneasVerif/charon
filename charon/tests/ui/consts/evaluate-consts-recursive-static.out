@@ -46,11 +46,11 @@ impl "impl_Sync_for_Node" Sync for Node {
 pub fn CYCLE_A() -> Node
 {
     let _0: Node; // return
-    let _1: Cell<&'5 Node>[{built_in impl MetaSized for &'5 Node}]; // anonymous local
-    let _2: &'8 Node; // anonymous local
-    let _3: &'9 Node; // anonymous local
-    let _4: &'10 Node; // anonymous local
-    let _5: &'11 Node; // anonymous local
+    let _1: Cell<&'6 Node>[{built_in impl MetaSized for &'6 Node}]; // anonymous local
+    let _2: &'9 Node; // anonymous local
+    let _3: &'10 Node; // anonymous local
+    let _4: &'11 Node; // anonymous local
+    let _5: &'12 Node; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -62,7 +62,7 @@ pub fn CYCLE_A() -> Node
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _1 = new<&'13 Node>[{built_in impl Sized for &'13 Node}](move _2)
+    _1 = new<&'14 Node>[{built_in impl Sized for &'14 Node}](move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     _0 = Node { value: const 1u32, next: move _1 }
@@ -79,11 +79,11 @@ pub static CYCLE_A: Node = CYCLE_A()
 pub fn CYCLE_B() -> Node
 {
     let _0: Node; // return
-    let _1: Cell<&'5 Node>[{built_in impl MetaSized for &'5 Node}]; // anonymous local
-    let _2: &'8 Node; // anonymous local
-    let _3: &'9 Node; // anonymous local
-    let _4: &'10 Node; // anonymous local
-    let _5: &'11 Node; // anonymous local
+    let _1: Cell<&'6 Node>[{built_in impl MetaSized for &'6 Node}]; // anonymous local
+    let _2: &'9 Node; // anonymous local
+    let _3: &'10 Node; // anonymous local
+    let _4: &'11 Node; // anonymous local
+    let _5: &'12 Node; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -95,7 +95,7 @@ pub fn CYCLE_B() -> Node
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _1 = new<&'13 Node>[{built_in impl Sized for &'13 Node}](move _2)
+    _1 = new<&'14 Node>[{built_in impl Sized for &'14 Node}](move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     _0 = Node { value: const 2u32, next: move _1 }

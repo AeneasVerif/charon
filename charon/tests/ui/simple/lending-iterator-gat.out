@@ -140,12 +140,12 @@ where
     TypeOutlives1: T: '_1,
     RegionOutlives0: 'a: '_1,
 {
-    let _0: Option<&'6 T>[{built_in impl Sized for &'6 T}]; // return
-    let self: &'15 mut Option<&'16 T>[{built_in impl Sized for &'16 T}]; // arg #1
-    let item_2: &'22 mut &'23 T; // local
-    let item_3: &'24 T; // local
-    let _4: Option<&'25 T>[{built_in impl Sized for &'25 T}]; // anonymous local
-    let _5: &'29 T; // anonymous local
+    let _0: Option<&'8 T>[{built_in impl Sized for &'8 T}]; // return
+    let self: &'17 mut Option<&'18 T>[{built_in impl Sized for &'18 T}]; // arg #1
+    let item_2: &'24 mut &'25 T; // local
+    let item_3: &'26 T; // local
+    let _4: Option<&'27 T>[{built_in impl Sized for &'27 T}]; // anonymous local
+    let _5: &'31 T; // anonymous local
 
     storage_live(_0)
     match (*self) {
@@ -497,35 +497,35 @@ pub fn main()
 {
     let _0: (); // return
     let x: i32; // local
-    let iter: Option<&'7 i32>[{built_in impl Sized for &'7 i32}]; // local
-    let _3: &'11 i32; // anonymous local
+    let iter: Option<&'8 i32>[{built_in impl Sized for &'8 i32}]; // local
+    let _3: &'12 i32; // anonymous local
     let sum: i32; // local
     let _5: (); // anonymous local
-    let _6: Option<&'12 i32>[{built_in impl Sized for &'12 i32}]; // anonymous local
-    let _7: closure<'17>; // anonymous local
-    let _8: &'19 mut i32; // anonymous local
-    let _9: (&'27 i32, &'28 i32); // anonymous local
-    let _10: &'32 i32; // anonymous local
-    let _11: &'33 i32; // anonymous local
-    let left_val: &'34 i32; // local
-    let right_val: &'35 i32; // local
+    let _6: Option<&'13 i32>[{built_in impl Sized for &'13 i32}]; // anonymous local
+    let _7: closure<'18>; // anonymous local
+    let _8: &'20 mut i32; // anonymous local
+    let _9: (&'29 i32, &'30 i32); // anonymous local
+    let _10: &'34 i32; // anonymous local
+    let _11: &'35 i32; // anonymous local
+    let left_val: &'36 i32; // local
+    let right_val: &'37 i32; // local
     let _14: bool; // anonymous local
     let _15: i32; // anonymous local
     let _16: i32; // anonymous local
     let kind: AssertKind; // local
     let _18: AssertKind; // anonymous local
-    let _19: &'36 i32; // anonymous local
-    let _20: &'37 i32; // anonymous local
-    let _21: &'38 i32; // anonymous local
-    let _22: &'39 i32; // anonymous local
-    let _23: Option<Arguments<'47>>[{built_in impl Sized for Arguments<'47>}]; // anonymous local
-    let _24: &'51 i32; // anonymous local
-    let _25: &'52 i32; // anonymous local
-    let _26: &'53 i32; // anonymous local
-    let _27: &'122 i32; // anonymous local
-    let _28: &'136 i32; // anonymous local
+    let _19: &'38 i32; // anonymous local
+    let _20: &'39 i32; // anonymous local
+    let _21: &'40 i32; // anonymous local
+    let _22: &'41 i32; // anonymous local
+    let _23: Option<Arguments<'50>>[{built_in impl Sized for Arguments<'50>}]; // anonymous local
+    let _24: &'54 i32; // anonymous local
+    let _25: &'55 i32; // anonymous local
+    let _26: &'56 i32; // anonymous local
+    let _27: &'139 i32; // anonymous local
+    let _28: &'154 i32; // anonymous local
     let _29: i32; // anonymous local
-    let _30: &'137 i32; // anonymous local
+    let _30: &'155 i32; // anonymous local
     let _31: i32; // anonymous local
 
     storage_live(_26)
@@ -559,7 +559,7 @@ pub fn main()
     _8 = &mut sum
     _7 = closure { _0: move _8 }
     storage_dead(_8)
-    _5 = for_each<Option<&'71 i32>[{built_in impl Sized for &'71 i32}], closure<'73>>[{built_in impl Sized for Option<&'71 i32>[{built_in impl Sized for &'71 i32}]}, {built_in impl Sized for closure<'73>}, impl_LendingIterator_for_Option<'71, i32>[{built_in impl Sized for i32}], impl_FnMut_tuple_for_closure<'73, '120>](move _6, move _7)
+    _5 = for_each<Option<&'76 i32>[{built_in impl Sized for &'76 i32}], closure<'78>>[{built_in impl Sized for Option<&'76 i32>[{built_in impl Sized for &'76 i32}]}, {built_in impl Sized for closure<'78>}, impl_LendingIterator_for_Option<'76, i32>[{built_in impl Sized for i32}], impl_FnMut_tuple_for_closure<'78, '137>](move _6, move _7)
     ↳⚡ storage_dead(_25)
         storage_dead(_24)
         storage_dead(_23)

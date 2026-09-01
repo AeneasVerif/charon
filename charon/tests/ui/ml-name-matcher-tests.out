@@ -629,7 +629,7 @@ fn mono_usage()
 {
     let _0: (); // return
     let _container1: MonoContainer<i32>[{built_in impl Sized for i32}]; // local
-    let _container2: MonoContainer<&'7 str>[{built_in impl Sized for &'7 str}]; // local
+    let _container2: MonoContainer<&'8 str>[{built_in impl Sized for &'8 str}]; // local
 
     storage_live(_0)
     _0 = ()
@@ -638,7 +638,7 @@ fn mono_usage()
     ↳⚡ unwind_continue
     fake_read(_container1)
     storage_live(_container2)
-    _container2 = create<&'12 str>[{built_in impl Sized for &'12 str}](const "test")
+    _container2 = create<&'13 str>[{built_in impl Sized for &'13 str}](const "test")
     ↳⚡ unwind_continue
     fake_read(_container2)
     _0 = ()

@@ -79,30 +79,30 @@ where
     let _2: Iter<'3, T>[TraitClause0]; // anonymous local
     let _3: &'4 [T]; // anonymous local
     let iter: Iter<'5, T>[TraitClause0]; // local
-    let _5: Option<&'13 T>[{built_in impl Sized for &'13 T}]; // anonymous local
-    let _6: &'19 mut Iter<'20, T>[TraitClause0]; // anonymous local
-    let _7: &'21 mut Iter<'22, T>[TraitClause0]; // anonymous local
-    let x: &'23 T; // local
+    let _5: Option<&'14 T>[{built_in impl Sized for &'14 T}]; // anonymous local
+    let _6: &'20 mut Iter<'21, T>[TraitClause0]; // anonymous local
+    let _7: &'22 mut Iter<'23, T>[TraitClause0]; // anonymous local
+    let x: &'24 T; // local
     let _9: (); // anonymous local
-    let _10: Arguments<'25>; // anonymous local
-    let args_11: (&'30 &'31 T,); // local
-    let _12: &'32 &'33 T; // anonymous local
-    let args_13: [Argument<'36>; 1usize]; // local
-    let _14: Argument<'37>; // anonymous local
-    let _15: &'38 &'39 T; // anonymous local
-    let _16: &'41 [u8; 7usize]; // anonymous local
-    let _17: &'42 [u8; 7usize]; // anonymous local
-    let _18: &'45 [Argument<'46>; 1usize]; // anonymous local
-    let _19: &'47 [Argument<'48>; 1usize]; // anonymous local
+    let _10: Arguments<'26>; // anonymous local
+    let args_11: (&'31 &'32 T,); // local
+    let _12: &'33 &'34 T; // anonymous local
+    let args_13: [Argument<'37>; 1usize]; // local
+    let _14: Argument<'38>; // anonymous local
+    let _15: &'39 &'40 T; // anonymous local
+    let _16: &'42 [u8; 7usize]; // anonymous local
+    let _17: &'43 [u8; 7usize]; // anonymous local
+    let _18: &'46 [Argument<'47>; 1usize]; // anonymous local
+    let _19: &'48 [Argument<'49>; 1usize]; // anonymous local
     let _20: [u8; 7usize]; // anonymous local
-    let _21: &'78 [u8; 7usize]; // anonymous local
+    let _21: &'80 [u8; 7usize]; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = copy slice
-    _2 = into_iter<'49, T>[TraitClause0](move _3)
+    _2 = into_iter<'50, T>[TraitClause0](move _3)
     ↳⚡ storage_dead(slice)
         unwind_continue
     storage_dead(_3)
@@ -114,7 +114,7 @@ where
         storage_live(_7)
         _7 = &mut iter
         _6 = &two-phase-mut (*_7)
-        _5 = next<'51, '53, T>[TraitClause0](move _6)
+        _5 = next<'52, '54, T>[TraitClause0](move _6)
         ↳⚡ storage_dead(slice)
             unwind_continue
         storage_dead(_6)
@@ -139,7 +139,7 @@ where
         storage_live(_14)
         storage_live(_15)
         _15 = &(*args_11._0)
-        _14 = new_debug<'64, '76, &'66 T>[{built_in impl Sized for &'68 T}, {impl#2}<'74, T>[TraitClause1]](move _15)
+        _14 = new_debug<'65, '78, &'67 T>[{built_in impl Sized for &'69 T}, {impl#2}<'76, T>[TraitClause1]](move _15)
         ↳⚡ storage_dead(slice)
             unwind_continue
         storage_dead(_15)
@@ -158,14 +158,14 @@ where
         storage_live(_19)
         _19 = &args_13
         _18 = &(*_19)
-        _10 = new<'80, 7usize, 1usize>(move _16, move _18)
+        _10 = new<'82, 7usize, 1usize>(move _16, move _18)
         ↳⚡ storage_dead(slice)
             unwind_continue
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(_17)
         storage_dead(_16)
-        _9 = _eprint<'82>(move _10)
+        _9 = _eprint<'84>(move _10)
         ↳⚡ storage_dead(slice)
             unwind_continue
         storage_dead(_10)

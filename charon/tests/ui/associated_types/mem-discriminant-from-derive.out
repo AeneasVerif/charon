@@ -91,13 +91,13 @@ pub fn impl_PartialEq_Enum_for_Enum::eq<'_0, '_1>(self: &'_0 Enum, other: &'_1 E
     let _7: bool; // anonymous local
     let _8: isize; // anonymous local
     let _9: isize; // anonymous local
-    let _10: (&'12 Enum, &'13 Enum); // anonymous local
-    let _11: &'17 Enum; // anonymous local
-    let _12: &'18 Enum; // anonymous local
-    let __self_0: &'20 u8; // local
-    let __arg1_0: &'21 u8; // local
-    let _15: &'24 &'25 u8; // anonymous local
-    let _16: &'26 &'27 u8; // anonymous local
+    let _10: (&'13 Enum, &'14 Enum); // anonymous local
+    let _11: &'18 Enum; // anonymous local
+    let _12: &'19 Enum; // anonymous local
+    let __self_0: &'21 u8; // local
+    let __arg1_0: &'22 u8; // local
+    let _15: &'25 &'26 u8; // anonymous local
+    let _16: &'27 &'28 u8; // anonymous local
 
     storage_live(_0)
     storage_live(__self_discr)
@@ -152,7 +152,7 @@ pub fn impl_PartialEq_Enum_for_Enum::eq<'_0, '_1>(self: &'_0 Enum, other: &'_1 E
                     _15 = &__self_0
                     storage_live(_16)
                     _16 = &__arg1_0
-                    _0 = {impl PartialEq<&'_0 B> for &'_1 A}::eq<'41, '42, '45, '46, u8, u8>[impl_PartialEq_u8_for_u8](move _15, move _16)
+                    _0 = {impl PartialEq<&'_0 B> for &'_1 A}::eq<'42, '43, '46, '47, u8, u8>[impl_PartialEq_u8_for_u8](move _15, move _16)
                     ↳⚡ storage_dead(other)
                         storage_dead(self)
                         unwind_continue

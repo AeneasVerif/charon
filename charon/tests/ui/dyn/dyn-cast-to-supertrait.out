@@ -431,7 +431,7 @@ fn main()
     storage_live(_9)
     storage_live(_10)
     _10 = &(*dyn_cat) with_metadata(copy dyn_cat.metadata)
-    _9 = takes_pettable<'47, (dyn Cat + '40)>[{built_in impl MetaSized for (dyn Cat + '42)}, Cat<(dyn Cat + '45)>::ImpliedClause2](move _10)
+    _9 = takes_pettable<'48, (dyn Cat + '40)>[{built_in impl MetaSized for (dyn Cat + '42)}, Cat<(dyn Cat + '46)>::ImpliedClause2](move _10)
     ↳⚡ unwind_continue
     storage_dead(_10)
     storage_dead(_9)

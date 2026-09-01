@@ -5474,47 +5474,47 @@ fn main()
     let _15: &'7 [i32]; // anonymous local
     let _16: &'9 [i32; 7usize]; // anonymous local
     let iter_17: Iter<'10, i32>[{built_in impl Sized for i32}]; // local
-    let _18: Option<&'18 i32>[{built_in impl Sized for &'18 i32}]; // anonymous local
-    let _19: &'24 mut Iter<'25, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _20: &'26 mut Iter<'27, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let v_21: &'28 i32; // local
+    let _18: Option<&'19 i32>[{built_in impl Sized for &'19 i32}]; // anonymous local
+    let _19: &'25 mut Iter<'26, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _20: &'27 mut Iter<'28, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let v_21: &'29 i32; // local
     let _22: (); // anonymous local
-    let _23: &'30 mut i32; // anonymous local
-    let _24: &'31 i32; // anonymous local
-    let _25: Chunks<'33, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _26: Chunks<'34, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _27: &'35 [i32]; // anonymous local
-    let _28: &'36 [i32; 7usize]; // anonymous local
-    let iter_29: Chunks<'37, i32>[{built_in impl Sized for i32}]; // local
-    let _30: Option<&'44 [i32]>[{built_in impl Sized for &'44 [i32]}]; // anonymous local
-    let _31: &'50 mut Chunks<'51, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _32: &'52 mut Chunks<'53, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _23: &'31 mut i32; // anonymous local
+    let _24: &'32 i32; // anonymous local
+    let _25: Chunks<'34, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _26: Chunks<'35, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _27: &'36 [i32]; // anonymous local
+    let _28: &'37 [i32; 7usize]; // anonymous local
+    let iter_29: Chunks<'38, i32>[{built_in impl Sized for i32}]; // local
+    let _30: Option<&'46 [i32]>[{built_in impl Sized for &'46 [i32]}]; // anonymous local
+    let _31: &'52 mut Chunks<'53, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _32: &'54 mut Chunks<'55, i32>[{built_in impl Sized for i32}]; // anonymous local
     let _33: i32; // anonymous local
-    let _34: ChunksExact<'55, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _35: ChunksExact<'56, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _36: &'57 [i32]; // anonymous local
-    let _37: &'58 [i32; 7usize]; // anonymous local
-    let iter_38: ChunksExact<'59, i32>[{built_in impl Sized for i32}]; // local
-    let _39: Option<&'60 [i32]>[{built_in impl Sized for &'60 [i32]}]; // anonymous local
-    let _40: &'66 mut ChunksExact<'67, i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _41: &'68 mut ChunksExact<'69, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _34: ChunksExact<'57, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _35: ChunksExact<'58, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _36: &'59 [i32]; // anonymous local
+    let _37: &'60 [i32; 7usize]; // anonymous local
+    let iter_38: ChunksExact<'61, i32>[{built_in impl Sized for i32}]; // local
+    let _39: Option<&'62 [i32]>[{built_in impl Sized for &'62 [i32]}]; // anonymous local
+    let _40: &'68 mut ChunksExact<'69, i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _41: &'70 mut ChunksExact<'71, i32>[{built_in impl Sized for i32}]; // anonymous local
     let _42: i32; // anonymous local
     let expected: i32; // local
-    let _44: (&'77 i32, &'78 i32); // anonymous local
-    let _45: &'82 i32; // anonymous local
-    let _46: &'83 i32; // anonymous local
-    let left_val: &'84 i32; // local
-    let right_val: &'85 i32; // local
+    let _44: (&'80 i32, &'81 i32); // anonymous local
+    let _45: &'85 i32; // anonymous local
+    let _46: &'86 i32; // anonymous local
+    let left_val: &'87 i32; // local
+    let right_val: &'88 i32; // local
     let _49: bool; // anonymous local
     let _50: i32; // anonymous local
     let _51: i32; // anonymous local
     let kind: AssertKind; // local
     let _53: AssertKind; // anonymous local
-    let _54: &'86 i32; // anonymous local
-    let _55: &'87 i32; // anonymous local
-    let _56: &'88 i32; // anonymous local
-    let _57: &'89 i32; // anonymous local
-    let _58: Option<Arguments<'97>>[{built_in impl Sized for Arguments<'97>}]; // anonymous local
+    let _54: &'89 i32; // anonymous local
+    let _55: &'90 i32; // anonymous local
+    let _56: &'91 i32; // anonymous local
+    let _57: &'92 i32; // anonymous local
+    let _58: Option<Arguments<'101>>[{built_in impl Sized for Arguments<'101>}]; // anonymous local
 
     storage_live(_0)
     storage_live(_12)
@@ -5545,7 +5545,7 @@ fn main()
         unwind_continue
     storage_dead(_5)
     _3 = impl_IntoIterator_for_T::into_iter<IntoIter<i32, 7usize>[{built_in impl Sized for i32}]>[{built_in impl Sized for IntoIter<i32, 7usize>[{built_in impl Sized for i32}]}, impl_Iterator_for_IntoIter<i32, 7usize>[{built_in impl Sized for i32}]](move _4)
-    ↳⚡ conditional_drop[drop_glue<'101, i32, 7usize>[{built_in impl Sized for i32}]] _4
+    ↳⚡ conditional_drop[drop_glue<'105, i32, 7usize>[{built_in impl Sized for i32}]] _4
         ↳⚡ storage_dead(_58)
             storage_dead(_57)
             storage_dead(_56)
@@ -5577,8 +5577,8 @@ fn main()
         storage_live(_9)
         _9 = &mut iter_6
         _8 = &two-phase-mut (*_9)
-        _7 = impl_Iterator_for_IntoIter::next<'103, i32, 7usize>[{built_in impl Sized for i32}](move _8)
-        ↳⚡ conditional_drop[drop_glue<'104, i32, 7usize>[{built_in impl Sized for i32}]] iter_6
+        _7 = impl_Iterator_for_IntoIter::next<'107, i32, 7usize>[{built_in impl Sized for i32}](move _8)
+        ↳⚡ conditional_drop[drop_glue<'108, i32, 7usize>[{built_in impl Sized for i32}]] iter_6
             ↳⚡ storage_dead(_58)
                 storage_dead(_57)
                 storage_dead(_56)
@@ -5590,7 +5590,7 @@ fn main()
                 storage_dead(_33)
                 storage_dead(_12)
                 unwind_terminate
-            conditional_drop[drop_glue<'105, i32, 7usize>[{built_in impl Sized for i32}]] _3
+            conditional_drop[drop_glue<'109, i32, 7usize>[{built_in impl Sized for i32}]] _3
             ↳⚡ storage_dead(_58)
                 storage_dead(_57)
                 storage_dead(_56)
@@ -5635,8 +5635,8 @@ fn main()
     }
     storage_dead(_9)
     storage_dead(_7)
-    conditional_drop[drop_glue<'106, i32, 7usize>[{built_in impl Sized for i32}]] iter_6
-    ↳⚡ conditional_drop[drop_glue<'105, i32, 7usize>[{built_in impl Sized for i32}]] _3
+    conditional_drop[drop_glue<'110, i32, 7usize>[{built_in impl Sized for i32}]] iter_6
+    ↳⚡ conditional_drop[drop_glue<'109, i32, 7usize>[{built_in impl Sized for i32}]] _3
         ↳⚡ storage_dead(_58)
             storage_dead(_57)
             storage_dead(_56)
@@ -5660,7 +5660,7 @@ fn main()
         storage_dead(_12)
         unwind_continue
     storage_dead(iter_6)
-    conditional_drop[drop_glue<'107, i32, 7usize>[{built_in impl Sized for i32}]] _3
+    conditional_drop[drop_glue<'111, i32, 7usize>[{built_in impl Sized for i32}]] _3
     ↳⚡ storage_dead(_58)
         storage_dead(_57)
         storage_dead(_56)
@@ -5681,7 +5681,7 @@ fn main()
     _15 = @ArrayToSliceShared<'_, i32, 7usize>(move _16)
     ↳⚡ undefined_behavior
     storage_dead(_16)
-    _14 = iter<'110, i32>[{built_in impl Sized for i32}](move _15)
+    _14 = iter<'114, i32>[{built_in impl Sized for i32}](move _15)
     ↳⚡ storage_dead(_58)
         storage_dead(_57)
         storage_dead(_56)
@@ -5694,7 +5694,7 @@ fn main()
         storage_dead(_12)
         unwind_continue
     storage_dead(_15)
-    _13 = impl_IntoIterator_for_T::into_iter<Iter<'112, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Iter<'112, i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Iter<'112, i32>[{built_in impl Sized for i32}]](move _14)
+    _13 = impl_IntoIterator_for_T::into_iter<Iter<'116, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Iter<'116, i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Iter<'116, i32>[{built_in impl Sized for i32}]](move _14)
     ↳⚡ storage_dead(_58)
         storage_dead(_57)
         storage_dead(_56)
@@ -5715,7 +5715,7 @@ fn main()
         storage_live(_20)
         _20 = &mut iter_17
         _19 = &two-phase-mut (*_20)
-        _18 = impl_Iterator_for_Iter::next<'122, '124, i32>[{built_in impl Sized for i32}](move _19)
+        _18 = impl_Iterator_for_Iter::next<'127, '129, i32>[{built_in impl Sized for i32}](move _19)
         ↳⚡ storage_dead(_58)
             storage_dead(_57)
             storage_dead(_56)
@@ -5742,7 +5742,7 @@ fn main()
         _23 = &two-phase-mut i
         storage_live(_24)
         _24 = copy v_21
-        _22 = add_assign<'130, '132>(move _23, move _24)
+        _22 = add_assign<'135, '137>(move _23, move _24)
         ↳⚡ storage_dead(_58)
             storage_dead(_57)
             storage_dead(_56)
@@ -5774,7 +5774,7 @@ fn main()
     _27 = @ArrayToSliceShared<'_, i32, 7usize>(move _28)
     ↳⚡ undefined_behavior
     storage_dead(_28)
-    _26 = chunks<'135, i32>[{built_in impl Sized for i32}](move _27, const 2usize)
+    _26 = chunks<'140, i32>[{built_in impl Sized for i32}](move _27, const 2usize)
     ↳⚡ storage_dead(_58)
         storage_dead(_57)
         storage_dead(_56)
@@ -5787,7 +5787,7 @@ fn main()
         storage_dead(_12)
         unwind_continue
     storage_dead(_27)
-    _25 = impl_IntoIterator_for_T::into_iter<Chunks<'137, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Chunks<'137, i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Chunks<'137, i32>[{built_in impl Sized for i32}]](move _26)
+    _25 = impl_IntoIterator_for_T::into_iter<Chunks<'142, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Chunks<'142, i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Chunks<'142, i32>[{built_in impl Sized for i32}]](move _26)
     ↳⚡ storage_dead(_58)
         storage_dead(_57)
         storage_dead(_56)
@@ -5808,7 +5808,7 @@ fn main()
         storage_live(_32)
         _32 = &mut iter_29
         _31 = &two-phase-mut (*_32)
-        _30 = impl_Iterator_for_Chunks::next<'147, '149, i32>[{built_in impl Sized for i32}](move _31)
+        _30 = impl_Iterator_for_Chunks::next<'153, '155, i32>[{built_in impl Sized for i32}](move _31)
         ↳⚡ storage_dead(_58)
             storage_dead(_57)
             storage_dead(_56)
@@ -5846,7 +5846,7 @@ fn main()
     _36 = @ArrayToSliceShared<'_, i32, 7usize>(move _37)
     ↳⚡ undefined_behavior
     storage_dead(_37)
-    _35 = chunks_exact<'152, i32>[{built_in impl Sized for i32}](move _36, const 2usize)
+    _35 = chunks_exact<'158, i32>[{built_in impl Sized for i32}](move _36, const 2usize)
     ↳⚡ storage_dead(_58)
         storage_dead(_57)
         storage_dead(_56)
@@ -5859,7 +5859,7 @@ fn main()
         storage_dead(_12)
         unwind_continue
     storage_dead(_36)
-    _34 = impl_IntoIterator_for_T::into_iter<ChunksExact<'154, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for ChunksExact<'154, i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_ChunksExact<'154, i32>[{built_in impl Sized for i32}]](move _35)
+    _34 = impl_IntoIterator_for_T::into_iter<ChunksExact<'160, i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for ChunksExact<'160, i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_ChunksExact<'160, i32>[{built_in impl Sized for i32}]](move _35)
     ↳⚡ storage_dead(_58)
         storage_dead(_57)
         storage_dead(_56)
@@ -5880,7 +5880,7 @@ fn main()
         storage_live(_41)
         _41 = &mut iter_38
         _40 = &two-phase-mut (*_41)
-        _39 = impl_Iterator_for_ChunksExact::next<'164, '166, i32>[{built_in impl Sized for i32}](move _40)
+        _39 = impl_Iterator_for_ChunksExact::next<'171, '173, i32>[{built_in impl Sized for i32}](move _40)
         ↳⚡ storage_dead(_58)
             storage_dead(_57)
             storage_dead(_56)

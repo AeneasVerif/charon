@@ -1,0 +1,580 @@
+# Final LLBC before serialization:
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Tuple
+#[fundamental]
+#[lang_item(Tuple)]
+pub trait Tuple<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct core::ops::function::FnOnce::{vtable}<Args, Ty0> {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<Args, Output = Ty0>)),
+  method_call_once: extern "rust-call" fn(*mut (dyn FnOnce<Args, Output = Ty0>), Args) -> Ty0,
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: core::ops::function::FnOnce
+#[fundamental]
+#[lang_item(FnOnce)]
+pub trait FnOnce<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self::Output: Sized)
+    type Output
+    fn call_once;
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+}
+
+struct core::ops::function::FnMut::{vtable}<Args, Ty0> {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn FnMut<Args, ImpliedClause1::Output = Ty0>)),
+  method_call_mut: extern "rust-call" fn<'_0_1>(&'_0_1 mut (dyn FnMut<Args, ImpliedClause1::Output = Ty0>), Args) -> Ty0,
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+  super_trait_1: &'static core::ops::function::FnOnce::{vtable}<Args, Ty0>,
+}
+
+// Full name: core::ops::function::FnMut
+#[fundamental]
+#[lang_item(FnMut)]
+pub trait FnMut<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnOnce<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    fn call_mut<'_0_1>;
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
+}
+
+struct core::ops::function::Fn::{vtable}<Args, Ty0> {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn Fn<Args, ImpliedClause1::ImpliedClause1::Output = Ty0>)),
+  method_call: extern "rust-call" fn<'_0_1>(&'_0_1 (dyn Fn<Args, ImpliedClause1::ImpliedClause1::Output = Ty0>), Args) -> Ty0,
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+  super_trait_1: &'static core::ops::function::FnMut::{vtable}<Args, Ty0>,
+}
+
+// Full name: core::ops::function::Fn
+#[fundamental]
+#[lang_item(Fn)]
+pub trait Fn<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnMut<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    fn call<'_0_1>;
+    vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
+}
+
+extern "rust-call" fn core::ops::function::Fn::{vtable_method}<Self, Args>(_1: &'_ (dyn Fn<Args, ImpliedClause1::ImpliedClause1::Output = Self::ImpliedClause1::ImpliedClause1::Output>), _2: Args) -> Self::ImpliedClause1::ImpliedClause1::Output
+{
+    let _0: Self::ImpliedClause1::ImpliedClause1::Output; // return
+    let _1: &'0 (dyn Fn<Args, ImpliedClause1::ImpliedClause1::Output = Self::ImpliedClause1::ImpliedClause1::Output> + '1); // arg #1
+    let _2: Args; // arg #2
+    let _3: &'2 Self; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = concretize<&'4 (dyn Fn<Args, ImpliedClause1::ImpliedClause1::Output = Self::ImpliedClause1::ImpliedClause1::Output> + '5), &'6 Self>(move _1)
+    _0 = Self::call<'9>(move _3, move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+unsafe fn core::ops::function::Fn::{vtable_drop_shim}<'_0, Self, Args>(dyn_self: &'_0 mut (dyn Fn<Args, ImpliedClause1::ImpliedClause1::Output = Self::ImpliedClause1::ImpliedClause1::Output>))
+where
+    TypeOutlives0: Args: '_0,
+    TypeOutlives1: Self::ImpliedClause1::ImpliedClause1::Output: '_0,
+    TypeOutlives2: Self: '_0,
+{
+    let ret: (); // return
+    let dyn_self: &'_0 mut (dyn Fn<Args, ImpliedClause1::ImpliedClause1::Output = Self::ImpliedClause1::ImpliedClause1::Output> + '0); // arg #1
+    let target_self: &'_0 mut Self; // local
+
+    storage_live(ret)
+    ret = ()
+    storage_live(target_self)
+    target_self = concretize<&'_0 mut (dyn Fn<Args, ImpliedClause1::ImpliedClause1::Output = Self::ImpliedClause1::ImpliedClause1::Output> + '1), &'_0 mut Self>(move dyn_self)
+    drop[{built_in impl Destruct for Self}::drop_glue<'3>] (*target_self)
+    ↳⚡ storage_dead(target_self)
+        storage_dead(dyn_self)
+        unwind_continue
+    storage_dead(target_self)
+    storage_dead(dyn_self)
+    return
+}
+
+fn core::ops::function::Fn::{vtable}<Self, Args>() -> core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
+{
+    let ret: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>; // return
+    let size: usize; // local
+    let align: usize; // local
+    let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn Fn<Args, ImpliedClause1::ImpliedClause1::Output = Self::ImpliedClause1::ImpliedClause1::Output> + '1)); // anonymous local
+    let _4: extern "rust-call" fn<'_0_1>(&'_0_1 (dyn Fn<Args, ImpliedClause1::ImpliedClause1::Output = Self::ImpliedClause1::ImpliedClause1::Output> + '2), Args) -> Self::ImpliedClause1::ImpliedClause1::Output; // anonymous local
+
+    storage_live(ret)
+    storage_live(size)
+    size = size_of<Self>
+    storage_live(align)
+    align = align_of<Self>
+    storage_live(_3)
+    _3 = cast<for<'_0_1> core::ops::function::Fn::{vtable_drop_shim}<'0, Self, Args>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Fn<Args, ImpliedClause1::ImpliedClause1::Output = Self::ImpliedClause1::ImpliedClause1::Output> + '1))>(const core::ops::function::Fn::{vtable_drop_shim}<'0, Self, Args>)
+    storage_live(_4)
+    _4 = cast<for<'_0_1> core::ops::function::Fn::{vtable_method}<Self, Args>, extern "rust-call" fn<'_0_1>(&'_0_1 (dyn Fn<Args, ImpliedClause1::ImpliedClause1::Output = Self::ImpliedClause1::ImpliedClause1::Output> + '2), Args) -> Self::ImpliedClause1::ImpliedClause1::Output>(const core::ops::function::Fn::{vtable_method}<Self, Args>)
+    ret = core::ops::function::Fn::{vtable} { size: move size, align: move align, drop: move _3, method_call: move _4, super_trait_0: const &vtable_of(Self::ImpliedClause0), super_trait_1: const &vtable_of(Self::ImpliedClause1) }
+    return
+}
+
+static core::ops::function::Fn::{vtable}<Self, Args>: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output> = core::ops::function::Fn::{vtable}<Self, Args>()
+
+extern "rust-call" fn core::ops::function::FnMut::{vtable_method}<Self, Args>(_1: &'_ mut (dyn FnMut<Args, ImpliedClause1::Output = Self::ImpliedClause1::Output>), _2: Args) -> Self::ImpliedClause1::Output
+{
+    let _0: Self::ImpliedClause1::Output; // return
+    let _1: &'0 mut (dyn FnMut<Args, ImpliedClause1::Output = Self::ImpliedClause1::Output> + '1); // arg #1
+    let _2: Args; // arg #2
+    let _3: &'2 mut Self; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = concretize<&'4 mut (dyn FnMut<Args, ImpliedClause1::Output = Self::ImpliedClause1::Output> + '5), &'6 mut Self>(move _1)
+    _0 = Self::call_mut<'9>(move _3, move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+unsafe fn core::ops::function::FnMut::{vtable_drop_shim}<'_0, Self, Args>(dyn_self: &'_0 mut (dyn FnMut<Args, ImpliedClause1::Output = Self::ImpliedClause1::Output>))
+where
+    TypeOutlives0: Args: '_0,
+    TypeOutlives1: Self::ImpliedClause1::Output: '_0,
+    TypeOutlives2: Self: '_0,
+{
+    let ret: (); // return
+    let dyn_self: &'_0 mut (dyn FnMut<Args, ImpliedClause1::Output = Self::ImpliedClause1::Output> + '0); // arg #1
+    let target_self: &'_0 mut Self; // local
+
+    storage_live(ret)
+    ret = ()
+    storage_live(target_self)
+    target_self = concretize<&'_0 mut (dyn FnMut<Args, ImpliedClause1::Output = Self::ImpliedClause1::Output> + '1), &'_0 mut Self>(move dyn_self)
+    drop[{built_in impl Destruct for Self}::drop_glue<'3>] (*target_self)
+    ↳⚡ storage_dead(target_self)
+        storage_dead(dyn_self)
+        unwind_continue
+    storage_dead(target_self)
+    storage_dead(dyn_self)
+    return
+}
+
+fn core::ops::function::FnMut::{vtable}<Self, Args>() -> core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
+{
+    let ret: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>; // return
+    let size: usize; // local
+    let align: usize; // local
+    let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn FnMut<Args, ImpliedClause1::Output = Self::ImpliedClause1::Output> + '1)); // anonymous local
+    let _4: extern "rust-call" fn<'_0_1>(&'_0_1 mut (dyn FnMut<Args, ImpliedClause1::Output = Self::ImpliedClause1::Output> + '2), Args) -> Self::ImpliedClause1::Output; // anonymous local
+
+    storage_live(ret)
+    storage_live(size)
+    size = size_of<Self>
+    storage_live(align)
+    align = align_of<Self>
+    storage_live(_3)
+    _3 = cast<for<'_0_1> core::ops::function::FnMut::{vtable_drop_shim}<'0, Self, Args>, unsafe fn<'_0_1>(&'_0_1 mut (dyn FnMut<Args, ImpliedClause1::Output = Self::ImpliedClause1::Output> + '1))>(const core::ops::function::FnMut::{vtable_drop_shim}<'0, Self, Args>)
+    storage_live(_4)
+    _4 = cast<for<'_0_1> core::ops::function::FnMut::{vtable_method}<Self, Args>, extern "rust-call" fn<'_0_1>(&'_0_1 mut (dyn FnMut<Args, ImpliedClause1::Output = Self::ImpliedClause1::Output> + '2), Args) -> Self::ImpliedClause1::Output>(const core::ops::function::FnMut::{vtable_method}<Self, Args>)
+    ret = core::ops::function::FnMut::{vtable} { size: move size, align: move align, drop: move _3, method_call_mut: move _4, super_trait_0: const &vtable_of(Self::ImpliedClause0), super_trait_1: const &vtable_of(Self::ImpliedClause1) }
+    return
+}
+
+static core::ops::function::FnMut::{vtable}<Self, Args>: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output> = core::ops::function::FnMut::{vtable}<Self, Args>()
+
+extern "rust-call" fn core::ops::function::FnOnce::{vtable_method}<Self, Args>(_1: *mut (dyn FnOnce<Args, Output = Self::Output>), _2: Args) -> Self::Output
+{
+    let _0: Self::Output; // return
+    let _1: *mut (dyn FnOnce<Args, Output = Self::Output> + '0); // arg #1
+    let _2: Args; // arg #2
+    let _3: *mut Self; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = concretize<*mut (dyn FnOnce<Args, Output = Self::Output> + '1), *mut Self>(move _1)
+    _0 = Self::call_once(move (*_3), move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+unsafe fn core::ops::function::FnOnce::{vtable_drop_shim}<'_0, Self, Args>(dyn_self: &'_0 mut (dyn FnOnce<Args, Output = Self::Output>))
+where
+    TypeOutlives0: Args: '_0,
+    TypeOutlives1: Self::Output: '_0,
+    TypeOutlives2: Self: '_0,
+{
+    let ret: (); // return
+    let dyn_self: &'_0 mut (dyn FnOnce<Args, Output = Self::Output> + '0); // arg #1
+    let target_self: &'_0 mut Self; // local
+
+    storage_live(ret)
+    ret = ()
+    storage_live(target_self)
+    target_self = concretize<&'_0 mut (dyn FnOnce<Args, Output = Self::Output> + '1), &'_0 mut Self>(move dyn_self)
+    drop[{built_in impl Destruct for Self}::drop_glue<'3>] (*target_self)
+    ↳⚡ storage_dead(target_self)
+        storage_dead(dyn_self)
+        unwind_continue
+    storage_dead(target_self)
+    storage_dead(dyn_self)
+    return
+}
+
+fn core::ops::function::FnOnce::{vtable}<Self, Args>() -> core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+{
+    let ret: core::ops::function::FnOnce::{vtable}<Args, Self::Output>; // return
+    let size: usize; // local
+    let align: usize; // local
+    let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<Args, Output = Self::Output> + '1)); // anonymous local
+    let _4: extern "rust-call" fn(*mut (dyn FnOnce<Args, Output = Self::Output> + '2), Args) -> Self::Output; // anonymous local
+
+    storage_live(ret)
+    storage_live(size)
+    size = size_of<Self>
+    storage_live(align)
+    align = align_of<Self>
+    storage_live(_3)
+    _3 = cast<for<'_0_1> core::ops::function::FnOnce::{vtable_drop_shim}<'0, Self, Args>, unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<Args, Output = Self::Output> + '1))>(const core::ops::function::FnOnce::{vtable_drop_shim}<'0, Self, Args>)
+    storage_live(_4)
+    _4 = cast<core::ops::function::FnOnce::{vtable_method}<Self, Args>, extern "rust-call" fn(*mut (dyn FnOnce<Args, Output = Self::Output> + '2), Args) -> Self::Output>(const core::ops::function::FnOnce::{vtable_method}<Self, Args>)
+    ret = core::ops::function::FnOnce::{vtable} { size: move size, align: move align, drop: move _3, method_call_once: move _4, super_trait_0: const &vtable_of(Self::ImpliedClause0) }
+    return
+}
+
+static core::ops::function::FnOnce::{vtable}<Self, Args>: core::ops::function::FnOnce::{vtable}<Args, Self::Output> = core::ops::function::FnOnce::{vtable}<Self, Args>()
+
+// Full name: alloc::alloc::Global
+#[lang_item(GlobalAlloc)]
+pub struct Global {}
+
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (type_error("removed allocator parameter"): Sized),
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box<T>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn drop_glue<'_0, T, A>(_1: &'_0 mut Box<T>[TraitClause0, TraitClause1])
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
+= <opaque>
+
+// Full name: alloc::boxed::{Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]}::new
+#[track_caller]
+#[diagnostic_item("box_new")]
+pub fn new<T>(_1: T) -> Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: alloc::boxed::{impl Fn<Args> for Box<F>[TraitClause1, TraitClause2]}::call
+pub extern "rust-call" fn call<'_0, Args, F, A>(_1: &'_0 Box<F>[TraitClause1, TraitClause2], _2: Args) -> TraitClause4::ImpliedClause1::ImpliedClause1::Output
+where
+    TraitClause0: (Args: Sized),
+    TraitClause1: (F: MetaSized),
+    TraitClause2: (A: Sized),
+    TraitClause3: (Args: Tuple),
+    TraitClause4: (F: Fn<Args>),
+    TypeOutlives0: F: '_0,
+    TypeOutlives1: A: '_0,
+= <opaque>
+
+struct (_,)<A> {
+  _0: A,
+}
+
+// Full name: test_crate::foo
+fn foo(x: u32) -> u32
+{
+    let _0: u32; // return
+    let x: u32; // arg #1
+
+    storage_live(_0)
+    _0 = copy x
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::wrap
+fn wrap<F>(f: F) -> Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + 'static)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + 'static)}, {built_in impl Sized for Global}]
+where
+    TraitClause0: (F: Sized),
+    TraitClause1: (F: Fn<(u32,)>),
+    TypeOutlives0: F: 'static,
+    TypeConstraint0: TraitClause1::ImpliedClause1::ImpliedClause1::Output = u32,
+{
+    let _0: Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '6)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '8)}, {built_in impl Sized for Global}]; // return
+    let f: F; // arg #1
+    let _2: Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11)}, {built_in impl Sized for Global}]; // anonymous local
+    let _3: Box<F>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]; // anonymous local
+    let _4: F; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = move f
+    _3 = new<F>[TraitClause0](move _4)
+    ↳⚡ conditional_drop[{built_in impl Destruct for F}::drop_glue<'12>] _4
+        ↳⚡ storage_dead(f)
+            unwind_terminate
+        conditional_drop[{built_in impl Destruct for F}::drop_glue<'17>] f
+        ↳⚡ storage_dead(f)
+            unwind_terminate
+        storage_dead(f)
+        unwind_continue
+    _2 = unsize_cast<Box<F>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}], Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '13)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '15)}, {built_in impl Sized for Global}], &vtable_of(TraitClause1)>(move _3)
+    conditional_drop[drop_glue<'16, F, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]] _3
+    ↳⚡ conditional_drop[{built_in impl Destruct for F}::drop_glue<'12>] _4
+        ↳⚡ storage_dead(f)
+            unwind_terminate
+        conditional_drop[{built_in impl Destruct for F}::drop_glue<'17>] f
+        ↳⚡ storage_dead(f)
+            unwind_terminate
+        storage_dead(f)
+        unwind_continue
+    storage_dead(_4)
+    storage_dead(_3)
+    _0 = unsize_cast<Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11)}, {built_in impl Sized for Global}], Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '18)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '20)}, {built_in impl Sized for Global}],  at []>(move _2)
+    conditional_drop[drop_glue<'35, (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '30), Global>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '30)}, {built_in impl Sized for Global}]] _2
+    ↳⚡ conditional_drop[{built_in impl Destruct for F}::drop_glue<'17>] f
+        ↳⚡ storage_dead(f)
+            unwind_terminate
+        storage_dead(f)
+        unwind_continue
+    storage_dead(_2)
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'36>] f
+    ↳⚡ storage_dead(f)
+        unwind_continue
+    storage_dead(f)
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let f: &'3 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '4); // local
+    let _2: &'6 fn(u32) -> u32; // anonymous local
+    let _3: &'7 fn(u32) -> u32; // anonymous local
+    let _4: u32; // anonymous local
+    let _5: &'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9); // anonymous local
+    let _6: (u32,); // anonymous local
+    let g: &'13 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '14); // local
+    let _8: &'16 mut fn(u32) -> u32; // anonymous local
+    let _9: &'17 mut fn(u32) -> u32; // anonymous local
+    let _10: fn(u32) -> u32; // anonymous local
+    let _11: u32; // anonymous local
+    let _12: &'18 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '19); // anonymous local
+    let _13: (u32,); // anonymous local
+    let _h: Box<(dyn FnOnce<(u32,), Output = u32> + '26)>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '28)}, {built_in impl Sized for Global}]; // local
+    let _15: Box<fn(u32) -> u32>[{built_in impl MetaSized for fn(u32) -> u32}, {built_in impl Sized for Global}]; // anonymous local
+    let _16: fn(u32) -> u32; // anonymous local
+    let _17: u32; // anonymous local
+    let _18: &'38 Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '39)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '41)}, {built_in impl Sized for Global}]; // anonymous local
+    let _19: Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '42)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '44)}, {built_in impl Sized for Global}]; // anonymous local
+    let _20: fn(u32) -> u32; // anonymous local
+    let _21: (u32,); // anonymous local
+    let _22: &'45 fn(u32) -> u32; // anonymous local
+    let _23: &'46 fn(u32) -> u32; // anonymous local
+    let _24: &'140 fn(u32) -> u32; // anonymous local
+    let _25: fn(u32) -> u32; // anonymous local
+
+    storage_live(_23)
+    storage_live(_24)
+    storage_live(_25)
+    // These coercions translate the vtable instances for `fn(u32) -> u32: Fn*<(u32,)>`.
+    _25 = cast<foo, fn(u32) -> u32>(const foo)
+    _24 = &_25
+    _23 = move _24
+    storage_live(_0)
+    storage_live(_22)
+    _0 = ()
+    storage_live(f)
+    storage_live(_2)
+    storage_live(_3)
+    _22 = move _23
+    _3 = &(*_22)
+    _2 = &(*_3)
+    f = unsize_cast<&'6 fn(u32) -> u32, &'47 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '48), &core::ops::function::Fn::{vtable}<fn(u32) -> u32, (u32,)>>(move _2)
+    storage_dead(_2)
+    fake_read(f)
+    set_type(typeof(f) == &'49 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '50))
+    storage_dead(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &(*f) with_metadata(copy f.metadata)
+    storage_live(_6)
+    _6 = (const 1u32,)
+    _4 = (copy (*_5.metadata).method_call)(move _5, move _6)
+    ↳⚡ storage_dead(_22)
+        unwind_continue
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_live(g)
+    storage_live(_8)
+    storage_live(_9)
+    storage_live(_10)
+    _10 = cast<foo, fn(u32) -> u32>(const foo)
+    _9 = &mut _10
+    _8 = &mut (*_9)
+    g = unsize_cast<&'16 mut fn(u32) -> u32, &'55 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '56), &core::ops::function::FnMut::{vtable}<fn(u32) -> u32, (u32,)>>(move _8)
+    storage_dead(_8)
+    fake_read(g)
+    set_type(typeof(g) == &'57 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '58))
+    storage_dead(_9)
+    storage_live(_11)
+    storage_live(_12)
+    _12 = &mut (*g) with_metadata(copy g.metadata)
+    storage_live(_13)
+    _13 = (const 2u32,)
+    _11 = (copy (*_12.metadata).method_call_mut)(move _12, move _13)
+    ↳⚡ storage_dead(_22)
+        unwind_continue
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_live(_h)
+    storage_live(_15)
+    storage_live(_16)
+    _16 = cast<foo, fn(u32) -> u32>(const foo)
+    _15 = new<fn(u32) -> u32>[{built_in impl Sized for fn(u32) -> u32}](move _16)
+    ↳⚡ storage_dead(_22)
+        unwind_continue
+    _h = unsize_cast<Box<fn(u32) -> u32>[{built_in impl MetaSized for fn(u32) -> u32}, {built_in impl Sized for Global}], Box<(dyn FnOnce<(u32,), Output = u32> + '63)>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '65)}, {built_in impl Sized for Global}], &core::ops::function::FnOnce::{vtable}<fn(u32) -> u32, (u32,)>>(move _15)
+    conditional_drop[drop_glue<'66, fn(u32) -> u32, Global>[{built_in impl MetaSized for fn(u32) -> u32}, {built_in impl Sized for Global}]] _15
+    ↳⚡ storage_dead(_22)
+        unwind_continue
+    storage_dead(_16)
+    storage_dead(_15)
+    fake_read(_h)
+    set_type(typeof(_h) == Box<(dyn FnOnce<(u32,), Output = u32> + '67)>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '69)}, {built_in impl Sized for Global}])
+    storage_live(_17)
+    storage_live(_18)
+    storage_live(_19)
+    storage_live(_20)
+    // The same builtin impls appear as clause proofs in the call generics.
+    _20 = cast<foo, fn(u32) -> u32>(const foo)
+    _19 = wrap<fn(u32) -> u32>[{built_in impl Sized for fn(u32) -> u32}, {built_in impl Fn<(u32,)> for fn(u32) -> u32}](move _20)
+    ↳⚡ conditional_drop[drop_glue<'84, (dyn FnOnce<(u32,), Output = u32> + '79), Global>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '79)}, {built_in impl Sized for Global}]] _h
+        ↳⚡ storage_dead(_22)
+            storage_dead(_25)
+            storage_dead(_24)
+            storage_dead(_23)
+            unwind_terminate
+        storage_dead(_22)
+        unwind_continue
+    _18 = &_19
+    storage_dead(_20)
+    storage_live(_21)
+    _21 = (const 3u32,)
+    _17 = call<'94, (u32,), (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '86), Global>[{built_in impl Sized for (u32,)}, {built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '88)}, {built_in impl Sized for Global}, {built_in impl Tuple for (u32,)}, Fn<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '92), (u32,)>](move _18, move _21)
+    ↳⚡ conditional_drop[drop_glue<'109, (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '104), Global>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '104)}, {built_in impl Sized for Global}]] _19
+        ↳⚡ storage_dead(_22)
+            storage_dead(_25)
+            storage_dead(_24)
+            storage_dead(_23)
+            unwind_terminate
+        conditional_drop[drop_glue<'84, (dyn FnOnce<(u32,), Output = u32> + '79), Global>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '79)}, {built_in impl Sized for Global}]] _h
+        ↳⚡ storage_dead(_22)
+            storage_dead(_25)
+            storage_dead(_24)
+            storage_dead(_23)
+            unwind_terminate
+        storage_dead(_22)
+        unwind_continue
+    storage_dead(_21)
+    storage_dead(_18)
+    conditional_drop[drop_glue<'124, (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '119), Global>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '119)}, {built_in impl Sized for Global}]] _19
+    ↳⚡ conditional_drop[drop_glue<'84, (dyn FnOnce<(u32,), Output = u32> + '79), Global>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '79)}, {built_in impl Sized for Global}]] _h
+        ↳⚡ storage_dead(_22)
+            storage_dead(_25)
+            storage_dead(_24)
+            storage_dead(_23)
+            unwind_terminate
+        storage_dead(_22)
+        unwind_continue
+    storage_dead(_19)
+    storage_dead(_17)
+    _0 = ()
+    conditional_drop[drop_glue<'139, (dyn FnOnce<(u32,), Output = u32> + '134), Global>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '134)}, {built_in impl Sized for Global}]] _h
+    ↳⚡ storage_dead(_22)
+        unwind_continue
+    storage_dead(_h)
+    storage_dead(_10)
+    storage_dead(g)
+    storage_dead(f)
+    storage_dead(_22)
+    storage_dead(_25)
+    storage_dead(_24)
+    storage_dead(_23)
+    return
+}
+
+
+

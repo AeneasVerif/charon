@@ -80,9 +80,10 @@ pub enum TransItemSourceKind {
     /// The initializer function of the `VTableInstance`.
     VTableInstanceInitializer(TransImplSource),
     /// Shim function to store a method in a vtable; give a method with `self: Ptr<Self>` argument,
-    /// this takes a `Ptr<dyn Trait>` and forwards to the method. The `DefId` refers to the method
-    /// implementation.
-    VTableMethod,
+    /// this takes a `Ptr<dyn Trait>` and forwards to the method. For a `Normal` impl the `DefId`
+    /// refers to the method implementation; for a `Callable` one it refers to the closure or fn
+    /// item, whose `call_*` method has no `DefId` of its own.
+    VTableMethod(TransImplSource),
     /// The drop shim function to be used in the vtable as a field.
     VTableDropShim(TransImplSource),
 }
@@ -96,6 +97,10 @@ pub enum TransImplSource {
     TraitAlias,
     /// An impl of the appropriate `Fn*` trait for a closure or function item.
     Callable(ClosureKind),
+    /// The builtin impl of the appropriate `Fn*` trait for a function pointer type. Unlike
+    /// `Callable`, there is no item to hang this off: the `DefId` is that of the trait, and the
+    /// concrete `Self` (the `fn(..)` type) comes from the trait ref's generics.
+    FnPointer(ClosureKind),
     /// A fictitious `impl Destruct for T` that contains the drop glue code for the given ADT or
     /// closure. The `DefId` is that of the ADT or closure.
     ImplicitDestruct,
@@ -165,21 +170,19 @@ impl TransItemSource {
     /// not attempt to generally compute the parent of an item. Used to compute names.
     pub(crate) fn parent(&self) -> Option<Self> {
         let parent_kind = match self.kind {
-            TransItemSourceKind::CallableMethod(kind) => {
+            TransItemSourceKind::CallableMethod(kind)
+            | TransItemSourceKind::VTableMethod(TransImplSource::Callable(kind)) => {
                 TransItemSourceKind::TraitImpl(TransImplSource::Callable(kind))
-            }
-            TransItemSourceKind::DropGlueMethod(TransImplSource::Marker)
-            | TransItemSourceKind::VTableInstance(TransImplSource::Marker)
-            | TransItemSourceKind::VTableInstanceInitializer(TransImplSource::Marker)
-            | TransItemSourceKind::VTableDropShim(TransImplSource::Marker) => {
-                TransItemSourceKind::TraitDecl
             }
             TransItemSourceKind::DropGlueMethod(impl_kind)
             | TransItemSourceKind::VTableInstance(impl_kind)
             | TransItemSourceKind::VTableInstanceInitializer(impl_kind)
-            | TransItemSourceKind::VTableDropShim(impl_kind) => {
-                TransItemSourceKind::TraitImpl(impl_kind)
-            }
+            | TransItemSourceKind::VTableDropShim(impl_kind) => match impl_kind {
+                TransImplSource::Marker | TransImplSource::FnPointer(..) => {
+                    TransItemSourceKind::TraitDecl
+                }
+                _ => TransItemSourceKind::TraitImpl(impl_kind),
+            },
             _ => return None,
         };
         Some(self.with_kind(parent_kind))
@@ -347,7 +350,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     | ClosureAsFnCast
                     | DropGlueMethod(..)
                     | VTableInstanceInitializer(..)
-                    | VTableMethod
+                    | VTableMethod(..)
                     | VTableDropShim(..) => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
                     InherentImpl | Module => return None,
                 };
@@ -744,6 +747,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     )
                     | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))
                     | TransItemSourceKind::CallableMethod(..)
+                    | TransItemSourceKind::VTableMethod(TransImplSource::Callable(..))
                     | TransItemSourceKind::ClosureAsFnCast = kind
                     {
                         generics.regions.extend(
@@ -756,7 +760,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
                 _ => {}
             }
-            if let TransItemSourceKind::CallableMethod(ClosureKind::FnMut | ClosureKind::Fn) = kind
+            if let TransItemSourceKind::CallableMethod(ClosureKind::FnMut | ClosureKind::Fn)
+            | TransItemSourceKind::VTableMethod(TransImplSource::Callable(
+                ClosureKind::FnMut | ClosureKind::Fn,
+            )) = kind
             {
                 generics.regions.push(self.translate_erased_region());
             }

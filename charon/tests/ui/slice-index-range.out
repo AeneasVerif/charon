@@ -55,22 +55,22 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     let start: usize; // arg #1
     let len: usize; // arg #2
     let _3: Arguments<'1>; // anonymous local
-    let args_4: (&'10 usize, &'11 usize); // local
-    let _5: &'15 usize; // anonymous local
-    let _6: &'16 usize; // anonymous local
-    let args_7: [Argument<'19>; 2usize]; // local
-    let _8: Argument<'20>; // anonymous local
-    let _9: &'21 usize; // anonymous local
-    let _10: Argument<'22>; // anonymous local
-    let _11: &'23 usize; // anonymous local
-    let _12: &'25 [u8; 57usize]; // anonymous local
-    let _13: &'26 [u8; 57usize]; // anonymous local
-    let _14: &'29 [Argument<'30>; 2usize]; // anonymous local
-    let _15: &'31 [Argument<'32>; 2usize]; // anonymous local
-    let _16: &'33 usize; // anonymous local
-    let _17: &'34 usize; // anonymous local
+    let args_4: (&'11 usize, &'12 usize); // local
+    let _5: &'16 usize; // anonymous local
+    let _6: &'17 usize; // anonymous local
+    let args_7: [Argument<'20>; 2usize]; // local
+    let _8: Argument<'21>; // anonymous local
+    let _9: &'22 usize; // anonymous local
+    let _10: Argument<'23>; // anonymous local
+    let _11: &'24 usize; // anonymous local
+    let _12: &'26 [u8; 57usize]; // anonymous local
+    let _13: &'27 [u8; 57usize]; // anonymous local
+    let _14: &'30 [Argument<'31>; 2usize]; // anonymous local
+    let _15: &'32 [Argument<'33>; 2usize]; // anonymous local
+    let _16: &'34 usize; // anonymous local
+    let _17: &'35 usize; // anonymous local
     let _18: [u8; 57usize]; // anonymous local
-    let _19: &'49 [u8; 57usize]; // anonymous local
+    let _19: &'50 [u8; 57usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_16)
@@ -89,7 +89,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     storage_live(_9)
     _16 = copy args_4._0
     _9 = &(*_16)
-    _8 = new_display<'41, '43, usize>[{built_in impl Sized for usize}, {impl#3}](move _9)
+    _8 = new_display<'42, '44, usize>[{built_in impl Sized for usize}, {impl#3}](move _9)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -103,7 +103,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     storage_live(_11)
     _17 = copy args_4._1
     _11 = &(*_17)
-    _10 = new_display<'45, '47, usize>[{built_in impl Sized for usize}, {impl#3}](move _11)
+    _10 = new_display<'46, '48, usize>[{built_in impl Sized for usize}, {impl#3}](move _11)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -128,7 +128,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     storage_live(_15)
     _15 = &args_7
     _14 = &(*_15)
-    _3 = new<'51, 57usize, 2usize>(move _12, move _14)
+    _3 = new<'52, 57usize, 2usize>(move _12, move _14)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -160,22 +160,22 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     let end: usize; // arg #1
     let len: usize; // arg #2
     let _3: Arguments<'1>; // anonymous local
-    let args_4: (&'10 usize, &'11 usize); // local
-    let _5: &'15 usize; // anonymous local
-    let _6: &'16 usize; // anonymous local
-    let args_7: [Argument<'19>; 2usize]; // local
-    let _8: Argument<'20>; // anonymous local
-    let _9: &'21 usize; // anonymous local
-    let _10: Argument<'22>; // anonymous local
-    let _11: &'23 usize; // anonymous local
-    let _12: &'25 [u8; 55usize]; // anonymous local
-    let _13: &'26 [u8; 55usize]; // anonymous local
-    let _14: &'29 [Argument<'30>; 2usize]; // anonymous local
-    let _15: &'31 [Argument<'32>; 2usize]; // anonymous local
-    let _16: &'33 usize; // anonymous local
-    let _17: &'34 usize; // anonymous local
+    let args_4: (&'11 usize, &'12 usize); // local
+    let _5: &'16 usize; // anonymous local
+    let _6: &'17 usize; // anonymous local
+    let args_7: [Argument<'20>; 2usize]; // local
+    let _8: Argument<'21>; // anonymous local
+    let _9: &'22 usize; // anonymous local
+    let _10: Argument<'23>; // anonymous local
+    let _11: &'24 usize; // anonymous local
+    let _12: &'26 [u8; 55usize]; // anonymous local
+    let _13: &'27 [u8; 55usize]; // anonymous local
+    let _14: &'30 [Argument<'31>; 2usize]; // anonymous local
+    let _15: &'32 [Argument<'33>; 2usize]; // anonymous local
+    let _16: &'34 usize; // anonymous local
+    let _17: &'35 usize; // anonymous local
     let _18: [u8; 55usize]; // anonymous local
-    let _19: &'49 [u8; 55usize]; // anonymous local
+    let _19: &'50 [u8; 55usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_16)
@@ -194,7 +194,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     storage_live(_9)
     _16 = copy args_4._0
     _9 = &(*_16)
-    _8 = new_display<'41, '43, usize>[{built_in impl Sized for usize}, {impl#3}](move _9)
+    _8 = new_display<'42, '44, usize>[{built_in impl Sized for usize}, {impl#3}](move _9)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -208,7 +208,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     storage_live(_11)
     _17 = copy args_4._1
     _11 = &(*_17)
-    _10 = new_display<'45, '47, usize>[{built_in impl Sized for usize}, {impl#3}](move _11)
+    _10 = new_display<'46, '48, usize>[{built_in impl Sized for usize}, {impl#3}](move _11)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -233,7 +233,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     storage_live(_15)
     _15 = &args_7
     _14 = &(*_15)
-    _3 = new<'51, 55usize, 2usize>(move _12, move _14)
+    _3 = new<'52, 55usize, 2usize>(move _12, move _14)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -265,22 +265,22 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     let start: usize; // arg #1
     let end: usize; // arg #2
     let _3: Arguments<'1>; // anonymous local
-    let args_4: (&'10 usize, &'11 usize); // local
-    let _5: &'15 usize; // anonymous local
-    let _6: &'16 usize; // anonymous local
-    let args_7: [Argument<'19>; 2usize]; // local
-    let _8: Argument<'20>; // anonymous local
-    let _9: &'21 usize; // anonymous local
-    let _10: Argument<'22>; // anonymous local
-    let _11: &'23 usize; // anonymous local
-    let _12: &'25 [u8; 40usize]; // anonymous local
-    let _13: &'26 [u8; 40usize]; // anonymous local
-    let _14: &'29 [Argument<'30>; 2usize]; // anonymous local
-    let _15: &'31 [Argument<'32>; 2usize]; // anonymous local
-    let _16: &'33 usize; // anonymous local
-    let _17: &'34 usize; // anonymous local
+    let args_4: (&'11 usize, &'12 usize); // local
+    let _5: &'16 usize; // anonymous local
+    let _6: &'17 usize; // anonymous local
+    let args_7: [Argument<'20>; 2usize]; // local
+    let _8: Argument<'21>; // anonymous local
+    let _9: &'22 usize; // anonymous local
+    let _10: Argument<'23>; // anonymous local
+    let _11: &'24 usize; // anonymous local
+    let _12: &'26 [u8; 40usize]; // anonymous local
+    let _13: &'27 [u8; 40usize]; // anonymous local
+    let _14: &'30 [Argument<'31>; 2usize]; // anonymous local
+    let _15: &'32 [Argument<'33>; 2usize]; // anonymous local
+    let _16: &'34 usize; // anonymous local
+    let _17: &'35 usize; // anonymous local
     let _18: [u8; 40usize]; // anonymous local
-    let _19: &'49 [u8; 40usize]; // anonymous local
+    let _19: &'50 [u8; 40usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_16)
@@ -299,7 +299,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     storage_live(_9)
     _16 = copy args_4._0
     _9 = &(*_16)
-    _8 = new_display<'41, '43, usize>[{built_in impl Sized for usize}, {impl#3}](move _9)
+    _8 = new_display<'42, '44, usize>[{built_in impl Sized for usize}, {impl#3}](move _9)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -313,7 +313,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     storage_live(_11)
     _17 = copy args_4._1
     _11 = &(*_17)
-    _10 = new_display<'45, '47, usize>[{built_in impl Sized for usize}, {impl#3}](move _11)
+    _10 = new_display<'46, '48, usize>[{built_in impl Sized for usize}, {impl#3}](move _11)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -338,7 +338,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     storage_live(_15)
     _15 = &args_7
     _14 = &(*_15)
-    _3 = new<'51, 40usize, 2usize>(move _12, move _14)
+    _3 = new<'52, 40usize, 2usize>(move _12, move _14)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -370,22 +370,22 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     let end: usize; // arg #1
     let len: usize; // arg #2
     let _3: Arguments<'1>; // anonymous local
-    let args_4: (&'10 usize, &'11 usize); // local
-    let _5: &'15 usize; // anonymous local
-    let _6: &'16 usize; // anonymous local
-    let args_7: [Argument<'19>; 2usize]; // local
-    let _8: Argument<'20>; // anonymous local
-    let _9: &'21 usize; // anonymous local
-    let _10: Argument<'22>; // anonymous local
-    let _11: &'23 usize; // anonymous local
-    let _12: &'25 [u8; 55usize]; // anonymous local
-    let _13: &'26 [u8; 55usize]; // anonymous local
-    let _14: &'29 [Argument<'30>; 2usize]; // anonymous local
-    let _15: &'31 [Argument<'32>; 2usize]; // anonymous local
-    let _16: &'33 usize; // anonymous local
-    let _17: &'34 usize; // anonymous local
+    let args_4: (&'11 usize, &'12 usize); // local
+    let _5: &'16 usize; // anonymous local
+    let _6: &'17 usize; // anonymous local
+    let args_7: [Argument<'20>; 2usize]; // local
+    let _8: Argument<'21>; // anonymous local
+    let _9: &'22 usize; // anonymous local
+    let _10: Argument<'23>; // anonymous local
+    let _11: &'24 usize; // anonymous local
+    let _12: &'26 [u8; 55usize]; // anonymous local
+    let _13: &'27 [u8; 55usize]; // anonymous local
+    let _14: &'30 [Argument<'31>; 2usize]; // anonymous local
+    let _15: &'32 [Argument<'33>; 2usize]; // anonymous local
+    let _16: &'34 usize; // anonymous local
+    let _17: &'35 usize; // anonymous local
     let _18: [u8; 55usize]; // anonymous local
-    let _19: &'49 [u8; 55usize]; // anonymous local
+    let _19: &'50 [u8; 55usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_16)
@@ -404,7 +404,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     storage_live(_9)
     _16 = copy args_4._0
     _9 = &(*_16)
-    _8 = new_display<'41, '43, usize>[{built_in impl Sized for usize}, {impl#3}](move _9)
+    _8 = new_display<'42, '44, usize>[{built_in impl Sized for usize}, {impl#3}](move _9)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -418,7 +418,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     storage_live(_11)
     _17 = copy args_4._1
     _11 = &(*_17)
-    _10 = new_display<'45, '47, usize>[{built_in impl Sized for usize}, {impl#3}](move _11)
+    _10 = new_display<'46, '48, usize>[{built_in impl Sized for usize}, {impl#3}](move _11)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -443,7 +443,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     storage_live(_15)
     _15 = &args_7
     _14 = &(*_15)
-    _3 = new<'51, 55usize, 2usize>(move _12, move _14)
+    _3 = new<'52, 55usize, 2usize>(move _12, move _14)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(args_7)
@@ -1562,9 +1562,9 @@ where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,
 {
-    let _0: Option<&'6 mut [T]>[{built_in impl Sized for &'6 mut [T]}]; // return
+    let _0: Option<&'8 mut [T]>[{built_in impl Sized for &'8 mut [T]}]; // return
     let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
-    let slice: &'10 mut [T]; // arg #2
+    let slice: &'12 mut [T]; // arg #2
     let _3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
@@ -1572,9 +1572,9 @@ where
     let _7: bool; // anonymous local
     let _8: usize; // anonymous local
     let _9: usize; // anonymous local
-    let _10: &'12 [T]; // anonymous local
-    let _11: &'13 mut [T]; // anonymous local
-    let _12: &'14 mut [T]; // anonymous local
+    let _10: &'14 [T]; // anonymous local
+    let _11: &'15 mut [T]; // anonymous local
+    let _12: &'16 mut [T]; // anonymous local
     let _13: *mut [T]; // anonymous local
     let _14: *mut [T]; // anonymous local
     let _15: usize; // anonymous local
@@ -1602,7 +1602,7 @@ where
             storage_live(_9)
             storage_live(_10)
             _10 = &(*slice) with_metadata(copy slice.metadata)
-            _9 = core::slice::{[T]}::len<'16, T>[TraitClause0](move _10)
+            _9 = core::slice::{[T]}::len<'18, T>[TraitClause0](move _10)
             ↳⚡ storage_dead(slice)
                 storage_dead(self)
                 unwind_continue
@@ -1662,9 +1662,9 @@ where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,
 {
-    let _0: Option<&'6 [T]>[{built_in impl Sized for &'6 [T]}]; // return
+    let _0: Option<&'8 [T]>[{built_in impl Sized for &'8 [T]}]; // return
     let self: Range<usize>[{built_in impl Sized for usize}]; // arg #1
-    let slice: &'10 [T]; // arg #2
+    let slice: &'12 [T]; // arg #2
     let _3: Option<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
@@ -1672,9 +1672,9 @@ where
     let _7: bool; // anonymous local
     let _8: usize; // anonymous local
     let _9: usize; // anonymous local
-    let _10: &'11 [T]; // anonymous local
-    let _11: &'12 [T]; // anonymous local
-    let _12: &'13 [T]; // anonymous local
+    let _10: &'13 [T]; // anonymous local
+    let _11: &'14 [T]; // anonymous local
+    let _12: &'15 [T]; // anonymous local
     let _13: *const [T]; // anonymous local
     let _14: *const [T]; // anonymous local
     let _15: usize; // anonymous local
@@ -1702,7 +1702,7 @@ where
             storage_live(_9)
             storage_live(_10)
             _10 = &(*slice) with_metadata(copy slice.metadata)
-            _9 = core::slice::{[T]}::len<'15, T>[TraitClause0](move _10)
+            _9 = core::slice::{[T]}::len<'17, T>[TraitClause0](move _10)
             ↳⚡ storage_dead(slice)
                 storage_dead(self)
                 unwind_continue

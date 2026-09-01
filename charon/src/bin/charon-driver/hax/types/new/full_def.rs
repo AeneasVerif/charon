@@ -514,6 +514,36 @@ pub enum FullDefKind<'tcx> {
     SyntheticCoroutineBody,
 }
 
+/// Whether the trait method declared by `method_decl_id` takes `self: Self` by value.
+pub fn vtable_receiver_is_by_value<'tcx>(tcx: ty::TyCtxt<'tcx>, method_decl_id: RDefId) -> bool {
+    let decl_sig = tcx
+        .fn_sig(method_decl_id)
+        .instantiate_identity()
+        .skip_norm_wip();
+    !decl_sig.inputs().skip_binder().is_empty()
+        && decl_sig.input(0).skip_binder().is_param(0)
+        && tcx.generics_of(method_decl_id).has_self
+}
+
+/// If the method declared by `method_decl_id` takes `self: Self` by value, adjust the vtable
+/// signature to take the receiver via `*mut Self` instead.
+/// This mirrors what rustc does for vtable shims, which take `*mut Self` (conceptually `&own Self`).
+fn adjust_by_value_vtable_receiver<'tcx>(
+    tcx: ty::TyCtxt<'tcx>,
+    method_decl_id: RDefId,
+    sig: ty::PolyFnSig<'tcx>,
+) -> ty::PolyFnSig<'tcx> {
+    if !vtable_receiver_is_by_value(tcx, method_decl_id) {
+        return sig;
+    }
+    sig.map_bound(|mut sig| {
+        let mut inputs_and_output = sig.inputs_and_output.to_vec();
+        inputs_and_output[0] = ty::Ty::new_mut_ptr(tcx, inputs_and_output[0]);
+        sig.inputs_and_output = tcx.mk_type_list(&inputs_and_output);
+        sig
+    })
+}
+
 fn gen_vtable_sig<'tcx>(
     // The state that owns the method DefId
     s: &impl UnderOwnerState<'tcx>,
@@ -578,8 +608,36 @@ fn gen_vtable_sig<'tcx>(
     // Instantiate and normalize the signature.
     let method_decl_sig = tcx.fn_sig(method_decl_id).instantiate(tcx, trait_args);
     let normalized_sig = normalize(tcx, s.typing_env(), method_decl_sig);
+    let normalized_sig = adjust_by_value_vtable_receiver(tcx, method_decl_id, normalized_sig);
 
     Some(normalized_sig.sinto(s))
+}
+
+/// The `dyn Trait<..>` type for this trait ref, i.e. its `Self` type made existential. Same as the
+/// `dyn_self` field of a `TraitImpl`, for the virtual impls we generate ourselves.
+///
+/// Panics if called on a non-dyn-compatible trait.
+pub fn trait_ref_dyn_self<'tcx, S: UnderOwnerState<'tcx>>(s: &S, trait_ref: &TraitRef) -> Ty {
+    let tcx = s.base().tcx;
+    let trait_def_id = trait_ref.def_id.real_rust_def_id();
+    let trait_ref = ty::TraitRef::new_from_args(tcx, trait_def_id, trait_ref.rustc_args(s));
+    rustc_utils::dyn_self_ty(tcx, s.typing_env(), trait_ref)
+        .expect("the trait of a vtable must be dyn-compatible")
+        .sinto(s)
+}
+
+/// The signature the `call*` method of this `Fn*` trait ref must have to be stored in a vtable,
+/// i.e. with `Self` replaced by the corresponding `dyn Fn*<..>` type. Same as `vtable_sig` in
+/// `AssocFn`, but for the virtual `Fn*` impls we generate ourselves, whose methods have no
+/// `AssocFn` of their own.
+pub fn fn_trait_vtable_method_sig<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    trait_ref: &TraitRef,
+) -> PolyFnSig {
+    let tcx = s.base().tcx;
+    let trait_def_id = trait_ref.def_id.real_rust_def_id();
+    let trait_ref = ty::TraitRef::new_from_args(tcx, trait_def_id, trait_ref.rustc_args(s));
+    gen_closure_sig(s, Some(trait_ref), true).unwrap()
 }
 
 fn gen_closure_sig<'tcx>(
@@ -618,6 +676,11 @@ fn gen_closure_sig<'tcx>(
     // Instantiate and normalize the signature.
     let sig = sig.instantiate(tcx, trait_args);
     let sig = normalize(tcx, s.typing_env(), sig);
+    let sig = if dyn_self {
+        adjust_by_value_vtable_receiver(tcx, call_method.def_id, sig)
+    } else {
+        sig
+    };
 
     Some(sig.sinto(s))
 }

@@ -1285,100 +1285,100 @@ fn main()
     let _15: String; // anonymous local
     let _16: &'23 str; // anonymous local
     let _17: &'24 str; // anonymous local
-    let _18: (&'32 i32, &'33 i32); // anonymous local
-    let _19: &'37 i32; // anonymous local
+    let _18: (&'33 i32, &'34 i32); // anonymous local
+    let _19: &'38 i32; // anonymous local
     let _20: i32; // anonymous local
-    let _21: &'38 mut (dyn Modifiable<i32> + '39); // anonymous local
-    let _22: &'40 i32; // anonymous local
-    let _23: &'41 mut i32; // anonymous local
+    let _21: &'39 mut (dyn Modifiable<i32> + '40); // anonymous local
+    let _22: &'41 i32; // anonymous local
+    let _23: &'42 mut i32; // anonymous local
     let _24: i32; // anonymous local
-    let _25: &'42 i32; // anonymous local
-    let left_val_26: &'43 i32; // local
-    let right_val_27: &'44 i32; // local
+    let _25: &'43 i32; // anonymous local
+    let left_val_26: &'44 i32; // local
+    let right_val_27: &'45 i32; // local
     let _28: bool; // anonymous local
     let _29: i32; // anonymous local
     let _30: i32; // anonymous local
     let kind_31: AssertKind; // local
     let _32: AssertKind; // anonymous local
-    let _33: &'45 i32; // anonymous local
-    let _34: &'46 i32; // anonymous local
-    let _35: &'47 i32; // anonymous local
-    let _36: &'48 i32; // anonymous local
-    let _37: Option<Arguments<'56>>[{built_in impl Sized for Arguments<'56>}]; // anonymous local
-    let z: &'63 (dyn NoParam + '64); // local
-    let _39: &'65 (dyn NoParam + '66); // anonymous local
-    let _40: &'67 (dyn NoParam + '68); // anonymous local
-    let _41: &'69 i32; // anonymous local
-    let _42: &'70 i32; // anonymous local
+    let _33: &'46 i32; // anonymous local
+    let _34: &'47 i32; // anonymous local
+    let _35: &'48 i32; // anonymous local
+    let _36: &'49 i32; // anonymous local
+    let _37: Option<Arguments<'58>>[{built_in impl Sized for Arguments<'58>}]; // anonymous local
+    let z: &'65 (dyn NoParam + '66); // local
+    let _39: &'67 (dyn NoParam + '68); // anonymous local
+    let _40: &'69 (dyn NoParam + '70); // anonymous local
+    let _41: &'71 i32; // anonymous local
+    let _42: &'72 i32; // anonymous local
     let _43: (); // anonymous local
-    let _44: &'71 (dyn NoParam + '72); // anonymous local
-    let a: &'76 (dyn Both32And64 + '77); // local
-    let _46: &'78 i32; // anonymous local
-    let _47: &'79 i32; // anonymous local
+    let _44: &'73 (dyn NoParam + '74); // anonymous local
+    let a: &'78 (dyn Both32And64 + '79); // local
+    let _46: &'80 i32; // anonymous local
+    let _47: &'81 i32; // anonymous local
     let _48: (); // anonymous local
-    let _49: &'80 (dyn Both32And64 + '81); // anonymous local
-    let _50: &'82 i32; // anonymous local
-    let _51: &'83 i32; // anonymous local
-    let _52: &'85 i64; // anonymous local
-    let _53: &'86 i64; // anonymous local
-    let b: &'90 (dyn LifetimeTrait<Ty = i32> + '91); // local
-    let _55: &'92 i32; // anonymous local
-    let _56: &'93 i32; // anonymous local
-    let _57: (&'94 i32, &'95 i32); // anonymous local
-    let _58: &'99 i32; // anonymous local
-    let _59: &'100 i32; // anonymous local
-    let _60: &'101 (dyn LifetimeTrait<Ty = i32> + '102); // anonymous local
-    let _61: &'103 (dyn LifetimeTrait<Ty = i32> + '104); // anonymous local
-    let _62: &'105 i32; // anonymous local
-    let _63: &'106 i32; // anonymous local
-    let _64: &'107 i32; // anonymous local
-    let left_val_65: &'108 i32; // local
-    let right_val_66: &'109 i32; // local
+    let _49: &'82 (dyn Both32And64 + '83); // anonymous local
+    let _50: &'84 i32; // anonymous local
+    let _51: &'85 i32; // anonymous local
+    let _52: &'87 i64; // anonymous local
+    let _53: &'88 i64; // anonymous local
+    let b: &'92 (dyn LifetimeTrait<Ty = i32> + '93); // local
+    let _55: &'94 i32; // anonymous local
+    let _56: &'95 i32; // anonymous local
+    let _57: (&'96 i32, &'97 i32); // anonymous local
+    let _58: &'101 i32; // anonymous local
+    let _59: &'102 i32; // anonymous local
+    let _60: &'103 (dyn LifetimeTrait<Ty = i32> + '104); // anonymous local
+    let _61: &'105 (dyn LifetimeTrait<Ty = i32> + '106); // anonymous local
+    let _62: &'107 i32; // anonymous local
+    let _63: &'108 i32; // anonymous local
+    let _64: &'109 i32; // anonymous local
+    let left_val_65: &'110 i32; // local
+    let right_val_66: &'111 i32; // local
     let _67: bool; // anonymous local
     let _68: i32; // anonymous local
     let _69: i32; // anonymous local
     let kind_70: AssertKind; // local
     let _71: AssertKind; // anonymous local
-    let _72: &'110 i32; // anonymous local
-    let _73: &'111 i32; // anonymous local
-    let _74: &'112 i32; // anonymous local
-    let _75: &'113 i32; // anonymous local
-    let _76: Option<Arguments<'114>>[{built_in impl Sized for Arguments<'114>}]; // anonymous local
-    let _77: &'118 i32; // anonymous local
-    let _78: &'119 i32; // anonymous local
-    let _79: &'120 i32; // anonymous local
-    let _80: &'121 i64; // anonymous local
-    let _81: &'122 i32; // anonymous local
-    let _82: &'123 i32; // anonymous local
-    let _83: &'124 i32; // anonymous local
-    let _84: &'125 i32; // anonymous local
-    let _85: &'126 i32; // anonymous local
-    let _86: &'127 i32; // anonymous local
-    let _87: &'158 i32; // anonymous local
-    let _88: &'166 i32; // anonymous local
-    let _89: &'184 i32; // anonymous local
-    let _90: &'190 i32; // anonymous local
-    let _91: &'191 i64; // anonymous local
-    let _92: &'197 i32; // anonymous local
-    let _93: &'205 i32; // anonymous local
-    let _94: &'210 i32; // anonymous local
-    let _95: &'224 i32; // anonymous local
+    let _72: &'112 i32; // anonymous local
+    let _73: &'113 i32; // anonymous local
+    let _74: &'114 i32; // anonymous local
+    let _75: &'115 i32; // anonymous local
+    let _76: Option<Arguments<'116>>[{built_in impl Sized for Arguments<'116>}]; // anonymous local
+    let _77: &'120 i32; // anonymous local
+    let _78: &'121 i32; // anonymous local
+    let _79: &'122 i32; // anonymous local
+    let _80: &'123 i64; // anonymous local
+    let _81: &'124 i32; // anonymous local
+    let _82: &'125 i32; // anonymous local
+    let _83: &'126 i32; // anonymous local
+    let _84: &'127 i32; // anonymous local
+    let _85: &'128 i32; // anonymous local
+    let _86: &'129 i32; // anonymous local
+    let _87: &'160 i32; // anonymous local
+    let _88: &'168 i32; // anonymous local
+    let _89: &'187 i32; // anonymous local
+    let _90: &'193 i32; // anonymous local
+    let _91: &'194 i64; // anonymous local
+    let _92: &'200 i32; // anonymous local
+    let _93: &'208 i32; // anonymous local
+    let _94: &'213 i32; // anonymous local
+    let _95: &'228 i32; // anonymous local
     let _96: i32; // anonymous local
-    let _97: &'225 i32; // anonymous local
+    let _97: &'229 i32; // anonymous local
     let _98: i32; // anonymous local
-    let _99: &'226 i32; // anonymous local
+    let _99: &'230 i32; // anonymous local
     let _100: i32; // anonymous local
-    let _101: &'227 i32; // anonymous local
+    let _101: &'231 i32; // anonymous local
     let _102: i32; // anonymous local
-    let _103: &'228 i32; // anonymous local
+    let _103: &'232 i32; // anonymous local
     let _104: i32; // anonymous local
-    let _105: &'229 i64; // anonymous local
+    let _105: &'233 i64; // anonymous local
     let _106: i64; // anonymous local
-    let _107: &'230 i32; // anonymous local
+    let _107: &'234 i32; // anonymous local
     let _108: i32; // anonymous local
-    let _109: &'231 i32; // anonymous local
+    let _109: &'235 i32; // anonymous local
     let _110: i32; // anonymous local
-    let _111: &'232 i32; // anonymous local
+    let _111: &'236 i32; // anonymous local
     let _112: i32; // anonymous local
 
     storage_live(_86)
@@ -1404,10 +1404,10 @@ fn main()
     _85 = move _86
     _3 = &(*_85)
     _2 = &(*_3)
-    x = unsize_cast<&'6 i32, &'128 (dyn Checkable<i32> + '129), &impl_Checkable_i32_for_i32::{vtable}>(move _2)
+    x = unsize_cast<&'6 i32, &'130 (dyn Checkable<i32> + '131), &impl_Checkable_i32_for_i32::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(x)
-    set_type(typeof(x) == &'130 (dyn Checkable<i32> + '131))
+    set_type(typeof(x) == &'132 (dyn Checkable<i32> + '133))
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
@@ -1448,10 +1448,10 @@ fn main()
     _9 = const 99i32
     _8 = &mut _9
     _7 = &mut (*_8)
-    y = unsize_cast<&'16 mut i32, &'136 mut (dyn Modifiable<i32> + '137), &impl_Modifiable_for_i32::{vtable}<i32>[{built_in impl Sized for i32}, impl_Clone_for_i32]>(move _7)
+    y = unsize_cast<&'16 mut i32, &'138 mut (dyn Modifiable<i32> + '139), &impl_Modifiable_for_i32::{vtable}<i32>[{built_in impl Sized for i32}, impl_Clone_for_i32]>(move _7)
     storage_dead(_7)
     fake_read(y)
-    set_type(typeof(y) == &'138 mut (dyn Modifiable<i32> + '139))
+    set_type(typeof(y) == &'140 mut (dyn Modifiable<i32> + '141))
     storage_dead(_8)
     storage_live(_10)
     storage_live(_11)
@@ -1463,7 +1463,7 @@ fn main()
     storage_live(_17)
     _17 = const "Hello"
     _16 = &(*_17) with_metadata(copy _17.metadata)
-    _15 = to_string<'142, str>[{built_in impl MetaSized for str}, {impl#10}](move _16)
+    _15 = to_string<'144, str>[{built_in impl MetaSized for str}, {impl#10}](move _16)
     ↳⚡ storage_dead(_85)
         storage_dead(_84)
         storage_dead(_83)
@@ -1491,8 +1491,8 @@ fn main()
     storage_dead(_16)
     _14 = &_15
     _13 = &(*_14)
-    _12 = modify_trait_object<'144, String>[{built_in impl Sized for String}, impl_Clone_for_String](move _13)
-    ↳⚡ conditional_drop[drop_glue<'145>] _15
+    _12 = modify_trait_object<'146, String>[{built_in impl Sized for String}, impl_Clone_for_String](move _13)
+    ↳⚡ conditional_drop[drop_glue<'147>] _15
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1570,8 +1570,8 @@ fn main()
         unwind_continue
     _11 = &_12
     storage_dead(_13)
-    _10 = is_empty<'147>(move _11)
-    ↳⚡ conditional_drop[drop_glue<'148>] _12
+    _10 = is_empty<'149>(move _11)
+    ↳⚡ conditional_drop[drop_glue<'150>] _12
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1623,7 +1623,7 @@ fn main()
             storage_dead(_87)
             storage_dead(_86)
             unwind_terminate
-        conditional_drop[drop_glue<'145>] _15
+        conditional_drop[drop_glue<'147>] _15
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1702,8 +1702,8 @@ fn main()
     if move _10 {
     } else {
         storage_dead(_11)
-        conditional_drop[drop_glue<'150>] _12
-        ↳⚡ conditional_drop[drop_glue<'145>] _15
+        conditional_drop[drop_glue<'152>] _12
+        ↳⚡ conditional_drop[drop_glue<'147>] _15
             ↳⚡ storage_dead(_85)
                 storage_dead(_84)
                 storage_dead(_83)
@@ -1779,7 +1779,7 @@ fn main()
             storage_dead(_32)
             storage_dead(kind_31)
             unwind_continue
-        conditional_drop[drop_glue<'152>] _15
+        conditional_drop[drop_glue<'154>] _15
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1964,7 +1964,7 @@ fn main()
         _83 = move _88
         _42 = &(*_83)
         _41 = &(*_42)
-        _40 = to_dyn_obj<'168, i32>[{built_in impl Sized for i32}, impl_NoParam_for_i32](move _41)
+        _40 = to_dyn_obj<'170, i32>[{built_in impl Sized for i32}, impl_NoParam_for_i32](move _41)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1990,11 +1990,11 @@ fn main()
             storage_dead(kind_31)
             unwind_continue
         _39 = &(*_40) with_metadata(copy _40.metadata)
-        z = unsize_cast<&'65 (dyn NoParam + '66), &'176 (dyn NoParam + '177),  at []>(move _39)
+        z = unsize_cast<&'67 (dyn NoParam + '68), &'179 (dyn NoParam + '180),  at []>(move _39)
         storage_dead(_41)
         storage_dead(_39)
         fake_read(z)
-        set_type(typeof(z) == &'178 (dyn NoParam + '179))
+        set_type(typeof(z) == &'181 (dyn NoParam + '182))
         storage_dead(_42)
         storage_dead(_40)
         storage_live(_43)
@@ -2051,10 +2051,10 @@ fn main()
         _82 = move _89
         _47 = &(*_82)
         _46 = &(*_47)
-        a = unsize_cast<&'78 i32, &'185 (dyn Both32And64 + '186), &impl_Both32And64_for_i32::{vtable}>(move _46)
+        a = unsize_cast<&'80 i32, &'188 (dyn Both32And64 + '189), &impl_Both32And64_for_i32::{vtable}>(move _46)
         storage_dead(_46)
         fake_read(a)
-        set_type(typeof(a) == &'187 (dyn Both32And64 + '188))
+        set_type(typeof(a) == &'190 (dyn Both32And64 + '191))
         storage_dead(_47)
         storage_live(_48)
         storage_live(_49)
@@ -2118,10 +2118,10 @@ fn main()
         _79 = move _92
         _56 = &(*_79)
         _55 = &(*_56)
-        b = unsize_cast<&'92 i32, &'198 (dyn LifetimeTrait<Ty = i32> + '199), &impl_LifetimeTrait_for_i32::{vtable}>(move _55)
+        b = unsize_cast<&'94 i32, &'201 (dyn LifetimeTrait<Ty = i32> + '202), &impl_LifetimeTrait_for_i32::{vtable}>(move _55)
         storage_dead(_55)
         fake_read(b)
-        set_type(typeof(b) == &'200 (dyn LifetimeTrait<Ty = i32> + '201))
+        set_type(typeof(b) == &'203 (dyn LifetimeTrait<Ty = i32> + '204))
         storage_dead(_56)
         storage_live(_57)
         storage_live(_58)
@@ -2129,14 +2129,14 @@ fn main()
         storage_live(_60)
         storage_live(_61)
         _61 = &(*b) with_metadata(copy b.metadata)
-        _60 = unsize_cast<&'103 (dyn LifetimeTrait<Ty = i32> + '104), &'203 (dyn LifetimeTrait<Ty = i32> + '204),  at []>(move _61)
+        _60 = unsize_cast<&'105 (dyn LifetimeTrait<Ty = i32> + '106), &'206 (dyn LifetimeTrait<Ty = i32> + '207),  at []>(move _61)
         storage_dead(_61)
         storage_live(_62)
         storage_live(_63)
         _78 = move _93
         _63 = &(*_78)
         _62 = &(*_63)
-        _59 = use_lifetime_trait<'208, '209>(move _60, move _62)
+        _59 = use_lifetime_trait<'211, '212>(move _60, move _62)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -2325,8 +2325,8 @@ fn main()
         return
     }
     storage_dead(_11)
-    conditional_drop[drop_glue<'149>] _12
-    ↳⚡ conditional_drop[drop_glue<'145>] _15
+    conditional_drop[drop_glue<'151>] _12
+    ↳⚡ conditional_drop[drop_glue<'147>] _15
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -2402,7 +2402,7 @@ fn main()
         storage_dead(_32)
         storage_dead(kind_31)
         unwind_continue
-    conditional_drop[drop_glue<'151>] _15
+    conditional_drop[drop_glue<'153>] _15
     ↳⚡ storage_dead(_85)
         storage_dead(_84)
         storage_dead(_83)

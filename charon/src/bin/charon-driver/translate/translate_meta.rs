@@ -413,8 +413,10 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let impl_id = self.register_and_enqueue(&None, src.clone()).unwrap();
                 name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
             }
-            TransItemSourceKind::TraitImpl(TransImplSource::Marker) => {
-                unreachable!("marker impls are only used as vtable item sources")
+            TransItemSourceKind::TraitImpl(
+                TransImplSource::Marker | TransImplSource::FnPointer(..),
+            ) => {
+                unreachable!("these impls are only used as vtable item sources")
             }
             TransItemSourceKind::CallableMethod(kind) => {
                 let fn_name = kind.method_name().to_string();
@@ -437,7 +439,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                 name.name
                     .push(PathElem::Ident("{vtable}".into(), Disambiguator::ZERO));
             }
-            TransItemSourceKind::VTableMethod => {
+            TransItemSourceKind::VTableMethod(..) => {
                 name.name.push(PathElem::Ident(
                     "{vtable_method}".into(),
                     Disambiguator::ZERO,
