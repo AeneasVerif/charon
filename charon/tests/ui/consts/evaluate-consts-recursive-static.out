@@ -11,20 +11,11 @@ pub opaque type Cell<T>
 where
     TraitClause0: (T: MetaSized),
 
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-// Full name: core::cell::{Cell<T>[TraitClause0::ImpliedClause0]}::new
-pub fn new<T>(_1: T) -> Cell<T>[TraitClause0::ImpliedClause0]
+// Full name: core::cell::UnsafeCell
+#[lang_item(UnsafeCell)]
+pub opaque type UnsafeCell<T>
 where
-    TraitClause0: (T: Sized),
-= <opaque>
+    TraitClause0: (T: MetaSized),
 
 // Full name: core::marker::Sync
 #[lang_item(Sync)]
@@ -43,70 +34,10 @@ impl "impl_Sync_for_Node" Sync for Node {
 }
 
 // Full name: test_crate::CYCLE_A
-pub fn CYCLE_A() -> Node
-{
-    let _0: Node; // return
-    let _1: Cell<&'5 Node>[{built_in impl MetaSized for &'5 Node}]; // anonymous local
-    let _2: &'8 Node; // anonymous local
-    let _3: &'9 Node; // anonymous local
-    let _4: &'10 Node; // anonymous local
-    let _5: &'11 Node; // anonymous local
-
-    storage_live(_0)
-    storage_live(_1)
-    storage_live(_2)
-    storage_live(_3)
-    storage_live(_4)
-    storage_live(_5)
-    _5 = &CYCLE_B
-    _4 = move _5
-    _3 = &(*_4)
-    _2 = &(*_3)
-    _1 = new<&'13 Node>[{built_in impl Sized for &'13 Node}](move _2)
-    ↳⚡ unwind_continue
-    storage_dead(_2)
-    _0 = Node { value: const 1u32, next: move _1 }
-    storage_dead(_4)
-    storage_dead(_3)
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::CYCLE_A
-pub static CYCLE_A: Node = CYCLE_A()
+pub static CYCLE_A: Node = Node { value: 1u32, next: Cell { 0: UnsafeCell { 0: &CYCLE_B } } }
 
 // Full name: test_crate::CYCLE_B
-pub fn CYCLE_B() -> Node
-{
-    let _0: Node; // return
-    let _1: Cell<&'5 Node>[{built_in impl MetaSized for &'5 Node}]; // anonymous local
-    let _2: &'8 Node; // anonymous local
-    let _3: &'9 Node; // anonymous local
-    let _4: &'10 Node; // anonymous local
-    let _5: &'11 Node; // anonymous local
-
-    storage_live(_0)
-    storage_live(_1)
-    storage_live(_2)
-    storage_live(_3)
-    storage_live(_4)
-    storage_live(_5)
-    _5 = &CYCLE_A
-    _4 = move _5
-    _3 = &(*_4)
-    _2 = &(*_3)
-    _1 = new<&'13 Node>[{built_in impl Sized for &'13 Node}](move _2)
-    ↳⚡ unwind_continue
-    storage_dead(_2)
-    _0 = Node { value: const 2u32, next: move _1 }
-    storage_dead(_4)
-    storage_dead(_3)
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::CYCLE_B
-pub static CYCLE_B: Node = CYCLE_B()
+pub static CYCLE_B: Node = Node { value: 2u32, next: Cell { 0: UnsafeCell { 0: &CYCLE_A } } }
 
 
 

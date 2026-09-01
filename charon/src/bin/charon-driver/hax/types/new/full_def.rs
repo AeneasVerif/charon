@@ -1152,7 +1152,13 @@ impl<'tcx> FullDef<'tcx> {
         let args = self.this().rustc_args(s);
         let kind = ty::AliasConstKind::new_from_def_id(tcx, def_id);
         let uneval = ty::AliasConst::new(tcx, kind, args);
-        let c = eval_ty_constant(s, uneval)?;
+        let Some(c) = eval_ty_constant(s, uneval) else {
+            // Const-evaluation gives up on a const that isn't monomorphic. For "trivial" consts,
+            // we can still read the value directly.
+            let (val, ty) = tcx.trivial_const(def_id)?;
+            let expr = const_value_to_constant_expr(s, ty, val, tcx.def_span(def_id));
+            return expr.discard_err();
+        };
         match c.kind() {
             ty::ConstKind::Error(..) => None,
             _ => Some(c.sinto(s)),
@@ -1178,6 +1184,15 @@ impl<'tcx> FullDef<'tcx> {
             self.def_id().type_of(s),
         );
         let alloc = s.base().tcx.eval_static_initializer(def_id).ok()?;
+        // A static whose type has interior mutability gets a mutable allocation, which
+        // const-eval refuses to read. We don't care though, so we reintern it as immutable.
+        let alloc = if alloc.inner().mutability.is_mut() {
+            let mut alloc = alloc.inner().clone();
+            alloc.mutability = rustc_middle::mir::Mutability::Not;
+            s.base().tcx.mk_const_alloc(alloc)
+        } else {
+            alloc
+        };
         // `eval_static_initializer` returns an interned allocation without an `AllocId`; give it
         // one so we can inspect it through the existing `ConstValue` path.
         let val = mir::ConstValue::Indirect {

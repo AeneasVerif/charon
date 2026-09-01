@@ -28,7 +28,13 @@ trait Trait<Self>
 fn FOO<Self>() -> usize
 where
     TraitClause0: (Self: Trait),
-= <missing>
+{
+    let _0: usize; // return
+
+    storage_live(_0)
+    _0 = const 42usize
+    return
+}
 
 // Full name: trait_default_const::Trait::FOO
 const FOO<Self>: usize
