@@ -2872,16 +2872,16 @@ where
     TypeOutlives0: T: '_0,
 {
     let _0: (); // return
-    let x: [&'6 mut T; 3usize]; // arg #1
-    let _a: &'10 mut T; // local
-    let _b: &'11 mut T; // local
-    let _c: &'12 mut T; // local
-    let _5: &'_ mut [&'6 mut T; 3usize]; // anonymous local
-    let _6: &'_ mut &'6 mut T; // anonymous local
-    let _7: &'_ mut [&'6 mut T; 3usize]; // anonymous local
-    let _8: &'_ mut &'6 mut T; // anonymous local
-    let _9: &'_ mut [&'6 mut T; 3usize]; // anonymous local
-    let _10: &'_ mut &'6 mut T; // anonymous local
+    let x: [&'8 mut T; 3usize]; // arg #1
+    let _a: &'12 mut T; // local
+    let _b: &'13 mut T; // local
+    let _c: &'14 mut T; // local
+    let _5: &'_ mut [&'8 mut T; 3usize]; // anonymous local
+    let _6: &'_ mut &'8 mut T; // anonymous local
+    let _7: &'_ mut [&'8 mut T; 3usize]; // anonymous local
+    let _8: &'_ mut &'8 mut T; // anonymous local
+    let _9: &'_ mut [&'8 mut T; 3usize]; // anonymous local
+    let _10: &'_ mut &'8 mut T; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -2889,21 +2889,21 @@ where
     storage_live(_5)
     _5 = &mut x
     storage_live(_6)
-    _6 = impl_IndexMut_for_array::index_mut<'_, &'6 mut T, usize, &'6 mut T, 3usize>[{built_in impl Sized for &'6 mut T}, {built_in impl Sized for usize}, impl_IndexMut_for_slice<&'6 mut T, usize, &'6 mut T>[{built_in impl Sized for &'6 mut T}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<&'6 mut T>[{built_in impl Sized for &'6 mut T}]]](move _5, const 0usize)
+    _6 = impl_IndexMut_for_array::index_mut<'_, &'8 mut T, usize, &'8 mut T, 3usize>[{built_in impl Sized for &'8 mut T}, {built_in impl Sized for usize}, impl_IndexMut_for_slice<&'8 mut T, usize, &'8 mut T>[{built_in impl Sized for &'8 mut T}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<&'8 mut T>[{built_in impl Sized for &'8 mut T}]]](move _5, const 0usize)
     ↳⚡ undefined_behavior
     _a = move (*_6)
     storage_live(_b)
     storage_live(_7)
     _7 = &mut x
     storage_live(_8)
-    _8 = impl_IndexMut_for_array::index_mut<'_, &'6 mut T, usize, &'6 mut T, 3usize>[{built_in impl Sized for &'6 mut T}, {built_in impl Sized for usize}, impl_IndexMut_for_slice<&'6 mut T, usize, &'6 mut T>[{built_in impl Sized for &'6 mut T}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<&'6 mut T>[{built_in impl Sized for &'6 mut T}]]](move _7, const 1usize)
+    _8 = impl_IndexMut_for_array::index_mut<'_, &'8 mut T, usize, &'8 mut T, 3usize>[{built_in impl Sized for &'8 mut T}, {built_in impl Sized for usize}, impl_IndexMut_for_slice<&'8 mut T, usize, &'8 mut T>[{built_in impl Sized for &'8 mut T}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<&'8 mut T>[{built_in impl Sized for &'8 mut T}]]](move _7, const 1usize)
     ↳⚡ undefined_behavior
     _b = move (*_8)
     storage_live(_c)
     storage_live(_9)
     _9 = &mut x
     storage_live(_10)
-    _10 = impl_IndexMut_for_array::index_mut<'_, &'6 mut T, usize, &'6 mut T, 3usize>[{built_in impl Sized for &'6 mut T}, {built_in impl Sized for usize}, impl_IndexMut_for_slice<&'6 mut T, usize, &'6 mut T>[{built_in impl Sized for &'6 mut T}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<&'6 mut T>[{built_in impl Sized for &'6 mut T}]]](move _9, const 2usize)
+    _10 = impl_IndexMut_for_array::index_mut<'_, &'8 mut T, usize, &'8 mut T, 3usize>[{built_in impl Sized for &'8 mut T}, {built_in impl Sized for usize}, impl_IndexMut_for_slice<&'8 mut T, usize, &'8 mut T>[{built_in impl Sized for &'8 mut T}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<&'8 mut T>[{built_in impl Sized for &'8 mut T}]]](move _9, const 2usize)
     ↳⚡ undefined_behavior
     _c = move (*_10)
     _0 = ()

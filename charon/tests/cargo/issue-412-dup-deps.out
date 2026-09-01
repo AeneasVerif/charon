@@ -70,28 +70,28 @@ fn main()
     let _0: (); // return
     let a: u32; // local
     let b: u32; // local
-    let _3: (&'8 u32, &'9 u32); // anonymous local
-    let _4: &'13 u32; // anonymous local
+    let _3: (&'9 u32, &'10 u32); // anonymous local
+    let _4: &'14 u32; // anonymous local
     let _5: u32; // anonymous local
     let _6: u32; // anonymous local
     let _7: u32; // anonymous local
     let _8: (u32, bool); // anonymous local
-    let _9: &'14 u32; // anonymous local
-    let left_val: &'15 u32; // local
-    let right_val: &'16 u32; // local
+    let _9: &'15 u32; // anonymous local
+    let left_val: &'16 u32; // local
+    let right_val: &'17 u32; // local
     let _12: bool; // anonymous local
     let _13: u32; // anonymous local
     let _14: u32; // anonymous local
     let kind: AssertKind; // local
     let _16: AssertKind; // anonymous local
-    let _17: &'17 u32; // anonymous local
-    let _18: &'18 u32; // anonymous local
-    let _19: &'19 u32; // anonymous local
-    let _20: &'20 u32; // anonymous local
-    let _21: Option<Arguments<'28>>[{built_in impl Sized for Arguments<'28>}]; // anonymous local
-    let _22: &'32 u32; // anonymous local
-    let _23: &'33 u32; // anonymous local
-    let _24: &'47 u32; // anonymous local
+    let _17: &'18 u32; // anonymous local
+    let _18: &'19 u32; // anonymous local
+    let _19: &'20 u32; // anonymous local
+    let _20: &'21 u32; // anonymous local
+    let _21: Option<Arguments<'30>>[{built_in impl Sized for Arguments<'30>}]; // anonymous local
+    let _22: &'34 u32; // anonymous local
+    let _23: &'35 u32; // anonymous local
+    let _24: &'50 u32; // anonymous local
     let _25: u32; // anonymous local
 
     storage_live(_0)
