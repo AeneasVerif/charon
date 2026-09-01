@@ -361,25 +361,25 @@ fn foo()
     let _13: u32; // anonymous local
     let _14: u32; // anonymous local
     let a: [u32; 10usize]; // local
-    let _16: (&'8 u32, &'9 u32); // anonymous local
-    let _17: &'13 u32; // anonymous local
+    let _16: (&'9 u32, &'10 u32); // anonymous local
+    let _17: &'14 u32; // anonymous local
     let _18: usize; // anonymous local
-    let _19: &'14 u32; // anonymous local
-    let left_val: &'15 u32; // local
-    let right_val: &'16 u32; // local
+    let _19: &'15 u32; // anonymous local
+    let left_val: &'16 u32; // local
+    let right_val: &'17 u32; // local
     let _22: bool; // anonymous local
     let _23: u32; // anonymous local
     let _24: u32; // anonymous local
     let kind: AssertKind; // local
     let _26: AssertKind; // anonymous local
-    let _27: &'17 u32; // anonymous local
-    let _28: &'18 u32; // anonymous local
-    let _29: &'19 u32; // anonymous local
-    let _30: &'20 u32; // anonymous local
-    let _31: Option<Arguments<'28>>[{built_in impl Sized for Arguments<'28>}]; // anonymous local
-    let _32: &'32 u32; // anonymous local
-    let _33: &'33 u32; // anonymous local
-    let _34: &'47 u32; // anonymous local
+    let _27: &'18 u32; // anonymous local
+    let _28: &'19 u32; // anonymous local
+    let _29: &'20 u32; // anonymous local
+    let _30: &'21 u32; // anonymous local
+    let _31: Option<Arguments<'30>>[{built_in impl Sized for Arguments<'30>}]; // anonymous local
+    let _32: &'34 u32; // anonymous local
+    let _33: &'35 u32; // anonymous local
+    let _34: &'50 u32; // anonymous local
     let _35: u32; // anonymous local
     let _36: &'_ [u32; 10usize]; // anonymous local
     let _37: &'_ u32; // anonymous local

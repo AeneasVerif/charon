@@ -483,25 +483,25 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
     let lhs: &'1 [u8]; // arg #1
     let rhs: &'2 [u8]; // arg #2
     let _3: bool; // anonymous local
-    let _4: (&'11 usize, &'12 usize); // anonymous local
-    let _5: &'16 usize; // anonymous local
+    let _4: (&'12 usize, &'13 usize); // anonymous local
+    let _5: &'17 usize; // anonymous local
     let _6: usize; // anonymous local
-    let _7: &'17 [u8]; // anonymous local
-    let _8: &'18 usize; // anonymous local
+    let _7: &'18 [u8]; // anonymous local
+    let _8: &'19 usize; // anonymous local
     let _9: usize; // anonymous local
-    let _10: &'19 [u8]; // anonymous local
-    let left_val: &'20 usize; // local
-    let right_val: &'21 usize; // local
+    let _10: &'20 [u8]; // anonymous local
+    let left_val: &'21 usize; // local
+    let right_val: &'22 usize; // local
     let _13: bool; // anonymous local
     let _14: usize; // anonymous local
     let _15: usize; // anonymous local
     let kind: AssertKind; // local
     let _17: AssertKind; // anonymous local
-    let _18: &'22 usize; // anonymous local
-    let _19: &'23 usize; // anonymous local
-    let _20: &'24 usize; // anonymous local
-    let _21: &'25 usize; // anonymous local
-    let _22: Option<Arguments<'33>>[{built_in impl Sized for Arguments<'33>}]; // anonymous local
+    let _18: &'23 usize; // anonymous local
+    let _19: &'24 usize; // anonymous local
+    let _20: &'25 usize; // anonymous local
+    let _21: &'26 usize; // anonymous local
+    let _22: Option<Arguments<'35>>[{built_in impl Sized for Arguments<'35>}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -513,7 +513,7 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
         storage_live(_6)
         storage_live(_7)
         _7 = &(*lhs) with_metadata(copy lhs.metadata)
-        _6 = core::slice::{[T]}::len<'38, u8>[{built_in impl Sized for u8}](move _7)
+        _6 = core::slice::{[T]}::len<'40, u8>[{built_in impl Sized for u8}](move _7)
         ↳⚡ storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)
@@ -530,7 +530,7 @@ fn select<'_0, '_1>(lhs: &'_0 [u8], rhs: &'_1 [u8])
         storage_live(_9)
         storage_live(_10)
         _10 = &(*rhs) with_metadata(copy rhs.metadata)
-        _9 = core::slice::{[T]}::len<'40, u8>[{built_in impl Sized for u8}](move _10)
+        _9 = core::slice::{[T]}::len<'42, u8>[{built_in impl Sized for u8}](move _10)
         ↳⚡ storage_dead(_22)
             storage_dead(_21)
             storage_dead(_20)

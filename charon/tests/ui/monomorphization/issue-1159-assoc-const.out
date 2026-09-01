@@ -140,13 +140,13 @@ const ARR: [u64; 1usize] = ARR()
 // Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER
 pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option<&'static [u64]>[{built_in impl Sized for &'static [u64]}]
 {
-    let _0: Option<&'6 [u64]>[{built_in impl Sized for &'6 [u64]}]; // return
-    let _1: &'10 [u64]; // anonymous local
-    let _2: &'12 [u64; 1usize]; // anonymous local
-    let _3: &'13 [u64; 1usize]; // anonymous local
-    let _4: &'14 [u64; 1usize]; // anonymous local
-    let _5: &'15 [u64; 1usize]; // anonymous local
-    let _6: &'23 [u64; 1usize]; // anonymous local
+    let _0: Option<&'8 [u64]>[{built_in impl Sized for &'8 [u64]}]; // return
+    let _1: &'12 [u64]; // anonymous local
+    let _2: &'14 [u64; 1usize]; // anonymous local
+    let _3: &'15 [u64; 1usize]; // anonymous local
+    let _4: &'16 [u64; 1usize]; // anonymous local
+    let _5: &'17 [u64; 1usize]; // anonymous local
+    let _6: &'26 [u64; 1usize]; // anonymous local
     let _7: [u64; 1usize]; // anonymous local
 
     storage_live(_5)

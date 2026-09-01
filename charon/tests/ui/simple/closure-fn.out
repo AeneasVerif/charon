@@ -393,7 +393,7 @@ fn main()
     storage_live(_11)
     _11 = &f
     _10 = &(*_11)
-    _9 = apply_to<'62, closure<'43, '44>>[{built_in impl Sized for closure<'43, '44>}, impl_Fn_tuple_for_closure<'43, '44>](move _10)
+    _9 = apply_to<'64, closure<'43, '44>>[{built_in impl Sized for closure<'43, '44>}, impl_Fn_tuple_for_closure<'43, '44>](move _10)
     ↳⚡ unwind_continue
     storage_dead(_10)
     storage_dead(_11)
@@ -403,7 +403,7 @@ fn main()
     storage_live(_14)
     _14 = &mut f
     _13 = &two-phase-mut (*_14)
-    _12 = apply_to_mut<'86, closure<'67, '68>>[{built_in impl Sized for closure<'67, '68>}, impl_FnMut_tuple_for_closure<'67, '68>](move _13)
+    _12 = apply_to_mut<'90, closure<'69, '70>>[{built_in impl Sized for closure<'69, '70>}, impl_FnMut_tuple_for_closure<'69, '70>](move _13)
     ↳⚡ unwind_continue
     storage_dead(_13)
     storage_dead(_14)
@@ -411,7 +411,7 @@ fn main()
     storage_live(_15)
     storage_live(_16)
     _16 = copy f
-    _15 = apply_to_once<closure<'89, '90>>[{built_in impl Sized for closure<'89, '90>}, impl_FnOnce_tuple_for_closure<'89, '90>](move _16)
+    _15 = apply_to_once<closure<'93, '94>>[{built_in impl Sized for closure<'93, '94>}, impl_FnOnce_tuple_for_closure<'93, '94>](move _16)
     ↳⚡ unwind_continue
     storage_dead(_16)
     storage_dead(_15)

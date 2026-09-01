@@ -368,10 +368,10 @@ where
     storage_live(value_2)
     value_2 = copy value_1
     fake_read(value_2)
-    set_type(typeof(value_2) == &'12 u32)
+    set_type(typeof(value_2) == &'13 u32)
     predicate_holds({built_in impl Sized for &'4 u32})
-    predicate_holds({impl Copy for &'_0 T}<'10, u32>)
-    set_outlives(&'11 u32, 'b)
+    predicate_holds({impl Copy for &'_0 T}<'11, u32>)
+    set_outlives(&'12 u32, 'b)
     _0 = ()
     storage_dead(value_2)
     storage_dead(value_1)

@@ -191,24 +191,24 @@ fn call<'a, T>(x: (&'a mut u32, T)) -> (&'a mut u32, T)
 where
     TraitClause0: (T: Sized),
 {
-    let _0: (&'6 mut u32, T); // return
-    let x: (&'10 mut u32, T); // arg #1
-    let _2: (&'14 mut u32, T); // anonymous local
+    let _0: (&'8 mut u32, T); // return
+    let x: (&'12 mut u32, T); // arg #1
+    let _2: (&'16 mut u32, T); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
     _2 = move x
-    _0 = test_crate::id::<(&_ mut _, _)><'25, u32, T>[{built_in impl core::marker::Sized::<(&_ mut _, _)><'25, T>[{built_in impl core::marker::Sized::<&_ mut _><'25> for u32}] for u32}, {built_in impl core::marker::Sized::<&_ mut _><'25> for u32}](move _2)
-    ↳⚡ conditional_drop[(_, _)::impl_Destruct_for_tuple::drop_glue::<_, &_ mut _, _><'72, '66, u32, T>[{built_in impl core::marker::Sized::<&_ mut _><'66> for u32}]] _2
+    _0 = test_crate::id::<(&_ mut _, _)><'28, u32, T>[{built_in impl core::marker::Sized::<(&_ mut _, _)><'28, T>[{built_in impl core::marker::Sized::<&_ mut _><'28> for u32}] for u32}, {built_in impl core::marker::Sized::<&_ mut _><'28> for u32}](move _2)
+    ↳⚡ conditional_drop[(_, _)::impl_Destruct_for_tuple::drop_glue::<_, &_ mut _, _><'87, '80, u32, T>[{built_in impl core::marker::Sized::<&_ mut _><'80> for u32}]] _2
         ↳⚡ storage_dead(x)
             unwind_terminate
-        conditional_drop[(_, _)::impl_Destruct_for_tuple::drop_glue::<_, &_ mut _, _><'108, '102, u32, T>[{built_in impl core::marker::Sized::<&_ mut _><'102> for u32}]] x
+        conditional_drop[(_, _)::impl_Destruct_for_tuple::drop_glue::<_, &_ mut _, _><'127, '120, u32, T>[{built_in impl core::marker::Sized::<&_ mut _><'120> for u32}]] x
         ↳⚡ storage_dead(x)
             unwind_terminate
         storage_dead(x)
         unwind_continue
     storage_dead(_2)
-    conditional_drop[(_, _)::impl_Destruct_for_tuple::drop_glue::<_, &_ mut _, _><'90, '84, u32, T>[{built_in impl core::marker::Sized::<&_ mut _><'84> for u32}]] x
+    conditional_drop[(_, _)::impl_Destruct_for_tuple::drop_glue::<_, &_ mut _, _><'107, '100, u32, T>[{built_in impl core::marker::Sized::<&_ mut _><'100> for u32}]] x
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(x)

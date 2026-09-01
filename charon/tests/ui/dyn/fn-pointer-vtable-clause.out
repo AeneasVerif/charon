@@ -367,9 +367,9 @@ where
     TypeOutlives0: F: 'static,
     TypeConstraint0: TraitClause1::ImpliedClause1::ImpliedClause1::Output = u32,
 {
-    let _0: Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '5)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '7)}, {built_in impl Sized for Global}]; // return
+    let _0: Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '6)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '8)}, {built_in impl Sized for Global}]; // return
     let f: F; // arg #1
-    let _2: Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '8)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '10)}, {built_in impl Sized for Global}]; // anonymous local
+    let _2: Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11)}, {built_in impl Sized for Global}]; // anonymous local
     let _3: Box<F>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]; // anonymous local
     let _4: F; // anonymous local
 
@@ -379,35 +379,35 @@ where
     storage_live(_4)
     _4 = move f
     _3 = new<F>[TraitClause0](move _4)
-    ↳⚡ conditional_drop[{built_in impl Destruct for F}::drop_glue<'11>] _4
+    ↳⚡ conditional_drop[{built_in impl Destruct for F}::drop_glue<'12>] _4
         ↳⚡ storage_dead(f)
             unwind_terminate
-        conditional_drop[{built_in impl Destruct for F}::drop_glue<'16>] f
+        conditional_drop[{built_in impl Destruct for F}::drop_glue<'17>] f
         ↳⚡ storage_dead(f)
             unwind_terminate
         storage_dead(f)
         unwind_continue
-    _2 = unsize_cast<Box<F>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}], Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '12)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '14)}, {built_in impl Sized for Global}], &vtable_of(TraitClause1)>(move _3)
-    conditional_drop[drop_glue<'15, F, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]] _3
-    ↳⚡ conditional_drop[{built_in impl Destruct for F}::drop_glue<'11>] _4
+    _2 = unsize_cast<Box<F>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}], Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '13)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '15)}, {built_in impl Sized for Global}], &vtable_of(TraitClause1)>(move _3)
+    conditional_drop[drop_glue<'16, F, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}]] _3
+    ↳⚡ conditional_drop[{built_in impl Destruct for F}::drop_glue<'12>] _4
         ↳⚡ storage_dead(f)
             unwind_terminate
-        conditional_drop[{built_in impl Destruct for F}::drop_glue<'16>] f
+        conditional_drop[{built_in impl Destruct for F}::drop_glue<'17>] f
         ↳⚡ storage_dead(f)
             unwind_terminate
         storage_dead(f)
         unwind_continue
     storage_dead(_4)
     storage_dead(_3)
-    _0 = unsize_cast<Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '8)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '10)}, {built_in impl Sized for Global}], Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '17)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '19)}, {built_in impl Sized for Global}],  at []>(move _2)
-    conditional_drop[drop_glue<'32, (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '28), Global>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '28)}, {built_in impl Sized for Global}]] _2
-    ↳⚡ conditional_drop[{built_in impl Destruct for F}::drop_glue<'16>] f
+    _0 = unsize_cast<Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11)}, {built_in impl Sized for Global}], Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '18)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '20)}, {built_in impl Sized for Global}],  at []>(move _2)
+    conditional_drop[drop_glue<'35, (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '30), Global>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '30)}, {built_in impl Sized for Global}]] _2
+    ↳⚡ conditional_drop[{built_in impl Destruct for F}::drop_glue<'17>] f
         ↳⚡ storage_dead(f)
             unwind_terminate
         storage_dead(f)
         unwind_continue
     storage_dead(_2)
-    conditional_drop[{built_in impl Destruct for F}::drop_glue<'33>] f
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'36>] f
     ↳⚡ storage_dead(f)
         unwind_continue
     storage_dead(f)
@@ -431,17 +431,17 @@ fn main()
     let _11: u32; // anonymous local
     let _12: &'18 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '19); // anonymous local
     let _13: (u32,); // anonymous local
-    let _h: Box<(dyn FnOnce<(u32,), Output = u32> + '25)>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '27)}, {built_in impl Sized for Global}]; // local
+    let _h: Box<(dyn FnOnce<(u32,), Output = u32> + '26)>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '28)}, {built_in impl Sized for Global}]; // local
     let _15: Box<fn(u32) -> u32>[{built_in impl MetaSized for fn(u32) -> u32}, {built_in impl Sized for Global}]; // anonymous local
     let _16: fn(u32) -> u32; // anonymous local
     let _17: u32; // anonymous local
-    let _18: &'36 Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '37)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '39)}, {built_in impl Sized for Global}]; // anonymous local
-    let _19: Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '40)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '42)}, {built_in impl Sized for Global}]; // anonymous local
+    let _18: &'38 Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '39)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '41)}, {built_in impl Sized for Global}]; // anonymous local
+    let _19: Box<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '42)>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '44)}, {built_in impl Sized for Global}]; // anonymous local
     let _20: fn(u32) -> u32; // anonymous local
     let _21: (u32,); // anonymous local
-    let _22: &'43 fn(u32) -> u32; // anonymous local
-    let _23: &'44 fn(u32) -> u32; // anonymous local
-    let _24: &'129 fn(u32) -> u32; // anonymous local
+    let _22: &'45 fn(u32) -> u32; // anonymous local
+    let _23: &'46 fn(u32) -> u32; // anonymous local
+    let _24: &'140 fn(u32) -> u32; // anonymous local
     let _25: fn(u32) -> u32; // anonymous local
 
     storage_live(_23)
@@ -460,10 +460,10 @@ fn main()
     _22 = move _23
     _3 = &(*_22)
     _2 = &(*_3)
-    f = unsize_cast<&'6 fn(u32) -> u32, &'45 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '46), &core::ops::function::Fn::{vtable}<fn(u32) -> u32, (u32,)>>(move _2)
+    f = unsize_cast<&'6 fn(u32) -> u32, &'47 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '48), &core::ops::function::Fn::{vtable}<fn(u32) -> u32, (u32,)>>(move _2)
     storage_dead(_2)
     fake_read(f)
-    set_type(typeof(f) == &'47 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '48))
+    set_type(typeof(f) == &'49 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '50))
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
@@ -483,10 +483,10 @@ fn main()
     _10 = cast<foo, fn(u32) -> u32>(const foo)
     _9 = &mut _10
     _8 = &mut (*_9)
-    g = unsize_cast<&'16 mut fn(u32) -> u32, &'53 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '54), &core::ops::function::FnMut::{vtable}<fn(u32) -> u32, (u32,)>>(move _8)
+    g = unsize_cast<&'16 mut fn(u32) -> u32, &'55 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '56), &core::ops::function::FnMut::{vtable}<fn(u32) -> u32, (u32,)>>(move _8)
     storage_dead(_8)
     fake_read(g)
-    set_type(typeof(g) == &'55 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '56))
+    set_type(typeof(g) == &'57 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '58))
     storage_dead(_9)
     storage_live(_11)
     storage_live(_12)
@@ -506,14 +506,14 @@ fn main()
     _15 = new<fn(u32) -> u32>[{built_in impl Sized for fn(u32) -> u32}](move _16)
     ↳⚡ storage_dead(_22)
         unwind_continue
-    _h = unsize_cast<Box<fn(u32) -> u32>[{built_in impl MetaSized for fn(u32) -> u32}, {built_in impl Sized for Global}], Box<(dyn FnOnce<(u32,), Output = u32> + '61)>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '63)}, {built_in impl Sized for Global}], &core::ops::function::FnOnce::{vtable}<fn(u32) -> u32, (u32,)>>(move _15)
-    conditional_drop[drop_glue<'64, fn(u32) -> u32, Global>[{built_in impl MetaSized for fn(u32) -> u32}, {built_in impl Sized for Global}]] _15
+    _h = unsize_cast<Box<fn(u32) -> u32>[{built_in impl MetaSized for fn(u32) -> u32}, {built_in impl Sized for Global}], Box<(dyn FnOnce<(u32,), Output = u32> + '63)>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '65)}, {built_in impl Sized for Global}], &core::ops::function::FnOnce::{vtable}<fn(u32) -> u32, (u32,)>>(move _15)
+    conditional_drop[drop_glue<'66, fn(u32) -> u32, Global>[{built_in impl MetaSized for fn(u32) -> u32}, {built_in impl Sized for Global}]] _15
     ↳⚡ storage_dead(_22)
         unwind_continue
     storage_dead(_16)
     storage_dead(_15)
     fake_read(_h)
-    set_type(typeof(_h) == Box<(dyn FnOnce<(u32,), Output = u32> + '65)>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '67)}, {built_in impl Sized for Global}])
+    set_type(typeof(_h) == Box<(dyn FnOnce<(u32,), Output = u32> + '67)>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '69)}, {built_in impl Sized for Global}])
     storage_live(_17)
     storage_live(_18)
     storage_live(_19)
@@ -521,7 +521,7 @@ fn main()
     // The same builtin impls appear as clause proofs in the call generics.
     _20 = cast<foo, fn(u32) -> u32>(const foo)
     _19 = wrap<fn(u32) -> u32>[{built_in impl Sized for fn(u32) -> u32}, {built_in impl Fn<(u32,)> for fn(u32) -> u32}](move _20)
-    ↳⚡ conditional_drop[drop_glue<'80, (dyn FnOnce<(u32,), Output = u32> + '76), Global>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '76)}, {built_in impl Sized for Global}]] _h
+    ↳⚡ conditional_drop[drop_glue<'84, (dyn FnOnce<(u32,), Output = u32> + '79), Global>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '79)}, {built_in impl Sized for Global}]] _h
         ↳⚡ storage_dead(_22)
             storage_dead(_25)
             storage_dead(_24)
@@ -533,14 +533,14 @@ fn main()
     storage_dead(_20)
     storage_live(_21)
     _21 = (const 3u32,)
-    _17 = call<'89, (u32,), (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '82), Global>[{built_in impl Sized for (u32,)}, {built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '84)}, {built_in impl Sized for Global}, {built_in impl Tuple for (u32,)}, Fn<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '87), (u32,)>](move _18, move _21)
-    ↳⚡ conditional_drop[drop_glue<'102, (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '98), Global>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '98)}, {built_in impl Sized for Global}]] _19
+    _17 = call<'94, (u32,), (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '86), Global>[{built_in impl Sized for (u32,)}, {built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '88)}, {built_in impl Sized for Global}, {built_in impl Tuple for (u32,)}, Fn<(dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '92), (u32,)>](move _18, move _21)
+    ↳⚡ conditional_drop[drop_glue<'109, (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '104), Global>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '104)}, {built_in impl Sized for Global}]] _19
         ↳⚡ storage_dead(_22)
             storage_dead(_25)
             storage_dead(_24)
             storage_dead(_23)
             unwind_terminate
-        conditional_drop[drop_glue<'80, (dyn FnOnce<(u32,), Output = u32> + '76), Global>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '76)}, {built_in impl Sized for Global}]] _h
+        conditional_drop[drop_glue<'84, (dyn FnOnce<(u32,), Output = u32> + '79), Global>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '79)}, {built_in impl Sized for Global}]] _h
         ↳⚡ storage_dead(_22)
             storage_dead(_25)
             storage_dead(_24)
@@ -550,8 +550,8 @@ fn main()
         unwind_continue
     storage_dead(_21)
     storage_dead(_18)
-    conditional_drop[drop_glue<'115, (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '111), Global>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '111)}, {built_in impl Sized for Global}]] _19
-    ↳⚡ conditional_drop[drop_glue<'80, (dyn FnOnce<(u32,), Output = u32> + '76), Global>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '76)}, {built_in impl Sized for Global}]] _h
+    conditional_drop[drop_glue<'124, (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '119), Global>[{built_in impl MetaSized for (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '119)}, {built_in impl Sized for Global}]] _19
+    ↳⚡ conditional_drop[drop_glue<'84, (dyn FnOnce<(u32,), Output = u32> + '79), Global>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '79)}, {built_in impl Sized for Global}]] _h
         ↳⚡ storage_dead(_22)
             storage_dead(_25)
             storage_dead(_24)
@@ -562,7 +562,7 @@ fn main()
     storage_dead(_19)
     storage_dead(_17)
     _0 = ()
-    conditional_drop[drop_glue<'128, (dyn FnOnce<(u32,), Output = u32> + '124), Global>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '124)}, {built_in impl Sized for Global}]] _h
+    conditional_drop[drop_glue<'139, (dyn FnOnce<(u32,), Output = u32> + '134), Global>[{built_in impl MetaSized for (dyn FnOnce<(u32,), Output = u32> + '134)}, {built_in impl Sized for Global}]] _h
     ↳⚡ storage_dead(_22)
         unwind_continue
     storage_dead(_h)

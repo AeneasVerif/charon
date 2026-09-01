@@ -314,11 +314,11 @@ where
     TraitClause0: (U: Sized),
     TypeOutlives0: U: '_0,
 {
-    let _0: WrapClone<&'9 U>[{built_in impl Sized for &'9 U}, {impl Clone for &'_0 T}<'9, U>]; // return
+    let _0: WrapClone<&'10 U>[{built_in impl Sized for &'10 U}, {impl Clone for &'_0 T}<'10, U>]; // return
     let _1: closure<U>[TraitClause0]; // arg #1
     let tupled_args: (&'_0 U,); // arg #2
-    let x: &'15 U; // local
-    let _4: &'16 U; // anonymous local
+    let x: &'16 U; // local
+    let _4: &'17 U; // anonymous local
 
     storage_live(_0)
     storage_live(x)
@@ -376,14 +376,14 @@ pub fn use_wrap()
 {
     let _0: (); // return
     let f: closure<u32>[{built_in impl Sized for u32}]; // local
-    let _2: WrapClone<&'10 u32>[{built_in impl Sized for &'10 u32}, {impl Clone for &'_0 T}<'10, u32>]; // anonymous local
+    let _2: WrapClone<&'11 u32>[{built_in impl Sized for &'11 u32}, {impl Clone for &'_0 T}<'11, u32>]; // anonymous local
     let _3: closure<u32>[{built_in impl Sized for u32}]; // anonymous local
-    let _4: (&'17 u32,); // anonymous local
-    let _5: &'18 u32; // anonymous local
-    let _6: &'19 u32; // anonymous local
-    let _7: &'20 u32; // anonymous local
-    let _8: &'21 u32; // anonymous local
-    let _9: &'36 u32; // anonymous local
+    let _4: (&'18 u32,); // anonymous local
+    let _5: &'19 u32; // anonymous local
+    let _6: &'20 u32; // anonymous local
+    let _7: &'21 u32; // anonymous local
+    let _8: &'22 u32; // anonymous local
+    let _9: &'37 u32; // anonymous local
     let _10: u32; // anonymous local
 
     storage_live(_0)
@@ -410,14 +410,14 @@ pub fn use_wrap()
     _6 = &(*_7)
     _5 = &(*_6)
     _4 = (move _5,)
-    _2 = call_once<'26, u32>[{built_in impl Sized for u32}](move _3, move _4)
-    ↳⚡ conditional_drop[drop_glue<'27, u32>[{built_in impl Sized for u32}]] _3
+    _2 = call_once<'27, u32>[{built_in impl Sized for u32}](move _3, move _4)
+    ↳⚡ conditional_drop[drop_glue<'28, u32>[{built_in impl Sized for u32}]] _3
         ↳⚡ storage_dead(_7)
             storage_dead(_10)
             storage_dead(_9)
             storage_dead(_8)
             unwind_terminate
-        conditional_drop[drop_glue<'35, u32>[{built_in impl Sized for u32}]] f
+        conditional_drop[drop_glue<'36, u32>[{built_in impl Sized for u32}]] f
         ↳⚡ storage_dead(_7)
             storage_dead(_10)
             storage_dead(_9)
@@ -428,11 +428,11 @@ pub fn use_wrap()
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
-    set_type(typeof(_2) <= WrapClone<&'28 u32>[{built_in impl Sized for &'28 u32}, {impl Clone for &'_0 T}<'28, u32>])
+    set_type(typeof(_2) <= WrapClone<&'29 u32>[{built_in impl Sized for &'29 u32}, {impl Clone for &'_0 T}<'29, u32>])
     storage_dead(_6)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[drop_glue<'34, u32>[{built_in impl Sized for u32}]] f
+    conditional_drop[drop_glue<'35, u32>[{built_in impl Sized for u32}]] f
     ↳⚡ storage_dead(_7)
         unwind_continue
     storage_dead(f)
