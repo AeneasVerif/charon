@@ -423,11 +423,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             }
                             type_map
                         };
+
+                        let impl_kind =
+                            match super::translate_closures::recognize_fn_trait_impl_proof(
+                                impl_source,
+                            ) {
+                                Some((self_ty, kind))
+                                    if matches!(self_ty.kind(), hax::TyKind::Arrow(_)) =>
+                                {
+                                    TransImplSource::FnPointer(kind)
+                                }
+                                _ => TransImplSource::Marker,
+                            };
                         let vtable = self.translate_vtable_instance_ref_no_enqueue(
                             span,
                             tref.hax_skip_binder_ref(),
                             tref.hax_skip_binder_ref(),
-                            TransImplSource::Marker,
+                            impl_kind,
                         )?;
                         TraitRefKind::BuiltinOrAuto {
                             builtin_data,
