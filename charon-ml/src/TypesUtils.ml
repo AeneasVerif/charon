@@ -120,7 +120,7 @@ let ty_as_builtin_adt (ty : ty) : builtin_ty * generic_args =
 
 let ty_as_opt_array (ty : ty) : (ty * constant_expr) option =
   match ty with
-  | TArray (ty, len) -> Some (ty, len)
+  | TArray (ty, len, _) -> Some (ty, len)
   | _ -> None
 
 let ty_is_array (ty : ty) : bool = Option.is_some (ty_as_opt_array ty)
@@ -132,7 +132,7 @@ let ty_as_array (ty : ty) : ty * constant_expr =
 
 let ty_as_opt_slice (ty : ty) : ty option =
   match ty with
-  | TSlice ty -> Some ty
+  | TSlice (ty, _) -> Some ty
   | _ -> None
 
 let ty_is_slice (ty : ty) : bool = Option.is_some (ty_as_opt_slice ty)

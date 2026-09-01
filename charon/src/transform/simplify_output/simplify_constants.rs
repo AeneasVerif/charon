@@ -108,14 +108,19 @@ fn transform_constant_expr(
             let aggregate_kind = AggregateKind::Adt(tref.clone(), *variant, None);
             Rvalue::Aggregate(aggregate_kind, fields)
         }
-        ConstantExprKind::Array(fields) if let TyKind::Array(ty, _) = val.ty().kind() => {
+        ConstantExprKind::Array(fields)
+            if let TyKind::Array(ty, _, ty_is_sized) = val.ty().kind() =>
+        {
             let fields = fields
                 .iter()
                 .cloned()
                 .map(|x| transform_constant_expr(ctx, x))
                 .collect_vec();
             let len = ConstantExpr::mk_usize(fields.len() as u128);
-            Rvalue::Aggregate(AggregateKind::Array(ty.clone(), len), fields)
+            Rvalue::Aggregate(
+                AggregateKind::Array(ty.clone(), len, ty_is_sized.clone()),
+                fields,
+            )
         }
         ConstantExprKind::FnPtr(fptr) if let TyKind::FnPtr(sig) = val.ty().kind() => {
             let from_ty =
@@ -167,16 +172,9 @@ impl UllbcPass for Transform {
         fun_decl.transform_ullbc_operands(ctx, transform_operand);
         if let Some(body) = fun_decl.body.as_unstructured_mut() {
             for block in body.body.iter_mut() {
-                // Simplify array with repeated constants into array repeats.
+                // Normalize unit constants into unit aggregates.
                 block.dyn_visit_in_body_mut(|rvalue: &mut Rvalue| {
                     take_mut::take(rvalue, |rvalue| match rvalue {
-                        Rvalue::Aggregate(AggregateKind::Array(ty, len), ref fields)
-                            if fields.len() >= 2
-                                && fields.iter().all(|x| x.is_const())
-                                && let Ok(op) = fields.iter().dedup().exactly_one() =>
-                        {
-                            Rvalue::Repeat(op.clone(), ty.clone(), len)
-                        }
                         Rvalue::Use(Operand::Const(e), _)
                             if e.kind().is_adt() && e.ty().is_unit() =>
                         {

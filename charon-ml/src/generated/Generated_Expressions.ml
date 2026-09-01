@@ -42,16 +42,17 @@ type aggregate_kind =
           indicates this is an enum and the aggregate uses that variant. The
           [FieldId], if present, indicates this is a union and the aggregate
           writes into that field. Otherwise this is a struct. *)
-  | AggregatedArray of ty * constant_expr
+  | AggregatedArray of ty * constant_expr * trait_ref option
       (** We don't put this with the ADT cas because this is the only built-in
           type with aggregates, and it is a primitive type. In particular, it
           makes sense to treat it differently because it has a variable number
-          of fields. *)
+          of fields. The third field is the proof that the element type is
+          [Sized]; it is absent with [--hide-marker-traits]. *)
   | AggregatedRawPtr of ty * ref_kind
       (** Construct a raw pointer from a pointer value, and its metadata (can be
           unit, if building a thin pointer). The type is the type of the
-          pointee. We lower this to a builtin function call for LLBC in
-          [crate::transform::simplify_output::ops_to_function_calls]. *)
+          pointee. We lower this to a standard library function call for LLBC in
+          [crate::transform::simplify_output::builtins_to_function_calls]. *)
 
 (** Binary operations. *)
 and binop =
@@ -291,10 +292,11 @@ and rvalue =
                 }
             }
           ]} *)
-  | Repeat of operand * ty * constant_expr
+  | Repeat of operand * ty * constant_expr * trait_ref
       (** [Repeat(x, n)] creates an array where [x] is copied [n] times.
 
-          We translate this to a function call for LLBC. *)
+          We translate this to a function call for LLBC. The last field is the
+          proof that the repeated value is [Copy]. *)
 
 (** Unary operation *)
 and unop =

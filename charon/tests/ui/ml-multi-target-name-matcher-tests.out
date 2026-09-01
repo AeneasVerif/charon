@@ -1,3 +1,21 @@
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait core::marker::MetaSized<Self>
+
+#[fundamental]
+#[lang_item(Sized)]
+pub trait core::marker::Sized<Self>
+{
+    proof ImpliedClause0: (Self: core::marker::MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+struct str {
+  _0: [u8],
+}
+
 #[pattern::pass("test_crate::x86_only")]
 #[pattern::fail("test_crate::x86_only::aarch64-apple-darwin")]
 #[pattern::fail("test_crate::x86_only::x86_64-apple-darwin")]

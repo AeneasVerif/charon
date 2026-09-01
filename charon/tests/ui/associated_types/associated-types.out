@@ -144,6 +144,10 @@ where
   _1: B,
 }
 
+struct str {
+  _0: [u8],
+}
+
 trait test_crate::Foo<'a, Self, Self_Item>
 where
     TypeOutlives0: Self_Item: 'a,

@@ -26,6 +26,12 @@ where
     TraitClause0: (T: MetaSized),
     TraitClause1: (type_error("removed allocator parameter"): Sized),
 
+struct () {}
+
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::A
 struct A<mut 'a, mut 'b> {
   x: &'a mut u32,

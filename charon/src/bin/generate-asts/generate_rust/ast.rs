@@ -147,7 +147,7 @@ impl Generator<'_> {
         match ty.kind() {
             TyKind::Literal(lit) => write!(f, "{lit}"),
             TyKind::Adt(tref) => self.fmt_generated_adt_type(f, tref),
-            TyKind::Array(ty, _) | TyKind::Slice(ty) => {
+            TyKind::Array(ty, ..) | TyKind::Slice(ty, _) => {
                 write!(f, "Vec<{}>", self.generated_type(ty))
             }
             TyKind::Ref(_, ty, _) => self.fmt_generated_type(f, ty),

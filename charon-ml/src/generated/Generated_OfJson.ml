@@ -120,10 +120,11 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _1 = option_of_json variant_id_of_json ctx _1 in
         let* _2 = option_of_json field_id_of_json ctx _2 in
         Ok (AggregatedAdt (_0, _1, _2))
-    | `Assoc [ ("Array", `List [ _0; _1 ]) ] ->
+    | `Assoc [ ("Array", `List [ _0; _1; _2 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
         let* _1 = constant_expr_of_json ctx _1 in
-        Ok (AggregatedArray (_0, _1))
+        let* _2 = option_of_json trait_ref_of_json ctx _2 in
+        Ok (AggregatedArray (_0, _1, _2))
     | `Assoc [ ("RawPtr", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
         let* _1 = ref_kind_of_json ctx _1 in
@@ -315,21 +316,6 @@ and builtin_assert_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `String "ResumedAfterDrop" -> Ok ResumedAfterDrop
     | _ -> Error "")
 
-and builtin_fun_id_of_json (ctx : of_json_ctx) (js : json) :
-    (builtin_fun_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "ArrayToSliceShared" -> Ok ArrayToSliceShared
-    | `String "ArrayToSliceMut" -> Ok ArrayToSliceMut
-    | `String "ArrayRepeat" -> Ok ArrayRepeat
-    | `Assoc [ ("Index", _0) ] ->
-        let* _0 = builtin_index_op_of_json ctx _0 in
-        Ok (Index _0)
-    | `Assoc [ ("PtrFromParts", _0) ] ->
-        let* _0 = ref_kind_of_json ctx _0 in
-        Ok (PtrFromParts _0)
-    | _ -> Error "")
-
 and builtin_impl_data_of_json (ctx : of_json_ctx) (js : json) :
     (builtin_impl_data, string) result =
   combine_error_msgs js __FUNCTION__
@@ -358,22 +344,6 @@ and builtin_impl_data_of_json (ctx : of_json_ctx) (js : json) :
     | `String "NoopDestruct" -> Ok BuiltinNoopDestruct
     | `String "UntrackedDestruct" -> Ok BuiltinUntrackedDestruct
     | `String "RemovedAdtClause" -> Ok BuiltinRemovedAdtClause
-    | _ -> Error "")
-
-and builtin_index_op_of_json (ctx : of_json_ctx) (js : json) :
-    (builtin_index_op, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc
-        [
-          ("is_array", is_array);
-          ("mutability", mutability);
-          ("is_range", is_range);
-        ] ->
-        let* is_array = bool_of_json ctx is_array in
-        let* mutability = ref_kind_of_json ctx mutability in
-        let* is_range = bool_of_json ctx is_range in
-        Ok ({ is_array; mutability; is_range } : builtin_index_op)
     | _ -> Error "")
 
 and builtin_path_elem_of_json (ctx : of_json_ctx) (js : json) :
@@ -694,9 +664,6 @@ and fun_id_of_json (ctx : of_json_ctx) (js : json) : (fun_id, string) result =
     | `Assoc [ ("Regular", _0) ] ->
         let* _0 = fun_decl_id_of_json ctx _0 in
         Ok (FRegular _0)
-    | `Assoc [ ("Builtin", _0) ] ->
-        let* _0 = builtin_fun_id_of_json ctx _0 in
-        Ok (FBuiltin _0)
     | _ -> Error "")
 
 and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
@@ -1214,11 +1181,12 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         let* _1 = ty_of_json ctx _1 in
         let* _2 = option_of_json constant_expr_of_json ctx _2 in
         Ok (Len (_0, _1, _2))
-    | `Assoc [ ("Repeat", `List [ _0; _1; _2 ]) ] ->
+    | `Assoc [ ("Repeat", `List [ _0; _1; _2; _3 ]) ] ->
         let* _0 = operand_of_json ctx _0 in
         let* _1 = ty_of_json ctx _1 in
         let* _2 = constant_expr_of_json ctx _2 in
-        Ok (Repeat (_0, _1, _2))
+        let* _3 = trait_ref_of_json ctx _3 in
+        Ok (Repeat (_0, _1, _2, _3))
     | _ -> Error "")
 
 and scalar_value_of_json (ctx : of_json_ctx) (js : json) :
@@ -1400,11 +1368,11 @@ and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = de_bruijn_var_of_json trait_clause_id_of_json ctx _0 in
         Ok (Clause _0)
     | `Assoc [ ("ParentClause", `List [ _0; _1 ]) ] ->
-        let* _0 = box_of_json trait_ref_of_json ctx _0 in
+        let* _0 = trait_ref_of_json ctx _0 in
         let* _1 = trait_clause_id_of_json ctx _1 in
         Ok (ParentClause (_0, _1))
     | `Assoc [ ("ItemClause", `List [ _0; _1; _2 ]) ] ->
-        let* _0 = box_of_json trait_ref_of_json ctx _0 in
+        let* _0 = trait_ref_of_json ctx _0 in
         let* _1 = assoc_type_id_of_json ctx _1 in
         let* _2 = trait_clause_id_of_json ctx _2 in
         Ok (ItemClause (_0, _1, _2))
@@ -1504,13 +1472,15 @@ and ty_kind_of_json (ctx : of_json_ctx) (js : json) : (ty_kind, string) result =
     | `Assoc [ ("PtrMetadata", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (TPtrMetadata _0)
-    | `Assoc [ ("Array", `List [ _0; _1 ]) ] ->
+    | `Assoc [ ("Array", `List [ _0; _1; _2 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
         let* _1 = constant_expr_of_json ctx _1 in
-        Ok (TArray (_0, _1))
-    | `Assoc [ ("Slice", _0) ] ->
+        let* _2 = option_of_json trait_ref_of_json ctx _2 in
+        Ok (TArray (_0, _1, _2))
+    | `Assoc [ ("Slice", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
-        Ok (TSlice _0)
+        let* _1 = option_of_json trait_ref_of_json ctx _1 in
+        Ok (TSlice (_0, _1))
     | `Assoc [ ("Pattern", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
         let* _1 = type_pattern_of_json ctx _1 in

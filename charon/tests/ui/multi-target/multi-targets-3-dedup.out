@@ -23,6 +23,10 @@ where
   _1: B,
 }
 
+struct str {
+  _0: [u8],
+}
+
 fn test_crate::clone_it<'_0>(x: &'_0 u32) -> u32
 {
     let _0: u32; // return

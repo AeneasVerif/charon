@@ -5,6 +5,22 @@
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::array::{[T; N]}::as_slice
+pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
 // Full name: alloc::string::String
 #[lang_item(String)]
 pub opaque type String
@@ -58,7 +74,7 @@ fn BAR() -> &'static [u8]
     _4 = &_3
     _2 = move _4
     _1 = &(*_2)
-    _0 = @ArrayToSliceShared<'_, u8, 5usize>(move _1)
+    _0 = as_slice<'_, u8, 5usize>[{built_in impl Sized for u8}](move _1)
     ↳⚡ undefined_behavior
     storage_dead(_2)
     storage_dead(_1)
@@ -83,7 +99,7 @@ fn main()
     storage_live(_3)
     _3 = const "Hello"
     _2 = &(*_3) with_metadata(copy _3.metadata)
-    _s = to_string<'5, str>[{built_in impl MetaSized for str}, {impl#1}](move _2)
+    _s = to_string<'5, str>[{built_in impl MetaSized for str}, {impl#3}](move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     fake_read(_s)

@@ -72,6 +72,10 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
     vtable: core::ops::function::Fn::{vtable}<Args, Self_Clause1_Clause1_Output>
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::Trait
 pub trait Trait<Self>
 {

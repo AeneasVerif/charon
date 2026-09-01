@@ -1,5 +1,15 @@
 # Final LLBC before serialization:
 
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -14,15 +24,13 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-struct () {}
-
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
+// Full name: core::array::{[T; N]}::as_mut_slice
+pub fn as_mut_slice<'_0, T, const N : usize>(_1: &'_0 mut [T; N]) -> &'_0 mut [T]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Destruct),
+    TypeOutlives0: T: '_0,
+= <opaque>
 
 #[lang_item(DropGlue)]
 unsafe fn core::ptr::drop_glue<'_0, T>(_1: &'_0 mut T)
@@ -42,6 +50,14 @@ where
     storage_dead(_1)
     return
 }
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index_mut
+pub fn impl_SliceIndex_slice_for_usize::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Destruct),
+    TypeOutlives0: T: '_0,
+= <opaque>
 
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]
@@ -102,6 +118,10 @@ where
   _1: B,
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: {impl Destruct for [T]}::drop_glue
 unsafe fn impl_Destruct_for_slice::drop_glue<'_0, T>(_1: &'_0 mut [T])
 where
@@ -140,7 +160,7 @@ where
             storage_live(_10)
             _10 = &mut (*_1) with_metadata(copy _1.metadata)
             storage_live(_11)
-            _11 = @SliceIndexMut<'_, T>(move _10, copy _3)
+            _11 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[TraitClause0, {built_in impl Destruct for T}](copy _3, move _10)
             ↳⚡ undefined_behavior
             _6 = &raw mut (*_11)
             _3 = move _3 wrap.+ const 1usize
@@ -153,7 +173,7 @@ where
                         storage_live(_8)
                         _8 = &mut (*_1) with_metadata(copy _1.metadata)
                         storage_live(_9)
-                        _9 = @SliceIndexMut<'_, T>(move _8, copy _3)
+                        _9 = impl_SliceIndex_slice_for_usize::index_mut<'_, T>[TraitClause0, {built_in impl Destruct for T}](copy _3, move _8)
                         ↳⚡ undefined_behavior
                         _4 = &raw mut (*_9)
                         _3 = move _3 wrap.+ const 1usize
@@ -222,7 +242,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _0 = ()
-    _2 = @ArrayToSliceMut<'_, T, N>(move _1)
+    _2 = as_mut_slice<'_, T, N>[TraitClause0, {built_in impl Destruct for T}](move _1)
     ↳⚡ undefined_behavior
     _0 = core::ptr::drop_glue<'6, [T]>[impl_Destruct_for_slice<T>[TraitClause0, TraitClause1], impl_Destruct_for_slice<T>[TraitClause0, TraitClause1]](move _2)
     ↳⚡ storage_dead(_2)

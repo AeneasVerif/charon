@@ -18,6 +18,10 @@ pub trait Sized<Self>
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 struct test_crate::DynableTrait::{vtable}<Ty0> {
   size: usize,
   align: usize,

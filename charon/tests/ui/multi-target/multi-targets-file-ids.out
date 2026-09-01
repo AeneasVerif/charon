@@ -86,6 +86,18 @@ pub unsafe fn core::core_arch::x86::sse2::_mm_loadu_si128(_1: *const core::core_
 pub unsafe fn core::core_arch::x86::sse2::_mm_storeu_si128(_1: *mut core::core_arch::x86::__m128i, _2: core::core_arch::x86::__m128i)
 = <opaque>
 
+pub fn core::array::{[T; N]}::as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
+where
+    TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+pub fn core::array::{[T; N]}::as_mut_slice<'_0, T, const N : usize>(_1: &'_0 mut [T; N]) -> &'_0 mut [T]
+where
+    TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
 pub fn core::clone::impls::{impl core::clone::Clone for usize}::clone<'_0>(_1: &'_0 usize) -> usize
 = <opaque>
 
@@ -248,6 +260,18 @@ where
 pub fn core::num::{u16}::wrapping_add(_1: u16, _2: u16) -> u16
 = <opaque>
 
+pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
+where
+    TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
+where
+    TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
 pub fn core::slice::{[T]}::as_ptr<'_0, T>(_1: &'_0 [T]) -> *const T
 where
     TraitClause0: (T: core::marker::Sized),
@@ -262,6 +286,10 @@ where
 
 struct (_,)<A> {
   _0: A,
+}
+
+struct str {
+  _0: [u8],
 }
 
 trait test_crate::SimdOps<Self>
@@ -320,7 +348,7 @@ fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::store<
     storage_live(_5)
     storage_live(_6)
     _6 = &two-phase-mut (*dst)
-    _5 = @ArrayToSliceMut<'_, u16, 8usize>(move _6)
+    _5 = core::array::{[T; N]}::as_mut_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _6)
     ↳⚡ undefined_behavior
     storage_dead(_6)
     _4 = core::slice::{[T]}::as_mut_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _5)
@@ -358,7 +386,7 @@ fn test_crate::x86::{impl test_crate::SimdOps for test_crate::x86::Sse2}::load<'
     storage_live(_4)
     storage_live(_5)
     _5 = &(*src)
-    _4 = @ArrayToSliceShared<'_, u16, 8usize>(move _5)
+    _4 = core::array::{[T; N]}::as_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _5)
     ↳⚡ undefined_behavior
     storage_dead(_5)
     _3 = core::slice::{[T]}::as_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _4)
@@ -429,7 +457,7 @@ fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::store<
     storage_live(_4)
     storage_live(_5)
     _5 = &two-phase-mut (*dst)
-    _4 = @ArrayToSliceMut<'_, u16, 8usize>(move _5)
+    _4 = core::array::{[T; N]}::as_mut_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _5)
     ↳⚡ undefined_behavior
     storage_dead(_5)
     _3 = core::slice::{[T]}::as_mut_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _4)
@@ -463,7 +491,7 @@ fn test_crate::arm::{impl test_crate::SimdOps for test_crate::arm::Neon}::load<'
     storage_live(_3)
     storage_live(_4)
     _4 = &(*src)
-    _3 = @ArrayToSliceShared<'_, u16, 8usize>(move _4)
+    _3 = core::array::{[T; N]}::as_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _4)
     ↳⚡ undefined_behavior
     storage_dead(_4)
     _2 = core::slice::{[T]}::as_ptr<'7, u16>[{built_in impl core::marker::Sized for u16}](move _3)
@@ -576,11 +604,14 @@ fn test_crate::add_scalar<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8us
     let _14: usize; // anonymous local
     let _15: usize; // anonymous local
     let _16: &'_ [u16; 8usize]; // anonymous local
-    let _17: &'_ u16; // anonymous local
-    let _18: &'_ [u16; 8usize]; // anonymous local
-    let _19: &'_ u16; // anonymous local
-    let _20: &'_ mut [u16; 8usize]; // anonymous local
-    let _21: &'_ mut u16; // anonymous local
+    let _17: &'_ [u16]; // anonymous local
+    let _18: &'_ u16; // anonymous local
+    let _19: &'_ [u16; 8usize]; // anonymous local
+    let _20: &'_ [u16]; // anonymous local
+    let _21: &'_ u16; // anonymous local
+    let _22: &'_ mut [u16; 8usize]; // anonymous local
+    let _23: &'_ mut [u16]; // anonymous local
+    let _24: &'_ mut u16; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -622,19 +653,25 @@ fn test_crate::add_scalar<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8us
         storage_live(_16)
         _16 = &(*a)
         storage_live(_17)
-        _17 = @ArrayIndexShared<'_, u16, 8usize>(move _16, copy _12)
+        _17 = core::array::{[T; N]}::as_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _16)
         ↳⚡ undefined_behavior
-        _11 = copy (*_17)
+        storage_live(_18)
+        _18 = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_, u16>[{built_in impl core::marker::Sized for u16}](copy _12, move _17)
+        ↳⚡ undefined_behavior
+        _11 = copy (*_18)
         storage_live(_13)
         storage_live(_14)
         _14 = copy i
         fake_read((*b))
-        storage_live(_18)
-        _18 = &(*b)
         storage_live(_19)
-        _19 = @ArrayIndexShared<'_, u16, 8usize>(move _18, copy _14)
+        _19 = &(*b)
+        storage_live(_20)
+        _20 = core::array::{[T; N]}::as_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _19)
         ↳⚡ undefined_behavior
-        _13 = copy (*_19)
+        storage_live(_21)
+        _21 = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_, u16>[{built_in impl core::marker::Sized for u16}](copy _14, move _20)
+        ↳⚡ undefined_behavior
+        _13 = copy (*_21)
         _10 = core::num::{u16}::wrapping_add(move _11, move _13)
         ↳⚡ storage_dead(b)
             storage_dead(a)
@@ -644,12 +681,15 @@ fn test_crate::add_scalar<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8us
         storage_live(_15)
         _15 = copy i
         fake_read((*a))
-        storage_live(_20)
-        _20 = &mut (*a)
-        storage_live(_21)
-        _21 = @ArrayIndexMut<'_, u16, 8usize>(move _20, copy _15)
+        storage_live(_22)
+        _22 = &mut (*a)
+        storage_live(_23)
+        _23 = core::array::{[T; N]}::as_mut_slice<'_, u16, 8usize>[{built_in impl core::marker::Sized for u16}](move _22)
         ↳⚡ undefined_behavior
-        (*_21) = move _10
+        storage_live(_24)
+        _24 = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index_mut<'_, u16>[{built_in impl core::marker::Sized for u16}](copy _15, move _23)
+        ↳⚡ undefined_behavior
+        (*_24) = move _10
         storage_dead(_10)
         storage_dead(_15)
         storage_dead(_14)
@@ -666,6 +706,9 @@ fn test_crate::add_scalar<'_0, '_1>(a: &'_0 mut [u16; 8usize], b: &'_1 [u16; 8us
     storage_dead(_3)
     storage_dead(b)
     storage_dead(a)
+    storage_dead(_24)
+    storage_dead(_23)
+    storage_dead(_22)
     storage_dead(_21)
     storage_dead(_20)
     storage_dead(_19)

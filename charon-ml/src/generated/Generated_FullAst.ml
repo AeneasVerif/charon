@@ -157,11 +157,12 @@ and cli_options = {
       (** Transform precise drops to the equivalent [drop_glue(&mut p)] call. *)
   ops_to_function_calls : bool;
       (** Transform array-to-slice unsizing, repeat expressions, and raw pointer
-          construction into builtin functions in ULLBC. *)
+          construction into standard library function calls in LLBC. *)
   index_to_function_calls : bool;
-      (** Transform array/slice indexing into builtin functions in ULLBC. Note
-          that this may introduce UB since it creates references that were not
-          normally created, including when indexing behind a raw pointer. *)
+      (** Transform array/slice indexing into standard library function calls in
+          LLBC. Note that this may introduce UB since it creates references that
+          were not normally created, including when indexing behind a raw
+          pointer. *)
   treat_box_as_builtin : bool;
       (** Treat [Box<T>] as if it was a built-in type. *)
   no_gen_tuple_structs : bool;

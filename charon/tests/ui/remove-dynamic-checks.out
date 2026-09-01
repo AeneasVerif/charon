@@ -14,6 +14,20 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index
+pub fn impl_SliceIndex_slice_for_usize::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index_mut
+pub fn impl_SliceIndex_slice_for_usize::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
 struct () {}
 
 struct (_, _)<A, B>
@@ -22,6 +36,10 @@ where
 {
   _0: A,
   _1: B,
+}
+
+struct str {
+  _0: [u8],
 }
 
 // Full name: test_crate::neg_test
@@ -720,7 +738,7 @@ fn index_slice_ignore_value<'_0>(x: &'_0 [u32])
     storage_live(_3)
     _3 = &(*x) with_metadata(copy x.metadata)
     storage_live(_4)
-    _4 = @SliceIndexShared<'_, u32>(move _3, copy _2)
+    _4 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _2, move _3)
     ↳⚡ undefined_behavior
     _ = (*_4)
     storage_dead(_2)
@@ -966,7 +984,7 @@ fn div_unsigned_to_slice<'_0>(result: &'_0 mut [u32], x: u32)
     storage_live(_5)
     _5 = &mut (*result) with_metadata(copy result.metadata)
     storage_live(_6)
-    _6 = @SliceIndexMut<'_, u32>(move _5, copy _4)
+    _6 = impl_SliceIndex_slice_for_usize::index_mut<'_, u32>[{built_in impl Sized for u32}](copy _4, move _5)
     ↳⚡ undefined_behavior
     (*_6) = move _3 panic./ const 3329u32
     storage_dead(_3)
@@ -999,7 +1017,7 @@ fn div_signed_to_slice<'_0>(result: &'_0 mut [i32], x: i32)
     storage_live(_5)
     _5 = &mut (*result) with_metadata(copy result.metadata)
     storage_live(_6)
-    _6 = @SliceIndexMut<'_, i32>(move _5, copy _4)
+    _6 = impl_SliceIndex_slice_for_usize::index_mut<'_, i32>[{built_in impl Sized for i32}](copy _4, move _5)
     ↳⚡ undefined_behavior
     (*_6) = move _3 panic./ const 3329i32
     storage_dead(_3)
@@ -1035,7 +1053,7 @@ fn add_to_slice<'_0>(result: &'_0 mut [u32], x: u32)
     storage_live(_6)
     _6 = &mut (*result) with_metadata(copy result.metadata)
     storage_live(_7)
-    _7 = @SliceIndexMut<'_, u32>(move _6, copy _5)
+    _7 = impl_SliceIndex_slice_for_usize::index_mut<'_, u32>[{built_in impl Sized for u32}](copy _5, move _6)
     ↳⚡ undefined_behavior
     (*_7) = move _4
     storage_dead(_3)
@@ -1080,7 +1098,7 @@ fn add_to_slice2<'_0>(result: &'_0 mut [u8], i: usize, x: u8)
     storage_live(_9)
     _9 = &mut (*result) with_metadata(copy result.metadata)
     storage_live(_10)
-    _10 = @SliceIndexMut<'_, u8>(move _9, copy _6)
+    _10 = impl_SliceIndex_slice_for_usize::index_mut<'_, u8>[{built_in impl Sized for u8}](copy _6, move _9)
     ↳⚡ undefined_behavior
     (*_10) = move _5
     storage_dead(_4)

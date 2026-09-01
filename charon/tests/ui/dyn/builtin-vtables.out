@@ -105,6 +105,10 @@ struct (_,)<A> {
   _0: A,
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::takes_fn
 fn takes_fn<'_0>(_1: &'_0 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '_0))
 {

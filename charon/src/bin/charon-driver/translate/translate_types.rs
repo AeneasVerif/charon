@@ -9,6 +9,18 @@ use charon_lib::ast::*;
 use charon_lib::ids::IndexVec;
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
+    pub(crate) fn translate_sized_proof(
+        &mut self,
+        span: Span,
+        ty: ty::Ty<'tcx>,
+    ) -> Result<Option<TraitRef>, Error> {
+        if self.options.hide_marker_traits {
+            return Ok(None);
+        }
+        let proof = hax::solve_sized(&self.hax_state, ty);
+        self.translate_trait_proof(span, &proof).map(Some)
+    }
+
     /// Translate an erased region. If we're inside a body, this will return a fresh body region
     /// instead.
     pub(crate) fn translate_erased_region(&mut self) -> Region {
@@ -169,11 +181,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Adt(tref)
             }
             hax::TyKind::Array(item_ref) => {
+                // `Sized` is the first predicate if we're not hiding marker traits.
+                let item_ty_is_sized = if self.options.hide_marker_traits {
+                    None
+                } else {
+                    Some(self.translate_trait_proof(span, &item_ref.trait_proofs[0])?)
+                };
                 let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
                 assert!(args.types.len() == 1 && args.const_generics.len() == 1);
                 TyKind::Array(
                     args.types.pop().unwrap(),
                     args.const_generics.pop().unwrap(),
+                    item_ty_is_sized,
                 )
             }
             hax::TyKind::Pat(ty, pat) => {
@@ -182,9 +201,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Pattern(ty, pat)
             }
             hax::TyKind::Slice(item_ref) => {
+                // `Sized` is the first predicate if we're not hiding marker traits.
+                let item_ty_is_sized = if self.options.hide_marker_traits {
+                    None
+                } else {
+                    Some(self.translate_trait_proof(span, &item_ref.trait_proofs[0])?)
+                };
                 let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
                 assert!(args.types.len() == 1);
-                TyKind::Slice(args.types.pop().unwrap())
+                TyKind::Slice(args.types.pop().unwrap(), item_ty_is_sized)
             }
             hax::TyKind::Tuple(item_ref) => {
                 let tref = self.translate_type_decl_ref(span, item_ref)?;
@@ -788,7 +813,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             AdtKind::Str => {
                 let u8_ty = TyKind::Literal(LiteralTy::UInt(UIntTy::U8)).into_ty();
-                Some(vec![Ty::mk_slice(u8_ty)])
+                let u8_is_sized = self.translate_sized_proof(def_span, self.tcx.types.u8)?;
+                Some(vec![Ty::mk_slice(u8_ty, u8_is_sized)])
             }
             _ => None,
         };

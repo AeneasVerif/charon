@@ -1,6 +1,31 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::array::{[T; N]}::as_slice
+pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
 struct () {}
+
+struct str {
+  _0: [u8],
+}
 
 // Full name: test_crate::main
 fn main()
@@ -23,7 +48,7 @@ fn main()
     storage_live(_7)
     _7 = &_6
     storage_live(_8)
-    _8 = @ArrayToSliceShared<'_, u8, 3usize>(move _7)
+    _8 = as_slice<'_, u8, 3usize>[{built_in impl Sized for u8}](move _7)
     ↳⚡ undefined_behavior
     y = move _8
     storage_live(z)

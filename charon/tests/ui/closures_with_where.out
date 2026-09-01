@@ -75,6 +75,10 @@ where
     TypeConstraint0: TraitClause3::ImpliedClause1::Output = T,
 = <opaque>
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::Ops
 trait Ops<Self, const K : usize>
 {

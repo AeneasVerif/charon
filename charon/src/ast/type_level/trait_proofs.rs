@@ -101,7 +101,7 @@ pub enum TraitRefKind {
     ///                     parent clause 1 of clause 0
     /// }
     /// ```
-    ParentClause(Box<TraitRef>, TraitClauseId),
+    ParentClause(TraitRef, TraitClauseId),
 
     /// A clause defined on an associated type. This variant is only used during translation; after
     /// the `lift_associated_item_clauses` pass, clauses on items become `ParentClause`s.
@@ -122,7 +122,7 @@ pub enum TraitRefKind {
     ///                         clause 1 from item W (from local clause 0)
     /// }
     /// ```
-    ItemClause(Box<TraitRef>, AssocTypeId, TraitClauseId),
+    ItemClause(TraitRef, AssocTypeId, TraitClauseId),
 
     /// The implicit `Self: Trait` clause. Present inside trait declarations, including trait
     /// method declarations. Not present in trait implementations as we can use `TraitImpl` intead.
@@ -235,6 +235,24 @@ impl TraitRef {
     /// value at the end of the function.
     pub fn with_contents_mut<R>(&mut self, f: impl FnOnce(&mut TraitRefContents) -> R) -> R {
         self.0.with_inner_mut(f)
+    }
+
+    /// Construct a proof of the chosen parent clause. Returns `None` if the crate is missing the
+    /// data we need.
+    pub fn project_parent_clause(
+        self,
+        krate: &TranslatedCrate,
+        clause_id: TraitClauseId,
+    ) -> Option<Self> {
+        let trait_decl = krate.trait_decls.get(self.trait_id())?;
+        let trait_decl_ref = trait_decl.implied_clauses[clause_id]
+            .trait_
+            .clone()
+            .substitute_with_tref(&self);
+        Some(Self::new(
+            TraitRefKind::ParentClause(self, clause_id),
+            trait_decl_ref,
+        ))
     }
 
     pub fn vtable_ref<'a>(&'a self, krate: &'a TranslatedCrate) -> Option<&'a GlobalDeclRef> {

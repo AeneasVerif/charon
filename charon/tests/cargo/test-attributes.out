@@ -812,21 +812,21 @@ pub const test_attributes::tests::test_foo: TestDescAndFn = test_attributes::tes
 pub fn main()
 {
     let _0: (); // return
-    let _1: &'4 [&'5 TestDescAndFn]; // anonymous local
-    let _2: &'9 [&'10 TestDescAndFn; 3usize]; // anonymous local
-    let _3: &'11 [&'12 TestDescAndFn; 3usize]; // anonymous local
-    let _4: &'20 [&'21 TestDescAndFn; 3usize]; // anonymous local
-    let _5: &'22 [&'23 TestDescAndFn; 3usize]; // anonymous local
-    let _6: &'32 [&'33 TestDescAndFn; 3usize]; // anonymous local
-    let _7: [&'34 TestDescAndFn; 3usize]; // anonymous local
-    let _8: &'35 TestDescAndFn; // anonymous local
-    let _9: &'36 TestDescAndFn; // anonymous local
+    let _1: &'12 [&'13 TestDescAndFn]; // anonymous local
+    let _2: &'28 [&'29 TestDescAndFn; 3usize]; // anonymous local
+    let _3: &'33 [&'34 TestDescAndFn; 3usize]; // anonymous local
+    let _4: &'48 [&'49 TestDescAndFn; 3usize]; // anonymous local
+    let _5: &'53 [&'54 TestDescAndFn; 3usize]; // anonymous local
+    let _6: &'75 [&'76 TestDescAndFn; 3usize]; // anonymous local
+    let _7: [&'80 TestDescAndFn; 3usize]; // anonymous local
+    let _8: &'84 TestDescAndFn; // anonymous local
+    let _9: &'85 TestDescAndFn; // anonymous local
     let _10: TestDescAndFn; // anonymous local
-    let _11: &'37 TestDescAndFn; // anonymous local
-    let _12: &'38 TestDescAndFn; // anonymous local
+    let _11: &'86 TestDescAndFn; // anonymous local
+    let _12: &'87 TestDescAndFn; // anonymous local
     let _13: TestDescAndFn; // anonymous local
-    let _14: &'39 TestDescAndFn; // anonymous local
-    let _15: &'40 TestDescAndFn; // anonymous local
+    let _14: &'88 TestDescAndFn; // anonymous local
+    let _15: &'89 TestDescAndFn; // anonymous local
     let _16: TestDescAndFn; // anonymous local
 
     storage_live(_5)
@@ -862,9 +862,9 @@ pub fn main()
     _4 = move _5
     _3 = &(*_4)
     _2 = &(*_3)
-    _1 = unsize_cast<&'9 [&'10 TestDescAndFn; 3usize], &'26 [&'27 TestDescAndFn], 3usize>(move _2)
+    _1 = unsize_cast<&'28 [&'29 TestDescAndFn; 3usize], &'66 [&'67 TestDescAndFn], 3usize>(move _2)
     storage_dead(_2)
-    _0 = test_main_static<'30, '31>(move _1)
+    _0 = test_main_static<'73, '74>(move _1)
     ↳⚡ unwind_continue
     storage_dead(_1)
     storage_dead(_3)

@@ -36,6 +36,10 @@ where
   _1: B,
 }
 
+struct str {
+  _0: [u8],
+}
+
 struct test_crate::Super::{vtable}<T> {
   size: usize,
   align: usize,

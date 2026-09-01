@@ -14,6 +14,41 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::array::repeat
+pub fn repeat<T, const N : usize>(_1: T) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+= <opaque>
+
+// Full name: core::array::{[T; N]}::as_slice
+pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn clone<'_0>(_1: &'_0 u32) -> u32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u32}
+impl "impl_Clone_for_u32" Clone for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    fn clone<'_0_1> = clone<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: core::default::Default
 #[diagnostic_item("Default")]
 pub trait Default<Self>
@@ -54,6 +89,13 @@ pub enum AssertKind {
   Ne,
   Match,
 }
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index
+pub fn impl_SliceIndex_slice_for_usize::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
 
 // Full name: core::slice::{[T]}::len
 #[lang_item(SliceLen)]
@@ -184,7 +226,7 @@ pub fn sum<'_0>(s: &'_0 [u32]) -> u32
         storage_live(_25)
         _25 = &(*s) with_metadata(copy s.metadata)
         storage_live(_26)
-        _26 = @SliceIndexShared<'_, u32>(move _25, copy _13)
+        _26 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _13, move _25)
         ↳⚡ undefined_behavior
         _12 = copy (*_26)
         _14 = copy sum panic.+ copy _12
@@ -382,7 +424,8 @@ fn foo()
     let _34: &'47 u32; // anonymous local
     let _35: u32; // anonymous local
     let _36: &'_ [u32; 10usize]; // anonymous local
-    let _37: &'_ u32; // anonymous local
+    let _37: &'_ [u32]; // anonymous local
+    let _38: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_32)
@@ -469,7 +512,7 @@ fn foo()
     storage_dead(_11)
     storage_live(a)
     // Build an array
-    a = @ArrayRepeat<u32, 10usize>(const 0u32)
+    a = repeat<u32, 10usize>[{built_in impl Sized for u32}, impl_Clone_for_u32](const 0u32)
     ↳⚡ undefined_behavior
     fake_read(a)
     storage_live(_16)
@@ -487,9 +530,12 @@ fn foo()
     storage_live(_36)
     _36 = &a
     storage_live(_37)
-    _37 = @ArrayIndexShared<'_, u32, 10usize>(move _36, copy _18)
+    _37 = as_slice<'_, u32, 10usize>[{built_in impl Sized for u32}](move _36)
     ↳⚡ undefined_behavior
-    _17 = &(*_37)
+    storage_live(_38)
+    _38 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _18, move _37)
+    ↳⚡ undefined_behavior
+    _17 = &(*_38)
     storage_live(_19)
     _32 = move _33
     _19 = &(*_32)
@@ -533,6 +579,7 @@ fn foo()
         storage_dead(_27)
         storage_dead(_26)
         storage_dead(kind)
+        storage_dead(_38)
         storage_dead(_37)
         storage_dead(_36)
         storage_dead(_35)
@@ -561,6 +608,7 @@ fn foo()
     storage_dead(_27)
     storage_dead(_26)
     storage_dead(kind)
+    storage_dead(_38)
     storage_dead(_37)
     storage_dead(_36)
     storage_dead(_35)

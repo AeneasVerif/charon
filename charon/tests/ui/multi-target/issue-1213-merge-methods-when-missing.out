@@ -221,6 +221,10 @@ struct (_,)<A> {
   _0: A,
 }
 
+struct str {
+  _0: [u8],
+}
+
 fn test_crate::f<'_0>(blocks: &'_0 mut [u8])
 {
     let _0: (); // return

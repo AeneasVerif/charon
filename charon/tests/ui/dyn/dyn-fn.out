@@ -90,6 +90,10 @@ struct (_,)<A> {
   _0: A,
 }
 
+struct str {
+  _0: [u8],
+}
+
 struct (_, _)<A, B>
 where
     TraitClause0: (A: Sized),

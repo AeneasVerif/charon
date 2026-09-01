@@ -79,6 +79,10 @@ where
   _1: B,
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::Pair
 pub struct Pair<T1, T2>
 where

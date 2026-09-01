@@ -2,11 +2,15 @@
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::HasAssoc
 trait HasAssoc<Self>
 {
     type Assoc
-    vtable: {vtable}<Self::Assoc>
+    vtable: test_crate::HasAssoc::{vtable}<Self::Assoc>
 }
 
 // Full name: test_crate::Trait

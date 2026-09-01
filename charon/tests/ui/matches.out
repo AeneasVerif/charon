@@ -32,6 +32,10 @@ where
   _1: B,
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::E1
 pub enum E1 {
   V1,

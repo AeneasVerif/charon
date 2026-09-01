@@ -15,8 +15,8 @@
 //! opaque, its signature/"outer shell" will be translated (e.g. for functions that's the
 //! signature) but not its contents.
 use itertools::Itertools;
-use rustc_middle::ty::TyCtxt;
-use rustc_span::sym;
+use rustc_middle::ty::{self, TyCtxt};
+use rustc_span::{def_id::DefId, sym};
 use std::cell::RefCell;
 use std::collections::HashSet;
 use std::path::PathBuf;
@@ -253,6 +253,70 @@ impl<'tcx> TranslateCtx<'tcx> {
         super::resolve_path::def_path_def_ids(&self.hax_state, pat, strict).map_err(|err| {
             register_error!(self, span, "failed to resolve item path `{pat}`: {err}")
         })
+    }
+
+    /// Resolve a path that is expected to name exactly one item.
+    pub fn resolve_single_path(&self, span: Span, pat: &NamePattern) -> Result<DefId, Error> {
+        self.resolve_path(span, pat, true)?
+            .into_iter()
+            .exactly_one()
+            .map_err(|_| register_error!(self, span, "expected exactly one item for path `{pat}`"))
+    }
+
+    fn register_polymorphic_function(&mut self, def_id: DefId) -> FunDeclId {
+        let def_id = def_id.sinto(&self.hax_state);
+        let item = TransItemSource::polymorphic(&def_id, TransItemSourceKind::Fun);
+        self.register_and_enqueue(&None, item).unwrap()
+    }
+
+    fn register_poly_function_by_path(&mut self, path: &str) -> Result<FunDeclId, Error> {
+        let path = NamePattern::parse(path).unwrap();
+        let def_id = self.resolve_single_path(Span::dummy(), &path)?;
+        Ok(self.register_polymorphic_function(def_id))
+    }
+
+    /// Register the std functions needed for `builtins_to_function_calls`.
+    fn register_builtin_functions(&mut self) -> Result<(), Error> {
+        if self.options.ops_to_function_calls || self.options.index_to_function_calls {
+            self.register_poly_function_by_path("array::as_slice")?;
+            self.register_poly_function_by_path("array::as_mut_slice")?;
+        }
+        if self.options.ops_to_function_calls {
+            for path in [
+                "core::array::repeat",
+                "core::ptr::metadata::from_raw_parts",
+                "core::ptr::metadata::from_raw_parts_mut",
+            ] {
+                self.register_poly_function_by_path(path)?;
+            }
+        }
+        if self.options.index_to_function_calls {
+            let tcx = self.tcx;
+            let trait_id = self.tcx.get_diagnostic_item(sym::SliceIndex).unwrap();
+            let impls = self.tcx.all_impls(trait_id).filter(|&impl_id| {
+                let trait_ref = tcx.impl_trait_ref(impl_id).skip_binder();
+                trait_ref.args.type_at(1).is_slice()
+                    && match trait_ref.self_ty().kind() {
+                        ty::Uint(ty::UintTy::Usize) => true,
+                        ty::Adt(def, args) => {
+                            tcx.is_lang_item(def.did(), rustc_attr_ir::LangItem::Range)
+                                && args.type_at(0) == tcx.types.usize
+                        }
+                        _ => false,
+                    }
+            });
+            for impl_id in impls {
+                let methods = tcx
+                    .associated_items(impl_id)
+                    .in_definition_order()
+                    .filter(|item| item.name() == sym::index || item.name() == sym::index_mut)
+                    .map(|item| item.def_id);
+                for method_id in methods {
+                    self.register_polymorphic_function(method_id);
+                }
+            }
+        }
+        Ok(())
     }
 
     /// Returns the default translation kind for the given `DefId`. Returns `None` for items that
@@ -1071,6 +1135,7 @@ pub fn translate<'tcx>(
     };
     ctx.register_target_info();
     ctx.reserve_unit_decl();
+    ctx.register_builtin_functions()?;
 
     // Start translating from the selected items.
     for start_from in ctx.options.start_from.clone() {

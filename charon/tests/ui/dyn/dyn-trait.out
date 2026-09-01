@@ -117,6 +117,10 @@ struct (_,)<A> {
   _0: A,
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::construct
 #[charon::opaque]
 fn construct<T>(_1: T) -> Box<(dyn Display + 'static)>[{built_in impl MetaSized for (dyn Display + 'static)}, {built_in impl Sized for Global}]

@@ -28,6 +28,10 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::foo
 fn foo<M>(_msg: M)
 where

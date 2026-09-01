@@ -48,6 +48,10 @@ pub trait FnPtr<Self>
     non-dyn-compatible
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::requires_fn_ptr
 fn requires_fn_ptr<F>()
 where

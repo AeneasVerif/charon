@@ -89,6 +89,10 @@ pub trait core::marker::Destruct::<Option<Option<&_ mut _>>><'_0, T0>
     non-dyn-compatible
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::identity
 fn identity<T>(x: T) -> T
 where

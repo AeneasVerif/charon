@@ -338,31 +338,6 @@ impl Display for BorrowKind {
     }
 }
 
-impl Display for BuiltinFunId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
-        let name = match *self {
-            BuiltinFunId::ArrayToSliceShared => "ArrayToSliceShared",
-            BuiltinFunId::ArrayToSliceMut => "ArrayToSliceMut",
-            BuiltinFunId::ArrayRepeat => "ArrayRepeat",
-            BuiltinFunId::Index(BuiltinIndexOp {
-                is_array,
-                mutability,
-                is_range,
-            }) => {
-                let ty = if is_array { "Array" } else { "Slice" };
-                let op = if is_range { "SubSlice" } else { "Index" };
-                let mutability = mutability.variant_name();
-                &format!("{ty}{op}{mutability}")
-            }
-            BuiltinFunId::PtrFromParts(mutability) => {
-                let mutability = mutability.variant_name();
-                &format!("PtrFromParts{mutability}")
-            }
-        };
-        f.write_str(name)
-    }
-}
-
 impl<C: AstFormatter> FmtWithCtx<C> for Call {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let dest = self.dest.with_ctx(ctx);
@@ -601,7 +576,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for FnPtr {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.kind.as_ref() {
             FnPtrKind::Fun(FunId::Regular(def_id)) => write!(f, "{}", def_id.with_ctx(ctx))?,
-            FnPtrKind::Fun(FunId::Builtin(builtin)) => write!(f, "@{}", builtin)?,
             FnPtrKind::Trait(trait_ref, method_id) => {
                 write!(f, "{}::", trait_ref.with_ctx(ctx))?;
                 ctx.format_method_name(f, trait_ref.trait_id(), *method_id)?;
@@ -1912,8 +1886,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                 }
             }
             Rvalue::Len(place, ..) => write!(f, "len({})", place.with_ctx(ctx)),
-            Rvalue::Repeat(op, _ty, cg) => {
-                write!(f, "[{}; {}]", op.with_ctx(ctx), cg.with_ctx(ctx))
+            Rvalue::Repeat(operand, _, len, _) => {
+                write!(f, "[{}; {}]", operand.with_ctx(ctx), len.with_ctx(ctx))
             }
         }
     }
@@ -2634,10 +2608,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 }
                 write!(f, " {}", ty.with_ctx(ctx))
             }
-            TyKind::Array(ty, len) => {
+            TyKind::Array(ty, len, _) => {
                 write!(f, "[{}; {}]", ty.with_ctx(ctx), len.with_ctx(ctx))
             }
-            TyKind::Slice(ty) => {
+            TyKind::Slice(ty, _) => {
                 write!(f, "[{}]", ty.with_ctx(ctx))
             }
             TyKind::TraitType(trait_ref, type_id, generics) => {

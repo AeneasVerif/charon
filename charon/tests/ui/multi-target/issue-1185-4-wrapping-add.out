@@ -1,7 +1,23 @@
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait core::marker::MetaSized<Self>
+
+#[fundamental]
+#[lang_item(Sized)]
+pub trait core::marker::Sized<Self>
+{
+    proof ImpliedClause0: (Self: core::marker::MetaSized)
+    non-dyn-compatible
+}
+
 pub fn core::num::{u32}::wrapping_add(_1: u32, _2: u32) -> u32
 = <opaque>
 
 struct () {}
+
+struct str {
+  _0: [u8],
+}
 
 pub fn test_crate::mod_reduce(a: u32) -> u32
 {

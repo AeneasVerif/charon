@@ -104,10 +104,12 @@ pub enum TyKind {
     /// As a marker of taking out metadata from a given type
     /// The internal type is assumed to be a type variable
     PtrMetadata(Ty),
-    /// An array type `[T; N]`
-    Array(Ty, ConstantExpr),
-    /// A slice type `[T]`
-    Slice(Ty),
+    /// An array type `[T; N]`. The third field is the proof that `T: Sized`; it is absent with
+    /// `--hide-marker-traits`.
+    Array(Ty, ConstantExpr, Option<TraitRef>),
+    /// A slice type `[T]`. The second field is the proof that `T: Sized`; it is absent with
+    /// `--hide-marker-traits`.
+    Slice(Ty, Option<TraitRef>),
     /// A pattern type. This is a newtype over the first type whose valid values are restricted by
     /// the pattern.
     Pattern(Ty, TypePattern),
@@ -403,12 +405,12 @@ impl Ty {
         matches!(self.kind(), TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
     }
 
-    pub fn mk_array(ty: Ty, len: ConstantExpr) -> Ty {
-        TyKind::Array(ty, len).into_ty()
+    pub fn mk_array(ty: Ty, len: ConstantExpr, ty_is_sized: Option<TraitRef>) -> Ty {
+        TyKind::Array(ty, len, ty_is_sized).into_ty()
     }
 
-    pub fn mk_slice(ty: Ty) -> Ty {
-        TyKind::Slice(ty).into_ty()
+    pub fn mk_slice(ty: Ty, ty_is_sized: Option<TraitRef>) -> Ty {
+        TyKind::Slice(ty, ty_is_sized).into_ty()
     }
     /// Return true if it is actually unit (i.e.: 0-tuple)
     pub fn is_unit(&self) -> bool {
@@ -513,7 +515,7 @@ impl Ty {
 
     pub fn as_array_or_slice(&self) -> Option<&Ty> {
         match self.kind() {
-            TyKind::Slice(ty) | TyKind::Array(ty, _) => Some(ty),
+            TyKind::Slice(ty, _) | TyKind::Array(ty, ..) => Some(ty),
             _ => None,
         }
     }

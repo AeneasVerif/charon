@@ -135,6 +135,10 @@ where
   _1: B,
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: (_,)::{impl Destruct for (A,)}::drop_glue
 unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A>(_1: &'_0 mut (A,))
 where

@@ -328,9 +328,9 @@ impl<'a> PartialMonomorphizer<'a> {
             TyKind::Ref(_, _, RefKind::Mut) => true,
             TyKind::Ref(_, ty, _)
             | TyKind::RawPtr(ty, _)
-            | TyKind::Array(ty, _)
+            | TyKind::Array(ty, ..)
             | TyKind::Pattern(ty, _)
-            | TyKind::Slice(ty) => self.is_infected(ty),
+            | TyKind::Slice(ty, _) => self.is_infected(ty),
             TyKind::Adt(tref) => {
                 let ty_infected = self.infected_types.contains(&tref.id);
                 let args_infected = if self.specialize_adts {

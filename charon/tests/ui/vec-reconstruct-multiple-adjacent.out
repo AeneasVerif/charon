@@ -103,6 +103,10 @@ where
     TraitClause1: (T: Clone),
 = <opaque>
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::multiple_adjacent
 fn multiple_adjacent()
 {

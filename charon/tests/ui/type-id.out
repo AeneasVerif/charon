@@ -2,16 +2,25 @@
 
 struct () {}
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
 // Full name: core::any::TypeId
 #[lang_item(TypeId)]
 pub struct TypeId {
   data: [*const (); 2usize],
 }
-
-// Full name: core::marker::MetaSized
-#[fundamental]
-#[lang_item(MetaSized)]
-pub trait MetaSized<Self>
 
 // Full name: core::intrinsics::type_id
 #[rustc_intrinsic]
@@ -46,15 +55,6 @@ where
     storage_dead(_2)
     storage_dead(_1)
     return
-}
-
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
 }
 
 // Full name: test_crate::type_id_u32

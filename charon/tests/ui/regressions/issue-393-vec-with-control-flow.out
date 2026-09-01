@@ -43,6 +43,8 @@ where
     TraitClause0: (T: MetaSized),
     TraitClause1: (type_error("removed allocator parameter"): Sized),
 
+struct () {}
+
 // Full name: alloc::boxed::Box::{impl Destruct for Box<T>[TraitClause0, TraitClause1]}::drop_glue
 unsafe fn impl_Destruct_for_Box::drop_glue<'_0, T, A>(_1: &'_0 mut Box<T>[TraitClause0, TraitClause1])
 where
@@ -88,6 +90,10 @@ where
     TypeOutlives0: T: '_0,
     TypeOutlives1: A: '_0,
 = <opaque>
+
+struct str {
+  _0: [u8],
+}
 
 // Full name: test_crate::next
 pub fn next(b: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]>[{built_in impl Sized for Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]}]

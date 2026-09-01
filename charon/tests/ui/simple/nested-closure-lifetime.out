@@ -83,6 +83,10 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 
+struct str {
+  _0: [u8],
+}
+
 struct test_crate::foo::closure::closure<'_0, T>
 where
     TraitClause0: (T: Sized),

@@ -12,6 +12,10 @@ pub trait core::marker::Sized<Self>
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 #[charon::opaque]
 trait test_crate::Trait<Self>
 {

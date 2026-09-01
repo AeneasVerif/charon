@@ -27,6 +27,10 @@ where
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::FromResidual
 pub trait FromResidual<Self, R>
 {

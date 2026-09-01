@@ -205,7 +205,7 @@ impl Generator<'_> {
         match ty.kind() {
             TyKind::Literal(_) => write!(f, "*({value})"),
             TyKind::Adt(tref) => self.fmt_adt_translation_expr(f, tref, value),
-            TyKind::Array(ty, _) | TyKind::Slice(ty) => {
+            TyKind::Array(ty, ..) | TyKind::Slice(ty, _) => {
                 write!(f, "({value}).iter().map(|value| ")?;
                 self.fmt_result_translation_expr(f, ty, "value")?;
                 write!(f, ").collect::<Result<Vec<_>, FromRustcError>>()?")

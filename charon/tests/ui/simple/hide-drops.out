@@ -1,5 +1,19 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
 // Full name: alloc::string::String
 #[lang_item(String)]
 pub opaque type String
@@ -14,6 +28,10 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut String)
 #[diagnostic_item("string_new")]
 pub fn new() -> String
 = <opaque>
+
+struct str {
+  _0: [u8],
+}
 
 // Full name: test_crate::use_string
 fn use_string(_1: String)

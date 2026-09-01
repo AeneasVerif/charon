@@ -14,6 +14,20 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index
+pub fn impl_SliceIndex_slice_for_usize::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index_mut
+pub fn impl_SliceIndex_slice_for_usize::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
 struct () {}
 
 struct (_, _)<A, B>
@@ -22,6 +36,10 @@ where
 {
   _0: A,
   _1: B,
+}
+
+struct str {
+  _0: [u8],
 }
 
 // Full name: test_crate::incr
@@ -44,13 +62,13 @@ pub fn incr<'_0>(s: &'_0 mut [u32])
     storage_live(_4)
     _4 = &(*s) with_metadata(copy s.metadata)
     storage_live(_5)
-    _5 = @SliceIndexShared<'_, u32>(move _4, copy _2)
+    _5 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _2, move _4)
     ↳⚡ undefined_behavior
     _3 = copy (*_5) panic.+ const 1u32
     storage_live(_6)
     _6 = &mut (*s) with_metadata(copy s.metadata)
     storage_live(_7)
-    _7 = @SliceIndexMut<'_, u32>(move _6, copy _2)
+    _7 = impl_SliceIndex_slice_for_usize::index_mut<'_, u32>[{built_in impl Sized for u32}](copy _2, move _6)
     ↳⚡ undefined_behavior
     (*_7) = move _3
     storage_dead(_2)

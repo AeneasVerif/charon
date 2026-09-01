@@ -57,6 +57,8 @@ where
   Break { _0: B },
 }
 
+struct () {}
+
 // Full name: core::ops::control_flow::ControlFlow::{impl Destruct for ControlFlow<B, C>[TraitClause0, TraitClause1]}::drop_glue
 unsafe fn impl_Destruct_for_ControlFlow::drop_glue<'_0, B, C>(_1: &'_0 mut ControlFlow<B, C>[TraitClause0, TraitClause1])
 where
@@ -106,6 +108,10 @@ where
 // Full name: alloc::string::String
 #[lang_item(String)]
 pub opaque type String
+
+struct str {
+  _0: [u8],
+}
 
 // Full name: test_crate::example
 pub fn example(x: Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]) -> Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]

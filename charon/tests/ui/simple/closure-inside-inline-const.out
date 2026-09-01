@@ -80,6 +80,10 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::foo::{const}::closure
 struct closure<T>
 where

@@ -10,12 +10,18 @@ pub trait core::marker::Sized<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 struct (_, _)<A, B>
 where
     TraitClause0: (A: core::marker::Sized),
 {
   _0: A,
   _1: B,
+}
+
+struct str {
+  _0: [u8],
 }
 
 pub struct test_crate::StructTargetIndep {

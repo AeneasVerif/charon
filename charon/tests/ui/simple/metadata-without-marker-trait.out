@@ -8,6 +8,12 @@ pub enum Option<T> {
   Some { _0: T },
 }
 
+struct () {}
+
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::wrap_shared_in_option
 pub fn wrap_shared_in_option<'a, T>(x: &'a T) -> Option<&'a T>
 where

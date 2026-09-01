@@ -26,6 +26,8 @@ pub trait core::marker::Sized::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>
     non-dyn-compatible
 }
 
+struct () {}
+
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -44,6 +46,10 @@ pub trait core::marker::Destruct::<(&_ mut _, &_ mut _)><'_0, '_1, T0, T1>
 {
     fn drop_glue<'_0_1>;
     non-dyn-compatible
+}
+
+struct str {
+  _0: [u8],
 }
 
 // Full name: test_crate::id

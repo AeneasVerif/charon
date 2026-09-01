@@ -150,7 +150,7 @@ impl Place {
             Ref(_, ty, _) | RawPtr(ty, _) => ty.clone(),
             Adt(tref) if tref.is_box() => tref.generics.types[0].clone(),
             Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(..)
-            | FnPtr(..) | FnDef(..) | PtrMetadata(..) | Array(..) | Slice(_) | Pattern(..)
+            | FnPtr(..) | FnDef(..) | PtrMetadata(..) | Array(..) | Slice(..) | Pattern(..)
             | Error(..) => {
                 panic!("internal type error")
             }

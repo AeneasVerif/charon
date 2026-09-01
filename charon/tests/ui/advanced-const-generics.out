@@ -1,5 +1,36 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::array::repeat
+pub fn repeat<T, const N : usize>(_1: T) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+= <opaque>
+
 // Full name: core::cmp::PartialEq
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
@@ -25,20 +56,6 @@ where
     TraitClause0: (Self: Eq),
     TypeOutlives0: Self: '_0,
 = <opaque>
-
-// Full name: core::marker::MetaSized
-#[fundamental]
-#[lang_item(MetaSized)]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
 
 // Full name: core::marker::StructuralPartialEq
 #[lang_item(StructuralPeq)]
@@ -240,7 +257,7 @@ fn bar<const N : usize>()
     storage_live(_1)
     storage_live(_2)
     _2 = ()
-    _1 = @ArrayRepeat<(), test_crate::bar::{const}#2<N>>(move _2)
+    _1 = repeat<(), test_crate::bar::{const}#2<N>>[{built_in impl Sized for ()}, {built_in impl Clone for ()}](move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
     set_type(typeof(_1) <= [(); test_crate::bar::{const}#1<N>])

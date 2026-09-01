@@ -1463,7 +1463,7 @@ fn main()
     storage_live(_17)
     _17 = const "Hello"
     _16 = &(*_17) with_metadata(copy _17.metadata)
-    _15 = to_string<'142, str>[{built_in impl MetaSized for str}, {impl#10}](move _16)
+    _15 = to_string<'142, str>[{built_in impl MetaSized for str}, {impl#12}](move _16)
     ↳⚡ storage_dead(_85)
         storage_dead(_84)
         storage_dead(_83)

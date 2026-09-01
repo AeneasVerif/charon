@@ -170,6 +170,10 @@ struct (_,)<A> {
   _0: A,
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::iter
 fn iter(n: usize)
 {

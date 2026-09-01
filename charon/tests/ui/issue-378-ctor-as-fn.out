@@ -54,6 +54,10 @@ unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
 pub fn new() -> String
 = <opaque>
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::F
 fn F() -> fn(u8) -> Option<u8>[{built_in impl Sized for u8}]
 {

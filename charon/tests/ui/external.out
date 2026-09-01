@@ -40,16 +40,14 @@ pub trait Copy<Self>
     non-dyn-compatible
 }
 
-// Full name: core::cell::{Cell<T>[TraitClause0::ImpliedClause0]}::get
-pub fn get<'_0, T>(_1: &'_0 Cell<T>[TraitClause0::ImpliedClause0]) -> T
+pub fn core::cell::{Cell<T>[TraitClause0::ImpliedClause0]}::get<'_0, T>(_1: &'_0 Cell<T>[TraitClause0::ImpliedClause0]) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
     TypeOutlives0: T: '_0,
 = <opaque>
 
-// Full name: core::cell::{Cell<T>[TraitClause0]}::get_mut
-pub fn get_mut<'_0, T>(_1: &'_0 mut Cell<T>[TraitClause0]) -> &'_0 mut T
+pub fn core::cell::{Cell<T>[TraitClause0]}::get_mut<'_0, T>(_1: &'_0 mut Cell<T>[TraitClause0]) -> &'_0 mut T
 where
     TraitClause0: (T: MetaSized),
     TypeOutlives0: T: '_0,
@@ -219,6 +217,10 @@ where
   _1: B,
 }
 
+struct str {
+  _0: [u8],
+}
+
 pub fn test_crate::swap<'a, T>(x: &'a mut T, y: &'a mut T)
 where
     TraitClause0: (T: Sized),
@@ -313,7 +315,7 @@ pub fn use_get<'_0>(rc: &'_0 Cell<u32>[{built_in impl MetaSized for u32}]) -> u3
     storage_live(_0)
     storage_live(_2)
     _2 = &(*rc)
-    _0 = get<'4, u32>[{built_in impl Sized for u32}, impl_Copy_for_u32](move _2)
+    _0 = core::cell::{Cell<T>[TraitClause0::ImpliedClause0]}::get<'4, u32>[{built_in impl Sized for u32}, impl_Copy_for_u32](move _2)
     ↳⚡ storage_dead(rc)
         unwind_continue
     storage_dead(_2)
@@ -336,7 +338,7 @@ pub fn incr<'_0>(rc: &'_0 mut Cell<u32>[{built_in impl MetaSized for u32}])
     storage_live(_2)
     storage_live(_3)
     _3 = &two-phase-mut (*rc)
-    _2 = get_mut<'6, u32>[{built_in impl MetaSized for u32}](move _3)
+    _2 = core::cell::{Cell<T>[TraitClause0]}::get_mut<'6, u32>[{built_in impl MetaSized for u32}](move _3)
     ↳⚡ storage_dead(_4)
         storage_dead(rc)
         unwind_continue

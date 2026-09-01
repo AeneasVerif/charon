@@ -1,5 +1,39 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::array::{[T; N]}::as_slice
+pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index
+pub fn impl_SliceIndex_slice_for_usize::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+struct () {}
+
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::first
 pub fn first(s: [u32; 0usize]) -> u32
 {
@@ -7,7 +41,8 @@ pub fn first(s: [u32; 0usize]) -> u32
     let s: [u32; 0usize]; // arg #1
     let _2: usize; // anonymous local
     let _3: &'_ [u32; 0usize]; // anonymous local
-    let _4: &'_ u32; // anonymous local
+    let _4: &'_ [u32]; // anonymous local
+    let _5: &'_ u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -16,11 +51,15 @@ pub fn first(s: [u32; 0usize]) -> u32
     storage_live(_3)
     _3 = &s
     storage_live(_4)
-    _4 = @ArrayIndexShared<'_, u32, 0usize>(move _3, copy _2)
+    _4 = as_slice<'_, u32, 0usize>[{built_in impl Sized for u32}](move _3)
     ↳⚡ undefined_behavior
-    _0 = copy (*_4)
+    storage_live(_5)
+    _5 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _2, move _4)
+    ↳⚡ undefined_behavior
+    _0 = copy (*_5)
     storage_dead(_2)
     storage_dead(s)
+    storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
     return

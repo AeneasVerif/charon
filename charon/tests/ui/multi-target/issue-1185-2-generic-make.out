@@ -7,6 +7,10 @@ pub trait core::marker::Destruct<Self>
     non-dyn-compatible
 }
 
+struct str {
+  _0: [u8],
+}
+
 pub struct test_crate::State<H> {
   _h: H,
 }

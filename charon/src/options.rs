@@ -203,11 +203,11 @@ pub struct CliOpts {
     #[serde(default)]
     pub desugar_drops: bool,
     /// Transform array-to-slice unsizing, repeat expressions, and raw pointer construction into
-    /// builtin functions in ULLBC.
+    /// standard library function calls in LLBC.
     #[clap(long)]
     #[serde(default)]
     pub ops_to_function_calls: bool,
-    /// Transform array/slice indexing into builtin functions in ULLBC. Note that this may
+    /// Transform array/slice indexing into standard library function calls in LLBC. Note that this may
     /// introduce UB since it creates references that were not normally created, including when
     /// indexing behind a raw pointer.
     #[clap(long)]
@@ -525,8 +525,10 @@ impl CliOpts {
                     self.reconstruct_fallible_operations = true;
                     self.reconstruct_asserts = true;
                     self.reconstruct_matches = true;
-                    self.ops_to_function_calls = true;
-                    self.index_to_function_calls = true;
+                    if !self.monomorphize {
+                        self.ops_to_function_calls = true;
+                        self.index_to_function_calls = true;
+                    }
                     self.duplicate_defaulted_methods = true;
                     self.deallocate_all_locals = true;
                     self.rustc_args.push("--edition=2021".to_owned());
@@ -535,6 +537,14 @@ impl CliOpts {
                     self.rustc_args
                         .push("-Zcrate-attr=register_tool(charon)".to_owned());
                     self.exclude.push("core::fmt".to_owned());
+                    if self.extract_opaque_bodies {
+                        self.exclude.extend([
+                            "core::array".to_owned(),
+                            "core::slice::index".to_owned(),
+                            "core::ptr::metadata::from_raw_parts".to_owned(),
+                            "core::ptr::metadata::from_raw_parts_mut".to_owned(),
+                        ]);
+                    }
                 }
             }
         }
@@ -567,6 +577,12 @@ impl CliOpts {
             anyhow::bail!(
                 "`--no-gen-tuple-structs` is not compatible with `--monomorphize`, as \
                 monomorphization requires each tuple to have its own type declaration"
+            )
+        }
+        if self.monomorphize && (self.ops_to_function_calls || self.index_to_function_calls) {
+            anyhow::bail!(
+                "`--monomorphize` is not compatible with `--ops-to-function-calls` or \
+                  `--index-to-function-calls`"
             )
         }
         if self.no_serialize && self.format.is_some() {
@@ -673,9 +689,9 @@ pub struct TranslateOptions {
     /// Monomorphize code using hax's instantiation mechanism.
     pub monomorphize_with_hax: bool,
     /// Transform array-to-slice unsizing, repeat expressions, and raw pointer construction into
-    /// builtin functions in ULLBC.
+    /// standard library function calls in LLBC.
     pub ops_to_function_calls: bool,
-    /// Transform array/slice indexing into builtin functions in ULLBC.
+    /// Transform array/slice indexing into standard library function calls in LLBC.
     pub index_to_function_calls: bool,
     /// Print the llbc just after control-flow reconstruction.
     pub print_built_llbc: bool,

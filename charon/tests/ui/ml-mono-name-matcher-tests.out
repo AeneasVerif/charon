@@ -1,5 +1,21 @@
 # Final LLBC before serialization:
 
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
 // Full name: core::ops::range::RangeFrom::<usize>
 #[lang_item(RangeFrom)]
 pub struct RangeFrom::<usize> {
@@ -46,12 +62,6 @@ fn bar()
 #[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some<'_, i32>")]
 #[pattern::fail(call[0], "core::option::{core::option::Option<@T>}::is_some<_, i32>")]
 #[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some<'_, @T>")]
-#[pattern::pass(call[1], "ArrayToSliceShared<'_, bool, 1>")]
-#[pattern::pass(call[2],
-"core::ops::index::Index<[bool], core::ops::range::RangeFrom<usize>>::index")]
-#[pattern::pass(call[2], "core::ops::index::Index<[@T], @I>::index")]
-#[pattern::fail(call[2],
-"core::slice::index::{core::ops::index::Index<[@T], @I>}::index<bool, core::ops::range::RangeFrom<usize>>")]
 fn foo()
 {
     let _0: (); // return
@@ -103,8 +113,7 @@ fn foo()
     _10 = move _13
     _5 = &(*_10)
     _4 = &(*_5)
-    slice = @ArrayToSliceShared<'_, bool, 1usize>(move _4)
-    ↳⚡ undefined_behavior
+    slice = unsize_cast<&'5 [bool; 1usize], &'16 [bool], 1usize>(move _4)
     storage_dead(_4)
     fake_read(slice)
     set_type(typeof(slice) == &'17 [bool])

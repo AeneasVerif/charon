@@ -84,6 +84,10 @@ where
     vtable: impl_Deref_for_Box::{vtable}<T, A>[TraitClause0, TraitClause1]
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::PointerFamily
 pub trait PointerFamily<Self>
 {

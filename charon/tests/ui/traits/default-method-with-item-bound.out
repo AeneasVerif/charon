@@ -51,6 +51,10 @@ pub opaque type String
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::Trait
 pub trait Trait<Self>
 {

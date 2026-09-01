@@ -296,7 +296,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 path: path_elem,
             } => {
                 let trait_ref = self.translate_trait_proof(span, base)?;
-                let trait_ref = Box::new(trait_ref);
                 match path_elem {
                     hax::TraitProofImpliedPredicate::AssocItem { item, index, .. } => {
                         let assoc_type_id =

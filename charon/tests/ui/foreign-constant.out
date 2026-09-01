@@ -1,11 +1,31 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
 // Full name: foreign_constant_aux::CONSTANT
 pub fn CONSTANT() -> u8
 = <opaque>
 
 // Full name: foreign_constant_aux::CONSTANT
 pub const CONSTANT: u8 = CONSTANT()
+
+struct () {}
+
+struct str {
+  _0: [u8],
+}
 
 // Full name: test_crate::foo
 fn foo() -> u8

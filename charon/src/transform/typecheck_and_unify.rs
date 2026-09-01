@@ -100,13 +100,13 @@ impl TypeCheckVisitor<'_> {
             }
             (TyKind::Literal(a), TyKind::Literal(b)) if a == b => {}
             (TyKind::Never, TyKind::Never) => {}
-            (TyKind::Array(aty, _), TyKind::Array(bty, _)) => {
+            (TyKind::Array(aty, ..), TyKind::Array(bty, ..)) => {
                 self.match_tys(aty, bty)?;
             }
             (TyKind::Pattern(aty, apat), TyKind::Pattern(bty, bpat)) if apat == bpat => {
                 self.match_tys(aty, bty)?;
             }
-            (TyKind::Slice(aty), TyKind::Slice(bty)) => {
+            (TyKind::Slice(aty, _), TyKind::Slice(bty, _)) => {
                 self.match_tys(aty, bty)?;
             }
             (TyKind::Ref(aregion, aty, akind), TyKind::Ref(bregion, bty, bkind))
@@ -525,8 +525,6 @@ impl VisitAst for TypeCheckVisitor<'_> {
     fn enter_fn_ptr(&mut self, x: &FnPtr) {
         match x.kind.as_ref() {
             FnPtrKind::Fun(FunId::Regular(id)) => self.assert_matches_item(*id, &x.generics),
-            // TODO: check builtin generics.
-            FnPtrKind::Fun(FunId::Builtin(_)) => {}
             FnPtrKind::Trait(trait_ref, method_id) => {
                 self.assert_matches_method(trait_ref, *method_id, &x.generics);
             }

@@ -118,7 +118,8 @@ and aggregate_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 1 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = constant_expr_of_postcard ctx st in
-         Ok (AggregatedArray (_0, _1))
+         let* _2 = option_of_postcard trait_ref_of_postcard ctx st in
+         Ok (AggregatedArray (_0, _1, _2))
      | 2 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = ref_kind_of_postcard ctx st in
@@ -291,22 +292,6 @@ and builtin_assert_kind_of_postcard (ctx : of_postcard_ctx)
      | 11 -> Ok ResumedAfterDrop
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
-and builtin_fun_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (builtin_fun_id, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 -> Ok ArrayToSliceShared
-     | 1 -> Ok ArrayToSliceMut
-     | 2 -> Ok ArrayRepeat
-     | 3 ->
-         let* _0 = builtin_index_op_of_postcard ctx st in
-         Ok (Index _0)
-     | 4 ->
-         let* _0 = ref_kind_of_postcard ctx st in
-         Ok (PtrFromParts _0)
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
 and builtin_impl_data_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
     : (builtin_impl_data, string) result =
   combine_error_msgs st __FUNCTION__
@@ -337,14 +322,6 @@ and builtin_impl_data_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
      | 22 -> Ok BuiltinUntrackedDestruct
      | 23 -> Ok BuiltinRemovedAdtClause
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
-and builtin_index_op_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (builtin_index_op, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* is_array = bool_of_postcard ctx st in
-     let* mutability = ref_kind_of_postcard ctx st in
-     let* is_range = bool_of_postcard ctx st in
-     Ok ({ is_array; mutability; is_range } : builtin_index_op))
 
 and builtin_path_elem_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
     : (builtin_path_elem, string) result =
@@ -651,9 +628,6 @@ and fun_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 0 ->
          let* _0 = fun_decl_id_of_postcard ctx st in
          Ok (FRegular _0)
-     | 1 ->
-         let* _0 = builtin_fun_id_of_postcard ctx st in
-         Ok (FBuiltin _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and fun_sig_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1116,7 +1090,8 @@ and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _0 = operand_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
          let* _2 = constant_expr_of_postcard ctx st in
-         Ok (Repeat (_0, _1, _2))
+         let* _3 = trait_ref_of_postcard ctx st in
+         Ok (Repeat (_0, _1, _2, _3))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and scalar_value_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1254,11 +1229,11 @@ and trait_ref_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          in
          Ok (Clause _0)
      | 2 ->
-         let* _0 = box_of_postcard trait_ref_of_postcard ctx st in
+         let* _0 = trait_ref_of_postcard ctx st in
          let* _1 = trait_clause_id_of_postcard ctx st in
          Ok (ParentClause (_0, _1))
      | 3 ->
-         let* _0 = box_of_postcard trait_ref_of_postcard ctx st in
+         let* _0 = trait_ref_of_postcard ctx st in
          let* _1 = assoc_type_id_of_postcard ctx st in
          let* _2 = trait_clause_id_of_postcard ctx st in
          Ok (ItemClause (_0, _1, _2))
@@ -1346,10 +1321,12 @@ and ty_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 11 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = constant_expr_of_postcard ctx st in
-         Ok (TArray (_0, _1))
+         let* _2 = option_of_postcard trait_ref_of_postcard ctx st in
+         Ok (TArray (_0, _1, _2))
      | 12 ->
          let* _0 = ty_of_postcard ctx st in
-         Ok (TSlice _0)
+         let* _1 = option_of_postcard trait_ref_of_postcard ctx st in
+         Ok (TSlice (_0, _1))
      | 13 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = type_pattern_of_postcard ctx st in

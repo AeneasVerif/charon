@@ -102,7 +102,7 @@ fn test_crate::unwrap(res: Result<u32, u32>[{built_in impl Sized for u32}, {buil
     storage_live(_0)
     storage_live(_2)
     _2 = copy res
-    _0 = core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {impl#0}](move _2)
+    _0 = core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {impl#2}](move _2)
     ↳⚡ storage_dead(res)
         unwind_continue
     storage_dead(_2)

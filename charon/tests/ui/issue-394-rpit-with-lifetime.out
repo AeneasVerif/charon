@@ -85,6 +85,10 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::sparse_transitions::closure
 struct closure<'a> {}
 

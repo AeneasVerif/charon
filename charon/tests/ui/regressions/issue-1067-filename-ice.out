@@ -1,13 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::io::error::Error
-pub opaque type Error
-
-// Full name: core::io::error::{impl Debug for Error}
-impl "impl_Debug_for_Error" Debug for Error {
-    vtable: impl_Debug_for_Error::{vtable}
-}
-
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -20,6 +12,21 @@ pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
+}
+
+// Full name: core::array::{[T; N]}::as_slice
+pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::io::error::Error
+pub opaque type Error
+
+// Full name: core::io::error::{impl Debug for Error}
+impl "impl_Debug_for_Error" Debug for Error {
+    vtable: impl_Debug_for_Error::{vtable}
 }
 
 // Full name: core::result::Result
@@ -87,6 +94,10 @@ where
     TraitClause0: (T: Sized),
 = <opaque>
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::main
 fn main()
 {
@@ -121,7 +132,7 @@ fn main()
     _9 = &_8
     _7 = move _9
     _6 = &(*_7)
-    _5 = @ArrayToSliceShared<'_, u8, 5usize>(move _6)
+    _5 = as_slice<'_, u8, 5usize>[{built_in impl Sized for u8}](move _6)
     ↳⚡ undefined_behavior
     storage_dead(_6)
     _3 = impl_Write_for_Vec_u8::write_all<'11, '12, Global>[{built_in impl Sized for Global}](move _4, move _5)

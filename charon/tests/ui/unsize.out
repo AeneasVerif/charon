@@ -14,6 +14,41 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::array::repeat
+pub fn repeat<T, const N : usize>(_1: T) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+= <opaque>
+
+// Full name: core::array::{[T; N]}::as_slice
+pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for i32}::clone
+pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for i32}
+impl "impl_Clone_for_i32" Clone for i32 {
+    proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
+    fn clone<'_0_1> = impl_Clone_for_i32::clone<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
@@ -78,7 +113,7 @@ pub fn alloc::string::{String}::new() -> String
 = <opaque>
 
 // Full name: alloc::string::{impl Clone for String}::clone
-pub fn clone<'_0>(_1: &'_0 String) -> String
+pub fn impl_Clone_for_String::clone<'_0>(_1: &'_0 String) -> String
 = <opaque>
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
@@ -91,6 +126,10 @@ static impl_Display_for_String::{vtable}: core::fmt::Display::{vtable} = impl_Di
 // Full name: alloc::string::{impl Display for String}
 impl "impl_Display_for_String" Display for String {
     vtable: impl_Display_for_String::{vtable}
+}
+
+struct str {
+  _0: [u8],
 }
 
 // Full name: test_crate::foo
@@ -123,7 +162,7 @@ fn foo()
     storage_live(_0)
     _0 = ()
     storage_live(array)
-    array = @ArrayRepeat<i32, 2usize>(const 0i32)
+    array = repeat<i32, 2usize>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 0i32)
     ↳⚡ undefined_behavior
     fake_read(array)
     set_type(typeof(array) == [i32; 2usize])
@@ -132,7 +171,7 @@ fn foo()
     storage_live(_4)
     _4 = &array
     _3 = &(*_4)
-    _2 = @ArrayToSliceShared<'_, i32, 2usize>(move _3)
+    _2 = as_slice<'_, i32, 2usize>[{built_in impl Sized for i32}](move _3)
     ↳⚡ undefined_behavior
     storage_dead(_3)
     set_type(typeof(_2) <= &'30 [i32])
@@ -191,7 +230,7 @@ fn foo()
     storage_live(_17)
     storage_live(_18)
     _18 = &string
-    _17 = clone<'42>(move _18)
+    _17 = impl_Clone_for_String::clone<'42>(move _18)
     ↳⚡ conditional_drop[impl_Destruct_for_String::drop_glue<'43>] string
         ↳⚡ unwind_terminate
         unwind_continue
@@ -224,7 +263,7 @@ fn foo()
     storage_live(_21)
     storage_live(_22)
     _22 = &string
-    _21 = clone<'67>(move _22)
+    _21 = impl_Clone_for_String::clone<'67>(move _22)
     ↳⚡ conditional_drop[impl_Destruct_for_String::drop_glue<'43>] string
         ↳⚡ unwind_terminate
         unwind_continue

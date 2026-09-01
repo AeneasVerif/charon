@@ -5,12 +5,30 @@ pub opaque type IoSlice<'a>
 
 struct () {}
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
 // Full name: core::io::io_slice::{IoSlice<'a>}::advance_slices
 pub fn advance_slices<'a, '_1, '_2>(_1: &'_1 mut &'_2 mut [IoSlice<'a>], _2: usize)
 where
     RegionOutlives0: '_2: '_1,
     RegionOutlives1: 'a: '_2,
 = <opaque>
+
+struct str {
+  _0: [u8],
+}
 
 // Full name: test_crate::foo
 pub fn foo<'_0, '_1, '_2>(bufs: &'_0 mut &'_1 mut [IoSlice<'_2>])
@@ -19,16 +37,16 @@ where
     RegionOutlives1: '_2: '_1,
 {
     let _0: (); // return
-    let bufs: &'7 mut &'8 mut [IoSlice<'9>]; // arg #1
+    let bufs: &'17 mut &'18 mut [IoSlice<'19>]; // arg #1
     let _2: (); // anonymous local
-    let _3: &'10 mut &'11 mut [IoSlice<'12>]; // anonymous local
+    let _3: &'23 mut &'24 mut [IoSlice<'25>]; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &two-phase-mut (*bufs)
-    _2 = advance_slices<'15, '18, '19>(move _3, const 0usize)
+    _2 = advance_slices<'34, '37, '38>(move _3, const 0usize)
     ↳⚡ storage_dead(bufs)
         unwind_continue
     storage_dead(_3)
