@@ -119,21 +119,6 @@ struct Wrapper::<(dyn Sub)> {
   _0: *const (dyn Sub),
 }
 
-// Full name: test_crate::Wrapper::<(dyn Sub)>
-struct Wrapper::<(dyn Sub)> {
-  _0: *const (dyn Sub),
-}
-
-// Full name: test_crate::Wrapper::<(dyn Sub)>
-struct Wrapper::<(dyn Sub)> {
-  _0: *const (dyn Sub),
-}
-
-// Full name: test_crate::Wrapper::<(dyn Sub)>
-struct Wrapper::<(dyn Sub)> {
-  _0: *const (dyn Sub),
-}
-
 // Full name: test_crate::generic_context1::<u8>
 fn generic_context1::<u8>(_1: Wrapper::<(dyn Sub)>)
 {
