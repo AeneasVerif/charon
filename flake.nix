@@ -22,7 +22,7 @@
           inherit system;
           overlays = [ (import rust-overlay) ];
         };
-        inherit (pkgs) lib stdenv makeWrapper bintools;
+        inherit (pkgs) lib stdenv makeWrapper;
 
         rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain;
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
@@ -45,7 +45,7 @@
           {
             nativeBuildInputs = [ makeWrapper ]
               # For `install_name_tool`.
-              ++ lib.optionals stdenv.isDarwin [ bintools ];
+              ++ lib.optionals stdenv.isDarwin [ pkgs.cctools ];
             passthru = charon-unwrapped.passthru;
           }
           (''
@@ -66,23 +66,96 @@
             # Ensures `charon-driver` finds the dylibs correctly.
             install_name_tool -add_rpath "${rustToolchain}/lib" "$out/bin/charon-driver"
           ''));
-        charon-portable = pkgs.runCommand "charon-portable" { } (''
-          mkdir -p $out/bin
-          cp ${charon-unwrapped}/bin/charon $out/bin/charon
-          cp ${charon-unwrapped}/bin/charon-driver $out/bin/charon-driver
-        ''
-        + (lib.optionalString stdenv.isLinux ''
-          for f in $out/bin/*; do
-            chmod +w $f
-            ${pkgs.patchelf}/bin/patchelf --set-interpreter ${
-              {
-                x86_64-linux = "/lib64/ld-linux-x86-64.so.2";
-                aarch64-linux = "/lib/ld-linux-aarch64.so.1";
-              }.${system}
-            } $f || true
-            ${pkgs.patchelf}/bin/patchelf --remove-rpath $f || true
-          done
-        ''));
+        # Produce binaries that can run on hosts without Nix by removing dylib
+        # references to the Nix store.
+        charon-portable = stdenv.mkDerivation {
+          name = "charon-portable";
+          nativeBuildInputs = lib.optionals stdenv.isDarwin [
+            # For `otool` and `install_name_tool`.
+            pkgs.cctools
+            # We modify the binaries, which requires signing them again.
+            pkgs.darwin.autoSignDarwinBinariesHook
+          ];
+          unpackPhase = ''
+            mkdir bin
+            cp ${charon-unwrapped}/bin/charon ${charon-unwrapped}/bin/charon-driver bin/
+            chmod -R u+w bin
+          '';
+          buildPhase = lib.optionalString stdenv.isLinux ''
+            for binary in bin/*; do
+              ${pkgs.patchelf}/bin/patchelf --set-interpreter ${
+                {
+                  x86_64-linux = "/lib64/ld-linux-x86-64.so.2";
+                  aarch64-linux = "/lib/ld-linux-aarch64.so.1";
+                }.${system}
+              } "$binary" || true
+              ${pkgs.patchelf}/bin/patchelf --remove-rpath "$binary" || true
+            done
+          ''
+          + lib.optionalString stdenv.isDarwin ''
+            # Collect everything we don't know how to make portable, so that
+            # one build reports all of it rather than one library at a time.
+            unhandled_dependencies=""
+            record_unhandled_dependency() {
+              unhandled_dependencies="$unhandled_dependencies
+              $1: $2"
+            }
+
+            for binary in bin/*; do
+              for dependency in $(otool -L "$binary" | tail -n +2 | awk '{ print $1 }'); do
+                library="$(basename "$dependency")"
+                case "$dependency" in
+                  ${rustToolchain}/lib/*)
+                    # `rustup run` makes the toolchain's dylibs available
+                    install_name_tool -change "$dependency" "$library" "$binary"
+                    ;;
+                  @rpath/*)
+                    if [ -e "${rustToolchain}/lib/$library" ]; then
+                      install_name_tool -change "$dependency" "$library" "$binary"
+                    else
+                      record_unhandled_dependency "$binary" "$dependency"
+                    fi
+                    ;;
+                  /nix/store/*)
+                    # Uses the system libraries shipped by macos.
+                    case "$library" in
+                      libSystem.B.dylib | libcharset.1.dylib | libiconv.2.dylib | \
+                        libobjc.A.dylib | libresolv.9.dylib)
+                        system_library="/usr/lib/$library"
+                        ;;
+                      libz.dylib | libz.1.dylib)
+                        system_library=/usr/lib/libz.1.dylib
+                        ;;
+                      *)
+                        record_unhandled_dependency "$binary" "$dependency"
+                        continue
+                        ;;
+                    esac
+                    install_name_tool -change "$dependency" "$system_library" "$binary"
+                    ;;
+                esac
+              done
+
+              # Drop rpaths pointing into the nix store: they'd be dangling,
+              # and any `@rpath/` dependency that still needs them was
+              # rewritten above.
+              for rpath in $(otool -l "$binary" | awk '$1 == "path" { print $2 }'); do
+                case "$rpath" in
+                  /nix/store/*) install_name_tool -delete_rpath "$rpath" "$binary" ;;
+                esac
+              done
+            done
+
+            if [ -n "$unhandled_dependencies" ]; then
+              echo "ERROR: the release contains dependencies that won't resolve on a host without Nix:$unhandled_dependencies" >&2
+              exit 1
+            fi
+          '';
+          installPhase = ''
+            mkdir -p $out
+            cp -r bin $out/
+          '';
+        };
         charon-release = pkgs.runCommand "charon-release"
           {
             nativeBuildInputs = lib.optionals stdenv.isLinux [ pkgs.binutils ];
