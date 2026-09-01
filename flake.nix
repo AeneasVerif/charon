@@ -22,7 +22,7 @@
           inherit system;
           overlays = [ (import rust-overlay) ];
         };
-        inherit (pkgs) lib stdenv makeWrapper bintools;
+        inherit (pkgs) lib stdenv makeWrapper;
 
         rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain;
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
@@ -45,7 +45,7 @@
           {
             nativeBuildInputs = [ makeWrapper ]
               # For `install_name_tool`.
-              ++ lib.optionals stdenv.isDarwin [ bintools ];
+              ++ lib.optionals stdenv.isDarwin [ pkgs.darwin.binutils-unwrapped ];
             passthru = charon-unwrapped.passthru;
           }
           (''
@@ -66,7 +66,12 @@
             # Ensures `charon-driver` finds the dylibs correctly.
             install_name_tool -add_rpath "${rustToolchain}/lib" "$out/bin/charon-driver"
           ''));
-        charon-portable = pkgs.runCommand "charon-portable" { } (''
+        charon-portable = pkgs.runCommand "charon-portable"
+          {
+            # For `otool` and `install_name_tool`.
+            nativeBuildInputs = lib.optionals stdenv.isDarwin [ pkgs.darwin.binutils-unwrapped ];
+          }
+          (''
           mkdir -p $out/bin
           cp ${charon-unwrapped}/bin/charon $out/bin/charon
           cp ${charon-unwrapped}/bin/charon-driver $out/bin/charon-driver
@@ -82,6 +87,88 @@
             } $f || true
             ${pkgs.patchelf}/bin/patchelf --remove-rpath $f || true
           done
+        '')
+        # The macOS equivalent of the `patchelf` pass above: a nix-built Mach-O
+        # binary records absolute `/nix/store` paths for its dependencies, so it
+        # dies with `Library not loaded: /nix/store/...` on a machine without a
+        # nix store. Rewrite every such reference:
+        #  * libraries macOS itself ships are taken from `/usr/lib`;
+        #  * rust toolchain libraries (`librustc_driver-*.dylib` & co, which the
+        #    driver needs) are referred to by bare filename, so that the loader
+        #    finds them via `DYLD_FALLBACK_LIBRARY_PATH`. `rustup run`, which is
+        #    how the released `charon` invokes `charon-driver`, sets that to the
+        #    `lib` directory of the pinned toolchain. This mirrors what happens
+        #    on linux, where we drop the rpath and let `LD_LIBRARY_PATH` do the
+        #    same job.
+        + (lib.optionalString stdenv.isDarwin ''
+          # Provides `signIfRequired`. Note that `runCommand` skips `fixupPhase`,
+          # so `autoSignDarwinBinariesHook` would not run here.
+          source ${pkgs.darwin.signingUtils}
+
+          # Collect everything we don't know how to make portable, so that one
+          # build reports all of it rather than one library at a time.
+          unhandled=""
+          unhandled_dep() {
+            unhandled="$unhandled
+            $(basename "$1"): $2"
+          }
+
+          for f in $out/bin/*; do
+            chmod +w "$f"
+
+            for dep in $(otool -L "$f" | tail -n +2 | awk '{ print $1 }'); do
+              leaf="$(basename "$dep")"
+              case "$dep" in
+                ${rustToolchain}/lib/*)
+                  install_name_tool -change "$dep" "$leaf" "$f"
+                  ;;
+                @rpath/*)
+                  # Rust records its own dylibs as `@rpath/lib<foo>.dylib`, and
+                  # the rpaths that resolve them are removed below, so these have
+                  # to be rewritten as well.
+                  if [ -e "${rustToolchain}/lib/$leaf" ]; then
+                    install_name_tool -change "$dep" "$leaf" "$f"
+                  else
+                    unhandled_dep "$f" "$dep"
+                  fi
+                  ;;
+                /nix/store/*)
+                  # Take the copy macOS itself ships.
+                  case "$leaf" in
+                    libSystem.B.dylib)  sys_lib=/usr/lib/libSystem.B.dylib ;;
+                    libcharset.1.dylib) sys_lib=/usr/lib/libcharset.1.dylib ;;
+                    libiconv.2.dylib)   sys_lib=/usr/lib/libiconv.2.dylib ;;
+                    libobjc.A.dylib)    sys_lib=/usr/lib/libobjc.A.dylib ;;
+                    libresolv.9.dylib)  sys_lib=/usr/lib/libresolv.9.dylib ;;
+                    libz.dylib | libz.1.dylib) sys_lib=/usr/lib/libz.1.dylib ;;
+                    *) unhandled_dep "$f" "$dep"; continue ;;
+                  esac
+                  install_name_tool -change "$dep" "$sys_lib" "$f"
+                  ;;
+              esac
+            done
+
+            # Drop rpaths pointing into the nix store: they'd be dangling, and
+            # any `@rpath/` dependency that still needs them was rewritten above.
+            for rpath in $(otool -l "$f" | awk '$1 == "path" { print $2 }'); do
+              case "$rpath" in
+                /nix/store/*) install_name_tool -delete_rpath "$rpath" "$f" ;;
+              esac
+            done
+
+            # Editing a Mach-O invalidates its (ad-hoc) code signature, and
+            # aarch64-darwin refuses to run an incorrectly signed binary.
+            signIfRequired "$f"
+          done
+
+          if [ -n "$unhandled" ]; then
+            echo "ERROR: the release depends on libraries that won't resolve on a machine" >&2
+            echo "that has no nix store:$unhandled" >&2
+            echo "If macOS ships one of them in /usr/lib, map it to the system copy in" >&2
+            echo "the \`case\` in flake.nix; otherwise it has to be shipped next to the" >&2
+            echo "binaries." >&2
+            exit 1
+          fi
         ''));
         charon-release = pkgs.runCommand "charon-release"
           {
