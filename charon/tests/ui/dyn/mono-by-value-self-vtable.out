@@ -1,0 +1,529 @@
+# Final LLBC before serialization:
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+fn core::marker::MetaSized::{vtable}::<S>() -> core::marker::MetaSized::{vtable}
+= <opaque>
+
+static core::marker::MetaSized::{vtable}::<S>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<S>()
+
+fn core::marker::MetaSized::{vtable}::<*mut u32>() -> core::marker::MetaSized::{vtable}
+= <opaque>
+
+static core::marker::MetaSized::{vtable}::<*mut u32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<*mut u32>()
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: alloc::boxed::Box::<S>
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box::<S, Global>
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box::<S, Global>}::drop_glue::<S, Global>
+unsafe fn {impl Destruct for Box::<S, Global>}::drop_glue::<S, Global><'_0>(_1: &'_0 mut Box::<S, Global>)
+= <opaque>
+
+// Full name: alloc::boxed::Box::<*mut u32>
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box::<*mut u32, Global>
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box::<*mut u32, Global>}::drop_glue::<*mut u32, Global>
+unsafe fn {impl Destruct for Box::<*mut u32, Global>}::drop_glue::<*mut u32, Global><'_0>(_1: &'_0 mut Box::<*mut u32, Global>)
+= <opaque>
+
+// Full name: alloc::boxed::Box::<(dyn Consume)>
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box::<(dyn Consume), Global>
+
+// Full name: alloc::boxed::Box::<(dyn Consume)>
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box::<(dyn Consume), Global>
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global>
+unsafe fn {impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'_0>(_1: &'_0 mut Box::<(dyn Consume), Global>)
+= <opaque>
+
+// Full name: test_crate::S
+struct S {
+  _0: u32,
+}
+
+#[track_caller]
+#[diagnostic_item("box_new")]
+pub fn alloc::boxed::{Box::<S, Global>}::new::<S>(_1: S) -> Box::<S, Global>
+= <opaque>
+
+#[track_caller]
+#[diagnostic_item("box_new")]
+pub fn alloc::boxed::{Box::<*mut u32, Global>}::new::<*mut u32>(_1: *mut u32) -> Box::<*mut u32, Global>
+= <opaque>
+
+struct test_crate::Consume::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  method_consume: *const (),
+  method_read: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::Consume
+trait Consume<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Consume::{vtable}
+}
+
+// Full name: test_crate::S::{impl Destruct for S}::drop_glue
+unsafe fn impl_Destruct_for_S::drop_glue<'_0>(_1: &'_0 mut S)
+{
+    let _0: (); // return
+    let _1: &'1 mut S; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::S::{impl Destruct for S}
+impl "impl_Destruct_for_S" Destruct for S {
+    fn drop_glue<'_0_1> = impl_Destruct_for_S::drop_glue<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Consume for S}::read
+fn impl_Consume_for_S::read<'_0>(self: &'_0 S) -> u32
+{
+    let _0: u32; // return
+    let self: &'1 S; // arg #1
+
+    storage_live(_0)
+    _0 = copy (*self)._0
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::{impl Consume for S}::read::{vtable_method}
+fn impl_Consume_for_S::read::{vtable_method}<'_0>(_1: &'_0 (dyn Consume)) -> u32
+{
+    let _0: u32; // return
+    let _1: &'_0 (dyn Consume + '0); // arg #1
+    let _2: &'_0 S; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = concretize<&'_0 (dyn Consume + '1), &'_0 S>(move _1)
+    _0 = impl_Consume_for_S::read<'_0>(move _2)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::{impl Consume for S}::consume
+fn impl_Consume_for_S::consume(self: S) -> u32
+{
+    let _0: u32; // return
+    let self: S; // arg #1
+
+    storage_live(_0)
+    _0 = copy self._0
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::{impl Consume for S}::consume::{vtable_method}
+fn impl_Consume_for_S::consume::{vtable_method}(_1: *mut (dyn Consume)) -> u32
+{
+    let _0: u32; // return
+    let _1: *mut (dyn Consume + '0); // arg #1
+    let _2: *mut S; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = concretize<*mut (dyn Consume + '1), *mut S>(move _1)
+    _0 = impl_Consume_for_S::consume(move (*_2))
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::{impl Consume for S}::{vtable_drop_shim}
+unsafe fn impl_Consume_for_S::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Consume))
+{
+    let ret: (); // return
+    let dyn_self: &'_0 mut (dyn Consume + '0); // arg #1
+    let target_self: &'_0 mut S; // local
+
+    storage_live(ret)
+    ret = ()
+    storage_live(target_self)
+    target_self = concretize<&'_0 mut (dyn Consume + '1), &'_0 mut S>(move dyn_self)
+    drop[impl_Destruct_for_S::drop_glue<'3>] (*target_self)
+    ↳⚡ storage_dead(target_self)
+        storage_dead(dyn_self)
+        unwind_continue
+    storage_dead(target_self)
+    storage_dead(dyn_self)
+    return
+}
+
+// Full name: test_crate::{impl Consume for S}::{vtable}
+fn impl_Consume_for_S::{vtable}() -> test_crate::Consume::{vtable}
+{
+    let ret: test_crate::Consume::{vtable}; // return
+    let size: usize; // local
+    let align: usize; // local
+    let drop: unsafe fn(*mut (dyn Consume + '0)); // local
+    let erased_drop: *const (); // local
+    let consume: fn(*mut (dyn Consume + '1)) -> u32; // local
+    let erased_consume: *const (); // local
+    let read: fn<'_0_1>(&'_0_1 (dyn Consume + '2)) -> u32; // local
+    let erased_read: *const (); // local
+    let _9: unsafe fn(*mut (dyn Consume + '5)); // anonymous local
+    let _10: fn(*mut (dyn Consume + '9)) -> u32; // anonymous local
+    let _11: fn<'_0_1>(&'_0_1 (dyn Consume + '14)) -> u32; // anonymous local
+    let _12: &'static core::marker::MetaSized::{vtable}; // anonymous local
+
+    storage_live(ret)
+    storage_live(size)
+    size = size_of<S>
+    storage_live(align)
+    align = align_of<S>
+    storage_live(drop)
+    storage_live(erased_drop)
+    storage_live(_9)
+    _9 = cast<impl_Consume_for_S::{vtable_drop_shim}<'4>, unsafe fn(*mut (dyn Consume + '5))>(const impl_Consume_for_S::{vtable_drop_shim}<'4>)
+    drop = move _9
+    erased_drop = cast<unsafe fn(*mut (dyn Consume + '6)), *const ()>(move drop)
+    storage_live(consume)
+    storage_live(erased_consume)
+    storage_live(_10)
+    _10 = cast<impl_Consume_for_S::consume::{vtable_method}, fn(*mut (dyn Consume + '9)) -> u32>(const impl_Consume_for_S::consume::{vtable_method})
+    consume = move _10
+    erased_consume = cast<fn(*mut (dyn Consume + '10)) -> u32, *const ()>(move consume)
+    storage_live(read)
+    storage_live(erased_read)
+    storage_live(_11)
+    _11 = cast<for<'_0_1> impl_Consume_for_S::read::{vtable_method}<'13>, fn<'_0_1>(&'_0_1 (dyn Consume + '14)) -> u32>(const impl_Consume_for_S::read::{vtable_method}<'13>)
+    read = move _11
+    erased_read = cast<fn<'_0_1>(&'_0_1 (dyn Consume + '15)) -> u32, *const ()>(move read)
+    storage_live(_12)
+    _12 = &core::marker::MetaSized::{vtable}::<S>
+    ret = test_crate::Consume::{vtable} { size: move size, align: move align, drop: move erased_drop, method_consume: move erased_consume, method_read: move erased_read, super_trait_0: move _12 }
+    return
+}
+
+// Full name: test_crate::{impl Consume for S}::{vtable}
+static impl_Consume_for_S::{vtable}: test_crate::Consume::{vtable} = impl_Consume_for_S::{vtable}()
+
+// Full name: test_crate::{impl Consume for S}
+impl "impl_Consume_for_S" Consume for S {
+    proof ImpliedClause0: (S: MetaSized) = {built_in impl MetaSized for S}
+    vtable: impl_Consume_for_S::{vtable}
+}
+
+// Full name: test_crate::{impl Consume for *mut u32}::read
+fn {impl Consume for *mut u32}::read<'_0>(self: &'_0 *mut u32) -> u32
+{
+    let _0: u32; // return
+    let self: &'1 *mut u32; // arg #1
+
+    storage_live(_0)
+    _0 = copy (*(*self))
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::{impl Consume for *mut u32}::read::{vtable_method}
+fn {impl Consume for *mut u32}::read::{vtable_method}<'_0>(_1: &'_0 (dyn Consume)) -> u32
+{
+    let _0: u32; // return
+    let _1: &'_0 (dyn Consume + '0); // arg #1
+    let _2: &'_0 *mut u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = concretize<&'_0 (dyn Consume + '1), &'_0 *mut u32>(move _1)
+    _0 = {impl Consume for *mut u32}::read<'_0>(move _2)
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::{impl Consume for *mut u32}::consume
+fn {impl Consume for *mut u32}::consume(self: *mut u32) -> u32
+{
+    let _0: u32; // return
+    let self: *mut u32; // arg #1
+
+    storage_live(_0)
+    _0 = copy (*self)
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::{impl Consume for *mut u32}::consume::{vtable_method}
+fn {impl Consume for *mut u32}::consume::{vtable_method}(_1: *mut (dyn Consume)) -> u32
+{
+    let _0: u32; // return
+    let _1: *mut (dyn Consume + '0); // arg #1
+    let _2: *mut *mut u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = concretize<*mut (dyn Consume + '1), *mut *mut u32>(move _1)
+    _0 = {impl Consume for *mut u32}::consume(move (*_2))
+    ↳⚡ storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::{impl Consume for *mut u32}::{vtable_drop_shim}
+unsafe fn {impl Consume for *mut u32}::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Consume))
+{
+    let ret: (); // return
+    let dyn_self: &'_0 mut (dyn Consume + '0); // arg #1
+    let target_self: &'_0 mut *mut u32; // local
+
+    storage_live(ret)
+    ret = ()
+    storage_live(target_self)
+    target_self = concretize<&'_0 mut (dyn Consume + '1), &'_0 mut *mut u32>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
+    return
+}
+
+// Full name: test_crate::{impl Consume for *mut u32}::{vtable}
+fn {impl Consume for *mut u32}::{vtable}() -> test_crate::Consume::{vtable}
+{
+    let ret: test_crate::Consume::{vtable}; // return
+    let size: usize; // local
+    let align: usize; // local
+    let drop: unsafe fn(*mut (dyn Consume + '0)); // local
+    let erased_drop: *const (); // local
+    let consume: fn(*mut (dyn Consume + '1)) -> u32; // local
+    let erased_consume: *const (); // local
+    let read: fn<'_0_1>(&'_0_1 (dyn Consume + '2)) -> u32; // local
+    let erased_read: *const (); // local
+    let _9: unsafe fn(*mut (dyn Consume + '5)); // anonymous local
+    let _10: fn(*mut (dyn Consume + '9)) -> u32; // anonymous local
+    let _11: fn<'_0_1>(&'_0_1 (dyn Consume + '14)) -> u32; // anonymous local
+    let _12: &'static core::marker::MetaSized::{vtable}; // anonymous local
+
+    storage_live(ret)
+    storage_live(size)
+    size = size_of<*mut u32>
+    storage_live(align)
+    align = align_of<*mut u32>
+    storage_live(drop)
+    storage_live(erased_drop)
+    storage_live(_9)
+    _9 = cast<{impl Consume for *mut u32}::{vtable_drop_shim}<'4>, unsafe fn(*mut (dyn Consume + '5))>(const {impl Consume for *mut u32}::{vtable_drop_shim}<'4>)
+    drop = move _9
+    erased_drop = cast<unsafe fn(*mut (dyn Consume + '6)), *const ()>(move drop)
+    storage_live(consume)
+    storage_live(erased_consume)
+    storage_live(_10)
+    _10 = cast<{impl Consume for *mut u32}::consume::{vtable_method}, fn(*mut (dyn Consume + '9)) -> u32>(const {impl Consume for *mut u32}::consume::{vtable_method})
+    consume = move _10
+    erased_consume = cast<fn(*mut (dyn Consume + '10)) -> u32, *const ()>(move consume)
+    storage_live(read)
+    storage_live(erased_read)
+    storage_live(_11)
+    _11 = cast<for<'_0_1> {impl Consume for *mut u32}::read::{vtable_method}<'13>, fn<'_0_1>(&'_0_1 (dyn Consume + '14)) -> u32>(const {impl Consume for *mut u32}::read::{vtable_method}<'13>)
+    read = move _11
+    erased_read = cast<fn<'_0_1>(&'_0_1 (dyn Consume + '15)) -> u32, *const ()>(move read)
+    storage_live(_12)
+    _12 = &core::marker::MetaSized::{vtable}::<*mut u32>
+    ret = test_crate::Consume::{vtable} { size: move size, align: move align, drop: move erased_drop, method_consume: move erased_consume, method_read: move erased_read, super_trait_0: move _12 }
+    return
+}
+
+// Full name: test_crate::{impl Consume for *mut u32}::{vtable}
+static {impl Consume for *mut u32}::{vtable}: test_crate::Consume::{vtable} = {impl Consume for *mut u32}::{vtable}()
+
+// Full name: test_crate::{impl Consume for *mut u32}
+impl Consume for *mut u32 {
+    proof ImpliedClause0: (*mut u32: MetaSized) = {built_in impl MetaSized for *mut u32}
+    vtable: {impl Consume for *mut u32}::{vtable}
+}
+
+// Full name: test_crate::mk
+fn mk() -> Box::<(dyn Consume), Global>
+{
+    let _0: Box::<(dyn Consume), Global>; // return
+    let _1: Box::<(dyn Consume), Global>; // anonymous local
+    let _2: Box::<S, Global>; // anonymous local
+    let _3: S; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = S { _0: const 42u32 }
+    _2 = alloc::boxed::{Box::<S, Global>}::new::<S>(move _3)
+    ↳⚡ unwind_continue
+    _1 = unsize_cast<Box::<S, Global>, Box::<(dyn Consume), Global>, &impl_Consume_for_S::{vtable}>(move _2)
+    conditional_drop[{impl Destruct for Box::<S, Global>}::drop_glue::<S, Global><'0>] _2
+    ↳⚡ unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 = unsize_cast<Box::<(dyn Consume), Global>, Box::<(dyn Consume), Global>,  at []>(move _1)
+    conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'1>] _1
+    ↳⚡ unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::mk_ptr
+fn mk_ptr(x: *mut u32) -> Box::<(dyn Consume), Global>
+{
+    let _0: Box::<(dyn Consume), Global>; // return
+    let x: *mut u32; // arg #1
+    let _2: Box::<(dyn Consume), Global>; // anonymous local
+    let _3: Box::<*mut u32, Global>; // anonymous local
+    let _4: *mut u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy x
+    _3 = alloc::boxed::{Box::<*mut u32, Global>}::new::<*mut u32>(move _4)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    _2 = unsize_cast<Box::<*mut u32, Global>, Box::<(dyn Consume), Global>, &{impl Consume for *mut u32}::{vtable}>(move _3)
+    conditional_drop[{impl Destruct for Box::<*mut u32, Global>}::drop_glue::<*mut u32, Global><'0>] _3
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_4)
+    storage_dead(_3)
+    _0 = unsize_cast<Box::<(dyn Consume), Global>, Box::<(dyn Consume), Global>,  at []>(move _2)
+    conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'1>] _2
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let x: Box::<(dyn Consume), Global>; // local
+    let _v_2: u32; // local
+    let _3: &'3 (dyn Consume + '4); // anonymous local
+    let n: u32; // local
+    let p: Box::<(dyn Consume), Global>; // local
+    let _6: *mut u32; // anonymous local
+    let _7: &'6 mut u32; // anonymous local
+    let _v_8: u32; // local
+    let _9: &'7 (dyn Consume + '8); // anonymous local
+    let _10: unsafe fn(&'3 (dyn Consume + '4)) -> u32; // anonymous local
+    let _11: unsafe fn(&'7 (dyn Consume + '8)) -> u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(x)
+    x = mk()
+    ↳⚡ unwind_continue
+    fake_read(x)
+    storage_live(_v_2)
+    storage_live(_3)
+    _3 = &(*x) with_metadata(copy x.metadata)
+    storage_live(_10)
+    _10 = cast<*const (), unsafe fn(&'3 (dyn Consume + '4)) -> u32>(copy (*_3.metadata).method_read)
+    _v_2 = (copy _10)(move _3)
+    ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'13>] x
+        ↳⚡ storage_dead(_11)
+            storage_dead(_10)
+            unwind_terminate
+        unwind_continue
+    storage_dead(_3)
+    fake_read(_v_2)
+    storage_live(n)
+    n = const 5u32
+    fake_read(n)
+    storage_live(p)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = &mut n
+    _6 = &raw mut (*_7)
+    p = mk_ptr(move _6)
+    ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'13>] x
+        ↳⚡ storage_dead(_11)
+            storage_dead(_10)
+            unwind_terminate
+        unwind_continue
+    storage_dead(_6)
+    fake_read(p)
+    storage_dead(_7)
+    storage_live(_v_8)
+    storage_live(_9)
+    _9 = &(*p) with_metadata(copy p.metadata)
+    storage_live(_11)
+    _11 = cast<*const (), unsafe fn(&'7 (dyn Consume + '8)) -> u32>(copy (*_9.metadata).method_read)
+    _v_8 = (copy _11)(move _9)
+    ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'18>] p
+        ↳⚡ storage_dead(_11)
+            storage_dead(_10)
+            unwind_terminate
+        conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'13>] x
+        ↳⚡ storage_dead(_11)
+            storage_dead(_10)
+            unwind_terminate
+        unwind_continue
+    storage_dead(_9)
+    fake_read(_v_8)
+    _0 = ()
+    storage_dead(_v_8)
+    conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'19>] p
+    ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'13>] x
+        ↳⚡ storage_dead(_11)
+            storage_dead(_10)
+            unwind_terminate
+        unwind_continue
+    storage_dead(p)
+    storage_dead(n)
+    storage_dead(_v_2)
+    conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'20>] x
+    ↳⚡ unwind_continue
+    storage_dead(x)
+    storage_dead(_11)
+    storage_dead(_10)
+    return
+}
+
+
+

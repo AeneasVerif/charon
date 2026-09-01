@@ -16,4 +16,7 @@ fn main() {
     // Built but not called: the drop shim must drop the captured state.
     let d = Droppable(0);
     let _h: Box<dyn FnOnce() -> Droppable> = Box::new(move || d);
+    // A closure with a higher-ranked signature.
+    let k: &dyn Fn(&u32) -> u32 = &|x: &u32| *x;
+    let _y = k(&4);
 }
