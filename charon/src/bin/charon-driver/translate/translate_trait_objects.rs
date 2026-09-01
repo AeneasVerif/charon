@@ -414,7 +414,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                             ctx.translate_poly_fun_sig(span, sig)
                         })?;
                         // A `self: Self` receiver would be unsized once `Self` becomes `dyn Trait`,
-                        // so takes it via `*mut Self` instead (like rustc)
+                        // so we take it via `*mut Self` instead (like rustc)
                         let receiver_is_by_value = matches!(
                             sig.value.inputs[0].kind(),
                             hax::TyKind::Param(param) if param.index == 0
@@ -1312,6 +1312,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         span: Span,
         target_receiver: &Ty,
         shim_signature: &FunSig,
+        receiver_is_by_value: bool,
         target_fn: FnPtr,
     ) -> Result<Body, Error> {
         let mut builder = BodyBuilder::new(span, shim_signature.inputs.len());
@@ -1323,10 +1324,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             .map(|ty| builder.new_var(None, ty.clone()))
             .collect_vec();
 
-        // The target function takes the receiver by value but the shim receives it via `*mut Self`;
-        // concretize the pointer and dereference it to call the target.
-        let receiver_is_by_value = matches!(shim_signature.inputs[0].kind(), TyKind::RawPtr(..))
-            && !matches!(target_receiver.kind(), TyKind::RawPtr(..));
         let cast_target_ty = if receiver_is_by_value {
             TyKind::RawPtr(target_receiver.clone(), RefKind::Mut).into_ty()
         } else {
@@ -1502,6 +1499,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let hax::FullDefKind::AssocFn {
             vtable_sig: Some(vtable_sig),
             sig: target_signature,
+            associated_item,
             ..
         } = impl_func_def.kind()
         else {
@@ -1516,6 +1514,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let signature = self.translate_fun_sig(span, &vtable_sig.value)?;
         // The concrete receiver we will cast to.
         let target_receiver = self.translate_ty(span, &target_signature.value.inputs[0])?;
+        let receiver_is_by_value = hax::vtable_receiver_is_by_value(
+            self.tcx,
+            associated_item
+                .implemented_trait_item_id()
+                .real_rust_def_id(),
+        );
 
         trace!(
             "[VtableShim] Obtained dyn signature with receiver type: {}",
@@ -1530,7 +1534,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 FnPtrKind::Fun(fun_id),
                 self.outermost_binder().params.identity_args(),
             );
-            self.translate_vtable_shim_body(span, &target_receiver, &signature, target_fn)?
+            self.translate_vtable_shim_body(
+                span,
+                &target_receiver,
+                &signature,
+                receiver_is_by_value,
+                target_fn,
+            )?
         };
 
         Ok(FunDecl {
@@ -1616,7 +1626,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 generics.regions.push(self.translate_erased_region());
             }
             let target_fn = FnPtr::new(FnPtrKind::Trait(tref, method_id), generics);
-            self.translate_vtable_shim_body(span, &target_receiver, &signature, target_fn)?
+            self.translate_vtable_shim_body(
+                span,
+                &target_receiver,
+                &signature,
+                target_kind == ClosureKind::FnOnce,
+                target_fn,
+            )?
         };
 
         Ok(FunDecl {
@@ -1739,7 +1755,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 FnPtrKind::Fun(fun_id),
                 self.outermost_binder().params.identity_args(),
             );
-            self.translate_vtable_shim_body(span, &target_receiver, &signature, target_fn)?
+            self.translate_vtable_shim_body(
+                span,
+                &target_receiver,
+                &signature,
+                target_kind == ClosureKind::FnOnce,
+                target_fn,
+            )?
         };
 
         Ok(FunDecl {

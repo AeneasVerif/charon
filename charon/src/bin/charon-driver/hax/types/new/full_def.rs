@@ -514,6 +514,17 @@ pub enum FullDefKind<'tcx> {
     SyntheticCoroutineBody,
 }
 
+/// Whether the trait method declared by `method_decl_id` takes `self: Self` by value.
+pub fn vtable_receiver_is_by_value<'tcx>(tcx: ty::TyCtxt<'tcx>, method_decl_id: RDefId) -> bool {
+    let decl_sig = tcx
+        .fn_sig(method_decl_id)
+        .instantiate_identity()
+        .skip_norm_wip();
+    !decl_sig.inputs().skip_binder().is_empty()
+        && decl_sig.input(0).skip_binder().is_param(0)
+        && tcx.generics_of(method_decl_id).has_self
+}
+
 /// If the method declared by `method_decl_id` takes `self: Self` by value, adjust the vtable
 /// signature to take the receiver via `*mut Self` instead.
 /// This mirrors what rustc does for vtable shims, which take `*mut Self` (conceptually `&own Self`).
@@ -522,14 +533,7 @@ fn adjust_by_value_vtable_receiver<'tcx>(
     method_decl_id: RDefId,
     sig: ty::PolyFnSig<'tcx>,
 ) -> ty::PolyFnSig<'tcx> {
-    let decl_sig = tcx
-        .fn_sig(method_decl_id)
-        .instantiate_identity()
-        .skip_norm_wip();
-    let receiver_is_by_value = !decl_sig.inputs().skip_binder().is_empty()
-        && decl_sig.input(0).skip_binder().is_param(0)
-        && tcx.generics_of(method_decl_id).has_self;
-    if !receiver_is_by_value {
+    if !vtable_receiver_is_by_value(tcx, method_decl_id) {
         return sig;
     }
     sig.map_bound(|mut sig| {
