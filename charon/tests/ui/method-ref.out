@@ -145,7 +145,7 @@ where
     _1 = const TraitClause1::cmp<'0, '1>
     storage_dead(_1)
     storage_live(_2)
-    _2 = use_fn<T, for<'_0_1, '_1_1> TraitClause1::cmp<'_0_1, '_1_1>>[TraitClause0, {built_in impl Sized for for<'_0_2, '_1_2> TraitClause1::cmp<'_0_2, '_1_2>}, {impl FnOnce<(&'_0 Self, &'_1 Self)> for for<'_0_1, '_1_1> TraitClause0::cmp<'_0_1, '_1_1>}<'8, '9, T>[TraitClause1]](const TraitClause1::cmp<'12, '13>)
+    _2 = use_fn<T, for<'_0_1, '_1_1> TraitClause1::cmp<'_0_1, '_1_1>>[TraitClause0, {built_in impl Sized for for<'_0_2, '_1_2> TraitClause1::cmp<'_0_2, '_1_2>}, {impl FnOnce<(&'_0 Self, &'_1 Self)> for for<'_0_1, '_1_1> TraitClause0::cmp<'_0_1, '_1_1>}<'8, '9, T>[TraitClause1]](const TraitClause1::cmp<'10, '11>)
     ↳⚡ unwind_continue
     storage_dead(_2)
     _0 = ()

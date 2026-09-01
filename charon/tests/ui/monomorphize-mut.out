@@ -575,9 +575,9 @@ where
     let _19: &'111 u32; // anonymous local
     let _20: &'112 u32; // anonymous local
     let _21: &'382 u32; // anonymous local
-    let _22: &'490 u32; // anonymous local
+    let _22: &'489 u32; // anonymous local
     let _23: u32; // anonymous local
-    let _24: &'491 u32; // anonymous local
+    let _24: &'490 u32; // anonymous local
     let _25: u32; // anonymous local
 
     storage_live(_20)
@@ -708,7 +708,7 @@ where
     _17 = &(*_18)
     _16 = Option::Some { _0: move _17 }
     storage_dead(_17)
-    _15 = map<&'390 u32, &'391 u32, identity<&'399 u32>[{built_in impl Sized for &'399 u32}]>[{built_in impl Sized for &'390 u32}, {built_in impl Sized for &'391 u32}, {built_in impl Sized for identity<&'420 u32>[{built_in impl Sized for &'420 u32}]}, {impl FnOnce<(T,)> for identity<T>[TraitClause0]}<&'390 u32>[{built_in impl Sized for &'390 u32}], {built_in impl Destruct for identity<&'467 u32>[{built_in impl Sized for &'467 u32}]}](move _16, const identity<&'483 u32>[{built_in impl Sized for &'483 u32}])
+    _15 = map<&'390 u32, &'391 u32, identity<&'399 u32>[{built_in impl Sized for &'399 u32}]>[{built_in impl Sized for &'390 u32}, {built_in impl Sized for &'391 u32}, {built_in impl Sized for identity<&'420 u32>[{built_in impl Sized for &'420 u32}]}, {impl FnOnce<(T,)> for identity<T>[TraitClause0]}<&'390 u32>[{built_in impl Sized for &'390 u32}], {built_in impl Destruct for identity<&'466 u32>[{built_in impl Sized for &'466 u32}]}](move _16, const identity<&'482 u32>[{built_in impl Sized for &'482 u32}])
     ↳⚡ conditional_drop[{built_in impl Destruct for A}::drop_glue<'120>] x
         ↳⚡ storage_dead(_19)
             storage_dead(_18)
@@ -727,7 +727,7 @@ where
     storage_dead(_16)
     storage_dead(_15)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for A}::drop_glue<'489>] x
+    conditional_drop[{built_in impl Destruct for A}::drop_glue<'488>] x
     ↳⚡ storage_dead(_19)
         storage_dead(_18)
         storage_dead(x)

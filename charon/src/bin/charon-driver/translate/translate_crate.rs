@@ -938,6 +938,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
         enqueue: bool,
     ) -> Result<RegionBinder<FnPtr>, Error> {
+        if let Some(fn_ptr) = self.translate_callable_method_fn_ptr(span, item)? {
+            return Ok(fn_ptr);
+        }
         if let Some(fn_ptr) = self.translate_method_decl_fn_ptr(span, item)? {
             return Ok(fn_ptr);
         }

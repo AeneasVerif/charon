@@ -522,10 +522,10 @@ pub fn main()
     let _24: &'51 i32; // anonymous local
     let _25: &'52 i32; // anonymous local
     let _26: &'53 i32; // anonymous local
-    let _27: &'122 i32; // anonymous local
-    let _28: &'136 i32; // anonymous local
+    let _27: &'121 i32; // anonymous local
+    let _28: &'135 i32; // anonymous local
     let _29: i32; // anonymous local
-    let _30: &'137 i32; // anonymous local
+    let _30: &'136 i32; // anonymous local
     let _31: i32; // anonymous local
 
     storage_live(_26)
