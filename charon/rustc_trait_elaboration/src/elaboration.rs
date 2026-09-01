@@ -102,7 +102,6 @@ impl<'tcx, Id: ItemId> Candidate<'tcx, Id> {
 #[derive(Clone)]
 pub struct PredicateSearcher<'tcx, Id: ItemId = DefId> {
     pub(crate) elab_ctx: ElaborationCtx<'tcx, Id>,
-    owner: Id,
     pub(crate) typing_env: rustc_middle::ty::TypingEnv<'tcx>,
     /// Local clauses available in the current context.
     candidates: HashMap<PolyTraitRef<'tcx>, Candidate<'tcx, Id>>,
@@ -126,7 +125,6 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         let initial_self_pred = initial_self_pred(state, &owner_id);
         let mut out = Self {
             elab_ctx,
-            owner: owner_id.clone(),
             typing_env: TypingEnv::new(owner_id.param_env(state), TypingMode::PostAnalysis),
             candidates: Default::default(),
             implicit_self_clause: initial_self_pred.is_some(),
@@ -176,9 +174,9 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         let tcx = self.elab_ctx.tcx;
 
         // Pretend there is an extra type parameter in the environment, and use it as `Self` in
-        // the dyn predicates.
-        let param_count = self.owner.generics_of(state).count();
-        let existential_ty = ParamTy::new(param_count as u32 + 1, Symbol::intern("_dyn"));
+        // the dyn predicates. Its index must not clash with the owner's parameters, and must
+        // also not depend on the owner, as it would break item identity (see charon#1391)
+        let existential_ty = ParamTy::new(u32::MAX, Symbol::intern("_dyn"));
         let self_ty = existential_ty.to_ty(tcx);
         let predicates = epreds.iter().map(|pred| pred.with_self_ty(tcx, self_ty));
         let predicates = ItemPredicates::new_unmapped(DUMMY_SP, predicates);

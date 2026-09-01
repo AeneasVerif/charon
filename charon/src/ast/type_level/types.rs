@@ -462,13 +462,6 @@ impl Ty {
         }
     }
 
-    pub fn as_box(&self) -> Option<&Ty> {
-        match self.kind() {
-            TyKind::Adt(ty_ref) if ty_ref.is_box() => Some(&ty_ref.generics.types[0]),
-            _ => None,
-        }
-    }
-
     pub fn as_adt_id(&self) -> Option<TypeDeclId> {
         self.kind().as_adt().map(|a| a.id)
     }

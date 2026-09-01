@@ -131,11 +131,8 @@ fn transform_dyn_trait_call(
         }
     };
 
-    let dyn_ty = dyn_trait_place
-        .ty()
-        .as_ref_or_ptr()
-        .or_else(|| dyn_trait_place.ty().as_box())
-        .expect("dyn trait receiver should be behind a pointer");
+    let dyn_pred = dyn_proof.trait_decl_ref.clone().erase();
+    let dyn_ty = &dyn_pred.generics.types[0];
     let PtrMetadata::VTable(receiver_vtable_ref) = dyn_ty.get_ptr_metadata(&ctx.ctx.translated)
     else {
         raise_error!(
