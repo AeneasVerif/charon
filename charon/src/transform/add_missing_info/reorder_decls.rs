@@ -426,7 +426,7 @@ fn compute_reordered_decls(ctx: &mut TransformCtx) -> Vec<DeclarationGroup> {
     // then local items. Within a crate, we sort by file then by source order.
     let sort_by = |item: &ItemRef| {
         let item_meta = item.item_meta();
-        let span = item_meta.span.data;
+        let span = item_meta.span.data();
         let file_name_order = sorted_file_ids.get(span.file_id);
         (
             item_meta.is_local,

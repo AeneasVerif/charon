@@ -75,7 +75,7 @@ impl Error {
 
     pub(crate) fn render(&self, krate: &TranslatedCrate, level: Level) -> String {
         use annotate_snippets::*;
-        let span = self.span.data;
+        let span = self.span.data();
 
         let mut group = Group::with_title(level.primary_title(&self.msg));
         let origin;
@@ -90,8 +90,8 @@ impl Error {
             } else {
                 // Show just the file and line/col.
                 let origin = Origin::path(&origin)
-                    .line(span.beg.line)
-                    .char_column(span.beg.col + 1);
+                    .line(span.beg.line as usize)
+                    .char_column(span.beg.col as usize + 1);
                 group = group.element(origin);
             }
         }
@@ -304,7 +304,7 @@ impl ErrorCtx {
                 DepNode::External(_) => None,
                 DepNode::Local(_, span) => Some(*span),
             })
-            .into_group_map_by(|span| span.data.file_id);
+            .into_group_map_by(|span| span.data().file_id);
 
         // Collect to a `Vec` to be able to sort it and to borrow `origin` (needed by
         // `Snippet::source`).
@@ -322,16 +322,15 @@ impl ErrorCtx {
         by_file.sort_by_key(|(file_id, ..)| *file_id);
 
         let level = Level::NOTE;
-        let snippets = by_file.iter().map(|(_, origin, source, spans)| {
-            Snippet::source(*source)
-                .path(origin)
-                .fold(true)
-                .annotations(
-                    spans
-                        .iter()
-                        .map(|span| AnnotationKind::Context.span(span.data.to_byte_range(source))),
-                )
-        });
+        let snippets =
+            by_file.iter().map(|(_, origin, source, spans)| {
+                Snippet::source(*source)
+                    .path(origin)
+                    .fold(true)
+                    .annotations(spans.iter().map(|span| {
+                        AnnotationKind::Context.span(span.data().to_byte_range(source))
+                    }))
+            });
 
         let msg = format!(
             "the error occurred when translating `{}`, \

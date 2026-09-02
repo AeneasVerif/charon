@@ -645,7 +645,7 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
         &mut self,
         source_text: &Option<String>,
         charon_span: Span,
-    ) -> Vec<(usize, Vec<String>)> {
+    ) -> Vec<(u32, Vec<String>)> {
         if let Some(body_text) = source_text {
             let mut comments = body_text
                 .lines()
@@ -653,7 +653,9 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
                 .rev()
                 .enumerate()
                 // Compute the absolute line number
-                .filter_map(|(i, line)| Some((charon_span.data.end.line.checked_sub(i)?, line)))
+                .filter_map(|(i, line)| {
+                    Some(((charon_span.data().end.line).checked_sub(i as u32)?, line))
+                })
                 // Extract the comment if this line starts with `//`
                 .map(|(line_nbr, line)| (line_nbr, line.trim_start().strip_prefix("//")))
                 .peekable()

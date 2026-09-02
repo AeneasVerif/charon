@@ -37,11 +37,11 @@ impl IsStatement for ullbc_ast::Terminator {
 }
 
 struct CommentsCtx {
-    comments: Vec<(usize, Vec<String>)>,
+    comments: Vec<(u32, Vec<String>)>,
 }
 impl CommentsCtx {
     fn visit<St: IsStatement>(&mut self, st: &mut St) {
-        let st_line = st.get_span().data.beg.line;
+        let st_line = st.get_span().data().beg.line;
         self.comments = mem::take(&mut self.comments)
             .into_iter()
             .filter_map(|(line, comments)| {

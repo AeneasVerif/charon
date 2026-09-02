@@ -103,6 +103,6 @@ pub fn translate_rust_text(
 }
 
 pub fn repr_span(span: Span) -> String {
-    let span_data = span.data;
+    let span_data = span.data();
     format!("{}-{}", span_data.beg, span_data.end)
 }
