@@ -319,7 +319,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Supertrait fields.
         for (i, pred) in implied_predicates.iter_trait_clauses().enumerate() {
-            let trait_clause_id = TraitClauseId::from_raw(i); // One trait clause id per trait clause
+            let trait_clause_id = TraitClauseId::from_usize(i); // One trait clause id per trait clause
             let clause = &pred.clause;
             let hax::ClauseKind::Trait(pred) = clause.kind.hax_skip_binder_ref() else {
                 unreachable!()

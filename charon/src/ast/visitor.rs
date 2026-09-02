@@ -47,7 +47,7 @@ use derive_generic_visitor::*;
     visitor(drive_two(&two ZipAst)),
     // Types that are skipped by normal visitors but compared for equality by `ZipAst`.
     skip_but_eq(
-        (), String, PathBuf, bool, char, i128, u8, u64, u128, usize, ustr::Ustr,
+        (), String, PathBuf, bool, char, i128, u8, u32, u64, u128, usize, ustr::Ustr,
         crate::options::CliOpts,
         Abi, BuiltinImplData, Byte, DeprecatedSince, DropKind, Error, FileName,
         GlobalKind, ItemOpacity, LangItem, LifetimeMutability, OptimizeAttr, OverflowMode,
@@ -199,7 +199,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
         AbortKind, BinOp, BorrowKind, BranchId, BuiltinAssertKind, ConstantExpr, FieldId,
         TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId,  UnOp, VariantId,
-        TraitRef, LiteralTy, Literal, Region, RegionId, (), String, PathBuf, bool, usize,
+        TraitRef, LiteralTy, Literal, Region, RegionId, (), String, PathBuf, bool, u32, usize,
         DropKind, Error, Variance, WithRetag, BuiltinTy, BuiltinPathElem,
         llbc_ast::BlockId, llbc_ast::StatementId,
     ),
