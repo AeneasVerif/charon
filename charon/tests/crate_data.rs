@@ -47,7 +47,7 @@ fn items_by_name<'c>(crate_data: &'c TranslatedCrate) -> HashMap<String, Item<'c
                 generics.trait_clauses = tdecl.implied_clauses.clone();
             }
             Item {
-                name_str: repr_name(crate_data, &item.item_meta().name),
+                name_str: item.item_meta().name.debug_repr(crate_data),
                 generics,
                 kind: item,
             }
@@ -66,7 +66,7 @@ fn type_decl() -> anyhow::Result<()> {
     )?;
     let type_decls = user_type_decls(&crate_data);
     assert_eq!(
-        repr_name(&crate_data, &type_decls[0].item_meta.name),
+        type_decls[0].item_meta.name.debug_repr(&crate_data),
         "test_crate::Struct"
     );
     Ok(())
@@ -158,14 +158,14 @@ fn file_name() -> anyhow::Result<()> {
     )?;
     let type_decls = user_type_decls(&crate_data);
     assert_eq!(
-        repr_name(&crate_data, &type_decls[0].item_meta.name),
+        type_decls[0].item_meta.name.debug_repr(&crate_data),
         "test_crate::Foo"
     );
     assert_eq!(
-        repr_name(&crate_data, &type_decls[1].item_meta.name),
+        type_decls[1].item_meta.name.debug_repr(&crate_data),
         "core::option::Option"
     );
-    let file_id = type_decls[1].item_meta.span.data.file_id;
+    let file_id = type_decls[1].item_meta.span.data().file_id;
     let file = &crate_data.files[file_id];
     assert_eq!(file.name.to_string(), "/rustc/library/core/src/option.rs");
     Ok(())
@@ -318,7 +318,8 @@ fn predicate_origins() -> anyhow::Result<()> {
         let clauses = &item.generics.trait_clauses;
         assert_eq!(origins.len(), clauses.len(), "failed for {item_name}");
         for (clause, (expected_origin, expected_trait_name)) in clauses.iter().zip(origins) {
-            let trait_name = trait_name(&crate_data, clause.trait_.skip_binder.id);
+            let trait_decl = &crate_data[clause.trait_.skip_binder.id];
+            let trait_name = trait_decl.item_meta.name.short_str().unwrap();
             assert_eq!(trait_name, expected_trait_name, "failed for {item_name}");
             assert_eq!(&clause.origin, &expected_origin, "failed for {item_name}");
         }
@@ -340,7 +341,8 @@ fn predicate_origins() -> anyhow::Result<()> {
     let clauses = &method.params.trait_clauses;
     assert_eq!(origins.len(), clauses.len(), "failed for trait_method");
     for (clause, (expected_origin, expected_trait_name)) in clauses.iter().zip(origins) {
-        let trait_name = trait_name(&crate_data, clause.trait_.skip_binder.id);
+        let trait_decl = &crate_data[clause.trait_.skip_binder.id];
+        let trait_name = trait_decl.item_meta.name.short_str().unwrap();
         assert_eq!(trait_name, expected_trait_name, "failed for trait_method");
         assert_eq!(&clause.origin, &expected_origin, "failed for trait_method");
     }
@@ -451,19 +453,19 @@ fn visibility() -> anyhow::Result<()> {
     )?;
     let type_decls = user_type_decls(&crate_data);
     assert_eq!(
-        repr_name(&crate_data, &type_decls[0].item_meta.name),
+        type_decls[0].item_meta.name.debug_repr(&crate_data),
         "test_crate::Pub"
     );
     assert!(type_decls[0].item_meta.attr_info.public);
     assert_eq!(
-        repr_name(&crate_data, &type_decls[1].item_meta.name),
+        type_decls[1].item_meta.name.debug_repr(&crate_data),
         "test_crate::Priv"
     );
     assert!(!type_decls[1].item_meta.attr_info.public);
     // Note how we think `PubInPriv` is public. It kind of is but there is no path to it. This is
     // probably fine.
     assert_eq!(
-        repr_name(&crate_data, &type_decls[2].item_meta.name),
+        type_decls[2].item_meta.name.debug_repr(&crate_data),
         "test_crate::private::PubInPriv"
     );
     assert!(type_decls[2].item_meta.attr_info.public);
@@ -771,7 +773,7 @@ fn known_trait_method_call() -> anyhow::Result<()> {
     )?;
     let function = &crate_data.fun_decls[0];
     assert_eq!(
-        repr_name(&crate_data, &function.item_meta.name),
+        function.item_meta.name.debug_repr(&crate_data),
         "test_crate::use_default"
     );
     let body = &function.body.as_structured().unwrap().body;
@@ -793,7 +795,7 @@ fn known_trait_method_call() -> anyhow::Result<()> {
     // This is the function that gets called.
     let function = &crate_data.fun_decls[*id];
     assert_eq!(
-        repr_name(&crate_data, &function.item_meta.name),
+        function.item_meta.name.debug_repr(&crate_data),
         "test_crate::<impl Default for ??>::default"
     );
     let FunSource::TraitImpl { .. } = &function.src else {

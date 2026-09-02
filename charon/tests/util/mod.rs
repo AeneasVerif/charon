@@ -6,7 +6,6 @@
 // module.
 #![allow(dead_code)]
 use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
-use itertools::Itertools;
 use snapbox::filter::Filter;
 use std::fmt::Display;
 use std::path::Path;
@@ -103,39 +102,7 @@ pub fn translate_rust_text(
     Ok(crate_data.translated)
 }
 
-/// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
-pub fn repr_name(crate_data: &TranslatedCrate, n: &Name) -> String {
-    n.name
-        .iter()
-        .map(|path_elem| match path_elem {
-            PathElem::Ident(i, _) => i.clone(),
-            PathElem::Impl(elem) => match elem {
-                ImplElem::Trait(impl_id) => match crate_data.trait_impls.get(*impl_id) {
-                    None => format!("<trait impl#{impl_id}>"),
-                    Some(timpl) => {
-                        let trait_name = trait_name(crate_data, timpl.impl_trait.id);
-                        format!("<impl {trait_name} for ??>")
-                    }
-                },
-                ImplElem::Ty(..) => "<inherent impl>".to_string(),
-            },
-            PathElem::Instantiated(..) => "<mono>".to_string(),
-            PathElem::Target(target) => target.clone(),
-            PathElem::Builtin(BuiltinPathElem::Tuple(n)) => format!("<tuple_{n}>"),
-            PathElem::Builtin(BuiltinPathElem::Str) => "<str>".to_string(),
-        })
-        .join("::")
-}
-
 pub fn repr_span(span: Span) -> String {
     let span_data = span.data;
     format!("{}-{}", span_data.beg, span_data.end)
-}
-
-pub fn trait_name(crate_data: &TranslatedCrate, trait_id: TraitDeclId) -> &str {
-    let tr = &crate_data.trait_decls[trait_id];
-    let PathElem::Ident(trait_name, _) = tr.item_meta.name.name.last().unwrap() else {
-        panic!()
-    };
-    trait_name
 }
