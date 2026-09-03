@@ -116,7 +116,7 @@ pub struct GExprBody<T> {
     /// For each line inside the body, we record any whole-line `//` comments found before it. They
     /// are added to statements in the late `recover_body_comments` pass.
     #[cfg_attr(feature = "charon_on_charon", charon::opaque)]
-    pub comments: Vec<(usize, Vec<String>)>,
+    pub comments: Vec<(u32, Vec<String>)>,
 }
 
 generate_index_type!(BranchId, "Branch");

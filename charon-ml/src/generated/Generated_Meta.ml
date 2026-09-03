@@ -347,28 +347,30 @@ and raw_attribute = {
 
 and rustc_rustc_version = { major : int; minor : int; patch : int }
 
-(** A snippet of source code within a file. *)
+(** A snippet of source code within a file, along with the place the code was
+    generated from in case of macro expansion. This is a pair of the span itself
+    ([data]) and an optional "generated from" span ([generated_from_span]).
+
+    For code coming from a macro expansion, [data] is the span of the macro
+    before expansion, i.e. the location where the user wrote the call to the
+    macro, and [generated_from_span] is where the code actually comes from.
+
+    Ex:
+    {@rust[
+      // Below, we consider the spans for the statements inside [test]
+
+      //   the statement we consider, which gets inlined in [test]
+                               VV
+      macro_rules! macro { ... st ... } // [generated_from_span] refers to this location
+
+      fn test() {
+          macro!(); // <-- [data] refers to this location
+      }
+    ]} *)
 and span = {
   data : span_data;
-      (** The source code span.
-
-          If this meta information is for a statement/terminator coming from a
-          macro expansion/inlining/etc., this span is (in case of macros) for
-          the macro before expansion (i.e., the location the code where the user
-          wrote the call to the macro).
-
-          Ex:
-          {@rust[
-            // Below, we consider the spans for the statements inside [test]
-
-            //   the statement we consider, which gets inlined in [test]
-                                     VV
-            macro_rules! macro { ... st ... } // [generated_from_span] refers to this location
-
-            fn test() {
-                macro!(); // <-- [data] refers to this location
-            }
-          ]} *)
+      (** The source code span; for code coming from a macro expansion, the
+          location of the macro call. *)
   generated_from_span : span_data option;
       (** Where the code actually comes from, in case of macro
           expansion/inlining/etc. *)

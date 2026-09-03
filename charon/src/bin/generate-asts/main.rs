@@ -18,6 +18,7 @@ fn run_charon(charon_llbc: &Path, rustc_datatypes: &generate_rust::RustcDatatype
     cmd.arg("--ullbc");
     cmd.arg("--start-from=charon_lib::ast::krate::TranslatedCrate");
     cmd.arg("--start-from=charon_lib::ast::bodies::unstructured::BodyContents");
+    cmd.arg("--start-from=charon_lib::ast::meta::spans::SerializedSpan");
     cmd.arg("--exclude=charon_lib::utils::hash_by_addr::HashByAddr");
     for path in rustc_datatypes.paths_to_start_from() {
         cmd.arg(format!("--start-from={path}"));
@@ -52,6 +53,23 @@ fn translate_charon_itself(
         .with_context(|| format!("Failed to deserialize {}", charon_llbc.display()))
 }
 
+/// Substitute the declaration of `Span` (optimised for low memory) with that of `SerializedSpan`,
+/// so OCaml doesn't deal with bit manipulations.
+fn use_serialized_span(crate_data: &mut TranslatedCrate) -> Result<()> {
+    let find = |name: &str| {
+        crate_data
+            .type_decls
+            .iter()
+            .find(|ty| ty.item_meta.name.debug_repr(crate_data) == name)
+            .map(|ty| ty.def_id)
+            .with_context(|| format!("Could not find type `{name}`"))
+    };
+    let serialized_span = find("charon_lib::ast::meta::spans::SerializedSpan")?;
+    let span = find("charon_lib::ast::meta::spans::Span")?;
+    crate_data.type_decls[span].kind = crate_data.type_decls[serialized_span].kind.clone();
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let dir = PathBuf::from("src/bin/generate-asts");
     let generated_dir = dir.join("generated");
@@ -59,7 +77,8 @@ fn main() -> Result<()> {
         .with_context(|| format!("Failed to create {}", generated_dir.display()))?;
 
     let rustc_datatypes = generate_rust::RustcDatatypes::new();
-    let crate_data = translate_charon_itself(&generated_dir, &rustc_datatypes)?;
+    let mut crate_data = translate_charon_itself(&generated_dir, &rustc_datatypes)?;
+    use_serialized_span(&mut crate_data)?;
 
     let ml_output_dir = if std::env::var("IN_CI").as_deref() == Ok("1") {
         generated_dir

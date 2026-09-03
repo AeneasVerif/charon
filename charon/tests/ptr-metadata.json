@@ -1,5 +1,5 @@
 {
-  "<tuple_0>": "None",
+  "<unit>": "None",
   "test_crate::Alias": "Length",
   "test_crate::StrDst": "Length",
   "test_crate::SliceDst": "Length",

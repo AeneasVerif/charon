@@ -380,17 +380,7 @@ impl<'a> Generator<'a> {
         self.crate_data[id]
             .item_meta
             .name
-            .name
-            .iter()
-            .map(|elem| match elem {
-                PathElem::Ident(name, _) => name.clone(),
-                PathElem::Impl(_) => "<impl>".to_string(),
-                PathElem::Instantiated(_) => "<mono>".to_string(),
-                PathElem::Target(target) => target.clone(),
-                PathElem::Builtin(BuiltinPathElem::Tuple(n)) => format!("<tuple_{n}>"),
-                PathElem::Builtin(BuiltinPathElem::Str) => "<str>".to_string(),
-            })
-            .join("::")
+            .debug_repr(self.crate_data)
     }
 
     fn datatype_for(&self, id: TypeDeclId) -> Option<&RustcDatatype> {

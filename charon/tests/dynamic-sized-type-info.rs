@@ -73,10 +73,7 @@ fn ptr_metadata() -> anyhow::Result<()> {
     let meta_kinds: SeqHashMap<String, &PtrMetadata> = crate_data
         .type_decls
         .iter()
-        .map(|td| {
-            let name = repr_name(&crate_data, &td.item_meta.name);
-            (name, &td.ptr_metadata)
-        })
+        .map(|td| (td.item_meta.name.debug_repr(&crate_data), &td.ptr_metadata))
         .collect();
     let str = serde_json::to_string_pretty(&meta_kinds)?;
     compare_or_overwrite(str, &PathBuf::from("./tests/ptr-metadata.json"))?;

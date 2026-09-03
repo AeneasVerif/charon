@@ -15,7 +15,6 @@ use std::fs;
 use std::path::PathBuf;
 
 use self::to_ocaml_ty::DeriveVisitors;
-use self::util::*;
 
 mod of_json;
 mod of_postcard;
@@ -41,7 +40,7 @@ impl<'a> GenerateCtx<'a> {
         let mut name_to_type: HashMap<String, &TypeDecl> = Default::default();
         let mut type_tree = HashMap::default();
         for ty in &crate_data.type_decls {
-            let long_name = repr_name(&ty.item_meta.name);
+            let long_name = ty.item_meta.name.debug_repr(crate_data);
             if long_name.starts_with("charon_lib")
                 && let Some(short_name) = ty.item_meta.name.short_str()
             {

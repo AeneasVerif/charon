@@ -5,21 +5,6 @@ use std::collections::{HashMap, HashSet};
 
 use super::GenerateCtx;
 
-/// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
-pub fn repr_name(n: &Name) -> String {
-    n.name
-        .iter()
-        .map(|path_elem| match path_elem {
-            PathElem::Ident(i, _) => i.clone(),
-            PathElem::Impl(..) => "<impl>".to_string(),
-            PathElem::Instantiated(..) => "<mono>".to_string(),
-            PathElem::Target(target) => target.clone(),
-            PathElem::Builtin(BuiltinPathElem::Tuple(n)) => format!("<tuple_{n}>"),
-            PathElem::Builtin(BuiltinPathElem::Str) => "<str>".to_string(),
-        })
-        .join("::")
-}
-
 pub fn make_ocaml_ident(name: &str) -> String {
     let leading_underscores = name.len() - name.trim_start_matches('_').len();
     let mut name = "_".repeat(leading_underscores) + &name.to_case(Case::Snake);
@@ -162,7 +147,10 @@ impl<'a> GenerateCtx<'a> {
                                 self.type_to_ocaml_ident(tdecl)
                             } else {
                                 let name = self.crate_data.item_name(tref.id);
-                                eprintln!("Warning: type {} missing from llbc", repr_name(name));
+                                eprintln!(
+                                    "Warning: type {} missing from llbc",
+                                    name.debug_repr(self.crate_data)
+                                );
                                 name.short_str().unwrap().to_lowercase()
                             };
                         if base_ty == "vec" {

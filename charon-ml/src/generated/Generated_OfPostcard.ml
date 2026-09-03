@@ -846,8 +846,8 @@ and literal_type_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
 and loc_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (loc, string) result =
   combine_error_msgs st __FUNCTION__
-    (let* line = usize_of_postcard ctx st in
-     let* col = usize_of_postcard ctx st in
+    (let* line = u32_of_postcard ctx st in
+     let* col = u32_of_postcard ctx st in
      Ok ({ line; col } : loc))
 
 and local_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -2267,7 +2267,7 @@ and gexpr_body_of_postcard :
      let* body = arg0_of_postcard ctx st in
      let* _ =
        list_of_postcard
-         (pair_of_postcard usize_of_postcard
+         (pair_of_postcard u32_of_postcard
             (list_of_postcard string_of_postcard))
          ctx st
      in

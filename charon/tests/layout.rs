@@ -188,7 +188,7 @@ fn type_layout() -> anyhow::Result<()> {
         if let Some(layout) = tdecl.layout.get(&the_target)
             && let Some(discriminator) = &layout.discriminator
         {
-            let name = repr_name(&crate_data, &tdecl.item_meta.name);
+            let name = tdecl.item_meta.name.debug_repr(&crate_data);
             for (var_id, variant) in layout.variant_layouts.iter_enumerated() {
                 if layout.is_variant_uninhabited(var_id) {
                     if let Some(variant) = variant {
@@ -251,7 +251,7 @@ fn type_layout() -> anyhow::Result<()> {
             if !is_local {
                 return None;
             }
-            let name = repr_name(&crate_data, &tdecl.item_meta.name);
+            let name = tdecl.item_meta.name.debug_repr(&crate_data);
             let opt_layout = tdecl.layout.get(&the_target).cloned();
             let serializable = opt_layout.map(|l| WithState::new(l, &()));
             Some((name, serializable))

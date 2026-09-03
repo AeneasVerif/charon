@@ -1,6 +1,7 @@
 //! User-visible names of items.
 use crate::ast::*;
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
+use itertools::Itertools;
 use macros::{EnumAsGetters, EnumIsA};
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
@@ -271,6 +272,38 @@ impl Name {
             PathElem::Ident(str, _) => Some(str),
             _ => None,
         }
+    }
+
+    /// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
+    /// This must only be used for debug printing; it is not reliable or exact.
+    pub fn debug_repr(&self, crate_data: &TranslatedCrate) -> String {
+        // Small helper
+        let trait_name = |impl_id: TraitImplId| {
+            crate_data
+                .trait_impls
+                .get(impl_id)
+                .and_then(|timpl| crate_data.trait_decls.get(timpl.impl_trait.id))
+                .and_then(|tr| tr.item_meta.name.name.last())
+                .and_then(|p| p.as_ident())
+                .map(|(name, _)| name)
+        };
+
+        self.name
+            .iter()
+            .map(|path_elem| match path_elem {
+                PathElem::Ident(i, _) => i.clone(),
+                PathElem::Impl(elem) => match elem {
+                    ImplElem::Trait(impl_id) => match trait_name(*impl_id) {
+                        None => format!("<trait impl#{impl_id}>"),
+                        Some(name) => format!("<impl {name} for ??>"),
+                    },
+                    ImplElem::Ty(..) => "<inherent impl>".to_string(),
+                },
+                PathElem::Instantiated(..) => "<mono>".to_string(),
+                PathElem::Target(target) => target.clone(),
+                PathElem::Builtin(builtin) => format!("<{}>", builtin.ident()),
+            })
+            .join("::")
     }
 }
 

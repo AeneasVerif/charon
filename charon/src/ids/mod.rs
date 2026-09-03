@@ -21,15 +21,14 @@ macro_rules! generate_index_type {
     ($name:ident, $pretty_name:expr) => {
         index_vec::define_index_type! {
             #[derive(Default, derive_generic_visitor::Drive, derive_generic_visitor::DriveMut, derive_generic_visitor::DriveTwo)]
-            pub struct $name = usize;
-            // Must fit in an u32 for serialization.
+            pub struct $name = u32;
             MAX_INDEX = u32::MAX as usize;
         }
 
         impl $name {
             pub const ZERO: Self = Self { _raw: 0 };
             pub const MAX: Self = Self {
-                _raw: Self::MAX_INDEX,
+                _raw: Self::MAX_INDEX as u32,
             };
             pub fn is_zero(&self) -> bool {
                 self.index() == 0

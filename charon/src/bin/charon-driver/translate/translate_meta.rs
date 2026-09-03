@@ -153,8 +153,8 @@ impl<'tcx> TranslateCtx<'tcx> {
         let convert_loc = |pos: rustc_span::BytePos| -> Loc {
             let loc = smap.lookup_char_pos(pos);
             Loc {
-                line: loc.line,
-                col: loc.col_display,
+                line: loc.line as u32,
+                col: loc.col_display as u32,
             }
         };
         let beg = convert_loc(span.lo());
@@ -183,23 +183,14 @@ impl<'tcx> TranslateCtx<'tcx> {
 
         if let Some(parent_span) = parent_span {
             let parent_span = self.translate_span_data(parent_span);
-            Span {
-                data: parent_span,
-                generated_from_span: Some(data),
-            }
+            Span::new(parent_span, Some(data))
         } else {
-            Span {
-                data,
-                generated_from_span: None,
-            }
+            Span::new(data, None)
         }
     }
 
     pub(crate) fn translate_span(&mut self, span: &rustc_span::Span) -> Span {
-        Span {
-            data: self.translate_span_data(*span),
-            generated_from_span: None,
-        }
+        Span::new(self.translate_span_data(*span), None)
     }
 
     pub(crate) fn def_span(&mut self, def_id: &hax::DefId) -> Span {
