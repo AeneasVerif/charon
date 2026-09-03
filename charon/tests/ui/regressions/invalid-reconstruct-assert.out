@@ -584,14 +584,14 @@ where
     }
 }
 
-// Full name: test_crate::main::closure
-struct closure {}
+// Full name: test_crate::main::{closure}
+struct {closure} {}
 
-// Full name: test_crate::main::closure::{impl Destruct for closure}::drop_glue
-unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
+// Full name: test_crate::main::{closure}::{impl Destruct for {closure}}::drop_glue
+unsafe fn drop_glue<'_0>(_1: &'_0 mut {closure})
 {
     let _0: (); // return
-    let _1: &'1 mut closure; // arg #1
+    let _1: &'1 mut {closure}; // arg #1
 
     bb0: {
         storage_live(_0);
@@ -601,17 +601,17 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
     }
 }
 
-// Full name: test_crate::main::closure::{impl Destruct for closure}
-impl "impl_Destruct_for_closure" Destruct for closure {
+// Full name: test_crate::main::{closure}::{impl Destruct for {closure}}
+impl "impl_Destruct_for_closure" Destruct for {closure} {
     fn drop_glue<'_0_1> = drop_glue<'_0_1>
     non-dyn-compatible
 }
 
-// Full name: test_crate::main::{impl FnMut<(&'_ u32,)> for closure}::call_mut
-fn call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled_args: (&'_0 u32,)) -> Ordering
+// Full name: test_crate::main::{impl FnMut<(&'_ u32,)> for {closure}}::call_mut
+fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}, tupled_args: (&'_0 u32,)) -> Ordering
 {
     let _0: Ordering; // return
-    let _1: &'1 mut closure; // arg #1
+    let _1: &'1 mut {closure}; // arg #1
     let tupled_args: (&'_0 u32,); // arg #2
     let x: &'2 u32; // local
     let _4: &'3 u32; // anonymous local
@@ -669,13 +669,13 @@ fn call_mut<'_0, '_1>(_1: &'_1 mut closure, tupled_args: (&'_0 u32,)) -> Orderin
     }
 }
 
-// Full name: test_crate::main::{impl FnOnce<(&'_ u32,)> for closure}::call_once
-fn call_once<'_0>(_1: closure, _2: (&'_0 u32,)) -> Ordering
+// Full name: test_crate::main::{impl FnOnce<(&'_ u32,)> for {closure}}::call_once
+fn call_once<'_0>(_1: {closure}, _2: (&'_0 u32,)) -> Ordering
 {
     let _0: Ordering; // return
-    let _1: closure; // arg #1
+    let _1: {closure}; // arg #1
     let _2: (&'0 u32,); // arg #2
-    let _3: &'2 mut closure; // anonymous local
+    let _3: &'2 mut {closure}; // anonymous local
 
     bb0: {
         storage_live(_0);
@@ -721,9 +721,9 @@ fn call_once<'_0>(_1: closure, _2: (&'_0 u32,)) -> Ordering
     }
 }
 
-// Full name: test_crate::main::{impl FnOnce<(&'_ u32,)> for closure}
-impl<'_0> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_ u32,)> for closure {
-    proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
+// Full name: test_crate::main::{impl FnOnce<(&'_ u32,)> for {closure}}
+impl<'_0> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_ u32,)> for {closure} {
+    proof ImpliedClause0: ({closure}: MetaSized) = {built_in impl MetaSized for {closure}}
     proof ImpliedClause1: ((&'_ u32,): Sized) = {built_in impl Sized for (&'_ u32,)}
     proof ImpliedClause2: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
     proof ImpliedClause3: (Ordering: Sized) = {built_in impl Sized for Ordering}
@@ -732,10 +732,10 @@ impl<'_0> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_ u32,)> for closure {
     vtable: impl_FnOnce_tuple_for_closure::{vtable}<'_0>
 }
 
-// Full name: test_crate::main::{impl FnMut<(&'_ u32,)> for closure}
-impl<'_0> "impl_FnMut_tuple_for_closure" FnMut<(&'_ u32,)> for closure {
-    proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
-    proof ImpliedClause1: (closure: FnOnce<(&'_ u32,)>) = impl_FnOnce_tuple_for_closure<'_0>
+// Full name: test_crate::main::{impl FnMut<(&'_ u32,)> for {closure}}
+impl<'_0> "impl_FnMut_tuple_for_closure" FnMut<(&'_ u32,)> for {closure} {
+    proof ImpliedClause0: ({closure}: MetaSized) = {built_in impl MetaSized for {closure}}
+    proof ImpliedClause1: ({closure}: FnOnce<(&'_ u32,)>) = impl_FnOnce_tuple_for_closure<'_0>
     proof ImpliedClause2: ((&'_ u32,): Sized) = {built_in impl Sized for (&'_ u32,)}
     proof ImpliedClause3: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
     fn call_mut<'_0_1> = call_mut<'_0, '_0_1>
@@ -753,7 +753,7 @@ fn main()
     let res: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // local
     let _6: &'5 [u32]; // anonymous local
     let _7: &'6 [u32; 5usize]; // anonymous local
-    let _8: closure; // anonymous local
+    let _8: {closure}; // anonymous local
 
     bb0: {
         storage_live(_0);
@@ -779,8 +779,8 @@ fn main()
         _6 = unsize_cast<&'6 [u32; 5usize], &'9 [u32], 5usize>(move _7);
         storage_dead(_7);
         storage_live(_8);
-        _8 = closure {  };
-        res = binary_search_by<'10, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, impl_FnMut_tuple_for_closure<'14>, impl_Destruct_for_closure](move _6, move _8) -> bb2 (unwind: bb1);
+        _8 = {closure} {  };
+        res = binary_search_by<'10, u32, {closure}>[{built_in impl Sized for u32}, {built_in impl Sized for {closure}}, impl_FnMut_tuple_for_closure<'14>, impl_Destruct_for_closure](move _6, move _8) -> bb2 (unwind: bb1);
     }
 
     bb1: {

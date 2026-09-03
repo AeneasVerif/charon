@@ -478,8 +478,13 @@ let rec match_name_with_generics (ctx : ctx) (c : match_config)
       && match_generic_args ctx c m pg g
   | [ PIdent (pid, pd, pg) ], [ PeTarget target ] ->
       pid = target && pd = 0 && match_generic_args ctx c m pg g
-  | [ PIdent ("str", 0, pg) ], [ PeBuiltin PeStr ] ->
-      match_generic_args ctx c m pg g
+  | [ PIdent (pid, pd, pg) ], [ PeBuiltin (b, d) ]
+    when match b with
+         | PeTuple _ -> false
+         | _ -> true ->
+      pid = TypesUtils.builtin_path_elem_ident b
+      && T.Disambiguator.of_int pd = d
+      && match_generic_args ctx c m pg g
   | [ PImpl pty ], [ PeImpl impl ] -> (
       (* We can get there when matching a prefix of the name with a pattern *)
       (* We have to distinguish two cases:
@@ -497,6 +502,14 @@ let rec match_name_with_generics (ctx : ctx) (c : match_config)
   | PIdent (pid, pd, pg) :: p, PeIdent (id, d) :: n ->
       (* This is not the end: check that the generics are empty *)
       pid = id
+      && T.Disambiguator.of_int pd = d
+      && pg = []
+      && match_name_with_generics ctx c p n g
+  | PIdent (pid, pd, pg) :: p, PeBuiltin (b, d) :: n
+    when match b with
+         | PeTuple _ -> false
+         | _ -> true ->
+      pid = TypesUtils.builtin_path_elem_ident b
       && T.Disambiguator.of_int pd = d
       && pg = []
       && match_name_with_generics ctx c p n g
@@ -957,13 +970,15 @@ and path_elem_with_generic_args_to_pattern (ctx : ctx) (c : to_pat_config)
       (* In pattern generation, we skip monomorphized elements since patterns
          are meant to match the logical structure, not the instantiation details *)
       []
-  | PeBuiltin PeStr -> begin
-      match generics with
-      | None -> [ PIdent ("str", 0, []) ]
-      | Some args -> [ PIdent ("str", 0, args) ]
-    end
-  | PeBuiltin (PeTuple _) ->
+  | PeBuiltin (PeTuple _, _) ->
       failwith "Can't convert the name of a tuple to a pattern"
+  | PeBuiltin (b, d) -> begin
+      let s = TypesUtils.builtin_path_elem_ident b in
+      let d = T.Disambiguator.to_int d in
+      match generics with
+      | None -> [ PIdent (s, d, []) ]
+      | Some args -> [ PIdent (s, d, args) ]
+    end
 
 and impl_elem_to_pattern (ctx : ctx) (c : to_pat_config) (impl : T.impl_elem) :
     pattern_elem =

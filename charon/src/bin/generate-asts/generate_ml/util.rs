@@ -14,8 +14,8 @@ pub fn repr_name(n: &Name) -> String {
             PathElem::Impl(..) => "<impl>".to_string(),
             PathElem::Instantiated(..) => "<mono>".to_string(),
             PathElem::Target(target) => target.clone(),
-            PathElem::Builtin(BuiltinPathElem::Tuple(n)) => format!("<tuple_{n}>"),
-            PathElem::Builtin(BuiltinPathElem::Str) => "<str>".to_string(),
+            PathElem::Builtin(BuiltinPathElem::Tuple(n), _) => format!("<tuple_{n}>"),
+            PathElem::Builtin(builtin, _) => format!("<{}>", builtin.ident()),
         })
         .join("::")
 }

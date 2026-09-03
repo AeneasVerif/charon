@@ -77,23 +77,23 @@ struct (_,)<A> {
   _0: A,
 }
 
-// Full name: test_crate::call_fn::closure
-struct closure<'_0, '_1>
+// Full name: test_crate::call_fn::{closure}
+struct {closure}<'_0, '_1>
 where
     RegionOutlives0: '_1: '_0,
 {
   _0: &'_0 &'_1 [u8],
 }
 
-// Full name: test_crate::call_fn::{impl Fn<(usize,)> for closure<'_0, '_1>}::call
-fn call<'_0, '_1, '_2>(_1: &'_2 closure<'_0, '_1>, tupled_args: (usize,)) -> u8
+// Full name: test_crate::call_fn::{impl Fn<(usize,)> for {closure}<'_0, '_1>}::call
+fn call<'_0, '_1, '_2>(_1: &'_2 {closure}<'_0, '_1>, tupled_args: (usize,)) -> u8
 where
     RegionOutlives0: '_1: '_0,
     RegionOutlives1: '_0: '_2,
     RegionOutlives2: '_1: '_2,
 {
     let _0: u8; // return
-    let _1: &'1 closure<'_0, '_1>; // arg #1
+    let _1: &'1 {closure}<'_0, '_1>; // arg #1
     let tupled_args: (usize,); // arg #2
     let i: usize; // local
     let _4: &'2 &'3 [u8]; // anonymous local
@@ -130,9 +130,9 @@ fn call_fn<'_0>(a: &'_0 [u8], i: usize) -> u8
     let _0: u8; // return
     let a: &'1 [u8]; // arg #1
     let i: usize; // arg #2
-    let read: closure<'4, '5>; // local
+    let read: {closure}<'4, '5>; // local
     let _4: &'8 &'9 [u8]; // anonymous local
-    let _5: &'13 closure<'14, '15>; // anonymous local
+    let _5: &'13 {closure}<'14, '15>; // anonymous local
     let _6: (usize,); // anonymous local
     let _7: usize; // anonymous local
 
@@ -140,7 +140,7 @@ fn call_fn<'_0>(a: &'_0 [u8], i: usize) -> u8
     storage_live(read)
     storage_live(_4)
     _4 = &a
-    read = closure { _0: move _4 }
+    read = {closure} { _0: move _4 }
     storage_dead(_4)
     fake_read(read)
     storage_live(_5)
@@ -162,15 +162,15 @@ fn call_fn<'_0>(a: &'_0 [u8], i: usize) -> u8
     return
 }
 
-// Full name: test_crate::call_fn::closure::{impl Destruct for closure<'_0, '_1>}::drop_glue
-unsafe fn drop_glue<'_0, '_1, '_2>(_1: &'_2 mut closure<'_0, '_1>)
+// Full name: test_crate::call_fn::{closure}::{impl Destruct for {closure}<'_0, '_1>}::drop_glue
+unsafe fn drop_glue<'_0, '_1, '_2>(_1: &'_2 mut {closure}<'_0, '_1>)
 where
     RegionOutlives0: '_1: '_0,
     RegionOutlives1: '_0: '_2,
     RegionOutlives2: '_1: '_2,
 {
     let _0: (); // return
-    let _1: &'1 mut closure<'_0, '_1>; // arg #1
+    let _1: &'1 mut {closure}<'_0, '_1>; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -178,17 +178,17 @@ where
     return
 }
 
-// Full name: test_crate::call_fn::{impl FnMut<(usize,)> for closure<'_0, '_1>}::call_mut
-fn call_mut<'_0, '_1, '_2>(state: &'_2 mut closure<'_0, '_1>, args: (usize,)) -> u8
+// Full name: test_crate::call_fn::{impl FnMut<(usize,)> for {closure}<'_0, '_1>}::call_mut
+fn call_mut<'_0, '_1, '_2>(state: &'_2 mut {closure}<'_0, '_1>, args: (usize,)) -> u8
 where
     RegionOutlives0: '_1: '_0,
     RegionOutlives1: '_0: '_2,
     RegionOutlives2: '_1: '_2,
 {
     let _0: u8; // return
-    let state: &'_2 mut closure<'_0, '_1>; // arg #1
+    let state: &'_2 mut {closure}<'_0, '_1>; // arg #1
     let args: (usize,); // arg #2
-    let _3: &'0 closure<'_0, '_1>; // anonymous local
+    let _3: &'0 {closure}<'_0, '_1>; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -204,15 +204,15 @@ where
     return
 }
 
-// Full name: test_crate::call_fn::{impl FnOnce<(usize,)> for closure<'_0, '_1>}::call_once
-fn call_once<'_0, '_1>(_1: closure<'_0, '_1>, _2: (usize,)) -> u8
+// Full name: test_crate::call_fn::{impl FnOnce<(usize,)> for {closure}<'_0, '_1>}::call_once
+fn call_once<'_0, '_1>(_1: {closure}<'_0, '_1>, _2: (usize,)) -> u8
 where
     RegionOutlives0: '_1: '_0,
 {
     let _0: u8; // return
-    let _1: closure<'_0, '_1>; // arg #1
+    let _1: {closure}<'_0, '_1>; // arg #1
     let _2: (usize,); // arg #2
-    let _3: &'1 mut closure<'_0, '_1>; // anonymous local
+    let _3: &'1 mut {closure}<'_0, '_1>; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -238,12 +238,12 @@ where
     return
 }
 
-// Full name: test_crate::call_fn::{impl FnOnce<(usize,)> for closure<'_0, '_1>}
-impl<'_0, '_1> "impl_FnOnce_tuple_for_closure" FnOnce<(usize,)> for closure<'_0, '_1>
+// Full name: test_crate::call_fn::{impl FnOnce<(usize,)> for {closure}<'_0, '_1>}
+impl<'_0, '_1> "impl_FnOnce_tuple_for_closure" FnOnce<(usize,)> for {closure}<'_0, '_1>
 where
     RegionOutlives0: '_1: '_0,
 {
-    proof ImpliedClause0: (closure<'_0, '_1>: MetaSized) = {built_in impl MetaSized for closure<'_0, '_1>}
+    proof ImpliedClause0: ({closure}<'_0, '_1>: MetaSized) = {built_in impl MetaSized for {closure}<'_0, '_1>}
     proof ImpliedClause1: ((usize,): Sized) = {built_in impl Sized for (usize,)}
     proof ImpliedClause2: ((usize,): Tuple) = {built_in impl Tuple for (usize,)}
     proof ImpliedClause3: (u8: Sized) = {built_in impl Sized for u8}
@@ -252,34 +252,34 @@ where
     vtable: impl_FnOnce_tuple_for_closure::{vtable}<'_0, '_1>
 }
 
-// Full name: test_crate::call_fn::{impl FnMut<(usize,)> for closure<'_0, '_1>}
-impl<'_0, '_1> "impl_FnMut_tuple_for_closure" FnMut<(usize,)> for closure<'_0, '_1>
+// Full name: test_crate::call_fn::{impl FnMut<(usize,)> for {closure}<'_0, '_1>}
+impl<'_0, '_1> "impl_FnMut_tuple_for_closure" FnMut<(usize,)> for {closure}<'_0, '_1>
 where
     RegionOutlives0: '_1: '_0,
 {
-    proof ImpliedClause0: (closure<'_0, '_1>: MetaSized) = {built_in impl MetaSized for closure<'_0, '_1>}
-    proof ImpliedClause1: (closure<'_0, '_1>: FnOnce<(usize,)>) = impl_FnOnce_tuple_for_closure<'_0, '_1>
+    proof ImpliedClause0: ({closure}<'_0, '_1>: MetaSized) = {built_in impl MetaSized for {closure}<'_0, '_1>}
+    proof ImpliedClause1: ({closure}<'_0, '_1>: FnOnce<(usize,)>) = impl_FnOnce_tuple_for_closure<'_0, '_1>
     proof ImpliedClause2: ((usize,): Sized) = {built_in impl Sized for (usize,)}
     proof ImpliedClause3: ((usize,): Tuple) = {built_in impl Tuple for (usize,)}
     fn call_mut<'_0_1> = call_mut<'_0, '_1, '_0_1>
     vtable: impl_FnMut_tuple_for_closure::{vtable}<'_0, '_1>
 }
 
-// Full name: test_crate::call_fn::{impl Fn<(usize,)> for closure<'_0, '_1>}
-impl<'_0, '_1> "impl_Fn_tuple_for_closure" Fn<(usize,)> for closure<'_0, '_1>
+// Full name: test_crate::call_fn::{impl Fn<(usize,)> for {closure}<'_0, '_1>}
+impl<'_0, '_1> "impl_Fn_tuple_for_closure" Fn<(usize,)> for {closure}<'_0, '_1>
 where
     RegionOutlives0: '_1: '_0,
 {
-    proof ImpliedClause0: (closure<'_0, '_1>: MetaSized) = {built_in impl MetaSized for closure<'_0, '_1>}
-    proof ImpliedClause1: (closure<'_0, '_1>: FnMut<(usize,)>) = impl_FnMut_tuple_for_closure<'_0, '_1>
+    proof ImpliedClause0: ({closure}<'_0, '_1>: MetaSized) = {built_in impl MetaSized for {closure}<'_0, '_1>}
+    proof ImpliedClause1: ({closure}<'_0, '_1>: FnMut<(usize,)>) = impl_FnMut_tuple_for_closure<'_0, '_1>
     proof ImpliedClause2: ((usize,): Sized) = {built_in impl Sized for (usize,)}
     proof ImpliedClause3: ((usize,): Tuple) = {built_in impl Tuple for (usize,)}
     fn call<'_0_1> = call<'_0, '_1, '_0_1>
     vtable: impl_Fn_tuple_for_closure::{vtable}<'_0, '_1>
 }
 
-// Full name: test_crate::call_fn::closure::{impl Destruct for closure<'_0, '_1>}
-impl<'_0, '_1> "impl_Destruct_for_closure" Destruct for closure<'_0, '_1>
+// Full name: test_crate::call_fn::{closure}::{impl Destruct for {closure}<'_0, '_1>}
+impl<'_0, '_1> "impl_Destruct_for_closure" Destruct for {closure}<'_0, '_1>
 where
     RegionOutlives0: '_1: '_0,
 {

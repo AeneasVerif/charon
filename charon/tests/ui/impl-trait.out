@@ -290,32 +290,32 @@ where
   _0: T,
 }
 
-// Full name: test_crate::wrap::closure
-struct closure<U>
+// Full name: test_crate::wrap::{closure}
+struct {closure}<U>
 where
     TraitClause0: (U: Sized),
 {}
 
 // Full name: test_crate::wrap
-pub fn wrap<U>() -> closure<U>[TraitClause0]
+pub fn wrap<U>() -> {closure}<U>[TraitClause0]
 where
     TraitClause0: (U: Sized),
 {
-    let _0: closure<U>[TraitClause0]; // return
+    let _0: {closure}<U>[TraitClause0]; // return
 
     storage_live(_0)
-    _0 = closure {  }
+    _0 = {closure} {  }
     return
 }
 
-// Full name: test_crate::wrap::{impl FnOnce<(&'_ U,)> for closure<U>[TraitClause0]}::call_once
-fn call_once<'_0, U>(_1: closure<U>[TraitClause0], tupled_args: (&'_0 U,)) -> WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]
+// Full name: test_crate::wrap::{impl FnOnce<(&'_ U,)> for {closure}<U>[TraitClause0]}::call_once
+fn call_once<'_0, U>(_1: {closure}<U>[TraitClause0], tupled_args: (&'_0 U,)) -> WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]
 where
     TraitClause0: (U: Sized),
     TypeOutlives0: U: '_0,
 {
     let _0: WrapClone<&'9 U>[{built_in impl Sized for &'9 U}, {impl Clone for &'_0 T}<'9, U>]; // return
-    let _1: closure<U>[TraitClause0]; // arg #1
+    let _1: {closure}<U>[TraitClause0]; // arg #1
     let tupled_args: (&'_0 U,); // arg #2
     let x: &'15 U; // local
     let _4: &'16 U; // anonymous local
@@ -333,12 +333,12 @@ where
     return
 }
 
-// Full name: test_crate::wrap::{impl FnOnce<(&'_ U,)> for closure<U>[TraitClause0]}
-impl<'_0, U> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_ U,)> for closure<U>[TraitClause0]
+// Full name: test_crate::wrap::{impl FnOnce<(&'_ U,)> for {closure}<U>[TraitClause0]}
+impl<'_0, U> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_ U,)> for {closure}<U>[TraitClause0]
 where
     TraitClause0: (U: Sized),
 {
-    proof ImpliedClause0: (closure<U>[TraitClause0]: MetaSized) = {built_in impl MetaSized for closure<U>[TraitClause0]}
+    proof ImpliedClause0: ({closure}<U>[TraitClause0]: MetaSized) = {built_in impl MetaSized for {closure}<U>[TraitClause0]}
     proof ImpliedClause1: ((&'_ U,): Sized) = {built_in impl Sized for (&'_ U,)}
     proof ImpliedClause2: ((&'_ U,): Tuple) = {built_in impl Tuple for (&'_ U,)}
     proof ImpliedClause3: (WrapClone<&'_ U>[{built_in impl Sized for &'_ U}, {impl Clone for &'_0 T}<'_, U>]: Sized) = {built_in impl Sized for WrapClone<&'_ U>[{built_in impl Sized for &'_ U}, {impl Clone for &'_0 T}<'_, U>]}
@@ -347,14 +347,14 @@ where
     vtable: impl_FnOnce_tuple_for_closure::{vtable}<'_0, U>[TraitClause0]
 }
 
-// Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[TraitClause0]}::drop_glue
-unsafe fn drop_glue<'_0, U>(_1: &'_0 mut closure<U>[TraitClause0])
+// Full name: test_crate::wrap::{closure}::{impl Destruct for {closure}<U>[TraitClause0]}::drop_glue
+unsafe fn drop_glue<'_0, U>(_1: &'_0 mut {closure}<U>[TraitClause0])
 where
     TraitClause0: (U: Sized),
     TypeOutlives0: U: '_0,
 {
     let _0: (); // return
-    let _1: &'1 mut closure<U>[TraitClause0]; // arg #1
+    let _1: &'1 mut {closure}<U>[TraitClause0]; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -362,8 +362,8 @@ where
     return
 }
 
-// Full name: test_crate::wrap::closure::{impl Destruct for closure<U>[TraitClause0]}
-impl<U> "impl_Destruct_for_closure" Destruct for closure<U>[TraitClause0]
+// Full name: test_crate::wrap::{closure}::{impl Destruct for {closure}<U>[TraitClause0]}
+impl<U> "impl_Destruct_for_closure" Destruct for {closure}<U>[TraitClause0]
 where
     TraitClause0: (U: Sized),
 {
@@ -375,9 +375,9 @@ where
 pub fn use_wrap()
 {
     let _0: (); // return
-    let f: closure<u32>[{built_in impl Sized for u32}]; // local
+    let f: {closure}<u32>[{built_in impl Sized for u32}]; // local
     let _2: WrapClone<&'10 u32>[{built_in impl Sized for &'10 u32}, {impl Clone for &'_0 T}<'10, u32>]; // anonymous local
-    let _3: closure<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let _3: {closure}<u32>[{built_in impl Sized for u32}]; // anonymous local
     let _4: (&'17 u32,); // anonymous local
     let _5: &'18 u32; // anonymous local
     let _6: &'19 u32; // anonymous local

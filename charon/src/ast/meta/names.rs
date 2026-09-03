@@ -42,9 +42,10 @@ pub enum PathElem {
     /// This item is only available on the given target. Only appears in multi-target mode.
     #[serde_state(stateless)]
     Target(TargetTriple),
-    /// A path element for a builtin, like tuples
+    /// A path element that doesn't come from the source code: either a builtin type such as
+    /// tuples, or an item that has no name of its own such as a closure or a vtable.
     #[serde_state(stateless)]
-    Builtin(BuiltinPathElem),
+    Builtin(BuiltinPathElem, Disambiguator),
 }
 
 /// Used for builtin items, rather than hardcoding these as strings.
@@ -58,6 +59,24 @@ pub enum BuiltinPathElem {
     /// `str`, which is a struct containing a `[u8]` the standard library expects
     /// to be valid UTF-8.
     Str,
+    /// A closure.
+    Closure,
+    /// A `use` declaration.
+    Use,
+    /// An anonymous constant.
+    AnonConst,
+    /// A constant that rustc promoted out of a body.
+    PromotedConst,
+    /// The function item we generate for a closure that is cast to a function pointer.
+    ClosureAsFn,
+    /// The method we add to the `Destruct` trait to hold the drop glue.
+    DropGlue,
+    /// The vtable struct of a trait, or the vtable global of a trait impl.
+    VTable,
+    /// The version of a method that is stored in a vtable.
+    VTableMethod,
+    /// The `drop_in_place` shim stored in a vtable.
+    VTableDropShim,
 }
 
 /// There are two kinds of `impl` blocks:
@@ -259,7 +278,7 @@ impl Name {
     pub fn is_builtin(&self) -> bool {
         matches!(
             self.name.first(),
-            Some(PathElem::Builtin(_) | PathElem::Impl(_))
+            Some(PathElem::Builtin(..) | PathElem::Impl(_))
         )
     }
 
@@ -267,7 +286,7 @@ impl Name {
     /// Returns `None` if the name is empty or if the last element has no identifier to give.
     pub fn short_str(&self) -> Option<&str> {
         match self.name.last()? {
-            PathElem::Builtin(builtin) => Some(builtin.ident()),
+            PathElem::Builtin(builtin, _) => Some(builtin.ident()),
             PathElem::Ident(str, _) => Some(str),
             _ => None,
         }
@@ -275,11 +294,30 @@ impl Name {
 }
 
 impl BuiltinPathElem {
+    /// If this builtin name is also how Rust refers to the item, in which case we don't
+    /// need to put braces around the name, as it is part of the actual path of the item.
+    pub fn is_rust_name(self) -> bool {
+        matches!(
+            self,
+            BuiltinPathElem::Str | BuiltinPathElem::Tuple(_) | BuiltinPathElem::DropGlue
+        )
+    }
+
+    /// The identifier we use to refer to this element.
     pub fn ident(self) -> &'static str {
         match self {
             BuiltinPathElem::Tuple(0) => "unit",
             BuiltinPathElem::Tuple(_) => "tuple",
             BuiltinPathElem::Str => "str",
+            BuiltinPathElem::Closure => "closure",
+            BuiltinPathElem::Use => "use",
+            BuiltinPathElem::AnonConst => "const",
+            BuiltinPathElem::PromotedConst => "promoted_const",
+            BuiltinPathElem::ClosureAsFn => "as_fn",
+            BuiltinPathElem::DropGlue => "drop_glue",
+            BuiltinPathElem::VTable => "vtable",
+            BuiltinPathElem::VTableMethod => "vtable_method",
+            BuiltinPathElem::VTableDropShim => "vtable_drop_shim",
         }
     }
 }

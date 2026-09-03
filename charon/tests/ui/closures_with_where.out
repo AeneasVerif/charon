@@ -83,22 +83,22 @@ trait Ops<Self, const K : usize>
     non-dyn-compatible
 }
 
-// Full name: test_crate::test::closure
-struct closure<T, const K : usize>
+// Full name: test_crate::test::{closure}
+struct {closure}<T, const K : usize>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
 {}
 
-// Full name: test_crate::test::closure::{impl Destruct for closure<T, K>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn drop_glue<'_0, T, const K : usize>(_1: &'_0 mut closure<T, K>[TraitClause0, TraitClause1])
+// Full name: test_crate::test::{closure}::{impl Destruct for {closure}<T, K>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn drop_glue<'_0, T, const K : usize>(_1: &'_0 mut {closure}<T, K>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
     TypeOutlives0: T: '_0,
 {
     let _0: (); // return
-    let _1: &'1 mut closure<T, K>[TraitClause0, TraitClause1]; // arg #1
+    let _1: &'1 mut {closure}<T, K>[TraitClause0, TraitClause1]; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -106,8 +106,8 @@ where
     return
 }
 
-// Full name: test_crate::test::closure::{impl Destruct for closure<T, K>[TraitClause0, TraitClause1]}
-impl<T, const K : usize> "impl_Destruct_for_closure" Destruct for closure<T, K>[TraitClause0, TraitClause1]
+// Full name: test_crate::test::{closure}::{impl Destruct for {closure}<T, K>[TraitClause0, TraitClause1]}
+impl<T, const K : usize> "impl_Destruct_for_closure" Destruct for {closure}<T, K>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
@@ -116,15 +116,15 @@ where
     non-dyn-compatible
 }
 
-// Full name: test_crate::test::{impl FnMut<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}::call_mut
-fn call_mut<'_0, T, const K : usize>(_1: &'_0 mut closure<T, K>[TraitClause0, TraitClause1], tupled_args: (usize,)) -> T
+// Full name: test_crate::test::{impl FnMut<(usize,)> for {closure}<T, K>[TraitClause0, TraitClause1]}::call_mut
+fn call_mut<'_0, T, const K : usize>(_1: &'_0 mut {closure}<T, K>[TraitClause0, TraitClause1], tupled_args: (usize,)) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
     TypeOutlives0: T: '_0,
 {
     let _0: T; // return
-    let _1: &'1 mut closure<T, K>[TraitClause0, TraitClause1]; // arg #1
+    let _1: &'1 mut {closure}<T, K>[TraitClause0, TraitClause1]; // arg #1
     let tupled_args: (usize,); // arg #2
     let i: usize; // local
     let _4: usize; // anonymous local
@@ -146,16 +146,16 @@ where
     return
 }
 
-// Full name: test_crate::test::{impl FnOnce<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}::call_once
-fn call_once<T, const K : usize>(_1: closure<T, K>[TraitClause0, TraitClause1], _2: (usize,)) -> T
+// Full name: test_crate::test::{impl FnOnce<(usize,)> for {closure}<T, K>[TraitClause0, TraitClause1]}::call_once
+fn call_once<T, const K : usize>(_1: {closure}<T, K>[TraitClause0, TraitClause1], _2: (usize,)) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
 {
     let _0: T; // return
-    let _1: closure<T, K>[TraitClause0, TraitClause1]; // arg #1
+    let _1: {closure}<T, K>[TraitClause0, TraitClause1]; // arg #1
     let _2: (usize,); // arg #2
-    let _3: &'1 mut closure<T, K>[TraitClause0, TraitClause1]; // anonymous local
+    let _3: &'1 mut {closure}<T, K>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -181,13 +181,13 @@ where
     return
 }
 
-// Full name: test_crate::test::{impl FnOnce<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}
-impl<T, const K : usize> "impl_FnOnce_tuple_for_closure" FnOnce<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]
+// Full name: test_crate::test::{impl FnOnce<(usize,)> for {closure}<T, K>[TraitClause0, TraitClause1]}
+impl<T, const K : usize> "impl_FnOnce_tuple_for_closure" FnOnce<(usize,)> for {closure}<T, K>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
 {
-    proof ImpliedClause0: (closure<T, K>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for closure<T, K>[TraitClause0, TraitClause1]}
+    proof ImpliedClause0: ({closure}<T, K>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for {closure}<T, K>[TraitClause0, TraitClause1]}
     proof ImpliedClause1: ((usize,): Sized) = {built_in impl Sized for (usize,)}
     proof ImpliedClause2: ((usize,): Tuple) = {built_in impl Tuple for (usize,)}
     proof ImpliedClause3: (T: Sized) = TraitClause0
@@ -196,14 +196,14 @@ where
     vtable: impl_FnOnce_tuple_for_closure::{vtable}<T, K>[TraitClause0, TraitClause1]
 }
 
-// Full name: test_crate::test::{impl FnMut<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]}
-impl<T, const K : usize> "impl_FnMut_tuple_for_closure" FnMut<(usize,)> for closure<T, K>[TraitClause0, TraitClause1]
+// Full name: test_crate::test::{impl FnMut<(usize,)> for {closure}<T, K>[TraitClause0, TraitClause1]}
+impl<T, const K : usize> "impl_FnMut_tuple_for_closure" FnMut<(usize,)> for {closure}<T, K>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Ops<K>),
 {
-    proof ImpliedClause0: (closure<T, K>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for closure<T, K>[TraitClause0, TraitClause1]}
-    proof ImpliedClause1: (closure<T, K>[TraitClause0, TraitClause1]: FnOnce<(usize,)>) = impl_FnOnce_tuple_for_closure<T, K>[TraitClause0, TraitClause1]
+    proof ImpliedClause0: ({closure}<T, K>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for {closure}<T, K>[TraitClause0, TraitClause1]}
+    proof ImpliedClause1: ({closure}<T, K>[TraitClause0, TraitClause1]: FnOnce<(usize,)>) = impl_FnOnce_tuple_for_closure<T, K>[TraitClause0, TraitClause1]
     proof ImpliedClause2: ((usize,): Sized) = {built_in impl Sized for (usize,)}
     proof ImpliedClause3: ((usize,): Tuple) = {built_in impl Tuple for (usize,)}
     fn call_mut<'_0_1> = call_mut<'_0_1, T, K>[TraitClause0, TraitClause1]
@@ -217,12 +217,12 @@ where
     TraitClause1: (T: Ops<K>),
 {
     let _0: [T; 1usize]; // return
-    let _1: closure<T, K>[TraitClause0, TraitClause1]; // anonymous local
+    let _1: {closure}<T, K>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
-    _1 = closure {  }
-    _0 = from_fn<T, closure<T, K>[TraitClause0, TraitClause1], 1usize>[TraitClause0, {built_in impl Sized for closure<T, K>[TraitClause0, TraitClause1]}, {built_in impl Destruct for T}, impl_FnMut_tuple_for_closure<T, K>[TraitClause0, TraitClause1], impl_Destruct_for_closure<T, K>[TraitClause0, TraitClause1]](move _1)
+    _1 = {closure} {  }
+    _0 = from_fn<T, {closure}<T, K>[TraitClause0, TraitClause1], 1usize>[TraitClause0, {built_in impl Sized for {closure}<T, K>[TraitClause0, TraitClause1]}, {built_in impl Destruct for T}, impl_FnMut_tuple_for_closure<T, K>[TraitClause0, TraitClause1], impl_Destruct_for_closure<T, K>[TraitClause0, TraitClause1]](move _1)
     ↳⚡ unwind_continue
     storage_dead(_1)
     return

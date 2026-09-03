@@ -218,8 +218,13 @@ impl<'tcx> TranslateCtx<'tcx> {
         let def_id = item.def_id();
         if let Some(synthetic) = def_id.as_synthetic(&self.hax_state) {
             return Ok(match synthetic {
-                hax::SyntheticItem::Tuple(n) => Some(PathElem::Builtin(BuiltinPathElem::Tuple(n))),
-                hax::SyntheticItem::Str => Some(PathElem::Builtin(BuiltinPathElem::Str)),
+                hax::SyntheticItem::Tuple(n) => Some(PathElem::Builtin(
+                    BuiltinPathElem::Tuple(n),
+                    Disambiguator::ZERO,
+                )),
+                hax::SyntheticItem::Str => {
+                    Some(PathElem::Builtin(BuiltinPathElem::Str, Disambiguator::ZERO))
+                }
                 hax::SyntheticItem::Array | hax::SyntheticItem::Slice => None,
             });
         }
@@ -286,17 +291,21 @@ impl<'tcx> TranslateCtx<'tcx> {
             // TODO: this is not very satisfactory, but on the other hand
             // we should be able to extract closures in local let-bindings
             // (i.e., we shouldn't have to introduce top-level let-bindings).
-            DefPathItem::Closure => Some(PathElem::Ident("closure".to_string(), disambiguator)),
+            DefPathItem::Closure => {
+                Some(PathElem::Builtin(BuiltinPathElem::Closure, disambiguator))
+            }
             // Do nothing, functions in `extern` blocks are in the same namespace as the
             // block.
             DefPathItem::ForeignMod => None,
             // Do nothing, the constructor of a struct/variant has the same name as the
             // struct/variant.
             DefPathItem::Ctor => None,
-            DefPathItem::Use => Some(PathElem::Ident("{use}".to_string(), disambiguator)),
-            DefPathItem::AnonConst => Some(PathElem::Ident("{const}".to_string(), disambiguator)),
-            DefPathItem::PromotedConst => Some(PathElem::Ident(
-                "{promoted_const}".to_string(),
+            DefPathItem::Use => Some(PathElem::Builtin(BuiltinPathElem::Use, disambiguator)),
+            DefPathItem::AnonConst => {
+                Some(PathElem::Builtin(BuiltinPathElem::AnonConst, disambiguator))
+            }
+            DefPathItem::PromotedConst => Some(PathElem::Builtin(
+                BuiltinPathElem::PromotedConst,
                 disambiguator,
             )),
             _ => {
@@ -422,30 +431,34 @@ impl<'tcx> TranslateCtx<'tcx> {
                     .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
             }
             TransItemSourceKind::DropGlueMethod(..) => {
-                name.name.push(PathElem::Ident(
-                    "drop_glue".to_string(),
+                name.name.push(PathElem::Builtin(
+                    BuiltinPathElem::DropGlue,
                     Disambiguator::ZERO,
                 ));
             }
             TransItemSourceKind::ClosureAsFnCast => {
-                name.name
-                    .push(PathElem::Ident("as_fn".into(), Disambiguator::ZERO));
+                name.name.push(PathElem::Builtin(
+                    BuiltinPathElem::ClosureAsFn,
+                    Disambiguator::ZERO,
+                ));
             }
             TransItemSourceKind::VTable
             | TransItemSourceKind::VTableInstance(..)
             | TransItemSourceKind::VTableInstanceInitializer(..) => {
-                name.name
-                    .push(PathElem::Ident("{vtable}".into(), Disambiguator::ZERO));
+                name.name.push(PathElem::Builtin(
+                    BuiltinPathElem::VTable,
+                    Disambiguator::ZERO,
+                ));
             }
             TransItemSourceKind::VTableMethod => {
-                name.name.push(PathElem::Ident(
-                    "{vtable_method}".into(),
+                name.name.push(PathElem::Builtin(
+                    BuiltinPathElem::VTableMethod,
                     Disambiguator::ZERO,
                 ));
             }
             TransItemSourceKind::VTableDropShim(..) => {
-                name.name.push(PathElem::Ident(
-                    "{vtable_drop_shim}".into(),
+                name.name.push(PathElem::Builtin(
+                    BuiltinPathElem::VTableDropShim,
                     Disambiguator::ZERO,
                 ));
             }

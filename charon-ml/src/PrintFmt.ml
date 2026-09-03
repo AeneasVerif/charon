@@ -924,13 +924,19 @@ and pp_path_elem (env : fmt_env) (fmt : Format.formatter) (e : path_elem) : unit
   | PeTarget target -> pp_string fmt target
   (* Written the same way as the types themselves, trailing comma included, so
      that a declaration and its uses don't look like different types. *)
-  | PeBuiltin (PeTuple n) ->
+  | PeBuiltin (PeTuple n, _) ->
       let trailing_comma = if n = 1 then "," else "" in
       Format.fprintf fmt "(%a%s)"
         (pp_sep_list ", " pp_string)
         (List.init n (fun _ -> "_"))
         trailing_comma
-  | PeBuiltin PeStr -> pp_string fmt "str"
+  | PeBuiltin (((PeStr | PeDropGlue) as b), _) ->
+      pp_string fmt (builtin_path_elem_ident b)
+  | PeBuiltin (b, d) ->
+      let d =
+        if d = Disambiguator.zero then "" else "#" ^ Disambiguator.to_string d
+      in
+      Format.fprintf fmt "{%s%s}" (builtin_path_elem_ident b) d
 
 and pp_name (env : fmt_env) (fmt : Format.formatter) (n : name) : unit =
   let env = { env with generics = [] } in

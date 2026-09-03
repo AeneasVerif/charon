@@ -21,8 +21,8 @@ where
     TraitClause0: (T: Sized),
 = <opaque>
 
-// Full name: closure_inside_inline_const::foo::{const}::closure
-struct closure<T>
+// Full name: closure_inside_inline_const::foo::{const}::{closure}
+struct {closure}<T>
 where
     TraitClause0: (T: Sized),
 {}
@@ -35,12 +35,12 @@ where
     let _0: usize; // return
     let _1: usize; // anonymous local
     let _2: usize; // anonymous local
-    let _f: closure<T>[TraitClause0]; // local
+    let _f: {closure}<T>[TraitClause0]; // local
 
     storage_live(_1)
     storage_live(_2)
     storage_live(_f)
-    _f = closure {  }
+    _f = {closure} {  }
     _2 = size_of<T>[TraitClause0]()
     ↳⚡ undefined_behavior
     storage_dead(_f)

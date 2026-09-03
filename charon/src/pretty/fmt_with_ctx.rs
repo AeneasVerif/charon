@@ -1315,12 +1315,24 @@ impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
                 }
                 write!(f, "{}", impl_elem.with_ctx(ctx))
             }
-            PathElem::Builtin(BuiltinPathElem::Tuple(n)) => {
+            PathElem::Builtin(BuiltinPathElem::Tuple(n), _) => {
                 let fields = std::iter::repeat_n("_", *n).format(", ");
                 let trailing_comma = if *n == 1 { "," } else { "" };
                 write!(f, "({fields}{trailing_comma})")
             }
-            PathElem::Builtin(BuiltinPathElem::Str) => write!(f, "str"),
+            PathElem::Builtin(elem, d) => {
+                if !elem.is_rust_name() {
+                    write!(f, "{{")?;
+                }
+                write!(f, "{}", elem.ident())?;
+                if !d.is_zero() {
+                    write!(f, "#{d}")?;
+                }
+                if !elem.is_rust_name() {
+                    write!(f, "}}")?;
+                }
+                Ok(())
+            }
             PathElem::Instantiated(binder) => {
                 // Anonymize all parameters.
                 let underscore = "_".to_string();
