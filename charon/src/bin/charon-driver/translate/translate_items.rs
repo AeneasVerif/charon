@@ -509,6 +509,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 id: global_id,
                 generics: Box::new(self.outermost_generics().identity_args()),
             })
+        } else if matches!(def.kind(), hax::FullDefKind::Ctor { .. }) {
+            FunSource::AdtConstructor
         } else {
             match self.get_trait_item_source(span, def)? {
                 None => FunSource::Normal,

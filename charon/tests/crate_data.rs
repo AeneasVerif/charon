@@ -720,6 +720,36 @@ fn declaration_groups() -> anyhow::Result<()> {
 }
 
 #[test]
+fn adt_constructor_source() -> anyhow::Result<()> {
+    let crate_data = translate(
+        r#"
+        struct TupleStruct(u32);
+        enum Enum {
+            Variant(u32),
+        }
+
+        fn constructor_refs() {
+            let _: fn(u32) -> TupleStruct = TupleStruct;
+            let _: fn(u32) -> Enum = Enum::Variant;
+        }
+        "#,
+    )?;
+
+    let constructor_names = crate_data
+        .fun_decls
+        .iter()
+        .filter(|fun| matches!(fun.src, FunSource::AdtConstructor))
+        .map(|fun| repr_name(&crate_data, &fun.item_meta.name))
+        .collect_vec();
+    assert_eq!(
+        constructor_names,
+        ["test_crate::TupleStruct", "test_crate::Enum::Variant"]
+    );
+
+    Ok(())
+}
+
+#[test]
 fn source_text() -> anyhow::Result<()> {
     let crate_data = translate(
         r#"
