@@ -384,6 +384,15 @@ and builtin_path_elem_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = int_of_json ctx _0 in
         Ok (PeTuple _0)
     | `String "Str" -> Ok PeStr
+    | `String "Closure" -> Ok PeClosure
+    | `String "Use" -> Ok PeUse
+    | `String "AnonConst" -> Ok PeAnonConst
+    | `String "PromotedConst" -> Ok PePromotedConst
+    | `String "ClosureAsFn" -> Ok PeClosureAsFn
+    | `String "DropGlue" -> Ok PeDropGlue
+    | `String "VTable" -> Ok PeVTable
+    | `String "VTableMethod" -> Ok PeVTableMethod
+    | `String "VTableDropShim" -> Ok PeVTableDropShim
     | _ -> Error "")
 
 and builtin_ty_of_json (ctx : of_json_ctx) (js : json) :
@@ -1011,9 +1020,10 @@ and path_elem_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Target", _0) ] ->
         let* _0 = string_of_json ctx _0 in
         Ok (PeTarget _0)
-    | `Assoc [ ("Builtin", _0) ] ->
+    | `Assoc [ ("Builtin", `List [ _0; _1 ]) ] ->
         let* _0 = builtin_path_elem_of_json ctx _0 in
-        Ok (PeBuiltin _0)
+        let* _1 = disambiguator_of_json ctx _1 in
+        Ok (PeBuiltin (_0, _1))
     | _ -> Error "")
 
 and place_of_json (ctx : of_json_ctx) (js : json) : (place, string) result =

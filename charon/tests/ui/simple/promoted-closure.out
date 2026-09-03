@@ -77,24 +77,24 @@ struct (_,)<A> {
   _0: A,
 }
 
-// Full name: test_crate::foo::closure
-struct closure {}
+// Full name: test_crate::foo::{closure}
+struct {closure} {}
 
 // Full name: test_crate::foo
-pub fn foo() -> &'static closure
+pub fn foo() -> &'static {closure}
 {
-    let _0: &'1 closure; // return
-    let _1: &'2 closure; // anonymous local
-    let _2: &'3 closure; // anonymous local
-    let _3: &'4 closure; // anonymous local
-    let _4: &'5 closure; // anonymous local
-    let _5: &'6 closure; // anonymous local
-    let _6: closure; // anonymous local
+    let _0: &'1 {closure}; // return
+    let _1: &'2 {closure}; // anonymous local
+    let _2: &'3 {closure}; // anonymous local
+    let _3: &'4 {closure}; // anonymous local
+    let _4: &'5 {closure}; // anonymous local
+    let _5: &'6 {closure}; // anonymous local
+    let _6: {closure}; // anonymous local
 
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    _6 = closure {  }
+    _6 = {closure} {  }
     _5 = &_6
     _4 = move _5
     storage_live(_0)
@@ -114,11 +114,11 @@ pub fn foo() -> &'static closure
     return
 }
 
-// Full name: test_crate::foo::closure::{impl Destruct for closure}::drop_glue
-unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
+// Full name: test_crate::foo::{closure}::{impl Destruct for {closure}}::drop_glue
+unsafe fn drop_glue<'_0>(_1: &'_0 mut {closure})
 {
     let _0: (); // return
-    let _1: &'1 mut closure; // arg #1
+    let _1: &'1 mut {closure}; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -126,11 +126,11 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut closure)
     return
 }
 
-// Full name: test_crate::foo::{impl Fn<(u32,)> for closure}::call
-fn call<'_0>(_1: &'_0 closure, tupled_args: (u32,)) -> u32
+// Full name: test_crate::foo::{impl Fn<(u32,)> for {closure}}::call
+fn call<'_0>(_1: &'_0 {closure}, tupled_args: (u32,)) -> u32
 {
     let _0: u32; // return
-    let _1: &'1 closure; // arg #1
+    let _1: &'1 {closure}; // arg #1
     let tupled_args: (u32,); // arg #2
     let x: u32; // local
 
@@ -144,13 +144,13 @@ fn call<'_0>(_1: &'_0 closure, tupled_args: (u32,)) -> u32
     return
 }
 
-// Full name: test_crate::foo::{impl FnMut<(u32,)> for closure}::call_mut
-fn call_mut<'_0>(state: &'_0 mut closure, args: (u32,)) -> u32
+// Full name: test_crate::foo::{impl FnMut<(u32,)> for {closure}}::call_mut
+fn call_mut<'_0>(state: &'_0 mut {closure}, args: (u32,)) -> u32
 {
     let _0: u32; // return
-    let state: &'_0 mut closure; // arg #1
+    let state: &'_0 mut {closure}; // arg #1
     let args: (u32,); // arg #2
-    let _3: &'0 closure; // anonymous local
+    let _3: &'0 {closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -166,13 +166,13 @@ fn call_mut<'_0>(state: &'_0 mut closure, args: (u32,)) -> u32
     return
 }
 
-// Full name: test_crate::foo::{impl FnOnce<(u32,)> for closure}::call_once
-fn call_once(_1: closure, _2: (u32,)) -> u32
+// Full name: test_crate::foo::{impl FnOnce<(u32,)> for {closure}}::call_once
+fn call_once(_1: {closure}, _2: (u32,)) -> u32
 {
     let _0: u32; // return
-    let _1: closure; // arg #1
+    let _1: {closure}; // arg #1
     let _2: (u32,); // arg #2
-    let _3: &'1 mut closure; // anonymous local
+    let _3: &'1 mut {closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -198,9 +198,9 @@ fn call_once(_1: closure, _2: (u32,)) -> u32
     return
 }
 
-// Full name: test_crate::foo::{impl FnOnce<(u32,)> for closure}
-impl "impl_FnOnce_tuple_for_closure" FnOnce<(u32,)> for closure {
-    proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
+// Full name: test_crate::foo::{impl FnOnce<(u32,)> for {closure}}
+impl "impl_FnOnce_tuple_for_closure" FnOnce<(u32,)> for {closure} {
+    proof ImpliedClause0: ({closure}: MetaSized) = {built_in impl MetaSized for {closure}}
     proof ImpliedClause1: ((u32,): Sized) = {built_in impl Sized for (u32,)}
     proof ImpliedClause2: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
@@ -209,28 +209,28 @@ impl "impl_FnOnce_tuple_for_closure" FnOnce<(u32,)> for closure {
     vtable: impl_FnOnce_tuple_for_closure::{vtable}
 }
 
-// Full name: test_crate::foo::{impl FnMut<(u32,)> for closure}
-impl "impl_FnMut_tuple_for_closure" FnMut<(u32,)> for closure {
-    proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
-    proof ImpliedClause1: (closure: FnOnce<(u32,)>) = impl_FnOnce_tuple_for_closure
+// Full name: test_crate::foo::{impl FnMut<(u32,)> for {closure}}
+impl "impl_FnMut_tuple_for_closure" FnMut<(u32,)> for {closure} {
+    proof ImpliedClause0: ({closure}: MetaSized) = {built_in impl MetaSized for {closure}}
+    proof ImpliedClause1: ({closure}: FnOnce<(u32,)>) = impl_FnOnce_tuple_for_closure
     proof ImpliedClause2: ((u32,): Sized) = {built_in impl Sized for (u32,)}
     proof ImpliedClause3: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     fn call_mut<'_0_1> = call_mut<'_0_1>
     vtable: impl_FnMut_tuple_for_closure::{vtable}
 }
 
-// Full name: test_crate::foo::{impl Fn<(u32,)> for closure}
-impl "impl_Fn_tuple_for_closure" Fn<(u32,)> for closure {
-    proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
-    proof ImpliedClause1: (closure: FnMut<(u32,)>) = impl_FnMut_tuple_for_closure
+// Full name: test_crate::foo::{impl Fn<(u32,)> for {closure}}
+impl "impl_Fn_tuple_for_closure" Fn<(u32,)> for {closure} {
+    proof ImpliedClause0: ({closure}: MetaSized) = {built_in impl MetaSized for {closure}}
+    proof ImpliedClause1: ({closure}: FnMut<(u32,)>) = impl_FnMut_tuple_for_closure
     proof ImpliedClause2: ((u32,): Sized) = {built_in impl Sized for (u32,)}
     proof ImpliedClause3: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     fn call<'_0_1> = call<'_0_1>
     vtable: impl_Fn_tuple_for_closure::{vtable}
 }
 
-// Full name: test_crate::foo::closure::{impl Destruct for closure}
-impl "impl_Destruct_for_closure" Destruct for closure {
+// Full name: test_crate::foo::{closure}::{impl Destruct for {closure}}
+impl "impl_Destruct_for_closure" Destruct for {closure} {
     fn drop_glue<'_0_1> = drop_glue<'_0_1>
     non-dyn-compatible
 }

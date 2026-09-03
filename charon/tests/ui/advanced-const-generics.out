@@ -232,7 +232,7 @@ fn foo<const X : Foo>() -> Foo
 fn bar<const N : usize>()
 {
     let _0: (); // return
-    let _1: [(); test_crate::bar::{const}#2<N>]; // anonymous local
+    let _1: [(); test_crate::bar::{const#2}<N>]; // anonymous local
     let _2: (); // anonymous local
 
     storage_live(_0)
@@ -240,10 +240,10 @@ fn bar<const N : usize>()
     storage_live(_1)
     storage_live(_2)
     _2 = ()
-    _1 = @ArrayRepeat<(), test_crate::bar::{const}#2<N>>(move _2)
+    _1 = @ArrayRepeat<(), test_crate::bar::{const#2}<N>>(move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
-    set_type(typeof(_1) <= [(); test_crate::bar::{const}#1<N>])
+    set_type(typeof(_1) <= [(); test_crate::bar::{const#1}<N>])
     storage_dead(_1)
     _0 = ()
     return

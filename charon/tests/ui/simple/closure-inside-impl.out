@@ -85,8 +85,8 @@ where
   _0: F,
 }
 
-// Full name: test_crate::{Foo<F>[TraitClause0]}::method::closure
-struct closure<F, T>
+// Full name: test_crate::{Foo<F>[TraitClause0]}::method::{closure}
+struct {closure}<F, T>
 where
     TraitClause0: (F: Sized),
     TraitClause1: (T: Sized),
@@ -99,20 +99,20 @@ where
     TraitClause1: (T: Sized),
 {
     let _0: (); // return
-    let _closure: closure<F, T>[TraitClause0, TraitClause1]; // local
+    let _closure: {closure}<F, T>[TraitClause0, TraitClause1]; // local
 
     storage_live(_0)
     _0 = ()
     storage_live(_closure)
-    _closure = closure {  }
+    _closure = {closure} {  }
     fake_read(_closure)
     _0 = ()
     storage_dead(_closure)
     return
 }
 
-// Full name: test_crate::{Foo<F>[TraitClause0]}::method::closure::{impl Destruct for closure<F, T>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn drop_glue<'_0, F, T>(_1: &'_0 mut closure<F, T>[TraitClause0, TraitClause1])
+// Full name: test_crate::{Foo<F>[TraitClause0]}::method::{closure}::{impl Destruct for {closure}<F, T>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn drop_glue<'_0, F, T>(_1: &'_0 mut {closure}<F, T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (F: Sized),
     TraitClause1: (T: Sized),
@@ -120,7 +120,7 @@ where
     TypeOutlives1: T: '_0,
 {
     let _0: (); // return
-    let _1: &'1 mut closure<F, T>[TraitClause0, TraitClause1]; // arg #1
+    let _1: &'1 mut {closure}<F, T>[TraitClause0, TraitClause1]; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -128,8 +128,8 @@ where
     return
 }
 
-// Full name: test_crate::{Foo<F>[TraitClause0]}::method::{impl Fn<((),)> for closure<F, T>[TraitClause0, TraitClause1]}::call
-fn call<'_0, F, T>(_1: &'_0 closure<F, T>[TraitClause0, TraitClause1], tupled_args: ((),))
+// Full name: test_crate::{Foo<F>[TraitClause0]}::method::{impl Fn<((),)> for {closure}<F, T>[TraitClause0, TraitClause1]}::call
+fn call<'_0, F, T>(_1: &'_0 {closure}<F, T>[TraitClause0, TraitClause1], tupled_args: ((),))
 where
     TraitClause0: (F: Sized),
     TraitClause1: (T: Sized),
@@ -137,7 +137,7 @@ where
     TypeOutlives1: T: '_0,
 {
     let _0: (); // return
-    let _1: &'1 closure<F, T>[TraitClause0, TraitClause1]; // arg #1
+    let _1: &'1 {closure}<F, T>[TraitClause0, TraitClause1]; // arg #1
     let tupled_args: ((),); // arg #2
     let _x: (); // local
 
@@ -152,8 +152,8 @@ where
     return
 }
 
-// Full name: test_crate::{Foo<F>[TraitClause0]}::method::{impl FnMut<((),)> for closure<F, T>[TraitClause0, TraitClause1]}::call_mut
-fn call_mut<'_0, F, T>(state: &'_0 mut closure<F, T>[TraitClause0, TraitClause1], args: ((),))
+// Full name: test_crate::{Foo<F>[TraitClause0]}::method::{impl FnMut<((),)> for {closure}<F, T>[TraitClause0, TraitClause1]}::call_mut
+fn call_mut<'_0, F, T>(state: &'_0 mut {closure}<F, T>[TraitClause0, TraitClause1], args: ((),))
 where
     TraitClause0: (F: Sized),
     TraitClause1: (T: Sized),
@@ -161,9 +161,9 @@ where
     TypeOutlives1: T: '_0,
 {
     let _0: (); // return
-    let state: &'_0 mut closure<F, T>[TraitClause0, TraitClause1]; // arg #1
+    let state: &'_0 mut {closure}<F, T>[TraitClause0, TraitClause1]; // arg #1
     let args: ((),); // arg #2
-    let _3: &'0 closure<F, T>[TraitClause0, TraitClause1]; // anonymous local
+    let _3: &'0 {closure}<F, T>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -180,16 +180,16 @@ where
     return
 }
 
-// Full name: test_crate::{Foo<F>[TraitClause0]}::method::{impl FnOnce<((),)> for closure<F, T>[TraitClause0, TraitClause1]}::call_once
-fn call_once<F, T>(_1: closure<F, T>[TraitClause0, TraitClause1], _2: ((),))
+// Full name: test_crate::{Foo<F>[TraitClause0]}::method::{impl FnOnce<((),)> for {closure}<F, T>[TraitClause0, TraitClause1]}::call_once
+fn call_once<F, T>(_1: {closure}<F, T>[TraitClause0, TraitClause1], _2: ((),))
 where
     TraitClause0: (F: Sized),
     TraitClause1: (T: Sized),
 {
     let _0: (); // return
-    let _1: closure<F, T>[TraitClause0, TraitClause1]; // arg #1
+    let _1: {closure}<F, T>[TraitClause0, TraitClause1]; // arg #1
     let _2: ((),); // arg #2
-    let _3: &'1 mut closure<F, T>[TraitClause0, TraitClause1]; // anonymous local
+    let _3: &'1 mut {closure}<F, T>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -216,13 +216,13 @@ where
     return
 }
 
-// Full name: test_crate::{Foo<F>[TraitClause0]}::method::{impl FnOnce<((),)> for closure<F, T>[TraitClause0, TraitClause1]}
-impl<F, T> "impl_FnOnce_tuple_for_closure" FnOnce<((),)> for closure<F, T>[TraitClause0, TraitClause1]
+// Full name: test_crate::{Foo<F>[TraitClause0]}::method::{impl FnOnce<((),)> for {closure}<F, T>[TraitClause0, TraitClause1]}
+impl<F, T> "impl_FnOnce_tuple_for_closure" FnOnce<((),)> for {closure}<F, T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (F: Sized),
     TraitClause1: (T: Sized),
 {
-    proof ImpliedClause0: (closure<F, T>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for closure<F, T>[TraitClause0, TraitClause1]}
+    proof ImpliedClause0: ({closure}<F, T>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for {closure}<F, T>[TraitClause0, TraitClause1]}
     proof ImpliedClause1: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause2: (((),): Tuple) = {built_in impl Tuple for ((),)}
     proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
@@ -231,36 +231,36 @@ where
     vtable: impl_FnOnce_tuple_for_closure::{vtable}<F, T>[TraitClause0, TraitClause1]
 }
 
-// Full name: test_crate::{Foo<F>[TraitClause0]}::method::{impl FnMut<((),)> for closure<F, T>[TraitClause0, TraitClause1]}
-impl<F, T> "impl_FnMut_tuple_for_closure" FnMut<((),)> for closure<F, T>[TraitClause0, TraitClause1]
+// Full name: test_crate::{Foo<F>[TraitClause0]}::method::{impl FnMut<((),)> for {closure}<F, T>[TraitClause0, TraitClause1]}
+impl<F, T> "impl_FnMut_tuple_for_closure" FnMut<((),)> for {closure}<F, T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (F: Sized),
     TraitClause1: (T: Sized),
 {
-    proof ImpliedClause0: (closure<F, T>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for closure<F, T>[TraitClause0, TraitClause1]}
-    proof ImpliedClause1: (closure<F, T>[TraitClause0, TraitClause1]: FnOnce<((),)>) = impl_FnOnce_tuple_for_closure<F, T>[TraitClause0, TraitClause1]
+    proof ImpliedClause0: ({closure}<F, T>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for {closure}<F, T>[TraitClause0, TraitClause1]}
+    proof ImpliedClause1: ({closure}<F, T>[TraitClause0, TraitClause1]: FnOnce<((),)>) = impl_FnOnce_tuple_for_closure<F, T>[TraitClause0, TraitClause1]
     proof ImpliedClause2: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause3: (((),): Tuple) = {built_in impl Tuple for ((),)}
     fn call_mut<'_0_1> = call_mut<'_0_1, F, T>[TraitClause0, TraitClause1]
     vtable: impl_FnMut_tuple_for_closure::{vtable}<F, T>[TraitClause0, TraitClause1]
 }
 
-// Full name: test_crate::{Foo<F>[TraitClause0]}::method::{impl Fn<((),)> for closure<F, T>[TraitClause0, TraitClause1]}
-impl<F, T> "impl_Fn_tuple_for_closure" Fn<((),)> for closure<F, T>[TraitClause0, TraitClause1]
+// Full name: test_crate::{Foo<F>[TraitClause0]}::method::{impl Fn<((),)> for {closure}<F, T>[TraitClause0, TraitClause1]}
+impl<F, T> "impl_Fn_tuple_for_closure" Fn<((),)> for {closure}<F, T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (F: Sized),
     TraitClause1: (T: Sized),
 {
-    proof ImpliedClause0: (closure<F, T>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for closure<F, T>[TraitClause0, TraitClause1]}
-    proof ImpliedClause1: (closure<F, T>[TraitClause0, TraitClause1]: FnMut<((),)>) = impl_FnMut_tuple_for_closure<F, T>[TraitClause0, TraitClause1]
+    proof ImpliedClause0: ({closure}<F, T>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for {closure}<F, T>[TraitClause0, TraitClause1]}
+    proof ImpliedClause1: ({closure}<F, T>[TraitClause0, TraitClause1]: FnMut<((),)>) = impl_FnMut_tuple_for_closure<F, T>[TraitClause0, TraitClause1]
     proof ImpliedClause2: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause3: (((),): Tuple) = {built_in impl Tuple for ((),)}
     fn call<'_0_1> = call<'_0_1, F, T>[TraitClause0, TraitClause1]
     vtable: impl_Fn_tuple_for_closure::{vtable}<F, T>[TraitClause0, TraitClause1]
 }
 
-// Full name: test_crate::{Foo<F>[TraitClause0]}::method::closure::{impl Destruct for closure<F, T>[TraitClause0, TraitClause1]}
-impl<F, T> "impl_Destruct_for_closure" Destruct for closure<F, T>[TraitClause0, TraitClause1]
+// Full name: test_crate::{Foo<F>[TraitClause0]}::method::{closure}::{impl Destruct for {closure}<F, T>[TraitClause0, TraitClause1]}
+impl<F, T> "impl_Destruct_for_closure" Destruct for {closure}<F, T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (F: Sized),
     TraitClause1: (T: Sized),

@@ -83,14 +83,14 @@ where
   _1: B,
 }
 
-// Full name: test_cargo_dependencies::main::silly_incr::closure
-struct closure {}
+// Full name: test_cargo_dependencies::main::silly_incr::{closure}
+struct {closure} {}
 
-// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32,)> for closure}::call_once
-fn call_once(_1: closure, tupled_args: (u32,)) -> u32
+// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32,)> for {closure}}::call_once
+fn call_once(_1: {closure}, tupled_args: (u32,)) -> u32
 {
     let _0: u32; // return
-    let _1: closure; // arg #1
+    let _1: {closure}; // arg #1
     let tupled_args: (u32,); // arg #2
     let y: u32; // local
     let _4: u32; // anonymous local
@@ -110,9 +110,9 @@ fn call_once(_1: closure, tupled_args: (u32,)) -> u32
     return
 }
 
-// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32,)> for closure}
-impl "impl_FnOnce_tuple_for_closure" FnOnce<(u32,)> for closure {
-    proof ImpliedClause0: (closure: MetaSized) = {built_in impl MetaSized for closure}
+// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32,)> for {closure}}
+impl "impl_FnOnce_tuple_for_closure" FnOnce<(u32,)> for {closure} {
+    proof ImpliedClause0: ({closure}: MetaSized) = {built_in impl MetaSized for {closure}}
     proof ImpliedClause1: ((u32,): Sized) = {built_in impl Sized for (u32,)}
     proof ImpliedClause2: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
     proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
@@ -128,7 +128,7 @@ fn silly_incr<'_0>(x: &'_0 mut u32)
     let x: &'1 mut u32; // arg #1
     let _2: (); // anonymous local
     let _3: &'2 mut u32; // anonymous local
-    let _4: closure; // anonymous local
+    let _4: {closure}; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -136,8 +136,8 @@ fn silly_incr<'_0>(x: &'_0 mut u32)
     storage_live(_3)
     _3 = &two-phase-mut (*x)
     storage_live(_4)
-    _4 = closure {  }
-    _2 = take<'4, u32, closure>[{built_in impl Sized for u32}, {built_in impl Sized for closure}, impl_FnOnce_tuple_for_closure](move _3, move _4)
+    _4 = {closure} {  }
+    _2 = take<'4, u32, {closure}>[{built_in impl Sized for u32}, {built_in impl Sized for {closure}}, impl_FnOnce_tuple_for_closure](move _3, move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
     storage_dead(_3)

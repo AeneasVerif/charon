@@ -13,8 +13,8 @@ enum FoundName<'a> {
 }
 
 fn register_short_name_candidate<'a>(
-    short_names: &mut HashMap<String, FoundName<'a>>,
-    short: String,
+    short_names: &mut HashMap<PathElem, FoundName<'a>>,
+    short: PathElem,
     long: &'a [PathElem],
     id: ItemId,
 ) {
@@ -45,7 +45,7 @@ pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         ctx.translated.short_names.clear();
-        let mut short_names: HashMap<String, FoundName> = Default::default();
+        let mut short_names: HashMap<PathElem, FoundName> = Default::default();
         for (&id, name) in &ctx.translated.item_names {
             let mut name_slice = name.name.as_slice();
 
@@ -66,15 +66,22 @@ impl TransformPass for Transform {
             if let [prefix @ .., PathElem::Instantiated(..)] = name_slice {
                 name_slice = prefix;
             }
-            // Ignoring monomorphizations, if a name is the only one to end with a given suffix, we
-            // accumulate the ids of all the items with that name (there may be several thanks to
-            // monomorphizations).
+            // Ignoring monomorphizations and disambiguators, if a name is the only one to end with
+            // a given suffix, we accumulate the ids of all the items with that name (there may be
+            // several thanks to monomorphizations).
             let candidate = match name_slice {
-                [.., PathElem::Ident(ident, _)] => Some(ident.clone()),
+                [.., PathElem::Ident(ident, _)] => {
+                    Some(PathElem::Ident(ident.clone(), Disambiguator::ZERO))
+                }
+                // Tuples and `str` are excluded: those are types with a syntax of their own.
+                [.., PathElem::Builtin(builtin, _)] if !builtin.is_tuple() && !builtin.is_str() => {
+                    Some(PathElem::Builtin(*builtin, Disambiguator::ZERO))
+                }
                 [PathElem::Impl(ImplElem::Trait(impl_id))]
                     if let Some(trait_impl) = ctx.translated.trait_impls.get(*impl_id) =>
                 {
                     trait_impl_short_name(&ctx.translated.item_names, trait_impl)
+                        .map(|short| PathElem::Ident(short, Disambiguator::ZERO))
                 }
 
                 _ => None,
@@ -88,7 +95,7 @@ impl TransformPass for Transform {
             if let FoundName::Unique { ids, .. } = found {
                 for id in ids {
                     let mut short_name = Name {
-                        name: vec![PathElem::Ident(short.clone(), Disambiguator::ZERO)],
+                        name: vec![short.clone()],
                     };
                     if let [.., mono @ PathElem::Instantiated(..)] =
                         ctx.translated.item_names[&id].name.as_slice()

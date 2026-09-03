@@ -265,8 +265,12 @@ impl PatElem {
                     generics,
                     ..
                 },
-                PathElem::Builtin(BuiltinPathElem::Str),
-            ) => pat_ident == "str" && PatTy::matches_generics(ctx, generics, args),
+                PathElem::Builtin(builtin, _),
+            ) => {
+                !builtin.is_tuple()
+                    && pat_ident == builtin.ident()
+                    && PatTy::matches_generics(ctx, generics, args)
+            }
             (PatElem::Impl(_pat), PathElem::Impl(ImplElem::Ty(..))) => {
                 // TODO
                 false

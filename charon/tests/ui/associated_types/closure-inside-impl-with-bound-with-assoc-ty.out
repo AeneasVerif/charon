@@ -92,8 +92,8 @@ where
   _0: F,
 }
 
-// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::closure
-struct closure<F, Clause1_Repr>
+// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{closure}
+struct {closure}<F, Clause1_Repr>
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
@@ -106,27 +106,27 @@ where
     TraitClause1: (F: PrimeField<Clause1_Repr>),
 {
     let _0: (); // return
-    let _closure: closure<F, Clause1_Repr>[TraitClause0, TraitClause1]; // local
+    let _closure: {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]; // local
 
     storage_live(_0)
     _0 = ()
     storage_live(_closure)
-    _closure = closure {  }
+    _closure = {closure} {  }
     fake_read(_closure)
     _0 = ()
     storage_dead(_closure)
     return
 }
 
-// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::closure::{impl Destruct for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn drop_glue<'_0, F, Clause1_Repr>(_1: &'_0 mut closure<F, Clause1_Repr>[TraitClause0, TraitClause1])
+// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{closure}::{impl Destruct for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]}::drop_glue
+unsafe fn drop_glue<'_0, F, Clause1_Repr>(_1: &'_0 mut {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1])
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
     TypeOutlives0: F: '_0,
 {
     let _0: (); // return
-    let _1: &'1 mut closure<F, Clause1_Repr>[TraitClause0, TraitClause1]; // arg #1
+    let _1: &'1 mut {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -134,15 +134,15 @@ where
     return
 }
 
-// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{impl Fn<((),), ()> for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}::call
-fn call<'_0, F, Clause1_Repr>(_1: &'_0 closure<F, Clause1_Repr>[TraitClause0, TraitClause1], tupled_args: ((),))
+// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{impl Fn<((),), ()> for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]}::call
+fn call<'_0, F, Clause1_Repr>(_1: &'_0 {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1], tupled_args: ((),))
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
     TypeOutlives0: F: '_0,
 {
     let _0: (); // return
-    let _1: &'1 closure<F, Clause1_Repr>[TraitClause0, TraitClause1]; // arg #1
+    let _1: &'1 {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]; // arg #1
     let tupled_args: ((),); // arg #2
     let _x: (); // local
 
@@ -157,17 +157,17 @@ where
     return
 }
 
-// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{impl FnMut<((),), ()> for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}::call_mut
-fn call_mut<'_0, F, Clause1_Repr>(state: &'_0 mut closure<F, Clause1_Repr>[TraitClause0, TraitClause1], args: ((),))
+// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{impl FnMut<((),), ()> for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]}::call_mut
+fn call_mut<'_0, F, Clause1_Repr>(state: &'_0 mut {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1], args: ((),))
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
     TypeOutlives0: F: '_0,
 {
     let _0: (); // return
-    let state: &'_0 mut closure<F, Clause1_Repr>[TraitClause0, TraitClause1]; // arg #1
+    let state: &'_0 mut {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]; // arg #1
     let args: ((),); // arg #2
-    let _3: &'0 closure<F, Clause1_Repr>[TraitClause0, TraitClause1]; // anonymous local
+    let _3: &'0 {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -184,16 +184,16 @@ where
     return
 }
 
-// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{impl FnOnce<((),), ()> for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}::call_once
-fn call_once<F, Clause1_Repr>(_1: closure<F, Clause1_Repr>[TraitClause0, TraitClause1], _2: ((),))
+// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{impl FnOnce<((),), ()> for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]}::call_once
+fn call_once<F, Clause1_Repr>(_1: {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1], _2: ((),))
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
 {
     let _0: (); // return
-    let _1: closure<F, Clause1_Repr>[TraitClause0, TraitClause1]; // arg #1
+    let _1: {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]; // arg #1
     let _2: ((),); // arg #2
-    let _3: &'1 mut closure<F, Clause1_Repr>[TraitClause0, TraitClause1]; // anonymous local
+    let _3: &'1 mut {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -220,13 +220,13 @@ where
     return
 }
 
-// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{impl FnOnce<((),), ()> for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}
-impl<F, Clause1_Repr> "impl_FnOnce_tuple_for_closure" FnOnce<((),), ()> for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]
+// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{impl FnOnce<((),), ()> for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]}
+impl<F, Clause1_Repr> "impl_FnOnce_tuple_for_closure" FnOnce<((),), ()> for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
 {
-    proof ImpliedClause0: (closure<F, Clause1_Repr>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}
+    proof ImpliedClause0: ({closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]}
     proof ImpliedClause1: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause2: (((),): Tuple) = {built_in impl Tuple for ((),)}
     proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
@@ -234,36 +234,36 @@ where
     vtable: impl_FnOnce_tuple_for_closure::{vtable}<F>[TraitClause0, TraitClause1]
 }
 
-// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{impl FnMut<((),), ()> for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}
-impl<F, Clause1_Repr> "impl_FnMut_tuple_for_closure" FnMut<((),), ()> for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]
+// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{impl FnMut<((),), ()> for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]}
+impl<F, Clause1_Repr> "impl_FnMut_tuple_for_closure" FnMut<((),), ()> for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
 {
-    proof ImpliedClause0: (closure<F, Clause1_Repr>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}
-    proof ImpliedClause1: (closure<F, Clause1_Repr>[TraitClause0, TraitClause1]: FnOnce<((),), ()>) = impl_FnOnce_tuple_for_closure<F, Clause1_Repr>[TraitClause0, TraitClause1]
+    proof ImpliedClause0: ({closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]}
+    proof ImpliedClause1: ({closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]: FnOnce<((),), ()>) = impl_FnOnce_tuple_for_closure<F, Clause1_Repr>[TraitClause0, TraitClause1]
     proof ImpliedClause2: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause3: (((),): Tuple) = {built_in impl Tuple for ((),)}
     fn call_mut<'_0_1> = call_mut<'_0_1, F, Clause1_Repr>[TraitClause0, TraitClause1]
     vtable: impl_FnMut_tuple_for_closure::{vtable}<F>[TraitClause0, TraitClause1]
 }
 
-// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{impl Fn<((),), ()> for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}
-impl<F, Clause1_Repr> "impl_Fn_tuple_for_closure" Fn<((),), ()> for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]
+// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{impl Fn<((),), ()> for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]}
+impl<F, Clause1_Repr> "impl_Fn_tuple_for_closure" Fn<((),), ()> for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
 {
-    proof ImpliedClause0: (closure<F, Clause1_Repr>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}
-    proof ImpliedClause1: (closure<F, Clause1_Repr>[TraitClause0, TraitClause1]: FnMut<((),), ()>) = impl_FnMut_tuple_for_closure<F, Clause1_Repr>[TraitClause0, TraitClause1]
+    proof ImpliedClause0: ({closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]}
+    proof ImpliedClause1: ({closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]: FnMut<((),), ()>) = impl_FnMut_tuple_for_closure<F, Clause1_Repr>[TraitClause0, TraitClause1]
     proof ImpliedClause2: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause3: (((),): Tuple) = {built_in impl Tuple for ((),)}
     fn call<'_0_1> = call<'_0_1, F, Clause1_Repr>[TraitClause0, TraitClause1]
     vtable: impl_Fn_tuple_for_closure::{vtable}<F>[TraitClause0, TraitClause1]
 }
 
-// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::closure::{impl Destruct for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]}
-impl<F, Clause1_Repr> "impl_Destruct_for_closure" Destruct for closure<F, Clause1_Repr>[TraitClause0, TraitClause1]
+// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{closure}::{impl Destruct for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]}
+impl<F, Clause1_Repr> "impl_Destruct_for_closure" Destruct for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),

@@ -357,13 +357,13 @@ fn foo()
     return
 }
 
-struct test_attributes::tests::test_ignore::closure {}
+struct test_attributes::tests::test_ignore::{closure} {}
 
-// Full name: test_attributes::tests::test_ignore::closure::{impl Destruct for test_attributes::tests::test_ignore::closure}::drop_glue
-unsafe fn {impl Destruct for test_attributes::tests::test_ignore::closure}::drop_glue<'_0>(_1: &'_0 mut test_attributes::tests::test_ignore::closure)
+// Full name: test_attributes::tests::test_ignore::{closure}::{impl Destruct for test_attributes::tests::test_ignore::{closure}}::drop_glue
+unsafe fn {impl Destruct for test_attributes::tests::test_ignore::{closure}}::drop_glue<'_0>(_1: &'_0 mut test_attributes::tests::test_ignore::{closure})
 {
     let _0: (); // return
-    let _1: &'1 mut test_attributes::tests::test_ignore::closure; // arg #1
+    let _1: &'1 mut test_attributes::tests::test_ignore::{closure}; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -382,11 +382,11 @@ fn test_attributes::tests::test_ignore#1()
     return
 }
 
-// Full name: test_attributes::tests::test_ignore::{impl Fn<()> for test_attributes::tests::test_ignore::closure}::call
-fn {impl Fn<()> for test_attributes::tests::test_ignore::closure}::call<'_0>(_1: &'_0 test_attributes::tests::test_ignore::closure, tupled_args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+// Full name: test_attributes::tests::test_ignore::{impl Fn<()> for test_attributes::tests::test_ignore::{closure}}::call
+fn {impl Fn<()> for test_attributes::tests::test_ignore::{closure}}::call<'_0>(_1: &'_0 test_attributes::tests::test_ignore::{closure}, tupled_args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let _1: &'1 test_attributes::tests::test_ignore::closure; // arg #1
+    let _1: &'1 test_attributes::tests::test_ignore::{closure}; // arg #1
     let tupled_args: (); // arg #2
     let _3: (); // anonymous local
 
@@ -400,54 +400,54 @@ fn {impl Fn<()> for test_attributes::tests::test_ignore::closure}::call<'_0>(_1:
     return
 }
 
-// Full name: test_attributes::tests::test_ignore::{impl FnMut<()> for test_attributes::tests::test_ignore::closure}::call_mut
-fn {impl FnMut<()> for test_attributes::tests::test_ignore::closure}::call_mut<'_0>(state: &'_0 mut test_attributes::tests::test_ignore::closure, args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+// Full name: test_attributes::tests::test_ignore::{impl FnMut<()> for test_attributes::tests::test_ignore::{closure}}::call_mut
+fn {impl FnMut<()> for test_attributes::tests::test_ignore::{closure}}::call_mut<'_0>(state: &'_0 mut test_attributes::tests::test_ignore::{closure}, args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let state: &'_0 mut test_attributes::tests::test_ignore::closure; // arg #1
+    let state: &'_0 mut test_attributes::tests::test_ignore::{closure}; // arg #1
     let args: (); // arg #2
-    let _3: &'0 test_attributes::tests::test_ignore::closure; // anonymous local
+    let _3: &'0 test_attributes::tests::test_ignore::{closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
-    _0 = {impl Fn<()> for test_attributes::tests::test_ignore::closure}::call<'2>(move _3, move args)
+    _0 = {impl Fn<()> for test_attributes::tests::test_ignore::{closure}}::call<'2>(move _3, move args)
     ↳⚡ unwind_continue
     return
 }
 
-// Full name: test_attributes::tests::test_ignore::{impl FnOnce<()> for test_attributes::tests::test_ignore::closure}::call_once
-fn {impl FnOnce<()> for test_attributes::tests::test_ignore::closure}::call_once(_1: test_attributes::tests::test_ignore::closure, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+// Full name: test_attributes::tests::test_ignore::{impl FnOnce<()> for test_attributes::tests::test_ignore::{closure}}::call_once
+fn {impl FnOnce<()> for test_attributes::tests::test_ignore::{closure}}::call_once(_1: test_attributes::tests::test_ignore::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let _1: test_attributes::tests::test_ignore::closure; // arg #1
+    let _1: test_attributes::tests::test_ignore::{closure}; // arg #1
     let _2: (); // arg #2
-    let _3: &'1 mut test_attributes::tests::test_ignore::closure; // anonymous local
+    let _3: &'1 mut test_attributes::tests::test_ignore::{closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<()> for test_attributes::tests::test_ignore::closure}::call_mut<'2>(move _3, move _2)
-    ↳⚡ drop[{impl Destruct for test_attributes::tests::test_ignore::closure}::drop_glue<'3>] _1
+    _0 = {impl FnMut<()> for test_attributes::tests::test_ignore::{closure}}::call_mut<'2>(move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_attributes::tests::test_ignore::{closure}}::drop_glue<'3>] _1
         ↳⚡ unwind_terminate
         unwind_continue
-    drop[{impl Destruct for test_attributes::tests::test_ignore::closure}::drop_glue<'4>] _1
+    drop[{impl Destruct for test_attributes::tests::test_ignore::{closure}}::drop_glue<'4>] _1
     ↳⚡ unwind_continue
     return
 }
 
-fn test_attributes::tests::test_ignore::closure::as_fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+fn test_attributes::tests::test_ignore::{closure}::{as_fn}() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
     let args: (); // local
-    let state: test_attributes::tests::test_ignore::closure; // local
+    let state: test_attributes::tests::test_ignore::{closure}; // local
 
     storage_live(_0)
     storage_live(args)
     storage_live(state)
     args = ()
-    state = test_attributes::tests::test_ignore::closure {  }
-    _0 = {impl FnOnce<()> for test_attributes::tests::test_ignore::closure}::call_once(move state, move args)
+    state = test_attributes::tests::test_ignore::{closure} {  }
+    _0 = {impl FnOnce<()> for test_attributes::tests::test_ignore::{closure}}::call_once(move state, move args)
     ↳⚡ unwind_continue
     return
 }
@@ -462,7 +462,7 @@ pub fn test_attributes::tests::test_ignore() -> TestDescAndFn
     let _5: TestType; // anonymous local
     let _6: TestFn; // anonymous local
     let _7: fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // anonymous local
-    let _8: test_attributes::tests::test_ignore::closure; // anonymous local
+    let _8: test_attributes::tests::test_ignore::{closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -486,8 +486,8 @@ pub fn test_attributes::tests::test_ignore() -> TestDescAndFn
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)
-    _8 = test_attributes::tests::test_ignore::closure {  }
-    _7 = cast<test_attributes::tests::test_ignore::closure::as_fn, fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]>(const test_attributes::tests::test_ignore::closure::as_fn)
+    _8 = test_attributes::tests::test_ignore::{closure} {  }
+    _7 = cast<test_attributes::tests::test_ignore::{closure}::{as_fn}, fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]>(const test_attributes::tests::test_ignore::{closure}::{as_fn})
     storage_dead(_8)
     _6 = TestFn::StaticTestFn { _0: move _7 }
     storage_dead(_7)
@@ -505,13 +505,13 @@ pub fn test_attributes::tests::test_ignore() -> TestDescAndFn
 
 pub const test_attributes::tests::test_ignore: TestDescAndFn = test_attributes::tests::test_ignore()
 
-struct test_attributes::tests::test_should_panic::closure {}
+struct test_attributes::tests::test_should_panic::{closure} {}
 
-// Full name: test_attributes::tests::test_should_panic::closure::{impl Destruct for test_attributes::tests::test_should_panic::closure}::drop_glue
-unsafe fn {impl Destruct for test_attributes::tests::test_should_panic::closure}::drop_glue<'_0>(_1: &'_0 mut test_attributes::tests::test_should_panic::closure)
+// Full name: test_attributes::tests::test_should_panic::{closure}::{impl Destruct for test_attributes::tests::test_should_panic::{closure}}::drop_glue
+unsafe fn {impl Destruct for test_attributes::tests::test_should_panic::{closure}}::drop_glue<'_0>(_1: &'_0 mut test_attributes::tests::test_should_panic::{closure})
 {
     let _0: (); // return
-    let _1: &'1 mut test_attributes::tests::test_should_panic::closure; // arg #1
+    let _1: &'1 mut test_attributes::tests::test_should_panic::{closure}; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -533,11 +533,11 @@ fn test_attributes::tests::test_should_panic#1()
     panic(core::panicking::panic_fmt)
 }
 
-// Full name: test_attributes::tests::test_should_panic::{impl Fn<()> for test_attributes::tests::test_should_panic::closure}::call
-fn {impl Fn<()> for test_attributes::tests::test_should_panic::closure}::call<'_0>(_1: &'_0 test_attributes::tests::test_should_panic::closure, tupled_args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+// Full name: test_attributes::tests::test_should_panic::{impl Fn<()> for test_attributes::tests::test_should_panic::{closure}}::call
+fn {impl Fn<()> for test_attributes::tests::test_should_panic::{closure}}::call<'_0>(_1: &'_0 test_attributes::tests::test_should_panic::{closure}, tupled_args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let _1: &'1 test_attributes::tests::test_should_panic::closure; // arg #1
+    let _1: &'1 test_attributes::tests::test_should_panic::{closure}; // arg #1
     let tupled_args: (); // arg #2
     let _3: (); // anonymous local
 
@@ -551,54 +551,54 @@ fn {impl Fn<()> for test_attributes::tests::test_should_panic::closure}::call<'_
     return
 }
 
-// Full name: test_attributes::tests::test_should_panic::{impl FnMut<()> for test_attributes::tests::test_should_panic::closure}::call_mut
-fn {impl FnMut<()> for test_attributes::tests::test_should_panic::closure}::call_mut<'_0>(state: &'_0 mut test_attributes::tests::test_should_panic::closure, args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+// Full name: test_attributes::tests::test_should_panic::{impl FnMut<()> for test_attributes::tests::test_should_panic::{closure}}::call_mut
+fn {impl FnMut<()> for test_attributes::tests::test_should_panic::{closure}}::call_mut<'_0>(state: &'_0 mut test_attributes::tests::test_should_panic::{closure}, args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let state: &'_0 mut test_attributes::tests::test_should_panic::closure; // arg #1
+    let state: &'_0 mut test_attributes::tests::test_should_panic::{closure}; // arg #1
     let args: (); // arg #2
-    let _3: &'0 test_attributes::tests::test_should_panic::closure; // anonymous local
+    let _3: &'0 test_attributes::tests::test_should_panic::{closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
-    _0 = {impl Fn<()> for test_attributes::tests::test_should_panic::closure}::call<'2>(move _3, move args)
+    _0 = {impl Fn<()> for test_attributes::tests::test_should_panic::{closure}}::call<'2>(move _3, move args)
     ↳⚡ unwind_continue
     return
 }
 
-// Full name: test_attributes::tests::test_should_panic::{impl FnOnce<()> for test_attributes::tests::test_should_panic::closure}::call_once
-fn {impl FnOnce<()> for test_attributes::tests::test_should_panic::closure}::call_once(_1: test_attributes::tests::test_should_panic::closure, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+// Full name: test_attributes::tests::test_should_panic::{impl FnOnce<()> for test_attributes::tests::test_should_panic::{closure}}::call_once
+fn {impl FnOnce<()> for test_attributes::tests::test_should_panic::{closure}}::call_once(_1: test_attributes::tests::test_should_panic::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let _1: test_attributes::tests::test_should_panic::closure; // arg #1
+    let _1: test_attributes::tests::test_should_panic::{closure}; // arg #1
     let _2: (); // arg #2
-    let _3: &'1 mut test_attributes::tests::test_should_panic::closure; // anonymous local
+    let _3: &'1 mut test_attributes::tests::test_should_panic::{closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<()> for test_attributes::tests::test_should_panic::closure}::call_mut<'2>(move _3, move _2)
-    ↳⚡ drop[{impl Destruct for test_attributes::tests::test_should_panic::closure}::drop_glue<'3>] _1
+    _0 = {impl FnMut<()> for test_attributes::tests::test_should_panic::{closure}}::call_mut<'2>(move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_attributes::tests::test_should_panic::{closure}}::drop_glue<'3>] _1
         ↳⚡ unwind_terminate
         unwind_continue
-    drop[{impl Destruct for test_attributes::tests::test_should_panic::closure}::drop_glue<'4>] _1
+    drop[{impl Destruct for test_attributes::tests::test_should_panic::{closure}}::drop_glue<'4>] _1
     ↳⚡ unwind_continue
     return
 }
 
-fn test_attributes::tests::test_should_panic::closure::as_fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+fn test_attributes::tests::test_should_panic::{closure}::{as_fn}() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
     let args: (); // local
-    let state: test_attributes::tests::test_should_panic::closure; // local
+    let state: test_attributes::tests::test_should_panic::{closure}; // local
 
     storage_live(_0)
     storage_live(args)
     storage_live(state)
     args = ()
-    state = test_attributes::tests::test_should_panic::closure {  }
-    _0 = {impl FnOnce<()> for test_attributes::tests::test_should_panic::closure}::call_once(move state, move args)
+    state = test_attributes::tests::test_should_panic::{closure} {  }
+    _0 = {impl FnOnce<()> for test_attributes::tests::test_should_panic::{closure}}::call_once(move state, move args)
     ↳⚡ unwind_continue
     return
 }
@@ -613,7 +613,7 @@ pub fn test_attributes::tests::test_should_panic() -> TestDescAndFn
     let _5: TestType; // anonymous local
     let _6: TestFn; // anonymous local
     let _7: fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // anonymous local
-    let _8: test_attributes::tests::test_should_panic::closure; // anonymous local
+    let _8: test_attributes::tests::test_should_panic::{closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -637,8 +637,8 @@ pub fn test_attributes::tests::test_should_panic() -> TestDescAndFn
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)
-    _8 = test_attributes::tests::test_should_panic::closure {  }
-    _7 = cast<test_attributes::tests::test_should_panic::closure::as_fn, fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]>(const test_attributes::tests::test_should_panic::closure::as_fn)
+    _8 = test_attributes::tests::test_should_panic::{closure} {  }
+    _7 = cast<test_attributes::tests::test_should_panic::{closure}::{as_fn}, fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]>(const test_attributes::tests::test_should_panic::{closure}::{as_fn})
     storage_dead(_8)
     _6 = TestFn::StaticTestFn { _0: move _7 }
     storage_dead(_7)
@@ -656,13 +656,13 @@ pub fn test_attributes::tests::test_should_panic() -> TestDescAndFn
 
 pub const test_attributes::tests::test_should_panic: TestDescAndFn = test_attributes::tests::test_should_panic()
 
-struct test_attributes::tests::test_foo::closure {}
+struct test_attributes::tests::test_foo::{closure} {}
 
-// Full name: test_attributes::tests::test_foo::closure::{impl Destruct for test_attributes::tests::test_foo::closure}::drop_glue
-unsafe fn {impl Destruct for test_attributes::tests::test_foo::closure}::drop_glue<'_0>(_1: &'_0 mut test_attributes::tests::test_foo::closure)
+// Full name: test_attributes::tests::test_foo::{closure}::{impl Destruct for test_attributes::tests::test_foo::{closure}}::drop_glue
+unsafe fn {impl Destruct for test_attributes::tests::test_foo::{closure}}::drop_glue<'_0>(_1: &'_0 mut test_attributes::tests::test_foo::{closure})
 {
     let _0: (); // return
-    let _1: &'1 mut test_attributes::tests::test_foo::closure; // arg #1
+    let _1: &'1 mut test_attributes::tests::test_foo::{closure}; // arg #1
 
     storage_live(_0)
     _0 = ()
@@ -685,11 +685,11 @@ fn test_attributes::tests::test_foo#1()
     return
 }
 
-// Full name: test_attributes::tests::test_foo::{impl Fn<()> for test_attributes::tests::test_foo::closure}::call
-fn {impl Fn<()> for test_attributes::tests::test_foo::closure}::call<'_0>(_1: &'_0 test_attributes::tests::test_foo::closure, tupled_args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+// Full name: test_attributes::tests::test_foo::{impl Fn<()> for test_attributes::tests::test_foo::{closure}}::call
+fn {impl Fn<()> for test_attributes::tests::test_foo::{closure}}::call<'_0>(_1: &'_0 test_attributes::tests::test_foo::{closure}, tupled_args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let _1: &'1 test_attributes::tests::test_foo::closure; // arg #1
+    let _1: &'1 test_attributes::tests::test_foo::{closure}; // arg #1
     let tupled_args: (); // arg #2
     let _3: (); // anonymous local
 
@@ -703,54 +703,54 @@ fn {impl Fn<()> for test_attributes::tests::test_foo::closure}::call<'_0>(_1: &'
     return
 }
 
-// Full name: test_attributes::tests::test_foo::{impl FnMut<()> for test_attributes::tests::test_foo::closure}::call_mut
-fn {impl FnMut<()> for test_attributes::tests::test_foo::closure}::call_mut<'_0>(state: &'_0 mut test_attributes::tests::test_foo::closure, args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+// Full name: test_attributes::tests::test_foo::{impl FnMut<()> for test_attributes::tests::test_foo::{closure}}::call_mut
+fn {impl FnMut<()> for test_attributes::tests::test_foo::{closure}}::call_mut<'_0>(state: &'_0 mut test_attributes::tests::test_foo::{closure}, args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let state: &'_0 mut test_attributes::tests::test_foo::closure; // arg #1
+    let state: &'_0 mut test_attributes::tests::test_foo::{closure}; // arg #1
     let args: (); // arg #2
-    let _3: &'0 test_attributes::tests::test_foo::closure; // anonymous local
+    let _3: &'0 test_attributes::tests::test_foo::{closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
-    _0 = {impl Fn<()> for test_attributes::tests::test_foo::closure}::call<'2>(move _3, move args)
+    _0 = {impl Fn<()> for test_attributes::tests::test_foo::{closure}}::call<'2>(move _3, move args)
     ↳⚡ unwind_continue
     return
 }
 
-// Full name: test_attributes::tests::test_foo::{impl FnOnce<()> for test_attributes::tests::test_foo::closure}::call_once
-fn {impl FnOnce<()> for test_attributes::tests::test_foo::closure}::call_once(_1: test_attributes::tests::test_foo::closure, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+// Full name: test_attributes::tests::test_foo::{impl FnOnce<()> for test_attributes::tests::test_foo::{closure}}::call_once
+fn {impl FnOnce<()> for test_attributes::tests::test_foo::{closure}}::call_once(_1: test_attributes::tests::test_foo::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
-    let _1: test_attributes::tests::test_foo::closure; // arg #1
+    let _1: test_attributes::tests::test_foo::{closure}; // arg #1
     let _2: (); // arg #2
-    let _3: &'1 mut test_attributes::tests::test_foo::closure; // anonymous local
+    let _3: &'1 mut test_attributes::tests::test_foo::{closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = {impl FnMut<()> for test_attributes::tests::test_foo::closure}::call_mut<'2>(move _3, move _2)
-    ↳⚡ drop[{impl Destruct for test_attributes::tests::test_foo::closure}::drop_glue<'3>] _1
+    _0 = {impl FnMut<()> for test_attributes::tests::test_foo::{closure}}::call_mut<'2>(move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_attributes::tests::test_foo::{closure}}::drop_glue<'3>] _1
         ↳⚡ unwind_terminate
         unwind_continue
-    drop[{impl Destruct for test_attributes::tests::test_foo::closure}::drop_glue<'4>] _1
+    drop[{impl Destruct for test_attributes::tests::test_foo::{closure}}::drop_glue<'4>] _1
     ↳⚡ unwind_continue
     return
 }
 
-fn test_attributes::tests::test_foo::closure::as_fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+fn test_attributes::tests::test_foo::{closure}::{as_fn}() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
     let args: (); // local
-    let state: test_attributes::tests::test_foo::closure; // local
+    let state: test_attributes::tests::test_foo::{closure}; // local
 
     storage_live(_0)
     storage_live(args)
     storage_live(state)
     args = ()
-    state = test_attributes::tests::test_foo::closure {  }
-    _0 = {impl FnOnce<()> for test_attributes::tests::test_foo::closure}::call_once(move state, move args)
+    state = test_attributes::tests::test_foo::{closure} {  }
+    _0 = {impl FnOnce<()> for test_attributes::tests::test_foo::{closure}}::call_once(move state, move args)
     ↳⚡ unwind_continue
     return
 }
@@ -765,7 +765,7 @@ pub fn test_attributes::tests::test_foo() -> TestDescAndFn
     let _5: TestType; // anonymous local
     let _6: TestFn; // anonymous local
     let _7: fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // anonymous local
-    let _8: test_attributes::tests::test_foo::closure; // anonymous local
+    let _8: test_attributes::tests::test_foo::{closure}; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
@@ -789,8 +789,8 @@ pub fn test_attributes::tests::test_foo() -> TestDescAndFn
     storage_live(_6)
     storage_live(_7)
     storage_live(_8)
-    _8 = test_attributes::tests::test_foo::closure {  }
-    _7 = cast<test_attributes::tests::test_foo::closure::as_fn, fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]>(const test_attributes::tests::test_foo::closure::as_fn)
+    _8 = test_attributes::tests::test_foo::{closure} {  }
+    _7 = cast<test_attributes::tests::test_foo::{closure}::{as_fn}, fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]>(const test_attributes::tests::test_foo::{closure}::{as_fn})
     storage_dead(_8)
     _6 = TestFn::StaticTestFn { _0: move _7 }
     storage_dead(_7)
@@ -871,114 +871,114 @@ pub fn main()
     return
 }
 
-// Full name: test_attributes::tests::test_foo::{impl FnOnce<()> for test_attributes::tests::test_foo::closure}
-impl FnOnce<()> for test_attributes::tests::test_foo::closure {
-    proof ImpliedClause0: (test_attributes::tests::test_foo::closure: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_foo::closure}
+// Full name: test_attributes::tests::test_foo::{impl FnOnce<()> for test_attributes::tests::test_foo::{closure}}
+impl FnOnce<()> for test_attributes::tests::test_foo::{closure} {
+    proof ImpliedClause0: (test_attributes::tests::test_foo::{closure}: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_foo::{closure}}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
     proof ImpliedClause3: (Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]: Sized) = {built_in impl Sized for Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]}
     type Output = Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
-    fn call_once = {impl FnOnce<()> for test_attributes::tests::test_foo::closure}::call_once
-    vtable: {impl FnOnce<()> for test_attributes::tests::test_foo::closure}::{vtable}
+    fn call_once = {impl FnOnce<()> for test_attributes::tests::test_foo::{closure}}::call_once
+    vtable: {impl FnOnce<()> for test_attributes::tests::test_foo::{closure}}::{vtable}
 }
 
-// Full name: test_attributes::tests::test_foo::{impl FnMut<()> for test_attributes::tests::test_foo::closure}
-impl FnMut<()> for test_attributes::tests::test_foo::closure {
-    proof ImpliedClause0: (test_attributes::tests::test_foo::closure: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_foo::closure}
-    proof ImpliedClause1: (test_attributes::tests::test_foo::closure: FnOnce<()>) = {impl FnOnce<()> for test_attributes::tests::test_foo::closure}
+// Full name: test_attributes::tests::test_foo::{impl FnMut<()> for test_attributes::tests::test_foo::{closure}}
+impl FnMut<()> for test_attributes::tests::test_foo::{closure} {
+    proof ImpliedClause0: (test_attributes::tests::test_foo::{closure}: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_foo::{closure}}
+    proof ImpliedClause1: (test_attributes::tests::test_foo::{closure}: FnOnce<()>) = {impl FnOnce<()> for test_attributes::tests::test_foo::{closure}}
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
-    fn call_mut<'_0_1> = {impl FnMut<()> for test_attributes::tests::test_foo::closure}::call_mut<'_0_1>
-    vtable: {impl FnMut<()> for test_attributes::tests::test_foo::closure}::{vtable}
+    fn call_mut<'_0_1> = {impl FnMut<()> for test_attributes::tests::test_foo::{closure}}::call_mut<'_0_1>
+    vtable: {impl FnMut<()> for test_attributes::tests::test_foo::{closure}}::{vtable}
 }
 
-// Full name: test_attributes::tests::test_foo::{impl Fn<()> for test_attributes::tests::test_foo::closure}
-impl Fn<()> for test_attributes::tests::test_foo::closure {
-    proof ImpliedClause0: (test_attributes::tests::test_foo::closure: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_foo::closure}
-    proof ImpliedClause1: (test_attributes::tests::test_foo::closure: FnMut<()>) = {impl FnMut<()> for test_attributes::tests::test_foo::closure}
+// Full name: test_attributes::tests::test_foo::{impl Fn<()> for test_attributes::tests::test_foo::{closure}}
+impl Fn<()> for test_attributes::tests::test_foo::{closure} {
+    proof ImpliedClause0: (test_attributes::tests::test_foo::{closure}: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_foo::{closure}}
+    proof ImpliedClause1: (test_attributes::tests::test_foo::{closure}: FnMut<()>) = {impl FnMut<()> for test_attributes::tests::test_foo::{closure}}
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
-    fn call<'_0_1> = {impl Fn<()> for test_attributes::tests::test_foo::closure}::call<'_0_1>
-    vtable: {impl Fn<()> for test_attributes::tests::test_foo::closure}::{vtable}
+    fn call<'_0_1> = {impl Fn<()> for test_attributes::tests::test_foo::{closure}}::call<'_0_1>
+    vtable: {impl Fn<()> for test_attributes::tests::test_foo::{closure}}::{vtable}
 }
 
-// Full name: test_attributes::tests::test_foo::closure::{impl Destruct for test_attributes::tests::test_foo::closure}
-impl Destruct for test_attributes::tests::test_foo::closure {
-    fn drop_glue<'_0_1> = {impl Destruct for test_attributes::tests::test_foo::closure}::drop_glue<'_0_1>
+// Full name: test_attributes::tests::test_foo::{closure}::{impl Destruct for test_attributes::tests::test_foo::{closure}}
+impl Destruct for test_attributes::tests::test_foo::{closure} {
+    fn drop_glue<'_0_1> = {impl Destruct for test_attributes::tests::test_foo::{closure}}::drop_glue<'_0_1>
     non-dyn-compatible
 }
 
-// Full name: test_attributes::tests::test_should_panic::{impl FnOnce<()> for test_attributes::tests::test_should_panic::closure}
-impl FnOnce<()> for test_attributes::tests::test_should_panic::closure {
-    proof ImpliedClause0: (test_attributes::tests::test_should_panic::closure: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_should_panic::closure}
+// Full name: test_attributes::tests::test_should_panic::{impl FnOnce<()> for test_attributes::tests::test_should_panic::{closure}}
+impl FnOnce<()> for test_attributes::tests::test_should_panic::{closure} {
+    proof ImpliedClause0: (test_attributes::tests::test_should_panic::{closure}: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_should_panic::{closure}}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
     proof ImpliedClause3: (Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]: Sized) = {built_in impl Sized for Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]}
     type Output = Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
-    fn call_once = {impl FnOnce<()> for test_attributes::tests::test_should_panic::closure}::call_once
-    vtable: {impl FnOnce<()> for test_attributes::tests::test_should_panic::closure}::{vtable}
+    fn call_once = {impl FnOnce<()> for test_attributes::tests::test_should_panic::{closure}}::call_once
+    vtable: {impl FnOnce<()> for test_attributes::tests::test_should_panic::{closure}}::{vtable}
 }
 
-// Full name: test_attributes::tests::test_should_panic::{impl FnMut<()> for test_attributes::tests::test_should_panic::closure}
-impl FnMut<()> for test_attributes::tests::test_should_panic::closure {
-    proof ImpliedClause0: (test_attributes::tests::test_should_panic::closure: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_should_panic::closure}
-    proof ImpliedClause1: (test_attributes::tests::test_should_panic::closure: FnOnce<()>) = {impl FnOnce<()> for test_attributes::tests::test_should_panic::closure}
+// Full name: test_attributes::tests::test_should_panic::{impl FnMut<()> for test_attributes::tests::test_should_panic::{closure}}
+impl FnMut<()> for test_attributes::tests::test_should_panic::{closure} {
+    proof ImpliedClause0: (test_attributes::tests::test_should_panic::{closure}: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_should_panic::{closure}}
+    proof ImpliedClause1: (test_attributes::tests::test_should_panic::{closure}: FnOnce<()>) = {impl FnOnce<()> for test_attributes::tests::test_should_panic::{closure}}
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
-    fn call_mut<'_0_1> = {impl FnMut<()> for test_attributes::tests::test_should_panic::closure}::call_mut<'_0_1>
-    vtable: {impl FnMut<()> for test_attributes::tests::test_should_panic::closure}::{vtable}
+    fn call_mut<'_0_1> = {impl FnMut<()> for test_attributes::tests::test_should_panic::{closure}}::call_mut<'_0_1>
+    vtable: {impl FnMut<()> for test_attributes::tests::test_should_panic::{closure}}::{vtable}
 }
 
-// Full name: test_attributes::tests::test_should_panic::{impl Fn<()> for test_attributes::tests::test_should_panic::closure}
-impl Fn<()> for test_attributes::tests::test_should_panic::closure {
-    proof ImpliedClause0: (test_attributes::tests::test_should_panic::closure: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_should_panic::closure}
-    proof ImpliedClause1: (test_attributes::tests::test_should_panic::closure: FnMut<()>) = {impl FnMut<()> for test_attributes::tests::test_should_panic::closure}
+// Full name: test_attributes::tests::test_should_panic::{impl Fn<()> for test_attributes::tests::test_should_panic::{closure}}
+impl Fn<()> for test_attributes::tests::test_should_panic::{closure} {
+    proof ImpliedClause0: (test_attributes::tests::test_should_panic::{closure}: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_should_panic::{closure}}
+    proof ImpliedClause1: (test_attributes::tests::test_should_panic::{closure}: FnMut<()>) = {impl FnMut<()> for test_attributes::tests::test_should_panic::{closure}}
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
-    fn call<'_0_1> = {impl Fn<()> for test_attributes::tests::test_should_panic::closure}::call<'_0_1>
-    vtable: {impl Fn<()> for test_attributes::tests::test_should_panic::closure}::{vtable}
+    fn call<'_0_1> = {impl Fn<()> for test_attributes::tests::test_should_panic::{closure}}::call<'_0_1>
+    vtable: {impl Fn<()> for test_attributes::tests::test_should_panic::{closure}}::{vtable}
 }
 
-// Full name: test_attributes::tests::test_should_panic::closure::{impl Destruct for test_attributes::tests::test_should_panic::closure}
-impl Destruct for test_attributes::tests::test_should_panic::closure {
-    fn drop_glue<'_0_1> = {impl Destruct for test_attributes::tests::test_should_panic::closure}::drop_glue<'_0_1>
+// Full name: test_attributes::tests::test_should_panic::{closure}::{impl Destruct for test_attributes::tests::test_should_panic::{closure}}
+impl Destruct for test_attributes::tests::test_should_panic::{closure} {
+    fn drop_glue<'_0_1> = {impl Destruct for test_attributes::tests::test_should_panic::{closure}}::drop_glue<'_0_1>
     non-dyn-compatible
 }
 
-// Full name: test_attributes::tests::test_ignore::{impl FnOnce<()> for test_attributes::tests::test_ignore::closure}
-impl FnOnce<()> for test_attributes::tests::test_ignore::closure {
-    proof ImpliedClause0: (test_attributes::tests::test_ignore::closure: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_ignore::closure}
+// Full name: test_attributes::tests::test_ignore::{impl FnOnce<()> for test_attributes::tests::test_ignore::{closure}}
+impl FnOnce<()> for test_attributes::tests::test_ignore::{closure} {
+    proof ImpliedClause0: (test_attributes::tests::test_ignore::{closure}: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_ignore::{closure}}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
     proof ImpliedClause3: (Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]: Sized) = {built_in impl Sized for Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]}
     type Output = Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
-    fn call_once = {impl FnOnce<()> for test_attributes::tests::test_ignore::closure}::call_once
-    vtable: {impl FnOnce<()> for test_attributes::tests::test_ignore::closure}::{vtable}
+    fn call_once = {impl FnOnce<()> for test_attributes::tests::test_ignore::{closure}}::call_once
+    vtable: {impl FnOnce<()> for test_attributes::tests::test_ignore::{closure}}::{vtable}
 }
 
-// Full name: test_attributes::tests::test_ignore::{impl FnMut<()> for test_attributes::tests::test_ignore::closure}
-impl FnMut<()> for test_attributes::tests::test_ignore::closure {
-    proof ImpliedClause0: (test_attributes::tests::test_ignore::closure: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_ignore::closure}
-    proof ImpliedClause1: (test_attributes::tests::test_ignore::closure: FnOnce<()>) = {impl FnOnce<()> for test_attributes::tests::test_ignore::closure}
+// Full name: test_attributes::tests::test_ignore::{impl FnMut<()> for test_attributes::tests::test_ignore::{closure}}
+impl FnMut<()> for test_attributes::tests::test_ignore::{closure} {
+    proof ImpliedClause0: (test_attributes::tests::test_ignore::{closure}: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_ignore::{closure}}
+    proof ImpliedClause1: (test_attributes::tests::test_ignore::{closure}: FnOnce<()>) = {impl FnOnce<()> for test_attributes::tests::test_ignore::{closure}}
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
-    fn call_mut<'_0_1> = {impl FnMut<()> for test_attributes::tests::test_ignore::closure}::call_mut<'_0_1>
-    vtable: {impl FnMut<()> for test_attributes::tests::test_ignore::closure}::{vtable}
+    fn call_mut<'_0_1> = {impl FnMut<()> for test_attributes::tests::test_ignore::{closure}}::call_mut<'_0_1>
+    vtable: {impl FnMut<()> for test_attributes::tests::test_ignore::{closure}}::{vtable}
 }
 
-// Full name: test_attributes::tests::test_ignore::{impl Fn<()> for test_attributes::tests::test_ignore::closure}
-impl Fn<()> for test_attributes::tests::test_ignore::closure {
-    proof ImpliedClause0: (test_attributes::tests::test_ignore::closure: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_ignore::closure}
-    proof ImpliedClause1: (test_attributes::tests::test_ignore::closure: FnMut<()>) = {impl FnMut<()> for test_attributes::tests::test_ignore::closure}
+// Full name: test_attributes::tests::test_ignore::{impl Fn<()> for test_attributes::tests::test_ignore::{closure}}
+impl Fn<()> for test_attributes::tests::test_ignore::{closure} {
+    proof ImpliedClause0: (test_attributes::tests::test_ignore::{closure}: MetaSized) = {built_in impl MetaSized for test_attributes::tests::test_ignore::{closure}}
+    proof ImpliedClause1: (test_attributes::tests::test_ignore::{closure}: FnMut<()>) = {impl FnMut<()> for test_attributes::tests::test_ignore::{closure}}
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
-    fn call<'_0_1> = {impl Fn<()> for test_attributes::tests::test_ignore::closure}::call<'_0_1>
-    vtable: {impl Fn<()> for test_attributes::tests::test_ignore::closure}::{vtable}
+    fn call<'_0_1> = {impl Fn<()> for test_attributes::tests::test_ignore::{closure}}::call<'_0_1>
+    vtable: {impl Fn<()> for test_attributes::tests::test_ignore::{closure}}::{vtable}
 }
 
-// Full name: test_attributes::tests::test_ignore::closure::{impl Destruct for test_attributes::tests::test_ignore::closure}
-impl Destruct for test_attributes::tests::test_ignore::closure {
-    fn drop_glue<'_0_1> = {impl Destruct for test_attributes::tests::test_ignore::closure}::drop_glue<'_0_1>
+// Full name: test_attributes::tests::test_ignore::{closure}::{impl Destruct for test_attributes::tests::test_ignore::{closure}}
+impl Destruct for test_attributes::tests::test_ignore::{closure} {
+    fn drop_glue<'_0_1> = {impl Destruct for test_attributes::tests::test_ignore::{closure}}::drop_glue<'_0_1>
     non-dyn-compatible
 }
 

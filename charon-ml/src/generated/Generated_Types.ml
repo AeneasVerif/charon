@@ -849,6 +849,19 @@ and builtin_path_elem =
   | PeStr
       (** [str], which is a struct containing a [[u8]] the standard library
           expects to be valid UTF-8. *)
+  | PeClosure  (** A closure. *)
+  | PeUse  (** A [use] declaration. *)
+  | PeAnonConst  (** An anonymous constant. *)
+  | PePromotedConst  (** A constant that rustc promoted out of a body. *)
+  | PeClosureAsFn
+      (** The function item we generate for a closure that is cast to a function
+          pointer. *)
+  | PeDropGlue
+      (** The method we add to the [Destruct] trait to hold the drop glue. *)
+  | PeVTable
+      (** The vtable struct of a trait, or the vtable global of a trait impl. *)
+  | PeVTableMethod  (** The version of a method that is stored in a vtable. *)
+  | PeVTableDropShim  (** The [drop_in_place] shim stored in a vtable. *)
 
 (** Additional information for closures. *)
 and closure_info = {
@@ -1372,8 +1385,10 @@ and path_elem =
   | PeTarget of string
       (** This item is only available on the given target. Only appears in
           multi-target mode. *)
-  | PeBuiltin of builtin_path_elem
-      (** A path element for a builtin, like tuples *)
+  | PeBuiltin of builtin_path_elem * disambiguator
+      (** A path element that doesn't come from the source code: either a
+          builtin type such as tuples, or an item that has no name of its own
+          such as a closure or a vtable. *)
 
 (** The metadata stored in a pointer. That's the information stored in pointers
     alongside their address. It's empty for [Sized] types, and interesting for

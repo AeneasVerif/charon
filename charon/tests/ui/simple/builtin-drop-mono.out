@@ -110,8 +110,9 @@ unsafe fn impl_Destruct_for_slice::drop_glue::<String><'_0>(_1: &'_0 mut [String
     return
 }
 
+// Full name: core::ptr::drop_glue::<[String]>
 #[lang_item(DropGlue)]
-unsafe fn core::ptr::drop_glue::<[String]><'_0>(_1: &'_0 mut [String])
+unsafe fn drop_glue::<[String]><'_0>(_1: &'_0 mut [String])
 {
     let ret: (); // return
     let _1: &'_0 mut [String]; // arg #1
@@ -146,7 +147,7 @@ unsafe fn impl_Destruct_for_array::drop_glue::<String, 4usize><'_0>(_1: &'_0 mut
     _0 = ()
     _2 = @ArrayToSliceMut<'_, String, 4usize>(move _1)
     ↳⚡ undefined_behavior
-    _0 = core::ptr::drop_glue::<[String]><'6>(move _2)
+    _0 = drop_glue::<[String]><'6>(move _2)
     ↳⚡ storage_dead(_2)
         storage_dead(_1)
         unwind_continue

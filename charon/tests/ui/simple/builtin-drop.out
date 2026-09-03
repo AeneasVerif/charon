@@ -24,8 +24,9 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
+// Full name: core::ptr::drop_glue
 #[lang_item(DropGlue)]
-unsafe fn core::ptr::drop_glue<'_0, T>(_1: &'_0 mut T)
+unsafe fn drop_glue<'_0, T>(_1: &'_0 mut T)
 where
     TraitClause0: (T: Destruct),
     TraitClause1: (T: Destruct),
@@ -224,7 +225,7 @@ where
     _0 = ()
     _2 = @ArrayToSliceMut<'_, T, N>(move _1)
     ↳⚡ undefined_behavior
-    _0 = core::ptr::drop_glue<'6, [T]>[impl_Destruct_for_slice<T>[TraitClause0, TraitClause1], impl_Destruct_for_slice<T>[TraitClause0, TraitClause1]](move _2)
+    _0 = drop_glue<'6, [T]>[impl_Destruct_for_slice<T>[TraitClause0, TraitClause1], impl_Destruct_for_slice<T>[TraitClause0, TraitClause1]](move _2)
     ↳⚡ storage_dead(_2)
         storage_dead(_1)
         unwind_continue

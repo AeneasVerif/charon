@@ -355,6 +355,15 @@ and builtin_path_elem_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* _0 = usize_of_postcard ctx st in
          Ok (PeTuple _0)
      | 1 -> Ok PeStr
+     | 2 -> Ok PeClosure
+     | 3 -> Ok PeUse
+     | 4 -> Ok PeAnonConst
+     | 5 -> Ok PePromotedConst
+     | 6 -> Ok PeClosureAsFn
+     | 7 -> Ok PeDropGlue
+     | 8 -> Ok PeVTable
+     | 9 -> Ok PeVTableMethod
+     | 10 -> Ok PeVTableDropShim
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and builtin_ty_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -937,7 +946,8 @@ and path_elem_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (PeTarget _0)
      | 4 ->
          let* _0 = builtin_path_elem_of_postcard ctx st in
-         Ok (PeBuiltin _0)
+         let* _1 = disambiguator_of_postcard ctx st in
+         Ok (PeBuiltin (_0, _1))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and place_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

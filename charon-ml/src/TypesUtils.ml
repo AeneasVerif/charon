@@ -30,9 +30,26 @@ type bound_fun_sig = fun_sig item_binder
 let to_name (ls : string list) : name =
   List.map (fun s -> PeIdent (s, Disambiguator.zero)) ls
 
+(** The identifier we use to refer to a builtin path element. *)
+let builtin_path_elem_ident (e : builtin_path_elem) : string =
+  match e with
+  | PeTuple 0 -> "unit"
+  | PeTuple _ -> "tuple"
+  | PeStr -> "str"
+  | PeClosure -> "closure"
+  | PeUse -> "use"
+  | PeAnonConst -> "const"
+  | PePromotedConst -> "promoted_const"
+  | PeClosureAsFn -> "as_fn"
+  | PeDropGlue -> "drop_glue"
+  | PeVTable -> "vtable"
+  | PeVTableMethod -> "vtable_method"
+  | PeVTableDropShim -> "vtable_drop_shim"
+
 let as_ident (e : path_elem) : string =
   match e with
   | PeIdent (s, _) -> s
+  | PeBuiltin (b, _) -> builtin_path_elem_ident b
   | _ -> raise (Failure "Unexpected")
 
 let type_decl_is_opaque (d : type_decl) : bool =
