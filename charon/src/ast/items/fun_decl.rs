@@ -77,6 +77,8 @@ pub enum Abi {
 pub enum FunSource {
     /// A normal function.
     Normal,
+    /// A synthetic function representing an ADT constructor.
+    AdtConstructor,
     /// A default method in a trait declaration.
     TraitDefault {
         /// The trait declaration this item belongs to.

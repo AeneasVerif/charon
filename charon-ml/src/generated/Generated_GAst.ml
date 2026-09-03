@@ -150,6 +150,8 @@ and fn_operand =
 (** Where a given function came from. *)
 and fun_source =
   | NormalFun  (** A normal function. *)
+  | AdtConstructorFun
+      (** A synthetic function representing an ADT constructor. *)
   | TraitDefaultFun of trait_decl_ref * trait_method_id
       (** A default method in a trait declaration.
 

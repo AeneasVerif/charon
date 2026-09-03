@@ -2215,21 +2215,22 @@ and fun_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* __tag = int_of_postcard ctx st in
      match __tag with
      | 0 -> Ok NormalFun
-     | 1 ->
+     | 1 -> Ok AdtConstructorFun
+     | 2 ->
          let* trait_ref = trait_decl_ref_of_postcard ctx st in
          let* item_id = trait_method_id_of_postcard ctx st in
          Ok (TraitDefaultFun (trait_ref, item_id))
-     | 2 ->
+     | 3 ->
          let* impl_ref = trait_impl_ref_of_postcard ctx st in
          let* trait_ref = trait_decl_ref_of_postcard ctx st in
          let* item_id = trait_method_id_of_postcard ctx st in
          let* reuses_default = bool_of_postcard ctx st in
          Ok (TraitImplFun (impl_ref, trait_ref, item_id, reuses_default))
-     | 3 -> Ok VTableShimFun
-     | 4 ->
+     | 4 -> Ok VTableShimFun
+     | 5 ->
          let* _0 = global_decl_ref_of_postcard ctx st in
          Ok (GlobalInitializerFun _0)
-     | 5 ->
+     | 6 ->
          let* dispatcher = fun_decl_ref_of_postcard ctx st in
          Ok (TargetDependentFun dispatcher)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))

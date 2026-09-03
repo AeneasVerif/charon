@@ -2633,6 +2633,7 @@ and fun_source_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Normal" -> Ok NormalFun
+    | `String "AdtConstructor" -> Ok AdtConstructorFun
     | `Assoc
         [
           ( "TraitDefault",

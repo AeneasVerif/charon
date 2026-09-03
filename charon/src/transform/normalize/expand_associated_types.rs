@@ -1315,6 +1315,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
     fn enter_fun_source(&mut self, kind: &mut FunSource) {
         match kind {
             FunSource::Normal
+            | FunSource::AdtConstructor
             | FunSource::GlobalInitializer(_)
             | FunSource::TargetDependent { .. }
             | FunSource::VTableShim => {}
