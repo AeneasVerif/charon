@@ -1,3 +1,4 @@
+use crate::utils::dedup::*;
 use derive_generic_visitor::{
     Break, Continue, ControlFlow, Drive, DriveMut, DriveTwo, VisitMut, Visitor,
 };
@@ -165,8 +166,20 @@ mod pack {
 
 /// A [`Span`] with its contents laid out, used for serialization and unpacking into a
 /// more readable format.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename = "Span")]
+#[derive(
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
+    Serialize,
+    Deserialize,
+    SerializeState,
+    DeserializeState,
+)]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("Span"))]
+#[serde_state(stateless)]
 pub struct SerializedSpan {
     /// The source code span; for code coming from a macro expansion, the location of the macro
     /// call.
@@ -274,31 +287,35 @@ impl Span {
 
 impl Serialize for Span {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        self.unpack().serialize(serializer)
+        SerDedup::Untagged(self.unpack()).serialize(serializer)
     }
 }
 impl<'de> Deserialize<'de> for Span {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        Ok(Span::from_unpacked(SerializedSpan::deserialize(
-            deserializer,
-        )?))
+        use serde::de::Error;
+        match SerDedup::<SerializedSpan>::deserialize(deserializer)? {
+            SerDedup::Untagged(span) => Ok(Span::from_unpacked(span)),
+            SerDedup::Value { .. } | SerDedup::Deduplicated { .. } => {
+                Err(D::Error::custom(stateless_deserialize_error::<Span>()))
+            }
+        }
     }
 }
-impl<State: ?Sized> SerializeState<State> for Span {
+impl<State: DedupSerializerState> SerializeState<State> for Span {
     fn serialize_state<S: serde::Serializer>(
         &self,
-        _state: &State,
+        state: &State,
         serializer: S,
     ) -> Result<S::Ok, S::Error> {
-        self.serialize(serializer)
+        serialize_dedup(self, self.unpack(), state, serializer)
     }
 }
-impl<'de, State: ?Sized> DeserializeState<'de, State> for Span {
+impl<'de, State: DedupSerializerState> DeserializeState<'de, State> for Span {
     fn deserialize_state<D: serde::Deserializer<'de>>(
-        _state: &State,
+        state: &State,
         deserializer: D,
     ) -> Result<Self, D::Error> {
-        Self::deserialize(deserializer)
+        deserialize_dedup(state, deserializer, Span::from_unpacked)
     }
 }
 

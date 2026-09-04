@@ -84,6 +84,25 @@ const MANUAL_IMPLS: &[(&str, &str)] = &[
         "ExactSizeExpr",
         "dedup_val_of_json ctx.exact_size_expr_dedup_tbl exact_size_expr_kind_of_json ctx json",
     ),
+    // Hand-written because spans are deduplicated in the serialized output.
+    (
+        "Span",
+        indoc!(
+            r#"
+            dedup_val_of_json ctx.span_dedup_tbl
+              (fun ctx json ->
+                match json with
+                | `Assoc [ ("data", data); ("generated_from_span", generated_from_span) ] ->
+                    let* data = span_data_of_json ctx data in
+                    let* generated_from_span =
+                      option_of_json span_data_of_json ctx generated_from_span
+                    in
+                    Ok ({ data; generated_from_span } : span)
+                | _ -> Error "")
+              ctx json
+            "#
+        ),
+    ),
 ];
 
 impl<'a> GenerateCtx<'a> {

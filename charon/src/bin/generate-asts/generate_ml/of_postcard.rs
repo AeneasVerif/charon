@@ -80,6 +80,20 @@ const MANUAL_IMPLS: &[(&str, &str)] = &[
         "ExactSizeExpr",
         "dedup_val_of_postcard ctx.exact_size_expr_dedup_tbl exact_size_expr_kind_of_postcard ctx st",
     ),
+    // Hand-written because spans are deduplicated in the serialized output.
+    (
+        "Span",
+        indoc!(
+            r#"
+            dedup_val_of_postcard ctx.span_dedup_tbl
+              (fun ctx st ->
+                let* data = span_data_of_postcard ctx st in
+                let* generated_from_span = option_of_postcard span_data_of_postcard ctx st in
+                Ok ({ data; generated_from_span } : span))
+              ctx st
+            "#
+        ),
+    ),
 ];
 
 impl<'a> GenerateCtx<'a> {

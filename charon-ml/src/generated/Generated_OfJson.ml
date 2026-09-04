@@ -44,6 +44,7 @@ type of_json_ctx = {
   tref_dedup_tbl : trait_ref DedupTbl.t;
   constant_expr_dedup_tbl : constant_expr DedupTbl.t;
   exact_size_expr_dedup_tbl : exact_size_expr DedupTbl.t;
+  span_dedup_tbl : span DedupTbl.t;
 }
 
 let empty_of_json_ctx : of_json_ctx =
@@ -53,6 +54,7 @@ let empty_of_json_ctx : of_json_ctx =
     tref_dedup_tbl = DedupTbl.create 1024;
     constant_expr_dedup_tbl = DedupTbl.create 1024;
     exact_size_expr_dedup_tbl = DedupTbl.create 1024;
+    span_dedup_tbl = DedupTbl.create 4096;
   }
 
 (** Values that come up often are deduplicated in the serialized output: the
@@ -1247,12 +1249,20 @@ and scalar_value_of_json (ctx : of_json_ctx) (js : json) :
 and span_of_json (ctx : of_json_ctx) (js : json) : (span, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("data", data); ("generated_from_span", generated_from_span) ] ->
-        let* data = span_data_of_json ctx data in
-        let* generated_from_span =
-          option_of_json span_data_of_json ctx generated_from_span
-        in
-        Ok ({ data; generated_from_span } : span)
+    | json ->
+        dedup_val_of_json ctx.span_dedup_tbl
+          (fun ctx json ->
+            match json with
+            | `Assoc
+                [ ("data", data); ("generated_from_span", generated_from_span) ]
+              ->
+                let* data = span_data_of_json ctx data in
+                let* generated_from_span =
+                  option_of_json span_data_of_json ctx generated_from_span
+                in
+                Ok ({ data; generated_from_span } : span)
+            | _ -> Error "")
+          ctx json
     | _ -> Error "")
 
 and span_data_of_json (ctx : of_json_ctx) (js : json) :

@@ -40,6 +40,7 @@ type of_postcard_ctx = {
   tref_dedup_tbl : trait_ref DedupTbl.t;
   constant_expr_dedup_tbl : constant_expr DedupTbl.t;
   exact_size_expr_dedup_tbl : exact_size_expr DedupTbl.t;
+  span_dedup_tbl : span DedupTbl.t;
 }
 
 let empty_of_postcard_ctx : of_postcard_ctx =
@@ -49,6 +50,7 @@ let empty_of_postcard_ctx : of_postcard_ctx =
     tref_dedup_tbl = DedupTbl.create 1024;
     constant_expr_dedup_tbl = DedupTbl.create 1024;
     exact_size_expr_dedup_tbl = DedupTbl.create 1024;
+    span_dedup_tbl = DedupTbl.create 4096;
   }
 
 (** Values that come up often are deduplicated in the serialized output: the
@@ -1148,11 +1150,14 @@ and scalar_value_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
 and span_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (span, string) result =
   combine_error_msgs st __FUNCTION__
-    (let* data = span_data_of_postcard ctx st in
-     let* generated_from_span =
-       option_of_postcard span_data_of_postcard ctx st
-     in
-     Ok ({ data; generated_from_span } : span))
+    (dedup_val_of_postcard ctx.span_dedup_tbl
+       (fun ctx st ->
+         let* data = span_data_of_postcard ctx st in
+         let* generated_from_span =
+           option_of_postcard span_data_of_postcard ctx st
+         in
+         Ok ({ data; generated_from_span } : span))
+       ctx st)
 
 and span_data_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (span_data, string) result =
