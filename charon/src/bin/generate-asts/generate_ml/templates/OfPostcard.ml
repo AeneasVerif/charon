@@ -47,10 +47,10 @@ type of_postcard_ctx = {
 let empty_of_postcard_ctx : of_postcard_ctx =
   {
     id_to_file_map = FileTbl.create 8;
-    ty_dedup_tbl = DedupTbl.create 1024;
+    ty_dedup_tbl = DedupTbl.create 2048;
     tref_dedup_tbl = DedupTbl.create 1024;
-    constant_expr_dedup_tbl = DedupTbl.create 1024;
-    exact_size_expr_dedup_tbl = DedupTbl.create 1024;
+    constant_expr_dedup_tbl = DedupTbl.create 64;
+    exact_size_expr_dedup_tbl = DedupTbl.create 16;
     span_dedup_tbl = DedupTbl.create 4096;
   }
 
