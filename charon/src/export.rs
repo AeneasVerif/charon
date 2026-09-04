@@ -32,7 +32,7 @@ impl Serialize for CrateData {
         if self.translated.options.no_dedup_serialized_ast {
             self.serialize_state(&(), serializer)
         } else {
-            let state = HashConsDedupSerializer::default();
+            let state = DedupSerializer::default();
             self.serialize_state(&state, serializer)
         }
     }
@@ -44,7 +44,7 @@ impl<'de> Deserialize<'de> for CrateData {
         D: Deserializer<'de>,
     {
         // Always provide the state, just in case.
-        let state = HashConsDedupSerializer::default();
+        let state = DedupSerializer::default();
         Self::deserialize_state(&state, deserializer)
     }
 }

@@ -21,7 +21,7 @@ use crate::utils::serialize_map_to_array::SeqHashMapToArray;
 /// A type can only be an ADT (structure or enumeration), as type aliases are
 /// inlined in MIR.
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
-#[serde_state(state_implements = HashConsSerializerState)]
+#[serde_state(state_implements = DedupSerializerState)]
 pub struct TypeDecl {
     pub def_id: TypeDeclId,
     /// Meta information associated with the item.

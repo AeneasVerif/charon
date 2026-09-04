@@ -21,7 +21,7 @@ use serde_state::{DeserializeState, SerializeState};
     DriveMut,
     DriveTwo,
 )]
-#[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
+#[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct TraitRef(pub HashConsed<TraitRefContents>);
 
 #[derive(

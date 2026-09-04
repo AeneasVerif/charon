@@ -33,7 +33,7 @@ pub use values::*;
     EnumAsGetters,
     EnumToGetters,
 )]
-#[serde_state(state_implements = HashConsSerializerState)]
+#[serde_state(state_implements = DedupSerializerState)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Body"))]
 pub enum Body {
     /// Body represented as a CFG. This is what ullbc is made of, and what we get after translating MIR.

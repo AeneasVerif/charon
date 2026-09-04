@@ -53,7 +53,7 @@ pub struct VariantLayout {
 /// Decision tree used to determine the active variant by reading memory. Mirrors MiniRust's
 /// `Discriminator`.
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
-#[serde_state(state_implements = HashConsSerializerState)]
+#[serde_state(state_implements = DedupSerializerState)]
 pub enum Discriminator {
     /// The variant is known.
     Known(VariantId),

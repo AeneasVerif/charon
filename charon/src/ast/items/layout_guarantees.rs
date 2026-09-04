@@ -80,7 +80,7 @@ pub enum MetadataValue {
     DriveMut,
     DriveTwo,
 )]
-#[serde_state(state_implements = HashConsSerializerState)]
+#[serde_state(state_implements = DedupSerializerState)]
 pub struct ExactSizeExpr(pub HashConsed<ExactSizeExprKind>);
 
 #[derive(

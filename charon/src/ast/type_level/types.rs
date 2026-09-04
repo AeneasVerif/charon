@@ -19,7 +19,7 @@ use serde_state::{DeserializeState, SerializeState};
     DriveMut,
     DriveTwo,
 )]
-#[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
+#[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct Ty(pub HashConsed<TyKind>);
 
 #[derive(
@@ -354,7 +354,7 @@ pub struct DynPredicate {
     DriveMut,
     DriveTwo,
 )]
-#[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
+#[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
 pub enum TypePattern {
     Range(ConstantExpr, ConstantExpr),
     OrPattern(Vec<TypePattern>),

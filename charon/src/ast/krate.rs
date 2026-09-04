@@ -32,7 +32,7 @@ pub type TargetTriple = String;
 /// To get a `TranslatedCrate`, run `charon cargo` inside a Rust crate, then deserialize
 /// the resulting `crate_name.llbc` file using [`crate::deserialize_llbc`].
 #[derive(Default, Clone, Drive, DriveMut, DriveTwo, SerializeState, DeserializeState)]
-#[serde_state(state_implements = HashConsSerializerState)]
+#[serde_state(state_implements = DedupSerializerState)]
 pub struct TranslatedCrate {
     /// The name of the crate.
     pub crate_name: String,

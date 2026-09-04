@@ -58,23 +58,20 @@ const MANUAL_IMPLS: &[(&str, &str)] = &[
             "#
         ),
     ),
-    (
-        "HashConsed",
-        r#"Error "use `hash_consed_val_of_json` instead""#,
-    ), // Not actually used
+    ("HashConsed", r#"Error "use `dedup_val_of_json` instead""#), // Not actually used
     (
         "Ty",
-        "hash_consed_val_of_json ctx.ty_hashcons_map ty_kind_of_json ctx json",
+        "dedup_val_of_json ctx.ty_dedup_tbl ty_kind_of_json ctx json",
     ),
     (
         "TraitRef",
-        "hash_consed_val_of_json ctx.tref_hashcons_map trait_ref_contents_of_json ctx json",
+        "dedup_val_of_json ctx.tref_dedup_tbl trait_ref_contents_of_json ctx json",
     ),
     (
         "ConstantExpr",
         indoc!(
             r#"
-            hash_consed_val_of_json ctx.constant_expr_hashcons_map
+            dedup_val_of_json ctx.constant_expr_dedup_tbl
               (fun ctx json ->
                 let* contents = pair_of_json constant_expr_kind_of_json ty_of_json ctx json in
                 let kind, ty = contents in
@@ -85,7 +82,7 @@ const MANUAL_IMPLS: &[(&str, &str)] = &[
     ),
     (
         "ExactSizeExpr",
-        "hash_consed_val_of_json ctx.exact_size_expr_hashcons_map exact_size_expr_kind_of_json ctx json",
+        "dedup_val_of_json ctx.exact_size_expr_dedup_tbl exact_size_expr_kind_of_json ctx json",
     ),
 ];
 

@@ -103,7 +103,7 @@ pub enum Rvalue {
     DriveMut,
     DriveTwo,
 )]
-#[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
+#[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
 pub enum Operand {
     Copy(Place),
     Move(Place),

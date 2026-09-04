@@ -23,6 +23,7 @@ pub use std::ops::ControlFlow;
 
 pub use crate::errors::Error;
 pub use crate::ids::{IndexMap, IndexVec};
+pub use crate::utils::dedup::*;
 pub use crate::utils::hash_cons::*;
 
 pub use bodies::*;

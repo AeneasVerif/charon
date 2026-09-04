@@ -1,7 +1,9 @@
 use itertools::Itertools;
 use macros::EnumAsGetters;
 
+pub mod dedup;
 pub mod hash_cons;
+pub use dedup::*;
 pub use hash_cons::*;
 
 pub static TAB_INCR: &str = "    ";

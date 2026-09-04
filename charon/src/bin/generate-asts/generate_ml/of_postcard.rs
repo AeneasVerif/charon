@@ -53,21 +53,21 @@ const MANUAL_IMPLS: &[(&str, &str)] = &[
     ),
     (
         "HashConsed",
-        r#"Error "use `hash_consed_val_of_postcard` instead""#,
+        r#"Error "use `dedup_val_of_postcard` instead""#,
     ),
     (
         "Ty",
-        "hash_consed_val_of_postcard ctx.ty_hashcons_map ty_kind_of_postcard ctx st",
+        "dedup_val_of_postcard ctx.ty_dedup_tbl ty_kind_of_postcard ctx st",
     ),
     (
         "TraitRef",
-        "hash_consed_val_of_postcard ctx.tref_hashcons_map trait_ref_contents_of_postcard ctx st",
+        "dedup_val_of_postcard ctx.tref_dedup_tbl trait_ref_contents_of_postcard ctx st",
     ),
     (
         "ConstantExpr",
         indoc!(
             r#"
-            hash_consed_val_of_postcard ctx.constant_expr_hashcons_map
+            dedup_val_of_postcard ctx.constant_expr_dedup_tbl
               (fun ctx st ->
                 let* contents = pair_of_postcard constant_expr_kind_of_postcard ty_of_postcard ctx st in
                 let kind, ty = contents in
@@ -78,7 +78,7 @@ const MANUAL_IMPLS: &[(&str, &str)] = &[
     ),
     (
         "ExactSizeExpr",
-        "hash_consed_val_of_postcard ctx.exact_size_expr_hashcons_map exact_size_expr_kind_of_postcard ctx st",
+        "dedup_val_of_postcard ctx.exact_size_expr_dedup_tbl exact_size_expr_kind_of_postcard ctx st",
     ),
 ];
 

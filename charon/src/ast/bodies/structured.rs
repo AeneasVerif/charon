@@ -19,7 +19,7 @@ pub type ExprBody = GExprBody<Block>;
 
 /// A sequence of statements.
 #[derive(Debug, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
-#[serde_state(state_implements = HashConsSerializerState)] // Avoid corecursive impls due to perfect derive
+#[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct Block {
     pub span: Span,
     /// Integer uniquely identifying this block. To simplify things we generate globally-fresh ids

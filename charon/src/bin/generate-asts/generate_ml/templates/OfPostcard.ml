@@ -18,7 +18,7 @@ open Generated_GAst
 open Generated_FullAst
 open Scalars
 module FileId = IdGen ()
-module HashConsId = IdGen ()
+module DedupId = IdGen ()
 
 module FileTbl = Hashtbl.Make (struct
   type t = FileId.id
@@ -27,46 +27,57 @@ module FileTbl = Hashtbl.Make (struct
   let hash = Hashtbl.hash
 end)
 
+(** Table of the values that were deduplicated in the serialized output, by id. *)
+module DedupTbl = Hashtbl.Make (struct
+  type t = DedupId.id
+
+  let equal = DedupId.equal_id
+  let hash = Hashtbl.hash
+end)
+
 type of_postcard_ctx = {
   id_to_file_map : file FileTbl.t;
-  ty_hashcons_map : ty HashConsId.Map.t ref;
-  tref_hashcons_map : trait_ref HashConsId.Map.t ref;
-  constant_expr_hashcons_map : constant_expr HashConsId.Map.t ref;
-  exact_size_expr_hashcons_map : exact_size_expr HashConsId.Map.t ref;
+  ty_dedup_tbl : ty DedupTbl.t;
+  tref_dedup_tbl : trait_ref DedupTbl.t;
+  constant_expr_dedup_tbl : constant_expr DedupTbl.t;
+  exact_size_expr_dedup_tbl : exact_size_expr DedupTbl.t;
 }
 
 let empty_of_postcard_ctx : of_postcard_ctx =
   {
     id_to_file_map = FileTbl.create 8;
-    ty_hashcons_map = ref HashConsId.Map.empty;
-    tref_hashcons_map = ref HashConsId.Map.empty;
-    constant_expr_hashcons_map = ref HashConsId.Map.empty;
-    exact_size_expr_hashcons_map = ref HashConsId.Map.empty;
+    ty_dedup_tbl = DedupTbl.create 1024;
+    tref_dedup_tbl = DedupTbl.create 1024;
+    constant_expr_dedup_tbl = DedupTbl.create 1024;
+    exact_size_expr_dedup_tbl = DedupTbl.create 1024;
   }
 
-let hash_consed_val_of_postcard (map : 'a HashConsId.Map.t ref)
+(** Values that come up often are deduplicated in the serialized output: the first
+    occurrence of a value is serialized in full along with an id, and later
+    occurrences only mention that id. *)
+let dedup_val_of_postcard (tbl : 'a DedupTbl.t)
     (of_postcard : of_postcard_ctx -> postcard_state -> ('a, string) result)
     (ctx : of_postcard_ctx) (st : postcard_state) : ('a, string) result =
   combine_error_msgs st __FUNCTION__
     (let* tag = int_of_postcard ctx st in
      match tag with
      | 0 ->
-         let* id = HashConsId.id_of_postcard ctx st in
+         let* id = DedupId.id_of_postcard ctx st in
          let* v = of_postcard ctx st in
-         map := HashConsId.Map.add id v !map;
+         DedupTbl.replace tbl id v;
          Ok v
      | 1 ->
-         let* id = HashConsId.id_of_postcard ctx st in
+         let* id = DedupId.id_of_postcard ctx st in
          begin
-           match HashConsId.Map.find_opt id !map with
+           match DedupTbl.find_opt tbl id with
            | Some v -> Ok v
            | None ->
                Error
-                 "Hash-consing key not found; there is a serialization mismatch \
+                 "Deduplication key not found; there is a serialization mismatch \
                   between Rust and OCaml"
          end
      | 2 -> of_postcard ctx st
-     | _ -> Error "invalid hash-consed representation")
+     | _ -> Error "invalid deduplicated value representation")
 
 let path_buf_of_postcard = string_of_postcard
 
