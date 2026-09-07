@@ -525,9 +525,8 @@ pub fn vtable_receiver_is_by_value<'tcx>(tcx: ty::TyCtxt<'tcx>, method_decl_id: 
         && tcx.generics_of(method_decl_id).has_self
 }
 
-/// If the method declared by `method_decl_id` takes `self: Self` by value, adjust the vtable
-/// signature to take the receiver via `*mut Self` instead.
-/// This mirrors what rustc does for vtable shims, which take `*mut Self` (conceptually `&own Self`).
+/// If the method takes `self: Self` by value, make the vtable signature take the receiver via
+/// `*mut Self` instead, like rustc's vtable shims do.
 fn adjust_by_value_vtable_receiver<'tcx>(
     tcx: ty::TyCtxt<'tcx>,
     method_decl_id: RDefId,
@@ -615,8 +614,6 @@ fn gen_vtable_sig<'tcx>(
 
 /// The `dyn Trait<..>` type for this trait ref, i.e. its `Self` type made existential. Same as the
 /// `dyn_self` field of a `TraitImpl`, for the virtual impls we generate ourselves.
-///
-/// Panics if called on a non-dyn-compatible trait.
 pub fn trait_ref_dyn_self<'tcx, S: UnderOwnerState<'tcx>>(s: &S, trait_ref: &TraitRef) -> Ty {
     let tcx = s.base().tcx;
     let trait_def_id = trait_ref.def_id.real_rust_def_id();
@@ -627,9 +624,8 @@ pub fn trait_ref_dyn_self<'tcx, S: UnderOwnerState<'tcx>>(s: &S, trait_ref: &Tra
 }
 
 /// The signature the `call*` method of this `Fn*` trait ref must have to be stored in a vtable,
-/// i.e. with `Self` replaced by the corresponding `dyn Fn*<..>` type. Same as `vtable_sig` in
-/// `AssocFn`, but for the virtual `Fn*` impls we generate ourselves, whose methods have no
-/// `AssocFn` of their own.
+/// i.e. with `Self` replaced by `dyn Fn*<..>`. Same as `AssocFn`'s `vtable_sig`, but for the
+/// virtual `Fn*` impls we generate ourselves, whose methods have no `AssocFn` of their own.
 pub fn fn_trait_vtable_method_sig<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     trait_ref: &TraitRef,

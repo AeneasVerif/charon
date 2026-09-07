@@ -3,7 +3,10 @@ use rustc_span::kw;
 use std::mem;
 
 use super::{
-    translate_crate::TransItemSourceKind, translate_ctx::*, translate_generics::BindingLevel,
+    translate_closures::{callable_virtual_impl, recognize_fn_trait_impl_proof},
+    translate_crate::TransItemSourceKind,
+    translate_ctx::*,
+    translate_generics::BindingLevel,
 };
 use crate::hax;
 use crate::hax::TraitPredicate;
@@ -413,23 +416,23 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                 .insert(hax::GenericPredicateId::TraitSelf, TraitClauseId::ZERO);
                             ctx.translate_poly_fun_sig(span, sig)
                         })?;
-                        // A `self: Self` receiver would be unsized once `Self` becomes `dyn Trait`,
-                        // so we take it via `*mut Self` instead (like rustc)
-                        let receiver_is_by_value = matches!(
+                        // A `self: Self` receiver would be unsized once `Self` becomes
+                        // `dyn Trait`, so we take it via `*mut Self` instead (like rustc).
+                        let by_value_receiver = matches!(
                             sig.value.inputs[0].kind(),
-                            hax::TyKind::Param(param) if param.index == 0
+                            hax::TyKind::Param(p) if p.index == 0
                         );
-                        let mut sig = bound_sig.apply(&{
+                        let mut fn_sig = bound_sig.apply(&{
                             let mut generics = GenericArgs::empty();
                             // Provide the `Self` clause.
                             generics.trait_refs.push(self_trait_ref.clone());
                             generics
                         });
-                        if receiver_is_by_value {
-                            let receiver = &mut sig.skip_binder.inputs[0];
+                        if by_value_receiver {
+                            let receiver = &mut fn_sig.skip_binder.inputs[0];
                             *receiver = TyKind::RawPtr(receiver.clone(), RefKind::Mut).into_ty();
                         }
-                        let ty = TyKind::FnPtr(sig).into_ty();
+                        let ty = TyKind::FnPtr(fn_sig).into_ty();
                         (field_name, ty)
                     }
                 }
@@ -659,29 +662,24 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             hax::TraitProofKind::Concrete { .. } | hax::TraitProofKind::Builtin { .. } => {
                 // We could return `VTableRef` but we need to enqueue the translation of the static
                 // so may as well reuse that to normalize a bit.
+                let fn_trait_impl = recognize_fn_trait_impl_proof(trait_proof);
                 let vtable_instance =
                     self.translate_region_binder(span, &trait_proof.pred, |ctx, tref| {
-                        let fn_trait_impl =
-                            super::translate_closures::recognize_fn_trait_impl_proof(trait_proof);
                         let (impl_item, impl_kind) = match (&trait_proof.kind, fn_trait_impl) {
                             (hax::TraitProofKind::Concrete(impl_item), _) => {
                                 (impl_item, TransImplSource::Normal)
                             }
-                            (_, Some((self_ty, closure_kind))) => match self_ty.kind() {
-                                // Key the `Fn*` impls of closures and fn items on the item
+                            // Key the `Fn*` impls of closures and fn items on the item; function
+                            // pointers have no item so we key them on the trait.
+                            (_, Some((self_ty, kind))) => match self_ty.kind() {
                                 hax::TyKind::Closure(args) => {
-                                    (&args.item, TransImplSource::Callable(closure_kind))
+                                    (&args.item, TransImplSource::Callable(kind))
                                 }
                                 hax::TyKind::FnDef { item, .. } => {
-                                    (item, TransImplSource::Callable(closure_kind))
+                                    (item, TransImplSource::Callable(kind))
                                 }
-                                // Function pointers don't have an item so put them on the trait
-                                hax::TyKind::Arrow(_) => {
-                                    (tref, TransImplSource::FnPointer(closure_kind))
-                                }
-                                _ => unreachable!(
-                                    "builtin `Fn*` impl for unexpected type {self_ty:?}"
-                                ),
+                                hax::TyKind::Arrow(_) => (tref, TransImplSource::FnPointer(kind)),
+                                _ => unreachable!("builtin `Fn*` impl for {self_ty:?}"),
                             },
                             (_, None) => (tref, TransImplSource::Marker),
                         };
@@ -840,7 +838,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         })
     }
 
-    /// Gather what we need to fill in the vtable of this impl. See `VTableInstanceData`.
+    /// Gather what we need to fill in the vtable of this impl.
     fn vtable_instance_data<'a>(
         impl_def: &'a hax::FullDef<'tcx>,
         impl_kind: TransImplSource,
@@ -848,7 +846,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         match (impl_kind, impl_def.kind()) {
             // The def is the closure or fn item; the impl is one of its virtual `Fn*` impls.
             (TransImplSource::Callable(target_kind), _) => {
-                let vimpl = super::translate_closures::callable_virtual_impl(impl_def, target_kind);
+                let vimpl = callable_virtual_impl(impl_def, target_kind);
                 VTableInstanceData {
                     implemented_trait_ref: &vimpl.trait_pred.trait_ref,
                     implied_trait_proofs: &vimpl.implied_trait_proofs,
@@ -1418,8 +1416,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // `dyn_self` field; we ask rustc for the `dyn Fn*<..>` type of the implemented trait ref.
         let callable_dyn_self;
         let (dyn_self, trait_pred) = if let TransImplSource::Callable(target_kind) = impl_kind {
-            let trait_pred =
-                &super::translate_closures::callable_virtual_impl(impl_def, target_kind).trait_pred;
+            let trait_pred = &callable_virtual_impl(impl_def, target_kind).trait_pred;
             callable_dyn_self =
                 hax::trait_ref_dyn_self(self.hax_state_with_id(), &trait_pred.trait_ref);
             (&callable_dyn_self, trait_pred)
@@ -1663,17 +1660,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let mut builder = BodyBuilder::new(span, shim_signature.inputs.len());
 
         let ret_place = builder.new_var(None, shim_signature.output.clone());
-        let shim_self = builder.new_var(
-            Some("shim_self".to_string()),
-            shim_signature.inputs[0].clone(),
-        );
+        let shim_self = builder.new_var(Some("shim_self".into()), shim_signature.inputs[0].clone());
         let tupled_args_ty = &shim_signature.inputs[1];
-        let tupled_args = builder.new_var(Some("args".to_string()), tupled_args_ty.clone());
+        let tupled_args = builder.new_var(Some("args".into()), tupled_args_ty.clone());
         let cast_target_ty = match target_kind {
             ClosureKind::Fn | ClosureKind::FnMut => target_receiver.clone(),
             ClosureKind::FnOnce => TyKind::RawPtr(target_receiver.clone(), RefKind::Mut).into_ty(),
         };
-        let target_self = builder.new_var(Some("target_self".to_string()), cast_target_ty);
+        let target_self = builder.new_var(Some("target_self".into()), cast_target_ty);
 
         // Replace the `dyn Trait` receiver with the concrete `fn(..)` one.
         let rval = Rvalue::UnaryOp(
@@ -1688,23 +1682,20 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // We only get here in mono mode, so the tupled argument type is a concrete tuple whose
         // fields we can untuple to call the function pointer directly.
         let tuple_ref = tupled_args_ty.as_adt().expect("args must be a tuple");
-        let _ = self.get_or_translate(ItemId::Type(tuple_ref.id))?;
-        let arg_tys = tupled_args_ty.as_tuple_fields(&self.t_ctx.translated);
-        let args = arg_tys
+        self.get_or_translate(ItemId::Type(tuple_ref.id))?;
+        let args = tupled_args_ty
+            .as_tuple_fields(&self.t_ctx.translated)
             .into_iter()
             .enumerate()
             .map(|(i, ty)| {
-                let nth_field = tupled_args
-                    .clone()
-                    .project(ProjectionElem::Field(None, FieldId::new(i)), ty);
-                Operand::Move(nth_field)
+                let field = ProjectionElem::Field(None, FieldId::new(i));
+                Operand::Move(tupled_args.clone().project(field, ty))
             })
             .collect();
 
-        // Dereference the pointer/reference to get the fn pointer to call.
-        let callee = target_self.deref();
         builder.call(Call {
-            func: FnOperand::Dynamic(Operand::Copy(callee)),
+            // Dereference the pointer/reference to get the fn pointer to call.
+            func: FnOperand::Dynamic(Operand::Copy(target_self.deref())),
             args,
             dest: ret_place,
         });
@@ -1723,7 +1714,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
 
-        let vimpl = super::translate_closures::callable_virtual_impl(def, target_kind);
+        let vimpl = callable_virtual_impl(def, target_kind);
         let vtable_sig = self.callable_vtable_method_sig(&vimpl.trait_pred.trait_ref);
 
         // The signature of the shim function. Its only late-bound region is the one of the

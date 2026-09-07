@@ -69,7 +69,7 @@ pub fn recognize_fn_trait_impl_proof(
     else {
         return None;
     };
-    let target_kind = match lang_item {
+    let kind = match lang_item {
         hax::SolverTraitLangItem::FnOnce => ClosureKind::FnOnce,
         hax::SolverTraitLangItem::FnMut => ClosureKind::FnMut,
         hax::SolverTraitLangItem::Fn => ClosureKind::Fn,
@@ -78,9 +78,9 @@ pub fn recognize_fn_trait_impl_proof(
     let Some(hax::GenericArg::Type(self_ty)) =
         trait_proof.pred.hax_skip_binder_ref().generic_args.first()
     else {
-        unreachable!("no Self type arg on Fn trait?");
+        unreachable!("no `Self` type arg on a `Fn*` trait ref")
     };
-    Some((self_ty, target_kind))
+    Some((self_ty, kind))
 }
 
 /// The built-in `Fn*` impl of the given kind that we generate for this closure or function item.
