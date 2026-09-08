@@ -78,7 +78,7 @@ impl UllbcPass for Transform {
             let FnOperand::Regular(fn_ptr) = &func else {
                 continue;
             };
-            let FnPtrKind::Fun(FunId::Regular(fun_id)) = fn_ptr.kind.as_ref() else {
+            let FnPtrKind::Fun(fun_id) = fn_ptr.kind.as_ref() else {
                 continue;
             };
             let Some(initializer) = self.to_inline.get(fun_id) else {

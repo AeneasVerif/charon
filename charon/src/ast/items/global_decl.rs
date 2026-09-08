@@ -92,7 +92,7 @@ impl GlobalDecl {
     pub fn init_fun_id(&self) -> Option<FunDeclId> {
         match self.value.kind() {
             ConstantExprKind::Call(fn_ptr, _) => match &*fn_ptr.kind {
-                FnPtrKind::Fun(FunId::Regular(id)) => Some(*id),
+                FnPtrKind::Fun(id) => Some(*id),
                 _ => None,
             },
             _ => None,

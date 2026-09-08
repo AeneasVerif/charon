@@ -791,7 +791,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let value = ConstantExpr::new(
             ConstantExprKind::Call(
                 FnPtr::new(
-                    FnPtrKind::Fun(FunId::Regular(init)),
+                    FnPtrKind::Fun(init),
                     self.outermost_generics().identity_args(),
                 ),
                 vec![],

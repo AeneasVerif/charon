@@ -156,32 +156,6 @@ pub struct FunDeclRef {
     pub generics: BoxedArgs,
 }
 
-/// A regular function.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
-#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("F"))]
-#[serde_state(stateless)]
-pub enum FunId {
-    /// A "regular" function (function local to the crate, external function
-    /// not treated as a primitive one).
-    Regular(FunDeclId),
-}
-
 #[derive(
     Debug,
     Clone,
@@ -198,8 +172,7 @@ pub enum FunId {
     Hash,
 )]
 pub enum FnPtrKind {
-    #[cfg_attr(feature = "charon_on_charon", charon::rename("FunId"))]
-    Fun(FunId),
+    Fun(FunDeclId),
     /// If a trait: the reference to the trait and the id of the trait method.
     #[cfg_attr(feature = "charon_on_charon", charon::rename("TraitMethod"))]
     Trait(TraitRef, TraitMethodId),
@@ -346,7 +319,7 @@ impl FnPtr {
     /// Get the generics for the pre-monomorphization item.
     pub fn pre_mono_generics<'a>(&'a self, krate: &'a TranslatedCrate) -> &'a GenericArgs {
         match *self.kind {
-            FnPtrKind::Fun(FunId::Regular(fun_id)) => krate
+            FnPtrKind::Fun(fun_id) => krate
                 .item_name(fun_id)
                 .mono_args()
                 .unwrap_or(&self.generics),
@@ -420,7 +393,7 @@ impl TryFrom<DeclRef<ItemId>> for FnPtr {
                 deal with the trait method case."
             )
         }
-        let id: FunId = item.id.try_into()?;
+        let id: FunDeclId = item.id.try_into()?;
         Ok(FnPtr::new(id.into(), item.generics))
     }
 }
@@ -460,24 +433,8 @@ wrap_unwrap_enum!(AssocItemId::Type(AssocTypeId));
 wrap_unwrap_enum!(AssocItemId::Method(TraitMethodId));
 wrap_unwrap_enum!(AssocItemId::Const(AssocConstId));
 
-impl TryFrom<ItemId> for FunId {
-    type Error = ();
-    fn try_from(x: ItemId) -> Result<Self, Self::Error> {
-        Ok(FunId::Regular(x.try_into()?))
-    }
-}
-impl From<FunDeclId> for FunId {
-    fn from(id: FunDeclId) -> Self {
-        Self::Regular(id)
-    }
-}
 impl From<FunDeclId> for FnPtrKind {
     fn from(id: FunDeclId) -> Self {
-        Self::Fun(id.into())
-    }
-}
-impl From<FunId> for FnPtrKind {
-    fn from(id: FunId) -> Self {
         Self::Fun(id)
     }
 }

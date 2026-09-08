@@ -41,7 +41,7 @@ impl UllbcPass for Transform {
                         return_place.as_local().unwrap(),
                         Call {
                             func: FnOperand::Regular(FnPtr::new(
-                                FnPtrKind::Fun(FunId::Regular(*initializer)),
+                                FnPtrKind::Fun(*initializer),
                                 gref.generics.clone(),
                             )),
                             args: vec![],

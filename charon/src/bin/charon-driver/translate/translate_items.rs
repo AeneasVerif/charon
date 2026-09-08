@@ -685,7 +685,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             ConstantExpr::new(
                 ConstantExprKind::Call(
                     FnPtr::new(
-                        FnPtrKind::Fun(FunId::Regular(initializer)),
+                        FnPtrKind::Fun(initializer),
                         self.outermost_generics().identity_args(),
                     ),
                     vec![],
@@ -1186,7 +1186,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                         .collect();
                                     let fn_ptr = bound_fn_ptr.apply(late_bound_regions);
                                     Ok(FunDeclRef {
-                                        id: *fn_ptr.kind.as_fun().unwrap().as_regular().unwrap(),
+                                        id: *fn_ptr.kind.as_fun().unwrap(),
                                         generics: fn_ptr.generics,
                                     })
                                 },

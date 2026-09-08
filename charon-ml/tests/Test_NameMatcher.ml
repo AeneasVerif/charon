@@ -140,7 +140,7 @@ module PatternTest = struct
           let generics =
             TypesUtils.generic_args_of_params decl.item_meta.span decl.generics
           in
-          Types.{ kind = FunId (FRegular decl.def_id); generics }
+          Types.{ kind = Fun decl.def_id; generics }
       | Some idx ->
           (* Find the nth function call in the function body. *)
           let rec list_stmt_calls (statement : statement) : call list =

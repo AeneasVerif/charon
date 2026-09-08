@@ -52,17 +52,10 @@ impl TypeDeclId {
         GenericsSource::item(*self)
     }
 }
-impl FunId {
-    pub fn generics_target(&self) -> GenericsSource {
-        match *self {
-            FunId::Regular(fun_id) => GenericsSource::item(fun_id),
-        }
-    }
-}
 impl FnPtrKind {
     pub fn generics_target(&self) -> GenericsSource {
         match self {
-            FnPtrKind::Fun(fun_id) => fun_id.generics_target(),
+            FnPtrKind::Fun(fun_id) => GenericsSource::item(*fun_id),
             FnPtrKind::Trait(trait_ref, name) => {
                 GenericsSource::Method(trait_ref.trait_decl_ref.skip_binder.id, *name)
             }

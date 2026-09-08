@@ -929,7 +929,7 @@ impl VisitAstMut for IdRefMapperVisitor<'_> {
     }
 
     fn enter_fn_ptr(&mut self, x: &mut FnPtr) {
-        if let FnPtrKind::Fun(FunId::Regular(id)) = x.kind.as_mut() {
+        if let FnPtrKind::Fun(id) = x.kind.as_mut() {
             self.map(id)
         }
     }
