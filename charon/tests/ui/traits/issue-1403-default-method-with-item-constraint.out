@@ -1,0 +1,20 @@
+error: Type error after transformations:
+       Mismatched trait clause:
+       expected: TraitClause0_1: ((): Trait<B>)
+            got: impl_Trait_for_unit: Trait<(), A>
+       Visitor stack:
+         charon_lib::ast::items::item_ids::FunDeclRef
+         charon_lib::ast::type_level::Binder<charon_lib::ast::items::item_ids::FunDeclRef>
+         charon_lib::ids::index_map::IndexMap<charon_lib::ast::items::trait_decl::TraitMethodId, charon_lib::ast::type_level::Binder<charon_lib::ast::items::item_ids::FunDeclRef>>
+         charon_lib::ast::items::trait_impl::TraitImpl
+       Binding stack (depth 2):
+         0: <'_0, Clause0_Assoc, TraitClause0: (@Adt0: @TraitDecl0<missing(@TypeBound(1, 0))>), TypeConstraint0: @TraitImpl0::@AssocType0 = @Adt2>
+         1: 
+  --> tests/ui/traits/issue-1403-unapplicable-method-constraint.rs:18:1
+   |
+18 | / impl Trait for () {
+19 | |     type Assoc = A;
+20 | | }
+   | |_^
+
+ERROR Charon failed to translate this code (1 errors)
