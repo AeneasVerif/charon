@@ -2,6 +2,18 @@
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized<Self>
 
+#[lang_item(Index)]
+pub trait core::ops::index::Index<Self, Idx>
+{
+    proof ImpliedClause0: (Self: core::marker::MetaSized)
+    proof ImpliedClause1: (Idx: core::marker::MetaSized)
+    proof ImpliedClause2: (Self::Output: core::marker::MetaSized)
+    type Output
+    #[track_caller]
+    fn index<'_0_1>;
+    vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
+}
+
 #[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized<Self>
@@ -9,6 +21,125 @@ pub trait core::marker::Sized<Self>
     proof ImpliedClause0: (Self: core::marker::MetaSized)
     non-dyn-compatible
 }
+
+pub fn core::array::{impl core::ops::index::Index<I> for [T; N]}::index<'_0, T, I, const N : usize>(_1: &'_0 [T; N], _2: I) -> &'_0 TraitClause2::Output
+where
+    TraitClause0: (T: core::marker::Sized),
+    TraitClause1: (I: core::marker::Sized),
+    TraitClause2: ([T]: core::ops::index::Index<I>),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: TraitClause2::Output: '_0,
+    TypeOutlives2: I: '_0,
+= <opaque>
+
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum core::option::Option<T>
+where
+    TraitClause0: (T: core::marker::Sized),
+{
+  None,
+  Some { _0: T },
+}
+
+#[diagnostic_item("SliceIndex")]
+pub trait core::slice::index::SliceIndex<Self, T>
+{
+    proof ImpliedClause0: (Self: core::marker::MetaSized)
+    proof ImpliedClause1: (T: core::marker::MetaSized)
+    proof ImpliedClause2: (Self::Output: core::marker::MetaSized)
+    type Output
+    fn get<'_0_1>;
+    fn get_mut<'_0_1>;
+    fn get_unchecked;
+    fn get_unchecked_mut;
+    #[track_caller]
+    fn index<'_0_1>;
+    #[track_caller]
+    fn index_mut<'_0_1>;
+    vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
+}
+
+pub fn core::slice::index::{impl core::ops::index::Index<I> for [T]}::index<'_0, T, I>(_1: &'_0 [T], _2: I) -> &'_0 TraitClause2::Output
+where
+    TraitClause0: (T: core::marker::Sized),
+    TraitClause1: (I: core::marker::Sized),
+    TraitClause2: (I: core::slice::index::SliceIndex<[T]>),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: TraitClause2::Output: '_0,
+    TypeOutlives2: I: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl core::ops::index::Index<I> for [T]}
+impl<T, I> core::ops::index::Index<I> for [T]
+where
+    TraitClause0: (T: core::marker::Sized),
+    TraitClause1: (I: core::marker::Sized),
+    TraitClause2: (I: core::slice::index::SliceIndex<[T]>),
+{
+    proof ImpliedClause0: ([T]: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for [T]}
+    proof ImpliedClause1: (I: core::marker::MetaSized) = TraitClause1::ImpliedClause0
+    proof ImpliedClause2: (TraitClause2::Output: core::marker::MetaSized) = TraitClause2::ImpliedClause2
+    type Output = TraitClause2::Output
+    fn index<'_0_1> = core::slice::index::{impl core::ops::index::Index<I> for [T]}::index<'_0_1, T, I>[TraitClause0, TraitClause1, TraitClause2]
+    vtable: core::slice::index::{impl core::ops::index::Index<I> for [T]}::{vtable}<T, I>[TraitClause0, TraitClause1, TraitClause2]
+}
+
+pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
+where
+    TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
+where
+    TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+#[track_caller]
+pub unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::get_unchecked_mut<T>(_1: usize, _2: *mut [T]) -> *mut T
+where
+    TraitClause0: (T: core::marker::Sized),
+= <opaque>
+
+#[track_caller]
+pub unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::get_unchecked<T>(_1: usize, _2: *const [T]) -> *const T
+where
+    TraitClause0: (T: core::marker::Sized),
+= <opaque>
+
+pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::get_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> core::option::Option<&'_0 mut T>[{built_in impl core::marker::Sized for &'_0 mut T}]
+where
+    TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::get<'_0, T>(_1: usize, _2: &'_0 [T]) -> core::option::Option<&'_0 T>[{built_in impl core::marker::Sized for &'_0 T}]
+where
+    TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}
+impl<T> core::slice::index::SliceIndex<[T]> for usize
+where
+    TraitClause0: (T: core::marker::Sized),
+{
+    proof ImpliedClause0: (usize: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for usize}
+    proof ImpliedClause1: ([T]: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for [T]}
+    proof ImpliedClause2: (T: core::marker::MetaSized) = TraitClause0::ImpliedClause0
+    type Output = T
+    fn get<'_0_1> = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::get<'_0_1, T>[TraitClause0]
+    fn get_mut<'_0_1> = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::get_mut<'_0_1, T>[TraitClause0]
+    fn get_unchecked = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::get_unchecked<T>[TraitClause0]
+    fn get_unchecked_mut = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::get_unchecked_mut<T>[TraitClause0]
+    fn index<'_0_1> = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_0_1, T>[TraitClause0]
+    fn index_mut<'_0_1> = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index_mut<'_0_1, T>[TraitClause0]
+    vtable: core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::{vtable}<T>[TraitClause0]
+}
+
+struct () {}
 
 pub struct test_crate::Foo::x86_64-pc-windows-msvc {
   x: u64,
@@ -47,7 +178,7 @@ pub fn test_crate::{test_crate::Foo::x86_64-pc-windows-msvc}::uses_const::x86_64
     storage_live(_4)
     _4 = &_2
     storage_live(_5)
-    _5 = @ArrayIndexShared<'_, u32, 4usize>[{built_in impl core::marker::Sized for u32}](move _4, copy _3)
+    _5 = core::array::{impl core::ops::index::Index<I> for [T; N]}::index<'_, u32, usize, 4usize>[{built_in impl core::marker::Sized for u32}, {built_in impl core::marker::Sized for usize}, core::slice::index::{impl core::ops::index::Index<I> for [T]}<u32, usize>[{built_in impl core::marker::Sized for u32}, {built_in impl core::marker::Sized for usize}, core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}<u32>[{built_in impl core::marker::Sized for u32}]]](move _4, copy _3)
     ↳⚡ undefined_behavior
     _0 = copy (*_5)
     storage_dead(_3)
@@ -87,7 +218,7 @@ pub fn test_crate::{test_crate::Foo::i686-unknown-linux-gnu}::uses_const::i686-u
     storage_live(_4)
     _4 = &_2
     storage_live(_5)
-    _5 = @ArrayIndexShared<'_, u32, 4usize>[{built_in impl core::marker::Sized for u32}](move _4, copy _3)
+    _5 = core::array::{impl core::ops::index::Index<I> for [T; N]}::index<'_, u32, usize, 4usize>[{built_in impl core::marker::Sized for u32}, {built_in impl core::marker::Sized for usize}, core::slice::index::{impl core::ops::index::Index<I> for [T]}<u32, usize>[{built_in impl core::marker::Sized for u32}, {built_in impl core::marker::Sized for usize}, core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}<u32>[{built_in impl core::marker::Sized for u32}]]](move _4, copy _3)
     ↳⚡ undefined_behavior
     _0 = copy (*_5)
     storage_dead(_3)

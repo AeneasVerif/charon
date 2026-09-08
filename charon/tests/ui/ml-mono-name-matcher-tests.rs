@@ -2,8 +2,6 @@
 //@ charon-args=--monomorphize
 //@ charon-args=--hide-allocator
 //@ charon-args=--treat-box-as-builtin
-//@ charon-args=--ops-to-function-calls
-//@ charon-args=--index-to-function-calls
 //@ charon-args=--unbind-item-vars
 #![feature(register_tool)]
 #![register_tool(pattern)]
@@ -56,13 +54,6 @@ impl<T, U> Trait<Box<T>> for Option<U> {
 // TODO: this should pass
 #[pattern::fail(call[0], "core::option::{core::option::Option<@T>}::is_some<_, i32>")]
 #[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some<'_, @T>")]
-#[pattern::pass(call[1], "ArrayToSliceShared<'_, bool, 1>")]
-// This is a trait instance call.
-#[pattern::pass(call[2], "core::ops::index::Index<[bool], core::ops::range::RangeFrom<usize>>::index")]
-#[pattern::pass(call[2], "core::ops::index::Index<[@T], @I>::index")]
-// We can reference the method directly.
-// TODO: this should pass
-#[pattern::fail(call[2], "core::slice::index::{core::ops::index::Index<[@T], @I>}::index<bool, core::ops::range::RangeFrom<usize>>")]
 fn foo() {
     let _ = Some(0).is_some();
     let slice: &[bool] = &[false];

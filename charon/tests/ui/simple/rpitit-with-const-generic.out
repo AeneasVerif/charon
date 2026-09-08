@@ -24,6 +24,13 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+// Full name: core::array::repeat
+pub fn repeat<T, const N : usize>(_1: T) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+= <opaque>
+
 // Full name: core::clone::impls::{impl Clone for u8}::clone
 pub fn clone<'_0>(_1: &'_0 u8) -> u8
 = <opaque>
@@ -32,23 +39,6 @@ pub fn clone<'_0>(_1: &'_0 u8) -> u8
 impl "impl_Clone_for_u8" Clone for u8 {
     proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
     fn clone<'_0_1> = clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for u8}
-impl "impl_Copy_for_u8" Copy for u8 {
-    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
-    proof ImpliedClause1: (u8: Clone) = impl_Clone_for_u8
     non-dyn-compatible
 }
 
@@ -74,7 +64,7 @@ pub fn bar<const N : usize>() -> [u8; N]
     let _0: [u8; N]; // return
 
     storage_live(_0)
-    _0 = @ArrayRepeat<u8, N>[impl_Copy_for_u8](const 0u8)
+    _0 = repeat<u8, N>[{built_in impl Sized for u8}, impl_Clone_for_u8](const 0u8)
     ↳⚡ undefined_behavior
     return
 }

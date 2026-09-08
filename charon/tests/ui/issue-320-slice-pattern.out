@@ -24,6 +24,44 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+// Full name: core::array::repeat
+pub fn repeat<T, const N : usize>(_1: T) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+= <opaque>
+
+// Full name: core::ops::index::Index
+#[lang_item(Index)]
+pub trait Index<Self, Idx>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Idx: MetaSized)
+    proof ImpliedClause2: (Self::Output: MetaSized)
+    type Output
+    #[track_caller]
+    fn index<'_0_1>;
+    vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
+}
+
+// Full name: core::array::{impl Index<I> for [T; N]}::index
+pub fn impl_Index_for_array::index<'_0, T, I, const N : usize>(_1: &'_0 [T; N], _2: I) -> &'_0 TraitClause2::Output
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (I: Sized),
+    TraitClause2: ([T]: Index<I>),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: TraitClause2::Output: '_0,
+    TypeOutlives2: I: '_0,
+= <opaque>
+
+// Full name: core::array::{[T; N]}::as_slice
+pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
 // Full name: core::clone::impls::{impl Clone for i32}::clone
 pub fn clone<'_0>(_1: &'_0 i32) -> i32
 = <opaque>
@@ -35,21 +73,190 @@ impl "impl_Clone_for_i32" Clone for i32 {
     non-dyn-compatible
 }
 
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
+// Full name: core::ops::range::Range
+#[lang_item(Range)]
+pub struct Range<Idx>
+where
+    TraitClause0: (Idx: Sized),
 {
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
+  start: Idx,
+  end: Idx,
 }
 
-// Full name: core::marker::{impl Copy for i32}
-impl "impl_Copy_for_i32" Copy for i32 {
-    proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
-    proof ImpliedClause1: (i32: Clone) = impl_Clone_for_i32
-    non-dyn-compatible
+// Full name: core::option::Option
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some { _0: T },
+}
+
+// Full name: core::slice::index::SliceIndex
+#[diagnostic_item("SliceIndex")]
+pub trait SliceIndex<Self, T>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: MetaSized)
+    proof ImpliedClause2: (Self::Output: MetaSized)
+    type Output
+    fn get<'_0_1>;
+    fn get_mut<'_0_1>;
+    fn get_unchecked;
+    fn get_unchecked_mut;
+    #[track_caller]
+    fn index<'_0_1>;
+    #[track_caller]
+    fn index_mut<'_0_1>;
+    vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
+}
+
+// Full name: core::slice::index::{impl Index<I> for [T]}::index
+pub fn impl_Index_for_slice::index<'_0, T, I>(_1: &'_0 [T], _2: I) -> &'_0 TraitClause2::Output
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (I: Sized),
+    TraitClause2: (I: SliceIndex<[T]>),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: TraitClause2::Output: '_0,
+    TypeOutlives2: I: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl Index<I> for [T]}
+impl<T, I> "impl_Index_for_slice" Index<I> for [T]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (I: Sized),
+    TraitClause2: (I: SliceIndex<[T]>),
+{
+    proof ImpliedClause0: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
+    proof ImpliedClause1: (I: MetaSized) = TraitClause1::ImpliedClause0
+    proof ImpliedClause2: (TraitClause2::Output: MetaSized) = TraitClause2::ImpliedClause2
+    type Output = TraitClause2::Output
+    fn index<'_0_1> = impl_Index_for_slice::index<'_0_1, T, I>[TraitClause0, TraitClause1, TraitClause2]
+    vtable: impl_Index_for_slice::{vtable}<T, I>[TraitClause0, TraitClause1, TraitClause2]
+}
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index_mut
+pub fn impl_SliceIndex_slice_for_usize::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index
+pub fn impl_SliceIndex_slice_for_usize::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked_mut
+#[track_caller]
+pub unsafe fn impl_SliceIndex_slice_for_usize::get_unchecked_mut<T>(_1: usize, _2: *mut [T]) -> *mut T
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked
+#[track_caller]
+pub unsafe fn impl_SliceIndex_slice_for_usize::get_unchecked<T>(_1: usize, _2: *const [T]) -> *const T
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_mut
+pub fn impl_SliceIndex_slice_for_usize::get_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> Option<&'_0 mut T>[{built_in impl Sized for &'_0 mut T}]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get
+pub fn impl_SliceIndex_slice_for_usize::get<'_0, T>(_1: usize, _2: &'_0 [T]) -> Option<&'_0 T>[{built_in impl Sized for &'_0 T}]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}
+impl<T> "impl_SliceIndex_slice_for_usize" SliceIndex<[T]> for usize
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
+    proof ImpliedClause1: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
+    proof ImpliedClause2: (T: MetaSized) = TraitClause0::ImpliedClause0
+    type Output = T
+    fn get<'_0_1> = impl_SliceIndex_slice_for_usize::get<'_0_1, T>[TraitClause0]
+    fn get_mut<'_0_1> = impl_SliceIndex_slice_for_usize::get_mut<'_0_1, T>[TraitClause0]
+    fn get_unchecked = impl_SliceIndex_slice_for_usize::get_unchecked<T>[TraitClause0]
+    fn get_unchecked_mut = impl_SliceIndex_slice_for_usize::get_unchecked_mut<T>[TraitClause0]
+    fn index<'_0_1> = impl_SliceIndex_slice_for_usize::index<'_0_1, T>[TraitClause0]
+    fn index_mut<'_0_1> = impl_SliceIndex_slice_for_usize::index_mut<'_0_1, T>[TraitClause0]
+    vtable: impl_SliceIndex_slice_for_usize::{vtable}<T>[TraitClause0]
+}
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::index_mut
+pub fn impl_SliceIndex_slice_for_Range_usize::index_mut<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> &'_0 mut [T]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::index
+pub fn impl_SliceIndex_slice_for_Range_usize::index<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 [T]) -> &'_0 [T]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut
+#[track_caller]
+pub unsafe fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut<T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: *mut [T]) -> *mut [T]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked
+#[track_caller]
+pub unsafe fn impl_SliceIndex_slice_for_Range_usize::get_unchecked<T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: *const [T]) -> *const [T]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_mut
+pub fn impl_SliceIndex_slice_for_Range_usize::get_mut<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 mut [T]) -> Option<&'_0 mut [T]>[{built_in impl Sized for &'_0 mut [T]}]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get
+pub fn impl_SliceIndex_slice_for_Range_usize::get<'_0, T>(_1: Range<usize>[{built_in impl Sized for usize}], _2: &'_0 [T]) -> Option<&'_0 [T]>[{built_in impl Sized for &'_0 [T]}]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}
+impl<T> "impl_SliceIndex_slice_for_Range_usize" SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (Range<usize>[{built_in impl Sized for usize}]: MetaSized) = {built_in impl MetaSized for Range<usize>[{built_in impl Sized for usize}]}
+    proof ImpliedClause1: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
+    proof ImpliedClause2: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
+    type Output = [T]
+    fn get<'_0_1> = impl_SliceIndex_slice_for_Range_usize::get<'_0_1, T>[TraitClause0]
+    fn get_mut<'_0_1> = impl_SliceIndex_slice_for_Range_usize::get_mut<'_0_1, T>[TraitClause0]
+    fn get_unchecked = impl_SliceIndex_slice_for_Range_usize::get_unchecked<T>[TraitClause0]
+    fn get_unchecked_mut = impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut<T>[TraitClause0]
+    fn index<'_0_1> = impl_SliceIndex_slice_for_Range_usize::index<'_0_1, T>[TraitClause0]
+    fn index_mut<'_0_1> = impl_SliceIndex_slice_for_Range_usize::index_mut<'_0_1, T>[TraitClause0]
+    vtable: impl_SliceIndex_slice_for_Range_usize::{vtable}<T>[TraitClause0]
 }
 
 struct () {}
@@ -65,14 +272,15 @@ fn slice_pat1()
     let _5: &'_ [i32; 4usize]; // anonymous local
     let _6: &'_ i32; // anonymous local
     let _7: &'_ [i32; 4usize]; // anonymous local
-    let _8: &'_ [i32]; // anonymous local
-    let _9: &'_ [i32; 4usize]; // anonymous local
-    let _10: &'_ i32; // anonymous local
+    let _8: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _9: &'_ [i32]; // anonymous local
+    let _10: &'_ [i32; 4usize]; // anonymous local
+    let _11: &'_ i32; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(array)
-    array = @ArrayRepeat<i32, 4usize>[impl_Copy_for_i32](const 0i32)
+    array = repeat<i32, 4usize>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 0i32)
     ↳⚡ undefined_behavior
     fake_read(array)
     set_type(typeof(array) == [i32; 4usize])
@@ -80,28 +288,31 @@ fn slice_pat1()
     storage_live(_5)
     _5 = &array
     storage_live(_6)
-    _6 = @ArrayIndexShared<'_, i32, 4usize>[{built_in impl Sized for i32}](move _5, const 0usize)
+    _6 = impl_Index_for_array::index<'_, i32, usize, 4usize>[{built_in impl Sized for i32}, {built_in impl Sized for usize}, impl_Index_for_slice<i32, usize>[{built_in impl Sized for i32}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<i32>[{built_in impl Sized for i32}]]](move _5, const 0usize)
     ↳⚡ undefined_behavior
     _a = copy (*_6)
     storage_live(_b)
     storage_live(_7)
     _7 = &array
     storage_live(_8)
-    _8 = @ArraySubSliceShared<'_, i32, 4usize>[{built_in impl Sized for i32}](move _7, const 1usize, const 3usize)
-    ↳⚡ undefined_behavior
-    _b = copy (*_8)
-    storage_live(_c)
+    _8 = Range { start: const 1usize, end: const 3usize }
     storage_live(_9)
-    _9 = &array
-    storage_live(_10)
-    _10 = @ArrayIndexShared<'_, i32, 4usize>[{built_in impl Sized for i32}](move _9, const 3usize)
+    _9 = impl_Index_for_array::index<'_, i32, Range<usize>[{built_in impl Sized for usize}], 4usize>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Index_for_slice<i32, Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_SliceIndex_slice_for_Range_usize<i32>[{built_in impl Sized for i32}]]](move _7, move _8)
     ↳⚡ undefined_behavior
-    _c = copy (*_10)
+    _b = copy (*_9)
+    storage_live(_c)
+    storage_live(_10)
+    _10 = &array
+    storage_live(_11)
+    _11 = impl_Index_for_array::index<'_, i32, usize, 4usize>[{built_in impl Sized for i32}, {built_in impl Sized for usize}, impl_Index_for_slice<i32, usize>[{built_in impl Sized for i32}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<i32>[{built_in impl Sized for i32}]]](move _10, const 3usize)
+    ↳⚡ undefined_behavior
+    _c = copy (*_11)
     _0 = ()
     storage_dead(_c)
     storage_dead(_b)
     storage_dead(_a)
     storage_dead(array)
+    storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
     storage_dead(_8)
@@ -127,14 +338,15 @@ fn slice_pat2()
     let _10: &'_ [i32; 4usize]; // anonymous local
     let _11: &'_ i32; // anonymous local
     let _12: &'_ [i32; 4usize]; // anonymous local
-    let _13: &'_ [i32]; // anonymous local
-    let _14: &'_ [i32; 4usize]; // anonymous local
-    let _15: &'_ i32; // anonymous local
+    let _13: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _14: &'_ [i32]; // anonymous local
+    let _15: &'_ [i32; 4usize]; // anonymous local
+    let _16: &'_ i32; // anonymous local
 
     storage_live(_7)
     storage_live(_8)
     storage_live(_9)
-    _9 = @ArrayRepeat<i32, 4usize>[impl_Copy_for_i32](const 0i32)
+    _9 = repeat<i32, 4usize>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 0i32)
     ↳⚡ undefined_behavior
     _8 = &_9
     _7 = move _8
@@ -153,29 +365,32 @@ fn slice_pat2()
     storage_live(_10)
     _10 = &(*array_ref)
     storage_live(_11)
-    _11 = @ArrayIndexShared<'_, i32, 4usize>[{built_in impl Sized for i32}](move _10, const 0usize)
+    _11 = impl_Index_for_array::index<'_, i32, usize, 4usize>[{built_in impl Sized for i32}, {built_in impl Sized for usize}, impl_Index_for_slice<i32, usize>[{built_in impl Sized for i32}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<i32>[{built_in impl Sized for i32}]]](move _10, const 0usize)
     ↳⚡ undefined_behavior
     _a = &(*_11)
     storage_live(_b)
     storage_live(_12)
     _12 = &(*array_ref)
     storage_live(_13)
-    _13 = @ArraySubSliceShared<'_, i32, 4usize>[{built_in impl Sized for i32}](move _12, const 1usize, const 3usize)
-    ↳⚡ undefined_behavior
-    _b = &(*_13)
-    storage_live(_c)
+    _13 = Range { start: const 1usize, end: const 3usize }
     storage_live(_14)
-    _14 = &(*array_ref)
-    storage_live(_15)
-    _15 = @ArrayIndexShared<'_, i32, 4usize>[{built_in impl Sized for i32}](move _14, const 3usize)
+    _14 = impl_Index_for_array::index<'_, i32, Range<usize>[{built_in impl Sized for usize}], 4usize>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Index_for_slice<i32, Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_SliceIndex_slice_for_Range_usize<i32>[{built_in impl Sized for i32}]]](move _12, move _13)
     ↳⚡ undefined_behavior
-    _c = &(*_15)
+    _b = &(*_14)
+    storage_live(_c)
+    storage_live(_15)
+    _15 = &(*array_ref)
+    storage_live(_16)
+    _16 = impl_Index_for_array::index<'_, i32, usize, 4usize>[{built_in impl Sized for i32}, {built_in impl Sized for usize}, impl_Index_for_slice<i32, usize>[{built_in impl Sized for i32}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<i32>[{built_in impl Sized for i32}]]](move _15, const 3usize)
+    ↳⚡ undefined_behavior
+    _c = &(*_16)
     _0 = ()
     storage_dead(_c)
     storage_dead(_b)
     storage_dead(_a)
     storage_dead(array_ref)
     storage_dead(_6)
+    storage_dead(_16)
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
@@ -214,16 +429,17 @@ fn slice_pat3()
     let _20: &'_ [i32]; // anonymous local
     let _21: usize; // anonymous local
     let _22: usize; // anonymous local
-    let _23: &'_ [i32]; // anonymous local
+    let _23: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _24: &'_ [i32]; // anonymous local
-    let _25: usize; // anonymous local
+    let _25: &'_ [i32]; // anonymous local
     let _26: usize; // anonymous local
-    let _27: &'_ i32; // anonymous local
+    let _27: usize; // anonymous local
+    let _28: &'_ i32; // anonymous local
 
     storage_live(_15)
     storage_live(_16)
     storage_live(_17)
-    _17 = @ArrayRepeat<i32, 4usize>[impl_Copy_for_i32](const 0i32)
+    _17 = repeat<i32, 4usize>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 0i32)
     ↳⚡ undefined_behavior
     _16 = &_17
     _15 = move _16
@@ -240,7 +456,7 @@ fn slice_pat3()
     _11 = move _15
     _3 = &(*_11)
     _2 = &(*_3)
-    slice = @ArrayToSliceShared<'_, i32, 4usize>[{built_in impl Sized for i32}](move _2)
+    slice = as_slice<'_, i32, 4usize>[{built_in impl Sized for i32}](move _2)
     ↳⚡ undefined_behavior
     storage_dead(_2)
     fake_read(slice)
@@ -256,7 +472,7 @@ fn slice_pat3()
     storage_live(_18)
     _18 = &(*slice) with_metadata(copy slice.metadata)
     storage_live(_19)
-    _19 = @SliceIndexShared<'_, i32>[{built_in impl Sized for i32}](move _18, const 0usize)
+    _19 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](const 0usize, move _18)
     ↳⚡ undefined_behavior
     _a = &(*_19)
     storage_live(_b)
@@ -275,21 +491,23 @@ fn slice_pat3()
     _22 = copy _21 ub.- const 1usize
     storage_dead(_21)
     storage_live(_23)
-    _23 = @SliceSubSliceShared<'_, i32>[{built_in impl Sized for i32}](move _20, const 1usize, copy _22)
-    ↳⚡ undefined_behavior
-    _b = &(*_23) with_metadata(copy _14)
-    storage_live(_c)
+    _23 = Range { start: const 1usize, end: copy _22 }
     storage_live(_24)
-    _24 = &(*slice) with_metadata(copy slice.metadata)
-    storage_live(_25)
-    _25 = len((*slice))
-    storage_live(_26)
-    _26 = copy _25 ub.- const 1usize
-    storage_dead(_25)
-    storage_live(_27)
-    _27 = @SliceIndexShared<'_, i32>[{built_in impl Sized for i32}](move _24, copy _26)
+    _24 = impl_SliceIndex_slice_for_Range_usize::index<'_, i32>[{built_in impl Sized for i32}](move _23, move _20)
     ↳⚡ undefined_behavior
-    _c = &(*_27)
+    _b = &(*_24) with_metadata(copy _14)
+    storage_live(_c)
+    storage_live(_25)
+    _25 = &(*slice) with_metadata(copy slice.metadata)
+    storage_live(_26)
+    _26 = len((*slice))
+    storage_live(_27)
+    _27 = copy _26 ub.- const 1usize
+    storage_dead(_26)
+    storage_live(_28)
+    _28 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](copy _27, move _25)
+    ↳⚡ undefined_behavior
+    _c = &(*_28)
     _0 = ()
     storage_dead(_c)
     storage_dead(_b)
@@ -302,8 +520,9 @@ fn slice_pat3()
     storage_dead(_9)
     storage_dead(_8)
     storage_dead(_7)
+    storage_dead(_28)
     storage_dead(_27)
-    storage_dead(_26)
+    storage_dead(_25)
     storage_dead(_24)
     storage_dead(_23)
     storage_dead(_22)
@@ -355,7 +574,7 @@ fn slice_pat4<'_0>(x: &'_0 [u32])
     storage_live(_7)
     _7 = &(*x) with_metadata(copy x.metadata)
     storage_live(_8)
-    _8 = @SliceIndexShared<'_, u32>[{built_in impl Sized for u32}](move _7, const 0usize)
+    _8 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](const 0usize, move _7)
     ↳⚡ undefined_behavior
     _y = &(*_8)
     _0 = ()
@@ -419,7 +638,7 @@ fn slice_pat5<'_0>(x: &'_0 Unsized)
     storage_live(_8)
     _8 = &(*x)._0 with_metadata(copy x.metadata)
     storage_live(_9)
-    _9 = @SliceIndexShared<'_, u32>[{built_in impl Sized for u32}](move _8, const 0usize)
+    _9 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](const 0usize, move _8)
     ↳⚡ undefined_behavior
     _y = copy (*_9)
     _0 = ()

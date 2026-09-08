@@ -25,6 +25,8 @@ where
   Some { _0: T },
 }
 
+struct () {}
+
 struct (_, _)<A, B>
 where
     TraitClause0: (A: Sized),

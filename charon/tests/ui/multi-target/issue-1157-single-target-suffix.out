@@ -1,3 +1,5 @@
+struct () {}
+
 fn test_crate::aarch64_only() -> u32
 {
     let _0: u32; // return

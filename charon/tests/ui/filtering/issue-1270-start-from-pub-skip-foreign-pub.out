@@ -57,6 +57,8 @@ where
   Break { _0: B },
 }
 
+struct () {}
+
 // Full name: core::ops::control_flow::ControlFlow::{impl Destruct for ControlFlow<B, C>[TraitClause0, TraitClause1]}::drop_glue
 unsafe fn impl_Destruct_for_ControlFlow::drop_glue<'_0, B, C>(_1: &'_0 mut ControlFlow<B, C>[TraitClause0, TraitClause1])
 where

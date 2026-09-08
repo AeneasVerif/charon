@@ -1,5 +1,7 @@
 # Final LLBC before serialization:
 
+struct () {}
+
 // Full name: test_crate::SOME_INT
 fn SOME_INT() -> &'static &'static i32
 {

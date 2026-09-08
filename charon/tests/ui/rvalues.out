@@ -24,6 +24,13 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+// Full name: core::array::repeat
+pub fn repeat<T, const N : usize>(_1: T) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+= <opaque>
+
 // Full name: core::clone::impls::{impl Clone for u32}::clone
 pub fn clone<'_0>(_1: &'_0 u32) -> u32
 = <opaque>
@@ -32,23 +39,6 @@ pub fn clone<'_0>(_1: &'_0 u32) -> u32
 impl "impl_Clone_for_u32" Clone for u32 {
     proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
     fn clone<'_0_1> = clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Copy
-#[lang_item(Copy)]
-#[diagnostic_item("Copy")]
-pub trait Copy<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: Clone)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::{impl Copy for u32}
-impl "impl_Copy_for_u32" Copy for u32 {
-    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
-    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
     non-dyn-compatible
 }
 
@@ -255,7 +245,7 @@ fn ptr_casts()
     storage_live(_18)
     storage_live(_19)
     storage_live(_20)
-    _20 = @ArrayRepeat<u32, 64usize>[impl_Copy_for_u32](const 0u32)
+    _20 = repeat<u32, 64usize>[{built_in impl Sized for u32}, impl_Clone_for_u32](const 0u32)
     ↳⚡ undefined_behavior
     _19 = &_20
     _18 = move _19
@@ -546,7 +536,7 @@ fn STEAL() -> [(); 1usize]
     storage_live(_0)
     storage_live(_1)
     _1 = ()
-    _0 = @ArrayRepeat<(), 1usize>[{built_in impl Copy for ()}](move _1)
+    _0 = repeat<(), 1usize>[{built_in impl Sized for ()}, {built_in impl Clone for ()}](move _1)
     ↳⚡ undefined_behavior
     storage_dead(_1)
     return
@@ -581,7 +571,7 @@ fn STEAL2() -> [(); 13usize]
     storage_live(_0)
     storage_live(_1)
     _1 = ()
-    _0 = @ArrayRepeat<(), 13usize>[{built_in impl Copy for ()}](move _1)
+    _0 = repeat<(), 13usize>[{built_in impl Sized for ()}, {built_in impl Clone for ()}](move _1)
     ↳⚡ undefined_behavior
     storage_dead(_1)
     return

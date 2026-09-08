@@ -22,6 +22,8 @@ where
 #[diagnostic_item("Sync")]
 pub trait Sync<Self>
 
+struct () {}
+
 // Full name: test_crate::Node
 pub struct Node {
   value: u32,
