@@ -1,0 +1,662 @@
+# Final LLBC before serialization:
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Tuple
+#[fundamental]
+#[lang_item(Tuple)]
+pub trait Tuple<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+opaque type core::ops::function::Fn::{vtable}
+
+opaque type core::ops::function::FnOnce::{vtable}
+
+// Full name: core::ops::function::FnOnce
+#[fundamental]
+#[lang_item(FnOnce)]
+pub trait FnOnce<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    vtable: core::ops::function::FnOnce::{vtable}
+}
+
+opaque type core::ops::function::FnMut::{vtable}
+
+// Full name: core::ops::function::FnMut
+#[fundamental]
+#[lang_item(FnMut)]
+pub trait FnMut<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnOnce<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    vtable: core::ops::function::FnMut::{vtable}
+}
+
+// Full name: core::ops::function::Fn
+#[fundamental]
+#[lang_item(Fn)]
+pub trait Fn<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnMut<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    vtable: core::ops::function::Fn::{vtable}
+}
+
+// Full name: core::option::Option::<Arguments::<'_>>
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option::<Arguments::<'_>> {
+  None,
+  Some { _0: Arguments::<'_> },
+}
+
+// Full name: core::panicking::AssertKind
+pub enum AssertKind {
+  Eq,
+  Ne,
+  Match,
+}
+
+struct (_,)::<i32> {
+  _0: i32,
+}
+
+struct (_, _)::<&'_ i32, &'_ i32> {
+  _0: &'_ i32,
+  _1: &'_ i32,
+}
+
+struct test_crate::BAR::{closure} {}
+
+// Full name: test_crate::BAR::{closure}::{impl Destruct for test_crate::BAR::{closure}}::drop_glue
+unsafe fn impl_Destruct_for_closure::drop_glue<'_0>(_1: &'_0 mut test_crate::BAR::{closure})
+{
+    let _0: (); // return
+    let _1: &'1 mut test_crate::BAR::{closure}; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::BAR::{impl Fn<(i32,)> for test_crate::BAR::{closure}}::call
+fn impl_Fn_for_closure::call<'_0>(_1: &'_0 test_crate::BAR::{closure}, tupled_args: (i32,))
+{
+    let _0: (); // return
+    let _1: &'1 test_crate::BAR::{closure}; // arg #1
+    let tupled_args: (i32,); // arg #2
+    let a: i32; // local
+    let _4: (&'_ i32, &'_ i32); // anonymous local
+    let _5: &'3 i32; // anonymous local
+    let _6: &'4 i32; // anonymous local
+    let left_val: &'5 i32; // local
+    let right_val: &'6 i32; // local
+    let _9: bool; // anonymous local
+    let _10: i32; // anonymous local
+    let _11: i32; // anonymous local
+    let kind: AssertKind; // local
+    let _13: AssertKind; // anonymous local
+    let _14: &'7 i32; // anonymous local
+    let _15: &'8 i32; // anonymous local
+    let _16: &'9 i32; // anonymous local
+    let _17: &'10 i32; // anonymous local
+    let _18: Option::<Arguments::<'_>>; // anonymous local
+    let _19: &'11 i32; // anonymous local
+    let _20: &'12 i32; // anonymous local
+    let _21: &'15 i32; // anonymous local
+    let _22: i32; // anonymous local
+
+    storage_live(_20)
+    storage_live(_21)
+    storage_live(_22)
+    _22 = const 43i32
+    _21 = &_22
+    _20 = move _21
+    storage_live(_0)
+    storage_live(a)
+    storage_live(_19)
+    _0 = ()
+    a = move tupled_args._0
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &a
+    storage_live(_6)
+    _19 = move _20
+    _6 = &(*_19)
+    _4 = (move _5, move _6)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_live(left_val)
+    left_val = copy _4._0
+    storage_live(right_val)
+    right_val = copy _4._1
+    storage_live(_9)
+    storage_live(_10)
+    _10 = copy (*left_val)
+    storage_live(_11)
+    _11 = copy (*right_val)
+    _9 = move _10 == move _11
+    if move _9 {
+    } else {
+        storage_dead(_11)
+        storage_dead(_10)
+        _0 = ()
+        storage_dead(_9)
+        storage_dead(right_val)
+        storage_dead(left_val)
+        storage_dead(_4)
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_13)
+        storage_dead(kind)
+        storage_dead(a)
+        storage_dead(tupled_args)
+        storage_dead(_1)
+        storage_dead(_22)
+        storage_dead(_21)
+        storage_dead(_20)
+        return
+    }
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_live(kind)
+    kind = AssertKind::Ne {  }
+    fake_read(kind)
+    storage_live(_13)
+    _13 = move kind
+    storage_live(_14)
+    storage_live(_15)
+    _15 = &(*left_val)
+    _14 = &(*_15)
+    storage_live(_16)
+    storage_live(_17)
+    _17 = &(*right_val)
+    _16 = &(*_17)
+    storage_live(_18)
+    _18 = Option::<Arguments::<'_>>::None {  }
+    storage_dead(_19)
+    storage_dead(_18)
+    storage_dead(_17)
+    storage_dead(_16)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_dead(kind)
+    storage_dead(a)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    storage_dead(_22)
+    storage_dead(_21)
+    storage_dead(_20)
+    panic(core::panicking::assert_failed::<i32, i32>)
+}
+
+// Full name: test_crate::BAR::{impl FnMut<(i32,)> for test_crate::BAR::{closure}}::call_mut
+fn impl_FnMut_for_closure::call_mut<'_0>(state: &'_0 mut test_crate::BAR::{closure}, args: (i32,))
+{
+    let _0: (); // return
+    let state: &'_0 mut test_crate::BAR::{closure}; // arg #1
+    let args: (i32,); // arg #2
+    let _3: &'0 test_crate::BAR::{closure}; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_3)
+    _3 = &(*state)
+    _0 = impl_Fn_for_closure::call<'2>(move _3, move args)
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::BAR::{impl FnOnce<(i32,)> for test_crate::BAR::{closure}}::call_once
+fn impl_FnOnce_for_closure::call_once(_1: test_crate::BAR::{closure}, _2: (i32,))
+{
+    let _0: (); // return
+    let _1: test_crate::BAR::{closure}; // arg #1
+    let _2: (i32,); // arg #2
+    let _3: &'1 mut test_crate::BAR::{closure}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _0 = ()
+    _3 = &mut _1
+    _0 = impl_FnMut_for_closure::call_mut<'3>(move _3, move _2)
+    ↳⚡ drop[impl_Destruct_for_closure::drop_glue<'4>] _1
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    drop[impl_Destruct_for_closure::drop_glue<'5>] _1
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::BAR::{closure}::{as_fn}
+fn {as_fn}(arg1: i32)
+{
+    let _0: (); // return
+    let arg1: i32; // arg #1
+    let args: (i32,); // local
+    let state: test_crate::BAR::{closure}; // local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(args)
+    storage_live(state)
+    args = (move arg1,)
+    state = test_crate::BAR::{closure} {  }
+    _0 = impl_FnOnce_for_closure::call_once(move state, move args)
+    ↳⚡ storage_dead(state)
+        storage_dead(args)
+        storage_dead(arg1)
+        unwind_continue
+    storage_dead(state)
+    storage_dead(args)
+    storage_dead(arg1)
+    return
+}
+
+// Full name: test_crate::BAR
+fn BAR() -> fn(i32)
+{
+    let _0: fn(i32); // return
+    let _1: test_crate::BAR::{closure}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = test_crate::BAR::{closure} {  }
+    _0 = cast<{as_fn}, fn(i32)>(const {as_fn})
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::BAR
+static BAR: fn(i32) = BAR()
+
+// Full name: test_crate::BAR::{impl FnOnce<(i32,)> for test_crate::BAR::{closure}}
+impl "impl_FnOnce_for_closure" FnOnce<(i32,)> for test_crate::BAR::{closure} {
+    proof ImpliedClause0: (test_crate::BAR::{closure}: MetaSized) = {built_in impl MetaSized for test_crate::BAR::{closure}}
+    proof ImpliedClause1: ((i32,): Sized) = {built_in impl Sized for (i32,)}
+    proof ImpliedClause2: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
+    vtable: impl_FnOnce_for_closure::{vtable}
+}
+
+// Full name: test_crate::BAR::{impl FnMut<(i32,)> for test_crate::BAR::{closure}}
+impl "impl_FnMut_for_closure" FnMut<(i32,)> for test_crate::BAR::{closure} {
+    proof ImpliedClause0: (test_crate::BAR::{closure}: MetaSized) = {built_in impl MetaSized for test_crate::BAR::{closure}}
+    proof ImpliedClause1: (test_crate::BAR::{closure}: FnOnce<(i32,)>) = impl_FnOnce_for_closure
+    proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
+    proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
+    vtable: impl_FnMut_for_closure::{vtable}
+}
+
+// Full name: test_crate::BAR::{impl Fn<(i32,)> for test_crate::BAR::{closure}}
+impl "impl_Fn_for_closure" Fn<(i32,)> for test_crate::BAR::{closure} {
+    proof ImpliedClause0: (test_crate::BAR::{closure}: MetaSized) = {built_in impl MetaSized for test_crate::BAR::{closure}}
+    proof ImpliedClause1: (test_crate::BAR::{closure}: FnMut<(i32,)>) = impl_FnMut_for_closure
+    proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
+    proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
+    vtable: impl_Fn_for_closure::{vtable}
+}
+
+// Full name: test_crate::BAR::{closure}::{impl Destruct for test_crate::BAR::{closure}}
+impl "impl_Destruct_for_closure" Destruct for test_crate::BAR::{closure} {
+    fn drop_glue<'_0_1> = impl_Destruct_for_closure::drop_glue<'_0_1>
+    non-dyn-compatible
+}
+
+struct test_crate::foo::{closure}::<u8> {}
+
+// Full name: test_crate::foo::{impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::call::<u8>
+fn {impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::call::<u8><'_0>(_1: &'_0 test_crate::foo::{closure}::<u8>, tupled_args: (i32,))
+{
+    let _0: (); // return
+    let _1: &'1 test_crate::foo::{closure}::<u8>; // arg #1
+    let tupled_args: (i32,); // arg #2
+    let a: i32; // local
+    let _4: (&'_ i32, &'_ i32); // anonymous local
+    let _5: &'3 i32; // anonymous local
+    let _6: &'4 i32; // anonymous local
+    let left_val: &'5 i32; // local
+    let right_val: &'6 i32; // local
+    let _9: bool; // anonymous local
+    let _10: i32; // anonymous local
+    let _11: i32; // anonymous local
+    let kind: AssertKind; // local
+    let _13: AssertKind; // anonymous local
+    let _14: &'7 i32; // anonymous local
+    let _15: &'8 i32; // anonymous local
+    let _16: &'9 i32; // anonymous local
+    let _17: &'10 i32; // anonymous local
+    let _18: Option::<Arguments::<'_>>; // anonymous local
+    let _19: &'11 i32; // anonymous local
+    let _20: &'12 i32; // anonymous local
+    let _21: &'15 i32; // anonymous local
+    let _22: i32; // anonymous local
+
+    storage_live(_20)
+    storage_live(_21)
+    storage_live(_22)
+    _22 = const 43i32
+    _21 = &_22
+    _20 = move _21
+    storage_live(_0)
+    storage_live(a)
+    storage_live(_19)
+    _0 = ()
+    a = move tupled_args._0
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &a
+    storage_live(_6)
+    _19 = move _20
+    _6 = &(*_19)
+    _4 = (move _5, move _6)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_live(left_val)
+    left_val = copy _4._0
+    storage_live(right_val)
+    right_val = copy _4._1
+    storage_live(_9)
+    storage_live(_10)
+    _10 = copy (*left_val)
+    storage_live(_11)
+    _11 = copy (*right_val)
+    _9 = move _10 == move _11
+    if move _9 {
+    } else {
+        storage_dead(_11)
+        storage_dead(_10)
+        _0 = ()
+        storage_dead(_9)
+        storage_dead(right_val)
+        storage_dead(left_val)
+        storage_dead(_4)
+        storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_13)
+        storage_dead(kind)
+        storage_dead(a)
+        storage_dead(tupled_args)
+        storage_dead(_1)
+        storage_dead(_22)
+        storage_dead(_21)
+        storage_dead(_20)
+        return
+    }
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_live(kind)
+    kind = AssertKind::Ne {  }
+    fake_read(kind)
+    storage_live(_13)
+    _13 = move kind
+    storage_live(_14)
+    storage_live(_15)
+    _15 = &(*left_val)
+    _14 = &(*_15)
+    storage_live(_16)
+    storage_live(_17)
+    _17 = &(*right_val)
+    _16 = &(*_17)
+    storage_live(_18)
+    _18 = Option::<Arguments::<'_>>::None {  }
+    storage_dead(_19)
+    storage_dead(_18)
+    storage_dead(_17)
+    storage_dead(_16)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_dead(kind)
+    storage_dead(a)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    storage_dead(_22)
+    storage_dead(_21)
+    storage_dead(_20)
+    panic(core::panicking::assert_failed::<i32, i32>)
+}
+
+// Full name: test_crate::foo::<u8>
+fn foo::<u8>()
+{
+    let _0: (); // return
+    let c: test_crate::foo::{closure}::<u8>; // local
+    let _2: (); // anonymous local
+    let _3: &'1 test_crate::foo::{closure}::<u8>; // anonymous local
+    let _4: (i32,); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(c)
+    c = test_crate::foo::{closure}::<u8> {  }
+    fake_read(c)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &c
+    storage_live(_4)
+    _4 = (const 42i32,)
+    _2 = {impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::call::<u8><'3>(move _3, move _4)
+    ↳⚡ unwind_continue
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 = ()
+    storage_dead(c)
+    return
+}
+
+// Full name: test_crate::foo::{impl FnOnce<(i32,)> for test_crate::foo::{closure}::<u8>}
+impl FnOnce<(i32,)> for test_crate::foo::{closure}::<u8> {
+    proof ImpliedClause0: (test_crate::foo::{closure}::<u8>: MetaSized) = {built_in impl MetaSized for test_crate::foo::{closure}::<u8>}
+    proof ImpliedClause1: ((i32,): Sized) = {built_in impl Sized for (i32,)}
+    proof ImpliedClause2: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
+    vtable: {impl FnOnce<(i32,)> for test_crate::foo::{closure}::<u8>}::{vtable}::<u8>
+}
+
+// Full name: test_crate::foo::{impl FnMut<(i32,)> for test_crate::foo::{closure}::<u8>}
+impl FnMut<(i32,)> for test_crate::foo::{closure}::<u8> {
+    proof ImpliedClause0: (test_crate::foo::{closure}::<u8>: MetaSized) = {built_in impl MetaSized for test_crate::foo::{closure}::<u8>}
+    proof ImpliedClause1: (test_crate::foo::{closure}::<u8>: FnOnce<(i32,)>) = {impl FnOnce<(i32,)> for test_crate::foo::{closure}::<u8>}
+    proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
+    proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
+    vtable: {impl FnMut<(i32,)> for test_crate::foo::{closure}::<u8>}::{vtable}::<u8>
+}
+
+// Full name: test_crate::foo::{impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}
+impl Fn<(i32,)> for test_crate::foo::{closure}::<u8> {
+    proof ImpliedClause0: (test_crate::foo::{closure}::<u8>: MetaSized) = {built_in impl MetaSized for test_crate::foo::{closure}::<u8>}
+    proof ImpliedClause1: (test_crate::foo::{closure}::<u8>: FnMut<(i32,)>) = {impl FnMut<(i32,)> for test_crate::foo::{closure}::<u8>}
+    proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
+    proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
+    vtable: {impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::{vtable}::<u8>
+}
+
+// Full name: test_crate::foo::{closure}::{impl Destruct for test_crate::foo::{closure}::<u8>}::drop_glue::<u8>
+unsafe fn {impl Destruct for test_crate::foo::{closure}::<u8>}::drop_glue::<u8><'_0>(_1: &'_0 mut test_crate::foo::{closure}::<u8>)
+{
+    let _0: (); // return
+    let _1: &'1 mut test_crate::foo::{closure}::<u8>; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::foo::{closure}::{impl Destruct for test_crate::foo::{closure}::<u8>}
+impl Destruct for test_crate::foo::{closure}::<u8> {
+    fn drop_glue<'_0_1> = {impl Destruct for test_crate::foo::{closure}::<u8>}::drop_glue::<u8><'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::foo::{impl FnMut<(i32,)> for test_crate::foo::{closure}::<u8>}::call_mut::<u8>
+fn {impl FnMut<(i32,)> for test_crate::foo::{closure}::<u8>}::call_mut::<u8><'_0>(state: &'_0 mut test_crate::foo::{closure}::<u8>, args: (i32,))
+{
+    let _0: (); // return
+    let state: &'_0 mut test_crate::foo::{closure}::<u8>; // arg #1
+    let args: (i32,); // arg #2
+    let _3: &'0 test_crate::foo::{closure}::<u8>; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_3)
+    _3 = &(*state)
+    _0 = {impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::call::<u8><'2>(move _3, move args)
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::foo::{impl FnOnce<(i32,)> for test_crate::foo::{closure}::<u8>}::call_once::<u8>
+fn {impl FnOnce<(i32,)> for test_crate::foo::{closure}::<u8>}::call_once::<u8>(_1: test_crate::foo::{closure}::<u8>, _2: (i32,))
+{
+    let _0: (); // return
+    let _1: test_crate::foo::{closure}::<u8>; // arg #1
+    let _2: (i32,); // arg #2
+    let _3: &'1 mut test_crate::foo::{closure}::<u8>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _0 = ()
+    _3 = &mut _1
+    _0 = {impl FnMut<(i32,)> for test_crate::foo::{closure}::<u8>}::call_mut::<u8><'3>(move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_crate::foo::{closure}::<u8>}::drop_glue::<u8><'4>] _1
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    drop[{impl Destruct for test_crate::foo::{closure}::<u8>}::drop_glue::<u8><'5>] _1
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let boo: &'3 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '4); // local
+    let _2: &'6 fn(i32); // anonymous local
+    let _3: &'7 fn(i32); // anonymous local
+    let _4: &'8 fn(i32); // anonymous local
+    let _5: (); // anonymous local
+    let _6: &'9 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '10); // anonymous local
+    let _7: (i32,); // anonymous local
+    let _8: (); // anonymous local
+    let _9: &'11 fn(i32); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(boo)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_9)
+    _9 = &BAR
+    _4 = move _9
+    _3 = &(*_4)
+    _2 = &(*_3)
+    boo = unsize_cast<&'6 fn(i32), &'12 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '13), &vtable_of({built_in impl Fn<(i32,)> for fn(i32)})>(move _2)
+    storage_dead(_2)
+    fake_read(boo)
+    set_type(typeof(boo) == &'14 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '15))
+    storage_dead(_3)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = &(*boo) with_metadata(copy boo.metadata)
+    storage_live(_7)
+    _7 = (const 42i32,)
+    _5 = Fn<(dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '18), (i32,)>::call<'19>(move _6, move _7)
+    ↳⚡ unwind_continue
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_live(_8)
+    _8 = foo::<u8>()
+    ↳⚡ unwind_continue
+    storage_dead(_8)
+    _0 = ()
+    storage_dead(_4)
+    storage_dead(boo)
+    storage_dead(_9)
+    return
+}
+
+
+

@@ -1524,12 +1524,7 @@ impl ClosureArgs {
 
         let tcx = s.base().tcx;
         let closure = from.as_closure();
-        let item = {
-            // The closure has no generics of its own: it inherits its parent generics and could
-            // have late-bound args but these are part of the signature.
-            let parent_args = tcx.mk_args(closure.parent_args());
-            translate_item_ref(s, def_id, parent_args)
-        };
+        let item = translate_item_ref(s, def_id, from);
         let sig = closure.sig();
         let sig = tcx.signature_unclosure(sig, rustc_hir::Safety::Safe);
         // Add bound variables for each erased region in the signature.
