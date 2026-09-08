@@ -910,8 +910,8 @@ where
                 unreachable!()
             };
             let closure = closure_args.as_closure();
-            // We lose lifetime information here. Eventually would be nice not to.
-            let input_ty = erase_free_regions(tcx, closure.sig().input(0).skip_binder());
+            let input_ty = tupled_args_ty(s, closure_sig(tcx, closure));
+            let input_ty = tcx.liberate_late_bound_regions(def_id, input_ty);
             let trait_args = [closure_ty, input_ty];
             let fn_once_trait = tcx.lang_items().fn_once_trait().unwrap();
             let fn_mut_trait = tcx.lang_items().fn_mut_trait().unwrap();
