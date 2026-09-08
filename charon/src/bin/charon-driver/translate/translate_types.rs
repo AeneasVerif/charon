@@ -626,20 +626,49 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let tag_size = r_abi::Size::from_bytes(tag_ty.target_size(ptr_size));
                 // Reinterpret raw tag bits in `tag_ty`, sign-extending if needed.
                 let tag_from_bits = |bits: u128| IntegerValue::from_bits(tag_ty, bits);
-                let tag_for_variant = |id: rustc_abi::VariantIdx| match tag_encoding {
-                    r_abi::TagEncoding::Direct => tcx
-                        .tag_for_variant(ty_env.as_query_input((ty, id)))
-                        .map(|s| tag_from_bits(s.to_bits(tag_size))),
-                    r_abi::TagEncoding::Niche {
-                        untagged_variant,
-                        niche_variants,
-                        niche_start,
-                    } => {
-                        // the untagged variant and uninhabited variants have no tag
-                        (id != *untagged_variant && niche_variants.contains(&id)).then(|| {
-                            let relative = (id.index() - niche_variants.start.index()) as u128;
-                            tag_from_bits(tag_size.truncate(niche_start.wrapping_add(relative)))
-                        })
+
+                struct VariantTagInfo {
+                    /// The value of the tag for this variant, even if this is the untagged variant
+                    /// of a niched enum. `None` if we can't compute it.
+                    value: Option<IntegerValue>,
+                    /// Whether the variant is inhabited or not.
+                    uninhabited: bool,
+                    /// Whether this is the niched (untagged) variant of a niched enum.
+                    niched: bool,
+                }
+                let taginfo_for_variant = |id: rustc_abi::VariantIdx| {
+                    let uninhabited = variants[id].is_uninhabited();
+                    match tag_encoding {
+                        r_abi::TagEncoding::Direct => {
+                            let value = if uninhabited {
+                                None
+                            } else {
+                                let tag = tcx
+                                    .tag_for_variant(ty_env.as_query_input((ty, id)))
+                                    .unwrap();
+                                Some(tag_from_bits(tag.to_bits(tag_size)))
+                            };
+                            VariantTagInfo {
+                                value,
+                                uninhabited,
+                                niched: false,
+                            }
+                        }
+                        r_abi::TagEncoding::Niche {
+                            untagged_variant,
+                            niche_variants,
+                            niche_start,
+                        } => {
+                            let value = niche_variants.contains(&id).then(|| {
+                                let relative = (id.index() - niche_variants.start.index()) as u128;
+                                tag_from_bits(tag_size.truncate(niche_start.wrapping_add(relative)))
+                            });
+                            VariantTagInfo {
+                                value,
+                                uninhabited,
+                                niched: id == *untagged_variant,
+                            }
+                        }
                     }
                 };
 
@@ -650,22 +679,21 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
                 for (id, variant_layout) in variants.iter_enumerated() {
                     let variant_id = self.translate_variant_id(id);
-                    let tagger = if variant_layout.is_uninhabited() {
-                        // rustc ICEs when asked for the tag of an uninhabited variant,
-                        // so we only do this for niche encodings.
-                        if matches!(tag_encoding, r_abi::TagEncoding::Niche { .. })
-                            && let Some(val) = tag_for_variant(id)
-                        {
+                    let taginfo = taginfo_for_variant(id);
+                    let tagger = if let Some(val) = taginfo.value {
+                        if taginfo.niched || taginfo.uninhabited {
+                            // If we could compute a tag for this variant, encountering it is UB.
                             children.push((val..=val, Discriminator::Invalid));
+                            vec![]
+                        } else {
+                            children.push((val..=val, Discriminator::Known(variant_id)));
+                            vec![(tag_offset, val)]
                         }
-                        vec![]
-                    } else if let Some(val) = tag_for_variant(id) {
-                        children.push((val..=val, Discriminator::Known(variant_id)));
-                        vec![(tag_offset, val)]
                     } else {
-                        // Untagged variant of a niche encoding
+                        // Niched or uninhabited variant that corresponds to no tag.
                         vec![]
                     };
+
                     variant_layouts.push(translate_variant_layout(variant_layout, tagger));
                 }
 
@@ -674,21 +702,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     // We follow what Minirust does:
                     // https://github.com/minirust/minirust/blob/master/tooling/minimize/src/enums.rs
                     r_abi::TagEncoding::Niche {
-                        untagged_variant,
-                        niche_variants,
-                        niche_start,
+                        untagged_variant, ..
                     } => {
-                        // The untagged variant may itself be in the range of niched variants, in
-                        // which case its niche value must never be encountered.
-                        if niche_variants.contains(untagged_variant) {
-                            let relative =
-                                (untagged_variant.index() - niche_variants.start.index()) as u128;
-                            let val = tag_from_bits(
-                                tag_size.truncate(niche_start.wrapping_add(relative)),
-                            );
-                            children.push((val..=val, Discriminator::Invalid));
-                        }
-
                         // Every value outside the valid range of the tag is invalid. The valid
                         // range is given as bits and may wrap around; we compare in `tag_ty`.
                         let valid = tag.valid_range(&self.t_ctx.tcx);
