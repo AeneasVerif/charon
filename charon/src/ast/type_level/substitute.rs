@@ -40,6 +40,7 @@ pub(crate) struct SubstVisitor<'a> {
     /// Whether to substitute explicit variables only (types, regions, const generics).
     explicits_only: bool,
     had_error: bool,
+    allow_metadata: bool,
 }
 impl<'a> SubstVisitor<'a> {
     pub(crate) fn new(
@@ -52,6 +53,21 @@ impl<'a> SubstVisitor<'a> {
             self_ref,
             explicits_only,
             had_error: false,
+            allow_metadata: false,
+        }
+    }
+
+    pub(crate) fn new_allow_metadata(
+        generics: &'a GenericArgs,
+        self_ref: Option<&'a TraitRefKind>,
+        explicits_only: bool,
+    ) -> Self {
+        Self {
+            generics,
+            self_ref,
+            explicits_only,
+            had_error: false,
+            allow_metadata: true,
         }
     }
 
@@ -120,7 +136,9 @@ impl VarsVisitor for SubstVisitor<'_> {
         ))
     }
     fn visit_metadata_value(&mut self, _value: &MetadataValue) {
-        self.had_error = true;
+        if !self.allow_metadata {
+            self.had_error = true;
+        }
     }
 }
 

@@ -6,6 +6,7 @@ use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::options::ConstHandling;
 use charon_lib::pretty::FmtWithCtx;
+use charon_lib::ullbc_ast::layout_guarantee_utils::LayoutGuarantees;
 use derive_generic_visitor::Visitor;
 use itertools::Itertools;
 use rustc_span::sym;
@@ -469,10 +470,21 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             Ok(kind) => kind,
             Err(err) => TypeDeclKind::Error(err.msg),
         };
-        let layout = self
-            .translate_layout(def)
+        let repr = match &def.kind {
+            hax::FullDefKind::Adt { repr: hax_repr, .. } => self.translate_repr_options(hax_repr),
+            _ => ReprOptions::default(),
+        };
+        let layout_guarantees =
+            LayoutGuarantees::for_type_decl(&kind, &self.t_ctx.translated, &repr);
+
+        let layout = layout_guarantees
             .into_iter()
-            .map(|l| (self.get_target_triple(), l))
+            .map(|guarantees| {
+                (
+                    self.get_target_triple(),
+                    self.translate_layout(guarantees, def, repr.clone()),
+                )
+            })
             .collect();
         let ptr_metadata = self.translate_ptr_metadata(span, def.this())?;
         let type_def = TypeDecl {

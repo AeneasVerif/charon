@@ -1,5 +1,5 @@
 //! The layout of types.
-use crate::ast::*;
+use crate::ast::{layout_guarantee_utils::LayoutGuarantees, *};
 use crate::ids::IndexVec;
 use crate::utils::serialize_map_to_array::SeqHashMapToArray;
 use derive_generic_visitor::*;
@@ -43,7 +43,7 @@ pub struct VariantLayout {
     pub field_offsets: IndexVec<FieldId, OffsetExpr>,
     /// Whether the variant is uninhabited, i.e. has any valid possible value.
     /// Note that uninhabited types can have arbitrary layouts.
-    pub uninhabited: bool,
+    pub uninhabited: Option<bool>,
     /// How to write the tag when constructing this variant. Each entry means: write `value` at
     /// byte `offset`. Mirrors MiniRust's `Variant::tagger`.
     #[serde_state(stateless)]
@@ -78,7 +78,7 @@ pub enum Discriminator {
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct SizeExpr {
     /// The guarantees about this size that can be relied on according to the Rust Reference.
-    pub guarantee: Option<SizeGuarantee>,
+    pub guarantee: Option<ExactSizeExpr>,
     /// The size chosen by this rustc run. `None` for unsized types.
     pub chosen: Option<ByteCount>,
 }
@@ -157,15 +157,97 @@ pub struct TargetInfo {
     pub primitive_alignments: SeqHashMap<ScalarTy, ByteCount>,
 }
 
+impl SizeExpr {
+    pub fn only_guarantee(bound: ExactSizeExpr) -> Self {
+        Self {
+            chosen: None,
+            guarantee: Some(bound),
+        }
+    }
+}
+
+impl OffsetExpr {
+    pub fn only_guarantee(guarantees: OffsetGuarantee) -> Self {
+        Self {
+            chosen: None,
+            guarantee: Some(guarantees),
+        }
+    }
+}
+
+impl VariantLayout {
+    pub fn only_guarantees(field_offsets: IndexVec<FieldId, OffsetGuarantee>) -> Self {
+        let field_offsets = field_offsets
+            .into_iter()
+            .map(OffsetExpr::only_guarantee)
+            .collect();
+        VariantLayout {
+            field_offsets,
+            uninhabited: None, // FIXME: we need inhabitedness predicates to correctly express this.
+            tagger: Vec::new(),
+        }
+    }
+}
+
 impl Layout {
-    pub fn is_variant_uninhabited(&self, variant_id: VariantId) -> bool {
-        self.variant_layouts[variant_id]
-            .as_ref()
-            .is_none_or(|v| v.uninhabited)
+    pub fn is_variant_uninhabited(&self, variant_id: VariantId) -> Option<bool> {
+        match self.variant_layouts[variant_id].as_ref() {
+            Some(v) => v.uninhabited,
+            None => Some(true),
+        }
+    }
+
+    pub fn only_guarantees(
+        guarantees: LayoutGuarantees,
+        repr: ReprOptions,
+        translated: &TranslatedCrate,
+        target: Option<&TargetTriple>,
+    ) -> Self {
+        let mut variant_layouts = IndexVec::new();
+        if let Some(variants) = guarantees
+            .offsets
+            .get_variants(None, Some(translated), target)
+        {
+            for fields in variants {
+                variant_layouts.push(Some(VariantLayout::only_guarantees(fields)));
+            }
+        }
+
+        Self {
+            size: SizeExpr::only_guarantee(guarantees.size),
+            align: SizeExpr::only_guarantee(guarantees.align),
+            discriminator: None,
+            uninhabited: false, // FIXME: we need inhabitedness predicates to correctly express this.
+            variant_layouts,
+            repr,
+        }
+    }
+
+    pub fn update_guarantees(
+        &mut self,
+        guarantees: LayoutGuarantees,
+        target: Option<&TargetTriple>,
+    ) {
+        self.size.guarantee = Some(guarantees.size);
+        self.align.guarantee = Some(guarantees.align);
+
+        if let Some(variant_guarantees) =
+            guarantees
+                .offsets
+                .get_variants(Some(self.variant_layouts.len()), None, target)
+        {
+            for (variant, guarantees) in self.variant_layouts.iter_mut().zip(variant_guarantees) {
+                if let Some(variant) = variant {
+                    for (offset, guarantee) in variant.field_offsets.iter_mut().zip(guarantees) {
+                        offset.guarantee = Some(guarantee);
+                    }
+                }
+            }
+        }
     }
 
     pub fn is_c_repr(&self) -> bool {
-        self.repr.repr_algo == ReprAlgorithm::C
+        self.repr.guarantees_fixed_field_order()
     }
 }
 

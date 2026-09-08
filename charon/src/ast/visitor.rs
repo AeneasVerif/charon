@@ -18,6 +18,7 @@ use crate::ast::from_rustc;
 use crate::ast::from_rustc::{
     AttributeKind, DeprecatedSince, Deprecation, Ident, LangItem, OptimizeAttr,
 };
+use crate::ast::layout_guarantee_utils::{LayoutGuarantees, OffsetGuarantees};
 use crate::ast::*;
 use crate::ids::{Idx, IndexVec};
 use derive_generic_visitor::*;
@@ -75,7 +76,7 @@ use derive_generic_visitor::*;
         ullbc_ast::TerminatorKind, SwitchData, SwitchScrutinee,
         UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, Layout, VariantLayout,
         Discriminator,
-        SizeExpr, OffsetExpr, SizeGuarantee, OffsetGuarantee,
+        SizeExpr, OffsetExpr, OffsetGuarantee, LayoutGuarantees, OffsetGuarantees,
         PtrMetadata,
         SpanData, SerializedSpan,
         ItemByVal, VTableField, AssocItemNames,
