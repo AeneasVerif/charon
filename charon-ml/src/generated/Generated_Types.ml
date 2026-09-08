@@ -850,6 +850,10 @@ and exact_size_expr_kind =
           - [ty]
           - [then_size]
           - [else_size] *)
+  | ExactSizeExprFieldOffset of variant_id option * field_id
+      (** The symbolic offset of the field within the variant (if any). *)
+  | ExactSizeExprAtLeast of exact_size_expr
+      (** Knowledge that the inner size expression is actually a lower bound. *)
 
 and field = {
   span : span;
@@ -1359,15 +1363,12 @@ and repr_options = {
 
 (** An expression denoting a size in bytes. *)
 and size_expr = {
-  guarantee : size_guarantee option;
+  guarantee : exact_size_expr option;
       (** The guarantees about this size that can be relied on according to the
           Rust Reference. *)
   chosen : int option;
       (** The size chosen by this rustc run. [None] for unsized types. *)
 }
-
-(** Guaranteed facts about a layout size. *)
-and size_guarantee = Equals of exact_size_expr | AtLeast of exact_size_expr
 
 (** A type declaration.
 
@@ -1458,7 +1459,7 @@ and variant = {
     Maps fields to their offset within the layout. *)
 and variant_layout = {
   field_offsets : offset_expr list;  (** The offset of each field. *)
-  uninhabited : bool;
+  uninhabited : bool option;
       (** Whether the variant is uninhabited, i.e. has any valid possible value.
           Note that uninhabited types can have arbitrary layouts. *)
   tagger : (int * integer_value) list;

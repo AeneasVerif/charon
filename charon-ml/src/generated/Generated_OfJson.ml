@@ -2539,6 +2539,13 @@ and exact_size_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* then_size = exact_size_expr_of_json ctx then_size in
         let* else_size = exact_size_expr_of_json ctx else_size in
         Ok (ExactSizeExprIfInhabited (ty, then_size, else_size))
+    | `Assoc [ ("FieldOffset", `List [ _0; _1 ]) ] ->
+        let* _0 = option_of_json variant_id_of_json ctx _0 in
+        let* _1 = field_id_of_json ctx _1 in
+        Ok (ExactSizeExprFieldOffset (_0, _1))
+    | `Assoc [ ("AtLeast", _0) ] ->
+        let* _0 = exact_size_expr_of_json ctx _0 in
+        Ok (ExactSizeExprAtLeast _0)
     | _ -> Error "")
 
 and field_of_json (ctx : of_json_ctx) (js : json) : (field, string) result =
@@ -3344,21 +3351,9 @@ and size_expr_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("guarantee", guarantee); ("chosen", chosen) ] ->
-        let* guarantee = option_of_json size_guarantee_of_json ctx guarantee in
+        let* guarantee = option_of_json exact_size_expr_of_json ctx guarantee in
         let* chosen = option_of_json int_of_json ctx chosen in
         Ok ({ guarantee; chosen } : size_expr)
-    | _ -> Error "")
-
-and size_guarantee_of_json (ctx : of_json_ctx) (js : json) :
-    (size_guarantee, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Equals", _0) ] ->
-        let* _0 = exact_size_expr_of_json ctx _0 in
-        Ok (Equals _0)
-    | `Assoc [ ("AtLeast", _0) ] ->
-        let* _0 = exact_size_expr_of_json ctx _0 in
-        Ok (AtLeast _0)
     | _ -> Error "")
 
 and target_info_of_json (ctx : of_json_ctx) (js : json) :
@@ -3842,7 +3837,7 @@ and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
           index_vec_of_json field_id_of_json offset_expr_of_json ctx
             field_offsets
         in
-        let* uninhabited = bool_of_json ctx uninhabited in
+        let* uninhabited = option_of_json bool_of_json ctx uninhabited in
         let* tagger =
           list_of_json
             (pair_of_json int_of_json integer_value_of_json)

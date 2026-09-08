@@ -2153,6 +2153,13 @@ and exact_size_expr_kind_of_postcard (ctx : of_postcard_ctx)
          let* then_size = exact_size_expr_of_postcard ctx st in
          let* else_size = exact_size_expr_of_postcard ctx st in
          Ok (ExactSizeExprIfInhabited (ty, then_size, else_size))
+     | 8 ->
+         let* _0 = option_of_postcard variant_id_of_postcard ctx st in
+         let* _1 = field_id_of_postcard ctx st in
+         Ok (ExactSizeExprFieldOffset (_0, _1))
+     | 9 ->
+         let* _0 = exact_size_expr_of_postcard ctx st in
+         Ok (ExactSizeExprAtLeast _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and field_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -2834,22 +2841,9 @@ and serialization_format_arg_of_postcard (ctx : of_postcard_ctx)
 and size_expr_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (size_expr, string) result =
   combine_error_msgs st __FUNCTION__
-    (let* guarantee = option_of_postcard size_guarantee_of_postcard ctx st in
+    (let* guarantee = option_of_postcard exact_size_expr_of_postcard ctx st in
      let* chosen = option_of_postcard u64_of_postcard ctx st in
      Ok ({ guarantee; chosen } : size_expr))
-
-and size_guarantee_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (size_guarantee, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 ->
-         let* _0 = exact_size_expr_of_postcard ctx st in
-         Ok (Equals _0)
-     | 1 ->
-         let* _0 = exact_size_expr_of_postcard ctx st in
-         Ok (AtLeast _0)
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (target_info, string) result =
@@ -3219,7 +3213,7 @@ and variant_layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* field_offsets =
        index_vec_of_postcard field_id_of_postcard offset_expr_of_postcard ctx st
      in
-     let* uninhabited = bool_of_postcard ctx st in
+     let* uninhabited = option_of_postcard bool_of_postcard ctx st in
      let* tagger =
        list_of_postcard
          (pair_of_postcard u64_of_postcard integer_value_of_postcard)
