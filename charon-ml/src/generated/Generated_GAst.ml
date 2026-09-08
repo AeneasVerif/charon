@@ -21,7 +21,6 @@ module BranchId = IdGen ()
 (* Imports *)
 type fn_ptr_kind = Types.fn_ptr_kind [@@deriving show, ord]
 type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
-type fun_id = Types.fun_id [@@deriving show, ord]
 
 (** (U)LLBC is a language with side-effects: a statement may abort in a way that
     isn't tracked by control-flow. The three kinds of abort are:

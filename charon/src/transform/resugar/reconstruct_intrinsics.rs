@@ -12,7 +12,7 @@ impl UllbcPass for Transform {
             let FnOperand::Regular(fn_ptr) = &call.func else {
                 return;
             };
-            let FnPtrKind::Fun(FunId::Regular(fun_id)) = fn_ptr.kind.as_ref() else {
+            let FnPtrKind::Fun(fun_id) = fn_ptr.kind.as_ref() else {
                 return;
             };
             let Some(fun_decl) = ctx.ctx.translated.fun_decls.get(*fun_id) else {

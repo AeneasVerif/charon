@@ -35,7 +35,7 @@ fn mk_fn_ptr(ctx: &TransformCtx, id: ItemId, mut generics: GenericArgs) -> FnPtr
             .push(TraitRef::new(kind, trait_decl_ref));
     }
     let fun_id = *id.as_fun().unwrap();
-    FnPtr::new(FnPtrKind::Fun(FunId::Regular(fun_id)), generics)
+    FnPtr::new(FnPtrKind::Fun(fun_id), generics)
 }
 
 /// Instantiate the trait impl that provides the given method.

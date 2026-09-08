@@ -357,7 +357,7 @@ and field_id = (FieldId.id[@visitors.opaque])
 and fn_ptr = { kind : fn_ptr_kind; generics : generic_args }
 
 and fn_ptr_kind =
-  | FunId of fun_id
+  | Fun of fun_decl_id
   | TraitMethod of trait_ref * trait_method_id
       (** If a trait: the reference to the trait and the id of the trait method.
       *)
@@ -367,12 +367,6 @@ and fun_decl_ref = {
   id : fun_decl_id;
   generics : generic_args;  (** Generic arguments passed to the function. *)
 }
-
-(** A regular function. *)
-and fun_id =
-  | FRegular of fun_decl_id
-      (** A "regular" function (function local to the crate, external function
-          not treated as a primitive one). *)
 
 (** A function signature. *)
 and fun_sig = {

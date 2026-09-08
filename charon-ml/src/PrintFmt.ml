@@ -546,10 +546,6 @@ and pp_match_pattern (env : fmt_env) (fmt : Format.formatter)
 and constant_expr_to_string env cv =
   pp_to_string (fun fmt -> pp_constant_expr env fmt cv)
 
-and pp_fun_id (env : fmt_env) (fmt : Format.formatter) (fid : fun_id) : unit =
-  match fid with
-  | FRegular fid -> pp_fun_decl_id env fmt fid
-
 and pp_fn_ptr_kind (env : fmt_env) (fmt : Format.formatter) (r : fn_ptr_kind) :
     unit =
   match r with
@@ -559,7 +555,7 @@ and pp_fn_ptr_kind (env : fmt_env) (fmt : Format.formatter) (r : fn_ptr_kind) :
           trait_ref.trait_decl_ref.binder_value.id method_id
       in
       Format.fprintf fmt "%a::%s" (pp_trait_ref env) trait_ref method_name
-  | FunId fid -> pp_fun_id env fmt fid
+  | Fun fid -> pp_fun_decl_id env fmt fid
 
 and pp_fn_ptr (env : fmt_env) (fmt : Format.formatter) (ptr : fn_ptr) : unit =
   Format.fprintf fmt "%a%a" (pp_fn_ptr_kind env) ptr.kind

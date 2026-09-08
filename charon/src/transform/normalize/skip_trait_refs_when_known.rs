@@ -23,7 +23,7 @@ fn normalize_default_method_call_on_known_impl(
     ctx: &TransformCtx,
     fn_ptr: &FnPtr,
 ) -> Option<FnPtr> {
-    let fun_id = fn_ptr.kind.as_ref().as_fun()?.as_regular()?;
+    let fun_id = fn_ptr.kind.as_ref().as_fun()?;
     let fun_decl = ctx.translated.fun_decls.get(*fun_id)?;
     let FunSource::TraitDefault {
         trait_ref,
@@ -96,10 +96,7 @@ fn normalize_method_call(
     );
     // Substitute the appropriate generics into the function call.
     let fn_ref = fn_ref.apply(&impl_ref.generics).apply(method_generics);
-    Some(FnPtr::new(
-        FnPtrKind::Fun(FunId::Regular(fn_ref.id)),
-        fn_ref.generics,
-    ))
+    Some(FnPtr::new(FnPtrKind::Fun(fn_ref.id), fn_ref.generics))
 }
 
 pub struct Transform;

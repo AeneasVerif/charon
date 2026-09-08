@@ -677,7 +677,7 @@ let lookup_flat_method_sig (crate : crate) (trait_id : trait_decl_id)
 let lookup_fndef_sig (crate : crate) (fn_ptr : fn_ptr region_binder) :
     fun_sig region_binder option =
   match fn_ptr.binder_value.kind with
-  | FunId (FRegular fun_decl_id) ->
+  | Fun fun_decl_id ->
       let* fun_decl =
         LlbcAst.FunDeclId.Map.find_opt fun_decl_id crate.fun_decls
       in

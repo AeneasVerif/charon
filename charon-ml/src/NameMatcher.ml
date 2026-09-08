@@ -717,7 +717,7 @@ and match_expr_with_const_generic (ctx : ctx) (c : match_config) (m : maps)
 let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : T.fn_ptr)
     : bool =
   match func.kind with
-  | FunId (FRegular fid) ->
+  | Fun fid ->
       (* Lookup the function decl *)
       let d = Types.FunDeclId.Map.find fid ctx.crate.fun_decls in
       (* Match the pattern on the name of the function. *)
@@ -1150,7 +1150,7 @@ let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
   let args = generic_args_to_pattern ctx c m func.generics in
   let pat =
     match func.kind with
-    | FunId (FRegular fid) ->
+    | Fun fid ->
         let d = Types.FunDeclId.Map.find fid ctx.crate.fun_decls in
         name_with_generics_to_pattern_aux ctx c m d.item_meta.name func.generics
     | TraitMethod (tr, method_id) ->

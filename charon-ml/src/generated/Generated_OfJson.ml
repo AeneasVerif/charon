@@ -669,8 +669,8 @@ and fn_ptr_kind_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Fun", _0) ] ->
-        let* _0 = fun_id_of_json ctx _0 in
-        Ok (FunId _0)
+        let* _0 = fun_decl_id_of_json ctx _0 in
+        Ok (Fun _0)
     | `Assoc [ ("Trait", `List [ _0; _1 ]) ] ->
         let* _0 = trait_ref_of_json ctx _0 in
         let* _1 = trait_method_id_of_json ctx _1 in
@@ -692,14 +692,6 @@ and fun_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
         let* id = fun_decl_id_of_json ctx id in
         let* generics = box_of_json generic_args_of_json ctx generics in
         Ok ({ id; generics } : fun_decl_ref)
-    | _ -> Error "")
-
-and fun_id_of_json (ctx : of_json_ctx) (js : json) : (fun_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Regular", _0) ] ->
-        let* _0 = fun_decl_id_of_json ctx _0 in
-        Ok (FRegular _0)
     | _ -> Error "")
 
 and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =

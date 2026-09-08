@@ -996,7 +996,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let fun_item: DeclRef<FunDeclId> = fun_item.try_convert_id().unwrap();
         let fun_id = match fun_item.trait_ref {
             // Direct function call
-            None => FnPtrKind::Fun(FunId::Regular(fun_item.id)),
+            None => FnPtrKind::Fun(fun_item.id),
             // Trait method
             Some(trait_ref) => {
                 let trait_decl_id = trait_ref.trait_id();

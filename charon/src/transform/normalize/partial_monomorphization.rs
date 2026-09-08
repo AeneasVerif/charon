@@ -498,7 +498,7 @@ impl VisitAstMut for PartialMonomorphizer<'_> {
     fn exit_fn_ptr(&mut self, x: &mut FnPtr) {
         // TODO: methods. any `Trait::method<&mut A>` requires monomorphizing all the instances of
         // that method just in case :>>>
-        if let FnPtrKind::Fun(FunId::Regular(id)) = *x.kind
+        if let FnPtrKind::Fun(id) = *x.kind
             && let Some(new_decl_ref) = self.process_generics(id.into(), &x.generics)
         {
             *x = new_decl_ref.try_into().unwrap()

@@ -302,7 +302,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         )?;
         Ok(Some(bound_ref.map(|dref| {
             let fn_ref: FunDeclRef = dref.try_into().unwrap();
-            FnPtr::new(FnPtrKind::Fun(FunId::Regular(fn_ref.id)), fn_ref.generics)
+            FnPtr::new(FnPtrKind::Fun(fn_ref.id), fn_ref.generics)
         })))
     }
 }

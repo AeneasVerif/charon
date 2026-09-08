@@ -77,7 +77,7 @@ struct AssumeInitTail {
 
 fn assume_init_fn_ptr<'a>(ctx: &TransformCtx, call: &'a Call) -> Option<&'a FnPtr> {
     if let FnOperand::Regular(fn_ptr) = &call.func
-        && let FnPtrKind::Fun(FunId::Regular(fid)) = *fn_ptr.kind
+        && let FnPtrKind::Fun(fid) = *fn_ptr.kind
         && ctx.translated.item_name(fid).short_str() == Some("assume_init")
     {
         Some(fn_ptr)
@@ -257,7 +257,7 @@ fn is_new_uninit_call(ctx: &TransformCtx, call: &Call) -> bool {
     let FnOperand::Regular(fn_ptr) = &call.func else {
         return false;
     };
-    let FnPtrKind::Fun(FunId::Regular(fid)) = *fn_ptr.kind else {
+    let FnPtrKind::Fun(fid) = *fn_ptr.kind else {
         return false;
     };
     ctx.translated.item_name(fid).short_str() == Some("new_uninit")
@@ -403,10 +403,7 @@ impl UllbcPass for Transform {
 
             let (fn_ptr, args) = if rw.branched_before_payload {
                 (
-                    FnPtr::new(
-                        FnPtrKind::Fun(FunId::Regular(box_write)),
-                        rw.assume_init_generics,
-                    ),
+                    FnPtr::new(FnPtrKind::Fun(box_write), rw.assume_init_generics),
                     vec![
                         Operand::Move(rw.uninit_box),
                         Operand::Move(array_local.clone()),
@@ -417,7 +414,7 @@ impl UllbcPass for Transform {
                     target: rw.new_uninit_target,
                 };
                 (
-                    FnPtr::new(FnPtrKind::Fun(FunId::Regular(box_new)), rw.box_new_generics),
+                    FnPtr::new(FnPtrKind::Fun(box_new), rw.box_new_generics),
                     vec![Operand::Move(array_local.clone())],
                 )
             };

@@ -639,8 +639,8 @@ and fn_ptr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* __tag = int_of_postcard ctx st in
      match __tag with
      | 0 ->
-         let* _0 = fun_id_of_postcard ctx st in
-         Ok (FunId _0)
+         let* _0 = fun_decl_id_of_postcard ctx st in
+         Ok (Fun _0)
      | 1 ->
          let* _0 = trait_ref_of_postcard ctx st in
          let* _1 = trait_method_id_of_postcard ctx st in
@@ -657,16 +657,6 @@ and fun_decl_ref_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* id = fun_decl_id_of_postcard ctx st in
      let* generics = box_of_postcard generic_args_of_postcard ctx st in
      Ok ({ id; generics } : fun_decl_ref))
-
-and fun_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (fun_id, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 ->
-         let* _0 = fun_decl_id_of_postcard ctx st in
-         Ok (FRegular _0)
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and fun_sig_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (fun_sig, string) result =

@@ -65,7 +65,7 @@ use derive_generic_visitor::*;
         Assert, AttributeKind, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAdt, BuiltinAssertKind,
         Call, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Deprecation, Disambiguator, DynPredicate, Field, FieldId, File, FloatTy, FloatValue,
-        FnOperand, FunId, FnPtrKind, FunSig, InlineAttr, IntegerTy, IntTy, UIntTy, ScalarTy,
+        FnOperand, FnPtrKind, FunSig, InlineAttr, IntegerTy, IntTy, UIntTy, ScalarTy,
         Ident, from_rustc::InlineAttr,
         llbc_ast::ExprBody, llbc_ast::StatementKind,
         Loc, Locals, NullOp, Operand, PathElem, PlaceKind,
@@ -612,9 +612,7 @@ mod wrappers {
         }
         fn visit_fn_ptr(&mut self, x: &FnPtr) -> ControlFlow<Self::Break> {
             match x.kind.as_ref() {
-                FnPtrKind::Fun(FunId::Regular(id)) => {
-                    self.0.visit_item_ref(ItemId::Fun(*id), &x.generics)
-                }
+                FnPtrKind::Fun(id) => self.0.visit_item_ref(ItemId::Fun(*id), &x.generics),
                 FnPtrKind::Trait(..) => self.visit_inner(x),
             }
         }
@@ -645,9 +643,7 @@ mod wrappers {
         }
         fn visit_fn_ptr(&mut self, x: &mut FnPtr) -> ControlFlow<Self::Break> {
             match x.kind.as_ref() {
-                FnPtrKind::Fun(FunId::Regular(id)) => {
-                    self.0.visit_item_ref(ItemId::Fun(*id), &mut x.generics)
-                }
+                FnPtrKind::Fun(id) => self.0.visit_item_ref(ItemId::Fun(*id), &mut x.generics),
                 FnPtrKind::Trait(..) => self.visit_inner(x),
             }
         }

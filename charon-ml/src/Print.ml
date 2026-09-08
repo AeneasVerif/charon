@@ -130,9 +130,6 @@ let type_decl_ref_to_string env tref =
 let fun_decl_id_to_string env id =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_fun_decl_id env fmt id)
 
-let fun_id_to_string env id =
-  PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_fun_id env fmt id)
-
 let fun_decl_ref_to_string env fn =
   PrintFmt.pp_to_string (fun fmt -> PrintFmt.pp_fun_decl_ref env fmt fn)
 

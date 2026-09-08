@@ -227,7 +227,7 @@ let has_body : body -> bool = function
     [global_decl.init] field. *)
 let init_fun_id_of_global (global : global_decl) : fun_decl_id option =
   match global.value.kind with
-  | CCall ({ kind = FunId (FRegular id); _ }, []) -> Some id
+  | CCall ({ kind = Fun id; _ }, []) -> Some id
   | _ -> None
 
 (** Split a module's declarations between types, functions and globals *)
