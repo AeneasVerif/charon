@@ -58,8 +58,9 @@ the world of code analysis and verification.
 
 ## Limitations
 
-Charon is alpha software. While it works quite well for a large number of crates, it has not reached
-the full set of features we intend, incorrectly translates code in some edge cases, and a number of
+Charon is beta software. It works quite well for a large number of crates, and the correctness of
+its translation is well-tested.
+That said, it is as of now poorly documented, has a number of open bugs, and a number of
 breaking changes in its API are planned. See the [limitations](./docs/limitations.md) for details.
 
 ## Installation & Build
