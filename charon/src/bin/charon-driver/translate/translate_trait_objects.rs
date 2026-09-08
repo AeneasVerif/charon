@@ -118,7 +118,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         self.check_at_most_one_pred_has_methods(span, &binder.predicates)?;
 
         // Add a binder that contains the existentially quantified type.
-        self.binding_levels.push(BindingLevel::new());
+        self.binding_levels.push(BindingLevel::new(None));
 
         // Add the existentially quantified type.
         let ty_id = self.innermost_binder_mut().push_type_var(
@@ -389,7 +389,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     } else {
                         // The method is defined in a context that has an extra `Self: Trait` clause, so
                         // we translate it bound first.
-                        let bound_sig = self.inside_binder(BinderKind::Other, |ctx| {
+                        let bound_sig = self.inside_binder(BinderKind::Other, None, |ctx| {
                             ctx.innermost_binder_mut()
                                 .trait_preds
                                 .insert(hax::GenericPredicateId::TraitSelf, TraitClauseId::ZERO);

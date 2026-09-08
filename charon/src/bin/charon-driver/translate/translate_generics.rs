@@ -24,6 +24,8 @@ use charon_lib::utils::CycleDetector;
 /// this level, and various maps from the rustc-internal indices to our indices.
 #[derive(Debug, Default)]
 pub(crate) struct BindingLevel {
+    /// The definition whose generics this binding level contains, if this is an item binder.
+    pub def_id: Option<hax::DefId>,
     /// The parameters and predicates bound at this level.
     pub params: GenericParams,
     /// Rust makes the distinction between early and late-bound region parameters. We do not make
@@ -79,8 +81,9 @@ fn translate_variance(variance: Option<&hax::Variance>) -> Variance {
 }
 
 impl BindingLevel {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(def_id: Option<hax::DefId>) -> Self {
         Self {
+            def_id,
             ..Default::default()
         }
     }
@@ -316,29 +319,33 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<RegionDbVar, Error> {
         use hax::LateParamRegionKind::*;
         match &region.kind {
-            Anon(index) | NamedAnon(index, _) if &region.scope == self.item_src.def_id() => {
-                // These come from liberate_late_bound_regions on a closure signature. They are
-                // bound in the toplevel binder.
-                let Some(region_id) = self
-                    .outermost_binder()
-                    .bound_region_vars
-                    .get(*index as usize)
-                    .copied()
+            Anon(index) | NamedAnon(index, _) => {
+                let Some((dbid, binder)) = self
+                    .binding_levels
+                    .iter_enumerated()
+                    .find(|(_, binder)| binder.def_id.as_ref() == Some(&region.scope))
                 else {
+                    raise_error!(
+                        self,
+                        span,
+                        "Unexpected error: could not find the binder for late-bound region {region:?}"
+                    )
+                };
+                let Some(region_id) = binder.bound_region_vars.get(*index as usize).copied() else {
                     raise_error!(
                         self,
                         span,
                         "Unexpected error: could not find the late-bound region variable {region:?}"
                     )
                 };
-                Ok(DeBruijnVar::bound(self.binding_levels.depth(), region_id))
+                Ok(DeBruijnVar::bound(dbid, region_id))
             }
             Named(def_id, _) => self.lookup_param(
                 span,
                 |bl| bl.region_vars_by_def_id.get(def_id).copied(),
                 || format!("the late-bound region variable {region:?}"),
             ),
-            Anon(_) | NamedAnon(..) | ClosureEnv => {
+            ClosureEnv => {
                 raise_error!(self, span, "Unexpected late-bound region: {region:?}")
             }
         }
@@ -527,7 +534,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: &TransItemSourceKind,
     ) -> Result<(), Error> {
         assert!(self.binding_levels.is_empty());
-        self.binding_levels.push(BindingLevel::new());
+        self.binding_levels
+            .push(BindingLevel::new(Some(def.def_id().clone())));
         self.push_generics_for_def(span, def)?;
         self.push_late_bound_generics_for_def(span, def)?;
 
@@ -582,11 +590,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Push a new binding level, run the provided function inside it, then return the bound value.
-    pub(crate) fn inside_binder<F, U>(&mut self, kind: BinderKind, f: F) -> Result<Binder<U>, Error>
+    pub(crate) fn inside_binder<F, U>(
+        &mut self,
+        kind: BinderKind,
+        def_id: Option<hax::DefId>,
+        f: F,
+    ) -> Result<Binder<U>, Error>
     where
         F: FnOnce(&mut Self) -> Result<U, Error>,
     {
-        self.binding_levels.push(BindingLevel::new());
+        self.binding_levels.push(BindingLevel::new(def_id));
 
         // Call the continuation. Important: do not short-circuit on error here.
         let res = f(self);
@@ -616,7 +629,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     {
         let inner_hax_state = self.t_ctx.hax_state.clone().with_hax_owner(def.def_id());
         let outer_hax_state = mem::replace(&mut self.hax_state, inner_hax_state);
-        let ret = self.inside_binder(kind, |this| {
+        let ret = self.inside_binder(kind, Some(def.def_id().clone()), |this| {
             this.push_generics_for_def_without_parents(span, def)?;
             this.push_late_bound_generics_for_def(span, def)?;
             this.innermost_binder().params.check_consistency();
@@ -641,7 +654,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     {
         let inner_hax_state = self.t_ctx.hax_state.clone().with_hax_owner(&binder.def_id);
         let outer_hax_state = mem::replace(&mut self.hax_state, inner_hax_state);
-        let ret = self.inside_binder(kind, |this| {
+        let ret = self.inside_binder(kind, Some(binder.def_id.clone()), |this| {
             this.push_param_env_without_parents(&binder.param_env, predicate_origin)?;
             this.innermost_binder_mut()
                 .push_params_from_binder(binder.late_bound.clone())?;
@@ -664,7 +677,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     where
         F: FnOnce(&mut Self, &T) -> Result<U, Error>,
     {
-        let binder = self.inside_binder(BinderKind::Other, |this| {
+        let binder = self.inside_binder(BinderKind::Other, None, |this| {
             this.innermost_binder_mut()
                 .push_params_from_binder(binder.rebind(()))?;
             f(this, binder.hax_skip_binder_ref())

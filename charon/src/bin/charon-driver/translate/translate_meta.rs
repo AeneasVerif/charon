@@ -469,7 +469,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             let trans_id = self.register_no_enqueue(&None, src).unwrap();
             let span = self.def_span(&item_ref.def_id);
             let mut bt_ctx = ItemTransCtx::new(src.clone(), trans_id, self);
-            let binder = bt_ctx.inside_binder(BinderKind::Other, |bt_ctx| {
+            let binder = bt_ctx.inside_binder(BinderKind::Other, None, |bt_ctx| {
                 // We skip the clauses: the args are enough to uniquely identify an ite.
                 bt_ctx.translate_generic_args(span, &item_ref.generic_args, &[])
             })?;
