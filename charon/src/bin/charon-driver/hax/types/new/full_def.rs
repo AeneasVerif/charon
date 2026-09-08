@@ -642,13 +642,11 @@ where
     let tcx = s.base().tcx;
     let type_of_self = || inst_binder(tcx, s.typing_env(), args, hax_def_id.type_of(s));
     let args_or_default = || args.unwrap_or_else(|| hax_def_id.identity_args(s));
-    let fn_def_trait_impls = |def_id: RDefId, sig: ty::EarlyBinder<'tcx, ty::PolyFnSig<'tcx>>| {
-        if sig.skip_binder().is_fn_trait_compatible()
+    let fn_def_trait_impls = |def_id: RDefId, fn_sig: ty::PolyFnSig<'tcx>| {
+        if fn_sig.is_fn_trait_compatible()
             && tcx.codegen_fn_attrs(def_id).target_features.is_empty()
         {
             let fn_args = args_or_default();
-            let fn_sig = inst_binder(tcx, s.typing_env(), args, sig);
-
             let self_ty = ty::Ty::new_fn_def(tcx, def_id, fn_sig.rebind(fn_args));
             let fn_sig = tcx.liberate_late_bound_regions(def_id, fn_sig);
             let input_ty = ty::Ty::new_tup(tcx, fn_sig.inputs());
@@ -871,8 +869,8 @@ where
         }
         RDefKind::Fn { .. } => {
             let sig = tcx.fn_sig(def_id);
-            let fn_trait_impls = fn_def_trait_impls(def_id, sig);
             let sig = inst_binder(tcx, s.typing_env(), args, sig);
+            let fn_trait_impls = fn_def_trait_impls(def_id, sig);
             FullDefKind::Fn {
                 param_env: get_param_env(s, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
@@ -888,8 +886,8 @@ where
         }
         RDefKind::AssocFn { .. } => {
             let item = tcx.associated_item(def_id);
-            let fn_trait_impls = fn_def_trait_impls(def_id, tcx.fn_sig(def_id));
             let sig = get_method_sig(tcx, s.typing_env(), def_id, args);
+            let fn_trait_impls = fn_def_trait_impls(def_id, sig);
             FullDefKind::AssocFn {
                 param_env: get_param_env(s, args),
                 associated_item: AssocItem::sfrom_instantiated(s, &item, args),
@@ -1010,7 +1008,6 @@ where
             let args = args_or_default();
             let ctor_of = ctor_of.sinto(s);
             let sig = tcx.fn_sig(def_id);
-            let fn_trait_impls = fn_def_trait_impls(def_id, sig);
 
             // The def_id of the adt this ctor belongs to.
             let adt_def_id = match ctor_of {
@@ -1027,6 +1024,7 @@ where
                 .collect();
             let output_ty = ty::Ty::new_adt(tcx, adt_def, args).sinto(s);
             let sig = inst_binder(tcx, s.typing_env(), Some(args), sig);
+            let fn_trait_impls = fn_def_trait_impls(def_id, sig);
             FullDefKind::Ctor {
                 adt_def_id: adt_def_id.sinto(s),
                 ctor_of,
