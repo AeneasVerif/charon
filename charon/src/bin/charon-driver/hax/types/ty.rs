@@ -990,17 +990,37 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
     src_ty: ty::Ty<'tcx>,
     tgt_ty: ty::Ty<'tcx>,
 ) -> UnsizingMetadata {
-    // TODO: to properly find out what field we want, we should use the query
-    // `coerce_unsized_info`, which we call recursively to get the list of fields
-    // to go into until we reach a pointer/reference.
-    // We should also pass this list of field IDs in the unsizing metadata.
-
-    let (Some(src_ty), Some(tgt_ty)) = (src_ty.builtin_deref(true), tgt_ty.builtin_deref(true))
-    else {
-        return UnsizingMetadata::Unknown;
-    };
+    // TODO: also pass the list of fields we go through in the unsizing metadata.
 
     let tcx = s.base().tcx;
+    let (Some(src_ty), Some(tgt_ty)) = (src_ty.builtin_deref(true), tgt_ty.builtin_deref(true))
+    else {
+        // Like `rustc_monomorphize::custom_coerce_unsize_info`: for a `CoerceUnsized` struct
+        // (e.g. `Rc`), find the impl and recurse into the field it coerces.
+        return match (src_ty.kind(), tgt_ty.kind()) {
+            (ty::Adt(def, src_args), ty::Adt(_, tgt_args)) => {
+                let coerce_trait = tcx.lang_items().coerce_unsized_trait().unwrap();
+                let tref = ty::TraitRef::new(tcx, coerce_trait, [src_ty, tgt_ty]);
+                let proof =
+                    s.with_predicate_searcher(|ps, ctx| ps.resolve(ctx, &ty::Binder::dummy(tref)));
+                let elaboration::TraitProofKind::Concrete(impl_ref) = &proof.contents().kind else {
+                    unreachable!("`CoerceUnsized` between ADTs is always proven by a concrete impl")
+                };
+                let info = tcx
+                    .coerce_unsized_info(impl_ref.def_id.real_rust_def_id())
+                    .unwrap();
+                // TODO: just accumulate this field index as we recurse down, for the consumer.
+                let ty::adjustment::CustomCoerceUnsized::Struct(i) = info.custom_kind.unwrap();
+                let field = &def.non_enum_variant().fields[i];
+                let typing_env = s.typing_env();
+                let src_ty = normalize(tcx, typing_env, field.ty(tcx, src_args));
+                let tgt_ty = normalize(tcx, typing_env, field.ty(tcx, tgt_args));
+                compute_unsizing_metadata(s, src_ty, tgt_ty)
+            }
+            (ty::Pat(a, _), ty::Pat(b, _)) => compute_unsizing_metadata(s, *a, *b),
+            _ => UnsizingMetadata::Unknown,
+        };
+    };
     let typing_env = s.typing_env();
     let (src_ty, tgt_ty) =
         tcx.struct_lockstep_tails_raw(src_ty, tgt_ty, |ty| normalize(tcx, typing_env, ty));
