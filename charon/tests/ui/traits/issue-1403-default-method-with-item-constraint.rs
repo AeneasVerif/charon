@@ -1,4 +1,3 @@
-//@ known-failure
 //@ no-default-options
 //@ charon-args=--translate-all-methods
 //@ charon-args=--lift-associated-types=*

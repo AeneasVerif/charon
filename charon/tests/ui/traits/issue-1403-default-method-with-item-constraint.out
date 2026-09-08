@@ -1,20 +1,59 @@
-error: Type error after transformations:
-       Mismatched trait clause:
-       expected: TraitClause0_1: ((): Trait<B>)
-            got: impl_Trait_for_unit: Trait<(), A>
-       Visitor stack:
-         charon_lib::ast::items::item_ids::FunDeclRef
-         charon_lib::ast::type_level::Binder<charon_lib::ast::items::item_ids::FunDeclRef>
-         charon_lib::ids::index_map::IndexMap<charon_lib::ast::items::trait_decl::TraitMethodId, charon_lib::ast::type_level::Binder<charon_lib::ast::items::item_ids::FunDeclRef>>
-         charon_lib::ast::items::trait_impl::TraitImpl
-       Binding stack (depth 2):
-         0: <'_0, Clause0_Assoc, TraitClause0: (@Adt0: @TraitDecl0<missing(@TypeBound(1, 0))>), TypeConstraint0: @TraitImpl0::@AssocType0 = @Adt2>
-         1: 
-  --> tests/ui/traits/issue-1403-unapplicable-method-constraint.rs:18:1
-   |
-18 | / impl Trait for () {
-19 | |     type Assoc = A;
-20 | | }
-   | |_^
+# Final LLBC before serialization:
 
-ERROR Charon failed to translate this code (1 errors)
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: test_crate::A
+pub struct A {}
+
+// Full name: test_crate::B
+pub struct B {}
+
+// Full name: test_crate::Trait
+pub trait Trait<Self, Self_Assoc>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self_Assoc: Sized)
+    fn method<'_0_1, Clause0_Assoc, TraitClause0_1: (Self: Trait<Clause0_Assoc>), TypeConstraint0: Self::Assoc = B> = method<'_0_1, Self, Clause0_Assoc>[Self, TraitClause0_1]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::Trait::method
+pub fn method<'_0, Self, Clause1_Assoc>(self: &'_0 Self)
+where
+    TraitClause0: (Self: Trait<B>),
+    TraitClause1: (Self: Trait<Clause1_Assoc>),
+    TypeOutlives0: Self: '_0,
+{
+    let _0: (); // return
+    let self: &'1 Self; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Trait<A> for ()}
+impl "impl_Trait_for_unit" Trait<A> for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: (A: Sized) = {built_in impl Sized for A}
+    fn method<'_0_1, Clause0_Assoc, TraitClause0_1: ((): Trait<Clause0_Assoc>), TypeConstraint0: impl_Trait_for_unit::Assoc = B> = method<'_0_1, (), Clause0_Assoc>[impl_Trait_for_unit, TraitClause0_1]
+    non-dyn-compatible
+}
+
+
+

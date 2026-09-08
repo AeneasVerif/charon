@@ -43,11 +43,12 @@ struct TypeCheckVisitor<'a> {
     body_lt_unifier: Option<UnionFind<RegionId>>,
     /// Whether `body_lt_unifier` merged anything, i.e. whether the body needs rewriting.
     did_unify_lifetimes: bool,
-    /// Copies of default methods may have contradictory premises like `Self::Item = bool` and
+    /// Defaulted methods may have contradictory premises like `Self::Item = bool` and
     /// `Self::Item = u32` which may equate entirely different types. We don't try to reason about
     /// this and instead accept this fact. It's fine because the original methods will be
     /// type-checked.
-    /// Example where this matters: tests/ui/traits/default-method-with-item-bound.6.rs
+    /// Some tests where this matters: default-method-with-item-bound.6.rs,
+    /// issue-1403-default-method-with-item-constraint
     accept_type_errors: bool,
 }
 
@@ -426,6 +427,19 @@ impl VisitAst for TypeCheckVisitor<'_> {
         VisitWithSpan::new(VisitWithBinderStack::new(self)).visit(x)?;
         self.visit_stack.pop();
         Continue(())
+    }
+
+    fn visit_binder<T: AstVisitable>(&mut self, binder: &Binder<T>) -> ControlFlow<Self::Break> {
+        let old_accept_type_errors = self.accept_type_errors;
+        // Default methods with unapplicable type constraints can give rise to type mismatches;
+        // seems to happen mostly when lifting associated types, so we skip typechecking in that
+        // case.
+        self.accept_type_errors |= matches!(&binder.kind, BinderKind::TraitMethod(..))
+            && !self.ctx.options.lift_associated_types.is_empty()
+            && !binder.params.trait_type_constraints.is_empty();
+        let result = self.visit_inner(binder);
+        self.accept_type_errors = old_accept_type_errors;
+        result
     }
 
     // Check that generics are correctly bound.
