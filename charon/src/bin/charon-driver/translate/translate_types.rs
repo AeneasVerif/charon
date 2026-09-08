@@ -730,13 +730,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             if min < start {
                                 children.push((min..=before_start, Discriminator::Invalid));
                             }
-                        } else if after_end < start {
-                            // The valid range wraps around: the invalid values are in the middle.
-                            children.push((after_end..=before_start, Discriminator::Invalid));
                         } else {
-                            // The valid range covers all values.
+                            // The valid range wraps around: the invalid values are in the middle.
+                            if after_end <= before_start {
+                                children.push((after_end..=before_start, Discriminator::Invalid));
+                            }
                         }
-
                         if variants[*untagged_variant].is_uninhabited() {
                             Discriminator::Invalid
                         } else {
