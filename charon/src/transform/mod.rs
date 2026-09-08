@@ -14,6 +14,7 @@ pub mod finish_translation {
 pub mod add_missing_info {
     pub mod add_implied_outlives;
     pub mod add_missing_alias_clauses;
+    pub mod add_missing_layout_guarantees;
     pub mod compute_short_names;
     pub mod link_specs;
     pub mod recover_body_comments;
@@ -116,6 +117,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         global(&add_missing_info::add_missing_alias_clauses::Transform),
         // Make explicit the outlives predicates implied by item signatures.
         global(&add_missing_info::add_implied_outlives::Transform),
+        // Instantiate missing layout guarantees that were left as place holders during translation.
+        global(&add_missing_info::add_missing_layout_guarantees::Transform),
     ]);
 
     // Body cleanup passes on the ullbc.
