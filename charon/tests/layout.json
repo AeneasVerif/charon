@@ -409,6 +409,181 @@
       "explicit_discr_type": null
     }
   },
+  "test_crate::NicheAdtSigned": {
+    "size": {
+      "guarantee": null,
+      "chosen": 4
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 4
+    },
+    "discriminator": {
+      "Branch": {
+        "offset": {
+          "guarantee": null,
+          "chosen": 0
+        },
+        "int_ty": {
+          "Signed": "I32"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I32",
+                  "0"
+                ]
+              },
+              "end": {
+                "Signed": [
+                  "I32",
+                  "0"
+                ]
+              }
+            },
+            {
+              "Known": 0
+            }
+          ]
+        ],
+        "fallback": {
+          "Known": 1
+        }
+      }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "I32",
+                "0"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": null
+    }
+  },
+  "test_crate::NicheAdtChar": {
+    "size": {
+      "guarantee": null,
+      "chosen": 4
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 4
+    },
+    "discriminator": {
+      "Branch": {
+        "offset": {
+          "guarantee": null,
+          "chosen": 0
+        },
+        "int_ty": {
+          "Unsigned": "U32"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "1114112"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "4294967294"
+                ]
+              }
+            },
+            "Invalid"
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "4294967295"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "4294967295"
+                ]
+              }
+            },
+            {
+              "Known": 0
+            }
+          ]
+        ],
+        "fallback": {
+          "Known": 1
+        }
+      }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "4294967295"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": null
+    }
+  },
   "test_crate::IsAZST": {
     "size": {
       "guarantee": null,
@@ -1037,6 +1212,23 @@
             {
               "Known": 2
             }
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "1114114"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "4294967295"
+                ]
+              }
+            },
+            "Invalid"
           ]
         ],
         "fallback": {
@@ -1813,62 +2005,66 @@
               "end": {
                 "Unsigned": [
                   "U8",
+                  "2"
+                ]
+              }
+            },
+            {
+              "Known": 0
+            }
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U8",
+                  "3"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U8",
+                  "3"
+                ]
+              }
+            },
+            "Invalid"
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U8",
+                  "4"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U8",
                   "4"
                 ]
               }
             },
             {
-              "Branch": {
-                "offset": {
-                  "guarantee": null,
-                  "chosen": 0
-                },
-                "int_ty": {
-                  "Unsigned": "U8"
-                },
-                "children": [
-                  [
-                    {
-                      "start": {
-                        "Unsigned": [
-                          "U8",
-                          "2"
-                        ]
-                      },
-                      "end": {
-                        "Unsigned": [
-                          "U8",
-                          "2"
-                        ]
-                      }
-                    },
-                    {
-                      "Known": 0
-                    }
-                  ],
-                  [
-                    {
-                      "start": {
-                        "Unsigned": [
-                          "U8",
-                          "4"
-                        ]
-                      },
-                      "end": {
-                        "Unsigned": [
-                          "U8",
-                          "4"
-                        ]
-                      }
-                    },
-                    {
-                      "Known": 2
-                    }
-                  ]
-                ],
-                "fallback": "Invalid"
-              }
+              "Known": 2
             }
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U8",
+                  "5"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U8",
+                  "255"
+                ]
+              }
+            },
+            "Invalid"
           ]
         ],
         "fallback": {
@@ -1913,6 +2109,380 @@
               "Unsigned": [
                 "U8",
                 "4"
+              ]
+            }
+          ]
+        ]
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": null
+    }
+  },
+  "test_crate::NicheInSignedRepr": {
+    "size": {
+      "guarantee": null,
+      "chosen": 1
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 1
+    },
+    "discriminator": {
+      "Branch": {
+        "offset": {
+          "guarantee": null,
+          "chosen": 0
+        },
+        "int_ty": {
+          "Signed": "I8"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I8",
+                  "-128"
+                ]
+              },
+              "end": {
+                "Signed": [
+                  "I8",
+                  "-3"
+                ]
+              }
+            },
+            "Invalid"
+          ],
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I8",
+                  "-2"
+                ]
+              },
+              "end": {
+                "Signed": [
+                  "I8",
+                  "-2"
+                ]
+              }
+            },
+            {
+              "Known": 1
+            }
+          ],
+          [
+            {
+              "start": {
+                "Signed": [
+                  "I8",
+                  "2"
+                ]
+              },
+              "end": {
+                "Signed": [
+                  "I8",
+                  "127"
+                ]
+              }
+            },
+            "Invalid"
+          ]
+        ],
+        "fallback": {
+          "Known": 0
+        }
+      }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
+        ],
+        "uninhabited": false,
+        "tagger": []
+      },
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Signed": [
+                "I8",
+                "-2"
+              ]
+            }
+          ]
+        ]
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": null
+    }
+  },
+  "test_crate::BigWithChar": {
+    "size": {
+      "guarantee": null,
+      "chosen": 16
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 8
+    },
+    "discriminator": {
+      "Known": 0
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          {
+            "guarantee": null,
+            "chosen": 0
+          },
+          {
+            "guarantee": null,
+            "chosen": 8
+          }
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ],
+    "repr": {
+      "repr_algo": "C",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": null
+    }
+  },
+  "test_crate::UninhabitedAtNicheEdge": {
+    "size": {
+      "guarantee": null,
+      "chosen": 16
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 8
+    },
+    "discriminator": {
+      "Branch": {
+        "offset": {
+          "guarantee": null,
+          "chosen": 8
+        },
+        "int_ty": {
+          "Unsigned": "U32"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "1114112"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "1114112"
+                ]
+              }
+            },
+            "Invalid"
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "1114113"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "1114113"
+                ]
+              }
+            },
+            {
+              "Known": 1
+            }
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "1114114"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "4294967295"
+                ]
+              }
+            },
+            "Invalid"
+          ]
+        ],
+        "fallback": {
+          "Known": 2
+        }
+      }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          {
+            "guarantee": null,
+            "chosen": 0
+          },
+          {
+            "guarantee": null,
+            "chosen": 4
+          }
+        ],
+        "uninhabited": true,
+        "tagger": []
+      },
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            8,
+            {
+              "Unsigned": [
+                "U32",
+                "1114113"
+              ]
+            }
+          ]
+        ]
+      },
+      {
+        "field_offsets": [
+          {
+            "guarantee": null,
+            "chosen": 0
+          }
+        ],
+        "uninhabited": false,
+        "tagger": []
+      }
+    ],
+    "repr": {
+      "repr_algo": "Rust",
+      "align_modif": null,
+      "transparent": false,
+      "explicit_discr_type": null
+    }
+  },
+  "test_crate::UninhabitedUntagged": {
+    "size": {
+      "guarantee": null,
+      "chosen": 4
+    },
+    "align": {
+      "guarantee": null,
+      "chosen": 4
+    },
+    "discriminator": {
+      "Branch": {
+        "offset": {
+          "guarantee": null,
+          "chosen": 0
+        },
+        "int_ty": {
+          "Unsigned": "U32"
+        },
+        "children": [
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "1114112"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "4294967294"
+                ]
+              }
+            },
+            "Invalid"
+          ],
+          [
+            {
+              "start": {
+                "Unsigned": [
+                  "U32",
+                  "4294967295"
+                ]
+              },
+              "end": {
+                "Unsigned": [
+                  "U32",
+                  "4294967295"
+                ]
+              }
+            },
+            {
+              "Known": 1
+            }
+          ]
+        ],
+        "fallback": "Invalid"
+      }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          {
+            "guarantee": null,
+            "chosen": 0
+          },
+          {
+            "guarantee": null,
+            "chosen": 4
+          }
+        ],
+        "uninhabited": true,
+        "tagger": []
+      },
+      {
+        "field_offsets": [],
+        "uninhabited": false,
+        "tagger": [
+          [
+            0,
+            {
+              "Unsigned": [
+                "U32",
+                "4294967295"
               ]
             }
           ]

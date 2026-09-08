@@ -624,18 +624,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     r_abi::Primitive::Float(_) => unreachable!(),
                 };
                 let tag_size = r_abi::Size::from_bytes(tag_ty.target_size(ptr_size));
-                let tag_for_variant = |id: rustc_abi::VariantIdx| {
-                    tcx.tag_for_variant(ty_env.as_query_input((ty, id)))
-                        .map(|s| match tag_ty {
-                            IntegerTy::Signed(int_ty) => {
-                                IntegerValue::from_int(ptr_size, int_ty, s.to_int(tag_size))
-                                    .unwrap()
-                            }
-                            IntegerTy::Unsigned(uint_ty) => {
-                                IntegerValue::from_uint(ptr_size, uint_ty, s.to_uint(tag_size))
-                                    .unwrap()
-                            }
+                // Reinterpret raw tag bits in `tag_ty`, sign-extending if needed.
+                let tag_from_bits = |bits: u128| IntegerValue::from_bits(tag_ty, bits);
+                let tag_for_variant = |id: rustc_abi::VariantIdx| match tag_encoding {
+                    r_abi::TagEncoding::Direct => tcx
+                        .tag_for_variant(ty_env.as_query_input((ty, id)))
+                        .map(|s| tag_from_bits(s.to_bits(tag_size))),
+                    r_abi::TagEncoding::Niche {
+                        untagged_variant,
+                        niche_variants,
+                        niche_start,
+                    } => {
+                        // the untagged variant and uninhabited variants have no tag
+                        (id != *untagged_variant && niche_variants.contains(&id)).then(|| {
+                            let relative = (id.index() - niche_variants.start.index()) as u128;
+                            tag_from_bits(tag_size.truncate(niche_start.wrapping_add(relative)))
                         })
+                    }
                 };
 
                 // Compute per-variant tag values and build tagger + discriminator children.
@@ -646,12 +651,19 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 for (id, variant_layout) in variants.iter_enumerated() {
                     let variant_id = self.translate_variant_id(id);
                     let tagger = if variant_layout.is_uninhabited() {
+                        // rustc ICEs when asked for the tag of an uninhabited variant,
+                        // so we only do this for niche encodings.
+                        if matches!(tag_encoding, r_abi::TagEncoding::Niche { .. })
+                            && let Some(val) = tag_for_variant(id)
+                        {
+                            children.push((val..=val, Discriminator::Invalid));
+                        }
                         vec![]
                     } else if let Some(val) = tag_for_variant(id) {
                         children.push((val..=val, Discriminator::Known(variant_id)));
                         vec![(tag_offset, val)]
                     } else {
-                        // Niched variant
+                        // Untagged variant of a niche encoding
                         vec![]
                     };
                     variant_layouts.push(translate_variant_layout(variant_layout, tagger));
@@ -659,32 +671,67 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
                 let fallback = match tag_encoding {
                     r_abi::TagEncoding::Direct => Discriminator::Invalid,
+                    // We follow what Minirust does:
+                    // https://github.com/minirust/minirust/blob/master/tooling/minimize/src/enums.rs
                     r_abi::TagEncoding::Niche {
                         untagged_variant,
                         niche_variants,
-                        ..
+                        niche_start,
                     } => {
-                        if niche_variants.contains(untagged_variant)
-                            && let Some(start) = tag_for_variant(niche_variants.start)
-                            && let Some(end) = tag_for_variant(niche_variants.last)
-                        {
-                            // Add an inner discriminator; the outer one filters the whole range of
-                            // values considered to be discriminants, the inner one selects known
-                            // variants from within that range. This is to detect the UB that
-                            // happens if we encounter a discriminant that would have been the
-                            // niched variant.
-                            let discriminator = Discriminator::Branch {
-                                offset: tag_offset_expr.clone(),
-                                int_ty: tag_ty,
-                                fallback: Box::new(Discriminator::Invalid),
-                                children,
-                            };
-                            children = vec![(start..=end, discriminator)];
+                        // The untagged variant may itself be in the range of niched variants, in
+                        // which case its niche value must never be encountered.
+                        if niche_variants.contains(untagged_variant) {
+                            let relative =
+                                (untagged_variant.index() - niche_variants.start.index()) as u128;
+                            let val = tag_from_bits(
+                                tag_size.truncate(niche_start.wrapping_add(relative)),
+                            );
+                            children.push((val..=val, Discriminator::Invalid));
                         }
-                        Discriminator::Known(self.translate_variant_id(*untagged_variant))
+
+                        // Every value outside the valid range of the tag is invalid. The valid
+                        // range is given as bits and may wrap around; we compare in `tag_ty`.
+                        let valid = tag.valid_range(&self.t_ctx.tcx);
+                        let start = tag_from_bits(valid.start);
+                        let end = tag_from_bits(valid.end);
+                        let (min, max) = match tag_ty {
+                            IntegerTy::Signed(_) => (
+                                tag_from_bits(tag_size.truncate(tag_size.signed_int_min() as u128)),
+                                tag_from_bits(tag_size.signed_int_max() as u128),
+                            ),
+                            IntegerTy::Unsigned(_) => {
+                                (tag_from_bits(0), tag_from_bits(tag_size.unsigned_int_max()))
+                            }
+                        };
+
+                        let after_end = tag_from_bits(tag_size.truncate(valid.end.wrapping_add(1)));
+                        let before_start =
+                            tag_from_bits(tag_size.truncate(valid.start.wrapping_sub(1)));
+                        if start <= end {
+                            // The valid range is contiguous: the invalid values are on either side.
+                            if end < max {
+                                children.push((after_end..=max, Discriminator::Invalid));
+                            }
+                            if min < start {
+                                children.push((min..=before_start, Discriminator::Invalid));
+                            }
+                        } else if after_end < start {
+                            // The valid range wraps around: the invalid values are in the middle.
+                            children.push((after_end..=before_start, Discriminator::Invalid));
+                        } else {
+                            // The valid range covers all values.
+                        }
+
+                        if variants[*untagged_variant].is_uninhabited() {
+                            Discriminator::Invalid
+                        } else {
+                            Discriminator::Known(self.translate_variant_id(*untagged_variant))
+                        }
                     }
                 };
 
+                // The ranges are disjoint; sort them for readability.
+                children.sort_by_key(|(range, _)| *range.start());
                 let discriminator = Discriminator::Branch {
                     offset: tag_offset_expr,
                     int_ty: tag_ty,
