@@ -314,14 +314,34 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         region: &hax::LateParamRegion,
     ) -> Result<RegionDbVar, Error> {
-        let hax::LateParamRegionKind::Named(def_id, _) = &region.kind else {
-            raise_error!(self, span, "Unexpected late-bound region: {region:?}")
-        };
-        self.lookup_param(
-            span,
-            |bl| bl.region_vars_by_def_id.get(def_id).copied(),
-            || format!("the late-bound region variable {region:?}"),
-        )
+        use hax::LateParamRegionKind::*;
+        match &region.kind {
+            Anon(index) | NamedAnon(index, _) if &region.scope == self.item_src.def_id() => {
+                // These come from liberate_late_bound_regions on a closure signature. They are
+                // bound in the toplevel binder.
+                let Some(region_id) = self
+                    .outermost_binder()
+                    .bound_region_vars
+                    .get(*index as usize)
+                    .copied()
+                else {
+                    raise_error!(
+                        self,
+                        span,
+                        "Unexpected error: could not find the late-bound region variable {region:?}"
+                    )
+                };
+                Ok(DeBruijnVar::bound(self.binding_levels.depth(), region_id))
+            }
+            Named(def_id, _) => self.lookup_param(
+                span,
+                |bl| bl.region_vars_by_def_id.get(def_id).copied(),
+                || format!("the late-bound region variable {region:?}"),
+            ),
+            Anon(_) | NamedAnon(..) | ClosureEnv => {
+                raise_error!(self, span, "Unexpected late-bound region: {region:?}")
+            }
+        }
     }
 
     pub(crate) fn lookup_type_var(

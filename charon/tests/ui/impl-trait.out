@@ -308,7 +308,7 @@ where
     return
 }
 
-// Full name: test_crate::wrap::{impl FnOnce<(&'_ U,)> for {closure}<U>[TraitClause0]}::call_once
+// Full name: test_crate::wrap::{impl FnOnce<(&'_0 U,)> for {closure}<U>[TraitClause0]}::call_once
 fn call_once<'_0, U>(_1: {closure}<U>[TraitClause0], tupled_args: (&'_0 U,)) -> WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]
 where
     TraitClause0: (U: Sized),
@@ -333,16 +333,17 @@ where
     return
 }
 
-// Full name: test_crate::wrap::{impl FnOnce<(&'_ U,)> for {closure}<U>[TraitClause0]}
-impl<'_0, U> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_ U,)> for {closure}<U>[TraitClause0]
+// Full name: test_crate::wrap::{impl FnOnce<(&'_0 U,)> for {closure}<U>[TraitClause0]}
+impl<'_0, U> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_0 U,)> for {closure}<U>[TraitClause0]
 where
     TraitClause0: (U: Sized),
+    TypeOutlives0: U: '_0,
 {
     proof ImpliedClause0: ({closure}<U>[TraitClause0]: MetaSized) = {built_in impl MetaSized for {closure}<U>[TraitClause0]}
-    proof ImpliedClause1: ((&'_ U,): Sized) = {built_in impl Sized for (&'_ U,)}
-    proof ImpliedClause2: ((&'_ U,): Tuple) = {built_in impl Tuple for (&'_ U,)}
-    proof ImpliedClause3: (WrapClone<&'_ U>[{built_in impl Sized for &'_ U}, {impl Clone for &'_0 T}<'_, U>]: Sized) = {built_in impl Sized for WrapClone<&'_ U>[{built_in impl Sized for &'_ U}, {impl Clone for &'_0 T}<'_, U>]}
-    type Output = WrapClone<&'_ U>[{built_in impl Sized for &'_ U}, {impl Clone for &'_0 T}<'_, U>]
+    proof ImpliedClause1: ((&'_0 U,): Sized) = {built_in impl Sized for (&'_0 U,)}
+    proof ImpliedClause2: ((&'_0 U,): Tuple) = {built_in impl Tuple for (&'_0 U,)}
+    proof ImpliedClause3: (WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]: Sized) = {built_in impl Sized for WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]}
+    type Output = WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]
     fn call_once = call_once<'_0, U>[TraitClause0]
     vtable: impl_FnOnce_tuple_for_closure::{vtable}<'_0, U>[TraitClause0]
 }
