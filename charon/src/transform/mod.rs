@@ -327,7 +327,9 @@ impl TransformCtx {
                     }
                 });
                 for pass in passes.iter() {
-                    pass.finalize(self);
+                    if pass.should_run(&self.options) {
+                        pass.finalize(self);
+                    }
                 }
             }
             Pass::FusedStructuredBody(passes) => {
