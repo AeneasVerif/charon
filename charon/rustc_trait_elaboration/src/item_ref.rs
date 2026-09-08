@@ -138,6 +138,9 @@ pub struct ItemRefContents<'tcx, Id: ItemId = DefId> {
     pub def_id: Id,
     /// The arguments provided to this item.
     pub generic_args: ty::GenericArgsRef<'tcx>,
+    /// The number of generic arguments excluding the extra inference arguments of closures and
+    /// inline consts.
+    pub proper_arg_count: usize,
     /// Witnesses of the trait clauses required by the item, e.g. `T: Sized` for `Option<T>`.
     pub trait_proofs: Vec<TraitProof<'tcx, Id>>,
     /// If we're referring to a trait associated item, this gives the trait clause/impl we're
@@ -210,11 +213,6 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         // Normalize the generics.
         let mut generics = normalize(tcx, typing_env, ty::Unnormalized::new_wip(generics));
 
-        // Rustc gives closures/inline consts extra generic for inference that we don't care about.
-        if let Some(parent) = def_id.typeck_parent(state) {
-            generics = generics.truncate_to(tcx, parent.generics_of(state));
-        }
-
         // If this is an associated item, resolve the trait reference.
         let mut trait_info = if assoc_item_resolution != AssocItemResolution::None
             && let Some(tr_def_id) = def_id.parent_of_assoc(state)
@@ -249,10 +247,17 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
 
         let trait_proofs = self.resolve_item_required_predicates(state, def_id.clone(), generics);
         let needs_explicit_self_clause = def_id.takes_explicit_self_clause(state);
+        // Rustc gives closures/inline consts extra generics for inference that we don't expose.
+        let proper_arg_count = if let Some(parent) = def_id.typeck_parent(state) {
+            parent.generics_of(state).count()
+        } else {
+            generics.len()
+        };
 
         let content = ItemRefContents {
             def_id,
             generic_args: generics,
+            proper_arg_count,
             trait_proofs,
             in_trait: trait_info,
             needs_explicit_self_clause,
@@ -271,6 +276,7 @@ impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
         let content = ItemRefContents {
             def_id,
             generic_args: Default::default(),
+            proper_arg_count: 0,
             trait_proofs: Default::default(),
             in_trait: Default::default(),
             needs_explicit_self_clause: false,
@@ -297,7 +303,7 @@ impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
         } else {
             0
         };
-        &self.generic_args[start..]
+        &self.generic_args[start..self.proper_arg_count]
     }
     /// The trait proofs passed to the item, except for trait associated items these are only the
     /// proofs of the method/type/const itself.
