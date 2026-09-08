@@ -782,7 +782,6 @@ impl LayoutGuarantees {
     ///
     /// NOTE: Must only ever be called in a context with a single target!
     /// Will panic otherwise.
-    #[tracing::instrument(skip(krate))]
     pub fn for_type_decl(
         td_kind: &TypeDeclKind,
         krate: &TranslatedCrate,
@@ -975,7 +974,8 @@ impl<'a> LayoutComputer<'a> {
 
                         for (var_id, var) in variants.iter_mut_enumerated() {
                             let (_, parts) = self.stack.last_mut().unwrap();
-                            debug_assert_eq!(parts.offsets.push(IndexVec::new()), var_id);
+                            let pushed_id = parts.offsets.push(IndexVec::new());
+                            debug_assert_eq!(pushed_id, var_id);
                             let get_field_ty =
                                 |f_id| ty_decl.get_field(Some(var_id), f_id).unwrap().ty.clone();
                             for (f_id, field) in var.iter_mut_enumerated() {
@@ -992,7 +992,8 @@ impl<'a> LayoutComputer<'a> {
                     OffsetGuarantees::Fields(fields) => {
                         let ty_decl = self.krate.type_decls.get(ty.as_adt_id().unwrap()).unwrap();
                         let (_, parts) = self.stack.last_mut().unwrap();
-                        debug_assert_eq!(parts.offsets.push(IndexVec::new()), VariantId::ZERO);
+                        let zero_id = parts.offsets.push(IndexVec::new());
+                        debug_assert_eq!(zero_id, VariantId::ZERO);
                         let get_field_ty = |f_id| ty_decl.get_field(None, f_id).unwrap().ty.clone();
                         for (f_id, field) in fields.iter_mut_enumerated() {
                             self.normalize_field_offset(field, None, f_id, get_field_ty, &None);
