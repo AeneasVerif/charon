@@ -7,11 +7,11 @@ use tracing::debug;
 
 use crate::{
     ast::{
-        AlignmentModifier, BuiltinTy, ConstantExpr, ConstantExprKind, ExactSizeExpr,
-        ExactSizeExprKind, Field, FieldId, HashConsSerializerState, IndexVec, IntTy, Layout,
-        LiteralTy, MetadataValue, OffsetGuarantee, ReprAlgorithm, ReprOptions, ScalarValue,
-        SubstVisitor, TargetInfo, TargetTriple, TranslatedCrate, Ty, TyKind, TypeDeclKind,
-        TypeDeclRef, UIntTy, VariantId, VariantLayout, VisitAstMut,
+        AlignmentModifier, BuiltinTy, ConstantExpr, ConstantExprKind, DedupSerializerState,
+        ExactSizeExpr, ExactSizeExprKind, Field, FieldId, IndexVec, IntTy, Layout, LiteralTy,
+        MetadataValue, OffsetGuarantee, ReprAlgorithm, ReprOptions, ScalarValue, SubstVisitor,
+        TargetInfo, TargetTriple, TranslatedCrate, Ty, TyKind, TypeDeclKind, TypeDeclRef, UIntTy,
+        VariantId, VariantLayout, VisitAstMut,
     },
     formatter::FmtCtx,
     pretty::FmtWithCtx,
@@ -31,7 +31,7 @@ use crate::{
     VariantName,
     DriveTwo,
 )]
-#[serde_state(state_implements = HashConsSerializerState)]
+#[serde_state(state_implements = DedupSerializerState)]
 #[cfg_attr(
     feature = "charon_on_charon",
     charon::variants_prefix("OffsetGuarantee")
@@ -121,7 +121,7 @@ impl OffsetGuarantees {
 #[derive(
     Debug, Clone, PartialEq, Eq, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
 )]
-#[serde_state(state_implements = HashConsSerializerState)]
+#[serde_state(state_implements = DedupSerializerState)]
 pub struct LayoutGuarantees {
     pub size: ExactSizeExpr,
     pub align: ExactSizeExpr,
@@ -226,7 +226,7 @@ impl<'a, 'b> LayoutGuaranteeComputer<'a, 'b> {
             } else {
                 LayoutGuarantees::mk_ordered_sequence_repr_c(
                     fields,
-                    Some(VariantId::from_raw(id)),
+                    Some(VariantId::from_raw(id as u32)),
                     tag_ty.clone(),
                 )
             };
@@ -518,7 +518,9 @@ impl<'a, 'b> LayoutGuaranteeComputer<'a, 'b> {
                     offsets: OffsetGuarantees::None,
                 })
             }
-            TyKind::Array(elem_ty, elem_num) => Some(LayoutGuarantees::mk_array(elem_ty, elem_num)),
+            TyKind::Array(elem_ty, elem_num, _) => {
+                Some(LayoutGuarantees::mk_array(elem_ty, elem_num))
+            }
             // For DSTs, we could think of a layout that is not only symbolic,
             // but also parametric in some meta data value.
             // For slice-like DSTs, we at least know that the alignment is the same as for the underlying array.
@@ -537,7 +539,7 @@ impl<'a, 'b> LayoutGuaranteeComputer<'a, 'b> {
                 })
             }
             // See https://doc.rust-lang.org/reference/type-layout.html#r-layout.slice
-            TyKind::Slice(_) => Some(LayoutGuarantees {
+            TyKind::Slice(_, _) => Some(LayoutGuarantees {
                 align: expr_of_ty(ty, false).into_expr(),
                 size: expr_of_ty(ty, true).into_expr(),
                 offsets: OffsetGuarantees::None,
@@ -663,7 +665,8 @@ impl LayoutGuarantees {
         };
         for (id, ty) in fields.enumerate() {
             let end_of_field = ExactSizeExprKind::Plus(
-                ExactSizeExprKind::FieldOffset(variant_id, FieldId::from_raw(id)).into_expr(),
+                ExactSizeExprKind::FieldOffset(variant_id, FieldId::from_raw(id as u32))
+                    .into_expr(),
                 expr_of_ty(&ty, true).into_expr(),
             );
             size_max.push(end_of_field.into_expr());
@@ -734,7 +737,8 @@ impl LayoutGuarantees {
             if peekable_fields.peek().is_none() {
                 // Only the last field is relevant for the size here.
                 size = ExactSizeExprKind::Plus(
-                    ExactSizeExprKind::FieldOffset(variant_id, FieldId::from_raw(id)).into_expr(),
+                    ExactSizeExprKind::FieldOffset(variant_id, FieldId::from_raw(id as u32))
+                        .into_expr(),
                     expr_of_ty(&ty, true).into_expr(),
                 )
                 .into_expr()
@@ -749,7 +753,7 @@ impl LayoutGuarantees {
                 }
             } else {
                 field_offsets.push(OffsetGuarantee::ReprCField {
-                    predecessor: Some(FieldId::from_raw(id - 1)),
+                    predecessor: Some(FieldId::from_raw(id as u32 - 1)),
                 });
             }
         }

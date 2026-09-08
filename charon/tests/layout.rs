@@ -340,7 +340,7 @@ fn type_layout() -> anyhow::Result<()> {
             indent_level: 1,
             ..Default::default()
         };
-        let name = repr_name(&crate_data, &tdecl.item_meta.name);
+        let name = tdecl.item_meta.name.debug_repr(&crate_data);
         writeln!(&mut buffer, "{name}")?;
         let fake_ty = Ty::new(TyKind::Adt(TypeDeclRef {
             id: tdecl.def_id,
