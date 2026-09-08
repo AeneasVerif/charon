@@ -625,7 +625,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 };
                 let tag_size = r_abi::Size::from_bytes(tag_ty.target_size(ptr_size));
                 // Reinterpret raw tag bits in `tag_ty`, sign-extending if needed.
-                let tag_from_bits = |bits: u128| IntegerValue::from_bits(tag_ty, bits);
+                let tag_from_bits =
+                    |bits: u128| IntegerValue::from_bits(tag_ty, tag_size.truncate(bits));
 
                 struct VariantTagInfo {
                     /// The value of the tag for this variant, even if this is the untagged variant
@@ -661,7 +662,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         } => {
                             let value = niche_variants.contains(&id).then(|| {
                                 let relative = (id.index() - niche_variants.start.index()) as u128;
-                                tag_from_bits(tag_size.truncate(niche_start.wrapping_add(relative)))
+                                tag_from_bits(niche_start.wrapping_add(relative))
                             });
                             VariantTagInfo {
                                 value,
@@ -711,7 +712,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         let end = tag_from_bits(valid.end);
                         let (min, max) = match tag_ty {
                             IntegerTy::Signed(_) => (
-                                tag_from_bits(tag_size.truncate(tag_size.signed_int_min() as u128)),
+                                tag_from_bits(tag_size.signed_int_min() as u128),
                                 tag_from_bits(tag_size.signed_int_max() as u128),
                             ),
                             IntegerTy::Unsigned(_) => {
@@ -719,9 +720,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             }
                         };
 
-                        let after_end = tag_from_bits(tag_size.truncate(valid.end.wrapping_add(1)));
-                        let before_start =
-                            tag_from_bits(tag_size.truncate(valid.start.wrapping_sub(1)));
+                        let after_end = tag_from_bits(valid.end.wrapping_add(1));
+                        let before_start = tag_from_bits(valid.start.wrapping_sub(1));
                         if start <= end {
                             // The valid range is contiguous: the invalid values are on either side.
                             if end < max {
