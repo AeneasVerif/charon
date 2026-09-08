@@ -122,7 +122,7 @@ let ty_as_adt (ty : ty) : type_decl_ref =
   | Some tref -> tref
   | None -> raise (Failure "Unreachable")
 
-let ty_as_builtin_adt_opt (ty : ty) : (builtin_ty * generic_args) option =
+let ty_as_builtin_adt_opt (ty : ty) : (builtin_adt * generic_args) option =
   match ty with
   | TAdt { builtin = Some id; generics; _ } -> Some (id, generics)
   | _ -> None
@@ -130,7 +130,7 @@ let ty_as_builtin_adt_opt (ty : ty) : (builtin_ty * generic_args) option =
 let ty_is_builtin_adt (ty : ty) : bool =
   Option.is_some (ty_as_builtin_adt_opt ty)
 
-let ty_as_builtin_adt (ty : ty) : builtin_ty * generic_args =
+let ty_as_builtin_adt (ty : ty) : builtin_adt * generic_args =
   match ty_as_builtin_adt_opt ty with
   | Some (id, generics) -> (id, generics)
   | None -> raise (Failure "Unreachable")
@@ -174,29 +174,18 @@ let ty_as_custom_adt (ty : ty) : TypeDeclId.id * generic_args =
   | TAdt { id; generics; builtin = None } -> (id, generics)
   | _ -> raise (Failure "Unreachable")
 
-let ty_as_literal (ty : ty) : literal_type =
+let ty_as_scalar (ty : ty) : scalar_type =
   match ty with
-  | TLiteral lty -> lty
+  | TScalar scalar_ty -> scalar_ty
   | _ -> raise (Failure "Unreachable")
 
-let literal_as_integer (literal : literal_type) : integer_type =
-  match literal with
-  | TInt ty -> Signed ty
-  | TUInt ty -> Unsigned ty
+let scalar_as_integer (scalar : scalar_type) : integer_type =
+  match scalar with
+  | TInteger ty -> ty
   | _ -> raise (Failure "Unreachable")
 
-let ty_as_integer (ty : ty) : integer_type =
-  literal_as_integer (ty_as_literal ty)
-
-let integer_as_literal (int_ty : integer_type) : literal_type =
-  match int_ty with
-  | Signed int_ty -> TInt int_ty
-  | Unsigned int_ty -> TUInt int_ty
-
-let constant_expr_as_literal (c : constant_expr) : Values.literal =
-  match c.kind with
-  | CLiteral v -> v
-  | _ -> raise (Failure "Unreachable")
+let ty_as_integer (ty : ty) : integer_type = scalar_as_integer (ty_as_scalar ty)
+let integer_as_scalar (int_ty : integer_type) : scalar_type = TInteger int_ty
 
 let trait_instance_id_as_trait_impl (id : trait_ref_kind) :
     trait_impl_id * generic_args =
@@ -264,7 +253,7 @@ let generic_args_of_params span (generics : generic_params) : generic_args =
   { regions; types; const_generics; trait_refs }
 
 (** The usize type *)
-let mk_usize_ty : ty = TLiteral (TUInt Usize)
+let mk_usize_ty : ty = TScalar (TInteger (Unsigned Usize))
 
 let ty_as_opt_box (box_ty : ty) : ty option =
   match box_ty with

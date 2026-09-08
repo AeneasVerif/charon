@@ -52,7 +52,7 @@ use derive_generic_visitor::*;
         Abi, BuiltinImplData, Byte, DeprecatedSince, DropKind, Error, FileName,
         GlobalKind, ItemOpacity, LangItem, LifetimeMutability, OptimizeAttr, OverflowMode,
         ReprOptions, Variance,
-        std::ops::RangeInclusive<ScalarValue>,
+        std::ops::RangeInclusive<IntegerValue>,
         WithRetag, BuiltinPathElem, BranchId,
     ),
     // Types that are completely skipped, even by `ZipAst`.
@@ -62,14 +62,14 @@ use derive_generic_visitor::*;
     ),
     // Types that we unconditionally explore.
     drive(
-        Assert, AttributeKind, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAssertKind, BuiltinTy,
+        Assert, AttributeKind, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAdt, BuiltinAssertKind,
         Call, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Deprecation, Disambiguator, DynPredicate, Field, FieldId, File, FloatTy, FloatValue,
-        FnOperand, FunId, FnPtrKind, FunSig, InlineAttr, IntegerTy, IntTy, UIntTy, Literal, LiteralTy,
+        FnOperand, FunId, FnPtrKind, FunSig, InlineAttr, IntegerTy, IntTy, UIntTy, ScalarTy,
         Ident, from_rustc::InlineAttr,
         llbc_ast::ExprBody, llbc_ast::StatementKind,
         Loc, Locals, NullOp, Operand, PathElem, PlaceKind,
-        RawAttribute, RefKind, RegionId, RegionParam, ScalarValue, TraitItemName, TraitMethodId, AssocTypeId, AssocConstId, AssocItemId, MaybeAssocItemId,
+        RawAttribute, RefKind, RegionId, RegionParam, IntegerValue, TraitItemName, TraitMethodId, AssocTypeId, AssocConstId, AssocItemId, MaybeAssocItemId,
         TranslatedCrate, TypeDeclKind, TypeParam, TypePattern, TypeVarId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, SwitchData, SwitchScrutinee,
@@ -198,9 +198,9 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
     skip(
         AbortKind, BinOp, BorrowKind, BranchId, BuiltinAssertKind, ConstantExpr, FieldId,
         TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
-        NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId,  UnOp, VariantId,
-        TraitRef, LiteralTy, Literal, Region, RegionId, (), String, PathBuf, bool, u32, usize,
-        DropKind, Error, Variance, WithRetag, BuiltinTy, BuiltinPathElem,
+        NullOp, RefKind, IntegerValue, Span, Ty, TypeDeclId,  UnOp, VariantId,
+        TraitRef, ScalarTy, Region, RegionId, (), String, PathBuf, bool, u32, usize,
+        DropKind, Error, Variance, WithRetag, BuiltinAdt, BuiltinPathElem,
         llbc_ast::BlockId, llbc_ast::StatementId,
     ),
     // Types that we unconditionally explore.

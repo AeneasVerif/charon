@@ -52,10 +52,9 @@ let pp_float_type (fmt : Format.formatter) = function
   | F64 -> pp_string fmt "f64"
   | F128 -> pp_string fmt "f128"
 
-let pp_literal_type (fmt : Format.formatter) (ty : literal_type) : unit =
+let pp_scalar_type (fmt : Format.formatter) (ty : scalar_type) : unit =
   match ty with
-  | TInt ity -> pp_integer_type fmt (Signed ity)
-  | TUInt uty -> pp_integer_type fmt (Unsigned uty)
+  | TInteger ity -> pp_integer_type fmt ity
   | TFloat fty -> pp_float_type fmt fty
   | TBool -> pp_string fmt "bool"
   | TChar -> pp_string fmt "char"
@@ -63,9 +62,9 @@ let pp_literal_type (fmt : Format.formatter) (ty : literal_type) : unit =
 let pp_big_int (fmt : Format.formatter) (bi : big_int) : unit =
   pp_string fmt (Z.to_string bi)
 
-let pp_scalar_value (fmt : Format.formatter) (sv : scalar_value) : unit =
-  Format.fprintf fmt "%a%a" pp_big_int (Scalars.get_val sv) pp_integer_type
-    (Scalars.get_ty sv)
+let pp_integer_value (fmt : Format.formatter) (v : integer_value) : unit =
+  Format.fprintf fmt "%a%a" pp_big_int (Scalars.get_val v) pp_integer_type
+    (Scalars.get_ty v)
 
 let pp_float_value (fmt : Format.formatter) (fv : float_value) : unit =
   Format.fprintf fmt "%s%a" fv.float_value pp_float_type fv.float_ty
@@ -113,18 +112,6 @@ let escape_char_debug (c : Uchar.t) : string =
   | 0x22 -> "\\\""
   | _ when i >= 0x20 && i <= 0x7e -> uchar_to_utf8 c
   | _ -> Printf.sprintf "\\u{%x}" i
-
-let pp_literal (fmt : Format.formatter) (lit : literal) : unit =
-  match lit with
-  | VScalar sv -> pp_scalar_value fmt sv
-  | VFloat fv -> pp_float_value fmt fv
-  | VBool b -> pp_string fmt (Bool.to_string b)
-  | VChar c -> Format.fprintf fmt "'%s'" (escape_char_debug c)
-  | VStr s -> Format.fprintf fmt "\"%s\"" (escape_string s)
-  | VByteStr bs ->
-      Format.fprintf fmt "[%a]"
-        (pp_sep_list ", " (fun fmt b -> pp_string fmt (string_of_int b)))
-        bs
 
 let pp_g_region_group (pp_rid : Format.formatter -> 'rid -> unit)
     (pp_id : Format.formatter -> 'id -> unit) (fmt : Format.formatter)
@@ -486,7 +473,15 @@ and pp_const_aggregate (env : fmt_env) (tref : type_decl_ref) opt_variant_id
 and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
     (cv : constant_expr) : unit =
   match cv.kind with
-  | CLiteral lit -> pp_literal fmt lit
+  | CInteger v -> pp_integer_value fmt v
+  | CFloat fv -> pp_float_value fmt fv
+  | CBool b -> pp_string fmt (Bool.to_string b)
+  | CChar c -> Format.fprintf fmt "'%s'" (escape_char_debug c)
+  | CStr s -> Format.fprintf fmt "\"%s\"" (escape_string s)
+  | CByteStr bs ->
+      Format.fprintf fmt "[%a]"
+        (pp_sep_list ", " (fun fmt b -> pp_string fmt (string_of_int b)))
+        bs
   | CDiscriminant ({ id = type_id; _ }, variant_id) ->
       Format.fprintf fmt "discriminant_of(%a)"
         (pp_adt_variant env type_id)
@@ -586,7 +581,7 @@ and pp_ty (env : fmt_env) (fmt : Format.formatter) (ty : ty) : unit =
   | TAdt tref -> pp_type_decl_ref env fmt tref
   | TVar tv -> pp_string fmt (type_db_var_to_string env tv)
   | TNever -> pp_string fmt "!"
-  | TLiteral lit_ty -> pp_literal_type fmt lit_ty
+  | TScalar scalar_ty -> pp_scalar_type fmt scalar_ty
   | TPattern (ty, pat) ->
       Format.fprintf fmt "%a is %a" (pp_ty env) ty (pp_type_pattern env) pat
   | TTraitType (trait_ref, type_id, generics) ->
@@ -1433,7 +1428,7 @@ and pp_cast_kind (env : fmt_env) (fmt : Format.formatter) (cast : cast_kind) :
     unit =
   match cast with
   | CastScalar (src, tgt) ->
-      Format.fprintf fmt "cast<%a, %a>" pp_literal_type src pp_literal_type tgt
+      Format.fprintf fmt "cast<%a, %a>" pp_scalar_type src pp_scalar_type tgt
   | CastFnPtr (src, tgt) | CastRawPtr (src, tgt) ->
       Format.fprintf fmt "cast<%a, %a>" (pp_ty env) src (pp_ty env) tgt
   | CastTransmute (src, tgt) ->

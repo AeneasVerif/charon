@@ -360,7 +360,7 @@ impl SwitchData {
         let SwitchScrutinee::Value(scrutinee) = &self.scrutinee else {
             return None;
         };
-        if !matches!(scrutinee.ty().kind(), TyKind::Literal(LiteralTy::Bool)) {
+        if !matches!(scrutinee.ty().kind(), TyKind::Scalar(ScalarTy::Bool)) {
             return None;
         }
 
@@ -368,11 +368,7 @@ impl SwitchData {
             self.branches
                 .iter()
                 .find_map(|(case, branch_id)| match case.kind() {
-                    ConstantExprKind::Literal(Literal::Bool(case_value))
-                        if *case_value == value =>
-                    {
-                        Some(*branch_id)
-                    }
+                    ConstantExprKind::Bool(case_value) if *case_value == value => Some(*branch_id),
                     _ => None,
                 })
                 .or(self.fallback)

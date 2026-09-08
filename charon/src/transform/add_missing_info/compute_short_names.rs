@@ -126,7 +126,7 @@ fn trait_impl_short_name(
 
     fn ty_to_idents(item_names: &SeqHashMap<ItemId, Name>, ty: &Ty) -> Option<String> {
         Some(match ty.kind() {
-            TyKind::Literal(literal) => literal.to_string(),
+            TyKind::Scalar(scalar) => scalar.to_string(),
             TyKind::Slice(..) => "slice".to_owned(),
             TyKind::Array(..) => "array".to_owned(),
             TyKind::Adt(tref) => item_to_ident(item_names, ItemId::Type(tref.id))?,

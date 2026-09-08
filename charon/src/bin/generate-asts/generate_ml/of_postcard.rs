@@ -147,9 +147,9 @@ impl<'a> GenerateCtx<'a> {
 
     fn type_to_ocaml_postcard_call(&self, ty: &Ty) -> String {
         match ty.kind() {
-            TyKind::Literal(LiteralTy::Bool) => "bool_of_postcard".to_string(),
-            TyKind::Literal(LiteralTy::Char) => "char_of_postcard".to_string(),
-            TyKind::Literal(LiteralTy::Int(int_ty)) => match int_ty {
+            TyKind::Scalar(ScalarTy::Bool) => "bool_of_postcard".to_string(),
+            TyKind::Scalar(ScalarTy::Char) => "char_of_postcard".to_string(),
+            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Signed(int_ty))) => match int_ty {
                 IntTy::Isize => "isize_of_postcard".to_string(),
                 IntTy::I8 => "i8_of_postcard".to_string(),
                 IntTy::I16 => "i16_of_postcard".to_string(),
@@ -157,7 +157,7 @@ impl<'a> GenerateCtx<'a> {
                 IntTy::I64 => "i64_of_postcard".to_string(),
                 IntTy::I128 => "big_int_of_postcard".to_string(),
             },
-            TyKind::Literal(LiteralTy::UInt(uint_ty)) => match uint_ty {
+            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(uint_ty))) => match uint_ty {
                 UIntTy::Usize => "usize_of_postcard".to_string(),
                 UIntTy::U8 => "u8_of_postcard".to_string(),
                 UIntTy::U16 => "u16_of_postcard".to_string(),
@@ -165,8 +165,8 @@ impl<'a> GenerateCtx<'a> {
                 UIntTy::U64 => "u64_of_postcard".to_string(),
                 UIntTy::U128 => "big_uint_of_postcard".to_string(),
             },
-            TyKind::Literal(LiteralTy::Float(FloatTy::F32)) => "f32_of_postcard".to_string(),
-            TyKind::Literal(LiteralTy::Float(_)) => "float_of_postcard".to_string(),
+            TyKind::Scalar(ScalarTy::Float(FloatTy::F32)) => "f32_of_postcard".to_string(),
+            TyKind::Scalar(ScalarTy::Float(_)) => "float_of_postcard".to_string(),
             TyKind::Adt(tref) => {
                 let mut expr = Vec::new();
                 for ty in &tref.generics.types {
@@ -204,8 +204,8 @@ impl<'a> GenerateCtx<'a> {
 
                         expr.insert(0, first + "_of_postcard");
                     }
-                    Some(BuiltinTy::Box) => expr.insert(0, "box_of_postcard".to_owned()),
-                    Some(BuiltinTy::Tuple) => {
+                    Some(BuiltinAdt::Box) => expr.insert(0, "box_of_postcard".to_owned()),
+                    Some(BuiltinAdt::Tuple) => {
                         let name = match tref.generics.types.len() {
                             2 => "pair_of_postcard".to_string(),
                             3 => "triple_of_postcard".to_string(),

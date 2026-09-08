@@ -61,15 +61,14 @@ let switch_as_if (data : switch_data) : (branch_id * branch_id) option =
         | Expressions.Copy p | Expressions.Move p -> p.ty
         | Expressions.Constant cv -> cv.ty
       in
-      if ty <> TLiteral TBool then None
+      if ty <> TScalar TBool then None
       else
         let branch_for value =
           match
             List.find_map
               (fun ((case : constant_expr), branch_id) ->
                 match case.kind with
-                | CLiteral (Values.VBool case_value) when case_value = value ->
-                    Some branch_id
+                | CBool case_value when case_value = value -> Some branch_id
                 | _ -> None)
               data.branches
           with

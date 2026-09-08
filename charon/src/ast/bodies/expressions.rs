@@ -232,7 +232,7 @@ pub enum UnOp {
 pub enum CastKind {
     /// Conversion between types in `{Integer, Bool}`
     /// Remark: for now we don't support conversions with Char.
-    Scalar(LiteralTy, LiteralTy),
+    Scalar(ScalarTy, ScalarTy),
     RawPtr(Ty, Ty),
     FnPtr(Ty, Ty),
     /// [Unsize coercion](https://doc.rust-lang.org/std/ops/trait.CoerceUnsized.html). This is
@@ -410,7 +410,7 @@ impl Rvalue {
                 TypeDeclRef {
                     id: TypeDeclId::UNIT,
                     generics: Box::new(GenericArgs::empty()),
-                    builtin: Some(BuiltinTy::Tuple),
+                    builtin: Some(BuiltinAdt::Tuple),
                 },
                 None,
                 None,

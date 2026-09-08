@@ -328,7 +328,7 @@ and target_info = {
       (** Whether the target platform uses little endian byte order. *)
   c_enum_smallest_repr_ty : int_ty;
       (** The minimum size of a [[repr(C)]] enum. *)
-  primitive_alignments : (literal_type * int) list;
+  primitive_alignments : (scalar_type * int) list;
       (** Alignments for primitive types. *)
 }
 

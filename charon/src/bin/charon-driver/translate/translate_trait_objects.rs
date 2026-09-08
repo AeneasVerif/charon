@@ -11,10 +11,6 @@ use charon_lib::formatter::IntoFormatter;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 
-fn usize_ty() -> Ty {
-    Ty::new(TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
-}
-
 // Vtable method values that are used to vtable initilization functions.
 // In poly mode, they are const values of shim function pointers direcly filled in vtable fields.
 // In mono mode, they are used for construction of casting statements (see `mk_cast` in `gen_vtable_instance_init_body` for details).
@@ -367,8 +363,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let mut supertrait_counter = 0..;
         for field in &vtable_data.fields {
             let (name, ty) = match field {
-                TrVTableField::Size => ("size".into(), usize_ty()),
-                TrVTableField::Align => ("align".into(), usize_ty()),
+                TrVTableField::Size => ("size".into(), Ty::mk_usize()),
+                TrVTableField::Align => ("align".into(), Ty::mk_usize()),
                 TrVTableField::Drop => {
                     // In Mono mode, drop shims are opaque function pointers.
                     if self.monomorphize() {

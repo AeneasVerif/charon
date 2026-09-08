@@ -98,7 +98,7 @@ impl TypeCheckVisitor<'_> {
             (TyKind::Adt(a), TyKind::Adt(b)) if a.id == b.id => {
                 self.match_generics(&a.generics, &b.generics)?
             }
-            (TyKind::Literal(a), TyKind::Literal(b)) if a == b => {}
+            (TyKind::Scalar(a), TyKind::Scalar(b)) if a == b => {}
             (TyKind::Never, TyKind::Never) => {}
             (TyKind::Array(aty, ..), TyKind::Array(bty, ..)) => {
                 self.match_tys(aty, bty)?;

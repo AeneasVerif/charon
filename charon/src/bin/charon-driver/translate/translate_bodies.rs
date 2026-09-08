@@ -770,8 +770,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     };
                     match type_ref.as_builtin() {
                         None => ProjectionElem::Field(downcast.take(), field),
-                        Some(BuiltinTy::Tuple) => ProjectionElem::Field(None, field),
-                        Some(BuiltinTy::Box) if field == FieldId::ZERO => ProjectionElem::Deref,
+                        Some(BuiltinAdt::Tuple) => ProjectionElem::Field(None, field),
+                        Some(BuiltinAdt::Box) if field == FieldId::ZERO => ProjectionElem::Deref,
                         _ => raise_error!(self, span, "field projection on unexpected type"),
                     }
                 }
@@ -1017,13 +1017,15 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                                     );
                                     ProjectionElem::Field(variant_id, field_id)
                                 }
-                                Some(BuiltinTy::Tuple) => {
+                                Some(BuiltinAdt::Tuple) => {
                                     assert!(generics.regions.is_empty());
                                     assert!(variant.is_none());
                                     assert!(generics.const_generics.is_empty());
                                     ProjectionElem::Field(None, field_id)
                                 }
-                                Some(BuiltinTy::Box) if self.t_ctx.options.treat_box_as_builtin => {
+                                Some(BuiltinAdt::Box)
+                                    if self.t_ctx.options.treat_box_as_builtin =>
+                                {
                                     // Some sanity checks
                                     assert!(generics.regions.is_empty());
                                     assert!(generics.types.len() == 2);
@@ -1040,7 +1042,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                                         )
                                     }
                                 }
-                                Some(BuiltinTy::Box) => ProjectionElem::Field(None, field_id),
+                                Some(BuiltinAdt::Box) => ProjectionElem::Field(None, field_id),
                                 Some(_) => {
                                     raise_error!(self, span, "Unexpected field projection")
                                 }
@@ -1066,15 +1068,15 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     offset, from_end, ..
                 } => {
                     let offset =
-                        Operand::Const(ScalarValue::mk_usize(offset as u128).to_constant());
+                        Operand::Const(IntegerValue::mk_usize(offset as u128).to_constant());
                     ProjectionElem::Index {
                         offset: Box::new(offset),
                         from_end,
                     }
                 }
                 &Subslice { from, to, from_end } => {
-                    let from = Operand::Const(ScalarValue::mk_usize(from as u128).to_constant());
-                    let to = Operand::Const(ScalarValue::mk_usize(to as u128).to_constant());
+                    let from = Operand::Const(IntegerValue::mk_usize(from as u128).to_constant());
+                    let to = Operand::Const(IntegerValue::mk_usize(to as u128).to_constant());
                     ProjectionElem::Subslice {
                         from: Box::new(from),
                         to: Box::new(to),
@@ -1248,8 +1250,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     | mir::CastKind::IntToFloat
                     | mir::CastKind::FloatToInt
                     | mir::CastKind::FloatToFloat => {
-                        let tgt_ty = *tgt_ty.kind().as_literal().unwrap();
-                        let src_ty = *src_ty.kind().as_literal().unwrap();
+                        let tgt_ty = *tgt_ty.kind().as_scalar().unwrap();
+                        let src_ty = *src_ty.kind().as_scalar().unwrap();
                         CastKind::Scalar(src_ty, tgt_ty)
                     }
                     mir::CastKind::PtrToPtr
@@ -1713,13 +1715,13 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         // Convert all the test values to the proper values.
         let otherwise = targets.otherwise();
         let switch_ty = discr.ty();
-        let switch_literal_ty = *switch_ty.as_literal().unwrap();
+        let switch_scalar_ty = *switch_ty.as_scalar().unwrap();
         let mut branch_targets: IndexVec<BranchId, BlockId> = IndexVec::new();
         let mut target_to_branch: SeqHashMap<BlockId, BranchId> = SeqHashMap::new();
         let mut switch_branches = Vec::with_capacity(targets.iter().count());
 
         // Keep the historical true-then-false traversal order for boolean switches.
-        let bool_fallback = (switch_literal_ty == LiteralTy::Bool).then(|| {
+        let bool_fallback = (switch_scalar_ty == ScalarTy::Bool).then(|| {
             let target = self.translate_basic_block_id(otherwise);
             *target_to_branch
                 .entry(target)
@@ -1727,14 +1729,14 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         });
 
         for (bits, target) in targets.iter() {
-            let Some(literal) = Literal::from_bits(&switch_literal_ty, bits) else {
-                raise_error!(self, span, "Can't match on type {switch_literal_ty}")
+            let Some(kind) = ConstantExprKind::from_bits(&switch_scalar_ty, bits) else {
+                raise_error!(self, span, "Can't match on type {switch_scalar_ty}")
             };
             let target = self.translate_basic_block_id(target);
             let branch_id = *target_to_branch
                 .entry(target)
                 .or_insert_with(|| branch_targets.push(target));
-            let value = ConstantExpr::new(ConstantExprKind::Literal(literal), switch_ty.clone());
+            let value = ConstantExpr::new(kind, switch_ty.clone());
             switch_branches.push((value, branch_id));
         }
 

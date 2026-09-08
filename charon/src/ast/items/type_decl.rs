@@ -83,7 +83,7 @@ pub struct Variant {
     /// The discriminant value outputted by `std::mem::discriminant` for this variant. This can be
     /// different than the value stored in memory (called `tag`); that one is described by
     /// [`Discriminator`] and [`VariantLayout::tagger`].
-    pub discriminant: Literal,
+    pub discriminant: IntegerValue,
 }
 
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
@@ -165,8 +165,8 @@ pub enum TypeSource {
         /// vtable corresponds to it.
         supertrait_map: IndexVec<TraitClauseId, Option<FieldId>>,
     },
-    /// A type declaration synthesised for a builtin type.
-    Builtin(BuiltinTy),
+    /// A type declaration synthesised for a builtin ADT.
+    Builtin(BuiltinAdt),
 }
 
 #[derive(

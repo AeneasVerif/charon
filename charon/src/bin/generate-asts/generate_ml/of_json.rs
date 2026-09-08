@@ -154,19 +154,19 @@ impl<'a> GenerateCtx<'a> {
     /// functions, e.g. `list_of_json bool_of_json`.
     fn type_to_ocaml_call(&self, ty: &Ty) -> String {
         match ty.kind() {
-            TyKind::Literal(LiteralTy::Bool) => "bool_of_json".to_string(),
-            TyKind::Literal(LiteralTy::Char) => "char_of_json".to_string(),
-            TyKind::Literal(LiteralTy::Int(int_ty)) => match int_ty {
+            TyKind::Scalar(ScalarTy::Bool) => "bool_of_json".to_string(),
+            TyKind::Scalar(ScalarTy::Char) => "char_of_json".to_string(),
+            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Signed(int_ty))) => match int_ty {
                 // Even though OCaml ints are only 63 bits, only scalars with their 128 bits should be able to become too large
                 IntTy::I128 => "big_int_of_json".to_string(),
                 _ => "int_of_json".to_string(),
             },
-            TyKind::Literal(LiteralTy::UInt(uint_ty)) => match uint_ty {
+            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(uint_ty))) => match uint_ty {
                 // Even though OCaml ints are only 63 bits, only scalars with their 128 bits should be able to become too large
                 UIntTy::U128 => "big_int_of_json".to_string(),
                 _ => "int_of_json".to_string(),
             },
-            TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
+            TyKind::Scalar(ScalarTy::Float(_)) => "float_of_json".to_string(),
             TyKind::Adt(tref) => {
                 let mut expr = Vec::new();
                 for ty in &tref.generics.types {
@@ -206,8 +206,8 @@ impl<'a> GenerateCtx<'a> {
 
                         expr.insert(0, first + "_of_json");
                     }
-                    Some(BuiltinTy::Box) => expr.insert(0, "box_of_json".to_owned()),
-                    Some(BuiltinTy::Tuple) => {
+                    Some(BuiltinAdt::Box) => expr.insert(0, "box_of_json".to_owned()),
+                    Some(BuiltinAdt::Tuple) => {
                         let name = match tref.generics.types.len() {
                             2 => "pair_of_json".to_string(),
                             3 => "triple_of_json".to_string(),

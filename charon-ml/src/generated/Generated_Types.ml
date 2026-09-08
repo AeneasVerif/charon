@@ -22,7 +22,7 @@ module Disambiguator = IdGen ()
 
 type integer_type = Values.integer_type [@@deriving show, ord, eq]
 type float_type = Values.float_type [@@deriving show, ord, eq]
-type literal_type = Values.literal_type [@@deriving show, ord, eq]
+type scalar_type = Values.scalar_type [@@deriving show, ord, eq]
 
 (* A range that includes both endpoints. *)
 type 'a range_inclusive = 'a * 'a [@@deriving show, ord, eq]
@@ -97,7 +97,7 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
       name = "iter_type_vars";
       monomorphic = [ "env" ];
       variety = "iter";
-      ancestors = [ "iter_literal" ];
+      ancestors = [ "iter_scalar" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     },
   visitors
@@ -105,7 +105,7 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
       name = "map_type_vars";
       monomorphic = [ "env" ];
       variety = "map";
-      ancestors = [ "map_literal" ];
+      ancestors = [ "map_scalar" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     },
   visitors
@@ -113,7 +113,7 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
       name = "reduce_type_vars";
       monomorphic = [ "env" ];
       variety = "reduce";
-      ancestors = [ "reduce_literal" ];
+      ancestors = [ "reduce_scalar" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     },
   visitors
@@ -121,7 +121,7 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
       name = "mapreduce_type_vars";
       monomorphic = [ "env" ];
       variety = "mapreduce";
-      ancestors = [ "mapreduce_literal" ];
+      ancestors = [ "mapreduce_scalar" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
 
@@ -199,6 +199,16 @@ and binder_kind =
   | BKDyn  (** Binder used for [dyn Trait] existential predicates. *)
   | BKOther  (** Some other use of a binder outside the main Charon ast. *)
 
+(** Builtin ADT identifiers. *)
+and builtin_adt =
+  | TTuple  (** A tuple [(A, B, ...)], including [unit]. *)
+  | TBox
+      (** Boxes; always detected, though they are only treated as primitives
+          with [--treat-box-as-builtin] *)
+  | TStr
+      (** The [str] type, which corresponds to a [[u8]] that encodes a string
+          with UTF-8. *)
+
 (** Describes a built-in impl. Mostly lists the implemented trait, sometimes
     with more details about the contents of the implementation. *)
 and builtin_impl_data =
@@ -237,24 +247,6 @@ and builtin_impl_data =
           are rewritten as
           [BuiltinOrAuto { builtin_data: RemovedAdtClause, .. }]. *)
 
-(** Builtin types identifiers.
-
-    WARNING: for now, all the built-in types are covariant in the generic
-    parameters (if there are). Adding types which don't satisfy this will
-    require to update the code abstracting the signatures (to properly take into
-    account the lifetime constraints).
-
-    TODO: update to not hardcode the types (except [Box] maybe) and be more
-    modular. TODO: move to builtins.rs? *)
-and builtin_ty =
-  | TTuple  (** A tuple [(A, B, ...)], including [unit]. *)
-  | TBox
-      (** Boxes; always detected, though they are only treated as primitives
-          with [--treat-box-as-builtin] *)
-  | TStr
-      (** The [str] type, which corresponds to a [[u8]] that encodes a string
-          with UTF-8. *)
-
 (** A byte, in the MiniRust sense: it can either be uninitialized, a concrete u8
     value, or part of a pointer with provenance (e.g. to a global or a function)
 *)
@@ -281,38 +273,54 @@ and const_generic_var_id = (ConstGenericVarId.id[@visitors.opaque])
 and constant_expr = { kind : constant_expr_kind; ty : ty }
 
 and constant_expr_kind =
-  | CLiteral of literal
+  | CBool of bool  (** Boolean value. *)
+  | CInteger of integer_value  (** Integer value. *)
+  | CChar of char_value  (** Char value. *)
+  | CFloat of float_value  (** Float value. *)
   | CAdt of variant_id option * constant_expr list
-      (** In most situations: Enumeration with one variant with no fields,
-          structure with no fields, unit (encoded as a 0-tuple).
+      (** Value of an ADT (struct or enum).
 
-          Less frequently: arbitrary ADT values.
-
-          We eliminate this case in a micro-pass. *)
+          This is eliminated inside functions if [--raw-consts] is off. *)
   | CArray of constant_expr list
+      (** Array value.
+
+          This is eliminated inside functions if [--raw-consts] is off. *)
+  | CRef of constant_expr * unsizing_metadata option
+      (** A shared reference to a constant value.
+
+          This is eliminated inside functions if [--raw-consts] is off. *)
+  | CPtr of ref_kind * constant_expr * unsizing_metadata option
+      (** A pointer to a static.
+
+          This is eliminated inside functions if [--raw-consts] is off. *)
+  | CStr of string  (** [str] value. *)
+  | CByteStr of int list  (** Byte string value. *)
+  | CFnDef of fn_ptr
+      (** ZST constant corresponding to the unique value of the type of a
+          function item. *)
+  | CFnPtr of fn_ptr
+      (** A function pointer value; this is a pointer (i.e. an address).
+
+          This is eliminated inside functions if [--raw-consts] is off. *)
+  | CPtrNoProvenance of big_int
+      (** A pointer with no provenance (e.g. 0 for the null pointer)
+
+          This is eliminated inside functions if [--raw-consts] is off. *)
+  | CTypeId of ty  (** The [TypeId] value for a type. *)
+  | CRawMemory of byte list
+      (** Raw memory value obtained from constant evaluation. Used when a more
+          structured representation isn't possible (e.g. for unions) or just
+          isn't implemented yet. *)
+  | CVar of const_generic_var_id de_bruijn_var  (** A const generic var *)
   | CGlobal of global_decl_ref
-      (** The value is a top-level constant/static.
+      (** The value of a constant/static.
 
-          We eliminate this case in a micro-pass.
-
-          Remark: constants can actually have generic parameters.
-          {@rust[
-            struct V<const N: usize, T> {
-              x: [T; N],
-            }
-
-            impl<const N: usize, T> V<N, T> {
-              const LEN: usize = N; // This has generics <N, T>
-            }
-
-            fn use_v<const N: usize, T>(v: V<N, T>) {
-              let l = V::<N, T>::LEN; // We need to provided a substitution here
-            }
-          ]} *)
+          This is eliminated inside functions if [--raw-consts] is off. *)
+  | CCall of fn_ptr * constant_expr list  (** A call to a [const fn]. *)
   | CTraitConst of trait_ref * assoc_const_id
       (** A trait associated constant.
 
-          Ex.:
+          E.g.:
           {@rust[
             impl Foo for Bar {
               const C : usize = 32; // <-
@@ -320,40 +328,15 @@ and constant_expr_kind =
           ]} *)
   | CVTableRef of trait_ref
       (** A reference to the vtable [static] item for this trait ref. This can
-          be normalized for cases where we do emit a vtable item. That's not
-          always the case for builtin traits, e.g. for [MetaSized]. *)
+          be normalized if we emitted a vtable item.
+
+          This is eliminated if [--raw-consts] is off. *)
   | CDiscriminant of type_decl_ref * variant_id
       (** The integer discriminant value corresponding to this enum variant. *)
-  | CRef of constant_expr * unsizing_metadata option
-      (** A shared reference to a constant value.
-
-          We eliminate this case in a micro-pass. *)
-  | CPtr of ref_kind * constant_expr * unsizing_metadata option
-      (** A pointer to a mutable static.
-
-          We eliminate this case in a micro-pass. *)
-  | CVar of const_generic_var_id de_bruijn_var  (** A const generic var *)
-  | CCall of fn_ptr * constant_expr list
-      (** A call to a [const fn] or a constant's initializer. *)
-  | CFnDef of fn_ptr  (** Function definition -- this is a ZST constant *)
-  | CFnPtr of fn_ptr
-      (** A function pointer to a function item; this is an actual pointer to
-          that function item.
-
-          We eliminate this case in a micro-pass. *)
   | CSizeOf of ty  (** The size of the given type. *)
   | CAlignOf of ty  (** The alignment of the given type. *)
-  | CTypeId of ty  (** The [TypeId] value for a type. *)
-  | CPtrNoProvenance of big_int
-      (** A pointer with no provenance (e.g. 0 for the null pointer)
-
-          We eliminate this case in a micro-pass. *)
-  | CRawMemory of byte list
-      (** Raw memory value obtained from constant evaluation. Used when a more
-          structured representation isn't possible (e.g. for unions) or just
-          isn't implemented yet. *)
   | COpaque of string
-      (** A constant expression that Charon still doesn't handle, along with the
+      (** A constant expression that Charon doesn't handle, along with the
           reason why. *)
 
 (** The contents of a [dyn Trait] type. *)
@@ -645,76 +628,73 @@ and trait_type_constraint = {
   ty : ty;
 }
 
-(** A type. *)
+(** A type.
+
+    This is an interned value; see [TyKind] for the actual contents. *)
 and ty = ty_kind hash_consed
 
+(** A type.
+
+    This is interned as [Ty], making it cheap to clone and compare. *)
 and ty_kind =
+  | TScalar of scalar_type
+      (** A scalar (integers, floats, [char], or [bool]). *)
+  | TArray of ty * constant_expr * trait_ref option
+      (** An array [[T; N]]. The third field is the proof that [T: Sized]; it is
+          absent with [--hide-marker-traits]. *)
+  | TSlice of ty * trait_ref option
+      (** A slice [[T]]. The second field is the proof that [T: Sized]; it is
+          absent with [--hide-marker-traits]. *)
   | TAdt of type_decl_ref
-      (** An ADT. Note that here ADTs are very general. They can be:
-          - user-defined ADTs
-          - tuples (including [unit], which is a 0-tuple)
-          - built-in types, namely [Box] and [str]
-
-          Note: this is incorrectly named: this can refer to any valid
-          [TypeDecl] including extern types. *)
-  | TVar of type_var_id de_bruijn_var
-  | TLiteral of literal_type
-  | TNever
-      (** The never type, for computations which don't return. It is sometimes
-          necessary for intermediate variables. For instance, if we do (coming
-          from the rust documentation):
-          {@rust[
-            let num: u32 = match get_a_number() {
-                Some(num) => num,
-                None => break,
-            };
-          ]}
-          the second branch will have type [Never]. Also note that [Never] can
-          be coerced to any type.
-
-          Note that we eliminate the variables which have this type in a
-          micro-pass. As statements don't have types, this type disappears
-          eventually disappears from the AST. *)
-  | TRef of region * ty * ref_kind  (** A borrow *)
+      (** An ADT: structs, enums, unions, as well as tuples and [str]. *)
+  | TRef of region * ty * ref_kind  (** A reference: [&T] or [&mut T]. *)
   | TRawPtr of ty * ref_kind  (** A raw pointer. *)
-  | TTraitType of trait_ref * assoc_type_id * generic_args
-      (** A trait associated type
-
-          Ex.:
-          {@rust[
-            trait Foo {
-              type Bar; // type associated to the trait Foo
-            }
-          ]} *)
-  | TDynTrait of dyn_predicate  (** [dyn Trait] *)
-  | TFnPtr of fun_sig region_binder
-      (** Function pointer type. This is a literal pointer to a region of memory
-          that contains a callable function. This is a function signature with
-          limited generics: it only supports lifetime generics, not other kinds
-          of generics. *)
   | TFnDef of fn_ptr region_binder
       (** The unique type associated with each function item. Each function item
-          is given a unique generic type that takes as input the function's
-          early-bound generics. This type is not generally nameable in Rust;
-          it's a ZST (there's a unique value), and a value of that type can be
-          cast to a function pointer or passed to functions that expect
-          [FnOnce]/[FnMut]/[Fn] parameters. There's a binder here because charon
-          function items take both early and late-bound lifetimes as arguments;
-          given that the type here is polymorpohic in the late-bound variables
-          (those that could appear in a function pointer type like
-          [for<'a> fn(&'a u32)]), we need to bind them here. *)
-  | TPtrMetadata of ty
-      (** As a marker of taking out metadata from a given type The internal type
-          is assumed to be a type variable *)
-  | TArray of ty * constant_expr * trait_ref option
-      (** An array type [[T; N]]. The third field is the proof that [T: Sized];
-          it is absent with [--hide-marker-traits]. *)
-  | TSlice of ty * trait_ref option
-      (** A slice type [[T]]. The second field is the proof that [T: Sized]; it
-          is absent with [--hide-marker-traits]. *)
+          is given a unique type that has the function's early-bound generics.
+          This type is not generally nameable in Rust; it's a ZST (there's a
+          unique value), and a value of that type can be cast to a function
+          pointer or passed to functions that expect [FnOnce]/[FnMut]/[Fn]
+          parameters.
+
+          There's a binder here because charon function items take both early
+          and late-bound lifetimes as arguments; given that the type we're
+          pointing to is polymorphic in the late-bound variables, we need to
+          bind them here.
+
+          {@rust[
+            rust
+            // ['a] is early-bound, 'b is late-bound.
+            fn foo<'a, 'b>(x: &'a u32, y: &'b u32)
+            where u32: 'b
+            {}
+          ]}
+          For rustc, there's a ZST [foo<'a>], that can be cast to a
+          [for<'b> fn(&'a u32, &'b u32)] function pointer. For charon, there's
+          an item [foo<'a, 'b>], and the [FnDef] item that corresponds to
+          rustc's [foo<'a>] is represented as [FnDef(for<'b> foo<'a, 'b>)]. *)
+  | TFnPtr of fun_sig region_binder
+      (** Function pointer type. This is a literal pointer to a region of memory
+          that contains a callable function.
+
+          A function pointer can have lifetime generics, e.g.
+          [for<'a> fn(&'a mut u32) -> &'a u32], hence the binder. *)
+  | TDynTrait of dyn_predicate
+      (** [dyn Trait]: erased value known to implement [Trait]. A pointer to it
+          will carry a vtable pointer that stores the methods that can be called
+          on this value. *)
   | TPattern of ty * type_pattern
-      (** A pattern type. This is a newtype over the first type whose valid
-          values are restricted by the pattern. *)
+      (** A pattern type: a type that is representationally identical to its
+          base type, except the only valid values are the ones that match the
+          pattern. *)
+  | TNever  (** The never type, the canonical uninhabited type. *)
+  | TVar of type_var_id de_bruijn_var  (** A type variable. *)
+  | TTraitType of trait_ref * assoc_type_id * generic_args
+      (** A trait associated type: [<T as Trait>::AssocType<Args>]. *)
+  | TPtrMetadata of ty
+      (** The type of pointer metadata for the given type; e.g. for [[T]], this
+          type is [usize]. The way to write this type in Rust is
+          [<X as core::ptr::Pointee>::Metadata]. *)
   | TError of string  (** A type that could not be computed or was incorrect. *)
 
 (** Reference to a type declaration.
@@ -724,8 +704,8 @@ and ty_kind =
 and type_decl_ref = {
   id : type_decl_id;
   generics : generic_args;
-  builtin : builtin_ty option;
-      (** If this points to a built-in type, it is recorded here for easier
+  builtin : builtin_adt option;
+      (** If this points to a builtin ADT, it is recorded here for easier
           identification. *)
 }
 
@@ -840,7 +820,7 @@ and discriminator =
   | Branch of
       offset_expr
       * integer_type
-      * (scalar_value range_inclusive * discriminator) list
+      * (integer_value range_inclusive * discriminator) list
       * discriminator
       (** Branch on an integer value read from memory at [offset].
 
@@ -1379,7 +1359,7 @@ and repr_options = {
   repr_algo : repr_algorithm;
   align_modif : alignment_modifier option;
   transparent : bool;
-  explicit_discr_type : literal_type option;
+  explicit_discr_type : integer_type option;
       (** The type supplied to [repr(..)], if any. *)
 }
 
@@ -1456,8 +1436,8 @@ and type_source =
           - [field_map]: Record what each vtable field means.
           - [supertrait_map]: For each implied clause that is also a supertrait
             clause, records which field of the vtable corresponds to it. *)
-  | BuiltinType of builtin_ty
-      (** A type declaration synthesised for a builtin type. *)
+  | BuiltinType of builtin_adt
+      (** A type declaration synthesised for a builtin ADT. *)
 
 and v_table_field =
   | VTableSize
@@ -1472,7 +1452,7 @@ and variant = {
   attr_info : attr_info;
   variant_name : string;
   fields : field list;
-  discriminant : literal;
+  discriminant : integer_value;
       (** The discriminant value outputted by [std::mem::discriminant] for this
           variant. This can be different than the value stored in memory (called
           [tag]); that one is described by [[Discriminator]] and
@@ -1487,7 +1467,7 @@ and variant_layout = {
   uninhabited : bool;
       (** Whether the variant is uninhabited, i.e. has any valid possible value.
           Note that uninhabited types can have arbitrary layouts. *)
-  tagger : (int * scalar_value) list;
+  tagger : (int * integer_value) list;
       (** How to write the tag when constructing this variant. Each entry means:
           write [value] at byte [offset]. Mirrors MiniRust's [Variant::tagger].
       *)

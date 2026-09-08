@@ -124,7 +124,7 @@ and borrow_kind =
 (** For all the variants: the first type gives the source type, the second one
     gives the destination type. *)
 and cast_kind =
-  | CastScalar of literal_type * literal_type
+  | CastScalar of scalar_type * scalar_type
       (** Conversion between types in [{Integer, Bool}] Remark: for now we don't
           support conversions with Char. *)
   | CastRawPtr of ty * ty

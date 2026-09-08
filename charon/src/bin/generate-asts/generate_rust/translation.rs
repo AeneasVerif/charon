@@ -203,7 +203,7 @@ impl Generator<'_> {
         value: &str,
     ) -> fmt::Result {
         match ty.kind() {
-            TyKind::Literal(_) => write!(f, "*({value})"),
+            TyKind::Scalar(_) => write!(f, "*({value})"),
             TyKind::Adt(tref) => self.fmt_adt_translation_expr(f, tref, value),
             TyKind::Array(ty, ..) | TyKind::Slice(ty, _) => {
                 write!(f, "({value}).iter().map(|value| ")?;
@@ -233,16 +233,16 @@ impl Generator<'_> {
                 }
                 _ => self.unsupported_type(self.debug_type_name(tref.id)),
             },
-            Some(BuiltinTy::Tuple) => {
+            Some(BuiltinAdt::Tuple) => {
                 self.fmt_tuple_translation_expr(f, &tref.generics.types, value)
             }
-            Some(BuiltinTy::Box) => {
+            Some(BuiltinAdt::Box) => {
                 let ty = tref.generics.types.iter().next().unwrap();
                 write!(f, "Box::new(")?;
                 self.fmt_translation_expr(f, ty, &format!("({value}).as_ref()"))?;
                 write!(f, ")")
             }
-            Some(BuiltinTy::Str) => write!(f, "({value}).to_string().into()"),
+            Some(BuiltinAdt::Str) => write!(f, "({value}).to_string().into()"),
         }
     }
 

@@ -392,14 +392,14 @@ let opt_update_cmap (c : match_config) (m : maps) (id : var option)
 
 (** Pay attention when updating the names because we use this function for
     several purposes:
-    - to match patterns with literal types
+    - to match patterns with scalar types
     - to convert patterns to strings which can be parsed as patterns
     - to convert patterns to string for printing/name generation *)
-let literal_type_to_string (ty : T.literal_type) : string =
+let scalar_type_to_string (ty : T.scalar_type) : string =
   match ty with
   | TBool -> "bool"
   | TChar -> "char"
-  | TInt ty -> (
+  | TInteger (Signed ty) -> (
       match ty with
       | Isize -> "isize"
       | I8 -> "i8"
@@ -407,7 +407,7 @@ let literal_type_to_string (ty : T.literal_type) : string =
       | I32 -> "i32"
       | I64 -> "i64"
       | I128 -> "i128")
-  | TUInt ty -> (
+  | TInteger (Unsigned ty) -> (
       match ty with
       | Usize -> "usize"
       | U8 -> "u8"
@@ -442,11 +442,11 @@ let match_ref_kind (prk : ref_kind) (rk : T.ref_kind) : bool =
   | RMut, RMut | RShared, RShared -> true
   | _ -> false
 
-let match_literal (pl : literal) (l : Values.literal) : bool =
-  match (pl, l) with
-  | LInt pv, VScalar v -> pv = Scalars.get_val v
-  | LBool pv, VBool v -> pv = v
-  | LChar pv, VChar v -> Uchar.of_char pv = v
+let match_literal (pl : literal) (kind : T.constant_expr_kind) : bool =
+  match (pl, kind) with
+  | LInt pv, CInteger v -> pv = Scalars.get_val v
+  | LBool pv, CBool v -> pv = v
+  | LChar pv, CChar v -> Uchar.of_char pv = v
   | _ -> false
 
 let rec match_name_with_generics (ctx : ctx) (c : match_config)
@@ -537,7 +537,7 @@ and match_name (ctx : ctx) (c : match_config) (p : pattern) (n : T.name) : bool
   match_name_with_generics ctx c p n TypesUtils.empty_generic_args
 
 and match_pattern_with_type_decl_id (ctx : ctx) (c : match_config) (m : maps)
-    (pid : pattern) (id : T.type_decl_id) (builtin : T.builtin_ty option)
+    (pid : pattern) (id : T.type_decl_id) (builtin : T.builtin_adt option)
     (generics : T.generic_args) : bool =
   match (builtin, pid) with
   | None, _ ->
@@ -555,9 +555,8 @@ and match_pattern_with_type_decl_id (ctx : ctx) (c : match_config) (m : maps)
       generics = TypesUtils.empty_generic_args
   | Some _, _ -> false
 
-and match_pattern_with_literal_type (pty : pattern) (ty : T.literal_type) : bool
-    =
-  let ty = literal_type_to_string ty in
+and match_pattern_with_scalar_type (pty : pattern) (ty : T.scalar_type) : bool =
+  let ty = scalar_type_to_string ty in
   match pty with
   | [ PIdent (ty', _, []) ] when ty = ty' -> true
   | [ PWild ] -> true
@@ -569,7 +568,7 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
   | EComp pid, TAdt tref ->
       match_pattern_with_type_decl_id ctx c m pid tref.id tref.builtin
         tref.generics
-  | EComp pid, TLiteral lit -> match_pattern_with_literal_type pid lit
+  | EComp pid, TScalar scalar -> match_pattern_with_scalar_type pid scalar
   | EPrimAdt (pid, pgenerics), ty -> begin
       match (pid, ty) with
       | TArray, TArray (ty, len, _) ->
@@ -702,7 +701,7 @@ and match_generic_arg (ctx : ctx) (c : match_config) (m : maps)
   | GRegion pr, MRegion r -> match_region c m pr r
   | GExpr e, MTy ty -> match_expr_with_ty ctx c m e ty
   | GExpr e, MCg cg -> match_expr_with_const_generic ctx c m e cg
-  | GValue v, MCg { kind = CLiteral cg; _ } -> match_literal v cg
+  | GValue v, MCg { kind; _ } -> match_literal v kind
   | _ -> false
 
 and match_expr_with_const_generic (ctx : ctx) (c : match_config) (m : maps)
@@ -887,25 +886,14 @@ type to_pat_config = {
   use_trait_decl_refs : bool;  (** See {!match_with_trait_decl_refs} *)
 }
 
-let literal_type_to_pattern (c : to_pat_config) (lit : T.literal_type) : expr =
-  let lit = literal_type_to_string lit in
-  let lit =
+let scalar_type_to_pattern (c : to_pat_config) (scalar : T.scalar_type) : expr =
+  let scalar = scalar_type_to_string scalar in
+  let scalar =
     match c.tgt with
-    | TkPattern | TkPretty -> lit
-    | TkName -> StringUtils.capitalize_first_letter lit
+    | TkPattern | TkPretty -> scalar
+    | TkName -> StringUtils.capitalize_first_letter scalar
   in
-  EComp [ PIdent (lit, 0, []) ]
-
-let literal_to_pattern (_c : to_pat_config) (lit : Values.literal) : literal =
-  match lit with
-  | VScalar sv -> LInt (Scalars.get_val sv)
-  | VBool v -> LBool v
-  | VChar v when Uchar.is_char v -> LChar (Uchar.to_char v)
-  | VChar _ ->
-      raise (Failure "Can't convert non-ASCII character literal to pattern")
-  | VFloat _ | VStr _ | VByteStr _ ->
-      raise
-        (Failure "Float, string and byte string literals are not valid in names")
+  EComp [ PIdent (scalar, 0, []) ]
 
 let rec name_with_generic_args_to_pattern_aux (ctx : ctx) (c : to_pat_config)
     (n : T.name) (generics : generic_args option) : pattern =
@@ -1001,7 +989,7 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
             [ PIdent ("str", 0, generic_args_to_pattern ctx c m tref.generics) ]
       )
   | TVar v -> EVar (type_var_to_pattern m v)
-  | TLiteral lit -> literal_type_to_pattern c lit
+  | TScalar scalar -> scalar_type_to_pattern c scalar
   | TRef (r, ty, rk) ->
       ERef
         ( region_to_pattern m r,
@@ -1084,7 +1072,14 @@ and constant_expr_to_pattern (ctx : ctx) (c : to_pat_config) (m : constraints)
     (cg : T.constant_expr) : generic_arg =
   match cg.kind with
   | CVar v -> GExpr (EVar (const_generic_var_to_pattern m v))
-  | CLiteral v -> GValue (literal_to_pattern c v)
+  | CInteger sv -> GValue (LInt (Scalars.get_val sv))
+  | CBool v -> GValue (LBool v)
+  | CChar v when Uchar.is_char v -> GValue (LChar (Uchar.to_char v))
+  | CChar _ ->
+      raise (Failure "Can't convert non-ASCII character literal to pattern")
+  | CFloat _ | CStr _ | CByteStr _ ->
+      raise
+        (Failure "Float, string and byte string literals are not valid in names")
   | CGlobal gref ->
       let d = T.GlobalDeclId.Map.find gref.id ctx.crate.global_decls in
       let n =

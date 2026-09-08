@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
 /// A type.
+///
+/// This is an interned value; see `TyKind` for the actual contents.
 #[derive(
     Debug,
     Clone,
@@ -22,6 +24,9 @@ use serde_state::{DeserializeState, SerializeState};
 #[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct Ty(pub HashConsed<TyKind>);
 
+/// A type.
+///
+/// This is interned as `Ty`, making it cheap to clone and compare.
 #[derive(
     Debug,
     Clone,
@@ -43,78 +48,121 @@ pub struct Ty(pub HashConsed<TyKind>);
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("T"))]
 pub enum TyKind {
-    /// An ADT.
-    /// Note that here ADTs are very general. They can be:
-    /// - user-defined ADTs
-    /// - tuples (including `unit`, which is a 0-tuple)
-    /// - built-in types, namely `Box` and `str`
-    ///
-    /// Note: this is incorrectly named: this can refer to any valid `TypeDecl` including extern
-    /// types.
+    /// A scalar (integers, floats, `char`, or `bool`).
+    Scalar(ScalarTy),
+    /// An array `[T; N]`. The third field is the proof that `T: Sized`; it is absent with
+    /// `--hide-marker-traits`.
+    Array(Ty, ConstantExpr, Option<TraitRef>),
+    /// A slice `[T]`. The second field is the proof that `T: Sized`; it is absent with
+    /// `--hide-marker-traits`.
+    Slice(Ty, Option<TraitRef>),
+    /// An ADT: structs, enums, unions, as well as tuples and `str`.
     Adt(TypeDeclRef),
-    #[cfg_attr(feature = "charon_on_charon", charon::rename("TVar"))]
-    TypeVar(TypeDbVar),
-    Literal(LiteralTy),
-    /// The never type, for computations which don't return. It is sometimes
-    /// necessary for intermediate variables. For instance, if we do (coming
-    /// from the rust documentation):
-    /// ```text
-    /// let num: u32 = match get_a_number() {
-    ///     Some(num) => num,
-    ///     None => break,
-    /// };
-    /// ```
-    /// the second branch will have type `Never`. Also note that `Never`
-    /// can be coerced to any type.
-    ///
-    /// Note that we eliminate the variables which have this type in a micro-pass.
-    /// As statements don't have types, this type disappears eventually disappears
-    /// from the AST.
-    Never,
-    // We don't support floating point numbers on purpose (for now)
-    /// A borrow
+    /// A reference: `&T` or `&mut T`.
     Ref(Region, Ty, RefKind),
     /// A raw pointer.
     RawPtr(Ty, RefKind),
-    /// A trait associated type
+    /// The unique type associated with each function item. Each function item is given a unique
+    /// type that has the function's early-bound generics. This type is not generally nameable in
+    /// Rust; it's a ZST (there's a unique value), and a value of that type can be cast to a
+    /// function pointer or passed to functions that expect `FnOnce`/`FnMut`/`Fn` parameters.
     ///
-    /// Ex.:
-    /// ```text
-    /// trait Foo {
-    ///   type Bar; // type associated to the trait Foo
-    /// }
-    /// ```
-    TraitType(TraitRef, AssocTypeId, GenericArgs),
-    /// `dyn Trait`
-    DynTrait(DynPredicate),
-    /// Function pointer type. This is a literal pointer to a region of memory that
-    /// contains a callable function.
-    /// This is a function signature with limited generics: it only supports lifetime generics, not
-    /// other kinds of generics.
-    FnPtr(RegionBinder<FunSig>),
-    /// The unique type associated with each function item. Each function item is given
-    /// a unique generic type that takes as input the function's early-bound generics. This type
-    /// is not generally nameable in Rust; it's a ZST (there's a unique value), and a value of that type
-    /// can be cast to a function pointer or passed to functions that expect `FnOnce`/`FnMut`/`Fn` parameters.
     /// There's a binder here because charon function items take both early and late-bound
-    /// lifetimes as arguments; given that the type here is polymorpohic in the late-bound
-    /// variables (those that could appear in a function pointer type like `for<'a> fn(&'a u32)`),
-    /// we need to bind them here.
+    /// lifetimes as arguments; given that the type we're pointing to is polymorphic in the
+    /// late-bound variables, we need to bind them here.
+    ///
+    /// ```rust
+    /// // `'a` is early-bound, 'b is late-bound.
+    /// fn foo<'a, 'b>(x: &'a u32, y: &'b u32)
+    /// where u32: 'b
+    /// {}
+    /// ```
+    /// For rustc, there's a ZST `foo<'a>`, that can be cast to a `for<'b> fn(&'a u32, &'b u32)`
+    /// function pointer.
+    /// For charon, there's an item `foo<'a, 'b>`, and the `FnDef` item that corresponds to rustc's
+    /// `foo<'a>` is represented as `FnDef(for<'b> foo<'a, 'b>)`.
     FnDef(RegionBinder<FnPtr>),
-    /// As a marker of taking out metadata from a given type
-    /// The internal type is assumed to be a type variable
-    PtrMetadata(Ty),
-    /// An array type `[T; N]`. The third field is the proof that `T: Sized`; it is absent with
-    /// `--hide-marker-traits`.
-    Array(Ty, ConstantExpr, Option<TraitRef>),
-    /// A slice type `[T]`. The second field is the proof that `T: Sized`; it is absent with
-    /// `--hide-marker-traits`.
-    Slice(Ty, Option<TraitRef>),
-    /// A pattern type. This is a newtype over the first type whose valid values are restricted by
-    /// the pattern.
+    /// Function pointer type. This is a literal pointer to a region of memory that contains a
+    /// callable function.
+    ///
+    /// A function pointer can have lifetime generics, e.g. `for<'a> fn(&'a mut u32) -> &'a u32`,
+    /// hence the binder.
+    FnPtr(RegionBinder<FunSig>),
+    /// `dyn Trait`: erased value known to implement `Trait`. A pointer to it will carry a vtable
+    /// pointer that stores the methods that can be called on this value.
+    DynTrait(DynPredicate),
+    /// A pattern type: a type that is representationally identical to its base type, except the
+    /// only valid values are the ones that match the pattern.
     Pattern(Ty, TypePattern),
+    /// The never type, the canonical uninhabited type.
+    Never,
+
+    /// A type variable.
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("TVar"))]
+    TypeVar(TypeDbVar),
+    /// A trait associated type: `<T as Trait>::AssocType<Args>`.
+    TraitType(TraitRef, AssocTypeId, GenericArgs),
+    /// The type of pointer metadata for the given type; e.g. for `[T]`, this type is `usize`. The
+    /// way to write this type in Rust is `<X as core::ptr::Pointee>::Metadata`.
+    PtrMetadata(Ty),
+
     /// A type that could not be computed or was incorrect.
     Error(String),
+}
+
+/// Types of primitive scalar values.
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Copy,
+    VariantName,
+    EnumIsA,
+    EnumAsGetters,
+    VariantIndexArity,
+    Serialize,
+    Deserialize,
+    SerializeState,
+    DeserializeState,
+    Drive,
+    DriveMut,
+    DriveTwo,
+    Hash,
+    Ord,
+    PartialOrd,
+)]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("ScalarType"))]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("T"))]
+#[serde_state(stateless)]
+pub enum ScalarTy {
+    Integer(IntegerTy),
+    Float(FloatTy),
+    Bool,
+    Char,
+}
+
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Copy,
+    Clone,
+    EnumIsA,
+    VariantName,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    DriveTwo,
+    Hash,
+    Ord,
+    PartialOrd,
+)]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("IntegerType"))]
+pub enum IntegerTy {
+    Signed(IntTy),
+    Unsigned(UIntTy),
 }
 
 #[derive(
@@ -186,29 +234,6 @@ pub enum UIntTy {
     Ord,
     PartialOrd,
 )]
-#[cfg_attr(feature = "charon_on_charon", charon::rename("IntegerType"))]
-pub enum IntegerTy {
-    Signed(IntTy),
-    Unsigned(UIntTy),
-}
-
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Copy,
-    Clone,
-    EnumIsA,
-    VariantName,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    DriveTwo,
-    Hash,
-    Ord,
-    PartialOrd,
-)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("FloatType"))]
 pub enum FloatTy {
     F16,
@@ -217,49 +242,7 @@ pub enum FloatTy {
     F128,
 }
 
-/// Types of primitive values. Either an integer, bool, char
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    Copy,
-    VariantName,
-    EnumIsA,
-    EnumAsGetters,
-    VariantIndexArity,
-    Serialize,
-    Deserialize,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-    Hash,
-    Ord,
-    PartialOrd,
-)]
-#[cfg_attr(feature = "charon_on_charon", charon::rename("LiteralType"))]
-#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("T"))]
-#[serde_state(stateless)]
-pub enum LiteralTy {
-    Int(IntTy),
-    UInt(UIntTy),
-    Float(FloatTy),
-    Bool,
-    Char,
-}
-
-/// Builtin types identifiers.
-///
-/// WARNING: for now, all the built-in types are covariant in the generic
-/// parameters (if there are). Adding types which don't satisfy this
-/// will require to update the code abstracting the signatures (to properly
-/// take into account the lifetime constraints).
-///
-/// TODO: update to not hardcode the types (except `Box` maybe) and be more
-/// modular.
-/// TODO: move to builtins.rs?
+/// Builtin ADT identifiers.
 #[derive(
     Debug,
     PartialEq,
@@ -279,7 +262,7 @@ pub enum LiteralTy {
     PartialOrd,
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("T"))]
-pub enum BuiltinTy {
+pub enum BuiltinAdt {
     /// A tuple `(A, B, ...)`, including `unit`.
     Tuple,
     /// Boxes; always detected, though they are only treated as primitives with `--treat-box-as-builtin`
@@ -389,20 +372,25 @@ impl Ty {
         static_type!(TyKind::Adt(TypeDeclRef {
             id: TypeDeclId::UNIT,
             generics: Box::new(GenericArgs::empty()),
-            builtin: Some(BuiltinTy::Tuple),
+            builtin: Some(BuiltinAdt::Tuple),
         }))
     }
 
     pub fn mk_bool() -> Ty {
-        static_type!(TyKind::Literal(LiteralTy::Bool))
+        static_type!(TyKind::Scalar(ScalarTy::Bool))
     }
 
     pub fn mk_usize() -> Ty {
-        static_type!(TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
+        static_type!(TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(
+            UIntTy::Usize
+        ))))
     }
 
     pub fn is_usize(&self) -> bool {
-        matches!(self.kind(), TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)))
+        matches!(
+            self.kind(),
+            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::Usize)))
+        )
     }
 
     pub fn mk_array(ty: Ty, len: ConstantExpr, ty_is_sized: Option<TraitRef>) -> Ty {
@@ -420,7 +408,7 @@ impl Ty {
     /// Return true if this is a scalar type
     pub fn is_scalar(&self) -> bool {
         match self.kind() {
-            TyKind::Literal(kind) => kind.is_int() || kind.is_uint(),
+            TyKind::Scalar(_) => true,
             TyKind::Pattern(ty, _) => ty.is_scalar(),
             _ => false,
         }
@@ -428,7 +416,7 @@ impl Ty {
 
     pub fn is_unsigned_scalar(&self) -> bool {
         match self.kind() {
-            TyKind::Literal(LiteralTy::UInt(_)) => true,
+            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(_))) => true,
             TyKind::Pattern(ty, _) => ty.is_unsigned_scalar(),
             _ => false,
         }
@@ -436,7 +424,7 @@ impl Ty {
 
     pub fn is_signed_scalar(&self) -> bool {
         match self.kind() {
-            TyKind::Literal(LiteralTy::Int(_)) => true,
+            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Signed(_))) => true,
             TyKind::Pattern(ty, _) => ty.is_signed_scalar(),
             _ => false,
         }
@@ -493,7 +481,7 @@ impl Ty {
             // `[T]` has metadata length
             TyKind::Slice(..) => PtrMetadata::Length,
             TyKind::TraitType(..) | TyKind::TypeVar(_) => PtrMetadata::InheritFrom(self.clone()),
-            TyKind::Literal(_)
+            TyKind::Scalar(_)
             | TyKind::Never
             | TyKind::Ref(..)
             | TyKind::RawPtr(..)
@@ -583,24 +571,15 @@ impl IntegerTy {
     }
 }
 
-impl LiteralTy {
-    pub fn to_integer_ty(&self) -> Option<IntegerTy> {
-        match self {
-            Self::Int(int_ty) => Some(IntegerTy::Signed(*int_ty)),
-            Self::UInt(uint_ty) => Some(IntegerTy::Unsigned(*uint_ty)),
-            _ => None,
-        }
-    }
-
+impl ScalarTy {
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
     pub fn target_size(&self, ptr_size: ByteCount) -> usize {
         match self {
-            LiteralTy::Int(int_ty) => int_ty.target_size(ptr_size),
-            LiteralTy::UInt(uint_ty) => uint_ty.target_size(ptr_size),
-            LiteralTy::Float(float_ty) => float_ty.target_size(),
-            LiteralTy::Char => 4,
-            LiteralTy::Bool => 1,
+            ScalarTy::Integer(int_ty) => int_ty.target_size(ptr_size),
+            ScalarTy::Float(float_ty) => float_ty.target_size(),
+            ScalarTy::Char => 4,
+            ScalarTy::Bool => 1,
         }
     }
 }
@@ -633,9 +612,9 @@ impl DynPredicate {
     }
 }
 
-impl From<LiteralTy> for Ty {
-    fn from(value: LiteralTy) -> Self {
-        TyKind::Literal(value).into_ty()
+impl From<ScalarTy> for Ty {
+    fn from(value: ScalarTy) -> Self {
+        TyKind::Scalar(value).into_ty()
     }
 }
 

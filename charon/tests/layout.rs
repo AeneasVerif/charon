@@ -226,7 +226,7 @@ fn type_layout() -> anyhow::Result<()> {
                                 // Find a value not in the used set (try incrementing from the
                                 // first used value).
                                 let candidate = used_vals.iter().copied().max().unwrap_or(0) + 1;
-                                ScalarValue::from_bits(int_ty, candidate)
+                                IntegerValue::from_bits(int_ty, candidate)
                             }))
                     });
                     assert_eq!(
@@ -243,7 +243,7 @@ fn type_layout() -> anyhow::Result<()> {
         .type_decls
         .iter()
         .filter_map(|tdecl| {
-            // Skips the builtin types too, whose names start with a `PathElem::Builtin`.
+            // Skips the builtin ADTs too, whose names start with a `PathElem::Builtin`.
             let is_local = matches!(
                 tdecl.item_meta.name.name.first().and_then(|e| e.as_ident()),
                 Some((crate_name, _)) if crate_name == "test_crate"

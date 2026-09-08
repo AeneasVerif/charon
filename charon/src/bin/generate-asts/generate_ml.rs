@@ -224,13 +224,14 @@ pub(crate) fn generate(
             markers: markers_from_children(&ctx, &[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     ancestors: &["Generated_Meta.meta"],
-                    name: "literal",
+                    name: "scalar",
                     reduce: true,
                     extra_types: &["char_value"],
                 })), &[
-                    "Literal",
+                    "IntegerValue",
+                    "FloatValue",
                     "IntegerTy",
-                    "LiteralTy",
+                    "ScalarTy",
                 ]),
             ]),
         },
@@ -239,7 +240,7 @@ pub(crate) fn generate(
             target: output_dir.join("Generated_Types.ml"),
             markers: markers_from_children(&ctx, &[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    ancestors: &["literal"],
+                    ancestors: &["scalar"],
                     name: "type_vars",
                     reduce: true,
                     extra_types: &[],

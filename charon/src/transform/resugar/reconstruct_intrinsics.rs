@@ -23,14 +23,10 @@ impl UllbcPass for Transform {
                 && let Some(ty) = generics.types.get(TypeVarId::ZERO)
                 && let TyKind::Adt(tref) = ty.kind()
                 && let [Operand::Const(arg0), Operand::Const(arg1)] = call.args.as_slice()
-                && let ConstantExprKind::Literal(Literal::Scalar(ScalarValue::Unsigned(
-                    UIntTy::U32,
-                    variant_id,
-                ))) = arg0.kind()
-                && let ConstantExprKind::Literal(Literal::Scalar(ScalarValue::Unsigned(
-                    UIntTy::U32,
-                    field_id,
-                ))) = arg1.kind()
+                && let ConstantExprKind::Integer(IntegerValue::Unsigned(UIntTy::U32, variant_id)) =
+                    arg0.kind()
+                && let ConstantExprKind::Integer(IntegerValue::Unsigned(UIntTy::U32, field_id)) =
+                    arg1.kind()
                 && let Some(tdecl) = ctx.ctx.translated.type_decls.get(tref.id)
             {
                 // TODO: move into a pass, maybe also size_of/align_of? or remove the nullops.

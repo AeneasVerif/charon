@@ -3,8 +3,8 @@
 //! ADTs in the operands, constant references, etc. This reduces the number
 //! of cases to handle and eases the function translation in Aeneas.
 //!
-//! This pass removes all those occurrences so that only the
-//! `ConstantExpression::Literal`. It does so by introducing intermediate statements.
+//! This pass removes all those occurrences, leaving only primitive constant expressions. It does
+//! so by introducing intermediate statements.
 //!
 //! A small remark about the intermediate statements we introduce for the globals:
 //! we do so because, when evaluating the code in "concrete" mode, it allows to
@@ -32,11 +32,8 @@ fn transform_constant_expr(
             return Operand::Copy(Place::new_global(global_ref.clone(), val.ty().clone()));
         }
         ConstantExprKind::PtrNoProvenance(ptr) => {
-            let usize_ty = TyKind::Literal(LiteralTy::UInt(UIntTy::Usize)).into_ty();
-            let ptr_usize = ConstantExprKind::Literal(Literal::Scalar(ScalarValue::Unsigned(
-                UIntTy::Usize,
-                *ptr,
-            )));
+            let usize_ty = Ty::mk_usize();
+            let ptr_usize = ConstantExprKind::Integer(IntegerValue::Unsigned(UIntTy::Usize, *ptr));
             let cast = UnOp::Cast(CastKind::RawPtr(usize_ty.clone(), val.ty().clone()));
             Rvalue::UnaryOp(cast, Operand::Const(ConstantExpr::new(ptr_usize, usize_ty)))
         }

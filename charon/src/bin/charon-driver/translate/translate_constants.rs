@@ -11,8 +11,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         _span: Span,
         v: &hax::ConstantLiteral,
     ) -> Result<ConstantExprKind, Error> {
-        let lit = match v {
-            hax::ConstantLiteral::ByteStr(bs) => Literal::ByteStr(bs.clone()),
+        Ok(match v {
+            hax::ConstantLiteral::ByteStr(bs) => ConstantExprKind::ByteStr(bs.clone()),
             hax::ConstantLiteral::Str(str) => {
                 // We should only get here if we actually want to translate the data
                 // backing the string, when we represent strings as unsized [u8]s
@@ -23,21 +23,21 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     str_bytes.iter().map(|b| Byte::Value(*b)).collect(),
                 ));
             }
-            hax::ConstantLiteral::Char(c) => Literal::Char(*c),
-            hax::ConstantLiteral::Bool(b) => Literal::Bool(*b),
+            hax::ConstantLiteral::Char(c) => ConstantExprKind::Char(*c),
+            hax::ConstantLiteral::Bool(b) => ConstantExprKind::Bool(*b),
             hax::ConstantLiteral::Int(i) => {
                 use crate::hax::ConstantInt;
                 let scalar = match i {
                     ConstantInt::Int(v, int_type) => {
                         let ty = Self::translate_hax_int_ty(int_type);
-                        ScalarValue::Signed(ty, *v)
+                        IntegerValue::Signed(ty, *v)
                     }
                     ConstantInt::Uint(v, uint_type) => {
                         let ty = Self::translate_hax_uint_ty(uint_type);
-                        ScalarValue::Unsigned(ty, *v)
+                        IntegerValue::Unsigned(ty, *v)
                     }
                 };
-                Literal::Scalar(scalar)
+                ConstantExprKind::Integer(scalar)
             }
             hax::ConstantLiteral::Float(value, float_type) => {
                 let value = value.clone();
@@ -47,13 +47,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     hax::FloatTy::F64 => FloatTy::F64,
                     hax::FloatTy::F128 => FloatTy::F128,
                 };
-                Literal::Float(FloatValue { value, ty })
+                ConstantExprKind::Float(FloatValue { value, ty })
             }
             hax::ConstantLiteral::PtrNoProvenance(v) => {
                 return Ok(ConstantExprKind::PtrNoProvenance(*v));
             }
-        };
-        Ok(ConstantExprKind::Literal(lit))
+        })
     }
 
     /// Remark: [hax::ConstantExpr] contains span information, but it is often
@@ -119,7 +118,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     v.contents.as_ref()
                     && !self.t_ctx.options.unsized_strings =>
             {
-                ConstantExprKind::Literal(Literal::Str(s.clone()))
+                ConstantExprKind::Str(s.clone())
             }
 
             hax::ConstantExprKind::Borrow(v) => {
@@ -141,7 +140,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         let len = ConstantExpr::mk_usize(s.len() as u128);
                         let ty_is_sized = self.translate_sized_proof(span, self.tcx.types.u8)?;
                         // the sub-constant is an array, that has it's reference unsized
-                        let subty = TyKind::Literal(LiteralTy::UInt(UIntTy::U8)).into();
+                        let subty =
+                            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::U8)))
+                                .into();
                         (
                             Some(UnsizingMetadata::Length(len.clone())),
                             Some(Ty::mk_array(subty, len, ty_is_sized)),

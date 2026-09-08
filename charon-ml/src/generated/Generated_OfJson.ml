@@ -288,6 +288,15 @@ and branch_id_of_json (ctx : of_json_ctx) (js : json) :
     | x -> BranchId.id_of_json ctx x
     | _ -> Error "")
 
+and builtin_adt_of_json (ctx : of_json_ctx) (js : json) :
+    (builtin_adt, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Tuple" -> Ok TTuple
+    | `String "Box" -> Ok TBox
+    | `String "Str" -> Ok TStr
+    | _ -> Error "")
+
 and builtin_assert_kind_of_json (ctx : of_json_ctx) (js : json) :
     (builtin_assert_kind, string) result =
   combine_error_msgs js __FUNCTION__
@@ -377,15 +386,6 @@ and builtin_path_elem_of_json (ctx : of_json_ctx) (js : json) :
     | `String "VTableDropShim" -> Ok PeVTableDropShim
     | _ -> Error "")
 
-and builtin_ty_of_json (ctx : of_json_ctx) (js : json) :
-    (builtin_ty, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "Tuple" -> Ok TTuple
-    | `String "Box" -> Ok TBox
-    | `String "Str" -> Ok TStr
-    | _ -> Error "")
-
 and byte_of_json (ctx : of_json_ctx) (js : json) : (byte, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -414,8 +414,8 @@ and cast_kind_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Scalar", `List [ _0; _1 ]) ] ->
-        let* _0 = literal_type_of_json ctx _0 in
-        let* _1 = literal_type_of_json ctx _1 in
+        let* _0 = scalar_type_of_json ctx _0 in
+        let* _1 = scalar_type_of_json ctx _1 in
         Ok (CastScalar (_0, _1))
     | `Assoc [ ("RawPtr", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
@@ -477,9 +477,18 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     (constant_expr_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Literal", _0) ] ->
-        let* _0 = literal_of_json ctx _0 in
-        Ok (CLiteral _0)
+    | `Assoc [ ("Bool", _0) ] ->
+        let* _0 = bool_of_json ctx _0 in
+        Ok (CBool _0)
+    | `Assoc [ ("Integer", _0) ] ->
+        let* _0 = integer_value_of_json ctx _0 in
+        Ok (CInteger _0)
+    | `Assoc [ ("Char", _0) ] ->
+        let* _0 = char_of_json ctx _0 in
+        Ok (CChar _0)
+    | `Assoc [ ("Float", _0) ] ->
+        let* _0 = float_value_of_json ctx _0 in
+        Ok (CFloat _0)
     | `Assoc [ ("Adt", `List [ _0; _1 ]) ] ->
         let* _0 = option_of_json variant_id_of_json ctx _0 in
         let* _1 = list_of_json constant_expr_of_json ctx _1 in
@@ -487,9 +496,46 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Array", _0) ] ->
         let* _0 = list_of_json constant_expr_of_json ctx _0 in
         Ok (CArray _0)
+    | `Assoc [ ("Ref", `List [ _0; _1 ]) ] ->
+        let* _0 = constant_expr_of_json ctx _0 in
+        let* _1 = option_of_json unsizing_metadata_of_json ctx _1 in
+        Ok (CRef (_0, _1))
+    | `Assoc [ ("Ptr", `List [ _0; _1; _2 ]) ] ->
+        let* _0 = ref_kind_of_json ctx _0 in
+        let* _1 = constant_expr_of_json ctx _1 in
+        let* _2 = option_of_json unsizing_metadata_of_json ctx _2 in
+        Ok (CPtr (_0, _1, _2))
+    | `Assoc [ ("Str", _0) ] ->
+        let* _0 = string_of_json ctx _0 in
+        Ok (CStr _0)
+    | `Assoc [ ("ByteStr", _0) ] ->
+        let* _0 = list_of_json int_of_json ctx _0 in
+        Ok (CByteStr _0)
+    | `Assoc [ ("FnDef", _0) ] ->
+        let* _0 = fn_ptr_of_json ctx _0 in
+        Ok (CFnDef _0)
+    | `Assoc [ ("FnPtr", _0) ] ->
+        let* _0 = fn_ptr_of_json ctx _0 in
+        Ok (CFnPtr _0)
+    | `Assoc [ ("PtrNoProvenance", _0) ] ->
+        let* _0 = big_int_of_json ctx _0 in
+        Ok (CPtrNoProvenance _0)
+    | `Assoc [ ("TypeId", _0) ] ->
+        let* _0 = ty_of_json ctx _0 in
+        Ok (CTypeId _0)
+    | `Assoc [ ("RawMemory", _0) ] ->
+        let* _0 = list_of_json byte_of_json ctx _0 in
+        Ok (CRawMemory _0)
+    | `Assoc [ ("Var", _0) ] ->
+        let* _0 = de_bruijn_var_of_json const_generic_var_id_of_json ctx _0 in
+        Ok (CVar _0)
     | `Assoc [ ("Global", _0) ] ->
         let* _0 = global_decl_ref_of_json ctx _0 in
         Ok (CGlobal _0)
+    | `Assoc [ ("Call", `List [ _0; _1 ]) ] ->
+        let* _0 = fn_ptr_of_json ctx _0 in
+        let* _1 = list_of_json constant_expr_of_json ctx _1 in
+        Ok (CCall (_0, _1))
     | `Assoc [ ("TraitConst", `List [ _0; _1 ]) ] ->
         let* _0 = trait_ref_of_json ctx _0 in
         let* _1 = assoc_const_id_of_json ctx _1 in
@@ -501,43 +547,12 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = type_decl_ref_of_json ctx _0 in
         let* _1 = variant_id_of_json ctx _1 in
         Ok (CDiscriminant (_0, _1))
-    | `Assoc [ ("Ref", `List [ _0; _1 ]) ] ->
-        let* _0 = constant_expr_of_json ctx _0 in
-        let* _1 = option_of_json unsizing_metadata_of_json ctx _1 in
-        Ok (CRef (_0, _1))
-    | `Assoc [ ("Ptr", `List [ _0; _1; _2 ]) ] ->
-        let* _0 = ref_kind_of_json ctx _0 in
-        let* _1 = constant_expr_of_json ctx _1 in
-        let* _2 = option_of_json unsizing_metadata_of_json ctx _2 in
-        Ok (CPtr (_0, _1, _2))
-    | `Assoc [ ("Var", _0) ] ->
-        let* _0 = de_bruijn_var_of_json const_generic_var_id_of_json ctx _0 in
-        Ok (CVar _0)
-    | `Assoc [ ("Call", `List [ _0; _1 ]) ] ->
-        let* _0 = fn_ptr_of_json ctx _0 in
-        let* _1 = list_of_json constant_expr_of_json ctx _1 in
-        Ok (CCall (_0, _1))
-    | `Assoc [ ("FnDef", _0) ] ->
-        let* _0 = fn_ptr_of_json ctx _0 in
-        Ok (CFnDef _0)
-    | `Assoc [ ("FnPtr", _0) ] ->
-        let* _0 = fn_ptr_of_json ctx _0 in
-        Ok (CFnPtr _0)
     | `Assoc [ ("SizeOf", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CSizeOf _0)
     | `Assoc [ ("AlignOf", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CAlignOf _0)
-    | `Assoc [ ("TypeId", _0) ] ->
-        let* _0 = ty_of_json ctx _0 in
-        Ok (CTypeId _0)
-    | `Assoc [ ("PtrNoProvenance", _0) ] ->
-        let* _0 = big_int_of_json ctx _0 in
-        Ok (CPtrNoProvenance _0)
-    | `Assoc [ ("RawMemory", _0) ] ->
-        let* _0 = list_of_json byte_of_json ctx _0 in
-        Ok (CRawMemory _0)
     | `Assoc [ ("Opaque", _0) ] ->
         let* _0 = string_of_json ctx _0 in
         Ok (COpaque _0)
@@ -857,6 +872,32 @@ and int_ty_of_json (ctx : of_json_ctx) (js : json) : (int_ty, string) result =
     | `String "I128" -> Ok I128
     | _ -> Error "")
 
+and integer_type_of_json (ctx : of_json_ctx) (js : json) :
+    (integer_type, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Signed", _0) ] ->
+        let* _0 = int_ty_of_json ctx _0 in
+        Ok (Signed _0)
+    | `Assoc [ ("Unsigned", _0) ] ->
+        let* _0 = u_int_ty_of_json ctx _0 in
+        Ok (Unsigned _0)
+    | _ -> Error "")
+
+and integer_value_of_json (ctx : of_json_ctx) (js : json) :
+    (integer_value, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Unsigned", `List [ _0; _1 ]) ] ->
+        let* _0 = u_int_ty_of_json ctx _0 in
+        let* _1 = big_int_of_json ctx _1 in
+        Ok (UnsignedInteger (_0, _1))
+    | `Assoc [ ("Signed", `List [ _0; _1 ]) ] ->
+        let* _0 = int_ty_of_json ctx _0 in
+        let* _1 = big_int_of_json ctx _1 in
+        Ok (SignedInteger (_0, _1))
+    | _ -> Error "")
+
 and lifetime_mutability_of_json (ctx : of_json_ctx) (js : json) :
     (lifetime_mutability, string) result =
   combine_error_msgs js __FUNCTION__
@@ -864,46 +905,6 @@ and lifetime_mutability_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Mutable" -> Ok LtMutable
     | `String "Shared" -> Ok LtShared
     | `String "Unknown" -> Ok LtUnknown
-    | _ -> Error "")
-
-and literal_of_json (ctx : of_json_ctx) (js : json) : (literal, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Scalar", _0) ] ->
-        let* _0 = scalar_value_of_json ctx _0 in
-        Ok (VScalar _0)
-    | `Assoc [ ("Float", _0) ] ->
-        let* _0 = float_value_of_json ctx _0 in
-        Ok (VFloat _0)
-    | `Assoc [ ("Bool", _0) ] ->
-        let* _0 = bool_of_json ctx _0 in
-        Ok (VBool _0)
-    | `Assoc [ ("Char", _0) ] ->
-        let* _0 = char_of_json ctx _0 in
-        Ok (VChar _0)
-    | `Assoc [ ("ByteStr", _0) ] ->
-        let* _0 = list_of_json int_of_json ctx _0 in
-        Ok (VByteStr _0)
-    | `Assoc [ ("Str", _0) ] ->
-        let* _0 = string_of_json ctx _0 in
-        Ok (VStr _0)
-    | _ -> Error "")
-
-and literal_type_of_json (ctx : of_json_ctx) (js : json) :
-    (literal_type, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Int", _0) ] ->
-        let* _0 = int_ty_of_json ctx _0 in
-        Ok (TInt _0)
-    | `Assoc [ ("UInt", _0) ] ->
-        let* _0 = u_int_ty_of_json ctx _0 in
-        Ok (TUInt _0)
-    | `Assoc [ ("Float", _0) ] ->
-        let* _0 = float_type_of_json ctx _0 in
-        Ok (TFloat _0)
-    | `String "Bool" -> Ok TBool
-    | `String "Char" -> Ok TChar
     | _ -> Error "")
 
 and loc_of_json (ctx : of_json_ctx) (js : json) : (loc, string) result =
@@ -1211,18 +1212,18 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         Ok (Repeat (_0, _1, _2, _3))
     | _ -> Error "")
 
-and scalar_value_of_json (ctx : of_json_ctx) (js : json) :
-    (scalar_value, string) result =
+and scalar_type_of_json (ctx : of_json_ctx) (js : json) :
+    (scalar_type, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Unsigned", `List [ _0; _1 ]) ] ->
-        let* _0 = u_int_ty_of_json ctx _0 in
-        let* _1 = big_int_of_json ctx _1 in
-        Ok (UnsignedScalar (_0, _1))
-    | `Assoc [ ("Signed", `List [ _0; _1 ]) ] ->
-        let* _0 = int_ty_of_json ctx _0 in
-        let* _1 = big_int_of_json ctx _1 in
-        Ok (SignedScalar (_0, _1))
+    | `Assoc [ ("Integer", _0) ] ->
+        let* _0 = integer_type_of_json ctx _0 in
+        Ok (TInteger _0)
+    | `Assoc [ ("Float", _0) ] ->
+        let* _0 = float_type_of_json ctx _0 in
+        Ok (TFloat _0)
+    | `String "Bool" -> Ok TBool
+    | `String "Char" -> Ok TChar
     | _ -> Error "")
 
 and span_of_json (ctx : of_json_ctx) (js : json) : (span, string) result =
@@ -1464,42 +1465,9 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
 and ty_kind_of_json (ctx : of_json_ctx) (js : json) : (ty_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Adt", _0) ] ->
-        let* _0 = type_decl_ref_of_json ctx _0 in
-        Ok (TAdt _0)
-    | `Assoc [ ("TypeVar", _0) ] ->
-        let* _0 = de_bruijn_var_of_json type_var_id_of_json ctx _0 in
-        Ok (TVar _0)
-    | `Assoc [ ("Literal", _0) ] ->
-        let* _0 = literal_type_of_json ctx _0 in
-        Ok (TLiteral _0)
-    | `String "Never" -> Ok TNever
-    | `Assoc [ ("Ref", `List [ _0; _1; _2 ]) ] ->
-        let* _0 = region_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        let* _2 = ref_kind_of_json ctx _2 in
-        Ok (TRef (_0, _1, _2))
-    | `Assoc [ ("RawPtr", `List [ _0; _1 ]) ] ->
-        let* _0 = ty_of_json ctx _0 in
-        let* _1 = ref_kind_of_json ctx _1 in
-        Ok (TRawPtr (_0, _1))
-    | `Assoc [ ("TraitType", `List [ _0; _1; _2 ]) ] ->
-        let* _0 = trait_ref_of_json ctx _0 in
-        let* _1 = assoc_type_id_of_json ctx _1 in
-        let* _2 = generic_args_of_json ctx _2 in
-        Ok (TTraitType (_0, _1, _2))
-    | `Assoc [ ("DynTrait", _0) ] ->
-        let* _0 = dyn_predicate_of_json ctx _0 in
-        Ok (TDynTrait _0)
-    | `Assoc [ ("FnPtr", _0) ] ->
-        let* _0 = region_binder_of_json fun_sig_of_json ctx _0 in
-        Ok (TFnPtr _0)
-    | `Assoc [ ("FnDef", _0) ] ->
-        let* _0 = region_binder_of_json fn_ptr_of_json ctx _0 in
-        Ok (TFnDef _0)
-    | `Assoc [ ("PtrMetadata", _0) ] ->
-        let* _0 = ty_of_json ctx _0 in
-        Ok (TPtrMetadata _0)
+    | `Assoc [ ("Scalar", _0) ] ->
+        let* _0 = scalar_type_of_json ctx _0 in
+        Ok (TScalar _0)
     | `Assoc [ ("Array", `List [ _0; _1; _2 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
         let* _1 = constant_expr_of_json ctx _1 in
@@ -1509,10 +1477,43 @@ and ty_kind_of_json (ctx : of_json_ctx) (js : json) : (ty_kind, string) result =
         let* _0 = ty_of_json ctx _0 in
         let* _1 = option_of_json trait_ref_of_json ctx _1 in
         Ok (TSlice (_0, _1))
+    | `Assoc [ ("Adt", _0) ] ->
+        let* _0 = type_decl_ref_of_json ctx _0 in
+        Ok (TAdt _0)
+    | `Assoc [ ("Ref", `List [ _0; _1; _2 ]) ] ->
+        let* _0 = region_of_json ctx _0 in
+        let* _1 = ty_of_json ctx _1 in
+        let* _2 = ref_kind_of_json ctx _2 in
+        Ok (TRef (_0, _1, _2))
+    | `Assoc [ ("RawPtr", `List [ _0; _1 ]) ] ->
+        let* _0 = ty_of_json ctx _0 in
+        let* _1 = ref_kind_of_json ctx _1 in
+        Ok (TRawPtr (_0, _1))
+    | `Assoc [ ("FnDef", _0) ] ->
+        let* _0 = region_binder_of_json fn_ptr_of_json ctx _0 in
+        Ok (TFnDef _0)
+    | `Assoc [ ("FnPtr", _0) ] ->
+        let* _0 = region_binder_of_json fun_sig_of_json ctx _0 in
+        Ok (TFnPtr _0)
+    | `Assoc [ ("DynTrait", _0) ] ->
+        let* _0 = dyn_predicate_of_json ctx _0 in
+        Ok (TDynTrait _0)
     | `Assoc [ ("Pattern", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
         let* _1 = type_pattern_of_json ctx _1 in
         Ok (TPattern (_0, _1))
+    | `String "Never" -> Ok TNever
+    | `Assoc [ ("TypeVar", _0) ] ->
+        let* _0 = de_bruijn_var_of_json type_var_id_of_json ctx _0 in
+        Ok (TVar _0)
+    | `Assoc [ ("TraitType", `List [ _0; _1; _2 ]) ] ->
+        let* _0 = trait_ref_of_json ctx _0 in
+        let* _1 = assoc_type_id_of_json ctx _1 in
+        let* _2 = generic_args_of_json ctx _2 in
+        Ok (TTraitType (_0, _1, _2))
+    | `Assoc [ ("PtrMetadata", _0) ] ->
+        let* _0 = ty_of_json ctx _0 in
+        Ok (TPtrMetadata _0)
     | `Assoc [ ("Error", _0) ] ->
         let* _0 = string_of_json ctx _0 in
         Ok (TError _0)
@@ -1532,7 +1533,7 @@ and type_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("id", id); ("generics", generics); ("builtin", builtin) ] ->
         let* id = type_decl_id_of_json ctx id in
         let* generics = box_of_json generic_args_of_json ctx generics in
-        let* builtin = option_of_json builtin_ty_of_json ctx builtin in
+        let* builtin = option_of_json builtin_adt_of_json ctx builtin in
         Ok ({ id; generics; builtin } : type_decl_ref)
     | _ -> Error "")
 
@@ -2478,7 +2479,7 @@ and discriminator_of_json (ctx : of_json_ctx) (js : json) :
         let* children =
           list_of_json
             (pair_of_json
-               (range_inclusive_of_json scalar_value_of_json)
+               (range_inclusive_of_json integer_value_of_json)
                discriminator_of_json)
             ctx children
         in
@@ -2824,18 +2825,6 @@ and rustc_inline_attr_of_json (ctx : of_json_ctx) (js : json) :
         let* attr_span = span_of_json ctx attr_span in
         let* reason = option_of_json string_of_json ctx reason in
         Ok (RustcInlineAttrForce (attr_span, reason))
-    | _ -> Error "")
-
-and integer_type_of_json (ctx : of_json_ctx) (js : json) :
-    (integer_type, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Signed", _0) ] ->
-        let* _0 = int_ty_of_json ctx _0 in
-        Ok (Signed _0)
-    | `Assoc [ ("Unsigned", _0) ] ->
-        let* _0 = u_int_ty_of_json ctx _0 in
-        Ok (Unsigned _0)
     | _ -> Error "")
 
 and item_id_of_json (ctx : of_json_ctx) (js : json) : (item_id, string) result =
@@ -3331,7 +3320,7 @@ and repr_options_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* transparent = bool_of_json ctx transparent in
         let* explicit_discr_type =
-          option_of_json literal_type_of_json ctx explicit_discr_type
+          option_of_json integer_type_of_json ctx explicit_discr_type
         in
         Ok
           ({ repr_algo; align_modif; transparent; explicit_discr_type }
@@ -3397,7 +3386,7 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
           int_ty_of_json ctx c_enum_smallest_repr_ty
         in
         let* primitive_alignments =
-          index_map_of_json literal_type_of_json int_of_json int_of_json ctx
+          index_map_of_json scalar_type_of_json int_of_json int_of_json ctx
             primitive_alignments
         in
         Ok
@@ -3803,7 +3792,7 @@ and type_source_of_json (ctx : of_json_ctx) (js : json) :
         in
         Ok (VTableType (dyn_predicate, field_map, supertrait_map))
     | `Assoc [ ("Builtin", _0) ] ->
-        let* _0 = builtin_ty_of_json ctx _0 in
+        let* _0 = builtin_adt_of_json ctx _0 in
         Ok (BuiltinType _0)
     | _ -> Error "")
 
@@ -3841,7 +3830,7 @@ and variant_of_json (ctx : of_json_ctx) (js : json) : (variant, string) result =
         let* fields =
           index_vec_of_json field_id_of_json field_of_json ctx fields
         in
-        let* discriminant = literal_of_json ctx discriminant in
+        let* discriminant = integer_value_of_json ctx discriminant in
         Ok
           ({ id; span; attr_info; variant_name; fields; discriminant }
             : variant)
@@ -3864,7 +3853,7 @@ and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
         let* uninhabited = bool_of_json ctx uninhabited in
         let* tagger =
           list_of_json
-            (pair_of_json int_of_json scalar_value_of_json)
+            (pair_of_json int_of_json integer_value_of_json)
             ctx tagger
         in
         Ok ({ field_offsets; uninhabited; tagger } : variant_layout)

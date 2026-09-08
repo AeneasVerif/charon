@@ -134,15 +134,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn translate_ty_inner(&mut self, span: Span, ty: &hax::Ty) -> Result<Ty, Error> {
         trace!("{:?}", ty);
         let kind = match ty.kind() {
-            hax::TyKind::Bool => TyKind::Literal(LiteralTy::Bool),
-            hax::TyKind::Char => TyKind::Literal(LiteralTy::Char),
-            hax::TyKind::Int(int_ty) => {
-                TyKind::Literal(LiteralTy::Int(Self::translate_hax_int_ty(int_ty)))
-            }
-            hax::TyKind::Uint(uint_ty) => {
-                TyKind::Literal(LiteralTy::UInt(Self::translate_hax_uint_ty(uint_ty)))
-            }
-            hax::TyKind::Float(float_ty) => TyKind::Literal(LiteralTy::Float(match float_ty {
+            hax::TyKind::Bool => TyKind::Scalar(ScalarTy::Bool),
+            hax::TyKind::Char => TyKind::Scalar(ScalarTy::Char),
+            hax::TyKind::Int(int_ty) => TyKind::Scalar(ScalarTy::Integer(IntegerTy::Signed(
+                Self::translate_hax_int_ty(int_ty),
+            ))),
+            hax::TyKind::Uint(uint_ty) => TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(
+                Self::translate_hax_uint_ty(uint_ty),
+            ))),
+            hax::TyKind::Float(float_ty) => TyKind::Scalar(ScalarTy::Float(match float_ty {
                 hax::FloatTy::F16 => FloatTy::F16,
                 hax::FloatTy::F32 => FloatTy::F32,
                 hax::FloatTy::F64 => FloatTy::F64,
@@ -427,16 +427,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Whether Rust treats this type specially, i.e. whether it is a tuple, `str` or `Box`.
-    pub(crate) fn recognize_builtin_type(&mut self, item: &hax::ItemRef) -> Option<BuiltinTy> {
+    pub(crate) fn recognize_builtin_adt(&mut self, item: &hax::ItemRef) -> Option<BuiltinAdt> {
         item.def_id
             .as_synthetic(self.hax_state())
             .and_then(|synthetic| match synthetic {
-                hax::SyntheticItem::Tuple(_) => Some(BuiltinTy::Tuple),
-                hax::SyntheticItem::Str => Some(BuiltinTy::Str),
+                hax::SyntheticItem::Tuple(_) => Some(BuiltinAdt::Tuple),
+                hax::SyntheticItem::Str => Some(BuiltinAdt::Str),
                 hax::SyntheticItem::Array | hax::SyntheticItem::Slice => None,
             })
             .or_else(|| {
-                (self.hax_def(item).ok()?.lang_item? == sym::owned_box).then_some(BuiltinTy::Box)
+                (self.hax_def(item).ok()?.lang_item? == sym::owned_box).then_some(BuiltinAdt::Box)
             })
     }
 
@@ -519,7 +519,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         fn translate_variant_layout(
             variant_layout: &r_abi::VariantLayout<r_abi::FieldIdx>,
-            tagger: Vec<(ByteCount, ScalarValue)>,
+            tagger: Vec<(ByteCount, IntegerValue)>,
         ) -> Option<VariantLayout> {
             let field_offsets = variant_layout
                 .field_offsets
@@ -535,7 +535,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         fn translate_layout_data(
             layout_data: &r_abi::LayoutData<r_abi::FieldIdx, r_abi::VariantIdx>,
-            tagger: Vec<(ByteCount, ScalarValue)>,
+            tagger: Vec<(ByteCount, IntegerValue)>,
         ) -> Option<VariantLayout> {
             let field_offsets = match &layout_data.fields {
                 r_abi::FieldsShape::Arbitrary { offsets, .. } => {
@@ -628,10 +628,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     tcx.tag_for_variant(ty_env.as_query_input((ty, id)))
                         .map(|s| match tag_ty {
                             IntegerTy::Signed(int_ty) => {
-                                ScalarValue::from_int(ptr_size, int_ty, s.to_int(tag_size)).unwrap()
+                                IntegerValue::from_int(ptr_size, int_ty, s.to_int(tag_size))
+                                    .unwrap()
                             }
                             IntegerTy::Unsigned(uint_ty) => {
-                                ScalarValue::from_uint(ptr_size, uint_ty, s.to_uint(tag_size))
+                                IntegerValue::from_uint(ptr_size, uint_ty, s.to_uint(tag_size))
                                     .unwrap()
                             }
                         })
@@ -744,7 +745,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let field_offsets = fields.map_ref(|field| {
                     let offset = size;
                     let size_of_ty = match field.ty.kind() {
-                        TyKind::Literal(literal_ty) => literal_ty.target_size(ptr_size) as u64,
+                        TyKind::Scalar(scalar_ty) => scalar_ty.target_size(ptr_size) as u64,
                         // This is a lie, the pointers could be fat...
                         TyKind::Ref(..) | TyKind::RawPtr(..) | TyKind::FnPtr(..) => ptr_size,
                         _ => panic!("Unsupported type for `generate_naive_layout`: {ty:?}"),
@@ -812,7 +813,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 Some(args.types.into_iter().collect_vec())
             }
             AdtKind::Str => {
-                let u8_ty = TyKind::Literal(LiteralTy::UInt(UIntTy::U8)).into_ty();
+                let u8_ty =
+                    TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::U8))).into_ty();
                 let u8_is_sized = self.translate_sized_proof(def_span, self.tcx.types.u8)?;
                 Some(vec![Ty::mk_slice(u8_ty, u8_is_sized)])
             }
@@ -949,11 +951,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         def_span: Span,
         discr: &hax::DiscriminantValue,
-    ) -> Result<Literal, Error> {
+    ) -> Result<IntegerValue, Error> {
         let ty = self.translate_ty(def_span, &discr.ty)?;
-        let lit_ty = ty.kind().as_literal().unwrap();
-        match Literal::from_bits(lit_ty, discr.val) {
-            Some(lit) => Ok(lit),
+        let scalar_ty = ty.kind().as_scalar().unwrap();
+        match scalar_ty.as_integer() {
+            Some(int_ty) => Ok(IntegerValue::from_bits(*int_ty, discr.val)),
             None => raise_error!(self, def_span, "unexpected discriminant type: {ty:?}",),
         }
     }
@@ -977,8 +979,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax_repr_options
                 .int_specified
                 .then(|| match hax_repr_options.typ.kind() {
-                    hax::TyKind::Int(ty) => LiteralTy::Int(Self::translate_hax_int_ty(ty)),
-                    hax::TyKind::Uint(ty) => LiteralTy::UInt(Self::translate_hax_uint_ty(ty)),
+                    hax::TyKind::Int(ty) => IntegerTy::Signed(Self::translate_hax_int_ty(ty)),
+                    hax::TyKind::Uint(ty) => IntegerTy::Unsigned(Self::translate_hax_uint_ty(ty)),
                     ty => unreachable!("explicit enum discriminant type is not an integer: {ty:?}"),
                 });
 

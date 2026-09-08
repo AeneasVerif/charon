@@ -275,6 +275,20 @@ type global_decl = {
   def_id : global_decl_id;
   item_meta : item_meta;  (** The meta data associated with the declaration. *)
   generics : generic_params;
+      (** Remark: constants can actually have generic parameters.
+          {@rust[
+            struct V<const N: usize, T> {
+                x: [T; N],
+            }
+
+            impl<const N: usize, T> V<N, T> {
+                const LEN: usize = N; // This has generics <N, T>
+            }
+
+            fn use_v<const N: usize, T>(v: V<N, T>) {
+                let l = V::<N, T>::LEN; // We need to provided a substitution here
+            }
+          ]} *)
   ty : ty;
   src : global_source;
       (** The context of the global: distinguishes normal items from

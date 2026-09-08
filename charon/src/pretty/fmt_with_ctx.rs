@@ -1149,27 +1149,13 @@ impl ItemMeta {
     }
 }
 
-impl Display for Literal {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
-        match self {
-            Literal::Scalar(v) => write!(f, "{v}"),
-            Literal::Float(v) => write!(f, "{v}"),
-            Literal::Bool(v) => write!(f, "{v}"),
-            Literal::Char(v) => write!(f, "'{}'", v.escape_debug()),
-            Literal::Str(v) => write!(f, "\"{}\"", v.replace("\\", "\\\\").replace("\n", "\\n")),
-            Literal::ByteStr(v) => write!(f, "{v:?}"),
-        }
-    }
-}
-
-impl Display for LiteralTy {
+impl Display for ScalarTy {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            LiteralTy::Int(ty) => write!(f, "{ty}"),
-            LiteralTy::UInt(ty) => write!(f, "{ty}"),
-            LiteralTy::Float(ty) => write!(f, "{ty}"),
-            LiteralTy::Char => write!(f, "char"),
-            LiteralTy::Bool => write!(f, "bool"),
+            ScalarTy::Integer(ty) => write!(f, "{ty}"),
+            ScalarTy::Float(ty) => write!(f, "{ty}"),
+            ScalarTy::Char => write!(f, "char"),
+            ScalarTy::Bool => write!(f, "bool"),
         }
     }
 }
@@ -1592,7 +1578,14 @@ impl_display_via_ctx!(ConstantExpr);
 impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.kind() {
-            ConstantExprKind::Literal(c) => write!(f, "{}", c),
+            ConstantExprKind::Integer(v) => write!(f, "{v}"),
+            ConstantExprKind::Float(v) => write!(f, "{v}"),
+            ConstantExprKind::Bool(v) => write!(f, "{v}"),
+            ConstantExprKind::Char(v) => write!(f, "'{}'", v.escape_debug()),
+            ConstantExprKind::Str(v) => {
+                write!(f, "\"{}\"", v.replace("\\", "\\\\").replace("\n", "\\n"))
+            }
+            ConstantExprKind::ByteStr(v) => write!(f, "{v:?}"),
             ConstantExprKind::Adt(variant_id, values) => {
                 let values = values.iter().map(|v| v.with_ctx(ctx));
                 let ty_ref = self.ty().as_adt().unwrap();
@@ -1905,11 +1898,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
     }
 }
 
-impl Display for ScalarValue {
+impl Display for IntegerValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
         match self {
-            ScalarValue::Signed(ty, v) => write!(f, "{v}{ty}"),
-            ScalarValue::Unsigned(ty, v) => write!(f, "{v}{ty}"),
+            IntegerValue::Signed(ty, v) => write!(f, "{v}{ty}"),
+            IntegerValue::Unsigned(ty, v) => write!(f, "{v}{ty}"),
         }
     }
 }
@@ -2602,7 +2595,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
             TyKind::Adt(tref) if tref.is_str() => write!(f, "str"),
             TyKind::Adt(tref) => write!(f, "{}", tref.with_ctx(ctx)),
             TyKind::TypeVar(id) => write!(f, "{}", id.with_ctx(ctx)),
-            TyKind::Literal(kind) => write!(f, "{kind}"),
+            TyKind::Scalar(kind) => write!(f, "{kind}"),
             TyKind::Never => write!(f, "!"),
             TyKind::Pattern(ty, pat) => write!(f, "{} is {}", ty.with_ctx(ctx), pat.with_ctx(ctx)),
             TyKind::Ref(r, ty, kind) => {
