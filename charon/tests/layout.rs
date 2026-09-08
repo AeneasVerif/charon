@@ -52,6 +52,16 @@ fn type_layout() -> anyhow::Result<()> {
             Some(NonZero<u32>)
         }
 
+        enum NicheAdtSigned {
+            None,
+            Some(NonZero<i32>),
+        }
+
+        enum NicheAdtChar {
+            None,
+            Some(char),
+        }
+
         struct IsAZST;
 
         struct GenericWithKnownLayout<T> {
@@ -173,6 +183,34 @@ fn type_layout() -> anyhow::Result<()> {
             Var2(bool), // variant 1, untagged (valid values are 0=false and 1=true)
             Var3,       // variant 2, tag 4
         }
+
+        // Signed tag: the niche is -2, and the valid range -2..=1 wraps around in bits
+        // (0xFE..=0x01). Values outside -2..=1 are invalid.
+        enum NicheInSignedRepr {
+            A(MyOrder),
+            B,
+        }
+
+        // Has a niche at offset 8
+        #[repr(C)]
+        struct BigWithChar {
+            a: u64,
+            c: char,
+        }
+
+        // The uninhabited variant `A` still gets a reserved niche value (0x110000), which must
+        // not be attributed to the untagged variant `C`!
+        enum UninhabitedAtNicheEdge {
+            A(u32, !),
+            B,
+            C(BigWithChar),
+        }
+
+        // The untagged variant is uninhabited: reading any non-niche value is UB.
+        enum UninhabitedUntagged {
+            A(char, !),
+            B,
+        }
         "#,
         &[],
     )?;
@@ -223,9 +261,8 @@ fn type_layout() -> anyhow::Result<()> {
                                     .filter(|(off, _)| *off == offset)
                                     .map(|(_, val)| val.to_bits())
                                     .collect();
-                                // Find a value not in the used set (try incrementing from the
-                                // first used value).
-                                let candidate = used_vals.iter().copied().max().unwrap_or(0) + 1;
+                                // Find the smallest value not in the used set.
+                                let candidate = (0..).find(|v| !used_vals.contains(v)).unwrap();
                                 IntegerValue::from_bits(int_ty, candidate)
                             }))
                     });
