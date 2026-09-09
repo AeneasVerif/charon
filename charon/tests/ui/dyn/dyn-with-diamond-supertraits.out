@@ -118,7 +118,7 @@ struct test_crate::Join::{vtable}<T, Ty0, Ty1, Ty2, Ty3> {
   size: usize,
   align: usize,
   drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn Join<T, ImpliedClause1::Left = Ty0, ImpliedClause1::ImpliedClause1::Internal = Ty1, ImpliedClause1::ImpliedClause1::Internal = Ty2, ImpliedClause2::Right = Ty3>)),
-  method_join_method: fn<'_0_1>(&'_0_1 (dyn Join<T, ImpliedClause1::Left = Ty0, ImpliedClause1::ImpliedClause1::Internal = Ty1, ImpliedClause1::ImpliedClause1::Internal = Ty2, ImpliedClause2::Right = Ty3>)) -> (Ty0, Ty3),
+  method_join_method: fn<'_0_1>(&'_0_1 (dyn Join<T, ImpliedClause1::Left = Ty0, ImpliedClause1::ImpliedClause1::Internal = Ty2, ImpliedClause1::ImpliedClause1::Internal = Ty2, ImpliedClause2::Right = Ty3>)) -> (Ty0, Ty3),
   super_trait_0: &'static core::marker::MetaSized::{vtable},
   super_trait_1: &'static test_crate::Left::{vtable}<Ty0, Ty2>,
   super_trait_2: &'static test_crate::Right::{vtable}<T, Ty3, Ty2>,
