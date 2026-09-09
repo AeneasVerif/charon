@@ -101,6 +101,67 @@ impl<T> Default for CycleDetector<T> {
     }
 }
 
+pub use dfs_with_path::DfsWithPath;
+pub mod dfs_with_path {
+    use petgraph::visit::{GraphRef, IntoNeighbors, VisitMap, Visitable};
+
+    enum DfsPathAction<N> {
+        PopPath,
+        Explore(N),
+    }
+
+    /// A depth-first traversal that exposes the path from its start to the current node.
+    pub struct DfsWithPath<N, VM> {
+        stack: Vec<DfsPathAction<N>>,
+        discovered: VM,
+        pub path: Vec<N>,
+    }
+
+    impl<N, VM> DfsWithPath<N, VM>
+    where
+        N: Copy + PartialEq,
+        VM: VisitMap<N>,
+    {
+        pub fn new<G>(graph: G, start: N) -> Self
+        where
+            G: GraphRef + Visitable<NodeId = N, Map = VM>,
+        {
+            Self {
+                stack: vec![DfsPathAction::Explore(start)],
+                discovered: graph.visit_map(),
+                path: Vec::new(),
+            }
+        }
+
+        pub fn next<G>(&mut self, graph: G) -> Option<N>
+        where
+            G: IntoNeighbors<NodeId = N>,
+        {
+            while let Some(action) = self.stack.pop() {
+                match action {
+                    DfsPathAction::Explore(node) => {
+                        if self.discovered.visit(node) {
+                            self.path.push(node);
+                            self.stack.push(DfsPathAction::PopPath);
+                            self.stack.extend(
+                                graph
+                                    .neighbors(node)
+                                    .filter(|node| !self.discovered.is_visited(node))
+                                    .map(DfsPathAction::Explore),
+                            );
+                            return Some(node);
+                        }
+                    }
+                    DfsPathAction::PopPath => {
+                        self.path.pop();
+                    }
+                }
+            }
+            None
+        }
+    }
+}
+
 pub mod type_map {
     use rustc_hash::FxHashMap;
     use std::{

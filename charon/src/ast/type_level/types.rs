@@ -386,13 +386,6 @@ impl Ty {
         ))))
     }
 
-    pub fn is_usize(&self) -> bool {
-        matches!(
-            self.kind(),
-            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::Usize)))
-        )
-    }
-
     pub fn mk_array(ty: Ty, len: ConstantExpr, ty_is_sized: Option<TraitRef>) -> Ty {
         TyKind::Array(ty, len, ty_is_sized).into_ty()
     }
@@ -400,60 +393,10 @@ impl Ty {
     pub fn mk_slice(ty: Ty, ty_is_sized: Option<TraitRef>) -> Ty {
         TyKind::Slice(ty, ty_is_sized).into_ty()
     }
+
     /// Return true if it is actually unit (i.e.: 0-tuple)
     pub fn is_unit(&self) -> bool {
         *self == Ty::mk_unit()
-    }
-
-    /// Return true if this is a scalar type
-    pub fn is_scalar(&self) -> bool {
-        match self.kind() {
-            TyKind::Scalar(_) => true,
-            TyKind::Pattern(ty, _) => ty.is_scalar(),
-            _ => false,
-        }
-    }
-
-    pub fn is_unsigned_scalar(&self) -> bool {
-        match self.kind() {
-            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(_))) => true,
-            TyKind::Pattern(ty, _) => ty.is_unsigned_scalar(),
-            _ => false,
-        }
-    }
-
-    pub fn is_signed_scalar(&self) -> bool {
-        match self.kind() {
-            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Signed(_))) => true,
-            TyKind::Pattern(ty, _) => ty.is_signed_scalar(),
-            _ => false,
-        }
-    }
-
-    pub fn is_str(&self) -> bool {
-        match self.kind() {
-            TyKind::Adt(ty_ref) => ty_ref.is_str(),
-            _ => false,
-        }
-    }
-
-    /// Return true if the type is Box
-    pub fn is_box(&self) -> bool {
-        match self.kind() {
-            TyKind::Adt(ty_ref) => ty_ref.is_box(),
-            _ => false,
-        }
-    }
-
-    pub fn is_tuple(&self) -> bool {
-        match self.kind() {
-            TyKind::Adt(ty_ref) => ty_ref.is_tuple(),
-            _ => false,
-        }
-    }
-
-    pub fn as_adt_id(&self) -> Option<TypeDeclId> {
-        self.kind().as_adt().map(|a| a.id)
     }
 
     pub fn get_ptr_metadata(&self, translated: &TranslatedCrate) -> PtrMetadata {
@@ -494,20 +437,6 @@ impl Ty {
         }
     }
 
-    pub fn as_ref_or_ptr(&self) -> Option<&Ty> {
-        match self.kind() {
-            TyKind::RawPtr(ty, _) | TyKind::Ref(_, ty, _) => Some(ty),
-            _ => None,
-        }
-    }
-
-    pub fn as_array_or_slice(&self) -> Option<&Ty> {
-        match self.kind() {
-            TyKind::Slice(ty, _) | TyKind::Array(ty, ..) => Some(ty),
-            _ => None,
-        }
-    }
-
     /// The field types of a tuple, in order. Panics if the type is not a tuple,
     /// or if the type declaration is not found in the crate.
     pub fn as_tuple_fields(&self, translated: &TranslatedCrate) -> Vec<Ty> {
@@ -545,6 +474,99 @@ impl Ty {
 impl TyKind {
     pub fn into_ty(self) -> Ty {
         Ty::new(self)
+    }
+
+    pub fn is_usize(&self) -> bool {
+        matches!(
+            self,
+            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::Usize)))
+        )
+    }
+
+    pub fn is_unsigned_scalar(&self) -> bool {
+        match self {
+            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(_))) => true,
+            TyKind::Pattern(ty, _) => ty.is_unsigned_scalar(),
+            _ => false,
+        }
+    }
+
+    pub fn is_signed_scalar(&self) -> bool {
+        match self {
+            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Signed(_))) => true,
+            TyKind::Pattern(ty, _) => ty.is_signed_scalar(),
+            _ => false,
+        }
+    }
+
+    pub fn is_str(&self) -> bool {
+        match self {
+            TyKind::Adt(ty_ref) => ty_ref.is_str(),
+            _ => false,
+        }
+    }
+
+    /// Return true if the type is Box
+    pub fn is_box(&self) -> bool {
+        match self {
+            TyKind::Adt(ty_ref) => ty_ref.is_box(),
+            _ => false,
+        }
+    }
+
+    pub fn is_tuple(&self) -> bool {
+        match self {
+            TyKind::Adt(ty_ref) => ty_ref.is_tuple(),
+            _ => false,
+        }
+    }
+
+    pub fn as_adt_id(&self) -> Option<TypeDeclId> {
+        self.as_adt().map(|a| a.id)
+    }
+
+    pub fn as_box(&self) -> Option<&Ty> {
+        match self {
+            TyKind::Adt(ty_ref) if ty_ref.is_box() => Some(&ty_ref.generics.types[0]),
+            _ => None,
+        }
+    }
+
+    pub fn as_box_mut(&mut self) -> Option<&mut Ty> {
+        match self {
+            TyKind::Adt(ty_ref) if ty_ref.is_box() => Some(&mut ty_ref.generics.types[0]),
+            _ => None,
+        }
+    }
+
+    pub fn builtin_deref(&self) -> Option<&Ty> {
+        match self {
+            TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) => Some(ty),
+            TyKind::Adt(ty_ref) if ty_ref.is_box() => Some(&ty_ref.generics.types[0]),
+            _ => None,
+        }
+    }
+
+    pub fn builtin_deref_mut(&mut self) -> Option<&mut Ty> {
+        match self {
+            TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) => Some(ty),
+            TyKind::Adt(ty_ref) if ty_ref.is_box() => Some(&mut ty_ref.generics.types[0]),
+            _ => None,
+        }
+    }
+
+    pub fn as_array_or_slice(&self) -> Option<&Ty> {
+        match self {
+            TyKind::Slice(ty, _) | TyKind::Array(ty, ..) => Some(ty),
+            _ => None,
+        }
+    }
+
+    pub fn as_array_or_slice_mut(&mut self) -> Option<&mut Ty> {
+        match self {
+            TyKind::Slice(ty, _) | TyKind::Array(ty, ..) => Some(ty),
+            _ => None,
+        }
     }
 }
 
