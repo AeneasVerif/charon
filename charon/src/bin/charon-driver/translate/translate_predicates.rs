@@ -407,12 +407,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             }
                             type_map
                         };
-                        let vtable = self.translate_vtable_instance_ref_no_enqueue(
-                            span,
-                            tref.hax_skip_binder_ref(),
-                            tref.hax_skip_binder_ref(),
-                            TransImplSource::Marker,
-                        )?;
+                        let vtable = self.translate_region_binder(span, tref, |ctx, tref| {
+                            ctx.translate_vtable_instance_ref_no_enqueue(
+                                span,
+                                tref,
+                                tref,
+                                TransImplSource::Marker,
+                            )
+                        })?;
+                        let vtable = self.erase_region_binder(vtable);
                         TraitRefKind::BuiltinOrAuto {
                             builtin_data,
                             parent_trait_refs,

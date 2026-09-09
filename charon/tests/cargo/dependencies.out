@@ -154,24 +154,24 @@ fn main()
     let _2: (); // anonymous local
     let _3: &'1 mut u32; // anonymous local
     let _4: &'2 mut u32; // anonymous local
-    let _5: (&'11 u32, &'12 u32); // anonymous local
-    let _6: &'16 u32; // anonymous local
-    let _7: &'17 u32; // anonymous local
-    let left_val: &'18 u32; // local
-    let right_val: &'19 u32; // local
+    let _5: (&'12 u32, &'13 u32); // anonymous local
+    let _6: &'17 u32; // anonymous local
+    let _7: &'18 u32; // anonymous local
+    let left_val: &'19 u32; // local
+    let right_val: &'20 u32; // local
     let _10: bool; // anonymous local
     let _11: u32; // anonymous local
     let _12: u32; // anonymous local
     let kind: AssertKind; // local
     let _14: AssertKind; // anonymous local
-    let _15: &'20 u32; // anonymous local
-    let _16: &'21 u32; // anonymous local
-    let _17: &'22 u32; // anonymous local
-    let _18: &'23 u32; // anonymous local
-    let _19: Option<Arguments<'31>>[{built_in impl Sized for Arguments<'31>}]; // anonymous local
-    let _20: &'35 u32; // anonymous local
-    let _21: &'38 u32; // anonymous local
-    let _22: &'52 u32; // anonymous local
+    let _15: &'21 u32; // anonymous local
+    let _16: &'22 u32; // anonymous local
+    let _17: &'23 u32; // anonymous local
+    let _18: &'24 u32; // anonymous local
+    let _19: Option<Arguments<'33>>[{built_in impl Sized for Arguments<'33>}]; // anonymous local
+    let _20: &'37 u32; // anonymous local
+    let _21: &'40 u32; // anonymous local
+    let _22: &'55 u32; // anonymous local
     let _23: u32; // anonymous local
 
     storage_live(_0)
@@ -185,7 +185,7 @@ fn main()
     storage_live(_4)
     _4 = &mut x
     _3 = &two-phase-mut (*_4)
-    _2 = silly_incr<'37>(move _3)
+    _2 = silly_incr<'39>(move _3)
     ↳⚡ unwind_continue
     storage_live(_21)
     storage_live(_22)

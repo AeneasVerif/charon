@@ -1548,8 +1548,8 @@ impl "impl_RecursiveImpl_for_unit" RecursiveImpl for () {
 // Full name: test_crate::flabada
 pub fn flabada<'a>(_x: &'a ()) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
 {
-    let _0: Wrapper<(bool, &'8 ())>[{built_in impl Sized for (bool, &'8 ())}]; // return
-    let _x: &'12 (); // arg #1
+    let _0: Wrapper<(bool, &'12 ())>[{built_in impl Sized for (bool, &'12 ())}]; // return
+    let _x: &'16 (); // arg #1
 
     storage_live(_0)
     storage_dead(_x)
@@ -1666,7 +1666,7 @@ pub fn flibidi()
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = test_crate::call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {impl Fn<(&'a (),)> for for<'a> flabada<'a>}<'0>](const flabada<'11>)
+    _1 = test_crate::call<'0, for<'a> flabada<'a>>[{built_in impl Sized for for<'a> flabada<'a>}, {impl Fn<(&'a (),)> for for<'a> flabada<'a>}<'0>](const flabada<'12>)
     ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()

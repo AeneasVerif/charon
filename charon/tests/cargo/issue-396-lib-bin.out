@@ -117,15 +117,15 @@ fn main()
     let args_3: (&'4 u32,); // local
     let _4: &'5 u32; // anonymous local
     let _5: u32; // anonymous local
-    let args_6: [Argument<'13>; 1usize]; // local
-    let _7: Argument<'17>; // anonymous local
-    let _8: &'18 u32; // anonymous local
-    let _9: &'20 [u8; 4usize]; // anonymous local
-    let _10: &'21 [u8; 4usize]; // anonymous local
-    let _11: &'27 [Argument<'28>; 1usize]; // anonymous local
-    let _12: &'32 [Argument<'33>; 1usize]; // anonymous local
+    let args_6: [Argument<'14>; 1usize]; // local
+    let _7: Argument<'18>; // anonymous local
+    let _8: &'19 u32; // anonymous local
+    let _9: &'21 [u8; 4usize]; // anonymous local
+    let _10: &'22 [u8; 4usize]; // anonymous local
+    let _11: &'28 [Argument<'29>; 1usize]; // anonymous local
+    let _12: &'33 [Argument<'34>; 1usize]; // anonymous local
     let _13: [u8; 4usize]; // anonymous local
-    let _14: &'43 [u8; 4usize]; // anonymous local
+    let _14: &'44 [u8; 4usize]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -144,7 +144,7 @@ fn main()
     storage_live(_7)
     storage_live(_8)
     _8 = &(*args_3._0)
-    _7 = new_display<'39, '41, u32>[{built_in impl Sized for u32}, impl_Display_for_u32](move _8)
+    _7 = new_display<'40, '42, u32>[{built_in impl Sized for u32}, impl_Display_for_u32](move _8)
     ↳⚡ unwind_continue
     storage_dead(_8)
     args_6 = [move _7]
@@ -162,13 +162,13 @@ fn main()
     storage_live(_12)
     _12 = &args_6
     _11 = &(*_12)
-    _2 = new<'48, 4usize, 1usize>(move _9, move _11)
+    _2 = new<'49, 4usize, 1usize>(move _9, move _11)
     ↳⚡ unwind_continue
     storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
-    _1 = _print<'50>(move _2)
+    _1 = _print<'51>(move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(args_6)

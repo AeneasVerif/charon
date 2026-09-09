@@ -33,16 +33,16 @@ where
     RegionOutlives1: '_2: '_1,
 {
     let _0: (); // return
-    let bufs: &'17 mut &'18 mut [IoSlice<'19>]; // arg #1
+    let bufs: &'19 mut &'20 mut [IoSlice<'21>]; // arg #1
     let _2: (); // anonymous local
-    let _3: &'23 mut &'24 mut [IoSlice<'25>]; // anonymous local
+    let _3: &'25 mut &'26 mut [IoSlice<'27>]; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
     _3 = &two-phase-mut (*bufs)
-    _2 = advance_slices<'34, '37, '38>(move _3, const 0usize)
+    _2 = advance_slices<'36, '39, '40>(move _3, const 0usize)
     ↳⚡ storage_dead(bufs)
         unwind_continue
     storage_dead(_3)
