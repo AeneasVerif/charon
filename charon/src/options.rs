@@ -684,6 +684,8 @@ pub struct TranslateOptions {
     pub remove_adt_clauses: bool,
     /// Monomorphize code using hax's instantiation mechanism.
     pub monomorphize_with_hax: bool,
+    /// Extract the unstructured LLBC (i.e., don't reconstruct the control-flow)
+    pub ullbc: bool,
     /// Transform array-to-slice unsizing and repeat expressions into standard library function
     /// calls in LLBC.
     pub ops_to_function_calls: bool,
@@ -859,6 +861,7 @@ impl TranslateOptions {
             remove_unused_self_clauses: options.remove_unused_self_clauses,
             remove_adt_clauses: options.remove_adt_clauses,
             monomorphize_with_hax: options.monomorphize,
+            ullbc: options.ullbc,
             ops_to_function_calls: options.ops_to_function_calls,
             index_to_function_calls: options.index_to_function_calls,
             print_built_llbc: options.print_built_llbc,
