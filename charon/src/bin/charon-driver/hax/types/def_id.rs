@@ -12,6 +12,7 @@ use charon_lib::ast::HashConsed;
 
 use itertools::Itertools;
 pub use rustc_middle::mir::Promoted as PromotedId;
+pub use rustc_middle::mir::interpret::AllocId as RAllocId;
 use rustc_span::DUMMY_SP;
 use {rustc_hir as hir, rustc_hir::def_id::DefId as RDefId, rustc_middle::ty};
 
@@ -101,6 +102,9 @@ pub enum DefIdBase {
     /// A completely fictitious item, we use this for arrays, slices and tuples to make
     /// monomorphization and other shenanigans easier.
     Synthetic(SyntheticItem),
+    /// A global standing for an anonymous const-eval allocation (e.g. the `[42]` in `&[42]`), so
+    /// that pointers to the same memory stay aliased.
+    Alloc(RAllocId),
 }
 
 #[derive(Debug, Hash, Clone, Copy, PartialEq, Eq)]
@@ -206,7 +210,9 @@ impl rustc_trait_elaboration::ItemId for DefId {
             DefIdBase::Synthetic(synthetic) => {
                 synthetic.predicates_defined_on(s, self.clone(), direction)
             }
-            DefIdBase::Promoted(..) => ItemPredicates::new_unmapped(DUMMY_SP, []),
+            DefIdBase::Promoted(..) | DefIdBase::Alloc(..) => {
+                ItemPredicates::new_unmapped(DUMMY_SP, [])
+            }
         }
     }
 
@@ -231,7 +237,7 @@ impl rustc_trait_elaboration::ItemId for DefId {
         match self.base {
             DefIdBase::Real(def_id) => def_id.typeck_parent(&tcx).map(|def_id| def_id.sinto(s)),
             DefIdBase::Promoted(def_id, ..) => Some(tcx.typeck_root_def_id(def_id).sinto(s)),
-            DefIdBase::ImplAssocItem(..) | DefIdBase::Synthetic(..) => None,
+            DefIdBase::ImplAssocItem(..) | DefIdBase::Synthetic(..) | DefIdBase::Alloc(..) => None,
         }
     }
 
@@ -252,7 +258,7 @@ impl rustc_trait_elaboration::ItemId for DefId {
                 .map(|def_id| def_id.sinto(s)),
             DefIdBase::ImplAssocItem(id) => Some(id.trait_impl_id.sinto(s)),
             DefIdBase::Promoted(def_id, _) => Some(def_id.sinto(s)),
-            DefIdBase::Synthetic(..) => None,
+            DefIdBase::Synthetic(..) | DefIdBase::Alloc(..) => None,
         }
     }
 
@@ -263,7 +269,7 @@ impl rustc_trait_elaboration::ItemId for DefId {
                 def_id.takes_explicit_self_clause(&tcx)
             }
             DefIdBase::ImplAssocItem(id) => id.item_decl_id.takes_explicit_self_clause(&tcx),
-            DefIdBase::Synthetic(..) => false,
+            DefIdBase::Synthetic(..) | DefIdBase::Alloc(..) => false,
         }
     }
 
@@ -318,6 +324,7 @@ impl DefId {
             DefIdBase::Real(did) | DefIdBase::Promoted(did, ..) => did.is_local(),
             DefIdBase::ImplAssocItem(id) => id.trait_impl_id.is_local(),
             DefIdBase::Synthetic(..) => false,
+            DefIdBase::Alloc(..) => true,
         }
     }
     pub fn is_typeck_child<'tcx>(&self, s: &impl BaseState<'tcx>) -> bool {
@@ -370,6 +377,27 @@ impl DefId {
         };
         contents.make_def_id(s)
     }
+
+    /// The global standing for an anonymous allocation. It has type `MaybeUninit<[u8; N]>` and
+    /// holds the raw bytes of the allocation; pointers to it view it at their own type.
+    pub fn make_anon_alloc<'tcx, S: BaseState<'tcx>>(s: &S, alloc_id: RAllocId) -> Self {
+        let tcx = s.base().tcx;
+        s.with_global_cache(|cache| cache.anon_allocs.insert(alloc_id));
+        let mutability = tcx
+            .global_alloc(alloc_id)
+            .unwrap_memory()
+            .inner()
+            .mutability;
+        let contents = DefIdContents {
+            base: DefIdBase::Alloc(alloc_id),
+            kind: DefKind::Static {
+                safety: Safety::Safe,
+                mutability,
+                nested: true,
+            },
+        };
+        contents.make_def_id(s)
+    }
 }
 
 impl DefId {
@@ -383,6 +411,9 @@ impl DefId {
                 ..
             }) => s.with_global_cache(|cache| cache.crate_name(tcx, def_id.krate)),
             DefIdBase::Synthetic(..) => (Symbol::intern(SYNTHETIC_CRATE_NAME), 0),
+            DefIdBase::Alloc(..) => {
+                s.with_global_cache(|cache| cache.crate_name(tcx, rustc_hir::def_id::LOCAL_CRATE))
+            }
         }
     }
 
@@ -411,7 +442,7 @@ impl DefId {
                 }
             }
             DefIdBase::ImplAssocItem(id) => tcx.def_span(id.item_impl_id),
-            DefIdBase::Synthetic(..) => rustc_span::DUMMY_SP,
+            DefIdBase::Synthetic(..) | DefIdBase::Alloc(..) => rustc_span::DUMMY_SP,
         }
         .sinto(s)
     }
@@ -454,6 +485,13 @@ impl DefId {
                 disambiguator: 0,
                 data: DefPathItem::TypeNs(Symbol::intern(&synthetic.name())),
             },
+            DefIdBase::Alloc(alloc_id) => DisambiguatedDefPathItem {
+                data: DefPathItem::PromotedConst,
+                // Number anonymous allocations in the order we encountered them.
+                disambiguator: s.with_global_cache(|cache| {
+                    cache.anon_allocs.get_index_of(&alloc_id).unwrap() as u32
+                }),
+            },
         }
     }
 
@@ -462,7 +500,9 @@ impl DefId {
             DefIdBase::Real(def_id) => s.tcx().opt_parent(def_id),
             DefIdBase::Promoted(def_id, _) => Some(def_id),
             DefIdBase::ImplAssocItem(id) => Some(id.trait_impl_id),
-            DefIdBase::Synthetic(..) => Some(rustc_span::def_id::CRATE_DEF_ID.to_def_id()),
+            DefIdBase::Synthetic(..) | DefIdBase::Alloc(..) => {
+                Some(rustc_span::def_id::CRATE_DEF_ID.to_def_id())
+            }
         }
         .sinto(s)
     }
@@ -479,6 +519,7 @@ impl DefId {
                 ..
             }) => can_have_generics(tcx, def_id),
             DefIdBase::Synthetic(synthetic) => synthetic.can_have_generics(s),
+            DefIdBase::Alloc(..) => false,
         }
     }
 
@@ -487,13 +528,17 @@ impl DefId {
         match self.base {
             DefIdBase::Real(def_id) => tcx.generics_of(def_id),
             DefIdBase::Synthetic(synthetic) => synthetic.generics_of(s),
-            DefIdBase::Promoted(def_id, ..) => s.with_item_cache(self, |cache| {
+            DefIdBase::Promoted(..) | DefIdBase::Alloc(..) => s.with_item_cache(self, |cache| {
                 if let Some(generics) = cache.virtual_generics {
                     return generics;
                 }
+                let parent = match self.base {
+                    DefIdBase::Promoted(def_id, ..) => Some(def_id),
+                    _ => None,
+                };
                 let generics = Box::leak(Box::new(ty::Generics {
-                    parent: Some(def_id),
-                    parent_count: tcx.generics_of(def_id).count(),
+                    parent,
+                    parent_count: parent.map_or(0, |p| tcx.generics_of(p).count()),
                     own_params: Default::default(),
                     param_def_id_to_index: Default::default(),
                     has_self: false,
@@ -550,6 +595,7 @@ impl DefId {
                 }
             }
             DefIdBase::Synthetic(synthetic) => synthetic.identity_args(s),
+            DefIdBase::Alloc(..) => ty::GenericArgsRef::default(),
             DefIdBase::ImplAssocItem(_) => panic!(
                 "virtual trait impl associated items do not have a \
                 sensible `identity_args`. consider `identity_args_for_item_decl`"
@@ -577,6 +623,7 @@ impl DefId {
                 }
             }
             DefIdBase::Synthetic(synthetic) => synthetic.param_env(s),
+            DefIdBase::Alloc(..) => ty::ParamEnv::empty(),
         }
     }
 
@@ -598,6 +645,16 @@ impl DefId {
             DefIdBase::Real(def_id) | DefIdBase::Promoted(def_id, ..) => tcx.type_of(def_id),
             DefIdBase::Synthetic(synthetic) => synthetic.type_of(s),
             DefIdBase::ImplAssocItem(id) => tcx.type_of(id.item_decl_id),
+            DefIdBase::Alloc(alloc_id) => {
+                // `MaybeUninit<[u8; N]>`
+                let size = tcx.global_alloc(alloc_id).unwrap_memory().inner().size();
+                let bytes = ty::Ty::new_array(tcx, tcx.types.u8, size.bytes());
+                let maybe_uninit =
+                    tcx.require_lang_item(rustc_attr_ir::LangItem::MaybeUninit, DUMMY_SP);
+                let ty =
+                    ty::Ty::new_adt(tcx, tcx.adt_def(maybe_uninit), tcx.mk_args(&[bytes.into()]));
+                ty::EarlyBinder::bind(tcx, ty)
+            }
         }
     }
 }
@@ -686,6 +743,7 @@ impl std::fmt::Debug for DefId {
                 write!(f, "{def_id:?}::promoted#{}", promoted.as_u32())
             }
             DefIdBase::Synthetic(item) => write!(f, "{}", item.name()),
+            DefIdBase::Alloc(alloc_id) => write!(f, "{alloc_id:?}"),
             DefIdBase::ImplAssocItem(id) => {
                 write!(f, "{:?}::{:?}", id.trait_impl_id, id.item_decl_id)
             }

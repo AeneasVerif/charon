@@ -26,7 +26,7 @@ use crate::hax;
 use crate::hax::SInto;
 use charon_lib::ast::*;
 use charon_lib::name_matcher::NamePattern;
-use charon_lib::options::{CliOpts, StartFrom, TranslateOptions};
+use charon_lib::options::{CliOpts, ConstHandling, StartFrom, TranslateOptions};
 use charon_lib::transform::TransformCtx;
 use macros::VariantIndexArity;
 
@@ -1131,6 +1131,7 @@ pub fn translate<'tcx>(
         tcx,
         hax::options::Options {
             inline_anon_consts: !translate_options.raw_consts,
+            anon_allocs_as_globals: matches!(translate_options.consts, ConstHandling::Values),
         },
         hax::options::BoundsOptions {
             add_destruct_bounds: translate_options.add_destruct_bounds,

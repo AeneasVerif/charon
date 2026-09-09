@@ -251,13 +251,13 @@ fn alloc_provenance<'tcx, S: UnderOwnerState<'tcx>>(
             instance.def_id(),
             instance.args,
         )),
-        Static(..) => match alloc_as_global(s, alloc_id) {
+        Static(..) | Memory(..) => match alloc_as_global(s, alloc_id) {
             Some(item) => ConstantByteProvenance::Global(item),
             None => ConstantByteProvenance::Unknown,
         },
-        // TODO: TypeIds, anonymous allocations.
+        // TODO: TypeIds
         // VTables are not reachable here, I believe: it's UB to attempt reading a VTable's data.
-        TypeId { .. } | VTable(..) | Memory(..) => ConstantByteProvenance::Unknown,
+        TypeId { .. } | VTable(..) => ConstantByteProvenance::Unknown,
     }
 }
 
@@ -275,6 +275,10 @@ fn alloc_as_global<'tcx, S: UnderOwnerState<'tcx>>(
             if let rustc_hir::def::DefKind::Static { nested: false, .. } = tcx.def_kind(did) =>
         {
             Some(translate_item_ref(s, did, Default::default()))
+        }
+        Memory(_) if s.base().options.anon_allocs_as_globals => {
+            let def_id = DefId::make_anon_alloc(s, alloc_id);
+            Some(ItemRef::dummy_without_generics(s, def_id))
         }
         _ => None,
     }
@@ -392,10 +396,18 @@ fn pointee_to_const<'tcx, S: UnderOwnerState<'tcx>>(
     };
 
     let (alloc_id, offset, _) = ecx.ptr_get_alloc_id(place.ptr(), 0)?;
-    // Our constant pointers don't have a way to indicate their offset, so we only name the
-    // global if the pointer is at its start.
+    // TODO: A view over an anonymous allocation must cover exactly the whole allocation.
+    // Our constant pointers don't have a way to indicate their offset, so if there's a
+    // mismatch it would be wrong.
+    let covers_alloc = |global_ty| match tcx.global_alloc(alloc_id) {
+        interpret::GlobalAlloc::Memory(alloc) => tcx
+            .layout_of(s.typing_env().as_query_input(global_ty))
+            .is_ok_and(|layout| layout.size == alloc.inner().size()),
+        _ => true,
+    };
     if let Some(global_ty) = global_ty
         && offset == rustc_abi::Size::ZERO
+        && covers_alloc(global_ty)
         && let Some(item) = alloc_as_global(s, alloc_id)
     {
         let kind = ConstantExprKind::NamedGlobal(item);
@@ -564,4 +576,18 @@ pub fn const_value_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
     let (ecx, op) =
         const_eval::mk_eval_cx_for_const_val(tcx.at(span), typing_env, val, ty).unwrap();
     op_to_const(s, span, &ecx, op)
+}
+
+/// Like `const_value_to_constant_expr`, but untyped.
+pub fn const_value_to_raw_memory<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    ty: rustc_middle::ty::Ty<'tcx>,
+    val: mir::ConstValue,
+    span: rustc_span::Span,
+) -> InterpResult<'tcx, ConstantExpr> {
+    let tcx = s.base().tcx;
+    let (ecx, op) =
+        const_eval::mk_eval_cx_for_const_val(tcx.at(span), s.typing_env(), val, ty).unwrap();
+    let bytes = op_to_raw_bytes(s, &ecx, &op)?;
+    interp_ok(ConstantExprKind::Memory(bytes).decorate(ty.sinto(s), span.sinto(s)))
 }
