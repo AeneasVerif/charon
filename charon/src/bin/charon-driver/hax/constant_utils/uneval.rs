@@ -1,5 +1,6 @@
 //! Reconstruct structured expressions from rustc's various constant representations.
 use super::*;
+use rustc_const_eval::const_eval;
 use rustc_const_eval::interpret::{FnVal, InterpResult, interp_ok};
 use rustc_middle::mir::interpret;
 use rustc_middle::{mir, ty};
@@ -238,12 +239,130 @@ pub(crate) fn valtree_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
     kind.decorate(ty.sinto(s), span.sinto(s))
 }
 
+/// The provenance to give to the bytes of a pointer into the given allocation.
+fn alloc_provenance<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    alloc_id: interpret::AllocId,
+) -> ConstantByteProvenance {
+    use interpret::GlobalAlloc::*;
+    let tcx = s.base().tcx;
+    match tcx.global_alloc(alloc_id) {
+        Function { instance } => ConstantByteProvenance::Function(translate_item_ref(
+            s,
+            instance.def_id(),
+            instance.args,
+        )),
+        // TODO: nested statics are synthetic items that make the rest of the machinery ICE, so we
+        // don't turn them into named globals yet.
+        Static(did)
+            if let rustc_hir::def::DefKind::Static { nested: false, .. } = tcx.def_kind(did) =>
+        {
+            ConstantByteProvenance::Global(translate_item_ref(s, did, Default::default()))
+        }
+        // TODO: TypeIds, anonymous allocations.
+        // VTables are not reachable here, I believe: it's UB to attempt reading a VTable's data.
+        _ => ConstantByteProvenance::Unknown,
+    }
+}
+
+/// Read the raw bytes of an evaluated operand, keeping track of uninitialized bytes and pointer
+/// provenance. Used for values that have no structured representation (e.g. unions).
+fn op_to_raw_bytes<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    ecx: &const_eval::CompileTimeInterpCx<'tcx>,
+    op: &rustc_const_eval::interpret::OpTy<'tcx>,
+) -> InterpResult<'tcx, Vec<ConstantByte>> {
+    op.as_mplace_or_imm().either(
+        |mplace| mplace_to_raw_bytes(s, ecx, &mplace),
+        |imm| interp_ok(imm_to_raw_bytes(s, &imm)),
+    )
+}
+
+/// The bytes of an immediate, which is made of at most two scalars.
+fn imm_to_raw_bytes<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    imm: &rustc_const_eval::interpret::ImmTy<'tcx>,
+) -> Vec<ConstantByte> {
+    use rustc_abi::Size;
+    use rustc_const_eval::interpret::Immediate;
+    let mut bytes = vec![ConstantByte::Uninit; imm.layout.size.bytes_usize()];
+    let mut write = |offset: Size, scalar: interpret::Scalar| {
+        match scalar {
+            interpret::Scalar::Int(int) => {
+                let mut scalar = vec![0; int.size().bytes_usize()];
+                let endian = s.base().tcx.data_layout.endian;
+                interpret::write_target_uint(endian, &mut scalar, int.to_bits(int.size())).unwrap();
+                for (i, b) in scalar.into_iter().enumerate() {
+                    bytes[offset.bytes_usize() + i] = ConstantByte::Value(b);
+                }
+            }
+            interpret::Scalar::Ptr(ptr, size) => {
+                let prov = alloc_provenance(s, ptr.provenance.alloc_id());
+                for i in 0..size {
+                    bytes[offset.bytes_usize() + i as usize] =
+                        ConstantByte::Provenance(prov.clone(), i);
+                }
+            }
+        };
+    };
+    match **imm {
+        Immediate::Uninit => {}
+        Immediate::Scalar(a) => write(Size::ZERO, a),
+        Immediate::ScalarPair(a, b) => {
+            let rustc_abi::BackendRepr::ScalarPair { b_offset, .. } = imm.layout.backend_repr
+            else {
+                unreachable!()
+            };
+            write(Size::ZERO, a);
+            write(b_offset, b);
+        }
+    }
+    bytes
+}
+
+/// The bytes of a value in memory.
+fn mplace_to_raw_bytes<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    ecx: &const_eval::CompileTimeInterpCx<'tcx>,
+    mplace: &rustc_const_eval::interpret::MPlaceTy<'tcx>,
+) -> InterpResult<'tcx, Vec<ConstantByte>> {
+    use rustc_abi::Size;
+    let size = mplace.layout.size;
+    if size.bytes() == 0 {
+        return interp_ok(vec![]);
+    }
+    let (alloc_id, offset, _) = ecx.ptr_get_alloc_id(mplace.ptr(), size.bytes() as i64)?;
+    let alloc = ecx.get_alloc_raw(alloc_id)?;
+    let range = interpret::alloc_range(offset, size);
+    let raw_bytes = alloc.get_bytes_unchecked(range);
+    let mut bytes: Vec<ConstantByte> = (0..size.bytes())
+        .map(
+            |i| match alloc.init_mask().get(offset + Size::from_bytes(i)) {
+                true => ConstantByte::Value(raw_bytes[i as usize]),
+                false => ConstantByte::Uninit,
+            },
+        )
+        .collect();
+
+    for (prov_range, prov) in alloc.provenance().get_range(range, ecx) {
+        let prov = alloc_provenance(s, prov.alloc_id());
+        for i in 0..prov_range.size.bytes() {
+            let pos = prov_range.start + Size::from_bytes(i);
+            if range.start <= pos && pos < range.end() {
+                bytes[(pos - range.start).bytes_usize()] =
+                    ConstantByte::Provenance(prov.clone(), i as u8);
+            }
+        }
+    }
+    interp_ok(bytes)
+}
+
 /// Use the const-eval interpreter to convert an evaluated operand back to a structured
 /// constant expression.
 fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     span: rustc_span::Span,
-    ecx: &rustc_const_eval::const_eval::CompileTimeInterpCx<'tcx>,
+    ecx: &const_eval::CompileTimeInterpCx<'tcx>,
     op: rustc_const_eval::interpret::OpTy<'tcx>,
 ) -> InterpResult<'tcx, ConstantExpr> {
     use rustc_const_eval::interpret::Projectable;
@@ -277,7 +396,7 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
             ConstantExprKind::Literal(lit)
         }
         ty::Adt(adt_def, ..) if adt_def.is_union() => {
-            ConstantExprKind::Todo("Cannot translate constant of union type".into())
+            ConstantExprKind::Memory(op_to_raw_bytes(s, ecx, &op)?)
         }
         ty::Adt(adt_def, ..) => {
             let variant = ecx.read_discriminant(&op)?;
@@ -406,7 +525,6 @@ pub fn const_value_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
     let tcx = s.base().tcx;
     let typing_env = s.typing_env();
     let (ecx, op) =
-        rustc_const_eval::const_eval::mk_eval_cx_for_const_val(tcx.at(span), typing_env, val, ty)
-            .unwrap();
+        const_eval::mk_eval_cx_for_const_val(tcx.at(span), typing_env, val, ty).unwrap();
     op_to_const(s, span, &ecx, op)
 }
