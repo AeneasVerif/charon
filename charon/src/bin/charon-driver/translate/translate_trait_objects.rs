@@ -430,6 +430,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ///   align: usize,
     ///   drop: fn(*mut dyn Trait<...>),
     ///   method_name: fn(&dyn Trait<...>, Args..) -> Output,
+    ///   by_value_method: fn(*mut dyn Trait<...>, Args..) -> Output,
     ///   ... other methods
     ///   super_trait_0: &'static SuperTrait0VTable
     ///   ... other supertraits

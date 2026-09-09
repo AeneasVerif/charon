@@ -124,12 +124,39 @@ fn transform_dyn_trait_call(
     if call.args.is_empty() {
         raise_error!(ctx.ctx, ctx.span, "Dyn trait call has no arguments!");
     }
-    let dyn_trait_place = match &call.args[0] {
-        Operand::Copy(place) | Operand::Move(place) => place,
+    let mut dyn_trait_place = match &call.args[0] {
+        Operand::Copy(place) | Operand::Move(place) => place.clone(),
         Operand::Const(_) => {
             panic!("Unexpected constant as receiver for dyn trait method call")
         }
     };
+
+    // Rustc may move the unsized first argument of by-value dyn call into a temporary local,
+    // e.g. for `StructWithTail<dyn T>>` and `b.field.by_value()`, we get `_15 = move (*b).field; by_value(move _15)`.
+    // That's an unsized local, which we is not supposed to happen. To avoid that we inline the
+    // place back into the call, giving us: `by_value(move (*b).field)`.
+    if let TyKind::DynTrait(..) = dyn_trait_place.ty().kind()
+        && let PlaceKind::Local(local) = dyn_trait_place.kind
+        && let Some(last) = ctx.statements.last()
+        && let StatementKind::Assign(dest, Rvalue::Use(src, _)) = &last.kind
+        && let Operand::Copy(place) | Operand::Move(place) = src
+        && dest.local_id() == Some(local)
+    {
+        call.args[0] = src.clone();
+        dyn_trait_place = place.clone();
+        ctx.statements.pop();
+    }
+
+    // `dyn Trait` has a carveout for unsized `self` types. It works by calling the method on a place
+    // of type `dyn Trait` directly. The actual shim we generate expects `*mut dyn Trait`, so we must
+    // borrow that unsized place. See `dyn/mono-dyn-call-by-value.out`.
+    if let TyKind::DynTrait(..) = dyn_trait_place.ty().kind() {
+        let ptr_ty = TyKind::RawPtr(dyn_trait_place.ty().clone(), RefKind::Mut).into_ty();
+        let rvalue = ctx.raw_borrow(dyn_trait_place, RefKind::Mut);
+        dyn_trait_place = ctx.fresh_var(None, ptr_ty);
+        ctx.insert_assn_stmt(dyn_trait_place.clone(), rvalue);
+        call.args[0] = Operand::Move(dyn_trait_place.clone());
+    }
 
     let dyn_pred = dyn_proof.trait_decl_ref.clone().erase();
     let dyn_ty = &dyn_pred.generics.types[0];
@@ -142,16 +169,9 @@ fn transform_dyn_trait_call(
         );
     };
 
-    // this is the the (wide) pointer that has the vtable metadata. by-value receivers (e.g. Box<dyn FnOnce>)
-    // are passed as *p, but it's p that has the vtable, so we need to get that!
-    let dyn_trait_place = match dyn_trait_place.as_projection() {
-        Some((ptr, ProjectionElem::Deref)) => ptr,
-        _ => dyn_trait_place,
-    };
     let receiver_vtable_ty = TyKind::Adt(receiver_vtable_ref).into_ty();
     let ptr_to_vtable_ty = Ty::new(TyKind::RawPtr(receiver_vtable_ty.clone(), RefKind::Shared));
     let mut method_vtable_place = dyn_trait_place
-        .clone()
         .project(ProjectionElem::PtrMetadata, ptr_to_vtable_ty)
         .project(ProjectionElem::Deref, receiver_vtable_ty);
 
