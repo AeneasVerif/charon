@@ -65,7 +65,7 @@ use derive_generic_visitor::*;
         Assert, AttributeKind, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAdt, BuiltinAssertKind,
         Call, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Deprecation, Disambiguator, DynPredicate, Field, FieldId, File, FloatTy, FloatValue,
-        FnOperand, FnPtrKind, FunSig, InlineAttr, IntegerTy, IntTy, UIntTy, ScalarTy,
+        FnOperand, FnPtrKind, InlineAttr, IntegerTy, IntTy, UIntTy, ScalarTy,
         Ident, from_rustc::InlineAttr,
         llbc_ast::ExprBody, llbc_ast::StatementKind,
         Loc, Locals, NullOp, Operand, PathElem, PlaceKind,
@@ -107,7 +107,7 @@ use derive_generic_visitor::*;
         for<T: AstVisitable> Binder<T>,
         llbc_block: llbc_ast::Block, llbc_statement: llbc_ast::Statement,
         ullbc_statement: ullbc_ast::Statement, ullbc_terminator: ullbc_ast::Terminator,
-        AbortKind, AggregateKind, FnPtr,
+        AbortKind, AggregateKind, FnPtr, FunSig,
         ConstantExpr, ConstantExprKind, ExactSizeExpr, ExactSizeExprKind, MetadataValue, Place, ProjectionElem, Rvalue, Body,
     )
 )]
@@ -452,6 +452,125 @@ mod wrappers {
         fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
             let binder_depth = self.0.binder_depth_mut();
             *binder_depth = binder_depth.decr()
+        }
+    }
+
+    /// Visitor wrapper that tracks the variance of the current position. To use it, make a visitor
+    /// that implements [`VisitorWithVariance`] and delegate its `visit` method to this wrapper.
+    pub struct VisitWithVariance<'a, 'ctx, V> {
+        inner: &'a mut V,
+        krate: &'ctx TranslatedCrate,
+    }
+
+    impl<'a, 'ctx, V: VisitorWithVariance> VisitWithVariance<'a, 'ctx, V> {
+        pub fn new(inner: &'a mut V, krate: &'ctx TranslatedCrate) -> Self {
+            Self { inner, krate }
+        }
+
+        fn compose(outer: Variance, inner: Variance) -> Variance {
+            match (outer, inner) {
+                (Variance::Unknown, _) | (_, Variance::Unknown) => Variance::Unknown,
+                (Variance::Bivariant, _) | (_, Variance::Bivariant) => Variance::Bivariant,
+                (Variance::Invariant, _) | (_, Variance::Invariant) => Variance::Invariant,
+                (Variance::Covariant, variance) => variance,
+                (Variance::Contravariant, Variance::Covariant) => Variance::Contravariant,
+                (Variance::Contravariant, Variance::Contravariant) => Variance::Covariant,
+            }
+        }
+    }
+
+    pub trait VisitorWithVariance {
+        fn ambient_variance_mut(&mut self) -> &mut Variance;
+    }
+
+    impl<V: Visitor> Visitor for VisitWithVariance<'_, '_, V> {
+        type Break = V::Break;
+    }
+
+    impl<V: VisitAst + VisitorWithVariance> VisitWithVariance<'_, '_, V> {
+        fn with(
+            &mut self,
+            variance: Variance,
+            f: impl FnOnce(&mut Self) -> ControlFlow<V::Break>,
+        ) -> ControlFlow<V::Break> {
+            let old = *self.inner.ambient_variance_mut();
+            *self.inner.ambient_variance_mut() = Self::compose(old, variance);
+            let result = f(self);
+            *self.inner.ambient_variance_mut() = old;
+            result
+        }
+
+        fn visit_with<T: AstVisitable>(
+            &mut self,
+            variance: Variance,
+            value: &T,
+        ) -> ControlFlow<V::Break> {
+            self.with(variance, |this| this.visit(value))
+        }
+
+        fn visit_inner_with(&mut self, variance: Variance, ty: &Ty) -> ControlFlow<V::Break> {
+            self.with(variance, |this| this.visit_inner(ty))
+        }
+    }
+
+    impl<V: VisitAst + VisitorWithVariance> VisitAst for VisitWithVariance<'_, '_, V> {
+        fn visit_inner<T: AstVisitable>(&mut self, value: &T) -> ControlFlow<Self::Break> {
+            value.drive(self.inner)
+        }
+
+        fn visit_ty(&mut self, ty: &Ty) -> ControlFlow<Self::Break> {
+            match ty.kind() {
+                TyKind::Ref(region, inner, kind) => {
+                    self.visit(region)?;
+                    match kind {
+                        RefKind::Shared => self.visit(inner)?,
+                        RefKind::Mut => self.visit_with(Variance::Invariant, inner)?,
+                    }
+                }
+                TyKind::RawPtr(inner, RefKind::Shared) => self.visit(inner)?,
+                TyKind::RawPtr(inner, RefKind::Mut) => {
+                    self.visit_with(Variance::Invariant, inner)?;
+                }
+                TyKind::FnPtr(..)
+                | TyKind::Adt(..)
+                | TyKind::Array(..)
+                | TyKind::Slice(..)
+                | TyKind::Pattern(..) => {
+                    self.visit_inner(ty)?;
+                }
+                TyKind::TraitType(..)
+                | TyKind::DynTrait(..)
+                | TyKind::FnDef(..)
+                | TyKind::PtrMetadata(..) => {
+                    self.visit_inner_with(Variance::Invariant, ty)?;
+                }
+                TyKind::TypeVar(..) | TyKind::Scalar(..) | TyKind::Never | TyKind::Error(..) => {}
+            }
+            Continue(())
+        }
+
+        fn visit_fun_sig(&mut self, sig: &FunSig) -> ControlFlow<Self::Break> {
+            for input in &sig.inputs {
+                self.visit_with(Variance::Contravariant, input)?;
+            }
+            self.visit(&sig.output)?;
+            Continue(())
+        }
+
+        fn visit_type_decl_ref(&mut self, type_ref: &TypeDeclRef) -> ControlFlow<Self::Break> {
+            if let Some(decl) = self.krate.type_decls.get(type_ref.id) {
+                let params = &decl.generics;
+                for (param, region) in params.regions.iter().zip(&type_ref.generics.regions) {
+                    self.visit_with(param.variance, region)?;
+                }
+                for (param, ty) in params.types.iter().zip(&type_ref.generics.types) {
+                    self.visit_with(param.variance, ty)?;
+                }
+            } else {
+                self.visit_with(Variance::Covariant, &type_ref.generics.regions)?;
+                self.visit_with(Variance::Covariant, &type_ref.generics.types)?;
+            }
+            Continue(())
         }
     }
 
