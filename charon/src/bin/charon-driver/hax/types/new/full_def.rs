@@ -497,6 +497,35 @@ pub enum FullDefKind<'tcx> {
     SyntheticCoroutineBody,
 }
 
+/// Whether the trait method declared by `method_decl_id` takes `self: Self` by value.
+pub fn vtable_receiver_is_by_value<'tcx>(tcx: ty::TyCtxt<'tcx>, method_decl_id: RDefId) -> bool {
+    let decl_sig = tcx
+        .fn_sig(method_decl_id)
+        .instantiate_identity()
+        .skip_norm_wip();
+    !decl_sig.inputs().skip_binder().is_empty()
+        && decl_sig.input(0).skip_binder().is_param(0)
+        && tcx.generics_of(method_decl_id).has_self
+}
+
+/// If the method takes `self: Self` by value, make the vtable signature take the receiver via
+/// `*mut Self` instead, like rustc's vtable shims do.
+fn adjust_by_value_vtable_receiver<'tcx>(
+    tcx: ty::TyCtxt<'tcx>,
+    method_decl_id: RDefId,
+    sig: ty::PolyFnSig<'tcx>,
+) -> ty::PolyFnSig<'tcx> {
+    if !vtable_receiver_is_by_value(tcx, method_decl_id) {
+        return sig;
+    }
+    sig.map_bound(|mut sig| {
+        let mut inputs_and_output = sig.inputs_and_output.to_vec();
+        inputs_and_output[0] = ty::Ty::new_mut_ptr(tcx, inputs_and_output[0]);
+        sig.inputs_and_output = tcx.mk_type_list(&inputs_and_output);
+        sig
+    })
+}
+
 fn gen_vtable_sig<'tcx>(
     // The state that owns the method DefId
     s: &impl UnderOwnerState<'tcx>,
@@ -561,6 +590,7 @@ fn gen_vtable_sig<'tcx>(
     // Instantiate and normalize the signature.
     let method_decl_sig = tcx.fn_sig(method_decl_id).instantiate(tcx, trait_args);
     let normalized_sig = normalize(tcx, s.typing_env(), method_decl_sig);
+    let normalized_sig = adjust_by_value_vtable_receiver(tcx, method_decl_id, normalized_sig);
 
     Some(normalized_sig.sinto(s))
 }

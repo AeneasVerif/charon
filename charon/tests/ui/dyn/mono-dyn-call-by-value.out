@@ -1,0 +1,355 @@
+# Final LLBC before serialization:
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+fn core::marker::MetaSized::{vtable}::<()>() -> core::marker::MetaSized::{vtable}
+= <opaque>
+
+static core::marker::MetaSized::{vtable}::<()>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<()>()
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: alloc::boxed::Box::<(), Global>
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box::<(), Global>
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box::<(), Global>}::drop_glue::<(), Global>
+unsafe fn {impl Destruct for Box::<(), Global>}::drop_glue::<(), Global><'_0>(_1: &'_0 mut Box::<(), Global>)
+= <opaque>
+
+// Full name: alloc::boxed::Box::<Foo::<(dyn T)>, Global>
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box::<Foo::<(dyn T)>, Global>
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box::<Foo::<(dyn T)>, Global>}::drop_glue::<Foo::<(dyn T)>, Global>
+unsafe fn {impl Destruct for Box::<Foo::<(dyn T)>, Global>}::drop_glue::<Foo::<(dyn T)>, Global><'_0>(_1: &'_0 mut Box::<Foo::<(dyn T)>, Global>)
+= <opaque>
+
+// Full name: alloc::boxed::Box::<Foo::<()>, Global>
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box::<Foo::<()>, Global>
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box::<Foo::<()>, Global>}::drop_glue::<Foo::<()>, Global>
+unsafe fn {impl Destruct for Box::<Foo::<()>, Global>}::drop_glue::<Foo::<()>, Global><'_0>(_1: &'_0 mut Box::<Foo::<()>, Global>)
+= <opaque>
+
+// Full name: alloc::boxed::Box::<(dyn T), Global>
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box::<(dyn T), Global>
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global>
+unsafe fn {impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'_0>(_1: &'_0 mut Box::<(dyn T), Global>)
+= <opaque>
+
+#[track_caller]
+#[diagnostic_item("box_new")]
+pub fn alloc::boxed::{Box::<(), Global>}::new::<()>(_1: ()) -> Box::<(), Global>
+= <opaque>
+
+// Full name: test_crate::Foo::<()>
+struct Foo::<()> {
+  _0: (),
+}
+
+#[track_caller]
+#[diagnostic_item("box_new")]
+pub fn alloc::boxed::{Box::<Foo::<()>, Global>}::new::<Foo::<()>>(_1: Foo::<()>) -> Box::<Foo::<()>, Global>
+= <opaque>
+
+struct test_crate::T::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  method_by_ref: *const (),
+  method_by_val: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::T
+trait T<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::T::{vtable}
+}
+
+// Full name: test_crate::{impl T for ()}::by_val
+fn by_val(self: ())
+{
+    let _0: (); // return
+    let self: (); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl T for ()}::by_val::{vtable_method}
+fn impl_T_for_unit::by_val::{vtable_method}(_1: *mut (dyn T))
+{
+    let _0: (); // return
+    let _1: *mut (dyn T + '0); // arg #1
+    let _2: *mut (); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = concretize<*mut (dyn T + '1), *mut ()>(move _1)
+    _0 = by_val(move (*_2))
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: test_crate::{impl T for ()}::by_ref
+fn by_ref<'_0>(self: &'_0 ())
+{
+    let _0: (); // return
+    let self: &'1 (); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl T for ()}::by_ref::{vtable_method}
+fn impl_T_for_unit::by_ref::{vtable_method}<'_0>(_1: &'_0 (dyn T))
+{
+    let _0: (); // return
+    let _1: &'_0 (dyn T + '0); // arg #1
+    let _2: &'_0 (); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = concretize<&'_0 (dyn T + '1), &'_0 ()>(move _1)
+    _0 = by_ref<'_0>(move _2)
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: test_crate::{impl T for ()}::{vtable_drop_shim}
+unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn T))
+{
+    let ret: (); // return
+    let dyn_self: &'_0 mut (dyn T + '0); // arg #1
+    let target_self: &'_0 mut (); // local
+
+    storage_live(ret)
+    ret = ()
+    storage_live(target_self)
+    target_self = concretize<&'_0 mut (dyn T + '1), &'_0 mut ()>(move dyn_self)
+    return
+}
+
+// Full name: test_crate::{impl T for ()}::{vtable}
+fn impl_T_for_unit::{vtable}() -> test_crate::T::{vtable}
+{
+    let ret: test_crate::T::{vtable}; // return
+    let size: usize; // local
+    let align: usize; // local
+    let drop: unsafe fn(*mut (dyn T + '0)); // local
+    let erased_drop: *const (); // local
+    let by_ref: fn<'_0_1>(&'_0_1 (dyn T + '1)); // local
+    let erased_by_ref: *const (); // local
+    let by_val: fn(*mut (dyn T + '2)); // local
+    let erased_by_val: *const (); // local
+    let _9: unsafe fn(*mut (dyn T + '5)); // anonymous local
+    let _10: fn<'_0_1>(&'_0_1 (dyn T + '10)); // anonymous local
+    let _11: fn(*mut (dyn T + '14)); // anonymous local
+    let _12: &'static core::marker::MetaSized::{vtable}; // anonymous local
+
+    storage_live(ret)
+    storage_live(size)
+    size = size_of<()>
+    storage_live(align)
+    align = align_of<()>
+    storage_live(drop)
+    storage_live(erased_drop)
+    storage_live(_9)
+    _9 = cast<{vtable_drop_shim}<'4>, unsafe fn(*mut (dyn T + '5))>(const {vtable_drop_shim}<'4>)
+    drop = move _9
+    erased_drop = cast<unsafe fn(*mut (dyn T + '6)), *const ()>(move drop)
+    storage_live(by_ref)
+    storage_live(erased_by_ref)
+    storage_live(_10)
+    _10 = cast<for<'_0_1> impl_T_for_unit::by_ref::{vtable_method}<'9>, fn<'_0_1>(&'_0_1 (dyn T + '10))>(const impl_T_for_unit::by_ref::{vtable_method}<'9>)
+    by_ref = move _10
+    erased_by_ref = cast<fn<'_0_1>(&'_0_1 (dyn T + '11)), *const ()>(move by_ref)
+    storage_live(by_val)
+    storage_live(erased_by_val)
+    storage_live(_11)
+    _11 = cast<impl_T_for_unit::by_val::{vtable_method}, fn(*mut (dyn T + '14))>(const impl_T_for_unit::by_val::{vtable_method})
+    by_val = move _11
+    erased_by_val = cast<fn(*mut (dyn T + '15)), *const ()>(move by_val)
+    storage_live(_12)
+    _12 = &core::marker::MetaSized::{vtable}::<()>
+    ret = test_crate::T::{vtable} { size: move size, align: move align, drop: move erased_drop, method_by_ref: move erased_by_ref, method_by_val: move erased_by_val, super_trait_0: move _12 }
+    return
+}
+
+// Full name: test_crate::{impl T for ()}::{vtable}
+static impl_T_for_unit::{vtable}: test_crate::T::{vtable} = impl_T_for_unit::{vtable}()
+
+// Full name: test_crate::{impl T for ()}
+impl "impl_T_for_unit" T for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    vtable: impl_T_for_unit::{vtable}
+}
+
+// Full name: test_crate::Foo::<(dyn T)>
+struct Foo::<(dyn T)> {
+  _0: (dyn T),
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let b: Box::<(dyn T), Global>; // local
+    let _2: Box::<(), Global>; // anonymous local
+    let _3: (); // anonymous local
+    let _4: (); // anonymous local
+    let _5: &'3 (dyn T + '4); // anonymous local
+    let _6: (); // anonymous local
+    let _7: Box::<(dyn T), Global>; // anonymous local
+    let f: Box::<Foo::<(dyn T)>, Global>; // local
+    let _9: Box::<Foo::<()>, Global>; // anonymous local
+    let _10: Foo::<()>; // anonymous local
+    let _11: (); // anonymous local
+    let _12: (); // anonymous local
+    let _13: &'5 (dyn T + '6); // anonymous local
+    let _14: (); // anonymous local
+    let _15: (dyn T + '7); // anonymous local
+    let _16: unsafe fn(&'3 (dyn T + '4)); // anonymous local
+    let _17: *mut (dyn T + '16); // anonymous local
+    let _18: unsafe fn(*mut (dyn T + '16)); // anonymous local
+    let _19: unsafe fn(&'5 (dyn T + '6)); // anonymous local
+    let _20: *mut (dyn T + '25); // anonymous local
+    let _21: unsafe fn(*mut (dyn T + '25)); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(b)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = ()
+    _2 = alloc::boxed::{Box::<(), Global>}::new::<()>(move _3)
+    ↳⚡ unwind_continue
+    b = unsize_cast<Box::<(), Global>, Box::<(dyn T), Global>, &impl_T_for_unit::{vtable}>(move _2)
+    conditional_drop[{impl Destruct for Box::<(), Global>}::drop_glue::<(), Global><'8>] _2
+    ↳⚡ unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    fake_read(b)
+    set_type(typeof(b) == Box::<(dyn T), Global>)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &(*b) with_metadata(copy b.metadata)
+    storage_live(_16)
+    _16 = cast<*const (), unsafe fn(&'3 (dyn T + '4))>(copy (*_5.metadata).method_by_ref)
+    _4 = (copy _16)(move _5)
+    ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'13>] b
+        ↳⚡ unwind_terminate
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = move b
+    storage_live(_17)
+    _17 = &raw mut (*_7) with_metadata(copy _7.metadata)
+    storage_live(_18)
+    _18 = cast<*const (), unsafe fn(*mut (dyn T + '16))>(copy (*_17.metadata).method_by_val)
+    _6 = (copy _18)(move _17)
+    ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'17>] _7
+        ↳⚡ unwind_terminate
+        conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'13>] b
+        ↳⚡ unwind_terminate
+        unwind_continue
+    conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'18>] _7
+    ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'13>] b
+        ↳⚡ unwind_terminate
+        unwind_continue
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_live(f)
+    storage_live(_9)
+    storage_live(_10)
+    storage_live(_11)
+    _11 = ()
+    _10 = Foo::<()> { _0: move _11 }
+    storage_dead(_11)
+    _9 = alloc::boxed::{Box::<Foo::<()>, Global>}::new::<Foo::<()>>(move _10)
+    ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'13>] b
+        ↳⚡ unwind_terminate
+        unwind_continue
+    f = unsize_cast<Box::<Foo::<()>, Global>, Box::<Foo::<(dyn T)>, Global>, &impl_T_for_unit::{vtable}>(move _9)
+    conditional_drop[{impl Destruct for Box::<Foo::<()>, Global>}::drop_glue::<Foo::<()>, Global><'19>] _9
+    ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'13>] b
+        ↳⚡ unwind_terminate
+        unwind_continue
+    storage_dead(_10)
+    storage_dead(_9)
+    fake_read(f)
+    set_type(typeof(f) == Box::<Foo::<(dyn T)>, Global>)
+    storage_live(_12)
+    storage_live(_13)
+    _13 = &(*f)._0 with_metadata(copy f.metadata)
+    storage_live(_19)
+    _19 = cast<*const (), unsafe fn(&'5 (dyn T + '6))>(copy (*_13.metadata).method_by_ref)
+    _12 = (copy _19)(move _13)
+    ↳⚡ conditional_drop[{impl Destruct for Box::<Foo::<(dyn T)>, Global>}::drop_glue::<Foo::<(dyn T)>, Global><'24>] f
+        ↳⚡ unwind_terminate
+        conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'13>] b
+        ↳⚡ unwind_terminate
+        unwind_continue
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_live(_14)
+    storage_live(_15)
+    storage_live(_20)
+    _20 = &raw mut (*f)._0 with_metadata(copy f.metadata)
+    storage_live(_21)
+    _21 = cast<*const (), unsafe fn(*mut (dyn T + '25))>(copy (*_20.metadata).method_by_val)
+    _14 = (copy _21)(move _20)
+    ↳⚡ conditional_drop[{built_in impl Destruct for (dyn T + '29)}::drop_glue<'30>] _15
+        ↳⚡ unwind_terminate
+        conditional_drop[{impl Destruct for Box::<Foo::<(dyn T)>, Global>}::drop_glue::<Foo::<(dyn T)>, Global><'24>] f
+        ↳⚡ unwind_terminate
+        conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'13>] b
+        ↳⚡ unwind_terminate
+        unwind_continue
+    storage_dead(_15)
+    storage_dead(_14)
+    _0 = ()
+    conditional_drop[{impl Destruct for Box::<Foo::<(dyn T)>, Global>}::drop_glue::<Foo::<(dyn T)>, Global><'31>] f
+    ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'13>] b
+        ↳⚡ unwind_terminate
+        unwind_continue
+    storage_dead(f)
+    conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'32>] b
+    ↳⚡ unwind_continue
+    storage_dead(b)
+    return
+}
+
+
+

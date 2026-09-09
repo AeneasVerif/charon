@@ -39,7 +39,7 @@ struct core::ops::function::FnOnce::{vtable}<Args, Ty0> {
   size: usize,
   align: usize,
   drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<Args, Output = Ty0>)),
-  method_call_once: extern "rust-call" fn((dyn FnOnce<Args, Output = Ty0>), Args) -> Ty0,
+  method_call_once: extern "rust-call" fn(*mut (dyn FnOnce<Args, Output = Ty0>), Args) -> Ty0,
   super_trait_0: &'static core::marker::MetaSized::{vtable},
 }
 

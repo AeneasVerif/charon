@@ -430,6 +430,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ///   align: usize,
     ///   drop: fn(*mut dyn Trait<...>),
     ///   method_name: fn(&dyn Trait<...>, Args..) -> Output,
+    ///   by_value_method: fn(*mut dyn Trait<...>, Args..) -> Output,
     ///   ... other methods
     ///   super_trait_0: &'static SuperTrait0VTable
     ///   ... other supertraits
@@ -1169,11 +1170,19 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     /// // call the impl function and assign the result to ret@0
     /// ret@0 := impl_func(target_self@(N+1), arg1@2, ..., argN@N);
     /// ```
+    ///
+    /// For a method that takes `self: Self` by value, the shim receiver is `*mut dyn Trait`, so
+    /// we concretize the pointer and move out of it:
+    /// ```ignore
+    /// target_self@(N+1) := concretize_cast<*mut dyn Trait, *mut TargetReceiverTy>(shim_self@1);
+    /// ret@0 := impl_func(move (*target_self@(N+1)), arg1@2, ..., argN@N);
+    /// ```
     fn translate_vtable_shim_body(
         &mut self,
         span: Span,
         target_receiver: &Ty,
         shim_signature: &FunSig,
+        receiver_is_by_value: bool,
         impl_func_def: &hax::FullDef,
     ) -> Result<Body, Error> {
         let mut builder = BodyBuilder::new(span, shim_signature.inputs.len());
@@ -1184,10 +1193,21 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             .iter()
             .map(|ty| builder.new_var(None, ty.clone()))
             .collect_vec();
-        let target_self = builder.new_var(None, target_receiver.clone());
+
+        let cast_target_ty = if receiver_is_by_value {
+            TyKind::RawPtr(target_receiver.clone(), RefKind::Mut).into_ty()
+        } else {
+            target_receiver.clone()
+        };
+        let target_self = builder.new_var(None, cast_target_ty);
 
         // Replace the `dyn Trait` receiver with the concrete one.
-        let shim_self = mem::replace(&mut method_args[0], target_self.clone());
+        let receiver_arg = if receiver_is_by_value {
+            target_self.clone().deref()
+        } else {
+            target_self.clone()
+        };
+        let shim_self = mem::replace(&mut method_args[0], receiver_arg);
 
         // Perform the core concretization cast.
         // FIXME: need to unpack & re-pack the structure for cases like `Rc`, `Arc`, `Pin` and
@@ -1337,6 +1357,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let hax::FullDefKind::AssocFn {
             vtable_sig: Some(vtable_sig),
             sig: target_signature,
+            associated_item,
             ..
         } = impl_func_def.kind()
         else {
@@ -1351,6 +1372,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let signature = self.translate_fun_sig(span, &vtable_sig.value)?;
         // The concrete receiver we will cast to.
         let target_receiver = self.translate_ty(span, &target_signature.value.inputs[0])?;
+        let receiver_is_by_value = hax::vtable_receiver_is_by_value(
+            self.tcx,
+            associated_item
+                .implemented_trait_item_id()
+                .real_rust_def_id(),
+        );
 
         trace!(
             "[VtableShim] Obtained dyn signature with receiver type: {}",
@@ -1360,7 +1387,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
         } else {
-            self.translate_vtable_shim_body(span, &target_receiver, &signature, impl_func_def)?
+            self.translate_vtable_shim_body(
+                span,
+                &target_receiver,
+                &signature,
+                receiver_is_by_value,
+                impl_func_def,
+            )?
         };
 
         Ok(FunDecl {
