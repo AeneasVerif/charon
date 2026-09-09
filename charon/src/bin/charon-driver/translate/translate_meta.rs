@@ -441,7 +441,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     Disambiguator::ZERO,
                 ));
             }
-            TransItemSourceKind::VTableMethod => {
+            TransItemSourceKind::VTableMethod(..) => {
                 name.name.push(PathElem::Builtin(
                     BuiltinPathElem::VTableMethod,
                     Disambiguator::ZERO,

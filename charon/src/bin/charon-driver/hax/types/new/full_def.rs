@@ -571,6 +571,17 @@ fn gen_vtable_sig<'tcx>(
         }
     }?;
 
+    Some(vtable_sig_with_dyn_self(s, method_decl_id, dyn_self))
+}
+
+/// The signature of `method_decl_id` as stored in a vtable, i.e. with its `Self` type replaced by
+/// the given `dyn Trait<..>` type.
+fn vtable_sig_with_dyn_self<'tcx>(
+    s: &impl UnderOwnerState<'tcx>,
+    method_decl_id: RDefId,
+    dyn_self: ty::Ty<'tcx>,
+) -> PolyFnSig {
+    let tcx = s.base().tcx;
     // dyn_self is of form `dyn Trait<Args...>`, we extract the trait args
     let ty::Dynamic(preds, _) = dyn_self.kind() else {
         panic!("Unexpected dyn_self: {:?}", dyn_self);
@@ -592,7 +603,41 @@ fn gen_vtable_sig<'tcx>(
     let normalized_sig = normalize(tcx, s.typing_env(), method_decl_sig);
     let normalized_sig = adjust_by_value_vtable_receiver(tcx, method_decl_id, normalized_sig);
 
-    Some(normalized_sig.sinto(s))
+    normalized_sig.sinto(s)
+}
+
+/// The `dyn Trait<..>` type for this trait ref, i.e. its `Self` type made existential. Same as the
+/// `dyn_self` field of a `TraitImpl`, for the virtual impls we generate ourselves.
+pub fn trait_ref_dyn_self<'tcx, S: UnderOwnerState<'tcx>>(s: &S, trait_ref: &TraitRef) -> Ty {
+    let tcx = s.base().tcx;
+    let trait_def_id = trait_ref.def_id.real_rust_def_id();
+    let trait_ref = ty::TraitRef::new_from_args(tcx, trait_def_id, trait_ref.rustc_args(s));
+    dyn_self_ty(tcx, s.typing_env(), trait_ref)
+        .expect("the trait of a vtable must be dyn-compatible")
+        .sinto(s)
+}
+
+/// The signature the `call*` method of this `Fn*` trait ref must have to be stored in a vtable,
+/// i.e. with `Self` replaced by `dyn Fn*<..>`. Same as `AssocFn`'s `vtable_sig`, but for the
+/// virtual `Fn*` impls we generate ourselves, whose methods have no `AssocFn` of their own.
+pub fn fn_trait_vtable_method_sig<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    trait_ref: &TraitRef,
+) -> PolyFnSig {
+    let tcx = s.base().tcx;
+    let trait_def_id = trait_ref.def_id.real_rust_def_id();
+    let trait_ref = ty::TraitRef::new_from_args(tcx, trait_def_id, trait_ref.rustc_args(s));
+    // Each `Fn*` trait has a single method: `call`/`call_mut`/`call_once`.
+    let call_method = tcx
+        .associated_items(trait_def_id)
+        .in_definition_order()
+        .find(|item| matches!(item.kind, ty::AssocKind::Fn { .. }))
+        .unwrap();
+    // Unlike `gen_vtable_sig` we keep the free regions: the shim takes the `&self` region of
+    // `call`/`call_mut` as a parameter of its own.
+    let dyn_self = dyn_self_ty(tcx, s.typing_env(), trait_ref)
+        .expect("the trait of a vtable must be dyn-compatible");
+    vtable_sig_with_dyn_self(s, call_method.def_id, dyn_self)
 }
 
 /// Construct the `FullDefKind` for this item.
