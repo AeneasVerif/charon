@@ -141,6 +141,13 @@ fn transform_dyn_trait_call(
             "Dyn trait receiver does not have vtable metadata"
         );
     };
+
+    // this is the the (wide) pointer that has the vtable metadata. by-value receivers (e.g. Box<dyn FnOnce>)
+    // are passed as *p, but it's p that has the vtable, so we need to get that!
+    let dyn_trait_place = match dyn_trait_place.as_projection() {
+        Some((ptr, ProjectionElem::Deref)) => ptr,
+        _ => dyn_trait_place,
+    };
     let receiver_vtable_ty = TyKind::Adt(receiver_vtable_ref).into_ty();
     let ptr_to_vtable_ty = Ty::new(TyKind::RawPtr(receiver_vtable_ty.clone(), RefKind::Shared));
     let mut method_vtable_place = dyn_trait_place
