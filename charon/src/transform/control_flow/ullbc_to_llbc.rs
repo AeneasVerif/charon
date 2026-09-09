@@ -15,9 +15,7 @@ use itertools::Itertools;
 use petgraph::algo::dijkstra;
 use petgraph::algo::dominators::{Dominators, simple_fast};
 use petgraph::graphmap::DiGraphMap;
-use petgraph::visit::{
-    Dfs, DfsPostOrder, EdgeFiltered, EdgeRef, GraphRef, IntoNeighbors, VisitMap, Visitable, Walker,
-};
+use petgraph::visit::{Dfs, DfsPostOrder, EdgeFiltered, EdgeRef, Walker};
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use smallvec::SmallVec;
 use std::cmp::Reverse;
@@ -28,66 +26,8 @@ use crate::llbc_ast::{self as tgt, StatementId};
 use crate::transform::TransformCtx;
 use crate::transform::ctx::TransformPass;
 use crate::ullbc_ast::{self as src, BlockId};
-use crate::utils::ensure_sufficient_stack;
+use crate::utils::{DfsWithPath, ensure_sufficient_stack};
 use crate::{ast::*, register_error};
-
-pub enum StackAction<N> {
-    PopPath,
-    Explore(N),
-}
-pub struct DfsWithPath<N, VM> {
-    /// The stack of nodes to visit
-    pub stack: Vec<StackAction<N>>,
-    /// The map of discovered nodes
-    pub discovered: VM,
-    /// The path from start node to current node.
-    pub path: Vec<N>,
-}
-impl<N, VM> DfsWithPath<N, VM>
-where
-    N: Copy + PartialEq,
-    VM: VisitMap<N>,
-{
-    /// Create a new **DfsWithPath**, using the graph's visitor map, and put **start** in the stack
-    /// of nodes to visit.
-    pub fn new<G>(graph: G, start: N) -> Self
-    where
-        G: GraphRef + Visitable<NodeId = N, Map = VM>,
-    {
-        Self {
-            stack: vec![StackAction::Explore(start)],
-            discovered: graph.visit_map(),
-            path: vec![],
-        }
-    }
-
-    /// Return the next node in the dfs, or **None** if the traversal is done.
-    pub fn next<G>(&mut self, graph: G) -> Option<N>
-    where
-        G: IntoNeighbors<NodeId = N>,
-    {
-        while let Some(action) = self.stack.pop() {
-            match action {
-                StackAction::Explore(node) => {
-                    if self.discovered.visit(node) {
-                        self.path.push(node);
-                        self.stack.push(StackAction::PopPath);
-                        for succ in graph.neighbors(node) {
-                            if !self.discovered.is_visited(&succ) {
-                                self.stack.push(StackAction::Explore(succ));
-                            }
-                        }
-                        return Some(node);
-                    }
-                }
-                StackAction::PopPath => {
-                    self.path.pop();
-                }
-            }
-        }
-        None
-    }
-}
 
 /// The amount of "flow" reaching a block.
 #[derive(Debug, Clone, Copy, Default)]
