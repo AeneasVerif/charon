@@ -508,6 +508,18 @@ impl<T> Binder<T> {
     {
         self.skip_binder.substitute(args)
     }
+
+    /// Like `apply`, but also keep the parameters: predicates mention them and therefore need to
+    /// be substituted before use too.
+    pub fn apply_keep_params(self, args: &GenericArgs) -> (GenericParams, T)
+    where
+        T: TyVisitable,
+    {
+        (
+            self.params.substitute(args),
+            self.skip_binder.substitute(args),
+        )
+    }
 }
 
 impl<T: AstVisitable> Binder<Binder<T>> {

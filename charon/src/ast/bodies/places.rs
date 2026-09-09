@@ -160,13 +160,14 @@ impl Place {
         }
     }
 
+    /// Iterate over the subplaces of this place, starting with the place itself.
+    pub fn subplaces(&self) -> impl Iterator<Item = &Self> {
+        std::iter::successors(Some(self), |place| Some(place.as_projection()?.0))
+    }
+
     pub fn projections(&self) -> impl Iterator<Item = &ProjectionElem> {
-        let mut place = self;
-        std::iter::from_fn(move || {
-            let (new_place, proj) = place.as_projection()?;
-            place = new_place;
-            Some(proj)
-        })
+        self.subplaces()
+            .filter_map(|place| Some(place.as_projection()?.1))
     }
 }
 
