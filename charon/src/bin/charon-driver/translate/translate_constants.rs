@@ -55,6 +55,31 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
+    fn translate_constant_byte(
+        &mut self,
+        span: Span,
+        b: &hax::ConstantByte,
+    ) -> Result<Byte, Error> {
+        Ok(match b {
+            hax::ConstantByte::Uninit => Byte::Uninit,
+            hax::ConstantByte::Value(v) => Byte::Value(*v),
+            hax::ConstantByte::Provenance(prov, offset) => {
+                let prov = match prov {
+                    hax::ConstantByteProvenance::Global(item) => {
+                        Provenance::Global(self.translate_global_decl_ref(span, item)?)
+                    }
+                    hax::ConstantByteProvenance::Function(item) => {
+                        let fun_ref: FunDeclRef =
+                            self.translate_item(span, item, TransItemSourceKind::Fun)?;
+                        Provenance::Function(fun_ref)
+                    }
+                    hax::ConstantByteProvenance::Unknown => Provenance::Unknown,
+                };
+                Byte::Provenance(prov, *offset)
+            }
+        })
+    }
+
     /// Remark: [hax::ConstantExpr] contains span information, but it is often
     /// the default span (i.e., it is useless), hence the additional span argument.
     /// TODO: the user_ty might be None because hax doesn't extract it (because
@@ -176,7 +201,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 ConstantExprKind::FnPtr(fn_ptr)
             }
             hax::ConstantExprKind::Memory(bytes) => {
-                ConstantExprKind::RawMemory(bytes.iter().map(|b| Byte::Value(*b)).collect())
+                let bytes: Vec<Byte> = bytes
+                    .iter()
+                    .map(|b| self.translate_constant_byte(span, b))
+                    .try_collect()?;
+                ConstantExprKind::RawMemory(bytes)
             }
             hax::ConstantExprKind::Todo(msg) => {
                 register_error!(self, span, "Unsupported constant: {:?}", msg);
