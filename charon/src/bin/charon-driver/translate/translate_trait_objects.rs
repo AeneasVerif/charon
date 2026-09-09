@@ -302,8 +302,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 // This is ok because dyn-compatible methods don't have generics.
                 let poly_item_def = self.poly_hax_def(item_def_id)?;
                 if let hax::FullDefKind::AssocFn {
-                    sig,
-                    vtable_sig: Some(_),
+                    vtable_sig: Some(sig),
                     ..
                 } = poly_item_def.kind()
                 {
@@ -387,20 +386,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         let erased_ptr_ty = Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::Shared));
                         (field_name, erased_ptr_ty)
                     } else {
-                        // The method is defined in a context that has an extra `Self: Trait` clause, so
-                        // we translate it bound first.
-                        let bound_sig = self.inside_binder(BinderKind::Other, None, |ctx| {
-                            ctx.innermost_binder_mut()
-                                .trait_preds
-                                .insert(hax::GenericPredicateId::TraitSelf, TraitClauseId::ZERO);
-                            ctx.translate_poly_fun_sig(span, sig)
-                        })?;
-                        let sig = bound_sig.apply(&{
-                            let mut generics = GenericArgs::empty();
-                            // Provide the `Self` clause.
-                            generics.trait_refs.push(self_trait_ref.clone());
-                            generics
-                        });
+                        let sig = self.translate_poly_fun_sig(span, sig)?;
                         let ty = TyKind::FnPtr(sig).into_ty();
                         (field_name, ty)
                     }
