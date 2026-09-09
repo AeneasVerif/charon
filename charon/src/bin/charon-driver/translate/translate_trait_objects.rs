@@ -183,6 +183,18 @@ pub struct VTableData {
     pub supertrait_map: IndexVec<TraitClauseId, Option<FieldId>>,
 }
 
+/// What we need to know about an impl to fill in its vtable.
+struct VTableInstanceData<'a> {
+    implemented_trait_ref: &'a hax::TraitRef,
+    implied_trait_proofs: &'a [hax::TraitProof],
+    methods: VTableMethodSource<'a>,
+}
+
+/// Where the shims stored in a vtable's method fields come from.
+enum VTableMethodSource<'a> {
+    ImplMethods(IndexVec<TraitMethodId, &'a hax::ImplAssocItem>),
+}
+
 /// Generate the vtable struct.
 impl<'tcx> ItemTransCtx<'tcx, '_> {
     /// Query whether a trait is dyn compatible.
@@ -717,17 +729,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         impl_def: &hax::FullDef<'tcx>,
         impl_kind: TransImplSource,
     ) -> Result<(Option<TraitImplRef>, TypeDeclRef), Error> {
-        let implemented_trait = match impl_def.kind() {
-            hax::FullDefKind::TraitImpl { trait_pred, .. } => {
-                assert_ne!(impl_kind, TransImplSource::Marker);
-                &trait_pred.trait_ref
-            }
-            hax::FullDefKind::Trait { self_predicate, .. } => {
-                assert_eq!(impl_kind, TransImplSource::Marker);
-                &self_predicate.trait_ref
-            }
-            _ => unreachable!(),
-        };
+        let implemented_trait =
+            Self::vtable_instance_data(impl_def, impl_kind).implemented_trait_ref;
         let vtable_struct_ref = self.translate_vtable_struct_ref(span, implemented_trait)?;
         let impl_ref = if impl_kind == TransImplSource::Marker || self.monomorphize() {
             None
@@ -798,23 +801,72 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         })
     }
 
+    /// Gather what we need to fill in the vtable of this impl.
+    fn vtable_instance_data<'a>(
+        impl_def: &'a hax::FullDef<'tcx>,
+        impl_kind: TransImplSource,
+    ) -> VTableInstanceData<'a> {
+        match (impl_kind, impl_def.kind()) {
+            (
+                TransImplSource::Normal,
+                hax::FullDefKind::TraitImpl {
+                    trait_pred,
+                    items,
+                    implied_trait_proofs,
+                    ..
+                },
+            ) => VTableInstanceData {
+                implemented_trait_ref: &trait_pred.trait_ref,
+                implied_trait_proofs,
+                methods: VTableMethodSource::ImplMethods(
+                    items
+                        .iter()
+                        .filter(|item| matches!(item.decl_def_id.kind, hax::DefKind::AssocFn))
+                        .collect(),
+                ),
+            },
+            (
+                TransImplSource::Marker,
+                hax::FullDefKind::Trait {
+                    self_predicate,
+                    implied_trait_proofs,
+                    ..
+                },
+            ) => VTableInstanceData {
+                implemented_trait_ref: &self_predicate.trait_ref,
+                implied_trait_proofs,
+                methods: VTableMethodSource::ImplMethods(IndexVec::new()),
+            },
+            _ => unreachable!(),
+        }
+    }
+
+    /// The shim to store in the next method field of a vtable.
+    fn vtable_method_value(
+        &mut self,
+        span: Span,
+        trait_id: TraitDeclId,
+        method_id: TraitMethodId,
+        implemented_trait: &hax::TraitRef,
+        methods: &VTableMethodSource<'_>,
+    ) -> Result<VtableMethodValue, Error> {
+        match methods {
+            VTableMethodSource::ImplMethods(methods) => self.add_method_to_vtable_value(
+                span,
+                trait_id,
+                implemented_trait,
+                methods[method_id],
+            ),
+        }
+    }
+
     fn add_method_to_vtable_value(
         &mut self,
         span: Span,
         trait_id: TraitDeclId,
         implemented_trait: &hax::TraitRef,
         item: &hax::ImplAssocItem,
-    ) -> Result<Option<VtableMethodValue>, Error> {
-        // Exit if the item isn't a vtable safe method.
-        let item_def = self.poly_hax_def(&item.decl_def_id)?;
-        let hax::FullDefKind::AssocFn {
-            vtable_sig: Some(_),
-            ..
-        } = item_def.kind()
-        else {
-            return Ok(None);
-        };
-
+    ) -> Result<VtableMethodValue, Error> {
         // The method is vtable safe so it has no generics, hence we can skip the binder.
         let item_ref = match &item.value {
             Some(value) => value.skip_binder.item.clone(),
@@ -870,7 +922,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             VtableMethodValue::Const(ConstantExprKind::FnPtr(shim_ref))
         };
 
-        Ok(Some(vtable_value))
+        Ok(vtable_value)
     }
 
     /// Generate the body of the vtable instance function.
@@ -886,21 +938,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         vtable_struct_ref: TypeDeclRef,
         impl_kind: TransImplSource,
     ) -> Result<Body, Error> {
-        let (implemented_trait_ref, impl_items) = match impl_def.kind() {
-            hax::FullDefKind::TraitImpl {
-                trait_pred, items, ..
-            } => {
-                assert_ne!(impl_kind, TransImplSource::Marker);
-                (trait_pred.trait_ref.clone(), items.as_slice())
-            }
-            hax::FullDefKind::Trait { self_predicate, .. } => {
-                assert_eq!(impl_kind, TransImplSource::Marker);
-                (self_predicate.trait_ref.clone(), &[] as &[_])
-            }
-            _ => unreachable!(),
-        };
+        let VTableInstanceData {
+            implemented_trait_ref,
+            implied_trait_proofs,
+            methods,
+        } = Self::vtable_instance_data(impl_def, impl_kind);
 
-        let trait_def = self.hax_def(&implemented_trait_ref)?;
+        let trait_def = self.hax_def(implemented_trait_ref)?;
         // We use `poly_trait_def` to fetch `implied_preds`, which is used to fetch supertrait in `prepare_vtable_fields`.
         let poly_trait_def = self.poly_hax_def(&implemented_trait_ref.def_id)?;
         let hax::FullDefKind::Trait {
@@ -911,7 +955,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             unreachable!()
         };
 
-        let implemented_trait = self.translate_trait_decl_ref(span, &implemented_trait_ref)?;
+        let implemented_trait = self.translate_trait_decl_ref(span, implemented_trait_ref)?;
         let trait_id = implemented_trait.id;
         // The type this impl is for.
         let self_ty = &implemented_trait.generics.types[0];
@@ -945,7 +989,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Construct a list with one operand per vtable field.
         let mut aggregate_fields = vec![];
-        let mut items_iter = impl_items.iter();
         for (field, ty) in vtable_data.fields.into_iter().zip(field_tys) {
             // In poly mode, all fields of vtables can be filled with const values.
             let mk_const = |kind| Operand::Const(ConstantExpr::new(kind, ty.clone()));
@@ -1034,39 +1077,21 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         mk_const(ConstantExprKind::FnPtr(drop_shim))
                     }
                 }
-                TrVTableField::Method(..) => 'a: {
-                    // Bit of a hack: we know the methods are in the right order. This is easier
-                    // than trying to index into the items list by name.
-                    for item in items_iter.by_ref() {
-                        if let Some(kind) = self.add_method_to_vtable_value(
-                            span,
-                            trait_id,
-                            &implemented_trait_ref,
-                            item,
-                        )? {
-                            match kind {
-                                VtableMethodValue::Const(const_kind) => {
-                                    break 'a mk_const(const_kind);
-                                }
-                                VtableMethodValue::Cast(method) => break 'a mk_cast(method),
-                            }
-                        }
+                TrVTableField::Method(method_id, _) => {
+                    let value = self.vtable_method_value(
+                        span,
+                        trait_id,
+                        method_id,
+                        implemented_trait_ref,
+                        &methods,
+                    )?;
+                    match value {
+                        VtableMethodValue::Const(const_kind) => mk_const(const_kind),
+                        VtableMethodValue::Cast(method) => mk_cast(method),
                     }
-                    unreachable!()
                 }
                 TrVTableField::SuperTrait(clause_id, _) => {
-                    let supertrait_proofs = match impl_def.kind() {
-                        hax::FullDefKind::TraitImpl {
-                            implied_trait_proofs,
-                            ..
-                        }
-                        | hax::FullDefKind::Trait {
-                            implied_trait_proofs,
-                            ..
-                        } => implied_trait_proofs,
-                        _ => unreachable!(),
-                    };
-                    let trait_proof = &supertrait_proofs[clause_id.index()];
+                    let trait_proof = &implied_trait_proofs[clause_id.index()];
                     Operand::Const(self.translate_vtable_instance_const(span, trait_proof)?)
                 }
             };
