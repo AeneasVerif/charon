@@ -245,23 +245,38 @@ fn alloc_provenance<'tcx, S: UnderOwnerState<'tcx>>(
     alloc_id: interpret::AllocId,
 ) -> ConstantByteProvenance {
     use interpret::GlobalAlloc::*;
-    let tcx = s.base().tcx;
-    match tcx.global_alloc(alloc_id) {
+    match s.base().tcx.global_alloc(alloc_id) {
         Function { instance } => ConstantByteProvenance::Function(translate_item_ref(
             s,
             instance.def_id(),
             instance.args,
         )),
+        Static(..) => match alloc_as_global(s, alloc_id) {
+            Some(item) => ConstantByteProvenance::Global(item),
+            None => ConstantByteProvenance::Unknown,
+        },
+        // TODO: TypeIds, anonymous allocations.
+        // VTables are not reachable here, I believe: it's UB to attempt reading a VTable's data.
+        TypeId { .. } | VTable(..) | Memory(..) => ConstantByteProvenance::Unknown,
+    }
+}
+
+/// The global that an allocation corresponds to, if any.
+fn alloc_as_global<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    alloc_id: interpret::AllocId,
+) -> Option<ItemRef> {
+    use interpret::GlobalAlloc::*;
+    let tcx = s.base().tcx;
+    match tcx.global_alloc(alloc_id) {
         // TODO: nested statics are synthetic items that make the rest of the machinery ICE, so we
         // don't turn them into named globals yet.
         Static(did)
             if let rustc_hir::def::DefKind::Static { nested: false, .. } = tcx.def_kind(did) =>
         {
-            ConstantByteProvenance::Global(translate_item_ref(s, did, Default::default()))
+            Some(translate_item_ref(s, did, Default::default()))
         }
-        // TODO: TypeIds, anonymous allocations.
-        // VTables are not reachable here, I believe: it's UB to attempt reading a VTable's data.
-        _ => ConstantByteProvenance::Unknown,
+        _ => None,
     }
 }
 
@@ -357,6 +372,40 @@ fn mplace_to_raw_bytes<'tcx, S: UnderOwnerState<'tcx>>(
     interp_ok(bytes)
 }
 
+/// Convert the target of a valid pointer. Pointers to globals are kept as references to these
+/// globals, and we fallback to reading the bytes for other cases.
+fn pointee_to_const<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    span: rustc_span::Span,
+    ecx: &const_eval::CompileTimeInterpCx<'tcx>,
+    place: rustc_const_eval::interpret::MPlaceTy<'tcx>,
+) -> InterpResult<'tcx, ConstantExpr> {
+    use rustc_const_eval::interpret::Projectable;
+    let tcx = s.base().tcx;
+    let ty = place.layout.ty;
+
+    let global_ty = match ty.kind() {
+        ty::Slice(elem) => Some(ty::Ty::new_array(tcx, *elem, place.len(ecx)?)),
+        // TODO: str? dyn?
+        _ if ty.is_sized(tcx, s.typing_env()) => Some(ty),
+        _ => None,
+    };
+
+    let (alloc_id, offset, _) = ecx.ptr_get_alloc_id(place.ptr(), 0)?;
+    // Our constant pointers don't have a way to indicate their offset, so we only name the
+    // global if the pointer is at its start.
+    if let Some(global_ty) = global_ty
+        && offset == rustc_abi::Size::ZERO
+        && let Some(item) = alloc_as_global(s, alloc_id)
+    {
+        let kind = ConstantExprKind::NamedGlobal(item);
+        interp_ok(kind.decorate(global_ty.sinto(s), span.sinto(s)))
+    } else {
+        // HACK: fallback to reading the bytes of the pointee
+        op_to_const(s, span, ecx, place.into())
+    }
+}
+
 /// Use the const-eval interpreter to convert an evaluated operand back to a structured
 /// constant expression.
 fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
@@ -368,7 +417,6 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
     use rustc_const_eval::interpret::Projectable;
     // Code inspired from `try_destructure_mir_constant_for_user_output` and
     // `const_eval::eval_queries::op_to_const`.
-    let tcx = s.base().tcx;
     let ty = op.layout.ty;
     // Helper for struct-likes.
     let read_fields = |of: rustc_const_eval::interpret::OpTy<'tcx>, field_count| {
@@ -378,17 +426,6 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
         })
     };
     let kind = match ty.kind() {
-        // Preserve references to statics. Nested statics are are synthetic items that make the
-        // rest of the machinery ICE, so we don't turn them into named globals here.
-        _ if let Some(place) = op.as_mplace_or_imm().left()
-            && let ptr = place.ptr()
-            && let Some((alloc_id, _, _)) = ecx.ptr_get_alloc_id(ptr, 0).discard_err()
-            && let interpret::GlobalAlloc::Static(did) = tcx.global_alloc(alloc_id)
-            && let rustc_hir::def::DefKind::Static { nested: false, .. } = tcx.def_kind(did) =>
-        {
-            let item = translate_item_ref(s, did, ty::GenericArgsRef::default());
-            ConstantExprKind::NamedGlobal(item)
-        }
         ty::Char | ty::Bool | ty::Uint(_) | ty::Int(_) | ty::Float(_) => {
             let scalar = ecx.read_scalar(&op)?;
             let scalar_int = scalar.try_to_scalar_int().unwrap();
@@ -475,9 +512,9 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
             let place_dangling = ecx.deref_pointer(&op).discard_err();
             let place = place_dangling
                 .filter(|place| ecx.ptr_get_alloc_id(place.ptr(), 0).discard_err().is_some());
-            if let Some(op) = place {
+            if let Some(place) = place {
                 // Valid pointer case
-                let val = op_to_const(s, span, ecx, op.into())?;
+                let val = pointee_to_const(s, span, ecx, place)?;
                 match ty.kind() {
                     ty::Ref(..) => ConstantExprKind::Borrow(val),
                     ty::RawPtr(.., mutability) => ConstantExprKind::RawBorrow {
