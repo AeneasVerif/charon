@@ -1,6 +1,5 @@
 use crate::hax::prelude::*;
 
-use itertools::Itertools;
 use rustc_hir as hir;
 use rustc_hir::def::DefKind as RDefKind;
 use rustc_middle::mir;
@@ -73,9 +72,6 @@ where
                 param_env,
                 adt_kind,
                 variants: [].into_iter().collect(),
-                flags: AdtFlags::AdtFlags {
-                    todo: String::new(),
-                },
                 repr: ReprOptions {
                     int_specified: false,
                     typ: Ty::new(s, TyKind::Int(IntTy::Isize)),
@@ -288,7 +284,6 @@ pub enum FullDefKind<'tcx> {
         param_env: ParamEnv,
         adt_kind: AdtKind,
         variants: IndexVec<VariantIdx, VariantDef>,
-        flags: AdtFlags,
         repr: ReprOptions,
         /// Info required to construct a virtual `Drop` impl for this adt.
         destruct_impl: Box<VirtualTraitImpl>,
@@ -420,18 +415,6 @@ pub enum FullDefKind<'tcx> {
         fn_impl: Option<Box<VirtualTraitImpl>>,
         /// Info required to construct a virtual `Drop` impl for this closure.
         destruct_impl: Box<VirtualTraitImpl>,
-        /// The signature of the `call_once` method.
-        call_once_sig: PolyFnSig,
-        /// The signature of the `call_mut` method, if applicable.
-        call_mut_sig: Option<PolyFnSig>,
-        /// The signature of the `call` method, if applicable.
-        call_sig: Option<PolyFnSig>,
-        /// The signature of the `call_mut` method, if applicable, with `Self` replaced by `dyn
-        /// Trait` (like vtable_sig in `AssocFn`).
-        call_mut_vtable_sig: Option<PolyFnSig>,
-        /// The signature of the `call` method, if applicable, with `Self` replaced by `dyn
-        /// Trait` (like vtable_sig in `AssocFn`).
-        call_vtable_sig: Option<PolyFnSig>,
     },
 
     // Constants
@@ -506,7 +489,7 @@ pub enum FullDefKind<'tcx> {
 
     // Others
     /// Macros
-    Macro(hir::def::MacroKinds),
+    Macro,
     /// A use of `global_asm!`.
     GlobalAsm,
     /// A synthetic coroutine body created by the lowering of a coroutine-closure, such as an async
@@ -582,46 +565,6 @@ fn gen_vtable_sig<'tcx>(
     Some(normalized_sig.sinto(s))
 }
 
-fn gen_closure_sig<'tcx>(
-    // The state that owns the method DefId
-    s: &impl UnderOwnerState<'tcx>,
-    // The `Fn`/`FnMut`/`FnOnce` trait reference of the closure
-    tref: Option<ty::TraitRef<'tcx>>,
-    // Whether to replace the `Self` type of the trait with `dyn TheTrait`
-    dyn_self: bool,
-) -> Option<PolyFnSig> {
-    let tref = tref?;
-    let tcx = s.base().tcx;
-
-    // Get AssocItems of `Fn` or `FnMut`
-    let assoc_item = tcx.associated_items(tref.def_id);
-    // Pick `call`/`call_mut`/`call_once`.
-    let call_method = assoc_item
-        .in_definition_order()
-        .filter(|item| matches!(item.kind, ty::AssocKind::Fn { .. }))
-        .exactly_one()
-        .ok()
-        .unwrap();
-    // Get its signature
-    let sig = tcx.fn_sig(call_method.def_id);
-    let trait_args = if dyn_self {
-        // Generate type of shim receiver
-        let dyn_self = dyn_self_ty(tcx, s.typing_env(), tref).unwrap();
-        // Construct signature with dyn_self
-        let mut full_args = vec![ty::GenericArg::from(dyn_self)];
-        full_args.extend(tref.args[1..].iter());
-        tcx.mk_args(&full_args)
-    } else {
-        tref.args
-    };
-
-    // Instantiate and normalize the signature.
-    let sig = sig.instantiate(tcx, trait_args);
-    let sig = normalize(tcx, s.typing_env(), sig);
-
-    Some(sig.sinto(s))
-}
-
 /// Construct the `FullDefKind` for this item.
 ///
 /// If `args` is `Some`, instantiate the whole definition with these generics; otherwise keep the
@@ -695,7 +638,6 @@ where
                 param_env: get_param_env(s, args),
                 adt_kind: def.adt_kind().sinto(s),
                 variants,
-                flags: def.flags().sinto(s),
                 repr: def.repr().sinto(s),
                 destruct_impl: virtual_impl_for(
                     s,
@@ -936,11 +878,6 @@ where
                 fn_once_impl: virtual_impl_for(s, fn_once_tref),
                 fn_mut_impl: fn_mut_tref.map(|tref| virtual_impl_for(s, tref)),
                 fn_impl: fn_tref.map(|tref| virtual_impl_for(s, tref)),
-                call_mut_vtable_sig: gen_closure_sig(s, fn_mut_tref, true),
-                call_vtable_sig: gen_closure_sig(s, fn_tref, true),
-                call_once_sig: gen_closure_sig(s, Some(fn_once_tref), false).unwrap(),
-                call_mut_sig: gen_closure_sig(s, fn_mut_tref, false),
-                call_sig: gen_closure_sig(s, fn_tref, false),
             }
         }
         kind @ (RDefKind::Const { .. } | RDefKind::AnonConst { .. }) => {
@@ -1039,7 +976,7 @@ where
             }
         }
         RDefKind::Field => FullDefKind::Field,
-        RDefKind::Macro(kinds) => FullDefKind::Macro(kinds),
+        RDefKind::Macro(..) => FullDefKind::Macro,
         RDefKind::GlobalAsm => FullDefKind::GlobalAsm,
         RDefKind::SyntheticCoroutineBody => FullDefKind::SyntheticCoroutineBody,
     }

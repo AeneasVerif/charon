@@ -930,8 +930,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, AdtKind> for ty::AdtKind {
     }
 }
 
-sinto_todo!(rustc_middle::ty, AdtFlags);
-
 /// Reflects [`rustc_abi::ReprOptions`].
 
 #[derive(AdtInto, Clone, Debug)]
