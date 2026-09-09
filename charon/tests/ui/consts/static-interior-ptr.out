@@ -33,7 +33,7 @@ static ARR: [u32; 3usize] = [1u32, 2u32, 3u32]
 static FIRST: &'static u32 = &ARR
 
 // Full name: test_crate::SECOND
-static SECOND: &'static u32 = &ARR
+static SECOND: &'static u32 = &2u32
 
 // Full name: test_crate::S
 struct S {
@@ -45,7 +45,7 @@ struct S {
 static S0: S = S { a: 1u32, b: 2u32 }
 
 // Full name: test_crate::B
-static B: &'static u32 = &S0
+static B: &'static u32 = &2u32
 
 // Full name: test_crate::main
 fn main()
