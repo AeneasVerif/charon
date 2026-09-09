@@ -177,8 +177,8 @@ where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: 'a,
 {
-    let _0: Option<&'6 T>[{built_in impl Sized for &'6 T}]; // return
-    let x: Option<&'10 T>[{built_in impl Sized for &'10 T}]; // arg #1
+    let _0: Option<&'8 T>[{built_in impl Sized for &'8 T}]; // return
+    let x: Option<&'12 T>[{built_in impl Sized for &'12 T}]; // arg #1
 
     storage_live(_0)
     _0 = copy x
@@ -302,15 +302,15 @@ where
 fn call_fn()
 {
     let _0: (); // return
-    let _1: Option<&'7 bool>[{built_in impl Sized for &'7 bool}]; // anonymous local
-    let _2: Option<&'11 bool>[{built_in impl Sized for &'11 bool}]; // anonymous local
+    let _1: Option<&'8 bool>[{built_in impl Sized for &'8 bool}]; // anonymous local
+    let _2: Option<&'12 bool>[{built_in impl Sized for &'12 bool}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
     _2 = Option::None {  }
-    _1 = external_use_item<'23, &'23 bool, Option<&'23 bool>[{built_in impl Sized for &'23 bool}], &'23 bool>[{built_in impl Sized for &'23 bool}, {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}<'23, bool>[{built_in impl Sized for bool}], impl_Foo_for_Option<'23, &'23 bool>[{built_in impl Sized for &'23 bool}, {impl Copy for &'_0 T}<'23, bool>]](move _2)
+    _1 = external_use_item<'25, &'25 bool, Option<&'25 bool>[{built_in impl Sized for &'25 bool}], &'25 bool>[{built_in impl Sized for &'25 bool}, {impl test_crate::Foo<'a, Option<&'a T>[{built_in impl Sized for &'a T}]> for &'a T}<'25, bool>[{built_in impl Sized for bool}], impl_Foo_for_Option<'25, &'25 bool>[{built_in impl Sized for &'25 bool}, {impl Copy for &'_0 T}<'25, bool>]](move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)

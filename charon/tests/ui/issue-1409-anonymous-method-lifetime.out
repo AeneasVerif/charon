@@ -191,7 +191,7 @@ pub fn test<'a>(x: &'a u64)
     storage_live(_2)
     storage_live(_3)
     _3 = &(*x)
-    _2 = use_fn<'3, from<'5>>[{built_in impl Sized for from<'7>}, {impl FnMut<(&'_0 u64,)> for from<'_0>}<'3>](move _3, const from<'19>)
+    _2 = use_fn<'3, from<'5>>[{built_in impl Sized for from<'7>}, {impl FnMut<(&'_0 u64,)> for from<'_0>}<'3>](move _3, const from<'20>)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_3)
