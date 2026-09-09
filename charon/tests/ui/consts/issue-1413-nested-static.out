@@ -1,6 +1,29 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::mem::maybe_uninit::MaybeUninit
+#[lang_item(MaybeUninit)]
+pub opaque type MaybeUninit<T>
+where
+    TraitClause0: (T: Sized),
+
 struct () {}
+
+// Full name: test_crate::{promoted_const}
+static {promoted_const}: MaybeUninit<[u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}] = RawMemory(0x2a, 0x00, 0x00, 0x00)
 
 // Full name: test_crate::FOO
 fn FOO() -> &'static mut u32
@@ -23,7 +46,7 @@ fn FOO() -> &'static mut u32
 static FOO: &'static mut u32 = FOO()
 
 // Full name: test_crate::SHARED
-static SHARED: &'static u32 = &42u32
+static SHARED: &'static u32 = &{promoted_const}
 
 // Full name: test_crate::main
 fn main()

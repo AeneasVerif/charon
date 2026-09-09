@@ -174,6 +174,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         )
                     }
 
+                    // A reference to an array-typed global, unsized to a slice.
+                    (_, TyKind::Array(_, len, _))
+                        if let TyKind::Ref(_, pointee, _) = ty.kind()
+                            && pointee.is_slice() =>
+                    {
+                        (Some(UnsizingMetadata::Length(len.clone())), None)
+                    }
+
                     _ => (None, None),
                 };
                 if let Some(new_ty) = new_ty {

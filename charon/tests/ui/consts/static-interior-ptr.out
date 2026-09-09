@@ -51,16 +51,16 @@ static B: &'static u32 = &2u32
 fn main()
 {
     let _0: (); // return
-    let _1: (&'14 u32, &'15 u32, &'16 u32); // anonymous local
-    let _2: &'23 u32; // anonymous local
-    let _3: &'26 &'27 u32; // anonymous local
-    let _4: &'28 u32; // anonymous local
-    let _5: &'29 &'30 u32; // anonymous local
-    let _6: &'31 u32; // anonymous local
-    let _7: &'32 &'33 u32; // anonymous local
-    let _8: &'34 &'35 u32; // anonymous local
-    let _9: &'38 &'39 u32; // anonymous local
-    let _10: &'42 &'43 u32; // anonymous local
+    let _1: (&'16 u32, &'17 u32, &'18 u32); // anonymous local
+    let _2: &'25 u32; // anonymous local
+    let _3: &'28 &'29 u32; // anonymous local
+    let _4: &'30 u32; // anonymous local
+    let _5: &'31 &'32 u32; // anonymous local
+    let _6: &'33 u32; // anonymous local
+    let _7: &'34 &'35 u32; // anonymous local
+    let _8: &'36 &'37 u32; // anonymous local
+    let _9: &'40 &'41 u32; // anonymous local
+    let _10: &'44 &'45 u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
