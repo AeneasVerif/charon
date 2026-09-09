@@ -563,14 +563,20 @@ pub struct GenericParamDef {
     pub kind: GenericParamDefKind,
     /// Variance of this type parameter, if sensible.
     #[value({
+        use SyntheticItem::*;
         use rustc_hir::def::DefKind::*;
         let tcx = s.base().tcx;
-        let parent = tcx.parent(self.def_id);
-        match tcx.def_kind(parent) {
-            Fn | AssocFn | Enum | Struct | Union | Ctor(..) | OpaqueTy => {
-                tcx.variances_of(parent).get(self.index as usize).sinto(s)
+        match s.owner().as_synthetic(s) {
+            Some(Array | Slice | Tuple(_) | Str) => Some(Variance::Covariant),
+            None => {
+                let parent = tcx.parent(self.def_id);
+                match tcx.def_kind(parent) {
+                    Fn | AssocFn | Enum | Struct | Union | Ctor(..) | OpaqueTy => {
+                        tcx.variances_of(parent).get(self.index as usize).sinto(s)
+                    }
+                    _ => None,
+                }
             }
-            _ => None
         }
     })]
     pub variance: Option<Variance>,
