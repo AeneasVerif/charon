@@ -57,7 +57,7 @@ impl<'a> SubstVisitor<'a> {
         }
     }
 
-    pub fn allow_metadata(mut self) -> Self{
+    pub fn allow_metadata(mut self) -> Self {
         self.allow_metadata = true;
         self
     }

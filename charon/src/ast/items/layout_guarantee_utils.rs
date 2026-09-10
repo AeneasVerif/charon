@@ -5,11 +5,11 @@ use macros::{EnumAsGetters, EnumIsA, VariantName};
 use serde_state::{DeserializeState, SerializeState};
 
 use crate::ast::{
-    AlignmentModifier, BuiltinTy, ConstantExpr, ConstantExprKind, DedupSerializerState, Field,
-    FieldId, IndexVec, IntTy, Layout, LiteralTy, MetadataValue, OffsetGuarantee, ReprAlgorithm,
-    ReprOptions, ScalarValue, SizeGuarantee, SizeGuaranteeKind, SubstVisitor, TargetInfo,
-    TargetTriple, TranslatedCrate, Ty, TyKind, TypeDeclKind, TypeDeclRef, UIntTy, VariantId,
-    VariantLayout, VisitAstMut,
+    AlignmentModifier, BuiltinAdt, ConstantExpr, ConstantExprKind, DedupSerializerState, Field,
+    FieldId, IndexVec, IntTy, IntegerTy, IntegerValue, Layout, MetadataValue, OffsetGuarantee,
+    ReprAlgorithm, ReprOptions, ScalarTy, SizeGuarantee, SizeGuaranteeKind, SubstVisitor,
+    TargetInfo, TargetTriple, TranslatedCrate, Ty, TyKind, TypeDeclKind, TypeDeclRef, UIntTy,
+    VariantId, VariantLayout, VisitAstMut,
 };
 
 #[derive(
@@ -314,7 +314,7 @@ impl<'a, 'b> LayoutGuaranteeComputer<'a, 'b> {
                         base_guarantees.align.with_kind_mut(|align_k| {
                             align_k.add_max(
                                 SizeGuaranteeKind::Constant(
-                                    ScalarValue::from_unchecked_uint(
+                                    IntegerValue::from_unchecked_uint(
                                         UIntTy::Usize,
                                         forced_align as u128,
                                     )
@@ -327,7 +327,7 @@ impl<'a, 'b> LayoutGuaranteeComputer<'a, 'b> {
                     Some(AlignmentModifier::Pack(n)) => {
                         base_guarantees.align = SizeGuarantee::new(SizeGuaranteeKind::Min(vec![
                             SizeGuaranteeKind::Constant(
-                                ScalarValue::from_unchecked_uint(UIntTy::Usize, n as u128)
+                                IntegerValue::from_unchecked_uint(UIntTy::Usize, n as u128)
                                     .to_constant(),
                             )
                             .into_expr(),
@@ -351,15 +351,15 @@ impl<'a, 'b> LayoutGuaranteeComputer<'a, 'b> {
                     if repr.guarantees_fixed_field_order() {
                         let field_less = variants.iter().all(|variant| variant.fields.is_empty());
 
-                        let discr_ty = Ty::new(TyKind::Literal(
+                        let discr_ty = Ty::new(TyKind::Scalar(ScalarTy::Integer(
                             if let Some(discr_ty) = &repr.explicit_discr_type {
                                 *discr_ty
                             } else {
-                                LiteralTy::Int(
+                                IntegerTy::Signed(
                                     self.krate.the_target_information().c_enum_smallest_repr_ty,
                                 )
                             },
-                        ));
+                        )));
 
                         if field_less {
                             // For field-less enums with a guaranteed discriminant type, the whole layout is exactly the type.
@@ -471,7 +471,7 @@ impl<'a, 'b> LayoutGuaranteeComputer<'a, 'b> {
                 tdr @ TypeDeclRef {
                     id: _,
                     generics,
-                    builtin: Some(BuiltinTy::Tuple),
+                    builtin: Some(BuiltinAdt::Tuple),
                 },
             ) => {
                 if force_repr_c {
@@ -491,13 +491,13 @@ impl<'a, 'b> LayoutGuaranteeComputer<'a, 'b> {
                 }
             }
             TyKind::TypeVar(_) => Some(LayoutGuarantees::mk_symbolic(ty.clone())),
-            TyKind::Literal(literal_ty) => Some(LayoutGuarantees::mk_primitive(
+            TyKind::Scalar(literal_ty) => Some(LayoutGuarantees::mk_primitive(
                 literal_ty,
                 self.krate.the_target_information(),
             )),
             TyKind::Adt(TypeDeclRef {
                 id: _,
-                builtin: Some(BuiltinTy::Box),
+                builtin: Some(BuiltinAdt::Box),
                 generics,
             }) => Some(self.mk_ptr(generics.types.first()?)),
             TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) => Some(self.mk_ptr(ty)),
@@ -518,13 +518,18 @@ impl<'a, 'b> LayoutGuaranteeComputer<'a, 'b> {
             //
             // See doc.rust-lang.org/reference/type-layout.html#r-layout.str
             TyKind::Adt(TypeDeclRef {
-                builtin: Some(BuiltinTy::Str),
+                builtin: Some(BuiltinAdt::Str),
                 ..
             }) => {
                 Some(LayoutGuarantees {
                     // Aligned to `u8`.
-                    align: expr_of_ty(&Ty::new(TyKind::Literal(LiteralTy::UInt(UIntTy::U8))), true)
-                        .into_expr(),
+                    align: expr_of_ty(
+                        &Ty::new(TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(
+                            UIntTy::U8,
+                        )))),
+                        true,
+                    )
+                    .into_expr(),
                     size: SizeGuaranteeKind::FromMetadata(MetadataValue::SliceLength).into_expr(),
                     offsets: OffsetGuarantees::None,
                 })
@@ -561,9 +566,9 @@ impl<'a, 'b> LayoutGuaranteeComputer<'a, 'b> {
 impl LayoutGuarantees {
     pub(super) fn one_zst() -> Self {
         Self {
-            size: SizeGuaranteeKind::Constant(ScalarValue::mk_zero_usize().to_constant())
+            size: SizeGuaranteeKind::Constant(IntegerValue::mk_zero_usize().to_constant())
                 .into_expr(),
-            align: SizeGuaranteeKind::Constant(ScalarValue::mk_one_usize().to_constant())
+            align: SizeGuaranteeKind::Constant(IntegerValue::mk_one_usize().to_constant())
                 .into_expr(),
             offsets: OffsetGuarantees::None,
         }
@@ -583,29 +588,30 @@ impl LayoutGuarantees {
     ///
     /// However, currently it ignores potential inconsistencies with regard to
     /// [https://doc.rust-lang.org/reference/type-layout.html#r-layout.primitive.size].
-    pub(super) fn mk_primitive(primitive: &LiteralTy, target_info: &TargetInfo) -> Self {
+    pub(super) fn mk_primitive(primitive: &ScalarTy, target_info: &TargetInfo) -> Self {
         let size = match primitive {
-            LiteralTy::Int(IntTy::Isize) | LiteralTy::UInt(UIntTy::Usize) => {
+            ScalarTy::Integer(IntegerTy::Signed(IntTy::Isize))
+            | ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::Usize)) => {
                 return Self {
                     size: mk_address_size().into_expr(),
                     align: mk_address_align().into_expr(),
                     offsets: OffsetGuarantees::None,
                 };
             }
-            LiteralTy::Int(int_ty) => int_ty.target_size(0),
-            LiteralTy::UInt(uint_ty) => uint_ty.target_size(0),
-            LiteralTy::Float(float_ty) => float_ty.target_size(),
-            LiteralTy::Bool => 1,
-            LiteralTy::Char => 4,
+            ScalarTy::Integer(IntegerTy::Signed(int_ty)) => int_ty.target_size(0),
+            ScalarTy::Integer(IntegerTy::Unsigned(uint_ty)) => uint_ty.target_size(0),
+            ScalarTy::Float(float_ty) => float_ty.target_size(),
+            ScalarTy::Bool => 1,
+            ScalarTy::Char => 4,
         };
         let align = target_info.primitive_alignments.get(primitive).unwrap();
         Self {
             size: SizeGuaranteeKind::Constant(
-                ScalarValue::from_unchecked_uint(UIntTy::Usize, size as u128).to_constant(),
+                IntegerValue::from_unchecked_uint(UIntTy::Usize, size as u128).to_constant(),
             )
             .into_expr(),
             align: SizeGuaranteeKind::Constant(
-                ScalarValue::from_uint(
+                IntegerValue::from_uint(
                     target_info.target_pointer_size,
                     UIntTy::Usize,
                     *align as u128,
@@ -648,7 +654,7 @@ impl LayoutGuarantees {
         {
             Some(
                 SizeGuaranteeKind::Constant(
-                    ScalarValue::from_unchecked_uint(UIntTy::Usize, *p as u128).to_constant(),
+                    IntegerValue::from_unchecked_uint(UIntTy::Usize, *p as u128).to_constant(),
                 )
                 .into_expr(),
             )
@@ -725,7 +731,7 @@ impl LayoutGuarantees {
             align_max.push(expr_of_ty(tag_ty, false).into_expr());
             expr_of_ty(tag_ty, true).into_expr()
         } else {
-            SizeGuaranteeKind::Constant(ScalarValue::mk_zero_usize().to_constant()).into_expr()
+            SizeGuaranteeKind::Constant(IntegerValue::mk_zero_usize().to_constant()).into_expr()
         };
         let mut field_offsets = IndexVec::new();
 
@@ -804,9 +810,9 @@ impl LayoutGuarantees {
 
     fn is_one_zst(&self) -> bool {
         self.size
-            == SizeGuaranteeKind::Constant(ScalarValue::mk_zero_usize().to_constant()).into_expr()
+            == SizeGuaranteeKind::Constant(IntegerValue::mk_zero_usize().to_constant()).into_expr()
             && self.align
-                == SizeGuaranteeKind::Constant(ScalarValue::mk_one_usize().to_constant())
+                == SizeGuaranteeKind::Constant(IntegerValue::mk_one_usize().to_constant())
                     .into_expr()
             && self.offsets == OffsetGuarantees::None
     }
@@ -877,7 +883,7 @@ impl<'a> LayoutComputer<'a> {
                 let (_, parts) = self.stack.last_mut().unwrap();
                 let fields = parts.offsets.last_mut().unwrap();
                 fields.push(
-                    SizeGuaranteeKind::Constant(ScalarValue::mk_zero_usize().to_constant())
+                    SizeGuaranteeKind::Constant(IntegerValue::mk_zero_usize().to_constant())
                         .into_expr(),
                 );
             }
@@ -956,7 +962,7 @@ impl<'a> LayoutComputer<'a> {
                                 base_layout
                                     .repr
                                     .explicit_discr_type
-                                    .unwrap_or(LiteralTy::Int(
+                                    .unwrap_or(IntegerTy::Signed(
                                         self.krate
                                             .target_information
                                             .get(self.target)
@@ -969,7 +975,9 @@ impl<'a> LayoutComputer<'a> {
                         };
                         let discr_size = discr_ty
                             .and_then(|ty| {
-                                self.compute_layout_guarantees(Ty::new(TyKind::Literal(ty)))
+                                self.compute_layout_guarantees(Ty::new(TyKind::Scalar(
+                                    ScalarTy::Integer(ty),
+                                )))
                             })
                             .map(|guarantees| guarantees.size);
 

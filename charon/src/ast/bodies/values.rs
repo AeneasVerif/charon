@@ -513,11 +513,11 @@ impl IntegerValue {
     }
 
     pub(crate) fn mk_zero_usize() -> Self {
-        ScalarValue::Unsigned(UIntTy::Usize, 0)
+        IntegerValue::Unsigned(UIntTy::Usize, 0)
     }
 
     pub(crate) fn mk_one_usize() -> Self {
-        ScalarValue::Unsigned(UIntTy::Usize, 1)
+        IntegerValue::Unsigned(UIntTy::Usize, 1)
     }
 }
 

@@ -137,10 +137,7 @@ impl SizeGuarantee {
 
     pub fn mk_const_byte_count(bytes: ByteCount) -> Self {
         Self::new(SizeGuaranteeKind::Constant(ConstantExpr::new(
-            ConstantExprKind::Literal(Literal::Scalar(ScalarValue::Unsigned(
-                UIntTy::Usize,
-                bytes as u128,
-            ))),
+            ConstantExprKind::Integer(IntegerValue::Unsigned(UIntTy::Usize, bytes as u128)),
             Ty::mk_usize(),
         )))
     }

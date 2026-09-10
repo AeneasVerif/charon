@@ -133,6 +133,46 @@ normalized Guarantees: {
         Some._0 is aligned to align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>(),
 }
 
+test_crate::NicheAdtSigned
+direct Guarantees: {
+    SIZE is >= aligned_to(max(0usize, >= aligned_to(max(offset(NicheAdtSigned.Some._0) + size_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()), max(align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()))), max(1usize, >= max(align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()))),
+    ALIGN is >= max(1usize, >= max(align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>())),
+    offset of 
+        Some._0 is aligned to align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>(),
+}
+stored Guarantees: {
+    SIZE is >= aligned_to(max(0usize, >= aligned_to(max(offset(NicheAdtSigned.Some._0) + size_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()), max(align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()))), max(1usize, >= max(align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()))),
+    ALIGN is >= max(1usize, >= max(align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>())),
+    offset of 
+        Some._0 is aligned to align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>(),
+}
+normalized Guarantees: {
+    SIZE is >= aligned_to(aligned_to(offset(NicheAdtSigned.Some._0) + size_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>(), align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()), max(align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>(), 1usize)),
+    ALIGN is >= max(align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>(), 1usize),
+    offset of 
+        Some._0 is aligned to align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>(),
+}
+
+test_crate::NicheAdtChar
+direct Guarantees: {
+    SIZE is >= aligned_to(max(0usize, >= aligned_to(max(offset(NicheAdtChar.Some._0) + size_of::<char>()), max(align_of::<char>()))), max(1usize, >= max(align_of::<char>()))),
+    ALIGN is >= max(1usize, >= max(align_of::<char>())),
+    offset of 
+        Some._0 is aligned to align_of::<char>(),
+}
+stored Guarantees: {
+    SIZE is >= aligned_to(max(0usize, >= aligned_to(max(offset(NicheAdtChar.Some._0) + size_of::<char>()), max(align_of::<char>()))), max(1usize, >= max(align_of::<char>()))),
+    ALIGN is >= max(1usize, >= max(align_of::<char>())),
+    offset of 
+        Some._0 is aligned to align_of::<char>(),
+}
+normalized Guarantees: {
+    SIZE is >= aligned_to(aligned_to(offset(NicheAdtChar.Some._0) + 4usize, 4usize), 4usize),
+    ALIGN is >= 4usize,
+    offset of 
+        Some._0 is aligned to 4usize,
+}
+
 test_crate::IsAZST
 direct Guarantees: {
     SIZE is 0usize,
@@ -621,5 +661,97 @@ normalized Guarantees: {
     ALIGN is >= 1usize,
     offset of 
         Var2._0 is aligned to 1usize,
+}
+
+test_crate::NicheInSignedRepr
+direct Guarantees: {
+    SIZE is >= aligned_to(max(>= aligned_to(max(offset(NicheInSignedRepr.A._0) + size_of::<MyOrder>()), max(align_of::<MyOrder>())), 0usize), max(>= max(align_of::<MyOrder>()), 1usize)),
+    ALIGN is >= max(>= max(align_of::<MyOrder>()), 1usize),
+    offset of 
+        A._0 is aligned to align_of::<MyOrder>(),
+}
+stored Guarantees: {
+    SIZE is >= aligned_to(max(>= aligned_to(max(offset(NicheInSignedRepr.A._0) + size_of::<MyOrder>()), max(align_of::<MyOrder>())), 0usize), max(>= max(align_of::<MyOrder>()), 1usize)),
+    ALIGN is >= max(>= max(align_of::<MyOrder>()), 1usize),
+    offset of 
+        A._0 is aligned to align_of::<MyOrder>(),
+}
+normalized Guarantees: {
+    SIZE is >= offset(NicheInSignedRepr.A._0) + 1usize,
+    ALIGN is >= 1usize,
+    offset of 
+        A._0 is aligned to 1usize,
+}
+
+test_crate::BigWithChar
+direct Guarantees: {
+    SIZE is aligned_to(offset(BigWithChar.c) + size_of::<char>(), max(align_of::<u64>(), align_of::<char>())),
+    ALIGN is max(align_of::<u64>(), align_of::<char>()),
+    offset of 
+        0 is 0,
+        1 is computed by repr(C) algorithm,
+}
+stored Guarantees: {
+    SIZE is aligned_to(offset(BigWithChar.c) + size_of::<char>(), max(align_of::<u64>(), align_of::<char>())),
+    ALIGN is max(align_of::<u64>(), align_of::<char>()),
+    offset of 
+        a is 0,
+        c is computed by repr(C) algorithm,
+}
+normalized Guarantees: {
+    SIZE is 16usize,
+    ALIGN is 8usize,
+    offset of 
+        a is 0,
+        c is computed by repr(C) algorithm,
+}
+
+test_crate::UninhabitedAtNicheEdge
+direct Guarantees: {
+    SIZE is >= aligned_to(max(>= aligned_to(max(offset(UninhabitedAtNicheEdge.A._0) + size_of::<u32>(), offset(UninhabitedAtNicheEdge.A._1) + size_of::<!>()), max(align_of::<u32>(), align_of::<!>())), 0usize, >= aligned_to(max(offset(UninhabitedAtNicheEdge.C._0) + size_of::<BigWithChar>()), max(align_of::<BigWithChar>()))), max(>= max(align_of::<u32>(), align_of::<!>()), 1usize, >= max(align_of::<BigWithChar>()))),
+    ALIGN is >= max(>= max(align_of::<u32>(), align_of::<!>()), 1usize, >= max(align_of::<BigWithChar>())),
+    offset of 
+        A._0 is aligned to align_of::<u32>(),
+        A._1 is aligned to align_of::<!>(),
+        C._0 is aligned to align_of::<BigWithChar>(),
+}
+stored Guarantees: {
+    SIZE is >= aligned_to(max(>= aligned_to(max(offset(UninhabitedAtNicheEdge.A._0) + size_of::<u32>(), offset(UninhabitedAtNicheEdge.A._1) + size_of::<!>()), max(align_of::<u32>(), align_of::<!>())), 0usize, >= aligned_to(max(offset(UninhabitedAtNicheEdge.C._0) + size_of::<BigWithChar>()), max(align_of::<BigWithChar>()))), max(>= max(align_of::<u32>(), align_of::<!>()), 1usize, >= max(align_of::<BigWithChar>()))),
+    ALIGN is >= max(>= max(align_of::<u32>(), align_of::<!>()), 1usize, >= max(align_of::<BigWithChar>())),
+    offset of 
+        A._0 is aligned to align_of::<u32>(),
+        A._1 is aligned to align_of::<!>(),
+        C._0 is aligned to align_of::<BigWithChar>(),
+}
+normalized Guarantees: {
+    SIZE is >= aligned_to(max(aligned_to(max(offset(UninhabitedAtNicheEdge.A._0) + 4usize, offset(UninhabitedAtNicheEdge.A._1)), 4usize), aligned_to(offset(UninhabitedAtNicheEdge.C._0) + aligned_to(offset(BigWithChar.c) + 4usize, 8usize), 8usize)), 8usize),
+    ALIGN is >= 8usize,
+    offset of 
+        A._0 is aligned to 4usize,
+        A._1 is aligned to 1usize,
+        C._0 is aligned to 8usize,
+}
+
+test_crate::UninhabitedUntagged
+direct Guarantees: {
+    SIZE is >= aligned_to(max(>= aligned_to(max(offset(UninhabitedUntagged.A._0) + size_of::<char>(), offset(UninhabitedUntagged.A._1) + size_of::<!>()), max(align_of::<char>(), align_of::<!>())), 0usize), max(>= max(align_of::<char>(), align_of::<!>()), 1usize)),
+    ALIGN is >= max(>= max(align_of::<char>(), align_of::<!>()), 1usize),
+    offset of 
+        A._0 is aligned to align_of::<char>(),
+        A._1 is aligned to align_of::<!>(),
+}
+stored Guarantees: {
+    SIZE is >= aligned_to(max(>= aligned_to(max(offset(UninhabitedUntagged.A._0) + size_of::<char>(), offset(UninhabitedUntagged.A._1) + size_of::<!>()), max(align_of::<char>(), align_of::<!>())), 0usize), max(>= max(align_of::<char>(), align_of::<!>()), 1usize)),
+    ALIGN is >= max(>= max(align_of::<char>(), align_of::<!>()), 1usize),
+    offset of 
+        A._0 is aligned to align_of::<char>(),
+        A._1 is aligned to align_of::<!>(),
+}
+normalized Guarantees: {
+    SIZE is >= aligned_to(aligned_to(max(offset(UninhabitedUntagged.A._0) + 4usize, offset(UninhabitedUntagged.A._1)), 4usize), 4usize),
+    ALIGN is >= 4usize,
+    offset of 
+        A._0 is aligned to 4usize,
+        A._1 is aligned to 1usize,
 }
 

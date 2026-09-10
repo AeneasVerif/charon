@@ -271,7 +271,7 @@ fn type_layout() -> anyhow::Result<()> {
                                         .collect();
                                     // Find the smallest value not in the used set.
                                     let candidate = (0..).find(|v| !used_vals.contains(v)).unwrap();
-                                IntegerValue::from_bits(int_ty, candidate)
+                                    IntegerValue::from_bits(int_ty, candidate)
                                 }))
                         });
                         assert_eq!(
@@ -316,7 +316,7 @@ fn type_layout() -> anyhow::Result<()> {
     }
     compare_or_overwrite(layouts_str, &PathBuf::from("./tests/layout.txt"))?;
 
-    fn byte_count_eq_scalar(byte_count: ByteCount, scalar: ScalarValue, ctx: String) {
+    fn byte_count_eq_scalar(byte_count: ByteCount, scalar: IntegerValue, ctx: String) {
         if scalar.is_signed() {
             assert_eq!(byte_count as i128, *scalar.as_signed().unwrap().1, "{ctx}");
         } else {
@@ -364,12 +364,12 @@ fn type_layout() -> anyhow::Result<()> {
             && let Some(align) = layout.align.chosen
         {
             if let Some(constant) = guarantees.size.as_constant()
-                && let ConstantExprKind::Literal(Literal::Scalar(size_guarantee)) = constant.kind()
+                && let ConstantExprKind::Integer(size_guarantee) = constant.kind()
             {
                 byte_count_eq_scalar(size, *size_guarantee, format!("{name}.size"));
             }
             if let Some(constant) = guarantees.align.as_constant()
-                && let ConstantExprKind::Literal(Literal::Scalar(align_guarantee)) = constant.kind()
+                && let ConstantExprKind::Integer(align_guarantee) = constant.kind()
             {
                 byte_count_eq_scalar(align, *align_guarantee, format!("{name}.align"));
             }
@@ -380,7 +380,7 @@ fn type_layout() -> anyhow::Result<()> {
                         if let Some(offset_guarantee) =
                             layout_computer.lookup_pre_computed_offset(&fake_ty, Some(v_id), f_id)
                             && let Some(constant) = offset_guarantee.as_constant()
-                            && let ConstantExprKind::Literal(Literal::Scalar(s)) = constant.kind()
+                            && let ConstantExprKind::Integer(s) = constant.kind()
                             && let Some(offset) = offset.chosen
                         {
                             byte_count_eq_scalar(offset, *s, format!("{name}.{v_id}.{f_id}"));
