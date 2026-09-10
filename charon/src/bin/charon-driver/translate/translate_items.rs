@@ -218,12 +218,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = match impl_kind {
-                    TransImplSource::Callable(kind) => {
-                        bt_ctx.translate_callable_vtable_shim(id, item_meta, &def, kind)?
-                    }
-                    _ => bt_ctx.translate_vtable_shim(id, item_meta, &def)?,
-                };
+                let fun_decl = bt_ctx.translate_vtable_shim(id, item_meta, &def, impl_kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             &TransItemSourceKind::VTableDropShim(impl_kind) => {

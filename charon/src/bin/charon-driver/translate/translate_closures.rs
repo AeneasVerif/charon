@@ -431,29 +431,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         })
     }
 
-    /// The type of the `self` argument of the `call_*` method of the `Fn*` impl of this callable,
-    /// i.e. `&closure`, `&mut closure` or `closure` depending on the trait.
-    pub(crate) fn translate_callable_method_receiver_ty(
-        &mut self,
-        span: Span,
-        def: &hax::FullDef<'tcx>,
-        target_kind: ClosureKind,
-    ) -> Result<Ty, Error> {
-        let callable = CallableFnImpls::from_def(def)
-            .expect("callable expected")
-            .callable;
-        let state_ty = self.get_callable_state_ty(span, callable)?;
-        Ok(match target_kind {
-            ClosureKind::FnOnce => state_ty,
-            ClosureKind::Fn | ClosureKind::FnMut => {
-                let rid = self.the_only_binder().closure_call_method_region.unwrap();
-                let region = Region::Var(DeBruijnVar::new_at_zero(rid));
-                let mutability = RefKind::mutable(target_kind == ClosureKind::FnMut);
-                TyKind::Ref(region, state_ty, mutability).into_ty()
-            }
-        })
-    }
-
     fn get_callable_state_ty(&mut self, span: Span, callable: Callable<'_>) -> Result<Ty, Error> {
         Ok(match callable {
             Callable::Closure(args) => {
