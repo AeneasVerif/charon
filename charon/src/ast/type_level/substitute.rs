@@ -57,18 +57,9 @@ impl<'a> SubstVisitor<'a> {
         }
     }
 
-    pub(crate) fn new_allow_metadata(
-        generics: &'a GenericArgs,
-        self_ref: Option<&'a TraitRefKind>,
-        explicits_only: bool,
-    ) -> Self {
-        Self {
-            generics,
-            self_ref,
-            explicits_only,
-            had_error: false,
-            allow_metadata: true,
-        }
+    pub fn allow_metadata(mut self) -> Self{
+        self.allow_metadata = true;
+        self
     }
 
     pub fn visit<T: TyVisitable>(mut self, mut x: T) -> Result<T, GenericsMismatch> {

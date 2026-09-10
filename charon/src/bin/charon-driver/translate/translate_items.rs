@@ -474,8 +474,19 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             hax::FullDefKind::Adt { repr: hax_repr, .. } => self.translate_repr_options(hax_repr),
             _ => ReprOptions::default(),
         };
+
+        let builtin = src.as_builtin().cloned();
+        assert!(self.binding_levels.len() == 1);
+        let gen_args = self
+            .binding_levels
+            .innermost()
+            .params
+            .clone()
+            .identity_args();
+        let tdr = TypeDeclRef::new(trans_id, gen_args, builtin);
+
         let layout_guarantees =
-            LayoutGuarantees::for_type_decl(&kind, &self.t_ctx.translated, &repr);
+            LayoutGuarantees::for_type_decl(&tdr, &kind, &self.t_ctx.translated, &repr);
 
         let layout = layout_guarantees
             .into_iter()

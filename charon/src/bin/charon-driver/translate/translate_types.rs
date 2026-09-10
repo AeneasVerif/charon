@@ -520,26 +520,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         def: &hax::FullDef<'tcx>,
         repr: ReprOptions,
     ) -> Layout {
-        fn zip_opt<'a, L, R, I, T, M>(
-            lhs: impl Iterator<Item = L> + 'a,
-            rhs: Option<impl IntoIterator<Item = R, IntoIter = I>>,
-            mut map: M,
-        ) -> Box<dyn Iterator<Item = T> + 'a>
-        where
-            R: 'a,
-            L: 'a,
-            I: Iterator<Item = R> + 'a,
-            T: 'a,
-            M: FnMut(L, Option<R>) -> T + 'a,
-        {
-            if let Some(rhs) = rhs {
-                Box::new(
-                    lhs.zip(rhs.into_iter())
-                        .map(move |(lhs, rhs)| map(lhs, Some(rhs))),
-                )
+        fn iter_opt<'a, R: 'a>(
+            rhs: Option<impl IntoIterator<Item = R, IntoIter: 'a>>,
+        ) -> impl Iterator<Item = Option<R>> {
+            let rhs: Box<dyn Iterator<Item = Option<R>> + '_> = if let Some(rhs) = rhs {
+                Box::new(rhs.into_iter().map(Some))
             } else {
-                Box::new(lhs.map(move |lhs| map(lhs, None)))
-            }
+                Box::new((0..).map(|_| None))
+            };
+            rhs
         }
 
         let item = def.this();
@@ -550,15 +539,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             tagger: Vec<(ByteCount, IntegerValue)>,
             variant_guarantees: Option<IndexVec<FieldId, OffsetGuarantee>>,
         ) -> VariantLayout {
-            let field_offsets = zip_opt(
-                variant_layout.field_offsets.iter(),
-                variant_guarantees,
-                |o: &r_abi::Size, guarantee| OffsetExpr {
+            let field_offsets = variant_layout
+                .field_offsets
+                .iter()
+                .zip(iter_opt(variant_guarantees))
+                .map(|(o, guarantee)| OffsetExpr {
                     chosen: Some(o.bytes()),
                     guarantee,
-                },
-            )
-            .collect();
+                })
+                .collect();
             VariantLayout {
                 field_offsets,
                 uninhabited: Some(variant_layout.is_uninhabited()),
@@ -572,24 +561,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             field_guarantees: Option<IndexVec<FieldId, OffsetGuarantee>>,
         ) -> VariantLayout {
             let field_offsets = match &layout_data.fields {
-                r_abi::FieldsShape::Arbitrary { offsets, .. } => zip_opt(
-                    offsets.iter(),
-                    field_guarantees,
-                    |o: &r_abi::Size, guarantee| OffsetExpr {
+                r_abi::FieldsShape::Arbitrary { offsets, .. } => offsets
+                    .iter()
+                    .zip(iter_opt(field_guarantees))
+                    .map(|(o, guarantee)| OffsetExpr {
                         chosen: Some(o.bytes()),
                         guarantee,
-                    },
-                )
-                .collect(),
-                r_abi::FieldsShape::Union(n) => zip_opt(
-                    vec![0; n.get()].into_iter(),
-                    field_guarantees,
-                    |o, guarantee| OffsetExpr {
+                    })
+                    .collect(),
+                r_abi::FieldsShape::Union(n) => vec![0; n.get()]
+                    .into_iter()
+                    .zip(iter_opt(field_guarantees))
+                    .map(|(o, guarantee)| OffsetExpr {
                         chosen: Some(o),
                         guarantee,
-                    },
-                )
-                .collect(),
+                    })
+                    .collect(),
                 r_abi::FieldsShape::Primitive => IndexVec::default(),
                 r_abi::FieldsShape::Array { .. } => panic!("Unexpected layout shape"),
             };
@@ -646,8 +633,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             .unwrap()
             .target_pointer_size;
 
-        // If layout computation returns an error, we return `None`.
-        // If layout computation returns an error, we return `None`.
         let layout = if let Ok(layout_data) = tcx.layout_of(pseudo_input) {
             layout_data.layout
         } else {
@@ -756,14 +741,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     IndexVec::new();
                 let mut children = Vec::new();
 
-                zip_opt(
-                    variants.iter_enumerated(),
-                    layout_guarantees.offsets.get_variants(
+                variants
+                    .iter_enumerated()
+                    .zip(iter_opt(layout_guarantees.offsets.get_variants(
                         Some(variants.len()),
                         Some(&self.t_ctx.translated),
                         Some(&the_target),
-                    ),
-                    |(id, variant_layout), field_guarantees| {
+                    )))
+                    .map(|((id, variant_layout), field_guarantees)| {
                         let variant_id = self.translate_variant_id(id);
                         let taginfo = taginfo_for_variant(id);
                         let tagger = if let Some(val) = taginfo.value {
@@ -785,9 +770,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             tagger,
                             field_guarantees,
                         )));
-                    },
-                )
-                .for_each(drop);
+                    })
+                    .for_each(drop);
 
                 let fallback = match tag_encoding {
                     r_abi::TagEncoding::Direct => Discriminator::Invalid,
@@ -958,11 +942,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 Ok(Layout {
                     size: SizeExpr {
                         chosen: Some(size),
-                        guarantee: Some(ExactSizeExpr::mk_const_byte_count(size)),
+                        guarantee: Some(SizeGuarantee::mk_const_byte_count(size)),
                     },
                     align: SizeExpr {
                         chosen: Some(align),
-                        guarantee: Some(ExactSizeExpr::mk_const_byte_count(align)),
+                        guarantee: Some(SizeGuarantee::mk_const_byte_count(align)),
                     },
                     discriminator: None,
                     uninhabited: false,

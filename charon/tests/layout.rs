@@ -4,7 +4,7 @@ use std::{borrow::Cow, fmt::Write, path::PathBuf};
 use charon_lib::{
     ast::*,
     formatter::FmtCtx,
-    pretty::FmtWithCtx,
+    pretty::{FmtWithCtx, fmt_with_ctx::TypeDeclFmtCtx},
     ullbc_ast::layout_guarantee_utils::{LayoutComputer, LayoutGuarantees},
 };
 
@@ -302,11 +302,15 @@ fn type_layout() -> anyhow::Result<()> {
             indent_level: 1,
             ..Default::default()
         };
+        let layout_ctx = TypeDeclFmtCtx {
+            fmt: &ctx,
+            ty_decl_id: tdecl.def_id,
+        };
         let name = tdecl.item_meta.name.debug_repr(&crate_data);
         writeln!(&mut layouts_str, "{name}")?;
         let opt_layout = tdecl.layout.get(&the_target).cloned();
         if let Some(layout) = opt_layout {
-            write!(&mut layouts_str, "{}", layout.with_ctx(&ctx))?;
+            write!(&mut layouts_str, "{}", layout.with_ctx(&layout_ctx))?;
         }
         writeln!(&mut layouts_str)?;
     }
@@ -340,6 +344,10 @@ fn type_layout() -> anyhow::Result<()> {
             indent_level: 1,
             ..Default::default()
         };
+        let layout_ctx = TypeDeclFmtCtx {
+            fmt: &ctx,
+            ty_decl_id: tdecl.def_id,
+        };
         let name = tdecl.item_meta.name.debug_repr(&crate_data);
         writeln!(&mut buffer, "{name}")?;
         let fake_ty = Ty::new(TyKind::Adt(TypeDeclRef {
@@ -355,14 +363,12 @@ fn type_layout() -> anyhow::Result<()> {
             && let Some(size) = layout.size.chosen
             && let Some(align) = layout.align.chosen
         {
-            if let Some(size_expr) = guarantees.size.is_exact()
-                && let Some(constant) = size_expr.as_constant()
+            if let Some(constant) = guarantees.size.as_constant()
                 && let ConstantExprKind::Literal(Literal::Scalar(size_guarantee)) = constant.kind()
             {
                 byte_count_eq_scalar(size, *size_guarantee, format!("{name}.size"));
             }
-            if let Some(align_expr) = guarantees.align.is_exact()
-                && let Some(constant) = align_expr.as_constant()
+            if let Some(constant) = guarantees.align.as_constant()
                 && let ConstantExprKind::Literal(Literal::Scalar(align_guarantee)) = constant.kind()
             {
                 byte_count_eq_scalar(align, *align_guarantee, format!("{name}.align"));
@@ -373,8 +379,7 @@ fn type_layout() -> anyhow::Result<()> {
                     for (f_id, offset) in variant.field_offsets.iter_enumerated() {
                         if let Some(offset_guarantee) =
                             layout_computer.lookup_pre_computed_offset(&fake_ty, Some(v_id), f_id)
-                            && let Some(offset_expr) = offset_guarantee.is_exact()
-                            && let Some(constant) = offset_expr.as_constant()
+                            && let Some(constant) = offset_guarantee.as_constant()
                             && let ConstantExprKind::Literal(Literal::Scalar(s)) = constant.kind()
                             && let Some(offset) = offset.chosen
                         {
@@ -385,18 +390,22 @@ fn type_layout() -> anyhow::Result<()> {
             }
         }
 
+        let tdr = fake_ty.as_adt().unwrap();
         if let Some(l) = tdecl.layout.get(&the_target) {
-            if let Some(g) = LayoutGuarantees::for_type_decl(&tdecl.kind, &crate_data, &l.repr) {
-                write!(&mut buffer, "direct {}", g.with_ctx(&ctx))?;
+            if let Some(g) = LayoutGuarantees::for_type_decl(tdr, &tdecl.kind, &crate_data, &l.repr)
+            {
+                write!(&mut buffer, "direct {}", g.with_ctx(&layout_ctx))?;
             }
             write!(
                 &mut buffer,
                 "stored {}",
-                LayoutGuarantees::from_layout(l).unwrap().with_ctx(&ctx)
+                LayoutGuarantees::from_layout(l)
+                    .unwrap()
+                    .with_ctx(&layout_ctx)
             )?;
         }
         if let Some(l) = opt_concretized {
-            write!(&mut buffer, "normalized {}", l.with_ctx(&ctx))?;
+            write!(&mut buffer, "normalized {}", l.with_ctx(&layout_ctx))?;
         }
         writeln!(&mut buffer)?;
     }

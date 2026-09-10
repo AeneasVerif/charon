@@ -43,6 +43,7 @@ pub struct VariantLayout {
     pub field_offsets: IndexVec<FieldId, OffsetExpr>,
     /// Whether the variant is uninhabited, i.e. has any valid possible value.
     /// Note that uninhabited types can have arbitrary layouts.
+    /// Is `None` if the variant is neither guaranteed to be inhabited, nor guaranteed to be uninhabited.
     pub uninhabited: Option<bool>,
     /// How to write the tag when constructing this variant. Each entry means: write `value` at
     /// byte `offset`. Mirrors MiniRust's `Variant::tagger`.
@@ -78,7 +79,7 @@ pub enum Discriminator {
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct SizeExpr {
     /// The guarantees about this size that can be relied on according to the Rust Reference.
-    pub guarantee: Option<ExactSizeExpr>,
+    pub guarantee: Option<SizeGuarantee>,
     /// The size chosen by this rustc run. `None` for unsized types.
     pub chosen: Option<ByteCount>,
 }
@@ -158,7 +159,7 @@ pub struct TargetInfo {
 }
 
 impl SizeExpr {
-    pub fn only_guarantee(bound: ExactSizeExpr) -> Self {
+    pub fn only_guarantee(bound: SizeGuarantee) -> Self {
         Self {
             chosen: None,
             guarantee: Some(bound),
