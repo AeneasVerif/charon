@@ -13,10 +13,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: peaceiris/actions-mdbook@v2
+        with:
+          mdbook-version: '0.5.4'
       - name: Build static files
         env:
           CARGO_TERM_COLOR: always
         run: |
+          make doc-manual
           cd charon
           make doc
 

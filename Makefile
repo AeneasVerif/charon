@@ -47,9 +47,17 @@ build-dev-charon-ml: charon-ml/src/CharonVersion.ml
 
 # Generate documentation
 .PHONY: doc
-doc:
+doc: doc-manual
 	cd charon && $(MAKE) doc
 	cd charon-ml && $(MAKE) doc
+
+.PHONY: doc-manual
+doc-manual:
+	mdbook build docs
+
+.PHONY: serve-manual
+serve-manual:
+	mdbook serve docs
 
 # Build and run the tests
 .PHONY: test

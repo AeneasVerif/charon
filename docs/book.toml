@@ -1,0 +1,13 @@
+[book]
+title = "The Charon Manual"
+authors = ["Charon contributors"]
+language = "en"
+src = "."
+
+[build]
+build-dir = "../charon/target/doc/manual"
+
+[output.html]
+site-url = "/charon/manual/"
+git-repository-url = "https://github.com/AeneasVerif/charon"
+edit-url-template = "https://github.com/AeneasVerif/charon/edit/main/docs/{path}"

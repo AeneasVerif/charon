@@ -39,7 +39,7 @@ The `charon-lib` crate can read this file and let you manipulate its contents. P
 `serde_json::from_reader::<charon_lib::export::CrateData>(file)`. OCaml bindings are also available
 in the `charon-ml` folder.
 
-For more detailed usage instructions, see the [documentation](./docs/usage.md).
+For more detailed usage instructions, see the [manual](https://aeneasverif.github.io/charon/manual/).
 
 ## Why Charon?
 
@@ -95,10 +95,11 @@ Alternatively, you can use Nix and do `nix develop` and all dependencies should 
 
 ## Documentation
 
-You can access the (work-in-progress) Rust documentation
-[online](https://aeneasverif.github.io/charon/charon_lib/index.html).
+You can access the [Charon manual](https://aeneasverif.github.io/charon/manual/) and the
+[`charon-lib` Rust API documentation](https://aeneasverif.github.io/charon/charon_lib)
+online.
 
-You can also run `make doc` to generate the documentation locally.
-It will generate a documentation accessible from
+You can also run `make doc` to generate the manual and API documentation locally. The manual is
+generated at `charon/target/doc/manual/index.html`. The API documentation is accessible from
 [`doc-rust.html`](./doc-rust.html) (for the Rust project) and
 [`doc-ml.html`](./doc-ml.html) (for the ML library).

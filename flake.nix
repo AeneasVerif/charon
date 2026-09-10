@@ -286,6 +286,7 @@
           OCAMLRUNPARAM = "b"; # Get backtrace on ocaml exception
 
           packages = [
+            pkgs.mdbook
             pkgs.ocamlPackages.ocaml
             ocamlformat
             pkgs.ocamlPackages.menhir
