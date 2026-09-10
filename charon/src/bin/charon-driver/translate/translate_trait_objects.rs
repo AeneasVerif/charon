@@ -9,6 +9,7 @@ use super::{
     translate_generics::BindingLevel,
 };
 use crate::hax;
+use crate::hax::SInto;
 use crate::hax::TraitPredicate;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::pretty::FmtWithCtx;
@@ -630,13 +631,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
         let ty = TyKind::Ref(Region::Static, vtbl_ty.clone(), RefKind::Shared).into_ty();
 
+        let fn_trait_impl = recognize_fn_trait_impl_proof(trait_proof);
         let kind = match &trait_proof.kind {
             // The marker trait vtable translation pipeline would give incorrect results for the
             // `Fn*` impl of a function pointer, which has no item to hang the impl off.
             // FIXME(dyn): translate vtables for the `Fn*` impls of function pointers
-            _ if let Some((self_ty, _)) = recognize_fn_trait_impl_proof(trait_proof)
+            _ if let Some((self_ty, _)) = &fn_trait_impl
                 && !matches!(
-                    self_ty.kind(),
+                    self_ty.hax_skip_binder_ref().kind(),
                     hax::TyKind::Closure(..) | hax::TyKind::FnDef { .. }
                 ) =>
             {
@@ -645,23 +647,26 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             hax::TraitProofKind::Concrete { .. } | hax::TraitProofKind::Builtin { .. } => {
                 // We could return `VTableRef` but we need to enqueue the translation of the static
                 // so may as well reuse that to normalize a bit.
-                let fn_trait_impl = recognize_fn_trait_impl_proof(trait_proof);
                 let vtable_instance =
                     self.translate_region_binder(span, &trait_proof.pred, |ctx, tref| {
+                        // We're inside the binder of `trait_proof.pred`, so we can skip the
+                        // binder of the `Self` type.
                         let (impl_item, impl_kind) = match (&trait_proof.kind, fn_trait_impl) {
                             (hax::TraitProofKind::Concrete(impl_item), _) => {
                                 (impl_item, TransImplSource::Normal)
                             }
-                            // The `Fn*` impls of closures and fn items are keyed on the item.
-                            (_, Some((self_ty, kind))) => match self_ty.kind() {
-                                hax::TyKind::Closure(args) => {
-                                    (&args.item, TransImplSource::Callable(kind))
+                            // This is a builtin `Fn*` impl for a callable.
+                            (_, Some((self_ty, kind))) => {
+                                match self_ty.hax_skip_binder_ref().kind() {
+                                    hax::TyKind::Closure(args) => {
+                                        (&args.item, TransImplSource::Callable(kind))
+                                    }
+                                    hax::TyKind::FnDef { item, .. } => {
+                                        (item, TransImplSource::Callable(kind))
+                                    }
+                                    _ => unreachable!("builtin `Fn*` impl for {self_ty:?}"),
                                 }
-                                hax::TyKind::FnDef { item, .. } => {
-                                    (item, TransImplSource::Callable(kind))
-                                }
-                                _ => unreachable!("builtin `Fn*` impl for {self_ty:?}"),
-                            },
+                            }
                             (_, None) => (tref, TransImplSource::Marker),
                         };
                         ctx.translate_vtable_instance_ref(span, tref, impl_item, impl_kind)
@@ -838,16 +843,19 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     implied_trait_proofs,
                     ..
                 },
-            ) => VTableInstanceData {
-                implemented_trait_ref: &trait_pred.trait_ref,
-                implied_trait_proofs,
-                methods: VTableMethodSource::ImplMethods(
-                    items
-                        .iter()
-                        .filter(|item| matches!(item.decl_def_id.kind, hax::DefKind::AssocFn))
-                        .collect(),
-                ),
-            },
+            ) => {
+                // The methods are indexed in the order provided by hax, which is the order of the
+                // trait declaration.
+                let methods: IndexVec<TraitMethodId, _> = items
+                    .iter()
+                    .filter(|item| matches!(item.decl_def_id.kind, hax::DefKind::AssocFn))
+                    .collect();
+                VTableInstanceData {
+                    implemented_trait_ref: &trait_pred.trait_ref,
+                    implied_trait_proofs,
+                    methods: VTableMethodSource::ImplMethods(methods),
+                }
+            }
             (
                 TransImplSource::Marker,
                 hax::FullDefKind::Trait {
@@ -1337,45 +1345,45 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
 
-        // For a callable the def is the closure or fn item, whose virtual `Fn*` impl has no
-        // `dyn_self` field; we ask rustc for the `dyn Fn*<..>` type of the implemented trait ref.
-        let callable_dyn_self;
-        let (dyn_self, trait_pred) = if let TransImplSource::Callable(target_kind) = impl_kind {
-            let trait_pred = &callable_virtual_impl(impl_def, target_kind).trait_pred;
-            callable_dyn_self =
-                hax::trait_ref_dyn_self(self.hax_state_with_id(), &trait_pred.trait_ref);
-            (&callable_dyn_self, trait_pred)
-        } else {
-            match impl_def.kind() {
+        let (dyn_self, trait_pred) = match (impl_kind, impl_def.kind()) {
+            // The def is the closure or fn item; the impl is one of its virtual `Fn*` impls, which
+            // has no `dyn_self` field, so we ask rustc for the `dyn Fn*<..>` type.
+            (TransImplSource::Callable(target_kind), _) => {
+                let trait_pred = &callable_virtual_impl(impl_def, target_kind).trait_pred;
+                let dyn_self =
+                    hax::trait_ref_dyn_self(self.hax_state_with_id(), &trait_pred.trait_ref)
+                        .sinto(self.hax_state_with_id());
+                (Some(dyn_self), trait_pred)
+            }
+            (
+                TransImplSource::Normal,
                 hax::FullDefKind::TraitImpl {
-                    dyn_self: Some(dyn_self),
+                    dyn_self,
                     trait_pred,
                     ..
-                } => {
-                    assert_eq!(impl_kind, TransImplSource::Normal);
-                    (dyn_self, trait_pred)
-                }
+                },
+            ) => (dyn_self.clone(), trait_pred),
+            (
+                TransImplSource::Marker,
                 hax::FullDefKind::Trait {
-                    dyn_self: Some(dyn_self),
+                    dyn_self,
                     self_predicate,
                     ..
-                } => {
-                    assert_eq!(impl_kind, TransImplSource::Marker);
-                    (dyn_self, self_predicate)
-                }
-                _ => {
-                    raise_error!(
-                        self,
-                        span,
-                        "Trying to generate a vtable drop shim for a non-dyn-compatible trait"
-                    );
-                }
-            }
+                },
+            ) => (dyn_self.clone(), self_predicate),
+            _ => unreachable!(),
+        };
+        let Some(dyn_self) = dyn_self else {
+            raise_error!(
+                self,
+                span,
+                "Trying to generate a vtable drop shim for a non-dyn-compatible trait"
+            );
         };
 
         let borrow_region = self.drop_glue_region();
 
-        let dyn_self = self.translate_ty(span, dyn_self)?;
+        let dyn_self = self.translate_ty(span, &dyn_self)?;
         // `&mut dyn Trait -> ()`
         let signature = self.drop_glue_method_sig(dyn_self.clone(), borrow_region);
 

@@ -61,7 +61,7 @@ pub fn translate_closure_kind(kind: &hax::ClosureKind) -> ClosureKind {
 /// implemented for and the kind of the implemented trait.
 pub fn recognize_fn_trait_impl_proof(
     trait_proof: &hax::TraitProof,
-) -> Option<(&hax::Ty, ClosureKind)> {
+) -> Option<(hax::Binder<&hax::Ty>, ClosureKind)> {
     let hax::TraitProofKind::Builtin {
         trait_data: hax::BuiltinTraitData::Other(lang_item),
         ..
@@ -80,7 +80,7 @@ pub fn recognize_fn_trait_impl_proof(
     else {
         unreachable!("no `Self` type arg on a `Fn*` trait ref")
     };
-    Some((self_ty, kind))
+    Some((trait_proof.pred.rebind(self_ty), kind))
 }
 
 /// The built-in `Fn*` impl of the given kind that we generate for this closure or function item.
