@@ -1335,11 +1335,14 @@ and repr_options = {
 
 (** An expression denoting a size in bytes. *)
 and size = {
+  chosen : size_expr option;
+      (** The size chosen by this rustc run. For sized types, this is a plain
+          integer. For unsized types, this is an expression describing how to
+          compute this size based on the values found in the pointer metadata.
+      *)
   guarantee : size_expr option;
       (** The guarantees about this size that can be relied on according to the
           Rust Reference. *)
-  chosen : int option;
-      (** The size chosen by this rustc run. [None] for unsized types. *)
 }
 
 (** An expression that represents a size in bytes. *)

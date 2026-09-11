@@ -2789,9 +2789,9 @@ and serialization_format_arg_of_postcard (ctx : of_postcard_ctx)
 and size_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (size, string) result =
   combine_error_msgs st __FUNCTION__
-    (let* guarantee = option_of_postcard size_expr_of_postcard ctx st in
-     let* chosen = option_of_postcard u64_of_postcard ctx st in
-     Ok ({ guarantee; chosen } : size))
+    (let* chosen = option_of_postcard size_expr_of_postcard ctx st in
+     let* guarantee = option_of_postcard size_expr_of_postcard ctx st in
+     Ok ({ chosen; guarantee } : size))
 
 and size_expr_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (size_expr, string) result =

@@ -77,10 +77,13 @@ pub enum Discriminator {
 /// An expression denoting a size in bytes.
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Size {
+    /// The size chosen by this rustc run. For sized types, this is a plain integer. For unsized
+    /// types, this is an expression describing how to compute this size based on the values found
+    /// in the pointer metadata.
+    // TODO: for now actually optional.
+    pub chosen: Option<SizeExpr>,
     /// The guarantees about this size that can be relied on according to the Rust Reference.
     pub guarantee: Option<SizeExpr>,
-    /// The size chosen by this rustc run. `None` for unsized types.
-    pub chosen: Option<ByteCount>,
 }
 
 /// An expression denoting an offset in bytes.
@@ -95,8 +98,10 @@ pub struct OffsetExpr {
 impl Size {
     pub fn new(chosen: impl Into<Option<ByteCount>>) -> Self {
         Self {
+            chosen: chosen
+                .into()
+                .map(|value| SizeExprKind::from_usize(u128::from(value)).into_expr()),
             guarantee: None,
-            chosen: chosen.into(),
         }
     }
 }

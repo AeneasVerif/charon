@@ -1,7 +1,7 @@
 test_crate::SimpleStruct:
   Layout {
-    size: 12,
-    align: 4,
+    size: 12usize,
+    align: 4usize,
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -27,8 +27,8 @@ test_crate::UnsizedStruct:
 
 test_crate::SimpleEnum:
   Layout {
-    size: 1,
-    align: 1,
+    size: 1usize,
+    align: 1usize,
     discriminator: read at offset 0 { 0u8 => Var1, 1u8 => Other, _ => invalid },
     uninhabited: false,
     variants: [
@@ -40,8 +40,8 @@ test_crate::SimpleEnum:
 
 test_crate::SimpleAdt:
   Layout {
-    size: 24,
-    align: 8,
+    size: 24usize,
+    align: 8usize,
     discriminator: read at offset 0 { 0u32 => EmptyVar, 1u32 => StructVar, 2u32 => TupleVar, _ => invalid },
     uninhabited: false,
     variants: [
@@ -54,8 +54,8 @@ test_crate::SimpleAdt:
 
 test_crate::NicheAdt:
   Layout {
-    size: 4,
-    align: 4,
+    size: 4usize,
+    align: 4usize,
     discriminator: read at offset 0 { 0u32 => None, _ => Some },
     uninhabited: false,
     variants: [
@@ -67,8 +67,8 @@ test_crate::NicheAdt:
 
 test_crate::NicheAdtSigned:
   Layout {
-    size: 4,
-    align: 4,
+    size: 4usize,
+    align: 4usize,
     discriminator: read at offset 0 { 0i32 => None, _ => Some },
     uninhabited: false,
     variants: [
@@ -80,8 +80,8 @@ test_crate::NicheAdtSigned:
 
 test_crate::NicheAdtChar:
   Layout {
-    size: 4,
-    align: 4,
+    size: 4usize,
+    align: 4usize,
     discriminator: read at offset 0 { 1114112u32..=4294967294u32 => invalid, 4294967295u32 => None, _ => Some },
     uninhabited: false,
     variants: [
@@ -93,8 +93,8 @@ test_crate::NicheAdtChar:
 
 test_crate::IsAZST:
   Layout {
-    size: 0,
-    align: 1,
+    size: 0usize,
+    align: 1usize,
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -105,8 +105,8 @@ test_crate::IsAZST:
 
 test_crate::GenericWithKnownLayout:
   Layout {
-    size: 16,
-    align: 8,
+    size: 16usize,
+    align: 8usize,
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -117,8 +117,8 @@ test_crate::GenericWithKnownLayout:
 
 test_crate::Reordered:
   Layout {
-    size: 8,
-    align: 4,
+    size: 8usize,
+    align: 4usize,
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -129,8 +129,8 @@ test_crate::Reordered:
 
 test_crate::NotReordered:
   Layout {
-    size: 12,
-    align: 4,
+    size: 12usize,
+    align: 4usize,
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -141,8 +141,8 @@ test_crate::NotReordered:
 
 test_crate::Packed:
   Layout {
-    size: 6,
-    align: 1,
+    size: 6usize,
+    align: 1usize,
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -153,8 +153,8 @@ test_crate::Packed:
 
 test_crate::UninhabitedVariant:
   Layout {
-    size: 4,
-    align: 4,
+    size: 4usize,
+    align: 4usize,
     discriminator: B,
     uninhabited: false,
     variants: [
@@ -166,8 +166,8 @@ test_crate::UninhabitedVariant:
 
 test_crate::UninhabitedVariant2:
   Layout {
-    size: 8,
-    align: 4,
+    size: 8usize,
+    align: 4usize,
     discriminator: read at offset 0 { 1u32 => B, _ => invalid },
     uninhabited: false,
     variants: [
@@ -179,8 +179,8 @@ test_crate::UninhabitedVariant2:
 
 test_crate::UninhabitedVariantWithFields:
   Layout {
-    size: 12,
-    align: 4,
+    size: 12usize,
+    align: 4usize,
     discriminator: read at offset 0 { 0u32 => Bar, _ => invalid },
     uninhabited: false,
     variants: [
@@ -192,8 +192,8 @@ test_crate::UninhabitedVariantWithFields:
 
 test_crate::Uninhabited:
   Layout {
-    size: 0,
-    align: 1,
+    size: 0usize,
+    align: 1usize,
     discriminator: SingleVariant,
     uninhabited: true,
     variants: [
@@ -204,8 +204,8 @@ test_crate::Uninhabited:
 
 test_crate::DiscriminantInNicheOfField:
   Layout {
-    size: 16,
-    align: 8,
+    size: 16usize,
+    align: 8usize,
     discriminator: read at offset 8 { 0isize => None, _ => Some },
     uninhabited: false,
     variants: [
@@ -217,8 +217,8 @@ test_crate::DiscriminantInNicheOfField:
 
 test_crate::MaybeUninitInt:
   Layout {
-    size: 4,
-    align: 4,
+    size: 4usize,
+    align: 4usize,
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -229,8 +229,8 @@ test_crate::MaybeUninitInt:
 
 test_crate::PackIntsUnion:
   Layout {
-    size: 8,
-    align: 8,
+    size: 8usize,
+    align: 8usize,
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -241,8 +241,8 @@ test_crate::PackIntsUnion:
 
 test_crate::NonZeroNiche:
   Layout {
-    size: 4,
-    align: 4,
+    size: 4usize,
+    align: 4usize,
     discriminator: read at offset 0 { 1114112u32 => B, 1114113u32 => C, 1114114u32..=4294967295u32 => invalid, _ => A },
     uninhabited: false,
     variants: [
@@ -255,8 +255,8 @@ test_crate::NonZeroNiche:
 
 test_crate::ArbitraryDiscriminants:
   Layout {
-    size: 32,
-    align: 8,
+    size: 32usize,
+    align: 8usize,
     discriminator: read at offset 0 { 12i32 => A, 43i32 => B, 123456i32 => C, _ => invalid },
     uninhabited: false,
     variants: [
@@ -269,8 +269,8 @@ test_crate::ArbitraryDiscriminants:
 
 test_crate::MyOrder:
   Layout {
-    size: 1,
-    align: 1,
+    size: 1usize,
+    align: 1usize,
     discriminator: read at offset 0 { -1i8 => Less, 0i8 => Equal, 1i8 => Greater, _ => invalid },
     uninhabited: false,
     variants: [
@@ -283,8 +283,8 @@ test_crate::MyOrder:
 
 test_crate::WithNicheAndUninhabited:
   Layout {
-    size: 4,
-    align: 4,
+    size: 4usize,
+    align: 4usize,
     discriminator: read at offset 0 { 0u32 => First, _ => Third },
     uninhabited: false,
     variants: [
@@ -300,8 +300,8 @@ test_crate::GenericUnsized:
 
 test_crate::GenericButFixedSize:
   Layout {
-    size: 8,
-    align: 8,
+    size: 8usize,
+    align: 8usize,
     discriminator: read at offset 0 { 0isize => First, _ => Second },
     uninhabited: false,
     variants: [
@@ -313,8 +313,8 @@ test_crate::GenericButFixedSize:
 
 test_crate::MaxBitsDiscr:
   Layout {
-    size: 16,
-    align: 16,
+    size: 16usize,
+    align: 16usize,
     discriminator: read at offset 0 { 42u128 => First, 18446744073709551615u128 => Second, _ => invalid },
     uninhabited: false,
     variants: [
@@ -326,8 +326,8 @@ test_crate::MaxBitsDiscr:
 
 test_crate::SingleVariantButNonZero:
   Layout {
-    size: 0,
-    align: 1,
+    size: 0usize,
+    align: 1usize,
     discriminator: @Variant1,
     uninhabited: false,
     variants: [
@@ -342,8 +342,8 @@ test_crate::NonAdtAlias:
 
 test_crate::Tuple:
   Layout {
-    size: 8,
-    align: 4,
+    size: 8usize,
+    align: 4usize,
     discriminator: @Variant0,
     uninhabited: false,
     variants: [
@@ -354,8 +354,8 @@ test_crate::Tuple:
 
 test_crate::Usize:
   Layout {
-    size: 8,
-    align: 8,
+    size: 8usize,
+    align: 8usize,
     discriminator: @Variant0,
     uninhabited: false,
     variants: [
@@ -376,8 +376,8 @@ test_crate::Str:
 
 test_crate::Ref:
   Layout {
-    size: 8,
-    align: 8,
+    size: 8usize,
+    align: 8usize,
     discriminator: @Variant0,
     uninhabited: false,
     variants: [
@@ -387,8 +387,8 @@ test_crate::Ref:
 
 test_crate::HasInvalidDiscr:
   Layout {
-    size: 1,
-    align: 1,
+    size: 1usize,
+    align: 1usize,
     discriminator: read at offset 0 { 2u8 => Var1, 3u8 => invalid, 4u8 => Var3, 5u8..=255u8 => invalid, _ => Var2 },
     uninhabited: false,
     variants: [
@@ -401,8 +401,8 @@ test_crate::HasInvalidDiscr:
 
 test_crate::NicheInSignedRepr:
   Layout {
-    size: 1,
-    align: 1,
+    size: 1usize,
+    align: 1usize,
     discriminator: read at offset 0 { -128i8..=-3i8 => invalid, -2i8 => B, 2i8..=127i8 => invalid, _ => A },
     uninhabited: false,
     variants: [
@@ -414,8 +414,8 @@ test_crate::NicheInSignedRepr:
 
 test_crate::BigWithChar:
   Layout {
-    size: 16,
-    align: 8,
+    size: 16usize,
+    align: 8usize,
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -426,8 +426,8 @@ test_crate::BigWithChar:
 
 test_crate::UninhabitedAtNicheEdge:
   Layout {
-    size: 16,
-    align: 8,
+    size: 16usize,
+    align: 8usize,
     discriminator: read at offset 8 { 1114112u32 => invalid, 1114113u32 => B, 1114114u32..=4294967295u32 => invalid, _ => C },
     uninhabited: false,
     variants: [
@@ -440,8 +440,8 @@ test_crate::UninhabitedAtNicheEdge:
 
 test_crate::UninhabitedUntagged:
   Layout {
-    size: 4,
-    align: 4,
+    size: 4usize,
+    align: 4usize,
     discriminator: read at offset 0 { 1114112u32..=4294967294u32 => invalid, 4294967295u32 => B, _ => invalid },
     uninhabited: false,
     variants: [
