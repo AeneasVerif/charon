@@ -135,37 +135,31 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Foo))
 fn impl_Foo_for_Bar::{vtable}() -> test_crate::Foo::{vtable}
 {
     let ret: test_crate::Foo::{vtable}; // return
-    let size: usize; // local
-    let align: usize; // local
     let drop: unsafe fn(*mut (dyn Foo + '0)); // local
     let erased_drop: *const (); // local
     let foo: fn<'_0_1>(&'_0_1 (dyn Foo + '1)); // local
     let erased_foo: *const (); // local
-    let _7: unsafe fn(*mut (dyn Foo + '4)); // anonymous local
-    let _8: fn<'_0_1>(&'_0_1 (dyn Foo + '9)); // anonymous local
-    let _9: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _5: unsafe fn(*mut (dyn Foo + '4)); // anonymous local
+    let _6: fn<'_0_1>(&'_0_1 (dyn Foo + '9)); // anonymous local
+    let _7: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     bb0: {
         storage_live(ret);
-        storage_live(size);
-        size = size_of<Bar>;
-        storage_live(align);
-        align = align_of<Bar>;
         storage_live(drop);
         storage_live(erased_drop);
-        storage_live(_7);
-        _7 = cast<{vtable_drop_shim}<'3>, unsafe fn(*mut (dyn Foo + '4))>(const {vtable_drop_shim}<'3>);
-        drop = move _7;
+        storage_live(_5);
+        _5 = cast<{vtable_drop_shim}<'3>, unsafe fn(*mut (dyn Foo + '4))>(const {vtable_drop_shim}<'3>);
+        drop = move _5;
         erased_drop = cast<unsafe fn(*mut (dyn Foo + '5)), *const ()>(move drop);
         storage_live(foo);
         storage_live(erased_foo);
-        storage_live(_8);
-        _8 = cast<for<'_0_1> {vtable_method}<'8>, fn<'_0_1>(&'_0_1 (dyn Foo + '9))>(const {vtable_method}<'8>);
-        foo = move _8;
+        storage_live(_6);
+        _6 = cast<for<'_0_1> {vtable_method}<'8>, fn<'_0_1>(&'_0_1 (dyn Foo + '9))>(const {vtable_method}<'8>);
+        foo = move _6;
         erased_foo = cast<fn<'_0_1>(&'_0_1 (dyn Foo + '10)), *const ()>(move foo);
-        storage_live(_9);
-        _9 = &core::marker::MetaSized::{vtable}::<Bar>;
-        ret = test_crate::Foo::{vtable} { size: move size, align: move align, drop: move erased_drop, method_foo: move erased_foo, super_trait_0: move _9 };
+        storage_live(_7);
+        _7 = &core::marker::MetaSized::{vtable}::<Bar>;
+        ret = test_crate::Foo::{vtable} { size: const size_of::<Bar>(), align: const align_of::<Bar>(), drop: move erased_drop, method_foo: move erased_foo, super_trait_0: move _7 };
         return;
     }
 }

@@ -1367,7 +1367,7 @@ where
     storage_live(_0)
     storage_live(_3)
     storage_live(_15)
-    _15 = ub_checks<bool>
+    _15 = ub_checks
     _3 = move _15
     if move _3 {
         storage_live(_4)
@@ -1524,7 +1524,7 @@ where
     storage_live(_0)
     storage_live(_3)
     storage_live(_15)
-    _15 = ub_checks<bool>
+    _15 = ub_checks
     _3 = move _15
     if move _3 {
         storage_live(_4)

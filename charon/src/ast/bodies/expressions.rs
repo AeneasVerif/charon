@@ -41,12 +41,12 @@ pub enum Rvalue {
         kind: RefKind,
         ptr_metadata: Operand,
     },
-    /// Binary operations (note that we merge "checked" and "unchecked" binops)
+    /// Binary operations.
     BinaryOp(BinOp, Operand, Operand),
     /// Unary operation (e.g. not, neg)
     UnaryOp(UnOp, Operand),
-    /// Nullary operation (e.g. `size_of`)
-    NullaryOp(NullOp, Ty),
+    /// An operation with no inputs.
+    NullaryOp(NullOp),
     /// Discriminant read. Reads the discriminant value of an enum. The place must have the type of
     /// an enum. The discriminant in question is the one in the `discriminant` field of the
     /// corresponding `Variant`. This can be different than the value stored in memory (called
@@ -273,9 +273,6 @@ pub enum CastKind {
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("Nullop"))]
 pub enum NullOp {
-    SizeOf,
-    AlignOf,
-    OffsetOf(TypeDeclRef, Option<VariantId>, FieldId),
     UbChecks,
     OverflowChecks,
     ContractChecks,

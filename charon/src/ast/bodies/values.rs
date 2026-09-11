@@ -119,6 +119,8 @@ pub enum ConstantExprKind {
     SizeOf(Ty),
     /// The alignment of the given type.
     AlignOf(Ty),
+    /// The offset of the given field.
+    OffsetOf(TypeDeclRef, Option<VariantId>, FieldId),
 
     /// A constant expression that Charon doesn't handle, along with the reason why.
     Opaque(String),

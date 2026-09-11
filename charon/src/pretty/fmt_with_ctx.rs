@@ -1214,20 +1214,8 @@ impl Name {
 }
 
 impl<C: AstFormatter> FmtWithCtx<C> for NullOp {
-    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let op = match self {
-            NullOp::SizeOf => "size_of",
-            NullOp::AlignOf => "align_of",
-            &NullOp::OffsetOf(ref ty, variant, field) => {
-                write!(f, "offset_of({}.", ty.with_ctx(ctx))?;
-                if let Some(variant) = variant {
-                    ctx.format_enum_variant_name(f, ty.id, variant)?;
-                    write!(f, ".")?;
-                }
-                ctx.format_field_name(f, ty.id, variant, field)?;
-                write!(f, ")")?;
-                return Ok(());
-            }
             NullOp::UbChecks => "ub_checks",
             NullOp::OverflowChecks => "overflow_checks",
             NullOp::ContractChecks => "contract_checks",
@@ -1677,6 +1665,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
             ConstantExprKind::AlignOf(ty) => {
                 write!(f, "align_of::<{}>()", ty.with_ctx(ctx))
             }
+            &ConstantExprKind::OffsetOf(ref ty, variant, field) => {
+                write!(f, "offset_of({}.", ty.with_ctx(ctx))?;
+                if let Some(variant) = variant {
+                    ctx.format_enum_variant_name(f, ty.id, variant)?;
+                    write!(f, ".")?;
+                }
+                ctx.format_field_name(f, ty.id, variant, field)?;
+                write!(f, ")")
+            }
             ConstantExprKind::PtrNoProvenance(v) => write!(f, "no-provenance {v}"),
             ConstantExprKind::RawMemory(bytes) => {
                 let bytes = bytes.iter().map(|v| v.with_ctx(ctx)).format(", ");
@@ -1840,9 +1837,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
             Rvalue::UnaryOp(unop, x) => {
                 write!(f, "{}({})", unop.with_ctx(ctx), x.with_ctx(ctx))
             }
-            Rvalue::NullaryOp(op, ty) => {
-                write!(f, "{}<{}>", op.with_ctx(ctx), ty.with_ctx(ctx))
-            }
+            Rvalue::NullaryOp(op) => op.fmt_with_ctx(ctx, f),
             Rvalue::Discriminant(p) => {
                 write!(f, "@discriminant({})", p.with_ctx(ctx),)
             }

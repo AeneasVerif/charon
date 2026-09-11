@@ -158,13 +158,7 @@ and cast_kind =
 and local_id = (LocalId.id[@visitors.opaque])
 
 (** Nullary operation *)
-and nullop =
-  | SizeOf
-  | AlignOf
-  | OffsetOf of type_decl_ref * variant_id option * field_id
-  | UbChecks
-  | OverflowChecks
-  | ContractChecks
+and nullop = UbChecks | OverflowChecks | ContractChecks
 
 and operand =
   | Copy of place
@@ -249,11 +243,9 @@ and rvalue =
           - [place]
           - [kind]
           - [ptr_metadata] *)
-  | BinaryOp of binop * operand * operand
-      (** Binary operations (note that we merge "checked" and "unchecked"
-          binops) *)
+  | BinaryOp of binop * operand * operand  (** Binary operations. *)
   | UnaryOp of unop * operand  (** Unary operation (e.g. not, neg) *)
-  | NullaryOp of nullop * ty  (** Nullary operation (e.g. [size_of]) *)
+  | NullaryOp of nullop  (** An operation with no inputs. *)
   | Discriminant of place
       (** Discriminant read. Reads the discriminant value of an enum. The place
           must have the type of an enum. The discriminant in question is the one

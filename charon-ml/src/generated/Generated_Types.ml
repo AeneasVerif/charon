@@ -335,6 +335,8 @@ and constant_expr_kind =
       (** The integer discriminant value corresponding to this enum variant. *)
   | CSizeOf of ty  (** The size of the given type. *)
   | CAlignOf of ty  (** The alignment of the given type. *)
+  | COffsetOf of type_decl_ref * variant_id option * field_id
+      (** The offset of the given field. *)
   | COpaque of string
       (** A constant expression that Charon doesn't handle, along with the
           reason why. *)

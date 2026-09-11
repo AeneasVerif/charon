@@ -81,27 +81,21 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Sub))
 fn impl_Sub_for_D::{vtable}() -> test_crate::Sub::{vtable}
 {
     let ret: test_crate::Sub::{vtable}; // return
-    let size: usize; // local
-    let align: usize; // local
     let drop: unsafe fn(*mut (dyn Sub + '0)); // local
     let erased_drop: *const (); // local
-    let _5: unsafe fn(*mut (dyn Sub + '3)); // anonymous local
-    let _6: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _3: unsafe fn(*mut (dyn Sub + '3)); // anonymous local
+    let _4: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
-    storage_live(size)
-    size = size_of<D>
-    storage_live(align)
-    align = align_of<D>
     storage_live(drop)
     storage_live(erased_drop)
-    storage_live(_5)
-    _5 = cast<{vtable_drop_shim}<'2>, unsafe fn(*mut (dyn Sub + '3))>(const {vtable_drop_shim}<'2>)
-    drop = move _5
+    storage_live(_3)
+    _3 = cast<{vtable_drop_shim}<'2>, unsafe fn(*mut (dyn Sub + '3))>(const {vtable_drop_shim}<'2>)
+    drop = move _3
     erased_drop = cast<unsafe fn(*mut (dyn Sub + '4)), *const ()>(move drop)
-    storage_live(_6)
-    _6 = &core::marker::MetaSized::{vtable}::<D>
-    ret = test_crate::Sub::{vtable} { size: move size, align: move align, drop: move erased_drop, super_trait_0: move _6 }
+    storage_live(_4)
+    _4 = &core::marker::MetaSized::{vtable}::<D>
+    ret = test_crate::Sub::{vtable} { size: const size_of::<D>(), align: const align_of::<D>(), drop: move erased_drop, super_trait_0: move _4 }
     return
 }
 

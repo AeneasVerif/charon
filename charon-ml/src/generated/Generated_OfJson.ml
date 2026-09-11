@@ -553,6 +553,11 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("AlignOf", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CAlignOf _0)
+    | `Assoc [ ("OffsetOf", `List [ _0; _1; _2 ]) ] ->
+        let* _0 = type_decl_ref_of_json ctx _0 in
+        let* _1 = option_of_json variant_id_of_json ctx _1 in
+        let* _2 = field_id_of_json ctx _2 in
+        Ok (COffsetOf (_0, _1, _2))
     | `Assoc [ ("Opaque", _0) ] ->
         let* _0 = string_of_json ctx _0 in
         Ok (COpaque _0)
@@ -924,13 +929,6 @@ and name_of_json (ctx : of_json_ctx) (js : json) : (name, string) result =
 and nullop_of_json (ctx : of_json_ctx) (js : json) : (nullop, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `String "SizeOf" -> Ok SizeOf
-    | `String "AlignOf" -> Ok AlignOf
-    | `Assoc [ ("OffsetOf", `List [ _0; _1; _2 ]) ] ->
-        let* _0 = type_decl_ref_of_json ctx _0 in
-        let* _1 = option_of_json variant_id_of_json ctx _1 in
-        let* _2 = field_id_of_json ctx _2 in
-        Ok (OffsetOf (_0, _1, _2))
     | `String "UbChecks" -> Ok UbChecks
     | `String "OverflowChecks" -> Ok OverflowChecks
     | `String "ContractChecks" -> Ok ContractChecks
@@ -1180,10 +1178,9 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         let* _0 = unop_of_json ctx _0 in
         let* _1 = operand_of_json ctx _1 in
         Ok (UnaryOp (_0, _1))
-    | `Assoc [ ("NullaryOp", `List [ _0; _1 ]) ] ->
+    | `Assoc [ ("NullaryOp", _0) ] ->
         let* _0 = nullop_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        Ok (NullaryOp (_0, _1))
+        Ok (NullaryOp _0)
     | `Assoc [ ("Discriminant", _0) ] ->
         let* _0 = place_of_json ctx _0 in
         Ok (Discriminant _0)

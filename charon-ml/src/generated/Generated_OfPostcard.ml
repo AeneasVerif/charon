@@ -530,6 +530,11 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* _0 = ty_of_postcard ctx st in
          Ok (CAlignOf _0)
      | 23 ->
+         let* _0 = type_decl_ref_of_postcard ctx st in
+         let* _1 = option_of_postcard variant_id_of_postcard ctx st in
+         let* _2 = field_id_of_postcard ctx st in
+         Ok (COffsetOf (_0, _1, _2))
+     | 24 ->
          let* _0 = string_of_postcard ctx st in
          Ok (COpaque _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
@@ -851,16 +856,9 @@ and nullop_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* __tag = int_of_postcard ctx st in
      match __tag with
-     | 0 -> Ok SizeOf
-     | 1 -> Ok AlignOf
-     | 2 ->
-         let* _0 = type_decl_ref_of_postcard ctx st in
-         let* _1 = option_of_postcard variant_id_of_postcard ctx st in
-         let* _2 = field_id_of_postcard ctx st in
-         Ok (OffsetOf (_0, _1, _2))
-     | 3 -> Ok UbChecks
-     | 4 -> Ok OverflowChecks
-     | 5 -> Ok ContractChecks
+     | 0 -> Ok UbChecks
+     | 1 -> Ok OverflowChecks
+     | 2 -> Ok ContractChecks
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and operand_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1086,8 +1084,7 @@ and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (UnaryOp (_0, _1))
      | 5 ->
          let* _0 = nullop_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         Ok (NullaryOp (_0, _1))
+         Ok (NullaryOp _0)
      | 6 ->
          let* _0 = place_of_postcard ctx st in
          Ok (Discriminant _0)

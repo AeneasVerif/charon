@@ -164,45 +164,39 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Trait))
 fn impl_Trait_for_Struct::{vtable}() -> test_crate::Trait::{vtable}
 {
     let ret: test_crate::Trait::{vtable}; // return
-    let size: usize; // local
-    let align: usize; // local
     let drop: unsafe fn(*mut (dyn Trait + '0)); // local
     let erased_drop: *const (); // local
     let base: fn<'_0_1>(&'_0_1 (dyn Trait + '1)) -> i32; // local
     let erased_base: *const (); // local
     let dflt: fn<'_0_1>(&'_0_1 (dyn Trait + '2)) -> i32; // local
     let erased_dflt: *const (); // local
-    let _9: unsafe fn(*mut (dyn Trait + '5)); // anonymous local
-    let _10: fn<'_0_1>(&'_0_1 (dyn Trait + '10)) -> i32; // anonymous local
-    let _11: fn<'_0_1>(&'_0_1 (dyn Trait + '15)) -> i32; // anonymous local
-    let _12: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _7: unsafe fn(*mut (dyn Trait + '5)); // anonymous local
+    let _8: fn<'_0_1>(&'_0_1 (dyn Trait + '10)) -> i32; // anonymous local
+    let _9: fn<'_0_1>(&'_0_1 (dyn Trait + '15)) -> i32; // anonymous local
+    let _10: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
-    storage_live(size)
-    size = size_of<Struct>
-    storage_live(align)
-    align = align_of<Struct>
     storage_live(drop)
     storage_live(erased_drop)
-    storage_live(_9)
-    _9 = cast<{vtable_drop_shim}<'4>, unsafe fn(*mut (dyn Trait + '5))>(const {vtable_drop_shim}<'4>)
-    drop = move _9
+    storage_live(_7)
+    _7 = cast<{vtable_drop_shim}<'4>, unsafe fn(*mut (dyn Trait + '5))>(const {vtable_drop_shim}<'4>)
+    drop = move _7
     erased_drop = cast<unsafe fn(*mut (dyn Trait + '6)), *const ()>(move drop)
     storage_live(base)
     storage_live(erased_base)
-    storage_live(_10)
-    _10 = cast<for<'_0_1> impl_Trait_for_Struct::base::{vtable_method}<'9>, fn<'_0_1>(&'_0_1 (dyn Trait + '10)) -> i32>(const impl_Trait_for_Struct::base::{vtable_method}<'9>)
-    base = move _10
+    storage_live(_8)
+    _8 = cast<for<'_0_1> impl_Trait_for_Struct::base::{vtable_method}<'9>, fn<'_0_1>(&'_0_1 (dyn Trait + '10)) -> i32>(const impl_Trait_for_Struct::base::{vtable_method}<'9>)
+    base = move _8
     erased_base = cast<fn<'_0_1>(&'_0_1 (dyn Trait + '11)) -> i32, *const ()>(move base)
     storage_live(dflt)
     storage_live(erased_dflt)
-    storage_live(_11)
-    _11 = cast<for<'_0_1> test_crate::Trait::dflt::{vtable_method}::<Struct><'14>, fn<'_0_1>(&'_0_1 (dyn Trait + '15)) -> i32>(const test_crate::Trait::dflt::{vtable_method}::<Struct><'14>)
-    dflt = move _11
+    storage_live(_9)
+    _9 = cast<for<'_0_1> test_crate::Trait::dflt::{vtable_method}::<Struct><'14>, fn<'_0_1>(&'_0_1 (dyn Trait + '15)) -> i32>(const test_crate::Trait::dflt::{vtable_method}::<Struct><'14>)
+    dflt = move _9
     erased_dflt = cast<fn<'_0_1>(&'_0_1 (dyn Trait + '16)) -> i32, *const ()>(move dflt)
-    storage_live(_12)
-    _12 = &core::marker::MetaSized::{vtable}::<Struct>
-    ret = test_crate::Trait::{vtable} { size: move size, align: move align, drop: move erased_drop, method_base: move erased_base, method_dflt: move erased_dflt, super_trait_0: move _12 }
+    storage_live(_10)
+    _10 = &core::marker::MetaSized::{vtable}::<Struct>
+    ret = test_crate::Trait::{vtable} { size: const size_of::<Struct>(), align: const align_of::<Struct>(), drop: move erased_drop, method_base: move erased_base, method_dflt: move erased_dflt, super_trait_0: move _10 }
     return
 }
 

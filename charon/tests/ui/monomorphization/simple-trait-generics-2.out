@@ -95,36 +95,30 @@ unsafe fn impl_Trait_bool_for_i32::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (d
 fn impl_Trait_bool_for_i32::{vtable}() -> test_crate::Trait::{vtable}
 {
     let ret: test_crate::Trait::{vtable}; // return
-    let size: usize; // local
-    let align: usize; // local
     let drop: unsafe fn(*mut (dyn Trait<bool> + '0)); // local
     let erased_drop: *const (); // local
     let comsume: fn<'_0_1>(&'_0_1 (dyn Trait<bool> + '1)) -> bool; // local
     let erased_comsume: *const (); // local
-    let _7: unsafe fn(*mut (dyn Trait<bool> + '4)); // anonymous local
-    let _8: fn<'_0_1>(&'_0_1 (dyn Trait<bool> + '9)) -> bool; // anonymous local
-    let _9: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _5: unsafe fn(*mut (dyn Trait<bool> + '4)); // anonymous local
+    let _6: fn<'_0_1>(&'_0_1 (dyn Trait<bool> + '9)) -> bool; // anonymous local
+    let _7: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
-    storage_live(size)
-    size = size_of<i32>
-    storage_live(align)
-    align = align_of<i32>
     storage_live(drop)
     storage_live(erased_drop)
-    storage_live(_7)
-    _7 = cast<impl_Trait_bool_for_i32::{vtable_drop_shim}<'3>, unsafe fn(*mut (dyn Trait<bool> + '4))>(const impl_Trait_bool_for_i32::{vtable_drop_shim}<'3>)
-    drop = move _7
+    storage_live(_5)
+    _5 = cast<impl_Trait_bool_for_i32::{vtable_drop_shim}<'3>, unsafe fn(*mut (dyn Trait<bool> + '4))>(const impl_Trait_bool_for_i32::{vtable_drop_shim}<'3>)
+    drop = move _5
     erased_drop = cast<unsafe fn(*mut (dyn Trait<bool> + '5)), *const ()>(move drop)
     storage_live(comsume)
     storage_live(erased_comsume)
-    storage_live(_8)
-    _8 = cast<for<'_0_1> impl_Trait_bool_for_i32::comsume::{vtable_method}<'8>, fn<'_0_1>(&'_0_1 (dyn Trait<bool> + '9)) -> bool>(const impl_Trait_bool_for_i32::comsume::{vtable_method}<'8>)
-    comsume = move _8
+    storage_live(_6)
+    _6 = cast<for<'_0_1> impl_Trait_bool_for_i32::comsume::{vtable_method}<'8>, fn<'_0_1>(&'_0_1 (dyn Trait<bool> + '9)) -> bool>(const impl_Trait_bool_for_i32::comsume::{vtable_method}<'8>)
+    comsume = move _6
     erased_comsume = cast<fn<'_0_1>(&'_0_1 (dyn Trait<bool> + '10)) -> bool, *const ()>(move comsume)
-    storage_live(_9)
-    _9 = &core::marker::MetaSized::{vtable}::<i32>
-    ret = test_crate::Trait::{vtable} { size: move size, align: move align, drop: move erased_drop, method_comsume: move erased_comsume, super_trait_0: move _9 }
+    storage_live(_7)
+    _7 = &core::marker::MetaSized::{vtable}::<i32>
+    ret = test_crate::Trait::{vtable} { size: const size_of::<i32>(), align: const align_of::<i32>(), drop: move erased_drop, method_comsume: move erased_comsume, super_trait_0: move _7 }
     return
 }
 
@@ -189,36 +183,30 @@ unsafe fn impl_Trait_usize_for_u32::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (
 fn impl_Trait_usize_for_u32::{vtable}() -> test_crate::Trait::{vtable}
 {
     let ret: test_crate::Trait::{vtable}; // return
-    let size: usize; // local
-    let align: usize; // local
     let drop: unsafe fn(*mut (dyn Trait<usize> + '0)); // local
     let erased_drop: *const (); // local
     let comsume: fn<'_0_1>(&'_0_1 (dyn Trait<usize> + '1)) -> usize; // local
     let erased_comsume: *const (); // local
-    let _7: unsafe fn(*mut (dyn Trait<usize> + '4)); // anonymous local
-    let _8: fn<'_0_1>(&'_0_1 (dyn Trait<usize> + '9)) -> usize; // anonymous local
-    let _9: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _5: unsafe fn(*mut (dyn Trait<usize> + '4)); // anonymous local
+    let _6: fn<'_0_1>(&'_0_1 (dyn Trait<usize> + '9)) -> usize; // anonymous local
+    let _7: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
-    storage_live(size)
-    size = size_of<u32>
-    storage_live(align)
-    align = align_of<u32>
     storage_live(drop)
     storage_live(erased_drop)
-    storage_live(_7)
-    _7 = cast<impl_Trait_usize_for_u32::{vtable_drop_shim}<'3>, unsafe fn(*mut (dyn Trait<usize> + '4))>(const impl_Trait_usize_for_u32::{vtable_drop_shim}<'3>)
-    drop = move _7
+    storage_live(_5)
+    _5 = cast<impl_Trait_usize_for_u32::{vtable_drop_shim}<'3>, unsafe fn(*mut (dyn Trait<usize> + '4))>(const impl_Trait_usize_for_u32::{vtable_drop_shim}<'3>)
+    drop = move _5
     erased_drop = cast<unsafe fn(*mut (dyn Trait<usize> + '5)), *const ()>(move drop)
     storage_live(comsume)
     storage_live(erased_comsume)
-    storage_live(_8)
-    _8 = cast<for<'_0_1> impl_Trait_usize_for_u32::comsume::{vtable_method}<'8>, fn<'_0_1>(&'_0_1 (dyn Trait<usize> + '9)) -> usize>(const impl_Trait_usize_for_u32::comsume::{vtable_method}<'8>)
-    comsume = move _8
+    storage_live(_6)
+    _6 = cast<for<'_0_1> impl_Trait_usize_for_u32::comsume::{vtable_method}<'8>, fn<'_0_1>(&'_0_1 (dyn Trait<usize> + '9)) -> usize>(const impl_Trait_usize_for_u32::comsume::{vtable_method}<'8>)
+    comsume = move _6
     erased_comsume = cast<fn<'_0_1>(&'_0_1 (dyn Trait<usize> + '10)) -> usize, *const ()>(move comsume)
-    storage_live(_9)
-    _9 = &core::marker::MetaSized::{vtable}::<u32>
-    ret = test_crate::Trait::{vtable} { size: move size, align: move align, drop: move erased_drop, method_comsume: move erased_comsume, super_trait_0: move _9 }
+    storage_live(_7)
+    _7 = &core::marker::MetaSized::{vtable}::<u32>
+    ret = test_crate::Trait::{vtable} { size: const size_of::<u32>(), align: const align_of::<u32>(), drop: move erased_drop, method_comsume: move erased_comsume, super_trait_0: move _7 }
     return
 }
 

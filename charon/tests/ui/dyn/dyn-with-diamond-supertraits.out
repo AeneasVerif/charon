@@ -202,24 +202,18 @@ unsafe fn impl_Super_i32_for_i32::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dy
 fn impl_Super_i32_for_i32::{vtable}() -> test_crate::Super::{vtable}<i32>
 {
     let ret: test_crate::Super::{vtable}<i32>; // return
-    let size: usize; // local
-    let align: usize; // local
-    let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn Super<i32> + '1)); // anonymous local
-    let _4: fn<'_0_1>(&'_0_1 (dyn Super<i32> + '3), i32) -> i32; // anonymous local
-    let _5: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn Super<i32> + '1)); // anonymous local
+    let _2: fn<'_0_1>(&'_0_1 (dyn Super<i32> + '3), i32) -> i32; // anonymous local
+    let _3: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
-    storage_live(size)
-    size = size_of<i32>
-    storage_live(align)
-    align = align_of<i32>
+    storage_live(_1)
+    _1 = cast<for<'_0_1> impl_Super_i32_for_i32::{vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Super<i32> + '1))>(const impl_Super_i32_for_i32::{vtable_drop_shim}<'0>)
+    storage_live(_2)
+    _2 = cast<for<'_0_1> impl_Super_i32_for_i32::super_method::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Super<i32> + '3), i32) -> i32>(const impl_Super_i32_for_i32::super_method::{vtable_method}<'2>)
     storage_live(_3)
-    _3 = cast<for<'_0_1> impl_Super_i32_for_i32::{vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Super<i32> + '1))>(const impl_Super_i32_for_i32::{vtable_drop_shim}<'0>)
-    storage_live(_4)
-    _4 = cast<for<'_0_1> impl_Super_i32_for_i32::super_method::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Super<i32> + '3), i32) -> i32>(const impl_Super_i32_for_i32::super_method::{vtable_method}<'2>)
-    storage_live(_5)
-    _5 = &core::marker::MetaSized::{vtable}<i32>
-    ret = test_crate::Super::{vtable} { size: move size, align: move align, drop: move _3, method_super_method: move _4, super_trait_0: move _5 }
+    _3 = &core::marker::MetaSized::{vtable}<i32>
+    ret = test_crate::Super::{vtable} { size: const size_of::<i32>(), align: const align_of::<i32>(), drop: move _1, method_super_method: move _2, super_trait_0: move _3 }
     return
 }
 
@@ -293,24 +287,18 @@ unsafe fn impl_Internal_for_i32::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn
 fn impl_Internal_for_i32::{vtable}() -> test_crate::Internal::{vtable}<i32>
 {
     let ret: test_crate::Internal::{vtable}<i32>; // return
-    let size: usize; // local
-    let align: usize; // local
-    let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn Internal<Internal = i32> + '1)); // anonymous local
-    let _4: fn<'_0_1>(&'_0_1 (dyn Internal<Internal = i32> + '3)) -> i32; // anonymous local
-    let _5: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn Internal<Internal = i32> + '1)); // anonymous local
+    let _2: fn<'_0_1>(&'_0_1 (dyn Internal<Internal = i32> + '3)) -> i32; // anonymous local
+    let _3: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
-    storage_live(size)
-    size = size_of<i32>
-    storage_live(align)
-    align = align_of<i32>
+    storage_live(_1)
+    _1 = cast<for<'_0_1> impl_Internal_for_i32::{vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Internal<Internal = i32> + '1))>(const impl_Internal_for_i32::{vtable_drop_shim}<'0>)
+    storage_live(_2)
+    _2 = cast<for<'_0_1> impl_Internal_for_i32::internal_method::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Internal<Internal = i32> + '3)) -> i32>(const impl_Internal_for_i32::internal_method::{vtable_method}<'2>)
     storage_live(_3)
-    _3 = cast<for<'_0_1> impl_Internal_for_i32::{vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Internal<Internal = i32> + '1))>(const impl_Internal_for_i32::{vtable_drop_shim}<'0>)
-    storage_live(_4)
-    _4 = cast<for<'_0_1> impl_Internal_for_i32::internal_method::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Internal<Internal = i32> + '3)) -> i32>(const impl_Internal_for_i32::internal_method::{vtable_method}<'2>)
-    storage_live(_5)
-    _5 = &core::marker::MetaSized::{vtable}<i32>
-    ret = test_crate::Internal::{vtable} { size: move size, align: move align, drop: move _3, method_internal_method: move _4, super_trait_0: move _5 }
+    _3 = &core::marker::MetaSized::{vtable}<i32>
+    ret = test_crate::Internal::{vtable} { size: const size_of::<i32>(), align: const align_of::<i32>(), drop: move _1, method_internal_method: move _2, super_trait_0: move _3 }
     return
 }
 
@@ -385,27 +373,21 @@ unsafe fn impl_Left_for_i32::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Lef
 fn impl_Left_for_i32::{vtable}() -> test_crate::Left::{vtable}<i32, i32>
 {
     let ret: test_crate::Left::{vtable}<i32, i32>; // return
-    let size: usize; // local
-    let align: usize; // local
-    let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn Left<Left = i32, ImpliedClause1::Internal = i32> + '1)); // anonymous local
-    let _4: fn<'_0_1>(&'_0_1 (dyn Left<Left = i32, ImpliedClause1::Internal = i32> + '3)) -> i32; // anonymous local
-    let _5: &'static core::marker::MetaSized::{vtable}; // anonymous local
-    let _6: &'static test_crate::Internal::{vtable}<i32>; // anonymous local
+    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn Left<Left = i32, ImpliedClause1::Internal = i32> + '1)); // anonymous local
+    let _2: fn<'_0_1>(&'_0_1 (dyn Left<Left = i32, ImpliedClause1::Internal = i32> + '3)) -> i32; // anonymous local
+    let _3: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _4: &'static test_crate::Internal::{vtable}<i32>; // anonymous local
 
     storage_live(ret)
-    storage_live(size)
-    size = size_of<i32>
-    storage_live(align)
-    align = align_of<i32>
+    storage_live(_1)
+    _1 = cast<for<'_0_1> impl_Left_for_i32::{vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Left<Left = i32, ImpliedClause1::Internal = i32> + '1))>(const impl_Left_for_i32::{vtable_drop_shim}<'0>)
+    storage_live(_2)
+    _2 = cast<for<'_0_1> impl_Left_for_i32::left_method::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Left<Left = i32, ImpliedClause1::Internal = i32> + '3)) -> i32>(const impl_Left_for_i32::left_method::{vtable_method}<'2>)
     storage_live(_3)
-    _3 = cast<for<'_0_1> impl_Left_for_i32::{vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Left<Left = i32, ImpliedClause1::Internal = i32> + '1))>(const impl_Left_for_i32::{vtable_drop_shim}<'0>)
+    _3 = &core::marker::MetaSized::{vtable}<i32>
     storage_live(_4)
-    _4 = cast<for<'_0_1> impl_Left_for_i32::left_method::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Left<Left = i32, ImpliedClause1::Internal = i32> + '3)) -> i32>(const impl_Left_for_i32::left_method::{vtable_method}<'2>)
-    storage_live(_5)
-    _5 = &core::marker::MetaSized::{vtable}<i32>
-    storage_live(_6)
-    _6 = &impl_Internal_for_i32::{vtable}
-    ret = test_crate::Left::{vtable} { size: move size, align: move align, drop: move _3, method_left_method: move _4, super_trait_0: move _5, super_trait_1: move _6 }
+    _4 = &impl_Internal_for_i32::{vtable}
+    ret = test_crate::Left::{vtable} { size: const size_of::<i32>(), align: const align_of::<i32>(), drop: move _1, method_left_method: move _2, super_trait_0: move _3, super_trait_1: move _4 }
     return
 }
 
@@ -523,30 +505,24 @@ unsafe fn impl_Right_i32_for_i32::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dy
 fn impl_Right_i32_for_i32::{vtable}() -> test_crate::Right::{vtable}<i32, i32, i32>
 {
     let ret: test_crate::Right::{vtable}<i32, i32, i32>; // return
-    let size: usize; // local
-    let align: usize; // local
-    let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn Right<i32, ImpliedClause1::Internal = i32, Right = i32> + '1)); // anonymous local
-    let _4: fn<'_0_1>(&'_0_1 (dyn Right<i32, ImpliedClause1::Internal = i32, Right = i32> + '3)) -> i32; // anonymous local
-    let _5: &'static core::marker::MetaSized::{vtable}; // anonymous local
-    let _6: &'static test_crate::Internal::{vtable}<i32>; // anonymous local
-    let _7: &'static test_crate::Super::{vtable}<i32>; // anonymous local
+    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn Right<i32, ImpliedClause1::Internal = i32, Right = i32> + '1)); // anonymous local
+    let _2: fn<'_0_1>(&'_0_1 (dyn Right<i32, ImpliedClause1::Internal = i32, Right = i32> + '3)) -> i32; // anonymous local
+    let _3: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _4: &'static test_crate::Internal::{vtable}<i32>; // anonymous local
+    let _5: &'static test_crate::Super::{vtable}<i32>; // anonymous local
 
     storage_live(ret)
-    storage_live(size)
-    size = size_of<i32>
-    storage_live(align)
-    align = align_of<i32>
+    storage_live(_1)
+    _1 = cast<for<'_0_1> impl_Right_i32_for_i32::{vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Right<i32, ImpliedClause1::Internal = i32, Right = i32> + '1))>(const impl_Right_i32_for_i32::{vtable_drop_shim}<'0>)
+    storage_live(_2)
+    _2 = cast<for<'_0_1> impl_Right_i32_for_i32::right_method::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Right<i32, ImpliedClause1::Internal = i32, Right = i32> + '3)) -> i32>(const impl_Right_i32_for_i32::right_method::{vtable_method}<'2>)
     storage_live(_3)
-    _3 = cast<for<'_0_1> impl_Right_i32_for_i32::{vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Right<i32, ImpliedClause1::Internal = i32, Right = i32> + '1))>(const impl_Right_i32_for_i32::{vtable_drop_shim}<'0>)
+    _3 = &core::marker::MetaSized::{vtable}<i32>
     storage_live(_4)
-    _4 = cast<for<'_0_1> impl_Right_i32_for_i32::right_method::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Right<i32, ImpliedClause1::Internal = i32, Right = i32> + '3)) -> i32>(const impl_Right_i32_for_i32::right_method::{vtable_method}<'2>)
+    _4 = &impl_Internal_for_i32::{vtable}
     storage_live(_5)
-    _5 = &core::marker::MetaSized::{vtable}<i32>
-    storage_live(_6)
-    _6 = &impl_Internal_for_i32::{vtable}
-    storage_live(_7)
-    _7 = &impl_Super_i32_for_i32::{vtable}
-    ret = test_crate::Right::{vtable} { size: move size, align: move align, drop: move _3, method_right_method: move _4, super_trait_0: move _5, super_trait_1: move _6, super_trait_2: move _7 }
+    _5 = &impl_Super_i32_for_i32::{vtable}
+    ret = test_crate::Right::{vtable} { size: const size_of::<i32>(), align: const align_of::<i32>(), drop: move _1, method_right_method: move _2, super_trait_0: move _3, super_trait_1: move _4, super_trait_2: move _5 }
     return
 }
 
@@ -636,30 +612,24 @@ unsafe fn impl_Join_i32_for_i32::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn
 fn impl_Join_i32_for_i32::{vtable}() -> test_crate::Join::{vtable}<i32, i32, i32, i32, i32>
 {
     let ret: test_crate::Join::{vtable}<i32, i32, i32, i32, i32>; // return
-    let size: usize; // local
-    let align: usize; // local
-    let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn Join<i32, ImpliedClause1::Left = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause2::Right = i32> + '1)); // anonymous local
-    let _4: fn<'_0_1>(&'_0_1 (dyn Join<i32, ImpliedClause1::Left = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause2::Right = i32> + '3)) -> (i32, i32); // anonymous local
-    let _5: &'static core::marker::MetaSized::{vtable}; // anonymous local
-    let _6: &'static test_crate::Left::{vtable}<i32, i32>; // anonymous local
-    let _7: &'static test_crate::Right::{vtable}<i32, i32, i32>; // anonymous local
+    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn Join<i32, ImpliedClause1::Left = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause2::Right = i32> + '1)); // anonymous local
+    let _2: fn<'_0_1>(&'_0_1 (dyn Join<i32, ImpliedClause1::Left = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause2::Right = i32> + '3)) -> (i32, i32); // anonymous local
+    let _3: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _4: &'static test_crate::Left::{vtable}<i32, i32>; // anonymous local
+    let _5: &'static test_crate::Right::{vtable}<i32, i32, i32>; // anonymous local
 
     storage_live(ret)
-    storage_live(size)
-    size = size_of<i32>
-    storage_live(align)
-    align = align_of<i32>
+    storage_live(_1)
+    _1 = cast<for<'_0_1> impl_Join_i32_for_i32::{vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Join<i32, ImpliedClause1::Left = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause2::Right = i32> + '1))>(const impl_Join_i32_for_i32::{vtable_drop_shim}<'0>)
+    storage_live(_2)
+    _2 = cast<for<'_0_1> impl_Join_i32_for_i32::join_method::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Join<i32, ImpliedClause1::Left = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause2::Right = i32> + '3)) -> (i32, i32)>(const impl_Join_i32_for_i32::join_method::{vtable_method}<'2>)
     storage_live(_3)
-    _3 = cast<for<'_0_1> impl_Join_i32_for_i32::{vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Join<i32, ImpliedClause1::Left = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause2::Right = i32> + '1))>(const impl_Join_i32_for_i32::{vtable_drop_shim}<'0>)
+    _3 = &core::marker::MetaSized::{vtable}<i32>
     storage_live(_4)
-    _4 = cast<for<'_0_1> impl_Join_i32_for_i32::join_method::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Join<i32, ImpliedClause1::Left = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause1::ImpliedClause1::Internal = i32, ImpliedClause2::Right = i32> + '3)) -> (i32, i32)>(const impl_Join_i32_for_i32::join_method::{vtable_method}<'2>)
+    _4 = &impl_Left_for_i32::{vtable}
     storage_live(_5)
-    _5 = &core::marker::MetaSized::{vtable}<i32>
-    storage_live(_6)
-    _6 = &impl_Left_for_i32::{vtable}
-    storage_live(_7)
-    _7 = &impl_Right_i32_for_i32::{vtable}
-    ret = test_crate::Join::{vtable} { size: move size, align: move align, drop: move _3, method_join_method: move _4, super_trait_0: move _5, super_trait_1: move _6, super_trait_2: move _7 }
+    _5 = &impl_Right_i32_for_i32::{vtable}
+    ret = test_crate::Join::{vtable} { size: const size_of::<i32>(), align: const align_of::<i32>(), drop: move _1, method_join_method: move _2, super_trait_0: move _3, super_trait_1: move _4, super_trait_2: move _5 }
     return
 }
 

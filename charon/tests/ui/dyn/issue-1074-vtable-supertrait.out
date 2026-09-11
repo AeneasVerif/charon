@@ -131,27 +131,21 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn MyTrait))
 fn impl_MyTrait_for_MyStruct::{vtable}() -> test_crate::MyTrait::{vtable}
 {
     let ret: test_crate::MyTrait::{vtable}; // return
-    let size: usize; // local
-    let align: usize; // local
-    let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn MyTrait + '1)); // anonymous local
-    let _4: fn<'_0_1>(&'_0_1 (dyn MyTrait + '3)); // anonymous local
-    let _5: &'static core::marker::MetaSized::{vtable}; // anonymous local
-    let _6: &'static core::marker::Send::{vtable}; // anonymous local
+    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn MyTrait + '1)); // anonymous local
+    let _2: fn<'_0_1>(&'_0_1 (dyn MyTrait + '3)); // anonymous local
+    let _3: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _4: &'static core::marker::Send::{vtable}; // anonymous local
 
     storage_live(ret)
-    storage_live(size)
-    size = size_of<MyStruct>
-    storage_live(align)
-    align = align_of<MyStruct>
+    storage_live(_1)
+    _1 = cast<for<'_0_1> {vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn MyTrait + '1))>(const {vtable_drop_shim}<'0>)
+    storage_live(_2)
+    _2 = cast<for<'_0_1> {vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn MyTrait + '3))>(const {vtable_method}<'2>)
     storage_live(_3)
-    _3 = cast<for<'_0_1> {vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn MyTrait + '1))>(const {vtable_drop_shim}<'0>)
+    _3 = &core::marker::MetaSized::{vtable}<MyStruct>
     storage_live(_4)
-    _4 = cast<for<'_0_1> {vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn MyTrait + '3))>(const {vtable_method}<'2>)
-    storage_live(_5)
-    _5 = &core::marker::MetaSized::{vtable}<MyStruct>
-    storage_live(_6)
-    _6 = &core::marker::Send::{vtable}<MyStruct>
-    ret = test_crate::MyTrait::{vtable} { size: move size, align: move align, drop: move _3, method_foo: move _4, super_trait_0: move _5, super_trait_1: move _6 }
+    _4 = &core::marker::Send::{vtable}<MyStruct>
+    ret = test_crate::MyTrait::{vtable} { size: const size_of::<MyStruct>(), align: const align_of::<MyStruct>(), drop: move _1, method_foo: move _2, super_trait_0: move _3, super_trait_1: move _4 }
     return
 }
 

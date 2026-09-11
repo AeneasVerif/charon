@@ -163,45 +163,39 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn T))
 fn impl_T_for_unit::{vtable}() -> test_crate::T::{vtable}
 {
     let ret: test_crate::T::{vtable}; // return
-    let size: usize; // local
-    let align: usize; // local
     let drop: unsafe fn(*mut (dyn T + '0)); // local
     let erased_drop: *const (); // local
     let by_ref: fn<'_0_1>(&'_0_1 (dyn T + '1)); // local
     let erased_by_ref: *const (); // local
     let by_val: fn(*mut (dyn T + '2)); // local
     let erased_by_val: *const (); // local
-    let _9: unsafe fn(*mut (dyn T + '5)); // anonymous local
-    let _10: fn<'_0_1>(&'_0_1 (dyn T + '10)); // anonymous local
-    let _11: fn(*mut (dyn T + '14)); // anonymous local
-    let _12: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _7: unsafe fn(*mut (dyn T + '5)); // anonymous local
+    let _8: fn<'_0_1>(&'_0_1 (dyn T + '10)); // anonymous local
+    let _9: fn(*mut (dyn T + '14)); // anonymous local
+    let _10: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
-    storage_live(size)
-    size = size_of<()>
-    storage_live(align)
-    align = align_of<()>
     storage_live(drop)
     storage_live(erased_drop)
-    storage_live(_9)
-    _9 = cast<{vtable_drop_shim}<'4>, unsafe fn(*mut (dyn T + '5))>(const {vtable_drop_shim}<'4>)
-    drop = move _9
+    storage_live(_7)
+    _7 = cast<{vtable_drop_shim}<'4>, unsafe fn(*mut (dyn T + '5))>(const {vtable_drop_shim}<'4>)
+    drop = move _7
     erased_drop = cast<unsafe fn(*mut (dyn T + '6)), *const ()>(move drop)
     storage_live(by_ref)
     storage_live(erased_by_ref)
-    storage_live(_10)
-    _10 = cast<for<'_0_1> impl_T_for_unit::by_ref::{vtable_method}<'9>, fn<'_0_1>(&'_0_1 (dyn T + '10))>(const impl_T_for_unit::by_ref::{vtable_method}<'9>)
-    by_ref = move _10
+    storage_live(_8)
+    _8 = cast<for<'_0_1> impl_T_for_unit::by_ref::{vtable_method}<'9>, fn<'_0_1>(&'_0_1 (dyn T + '10))>(const impl_T_for_unit::by_ref::{vtable_method}<'9>)
+    by_ref = move _8
     erased_by_ref = cast<fn<'_0_1>(&'_0_1 (dyn T + '11)), *const ()>(move by_ref)
     storage_live(by_val)
     storage_live(erased_by_val)
-    storage_live(_11)
-    _11 = cast<impl_T_for_unit::by_val::{vtable_method}, fn(*mut (dyn T + '14))>(const impl_T_for_unit::by_val::{vtable_method})
-    by_val = move _11
+    storage_live(_9)
+    _9 = cast<impl_T_for_unit::by_val::{vtable_method}, fn(*mut (dyn T + '14))>(const impl_T_for_unit::by_val::{vtable_method})
+    by_val = move _9
     erased_by_val = cast<fn(*mut (dyn T + '15)), *const ()>(move by_val)
-    storage_live(_12)
-    _12 = &core::marker::MetaSized::{vtable}::<()>
-    ret = test_crate::T::{vtable} { size: move size, align: move align, drop: move erased_drop, method_by_ref: move erased_by_ref, method_by_val: move erased_by_val, super_trait_0: move _12 }
+    storage_live(_10)
+    _10 = &core::marker::MetaSized::{vtable}::<()>
+    ret = test_crate::T::{vtable} { size: const size_of::<()>(), align: const align_of::<()>(), drop: move erased_drop, method_by_ref: move erased_by_ref, method_by_val: move erased_by_val, super_trait_0: move _10 }
     return
 }
 
