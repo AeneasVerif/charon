@@ -556,6 +556,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | TransItemSourceKind::VTableInstanceInitializer(TransImplSource::Callable(..))
             | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))
             | TransItemSourceKind::CallableMethod(..)
+            | TransItemSourceKind::VTableMethod(TransImplSource::Callable(..))
             | TransItemSourceKind::ClosureAsFnCast = kind
             {
                 self.the_only_binder_mut()
@@ -567,7 +568,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         | hax::FullDefKind::AssocFn { .. }
         | hax::FullDefKind::Closure { .. }
         | hax::FullDefKind::Ctor { .. } = def.kind()
-            && let TransItemSourceKind::CallableMethod(ClosureKind::Fn | ClosureKind::FnMut) = kind
+            && let TransItemSourceKind::CallableMethod(ClosureKind::Fn | ClosureKind::FnMut)
+            | TransItemSourceKind::VTableMethod(TransImplSource::Callable(
+                ClosureKind::Fn | ClosureKind::FnMut,
+            )) = kind
         {
             // Add the lifetime generics coming from the method itself.
             let rid = self

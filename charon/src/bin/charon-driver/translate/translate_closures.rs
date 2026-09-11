@@ -57,6 +57,42 @@ pub fn translate_closure_kind(kind: &hax::ClosureKind) -> ClosureKind {
     }
 }
 
+/// If this trait proof is a built-in impl of a `Fn*` trait, return the `Self` type it is
+/// implemented for and the kind of the implemented trait.
+pub fn recognize_fn_trait_impl_proof(
+    trait_proof: &hax::TraitProof,
+) -> Option<(hax::Binder<&hax::Ty>, ClosureKind)> {
+    let hax::TraitProofKind::Builtin {
+        trait_data: hax::BuiltinTraitData::Other(lang_item),
+        ..
+    } = &trait_proof.kind
+    else {
+        return None;
+    };
+    let kind = match lang_item {
+        hax::SolverTraitLangItem::FnOnce => ClosureKind::FnOnce,
+        hax::SolverTraitLangItem::FnMut => ClosureKind::FnMut,
+        hax::SolverTraitLangItem::Fn => ClosureKind::Fn,
+        _ => return None,
+    };
+    let Some(hax::GenericArg::Type(self_ty)) =
+        trait_proof.pred.hax_skip_binder_ref().generic_args.first()
+    else {
+        unreachable!("no `Self` type arg on a `Fn*` trait ref")
+    };
+    Some((trait_proof.pred.rebind(self_ty), kind))
+}
+
+/// The built-in `Fn*` impl of the given kind that we generate for this closure or function item.
+pub fn callable_virtual_impl<'a>(
+    def: &'a hax::FullDef<'_>,
+    target_kind: ClosureKind,
+) -> &'a hax::VirtualTraitImpl {
+    CallableFnImpls::from_def(def)
+        .and_then(|impls| impls.vimpl(target_kind))
+        .expect("expected a callable with a Fn* impl")
+}
+
 #[derive(Clone, Copy)]
 enum Callable<'a> {
     Closure(&'a hax::ClosureArgs),
@@ -738,7 +774,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Hax gives us trait-related information for the impl we're building.
         let vimpl = callable_impls.vimpl(target_kind).unwrap();
         let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
-        let method_id = self.translate_trait_method_id(implemented_trait.id, &vimpl.methods[0])?;
+        let method_id =
+            self.translate_trait_method_id(implemented_trait.id, &vimpl.methods[0].0)?;
 
         let impl_ref = self.translate_callable_impl_ref(span, callable.item(), target_kind)?;
         let src = FunSource::TraitImpl {
@@ -799,7 +836,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Construct the `call_*` method reference.
         let trait_decl_id = timpl.impl_trait.id;
-        let trait_method_id = self.translate_trait_method_id(trait_decl_id, &vimpl.methods[0])?;
+        let trait_method_id = self.translate_trait_method_id(trait_decl_id, &vimpl.methods[0].0)?;
         let call_fn_binder = {
             let kind = TransItemSourceKind::CallableMethod(target_kind);
             let bound_method_ref: RegionBinder<DeclRef<ItemId>> = self

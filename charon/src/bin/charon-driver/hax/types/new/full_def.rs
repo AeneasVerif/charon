@@ -571,6 +571,17 @@ fn gen_vtable_sig<'tcx>(
         }
     }?;
 
+    Some(vtable_sig_with_dyn_self(s, method_decl_id, dyn_self))
+}
+
+/// The signature of `method_decl_id` as stored in a vtable, i.e. with its `Self` type replaced by
+/// the given `dyn Trait<..>` type.
+fn vtable_sig_with_dyn_self<'tcx>(
+    s: &impl UnderOwnerState<'tcx>,
+    method_decl_id: RDefId,
+    dyn_self: ty::Ty<'tcx>,
+) -> PolyFnSig {
+    let tcx = s.base().tcx;
     // dyn_self is of form `dyn Trait<Args...>`, we extract the trait args
     let ty::Dynamic(preds, _) = dyn_self.kind() else {
         panic!("Unexpected dyn_self: {:?}", dyn_self);
@@ -592,7 +603,7 @@ fn gen_vtable_sig<'tcx>(
     let normalized_sig = normalize(tcx, s.typing_env(), method_decl_sig);
     let normalized_sig = adjust_by_value_vtable_receiver(tcx, method_decl_id, normalized_sig);
 
-    Some(normalized_sig.sinto(s))
+    normalized_sig.sinto(s)
 }
 
 /// Construct the `FullDefKind` for this item.
@@ -1084,8 +1095,10 @@ pub struct VirtualTraitImpl {
     pub implied_trait_proofs: Vec<TraitProof>,
     /// The associated types and their predicates, in definition order.
     pub types: Vec<(Ty, Vec<TraitProof>)>,
-    /// The methods, in definition order.
-    pub methods: Vec<DefId>,
+    /// The methods, in definition order, with the dyn-signature if any.
+    pub methods: Vec<(DefId, Option<PolyFnSig>)>,
+    /// The `dyn Trait<..>` type for the implemented trait ref, if dyn-compatible.
+    pub dyn_self: Option<Ty>,
 }
 
 impl<'tcx> FullDef<'tcx> {
@@ -1378,17 +1391,28 @@ where
             (ty, required_trait_proofs)
         })
         .collect();
+    // The environment may lack the predicates needed to prove the trait holds; translating the
+    // `dyn Trait` type would then report errors, so we check first.
+    let dyn_self = (tcx.is_dyn_compatible(trait_ref.def_id)
+        && !solve_trait(s, ty::Binder::dummy(trait_ref)).kind.is_error())
+    .then(|| dyn_self_ty(tcx, s.typing_env(), trait_ref))
+    .flatten();
     let methods = tcx
         .associated_items(trait_ref.def_id)
         .in_definition_order()
         .filter(|assoc| matches!(assoc.kind, ty::AssocKind::Fn { .. }))
-        .map(|assoc| assoc.def_id.sinto(s))
+        .map(|assoc| {
+            let vtable_sig =
+                dyn_self.map(|dyn_self| vtable_sig_with_dyn_self(s, assoc.def_id, dyn_self));
+            (assoc.def_id.sinto(s), vtable_sig)
+        })
         .collect();
     Box::new(VirtualTraitImpl {
         trait_pred,
         implied_trait_proofs: required_trait_proofs,
         types,
         methods,
+        dyn_self: dyn_self.sinto(s),
     })
 }
 

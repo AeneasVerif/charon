@@ -79,6 +79,13 @@ pub enum TraitProofKind {
     Error(String),
 }
 
+impl TraitProofKind {
+    /// Returns `true` if this is an error proof.
+    pub fn is_error(&self) -> bool {
+        matches!(self, TraitProofKind::Error(_))
+    }
+}
+
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::BuiltinTraitData<'tcx>, state: S as s)]
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
