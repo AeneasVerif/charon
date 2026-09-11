@@ -4,13 +4,6 @@ use derive_generic_visitor::*;
 use macros::{EnumAsGetters, EnumIsA, VariantName};
 use serde_state::{DeserializeState, SerializeState};
 
-/// Guaranteed facts about a layout size.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
-pub enum SizeGuarantee {
-    Equals(SizeExpr),
-    AtLeast(SizeExpr),
-}
-
 /// Guaranteed facts about a field offset.
 #[derive(
     Debug,
@@ -109,7 +102,10 @@ pub enum SizeExprKind {
     Max(Vec<SizeExpr>),
     Min(Vec<SizeExpr>),
     Plus(SizeExpr, SizeExpr),
+    /// Multiply by a constant.
     Scale(SizeExpr, ConstantExpr),
+    /// The size is at least the value of this expression.
+    AtLeast(SizeExpr),
     /// The next multiple of `target_align` from `base`.
     AlignTo {
         base: SizeExpr,
@@ -160,10 +156,6 @@ impl SizeExpr {
                 *expr = match expr {
                     SizeExprKind::Constant(constant) => {
                         debug_assert!(constant.ty().is_usize());
-                        let exact_guarantee = |size: &Size| match &size.guarantee {
-                            Some(SizeGuarantee::Equals(value)) => Some(value.clone()),
-                            Some(SizeGuarantee::AtLeast(_)) | None => None,
-                        };
                         let mut guaranteed = match constant.kind() {
                             ConstantExprKind::SizeOf(ty) => match ty.kind() {
                                 TyKind::Never => SizeExpr::from_usize(0),
@@ -183,7 +175,7 @@ impl SizeExpr {
                                     if let Some(ty_ref) = ty.as_adt()
                                         && let Some(decl) = self.krate.type_decls.get(ty_ref.id)
                                         && let Some(layout) = decl.layout.get(self.target)
-                                        && let Some(value) = exact_guarantee(&layout.size)
+                                        && let Some(value) = layout.size.guarantee.clone()
                                     {
                                         value.substitute(&ty_ref.generics)
                                     } else {
@@ -208,7 +200,7 @@ impl SizeExpr {
                                     if let Some(ty_ref) = ty.as_adt()
                                         && let Some(decl) = self.krate.type_decls.get(ty_ref.id)
                                         && let Some(layout) = decl.layout.get(self.target)
-                                        && let Some(value) = exact_guarantee(&layout.align)
+                                        && let Some(value) = layout.align.guarantee.clone()
                                     {
                                         value.substitute(&ty_ref.generics)
                                     } else {
@@ -221,7 +213,6 @@ impl SizeExpr {
                         self.visit(&mut guaranteed);
                         guaranteed.kind().clone()
                     }
-                    SizeExprKind::FromMetadata(_) => return,
                     SizeExprKind::Max(values) => {
                         // Flatten nested operations.
                         for val in std::mem::take(values) {
@@ -304,6 +295,7 @@ impl SizeExpr {
                         // FIXME: evaluate type inhabitedness
                         return;
                     }
+                    SizeExprKind::AtLeast(_) | SizeExprKind::FromMetadata(_) => return,
                 };
             }
         }
@@ -581,7 +573,7 @@ mod tests {
         ));
 
         let size = &mut krate.type_decls.get_mut(id).unwrap().layout[&target].size;
-        size.guarantee = Some(SizeGuarantee::Equals(
+        size.guarantee = Some(
             SizeExprKind::Plus(
                 SizeExprKind::Constant(ConstantExpr::new(
                     ConstantExprKind::SizeOf(generic_ty),
@@ -591,7 +583,7 @@ mod tests {
                 SizeExpr::from_usize(5),
             )
             .into_expr(),
-        ));
+        );
         let with_guarantee = size_of().normalize(&krate, &target);
         assert_eq!(with_guarantee.as_usize(), Some(7));
     }

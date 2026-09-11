@@ -1335,7 +1335,7 @@ and repr_options = {
 
 (** An expression denoting a size in bytes. *)
 and size = {
-  guarantee : size_guarantee option;
+  guarantee : size_expr option;
       (** The guarantees about this size that can be relied on according to the
           Rust Reference. *)
   chosen : int option;
@@ -1353,7 +1353,9 @@ and size_expr_kind =
   | SizeExprMax of size_expr list
   | SizeExprMin of size_expr list
   | SizeExprPlus of size_expr * size_expr
-  | SizeExprScale of size_expr * constant_expr
+  | SizeExprScale of size_expr * constant_expr  (** Multiply by a constant. *)
+  | SizeExprAtLeast of size_expr
+      (** The size is at least the value of this expression. *)
   | SizeExprAlignTo of size_expr * size_expr
       (** The next multiple of [target_align] from [base].
 
@@ -1367,9 +1369,6 @@ and size_expr_kind =
           - [ty]
           - [then_size]
           - [else_size] *)
-
-(** Guaranteed facts about a layout size. *)
-and size_guarantee = Equals of size_expr | AtLeast of size_expr
 
 (** A type declaration.
 

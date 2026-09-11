@@ -75,7 +75,7 @@ use derive_generic_visitor::*;
         ullbc_ast::TerminatorKind, SwitchData, SwitchScrutinee,
         UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, Layout, VariantLayout,
         Discriminator,
-        Size, OffsetExpr, SizeGuarantee, OffsetGuarantee,
+        Size, OffsetExpr, OffsetGuarantee,
         PtrMetadata,
         SpanData, SerializedSpan,
         ItemByVal, VTableField, AssocItemNames,

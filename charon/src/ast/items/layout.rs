@@ -78,7 +78,7 @@ pub enum Discriminator {
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Size {
     /// The guarantees about this size that can be relied on according to the Rust Reference.
-    pub guarantee: Option<SizeGuarantee>,
+    pub guarantee: Option<SizeExpr>,
     /// The size chosen by this rustc run. `None` for unsized types.
     pub chosen: Option<ByteCount>,
 }

@@ -3287,7 +3287,7 @@ and size_of_json (ctx : of_json_ctx) (js : json) : (size, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("guarantee", guarantee); ("chosen", chosen) ] ->
-        let* guarantee = option_of_json size_guarantee_of_json ctx guarantee in
+        let* guarantee = option_of_json size_expr_of_json ctx guarantee in
         let* chosen = option_of_json int_of_json ctx chosen in
         Ok ({ guarantee; chosen } : size)
     | _ -> Error "")
@@ -3325,6 +3325,9 @@ and size_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = size_expr_of_json ctx _0 in
         let* _1 = constant_expr_of_json ctx _1 in
         Ok (SizeExprScale (_0, _1))
+    | `Assoc [ ("AtLeast", _0) ] ->
+        let* _0 = size_expr_of_json ctx _0 in
+        Ok (SizeExprAtLeast _0)
     | `Assoc
         [
           ("AlignTo", `Assoc [ ("base", base); ("target_align", target_align) ]);
@@ -3343,18 +3346,6 @@ and size_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* then_size = size_expr_of_json ctx then_size in
         let* else_size = size_expr_of_json ctx else_size in
         Ok (SizeExprIfInhabited (ty, then_size, else_size))
-    | _ -> Error "")
-
-and size_guarantee_of_json (ctx : of_json_ctx) (js : json) :
-    (size_guarantee, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Equals", _0) ] ->
-        let* _0 = size_expr_of_json ctx _0 in
-        Ok (Equals _0)
-    | `Assoc [ ("AtLeast", _0) ] ->
-        let* _0 = size_expr_of_json ctx _0 in
-        Ok (AtLeast _0)
     | _ -> Error "")
 
 and target_info_of_json (ctx : of_json_ctx) (js : json) :
