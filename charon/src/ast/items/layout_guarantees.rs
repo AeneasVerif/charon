@@ -538,7 +538,7 @@ mod tests {
             target.clone(),
             Layout {
                 size: Size {
-                    chosen: Some(SizeExpr::from_usize(99)),
+                    chosen: SizeExpr::from_usize(99),
                     guarantee: None,
                 },
                 align: Size::new(1),

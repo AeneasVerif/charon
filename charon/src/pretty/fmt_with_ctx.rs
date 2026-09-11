@@ -1803,10 +1803,7 @@ impl Display for ReprOptions {
 
 impl<C: AstFormatter> FmtWithCtx<C> for Size {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self.chosen {
-            Some(chosen) => write!(f, "{}", chosen.with_ctx(ctx))?,
-            None => write!(f, "?")?,
-        }
+        write!(f, "{}", self.chosen.with_ctx(ctx))?;
         if let Some(guarantee) = &self.guarantee {
             write!(f, " (guaranteed: {})", guarantee.with_ctx(ctx))?;
         }

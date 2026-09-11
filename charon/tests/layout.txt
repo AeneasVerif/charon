@@ -15,14 +15,50 @@ test_crate::GenericStruct:
 
 test_crate::UnsizedStruct:
   Layout {
-    size: ?,
-    align: ?,
+    size: align_to((8usize + (slice_length * 8usize)), max(8usize, 8usize)),
+    align: max(8usize, 8usize),
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
       SingleVariant: { offsets: [0, 8], uninhabited: false, tagger: [] },
     ],
     repr(Rust),
+  }
+
+test_crate::UnsizedDyn:
+  Layout {
+    size: align_to((1usize + dyn_size), max(1usize, dyn_align)),
+    align: max(1usize, dyn_align),
+    discriminator: SingleVariant,
+    uninhabited: false,
+    variants: [
+      SingleVariant: { offsets: [0, 1], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::NestedUnsized:
+  Layout {
+    size: align_to((8usize + align_to((8usize + (slice_length * 8usize)), max(8usize, 8usize))), max(8usize, max(8usize, 8usize))),
+    align: max(8usize, max(8usize, 8usize)),
+    discriminator: SingleVariant,
+    uninhabited: false,
+    variants: [
+      SingleVariant: { offsets: [0, 8], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::PackedUnsized:
+  Layout {
+    size: align_to((2usize + (slice_length * 4usize)), max(2usize, min(4usize, 2usize))),
+    align: max(2usize, min(4usize, 2usize)),
+    discriminator: SingleVariant,
+    uninhabited: false,
+    variants: [
+      SingleVariant: { offsets: [0, 2], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust, packed(2)),
   }
 
 test_crate::SimpleEnum:
@@ -365,8 +401,8 @@ test_crate::Usize:
 
 test_crate::Str:
   Layout {
-    size: ?,
-    align: ?,
+    size: (slice_length * 1usize),
+    align: 1usize,
     discriminator: @Variant0,
     uninhabited: false,
     variants: [

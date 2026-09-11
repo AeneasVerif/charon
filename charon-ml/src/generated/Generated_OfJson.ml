@@ -3287,7 +3287,7 @@ and size_of_json (ctx : of_json_ctx) (js : json) : (size, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("chosen", chosen); ("guarantee", guarantee) ] ->
-        let* chosen = option_of_json size_expr_of_json ctx chosen in
+        let* chosen = size_expr_of_json ctx chosen in
         let* guarantee = option_of_json size_expr_of_json ctx guarantee in
         Ok ({ chosen; guarantee } : size)
     | _ -> Error "")

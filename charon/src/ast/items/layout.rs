@@ -80,8 +80,7 @@ pub struct Size {
     /// The size chosen by this rustc run. For sized types, this is a plain integer. For unsized
     /// types, this is an expression describing how to compute this size based on the values found
     /// in the pointer metadata.
-    // TODO: for now actually optional.
-    pub chosen: Option<SizeExpr>,
+    pub chosen: SizeExpr,
     /// The guarantees about this size that can be relied on according to the Rust Reference.
     pub guarantee: Option<SizeExpr>,
 }
@@ -96,11 +95,13 @@ pub struct OffsetExpr {
 }
 
 impl Size {
-    pub fn new(chosen: impl Into<Option<ByteCount>>) -> Self {
+    pub fn new(chosen: ByteCount) -> Self {
+        Self::from_expr(SizeExprKind::from_usize(u128::from(chosen)).into_expr())
+    }
+
+    pub fn from_expr(chosen: SizeExpr) -> Self {
         Self {
-            chosen: chosen
-                .into()
-                .map(|value| SizeExprKind::from_usize(u128::from(value)).into_expr()),
+            chosen,
             guarantee: None,
         }
     }

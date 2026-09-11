@@ -1335,7 +1335,7 @@ and repr_options = {
 
 (** An expression denoting a size in bytes. *)
 and size = {
-  chosen : size_expr option;
+  chosen : size_expr;
       (** The size chosen by this rustc run. For sized types, this is a plain
           integer. For unsized types, this is an expression describing how to
           compute this size based on the values found in the pointer metadata.

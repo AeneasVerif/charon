@@ -10,6 +10,47 @@ use charon_lib::{
 mod util;
 use util::*;
 
+fn eval_size_expr(expr: &SizeExpr, dyn_size: u128, dyn_align: u128, slice_length: u128) -> u128 {
+    match expr.kind() {
+        SizeExprKind::Constant(constant) => constant
+            .as_usize_literal()
+            .expect("chosen size expressions must only contain integer constants"),
+        SizeExprKind::FromMetadata(metadata) => match metadata {
+            MetadataValue::DynSize => dyn_size,
+            MetadataValue::DynAlign => dyn_align,
+            MetadataValue::SliceLength => slice_length,
+        },
+        SizeExprKind::Max(values) => values
+            .iter()
+            .map(|value| eval_size_expr(value, dyn_size, dyn_align, slice_length))
+            .max()
+            .unwrap(),
+        SizeExprKind::Min(values) => values
+            .iter()
+            .map(|value| eval_size_expr(value, dyn_size, dyn_align, slice_length))
+            .min()
+            .unwrap(),
+        SizeExprKind::Plus(left, right) => {
+            eval_size_expr(left, dyn_size, dyn_align, slice_length)
+                + eval_size_expr(right, dyn_size, dyn_align, slice_length)
+        }
+        SizeExprKind::Scale(base, multiplier) => {
+            eval_size_expr(base, dyn_size, dyn_align, slice_length)
+                * multiplier
+                    .as_usize_literal()
+                    .expect("chosen size expressions must only contain integer constants")
+        }
+        SizeExprKind::AlignTo { base, target_align } => {
+            let base = eval_size_expr(base, dyn_size, dyn_align, slice_length);
+            let align = eval_size_expr(target_align, dyn_size, dyn_align, slice_length);
+            base.next_multiple_of(align)
+        }
+        SizeExprKind::AtLeast(_) | SizeExprKind::IfInhabited { .. } => {
+            panic!("chosen size expressions must be exact")
+        }
+    }
+}
+
 #[test]
 fn type_layout() -> anyhow::Result<()> {
     let crate_data = translate_rust_text(
@@ -33,11 +74,21 @@ fn type_layout() -> anyhow::Result<()> {
             y: [usize]
         }
 
-        // Unsupported for now
-        // struct UnsizedStruct2 {
-        //     x: usize,
-        //     y: dyn std::fmt::Debug
-        // }
+        struct UnsizedDyn {
+            x: u8,
+            y: dyn std::fmt::Debug
+        }
+
+        struct NestedUnsized {
+            x: u16,
+            y: UnsizedStruct,
+        }
+
+        #[repr(packed(2))]
+        struct PackedUnsized {
+            x: u8,
+            y: [u32],
+        }
 
         enum SimpleEnum {
             Var1,
@@ -225,6 +276,7 @@ fn type_layout() -> anyhow::Result<()> {
         crate_data.target_information[&the_target].c_enum_smallest_repr_ty,
         IntTy::I32,
     );
+    let ptr_size = u128::from(crate_data.target_information[&the_target].target_pointer_size);
     for tdecl in crate_data.type_decls.iter() {
         if let Some(layout) = tdecl.layout.get(&the_target)
             && let Some(discriminator) = &layout.discriminator
@@ -278,6 +330,39 @@ fn type_layout() -> anyhow::Result<()> {
             }
         }
     }
+
+    let local_layout = |name: &str| {
+        crate_data
+            .type_decls
+            .iter()
+            .find(|decl| decl.item_meta.name.debug_repr(&crate_data) == name)
+            .unwrap()
+            .layout
+            .get(&the_target)
+            .unwrap()
+    };
+    let assert_chosen = |name: &str, metadata: (u128, u128, u128), expected: (u128, u128)| {
+        let layout = local_layout(name);
+        assert_eq!(
+            (
+                eval_size_expr(&layout.size.chosen, metadata.0, metadata.1, metadata.2),
+                eval_size_expr(&layout.align.chosen, metadata.0, metadata.1, metadata.2),
+            ),
+            expected,
+        );
+    };
+    assert_chosen(
+        "test_crate::UnsizedStruct",
+        (0, 0, 3),
+        (4 * ptr_size, ptr_size),
+    );
+    assert_chosen("test_crate::UnsizedDyn", (12, 4, 0), (16, 4));
+    assert_chosen(
+        "test_crate::NestedUnsized",
+        (0, 0, 3),
+        (5 * ptr_size, ptr_size),
+    );
+    assert_chosen("test_crate::PackedUnsized", (0, 0, 3), (14, 2));
 
     let mut layouts = String::new();
     let fmt = (&crate_data).into_fmt();
