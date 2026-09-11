@@ -1,8 +1,11 @@
 use itertools::Itertools;
-use serde_state::WithState;
-use std::path::PathBuf;
+use std::{fmt::Write, path::PathBuf};
 
 use charon_lib::ast::*;
+use charon_lib::{
+    formatter::{AstFormatter, IntoFormatter},
+    pretty::FmtWithCtx,
+};
 
 mod util;
 use util::*;
@@ -276,26 +279,35 @@ fn type_layout() -> anyhow::Result<()> {
         }
     }
 
-    let layouts: SeqHashMap<String, Option<_>> = crate_data
-        .type_decls
-        .iter()
-        .filter_map(|tdecl| {
-            // Skips the builtin ADTs too, whose names start with a `PathElem::Builtin`.
-            let is_local = matches!(
-                tdecl.item_meta.name.name.first().and_then(|e| e.as_ident()),
-                Some((crate_name, _)) if crate_name == "test_crate"
-            );
-            if !is_local {
-                return None;
-            }
-            let name = tdecl.item_meta.name.debug_repr(&crate_data);
-            let opt_layout = tdecl.layout.get(&the_target).cloned();
-            let serializable = opt_layout.map(|l| WithState::new(l, &()));
-            Some((name, serializable))
-        })
-        .collect();
-    let layouts_str = serde_json::to_string_pretty(&layouts)?;
+    let mut layouts = String::new();
+    let fmt = (&crate_data).into_fmt();
+    for tdecl in crate_data.type_decls.iter() {
+        // Skips the builtin ADTs too, whose names start with a `PathElem::Builtin`.
+        let is_local = matches!(
+            tdecl.item_meta.name.name.first().and_then(|e| e.as_ident()),
+            Some((crate_name, _)) if crate_name == "test_crate"
+        );
+        if !is_local {
+            continue;
+        }
 
-    compare_or_overwrite(layouts_str, &PathBuf::from("./tests/layout.json"))?;
+        if !layouts.is_empty() {
+            writeln!(layouts)?;
+        }
+        let name = tdecl.item_meta.name.debug_repr(&crate_data);
+        writeln!(layouts, "{name}:")?;
+        match tdecl.layout.get(&the_target) {
+            Some(layout) => {
+                let fmt = fmt.set_generics(&tdecl.generics);
+                let fmt = fmt.set_current_type(tdecl.def_id);
+                for line in layout.to_string_with_ctx(&fmt).lines() {
+                    writeln!(layouts, "  {line}")?;
+                }
+            }
+            None => writeln!(layouts, "  none")?,
+        }
+    }
+
+    compare_or_overwrite(layouts, &PathBuf::from("./tests/layout.txt"))?;
     Ok(())
 }

@@ -1,0 +1,452 @@
+test_crate::SimpleStruct:
+  Layout {
+    size: 12,
+    align: 4,
+    discriminator: SingleVariant,
+    uninhabited: false,
+    variants: [
+      SingleVariant: { offsets: [0, 4, 8], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::GenericStruct:
+  none
+
+test_crate::UnsizedStruct:
+  Layout {
+    size: ?,
+    align: ?,
+    discriminator: SingleVariant,
+    uninhabited: false,
+    variants: [
+      SingleVariant: { offsets: [0, 8], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::SimpleEnum:
+  Layout {
+    size: 1,
+    align: 1,
+    discriminator: read at offset 0 { 0u8 => Var1, 1u8 => Other, _ => invalid },
+    uninhabited: false,
+    variants: [
+      Var1: { offsets: [], uninhabited: false, tagger: [0 := 0u8] },
+      Other: { offsets: [], uninhabited: false, tagger: [0 := 1u8] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::SimpleAdt:
+  Layout {
+    size: 24,
+    align: 8,
+    discriminator: read at offset 0 { 0u32 => EmptyVar, 1u32 => StructVar, 2u32 => TupleVar, _ => invalid },
+    uninhabited: false,
+    variants: [
+      EmptyVar: { offsets: [], uninhabited: false, tagger: [0 := 0u32] },
+      StructVar: { offsets: [8, 16], uninhabited: false, tagger: [0 := 1u32] },
+      TupleVar: { offsets: [4, 8], uninhabited: false, tagger: [0 := 2u32] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::NicheAdt:
+  Layout {
+    size: 4,
+    align: 4,
+    discriminator: read at offset 0 { 0u32 => None, _ => Some },
+    uninhabited: false,
+    variants: [
+      None: { offsets: [], uninhabited: false, tagger: [0 := 0u32] },
+      Some: { offsets: [0], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::NicheAdtSigned:
+  Layout {
+    size: 4,
+    align: 4,
+    discriminator: read at offset 0 { 0i32 => None, _ => Some },
+    uninhabited: false,
+    variants: [
+      None: { offsets: [], uninhabited: false, tagger: [0 := 0i32] },
+      Some: { offsets: [0], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::NicheAdtChar:
+  Layout {
+    size: 4,
+    align: 4,
+    discriminator: read at offset 0 { 1114112u32..=4294967294u32 => invalid, 4294967295u32 => None, _ => Some },
+    uninhabited: false,
+    variants: [
+      None: { offsets: [], uninhabited: false, tagger: [0 := 4294967295u32] },
+      Some: { offsets: [0], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::IsAZST:
+  Layout {
+    size: 0,
+    align: 1,
+    discriminator: SingleVariant,
+    uninhabited: false,
+    variants: [
+      SingleVariant: { offsets: [], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::GenericWithKnownLayout:
+  Layout {
+    size: 16,
+    align: 8,
+    discriminator: SingleVariant,
+    uninhabited: false,
+    variants: [
+      SingleVariant: { offsets: [8, 0], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::Reordered:
+  Layout {
+    size: 8,
+    align: 4,
+    discriminator: SingleVariant,
+    uninhabited: false,
+    variants: [
+      SingleVariant: { offsets: [4, 0, 5], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::NotReordered:
+  Layout {
+    size: 12,
+    align: 4,
+    discriminator: SingleVariant,
+    uninhabited: false,
+    variants: [
+      SingleVariant: { offsets: [0, 4, 8], uninhabited: false, tagger: [] },
+    ],
+    repr(C),
+  }
+
+test_crate::Packed:
+  Layout {
+    size: 6,
+    align: 1,
+    discriminator: SingleVariant,
+    uninhabited: false,
+    variants: [
+      SingleVariant: { offsets: [0, 1, 5], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust, packed(1)),
+  }
+
+test_crate::UninhabitedVariant:
+  Layout {
+    size: 4,
+    align: 4,
+    discriminator: B,
+    uninhabited: false,
+    variants: [
+      A: none,
+      B: { offsets: [0], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::UninhabitedVariant2:
+  Layout {
+    size: 8,
+    align: 4,
+    discriminator: read at offset 0 { 1u32 => B, _ => invalid },
+    uninhabited: false,
+    variants: [
+      A: { offsets: [4, 4], uninhabited: true, tagger: [] },
+      B: { offsets: [4], uninhabited: false, tagger: [0 := 1u32] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::UninhabitedVariantWithFields:
+  Layout {
+    size: 12,
+    align: 4,
+    discriminator: read at offset 0 { 0u32 => Bar, _ => invalid },
+    uninhabited: false,
+    variants: [
+      Bar: { offsets: [], uninhabited: false, tagger: [0 := 0u32] },
+      Baz: { offsets: [4, 4, 8], uninhabited: true, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::Uninhabited:
+  Layout {
+    size: 0,
+    align: 1,
+    discriminator: SingleVariant,
+    uninhabited: true,
+    variants: [
+      SingleVariant: { offsets: [0], uninhabited: true, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::DiscriminantInNicheOfField:
+  Layout {
+    size: 16,
+    align: 8,
+    discriminator: read at offset 8 { 0isize => None, _ => Some },
+    uninhabited: false,
+    variants: [
+      None: { offsets: [], uninhabited: false, tagger: [8 := 0isize] },
+      Some: { offsets: [0], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::MaybeUninitInt:
+  Layout {
+    size: 4,
+    align: 4,
+    discriminator: SingleVariant,
+    uninhabited: false,
+    variants: [
+      SingleVariant: { offsets: [0, 0], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::PackIntsUnion:
+  Layout {
+    size: 8,
+    align: 8,
+    discriminator: SingleVariant,
+    uninhabited: false,
+    variants: [
+      SingleVariant: { offsets: [0, 0], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::NonZeroNiche:
+  Layout {
+    size: 4,
+    align: 4,
+    discriminator: read at offset 0 { 1114112u32 => B, 1114113u32 => C, 1114114u32..=4294967295u32 => invalid, _ => A },
+    uninhabited: false,
+    variants: [
+      A: { offsets: [0], uninhabited: false, tagger: [] },
+      B: { offsets: [], uninhabited: false, tagger: [0 := 1114112u32] },
+      C: { offsets: [], uninhabited: false, tagger: [0 := 1114113u32] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::ArbitraryDiscriminants:
+  Layout {
+    size: 32,
+    align: 8,
+    discriminator: read at offset 0 { 12i32 => A, 43i32 => B, 123456i32 => C, _ => invalid },
+    uninhabited: false,
+    variants: [
+      A: { offsets: [8], uninhabited: false, tagger: [0 := 12i32] },
+      B: { offsets: [4], uninhabited: false, tagger: [0 := 43i32] },
+      C: { offsets: [], uninhabited: false, tagger: [0 := 123456i32] },
+    ],
+    repr(Rust, discriminant i32),
+  }
+
+test_crate::MyOrder:
+  Layout {
+    size: 1,
+    align: 1,
+    discriminator: read at offset 0 { -1i8 => Less, 0i8 => Equal, 1i8 => Greater, _ => invalid },
+    uninhabited: false,
+    variants: [
+      Less: { offsets: [], uninhabited: false, tagger: [0 := -1i8] },
+      Equal: { offsets: [], uninhabited: false, tagger: [0 := 0i8] },
+      Greater: { offsets: [], uninhabited: false, tagger: [0 := 1i8] },
+    ],
+    repr(Rust, discriminant i8),
+  }
+
+test_crate::WithNicheAndUninhabited:
+  Layout {
+    size: 4,
+    align: 4,
+    discriminator: read at offset 0 { 0u32 => First, _ => Third },
+    uninhabited: false,
+    variants: [
+      First: { offsets: [], uninhabited: false, tagger: [0 := 0u32] },
+      Second: { offsets: [0], uninhabited: true, tagger: [] },
+      Third: { offsets: [0], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::GenericUnsized:
+  none
+
+test_crate::GenericButFixedSize:
+  Layout {
+    size: 8,
+    align: 8,
+    discriminator: read at offset 0 { 0isize => First, _ => Second },
+    uninhabited: false,
+    variants: [
+      First: { offsets: [], uninhabited: false, tagger: [0 := 0isize] },
+      Second: { offsets: [0], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::MaxBitsDiscr:
+  Layout {
+    size: 16,
+    align: 16,
+    discriminator: read at offset 0 { 42u128 => First, 18446744073709551615u128 => Second, _ => invalid },
+    uninhabited: false,
+    variants: [
+      First: { offsets: [], uninhabited: false, tagger: [0 := 42u128] },
+      Second: { offsets: [], uninhabited: false, tagger: [0 := 18446744073709551615u128] },
+    ],
+    repr(Rust, discriminant u128),
+  }
+
+test_crate::SingleVariantButNonZero:
+  Layout {
+    size: 0,
+    align: 1,
+    discriminator: @Variant1,
+    uninhabited: false,
+    variants: [
+      @Variant0: none,
+      @Variant1: { offsets: [0], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::NonAdtAlias:
+  none
+
+test_crate::Tuple:
+  Layout {
+    size: 8,
+    align: 4,
+    discriminator: @Variant0,
+    uninhabited: false,
+    variants: [
+      @Variant0: { offsets: [0, 4], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::Usize:
+  Layout {
+    size: 8,
+    align: 8,
+    discriminator: @Variant0,
+    uninhabited: false,
+    variants: [
+    ],
+    repr(Rust),
+  }
+
+test_crate::Str:
+  Layout {
+    size: ?,
+    align: ?,
+    discriminator: @Variant0,
+    uninhabited: false,
+    variants: [
+    ],
+    repr(Rust),
+  }
+
+test_crate::Ref:
+  Layout {
+    size: 8,
+    align: 8,
+    discriminator: @Variant0,
+    uninhabited: false,
+    variants: [
+    ],
+    repr(Rust),
+  }
+
+test_crate::HasInvalidDiscr:
+  Layout {
+    size: 1,
+    align: 1,
+    discriminator: read at offset 0 { 2u8 => Var1, 3u8 => invalid, 4u8 => Var3, 5u8..=255u8 => invalid, _ => Var2 },
+    uninhabited: false,
+    variants: [
+      Var1: { offsets: [], uninhabited: false, tagger: [0 := 2u8] },
+      Var2: { offsets: [0], uninhabited: false, tagger: [] },
+      Var3: { offsets: [], uninhabited: false, tagger: [0 := 4u8] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::NicheInSignedRepr:
+  Layout {
+    size: 1,
+    align: 1,
+    discriminator: read at offset 0 { -128i8..=-3i8 => invalid, -2i8 => B, 2i8..=127i8 => invalid, _ => A },
+    uninhabited: false,
+    variants: [
+      A: { offsets: [0], uninhabited: false, tagger: [] },
+      B: { offsets: [], uninhabited: false, tagger: [0 := -2i8] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::BigWithChar:
+  Layout {
+    size: 16,
+    align: 8,
+    discriminator: SingleVariant,
+    uninhabited: false,
+    variants: [
+      SingleVariant: { offsets: [0, 8], uninhabited: false, tagger: [] },
+    ],
+    repr(C),
+  }
+
+test_crate::UninhabitedAtNicheEdge:
+  Layout {
+    size: 16,
+    align: 8,
+    discriminator: read at offset 8 { 1114112u32 => invalid, 1114113u32 => B, 1114114u32..=4294967295u32 => invalid, _ => C },
+    uninhabited: false,
+    variants: [
+      A: { offsets: [0, 4], uninhabited: true, tagger: [] },
+      B: { offsets: [], uninhabited: false, tagger: [8 := 1114113u32] },
+      C: { offsets: [0], uninhabited: false, tagger: [] },
+    ],
+    repr(Rust),
+  }
+
+test_crate::UninhabitedUntagged:
+  Layout {
+    size: 4,
+    align: 4,
+    discriminator: read at offset 0 { 1114112u32..=4294967294u32 => invalid, 4294967295u32 => B, _ => invalid },
+    uninhabited: false,
+    variants: [
+      A: { offsets: [0, 4], uninhabited: true, tagger: [] },
+      B: { offsets: [], uninhabited: false, tagger: [0 := 4294967295u32] },
+    ],
+    repr(Rust),
+  }
