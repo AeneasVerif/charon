@@ -15,7 +15,7 @@ test_crate::GenericStruct:
 
 test_crate::UnsizedStruct:
   Layout {
-    size: align_to((8usize + (slice_length * 8usize)), 8usize),
+    size: (8usize + (slice_length * 8usize)),
     align: 8usize,
     discriminator: SingleVariant,
     uninhabited: false,
@@ -39,7 +39,7 @@ test_crate::UnsizedDyn:
 
 test_crate::NestedUnsized:
   Layout {
-    size: align_to((8usize + align_to((8usize + (slice_length * 8usize)), 8usize)), 8usize),
+    size: (16usize + (slice_length * 8usize)),
     align: 8usize,
     discriminator: SingleVariant,
     uninhabited: false,
@@ -51,7 +51,7 @@ test_crate::NestedUnsized:
 
 test_crate::PackedUnsized:
   Layout {
-    size: align_to((2usize + (slice_length * 4usize)), 2usize),
+    size: (2usize + (slice_length * 4usize)),
     align: 2usize,
     discriminator: SingleVariant,
     uninhabited: false,

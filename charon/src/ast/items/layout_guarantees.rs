@@ -159,6 +159,24 @@ impl SizeExpr {
                 .reduce(f)
         }
 
+        fn is_aligned_to(value: &SizeExpr, align: u128) -> bool {
+            if align == 0 {
+                return false;
+            }
+            match value.kind() {
+                SizeExprKind::Constant(constant) => constant
+                    .as_usize_literal()
+                    .is_some_and(|value| value % align == 0),
+                SizeExprKind::Scale(_, multiplier) => multiplier
+                    .as_usize_literal()
+                    .is_some_and(|multiplier| multiplier % align == 0),
+                SizeExprKind::AlignTo { target_align, .. } => target_align
+                    .as_usize()
+                    .is_some_and(|target_align| target_align % align == 0),
+                _ => false,
+            }
+        }
+
         impl VisitAstMut for NormalizeSizeExpr<'_> {
             fn exit_size_expr_kind(&mut self, expr: &mut SizeExprKind) {
                 *expr = match expr {
@@ -275,14 +293,41 @@ impl SizeExpr {
                             return;
                         }
                     }
-                    SizeExprKind::Plus(left, right) => match (left.as_usize(), right.as_usize()) {
-                        (Some(left), Some(right)) => {
-                            SizeExprKind::from_usize(left.strict_add(right))
+                    SizeExprKind::Plus(left, right) => {
+                        fn flatten_addition(value: &SizeExpr, values: &mut Vec<SizeExpr>) {
+                            if let SizeExprKind::Plus(left, right) = value.kind() {
+                                flatten_addition(left, values);
+                                flatten_addition(right, values);
+                            } else {
+                                values.push(value.clone());
+                            }
                         }
-                        (Some(0), None) => right.kind().clone(),
-                        (None, Some(0)) => left.kind().clone(),
-                        _ => return,
-                    },
+
+                        // Collect constants at the start and left-associate the remaining sum.
+                        let mut values = Vec::new();
+                        flatten_addition(left, &mut values);
+                        flatten_addition(right, &mut values);
+
+                        let mut constant = 0u128;
+                        values.retain(|value| {
+                            if let Some(value) = value.as_usize() {
+                                constant = constant.strict_add(value);
+                                false
+                            } else {
+                                true
+                            }
+                        });
+
+                        if constant != 0 || values.is_empty() {
+                            values.insert(0, SizeExpr::from_usize(constant));
+                        }
+                        values
+                            .into_iter()
+                            .reduce(|left, right| SizeExprKind::Plus(left, right).into_expr())
+                            .unwrap()
+                            .kind()
+                            .clone()
+                    }
                     SizeExprKind::Scale(base, multiplier) => {
                         match (base.as_usize(), multiplier.as_usize_literal()) {
                             (_, Some(0)) | (Some(0), _) => SizeExprKind::zero(),
@@ -296,7 +341,6 @@ impl SizeExpr {
                     SizeExprKind::AlignTo { base, target_align } => {
                         match (base.as_usize(), target_align.as_usize()) {
                             (_, Some(1)) => base.kind().clone(),
-                            (Some(0), Some(align)) if align != 0 => base.kind().clone(),
                             (Some(base), Some(align)) if align != 0 => {
                                 let remainder = base % align;
                                 SizeExprKind::from_usize(if remainder == 0 {
@@ -304,6 +348,22 @@ impl SizeExpr {
                                 } else {
                                     base.strict_add(align - remainder)
                                 })
+                            }
+                            (_, Some(align)) if is_aligned_to(base, align) => base.kind().clone(),
+                            (_, Some(align))
+                                if let SizeExprKind::Plus(left, right) = base.kind()
+                                    && is_aligned_to(left, align) =>
+                            {
+                                // If `left` is a multiple of `align`, then
+                                // `align_to(left + right, align) = left + align_to(right, align)`.
+                                let right = SizeExprKind::AlignTo {
+                                    base: right.clone(),
+                                    target_align: target_align.clone(),
+                                }
+                                .into_expr();
+                                let mut new = SizeExprKind::Plus(left.clone(), right);
+                                self.visit(&mut new);
+                                new
                             }
                             _ => return,
                         }
@@ -401,6 +461,136 @@ mod tests {
         .normalize(&krate, Some(&target), false);
 
         assert_eq!(expr.as_usize(), Some(16));
+    }
+
+    #[test]
+    fn normalize_additions() {
+        let (krate, target) = test_krate();
+        let dyn_size = SizeExprKind::FromMetadata(MetadataValue::DynSize).into_expr();
+        let dyn_align = SizeExprKind::FromMetadata(MetadataValue::DynAlign).into_expr();
+        let expr = SizeExprKind::Plus(
+            dyn_size.clone(),
+            SizeExprKind::Plus(
+                SizeExpr::from_usize(2),
+                SizeExprKind::Plus(dyn_align.clone(), SizeExpr::from_usize(3)).into_expr(),
+            )
+            .into_expr(),
+        )
+        .into_expr()
+        .normalize(&krate, Some(&target), false);
+
+        assert_eq!(
+            expr,
+            SizeExprKind::Plus(
+                SizeExprKind::Plus(SizeExpr::from_usize(5), dyn_size).into_expr(),
+                dyn_align,
+            )
+            .into_expr()
+        );
+    }
+
+    #[test]
+    fn normalize_align_to_with_aligned_prefix() {
+        let (krate, target) = test_krate();
+        let dyn_size = SizeExprKind::FromMetadata(MetadataValue::DynSize).into_expr();
+        let dyn_align = SizeExprKind::FromMetadata(MetadataValue::DynAlign).into_expr();
+        let target_align = SizeExpr::from_usize(4);
+
+        let with_constant = SizeExprKind::AlignTo {
+            base: SizeExprKind::Plus(SizeExpr::from_usize(8), dyn_size.clone()).into_expr(),
+            target_align: target_align.clone(),
+        }
+        .into_expr()
+        .normalize(&krate, Some(&target), false);
+        assert_eq!(
+            with_constant,
+            SizeExprKind::Plus(
+                SizeExpr::from_usize(8),
+                SizeExprKind::AlignTo {
+                    base: dyn_size.clone(),
+                    target_align: target_align.clone(),
+                }
+                .into_expr(),
+            )
+            .into_expr()
+        );
+
+        let scaled = SizeExprKind::Scale(dyn_size, ConstantExpr::mk_usize(8)).into_expr();
+        let aligned_scale = SizeExprKind::AlignTo {
+            base: scaled.clone(),
+            target_align: target_align.clone(),
+        }
+        .into_expr()
+        .normalize(&krate, Some(&target), false);
+        assert_eq!(aligned_scale, scaled);
+
+        let inner_align_to = SizeExprKind::AlignTo {
+            base: dyn_align.clone(),
+            target_align: SizeExpr::from_usize(8),
+        }
+        .into_expr();
+        let nested_align_to = SizeExprKind::AlignTo {
+            base: inner_align_to.clone(),
+            target_align: target_align.clone(),
+        }
+        .into_expr()
+        .normalize(&krate, Some(&target), false);
+        assert_eq!(nested_align_to, inner_align_to);
+
+        let insufficient_inner_align = SizeExprKind::AlignTo {
+            base: SizeExprKind::AlignTo {
+                base: dyn_align.clone(),
+                target_align: SizeExpr::from_usize(4),
+            }
+            .into_expr(),
+            target_align: SizeExpr::from_usize(8),
+        }
+        .into_expr();
+        assert_eq!(
+            insufficient_inner_align
+                .clone()
+                .normalize(&krate, Some(&target), false),
+            insufficient_inner_align
+        );
+
+        let with_scale = SizeExprKind::AlignTo {
+            base: SizeExprKind::Plus(scaled.clone(), dyn_align.clone()).into_expr(),
+            target_align: target_align.clone(),
+        }
+        .into_expr()
+        .normalize(&krate, Some(&target), false);
+        assert_eq!(
+            with_scale,
+            SizeExprKind::Plus(
+                scaled,
+                SizeExprKind::AlignTo {
+                    base: dyn_align,
+                    target_align,
+                }
+                .into_expr(),
+            )
+            .into_expr()
+        );
+
+        let unaligned_scale = SizeExprKind::AlignTo {
+            base: SizeExprKind::Plus(
+                SizeExprKind::Scale(
+                    SizeExprKind::FromMetadata(MetadataValue::DynSize).into_expr(),
+                    ConstantExpr::mk_usize(6),
+                )
+                .into_expr(),
+                SizeExprKind::FromMetadata(MetadataValue::DynAlign).into_expr(),
+            )
+            .into_expr(),
+            target_align: SizeExpr::from_usize(4),
+        }
+        .into_expr();
+        assert_eq!(
+            unaligned_scale
+                .clone()
+                .normalize(&krate, Some(&target), false),
+            unaligned_scale
+        );
     }
 
     #[test]
