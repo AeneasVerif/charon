@@ -1178,10 +1178,9 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         let* _0 = unop_of_json ctx _0 in
         let* _1 = operand_of_json ctx _1 in
         Ok (UnaryOp (_0, _1))
-    | `Assoc [ ("NullaryOp", `List [ _0; _1 ]) ] ->
+    | `Assoc [ ("NullaryOp", _0) ] ->
         let* _0 = nullop_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        Ok (NullaryOp (_0, _1))
+        Ok (NullaryOp _0)
     | `Assoc [ ("Discriminant", _0) ] ->
         let* _0 = place_of_json ctx _0 in
         Ok (Discriminant _0)

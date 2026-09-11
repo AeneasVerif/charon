@@ -1084,8 +1084,7 @@ and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (UnaryOp (_0, _1))
      | 5 ->
          let* _0 = nullop_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         Ok (NullaryOp (_0, _1))
+         Ok (NullaryOp _0)
      | 6 ->
          let* _0 = place_of_postcard ctx st in
          Ok (Discriminant _0)

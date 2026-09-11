@@ -493,7 +493,7 @@ fn check_language_ub() -> bool
         return
     }
     storage_live(_2)
-    _2 = ub_checks<bool>
+    _2 = ub_checks
     _0 = move _2
     storage_dead(_1)
     storage_dead(_2)

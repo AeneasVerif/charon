@@ -1837,9 +1837,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
             Rvalue::UnaryOp(unop, x) => {
                 write!(f, "{}({})", unop.with_ctx(ctx), x.with_ctx(ctx))
             }
-            Rvalue::NullaryOp(op, ty) => {
-                write!(f, "{}<{}>", op.with_ctx(ctx), ty.with_ctx(ctx))
-            }
+            Rvalue::NullaryOp(op) => op.fmt_with_ctx(ctx, f),
             Rvalue::Discriminant(p) => {
                 write!(f, "@discriminant({})", p.with_ctx(ctx),)
             }

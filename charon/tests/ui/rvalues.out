@@ -638,7 +638,7 @@ where
     _16 = move _17
     storage_live(ub)
     storage_live(_15)
-    _15 = ub_checks<bool>
+    _15 = ub_checks
     ub = move _15
     storage_live(offset)
     offset = move _16

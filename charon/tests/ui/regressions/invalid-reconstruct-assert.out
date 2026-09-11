@@ -258,7 +258,7 @@ where
         storage_live(_14);
         storage_live(_29);
         storage_live(_43);
-        _43 = ub_checks<bool>;
+        _43 = ub_checks;
         if move _43 -> bb7 else -> bb8;
     }
 
@@ -273,7 +273,7 @@ where
         index = copy base;
         storage_live(_35);
         storage_live(_44);
-        _44 = ub_checks<bool>;
+        _44 = ub_checks;
         if move _44 -> bb9 else -> bb10;
     }
 
@@ -440,7 +440,7 @@ where
         cond_23 = move _24 < copy _39;
         storage_dead(_24);
         storage_live(_47);
-        _47 = ub_checks<bool>;
+        _47 = ub_checks;
         if move _47 -> bb27 else -> bb28;
     }
 
@@ -456,7 +456,7 @@ where
         storage_live(cond_28);
         cond_28 = copy result <= copy _39;
         storage_live(_48);
-        _48 = ub_checks<bool>;
+        _48 = ub_checks;
         if move _48 -> bb29 else -> bb30;
     }
 

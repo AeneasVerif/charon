@@ -1585,8 +1585,7 @@ and pp_rvalue (env : fmt_env) (fmt : Format.formatter) (rv : rvalue) : unit =
         Format.fprintf fmt "%s%s with_metadata(%s)" ptr_kind p
           (operand_to_string env op)
     end
-  | NullaryOp (op, ty) ->
-      Format.fprintf fmt "%a<%a>" (pp_nullop env) op (pp_ty env) ty
+  | NullaryOp op -> pp_nullop env fmt op
   | UnaryOp (unop, op) ->
       Format.fprintf fmt "%a(%a)" (pp_unop env) unop (pp_operand env) op
   | BinaryOp (binop, op1, op2) ->

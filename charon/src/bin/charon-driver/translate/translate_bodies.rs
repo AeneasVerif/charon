@@ -1169,10 +1169,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 });
                 self.statements.push(Statement {
                     span,
-                    kind: StatementKind::Assign(
-                        local.clone(),
-                        Rvalue::NullaryOp(op, Ty::mk_bool()),
-                    ),
+                    kind: StatementKind::Assign(local.clone(), Rvalue::NullaryOp(op)),
                     comments_before: vec![],
                 });
                 Operand::Move(local)
