@@ -26,6 +26,7 @@ pub trait AstFormatter: Sized {
 
     fn no_generics<'a>(&'a self) -> Self::Reborrow<'a>;
     fn set_generics<'a>(&'a self, generics: &'a GenericParams) -> Self::Reborrow<'a>;
+    fn set_current_type<'a>(&'a self, type_id: TypeDeclId) -> Self::Reborrow<'a>;
     fn set_locals<'a>(&'a self, locals: &'a Locals) -> Self::Reborrow<'a>;
     fn push_binder<'a>(&'a self, new_params: Cow<'a, GenericParams>) -> Self::Reborrow<'a>;
     fn push_bound_regions<'a>(
@@ -121,14 +122,24 @@ pub trait AstFormatter: Sized {
     ) -> fmt::Result {
         let variant = if let Some(translated) = self.get_crate()
             && let Some(def) = translated.type_decls.get(type_id)
-            && let Some(variants) = def.kind.as_enum()
         {
-            &variants.get(variant_id).unwrap().name
+            match &def.kind {
+                TypeDeclKind::Enum(variants) => &variants.get(variant_id).unwrap().name,
+                TypeDeclKind::Struct(..) | TypeDeclKind::Union(..) => "SingleVariant",
+                TypeDeclKind::Opaque | TypeDeclKind::Alias(..) | TypeDeclKind::Error(..) => {
+                    &variant_id.to_pretty_string()
+                }
+            }
         } else {
             &variant_id.to_pretty_string()
         };
         write!(f, "{variant}")
     }
+    fn format_current_variant_name(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        variant_id: VariantId,
+    ) -> fmt::Result;
     fn format_enum_variant(
         &self,
         f: &mut fmt::Formatter<'_>,
@@ -174,6 +185,7 @@ pub trait AstFormatter: Sized {
 #[derive(Default)]
 pub struct FmtCtx<'a> {
     pub translated: Option<&'a TranslatedCrate>,
+    pub current_type: Option<TypeDeclId>,
     /// Generics form a stack, where each binder introduces a new level. For DeBruijn indices to
     /// work, we keep the innermost parameters at the start of the vector.
     pub generics: BindingStack<Cow<'a, GenericParams>>,
@@ -200,6 +212,12 @@ impl<'c> AstFormatter for FmtCtx<'c> {
     fn set_generics<'a>(&'a self, generics: &'a GenericParams) -> Self::Reborrow<'a> {
         FmtCtx {
             generics: BindingStack::new(Cow::Borrowed(generics)),
+            ..self.reborrow()
+        }
+    }
+    fn set_current_type<'a>(&'a self, type_id: TypeDeclId) -> Self::Reborrow<'a> {
+        FmtCtx {
+            current_type: Some(type_id),
             ..self.reborrow()
         }
     }
@@ -239,6 +257,17 @@ impl<'c> AstFormatter for FmtCtx<'c> {
             write!(f, "{}", local_names[id])
         } else {
             write!(f, "_{id}")
+        }
+    }
+
+    fn format_current_variant_name(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        variant_id: VariantId,
+    ) -> fmt::Result {
+        match self.current_type {
+            Some(type_id) => self.format_enum_variant_name(f, type_id, variant_id),
+            None => write!(f, "{variant_id}"),
         }
     }
 
@@ -305,6 +334,7 @@ impl<'a> FmtCtx<'a> {
     fn reborrow<'b>(&'b self) -> FmtCtx<'b> {
         FmtCtx {
             translated: self.translated,
+            current_type: self.current_type,
             generics: self.generics.clone(),
             local_names: self.local_names.clone(),
             indent_level: self.indent_level,

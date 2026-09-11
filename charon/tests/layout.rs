@@ -1,11 +1,55 @@
 use itertools::Itertools;
-use serde_state::WithState;
-use std::path::PathBuf;
+use std::{fmt::Write, path::PathBuf};
 
 use charon_lib::ast::*;
+use charon_lib::{
+    formatter::{AstFormatter, IntoFormatter},
+    pretty::FmtWithCtx,
+};
 
 mod util;
 use util::*;
+
+fn eval_size_expr(expr: &SizeExpr, dyn_size: u128, dyn_align: u128, slice_length: u128) -> u128 {
+    match expr.kind() {
+        SizeExprKind::Constant(constant) => constant
+            .as_usize_literal()
+            .expect("chosen size expressions must only contain integer constants"),
+        SizeExprKind::FromMetadata(metadata) => match metadata {
+            MetadataValue::DynSize => dyn_size,
+            MetadataValue::DynAlign => dyn_align,
+            MetadataValue::SliceLength => slice_length,
+        },
+        SizeExprKind::Max(values) => values
+            .iter()
+            .map(|value| eval_size_expr(value, dyn_size, dyn_align, slice_length))
+            .max()
+            .unwrap(),
+        SizeExprKind::Min(values) => values
+            .iter()
+            .map(|value| eval_size_expr(value, dyn_size, dyn_align, slice_length))
+            .min()
+            .unwrap(),
+        SizeExprKind::Plus(left, right) => {
+            eval_size_expr(left, dyn_size, dyn_align, slice_length)
+                + eval_size_expr(right, dyn_size, dyn_align, slice_length)
+        }
+        SizeExprKind::Scale(base, multiplier) => {
+            eval_size_expr(base, dyn_size, dyn_align, slice_length)
+                * multiplier
+                    .as_usize_literal()
+                    .expect("chosen size expressions must only contain integer constants")
+        }
+        SizeExprKind::AlignTo { base, target_align } => {
+            let base = eval_size_expr(base, dyn_size, dyn_align, slice_length);
+            let align = eval_size_expr(target_align, dyn_size, dyn_align, slice_length);
+            base.next_multiple_of(align)
+        }
+        SizeExprKind::AtLeast(_) | SizeExprKind::IfInhabited { .. } => {
+            panic!("chosen size expressions must be exact")
+        }
+    }
+}
 
 #[test]
 fn type_layout() -> anyhow::Result<()> {
@@ -30,11 +74,21 @@ fn type_layout() -> anyhow::Result<()> {
             y: [usize]
         }
 
-        // Unsupported for now
-        // struct UnsizedStruct2 {
-        //     x: usize,
-        //     y: dyn std::fmt::Debug
-        // }
+        struct UnsizedDyn {
+            x: u8,
+            y: dyn std::fmt::Debug
+        }
+
+        struct NestedUnsized {
+            x: u16,
+            y: UnsizedStruct,
+        }
+
+        #[repr(packed(2))]
+        struct PackedUnsized {
+            x: u8,
+            y: [u32],
+        }
 
         enum SimpleEnum {
             Var1,
@@ -222,6 +276,7 @@ fn type_layout() -> anyhow::Result<()> {
         crate_data.target_information[&the_target].c_enum_smallest_repr_ty,
         IntTy::I32,
     );
+    let ptr_size = u128::from(crate_data.target_information[&the_target].target_pointer_size);
     for tdecl in crate_data.type_decls.iter() {
         if let Some(layout) = tdecl.layout.get(&the_target)
             && let Some(discriminator) = &layout.discriminator
@@ -276,26 +331,68 @@ fn type_layout() -> anyhow::Result<()> {
         }
     }
 
-    let layouts: SeqHashMap<String, Option<_>> = crate_data
-        .type_decls
-        .iter()
-        .filter_map(|tdecl| {
-            // Skips the builtin ADTs too, whose names start with a `PathElem::Builtin`.
-            let is_local = matches!(
-                tdecl.item_meta.name.name.first().and_then(|e| e.as_ident()),
-                Some((crate_name, _)) if crate_name == "test_crate"
-            );
-            if !is_local {
-                return None;
-            }
-            let name = tdecl.item_meta.name.debug_repr(&crate_data);
-            let opt_layout = tdecl.layout.get(&the_target).cloned();
-            let serializable = opt_layout.map(|l| WithState::new(l, &()));
-            Some((name, serializable))
-        })
-        .collect();
-    let layouts_str = serde_json::to_string_pretty(&layouts)?;
+    let local_layout = |name: &str| {
+        crate_data
+            .type_decls
+            .iter()
+            .find(|decl| decl.item_meta.name.debug_repr(&crate_data) == name)
+            .unwrap()
+            .layout
+            .get(&the_target)
+            .unwrap()
+    };
+    let assert_chosen = |name: &str, metadata: (u128, u128, u128), expected: (u128, u128)| {
+        let layout = local_layout(name);
+        assert_eq!(
+            (
+                eval_size_expr(&layout.size.chosen, metadata.0, metadata.1, metadata.2),
+                eval_size_expr(&layout.align.chosen, metadata.0, metadata.1, metadata.2),
+            ),
+            expected,
+        );
+    };
+    assert_chosen(
+        "test_crate::UnsizedStruct",
+        (0, 0, 3),
+        (4 * ptr_size, ptr_size),
+    );
+    assert_chosen("test_crate::UnsizedDyn", (12, 4, 0), (16, 4));
+    assert_chosen(
+        "test_crate::NestedUnsized",
+        (0, 0, 3),
+        (5 * ptr_size, ptr_size),
+    );
+    assert_chosen("test_crate::PackedUnsized", (0, 0, 3), (14, 2));
 
-    compare_or_overwrite(layouts_str, &PathBuf::from("./tests/layout.json"))?;
+    let mut layouts = String::new();
+    let fmt = (&crate_data).into_fmt();
+    for tdecl in crate_data.type_decls.iter() {
+        // Skips the builtin ADTs too, whose names start with a `PathElem::Builtin`.
+        let is_local = matches!(
+            tdecl.item_meta.name.name.first().and_then(|e| e.as_ident()),
+            Some((crate_name, _)) if crate_name == "test_crate"
+        );
+        if !is_local {
+            continue;
+        }
+
+        if !layouts.is_empty() {
+            writeln!(layouts)?;
+        }
+        let name = tdecl.item_meta.name.debug_repr(&crate_data);
+        writeln!(layouts, "{name}:")?;
+        match tdecl.layout.get(&the_target) {
+            Some(layout) => {
+                let fmt = fmt.set_generics(&tdecl.generics);
+                let fmt = fmt.set_current_type(tdecl.def_id);
+                for line in layout.to_string_with_ctx(&fmt).lines() {
+                    writeln!(layouts, "  {line}")?;
+                }
+            }
+            None => writeln!(layouts, "  none")?,
+        }
+    }
+
+    compare_or_overwrite(layouts, &PathBuf::from("./tests/layout.txt"))?;
     Ok(())
 }

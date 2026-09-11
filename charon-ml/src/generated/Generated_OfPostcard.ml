@@ -40,7 +40,7 @@ type of_postcard_ctx = {
   ty_dedup_tbl : ty DedupTbl.t;
   tref_dedup_tbl : trait_ref DedupTbl.t;
   constant_expr_dedup_tbl : constant_expr DedupTbl.t;
-  exact_size_expr_dedup_tbl : exact_size_expr DedupTbl.t;
+  size_expr_dedup_tbl : size_expr DedupTbl.t;
   span_dedup_tbl : span DedupTbl.t;
 }
 
@@ -50,7 +50,7 @@ let empty_of_postcard_ctx : of_postcard_ctx =
     ty_dedup_tbl = DedupTbl.create 2048;
     tref_dedup_tbl = DedupTbl.create 1024;
     constant_expr_dedup_tbl = DedupTbl.create 64;
-    exact_size_expr_dedup_tbl = DedupTbl.create 16;
+    size_expr_dedup_tbl = DedupTbl.create 16;
     span_dedup_tbl = DedupTbl.create 4096;
   }
 
@@ -2110,48 +2110,6 @@ and error_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* msg = string_of_postcard ctx st in
      Ok ({ span; msg } : error))
 
-and exact_size_expr_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (exact_size_expr, string) result =
-  combine_error_msgs st __FUNCTION__
-    (dedup_val_of_postcard ctx.exact_size_expr_dedup_tbl
-       exact_size_expr_kind_of_postcard ctx st)
-
-and exact_size_expr_kind_of_postcard (ctx : of_postcard_ctx)
-    (st : postcard_state) : (exact_size_expr_kind, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* __tag = int_of_postcard ctx st in
-     match __tag with
-     | 0 ->
-         let* _0 = constant_expr_of_postcard ctx st in
-         Ok (ExactSizeExprConstant _0)
-     | 1 ->
-         let* _0 = metadata_value_of_postcard ctx st in
-         Ok (ExactSizeExprFromMetadata _0)
-     | 2 ->
-         let* _0 = list_of_postcard exact_size_expr_of_postcard ctx st in
-         Ok (ExactSizeExprMax _0)
-     | 3 ->
-         let* _0 = list_of_postcard exact_size_expr_of_postcard ctx st in
-         Ok (ExactSizeExprMin _0)
-     | 4 ->
-         let* _0 = exact_size_expr_of_postcard ctx st in
-         let* _1 = exact_size_expr_of_postcard ctx st in
-         Ok (ExactSizeExprPlus (_0, _1))
-     | 5 ->
-         let* _0 = exact_size_expr_of_postcard ctx st in
-         let* _1 = constant_expr_of_postcard ctx st in
-         Ok (ExactSizeExprScale (_0, _1))
-     | 6 ->
-         let* base = exact_size_expr_of_postcard ctx st in
-         let* target_align = exact_size_expr_of_postcard ctx st in
-         Ok (ExactSizeExprAlignTo (base, target_align))
-     | 7 ->
-         let* ty = ty_of_postcard ctx st in
-         let* then_size = exact_size_expr_of_postcard ctx st in
-         let* else_size = exact_size_expr_of_postcard ctx st in
-         Ok (ExactSizeExprIfInhabited (ty, then_size, else_size))
-     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
-
 and field_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (field, string) result =
   combine_error_msgs st __FUNCTION__
@@ -2642,8 +2600,8 @@ and rustc_lang_item_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
 and layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (layout, string) result =
   combine_error_msgs st __FUNCTION__
-    (let* size = size_expr_of_postcard ctx st in
-     let* align = size_expr_of_postcard ctx st in
+    (let* size = size_of_postcard ctx st in
+     let* align = size_of_postcard ctx st in
      let* discriminator = option_of_postcard discriminator_of_postcard ctx st in
      let* uninhabited = bool_of_postcard ctx st in
      let* variant_layouts =
@@ -2732,7 +2690,7 @@ and offset_guarantee_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      match __tag with
      | 0 -> Ok AtOffsetZero
      | 1 ->
-         let* _0 = exact_size_expr_of_postcard ctx st in
+         let* _0 = size_expr_of_postcard ctx st in
          Ok (GuaranteedAlignment _0)
      | 2 ->
          let* predecessor = option_of_postcard field_id_of_postcard ctx st in
@@ -2828,24 +2786,56 @@ and serialization_format_arg_of_postcard (ctx : of_postcard_ctx)
      | 2 -> Ok AllFormats
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and size_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (size, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* chosen = size_expr_of_postcard ctx st in
+     let* guarantee = option_of_postcard size_expr_of_postcard ctx st in
+     Ok ({ chosen; guarantee } : size))
+
 and size_expr_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (size_expr, string) result =
   combine_error_msgs st __FUNCTION__
-    (let* guarantee = option_of_postcard size_guarantee_of_postcard ctx st in
-     let* chosen = option_of_postcard u64_of_postcard ctx st in
-     Ok ({ guarantee; chosen } : size_expr))
+    (dedup_val_of_postcard ctx.size_expr_dedup_tbl size_expr_kind_of_postcard
+       ctx st)
 
-and size_guarantee_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (size_guarantee, string) result =
+and size_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (size_expr_kind, string) result =
   combine_error_msgs st __FUNCTION__
     (let* __tag = int_of_postcard ctx st in
      match __tag with
      | 0 ->
-         let* _0 = exact_size_expr_of_postcard ctx st in
-         Ok (Equals _0)
+         let* _0 = constant_expr_of_postcard ctx st in
+         Ok (SizeExprConstant _0)
      | 1 ->
-         let* _0 = exact_size_expr_of_postcard ctx st in
-         Ok (AtLeast _0)
+         let* _0 = metadata_value_of_postcard ctx st in
+         Ok (SizeExprFromMetadata _0)
+     | 2 ->
+         let* _0 = list_of_postcard size_expr_of_postcard ctx st in
+         Ok (SizeExprMax _0)
+     | 3 ->
+         let* _0 = list_of_postcard size_expr_of_postcard ctx st in
+         Ok (SizeExprMin _0)
+     | 4 ->
+         let* _0 = size_expr_of_postcard ctx st in
+         let* _1 = size_expr_of_postcard ctx st in
+         Ok (SizeExprPlus (_0, _1))
+     | 5 ->
+         let* _0 = size_expr_of_postcard ctx st in
+         let* _1 = constant_expr_of_postcard ctx st in
+         Ok (SizeExprScale (_0, _1))
+     | 6 ->
+         let* _0 = size_expr_of_postcard ctx st in
+         Ok (SizeExprAtLeast _0)
+     | 7 ->
+         let* base = size_expr_of_postcard ctx st in
+         let* target_align = size_expr_of_postcard ctx st in
+         Ok (SizeExprAlignTo (base, target_align))
+     | 8 ->
+         let* ty = ty_of_postcard ctx st in
+         let* then_size = size_expr_of_postcard ctx st in
+         let* else_size = size_expr_of_postcard ctx st in
+         Ok (SizeExprIfInhabited (ty, then_size, else_size))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

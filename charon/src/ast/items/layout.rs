@@ -16,9 +16,9 @@ pub type ByteCount = u64;
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Layout {
     /// The size of the type in bytes.
-    pub size: SizeExpr,
+    pub size: Size,
     /// The alignment, in bytes.
-    pub align: SizeExpr,
+    pub align: Size,
     /// Decision tree that determines the active variant by reading memory. Only `Some` for enums.
     pub discriminator: Option<Discriminator>,
     /// Whether the type is uninhabited, i.e. has any valid value at all.
@@ -76,11 +76,13 @@ pub enum Discriminator {
 
 /// An expression denoting a size in bytes.
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
-pub struct SizeExpr {
+pub struct Size {
+    /// The size chosen by this rustc run. For sized types, this is a plain integer. For unsized
+    /// types, this is an expression describing how to compute this size based on the values found
+    /// in the pointer metadata.
+    pub chosen: SizeExpr,
     /// The guarantees about this size that can be relied on according to the Rust Reference.
-    pub guarantee: Option<SizeGuarantee>,
-    /// The size chosen by this rustc run. `None` for unsized types.
-    pub chosen: Option<ByteCount>,
+    pub guarantee: Option<SizeExpr>,
 }
 
 /// An expression denoting an offset in bytes.
@@ -92,11 +94,15 @@ pub struct OffsetExpr {
     pub chosen: Option<ByteCount>,
 }
 
-impl SizeExpr {
-    pub fn new(chosen: impl Into<Option<ByteCount>>) -> Self {
+impl Size {
+    pub fn new(chosen: ByteCount) -> Self {
+        Self::from_expr(SizeExprKind::from_usize(u128::from(chosen)).into_expr())
+    }
+
+    pub fn from_expr(chosen: SizeExpr) -> Self {
         Self {
+            chosen,
             guarantee: None,
-            chosen: chosen.into(),
         }
     }
 }

@@ -437,6 +437,32 @@ impl<C: AstFormatter> FmtWithCtx<C> for DeclarationGroup {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for Discriminator {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Discriminator::Known(variant_id) => ctx.format_current_variant_name(f, *variant_id),
+            Discriminator::Invalid => write!(f, "invalid"),
+            Discriminator::Branch {
+                offset,
+                children,
+                fallback,
+                ..
+            } => {
+                write!(f, "read at offset {} {{ ", offset.with_ctx(ctx))?;
+                for (range, child) in children {
+                    if range.start() == range.end() {
+                        write!(f, "{}", range.start())?;
+                    } else {
+                        write!(f, "{}..={}", range.start(), range.end())?;
+                    }
+                    write!(f, " => {}, ", child.with_ctx(ctx))?;
+                }
+                write!(f, "_ => {} }}", fallback.with_ctx(ctx))
+            }
+        }
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let params = &self.binder.params;
@@ -1149,6 +1175,35 @@ impl ItemMeta {
     }
 }
 
+impl_display_via_ctx!(Layout);
+impl<C: AstFormatter> FmtWithCtx<C> for Layout {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Layout {{")?;
+        writeln!(f, "  size: {},", self.size.with_ctx(ctx))?;
+        writeln!(f, "  align: {},", self.align.with_ctx(ctx))?;
+        match &self.discriminator {
+            Some(discriminator) => {
+                writeln!(f, "  discriminator: {},", discriminator.with_ctx(ctx))?
+            }
+            None => writeln!(f, "  discriminator: none,")?,
+        }
+        writeln!(f, "  uninhabited: {},", self.uninhabited)?;
+        writeln!(f, "  variants: [")?;
+        for (variant_id, layout) in self.variant_layouts.iter_enumerated() {
+            write!(f, "    ")?;
+            ctx.format_current_variant_name(f, variant_id)?;
+            write!(f, ": ")?;
+            match layout {
+                Some(layout) => writeln!(f, "{},", layout.with_ctx(ctx))?,
+                None => writeln!(f, "none,")?,
+            }
+        }
+        writeln!(f, "  ],")?;
+        writeln!(f, "  {},", self.repr)?;
+        write!(f, "}}")
+    }
+}
+
 impl Display for ScalarTy {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -1181,6 +1236,17 @@ impl Display for Local {
 impl<C: AstFormatter> FmtWithCtx<C> for LocalId {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         ctx.format_local_id(f, *self)
+    }
+}
+
+impl Display for MetadataValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let name = match self {
+            MetadataValue::DynSize => "dyn_size",
+            MetadataValue::DynAlign => "dyn_align",
+            MetadataValue::SliceLength => "slice_length",
+        };
+        write!(f, "{name}")
     }
 }
 
@@ -1231,6 +1297,34 @@ impl<C: AstFormatter> FmtWithCtx<C> for Operand {
             Operand::Copy(p) => write!(f, "copy {}", p.with_ctx(ctx)),
             Operand::Move(p) => write!(f, "move {}", p.with_ctx(ctx)),
             Operand::Const(c) => write!(f, "const {}", c.with_ctx(ctx)),
+        }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for OffsetExpr {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.chosen {
+            Some(chosen) => write!(f, "{chosen}")?,
+            None => write!(f, "?")?,
+        }
+        if let Some(guarantee) = &self.guarantee {
+            write!(f, " (guaranteed: {})", guarantee.with_ctx(ctx))?;
+        }
+        Ok(())
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for OffsetGuarantee {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            OffsetGuarantee::AtOffsetZero => write!(f, "zero"),
+            OffsetGuarantee::GuaranteedAlignment(align) => {
+                write!(f, "aligned({})", align.with_ctx(ctx))
+            }
+            OffsetGuarantee::ReprCField { predecessor } => match predecessor {
+                Some(predecessor) => write!(f, "repr_c_after({predecessor})"),
+                None => write!(f, "repr_c_after_tag"),
+            },
         }
     }
 }
@@ -1680,6 +1774,83 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
                 write!(f, "RawMemory({})", bytes)
             }
             ConstantExprKind::Opaque(cause) => write!(f, "Opaque({cause})"),
+        }
+    }
+}
+
+impl Display for ReprOptions {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let algorithm = match self.repr_algo {
+            ReprAlgorithm::Rust => "Rust",
+            ReprAlgorithm::C => "C",
+        };
+        write!(f, "repr({algorithm}")?;
+        if let Some(modifier) = &self.align_modif {
+            match modifier {
+                AlignmentModifier::Align(align) => write!(f, ", align({align})")?,
+                AlignmentModifier::Pack(pack) => write!(f, ", packed({pack})")?,
+            }
+        }
+        if self.transparent {
+            write!(f, ", transparent")?;
+        }
+        if let Some(int_ty) = self.explicit_discr_type {
+            write!(f, ", discriminant {int_ty}")?;
+        }
+        write!(f, ")")
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for Size {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.chosen.with_ctx(ctx))?;
+        if let Some(guarantee) = &self.guarantee {
+            write!(f, " (guaranteed: {})", guarantee.with_ctx(ctx))?;
+        }
+        Ok(())
+    }
+}
+
+impl_display_via_ctx!(SizeExpr);
+impl<C: AstFormatter> FmtWithCtx<C> for SizeExpr {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.kind() {
+            SizeExprKind::Constant(constant) => write!(f, "{}", constant.with_ctx(ctx)),
+            SizeExprKind::FromMetadata(metadata) => write!(f, "{metadata}"),
+            SizeExprKind::Max(values) => write!(
+                f,
+                "max({})",
+                values.iter().map(|value| value.with_ctx(ctx)).format(", ")
+            ),
+            SizeExprKind::Min(values) => write!(
+                f,
+                "min({})",
+                values.iter().map(|value| value.with_ctx(ctx)).format(", ")
+            ),
+            SizeExprKind::Plus(left, right) => {
+                write!(f, "({} + {})", left.with_ctx(ctx), right.with_ctx(ctx))
+            }
+            SizeExprKind::Scale(base, multiplier) => {
+                write!(f, "({} * {})", base.with_ctx(ctx), multiplier.with_ctx(ctx))
+            }
+            SizeExprKind::AtLeast(value) => write!(f, "at_least({})", value.with_ctx(ctx)),
+            SizeExprKind::AlignTo { base, target_align } => write!(
+                f,
+                "align_to({}, {})",
+                base.with_ctx(ctx),
+                target_align.with_ctx(ctx)
+            ),
+            SizeExprKind::IfInhabited {
+                ty,
+                then_size,
+                else_size,
+            } => write!(
+                f,
+                "if_inhabited({}, {}, {})",
+                ty.with_ctx(ctx),
+                then_size.with_ctx(ctx),
+                else_size.with_ctx(ctx)
+            ),
         }
     }
 }
@@ -2758,5 +2929,25 @@ impl<C: AstFormatter> FmtWithCtx<C> for Variant {
             write!(f, " {{ {} }}", fields)?;
         }
         Ok(())
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for VariantLayout {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let offsets = self
+            .field_offsets
+            .iter()
+            .map(|offset| offset.with_ctx(ctx))
+            .format(", ");
+        let tagger = self
+            .tagger
+            .iter()
+            .map(|(offset, value)| format!("{offset} := {value}"))
+            .format(", ");
+        write!(
+            f,
+            "{{ offsets: [{offsets}], uninhabited: {}, tagger: [{tagger}] }}",
+            self.uninhabited
+        )
     }
 }

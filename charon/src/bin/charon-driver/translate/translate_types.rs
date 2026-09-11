@@ -572,6 +572,67 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
         }
 
+        /// Returns expressions that compute the layout (size, align) chosen by rustc. For sized
+        /// types, that's plain integers; for unsized types, we build expressions that compute the
+        /// right value based on pointer metadata values. This mirrors rustc's
+        /// `size_and_align_of_dst` computation:
+        /// <https://github.com/rust-lang/rust/blob/3fbb92e14159dd8b9bdb81e065883d1132e5abb7/compiler/rustc_codegen_ssa/src/size_of_val.rs#L100-L182>.
+        fn chosen_size_and_align<'tcx>(
+            cx: &ty::layout::LayoutCx<'tcx>,
+            layout: ty::layout::TyAndLayout<'tcx>,
+        ) -> Option<(SizeExpr, SizeExpr)> {
+            let constant = |value: u64| SizeExprKind::from_usize(u128::from(value)).into_expr();
+
+            if layout.is_sized() {
+                return Some((
+                    constant(layout.size.bytes()),
+                    constant(layout.align.abi.bytes()),
+                ));
+            }
+
+            match layout.ty.kind() {
+                ty::Dynamic(..) => Some((
+                    SizeExprKind::FromMetadata(MetadataValue::DynSize).into_expr(),
+                    SizeExprKind::FromMetadata(MetadataValue::DynAlign).into_expr(),
+                )),
+                ty::Slice(..) | ty::Str => {
+                    let unit = layout.field(cx, 0);
+                    Some((
+                        SizeExprKind::Scale(
+                            SizeExprKind::FromMetadata(MetadataValue::SliceLength).into_expr(),
+                            ConstantExpr::mk_usize(u128::from(unit.size.bytes())),
+                        )
+                        .into_expr(),
+                        constant(unit.align.abi.bytes()),
+                    ))
+                }
+                ty::Adt(..) | ty::Tuple(..) => {
+                    let tail_idx = layout.fields.count() - 1;
+                    let tail_offset = constant(layout.fields.offset(tail_idx).bytes());
+                    let sized_align = constant(layout.align.abi.bytes());
+                    let tail_layout = layout.field(cx, tail_idx);
+                    let (tail_size, mut tail_align) = chosen_size_and_align(cx, tail_layout)?;
+
+                    if let ty::Adt(def, _) = layout.ty.kind()
+                        && let Some(pack) = def.repr().pack
+                    {
+                        tail_align =
+                            SizeExprKind::Min(vec![tail_align, constant(pack.bytes())]).into_expr();
+                    }
+
+                    let full_align = SizeExprKind::Max(vec![sized_align, tail_align]).into_expr();
+                    let full_size = SizeExprKind::AlignTo {
+                        base: SizeExprKind::Plus(tail_offset, tail_size).into_expr(),
+                        target_align: full_align.clone(),
+                    }
+                    .into_expr();
+                    Some((full_size, full_align))
+                }
+                ty::Foreign(..) => None,
+                _ => None,
+            }
+        }
+
         let tcx = self.t_ctx.tcx;
         let hax_state = self.hax_state_with_id();
         assert_eq!(hax_state.owner(), item.def_id);
@@ -585,17 +646,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let ptr_size = self.translated.the_target_information().target_pointer_size;
 
         // If layout computation returns an error, we return `None`.
-        let layout = tcx.layout_of(pseudo_input).ok()?.layout;
-        let (size, align) = if layout.is_sized() {
-            (
-                Some(layout.size().bytes()),
-                Some(layout.align().abi.bytes()),
-            )
-        } else {
-            (None, None)
-        };
-        let size = SizeExpr::new(size);
-        let align = SizeExpr::new(align);
+        let ty_layout = tcx.layout_of(pseudo_input).ok()?;
+        let layout_cx = ty::layout::LayoutCx::new(tcx, ty_env);
+        let (size, align) = chosen_size_and_align(&layout_cx, ty_layout)?;
+        let size = Size::from_expr(size.normalize(&self.translated, None, false));
+        let align = Size::from_expr(align.normalize(&self.translated, None, false));
+        let layout = ty_layout.layout;
 
         // Build the discriminator tree and variant layouts.
         let (discriminator, variant_layouts) = match layout.variants() {
@@ -818,8 +874,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 });
 
                 Ok(Layout {
-                    size: SizeExpr::new(size),
-                    align: SizeExpr::new(align),
+                    size: Size::new(size),
+                    align: Size::new(align),
                     discriminator: None,
                     uninhabited: false,
                     variant_layouts: IndexVec::from([Some(VariantLayout {

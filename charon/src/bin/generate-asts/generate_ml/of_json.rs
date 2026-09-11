@@ -81,8 +81,8 @@ const MANUAL_IMPLS: &[(&str, &str)] = &[
         ),
     ),
     (
-        "ExactSizeExpr",
-        "dedup_val_of_json ctx.exact_size_expr_dedup_tbl exact_size_expr_kind_of_json ctx json",
+        "SizeExpr",
+        "dedup_val_of_json ctx.size_expr_dedup_tbl size_expr_kind_of_json ctx json",
     ),
     // Hand-written because spans are deduplicated in the serialized output.
     (
