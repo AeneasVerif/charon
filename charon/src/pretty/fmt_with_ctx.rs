@@ -346,7 +346,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for SizeExpr {
         if let Some(raw) = self.chosen {
             write!(f, "{raw}")?;
         } else {
-            write!(f, "unk")?;
+            write!(f, "unknown")?;
         }
         if let Some(guarantees) = &self.guarantee {
             write!(f, " (guaranteed ")?;
@@ -1391,7 +1391,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for OffsetExpr {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.chosen {
             Some(n) => write!(f, "{n}"),
-            None => write!(f, "unk"),
+            None => write!(f, "unknown"),
         }?;
         if let Some(guarantees) = &self.guarantee {
             write!(f, " (guaranteed ")?;
@@ -3034,7 +3034,7 @@ impl<'a, C: AstFormatter> FmtWithCtx<(&TypeDeclFmtCtx<'a, C>, Option<VariantId>)
         write!(f, "{tab}{tab}{tab}uninhabited: ")?;
         match self.uninhabited {
             Some(uninhabited) => write!(f, "{uninhabited}"),
-            None => write!(f, "unk"),
+            None => write!(f, "unknown"),
         }?;
         write!(f, ",\n{tab}{tab}{tab}tagger: [")?;
         for (offset, val) in self.tagger.iter() {

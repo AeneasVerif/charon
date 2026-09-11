@@ -11,7 +11,7 @@ use charon_lib::{
 mod util;
 use util::*;
 
-const CRATE_SOURCE: &'static str = r#"
+const CRATE_SOURCE: &str = r#"
         #![feature(never_type)]
         use std::num::NonZero;
 
@@ -211,6 +211,12 @@ const CRATE_SOURCE: &'static str = r#"
         enum UninhabitedUntagged {
             A(char, !),
             B,
+        }
+
+        #[repr(C)]
+        struct PolyReprC<T> {
+            hd: usize,
+            tl: T
         }
         "#;
 

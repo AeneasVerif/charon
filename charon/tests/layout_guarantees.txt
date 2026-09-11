@@ -755,3 +755,26 @@ normalized Guarantees: {
         A._1 is aligned to 1usize,
 }
 
+test_crate::PolyReprC
+direct Guarantees: {
+    SIZE is aligned_to(offset_of(PolyReprC<T>[TraitClause0].tl) + size_of::<T>(), max(align_of::<usize>(), align_of::<T>())),
+    ALIGN is max(align_of::<usize>(), align_of::<T>()),
+    offset of 
+        hd is 0,
+        tl is computed by repr(C) algorithm,
+}
+stored Guarantees: {
+    SIZE is aligned_to(offset_of(PolyReprC<T>[TraitClause0].tl) + size_of::<T>(), max(align_of::<usize>(), align_of::<T>())),
+    ALIGN is max(align_of::<usize>(), align_of::<T>()),
+    offset of 
+        hd is 0,
+        tl is computed by repr(C) algorithm,
+}
+normalized Guarantees: {
+    SIZE is aligned_to(aligned_to(8usize, align_of::<T>()) + size_of::<T>(), max(align_of::<T>(), 8usize)),
+    ALIGN is max(align_of::<T>(), 8usize),
+    offset of 
+        hd is 0,
+        tl is computed by repr(C) algorithm,
+}
+

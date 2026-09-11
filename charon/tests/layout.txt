@@ -17,15 +17,15 @@ Layout: {
 
 test_crate::GenericStruct
 Layout: {
-    SIZE: unk (guaranteed >= aligned_to(max(offset_of(GenericStruct<T>[TraitClause0].a) + size_of::<usize>(), offset_of(GenericStruct<T>[TraitClause0].b) + size_of::<T>()), max(align_of::<usize>(), align_of::<T>()))),
-    ALIGN: unk (guaranteed >= max(align_of::<usize>(), align_of::<T>())),
+    SIZE: unknown (guaranteed >= aligned_to(max(offset_of(GenericStruct<T>[TraitClause0].a) + size_of::<usize>(), offset_of(GenericStruct<T>[TraitClause0].b) + size_of::<T>()), max(align_of::<usize>(), align_of::<T>()))),
+    ALIGN: unknown (guaranteed >= max(align_of::<usize>(), align_of::<T>())),
     discriminator: None,
     uninhabited: false,
     variant_layouts: 
         VariantLayout { 
-            offset of a: unk (guaranteed aligned to align_of::<usize>()),
-            offset of b: unk (guaranteed aligned to align_of::<T>()),
-            uninhabited: unk,
+            offset of a: unknown (guaranteed aligned to align_of::<usize>()),
+            offset of b: unknown (guaranteed aligned to align_of::<T>()),
+            uninhabited: unknown,
             tagger: [],
         }
     repr: repr(),
@@ -33,8 +33,8 @@ Layout: {
 
 test_crate::UnsizedStruct
 Layout: {
-    SIZE: unk (guaranteed >= aligned_to(max(offset_of(UnsizedStruct.x) + size_of::<usize>(), offset_of(UnsizedStruct.y) + size_of::<[usize]>()), max(align_of::<usize>(), align_of::<[usize]>()))),
-    ALIGN: unk (guaranteed >= max(align_of::<usize>(), align_of::<[usize]>())),
+    SIZE: unknown (guaranteed >= aligned_to(max(offset_of(UnsizedStruct.x) + size_of::<usize>(), offset_of(UnsizedStruct.y) + size_of::<[usize]>()), max(align_of::<usize>(), align_of::<[usize]>()))),
+    ALIGN: unknown (guaranteed >= max(align_of::<usize>(), align_of::<[usize]>())),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
@@ -237,8 +237,8 @@ Layout: {
     uninhabited: false,
     variant_layouts: 
         A.VariantLayout { 
-            offset of _0: unk (guaranteed aligned to align_of::<!>()),
-            uninhabited: unk,
+            offset of _0: unknown (guaranteed aligned to align_of::<!>()),
+            uninhabited: unknown,
             tagger: [],
         }
         B.VariantLayout { 
@@ -424,18 +424,18 @@ Layout: {
 
 test_crate::GenericUnsized
 Layout: {
-    SIZE: unk (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset_of(GenericUnsized<'a, T>[TraitClause0].Second._0) + size_of::<&'a T>()), max(align_of::<&'a T>()))), max(1usize, >= max(align_of::<&'a T>())))),
-    ALIGN: unk (guaranteed >= max(1usize, >= max(align_of::<&'a T>()))),
+    SIZE: unknown (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset_of(GenericUnsized<'a, T>[TraitClause0].Second._0) + size_of::<&'a T>()), max(align_of::<&'a T>()))), max(1usize, >= max(align_of::<&'a T>())))),
+    ALIGN: unknown (guaranteed >= max(1usize, >= max(align_of::<&'a T>()))),
     discriminator: None,
     uninhabited: false,
     variant_layouts: 
         First.VariantLayout { 
-            uninhabited: unk,
+            uninhabited: unknown,
             tagger: [],
         }
         Second.VariantLayout { 
-            offset of _0: unk (guaranteed aligned to align_of::<&'a T>()),
-            uninhabited: unk,
+            offset of _0: unknown (guaranteed aligned to align_of::<&'a T>()),
+            uninhabited: unknown,
             tagger: [],
         }
     repr: repr(),
@@ -496,8 +496,8 @@ Layout: {
 
 test_crate::NonAdtAlias
 Layout: {
-    SIZE: unk (guaranteed size_of::<T>()),
-    ALIGN: unk (guaranteed align_of::<T>()),
+    SIZE: unknown (guaranteed size_of::<T>()),
+    ALIGN: unknown (guaranteed align_of::<T>()),
     discriminator: None,
     uninhabited: false,
     variant_layouts: 
@@ -532,8 +532,8 @@ Layout: {
 
 test_crate::Str
 Layout: {
-    SIZE: unk (guaranteed slice length),
-    ALIGN: unk (guaranteed size_of::<u8>()),
+    SIZE: unknown (guaranteed slice length),
+    ALIGN: unknown (guaranteed size_of::<u8>()),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
@@ -651,5 +651,21 @@ Layout: {
             tagger: [0:4294967295u32],
         }
     repr: repr(),
+}
+
+test_crate::PolyReprC
+Layout: {
+    SIZE: unknown (guaranteed aligned_to(offset_of(PolyReprC<T>[TraitClause0].tl) + size_of::<T>(), max(align_of::<usize>(), align_of::<T>()))),
+    ALIGN: unknown (guaranteed max(align_of::<usize>(), align_of::<T>())),
+    discriminator: None,
+    uninhabited: false,
+    variant_layouts: 
+        VariantLayout { 
+            offset of hd: unknown (guaranteed 0),
+            offset of tl: unknown (guaranteed computed by repr(C) algorithm),
+            uninhabited: unknown,
+            tagger: [],
+        }
+    repr: repr(C,),
 }
 
