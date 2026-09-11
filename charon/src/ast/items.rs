@@ -6,6 +6,7 @@ pub mod fun_decl;
 pub mod global_decl;
 pub mod item_ids;
 pub mod layout;
+pub mod layout_guarantee_utils;
 pub mod layout_guarantees;
 pub mod trait_decl;
 pub mod trait_impl;

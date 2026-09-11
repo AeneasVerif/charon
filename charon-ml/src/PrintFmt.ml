@@ -370,6 +370,17 @@ let abi_prefix (abi : abi) : string =
   | AbiRust -> ""
   | _ -> "extern \"" ^ abi_name abi ^ "\" "
 
+let adt_field_to_string (env : fmt_env) (def_id : TypeDeclId.id)
+    (opt_variant_id : VariantId.id option) (field_id : FieldId.id) :
+    string option =
+  match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
+  | None -> None
+  | Some { kind = Opaque; _ } -> None
+  | Some def ->
+      let fields = type_decl_get_fields def opt_variant_id in
+      let field = FieldId.nth fields field_id in
+      Some field.field_name
+
 let rec pp_type_decl_id env fmt def_id =
   match find_short_name env (IdType def_id) with
   | Some name -> pp_name env fmt name
@@ -535,6 +546,27 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
           Format.fprintf fmt " with_metadata(%a)" (pp_unsizing_metadata env)
             meta)
         meta
+  | COffsetOf (ty, opt_variant_id, field_id) ->
+      let def_id = Some ty.id in
+      let variant_name =
+        match (def_id, opt_variant_id) with
+        | Some def_id, Some variant_id -> (
+            match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
+            | Some { kind = Enum variants; _ } ->
+                (VariantId.nth variants variant_id).variant_name ^ "."
+            | _ -> VariantId.to_string variant_id ^ ".")
+        | _ -> ""
+      in
+      let field_name =
+        match def_id with
+        | Some def_id -> (
+            match adt_field_to_string env def_id opt_variant_id field_id with
+            | Some name -> name
+            | None -> FieldId.to_string field_id)
+        | None -> FieldId.to_string field_id
+      in
+      Format.fprintf fmt "offset_of(%a.%s%s)" (pp_type_decl_ref env) ty
+        variant_name field_name
 
 and pp_match_pattern (env : fmt_env) (fmt : Format.formatter)
     (cv : constant_expr) : unit =
@@ -1315,17 +1347,6 @@ let pp_type_decl (env : fmt_env) (fmt : Format.formatter) (def : type_decl) :
   | TDeclError err ->
       Format.fprintf fmt "%s%s%s = ERROR(%s)" intro params clauses err
 
-let adt_field_to_string (env : fmt_env) (def_id : TypeDeclId.id)
-    (opt_variant_id : VariantId.id option) (field_id : FieldId.id) :
-    string option =
-  match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
-  | None -> None
-  | Some { kind = Opaque; _ } -> None
-  | Some def ->
-      let fields = type_decl_get_fields def opt_variant_id in
-      let field = FieldId.nth fields field_id in
-      Some field.field_name
-
 let local_id_to_pretty_string (id : local_id) : string =
   "_" ^ LocalId.to_string id
 
@@ -1439,27 +1460,6 @@ and pp_nullop (env : fmt_env) (fmt : Format.formatter) (op : nullop) : unit =
   match op with
   | SizeOf -> pp_string fmt "size_of"
   | AlignOf -> pp_string fmt "align_of"
-  | OffsetOf (ty, opt_variant_id, field_id) ->
-      let def_id = Some ty.id in
-      let variant_name =
-        match (def_id, opt_variant_id) with
-        | Some def_id, Some variant_id -> (
-            match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
-            | Some { kind = Enum variants; _ } ->
-                (VariantId.nth variants variant_id).variant_name ^ "."
-            | _ -> VariantId.to_string variant_id ^ ".")
-        | _ -> ""
-      in
-      let field_name =
-        match def_id with
-        | Some def_id -> (
-            match adt_field_to_string env def_id opt_variant_id field_id with
-            | Some name -> name
-            | None -> FieldId.to_string field_id)
-        | None -> FieldId.to_string field_id
-      in
-      Format.fprintf fmt "offset_of(%a.%s%s)" (pp_type_decl_ref env) ty
-        variant_name field_name
   | UbChecks -> pp_string fmt "ub_checks"
   | ContractChecks -> pp_string fmt "contract_checks"
   | OverflowChecks -> pp_string fmt "overflow_checks"

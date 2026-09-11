@@ -44,7 +44,7 @@ type of_json_ctx = {
   ty_dedup_tbl : ty DedupTbl.t;
   tref_dedup_tbl : trait_ref DedupTbl.t;
   constant_expr_dedup_tbl : constant_expr DedupTbl.t;
-  exact_size_expr_dedup_tbl : exact_size_expr DedupTbl.t;
+  size_guarantee_dedup_tbl : size_guarantee DedupTbl.t;
   span_dedup_tbl : span DedupTbl.t;
 }
 
@@ -54,7 +54,7 @@ let empty_of_json_ctx : of_json_ctx =
     ty_dedup_tbl = DedupTbl.create 2048;
     tref_dedup_tbl = DedupTbl.create 1024;
     constant_expr_dedup_tbl = DedupTbl.create 64;
-    exact_size_expr_dedup_tbl = DedupTbl.create 16;
+    size_guarantee_dedup_tbl = DedupTbl.create 16;
     span_dedup_tbl = DedupTbl.create 4096;
   }
 
@@ -553,6 +553,11 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("AlignOf", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CAlignOf _0)
+    | `Assoc [ ("OffsetOf", `List [ _0; _1; _2 ]) ] ->
+        let* _0 = type_decl_ref_of_json ctx _0 in
+        let* _1 = option_of_json variant_id_of_json ctx _1 in
+        let* _2 = field_id_of_json ctx _2 in
+        Ok (COffsetOf (_0, _1, _2))
     | `Assoc [ ("Opaque", _0) ] ->
         let* _0 = string_of_json ctx _0 in
         Ok (COpaque _0)
@@ -926,11 +931,6 @@ and nullop_of_json (ctx : of_json_ctx) (js : json) : (nullop, string) result =
     (match js with
     | `String "SizeOf" -> Ok SizeOf
     | `String "AlignOf" -> Ok AlignOf
-    | `Assoc [ ("OffsetOf", `List [ _0; _1; _2 ]) ] ->
-        let* _0 = type_decl_ref_of_json ctx _0 in
-        let* _1 = option_of_json variant_id_of_json ctx _1 in
-        let* _2 = field_id_of_json ctx _2 in
-        Ok (OffsetOf (_0, _1, _2))
     | `String "UbChecks" -> Ok UbChecks
     | `String "OverflowChecks" -> Ok OverflowChecks
     | `String "ContractChecks" -> Ok ContractChecks
@@ -2488,59 +2488,6 @@ and error_of_json (ctx : of_json_ctx) (js : json) : (error, string) result =
         Ok ({ span; msg } : error)
     | _ -> Error "")
 
-and exact_size_expr_of_json (ctx : of_json_ctx) (js : json) :
-    (exact_size_expr, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | json ->
-        dedup_val_of_json ctx.exact_size_expr_dedup_tbl
-          exact_size_expr_kind_of_json ctx json
-    | _ -> Error "")
-
-and exact_size_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
-    (exact_size_expr_kind, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Constant", _0) ] ->
-        let* _0 = constant_expr_of_json ctx _0 in
-        Ok (ExactSizeExprConstant _0)
-    | `Assoc [ ("FromMetadata", _0) ] ->
-        let* _0 = metadata_value_of_json ctx _0 in
-        Ok (ExactSizeExprFromMetadata _0)
-    | `Assoc [ ("Max", _0) ] ->
-        let* _0 = list_of_json exact_size_expr_of_json ctx _0 in
-        Ok (ExactSizeExprMax _0)
-    | `Assoc [ ("Min", _0) ] ->
-        let* _0 = list_of_json exact_size_expr_of_json ctx _0 in
-        Ok (ExactSizeExprMin _0)
-    | `Assoc [ ("Plus", `List [ _0; _1 ]) ] ->
-        let* _0 = exact_size_expr_of_json ctx _0 in
-        let* _1 = exact_size_expr_of_json ctx _1 in
-        Ok (ExactSizeExprPlus (_0, _1))
-    | `Assoc [ ("Scale", `List [ _0; _1 ]) ] ->
-        let* _0 = exact_size_expr_of_json ctx _0 in
-        let* _1 = constant_expr_of_json ctx _1 in
-        Ok (ExactSizeExprScale (_0, _1))
-    | `Assoc
-        [
-          ("AlignTo", `Assoc [ ("base", base); ("target_align", target_align) ]);
-        ] ->
-        let* base = exact_size_expr_of_json ctx base in
-        let* target_align = exact_size_expr_of_json ctx target_align in
-        Ok (ExactSizeExprAlignTo (base, target_align))
-    | `Assoc
-        [
-          ( "IfInhabited",
-            `Assoc
-              [ ("ty", ty); ("then_size", then_size); ("else_size", else_size) ]
-          );
-        ] ->
-        let* ty = ty_of_json ctx ty in
-        let* then_size = exact_size_expr_of_json ctx then_size in
-        let* else_size = exact_size_expr_of_json ctx else_size in
-        Ok (ExactSizeExprIfInhabited (ty, then_size, else_size))
-    | _ -> Error "")
-
 and field_of_json (ctx : of_json_ctx) (js : json) : (field, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -3234,7 +3181,7 @@ and offset_guarantee_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `String "AtOffsetZero" -> Ok AtOffsetZero
     | `Assoc [ ("GuaranteedAlignment", _0) ] ->
-        let* _0 = exact_size_expr_of_json ctx _0 in
+        let* _0 = size_guarantee_of_json ctx _0 in
         Ok (GuaranteedAlignment _0)
     | `Assoc [ ("ReprCField", `Assoc [ ("predecessor", predecessor) ]) ] ->
         let* predecessor = option_of_json field_id_of_json ctx predecessor in
@@ -3353,12 +3300,56 @@ and size_guarantee_of_json (ctx : of_json_ctx) (js : json) :
     (size_guarantee, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Equals", _0) ] ->
-        let* _0 = exact_size_expr_of_json ctx _0 in
-        Ok (Equals _0)
+    | json ->
+        dedup_val_of_json ctx.size_guarantee_dedup_tbl
+          size_guarantee_kind_of_json ctx json
+    | _ -> Error "")
+
+and size_guarantee_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (size_guarantee_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Constant", _0) ] ->
+        let* _0 = constant_expr_of_json ctx _0 in
+        Ok (SizeGuaranteeConstant _0)
+    | `Assoc [ ("FromMetadata", _0) ] ->
+        let* _0 = metadata_value_of_json ctx _0 in
+        Ok (SizeGuaranteeFromMetadata _0)
+    | `Assoc [ ("Max", _0) ] ->
+        let* _0 = list_of_json size_guarantee_of_json ctx _0 in
+        Ok (SizeGuaranteeMax _0)
+    | `Assoc [ ("Min", _0) ] ->
+        let* _0 = list_of_json size_guarantee_of_json ctx _0 in
+        Ok (SizeGuaranteeMin _0)
+    | `Assoc [ ("Plus", `List [ _0; _1 ]) ] ->
+        let* _0 = size_guarantee_of_json ctx _0 in
+        let* _1 = size_guarantee_of_json ctx _1 in
+        Ok (SizeGuaranteePlus (_0, _1))
+    | `Assoc [ ("Scale", `List [ _0; _1 ]) ] ->
+        let* _0 = size_guarantee_of_json ctx _0 in
+        let* _1 = constant_expr_of_json ctx _1 in
+        Ok (SizeGuaranteeScale (_0, _1))
+    | `Assoc
+        [
+          ("AlignTo", `Assoc [ ("base", base); ("target_align", target_align) ]);
+        ] ->
+        let* base = size_guarantee_of_json ctx base in
+        let* target_align = size_guarantee_of_json ctx target_align in
+        Ok (SizeGuaranteeAlignTo (base, target_align))
+    | `Assoc
+        [
+          ( "IfInhabited",
+            `Assoc
+              [ ("ty", ty); ("then_size", then_size); ("else_size", else_size) ]
+          );
+        ] ->
+        let* ty = ty_of_json ctx ty in
+        let* then_size = size_guarantee_of_json ctx then_size in
+        let* else_size = size_guarantee_of_json ctx else_size in
+        Ok (SizeGuaranteeIfInhabited (ty, then_size, else_size))
     | `Assoc [ ("AtLeast", _0) ] ->
-        let* _0 = exact_size_expr_of_json ctx _0 in
-        Ok (AtLeast _0)
+        let* _0 = size_guarantee_of_json ctx _0 in
+        Ok (SizeGuaranteeAtLeast _0)
     | _ -> Error "")
 
 and target_info_of_json (ctx : of_json_ctx) (js : json) :
@@ -3842,7 +3833,7 @@ and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
           index_vec_of_json field_id_of_json offset_expr_of_json ctx
             field_offsets
         in
-        let* uninhabited = bool_of_json ctx uninhabited in
+        let* uninhabited = option_of_json bool_of_json ctx uninhabited in
         let* tagger =
           list_of_json
             (pair_of_json int_of_json integer_value_of_json)

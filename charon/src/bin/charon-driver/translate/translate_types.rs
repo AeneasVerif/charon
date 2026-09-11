@@ -1,3 +1,4 @@
+use charon_lib::ullbc_ast::layout_guarantee_utils::LayoutGuarantees;
 use itertools::Itertools;
 use rustc_middle::ty;
 use rustc_span::sym;
@@ -512,44 +513,78 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ///
     /// Translates the layout as queried from rustc into
     /// the more restricted [`Layout`].
-    #[tracing::instrument(skip(self))]
-    pub fn translate_layout(&mut self, def: &hax::FullDef<'tcx>) -> Option<Layout> {
+    #[tracing::instrument(skip(self, layout_guarantees))]
+    pub fn translate_layout(
+        &mut self,
+        layout_guarantees: LayoutGuarantees,
+        def: &hax::FullDef<'tcx>,
+        repr: ReprOptions,
+    ) -> Layout {
+        fn iter_opt<'a, R: 'a>(
+            rhs: Option<impl IntoIterator<Item = R, IntoIter: 'a>>,
+        ) -> impl Iterator<Item = Option<R>> {
+            let rhs: Box<dyn Iterator<Item = Option<R>> + '_> = if let Some(rhs) = rhs {
+                Box::new(rhs.into_iter().map(Some))
+            } else {
+                Box::new((0..).map(|_| None))
+            };
+            rhs
+        }
+
         let item = def.this();
         use rustc_abi as r_abi;
 
         fn translate_variant_layout(
             variant_layout: &r_abi::VariantLayout<r_abi::FieldIdx>,
             tagger: Vec<(ByteCount, IntegerValue)>,
-        ) -> Option<VariantLayout> {
+            variant_guarantees: Option<IndexVec<FieldId, OffsetGuarantee>>,
+        ) -> VariantLayout {
             let field_offsets = variant_layout
                 .field_offsets
                 .iter()
-                .map(|o| OffsetExpr::new(o.bytes()))
+                .zip(iter_opt(variant_guarantees))
+                .map(|(o, guarantee)| OffsetExpr {
+                    chosen: Some(o.bytes()),
+                    guarantee,
+                })
                 .collect();
-            Some(VariantLayout {
+            VariantLayout {
                 field_offsets,
-                uninhabited: variant_layout.is_uninhabited(),
+                uninhabited: Some(variant_layout.is_uninhabited()),
                 tagger,
-            })
+            }
         }
 
         fn translate_layout_data(
             layout_data: &r_abi::LayoutData<r_abi::FieldIdx, r_abi::VariantIdx>,
             tagger: Vec<(ByteCount, IntegerValue)>,
-        ) -> Option<VariantLayout> {
+            field_guarantees: Option<IndexVec<FieldId, OffsetGuarantee>>,
+        ) -> VariantLayout {
             let field_offsets = match &layout_data.fields {
-                r_abi::FieldsShape::Arbitrary { offsets, .. } => {
-                    offsets.iter().map(|o| OffsetExpr::new(o.bytes())).collect()
-                }
-                r_abi::FieldsShape::Union(n) => (0..n.get()).map(|_| OffsetExpr::new(0)).collect(),
+                r_abi::FieldsShape::Arbitrary { offsets, .. } => offsets
+                    .iter()
+                    .zip(iter_opt(field_guarantees))
+                    .map(|(o, guarantee)| OffsetExpr {
+                        chosen: Some(o.bytes()),
+                        guarantee,
+                    })
+                    .collect(),
+                r_abi::FieldsShape::Union(n) => vec![0; n.get()]
+                    .into_iter()
+                    .zip(iter_opt(field_guarantees))
+                    .map(|(o, guarantee)| OffsetExpr {
+                        chosen: Some(o),
+                        guarantee,
+                    })
+                    .collect(),
                 r_abi::FieldsShape::Primitive => IndexVec::default(),
                 r_abi::FieldsShape::Array { .. } => panic!("Unexpected layout shape"),
             };
-            Some(VariantLayout {
+            VariantLayout {
                 field_offsets,
-                uninhabited: layout_data.is_uninhabited(),
+                uninhabited: Some(layout_data.is_uninhabited()),
                 tagger,
-            })
+            }
         }
 
         fn translate_primitive_int(int_ty: r_abi::Integer, signed: bool) -> IntegerTy {
@@ -582,10 +617,32 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             .instantiate(tcx, item.rustc_args(hax_state));
         let ty = hax::normalize(tcx, ty_env, ty);
         let pseudo_input = ty_env.as_query_input(ty);
-        let ptr_size = self.translated.the_target_information().target_pointer_size;
+        let the_target = self
+            .t_ctx
+            .translated
+            .target_information
+            .first()
+            .unwrap()
+            .0
+            .clone();
+        let ptr_size = self
+            .t_ctx
+            .translated
+            .target_information
+            .get(&the_target)
+            .unwrap()
+            .target_pointer_size;
 
-        // If layout computation returns an error, we return `None`.
-        let layout = tcx.layout_of(pseudo_input).ok()?.layout;
+        let layout = if let Ok(layout_data) = tcx.layout_of(pseudo_input) {
+            layout_data.layout
+        } else {
+            return Layout::only_guarantees(
+                layout_guarantees,
+                repr,
+                &self.t_ctx.translated,
+                Some(&the_target),
+            );
+        };
         let (size, align) = if layout.is_sized() {
             (
                 Some(layout.size().bytes()),
@@ -594,8 +651,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         } else {
             (None, None)
         };
-        let size = SizeExpr::new(size);
-        let align = SizeExpr::new(align);
+        let size = SizeExpr {
+            chosen: size,
+            guarantee: Some(layout_guarantees.size),
+        };
+        let align = SizeExpr {
+            chosen: align,
+            guarantee: Some(layout_guarantees.align),
+        };
 
         // Build the discriminator tree and variant layouts.
         let (discriminator, variant_layouts) = match layout.variants() {
@@ -678,25 +741,37 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     IndexVec::new();
                 let mut children = Vec::new();
 
-                for (id, variant_layout) in variants.iter_enumerated() {
-                    let variant_id = self.translate_variant_id(id);
-                    let taginfo = taginfo_for_variant(id);
-                    let tagger = if let Some(val) = taginfo.value {
-                        if taginfo.niched || taginfo.uninhabited {
-                            // If we could compute a tag for this variant, encountering it is UB.
-                            children.push((val..=val, Discriminator::Invalid));
-                            vec![]
+                variants
+                    .iter_enumerated()
+                    .zip(iter_opt(layout_guarantees.offsets.get_variants(
+                        Some(variants.len()),
+                        Some(&self.t_ctx.translated),
+                        Some(&the_target),
+                    )))
+                    .map(|((id, variant_layout), field_guarantees)| {
+                        let variant_id = self.translate_variant_id(id);
+                        let taginfo = taginfo_for_variant(id);
+                        let tagger = if let Some(val) = taginfo.value {
+                            if taginfo.niched || taginfo.uninhabited {
+                                // If we could compute a tag for this variant, encountering it is UB.
+                                children.push((val..=val, Discriminator::Invalid));
+                                vec![]
+                            } else {
+                                children.push((val..=val, Discriminator::Known(variant_id)));
+                                vec![(tag_offset, val)]
+                            }
                         } else {
-                            children.push((val..=val, Discriminator::Known(variant_id)));
-                            vec![(tag_offset, val)]
-                        }
-                    } else {
-                        // Niched or uninhabited variant that corresponds to no tag.
-                        vec![]
-                    };
+                            // Niched or uninhabited variant that corresponds to no tag.
+                            vec![]
+                        };
 
-                    variant_layouts.push(translate_variant_layout(variant_layout, tagger));
-                }
+                        variant_layouts.push(Some(translate_variant_layout(
+                            variant_layout,
+                            tagger,
+                            field_guarantees,
+                        )));
+                    })
+                    .for_each(drop);
 
                 let fallback = match tag_encoding {
                     r_abi::TagEncoding::Direct => Discriminator::Invalid,
@@ -764,13 +839,50 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         } else {
                             1
                         };
-                        let mut variant_layouts: IndexVec<VariantId, Option<VariantLayout>> =
-                            (0..n_variants).map(|_| None).collect();
-                        variant_layouts[variant_id] = translate_layout_data(&layout, vec![]);
-                        variant_layouts
+                        if let Some(variants_guarantees) = layout_guarantees.offsets.get_variants(
+                            Some(n_variants),
+                            Some(&self.t_ctx.translated),
+                            Some(&the_target),
+                        ) {
+                            debug_assert_eq!(n_variants, variants_guarantees.len());
+                            variants_guarantees
+                                .into_iter_enumerated()
+                                .map(|(id, fields)| {
+                                    if id == variant_id {
+                                        Some(translate_layout_data(&layout, vec![], Some(fields)))
+                                    } else {
+                                        Some(VariantLayout::only_guarantees(fields))
+                                    }
+                                })
+                                .collect()
+                        } else {
+                            let mut variant_layouts: IndexVec<VariantId, Option<VariantLayout>> =
+                                (0..n_variants).map(|_| None).collect();
+                            variant_layouts[variant_id] =
+                                Some(translate_layout_data(&layout, vec![], None));
+                            variant_layouts
+                        }
                     }
-                    r_abi::FieldsShape::Union(_) => {
-                        vec![translate_layout_data(&layout, vec![])].into()
+                    r_abi::FieldsShape::Union(n) => {
+                        // FIXME: differing levels of details in the model
+                        let variants_guarantees = layout_guarantees
+                            .offsets
+                            .get_variants(
+                                Some(n.get()),
+                                Some(&self.t_ctx.translated),
+                                Some(&the_target),
+                            )
+                            .unwrap();
+                        let only_first_fields = variants_guarantees
+                            .into_iter()
+                            .map(|field_guarantees| field_guarantees.first().unwrap().clone())
+                            .collect();
+                        vec![Some(translate_layout_data(
+                            &layout,
+                            vec![],
+                            Some(only_first_fields),
+                        ))]
+                        .into()
                     }
                     r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Array { .. } => {
                         vec![].into()
@@ -786,14 +898,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             _ => ReprOptions::default(),
         };
 
-        Some(Layout {
+        Layout {
             size,
             align,
             discriminator,
             uninhabited: layout.is_uninhabited(),
             variant_layouts,
             repr,
-        })
+        }
     }
 
     /// Generate a naive layout for this type.
@@ -803,7 +915,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let mut size = 0;
                 let mut align = 0;
                 let ptr_size = self.translated.the_target_information().target_pointer_size;
-                let field_offsets = fields.map_ref(|field| {
+                let field_offsets = fields.map_ref_indexed(|id, field| {
                     let offset = size;
                     let size_of_ty = match field.ty.kind() {
                         TyKind::Scalar(scalar_ty) => scalar_ty.target_size(ptr_size) as u64,
@@ -814,18 +926,34 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     size += size_of_ty;
                     // For these types, align == size is good enough.
                     align = std::cmp::max(align, size);
-                    OffsetExpr::new(offset)
+                    let guarantees = if id == 0 {
+                        OffsetGuarantee::AtOffsetZero
+                    } else {
+                        OffsetGuarantee::ReprCField {
+                            predecessor: Some(id - 1),
+                        }
+                    };
+                    OffsetExpr {
+                        guarantee: Some(guarantees),
+                        chosen: Some(offset),
+                    }
                 });
 
                 Ok(Layout {
-                    size: SizeExpr::new(size),
-                    align: SizeExpr::new(align),
+                    size: SizeExpr {
+                        chosen: Some(size),
+                        guarantee: Some(SizeGuarantee::mk_const_byte_count(size)),
+                    },
+                    align: SizeExpr {
+                        chosen: Some(align),
+                        guarantee: Some(SizeGuarantee::mk_const_byte_count(align)),
+                    },
                     discriminator: None,
                     uninhabited: false,
                     variant_layouts: IndexVec::from([Some(VariantLayout {
                         field_offsets,
                         tagger: vec![],
-                        uninhabited: false,
+                        uninhabited: Some(false),
                     })]),
                     repr: ReprOptions::default(),
                 })

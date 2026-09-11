@@ -18,6 +18,7 @@ use crate::ast::from_rustc;
 use crate::ast::from_rustc::{
     AttributeKind, DeprecatedSince, Deprecation, Ident, LangItem, OptimizeAttr,
 };
+use crate::ast::layout_guarantee_utils::{LayoutGuarantees, OffsetGuarantees};
 use crate::ast::*;
 use crate::ids::{Idx, IndexVec};
 use derive_generic_visitor::*;
@@ -75,7 +76,7 @@ use derive_generic_visitor::*;
         ullbc_ast::TerminatorKind, SwitchData, SwitchScrutinee,
         UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, Layout, VariantLayout,
         Discriminator,
-        SizeExpr, OffsetExpr, SizeGuarantee, OffsetGuarantee,
+        SizeExpr, OffsetExpr, OffsetGuarantee, LayoutGuarantees, OffsetGuarantees,
         PtrMetadata,
         SpanData, SerializedSpan,
         ItemByVal, VTableField, AssocItemNames,
@@ -108,7 +109,7 @@ use derive_generic_visitor::*;
         llbc_block: llbc_ast::Block, llbc_statement: llbc_ast::Statement,
         ullbc_statement: ullbc_ast::Statement, ullbc_terminator: ullbc_ast::Terminator,
         AbortKind, AggregateKind, FnPtr, FunSig,
-        ConstantExpr, ConstantExprKind, ExactSizeExpr, ExactSizeExprKind, MetadataValue, Place, ProjectionElem, Rvalue, Body,
+        ConstantExpr, ConstantExprKind, SizeGuarantee, SizeGuaranteeKind, MetadataValue, Place, ProjectionElem, Rvalue, Body,
     )
 )]
 pub trait AstVisitable: Any {

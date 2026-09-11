@@ -335,6 +335,8 @@ and constant_expr_kind =
       (** The integer discriminant value corresponding to this enum variant. *)
   | CSizeOf of ty  (** The size of the given type. *)
   | CAlignOf of ty  (** The alignment of the given type. *)
+  | COffsetOf of type_decl_ref * variant_id option * field_id
+      (** The offset of the given field in the given type('s variant). *)
   | COpaque of string
       (** A constant expression that Charon doesn't handle, along with the
           reason why. *)
@@ -825,32 +827,6 @@ and discriminator =
             the given [Discriminator]. The ranges are sorted.
           - [fallback]: Fallback if no range in [children] matches. *)
 
-(** An expression that represents a size in bytes. *)
-and exact_size_expr = exact_size_expr_kind hash_consed
-
-and exact_size_expr_kind =
-  | ExactSizeExprConstant of constant_expr
-      (** An arbitrary constant of type [usize]. *)
-  | ExactSizeExprFromMetadata of metadata_value
-      (** Layout information stored in the pointer metadata to this object. *)
-  | ExactSizeExprMax of exact_size_expr list
-  | ExactSizeExprMin of exact_size_expr list
-  | ExactSizeExprPlus of exact_size_expr * exact_size_expr
-  | ExactSizeExprScale of exact_size_expr * constant_expr
-  | ExactSizeExprAlignTo of exact_size_expr * exact_size_expr
-      (** The next multiple of [target_align] from [base].
-
-          Fields:
-          - [base]
-          - [target_align] *)
-  | ExactSizeExprIfInhabited of ty * exact_size_expr * exact_size_expr
-      (** A size expression that depens on whether the given type is inhabited.
-
-          Fields:
-          - [ty]
-          - [then_size]
-          - [else_size] *)
-
 and field = {
   span : span;
   attr_info : attr_info;
@@ -1290,7 +1266,7 @@ and offset_guarantee =
   | AtOffsetZero
       (** Guaranteed to be at offset zero. This applies for [repr(transparent)]
           and in some [repr(C)] cases. *)
-  | GuaranteedAlignment of exact_size_expr
+  | GuaranteedAlignment of size_guarantee
       (** Guaranteed only to be aligned to the given expression. *)
   | ReprCField of field_id option
       (** This offset is computed by the layout algorithm for C: take the
@@ -1366,8 +1342,33 @@ and size_expr = {
       (** The size chosen by this rustc run. [None] for unsized types. *)
 }
 
-(** Guaranteed facts about a layout size. *)
-and size_guarantee = Equals of exact_size_expr | AtLeast of exact_size_expr
+(** An expression that represents a size in bytes. *)
+and size_guarantee = size_guarantee_kind hash_consed
+
+and size_guarantee_kind =
+  | SizeGuaranteeConstant of constant_expr
+      (** An arbitrary constant of type [usize]. *)
+  | SizeGuaranteeFromMetadata of metadata_value
+      (** Layout information stored in the pointer metadata to this object. *)
+  | SizeGuaranteeMax of size_guarantee list
+  | SizeGuaranteeMin of size_guarantee list
+  | SizeGuaranteePlus of size_guarantee * size_guarantee
+  | SizeGuaranteeScale of size_guarantee * constant_expr
+  | SizeGuaranteeAlignTo of size_guarantee * size_guarantee
+      (** The next multiple of [target_align] from [base].
+
+          Fields:
+          - [base]
+          - [target_align] *)
+  | SizeGuaranteeIfInhabited of ty * size_guarantee * size_guarantee
+      (** A size expression that depens on whether the given type is inhabited.
+
+          Fields:
+          - [ty]
+          - [then_size]
+          - [else_size] *)
+  | SizeGuaranteeAtLeast of size_guarantee
+      (** Any value larger than that one. *)
 
 (** A type declaration.
 
@@ -1458,9 +1459,11 @@ and variant = {
     Maps fields to their offset within the layout. *)
 and variant_layout = {
   field_offsets : offset_expr list;  (** The offset of each field. *)
-  uninhabited : bool;
+  uninhabited : bool option;
       (** Whether the variant is uninhabited, i.e. has any valid possible value.
-          Note that uninhabited types can have arbitrary layouts. *)
+          Note that uninhabited types can have arbitrary layouts. Is [None] if
+          the variant is neither guaranteed to be inhabited, nor guaranteed to
+          be uninhabited. *)
   tagger : (int * integer_value) list;
       (** How to write the tag when constructing this variant. Each entry means:
           write [value] at byte [offset]. Mirrors MiniRust's [Variant::tagger].

@@ -119,6 +119,8 @@ pub enum ConstantExprKind {
     SizeOf(Ty),
     /// The alignment of the given type.
     AlignOf(Ty),
+    /// The offset of the given field in the given type('s variant).
+    OffsetOf(TypeDeclRef, Option<VariantId>, FieldId),
 
     /// A constant expression that Charon doesn't handle, along with the reason why.
     Opaque(String),
@@ -510,6 +512,14 @@ impl IntegerValue {
             ConstantExprKind::Integer(self),
             TyKind::Scalar(scalar_ty).into_ty(),
         )
+    }
+
+    pub(crate) fn mk_zero_usize() -> Self {
+        IntegerValue::Unsigned(UIntTy::Usize, 0)
+    }
+
+    pub(crate) fn mk_one_usize() -> Self {
+        IntegerValue::Unsigned(UIntTy::Usize, 1)
     }
 }
 

@@ -158,13 +158,7 @@ and cast_kind =
 and local_id = (LocalId.id[@visitors.opaque])
 
 (** Nullary operation *)
-and nullop =
-  | SizeOf
-  | AlignOf
-  | OffsetOf of type_decl_ref * variant_id option * field_id
-  | UbChecks
-  | OverflowChecks
-  | ContractChecks
+and nullop = SizeOf | AlignOf | UbChecks | OverflowChecks | ContractChecks
 
 and operand =
   | Copy of place
