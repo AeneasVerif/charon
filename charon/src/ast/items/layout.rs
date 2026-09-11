@@ -16,9 +16,9 @@ pub type ByteCount = u64;
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Layout {
     /// The size of the type in bytes.
-    pub size: SizeExpr,
+    pub size: Size,
     /// The alignment, in bytes.
-    pub align: SizeExpr,
+    pub align: Size,
     /// Decision tree that determines the active variant by reading memory. Only `Some` for enums.
     pub discriminator: Option<Discriminator>,
     /// Whether the type is uninhabited, i.e. has any valid value at all.
@@ -76,7 +76,7 @@ pub enum Discriminator {
 
 /// An expression denoting a size in bytes.
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
-pub struct SizeExpr {
+pub struct Size {
     /// The guarantees about this size that can be relied on according to the Rust Reference.
     pub guarantee: Option<SizeGuarantee>,
     /// The size chosen by this rustc run. `None` for unsized types.
@@ -92,7 +92,7 @@ pub struct OffsetExpr {
     pub chosen: Option<ByteCount>,
 }
 
-impl SizeExpr {
+impl Size {
     pub fn new(chosen: impl Into<Option<ByteCount>>) -> Self {
         Self {
             guarantee: None,

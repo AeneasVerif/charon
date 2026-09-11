@@ -7,8 +7,8 @@ use serde_state::{DeserializeState, SerializeState};
 /// Guaranteed facts about a layout size.
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum SizeGuarantee {
-    Equals(ExactSizeExpr),
-    AtLeast(ExactSizeExpr),
+    Equals(SizeExpr),
+    AtLeast(SizeExpr),
 }
 
 /// Guaranteed facts about a field offset.
@@ -28,7 +28,7 @@ pub enum OffsetGuarantee {
     /// Guaranteed to be at offset zero. This applies for `repr(transparent)` and in some `repr(C)` cases.
     AtOffsetZero,
     /// Guaranteed only to be aligned to the given expression.
-    GuaranteedAlignment(ExactSizeExpr),
+    GuaranteedAlignment(SizeExpr),
     /// This offset is computed by the layout algorithm for C: take the previous field offset, add
     /// the previous field size, and align to the current field alignment.
     ReprCField {
@@ -81,7 +81,7 @@ pub enum MetadataValue {
     DriveTwo,
 )]
 #[serde_state(state_implements = DedupSerializerState)]
-pub struct ExactSizeExpr(pub HashConsed<ExactSizeExprKind>);
+pub struct SizeExpr(pub HashConsed<SizeExprKind>);
 
 #[derive(
     Debug,
@@ -100,39 +100,39 @@ pub struct ExactSizeExpr(pub HashConsed<ExactSizeExprKind>);
     DriveMut,
     DriveTwo,
 )]
-#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("ExactSizeExpr"))]
-pub enum ExactSizeExprKind {
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("SizeExpr"))]
+pub enum SizeExprKind {
     /// An arbitrary constant of type `usize`.
     Constant(ConstantExpr),
     /// Layout information stored in the pointer metadata to this object.
     FromMetadata(MetadataValue),
-    Max(Vec<ExactSizeExpr>),
-    Min(Vec<ExactSizeExpr>),
-    Plus(ExactSizeExpr, ExactSizeExpr),
-    Scale(ExactSizeExpr, ConstantExpr),
+    Max(Vec<SizeExpr>),
+    Min(Vec<SizeExpr>),
+    Plus(SizeExpr, SizeExpr),
+    Scale(SizeExpr, ConstantExpr),
     /// The next multiple of `target_align` from `base`.
     AlignTo {
-        base: ExactSizeExpr,
-        target_align: ExactSizeExpr,
+        base: SizeExpr,
+        target_align: SizeExpr,
     },
     /// A size expression that depens on whether the given type is inhabited.
     IfInhabited {
         ty: Ty,
-        then_size: ExactSizeExpr,
-        else_size: ExactSizeExpr,
+        then_size: SizeExpr,
+        else_size: SizeExpr,
     },
 }
 
-impl ExactSizeExpr {
-    pub fn new(kind: ExactSizeExprKind) -> Self {
+impl SizeExpr {
+    pub fn new(kind: SizeExprKind) -> Self {
         Self(HashConsed::new(kind))
     }
 
-    pub fn kind(&self) -> &ExactSizeExprKind {
+    pub fn kind(&self) -> &SizeExprKind {
         self.0.inner()
     }
 
-    pub fn with_kind_mut<R>(&mut self, f: impl FnOnce(&mut ExactSizeExprKind) -> R) -> R {
+    pub fn with_kind_mut<R>(&mut self, f: impl FnOnce(&mut SizeExprKind) -> R) -> R {
         self.0.with_inner_mut(f)
     }
 
@@ -146,7 +146,7 @@ impl ExactSizeExpr {
 
         /// Take out the concrete values from the vec and fold them with the provided function.
         fn fold_concrete_values(
-            values: &mut Vec<ExactSizeExpr>,
+            values: &mut Vec<SizeExpr>,
             f: impl Fn(u128, u128) -> u128,
         ) -> Option<u128> {
             values
@@ -156,22 +156,22 @@ impl ExactSizeExpr {
         }
 
         impl VisitAstMut for NormalizeSizeExpr<'_> {
-            fn exit_exact_size_expr_kind(&mut self, expr: &mut ExactSizeExprKind) {
+            fn exit_size_expr_kind(&mut self, expr: &mut SizeExprKind) {
                 *expr = match expr {
-                    ExactSizeExprKind::Constant(constant) => {
+                    SizeExprKind::Constant(constant) => {
                         debug_assert!(constant.ty().is_usize());
-                        let exact_guarantee = |size: &SizeExpr| match &size.guarantee {
+                        let exact_guarantee = |size: &Size| match &size.guarantee {
                             Some(SizeGuarantee::Equals(value)) => Some(value.clone()),
                             Some(SizeGuarantee::AtLeast(_)) | None => None,
                         };
                         let mut guaranteed = match constant.kind() {
                             ConstantExprKind::SizeOf(ty) => match ty.kind() {
-                                TyKind::Never => ExactSizeExpr::from_usize(0),
+                                TyKind::Never => SizeExpr::from_usize(0),
                                 TyKind::Scalar(scalar_ty) => {
                                     if let Some(target) =
                                         self.krate.target_information.get(self.target)
                                     {
-                                        ExactSizeExpr::from_usize(
+                                        SizeExpr::from_usize(
                                             scalar_ty.target_size(target.target_pointer_size)
                                                 as u128,
                                         )
@@ -192,14 +192,14 @@ impl ExactSizeExpr {
                                 }
                             },
                             ConstantExprKind::AlignOf(ty) => match ty.kind() {
-                                TyKind::Never => ExactSizeExpr::from_usize(1),
+                                TyKind::Never => SizeExpr::from_usize(1),
                                 TyKind::Scalar(scalar_ty) => {
                                     if let Some(target) =
                                         self.krate.target_information.get(self.target)
                                         && let Some(value) =
                                             target.primitive_alignments.get(scalar_ty)
                                     {
-                                        ExactSizeExpr::from_usize(u128::from(*value))
+                                        SizeExpr::from_usize(u128::from(*value))
                                     } else {
                                         return;
                                     }
@@ -221,14 +221,12 @@ impl ExactSizeExpr {
                         self.visit(&mut guaranteed);
                         guaranteed.kind().clone()
                     }
-                    ExactSizeExprKind::FromMetadata(_) => return,
-                    ExactSizeExprKind::Max(values) => {
+                    SizeExprKind::FromMetadata(_) => return,
+                    SizeExprKind::Max(values) => {
                         // Flatten nested operations.
                         for val in std::mem::take(values) {
                             match val.kind() {
-                                ExactSizeExprKind::Max(nested) => {
-                                    values.extend(nested.iter().cloned())
-                                }
+                                SizeExprKind::Max(nested) => values.extend(nested.iter().cloned()),
                                 _ => values.push(val),
                             }
                         }
@@ -237,23 +235,21 @@ impl ExactSizeExpr {
                             && value != 0
                         {
                             // Zero is the identity of `Max` so we don't push in that case.
-                            values.push(ExactSizeExpr::from_usize(value));
+                            values.push(SizeExpr::from_usize(value));
                         }
                         if values.len() == 1 {
                             values.pop().unwrap().kind().clone()
                         } else if values.is_empty() {
-                            ExactSizeExprKind::zero()
+                            SizeExprKind::zero()
                         } else {
                             return;
                         }
                     }
-                    ExactSizeExprKind::Min(values) => {
+                    SizeExprKind::Min(values) => {
                         // Flatten nested operations.
                         for val in std::mem::take(values) {
                             match val.kind() {
-                                ExactSizeExprKind::Min(nested) => {
-                                    values.extend(nested.iter().cloned())
-                                }
+                                SizeExprKind::Min(nested) => values.extend(nested.iter().cloned()),
                                 _ => values.push(val),
                             }
                         }
@@ -263,7 +259,7 @@ impl ExactSizeExpr {
                             if value == 0 {
                                 values.clear();
                             }
-                            values.push(ExactSizeExpr::from_usize(value));
+                            values.push(SizeExpr::from_usize(value));
                         }
                         if values.len() == 1 {
                             values.pop().unwrap().kind().clone()
@@ -271,33 +267,31 @@ impl ExactSizeExpr {
                             return;
                         }
                     }
-                    ExactSizeExprKind::Plus(left, right) => {
-                        match (left.as_usize(), right.as_usize()) {
-                            (Some(left), Some(right)) => {
-                                ExactSizeExprKind::from_usize(left.strict_add(right))
-                            }
-                            (Some(0), None) => right.kind().clone(),
-                            (None, Some(0)) => left.kind().clone(),
-                            _ => return,
+                    SizeExprKind::Plus(left, right) => match (left.as_usize(), right.as_usize()) {
+                        (Some(left), Some(right)) => {
+                            SizeExprKind::from_usize(left.strict_add(right))
                         }
-                    }
-                    ExactSizeExprKind::Scale(base, multiplier) => {
+                        (Some(0), None) => right.kind().clone(),
+                        (None, Some(0)) => left.kind().clone(),
+                        _ => return,
+                    },
+                    SizeExprKind::Scale(base, multiplier) => {
                         match (base.as_usize(), multiplier.as_usize_literal()) {
-                            (_, Some(0)) | (Some(0), _) => ExactSizeExprKind::zero(),
+                            (_, Some(0)) | (Some(0), _) => SizeExprKind::zero(),
                             (_, Some(1)) => base.kind().clone(),
                             (Some(base), Some(multiplier)) => {
-                                ExactSizeExprKind::from_usize(base.strict_mul(multiplier))
+                                SizeExprKind::from_usize(base.strict_mul(multiplier))
                             }
                             _ => return,
                         }
                     }
-                    ExactSizeExprKind::AlignTo { base, target_align } => {
+                    SizeExprKind::AlignTo { base, target_align } => {
                         match (base.as_usize(), target_align.as_usize()) {
                             (_, Some(1)) => base.kind().clone(),
                             (Some(0), Some(align)) if align != 0 => base.kind().clone(),
                             (Some(base), Some(align)) if align != 0 => {
                                 let remainder = base % align;
-                                ExactSizeExprKind::from_usize(if remainder == 0 {
+                                SizeExprKind::from_usize(if remainder == 0 {
                                     base
                                 } else {
                                     base.strict_add(align - remainder)
@@ -306,7 +300,7 @@ impl ExactSizeExpr {
                             _ => return,
                         }
                     }
-                    ExactSizeExprKind::IfInhabited { .. } => {
+                    SizeExprKind::IfInhabited { .. } => {
                         // FIXME: evaluate type inhabitedness
                         return;
                     }
@@ -319,7 +313,7 @@ impl ExactSizeExpr {
     }
 
     fn as_usize(&self) -> Option<u128> {
-        if let ExactSizeExprKind::Constant(constant) = self.kind() {
+        if let SizeExprKind::Constant(constant) = self.kind() {
             constant.as_usize_literal()
         } else {
             None
@@ -327,11 +321,11 @@ impl ExactSizeExpr {
     }
 
     fn from_usize(value: u128) -> Self {
-        ExactSizeExprKind::from_usize(value).into_expr()
+        SizeExprKind::from_usize(value).into_expr()
     }
 }
 
-impl ExactSizeExprKind {
+impl SizeExprKind {
     pub fn zero() -> Self {
         Self::from_usize(0)
     }
@@ -340,19 +334,19 @@ impl ExactSizeExprKind {
         Self::Constant(ConstantExpr::mk_usize(value))
     }
 
-    pub fn into_expr(self) -> ExactSizeExpr {
-        ExactSizeExpr::new(self)
+    pub fn into_expr(self) -> SizeExpr {
+        SizeExpr::new(self)
     }
 }
 
-impl From<ExactSizeExprKind> for ExactSizeExpr {
-    fn from(kind: ExactSizeExprKind) -> Self {
+impl From<SizeExprKind> for SizeExpr {
+    fn from(kind: SizeExprKind) -> Self {
         kind.into_expr()
     }
 }
 
-impl std::ops::Deref for ExactSizeExpr {
-    type Target = ExactSizeExprKind;
+impl std::ops::Deref for SizeExpr {
+    type Target = SizeExprKind;
 
     fn deref(&self) -> &Self::Target {
         self.kind()
@@ -381,14 +375,13 @@ mod tests {
     #[test]
     fn normalize_arithmetic() {
         let (krate, target) = test_krate();
-        let expr = ExactSizeExprKind::AlignTo {
-            base: ExactSizeExprKind::Plus(
-                ExactSizeExpr::from_usize(2),
-                ExactSizeExprKind::Scale(ExactSizeExpr::from_usize(3), ConstantExpr::mk_usize(4))
-                    .into_expr(),
+        let expr = SizeExprKind::AlignTo {
+            base: SizeExprKind::Plus(
+                SizeExpr::from_usize(2),
+                SizeExprKind::Scale(SizeExpr::from_usize(3), ConstantExpr::mk_usize(4)).into_expr(),
             )
             .into_expr(),
-            target_align: ExactSizeExpr::from_usize(8),
+            target_align: SizeExpr::from_usize(8),
         }
         .into_expr()
         .normalize(&krate, &target);
@@ -399,29 +392,29 @@ mod tests {
     #[test]
     fn normalize_extrema_partially() {
         let (krate, target) = test_krate();
-        let expr = ExactSizeExprKind::Max(vec![
-            ExactSizeExpr::from_usize(2),
-            ExactSizeExprKind::Max(vec![
-                ExactSizeExpr::from_usize(5),
-                ExactSizeExprKind::FromMetadata(MetadataValue::DynSize).into_expr(),
+        let expr = SizeExprKind::Max(vec![
+            SizeExpr::from_usize(2),
+            SizeExprKind::Max(vec![
+                SizeExpr::from_usize(5),
+                SizeExprKind::FromMetadata(MetadataValue::DynSize).into_expr(),
             ])
             .into_expr(),
-            ExactSizeExpr::from_usize(3),
+            SizeExpr::from_usize(3),
         ])
         .into_expr()
         .normalize(&krate, &target);
 
-        let ExactSizeExprKind::Max(contenders) = expr.kind() else {
+        let SizeExprKind::Max(contenders) = expr.kind() else {
             panic!("expected a partially normalized maximum")
         };
         assert_eq!(contenders.len(), 2);
         assert_eq!(contenders[1].as_usize(), Some(5));
         assert!(matches!(
             contenders[0].kind(),
-            ExactSizeExprKind::FromMetadata(MetadataValue::DynSize)
+            SizeExprKind::FromMetadata(MetadataValue::DynSize)
         ));
 
-        let empty = ExactSizeExprKind::Max(Vec::new())
+        let empty = SizeExprKind::Max(Vec::new())
             .into_expr()
             .normalize(&krate, &target);
         assert_eq!(empty.as_usize(), Some(0));
@@ -430,23 +423,23 @@ mod tests {
     #[test]
     fn normalize_extrema_identities() {
         let (krate, target) = test_krate();
-        let max = ExactSizeExprKind::Max(vec![
-            ExactSizeExpr::from_usize(0),
-            ExactSizeExprKind::FromMetadata(MetadataValue::DynSize).into_expr(),
+        let max = SizeExprKind::Max(vec![
+            SizeExpr::from_usize(0),
+            SizeExprKind::FromMetadata(MetadataValue::DynSize).into_expr(),
         ])
         .into_expr()
         .normalize(&krate, &target);
-        let min = ExactSizeExprKind::Min(vec![
-            ExactSizeExpr::from_usize(7),
-            ExactSizeExprKind::FromMetadata(MetadataValue::DynSize).into_expr(),
-            ExactSizeExpr::from_usize(0),
+        let min = SizeExprKind::Min(vec![
+            SizeExpr::from_usize(7),
+            SizeExprKind::FromMetadata(MetadataValue::DynSize).into_expr(),
+            SizeExpr::from_usize(0),
         ])
         .into_expr()
         .normalize(&krate, &target);
 
         assert!(matches!(
             max.kind(),
-            ExactSizeExprKind::FromMetadata(MetadataValue::DynSize)
+            SizeExprKind::FromMetadata(MetadataValue::DynSize)
         ));
         assert_eq!(min.as_usize(), Some(0));
     }
@@ -454,19 +447,16 @@ mod tests {
     #[test]
     fn normalize_if_inhabited() {
         let (krate, target) = test_krate();
-        let expr = ExactSizeExprKind::IfInhabited {
+        let expr = SizeExprKind::IfInhabited {
             ty: TyKind::Never.into_ty(),
-            then_size: ExactSizeExpr::from_usize(10),
-            else_size: ExactSizeExprKind::Plus(
-                ExactSizeExpr::from_usize(2),
-                ExactSizeExpr::from_usize(3),
-            )
-            .into_expr(),
+            then_size: SizeExpr::from_usize(10),
+            else_size: SizeExprKind::Plus(SizeExpr::from_usize(2), SizeExpr::from_usize(3))
+                .into_expr(),
         }
         .into_expr()
         .normalize(&krate, &target);
 
-        let ExactSizeExprKind::IfInhabited {
+        let SizeExprKind::IfInhabited {
             then_size,
             else_size,
             ..
@@ -498,19 +488,19 @@ mod tests {
         let target_a = "a".to_owned();
         let target_b = "b".to_owned();
 
-        let size = ExactSizeExprKind::Constant(ConstantExpr::new(
+        let size = SizeExprKind::Constant(ConstantExpr::new(
             ConstantExprKind::SizeOf(TyKind::Scalar(scalar_ty).into_ty()),
             Ty::mk_usize(),
         ))
         .into_expr()
         .normalize(&krate, &target_a);
-        let align = ExactSizeExprKind::Constant(ConstantExpr::new(
+        let align = SizeExprKind::Constant(ConstantExpr::new(
             ConstantExprKind::AlignOf(TyKind::Scalar(scalar_ty).into_ty()),
             Ty::mk_usize(),
         ))
         .into_expr()
         .normalize(&krate, &target_a);
-        let pointer_size = ExactSizeExprKind::Constant(ConstantExpr::new(
+        let pointer_size = SizeExprKind::Constant(ConstantExpr::new(
             ConstantExprKind::SizeOf(Ty::mk_usize()),
             Ty::mk_usize(),
         ))
@@ -537,11 +527,11 @@ mod tests {
         layouts.insert(
             target.clone(),
             Layout {
-                size: SizeExpr {
+                size: Size {
                     guarantee: None,
                     chosen: Some(99),
                 },
-                align: SizeExpr::new(1),
+                align: Size::new(1),
                 discriminator: None,
                 uninhabited: false,
                 variant_layouts: Default::default(),
@@ -576,7 +566,7 @@ mod tests {
         ))
         .into_ty();
         let size_of = || {
-            ExactSizeExprKind::Constant(ConstantExpr::new(
+            SizeExprKind::Constant(ConstantExpr::new(
                 ConstantExprKind::SizeOf(ty.clone()),
                 Ty::mk_usize(),
             ))
@@ -586,19 +576,19 @@ mod tests {
         let without_guarantee = size_of().normalize(&krate, &target);
         assert!(matches!(
             without_guarantee.kind(),
-            ExactSizeExprKind::Constant(constant)
+            SizeExprKind::Constant(constant)
                 if matches!(constant.kind(), ConstantExprKind::SizeOf(_))
         ));
 
         let size = &mut krate.type_decls.get_mut(id).unwrap().layout[&target].size;
         size.guarantee = Some(SizeGuarantee::Equals(
-            ExactSizeExprKind::Plus(
-                ExactSizeExprKind::Constant(ConstantExpr::new(
+            SizeExprKind::Plus(
+                SizeExprKind::Constant(ConstantExpr::new(
                     ConstantExprKind::SizeOf(generic_ty),
                     Ty::mk_usize(),
                 ))
                 .into_expr(),
-                ExactSizeExpr::from_usize(5),
+                SizeExpr::from_usize(5),
             )
             .into_expr(),
         ));

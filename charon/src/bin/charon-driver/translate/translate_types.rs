@@ -594,8 +594,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         } else {
             (None, None)
         };
-        let size = SizeExpr::new(size);
-        let align = SizeExpr::new(align);
+        let size = Size::new(size);
+        let align = Size::new(align);
 
         // Build the discriminator tree and variant layouts.
         let (discriminator, variant_layouts) = match layout.variants() {
@@ -818,8 +818,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 });
 
                 Ok(Layout {
-                    size: SizeExpr::new(size),
-                    align: SizeExpr::new(align),
+                    size: Size::new(size),
+                    align: Size::new(align),
                     discriminator: None,
                     uninhabited: false,
                     variant_layouts: IndexVec::from([Some(VariantLayout {

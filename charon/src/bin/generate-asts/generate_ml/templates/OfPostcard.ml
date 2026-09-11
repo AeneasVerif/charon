@@ -40,7 +40,7 @@ type of_postcard_ctx = {
   ty_dedup_tbl : ty DedupTbl.t;
   tref_dedup_tbl : trait_ref DedupTbl.t;
   constant_expr_dedup_tbl : constant_expr DedupTbl.t;
-  exact_size_expr_dedup_tbl : exact_size_expr DedupTbl.t;
+  size_expr_dedup_tbl : size_expr DedupTbl.t;
   span_dedup_tbl : span DedupTbl.t;
 }
 
@@ -50,7 +50,7 @@ let empty_of_postcard_ctx : of_postcard_ctx =
     ty_dedup_tbl = DedupTbl.create 2048;
     tref_dedup_tbl = DedupTbl.create 1024;
     constant_expr_dedup_tbl = DedupTbl.create 64;
-    exact_size_expr_dedup_tbl = DedupTbl.create 16;
+    size_expr_dedup_tbl = DedupTbl.create 16;
     span_dedup_tbl = DedupTbl.create 4096;
   }
 

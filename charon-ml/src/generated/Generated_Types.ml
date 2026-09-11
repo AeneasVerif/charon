@@ -827,32 +827,6 @@ and discriminator =
             the given [Discriminator]. The ranges are sorted.
           - [fallback]: Fallback if no range in [children] matches. *)
 
-(** An expression that represents a size in bytes. *)
-and exact_size_expr = exact_size_expr_kind hash_consed
-
-and exact_size_expr_kind =
-  | ExactSizeExprConstant of constant_expr
-      (** An arbitrary constant of type [usize]. *)
-  | ExactSizeExprFromMetadata of metadata_value
-      (** Layout information stored in the pointer metadata to this object. *)
-  | ExactSizeExprMax of exact_size_expr list
-  | ExactSizeExprMin of exact_size_expr list
-  | ExactSizeExprPlus of exact_size_expr * exact_size_expr
-  | ExactSizeExprScale of exact_size_expr * constant_expr
-  | ExactSizeExprAlignTo of exact_size_expr * exact_size_expr
-      (** The next multiple of [target_align] from [base].
-
-          Fields:
-          - [base]
-          - [target_align] *)
-  | ExactSizeExprIfInhabited of ty * exact_size_expr * exact_size_expr
-      (** A size expression that depens on whether the given type is inhabited.
-
-          Fields:
-          - [ty]
-          - [then_size]
-          - [else_size] *)
-
 and field = {
   span : span;
   attr_info : attr_info;
@@ -1207,8 +1181,8 @@ and rustc_lang_item =
     known layout (e.g. it is ?Sized) some of the layout parts are not available.
 *)
 and layout = {
-  size : size_expr;  (** The size of the type in bytes. *)
-  align : size_expr;  (** The alignment, in bytes. *)
+  size : size;  (** The size of the type in bytes. *)
+  align : size;  (** The alignment, in bytes. *)
   discriminator : discriminator option;
       (** Decision tree that determines the active variant by reading memory.
           Only [Some] for enums. *)
@@ -1292,7 +1266,7 @@ and offset_guarantee =
   | AtOffsetZero
       (** Guaranteed to be at offset zero. This applies for [repr(transparent)]
           and in some [repr(C)] cases. *)
-  | GuaranteedAlignment of exact_size_expr
+  | GuaranteedAlignment of size_expr
       (** Guaranteed only to be aligned to the given expression. *)
   | ReprCField of field_id option
       (** This offset is computed by the layout algorithm for C: take the
@@ -1360,7 +1334,7 @@ and repr_options = {
 }
 
 (** An expression denoting a size in bytes. *)
-and size_expr = {
+and size = {
   guarantee : size_guarantee option;
       (** The guarantees about this size that can be relied on according to the
           Rust Reference. *)
@@ -1368,8 +1342,34 @@ and size_expr = {
       (** The size chosen by this rustc run. [None] for unsized types. *)
 }
 
+(** An expression that represents a size in bytes. *)
+and size_expr = size_expr_kind hash_consed
+
+and size_expr_kind =
+  | SizeExprConstant of constant_expr
+      (** An arbitrary constant of type [usize]. *)
+  | SizeExprFromMetadata of metadata_value
+      (** Layout information stored in the pointer metadata to this object. *)
+  | SizeExprMax of size_expr list
+  | SizeExprMin of size_expr list
+  | SizeExprPlus of size_expr * size_expr
+  | SizeExprScale of size_expr * constant_expr
+  | SizeExprAlignTo of size_expr * size_expr
+      (** The next multiple of [target_align] from [base].
+
+          Fields:
+          - [base]
+          - [target_align] *)
+  | SizeExprIfInhabited of ty * size_expr * size_expr
+      (** A size expression that depens on whether the given type is inhabited.
+
+          Fields:
+          - [ty]
+          - [then_size]
+          - [else_size] *)
+
 (** Guaranteed facts about a layout size. *)
-and size_guarantee = Equals of exact_size_expr | AtLeast of exact_size_expr
+and size_guarantee = Equals of size_expr | AtLeast of size_expr
 
 (** A type declaration.
 
