@@ -1,14 +1,14 @@
 test_crate::SimpleStruct
 Layout: {
-    SIZE: 12 (guaranteed >= aligned_to(max(offset(SimpleStruct.x) + size_of::<u32>(), offset(SimpleStruct.y) + size_of::<u32>(), offset(SimpleStruct.z) + size_of::<u32>()), max(align_of::<u32>(), align_of::<u32>(), align_of::<u32>()))),
+    SIZE: 12 (guaranteed >= aligned_to(max(offset_of(SimpleStruct.x) + size_of::<u32>(), offset_of(SimpleStruct.y) + size_of::<u32>(), offset_of(SimpleStruct.z) + size_of::<u32>()), max(align_of::<u32>(), align_of::<u32>(), align_of::<u32>()))),
     ALIGN: 4 (guaranteed >= max(align_of::<u32>(), align_of::<u32>(), align_of::<u32>())),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        @Variant0: VariantLayout { 
-            offset of 0: 0 (guaranteed aligned to align_of::<u32>()),
-            offset of 1: 4 (guaranteed aligned to align_of::<u32>()),
-            offset of 2: 8 (guaranteed aligned to align_of::<u32>()),
+        VariantLayout { 
+            offset of x: 0 (guaranteed aligned to align_of::<u32>()),
+            offset of y: 4 (guaranteed aligned to align_of::<u32>()),
+            offset of z: 8 (guaranteed aligned to align_of::<u32>()),
             uninhabited: false,
             tagger: [],
         }
@@ -17,14 +17,14 @@ Layout: {
 
 test_crate::GenericStruct
 Layout: {
-    SIZE: unk (guaranteed >= aligned_to(max(offset(GenericStruct<T>[TraitClause0].a) + size_of::<usize>(), offset(GenericStruct<T>[TraitClause0].b) + size_of::<T>()), max(align_of::<usize>(), align_of::<T>()))),
+    SIZE: unk (guaranteed >= aligned_to(max(offset_of(GenericStruct<T>[TraitClause0].a) + size_of::<usize>(), offset_of(GenericStruct<T>[TraitClause0].b) + size_of::<T>()), max(align_of::<usize>(), align_of::<T>()))),
     ALIGN: unk (guaranteed >= max(align_of::<usize>(), align_of::<T>())),
     discriminator: None,
     uninhabited: false,
     variant_layouts: 
-        @Variant0: VariantLayout { 
-            offset of 0: unk (guaranteed aligned to align_of::<usize>()),
-            offset of 1: unk (guaranteed aligned to align_of::<T>()),
+        VariantLayout { 
+            offset of a: unk (guaranteed aligned to align_of::<usize>()),
+            offset of b: unk (guaranteed aligned to align_of::<T>()),
             uninhabited: unk,
             tagger: [],
         }
@@ -33,14 +33,14 @@ Layout: {
 
 test_crate::UnsizedStruct
 Layout: {
-    SIZE: unk (guaranteed >= aligned_to(max(offset(UnsizedStruct.x) + size_of::<usize>(), offset(UnsizedStruct.y) + size_of::<[usize]>()), max(align_of::<usize>(), align_of::<[usize]>()))),
+    SIZE: unk (guaranteed >= aligned_to(max(offset_of(UnsizedStruct.x) + size_of::<usize>(), offset_of(UnsizedStruct.y) + size_of::<[usize]>()), max(align_of::<usize>(), align_of::<[usize]>()))),
     ALIGN: unk (guaranteed >= max(align_of::<usize>(), align_of::<[usize]>())),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        @Variant0: VariantLayout { 
-            offset of 0: 0 (guaranteed aligned to align_of::<usize>()),
-            offset of 1: 8 (guaranteed aligned to align_of::<[usize]>()),
+        VariantLayout { 
+            offset of x: 0 (guaranteed aligned to align_of::<usize>()),
+            offset of y: 8 (guaranteed aligned to align_of::<[usize]>()),
             uninhabited: false,
             tagger: [],
         }
@@ -54,11 +54,11 @@ Layout: {
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        Var1: VariantLayout { 
+        Var1.VariantLayout { 
             uninhabited: false,
             tagger: [0:0u8],
         }
-        Other: VariantLayout { 
+        Other.VariantLayout { 
             uninhabited: false,
             tagger: [0:1u8],
         }
@@ -67,22 +67,22 @@ Layout: {
 
 test_crate::SimpleAdt
 Layout: {
-    SIZE: 24 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset(SimpleAdt.StructVar.x) + size_of::<usize>(), offset(SimpleAdt.StructVar.y) + size_of::<usize>()), max(align_of::<usize>(), align_of::<usize>())), >= aligned_to(max(offset(SimpleAdt.TupleVar._0) + size_of::<u32>(), offset(SimpleAdt.TupleVar._1) + size_of::<u32>()), max(align_of::<u32>(), align_of::<u32>()))), max(1usize, >= max(align_of::<usize>(), align_of::<usize>()), >= max(align_of::<u32>(), align_of::<u32>())))),
+    SIZE: 24 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset_of(SimpleAdt.StructVar.x) + size_of::<usize>(), offset_of(SimpleAdt.StructVar.y) + size_of::<usize>()), max(align_of::<usize>(), align_of::<usize>())), >= aligned_to(max(offset_of(SimpleAdt.TupleVar._0) + size_of::<u32>(), offset_of(SimpleAdt.TupleVar._1) + size_of::<u32>()), max(align_of::<u32>(), align_of::<u32>()))), max(1usize, >= max(align_of::<usize>(), align_of::<usize>()), >= max(align_of::<u32>(), align_of::<u32>())))),
     ALIGN: 8 (guaranteed >= max(1usize, >= max(align_of::<usize>(), align_of::<usize>()), >= max(align_of::<u32>(), align_of::<u32>()))),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        EmptyVar: VariantLayout { 
+        EmptyVar.VariantLayout { 
             uninhabited: false,
             tagger: [0:0u32],
         }
-        StructVar: VariantLayout { 
+        StructVar.VariantLayout { 
             offset of x: 8 (guaranteed aligned to align_of::<usize>()),
             offset of y: 16 (guaranteed aligned to align_of::<usize>()),
             uninhabited: false,
             tagger: [0:1u32],
         }
-        TupleVar: VariantLayout { 
+        TupleVar.VariantLayout { 
             offset of _0: 4 (guaranteed aligned to align_of::<u32>()),
             offset of _1: 8 (guaranteed aligned to align_of::<u32>()),
             uninhabited: false,
@@ -93,16 +93,16 @@ Layout: {
 
 test_crate::NicheAdt
 Layout: {
-    SIZE: 4 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset(NicheAdt.Some._0) + size_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()), max(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()))), max(1usize, >= max(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>())))),
+    SIZE: 4 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset_of(NicheAdt.Some._0) + size_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()), max(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()))), max(1usize, >= max(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>())))),
     ALIGN: 4 (guaranteed >= max(1usize, >= max(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()))),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        None: VariantLayout { 
+        None.VariantLayout { 
             uninhabited: false,
             tagger: [0:0u32],
         }
-        Some: VariantLayout { 
+        Some.VariantLayout { 
             offset of _0: 0 (guaranteed aligned to align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()),
             uninhabited: false,
             tagger: [],
@@ -112,16 +112,16 @@ Layout: {
 
 test_crate::NicheAdtSigned
 Layout: {
-    SIZE: 4 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset(NicheAdtSigned.Some._0) + size_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()), max(align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()))), max(1usize, >= max(align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>())))),
+    SIZE: 4 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset_of(NicheAdtSigned.Some._0) + size_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()), max(align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()))), max(1usize, >= max(align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>())))),
     ALIGN: 4 (guaranteed >= max(1usize, >= max(align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()))),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        None: VariantLayout { 
+        None.VariantLayout { 
             uninhabited: false,
             tagger: [0:0i32],
         }
-        Some: VariantLayout { 
+        Some.VariantLayout { 
             offset of _0: 0 (guaranteed aligned to align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()),
             uninhabited: false,
             tagger: [],
@@ -131,16 +131,16 @@ Layout: {
 
 test_crate::NicheAdtChar
 Layout: {
-    SIZE: 4 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset(NicheAdtChar.Some._0) + size_of::<char>()), max(align_of::<char>()))), max(1usize, >= max(align_of::<char>())))),
+    SIZE: 4 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset_of(NicheAdtChar.Some._0) + size_of::<char>()), max(align_of::<char>()))), max(1usize, >= max(align_of::<char>())))),
     ALIGN: 4 (guaranteed >= max(1usize, >= max(align_of::<char>()))),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        None: VariantLayout { 
+        None.VariantLayout { 
             uninhabited: false,
             tagger: [0:4294967295u32],
         }
-        Some: VariantLayout { 
+        Some.VariantLayout { 
             offset of _0: 0 (guaranteed aligned to align_of::<char>()),
             uninhabited: false,
             tagger: [],
@@ -155,7 +155,7 @@ Layout: {
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        @Variant0: VariantLayout { 
+        VariantLayout { 
             uninhabited: false,
             tagger: [],
         }
@@ -164,14 +164,14 @@ Layout: {
 
 test_crate::GenericWithKnownLayout
 Layout: {
-    SIZE: 16 (guaranteed >= aligned_to(max(offset(GenericWithKnownLayout<T>[TraitClause0].x) + size_of::<usize>(), offset(GenericWithKnownLayout<T>[TraitClause0].y) + size_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>()), max(align_of::<usize>(), align_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>()))),
+    SIZE: 16 (guaranteed >= aligned_to(max(offset_of(GenericWithKnownLayout<T>[TraitClause0].x) + size_of::<usize>(), offset_of(GenericWithKnownLayout<T>[TraitClause0].y) + size_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>()), max(align_of::<usize>(), align_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>()))),
     ALIGN: 8 (guaranteed >= max(align_of::<usize>(), align_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>())),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        @Variant0: VariantLayout { 
-            offset of 0: 8 (guaranteed aligned to align_of::<usize>()),
-            offset of 1: 0 (guaranteed aligned to align_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>()),
+        VariantLayout { 
+            offset of x: 8 (guaranteed aligned to align_of::<usize>()),
+            offset of y: 0 (guaranteed aligned to align_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>()),
             uninhabited: false,
             tagger: [],
         }
@@ -180,15 +180,15 @@ Layout: {
 
 test_crate::Reordered
 Layout: {
-    SIZE: 8 (guaranteed >= aligned_to(max(offset(Reordered.x) + size_of::<u8>(), offset(Reordered.y) + size_of::<u32>(), offset(Reordered.z) + size_of::<u8>()), max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>()))),
+    SIZE: 8 (guaranteed >= aligned_to(max(offset_of(Reordered.x) + size_of::<u8>(), offset_of(Reordered.y) + size_of::<u32>(), offset_of(Reordered.z) + size_of::<u8>()), max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>()))),
     ALIGN: 4 (guaranteed >= max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>())),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        @Variant0: VariantLayout { 
-            offset of 0: 4 (guaranteed aligned to align_of::<u8>()),
-            offset of 1: 0 (guaranteed aligned to align_of::<u32>()),
-            offset of 2: 5 (guaranteed aligned to align_of::<u8>()),
+        VariantLayout { 
+            offset of x: 4 (guaranteed aligned to align_of::<u8>()),
+            offset of y: 0 (guaranteed aligned to align_of::<u32>()),
+            offset of z: 5 (guaranteed aligned to align_of::<u8>()),
             uninhabited: false,
             tagger: [],
         }
@@ -197,15 +197,15 @@ Layout: {
 
 test_crate::NotReordered
 Layout: {
-    SIZE: 12 (guaranteed aligned_to(offset(NotReordered.z) + size_of::<u8>(), max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>()))),
+    SIZE: 12 (guaranteed aligned_to(offset_of(NotReordered.z) + size_of::<u8>(), max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>()))),
     ALIGN: 4 (guaranteed max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>())),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        @Variant0: VariantLayout { 
-            offset of 0: 0 (guaranteed 0),
-            offset of 1: 4 (guaranteed computed by repr(C) algorithm),
-            offset of 2: 8 (guaranteed computed by repr(C) algorithm),
+        VariantLayout { 
+            offset of x: 0 (guaranteed 0),
+            offset of y: 4 (guaranteed computed by repr(C) algorithm),
+            offset of z: 8 (guaranteed computed by repr(C) algorithm),
             uninhabited: false,
             tagger: [],
         }
@@ -214,15 +214,15 @@ Layout: {
 
 test_crate::Packed
 Layout: {
-    SIZE: 6 (guaranteed >= aligned_to(max(offset(Packed.x) + size_of::<u8>(), offset(Packed.y) + size_of::<u32>(), offset(Packed.z) + size_of::<u8>()), max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>()))),
+    SIZE: 6 (guaranteed >= aligned_to(max(offset_of(Packed.x) + size_of::<u8>(), offset_of(Packed.y) + size_of::<u32>(), offset_of(Packed.z) + size_of::<u8>()), max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>()))),
     ALIGN: 1 (guaranteed min(1usize, >= max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>()))),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        @Variant0: VariantLayout { 
-            offset of 0: 0 (guaranteed aligned to min(1usize, align_of::<u8>())),
-            offset of 1: 1 (guaranteed aligned to min(1usize, align_of::<u32>())),
-            offset of 2: 5 (guaranteed aligned to min(1usize, align_of::<u8>())),
+        VariantLayout { 
+            offset of x: 0 (guaranteed aligned to min(1usize, align_of::<u8>())),
+            offset of y: 1 (guaranteed aligned to min(1usize, align_of::<u32>())),
+            offset of z: 5 (guaranteed aligned to min(1usize, align_of::<u8>())),
             uninhabited: false,
             tagger: [],
         }
@@ -231,17 +231,17 @@ Layout: {
 
 test_crate::UninhabitedVariant
 Layout: {
-    SIZE: 4 (guaranteed >= aligned_to(max(>= aligned_to(max(offset(UninhabitedVariant.A._0) + size_of::<!>()), max(align_of::<!>())), >= aligned_to(max(offset(UninhabitedVariant.B._0) + size_of::<u32>()), max(align_of::<u32>()))), max(>= max(align_of::<!>()), >= max(align_of::<u32>())))),
+    SIZE: 4 (guaranteed >= aligned_to(max(>= aligned_to(max(offset_of(UninhabitedVariant.A._0) + size_of::<!>()), max(align_of::<!>())), >= aligned_to(max(offset_of(UninhabitedVariant.B._0) + size_of::<u32>()), max(align_of::<u32>()))), max(>= max(align_of::<!>()), >= max(align_of::<u32>())))),
     ALIGN: 4 (guaranteed >= max(>= max(align_of::<!>()), >= max(align_of::<u32>()))),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        A: VariantLayout { 
+        A.VariantLayout { 
             offset of _0: unk (guaranteed aligned to align_of::<!>()),
             uninhabited: unk,
             tagger: [],
         }
-        B: VariantLayout { 
+        B.VariantLayout { 
             offset of _0: 0 (guaranteed aligned to align_of::<u32>()),
             uninhabited: false,
             tagger: [],
@@ -251,18 +251,18 @@ Layout: {
 
 test_crate::UninhabitedVariant2
 Layout: {
-    SIZE: 8 (guaranteed >= aligned_to(max(>= aligned_to(max(offset(UninhabitedVariant2.A._0) + size_of::<!>(), offset(UninhabitedVariant2.A._1) + size_of::<u32>()), max(align_of::<!>(), align_of::<u32>())), >= aligned_to(max(offset(UninhabitedVariant2.B._0) + size_of::<u32>()), max(align_of::<u32>()))), max(>= max(align_of::<!>(), align_of::<u32>()), >= max(align_of::<u32>())))),
+    SIZE: 8 (guaranteed >= aligned_to(max(>= aligned_to(max(offset_of(UninhabitedVariant2.A._0) + size_of::<!>(), offset_of(UninhabitedVariant2.A._1) + size_of::<u32>()), max(align_of::<!>(), align_of::<u32>())), >= aligned_to(max(offset_of(UninhabitedVariant2.B._0) + size_of::<u32>()), max(align_of::<u32>()))), max(>= max(align_of::<!>(), align_of::<u32>()), >= max(align_of::<u32>())))),
     ALIGN: 4 (guaranteed >= max(>= max(align_of::<!>(), align_of::<u32>()), >= max(align_of::<u32>()))),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        A: VariantLayout { 
+        A.VariantLayout { 
             offset of _0: 4 (guaranteed aligned to align_of::<!>()),
             offset of _1: 4 (guaranteed aligned to align_of::<u32>()),
             uninhabited: true,
             tagger: [],
         }
-        B: VariantLayout { 
+        B.VariantLayout { 
             offset of _0: 4 (guaranteed aligned to align_of::<u32>()),
             uninhabited: false,
             tagger: [0:1u32],
@@ -272,16 +272,16 @@ Layout: {
 
 test_crate::UninhabitedVariantWithFields
 Layout: {
-    SIZE: 12 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset(UninhabitedVariantWithFields.Baz.x) + size_of::<u32>(), offset(UninhabitedVariantWithFields.Baz.y) + size_of::<!>(), offset(UninhabitedVariantWithFields.Baz.z) + size_of::<u32>()), max(align_of::<u32>(), align_of::<!>(), align_of::<u32>()))), max(1usize, >= max(align_of::<u32>(), align_of::<!>(), align_of::<u32>())))),
+    SIZE: 12 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset_of(UninhabitedVariantWithFields.Baz.x) + size_of::<u32>(), offset_of(UninhabitedVariantWithFields.Baz.y) + size_of::<!>(), offset_of(UninhabitedVariantWithFields.Baz.z) + size_of::<u32>()), max(align_of::<u32>(), align_of::<!>(), align_of::<u32>()))), max(1usize, >= max(align_of::<u32>(), align_of::<!>(), align_of::<u32>())))),
     ALIGN: 4 (guaranteed >= max(1usize, >= max(align_of::<u32>(), align_of::<!>(), align_of::<u32>()))),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        Bar: VariantLayout { 
+        Bar.VariantLayout { 
             uninhabited: false,
             tagger: [0:0u32],
         }
-        Baz: VariantLayout { 
+        Baz.VariantLayout { 
             offset of x: 4 (guaranteed aligned to align_of::<u32>()),
             offset of y: 4 (guaranteed aligned to align_of::<!>()),
             offset of z: 8 (guaranteed aligned to align_of::<u32>()),
@@ -293,13 +293,13 @@ Layout: {
 
 test_crate::Uninhabited
 Layout: {
-    SIZE: 0 (guaranteed >= aligned_to(max(offset(Uninhabited._0) + size_of::<!>()), max(align_of::<!>()))),
+    SIZE: 0 (guaranteed >= aligned_to(max(offset_of(Uninhabited._0) + size_of::<!>()), max(align_of::<!>()))),
     ALIGN: 1 (guaranteed >= max(align_of::<!>())),
     discriminator: omitted because tree-shaped,
     uninhabited: true,
     variant_layouts: 
-        @Variant0: VariantLayout { 
-            offset of 0: 0 (guaranteed aligned to align_of::<!>()),
+        VariantLayout { 
+            offset of _0: 0 (guaranteed aligned to align_of::<!>()),
             uninhabited: true,
             tagger: [],
         }
@@ -308,16 +308,16 @@ Layout: {
 
 test_crate::DiscriminantInNicheOfField
 Layout: {
-    SIZE: 16 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset(DiscriminantInNicheOfField<'a, T>[TraitClause0].Some._0) + size_of::<(usize, &'a T)>()), max(align_of::<(usize, &'a T)>()))), max(1usize, >= max(align_of::<(usize, &'a T)>())))),
+    SIZE: 16 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset_of(DiscriminantInNicheOfField<'a, T>[TraitClause0].Some._0) + size_of::<(usize, &'a T)>()), max(align_of::<(usize, &'a T)>()))), max(1usize, >= max(align_of::<(usize, &'a T)>())))),
     ALIGN: 8 (guaranteed >= max(1usize, >= max(align_of::<(usize, &'a T)>()))),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        None: VariantLayout { 
+        None.VariantLayout { 
             uninhabited: false,
             tagger: [8:0isize],
         }
-        Some: VariantLayout { 
+        Some.VariantLayout { 
             offset of _0: 0 (guaranteed aligned to align_of::<(usize, &'a T)>()),
             uninhabited: false,
             tagger: [],
@@ -331,21 +331,21 @@ test_crate::PackIntsUnion
 
 test_crate::NonZeroNiche
 Layout: {
-    SIZE: 4 (guaranteed >= aligned_to(max(>= aligned_to(max(offset(NonZeroNiche.A._0) + size_of::<char>()), max(align_of::<char>())), 0usize, 0usize), max(>= max(align_of::<char>()), 1usize, 1usize))),
+    SIZE: 4 (guaranteed >= aligned_to(max(>= aligned_to(max(offset_of(NonZeroNiche.A._0) + size_of::<char>()), max(align_of::<char>())), 0usize, 0usize), max(>= max(align_of::<char>()), 1usize, 1usize))),
     ALIGN: 4 (guaranteed >= max(>= max(align_of::<char>()), 1usize, 1usize)),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        A: VariantLayout { 
+        A.VariantLayout { 
             offset of _0: 0 (guaranteed aligned to align_of::<char>()),
             uninhabited: false,
             tagger: [],
         }
-        B: VariantLayout { 
+        B.VariantLayout { 
             uninhabited: false,
             tagger: [0:1114112u32],
         }
-        C: VariantLayout { 
+        C.VariantLayout { 
             uninhabited: false,
             tagger: [0:1114113u32],
         }
@@ -354,22 +354,22 @@ Layout: {
 
 test_crate::ArbitraryDiscriminants
 Layout: {
-    SIZE: 32 (guaranteed aligned_to(max(offset(ArbitraryDiscriminants.A._0) + size_of::<String>(), offset(ArbitraryDiscriminants.B._0) + size_of::<u32>(), size_of::<i32>()), max(align_of::<i32>(), align_of::<String>(), align_of::<i32>(), align_of::<u32>(), align_of::<i32>()))),
+    SIZE: 32 (guaranteed aligned_to(max(offset_of(ArbitraryDiscriminants.A._0) + size_of::<String>(), offset_of(ArbitraryDiscriminants.B._0) + size_of::<u32>(), size_of::<i32>()), max(align_of::<i32>(), align_of::<String>(), align_of::<i32>(), align_of::<u32>(), align_of::<i32>()))),
     ALIGN: 8 (guaranteed max(align_of::<i32>(), align_of::<String>(), align_of::<i32>(), align_of::<u32>(), align_of::<i32>())),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        A: VariantLayout { 
+        A.VariantLayout { 
             offset of _0: 8 (guaranteed computed by repr(C) algorithm),
             uninhabited: false,
             tagger: [0:12i32],
         }
-        B: VariantLayout { 
+        B.VariantLayout { 
             offset of _0: 4 (guaranteed computed by repr(C) algorithm),
             uninhabited: false,
             tagger: [0:43i32],
         }
-        C: VariantLayout { 
+        C.VariantLayout { 
             uninhabited: false,
             tagger: [0:123456i32],
         }
@@ -383,15 +383,15 @@ Layout: {
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        Less: VariantLayout { 
+        Less.VariantLayout { 
             uninhabited: false,
             tagger: [0:-1i8],
         }
-        Equal: VariantLayout { 
+        Equal.VariantLayout { 
             uninhabited: false,
             tagger: [0:0i8],
         }
-        Greater: VariantLayout { 
+        Greater.VariantLayout { 
             uninhabited: false,
             tagger: [0:1i8],
         }
@@ -400,21 +400,21 @@ Layout: {
 
 test_crate::WithNicheAndUninhabited
 Layout: {
-    SIZE: 4 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset(WithNicheAndUninhabited.Second._0) + size_of::<!>()), max(align_of::<!>())), >= aligned_to(max(offset(WithNicheAndUninhabited.Third._0) + size_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()), max(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()))), max(1usize, >= max(align_of::<!>()), >= max(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>())))),
+    SIZE: 4 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset_of(WithNicheAndUninhabited.Second._0) + size_of::<!>()), max(align_of::<!>())), >= aligned_to(max(offset_of(WithNicheAndUninhabited.Third._0) + size_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()), max(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()))), max(1usize, >= max(align_of::<!>()), >= max(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>())))),
     ALIGN: 4 (guaranteed >= max(1usize, >= max(align_of::<!>()), >= max(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()))),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        First: VariantLayout { 
+        First.VariantLayout { 
             uninhabited: false,
             tagger: [0:0u32],
         }
-        Second: VariantLayout { 
+        Second.VariantLayout { 
             offset of _0: 0 (guaranteed aligned to align_of::<!>()),
             uninhabited: true,
             tagger: [],
         }
-        Third: VariantLayout { 
+        Third.VariantLayout { 
             offset of _0: 0 (guaranteed aligned to align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()),
             uninhabited: false,
             tagger: [],
@@ -424,16 +424,16 @@ Layout: {
 
 test_crate::GenericUnsized
 Layout: {
-    SIZE: unk (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset(GenericUnsized<'a, T>[TraitClause0].Second._0) + size_of::<&'a T>()), max(align_of::<&'a T>()))), max(1usize, >= max(align_of::<&'a T>())))),
+    SIZE: unk (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset_of(GenericUnsized<'a, T>[TraitClause0].Second._0) + size_of::<&'a T>()), max(align_of::<&'a T>()))), max(1usize, >= max(align_of::<&'a T>())))),
     ALIGN: unk (guaranteed >= max(1usize, >= max(align_of::<&'a T>()))),
     discriminator: None,
     uninhabited: false,
     variant_layouts: 
-        First: VariantLayout { 
+        First.VariantLayout { 
             uninhabited: unk,
             tagger: [],
         }
-        Second: VariantLayout { 
+        Second.VariantLayout { 
             offset of _0: unk (guaranteed aligned to align_of::<&'a T>()),
             uninhabited: unk,
             tagger: [],
@@ -443,16 +443,16 @@ Layout: {
 
 test_crate::GenericButFixedSize
 Layout: {
-    SIZE: 8 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset(GenericButFixedSize<'a, T>[TraitClause0].Second._0) + size_of::<&'a T>()), max(align_of::<&'a T>()))), max(1usize, >= max(align_of::<&'a T>())))),
+    SIZE: 8 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset_of(GenericButFixedSize<'a, T>[TraitClause0].Second._0) + size_of::<&'a T>()), max(align_of::<&'a T>()))), max(1usize, >= max(align_of::<&'a T>())))),
     ALIGN: 8 (guaranteed >= max(1usize, >= max(align_of::<&'a T>()))),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        First: VariantLayout { 
+        First.VariantLayout { 
             uninhabited: false,
             tagger: [0:0isize],
         }
-        Second: VariantLayout { 
+        Second.VariantLayout { 
             offset of _0: 0 (guaranteed aligned to align_of::<&'a T>()),
             uninhabited: false,
             tagger: [],
@@ -467,11 +467,11 @@ Layout: {
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        First: VariantLayout { 
+        First.VariantLayout { 
             uninhabited: false,
             tagger: [0:42u128],
         }
-        Second: VariantLayout { 
+        Second.VariantLayout { 
             uninhabited: false,
             tagger: [0:18446744073709551615u128],
         }
@@ -480,14 +480,14 @@ Layout: {
 
 test_crate::SingleVariantButNonZero
 Layout: {
-    SIZE: 0 (guaranteed >= aligned_to(max(>= aligned_to(max(offset(Result<!, ()>[{built_in impl Sized for !}, {built_in impl Sized for ()}].Ok._0) + size_of::<!>()), max(align_of::<!>())), >= aligned_to(max(offset(Result<!, ()>[{built_in impl Sized for !}, {built_in impl Sized for ()}].Err._0) + size_of::<()>()), max(align_of::<()>()))), max(>= max(align_of::<!>()), >= max(align_of::<()>())))),
+    SIZE: 0 (guaranteed >= aligned_to(max(>= aligned_to(max(offset_of(Result<!, ()>[{built_in impl Sized for !}, {built_in impl Sized for ()}].Ok._0) + size_of::<!>()), max(align_of::<!>())), >= aligned_to(max(offset_of(Result<!, ()>[{built_in impl Sized for !}, {built_in impl Sized for ()}].Err._0) + size_of::<()>()), max(align_of::<()>()))), max(>= max(align_of::<!>()), >= max(align_of::<()>())))),
     ALIGN: 1 (guaranteed >= max(>= max(align_of::<!>()), >= max(align_of::<()>()))),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        @Variant0: None,
-        @Variant1: VariantLayout { 
-            offset of 0: 0 (guaranteed aligned to align_of::<()>()),
+        Ok.None,
+        Err.VariantLayout { 
+            offset of _0: 0 (guaranteed aligned to align_of::<()>()),
             uninhabited: false,
             tagger: [],
         }
@@ -506,14 +506,14 @@ Layout: {
 
 test_crate::Tuple
 Layout: {
-    SIZE: 8 (guaranteed >= aligned_to(max(offset((_, _)<u32, u32>[{built_in impl Sized for u32}]._0) + size_of::<u32>(), offset((_, _)<u32, u32>[{built_in impl Sized for u32}]._1) + size_of::<u32>()), max(align_of::<u32>(), align_of::<u32>()))),
+    SIZE: 8 (guaranteed >= aligned_to(max(offset_of((_, _)<u32, u32>[{built_in impl Sized for u32}]._0) + size_of::<u32>(), offset_of((_, _)<u32, u32>[{built_in impl Sized for u32}]._1) + size_of::<u32>()), max(align_of::<u32>(), align_of::<u32>()))),
     ALIGN: 4 (guaranteed >= max(align_of::<u32>(), align_of::<u32>())),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        @Variant0: VariantLayout { 
-            offset of 0: 0 (guaranteed aligned to align_of::<u32>()),
-            offset of 1: 4 (guaranteed aligned to align_of::<u32>()),
+        VariantLayout { 
+            offset of _0: 0 (guaranteed aligned to align_of::<u32>()),
+            offset of _1: 4 (guaranteed aligned to align_of::<u32>()),
             uninhabited: false,
             tagger: [],
         }
@@ -522,8 +522,8 @@ Layout: {
 
 test_crate::Usize
 Layout: {
-    SIZE: 8 (guaranteed size_of::<usize>()),
-    ALIGN: 8 (guaranteed align_of::<usize>()),
+    SIZE: 8 (guaranteed 8usize),
+    ALIGN: 8 (guaranteed 8usize),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
@@ -552,21 +552,21 @@ Layout: {
 
 test_crate::HasInvalidDiscr
 Layout: {
-    SIZE: 1 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset(HasInvalidDiscr.Var2._0) + size_of::<bool>()), max(align_of::<bool>())), 0usize), max(1usize, >= max(align_of::<bool>()), 1usize))),
+    SIZE: 1 (guaranteed >= aligned_to(max(0usize, >= aligned_to(max(offset_of(HasInvalidDiscr.Var2._0) + size_of::<bool>()), max(align_of::<bool>())), 0usize), max(1usize, >= max(align_of::<bool>()), 1usize))),
     ALIGN: 1 (guaranteed >= max(1usize, >= max(align_of::<bool>()), 1usize)),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        Var1: VariantLayout { 
+        Var1.VariantLayout { 
             uninhabited: false,
             tagger: [0:2u8],
         }
-        Var2: VariantLayout { 
+        Var2.VariantLayout { 
             offset of _0: 0 (guaranteed aligned to align_of::<bool>()),
             uninhabited: false,
             tagger: [],
         }
-        Var3: VariantLayout { 
+        Var3.VariantLayout { 
             uninhabited: false,
             tagger: [0:4u8],
         }
@@ -575,17 +575,17 @@ Layout: {
 
 test_crate::NicheInSignedRepr
 Layout: {
-    SIZE: 1 (guaranteed >= aligned_to(max(>= aligned_to(max(offset(NicheInSignedRepr.A._0) + size_of::<MyOrder>()), max(align_of::<MyOrder>())), 0usize), max(>= max(align_of::<MyOrder>()), 1usize))),
+    SIZE: 1 (guaranteed >= aligned_to(max(>= aligned_to(max(offset_of(NicheInSignedRepr.A._0) + size_of::<MyOrder>()), max(align_of::<MyOrder>())), 0usize), max(>= max(align_of::<MyOrder>()), 1usize))),
     ALIGN: 1 (guaranteed >= max(>= max(align_of::<MyOrder>()), 1usize)),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        A: VariantLayout { 
+        A.VariantLayout { 
             offset of _0: 0 (guaranteed aligned to align_of::<MyOrder>()),
             uninhabited: false,
             tagger: [],
         }
-        B: VariantLayout { 
+        B.VariantLayout { 
             uninhabited: false,
             tagger: [0:-2i8],
         }
@@ -594,14 +594,14 @@ Layout: {
 
 test_crate::BigWithChar
 Layout: {
-    SIZE: 16 (guaranteed aligned_to(offset(BigWithChar.c) + size_of::<char>(), max(align_of::<u64>(), align_of::<char>()))),
+    SIZE: 16 (guaranteed aligned_to(offset_of(BigWithChar.c) + size_of::<char>(), max(align_of::<u64>(), align_of::<char>()))),
     ALIGN: 8 (guaranteed max(align_of::<u64>(), align_of::<char>())),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        @Variant0: VariantLayout { 
-            offset of 0: 0 (guaranteed 0),
-            offset of 1: 8 (guaranteed computed by repr(C) algorithm),
+        VariantLayout { 
+            offset of a: 0 (guaranteed 0),
+            offset of c: 8 (guaranteed computed by repr(C) algorithm),
             uninhabited: false,
             tagger: [],
         }
@@ -610,22 +610,22 @@ Layout: {
 
 test_crate::UninhabitedAtNicheEdge
 Layout: {
-    SIZE: 16 (guaranteed >= aligned_to(max(>= aligned_to(max(offset(UninhabitedAtNicheEdge.A._0) + size_of::<u32>(), offset(UninhabitedAtNicheEdge.A._1) + size_of::<!>()), max(align_of::<u32>(), align_of::<!>())), 0usize, >= aligned_to(max(offset(UninhabitedAtNicheEdge.C._0) + size_of::<BigWithChar>()), max(align_of::<BigWithChar>()))), max(>= max(align_of::<u32>(), align_of::<!>()), 1usize, >= max(align_of::<BigWithChar>())))),
+    SIZE: 16 (guaranteed >= aligned_to(max(>= aligned_to(max(offset_of(UninhabitedAtNicheEdge.A._0) + size_of::<u32>(), offset_of(UninhabitedAtNicheEdge.A._1) + size_of::<!>()), max(align_of::<u32>(), align_of::<!>())), 0usize, >= aligned_to(max(offset_of(UninhabitedAtNicheEdge.C._0) + size_of::<BigWithChar>()), max(align_of::<BigWithChar>()))), max(>= max(align_of::<u32>(), align_of::<!>()), 1usize, >= max(align_of::<BigWithChar>())))),
     ALIGN: 8 (guaranteed >= max(>= max(align_of::<u32>(), align_of::<!>()), 1usize, >= max(align_of::<BigWithChar>()))),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        A: VariantLayout { 
+        A.VariantLayout { 
             offset of _0: 0 (guaranteed aligned to align_of::<u32>()),
             offset of _1: 4 (guaranteed aligned to align_of::<!>()),
             uninhabited: true,
             tagger: [],
         }
-        B: VariantLayout { 
+        B.VariantLayout { 
             uninhabited: false,
             tagger: [8:1114113u32],
         }
-        C: VariantLayout { 
+        C.VariantLayout { 
             offset of _0: 0 (guaranteed aligned to align_of::<BigWithChar>()),
             uninhabited: false,
             tagger: [],
@@ -635,18 +635,18 @@ Layout: {
 
 test_crate::UninhabitedUntagged
 Layout: {
-    SIZE: 4 (guaranteed >= aligned_to(max(>= aligned_to(max(offset(UninhabitedUntagged.A._0) + size_of::<char>(), offset(UninhabitedUntagged.A._1) + size_of::<!>()), max(align_of::<char>(), align_of::<!>())), 0usize), max(>= max(align_of::<char>(), align_of::<!>()), 1usize))),
+    SIZE: 4 (guaranteed >= aligned_to(max(>= aligned_to(max(offset_of(UninhabitedUntagged.A._0) + size_of::<char>(), offset_of(UninhabitedUntagged.A._1) + size_of::<!>()), max(align_of::<char>(), align_of::<!>())), 0usize), max(>= max(align_of::<char>(), align_of::<!>()), 1usize))),
     ALIGN: 4 (guaranteed >= max(>= max(align_of::<char>(), align_of::<!>()), 1usize)),
     discriminator: omitted because tree-shaped,
     uninhabited: false,
     variant_layouts: 
-        A: VariantLayout { 
+        A.VariantLayout { 
             offset of _0: 0 (guaranteed aligned to align_of::<char>()),
             offset of _1: 4 (guaranteed aligned to align_of::<!>()),
             uninhabited: true,
             tagger: [],
         }
-        B: VariantLayout { 
+        B.VariantLayout { 
             uninhabited: false,
             tagger: [0:4294967295u32],
         }

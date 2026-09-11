@@ -553,6 +553,11 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("AlignOf", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CAlignOf _0)
+    | `Assoc [ ("OffsetOf", `List [ _0; _1; _2 ]) ] ->
+        let* _0 = type_decl_ref_of_json ctx _0 in
+        let* _1 = option_of_json variant_id_of_json ctx _1 in
+        let* _2 = field_id_of_json ctx _2 in
+        Ok (COffsetOf (_0, _1, _2))
     | `Assoc [ ("Opaque", _0) ] ->
         let* _0 = string_of_json ctx _0 in
         Ok (COpaque _0)
@@ -926,11 +931,6 @@ and nullop_of_json (ctx : of_json_ctx) (js : json) : (nullop, string) result =
     (match js with
     | `String "SizeOf" -> Ok SizeOf
     | `String "AlignOf" -> Ok AlignOf
-    | `Assoc [ ("OffsetOf", `List [ _0; _1; _2 ]) ] ->
-        let* _0 = type_decl_ref_of_json ctx _0 in
-        let* _1 = option_of_json variant_id_of_json ctx _1 in
-        let* _2 = field_id_of_json ctx _2 in
-        Ok (OffsetOf (_0, _1, _2))
     | `String "UbChecks" -> Ok UbChecks
     | `String "OverflowChecks" -> Ok OverflowChecks
     | `String "ContractChecks" -> Ok ContractChecks
@@ -3347,11 +3347,6 @@ and size_guarantee_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* then_size = size_guarantee_of_json ctx then_size in
         let* else_size = size_guarantee_of_json ctx else_size in
         Ok (SizeGuaranteeIfInhabited (ty, then_size, else_size))
-    | `Assoc [ ("FieldOffset", `List [ _0; _1; _2 ]) ] ->
-        let* _0 = type_decl_ref_of_json ctx _0 in
-        let* _1 = option_of_json variant_id_of_json ctx _1 in
-        let* _2 = field_id_of_json ctx _2 in
-        Ok (SizeGuaranteeFieldOffset (_0, _1, _2))
     | `Assoc [ ("AtLeast", _0) ] ->
         let* _0 = size_guarantee_of_json ctx _0 in
         Ok (SizeGuaranteeAtLeast _0)

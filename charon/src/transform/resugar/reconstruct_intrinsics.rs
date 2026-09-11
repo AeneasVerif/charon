@@ -37,9 +37,12 @@ impl UllbcPass for Transform {
                     None
                 };
                 let field_id = FieldId::from_usize(*field_id as usize);
-                let rval = Rvalue::NullaryOp(
-                    NullOp::OffsetOf(tref.clone(), variant_id, field_id),
-                    Ty::mk_usize(),
+                let rval = Rvalue::Use(
+                    Operand::Const(ConstantExpr::new(
+                        ConstantExprKind::OffsetOf(tref.clone(), variant_id, field_id),
+                        Ty::mk_usize(),
+                    )),
+                    WithRetag::No,
                 );
                 ctx.insert_assn_stmt(call.dest.clone(), rval);
                 term.kind = TerminatorKind::Goto { target: *target };

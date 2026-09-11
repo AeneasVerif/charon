@@ -6,7 +6,7 @@ use serde_state::{DeserializeState, SerializeState};
 
 use crate::ast::{
     AlignmentModifier, BuiltinAdt, ConstantExpr, ConstantExprKind, DedupSerializerState, Field,
-    FieldId, IndexVec, IntTy, IntegerTy, IntegerValue, Layout, MetadataValue, OffsetGuarantee,
+    FieldId, IndexVec, IntegerTy, IntegerValue, Layout, MetadataValue, OffsetGuarantee,
     ReprAlgorithm, ReprOptions, ScalarTy, SizeGuarantee, SizeGuaranteeKind, SubstVisitor,
     TargetInfo, TargetTriple, TranslatedCrate, Ty, TyKind, TypeDeclKind, TypeDeclRef, UIntTy,
     VariantId, VariantLayout, VisitAstMut,
@@ -156,6 +156,14 @@ fn mk_address_align() -> SizeGuaranteeKind {
     ))
 }
 
+fn mk_offset_expr(tdr: TypeDeclRef, var_id: Option<VariantId>, f_id: FieldId) -> SizeGuarantee {
+    SizeGuaranteeKind::Constant(ConstantExpr::new(
+        ConstantExprKind::OffsetOf(tdr, var_id, f_id),
+        Ty::mk_usize(),
+    ))
+    .into_expr()
+}
+
 impl<'a, 'b> LayoutGuaranteeComputer<'a, 'b> {
     pub(super) fn new(krate: &'a TranslatedCrate, target: Option<&'b TargetTriple>) -> Self {
         Self { krate, target }
@@ -169,12 +177,8 @@ impl<'a, 'b> LayoutGuaranteeComputer<'a, 'b> {
         // If we have no metadata, the pointer is exactly the address value.
         let exact = meta.is_unit();
         let ptr_size = mk_address_size().into_expr();
-        let ptr_align =
-            ConstantExpr::new(ConstantExprKind::AlignOf(Ty::mk_usize()), Ty::mk_usize());
-        let align = SizeGuaranteeKind::Max(vec![
-            SizeGuaranteeKind::Constant(ptr_align.clone()).into_expr(),
-            expr_of_ty(&meta, false).into_expr(),
-        ]);
+        let ptr_align = mk_address_align().into_expr();
+        let align = SizeGuaranteeKind::Max(vec![ptr_align, expr_of_ty(&meta, false).into_expr()]);
         let size = SizeGuarantee::make(
             SizeGuaranteeKind::AlignTo {
                 base: SizeGuaranteeKind::Plus(ptr_size, expr_of_ty(&meta, true).into_expr())
@@ -503,9 +507,10 @@ impl<'a, 'b> LayoutGuaranteeComputer<'a, 'b> {
             TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) => Some(self.mk_ptr(ty)),
             TyKind::FnPtr(_) => {
                 let ptr_size = mk_address_size().into_expr();
+                let ptr_align = mk_address_align().into_expr();
                 Some(LayoutGuarantees {
-                    size: ptr_size.clone(),
-                    align: ptr_size.clone(),
+                    size: ptr_size,
+                    align: ptr_align,
                     offsets: OffsetGuarantees::None,
                 })
             }
@@ -589,21 +594,7 @@ impl LayoutGuarantees {
     /// However, currently it ignores potential inconsistencies with regard to
     /// [https://doc.rust-lang.org/reference/type-layout.html#r-layout.primitive.size].
     pub(super) fn mk_primitive(primitive: &ScalarTy, target_info: &TargetInfo) -> Self {
-        let size = match primitive {
-            ScalarTy::Integer(IntegerTy::Signed(IntTy::Isize))
-            | ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::Usize)) => {
-                return Self {
-                    size: mk_address_size().into_expr(),
-                    align: mk_address_align().into_expr(),
-                    offsets: OffsetGuarantees::None,
-                };
-            }
-            ScalarTy::Integer(IntegerTy::Signed(int_ty)) => int_ty.target_size(0),
-            ScalarTy::Integer(IntegerTy::Unsigned(uint_ty)) => uint_ty.target_size(0),
-            ScalarTy::Float(float_ty) => float_ty.target_size(),
-            ScalarTy::Bool => 1,
-            ScalarTy::Char => 4,
-        };
+        let size = primitive.target_size(target_info.target_pointer_size);
         let align = target_info.primitive_alignments.get(primitive).unwrap();
         Self {
             size: SizeGuaranteeKind::Constant(
@@ -611,13 +602,7 @@ impl LayoutGuarantees {
             )
             .into_expr(),
             align: SizeGuaranteeKind::Constant(
-                IntegerValue::from_uint(
-                    target_info.target_pointer_size,
-                    UIntTy::Usize,
-                    *align as u128,
-                )
-                .unwrap()
-                .to_constant(),
+                IntegerValue::from_unchecked_uint(UIntTy::Usize, *align as u128).to_constant(),
             )
             .into_expr(),
             offsets: OffsetGuarantees::None,
@@ -663,12 +648,7 @@ impl LayoutGuarantees {
         };
         for (id, ty) in fields.enumerate() {
             let end_of_field = SizeGuaranteeKind::Plus(
-                SizeGuaranteeKind::FieldOffset(
-                    tdr.clone(),
-                    variant_id,
-                    FieldId::from_raw(id as u32),
-                )
-                .into_expr(),
+                mk_offset_expr(tdr.clone(), variant_id, FieldId::from_raw(id as u32)),
                 expr_of_ty(&ty, true).into_expr(),
             );
             size_max.push(end_of_field.into_expr());
@@ -740,12 +720,7 @@ impl LayoutGuarantees {
             if peekable_fields.peek().is_none() {
                 // Only the last field is relevant for the size here.
                 size = SizeGuaranteeKind::Plus(
-                    SizeGuaranteeKind::FieldOffset(
-                        tdr.clone(),
-                        variant_id,
-                        FieldId::from_raw(id as u32),
-                    )
-                    .into_expr(),
+                    mk_offset_expr(tdr.clone(), variant_id, FieldId::from_raw(id as u32)),
                     expr_of_ty(&ty, true).into_expr(),
                 )
                 .into_expr()
@@ -826,7 +801,7 @@ struct PartialLayoutGuarantees {
 
 /// A structure that computes and stores originally symbolic layouts, which have been
 /// normalized for a given target as much as possible. Will not be used during translation.
-pub struct LayoutComputer<'a> {
+pub struct LayoutGuaranteeHelper<'a> {
     krate: &'a TranslatedCrate,
     target: &'a TargetTriple,
     cache: HashMap<Ty, LayoutGuarantees>,
@@ -835,7 +810,7 @@ pub struct LayoutComputer<'a> {
     stack: Vec<(Ty, PartialLayoutGuarantees)>,
 }
 
-impl<'a> LayoutComputer<'a> {
+impl<'a> LayoutGuaranteeHelper<'a> {
     pub fn new(krate: &'a TranslatedCrate, target: &'a TargetTriple) -> Self {
         Self {
             krate,
@@ -847,29 +822,27 @@ impl<'a> LayoutComputer<'a> {
     }
 
     // Wrapper function to enable normalization of symbolic field offsets.
-    fn normalize_size(&self, mut size_expr: SizeGuaranteeKind) -> SizeGuarantee {
+    fn compute_size(&self, mut size_expr: SizeGuaranteeKind) -> SizeGuarantee {
         #[derive(Visitor)]
-        struct OffsetVisitor<'a, 'b>(&'b LayoutComputer<'a>);
+        struct OffsetVisitor<'a, 'b>(&'b LayoutGuaranteeHelper<'a>);
         impl<'a, 'b> VisitAstMut for OffsetVisitor<'a, 'b> {
-            fn visit_size_guarantee_kind(
-                &mut self,
-                x: &mut SizeGuaranteeKind,
-            ) -> ::std::ops::ControlFlow<Self::Break> {
-                if let SizeGuaranteeKind::FieldOffset(tdr, var, f) = x {
+            fn enter_size_guarantee_kind(&mut self, x: &mut SizeGuaranteeKind) {
+                if let SizeGuaranteeKind::Constant(c) = x
+                    && let ConstantExprKind::OffsetOf(tdr, var, f) = c.kind()
+                {
                     let ty = Ty::new(TyKind::Adt(tdr.clone()));
                     if let Some(offset) = self.0.lookup_pre_computed_offset(&ty, *var, *f) {
                         *x = offset.kind().clone();
                     }
                 }
-                self.visit_inner(x)
             }
         }
 
-        OffsetVisitor(self).visit_size_guarantee_kind(&mut size_expr);
+        OffsetVisitor(self).visit(&mut size_expr);
         size_expr.into_expr().normalize(self.krate, self.target)
     }
 
-    fn normalize_field_offset(
+    fn compute_field_offset(
         &mut self,
         tdr: &TypeDeclRef,
         field_offset: &mut OffsetGuarantee,
@@ -896,7 +869,7 @@ impl<'a> LayoutComputer<'a> {
                 let predecessor_end = if let Some(pre) = predecessor {
                     let pre_ty = field_tys(*pre);
                     SizeGuaranteeKind::Plus(
-                        SizeGuaranteeKind::FieldOffset(tdr.clone(), var_id, *pre).into_expr(),
+                        mk_offset_expr(tdr.clone(), var_id, *pre),
                         SizeGuaranteeKind::Constant(ConstantExpr::new(
                             ConstantExprKind::SizeOf(pre_ty),
                             Ty::mk_usize(),
@@ -922,7 +895,7 @@ impl<'a> LayoutComputer<'a> {
     }
 
     /// Computes the most precise layout guarantees we can deduce for this type.
-    pub fn compute_layout_guarantees(&mut self, ty: Ty) -> Option<LayoutGuarantees> {
+    pub fn compute_concrete_layout_guarantees(&mut self, ty: Ty) -> Option<LayoutGuarantees> {
         if let Some(layout) = self.cache.get(&ty) {
             Some(layout.clone())
         } else if self.stack.iter().any(|(stack_ty, _)| &ty == stack_ty) {
@@ -947,7 +920,9 @@ impl<'a> LayoutComputer<'a> {
             } else {
                 match &mut symbolic_layout.offsets {
                     OffsetGuarantees::Symbolic(ty) => {
-                        if let Some(guarantees) = self.compute_layout_guarantees(ty.clone()) {
+                        if let Some(guarantees) =
+                            self.compute_concrete_layout_guarantees(ty.clone())
+                        {
                             let (_, parts) = self.stack.last_mut().unwrap();
                             parts.offsets = self.offset_cache.get(ty).cloned().unwrap();
                             symbolic_layout.offsets = guarantees.offsets;
@@ -975,7 +950,7 @@ impl<'a> LayoutComputer<'a> {
                         };
                         let discr_size = discr_ty
                             .and_then(|ty| {
-                                self.compute_layout_guarantees(Ty::new(TyKind::Scalar(
+                                self.compute_concrete_layout_guarantees(Ty::new(TyKind::Scalar(
                                     ScalarTy::Integer(ty),
                                 )))
                             })
@@ -988,7 +963,7 @@ impl<'a> LayoutComputer<'a> {
                             let get_field_ty =
                                 |f_id| ty_decl.get_field(Some(var_id), f_id).unwrap().ty.clone();
                             for (f_id, field) in var.iter_mut_enumerated() {
-                                self.normalize_field_offset(
+                                self.compute_field_offset(
                                     tdr,
                                     field,
                                     Some(var_id),
@@ -1007,14 +982,7 @@ impl<'a> LayoutComputer<'a> {
                         debug_assert_eq!(zero_id, VariantId::ZERO);
                         let get_field_ty = |f_id| ty_decl.get_field(None, f_id).unwrap().ty.clone();
                         for (f_id, field) in fields.iter_mut_enumerated() {
-                            self.normalize_field_offset(
-                                tdr,
-                                field,
-                                None,
-                                f_id,
-                                get_field_ty,
-                                &None,
-                            );
+                            self.compute_field_offset(tdr, field, None, f_id, get_field_ty, &None);
                         }
                     }
                     OffsetGuarantees::None => (),
@@ -1024,8 +992,12 @@ impl<'a> LayoutComputer<'a> {
             let (_, partial_guarantees) = self.stack.pop().unwrap();
             self.offset_cache
                 .insert(ty.clone(), partial_guarantees.offsets);
-
-            symbolic_layout.size = self.normalize_size(symbolic_layout.size.kind().clone());
+            // Allow resolution of non-concrete layout expressions to enable stronger normalization.
+            symbolic_layout.size =
+                symbolic_layout
+                    .size
+                    .normalize_aux(self.krate, self.target, false);
+            symbolic_layout.size = self.compute_size(symbolic_layout.size.kind().clone());
 
             self.cache.insert(ty, symbolic_layout.clone());
             Some(symbolic_layout)

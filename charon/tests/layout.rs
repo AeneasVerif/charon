@@ -5,16 +5,13 @@ use charon_lib::{
     ast::*,
     formatter::FmtCtx,
     pretty::{FmtWithCtx, fmt_with_ctx::TypeDeclFmtCtx},
-    ullbc_ast::layout_guarantee_utils::{LayoutComputer, LayoutGuarantees},
+    ullbc_ast::layout_guarantee_utils::{LayoutGuaranteeHelper, LayoutGuarantees},
 };
 
 mod util;
 use util::*;
 
-#[test]
-fn type_layout() -> anyhow::Result<()> {
-    let crate_data = translate_rust_text(
-        r#"
+const CRATE_SOURCE: &'static str = r#"
         #![feature(never_type)]
         use std::num::NonZero;
 
@@ -215,17 +212,19 @@ fn type_layout() -> anyhow::Result<()> {
             A(char, !),
             B,
         }
-        "#,
-        &[],
-    )?;
+        "#;
 
-    // Check whether discriminator/tagger roundtrips are correct: use each variant's tagger
-    // to answer the discriminator's read queries, and verify we get back the same variant.
+#[test]
+fn layout_discriminator_tagger() -> anyhow::Result<()> {
+    let crate_data = translate_rust_text(CRATE_SOURCE, &[])?;
     let the_target = crate_data.target_information.keys().next().unwrap().clone();
     assert_eq!(
         crate_data.target_information[&the_target].c_enum_smallest_repr_ty,
         IntTy::I32,
     );
+
+    // Check whether discriminator/tagger roundtrips are correct: use each variant's tagger
+    // to answer the discriminator's read queries, and verify we get back the same variant.
     for tdecl in crate_data.type_decls.iter() {
         if let Some(layout) = tdecl.layout.get(&the_target)
             && let Some(discriminator) = &layout.discriminator
@@ -280,12 +279,24 @@ fn type_layout() -> anyhow::Result<()> {
                             "For type {name} variant {var_id}, tagger = {tagger:?}",
                         );
                     }
-                    _ => (),
+                    None => (),
                 }
             }
         }
     }
+    Ok(())
+}
 
+#[test]
+fn print_layouts() -> anyhow::Result<()> {
+    let crate_data = translate_rust_text(CRATE_SOURCE, &[])?;
+    let the_target = crate_data.target_information.keys().next().unwrap().clone();
+    assert_eq!(
+        crate_data.target_information[&the_target].c_enum_smallest_repr_ty,
+        IntTy::I32,
+    );
+
+    // Collect and print all layouts.
     let mut layouts_str = String::new();
     for tdecl in crate_data.type_decls.iter() {
         // Skips the builtin ADTs too, whose names start with a `PathElem::Builtin`.
@@ -302,9 +313,16 @@ fn type_layout() -> anyhow::Result<()> {
             indent_level: 1,
             ..Default::default()
         };
+        let td_id = if let Some(aliased) = tdecl.kind.as_alias()
+            && let Some(aliased_id) = aliased.as_adt_id()
+        {
+            aliased_id
+        } else {
+            tdecl.def_id
+        };
         let layout_ctx = TypeDeclFmtCtx {
             fmt: &ctx,
-            ty_decl_id: tdecl.def_id,
+            ty_decl_id: td_id,
         };
         let name = tdecl.item_meta.name.debug_repr(&crate_data);
         writeln!(&mut layouts_str, "{name}")?;
@@ -315,6 +333,18 @@ fn type_layout() -> anyhow::Result<()> {
         writeln!(&mut layouts_str)?;
     }
     compare_or_overwrite(layouts_str, &PathBuf::from("./tests/layout.txt"))?;
+
+    Ok(())
+}
+
+#[test]
+fn layout_guarantee_concretize_check() -> anyhow::Result<()> {
+    let crate_data = translate_rust_text(CRATE_SOURCE, &[])?;
+    let the_target = crate_data.target_information.keys().next().unwrap().clone();
+    assert_eq!(
+        crate_data.target_information[&the_target].c_enum_smallest_repr_ty,
+        IntTy::I32,
+    );
 
     fn byte_count_eq_scalar(byte_count: ByteCount, scalar: IntegerValue, ctx: String) {
         if scalar.is_signed() {
@@ -328,7 +358,9 @@ fn type_layout() -> anyhow::Result<()> {
         }
     }
 
-    let mut layout_computer = LayoutComputer::new(&crate_data, &the_target);
+    // Compute and concretize layout guarantees and check them against the actual layouts.
+    // Also, print all stages.
+    let mut layout_computer = LayoutGuaranteeHelper::new(&crate_data, &the_target);
     let mut buffer = String::new();
     for tdecl in crate_data.type_decls.iter() {
         let is_local = matches!(
@@ -344,9 +376,16 @@ fn type_layout() -> anyhow::Result<()> {
             indent_level: 1,
             ..Default::default()
         };
+        let td_id = if let Some(aliased) = tdecl.kind.as_alias()
+            && let Some(aliased_id) = aliased.as_adt_id()
+        {
+            aliased_id
+        } else {
+            tdecl.def_id
+        };
         let layout_ctx = TypeDeclFmtCtx {
             fmt: &ctx,
-            ty_decl_id: tdecl.def_id,
+            ty_decl_id: td_id,
         };
         let name = tdecl.item_meta.name.debug_repr(&crate_data);
         writeln!(&mut buffer, "{name}")?;
@@ -356,7 +395,7 @@ fn type_layout() -> anyhow::Result<()> {
             builtin: None,
         }));
 
-        let opt_concretized = layout_computer.compute_layout_guarantees(fake_ty.clone());
+        let opt_concretized = layout_computer.compute_concrete_layout_guarantees(fake_ty.clone());
         // Check whether concretized layout guarantees always match known layouts.
         if let Some(layout) = tdecl.layout.get(&the_target)
             && let Some(guarantees) = &opt_concretized

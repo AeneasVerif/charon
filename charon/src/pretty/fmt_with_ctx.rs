@@ -1168,8 +1168,8 @@ impl ItemMeta {
     }
 }
 
-impl<'a> FmtWithCtx<TypeDeclFmtCtx<'a>> for Layout {
-    fn fmt_with_ctx(&self, ctx: &TypeDeclFmtCtx, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl<'a, C: AstFormatter> FmtWithCtx<TypeDeclFmtCtx<'a, C>> for Layout {
+    fn fmt_with_ctx(&self, ctx: &TypeDeclFmtCtx<C>, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let tab = ctx.fmt.indent();
         write!(f, "Layout: {{\n{tab}SIZE: ")?;
         self.size.fmt_with_ctx(ctx.fmt, f)?;
@@ -1186,12 +1186,22 @@ impl<'a> FmtWithCtx<TypeDeclFmtCtx<'a>> for Layout {
         }
         write!(f, ",\n{tab}uninhabited: {}", self.uninhabited)?;
         writeln!(f, ",\n{tab}variant_layouts: ")?;
+        let has_no_variants = ctx
+            .fmt
+            .get_crate()
+            .and_then(|krate| krate.type_decls.get(ctx.ty_decl_id))
+            .map_or_default(|tdecl| tdecl.kind.is_struct())
+            && self.variant_layouts.len() == 1;
         for (v_id, variant) in self.variant_layouts.iter_enumerated() {
             write!(f, "{tab}{tab}")?;
-            ctx.fmt.format_enum_variant_name(f, ctx.ty_decl_id, v_id)?;
-            write!(f, ": ")?;
+            let mut opt_var_id = None;
+            if !has_no_variants {
+                ctx.fmt.format_enum_variant_name(f, ctx.ty_decl_id, v_id)?;
+                write!(f, ".")?;
+                opt_var_id = Some(v_id);
+            }
             match variant {
-                Some(variant) => variant.fmt_with_ctx(&(ctx, v_id), f),
+                Some(variant) => variant.fmt_with_ctx(&(ctx, opt_var_id), f),
                 None => {
                     writeln!(f, "None,")
                 }
@@ -1203,13 +1213,13 @@ impl<'a> FmtWithCtx<TypeDeclFmtCtx<'a>> for Layout {
     }
 }
 
-pub struct TypeDeclFmtCtx<'a> {
-    pub fmt: &'a FmtCtx<'a>,
+pub struct TypeDeclFmtCtx<'a, C: AstFormatter> {
+    pub fmt: &'a C,
     pub ty_decl_id: TypeDeclId,
 }
 
-impl<'a> FmtWithCtx<TypeDeclFmtCtx<'a>> for LayoutGuarantees {
-    fn fmt_with_ctx(&self, ctx: &TypeDeclFmtCtx, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl<'a, C: AstFormatter> FmtWithCtx<TypeDeclFmtCtx<'a, C>> for LayoutGuarantees {
+    fn fmt_with_ctx(&self, ctx: &TypeDeclFmtCtx<C>, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let tab = ctx.fmt.indent();
         write!(f, "Guarantees: {{\n{tab}SIZE is ")?;
         self.size.fmt_with_ctx(ctx.fmt, f)?;
@@ -1295,21 +1305,11 @@ impl Name {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for NullOp {
-    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl Display for NullOp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let op = match self {
             NullOp::SizeOf => "size_of",
             NullOp::AlignOf => "align_of",
-            &NullOp::OffsetOf(ref ty, variant, field) => {
-                write!(f, "offset_of({}.", ty.with_ctx(ctx))?;
-                if let Some(variant) = variant {
-                    ctx.format_enum_variant_name(f, ty.id, variant)?;
-                    write!(f, ".")?;
-                }
-                ctx.format_field_name(f, ty.id, variant, field)?;
-                write!(f, ")")?;
-                return Ok(());
-            }
             NullOp::UbChecks => "ub_checks",
             NullOp::OverflowChecks => "overflow_checks",
             NullOp::ContractChecks => "contract_checks",
@@ -1331,8 +1331,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for OffsetGuarantee {
     }
 }
 
-impl<'a> FmtWithCtx<TypeDeclFmtCtx<'a>> for OffsetGuarantees {
-    fn fmt_with_ctx(&self, ctx: &TypeDeclFmtCtx, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl<'a, C: AstFormatter> FmtWithCtx<TypeDeclFmtCtx<'a, C>> for OffsetGuarantees {
+    fn fmt_with_ctx(&self, ctx: &TypeDeclFmtCtx<C>, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let tab = ctx.fmt.indent();
         match self {
             OffsetGuarantees::Symbolic(ty) => {
@@ -1346,7 +1346,7 @@ impl<'a> FmtWithCtx<TypeDeclFmtCtx<'a>> for OffsetGuarantees {
                 }
                 let has_no_variants = ctx
                     .fmt
-                    .translated
+                    .get_crate()
                     .and_then(|krate| krate.type_decls.get(ctx.ty_decl_id))
                     .map_or_default(|tdecl| tdecl.kind.is_struct())
                     && variants.len() == 1;
@@ -1374,7 +1374,9 @@ impl<'a> FmtWithCtx<TypeDeclFmtCtx<'a>> for OffsetGuarantees {
                     writeln!(f, "{tab}offset of ")?;
                 }
                 for (f_id, offset) in fields.iter_enumerated() {
-                    write!(f, "{tab}{tab}{f_id} is ")?;
+                    write!(f, "{tab}{tab}")?;
+                    ctx.fmt.format_field_name(f, ctx.ty_decl_id, None, f_id)?;
+                    write!(f, " is ")?;
                     offset.fmt_with_ctx(ctx.fmt, f)?;
                     writeln!(f, ",")?;
                 }
@@ -1841,6 +1843,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
             ConstantExprKind::AlignOf(ty) => {
                 write!(f, "align_of::<{}>()", ty.with_ctx(ctx))
             }
+            &ConstantExprKind::OffsetOf(ref ty, variant, field) => {
+                write!(f, "offset_of({}.", ty.with_ctx(ctx))?;
+                if let Some(variant) = variant {
+                    ctx.format_enum_variant_name(f, ty.id, variant)?;
+                    write!(f, ".")?;
+                }
+                ctx.format_field_name(f, ty.id, variant, field)?;
+                write!(f, ")")
+            }
             ConstantExprKind::PtrNoProvenance(v) => write!(f, "no-provenance {v}"),
             ConstantExprKind::RawMemory(bytes) => {
                 let bytes = bytes.iter().map(|v| v.with_ctx(ctx)).format(", ");
@@ -2031,7 +2042,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                 write!(f, "{}({})", unop.with_ctx(ctx), x.with_ctx(ctx))
             }
             Rvalue::NullaryOp(op, ty) => {
-                write!(f, "{}<{}>", op.with_ctx(ctx), ty.with_ctx(ctx))
+                write!(f, "{}<{}>", op, ty.with_ctx(ctx))
             }
             Rvalue::Discriminant(p) => {
                 write!(f, "@discriminant({})", p.with_ctx(ctx),)
@@ -2128,15 +2139,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for SizeGuaranteeKind {
             }
             SizeGuaranteeKind::IfInhabited { .. } => todo!(),
             SizeGuaranteeKind::FromMetadata(metadata_value) => write!(f, "{metadata_value}"),
-            SizeGuaranteeKind::FieldOffset(tdr, variant_id, field_id) => {
-                write!(f, "offset({}.", tdr.with_ctx(ctx))?;
-                if let Some(variant) = variant_id {
-                    ctx.format_enum_variant_name(f, tdr.id, *variant)?;
-                    write!(f, ".")?;
-                }
-                ctx.format_field_name(f, tdr.id, *variant_id, *field_id)?;
-                write!(f, ")")
-            }
             SizeGuaranteeKind::AtLeast(inner) => {
                 write!(f, ">= ")?;
                 inner.fmt_with_ctx(ctx, f)
@@ -3010,10 +3012,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for Variant {
     }
 }
 
-impl<'a> FmtWithCtx<(&TypeDeclFmtCtx<'a>, VariantId)> for VariantLayout {
+impl<'a, C: AstFormatter> FmtWithCtx<(&TypeDeclFmtCtx<'a, C>, Option<VariantId>)>
+    for VariantLayout
+{
     fn fmt_with_ctx(
         &self,
-        ctx: &(&TypeDeclFmtCtx, VariantId),
+        ctx: &(&TypeDeclFmtCtx<C>, Option<VariantId>),
         f: &mut fmt::Formatter<'_>,
     ) -> fmt::Result {
         let tab = ctx.0.fmt.indent();
@@ -3022,7 +3026,7 @@ impl<'a> FmtWithCtx<(&TypeDeclFmtCtx<'a>, VariantId)> for VariantLayout {
             write!(f, "{tab}{tab}{tab}offset of ")?;
             ctx.0
                 .fmt
-                .format_field_name(f, ctx.0.ty_decl_id, Some(ctx.1), f_id)?;
+                .format_field_name(f, ctx.0.ty_decl_id, ctx.1, f_id)?;
             write!(f, ": ")?;
             offset.fmt_with_ctx(ctx.0.fmt, f)?;
             writeln!(f, ",")?;

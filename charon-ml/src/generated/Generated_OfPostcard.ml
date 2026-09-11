@@ -530,6 +530,11 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* _0 = ty_of_postcard ctx st in
          Ok (CAlignOf _0)
      | 23 ->
+         let* _0 = type_decl_ref_of_postcard ctx st in
+         let* _1 = option_of_postcard variant_id_of_postcard ctx st in
+         let* _2 = field_id_of_postcard ctx st in
+         Ok (COffsetOf (_0, _1, _2))
+     | 24 ->
          let* _0 = string_of_postcard ctx st in
          Ok (COpaque _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
@@ -853,14 +858,9 @@ and nullop_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      match __tag with
      | 0 -> Ok SizeOf
      | 1 -> Ok AlignOf
-     | 2 ->
-         let* _0 = type_decl_ref_of_postcard ctx st in
-         let* _1 = option_of_postcard variant_id_of_postcard ctx st in
-         let* _2 = field_id_of_postcard ctx st in
-         Ok (OffsetOf (_0, _1, _2))
-     | 3 -> Ok UbChecks
-     | 4 -> Ok OverflowChecks
-     | 5 -> Ok ContractChecks
+     | 2 -> Ok UbChecks
+     | 3 -> Ok OverflowChecks
+     | 4 -> Ok ContractChecks
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and operand_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -2837,11 +2837,6 @@ and size_guarantee_kind_of_postcard (ctx : of_postcard_ctx)
          let* else_size = size_guarantee_of_postcard ctx st in
          Ok (SizeGuaranteeIfInhabited (ty, then_size, else_size))
      | 8 ->
-         let* _0 = type_decl_ref_of_postcard ctx st in
-         let* _1 = option_of_postcard variant_id_of_postcard ctx st in
-         let* _2 = field_id_of_postcard ctx st in
-         Ok (SizeGuaranteeFieldOffset (_0, _1, _2))
-     | 9 ->
          let* _0 = size_guarantee_of_postcard ctx st in
          Ok (SizeGuaranteeAtLeast _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))

@@ -116,8 +116,6 @@ pub enum SizeGuaranteeKind {
         then_size: SizeGuarantee,
         else_size: SizeGuarantee,
     },
-    /// The offset of the given field inside the referenced type.
-    FieldOffset(TypeDeclRef, Option<VariantId>, FieldId),
     /// Any value larger than that one.
     AtLeast(SizeGuarantee),
 }
@@ -151,11 +149,24 @@ impl SizeGuarantee {
     }
 
     /// Recursively evaluate the parts of this expression that are known in `krate`.
-    pub fn normalize(mut self, krate: &TranslatedCrate, target: &TargetTriple) -> Self {
+    pub fn normalize(self, krate: &TranslatedCrate, target: &TargetTriple) -> Self {
+        self.normalize_aux(krate, target, true)
+    }
+
+    /// Recursively evaluate the parts of this expression that are known in `krate`.
+    ///
+    /// If `strict`, it only resolves symbolic constants (`SizeOF` etc.) if their value is a known concrete constant.
+    pub(super) fn normalize_aux(
+        mut self,
+        krate: &TranslatedCrate,
+        target: &TargetTriple,
+        strict: bool,
+    ) -> Self {
         #[derive(Visitor)]
         struct NormalizeSizeExpr<'a> {
             krate: &'a TranslatedCrate,
             target: &'a TargetTriple,
+            strict: bool,
         }
 
         /// Take out the concrete values from the vec and fold them with the provided function.
@@ -229,7 +240,14 @@ impl SizeGuarantee {
                             _ => return,
                         };
                         self.visit(&mut guaranteed);
-                        guaranteed.kind().clone()
+
+                        if (self.strict && guaranteed.as_usize().is_some())
+                            || (!self.strict && guaranteed.is_exact())
+                        {
+                            guaranteed.kind().clone()
+                        } else {
+                            return;
+                        }
                     }
                     SizeGuaranteeKind::FromMetadata(_) => return,
                     SizeGuaranteeKind::Max(values) => {
@@ -247,9 +265,6 @@ impl SizeGuarantee {
                                 _ => values.push(val),
                             }
                         }
-                        values.iter_mut().for_each(|val| {
-                            self.visit(val);
-                        });
                         // Get the max of the concrete values.
                         if let Some(value) = fold_concrete_values(values, std::cmp::max)
                             && value != 0
@@ -276,13 +291,10 @@ impl SizeGuarantee {
                                 _ => values.push(val),
                             }
                         }
-                        values.iter_mut().for_each(|val| {
-                            self.visit(val);
-                        });
+
                         // Get the min of the concrete values.
                         // If it is only an `AtLeast`, we need to lift the `AtLeast` to the overall-result,
                         // if it is not an `AtLeast`, we can ignore all `AtLeast`s with concrete values inside.
-
                         if let Some((value, exact)) = values
                             .extract_if(.., |val| val.as_usize_exact().is_some())
                             .map(|val| val.as_usize_exact().unwrap())
@@ -379,12 +391,7 @@ impl SizeGuarantee {
                         // FIXME: evaluate type inhabitedness
                         return;
                     }
-                    SizeGuaranteeKind::FieldOffset(_, _, _) => {
-                        // TODO: Can we do anything here?
-                        return;
-                    }
                     SizeGuaranteeKind::AtLeast(inner) => {
-                        self.visit(inner);
                         // Strip nested layers of `AtLeast` away.
                         if inner.kind().is_at_least() {
                             inner.kind().clone()
@@ -396,7 +403,12 @@ impl SizeGuarantee {
             }
         }
 
-        NormalizeSizeExpr { krate, target }.visit(&mut self);
+        NormalizeSizeExpr {
+            krate,
+            target,
+            strict,
+        }
+        .visit(&mut self);
         self
     }
 
@@ -433,6 +445,27 @@ impl SizeGuarantee {
         } else {
             SizeGuaranteeKind::AtLeast(self).into_expr()
         }
+    }
+
+    fn is_exact(&self) -> bool {
+        #[derive(Visitor)]
+        struct Finder {
+            found: bool,
+        }
+        impl VisitAst for Finder {
+            fn enter_size_guarantee_kind(&mut self, x: &SizeGuaranteeKind) {
+                if self.found {
+                    return;
+                }
+
+                if let SizeGuaranteeKind::AtLeast(_) = x {
+                    self.found = true;
+                }
+            }
+        }
+        let mut finder = Finder { found: false };
+        self.drive(&mut finder);
+        !finder.found
     }
 }
 
