@@ -17,31 +17,6 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::MetaSized
-#[fundamental]
-#[lang_item(MetaSized)]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-// Full name: core::option::Option
-#[lang_item(Option)]
-#[diagnostic_item("Option")]
-pub enum Option<T>
-where
-    TraitClause0: (T: Sized),
-{
-  None,
-  Some { _0: T },
-}
-
 // Full name: core::option::Option::<&'_ [u64]>
 #[lang_item(Option)]
 #[diagnostic_item("Option")]
@@ -62,17 +37,6 @@ pub trait MyConfig<Self>
     non-dyn-compatible
 }
 
-// Full name: test_crate::MyConfig
-pub trait MyConfig<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    const SLICE_HOLDER : Option<&'static [u64]>[{built_in impl Sized for &'static [u64]}]
-    non-dyn-compatible
-}
-
-// Full name: test_crate::Concrete
-pub struct Concrete {}
-
 // Full name: test_crate::Concrete
 pub struct Concrete {}
 
@@ -90,7 +54,7 @@ fn ARR() -> [u64; 1usize]
 const ARR: [u64; 1usize] = ARR()
 
 // Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER
-pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option::<&'_ [u64]>
+pub fn SLICE_HOLDER() -> Option::<&'_ [u64]>
 {
     let _0: Option::<&'_ [u64]>; // return
     let _1: &'1 [u64]; // anonymous local
@@ -123,61 +87,11 @@ pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option::<&'_ [u64]>
     return
 }
 
-// Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER::ARR
-fn ARR() -> [u64; 1usize]
-{
-    let _0: [u64; 1usize]; // return
-
-    storage_live(_0)
-    _0 = [const 7u64]
-    return
-}
-
-// Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER::ARR
-const ARR: [u64; 1usize] = ARR()
-
 // Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER
-pub fn {impl MyConfig for Concrete}::SLICE_HOLDER() -> Option<&'static [u64]>[{built_in impl Sized for &'static [u64]}]
-{
-    let _0: Option<&'8 [u64]>[{built_in impl Sized for &'8 [u64]}]; // return
-    let _1: &'12 [u64]; // anonymous local
-    let _2: &'14 [u64; 1usize]; // anonymous local
-    let _3: &'15 [u64; 1usize]; // anonymous local
-    let _4: &'16 [u64; 1usize]; // anonymous local
-    let _5: &'17 [u64; 1usize]; // anonymous local
-    let _6: &'26 [u64; 1usize]; // anonymous local
-    let _7: [u64; 1usize]; // anonymous local
-
-    storage_live(_5)
-    storage_live(_6)
-    storage_live(_7)
-    _7 = copy ARR
-    _6 = &_7
-    _5 = move _6
-    storage_live(_0)
-    storage_live(_4)
-    storage_live(_1)
-    storage_live(_2)
-    storage_live(_3)
-    _4 = move _5
-    _3 = &(*_4)
-    _2 = &(*_3)
-    _1 = unsize_cast<&'14 [u64; 1usize], &'18 [u64], 1usize>(move _2)
-    storage_dead(_2)
-    _0 = Option::Some { _0: move _1 }
-    storage_dead(_1)
-    storage_dead(_3)
-    return
-}
-
-// Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER
-pub const {impl MyConfig for Concrete}::SLICE_HOLDER: Option::<&'_ [u64]> = {impl MyConfig for Concrete}::SLICE_HOLDER()
-
-// Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER
-pub const {impl MyConfig for Concrete}::SLICE_HOLDER: Option<&'static [u64]>[{built_in impl Sized for &'static [u64]}] = {impl MyConfig for Concrete}::SLICE_HOLDER()
+pub const SLICE_HOLDER: Option::<&'_ [u64]> = SLICE_HOLDER()
 
 // Full name: test_crate::{impl MyConfig for Concrete}::op
-pub fn {impl MyConfig for Concrete}::op(x: u64) -> u64
+pub fn op(x: u64) -> u64
 {
     let _0: u64; // return
     let x: u64; // arg #1
@@ -206,7 +120,7 @@ pub fn entry(x: u64) -> u64
     storage_live(_0)
     storage_live(_2)
     _2 = copy x
-    _0 = {impl MyConfig for Concrete}::op(move _2)
+    _0 = op(move _2)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)

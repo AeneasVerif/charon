@@ -1126,7 +1126,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let mut methods: IndexMap<TraitMethodId, _> = IndexMap::new();
 
         // In mono mode, we do not translate any associated items in trait impl.
-        if self.monomorphize() {
+        if self.monomorphize() || self.is_poly_in_mono(&self.item_src) {
             return Ok(TraitImpl {
                 def_id,
                 item_meta,
