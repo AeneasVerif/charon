@@ -1,4 +1,5 @@
 //@ charon-args=--monomorphize
+//@ charon-args=--include=core::ops::function
 
 static BAR: fn(i32) = |a| assert_ne!(a, 43);
 

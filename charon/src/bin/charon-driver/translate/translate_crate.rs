@@ -68,6 +68,17 @@ pub enum TransItemSourceKind {
     Module,
     /// The `call_*` method of the generated `Fn*` impl for a closure or fn item.
     CallableMethod(ClosureKind),
+    /// The `call_*` method of the builtin `Fn*` impl of a function pointer type. That impl has no
+    /// item to hang off, so the `DefId` is that of the trait and the `Self` type (the `fn(..)`
+    /// one) comes from the trait ref's generics.
+    ///
+    /// We only generate this in monomorphic mode. The body untuples the arguments and calls the
+    /// pointer, which needs a concrete `Self`. Giving it a synthetic `DefId` like tuples
+    /// and arrays have doesn't work either, because the item's generics would have to carry the
+    /// pointer's late-bound regions (`for<'a> fn(&'a u32)`) to distinguish it from
+    /// `fn(&'static u32)`, and synthetic generics can't. This is not an issue in monomorphic mode,
+    /// as regions are erased.
+    FnPointerMethod(ClosureKind),
     /// A cast of a stateless closure to a function pointer.
     ClosureAsFnCast,
     /// The `drop_glue` method of a `Destruct` impl. It contains the drop glue that calls
@@ -169,6 +180,7 @@ impl TransItemSource {
             | TransItemSourceKind::VTableMethod(TransImplSource::Callable(kind)) => {
                 TransItemSourceKind::TraitImpl(TransImplSource::Callable(kind))
             }
+            TransItemSourceKind::FnPointerMethod(..) => TransItemSourceKind::TraitDecl,
             TransItemSourceKind::DropGlueMethod(TransImplSource::Marker)
             | TransItemSourceKind::VTableInstance(TransImplSource::Marker)
             | TransItemSourceKind::VTableInstanceInitializer(TransImplSource::Marker)
@@ -430,6 +442,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     }
                     Fun
                     | CallableMethod(..)
+                    | FnPointerMethod(..)
                     | ClosureAsFnCast
                     | DropGlueMethod(..)
                     | VTableInstanceInitializer(..)
@@ -1030,6 +1043,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         enqueue: bool,
     ) -> Result<RegionBinder<FnPtr>, Error> {
         if let Some(fn_ptr) = self.translate_callable_method_fn_ptr(span, item)? {
+            return Ok(fn_ptr);
+        }
+        if let Some(fn_ptr) = self.translate_fn_pointer_method_fn_ptr(span, item)? {
             return Ok(fn_ptr);
         }
         if let Some(fn_ptr) = self.translate_method_decl_fn_ptr(span, item)? {

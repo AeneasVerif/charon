@@ -2779,8 +2779,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
             }
             TraitRefKind::Clause(id) => write!(f, "{}", id.with_ctx(ctx)),
             TraitRefKind::BuiltinOrAuto { types, .. } => {
-                let bound_ctx = &ctx.push_bound_regions(&self.trait_decl_ref.regions);
-                let impl_trait = self.trait_decl_ref.skip_binder.format_as_impl(bound_ctx);
+                let impl_trait = self
+                    .trait_decl_ref
+                    .fmt_as_for_with(ctx, |ctx, tref| tref.format_as_impl(ctx).to_string());
                 write!(f, "{{built_in impl {impl_trait}")?;
                 if !types.is_empty() {
                     let trait_id = self.trait_decl_ref.skip_binder.id;
