@@ -1,0 +1,220 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Tuple
+#[fundamental]
+#[lang_item(Tuple)]
+pub trait Tuple<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::ops::function::FnOnce
+#[fundamental]
+#[lang_item(FnOnce)]
+pub trait FnOnce<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self::Output: Sized)
+    type Output
+    fn call_once;
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+}
+
+// Full name: core::ops::function::FnMut
+#[fundamental]
+#[lang_item(FnMut)]
+pub trait FnMut<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnOnce<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    fn call_mut<'_0_1>;
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
+}
+
+// Full name: core::ops::function::Fn
+#[fundamental]
+#[lang_item(Fn)]
+pub trait Fn<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnMut<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    fn call<'_0_1>;
+    vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
+}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+struct (_,)<A> {
+  _0: A,
+}
+
+// Full name: test_crate::add_one
+fn add_one(x: u32) -> u32
+{
+    let _0: u32; // return
+    let x: u32; // arg #1
+    let _2: u32; // anonymous local
+    let _3: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_2)
+    _2 = copy x
+    _3 = copy _2 panic.+ const 1u32
+    _0 = move _3
+    storage_dead(_2)
+    storage_dead(_3)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::call_it
+fn call_it<F>(f: F, x: u32) -> u32
+where
+    TraitClause0: (F: Sized),
+    TraitClause1: (F: Fn<(u32,)>),
+    TypeConstraint0: TraitClause1::ImpliedClause1::ImpliedClause1::Output = u32,
+{
+    let _0: u32; // return
+    let f: F; // arg #1
+    let x: u32; // arg #2
+    let _3: &'1 F; // anonymous local
+    let _4: (u32,); // anonymous local
+    let _5: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &f
+    storage_live(_4)
+    storage_live(_5)
+    _5 = copy x
+    _4 = (move _5,)
+    _0 = TraitClause1::call<'2>(move _3, move _4)
+    ↳⚡ conditional_drop[{built_in impl Destruct for F}::drop_glue<'3>] f
+        ↳⚡ storage_dead(x)
+            storage_dead(f)
+            unwind_terminate
+        storage_dead(x)
+        storage_dead(f)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    conditional_drop[{built_in impl Destruct for F}::drop_glue<'4>] f
+    ↳⚡ storage_dead(x)
+        storage_dead(f)
+        unwind_continue
+    storage_dead(x)
+    storage_dead(f)
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let f: fn(u32) -> u32; // local
+    let _2: u32; // anonymous local
+    let _3: fn(u32) -> u32; // anonymous local
+    let _4: u32; // anonymous local
+    let _5: &'1 fn(u32) -> u32; // anonymous local
+    let _6: &'2 fn(u32) -> u32; // anonymous local
+    let _7: (u32,); // anonymous local
+    let g: extern "rust-call" fn<'_0_1>(&'_0_1 fn(u32) -> u32, (u32,)) -> u32; // local
+    let _9: u32; // anonymous local
+    let _10: extern "rust-call" fn<'_0_1>(&'_0_1 fn(u32) -> u32, (u32,)) -> u32; // anonymous local
+    let _11: &'3 fn(u32) -> u32; // anonymous local
+    let _12: &'4 fn(u32) -> u32; // anonymous local
+    let _13: (u32,); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(f)
+    f = cast<add_one, fn(u32) -> u32>(const add_one)
+    fake_read(f)
+    set_type(typeof(f) == fn(u32) -> u32)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy f
+    _2 = call_it<fn(u32) -> u32>[{built_in impl Sized for fn(u32) -> u32}, {built_in impl Fn<(u32,)> for fn(u32) -> u32}](move _3, const 0u32)
+    ↳⚡ unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = &f
+    _5 = &(*_6)
+    storage_live(_7)
+    _7 = (const 1u32,)
+    _4 = {built_in impl Fn<(u32,)> for fn(u32) -> u32}::call<'5>(move _5, move _7)
+    ↳⚡ unwind_continue
+    storage_dead(_7)
+    storage_dead(_5)
+    storage_dead(_6)
+    storage_dead(_4)
+    storage_live(g)
+    g = cast<for<'_0_1> {built_in impl Fn<(u32,)> for fn(u32) -> u32}::call<'_0_1>, extern "rust-call" fn<'_0_1>(&'_0_1 fn(u32) -> u32, (u32,)) -> u32>(const {built_in impl Fn<(u32,)> for fn(u32) -> u32}::call<'6>)
+    fake_read(g)
+    set_type(typeof(g) == extern "rust-call" fn<'_0_1>(&'_0_1 fn(u32) -> u32, (u32,)) -> u32)
+    storage_live(_9)
+    storage_live(_10)
+    _10 = copy g
+    storage_live(_11)
+    storage_live(_12)
+    _12 = &f
+    _11 = &(*_12)
+    storage_live(_13)
+    _13 = (const 2u32,)
+    _9 = (move _10)(move _11, move _13)
+    ↳⚡ unwind_continue
+    storage_dead(_13)
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_dead(_12)
+    storage_dead(_9)
+    _0 = ()
+    storage_dead(g)
+    storage_dead(f)
+    return
+}
+
+
+

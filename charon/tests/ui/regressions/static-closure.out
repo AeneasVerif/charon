@@ -35,9 +35,31 @@ pub trait Tuple<Self>
     non-dyn-compatible
 }
 
-opaque type core::ops::function::Fn::{vtable}
+struct core::ops::function::FnOnce::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  method_call_once: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
 
-opaque type core::ops::function::FnOnce::{vtable}
+struct core::ops::function::FnMut::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  method_call_mut: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+  super_trait_1: &'static core::ops::function::FnOnce::{vtable},
+}
+
+struct core::ops::function::Fn::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  method_call: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+  super_trait_1: &'static core::ops::function::FnMut::{vtable},
+}
 
 // Full name: core::ops::function::FnOnce
 #[fundamental]
@@ -49,8 +71,6 @@ pub trait FnOnce<Self, Args>
     proof ImpliedClause2: (Args: Tuple)
     vtable: core::ops::function::FnOnce::{vtable}
 }
-
-opaque type core::ops::function::FnMut::{vtable}
 
 // Full name: core::ops::function::FnMut
 #[fundamental]
@@ -619,7 +639,8 @@ fn main()
     let _6: &'9 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '10); // anonymous local
     let _7: (i32,); // anonymous local
     let _8: (); // anonymous local
-    let _9: &'11 fn(i32); // anonymous local
+    let _9: unsafe fn(&'9 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '10), (i32,)); // anonymous local
+    let _10: &'11 fn(i32); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -627,9 +648,9 @@ fn main()
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    storage_live(_9)
-    _9 = &BAR
-    _4 = move _9
+    storage_live(_10)
+    _10 = &BAR
+    _4 = move _10
     _3 = &(*_4)
     _2 = &(*_3)
     boo = unsize_cast<&'6 fn(i32), &'12 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '13), &vtable_of({built_in impl Fn<(i32,)> for fn(i32)})>(move _2)
@@ -642,7 +663,9 @@ fn main()
     _6 = &(*boo) with_metadata(copy boo.metadata)
     storage_live(_7)
     _7 = (const 42i32,)
-    _5 = Fn<(dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '18), (i32,)>::call<'19>(move _6, move _7)
+    storage_live(_9)
+    _9 = cast<*const (), unsafe fn(&'9 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '10), (i32,))>(copy (*_6.metadata).method_call)
+    _5 = (copy _9)(move _6, move _7)
     ↳⚡ unwind_continue
     storage_dead(_7)
     storage_dead(_6)
@@ -654,6 +677,7 @@ fn main()
     _0 = ()
     storage_dead(_4)
     storage_dead(boo)
+    storage_dead(_10)
     storage_dead(_9)
     return
 }
