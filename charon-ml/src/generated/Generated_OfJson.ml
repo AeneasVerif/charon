@@ -929,8 +929,6 @@ and name_of_json (ctx : of_json_ctx) (js : json) : (name, string) result =
 and nullop_of_json (ctx : of_json_ctx) (js : json) : (nullop, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `String "SizeOf" -> Ok SizeOf
-    | `String "AlignOf" -> Ok AlignOf
     | `String "UbChecks" -> Ok UbChecks
     | `String "OverflowChecks" -> Ok OverflowChecks
     | `String "ContractChecks" -> Ok ContractChecks

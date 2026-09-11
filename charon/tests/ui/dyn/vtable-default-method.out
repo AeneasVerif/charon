@@ -217,27 +217,21 @@ impl "impl_Trait_for_Struct" Trait for Struct {
 fn impl_Trait_for_Struct::{vtable}() -> test_crate::Trait::{vtable}
 {
     let ret: test_crate::Trait::{vtable}; // return
-    let size: usize; // local
-    let align: usize; // local
-    let _3: unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait + '1)); // anonymous local
-    let _4: fn<'_0_1>(&'_0_1 (dyn Trait + '3)) -> i32; // anonymous local
-    let _5: fn<'_0_1>(&'_0_1 (dyn Trait + '5)) -> i32; // anonymous local
-    let _6: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait + '1)); // anonymous local
+    let _2: fn<'_0_1>(&'_0_1 (dyn Trait + '3)) -> i32; // anonymous local
+    let _3: fn<'_0_1>(&'_0_1 (dyn Trait + '5)) -> i32; // anonymous local
+    let _4: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
-    storage_live(size)
-    size = size_of<Struct>
-    storage_live(align)
-    align = align_of<Struct>
+    storage_live(_1)
+    _1 = cast<for<'_0_1> {vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait + '1))>(const {vtable_drop_shim}<'0>)
+    storage_live(_2)
+    _2 = cast<for<'_0_1> impl_Trait_for_Struct::base::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Trait + '3)) -> i32>(const impl_Trait_for_Struct::base::{vtable_method}<'2>)
     storage_live(_3)
-    _3 = cast<for<'_0_1> {vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait + '1))>(const {vtable_drop_shim}<'0>)
+    _3 = cast<for<'_0_1> test_crate::Trait::dflt::{vtable_method}<'4, Struct>[impl_Trait_for_Struct], fn<'_0_1>(&'_0_1 (dyn Trait + '5)) -> i32>(const test_crate::Trait::dflt::{vtable_method}<'4, Struct>[impl_Trait_for_Struct])
     storage_live(_4)
-    _4 = cast<for<'_0_1> impl_Trait_for_Struct::base::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Trait + '3)) -> i32>(const impl_Trait_for_Struct::base::{vtable_method}<'2>)
-    storage_live(_5)
-    _5 = cast<for<'_0_1> test_crate::Trait::dflt::{vtable_method}<'4, Struct>[impl_Trait_for_Struct], fn<'_0_1>(&'_0_1 (dyn Trait + '5)) -> i32>(const test_crate::Trait::dflt::{vtable_method}<'4, Struct>[impl_Trait_for_Struct])
-    storage_live(_6)
-    _6 = &core::marker::MetaSized::{vtable}<Struct>
-    ret = test_crate::Trait::{vtable} { size: move size, align: move align, drop: move _3, method_base: move _4, method_dflt: move _5, super_trait_0: move _6 }
+    _4 = &core::marker::MetaSized::{vtable}<Struct>
+    ret = test_crate::Trait::{vtable} { size: const size_of::<Struct>(), align: const align_of::<Struct>(), drop: move _1, method_base: move _2, method_dflt: move _3, super_trait_0: move _4 }
     return
 }
 

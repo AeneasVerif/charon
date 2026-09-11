@@ -1216,8 +1216,6 @@ impl Name {
 impl<C: AstFormatter> FmtWithCtx<C> for NullOp {
     fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let op = match self {
-            NullOp::SizeOf => "size_of",
-            NullOp::AlignOf => "align_of",
             NullOp::UbChecks => "ub_checks",
             NullOp::OverflowChecks => "overflow_checks",
             NullOp::ContractChecks => "contract_checks",

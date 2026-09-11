@@ -998,22 +998,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 Operand::Move(cast_local)
             };
             let op = match field {
-                TrVTableField::Size => {
-                    let size_local = builder.new_var(Some("size".to_string()), ty);
-                    builder.push_statement(StatementKind::Assign(
-                        size_local.clone(),
-                        Rvalue::NullaryOp(NullOp::SizeOf, self_ty.clone()),
-                    ));
-                    Operand::Move(size_local)
-                }
-                TrVTableField::Align => {
-                    let align_local = builder.new_var(Some("align".to_string()), ty);
-                    builder.push_statement(StatementKind::Assign(
-                        align_local.clone(),
-                        Rvalue::NullaryOp(NullOp::AlignOf, self_ty.clone()),
-                    ));
-                    Operand::Move(align_local)
-                }
+                TrVTableField::Size => mk_const(ConstantExprKind::SizeOf(self_ty.clone())),
+                TrVTableField::Align => mk_const(ConstantExprKind::AlignOf(self_ty.clone())),
                 TrVTableField::Drop => {
                     let drop_shim = self.translate_item(
                         span,

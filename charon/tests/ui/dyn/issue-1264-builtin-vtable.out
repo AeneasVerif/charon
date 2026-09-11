@@ -33,24 +33,18 @@ unsafe fn {vtable_drop_shim}::<i32><'_0>(dyn_self: &'_0 mut (dyn Send))
 fn {vtable}::<i32>() -> {vtable}
 {
     let ret: {vtable}; // return
-    let size: usize; // local
-    let align: usize; // local
     let drop: unsafe fn(*mut (dyn Send + '0)); // local
     let erased_drop: *const (); // local
-    let _5: unsafe fn(*mut (dyn Send + '3)); // anonymous local
+    let _3: unsafe fn(*mut (dyn Send + '3)); // anonymous local
 
     storage_live(ret)
-    storage_live(size)
-    size = size_of<i32>
-    storage_live(align)
-    align = align_of<i32>
     storage_live(drop)
     storage_live(erased_drop)
-    storage_live(_5)
-    _5 = cast<{vtable_drop_shim}::<i32><'2>, unsafe fn(*mut (dyn Send + '3))>(const {vtable_drop_shim}::<i32><'2>)
-    drop = move _5
+    storage_live(_3)
+    _3 = cast<{vtable_drop_shim}::<i32><'2>, unsafe fn(*mut (dyn Send + '3))>(const {vtable_drop_shim}::<i32><'2>)
+    drop = move _3
     erased_drop = cast<unsafe fn(*mut (dyn Send + '4)), *const ()>(move drop)
-    ret = {vtable} { size: move size, align: move align, drop: move erased_drop }
+    ret = {vtable} { size: const size_of::<i32>(), align: const align_of::<i32>(), drop: move erased_drop }
     return
 }
 

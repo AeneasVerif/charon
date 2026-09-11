@@ -273,8 +273,6 @@ pub enum CastKind {
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("Nullop"))]
 pub enum NullOp {
-    SizeOf,
-    AlignOf,
     UbChecks,
     OverflowChecks,
     ContractChecks,

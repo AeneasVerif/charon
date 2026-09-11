@@ -1454,8 +1454,6 @@ and pp_cast_kind (env : fmt_env) (fmt : Format.formatter) (cast : cast_kind) :
 
 and pp_nullop (env : fmt_env) (fmt : Format.formatter) (op : nullop) : unit =
   match op with
-  | SizeOf -> pp_string fmt "size_of"
-  | AlignOf -> pp_string fmt "align_of"
   | UbChecks -> pp_string fmt "ub_checks"
   | ContractChecks -> pp_string fmt "contract_checks"
   | OverflowChecks -> pp_string fmt "overflow_checks"

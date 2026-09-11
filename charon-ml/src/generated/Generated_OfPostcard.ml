@@ -856,11 +856,9 @@ and nullop_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* __tag = int_of_postcard ctx st in
      match __tag with
-     | 0 -> Ok SizeOf
-     | 1 -> Ok AlignOf
-     | 2 -> Ok UbChecks
-     | 3 -> Ok OverflowChecks
-     | 4 -> Ok ContractChecks
+     | 0 -> Ok UbChecks
+     | 1 -> Ok OverflowChecks
+     | 2 -> Ok ContractChecks
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and operand_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

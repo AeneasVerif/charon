@@ -116,45 +116,39 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Trait))
 fn impl_Trait_for_i32::{vtable}() -> test_crate::Trait::{vtable}
 {
     let ret: test_crate::Trait::{vtable}; // return
-    let size: usize; // local
-    let align: usize; // local
     let drop: unsafe fn(*mut (dyn Trait + '0)); // local
     let erased_drop: *const (); // local
     let consume: fn<'_0_1>(&'_0_1 (dyn Trait + '1)); // local
     let erased_consume: *const (); // local
     let another: fn<'_0_1>(&'_0_1 (dyn Trait + '2)); // local
     let erased_another: *const (); // local
-    let _9: unsafe fn(*mut (dyn Trait + '5)); // anonymous local
-    let _10: fn<'_0_1>(&'_0_1 (dyn Trait + '10)); // anonymous local
-    let _11: fn<'_0_1>(&'_0_1 (dyn Trait + '15)); // anonymous local
-    let _12: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _7: unsafe fn(*mut (dyn Trait + '5)); // anonymous local
+    let _8: fn<'_0_1>(&'_0_1 (dyn Trait + '10)); // anonymous local
+    let _9: fn<'_0_1>(&'_0_1 (dyn Trait + '15)); // anonymous local
+    let _10: &'static core::marker::MetaSized::{vtable}; // anonymous local
 
     storage_live(ret)
-    storage_live(size)
-    size = size_of<i32>
-    storage_live(align)
-    align = align_of<i32>
     storage_live(drop)
     storage_live(erased_drop)
-    storage_live(_9)
-    _9 = cast<{vtable_drop_shim}<'4>, unsafe fn(*mut (dyn Trait + '5))>(const {vtable_drop_shim}<'4>)
-    drop = move _9
+    storage_live(_7)
+    _7 = cast<{vtable_drop_shim}<'4>, unsafe fn(*mut (dyn Trait + '5))>(const {vtable_drop_shim}<'4>)
+    drop = move _7
     erased_drop = cast<unsafe fn(*mut (dyn Trait + '6)), *const ()>(move drop)
     storage_live(consume)
     storage_live(erased_consume)
-    storage_live(_10)
-    _10 = cast<for<'_0_1> impl_Trait_for_i32::consume::{vtable_method}<'9>, fn<'_0_1>(&'_0_1 (dyn Trait + '10))>(const impl_Trait_for_i32::consume::{vtable_method}<'9>)
-    consume = move _10
+    storage_live(_8)
+    _8 = cast<for<'_0_1> impl_Trait_for_i32::consume::{vtable_method}<'9>, fn<'_0_1>(&'_0_1 (dyn Trait + '10))>(const impl_Trait_for_i32::consume::{vtable_method}<'9>)
+    consume = move _8
     erased_consume = cast<fn<'_0_1>(&'_0_1 (dyn Trait + '11)), *const ()>(move consume)
     storage_live(another)
     storage_live(erased_another)
-    storage_live(_11)
-    _11 = cast<for<'_0_1> impl_Trait_for_i32::another::{vtable_method}<'14>, fn<'_0_1>(&'_0_1 (dyn Trait + '15))>(const impl_Trait_for_i32::another::{vtable_method}<'14>)
-    another = move _11
+    storage_live(_9)
+    _9 = cast<for<'_0_1> impl_Trait_for_i32::another::{vtable_method}<'14>, fn<'_0_1>(&'_0_1 (dyn Trait + '15))>(const impl_Trait_for_i32::another::{vtable_method}<'14>)
+    another = move _9
     erased_another = cast<fn<'_0_1>(&'_0_1 (dyn Trait + '16)), *const ()>(move another)
-    storage_live(_12)
-    _12 = &core::marker::MetaSized::{vtable}::<i32>
-    ret = test_crate::Trait::{vtable} { size: move size, align: move align, drop: move erased_drop, method_consume: move erased_consume, method_another: move erased_another, super_trait_0: move _12 }
+    storage_live(_10)
+    _10 = &core::marker::MetaSized::{vtable}::<i32>
+    ret = test_crate::Trait::{vtable} { size: const size_of::<i32>(), align: const align_of::<i32>(), drop: move erased_drop, method_consume: move erased_consume, method_another: move erased_another, super_trait_0: move _10 }
     return
 }
 
