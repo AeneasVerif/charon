@@ -275,7 +275,6 @@ pub enum CastKind {
 pub enum NullOp {
     SizeOf,
     AlignOf,
-    OffsetOf(TypeDeclRef, Option<VariantId>, FieldId),
     UbChecks,
     OverflowChecks,
     ContractChecks,

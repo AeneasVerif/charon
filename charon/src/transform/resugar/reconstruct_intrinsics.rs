@@ -29,19 +29,20 @@ impl UllbcPass for Transform {
                     arg1.kind()
                 && let Some(tdecl) = ctx.ctx.translated.type_decls.get(tref.id)
             {
-                // TODO: move into a pass, maybe also size_of/align_of? or remove the nullops.
-                // maybe this is a constant also.
                 let variant_id = if tdecl.kind.is_enum() {
                     Some(VariantId::from_usize(*variant_id as usize))
                 } else {
                     None
                 };
                 let field_id = FieldId::from_usize(*field_id as usize);
-                let rval = Rvalue::NullaryOp(
-                    NullOp::OffsetOf(tref.clone(), variant_id, field_id),
+                let constant = ConstantExpr::new(
+                    ConstantExprKind::OffsetOf(tref.clone(), variant_id, field_id),
                     Ty::mk_usize(),
                 );
-                ctx.insert_assn_stmt(call.dest.clone(), rval);
+                ctx.insert_assn_stmt(
+                    call.dest.clone(),
+                    Rvalue::Use(Operand::Const(constant), WithRetag::No),
+                );
                 term.kind = TerminatorKind::Goto { target: *target };
             }
         });

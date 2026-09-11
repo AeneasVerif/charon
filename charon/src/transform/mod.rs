@@ -169,8 +169,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         resugar::reconstruct_vec_boxes::Transform::new(ctx),
         // Resugar the box derefs that got desugared in elaborated MIR.
         CowBox::Borrowed(&resugar::reconstruct_box_derefs::Transform),
-        // Recognize calls to the `offset_of` intrinsics and replace them with the
-        // corresponding `NullOp`.
+        // Recognize calls to the `offset_of` intrinsic and replace them with the
+        // corresponding constant expression.
         CowBox::Borrowed(&resugar::reconstruct_intrinsics::Transform),
         // Reconstruct the asserts
         CowBox::Borrowed(&resugar::reconstruct_asserts::Transform),
