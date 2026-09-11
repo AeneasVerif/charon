@@ -21,7 +21,9 @@ use super::translate_crate::*;
 use super::translate_ctx::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter, compute_local_names};
 use charon_lib::name_matcher::NamePattern;
+use charon_lib::options::TranslateOptions;
 use charon_lib::pretty::FmtWithCtx;
+use charon_lib::transform::ctx::BodyTransformCtx;
 use charon_lib::ullbc_ast::*;
 
 /// A translation context for function bodies.
@@ -105,6 +107,8 @@ pub(crate) struct BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
     pub b_ctx: &'bctx mut BodyTransCtx<'tcx, 'tctx, 'ictx>,
     /// Block onto which we're adding statements.
     pub current_block: BlockId,
+    /// Span of the statement or terminator currently being translated.
+    pub span: Span,
     /// List of currently translated statements
     pub statements: Vec<Statement>,
 }
@@ -117,6 +121,7 @@ impl<'tcx, 'tctx, 'ictx, 'bctx> BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
         BlockTransCtx {
             b_ctx,
             current_block,
+            span: Span::dummy(),
             statements: Vec::new(),
         }
     }
@@ -710,6 +715,41 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
     }
 }
 
+impl BodyTransformCtx for BlockTransCtx<'_, '_, '_, '_> {
+    fn get_crate(&self) -> &TranslatedCrate {
+        &self.translated
+    }
+
+    fn get_options(&self) -> &TranslateOptions {
+        &self.options
+    }
+
+    fn get_params(&self) -> &GenericParams {
+        self.outermost_generics()
+    }
+
+    fn get_locals_mut(&mut self) -> &mut Locals {
+        &mut self.locals
+    }
+
+    fn insert_storage_live_stmt(&mut self, local: LocalId) {
+        self.statements
+            .push(Statement::new(self.span, StatementKind::StorageLive(local)));
+    }
+
+    fn insert_storage_dead_stmt(&mut self, local: LocalId) {
+        self.statements
+            .push(Statement::new(self.span, StatementKind::StorageDead(local)));
+    }
+
+    fn insert_assn_stmt(&mut self, place: Place, rvalue: Rvalue) {
+        self.statements.push(Statement::new(
+            self.span,
+            StatementKind::Assign(place, rvalue),
+        ));
+    }
+}
+
 impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
     fn missing_ptr_metadata() -> Operand {
         Operand::Const(ConstantExpr::new(
@@ -1131,15 +1171,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                                 fields.iter().cloned(),
                             )?
                         {
-                            let local = self.locals.new_var(None, constant.ty().clone());
-                            self.statements.push(Statement::new(
-                                span,
-                                StatementKind::StorageLive(local.as_local().unwrap()),
-                            ));
-                            self.statements.push(Statement::new(
-                                span,
-                                StatementKind::Assign(local.clone(), repeat),
-                            ));
+                            let local = self.fresh_var(None, constant.ty().clone());
+                            self.insert_assn_stmt(local.clone(), repeat);
                             return Ok(Operand::Move(local));
                         }
                         Operand::Const(constant)
@@ -1161,17 +1194,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     mir::RuntimeChecks::OverflowChecks => NullOp::OverflowChecks,
                     mir::RuntimeChecks::ContractChecks => NullOp::ContractChecks,
                 };
-                let local = self.locals.new_var(None, Ty::mk_bool());
-                self.statements.push(Statement {
-                    span,
-                    kind: StatementKind::StorageLive(local.as_local().unwrap()),
-                    comments_before: vec![],
-                });
-                self.statements.push(Statement {
-                    span,
-                    kind: StatementKind::Assign(local.clone(), Rvalue::NullaryOp(op)),
-                    comments_before: vec![],
-                });
+                let local = self.fresh_var(None, Ty::mk_bool());
+                self.insert_assn_stmt(local.clone(), Rvalue::NullaryOp(op));
                 Operand::Move(local)
             }
         })
@@ -1461,6 +1485,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         trace!("About to translate statement (MIR) {:?}", statement);
         let span = self.translate_span_from_source_info(source_scopes, &statement.source_info);
 
+        self.span = span;
         let kind: Option<StatementKind> = match &statement.kind {
             mir::StatementKind::Assign((place, rvalue)) => {
                 let t_place = self.translate_place(span, place)?;
@@ -1598,6 +1623,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         let span = self.translate_span_from_source_info(source_scopes, &terminator.source_info);
 
         // Translate the terminator
+        self.span = span;
         use mir::TerminatorKind;
         let kind: ullbc_ast::TerminatorKind = match &terminator.kind {
             TerminatorKind::Goto { target } => {
