@@ -133,11 +133,19 @@ impl SizeExpr {
     }
 
     /// Recursively evaluate the parts of this expression that are known in `krate`.
-    pub fn normalize(mut self, krate: &TranslatedCrate, target: &TargetTriple) -> Self {
+    /// If `allow_precision_loss` is false, `SizeOf` and `AlignOf` are only replaced with a
+    /// [`SizeExprKind::Constant`].
+    pub fn normalize(
+        mut self,
+        krate: &TranslatedCrate,
+        target: &TargetTriple,
+        allow_precision_loss: bool,
+    ) -> Self {
         #[derive(Visitor)]
         struct NormalizeSizeExpr<'a> {
             krate: &'a TranslatedCrate,
             target: &'a TargetTriple,
+            allow_precision_loss: bool,
         }
 
         /// Take out the concrete values from the vec and fold them with the provided function.
@@ -211,6 +219,11 @@ impl SizeExpr {
                             _ => return,
                         };
                         self.visit(&mut guaranteed);
+                        if !self.allow_precision_loss
+                            && !matches!(guaranteed.kind(), SizeExprKind::Constant(_))
+                        {
+                            return;
+                        }
                         guaranteed.kind().clone()
                     }
                     SizeExprKind::Max(values) => {
@@ -300,7 +313,12 @@ impl SizeExpr {
             }
         }
 
-        NormalizeSizeExpr { krate, target }.visit(&mut self);
+        NormalizeSizeExpr {
+            krate,
+            target,
+            allow_precision_loss,
+        }
+        .visit(&mut self);
         self
     }
 
@@ -376,7 +394,7 @@ mod tests {
             target_align: SizeExpr::from_usize(8),
         }
         .into_expr()
-        .normalize(&krate, &target);
+        .normalize(&krate, &target, false);
 
         assert_eq!(expr.as_usize(), Some(16));
     }
@@ -394,7 +412,7 @@ mod tests {
             SizeExpr::from_usize(3),
         ])
         .into_expr()
-        .normalize(&krate, &target);
+        .normalize(&krate, &target, false);
 
         let SizeExprKind::Max(contenders) = expr.kind() else {
             panic!("expected a partially normalized maximum")
@@ -408,7 +426,7 @@ mod tests {
 
         let empty = SizeExprKind::Max(Vec::new())
             .into_expr()
-            .normalize(&krate, &target);
+            .normalize(&krate, &target, false);
         assert_eq!(empty.as_usize(), Some(0));
     }
 
@@ -420,14 +438,14 @@ mod tests {
             SizeExprKind::FromMetadata(MetadataValue::DynSize).into_expr(),
         ])
         .into_expr()
-        .normalize(&krate, &target);
+        .normalize(&krate, &target, false);
         let min = SizeExprKind::Min(vec![
             SizeExpr::from_usize(7),
             SizeExprKind::FromMetadata(MetadataValue::DynSize).into_expr(),
             SizeExpr::from_usize(0),
         ])
         .into_expr()
-        .normalize(&krate, &target);
+        .normalize(&krate, &target, false);
 
         assert!(matches!(
             max.kind(),
@@ -446,7 +464,7 @@ mod tests {
                 .into_expr(),
         }
         .into_expr()
-        .normalize(&krate, &target);
+        .normalize(&krate, &target, false);
 
         let SizeExprKind::IfInhabited {
             then_size,
@@ -485,20 +503,20 @@ mod tests {
             Ty::mk_usize(),
         ))
         .into_expr()
-        .normalize(&krate, &target_a);
+        .normalize(&krate, &target_a, false);
         let align = SizeExprKind::Constant(ConstantExpr::new(
             ConstantExprKind::AlignOf(TyKind::Scalar(scalar_ty).into_ty()),
             Ty::mk_usize(),
         ))
         .into_expr()
-        .normalize(&krate, &target_a);
+        .normalize(&krate, &target_a, false);
         let pointer_size = SizeExprKind::Constant(ConstantExpr::new(
             ConstantExprKind::SizeOf(Ty::mk_usize()),
             Ty::mk_usize(),
         ))
         .into_expr();
-        let pointer_size_a = pointer_size.clone().normalize(&krate, &target_a);
-        let pointer_size_b = pointer_size.normalize(&krate, &target_b);
+        let pointer_size_a = pointer_size.clone().normalize(&krate, &target_a, false);
+        let pointer_size_b = pointer_size.normalize(&krate, &target_b, false);
 
         assert_eq!(size.as_usize(), Some(8));
         assert_eq!(align.as_usize(), Some(4));
@@ -564,12 +582,51 @@ mod tests {
             ))
             .into_expr()
         };
+        let align_of = || {
+            SizeExprKind::Constant(ConstantExpr::new(
+                ConstantExprKind::AlignOf(ty.clone()),
+                Ty::mk_usize(),
+            ))
+            .into_expr()
+        };
 
-        let without_guarantee = size_of().normalize(&krate, &target);
+        let without_guarantee = size_of().normalize(&krate, &target, false);
         assert!(matches!(
             without_guarantee.kind(),
             SizeExprKind::Constant(constant)
                 if matches!(constant.kind(), ConstantExprKind::SizeOf(_))
+        ));
+
+        {
+            let layout = &mut krate.type_decls.get_mut(id).unwrap().layout[&target];
+            layout.size.guarantee =
+                Some(SizeExprKind::AtLeast(SizeExpr::from_usize(2)).into_expr());
+            layout.align.guarantee =
+                Some(SizeExprKind::AtLeast(SizeExpr::from_usize(1)).into_expr());
+        }
+
+        let size_without_precision_loss = size_of().normalize(&krate, &target, false);
+        assert!(matches!(
+            size_without_precision_loss.kind(),
+            SizeExprKind::Constant(constant)
+                if matches!(constant.kind(), ConstantExprKind::SizeOf(_))
+        ));
+        let align_without_precision_loss = align_of().normalize(&krate, &target, false);
+        assert!(matches!(
+            align_without_precision_loss.kind(),
+            SizeExprKind::Constant(constant)
+                if matches!(constant.kind(), ConstantExprKind::AlignOf(_))
+        ));
+
+        let size_with_precision_loss = size_of().normalize(&krate, &target, true);
+        assert!(matches!(
+            size_with_precision_loss.kind(),
+            SizeExprKind::AtLeast(value) if value.as_usize() == Some(2)
+        ));
+        let align_with_precision_loss = align_of().normalize(&krate, &target, true);
+        assert!(matches!(
+            align_with_precision_loss.kind(),
+            SizeExprKind::AtLeast(value) if value.as_usize() == Some(1)
         ));
 
         let size = &mut krate.type_decls.get_mut(id).unwrap().layout[&target].size;
@@ -584,7 +641,7 @@ mod tests {
             )
             .into_expr(),
         );
-        let with_guarantee = size_of().normalize(&krate, &target);
+        let with_guarantee = size_of().normalize(&krate, &target, false);
         assert_eq!(with_guarantee.as_usize(), Some(7));
     }
 }
