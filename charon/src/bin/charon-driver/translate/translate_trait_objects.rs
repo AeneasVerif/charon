@@ -9,7 +9,6 @@ use super::{
     translate_generics::BindingLevel,
 };
 use crate::hax;
-use crate::hax::SInto;
 use crate::hax::TraitPredicate;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::pretty::FmtWithCtx;
@@ -197,7 +196,7 @@ struct VTableInstanceData<'a> {
 /// Where the shims stored in a vtable's method fields come from.
 enum VTableMethodSource<'a> {
     ImplMethods(IndexVec<TraitMethodId, &'a hax::ImplAssocItem>),
-    FnTraitShim(&'a hax::ItemRef, TransImplSource),
+    FnTraitShim(&'a hax::ItemRef, TransImplSource, &'a hax::PolyFnSig),
 }
 
 /// Generate the vtable struct.
@@ -748,8 +747,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         impl_def: &hax::FullDef<'tcx>,
         impl_kind: TransImplSource,
     ) -> Result<(Option<TraitImplRef>, TypeDeclRef), Error> {
-        let implemented_trait =
-            Self::vtable_instance_data(impl_def, impl_kind).implemented_trait_ref;
+        let implemented_trait = self
+            .vtable_instance_data(impl_def, impl_kind)
+            .implemented_trait_ref;
         let vtable_struct_ref = self.translate_vtable_struct_ref(span, implemented_trait)?;
         let impl_ref = if impl_kind == TransImplSource::Marker || self.monomorphize() {
             None
@@ -822,6 +822,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
     /// Gather what we need to fill in the vtable of this impl.
     fn vtable_instance_data<'a>(
+        &self,
         impl_def: &'a hax::FullDef<'tcx>,
         impl_kind: TransImplSource,
     ) -> VTableInstanceData<'a> {
@@ -829,10 +830,18 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             // The def is the closure or fn item; the impl is one of its virtual `Fn*` impls.
             (TransImplSource::Callable(target_kind), _) => {
                 let vimpl = callable_virtual_impl(impl_def, target_kind);
+                let vtable_sig = vimpl.methods[0]
+                    .1
+                    .as_ref()
+                    .expect("a callable with a vtable must be dyn-compatible");
                 VTableInstanceData {
                     implemented_trait_ref: &vimpl.trait_pred.trait_ref,
                     implied_trait_proofs: &vimpl.implied_trait_proofs,
-                    methods: VTableMethodSource::FnTraitShim(impl_def.this(), impl_kind),
+                    methods: VTableMethodSource::FnTraitShim(
+                        impl_def.this(),
+                        impl_kind,
+                        vtable_sig,
+                    ),
                 }
             }
             (
@@ -949,7 +958,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     .to_string();
                 Ok(VtableMethodValue::Cast((method_name, method_ty, shim)))
             }
-            &VTableMethodSource::FnTraitShim(item, impl_source) => {
+            &VTableMethodSource::FnTraitShim(item, impl_source, vtable_sig) => {
                 let shim = self.translate_fn_ptr(
                     span,
                     item,
@@ -960,9 +969,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 }
                 // In mono mode the vtable field is an erased pointer, so we must compute the real
                 // type of the shim to cast from.
-                let vtable_sig =
-                    hax::fn_trait_vtable_method_sig(self.hax_state_with_id(), implemented_trait);
-                let bound_sig = self.translate_region_binder(span, &vtable_sig, |ctx, sig| {
+                let bound_sig = self.translate_region_binder(span, vtable_sig, |ctx, sig| {
                     ctx.translate_fun_sig(span, sig)
                 })?;
                 let method_ty = TyKind::FnPtr(bound_sig).into_ty();
@@ -992,7 +999,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             implemented_trait_ref,
             implied_trait_proofs,
             methods,
-        } = Self::vtable_instance_data(impl_def, impl_kind);
+        } = self.vtable_instance_data(impl_def, impl_kind);
 
         let trait_def = self.hax_def(implemented_trait_ref)?;
         // We use `poly_trait_def` to fetch `implied_preds`, which is used to fetch supertrait in `prepare_vtable_fields`.
@@ -1346,14 +1353,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let span = item_meta.span;
 
         let (dyn_self, trait_pred) = match (impl_kind, impl_def.kind()) {
-            // The def is the closure or fn item; the impl is one of its virtual `Fn*` impls, which
-            // has no `dyn_self` field, so we ask rustc for the `dyn Fn*<..>` type.
+            // The def is the closure or fn item; the impl is one of its virtual `Fn*` impls.
             (TransImplSource::Callable(target_kind), _) => {
-                let trait_pred = &callable_virtual_impl(impl_def, target_kind).trait_pred;
-                let dyn_self =
-                    hax::trait_ref_dyn_self(self.hax_state_with_id(), &trait_pred.trait_ref)
-                        .sinto(self.hax_state_with_id());
-                (Some(dyn_self), trait_pred)
+                let vimpl = callable_virtual_impl(impl_def, target_kind);
+                (vimpl.dyn_self.clone(), &vimpl.trait_pred)
             }
             (
                 TransImplSource::Normal,
@@ -1433,14 +1436,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         if let TransImplSource::Callable(target_kind) = impl_kind {
             let vimpl = callable_virtual_impl(def, target_kind);
-            let vtable_sig = hax::fn_trait_vtable_method_sig(
-                self.hax_state_with_id(),
-                &vimpl.trait_pred.trait_ref,
-            );
+            let vtable_sig = &vimpl.methods[0]
+                .1
+                .as_ref()
+                .expect("a callable with a vtable must be dyn-compatible");
             // Its only late-bound region is the one of the `call`/`call_mut` method, for which
             // we have a dedicated parameter.
             signature = {
-                let bound_sig = self.translate_region_binder(span, &vtable_sig, |ctx, sig| {
+                let bound_sig = self.translate_region_binder(span, vtable_sig, |ctx, sig| {
                     ctx.translate_fun_sig(span, sig)
                 })?;
                 bound_sig.apply(

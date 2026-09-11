@@ -774,7 +774,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Hax gives us trait-related information for the impl we're building.
         let vimpl = callable_impls.vimpl(target_kind).unwrap();
         let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
-        let method_id = self.translate_trait_method_id(implemented_trait.id, &vimpl.methods[0])?;
+        let method_id =
+            self.translate_trait_method_id(implemented_trait.id, &vimpl.methods[0].0)?;
 
         let impl_ref = self.translate_callable_impl_ref(span, callable.item(), target_kind)?;
         let src = FunSource::TraitImpl {
@@ -835,7 +836,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Construct the `call_*` method reference.
         let trait_decl_id = timpl.impl_trait.id;
-        let trait_method_id = self.translate_trait_method_id(trait_decl_id, &vimpl.methods[0])?;
+        let trait_method_id = self.translate_trait_method_id(trait_decl_id, &vimpl.methods[0].0)?;
         let call_fn_binder = {
             let kind = TransItemSourceKind::CallableMethod(target_kind);
             let bound_method_ref: RegionBinder<DeclRef<ItemId>> = self

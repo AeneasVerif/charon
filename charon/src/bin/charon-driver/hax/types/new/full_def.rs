@@ -606,38 +606,6 @@ fn vtable_sig_with_dyn_self<'tcx>(
     normalized_sig.sinto(s)
 }
 
-/// The `dyn Trait<..>` type for this trait ref, i.e. its `Self` type made existential. Same as the
-/// `dyn_self` field of a `TraitImpl`, for the virtual impls we generate ourselves.
-pub fn trait_ref_dyn_self<'tcx, S: UnderOwnerState<'tcx>>(
-    s: &S,
-    trait_ref: &TraitRef,
-) -> ty::Ty<'tcx> {
-    let tcx = s.base().tcx;
-    let trait_def_id = trait_ref.def_id.real_rust_def_id();
-    let trait_ref = ty::TraitRef::new_from_args(tcx, trait_def_id, trait_ref.rustc_args(s));
-    dyn_self_ty(tcx, s.typing_env(), trait_ref)
-        .expect("the trait of a vtable must be dyn-compatible")
-}
-
-/// The signature the `call*` method of this `Fn*` trait ref must have to be stored in a vtable,
-/// i.e. with `Self` replaced by `dyn Fn*<..>`. Same as `AssocFn`'s `vtable_sig`, but for the
-/// virtual `Fn*` impls we generate ourselves, whose methods have no `AssocFn` of their own.
-pub fn fn_trait_vtable_method_sig<'tcx, S: UnderOwnerState<'tcx>>(
-    s: &S,
-    trait_ref: &TraitRef,
-) -> PolyFnSig {
-    let tcx = s.base().tcx;
-    // Each `Fn*` trait has a single method: `call`/`call_mut`/`call_once`.
-    let call_method = tcx
-        .associated_items(trait_ref.def_id.real_rust_def_id())
-        .in_definition_order()
-        .find(|item| matches!(item.kind, ty::AssocKind::Fn { .. }))
-        .unwrap();
-    // Unlike `gen_vtable_sig` we keep the free regions: the shim takes the `&self` region of
-    // `call`/`call_mut` as a parameter of its own.
-    vtable_sig_with_dyn_self(s, call_method.def_id, trait_ref_dyn_self(s, trait_ref))
-}
-
 /// Construct the `FullDefKind` for this item.
 ///
 /// If `args` is `Some`, instantiate the whole definition with these generics; otherwise keep the
@@ -1127,8 +1095,10 @@ pub struct VirtualTraitImpl {
     pub implied_trait_proofs: Vec<TraitProof>,
     /// The associated types and their predicates, in definition order.
     pub types: Vec<(Ty, Vec<TraitProof>)>,
-    /// The methods, in definition order.
-    pub methods: Vec<DefId>,
+    /// The methods, in definition order, with the dyn-signature if any.
+    pub methods: Vec<(DefId, Option<PolyFnSig>)>,
+    /// The `dyn Trait<..>` type for the implemented trait ref, if dyn-compatible.
+    pub dyn_self: Option<Ty>,
 }
 
 impl<'tcx> FullDef<'tcx> {
@@ -1421,17 +1391,28 @@ where
             (ty, required_trait_proofs)
         })
         .collect();
+    // The environment may lack the predicates needed to prove the trait holds; translating the
+    // `dyn Trait` type would then report errors, so we check first.
+    let dyn_self = (tcx.is_dyn_compatible(trait_ref.def_id)
+        && !solve_trait(s, ty::Binder::dummy(trait_ref)).kind.is_error())
+    .then(|| dyn_self_ty(tcx, s.typing_env(), trait_ref))
+    .flatten();
     let methods = tcx
         .associated_items(trait_ref.def_id)
         .in_definition_order()
         .filter(|assoc| matches!(assoc.kind, ty::AssocKind::Fn { .. }))
-        .map(|assoc| assoc.def_id.sinto(s))
+        .map(|assoc| {
+            let vtable_sig =
+                dyn_self.map(|dyn_self| vtable_sig_with_dyn_self(s, assoc.def_id, dyn_self));
+            (assoc.def_id.sinto(s), vtable_sig)
+        })
         .collect();
     Box::new(VirtualTraitImpl {
         trait_pred,
         implied_trait_proofs: required_trait_proofs,
         types,
         methods,
+        dyn_self: dyn_self.sinto(s),
     })
 }
 
