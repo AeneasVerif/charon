@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789058248565,
+  "lastUpdate": 1789144062375,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -12114,6 +12114,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 244.1,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.4,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "36ca6ae9de9337c0ade7ca2de7b4075d180eeaad",
+          "message": "Merge pull request #1433 from Nadrieril/offsetof\n\nTransform the layout-related `NullOp`s into constants",
+          "timestamp": "2026-09-11T16:17:44Z",
+          "tree_id": "70355c4ecabf23719f64ed9a0c90e7844a867bdb",
+          "url": "https://github.com/AeneasVerif/charon/commit/36ca6ae9de9337c0ade7ca2de7b4075d180eeaad"
+        },
+        "date": 1789144060577,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 55623602735,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 6.84,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 363.2,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 19.5,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 27375559941,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.48,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 243.9,
             "unit": "max-rss(MB)"
           },
           {
