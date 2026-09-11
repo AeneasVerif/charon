@@ -50,14 +50,6 @@ pub enum Option::<&'_ [u64]> {
   Some { _0: &'_ [u64] },
 }
 
-struct (_, _)<A, B>
-where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
-}
-
 struct (_, _)::<u64, bool> {
   _0: u64,
   _1: bool,
@@ -75,7 +67,6 @@ pub trait MyConfig<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     const SLICE_HOLDER : Option<&'static [u64]>[{built_in impl Sized for &'static [u64]}]
-    fn op;
     non-dyn-compatible
 }
 
@@ -184,26 +175,6 @@ pub const {impl MyConfig for Concrete}::SLICE_HOLDER: Option::<&'_ [u64]> = {imp
 
 // Full name: test_crate::{impl MyConfig for Concrete}::SLICE_HOLDER
 pub const {impl MyConfig for Concrete}::SLICE_HOLDER: Option<&'static [u64]>[{built_in impl Sized for &'static [u64]}] = {impl MyConfig for Concrete}::SLICE_HOLDER()
-
-// Full name: test_crate::{impl MyConfig for Concrete}::op
-pub fn {impl MyConfig for Concrete}::op(x: u64) -> u64
-{
-    let _0: u64; // return
-    let x: u64; // arg #1
-    let _2: u64; // anonymous local
-    let _3: u64; // anonymous local
-
-    storage_live(_0)
-    storage_live(_3)
-    storage_live(_2)
-    _2 = copy x
-    _3 = copy _2 panic.+ const 1u64
-    _0 = move _3
-    storage_dead(_2)
-    storage_dead(_3)
-    storage_dead(x)
-    return
-}
 
 // Full name: test_crate::{impl MyConfig for Concrete}::op
 pub fn {impl MyConfig for Concrete}::op(x: u64) -> u64
