@@ -1175,6 +1175,36 @@ impl ItemMeta {
     }
 }
 
+impl_display_via_ctx!(InhabitedPredicate);
+impl<C: AstFormatter> FmtWithCtx<C> for InhabitedPredicate {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.kind() {
+            InhabitedPredicateKind::True => write!(f, "true"),
+            InhabitedPredicateKind::False => write!(f, "false"),
+            InhabitedPredicateKind::ConstIsZero(value) => {
+                write!(f, "{} == 0", value.with_ctx(ctx))
+            }
+            InhabitedPredicateKind::GenericType(ty) => {
+                write!(f, "if_inhabited({})", ty.with_ctx(ctx))
+            }
+            InhabitedPredicateKind::And(predicates) => {
+                write!(
+                    f,
+                    "({})",
+                    predicates.iter().map(|p| p.with_ctx(ctx)).format(" && ")
+                )
+            }
+            InhabitedPredicateKind::Or(predicates) => {
+                write!(
+                    f,
+                    "({})",
+                    predicates.iter().map(|p| p.with_ctx(ctx)).format(" || ")
+                )
+            }
+        }
+    }
+}
+
 impl_display_via_ctx!(Layout);
 impl<C: AstFormatter> FmtWithCtx<C> for Layout {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -1187,7 +1217,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Layout {
             }
             None => writeln!(f, "  discriminator: none,")?,
         }
-        writeln!(f, "  uninhabited: {},", self.uninhabited)?;
+        writeln!(f, "  inhabited: {},", self.inhabited.with_ctx(ctx))?;
         writeln!(f, "  variants: [")?;
         for (variant_id, layout) in self.variant_layouts.iter_enumerated() {
             write!(f, "    ")?;
@@ -2946,8 +2976,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for VariantLayout {
             .format(", ");
         write!(
             f,
-            "{{ offsets: [{offsets}], uninhabited: {}, tagger: [{tagger}] }}",
-            self.uninhabited
+            "{{ offsets: [{offsets}], inhabited: {}, tagger: [{tagger}] }}",
+            self.inhabited.with_ctx(ctx)
         )
     }
 }

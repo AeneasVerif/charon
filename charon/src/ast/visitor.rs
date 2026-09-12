@@ -108,7 +108,8 @@ use derive_generic_visitor::*;
         llbc_block: llbc_ast::Block, llbc_statement: llbc_ast::Statement,
         ullbc_statement: ullbc_ast::Statement, ullbc_terminator: ullbc_ast::Terminator,
         AbortKind, AggregateKind, FnPtr, FunSig,
-        ConstantExpr, ConstantExprKind, SizeExpr, SizeExprKind, MetadataValue, Place, ProjectionElem, Rvalue, Body,
+        ConstantExpr, ConstantExprKind, InhabitedPredicate, InhabitedPredicateKind, SizeExpr,
+        SizeExprKind, MetadataValue, Place, ProjectionElem, Rvalue, Body,
     )
 )]
 pub trait AstVisitable: Any {

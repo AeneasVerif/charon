@@ -855,6 +855,21 @@ and field = {
     } *)
 and impl_elem = ImplElemTy of ty binder | ImplElemTrait of trait_impl_id
 
+(** Represents whether a type or variant is inhabited. Like rustc's
+    [InhabitedPredicate], this can depend on generic parameters and constant
+    values. *)
+and inhabited_predicate = inhabited_predicate_kind hash_consed
+
+and inhabited_predicate_kind =
+  | InhabitedPredicateTrue
+  | InhabitedPredicateFalse
+  | InhabitedPredicateConstIsZero of constant_expr
+      (** Inhabited when this constant is zero. *)
+  | InhabitedPredicateGenericType of ty
+      (** Inhabited when this generic type is inhabited. *)
+  | InhabitedPredicateAnd of inhabited_predicate list
+  | InhabitedPredicateOr of inhabited_predicate list
+
 (** Meta information about an item (function, trait decl, trait impl, type decl,
     global). *)
 and item_meta = {
@@ -1186,11 +1201,10 @@ and layout = {
   discriminator : discriminator option;
       (** Decision tree that determines the active variant by reading memory.
           Only [Some] for enums. *)
-  uninhabited : bool;
-      (** Whether the type is uninhabited, i.e. has any valid value at all. Note
-          that uninhabited types can have arbitrary layouts: [(u32, !)] has
-          space for the [u32] and [enum E2 { A, B(!), C(i32, !) }] may have
-          space for a discriminant. *)
+  inhabited : inhabited_predicate;
+      (** Whether the type has any valid value. Note that uninhabited types can
+          have arbitrary layouts: [(u32, !)] has space for the [u32] and
+          [enum E2 { A, B(!), C(i32, !) }] may have space for a discriminant. *)
   variant_layouts : variant_layout option list;
       (** Map from [VariantId] to the corresponding field layouts. Some variants
           don't have a meaningful layout due to being uninhabited (though an
@@ -1462,9 +1476,9 @@ and variant = {
     Maps fields to their offset within the layout. *)
 and variant_layout = {
   field_offsets : offset_expr list;  (** The offset of each field. *)
-  uninhabited : bool;
-      (** Whether the variant is uninhabited, i.e. has any valid possible value.
-          Note that uninhabited types can have arbitrary layouts. *)
+  inhabited : inhabited_predicate;
+      (** Whether the variant has any valid possible value. Note that
+          uninhabited types can have arbitrary layouts. *)
   tagger : (int * integer_value) list;
       (** How to write the tag when constructing this variant. Each entry means:
           write [value] at byte [offset]. Mirrors MiniRust's [Variant::tagger].

@@ -16,43 +16,11 @@ open Generated_Expressions
 open Generated_GAst
 open Generated_FullAst
 open Scalars
-module FileId = IdGen ()
-module DedupId = IdGen ()
+open DeserializationCtx
 
-module FileTbl = Hashtbl.Make (struct
-  type t = FileId.id
+type of_postcard_ctx = DeserializationCtx.t
 
-  let equal = FileId.equal_id
-  let hash = Hashtbl.hash
-end)
-
-(** Table of the values that were deduplicated in the serialized output, by id.
-*)
-module DedupTbl = Hashtbl.Make (struct
-  type t = DedupId.id
-
-  let equal = DedupId.equal_id
-  let hash = Hashtbl.hash
-end)
-
-type of_postcard_ctx = {
-  id_to_file_map : file FileTbl.t;
-  ty_dedup_tbl : ty DedupTbl.t;
-  tref_dedup_tbl : trait_ref DedupTbl.t;
-  constant_expr_dedup_tbl : constant_expr DedupTbl.t;
-  size_expr_dedup_tbl : size_expr DedupTbl.t;
-  span_dedup_tbl : span DedupTbl.t;
-}
-
-let empty_of_postcard_ctx : of_postcard_ctx =
-  {
-    id_to_file_map = FileTbl.create 8;
-    ty_dedup_tbl = DedupTbl.create 2048;
-    tref_dedup_tbl = DedupTbl.create 1024;
-    constant_expr_dedup_tbl = DedupTbl.create 64;
-    size_expr_dedup_tbl = DedupTbl.create 16;
-    span_dedup_tbl = DedupTbl.create 4096;
-  }
+let empty_of_postcard_ctx = DeserializationCtx.empty ()
 
 (** Values that come up often are deduplicated in the serialized output: the
     first occurrence of a value is serialized in full along with an id, and
@@ -2291,6 +2259,33 @@ and index_map_of_postcard :
        (key_value_pair_of_postcard arg0_of_postcard arg1_of_postcard)
        ctx st)
 
+and inhabited_predicate_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (inhabited_predicate, string) result =
+  combine_error_msgs st __FUNCTION__
+    (dedup_val_of_postcard ctx.inhabited_predicate_dedup_tbl
+       inhabited_predicate_kind_of_postcard ctx st)
+
+and inhabited_predicate_kind_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (inhabited_predicate_kind, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok InhabitedPredicateTrue
+     | 1 -> Ok InhabitedPredicateFalse
+     | 2 ->
+         let* _0 = constant_expr_of_postcard ctx st in
+         Ok (InhabitedPredicateConstIsZero _0)
+     | 3 ->
+         let* _0 = ty_of_postcard ctx st in
+         Ok (InhabitedPredicateGenericType _0)
+     | 4 ->
+         let* _0 = list_of_postcard inhabited_predicate_of_postcard ctx st in
+         Ok (InhabitedPredicateAnd _0)
+     | 5 ->
+         let* _0 = list_of_postcard inhabited_predicate_of_postcard ctx st in
+         Ok (InhabitedPredicateOr _0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and inline_attr_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (inline_attr, string) result =
   combine_error_msgs st __FUNCTION__
@@ -2605,7 +2600,7 @@ and layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* size = size_of_postcard ctx st in
      let* align = size_of_postcard ctx st in
      let* discriminator = option_of_postcard discriminator_of_postcard ctx st in
-     let* uninhabited = bool_of_postcard ctx st in
+     let* inhabited = inhabited_predicate_of_postcard ctx st in
      let* variant_layouts =
        index_vec_of_postcard variant_id_of_postcard
          (option_of_postcard variant_layout_of_postcard)
@@ -2613,7 +2608,7 @@ and layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      in
      let* repr = repr_options_of_postcard ctx st in
      Ok
-       ({ size; align; discriminator; uninhabited; variant_layouts; repr }
+       ({ size; align; discriminator; inhabited; variant_layouts; repr }
          : layout))
 
 and local_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -3208,10 +3203,10 @@ and variant_layout_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* field_offsets =
        index_vec_of_postcard field_id_of_postcard offset_expr_of_postcard ctx st
      in
-     let* uninhabited = bool_of_postcard ctx st in
+     let* inhabited = inhabited_predicate_of_postcard ctx st in
      let* tagger =
        list_of_postcard
          (pair_of_postcard u64_of_postcard integer_value_of_postcard)
          ctx st
      in
-     Ok ({ field_offsets; uninhabited; tagger } : variant_layout))
+     Ok ({ field_offsets; inhabited; tagger } : variant_layout))
