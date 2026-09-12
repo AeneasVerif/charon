@@ -236,6 +236,8 @@ and cli_options = {
   no_normalize : bool;  (** Don't normalize associated types. *)
   no_reorder_decls : bool;
       (** Don't compute a stable order for declarations. *)
+  no_compute_layout_guarantees : bool;
+      (** Don't compute type layout guarantees. *)
   abort_on_error : bool;
       (** Panic on the first error. This is useful for debugging. *)
   error_on_warnings : bool;  (** Consider any warnings to be errors. *)

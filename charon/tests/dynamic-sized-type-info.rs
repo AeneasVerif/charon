@@ -67,8 +67,7 @@ fn ptr_metadata() -> anyhow::Result<()> {
         x: u32,
         y: T,
     }
-    "#,
-        &[],
+        "#,
     )?;
     let meta_kinds: SeqHashMap<String, &PtrMetadata> = crate_data
         .type_decls

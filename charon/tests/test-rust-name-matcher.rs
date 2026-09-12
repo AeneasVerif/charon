@@ -65,7 +65,7 @@ fn test_crate_data(crate_data: &TranslatedCrate) -> anyhow::Result<()> {
 
 #[test]
 fn test_partial_mono_name_matcher() -> anyhow::Result<()> {
-    let code = r#"
+    let code = r#"//@ charon-args=--monomorphize-mut=except-types --remove-adt-clauses --remove-associated-types=*
         fn identity<T>(x: T) -> T {
             x
         }
@@ -76,14 +76,7 @@ fn test_partial_mono_name_matcher() -> anyhow::Result<()> {
             let _ = identity((&mut x, &mut y));
         }
     "#;
-    let crate_data = util::translate_rust_text(
-        code,
-        &[
-            "--monomorphize-mut=except-types",
-            "--remove-adt-clauses",
-            "--remove-associated-types=*",
-        ],
-    )?;
+    let crate_data = util::translate_rust_text(code)?;
 
     let identity_instantiations = crate_data.fun_decls.iter().filter(|decl| {
         let name = &decl.item_meta.name.name;
@@ -150,9 +143,14 @@ fn test_partial_mono_name_matcher() -> anyhow::Result<()> {
 
 #[test]
 fn test_name_matcher() -> anyhow::Result<()> {
-    let code = &std::fs::read_to_string(TEST_FILE)?;
-    let crate_data = util::translate_rust_text(code, &[])?;
+    let crate_data = util::translate_rust_file(TEST_FILE)?;
     test_crate_data(&crate_data)?;
-    let mono_crate_data = util::translate_rust_text(code, &["--monomorphize"])?;
+
+    let code = std::fs::read_to_string(TEST_FILE)?;
+    let code = code
+        .replace("//@ charon-args=--ops-to-function-calls\n", "")
+        .replace("//@ charon-args=--index-to-function-calls\n", "");
+    let mono_code = format!("//@ charon-arg=--monomorphize\n{code}");
+    let mono_crate_data = util::translate_rust_text(mono_code)?;
     test_crate_data(&mono_crate_data)
 }

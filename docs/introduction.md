@@ -14,3 +14,15 @@ to this manual can be a good prompt for us to fill the gaps.
 [^1]: Semantic information only however; we do not preserve syntactic information like scopes nor
 distinguish say `while` from `loop`.
 [Zulip]: https://aeneas-verif.zulipchat.com/#topics/channel/349819-general
+
+<!-- TODO: -->
+<!-- multi-targets -->
+<!-- layout -->
+<!-- vtables -->
+<!-- items virtuels -->
+<!-- visitors -->
+<!-- generics -->
+<!-- mono mode -->
+<!-- names&filtering -->
+<!-- trait proofs -->
+<!-- tuto -->

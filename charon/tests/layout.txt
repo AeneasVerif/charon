@@ -1,7 +1,7 @@
 test_crate::SimpleStruct:
   Layout {
-    size: 12usize,
-    align: 4usize,
+    size: 12usize (guaranteed: at_least(align_to(max(size_of::<u32>(), size_of::<u32>(), size_of::<u32>()), max(align_of::<u32>(), align_of::<u32>(), align_of::<u32>())))),
+    align: 4usize (guaranteed: at_least(max(align_of::<u32>(), align_of::<u32>(), align_of::<u32>()))),
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -15,8 +15,8 @@ test_crate::GenericStruct:
 
 test_crate::UnsizedStruct:
   Layout {
-    size: (8usize + (slice_length * 8usize)),
-    align: 8usize,
+    size: (8usize + (slice_length * 8usize)) (guaranteed: at_least(align_to(max(size_of::<usize>(), size_of::<[usize]>()), max(align_of::<usize>(), align_of::<[usize]>())))),
+    align: 8usize (guaranteed: at_least(max(align_of::<usize>(), align_of::<[usize]>()))),
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -27,8 +27,8 @@ test_crate::UnsizedStruct:
 
 test_crate::UnsizedDyn:
   Layout {
-    size: align_to((1usize + dyn_size), max(dyn_align, 1usize)),
-    align: max(dyn_align, 1usize),
+    size: align_to((1usize + dyn_size), max(dyn_align, 1usize)) (guaranteed: at_least(align_to(max(size_of::<u8>(), dyn_size), max(align_of::<u8>(), dyn_align)))),
+    align: max(dyn_align, 1usize) (guaranteed: at_least(max(align_of::<u8>(), dyn_align))),
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -39,8 +39,8 @@ test_crate::UnsizedDyn:
 
 test_crate::NestedUnsized:
   Layout {
-    size: (16usize + (slice_length * 8usize)),
-    align: 8usize,
+    size: (16usize + (slice_length * 8usize)) (guaranteed: at_least(align_to(max(size_of::<u16>(), size_of::<UnsizedStruct>()), max(align_of::<u16>(), align_of::<UnsizedStruct>())))),
+    align: 8usize (guaranteed: at_least(max(align_of::<u16>(), align_of::<UnsizedStruct>()))),
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -51,8 +51,8 @@ test_crate::NestedUnsized:
 
 test_crate::PackedUnsized:
   Layout {
-    size: (2usize + (slice_length * 4usize)),
-    align: 2usize,
+    size: (2usize + (slice_length * 4usize)) (guaranteed: at_least(align_to(max(size_of::<u8>(), size_of::<[u32]>()), max(min(align_of::<u8>(), 2usize), min(align_of::<[u32]>(), 2usize))))),
+    align: 2usize (guaranteed: at_least(max(min(align_of::<u8>(), 2usize), min(align_of::<[u32]>(), 2usize)))),
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -63,8 +63,8 @@ test_crate::PackedUnsized:
 
 test_crate::SimpleEnum:
   Layout {
-    size: 1usize,
-    align: 1usize,
+    size: 1usize (guaranteed: at_least(align_to(0usize, 0usize))),
+    align: 1usize (guaranteed: at_least(0usize)),
     discriminator: read at offset 0 { 0u8 => Var1, 1u8 => Other, _ => invalid },
     uninhabited: false,
     variants: [
@@ -76,8 +76,8 @@ test_crate::SimpleEnum:
 
 test_crate::SimpleAdt:
   Layout {
-    size: 24usize,
-    align: 8usize,
+    size: 24usize (guaranteed: at_least(align_to(max(size_of::<usize>(), size_of::<usize>(), size_of::<u32>(), size_of::<u32>()), max(align_of::<usize>(), align_of::<usize>(), align_of::<u32>(), align_of::<u32>())))),
+    align: 8usize (guaranteed: at_least(max(align_of::<usize>(), align_of::<usize>(), align_of::<u32>(), align_of::<u32>()))),
     discriminator: read at offset 0 { 0u32 => EmptyVar, 1u32 => StructVar, 2u32 => TupleVar, _ => invalid },
     uninhabited: false,
     variants: [
@@ -90,8 +90,8 @@ test_crate::SimpleAdt:
 
 test_crate::NicheAdt:
   Layout {
-    size: 4usize,
-    align: 4usize,
+    size: 4usize (guaranteed: at_least(align_to(size_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>(), align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()))),
+    align: 4usize (guaranteed: at_least(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>())),
     discriminator: read at offset 0 { 0u32 => None, _ => Some },
     uninhabited: false,
     variants: [
@@ -103,8 +103,8 @@ test_crate::NicheAdt:
 
 test_crate::NicheAdtSigned:
   Layout {
-    size: 4usize,
-    align: 4usize,
+    size: 4usize (guaranteed: at_least(align_to(size_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>(), align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()))),
+    align: 4usize (guaranteed: at_least(align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>())),
     discriminator: read at offset 0 { 0i32 => None, _ => Some },
     uninhabited: false,
     variants: [
@@ -116,8 +116,8 @@ test_crate::NicheAdtSigned:
 
 test_crate::NicheAdtChar:
   Layout {
-    size: 4usize,
-    align: 4usize,
+    size: 4usize (guaranteed: at_least(align_to(size_of::<char>(), align_of::<char>()))),
+    align: 4usize (guaranteed: at_least(align_of::<char>())),
     discriminator: read at offset 0 { 1114112u32..=4294967294u32 => invalid, 4294967295u32 => None, _ => Some },
     uninhabited: false,
     variants: [
@@ -129,8 +129,8 @@ test_crate::NicheAdtChar:
 
 test_crate::IsAZST:
   Layout {
-    size: 0usize,
-    align: 1usize,
+    size: 0usize (guaranteed: at_least(align_to(0usize, 0usize))),
+    align: 1usize (guaranteed: at_least(0usize)),
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -141,8 +141,8 @@ test_crate::IsAZST:
 
 test_crate::GenericWithKnownLayout:
   Layout {
-    size: 16usize,
-    align: 8usize,
+    size: 16usize (guaranteed: at_least(align_to(max(size_of::<usize>(), size_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>()), max(align_of::<usize>(), align_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>())))),
+    align: 8usize (guaranteed: at_least(max(align_of::<usize>(), align_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>()))),
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -153,8 +153,8 @@ test_crate::GenericWithKnownLayout:
 
 test_crate::Reordered:
   Layout {
-    size: 8usize,
-    align: 4usize,
+    size: 8usize (guaranteed: at_least(align_to(max(size_of::<u8>(), size_of::<u32>(), size_of::<u8>()), max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>())))),
+    align: 4usize (guaranteed: at_least(max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>()))),
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -165,8 +165,8 @@ test_crate::Reordered:
 
 test_crate::NotReordered:
   Layout {
-    size: 12usize,
-    align: 4usize,
+    size: 12usize (guaranteed: at_least(align_to(max(size_of::<u8>(), size_of::<u32>(), size_of::<u8>()), max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>())))),
+    align: 4usize (guaranteed: at_least(max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>()))),
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -177,8 +177,8 @@ test_crate::NotReordered:
 
 test_crate::Packed:
   Layout {
-    size: 6usize,
-    align: 1usize,
+    size: 6usize (guaranteed: at_least(align_to(max(size_of::<u8>(), size_of::<u32>(), size_of::<u8>()), max(min(align_of::<u8>(), 1usize), min(align_of::<u32>(), 1usize), min(align_of::<u8>(), 1usize))))),
+    align: 1usize (guaranteed: at_least(max(min(align_of::<u8>(), 1usize), min(align_of::<u32>(), 1usize), min(align_of::<u8>(), 1usize)))),
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -189,8 +189,8 @@ test_crate::Packed:
 
 test_crate::UninhabitedVariant:
   Layout {
-    size: 4usize,
-    align: 4usize,
+    size: 4usize (guaranteed: at_least(align_to(size_of::<u32>(), align_of::<u32>()))),
+    align: 4usize (guaranteed: at_least(align_of::<u32>())),
     discriminator: B,
     uninhabited: false,
     variants: [
@@ -202,8 +202,8 @@ test_crate::UninhabitedVariant:
 
 test_crate::UninhabitedVariant2:
   Layout {
-    size: 8usize,
-    align: 4usize,
+    size: 8usize (guaranteed: at_least(align_to(size_of::<u32>(), align_of::<u32>()))),
+    align: 4usize (guaranteed: at_least(align_of::<u32>())),
     discriminator: read at offset 0 { 1u32 => B, _ => invalid },
     uninhabited: false,
     variants: [
@@ -215,8 +215,8 @@ test_crate::UninhabitedVariant2:
 
 test_crate::UninhabitedVariantWithFields:
   Layout {
-    size: 12usize,
-    align: 4usize,
+    size: 12usize (guaranteed: at_least(align_to(0usize, 0usize))),
+    align: 4usize (guaranteed: at_least(0usize)),
     discriminator: read at offset 0 { 0u32 => Bar, _ => invalid },
     uninhabited: false,
     variants: [
@@ -240,8 +240,8 @@ test_crate::Uninhabited:
 
 test_crate::DiscriminantInNicheOfField:
   Layout {
-    size: 16usize,
-    align: 8usize,
+    size: 16usize (guaranteed: at_least(align_to(size_of::<(usize, &'a T)>(), align_of::<(usize, &'a T)>()))),
+    align: 8usize (guaranteed: at_least(align_of::<(usize, &'a T)>())),
     discriminator: read at offset 8 { 0isize => None, _ => Some },
     uninhabited: false,
     variants: [
@@ -253,8 +253,8 @@ test_crate::DiscriminantInNicheOfField:
 
 test_crate::MaybeUninitInt:
   Layout {
-    size: 4usize,
-    align: 4usize,
+    size: 4usize (guaranteed: at_least(align_to(max(size_of::<u32>(), size_of::<()>()), max(align_of::<u32>(), align_of::<()>())))),
+    align: 4usize (guaranteed: at_least(max(align_of::<u32>(), align_of::<()>()))),
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -265,8 +265,8 @@ test_crate::MaybeUninitInt:
 
 test_crate::PackIntsUnion:
   Layout {
-    size: 8usize,
-    align: 8usize,
+    size: 8usize (guaranteed: at_least(align_to(max(size_of::<(u32, u32)>(), size_of::<u64>()), max(align_of::<(u32, u32)>(), align_of::<u64>())))),
+    align: 8usize (guaranteed: at_least(max(align_of::<(u32, u32)>(), align_of::<u64>()))),
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -277,8 +277,8 @@ test_crate::PackIntsUnion:
 
 test_crate::NonZeroNiche:
   Layout {
-    size: 4usize,
-    align: 4usize,
+    size: 4usize (guaranteed: at_least(align_to(size_of::<char>(), align_of::<char>()))),
+    align: 4usize (guaranteed: at_least(align_of::<char>())),
     discriminator: read at offset 0 { 1114112u32 => B, 1114113u32 => C, 1114114u32..=4294967295u32 => invalid, _ => A },
     uninhabited: false,
     variants: [
@@ -291,8 +291,8 @@ test_crate::NonZeroNiche:
 
 test_crate::ArbitraryDiscriminants:
   Layout {
-    size: 32usize,
-    align: 8usize,
+    size: 32usize (guaranteed: at_least(align_to(max(size_of::<String>(), size_of::<u32>()), max(align_of::<String>(), align_of::<u32>())))),
+    align: 8usize (guaranteed: at_least(max(align_of::<String>(), align_of::<u32>()))),
     discriminator: read at offset 0 { 12i32 => A, 43i32 => B, 123456i32 => C, _ => invalid },
     uninhabited: false,
     variants: [
@@ -305,8 +305,8 @@ test_crate::ArbitraryDiscriminants:
 
 test_crate::MyOrder:
   Layout {
-    size: 1usize,
-    align: 1usize,
+    size: 1usize (guaranteed: at_least(align_to(0usize, 0usize))),
+    align: 1usize (guaranteed: at_least(0usize)),
     discriminator: read at offset 0 { -1i8 => Less, 0i8 => Equal, 1i8 => Greater, _ => invalid },
     uninhabited: false,
     variants: [
@@ -319,8 +319,8 @@ test_crate::MyOrder:
 
 test_crate::WithNicheAndUninhabited:
   Layout {
-    size: 4usize,
-    align: 4usize,
+    size: 4usize (guaranteed: at_least(align_to(size_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>(), align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()))),
+    align: 4usize (guaranteed: at_least(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>())),
     discriminator: read at offset 0 { 0u32 => First, _ => Third },
     uninhabited: false,
     variants: [
@@ -336,8 +336,8 @@ test_crate::GenericUnsized:
 
 test_crate::GenericButFixedSize:
   Layout {
-    size: 8usize,
-    align: 8usize,
+    size: 8usize (guaranteed: at_least(align_to(size_of::<&'a T>(), align_of::<&'a T>()))),
+    align: 8usize (guaranteed: at_least(align_of::<&'a T>())),
     discriminator: read at offset 0 { 0isize => First, _ => Second },
     uninhabited: false,
     variants: [
@@ -349,8 +349,8 @@ test_crate::GenericButFixedSize:
 
 test_crate::MaxBitsDiscr:
   Layout {
-    size: 16usize,
-    align: 16usize,
+    size: 16usize (guaranteed: at_least(align_to(0usize, 0usize))),
+    align: 16usize (guaranteed: at_least(0usize)),
     discriminator: read at offset 0 { 42u128 => First, 18446744073709551615u128 => Second, _ => invalid },
     uninhabited: false,
     variants: [
@@ -423,8 +423,8 @@ test_crate::Ref:
 
 test_crate::HasInvalidDiscr:
   Layout {
-    size: 1usize,
-    align: 1usize,
+    size: 1usize (guaranteed: at_least(align_to(size_of::<bool>(), align_of::<bool>()))),
+    align: 1usize (guaranteed: at_least(align_of::<bool>())),
     discriminator: read at offset 0 { 2u8 => Var1, 3u8 => invalid, 4u8 => Var3, 5u8..=255u8 => invalid, _ => Var2 },
     uninhabited: false,
     variants: [
@@ -437,8 +437,8 @@ test_crate::HasInvalidDiscr:
 
 test_crate::NicheInSignedRepr:
   Layout {
-    size: 1usize,
-    align: 1usize,
+    size: 1usize (guaranteed: at_least(align_to(size_of::<MyOrder>(), align_of::<MyOrder>()))),
+    align: 1usize (guaranteed: at_least(align_of::<MyOrder>())),
     discriminator: read at offset 0 { -128i8..=-3i8 => invalid, -2i8 => B, 2i8..=127i8 => invalid, _ => A },
     uninhabited: false,
     variants: [
@@ -450,8 +450,8 @@ test_crate::NicheInSignedRepr:
 
 test_crate::BigWithChar:
   Layout {
-    size: 16usize,
-    align: 8usize,
+    size: 16usize (guaranteed: at_least(align_to(max(size_of::<u64>(), size_of::<char>()), max(align_of::<u64>(), align_of::<char>())))),
+    align: 8usize (guaranteed: at_least(max(align_of::<u64>(), align_of::<char>()))),
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [
@@ -462,8 +462,8 @@ test_crate::BigWithChar:
 
 test_crate::UninhabitedAtNicheEdge:
   Layout {
-    size: 16usize,
-    align: 8usize,
+    size: 16usize (guaranteed: at_least(align_to(size_of::<BigWithChar>(), align_of::<BigWithChar>()))),
+    align: 8usize (guaranteed: at_least(align_of::<BigWithChar>())),
     discriminator: read at offset 8 { 1114112u32 => invalid, 1114113u32 => B, 1114114u32..=4294967295u32 => invalid, _ => C },
     uninhabited: false,
     variants: [
@@ -476,8 +476,8 @@ test_crate::UninhabitedAtNicheEdge:
 
 test_crate::UninhabitedUntagged:
   Layout {
-    size: 4usize,
-    align: 4usize,
+    size: 4usize (guaranteed: at_least(align_to(0usize, 0usize))),
+    align: 4usize (guaranteed: at_least(0usize)),
     discriminator: read at offset 0 { 1114112u32..=4294967294u32 => invalid, 4294967295u32 => B, _ => invalid },
     uninhabited: false,
     variants: [
@@ -486,3 +486,6 @@ test_crate::UninhabitedUntagged:
     ],
     repr(Rust),
   }
+
+test_crate::PolyReprC:
+  none

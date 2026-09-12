@@ -329,6 +329,10 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub no_reorder_decls: bool,
+    /// Don't compute type layout guarantees.
+    #[clap(long)]
+    #[serde(default)]
+    pub no_compute_layout_guarantees: bool,
     /// Panic on the first error. This is useful for debugging.
     #[clap(long)]
     #[serde(default)]
@@ -476,6 +480,7 @@ impl CliOpts {
                     self.no_typecheck = true;
                     self.no_normalize = true;
                     self.no_reorder_decls = true;
+                    self.no_compute_layout_guarantees = true;
                     self.hide_marker_traits = true;
                     self.raw_consts = true;
                 }
@@ -514,6 +519,7 @@ impl CliOpts {
                     self.monomorphize = true;
                     self.no_normalize = true;
                     self.no_reorder_decls = true;
+                    self.no_compute_layout_guarantees = true;
                     self.precise_drops = true;
                     self.consts = Some(ConstHandling::Values);
                     self.ullbc = true;
@@ -728,6 +734,8 @@ pub struct TranslateOptions {
     pub no_normalize: bool,
     /// Don't reorder declarations and compute recursive declaration groups.
     pub no_reorder_decls: bool,
+    /// Don't compute type layout guarantees.
+    pub no_compute_layout_guarantees: bool,
     /// Transform Drop to Call drop_glue
     pub desugar_drops: bool,
     /// Add `Destruct` bounds to all generic params.
@@ -882,6 +890,7 @@ impl TranslateOptions {
             no_typecheck: options.no_typecheck,
             no_normalize: options.no_normalize,
             no_reorder_decls: options.no_reorder_decls,
+            no_compute_layout_guarantees: options.no_compute_layout_guarantees,
             desugar_drops: options.desugar_drops,
             add_destruct_bounds: options.precise_drops,
         }
