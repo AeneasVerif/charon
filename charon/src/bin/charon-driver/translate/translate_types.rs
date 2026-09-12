@@ -1085,9 +1085,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         };
 
         let align_mod = if let Some(align) = &hax_repr_options.align {
-            Some(AlignmentModifier::Align(align.bytes))
+            Some(AlignmentModifier::Align(align.bytes()))
         } else if let Some(pack) = &hax_repr_options.pack {
-            Some(AlignmentModifier::Pack(pack.bytes))
+            Some(AlignmentModifier::Pack(pack.bytes()))
         } else {
             None
         };
