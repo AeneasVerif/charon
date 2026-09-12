@@ -6,15 +6,8 @@ use std::collections::HashMap;
 mod util;
 use util::*;
 
-fn translate_with_options(
-    code: impl std::fmt::Display,
-    options: &[&str],
-) -> anyhow::Result<TranslatedCrate> {
-    util::translate_rust_text(code, options)
-}
-
 fn translate(code: impl std::fmt::Display) -> anyhow::Result<TranslatedCrate> {
-    util::translate_rust_text(code, &[])
+    util::translate_rust_text(code)
 }
 
 /// The type declarations written by the user, in order. Every crate also declares the types Rust
@@ -173,8 +166,8 @@ fn file_name() -> anyhow::Result<()> {
 
 #[test]
 fn spans() -> anyhow::Result<()> {
-    let crate_data = translate_with_options(
-        "
+    let crate_data = translate(
+        "//@ charon-args=--reconstruct-fallible-operations
         pub fn sum(s: &[u32]) -> u32 {
             let mut sum = 0;
             let mut i = 0;
@@ -185,19 +178,18 @@ fn spans() -> anyhow::Result<()> {
             sum
         }
         ",
-        &["--reconstruct-fallible-operations"],
     )?;
     let function = &crate_data.fun_decls[0];
     // Span of the whole function.
-    assert_eq!(repr_span(function.item_meta.span), "2:8-10:9");
+    assert_eq!(repr_span(function.item_meta.span), "3:8-11:9");
 
     let body = &function.body.as_structured().unwrap();
     // Span of the function body
-    assert_eq!(repr_span(body.body.span), "3:16-10:9");
+    assert_eq!(repr_span(body.body.span), "4:16-11:9");
 
     let sum_var = &body.locals.locals[2];
     assert_eq!(sum_var.name.as_deref(), Some("sum"));
-    assert_eq!(repr_span(sum_var.span), "3:16-3:23");
+    assert_eq!(repr_span(sum_var.span), "4:16-4:23");
 
     let the_loop = body
         .body
@@ -205,7 +197,7 @@ fn spans() -> anyhow::Result<()> {
         .iter()
         .find(|st| st.kind.is_loop())
         .unwrap();
-    assert_eq!(repr_span(the_loop.span), "5:12-8:13");
+    assert_eq!(repr_span(the_loop.span), "6:12-9:13");
 
     Ok(())
 }
@@ -836,15 +828,14 @@ fn known_trait_method_call() -> anyhow::Result<()> {
 
 #[test]
 fn target_dispatch_source() -> anyhow::Result<()> {
-    let crate_data = translate_with_options(
-        "
+    let crate_data = translate(
+        "//@ charon-args=--targets=x86_64-apple-darwin,i686-unknown-linux-gnu
         #[cfg(target_pointer_width = \"64\")]
         pub fn platform_val() -> u32 { 64 }
 
         #[cfg(target_pointer_width = \"32\")]
         pub fn platform_val() -> u32 { 32 }
         ",
-        &["--targets=x86_64-apple-darwin,i686-unknown-linux-gnu"],
     )?;
 
     // Find the dispatcher (the facade with a TargetDispatch body).
@@ -871,8 +862,8 @@ fn target_dispatch_source() -> anyhow::Result<()> {
 
 #[test]
 fn issue_1184_target_dispatch_unbound_item_generics() -> anyhow::Result<()> {
-    let crate_data = translate_with_options(
-        "
+    let crate_data = translate(
+        "//@ charon-args=--preset=aeneas --targets=x86_64-unknown-linux-gnu,i686-unknown-linux-gnu
         pub struct Foo<T>(core::marker::PhantomData<T>);
 
         impl<T> Foo<T> {
@@ -884,10 +875,6 @@ fn issue_1184_target_dispatch_unbound_item_generics() -> anyhow::Result<()> {
             }
         }
         ",
-        &[
-            "--preset=aeneas",
-            "--targets=x86_64-unknown-linux-gnu,i686-unknown-linux-gnu",
-        ],
     )?;
 
     let real_dispatcher = crate_data

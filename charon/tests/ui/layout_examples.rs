@@ -1,4 +1,5 @@
 //@ no-check-output
+//@ no-default-options
 #![feature(never_type)]
 
 use std::num::NonZero;

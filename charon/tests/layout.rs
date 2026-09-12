@@ -53,7 +53,7 @@ fn eval_size_expr(expr: &SizeExpr, dyn_size: u128, dyn_align: u128, slice_length
 
 #[test]
 fn type_layout() -> anyhow::Result<()> {
-    let crate_data = translate_rust_file("tests/ui/layout_examples.rs", &[])?;
+    let crate_data = translate_rust_file("tests/ui/layout_examples.rs")?;
 
     // Check whether discriminator/tagger roundtrips are correct: use each variant's tagger
     // to answer the discriminator's read queries, and verify we get back the same variant.

@@ -64,50 +64,39 @@ fn expect_file_contents(path: &Path, actual: snapbox::Data) -> snapbox::assert::
 }
 
 /// Given a string that contains rust code, this calls charon on it and returns the result.
-pub fn translate_rust_text(
-    code: impl Display,
-    options: &[&str],
-) -> anyhow::Result<TranslatedCrate> {
+pub fn translate_rust_text(code: impl Display) -> anyhow::Result<TranslatedCrate> {
     // Write the code to a temporary file.
     use std::io::Write;
     let tmp_dir = tempfile::TempDir::new()?;
     let input_path = tmp_dir.path().join("test_crate.rs");
     {
         let mut tmp_file = File::create(&input_path)?;
-        write!(tmp_file, "{}", code)?;
+        writeln!(tmp_file, "//@ no-default-options")?;
+        write!(tmp_file, "{code}")?;
         drop(tmp_file);
     }
 
-    translate_rust_file(input_path, options)
+    translate_rust_file(input_path)
 }
 
 /// Call Charon on a Rust file and return the result.
-pub fn translate_rust_file(
-    input_path: impl AsRef<Path>,
-    options: &[&str],
-) -> anyhow::Result<TranslatedCrate> {
+pub fn translate_rust_file(input_path: impl AsRef<Path>) -> anyhow::Result<TranslatedCrate> {
     // Initialize the logger
     logger::initialize_logger();
 
     // Call charon
-    let tmp_dir = tempfile::TempDir::new()?;
-    let output_path = tmp_dir.path().join("test_crate.llbc");
+    let input_path = input_path.as_ref();
     Command::cargo_bin("charon")?
-        .arg("rustc")
-        .arg("--abort-on-error")
-        .arg("--dest-file")
-        .arg(&output_path)
-        .args(options)
-        .arg("--")
-        .arg("--edition=2021")
-        .arg("--crate-type=rlib")
-        .arg("--crate-name=test_crate")
-        .arg(input_path.as_ref())
+        .arg("ui-test")
+        .arg(input_path)
         .assert()
         .try_success()?;
 
     // Extract the computed crate data.
-    let crate_data = CrateData::deserialize_from_file(&output_path, SerializationFormat::Json)?;
+    let crate_data = CrateData::deserialize_from_file(
+        &input_path.with_extension("llbc"),
+        SerializationFormat::Json,
+    )?;
 
     Ok(crate_data.translated)
 }
