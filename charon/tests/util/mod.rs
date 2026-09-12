@@ -68,9 +68,6 @@ pub fn translate_rust_text(
     code: impl Display,
     options: &[&str],
 ) -> anyhow::Result<TranslatedCrate> {
-    // Initialize the logger
-    logger::initialize_logger();
-
     // Write the code to a temporary file.
     use std::io::Write;
     let tmp_dir = tempfile::TempDir::new()?;
@@ -81,7 +78,19 @@ pub fn translate_rust_text(
         drop(tmp_file);
     }
 
+    translate_rust_file(input_path, options)
+}
+
+/// Call Charon on a Rust file and return the result.
+pub fn translate_rust_file(
+    input_path: impl AsRef<Path>,
+    options: &[&str],
+) -> anyhow::Result<TranslatedCrate> {
+    // Initialize the logger
+    logger::initialize_logger();
+
     // Call charon
+    let tmp_dir = tempfile::TempDir::new()?;
     let output_path = tmp_dir.path().join("test_crate.llbc");
     Command::cargo_bin("charon")?
         .arg("rustc")
@@ -92,7 +101,8 @@ pub fn translate_rust_text(
         .arg("--")
         .arg("--edition=2021")
         .arg("--crate-type=rlib")
-        .arg(input_path)
+        .arg("--crate-name=test_crate")
+        .arg(input_path.as_ref())
         .assert()
         .try_success()?;
 
