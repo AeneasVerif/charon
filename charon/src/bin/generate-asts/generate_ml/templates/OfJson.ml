@@ -18,47 +18,14 @@ open Generated_Expressions
 open Generated_GAst
 open Generated_FullAst
 open Scalars
-module FileId = IdGen ()
-module DedupId = IdGen ()
+open DeserializationCtx
 
 (** The default logger *)
 let log = Logging.llbc_of_json_logger
 
-module FileTbl = Hashtbl.Make (struct
-  type t = FileId.id
+type of_json_ctx = DeserializationCtx.t
 
-  let equal = FileId.equal_id
-  let hash = Hashtbl.hash
-end)
-
-(** Table of the values that were deduplicated in the serialized output, by id. *)
-module DedupTbl = Hashtbl.Make (struct
-  type t = DedupId.id
-
-  let equal = DedupId.equal_id
-  let hash = Hashtbl.hash
-end)
-
-type of_json_ctx = {
-  id_to_file_map : file FileTbl.t;
-  ty_dedup_tbl : ty DedupTbl.t;
-  tref_dedup_tbl : trait_ref DedupTbl.t;
-  constant_expr_dedup_tbl : constant_expr DedupTbl.t;
-  size_expr_dedup_tbl : size_expr DedupTbl.t;
-  inhabited_predicate_dedup_tbl : inhabited_predicate DedupTbl.t;
-  span_dedup_tbl : span DedupTbl.t;
-}
-
-let empty_of_json_ctx : of_json_ctx =
-  {
-    id_to_file_map = FileTbl.create 8;
-    ty_dedup_tbl = DedupTbl.create 2048;
-    tref_dedup_tbl = DedupTbl.create 1024;
-    constant_expr_dedup_tbl = DedupTbl.create 64;
-    size_expr_dedup_tbl = DedupTbl.create 16;
-    inhabited_predicate_dedup_tbl = DedupTbl.create 16;
-    span_dedup_tbl = DedupTbl.create 4096;
-  }
+let empty_of_json_ctx = DeserializationCtx.empty ()
 
 (** Values that come up often are deduplicated in the serialized output: the first
     occurrence of a value is serialized in full along with an id, and later
