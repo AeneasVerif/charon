@@ -27,8 +27,8 @@ test_crate::UnsizedStruct:
 
 test_crate::UnsizedDyn:
   Layout {
-    size: align_to((1usize + dyn_size), max(dyn_align, 1usize)) (guaranteed: at_least(align_to(max(size_of::<u8>(), size_of::<(dyn Debug + 'static)>()), max(align_of::<u8>(), align_of::<(dyn Debug + 'static)>())))),
-    align: max(dyn_align, 1usize) (guaranteed: at_least(max(align_of::<u8>(), align_of::<(dyn Debug + 'static)>()))),
+    size: align_to((1usize + dyn_size), max(dyn_align, 1usize)) (guaranteed: at_least(align_to(max(size_of::<u8>(), dyn_size), max(align_of::<u8>(), dyn_align)))),
+    align: max(dyn_align, 1usize) (guaranteed: at_least(max(align_of::<u8>(), dyn_align))),
     discriminator: SingleVariant,
     uninhabited: false,
     variants: [

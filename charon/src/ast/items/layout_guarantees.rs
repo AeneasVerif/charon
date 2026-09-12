@@ -185,6 +185,9 @@ impl SizeExpr {
                         let mut guaranteed = match constant.kind() {
                             ConstantExprKind::SizeOf(ty) => match ty.kind() {
                                 TyKind::Never => SizeExpr::from_usize(0),
+                                TyKind::DynTrait(..) => {
+                                    SizeExprKind::FromMetadata(MetadataValue::DynSize).into_expr()
+                                }
                                 TyKind::Scalar(scalar_ty) => {
                                     if let Some(krate) = self.krate
                                         && let Some(target) = self.for_target
@@ -214,6 +217,9 @@ impl SizeExpr {
                             },
                             ConstantExprKind::AlignOf(ty) => match ty.kind() {
                                 TyKind::Never => SizeExpr::from_usize(1),
+                                TyKind::DynTrait(..) => {
+                                    SizeExprKind::FromMetadata(MetadataValue::DynAlign).into_expr()
+                                }
                                 TyKind::Scalar(scalar_ty) => {
                                     if let Some(krate) = self.krate
                                         && let Some(target) = self.for_target
@@ -244,7 +250,10 @@ impl SizeExpr {
                         };
                         self.visit(&mut guaranteed);
                         if !self.allow_precision_loss
-                            && !matches!(guaranteed.kind(), SizeExprKind::Constant(_))
+                            && !matches!(
+                                guaranteed.kind(),
+                                SizeExprKind::Constant(_) | SizeExprKind::FromMetadata(_)
+                            )
                         {
                             return;
                         }
