@@ -197,6 +197,9 @@ Options:
       --no-reorder-decls
           Don't compute a stable order for declarations
 
+      --no-compute-layout-guarantees
+          Don't compute type layout guarantees
+
       --abort-on-error
           Panic on the first error. This is useful for debugging
 

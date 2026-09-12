@@ -649,8 +649,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let ty_layout = tcx.layout_of(pseudo_input).ok()?;
         let layout_cx = ty::layout::LayoutCx::new(tcx, ty_env);
         let (size, align) = chosen_size_and_align(&layout_cx, ty_layout)?;
-        let size = Size::from_expr(size.normalize(&self.translated, None, false));
-        let align = Size::from_expr(align.normalize(&self.translated, None, false));
+        let size = Size::from_expr(size.normalize(Some(&self.translated), None, false));
+        let align = Size::from_expr(align.normalize(Some(&self.translated), None, false));
         let layout = ty_layout.layout;
 
         // Build the discriminator tree and variant layouts.

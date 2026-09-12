@@ -14,6 +14,7 @@ pub mod finish_translation {
 pub mod add_missing_info {
     pub mod add_implied_outlives;
     pub mod add_missing_alias_clauses;
+    pub mod compute_layout_guarantees;
     pub mod compute_short_names;
     pub mod link_specs;
     pub mod recover_body_comments;
@@ -244,6 +245,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         // Partially monomorphize items so that no item is ever instanciated with a mutable reference
         // or a type containing one.
         global(&normalize::partial_monomorphization::Transform),
+        // Provide expressions describing the language-guaranteed properties of each type layout.
+        global(&add_missing_info::compute_layout_guarantees::Transform),
         // Reorder the graph of dependencies and compute the strictly connex components to:
         // - compute the order in which to extract the definitions
         // - find the recursive definitions

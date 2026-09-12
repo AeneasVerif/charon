@@ -1921,6 +1921,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* no_typecheck = bool_of_postcard ctx st in
      let* no_normalize = bool_of_postcard ctx st in
      let* no_reorder_decls = bool_of_postcard ctx st in
+     let* no_compute_layout_guarantees = bool_of_postcard ctx st in
      let* abort_on_error = bool_of_postcard ctx st in
      let* error_on_warnings = bool_of_postcard ctx st in
      let* preset = option_of_postcard preset_of_postcard ctx st in
@@ -1976,6 +1977,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           no_typecheck;
           no_normalize;
           no_reorder_decls;
+          no_compute_layout_guarantees;
           abort_on_error;
           error_on_warnings;
           preset;
