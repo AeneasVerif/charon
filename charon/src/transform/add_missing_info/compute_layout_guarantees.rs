@@ -31,7 +31,7 @@ impl TransformPass for Transform {
                 {
                     fields.iter().map(|field| field.ty.clone()).collect()
                 }
-                TypeDeclKind::Enum(variants) => variants
+                TypeDeclKind::Enum(variants) if !layout.uninhabited => variants
                     .iter_enumerated()
                     .filter(|(id, _)| {
                         layout.variant_layouts[*id]
