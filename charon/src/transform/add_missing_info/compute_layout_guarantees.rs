@@ -21,13 +21,20 @@ impl TransformPass for Transform {
             .expect("layout guarantees expect exactly one target")
             .clone();
 
-        for decl in ctx.translated.type_decls.iter_mut() {
+        ctx.for_each_type_decl(|ctx, decl| {
             let Some(layout) = decl.layout.get_mut(&target) else {
-                continue;
+                return;
             };
+
+            // Normalize Inhabited predicates
+            layout.inhabited = layout.inhabited.clone().normalize(&ctx.translated, None);
+            for layout in layout.variant_layouts.iter_mut().flatten() {
+                layout.inhabited = layout.inhabited.clone().normalize(&ctx.translated, None);
+            }
+
             let field_tys: Vec<_> = match &decl.kind {
                 TypeDeclKind::Struct(fields) | TypeDeclKind::Union(fields)
-                    if !layout.uninhabited =>
+                    if layout.inhabited.always_true() =>
                 {
                     fields.iter().map(|field| field.ty.clone()).collect()
                 }
@@ -36,12 +43,12 @@ impl TransformPass for Transform {
                     .filter(|(id, _)| {
                         layout.variant_layouts[*id]
                             .as_ref()
-                            .is_some_and(|vl| !vl.uninhabited)
+                            .is_some_and(|vl| vl.inhabited.always_true())
                     })
                     .flat_map(|(_, variant)| variant.fields.iter())
                     .map(|field| field.ty.clone())
                     .collect(),
-                _ => continue,
+                _ => return,
             };
 
             // `repr(packed)` caps the effective alignment of each field.
@@ -81,6 +88,6 @@ impl TransformPass for Transform {
 
             layout.align.guarantee = Some(SizeExprKind::AtLeast(align).into_expr());
             layout.size.guarantee = Some(SizeExprKind::AtLeast(size).into_expr());
-        }
+        });
     }
 }

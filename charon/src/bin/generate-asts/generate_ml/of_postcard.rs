@@ -80,6 +80,10 @@ const MANUAL_IMPLS: &[(&str, &str)] = &[
         "SizeExpr",
         "dedup_val_of_postcard ctx.size_expr_dedup_tbl size_expr_kind_of_postcard ctx st",
     ),
+    (
+        "InhabitedPredicate",
+        "dedup_val_of_postcard ctx.inhabited_predicate_dedup_tbl inhabited_predicate_kind_of_postcard ctx st",
+    ),
     // Hand-written because spans are deduplicated in the serialized output.
     (
         "Span",

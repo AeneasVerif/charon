@@ -69,7 +69,7 @@ fn type_layout() -> anyhow::Result<()> {
         {
             let name = tdecl.item_meta.name.debug_repr(&crate_data);
             for (var_id, variant) in layout.variant_layouts.iter_enumerated() {
-                if layout.is_variant_uninhabited(var_id) {
+                if layout.is_variant_always_uninhabited(var_id) {
                     if let Some(variant) = variant {
                         assert!(
                             variant.tagger.is_empty(),

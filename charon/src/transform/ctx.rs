@@ -160,7 +160,8 @@ impl TransformCtx {
     }
 
     /// Mutably iterate over the function declarations.
-    /// Warning: each inspected fundecl becomes inaccessible from `ctx` during the course of this function.
+    /// Warning: each inspected function declaration becomes inaccessible from `ctx` during the
+    /// course of this function.
     pub(crate) fn for_each_fun_decl(&mut self, mut f: impl FnMut(&mut Self, &mut FunDecl)) {
         let fn_ids = self.translated.fun_decls.all_indices();
         for id in fn_ids {
@@ -169,6 +170,21 @@ impl TransformCtx {
                 let is_local = decl.item_meta.is_local;
                 self.with_def_id(fun_decl_id, is_local, |ctx| f(ctx, &mut decl));
                 self.translated.fun_decls.set_slot(id, decl);
+            }
+        }
+    }
+
+    /// Mutably iterate over the type declarations.
+    /// Warning: each inspected type declaration becomes inaccessible from `ctx` during the course
+    /// of this function.
+    pub(crate) fn for_each_type_decl(&mut self, mut f: impl FnMut(&mut Self, &mut TypeDecl)) {
+        let type_ids = self.translated.type_decls.all_indices();
+        for id in type_ids {
+            if let Some(mut decl) = self.translated.type_decls.remove(id) {
+                let type_decl_id = decl.def_id;
+                let is_local = decl.item_meta.is_local;
+                self.with_def_id(type_decl_id, is_local, |ctx| f(ctx, &mut decl));
+                self.translated.type_decls.set_slot(id, decl);
             }
         }
     }

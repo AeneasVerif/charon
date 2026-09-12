@@ -513,28 +513,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translates the layout as queried from rustc into
     /// the more restricted [`Layout`].
     #[tracing::instrument(skip(self))]
-    pub fn translate_layout(&mut self, def: &hax::FullDef<'tcx>) -> Option<Layout> {
+    pub fn translate_layout(&mut self, span: Span, def: &hax::FullDef<'tcx>) -> Option<Layout> {
         let item = def.this();
         use rustc_abi as r_abi;
 
-        fn translate_variant_layout(
-            variant_layout: &r_abi::VariantLayout<r_abi::FieldIdx>,
-            tagger: Vec<(ByteCount, IntegerValue)>,
-        ) -> Option<VariantLayout> {
-            let field_offsets = variant_layout
-                .field_offsets
-                .iter()
-                .map(|o| OffsetExpr::new(o.bytes()))
-                .collect();
-            Some(VariantLayout {
-                field_offsets,
-                uninhabited: variant_layout.is_uninhabited(),
-                tagger,
-            })
-        }
-
-        fn translate_layout_data(
+        fn translate_variant_layout_data(
             layout_data: &r_abi::LayoutData<r_abi::FieldIdx, r_abi::VariantIdx>,
+            inhabited: InhabitedPredicate,
             tagger: Vec<(ByteCount, IntegerValue)>,
         ) -> Option<VariantLayout> {
             let field_offsets = match &layout_data.fields {
@@ -547,7 +532,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             };
             Some(VariantLayout {
                 field_offsets,
-                uninhabited: layout_data.is_uninhabited(),
+                inhabited,
                 tagger,
             })
         }
@@ -653,6 +638,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let align = Size::from_expr(align.normalize(Some(&self.translated), None, false));
         let layout = ty_layout.layout;
 
+        let rustc_variant_inhabited = |id| match ty.kind() {
+            ty::Adt(adt, args) if adt.is_enum() => adt
+                .variant(id)
+                .inhabited_predicate(tcx, *adt)
+                .instantiate(tcx, args),
+            _ => ty.inhabited_predicate(tcx),
+        };
         // Build the discriminator tree and variant layouts.
         let (discriminator, variant_layouts) = match layout.variants() {
             r_abi::Variants::Multiple {
@@ -737,6 +729,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 for (id, variant_layout) in variants.iter_enumerated() {
                     let variant_id = self.translate_variant_id(id);
                     let taginfo = taginfo_for_variant(id);
+                    let variant_inhabited = self
+                        .translate_inhabited_predicate(span, rustc_variant_inhabited(id))
+                        .ok()?;
                     let tagger = if let Some(val) = taginfo.value {
                         if taginfo.niched || taginfo.uninhabited {
                             // If we could compute a tag for this variant, encountering it is UB.
@@ -751,7 +746,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         vec![]
                     };
 
-                    variant_layouts.push(translate_variant_layout(variant_layout, tagger));
+                    let field_offsets = variant_layout
+                        .field_offsets
+                        .iter()
+                        .map(|o| OffsetExpr::new(o.bytes()))
+                        .collect();
+                    variant_layouts.push(Some(VariantLayout {
+                        field_offsets,
+                        inhabited: variant_inhabited,
+                        tagger,
+                    }));
                 }
 
                 let fallback = match tag_encoding {
@@ -822,11 +826,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         };
                         let mut variant_layouts: IndexVec<VariantId, Option<VariantLayout>> =
                             (0..n_variants).map(|_| None).collect();
-                        variant_layouts[variant_id] = translate_layout_data(&layout, vec![]);
+                        let variant_inhabited = self
+                            .translate_inhabited_predicate(span, rustc_variant_inhabited(*index))
+                            .ok()?;
+                        variant_layouts[variant_id] =
+                            translate_variant_layout_data(&layout, variant_inhabited, vec![]);
                         variant_layouts
                     }
                     r_abi::FieldsShape::Union(_) => {
-                        vec![translate_layout_data(&layout, vec![])].into()
+                        let variant_inhabited = self
+                            .translate_inhabited_predicate(span, rustc_variant_inhabited(*index))
+                            .ok()?;
+                        vec![translate_variant_layout_data(
+                            &layout,
+                            variant_inhabited,
+                            vec![],
+                        )]
+                        .into()
                     }
                     r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Array { .. } => {
                         vec![].into()
@@ -837,6 +853,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             r_abi::Variants::Empty => (None, IndexVec::new()),
         };
 
+        let inhabited = self
+            .translate_inhabited_predicate(span, ty.inhabited_predicate(tcx))
+            .ok()?;
+
         let repr = match &def.kind {
             hax::FullDefKind::Adt { repr: hax_repr, .. } => self.translate_repr_options(hax_repr),
             _ => ReprOptions::default(),
@@ -846,7 +866,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             size,
             align,
             discriminator,
-            uninhabited: layout.is_uninhabited(),
+            inhabited,
             variant_layouts,
             repr,
         })
@@ -877,11 +897,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     size: Size::new(size),
                     align: Size::new(align),
                     discriminator: None,
-                    uninhabited: false,
+                    inhabited: InhabitedPredicate::mk_true(),
                     variant_layouts: IndexVec::from([Some(VariantLayout {
                         field_offsets,
                         tagger: vec![],
-                        uninhabited: false,
+                        inhabited: InhabitedPredicate::mk_true(),
                     })]),
                     repr: ReprOptions::default(),
                 })
@@ -1075,6 +1095,45 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             Some(int_ty) => Ok(IntegerValue::from_bits(*int_ty, discr.val)),
             None => raise_error!(self, def_span, "unexpected discriminant type: {ty:?}",),
         }
+    }
+
+    fn translate_inhabited_predicate(
+        &mut self,
+        span: Span,
+        predicate: ty::inhabitedness::InhabitedPredicate<'tcx>,
+    ) -> Result<InhabitedPredicate, Error> {
+        use ty::inhabitedness::InhabitedPredicate as RustcPredicate;
+        Ok(match predicate {
+            RustcPredicate::True => InhabitedPredicateKind::True,
+            RustcPredicate::False => InhabitedPredicateKind::False,
+            RustcPredicate::ConstIsZero(value) => {
+                InhabitedPredicateKind::ConstIsZero(self.translate_ty_constant_expr(span, &value)?)
+            }
+            // We only retain layout-relevant inhabitedness.
+            RustcPredicate::NotInModule(_) => InhabitedPredicateKind::False,
+            RustcPredicate::GenericType(ty) => {
+                InhabitedPredicateKind::GenericType(self.translate_rustc_ty(span, &ty)?)
+            }
+            RustcPredicate::OpaqueType(key) => {
+                // Reveal the opaque type.
+                let opaque_ty = self
+                    .tcx
+                    .type_of(key.def_id)
+                    .instantiate(self.tcx, key.args)
+                    .skip_norm_wip();
+                return self
+                    .translate_inhabited_predicate(span, opaque_ty.inhabited_predicate(self.tcx));
+            }
+            RustcPredicate::And(&[left, right]) => InhabitedPredicateKind::And(vec![
+                self.translate_inhabited_predicate(span, left)?,
+                self.translate_inhabited_predicate(span, right)?,
+            ]),
+            RustcPredicate::Or(&[left, right]) => InhabitedPredicateKind::Or(vec![
+                self.translate_inhabited_predicate(span, left)?,
+                self.translate_inhabited_predicate(span, right)?,
+            ]),
+        }
+        .into_pred())
     }
 
     pub fn translate_repr_options(&mut self, hax_repr_options: &hax::ReprOptions) -> ReprOptions {

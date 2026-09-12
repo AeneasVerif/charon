@@ -3,6 +3,7 @@ use crate::ast::*;
 use crate::ids::IndexVec;
 use crate::utils::serialize_map_to_array::SeqHashMapToArray;
 use derive_generic_visitor::*;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
@@ -21,10 +22,10 @@ pub struct Layout {
     pub align: Size,
     /// Decision tree that determines the active variant by reading memory. Only `Some` for enums.
     pub discriminator: Option<Discriminator>,
-    /// Whether the type is uninhabited, i.e. has any valid value at all.
+    /// Whether the type has any valid value.
     /// Note that uninhabited types can have arbitrary layouts: `(u32, !)` has space for the `u32`
     /// and `enum E2 { A, B(!), C(i32, !) }` may have space for a discriminant.
-    pub uninhabited: bool,
+    pub inhabited: InhabitedPredicate,
     /// Map from `VariantId` to the corresponding field layouts. Some variants don't have a
     /// meaningful layout due to being uninhabited (though an uninhabited variant may have a
     /// layout). Structs and unions are modeled as having exactly one variant.
@@ -41,9 +42,9 @@ pub struct Layout {
 pub struct VariantLayout {
     /// The offset of each field.
     pub field_offsets: IndexVec<FieldId, OffsetExpr>,
-    /// Whether the variant is uninhabited, i.e. has any valid possible value.
+    /// Whether the variant has any valid possible value.
     /// Note that uninhabited types can have arbitrary layouts.
-    pub uninhabited: bool,
+    pub inhabited: InhabitedPredicate,
     /// How to write the tag when constructing this variant. Each entry means: write `value` at
     /// byte `offset`. Mirrors MiniRust's `Variant::tagger`.
     #[serde_state(stateless)]
@@ -116,6 +117,230 @@ impl OffsetExpr {
     }
 }
 
+/// Represents whether a type or variant is inhabited. Like rustc's `InhabitedPredicate`, this can
+/// depend on generic parameters and constant values.
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
+)]
+#[serde_state(state_implements = DedupSerializerState)]
+pub struct InhabitedPredicate(pub HashConsed<InhabitedPredicateKind>);
+
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
+)]
+#[cfg_attr(
+    feature = "charon_on_charon",
+    charon::variants_prefix("InhabitedPredicate")
+)]
+pub enum InhabitedPredicateKind {
+    True,
+    False,
+    /// Inhabited when this constant is zero.
+    ConstIsZero(ConstantExpr),
+    /// Inhabited when this generic type is inhabited.
+    GenericType(Ty),
+    And(Vec<InhabitedPredicate>),
+    Or(Vec<InhabitedPredicate>),
+}
+
+impl InhabitedPredicate {
+    pub fn new(kind: InhabitedPredicateKind) -> Self {
+        Self(HashConsed::new(kind))
+    }
+
+    pub fn kind(&self) -> &InhabitedPredicateKind {
+        self.0.inner()
+    }
+
+    pub fn with_kind_mut<R>(&mut self, f: impl FnOnce(&mut InhabitedPredicateKind) -> R) -> R {
+        self.0.with_inner_mut(f)
+    }
+
+    pub fn mk_true() -> Self {
+        InhabitedPredicateKind::True.into_pred()
+    }
+
+    pub fn mk_false() -> Self {
+        InhabitedPredicateKind::False.into_pred()
+    }
+
+    pub fn always_true(&self) -> bool {
+        matches!(self.kind(), InhabitedPredicateKind::True)
+    }
+
+    pub fn always_false(&self) -> bool {
+        matches!(self.kind(), InhabitedPredicateKind::False)
+    }
+
+    pub fn is_known(&self) -> bool {
+        self.always_true() || self.always_false()
+    }
+
+    pub fn as_bool(&self) -> Option<bool> {
+        match self.kind() {
+            InhabitedPredicateKind::True => Some(true),
+            InhabitedPredicateKind::False => Some(false),
+            _ => None,
+        }
+    }
+
+    pub fn normalize(mut self, krate: &TranslatedCrate, for_target: Option<&TargetTriple>) -> Self {
+        #[derive(Visitor)]
+        struct NormalizeInhabitedPredicate<'a> {
+            krate: &'a TranslatedCrate,
+            for_target: Option<&'a TargetTriple>,
+        }
+
+        fn fold_concrete_values(
+            predicates: &mut Vec<InhabitedPredicate>,
+            f: impl Fn(bool, bool) -> bool,
+        ) -> Option<bool> {
+            predicates
+                .extract_if(.., |pred| pred.is_known())
+                .map(|pred| pred.as_bool().unwrap())
+                .reduce(f)
+        }
+
+        impl VisitAstMut for NormalizeInhabitedPredicate<'_> {
+            fn exit_inhabited_predicate_kind(&mut self, pred: &mut InhabitedPredicateKind) {
+                *pred = match pred {
+                    InhabitedPredicateKind::True | InhabitedPredicateKind::False => return,
+                    InhabitedPredicateKind::ConstIsZero(value) => {
+                        if let Some(value) = value.as_usize_literal() {
+                            if value == 0 {
+                                InhabitedPredicateKind::True
+                            } else {
+                                InhabitedPredicateKind::False
+                            }
+                        } else {
+                            return;
+                        }
+                    }
+                    InhabitedPredicateKind::GenericType(ty) => {
+                        let mut new = ty.inhabited_predicate(self.krate, self.for_target);
+                        if let InhabitedPredicateKind::GenericType(new_ty) = new.kind()
+                            && new_ty == ty
+                        {
+                            return;
+                        }
+                        self.visit(&mut new);
+                        new.kind().clone()
+                    }
+                    InhabitedPredicateKind::And(predicates) => {
+                        for pred in std::mem::take(predicates) {
+                            match pred.kind() {
+                                InhabitedPredicateKind::And(nested) => {
+                                    predicates.extend(nested.iter().cloned())
+                                }
+                                _ => predicates.push(pred),
+                            }
+                        }
+                        if let Some(value) = fold_concrete_values(predicates, |x, y| x && y)
+                            && !value
+                        {
+                            InhabitedPredicateKind::False
+                        } else if predicates.is_empty() {
+                            InhabitedPredicateKind::True
+                        } else if predicates.len() == 1 {
+                            predicates.pop().unwrap().kind().clone()
+                        } else {
+                            return;
+                        }
+                    }
+                    InhabitedPredicateKind::Or(predicates) => {
+                        for pred in std::mem::take(predicates) {
+                            match pred.kind() {
+                                InhabitedPredicateKind::Or(nested) => {
+                                    predicates.extend(nested.iter().cloned())
+                                }
+                                _ => predicates.push(pred),
+                            }
+                        }
+                        if let Some(value) = fold_concrete_values(predicates, |x, y| x || y)
+                            && value
+                        {
+                            InhabitedPredicateKind::True
+                        } else if predicates.is_empty() {
+                            InhabitedPredicateKind::False
+                        } else if predicates.len() == 1 {
+                            predicates.pop().unwrap().kind().clone()
+                        } else {
+                            return;
+                        }
+                    }
+                };
+            }
+        }
+
+        NormalizeInhabitedPredicate { krate, for_target }.visit(&mut self);
+        self
+    }
+}
+
+impl InhabitedPredicateKind {
+    pub fn into_pred(self) -> InhabitedPredicate {
+        InhabitedPredicate::new(self)
+    }
+}
+
+impl Ty {
+    pub fn inhabited_predicate(
+        &self,
+        krate: &TranslatedCrate,
+        for_target: Option<&TargetTriple>,
+    ) -> InhabitedPredicate {
+        match self.kind() {
+            TyKind::Never => InhabitedPredicate::mk_false(),
+            TyKind::Array(ty, len, _) => match len.as_usize_literal() {
+                Some(0) => InhabitedPredicate::mk_true(),
+                Some(_) => ty.inhabited_predicate(krate, for_target),
+                None => InhabitedPredicateKind::Or(vec![
+                    InhabitedPredicateKind::ConstIsZero(len.clone()).into_pred(),
+                    ty.inhabited_predicate(krate, for_target),
+                ])
+                .into_pred(),
+            },
+            TyKind::Adt(ty_ref)
+                if let Some(decl) = krate.type_decls.get(ty_ref.id)
+                    && let Some(layout) = if let Some(target) = for_target {
+                        decl.layout.get(target)
+                    } else {
+                        decl.layout.values().exactly_one().ok()
+                    } =>
+            {
+                layout.inhabited.clone().substitute(&ty_ref.generics)
+            }
+            TyKind::TypeVar(_) | TyKind::TraitType(..) | TyKind::Adt(_) => {
+                InhabitedPredicateKind::GenericType(self.clone()).into_pred()
+            }
+            TyKind::Scalar(_)
+            | TyKind::Slice(..)
+            | TyKind::Ref(..)
+            | TyKind::RawPtr(..)
+            | TyKind::FnDef(..)
+            | TyKind::FnPtr(..)
+            | TyKind::DynTrait(..)
+            | TyKind::Pattern(..)
+            | TyKind::PtrMetadata(..)
+            | TyKind::Error(_) => InhabitedPredicate::mk_true(),
+        }
+    }
+}
+
+impl Default for InhabitedPredicate {
+    fn default() -> Self {
+        Self::mk_true()
+    }
+}
+
+impl std::ops::Deref for InhabitedPredicate {
+    type Target = InhabitedPredicateKind;
+
+    fn deref(&self) -> &Self::Target {
+        self.kind()
+    }
+}
+
 /// The representation options as annotated by the user.
 ///
 /// NOTE: This does not include less common/unstable representations such as `#[repr(simd)]`
@@ -164,10 +389,16 @@ pub struct TargetInfo {
 }
 
 impl Layout {
-    pub fn is_variant_uninhabited(&self, variant_id: VariantId) -> bool {
+    pub fn is_variant_always_uninhabited(&self, variant_id: VariantId) -> bool {
         self.variant_layouts[variant_id]
             .as_ref()
-            .is_none_or(|v| v.uninhabited)
+            .is_none_or(|layout| layout.inhabited.always_false())
+    }
+
+    pub fn is_variant_always_inhabited(&self, variant_id: VariantId) -> bool {
+        self.variant_layouts[variant_id]
+            .as_ref()
+            .is_none_or(|layout| layout.inhabited.always_true())
     }
 
     pub fn is_c_repr(&self) -> bool {

@@ -377,9 +377,23 @@ impl SizeExpr {
                             _ => return,
                         }
                     }
-                    SizeExprKind::IfInhabited { .. } => {
-                        // FIXME: evaluate type inhabitedness
-                        return;
+                    SizeExprKind::IfInhabited {
+                        ty,
+                        then_size,
+                        else_size,
+                    } => {
+                        if then_size == else_size {
+                            then_size.kind().clone()
+                        } else if let Some(krate) = self.krate
+                            && let Some(inhabited) = ty
+                                .inhabited_predicate(krate, self.for_target)
+                                .normalize(krate, self.for_target)
+                                .as_bool()
+                        {
+                            if inhabited { then_size } else { else_size }.kind().clone()
+                        } else {
+                            return;
+                        }
                     }
                     SizeExprKind::AtLeast(_) | SizeExprKind::FromMetadata(_) => return,
                 };
@@ -670,16 +684,7 @@ mod tests {
         .into_expr()
         .normalize(Some(&krate), Some(&target), false);
 
-        let SizeExprKind::IfInhabited {
-            then_size,
-            else_size,
-            ..
-        } = expr.kind()
-        else {
-            panic!("inhabitedness is not normalized yet")
-        };
-        assert_eq!(then_size.as_usize(), Some(10));
-        assert_eq!(else_size.as_usize(), Some(5));
+        assert_eq!(expr.as_usize(), Some(5));
     }
 
     #[test]
@@ -786,7 +791,7 @@ mod tests {
                 },
                 align: Size::new(1),
                 discriminator: None,
-                uninhabited: false,
+                inhabited: InhabitedPredicate::mk_true(),
                 variant_layouts: Default::default(),
                 repr: Default::default(),
             },
