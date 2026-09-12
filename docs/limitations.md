@@ -25,3 +25,11 @@ Tracked here: https://github.com/AeneasVerif/charon/issues/142
 - Precise lifetimes for higher-ranked trait predicates
   https://github.com/AeneasVerif/charon/issues/1143;
 - Lifetime information inside function bodies (not planned).
+
+## By-design limitations
+
+- Charon's output contains little syntactic information. Stuff like scopes, or distinguishing
+  between `loop`, `while` and `for`, is not kept; only semantic information is kept. This can impede
+  lints. We do keep good spans for error reporting however.
+- It's not possible to do trait solving on the output of Charon. Charon simply does not have all the
+  type system logic needed to do that, nor would I want to try and reimplement that.
