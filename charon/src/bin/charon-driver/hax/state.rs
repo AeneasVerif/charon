@@ -96,6 +96,9 @@ mod types {
         pub reverse_item_refs_map: HashMap<ItemRef, ty::GenericArgsRef<'tcx>>,
         /// Data for synthetic items. See the `synthetic_items` module.
         pub synthetic_item_data: HashMap<SyntheticItem, SyntheticItemData<'tcx>>,
+        /// Anonymous allocations we turned into globals, in encounter order. Used to keep
+        /// the order of globals stable across runs.
+        pub anon_allocs: indexmap::IndexSet<RAllocId>,
         /// Cached names and disambiguators for crate names.
         pub disambiguated_crate_names: Option<FxHashMap<CrateNum, (Symbol, u32)>>,
     }

@@ -1,0 +1,102 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+struct (_, _, _)<A, B, C>
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+  _0: A,
+  _1: B,
+  _2: C,
+}
+
+// Full name: test_crate::ARR
+static ARR: [u32; 3usize] = [1u32, 2u32, 3u32]
+
+// Full name: test_crate::FIRST
+static FIRST: &'static u32 = &ARR
+
+// Full name: test_crate::SECOND
+static SECOND: &'static u32 = &2u32
+
+// Full name: test_crate::S
+struct S {
+  a: u32,
+  b: u32,
+}
+
+// Full name: test_crate::S0
+static S0: S = S { a: 1u32, b: 2u32 }
+
+// Full name: test_crate::B
+static B: &'static u32 = &2u32
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let _1: (&'16 u32, &'17 u32, &'18 u32); // anonymous local
+    let _2: &'25 u32; // anonymous local
+    let _3: &'28 &'29 u32; // anonymous local
+    let _4: &'30 u32; // anonymous local
+    let _5: &'31 &'32 u32; // anonymous local
+    let _6: &'33 u32; // anonymous local
+    let _7: &'34 &'35 u32; // anonymous local
+    let _8: &'36 &'37 u32; // anonymous local
+    let _9: &'40 &'41 u32; // anonymous local
+    let _10: &'44 &'45 u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_8)
+    _8 = &FIRST
+    _3 = move _8
+    _2 = copy (*_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_9)
+    _9 = &SECOND
+    _5 = move _9
+    _4 = copy (*_5)
+    storage_live(_6)
+    storage_live(_7)
+    storage_live(_10)
+    _10 = &B
+    _7 = move _10
+    _6 = copy (*_7)
+    _1 = (move _2, move _4, move _6)
+    storage_dead(_6)
+    storage_dead(_4)
+    storage_dead(_2)
+    storage_dead(_7)
+    storage_dead(_5)
+    storage_dead(_3)
+    storage_dead(_1)
+    _0 = ()
+    storage_dead(_10)
+    storage_dead(_9)
+    storage_dead(_8)
+    return
+}
+
+
+

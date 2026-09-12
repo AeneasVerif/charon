@@ -1633,11 +1633,21 @@ impl Display for RawAttribute {
 }
 
 impl<C: AstFormatter> FmtWithCtx<C> for Byte {
-    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Byte::Value(x) => write!(f, "{:#4x}", x),
+            Byte::Value(x) => write!(f, "{:#04x}", x),
             Byte::Uninit => write!(f, "--"),
-            Byte::Provenance(p, ofs) => write!(f, "{:?}[{}]", p, ofs),
+            Byte::Provenance(p, ofs) => write!(f, "{}[{}]", p.with_ctx(ctx), ofs),
+        }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for Provenance {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Provenance::Global(g) => write!(f, "&{}", g.with_ctx(ctx)),
+            Provenance::Function(func) => write!(f, "&{}", func.with_ctx(ctx)),
+            Provenance::Unknown => write!(f, "&?"),
         }
     }
 }

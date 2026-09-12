@@ -78,10 +78,34 @@ pub enum ConstantExprKind {
     /// A function pointer. This is an actual pointer to that function.
     FnPtr(ItemRef),
     /// A blob of memory containing the byte representation of the value. This can occur when
-    /// evaluating MIR constants. Interpreting this back to a structured value is left as an
-    /// exercice to the consumer.
-    Memory(Vec<u8>),
+    /// evaluating MIR constants (e.g. unions). Interpreting this back to a structured value
+    /// is left as an exercice to the consumer.
+    Memory(Vec<ConstantByte>),
     Todo(String),
+}
+
+/// A byte of an evaluated constant, in the MiniRust sense.
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum ConstantByte {
+    /// An uninitialized byte (e.g. padding, or the bytes of a union not covered by the active
+    /// field).
+    Uninit,
+    /// A concrete byte value.
+    Value(u8),
+    /// A byte that is part of a pointer with provenance. The `u8` is the offset of this byte
+    /// within the pointer.
+    Provenance(ConstantByteProvenance, u8),
+}
+
+/// What a pointer byte in an evaluated constant points to.
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum ConstantByteProvenance {
+    /// A pointer to a static.
+    Global(ItemRef),
+    /// A pointer to a function.
+    Function(ItemRef),
+    /// A pointer to anything else (an anonymous allocation, a vtable...).
+    Unknown,
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]

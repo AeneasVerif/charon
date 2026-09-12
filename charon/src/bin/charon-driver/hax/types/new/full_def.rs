@@ -116,6 +116,27 @@ where
                 .sinto(s);
             diagnostic_item = tcx.get_diagnostic_name(rust_def_id).sinto(s);
         }
+        DefIdBase::Alloc(alloc_id) => {
+            kind = FullDefKind::Static {
+                param_env: ParamEnv::empty(s, None),
+                safety: Safety::Safe,
+                mutability: tcx
+                    .global_alloc(alloc_id)
+                    .unwrap_memory()
+                    .inner()
+                    .mutability,
+                thread_local: false,
+                nested: true,
+                ty: def_id
+                    .type_of(s)
+                    .instantiate_identity()
+                    .skip_normalization()
+                    .sinto(s),
+            };
+            source_span = None;
+            lang_item = Default::default();
+            diagnostic_item = Default::default();
+        }
         DefIdBase::ImplAssocItem(_) => {
             panic!("virtual trait impl associated items do not have `FullDef`s")
         }
@@ -1153,6 +1174,18 @@ impl<'tcx> FullDef<'tcx> {
             _ => panic!("expected a Static definition"),
         }
         let s = &s.with_hax_owner(self.def_id());
+
+        if let DefIdBase::Alloc(alloc_id) = self.def_id().base {
+            // If this is an allocation, it is untyped and we need to read it as raw memory.
+            let val = mir::ConstValue::Indirect {
+                alloc_id,
+                offset: rustc_abi::Size::ZERO,
+            };
+            let ty = self.def_id().type_of(s).instantiate_identity();
+            let span = rustc_span::DUMMY_SP;
+            return const_value_to_raw_memory(s, ty.skip_normalization(), val, span).discard_err();
+        }
+
         let def_id = self.def_id().as_real_def_id()?;
         let args = self.this().rustc_args(s);
         let ty = inst_binder(

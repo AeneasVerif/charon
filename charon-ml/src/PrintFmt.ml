@@ -431,16 +431,14 @@ and pp_trait_impl_ref (env : fmt_env) (fmt : Format.formatter)
 and pp_provenance (env : fmt_env) (fmt : Format.formatter) (pv : provenance) :
     unit =
   match pv with
-  | ProvGlobal gref ->
-      Format.fprintf fmt "prov_global(%a)" (pp_global_decl_ref env) gref
-  | ProvFunction fn_ref ->
-      Format.fprintf fmt "prov_fn(%a)" (pp_fun_decl_ref env) fn_ref
-  | ProvUnknown -> pp_string fmt "prov_unknown"
+  | ProvGlobal gref -> Format.fprintf fmt "&%a" (pp_global_decl_ref env) gref
+  | ProvFunction fn_ref -> Format.fprintf fmt "&%a" (pp_fun_decl_ref env) fn_ref
+  | ProvUnknown -> pp_string fmt "&?"
 
 and pp_byte (env : fmt_env) (fmt : Format.formatter) (cv : byte) : unit =
   match cv with
   | Uninit -> pp_string fmt "--"
-  | Value b -> Format.fprintf fmt "%#4x" b
+  | Value b -> Format.fprintf fmt "0x%02x" b
   | Provenance (p, i) -> Format.fprintf fmt "%a[%d]" (pp_provenance env) p i
 
 and pp_unsizing_metadata (env : fmt_env) (fmt : Format.formatter)

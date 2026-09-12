@@ -1,0 +1,131 @@
+# Final LLBC before serialization:
+
+// Full name: core::mem::maybe_uninit::MaybeUninit::<[u8; 4usize]>
+#[lang_item(MaybeUninit)]
+pub opaque type MaybeUninit::<[u8; 4usize]>
+
+struct () {}
+
+// Full name: test_crate::{promoted_const}
+static {promoted_const}: MaybeUninit::<[u8; 4usize]> = RawMemory(0x01, 0x00, 0x00, 0x00)
+
+// Full name: test_crate::U
+union U {
+  a: u32,
+  b: f64,
+  c: u8,
+  p: &'static u32,
+}
+
+// Full name: test_crate::Z
+static Z: u32 = 5u32
+
+// Full name: test_crate::A
+static A: U = RawMemory(0x01, 0x00, 0x00, 0x00, --, --, --, --)
+
+// Full name: test_crate::B
+static B: U = RawMemory(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f)
+
+// Full name: test_crate::C
+static C: U = RawMemory(0x01, --, --, --, --, --, --, --)
+
+// Full name: test_crate::P1
+static P1: U = RawMemory(&Z[0], &Z[1], &Z[2], &Z[3], &Z[4], &Z[5], &Z[6], &Z[7])
+
+// Full name: test_crate::P2
+static P2: U = RawMemory(&{promoted_const}[0], &{promoted_const}[1], &{promoted_const}[2], &{promoted_const}[3], &{promoted_const}[4], &{promoted_const}[5], &{promoted_const}[6], &{promoted_const}[7])
+
+// Full name: test_crate::Same
+union Same {
+  a: u32,
+  b: u32,
+}
+
+// Full name: test_crate::SAME
+static SAME: Same = RawMemory(0x07, 0x00, 0x00, 0x00)
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let _1: &'1 U; // anonymous local
+    let _2: &'2 U; // anonymous local
+    let _3: &'3 U; // anonymous local
+    let _4: &'4 U; // anonymous local
+    let _5: &'5 U; // anonymous local
+    let _6: &'6 U; // anonymous local
+    let _7: &'7 U; // anonymous local
+    let _8: &'8 U; // anonymous local
+    let _9: &'9 U; // anonymous local
+    let _10: &'10 U; // anonymous local
+    let _11: &'12 Same; // anonymous local
+    let _12: &'13 Same; // anonymous local
+    let _13: &'14 U; // anonymous local
+    let _14: &'15 U; // anonymous local
+    let _15: &'16 U; // anonymous local
+    let _16: &'17 U; // anonymous local
+    let _17: &'18 U; // anonymous local
+    let _18: &'19 Same; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_13)
+    _13 = &A
+    _2 = move _13
+    _1 = &(*_2)
+    storage_dead(_1)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_14)
+    _14 = &B
+    _4 = move _14
+    _3 = &(*_4)
+    storage_dead(_3)
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_15)
+    _15 = &C
+    _6 = move _15
+    _5 = &(*_6)
+    storage_dead(_5)
+    storage_live(_7)
+    storage_live(_8)
+    storage_live(_16)
+    _16 = &P1
+    _8 = move _16
+    _7 = &(*_8)
+    storage_dead(_7)
+    storage_live(_9)
+    storage_live(_10)
+    storage_live(_17)
+    _17 = &P2
+    _10 = move _17
+    _9 = &(*_10)
+    storage_dead(_9)
+    storage_live(_11)
+    storage_live(_12)
+    storage_live(_18)
+    _18 = &SAME
+    _12 = move _18
+    _11 = &(*_12)
+    storage_dead(_11)
+    _0 = ()
+    storage_dead(_12)
+    storage_dead(_10)
+    storage_dead(_8)
+    storage_dead(_6)
+    storage_dead(_4)
+    storage_dead(_2)
+    storage_dead(_18)
+    storage_dead(_17)
+    storage_dead(_16)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_13)
+    return
+}
+
+
+
