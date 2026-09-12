@@ -305,6 +305,7 @@ impl SizeExpr {
                         }
                     }
                     SizeExprKind::Plus(left, right) => {
+                        // Flatten nested sums.
                         fn flatten_addition(value: &SizeExpr, values: &mut Vec<SizeExpr>) {
                             if let SizeExprKind::Plus(left, right) = value.kind() {
                                 flatten_addition(left, values);
@@ -313,31 +314,28 @@ impl SizeExpr {
                                 values.push(value.clone());
                             }
                         }
-
-                        // Collect constants at the start and left-associate the remaining sum.
                         let mut values = Vec::new();
                         flatten_addition(left, &mut values);
                         flatten_addition(right, &mut values);
 
-                        let mut constant = 0u128;
-                        values.retain(|value| {
-                            if let Some(value) = value.as_usize() {
-                                constant = constant.strict_add(value);
-                                false
-                            } else {
-                                true
-                            }
-                        });
-
-                        if constant != 0 || values.is_empty() {
+                        // Sum all the constants and leave the sum at the start.
+                        if let Some(constant) = fold_concrete_values(&mut values, u128::strict_add)
+                            && constant != 0
+                        {
                             values.insert(0, SizeExpr::from_usize(constant));
                         }
-                        values
-                            .into_iter()
-                            .reduce(|left, right| SizeExprKind::Plus(left, right).into_expr())
-                            .unwrap()
-                            .kind()
-                            .clone()
+                        if values.len() == 1 {
+                            values.pop().unwrap().kind().clone()
+                        } else if values.is_empty() {
+                            SizeExprKind::zero()
+                        } else {
+                            values
+                                .into_iter()
+                                .reduce(|left, right| SizeExprKind::Plus(left, right).into_expr())
+                                .unwrap()
+                                .kind()
+                                .clone()
+                        }
                     }
                     SizeExprKind::Scale(base, multiplier) => {
                         match (base.as_usize(), multiplier.as_usize_literal()) {
