@@ -486,3 +486,6 @@ test_crate::UninhabitedUntagged:
     ],
     repr(Rust),
   }
+
+test_crate::PolyReprC:
+  none

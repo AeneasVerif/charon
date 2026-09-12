@@ -210,3 +210,9 @@ enum UninhabitedUntagged {
     A(char, !),
     B,
 }
+
+#[repr(C)]
+struct PolyReprC<T> {
+    hd: usize,
+    tl: T,
+}
