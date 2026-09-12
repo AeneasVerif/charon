@@ -868,10 +868,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     let method_item_meta =
                         self.translate_item_meta(&item_def, &item_src, method_name, method_opacity);
                     // By default we only enqueue required methods (those that don't have a default
-                    // impl). If the trait is transparent, we enqueue all its methods.
+                    // impl). If the trait is transparent, we enqueue all its methods. In mono we skip
+                    // translating trait methods (unless they are directly called).
                     if self.options.translate_all_methods
-                        || item_meta.opacity.is_transparent()
-                        || !hax_item.has_value
+                        || (!self.t_ctx.options.monomorphize_with_hax
+                            && (item_meta.opacity.is_transparent() || !hax_item.has_value))
                     {
                         self.mark_method_as_used(trait_decl_id, trait_method_id);
                     }
@@ -1125,7 +1126,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let mut methods: IndexMap<TraitMethodId, _> = IndexMap::new();
 
         // In mono mode, we do not translate any associated items in trait impl.
-        if self.monomorphize() {
+        if self.monomorphize() || self.is_poly_in_mono(&self.item_src) {
             return Ok(TraitImpl {
                 def_id,
                 item_meta,
@@ -1162,8 +1163,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     let bound_fn_ref = match &impl_item.value {
                         Some(value) => {
                             // By default we only enqueue required methods (those that don't have a default
-                            // impl). If the impl is transparent, we enqueue all the implemented methods.
-                            if item_meta.opacity.is_transparent() {
+                            // impl). If the impl is transparent, we enqueue all the implemented methods (except
+                            // in mono).
+                            if item_meta.opacity.is_transparent()
+                                && !self.t_ctx.options.monomorphize_with_hax
+                            {
                                 self.mark_method_as_used(trait_id, trait_method_id);
                             }
                             self.translate_item_binder(

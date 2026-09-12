@@ -408,6 +408,11 @@ impl<'tcx> TranslateCtx<'tcx> {
         let _: Option<ItemId> = self.register_and_enqueue(&None, item_src);
     }
 
+    /// Whether this item is polymorphic, while we are in monomorphic mode.
+    pub(crate) fn is_poly_in_mono(&self, item_src: &TransItemSource) -> bool {
+        self.options.monomorphize_with_hax && matches!(item_src.item, RustcItem::Poly(..))
+    }
+
     pub(crate) fn register_no_enqueue<T: TryFrom<ItemId>>(
         &mut self,
         dep_src: &Option<DepSource>,
@@ -739,7 +744,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let mono =
             self.monomorphize() && (kind.is_for_trait() || !self.item_src.kind.is_for_trait());
         let item_src = TransItemSource::from_item(&item, kind, mono);
-        if enqueue {
+        if enqueue && !self.is_poly_in_mono(&self.item_src) {
             self.register_and_enqueue(span, item_src)
         } else {
             self.register_no_enqueue(span, &item_src)
