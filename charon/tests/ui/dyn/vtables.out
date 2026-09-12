@@ -682,7 +682,7 @@ where
     _0 = ()
     storage_live(_4)
     _4 = concretize<&'_0 (dyn Both32And64 + '1), &'_0 Self>(move _1)
-    _0 = test_crate::Both32And64::both_operate<'_0, '_1, '_2, Self>[TraitClause0](move _4, move _2, move _3)
+    _0 = TraitClause0::both_operate<'_0, '_1, '_2>(move _4, move _2, move _3)
     ↳⚡ storage_dead(_4)
         storage_dead(_3)
         storage_dead(_2)

@@ -111,7 +111,8 @@ pub enum TransImplSource {
     /// A fictitious `impl Destruct for T` that contains the drop glue code for the given ADT or
     /// closure. The `DefId` is that of the ADT or closure.
     ImplicitDestruct,
-    /// A marker-trait implementation. The `DefId` is that of the trait.
+    /// A builtin impl with no item of its own (marker traits, `Fn*` for function pointers). The
+    /// `DefId` is that of the trait; its methods, if any, are called through the `Self` clause.
     Marker,
 }
 
@@ -181,8 +182,8 @@ impl TransItemSource {
             | TransItemSourceKind::VTableMethod(TransImplSource::Callable(kind)) => {
                 TransItemSourceKind::TraitImpl(TransImplSource::Callable(kind))
             }
-            TransItemSourceKind::FnPointerMethod(..) => TransItemSourceKind::TraitDecl,
-            TransItemSourceKind::DropGlueMethod(TransImplSource::Marker)
+            TransItemSourceKind::FnPointerMethod(..)
+            | TransItemSourceKind::DropGlueMethod(TransImplSource::Marker)
             | TransItemSourceKind::VTableInstance(TransImplSource::Marker)
             | TransItemSourceKind::VTableInstanceInitializer(TransImplSource::Marker)
             | TransItemSourceKind::VTableDropShim(TransImplSource::Marker) => {
@@ -1043,14 +1044,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         kind: TransItemSourceKind,
         enqueue: bool,
     ) -> Result<RegionBinder<FnPtr>, Error> {
-        if let Some(fn_ptr) = self.translate_callable_method_fn_ptr(span, item)? {
-            return Ok(fn_ptr);
-        }
-        if let Some(fn_ptr) = self.translate_fn_pointer_method_fn_ptr(span, item)? {
-            return Ok(fn_ptr);
-        }
-        if let Some(fn_ptr) = self.translate_method_decl_fn_ptr(span, item)? {
-            return Ok(fn_ptr);
+        if kind == TransItemSourceKind::Fun {
+            if let Some(fn_ptr) = self.translate_callable_method_fn_ptr(span, item)? {
+                return Ok(fn_ptr);
+            }
+            if let Some(fn_ptr) = self.translate_fn_pointer_method_fn_ptr(span, item)? {
+                return Ok(fn_ptr);
+            }
+            if let Some(fn_ptr) = self.translate_method_decl_fn_ptr(span, item)? {
+                return Ok(fn_ptr);
+            }
         }
 
         let late_bound = self.hax_def(item)?.late_bound();
