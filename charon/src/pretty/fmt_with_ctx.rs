@@ -1224,7 +1224,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Layout {
             ctx.format_current_variant_name(f, variant_id)?;
             write!(f, ": ")?;
             match layout {
-                Some(layout) => writeln!(f, "{},", layout.with_ctx(ctx))?,
+                Some(layout) => writeln!(f, "{},", layout.with_ctx(&(ctx, variant_id)))?,
                 None => writeln!(f, "none,")?,
             }
         }
@@ -2962,22 +2962,25 @@ impl<C: AstFormatter> FmtWithCtx<C> for Variant {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for VariantLayout {
-    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let offsets = self
-            .field_offsets
-            .iter()
-            .map(|offset| offset.with_ctx(ctx))
-            .format(", ");
+impl<C: AstFormatter> FmtWithCtx<(&C, VariantId)> for VariantLayout {
+    fn fmt_with_ctx(
+        &self,
+        &(ctx, variant_id): &(&C, VariantId),
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
+        writeln!(f, "{{")?;
+        for (field_id, offset) in self.field_offsets.iter_enumerated() {
+            write!(f, "      offset of ")?;
+            ctx.format_current_field_name(f, variant_id, field_id)?;
+            writeln!(f, ": {},", offset.with_ctx(ctx))?;
+        }
         let tagger = self
             .tagger
             .iter()
             .map(|(offset, value)| format!("{offset} := {value}"))
             .format(", ");
-        write!(
-            f,
-            "{{ offsets: [{offsets}], inhabited: {}, tagger: [{tagger}] }}",
-            self.inhabited.with_ctx(ctx)
-        )
+        writeln!(f, "      inhabited: {},", self.inhabited.with_ctx(ctx))?;
+        writeln!(f, "      tagger: [{tagger}],")?;
+        write!(f, "    }}")
     }
 }

@@ -159,6 +159,32 @@ impl SizeExpr {
                 .reduce(f)
         }
 
+        fn peel_at_least(value: &SizeExpr) -> (SizeExpr, bool) {
+            if let SizeExprKind::AtLeast(inner) = value.kind() {
+                (inner.clone(), true)
+            } else {
+                (value.clone(), false)
+            }
+        }
+
+        fn rewrap_at_least(kind: SizeExprKind, at_least: bool) -> SizeExprKind {
+            if at_least {
+                SizeExprKind::AtLeast(kind.into_expr())
+            } else {
+                kind
+            }
+        }
+
+        fn as_usize_bound(value: &SizeExpr) -> Option<(u128, bool)> {
+            match value.kind() {
+                SizeExprKind::Constant(constant) => {
+                    constant.as_usize_literal().map(|value| (value, true))
+                }
+                SizeExprKind::AtLeast(inner) => inner.as_usize().map(|value| (value, false)),
+                _ => None,
+            }
+        }
+
         fn is_aligned_to(value: &SizeExpr, align: u128) -> bool {
             if align == 0 {
                 return false;
@@ -260,8 +286,11 @@ impl SizeExpr {
                         guaranteed.kind().clone()
                     }
                     SizeExprKind::Max(values) => {
+                        let mut at_least = false;
                         // Flatten nested operations.
                         for val in std::mem::take(values) {
+                            let (val, val_at_least) = peel_at_least(&val);
+                            at_least |= val_at_least;
                             match val.kind() {
                                 SizeExprKind::Max(nested) => values.extend(nested.iter().cloned()),
                                 _ => values.push(val),
@@ -274,13 +303,16 @@ impl SizeExpr {
                             // Zero is the identity of `Max` so we don't push in that case.
                             values.push(SizeExpr::from_usize(value));
                         }
-                        if values.len() == 1 {
+                        let kind = if values.len() == 1 {
                             values.pop().unwrap().kind().clone()
                         } else if values.is_empty() {
                             SizeExprKind::zero()
+                        } else if at_least {
+                            SizeExprKind::Max(std::mem::take(values))
                         } else {
                             return;
-                        }
+                        };
+                        rewrap_at_least(kind, at_least)
                     }
                     SizeExprKind::Min(values) => {
                         // Flatten nested operations.
@@ -290,13 +322,26 @@ impl SizeExpr {
                                 _ => values.push(val),
                             }
                         }
-                        // Get the min of the concrete values.
-                        if let Some(value) = fold_concrete_values(values, std::cmp::min) {
+                        // Get the min of the concrete values. If the smallest value is an exact
+                        // value, it makes the whole `min` exact. Otherwise, we only get an
+                        // `AtLeast` lower bound.
+                        if let Some((value, exact)) = values
+                            .extract_if(.., |value| as_usize_bound(value).is_some())
+                            .map(|value| as_usize_bound(&value).unwrap())
+                            .reduce(|(left, left_exact), (right, right_exact)| {
+                                match left.cmp(&right) {
+                                    std::cmp::Ordering::Less => (left, left_exact),
+                                    std::cmp::Ordering::Greater => (right, right_exact),
+                                    std::cmp::Ordering::Equal => (left, left_exact || right_exact),
+                                }
+                            })
+                        {
                             // Zero is absorbing for `Min`.
                             if value == 0 {
                                 values.clear();
                             }
-                            values.push(SizeExpr::from_usize(value));
+                            let value = SizeExprKind::from_usize(value);
+                            values.push(rewrap_at_least(value, !exact).into_expr());
                         }
                         if values.len() == 1 {
                             values.pop().unwrap().kind().clone()
@@ -306,17 +351,27 @@ impl SizeExpr {
                     }
                     SizeExprKind::Plus(left, right) => {
                         // Flatten nested sums.
-                        fn flatten_addition(value: &SizeExpr, values: &mut Vec<SizeExpr>) {
-                            if let SizeExprKind::Plus(left, right) = value.kind() {
-                                flatten_addition(left, values);
-                                flatten_addition(right, values);
-                            } else {
-                                values.push(value.clone());
+                        fn flatten_addition(
+                            value: &SizeExpr,
+                            values: &mut Vec<SizeExpr>,
+                            at_least: &mut bool,
+                        ) {
+                            match value.kind() {
+                                SizeExprKind::Plus(left, right) => {
+                                    flatten_addition(left, values, at_least);
+                                    flatten_addition(right, values, at_least);
+                                }
+                                SizeExprKind::AtLeast(inner) => {
+                                    *at_least = true;
+                                    flatten_addition(inner, values, at_least);
+                                }
+                                _ => values.push(value.clone()),
                             }
                         }
                         let mut values = Vec::new();
-                        flatten_addition(left, &mut values);
-                        flatten_addition(right, &mut values);
+                        let mut at_least = false;
+                        flatten_addition(left, &mut values, &mut at_least);
+                        flatten_addition(right, &mut values, &mut at_least);
 
                         // Sum all the constants and leave the sum at the start.
                         if let Some(constant) = fold_concrete_values(&mut values, u128::strict_add)
@@ -324,7 +379,7 @@ impl SizeExpr {
                         {
                             values.insert(0, SizeExpr::from_usize(constant));
                         }
-                        if values.len() == 1 {
+                        let kind = if values.len() == 1 {
                             values.pop().unwrap().kind().clone()
                         } else if values.is_empty() {
                             SizeExprKind::zero()
@@ -335,7 +390,8 @@ impl SizeExpr {
                                 .unwrap()
                                 .kind()
                                 .clone()
-                        }
+                        };
+                        rewrap_at_least(kind, at_least)
                     }
                     SizeExprKind::Scale(base, multiplier) => {
                         match (base.as_usize(), multiplier.as_usize_literal()) {
@@ -343,6 +399,11 @@ impl SizeExpr {
                             (_, Some(1)) => base.kind().clone(),
                             (Some(base), Some(multiplier)) => {
                                 SizeExprKind::from_usize(base.strict_mul(multiplier))
+                            }
+                            _ if let (base, true) = peel_at_least(base) => {
+                                let mut kind = SizeExprKind::Scale(base, multiplier.clone());
+                                self.visit(&mut kind);
+                                rewrap_at_least(kind, true)
                             }
                             _ => return,
                         }
@@ -374,6 +435,15 @@ impl SizeExpr {
                                 self.visit(&mut new);
                                 new
                             }
+                            _ if let (base, base_at_least) = peel_at_least(base)
+                                && let (target_align, align_at_least) =
+                                    peel_at_least(target_align)
+                                && (base_at_least || align_at_least) =>
+                            {
+                                let mut kind = SizeExprKind::AlignTo { base, target_align };
+                                self.visit(&mut kind);
+                                rewrap_at_least(kind, true)
+                            }
                             _ => return,
                         }
                     }
@@ -395,7 +465,14 @@ impl SizeExpr {
                             return;
                         }
                     }
-                    SizeExprKind::AtLeast(_) | SizeExprKind::FromMetadata(_) => return,
+                    SizeExprKind::AtLeast(inner) => {
+                        if inner.kind().is_at_least() {
+                            inner.kind().clone()
+                        } else {
+                            return;
+                        }
+                    }
+                    SizeExprKind::FromMetadata(_) => return,
                 };
             }
         }
@@ -670,6 +747,50 @@ mod tests {
             SizeExprKind::FromMetadata(MetadataValue::DynSize)
         ));
         assert_eq!(min.as_usize(), Some(0));
+    }
+
+    #[test]
+    fn normalize_lower_bounds() {
+        let normalize = |kind: SizeExprKind| kind.into_expr().normalize(None, None, false);
+        let at_least = |value| SizeExprKind::AtLeast(SizeExpr::from_usize(value)).into_expr();
+        let dyn_size = SizeExprKind::FromMetadata(MetadataValue::DynSize).into_expr();
+
+        assert_eq!(
+            normalize(SizeExprKind::Max(vec![at_least(2), dyn_size.clone()])),
+            SizeExprKind::AtLeast(
+                SizeExprKind::Max(vec![dyn_size.clone(), SizeExpr::from_usize(2)]).into_expr()
+            )
+            .into_expr()
+        );
+        assert_eq!(
+            normalize(SizeExprKind::Plus(at_least(2), SizeExpr::from_usize(3))),
+            at_least(5)
+        );
+        assert_eq!(
+            normalize(SizeExprKind::Scale(at_least(2), ConstantExpr::mk_usize(3))),
+            at_least(6)
+        );
+        assert_eq!(
+            normalize(SizeExprKind::AlignTo {
+                base: at_least(5),
+                target_align: SizeExpr::from_usize(4),
+            }),
+            at_least(8)
+        );
+        assert_eq!(
+            normalize(SizeExprKind::Min(vec![
+                at_least(5),
+                SizeExpr::from_usize(3)
+            ])),
+            SizeExpr::from_usize(3)
+        );
+        assert_eq!(
+            normalize(SizeExprKind::Min(vec![
+                at_least(3),
+                SizeExpr::from_usize(5)
+            ])),
+            at_least(3)
+        );
     }
 
     #[test]
