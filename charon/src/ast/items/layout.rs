@@ -398,7 +398,7 @@ impl Layout {
     pub fn is_variant_always_inhabited(&self, variant_id: VariantId) -> bool {
         self.variant_layouts[variant_id]
             .as_ref()
-            .is_none_or(|layout| layout.inhabited.always_true())
+            .is_some_and(|layout| layout.inhabited.always_true())
     }
 
     pub fn is_c_repr(&self) -> bool {
