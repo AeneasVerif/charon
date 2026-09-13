@@ -165,7 +165,7 @@ pub trait AstFormatter: Sized {
                 (TypeDeclKind::Enum(variants), Some(variant_id)) => {
                     Some(&variants[variant_id].fields[field_id].name)
                 }
-                (TypeDeclKind::Struct(fields) | TypeDeclKind::Union(fields), None) => {
+                (TypeDeclKind::Struct(fields) | TypeDeclKind::Union(fields), _) => {
                     Some(&fields[field_id].name)
                 }
                 _ => None,
@@ -179,6 +179,12 @@ pub trait AstFormatter: Sized {
             write!(f, "{field_id}")
         }
     }
+    fn format_current_field_name(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        _variant_id: VariantId,
+        field_id: FieldId,
+    ) -> fmt::Result;
 }
 
 /// Context for formatting.
@@ -268,6 +274,18 @@ impl<'c> AstFormatter for FmtCtx<'c> {
         match self.current_type {
             Some(type_id) => self.format_enum_variant_name(f, type_id, variant_id),
             None => write!(f, "{variant_id}"),
+        }
+    }
+
+    fn format_current_field_name(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        variant_id: VariantId,
+        field_id: FieldId,
+    ) -> fmt::Result {
+        match self.current_type {
+            Some(type_id) => self.format_field_name(f, type_id, Some(variant_id), field_id),
+            None => write!(f, "{field_id}"),
         }
     }
 
