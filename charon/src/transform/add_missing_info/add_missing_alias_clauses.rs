@@ -4,12 +4,14 @@
 
 use crate::ast::*;
 use crate::transform::{TransformCtx, ctx::TransformPass};
+use rustc_hash::FxHashMap as HashMap;
 
 #[derive(Visitor)]
 struct ClauseExtractor<'a> {
     params: &'a mut GenericParams,
     span: Span,
     binder_stack: BindingStack<GenericParams>,
+    extracted_clauses: HashMap<PolyTraitDeclRef, TraitClauseId>,
 }
 
 impl<'a> ClauseExtractor<'a> {
@@ -18,6 +20,7 @@ impl<'a> ClauseExtractor<'a> {
             binder_stack: BindingStack::new(params.clone()),
             params,
             span,
+            extracted_clauses: HashMap::default(),
         }
     }
 
@@ -104,12 +107,18 @@ impl VisitAstMut for ClauseExtractor<'_> {
         if matches!(tref.kind, TraitRefKind::Unknown(_))
             && let Some(trait_) = self.extract_trait_clause(tref.trait_decl_ref.clone())
         {
-            let clause_id = self.params.trait_clauses.push_with(|clause_id| TraitParam {
-                clause_id,
-                span: Some(self.span),
-                origin: PredicateOrigin::WhereClauseOnType,
-                trait_,
-            });
+            let clause_id = if let Some(clause_id) = self.extracted_clauses.get(&trait_) {
+                *clause_id
+            } else {
+                let clause_id = self.params.trait_clauses.push_with(|clause_id| TraitParam {
+                    clause_id,
+                    span: Some(self.span),
+                    origin: PredicateOrigin::WhereClauseOnType,
+                    trait_: trait_.clone(),
+                });
+                self.extracted_clauses.insert(trait_, clause_id);
+                clause_id
+            };
             tref.kind =
                 TraitRefKind::Clause(DeBruijnVar::bound(self.binder_stack.depth(), clause_id));
         }
@@ -120,8 +129,10 @@ pub struct Transform;
 impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         for tdecl in &mut ctx.translated.type_decls {
-            if let TypeDeclKind::Alias(ty) = &mut tdecl.kind {
-                ClauseExtractor::new(&mut tdecl.generics, tdecl.item_meta.span).visit(ty);
+            if matches!(tdecl.kind, TypeDeclKind::Alias(_)) {
+                let mut extractor = ClauseExtractor::new(&mut tdecl.generics, tdecl.item_meta.span);
+                extractor.visit(&mut tdecl.kind);
+                extractor.visit(&mut tdecl.layout);
             }
         }
     }

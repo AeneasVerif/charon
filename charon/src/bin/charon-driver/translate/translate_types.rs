@@ -510,10 +510,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     /// Translate a type layout.
     ///
-    /// Translates the layout as queried from rustc into
-    /// the more restricted [`Layout`].
+    /// Translates the layout as queried from rustc into the more restricted [`Layout`].
     #[tracing::instrument(skip(self))]
-    pub fn translate_layout(&mut self, span: Span, def: &hax::FullDef<'tcx>) -> Option<Layout> {
+    pub fn translate_layout(
+        &mut self,
+        span: Span,
+        def: &hax::FullDef<'tcx>,
+        kind: &TypeDeclKind,
+    ) -> Option<Layout> {
         let item = def.this();
         use rustc_abi as r_abi;
 
@@ -630,14 +634,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let pseudo_input = ty_env.as_query_input(ty);
         let ptr_size = self.translated.the_target_information().target_pointer_size;
 
-        // If layout computation returns an error, we return `None`.
-        let ty_layout = tcx.layout_of(pseudo_input).ok()?;
-        let layout_cx = ty::layout::LayoutCx::new(tcx, ty_env);
-        let (size, align) = chosen_size_and_align(&layout_cx, ty_layout)?;
-        let size = Size::from_expr(size.normalize(Some(&self.translated), None, false));
-        let align = Size::from_expr(align.normalize(Some(&self.translated), None, false));
-        let layout = ty_layout.layout;
-
+        let repr = match &def.kind {
+            hax::FullDefKind::Adt { repr: hax_repr, .. } => self.translate_repr_options(hax_repr),
+            _ => ReprOptions::default(),
+        };
+        let ty_layout = match tcx.layout_of(pseudo_input) {
+            Ok(layout) => layout,
+            Err(_) => return Layout::for_type(&self.translated, kind, repr),
+        };
         let rustc_variant_inhabited = |id| match ty.kind() {
             ty::Adt(adt, args) if adt.is_enum() => adt
                 .variant(id)
@@ -645,6 +649,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 .instantiate(tcx, args),
             _ => ty.inhabited_predicate(tcx),
         };
+        let inhabited = self
+            .translate_inhabited_predicate(span, ty.inhabited_predicate(tcx))
+            .ok()?;
+        let layout_cx = ty::layout::LayoutCx::new(tcx, ty_env);
+        let (size, align) = chosen_size_and_align(&layout_cx, ty_layout)?;
+        let size = Size::from_expr(size.normalize(Some(&self.translated), None, false));
+        let align = Size::from_expr(align.normalize(Some(&self.translated), None, false));
+        let layout = ty_layout.layout;
+
         // Build the discriminator tree and variant layouts.
         let (discriminator, variant_layouts) = match layout.variants() {
             r_abi::Variants::Multiple {
@@ -851,15 +864,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 (Some(Discriminator::trivial(variant_id)), variant_layouts)
             }
             r_abi::Variants::Empty => (None, IndexVec::new()),
-        };
-
-        let inhabited = self
-            .translate_inhabited_predicate(span, ty.inhabited_predicate(tcx))
-            .ok()?;
-
-        let repr = match &def.kind {
-            hax::FullDefKind::Adt { repr: hax_repr, .. } => self.translate_repr_options(hax_repr),
-            _ => ReprOptions::default(),
         };
 
         Some(Layout {
