@@ -261,10 +261,7 @@ impl Display for BinOp {
 impl<C: AstFormatter> FmtWithCtx<C> for llbc::Block {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for st in &self.statements {
-            write!(f, "{}", st.with_ctx(ctx))?;
-            if !st.kind.is_nop() {
-                writeln!(f)?;
-            }
+            st.fmt_with_ctx(ctx, f)?;
         }
         Ok(())
     }
@@ -294,7 +291,7 @@ fn fmt_llbc_unwind_block<C: AstFormatter>(
 impl<C: AstFormatter> FmtWithCtx<C> for ullbc::BlockData {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for statement in &self.statements {
-            writeln!(f, "{};", statement.with_ctx(ctx))?;
+            statement.fmt_with_ctx(ctx, f)?;
         }
         write!(f, "{};", self.terminator.with_ctx(ctx))?;
         Ok(())
@@ -2148,6 +2145,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let tab = ctx.indent();
         use ullbc::StatementKind;
+        if ctx.hide_storage_statements()
+            && (self.kind.is_storage_live() || self.kind.is_storage_dead())
+        {
+            return Ok(());
+        }
         for line in &self.comments_before {
             writeln!(f, "{tab}// {line}")?;
         }
@@ -2182,7 +2184,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
                 )
             }
             StatementKind::Nop => write!(f, "{tab}nop"),
-        }
+        }?;
+        writeln!(f, ";")
     }
 }
 
@@ -2190,6 +2193,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let tab = ctx.indent();
         use llbc::StatementKind;
+        if ctx.hide_storage_statements()
+            && (self.kind.is_storage_live() || self.kind.is_storage_dead())
+        {
+            return Ok(());
+        }
         for line in &self.comments_before {
             writeln!(f, "{tab}// {line}")?;
         }
@@ -2354,7 +2362,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             }
             StatementKind::Error(s) => write!(f, "@ERROR({})", s),
             StatementKind::Nop => unreachable!(),
-        }
+        }?;
+        writeln!(f)
     }
 }
 
@@ -2881,6 +2890,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
             .fmt_item_intro(f, ctx, keyword, self.def_id)?;
 
         let ctx = &ctx.set_generics(&self.generics);
+        let ctx = &ctx.set_current_type(self.def_id);
         let (params, preds) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         write!(f, "{params}{preds}")?;
 
@@ -2919,7 +2929,25 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
             TypeDeclKind::Alias(ty) => write!(f, " = {}", ty.with_ctx(ctx)),
             TypeDeclKind::Opaque => write!(f, ""),
             TypeDeclKind::Error(msg) => write!(f, " = ERROR({msg})"),
+        }?;
+
+        if ctx.include_layouts() {
+            match self.layout.len() {
+                0 => write!(f, "\n\n// Layout: none")?,
+                1 => {
+                    let layout = self.layout.values().next().unwrap();
+                    write!(f, "\n\n{}", layout.with_ctx(ctx))?;
+                }
+                _ => {
+                    for (target, layout) in &self.layout {
+                        write!(f, "\n\n// Layout for target `{target}`:\n")?;
+                        write!(f, "{}", layout.with_ctx(ctx))?;
+                    }
+                }
+            }
         }
+
+        Ok(())
     }
 }
 

@@ -45,8 +45,35 @@ fn charon_pretty_print() -> Result<()> {
                     stdout.contains(search),
                     "Output of pretty-printing {llbc} is:\n{stdout:?}\nIt doesn't contain {search:?}."
                 );
+                ensure!(!stdout.contains("\n\nLayout {\n  size:"));
+                ensure!(stdout.contains("storage_live("));
+                ensure!(stdout.contains("storage_dead("));
                 Ok(())
-            })
+            })?;
+
+            charon(
+                &["pretty-print", "--include-layouts", llbc],
+                ".",
+                |stdout, _| {
+                    let search = "pub enum AB {\n  A,\n  B,\n}\n\nLayout {\n  size: 1usize";
+                    ensure!(
+                        stdout.contains(search),
+                        "Output of pretty-printing {llbc} with layouts is:\n{stdout:?}\nIt doesn't contain {search:?}."
+                    );
+                    Ok(())
+                },
+            )?;
+
+            charon(
+                &["pretty-print", "--hide-storage-statements", llbc],
+                ".",
+                |stdout, _| {
+                    ensure!(stdout.contains("pub fn index_array_shared"));
+                    ensure!(!stdout.contains("storage_live("));
+                    ensure!(!stdout.contains("storage_dead("));
+                    Ok(())
+                },
+            )
         },
     )
 }

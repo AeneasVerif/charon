@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
 
 use crate::ast::*;
-use crate::formatter::{FmtCtx, IntoFormatter};
+use crate::formatter::{AstFormatter, FmtCtx, IntoFormatter};
 use crate::ids::{IndexMap, IndexVec};
 use crate::pretty::FmtWithCtx;
 use crate::utils::serialize_map_to_array::SeqHashMapToArray;
@@ -273,6 +273,12 @@ impl TranslatedCrate {
 impl fmt::Display for TranslatedCrate {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let fmt: &FmtCtx = &self.into_fmt();
+        self.fmt_with_ctx(fmt, f)
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for TranslatedCrate {
+    fn fmt_with_ctx(&self, fmt: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.ordered_decls {
             None => {
                 // We do simple: types, globals, traits, functions
@@ -295,7 +301,13 @@ impl fmt::Display for TranslatedCrate {
             Some(ordered_decls) => {
                 for gr in ordered_decls {
                     for id in gr.get_ids() {
-                        writeln!(f, "{}\n", fmt.format_decl_id(id))?
+                        match self.get_item(id) {
+                            Some(decl) => writeln!(f, "{}\n", decl.with_ctx(fmt))?,
+                            None => {
+                                let name = self.item_short_name(id).with_ctx(fmt);
+                                writeln!(f, "Missing decl: {id:?} ({name})\n")?;
+                            }
+                        }
                     }
                 }
             }
