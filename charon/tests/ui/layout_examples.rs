@@ -1,5 +1,6 @@
 //@ no-check-output
 //@ no-default-options
+//@ charon-args=--include=core::result::Result
 #![feature(never_type)]
 
 use std::num::NonZero;
