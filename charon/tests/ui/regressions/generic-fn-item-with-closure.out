@@ -1,0 +1,81 @@
+error: Type error after translation:
+       Mismatched type generics:
+       target: {impl#9}::call_once
+       expected: [T]
+            got: [T, i8, extern "rust-call" fn(()), ()]
+       Visitor stack:
+         charon_lib::ast::items::item_ids::FunDeclRef
+         charon_lib::ast::type_level::Binder<charon_lib::ast::items::item_ids::FunDeclRef>
+         charon_lib::ids::index_map::IndexMap<charon_lib::ast::items::trait_decl::TraitMethodId, charon_lib::ast::type_level::Binder<charon_lib::ast::items::item_ids::FunDeclRef>>
+         charon_lib::ast::items::trait_impl::TraitImpl
+       Binding stack (depth 2):
+         0: 
+         1: <T, TraitClause0: (missing(@TypeBound(1, 0)): @TraitDecl0)>
+ --> tests/ui/regressions/generic-fn-item-with-closure.rs:2:1
+  |
+2 | / pub fn identity<T>(value: T) -> T {
+3 | |     let _closure = || ();
+4 | |     value
+5 | | }
+  | |_^
+
+error: Type error after translation:
+       Mismatched type generics:
+       target: {impl FnOnce<(T,)> for identity<T>[TraitClause0]}
+       expected: [T]
+            got: [T, i8, extern "rust-call" fn(()), ()]
+       Visitor stack:
+         charon_lib::ast::items::item_ids::TraitImplRef
+         charon_lib::ast::items::fun_decl::FunSource
+         charon_lib::ast::items::fun_decl::FunDecl
+       Binding stack (depth 1):
+         0: <T, TraitClause0: (missing(@TypeBound(1, 0)): @TraitDecl0)>
+ --> tests/ui/regressions/generic-fn-item-with-closure.rs:2:1
+  |
+2 | / pub fn identity<T>(value: T) -> T {
+3 | |     let _closure = || ();
+4 | |     value
+5 | | }
+  | |_^
+
+error: Type error after transformations:
+       Mismatched type generics:
+       target: {impl#9}::call_once
+       expected: [T]
+            got: [T, i8, extern "rust-call" fn(()), ()]
+       Visitor stack:
+         charon_lib::ast::items::item_ids::FunDeclRef
+         charon_lib::ast::type_level::Binder<charon_lib::ast::items::item_ids::FunDeclRef>
+         charon_lib::ids::index_map::IndexMap<charon_lib::ast::items::trait_decl::TraitMethodId, charon_lib::ast::type_level::Binder<charon_lib::ast::items::item_ids::FunDeclRef>>
+         charon_lib::ast::items::trait_impl::TraitImpl
+       Binding stack (depth 2):
+         0: 
+         1: <T, TraitClause0: (missing(@TypeBound(1, 0)): @TraitDecl0)>
+ --> tests/ui/regressions/generic-fn-item-with-closure.rs:2:1
+  |
+2 | / pub fn identity<T>(value: T) -> T {
+3 | |     let _closure = || ();
+4 | |     value
+5 | | }
+  | |_^
+
+error: Type error after transformations:
+       Mismatched type generics:
+       target: {impl FnOnce<(T,)> for identity<T>[TraitClause0]}
+       expected: [T]
+            got: [T, i8, extern "rust-call" fn(()), ()]
+       Visitor stack:
+         charon_lib::ast::items::item_ids::TraitImplRef
+         charon_lib::ast::items::fun_decl::FunSource
+         charon_lib::ast::items::fun_decl::FunDecl
+       Binding stack (depth 1):
+         0: <T, TraitClause0: (missing(@TypeBound(1, 0)): @TraitDecl0)>
+ --> tests/ui/regressions/generic-fn-item-with-closure.rs:2:1
+  |
+2 | / pub fn identity<T>(value: T) -> T {
+3 | |     let _closure = || ();
+4 | |     value
+5 | | }
+  | |_^
+
+ERROR Charon failed to translate this code (4 errors)
