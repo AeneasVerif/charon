@@ -1165,7 +1165,7 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         let* _0 = operand_of_json ctx _0 in
         let* _1 = ty_of_json ctx _1 in
         let* _2 = constant_expr_of_json ctx _2 in
-        let* _3 = trait_ref_of_json ctx _3 in
+        let* _3 = option_of_json trait_ref_of_json ctx _3 in
         Ok (Repeat (_0, _1, _2, _3))
     | _ -> Error "")
 

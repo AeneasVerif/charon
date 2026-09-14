@@ -777,16 +777,15 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 unreachable!()
             };
             let rust_elem_ty = item_ref.rustc_args(&self.hax_state).type_at(0);
-            let copy_proof = hax::solve_copy(&self.hax_state, rust_elem_ty);
-            if matches!(&copy_proof.kind, hax::TraitProofKind::Error(_)) {
+            let Some(copy_proof) = hax::solve_copy(&self.hax_state, rust_elem_ty) else {
                 return Ok(None);
-            }
+            };
             let ty_is_copy = self.translate_trait_proof(span, &copy_proof)?;
             Ok(Some(Rvalue::Repeat(
                 Operand::Const(field),
                 elem_ty.clone(),
                 len.clone(),
-                ty_is_copy,
+                Some(ty_is_copy),
             )))
         } else {
             Ok(None)
@@ -1225,8 +1224,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             mir::Rvalue::Repeat(operand, cnst) => {
                 let ty_is_copy = {
                     let rust_ty = operand.ty(self.local_decls, self.tcx);
-                    let proof = hax::solve_copy(&self.hax_state, rust_ty);
-                    self.translate_trait_proof(span, &proof)?
+                    hax::solve_copy(&self.hax_state, rust_ty)
+                        .map(|proof| self.translate_trait_proof(span, &proof))
+                        .transpose()?
                 };
                 let c = self.translate_ty_constant_expr(span, cnst)?;
                 let op = self.translate_operand(span, operand)?;

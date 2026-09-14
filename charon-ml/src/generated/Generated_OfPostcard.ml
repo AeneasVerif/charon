@@ -1069,7 +1069,7 @@ and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _0 = operand_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
          let* _2 = constant_expr_of_postcard ctx st in
-         let* _3 = trait_ref_of_postcard ctx st in
+         let* _3 = option_of_postcard trait_ref_of_postcard ctx st in
          Ok (Repeat (_0, _1, _2, _3))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 

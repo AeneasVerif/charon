@@ -125,6 +125,9 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
         }
         // Transform the array aggregates to function calls.
         StatementKind::Assign(place, Rvalue::Repeat(operand, ty, len, ty_is_copy)) => {
+            let Some(ty_is_copy) = ty_is_copy else {
+                return;
+            };
             // We could avoid the clone operations below if we take the content of
             // the statement. In practice, this shouldn't have much impact.
             let Some(&fun_id) = std_items.item_map.get(&StdItem::ArrayRepeat) else {
