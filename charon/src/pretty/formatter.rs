@@ -27,6 +27,9 @@ pub trait AstFormatter: Sized {
     fn include_layouts(&self) -> bool {
         false
     }
+    fn hide_storage_statements(&self) -> bool {
+        false
+    }
 
     fn no_generics<'a>(&'a self) -> Self::Reborrow<'a>;
     fn set_generics<'a>(&'a self, generics: &'a GenericParams) -> Self::Reborrow<'a>;
@@ -196,6 +199,7 @@ pub trait AstFormatter: Sized {
 pub struct FmtCtx<'a> {
     pub translated: Option<&'a TranslatedCrate>,
     pub include_layouts: bool,
+    pub hide_storage_statements: bool,
     pub current_type: Option<TypeDeclId>,
     /// Generics form a stack, where each binder introduces a new level. For DeBruijn indices to
     /// work, we keep the innermost parameters at the start of the vector.
@@ -216,6 +220,9 @@ impl<'c> AstFormatter for FmtCtx<'c> {
 
     fn include_layouts(&self) -> bool {
         self.include_layouts
+    }
+    fn hide_storage_statements(&self) -> bool {
+        self.hide_storage_statements
     }
 
     fn no_generics<'a>(&'a self) -> Self::Reborrow<'a> {
@@ -362,6 +369,7 @@ impl<'a> FmtCtx<'a> {
         FmtCtx {
             translated: self.translated,
             include_layouts: self.include_layouts,
+            hide_storage_statements: self.hide_storage_statements,
             current_type: self.current_type,
             generics: self.generics.clone(),
             local_names: self.local_names.clone(),

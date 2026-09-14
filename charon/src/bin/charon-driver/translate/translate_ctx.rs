@@ -306,6 +306,7 @@ impl<'a> IntoFormatter for &'a ItemTransCtx<'_, '_> {
         FmtCtx {
             translated: Some(&self.t_ctx.translated),
             include_layouts: false,
+            hide_storage_statements: false,
             current_type: None,
             generics: self.binding_levels.map_ref(|bl| Cow::Borrowed(&bl.params)),
             local_names: None,

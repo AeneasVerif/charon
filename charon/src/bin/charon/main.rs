@@ -64,6 +64,7 @@ pub fn main() -> Result<()> {
                 charon_lib::deserialize_llbc_with_format(&pretty_print.file, pretty_print.format)?;
             let mut fmt = krate.into_fmt();
             fmt.include_layouts = pretty_print.include_layouts;
+            fmt.hide_storage_statements = pretty_print.hide_storage_statements;
             println!("{}", krate.with_ctx(&fmt));
             ExitStatus::default()
         }
