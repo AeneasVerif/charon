@@ -2881,6 +2881,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
             .fmt_item_intro(f, ctx, keyword, self.def_id)?;
 
         let ctx = &ctx.set_generics(&self.generics);
+        let ctx = &ctx.set_current_type(self.def_id);
         let (params, preds) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         write!(f, "{params}{preds}")?;
 
@@ -2919,7 +2920,25 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
             TypeDeclKind::Alias(ty) => write!(f, " = {}", ty.with_ctx(ctx)),
             TypeDeclKind::Opaque => write!(f, ""),
             TypeDeclKind::Error(msg) => write!(f, " = ERROR({msg})"),
+        }?;
+
+        if ctx.include_layouts() {
+            match self.layout.len() {
+                0 => write!(f, "\n\n// Layout: none")?,
+                1 => {
+                    let layout = self.layout.values().next().unwrap();
+                    write!(f, "\n\n{}", layout.with_ctx(ctx))?;
+                }
+                _ => {
+                    for (target, layout) in &self.layout {
+                        write!(f, "\n\n// Layout for target `{target}`:\n")?;
+                        write!(f, "{}", layout.with_ctx(ctx))?;
+                    }
+                }
+            }
         }
+
+        Ok(())
     }
 }
 

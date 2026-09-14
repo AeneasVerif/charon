@@ -38,6 +38,9 @@ pub struct PrettyPrintArgs {
     /// Serialization format of the input file.
     #[arg(long, value_enum, default_value_t)]
     pub format: SerializationFormat,
+    /// Also print the layout of every type declaration.
+    #[arg(long)]
+    pub include_layouts: bool,
 }
 
 /// Usage: `charon cargo [charon options] -- [rustc options]`

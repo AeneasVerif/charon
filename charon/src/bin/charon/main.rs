@@ -32,8 +32,10 @@
 use anyhow::{Context, Result};
 use charon_lib::{
     export::{CrateData, multi_target},
+    formatter::IntoFormatter,
     logger,
     options::{CHARON_ARGS, CliOpts, SerializationFormat, SerializationFormatArg},
+    pretty::FmtWithCtx,
     utils::arg_value,
 };
 use clap::Parser;
@@ -60,7 +62,9 @@ pub fn main() -> Result<()> {
         Charon::PrettyPrint(pretty_print) => {
             let krate =
                 charon_lib::deserialize_llbc_with_format(&pretty_print.file, pretty_print.format)?;
-            println!("{krate}");
+            let mut fmt = krate.into_fmt();
+            fmt.include_layouts = pretty_print.include_layouts;
+            println!("{}", krate.with_ctx(&fmt));
             ExitStatus::default()
         }
         Charon::Cargo(subcmd_cargo) => {
