@@ -1,0 +1,9 @@
+error: spawning threads from a request handler is forbidden
+ --> examples/detect_threads/input.rs:4:27
+  |
+4 |       let _background_job = std::thread::spawn(move || {
+  |  ___________________________^
+5 | |         consume(input);
+6 | |     });
+  | |______^ `input::handle_request` spawns a thread here
+Found 1 thread-spawn violation(s).
