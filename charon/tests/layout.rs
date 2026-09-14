@@ -2,10 +2,7 @@ use itertools::Itertools;
 use std::{fmt::Write, path::PathBuf};
 
 use charon_lib::ast::*;
-use charon_lib::{
-    formatter::{AstFormatter, IntoFormatter},
-    pretty::FmtWithCtx,
-};
+use charon_lib::{formatter::IntoFormatter, pretty::FmtWithCtx};
 
 mod util;
 use util::*;
@@ -153,7 +150,8 @@ fn type_layout() -> anyhow::Result<()> {
     assert_chosen("test_crate::PackedUnsized", (0, 0, 3), (14, 2));
 
     let mut layouts = String::new();
-    let fmt = (&crate_data).into_fmt();
+    let mut fmt = (&crate_data).into_fmt();
+    fmt.include_layouts = true;
     for tdecl in crate_data.type_decls.iter() {
         // Skips the builtin ADTs too, whose names start with a `PathElem::Builtin`.
         let is_local = matches!(
@@ -167,18 +165,7 @@ fn type_layout() -> anyhow::Result<()> {
         if !layouts.is_empty() {
             writeln!(layouts)?;
         }
-        let name = tdecl.item_meta.name.debug_repr(&crate_data);
-        writeln!(layouts, "{name}:")?;
-        match tdecl.layout.get(&the_target) {
-            Some(layout) => {
-                let fmt = fmt.set_generics(&tdecl.generics);
-                let fmt = fmt.set_current_type(tdecl.def_id);
-                for line in layout.to_string_with_ctx(&fmt).lines() {
-                    writeln!(layouts, "  {line}")?;
-                }
-            }
-            None => writeln!(layouts, "  none")?,
-        }
+        writeln!(layouts, "{}", tdecl.with_ctx(&fmt))?;
     }
 
     compare_or_overwrite(layouts, &PathBuf::from("./tests/layout.txt"))?;

@@ -1205,29 +1205,30 @@ impl<C: AstFormatter> FmtWithCtx<C> for InhabitedPredicate {
 impl_display_via_ctx!(Layout);
 impl<C: AstFormatter> FmtWithCtx<C> for Layout {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "Layout {{")?;
-        writeln!(f, "  size: {},", self.size.with_ctx(ctx))?;
-        writeln!(f, "  align: {},", self.align.with_ctx(ctx))?;
+        let tab = ctx.indent();
+        writeln!(f, "{tab}size: {},", self.size.with_ctx(ctx))?;
+        writeln!(f, "{tab}align: {},", self.align.with_ctx(ctx))?;
         match &self.discriminator {
             Some(discriminator) => {
-                writeln!(f, "  discriminator: {},", discriminator.with_ctx(ctx))?
+                writeln!(f, "{tab}discriminator: {},", discriminator.with_ctx(ctx))?
             }
-            None => writeln!(f, "  discriminator: none,")?,
+            None => writeln!(f, "{tab}discriminator: none,")?,
         }
-        writeln!(f, "  inhabited: {},", self.inhabited.with_ctx(ctx))?;
-        writeln!(f, "  variants: [")?;
+        writeln!(f, "{tab}inhabited: {},", self.inhabited.with_ctx(ctx))?;
+        writeln!(f, "{tab}variants: [")?;
+        let ctx1 = &ctx.increase_indent();
+        let tab1 = ctx1.indent();
         for (variant_id, layout) in self.variant_layouts.iter_enumerated() {
-            write!(f, "    ")?;
-            ctx.format_current_variant_name(f, variant_id)?;
+            write!(f, "{tab1}")?;
+            ctx1.format_current_variant_name(f, variant_id)?;
             write!(f, ": ")?;
             match layout {
-                Some(layout) => writeln!(f, "{},", layout.with_ctx(&(ctx, variant_id)))?,
+                Some(layout) => writeln!(f, "{},", layout.with_ctx(&(ctx1, variant_id)))?,
                 None => writeln!(f, "none,")?,
             }
         }
-        writeln!(f, "  ],")?;
-        writeln!(f, "  {},", self.repr)?;
-        write!(f, "}}")
+        writeln!(f, "{tab}],")?;
+        write!(f, "{tab}{},", self.repr)
     }
 }
 
@@ -2942,16 +2943,33 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
         }?;
 
         if ctx.include_layouts() {
+            let layout_type_id = match &self.kind {
+                TypeDeclKind::Alias(ty) => ty.as_adt().map(|tref| tref.id).unwrap_or(self.def_id),
+                _ => self.def_id,
+            };
+            let ctx = &ctx.set_current_type(layout_type_id);
+            let fmt_layout =
+                |f: &mut fmt::Formatter<'_>, heading: &str, layout: &Layout| -> fmt::Result {
+                    write!(f, "// {heading}:")?;
+                    let ctx = &ctx.increase_indent();
+                    for line in layout.to_string_with_ctx(ctx).lines() {
+                        write!(f, "\n// {line}")?;
+                    }
+                    Ok(())
+                };
             match self.layout.len() {
-                0 => write!(f, "\n\n// Layout: none")?,
+                0 => write!(f, "\n// layout: none")?,
                 1 => {
                     let layout = self.layout.values().next().unwrap();
-                    write!(f, "\n\n{}", layout.with_ctx(ctx))?;
+                    writeln!(f)?;
+                    fmt_layout(f, "layout", layout)?;
                 }
                 _ => {
+                    let mut separator = "\n";
                     for (target, layout) in &self.layout {
-                        write!(f, "\n\n// Layout for target `{target}`:\n")?;
-                        write!(f, "{}", layout.with_ctx(ctx))?;
+                        write!(f, "{separator}")?;
+                        fmt_layout(f, &format!("layout for target `{target}`"), layout)?;
+                        separator = "\n\n";
                     }
                 }
             }
@@ -3010,18 +3028,21 @@ impl<C: AstFormatter> FmtWithCtx<(&C, VariantId)> for VariantLayout {
         f: &mut fmt::Formatter<'_>,
     ) -> fmt::Result {
         writeln!(f, "{{")?;
+        let tab = ctx.indent();
+        let ctx1 = &ctx.increase_indent();
+        let tab1 = ctx1.indent();
         for (field_id, offset) in self.field_offsets.iter_enumerated() {
-            write!(f, "      offset of ")?;
-            ctx.format_current_field_name(f, variant_id, field_id)?;
-            writeln!(f, ": {},", offset.with_ctx(ctx))?;
+            write!(f, "{tab1}offset of ")?;
+            ctx1.format_current_field_name(f, variant_id, field_id)?;
+            writeln!(f, ": {},", offset.with_ctx(ctx1))?;
         }
         let tagger = self
             .tagger
             .iter()
             .map(|(offset, value)| format!("{offset} := {value}"))
             .format(", ");
-        writeln!(f, "      inhabited: {},", self.inhabited.with_ctx(ctx))?;
-        writeln!(f, "      tagger: [{tagger}],")?;
-        write!(f, "    }}")
+        writeln!(f, "{tab1}inhabited: {},", self.inhabited.with_ctx(ctx1))?;
+        writeln!(f, "{tab1}tagger: [{tagger}],")?;
+        write!(f, "{tab}}}")
     }
 }
