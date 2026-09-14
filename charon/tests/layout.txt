@@ -8,10 +8,10 @@ struct SimpleStruct {
 Layout {
   size: 12usize (guaranteed: at_least(align_to(max(size_of::<u32>(), size_of::<u32>(), size_of::<u32>()), max(align_of::<u32>(), align_of::<u32>(), align_of::<u32>())))),
   align: 4usize (guaranteed: at_least(max(align_of::<u32>(), align_of::<u32>(), align_of::<u32>()))),
-  discriminator: SingleVariant,
+  discriminator: _,
   inhabited: true,
   variants: [
-    SingleVariant: {
+    _: {
       offset of x: 0,
       offset of y: 4,
       offset of z: 8,
@@ -37,7 +37,7 @@ Layout {
   discriminator: none,
   inhabited: if_inhabited(T),
   variants: [
-    SingleVariant: {
+    _: {
       offset of a: ?,
       offset of b: ?,
       inhabited: if_inhabited(T),
@@ -56,10 +56,10 @@ struct UnsizedStruct {
 Layout {
   size: (8usize + (slice_length * 8usize)) (guaranteed: at_least(align_to(max(size_of::<usize>(), size_of::<[usize]>()), max(align_of::<usize>(), align_of::<[usize]>())))),
   align: 8usize (guaranteed: at_least(max(align_of::<usize>(), align_of::<[usize]>()))),
-  discriminator: SingleVariant,
+  discriminator: _,
   inhabited: true,
   variants: [
-    SingleVariant: {
+    _: {
       offset of x: 0,
       offset of y: 8,
       inhabited: true,
@@ -78,10 +78,10 @@ struct UnsizedDyn {
 Layout {
   size: align_to((1usize + dyn_size), max(dyn_align, 1usize)) (guaranteed: at_least(align_to(max(size_of::<u8>(), dyn_size), max(align_of::<u8>(), dyn_align)))),
   align: max(dyn_align, 1usize) (guaranteed: at_least(max(align_of::<u8>(), dyn_align))),
-  discriminator: SingleVariant,
+  discriminator: _,
   inhabited: true,
   variants: [
-    SingleVariant: {
+    _: {
       offset of x: 0,
       offset of y: 1,
       inhabited: true,
@@ -100,10 +100,10 @@ struct NestedUnsized {
 Layout {
   size: (16usize + (slice_length * 8usize)) (guaranteed: at_least(align_to(max(size_of::<u16>(), size_of::<UnsizedStruct>()), max(align_of::<u16>(), align_of::<UnsizedStruct>())))),
   align: 8usize (guaranteed: at_least(max(align_of::<u16>(), align_of::<UnsizedStruct>()))),
-  discriminator: SingleVariant,
+  discriminator: _,
   inhabited: true,
   variants: [
-    SingleVariant: {
+    _: {
       offset of x: 0,
       offset of y: 8,
       inhabited: true,
@@ -122,10 +122,10 @@ struct PackedUnsized {
 Layout {
   size: (2usize + (slice_length * 4usize)) (guaranteed: at_least(align_to(max(size_of::<u8>(), size_of::<[u32]>()), max(min(align_of::<u8>(), 2usize), min(align_of::<[u32]>(), 2usize))))),
   align: 2usize (guaranteed: at_least(max(min(align_of::<u8>(), 2usize), min(align_of::<[u32]>(), 2usize)))),
-  discriminator: SingleVariant,
+  discriminator: _,
   inhabited: true,
   variants: [
-    SingleVariant: {
+    _: {
       offset of x: 0,
       offset of y: 2,
       inhabited: true,
@@ -273,10 +273,10 @@ struct IsAZST {}
 Layout {
   size: 0usize (guaranteed: at_least(align_to(0usize, 0usize))),
   align: 1usize (guaranteed: at_least(0usize)),
-  discriminator: SingleVariant,
+  discriminator: _,
   inhabited: true,
   variants: [
-    SingleVariant: {
+    _: {
       inhabited: true,
       tagger: [],
     },
@@ -296,10 +296,10 @@ where
 Layout {
   size: 16usize (guaranteed: at_least(align_to(max(size_of::<usize>(), size_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>()), max(align_of::<usize>(), align_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>())))),
   align: 8usize (guaranteed: at_least(max(align_of::<usize>(), align_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>()))),
-  discriminator: SingleVariant,
+  discriminator: _,
   inhabited: true,
   variants: [
-    SingleVariant: {
+    _: {
       offset of x: 8,
       offset of y: 0,
       inhabited: true,
@@ -319,10 +319,10 @@ struct Reordered {
 Layout {
   size: 8usize (guaranteed: at_least(align_to(max(size_of::<u8>(), size_of::<u32>(), size_of::<u8>()), max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>())))),
   align: 4usize (guaranteed: at_least(max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>()))),
-  discriminator: SingleVariant,
+  discriminator: _,
   inhabited: true,
   variants: [
-    SingleVariant: {
+    _: {
       offset of x: 4,
       offset of y: 0,
       offset of z: 5,
@@ -343,10 +343,10 @@ struct NotReordered {
 Layout {
   size: 12usize (guaranteed: at_least(align_to(max(size_of::<u8>(), size_of::<u32>(), size_of::<u8>()), max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>())))),
   align: 4usize (guaranteed: at_least(max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>()))),
-  discriminator: SingleVariant,
+  discriminator: _,
   inhabited: true,
   variants: [
-    SingleVariant: {
+    _: {
       offset of x: 0,
       offset of y: 4,
       offset of z: 8,
@@ -367,10 +367,10 @@ struct Packed {
 Layout {
   size: 6usize (guaranteed: at_least(align_to(max(size_of::<u8>(), size_of::<u32>(), size_of::<u8>()), max(min(align_of::<u8>(), 1usize), min(align_of::<u32>(), 1usize), min(align_of::<u8>(), 1usize))))),
   align: 1usize (guaranteed: at_least(max(min(align_of::<u8>(), 1usize), min(align_of::<u32>(), 1usize), min(align_of::<u8>(), 1usize)))),
-  discriminator: SingleVariant,
+  discriminator: _,
   inhabited: true,
   variants: [
-    SingleVariant: {
+    _: {
       offset of x: 0,
       offset of y: 1,
       offset of z: 5,
@@ -465,10 +465,10 @@ struct Uninhabited {
 Layout {
   size: 0usize,
   align: 1usize,
-  discriminator: SingleVariant,
+  discriminator: _,
   inhabited: false,
   variants: [
-    SingleVariant: {
+    _: {
       offset of _0: 0,
       inhabited: false,
       tagger: [],
@@ -515,10 +515,10 @@ union MaybeUninitInt {
 Layout {
   size: 4usize (guaranteed: at_least(align_to(max(size_of::<u32>(), size_of::<()>()), max(align_of::<u32>(), align_of::<()>())))),
   align: 4usize (guaranteed: at_least(max(align_of::<u32>(), align_of::<()>()))),
-  discriminator: SingleVariant,
+  discriminator: _,
   inhabited: true,
   variants: [
-    SingleVariant: {
+    _: {
       offset of x: 0,
       offset of y: 0,
       inhabited: true,
@@ -537,10 +537,10 @@ union PackIntsUnion {
 Layout {
   size: 8usize (guaranteed: at_least(align_to(max(size_of::<(u32, u32)>(), size_of::<u64>()), max(align_of::<(u32, u32)>(), align_of::<u64>())))),
   align: 8usize (guaranteed: at_least(max(align_of::<(u32, u32)>(), align_of::<u64>()))),
-  discriminator: SingleVariant,
+  discriminator: _,
   inhabited: true,
   variants: [
-    SingleVariant: {
+    _: {
       offset of x: 0,
       offset of y: 0,
       inhabited: true,
@@ -909,10 +909,10 @@ struct BigWithChar {
 Layout {
   size: 16usize (guaranteed: at_least(align_to(max(size_of::<u64>(), size_of::<char>()), max(align_of::<u64>(), align_of::<char>())))),
   align: 8usize (guaranteed: at_least(max(align_of::<u64>(), align_of::<char>()))),
-  discriminator: SingleVariant,
+  discriminator: _,
   inhabited: true,
   variants: [
-    SingleVariant: {
+    _: {
       offset of a: 0,
       offset of c: 8,
       inhabited: true,
@@ -995,7 +995,7 @@ Layout {
   discriminator: none,
   inhabited: if_inhabited(T),
   variants: [
-    SingleVariant: {
+    _: {
       offset of hd: ?,
       offset of tl: ?,
       inhabited: if_inhabited(T),

@@ -132,7 +132,7 @@ pub trait AstFormatter: Sized {
         {
             match &def.kind {
                 TypeDeclKind::Enum(variants) => &variants.get(variant_id).unwrap().name,
-                TypeDeclKind::Struct(..) | TypeDeclKind::Union(..) => "SingleVariant",
+                TypeDeclKind::Struct(..) | TypeDeclKind::Union(..) => "_",
                 TypeDeclKind::Opaque | TypeDeclKind::Alias(..) | TypeDeclKind::Error(..) => {
                     &variant_id.to_pretty_string()
                 }
