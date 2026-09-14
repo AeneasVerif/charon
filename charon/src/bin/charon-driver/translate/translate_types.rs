@@ -658,8 +658,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let align = Size::from_expr(align.normalize(Some(&self.translated), None, false));
         let layout = ty_layout.layout;
 
+        let num_variants = match ty.variant_range(self.t_ctx.tcx) {
+            Some(range) => range.end.index(),
+            None => match layout.fields() {
+                r_abi::FieldsShape::Arbitrary { .. } | r_abi::FieldsShape::Union(_) => 1,
+                r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Array { .. } => 0,
+            },
+        };
+        let mut variant_layouts: IndexVec<VariantId, Option<VariantLayout>> =
+            (0..num_variants).map(|_| None).collect();
         // Build the discriminator tree and variant layouts.
-        let (discriminator, variant_layouts) = match layout.variants() {
+        let discriminator = match layout.variants() {
             r_abi::Variants::Multiple {
                 tag,
                 tag_encoding,
@@ -735,8 +744,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 };
 
                 // Compute per-variant tag values and build tagger + discriminator children.
-                let mut variant_layouts: IndexVec<VariantId, Option<VariantLayout>> =
-                    IndexVec::new();
                 let mut children = Vec::new();
 
                 for (id, variant_layout) in variants.iter_enumerated() {
@@ -764,11 +771,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .iter()
                         .map(|o| OffsetExpr::new(o.bytes()))
                         .collect();
-                    variant_layouts.push(Some(VariantLayout {
+                    variant_layouts[variant_id] = Some(VariantLayout {
                         field_offsets,
                         inhabited: variant_inhabited,
                         tagger,
-                    }));
+                    });
                 }
 
                 let fallback = match tag_encoding {
@@ -826,44 +833,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     children,
                 };
 
-                (Some(discriminator), variant_layouts)
+                Some(discriminator)
             }
             r_abi::Variants::Single { index } => {
                 let variant_id = self.translate_variant_id(*index);
-                let variant_layouts = match layout.fields() {
-                    r_abi::FieldsShape::Arbitrary { .. } => {
-                        let n_variants = if let Some(range) = ty.variant_range(self.t_ctx.tcx) {
-                            range.end.index()
-                        } else {
-                            1
-                        };
-                        let mut variant_layouts: IndexVec<VariantId, Option<VariantLayout>> =
-                            (0..n_variants).map(|_| None).collect();
+                match layout.fields() {
+                    r_abi::FieldsShape::Arbitrary { .. } | r_abi::FieldsShape::Union(_) => {
                         let variant_inhabited = self
                             .translate_inhabited_predicate(span, rustc_variant_inhabited(*index))
                             .ok()?;
                         variant_layouts[variant_id] =
                             translate_variant_layout_data(&layout, variant_inhabited, vec![]);
-                        variant_layouts
                     }
-                    r_abi::FieldsShape::Union(_) => {
-                        let variant_inhabited = self
-                            .translate_inhabited_predicate(span, rustc_variant_inhabited(*index))
-                            .ok()?;
-                        vec![translate_variant_layout_data(
-                            &layout,
-                            variant_inhabited,
-                            vec![],
-                        )]
-                        .into()
-                    }
-                    r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Array { .. } => {
-                        vec![].into()
-                    }
-                };
-                (Some(Discriminator::trivial(variant_id)), variant_layouts)
+                    r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Array { .. } => {}
+                }
+                Some(Discriminator::trivial(variant_id))
             }
-            r_abi::Variants::Empty => (None, IndexVec::new()),
+            r_abi::Variants::Empty => None,
         };
 
         Some(Layout {
