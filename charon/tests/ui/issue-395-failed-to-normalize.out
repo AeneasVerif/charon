@@ -65,8 +65,7 @@ pub type Alias<T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait),
-    TraitClause2: (T: Trait),
-    TraitClause3: (TraitClause2::AssocType: Sized), = Option<TraitClause1::AssocType>[TraitClause3]
+    TraitClause2: (TraitClause1::AssocType: Sized), = Option<TraitClause1::AssocType>[TraitClause2]
 
 // Full name: test_crate::C
 pub trait C<Self, T>
@@ -94,8 +93,7 @@ where
     TraitClause0: (I: Sized),
     TraitClause1: (F: Sized),
     TraitClause2: (I: Iterator),
-    TraitClause3: (I: Iterator),
-    TraitClause4: (F: C<TraitClause3::Item>), = S<I, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause4]
+    TraitClause3: (F: C<TraitClause2::Item>), = S<I, F>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
 
 
 

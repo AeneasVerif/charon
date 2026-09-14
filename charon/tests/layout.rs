@@ -129,10 +129,12 @@ fn type_layout() -> anyhow::Result<()> {
     };
     let assert_chosen = |name: &str, metadata: (u128, u128, u128), expected: (u128, u128)| {
         let layout = local_layout(name);
+        let size = layout.size.chosen.as_ref().unwrap();
+        let align = layout.align.chosen.as_ref().unwrap();
         assert_eq!(
             (
-                eval_size_expr(&layout.size.chosen, metadata.0, metadata.1, metadata.2),
-                eval_size_expr(&layout.align.chosen, metadata.0, metadata.1, metadata.2),
+                eval_size_expr(size, metadata.0, metadata.1, metadata.2),
+                eval_size_expr(align, metadata.0, metadata.1, metadata.2),
             ),
             expected,
         );

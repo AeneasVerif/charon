@@ -470,12 +470,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             Err(err) => TypeDeclKind::Error(err.msg),
         };
         let layout = self
-            .translate_layout(span, def)
+            .translate_layout(span, def, &kind)
             .into_iter()
             .map(|l| (self.get_target_triple(), l))
             .collect();
         let ptr_metadata = self.translate_ptr_metadata(span, def.this())?;
-        let type_def = TypeDecl {
+        Ok(TypeDecl {
             def_id: trans_id,
             item_meta,
             generics: self.into_generics(),
@@ -483,9 +483,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             src,
             layout,
             ptr_metadata,
-        };
-
-        Ok(type_def)
+        })
     }
 
     /// Translate one function.

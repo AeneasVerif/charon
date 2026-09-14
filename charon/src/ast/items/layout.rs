@@ -51,6 +51,111 @@ pub struct VariantLayout {
     pub tagger: Vec<(ByteCount, IntegerValue)>,
 }
 
+impl Layout {
+    /// Construct a layout for this type. The returned layout contains no size-related information.
+    pub fn for_type(
+        krate: &TranslatedCrate,
+        kind: &TypeDeclKind,
+        repr: ReprOptions,
+    ) -> Option<Self> {
+        let fields_inhabited = |fields: &IndexVec<FieldId, Field>| {
+            InhabitedPredicateKind::And(
+                fields
+                    .iter()
+                    .map(|field| field.ty.inhabited_predicate(krate, None))
+                    .collect(),
+            )
+            .into_pred()
+        };
+
+        let (inhabited, variant_layouts) = match kind {
+            TypeDeclKind::Struct(fields) => {
+                let inhabited = fields_inhabited(fields);
+                let field_offsets = fields
+                    .iter()
+                    .map(|_| OffsetExpr::new(None::<ByteCount>))
+                    .collect();
+                let layouts = vec![Some(VariantLayout {
+                    field_offsets,
+                    inhabited: inhabited.clone(),
+                    tagger: Vec::new(),
+                })]
+                .into();
+                (inhabited, layouts)
+            }
+            TypeDeclKind::Union(fields) => {
+                let inhabited = InhabitedPredicateKind::Or(
+                    fields
+                        .iter()
+                        .map(|field| field.ty.inhabited_predicate(krate, None))
+                        .collect(),
+                )
+                .into_pred();
+                let field_offsets = fields
+                    .iter()
+                    .map(|_| OffsetExpr::new(None::<ByteCount>))
+                    .collect();
+                let layouts = vec![Some(VariantLayout {
+                    field_offsets,
+                    inhabited: inhabited.clone(),
+                    tagger: Vec::new(),
+                })]
+                .into();
+                (inhabited, layouts)
+            }
+            TypeDeclKind::Enum(variants) => {
+                let mut layouts = IndexVec::new();
+                let mut variant_predicates = Vec::new();
+                for variant in variants {
+                    let variant_inhabited = fields_inhabited(&variant.fields);
+                    let field_offsets = variant
+                        .fields
+                        .iter()
+                        .map(|_| OffsetExpr::new(None::<ByteCount>))
+                        .collect();
+                    layouts.push(Some(VariantLayout {
+                        field_offsets,
+                        inhabited: variant_inhabited.clone(),
+                        tagger: Vec::new(),
+                    }));
+                    variant_predicates.push(variant_inhabited);
+                }
+                (
+                    InhabitedPredicateKind::Or(variant_predicates).into_pred(),
+                    layouts,
+                )
+            }
+            TypeDeclKind::Alias(ty) => (ty.inhabited_predicate(krate, None), IndexVec::new()),
+            TypeDeclKind::Opaque | TypeDeclKind::Error(_) => return None,
+        };
+
+        Some(Self {
+            size: Size::from_expr(None),
+            align: Size::from_expr(None),
+            discriminator: None,
+            inhabited,
+            variant_layouts,
+            repr,
+        })
+    }
+
+    pub fn is_variant_always_uninhabited(&self, variant_id: VariantId) -> bool {
+        self.variant_layouts[variant_id]
+            .as_ref()
+            .is_none_or(|layout| layout.inhabited.always_false())
+    }
+
+    pub fn is_variant_always_inhabited(&self, variant_id: VariantId) -> bool {
+        self.variant_layouts[variant_id]
+            .as_ref()
+            .is_some_and(|layout| layout.inhabited.always_true())
+    }
+
+    pub fn is_c_repr(&self) -> bool {
+        self.repr.repr_algo == ReprAlgorithm::C
+    }
+}
+
 /// Decision tree used to determine the active variant by reading memory. Mirrors MiniRust's
 /// `Discriminator`.
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
@@ -78,10 +183,10 @@ pub enum Discriminator {
 /// An expression denoting a size in bytes.
 #[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Size {
-    /// The size chosen by this rustc run. For sized types, this is a plain integer. For unsized
+    /// The size chosen by this rustc run. For sized types, this is a plain integer, and for unsized
     /// types, this is an expression describing how to compute this size based on the values found
-    /// in the pointer metadata.
-    pub chosen: SizeExpr,
+    /// in the pointer metadata. This can be `None` for polymorphic types.
+    pub chosen: Option<SizeExpr>,
     /// The guarantees about this size that can be relied on according to the Rust Reference.
     pub guarantee: Option<SizeExpr>,
 }
@@ -96,13 +201,17 @@ pub struct OffsetExpr {
 }
 
 impl Size {
-    pub fn new(chosen: ByteCount) -> Self {
-        Self::from_expr(SizeExprKind::from_usize(u128::from(chosen)).into_expr())
+    pub fn new(chosen: impl Into<Option<ByteCount>>) -> Self {
+        Self::from_expr(
+            chosen
+                .into()
+                .map(|chosen| SizeExprKind::from_usize(u128::from(chosen)).into_expr()),
+        )
     }
 
-    pub fn from_expr(chosen: SizeExpr) -> Self {
+    pub fn from_expr(chosen: impl Into<Option<SizeExpr>>) -> Self {
         Self {
-            chosen,
+            chosen: chosen.into(),
             guarantee: None,
         }
     }
@@ -386,24 +495,6 @@ pub struct TargetInfo {
     /// Alignments for primitive types.
     #[serde(with = "SeqHashMapToArray::<ScalarTy, ByteCount>")]
     pub primitive_alignments: SeqHashMap<ScalarTy, ByteCount>,
-}
-
-impl Layout {
-    pub fn is_variant_always_uninhabited(&self, variant_id: VariantId) -> bool {
-        self.variant_layouts[variant_id]
-            .as_ref()
-            .is_none_or(|layout| layout.inhabited.always_false())
-    }
-
-    pub fn is_variant_always_inhabited(&self, variant_id: VariantId) -> bool {
-        self.variant_layouts[variant_id]
-            .as_ref()
-            .is_none_or(|layout| layout.inhabited.always_true())
-    }
-
-    pub fn is_c_repr(&self) -> bool {
-        self.repr.repr_algo == ReprAlgorithm::C
-    }
 }
 
 #[derive(Debug, PartialEq, Eq)]

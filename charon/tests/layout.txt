@@ -17,7 +17,21 @@ test_crate::SimpleStruct:
   }
 
 test_crate::GenericStruct:
-  none
+  Layout {
+    size: ?,
+    align: ?,
+    discriminator: none,
+    inhabited: if_inhabited(T),
+    variants: [
+      SingleVariant: {
+        offset of a: ?,
+        offset of b: ?,
+        inhabited: if_inhabited(T),
+        tagger: [],
+      },
+    ],
+    repr(Rust),
+  }
 
 test_crate::UnsizedStruct:
   Layout {
@@ -508,7 +522,24 @@ test_crate::WithNicheAndUninhabited:
   }
 
 test_crate::GenericUnsized:
-  none
+  Layout {
+    size: ? (guaranteed: at_least(align_to(size_of::<&'a T>(), align_of::<&'a T>()))),
+    align: ? (guaranteed: at_least(align_of::<&'a T>())),
+    discriminator: none,
+    inhabited: true,
+    variants: [
+      First: {
+        inhabited: true,
+        tagger: [],
+      },
+      Second: {
+        offset of _0: ?,
+        inhabited: true,
+        tagger: [],
+      },
+    ],
+    repr(Rust),
+  }
 
 test_crate::GenericButFixedSize:
   Layout {
@@ -567,7 +598,15 @@ test_crate::SingleVariantButNonZero:
   }
 
 test_crate::NonAdtAlias:
-  none
+  Layout {
+    size: ?,
+    align: ?,
+    discriminator: none,
+    inhabited: if_inhabited(T),
+    variants: [
+    ],
+    repr(Rust),
+  }
 
 test_crate::Tuple:
   Layout {
@@ -728,4 +767,18 @@ test_crate::UninhabitedUntagged:
   }
 
 test_crate::PolyReprC:
-  none
+  Layout {
+    size: ?,
+    align: ?,
+    discriminator: none,
+    inhabited: if_inhabited(T),
+    variants: [
+      SingleVariant: {
+        offset of hd: ?,
+        offset of tl: ?,
+        inhabited: if_inhabited(T),
+        tagger: [],
+      },
+    ],
+    repr(C),
+  }
