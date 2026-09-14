@@ -12,11 +12,30 @@ enum MyResult::<Never, u8> {
   Err { _0: u8 },
 }
 
+// Full name: test_crate::MyResult::<Never, Never>
+enum MyResult::<Never, Never> {
+  Ok { _0: Never },
+  Err { _0: Never },
+}
+
 // Full name: test_crate::use_result
 fn use_result(_1: MyResult::<Never, u8>)
 {
     let _0: (); // return
     let _1: MyResult::<Never, u8>; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::use_uninhabited_result
+fn use_uninhabited_result(_1: MyResult::<Never, Never>)
+{
+    let _0: (); // return
+    let _1: MyResult::<Never, Never>; // arg #1
 
     storage_live(_0)
     _0 = ()
