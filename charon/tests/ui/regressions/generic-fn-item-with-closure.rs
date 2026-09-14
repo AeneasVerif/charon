@@ -1,4 +1,3 @@
-//@ known-failure
 pub fn identity<T>(value: T) -> T {
     let _closure = || ();
     value
