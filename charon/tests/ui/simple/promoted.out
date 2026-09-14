@@ -2,6 +2,22 @@
 
 struct () {}
 
+// Full name: test_crate::foo::{promoted_const}
+fn {promoted_const}() -> &'_ i32
+{
+    let _0: &'0 i32; // return
+    let _1: i32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = const 42i32
+    _0 = &_1
+    return
+}
+
+// Full name: test_crate::foo::{promoted_const}
+const {promoted_const}: &'_ i32 = {promoted_const}()
+
 // Full name: test_crate::foo
 fn foo()
 {
@@ -18,19 +34,6 @@ fn foo()
     storage_dead(_1)
     _0 = const ()
     storage_dead(_2)
-    return
-}
-
-// Full name: test_crate::foo::{promoted_const}
-fn {promoted_const}() -> &'_ i32
-{
-    let _0: &'0 i32; // return
-    let _1: i32; // anonymous local
-
-    storage_live(_0)
-    storage_live(_1)
-    _1 = const 42i32
-    _0 = &_1
     return
 }
 
