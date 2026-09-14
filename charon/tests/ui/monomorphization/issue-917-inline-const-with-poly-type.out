@@ -80,10 +80,10 @@ struct (_,)::<()> {
   _0: (),
 }
 
-// Full name: test_crate::foo::{const}::{closure}::<()>
+// Full name: test_crate::foo::{closure}::<()>
 struct {closure}::<()> {}
 
-// Full name: test_crate::foo::{const}::{closure}::{impl Destruct for {closure}::<()>}::drop_glue::<()>
+// Full name: test_crate::foo::{closure}::{impl Destruct for {closure}::<()>}::drop_glue::<()>
 unsafe fn drop_glue::<()><'_0>(_1: &'_0 mut {closure}::<()>)
 {
     let _0: (); // return
@@ -95,7 +95,7 @@ unsafe fn drop_glue::<()><'_0>(_1: &'_0 mut {closure}::<()>)
     return
 }
 
-// Full name: test_crate::foo::{const}::{impl Fn<((),)> for {closure}::<()>}::call::<()>
+// Full name: test_crate::foo::{impl Fn<((),)> for {closure}::<()>}::call::<()>
 fn call::<()><'_0>(_1: &'_0 {closure}::<()>, tupled_args: ((),))
 {
     let _0: (); // return
@@ -114,7 +114,7 @@ fn call::<()><'_0>(_1: &'_0 {closure}::<()>, tupled_args: ((),))
     return
 }
 
-// Full name: test_crate::foo::{const}::{impl FnMut<((),)> for {closure}::<()>}::call_mut::<()>
+// Full name: test_crate::foo::{impl FnMut<((),)> for {closure}::<()>}::call_mut::<()>
 fn call_mut::<()><'_0>(state: &'_0 mut {closure}::<()>, args: ((),))
 {
     let _0: (); // return
@@ -137,7 +137,7 @@ fn call_mut::<()><'_0>(state: &'_0 mut {closure}::<()>, args: ((),))
     return
 }
 
-// Full name: test_crate::foo::{const}::{impl FnOnce<((),)> for {closure}::<()>}::call_once::<()>
+// Full name: test_crate::foo::{impl FnOnce<((),)> for {closure}::<()>}::call_once::<()>
 fn call_once::<()>(_1: {closure}::<()>, _2: ((),))
 {
     let _0: (); // return
@@ -170,7 +170,7 @@ fn call_once::<()>(_1: {closure}::<()>, _2: ((),))
     return
 }
 
-// Full name: test_crate::foo::{const}::{closure}::{as_fn}::<()>
+// Full name: test_crate::foo::{closure}::{as_fn}::<()>
 fn {as_fn}::<()>(arg1: ())
 {
     let _0: (); // return
@@ -236,7 +236,7 @@ fn foo::<()>(x: ())
     return
 }
 
-// Full name: test_crate::foo::{const}::{impl FnOnce<((),)> for {closure}::<()>}
+// Full name: test_crate::foo::{impl FnOnce<((),)> for {closure}::<()>}
 impl FnOnce<((),)> for {closure}::<()> {
     proof ImpliedClause0: ({closure}::<()>: MetaSized) = {built_in impl MetaSized for {closure}::<()>}
     proof ImpliedClause1: (((),): Sized) = {built_in impl Sized for ((),)}
@@ -244,7 +244,7 @@ impl FnOnce<((),)> for {closure}::<()> {
     vtable: {impl FnOnce<((),)> for {closure}::<()>}::{vtable}::<()>
 }
 
-// Full name: test_crate::foo::{const}::{impl FnMut<((),)> for {closure}::<()>}
+// Full name: test_crate::foo::{impl FnMut<((),)> for {closure}::<()>}
 impl FnMut<((),)> for {closure}::<()> {
     proof ImpliedClause0: ({closure}::<()>: MetaSized) = {built_in impl MetaSized for {closure}::<()>}
     proof ImpliedClause1: ({closure}::<()>: FnOnce<((),)>) = {impl FnOnce<((),)> for {closure}::<()>}
@@ -253,7 +253,7 @@ impl FnMut<((),)> for {closure}::<()> {
     vtable: {impl FnMut<((),)> for {closure}::<()>}::{vtable}::<()>
 }
 
-// Full name: test_crate::foo::{const}::{impl Fn<((),)> for {closure}::<()>}
+// Full name: test_crate::foo::{impl Fn<((),)> for {closure}::<()>}
 impl Fn<((),)> for {closure}::<()> {
     proof ImpliedClause0: ({closure}::<()>: MetaSized) = {built_in impl MetaSized for {closure}::<()>}
     proof ImpliedClause1: ({closure}::<()>: FnMut<((),)>) = {impl FnMut<((),)> for {closure}::<()>}
@@ -262,7 +262,7 @@ impl Fn<((),)> for {closure}::<()> {
     vtable: {impl Fn<((),)> for {closure}::<()>}::{vtable}::<()>
 }
 
-// Full name: test_crate::foo::{const}::{closure}::{impl Destruct for {closure}::<()>}
+// Full name: test_crate::foo::{closure}::{impl Destruct for {closure}::<()>}
 impl Destruct for {closure}::<()> {
     fn drop_glue<'_0_1> = drop_glue::<()><'_0_1>
     non-dyn-compatible

@@ -1211,8 +1211,9 @@ impl<'tcx> FullDef<'tcx> {
             | Const {
                 kind: ConstKind::AnonConst | ConstKind::PromotedConst,
                 ..
-            } => self.param_env().unwrap().parent.clone(),
-            Closure { .. } | Ctor { .. } | Variant { .. } => {
+            }
+            | Closure { .. } => self.param_env().unwrap().parent.clone(),
+            Ctor { .. } | Variant { .. } => {
                 let parent = self.def_id().parent(s).unwrap();
                 // The parent has the same generics as this item.
                 Some(self.this().with_def_id(s, &parent))

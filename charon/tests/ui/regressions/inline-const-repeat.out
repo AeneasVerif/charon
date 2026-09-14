@@ -1,0 +1,54 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::mem::maybe_uninit::MaybeUninit
+#[lang_item(MaybeUninit)]
+pub opaque type MaybeUninit<T>
+where
+    TraitClause0: (T: Sized),
+
+// Full name: core::mem::maybe_uninit::{MaybeUninit<T>[TraitClause0]}::uninit
+#[diagnostic_item("maybe_uninit_uninit")]
+pub fn uninit<T>() -> MaybeUninit<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+struct () {}
+
+// Full name: test_crate::repeat_inline_const
+pub fn repeat_inline_const<T, const N : usize>() -> [MaybeUninit<T>[TraitClause0]; N]
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: [MaybeUninit<T>[TraitClause0]; N]; // return
+    let _1: MaybeUninit<T>[TraitClause0]; // anonymous local
+    let _2: MaybeUninit<T>[TraitClause0]; // anonymous local
+
+    storage_live(_1)
+    storage_live(_2)
+    _2 = uninit<T>[TraitClause0]()
+    ↳⚡ undefined_behavior
+    _1 = move _2
+    storage_live(_0)
+    _0 = [move _1; N]
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+
+
