@@ -407,6 +407,7 @@ where
     R: IdxSliceIndex<I, Option<T>, Output = Option<T>>,
 {
     type Output = T;
+    #[track_caller]
     fn index(&self, index: R) -> &Self::Output {
         self.vector[index].as_ref().unwrap()
     }
@@ -417,6 +418,7 @@ where
     I: Idx,
     R: IdxSliceIndex<I, Option<T>, Output = Option<T>>,
 {
+    #[track_caller]
     fn index_mut(&mut self, index: R) -> &mut Self::Output {
         self.vector[index].as_mut().unwrap()
     }

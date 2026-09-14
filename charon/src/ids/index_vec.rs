@@ -171,6 +171,7 @@ where
     R: IdxSliceIndex<I, T, Output = T>,
 {
     type Output = T;
+    #[track_caller]
     fn index(&self, index: R) -> &Self::Output {
         &self.vector[index]
     }
@@ -181,6 +182,7 @@ where
     I: Idx,
     R: IdxSliceIndex<I, T, Output = T>,
 {
+    #[track_caller]
     fn index_mut(&mut self, index: R) -> &mut Self::Output {
         &mut self.vector[index]
     }
