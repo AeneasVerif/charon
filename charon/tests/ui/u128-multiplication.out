@@ -1,0 +1,681 @@
+# Final LLBC before serialization:
+
+struct (_, _)<A, B> {
+  _0: A,
+  _1: B,
+}
+
+// Full name: core::num::{u64}::MAX
+pub fn MAX() -> u64
+{
+    let _0: u64; // return
+
+    storage_live(_0)
+    _0 = ~(const 0u64)
+    return
+}
+
+// Full name: core::num::{u64}::MAX
+pub const MAX: u64 = MAX()
+
+// Full name: core::intrinsics::fallback::wide_mul_u128::to_low_high::MASK
+fn MASK() -> u128
+{
+    let _0: u128; // return
+    let _1: u128; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = cast<u64, u128>(copy MAX)
+    _0 = copy _1
+    storage_dead(_1)
+    return
+}
+
+// Full name: core::intrinsics::fallback::wide_mul_u128::to_low_high::MASK
+const MASK: u128 = MASK()
+
+// Full name: core::intrinsics::fallback::wide_mul_u128::to_low_high
+fn to_low_high(x: u128) -> [u128; 2usize]
+{
+    let _0: [u128; 2usize]; // return
+    let x: u128; // arg #1
+    let _2: u128; // anonymous local
+    let _3: u128; // anonymous local
+    let _4: u128; // anonymous local
+    let _5: u128; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy x
+    _2 = move _3 & copy MASK
+    storage_dead(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = copy x
+    _4 = move _5 panic.>> const 64i32
+    storage_dead(_5)
+    _0 = [move _2, move _4]
+    storage_dead(_4)
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: core::intrinsics::fallback::wide_mul_u128::scalar_mul
+fn scalar_mul(low_high: [u128; 2usize], k: u128) -> [u128; 3usize]
+{
+    let _0: [u128; 3usize]; // return
+    let low_high: [u128; 2usize]; // arg #1
+    let k: u128; // arg #2
+    let x: u128; // local
+    let c: u128; // local
+    let _5: [u128; 2usize]; // anonymous local
+    let _6: u128; // anonymous local
+    let _7: u128; // anonymous local
+    let _8: u128; // anonymous local
+    let _9: usize; // anonymous local
+    let _10: u128; // anonymous local
+    let y: u128; // local
+    let z: u128; // local
+    let _13: [u128; 2usize]; // anonymous local
+    let _14: u128; // anonymous local
+    let _15: u128; // anonymous local
+    let _16: u128; // anonymous local
+    let _17: u128; // anonymous local
+    let _18: usize; // anonymous local
+    let _19: u128; // anonymous local
+    let _20: u128; // anonymous local
+    let _21: u128; // anonymous local
+    let _22: u128; // anonymous local
+    let _23: u128; // anonymous local
+    let _24: u128; // anonymous local
+
+    storage_live(_0)
+    storage_live(_10)
+    storage_live(_19)
+    storage_live(_21)
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = copy k
+    storage_live(_8)
+    storage_live(_9)
+    _9 = const 0usize
+    _8 = copy low_high[copy _9]
+    _10 = copy _7 panic.* copy _8
+    _6 = move _10
+    storage_dead(_8)
+    storage_dead(_7)
+    _5 = to_low_high(move _6)
+    ↳⚡ storage_dead(_21)
+        storage_dead(_19)
+        storage_dead(_10)
+        storage_dead(k)
+        storage_dead(low_high)
+        unwind_continue
+    storage_dead(_6)
+    storage_live(x)
+    x = copy _5[const 0usize]
+    storage_live(c)
+    c = copy _5[const 1usize]
+    storage_dead(_9)
+    storage_dead(_5)
+    storage_live(_13)
+    storage_live(_14)
+    storage_live(_15)
+    storage_live(_16)
+    _16 = copy k
+    storage_live(_17)
+    storage_live(_18)
+    _18 = const 1usize
+    _17 = copy low_high[copy _18]
+    _19 = copy _16 panic.* copy _17
+    _15 = move _19
+    storage_dead(_17)
+    storage_dead(_16)
+    storage_live(_20)
+    _20 = copy c
+    _21 = copy _15 panic.+ copy _20
+    _14 = move _21
+    storage_dead(_20)
+    storage_dead(_15)
+    _13 = to_low_high(move _14)
+    ↳⚡ storage_dead(_21)
+        storage_dead(_19)
+        storage_dead(_10)
+        storage_dead(k)
+        storage_dead(low_high)
+        unwind_continue
+    storage_dead(_14)
+    storage_live(y)
+    y = copy _13[const 0usize]
+    storage_live(z)
+    z = copy _13[const 1usize]
+    storage_dead(_18)
+    storage_dead(_13)
+    storage_live(_22)
+    _22 = copy x
+    storage_live(_23)
+    _23 = copy y
+    storage_live(_24)
+    _24 = copy z
+    _0 = [move _22, move _23, move _24]
+    storage_dead(_24)
+    storage_dead(_23)
+    storage_dead(_22)
+    storage_dead(z)
+    storage_dead(y)
+    storage_dead(c)
+    storage_dead(x)
+    storage_dead(_21)
+    storage_dead(_19)
+    storage_dead(_10)
+    storage_dead(k)
+    storage_dead(low_high)
+    return
+}
+
+// Full name: core::intrinsics::fallback::wide_mul_u128::from_low_high
+fn from_low_high(x: [u128; 2usize]) -> u128
+{
+    let _0: u128; // return
+    let x: [u128; 2usize]; // arg #1
+    let _2: u128; // anonymous local
+    let _3: usize; // anonymous local
+    let _4: u128; // anonymous local
+    let _5: u128; // anonymous local
+    let _6: usize; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = const 0usize
+    _2 = copy x[copy _3]
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = const 1usize
+    _5 = copy x[copy _6]
+    _4 = move _5 panic.<< const 64i32
+    storage_dead(_5)
+    _0 = move _2 | move _4
+    storage_dead(_6)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
+// Full name: core::intrinsics::fallback::wide_mul_u128
+fn wide_mul_u128(a_1: u128, b_2: u128) -> (u128, u128)
+{
+    let _0: (u128, u128); // return
+    let a_1: u128; // arg #1
+    let b_2: u128; // arg #2
+    let a_3: [u128; 2usize]; // local
+    let _4: u128; // anonymous local
+    let b_5: [u128; 2usize]; // local
+    let _6: u128; // anonymous local
+    let low: [u128; 3usize]; // local
+    let _8: [u128; 2usize]; // anonymous local
+    let _9: u128; // anonymous local
+    let _10: usize; // anonymous local
+    let high: [u128; 3usize]; // local
+    let _12: [u128; 2usize]; // anonymous local
+    let _13: u128; // anonymous local
+    let _14: usize; // anonymous local
+    let r0: u128; // local
+    let _16: usize; // anonymous local
+    let r1: u128; // local
+    let c_18: u128; // local
+    let _19: [u128; 2usize]; // anonymous local
+    let _20: u128; // anonymous local
+    let _21: u128; // anonymous local
+    let _22: usize; // anonymous local
+    let _23: u128; // anonymous local
+    let _24: usize; // anonymous local
+    let _25: u128; // anonymous local
+    let r2: u128; // local
+    let c_27: u128; // local
+    let _28: [u128; 2usize]; // anonymous local
+    let _29: u128; // anonymous local
+    let _30: u128; // anonymous local
+    let _31: u128; // anonymous local
+    let _32: usize; // anonymous local
+    let _33: u128; // anonymous local
+    let _34: usize; // anonymous local
+    let _35: u128; // anonymous local
+    let _36: u128; // anonymous local
+    let _37: u128; // anonymous local
+    let r3: u128; // local
+    let _39: u128; // anonymous local
+    let _40: usize; // anonymous local
+    let _41: u128; // anonymous local
+    let _42: u128; // anonymous local
+    let _43: u128; // anonymous local
+    let _44: [u128; 2usize]; // anonymous local
+    let _45: u128; // anonymous local
+    let _46: u128; // anonymous local
+    let _47: u128; // anonymous local
+    let _48: [u128; 2usize]; // anonymous local
+    let _49: u128; // anonymous local
+    let _50: u128; // anonymous local
+
+    storage_live(_0)
+    storage_live(_25)
+    storage_live(_35)
+    storage_live(_37)
+    storage_live(_42)
+    storage_live(a_3)
+    storage_live(_4)
+    _4 = copy a_1
+    a_3 = to_low_high(move _4)
+    ↳⚡ storage_dead(_42)
+        storage_dead(_37)
+        storage_dead(_35)
+        storage_dead(_25)
+        storage_dead(b_2)
+        storage_dead(a_1)
+        unwind_continue
+    storage_dead(_4)
+    storage_live(b_5)
+    storage_live(_6)
+    _6 = copy b_2
+    b_5 = to_low_high(move _6)
+    ↳⚡ storage_dead(_42)
+        storage_dead(_37)
+        storage_dead(_35)
+        storage_dead(_25)
+        storage_dead(b_2)
+        storage_dead(a_1)
+        unwind_continue
+    storage_dead(_6)
+    storage_live(low)
+    storage_live(_8)
+    _8 = copy a_3
+    storage_live(_9)
+    storage_live(_10)
+    _10 = const 0usize
+    _9 = copy b_5[copy _10]
+    low = scalar_mul(move _8, move _9)
+    ↳⚡ storage_dead(_42)
+        storage_dead(_37)
+        storage_dead(_35)
+        storage_dead(_25)
+        storage_dead(b_2)
+        storage_dead(a_1)
+        unwind_continue
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(_10)
+    storage_live(high)
+    storage_live(_12)
+    _12 = copy a_3
+    storage_live(_13)
+    storage_live(_14)
+    _14 = const 1usize
+    _13 = copy b_5[copy _14]
+    high = scalar_mul(move _12, move _13)
+    ↳⚡ storage_dead(_42)
+        storage_dead(_37)
+        storage_dead(_35)
+        storage_dead(_25)
+        storage_dead(b_2)
+        storage_dead(a_1)
+        unwind_continue
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_dead(_14)
+    storage_live(r0)
+    storage_live(_16)
+    _16 = const 0usize
+    r0 = copy low[copy _16]
+    storage_dead(_16)
+    storage_live(_19)
+    storage_live(_20)
+    storage_live(_21)
+    storage_live(_22)
+    _22 = const 1usize
+    _21 = copy low[copy _22]
+    storage_live(_23)
+    storage_live(_24)
+    _24 = const 0usize
+    _23 = copy high[copy _24]
+    _25 = copy _21 panic.+ copy _23
+    _20 = move _25
+    storage_dead(_23)
+    storage_dead(_21)
+    _19 = to_low_high(move _20)
+    ↳⚡ storage_dead(_42)
+        storage_dead(_37)
+        storage_dead(_35)
+        storage_dead(_25)
+        storage_dead(b_2)
+        storage_dead(a_1)
+        unwind_continue
+    storage_dead(_20)
+    storage_live(r1)
+    r1 = copy _19[const 0usize]
+    storage_live(c_18)
+    c_18 = copy _19[const 1usize]
+    storage_dead(_24)
+    storage_dead(_22)
+    storage_dead(_19)
+    storage_live(_28)
+    storage_live(_29)
+    storage_live(_30)
+    storage_live(_31)
+    storage_live(_32)
+    _32 = const 2usize
+    _31 = copy low[copy _32]
+    storage_live(_33)
+    storage_live(_34)
+    _34 = const 1usize
+    _33 = copy high[copy _34]
+    _35 = copy _31 panic.+ copy _33
+    _30 = move _35
+    storage_dead(_33)
+    storage_dead(_31)
+    storage_live(_36)
+    _36 = copy c_18
+    _37 = copy _30 panic.+ copy _36
+    _29 = move _37
+    storage_dead(_36)
+    storage_dead(_30)
+    _28 = to_low_high(move _29)
+    ↳⚡ storage_dead(_42)
+        storage_dead(_37)
+        storage_dead(_35)
+        storage_dead(_25)
+        storage_dead(b_2)
+        storage_dead(a_1)
+        unwind_continue
+    storage_dead(_29)
+    storage_live(r2)
+    r2 = copy _28[const 0usize]
+    storage_live(c_27)
+    c_27 = copy _28[const 1usize]
+    storage_dead(_34)
+    storage_dead(_32)
+    storage_dead(_28)
+    storage_live(r3)
+    storage_live(_39)
+    storage_live(_40)
+    _40 = const 2usize
+    _39 = copy high[copy _40]
+    storage_live(_41)
+    _41 = copy c_27
+    _42 = copy _39 panic.+ copy _41
+    r3 = move _42
+    storage_dead(_41)
+    storage_dead(_39)
+    storage_dead(_40)
+    storage_live(_43)
+    storage_live(_44)
+    storage_live(_45)
+    _45 = copy r0
+    storage_live(_46)
+    _46 = copy r1
+    _44 = [move _45, move _46]
+    storage_dead(_46)
+    storage_dead(_45)
+    _43 = from_low_high(move _44)
+    ↳⚡ storage_dead(_42)
+        storage_dead(_37)
+        storage_dead(_35)
+        storage_dead(_25)
+        storage_dead(b_2)
+        storage_dead(a_1)
+        unwind_continue
+    storage_dead(_44)
+    storage_live(_47)
+    storage_live(_48)
+    storage_live(_49)
+    _49 = copy r2
+    storage_live(_50)
+    _50 = copy r3
+    _48 = [move _49, move _50]
+    storage_dead(_50)
+    storage_dead(_49)
+    _47 = from_low_high(move _48)
+    ↳⚡ storage_dead(_42)
+        storage_dead(_37)
+        storage_dead(_35)
+        storage_dead(_25)
+        storage_dead(b_2)
+        storage_dead(a_1)
+        unwind_continue
+    storage_dead(_48)
+    _0 = (move _43, move _47)
+    storage_dead(_47)
+    storage_dead(_43)
+    storage_dead(r3)
+    storage_dead(c_27)
+    storage_dead(r2)
+    storage_dead(c_18)
+    storage_dead(r1)
+    storage_dead(r0)
+    storage_dead(high)
+    storage_dead(low)
+    storage_dead(b_5)
+    storage_dead(a_3)
+    storage_dead(_42)
+    storage_dead(_37)
+    storage_dead(_35)
+    storage_dead(_25)
+    storage_dead(b_2)
+    storage_dead(a_1)
+    return
+}
+
+// Full name: core::num::{u128}::overflowing_add
+pub fn overflowing_add(self: u128, rhs: u128) -> (u128, bool)
+{
+    let _0: (u128, bool); // return
+    let self: u128; // arg #1
+    let rhs: u128; // arg #2
+    let a: u128; // local
+    let b: bool; // local
+    let _5: (u128, bool); // anonymous local
+    let _6: u128; // anonymous local
+    let _7: u128; // anonymous local
+    let _8: u128; // anonymous local
+    let _9: bool; // anonymous local
+
+    storage_live(_0)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = copy self
+    storage_live(_7)
+    _7 = copy rhs
+    _5 = move _6 checked.+ move _7
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_live(a)
+    a = copy _5._0
+    storage_live(b)
+    b = copy _5._1
+    storage_dead(_5)
+    storage_live(_8)
+    _8 = copy a
+    storage_live(_9)
+    _9 = copy b
+    _0 = (move _8, move _9)
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(b)
+    storage_dead(a)
+    storage_dead(rhs)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::intrinsics::fallback::{impl CarryingMulAdd for u128}::carrying_mul_add
+pub fn carrying_mul_add(self: u128, b: u128, c: u128, d: u128) -> (u128, u128)
+{
+    let _0: (u128, u128); // return
+    let self: u128; // arg #1
+    let b: u128; // arg #2
+    let c: u128; // arg #3
+    let d: u128; // arg #4
+    let low_5: u128; // local
+    let high: u128; // local
+    let _7: (u128, u128); // anonymous local
+    let _8: u128; // anonymous local
+    let _9: u128; // anonymous local
+    let low_10: u128; // local
+    let carry_11: bool; // local
+    let _12: (u128, bool); // anonymous local
+    let _13: u128; // anonymous local
+    let _14: u128; // anonymous local
+    let _15: u128; // anonymous local
+    let _16: bool; // anonymous local
+    let _17: u128; // anonymous local
+    let low_18: u128; // local
+    let carry_19: bool; // local
+    let _20: (u128, bool); // anonymous local
+    let _21: u128; // anonymous local
+    let _22: u128; // anonymous local
+    let _23: u128; // anonymous local
+    let _24: bool; // anonymous local
+    let _25: u128; // anonymous local
+    let _26: u128; // anonymous local
+    let _27: u128; // anonymous local
+
+    storage_live(_0)
+    storage_live(_17)
+    storage_live(_25)
+    storage_live(_7)
+    storage_live(_8)
+    _8 = copy self
+    storage_live(_9)
+    _9 = copy b
+    _7 = wide_mul_u128(move _8, move _9)
+    ↳⚡ storage_dead(_25)
+        storage_dead(_17)
+        storage_dead(d)
+        storage_dead(c)
+        storage_dead(b)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_live(low_5)
+    low_5 = copy _7._0
+    storage_live(high)
+    high = copy _7._1
+    storage_dead(_7)
+    storage_live(_12)
+    storage_live(_13)
+    _13 = copy low_5
+    storage_live(_14)
+    _14 = copy c
+    _12 = overflowing_add(move _13, move _14)
+    ↳⚡ storage_dead(_25)
+        storage_dead(_17)
+        storage_dead(d)
+        storage_dead(c)
+        storage_dead(b)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_live(low_10)
+    low_10 = copy _12._0
+    storage_live(carry_11)
+    carry_11 = copy _12._1
+    storage_dead(_12)
+    storage_live(_15)
+    storage_live(_16)
+    _16 = copy carry_11
+    _15 = cast<bool, u128>(move _16)
+    storage_dead(_16)
+    _17 = copy high panic.+ copy _15
+    high = move _17
+    storage_dead(_15)
+    storage_live(_20)
+    storage_live(_21)
+    _21 = copy low_10
+    storage_live(_22)
+    _22 = copy d
+    _20 = overflowing_add(move _21, move _22)
+    ↳⚡ storage_dead(_25)
+        storage_dead(_17)
+        storage_dead(d)
+        storage_dead(c)
+        storage_dead(b)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_22)
+    storage_dead(_21)
+    storage_live(low_18)
+    low_18 = copy _20._0
+    storage_live(carry_19)
+    carry_19 = copy _20._1
+    storage_dead(_20)
+    storage_live(_23)
+    storage_live(_24)
+    _24 = copy carry_19
+    _23 = cast<bool, u128>(move _24)
+    storage_dead(_24)
+    _25 = copy high panic.+ copy _23
+    high = move _25
+    storage_dead(_23)
+    storage_live(_26)
+    _26 = copy low_18
+    storage_live(_27)
+    _27 = copy high
+    _0 = (move _26, move _27)
+    storage_dead(_27)
+    storage_dead(_26)
+    storage_dead(carry_19)
+    storage_dead(low_18)
+    storage_dead(carry_11)
+    storage_dead(low_10)
+    storage_dead(high)
+    storage_dead(low_5)
+    storage_dead(_25)
+    storage_dead(_17)
+    storage_dead(d)
+    storage_dead(c)
+    storage_dead(b)
+    storage_dead(self)
+    return
+}
+
+struct () {}
+
+// Full name: test_crate::mult_u128
+pub fn mult_u128(a: u128, b: u128) -> u128
+{
+    let _0: u128; // return
+    let a: u128; // arg #1
+    let b: u128; // arg #2
+    let _3: (u128, u128); // anonymous local
+    let _4: u128; // anonymous local
+    let _5: u128; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy a
+    storage_live(_5)
+    _5 = copy b
+    _3 = carrying_mul_add(move _4, move _5, const 0u128, const 0u128)
+    ↳⚡ storage_dead(b)
+        storage_dead(a)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = copy _3._0
+    storage_dead(_3)
+    storage_dead(b)
+    storage_dead(a)
+    return
+}
+
+
+

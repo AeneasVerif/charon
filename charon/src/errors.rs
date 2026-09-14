@@ -119,6 +119,34 @@ pub fn display_unspanned_error(level: Level, msg: &str) {
     anstream::eprintln!("{message}\n");
 }
 
+/// Display an error at the given source span.
+pub fn display_spanned_error(krate: &TranslatedCrate, span: Span, title: &str, label: &str) {
+    use annotate_snippets::*;
+
+    let span = span.data();
+    let mut group = Group::with_title(Level::ERROR.primary_title(title));
+    let origin;
+    if let Some(file) = krate.files.get(span.file_id) {
+        origin = file.name.to_string();
+        if let Some(source) = &file.contents {
+            let snippet = Snippet::source(source).path(&origin).annotation(
+                AnnotationKind::Primary
+                    .span(span.to_byte_range(source))
+                    .label(label),
+            );
+            group = group.element(snippet);
+        } else {
+            let origin = Origin::path(origin)
+                .line(span.beg.line as usize)
+                .char_column(span.beg.col as usize + 1);
+            group = group.element(origin);
+        }
+    }
+
+    let diagnostic = [group];
+    anstream::eprintln!("{}", Renderer::styled().render(&diagnostic));
+}
+
 /// We use this to save the origin of an id. This is useful for the external
 /// dependencies, especially if some external dependencies don't extract:
 /// we use this information to tell the user what is the code which

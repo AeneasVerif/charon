@@ -22,24 +22,41 @@ type assoc_item_names = {
   consts : trait_item_name list;
 }
 
-(** The body of a function. *)
+(** The body of a function.
+
+    A normal function has a body that's either structured or unstructured. These
+    are two equivalent representations of the same function body, which only
+    differ in how control-flow is represented. By default bodies are structured;
+    passing [--ullbc] to Charon makes bodies unstructured.
+
+    Besides these, some functions have virtual bodies or no body, see the doc
+    for each variant. *)
 and body =
   | UnstructuredBody of Generated_UllbcAst.block list gexpr_body
-      (** Body represented as a CFG. This is what ullbc is made of, and what we
-          get after translating MIR. *)
+      (** Body represented as a control-flow graph (CFG), i.e. with numbered
+          blocks and jumps/GOTOs between them. This is available when passing
+          [--ullbc] to Charon.
+
+          This is also the same structure as rustc's MIR, and is in fact a
+          direct translation of it. *)
   | StructuredBody of Generated_LlbcAst.block gexpr_body
-      (** Body represented with structured control flow. This is what llbc is
-          made of. We restructure the control flow in the [ullbc_to_llbc] pass.
-      *)
+      (** Body represented with structured control flow, i.e. with nested
+          [if]/[match]/[loop] blocks. This is available when [--ullbc] is not
+          passed to Charon.
+
+          This structure is recovered from the unstructured body in the
+          [ullbc_to_llbc] pass. *)
   | TargetDispatchBody of (string * fun_decl_ref) list
       (** A façade body that dispatches to one of several per-target function
-          bodies. Created during multi-target merging for functions with the
-          same signature but different bodies across targets. *)
+          bodies. This is created during multi-target merging (using [--target])
+          to represent functions that have a different implementation across
+          targets. *)
   | ExternBody of string
       (** Function declared in an [extern { ... }] block. The string is the
           foreign symbol name. *)
   | IntrinsicBody of string * string option list
-      (** Rust intrinsic function.
+      (** Rust intrinsic function. This has no body and describes a "built-in"
+          operation that must be handled by the codegen backend.
 
           Fields:
           - [name]: The intrinsic name.
@@ -48,10 +65,13 @@ and body =
       (** A body that the user chose not to translate, based on opacity settings
           like [--include]/[--opaque]. *)
   | MissingBody
-      (** A body that was not available. Typically that's function bodies for
-          non-generic and non-inlineable std functions, as these are not present
-          in the compiled standard library [.rmeta] file shipped with a rust
-          toolchain. *)
+      (** A body that was not available.
+
+          These can occur when using a sysroot that doesn't have MIR for all the
+          standard library functions. This is the case of the sysroot that ships
+          with every Rust toolchain, but Charon uses a custom-built sysroot that
+          does. So this shouldn't happen unless you're passing [--sysroot] to
+          charon. *)
   | ErrorBody of error
       (** We encountered an error while translating this body. *)
 

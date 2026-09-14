@@ -258,6 +258,19 @@ impl TranslatedCrate {
         self.all_items().map(|item| (item.id(), item))
     }
 
+    /// Iterate over all reachable items in dependency order. Panics if `--no-reorder-decls` cas
+    /// passed to Charon.
+    pub fn in_dependency_order(&self) -> impl Iterator<Item = ItemId> + '_ {
+        self.ordered_decls
+            .as_ref()
+            .expect(
+                "`in_dependency_order` no available if \
+                `--no-reorder-decls` was passed to Charon",
+            )
+            .iter()
+            .flat_map(DeclarationGroup::get_ids)
+    }
+
     /// When translating without `--target`, there's only one target information; this method
     /// retrieves it.
     /// Panics if this crate was translated in multi-target mode.
