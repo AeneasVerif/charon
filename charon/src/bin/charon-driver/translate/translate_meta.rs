@@ -963,7 +963,9 @@ impl<'tcx> TranslateCtx<'tcx> {
             (AttrInfo::default(), None, None)
         };
 
-        let opacity = if attr_info.attributes.iter().any(|attr| attr.is_exclude()) {
+        let opacity = if attr_info.attributes.iter().any(|attr| attr.is_exclude())
+            || self.is_poly_in_mono(item_src)
+        {
             ItemOpacity::Invisible.max(name_opacity)
         } else if self.is_extern_item(def)
             || attr_info.attributes.iter().any(|attr| attr.is_opaque())
