@@ -23,7 +23,7 @@ fn main() -> Result<()> {
     };
 
     // A patterh that detects the `thread::spawn` function we care about.
-    let thread_spawn = NamePattern::parse("std::thread::_::spawn").unwrap();
+    let thread_spawn = NamePattern::parse("std::thread::functions::spawn").unwrap();
 
     // Iterate over all the functions in the crate (including dependencies) to find calls to
     // `thread::spawn`.
