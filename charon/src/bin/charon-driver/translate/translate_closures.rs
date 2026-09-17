@@ -141,40 +141,40 @@ impl<'a> CallableFnImpls<'a> {
     fn from_def(def: &'a hax::FullDef<'_>) -> Option<Self> {
         match def.kind() {
             hax::FullDefKind::Closure(c) => Some(Self {
-                callable: Callable::Closure(&c.args),
-                fn_once_impl: Some(&c.fn_once_impl),
-                fn_mut_impl: c.fn_mut_impl.as_deref(),
-                fn_impl: c.fn_impl.as_deref(),
+                callable: Callable::Closure(c.args()),
+                fn_once_impl: Some(c.fn_once_impl()),
+                fn_mut_impl: c.fn_mut_impl(),
+                fn_impl: c.fn_impl(),
             }),
             hax::FullDefKind::Fn(f) => Some(Self {
                 callable: Callable::FnDef {
                     item: def.this(),
-                    sig: &f.sig,
-                    tupled_args_ty: f.tupled_args_ty.as_ref()?,
+                    sig: f.sig(),
+                    tupled_args_ty: f.tupled_args_ty()?,
                 },
-                fn_once_impl: f.fn_once_impl.as_deref(),
-                fn_mut_impl: f.fn_mut_impl.as_deref(),
-                fn_impl: f.fn_impl.as_deref(),
+                fn_once_impl: f.fn_once_impl(),
+                fn_mut_impl: f.fn_mut_impl(),
+                fn_impl: f.fn_impl(),
             }),
             hax::FullDefKind::AssocFn(f) => Some(Self {
                 callable: Callable::FnDef {
                     item: def.this(),
-                    sig: &f.sig,
-                    tupled_args_ty: f.tupled_args_ty.as_ref()?,
+                    sig: f.sig(),
+                    tupled_args_ty: f.tupled_args_ty()?,
                 },
-                fn_once_impl: f.fn_once_impl.as_deref(),
-                fn_mut_impl: f.fn_mut_impl.as_deref(),
-                fn_impl: f.fn_impl.as_deref(),
+                fn_once_impl: f.fn_once_impl(),
+                fn_mut_impl: f.fn_mut_impl(),
+                fn_impl: f.fn_impl(),
             }),
             hax::FullDefKind::Ctor(f) => Some(Self {
                 callable: Callable::FnDef {
                     item: def.this(),
-                    sig: &f.sig,
-                    tupled_args_ty: f.tupled_args_ty.as_ref()?,
+                    sig: f.sig(),
+                    tupled_args_ty: f.tupled_args_ty()?,
                 },
-                fn_once_impl: f.fn_once_impl.as_deref(),
-                fn_mut_impl: f.fn_mut_impl.as_deref(),
-                fn_impl: f.fn_impl.as_deref(),
+                fn_once_impl: f.fn_once_impl(),
+                fn_mut_impl: f.fn_mut_impl(),
+                fn_impl: f.fn_impl(),
             }),
             _ => None,
         }
@@ -874,14 +874,15 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         trace!("About to translate closure as fn:\n{:?}", def.def_id());
 
+        let closure_args = closure.args();
         assert!(
-            closure.args.upvar_tys.is_empty(),
+            closure_args.upvar_tys.is_empty(),
             "Only stateless closures can be translated as functions"
         );
 
         // Translate the function signature
-        let signature = self.translate_fun_sig(span, closure.args.fn_sig.hax_skip_binder_ref())?;
-        let state_ty = self.get_callable_state_ty(span, Callable::Closure(&closure.args))?;
+        let signature = self.translate_fun_sig(span, closure_args.fn_sig.hax_skip_binder_ref())?;
+        let state_ty = self.get_callable_state_ty(span, Callable::Closure(closure_args))?;
 
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
@@ -899,7 +900,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 TransItemSourceKind::CallableMethod(ClosureKind::FnOnce),
             );
             let impl_ref =
-                self.translate_callable_impl_ref(span, &closure.args.item, ClosureKind::FnOnce)?;
+                self.translate_callable_impl_ref(span, &closure_args.item, ClosureKind::FnOnce)?;
             let fn_op = FnOperand::Regular(FnPtr::new(fun_id.into(), impl_ref.generics.clone()));
 
             let mut builder = BodyBuilder::new(span, signature.inputs.len());
@@ -912,7 +913,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 .map(|(i, ty)| builder.new_var(Some(format!("arg{}", i + 1)), ty.clone()))
                 .collect();
             let args_tupled_ty =
-                self.translate_ty(span, closure.args.tupled_args_ty.hax_skip_binder_ref())?;
+                self.translate_ty(span, closure_args.tupled_args_ty.hax_skip_binder_ref())?;
             let args_tupled = builder.new_var(Some("args".to_string()), args_tupled_ty.clone());
             let state = builder.new_var(Some("state".to_string()), state_ty.clone());
 

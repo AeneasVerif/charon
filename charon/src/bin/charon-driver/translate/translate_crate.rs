@@ -233,9 +233,10 @@ impl<'tcx> TranslateCtx<'tcx> {
         if matches!(def_id.kind, hax::DefKind::AssocFn)
             && let def = self.poly_hax_def(def_id).ok()?
             && let hax::FullDefKind::AssocFn(f) = def.kind()
-            && !f.associated_item.has_value
+            && let associated_item = f.associated_item()
+            && !associated_item.has_value
             && let hax::AssocItemContainer::TraitContainer { trait_ref } =
-                &f.associated_item.container
+                &associated_item.container
         {
             Some(trait_ref.def_id.clone())
         } else {
@@ -490,7 +491,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             .translated
             .assoc_item_names
             .get_or_insert_with(trait_id, Default::default);
-        for item in &t.items {
+        for item in t.items() {
             let name = TraitItemName(
                 item.name
                     .as_ref()
@@ -533,9 +534,9 @@ impl<'tcx> TranslateCtx<'tcx> {
 
         let item_def = self.poly_hax_def(item_def_id)?;
         let assoc = match item_def.kind() {
-            hax::FullDefKind::AssocTy(t) => &t.associated_item,
-            hax::FullDefKind::AssocConst(c) => &c.associated_item,
-            hax::FullDefKind::AssocFn(f) => &f.associated_item,
+            hax::FullDefKind::AssocTy(t) => t.associated_item(),
+            hax::FullDefKind::AssocConst(c) => c.associated_item(),
+            hax::FullDefKind::AssocFn(f) => f.associated_item(),
             _ => panic!("Unexpected def for associated item: {item_def:?}"),
         };
         let decl_def_id = assoc.implemented_trait_item_id();
@@ -801,9 +802,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         ) {
             let def = self.hax_def(hax_item)?;
             let sig = match def.kind() {
-                hax::FullDefKind::Fn(f) => Some(&f.sig),
-                hax::FullDefKind::AssocFn(f) => Some(&f.sig),
-                hax::FullDefKind::Ctor(f) => Some(&f.sig),
+                hax::FullDefKind::Fn(f) => Some(f.sig()),
+                hax::FullDefKind::AssocFn(f) => Some(f.sig()),
+                hax::FullDefKind::Ctor(f) => Some(f.sig()),
                 _ => None,
             };
             if let Some(sig) = sig {
@@ -813,7 +814,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .map(|_| self.translate_erased_region()),
                 );
             } else if let hax::FullDefKind::Closure(c) = def.kind() {
-                let upvar_regions = if self.item_src.def_id() == &c.args.item.def_id {
+                let closure_args = c.args();
+                let upvar_regions = if self.item_src.def_id() == &closure_args.item.def_id {
                     assert!(self.outermost_binder().closure_upvar_tys.is_some());
                     self.outermost_binder().closure_upvar_regions.len()
                 } else {
@@ -840,7 +842,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 | TransItemSourceKind::ClosureAsFnCast = kind
                 {
                     generics.regions.extend(
-                        c.args
+                        closure_args
                             .fn_sig
                             .bound_vars
                             .iter()
@@ -963,7 +965,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             return Ok(None);
         };
         if !matches!(
-            &f.associated_item.container,
+            &f.associated_item().container,
             hax::AssocItemContainer::TraitContainer { .. }
         ) {
             return Ok(None);
@@ -971,7 +973,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         let trait_ref = self.translate_trait_proof(span, in_trait)?;
         let generics = self.translate_generic_args(span, &item.generic_args, &item.trait_proofs)?;
-        self.translate_region_binder(span, &f.sig.as_ref().rebind(()), |ctx, _| {
+        self.translate_region_binder(span, &f.sig().as_ref().rebind(()), |ctx, _| {
             let method_id = ctx.translate_trait_method_id(trait_ref.trait_id(), &item.def_id)?;
             let fn_kind = FnPtrKind::Trait(trait_ref.move_under_binder(), method_id);
             let generics = generics.move_under_binder();

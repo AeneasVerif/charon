@@ -334,17 +334,17 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         }
         match def.kind() {
             hax::FullDefKind::InherentImpl(i) => {
-                for assoc in &i.items {
+                for assoc in i.items() {
                     self.t_ctx.enqueue_module_item(&assoc.def_id);
                 }
             }
             hax::FullDefKind::Mod(m) => {
-                for (_, def_id) in &m.items {
+                for (_, def_id) in m.items() {
                     self.t_ctx.enqueue_module_item(def_id);
                 }
             }
             hax::FullDefKind::ForeignMod(m) => {
-                for def_id in &m.items {
+                for def_id in m.items() {
                     self.t_ctx.enqueue_module_item(def_id);
                 }
             }
@@ -358,8 +358,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         def: &hax::FullDef<'tcx>,
     ) -> Result<Option<TraitItemSource>, Error> {
         let assoc = match def.kind() {
-            hax::FullDefKind::AssocConst(c) => &c.associated_item,
-            hax::FullDefKind::AssocFn(f) => &f.associated_item,
+            hax::FullDefKind::AssocConst(c) => c.associated_item(),
+            hax::FullDefKind::AssocFn(f) => f.associated_item(),
             _ => return Ok(None),
         };
         Ok(Some(match &assoc.container {
@@ -439,7 +439,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Get the kind of the type decl.
         let src = if let hax::FullDefKind::Closure(c) = def.kind() {
-            let info = self.translate_closure_info(span, &c.args)?;
+            let info = self.translate_closure_info(span, c.args())?;
             TypeSource::Closure { info }
         } else if let Some(builtin) = self.recognize_builtin_adt(def.this()) {
             TypeSource::Builtin(builtin)
@@ -454,10 +454,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             hax::FullDefKind::TyAlias(a) => {
                 // Don't error on missing trait refs.
                 self.error_on_trait_proof_error = false;
-                self.translate_ty(span, &a.ty).map(TypeDeclKind::Alias)
+                self.translate_ty(span, a.ty()).map(TypeDeclKind::Alias)
             }
             hax::FullDefKind::Adt(_) => self.translate_adt_def(trans_id, span, &item_meta, def),
-            hax::FullDefKind::Closure(c) => self.translate_closure_adt(span, &c.args),
+            hax::FullDefKind::Closure(c) => self.translate_closure_adt(span, c.args()),
             _ => panic!("Unexpected item when translating types: {def:?}"),
         };
 
@@ -529,11 +529,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         if let hax::FullDefKind::Ctor(ctor) = def.kind() {
             let signature = FunSig {
                 inputs: ctor
-                    .fields
+                    .fields()
                     .iter()
                     .map(|field| self.translate_ty(span, &field.ty))
                     .try_collect()?,
-                output: self.translate_ty(span, &ctor.output_ty)?,
+                output: self.translate_ty(span, ctor.output_ty())?,
                 is_unsafe: false,
                 abi: Abi::rust(),
                 is_variadic: false,
@@ -557,15 +557,15 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Translate the function signature
         trace!("Translating function signature");
         let signature = match &def.kind {
-            hax::FullDefKind::Fn(f) => self.translate_fun_sig(span, &f.sig.value)?,
-            hax::FullDefKind::AssocFn(f) => self.translate_fun_sig(span, &f.sig.value)?,
+            hax::FullDefKind::Fn(f) => self.translate_fun_sig(span, &f.sig().value)?,
+            hax::FullDefKind::AssocFn(f) => self.translate_fun_sig(span, &f.sig().value)?,
             hax::FullDefKind::Const(_)
             | hax::FullDefKind::AssocConst(_)
             | hax::FullDefKind::Static(_) => {
                 let ty = match &def.kind {
-                    hax::FullDefKind::Const(c) => &c.ty,
-                    hax::FullDefKind::AssocConst(c) => &c.ty,
-                    hax::FullDefKind::Static(s) => &s.ty,
+                    hax::FullDefKind::Const(c) => c.ty(),
+                    hax::FullDefKind::AssocConst(c) => c.ty(),
+                    hax::FullDefKind::Static(s) => s.ty(),
                     _ => unreachable!(),
                 };
                 FunSig {
@@ -649,17 +649,17 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         trace!("Translating global type");
         let ty = match &def.kind {
-            hax::FullDefKind::Const(c) => &c.ty,
-            hax::FullDefKind::AssocConst(c) => &c.ty,
-            hax::FullDefKind::Static(s) => &s.ty,
+            hax::FullDefKind::Const(c) => c.ty(),
+            hax::FullDefKind::AssocConst(c) => c.ty(),
+            hax::FullDefKind::Static(s) => s.ty(),
             _ => panic!("Unexpected def for constant: {def:?}"),
         };
         let ty = self.translate_ty(span, ty)?;
 
         let global_kind = match &def.kind {
-            hax::FullDefKind::Static(s) if s.thread_local => GlobalKind::ThreadLocal,
+            hax::FullDefKind::Static(s) if s.thread_local() => GlobalKind::ThreadLocal,
             hax::FullDefKind::Static(_) => GlobalKind::Static,
-            hax::FullDefKind::Const(c) if matches!(c.kind, hax::ConstKind::TopLevel) => {
+            hax::FullDefKind::Const(c) if matches!(c.kind(), hax::ConstKind::TopLevel) => {
                 GlobalKind::NamedConst
             }
             hax::FullDefKind::AssocConst(_) => GlobalKind::NamedConst,
@@ -714,8 +714,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let span = item_meta.span;
 
         let implied_predicates = match def.kind() {
-            hax::FullDefKind::Trait(t) => &t.implied_predicates,
-            hax::FullDefKind::TraitAlias(t) => &t.implied_predicates,
+            hax::FullDefKind::Trait(t) => t.implied_predicates(),
+            hax::FullDefKind::TraitAlias(t) => t.implied_predicates(),
             _ => raise_error!(self, span, "Unexpected definition: {def:?}"),
         };
         let src = match def.kind() {
@@ -755,7 +755,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
         let self_trait_ref = TraitRef::new(
             TraitRefKind::SelfId,
-            RegionBinder::empty(self.translate_trait_predicate(span, &t.self_predicate)?),
+            RegionBinder::empty(self.translate_trait_predicate(span, t.self_predicate())?),
         );
 
         // Translate the associated items
@@ -825,7 +825,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             });
         }
 
-        for hax_item in &t.items {
+        for hax_item in t.items() {
             let item_def_id = &hax_item.def_id;
             let item_span = self.def_span(item_def_id);
             let assoc_item_id = self.translate_assoc_item_id(trait_decl_id, item_def_id)?;
@@ -860,7 +860,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     {
                         self.mark_method_as_used(trait_decl_id, trait_method_id);
                     }
-                    let default_fun_id = f.associated_item.has_value.then(|| {
+                    let default_fun_id = f.associated_item().has_value.then(|| {
                         let fun_id = self.register_no_enqueue(item_span, &item_src);
                         // Register this method.
                         self.register_method_impl(trait_decl_id, trait_method_id, fun_id);
@@ -893,7 +893,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                             // `skip_binder` is allowed because `translate_binder_for_def` puts the
                             // late bound params in scope.
                             let signature =
-                                bt_ctx.translate_fun_sig(span, f.sig.hax_skip_binder_ref())?;
+                                bt_ctx.translate_fun_sig(span, f.sig().hax_skip_binder_ref())?;
                             Ok(TraitMethod {
                                 name: item_name,
                                 item_meta: method_item_meta,
@@ -966,7 +966,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                     generics: Box::new(generics),
                                 }
                             });
-                            let ty = ctx.translate_ty(item_span, &c.ty)?;
+                            let ty = ctx.translate_ty(item_span, c.ty())?;
                             Ok(TraitAssocConst {
                                 name: item_name,
                                 attr_info,
@@ -991,14 +991,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                             // Also add the implied predicates.
                             let mut implied_clauses = Default::default();
                             ctx.translate_predicates(
-                                &assoc_ty_def.implied_predicates,
+                                assoc_ty_def.implied_predicates(),
                                 PredicateOrigin::TraitItem(assoc_type_id),
                                 Some(&mut implied_clauses),
                             )?;
 
                             let default = assoc_ty_def
-                                .value
-                                .as_ref()
+                                .value()
                                 .map(|(ty, trait_proofs)| -> Result<_, Error> {
                                     let ty = ctx.translate_ty(item_span, ty)?;
                                     let trefs = ctx.translate_trait_proofs(span, trait_proofs)?;
@@ -1051,7 +1050,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
 
         // Retrieve the information about the implemented trait.
-        let implemented_trait = self.translate_trait_ref(span, &timpl.trait_pred.trait_ref)?;
+        let trait_pred = timpl.trait_pred();
+        let implemented_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
         let trait_id = implemented_trait.id;
 
         // Translate the bare minimum needed for names: `impl_trait`.
@@ -1081,13 +1081,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let vtable = self.translate_vtable_instance_ref_no_enqueue(
             span,
-            &timpl.trait_pred.trait_ref,
+            &trait_pred.trait_ref,
             def.this(),
             TransImplSource::Normal,
         )?;
 
         // The trait refs which implement the parent clauses of the implemented trait decl.
-        let implied_trait_refs = self.translate_trait_proofs(span, &timpl.implied_trait_proofs)?;
+        let implied_trait_refs = self.translate_trait_proofs(span, timpl.implied_trait_proofs())?;
 
         {
             // Debugging
@@ -1103,7 +1103,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             );
         }
 
-        let implemented_trait_def = self.poly_hax_def(&timpl.trait_pred.trait_ref.def_id)?;
+        let implemented_trait_def = self.poly_hax_def(&trait_pred.trait_ref.def_id)?;
         if implemented_trait_def.lang_item == Some(sym::destruct) {
             raise_error!(
                 self,
@@ -1133,7 +1133,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             });
         }
 
-        for impl_item in &timpl.items {
+        for impl_item in timpl.items() {
             let item_def_id = impl_item.def_id().unwrap_or(impl_item.decl_def_id());
             let item_span = self.def_span(item_def_id);
             let assoc_item_id = self.translate_assoc_item_id(trait_id, item_def_id)?;
@@ -1328,11 +1328,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
 
         // Retrieve the information about the implemented trait.
-        let implemented_trait = self.translate_trait_ref(span, &t.self_predicate.trait_ref)?;
+        let implemented_trait = self.translate_trait_ref(span, &t.self_predicate().trait_ref)?;
 
         // Register the trait implied clauses as required clauses for the impl.
         assert!(self.innermost_generics_mut().trait_clauses.is_empty());
-        self.register_predicates(&t.implied_predicates, PredicateOrigin::WhereClauseOnTrait)?;
+        self.register_predicates(t.implied_predicates(), PredicateOrigin::WhereClauseOnTrait)?;
 
         let mut generics = self.the_only_binder().params.identity_args();
         // Do the inverse operation: the trait considers the clauses as implied.
@@ -1442,7 +1442,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Monomorphic traits have no associated types.
         if !self.monomorphize() {
             let type_items = t
-                .items
+                .items()
                 .iter()
                 .filter(|assoc| matches!(assoc.kind, hax::AssocKind::Type { .. }));
             for ((ty, trait_proofs), assoc) in vimpl.types.iter().zip(type_items) {

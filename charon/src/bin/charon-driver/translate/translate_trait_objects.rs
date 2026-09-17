@@ -92,7 +92,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 let trait_def = self.poly_hax_def(trait_def_id)?;
                 let has_methods = match trait_def.kind() {
                     hax::FullDefKind::Trait(t) => t
-                        .items
+                        .items()
                         .iter()
                         .any(|assoc| matches!(assoc.kind, hax::AssocKind::Fn { .. })),
                     hax::FullDefKind::TraitAlias(_) => false,
@@ -208,8 +208,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn trait_is_dyn_compatible(&mut self, def_id: &hax::DefId) -> Result<bool, Error> {
         let def = self.poly_hax_def(def_id)?;
         Ok(match def.kind() {
-            hax::FullDefKind::Trait(t) => t.dyn_self.is_some(),
-            hax::FullDefKind::TraitAlias(t) => t.dyn_self.is_some(),
+            hax::FullDefKind::Trait(t) => t.dyn_self().is_some(),
+            hax::FullDefKind::TraitAlias(t) => t.dyn_self().is_some(),
             _ => false,
         })
     }
@@ -314,12 +314,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Method fields.
         if let hax::FullDefKind::Trait(t) = poly_trait_def.kind() {
-            for item in &t.items {
+            for item in t.items() {
                 let item_def_id = &item.def_id;
                 // This is ok because dyn-compatible methods don't have generics.
                 let poly_item_def = self.poly_hax_def(item_def_id)?;
                 if let hax::FullDefKind::AssocFn(f) = poly_item_def.kind()
-                    && let Some(sig) = &f.vtable_sig
+                    && let Some(sig) = f.vtable_sig()
                 {
                     let id = self.translate_trait_method_id_no_enqueue(trait_id, item_def_id)?;
                     fields.push(TrVTableField::Method(id, sig.clone()));
@@ -468,9 +468,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         }
 
         let (self_predicate, dyn_self, implied_predicates) = match trait_def.kind() {
-            hax::FullDefKind::Trait(t) => (&t.self_predicate, &t.dyn_self, &t.implied_predicates),
+            hax::FullDefKind::Trait(t) => {
+                (t.self_predicate(), t.dyn_self(), t.implied_predicates())
+            }
             hax::FullDefKind::TraitAlias(t) => {
-                (&t.self_predicate, &t.dyn_self, &t.implied_predicates)
+                (t.self_predicate(), t.dyn_self(), t.implied_predicates())
             }
             _ => panic!(),
         };
@@ -839,19 +841,19 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 // The methods are indexed in the order provided by hax, which is the order of the
                 // trait declaration.
                 let methods: IndexVec<TraitMethodId, _> = timpl
-                    .items
+                    .items()
                     .iter()
                     .filter(|item| matches!(item.decl_def_id.kind, hax::DefKind::AssocFn))
                     .collect();
                 VTableInstanceData {
-                    implemented_trait_ref: &timpl.trait_pred.trait_ref,
-                    implied_trait_proofs: &timpl.implied_trait_proofs,
+                    implemented_trait_ref: &timpl.trait_pred().trait_ref,
+                    implied_trait_proofs: timpl.implied_trait_proofs(),
                     methods: VTableMethodSource::ImplMethods(methods),
                 }
             }
             (TransImplSource::Marker, hax::FullDefKind::Trait(t)) => VTableInstanceData {
-                implemented_trait_ref: &t.self_predicate.trait_ref,
-                implied_trait_proofs: &t.implied_trait_proofs,
+                implemented_trait_ref: &t.self_predicate().trait_ref,
+                implied_trait_proofs: t.implied_trait_proofs(),
                 methods: VTableMethodSource::ImplMethods(IndexVec::new()),
             },
             _ => unreachable!(),
@@ -908,10 +910,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     &TransItemSourceKind::VTableMethod(TransImplSource::Normal),
                 )?;
                 let vtable_sig = match assoc_fun_def.kind() {
-                    hax::FullDefKind::AssocFn(f) if f.vtable_sig.is_some() => {
-                        f.vtable_sig.clone().unwrap()
-                    }
-                    _ => unreachable!("MONO: only assoc fun is supported"),
+                    hax::FullDefKind::AssocFn(f) => f.vtable_sig(),
+                    _ => None,
+                };
+                let Some(vtable_sig) = vtable_sig else {
+                    unreachable!("MONO: only assoc fun is supported")
                 };
 
                 let signature = self.translate_fun_sig(span, &vtable_sig.value)?;
@@ -994,7 +997,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let ret_place = builder.new_var(Some("ret".into()), ret_ty.clone());
 
         let vtable_data =
-            self.prepare_vtable_fields(&poly_trait_def, trait_id, &poly_trait.implied_predicates)?;
+            self.prepare_vtable_fields(&poly_trait_def, trait_id, poly_trait.implied_predicates())?;
         // Retrieve the expected field types from the struct definition. This avoids complicated
         // substitutions.
         let field_tys = {
@@ -1085,7 +1088,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                             panic!()
                         };
 
-                        let Some(dyn_self) = &t.dyn_self else {
+                        let Some(dyn_self) = t.dyn_self() else {
                             panic!(
                                 "MONO: Trying to generate a vtable for a non-dyn-compatible trait"
                             )
@@ -1332,10 +1335,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 (vimpl.dyn_self.clone(), &vimpl.trait_pred)
             }
             (TransImplSource::Normal, hax::FullDefKind::TraitImpl(timpl)) => {
-                (timpl.dyn_self.clone(), &timpl.trait_pred)
+                (timpl.dyn_self().cloned(), timpl.trait_pred())
             }
             (TransImplSource::Marker, hax::FullDefKind::Trait(t)) => {
-                (t.dyn_self.clone(), &t.self_predicate)
+                (t.dyn_self().cloned(), t.self_predicate())
             }
             _ => unreachable!(),
         };
@@ -1444,7 +1447,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     "Trying to generate a vtable shim for a non-vtable-safe method"
                 );
             };
-            let Some(vtable_sig) = &f.vtable_sig else {
+            let Some(vtable_sig) = f.vtable_sig() else {
                 raise_error!(
                     self,
                     span,
@@ -1452,10 +1455,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 );
             };
             signature = self.translate_fun_sig(span, &vtable_sig.value)?;
-            target_receiver = self.translate_ty(span, &f.sig.value.inputs[0])?;
+            target_receiver = self.translate_ty(span, &f.sig().value.inputs[0])?;
             receiver_is_by_value = hax::vtable_receiver_is_by_value(
                 self.tcx,
-                f.associated_item
+                f.associated_item()
                     .implemented_trait_item_id()
                     .real_rust_def_id(),
             );
