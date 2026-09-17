@@ -41,7 +41,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         span: Span,
         def: &hax::FullDef<'tcx>,
     ) -> Result<Body, Error> {
-        let (hax::FullDefKind::Adt { .. } | hax::FullDefKind::Closure { .. }) = def.kind() else {
+        let (hax::FullDefKind::Adt(_) | hax::FullDefKind::Closure(_)) = def.kind() else {
             return Ok(Body::Missing);
         };
 
@@ -64,7 +64,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let trait_pred = match def.kind() {
             // Charon-generated `Destruct` impl for an ADT.
-            FullDefKind::Adt { destruct_impl, .. } | FullDefKind::Closure { destruct_impl, .. } => {
+            FullDefKind::Adt(hax::Adt { destruct_impl, .. })
+            | FullDefKind::Closure(hax::Closure { destruct_impl, .. }) => {
                 assert_eq!(impl_kind, TransImplSource::ImplicitDestruct);
                 &destruct_impl.trait_pred
             }
@@ -169,8 +170,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
 
-        let (FullDefKind::Adt { destruct_impl, .. } | FullDefKind::Closure { destruct_impl, .. }) =
-            def.kind()
+        let (FullDefKind::Adt(hax::Adt { destruct_impl, .. })
+        | FullDefKind::Closure(hax::Closure { destruct_impl, .. })) = def.kind()
         else {
             unreachable!("{:?}", def.def_id())
         };

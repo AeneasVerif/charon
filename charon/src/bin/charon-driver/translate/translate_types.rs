@@ -635,7 +635,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let ptr_size = self.translated.the_target_information().target_pointer_size;
 
         let repr = match &def.kind {
-            hax::FullDefKind::Adt { repr: hax_repr, .. } => self.translate_repr_options(hax_repr),
+            hax::FullDefKind::Adt(hax::Adt { repr: hax_repr, .. }) => {
+                self.translate_repr_options(hax_repr)
+            }
             _ => ReprOptions::default(),
         };
         let ty_layout = match tcx.layout_of(pseudo_input) {
@@ -917,9 +919,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         def: &hax::FullDef<'tcx>,
     ) -> Result<TypeDeclKind, Error> {
         use crate::hax::AdtKind;
-        let hax::FullDefKind::Adt {
+        let hax::FullDefKind::Adt(hax::Adt {
             adt_kind, variants, ..
-        } = def.kind()
+        }) = def.kind()
         else {
             unreachable!()
         };

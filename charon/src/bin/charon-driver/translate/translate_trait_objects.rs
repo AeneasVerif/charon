@@ -91,10 +91,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 let trait_def_id = &trait_predicate.trait_ref.def_id;
                 let trait_def = self.poly_hax_def(trait_def_id)?;
                 let has_methods = match trait_def.kind() {
-                    hax::FullDefKind::Trait { items, .. } => items
+                    hax::FullDefKind::Trait(hax::Trait { items, .. }) => items
                         .iter()
                         .any(|assoc| matches!(assoc.kind, hax::AssocKind::Fn { .. })),
-                    hax::FullDefKind::TraitAlias { .. } => false,
+                    hax::FullDefKind::TraitAlias(_) => false,
                     _ => unreachable!(),
                 };
                 if has_methods {
@@ -207,8 +207,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn trait_is_dyn_compatible(&mut self, def_id: &hax::DefId) -> Result<bool, Error> {
         let def = self.poly_hax_def(def_id)?;
         Ok(match def.kind() {
-            hax::FullDefKind::Trait { dyn_self, .. }
-            | hax::FullDefKind::TraitAlias { dyn_self, .. } => dyn_self.is_some(),
+            hax::FullDefKind::Trait(hax::Trait { dyn_self, .. })
+            | hax::FullDefKind::TraitAlias(hax::TraitAlias { dyn_self, .. }) => dyn_self.is_some(),
             _ => false,
         })
     }
@@ -312,15 +312,15 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         fields.push(TrVTableField::Drop);
 
         // Method fields.
-        if let hax::FullDefKind::Trait { items, .. } = poly_trait_def.kind() {
+        if let hax::FullDefKind::Trait(hax::Trait { items, .. }) = poly_trait_def.kind() {
             for item in items {
                 let item_def_id = &item.def_id;
                 // This is ok because dyn-compatible methods don't have generics.
                 let poly_item_def = self.poly_hax_def(item_def_id)?;
-                if let hax::FullDefKind::AssocFn {
+                if let hax::FullDefKind::AssocFn(hax::AssocFn {
                     vtable_sig: Some(sig),
                     ..
-                } = poly_item_def.kind()
+                }) = poly_item_def.kind()
                 {
                     let id = self.translate_trait_method_id_no_enqueue(trait_id, item_def_id)?;
                     fields.push(TrVTableField::Method(id, sig.clone()));
@@ -468,18 +468,18 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             );
         }
 
-        let (hax::FullDefKind::Trait {
+        let (hax::FullDefKind::Trait(hax::Trait {
             self_predicate,
             dyn_self,
             implied_predicates,
             ..
-        }
-        | hax::FullDefKind::TraitAlias {
+        })
+        | hax::FullDefKind::TraitAlias(hax::TraitAlias {
             self_predicate,
             dyn_self,
             implied_predicates,
             ..
-        }) = trait_def.kind()
+        })) = trait_def.kind()
         else {
             panic!()
         };
@@ -846,12 +846,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             }
             (
                 TransImplSource::Normal,
-                hax::FullDefKind::TraitImpl {
+                hax::FullDefKind::TraitImpl(hax::TraitImpl {
                     trait_pred,
                     items,
                     implied_trait_proofs,
                     ..
-                },
+                }),
             ) => {
                 // The methods are indexed in the order provided by hax, which is the order of the
                 // trait declaration.
@@ -867,11 +867,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             }
             (
                 TransImplSource::Marker,
-                hax::FullDefKind::Trait {
+                hax::FullDefKind::Trait(hax::Trait {
                     self_predicate,
                     implied_trait_proofs,
                     ..
-                },
+                }),
             ) => VTableInstanceData {
                 implemented_trait_ref: &self_predicate.trait_ref,
                 implied_trait_proofs,
@@ -931,10 +931,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     &TransItemSourceKind::VTableMethod(TransImplSource::Normal),
                 )?;
                 let vtable_sig = match assoc_fun_def.kind() {
-                    hax::FullDefKind::AssocFn {
+                    hax::FullDefKind::AssocFn(hax::AssocFn {
                         vtable_sig: Some(vtable_sig),
                         ..
-                    } => vtable_sig.clone(),
+                    }) => vtable_sig.clone(),
                     _ => unreachable!("MONO: only assoc fun is supported"),
                 };
 
@@ -1004,10 +1004,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let trait_def = self.hax_def(implemented_trait_ref)?;
         // We use `poly_trait_def` to fetch `implied_preds`, which is used to fetch supertrait in `prepare_vtable_fields`.
         let poly_trait_def = self.poly_hax_def(&implemented_trait_ref.def_id)?;
-        let hax::FullDefKind::Trait {
+        let hax::FullDefKind::Trait(hax::Trait {
             implied_predicates: implied_preds,
             ..
-        } = poly_trait_def.kind()
+        }) = poly_trait_def.kind()
         else {
             unreachable!()
         };
@@ -1108,7 +1108,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     )?;
                     if self.monomorphize() {
                         // manually compute the type of drop shim function.
-                        let hax::FullDefKind::Trait { dyn_self, .. } = trait_def.kind() else {
+                        let hax::FullDefKind::Trait(hax::Trait { dyn_self, .. }) = trait_def.kind()
+                        else {
                             panic!()
                         };
 
@@ -1360,19 +1361,19 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             }
             (
                 TransImplSource::Normal,
-                hax::FullDefKind::TraitImpl {
+                hax::FullDefKind::TraitImpl(hax::TraitImpl {
                     dyn_self,
                     trait_pred,
                     ..
-                },
+                }),
             ) => (dyn_self.clone(), trait_pred),
             (
                 TransImplSource::Marker,
-                hax::FullDefKind::Trait {
+                hax::FullDefKind::Trait(hax::Trait {
                     dyn_self,
                     self_predicate,
                     ..
-                },
+                }),
             ) => (dyn_self.clone(), self_predicate),
             _ => unreachable!(),
         };
@@ -1474,12 +1475,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             receiver_is_by_value = target_kind == ClosureKind::FnOnce;
             target_item = TransItemSourceKind::CallableMethod(target_kind);
         } else {
-            let hax::FullDefKind::AssocFn {
+            let hax::FullDefKind::AssocFn(hax::AssocFn {
                 vtable_sig: Some(vtable_sig),
                 sig: target_signature,
                 associated_item,
                 ..
-            } = def.kind()
+            }) = def.kind()
             else {
                 raise_error!(
                     self,

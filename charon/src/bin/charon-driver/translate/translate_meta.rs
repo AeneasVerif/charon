@@ -242,7 +242,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                 // implementation (`impl Bar for Foo { ... }`).
                 let impl_elem = match full_def.kind() {
                     // Inherent impl ("regular" impl)
-                    hax::FullDefKind::InherentImpl { ty, .. } => {
+                    hax::FullDefKind::InherentImpl(hax::InherentImpl { ty, .. }) => {
                         // We need to convert the type, which may contain quantified
                         // substs and bounds. In order to properly do so, we introduce
                         // a body translation context.
@@ -262,7 +262,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                         }))
                     }
                     // Trait implementation
-                    hax::FullDefKind::TraitImpl { .. } => {
+                    hax::FullDefKind::TraitImpl(_) => {
                         let impl_id = {
                             let item_src = TransItemSource::new(
                                 item.clone(),
@@ -523,9 +523,9 @@ impl<'tcx> TranslateCtx<'tcx> {
                     // Free items inside a function body aren't in the `nameable_children`.
                     if matches!(
                         parent_def.kind(),
-                        hax::FullDefKind::Fn { .. }
-                            | hax::FullDefKind::AssocFn { .. }
-                            | hax::FullDefKind::Closure { .. }
+                        hax::FullDefKind::Fn(_)
+                            | hax::FullDefKind::AssocFn(_)
+                            | hax::FullDefKind::Closure(_)
                     ) && let Some(parent_local_id) =
                         parent_id.as_real_def_id().and_then(|id| id.as_local())
                         && let Some(body_id) =
@@ -596,15 +596,15 @@ impl<'tcx> TranslateCtx<'tcx> {
         }
 
         if let ContractTarget::Path(_) = target
-            && let hax::FullDefKind::AssocFn {
+            && let hax::FullDefKind::AssocFn(hax::AssocFn {
                 associated_item, ..
-            }
-            | hax::FullDefKind::AssocConst {
+            })
+            | hax::FullDefKind::AssocConst(hax::AssocConst {
                 associated_item, ..
-            }
-            | hax::FullDefKind::AssocTy {
+            })
+            | hax::FullDefKind::AssocTy(hax::AssocTy {
                 associated_item, ..
-            } = target_def.kind()
+            }) = target_def.kind()
             && let hax::AssocItemContainer::TraitContainer { trait_ref } =
                 &associated_item.container
         {
@@ -619,9 +619,11 @@ impl<'tcx> TranslateCtx<'tcx> {
         } else {
             let kind = match target_def.kind() {
                 // Point at the method that contains the closure code.
-                hax::FullDefKind::Closure { args, .. } => TransItemSourceKind::CallableMethod(
-                    super::translate_closures::translate_closure_kind(&args.kind),
-                ),
+                hax::FullDefKind::Closure(hax::Closure { args, .. }) => {
+                    TransItemSourceKind::CallableMethod(
+                        super::translate_closures::translate_closure_kind(&args.kind),
+                    )
+                }
                 _ => self
                     .base_kind_for_item(&target_def_id)
                     .ok_or_else(|| format!("`{target_def_id:?}` is not a translatable item"))?,
@@ -861,9 +863,9 @@ impl<'tcx> TranslateCtx<'tcx> {
 
     pub(crate) fn translate_inline(&self, def: &hax::FullDef<'tcx>) -> Option<InlineAttr> {
         match def.kind() {
-            hax::FullDefKind::Fn { inline, .. }
-            | hax::FullDefKind::AssocFn { inline, .. }
-            | hax::FullDefKind::Closure { inline, .. } => match inline {
+            hax::FullDefKind::Fn(hax::Fn { inline, .. })
+            | hax::FullDefKind::AssocFn(hax::AssocFn { inline, .. })
+            | hax::FullDefKind::Closure(hax::Closure { inline, .. }) => match inline {
                 hax::InlineAttr::None => None,
                 hax::InlineAttr::Hint => Some(InlineAttr::Hint),
                 hax::InlineAttr::Never => Some(InlineAttr::Never),

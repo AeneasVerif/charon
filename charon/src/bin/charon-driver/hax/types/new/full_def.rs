@@ -67,7 +67,7 @@ where
                 let type_of_self = inst_binder(tcx, s.typing_env(), args, def_id.type_of(s));
                 virtual_impl_for(s, ty::TraitRef::new(tcx, destruct_trait, [type_of_self]))
             };
-            kind = FullDefKind::Adt {
+            kind = FullDefKind::Adt(Adt {
                 phantom: PhantomData,
                 param_env,
                 adt_kind,
@@ -80,7 +80,7 @@ where
                     flags: Default::default(),
                 },
                 destruct_impl,
-            };
+            });
 
             source_span = None;
             lang_item = Default::default();
@@ -95,11 +95,11 @@ where
 
             let ty = body.local_decls[rustc_middle::mir::Local::ZERO].ty;
             let ty = substitute(tcx, s.typing_env(), args, ty).sinto(s);
-            kind = FullDefKind::Const {
+            kind = FullDefKind::Const(Const {
                 param_env,
                 ty,
                 kind: ConstKind::PromotedConst,
-            };
+            });
 
             lang_item = Default::default();
             diagnostic_item = Default::default();
@@ -117,7 +117,7 @@ where
             diagnostic_item = tcx.get_diagnostic_name(rust_def_id).sinto(s);
         }
         DefIdBase::Alloc(alloc_id) => {
-            kind = FullDefKind::Static {
+            kind = FullDefKind::Static(Static {
                 param_env: ParamEnv::empty(s, None),
                 safety: Safety::Safe,
                 mutability: tcx
@@ -132,7 +132,7 @@ where
                     .instantiate_identity()
                     .skip_normalization()
                     .sinto(s),
-            };
+            });
             source_span = None;
             lang_item = Default::default();
             diagnostic_item = Default::default();
@@ -300,179 +300,43 @@ pub enum InlineAttr {
 pub enum FullDefKind<'tcx> {
     // Types
     /// ADts (`Struct`, `Enum` and `Union` map to this variant).
-    Adt {
-        phantom: PhantomData<*mut &'tcx ()>,
-        param_env: ParamEnv,
-        adt_kind: AdtKind,
-        variants: IndexVec<VariantIdx, VariantDef>,
-        repr: ReprOptions,
-        /// Info required to construct a virtual `Drop` impl for this adt.
-        destruct_impl: Box<VirtualTraitImpl>,
-    },
+    Adt(Adt<'tcx>),
     /// Type alias: `type Foo = Bar;`
-    TyAlias {
-        param_env: ParamEnv,
-        ty: Ty,
-    },
+    TyAlias(TyAlias),
     /// Type from an `extern` block.
     ForeignTy,
     /// Associated type: `trait MyTrait { type Assoc; }`
-    AssocTy {
-        param_env: ParamEnv,
-        implied_predicates: GenericPredicates,
-        associated_item: AssocItem,
-        /// The value for this associated type, along with proofs of the required predicates. If
-        /// we're in a trait decl, this has a value iff the type has a default; if we're in a trait
-        /// impl, this has a value iff the impl provides its own value for it.
-        value: Option<(Ty, Vec<TraitProof>)>,
-    },
+    AssocTy(AssocTy),
     /// Opaque type, aka `impl Trait`.
     OpaqueTy,
 
     // Traits
-    Trait {
-        param_env: ParamEnv,
-        implied_predicates: GenericPredicates,
-        /// Proofs of the implied predicates. Most often uses the `Self` clause, except for builtin
-        /// traits like `Sized`.
-        implied_trait_proofs: Vec<TraitProof>,
-        /// The special `Self: Trait` clause.
-        self_predicate: TraitPredicate,
-        /// The proof for the special `Self: Trait` clause. Almost always a `TraitProofKind::Self`,
-        /// except for builtin traits like `Sized`.
-        self_proof: TraitProof,
-        /// Associated items, in definition order.
-        items: Vec<AssocItem>,
-        /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for this trait. This is `Some` iff this
-        /// trait is dyn-compatible.
-        dyn_self: Option<Ty>,
-    },
+    Trait(Trait),
     /// Trait alias: `trait IntIterator = Iterator<Item = i32>;`
-    TraitAlias {
-        param_env: ParamEnv,
-        implied_predicates: GenericPredicates,
-        /// The special `Self: Trait` clause.
-        self_predicate: TraitPredicate,
-        /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for this trait. This is `Some` iff this
-        /// trait is dyn-compatible.
-        dyn_self: Option<Ty>,
-    },
-    TraitImpl {
-        param_env: ParamEnv,
-        /// The trait that is implemented by this impl block.
-        trait_pred: TraitPredicate,
-        /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for the implemented trait. This is
-        /// `Some` iff the trait is dyn-compatible.
-        dyn_self: Option<Ty>,
-        /// The trait proofs required to satisfy the predicates on the trait declaration. E.g.:
-        /// ```ignore
-        /// trait Foo: Bar {}
-        /// impl Foo for () {} // would supply a proof for `Self: Bar`.
-        /// ```
-        implied_trait_proofs: Vec<TraitProof>,
-        /// Associated items, in the order of the trait declaration. Includes defaulted items.
-        items: Vec<ImplAssocItem>,
-    },
-    InherentImpl {
-        param_env: ParamEnv,
-        /// The type to which this block applies.
-        ty: Ty,
-        /// Associated items, in definition order.
-        items: Vec<AssocItem>,
-    },
+    TraitAlias(TraitAlias),
+    TraitImpl(TraitImpl),
+    InherentImpl(InherentImpl),
 
     // Functions
-    Fn {
-        param_env: ParamEnv,
-        inline: InlineAttr,
-        is_const: bool,
-        sig: PolyFnSig,
-        /// The arguments of this function, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
-        /// Binds the same variables as `sig`. `None` if this function doesn't implement `Fn*`.
-        tupled_args_ty: Option<Binder<Ty>>,
-        /// Info required to construct a virtual `FnOnce` impl for this function, if compatible.
-        fn_once_impl: Option<Box<VirtualTraitImpl>>,
-        /// Info required to construct a virtual `FnMut` impl for this function, if compatible.
-        fn_mut_impl: Option<Box<VirtualTraitImpl>>,
-        /// Info required to construct a virtual `Fn` impl for this function, if compatible.
-        fn_impl: Option<Box<VirtualTraitImpl>>,
-    },
+    Fn(Fn),
     /// Associated function: `impl MyStruct { fn associated() {} }` or `trait Foo { fn associated()
     /// {} }`
-    AssocFn {
-        param_env: ParamEnv,
-        associated_item: AssocItem,
-        inline: InlineAttr,
-        is_const: bool,
-        /// The function signature when this method is used in a vtable. `None` if this method is not
-        /// vtable safe. `Some(sig)` if it is vtable safe, where `sig` is the trait method declaration's
-        /// signature with `Self` replaced by `dyn Trait` and associated types normalized.
-        vtable_sig: Option<PolyFnSig>,
-        sig: PolyFnSig,
-        /// The arguments of this function, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
-        /// Binds the same variables as `sig`. `None` if this function doesn't implement `Fn*`.
-        tupled_args_ty: Option<Binder<Ty>>,
-        /// Info required to construct a virtual `FnOnce` impl for this function, if compatible.
-        fn_once_impl: Option<Box<VirtualTraitImpl>>,
-        /// Info required to construct a virtual `FnMut` impl for this function, if compatible.
-        fn_mut_impl: Option<Box<VirtualTraitImpl>>,
-        /// Info required to construct a virtual `Fn` impl for this function, if compatible.
-        fn_impl: Option<Box<VirtualTraitImpl>>,
-    },
+    AssocFn(AssocFn),
     /// A closure, coroutine, or coroutine-closure.
-    Closure {
-        /// This param env is empty because the (early-bound) generics of a closure are the same as
-        /// those of the item in which it is defined. We hide the special weird generics that rustc
-        /// uses internally for inference on closures.
-        param_env: ParamEnv,
-        args: ClosureArgs,
-        is_const: bool,
-        inline: InlineAttr,
-        /// Info required to construct a virtual `FnOnce` impl for this closure.
-        fn_once_impl: Box<VirtualTraitImpl>,
-        /// Info required to construct a virtual `FnMut` impl for this closure.
-        fn_mut_impl: Option<Box<VirtualTraitImpl>>,
-        /// Info required to construct a virtual `Fn` impl for this closure.
-        fn_impl: Option<Box<VirtualTraitImpl>>,
-        /// Info required to construct a virtual `Drop` impl for this closure.
-        destruct_impl: Box<VirtualTraitImpl>,
-    },
+    Closure(Closure),
 
     // Constants
-    Const {
-        param_env: ParamEnv,
-        ty: Ty,
-        kind: ConstKind,
-    },
+    Const(Const),
     /// Associated constant: `trait MyTrait { const ASSOC: usize; }`
-    AssocConst {
-        param_env: ParamEnv,
-        associated_item: AssocItem,
-        ty: Ty,
-    },
-    Static {
-        param_env: ParamEnv,
-        /// Whether it's a `unsafe static`, `safe static` (inside extern only) or just a `static`.
-        safety: Safety,
-        /// Whether it's a `static mut` or just a `static`.
-        mutability: Mutability,
-        /// Whether it's a `#[thread_local] static`.
-        thread_local: bool,
-        /// Whether it's an anonymous static generated for nested allocations.
-        nested: bool,
-        ty: Ty,
-    },
+    AssocConst(AssocConst),
+    Static(Static),
 
     // Crates and modules
     ExternCrate,
     Use,
-    Mod {
-        items: Vec<(Option<Ident>, DefId)>,
-    },
+    Mod(Mod),
     /// An `extern` block.
-    ForeignMod {
-        items: Vec<DefId>,
-    },
+    ForeignMod(ForeignMod),
 
     // Type-level parameters
     /// Type parameter: the `T` in `struct Vec<T> { ... }`
@@ -486,23 +350,7 @@ pub enum FullDefKind<'tcx> {
     /// Refers to the variant definition, [`DefKind::Ctor`] refers to its constructor if it exists.
     Variant,
     /// The constructor function of a tuple/unit struct or tuple/unit enum variant.
-    Ctor {
-        adt_def_id: DefId,
-        ctor_of: CtorOf,
-        variant_id: VariantIdx,
-        fields: IndexVec<FieldIdx, FieldDef>,
-        output_ty: Ty,
-        sig: PolyFnSig,
-        /// The arguments of this constructor, tupled as the `Fn*` traits take them, e.g. `(A, B,
-        /// C)`. Binds the same variables as `sig`. Always `Somes`.
-        tupled_args_ty: Option<Binder<Ty>>,
-        /// Info required to construct a virtual `FnOnce` impl for this constructor.
-        fn_once_impl: Option<Box<VirtualTraitImpl>>,
-        /// Info required to construct a virtual `FnMut` impl for this constructor.
-        fn_mut_impl: Option<Box<VirtualTraitImpl>>,
-        /// Info required to construct a virtual `Fn` impl for this constructor.
-        fn_impl: Option<Box<VirtualTraitImpl>>,
-    },
+    Ctor(Ctor),
     /// A field in a struct, enum or union. e.g.
     /// - `bar` in `struct Foo { bar: u8 }`
     /// - `Foo::Bar::0` in `enum Foo { Bar(u8) }`
@@ -517,6 +365,216 @@ pub enum FullDefKind<'tcx> {
     /// closure.
     SyntheticCoroutineBody,
     TestBinderConstraints,
+}
+
+/// ADts (`Struct`, `Enum` and `Union` map to this).
+#[derive(Clone, Debug)]
+pub struct Adt<'tcx> {
+    pub phantom: PhantomData<*mut &'tcx ()>,
+    pub param_env: ParamEnv,
+    pub adt_kind: AdtKind,
+    pub variants: IndexVec<VariantIdx, VariantDef>,
+    pub repr: ReprOptions,
+    /// Info required to construct a virtual `Drop` impl for this adt.
+    pub destruct_impl: Box<VirtualTraitImpl>,
+}
+
+/// Type alias: `type Foo = Bar;`
+#[derive(Clone, Debug)]
+pub struct TyAlias {
+    pub param_env: ParamEnv,
+    pub ty: Ty,
+}
+
+/// Associated type: `trait MyTrait { type Assoc; }`
+#[derive(Clone, Debug)]
+pub struct AssocTy {
+    pub param_env: ParamEnv,
+    pub implied_predicates: GenericPredicates,
+    pub associated_item: AssocItem,
+    /// The value for this associated type, along with proofs of the required predicates. If
+    /// we're in a trait decl, this has a value iff the type has a default; if we're in a trait
+    /// impl, this has a value iff the impl provides its own value for it.
+    pub value: Option<(Ty, Vec<TraitProof>)>,
+}
+
+#[derive(Clone, Debug)]
+pub struct Trait {
+    pub param_env: ParamEnv,
+    pub implied_predicates: GenericPredicates,
+    /// Proofs of the implied predicates. Most often uses the `Self` clause, except for builtin
+    /// traits like `Sized`.
+    pub implied_trait_proofs: Vec<TraitProof>,
+    /// The special `Self: Trait` clause.
+    pub self_predicate: TraitPredicate,
+    /// The proof for the special `Self: Trait` clause. Almost always a `TraitProofKind::Self`,
+    /// except for builtin traits like `Sized`.
+    pub self_proof: TraitProof,
+    /// Associated items, in definition order.
+    pub items: Vec<AssocItem>,
+    /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for this trait. This is `Some` iff this
+    /// trait is dyn-compatible.
+    pub dyn_self: Option<Ty>,
+}
+
+/// Trait alias: `trait IntIterator = Iterator<Item = i32>;`
+#[derive(Clone, Debug)]
+pub struct TraitAlias {
+    pub param_env: ParamEnv,
+    pub implied_predicates: GenericPredicates,
+    /// The special `Self: Trait` clause.
+    pub self_predicate: TraitPredicate,
+    /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for this trait. This is `Some` iff this
+    /// trait is dyn-compatible.
+    pub dyn_self: Option<Ty>,
+}
+
+#[derive(Clone, Debug)]
+pub struct TraitImpl {
+    pub param_env: ParamEnv,
+    /// The trait that is implemented by this impl block.
+    pub trait_pred: TraitPredicate,
+    /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for the implemented trait. This is
+    /// `Some` iff the trait is dyn-compatible.
+    pub dyn_self: Option<Ty>,
+    /// The trait proofs required to satisfy the predicates on the trait declaration. E.g.:
+    /// ```ignore
+    /// trait Foo: Bar {}
+    /// impl Foo for () {} // would supply a proof for `Self: Bar`.
+    /// ```
+    pub implied_trait_proofs: Vec<TraitProof>,
+    /// Associated items, in the order of the trait declaration. Includes defaulted items.
+    pub items: Vec<ImplAssocItem>,
+}
+
+#[derive(Clone, Debug)]
+pub struct InherentImpl {
+    pub param_env: ParamEnv,
+    /// The type to which this block applies.
+    pub ty: Ty,
+    /// Associated items, in definition order.
+    pub items: Vec<AssocItem>,
+}
+
+#[derive(Clone, Debug)]
+pub struct Fn {
+    pub param_env: ParamEnv,
+    pub inline: InlineAttr,
+    pub is_const: bool,
+    pub sig: PolyFnSig,
+    /// The arguments of this function, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
+    /// Binds the same variables as `sig`. `None` if this function doesn't implement `Fn*`.
+    pub tupled_args_ty: Option<Binder<Ty>>,
+    /// Info required to construct a virtual `FnOnce` impl for this function, if compatible.
+    pub fn_once_impl: Option<Box<VirtualTraitImpl>>,
+    /// Info required to construct a virtual `FnMut` impl for this function, if compatible.
+    pub fn_mut_impl: Option<Box<VirtualTraitImpl>>,
+    /// Info required to construct a virtual `Fn` impl for this function, if compatible.
+    pub fn_impl: Option<Box<VirtualTraitImpl>>,
+}
+
+/// Associated function: `impl MyStruct { fn associated() {} }` or `trait Foo { fn associated()
+/// {} }`
+#[derive(Clone, Debug)]
+pub struct AssocFn {
+    pub param_env: ParamEnv,
+    pub associated_item: AssocItem,
+    pub inline: InlineAttr,
+    pub is_const: bool,
+    /// The function signature when this method is used in a vtable. `None` if this method is not
+    /// vtable safe. `Some(sig)` if it is vtable safe, where `sig` is the trait method declaration's
+    /// signature with `Self` replaced by `dyn Trait` and associated types normalized.
+    pub vtable_sig: Option<PolyFnSig>,
+    pub sig: PolyFnSig,
+    /// The arguments of this function, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
+    /// Binds the same variables as `sig`. `None` if this function doesn't implement `Fn*`.
+    pub tupled_args_ty: Option<Binder<Ty>>,
+    /// Info required to construct a virtual `FnOnce` impl for this function, if compatible.
+    pub fn_once_impl: Option<Box<VirtualTraitImpl>>,
+    /// Info required to construct a virtual `FnMut` impl for this function, if compatible.
+    pub fn_mut_impl: Option<Box<VirtualTraitImpl>>,
+    /// Info required to construct a virtual `Fn` impl for this function, if compatible.
+    pub fn_impl: Option<Box<VirtualTraitImpl>>,
+}
+
+/// A closure, coroutine, or coroutine-closure.
+#[derive(Clone, Debug)]
+pub struct Closure {
+    /// This param env is empty because the (early-bound) generics of a closure are the same as
+    /// those of the item in which it is defined. We hide the special weird generics that rustc
+    /// uses internally for inference on closures.
+    pub param_env: ParamEnv,
+    pub args: ClosureArgs,
+    pub is_const: bool,
+    pub inline: InlineAttr,
+    /// Info required to construct a virtual `FnOnce` impl for this closure.
+    pub fn_once_impl: Box<VirtualTraitImpl>,
+    /// Info required to construct a virtual `FnMut` impl for this closure.
+    pub fn_mut_impl: Option<Box<VirtualTraitImpl>>,
+    /// Info required to construct a virtual `Fn` impl for this closure.
+    pub fn_impl: Option<Box<VirtualTraitImpl>>,
+    /// Info required to construct a virtual `Drop` impl for this closure.
+    pub destruct_impl: Box<VirtualTraitImpl>,
+}
+
+#[derive(Clone, Debug)]
+pub struct Const {
+    pub param_env: ParamEnv,
+    pub ty: Ty,
+    pub kind: ConstKind,
+}
+
+/// Associated constant: `trait MyTrait { const ASSOC: usize; }`
+#[derive(Clone, Debug)]
+pub struct AssocConst {
+    pub param_env: ParamEnv,
+    pub associated_item: AssocItem,
+    pub ty: Ty,
+}
+
+#[derive(Clone, Debug)]
+pub struct Static {
+    pub param_env: ParamEnv,
+    /// Whether it's a `unsafe static`, `safe static` (inside extern only) or just a `static`.
+    pub safety: Safety,
+    /// Whether it's a `static mut` or just a `static`.
+    pub mutability: Mutability,
+    /// Whether it's a `#[thread_local] static`.
+    pub thread_local: bool,
+    /// Whether it's an anonymous static generated for nested allocations.
+    pub nested: bool,
+    pub ty: Ty,
+}
+
+#[derive(Clone, Debug)]
+pub struct Mod {
+    pub items: Vec<(Option<Ident>, DefId)>,
+}
+
+/// An `extern` block.
+#[derive(Clone, Debug)]
+pub struct ForeignMod {
+    pub items: Vec<DefId>,
+}
+
+/// The constructor function of a tuple/unit struct or tuple/unit enum variant.
+#[derive(Clone, Debug)]
+pub struct Ctor {
+    pub adt_def_id: DefId,
+    pub ctor_of: CtorOf,
+    pub variant_id: VariantIdx,
+    pub fields: IndexVec<FieldIdx, FieldDef>,
+    pub output_ty: Ty,
+    pub sig: PolyFnSig,
+    /// The arguments of this constructor, tupled as the `Fn*` traits take them, e.g. `(A, B,
+    /// C)`. Binds the same variables as `sig`. Always `Somes`.
+    pub tupled_args_ty: Option<Binder<Ty>>,
+    /// Info required to construct a virtual `FnOnce` impl for this constructor.
+    pub fn_once_impl: Option<Box<VirtualTraitImpl>>,
+    /// Info required to construct a virtual `FnMut` impl for this constructor.
+    pub fn_mut_impl: Option<Box<VirtualTraitImpl>>,
+    /// Info required to construct a virtual `Fn` impl for this constructor.
+    pub fn_impl: Option<Box<VirtualTraitImpl>>,
 }
 
 /// Whether the trait method declared by `method_decl_id` takes `self: Self` by value.
@@ -696,7 +754,7 @@ where
                 .collect();
 
             let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
-            FullDefKind::Adt {
+            FullDefKind::Adt(Adt {
                 phantom: PhantomData,
                 param_env: get_param_env(s, args),
                 adt_kind: def.adt_kind().sinto(s),
@@ -706,14 +764,14 @@ where
                     s,
                     ty::TraitRef::new(tcx, destruct_trait, [type_of_self()]),
                 ),
-            }
+            })
         }
-        RDefKind::TyAlias { .. } => FullDefKind::TyAlias {
+        RDefKind::TyAlias { .. } => FullDefKind::TyAlias(TyAlias {
             param_env: get_param_env(s, args),
             ty: type_of_self().sinto(s),
-        },
+        }),
         RDefKind::ForeignTy => FullDefKind::ForeignTy,
-        RDefKind::AssocTy { .. } => FullDefKind::AssocTy {
+        RDefKind::AssocTy { .. } => FullDefKind::AssocTy(AssocTy {
             param_env: get_param_env(s, args),
             implied_predicates: get_implied_predicates(s, args),
             associated_item: AssocItem::sfrom_instantiated(s, &tcx.associated_item(def_id), args),
@@ -725,9 +783,9 @@ where
             } else {
                 None
             },
-        },
+        }),
         RDefKind::OpaqueTy => FullDefKind::OpaqueTy,
-        RDefKind::Trait { .. } => FullDefKind::Trait {
+        RDefKind::Trait { .. } => FullDefKind::Trait(Trait {
             param_env: get_param_env(s, args),
             implied_predicates: get_implied_predicates(s, args),
             implied_trait_proofs: solve_item_implied_traits(s, def_id, args_or_default()),
@@ -747,13 +805,13 @@ where
                     AssocItem::sfrom_instantiated(s, assoc, item_args)
                 })
                 .collect::<Vec<_>>(),
-        },
-        RDefKind::TraitAlias { .. } => FullDefKind::TraitAlias {
+        }),
+        RDefKind::TraitAlias { .. } => FullDefKind::TraitAlias(TraitAlias {
             param_env: get_param_env(s, args),
             implied_predicates: get_implied_predicates(s, args),
             self_predicate: get_self_predicate(s, args),
             dyn_self: get_trait_decl_dyn_self_ty(s, args).sinto(s),
-        },
+        }),
         RDefKind::Impl { of_trait, .. } => {
             use std::collections::HashMap;
             let param_env = get_param_env(s, args);
@@ -771,11 +829,11 @@ where
                         AssocItem::sfrom_instantiated(s, assoc, item_args)
                     })
                     .collect::<Vec<_>>();
-                FullDefKind::InherentImpl {
+                FullDefKind::InherentImpl(InherentImpl {
                     param_env,
                     ty: type_of_self().sinto(s),
                     items,
-                }
+                })
             } else {
                 let trait_ref = tcx.impl_trait_ref(def_id);
                 let trait_ref = inst_binder(tcx, s.typing_env(), args, trait_ref);
@@ -863,20 +921,20 @@ where
                     })
                     .collect();
                 assert!(item_map.is_empty());
-                FullDefKind::TraitImpl {
+                FullDefKind::TraitImpl(TraitImpl {
                     param_env,
                     trait_pred,
                     dyn_self,
                     implied_trait_proofs: required_trait_proofs,
                     items,
-                }
+                })
             }
         }
         RDefKind::Fn { .. } => {
             let sig = tcx.fn_sig(def_id);
             let sig = inst_binder(tcx, s.typing_env(), args, sig);
             let fn_trait_impls = fn_def_trait_impls(def_id, sig);
-            FullDefKind::Fn {
+            FullDefKind::Fn(Fn {
                 param_env: get_param_env(s, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 is_const: matches!(tcx.constness(def_id), rustc_hir::Constness::Const { .. }),
@@ -887,13 +945,13 @@ where
                 fn_once_impl: fn_trait_impls.as_ref().map(|(vimpl, _, _)| vimpl.clone()),
                 fn_mut_impl: fn_trait_impls.as_ref().map(|(_, vimpl, _)| vimpl.clone()),
                 fn_impl: fn_trait_impls.map(|(_, _, vimpl)| vimpl),
-            }
+            })
         }
         RDefKind::AssocFn { .. } => {
             let item = tcx.associated_item(def_id);
             let sig = get_method_sig(tcx, s.typing_env(), def_id, args);
             let fn_trait_impls = fn_def_trait_impls(def_id, sig);
-            FullDefKind::AssocFn {
+            FullDefKind::AssocFn(AssocFn {
                 param_env: get_param_env(s, args),
                 associated_item: AssocItem::sfrom_instantiated(s, &item, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
@@ -906,7 +964,7 @@ where
                 fn_once_impl: fn_trait_impls.as_ref().map(|(vimpl, _, _)| vimpl.clone()),
                 fn_mut_impl: fn_trait_impls.as_ref().map(|(_, vimpl, _)| vimpl.clone()),
                 fn_impl: fn_trait_impls.map(|(_, _, vimpl)| vimpl),
-            }
+            })
         }
         RDefKind::Closure { .. } => {
             use ty::ClosureKind::{Fn, FnMut};
@@ -929,7 +987,7 @@ where
             let fn_tref =
                 matches!(closure.kind(), Fn).then(|| ty::TraitRef::new(tcx, fn_trait, trait_args));
 
-            FullDefKind::Closure {
+            FullDefKind::Closure(Closure {
                 param_env: get_param_env(s, args),
                 is_const: matches!(tcx.constness(def_id), rustc_hir::Constness::Const { .. }),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
@@ -941,7 +999,7 @@ where
                 fn_once_impl: virtual_impl_for(s, fn_once_tref),
                 fn_mut_impl: fn_mut_tref.map(|tref| virtual_impl_for(s, tref)),
                 fn_impl: fn_tref.map(|tref| virtual_impl_for(s, tref)),
-            }
+            })
         }
         kind @ (RDefKind::Const | RDefKind::AnonConst { .. }) => {
             let kind = match kind {
@@ -968,38 +1026,38 @@ where
             } else {
                 type_of_self()
             };
-            FullDefKind::Const {
+            FullDefKind::Const(Const {
                 param_env: get_param_env(s, args),
                 ty: self_ty.sinto(s),
                 kind,
-            }
+            })
         }
-        RDefKind::AssocConst => FullDefKind::AssocConst {
+        RDefKind::AssocConst => FullDefKind::AssocConst(AssocConst {
             param_env: get_param_env(s, args),
             associated_item: AssocItem::sfrom_instantiated(s, &tcx.associated_item(def_id), args),
             ty: type_of_self().sinto(s),
-        },
+        }),
         RDefKind::Static {
             safety,
             mutability,
             nested,
             ..
-        } => FullDefKind::Static {
+        } => FullDefKind::Static(Static {
             param_env: get_param_env(s, args),
             safety: safety.sinto(s),
             mutability: mutability.sinto(s),
             thread_local: tcx.is_thread_local_static(def_id),
             nested: nested.sinto(s),
             ty: type_of_self().sinto(s),
-        },
+        }),
         RDefKind::ExternCrate => FullDefKind::ExternCrate,
         RDefKind::Use => FullDefKind::Use,
-        RDefKind::Mod { .. } => FullDefKind::Mod {
+        RDefKind::Mod { .. } => FullDefKind::Mod(Mod {
             items: get_mod_children(tcx, def_id).sinto(s),
-        },
-        RDefKind::ForeignMod { .. } => FullDefKind::ForeignMod {
+        }),
+        RDefKind::ForeignMod { .. } => FullDefKind::ForeignMod(ForeignMod {
             items: get_foreign_mod_children(tcx, def_id).sinto(s),
-        },
+        }),
         RDefKind::TyParam => FullDefKind::TyParam,
         RDefKind::ConstParam => FullDefKind::ConstParam,
         RDefKind::LifetimeParam => FullDefKind::LifetimeParam,
@@ -1025,7 +1083,7 @@ where
             let output_ty = ty::Ty::new_adt(tcx, adt_def, args).sinto(s);
             let sig = inst_binder(tcx, s.typing_env(), Some(args), sig);
             let fn_trait_impls = fn_def_trait_impls(def_id, sig);
-            FullDefKind::Ctor {
+            FullDefKind::Ctor(Ctor {
                 adt_def_id: adt_def_id.sinto(s),
                 ctor_of,
                 variant_id: variant_id.sinto(s),
@@ -1036,7 +1094,7 @@ where
                 fn_once_impl: fn_trait_impls.as_ref().map(|(vimpl, _, _)| vimpl.clone()),
                 fn_mut_impl: fn_trait_impls.as_ref().map(|(_, vimpl, _)| vimpl.clone()),
                 fn_impl: fn_trait_impls.map(|(_, _, vimpl)| vimpl),
-            }
+            })
         }
         RDefKind::Field => FullDefKind::Field,
         RDefKind::Macro(..) => FullDefKind::Macro,
@@ -1144,7 +1202,7 @@ impl<'tcx> FullDef<'tcx> {
         S: BaseState<'tcx>,
     {
         match self.kind() {
-            FullDefKind::Const { .. } | FullDefKind::AssocConst { .. } => {}
+            FullDefKind::Const(_) | FullDefKind::AssocConst(_) => {}
             _ => panic!("expected a Const or AssocConst definition"),
         }
         let s = &s.with_hax_owner(self.def_id());
@@ -1173,7 +1231,7 @@ impl<'tcx> FullDef<'tcx> {
         S: BaseState<'tcx>,
     {
         match self.kind() {
-            FullDefKind::Static { .. } => {}
+            FullDefKind::Static(_) => {}
             _ => panic!("expected a Static definition"),
         }
         let s = &s.with_hax_owner(self.def_id());
@@ -1218,38 +1276,36 @@ impl<'tcx> FullDef<'tcx> {
 
     /// Returns the generics and predicates for definitions that have those.
     pub fn param_env(&self) -> Option<&ParamEnv> {
-        use FullDefKind::*;
         match self.kind() {
-            Adt { param_env, .. }
-            | Trait { param_env, .. }
-            | TraitAlias { param_env, .. }
-            | TyAlias { param_env, .. }
-            | AssocTy { param_env, .. }
-            | Fn { param_env, .. }
-            | AssocFn { param_env, .. }
-            | Closure { param_env, .. }
-            | Const { param_env, .. }
-            | AssocConst { param_env, .. }
-            | Static { param_env, .. }
-            | TraitImpl { param_env, .. }
-            | InherentImpl { param_env, .. } => Some(param_env),
+            FullDefKind::Adt(Adt { param_env, .. })
+            | FullDefKind::Trait(Trait { param_env, .. })
+            | FullDefKind::TraitAlias(TraitAlias { param_env, .. })
+            | FullDefKind::TyAlias(TyAlias { param_env, .. })
+            | FullDefKind::AssocTy(AssocTy { param_env, .. })
+            | FullDefKind::Fn(Fn { param_env, .. })
+            | FullDefKind::AssocFn(AssocFn { param_env, .. })
+            | FullDefKind::Closure(Closure { param_env, .. })
+            | FullDefKind::Const(Const { param_env, .. })
+            | FullDefKind::AssocConst(AssocConst { param_env, .. })
+            | FullDefKind::Static(Static { param_env, .. })
+            | FullDefKind::TraitImpl(TraitImpl { param_env, .. })
+            | FullDefKind::InherentImpl(InherentImpl { param_env, .. }) => Some(param_env),
             _ => None,
         }
     }
 
     /// Return the parent of this item if the item inherits the typing context from its parent.
     pub fn typing_parent(&self, s: &impl BaseState<'tcx>) -> Option<ItemRef> {
-        use FullDefKind::*;
         match self.kind() {
-            AssocTy { .. }
-            | AssocFn { .. }
-            | AssocConst { .. }
-            | Const {
+            FullDefKind::AssocTy(_)
+            | FullDefKind::AssocFn(_)
+            | FullDefKind::AssocConst(_)
+            | FullDefKind::Const(Const {
                 kind: ConstKind::AnonConst | ConstKind::PromotedConst,
                 ..
-            }
-            | Closure { .. } => self.param_env().unwrap().parent.clone(),
-            Ctor { .. } | Variant { .. } => {
+            })
+            | FullDefKind::Closure(_) => self.param_env().unwrap().parent.clone(),
+            FullDefKind::Ctor(_) | FullDefKind::Variant => {
                 let parent = self.def_id().parent(s).unwrap();
                 // The parent has the same generics as this item.
                 Some(self.this().with_def_id(s, &parent))
@@ -1279,15 +1335,14 @@ impl<'tcx> FullDef<'tcx> {
     pub fn has_own_generics_or_predicates(&self) -> bool {
         match self.param_env() {
             Some(p) => {
-                let has_predicates = if let FullDefKind::AssocFn { .. }
-                | FullDefKind::AssocConst { .. } = self.kind()
-                {
-                    // Assoc fns and consts have a special `Self: Trait` predicate inserted, which
-                    // we don't want to consider as an "own predicate".
-                    p.predicates.predicates.len() > 1
-                } else {
-                    !p.predicates.predicates.is_empty()
-                };
+                let has_predicates =
+                    if let FullDefKind::AssocFn(_) | FullDefKind::AssocConst(_) = self.kind() {
+                        // Assoc fns and consts have a special `Self: Trait` predicate inserted, which
+                        // we don't want to consider as an "own predicate".
+                        p.predicates.predicates.len() > 1
+                    } else {
+                        !p.predicates.predicates.is_empty()
+                    };
                 !p.generics.params.is_empty() || has_predicates
             }
             None => false,
@@ -1298,7 +1353,7 @@ impl<'tcx> FullDef<'tcx> {
     /// are none.
     pub fn late_bound(&self) -> Binder<()> {
         match self.kind() {
-            FullDefKind::Fn { sig, .. } | FullDefKind::AssocFn { sig, .. } => {
+            FullDefKind::Fn(Fn { sig, .. }) | FullDefKind::AssocFn(AssocFn { sig, .. }) => {
                 sig.as_ref().rebind(())
             }
             _ => Binder::empty(),
@@ -1309,23 +1364,24 @@ impl<'tcx> FullDef<'tcx> {
     /// types, this includes inherent items.
     pub fn nameable_children(&self, s: &impl BaseState<'tcx>) -> Vec<(Symbol, DefId)> {
         let mut children = match self.kind() {
-            FullDefKind::Mod { items } => items
+            FullDefKind::Mod(Mod { items }) => items
                 .iter()
                 .filter_map(|(opt_ident, def_id)| Some((opt_ident.as_ref()?.0, def_id.clone())))
                 .collect(),
-            FullDefKind::Adt {
+            FullDefKind::Adt(Adt {
                 adt_kind: AdtKind::Enum,
                 variants,
                 ..
-            } => variants
+            }) => variants
                 .iter()
                 .map(|variant| (variant.name, variant.def_id.clone()))
                 .collect(),
-            FullDefKind::InherentImpl { items, .. } | FullDefKind::Trait { items, .. } => items
+            FullDefKind::InherentImpl(InherentImpl { items, .. })
+            | FullDefKind::Trait(Trait { items, .. }) => items
                 .iter()
                 .filter_map(|item| Some((item.name?, item.def_id.clone())))
                 .collect(),
-            FullDefKind::TraitImpl { items, .. } => items
+            FullDefKind::TraitImpl(TraitImpl { items, .. }) => items
                 .iter()
                 .filter_map(|item| Some((item.name?, item.def_id()?.clone())))
                 .collect(),

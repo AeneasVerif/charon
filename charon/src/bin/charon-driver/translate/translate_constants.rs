@@ -239,10 +239,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         def: &hax::FullDef<'tcx>,
     ) -> Option<hax::Decorated<hax::ConstantExprKind>> {
         match def.kind() {
-            hax::FullDefKind::Const { .. } | hax::FullDefKind::AssocConst { .. } => {
+            hax::FullDefKind::Const(_) | hax::FullDefKind::AssocConst(_) => {
                 def.const_value(self.hax_state_with_id())
             }
-            hax::FullDefKind::Static { .. } => def.static_value(self.hax_state_with_id()),
+            hax::FullDefKind::Static(_) => def.static_value(self.hax_state_with_id()),
             _ => None,
         }
     }

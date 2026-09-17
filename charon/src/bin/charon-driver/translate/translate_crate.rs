@@ -232,9 +232,9 @@ impl<'tcx> TranslateCtx<'tcx> {
     fn is_method_decl_without_default(&mut self, def_id: &hax::DefId) -> Option<hax::DefId> {
         if matches!(def_id.kind, hax::DefKind::AssocFn)
             && let def = self.poly_hax_def(def_id).ok()?
-            && let hax::FullDefKind::AssocFn {
+            && let hax::FullDefKind::AssocFn(hax::AssocFn {
                 associated_item, ..
-            } = def.kind()
+            }) = def.kind()
             && !associated_item.has_value
             && let hax::AssocItemContainer::TraitContainer { trait_ref } =
                 &associated_item.container
@@ -485,7 +485,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             return Ok(());
         }
         let trait_def = self.poly_hax_def(trait_def_id)?;
-        let hax::FullDefKind::Trait { items, .. } = trait_def.kind() else {
+        let hax::FullDefKind::Trait(hax::Trait { items, .. }) = trait_def.kind() else {
             unreachable!()
         };
         let names = self
@@ -535,15 +535,15 @@ impl<'tcx> TranslateCtx<'tcx> {
 
         let item_def = self.poly_hax_def(item_def_id)?;
         let assoc = match item_def.kind() {
-            hax::FullDefKind::AssocTy {
+            hax::FullDefKind::AssocTy(hax::AssocTy {
                 associated_item, ..
-            }
-            | hax::FullDefKind::AssocConst {
+            })
+            | hax::FullDefKind::AssocConst(hax::AssocConst {
                 associated_item, ..
-            }
-            | hax::FullDefKind::AssocFn {
+            })
+            | hax::FullDefKind::AssocFn(hax::AssocFn {
                 associated_item, ..
-            } => associated_item,
+            }) => associated_item,
             _ => panic!("Unexpected def for associated item: {item_def:?}"),
         };
         let decl_def_id = assoc.implemented_trait_item_id();
@@ -809,16 +809,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         ) {
             let def = self.hax_def(hax_item)?;
             match def.kind() {
-                hax::FullDefKind::Fn { sig, .. }
-                | hax::FullDefKind::AssocFn { sig, .. }
-                | hax::FullDefKind::Ctor { sig, .. } => {
+                hax::FullDefKind::Fn(hax::Fn { sig, .. })
+                | hax::FullDefKind::AssocFn(hax::AssocFn { sig, .. })
+                | hax::FullDefKind::Ctor(hax::Ctor { sig, .. }) => {
                     generics.regions.extend(
                         sig.bound_vars
                             .iter()
                             .map(|_| self.translate_erased_region()),
                     );
                 }
-                hax::FullDefKind::Closure { args, .. } => {
+                hax::FullDefKind::Closure(hax::Closure { args, .. }) => {
                     let upvar_regions = if self.item_src.def_id() == &args.item.def_id {
                         assert!(self.outermost_binder().closure_upvar_tys.is_some());
                         self.outermost_binder().closure_upvar_regions.len()
@@ -966,11 +966,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             return Ok(None);
         };
         let def = self.hax_def(item)?;
-        let hax::FullDefKind::AssocFn {
+        let hax::FullDefKind::AssocFn(hax::AssocFn {
             associated_item,
             sig,
             ..
-        } = def.kind()
+        }) = def.kind()
         else {
             return Ok(None);
         };

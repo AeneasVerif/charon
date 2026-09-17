@@ -323,14 +323,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         span: Span,
         def: &hax::FullDef<'tcx>,
     ) -> Result<Body, Error> {
-        let hax::FullDefKind::Ctor {
+        let hax::FullDefKind::Ctor(hax::Ctor {
             adt_def_id,
             ctor_of,
             variant_id,
             fields,
             output_ty,
             ..
-        } = def.kind()
+        }) = def.kind()
         else {
             unreachable!()
         };
@@ -374,7 +374,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         //     core::slice::into_vec(y)
         // }
         let tcx = self.tcx;
-        let hax::FullDefKind::Fn { sig: hax_sig, .. } = def.kind() else {
+        let hax::FullDefKind::Fn(hax::Fn { sig: hax_sig, .. }) = def.kind() else {
             unreachable!()
         };
         let hax_sig = hax_sig.hax_skip_binder_ref();
@@ -542,7 +542,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         def: &hax::FullDef<'tcx>,
         signature: &FunSig,
     ) -> Result<Body, Error> {
-        let hax::FullDefKind::Fn { .. } = def.kind() else {
+        let hax::FullDefKind::Fn(_) = def.kind() else {
             unreachable!()
         };
         let def_id = def.def_id().as_real_def_id().unwrap();

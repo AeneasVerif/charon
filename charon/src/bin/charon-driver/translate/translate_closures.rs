@@ -140,42 +140,42 @@ struct CallableFnImpls<'a> {
 impl<'a> CallableFnImpls<'a> {
     fn from_def(def: &'a hax::FullDef<'_>) -> Option<Self> {
         match def.kind() {
-            hax::FullDefKind::Closure {
+            hax::FullDefKind::Closure(hax::Closure {
                 args,
                 fn_once_impl,
                 fn_mut_impl,
                 fn_impl,
                 ..
-            } => Some(Self {
+            }) => Some(Self {
                 callable: Callable::Closure(args),
                 fn_once_impl: Some(fn_once_impl),
                 fn_mut_impl: fn_mut_impl.as_deref(),
                 fn_impl: fn_impl.as_deref(),
             }),
-            hax::FullDefKind::Fn {
+            hax::FullDefKind::Fn(hax::Fn {
                 sig,
                 tupled_args_ty,
                 fn_once_impl,
                 fn_mut_impl,
                 fn_impl,
                 ..
-            }
-            | hax::FullDefKind::AssocFn {
+            })
+            | hax::FullDefKind::AssocFn(hax::AssocFn {
                 sig,
                 tupled_args_ty,
                 fn_once_impl,
                 fn_mut_impl,
                 fn_impl,
                 ..
-            }
-            | hax::FullDefKind::Ctor {
+            })
+            | hax::FullDefKind::Ctor(hax::Ctor {
                 sig,
                 tupled_args_ty,
                 fn_once_impl,
                 fn_mut_impl,
                 fn_impl,
                 ..
-            } => Some(Self {
+            }) => Some(Self {
                 callable: Callable::FnDef {
                     item: def.this(),
                     sig,
@@ -877,7 +877,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         def: &hax::FullDef<'tcx>,
     ) -> Result<FunDecl, Error> {
         let span = item_meta.span;
-        let hax::FullDefKind::Closure { args: closure, .. } = &def.kind else {
+        let hax::FullDefKind::Closure(hax::Closure { args: closure, .. }) = &def.kind else {
             unreachable!()
         };
 

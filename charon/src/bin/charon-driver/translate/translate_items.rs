@@ -333,17 +333,17 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             return;
         }
         match def.kind() {
-            hax::FullDefKind::InherentImpl { items, .. } => {
+            hax::FullDefKind::InherentImpl(hax::InherentImpl { items, .. }) => {
                 for assoc in items {
                     self.t_ctx.enqueue_module_item(&assoc.def_id);
                 }
             }
-            hax::FullDefKind::Mod { items, .. } => {
+            hax::FullDefKind::Mod(hax::Mod { items, .. }) => {
                 for (_, def_id) in items {
                     self.t_ctx.enqueue_module_item(def_id);
                 }
             }
-            hax::FullDefKind::ForeignMod { items, .. } => {
+            hax::FullDefKind::ForeignMod(hax::ForeignMod { items, .. }) => {
                 for def_id in items {
                     self.t_ctx.enqueue_module_item(def_id);
                 }
@@ -358,12 +358,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         def: &hax::FullDef<'tcx>,
     ) -> Result<Option<TraitItemSource>, Error> {
         let assoc = match def.kind() {
-            hax::FullDefKind::AssocConst {
+            hax::FullDefKind::AssocConst(hax::AssocConst {
                 associated_item, ..
-            }
-            | hax::FullDefKind::AssocFn {
+            })
+            | hax::FullDefKind::AssocFn(hax::AssocFn {
                 associated_item, ..
-            } => associated_item,
+            }) => associated_item,
             _ => return Ok(None),
         };
         Ok(Some(match &assoc.container {
@@ -390,7 +390,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     self.translate_trait_impl_ref(span, impl_, TransImplSource::Normal)?;
                 let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
                 let item_id = self.translate_assoc_item_id(trait_ref.id, def.def_id())?;
-                if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
+                if matches!(def.kind(), hax::FullDefKind::AssocFn(_)) {
                     // If the implementation is getting translated, that means the method is
                     // getting used.
                     let method_id = *item_id.as_method().unwrap();
@@ -415,7 +415,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 // don't have associated items.
                 let trait_ref = self.translate_trait_ref(span, trait_ref)?;
                 let item_id = self.translate_assoc_item_id(trait_ref.id, def.def_id())?;
-                if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
+                if matches!(def.kind(), hax::FullDefKind::AssocFn(_)) {
                     // If the method fundecl is getting translated, that means the method is
                     // getting used.
                     let method_id = *item_id.as_method().unwrap();
@@ -442,7 +442,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let span = item_meta.span;
 
         // Get the kind of the type decl.
-        let src = if let hax::FullDefKind::Closure { args, .. } = def.kind() {
+        let src = if let hax::FullDefKind::Closure(hax::Closure { args, .. }) = def.kind() {
             let info = self.translate_closure_info(span, args)?;
             TypeSource::Closure { info }
         } else if let Some(builtin) = self.recognize_builtin_adt(def.this()) {
@@ -455,13 +455,15 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let kind = match &def.kind {
             _ if item_meta.opacity.is_opaque() => Ok(TypeDeclKind::Opaque),
             hax::FullDefKind::OpaqueTy | hax::FullDefKind::ForeignTy => Ok(TypeDeclKind::Opaque),
-            hax::FullDefKind::TyAlias { ty, .. } => {
+            hax::FullDefKind::TyAlias(hax::TyAlias { ty, .. }) => {
                 // Don't error on missing trait refs.
                 self.error_on_trait_proof_error = false;
                 self.translate_ty(span, ty).map(TypeDeclKind::Alias)
             }
-            hax::FullDefKind::Adt { .. } => self.translate_adt_def(trans_id, span, &item_meta, def),
-            hax::FullDefKind::Closure { args, .. } => self.translate_closure_adt(span, args),
+            hax::FullDefKind::Adt(_) => self.translate_adt_def(trans_id, span, &item_meta, def),
+            hax::FullDefKind::Closure(hax::Closure { args, .. }) => {
+                self.translate_closure_adt(span, args)
+            }
             _ => panic!("Unexpected item when translating types: {def:?}"),
         };
 
@@ -498,16 +500,16 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let src = if matches!(
             def.kind(),
-            hax::FullDefKind::Const { .. }
-                | hax::FullDefKind::AssocConst { .. }
-                | hax::FullDefKind::Static { .. }
+            hax::FullDefKind::Const(_)
+                | hax::FullDefKind::AssocConst(_)
+                | hax::FullDefKind::Static(_)
         ) {
             let global_id = self.register_item(span, def.this(), TransItemSourceKind::Global);
             FunSource::GlobalInitializer(GlobalDeclRef {
                 id: global_id,
                 generics: Box::new(self.outermost_generics().identity_args()),
             })
-        } else if matches!(def.kind(), hax::FullDefKind::Ctor { .. }) {
+        } else if matches!(def.kind(), hax::FullDefKind::Ctor(_)) {
             FunSource::AdtConstructor
         } else {
             match self.get_trait_item_source(span, def)? {
@@ -530,9 +532,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             }
         };
 
-        if let hax::FullDefKind::Ctor {
+        if let hax::FullDefKind::Ctor(hax::Ctor {
             fields, output_ty, ..
-        } = def.kind()
+        }) = def.kind()
         {
             let signature = FunSig {
                 inputs: fields
@@ -563,12 +565,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Translate the function signature
         trace!("Translating function signature");
         let signature = match &def.kind {
-            hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
+            hax::FullDefKind::Fn(hax::Fn { sig, .. })
+            | hax::FullDefKind::AssocFn(hax::AssocFn { sig, .. }) => {
                 self.translate_fun_sig(span, &sig.value)?
             }
-            hax::FullDefKind::Const { ty, .. }
-            | hax::FullDefKind::AssocConst { ty, .. }
-            | hax::FullDefKind::Static { ty, .. } => FunSig {
+            hax::FullDefKind::Const(hax::Const { ty, .. })
+            | hax::FullDefKind::AssocConst(hax::AssocConst { ty, .. })
+            | hax::FullDefKind::Static(hax::Static { ty, .. }) => FunSig {
                 inputs: vec![],
                 output: self.translate_ty(span, ty)?,
                 is_unsafe: false,
@@ -648,24 +651,24 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         trace!("Translating global type");
         let ty = match &def.kind {
-            hax::FullDefKind::Const { ty, .. }
-            | hax::FullDefKind::AssocConst { ty, .. }
-            | hax::FullDefKind::Static { ty, .. } => ty,
+            hax::FullDefKind::Const(hax::Const { ty, .. })
+            | hax::FullDefKind::AssocConst(hax::AssocConst { ty, .. })
+            | hax::FullDefKind::Static(hax::Static { ty, .. }) => ty,
             _ => panic!("Unexpected def for constant: {def:?}"),
         };
         let ty = self.translate_ty(span, ty)?;
 
         let global_kind = match &def.kind {
-            hax::FullDefKind::Static {
+            hax::FullDefKind::Static(hax::Static {
                 thread_local: true, ..
-            } => GlobalKind::ThreadLocal,
-            hax::FullDefKind::Static { .. } => GlobalKind::Static,
-            hax::FullDefKind::Const {
+            }) => GlobalKind::ThreadLocal,
+            hax::FullDefKind::Static(_) => GlobalKind::Static,
+            hax::FullDefKind::Const(hax::Const {
                 kind: hax::ConstKind::TopLevel,
                 ..
-            }
-            | hax::FullDefKind::AssocConst { .. } => GlobalKind::NamedConst,
-            hax::FullDefKind::Const { .. } => GlobalKind::AnonConst,
+            })
+            | hax::FullDefKind::AssocConst(_) => GlobalKind::NamedConst,
+            hax::FullDefKind::Const(_) => GlobalKind::AnonConst,
             _ => panic!("Unexpected def for constant: {def:?}"),
         };
 
@@ -715,18 +718,18 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<TraitDecl, Error> {
         let span = item_meta.span;
 
-        let (hax::FullDefKind::Trait {
+        let (hax::FullDefKind::Trait(hax::Trait {
             implied_predicates, ..
-        }
-        | hax::FullDefKind::TraitAlias {
+        })
+        | hax::FullDefKind::TraitAlias(hax::TraitAlias {
             implied_predicates, ..
-        }) = def.kind()
+        })) = def.kind()
         else {
             raise_error!(self, span, "Unexpected definition: {def:?}");
         };
         let src = match def.kind() {
-            hax::FullDefKind::Trait { .. } => TraitDeclSource::Normal,
-            hax::FullDefKind::TraitAlias { .. } => TraitDeclSource::TraitAlias,
+            hax::FullDefKind::Trait(_) => TraitDeclSource::Normal,
+            hax::FullDefKind::TraitAlias(_) => TraitDeclSource::TraitAlias,
             _ => unreachable!(),
         };
 
@@ -741,7 +744,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let vtable = self.translate_vtable_struct_ref_no_enqueue(span, def.this())?;
 
-        if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
+        if let hax::FullDefKind::TraitAlias(_) = def.kind() {
             // Trait aliases don't have any items. Everything interesting is in the parent clauses.
             return Ok(TraitDecl {
                 def_id: trait_decl_id,
@@ -756,11 +759,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             });
         }
 
-        let hax::FullDefKind::Trait {
+        let hax::FullDefKind::Trait(hax::Trait {
             items,
             self_predicate,
             ..
-        } = &def.kind
+        }) = &def.kind
         else {
             unreachable!()
         };
@@ -857,11 +860,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             let attr_info = self.translate_attr_info(&item_def);
 
             match item_def.kind() {
-                hax::FullDefKind::AssocFn {
+                hax::FullDefKind::AssocFn(hax::AssocFn {
                     sig,
                     associated_item,
                     ..
-                } => {
+                }) => {
                     let trait_method_id = *assoc_item_id.as_method().unwrap();
                     let method_name = self.translate_name(&item_src)?;
                     let method_opacity = self.opacity_for_name(&method_name);
@@ -953,7 +956,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     // ones that correspond to unused methods at the end of translation.
                     methods.set_slot_extend(trait_method_id, method);
                 }
-                hax::FullDefKind::AssocConst { ty, .. } => {
+                hax::FullDefKind::AssocConst(hax::AssocConst { ty, .. }) => {
                     let assoc_const_id = *assoc_item_id.as_const().unwrap();
                     // The const is defined in a context that has an extra `Self: Trait` clause, so
                     // we translate it bound first.
@@ -998,11 +1001,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     });
                     consts.set_slot_extend(assoc_const_id, assoc_const);
                 }
-                hax::FullDefKind::AssocTy {
+                hax::FullDefKind::AssocTy(hax::AssocTy {
                     implied_predicates,
                     value: default,
                     ..
-                } => {
+                }) => {
                     let assoc_type_id = *assoc_item_id.as_type().unwrap();
                     let binder_kind = BinderKind::TraitType(trait_decl_id, assoc_type_id);
                     let assoc_ty =
@@ -1064,12 +1067,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
 
-        let hax::FullDefKind::TraitImpl {
+        let hax::FullDefKind::TraitImpl(hax::TraitImpl {
             trait_pred,
             implied_trait_proofs,
             items: impl_items,
             ..
-        } = &def.kind
+        }) = &def.kind
         else {
             unreachable!()
         };
@@ -1165,15 +1168,15 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             // In not-mono mode, we use the polymorphic item as usual.
             let item_def = self.poly_hax_def(item_def_id)?;
             let trans_kind = match item_def.kind() {
-                hax::FullDefKind::AssocFn { .. } => TransItemSourceKind::Fun,
-                hax::FullDefKind::AssocConst { .. } => TransItemSourceKind::Global,
-                hax::FullDefKind::AssocTy { .. } => TransItemSourceKind::Type,
+                hax::FullDefKind::AssocFn(_) => TransItemSourceKind::Fun,
+                hax::FullDefKind::AssocConst(_) => TransItemSourceKind::Global,
+                hax::FullDefKind::AssocTy(_) => TransItemSourceKind::Type,
                 _ => unreachable!(),
             };
             let item_src = TransItemSource::polymorphic(item_def_id, trans_kind);
 
             match item_def.kind() {
-                hax::FullDefKind::AssocFn { .. } => {
+                hax::FullDefKind::AssocFn(_) => {
                     let trait_method_id = *assoc_item_id.as_method().unwrap();
                     let binder_kind = BinderKind::TraitMethod(trait_id, trait_method_id);
                     let bound_fn_ref = match &impl_item.value {
@@ -1241,7 +1244,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     // ones that correspond to unused methods at the end of translation.
                     methods.set_slot_extend(trait_method_id, bound_fn_ref);
                 }
-                hax::FullDefKind::AssocConst { .. } => {
+                hax::FullDefKind::AssocConst(_) => {
                     let assoc_const_id = *assoc_item_id.as_const().unwrap();
                     let id = self.register_and_enqueue(item_span, item_src);
                     // The parameters of the constant are the same as those of the item that
@@ -1261,7 +1264,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     };
                     consts.set_slot_extend(assoc_const_id, gref);
                 }
-                hax::FullDefKind::AssocTy { .. } => {
+                hax::FullDefKind::AssocTy(_) => {
                     let assoc_type_id = *assoc_item_id.as_type().unwrap();
                     let binder_kind = BinderKind::TraitType(trait_id, assoc_type_id);
                     let assoc_ty = match &impl_item.value {
@@ -1347,11 +1350,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
 
-        let hax::FullDefKind::TraitAlias {
+        let hax::FullDefKind::TraitAlias(hax::TraitAlias {
             implied_predicates,
             self_predicate,
             ..
-        } = &def.kind
+        }) = &def.kind
         else {
             raise_error!(self, span, "Unexpected definition: {def:?}");
         };
@@ -1454,9 +1457,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             _ => unreachable!("not a virtual impl source: {impl_kind:?}"),
         };
         let trait_def = self.hax_def(&vimpl.trait_pred.trait_ref)?;
-        let hax::FullDefKind::Trait {
+        let hax::FullDefKind::Trait(hax::Trait {
             items: trait_items, ..
-        } = trait_def.kind()
+        }) = trait_def.kind()
         else {
             panic!()
         };
