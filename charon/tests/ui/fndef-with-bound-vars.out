@@ -16,6 +16,63 @@ pub trait Sized<Self>
 
 struct () {}
 
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Tuple
+#[fundamental]
+#[lang_item(Tuple)]
+pub trait Tuple<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::ops::function::FnOnce
+#[fundamental]
+#[lang_item(FnOnce)]
+pub trait FnOnce<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self::Output: Sized)
+    type Output
+    fn call_once;
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+}
+
+// Full name: core::ops::function::FnMut
+#[fundamental]
+#[lang_item(FnMut)]
+pub trait FnMut<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnOnce<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    fn call_mut<'_0_1>;
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
+}
+
+// Full name: core::ops::function::Fn
+#[fundamental]
+#[lang_item(Fn)]
+pub trait Fn<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnMut<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    fn call<'_0_1>;
+    vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
+}
+
 // Full name: test_crate::bar
 fn bar<T>()
 where
@@ -29,9 +86,280 @@ where
     return
 }
 
+struct test_crate::main::{closure} {}
+
 // Full name: test_crate::main
 fn main()
-= error("Hax panicked when translating `Closure(test_crate::main::{closure#0}, [i8, Binder { value: extern "RustCall" fn(()) -> Closure(test_crate::main::{closure#0}::{closure#0}, [i8, Binder { value: extern "RustCall" fn(()) -> FnDef(test_crate::bar, Binder { value: [&'{erased} ()], bound_vars: [] }), bound_vars: [] }, (FnDef(test_crate::bar, Binder { value: [&'{erased} ()], bound_vars: [] }),)]), bound_vars: [] }, ()])`.")
+{
+    let _0: (); // return
+    let _1: test_crate::main::{closure}; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = test_crate::main::{closure} {  }
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+struct test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3> {
+  _0: bar<&'_0 ()>[{built_in impl Sized for &'_3 ()}],
+}
+
+// Full name: test_crate::main::{closure}::{impl Destruct for test_crate::main::{closure}}::drop_glue
+unsafe fn {impl Destruct for test_crate::main::{closure}}::drop_glue<'_0>(_1: &'_0 mut test_crate::main::{closure})
+{
+    let _0: (); // return
+    let _1: &'1 mut test_crate::main::{closure}; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::main::{impl Fn<()> for test_crate::main::{closure}}::call
+fn {impl Fn<()> for test_crate::main::{closure}}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::main::{closure}, tupled_args: ()) -> test_crate::main::{closure}::{closure}<'_, '_, '_, '_>
+{
+    let _0: test_crate::main::{closure}::{closure}<'4, '5, '6, '7>; // return
+    let _1: &'9 test_crate::main::{closure}; // arg #1
+    let tupled_args: (); // arg #2
+    let i: bar<&'18 ()>[{built_in impl Sized for &'18 ()}]; // local
+
+    storage_live(_0)
+    storage_live(i)
+    i = const bar<&'27 ()>[{built_in impl Sized for &'29 ()}]
+    fake_read(i)
+    _0 = test_crate::main::{closure}::{closure} { _0: copy i }
+    storage_dead(i)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::main::{impl FnMut<()> for test_crate::main::{closure}}::call_mut
+fn {impl FnMut<()> for test_crate::main::{closure}}::call_mut<'_0, '_1, '_2>(state: &'_2 mut test_crate::main::{closure}, args: ()) -> test_crate::main::{closure}::{closure}<'_, '_, '_, '_>
+{
+    let _0: test_crate::main::{closure}::{closure}<'0, '1, '2, '3>; // return
+    let state: &'_2 mut test_crate::main::{closure}; // arg #1
+    let args: (); // arg #2
+    let _3: &'4 test_crate::main::{closure}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &(*state)
+    _0 = {impl Fn<()> for test_crate::main::{closure}}::call<'_0, '_1, '6>(move _3, move args)
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::main::{impl FnOnce<()> for test_crate::main::{closure}}::call_once
+fn {impl FnOnce<()> for test_crate::main::{closure}}::call_once<'_0, '_1>(_1: test_crate::main::{closure}, _2: ()) -> test_crate::main::{closure}::{closure}<'_, '_, '_, '_>
+{
+    let _0: test_crate::main::{closure}::{closure}<'4, '5, '6, '7>; // return
+    let _1: test_crate::main::{closure}; // arg #1
+    let _2: (); // arg #2
+    let _3: &'9 mut test_crate::main::{closure}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &mut _1
+    _0 = {impl FnMut<()> for test_crate::main::{closure}}::call_mut<'_0, '_1, '12>(move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_crate::main::{closure}}::drop_glue<'13>] _1
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    drop[{impl Destruct for test_crate::main::{closure}}::drop_glue<'14>] _1
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::main::{impl FnOnce<()> for test_crate::main::{closure}}
+impl<'_0, '_1> FnOnce<()> for test_crate::main::{closure} {
+    proof ImpliedClause0: (test_crate::main::{closure}: MetaSized) = {built_in impl MetaSized for test_crate::main::{closure}}
+    proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
+    proof ImpliedClause3: (test_crate::main::{closure}::{closure}<'_, '_, '_, '_>: Sized) = {built_in impl Sized for test_crate::main::{closure}::{closure}<'_, '_, '_, '_>}
+    type Output = test_crate::main::{closure}::{closure}<'_, '_, '_, '_>
+    fn call_once = {impl FnOnce<()> for test_crate::main::{closure}}::call_once<'_0, '_1>
+    vtable: {impl FnOnce<()> for test_crate::main::{closure}}::{vtable}<'_0, '_1>
+}
+
+// Full name: test_crate::main::{impl FnMut<()> for test_crate::main::{closure}}
+impl<'_0, '_1> FnMut<()> for test_crate::main::{closure} {
+    proof ImpliedClause0: (test_crate::main::{closure}: MetaSized) = {built_in impl MetaSized for test_crate::main::{closure}}
+    proof ImpliedClause1: (test_crate::main::{closure}: FnOnce<()>) = {impl FnOnce<()> for test_crate::main::{closure}}<'_0, '_1>
+    proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
+    fn call_mut<'_0_1> = {impl FnMut<()> for test_crate::main::{closure}}::call_mut<'_0, '_1, '_0_1>
+    vtable: {impl FnMut<()> for test_crate::main::{closure}}::{vtable}<'_0, '_1>
+}
+
+// Full name: test_crate::main::{impl Fn<()> for test_crate::main::{closure}}
+impl<'_0, '_1> Fn<()> for test_crate::main::{closure} {
+    proof ImpliedClause0: (test_crate::main::{closure}: MetaSized) = {built_in impl MetaSized for test_crate::main::{closure}}
+    proof ImpliedClause1: (test_crate::main::{closure}: FnMut<()>) = {impl FnMut<()> for test_crate::main::{closure}}<'_0, '_1>
+    proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
+    fn call<'_0_1> = {impl Fn<()> for test_crate::main::{closure}}::call<'_0, '_1, '_0_1>
+    vtable: {impl Fn<()> for test_crate::main::{closure}}::{vtable}<'_0, '_1>
+}
+
+// Full name: test_crate::main::{closure}::{impl Destruct for test_crate::main::{closure}}
+impl Destruct for test_crate::main::{closure} {
+    fn drop_glue<'_0_1> = {impl Destruct for test_crate::main::{closure}}::drop_glue<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::main::{closure}::{closure}::{impl Destruct for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::drop_glue
+unsafe fn {impl Destruct for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::drop_glue<'_0, '_1, '_2, '_3, '_4>(_1: &'_4 mut test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>)
+where
+    RegionOutlives0: '_0: '_4,
+    RegionOutlives1: '_1: '_4,
+    RegionOutlives2: '_2: '_4,
+    RegionOutlives3: '_3: '_4,
+{
+    let _0: (); // return
+    let _1: &'1 mut test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::main::{closure}::{impl Fn<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::call
+fn {impl Fn<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::call<'_0, '_1, '_2, '_3, '_4, '_5>(_1: &'_5 test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>, tupled_args: ()) -> bar<&'_ ()>[{built_in impl Sized for &'_ ()}]
+where
+    RegionOutlives0: '_0: '_5,
+    RegionOutlives1: '_1: '_5,
+    RegionOutlives2: '_2: '_5,
+    RegionOutlives3: '_3: '_5,
+{
+    let _0: bar<&'0 ()>[{built_in impl Sized for &'0 ()}]; // return
+    let _1: &'5 test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>; // arg #1
+    let tupled_args: (); // arg #2
+
+    storage_live(_0)
+    _0 = copy (*_1)._0
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::main::{closure}::{impl FnMut<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::call_mut
+fn {impl FnMut<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::call_mut<'_0, '_1, '_2, '_3, '_4, '_5>(state: &'_5 mut test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>, args: ()) -> bar<&'_ ()>[{built_in impl Sized for &'_ ()}]
+where
+    RegionOutlives0: '_0: '_5,
+    RegionOutlives1: '_1: '_5,
+    RegionOutlives2: '_2: '_5,
+    RegionOutlives3: '_3: '_5,
+{
+    let _0: bar<&'0 ()>[{built_in impl Sized for &'0 ()}]; // return
+    let state: &'_5 mut test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>; // arg #1
+    let args: (); // arg #2
+    let _3: &'4 test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &(*state)
+    _0 = {impl Fn<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::call<'_0, '_1, '_2, '_3, '_4, '6>(move _3, move args)
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::main::{closure}::{impl FnOnce<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::call_once
+fn {impl FnOnce<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::call_once<'_0, '_1, '_2, '_3, '_4>(_1: test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>, _2: ()) -> bar<&'_ ()>[{built_in impl Sized for &'_ ()}]
+{
+    let _0: bar<&'0 ()>[{built_in impl Sized for &'0 ()}]; // return
+    let _1: test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>; // arg #1
+    let _2: (); // arg #2
+    let _3: &'5 mut test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &mut _1
+    _0 = {impl FnMut<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::call_mut<'_0, '_1, '_2, '_3, '_4, '15>(move _3, move _2)
+    ↳⚡ drop[{impl Destruct for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::drop_glue<'_0, '_1, '_2, '_3, '24>] _1
+        ↳⚡ storage_dead(_3)
+            storage_dead(_2)
+            storage_dead(_1)
+            unwind_terminate
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    drop[{impl Destruct for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::drop_glue<'_0, '_1, '_2, '_3, '33>] _1
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::main::{closure}::{impl FnOnce<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}
+impl<'_0, '_1, '_2, '_3, '_4> FnOnce<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3> {
+    proof ImpliedClause0: (test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>: MetaSized) = {built_in impl MetaSized for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}
+    proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
+    proof ImpliedClause3: (bar<&'_ ()>[{built_in impl Sized for &'_ ()}]: Sized) = {built_in impl Sized for bar<&'_ ()>[{built_in impl Sized for &'_ ()}]}
+    type Output = bar<&'_ ()>[{built_in impl Sized for &'_ ()}]
+    fn call_once = {impl FnOnce<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::call_once<'_0, '_1, '_2, '_3, '_4>
+    vtable: {impl FnOnce<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::{vtable}<'_0, '_1, '_2, '_3, '_4>
+}
+
+// Full name: test_crate::main::{closure}::{impl FnMut<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}
+impl<'_0, '_1, '_2, '_3, '_4> FnMut<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3> {
+    proof ImpliedClause0: (test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>: MetaSized) = {built_in impl MetaSized for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}
+    proof ImpliedClause1: (test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>: FnOnce<()>) = {impl FnOnce<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}<'_0, '_1, '_2, '_3, '_4>
+    proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
+    fn call_mut<'_0_1> = {impl FnMut<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::call_mut<'_0, '_1, '_2, '_3, '_4, '_0_1>
+    vtable: {impl FnMut<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::{vtable}<'_0, '_1, '_2, '_3, '_4>
+}
+
+// Full name: test_crate::main::{closure}::{impl Fn<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}
+impl<'_0, '_1, '_2, '_3, '_4> Fn<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3> {
+    proof ImpliedClause0: (test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>: MetaSized) = {built_in impl MetaSized for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}
+    proof ImpliedClause1: (test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>: FnMut<()>) = {impl FnMut<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}<'_0, '_1, '_2, '_3, '_4>
+    proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
+    fn call<'_0_1> = {impl Fn<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::call<'_0, '_1, '_2, '_3, '_4, '_0_1>
+    vtable: {impl Fn<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::{vtable}<'_0, '_1, '_2, '_3, '_4>
+}
+
+// Full name: test_crate::main::{closure}::{closure}::{impl Destruct for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}
+impl<'_0, '_1, '_2, '_3> Destruct for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3> {
+    fn drop_glue<'_0_1> = {impl Destruct for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::drop_glue<'_0, '_1, '_2, '_3, '_0_1>
+    non-dyn-compatible
+}
 
 
 

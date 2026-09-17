@@ -722,7 +722,11 @@ pub enum TyKind {
 
     #[custom_arm(
         ty::TyKind::FnDef(fun_id, generics) => {
-            let generics = generics.no_bound_vars().expect("bound variables in FnDef");
+            // trying to work out where the binder here even comes from, cause rustc doesn't have it
+            // so you must be rebinding somewhere
+            let tcx = s.base().tcx;
+            // note: loss of precision, we erase the bound vars.
+            let generics = erase_free_regions(tcx, generics.skip_binder());
             let item = translate_item_ref(s, *fun_id, generics);
             let tcx = s.base().tcx;
             let fn_sig = tcx.fn_sig(*fun_id).instantiate(tcx, generics);

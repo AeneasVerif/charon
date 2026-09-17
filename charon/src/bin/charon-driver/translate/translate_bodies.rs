@@ -1803,7 +1803,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             ty::TyKind::FnDef(def_id, generics) => {
                 // The type of the value is one of the singleton types that corresponds to each function,
                 // which is enough information.
-                let generics = generics.no_bound_vars().expect("bound variables in FnDef");
+                //
+                // note: loss of precision, we erase the bound vars.
+                let generics = hax::erase_free_regions(tcx, generics.skip_binder());
                 let item = &hax::translate_item_ref(&self.hax_state, *def_id, generics);
                 trace!("func: {:?}", item.def_id);
                 let fun_def = self.hax_def(item)?;
