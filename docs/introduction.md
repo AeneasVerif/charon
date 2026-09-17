@@ -2,8 +2,8 @@
 
 Charon is a CLI tool that helps other tools analyze Rust code.
 Its basic function is that you call `charon cargo` on a Rust crate,
-and Charon produces a `crate_name.llbc` file which contains
-all the information you could possibly hope to get from the crate[^1].
+and Charon produces a file which contains all the information you could
+possibly hope to get from the crate[^1].
 
 This manual is a bare-bones draft that we plan to improve over time.
 In the meantime, if there's something you want to know about,
