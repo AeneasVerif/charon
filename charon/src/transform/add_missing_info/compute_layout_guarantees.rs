@@ -188,11 +188,17 @@ fn compute_guarantees(
     }
 
     // `repr(Rust)` only guarantees that the fields are aligned and don't overlap, and that the
-    // alignment is at least that of the fields.
+    // alignment is at least that of the fields. The size is at least the end of every field.
     // <https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.rust.layout>
     let fields = variants.iter().flat_map(|(_, fields)| fields);
-    let align = type_align(fields.clone().map(field_align).collect());
-    let size = SizeExpr::max_size(fields.map(SizeExpr::size_of).collect());
+    let align = type_align(fields.map(field_align).collect());
+    let field_ends = variants.iter().flat_map(|(variant, fields)| {
+        fields.iter().enumerate().map(move |(f, ty)| {
+            let offset = SizeExpr::offset_of(decl.self_ref(), *variant, FieldId::from_usize(f));
+            SizeExprKind::Plus(offset, SizeExpr::size_of(ty)).into_expr()
+        })
+    });
+    let size = SizeExpr::max_size(field_ends.collect());
     let offsets = variants
         .iter()
         .map(|(_, fields)| {

@@ -5,7 +5,7 @@ struct SimpleStruct {
   z: u32,
 }
 // layout:
-//     size: 12usize (guaranteed: at_least(align_to(max(size_of::<u32>(), size_of::<u32>(), size_of::<u32>()), max(align_of::<u32>(), align_of::<u32>(), align_of::<u32>())))),
+//     size: 12usize (guaranteed: at_least(align_to(max((offset_of(SimpleStruct.x) + size_of::<u32>()), (offset_of(SimpleStruct.y) + size_of::<u32>()), (offset_of(SimpleStruct.z) + size_of::<u32>())), max(align_of::<u32>(), align_of::<u32>(), align_of::<u32>())))),
 //     align: 4usize (guaranteed: at_least(max(align_of::<u32>(), align_of::<u32>(), align_of::<u32>()))),
 //     discriminator: _,
 //     inhabited: true,
@@ -29,7 +29,7 @@ where
   b: T,
 }
 // layout:
-//     size: ? (guaranteed: at_least(align_to(max(size_of::<usize>(), size_of::<T>()), max(align_of::<usize>(), align_of::<T>())))),
+//     size: ? (guaranteed: at_least(align_to(max((offset_of(GenericStruct<T>[TraitClause0].a) + size_of::<usize>()), (offset_of(GenericStruct<T>[TraitClause0].b) + size_of::<T>())), max(align_of::<usize>(), align_of::<T>())))),
 //     align: ? (guaranteed: at_least(max(align_of::<usize>(), align_of::<T>()))),
 //     discriminator: none,
 //     inhabited: if_inhabited(T),
@@ -49,7 +49,7 @@ struct UnsizedStruct {
   y: [usize],
 }
 // layout:
-//     size: (8usize + (slice_length * 8usize)) (guaranteed: at_least(align_to(max(size_of::<usize>(), size_of::<[usize]>()), max(align_of::<usize>(), align_of::<[usize]>())))),
+//     size: (8usize + (slice_length * 8usize)) (guaranteed: at_least(align_to(max((offset_of(UnsizedStruct.x) + size_of::<usize>()), (offset_of(UnsizedStruct.y) + size_of::<[usize]>())), max(align_of::<usize>(), align_of::<[usize]>())))),
 //     align: 8usize (guaranteed: at_least(max(align_of::<usize>(), align_of::<[usize]>()))),
 //     discriminator: _,
 //     inhabited: true,
@@ -69,7 +69,7 @@ struct UnsizedDyn {
   y: (dyn Debug + 'static),
 }
 // layout:
-//     size: align_to((1usize + dyn_size), max(dyn_align, 1usize)) (guaranteed: at_least(align_to(max(size_of::<u8>(), dyn_size), max(align_of::<u8>(), dyn_align)))),
+//     size: align_to((1usize + dyn_size), max(dyn_align, 1usize)) (guaranteed: at_least(align_to(max((offset_of(UnsizedDyn.x) + size_of::<u8>()), (offset_of(UnsizedDyn.y) + dyn_size)), max(align_of::<u8>(), dyn_align)))),
 //     align: max(dyn_align, 1usize) (guaranteed: at_least(max(align_of::<u8>(), dyn_align))),
 //     discriminator: _,
 //     inhabited: true,
@@ -89,7 +89,7 @@ struct NestedUnsized {
   y: UnsizedStruct,
 }
 // layout:
-//     size: (16usize + (slice_length * 8usize)) (guaranteed: at_least(align_to(max(size_of::<u16>(), size_of::<UnsizedStruct>()), max(align_of::<u16>(), align_of::<UnsizedStruct>())))),
+//     size: (16usize + (slice_length * 8usize)) (guaranteed: at_least(align_to(max((offset_of(NestedUnsized.x) + size_of::<u16>()), (offset_of(NestedUnsized.y) + size_of::<UnsizedStruct>())), max(align_of::<u16>(), align_of::<UnsizedStruct>())))),
 //     align: 8usize (guaranteed: at_least(max(align_of::<u16>(), align_of::<UnsizedStruct>()))),
 //     discriminator: _,
 //     inhabited: true,
@@ -109,7 +109,7 @@ struct PackedUnsized {
   y: [u32],
 }
 // layout:
-//     size: (2usize + (slice_length * 4usize)) (guaranteed: at_least(align_to(max(size_of::<u8>(), size_of::<[u32]>()), max(min(align_of::<u8>(), 2usize), min(align_of::<[u32]>(), 2usize))))),
+//     size: (2usize + (slice_length * 4usize)) (guaranteed: at_least(align_to(max((offset_of(PackedUnsized.x) + size_of::<u8>()), (offset_of(PackedUnsized.y) + size_of::<[u32]>())), max(min(align_of::<u8>(), 2usize), min(align_of::<[u32]>(), 2usize))))),
 //     align: 2usize (guaranteed: at_least(max(min(align_of::<u8>(), 2usize), min(align_of::<[u32]>(), 2usize)))),
 //     discriminator: _,
 //     inhabited: true,
@@ -152,7 +152,7 @@ enum SimpleAdt {
   TupleVar { _0: u32, _1: u32 },
 }
 // layout:
-//     size: 24usize (guaranteed: at_least(align_to(max(size_of::<usize>(), size_of::<usize>(), size_of::<u32>(), size_of::<u32>()), max(align_of::<usize>(), align_of::<usize>(), align_of::<u32>(), align_of::<u32>())))),
+//     size: 24usize (guaranteed: at_least(align_to(max((offset_of(SimpleAdt.StructVar.x) + size_of::<usize>()), (offset_of(SimpleAdt.StructVar.y) + size_of::<usize>()), (offset_of(SimpleAdt.TupleVar._0) + size_of::<u32>()), (offset_of(SimpleAdt.TupleVar._1) + size_of::<u32>())), max(align_of::<usize>(), align_of::<usize>(), align_of::<u32>(), align_of::<u32>())))),
 //     align: 8usize (guaranteed: at_least(max(align_of::<usize>(), align_of::<usize>(), align_of::<u32>(), align_of::<u32>()))),
 //     discriminator: read at offset 0 { 0u32 => EmptyVar, 1u32 => StructVar, 2u32 => TupleVar, _ => invalid },
 //     inhabited: true,
@@ -182,7 +182,7 @@ enum NicheAdt {
   Some { _0: NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32] },
 }
 // layout:
-//     size: 4usize (guaranteed: at_least(align_to(size_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>(), align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()))),
+//     size: 4usize (guaranteed: at_least(align_to((offset_of(NicheAdt.Some._0) + size_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()), align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()))),
 //     align: 4usize (guaranteed: at_least(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>())),
 //     discriminator: read at offset 0 { 0u32 => None, _ => Some },
 //     inhabited: true,
@@ -205,7 +205,7 @@ enum NicheAdtSigned {
   Some { _0: NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32] },
 }
 // layout:
-//     size: 4usize (guaranteed: at_least(align_to(size_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>(), align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()))),
+//     size: 4usize (guaranteed: at_least(align_to((offset_of(NicheAdtSigned.Some._0) + size_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()), align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>()))),
 //     align: 4usize (guaranteed: at_least(align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>())),
 //     discriminator: read at offset 0 { 0i32 => None, _ => Some },
 //     inhabited: true,
@@ -228,7 +228,7 @@ enum NicheAdtChar {
   Some { _0: char },
 }
 // layout:
-//     size: 4usize (guaranteed: at_least(align_to(size_of::<char>(), align_of::<char>()))),
+//     size: 4usize (guaranteed: at_least(align_to((offset_of(NicheAdtChar.Some._0) + size_of::<char>()), align_of::<char>()))),
 //     align: 4usize (guaranteed: at_least(align_of::<char>())),
 //     discriminator: read at offset 0 { 1114112u32..=4294967294u32 => invalid, 4294967295u32 => None, _ => Some },
 //     inhabited: true,
@@ -269,7 +269,7 @@ where
   y: Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global],
 }
 // layout:
-//     size: 16usize (guaranteed: at_least(align_to(max(size_of::<usize>(), size_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>()), max(align_of::<usize>(), align_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>())))),
+//     size: 16usize (guaranteed: at_least(align_to(max((offset_of(GenericWithKnownLayout<T>[TraitClause0].x) + size_of::<usize>()), (offset_of(GenericWithKnownLayout<T>[TraitClause0].y) + size_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>())), max(align_of::<usize>(), align_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>())))),
 //     align: 8usize (guaranteed: at_least(max(align_of::<usize>(), align_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>()))),
 //     discriminator: _,
 //     inhabited: true,
@@ -290,7 +290,7 @@ struct Reordered {
   z: u8,
 }
 // layout:
-//     size: 8usize (guaranteed: at_least(align_to(max(size_of::<u8>(), size_of::<u32>(), size_of::<u8>()), max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>())))),
+//     size: 8usize (guaranteed: at_least(align_to(max((offset_of(Reordered.x) + size_of::<u8>()), (offset_of(Reordered.y) + size_of::<u32>()), (offset_of(Reordered.z) + size_of::<u8>())), max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>())))),
 //     align: 4usize (guaranteed: at_least(max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>()))),
 //     discriminator: _,
 //     inhabited: true,
@@ -334,7 +334,7 @@ struct Packed {
   z: u8,
 }
 // layout:
-//     size: 6usize (guaranteed: at_least(align_to(max(size_of::<u8>(), size_of::<u32>(), size_of::<u8>()), max(min(align_of::<u8>(), 1usize), min(align_of::<u32>(), 1usize), min(align_of::<u8>(), 1usize))))),
+//     size: 6usize (guaranteed: at_least(align_to(max((offset_of(Packed.x) + size_of::<u8>()), (offset_of(Packed.y) + size_of::<u32>()), (offset_of(Packed.z) + size_of::<u8>())), max(min(align_of::<u8>(), 1usize), min(align_of::<u32>(), 1usize), min(align_of::<u8>(), 1usize))))),
 //     align: 1usize (guaranteed: at_least(max(min(align_of::<u8>(), 1usize), min(align_of::<u32>(), 1usize), min(align_of::<u8>(), 1usize)))),
 //     discriminator: _,
 //     inhabited: true,
@@ -355,7 +355,7 @@ enum UninhabitedVariant {
   B { _0: u32 },
 }
 // layout:
-//     size: 4usize (guaranteed: at_least(align_to(size_of::<u32>(), max(align_of::<u32>(), 1usize)))),
+//     size: 4usize (guaranteed: at_least(align_to(max(offset_of(UninhabitedVariant.A._0), (offset_of(UninhabitedVariant.B._0) + size_of::<u32>())), max(align_of::<u32>(), 1usize)))),
 //     align: 4usize (guaranteed: at_least(max(align_of::<u32>(), 1usize))),
 //     discriminator: B,
 //     inhabited: true,
@@ -375,7 +375,7 @@ enum UninhabitedVariant2 {
   B { _0: u32 },
 }
 // layout:
-//     size: 8usize (guaranteed: at_least(align_to(max(size_of::<u32>(), size_of::<u32>()), max(align_of::<u32>(), align_of::<u32>(), 1usize)))),
+//     size: 8usize (guaranteed: at_least(align_to(max(offset_of(UninhabitedVariant2.A._0), (offset_of(UninhabitedVariant2.A._1) + size_of::<u32>()), (offset_of(UninhabitedVariant2.B._0) + size_of::<u32>())), max(align_of::<u32>(), align_of::<u32>(), 1usize)))),
 //     align: 4usize (guaranteed: at_least(max(align_of::<u32>(), align_of::<u32>(), 1usize))),
 //     discriminator: read at offset 0 { 1u32 => B, _ => invalid },
 //     inhabited: true,
@@ -400,7 +400,7 @@ enum UninhabitedVariantWithFields {
   Baz { x: u32, y: !, z: u32 },
 }
 // layout:
-//     size: 12usize (guaranteed: at_least(align_to(max(size_of::<u32>(), size_of::<u32>()), max(align_of::<u32>(), align_of::<u32>(), 1usize)))),
+//     size: 12usize (guaranteed: at_least(align_to(max((offset_of(UninhabitedVariantWithFields.Baz.x) + size_of::<u32>()), offset_of(UninhabitedVariantWithFields.Baz.y), (offset_of(UninhabitedVariantWithFields.Baz.z) + size_of::<u32>())), max(align_of::<u32>(), align_of::<u32>(), 1usize)))),
 //     align: 4usize (guaranteed: at_least(max(align_of::<u32>(), align_of::<u32>(), 1usize))),
 //     discriminator: read at offset 0 { 0u32 => Bar, _ => invalid },
 //     inhabited: true,
@@ -424,7 +424,7 @@ struct Uninhabited {
   _0: !,
 }
 // layout:
-//     size: 0usize (guaranteed: at_least(0usize)),
+//     size: 0usize (guaranteed: at_least(offset_of(Uninhabited._0))),
 //     align: 1usize (guaranteed: at_least(1usize)),
 //     discriminator: _,
 //     inhabited: false,
@@ -447,7 +447,7 @@ where
   Some { _0: (usize, &'a T) },
 }
 // layout:
-//     size: 16usize (guaranteed: at_least(align_to(size_of::<(usize, &'a T)>(), align_of::<(usize, &'a T)>()))),
+//     size: 16usize (guaranteed: at_least(align_to((offset_of(DiscriminantInNicheOfField<'a, T>[TraitClause0].Some._0) + size_of::<(usize, &'a T)>()), align_of::<(usize, &'a T)>()))),
 //     align: 8usize (guaranteed: at_least(align_of::<(usize, &'a T)>())),
 //     discriminator: read at offset 8 { 0isize => None, _ => Some },
 //     inhabited: true,
@@ -470,7 +470,7 @@ union MaybeUninitInt {
   y: (),
 }
 // layout:
-//     size: 4usize (guaranteed: at_least(align_to(max(size_of::<u32>(), size_of::<()>()), max(align_of::<u32>(), align_of::<()>())))),
+//     size: 4usize (guaranteed: at_least(align_to(max((offset_of(MaybeUninitInt.x) + size_of::<u32>()), (offset_of(MaybeUninitInt.y) + size_of::<()>())), max(align_of::<u32>(), align_of::<()>())))),
 //     align: 4usize (guaranteed: at_least(max(align_of::<u32>(), align_of::<()>()))),
 //     discriminator: _,
 //     inhabited: true,
@@ -490,7 +490,7 @@ union PackIntsUnion {
   y: u64,
 }
 // layout:
-//     size: 8usize (guaranteed: at_least(align_to(max(size_of::<(u32, u32)>(), size_of::<u64>()), max(align_of::<(u32, u32)>(), align_of::<u64>())))),
+//     size: 8usize (guaranteed: at_least(align_to(max((offset_of(PackIntsUnion.x) + size_of::<(u32, u32)>()), (offset_of(PackIntsUnion.y) + size_of::<u64>())), max(align_of::<(u32, u32)>(), align_of::<u64>())))),
 //     align: 8usize (guaranteed: at_least(max(align_of::<(u32, u32)>(), align_of::<u64>()))),
 //     discriminator: _,
 //     inhabited: true,
@@ -511,7 +511,7 @@ enum NonZeroNiche {
   C,
 }
 // layout:
-//     size: 4usize (guaranteed: at_least(align_to(size_of::<char>(), align_of::<char>()))),
+//     size: 4usize (guaranteed: at_least(align_to((offset_of(NonZeroNiche.A._0) + size_of::<char>()), align_of::<char>()))),
 //     align: 4usize (guaranteed: at_least(align_of::<char>())),
 //     discriminator: read at offset 0 { 1114112u32 => B, 1114113u32 => C, 1114114u32..=4294967295u32 => invalid, _ => A },
 //     inhabited: true,
@@ -595,7 +595,7 @@ enum WithNicheAndUninhabited {
   Third { _0: NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32] },
 }
 // layout:
-//     size: 4usize (guaranteed: at_least(align_to(size_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>(), max(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>(), 1usize)))),
+//     size: 4usize (guaranteed: at_least(align_to(max(offset_of(WithNicheAndUninhabited.Second._0), (offset_of(WithNicheAndUninhabited.Third._0) + size_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>())), max(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>(), 1usize)))),
 //     align: 4usize (guaranteed: at_least(max(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>(), 1usize))),
 //     discriminator: read at offset 0 { 0u32 => First, _ => Third },
 //     inhabited: true,
@@ -627,7 +627,7 @@ where
   Second { _0: &'a T },
 }
 // layout:
-//     size: ? (guaranteed: at_least(align_to(size_of::<&'a T>(), align_of::<&'a T>()))),
+//     size: ? (guaranteed: at_least(align_to((offset_of(GenericUnsized<'a, T>[TraitClause0].Second._0) + size_of::<&'a T>()), align_of::<&'a T>()))),
 //     align: ? (guaranteed: at_least(align_of::<&'a T>())),
 //     discriminator: none,
 //     inhabited: true,
@@ -654,7 +654,7 @@ where
   Second { _0: &'a T },
 }
 // layout:
-//     size: 8usize (guaranteed: at_least(align_to(size_of::<&'a T>(), align_of::<&'a T>()))),
+//     size: 8usize (guaranteed: at_least(align_to((offset_of(GenericButFixedSize<'a, T>[TraitClause0].Second._0) + size_of::<&'a T>()), align_of::<&'a T>()))),
 //     align: 8usize (guaranteed: at_least(align_of::<&'a T>())),
 //     discriminator: read at offset 0 { 0isize => First, _ => Second },
 //     inhabited: true,
@@ -780,7 +780,7 @@ enum HasInvalidDiscr {
   Var3,
 }
 // layout:
-//     size: 1usize (guaranteed: at_least(align_to(size_of::<bool>(), align_of::<bool>()))),
+//     size: 1usize (guaranteed: at_least(align_to((offset_of(HasInvalidDiscr.Var2._0) + size_of::<bool>()), align_of::<bool>()))),
 //     align: 1usize (guaranteed: at_least(align_of::<bool>())),
 //     discriminator: read at offset 0 { 2u8 => Var1, 3u8 => invalid, 4u8 => Var3, 5u8..=255u8 => invalid, _ => Var2 },
 //     inhabited: true,
@@ -807,7 +807,7 @@ enum NicheInSignedRepr {
   B,
 }
 // layout:
-//     size: 1usize (guaranteed: at_least(align_to(size_of::<MyOrder>(), align_of::<MyOrder>()))),
+//     size: 1usize (guaranteed: at_least(align_to((offset_of(NicheInSignedRepr.A._0) + size_of::<MyOrder>()), align_of::<MyOrder>()))),
 //     align: 1usize (guaranteed: at_least(align_of::<MyOrder>())),
 //     discriminator: read at offset 0 { -128i8..=-3i8 => invalid, -2i8 => B, 2i8..=127i8 => invalid, _ => A },
 //     inhabited: true,
@@ -851,7 +851,7 @@ enum UninhabitedAtNicheEdge {
   C { _0: BigWithChar },
 }
 // layout:
-//     size: 16usize (guaranteed: at_least(align_to(max(size_of::<u32>(), size_of::<BigWithChar>()), max(align_of::<u32>(), align_of::<BigWithChar>(), 1usize)))),
+//     size: 16usize (guaranteed: at_least(align_to(max((offset_of(UninhabitedAtNicheEdge.A._0) + size_of::<u32>()), offset_of(UninhabitedAtNicheEdge.A._1), (offset_of(UninhabitedAtNicheEdge.C._0) + size_of::<BigWithChar>())), max(align_of::<u32>(), align_of::<BigWithChar>(), 1usize)))),
 //     align: 8usize (guaranteed: at_least(max(align_of::<u32>(), align_of::<BigWithChar>(), 1usize))),
 //     discriminator: read at offset 8 { 1114112u32 => invalid, 1114113u32 => B, 1114114u32..=4294967295u32 => invalid, _ => C },
 //     inhabited: true,
@@ -880,7 +880,7 @@ enum UninhabitedUntagged {
   B,
 }
 // layout:
-//     size: 4usize (guaranteed: at_least(align_to(size_of::<char>(), max(align_of::<char>(), 1usize)))),
+//     size: 4usize (guaranteed: at_least(align_to(max((offset_of(UninhabitedUntagged.A._0) + size_of::<char>()), offset_of(UninhabitedUntagged.A._1)), max(align_of::<char>(), 1usize)))),
 //     align: 4usize (guaranteed: at_least(max(align_of::<char>(), 1usize))),
 //     discriminator: read at offset 0 { 1114112u32..=4294967294u32 => invalid, 4294967295u32 => B, _ => invalid },
 //     inhabited: true,
@@ -946,7 +946,7 @@ struct Aligned {
   x: u8,
 }
 // layout:
-//     size: 16usize (guaranteed: at_least(align_to(size_of::<u8>(), max(align_of::<u8>(), 16usize)))),
+//     size: 16usize (guaranteed: at_least(align_to((offset_of(Aligned.x) + size_of::<u8>()), max(align_of::<u8>(), 16usize)))),
 //     align: 16usize (guaranteed: at_least(max(align_of::<u8>(), 16usize))),
 //     discriminator: _,
 //     inhabited: true,
