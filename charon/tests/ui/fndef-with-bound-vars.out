@@ -1,0 +1,37 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: test_crate::bar
+fn bar<T>()
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+= error("Hax panicked when translating `Closure(test_crate::main::{closure#0}, [i8, Binder { value: extern "RustCall" fn(()) -> Closure(test_crate::main::{closure#0}::{closure#0}, [i8, Binder { value: extern "RustCall" fn(()) -> FnDef(test_crate::bar, Binder { value: [&'{erased} ()], bound_vars: [] }), bound_vars: [] }, (FnDef(test_crate::bar, Binder { value: [&'{erased} ()], bound_vars: [] }),)]), bound_vars: [] }, ()])`.")
+
+
+
