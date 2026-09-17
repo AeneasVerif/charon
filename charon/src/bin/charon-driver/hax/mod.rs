@@ -28,5 +28,8 @@ pub mod options {
         /// blocks or advanced constant expressions as in `[T; N+1]`), or refer to them as
         /// `GlobalName`s.
         pub inline_anon_consts: bool,
+        /// Whether to turn anonymous const-eval allocations (e.g. the bytes of `b"foo"`) into
+        /// `RawMemory` globals, or to inline their contents at each use.
+        pub anon_allocs_as_globals: bool,
     }
 }

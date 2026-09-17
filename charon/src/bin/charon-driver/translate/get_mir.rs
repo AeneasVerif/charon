@@ -117,6 +117,7 @@ fn get_mir_for_def_id_and_level<'tcx>(
         hax::DefIdBase::Promoted(rust_def_id, promoted_id) => {
             Some(hax::get_promoted_mir(tcx, rust_def_id, promoted_id))
         }
+        hax::DefIdBase::Alloc(..) => None,
         _ => unreachable!(),
     }
 }
