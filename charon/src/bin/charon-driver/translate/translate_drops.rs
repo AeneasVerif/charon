@@ -41,7 +41,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         span: Span,
         def: &hax::FullDef<'tcx>,
     ) -> Result<Body, Error> {
-        let (hax::FullDefKind::Adt { .. } | hax::FullDefKind::Closure { .. }) = def.kind() else {
+        let (hax::FullDefKind::Adt(_) | hax::FullDefKind::Closure(_)) = def.kind() else {
             return Ok(Body::Missing);
         };
 
@@ -62,12 +62,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let span = item_meta.span;
         let borrow_region = self.drop_glue_region();
 
+        // Charon-generated `Destruct` impl for an ADT.
+        assert_eq!(impl_kind, TransImplSource::ImplicitDestruct);
         let trait_pred = match def.kind() {
-            // Charon-generated `Destruct` impl for an ADT.
-            FullDefKind::Adt { destruct_impl, .. } | FullDefKind::Closure { destruct_impl, .. } => {
-                assert_eq!(impl_kind, TransImplSource::ImplicitDestruct);
-                &destruct_impl.trait_pred
-            }
+            FullDefKind::Adt(adt) => &adt.destruct_impl.trait_pred,
+            FullDefKind::Closure(c) => &c.destruct_impl.trait_pred,
             _ => unreachable!(),
         };
 
@@ -169,10 +168,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
 
-        let (FullDefKind::Adt { destruct_impl, .. } | FullDefKind::Closure { destruct_impl, .. }) =
-            def.kind()
-        else {
-            unreachable!("{:?}", def.def_id())
+        let destruct_impl = match def.kind() {
+            FullDefKind::Adt(adt) => &adt.destruct_impl,
+            FullDefKind::Closure(c) => &c.destruct_impl,
+            _ => unreachable!("{:?}", def.def_id()),
         };
         let mut timpl = self.translate_virtual_trait_impl(
             impl_id,

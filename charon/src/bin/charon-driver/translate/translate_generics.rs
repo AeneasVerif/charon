@@ -448,10 +448,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         _span: Span,
         def: &hax::FullDef<'tcx>,
     ) -> Result<(), Error> {
-        if let hax::FullDefKind::Fn { sig, .. }
-        | hax::FullDefKind::AssocFn { sig, .. }
-        | hax::FullDefKind::Ctor { sig, .. } = def.kind()
-        {
+        let sig = match def.kind() {
+            hax::FullDefKind::Fn(f) => Some(&f.sig),
+            hax::FullDefKind::AssocFn(f) => Some(&f.sig),
+            hax::FullDefKind::Ctor(f) => Some(&f.sig),
+            _ => None,
+        };
+        if let Some(sig) = sig {
             let innermost_binder = self.innermost_binder_mut();
             assert!(innermost_binder.bound_region_vars.is_empty());
             innermost_binder.push_params_from_binder(sig.rebind(()))?;
@@ -491,19 +494,19 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn predicate_origin_for_def(def: &hax::FullDef<'tcx>) -> PredicateOrigin {
         use crate::hax::FullDefKind;
         match &def.kind {
-            FullDefKind::Adt { .. } | FullDefKind::TyAlias { .. } | FullDefKind::AssocTy { .. } => {
+            FullDefKind::Adt(_) | FullDefKind::TyAlias(_) | FullDefKind::AssocTy(_) => {
                 PredicateOrigin::WhereClauseOnType
             }
-            FullDefKind::Fn { .. }
-            | FullDefKind::AssocFn { .. }
-            | FullDefKind::Closure { .. }
-            | FullDefKind::Const { .. }
-            | FullDefKind::AssocConst { .. }
-            | FullDefKind::Static { .. } => PredicateOrigin::WhereClauseOnFn,
-            FullDefKind::TraitImpl { .. } | FullDefKind::InherentImpl { .. } => {
+            FullDefKind::Fn(_)
+            | FullDefKind::AssocFn(_)
+            | FullDefKind::Closure(_)
+            | FullDefKind::Const(_)
+            | FullDefKind::AssocConst(_)
+            | FullDefKind::Static(_) => PredicateOrigin::WhereClauseOnFn,
+            FullDefKind::TraitImpl(_) | FullDefKind::InherentImpl(_) => {
                 PredicateOrigin::WhereClauseOnImpl
             }
-            FullDefKind::Trait { .. } | FullDefKind::TraitAlias { .. } => {
+            FullDefKind::Trait(_) | FullDefKind::TraitAlias(_) => {
                 PredicateOrigin::WhereClauseOnTrait
             }
             _ => panic!("Unexpected def: {:?}", def.def_id().kind),
@@ -539,10 +542,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.push_generics_for_def(span, def)?;
         self.push_late_bound_generics_for_def(span, def)?;
 
-        if let hax::FullDefKind::Closure { args, .. } = def.kind() {
+        if let hax::FullDefKind::Closure(c) = def.kind() {
             // Add the lifetime generics coming from the upvars. We translate the upvar types early
             // to know what lifetimes are needed.
-            let upvar_tys = self.translate_closure_upvar_tys(span, args)?;
+            let upvar_tys = self.translate_closure_upvar_tys(span, &c.args)?;
             // Add new lifetimes params to replace the erased ones.
             let upvar_tys = upvar_tys.replace_erased_regions(|| {
                 let region_id = self.the_only_binder_mut().push_upvar_region();
@@ -560,14 +563,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | TransItemSourceKind::ClosureAsFnCast = kind
             {
                 self.the_only_binder_mut()
-                    .push_params_from_binder(args.fn_sig.rebind(()))?;
+                    .push_params_from_binder(c.args.fn_sig.rebind(()))?;
             }
         }
 
-        if let hax::FullDefKind::Fn { .. }
-        | hax::FullDefKind::AssocFn { .. }
-        | hax::FullDefKind::Closure { .. }
-        | hax::FullDefKind::Ctor { .. } = def.kind()
+        if let hax::FullDefKind::Fn(_)
+        | hax::FullDefKind::AssocFn(_)
+        | hax::FullDefKind::Closure(_)
+        | hax::FullDefKind::Ctor(_) = def.kind()
             && let TransItemSourceKind::CallableMethod(ClosureKind::Fn | ClosureKind::FnMut)
             | TransItemSourceKind::VTableMethod(TransImplSource::Callable(
                 ClosureKind::Fn | ClosureKind::FnMut,
