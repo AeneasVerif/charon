@@ -334,12 +334,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         }
         match def.kind() {
             hax::FullDefKind::InherentImpl(i) => {
-                for assoc in i.items() {
+                for assoc in i.items(self.hax_state()) {
                     self.t_ctx.enqueue_module_item(&assoc.def_id);
                 }
             }
             hax::FullDefKind::Mod(m) => {
-                for (_, def_id) in m.items() {
+                for (_, def_id) in m.items(self.hax_state()) {
                     self.t_ctx.enqueue_module_item(def_id);
                 }
             }
@@ -825,7 +825,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             });
         }
 
-        for hax_item in t.items() {
+        for hax_item in t.items(self.hax_state()) {
             let item_def_id = &hax_item.def_id;
             let item_span = self.def_span(item_def_id);
             let assoc_item_id = self.translate_assoc_item_id(trait_decl_id, item_def_id)?;
@@ -997,10 +997,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                             )?;
 
                             let default = assoc_ty_def
-                                .value()
+                                .value(ctx.hax_state())
                                 .map(|(ty, trait_proofs)| -> Result<_, Error> {
-                                    let ty = ctx.translate_ty(item_span, ty)?;
-                                    let trefs = ctx.translate_trait_proofs(span, trait_proofs)?;
+                                    let ty = ctx.translate_ty(item_span, &ty)?;
+                                    let trefs = ctx.translate_trait_proofs(span, &trait_proofs)?;
                                     Ok(TraitAssocTyImpl {
                                         value: ty,
                                         implied_trait_refs: trefs,
@@ -1133,7 +1133,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             });
         }
 
-        for impl_item in timpl.items() {
+        for impl_item in &timpl.items(self.hax_state()) {
             let item_def_id = impl_item.def_id().unwrap_or(impl_item.decl_def_id());
             let item_span = self.def_span(item_def_id);
             let assoc_item_id = self.translate_assoc_item_id(trait_id, item_def_id)?;
@@ -1441,8 +1441,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let mut types: IndexMap<AssocTypeId, _> = IndexMap::new();
         // Monomorphic traits have no associated types.
         if !self.monomorphize() {
-            let type_items = t
-                .items()
+            let trait_items = t.items(self.hax_state());
+            let type_items = trait_items
                 .iter()
                 .filter(|assoc| matches!(assoc.kind, hax::AssocKind::Type { .. }));
             for ((ty, trait_proofs), assoc) in vimpl.types.iter().zip(type_items) {

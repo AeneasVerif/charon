@@ -92,7 +92,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 let trait_def = self.poly_hax_def(trait_def_id)?;
                 let has_methods = match trait_def.kind() {
                     hax::FullDefKind::Trait(t) => t
-                        .items()
+                        .items(self.hax_state())
                         .iter()
                         .any(|assoc| matches!(assoc.kind, hax::AssocKind::Fn { .. })),
                     hax::FullDefKind::TraitAlias(_) => false,
@@ -314,7 +314,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Method fields.
         if let hax::FullDefKind::Trait(t) = poly_trait_def.kind() {
-            for item in t.items() {
+            for item in t.items(self.hax_state()) {
                 let item_def_id = &item.def_id;
                 // This is ok because dyn-compatible methods don't have generics.
                 let poly_item_def = self.poly_hax_def(item_def_id)?;
@@ -841,10 +841,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 // The methods are indexed in the order provided by hax, which is the order of the
                 // trait declaration.
                 let methods: IndexVec<TraitMethodId, _> = timpl
-                    .items()
-                    .iter()
+                    .items(self.hax_state())
+                    .into_iter()
                     .filter(|item| matches!(item.decl_def_id.kind, hax::DefKind::AssocFn))
-                    .cloned()
                     .collect();
                 VTableInstanceData {
                     implemented_trait_ref: timpl.trait_pred().trait_ref.clone(),
@@ -854,7 +853,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             }
             (TransImplSource::Marker, hax::FullDefKind::Trait(t)) => VTableInstanceData {
                 implemented_trait_ref: t.self_predicate().trait_ref.clone(),
-                implied_trait_proofs: t.implied_trait_proofs().to_vec(),
+                implied_trait_proofs: t.implied_trait_proofs(self.hax_state()),
                 methods: VTableMethodSource::ImplMethods(IndexVec::new()),
             },
             _ => unreachable!(),
@@ -1336,7 +1335,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 (vimpl.dyn_self, vimpl.trait_pred)
             }
             (TransImplSource::Normal, hax::FullDefKind::TraitImpl(timpl)) => {
-                (timpl.dyn_self().cloned(), timpl.trait_pred().clone())
+                (timpl.dyn_self(self.hax_state()), timpl.trait_pred().clone())
             }
             (TransImplSource::Marker, hax::FullDefKind::Trait(t)) => {
                 (t.dyn_self().cloned(), t.self_predicate().clone())

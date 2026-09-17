@@ -305,16 +305,16 @@ pub enum FullDefKind<'tcx> {
     /// Type from an `extern` block.
     ForeignTy,
     /// Associated type: `trait MyTrait { type Assoc; }`
-    AssocTy(AssocTy),
+    AssocTy(AssocTy<'tcx>),
     /// Opaque type, aka `impl Trait`.
     OpaqueTy,
 
     // Traits
-    Trait(Trait),
+    Trait(Trait<'tcx>),
     /// Trait alias: `trait IntIterator = Iterator<Item = i32>;`
     TraitAlias(TraitAlias),
-    TraitImpl(TraitImpl),
-    InherentImpl(InherentImpl),
+    TraitImpl(TraitImpl<'tcx>),
+    InherentImpl(InherentImpl<'tcx>),
 
     // Functions
     Fn(Fn<'tcx>),
@@ -415,17 +415,15 @@ impl TyAlias {
 
 /// Associated type: `trait MyTrait { type Assoc; }`
 #[derive(Clone, Debug)]
-pub struct AssocTy {
+pub struct AssocTy<'tcx> {
+    def_id: DefId,
+    args: Option<ty::GenericArgsRef<'tcx>>,
     param_env: ParamEnv,
     implied_predicates: GenericPredicates,
     associated_item: AssocItem,
-    /// The value for this associated type, along with proofs of the required predicates. If
-    /// we're in a trait decl, this has a value iff the type has a default; if we're in a trait
-    /// impl, this has a value iff the impl provides its own value for it.
-    value: Option<(Ty, Vec<TraitProof>)>,
 }
 
-impl AssocTy {
+impl<'tcx> AssocTy<'tcx> {
     pub fn param_env(&self) -> &ParamEnv {
         &self.param_env
     }
@@ -438,28 +436,35 @@ impl AssocTy {
     /// The value for this associated type, along with proofs of the required predicates. If
     /// we're in a trait decl, this has a value iff the type has a default; if we're in a trait
     /// impl, this has a value iff the impl provides its own value for it.
-    pub fn value(&self) -> Option<&(Ty, Vec<TraitProof>)> {
-        self.value.as_ref()
+    pub fn value(&self, s: &impl BaseState<'tcx>) -> Option<(Ty, Vec<TraitProof>)> {
+        let s = &s.with_hax_owner(&self.def_id);
+        let tcx = s.base().tcx;
+        let def_id = self.def_id.real_rust_def_id();
+        if tcx.defaultness(def_id).has_value() {
+            let ty = inst_binder(tcx, s.typing_env(), self.args, self.def_id.type_of(s));
+            let args = self.args.unwrap_or_else(|| self.def_id.identity_args(s));
+            let trait_proofs = solve_item_implied_traits(s, def_id, args);
+            Some((ty.sinto(s), trait_proofs))
+        } else {
+            None
+        }
     }
 }
 
 #[derive(Clone, Debug)]
-pub struct Trait {
+pub struct Trait<'tcx> {
+    def_id: DefId,
+    args: Option<ty::GenericArgsRef<'tcx>>,
     param_env: ParamEnv,
     implied_predicates: GenericPredicates,
-    /// Proofs of the implied predicates. Most often uses the `Self` clause, except for builtin
-    /// traits like `Sized`.
-    implied_trait_proofs: Vec<TraitProof>,
     /// The special `Self: Trait` clause.
     self_predicate: TraitPredicate,
-    /// Associated items, in definition order.
-    items: Vec<AssocItem>,
     /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for this trait. This is `Some` iff this
     /// trait is dyn-compatible.
     dyn_self: Option<Ty>,
 }
 
-impl Trait {
+impl<'tcx> Trait<'tcx> {
     pub fn param_env(&self) -> &ParamEnv {
         &self.param_env
     }
@@ -468,16 +473,18 @@ impl Trait {
     }
     /// Proofs of the implied predicates. Most often uses the `Self` clause, except for builtin
     /// traits like `Sized`.
-    pub fn implied_trait_proofs(&self) -> &[TraitProof] {
-        &self.implied_trait_proofs
+    pub fn implied_trait_proofs(&self, s: &impl BaseState<'tcx>) -> Vec<TraitProof> {
+        let s = &s.with_hax_owner(&self.def_id);
+        let args = self.args.unwrap_or_else(|| self.def_id.identity_args(s));
+        solve_item_implied_traits(s, self.def_id.real_rust_def_id(), args)
     }
     /// The special `Self: Trait` clause.
     pub fn self_predicate(&self) -> &TraitPredicate {
         &self.self_predicate
     }
     /// Associated items, in definition order.
-    pub fn items(&self) -> &[AssocItem] {
-        &self.items
+    pub fn items(&self, s: &impl BaseState<'tcx>) -> Vec<AssocItem> {
+        assoc_items_of(&s.with_hax_owner(&self.def_id), self.args)
     }
     /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for this trait. This is `Some` iff this
     /// trait is dyn-compatible.
@@ -517,24 +524,23 @@ impl TraitAlias {
 }
 
 #[derive(Clone, Debug)]
-pub struct TraitImpl {
+pub struct TraitImpl<'tcx> {
+    this: ItemRef,
+    args: Option<ty::GenericArgsRef<'tcx>>,
+    /// The implemented trait, instantiated with `args` if relevant.
+    trait_ref: ty::TraitRef<'tcx>,
     param_env: ParamEnv,
     /// The trait that is implemented by this impl block.
     trait_pred: TraitPredicate,
-    /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for the implemented trait. This is
-    /// `Some` iff the trait is dyn-compatible.
-    dyn_self: Option<Ty>,
     /// The trait proofs required to satisfy the predicates on the trait declaration. E.g.:
     /// ```ignore
     /// trait Foo: Bar {}
     /// impl Foo for () {} // would supply a proof for `Self: Bar`.
     /// ```
     implied_trait_proofs: Vec<TraitProof>,
-    /// Associated items, in the order of the trait declaration. Includes defaulted items.
-    items: Vec<ImplAssocItem>,
 }
 
-impl TraitImpl {
+impl<'tcx> TraitImpl<'tcx> {
     pub fn param_env(&self) -> &ParamEnv {
         &self.param_env
     }
@@ -544,8 +550,9 @@ impl TraitImpl {
     }
     /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for the implemented trait. This is
     /// `Some` iff the trait is dyn-compatible.
-    pub fn dyn_self(&self) -> Option<&Ty> {
-        self.dyn_self.as_ref()
+    pub fn dyn_self(&self, s: &impl BaseState<'tcx>) -> Option<Ty> {
+        let s = &s.with_hax_owner(&self.this.def_id);
+        dyn_self_ty(s.base().tcx, s.typing_env(), self.trait_ref).sinto(s)
     }
     /// The trait proofs required to satisfy the predicates on the trait declaration. E.g.:
     /// ```ignore
@@ -556,21 +563,91 @@ impl TraitImpl {
         &self.implied_trait_proofs
     }
     /// Associated items, in the order of the trait declaration. Includes defaulted items.
-    pub fn items(&self) -> &[ImplAssocItem] {
-        &self.items
+    pub fn items(&self, s: &impl BaseState<'tcx>) -> Vec<ImplAssocItem> {
+        use std::collections::HashMap;
+        let this = &self.this;
+        let s = &s.with_hax_owner(&this.def_id);
+        let tcx = s.base().tcx;
+        let def_id = this.def_id.real_rust_def_id();
+        let trait_ref = self.trait_ref;
+        let args = self.args.unwrap_or_else(|| this.def_id.identity_args(s));
+
+        let mut item_map: HashMap<RDefId, _> = tcx
+            .associated_items(def_id)
+            .in_definition_order()
+            .map(|assoc| (assoc.trait_item_def_id().unwrap(), assoc))
+            .collect();
+        let items = tcx
+            .associated_items(trait_ref.def_id)
+            .in_definition_order()
+            .map(|decl_assoc| {
+                let decl_def_id = decl_assoc.def_id;
+                let trait_impl_id = def_id;
+                let value = item_map.remove(&decl_def_id).map(|impl_assoc| {
+                    let impl_assoc_def_id: DefId = impl_assoc.def_id.sinto(s);
+                    let virtual_item =
+                        VirtualImplAssocItem::new(trait_impl_id, decl_def_id, impl_assoc.def_id);
+                    let virtual_item_def_id = DefId::make_assoc_item_impl(s, virtual_item);
+                    let s = &s.with_hax_owner(&virtual_item_def_id);
+                    let item_decl_args = virtual_item.args_for_item_decl(s, trait_ref.args);
+                    let item_impl_args = virtual_item.args_for_item_impl(s, args);
+                    let assoc_ty_value = matches!(decl_assoc.kind, ty::AssocKind::Type { .. })
+                        .then(|| {
+                            inst_binder(
+                                tcx,
+                                s.typing_env(),
+                                Some(item_impl_args),
+                                impl_assoc_def_id.type_of(s),
+                            )
+                            .sinto(s)
+                        });
+                    let required_trait_proofs =
+                        solve_item_implied_traits(s, decl_def_id, item_decl_args);
+                    let param_env = {
+                        // Pass `None` to get the generics, but add the known parent.
+                        // FIXME: maybe a custom enum instead of `Option<Args>`.
+                        let mut param_env = get_param_env(s, None);
+                        param_env.generics.parent = Some(this.def_id.clone());
+                        param_env.parent = Some(this.clone());
+                        param_env
+                    };
+                    let item = ItemRef::translate(s, impl_assoc.def_id, item_impl_args);
+                    let late_bound = late_bound_for_def(s, impl_assoc.def_id, Some(item_impl_args));
+                    let value = ImplAssocItemValue {
+                        item,
+                        assoc_ty_value,
+                        implied_trait_proofs: required_trait_proofs,
+                    };
+                    TraitItemBinder {
+                        def_id: virtual_item_def_id,
+                        param_env,
+                        late_bound,
+                        skip_binder: value,
+                    }
+                });
+
+                ImplAssocItem {
+                    name: decl_assoc.opt_name().sinto(s),
+                    value,
+                    decl_def_id: decl_def_id.sinto(s),
+                }
+            })
+            .collect();
+        assert!(item_map.is_empty());
+        items
     }
 }
 
 #[derive(Clone, Debug)]
-pub struct InherentImpl {
+pub struct InherentImpl<'tcx> {
+    def_id: DefId,
+    args: Option<ty::GenericArgsRef<'tcx>>,
     param_env: ParamEnv,
     /// The type to which this block applies.
     ty: Ty,
-    /// Associated items, in definition order.
-    items: Vec<AssocItem>,
 }
 
-impl InherentImpl {
+impl<'tcx> InherentImpl<'tcx> {
     pub fn param_env(&self) -> &ParamEnv {
         &self.param_env
     }
@@ -579,9 +656,30 @@ impl InherentImpl {
         &self.ty
     }
     /// Associated items, in definition order.
-    pub fn items(&self) -> &[AssocItem] {
-        &self.items
+    pub fn items(&self, s: &impl BaseState<'tcx>) -> Vec<AssocItem> {
+        assoc_items_of(&s.with_hax_owner(&self.def_id), self.args)
     }
+}
+
+/// The associated items of the trait or inherent impl that owns `s`, in definition order.
+fn assoc_items_of<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    args: Option<ty::GenericArgsRef<'tcx>>,
+) -> Vec<AssocItem> {
+    let tcx = s.base().tcx;
+    let def_id = s.owner().real_rust_def_id();
+    tcx.associated_items(def_id)
+        .in_definition_order()
+        .map(|assoc| {
+            let item_args = args.map(|args| {
+                let item_def_id: DefId = assoc.def_id.sinto(s);
+                let item_identity_args = item_def_id.identity_args(s);
+                let item_args = item_identity_args.rebase_onto(tcx, def_id, args);
+                tcx.mk_args(item_args)
+            });
+            AssocItem::sfrom_instantiated(s, assoc, item_args)
+        })
+        .collect()
 }
 
 /// The virtual `Fn*` impls of a function item or constructor, which exist iff the function is
@@ -822,12 +920,12 @@ impl Static {
 
 #[derive(Clone, Debug)]
 pub struct Mod {
-    items: Vec<(Option<Ident>, DefId)>,
+    def_id: DefId,
 }
 
 impl Mod {
-    pub fn items(&self) -> &[(Option<Ident>, DefId)] {
-        &self.items
+    pub fn items<'tcx>(&self, s: &impl BaseState<'tcx>) -> Vec<(Option<Ident>, DefId)> {
+        get_mod_children(s.base().tcx, self.def_id.real_rust_def_id()).sinto(s)
     }
 }
 
@@ -1056,38 +1154,20 @@ where
         }),
         RDefKind::ForeignTy => FullDefKind::ForeignTy,
         RDefKind::AssocTy { .. } => FullDefKind::AssocTy(AssocTy {
+            def_id: hax_def_id.clone(),
+            args,
             param_env: get_param_env(s, args),
             implied_predicates: get_implied_predicates(s, args),
             associated_item: AssocItem::sfrom_instantiated(s, &tcx.associated_item(def_id), args),
-            value: if tcx.defaultness(def_id).has_value() {
-                let ty = type_of_self();
-                let args = args_or_default();
-                let trait_proofs = solve_item_implied_traits(s, def_id, args);
-                Some((ty.sinto(s), trait_proofs))
-            } else {
-                None
-            },
         }),
         RDefKind::OpaqueTy => FullDefKind::OpaqueTy,
         RDefKind::Trait { .. } => FullDefKind::Trait(Trait {
+            def_id: hax_def_id.clone(),
+            args,
             param_env: get_param_env(s, args),
             implied_predicates: get_implied_predicates(s, args),
-            implied_trait_proofs: solve_item_implied_traits(s, def_id, args_or_default()),
             self_predicate: get_self_predicate(s, args),
             dyn_self: get_trait_decl_dyn_self_ty(s, args).sinto(s),
-            items: tcx
-                .associated_items(def_id)
-                .in_definition_order()
-                .map(|assoc| {
-                    let item_args = args.map(|args| {
-                        let item_def_id: DefId = assoc.def_id.sinto(s);
-                        let item_identity_args = item_def_id.identity_args(s);
-                        let item_args = item_identity_args.rebase_onto(tcx, def_id, args);
-                        tcx.mk_args(item_args)
-                    });
-                    AssocItem::sfrom_instantiated(s, assoc, item_args)
-                })
-                .collect::<Vec<_>>(),
         }),
         RDefKind::TraitAlias { .. } => FullDefKind::TraitAlias(TraitAlias {
             param_env: get_param_env(s, args),
@@ -1096,26 +1176,13 @@ where
             dyn_self: get_trait_decl_dyn_self_ty(s, args).sinto(s),
         }),
         RDefKind::Impl { of_trait, .. } => {
-            use std::collections::HashMap;
             let param_env = get_param_env(s, args);
             if !of_trait {
-                let items = tcx
-                    .associated_items(def_id)
-                    .in_definition_order()
-                    .map(|assoc| {
-                        let item_args = args.map(|args| {
-                            let item_def_id: DefId = assoc.def_id.sinto(s);
-                            let item_identity_args = item_def_id.identity_args(s);
-                            let item_args = item_identity_args.rebase_onto(tcx, def_id, args);
-                            tcx.mk_args(item_args)
-                        });
-                        AssocItem::sfrom_instantiated(s, assoc, item_args)
-                    })
-                    .collect::<Vec<_>>();
                 FullDefKind::InherentImpl(InherentImpl {
+                    def_id: hax_def_id.clone(),
+                    args,
                     param_env,
                     ty: type_of_self().sinto(s),
-                    items,
                 })
             } else {
                 let trait_ref = tcx.impl_trait_ref(def_id);
@@ -1125,91 +1192,16 @@ where
                     trait_ref: trait_ref.sinto(s),
                     is_positive: matches!(polarity, ty::ImplPolarity::Positive),
                 };
-                let dyn_self = dyn_self_ty(tcx, s.typing_env(), trait_ref).sinto(s);
                 // Trait proofs required by the trait.
                 let required_trait_proofs =
                     solve_item_implied_traits(s, trait_ref.def_id, trait_ref.args);
-
-                let mut item_map: HashMap<RDefId, _> = tcx
-                    .associated_items(def_id)
-                    .in_definition_order()
-                    .map(|assoc| (assoc.trait_item_def_id().unwrap(), assoc))
-                    .collect();
-                let items = tcx
-                    .associated_items(trait_ref.def_id)
-                    .in_definition_order()
-                    .map(|decl_assoc| {
-                        let decl_def_id = decl_assoc.def_id;
-                        let trait_impl_id = def_id;
-                        let value = match item_map.remove(&decl_def_id) {
-                            Some(impl_assoc) => {
-                                let impl_assoc_def_id: DefId = impl_assoc.def_id.sinto(s);
-                                let virtual_item = VirtualImplAssocItem::new(
-                                    trait_impl_id,
-                                    decl_def_id,
-                                    impl_assoc.def_id,
-                                );
-                                let virtual_item_def_id =
-                                    DefId::make_assoc_item_impl(s, virtual_item);
-                                let s = &s.with_hax_owner(&virtual_item_def_id);
-                                let item_decl_args =
-                                    virtual_item.args_for_item_decl(s, trait_ref.args);
-                                let item_impl_args =
-                                    virtual_item.args_for_item_impl(s, args_or_default());
-                                let assoc_ty_value =
-                                    if matches!(decl_assoc.kind, ty::AssocKind::Type { .. }) {
-                                        let ty = inst_binder(
-                                            tcx,
-                                            s.typing_env(),
-                                            Some(item_impl_args),
-                                            impl_assoc_def_id.type_of(s),
-                                        );
-                                        Some(ty.sinto(s))
-                                    } else {
-                                        None
-                                    };
-                                let required_trait_proofs =
-                                    solve_item_implied_traits(s, decl_def_id, item_decl_args);
-                                let param_env = {
-                                    // Pass `None` to get the generics, but add the known parent.
-                                    // FIXME: maybe a custom enum instead of `Option<Args>`.
-                                    let mut param_env = get_param_env(s, None);
-                                    param_env.generics.parent = Some(this.def_id.clone());
-                                    param_env.parent = Some(this.clone());
-                                    param_env
-                                };
-                                let item = ItemRef::translate(s, impl_assoc.def_id, item_impl_args);
-                                let late_bound =
-                                    late_bound_for_def(s, impl_assoc.def_id, Some(item_impl_args));
-                                let value = ImplAssocItemValue {
-                                    item,
-                                    assoc_ty_value,
-                                    implied_trait_proofs: required_trait_proofs,
-                                };
-                                Some(TraitItemBinder {
-                                    def_id: virtual_item_def_id,
-                                    param_env,
-                                    late_bound,
-                                    skip_binder: value,
-                                })
-                            }
-                            None => None,
-                        };
-
-                        ImplAssocItem {
-                            name: decl_assoc.opt_name().sinto(s),
-                            value,
-                            decl_def_id: decl_def_id.sinto(s),
-                        }
-                    })
-                    .collect();
-                assert!(item_map.is_empty());
                 FullDefKind::TraitImpl(TraitImpl {
+                    this: this.clone(),
+                    args,
+                    trait_ref,
                     param_env,
                     trait_pred,
-                    dyn_self,
                     implied_trait_proofs: required_trait_proofs,
-                    items,
                 })
             }
         }
@@ -1320,7 +1312,7 @@ where
         RDefKind::ExternCrate => FullDefKind::ExternCrate,
         RDefKind::Use => FullDefKind::Use,
         RDefKind::Mod { .. } => FullDefKind::Mod(Mod {
-            items: get_mod_children(tcx, def_id).sinto(s),
+            def_id: hax_def_id.clone(),
         }),
         RDefKind::ForeignMod { .. } => FullDefKind::ForeignMod(ForeignMod {
             items: get_foreign_mod_children(tcx, def_id).sinto(s),
@@ -1630,9 +1622,9 @@ impl<'tcx> FullDef<'tcx> {
     pub fn nameable_children(&self, s: &impl BaseState<'tcx>) -> Vec<(Symbol, DefId)> {
         let mut children = match self.kind() {
             FullDefKind::Mod(m) => m
-                .items()
-                .iter()
-                .filter_map(|(opt_ident, def_id)| Some((opt_ident.as_ref()?.0, def_id.clone())))
+                .items(s)
+                .into_iter()
+                .filter_map(|(opt_ident, def_id)| Some((opt_ident?.0, def_id)))
                 .collect(),
             FullDefKind::Adt(adt) if matches!(adt.adt_kind(), AdtKind::Enum) => adt
                 .variants()
@@ -1640,18 +1632,18 @@ impl<'tcx> FullDef<'tcx> {
                 .map(|variant| (variant.name, variant.def_id.clone()))
                 .collect(),
             FullDefKind::InherentImpl(i) => i
-                .items()
-                .iter()
-                .filter_map(|item| Some((item.name?, item.def_id.clone())))
+                .items(s)
+                .into_iter()
+                .filter_map(|item| Some((item.name?, item.def_id)))
                 .collect(),
             FullDefKind::Trait(t) => t
-                .items()
-                .iter()
-                .filter_map(|item| Some((item.name?, item.def_id.clone())))
+                .items(s)
+                .into_iter()
+                .filter_map(|item| Some((item.name?, item.def_id)))
                 .collect(),
             FullDefKind::TraitImpl(timpl) => timpl
-                .items()
-                .iter()
+                .items(s)
+                .into_iter()
                 .filter_map(|item| Some((item.name?, item.def_id()?.clone())))
                 .collect(),
             _ => vec![],

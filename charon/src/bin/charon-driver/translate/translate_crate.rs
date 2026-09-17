@@ -491,7 +491,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             .translated
             .assoc_item_names
             .get_or_insert_with(trait_id, Default::default);
-        for item in t.items() {
+        for item in t.items(&self.hax_state) {
             let name = TraitItemName(
                 item.name
                     .as_ref()
