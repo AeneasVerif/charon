@@ -5,6 +5,7 @@
 //@ charon-args=--index-to-function-calls
 //@ charon-args=--unbind-item-vars
 #![feature(register_tool)]
+#![feature(never_type)]
 #![register_tool(pattern)]
 //! Tests for the ml name matcher. This is in the rust test suite so that the llbc file gets
 //! generated. Tests on the ml side will then inspect the file and check that each item matches the
@@ -127,6 +128,14 @@ impl<T> MonoContainer<T> {
 fn mono_usage() {
     let _container1 = MonoContainer::create(42i32);
     let _container2 = MonoContainer::create("test");
+}
+
+struct NeverContainer<T>(T);
+
+impl NeverContainer<!> {
+    #[pattern::pass("test_crate::{test_crate::NeverContainer<!>}::method")]
+    #[pattern::fail("test_crate::{test_crate::NeverContainer<u8>}::method")]
+    fn method() {}
 }
 
 trait Get<'a, T> {

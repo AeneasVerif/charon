@@ -33,6 +33,7 @@ let parse_tests () =
       "{fn (@T, @U) -> u32}";
       "{*const @T}";
       "{*mut @T}";
+      "x::{Result<!, @E>}::f";
       "x::y::x86_64-apple-darwin";
       "test_crate::foo::aarch64-unknown-linux-gnu";
     ]
