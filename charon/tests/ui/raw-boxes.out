@@ -17,7 +17,7 @@ where
 }
 
 // Full name: core::ptr::non_null::NonNull
-#[diagnostic_item("NonNull")]
+#[lang_item(NonNull)]
 pub struct NonNull<T> {
   pointer: *const T is !null,
 }
@@ -730,13 +730,13 @@ where
     let self: &'1 Self; // arg #1
     let layout: Layout; // arg #2
     let ptr: NonNull<[u8]>; // local
-    let _4: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
+    let _4: ControlFlow<Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
     let _5: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
     let _6: &'2 Self; // anonymous local
     let _7: Layout; // anonymous local
     let _8: isize; // anonymous local
-    let residual: Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]; // local
-    let _10: Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]; // anonymous local
+    let residual: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // local
+    let _10: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // anonymous local
     let val: NonNull<[u8]>; // local
     let _12: (); // anonymous local
     let _13: *mut u8; // anonymous local
@@ -1079,13 +1079,13 @@ where
     let _10: &'4 Layout; // anonymous local
     let _11: Arguments<'6>; // anonymous local
     let new_ptr: NonNull<[u8]>; // local
-    let _13: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
+    let _13: ControlFlow<Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
     let _14: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
     let _15: &'7 Self; // anonymous local
     let _16: Layout; // anonymous local
     let _17: isize; // anonymous local
-    let residual: Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]; // local
-    let _19: Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]; // anonymous local
+    let residual: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // local
+    let _19: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // anonymous local
     let val: NonNull<[u8]>; // local
     let _21: (); // anonymous local
     let _22: *const u8; // anonymous local
@@ -1243,13 +1243,13 @@ where
     let _10: &'4 Layout; // anonymous local
     let _11: Arguments<'6>; // anonymous local
     let new_ptr: NonNull<[u8]>; // local
-    let _13: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
+    let _13: ControlFlow<Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
     let _14: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
     let _15: &'7 Self; // anonymous local
     let _16: Layout; // anonymous local
     let _17: isize; // anonymous local
-    let residual: Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]; // local
-    let _19: Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]; // anonymous local
+    let residual: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // local
+    let _19: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // anonymous local
     let val: NonNull<[u8]>; // local
     let _21: (); // anonymous local
     let _22: *const u8; // anonymous local
@@ -1407,13 +1407,13 @@ where
     let _10: &'4 Layout; // anonymous local
     let _11: Arguments<'6>; // anonymous local
     let new_ptr: NonNull<[u8]>; // local
-    let _13: ControlFlow<Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
+    let _13: ControlFlow<Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}], NonNull<[u8]>>[{built_in impl Sized for Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]}, {built_in impl Sized for NonNull<[u8]>}]; // anonymous local
     let _14: Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]; // anonymous local
     let _15: &'7 Self; // anonymous local
     let _16: Layout; // anonymous local
     let _17: isize; // anonymous local
-    let residual: Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]; // local
-    let _19: Result<Infallible, AllocError>[{built_in impl Sized for Infallible}, {built_in impl Sized for AllocError}]; // anonymous local
+    let residual: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // local
+    let _19: Result<!, AllocError>[{built_in impl Sized for !}, {built_in impl Sized for AllocError}]; // anonymous local
     let val: NonNull<[u8]>; // local
     let _21: (); // anonymous local
     let _22: *const u8; // anonymous local
@@ -1621,39 +1621,13 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-// Full name: core::mem::maybe_dangling::MaybeDangling
-#[lang_item(MaybeDangling)]
-pub struct MaybeDangling<P>
-where
-    TraitClause0: (P: MetaSized),
-{
-  _0: P,
-}
-
 // Full name: core::mem::manually_drop::ManuallyDrop
 #[lang_item(ManuallyDrop)]
 pub struct ManuallyDrop<T>
 where
     TraitClause0: (T: MetaSized),
 {
-  value: MaybeDangling<T>[TraitClause0],
-}
-
-pub fn core::mem::maybe_dangling::{MaybeDangling<P>[TraitClause0]}::new<P>(x: P) -> MaybeDangling<P>[TraitClause0]
-where
-    TraitClause0: (P: MetaSized),
-    TraitClause1: (P: Sized),
-{
-    let _0: MaybeDangling<P>[TraitClause0]; // return
-    let x: P; // arg #1
-    let _2: P; // anonymous local
-
-    storage_live(_0)
-    storage_live(_2)
-    _2 = move x
-    _0 = MaybeDangling { _0: move _2 }
-    storage_dead(_2)
-    return
+  value: T,
 }
 
 pub fn core::mem::manually_drop::{ManuallyDrop<T>[TraitClause0::ImpliedClause0]}::new<T>(value: T) -> ManuallyDrop<T>[TraitClause0::ImpliedClause0]
@@ -1662,35 +1636,12 @@ where
 {
     let _0: ManuallyDrop<T>[TraitClause0::ImpliedClause0]; // return
     let value: T; // arg #1
-    let _2: MaybeDangling<T>[TraitClause0::ImpliedClause0]; // anonymous local
-    let _3: T; // anonymous local
+    let _2: T; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
-    storage_live(_3)
-    _3 = move value
-    _2 = core::mem::maybe_dangling::{MaybeDangling<P>[TraitClause0]}::new<T>[TraitClause0::ImpliedClause0, TraitClause0](move _3)
-    ↳⚡ unwind_continue
-    storage_dead(_3)
+    _2 = move value
     _0 = ManuallyDrop { value: move _2 }
-    storage_dead(_2)
-    return
-}
-
-// Full name: core::mem::maybe_dangling::{MaybeDangling<P>[TraitClause0]}::as_ref
-pub fn as_ref<'_0, P>(self: &'_0 MaybeDangling<P>[TraitClause0]) -> &'_0 P
-where
-    TraitClause0: (P: MetaSized),
-    TypeOutlives0: P: '_0,
-{
-    let _0: &'1 P; // return
-    let self: &'3 MaybeDangling<P>[TraitClause0]; // arg #1
-    let _2: &'4 P; // anonymous local
-
-    storage_live(_0)
-    storage_live(_2)
-    _2 = &(*self)._0 with_metadata(copy self.metadata)
-    _0 = &(*_2) with_metadata(copy _2.metadata)
     storage_dead(_2)
     return
 }
@@ -1704,38 +1655,11 @@ where
     let _0: &'1 T; // return
     let self: &'3 ManuallyDrop<T>[TraitClause0]; // arg #1
     let _2: &'4 T; // anonymous local
-    let _3: &'6 MaybeDangling<T>[TraitClause0]; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
-    storage_live(_3)
-    _3 = &(*self).value with_metadata(copy self.metadata)
-    _2 = as_ref<'8, T>[TraitClause0](move _3)
-    ↳⚡ unwind_continue
+    _2 = &(*self).value with_metadata(copy self.metadata)
     _0 = &(*_2) with_metadata(copy _2.metadata)
-    storage_dead(_3)
-    storage_dead(_2)
-    return
-}
-
-// Full name: core::mem::maybe_dangling::{MaybeDangling<P>[TraitClause0]}::as_mut
-pub fn as_mut<'_0, P>(self: &'_0 mut MaybeDangling<P>[TraitClause0]) -> &'_0 mut P
-where
-    TraitClause0: (P: MetaSized),
-    TypeOutlives0: P: '_0,
-{
-    let _0: &'1 mut P; // return
-    let self: &'3 mut MaybeDangling<P>[TraitClause0]; // arg #1
-    let _2: &'4 mut P; // anonymous local
-    let _3: &'5 mut P; // anonymous local
-
-    storage_live(_0)
-    storage_live(_2)
-    storage_live(_3)
-    _3 = &mut (*self)._0 with_metadata(copy self.metadata)
-    _2 = &mut (*_3) with_metadata(copy _3.metadata)
-    storage_dead(_3)
-    _0 = &mut (*_2) with_metadata(copy _2.metadata)
     storage_dead(_2)
     return
 }
@@ -1750,17 +1674,12 @@ where
     let self: &'3 mut ManuallyDrop<T>[TraitClause0]; // arg #1
     let _2: &'4 mut T; // anonymous local
     let _3: &'5 mut T; // anonymous local
-    let _4: &'7 mut MaybeDangling<T>[TraitClause0]; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
     storage_live(_3)
-    storage_live(_4)
-    _4 = &two-phase-mut (*self).value with_metadata(copy self.metadata)
-    _3 = as_mut<'9, T>[TraitClause0](move _4)
-    ↳⚡ unwind_continue
+    _3 = &mut (*self).value with_metadata(copy self.metadata)
     _2 = &mut (*_3) with_metadata(copy _3.metadata)
-    storage_dead(_4)
     storage_dead(_3)
     _0 = &mut (*_2) with_metadata(copy _2.metadata)
     storage_dead(_2)

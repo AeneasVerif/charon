@@ -22,13 +22,13 @@ pub trait MetaSized<Self>
 pub trait VaArgSafe<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    vtable: core::ffi::va_list::VaArgSafe::{vtable}
+    non-dyn-compatible
 }
 
 // Full name: core::ffi::va_list::{impl VaArgSafe for i32}
 impl "impl_VaArgSafe_for_i32" VaArgSafe for i32 {
     proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
-    vtable: impl_VaArgSafe_for_i32::{vtable}
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Sized

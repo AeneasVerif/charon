@@ -177,7 +177,7 @@ fn use_foo()
     _5 = &foo
     _4 = get_ty<'6>(move _5)
     ↳⚡ unwind_continue
-    _3 = &(*_4)
+    _3 = &(*_4) with_metadata(copy _4.metadata)
     storage_dead(_5)
     _2 = impl_Clone_for_u32::clone<'9>(move _3)
     ↳⚡ unwind_continue

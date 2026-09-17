@@ -83,9 +83,6 @@ impl<'tcx> TranslateCtx<'tcx> {
                 })
             }
             AttributeKind::RustcIntrinsic => Ok(from_rustc::AttributeKind::RustcIntrinsic),
-            AttributeKind::RustcTestEntrypointMarker => {
-                Ok(from_rustc::AttributeKind::RustcTestEntrypointMarker)
-            }
             AttributeKind::ShouldPanic { reason } => Ok(from_rustc::AttributeKind::ShouldPanic {
                 reason: (reason)
                     .as_ref()
@@ -140,10 +137,13 @@ impl<'tcx> TranslateCtx<'tcx> {
             LangItem::PointeeTrait => Ok(from_rustc::LangItem::PointeeTrait),
             LangItem::Metadata => Ok(from_rustc::LangItem::Metadata),
             LangItem::DynMetadata => Ok(from_rustc::LangItem::DynMetadata),
+            LangItem::NonNull => Ok(from_rustc::LangItem::NonNull),
             LangItem::Freeze => Ok(from_rustc::LangItem::Freeze),
             LangItem::UnsafeUnpin => Ok(from_rustc::LangItem::UnsafeUnpin),
             LangItem::FnPtrTrait => Ok(from_rustc::LangItem::FnPtrTrait),
-            LangItem::FnPtrAddr => Ok(from_rustc::LangItem::FnPtrAddr),
+            LangItem::FnPtrAsPtr => Ok(from_rustc::LangItem::FnPtrAsPtr),
+            LangItem::FnPtrFromPtr => Ok(from_rustc::LangItem::FnPtrFromPtr),
+            LangItem::Code => Ok(from_rustc::LangItem::Code),
             LangItem::Drop => Ok(from_rustc::LangItem::Drop),
             LangItem::Destruct => Ok(from_rustc::LangItem::Destruct),
             LangItem::AsyncDrop => Ok(from_rustc::LangItem::AsyncDrop),
@@ -193,6 +193,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             LangItem::Fn => Ok(from_rustc::LangItem::Fn),
             LangItem::FnMut => Ok(from_rustc::LangItem::FnMut),
             LangItem::FnOnce => Ok(from_rustc::LangItem::FnOnce),
+            LangItem::FnStatic => Ok(from_rustc::LangItem::FnStatic),
             LangItem::AsyncFn => Ok(from_rustc::LangItem::AsyncFn),
             LangItem::AsyncFnMut => Ok(from_rustc::LangItem::AsyncFnMut),
             LangItem::AsyncFnOnce => Ok(from_rustc::LangItem::AsyncFnOnce),
@@ -362,6 +363,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             LangItem::FieldOffset => Ok(from_rustc::LangItem::FieldOffset),
             LangItem::From => Ok(from_rustc::LangItem::From),
             LangItem::FromFn => Ok(from_rustc::LangItem::FromFn),
+            LangItem::FnPtr => Ok(from_rustc::LangItem::FnPtr),
             // If the below is reached, the code is not up-to-date with the rustc version
             _ => Err(FromRustcError),
         }

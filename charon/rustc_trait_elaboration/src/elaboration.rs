@@ -188,7 +188,6 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             self.typing_env
                 .param_env
                 .caller_bounds()
-                .iter()
                 .chain(predicates.iter().map(|pred| pred.clause)),
         );
         let val = f(&mut searcher, self_ty);
@@ -410,39 +409,35 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         let tcx = self.elab_ctx.tcx;
         let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
 
-        let erased_tref = normalize_bound_val(tcx, self.typing_env, *tref);
+        let tref = ty::set_aliases_to_non_rigid(tcx, *tref).skip_normalization();
+        let erased_tref = normalize_bound_val(tcx, self.typing_env, tref);
         let trait_def_id = erased_tref.skip_binder().def_id;
 
         let elab_ctx = self.elab_ctx;
         let error = |msg: String| {
             elab_ctx.intern_trait_proof(TraitProofContents {
-                pred: *tref,
+                pred: tref,
                 kind: TraitProofKind::Error(msg),
             })
         };
 
         let impl_source = shallow_resolve_trait_ref(tcx, self.typing_env.param_env, erased_tref);
-        let impl_source = match impl_source {
-            Ok(impl_source) => impl_source,
-            Err(e) => {
-                return error(format!(
-                    "Could not find a clause for `{tref:?}` \
-                    in the current context: `{e:?}`"
-                ));
-            }
-        };
         let atom = match impl_source {
-            ImplSource::UserDefined(ImplSourceUserDefinedData {
+            Ok(ImplSource::UserDefined(ImplSourceUserDefinedData {
                 impl_def_id,
                 args: generics,
                 ..
-            }) => TraitProofKind::Concrete(self.resolve_item_reference(
+            })) => TraitProofKind::Concrete(self.resolve_item_reference(
                 state,
                 Id::from_rust_def_id(state, impl_def_id),
                 generics,
                 AssocItemResolution::ImplItem,
             )),
-            ImplSource::Param(_) => match self.resolve_local(state, erased_tref.upcast(tcx)) {
+            // Rustc can report ambiguity for a built-in trait's own `Self` clause. In that case
+            // the clause can be found locally, so we try that.
+            Err(CodegenObligationError::Ambiguity) | Ok(ImplSource::Param(_)) => match self
+                .resolve_local(state, erased_tref.upcast(tcx))
+            {
                 Some(candidate) => candidate.proof.kind.clone(),
                 None => {
                     let msg =
@@ -450,10 +445,10 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
                     return error(msg);
                 }
             },
-            ImplSource::Builtin(BuiltinImplSource::Object { .. }, _) => {
-                TraitProofKind::Dyn(self.resolve_dyn_trait(state, *tref))
+            Ok(ImplSource::Builtin(BuiltinImplSource::Object { .. }, _)) => {
+                TraitProofKind::Dyn(self.resolve_dyn_trait(state, tref))
             }
-            ImplSource::Builtin(_, _) => {
+            Ok(ImplSource::Builtin(_, _)) => {
                 // Resolve the predicates implied by the trait.
                 // If we wanted to not skip this binder, we'd have to instantiate the bound
                 // regions, solve, then wrap the result in a binder. And track higher-kinded
@@ -533,7 +528,7 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
                         // Every `dyn` has a `drop_in_place` in its vtable, ergo we pretend that every
                         // `dyn` has `Destruct` in its list of traits.
                         ty::Dynamic(..) => {
-                            Either::Right(TraitProofKind::Dyn(self.resolve_dyn_trait(state, *tref)))
+                            Either::Right(TraitProofKind::Dyn(self.resolve_dyn_trait(state, tref)))
                         }
                         ty::Param(..) | ty::Alias(..) | ty::Bound(..) => {
                             if self.elab_ctx.bounds_options().add_destruct_bounds {
@@ -583,13 +578,19 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
                     Either::Right(atom) => atom,
                 }
             }
+            Err(e) => {
+                return error(format!(
+                    "Could not find a clause for `{tref:?}` \
+                    in the current context: `{e:?}`"
+                ));
+            }
         };
 
         let trait_proof = self.elab_ctx.intern_trait_proof(TraitProofContents {
             kind: atom,
-            pred: *tref,
+            pred: tref,
         });
-        self.trait_proofs_cache.insert(*tref, trait_proof);
+        self.trait_proofs_cache.insert(tref, trait_proof);
         trait_proof
     }
 
@@ -694,7 +695,7 @@ fn shallow_resolve_trait_ref<'tcx>(
         return Err(CodegenObligationError::Ambiguity);
     }
 
-    let impl_source = infcx.resolve_vars_if_possible(impl_source);
+    let impl_source = infcx.deeply_resolve_ignoring_regions(impl_source);
     let impl_source = tcx.erase_and_anonymize_regions(impl_source);
 
     if impl_source.has_infer() {

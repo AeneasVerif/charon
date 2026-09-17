@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
 // Full name: core::ptr::non_null::NonNull::<Node::<u8>>
-#[diagnostic_item("NonNull")]
+#[lang_item(NonNull)]
 pub opaque type NonNull::<Node::<u8>>
 
 // Full name: core::option::Option::<NonNull::<Node::<u8>>>

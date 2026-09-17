@@ -1633,7 +1633,6 @@ impl Display for from_rustc::AttributeKind {
             },
             AttributeKind::RustcAlign { align, .. } => write!(f, "rustc_align({align})"),
             AttributeKind::RustcIntrinsic => write!(f, "rustc_intrinsic"),
-            AttributeKind::RustcTestEntrypointMarker => write!(f, "rustc_test_entrypoint_marker"),
             AttributeKind::ShouldPanic { reason } => {
                 write!(f, "should_panic")?;
                 if let Some(reason) = reason {

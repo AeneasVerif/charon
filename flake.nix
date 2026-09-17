@@ -8,7 +8,7 @@
     rust-overlay = {
       # We pin a specific commit because we require a relatively recent version
       # and flake dependents don't look at our flake.lock.
-      url = "github:oxalica/rust-overlay/b32685dd7c5a965aa8273adb7ddaf7f5b40d0faa";
+      url = "github:oxalica/rust-overlay/a1d497a9415999853809ba22a7959b1c36dc6554";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     crane.url = "github:ipetkov/crane";

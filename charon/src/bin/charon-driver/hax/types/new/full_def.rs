@@ -495,6 +495,7 @@ pub enum FullDefKind<'tcx> {
     /// A synthetic coroutine body created by the lowering of a coroutine-closure, such as an async
     /// closure.
     SyntheticCoroutineBody,
+    TestBinderConstraints,
 }
 
 /// Whether the trait method declared by `method_decl_id` takes `self: Self` by value.
@@ -921,9 +922,9 @@ where
                 fn_impl: fn_tref.map(|tref| virtual_impl_for(s, tref)),
             }
         }
-        kind @ (RDefKind::Const { .. } | RDefKind::AnonConst { .. }) => {
+        kind @ (RDefKind::Const | RDefKind::AnonConst { .. }) => {
             let kind = match kind {
-                RDefKind::Const { .. } => ConstKind::TopLevel,
+                RDefKind::Const => ConstKind::TopLevel,
                 RDefKind::AnonConst { .. } => ConstKind::AnonConst,
                 _ => unreachable!(),
             };
@@ -952,7 +953,7 @@ where
                 kind,
             }
         }
-        RDefKind::AssocConst { .. } => FullDefKind::AssocConst {
+        RDefKind::AssocConst => FullDefKind::AssocConst {
             param_env: get_param_env(s, args),
             associated_item: AssocItem::sfrom_instantiated(s, &tcx.associated_item(def_id), args),
             ty: type_of_self().sinto(s),
@@ -1020,6 +1021,7 @@ where
         RDefKind::Macro(..) => FullDefKind::Macro,
         RDefKind::GlobalAsm => FullDefKind::GlobalAsm,
         RDefKind::SyntheticCoroutineBody => FullDefKind::SyntheticCoroutineBody,
+        RDefKind::TestBinderConstraints => FullDefKind::TestBinderConstraints,
     }
 }
 
@@ -1128,7 +1130,8 @@ impl<'tcx> FullDef<'tcx> {
         let tcx = s.base().tcx;
         let def_id = self.def_id().as_real_def_id()?;
         let args = self.this().rustc_args(s);
-        let kind = ty::AliasConstKind::new_from_def_id(tcx, def_id);
+        let kind =
+            ty::AliasConstKind::new_from_def_id(tcx, def_id, ty::AliasConstInherentArgsKind::Impl);
         let uneval = ty::AliasConst::new(tcx, kind, args);
         let Some(c) = eval_ty_constant(s, uneval) else {
             // Const-evaluation gives up on a const that isn't monomorphic. For "trivial" consts,
@@ -1327,7 +1330,7 @@ fn get_self_predicate<'tcx, S: UnderOwnerState<'tcx>>(
 ) -> TraitPredicate {
     use ty::Upcast;
     let tcx = s.base().tcx;
-    let pred: ty::TraitPredicate = self_trait_ref(s, args).no_bound_vars().unwrap().upcast(tcx);
+    let pred: ty::TraitClause = self_trait_ref(s, args).no_bound_vars().unwrap().upcast(tcx);
     pred.sinto(s)
 }
 

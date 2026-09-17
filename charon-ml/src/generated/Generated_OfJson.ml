@@ -2058,8 +2058,6 @@ and rustc_attribute_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* span = span_of_json ctx span in
         Ok (RustcAttributeKindRustcAlign (align, span))
     | `String "RustcIntrinsic" -> Ok RustcAttributeKindRustcIntrinsic
-    | `String "RustcTestEntrypointMarker" ->
-        Ok RustcAttributeKindRustcTestEntrypointMarker
     | `Assoc [ ("ShouldPanic", `Assoc [ ("reason", reason) ]) ] ->
         let* reason = option_of_json string_of_json ctx reason in
         Ok (RustcAttributeKindShouldPanic reason)
@@ -2857,10 +2855,13 @@ and rustc_lang_item_of_json (ctx : of_json_ctx) (js : json) :
     | `String "PointeeTrait" -> Ok RustcLangItemPointeeTrait
     | `String "Metadata" -> Ok RustcLangItemMetadata
     | `String "DynMetadata" -> Ok RustcLangItemDynMetadata
+    | `String "NonNull" -> Ok RustcLangItemNonNull
     | `String "Freeze" -> Ok RustcLangItemFreeze
     | `String "UnsafeUnpin" -> Ok RustcLangItemUnsafeUnpin
     | `String "FnPtrTrait" -> Ok RustcLangItemFnPtrTrait
-    | `String "FnPtrAddr" -> Ok RustcLangItemFnPtrAddr
+    | `String "FnPtrAsPtr" -> Ok RustcLangItemFnPtrAsPtr
+    | `String "FnPtrFromPtr" -> Ok RustcLangItemFnPtrFromPtr
+    | `String "Code" -> Ok RustcLangItemCode
     | `String "Drop" -> Ok RustcLangItemDrop
     | `String "Destruct" -> Ok RustcLangItemDestruct
     | `String "AsyncDrop" -> Ok RustcLangItemAsyncDrop
@@ -2910,6 +2911,7 @@ and rustc_lang_item_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Fn" -> Ok RustcLangItemFn
     | `String "FnMut" -> Ok RustcLangItemFnMut
     | `String "FnOnce" -> Ok RustcLangItemFnOnce
+    | `String "FnStatic" -> Ok RustcLangItemFnStatic
     | `String "AsyncFn" -> Ok RustcLangItemAsyncFn
     | `String "AsyncFnMut" -> Ok RustcLangItemAsyncFnMut
     | `String "AsyncFnOnce" -> Ok RustcLangItemAsyncFnOnce
@@ -3069,6 +3071,7 @@ and rustc_lang_item_of_json (ctx : of_json_ctx) (js : json) :
     | `String "FieldOffset" -> Ok RustcLangItemFieldOffset
     | `String "From" -> Ok RustcLangItemFrom
     | `String "FromFn" -> Ok RustcLangItemFromFn
+    | `String "FnPtr" -> Ok RustcLangItemFnPtr
     | _ -> Error "")
 
 and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =

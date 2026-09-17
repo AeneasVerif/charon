@@ -139,7 +139,7 @@ where
 pub opaque type UsizeNoHighBit
 
 // Full name: core::ptr::non_null::NonNull
-#[diagnostic_item("NonNull")]
+#[lang_item(NonNull)]
 pub opaque type NonNull<T>
 
 // Full name: core::ptr::unique::Unique

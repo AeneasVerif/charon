@@ -297,7 +297,7 @@ pub fn param_env_from_clauses<'tcx>(
     predicates: impl Iterator<Item = ty::Clause<'tcx>>,
 ) -> ty::ParamEnv<'tcx> {
     let cause = rustc_trait_selection::traits::ObligationCause::dummy();
-    let param_env = ty::ParamEnv::new(tcx.mk_clauses_from_iter(predicates));
+    let param_env = ty::ParamEnv::new(tcx, predicates);
     rustc_trait_selection::traits::normalize_param_env_or_error(tcx, param_env, cause)
 }
 
@@ -525,7 +525,7 @@ pub fn dyn_self_ty<'tcx>(
     let ty_constraints = assoc_tys_for_trait(tcx, typing_env, tref)
         .into_iter()
         .map(|alias_ty| {
-            let proj = ty::ProjectionPredicate {
+            let proj = ty::ProjectionClause {
                 projection_term: alias_ty.into(),
                 term: ty::Ty::new_alias(tcx, ty::IsRigid::No, alias_ty).into(),
             };

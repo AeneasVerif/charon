@@ -130,7 +130,7 @@ where
 }
 
 // Full name: core::ptr::non_null::NonNull
-#[diagnostic_item("NonNull")]
+#[lang_item(NonNull)]
 pub opaque type NonNull<T>
 where
     TraitClause0: (T: Destruct),

@@ -645,7 +645,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let rustc_variant_inhabited = |id| match ty.kind() {
             ty::Adt(adt, args) if adt.is_enum() => adt
                 .variant(id)
-                .inhabited_predicate(tcx, *adt)
+                .inhabited_predicate(tcx)
                 .instantiate(tcx, args),
             _ => ty.inhabited_predicate(tcx),
         };

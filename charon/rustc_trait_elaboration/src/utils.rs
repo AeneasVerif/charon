@@ -36,7 +36,7 @@ pub(crate) fn param_env_from_clauses<'tcx>(
     use rustc_middle::traits::ObligationCause;
     use rustc_trait_selection::traits::normalize_param_env_or_error;
 
-    let param_env = ParamEnv::new(tcx.mk_clauses_from_iter(predicates));
+    let param_env = ParamEnv::new(tcx, predicates);
     normalize_param_env_or_error(tcx, param_env, ObligationCause::dummy())
 }
 
@@ -148,7 +148,7 @@ pub trait ToPolyTraitRef<'tcx> {
     fn to_poly_trait_ref(&self) -> PolyTraitRef<'tcx>;
 }
 
-impl<'tcx> ToPolyTraitRef<'tcx> for PolyTraitPredicate<'tcx> {
+impl<'tcx> ToPolyTraitRef<'tcx> for PolyTraitClause<'tcx> {
     fn to_poly_trait_ref(&self) -> PolyTraitRef<'tcx> {
         self.map_bound_ref(|trait_pred| trait_pred.trait_ref)
     }

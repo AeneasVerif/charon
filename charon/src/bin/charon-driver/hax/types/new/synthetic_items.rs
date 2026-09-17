@@ -263,7 +263,7 @@ impl<'tcx> GlobalCache<'tcx> {
         let data = SyntheticItemData {
             generics: Box::leak(Box::new(generics)),
             clauses,
-            param_env: ty::ParamEnv::new(tcx.mk_clauses_from_iter(clauses.iter().copied())),
+            param_env: ty::ParamEnv::new(tcx, clauses.iter().copied()),
         };
         self.synthetic_item_data.insert(item, data);
         data

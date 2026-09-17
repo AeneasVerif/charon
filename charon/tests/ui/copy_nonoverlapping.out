@@ -144,7 +144,7 @@ struct str {
 }
 
 // Full name: core::ptr::non_null::NonNull
-#[diagnostic_item("NonNull")]
+#[lang_item(NonNull)]
 pub struct NonNull<T> {
   pointer: *const T is !null,
 }
