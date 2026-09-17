@@ -965,15 +965,23 @@ pub struct ReprFlags {
     pub is_simd: bool,
 }
 
-/// Reflects [`rustc_abi::Align`], but directly stores the number of bytes as a u64.
+/// Reflects [`rustc_abi::Align`]. We store the exponent of the alignment.
 
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(AdtInto, Clone, Copy, Debug, Hash, PartialEq, Eq)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_abi::Align, state: S as _s)]
 pub struct Align {
+    /// The real alignment is `1 << (pow2_plus_one - 1)`. We store `pow2 + 1` to have a niche.
     #[value({
-        self.bytes()
-    })]
-    pub bytes: u64,
+           std::num::NonZeroU8::new(self.bytes().trailing_zeros() as u8 + 1).unwrap()
+        })]
+    pow2_plus_one: std::num::NonZeroU8,
+}
+
+impl Align {
+    /// The alignment in bytes.
+    pub fn bytes(self) -> u64 {
+        1 << (self.pow2_plus_one.get() - 1)
+    }
 }
 
 /// The metadata to attach to the newly-unsized ptr.
