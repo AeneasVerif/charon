@@ -230,13 +230,16 @@ pub enum ClosureKind {
 }
 
 impl TypeDecl {
+    pub fn get_fields(&self, variant: Option<VariantId>) -> Option<&IndexVec<FieldId, Field>> {
+        match &self.kind {
+            TypeDeclKind::Struct(fields) | TypeDeclKind::Union(fields) => Some(fields),
+            TypeDeclKind::Enum(variants) => Some(&variants[variant.unwrap()].fields),
+            _ => None,
+        }
+    }
+
     pub fn get_field(&self, variant: Option<VariantId>, field: FieldId) -> Option<&Field> {
-        let fields = match &self.kind {
-            TypeDeclKind::Struct(fields) | TypeDeclKind::Union(fields) => fields,
-            TypeDeclKind::Enum(variants) => &variants[variant.unwrap()].fields,
-            _ => return None,
-        };
-        fields.get(field)
+        self.get_fields(variant)?.get(field)
     }
 
     pub fn get_field_by_name(
