@@ -218,3 +218,30 @@ struct PolyReprC<T> {
     hd: usize,
     tl: T,
 }
+
+#[repr(transparent)]
+struct Transparent(u32, ());
+
+#[repr(align(16))]
+struct Aligned {
+    x: u8,
+}
+
+#[repr(C, packed(2))]
+struct PackedReprC {
+    x: u8,
+    y: u32,
+}
+
+#[repr(C)]
+union ReprCUnion {
+    x: u8,
+    y: u32,
+}
+
+#[repr(C)]
+enum ReprCEnum {
+    A(u8),
+    B(u64),
+    C,
+}

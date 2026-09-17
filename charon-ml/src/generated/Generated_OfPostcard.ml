@@ -2089,6 +2089,17 @@ and field_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* field_ty = ty_of_postcard ctx st in
      Ok ({ span; attr_info; field_name; is_positional; field_ty } : field))
 
+and field_predecessor_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
+    : (field_predecessor, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* _0 = field_id_of_postcard ctx st in
+         Ok (PredecessorField _0)
+     | 1 -> Ok PredecessorTag
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and file_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (file, string) result =
   combine_error_msgs st __FUNCTION__
@@ -2689,13 +2700,15 @@ and offset_guarantee_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* __tag = int_of_postcard ctx st in
      match __tag with
-     | 0 -> Ok AtOffsetZero
+     | 0 ->
+         let* _0 = size_expr_of_postcard ctx st in
+         Ok (AtOffset _0)
      | 1 ->
          let* _0 = size_expr_of_postcard ctx st in
          Ok (GuaranteedAlignment _0)
      | 2 ->
-         let* predecessor = option_of_postcard field_id_of_postcard ctx st in
-         Ok (ReprCField predecessor)
+         let* _0 = field_predecessor_of_postcard ctx st in
+         Ok (ReprCField _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and rustc_optimize_attr_of_postcard (ctx : of_postcard_ctx)

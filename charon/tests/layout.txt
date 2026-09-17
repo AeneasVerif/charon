@@ -11,9 +11,9 @@ struct SimpleStruct {
 //     inhabited: true,
 //     variants: [
 //         _: {
-//             offset of x: 0,
-//             offset of y: 4,
-//             offset of z: 8,
+//             offset of x: 0 (guaranteed: aligned(align_of::<u32>())),
+//             offset of y: 4 (guaranteed: aligned(align_of::<u32>())),
+//             offset of z: 8 (guaranteed: aligned(align_of::<u32>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -29,14 +29,14 @@ where
   b: T,
 }
 // layout:
-//     size: ?,
-//     align: ?,
+//     size: ? (guaranteed: at_least(align_to(max(size_of::<usize>(), size_of::<T>()), max(align_of::<usize>(), align_of::<T>())))),
+//     align: ? (guaranteed: at_least(max(align_of::<usize>(), align_of::<T>()))),
 //     discriminator: none,
 //     inhabited: if_inhabited(T),
 //     variants: [
 //         _: {
-//             offset of a: ?,
-//             offset of b: ?,
+//             offset of a: ? (guaranteed: aligned(align_of::<usize>())),
+//             offset of b: ? (guaranteed: aligned(align_of::<T>())),
 //             inhabited: if_inhabited(T),
 //             tagger: [],
 //         },
@@ -55,8 +55,8 @@ struct UnsizedStruct {
 //     inhabited: true,
 //     variants: [
 //         _: {
-//             offset of x: 0,
-//             offset of y: 8,
+//             offset of x: 0 (guaranteed: aligned(align_of::<usize>())),
+//             offset of y: 8 (guaranteed: aligned(align_of::<[usize]>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -75,8 +75,8 @@ struct UnsizedDyn {
 //     inhabited: true,
 //     variants: [
 //         _: {
-//             offset of x: 0,
-//             offset of y: 1,
+//             offset of x: 0 (guaranteed: aligned(align_of::<u8>())),
+//             offset of y: 1 (guaranteed: aligned(align_of::<(dyn Debug + 'static)>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -95,8 +95,8 @@ struct NestedUnsized {
 //     inhabited: true,
 //     variants: [
 //         _: {
-//             offset of x: 0,
-//             offset of y: 8,
+//             offset of x: 0 (guaranteed: aligned(align_of::<u16>())),
+//             offset of y: 8 (guaranteed: aligned(align_of::<UnsizedStruct>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -115,8 +115,8 @@ struct PackedUnsized {
 //     inhabited: true,
 //     variants: [
 //         _: {
-//             offset of x: 0,
-//             offset of y: 2,
+//             offset of x: 0 (guaranteed: aligned(min(align_of::<u8>(), 2usize))),
+//             offset of y: 2 (guaranteed: aligned(min(align_of::<[u32]>(), 2usize))),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -129,8 +129,8 @@ enum SimpleEnum {
   Other,
 }
 // layout:
-//     size: 1usize (guaranteed: at_least(align_to(0usize, 0usize))),
-//     align: 1usize (guaranteed: at_least(0usize)),
+//     size: 1usize (guaranteed: at_least(0usize)),
+//     align: 1usize (guaranteed: at_least(1usize)),
 //     discriminator: read at offset 0 { 0u8 => Var1, 1u8 => Other, _ => invalid },
 //     inhabited: true,
 //     variants: [
@@ -162,14 +162,14 @@ enum SimpleAdt {
 //             tagger: [0 := 0u32],
 //         },
 //         StructVar: {
-//             offset of x: 8,
-//             offset of y: 16,
+//             offset of x: 8 (guaranteed: aligned(align_of::<usize>())),
+//             offset of y: 16 (guaranteed: aligned(align_of::<usize>())),
 //             inhabited: true,
 //             tagger: [0 := 1u32],
 //         },
 //         TupleVar: {
-//             offset of _0: 4,
-//             offset of _1: 8,
+//             offset of _0: 4 (guaranteed: aligned(align_of::<u32>())),
+//             offset of _1: 8 (guaranteed: aligned(align_of::<u32>())),
 //             inhabited: true,
 //             tagger: [0 := 2u32],
 //         },
@@ -192,7 +192,7 @@ enum NicheAdt {
 //             tagger: [0 := 0u32],
 //         },
 //         Some: {
-//             offset of _0: 0,
+//             offset of _0: 0 (guaranteed: aligned(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -215,7 +215,7 @@ enum NicheAdtSigned {
 //             tagger: [0 := 0i32],
 //         },
 //         Some: {
-//             offset of _0: 0,
+//             offset of _0: 0 (guaranteed: aligned(align_of::<NonZero<i32>[{built_in impl Sized for i32}, impl_ZeroablePrimitive_for_i32]>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -238,7 +238,7 @@ enum NicheAdtChar {
 //             tagger: [0 := 4294967295u32],
 //         },
 //         Some: {
-//             offset of _0: 0,
+//             offset of _0: 0 (guaranteed: aligned(align_of::<char>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -248,8 +248,8 @@ enum NicheAdtChar {
 // Full name: test_crate::IsAZST
 struct IsAZST {}
 // layout:
-//     size: 0usize (guaranteed: at_least(align_to(0usize, 0usize))),
-//     align: 1usize (guaranteed: at_least(0usize)),
+//     size: 0usize (guaranteed: at_least(0usize)),
+//     align: 1usize (guaranteed: at_least(1usize)),
 //     discriminator: _,
 //     inhabited: true,
 //     variants: [
@@ -275,8 +275,8 @@ where
 //     inhabited: true,
 //     variants: [
 //         _: {
-//             offset of x: 8,
-//             offset of y: 0,
+//             offset of x: 8 (guaranteed: aligned(align_of::<usize>())),
+//             offset of y: 0 (guaranteed: aligned(align_of::<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, impl_Allocator_for_Global]>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -296,9 +296,9 @@ struct Reordered {
 //     inhabited: true,
 //     variants: [
 //         _: {
-//             offset of x: 4,
-//             offset of y: 0,
-//             offset of z: 5,
+//             offset of x: 4 (guaranteed: aligned(align_of::<u8>())),
+//             offset of y: 0 (guaranteed: aligned(align_of::<u32>())),
+//             offset of z: 5 (guaranteed: aligned(align_of::<u8>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -312,15 +312,15 @@ struct NotReordered {
   z: u8,
 }
 // layout:
-//     size: 12usize (guaranteed: at_least(align_to(max(size_of::<u8>(), size_of::<u32>(), size_of::<u8>()), max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>())))),
-//     align: 4usize (guaranteed: at_least(max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>()))),
+//     size: 12usize (guaranteed: align_to((offset_of(NotReordered.z) + size_of::<u8>()), max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>()))),
+//     align: 4usize (guaranteed: max(align_of::<u8>(), align_of::<u32>(), align_of::<u8>())),
 //     discriminator: _,
 //     inhabited: true,
 //     variants: [
 //         _: {
-//             offset of x: 0,
-//             offset of y: 4,
-//             offset of z: 8,
+//             offset of x: 0 (guaranteed: 0usize),
+//             offset of y: 4 (guaranteed: repr_c_after(0)),
+//             offset of z: 8 (guaranteed: repr_c_after(1)),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -340,9 +340,9 @@ struct Packed {
 //     inhabited: true,
 //     variants: [
 //         _: {
-//             offset of x: 0,
-//             offset of y: 1,
-//             offset of z: 5,
+//             offset of x: 0 (guaranteed: aligned(min(align_of::<u8>(), 1usize))),
+//             offset of y: 1 (guaranteed: aligned(min(align_of::<u32>(), 1usize))),
+//             offset of z: 5 (guaranteed: aligned(min(align_of::<u8>(), 1usize))),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -355,14 +355,14 @@ enum UninhabitedVariant {
   B { _0: u32 },
 }
 // layout:
-//     size: 4usize (guaranteed: at_least(align_to(size_of::<u32>(), align_of::<u32>()))),
-//     align: 4usize (guaranteed: at_least(align_of::<u32>())),
+//     size: 4usize (guaranteed: at_least(align_to(size_of::<u32>(), max(align_of::<u32>(), 1usize)))),
+//     align: 4usize (guaranteed: at_least(max(align_of::<u32>(), 1usize))),
 //     discriminator: B,
 //     inhabited: true,
 //     variants: [
 //         A: none,
 //         B: {
-//             offset of _0: 0,
+//             offset of _0: 0 (guaranteed: aligned(align_of::<u32>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -375,19 +375,19 @@ enum UninhabitedVariant2 {
   B { _0: u32 },
 }
 // layout:
-//     size: 8usize (guaranteed: at_least(align_to(size_of::<u32>(), align_of::<u32>()))),
-//     align: 4usize (guaranteed: at_least(align_of::<u32>())),
+//     size: 8usize (guaranteed: at_least(align_to(max(size_of::<u32>(), size_of::<u32>()), max(align_of::<u32>(), align_of::<u32>(), 1usize)))),
+//     align: 4usize (guaranteed: at_least(max(align_of::<u32>(), align_of::<u32>(), 1usize))),
 //     discriminator: read at offset 0 { 1u32 => B, _ => invalid },
 //     inhabited: true,
 //     variants: [
 //         A: {
-//             offset of _0: 4,
-//             offset of _1: 4,
+//             offset of _0: 4 (guaranteed: aligned(align_of::<!>())),
+//             offset of _1: 4 (guaranteed: aligned(align_of::<u32>())),
 //             inhabited: false,
 //             tagger: [],
 //         },
 //         B: {
-//             offset of _0: 4,
+//             offset of _0: 4 (guaranteed: aligned(align_of::<u32>())),
 //             inhabited: true,
 //             tagger: [0 := 1u32],
 //         },
@@ -400,8 +400,8 @@ enum UninhabitedVariantWithFields {
   Baz { x: u32, y: !, z: u32 },
 }
 // layout:
-//     size: 12usize (guaranteed: at_least(align_to(0usize, 0usize))),
-//     align: 4usize (guaranteed: at_least(0usize)),
+//     size: 12usize (guaranteed: at_least(align_to(max(size_of::<u32>(), size_of::<u32>()), max(align_of::<u32>(), align_of::<u32>(), 1usize)))),
+//     align: 4usize (guaranteed: at_least(max(align_of::<u32>(), align_of::<u32>(), 1usize))),
 //     discriminator: read at offset 0 { 0u32 => Bar, _ => invalid },
 //     inhabited: true,
 //     variants: [
@@ -410,9 +410,9 @@ enum UninhabitedVariantWithFields {
 //             tagger: [0 := 0u32],
 //         },
 //         Baz: {
-//             offset of x: 4,
-//             offset of y: 4,
-//             offset of z: 8,
+//             offset of x: 4 (guaranteed: aligned(align_of::<u32>())),
+//             offset of y: 4 (guaranteed: aligned(align_of::<!>())),
+//             offset of z: 8 (guaranteed: aligned(align_of::<u32>())),
 //             inhabited: false,
 //             tagger: [],
 //         },
@@ -424,13 +424,13 @@ struct Uninhabited {
   _0: !,
 }
 // layout:
-//     size: 0usize,
-//     align: 1usize,
+//     size: 0usize (guaranteed: at_least(0usize)),
+//     align: 1usize (guaranteed: at_least(1usize)),
 //     discriminator: _,
 //     inhabited: false,
 //     variants: [
 //         _: {
-//             offset of _0: 0,
+//             offset of _0: 0 (guaranteed: aligned(align_of::<!>())),
 //             inhabited: false,
 //             tagger: [],
 //         },
@@ -457,7 +457,7 @@ where
 //             tagger: [8 := 0isize],
 //         },
 //         Some: {
-//             offset of _0: 0,
+//             offset of _0: 0 (guaranteed: aligned(align_of::<(usize, &'a T)>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -476,8 +476,8 @@ union MaybeUninitInt {
 //     inhabited: true,
 //     variants: [
 //         _: {
-//             offset of x: 0,
-//             offset of y: 0,
+//             offset of x: 0 (guaranteed: aligned(align_of::<u32>())),
+//             offset of y: 0 (guaranteed: aligned(align_of::<()>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -496,8 +496,8 @@ union PackIntsUnion {
 //     inhabited: true,
 //     variants: [
 //         _: {
-//             offset of x: 0,
-//             offset of y: 0,
+//             offset of x: 0 (guaranteed: aligned(align_of::<(u32, u32)>())),
+//             offset of y: 0 (guaranteed: aligned(align_of::<u64>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -517,7 +517,7 @@ enum NonZeroNiche {
 //     inhabited: true,
 //     variants: [
 //         A: {
-//             offset of _0: 0,
+//             offset of _0: 0 (guaranteed: aligned(align_of::<char>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -539,18 +539,18 @@ enum ArbitraryDiscriminants {
   C,
 }
 // layout:
-//     size: 32usize (guaranteed: at_least(align_to(max(size_of::<String>(), size_of::<u32>()), max(align_of::<String>(), align_of::<u32>())))),
-//     align: 8usize (guaranteed: at_least(max(align_of::<String>(), align_of::<u32>()))),
+//     size: 32usize (guaranteed: align_to(max(size_of::<i32>(), (offset_of(ArbitraryDiscriminants.A._0) + size_of::<String>()), (offset_of(ArbitraryDiscriminants.B._0) + size_of::<u32>())), max(align_of::<i32>(), align_of::<String>(), align_of::<u32>()))),
+//     align: 8usize (guaranteed: max(align_of::<i32>(), align_of::<String>(), align_of::<u32>())),
 //     discriminator: read at offset 0 { 12i32 => A, 43i32 => B, 123456i32 => C, _ => invalid },
 //     inhabited: true,
 //     variants: [
 //         A: {
-//             offset of _0: 8,
+//             offset of _0: 8 (guaranteed: repr_c_after_tag),
 //             inhabited: true,
 //             tagger: [0 := 12i32],
 //         },
 //         B: {
-//             offset of _0: 4,
+//             offset of _0: 4 (guaranteed: repr_c_after_tag),
 //             inhabited: true,
 //             tagger: [0 := 43i32],
 //         },
@@ -568,8 +568,8 @@ enum MyOrder {
   Greater,
 }
 // layout:
-//     size: 1usize (guaranteed: at_least(align_to(0usize, 0usize))),
-//     align: 1usize (guaranteed: at_least(0usize)),
+//     size: 1usize (guaranteed: size_of::<i8>()),
+//     align: 1usize (guaranteed: align_of::<i8>()),
 //     discriminator: read at offset 0 { -1i8 => Less, 0i8 => Equal, 1i8 => Greater, _ => invalid },
 //     inhabited: true,
 //     variants: [
@@ -595,8 +595,8 @@ enum WithNicheAndUninhabited {
   Third { _0: NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32] },
 }
 // layout:
-//     size: 4usize (guaranteed: at_least(align_to(size_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>(), align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>()))),
-//     align: 4usize (guaranteed: at_least(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>())),
+//     size: 4usize (guaranteed: at_least(align_to(size_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>(), max(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>(), 1usize)))),
+//     align: 4usize (guaranteed: at_least(max(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>(), 1usize))),
 //     discriminator: read at offset 0 { 0u32 => First, _ => Third },
 //     inhabited: true,
 //     variants: [
@@ -605,12 +605,12 @@ enum WithNicheAndUninhabited {
 //             tagger: [0 := 0u32],
 //         },
 //         Second: {
-//             offset of _0: 0,
+//             offset of _0: 0 (guaranteed: aligned(align_of::<!>())),
 //             inhabited: false,
 //             tagger: [],
 //         },
 //         Third: {
-//             offset of _0: 0,
+//             offset of _0: 0 (guaranteed: aligned(align_of::<NonZero<u32>[{built_in impl Sized for u32}, impl_ZeroablePrimitive_for_u32]>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -637,7 +637,7 @@ where
 //             tagger: [],
 //         },
 //         Second: {
-//             offset of _0: ?,
+//             offset of _0: ? (guaranteed: aligned(align_of::<&'a T>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -664,7 +664,7 @@ where
 //             tagger: [0 := 0isize],
 //         },
 //         Second: {
-//             offset of _0: 0,
+//             offset of _0: 0 (guaranteed: aligned(align_of::<&'a T>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -677,8 +677,8 @@ enum MaxBitsDiscr {
   Second,
 }
 // layout:
-//     size: 16usize (guaranteed: at_least(align_to(0usize, 0usize))),
-//     align: 16usize (guaranteed: at_least(0usize)),
+//     size: 16usize (guaranteed: size_of::<u128>()),
+//     align: 16usize (guaranteed: align_of::<u128>()),
 //     discriminator: read at offset 0 { 42u128 => First, 18446744073709551615u128 => Second, _ => invalid },
 //     inhabited: true,
 //     variants: [
@@ -696,8 +696,8 @@ enum MaxBitsDiscr {
 // Full name: test_crate::SingleVariantButNonZero
 type SingleVariantButNonZero = Result<!, ()>[{built_in impl Sized for !}, {built_in impl Sized for ()}]
 // layout:
-//     size: 0usize,
-//     align: 1usize,
+//     size: 0usize (guaranteed: size_of::<Result<!, ()>[{built_in impl Sized for !}, {built_in impl Sized for ()}]>()),
+//     align: 1usize (guaranteed: align_of::<Result<!, ()>[{built_in impl Sized for !}, {built_in impl Sized for ()}]>()),
 //     discriminator: Err,
 //     inhabited: true,
 //     variants: [
@@ -715,8 +715,8 @@ type NonAdtAlias<T>
 where
     TraitClause0: (T: Sized), = T
 // layout:
-//     size: ?,
-//     align: ?,
+//     size: ? (guaranteed: size_of::<T>()),
+//     align: ? (guaranteed: align_of::<T>()),
 //     discriminator: none,
 //     inhabited: if_inhabited(T),
 //     variants: [
@@ -726,8 +726,8 @@ where
 // Full name: test_crate::Tuple
 type Tuple = (u32, u32)
 // layout:
-//     size: 8usize,
-//     align: 4usize,
+//     size: 8usize (guaranteed: size_of::<(u32, u32)>()),
+//     align: 4usize (guaranteed: align_of::<(u32, u32)>()),
 //     discriminator: _,
 //     inhabited: true,
 //     variants: [
@@ -743,8 +743,8 @@ type Tuple = (u32, u32)
 // Full name: test_crate::Usize
 type Usize = usize
 // layout:
-//     size: 8usize,
-//     align: 8usize,
+//     size: 8usize (guaranteed: size_of::<usize>()),
+//     align: 8usize (guaranteed: align_of::<usize>()),
 //     discriminator: @Variant0,
 //     inhabited: true,
 //     variants: [
@@ -754,8 +754,8 @@ type Usize = usize
 // Full name: test_crate::Str
 type Str = str
 // layout:
-//     size: slice_length,
-//     align: 1usize,
+//     size: slice_length (guaranteed: size_of::<str>()),
+//     align: 1usize (guaranteed: align_of::<str>()),
 //     discriminator: _,
 //     inhabited: true,
 //     variants: [
@@ -765,8 +765,8 @@ type Str = str
 // Full name: test_crate::Ref
 type Ref<'a> = &'a mut u32
 // layout:
-//     size: 8usize,
-//     align: 8usize,
+//     size: 8usize (guaranteed: size_of::<&'a mut u32>()),
+//     align: 8usize (guaranteed: align_of::<&'a mut u32>()),
 //     discriminator: @Variant0,
 //     inhabited: true,
 //     variants: [
@@ -790,7 +790,7 @@ enum HasInvalidDiscr {
 //             tagger: [0 := 2u8],
 //         },
 //         Var2: {
-//             offset of _0: 0,
+//             offset of _0: 0 (guaranteed: aligned(align_of::<bool>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -813,7 +813,7 @@ enum NicheInSignedRepr {
 //     inhabited: true,
 //     variants: [
 //         A: {
-//             offset of _0: 0,
+//             offset of _0: 0 (guaranteed: aligned(align_of::<MyOrder>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -830,14 +830,14 @@ struct BigWithChar {
   c: char,
 }
 // layout:
-//     size: 16usize (guaranteed: at_least(align_to(max(size_of::<u64>(), size_of::<char>()), max(align_of::<u64>(), align_of::<char>())))),
-//     align: 8usize (guaranteed: at_least(max(align_of::<u64>(), align_of::<char>()))),
+//     size: 16usize (guaranteed: align_to((offset_of(BigWithChar.c) + size_of::<char>()), max(align_of::<u64>(), align_of::<char>()))),
+//     align: 8usize (guaranteed: max(align_of::<u64>(), align_of::<char>())),
 //     discriminator: _,
 //     inhabited: true,
 //     variants: [
 //         _: {
-//             offset of a: 0,
-//             offset of c: 8,
+//             offset of a: 0 (guaranteed: 0usize),
+//             offset of c: 8 (guaranteed: repr_c_after(0)),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -851,14 +851,14 @@ enum UninhabitedAtNicheEdge {
   C { _0: BigWithChar },
 }
 // layout:
-//     size: 16usize (guaranteed: at_least(align_to(size_of::<BigWithChar>(), align_of::<BigWithChar>()))),
-//     align: 8usize (guaranteed: at_least(align_of::<BigWithChar>())),
+//     size: 16usize (guaranteed: at_least(align_to(max(size_of::<u32>(), size_of::<BigWithChar>()), max(align_of::<u32>(), align_of::<BigWithChar>(), 1usize)))),
+//     align: 8usize (guaranteed: at_least(max(align_of::<u32>(), align_of::<BigWithChar>(), 1usize))),
 //     discriminator: read at offset 8 { 1114112u32 => invalid, 1114113u32 => B, 1114114u32..=4294967295u32 => invalid, _ => C },
 //     inhabited: true,
 //     variants: [
 //         A: {
-//             offset of _0: 0,
-//             offset of _1: 4,
+//             offset of _0: 0 (guaranteed: aligned(align_of::<u32>())),
+//             offset of _1: 4 (guaranteed: aligned(align_of::<!>())),
 //             inhabited: false,
 //             tagger: [],
 //         },
@@ -867,7 +867,7 @@ enum UninhabitedAtNicheEdge {
 //             tagger: [8 := 1114113u32],
 //         },
 //         C: {
-//             offset of _0: 0,
+//             offset of _0: 0 (guaranteed: aligned(align_of::<BigWithChar>())),
 //             inhabited: true,
 //             tagger: [],
 //         },
@@ -880,14 +880,14 @@ enum UninhabitedUntagged {
   B,
 }
 // layout:
-//     size: 4usize (guaranteed: at_least(align_to(0usize, 0usize))),
-//     align: 4usize (guaranteed: at_least(0usize)),
+//     size: 4usize (guaranteed: at_least(align_to(size_of::<char>(), max(align_of::<char>(), 1usize)))),
+//     align: 4usize (guaranteed: at_least(max(align_of::<char>(), 1usize))),
 //     discriminator: read at offset 0 { 1114112u32..=4294967294u32 => invalid, 4294967295u32 => B, _ => invalid },
 //     inhabited: true,
 //     variants: [
 //         A: {
-//             offset of _0: 0,
-//             offset of _1: 4,
+//             offset of _0: 0 (guaranteed: aligned(align_of::<char>())),
+//             offset of _1: 4 (guaranteed: aligned(align_of::<!>())),
 //             inhabited: false,
 //             tagger: [],
 //         },
@@ -907,16 +907,123 @@ where
   tl: T,
 }
 // layout:
-//     size: ?,
-//     align: ?,
+//     size: ? (guaranteed: align_to((offset_of(PolyReprC<T>[TraitClause0].tl) + size_of::<T>()), max(align_of::<usize>(), align_of::<T>()))),
+//     align: ? (guaranteed: max(align_of::<usize>(), align_of::<T>())),
 //     discriminator: none,
 //     inhabited: if_inhabited(T),
 //     variants: [
 //         _: {
-//             offset of hd: ?,
-//             offset of tl: ?,
+//             offset of hd: ? (guaranteed: 0usize),
+//             offset of tl: ? (guaranteed: repr_c_after(0)),
 //             inhabited: if_inhabited(T),
 //             tagger: [],
+//         },
+//     ],
+//     repr(C),
+
+// Full name: test_crate::Transparent
+struct Transparent {
+  _0: u32,
+  _1: (),
+}
+// layout:
+//     size: 4usize (guaranteed: max(size_of::<u32>(), size_of::<()>())),
+//     align: 4usize (guaranteed: max(align_of::<u32>(), align_of::<()>())),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of _0: 0 (guaranteed: aligned(align_of::<u32>())),
+//             offset of _1: 4 (guaranteed: aligned(align_of::<()>())),
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust, transparent),
+
+// Full name: test_crate::Aligned
+struct Aligned {
+  x: u8,
+}
+// layout:
+//     size: 16usize (guaranteed: at_least(align_to(size_of::<u8>(), max(align_of::<u8>(), 16usize)))),
+//     align: 16usize (guaranteed: at_least(max(align_of::<u8>(), 16usize))),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of x: 0 (guaranteed: aligned(align_of::<u8>())),
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust, align(16)),
+
+// Full name: test_crate::PackedReprC
+struct PackedReprC {
+  x: u8,
+  y: u32,
+}
+// layout:
+//     size: 6usize (guaranteed: align_to((offset_of(PackedReprC.y) + size_of::<u32>()), max(min(align_of::<u8>(), 2usize), min(align_of::<u32>(), 2usize)))),
+//     align: 2usize (guaranteed: max(min(align_of::<u8>(), 2usize), min(align_of::<u32>(), 2usize))),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of x: 0 (guaranteed: 0usize),
+//             offset of y: 2 (guaranteed: repr_c_after(0)),
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(C, packed(2)),
+
+// Full name: test_crate::ReprCUnion
+union ReprCUnion {
+  x: u8,
+  y: u32,
+}
+// layout:
+//     size: 4usize (guaranteed: align_to(max(size_of::<u8>(), size_of::<u32>()), max(align_of::<u8>(), align_of::<u32>()))),
+//     align: 4usize (guaranteed: max(align_of::<u8>(), align_of::<u32>())),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of x: 0 (guaranteed: 0usize),
+//             offset of y: 0 (guaranteed: 0usize),
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(C),
+
+// Full name: test_crate::ReprCEnum
+enum ReprCEnum {
+  A { _0: u8 },
+  B { _0: u64 },
+  C,
+}
+// layout:
+//     size: 16usize (guaranteed: align_to(max(size_of::<i32>(), (offset_of(ReprCEnum.A._0) + size_of::<u8>()), (offset_of(ReprCEnum.B._0) + size_of::<u64>())), max(align_of::<i32>(), align_of::<u8>(), align_of::<u64>()))),
+//     align: 8usize (guaranteed: max(align_of::<i32>(), align_of::<u8>(), align_of::<u64>())),
+//     discriminator: read at offset 0 { 0u32 => A, 1u32 => B, 2u32 => C, _ => invalid },
+//     inhabited: true,
+//     variants: [
+//         A: {
+//             offset of _0: 8 (guaranteed: align_to(size_of::<i32>(), max(align_of::<u8>(), align_of::<u64>()))),
+//             inhabited: true,
+//             tagger: [0 := 0u32],
+//         },
+//         B: {
+//             offset of _0: 8 (guaranteed: align_to(size_of::<i32>(), max(align_of::<u8>(), align_of::<u64>()))),
+//             inhabited: true,
+//             tagger: [0 := 1u32],
+//         },
+//         C: {
+//             inhabited: true,
+//             tagger: [0 := 2u32],
 //         },
 //     ],
 //     repr(C),

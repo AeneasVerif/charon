@@ -1345,14 +1345,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for OffsetExpr {
 impl<C: AstFormatter> FmtWithCtx<C> for OffsetGuarantee {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            OffsetGuarantee::AtOffsetZero => write!(f, "zero"),
+            OffsetGuarantee::AtOffset(offset) => write!(f, "{}", offset.with_ctx(ctx)),
             OffsetGuarantee::GuaranteedAlignment(align) => {
                 write!(f, "aligned({})", align.with_ctx(ctx))
             }
-            OffsetGuarantee::ReprCField { predecessor } => match predecessor {
-                Some(predecessor) => write!(f, "repr_c_after({predecessor})"),
-                None => write!(f, "repr_c_after_tag"),
-            },
+            OffsetGuarantee::ReprCField(FieldPredecessor::Field(field)) => {
+                write!(f, "repr_c_after({field})")
+            }
+            OffsetGuarantee::ReprCField(FieldPredecessor::Tag) => write!(f, "repr_c_after_tag"),
         }
     }
 }

@@ -253,6 +253,15 @@ impl TypeDecl {
             .iter_enumerated()
             .find(|(_, field)| field.name == field_name)
     }
+
+    /// Returns a `TypeDeclRef` that refers to this type declaration, with identity generic arguments.
+    pub fn self_ref(&self) -> TypeDeclRef {
+        TypeDeclRef {
+            id: self.def_id,
+            generics: Box::new(self.generics.identity_args()),
+            builtin: self.src.as_builtin().cloned(),
+        }
+    }
 }
 
 impl Variant {

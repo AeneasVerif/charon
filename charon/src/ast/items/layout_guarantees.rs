@@ -4,6 +4,14 @@ use derive_generic_visitor::*;
 use macros::{EnumAsGetters, EnumIsA, VariantName};
 use serde_state::{DeserializeState, SerializeState};
 
+/// The predecessor of a field in a struct or enum variant.
+#[derive(Debug, Clone, Copy, PartialEq, SerializeState, DeserializeState)]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Predecessor"))]
+pub enum FieldPredecessor {
+    Field(FieldId),
+    Tag,
+}
+
 /// Guaranteed facts about a field offset.
 #[derive(
     Debug,
@@ -18,16 +26,13 @@ use serde_state::{DeserializeState, SerializeState};
     DriveTwo,
 )]
 pub enum OffsetGuarantee {
-    /// Guaranteed to be at offset zero. This applies for `repr(transparent)` and in some `repr(C)` cases.
-    AtOffsetZero,
+    /// Guaranteed to be exactly at the given offset.
+    AtOffset(SizeExpr),
     /// Guaranteed only to be aligned to the given expression.
     GuaranteedAlignment(SizeExpr),
     /// This offset is computed by the layout algorithm for C: take the previous field offset, add
-    /// the previous field size, and align to the current field alignment.
-    ReprCField {
-        /// If this is `None`, then the field is directly after the enum tag.
-        predecessor: Option<FieldId>,
-    },
+    /// the previous field size, and align to the current field alignment (as capped by `packed`).
+    ReprCField(FieldPredecessor),
 }
 
 /// Layout information given by the metadata of an unsized type.
@@ -130,6 +135,65 @@ impl SizeExpr {
 
     pub fn with_kind_mut<R>(&mut self, f: impl FnOnce(&mut SizeExprKind) -> R) -> R {
         self.0.with_inner_mut(f)
+    }
+
+    pub fn from_usize(value: u128) -> Self {
+        SizeExprKind::from_usize(value).into_expr()
+    }
+
+    /// The symbolic constant `size_of::<ty>()`.
+    pub fn size_of(ty: &Ty) -> Self {
+        Self::constant(ConstantExprKind::SizeOf(ty.clone()))
+    }
+
+    /// The symbolic constant `align_of::<ty>()`.
+    pub fn align_of(ty: &Ty) -> Self {
+        Self::constant(ConstantExprKind::AlignOf(ty.clone()))
+    }
+
+    /// The symbolic constant `offset_of!(ty, variant.field)`.
+    pub fn offset_of(ty: TypeDeclRef, variant: Option<VariantId>, field: FieldId) -> Self {
+        Self::constant(ConstantExprKind::OffsetOf(ty, variant, field))
+    }
+
+    fn constant(kind: ConstantExprKind) -> Self {
+        SizeExprKind::Constant(ConstantExpr::new(kind, Ty::mk_usize())).into_expr()
+    }
+
+    /// The maximum of the given values; or `default` if the list is empty.
+    pub fn max_or(mut values: Vec<SizeExpr>, default: SizeExpr) -> SizeExpr {
+        match values.len() {
+            0 => default,
+            1 => values.pop().unwrap(),
+            _ => SizeExprKind::Max(values).into_expr(),
+        }
+    }
+
+    /// The maximum of the given values; defaults to 1 if the list is empty.
+    pub fn max_align(values: Vec<SizeExpr>) -> SizeExpr {
+        Self::max_or(values, SizeExpr::from_usize(1))
+    }
+
+    /// The maximum of the given values; defaults to 0 if the list is empty.
+    pub fn max_size(values: Vec<SizeExpr>) -> SizeExpr {
+        Self::max_or(values, SizeExpr::from_usize(0))
+    }
+
+    pub fn align_to(base: SizeExpr, target_align: SizeExpr) -> SizeExpr {
+        SizeExprKind::AlignTo { base, target_align }.into_expr()
+    }
+
+    pub fn at_least(value: SizeExpr) -> SizeExpr {
+        SizeExprKind::AtLeast(value).into_expr()
+    }
+
+    pub fn if_inhabited(ty: &Ty, then_size: SizeExpr, else_size: SizeExpr) -> SizeExpr {
+        SizeExprKind::IfInhabited {
+            ty: ty.clone(),
+            then_size,
+            else_size,
+        }
+        .into_expr()
     }
 
     /// Recursively evaluate the parts of this expression that are known in `krate`.
@@ -492,10 +556,6 @@ impl SizeExpr {
         } else {
             None
         }
-    }
-
-    fn from_usize(value: u128) -> Self {
-        SizeExprKind::from_usize(value).into_expr()
     }
 }
 
