@@ -323,24 +323,19 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         span: Span,
         def: &hax::FullDef<'tcx>,
     ) -> Result<Body, Error> {
-        let hax::FullDefKind::Ctor(hax::Ctor {
-            adt_def_id,
-            ctor_of,
-            variant_id,
-            fields,
-            output_ty,
-            ..
-        }) = def.kind()
-        else {
+        let hax::FullDefKind::Ctor(ctor) = def.kind() else {
             unreachable!()
         };
-        let tref = self
-            .translate_type_decl_ref(span, &def.this().with_def_id(self.hax_state(), adt_def_id))?;
-        let output_ty = self.translate_ty(span, output_ty)?;
+        let tref = self.translate_type_decl_ref(
+            span,
+            &def.this().with_def_id(self.hax_state(), &ctor.adt_def_id),
+        )?;
+        let output_ty = self.translate_ty(span, &ctor.output_ty)?;
 
-        let mut builder = BodyBuilder::new(span, fields.len());
+        let mut builder = BodyBuilder::new(span, ctor.fields.len());
         let return_place = builder.new_var(None, output_ty);
-        let args: Vec<_> = fields
+        let args: Vec<_> = ctor
+            .fields
             .iter()
             .map(|field| -> Result<Operand, Error> {
                 let ty = self.translate_ty(span, &field.ty)?;
@@ -348,9 +343,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 Ok(Operand::Move(place))
             })
             .try_collect()?;
-        let variant = match ctor_of {
+        let variant = match ctor.ctor_of {
             hax::CtorOf::Struct => None,
-            hax::CtorOf::Variant => Some(self.translate_variant_id(*variant_id)),
+            hax::CtorOf::Variant => Some(self.translate_variant_id(ctor.variant_id)),
         };
         builder.push_statement(StatementKind::Assign(
             return_place,
@@ -374,10 +369,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         //     core::slice::into_vec(y)
         // }
         let tcx = self.tcx;
-        let hax::FullDefKind::Fn(hax::Fn { sig: hax_sig, .. }) = def.kind() else {
+        let hax::FullDefKind::Fn(f) = def.kind() else {
             unreachable!()
         };
-        let hax_sig = hax_sig.hax_skip_binder_ref();
+        let hax_sig = f.sig.hax_skip_binder_ref();
         let sig = self.translate_fun_sig(span, hax_sig)?;
 
         // Get the `[T; N]` and `A` parameters.

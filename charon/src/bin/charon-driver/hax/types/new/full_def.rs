@@ -1277,19 +1277,19 @@ impl<'tcx> FullDef<'tcx> {
     /// Returns the generics and predicates for definitions that have those.
     pub fn param_env(&self) -> Option<&ParamEnv> {
         match self.kind() {
-            FullDefKind::Adt(Adt { param_env, .. })
-            | FullDefKind::Trait(Trait { param_env, .. })
-            | FullDefKind::TraitAlias(TraitAlias { param_env, .. })
-            | FullDefKind::TyAlias(TyAlias { param_env, .. })
-            | FullDefKind::AssocTy(AssocTy { param_env, .. })
-            | FullDefKind::Fn(Fn { param_env, .. })
-            | FullDefKind::AssocFn(AssocFn { param_env, .. })
-            | FullDefKind::Closure(Closure { param_env, .. })
-            | FullDefKind::Const(Const { param_env, .. })
-            | FullDefKind::AssocConst(AssocConst { param_env, .. })
-            | FullDefKind::Static(Static { param_env, .. })
-            | FullDefKind::TraitImpl(TraitImpl { param_env, .. })
-            | FullDefKind::InherentImpl(InherentImpl { param_env, .. }) => Some(param_env),
+            FullDefKind::Adt(d) => Some(&d.param_env),
+            FullDefKind::Trait(d) => Some(&d.param_env),
+            FullDefKind::TraitAlias(d) => Some(&d.param_env),
+            FullDefKind::TyAlias(d) => Some(&d.param_env),
+            FullDefKind::AssocTy(d) => Some(&d.param_env),
+            FullDefKind::Fn(d) => Some(&d.param_env),
+            FullDefKind::AssocFn(d) => Some(&d.param_env),
+            FullDefKind::Closure(d) => Some(&d.param_env),
+            FullDefKind::Const(d) => Some(&d.param_env),
+            FullDefKind::AssocConst(d) => Some(&d.param_env),
+            FullDefKind::Static(d) => Some(&d.param_env),
+            FullDefKind::TraitImpl(d) => Some(&d.param_env),
+            FullDefKind::InherentImpl(d) => Some(&d.param_env),
             _ => None,
         }
     }
@@ -1297,13 +1297,14 @@ impl<'tcx> FullDef<'tcx> {
     /// Return the parent of this item if the item inherits the typing context from its parent.
     pub fn typing_parent(&self, s: &impl BaseState<'tcx>) -> Option<ItemRef> {
         match self.kind() {
+            FullDefKind::Const(c)
+                if matches!(c.kind, ConstKind::AnonConst | ConstKind::PromotedConst) =>
+            {
+                self.param_env().unwrap().parent.clone()
+            }
             FullDefKind::AssocTy(_)
             | FullDefKind::AssocFn(_)
             | FullDefKind::AssocConst(_)
-            | FullDefKind::Const(Const {
-                kind: ConstKind::AnonConst | ConstKind::PromotedConst,
-                ..
-            })
             | FullDefKind::Closure(_) => self.param_env().unwrap().parent.clone(),
             FullDefKind::Ctor(_) | FullDefKind::Variant => {
                 let parent = self.def_id().parent(s).unwrap();
@@ -1353,9 +1354,8 @@ impl<'tcx> FullDef<'tcx> {
     /// are none.
     pub fn late_bound(&self) -> Binder<()> {
         match self.kind() {
-            FullDefKind::Fn(Fn { sig, .. }) | FullDefKind::AssocFn(AssocFn { sig, .. }) => {
-                sig.as_ref().rebind(())
-            }
+            FullDefKind::Fn(f) => f.sig.as_ref().rebind(()),
+            FullDefKind::AssocFn(f) => f.sig.as_ref().rebind(()),
             _ => Binder::empty(),
         }
     }
@@ -1364,24 +1364,28 @@ impl<'tcx> FullDef<'tcx> {
     /// types, this includes inherent items.
     pub fn nameable_children(&self, s: &impl BaseState<'tcx>) -> Vec<(Symbol, DefId)> {
         let mut children = match self.kind() {
-            FullDefKind::Mod(Mod { items }) => items
+            FullDefKind::Mod(m) => m
+                .items
                 .iter()
                 .filter_map(|(opt_ident, def_id)| Some((opt_ident.as_ref()?.0, def_id.clone())))
                 .collect(),
-            FullDefKind::Adt(Adt {
-                adt_kind: AdtKind::Enum,
-                variants,
-                ..
-            }) => variants
+            FullDefKind::Adt(adt) if matches!(adt.adt_kind, AdtKind::Enum) => adt
+                .variants
                 .iter()
                 .map(|variant| (variant.name, variant.def_id.clone()))
                 .collect(),
-            FullDefKind::InherentImpl(InherentImpl { items, .. })
-            | FullDefKind::Trait(Trait { items, .. }) => items
+            FullDefKind::InherentImpl(i) => i
+                .items
                 .iter()
                 .filter_map(|item| Some((item.name?, item.def_id.clone())))
                 .collect(),
-            FullDefKind::TraitImpl(TraitImpl { items, .. }) => items
+            FullDefKind::Trait(t) => t
+                .items
+                .iter()
+                .filter_map(|item| Some((item.name?, item.def_id.clone())))
+                .collect(),
+            FullDefKind::TraitImpl(timpl) => timpl
+                .items
                 .iter()
                 .filter_map(|item| Some((item.name?, item.def_id()?.clone())))
                 .collect(),

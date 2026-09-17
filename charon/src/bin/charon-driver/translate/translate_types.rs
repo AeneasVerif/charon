@@ -635,9 +635,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let ptr_size = self.translated.the_target_information().target_pointer_size;
 
         let repr = match &def.kind {
-            hax::FullDefKind::Adt(hax::Adt { repr: hax_repr, .. }) => {
-                self.translate_repr_options(hax_repr)
-            }
+            hax::FullDefKind::Adt(adt) => self.translate_repr_options(&adt.repr),
             _ => ReprOptions::default(),
         };
         let ty_layout = match tcx.layout_of(pseudo_input) {
@@ -919,10 +917,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         def: &hax::FullDef<'tcx>,
     ) -> Result<TypeDeclKind, Error> {
         use crate::hax::AdtKind;
-        let hax::FullDefKind::Adt(hax::Adt {
-            adt_kind, variants, ..
-        }) = def.kind()
-        else {
+        let hax::FullDefKind::Adt(adt) = def.kind() else {
             unreachable!()
         };
 
@@ -930,12 +925,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             return Ok(TypeDeclKind::Opaque);
         }
 
-        if matches!(adt_kind, AdtKind::Tuple) && self.t_ctx.options.no_gen_tuple_structs {
+        if matches!(adt.adt_kind, AdtKind::Tuple) && self.t_ctx.options.no_gen_tuple_structs {
             return Ok(TypeDeclKind::Opaque);
         }
 
         // hax's synthetic ADTs have no variants; we must construct the fields ourselves
-        let synthetic_fields = match adt_kind {
+        let synthetic_fields = match adt.adt_kind {
             AdtKind::Tuple => {
                 let item = def.this();
                 let args = self.translate_generic_args(def_span, &item.generic_args, &[])?;
@@ -970,12 +965,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // transparent (i.e., extract its body). If it is an enumeration, then yes
         // (because the variants of public enumerations are public, together with their
         // fields). If it is a structure, we check if all the fields are public.
-        let contents_are_public = match adt_kind {
+        let contents_are_public = match adt.adt_kind {
             AdtKind::Enum => true,
             AdtKind::Struct | AdtKind::Union => {
                 // Check the unique variant
-                error_assert!(self, def_span, variants.len() == 1);
-                variants[hax::VariantIdx::from(0usize)]
+                error_assert!(self, def_span, adt.variants.len() == 1);
+                adt.variants[hax::VariantIdx::from(0usize)]
                     .fields
                     .iter()
                     .all(|f| matches!(f.vis, Visibility::Public))
@@ -994,7 +989,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         // The type is transparent: explore the variants
         let mut translated_variants: IndexVec<VariantId, Variant> = Default::default();
-        for (i, var_def) in variants.iter().enumerate() {
+        for (i, var_def) in adt.variants.iter().enumerate() {
             trace!("variant {i}: {var_def:?}");
 
             let mut fields: IndexVec<FieldId, Field> = Default::default();
@@ -1065,7 +1060,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         // Register the type
-        let type_def_kind: TypeDeclKind = match adt_kind {
+        let type_def_kind: TypeDeclKind = match adt.adt_kind {
             AdtKind::Struct => TypeDeclKind::Struct(translated_variants[0].fields.clone()),
             AdtKind::Enum => TypeDeclKind::Enum(translated_variants),
             AdtKind::Union => TypeDeclKind::Union(translated_variants[0].fields.clone()),

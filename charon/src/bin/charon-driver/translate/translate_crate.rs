@@ -232,12 +232,10 @@ impl<'tcx> TranslateCtx<'tcx> {
     fn is_method_decl_without_default(&mut self, def_id: &hax::DefId) -> Option<hax::DefId> {
         if matches!(def_id.kind, hax::DefKind::AssocFn)
             && let def = self.poly_hax_def(def_id).ok()?
-            && let hax::FullDefKind::AssocFn(hax::AssocFn {
-                associated_item, ..
-            }) = def.kind()
-            && !associated_item.has_value
+            && let hax::FullDefKind::AssocFn(f) = def.kind()
+            && !f.associated_item.has_value
             && let hax::AssocItemContainer::TraitContainer { trait_ref } =
-                &associated_item.container
+                &f.associated_item.container
         {
             Some(trait_ref.def_id.clone())
         } else {
@@ -485,14 +483,14 @@ impl<'tcx> TranslateCtx<'tcx> {
             return Ok(());
         }
         let trait_def = self.poly_hax_def(trait_def_id)?;
-        let hax::FullDefKind::Trait(hax::Trait { items, .. }) = trait_def.kind() else {
+        let hax::FullDefKind::Trait(t) = trait_def.kind() else {
             unreachable!()
         };
         let names = self
             .translated
             .assoc_item_names
             .get_or_insert_with(trait_id, Default::default);
-        for item in items {
+        for item in &t.items {
             let name = TraitItemName(
                 item.name
                     .as_ref()
@@ -535,15 +533,9 @@ impl<'tcx> TranslateCtx<'tcx> {
 
         let item_def = self.poly_hax_def(item_def_id)?;
         let assoc = match item_def.kind() {
-            hax::FullDefKind::AssocTy(hax::AssocTy {
-                associated_item, ..
-            })
-            | hax::FullDefKind::AssocConst(hax::AssocConst {
-                associated_item, ..
-            })
-            | hax::FullDefKind::AssocFn(hax::AssocFn {
-                associated_item, ..
-            }) => associated_item,
+            hax::FullDefKind::AssocTy(t) => &t.associated_item,
+            hax::FullDefKind::AssocConst(c) => &c.associated_item,
+            hax::FullDefKind::AssocFn(f) => &f.associated_item,
             _ => panic!("Unexpected def for associated item: {item_def:?}"),
         };
         let decl_def_id = assoc.implemented_trait_item_id();
@@ -808,52 +800,53 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 | hax::DefKind::Ctor(..)
         ) {
             let def = self.hax_def(hax_item)?;
-            match def.kind() {
-                hax::FullDefKind::Fn(hax::Fn { sig, .. })
-                | hax::FullDefKind::AssocFn(hax::AssocFn { sig, .. })
-                | hax::FullDefKind::Ctor(hax::Ctor { sig, .. }) => {
+            let sig = match def.kind() {
+                hax::FullDefKind::Fn(f) => Some(&f.sig),
+                hax::FullDefKind::AssocFn(f) => Some(&f.sig),
+                hax::FullDefKind::Ctor(f) => Some(&f.sig),
+                _ => None,
+            };
+            if let Some(sig) = sig {
+                generics.regions.extend(
+                    sig.bound_vars
+                        .iter()
+                        .map(|_| self.translate_erased_region()),
+                );
+            } else if let hax::FullDefKind::Closure(c) = def.kind() {
+                let upvar_regions = if self.item_src.def_id() == &c.args.item.def_id {
+                    assert!(self.outermost_binder().closure_upvar_tys.is_some());
+                    self.outermost_binder().closure_upvar_regions.len()
+                } else {
+                    // If we're not translating a closure item, fetch the closure adt
+                    // definition and add enough erased lifetimes to match its number of
+                    // arguments.
+                    let adt_decl_id: ItemId =
+                        self.register_item(span, hax_item, TransItemSourceKind::Type);
+                    let adt_decl = self.get_or_translate(adt_decl_id)?;
+                    let adt_generics = adt_decl.generic_params();
+                    adt_generics.regions.len() - generics.regions.len()
+                };
+                generics
+                    .regions
+                    .extend((0..upvar_regions).map(|_| self.translate_erased_region()));
+                if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
+                | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))
+                | TransItemSourceKind::VTableInstanceInitializer(TransImplSource::Callable(
+                    ..,
+                ))
+                | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))
+                | TransItemSourceKind::CallableMethod(..)
+                | TransItemSourceKind::VTableMethod(TransImplSource::Callable(..))
+                | TransItemSourceKind::ClosureAsFnCast = kind
+                {
                     generics.regions.extend(
-                        sig.bound_vars
+                        c.args
+                            .fn_sig
+                            .bound_vars
                             .iter()
                             .map(|_| self.translate_erased_region()),
                     );
                 }
-                hax::FullDefKind::Closure(hax::Closure { args, .. }) => {
-                    let upvar_regions = if self.item_src.def_id() == &args.item.def_id {
-                        assert!(self.outermost_binder().closure_upvar_tys.is_some());
-                        self.outermost_binder().closure_upvar_regions.len()
-                    } else {
-                        // If we're not translating a closure item, fetch the closure adt
-                        // definition and add enough erased lifetimes to match its number of
-                        // arguments.
-                        let adt_decl_id: ItemId =
-                            self.register_item(span, hax_item, TransItemSourceKind::Type);
-                        let adt_decl = self.get_or_translate(adt_decl_id)?;
-                        let adt_generics = adt_decl.generic_params();
-                        adt_generics.regions.len() - generics.regions.len()
-                    };
-                    generics
-                        .regions
-                        .extend((0..upvar_regions).map(|_| self.translate_erased_region()));
-                    if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
-                    | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))
-                    | TransItemSourceKind::VTableInstanceInitializer(
-                        TransImplSource::Callable(..),
-                    )
-                    | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))
-                    | TransItemSourceKind::CallableMethod(..)
-                    | TransItemSourceKind::VTableMethod(TransImplSource::Callable(..))
-                    | TransItemSourceKind::ClosureAsFnCast = kind
-                    {
-                        generics.regions.extend(
-                            args.fn_sig
-                                .bound_vars
-                                .iter()
-                                .map(|_| self.translate_erased_region()),
-                        );
-                    }
-                }
-                _ => {}
             }
             if let TransItemSourceKind::CallableMethod(ClosureKind::FnMut | ClosureKind::Fn)
             | TransItemSourceKind::VTableMethod(TransImplSource::Callable(
@@ -966,16 +959,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             return Ok(None);
         };
         let def = self.hax_def(item)?;
-        let hax::FullDefKind::AssocFn(hax::AssocFn {
-            associated_item,
-            sig,
-            ..
-        }) = def.kind()
-        else {
+        let hax::FullDefKind::AssocFn(f) = def.kind() else {
             return Ok(None);
         };
         if !matches!(
-            &associated_item.container,
+            &f.associated_item.container,
             hax::AssocItemContainer::TraitContainer { .. }
         ) {
             return Ok(None);
@@ -983,7 +971,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         let trait_ref = self.translate_trait_proof(span, in_trait)?;
         let generics = self.translate_generic_args(span, &item.generic_args, &item.trait_proofs)?;
-        self.translate_region_binder(span, &sig.as_ref().rebind(()), |ctx, _| {
+        self.translate_region_binder(span, &f.sig.as_ref().rebind(()), |ctx, _| {
             let method_id = ctx.translate_trait_method_id(trait_ref.trait_id(), &item.def_id)?;
             let fn_kind = FnPtrKind::Trait(trait_ref.move_under_binder(), method_id);
             let generics = generics.move_under_binder();
