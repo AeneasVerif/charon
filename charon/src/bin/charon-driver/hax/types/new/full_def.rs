@@ -317,10 +317,10 @@ pub enum FullDefKind<'tcx> {
     InherentImpl(InherentImpl),
 
     // Functions
-    Fn(Fn),
+    Fn(Fn<'tcx>),
     /// Associated function: `impl MyStruct { fn associated() {} }` or `trait Foo { fn associated()
     /// {} }`
-    AssocFn(AssocFn),
+    AssocFn(AssocFn<'tcx>),
     /// A closure, coroutine, or coroutine-closure.
     Closure(Closure),
 
@@ -349,7 +349,7 @@ pub enum FullDefKind<'tcx> {
     /// Refers to the variant definition, [`DefKind::Ctor`] refers to its constructor if it exists.
     Variant,
     /// The constructor function of a tuple/unit struct or tuple/unit enum variant.
-    Ctor(Ctor),
+    Ctor(Ctor<'tcx>),
     /// A field in a struct, enum or union. e.g.
     /// - `bar` in `struct Foo { bar: u8 }`
     /// - `Foo::Bar::0` in `enum Foo { Bar(u8) }`
@@ -584,23 +584,66 @@ impl InherentImpl {
     }
 }
 
+/// The virtual `Fn*` impls of a function item or constructor, which exist iff the function is
+/// `Fn*`-compatible.
 #[derive(Clone, Debug)]
-pub struct Fn {
+pub struct FnTraitImpls {
+    /// The arguments of this function, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
+    /// Binds the same variables as the function's `sig`.
+    pub tupled_args_ty: Binder<Ty>,
+    /// Info required to construct a virtual `FnOnce` impl for this function.
+    pub fn_once_impl: Box<VirtualTraitImpl>,
+    /// Info required to construct a virtual `FnMut` impl for this function.
+    pub fn_mut_impl: Box<VirtualTraitImpl>,
+    /// Info required to construct a virtual `Fn` impl for this function.
+    pub fn_impl: Box<VirtualTraitImpl>,
+}
+
+/// Compute the `Fn*` impls of the function item owned by `s`, given its (instantiated) signature.
+fn fn_def_trait_impls<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    args: Option<ty::GenericArgsRef<'tcx>>,
+    fn_sig: ty::PolyFnSig<'tcx>,
+) -> Option<FnTraitImpls> {
+    let tcx = s.base().tcx;
+    let def_id = s.owner().real_rust_def_id();
+    if !fn_sig.is_fn_trait_compatible() || !tcx.codegen_fn_attrs(def_id).target_features.is_empty()
+    {
+        return None;
+    }
+    let fn_args = args.unwrap_or_else(|| s.owner().identity_args(s));
+    let self_ty = ty::Ty::new_fn_def(tcx, def_id, fn_sig.rebind(fn_args));
+    let liberated_sig = tcx.liberate_late_bound_regions(def_id, fn_sig);
+    let input_ty = ty::Ty::new_tup(tcx, liberated_sig.inputs());
+    let trait_args = [self_ty, input_ty];
+
+    let fn_once_trait = tcx.lang_items().fn_once_trait().unwrap();
+    let fn_mut_trait = tcx.lang_items().fn_mut_trait().unwrap();
+    let fn_trait = tcx.lang_items().fn_trait().unwrap();
+
+    let fn_once_tref = ty::TraitRef::new(tcx, fn_once_trait, trait_args);
+    let fn_mut_tref = ty::TraitRef::new(tcx, fn_mut_trait, trait_args);
+    let fn_tref = ty::TraitRef::new(tcx, fn_trait, trait_args);
+    Some(FnTraitImpls {
+        tupled_args_ty: tupled_args_ty(s, fn_sig).sinto(s),
+        fn_once_impl: virtual_impl_for(s, fn_once_tref),
+        fn_mut_impl: virtual_impl_for(s, fn_mut_tref),
+        fn_impl: virtual_impl_for(s, fn_tref),
+    })
+}
+
+#[derive(Clone, Debug)]
+pub struct Fn<'tcx> {
+    def_id: DefId,
+    args: Option<ty::GenericArgsRef<'tcx>>,
+    /// The signature, instantiated with `args` if relevant.
+    rustc_sig: ty::PolyFnSig<'tcx>,
     param_env: ParamEnv,
     inline: InlineAttr,
     sig: PolyFnSig,
-    /// The arguments of this function, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
-    /// Binds the same variables as `sig`. `None` if this function doesn't implement `Fn*`.
-    tupled_args_ty: Option<Binder<Ty>>,
-    /// Info required to construct a virtual `FnOnce` impl for this function, if compatible.
-    fn_once_impl: Option<Box<VirtualTraitImpl>>,
-    /// Info required to construct a virtual `FnMut` impl for this function, if compatible.
-    fn_mut_impl: Option<Box<VirtualTraitImpl>>,
-    /// Info required to construct a virtual `Fn` impl for this function, if compatible.
-    fn_impl: Option<Box<VirtualTraitImpl>>,
 }
 
-impl Fn {
+impl<'tcx> Fn<'tcx> {
     pub fn param_env(&self) -> &ParamEnv {
         &self.param_env
     }
@@ -610,49 +653,27 @@ impl Fn {
     pub fn sig(&self) -> &PolyFnSig {
         &self.sig
     }
-    /// The arguments of this function, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
-    /// Binds the same variables as `sig`. `None` if this function doesn't implement `Fn*`.
-    pub fn tupled_args_ty(&self) -> Option<&Binder<Ty>> {
-        self.tupled_args_ty.as_ref()
-    }
-    /// Info required to construct a virtual `FnOnce` impl for this function, if compatible.
-    pub fn fn_once_impl(&self) -> Option<&VirtualTraitImpl> {
-        self.fn_once_impl.as_deref()
-    }
-    /// Info required to construct a virtual `FnMut` impl for this function, if compatible.
-    pub fn fn_mut_impl(&self) -> Option<&VirtualTraitImpl> {
-        self.fn_mut_impl.as_deref()
-    }
-    /// Info required to construct a virtual `Fn` impl for this function, if compatible.
-    pub fn fn_impl(&self) -> Option<&VirtualTraitImpl> {
-        self.fn_impl.as_deref()
+    /// The virtual `Fn*` impls for this function, if it is `Fn*`-compatible.
+    pub fn fn_trait_impls(&self, s: &impl BaseState<'tcx>) -> Option<FnTraitImpls> {
+        fn_def_trait_impls(&s.with_hax_owner(&self.def_id), self.args, self.rustc_sig)
     }
 }
 
 /// Associated function: `impl MyStruct { fn associated() {} }` or `trait Foo { fn associated()
 /// {} }`
 #[derive(Clone, Debug)]
-pub struct AssocFn {
+pub struct AssocFn<'tcx> {
+    def_id: DefId,
+    args: Option<ty::GenericArgsRef<'tcx>>,
+    /// The signature, instantiated with `args` if relevant.
+    rustc_sig: ty::PolyFnSig<'tcx>,
     param_env: ParamEnv,
     associated_item: AssocItem,
     inline: InlineAttr,
-    /// The function signature when this method is used in a vtable. `None` if this method is not
-    /// vtable safe. `Some(sig)` if it is vtable safe, where `sig` is the trait method declaration's
-    /// signature with `Self` replaced by `dyn Trait` and associated types normalized.
-    vtable_sig: Option<PolyFnSig>,
     sig: PolyFnSig,
-    /// The arguments of this function, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
-    /// Binds the same variables as `sig`. `None` if this function doesn't implement `Fn*`.
-    tupled_args_ty: Option<Binder<Ty>>,
-    /// Info required to construct a virtual `FnOnce` impl for this function, if compatible.
-    fn_once_impl: Option<Box<VirtualTraitImpl>>,
-    /// Info required to construct a virtual `FnMut` impl for this function, if compatible.
-    fn_mut_impl: Option<Box<VirtualTraitImpl>>,
-    /// Info required to construct a virtual `Fn` impl for this function, if compatible.
-    fn_impl: Option<Box<VirtualTraitImpl>>,
 }
 
-impl AssocFn {
+impl<'tcx> AssocFn<'tcx> {
     pub fn param_env(&self) -> &ParamEnv {
         &self.param_env
     }
@@ -665,28 +686,15 @@ impl AssocFn {
     /// The function signature when this method is used in a vtable. `None` if this method is not
     /// vtable safe. `Some(sig)` if it is vtable safe, where `sig` is the trait method declaration's
     /// signature with `Self` replaced by `dyn Trait` and associated types normalized.
-    pub fn vtable_sig(&self) -> Option<&PolyFnSig> {
-        self.vtable_sig.as_ref()
+    pub fn vtable_sig(&self, s: &impl BaseState<'tcx>) -> Option<PolyFnSig> {
+        gen_vtable_sig(&s.with_hax_owner(&self.def_id), self.args)
     }
     pub fn sig(&self) -> &PolyFnSig {
         &self.sig
     }
-    /// The arguments of this function, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
-    /// Binds the same variables as `sig`. `None` if this function doesn't implement `Fn*`.
-    pub fn tupled_args_ty(&self) -> Option<&Binder<Ty>> {
-        self.tupled_args_ty.as_ref()
-    }
-    /// Info required to construct a virtual `FnOnce` impl for this function, if compatible.
-    pub fn fn_once_impl(&self) -> Option<&VirtualTraitImpl> {
-        self.fn_once_impl.as_deref()
-    }
-    /// Info required to construct a virtual `FnMut` impl for this function, if compatible.
-    pub fn fn_mut_impl(&self) -> Option<&VirtualTraitImpl> {
-        self.fn_mut_impl.as_deref()
-    }
-    /// Info required to construct a virtual `Fn` impl for this function, if compatible.
-    pub fn fn_impl(&self) -> Option<&VirtualTraitImpl> {
-        self.fn_impl.as_deref()
+    /// The virtual `Fn*` impls for this function, if it is `Fn*`-compatible.
+    pub fn fn_trait_impls(&self, s: &impl BaseState<'tcx>) -> Option<FnTraitImpls> {
+        fn_def_trait_impls(&s.with_hax_owner(&self.def_id), self.args, self.rustc_sig)
     }
 }
 
@@ -837,25 +845,20 @@ impl ForeignMod {
 
 /// The constructor function of a tuple/unit struct or tuple/unit enum variant.
 #[derive(Clone, Debug)]
-pub struct Ctor {
+pub struct Ctor<'tcx> {
+    def_id: DefId,
+    args: ty::GenericArgsRef<'tcx>,
+    /// The signature, instantiated with `args`.
+    rustc_sig: ty::PolyFnSig<'tcx>,
     adt_def_id: DefId,
     ctor_of: CtorOf,
     variant_id: VariantIdx,
     fields: IndexVec<FieldIdx, FieldDef>,
     output_ty: Ty,
     sig: PolyFnSig,
-    /// The arguments of this constructor, tupled as the `Fn*` traits take them, e.g. `(A, B,
-    /// C)`. Binds the same variables as `sig`. Always `Somes`.
-    tupled_args_ty: Option<Binder<Ty>>,
-    /// Info required to construct a virtual `FnOnce` impl for this constructor.
-    fn_once_impl: Option<Box<VirtualTraitImpl>>,
-    /// Info required to construct a virtual `FnMut` impl for this constructor.
-    fn_mut_impl: Option<Box<VirtualTraitImpl>>,
-    /// Info required to construct a virtual `Fn` impl for this constructor.
-    fn_impl: Option<Box<VirtualTraitImpl>>,
 }
 
-impl Ctor {
+impl<'tcx> Ctor<'tcx> {
     pub fn adt_def_id(&self) -> &DefId {
         &self.adt_def_id
     }
@@ -874,22 +877,13 @@ impl Ctor {
     pub fn sig(&self) -> &PolyFnSig {
         &self.sig
     }
-    /// The arguments of this constructor, tupled as the `Fn*` traits take them, e.g. `(A, B,
-    /// C)`. Binds the same variables as `sig`. Always `Somes`.
-    pub fn tupled_args_ty(&self) -> Option<&Binder<Ty>> {
-        self.tupled_args_ty.as_ref()
-    }
-    /// Info required to construct a virtual `FnOnce` impl for this constructor.
-    pub fn fn_once_impl(&self) -> Option<&VirtualTraitImpl> {
-        self.fn_once_impl.as_deref()
-    }
-    /// Info required to construct a virtual `FnMut` impl for this constructor.
-    pub fn fn_mut_impl(&self) -> Option<&VirtualTraitImpl> {
-        self.fn_mut_impl.as_deref()
-    }
-    /// Info required to construct a virtual `Fn` impl for this constructor.
-    pub fn fn_impl(&self) -> Option<&VirtualTraitImpl> {
-        self.fn_impl.as_deref()
+    /// The virtual `Fn*` impls for this constructor.
+    pub fn fn_trait_impls(&self, s: &impl BaseState<'tcx>) -> Option<FnTraitImpls> {
+        fn_def_trait_impls(
+            &s.with_hax_owner(&self.def_id),
+            Some(self.args),
+            self.rustc_sig,
+        )
     }
 }
 
@@ -1022,32 +1016,6 @@ where
     let tcx = s.base().tcx;
     let type_of_self = || inst_binder(tcx, s.typing_env(), args, hax_def_id.type_of(s));
     let args_or_default = || args.unwrap_or_else(|| hax_def_id.identity_args(s));
-    let fn_def_trait_impls = |def_id: RDefId, fn_sig: ty::PolyFnSig<'tcx>| {
-        if fn_sig.is_fn_trait_compatible()
-            && tcx.codegen_fn_attrs(def_id).target_features.is_empty()
-        {
-            let fn_args = args_or_default();
-            let self_ty = ty::Ty::new_fn_def(tcx, def_id, fn_sig.rebind(fn_args));
-            let fn_sig = tcx.liberate_late_bound_regions(def_id, fn_sig);
-            let input_ty = ty::Ty::new_tup(tcx, fn_sig.inputs());
-            let trait_args = [self_ty, input_ty];
-
-            let fn_once_trait = tcx.lang_items().fn_once_trait().unwrap();
-            let fn_mut_trait = tcx.lang_items().fn_mut_trait().unwrap();
-            let fn_trait = tcx.lang_items().fn_trait().unwrap();
-
-            let fn_once_tref = ty::TraitRef::new(tcx, fn_once_trait, trait_args);
-            let fn_mut_tref = ty::TraitRef::new(tcx, fn_mut_trait, trait_args);
-            let fn_tref = ty::TraitRef::new(tcx, fn_trait, trait_args);
-            Some((
-                virtual_impl_for(s, fn_once_tref),
-                virtual_impl_for(s, fn_mut_tref),
-                virtual_impl_for(s, fn_tref),
-            ))
-        } else {
-            None
-        }
-    };
     match get_def_kind(tcx, def_id) {
         RDefKind::Struct { .. } | RDefKind::Union { .. } | RDefKind::Enum { .. } => {
             let def = tcx.adt_def(def_id);
@@ -1248,35 +1216,26 @@ where
         RDefKind::Fn { .. } => {
             let sig = tcx.fn_sig(def_id);
             let sig = inst_binder(tcx, s.typing_env(), args, sig);
-            let fn_trait_impls = fn_def_trait_impls(def_id, sig);
             FullDefKind::Fn(Fn {
+                def_id: hax_def_id.clone(),
+                args,
+                rustc_sig: sig,
                 param_env: get_param_env(s, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
-                tupled_args_ty: fn_trait_impls
-                    .is_some()
-                    .then(|| tupled_args_ty(s, sig).sinto(s)),
                 sig: sig.sinto(s),
-                fn_once_impl: fn_trait_impls.as_ref().map(|(vimpl, _, _)| vimpl.clone()),
-                fn_mut_impl: fn_trait_impls.as_ref().map(|(_, vimpl, _)| vimpl.clone()),
-                fn_impl: fn_trait_impls.map(|(_, _, vimpl)| vimpl),
             })
         }
         RDefKind::AssocFn { .. } => {
             let item = tcx.associated_item(def_id);
             let sig = get_method_sig(tcx, s.typing_env(), def_id, args);
-            let fn_trait_impls = fn_def_trait_impls(def_id, sig);
             FullDefKind::AssocFn(AssocFn {
+                def_id: hax_def_id.clone(),
+                args,
+                rustc_sig: sig,
                 param_env: get_param_env(s, args),
                 associated_item: AssocItem::sfrom_instantiated(s, &item, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
-                vtable_sig: gen_vtable_sig(s, args),
-                tupled_args_ty: fn_trait_impls
-                    .is_some()
-                    .then(|| tupled_args_ty(s, sig).sinto(s)),
                 sig: sig.sinto(s),
-                fn_once_impl: fn_trait_impls.as_ref().map(|(vimpl, _, _)| vimpl.clone()),
-                fn_mut_impl: fn_trait_impls.as_ref().map(|(_, vimpl, _)| vimpl.clone()),
-                fn_impl: fn_trait_impls.map(|(_, _, vimpl)| vimpl),
             })
         }
         RDefKind::Closure { .. } => {
@@ -1390,18 +1349,16 @@ where
                 .collect();
             let output_ty = ty::Ty::new_adt(tcx, adt_def, args).sinto(s);
             let sig = inst_binder(tcx, s.typing_env(), Some(args), sig);
-            let fn_trait_impls = fn_def_trait_impls(def_id, sig);
             FullDefKind::Ctor(Ctor {
+                def_id: hax_def_id.clone(),
+                args,
+                rustc_sig: sig,
                 adt_def_id: adt_def_id.sinto(s),
                 ctor_of,
                 variant_id: variant_id.sinto(s),
                 fields,
                 output_ty,
-                tupled_args_ty: Some(tupled_args_ty(s, sig).sinto(s)),
                 sig: sig.sinto(s),
-                fn_once_impl: fn_trait_impls.as_ref().map(|(vimpl, _, _)| vimpl.clone()),
-                fn_mut_impl: fn_trait_impls.as_ref().map(|(_, vimpl, _)| vimpl.clone()),
-                fn_impl: fn_trait_impls.map(|(_, _, vimpl)| vimpl),
             })
         }
         RDefKind::Field => FullDefKind::Field,
