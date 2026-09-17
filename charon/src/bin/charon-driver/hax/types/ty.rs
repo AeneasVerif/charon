@@ -1107,13 +1107,13 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TraitRef> for ty::TraitRef<'tcx> {
     }
 }
 
-/// Reflects [`ty::TraitPredicate`]
+/// Reflects [`ty::TraitClause`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::TraitPredicate<'tcx>, state: S as tcx)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::TraitClause<'tcx>, state: S as tcx)]
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct TraitPredicate {
     pub trait_ref: TraitRef,
-    #[map(*x == ty::PredicatePolarity::Positive)]
+    #[map(*x == ty::ClausePolarity::Positive)]
     #[from(polarity)]
     pub is_positive: bool,
 }
@@ -1184,9 +1184,7 @@ pub struct ProjectionPredicate {
     pub ty: Ty,
 }
 
-impl<'tcx, S: UnderBinderState<'tcx>> SInto<S, ProjectionPredicate>
-    for ty::ProjectionPredicate<'tcx>
-{
+impl<'tcx, S: UnderBinderState<'tcx>> SInto<S, ProjectionPredicate> for ty::ProjectionClause<'tcx> {
     fn sinto(&self, s: &S) -> ProjectionPredicate {
         let tcx = s.base().tcx;
         let alias_ty = &self.projection_term.expect_ty();
@@ -1235,7 +1233,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause> for ty::Clause<'tcx> {
     }
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause> for ty::PolyTraitPredicate<'tcx> {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause> for ty::PolyTraitClause<'tcx> {
     fn sinto(&self, s: &S) -> Clause {
         let kind: Binder<_> = self.sinto(s);
         let kind: Binder<ClauseKind> = kind.map(ClauseKind::Trait);
@@ -1389,7 +1387,7 @@ impl<'tcx> BinderVariances<'tcx> for ty::Ty<'tcx> {}
 impl<'tcx> BinderVariances<'tcx> for ty::ClauseKind<'tcx> {}
 impl<'tcx> BinderVariances<'tcx> for ty::PredicateKind<'tcx> {}
 impl<'tcx> BinderVariances<'tcx> for ty::TraitRef<'tcx> {}
-impl<'tcx> BinderVariances<'tcx> for ty::TraitPredicate<'tcx> {}
+impl<'tcx> BinderVariances<'tcx> for ty::TraitClause<'tcx> {}
 
 impl<'tcx, S: UnderOwnerState<'tcx>, T1, T2> SInto<S, Binder<T2>> for ty::Binder<'tcx, T1>
 where

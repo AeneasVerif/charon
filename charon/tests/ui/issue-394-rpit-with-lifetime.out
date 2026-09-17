@@ -69,6 +69,7 @@ where
     TraitClause0: (F: Sized),
 
 // Full name: core::iter::sources::from_fn::from_fn
+#[diagnostic_item("iter_from_fn")]
 pub fn from_fn<T, F>(_1: F) -> FromFn<F>[TraitClause1]
 where
     TraitClause0: (T: Sized),

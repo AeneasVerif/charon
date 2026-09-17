@@ -279,7 +279,7 @@ pub fn core::num::{usize}::MAX() -> usize
 pub const core::num::{usize}::MAX: usize = core::num::{usize}::MAX()
 
 // Full name: core::ptr::non_null::NonNull
-#[diagnostic_item("NonNull")]
+#[lang_item(NonNull)]
 pub struct NonNull<T> {
   pointer: *const T is !null,
 }

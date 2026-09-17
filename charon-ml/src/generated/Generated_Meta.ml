@@ -222,8 +222,6 @@ and rustc_attribute_kind =
           - [align]
           - [span] *)
   | RustcAttributeKindRustcIntrinsic  (** Represents [#[rustc_intrinsic]] *)
-  | RustcAttributeKindRustcTestEntrypointMarker
-      (** Represents [#[rustc_test_entrypoint_marker]] *)
   | RustcAttributeKindShouldPanic of string option
       (** Represents [#[should_panic]]
 

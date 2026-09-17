@@ -27,6 +27,7 @@
       references:
     - ["[@T; @N]"]: slice
     - ["&'R mut @T"]: mutable reference
+    - ["!"]: the never type
 
     Remark: [Box] is treated as a primitive type, which means that one only
     needs to type ["Box"] (instead of ["alloc::boxed::Box"] - though the latter
@@ -168,6 +169,10 @@ and expr_to_string (c : print_config) (e : expr) : string =
           in
           rk ^ region_to_string c r ^ expr_to_string c ty)
   | EVar v -> opt_var_to_string c v
+  | ENever -> (
+      match c.tgt with
+      | TkName -> "Never"
+      | TkPattern | TkPretty -> "!")
   | EArrow (inputs, out) -> (
       let inputs = List.map (expr_to_string c) inputs in
       let out = Option.map (expr_to_string c) out in
@@ -601,6 +606,7 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
       && match_expr_with_ty ctx c m pty ty
       && match_ref_kind prk rk
   | EVar v, _ -> opt_update_tmap c m v ty
+  | ENever, TNever -> true
   | EComp pid, TTraitType (trait_ref, type_id, generics) ->
       match_trait_type ctx c m pid trait_ref type_id generics
   | EArrow (pinputs, pout), TFnPtr binder -> begin
@@ -632,7 +638,7 @@ and match_expr_with_trait_impl_id (ctx : ctx) (c : match_config) (ptr : expr)
   | EComp pid ->
       match_name_with_generics ctx c pid d.item_meta.name
         impl.impl_trait.generics
-  | EPrimAdt _ | ERef _ | EVar _ | EArrow _ | ERawPtr _ -> false
+  | EPrimAdt _ | ERef _ | EVar _ | ENever | EArrow _ | ERawPtr _ -> false
 
 and match_trait_decl_ref (ctx : ctx) (c : match_config) (m : maps)
     (pid : pattern) (tr : T.trait_decl_ref T.region_binder) : bool =
@@ -989,6 +995,7 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
             [ PIdent ("str", 0, generic_args_to_pattern ctx c m tref.generics) ]
       )
   | TVar v -> EVar (type_var_to_pattern m v)
+  | TNever -> ENever
   | TScalar scalar -> scalar_type_to_pattern c scalar
   | TRef (r, ty, rk) ->
       ERef
@@ -1303,6 +1310,7 @@ and expr_convertible_aux (c : conv_config) (m : conv_map) (e0 : expr)
         expr_convertible_aux c m e0 e1
       else Error ()
   | EVar v0, EVar v1 -> opt_var_convertible c m v0 v1
+  | ENever, ENever -> Ok m
   | EArrow (inputs0, None), EArrow (inputs1, None) ->
       exprl_convertible_aux c m inputs0 inputs1
   | EArrow (inputs0, Some out0), EArrow (inputs1, Some out1) ->

@@ -74,7 +74,6 @@ impl RustcDatatypes {
                     "Optimize",
                     "RustcAlign",
                     "RustcIntrinsic",
-                    "RustcTestEntrypointMarker",
                     "ShouldPanic",
                     "TargetFeature",
                     "TrackCaller",

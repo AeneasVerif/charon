@@ -215,10 +215,10 @@ impl<'tcx, Id: ItemId> ItemPredicates<'tcx, Id> {
         };
 
         match tcx.def_kind(def_id) {
-            AssocConst { .. }
+            AssocConst
             | AssocFn
             | AssocTy
-            | Const { .. }
+            | Const
             | Enum
             | Fn
             | ForeignTy
@@ -436,6 +436,6 @@ pub fn inherits_parent_clauses<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId) -> bool {
     use DefKind::*;
     matches!(
         tcx.def_kind(def_id),
-        AnonConst | AssocConst { .. } | AssocFn | AssocTy | Closure | Ctor(..) | Variant
+        AnonConst | AssocConst | AssocFn | AssocTy | Closure | Ctor(..) | Variant
     )
 }

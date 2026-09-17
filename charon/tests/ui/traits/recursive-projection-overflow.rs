@@ -1,5 +1,3 @@
-//@ known-failure
-
 pub trait QueryTrait {}
 
 pub trait AsQuery {

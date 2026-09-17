@@ -42,10 +42,6 @@ where
     non-dyn-compatible
 }
 
-// Full name: core::convert::Infallible
-pub enum Infallible {
-}
-
 // Full name: core::ops::control_flow::ControlFlow
 #[diagnostic_item("ControlFlow")]
 pub enum ControlFlow<B, C>
@@ -89,15 +85,15 @@ where
 = <opaque>
 
 // Full name: core::result::{impl Try for Result<T, E>[TraitClause0, TraitClause1]}::branch
-pub fn branch<T, E>(_1: Result<T, E>[TraitClause0, TraitClause1]) -> ControlFlow<Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1], T>[{built_in impl Sized for Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1]}, TraitClause0]
+pub fn branch<T, E>(_1: Result<T, E>[TraitClause0, TraitClause1]) -> ControlFlow<Result<!, E>[{built_in impl Sized for !}, TraitClause1], T>[{built_in impl Sized for Result<!, E>[{built_in impl Sized for !}, TraitClause1]}, TraitClause0]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
 = <opaque>
 
-// Full name: core::result::{impl FromResidual<Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1]> for Result<T, F>[TraitClause0, TraitClause2]}::from_residual
+// Full name: core::result::{impl FromResidual<Result<!, E>[{built_in impl Sized for !}, TraitClause1]> for Result<T, F>[TraitClause0, TraitClause2]}::from_residual
 #[track_caller]
-pub fn from_residual<T, E, F>(_1: Result<Infallible, E>[{built_in impl Sized for Infallible}, TraitClause1]) -> Result<T, F>[TraitClause0, TraitClause2]
+pub fn from_residual<T, E, F>(_1: Result<!, E>[{built_in impl Sized for !}, TraitClause1]) -> Result<T, F>[TraitClause0, TraitClause2]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
@@ -115,10 +111,10 @@ pub fn example(x: Result<u32, String>[{built_in impl Sized for u32}, {built_in i
     let _0: Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]; // return
     let x: Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]; // arg #1
     let _2: u32; // anonymous local
-    let _3: ControlFlow<Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]; // anonymous local
+    let _3: ControlFlow<Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]; // anonymous local
     let _4: Result<u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]; // anonymous local
-    let residual: Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]; // local
-    let _6: Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]; // anonymous local
+    let residual: Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}]; // local
+    let _6: Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}]; // anonymous local
     let val: u32; // local
 
     storage_live(_0)
@@ -145,13 +141,13 @@ pub fn example(x: Result<u32, String>[{built_in impl Sized for u32}, {built_in i
             storage_live(_6)
             _6 = move residual
             _0 = from_residual<u32, String, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}, {built_in impl Sized for String}, impl_From_for_T<String>[{built_in impl Sized for String}]](move _6)
-            ↳⚡ conditional_drop[impl_Destruct_for_Result::drop_glue<'4, Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]] _6
+            ↳⚡ conditional_drop[impl_Destruct_for_Result::drop_glue<'4, !, String>[{built_in impl Sized for !}, {built_in impl Sized for String}]] _6
                 ↳⚡ storage_dead(x)
                     unwind_terminate
-                conditional_drop[impl_Destruct_for_Result::drop_glue<'6, Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]] residual
+                conditional_drop[impl_Destruct_for_Result::drop_glue<'6, !, String>[{built_in impl Sized for !}, {built_in impl Sized for String}]] residual
                 ↳⚡ storage_dead(x)
                     unwind_terminate
-                conditional_drop[impl_Destruct_for_ControlFlow::drop_glue<'8, Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]] _3
+                conditional_drop[impl_Destruct_for_ControlFlow::drop_glue<'8, Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]] _3
                 ↳⚡ storage_dead(x)
                     unwind_terminate
                 conditional_drop[impl_Destruct_for_Result::drop_glue<'1, u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]] x
@@ -160,8 +156,8 @@ pub fn example(x: Result<u32, String>[{built_in impl Sized for u32}, {built_in i
                 storage_dead(x)
                 unwind_continue
             storage_dead(_6)
-            conditional_drop[impl_Destruct_for_Result::drop_glue<'5, Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]] residual
-            ↳⚡ conditional_drop[impl_Destruct_for_ControlFlow::drop_glue<'8, Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]] _3
+            conditional_drop[impl_Destruct_for_Result::drop_glue<'5, !, String>[{built_in impl Sized for !}, {built_in impl Sized for String}]] residual
+            ↳⚡ conditional_drop[impl_Destruct_for_ControlFlow::drop_glue<'8, Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]] _3
                 ↳⚡ storage_dead(x)
                     unwind_terminate
                 conditional_drop[impl_Destruct_for_Result::drop_glue<'1, u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]] x
@@ -171,7 +167,7 @@ pub fn example(x: Result<u32, String>[{built_in impl Sized for u32}, {built_in i
                 unwind_continue
             storage_dead(residual)
             storage_dead(_2)
-            conditional_drop[impl_Destruct_for_ControlFlow::drop_glue<'7, Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]] _3
+            conditional_drop[impl_Destruct_for_ControlFlow::drop_glue<'7, Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]] _3
             ↳⚡ conditional_drop[impl_Destruct_for_Result::drop_glue<'1, u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]] x
                 ↳⚡ storage_dead(x)
                     unwind_terminate
@@ -191,7 +187,7 @@ pub fn example(x: Result<u32, String>[{built_in impl Sized for u32}, {built_in i
     storage_dead(val)
     _0 = Result::Ok { _0: move _2 }
     storage_dead(_2)
-    conditional_drop[impl_Destruct_for_ControlFlow::drop_glue<'2, Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<Infallible, String>[{built_in impl Sized for Infallible}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]] _3
+    conditional_drop[impl_Destruct_for_ControlFlow::drop_glue<'2, Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}], u32>[{built_in impl Sized for Result<!, String>[{built_in impl Sized for !}, {built_in impl Sized for String}]}, {built_in impl Sized for u32}]] _3
     ↳⚡ conditional_drop[impl_Destruct_for_Result::drop_glue<'1, u32, String>[{built_in impl Sized for u32}, {built_in impl Sized for String}]] x
         ↳⚡ storage_dead(x)
             unwind_terminate

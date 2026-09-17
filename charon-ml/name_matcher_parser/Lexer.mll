@@ -37,6 +37,7 @@ rule token = parse
   | ',' { COMMA }
   | "->" { ARROW }
   | '*' { STAR }
+  | '!' { NEVER }
   | "#" { HASH }
   | _ { raise (Failure ("Character not allowed in source text: '" ^ Lexing.lexeme lexbuf ^ "'")) }
 

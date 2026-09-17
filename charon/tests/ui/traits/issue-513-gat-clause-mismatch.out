@@ -53,7 +53,7 @@ impl "impl_Trait_for_unit" Trait for () {
     type Type = ()
     where
         TraitClause0_1: ((): Copy),
-        proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()};
+        proof ImpliedClause0: ((): Sized) = TraitClause0_1::ImpliedClause1::ImpliedClause0;
     non-dyn-compatible
 }
 

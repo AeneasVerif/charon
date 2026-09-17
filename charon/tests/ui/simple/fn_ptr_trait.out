@@ -34,19 +34,27 @@ pub trait Copy<Self>
     non-dyn-compatible
 }
 
-struct () {}
+// Full name: core::ops::function::Code
+#[lang_item(Code)]
+pub opaque type Code
 
-// Full name: core::marker::FnPtr
+// Full name: core::ptr::non_null::NonNull
+#[lang_item(NonNull)]
+pub opaque type NonNull<T>
+
+// Full name: core::ops::function::FnPtr
 #[fundamental]
 #[lang_item(FnPtrTrait)]
 pub trait FnPtr<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Copy)
-    proof ImpliedClause2: (Self: Clone)
-    fn addr;
+    fn as_ptr;
+    fn from_ptr;
     non-dyn-compatible
 }
+
+struct () {}
 
 // Full name: test_crate::requires_fn_ptr
 fn requires_fn_ptr<F>()

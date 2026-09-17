@@ -1,36 +1,10 @@
 # Final LLBC before serialization:
 
-struct () {}
-
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
-
-// Full name: core::marker::MetaSized
-#[fundamental]
-#[lang_item(MetaSized)]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
 // Full name: core::cmp::impls::{impl Ord for u64}::min
-#[diagnostic_item("cmp_ord_min")]
 pub fn impl_Ord_for_u64::min(_1: u64, _2: u64) -> u64
-where
-    TraitClause0: (u64: Sized),
-    TraitClause1: (u64: Destruct),
 = <opaque>
+
+struct () {}
 
 // Full name: test_crate::main
 fn main()
@@ -41,7 +15,7 @@ fn main()
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = impl_Ord_for_u64::min[{built_in impl Sized for u64}, {built_in impl Destruct for u64}](const 1u64, const 2u64)
+    _1 = impl_Ord_for_u64::min(const 1u64, const 2u64)
     ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()

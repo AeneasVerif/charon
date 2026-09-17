@@ -14,6 +14,7 @@ open Ast
 %token LEFT_SQUARE RIGHT_SQUARE
 %token LEFT_ANGLE RIGHT_ANGLE
 %token SEMICOL AMPERSAND MUT CONST COMMA EOF FN ARROW STAR HASH
+%token NEVER
 
 /* Types */
 
@@ -70,6 +71,7 @@ expr:
       ERef (r, ty, RShared) }
   // Variables
   | v=VAR { EVar v }
+  | NEVER { ENever }
   // Arrows
   | FN; LEFT_BRACKET; inputs=separated_list(COMMA, expr); RIGHT_BRACKET; ARROW; ret=expr {
     EArrow (inputs, Some ret) }

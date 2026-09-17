@@ -111,10 +111,7 @@ impl ItemId for DefId {
     }
 
     fn takes_explicit_self_clause<'tcx>(&self, tcx: &Self::State<'tcx>) -> bool {
-        matches!(
-            tcx.def_kind(*self),
-            DefKind::AssocFn | DefKind::AssocConst { .. }
-        )
+        matches!(tcx.def_kind(*self), DefKind::AssocFn | DefKind::AssocConst)
     }
 
     fn find_in_impl<'tcx>(&self, tcx: &Self::State<'tcx>, trait_impl: &Self) -> Option<Self> {

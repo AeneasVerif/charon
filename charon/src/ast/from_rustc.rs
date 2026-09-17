@@ -106,8 +106,6 @@ pub enum AttributeKind {
     RustcAlign { align: u64, span: Span },
     /// Represents `#[rustc_intrinsic]`
     RustcIntrinsic,
-    /// Represents `#[rustc_test_entrypoint_marker]`
-    RustcTestEntrypointMarker,
     /// Represents `#[should_panic]`
     ShouldPanic { reason: Option<Ustr> },
     /// Represents `#[target_feature(enable = "...")]` and
@@ -166,14 +164,20 @@ pub enum LangItem {
     Metadata,
     ///The `dyn_metadata` lang item.
     DynMetadata,
+    ///The `non_null` lang item.
+    NonNull,
     ///The `freeze` lang item.
     Freeze,
     ///The `unsafe_unpin` lang item.
     UnsafeUnpin,
     ///The `fn_ptr_trait` lang item.
     FnPtrTrait,
-    ///The `fn_ptr_addr` lang item.
-    FnPtrAddr,
+    ///The `fn_ptr_as_ptr` lang item.
+    FnPtrAsPtr,
+    ///The `fn_ptr_from_ptr` lang item.
+    FnPtrFromPtr,
+    ///The `code` lang item.
+    Code,
     ///The `drop` lang item.
     Drop,
     ///The `destruct` lang item.
@@ -272,6 +276,8 @@ pub enum LangItem {
     FnMut,
     ///The `fn_once` lang item.
     FnOnce,
+    ///The `fn_static` lang item.
+    FnStatic,
     ///The `async_fn` lang item.
     AsyncFn,
     ///The `async_fn_mut` lang item.
@@ -312,7 +318,7 @@ pub enum LangItem {
     CoroutineResume,
     ///The `unpin` lang item.
     Unpin,
-    ///The `pin` lang item.
+    ///The `Pin` lang item.
     Pin,
     ///The `Ordering` lang item.
     OrderingEnum,
@@ -572,6 +578,8 @@ pub enum LangItem {
     From,
     ///The `from` lang item.
     FromFn,
+    ///The `FnPtr` lang item.
+    FnPtr,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]

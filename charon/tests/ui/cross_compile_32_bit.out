@@ -22,7 +22,7 @@ pub fn MAX() -> usize
 pub const MAX: usize = MAX()
 
 // Full name: core::ptr::non_null::NonNull
-#[diagnostic_item("NonNull")]
+#[lang_item(NonNull)]
 pub opaque type NonNull<T>
 
 // Full name: core::ptr::non_null::{NonNull<T>}::new_unchecked

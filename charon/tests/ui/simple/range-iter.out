@@ -133,6 +133,16 @@ pub struct Range<Idx> {
   end: Idx,
 }
 
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
 // Full name: core::iter::traits::iterator::Iterator
 #[lang_item(Iterator)]
 #[diagnostic_item("Iterator")]
@@ -146,6 +156,7 @@ pub trait Iterator<Self, Self_Item>
 pub fn next<'_0, A>(_1: &'_0 mut Range<A>) -> Option<A>
 where
     TraitClause0: (A: Step),
+    TraitClause1: (A: Destruct),
     TypeOutlives0: A: '_0,
 = <opaque>
 
@@ -153,9 +164,10 @@ where
 impl<A> "impl_Iterator_for_Range" Iterator<A> for Range<A>
 where
     TraitClause0: (A: Step),
+    TraitClause1: (A: Destruct),
 {
-    fn next<'_0_1> = next<'_0_1, A>[TraitClause0]
-    vtable: impl_Iterator_for_Range::{vtable}<A>[TraitClause0]
+    fn next<'_0_1> = next<'_0_1, A>[TraitClause0, TraitClause1]
+    vtable: impl_Iterator_for_Range::{vtable}<A>[TraitClause0, TraitClause1]
 }
 
 // Full name: core::iter::traits::collect::{impl IntoIterator<Clause0_Item, I> for I}::into_iter
@@ -163,8 +175,6 @@ pub fn into_iter<I, Clause0_Item>(_1: I) -> I
 where
     TraitClause0: (I: Iterator<Clause0_Item>),
 = <opaque>
-
-struct () {}
 
 struct (_,)<A> {
   _0: A,
@@ -192,7 +202,7 @@ fn iter(n: usize)
     _4 = copy n
     _3 = Range { start: const 0usize, end: move _4 }
     storage_dead(_4)
-    _2 = into_iter<Range<usize>, usize>[impl_Iterator_for_Range<usize>[impl_Step_for_usize]](move _3)
+    _2 = into_iter<Range<usize>, usize>[impl_Iterator_for_Range<usize>[impl_Step_for_usize, {built_in impl Destruct for usize}]](move _3)
     ↳⚡ storage_dead(n)
         unwind_continue
     storage_dead(_3)
@@ -204,7 +214,7 @@ fn iter(n: usize)
         storage_live(_8)
         _8 = &mut iter
         _7 = &two-phase-mut (*_8)
-        _6 = next<'4, usize>[impl_Step_for_usize](move _7)
+        _6 = next<'4, usize>[impl_Step_for_usize, {built_in impl Destruct for usize}](move _7)
         ↳⚡ storage_dead(n)
             unwind_continue
         storage_dead(_7)

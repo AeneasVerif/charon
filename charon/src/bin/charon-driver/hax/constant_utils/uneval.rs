@@ -317,7 +317,7 @@ fn imm_to_raw_bytes<'tcx, S: UnderOwnerState<'tcx>>(
             }
             interpret::Scalar::Ptr(ptr, size) => {
                 let prov = alloc_provenance(s, ptr.provenance.alloc_id());
-                for i in 0..size {
+                for i in 0..size.get() {
                     bytes[offset.bytes_usize() + i as usize] =
                         ConstantByte::Provenance(prov.clone(), i);
                 }

@@ -802,6 +802,13 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         for projection in projections {
             let projection = match projection {
                 mir::ProjectionElem::Deref => ProjectionElem::Deref,
+                mir::ProjectionElem::PhantomDeref => {
+                    raise_error!(
+                        self,
+                        span,
+                        "unsupported phantom dereference in user type projection"
+                    );
+                }
                 mir::ProjectionElem::Field(field, ()) => {
                     let field = self.translate_field_id(*field);
                     let TyKind::Adt(type_ref) = ty.kind() else {
@@ -896,7 +903,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
 
             for clause in instantiated_user_ty.bounds {
                 if let Some(trait_predicate) = clause.as_trait_clause() {
-                    if trait_predicate.skip_binder().polarity != ty::PredicatePolarity::Positive {
+                    if trait_predicate.skip_binder().polarity != ty::ClausePolarity::Positive {
                         raise_error!(self, span, "negative trait bound in a user type annotation")
                     }
                     let proof = hax::solve_trait(
@@ -1032,6 +1039,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             let next_place_ty = self.translate_ty(span, &next_place_ty)?;
             let proj_elem = match elem {
                 Deref => ProjectionElem::Deref,
+                PhantomDeref => {
+                    raise_error!(self, span, "unsupported phantom dereference in MIR place");
+                }
                 Field(index, _) => {
                     let TyKind::Adt(tref) = place.ty().kind() else {
                         raise_error!(

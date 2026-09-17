@@ -41,9 +41,7 @@ pub enum DefKind {
     AssocTy,
     TyParam,
     Fn,
-    Const {
-        is_type_const: bool,
-    },
+    Const,
     ConstParam,
     Static {
         safety: Safety,
@@ -52,9 +50,7 @@ pub enum DefKind {
     },
     Ctor(CtorOf, CtorKind),
     AssocFn,
-    AssocConst {
-        is_type_const: bool,
-    },
+    AssocConst,
     Macro(MacroKinds),
     ExternCrate,
     Use,
@@ -72,6 +68,7 @@ pub enum DefKind {
     },
     Closure,
     SyntheticCoroutineBody,
+    TestBinderConstraints,
 }
 
 /// The crate name under which synthetic items are exported under.
@@ -608,7 +605,7 @@ impl DefId {
         match self.base {
             DefIdBase::ImplAssocItem(id) => {
                 let item_args = id.identity_args_for_item_decl(s);
-                let impl_predicates = tcx.param_env(id.trait_impl_id).caller_bounds().iter();
+                let impl_predicates = tcx.param_env(id.trait_impl_id).caller_bounds();
                 let item_predicates = tcx
                     .clauses_of(id.item_decl_id)
                     .instantiate_own(tcx, item_args)
@@ -699,6 +696,7 @@ impl DefId {
             | LifetimeParam
             | OpaqueTy
             | SyntheticCoroutineBody
+            | TestBinderConstraints
             | TyParam => None,
         }
     }
@@ -805,6 +803,7 @@ pub enum DefPathItem {
     MacroNs(Symbol),
     LifetimeNs(Symbol),
     Closure,
+    TestBinderConstraints,
     Ctor,
     AnonConst,
     #[disable_mapping]

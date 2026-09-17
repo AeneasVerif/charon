@@ -654,6 +654,26 @@ fn mono_usage()
     return
 }
 
+// Full name: test_crate::NeverContainer
+struct NeverContainer<T>
+where
+    TraitClause0: (T: Sized),
+{
+  _0: T,
+}
+
+#[pattern::pass("test_crate::{test_crate::NeverContainer<!>}::method")]
+#[pattern::fail("test_crate::{test_crate::NeverContainer<u8>}::method")]
+fn test_crate::{NeverContainer<!>[{built_in impl Sized for !}]}::method()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
 // Full name: test_crate::Get
 trait Get<'a, Self, T>
 {
