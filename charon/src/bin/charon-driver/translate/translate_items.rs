@@ -1077,6 +1077,23 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Retrieve the information about the implemented trait.
         let implemented_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
         let trait_id = implemented_trait.id;
+
+        // Translate the bare minimum needed for names: `impl_trait`.
+        if self.is_poly_in_mono(&self.item_src) {
+            return Ok(TraitImpl {
+                def_id,
+                item_meta,
+                src: TraitImplSource::Normal,
+                impl_trait: implemented_trait,
+                generics: self.into_generics(),
+                implied_trait_refs: Default::default(),
+                consts: Default::default(),
+                types: Default::default(),
+                methods: Default::default(),
+                vtable: None,
+            });
+        }
+
         // A `TraitRef` that points to this impl with the correct generics.
         let self_predicate = TraitRef::new(
             TraitRefKind::TraitImpl(TraitImplRef {
