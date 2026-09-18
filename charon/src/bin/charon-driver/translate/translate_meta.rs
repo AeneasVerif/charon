@@ -254,7 +254,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                             &full_def,
                             &TransItemSourceKind::InherentImpl,
                         )?;
-                        let ty = bt_ctx.translate_ty(span, &i.ty)?;
+                        let ty = bt_ctx.translate_ty(span, i.ty())?;
                         ImplElem::Ty(Box::new(Binder {
                             kind: BinderKind::InherentImplBlock,
                             params: bt_ctx.into_generics(),
@@ -596,9 +596,9 @@ impl<'tcx> TranslateCtx<'tcx> {
         }
 
         let associated_item = match target_def.kind() {
-            hax::FullDefKind::AssocFn(f) => Some(&f.associated_item),
-            hax::FullDefKind::AssocConst(c) => Some(&c.associated_item),
-            hax::FullDefKind::AssocTy(t) => Some(&t.associated_item),
+            hax::FullDefKind::AssocFn(f) => Some(f.associated_item()),
+            hax::FullDefKind::AssocConst(c) => Some(c.associated_item()),
+            hax::FullDefKind::AssocTy(t) => Some(t.associated_item()),
             _ => None,
         };
         if let ContractTarget::Path(_) = target
@@ -618,7 +618,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             let kind = match target_def.kind() {
                 // Point at the method that contains the closure code.
                 hax::FullDefKind::Closure(c) => TransItemSourceKind::CallableMethod(
-                    super::translate_closures::translate_closure_kind(&c.args.kind),
+                    super::translate_closures::translate_closure_kind(&c.args().kind),
                 ),
                 _ => self
                     .base_kind_for_item(&target_def_id)
@@ -859,9 +859,9 @@ impl<'tcx> TranslateCtx<'tcx> {
 
     pub(crate) fn translate_inline(&self, def: &hax::FullDef<'tcx>) -> Option<InlineAttr> {
         let inline = match def.kind() {
-            hax::FullDefKind::Fn(f) => &f.inline,
-            hax::FullDefKind::AssocFn(f) => &f.inline,
-            hax::FullDefKind::Closure(c) => &c.inline,
+            hax::FullDefKind::Fn(f) => f.inline(),
+            hax::FullDefKind::AssocFn(f) => f.inline(),
+            hax::FullDefKind::Closure(c) => c.inline(),
             _ => return None,
         };
         match inline {

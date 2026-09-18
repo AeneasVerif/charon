@@ -449,9 +449,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         def: &hax::FullDef<'tcx>,
     ) -> Result<(), Error> {
         let sig = match def.kind() {
-            hax::FullDefKind::Fn(f) => Some(&f.sig),
-            hax::FullDefKind::AssocFn(f) => Some(&f.sig),
-            hax::FullDefKind::Ctor(f) => Some(&f.sig),
+            hax::FullDefKind::Fn(f) => Some(f.sig()),
+            hax::FullDefKind::AssocFn(f) => Some(f.sig()),
+            hax::FullDefKind::Ctor(f) => Some(f.sig()),
             _ => None,
         };
         if let Some(sig) = sig {
@@ -545,7 +545,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         if let hax::FullDefKind::Closure(c) = def.kind() {
             // Add the lifetime generics coming from the upvars. We translate the upvar types early
             // to know what lifetimes are needed.
-            let upvar_tys = self.translate_closure_upvar_tys(span, &c.args)?;
+            let closure_args = c.args();
+            let upvar_tys = self.translate_closure_upvar_tys(span, closure_args)?;
             // Add new lifetimes params to replace the erased ones.
             let upvar_tys = upvar_tys.replace_erased_regions(|| {
                 let region_id = self.the_only_binder_mut().push_upvar_region();
@@ -563,7 +564,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | TransItemSourceKind::ClosureAsFnCast = kind
             {
                 self.the_only_binder_mut()
-                    .push_params_from_binder(c.args.fn_sig.rebind(()))?;
+                    .push_params_from_binder(closure_args.fn_sig.rebind(()))?;
             }
         }
 
