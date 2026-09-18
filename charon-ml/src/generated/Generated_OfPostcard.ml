@@ -2209,11 +2209,23 @@ and global_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* item_meta = item_meta_of_postcard ctx st in
      let* generics = generic_params_of_postcard ctx st in
      let* ty = ty_of_postcard ctx st in
+     let* size = size_of_postcard ctx st in
+     let* align = size_of_postcard ctx st in
      let* src = global_source_of_postcard ctx st in
      let* global_kind = global_kind_of_postcard ctx st in
      let* value = constant_expr_of_postcard ctx st in
      Ok
-       ({ def_id; item_meta; generics; ty; src; global_kind; value }
+       ({
+          def_id;
+          item_meta;
+          generics;
+          ty;
+          size;
+          align;
+          src;
+          global_kind;
+          value;
+        }
          : global_decl))
 
 and global_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

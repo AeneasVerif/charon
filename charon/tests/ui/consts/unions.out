@@ -1,13 +1,13 @@
 # Final LLBC before serialization:
 
-// Full name: core::mem::maybe_uninit::MaybeUninit::<[u32; 1usize]>
+// Full name: core::mem::maybe_uninit::MaybeUninit::<[u8; 4usize]>
 #[lang_item(MaybeUninit)]
-pub opaque type MaybeUninit::<[u32; 1usize]>
+pub opaque type MaybeUninit::<[u8; 4usize]>
 
 struct () {}
 
 // Full name: test_crate::{promoted_const}
-static {promoted_const}: MaybeUninit::<[u32; 1usize]> = RawMemory(0x01, 0x00, 0x00, 0x00)
+static {promoted_const}: MaybeUninit::<[u8; 4usize]> = RawMemory(0x01, 0x00, 0x00, 0x00)
 
 // Full name: test_crate::U
 union U {

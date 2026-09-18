@@ -25,6 +25,10 @@ pub struct GlobalDecl {
     /// ```
     pub generics: GenericParams,
     pub ty: Ty,
+    /// The size in bytes of the global's allocation.
+    pub size: Size,
+    /// The alignment in bytes of the global's allocation.
+    pub align: Size,
     /// The context of the global: distinguishes normal items from trait-associated items and
     /// vtable instances.
     pub src: GlobalSource,

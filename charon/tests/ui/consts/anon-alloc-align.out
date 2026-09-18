@@ -24,19 +24,19 @@ struct () {}
 
 static test_crate::{promoted_const}: MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}] = RawMemory(0x01)
 
-static test_crate::{promoted_const#1}: MaybeUninit<[u16; 1usize]>[{built_in impl Sized for [u16; 1usize]}] = RawMemory(0x02, 0x00)
+static test_crate::{promoted_const#1}: MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}] = RawMemory(0x02, 0x00)
 
-static test_crate::{promoted_const#2}: MaybeUninit<[u32; 1usize]>[{built_in impl Sized for [u32; 1usize]}] = RawMemory(0x03, 0x00, 0x00, 0x00)
+static test_crate::{promoted_const#2}: MaybeUninit<[u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}] = RawMemory(0x03, 0x00, 0x00, 0x00)
 
-static test_crate::{promoted_const#3}: MaybeUninit<[u64; 1usize]>[{built_in impl Sized for [u64; 1usize]}] = RawMemory(0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
+static test_crate::{promoted_const#3}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
 
-static test_crate::{promoted_const#4}: MaybeUninit<[u128; 1usize]>[{built_in impl Sized for [u128; 1usize]}] = RawMemory(0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
+static test_crate::{promoted_const#4}: MaybeUninit<[u8; 16usize]>[{built_in impl Sized for [u8; 16usize]}] = RawMemory(0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
 
-static test_crate::{promoted_const#5}: MaybeUninit<[u32; 3usize]>[{built_in impl Sized for [u32; 3usize]}] = RawMemory(0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00)
+static test_crate::{promoted_const#5}: MaybeUninit<[u8; 12usize]>[{built_in impl Sized for [u8; 12usize]}] = RawMemory(0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00)
 
-static test_crate::{promoted_const#6}: MaybeUninit<[u32; 3usize]>[{built_in impl Sized for [u32; 3usize]}] = RawMemory(0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00)
+static test_crate::{promoted_const#6}: MaybeUninit<[u8; 12usize]>[{built_in impl Sized for [u8; 12usize]}] = RawMemory(0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00)
 
-static test_crate::{promoted_const#7}: MaybeUninit<[u64; 2usize]>[{built_in impl Sized for [u64; 2usize]}] = RawMemory(0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, --, --, --, --, --, --, --)
+static test_crate::{promoted_const#7}: MaybeUninit<[u8; 16usize]>[{built_in impl Sized for [u8; 16usize]}] = RawMemory(0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, --, --, --, --, --, --, --)
 
 // Full name: test_crate::S
 struct S {

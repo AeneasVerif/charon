@@ -790,6 +790,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             TransItemSourceKind::VTableInstanceInitializer(impl_kind),
         );
         let ty = Ty::new(TyKind::Adt(vtable_struct_ref));
+        let size = Size::from_expr(SizeExpr::size_of(&ty));
+        let align = Size::from_expr(SizeExpr::align_of(&ty));
         let value = ConstantExpr::new(
             ConstantExprKind::Call(
                 FnPtr::new(
@@ -809,6 +811,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             // it should be static to have its own address
             global_kind: GlobalKind::Static,
             ty,
+            size,
+            align,
             value,
         })
     }
