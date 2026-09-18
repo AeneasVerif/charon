@@ -167,16 +167,6 @@ where
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
 
-// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_glue
-unsafe fn impl_Destruct_for_Global::drop_glue<'_0>(_1: &'_0 mut Global)
-= <opaque>
-
-// Full name: alloc::alloc::Global::{impl Destruct for Global}
-impl "impl_Destruct_for_Global" Destruct for Global {
-    fn drop_glue<'_0_1> = impl_Destruct_for_Global::drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: alloc::vec::Vec
 #[diagnostic_item("Vec")]
 pub opaque type Vec<T>
@@ -185,7 +175,7 @@ where
     TraitClause1: (type_error("removed allocator parameter"): Sized),
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn impl_Destruct_for_Vec::drop_glue<'_0, T, A>(_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1])
+unsafe fn drop_glue<'_0, T, A>(_1: &'_0 mut Vec<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
@@ -288,14 +278,14 @@ pub fn test_vec_push()
     storage_live(_2)
     storage_live(_3)
     _3 = &two-phase-mut v
-    _2 = push<'3, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, impl_Destruct_for_Global](move _3, const 0u32)
-    ↳⚡ conditional_drop[impl_Destruct_for_Vec::drop_glue<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] v
+    _2 = push<'3, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for Global}](move _3, const 0u32)
+    ↳⚡ conditional_drop[drop_glue<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] v
         ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_3)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[impl_Destruct_for_Vec::drop_glue<'5, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] v
+    conditional_drop[drop_glue<'5, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}]] v
     ↳⚡ unwind_continue
     storage_dead(v)
     return

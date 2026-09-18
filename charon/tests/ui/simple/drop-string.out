@@ -64,16 +64,6 @@ where
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
 
-// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_glue
-unsafe fn impl_Destruct_for_Global::drop_glue<'_0>(_1: &'_0 mut Global)
-= <opaque>
-
-// Full name: alloc::alloc::Global::{impl Destruct for Global}
-impl "impl_Destruct_for_Global" Destruct for Global {
-    fn drop_glue<'_0_1> = impl_Destruct_for_Global::drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: alloc::vec::Vec
 #[diagnostic_item("Vec")]
 pub opaque type Vec<T>
@@ -86,7 +76,7 @@ where
 // Full name: alloc::string::String
 #[lang_item(String)]
 pub struct String {
-  vec: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, impl_Destruct_for_Global],
+  vec: Vec<u8>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {built_in impl Destruct for Global}],
 }
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]}::drop_glue
@@ -108,7 +98,7 @@ unsafe fn impl_Destruct_for_String::drop_glue<'_0>(_1: &'_0 mut String)
 
     storage_live(_0)
     _0 = ()
-    drop[impl_Destruct_for_Vec::drop_glue<'2, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, impl_Destruct_for_Global]] (*_1).vec
+    drop[impl_Destruct_for_Vec::drop_glue<'2, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}, {built_in impl Destruct for u8}, {built_in impl Destruct for Global}]] (*_1).vec
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)

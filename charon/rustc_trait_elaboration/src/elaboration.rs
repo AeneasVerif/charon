@@ -524,7 +524,13 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
                         | ty::Closure(..)
                         | ty::Coroutine(..)
                         | ty::CoroutineClosure(..)
-                        | ty::CoroutineWitness(..) => Either::Left(DestructData::Glue { ty }),
+                        | ty::CoroutineWitness(..) => {
+                            if ty.needs_drop(tcx, self.typing_env) {
+                                Either::Left(DestructData::Glue { ty })
+                            } else {
+                                Either::Left(DestructData::Noop)
+                            }
+                        }
                         // Every `dyn` has a `drop_in_place` in its vtable, ergo we pretend that every
                         // `dyn` has `Destruct` in its list of traits.
                         ty::Dynamic(..) => {

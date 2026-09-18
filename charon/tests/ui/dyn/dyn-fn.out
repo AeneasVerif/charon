@@ -21,16 +21,6 @@ fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable
 
 static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
-struct () {}
-
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
-
 // Full name: core::marker::Tuple
 #[fundamental]
 #[lang_item(Tuple)]
@@ -39,6 +29,8 @@ pub trait Tuple<Self>
     proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
+
+struct () {}
 
 // Full name: core::ops::function::FnOnce
 #[fundamental]
@@ -212,18 +204,6 @@ where
     return
 }
 
-// Full name: test_crate::gives_fn::{closure}::{impl Destruct for {closure}}::drop_glue
-unsafe fn drop_glue<'_0>(_1: &'_0 mut {closure})
-{
-    let _0: (); // return
-    let _1: &'1 mut {closure}; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
 // Full name: test_crate::gives_fn::{impl Fn<(&'_0 mut u32,)> for {closure}}::{vtable_drop_shim}
 unsafe fn {vtable_drop_shim}<'_0, '_1>(dyn_self: &'_1 mut (dyn Fn<(&'_0 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool>))
 where
@@ -237,10 +217,6 @@ where
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_1 mut (dyn Fn<(&'_0 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '3), &'_1 mut {closure}>(move dyn_self)
-    drop[drop_glue<'9>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -305,16 +281,6 @@ fn call_once<'_0>(_1: {closure}, _2: (&'_0 mut u32,)) -> bool
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'_0, '9>(move _3, move _2)
-    ↳⚡ drop[drop_glue<'10>] _1
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    drop[drop_glue<'11>] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -395,12 +361,6 @@ fn gives_fn()
     storage_dead(_6)
     storage_dead(_5)
     return
-}
-
-// Full name: test_crate::gives_fn::{closure}::{impl Destruct for {closure}}
-impl "impl_Destruct_for_closure" Destruct for {closure} {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1>
-    non-dyn-compatible
 }
 
 

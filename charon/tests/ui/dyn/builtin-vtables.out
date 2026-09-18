@@ -740,18 +740,6 @@ where
 // Full name: test_crate::main::{closure}
 struct {closure} {}
 
-// Full name: test_crate::main::{closure}::{impl Destruct for {closure}}::drop_glue
-unsafe fn drop_glue<'_0>(_1: &'_0 mut {closure})
-{
-    let _0: (); // return
-    let _1: &'1 mut {closure}; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
 // Full name: test_crate::main::{impl Fn<(u32,)> for {closure}}::call
 fn impl_Fn_tuple_for_closure::call<'_0>(_1: &'_0 {closure}, tupled_args: (u32,)) -> u32
 {
@@ -804,16 +792,6 @@ fn impl_FnOnce_tuple_for_closure::call_once(_1: {closure}, _2: (u32,)) -> u32
     storage_live(_3)
     _3 = &mut _1
     _0 = impl_FnMut_tuple_for_closure::call_mut<'2>(move _3, move _2)
-    ↳⚡ drop[drop_glue<'3>] _1
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    drop[drop_glue<'4>] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -857,10 +835,6 @@ unsafe fn impl_FnOnce_tuple_for_closure::{vtable_drop_shim}<'_0>(dyn_self: &'_0 
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn FnOnce<(u32,), Output = u32> + '1), &'_0 mut {closure}>(move dyn_self)
-    drop[drop_glue<'3>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -921,10 +895,6 @@ unsafe fn impl_FnMut_tuple_for_closure::{vtable_drop_shim}<'_0>(dyn_self: &'_0 m
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '1), &'_0 mut {closure}>(move dyn_self)
-    drop[drop_glue<'3>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -988,10 +958,6 @@ unsafe fn impl_Fn_tuple_for_closure::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut 
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '1), &'_0 mut {closure}>(move dyn_self)
-    drop[drop_glue<'3>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -1171,12 +1137,6 @@ fn main()
     storage_dead(_17)
     storage_dead(_16)
     return
-}
-
-// Full name: test_crate::main::{closure}::{impl Destruct for {closure}}
-impl "impl_Destruct_for_closure" Destruct for {closure} {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1>
-    non-dyn-compatible
 }
 
 

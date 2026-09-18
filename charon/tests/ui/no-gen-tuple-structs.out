@@ -287,20 +287,6 @@ where
     return
 }
 
-// Full name: test_crate::use_closure::{closure}::{impl Destruct for {closure}<'_0>}::drop_glue
-unsafe fn drop_glue<'_0, '_1>(_1: &'_1 mut {closure}<'_0>)
-where
-    RegionOutlives0: '_0: '_1,
-{
-    let _0: (); // return
-    let _1: &'1 mut {closure}<'_0>; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
 // Full name: test_crate::use_closure::{impl FnOnce<(u32, bool)> for {closure}<'_0>}::call_once
 fn call_once<'_0>(_1: {closure}<'_0>, _2: (u32, bool)) -> u32
 {
@@ -313,16 +299,6 @@ fn call_once<'_0>(_1: {closure}<'_0>, _2: (u32, bool)) -> u32
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'_0, '4>(move _3, move _2)
-    ↳⚡ drop[drop_glue<'_0, '7>] _1
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    drop[drop_glue<'_0, '10>] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -384,12 +360,6 @@ fn use_closure(z: u32) -> u32
     storage_dead(_2)
     storage_dead(z)
     return
-}
-
-// Full name: test_crate::use_closure::{closure}::{impl Destruct for {closure}<'_0>}
-impl<'_0> "impl_Destruct_for_closure" Destruct for {closure}<'_0> {
-    fn drop_glue<'_0_1> = drop_glue<'_0, '_0_1>
-    non-dyn-compatible
 }
 
 

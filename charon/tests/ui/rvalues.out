@@ -42,16 +42,6 @@ impl "impl_Clone_for_u32" Clone for u32 {
     non-dyn-compatible
 }
 
-struct () {}
-
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
-
 // Full name: core::marker::Tuple
 #[fundamental]
 #[lang_item(Tuple)]
@@ -128,6 +118,8 @@ pub trait Fn<Self, Args>
     fn call<'_0_1>;
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
+
+struct () {}
 
 struct (_, _)<A, B>
 where
@@ -317,18 +309,6 @@ fn ptr_casts()
 // Full name: test_crate::fn_casts::{closure}
 struct {closure} {}
 
-// Full name: test_crate::fn_casts::{closure}::{impl Destruct for {closure}}::drop_glue
-unsafe fn drop_glue<'_0>(_1: &'_0 mut {closure})
-{
-    let _0: (); // return
-    let _1: &'1 mut {closure}; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
 // Full name: test_crate::fn_casts::{impl Fn<(u8,)> for {closure}}::call
 fn call<'_0>(_1: &'_0 {closure}, tupled_args: (u8,))
 {
@@ -384,16 +364,6 @@ fn call_once(_1: {closure}, _2: (u8,))
     _0 = ()
     _3 = &mut _1
     _0 = call_mut<'2>(move _3, move _2)
-    ↳⚡ drop[drop_glue<'3>] _1
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    drop[drop_glue<'4>] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -519,12 +489,6 @@ impl "impl_Fn_tuple_for_closure" Fn<(u8,)> for {closure} {
     proof ImpliedClause3: ((u8,): Tuple) = {built_in impl Tuple for (u8,)}
     fn call<'_0_1> = call<'_0_1>
     vtable: impl_Fn_tuple_for_closure::{vtable}
-}
-
-// Full name: test_crate::fn_casts::{closure}::{impl Destruct for {closure}}
-impl "impl_Destruct_for_closure" Destruct for {closure} {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1>
-    non-dyn-compatible
 }
 
 // Full name: test_crate::STEAL

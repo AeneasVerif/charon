@@ -14,16 +14,6 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-struct () {}
-
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
-
 // Full name: core::marker::Tuple
 #[fundamental]
 #[lang_item(Tuple)]
@@ -72,6 +62,8 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
     vtable: core::ops::function::Fn::{vtable}<Args, Self_Clause1_Clause1_Output>
 }
 
+struct () {}
+
 struct (_,)<A> {
   _0: A,
 }
@@ -115,22 +107,6 @@ where
     fake_read(_closure)
     _0 = ()
     storage_dead(_closure)
-    return
-}
-
-// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{closure}::{impl Destruct for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn drop_glue<'_0, F, Clause1_Repr>(_1: &'_0 mut {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1])
-where
-    TraitClause0: (F: Sized),
-    TraitClause1: (F: PrimeField<Clause1_Repr>),
-    TypeOutlives0: F: '_0,
-{
-    let _0: (); // return
-    let _1: &'1 mut {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
     return
 }
 
@@ -200,16 +176,6 @@ where
     _0 = ()
     _3 = &mut _1
     _0 = call_mut<'2, F, Clause1_Repr>[TraitClause0, TraitClause1](move _3, move _2)
-    ↳⚡ drop[drop_glue<'3, F, Clause1_Repr>[TraitClause0, TraitClause1]] _1
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    drop[drop_glue<'4, F, Clause1_Repr>[TraitClause0, TraitClause1]] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -260,16 +226,6 @@ where
     proof ImpliedClause3: (((),): Tuple) = {built_in impl Tuple for ((),)}
     fn call<'_0_1> = call<'_0_1, F, Clause1_Repr>[TraitClause0, TraitClause1]
     vtable: impl_Fn_tuple_for_closure::{vtable}<F>[TraitClause0, TraitClause1]
-}
-
-// Full name: test_crate::{SqrtTables<F>[TraitClause0]}::sqrt_common::{closure}::{impl Destruct for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]}
-impl<F, Clause1_Repr> "impl_Destruct_for_closure" Destruct for {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]
-where
-    TraitClause0: (F: Sized),
-    TraitClause1: (F: PrimeField<Clause1_Repr>),
-{
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, F, Clause1_Repr>[TraitClause0, TraitClause1]
-    non-dyn-compatible
 }
 
 

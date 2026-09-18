@@ -14,16 +14,6 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-struct () {}
-
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
-
 // Full name: core::marker::Tuple
 #[fundamental]
 #[lang_item(Tuple)]
@@ -73,6 +63,8 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 
+struct () {}
+
 struct (_,)<A> {
   _0: A,
 }
@@ -94,18 +86,6 @@ where
 }
 
 struct test_crate::main::{closure#1} {}
-
-// Full name: test_crate::main::{closure#1}::{impl Destruct for test_crate::main::{closure#1}}::drop_glue
-unsafe fn {impl Destruct for test_crate::main::{closure#1}}::drop_glue<'_0>(_1: &'_0 mut test_crate::main::{closure#1})
-{
-    let _0: (); // return
-    let _1: &'1 mut test_crate::main::{closure#1}; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
 
 // Full name: test_crate::main::{impl Fn<(&'_0 u16,)> for test_crate::main::{closure#1}}::call
 fn {impl Fn<(&'_0 u16,)> for test_crate::main::{closure#1}}::call<'_0, '_1>(_1: &'_1 test_crate::main::{closure#1}, tupled_args: (&'_0 u16,))
@@ -162,16 +142,6 @@ fn {impl FnOnce<(&'_0 u16,)> for test_crate::main::{closure#1}}::call_once<'_0>(
     _0 = ()
     _3 = &mut _1
     _0 = {impl FnMut<(&'_0 u16,)> for test_crate::main::{closure#1}}::call_mut<'_0, '9>(move _3, move _2)
-    ↳⚡ drop[{impl Destruct for test_crate::main::{closure#1}}::drop_glue<'10>] _1
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    drop[{impl Destruct for test_crate::main::{closure#1}}::drop_glue<'11>] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -237,18 +207,6 @@ fn main()
     return
 }
 
-// Full name: test_crate::main::{closure}::{impl Destruct for test_crate::main::{closure}}::drop_glue
-unsafe fn {impl Destruct for test_crate::main::{closure}}::drop_glue<'_0>(_1: &'_0 mut test_crate::main::{closure})
-{
-    let _0: (); // return
-    let _1: &'1 mut test_crate::main::{closure}; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
 // Full name: test_crate::main::{impl Fn<(&'_0 u8,)> for test_crate::main::{closure}}::call
 fn {impl Fn<(&'_0 u8,)> for test_crate::main::{closure}}::call<'_0, '_1>(_1: &'_1 test_crate::main::{closure}, tupled_args: (&'_0 u8,))
 {
@@ -304,16 +262,6 @@ fn {impl FnOnce<(&'_0 u8,)> for test_crate::main::{closure}}::call_once<'_0>(_1:
     _0 = ()
     _3 = &mut _1
     _0 = {impl FnMut<(&'_0 u8,)> for test_crate::main::{closure}}::call_mut<'_0, '9>(move _3, move _2)
-    ↳⚡ drop[{impl Destruct for test_crate::main::{closure}}::drop_glue<'10>] _1
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    drop[{impl Destruct for test_crate::main::{closure}}::drop_glue<'11>] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -355,12 +303,6 @@ impl<'_0> Fn<(&'_0 u8,)> for test_crate::main::{closure} {
     vtable: {impl Fn<(&'_0 u8,)> for test_crate::main::{closure}}::{vtable}<'_0>
 }
 
-// Full name: test_crate::main::{closure}::{impl Destruct for test_crate::main::{closure}}
-impl Destruct for test_crate::main::{closure} {
-    fn drop_glue<'_0_1> = {impl Destruct for test_crate::main::{closure}}::drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: test_crate::main::{impl FnOnce<(&'_0 u16,)> for test_crate::main::{closure#1}}
 impl<'_0> FnOnce<(&'_0 u16,)> for test_crate::main::{closure#1} {
     proof ImpliedClause0: (test_crate::main::{closure#1}: MetaSized) = {built_in impl MetaSized for test_crate::main::{closure#1}}
@@ -390,12 +332,6 @@ impl<'_0> Fn<(&'_0 u16,)> for test_crate::main::{closure#1} {
     proof ImpliedClause3: ((&'_0 u16,): Tuple) = {built_in impl Tuple for (&'_0 u16,)}
     fn call<'_0_1> = {impl Fn<(&'_0 u16,)> for test_crate::main::{closure#1}}::call<'_0, '_0_1>
     vtable: {impl Fn<(&'_0 u16,)> for test_crate::main::{closure#1}}::{vtable}<'_0>
-}
-
-// Full name: test_crate::main::{closure#1}::{impl Destruct for test_crate::main::{closure#1}}
-impl Destruct for test_crate::main::{closure#1} {
-    fn drop_glue<'_0_1> = {impl Destruct for test_crate::main::{closure#1}}::drop_glue<'_0_1>
-    non-dyn-compatible
 }
 
 

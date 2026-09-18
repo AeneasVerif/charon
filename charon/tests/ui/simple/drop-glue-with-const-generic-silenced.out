@@ -64,16 +64,6 @@ where
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
 
-// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_glue
-unsafe fn impl_Destruct_for_Global::drop_glue<'_0>(_1: &'_0 mut Global)
-= <opaque>
-
-// Full name: alloc::alloc::Global::{impl Destruct for Global}
-impl "impl_Destruct_for_Global" Destruct for Global {
-    fn drop_glue<'_0_1> = impl_Destruct_for_Global::drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: alloc::boxed::Box
 #[fundamental]
 #[lang_item(OwnedBox)]
@@ -231,7 +221,7 @@ struct KeccakState {}
 // Full name: test_crate::PortableHash
 struct PortableHash<const K : usize> {
   shake128_state: [KeccakState; K],
-  make_non_trivial: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global],
+  make_non_trivial: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}],
 }
 
 // Full name: test_crate::PortableHash::{impl Destruct for PortableHash<K>}::drop_glue

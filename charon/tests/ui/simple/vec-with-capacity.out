@@ -48,16 +48,6 @@ where
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
 
-// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_glue
-unsafe fn impl_Destruct_for_Global::drop_glue<'_0>(_1: &'_0 mut Global)
-= <opaque>
-
-// Full name: alloc::alloc::Global::{impl Destruct for Global}
-impl "impl_Destruct_for_Global" Destruct for Global {
-    fn drop_glue<'_0_1> = impl_Destruct_for_Global::drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: alloc::raw_vec::RawVec
 opaque type RawVec<T, A>
 where
@@ -356,7 +346,7 @@ where
     _2 = copy capacity
     storage_live(_3)
     _3 = Global {  }
-    _0 = alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::with_capacity_in<T, Global>[TraitClause0, {built_in impl Sized for Global}, impl_Destruct_for_Global](move _2, move _3)
+    _0 = alloc::vec::{Vec<T>[TraitClause0, TraitClause1]}::with_capacity_in<T, Global>[TraitClause0, {built_in impl Sized for Global}, {built_in impl Destruct for Global}](move _2, move _3)
     ↳⚡ storage_dead(capacity)
         unwind_continue
     storage_dead(_3)
