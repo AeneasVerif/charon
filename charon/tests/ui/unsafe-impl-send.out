@@ -13,7 +13,7 @@ struct Foo {
 
 // Full name: test_crate::{impl Send for Foo}
 impl "impl_Send_for_Foo" Send for Foo {
-    vtable: impl_Send_for_Foo::{vtable}
+    vtable: lazy
 }
 
 

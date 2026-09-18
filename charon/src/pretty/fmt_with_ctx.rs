@@ -2718,10 +2718,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                 writeln!(f, "{params} = {fn_ref}")?;
             }
         }
-        if let Some(vtb_ref) = &self.vtable {
-            writeln!(f, "{TAB_INCR}vtable: {}", vtb_ref.with_ctx(ctx))?;
-        } else {
-            writeln!(f, "{TAB_INCR}non-dyn-compatible")?;
+        match &self.vtable {
+            VTableDecl::VTable(vtb_ref) => {
+                writeln!(f, "{TAB_INCR}vtable: {}", vtb_ref.with_ctx(ctx))?
+            }
+            VTableDecl::Lazy => writeln!(f, "{TAB_INCR}vtable: lazy")?,
+            VTableDecl::Unknown(msg) => writeln!(f, "{TAB_INCR}vtable: unknown // {msg}")?,
+            VTableDecl::NotDynCompatible => writeln!(f, "{TAB_INCR}non-dyn-compatible")?,
         }
         write!(f, "}}")?;
         Ok(())

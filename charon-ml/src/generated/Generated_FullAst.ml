@@ -142,6 +142,11 @@ and cli_options = {
   translate_all_methods : bool;
       (** Usually we skip the provided methods that aren't used. When this flag
           is on, we translate them all. *)
+  eager_vtables : bool;
+      (** Usually we only translate the vtables that are used in an unsizing
+          coercion, and leave the [vtable] field of the other trait impls as
+          [Lazy]. When this flag is on, we translate the vtable of every trait
+          impl of a dyn-compatible trait. *)
   duplicate_defaulted_methods : bool;
       (** Whenever an impl doesn't implement a method (because it has a default
           body), this creates a duplicate method as if it had been implemented.

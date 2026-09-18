@@ -65,7 +65,7 @@ impl "impl_MyTrait_for_S" MyTrait for S {
         TraitClause0_1: (S: Sized),
         proof ImpliedClause0: (impl_MyTrait_for_S::foo_ty[TraitClause0_1]: Sized) = impl_MyTrait_for_S::foo_ty::ImpliedClause0;
     fn foo<TraitClause0_1: (S: Sized)> = impl_MyTrait_for_S::foo[TraitClause0_1]
-    vtable: impl_MyTrait_for_S::{vtable}
+    vtable: lazy
 }
 
 

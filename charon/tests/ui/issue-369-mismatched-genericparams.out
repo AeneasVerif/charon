@@ -52,7 +52,7 @@ where
 {
     proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
-    vtable: impl_FromResidual_unit_for_Option::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl Try for Option<T>[TraitClause0]}
@@ -64,7 +64,7 @@ where
     proof ImpliedClause1: (Option<T>[TraitClause0]: FromResidual<()>) = impl_FromResidual_unit_for_Option<T>[TraitClause0]
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     type Residual = ()
-    vtable: impl_Try_for_Option::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 

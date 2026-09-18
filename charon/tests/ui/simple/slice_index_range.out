@@ -1991,7 +1991,7 @@ where
     fn get_unchecked_mut = impl_SliceIndex_slice_for_RangeInclusive_usize::get_unchecked_mut<T>[TraitClause0]
     fn index<'_0_1> = impl_SliceIndex_slice_for_RangeInclusive_usize::index<'_0_1, T>[TraitClause0]
     fn index_mut<'_0_1> = impl_SliceIndex_slice_for_RangeInclusive_usize::index_mut<'_0_1, T>[TraitClause0]
-    vtable: impl_SliceIndex_slice_for_RangeInclusive_usize::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: test_crate::slice_index_range

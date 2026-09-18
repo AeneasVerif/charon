@@ -56,7 +56,7 @@ where
     proof ImpliedClause1: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: (Tuple<Option<T>[TraitClause0], ()>[{built_in impl Sized for Option<T>[TraitClause0]}, {built_in impl MetaSized for ()}]: Sized) = impl_ProveWithParentClause_Option_for_unit<T>[TraitClause0]::ImpliedClause3
-    vtable: impl_ProveWithParentClause_Option_for_unit::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: test_crate::ProveWithItemClause
@@ -78,7 +78,7 @@ where
     proof ImpliedClause1: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: (Tuple<(), Option<T>[TraitClause0]>[{built_in impl Sized for ()}, {built_in impl MetaSized for Option<T>[TraitClause0]}]: Sized) = impl_ProveWithItemClause_Option_for_unit<T>[TraitClause0]::ImpliedClause3
-    vtable: impl_ProveWithItemClause_Option_for_unit::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 

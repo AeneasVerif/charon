@@ -40,7 +40,7 @@ where
 {
     proof ImpliedClause0: (I: MetaSized) = TraitClause0::ImpliedClause0
     proof ImpliedClause1: (I: T1<Clause1_A>) = TraitClause1
-    vtable: impl_T2_for_T::{vtable}<I>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 

@@ -1,6 +1,8 @@
 use crate::ast::*;
 use crate::ids::IndexVec;
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
+use macros::EnumAsGetters;
+use macros::EnumIsA;
 use serde_state::DeserializeState;
 use serde_state::SerializeState;
 
@@ -32,9 +34,8 @@ pub struct TraitImpl {
     pub types: IndexMap<AssocTypeId, Binder<TraitAssocTyImpl>>,
     /// The implemented methods
     pub methods: IndexMap<TraitMethodId, Binder<FunDeclRef>>,
-    /// The virtual table instance for this trait implementation. This is `Some` iff the trait is
-    /// dyn-compatible.
-    pub vtable: Option<GlobalDeclRef>,
+    /// The virtual table instance for this trait implementation.
+    pub vtable: VTableDecl,
 }
 
 /// The value of a trait associated type.
@@ -74,6 +75,31 @@ pub enum TraitImplSource {
     },
     /// The `Destruct` implementation generated for an ADT or closure.
     Destruct,
+}
+
+/// The virtual table instance for a trait implementation.
+#[derive(
+    Debug,
+    Clone,
+    SerializeState,
+    DeserializeState,
+    EnumIsA,
+    EnumAsGetters,
+    Drive,
+    DriveMut,
+    DriveTwo,
+)]
+pub enum VTableDecl {
+    /// The trait is not dyn-compatible, so no vtable exists.
+    NotDynCompatible,
+    /// The trait is dyn-compatible, but we have not computed a vtable for it, as it is not used.
+    Lazy,
+    /// The trait is dyn-compatible, and we have computed a vtable for it.
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("VTableInstance"))]
+    VTable(GlobalDeclRef),
+    /// We don't support computing a vtable for this impl; the string explains why.
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("UnknownVTable"))]
+    Unknown(String),
 }
 
 impl TraitImpl {

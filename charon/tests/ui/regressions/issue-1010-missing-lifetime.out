@@ -332,7 +332,7 @@ impl<'_0> FnOnce<(&'_0 u8,)> for test_crate::main::{closure} {
     proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
     type Output = ()
     fn call_once = {impl FnOnce<(&'_0 u8,)> for test_crate::main::{closure}}::call_once<'_0>
-    vtable: {impl FnOnce<(&'_0 u8,)> for test_crate::main::{closure}}::{vtable}<'_0>
+    vtable: lazy
 }
 
 // Full name: test_crate::main::{impl FnMut<(&'_0 u8,)> for test_crate::main::{closure}}
@@ -342,7 +342,7 @@ impl<'_0> FnMut<(&'_0 u8,)> for test_crate::main::{closure} {
     proof ImpliedClause2: ((&'_0 u8,): Sized) = {built_in impl Sized for (&'_0 u8,)}
     proof ImpliedClause3: ((&'_0 u8,): Tuple) = {built_in impl Tuple for (&'_0 u8,)}
     fn call_mut<'_0_1> = {impl FnMut<(&'_0 u8,)> for test_crate::main::{closure}}::call_mut<'_0, '_0_1>
-    vtable: {impl FnMut<(&'_0 u8,)> for test_crate::main::{closure}}::{vtable}<'_0>
+    vtable: lazy
 }
 
 // Full name: test_crate::main::{impl Fn<(&'_0 u8,)> for test_crate::main::{closure}}
@@ -352,7 +352,7 @@ impl<'_0> Fn<(&'_0 u8,)> for test_crate::main::{closure} {
     proof ImpliedClause2: ((&'_0 u8,): Sized) = {built_in impl Sized for (&'_0 u8,)}
     proof ImpliedClause3: ((&'_0 u8,): Tuple) = {built_in impl Tuple for (&'_0 u8,)}
     fn call<'_0_1> = {impl Fn<(&'_0 u8,)> for test_crate::main::{closure}}::call<'_0, '_0_1>
-    vtable: {impl Fn<(&'_0 u8,)> for test_crate::main::{closure}}::{vtable}<'_0>
+    vtable: lazy
 }
 
 // Full name: test_crate::main::{closure}::{impl Destruct for test_crate::main::{closure}}
@@ -369,7 +369,7 @@ impl<'_0> FnOnce<(&'_0 u16,)> for test_crate::main::{closure#1} {
     proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
     type Output = ()
     fn call_once = {impl FnOnce<(&'_0 u16,)> for test_crate::main::{closure#1}}::call_once<'_0>
-    vtable: {impl FnOnce<(&'_0 u16,)> for test_crate::main::{closure#1}}::{vtable}<'_0>
+    vtable: lazy
 }
 
 // Full name: test_crate::main::{impl FnMut<(&'_0 u16,)> for test_crate::main::{closure#1}}
@@ -379,7 +379,7 @@ impl<'_0> FnMut<(&'_0 u16,)> for test_crate::main::{closure#1} {
     proof ImpliedClause2: ((&'_0 u16,): Sized) = {built_in impl Sized for (&'_0 u16,)}
     proof ImpliedClause3: ((&'_0 u16,): Tuple) = {built_in impl Tuple for (&'_0 u16,)}
     fn call_mut<'_0_1> = {impl FnMut<(&'_0 u16,)> for test_crate::main::{closure#1}}::call_mut<'_0, '_0_1>
-    vtable: {impl FnMut<(&'_0 u16,)> for test_crate::main::{closure#1}}::{vtable}<'_0>
+    vtable: lazy
 }
 
 // Full name: test_crate::main::{impl Fn<(&'_0 u16,)> for test_crate::main::{closure#1}}
@@ -389,7 +389,7 @@ impl<'_0> Fn<(&'_0 u16,)> for test_crate::main::{closure#1} {
     proof ImpliedClause2: ((&'_0 u16,): Sized) = {built_in impl Sized for (&'_0 u16,)}
     proof ImpliedClause3: ((&'_0 u16,): Tuple) = {built_in impl Tuple for (&'_0 u16,)}
     fn call<'_0_1> = {impl Fn<(&'_0 u16,)> for test_crate::main::{closure#1}}::call<'_0, '_0_1>
-    vtable: {impl Fn<(&'_0 u16,)> for test_crate::main::{closure#1}}::{vtable}<'_0>
+    vtable: lazy
 }
 
 // Full name: test_crate::main::{closure#1}::{impl Destruct for test_crate::main::{closure#1}}

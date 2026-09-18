@@ -126,7 +126,7 @@ pub fn impl_PartialEq_i32_for_i32::eq<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> b
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
 impl "impl_PartialEq_i32_for_i32" PartialEq<i32> for i32 {
     fn eq<'_0_1, '_1_1> = impl_PartialEq_i32_for_i32::eq<'_0_1, '_1_1>
-    vtable: impl_PartialEq_i32_for_i32::{vtable}
+    vtable: lazy
 }
 
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}::eq
@@ -136,7 +136,7 @@ pub fn impl_PartialEq_usize_for_usize::eq<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usi
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}
 impl "impl_PartialEq_usize_for_usize" PartialEq<usize> for usize {
     fn eq<'_0_1, '_1_1> = impl_PartialEq_usize_for_usize::eq<'_0_1, '_1_1>
-    vtable: impl_PartialEq_usize_for_usize::{vtable}
+    vtable: lazy
 }
 
 // Full name: core::cmp::impls::{impl PartialEq<u32> for u32}::eq
@@ -146,7 +146,7 @@ pub fn impl_PartialEq_u32_for_u32::eq<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> b
 // Full name: core::cmp::impls::{impl PartialEq<u32> for u32}
 impl "impl_PartialEq_u32_for_u32" PartialEq<u32> for u32 {
     fn eq<'_0_1, '_1_1> = impl_PartialEq_u32_for_u32::eq<'_0_1, '_1_1>
-    vtable: impl_PartialEq_u32_for_u32::{vtable}
+    vtable: lazy
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}::partial_cmp
@@ -157,7 +157,7 @@ pub fn impl_PartialOrd_i32_for_i32::partial_cmp<'_0, '_1>(_1: &'_0 i32, _2: &'_1
 impl "impl_PartialOrd_i32_for_i32" PartialOrd<i32> for i32 {
     proof ImpliedClause0: (i32: PartialEq<i32>) = impl_PartialEq_i32_for_i32
     fn partial_cmp<'_0_1, '_1_1> = impl_PartialOrd_i32_for_i32::partial_cmp<'_0_1, '_1_1>
-    vtable: impl_PartialOrd_i32_for_i32::{vtable}
+    vtable: lazy
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}::partial_cmp
@@ -168,7 +168,7 @@ pub fn impl_PartialOrd_usize_for_usize::partial_cmp<'_0, '_1>(_1: &'_0 usize, _2
 impl "impl_PartialOrd_usize_for_usize" PartialOrd<usize> for usize {
     proof ImpliedClause0: (usize: PartialEq<usize>) = impl_PartialEq_usize_for_usize
     fn partial_cmp<'_0_1, '_1_1> = impl_PartialOrd_usize_for_usize::partial_cmp<'_0_1, '_1_1>
-    vtable: impl_PartialOrd_usize_for_usize::{vtable}
+    vtable: lazy
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}::partial_cmp
@@ -179,7 +179,7 @@ pub fn impl_PartialOrd_u32_for_u32::partial_cmp<'_0, '_1>(_1: &'_0 u32, _2: &'_1
 impl "impl_PartialOrd_u32_for_u32" PartialOrd<u32> for u32 {
     proof ImpliedClause0: (u32: PartialEq<u32>) = impl_PartialEq_u32_for_u32
     fn partial_cmp<'_0_1, '_1_1> = impl_PartialOrd_u32_for_u32::partial_cmp<'_0_1, '_1_1>
-    vtable: impl_PartialOrd_u32_for_u32::{vtable}
+    vtable: lazy
 }
 
 struct (_, _)<A, B>
@@ -356,7 +356,7 @@ where
     proof ImpliedClause1: (A: Sized) = TraitClause0
     type Item = A
     fn next<'_0_1> = next<'_0_1, A>[TraitClause0, TraitClause1, TraitClause2]
-    vtable: impl_Iterator_for_Range::{vtable}<A>[TraitClause0, TraitClause1, TraitClause2]
+    vtable: lazy
 }
 
 // Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
@@ -408,7 +408,7 @@ where
     proof ImpliedClause2: (TraitClause2::Output: MetaSized) = TraitClause2::ImpliedClause2
     type Output = TraitClause2::Output
     fn index<'_0_1> = impl_Index_for_slice::index<'_0_1, T, I>[TraitClause0, TraitClause1, TraitClause2]
-    vtable: impl_Index_for_slice::{vtable}<T, I>[TraitClause0, TraitClause1, TraitClause2]
+    vtable: lazy
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index_mut
@@ -468,7 +468,7 @@ where
     fn get_unchecked_mut = impl_SliceIndex_slice_for_usize::get_unchecked_mut<T>[TraitClause0]
     fn index<'_0_1> = impl_SliceIndex_slice_for_usize::index<'_0_1, T>[TraitClause0]
     fn index_mut<'_0_1> = impl_SliceIndex_slice_for_usize::index_mut<'_0_1, T>[TraitClause0]
-    vtable: impl_SliceIndex_slice_for_usize::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: alloc::alloc::Global

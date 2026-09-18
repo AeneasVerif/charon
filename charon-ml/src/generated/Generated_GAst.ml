@@ -520,9 +520,8 @@ and trait_impl = {
       (** The implemented associated types. *)
   methods : fun_decl_ref binder trait_method_id_map;
       (** The implemented methods *)
-  vtable : global_decl_ref option;
-      (** The virtual table instance for this trait implementation. This is
-          [Some] iff the trait is dyn-compatible. *)
+  vtable : v_table_decl;
+      (** The virtual table instance for this trait implementation. *)
 }
 
 (** Where the impl comes from. *)
@@ -537,6 +536,19 @@ and trait_impl_source =
           - [kind] *)
   | DestructTraitImpl
       (** The [Destruct] implementation generated for an ADT or closure. *)
+
+(** The virtual table instance for a trait implementation. *)
+and v_table_decl =
+  | NotDynCompatible
+      (** The trait is not dyn-compatible, so no vtable exists. *)
+  | Lazy
+      (** The trait is dyn-compatible, but we have not computed a vtable for it,
+          as it is not used. *)
+  | VTableInstance of global_decl_ref
+      (** The trait is dyn-compatible, and we have computed a vtable for it. *)
+  | UnknownVTable of string
+      (** We don't support computing a vtable for this impl; the string explains
+          why. *)
 [@@deriving
   show,
   eq,

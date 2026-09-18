@@ -81,7 +81,7 @@ impl "impl_BoolTrait_for_bool" BoolTrait for bool {
     proof ImpliedClause0: (bool: MetaSized) = {built_in impl MetaSized for bool}
     fn get_bool<'_0_1> = get_bool<'_0_1>
     fn ret_true<'_0_1> = impl_BoolTrait_for_bool::ret_true<'_0_1>
-    vtable: impl_BoolTrait_for_bool::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::test_bool_trait

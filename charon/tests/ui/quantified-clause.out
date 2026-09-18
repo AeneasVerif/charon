@@ -205,7 +205,7 @@ where
     TraitClause3: for<'a> (TraitClause2::Item: Copy),
 {
     proof ImpliedClause0: (Result<T, U>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for Result<T, U>[TraitClause0, TraitClause1]}
-    vtable: impl_Trait_for_Result::{vtable}<T, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+    vtable: lazy
 }
 
 

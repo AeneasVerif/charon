@@ -134,7 +134,7 @@ impl "impl_Destruct_for_Foo" Destruct for Foo {
 impl "impl_Drop_for_Foo" Drop for Foo {
     proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
     fn drop<'_0_1> = impl_Drop_for_Foo::drop<'_0_1>
-    vtable: impl_Drop_for_Foo::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::main

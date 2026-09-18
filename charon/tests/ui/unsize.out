@@ -153,17 +153,17 @@ pub fn alloc::string::{String}::new() -> String
 pub fn impl_Clone_for_String::clone<'_0>(_1: &'_0 String) -> String
 = <opaque>
 
+// Full name: alloc::string::{impl Display for String}
+impl "impl_Display_for_String" Display for String {
+    vtable: unknown // the vtable struct of the trait is excluded
+}
+
 // Full name: alloc::string::{impl Display for String}::{vtable}
 fn impl_Display_for_String::{vtable}() -> core::fmt::Display::{vtable}
 = <opaque>
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
 static impl_Display_for_String::{vtable}: core::fmt::Display::{vtable} = impl_Display_for_String::{vtable}()
-
-// Full name: alloc::string::{impl Display for String}
-impl "impl_Display_for_String" Display for String {
-    vtable: impl_Display_for_String::{vtable}
-}
 
 // Full name: alloc::sync::Arc
 #[diagnostic_item("Arc")]
@@ -200,7 +200,7 @@ where
     TraitClause0: (T: MetaSized),
 {
     proof ImpliedClause0: (MyPtr<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for MyPtr<T>[TraitClause0]}
-    vtable: impl_CoercePointeeValidated_for_MyPtr::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl DispatchFromDyn<MyPtr<__S>[TraitClause1]> for MyPtr<T>[TraitClause0]}

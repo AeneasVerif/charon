@@ -36,7 +36,7 @@ pub trait Trait<Self, Self_Type>
 impl "impl_Trait_for_unit" Trait<()> for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
-    vtable: impl_Trait_for_unit::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::HashMap

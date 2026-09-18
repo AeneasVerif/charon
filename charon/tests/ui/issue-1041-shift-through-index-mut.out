@@ -76,7 +76,7 @@ impl "impl_Index_usize_for_Wrap" Index<usize> for Wrap {
     proof ImpliedClause2: (u64: MetaSized) = {built_in impl MetaSized for u64}
     type Output = u64
     fn index<'_0_1> = index<'_0_1>
-    vtable: impl_Index_usize_for_Wrap::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl IndexMut<usize> for Wrap}::index_mut
@@ -112,7 +112,7 @@ impl "impl_IndexMut_usize_for_Wrap" IndexMut<usize> for Wrap {
     proof ImpliedClause1: (Wrap: Index<usize>) = impl_Index_usize_for_Wrap
     proof ImpliedClause2: (usize: MetaSized) = {built_in impl MetaSized for usize}
     fn index_mut<'_0_1> = index_mut<'_0_1>
-    vtable: impl_IndexMut_usize_for_Wrap::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::shr_into_index

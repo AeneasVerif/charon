@@ -76,7 +76,7 @@ pub trait Fn<Self, Args, Self_Clause1_Clause1_Output>
 pub trait Trait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
-    fn method<'_0_1> = test_crate::Trait::method<'_0_1, Self>[Self]
+    fn method<'_0_1> = test_crate::Trait::method<'_0_1, Self>
     vtable: test_crate::Trait::{vtable}
 }
 
@@ -85,7 +85,6 @@ struct {closure}<Self> {}
 
 pub fn test_crate::Trait::method<'_0, Self>(self: &'_0 Self)
 where
-    TraitClause0: (Self: Trait),
     TypeOutlives0: Self: '_0,
 {
     let _0: (); // return
@@ -105,7 +104,6 @@ where
 // Full name: test_crate::Trait::method::{closure}::{impl Destruct for {closure}<Self>}::drop_glue
 unsafe fn drop_glue<'_0, Self>(_1: &'_0 mut {closure}<Self>)
 where
-    TraitClause0: (Self: Trait),
     TypeOutlives0: Self: '_0,
 {
     let _0: (); // return
@@ -120,7 +118,6 @@ where
 // Full name: test_crate::Trait::method::{impl Fn<(), usize> for {closure}<Self>}::call
 fn call<'_0, Self>(_1: &'_0 {closure}<Self>, tupled_args: ()) -> usize
 where
-    TraitClause0: (Self: Trait),
     TypeOutlives0: Self: '_0,
 {
     let _0: usize; // return
@@ -137,7 +134,6 @@ where
 // Full name: test_crate::Trait::method::{impl FnMut<(), usize> for {closure}<Self>}::call_mut
 fn call_mut<'_0, Self>(state: &'_0 mut {closure}<Self>, args: ()) -> usize
 where
-    TraitClause0: (Self: Trait),
     TypeOutlives0: Self: '_0,
 {
     let _0: usize; // return
@@ -148,7 +144,7 @@ where
     storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
-    _0 = call<'2, Self>[TraitClause0](move _3, move args)
+    _0 = call<'2, Self>(move _3, move args)
     ↳⚡ storage_dead(_3)
         storage_dead(args)
         storage_dead(state)
@@ -161,8 +157,6 @@ where
 
 // Full name: test_crate::Trait::method::{impl FnOnce<(), usize> for {closure}<Self>}::call_once
 fn call_once<Self>(_1: {closure}<Self>, _2: ()) -> usize
-where
-    TraitClause0: (Self: Trait),
 {
     let _0: usize; // return
     let _1: {closure}<Self>; // arg #1
@@ -172,8 +166,8 @@ where
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'2, Self>[TraitClause0](move _3, move _2)
-    ↳⚡ drop[drop_glue<'3, Self>[TraitClause0]] _1
+    _0 = call_mut<'2, Self>(move _3, move _2)
+    ↳⚡ drop[drop_glue<'3, Self>] _1
         ↳⚡ storage_dead(_3)
             storage_dead(_2)
             storage_dead(_1)
@@ -182,7 +176,7 @@ where
         storage_dead(_2)
         storage_dead(_1)
         unwind_continue
-    drop[drop_glue<'4, Self>[TraitClause0]] _1
+    drop[drop_glue<'4, Self>] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -194,50 +188,38 @@ where
 }
 
 // Full name: test_crate::Trait::method::{impl FnOnce<(), usize> for {closure}<Self>}
-impl<Self> "impl_FnOnce_unit_for_closure" FnOnce<(), usize> for {closure}<Self>
-where
-    TraitClause0: (Self: Trait),
-{
+impl<Self> "impl_FnOnce_unit_for_closure" FnOnce<(), usize> for {closure}<Self> {
     proof ImpliedClause0: ({closure}<Self>: MetaSized) = {built_in impl MetaSized for {closure}<Self>}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
     proof ImpliedClause3: (usize: Sized) = {built_in impl Sized for usize}
-    fn call_once = call_once<Self>[TraitClause0]
-    vtable: impl_FnOnce_unit_for_closure::{vtable}<Self>[TraitClause0]
+    fn call_once = call_once<Self>
+    vtable: lazy
 }
 
 // Full name: test_crate::Trait::method::{impl FnMut<(), usize> for {closure}<Self>}
-impl<Self> "impl_FnMut_unit_for_closure" FnMut<(), usize> for {closure}<Self>
-where
-    TraitClause0: (Self: Trait),
-{
+impl<Self> "impl_FnMut_unit_for_closure" FnMut<(), usize> for {closure}<Self> {
     proof ImpliedClause0: ({closure}<Self>: MetaSized) = {built_in impl MetaSized for {closure}<Self>}
-    proof ImpliedClause1: ({closure}<Self>: FnOnce<(), usize>) = impl_FnOnce_unit_for_closure<Self>[TraitClause0]
+    proof ImpliedClause1: ({closure}<Self>: FnOnce<(), usize>) = impl_FnOnce_unit_for_closure<Self>
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
-    fn call_mut<'_0_1> = call_mut<'_0_1, Self>[TraitClause0]
-    vtable: impl_FnMut_unit_for_closure::{vtable}<Self>[TraitClause0]
+    fn call_mut<'_0_1> = call_mut<'_0_1, Self>
+    vtable: lazy
 }
 
 // Full name: test_crate::Trait::method::{impl Fn<(), usize> for {closure}<Self>}
-impl<Self> "impl_Fn_unit_for_closure" Fn<(), usize> for {closure}<Self>
-where
-    TraitClause0: (Self: Trait),
-{
+impl<Self> "impl_Fn_unit_for_closure" Fn<(), usize> for {closure}<Self> {
     proof ImpliedClause0: ({closure}<Self>: MetaSized) = {built_in impl MetaSized for {closure}<Self>}
-    proof ImpliedClause1: ({closure}<Self>: FnMut<(), usize>) = impl_FnMut_unit_for_closure<Self>[TraitClause0]
+    proof ImpliedClause1: ({closure}<Self>: FnMut<(), usize>) = impl_FnMut_unit_for_closure<Self>
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
-    fn call<'_0_1> = call<'_0_1, Self>[TraitClause0]
-    vtable: impl_Fn_unit_for_closure::{vtable}<Self>[TraitClause0]
+    fn call<'_0_1> = call<'_0_1, Self>
+    vtable: lazy
 }
 
 // Full name: test_crate::Trait::method::{closure}::{impl Destruct for {closure}<Self>}
-impl<Self> "impl_Destruct_for_closure" Destruct for {closure}<Self>
-where
-    TraitClause0: (Self: Trait),
-{
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>[TraitClause0]
+impl<Self> "impl_Destruct_for_closure" Destruct for {closure}<Self> {
+    fn drop_glue<'_0_1> = drop_glue<'_0_1, Self>
     non-dyn-compatible
 }
 
@@ -262,7 +244,7 @@ pub fn impl_Trait_for_unit::method<'_0>(self: &'_0 ())
 impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     fn method<'_0_1> = impl_Trait_for_unit::method<'_0_1>
-    vtable: impl_Trait_for_unit::{vtable}
+    vtable: lazy
 }
 
 

@@ -5,7 +5,7 @@ pub opaque type TryFromSliceError
 
 // Full name: core::array::{impl Debug for TryFromSliceError}
 impl "impl_Debug_for_TryFromSliceError" Debug for TryFromSliceError {
-    vtable: impl_Debug_for_TryFromSliceError::{vtable}
+    vtable: unknown // the vtable struct of the trait is excluded
 }
 
 // Full name: core::marker::MetaSized

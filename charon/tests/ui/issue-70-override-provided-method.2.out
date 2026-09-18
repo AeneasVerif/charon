@@ -185,7 +185,7 @@ impl "impl_Trait_for_Foo" Trait for Foo {
     fn required<'_0_1> = impl_Trait_for_Foo::required<'_0_1>
     fn provided1<'_0_1> = impl_Trait_for_Foo::provided1<'_0_1>
     fn provided2<'_0_1> = impl_Trait_for_Foo::provided2<'_0_1>
-    vtable: impl_Trait_for_Foo::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::Bar
@@ -276,7 +276,7 @@ impl "impl_Trait_for_Bar" Trait for Bar {
     fn required<'_0_1> = impl_Trait_for_Bar::required<'_0_1>
     fn provided1<'_0_1> = impl_Trait_for_Bar::provided1<'_0_1>
     fn provided2<'_0_1> = impl_Trait_for_Bar::provided2<'_0_1>
-    vtable: impl_Trait_for_Bar::{vtable}
+    vtable: lazy
 }
 
 

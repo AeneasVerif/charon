@@ -214,7 +214,7 @@ impl "impl_Destruct_for_Droppable" Destruct for Droppable {
 impl "impl_Drop_for_Droppable" Drop for Droppable {
     proof ImpliedClause0: (Droppable: MetaSized) = {built_in impl MetaSized for Droppable}
     fn drop<'_0_1> = impl_Drop_for_Droppable::drop<'_0_1>
-    vtable: impl_Drop_for_Droppable::{vtable}
+    vtable: lazy
 }
 
 struct test_crate::wrap::{closure}<T>

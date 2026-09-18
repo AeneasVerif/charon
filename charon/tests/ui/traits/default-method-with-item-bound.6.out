@@ -28,7 +28,7 @@ trait Takes<Self, T>
 impl "impl_Takes_bool_for_unit" Takes<bool> for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (bool: Sized) = {built_in impl Sized for bool}
-    vtable: impl_Takes_bool_for_unit::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::Trait

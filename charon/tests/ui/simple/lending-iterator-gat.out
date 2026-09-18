@@ -479,7 +479,7 @@ impl<'_0, '_1> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_1 i32,)> for {closure}
     proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
     type Output = ()
     fn call_once = call_once<'_0, '_1>
-    vtable: impl_FnOnce_tuple_for_closure::{vtable}<'_0, '_1>
+    vtable: lazy
 }
 
 // Full name: test_crate::main::{impl FnMut<(&'_1 i32,)> for {closure}<'_0>}
@@ -489,7 +489,7 @@ impl<'_0, '_1> "impl_FnMut_tuple_for_closure" FnMut<(&'_1 i32,)> for {closure}<'
     proof ImpliedClause2: ((&'_1 i32,): Sized) = {built_in impl Sized for (&'_1 i32,)}
     proof ImpliedClause3: ((&'_1 i32,): Tuple) = {built_in impl Tuple for (&'_1 i32,)}
     fn call_mut<'_0_1> = call_mut<'_0, '_1, '_0_1>
-    vtable: impl_FnMut_tuple_for_closure::{vtable}<'_0, '_1>
+    vtable: lazy
 }
 
 // Full name: test_crate::main

@@ -118,7 +118,7 @@ impl "impl_FnOnce_tuple_for_closure" FnOnce<(u32,)> for {closure} {
     proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
     type Output = u32
     fn call_once = call_once
-    vtable: impl_FnOnce_tuple_for_closure::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_cargo_dependencies::main::silly_incr
