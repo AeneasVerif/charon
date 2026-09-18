@@ -1,0 +1,167 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::mem::maybe_uninit::MaybeUninit
+#[lang_item(MaybeUninit)]
+pub opaque type MaybeUninit<T>
+where
+    TraitClause0: (T: Sized),
+
+struct () {}
+
+static test_crate::{promoted_const}: MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}] = RawMemory(0x01)
+
+static test_crate::{promoted_const#1}: MaybeUninit<[u16; 1usize]>[{built_in impl Sized for [u16; 1usize]}] = RawMemory(0x02, 0x00)
+
+static test_crate::{promoted_const#2}: MaybeUninit<[u32; 1usize]>[{built_in impl Sized for [u32; 1usize]}] = RawMemory(0x03, 0x00, 0x00, 0x00)
+
+static test_crate::{promoted_const#3}: MaybeUninit<[u64; 1usize]>[{built_in impl Sized for [u64; 1usize]}] = RawMemory(0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
+
+static test_crate::{promoted_const#4}: MaybeUninit<[u128; 1usize]>[{built_in impl Sized for [u128; 1usize]}] = RawMemory(0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
+
+static test_crate::{promoted_const#5}: MaybeUninit<[u32; 3usize]>[{built_in impl Sized for [u32; 3usize]}] = RawMemory(0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00)
+
+static test_crate::{promoted_const#6}: MaybeUninit<[u32; 3usize]>[{built_in impl Sized for [u32; 3usize]}] = RawMemory(0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00)
+
+static test_crate::{promoted_const#7}: MaybeUninit<[u64; 2usize]>[{built_in impl Sized for [u64; 2usize]}] = RawMemory(0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, --, --, --, --, --, --, --)
+
+// Full name: test_crate::S
+struct S {
+  a: u8,
+  b: u64,
+}
+
+// Full name: test_crate::U8
+static U8: &'static u8 = &test_crate::{promoted_const}
+
+// Full name: test_crate::U16
+static U16: &'static u16 = &test_crate::{promoted_const#1}
+
+// Full name: test_crate::U32
+static U32: &'static u32 = &test_crate::{promoted_const#2}
+
+// Full name: test_crate::U64
+static U64: &'static u64 = &test_crate::{promoted_const#3}
+
+// Full name: test_crate::U128
+static U128: &'static u128 = &test_crate::{promoted_const#4}
+
+// Full name: test_crate::ARR
+static ARR: &'static [u32; 3usize] = &test_crate::{promoted_const#5}
+
+// Full name: test_crate::SLICE
+static SLICE: &'static [u32] = &test_crate::{promoted_const#6} with_metadata(3usize)
+
+// Full name: test_crate::STRUCT
+static STRUCT: &'static S = &test_crate::{promoted_const#7}
+
+// Full name: test_crate::INNER
+static INNER: &'static u64 = &2u64
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let _1: &'3 &'4 u8; // anonymous local
+    let _2: &'8 &'9 u16; // anonymous local
+    let _3: &'13 &'14 u32; // anonymous local
+    let _4: &'18 &'19 u64; // anonymous local
+    let _5: &'23 &'24 u128; // anonymous local
+    let _6: &'28 &'29 [u32; 3usize]; // anonymous local
+    let _7: &'33 &'34 [u32]; // anonymous local
+    let _8: &'38 &'39 S; // anonymous local
+    let _9: &'40 &'41 u64; // anonymous local
+    let _10: &'42 &'43 u8; // anonymous local
+    let _11: &'46 &'47 u16; // anonymous local
+    let _12: &'50 &'51 u32; // anonymous local
+    let _13: &'54 &'55 u64; // anonymous local
+    let _14: &'58 &'59 u128; // anonymous local
+    let _15: &'62 &'63 [u32; 3usize]; // anonymous local
+    let _16: &'66 &'67 [u32]; // anonymous local
+    let _17: &'70 &'71 S; // anonymous local
+    let _18: &'74 &'75 u64; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    storage_live(_10)
+    _10 = &U8
+    _1 = move _10
+    _ = (*_1)
+    storage_dead(_1)
+    storage_live(_2)
+    storage_live(_11)
+    _11 = &U16
+    _2 = move _11
+    _ = (*_2)
+    storage_dead(_2)
+    storage_live(_3)
+    storage_live(_12)
+    _12 = &U32
+    _3 = move _12
+    _ = (*_3)
+    storage_dead(_3)
+    storage_live(_4)
+    storage_live(_13)
+    _13 = &U64
+    _4 = move _13
+    _ = (*_4)
+    storage_dead(_4)
+    storage_live(_5)
+    storage_live(_14)
+    _14 = &U128
+    _5 = move _14
+    _ = (*_5)
+    storage_dead(_5)
+    storage_live(_6)
+    storage_live(_15)
+    _15 = &ARR
+    _6 = move _15
+    _ = (*_6)
+    storage_dead(_6)
+    storage_live(_7)
+    storage_live(_16)
+    _16 = &SLICE
+    _7 = move _16
+    _ = (*_7)
+    storage_dead(_7)
+    storage_live(_8)
+    storage_live(_17)
+    _17 = &STRUCT
+    _8 = move _17
+    _ = (*_8)
+    storage_dead(_8)
+    storage_live(_9)
+    storage_live(_18)
+    _18 = &INNER
+    _9 = move _18
+    _ = (*_9)
+    storage_dead(_9)
+    _0 = ()
+    storage_dead(_18)
+    storage_dead(_17)
+    storage_dead(_16)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_dead(_10)
+    return
+}
+
+
+

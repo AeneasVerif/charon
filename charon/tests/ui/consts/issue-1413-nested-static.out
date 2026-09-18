@@ -23,7 +23,7 @@ where
 struct () {}
 
 // Full name: test_crate::{promoted_const}
-static {promoted_const}: MaybeUninit<[u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}] = RawMemory(0x2a, 0x00, 0x00, 0x00)
+static {promoted_const}: MaybeUninit<[u32; 1usize]>[{built_in impl Sized for [u32; 1usize]}] = RawMemory(0x2a, 0x00, 0x00, 0x00)
 
 // Full name: test_crate::FOO
 fn FOO() -> &'static mut u32

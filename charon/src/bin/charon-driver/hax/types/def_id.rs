@@ -643,9 +643,21 @@ impl DefId {
             DefIdBase::Synthetic(synthetic) => synthetic.type_of(s),
             DefIdBase::ImplAssocItem(id) => tcx.type_of(id.item_decl_id),
             DefIdBase::Alloc(alloc_id) => {
-                // `MaybeUninit<[u8; N]>`
-                let size = tcx.global_alloc(alloc_id).unwrap_memory().inner().size();
-                let bytes = ty::Ty::new_array(tcx, tcx.types.u8, size.bytes());
+                // `MaybeUninit<[uN; size / N]>`, where `uN` has the alignment of the allocation.
+                let alloc = tcx.global_alloc(alloc_id).unwrap_memory().inner();
+                let (size, align) = (alloc.size().bytes(), alloc.align.bytes());
+                let elem = match align {
+                    1 => tcx.types.u8,
+                    2 => tcx.types.u16,
+                    4 => tcx.types.u32,
+                    8 => tcx.types.u64,
+                    16 => tcx.types.u128,
+                    _ => fatal!(s, "Cannot represent an allocation of alignment {}", align),
+                };
+                if !size.is_multiple_of(align) {
+                    fatal!(s, "Allocation of size {} with align {}", size, align);
+                }
+                let bytes = ty::Ty::new_array(tcx, elem, size / align);
                 let maybe_uninit =
                     tcx.require_lang_item(rustc_attr_ir::LangItem::MaybeUninit, DUMMY_SP);
                 let ty =
