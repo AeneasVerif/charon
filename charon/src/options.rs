@@ -516,8 +516,11 @@ impl CliOpts {
                     self.desugar_drops = true;
                     self.extract_opaque_bodies = true;
                     self.mir = Some(MirLevel::Elaborated);
+                    self.reconstruct_fallible_operations = true;
+                    self.reconstruct_asserts = true;
                     self.monomorphize = true;
                     self.no_normalize = true;
+                    self.no_typecheck = true;
                     self.no_reorder_decls = true;
                     self.no_compute_layout_guarantees = true;
                     self.precise_drops = true;
