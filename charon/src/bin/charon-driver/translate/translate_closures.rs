@@ -812,6 +812,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             vimpl,
         )?;
 
+        if self.monomorphize() {
+            return Ok(timpl);
+        }
+
         // Construct the `call_*` method reference.
         let trait_decl_id = timpl.impl_trait.id;
         let trait_method_id = self.translate_trait_method_id(trait_decl_id, &vimpl.methods[0].0)?;
@@ -835,9 +839,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 fn_decl_ref,
             )
         };
-        if self.monomorphize() {
-            return Ok(timpl);
-        }
         timpl
             .methods
             .set_slot_extend(trait_method_id, call_fn_binder);

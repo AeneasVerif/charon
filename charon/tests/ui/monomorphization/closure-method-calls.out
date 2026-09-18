@@ -485,50 +485,6 @@ impl "impl_Fn_for_closure" Fn<(i32,)> for test_crate::main::{closure} {
     vtable: impl_Fn_for_closure::{vtable}
 }
 
-// Full name: test_crate::main::{impl FnMut<(i32,)> for test_crate::main::{closure}}::call_mut
-fn {impl FnMut<(i32,)> for test_crate::main::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::main::{closure}, args: (i32,)) -> i32
-{
-    let _0: i32; // return
-    let state: &'_0 mut test_crate::main::{closure}; // arg #1
-    let args: (i32,); // arg #2
-    let _3: &'0 test_crate::main::{closure}; // anonymous local
-
-    storage_live(_0)
-    storage_live(_3)
-    _3 = &(*state)
-    _0 = impl_Fn_for_closure::call<'2>(move _3, move args)
-    ↳⚡ storage_dead(_3)
-        storage_dead(args)
-        storage_dead(state)
-        unwind_continue
-    storage_dead(_3)
-    storage_dead(args)
-    storage_dead(state)
-    return
-}
-
-// Full name: test_crate::main::{impl FnOnce<(i32,)> for test_crate::main::{closure}}::call_once
-fn {impl FnOnce<(i32,)> for test_crate::main::{closure}}::call_once(_1: test_crate::main::{closure}, _2: (i32,)) -> i32
-{
-    let _0: i32; // return
-    let _1: test_crate::main::{closure}; // arg #1
-    let _2: (i32,); // arg #2
-    let _3: &'1 mut test_crate::main::{closure}; // anonymous local
-
-    storage_live(_0)
-    storage_live(_3)
-    _3 = &mut _1
-    _0 = {impl FnMut<(i32,)> for test_crate::main::{closure}}::call_mut<'3>(move _3, move _2)
-    ↳⚡ storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    storage_dead(_3)
-    storage_dead(_2)
-    storage_dead(_1)
-    return
-}
-
 // Full name: test_crate::main::{impl FnOnce<(i32,)> for test_crate::main::{closure#1}}
 impl FnOnce<(i32,)> for test_crate::main::{closure#1} {
     proof ImpliedClause0: (test_crate::main::{closure#1}: MetaSized) = {built_in impl MetaSized for test_crate::main::{closure#1}}
@@ -544,28 +500,6 @@ impl FnMut<(i32,)> for test_crate::main::{closure#1} {
     proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
     proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
     vtable: {impl FnMut<(i32,)> for test_crate::main::{closure#1}}::{vtable}
-}
-
-// Full name: test_crate::main::{impl FnOnce<(i32,)> for test_crate::main::{closure#1}}::call_once
-fn {impl FnOnce<(i32,)> for test_crate::main::{closure#1}}::call_once(_1: test_crate::main::{closure#1}, _2: (i32,)) -> i32
-{
-    let _0: i32; // return
-    let _1: test_crate::main::{closure#1}; // arg #1
-    let _2: (i32,); // arg #2
-    let _3: &'1 mut test_crate::main::{closure#1}; // anonymous local
-
-    storage_live(_0)
-    storage_live(_3)
-    _3 = &mut _1
-    _0 = {impl FnMut<(i32,)> for test_crate::main::{closure#1}}::call_mut<'3>(move _3, move _2)
-    ↳⚡ storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    storage_dead(_3)
-    storage_dead(_2)
-    storage_dead(_1)
-    return
 }
 
 // Full name: test_crate::main::{impl FnOnce<(i32,)> for test_crate::main::{closure#2}}
