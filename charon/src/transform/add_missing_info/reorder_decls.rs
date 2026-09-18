@@ -350,6 +350,10 @@ impl VisitAst for DepsForItem<'_> {
         }
     }
 
+    // The layout guarantees of a type mention the type itself -- we ignore those.
+    fn visit_layout(&mut self, _: &Layout) -> ControlFlow<Self::Break> {
+        Continue(())
+    }
     // Sources are reverse dependencies; exploring them is likely to create dependency cycles.
     fn visit_type_source(&mut self, _: &TypeSource) -> ControlFlow<Self::Break> {
         Continue(())

@@ -51,7 +51,7 @@ use derive_generic_visitor::*;
         crate::options::CliOpts,
         Abi, BuiltinImplData, Byte, DeprecatedSince, DropKind, Error, FileName,
         GlobalKind, ItemOpacity, LangItem, LifetimeMutability, OptimizeAttr, OverflowMode,
-        ReprOptions, Variance,
+        ReprOptions, Variance, FieldPredecessor,
         std::ops::RangeInclusive<IntegerValue>,
         WithRetag, BuiltinPathElem, BranchId,
     ),
@@ -73,7 +73,7 @@ use derive_generic_visitor::*;
         TranslatedCrate, TypeDeclKind, TypeParam, TypePattern, TypeVarId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, SwitchData, SwitchScrutinee,
-        UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, Layout, VariantLayout,
+        UnOp, UnsizingMetadata, Local, Variant, VariantId, LocalId, VariantLayout,
         Discriminator,
         Size, OffsetExpr, OffsetGuarantee,
         PtrMetadata,
@@ -108,7 +108,7 @@ use derive_generic_visitor::*;
         llbc_block: llbc_ast::Block, llbc_statement: llbc_ast::Statement,
         ullbc_statement: ullbc_ast::Statement, ullbc_terminator: ullbc_ast::Terminator,
         AbortKind, AggregateKind, FnPtr, FunSig,
-        ConstantExpr, ConstantExprKind, InhabitedPredicate, InhabitedPredicateKind, SizeExpr,
+        ConstantExpr, ConstantExprKind, Layout, InhabitedPredicate, InhabitedPredicateKind, SizeExpr,
         SizeExprKind, MetadataValue, Place, ProjectionElem, Rvalue, Body,
     )
 )]

@@ -2475,6 +2475,16 @@ and field_of_json (ctx : of_json_ctx) (js : json) : (field, string) result =
         Ok ({ span; attr_info; field_name; is_positional; field_ty } : field)
     | _ -> Error "")
 
+and field_predecessor_of_json (ctx : of_json_ctx) (js : json) :
+    (field_predecessor, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Field", _0) ] ->
+        let* _0 = field_id_of_json ctx _0 in
+        Ok (PredecessorField _0)
+    | `String "Tag" -> Ok PredecessorTag
+    | _ -> Error "")
+
 and file_of_json (ctx : of_json_ctx) (js : json) : (file, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -3181,13 +3191,15 @@ and offset_guarantee_of_json (ctx : of_json_ctx) (js : json) :
     (offset_guarantee, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `String "AtOffsetZero" -> Ok AtOffsetZero
+    | `Assoc [ ("AtOffset", _0) ] ->
+        let* _0 = size_expr_of_json ctx _0 in
+        Ok (AtOffset _0)
     | `Assoc [ ("GuaranteedAlignment", _0) ] ->
         let* _0 = size_expr_of_json ctx _0 in
         Ok (GuaranteedAlignment _0)
-    | `Assoc [ ("ReprCField", `Assoc [ ("predecessor", predecessor) ]) ] ->
-        let* predecessor = option_of_json field_id_of_json ctx predecessor in
-        Ok (ReprCField predecessor)
+    | `Assoc [ ("ReprCField", _0) ] ->
+        let* _0 = field_predecessor_of_json ctx _0 in
+        Ok (ReprCField _0)
     | _ -> Error "")
 
 and rustc_optimize_attr_of_json (ctx : of_json_ctx) (js : json) :

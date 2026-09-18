@@ -838,6 +838,9 @@ and field = {
   field_ty : ty;
 }
 
+(** The predecessor of a field in a struct or enum variant. *)
+and field_predecessor = PredecessorField of field_id | PredecessorTag
+
 (** There are two kinds of [impl] blocks:
     {ul
      {- impl blocks linked to a type ("inherent" impl blocks following Rust
@@ -1282,19 +1285,13 @@ and offset_expr = {
 
 (** Guaranteed facts about a field offset. *)
 and offset_guarantee =
-  | AtOffsetZero
-      (** Guaranteed to be at offset zero. This applies for [repr(transparent)]
-          and in some [repr(C)] cases. *)
+  | AtOffset of size_expr  (** Guaranteed to be exactly at the given offset. *)
   | GuaranteedAlignment of size_expr
       (** Guaranteed only to be aligned to the given expression. *)
-  | ReprCField of field_id option
+  | ReprCField of field_predecessor
       (** This offset is computed by the layout algorithm for C: take the
           previous field offset, add the previous field size, and align to the
-          current field alignment.
-
-          Fields:
-          - [predecessor]: If this is [None], then the field is directly after
-            the enum tag. *)
+          current field alignment (as capped by [packed]). *)
 
 (** See the comments for [Name] *)
 and path_elem =
