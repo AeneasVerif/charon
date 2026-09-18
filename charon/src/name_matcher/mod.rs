@@ -1,6 +1,5 @@
 use std::cmp::Ordering;
 
-use itertools::{EitherOrBoth, Itertools};
 use serde::{Deserialize, Serialize};
 
 use crate::{ast::*, formatter::IntoFormatter, pretty::FmtWithCtx};
@@ -71,11 +70,12 @@ impl Pattern {
         args: Option<&GenericArgs>,
     ) -> bool {
         let mut scrutinee_elems = name.name.as_slice();
-        let mut args: Option<GenericArgs> = args.cloned();
+        let instantiated_args: Option<GenericArgs>;
+        let mut args: Option<&GenericArgs> = args;
         if let [prefix @ .., PathElem::Instantiated(instantiation)] = scrutinee_elems {
             // An `Instantiated` suffix is appended when the generics of an item are modified; it
             // records the map from the new generics to the old ones.
-            args = match args {
+            instantiated_args = match args {
                 None => None,
                 Some(args) if instantiation.params.is_empty() => {
                     // HACK: Monomorphization doesn't handle late-bound regions properly, so we
@@ -90,23 +90,23 @@ impl Pattern {
                     );
                     // We can ignore the binder because binding levels shouldn't affect matching.
                     let mut mono_args = instantiation.skip_binder.clone();
-                    mono_args.regions.extend(args.regions);
+                    mono_args.regions.extend(args.regions.iter().cloned());
                     Some(mono_args)
                 }
                 Some(args) => {
                     assert!(
-                        generic_args_match_params(&instantiation.params, &args),
+                        generic_args_match_params(&instantiation.params, args),
                         "In pattern \"{}\" matching against name \"{}\": the instantiated item generics {} do not match the item parameters",
                         self,
                         name.with_ctx(&ctx.into_fmt()),
                         args.with_ctx(&ctx.into_fmt())
                     );
-                    Some(instantiation.as_ref().clone().apply(&args))
+                    Some(instantiation.as_ref().clone().apply(args))
                 }
             };
+            args = instantiated_args.as_ref();
             scrutinee_elems = prefix;
         };
-        let args = args.as_ref();
         // Patterns that start with an impl block match that impl block anywhere. In such a case we
         // truncate the scrutinee name to start with the rightmost impl in its name. This isn't
         // fully precise in case of impls within impls, but we'll ignore that.
@@ -119,25 +119,20 @@ impl Pattern {
             scrutinee_elems = &scrutinee_elems[i..];
         }
 
-        let zipped = self.elems.iter().zip_longest(scrutinee_elems).collect_vec();
-        let zipped_len = zipped.len();
-        for (i, x) in zipped.into_iter().enumerate() {
-            let is_last = i + 1 == zipped_len;
-            match x {
-                EitherOrBoth::Both(pat, elem) => {
-                    let args = if is_last { args } else { None };
-                    if !pat.matches_with_generics(ctx, elem, args) {
-                        return false;
-                    }
-                }
-                // The pattern is shorter than the scrutinee and the previous elements match: we
-                // count that as matching.
-                EitherOrBoth::Right(_) => return true,
-                // The pattern is longer than the scrutinee; they don't match.
-                EitherOrBoth::Left(_) => return false,
+        // The pattern is longer than the scrutinee; they don't match.
+        if self.elems.len() > scrutinee_elems.len() {
+            return false;
+        }
+        // The pattern is shorter or equal to the scrutinee: it matches if their shared
+        // prefix matches.
+        let same_length = self.elems.len() == scrutinee_elems.len();
+        for (i, pat) in self.elems.iter().enumerate() {
+            let is_last = same_length && i + 1 == self.elems.len();
+            let args = if is_last { args } else { None };
+            if !pat.matches_with_generics(ctx, &scrutinee_elems[i], args) {
+                return false;
             }
         }
-        // Both had the same length and all the elements matched.
         true
     }
 
