@@ -1,6 +1,6 @@
 //! Copies of the relevant type-level types. These are semantically-rich representations of
 //! type-level concepts such as types and trait references.
-use std::collections::HashMap;
+use rustc_hash::FxHashMap as HashMap;
 
 use crate::hax::prelude::*;
 use crate::hax::sinto_as_usize;
@@ -1370,7 +1370,7 @@ trait BinderVariances<'tcx>: Sized {
         _tcx: ty::TyCtxt<'tcx>,
         _binder: &ty::Binder<'tcx, Self>,
     ) -> HashMap<ty::BoundVar, ty::Variance> {
-        HashMap::new()
+        HashMap::default()
     }
 }
 

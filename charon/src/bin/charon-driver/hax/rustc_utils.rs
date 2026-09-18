@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
 use rustc_hir::def::DefKind as RDefKind;
 use rustc_middle::infer::canonical::{CanonicalVarKinds, CanonicalVarValues};
@@ -241,7 +241,7 @@ pub fn fn_sig_bound_region_variances<'tcx>(
 
     let mut relation = FunctionalVariances {
         tcx,
-        variances: HashMap::new(),
+        variances: HashMap::default(),
         // `Relate for FnSig` makes inputs contravariant. We are computing the variance of the
         // signature's own bound parameters, so cancel that outer function-type variance. Nested
         // function types still introduce their own contravariance as usual.
