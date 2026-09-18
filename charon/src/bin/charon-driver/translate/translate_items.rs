@@ -1424,10 +1424,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             TransImplSource::ImplicitDestruct => TraitImplSource::Destruct,
             _ => unreachable!("not a virtual impl source: {impl_kind:?}"),
         };
-        let trait_def = self.hax_def(&vimpl.trait_pred.trait_ref)?;
-        let hax::FullDefKind::Trait(t) = trait_def.kind() else {
-            panic!()
-        };
 
         let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
         let implied_trait_refs = self.translate_trait_proofs(span, &vimpl.implied_trait_proofs)?;
@@ -1441,6 +1437,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let mut types: IndexMap<AssocTypeId, _> = IndexMap::new();
         // Monomorphic traits have no associated types.
         if !self.monomorphize() {
+            let trait_def = self.poly_hax_def(&vimpl.trait_pred.trait_ref.def_id)?;
+            let hax::FullDefKind::Trait(t) = trait_def.kind() else {
+                panic!()
+            };
             let trait_items = t.items(self.hax_state());
             let type_items = trait_items
                 .iter()
