@@ -2634,6 +2634,8 @@ and global_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("item_meta", item_meta);
           ("generics", generics);
           ("ty", ty);
+          ("size", size);
+          ("align", align);
           ("src", src);
           ("global_kind", global_kind);
           ("value", value);
@@ -2642,11 +2644,23 @@ and global_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
         let* ty = ty_of_json ctx ty in
+        let* size = size_of_json ctx size in
+        let* align = size_of_json ctx align in
         let* src = global_source_of_json ctx src in
         let* global_kind = global_kind_of_json ctx global_kind in
         let* value = constant_expr_of_json ctx value in
         Ok
-          ({ def_id; item_meta; generics; ty; src; global_kind; value }
+          ({
+             def_id;
+             item_meta;
+             generics;
+             ty;
+             size;
+             align;
+             src;
+             global_kind;
+             value;
+           }
             : global_decl)
     | _ -> Error "")
 

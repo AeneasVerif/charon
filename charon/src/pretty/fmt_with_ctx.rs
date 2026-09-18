@@ -1020,6 +1020,11 @@ where
         let value = self.value.with_ctx(ctx);
         write!(f, "= {value}")?;
 
+        if ctx.include_layouts() {
+            let (size, align) = (self.size.with_ctx(ctx), self.align.with_ctx(ctx));
+            write!(f, "\n// size: {size}, align: {align}")?;
+        }
+
         Ok(())
     }
 }

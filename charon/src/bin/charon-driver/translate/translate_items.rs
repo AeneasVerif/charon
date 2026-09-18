@@ -656,6 +656,20 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
         let ty = self.translate_ty(span, ty)?;
 
+        let (size, align) = if let hax::DefIdBase::Alloc(alloc_id) = def.def_id().base {
+            let tcx = self.t_ctx.tcx;
+            let alloc = tcx.global_alloc(alloc_id).unwrap_memory().inner();
+            (
+                Size::new(alloc.size().bytes()),
+                Size::new(alloc.align.bytes()),
+            )
+        } else {
+            (
+                Size::from_expr(SizeExpr::size_of(&ty)),
+                Size::from_expr(SizeExpr::align_of(&ty)),
+            )
+        };
+
         let global_kind = match &def.kind {
             hax::FullDefKind::Static(s) if s.thread_local() => GlobalKind::ThreadLocal,
             hax::FullDefKind::Static(_) => GlobalKind::Static,
@@ -697,6 +711,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             item_meta,
             generics: self.into_generics(),
             ty,
+            size,
+            align,
             src: item_source,
             global_kind,
             value,
