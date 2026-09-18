@@ -126,7 +126,6 @@ where
                     .inner()
                     .mutability,
                 thread_local: false,
-                nested: true,
                 ty: def_id
                     .type_of(s)
                     .instantiate_identity()
@@ -453,9 +452,6 @@ pub struct Trait {
     implied_trait_proofs: Vec<TraitProof>,
     /// The special `Self: Trait` clause.
     self_predicate: TraitPredicate,
-    /// The proof for the special `Self: Trait` clause. Almost always a `TraitProofKind::Self`,
-    /// except for builtin traits like `Sized`.
-    self_proof: TraitProof,
     /// Associated items, in definition order.
     items: Vec<AssocItem>,
     /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for this trait. This is `Some` iff this
@@ -478,11 +474,6 @@ impl Trait {
     /// The special `Self: Trait` clause.
     pub fn self_predicate(&self) -> &TraitPredicate {
         &self.self_predicate
-    }
-    /// The proof for the special `Self: Trait` clause. Almost always a `TraitProofKind::Self`,
-    /// except for builtin traits like `Sized`.
-    pub fn self_proof(&self) -> &TraitProof {
-        &self.self_proof
     }
     /// Associated items, in definition order.
     pub fn items(&self) -> &[AssocItem] {
@@ -597,7 +588,6 @@ impl InherentImpl {
 pub struct Fn {
     param_env: ParamEnv,
     inline: InlineAttr,
-    is_const: bool,
     sig: PolyFnSig,
     /// The arguments of this function, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
     /// Binds the same variables as `sig`. `None` if this function doesn't implement `Fn*`.
@@ -616,9 +606,6 @@ impl Fn {
     }
     pub fn inline(&self) -> &InlineAttr {
         &self.inline
-    }
-    pub fn is_const(&self) -> bool {
-        self.is_const
     }
     pub fn sig(&self) -> &PolyFnSig {
         &self.sig
@@ -649,7 +636,6 @@ pub struct AssocFn {
     param_env: ParamEnv,
     associated_item: AssocItem,
     inline: InlineAttr,
-    is_const: bool,
     /// The function signature when this method is used in a vtable. `None` if this method is not
     /// vtable safe. `Some(sig)` if it is vtable safe, where `sig` is the trait method declaration's
     /// signature with `Self` replaced by `dyn Trait` and associated types normalized.
@@ -675,9 +661,6 @@ impl AssocFn {
     }
     pub fn inline(&self) -> &InlineAttr {
         &self.inline
-    }
-    pub fn is_const(&self) -> bool {
-        self.is_const
     }
     /// The function signature when this method is used in a vtable. `None` if this method is not
     /// vtable safe. `Some(sig)` if it is vtable safe, where `sig` is the trait method declaration's
@@ -715,7 +698,6 @@ pub struct Closure {
     /// uses internally for inference on closures.
     param_env: ParamEnv,
     args: ClosureArgs,
-    is_const: bool,
     inline: InlineAttr,
     /// Info required to construct a virtual `FnOnce` impl for this closure.
     fn_once_impl: Box<VirtualTraitImpl>,
@@ -736,9 +718,6 @@ impl Closure {
     }
     pub fn args(&self) -> &ClosureArgs {
         &self.args
-    }
-    pub fn is_const(&self) -> bool {
-        self.is_const
     }
     pub fn inline(&self) -> &InlineAttr {
         &self.inline
@@ -809,8 +788,6 @@ pub struct Static {
     mutability: Mutability,
     /// Whether it's a `#[thread_local] static`.
     thread_local: bool,
-    /// Whether it's an anonymous static generated for nested allocations.
-    nested: bool,
     ty: Ty,
 }
 
@@ -829,10 +806,6 @@ impl Static {
     /// Whether it's a `#[thread_local] static`.
     pub fn thread_local(&self) -> bool {
         self.thread_local
-    }
-    /// Whether it's an anonymous static generated for nested allocations.
-    pub fn nested(&self) -> bool {
-        self.nested
     }
     pub fn ty(&self) -> &Ty {
         &self.ty
@@ -1133,7 +1106,6 @@ where
             implied_predicates: get_implied_predicates(s, args),
             implied_trait_proofs: solve_item_implied_traits(s, def_id, args_or_default()),
             self_predicate: get_self_predicate(s, args),
-            self_proof: solve_trait(s, self_trait_ref(s, args)),
             dyn_self: get_trait_decl_dyn_self_ty(s, args).sinto(s),
             items: tcx
                 .associated_items(def_id)
@@ -1280,7 +1252,6 @@ where
             FullDefKind::Fn(Fn {
                 param_env: get_param_env(s, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
-                is_const: matches!(tcx.constness(def_id), rustc_hir::Constness::Const { .. }),
                 tupled_args_ty: fn_trait_impls
                     .is_some()
                     .then(|| tupled_args_ty(s, sig).sinto(s)),
@@ -1298,7 +1269,6 @@ where
                 param_env: get_param_env(s, args),
                 associated_item: AssocItem::sfrom_instantiated(s, &item, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
-                is_const: matches!(tcx.constness(def_id), rustc_hir::Constness::Const { .. }),
                 vtable_sig: gen_vtable_sig(s, args),
                 tupled_args_ty: fn_trait_impls
                     .is_some()
@@ -1332,7 +1302,6 @@ where
 
             FullDefKind::Closure(Closure {
                 param_env: get_param_env(s, args),
-                is_const: matches!(tcx.constness(def_id), rustc_hir::Constness::Const { .. }),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 args: ClosureArgs::sfrom(s, def_id, closure_args),
                 destruct_impl: virtual_impl_for(
@@ -1381,16 +1350,12 @@ where
             ty: type_of_self().sinto(s),
         }),
         RDefKind::Static {
-            safety,
-            mutability,
-            nested,
-            ..
+            safety, mutability, ..
         } => FullDefKind::Static(Static {
             param_env: get_param_env(s, args),
             safety: safety.sinto(s),
             mutability: mutability.sinto(s),
             thread_local: tcx.is_thread_local_static(def_id),
-            nested: nested.sinto(s),
             ty: type_of_self().sinto(s),
         }),
         RDefKind::ExternCrate => FullDefKind::ExternCrate,
