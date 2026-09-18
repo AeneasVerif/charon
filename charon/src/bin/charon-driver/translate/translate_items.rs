@@ -1133,7 +1133,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             });
         }
 
-        for impl_item in &timpl.items(self.hax_state()) {
+        for impl_item in timpl.items(self.hax_state()) {
             let item_def_id = impl_item.def_id().unwrap_or(impl_item.decl_def_id());
             let item_span = self.def_span(item_def_id);
             let assoc_item_id = self.translate_assoc_item_id(trait_id, item_def_id)?;
