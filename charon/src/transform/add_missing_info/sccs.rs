@@ -6,7 +6,7 @@ use itertools::Itertools;
 use petgraph::algo::scc::tarjan_scc;
 use petgraph::graphmap::NodeTrait;
 use petgraph::prelude::DiGraphMap;
-use petgraph::visit::{DfsPostOrder, Walker};
+use petgraph::visit::DfsPostOrder;
 
 use crate::ast::*;
 
@@ -88,8 +88,10 @@ pub fn ordered_scc<Id: NodeTrait + Debug, O: Ord>(
     // topological sort for the scc DAG. Moreover this will explore other sccs in order too because
     // we sorted the list of neighbors.
     let mut reordered_sccs_ids: SeqHashSet<SccId> = SeqHashSet::new();
+    let mut dfs = DfsPostOrder::empty(&scc_graph);
     for scc_id in scc_graph.nodes() {
-        for scc_id in DfsPostOrder::new(&scc_graph, scc_id).iter(&scc_graph) {
+        dfs.move_to(scc_id);
+        while let Some(scc_id) = dfs.next(&scc_graph) {
             reordered_sccs_ids.insert(scc_id);
         }
     }

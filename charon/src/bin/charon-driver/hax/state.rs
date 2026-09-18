@@ -80,7 +80,7 @@ mod types {
     impl LocalContextS {
         pub fn new() -> LocalContextS {
             LocalContextS {
-                vars: HashMap::new(),
+                vars: HashMap::default(),
             }
         }
     }
