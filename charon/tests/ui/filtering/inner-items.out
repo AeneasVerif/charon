@@ -39,7 +39,7 @@ trait Trait<Self>
 // Full name: test_crate::foo::{impl Trait for ()}
 impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    vtable: impl_Trait_for_unit::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::Bar

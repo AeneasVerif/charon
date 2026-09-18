@@ -1,7 +1,5 @@
 # Final LLBC before serialization:
 
-opaque type core::marker::MetaSized::{vtable}
-
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -26,17 +24,17 @@ struct () {}
 unsafe fn drop_glue<'_0>(_1: &'_0 mut String)
 = <opaque>
 
+// Full name: alloc::string::{impl Display for String}
+impl "impl_Display_for_String" Display for String {
+    vtable: unknown // the vtable struct of the trait is excluded
+}
+
 // Full name: alloc::string::{impl Display for String}::{vtable}
 fn impl_Display_for_String::{vtable}() -> core::fmt::Display::{vtable}
 = <opaque>
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
 static impl_Display_for_String::{vtable}: core::fmt::Display::{vtable} = impl_Display_for_String::{vtable}()
-
-// Full name: alloc::string::{impl Display for String}
-impl "impl_Display_for_String" Display for String {
-    vtable: impl_Display_for_String::{vtable}
-}
 
 struct str {
   _0: [u8],

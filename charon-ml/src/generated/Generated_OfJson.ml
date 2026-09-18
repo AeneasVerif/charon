@@ -2142,6 +2142,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("exclude", exclude);
           ("extract_opaque_bodies", extract_opaque_bodies);
           ("translate_all_methods", translate_all_methods);
+          ("eager_vtables", eager_vtables);
           ("duplicate_defaulted_methods", duplicate_defaulted_methods);
           ("lift_associated_types", lift_associated_types);
           ("hide_marker_traits", hide_marker_traits);
@@ -2203,6 +2204,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* exclude = list_of_json string_of_json ctx exclude in
         let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
         let* translate_all_methods = bool_of_json ctx translate_all_methods in
+        let* eager_vtables = bool_of_json ctx eager_vtables in
         let* duplicate_defaulted_methods =
           bool_of_json ctx duplicate_defaulted_methods
         in
@@ -2275,6 +2277,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              exclude;
              extract_opaque_bodies;
              translate_all_methods;
+             eager_vtables;
              duplicate_defaulted_methods;
              lift_associated_types;
              hide_marker_traits;
@@ -3568,7 +3571,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
                  ctx json))
             ctx methods
         in
-        let* vtable = option_of_json global_decl_ref_of_json ctx vtable in
+        let* vtable = v_table_decl_of_json ctx vtable in
         Ok
           ({
              def_id;
@@ -3804,6 +3807,20 @@ and type_source_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Builtin", _0) ] ->
         let* _0 = builtin_adt_of_json ctx _0 in
         Ok (BuiltinType _0)
+    | _ -> Error "")
+
+and v_table_decl_of_json (ctx : of_json_ctx) (js : json) :
+    (v_table_decl, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "NotDynCompatible" -> Ok NotDynCompatible
+    | `String "Lazy" -> Ok Lazy
+    | `Assoc [ ("VTable", _0) ] ->
+        let* _0 = global_decl_ref_of_json ctx _0 in
+        Ok (VTableInstance _0)
+    | `Assoc [ ("Unknown", _0) ] ->
+        let* _0 = string_of_json ctx _0 in
+        Ok (UnknownVTable _0)
     | _ -> Error "")
 
 and v_table_field_of_json (ctx : of_json_ctx) (js : json) :

@@ -191,7 +191,7 @@ impl "impl_Allocator_for_Global" Allocator for Global {
     proof ImpliedClause1: (Global: Destruct) = impl_Destruct_for_Global
     fn allocate<'_0_1> = allocate<'_0_1>
     fn deallocate<'_0_1> = deallocate<'_0_1>
-    vtable: impl_Allocator_for_Global::{vtable}
+    vtable: lazy
 }
 
 // Full name: alloc::boxed::Box

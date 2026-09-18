@@ -159,7 +159,7 @@ impl<'a> "impl_FnOnce_unit_for_closure" FnOnce<()> for {closure}<'a> {
     proof ImpliedClause3: (Option<u8>[{built_in impl Sized for u8}]: Sized) = {built_in impl Sized for Option<u8>[{built_in impl Sized for u8}]}
     type Output = Option<u8>[{built_in impl Sized for u8}]
     fn call_once = call_once<'a>
-    vtable: impl_FnOnce_unit_for_closure::{vtable}<'a>
+    vtable: lazy
 }
 
 // Full name: test_crate::sparse_transitions::{impl FnMut<()> for {closure}<'a>}
@@ -169,7 +169,7 @@ impl<'a> "impl_FnMut_unit_for_closure" FnMut<()> for {closure}<'a> {
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
     fn call_mut<'_0_1> = call_mut<'a, '_0_1>
-    vtable: impl_FnMut_unit_for_closure::{vtable}<'a>
+    vtable: lazy
 }
 
 // Full name: test_crate::sparse_transitions

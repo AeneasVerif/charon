@@ -91,7 +91,7 @@ pub fn impl_PartialEq_i32_for_i32::eq<'_0, '_1>(_1: &'_0 i32, _2: &'_1 i32) -> b
 // Full name: core::cmp::impls::{impl PartialEq<i32> for i32}
 impl "impl_PartialEq_i32_for_i32" PartialEq<i32> for i32 {
     fn eq<'_0_1, '_1_1> = impl_PartialEq_i32_for_i32::eq<'_0_1, '_1_1>
-    vtable: impl_PartialEq_i32_for_i32::{vtable}
+    vtable: lazy
 }
 
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}::eq
@@ -101,7 +101,7 @@ pub fn impl_PartialEq_usize_for_usize::eq<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usi
 // Full name: core::cmp::impls::{impl PartialEq<usize> for usize}
 impl "impl_PartialEq_usize_for_usize" PartialEq<usize> for usize {
     fn eq<'_0_1, '_1_1> = impl_PartialEq_usize_for_usize::eq<'_0_1, '_1_1>
-    vtable: impl_PartialEq_usize_for_usize::{vtable}
+    vtable: lazy
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}::partial_cmp
@@ -112,7 +112,7 @@ pub fn impl_PartialOrd_i32_for_i32::partial_cmp<'_0, '_1>(_1: &'_0 i32, _2: &'_1
 impl "impl_PartialOrd_i32_for_i32" PartialOrd<i32> for i32 {
     proof ImpliedClause0: (i32: PartialEq<i32>) = impl_PartialEq_i32_for_i32
     fn partial_cmp<'_0_1, '_1_1> = impl_PartialOrd_i32_for_i32::partial_cmp<'_0_1, '_1_1>
-    vtable: impl_PartialOrd_i32_for_i32::{vtable}
+    vtable: lazy
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<usize> for usize}::partial_cmp
@@ -123,7 +123,7 @@ pub fn impl_PartialOrd_usize_for_usize::partial_cmp<'_0, '_1>(_1: &'_0 usize, _2
 impl "impl_PartialOrd_usize_for_usize" PartialOrd<usize> for usize {
     proof ImpliedClause0: (usize: PartialEq<usize>) = impl_PartialEq_usize_for_usize
     fn partial_cmp<'_0_1, '_1_1> = impl_PartialOrd_usize_for_usize::partial_cmp<'_0_1, '_1_1>
-    vtable: impl_PartialOrd_usize_for_usize::{vtable}
+    vtable: lazy
 }
 
 struct (_, _)<A, B>
@@ -267,7 +267,7 @@ where
     proof ImpliedClause1: (A: Sized) = TraitClause0
     type Item = A
     fn next<'_0_1> = next<'_0_1, A>[TraitClause0, TraitClause1, TraitClause2]
-    vtable: impl_Iterator_for_Range::{vtable}<A>[TraitClause0, TraitClause1, TraitClause2]
+    vtable: lazy
 }
 
 // Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter

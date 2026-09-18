@@ -85,7 +85,7 @@ where
     proof ImpliedClause0: (Struct: MetaSized) = {built_in impl MetaSized for Struct}
     proof ImpliedClause1: (T: Sized) = TraitClause0
     proof ImpliedClause2: (u32: Sized) = {built_in impl Sized for u32}
-    vtable: impl_Trait_for_Struct::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: test_crate::Alias
@@ -110,7 +110,7 @@ where
     proof ImpliedClause1: (Self: Trait<Option<U>[TraitClause3], u32>) = TraitClause1
     proof ImpliedClause2: (Self: Clone) = TraitClause2
     proof ImpliedClause3: (U: Sized) = TraitClause3
-    non-dyn-compatible
+    vtable: unknown // vtables of trait alias impls are not supported
 }
 
 // Full name: test_crate::takes_alias

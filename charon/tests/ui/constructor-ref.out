@@ -103,7 +103,7 @@ where
     proof ImpliedClause3: (Wrapper<T>[TraitClause0]: Sized) = {built_in impl Sized for Wrapper<T>[TraitClause0]}
     type Output = Wrapper<T>[TraitClause0]
     fn call_once = call_once<T>[TraitClause0]
-    vtable: {impl FnOnce<(T,)> for Value<T>[TraitClause0]}::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: test_crate::use_constructor

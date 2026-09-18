@@ -142,7 +142,7 @@ impl<'_0> FnOnce<(&'_0 u64,)> for from<'_0> {
     proof ImpliedClause3: (S: Sized) = {built_in impl Sized for S}
     type Output = S
     fn call_once = call_once<'_0>
-    vtable: {impl FnOnce<(&'_0 u64,)> for from<'_0>}::{vtable}<'_0>
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl From<&'_0 u64> for S}::{impl FnMut<(&'_0 u64,)> for from<'_0>}
@@ -152,7 +152,7 @@ impl<'_0> FnMut<(&'_0 u64,)> for from<'_0> {
     proof ImpliedClause2: ((&'_0 u64,): Sized) = {built_in impl Sized for (&'_0 u64,)}
     proof ImpliedClause3: ((&'_0 u64,): Tuple) = {built_in impl Tuple for (&'_0 u64,)}
     fn call_mut<'_0_1> = call_mut<'_0, '_0_1>
-    vtable: {impl FnMut<(&'_0 u64,)> for from<'_0>}::{vtable}<'_0>
+    vtable: lazy
 }
 
 // Full name: test_crate::use_fn

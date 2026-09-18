@@ -1082,7 +1082,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 consts: Default::default(),
                 types: Default::default(),
                 methods: Default::default(),
-                vtable: None,
+                vtable: VTableDecl::Unknown("polymorphic impl in monomorphic mode".into()),
             });
         }
 
@@ -1095,7 +1095,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             RegionBinder::empty(implemented_trait.clone()),
         );
 
-        let vtable = self.translate_vtable_instance_ref_no_enqueue(
+        let vtable = self.translate_trait_impl_vtable(
             span,
             &trait_pred.trait_ref,
             def.this(),
@@ -1365,7 +1365,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             types: Default::default(),
             methods: Default::default(),
             // TODO(dyn)
-            vtable: None,
+            vtable: VTableDecl::Unknown("vtables of trait alias impls are not supported".into()),
         };
         // We got the predicates from a trait decl, so they may refer to the virtual `Self`
         // clause, which doesn't exist for impls. We fix that up here.
@@ -1447,7 +1447,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
         let implied_trait_refs = self.translate_trait_proofs(span, &vimpl.implied_trait_proofs)?;
-        let vtable = self.translate_vtable_instance_ref_no_enqueue(
+        let vtable = self.translate_trait_impl_vtable(
             span,
             &vimpl.trait_pred.trait_ref,
             vtable_item,

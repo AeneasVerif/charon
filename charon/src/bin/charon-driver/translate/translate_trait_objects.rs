@@ -265,9 +265,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             return Ok(None);
         }
 
-        // FIXME: preserve legacy behavior, maybe undesired.
-        let enqueue = enqueue || self.monomorphize();
-
         // Don't enqueue the vtable for translation by default. It will be enqueued if used in a
         // `dyn Trait`.
         let mut vtable_ref = self.translate_type_decl_ref_maybe_enqueue(
@@ -709,6 +706,43 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         )
     }
 
+    /// Compute the `vtable` field of a trait impl. If `--eager-vtables` is set, this enqueues the
+    /// vtable for translation.
+    pub fn translate_trait_impl_vtable(
+        &mut self,
+        span: Span,
+        trait_ref: &hax::TraitRef,
+        vtable_item: &hax::ItemRef,
+        impl_kind: TransImplSource,
+    ) -> Result<VTableDecl, Error> {
+        let Some(vtable_struct) = self.translate_vtable_struct_ref_no_enqueue(span, trait_ref)?
+        else {
+            return Ok(VTableDecl::NotDynCompatible);
+        };
+        // The vtable initializer needs the fields of the vtable struct.
+        let struct_name = &self.translated.item_names[&ItemId::Type(vtable_struct.id)];
+        if self.opacity_for_name(struct_name).is_invisible() {
+            return Ok(VTableDecl::Unknown(
+                "the vtable struct of the trait is excluded".into(),
+            ));
+        }
+        let vtable = self
+            .translate_vtable_instance_ref_maybe_enqueue(
+                self.options.eager_vtables,
+                span,
+                trait_ref,
+                vtable_item,
+                impl_kind,
+            )?
+            .unwrap();
+
+        if self.translated.global_decls.get(vtable.id).is_none() {
+            Ok(VTableDecl::Lazy)
+        } else {
+            Ok(VTableDecl::VTable(vtable))
+        }
+    }
+
     pub fn translate_vtable_instance_ref_maybe_enqueue(
         &mut self,
         enqueue: bool,
@@ -778,6 +812,25 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         impl_kind: TransImplSource,
     ) -> Result<GlobalDecl, Error> {
         let span = item_meta.span;
+
+        // Update the impl, in case it's vtable was lazy.
+        if impl_kind != TransImplSource::Marker {
+            let impl_id: TraitImplId = self.register_item_maybe_enqueue(
+                span,
+                false,
+                impl_def.this(),
+                TransItemSourceKind::TraitImpl(impl_kind),
+            );
+            let vtable_ref = GlobalDeclRef {
+                id: global_id,
+                generics: Box::new(self.outermost_generics().identity_args()),
+            };
+            if let Some(timpl) = self.t_ctx.translated.trait_impls.get_mut(impl_id)
+                && timpl.vtable.is_lazy()
+            {
+                timpl.vtable = VTableDecl::VTable(vtable_ref);
+            }
+        }
 
         let (impl_ref, vtable_struct_ref) =
             self.get_vtable_instance_info(span, impl_def, impl_kind)?;

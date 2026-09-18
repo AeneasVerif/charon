@@ -553,7 +553,7 @@ impl "impl_Drop_for_Point" Drop for Point {
     proof ImpliedClause0: (Point: MetaSized) = {built_in impl MetaSized for Point}
     proof ImpliedClause1: (Point: Destruct) = impl_Destruct_for_Point
     fn drop<'_0_1> = impl_Drop_for_Point::drop<'_0_1>
-    vtable: impl_Drop_for_Point::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::main

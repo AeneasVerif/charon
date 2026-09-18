@@ -81,7 +81,7 @@ trait Trait2<Self>
 // Full name: test_crate::hidden_module::{impl Trait2 for Type1}
 impl "impl_Trait2_for_Type1" Trait2 for Type1 {
     proof ImpliedClause0: (Type1: MetaSized) = {built_in impl MetaSized for Type1}
-    vtable: impl_Trait2_for_Type1::{vtable}
+    vtable: lazy
 }
 
 

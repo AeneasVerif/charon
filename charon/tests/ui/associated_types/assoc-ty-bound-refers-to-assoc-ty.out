@@ -46,7 +46,7 @@ where
     TraitClause1: (I: Iterator<Clause1_Item>),
 {
     proof ImpliedClause0: (I: MetaSized) = TraitClause0::ImpliedClause0
-    vtable: impl_IsIterator_for_T::{vtable}<I>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::assert_is_iterator

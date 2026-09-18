@@ -36,7 +36,7 @@ pub trait Foo<Self>
 // Full name: test_crate::{impl Foo for ()}
 impl "impl_Foo_for_unit" Foo for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    vtable: impl_Foo_for_unit::{vtable}
+    vtable: lazy
 }
 
 struct test_crate::Broken::{vtable}<Ty0> {

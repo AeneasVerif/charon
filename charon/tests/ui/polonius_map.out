@@ -31,7 +31,7 @@ where
     proof ImpliedClause0: (T: MetaSized) = TraitClause0
     proof ImpliedClause1: (T: MetaSized) = TraitClause0
     fn borrow<'_0_1> = borrow<'_0_1, T>[TraitClause0]
-    vtable: impl_Borrow_for_T::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: core::cmp::PartialEq
@@ -58,7 +58,7 @@ pub fn eq<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> bool
 // Full name: core::cmp::impls::{impl PartialEq<u32> for u32}
 impl "impl_PartialEq_u32_for_u32" PartialEq<u32> for u32 {
     fn eq<'_0_1, '_1_1> = eq<'_0_1, '_1_1>
-    vtable: impl_PartialEq_u32_for_u32::{vtable}
+    vtable: lazy
 }
 
 // Full name: core::cmp::impls::{impl Eq for u32}
@@ -218,7 +218,7 @@ impl "impl_Hasher_for_DefaultHasher" Hasher for DefaultHasher {
     proof ImpliedClause0: (DefaultHasher: MetaSized) = {built_in impl MetaSized for DefaultHasher}
     fn finish<'_0_1> = finish<'_0_1>
     fn write<'_0_1, '_1_1> = write<'_0_1, '_1_1>
-    vtable: impl_Hasher_for_DefaultHasher::{vtable}
+    vtable: lazy
 }
 
 // Full name: std::hash::random::{impl BuildHasher for RandomState}::build_hasher
@@ -232,7 +232,7 @@ impl "impl_BuildHasher_for_RandomState" BuildHasher for RandomState {
     proof ImpliedClause2: (DefaultHasher: Hasher) = impl_Hasher_for_DefaultHasher
     type Hasher = DefaultHasher
     fn build_hasher<'_0_1> = build_hasher<'_0_1>
-    vtable: impl_BuildHasher_for_RandomState::{vtable}
+    vtable: lazy
 }
 
 // Full name: alloc::alloc::Global

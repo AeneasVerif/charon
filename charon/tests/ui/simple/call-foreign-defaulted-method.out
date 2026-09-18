@@ -84,7 +84,7 @@ where
 impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     fn defaulted<'_0_1> = impl_Trait_for_unit::defaulted<'_0_1>
-    vtable: impl_Trait_for_unit::{vtable}
+    vtable: lazy
 }
 
 

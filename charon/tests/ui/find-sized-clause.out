@@ -40,7 +40,7 @@ where
     TraitClause0: (T: Sized),
 {
     proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
-    vtable: impl_Trait_for_Option::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 

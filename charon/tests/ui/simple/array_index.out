@@ -91,7 +91,7 @@ where
     proof ImpliedClause2: (TraitClause2::Output: MetaSized) = TraitClause2::ImpliedClause2
     type Output = TraitClause2::Output
     fn index<'_0_1> = impl_Index_for_slice::index<'_0_1, T, I>[TraitClause0, TraitClause1, TraitClause2]
-    vtable: impl_Index_for_slice::{vtable}<T, I>[TraitClause0, TraitClause1, TraitClause2]
+    vtable: lazy
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index_mut
@@ -151,7 +151,7 @@ where
     fn get_unchecked_mut = impl_SliceIndex_slice_for_usize::get_unchecked_mut<T>[TraitClause0]
     fn index<'_0_1> = impl_SliceIndex_slice_for_usize::index<'_0_1, T>[TraitClause0]
     fn index_mut<'_0_1> = impl_SliceIndex_slice_for_usize::index_mut<'_0_1, T>[TraitClause0]
-    vtable: impl_SliceIndex_slice_for_usize::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 struct () {}

@@ -1,8 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized::{vtable}
-opaque type {vtable}
-
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]

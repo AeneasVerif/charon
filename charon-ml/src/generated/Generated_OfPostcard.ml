@@ -1853,6 +1853,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* exclude = list_of_postcard string_of_postcard ctx st in
      let* extract_opaque_bodies = bool_of_postcard ctx st in
      let* translate_all_methods = bool_of_postcard ctx st in
+     let* eager_vtables = bool_of_postcard ctx st in
      let* duplicate_defaulted_methods = bool_of_postcard ctx st in
      let* lift_associated_types = list_of_postcard string_of_postcard ctx st in
      let* hide_marker_traits = bool_of_postcard ctx st in
@@ -1911,6 +1912,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           exclude;
           extract_opaque_bodies;
           translate_all_methods;
+          eager_vtables;
           duplicate_defaulted_methods;
           lift_associated_types;
           hide_marker_traits;
@@ -2997,7 +2999,7 @@ and trait_impl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
               ctx st))
          ctx st
      in
-     let* vtable = option_of_postcard global_decl_ref_of_postcard ctx st in
+     let* vtable = v_table_decl_of_postcard ctx st in
      Ok
        ({
           def_id;
@@ -3195,6 +3197,21 @@ and type_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 3 ->
          let* _0 = builtin_adt_of_postcard ctx st in
          Ok (BuiltinType _0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and v_table_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (v_table_decl, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok NotDynCompatible
+     | 1 -> Ok Lazy
+     | 2 ->
+         let* _0 = global_decl_ref_of_postcard ctx st in
+         Ok (VTableInstance _0)
+     | 3 ->
+         let* _0 = string_of_postcard ctx st in
+         Ok (UnknownVTable _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and v_table_field_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

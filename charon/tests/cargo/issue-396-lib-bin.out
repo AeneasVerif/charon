@@ -79,7 +79,7 @@ where
 // Full name: core::fmt::num::imp::{impl Display for u32}
 impl "impl_Display_for_u32" Display for u32 {
     fn fmt<'_0_1, '_1_1, '_2_1> = fmt<'_0_1, '_1_1, '_2_1>
-    vtable: impl_Display_for_u32::{vtable}
+    vtable: lazy
 }
 
 // Full name: core::fmt::rt::{Argument<'_0>}::new_display

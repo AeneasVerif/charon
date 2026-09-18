@@ -349,7 +349,7 @@ trait test_crate::loopy::Bar<Self, Self_BarTy>
 impl "impl_Bar_for_unit" test_crate::loopy::Bar<bool> for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (bool: Sized) = {built_in impl Sized for bool}
-    vtable: impl_Bar_for_unit::{vtable}
+    vtable: lazy
 }
 
 trait test_crate::loopy::Foo<Self>
@@ -371,7 +371,7 @@ impl "impl_Foo_for_unit" test_crate::loopy::Foo for () {
     proof ImpliedClause3: ((): test_crate::loopy::Bar<bool>) = impl_Bar_for_unit
     type FooTy = ()
     type Self_Clause3_BarTy = bool
-    vtable: impl_Foo_for_unit::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::loopy::Baz
@@ -396,7 +396,7 @@ impl "impl_Baz_unit_for_unit" Baz<()> for () {
     proof ImpliedClause4: (usize: Sized) = {built_in impl Sized for usize}
     type BazTy = usize
     type Self_Clause3_BarTy = bool
-    vtable: impl_Baz_unit_for_unit::{vtable}
+    vtable: lazy
 }
 
 trait test_crate::loopy_with_generics::Bar<'a, Self, T, U, Self_BarTy>
@@ -418,7 +418,7 @@ where
     proof ImpliedClause1: (u8: Sized) = {built_in impl Sized for u8}
     proof ImpliedClause2: (T: Sized) = TraitClause0
     proof ImpliedClause3: (&'a T: Sized) = {built_in impl Sized for &'a T}
-    vtable: impl_Bar_u8_for_unit::{vtable}<'a, T>[TraitClause0]
+    vtable: lazy
 }
 
 trait test_crate::loopy_with_generics::Foo<'b, Self, T>
@@ -442,7 +442,7 @@ impl "impl_Foo_u16_for_unit" test_crate::loopy_with_generics::Foo<'static, u16> 
     proof ImpliedClause4: ((): test_crate::loopy_with_generics::Bar<'static, u8, Option<u16>[{built_in impl Sized for u16}], &'_ Option<u16>[{built_in impl Sized for u16}]>) = impl_Bar_u8_for_unit<'_, Option<u16>[{built_in impl Sized for u16}]>[{built_in impl Sized for Option<u16>[{built_in impl Sized for u16}]}]
     type FooTy = ()
     type Self_Clause4_BarTy = &'_ Option<u16>[{built_in impl Sized for u16}]
-    vtable: impl_Foo_u16_for_unit::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::cow::Cow
@@ -479,7 +479,7 @@ where
     proof ImpliedClause1: (Option<T>[TraitClause0]: Sized) = {built_in impl Sized for Option<T>[TraitClause0]}
     proof ImpliedClause2: (&'a (): Sized) = {built_in impl Sized for &'a ()}
     proof ImpliedClause3: (&'a (Option<T>[TraitClause0], &'a ()): Sized) = impl_Foo_Option_for_unit<'a, T>[TraitClause0]::ImpliedClause3
-    vtable: impl_Foo_Option_for_unit::{vtable}<'a, T>[TraitClause0]
+    vtable: lazy
 }
 
 
