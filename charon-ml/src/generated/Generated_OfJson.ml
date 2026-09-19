@@ -2147,6 +2147,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("lift_associated_types", lift_associated_types);
           ("hide_marker_traits", hide_marker_traits);
           ("hide_allocator", hide_allocator);
+          ("no_doc_comments", no_doc_comments);
           ("remove_unused_clauses", remove_unused_clauses);
           ("remove_unused_self_clauses", remove_unused_self_clauses);
           ("remove_adt_clauses", remove_adt_clauses);
@@ -2214,6 +2215,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* hide_marker_traits = bool_of_json ctx hide_marker_traits in
         let* hide_allocator = bool_of_json ctx hide_allocator in
+        let* no_doc_comments = bool_of_json ctx no_doc_comments in
         let* remove_unused_clauses = bool_of_json ctx remove_unused_clauses in
         let* remove_unused_self_clauses =
           bool_of_json ctx remove_unused_self_clauses
@@ -2284,6 +2286,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              lift_associated_types;
              hide_marker_traits;
              hide_allocator;
+             no_doc_comments;
              remove_unused_clauses;
              remove_unused_self_clauses;
              remove_adt_clauses;

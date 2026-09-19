@@ -1858,6 +1858,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* lift_associated_types = list_of_postcard string_of_postcard ctx st in
      let* hide_marker_traits = bool_of_postcard ctx st in
      let* hide_allocator = bool_of_postcard ctx st in
+     let* no_doc_comments = bool_of_postcard ctx st in
      let* remove_unused_clauses = bool_of_postcard ctx st in
      let* remove_unused_self_clauses = bool_of_postcard ctx st in
      let* remove_adt_clauses = bool_of_postcard ctx st in
@@ -1918,6 +1919,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           lift_associated_types;
           hide_marker_traits;
           hide_allocator;
+          no_doc_comments;
           remove_unused_clauses;
           remove_unused_self_clauses;
           remove_adt_clauses;

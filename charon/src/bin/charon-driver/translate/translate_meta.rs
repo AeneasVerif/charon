@@ -833,7 +833,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         use rustc_hir::attrs as hir_attrs;
         match attr {
             hir::Attribute::Parsed(hir_attrs::AttributeKind::DocComment { comment, .. }) => {
-                Some(Attribute::DocComment(comment.to_string()))
+                (!self.options.no_doc_comments).then(|| Attribute::DocComment(comment.to_string()))
             }
             hir::Attribute::Parsed(attr) => self
                 .translate_rustc_attribute_kind(attr)

@@ -163,6 +163,7 @@ and cli_options = {
   hide_allocator : bool;
       (** Hide the [A] type parameter on standard library containers ([Box],
           [Vec], etc). *)
+  no_doc_comments : bool;  (** Don't translate doc comments. *)
   remove_unused_clauses : bool;
       (** Remove trait clauses that aren't ultimately used anywhere. This is
           potentially incorrect as sometimes the mere presence of a trait clause
