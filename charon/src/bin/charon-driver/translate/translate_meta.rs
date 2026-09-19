@@ -372,11 +372,10 @@ impl<'tcx> TranslateCtx<'tcx> {
 
         let is_builtin = def_id.as_synthetic(&self.hax_state).is_some();
         let parent_name = if !is_builtin && let Some(parent_id) = def_id.parent(&self.hax_state) {
-            let def = self.hax_def_for_item(item)?;
-            if matches!(item, RustcItem::Mono(..))
-                && let Some(parent_item) = def.typing_parent(&self.hax_state)
+            if let RustcItem::Mono(item_ref) = item
+                && let Some(parent_item) = item_ref.typing_parent(&self.hax_state)
             {
-                self.name_for_item(&RustcItem::Mono(parent_item.clone()))?
+                self.name_for_item(&RustcItem::Mono(parent_item))?
             } else {
                 self.name_for_item(&RustcItem::Poly(parent_id.clone()))?
             }

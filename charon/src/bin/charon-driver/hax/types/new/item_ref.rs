@@ -327,6 +327,33 @@ impl ItemRef {
     pub fn with_def_id<'tcx, S: BaseState<'tcx>>(&self, s: &S, def_id: &DefId) -> Self {
         self.mutate_def_id(s, |d| *d = def_id.clone())
     }
+
+    /// The item whose generics this item's generics extend, if any: the impl or trait of an
+    /// associated item, the enclosing item of a closure or anonymous constant, the type of a
+    /// variant or constructor. It is instantiated with the corresponding prefix of our generic
+    /// args. This is cheap: it doesn't require computing the `FullDef`.
+    pub fn typing_parent<'tcx, S: BaseState<'tcx>>(&self, s: &S) -> Option<ItemRef> {
+        match self.def_id.kind {
+            DefKind::AssocTy
+            | DefKind::AssocFn
+            | DefKind::AssocConst
+            | DefKind::Closure
+            | DefKind::AnonConst
+            | DefKind::PromotedConst => {
+                let tcx = s.base().tcx;
+                let parent = self.def_id.generics_of(s).parent?.sinto(s);
+                let parent_args = self.rustc_args(s).truncate_to(tcx, parent.generics_of(s));
+                let s = &s.with_hax_owner(&self.def_id);
+                Some(ItemRef::translate_from_hax_def_id(s, parent, parent_args))
+            }
+            DefKind::Ctor(..) | DefKind::Variant => {
+                let parent = self.def_id.parent(s).unwrap();
+                // The parent has the same generics as this item.
+                Some(self.with_def_id(s, &parent))
+            }
+            _ => None,
+        }
+    }
 }
 
 impl std::ops::Deref for ItemRef {
