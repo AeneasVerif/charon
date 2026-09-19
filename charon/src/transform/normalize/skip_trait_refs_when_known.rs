@@ -1,4 +1,6 @@
-use derive_generic_visitor::Visitor;
+use rustc_hash::FxHashMap as HashMap;
+
+use derive_generic_visitor::*;
 
 use crate::transform::ctx::UllbcPass;
 use crate::{transform::TransformCtx, ullbc_ast::*};
@@ -6,6 +8,9 @@ use crate::{transform::TransformCtx, ullbc_ast::*};
 #[derive(Visitor)]
 struct NormalizeFnPtr<'a> {
     ctx: &'a TransformCtx,
+    /// Types are hash-consed and bodies mention the same types many times; remember what each
+    /// visited type was rewritten to instead of exploring it again.
+    visited_tys: HashMap<Ty, Ty>,
 }
 
 impl VisitAstMut for NormalizeFnPtr<'_> {
@@ -15,6 +20,16 @@ impl VisitAstMut for NormalizeFnPtr<'_> {
         {
             *fn_ptr = new_fn_ptr;
         }
+    }
+    fn visit_ty(&mut self, ty: &mut Ty) -> ControlFlow<Self::Break> {
+        if let Some(new_ty) = self.visited_tys.get(ty) {
+            *ty = new_ty.clone();
+            return Continue(());
+        }
+        let old_ty = ty.clone();
+        self.visit_inner(ty)?;
+        self.visited_tys.insert(old_ty, ty.clone());
+        Continue(())
     }
 }
 
@@ -102,6 +117,9 @@ fn normalize_method_call(
 pub struct Transform;
 impl UllbcPass for Transform {
     fn transform_item(&self, ctx: &mut TransformCtx, mut item: ItemRefMut<'_>) {
-        let _ = item.drive_mut(&mut NormalizeFnPtr { ctx });
+        let _ = item.drive_mut(&mut NormalizeFnPtr {
+            ctx,
+            visited_tys: Default::default(),
+        });
     }
 }
