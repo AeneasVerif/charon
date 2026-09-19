@@ -205,13 +205,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     /// Query whether a trait is dyn compatible.
     /// TODO(dyn): for now we return `false` if the trait has any associated types, as we don't
     /// handle associated types in vtables.
-    pub fn trait_is_dyn_compatible(&mut self, def_id: &hax::DefId) -> Result<bool, Error> {
-        let def = self.poly_hax_def(def_id)?;
-        Ok(match def.kind() {
-            hax::FullDefKind::Trait(t) => t.dyn_self().is_some(),
-            hax::FullDefKind::TraitAlias(t) => t.dyn_self().is_some(),
-            _ => false,
-        })
+    pub fn trait_is_dyn_compatible(&mut self, def_id: &hax::DefId) -> bool {
+        matches!(def_id.kind, hax::DefKind::Trait | hax::DefKind::TraitAlias)
+            && def_id
+                .as_real_def_id()
+                .is_some_and(|id| self.tcx.is_dyn_compatible(id))
     }
 
     /// Check whether this trait ref is of the form `Self: Trait<...>`.
@@ -261,7 +259,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         span: Span,
         tref: &hax::TraitRef,
     ) -> Result<Option<TypeDeclRef>, Error> {
-        if !self.trait_is_dyn_compatible(&tref.def_id)? {
+        if !self.trait_is_dyn_compatible(&tref.def_id) {
             return Ok(None);
         }
 
@@ -336,7 +334,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             };
             // If a clause looks like `Self: OtherTrait<...>`, we consider it a supertrait.
             if self.pred_is_for_self(&pred.trait_ref) {
-                if !self.trait_is_dyn_compatible(&pred.trait_ref.def_id)? {
+                if !self.trait_is_dyn_compatible(&pred.trait_ref.def_id) {
                     // We add fake `Destruct` supertraits, but these are not dyn-compatible.
                     self.assert_is_destruct(&pred.trait_ref);
                     continue;
@@ -458,7 +456,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<TypeDecl, Error> {
         let mono = self.monomorphize();
         let span = item_meta.span;
-        if !self.trait_is_dyn_compatible(trait_def.def_id())? {
+        if !self.trait_is_dyn_compatible(trait_def.def_id()) {
             raise_error!(
                 self,
                 span,
@@ -605,7 +603,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         trait_proof: &hax::TraitProof,
     ) -> Result<ConstantExpr, Error> {
         let tref = trait_proof.pred.hax_skip_binder_ref();
-        if !self.trait_is_dyn_compatible(&tref.def_id)? {
+        if !self.trait_is_dyn_compatible(&tref.def_id) {
             raise_error!(
                 self,
                 span,
@@ -717,7 +715,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         vtable_item: &hax::ItemRef,
         impl_kind: TransImplSource,
     ) -> Result<Option<GlobalDeclRef>, Error> {
-        if !self.trait_is_dyn_compatible(&trait_ref.def_id)? {
+        if !self.trait_is_dyn_compatible(&trait_ref.def_id) {
             return Ok(None);
         }
         // Don't enqueue the vtable for translation by default. It will be enqueued if used in a
