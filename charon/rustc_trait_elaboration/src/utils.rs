@@ -51,15 +51,21 @@ where
 {
     use rustc_infer::infer::TyCtxtInferExt;
     use rustc_middle::traits::ObligationCause;
+    use rustc_middle::ty::TypeVisitableExt;
     use rustc_trait_selection::traits::query::normalize::QueryNormalizeExt;
-    let value = unnormalized.clone().skip_normalization();
+    let value = unnormalized.skip_normalization();
+    // early exit if possible, to avoid the clone below (costly for large bodies).
+    if !value.has_aliases() {
+        return value;
+    }
+    let fallback = value.clone();
     let (infcx, param_env) = tcx.infer_ctxt().build_with_typing_env(typing_env);
     infcx
         .at(&ObligationCause::dummy(), param_env)
         .query_normalize(value)
         // We ignore the generated outlives relations. Unsure what we should do with them.
         .map(|x| x.value)
-        .unwrap_or(unnormalized.skip_normalization())
+        .unwrap_or(fallback)
 }
 
 /// Erase free regions from the given value. Largely copied from `tcx.erase_and_anonymize_regions`, but also
