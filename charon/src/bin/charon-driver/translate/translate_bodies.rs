@@ -4,7 +4,7 @@
 //! independently.
 
 use itertools::Itertools;
-use std::collections::HashMap;
+use rustc_hash::FxHashMap as HashMap;
 use std::collections::VecDeque;
 use std::mem;
 use std::ops::Deref;

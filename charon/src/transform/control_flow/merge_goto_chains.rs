@@ -1,6 +1,6 @@
 //! # Micro-pass: merge single-origin gotos into their parent and skip over blocks that consist of
 //! only a goto.
-use std::collections::HashSet;
+use rustc_hash::FxHashSet as HashSet;
 use std::mem;
 
 use crate::ids::IndexVec;
@@ -67,7 +67,7 @@ impl UllbcPass for Transform {
             }
         }
         // Skip over trivial gotos.
-        let mut visited = HashSet::new(); // detect and skip loops
+        let mut visited = HashSet::default(); // detect and skip loops
         for id in body.body.indices() {
             if body.body[id]
                 .targets()

@@ -4,7 +4,7 @@
 //! compiling for release). In our case, we take this into account in the semantics of our
 //! array/slice manipulation and arithmetic functions, on the verification side.
 
-use std::collections::HashSet;
+use rustc_hash::FxHashSet as HashSet;
 
 use crate::transform::TransformCtx;
 use crate::transform::ctx::UllbcPass;
@@ -27,7 +27,7 @@ fn compute_uses(body: &ExprBody) -> LocalUses {
     }
 
     body.body.map_ref(|block| {
-        let mut uses = HashSet::new();
+        let mut uses = HashSet::default();
         let mut visitor = UsedLocalsVisitor(&mut uses);
 
         // do a simple live variable analysis by walking the block backwards

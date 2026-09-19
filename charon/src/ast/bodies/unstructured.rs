@@ -3,9 +3,9 @@
 //! In effect, this is a cleaned up version of MIR.
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use macros::{EnumAsGetters, EnumIsA, VariantName};
+use rustc_hash::FxHashMap as HashMap;
 use serde_state::{DeserializeState, SerializeState};
 use smallvec::{SmallVec, smallvec};
-use std::collections::HashMap;
 use std::mem;
 use std::ops::{Index, IndexMut};
 
