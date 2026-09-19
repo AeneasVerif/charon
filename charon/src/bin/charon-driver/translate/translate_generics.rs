@@ -467,8 +467,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn push_generics_for_def(&mut self, span: Span, def: &hax::FullDef<'tcx>) -> Result<(), Error> {
         trace!("{:?}", def.param_env());
         // Add generics from the parent item, recursively (recursivity is important for closures,
-        // as they can be nested).
-        if let Some(parent_item) = def.typing_parent(self.hax_state()) {
+        // as they can be nested). Instantiated defs have no generics, so we can skip it.
+        let def_is_instantiated = self.monomorphize() && !self.item_src.kind.is_for_trait();
+        if !def_is_instantiated && let Some(parent_item) = def.typing_parent(self.hax_state()) {
             let parent_def = self.hax_def(&parent_item)?;
             self.push_generics_for_def(span, &parent_def)?;
         }
