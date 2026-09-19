@@ -29,7 +29,7 @@
 use crate::ids::Generator;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
-use std::collections::HashMap;
+use rustc_hash::FxHashMap as HashMap;
 
 use crate::transform::ctx::UllbcPass;
 

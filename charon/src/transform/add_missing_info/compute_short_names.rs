@@ -1,4 +1,5 @@
-use std::collections::{HashMap, hash_map::Entry};
+use rustc_hash::FxHashMap as HashMap;
+use std::collections::hash_map::Entry;
 
 use crate::ast::*;
 
