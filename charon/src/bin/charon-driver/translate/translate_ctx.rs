@@ -71,6 +71,8 @@ pub struct TranslateCtx<'tcx> {
     pub cached_names: HashMap<RustcItem, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
     pub cached_item_metas: HashMap<TransItemSource, ItemMeta>,
+    /// Functions that are not panic lang items but that we still treat as panics.
+    pub panic_fns: HashSet<rustc_span::def_id::DefId>,
     /// Compute which lifetimes are used in a `&'a mut T`. This is a global fixpoint analysis.
     pub lt_mutability_computer: LifetimeMutabilityComputer,
 }

@@ -4,6 +4,7 @@
 //! independently.
 
 use itertools::Itertools;
+use rustc_attr_ir::LangItem;
 use rustc_hash::FxHashMap as HashMap;
 use std::collections::VecDeque;
 use std::mem;
@@ -1811,19 +1812,18 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let generics = generics.no_bound_vars().expect("bound variables in FnDef");
                 let item = &hax::translate_item_ref(&self.hax_state, *def_id, generics);
                 trace!("func: {:?}", item.def_id);
-                let fun_def = self.hax_def(item)?;
-                let item_src =
-                    TransItemSource::from_item(item, TransItemSourceKind::Fun, self.monomorphize());
-                let name = self.t_ctx.translate_name(&item_src)?;
-                let panic_lang_items = &["panic", "panic_fmt", "begin_panic"];
-                let panic_names = &[&["core", "panicking", "assert_failed"], EXPLICIT_PANIC_NAME];
-
-                if fun_def
-                    .lang_item
-                    .as_ref()
-                    .is_some_and(|lang_it| panic_lang_items.iter().contains(&lang_it.as_str()))
-                    || panic_names.iter().any(|panic| name.equals_ref_name(panic))
-                {
+                // There are actually ~30 lang items relating to panic functions; should we list them all here?
+                let is_panic = [LangItem::Panic, LangItem::PanicFmt, LangItem::BeginPanic]
+                    .into_iter()
+                    .any(|lang_item| tcx.is_lang_item(*def_id, lang_item))
+                    || self.t_ctx.panic_fns.contains(def_id);
+                if is_panic {
+                    let item_src = TransItemSource::from_item(
+                        item,
+                        TransItemSourceKind::Fun,
+                        self.monomorphize(),
+                    );
+                    let name = self.t_ctx.translate_name(&item_src)?;
                     // If the call is `panic!`, then the target is `None`.
                     // I don't know in which other cases it can be `None`.
                     assert!(target.is_none());
