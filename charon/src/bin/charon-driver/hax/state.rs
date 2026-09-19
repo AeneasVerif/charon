@@ -94,6 +94,11 @@ mod types {
         pub def_ids: HashMap<RDefId, DefId>,
         /// Map that recovers rustc args for a given `ItemRef`.
         pub reverse_item_refs_map: HashMap<ItemRef, ty::GenericArgsRef<'tcx>>,
+        /// Owner-independent cache of item refs whose generics have no parameters.
+        pub concrete_item_refs:
+            HashMap<(DefId, ty::GenericArgsRef<'tcx>, AssocItemResolution), ItemRef>,
+        /// Owner-independent cache of types without parameters.
+        pub concrete_tys: HashMap<ty::Ty<'tcx>, Ty>,
         /// Data for synthetic items. See the `synthetic_items` module.
         pub synthetic_item_data: HashMap<SyntheticItem, SyntheticItemData<'tcx>>,
         /// Anonymous allocations we turned into globals, in encounter order. Used to keep

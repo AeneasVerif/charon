@@ -2,6 +2,7 @@ use crate::hax::prelude::*;
 
 use charon_lib::ast::HashConsed;
 use rustc_middle::ty;
+use rustc_middle::ty::TypeVisitableExt;
 use rustc_span::def_id::DefId as RDefId;
 
 /// Reference to an item, with generics. Basically any mention of an item (function, type, etc)
@@ -167,6 +168,17 @@ impl ItemRef {
             return item;
         }
 
+        let is_concrete = !generics.has_non_region_param();
+        if is_concrete
+            && let Some(item) =
+                s.with_global_cache(|cache| cache.concrete_item_refs.get(&key).cloned())
+        {
+            s.with_cache(|cache| {
+                cache.item_refs.insert(key, item.clone());
+            });
+            return item;
+        }
+
         // Don't resolve if the DefId isn't real.
         let is_real_def_id = hax_def_id.as_real_def_id().is_some();
         let assoc_item_resolution = if is_real_def_id {
@@ -185,13 +197,16 @@ impl ItemRef {
 
         let content: ItemRefContents = item_ref.sinto(s);
         let item = content.intern(s);
-        s.with_cache(|cache| {
-            cache.item_refs.insert(key, item.clone());
-        });
         s.with_global_cache(|cache| {
             cache
                 .reverse_item_refs_map
                 .insert(item.clone(), item_ref.generics());
+            if is_concrete {
+                cache.concrete_item_refs.insert(key.clone(), item.clone());
+            }
+        });
+        s.with_cache(|cache| {
+            cache.item_refs.insert(key, item.clone());
         });
         item
     }
