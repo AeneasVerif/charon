@@ -243,13 +243,16 @@ impl<'tcx> TranslateCtx<'tcx> {
                 Some(PathElem::Ident(symbol.to_string(), disambiguator))
             }
             DefPathItem::Impl => {
-                let full_def = self.hax_def_for_item(item)?;
                 // Two cases, depending on whether the impl block is
                 // a "regular" impl block (`impl Foo { ... }`) or a trait
                 // implementation (`impl Bar for Foo { ... }`).
-                let impl_elem = match full_def.kind() {
+                let impl_elem = match def_id.kind {
                     // Inherent impl ("regular" impl)
-                    hax::FullDefKind::InherentImpl(i) => {
+                    hax::DefKind::Impl { of_trait: false } => {
+                        let full_def = self.hax_def_for_item(item)?;
+                        let hax::FullDefKind::InherentImpl(i) = full_def.kind() else {
+                            unreachable!()
+                        };
                         // We need to convert the type, which may contain quantified
                         // substs and bounds. In order to properly do so, we introduce
                         // a body translation context.
@@ -269,7 +272,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                         }))
                     }
                     // Trait implementation
-                    hax::FullDefKind::TraitImpl(_) => {
+                    hax::DefKind::Impl { of_trait: true } => {
                         let impl_id = {
                             let item_src = TransItemSource::new(
                                 item.clone(),
