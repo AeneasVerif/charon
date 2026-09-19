@@ -6,7 +6,6 @@ use rustc_middle::mir;
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
 use std::cell::OnceCell;
-use std::marker::PhantomData;
 use std::sync::Arc;
 
 /// Gathers a lot of definition information about a [`rustc_hir::def_id::DefId`].
@@ -63,13 +62,9 @@ where
                 SyntheticItem::Str => AdtKind::Str,
             };
             let param_env = get_param_env(s, args);
-            let destruct_impl = {
-                let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
-                let type_of_self = inst_binder(tcx, s.typing_env(), args, def_id.type_of(s));
-                virtual_impl_for(s, ty::TraitRef::new(tcx, destruct_trait, [type_of_self]))
-            };
             kind = FullDefKind::Adt(Adt {
-                phantom: PhantomData,
+                def_id: def_id.clone(),
+                self_ty: inst_binder(tcx, s.typing_env(), args, def_id.type_of(s)),
                 param_env,
                 adt_kind,
                 variants: [].into_iter().collect(),
@@ -80,7 +75,7 @@ where
                     pack: None,
                     flags: Default::default(),
                 },
-                destruct_impl,
+                destruct_impl: Default::default(),
             });
 
             source_span = None;
@@ -370,13 +365,16 @@ pub enum FullDefKind<'tcx> {
 /// ADts (`Struct`, `Enum` and `Union` map to this).
 #[derive(Clone, Debug)]
 pub struct Adt<'tcx> {
-    phantom: PhantomData<*mut &'tcx ()>,
+    def_id: DefId,
+    /// The (instantiated) type of this adt.
+    self_ty: ty::Ty<'tcx>,
     param_env: ParamEnv,
     adt_kind: AdtKind,
     variants: IndexVec<VariantIdx, VariantDef>,
     repr: ReprOptions,
     /// Info required to construct a virtual `Drop` impl for this adt.
-    destruct_impl: Box<VirtualTraitImpl>,
+    /// Computed on demand, see [`Adt::destruct_impl`].
+    destruct_impl: OnceCell<Box<VirtualTraitImpl>>,
 }
 
 impl<'tcx> Adt<'tcx> {
@@ -393,8 +391,13 @@ impl<'tcx> Adt<'tcx> {
         &self.repr
     }
     /// Info required to construct a virtual `Drop` impl for this adt.
-    pub fn destruct_impl(&self) -> &VirtualTraitImpl {
-        &self.destruct_impl
+    pub fn destruct_impl(&self, s: &impl BaseState<'tcx>) -> &VirtualTraitImpl {
+        self.destruct_impl.get_or_init(|| {
+            let s = &s.with_hax_owner(&self.def_id);
+            let tcx = s.base().tcx;
+            let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
+            virtual_impl_for(s, ty::TraitRef::new(tcx, destruct_trait, [self.self_ty]))
+        })
     }
 }
 
@@ -1173,17 +1176,14 @@ where
                 })
                 .collect();
 
-            let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
             FullDefKind::Adt(Adt {
-                phantom: PhantomData,
+                def_id: hax_def_id.clone(),
+                self_ty: type_of_self(),
                 param_env: get_param_env(s, args),
                 adt_kind: def.adt_kind().sinto(s),
                 variants,
                 repr: def.repr().sinto(s),
-                destruct_impl: virtual_impl_for(
-                    s,
-                    ty::TraitRef::new(tcx, destruct_trait, [type_of_self()]),
-                ),
+                destruct_impl: Default::default(),
             })
         }
         RDefKind::TyAlias { .. } => FullDefKind::TyAlias(TyAlias {

@@ -65,7 +65,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Charon-generated `Destruct` impl for an ADT.
         assert_eq!(impl_kind, TransImplSource::ImplicitDestruct);
         let trait_pred = match def.kind() {
-            FullDefKind::Adt(adt) => &adt.destruct_impl().trait_pred,
+            FullDefKind::Adt(adt) => &adt.destruct_impl(self.hax_state()).trait_pred,
             FullDefKind::Closure(c) => &c.destruct_impl().trait_pred,
             _ => unreachable!(),
         };
@@ -169,7 +169,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let span = item_meta.span;
 
         let destruct_impl = match def.kind() {
-            FullDefKind::Adt(adt) => adt.destruct_impl(),
+            FullDefKind::Adt(adt) => adt.destruct_impl(self.hax_state()),
             FullDefKind::Closure(c) => c.destruct_impl(),
             _ => unreachable!("{:?}", def.def_id()),
         };
