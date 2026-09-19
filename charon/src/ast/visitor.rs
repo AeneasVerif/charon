@@ -12,7 +12,10 @@
 //! Underneath it all, this uses `derive_generic_visitor::Drive[Mut]` to do the actual visiting.
 use std::mem;
 use std::path::PathBuf;
-use std::{any::Any, hash::Hash};
+use std::{
+    any::{Any, TypeId},
+    hash::Hash,
+};
 
 use crate::ast::from_rustc;
 use crate::ast::from_rustc::{
@@ -250,11 +253,42 @@ pub trait BodyVisitable: Any {
     }
 }
 
+/// TypeIds of types that only occur within bodies; used to know when we can skip visiting
+/// type-level values, which can't contain them.
+const BODY_ONLY_IDS: [TypeId; 15] = [
+    TypeId::of::<Body>(),
+    TypeId::of::<Locals>(),
+    TypeId::of::<Local>(),
+    TypeId::of::<LocalId>(),
+    TypeId::of::<Place>(),
+    TypeId::of::<Operand>(),
+    TypeId::of::<Rvalue>(),
+    TypeId::of::<FnOperand>(),
+    TypeId::of::<Call>(),
+    TypeId::of::<ullbc_ast::BlockId>(),
+    TypeId::of::<ullbc_ast::BlockData>(),
+    TypeId::of::<ullbc_ast::Statement>(),
+    TypeId::of::<ullbc_ast::Terminator>(),
+    TypeId::of::<llbc_ast::Block>(),
+    TypeId::of::<llbc_ast::Statement>(),
+];
+
+/// TypeIds of type-level values, that cannot contain body-level values.
+const TYPE_ONLY_IDS: [TypeId; 3] = [
+    TypeId::of::<Ty>(),
+    TypeId::of::<GenericArgs>(),
+    TypeId::of::<TraitRef>(),
+];
+
 /// Ast and body visitor that uses dynamic dispatch to call the provided function on the visited
 /// values of the right type.
 #[derive(Visitor)]
 pub struct DynVisitor<F> {
     enter: F,
+    /// Whether the visited type can only occur in bodies.
+    body_only: bool,
+    /// Whether we're visiting `ullbc_ast::BlockId`s, which only occur in terminators.
+    block_ids_only: bool,
 }
 impl DynVisitor<()> {
     pub fn new_shared<T: Any>(mut f: impl FnMut(&T)) -> DynVisitor<impl FnMut(&dyn Any)> {
@@ -263,7 +297,11 @@ impl DynVisitor<()> {
                 f(x);
             }
         };
-        DynVisitor { enter }
+        DynVisitor {
+            enter,
+            body_only: BODY_ONLY_IDS.contains(&TypeId::of::<T>()),
+            block_ids_only: TypeId::of::<T>() == TypeId::of::<ullbc_ast::BlockId>(),
+        }
     }
     pub fn new_mut<T: Any>(mut f: impl FnMut(&mut T)) -> DynVisitor<impl FnMut(&mut dyn Any)> {
         let enter = move |x: &mut dyn Any| {
@@ -271,7 +309,19 @@ impl DynVisitor<()> {
                 f(x);
             }
         };
-        DynVisitor { enter }
+        DynVisitor {
+            enter,
+            body_only: BODY_ONLY_IDS.contains(&TypeId::of::<T>()),
+            block_ids_only: TypeId::of::<T>() == TypeId::of::<ullbc_ast::BlockId>(),
+        }
+    }
+}
+impl<F> DynVisitor<F> {
+    /// Whether to skip this value, because we statically know there is nothing worth visiting inside.
+    fn skip<T: Any>(&self) -> bool {
+        let id = TypeId::of::<T>();
+        (self.body_only && TYPE_ONLY_IDS.contains(&id))
+            || (self.block_ids_only && id == TypeId::of::<ullbc_ast::Statement>())
     }
 }
 impl<F> VisitAst for DynVisitor<F>
@@ -279,6 +329,9 @@ where
     F: FnMut(&dyn Any),
 {
     fn visit<T: AstVisitable>(&mut self, x: &T) -> ControlFlow<Self::Break> {
+        if self.skip::<T>() {
+            return Continue(());
+        }
         (self.enter)(x);
         x.drive(self)?;
         Continue(())
@@ -289,6 +342,9 @@ where
     F: FnMut(&mut dyn Any),
 {
     fn visit<T: AstVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
+        if self.skip::<T>() {
+            return Continue(());
+        }
         (self.enter)(x);
         x.drive_mut(self)?;
         Continue(())
@@ -299,6 +355,9 @@ where
     F: FnMut(&dyn Any),
 {
     fn visit<T: BodyVisitable>(&mut self, x: &T) -> ControlFlow<Self::Break> {
+        if self.skip::<T>() {
+            return Continue(());
+        }
         (self.enter)(x);
         x.drive_body(self)?;
         Continue(())
@@ -309,6 +368,9 @@ where
     F: FnMut(&mut dyn Any),
 {
     fn visit<T: BodyVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
+        if self.skip::<T>() {
+            return Continue(());
+        }
         (self.enter)(x);
         x.drive_body_mut(self)?;
         Continue(())
