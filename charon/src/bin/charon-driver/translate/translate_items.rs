@@ -1155,17 +1155,16 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             let assoc_item_id = self.translate_assoc_item_id(trait_id, item_def_id)?;
 
             // In not-mono mode, we use the polymorphic item as usual.
-            let item_def = self.poly_hax_def(item_def_id)?;
-            let trans_kind = match item_def.kind() {
-                hax::FullDefKind::AssocFn(_) => TransItemSourceKind::Fun,
-                hax::FullDefKind::AssocConst(_) => TransItemSourceKind::Global,
-                hax::FullDefKind::AssocTy(_) => TransItemSourceKind::Type,
+            let trans_kind = match item_def_id.kind {
+                hax::DefKind::AssocFn => TransItemSourceKind::Fun,
+                hax::DefKind::AssocConst => TransItemSourceKind::Global,
+                hax::DefKind::AssocTy => TransItemSourceKind::Type,
                 _ => unreachable!(),
             };
             let item_src = TransItemSource::polymorphic(item_def_id, trans_kind);
 
-            match item_def.kind() {
-                hax::FullDefKind::AssocFn(_) => {
+            match item_def_id.kind {
+                hax::DefKind::AssocFn => {
                     let trait_method_id = *assoc_item_id.as_method().unwrap();
                     let binder_kind = BinderKind::TraitMethod(trait_id, trait_method_id);
                     let bound_fn_ref = match &impl_item.value {
@@ -1233,7 +1232,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     // ones that correspond to unused methods at the end of translation.
                     methods.set_slot_extend(trait_method_id, bound_fn_ref);
                 }
-                hax::FullDefKind::AssocConst(_) => {
+                hax::DefKind::AssocConst => {
                     let assoc_const_id = *assoc_item_id.as_const().unwrap();
                     let id = self.register_and_enqueue(item_span, item_src);
                     // The parameters of the constant are the same as those of the item that
@@ -1253,7 +1252,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     };
                     consts.set_slot_extend(assoc_const_id, gref);
                 }
-                hax::FullDefKind::AssocTy(_) => {
+                hax::DefKind::AssocTy => {
                     let assoc_type_id = *assoc_item_id.as_type().unwrap();
                     let binder_kind = BinderKind::TraitType(trait_id, assoc_type_id);
                     let assoc_ty = match &impl_item.value {
@@ -1303,7 +1302,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
                     types.set_slot_extend(assoc_type_id, assoc_ty);
                 }
-                _ => panic!("Unexpected definition for trait item: {item_def:?}"),
+                _ => panic!("Unexpected definition for trait item: {item_def_id:?}"),
             }
         }
 
