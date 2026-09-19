@@ -1,0 +1,113 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::option::Option
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some { _0: T },
+}
+
+struct () {}
+
+// Full name: test_crate::Tr
+pub trait Tr<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    const C : u32
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Tr for &'a u32}::C
+pub fn C<'a>() -> u32
+{
+    let _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 1u32
+    return
+}
+
+// Full name: test_crate::{impl Tr for &'a u32}::C
+pub const C<'a>: u32 = C<'a>()
+
+// Full name: test_crate::{impl Tr for &'a u32}
+impl<'a> Tr for &'a u32 {
+    proof ImpliedClause0: (&'a u32: MetaSized) = {built_in impl MetaSized for &'a u32}
+    const C = C<'a>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::W
+pub struct W<T>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Tr),
+{
+  _0: T,
+}
+
+// Full name: test_crate::with_clause
+pub fn with_clause() -> u32
+where
+    TraitClause0: for<'a> (&'a u32: Tr),
+{
+    let _0: u32; // return
+    let _x: Option<W<&'48 u32>[{built_in impl Sized for &'48 u32}, TraitClause0]>[{built_in impl Sized for W<&'48 u32>[{built_in impl Sized for &'48 u32}, TraitClause0]}]; // local
+
+    storage_live(_0)
+    storage_live(_x)
+    _x = Option::None {  }
+    fake_read(_x)
+    set_type(typeof(_x) == Option<W<&'104 u32>[{built_in impl Sized for &'104 u32}, TraitClause0]>[{built_in impl Sized for W<&'104 u32>[{built_in impl Sized for &'104 u32}, TraitClause0]}])
+    _0 = const TraitClause0::C
+    storage_dead(_x)
+    return
+}
+
+// Full name: test_crate::without_clause
+pub fn without_clause() -> u32
+{
+    let _0: u32; // return
+    let _x: Option<W<&'68 u32>[{built_in impl Sized for &'68 u32}, {impl Tr for &'a u32}<'68>]>[{built_in impl Sized for W<&'68 u32>[{built_in impl Sized for &'68 u32}, {impl Tr for &'a u32}<'68>]}]; // local
+
+    storage_live(_0)
+    storage_live(_x)
+    _x = Option::None {  }
+    fake_read(_x)
+    set_type(typeof(_x) == Option<W<&'149 u32>[{built_in impl Sized for &'149 u32}, {impl Tr for &'a u32}<'149>]>[{built_in impl Sized for W<&'149 u32>[{built_in impl Sized for &'149 u32}, {impl Tr for &'a u32}<'149>]}])
+    _0 = copy C<'173>
+    storage_dead(_x)
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+
+
