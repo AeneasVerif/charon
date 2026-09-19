@@ -1003,8 +1003,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let field_span = self.t_ctx.translate_span(&field_def.span);
                 // Translate the field type
                 let ty = self.translate_ty(field_span, &field_def.ty)?;
-                let field_full_def =
-                    self.hax_def(&def.this().with_def_id(self.hax_state(), &field_def.did))?;
+                let field_full_def = self.poly_hax_def(&field_def.did)?;
                 let field_attrs = self.t_ctx.translate_attr_info(&field_full_def);
 
                 // Retrieve the field name.
@@ -1027,8 +1026,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let discriminant = self.translate_discriminant(def_span, &var_def.discr_val)?;
             let variant_span = self.t_ctx.translate_span(&var_def.span);
             let variant_name = var_def.name.to_string();
-            let variant_full_def =
-                self.hax_def(&def.this().with_def_id(self.hax_state(), &var_def.def_id))?;
+            let variant_full_def = self.poly_hax_def(&var_def.def_id)?;
 
             let mut variant_attrs = self.t_ctx.translate_attr_info(&variant_full_def);
             // Propagate a `#[charon::variants_prefix(..)]` or `#[charon::variants_suffix(..)]` attribute to the variants.
