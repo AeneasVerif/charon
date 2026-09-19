@@ -178,6 +178,10 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub hide_allocator: bool,
+    /// Don't translate doc comments.
+    #[clap(long)]
+    #[serde(default)]
+    pub no_doc_comments: bool,
 
     /// Remove trait clauses that aren't ultimately used anywhere. This is potentially incorrect as
     /// sometimes the mere presence of a trait clause is used to justify an operation, e.g. copying
@@ -523,6 +527,7 @@ impl CliOpts {
                     self.no_typecheck = true;
                     self.no_reorder_decls = true;
                     self.no_compute_layout_guarantees = true;
+                    self.no_doc_comments = true;
                     self.precise_drops = true;
                     self.consts = Some(ConstHandling::Values);
                     self.ullbc = true;
@@ -680,6 +685,8 @@ pub struct TranslateOptions {
     pub hide_marker_traits: bool,
     /// Hide the `A` type parameter on standard library containers (`Box`, `Vec`, etc).
     pub hide_allocator: bool,
+    /// Don't translate doc comments.
+    pub no_doc_comments: bool,
     /// List of traits to remove any mentions of. Influenced by `hide_marker_traits`,
     /// `hide_allocator`, and `precise_drops`.
     pub hide_traits: Vec<NamePattern>,
@@ -867,6 +874,7 @@ impl TranslateOptions {
             monomorphize_mut: options.monomorphize_mut,
             hide_marker_traits: options.hide_marker_traits,
             hide_allocator: options.hide_allocator,
+            no_doc_comments: options.no_doc_comments,
             hide_traits,
             remove_unused_clauses: options.remove_unused_clauses,
             remove_unused_self_clauses: options.remove_unused_self_clauses,
