@@ -1599,23 +1599,7 @@ impl<'tcx> FullDef<'tcx> {
 
     /// Return the parent of this item if the item inherits the typing context from its parent.
     pub fn typing_parent(&self, s: &impl BaseState<'tcx>) -> Option<ItemRef> {
-        match self.kind() {
-            FullDefKind::Const(c)
-                if matches!(c.kind(), ConstKind::AnonConst | ConstKind::PromotedConst) =>
-            {
-                self.param_env().unwrap().parent.clone()
-            }
-            FullDefKind::AssocTy(_)
-            | FullDefKind::AssocFn(_)
-            | FullDefKind::AssocConst(_)
-            | FullDefKind::Closure(_) => self.param_env().unwrap().parent.clone(),
-            FullDefKind::Ctor(_) | FullDefKind::Variant => {
-                let parent = self.def_id().parent(s).unwrap();
-                // The parent has the same generics as this item.
-                Some(self.this().with_def_id(s, &parent))
-            }
-            _ => None,
-        }
+        self.this().typing_parent(s)
     }
 
     /// Whether the item has any generics at all (including parent generics).
