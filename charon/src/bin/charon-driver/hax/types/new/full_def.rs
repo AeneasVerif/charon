@@ -1,5 +1,6 @@
 use crate::hax::prelude::*;
 
+use rustc_attr_ir::LangItem;
 use rustc_hir as hir;
 use rustc_hir::def::DefKind as RDefKind;
 use rustc_middle::mir;
@@ -831,20 +832,21 @@ impl<'tcx> AssocFn<'tcx> {
 /// A closure, coroutine, or coroutine-closure.
 #[derive(Clone, Debug)]
 pub struct Closure<'tcx> {
+    def_id: DefId,
+    /// `[closure_ty, tupled_args_ty]`: the args of the `Fn*` traits for this closure.
+    fn_trait_args: [ty::Ty<'tcx>; 2],
+    kind: ty::ClosureKind,
     /// This param env is empty because the (early-bound) generics of a closure are the same as
     /// those of the item in which it is defined. We hide the special weird generics that rustc
     /// uses internally for inference on closures.
     param_env: ParamEnv,
     args: ClosureArgs,
     inline: InlineAttr,
-    /// Info required to construct a virtual `FnOnce` impl for this closure.
-    fn_once_impl: Box<VirtualTraitImpl<'tcx>>,
-    /// Info required to construct a virtual `FnMut` impl for this closure.
-    fn_mut_impl: Option<Box<VirtualTraitImpl<'tcx>>>,
-    /// Info required to construct a virtual `Fn` impl for this closure.
-    fn_impl: Option<Box<VirtualTraitImpl<'tcx>>>,
-    /// Info required to construct a virtual `Drop` impl for this closure.
-    destruct_impl: Box<VirtualTraitImpl<'tcx>>,
+    /// Computed on demand, see the accessors below.
+    fn_once_impl: OnceCell<Box<VirtualTraitImpl<'tcx>>>,
+    fn_mut_impl: OnceCell<Option<Box<VirtualTraitImpl<'tcx>>>>,
+    fn_impl: OnceCell<Option<Box<VirtualTraitImpl<'tcx>>>>,
+    destruct_impl: OnceCell<Box<VirtualTraitImpl<'tcx>>>,
 }
 
 impl<'tcx> Closure<'tcx> {
@@ -860,21 +862,46 @@ impl<'tcx> Closure<'tcx> {
     pub fn inline(&self) -> &InlineAttr {
         &self.inline
     }
+    /// The virtual impl of this closure for the given trait.
+    fn virtual_impl(
+        &self,
+        s: &impl BaseState<'tcx>,
+        trait_lang_item: LangItem,
+        trait_args: &[ty::Ty<'tcx>],
+    ) -> Box<VirtualTraitImpl<'tcx>> {
+        let s = &s.with_hax_owner(&self.def_id);
+        let tcx = s.base().tcx;
+        let def_id = tcx.lang_items().get(trait_lang_item).unwrap();
+        let tref = ty::TraitRef::new(tcx, def_id, trait_args.iter().copied());
+        virtual_impl_for(s, tref)
+    }
     /// Info required to construct a virtual `FnOnce` impl for this closure.
-    pub fn fn_once_impl(&self) -> &VirtualTraitImpl<'tcx> {
-        &self.fn_once_impl
+    pub fn fn_once_impl(&self, s: &impl BaseState<'tcx>) -> &VirtualTraitImpl<'tcx> {
+        self.fn_once_impl
+            .get_or_init(|| self.virtual_impl(s, LangItem::FnOnce, &self.fn_trait_args))
     }
     /// Info required to construct a virtual `FnMut` impl for this closure.
-    pub fn fn_mut_impl(&self) -> Option<&VirtualTraitImpl<'tcx>> {
-        self.fn_mut_impl.as_deref()
+    pub fn fn_mut_impl(&self, s: &impl BaseState<'tcx>) -> Option<&VirtualTraitImpl<'tcx>> {
+        self.fn_mut_impl
+            .get_or_init(|| {
+                matches!(self.kind, ty::ClosureKind::FnMut | ty::ClosureKind::Fn)
+                    .then(|| self.virtual_impl(s, LangItem::FnMut, &self.fn_trait_args))
+            })
+            .as_deref()
     }
     /// Info required to construct a virtual `Fn` impl for this closure.
-    pub fn fn_impl(&self) -> Option<&VirtualTraitImpl<'tcx>> {
-        self.fn_impl.as_deref()
+    pub fn fn_impl(&self, s: &impl BaseState<'tcx>) -> Option<&VirtualTraitImpl<'tcx>> {
+        self.fn_impl
+            .get_or_init(|| {
+                matches!(self.kind, ty::ClosureKind::Fn)
+                    .then(|| self.virtual_impl(s, LangItem::Fn, &self.fn_trait_args))
+            })
+            .as_deref()
     }
     /// Info required to construct a virtual `Drop` impl for this closure.
-    pub fn destruct_impl(&self) -> &VirtualTraitImpl<'tcx> {
-        &self.destruct_impl
+    pub fn destruct_impl(&self, s: &impl BaseState<'tcx>) -> &VirtualTraitImpl<'tcx> {
+        self.destruct_impl
+            .get_or_init(|| self.virtual_impl(s, LangItem::Destruct, &self.fn_trait_args[..1]))
     }
 }
 
@@ -1275,7 +1302,6 @@ where
             })
         }
         RDefKind::Closure { .. } => {
-            use ty::ClosureKind::{Fn, FnMut};
             let closure_ty = type_of_self();
             let ty::TyKind::Closure(_, closure_args) = closure_ty.kind() else {
                 unreachable!()
@@ -1283,29 +1309,17 @@ where
             let closure = closure_args.as_closure();
             let input_ty = tupled_args_ty(s, closure_sig(tcx, closure));
             let input_ty = tcx.liberate_late_bound_regions(def_id, input_ty);
-            let trait_args = [closure_ty, input_ty];
-            let fn_once_trait = tcx.lang_items().fn_once_trait().unwrap();
-            let fn_mut_trait = tcx.lang_items().fn_mut_trait().unwrap();
-            let fn_trait = tcx.lang_items().fn_trait().unwrap();
-            let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
-
-            let fn_once_tref = ty::TraitRef::new(tcx, fn_once_trait, trait_args);
-            let fn_mut_tref = matches!(closure.kind(), FnMut | Fn)
-                .then(|| ty::TraitRef::new(tcx, fn_mut_trait, trait_args));
-            let fn_tref =
-                matches!(closure.kind(), Fn).then(|| ty::TraitRef::new(tcx, fn_trait, trait_args));
-
             FullDefKind::Closure(Closure {
+                def_id: hax_def_id.clone(),
+                fn_trait_args: [closure_ty, input_ty],
+                kind: closure.kind(),
                 param_env: get_param_env(s, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 args: ClosureArgs::sfrom(s, def_id, closure_args),
-                destruct_impl: virtual_impl_for(
-                    s,
-                    ty::TraitRef::new(tcx, destruct_trait, [type_of_self()]),
-                ),
-                fn_once_impl: virtual_impl_for(s, fn_once_tref),
-                fn_mut_impl: fn_mut_tref.map(|tref| virtual_impl_for(s, tref)),
-                fn_impl: fn_tref.map(|tref| virtual_impl_for(s, tref)),
+                fn_once_impl: Default::default(),
+                fn_mut_impl: Default::default(),
+                fn_impl: Default::default(),
+                destruct_impl: Default::default(),
             })
         }
         kind @ (RDefKind::Const | RDefKind::AnonConst { .. }) => {

@@ -66,7 +66,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         assert_eq!(impl_kind, TransImplSource::ImplicitDestruct);
         let trait_pred = match def.kind() {
             FullDefKind::Adt(adt) => &adt.destruct_impl(self.hax_state()).trait_pred,
-            FullDefKind::Closure(c) => &c.destruct_impl().trait_pred,
+            FullDefKind::Closure(c) => &c.destruct_impl(self.hax_state()).trait_pred,
             _ => unreachable!(),
         };
 
@@ -170,7 +170,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let destruct_impl = match def.kind() {
             FullDefKind::Adt(adt) => adt.destruct_impl(self.hax_state()),
-            FullDefKind::Closure(c) => c.destruct_impl(),
+            FullDefKind::Closure(c) => c.destruct_impl(self.hax_state()),
             _ => unreachable!("{:?}", def.def_id()),
         };
         let mut timpl = self.translate_virtual_trait_impl(
