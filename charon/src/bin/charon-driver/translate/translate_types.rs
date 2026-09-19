@@ -162,7 +162,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         self.translate_assoc_type_id(trait_ref.trait_id(), &item.def_id)?;
                     let trait_proofs = item.trait_proofs(self.hax_state_with_id());
                     let generics =
-                        self.translate_generic_args(span, &item.generic_args, trait_proofs)?;
+                        self.translate_generic_args(span, &item.generic_args, &trait_proofs)?;
                     TyKind::TraitType(trait_ref, assoc_type_id, generics)
                 }
                 hax::AliasKind::Opaque { hidden_ty, .. } => {
@@ -186,8 +186,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let item_ty_is_sized = if self.options.hide_marker_traits {
                     None
                 } else {
-                    let sized = &item_ref.trait_proofs(self.hax_state_with_id())[0];
-                    Some(self.translate_trait_proof(span, sized)?)
+                    let trait_proofs = item_ref.trait_proofs(self.hax_state_with_id());
+                    Some(self.translate_trait_proof(span, &trait_proofs[0])?)
                 };
                 let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
                 assert!(args.types.len() == 1 && args.const_generics.len() == 1);
@@ -207,8 +207,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let item_ty_is_sized = if self.options.hide_marker_traits {
                     None
                 } else {
-                    let sized = &item_ref.trait_proofs(self.hax_state_with_id())[0];
-                    Some(self.translate_trait_proof(span, sized)?)
+                    let trait_proofs = item_ref.trait_proofs(self.hax_state_with_id());
+                    Some(self.translate_trait_proof(span, &trait_proofs[0])?)
                 };
                 let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
                 assert!(args.types.len() == 1);

@@ -8,6 +8,7 @@ use crate::hax::sinto_todo;
 
 use charon_lib::ast::HashConsed;
 use rustc_middle::ty;
+use rustc_middle::ty::TypeVisitableExt;
 use rustc_span::def_id::DefId as RDefId;
 use rustc_type_ir::inherent::IntoKind;
 
@@ -700,11 +701,23 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Ty> for rustc_middle::ty::Ty<'tcx>
         if let Some(ty) = s.with_cache(|cache| cache.tys.get(self).cloned()) {
             return ty;
         }
+
+        let is_concrete = !self.has_non_region_param() && !s.owner_has_concrete_clauses();
+        if is_concrete
+            && let Some(ty) = s.with_global_cache(|cache| cache.concrete_tys.get(self).cloned())
+        {
+            return ty;
+        }
         let kind: TyKind = self.kind().sinto(s);
         let ty = Ty::new(s, kind);
         s.with_cache(|cache| {
             cache.tys.insert(*self, ty.clone());
         });
+        if is_concrete {
+            s.with_global_cache(|cache| {
+                cache.concrete_tys.insert(*self, ty.clone());
+            });
+        }
         ty
     }
 }

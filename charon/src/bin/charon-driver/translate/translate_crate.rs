@@ -786,7 +786,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             GenericArgs::empty()
         } else {
             let trait_proofs = hax_item.trait_proofs(self.hax_state_with_id());
-            self.translate_generic_args(span, &hax_item.generic_args, trait_proofs)?
+            self.translate_generic_args(span, &hax_item.generic_args, &trait_proofs)?
         };
 
         // Add regions to make sure the item args match the params we set up in
@@ -971,7 +971,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         let trait_ref = self.translate_trait_proof(span, in_trait)?;
         let trait_proofs = item.trait_proofs(self.hax_state_with_id());
-        let generics = self.translate_generic_args(span, &item.generic_args, trait_proofs)?;
+        let generics = self.translate_generic_args(span, &item.generic_args, &trait_proofs)?;
         self.translate_region_binder(span, &f.sig().as_ref().rebind(()), |ctx, _| {
             let method_id = ctx.translate_trait_method_id(trait_ref.trait_id(), &item.def_id)?;
             let fn_kind = FnPtrKind::Trait(trait_ref.move_under_binder(), method_id);
