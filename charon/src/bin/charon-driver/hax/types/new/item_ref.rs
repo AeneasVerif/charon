@@ -66,6 +66,10 @@ pub struct ItemRefContents<'tcx> {
     /// for the item itself.
     #[value(self.assoc_trait_proofs().sinto(s))]
     pub trait_proofs: Vec<TraitProof<'tcx>>,
+    /// The item under which this reference was made, if the generics mention its parameters:
+    /// the trait proofs may then refer to its local clauses.
+    #[value(self.has_owner_param.then(|| s.owner()))]
+    owner: Option<DefId>,
     /// If we're referring to a trait associated item, this gives the trait clause/impl we're
     /// referring to.
     #[value(self.in_trait.as_ref().map(|(x, _)| x).sinto(s))]
@@ -184,6 +188,7 @@ impl<'tcx> ItemRef<'tcx> {
             rustc_args: Default::default(),
             generic_args: Default::default(),
             trait_proofs: Default::default(),
+            owner: None,
             in_trait: Default::default(),
             has_param: false,
             has_non_lt_param: false,

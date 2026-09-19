@@ -4,8 +4,8 @@ use rustc_hir::{def::DefKind, def_id::DefId};
 use rustc_middle::ty::{self, GenericArg, GenericArgsRef, TypeVisitableExt};
 
 use crate::{
-    ItemPredicates, PredicateDirection, PredicateSearcher, TraitProof, TraitProofKind,
-    inherits_parent_clauses, normalize, self_predicate,
+    DYN_SELF_PARAM_INDEX, ItemPredicates, PredicateDirection, PredicateSearcher, TraitProof,
+    TraitProofKind, inherits_parent_clauses, normalize, self_predicate,
 };
 
 /// The identifier of an item; generalizes over rustc's `DefId` to allow for virtual items.
@@ -145,6 +145,8 @@ pub struct ItemRefContents<'tcx, Id: ItemId = DefId> {
     pub needs_explicit_self_clause: bool,
     /// Whether this contains any reference to a type/lifetime/const parameter.
     pub has_param: bool,
+    /// Whether this mentions the type/const parameters of the item under which the reference was made.
+    pub has_owner_param: bool,
     /// Whether this contains any reference to a type/const parameter.
     pub has_non_lt_param: bool,
 }
@@ -252,6 +254,33 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
 
         let trait_proofs = self.resolve_item_required_predicates(state, def_id.clone(), generics);
         let needs_explicit_self_clause = def_id.takes_explicit_self_clause(state);
+
+        // Determine whether this item reference mentions any of the type/const parameters of the
+        // owner. We exclude the `dyn` self parameter we add, since that is unrelated to the owner.
+        let has_owner_param = generics.has_non_region_param() && {
+            use rustc_middle::ty::{TypeSuperVisitable, TypeVisitable, TypeVisitor};
+            use std::ops::ControlFlow;
+            struct HasOwnerParam;
+            impl<'tcx> TypeVisitor<ty::TyCtxt<'tcx>> for HasOwnerParam {
+                type Result = ControlFlow<()>;
+                fn visit_ty(&mut self, ty: ty::Ty<'tcx>) -> ControlFlow<()> {
+                    match ty.kind() {
+                        ty::Param(p) if p.index != DYN_SELF_PARAM_INDEX => ControlFlow::Break(()),
+                        _ if ty.has_non_region_param() => ty.super_visit_with(self),
+                        _ => ControlFlow::Continue(()),
+                    }
+                }
+                fn visit_const(&mut self, c: ty::Const<'tcx>) -> ControlFlow<()> {
+                    match c.kind() {
+                        ty::ConstKind::Param(_) => ControlFlow::Break(()),
+                        _ if c.has_non_region_param() => c.super_visit_with(self),
+                        _ => ControlFlow::Continue(()),
+                    }
+                }
+            }
+            generics.visit_with(&mut HasOwnerParam).is_break()
+        };
+
         let content = ItemRefContents {
             def_id,
             generic_args: generics,
@@ -262,6 +291,7 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
                 || generics.has_escaping_bound_vars()
                 || generics.has_free_regions(),
             has_non_lt_param: generics.has_param(),
+            has_owner_param,
         };
         content.intern()
     }
@@ -278,6 +308,7 @@ impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
             needs_explicit_self_clause: false,
             has_param: false,
             has_non_lt_param: false,
+            has_owner_param: false,
         };
         content.intern()
     }
