@@ -88,7 +88,7 @@ pub fn callable_virtual_impl<'a, 'tcx>(
     def: &'a hax::FullDef<'tcx>,
     s: &impl hax::BaseState<'tcx>,
     target_kind: ClosureKind,
-) -> &'a hax::VirtualTraitImpl {
+) -> &'a hax::VirtualTraitImpl<'tcx> {
     CallableFnImpls::from_def(def, s)
         .and_then(|impls| impls.vimpl(target_kind))
         .expect("expected a callable with a Fn* impl")
@@ -131,16 +131,16 @@ impl<'a> Callable<'a> {
 }
 
 #[derive(Clone, Copy)]
-struct CallableFnImpls<'a> {
+struct CallableFnImpls<'a, 'tcx> {
     callable: Callable<'a>,
-    fn_once_impl: Option<&'a hax::VirtualTraitImpl>,
-    fn_mut_impl: Option<&'a hax::VirtualTraitImpl>,
-    fn_impl: Option<&'a hax::VirtualTraitImpl>,
+    fn_once_impl: Option<&'a hax::VirtualTraitImpl<'tcx>>,
+    fn_mut_impl: Option<&'a hax::VirtualTraitImpl<'tcx>>,
+    fn_impl: Option<&'a hax::VirtualTraitImpl<'tcx>>,
 }
 
-impl<'a> CallableFnImpls<'a> {
-    fn from_def<'tcx>(def: &'a hax::FullDef<'tcx>, s: &impl hax::BaseState<'tcx>) -> Option<Self> {
-        let from_fn_def = |sig: &'a hax::PolyFnSig, impls: Option<&'a hax::FnTraitImpls>| {
+impl<'a, 'tcx> CallableFnImpls<'a, 'tcx> {
+    fn from_def(def: &'a hax::FullDef<'tcx>, s: &impl hax::BaseState<'tcx>) -> Option<Self> {
+        let from_fn_def = |sig: &'a hax::PolyFnSig, impls: Option<&'a hax::FnTraitImpls<'tcx>>| {
             let impls = impls?;
             Some(Self {
                 callable: Callable::FnDef {
@@ -167,7 +167,7 @@ impl<'a> CallableFnImpls<'a> {
         }
     }
 
-    fn vimpl(self, target_kind: ClosureKind) -> Option<&'a hax::VirtualTraitImpl> {
+    fn vimpl(self, target_kind: ClosureKind) -> Option<&'a hax::VirtualTraitImpl<'tcx>> {
         match target_kind {
             ClosureKind::FnOnce => self.fn_once_impl,
             ClosureKind::FnMut => self.fn_mut_impl,
@@ -753,7 +753,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let vimpl = callable_impls.vimpl(target_kind).unwrap();
         let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
         let method_id =
-            self.translate_trait_method_id(implemented_trait.id, &vimpl.methods[0].0)?;
+            self.translate_trait_method_id(implemented_trait.id, &vimpl.methods[0])?;
 
         let impl_ref = self.translate_callable_impl_ref(span, callable.item(), target_kind)?;
         let src = FunSource::TraitImpl {
@@ -818,7 +818,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Construct the `call_*` method reference.
         let trait_decl_id = timpl.impl_trait.id;
-        let trait_method_id = self.translate_trait_method_id(trait_decl_id, &vimpl.methods[0].0)?;
+        let trait_method_id = self.translate_trait_method_id(trait_decl_id, &vimpl.methods[0])?;
         let call_fn_binder = {
             let kind = TransItemSourceKind::CallableMethod(target_kind);
             let bound_method_ref: RegionBinder<DeclRef<ItemId>> = self
