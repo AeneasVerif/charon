@@ -97,7 +97,7 @@ where
     storage_live(_0)
     storage_live(_2)
     _2 = concretize<&'_0 (dyn Trait + '1), &'_0 Self>(move _1)
-    _0 = test_crate::Trait::dflt<'_0, Self>[TraitClause0](move _2)
+    _0 = TraitClause0::dflt<'_0>(move _2)
     ↳⚡ storage_dead(_2)
         storage_dead(_1)
         unwind_continue

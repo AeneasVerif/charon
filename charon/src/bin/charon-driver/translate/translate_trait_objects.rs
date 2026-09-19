@@ -196,7 +196,7 @@ struct VTableInstanceData<'a> {
 
 /// Where the shims stored in a vtable's method fields come from.
 enum VTableMethodSource<'a> {
-    ImplMethods(IndexVec<TraitMethodId, &'a hax::ImplAssocItem>),
+    Methods(IndexVec<TraitMethodId, hax::ItemRef>),
     FnTraitShim(&'a hax::ItemRef, TransImplSource, &'a hax::PolyFnSig),
 }
 
@@ -625,17 +625,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let fn_trait_impl = recognize_fn_trait_impl_proof(trait_proof);
         let kind = match &trait_proof.kind {
-            // The marker trait vtable translation pipeline would give incorrect results for the
-            // `Fn*` impl of a function pointer, which has no item to hang the impl off.
-            // FIXME(dyn): translate vtables for the `Fn*` impls of function pointers
-            _ if let Some((self_ty, _)) = &fn_trait_impl
-                && !matches!(
-                    self_ty.hax_skip_binder_ref().kind(),
-                    hax::TyKind::Closure(..) | hax::TyKind::FnDef { .. }
-                ) =>
-            {
-                ConstantExprKind::VTableRef(self.translate_trait_proof(span, trait_proof)?)
-            }
             hax::TraitProofKind::Concrete { .. } | hax::TraitProofKind::Builtin { .. } => {
                 // We could return `VTableRef` but we need to enqueue the translation of the static
                 // so may as well reuse that to normalize a bit.
@@ -656,6 +645,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                     hax::TyKind::FnDef { item, .. } => {
                                         (item, TransImplSource::Callable(kind))
                                     }
+                                    hax::TyKind::Arrow(_) => (tref, TransImplSource::Marker),
                                     _ => unreachable!("builtin `Fn*` impl for {self_ty:?}"),
                                 }
                             }
@@ -823,6 +813,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         impl_def: &'a hax::FullDef<'tcx>,
         impl_kind: TransImplSource,
     ) -> VTableInstanceData<'a> {
+        let hax_state = self.hax_state_with_id();
+        // The method of the trait declaration, instantiated for this impl.
+        let decl_method = |trait_ref: &hax::TraitRef, decl_def_id: &hax::DefId| {
+            let trait_args = trait_ref.rustc_args(hax_state);
+            hax::ItemRef::translate_from_hax_def_id(hax_state, decl_def_id.clone(), trait_args)
+        };
         match (impl_kind, impl_def.kind()) {
             // The def is the closure or fn item; the impl is one of its virtual `Fn*` impls.
             (TransImplSource::Callable(target_kind), _) => {
@@ -844,22 +840,37 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             (TransImplSource::Normal, hax::FullDefKind::TraitImpl(timpl)) => {
                 // The methods are indexed in the order provided by hax, which is the order of the
                 // trait declaration.
-                let methods: IndexVec<TraitMethodId, _> = timpl
+                let methods = timpl
                     .items(self.hax_state())
                     .iter()
                     .filter(|item| matches!(item.decl_def_id.kind, hax::DefKind::AssocFn))
+                    .map(|item| match &item.value {
+                        // The method is vtable safe so it has no generics, hence we can skip the binder.
+                        Some(value) => value.skip_binder.item.clone(),
+                        // The impl doesn't provide this method, so we get the trait's default.
+                        None => decl_method(&timpl.trait_pred().trait_ref, &item.decl_def_id),
+                    })
                     .collect();
                 VTableInstanceData {
                     implemented_trait_ref: &timpl.trait_pred().trait_ref,
                     implied_trait_proofs: timpl.implied_trait_proofs(),
-                    methods: VTableMethodSource::ImplMethods(methods),
+                    methods: VTableMethodSource::Methods(methods),
                 }
             }
-            (TransImplSource::Marker, hax::FullDefKind::Trait(t)) => VTableInstanceData {
-                implemented_trait_ref: &t.self_predicate().trait_ref,
-                implied_trait_proofs: t.implied_trait_proofs(self.hax_state()),
-                methods: VTableMethodSource::ImplMethods(IndexVec::new()),
-            },
+            (TransImplSource::Marker, hax::FullDefKind::Trait(t)) => {
+                let self_pred = t.self_predicate();
+                let methods = t
+                    .items(self.hax_state())
+                    .iter()
+                    .filter(|item| matches!(item.kind, hax::AssocKind::Fn { .. }))
+                    .map(|item| decl_method(&self_pred.trait_ref, &item.def_id))
+                    .collect();
+                VTableInstanceData {
+                    implemented_trait_ref: &self_pred.trait_ref,
+                    implied_trait_proofs: t.implied_trait_proofs(self.hax_state()),
+                    methods: VTableMethodSource::Methods(methods),
+                }
+            }
             _ => unreachable!(),
         }
     }
@@ -870,29 +881,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         span: Span,
         trait_id: TraitDeclId,
         method_id: TraitMethodId,
-        implemented_trait: &hax::TraitRef,
         methods: &VTableMethodSource<'_>,
     ) -> Result<VtableMethodValue, Error> {
         match methods {
-            VTableMethodSource::ImplMethods(methods) => {
-                let item = methods[method_id];
-                // The method is vtable safe so it has no generics, hence we can skip the binder.
-                let item_ref = match &item.value {
-                    Some(value) => value.skip_binder.item.clone(),
-                    // The impl doesn't provide this method, so we get the trait's default.
-                    None => {
-                        let hax_state = self.hax_state_with_id();
-                        let trait_args = implemented_trait.rustc_args(hax_state);
-                        hax::ItemRef::translate_from_hax_def_id(
-                            hax_state,
-                            item.decl_def_id.clone(),
-                            trait_args,
-                        )
-                    }
-                };
+            VTableMethodSource::Methods(methods) => {
+                let item_ref = &methods[method_id];
                 let shim = self.translate_fn_ptr(
                     span,
-                    &item_ref,
+                    item_ref,
                     TransItemSourceKind::VTableMethod(TransImplSource::Normal),
                 )?;
 
@@ -907,7 +903,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 // and restore the orginal one after computing `method_ty`.
                 assert!(self.binding_levels.len() == 1);
                 let orginal_binding = self.binding_levels.pop();
-                let assoc_fun_def = self.hax_def(&item_ref)?;
+                let assoc_fun_def = self.hax_def(item_ref)?;
                 self.translate_item_generics(
                     span,
                     &assoc_fun_def,
@@ -1115,13 +1111,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     }
                 }
                 TrVTableField::Method(method_id, _) => {
-                    let value = self.vtable_method_value(
-                        span,
-                        trait_id,
-                        method_id,
-                        implemented_trait_ref,
-                        &methods,
-                    )?;
+                    let value = self.vtable_method_value(span, trait_id, method_id, &methods)?;
                     match value {
                         VtableMethodValue::Const(const_kind) => mk_const(const_kind),
                         VtableMethodValue::Cast(method) => mk_cast(method),
@@ -1401,8 +1391,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // the concrete receiver we will cast to
         let target_receiver: Ty;
         let receiver_is_by_value: bool;
-        // the item that implements the method.
-        let target_item: TransItemSourceKind;
+        // the item that implements the method, if it isn't the method itself.
+        let target_item: Option<TransItemSourceKind>;
 
         if let TransImplSource::Callable(target_kind) = impl_kind {
             let vimpl = callable_virtual_impl(def, self.hax_state(), target_kind);
@@ -1442,7 +1432,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 }
             };
             receiver_is_by_value = target_kind == ClosureKind::FnOnce;
-            target_item = TransItemSourceKind::CallableMethod(target_kind);
+            target_item = Some(TransItemSourceKind::CallableMethod(target_kind));
         } else {
             let hax::FullDefKind::AssocFn(f) = def.kind() else {
                 raise_error!(
@@ -1466,7 +1456,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     .implemented_trait_item_id()
                     .real_rust_def_id(),
             );
-            target_item = TransItemSourceKind::Fun;
+            target_item = None;
         };
 
         trace!(
@@ -1477,11 +1467,25 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque
         } else {
-            let fun_id = self.register_item(span, def.this(), target_item);
-            let target_fn = FnPtr::new(
-                FnPtrKind::Fun(fun_id),
-                self.outermost_binder().params.identity_args(),
-            );
+            let target_fn = match target_item {
+                Some(kind) => {
+                    let fun_id = self.register_item(span, def.this(), kind);
+                    FnPtr::new(
+                        FnPtrKind::Fun(fun_id),
+                        self.outermost_binder().params.identity_args(),
+                    )
+                }
+                None => {
+                    let late_bound_regions = self
+                        .innermost_binder()
+                        .bound_region_vars
+                        .iter()
+                        .map(|rid| Region::Var(DeBruijnVar::new_at_zero(*rid)))
+                        .collect();
+                    self.translate_bound_fn_ptr(span, def.this(), TransItemSourceKind::Fun)?
+                        .apply(late_bound_regions)
+                }
+            };
             self.translate_vtable_shim_body(
                 span,
                 &target_receiver,

@@ -177,6 +177,13 @@ impl<'tcx> TranslateCtx<'tcx> {
                 let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
+            &TransItemSourceKind::FnPointerMethod(kind) => {
+                let Some(ItemId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl = bt_ctx.translate_fn_pointer_method(id, item_meta, &def, kind)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
             TransItemSourceKind::ClosureAsFnCast => {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()

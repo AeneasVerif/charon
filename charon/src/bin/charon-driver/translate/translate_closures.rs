@@ -316,8 +316,47 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         )?;
         Ok(Some(bound_ref.map(|dref| {
             let fn_ref: FunDeclRef = dref.try_into().unwrap();
-            FnPtr::new(FnPtrKind::Fun(fn_ref.id), fn_ref.generics)
+            fn_ref.into()
         })))
+    }
+
+    /// Same as `translate_callable_method_fn_ptr`, for the builtin `Fn*` impl of a function
+    /// pointer. That impl has no item of its own, so we generate its `call*` method ourselves;
+    /// see `TransItemSourceKind::FnPointerMethod` for why this is monomorphic-only.
+    pub(crate) fn translate_fn_pointer_method_fn_ptr(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef,
+    ) -> Result<Option<RegionBinder<FnPtr>>, Error> {
+        if !self.monomorphize() {
+            return Ok(None);
+        }
+        let Some(in_trait) = &item.in_trait else {
+            return Ok(None);
+        };
+        let Some((self_ty, target_kind)) = recognize_fn_trait_impl_proof(in_trait) else {
+            return Ok(None);
+        };
+        if !matches!(self_ty.hax_skip_binder_ref().kind(), hax::TyKind::Arrow(..)) {
+            return Ok(None);
+        }
+        // The method item is keyed on the trait, like the impl itself.
+        let trait_ref = in_trait
+            .pred
+            .hax_skip_binder_ref()
+            .erase(self.hax_state_with_id());
+        let kind = TransItemSourceKind::FnPointerMethod(target_kind);
+        let fn_ref: FunDeclRef = self.translate_item(span, &trait_ref, kind)?;
+        // Bind the late-bound region of the `call`/`call_mut` receiver, as the method's own
+        // signature would; the method takes no region argument of its own.
+        let mut regions = IndexVec::new();
+        if !matches!(target_kind, ClosureKind::FnOnce) {
+            regions.push_with(|index| RegionParam::new(index, None, Variance::Covariant));
+        }
+        Ok(Some(RegionBinder {
+            regions,
+            skip_binder: fn_ref.into(),
+        }))
     }
 }
 
@@ -786,6 +825,97 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             generics: self.into_generics(),
             signature: Box::new(signature),
             src,
+            body,
+        })
+    }
+
+    /// The `call`/`call_mut`/`call_once` method of the builtin `Fn*` impl of a function pointer.
+    /// This only works in monomorphic code, as we need to untuple the arguments to call the function
+    /// pointer, which requires the `Args` type to be concrete.
+    pub fn translate_fn_pointer_method(
+        mut self,
+        def_id: FunDeclId,
+        item_meta: ItemMeta,
+        def: &hax::FullDef<'tcx>,
+        target_kind: ClosureKind,
+    ) -> Result<FunDecl, Error> {
+        let span = item_meta.span;
+
+        let hax::FullDefKind::Trait(t) = def.kind() else {
+            unreachable!("a fn-pointer method is registered against its trait")
+        };
+        let method_item = t
+            .items(self.hax_state())
+            .iter()
+            .find(|item| matches!(item.kind, hax::AssocKind::Fn { .. }))
+            .expect("the `Fn*` traits each have a method");
+        let method_ref = {
+            let hax_state = self.hax_state_with_id();
+            let trait_args = t.self_predicate().trait_ref.rustc_args(hax_state);
+            hax::ItemRef::translate_from_hax_def_id(
+                hax_state,
+                method_item.def_id.clone(),
+                trait_args,
+            )
+        };
+        let method_def = self.hax_def(&method_ref)?;
+        let hax::FullDefKind::AssocFn(f) = method_def.kind() else {
+            unreachable!()
+        };
+        // We only generate this item in mono mode, where regions are erased anyway.
+        let signature = {
+            let bound_sig = self.translate_region_binder(span, f.sig(), |ctx, sig| {
+                ctx.translate_fun_sig(span, sig)
+            })?;
+            self.erase_region_binder(bound_sig)
+        };
+
+        let body = if item_meta.opacity.with_private_contents().is_opaque() {
+            Body::Opaque
+        } else {
+            // ```ignore
+            // fn call(self: &fn(A, B) -> R, args: (A, B)) -> R {
+            //     (*self)(move args.0, move args.1)
+            // }
+            // ```
+            let mut builder = BodyBuilder::new(span, signature.inputs.len());
+            let ret_place = builder.new_var(None, signature.output.clone());
+            let self_place = builder.new_var(Some("self".into()), signature.inputs[0].clone());
+            let tupled_args_ty = &signature.inputs[1];
+            let tupled_args = builder.new_var(Some("args".into()), tupled_args_ty.clone());
+
+            // The `Self` type is concrete, so the tupled argument type is a concrete tuple whose
+            // fields we can untuple to call the function pointer directly.
+            let tuple_ref = tupled_args_ty.as_adt().expect("args must be a tuple");
+            self.get_or_translate(ItemId::Type(tuple_ref.id))?;
+            let args = tupled_args_ty
+                .as_tuple_fields(&self.t_ctx.translated)
+                .into_iter()
+                .enumerate()
+                .map(|(i, ty)| {
+                    let field = ProjectionElem::Field(None, FieldId::new(i));
+                    Operand::Move(tupled_args.clone().project(field, ty))
+                })
+                .collect();
+            // `call`/`call_mut` take the pointer by reference, `call_once` takes it by value.
+            let func = match target_kind {
+                ClosureKind::FnOnce => Operand::Copy(self_place),
+                ClosureKind::Fn | ClosureKind::FnMut => Operand::Copy(self_place.deref()),
+            };
+            builder.call(Call {
+                func: FnOperand::Dynamic(func),
+                args,
+                dest: ret_place,
+            });
+            Body::Unstructured(builder.build())
+        };
+
+        Ok(FunDecl {
+            def_id,
+            item_meta,
+            generics: self.into_generics(),
+            signature: Box::new(signature),
+            src: FunSource::Normal,
             body,
         })
     }

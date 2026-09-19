@@ -96,7 +96,7 @@ fn normalize_method_call(
     );
     // Substitute the appropriate generics into the function call.
     let fn_ref = fn_ref.apply(&impl_ref.generics).apply(method_generics);
-    Some(FnPtr::new(FnPtrKind::Fun(fn_ref.id), fn_ref.generics))
+    Some(fn_ref.into())
 }
 
 pub struct Transform;
