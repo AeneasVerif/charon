@@ -10,6 +10,7 @@ use super::translate_ctx::{ItemTransCtx, TransImplSource, TransItemSourceKind};
 use charon_lib::ast::*;
 use charon_lib::ids::IndexVec;
 use charon_lib::utils::CycleDetector;
+use macros::EnumIsA;
 
 /// A level of binding for type-level variables. Each item has a top-level binding level
 /// corresponding to the parameters and clauses to the items. We may then encounter inner binding
@@ -61,7 +62,23 @@ pub(crate) struct BindingLevel {
     /// Cache the translation of types. This harnesses the deduplication of `Ty` that hax does.
     // Important: we can't reuse type caches from earlier binders as the new binder may change what
     // a given variable resolves to.
-    pub type_trans_cache: HashMap<hax::Ty, Ty>,
+    pub type_trans_cache: HashMap<hax::Ty, (Ty, HasErasedOrBodyRegions)>,
+}
+
+#[derive(Debug, Clone, Copy, EnumIsA)]
+pub enum HasErasedOrBodyRegions {
+    No,
+    Yes,
+}
+
+impl From<bool> for HasErasedOrBodyRegions {
+    fn from(b: bool) -> Self {
+        if b {
+            HasErasedOrBodyRegions::Yes
+        } else {
+            HasErasedOrBodyRegions::No
+        }
+    }
 }
 
 /// Small helper: we ignore some region names (when they are equal to "'_")

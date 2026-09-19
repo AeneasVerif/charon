@@ -108,23 +108,30 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// regions), in which case the return type is different.
     #[tracing::instrument(skip(self, span))]
     pub(crate) fn translate_ty(&mut self, span: Span, hax_ty: &hax::Ty) -> Result<Ty, Error> {
-        let mut ty = if let Some(ty) = self
+        let (mut ty, has_erased_regions) = if let Some(cached) = self
             .innermost_binder()
             .type_trans_cache
             .get(hax_ty)
             .cloned()
         {
-            ty
+            cached
         } else {
             let ty = self
                 .translate_ty_inner(span, hax_ty)
                 .unwrap_or_else(|e| TyKind::Error(e.msg).into_ty());
+            let mut has_erased_regions = false;
+            ty.dyn_visit(|r: &Region| {
+                has_erased_regions |= matches!(r, Region::Erased | Region::Body(..))
+            });
+            let has_erased_regions = has_erased_regions.into();
             self.innermost_binder_mut()
                 .type_trans_cache
-                .insert(hax_ty.clone(), ty.clone());
-            ty
+                .insert(hax_ty.clone(), (ty.clone(), has_erased_regions));
+            (ty, has_erased_regions)
         };
-        if let Some(v) = &mut self.lifetime_freshener {
+        if has_erased_regions.is_yes()
+            && let Some(v) = &mut self.lifetime_freshener
+        {
             // We might be reusing a value from cache: we must refresh the erased & body regions.
             ty = ty.replace_erased_regions(|| Region::Body(v.push(())));
         }
