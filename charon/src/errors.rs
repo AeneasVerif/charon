@@ -169,35 +169,28 @@ enum DepNode {
 
 /// Graph of dependencies between erroring definitions and the definitions they came from.
 struct DepGraph {
-    dgraph: DiGraphMap<DepNode, (), rustc_hash::FxBuildHasher>,
+    edges: HashSet<(DepNode, DepNode)>,
 }
 
 impl DepGraph {
     fn new() -> Self {
         DepGraph {
-            dgraph: DiGraphMap::default(),
-        }
-    }
-
-    fn insert_node(&mut self, n: DepNode) {
-        // We have to be careful about duplicate nodes
-        if !self.dgraph.contains_node(n) {
-            self.dgraph.add_node(n);
+            edges: Default::default(),
         }
     }
 
     fn insert_edge(&mut self, from: DepNode, to: DepNode) {
-        self.insert_node(from);
-        self.insert_node(to);
-        if !self.dgraph.contains_edge(from, to) {
-            self.dgraph.add_edge(from, to, ());
-        }
+        self.edges.insert((from, to));
+    }
+
+    fn graph(&self) -> DiGraphMap<DepNode, (), rustc_hash::FxBuildHasher> {
+        DiGraphMap::from_edges(self.edges.iter().copied())
     }
 }
 
 impl std::fmt::Display for DepGraph {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        for (from, to, _) in self.dgraph.all_edges() {
+        for (from, to) in &self.edges {
             writeln!(f, "{from:?} -> {to:?}")?
         }
         Ok(())
@@ -303,8 +296,6 @@ impl ErrorCtx {
             && !is_local
         {
             let src_node = DepNode::External(item_id);
-            self.external_dep_graph.insert_node(src_node);
-
             let tgt_node = match src.span {
                 Some(span) => DepNode::Local(src.src_id, span),
                 None => DepNode::External(src.src_id),
@@ -321,8 +312,8 @@ impl ErrorCtx {
 
         // Use `Dijkstra's` algorithm to find the local items reachable from the current non-local
         // item.
-        let graph = &self.external_dep_graph;
-        let reachable = dijkstra(&graph.dgraph, DepNode::External(id), None, |_| 1);
+        let graph = self.external_dep_graph.graph();
+        let reachable = dijkstra(&graph, DepNode::External(id), None, |_| 1);
         trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
 
         // Collect reachable local spans.
