@@ -297,7 +297,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     // TODO(dyn): for now, we consider traits with associated types to not be dyn
                     // compatible because we don't know how to handle them; for these we skip
                     // translating the vtable.
-                    if self.trait_is_dyn_compatible(&trait_predicate.trait_ref.def_id)? {
+                    if self.trait_is_dyn_compatible(&trait_predicate.trait_ref.def_id) {
                         // Ensure the vtable type is translated. The first predicate is the one that
                         // can have methods, i.e. a vtable.
                         let _: TypeDeclId = self.register_item(
