@@ -423,18 +423,6 @@ where
 
 struct test_crate::main::{closure#3} {}
 
-// Full name: test_crate::main::{closure#3}::{impl Destruct for test_crate::main::{closure#3}}::drop_glue
-unsafe fn {impl Destruct for test_crate::main::{closure#3}}::drop_glue<'_0>(_1: &'_0 mut test_crate::main::{closure#3})
-{
-    let _0: (); // return
-    let _1: &'1 mut test_crate::main::{closure#3}; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
 // Full name: test_crate::main::{impl Fn<(&'_0 u32,)> for test_crate::main::{closure#3}}::call
 fn {impl Fn<(&'_0 u32,)> for test_crate::main::{closure#3}}::call<'_0, '_1>(_1: &'_1 test_crate::main::{closure#3}, tupled_args: (&'_0 u32,)) -> u32
 {
@@ -487,16 +475,6 @@ fn {impl FnOnce<(&'_0 u32,)> for test_crate::main::{closure#3}}::call_once<'_0>(
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(&'_0 u32,)> for test_crate::main::{closure#3}}::call_mut<'_0, '9>(move _3, move _2)
-    ↳⚡ drop[{impl Destruct for test_crate::main::{closure#3}}::drop_glue<'10>] _1
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    drop[{impl Destruct for test_crate::main::{closure#3}}::drop_glue<'11>] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -542,10 +520,6 @@ where
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_1 mut (dyn FnOnce<(&'_0 u32,), Output = u32> + '1), &'_1 mut test_crate::main::{closure#3}>(move dyn_self)
-    drop[{impl Destruct for test_crate::main::{closure#3}}::drop_glue<'3>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -610,10 +584,6 @@ where
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_1 mut (dyn FnMut<(&'_0 u32,), ImpliedClause1::Output = u32> + '2), &'_1 mut test_crate::main::{closure#3}>(move dyn_self)
-    drop[{impl Destruct for test_crate::main::{closure#3}}::drop_glue<'6>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -681,10 +651,6 @@ where
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_1 mut (dyn Fn<(&'_0 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '3), &'_1 mut test_crate::main::{closure#3}>(move dyn_self)
-    drop[{impl Destruct for test_crate::main::{closure#3}}::drop_glue<'9>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -862,20 +828,6 @@ struct test_crate::main::{closure#1}<'_0> {
   _0: &'_0 u32,
 }
 
-// Full name: test_crate::main::{closure#1}::{impl Destruct for test_crate::main::{closure#1}<'_0>}::drop_glue
-unsafe fn {impl Destruct for test_crate::main::{closure#1}<'_0>}::drop_glue<'_0, '_1>(_1: &'_1 mut test_crate::main::{closure#1}<'_0>)
-where
-    RegionOutlives0: '_0: '_1,
-{
-    let _0: (); // return
-    let _1: &'1 mut test_crate::main::{closure#1}<'_0>; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
 // Full name: test_crate::main::{impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::call
 fn {impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::call<'_0, '_1>(_1: &'_1 test_crate::main::{closure#1}<'_0>, tupled_args: (u32,)) -> u32
 where
@@ -944,16 +896,6 @@ fn {impl FnOnce<(u32,)> for test_crate::main::{closure#1}<'_0>}::call_once<'_0>(
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(u32,)> for test_crate::main::{closure#1}<'_0>}::call_mut<'_0, '4>(move _3, move _2)
-    ↳⚡ drop[{impl Destruct for test_crate::main::{closure#1}<'_0>}::drop_glue<'_0, '7>] _1
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    drop[{impl Destruct for test_crate::main::{closure#1}<'_0>}::drop_glue<'_0, '10>] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -997,10 +939,6 @@ unsafe fn {impl FnOnce<(u32,)> for test_crate::main::{closure#1}<'_0>}::{vtable_
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_1 mut (dyn FnOnce<(u32,), Output = u32> + '1), &'_1 mut test_crate::main::{closure#1}<'_0>>(move dyn_self)
-    drop[{impl Destruct for test_crate::main::{closure#1}<'_0>}::drop_glue<'_0, '3>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -1061,10 +999,6 @@ unsafe fn {impl FnMut<(u32,)> for test_crate::main::{closure#1}<'_0>}::{vtable_d
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_1 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '1), &'_1 mut test_crate::main::{closure#1}<'_0>>(move dyn_self)
-    drop[{impl Destruct for test_crate::main::{closure#1}<'_0>}::drop_glue<'_0, '3>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -1128,10 +1062,6 @@ unsafe fn {impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::{vtable_drop
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_1 mut (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '1), &'_1 mut test_crate::main::{closure#1}<'_0>>(move dyn_self)
-    drop[{impl Destruct for test_crate::main::{closure#1}<'_0>}::drop_glue<'_0, '3>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -1195,18 +1125,6 @@ impl<'_0> Fn<(u32,)> for test_crate::main::{closure#1}<'_0> {
 
 struct test_crate::main::{closure} {}
 
-// Full name: test_crate::main::{closure}::{impl Destruct for test_crate::main::{closure}}::drop_glue
-unsafe fn {impl Destruct for test_crate::main::{closure}}::drop_glue<'_0>(_1: &'_0 mut test_crate::main::{closure})
-{
-    let _0: (); // return
-    let _1: &'1 mut test_crate::main::{closure}; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
 // Full name: test_crate::main::{impl Fn<(u32,)> for test_crate::main::{closure}}::call
 fn {impl Fn<(u32,)> for test_crate::main::{closure}}::call<'_0>(_1: &'_0 test_crate::main::{closure}, tupled_args: (u32,)) -> u32
 {
@@ -1267,16 +1185,6 @@ fn {impl FnOnce<(u32,)> for test_crate::main::{closure}}::call_once(_1: test_cra
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(u32,)> for test_crate::main::{closure}}::call_mut<'2>(move _3, move _2)
-    ↳⚡ drop[{impl Destruct for test_crate::main::{closure}}::drop_glue<'3>] _1
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    drop[{impl Destruct for test_crate::main::{closure}}::drop_glue<'4>] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -1320,10 +1228,6 @@ unsafe fn {impl FnOnce<(u32,)> for test_crate::main::{closure}}::{vtable_drop_sh
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn FnOnce<(u32,), Output = u32> + '1), &'_0 mut test_crate::main::{closure}>(move dyn_self)
-    drop[{impl Destruct for test_crate::main::{closure}}::drop_glue<'3>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -1384,10 +1288,6 @@ unsafe fn {impl FnMut<(u32,)> for test_crate::main::{closure}}::{vtable_drop_shi
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '1), &'_0 mut test_crate::main::{closure}>(move dyn_self)
-    drop[{impl Destruct for test_crate::main::{closure}}::drop_glue<'3>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -1451,10 +1351,6 @@ unsafe fn {impl Fn<(u32,)> for test_crate::main::{closure}}::{vtable_drop_shim}<
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '1), &'_0 mut test_crate::main::{closure}>(move dyn_self)
-    drop[{impl Destruct for test_crate::main::{closure}}::drop_glue<'3>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -1912,27 +1808,9 @@ fn main()
     return
 }
 
-// Full name: test_crate::main::{closure}::{impl Destruct for test_crate::main::{closure}}
-impl Destruct for test_crate::main::{closure} {
-    fn drop_glue<'_0_1> = {impl Destruct for test_crate::main::{closure}}::drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: test_crate::main::{closure#1}::{impl Destruct for test_crate::main::{closure#1}<'_0>}
-impl<'_0> Destruct for test_crate::main::{closure#1}<'_0> {
-    fn drop_glue<'_0_1> = {impl Destruct for test_crate::main::{closure#1}<'_0>}::drop_glue<'_0, '_0_1>
-    non-dyn-compatible
-}
-
 // Full name: test_crate::main::{closure#2}::{impl Destruct for test_crate::main::{closure#2}}
 impl Destruct for test_crate::main::{closure#2} {
     fn drop_glue<'_0_1> = {impl Destruct for test_crate::main::{closure#2}}::drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: test_crate::main::{closure#3}::{impl Destruct for test_crate::main::{closure#3}}
-impl Destruct for test_crate::main::{closure#3} {
-    fn drop_glue<'_0_1> = {impl Destruct for test_crate::main::{closure#3}}::drop_glue<'_0_1>
     non-dyn-compatible
 }
 

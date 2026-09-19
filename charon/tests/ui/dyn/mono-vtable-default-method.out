@@ -14,14 +14,6 @@ static core::marker::MetaSized::{vtable}::<Struct>: core::marker::MetaSized::{vt
 
 struct () {}
 
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
-
 struct (_, _)::<i32, bool> {
   _0: i32,
   _1: bool,
@@ -103,24 +95,6 @@ fn test_crate::Trait::dflt::{vtable_method}::<Struct><'_0>(_1: &'_0 (dyn Trait))
     return
 }
 
-// Full name: test_crate::Struct::{impl Destruct for Struct}::drop_glue
-unsafe fn drop_glue<'_0>(_1: &'_0 mut Struct)
-{
-    let _0: (); // return
-    let _1: &'1 mut Struct; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::Struct::{impl Destruct for Struct}
-impl "impl_Destruct_for_Struct" Destruct for Struct {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: test_crate::{impl Trait for Struct}::base::{vtable_method}
 fn impl_Trait_for_Struct::base::{vtable_method}<'_0>(_1: &'_0 (dyn Trait)) -> i32
 {
@@ -151,10 +125,6 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Trait))
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Trait + '1), &'_0 mut Struct>(move dyn_self)
-    drop[drop_glue<'3>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return

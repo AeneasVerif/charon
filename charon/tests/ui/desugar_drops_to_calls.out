@@ -91,16 +91,6 @@ pub fn _print<'_0>(_1: Arguments<'_0>)
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
 
-// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_glue
-unsafe fn impl_Destruct_for_Global::drop_glue<'_0>(_1: &'_0 mut Global)
-= <opaque>
-
-// Full name: alloc::alloc::Global::{impl Destruct for Global}
-impl "impl_Destruct_for_Global" Destruct for Global {
-    fn drop_glue<'_0_1> = impl_Destruct_for_Global::drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: alloc::boxed::Box
 #[fundamental]
 #[lang_item(OwnedBox)]
@@ -122,10 +112,10 @@ where
     TypeOutlives1: A: '_0,
 = <opaque>
 
-// Full name: alloc::boxed::{Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, TraitClause1, impl_Destruct_for_Global]}::new
+// Full name: alloc::boxed::{Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, TraitClause1, {built_in impl Destruct for Global}]}::new
 #[track_caller]
 #[diagnostic_item("box_new")]
-pub fn new<T>(_1: T) -> Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, TraitClause1, impl_Destruct_for_Global]
+pub fn new<T>(_1: T) -> Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, TraitClause1, {built_in impl Destruct for Global}]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Destruct),
@@ -346,11 +336,11 @@ fn use_string(_1: String)
 }
 
 // Full name: test_crate::use_vec
-fn use_vec(_1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global])
+fn use_vec(_1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}])
 {
     let _0: (); // return
-    let _1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // arg #1
-    let drop_arg: &'_ mut Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // local
+    let _1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // arg #1
+    let drop_arg: &'_ mut Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
     let drop_ret: (); // local
 
     storage_live(_0)
@@ -359,7 +349,7 @@ fn use_vec(_1: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for 
     storage_live(drop_arg)
     drop_arg = &mut _1
     storage_live(drop_ret)
-    drop_ret = impl_Destruct_for_Vec::drop_glue<'0, i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg)
+    drop_ret = impl_Destruct_for_Vec::drop_glue<'0, i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}](move drop_arg)
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)
@@ -409,8 +399,8 @@ fn skip_drop_scalar(_1: i32)
 
 // Full name: test_crate::Point
 struct Point {
-  x: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global],
-  y: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global],
+  x: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}],
+  y: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}],
 }
 
 // Full name: test_crate::{impl Drop for Point}::drop
@@ -445,13 +435,13 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
     let _1: &'1 mut Point; // arg #1
     let _2: &'2 mut Point; // anonymous local
     let _3: (); // anonymous local
-    let drop_arg_4: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // local
+    let drop_arg_4: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
     let drop_ret_5: (); // local
-    let drop_arg_6: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // local
+    let drop_arg_6: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
     let drop_ret_7: (); // local
-    let drop_arg_8: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // local
+    let drop_arg_8: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
     let drop_ret_9: (); // local
-    let drop_arg_10: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // local
+    let drop_arg_10: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
     let drop_ret_11: (); // local
 
     storage_live(_0)
@@ -463,7 +453,7 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
     ↳⚡ storage_live(drop_arg_4)
         drop_arg_4 = &mut (*_1).x
         storage_live(drop_ret_5)
-        drop_ret_5 = impl_Destruct_for_Box::drop_glue<'5, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_4)
+        drop_ret_5 = impl_Destruct_for_Box::drop_glue<'5, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}](move drop_arg_4)
         ↳⚡ storage_dead(_3)
             storage_dead(_2)
             storage_dead(_1)
@@ -479,7 +469,7 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
         storage_live(drop_arg_8)
         drop_arg_8 = &mut (*_1).y
         storage_live(drop_ret_9)
-        drop_ret_9 = impl_Destruct_for_Box::drop_glue<'7, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_8)
+        drop_ret_9 = impl_Destruct_for_Box::drop_glue<'7, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}](move drop_arg_8)
         ↳⚡ storage_dead(_3)
             storage_dead(_2)
             storage_dead(_1)
@@ -499,11 +489,11 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
     storage_live(drop_arg_6)
     drop_arg_6 = &mut (*_1).x
     storage_live(drop_ret_7)
-    drop_ret_7 = impl_Destruct_for_Box::drop_glue<'6, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_6)
+    drop_ret_7 = impl_Destruct_for_Box::drop_glue<'6, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}](move drop_arg_6)
     ↳⚡ storage_live(drop_arg_8)
         drop_arg_8 = &mut (*_1).y
         storage_live(drop_ret_9)
-        drop_ret_9 = impl_Destruct_for_Box::drop_glue<'7, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_8)
+        drop_ret_9 = impl_Destruct_for_Box::drop_glue<'7, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}](move drop_arg_8)
         ↳⚡ storage_dead(_3)
             storage_dead(_2)
             storage_dead(_1)
@@ -523,7 +513,7 @@ unsafe fn impl_Destruct_for_Point::drop_glue<'_0>(_1: &'_0 mut Point)
     storage_live(drop_arg_10)
     drop_arg_10 = &mut (*_1).y
     storage_live(drop_ret_11)
-    drop_ret_11 = impl_Destruct_for_Box::drop_glue<'8, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_10)
+    drop_ret_11 = impl_Destruct_for_Box::drop_glue<'8, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}](move drop_arg_10)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -561,9 +551,9 @@ fn main()
 {
     let _0: (); // return
     let p: Point; // local
-    let _2: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // anonymous local
-    let _3: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // anonymous local
-    let drop_arg_4: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global]; // local
+    let _2: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // anonymous local
+    let _3: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // anonymous local
+    let drop_arg_4: &'_ mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // local
     let drop_ret_5: (); // local
     let drop_arg_6: &'_ mut Point; // local
     let drop_ret_7: (); // local
@@ -579,7 +569,7 @@ fn main()
     ↳⚡ storage_live(drop_arg_4)
         drop_arg_4 = &mut _2
         storage_live(drop_ret_5)
-        drop_ret_5 = impl_Destruct_for_Box::drop_glue<'0, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, impl_Destruct_for_Global](move drop_arg_4)
+        drop_ret_5 = impl_Destruct_for_Box::drop_glue<'0, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}](move drop_arg_4)
         ↳⚡ storage_dead(drop_ret_7)
             storage_dead(drop_arg_6)
             storage_dead(drop_ret_5)

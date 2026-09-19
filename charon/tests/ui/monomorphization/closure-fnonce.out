@@ -16,16 +16,6 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-struct () {}
-
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
-
 // Full name: core::marker::Tuple
 #[fundamental]
 #[lang_item(Tuple)]
@@ -37,6 +27,8 @@ pub trait Tuple<Self>
 
 // Full name: test_crate::NotCopy
 struct NotCopy {}
+
+struct () {}
 
 // Full name: core::mem::drop::<NotCopy>
 #[diagnostic_item("mem_drop")]
@@ -68,18 +60,6 @@ struct (_, _)::<u8, bool> {
 // Full name: test_crate::main::{closure}
 struct {closure} {
   _0: NotCopy,
-}
-
-// Full name: test_crate::main::{closure}::{impl Destruct for {closure}}::drop_glue
-unsafe fn drop_glue<'_0>(_1: &'_0 mut {closure})
-{
-    let _0: (); // return
-    let _1: &'1 mut {closure}; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for {closure}}::call_once
@@ -135,19 +115,10 @@ fn apply_to_zero_once::<{closure}>(f: {closure}) -> u8
     storage_live(_3)
     _3 = (const 0u8,)
     _0 = call_once(move _2, move _3)
-    ↳⚡ conditional_drop[drop_glue<'0>] _2
-        ↳⚡ storage_dead(f)
-            unwind_terminate
-        conditional_drop[drop_glue<'2>] f
-        ↳⚡ storage_dead(f)
-            unwind_terminate
-        storage_dead(f)
+    ↳⚡ storage_dead(f)
         unwind_continue
     storage_dead(_3)
     storage_dead(_2)
-    conditional_drop[drop_glue<'1>] f
-    ↳⚡ storage_dead(f)
-        unwind_continue
     storage_dead(f)
     return
 }
@@ -183,12 +154,6 @@ impl "impl_FnOnce_for_closure" FnOnce<(u8,)> for {closure} {
     proof ImpliedClause1: ((u8,): Sized) = {built_in impl Sized for (u8,)}
     proof ImpliedClause2: ((u8,): Tuple) = {built_in impl Tuple for (u8,)}
     vtable: impl_FnOnce_for_closure::{vtable}
-}
-
-// Full name: test_crate::main::{closure}::{impl Destruct for {closure}}
-impl "impl_Destruct_for_closure" Destruct for {closure} {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1>
-    non-dyn-compatible
 }
 
 

@@ -14,14 +14,6 @@ static core::marker::MetaSized::{vtable}::<D>: core::marker::MetaSized::{vtable}
 
 struct () {}
 
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
-
 struct test_crate::Sub::{vtable} {
   size: usize,
   align: usize,
@@ -39,24 +31,6 @@ trait Sub<Self>
 // Full name: test_crate::D
 struct D {}
 
-// Full name: test_crate::D::{impl Destruct for D}::drop_glue
-unsafe fn drop_glue<'_0>(_1: &'_0 mut D)
-{
-    let _0: (); // return
-    let _1: &'1 mut D; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::D::{impl Destruct for D}
-impl "impl_Destruct_for_D" Destruct for D {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: test_crate::{impl Sub for D}::{vtable_drop_shim}
 unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Sub))
 {
@@ -68,10 +42,6 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Sub))
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Sub + '1), &'_0 mut D>(move dyn_self)
-    drop[drop_glue<'3>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return

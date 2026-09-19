@@ -149,16 +149,6 @@ pub opaque type Unique<T>
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
 
-// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_glue
-unsafe fn drop_glue<'_0>(_1: &'_0 mut Global)
-= <opaque>
-
-// Full name: alloc::alloc::Global::{impl Destruct for Global}
-impl "impl_Destruct_for_Global" Destruct for Global {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: alloc::raw_vec::RawVec
 opaque type RawVec<T, A>
 where
@@ -313,7 +303,7 @@ fn vec<'_0>(x: &'_0 mut Vec<u32>[{built_in impl Sized for u32}, {built_in impl S
     _0 = ()
     storage_live(_2)
     _2 = &two-phase-mut (*x)
-    _0 = push<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, impl_Destruct_for_Global](move _2, const 42u32)
+    _0 = push<'4, u32, Global>[{built_in impl Sized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for Global}](move _2, const 42u32)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_2)

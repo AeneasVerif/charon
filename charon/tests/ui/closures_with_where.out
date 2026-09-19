@@ -90,32 +90,6 @@ where
     TraitClause1: (T: Ops<K>),
 {}
 
-// Full name: test_crate::test::{closure}::{impl Destruct for {closure}<T, K>[TraitClause0, TraitClause1]}::drop_glue
-unsafe fn drop_glue<'_0, T, const K : usize>(_1: &'_0 mut {closure}<T, K>[TraitClause0, TraitClause1])
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Ops<K>),
-    TypeOutlives0: T: '_0,
-{
-    let _0: (); // return
-    let _1: &'1 mut {closure}<T, K>[TraitClause0, TraitClause1]; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::test::{closure}::{impl Destruct for {closure}<T, K>[TraitClause0, TraitClause1]}
-impl<T, const K : usize> "impl_Destruct_for_closure" Destruct for {closure}<T, K>[TraitClause0, TraitClause1]
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Ops<K>),
-{
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, T, K>[TraitClause0, TraitClause1]
-    non-dyn-compatible
-}
-
 // Full name: test_crate::test::{impl FnMut<(usize,)> for {closure}<T, K>[TraitClause0, TraitClause1]}::call_mut
 fn call_mut<'_0, T, const K : usize>(_1: &'_0 mut {closure}<T, K>[TraitClause0, TraitClause1], tupled_args: (usize,)) -> T
 where
@@ -161,16 +135,6 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'2, T, K>[TraitClause0, TraitClause1](move _3, move _2)
-    ↳⚡ drop[drop_glue<'3, T, K>[TraitClause0, TraitClause1]] _1
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    drop[drop_glue<'4, T, K>[TraitClause0, TraitClause1]] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -222,7 +186,7 @@ where
     storage_live(_0)
     storage_live(_1)
     _1 = {closure} {  }
-    _0 = from_fn<T, {closure}<T, K>[TraitClause0, TraitClause1], 1usize>[TraitClause0, {built_in impl Sized for {closure}<T, K>[TraitClause0, TraitClause1]}, {built_in impl Destruct for T}, impl_FnMut_tuple_for_closure<T, K>[TraitClause0, TraitClause1], impl_Destruct_for_closure<T, K>[TraitClause0, TraitClause1]](move _1)
+    _0 = from_fn<T, {closure}<T, K>[TraitClause0, TraitClause1], 1usize>[TraitClause0, {built_in impl Sized for {closure}<T, K>[TraitClause0, TraitClause1]}, {built_in impl Destruct for T}, impl_FnMut_tuple_for_closure<T, K>[TraitClause0, TraitClause1], {built_in impl Destruct for {closure}<T, K>[TraitClause0, TraitClause1]}](move _1)
     ↳⚡ unwind_continue
     storage_dead(_1)
     return

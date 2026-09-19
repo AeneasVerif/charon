@@ -466,17 +466,6 @@ fn tuple_closure_call()
     return
 }
 
-// Full name: test_crate::tuple_closure_call::{closure}::{impl Destruct for {closure}}::drop_glue
-unsafe fn drop_glue<'_0>(_1: &'_0 mut {closure})
-{
-    let _0: (); // return
-    let _1: &'1 mut {closure}; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    return
-}
-
 // Full name: test_crate::tuple_closure_call::{impl FnMut<(usize,)> for {closure}}::call_mut
 fn call_mut<'_0>(state: &'_0 mut {closure}, args: (usize,)) -> usize
 {
@@ -505,10 +494,6 @@ fn call_once(_1: {closure}, _2: (usize,)) -> usize
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'2>(move _3, move _2)
-    ↳⚡ drop[drop_glue<'3>] _1
-        ↳⚡ unwind_terminate
-        unwind_continue
-    drop[drop_glue<'4>] _1
     ↳⚡ unwind_continue
     return
 }
@@ -542,12 +527,6 @@ impl "impl_Fn_tuple_for_closure" Fn<(usize,)> for {closure} {
     proof ImpliedClause3: ((usize,): Tuple) = {built_in impl Tuple for (usize,)}
     fn call<'_0_1> = call<'_0_1>
     vtable: impl_Fn_tuple_for_closure::{vtable}
-}
-
-// Full name: test_crate::tuple_closure_call::{closure}::{impl Destruct for {closure}}
-impl "impl_Destruct_for_closure" Destruct for {closure} {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1>
-    non-dyn-compatible
 }
 
 fn test_crate::funs_with_disambiguator::f#1() -> u32

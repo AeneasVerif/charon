@@ -12,20 +12,12 @@ fn core::marker::MetaSized::{vtable}::<S>() -> core::marker::MetaSized::{vtable}
 
 static core::marker::MetaSized::{vtable}::<S>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<S>()
 
-struct () {}
-
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
-
 // Full name: alloc::boxed::Box::<S>
 #[fundamental]
 #[lang_item(OwnedBox)]
 pub opaque type Box::<S, Global>
+
+struct () {}
 
 // Full name: alloc::boxed::Box::{impl Destruct for Box::<S, Global>}::drop_glue::<S, Global>
 unsafe fn {impl Destruct for Box::<S, Global>}::drop_glue::<S, Global><'_0>(_1: &'_0 mut Box::<S, Global>)
@@ -62,24 +54,6 @@ trait Trait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     vtable: test_crate::Trait::{vtable}
-}
-
-// Full name: test_crate::S::{impl Destruct for S}::drop_glue
-unsafe fn impl_Destruct_for_S::drop_glue<'_0>(_1: &'_0 mut S)
-{
-    let _0: (); // return
-    let _1: &'1 mut S; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::S::{impl Destruct for S}
-impl "impl_Destruct_for_S" Destruct for S {
-    fn drop_glue<'_0_1> = impl_Destruct_for_S::drop_glue<'_0_1>
-    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Trait for S}::method
@@ -129,10 +103,6 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Trait))
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Trait + '1), &'_0 mut S>(move dyn_self)
-    drop[impl_Destruct_for_S::drop_glue<'3>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return

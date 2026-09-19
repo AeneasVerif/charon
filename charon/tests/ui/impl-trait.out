@@ -348,30 +348,6 @@ where
     vtable: impl_FnOnce_tuple_for_closure::{vtable}<'_0, U>[TraitClause0]
 }
 
-// Full name: test_crate::wrap::{closure}::{impl Destruct for {closure}<U>[TraitClause0]}::drop_glue
-unsafe fn drop_glue<'_0, U>(_1: &'_0 mut {closure}<U>[TraitClause0])
-where
-    TraitClause0: (U: Sized),
-    TypeOutlives0: U: '_0,
-{
-    let _0: (); // return
-    let _1: &'1 mut {closure}<U>[TraitClause0]; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::wrap::{closure}::{impl Destruct for {closure}<U>[TraitClause0]}
-impl<U> "impl_Destruct_for_closure" Destruct for {closure}<U>[TraitClause0]
-where
-    TraitClause0: (U: Sized),
-{
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, U>[TraitClause0]
-    non-dyn-compatible
-}
-
 // Full name: test_crate::use_wrap
 pub fn use_wrap()
 {
@@ -412,19 +388,7 @@ pub fn use_wrap()
     _5 = &(*_6)
     _4 = (move _5,)
     _2 = call_once<'27, u32>[{built_in impl Sized for u32}](move _3, move _4)
-    ↳⚡ conditional_drop[drop_glue<'28, u32>[{built_in impl Sized for u32}]] _3
-        ↳⚡ storage_dead(_7)
-            storage_dead(_10)
-            storage_dead(_9)
-            storage_dead(_8)
-            unwind_terminate
-        conditional_drop[drop_glue<'36, u32>[{built_in impl Sized for u32}]] f
-        ↳⚡ storage_dead(_7)
-            storage_dead(_10)
-            storage_dead(_9)
-            storage_dead(_8)
-            unwind_terminate
-        storage_dead(_7)
+    ↳⚡ storage_dead(_7)
         unwind_continue
     storage_dead(_5)
     storage_dead(_4)
@@ -433,9 +397,6 @@ pub fn use_wrap()
     storage_dead(_6)
     storage_dead(_2)
     _0 = ()
-    conditional_drop[drop_glue<'35, u32>[{built_in impl Sized for u32}]] f
-    ↳⚡ storage_dead(_7)
-        unwind_continue
     storage_dead(f)
     storage_dead(_7)
     storage_dead(_10)

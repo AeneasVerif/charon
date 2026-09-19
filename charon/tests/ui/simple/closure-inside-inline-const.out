@@ -14,16 +14,6 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-struct () {}
-
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
-
 // Full name: core::marker::Tuple
 #[fundamental]
 #[lang_item(Tuple)]
@@ -80,6 +70,8 @@ pub trait Fn<Self, Args>
     vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
 }
 
+struct () {}
+
 // Full name: test_crate::foo::{const}::{closure}
 struct {closure}<T>
 where
@@ -107,21 +99,6 @@ where
     storage_live(_0)
     _0 = move _1
     storage_dead(_2)
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::foo::{const}::{closure}::{impl Destruct for {closure}<T>[TraitClause0]}::drop_glue
-unsafe fn drop_glue<'_0, T>(_1: &'_0 mut {closure}<T>[TraitClause0])
-where
-    TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
-{
-    let _0: (); // return
-    let _1: &'1 mut {closure}<T>[TraitClause0]; // arg #1
-
-    storage_live(_0)
-    _0 = ()
     storage_dead(_1)
     return
 }
@@ -182,16 +159,6 @@ where
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'2, T>[TraitClause0](move _3, move _2)
-    ↳⚡ drop[drop_glue<'3, T>[TraitClause0]] _1
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    drop[drop_glue<'4, T>[TraitClause0]] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -240,15 +207,6 @@ where
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
     fn call<'_0_1> = call<'_0_1, T>[TraitClause0]
     vtable: impl_Fn_unit_for_closure::{vtable}<T>[TraitClause0]
-}
-
-// Full name: test_crate::foo::{const}::{closure}::{impl Destruct for {closure}<T>[TraitClause0]}
-impl<T> "impl_Destruct_for_closure" Destruct for {closure}<T>[TraitClause0]
-where
-    TraitClause0: (T: Sized),
-{
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, T>[TraitClause0]
-    non-dyn-compatible
 }
 
 

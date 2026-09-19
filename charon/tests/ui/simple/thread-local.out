@@ -52,16 +52,6 @@ impl Copy for ! {
     non-dyn-compatible
 }
 
-struct () {}
-
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
-
 // Full name: core::marker::Tuple
 #[fundamental]
 #[lang_item(Tuple)]
@@ -128,6 +118,8 @@ where
   None,
   Some { _0: T },
 }
+
+struct () {}
 
 // Full name: std::sys::thread_local::native::lazy::Storage
 pub opaque type Storage<T, D>
@@ -254,18 +246,6 @@ impl FnOnce<()> for __rust_std_internal_init_fn {
 
 struct test_crate::FOO::{const}::{closure} {}
 
-// Full name: test_crate::FOO::{const}::{closure}::{impl Destruct for test_crate::FOO::{const}::{closure}}::drop_glue
-unsafe fn {impl Destruct for test_crate::FOO::{const}::{closure}}::drop_glue<'_0>(_1: &'_0 mut test_crate::FOO::{const}::{closure})
-{
-    let _0: (); // return
-    let _1: &'1 mut test_crate::FOO::{const}::{closure}; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
 fn test_crate::FOO::{const}::{closure}::__RUST_STD_INTERNAL_VAL() -> Storage<u32, ()>[{built_in impl Sized for u32}, {built_in impl Sized for ()}]
 {
     let _0: Storage<u32, ()>[{built_in impl Sized for u32}, {built_in impl Sized for ()}]; // return
@@ -346,16 +326,6 @@ fn {impl FnOnce<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{bu
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure}}::call_mut<'_0, '35>(move _3, move _2)
-    ↳⚡ drop[{impl Destruct for test_crate::FOO::{const}::{closure}}::drop_glue<'36>] _1
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    drop[{impl Destruct for test_crate::FOO::{const}::{closure}}::drop_glue<'37>] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -397,12 +367,6 @@ impl<'_0> Fn<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built
     vtable: {impl Fn<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure}}::{vtable}<'_0>
 }
 
-// Full name: test_crate::FOO::{const}::{closure}::{impl Destruct for test_crate::FOO::{const}::{closure}}
-impl Destruct for test_crate::FOO::{const}::{closure} {
-    fn drop_glue<'_0_1> = {impl Destruct for test_crate::FOO::{const}::{closure}}::drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
 fn test_crate::FOO::{const}::{closure}::{as_fn}<'_0>(arg1: Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}]) -> *const u32
 {
     let _0: *const u32; // return
@@ -427,18 +391,6 @@ fn test_crate::FOO::{const}::{closure}::{as_fn}<'_0>(arg1: Option<&'_0 mut Optio
 }
 
 struct test_crate::FOO::{const}::{closure#1} {}
-
-// Full name: test_crate::FOO::{const}::{closure#1}::{impl Destruct for test_crate::FOO::{const}::{closure#1}}::drop_glue
-unsafe fn {impl Destruct for test_crate::FOO::{const}::{closure#1}}::drop_glue<'_0>(_1: &'_0 mut test_crate::FOO::{const}::{closure#1})
-{
-    let _0: (); // return
-    let _1: &'1 mut test_crate::FOO::{const}::{closure#1}; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
 
 fn test_crate::FOO::{const}::{closure#1}::__RUST_STD_INTERNAL_VAL() -> Storage<u32, !>[{built_in impl Sized for u32}, {built_in impl Sized for !}]
 {
@@ -520,16 +472,6 @@ fn {impl FnOnce<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{bu
     storage_live(_3)
     _3 = &mut _1
     _0 = {impl FnMut<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure#1}}::call_mut<'_0, '35>(move _3, move _2)
-    ↳⚡ drop[{impl Destruct for test_crate::FOO::{const}::{closure#1}}::drop_glue<'36>] _1
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    drop[{impl Destruct for test_crate::FOO::{const}::{closure#1}}::drop_glue<'37>] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -569,12 +511,6 @@ impl<'_0> Fn<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built
     proof ImpliedClause3: ((Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],): Tuple) = {built_in impl Tuple for (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)}
     fn call<'_0_1> = {impl Fn<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure#1}}::call<'_0, '_0_1>
     vtable: {impl Fn<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure#1}}::{vtable}<'_0>
-}
-
-// Full name: test_crate::FOO::{const}::{closure#1}::{impl Destruct for test_crate::FOO::{const}::{closure#1}}
-impl Destruct for test_crate::FOO::{const}::{closure#1} {
-    fn drop_glue<'_0_1> = {impl Destruct for test_crate::FOO::{const}::{closure#1}}::drop_glue<'_0_1>
-    non-dyn-compatible
 }
 
 fn test_crate::FOO::{const}::{closure#1}::{as_fn}<'_0>(arg1: Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}]) -> *const u32

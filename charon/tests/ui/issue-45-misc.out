@@ -454,24 +454,6 @@ where
 // Full name: test_crate::map::{closure}
 struct {closure} {}
 
-// Full name: test_crate::map::{closure}::{impl Destruct for {closure}}::drop_glue
-unsafe fn drop_glue<'_0>(_1: &'_0 mut {closure})
-{
-    let _0: (); // return
-    let _1: &'1 mut {closure}; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::map::{closure}::{impl Destruct for {closure}}
-impl "impl_Destruct_for_closure" Destruct for {closure} {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: test_crate::map::{impl FnMut<(i32,)> for {closure}}::call_mut
 fn call_mut<'_0>(_1: &'_0 mut {closure}, tupled_args: (i32,)) -> i32
 {
@@ -502,16 +484,6 @@ fn call_once(_1: {closure}, _2: (i32,)) -> i32
     storage_live(_3)
     _3 = &mut _1
     _0 = call_mut<'2>(move _3, move _2)
-    ↳⚡ drop[drop_glue<'3>] _1
-        ↳⚡ storage_dead(_3)
-            storage_dead(_2)
-            storage_dead(_1)
-            unwind_terminate
-        storage_dead(_3)
-        storage_dead(_2)
-        storage_dead(_1)
-        unwind_continue
-    drop[drop_glue<'4>] _1
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -555,7 +527,7 @@ pub fn test_crate::map(x: [i32; 256usize]) -> [i32; 256usize]
     _2 = copy x
     storage_live(_3)
     _3 = {closure} {  }
-    _0 = core::array::{[T; N]}::map<i32, {closure}, i32, 256usize>[{built_in impl Sized for i32}, {built_in impl Sized for {closure}}, {built_in impl Sized for i32}, impl_FnMut_tuple_for_closure, impl_Destruct_for_closure, {built_in impl Destruct for i32}, {built_in impl Destruct for i32}](move _2, move _3)
+    _0 = core::array::{[T; N]}::map<i32, {closure}, i32, 256usize>[{built_in impl Sized for i32}, {built_in impl Sized for {closure}}, {built_in impl Sized for i32}, impl_FnMut_tuple_for_closure, {built_in impl Destruct for {closure}}, {built_in impl Destruct for i32}, {built_in impl Destruct for i32}](move _2, move _3)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_3)

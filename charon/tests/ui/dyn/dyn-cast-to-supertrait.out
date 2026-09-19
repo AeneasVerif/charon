@@ -14,14 +14,6 @@ static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable
 
 struct () {}
 
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
-
 struct test_crate::Feline::{vtable} {
   size: usize,
   align: usize,
@@ -77,24 +69,6 @@ trait Cat<Self>
 // Full name: test_crate::HouseCat
 struct HouseCat {}
 
-// Full name: test_crate::HouseCat::{impl Destruct for HouseCat}::drop_glue
-unsafe fn drop_glue<'_0>(_1: &'_0 mut HouseCat)
-{
-    let _0: (); // return
-    let _1: &'1 mut HouseCat; // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::HouseCat::{impl Destruct for HouseCat}
-impl "impl_Destruct_for_HouseCat" Destruct for HouseCat {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: test_crate::{impl Feline for HouseCat}::hunt
 fn hunt<'_0>(self: &'_0 HouseCat)
 {
@@ -139,10 +113,6 @@ unsafe fn impl_Feline_for_HouseCat::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Feline + '1), &'_0 mut HouseCat>(move dyn_self)
-    drop[drop_glue<'3>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -221,10 +191,6 @@ unsafe fn impl_Pettable_for_HouseCat::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Pettable + '1), &'_0 mut HouseCat>(move dyn_self)
-    drop[drop_glue<'3>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -303,10 +269,6 @@ unsafe fn impl_Cat_for_HouseCat::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn
     ret = ()
     storage_live(target_self)
     target_self = concretize<&'_0 mut (dyn Cat + '1), &'_0 mut HouseCat>(move dyn_self)
-    drop[drop_glue<'3>] (*target_self)
-    ↳⚡ storage_dead(target_self)
-        storage_dead(dyn_self)
-        unwind_continue
     storage_dead(target_self)
     storage_dead(dyn_self)
     return

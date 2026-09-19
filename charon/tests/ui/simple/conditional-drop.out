@@ -64,16 +64,6 @@ where
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
 
-// Full name: alloc::alloc::Global::{impl Destruct for Global}::drop_glue
-unsafe fn impl_Destruct_for_Global::drop_glue<'_0>(_1: &'_0 mut Global)
-= <opaque>
-
-// Full name: alloc::alloc::Global::{impl Destruct for Global}
-impl "impl_Destruct_for_Global" Destruct for Global {
-    fn drop_glue<'_0_1> = impl_Destruct_for_Global::drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: alloc::boxed::Box
 #[fundamental]
 #[lang_item(OwnedBox)]
@@ -95,10 +85,10 @@ where
     TypeOutlives1: A: '_0,
 = <opaque>
 
-// Full name: alloc::boxed::{Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, TraitClause1, impl_Destruct_for_Global]}::new
+// Full name: alloc::boxed::{Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, TraitClause1, {built_in impl Destruct for Global}]}::new
 #[track_caller]
 #[diagnostic_item("box_new")]
-pub fn new<T>(_1: T) -> Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, TraitClause1, impl_Destruct_for_Global]
+pub fn new<T>(_1: T) -> Box<T>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, TraitClause1, {built_in impl Destruct for Global}]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Destruct),
@@ -246,15 +236,15 @@ where
 }
 
 // Full name: test_crate::use_box
-fn use_box(_1: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global])
+fn use_box(_1: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}])
 {
     let _0: (); // return
-    let _1: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global]; // arg #1
+    let _1: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}]; // arg #1
 
     storage_live(_0)
     _0 = ()
     _0 = ()
-    drop[impl_Destruct_for_Box::drop_glue<'0, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global]] _1
+    drop[impl_Destruct_for_Box::drop_glue<'0, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}]] _1
     ↳⚡ storage_dead(_1)
         unwind_continue
     storage_dead(_1)
@@ -265,10 +255,10 @@ fn use_box(_1: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized 
 fn main()
 {
     let _0: (); // return
-    let b: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global]; // local
+    let b: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}]; // local
     let _2: bool; // anonymous local
     let _3: (); // anonymous local
-    let _4: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global]; // anonymous local
+    let _4: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}]; // anonymous local
     let _5: bool; // anonymous local
 
     storage_live(_0)
@@ -299,7 +289,7 @@ fn main()
     storage_dead(_2)
     // `b` is dropped implicitly here
     if copy _5 {
-        drop[impl_Destruct_for_Box::drop_glue<'0, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, impl_Destruct_for_Global]] b
+        drop[impl_Destruct_for_Box::drop_glue<'0, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}]] b
         ↳⚡ storage_dead(_5)
             unwind_continue
     } else {
