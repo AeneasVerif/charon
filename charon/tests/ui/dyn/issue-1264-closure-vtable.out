@@ -55,8 +55,6 @@ pub trait Tuple<Self>
     non-dyn-compatible
 }
 
-opaque type core::ops::drop::Drop::{vtable}
-
 // Full name: core::ops::drop::Drop
 #[lang_item(Drop)]
 pub trait Drop<Self>
@@ -218,7 +216,7 @@ impl "impl_Destruct_for_Droppable" Destruct for Droppable {
 // Full name: test_crate::{impl Drop for Droppable}
 impl "impl_Drop_for_Droppable" Drop for Droppable {
     proof ImpliedClause0: (Droppable: MetaSized) = {built_in impl MetaSized for Droppable}
-    vtable: impl_Drop_for_Droppable::{vtable}
+    vtable: lazy
 }
 
 struct test_crate::main::{closure#3} {}

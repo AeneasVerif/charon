@@ -185,7 +185,7 @@ pub fn impl_PartialEq_u8_for_u8::eq<'_0, '_1>(_1: &'_0 u8, _2: &'_1 u8) -> bool
 // Full name: core::cmp::impls::{impl PartialEq<u8> for u8}
 impl "impl_PartialEq_u8_for_u8" PartialEq<u8> for u8 {
     fn eq<'_0_1, '_1_1> = impl_PartialEq_u8_for_u8::eq<'_0_1, '_1_1>
-    vtable: impl_PartialEq_u8_for_u8::{vtable}
+    vtable: lazy
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<u8> for u8}::partial_cmp
@@ -196,7 +196,7 @@ pub fn impl_PartialOrd_u8_for_u8::partial_cmp<'_0, '_1>(_1: &'_0 u8, _2: &'_1 u8
 impl "impl_PartialOrd_u8_for_u8" PartialOrd<u8> for u8 {
     proof ImpliedClause0: (u8: PartialEq<u8>) = impl_PartialEq_u8_for_u8
     fn partial_cmp<'_0_1, '_1_1> = impl_PartialOrd_u8_for_u8::partial_cmp<'_0_1, '_1_1>
-    vtable: impl_PartialOrd_u8_for_u8::{vtable}
+    vtable: lazy
 }
 
 struct (_, _)<A, B>
@@ -297,7 +297,7 @@ where
     proof ImpliedClause1: (A: Sized) = TraitClause0
     type Item = A
     fn next<'_0_1> = next<'_0_1, A>[TraitClause0, TraitClause1, TraitClause2]
-    vtable: impl_Iterator_for_Range::{vtable}<A>[TraitClause0, TraitClause1, TraitClause2]
+    vtable: lazy
 }
 
 // Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
@@ -356,7 +356,7 @@ where
     proof ImpliedClause2: (TraitClause2::Output: MetaSized) = TraitClause2::ImpliedClause2
     type Output = TraitClause2::Output
     fn index<'_0_1> = impl_Index_for_slice::index<'_0_1, T, I>[TraitClause0, TraitClause1, TraitClause2]
-    vtable: impl_Index_for_slice::{vtable}<T, I>[TraitClause0, TraitClause1, TraitClause2]
+    vtable: lazy
 }
 
 // Full name: core::slice::index::{impl IndexMut<I> for [T]}::index_mut
@@ -381,7 +381,7 @@ where
     proof ImpliedClause1: ([T]: Index<I>) = impl_Index_for_slice<T, I>[TraitClause0, TraitClause1, TraitClause2]
     proof ImpliedClause2: (I: MetaSized) = TraitClause1::ImpliedClause0
     fn index_mut<'_0_1> = impl_IndexMut_for_slice::index_mut<'_0_1, T, I>[TraitClause0, TraitClause1, TraitClause2]
-    vtable: impl_IndexMut_for_slice::{vtable}<T, I>[TraitClause0, TraitClause1, TraitClause2]
+    vtable: lazy
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index_mut
@@ -441,7 +441,7 @@ where
     fn get_unchecked_mut = impl_SliceIndex_slice_for_usize::get_unchecked_mut<T>[TraitClause0]
     fn index<'_0_1> = impl_SliceIndex_slice_for_usize::index<'_0_1, T>[TraitClause0]
     fn index_mut<'_0_1> = impl_SliceIndex_slice_for_usize::index_mut<'_0_1, T>[TraitClause0]
-    vtable: impl_SliceIndex_slice_for_usize::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 #[lang_item(SliceLen)]
@@ -502,7 +502,7 @@ impl "impl_FnOnce_tuple_for_closure" FnOnce<(i32,)> for {closure} {
     proof ImpliedClause3: (i32: Sized) = {built_in impl Sized for i32}
     type Output = i32
     fn call_once = call_once
-    vtable: impl_FnOnce_tuple_for_closure::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::map::{impl FnMut<(i32,)> for {closure}}
@@ -512,7 +512,7 @@ impl "impl_FnMut_tuple_for_closure" FnMut<(i32,)> for {closure} {
     proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
     proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
     fn call_mut<'_0_1> = call_mut<'_0_1>
-    vtable: impl_FnMut_tuple_for_closure::{vtable}
+    vtable: lazy
 }
 
 pub fn test_crate::map(x: [i32; 256usize]) -> [i32; 256usize]

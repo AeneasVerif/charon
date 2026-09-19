@@ -81,7 +81,7 @@ where
     proof ImpliedClause0: (T: MetaSized) = TraitClause0
     type Target = T
     fn deref<'_0_1> = deref<'_0_1, T, A>[TraitClause0, TraitClause1]
-    vtable: impl_Deref_for_Box::{vtable}<T, A>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::PointerFamily

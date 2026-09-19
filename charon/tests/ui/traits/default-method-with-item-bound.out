@@ -103,7 +103,7 @@ where
     proof ImpliedClause1: (T: Sized) = TraitClause0
     type Item = T
     fn defaulted<'_0_1, TraitClause0_1: (Option<T>[TraitClause0]: Copy)> = impl_Trait_for_Option::defaulted<'_0_1, T>[TraitClause0, TraitClause0_1]
-    vtable: impl_Trait_for_Option::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl Trait for String}::defaulted
@@ -127,7 +127,7 @@ impl "impl_Trait_for_String" Trait for String {
     proof ImpliedClause1: (String: Sized) = {built_in impl Sized for String}
     type Item = String
     fn defaulted<'_0_1, TraitClause0_1: (String: Copy)> = impl_Trait_for_String::defaulted<'_0_1>[TraitClause0_1]
-    vtable: impl_Trait_for_String::{vtable}
+    vtable: lazy
 }
 
 

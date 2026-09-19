@@ -28,7 +28,7 @@ trait Trait<Self, Self_Type>
 impl "impl_Trait_for_u32" Trait<bool> for u32 {
     proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
     proof ImpliedClause1: (bool: Sized) = {built_in impl Sized for bool}
-    vtable: impl_Trait_for_u32::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::Foo

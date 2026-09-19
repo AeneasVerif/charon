@@ -203,7 +203,7 @@ where
     proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
     proof ImpliedClause3: (T: Sized) = TraitClause0
     fn call_once = {impl FnOnce<(), T> for test_crate::f::{closure}<'_0, T>}::call_once<'_0, T>[TraitClause0, TraitClause1]
-    vtable: {impl FnOnce<(), T> for test_crate::f::{closure}<'_0, T>}::{vtable}<'_0, T>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::f::{impl FnMut<(), T> for test_crate::f::{closure}<'_0, T>}
@@ -218,7 +218,7 @@ where
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
     fn call_mut<'_0_1> = {impl FnMut<(), T> for test_crate::f::{closure}<'_0, T>}::call_mut<'_0, '_0_1, T>[TraitClause0, TraitClause1]
-    vtable: {impl FnMut<(), T> for test_crate::f::{closure}<'_0, T>}::{vtable}<'_0, T>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::f::{impl Fn<(), T> for test_crate::f::{closure}<'_0, T>}
@@ -233,7 +233,7 @@ where
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
     fn call<'_0_1> = {impl Fn<(), T> for test_crate::f::{closure}<'_0, T>}::call<'_0, '_0_1, T>[TraitClause0, TraitClause1]
-    vtable: {impl Fn<(), T> for test_crate::f::{closure}<'_0, T>}::{vtable}<'_0, T>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 struct test_crate::g::{closure}<'_0, T>
@@ -354,7 +354,7 @@ where
     proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
     proof ImpliedClause3: (T: Sized) = TraitClause0
     fn call_once = {impl FnOnce<(), T> for test_crate::g::{closure}<'_0, T>}::call_once<'_0, T>[TraitClause0, TraitClause1]
-    vtable: {impl FnOnce<(), T> for test_crate::g::{closure}<'_0, T>}::{vtable}<'_0, T>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::g::{impl FnMut<(), T> for test_crate::g::{closure}<'_0, T>}
@@ -369,7 +369,7 @@ where
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
     fn call_mut<'_0_1> = {impl FnMut<(), T> for test_crate::g::{closure}<'_0, T>}::call_mut<'_0, '_0_1, T>[TraitClause0, TraitClause1]
-    vtable: {impl FnMut<(), T> for test_crate::g::{closure}<'_0, T>}::{vtable}<'_0, T>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::g::{impl Fn<(), T> for test_crate::g::{closure}<'_0, T>}
@@ -384,7 +384,7 @@ where
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
     fn call<'_0_1> = {impl Fn<(), T> for test_crate::g::{closure}<'_0, T>}::call<'_0, '_0_1, T>[TraitClause0, TraitClause1]
-    vtable: {impl Fn<(), T> for test_crate::g::{closure}<'_0, T>}::{vtable}<'_0, T>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 

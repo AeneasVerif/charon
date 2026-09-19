@@ -157,6 +157,12 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub translate_all_methods: bool,
+    /// Usually we only translate the vtables that are used in an unsizing coercion, and leave the
+    /// `vtable` field of the other trait impls as `Lazy`. When this flag is on, we translate the
+    /// vtable of every trait impl of a dyn-compatible trait.
+    #[clap(long)]
+    #[serde(default)]
+    pub eager_vtables: bool,
     /// Whenever an impl doesn't implement a method (because it has a default body), this creates a
     /// duplicate method as if it had been implemented. This can simplify the call-graphs as
     /// otherwise calls within the default body would be indirected through trait proofs.
@@ -670,6 +676,8 @@ pub struct TranslateOptions {
     /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
     /// them all.
     pub translate_all_methods: bool,
+    /// Translate the vtable of every trait impl, not just those used in an unsizing coercion.
+    pub eager_vtables: bool,
     /// Duplicate trait default methods into impls that use them.
     pub duplicate_defaulted_methods: bool,
     /// If `Some(_)`, run the partial mutability monomorphization pass. The contained enum
@@ -889,6 +897,7 @@ impl TranslateOptions {
             lift_associated_types,
             unbind_item_vars: options.unbind_item_vars,
             translate_all_methods: options.translate_all_methods,
+            eager_vtables: options.eager_vtables,
             duplicate_defaulted_methods: options.duplicate_defaulted_methods,
             no_typecheck: options.no_typecheck,
             no_normalize: options.no_normalize,

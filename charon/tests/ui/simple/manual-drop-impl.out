@@ -136,7 +136,7 @@ where
 {
     proof ImpliedClause0: (Foo<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Foo<T>[TraitClause0]}
     fn drop<'_0_1> = impl_Drop_for_Foo::drop<'_0_1, T>[TraitClause0]
-    vtable: impl_Drop_for_Foo::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: test_crate::drop_foo

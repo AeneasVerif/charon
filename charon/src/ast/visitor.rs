@@ -78,7 +78,7 @@ use derive_generic_visitor::*;
         Size, OffsetExpr, OffsetGuarantee,
         PtrMetadata,
         SpanData, SerializedSpan,
-        ItemByVal, VTableField, AssocItemNames,
+        ItemByVal, VTableField, VTableDecl, AssocItemNames,
         for<Id: AstVisitable> DeclRef<Id>, ItemId,
         for<T: AstVisitable> Box<T>,
         for<T: AstVisitable> Option<T>,

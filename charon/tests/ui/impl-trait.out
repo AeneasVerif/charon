@@ -140,7 +140,7 @@ impl "impl_Foo_for_unit" Foo for () {
     proof ImpliedClause2: (u32: Clone) = impl_Clone_for_u32
     type Type = u32
     fn get_ty<'_0_1> = get_ty<'_0_1>
-    vtable: impl_Foo_for_unit::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::mk_foo
@@ -345,7 +345,7 @@ where
     proof ImpliedClause3: (WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]: Sized) = {built_in impl Sized for WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]}
     type Output = WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]
     fn call_once = call_once<'_0, U>[TraitClause0]
-    vtable: impl_FnOnce_tuple_for_closure::{vtable}<'_0, U>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: test_crate::use_wrap

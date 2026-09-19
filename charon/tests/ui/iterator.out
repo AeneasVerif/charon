@@ -1566,7 +1566,7 @@ where
     fn is_sorted_by<F, TraitClause0_1: (F: Sized), TraitClause1_1: (IntoIter<T, N>[TraitClause0]: Sized), TraitClause2_1: (IntoIter<T, N>[TraitClause0]: Destruct), TraitClause3_1: (T: Destruct), TraitClause4_1: for<'_0_2, '_1_2> (F: FnMut<(&'_0_2 T, &'_1_2 T)>), TraitClause5_1: (F: Destruct), TypeConstraint0: for<'_0_2, '_1_2> TraitClause4_1::ImpliedClause1::Output = bool> = impl_Iterator_for_IntoIter::is_sorted_by<T, F, N>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1, TraitClause5_1]
     fn is_sorted_by_key<F, K, TraitClause0_1: (F: Sized), TraitClause1_1: (K: Sized), TraitClause2_1: (IntoIter<T, N>[TraitClause0]: Sized), TraitClause3_1: (F: FnMut<(T,)>), TraitClause4_1: (K: PartialOrd<K>), TypeConstraint0: TraitClause3_1::ImpliedClause1::Output = K> = impl_Iterator_for_IntoIter::is_sorted_by_key<T, F, K, N>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1]
     fn __iterator_get_unchecked<'_0_1, TraitClause0_1: (IntoIter<T, N>[TraitClause0]: TrustedRandomAccessNoCoerce)> = impl_Iterator_for_IntoIter::__iterator_get_unchecked<'_0_1, T, N>[TraitClause0]
-    vtable: impl_Iterator_for_IntoIter::{vtable}<T, N>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: core::array::{[T; N]}::as_slice
@@ -3548,7 +3548,7 @@ where
     fn is_sorted_by<F, TraitClause0_1: (F: Sized), TraitClause1_1: (Iter<'a, T>[TraitClause0]: Sized), TraitClause2_1: (Iter<'a, T>[TraitClause0]: Destruct), TraitClause3_1: (&'a T: Destruct), TraitClause4_1: for<'_0_2, '_1_2> (F: FnMut<(&'_0_2 &'a T, &'_1_2 &'a T)>), TraitClause5_1: (F: Destruct), TypeConstraint0: for<'_0_2, '_1_2> TraitClause4_1::ImpliedClause1::Output = bool> = impl_Iterator_for_Iter::is_sorted_by<'a, T, F>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause4_1]
     fn is_sorted_by_key<F, K, TraitClause0_1: (F: Sized), TraitClause1_1: (K: Sized), TraitClause2_1: (Iter<'a, T>[TraitClause0]: Sized), TraitClause3_1: (F: FnMut<(&'a T,)>), TraitClause4_1: (K: PartialOrd<K>), TypeConstraint0: TraitClause3_1::ImpliedClause1::Output = K> = impl_Iterator_for_Iter::is_sorted_by_key<'a, T, F, K>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1]
     fn __iterator_get_unchecked<'_0_1, TraitClause0_1: (Iter<'a, T>[TraitClause0]: TrustedRandomAccessNoCoerce)> = impl_Iterator_for_Iter::__iterator_get_unchecked<'a, '_0_1, T>[TraitClause0]
-    vtable: impl_Iterator_for_Iter::{vtable}<'a, T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: core::slice::iter::Chunks
@@ -4543,7 +4543,7 @@ where
     fn is_sorted_by<F, TraitClause0_1: (F: Sized), TraitClause1_1: (Chunks<'a, T>[TraitClause0]: Sized), TraitClause2_1: (Chunks<'a, T>[TraitClause0]: Destruct), TraitClause3_1: (&'a [T]: Destruct), TraitClause4_1: for<'_0_2, '_1_2> (F: FnMut<(&'_0_2 &'a [T], &'_1_2 &'a [T])>), TraitClause5_1: (F: Destruct), TypeConstraint0: for<'_0_2, '_1_2> TraitClause4_1::ImpliedClause1::Output = bool> = impl_Iterator_for_Chunks::is_sorted_by<'a, T, F>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1, TraitClause5_1]
     fn is_sorted_by_key<F, K, TraitClause0_1: (F: Sized), TraitClause1_1: (K: Sized), TraitClause2_1: (Chunks<'a, T>[TraitClause0]: Sized), TraitClause3_1: (F: FnMut<(&'a [T],)>), TraitClause4_1: (K: PartialOrd<K>), TypeConstraint0: TraitClause3_1::ImpliedClause1::Output = K> = impl_Iterator_for_Chunks::is_sorted_by_key<'a, T, F, K>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1]
     fn __iterator_get_unchecked<'_0_1, TraitClause0_1: (Chunks<'a, T>[TraitClause0]: TrustedRandomAccessNoCoerce)> = impl_Iterator_for_Chunks::__iterator_get_unchecked<'a, '_0_1, T>[TraitClause0]
-    vtable: impl_Iterator_for_Chunks::{vtable}<'a, T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: core::slice::iter::ChunksExact
@@ -5538,7 +5538,7 @@ where
     fn is_sorted_by<F, TraitClause0_1: (F: Sized), TraitClause1_1: (ChunksExact<'a, T>[TraitClause0]: Sized), TraitClause2_1: (ChunksExact<'a, T>[TraitClause0]: Destruct), TraitClause3_1: (&'a [T]: Destruct), TraitClause4_1: for<'_0_2, '_1_2> (F: FnMut<(&'_0_2 &'a [T], &'_1_2 &'a [T])>), TraitClause5_1: (F: Destruct), TypeConstraint0: for<'_0_2, '_1_2> TraitClause4_1::ImpliedClause1::Output = bool> = impl_Iterator_for_ChunksExact::is_sorted_by<'a, T, F>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1, TraitClause5_1]
     fn is_sorted_by_key<F, K, TraitClause0_1: (F: Sized), TraitClause1_1: (K: Sized), TraitClause2_1: (ChunksExact<'a, T>[TraitClause0]: Sized), TraitClause3_1: (F: FnMut<(&'a [T],)>), TraitClause4_1: (K: PartialOrd<K>), TypeConstraint0: TraitClause3_1::ImpliedClause1::Output = K> = impl_Iterator_for_ChunksExact::is_sorted_by_key<'a, T, F, K>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1, TraitClause3_1, TraitClause4_1]
     fn __iterator_get_unchecked<'_0_1, TraitClause0_1: (ChunksExact<'a, T>[TraitClause0]: TrustedRandomAccessNoCoerce)> = impl_Iterator_for_ChunksExact::__iterator_get_unchecked<'a, '_0_1, T>[TraitClause0]
-    vtable: impl_Iterator_for_ChunksExact::{vtable}<'a, T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: core::slice::{[T]}::iter

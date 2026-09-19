@@ -1917,10 +1917,13 @@ let pp_trait_impl (env : fmt_env) (indent : string) (indent_incr : string)
          Format.fprintf fmt "%sfn %s%s = %a\n" indent1 name params
            (pp_fun_decl_ref env) f.binder_value);
   (match def.vtable with
-  | Some vtb_ref ->
+  | VTableInstance vtb_ref ->
       Format.fprintf fmt "%svtable: %a\n" indent1 (pp_global_decl_ref env)
         vtb_ref
-  | None -> Format.fprintf fmt "%snon-dyn-compatible\n" indent1);
+  | Lazy -> Format.fprintf fmt "%svtable: lazy\n" indent1
+  | UnknownVTable msg ->
+      Format.fprintf fmt "%svtable: unknown // %s\n" indent1 msg
+  | NotDynCompatible -> Format.fprintf fmt "%snon-dyn-compatible\n" indent1);
   pp_string fmt "}"
 
 let pp_global_decl (env : fmt_env) (indent : string) (indent_incr : string)

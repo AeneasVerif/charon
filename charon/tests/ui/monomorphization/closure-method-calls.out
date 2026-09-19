@@ -1,7 +1,5 @@
 # Final LLBC before serialization:
 
-opaque type core::marker::MetaSized::{vtable}
-
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -25,10 +23,6 @@ pub trait Tuple<Self>
     non-dyn-compatible
 }
 
-opaque type core::ops::function::Fn::{vtable}
-
-opaque type core::ops::function::FnOnce::{vtable}
-
 // Full name: core::ops::function::FnOnce
 #[fundamental]
 #[lang_item(FnOnce)]
@@ -39,8 +33,6 @@ pub trait FnOnce<Self, Args>
     proof ImpliedClause2: (Args: Tuple)
     vtable: core::ops::function::FnOnce::{vtable}
 }
-
-opaque type core::ops::function::FnMut::{vtable}
 
 // Full name: core::ops::function::FnMut
 #[fundamental]
@@ -464,7 +456,7 @@ impl FnOnce<(i32,)> for test_crate::main::{closure} {
     proof ImpliedClause0: (test_crate::main::{closure}: MetaSized) = {built_in impl MetaSized for test_crate::main::{closure}}
     proof ImpliedClause1: ((i32,): Sized) = {built_in impl Sized for (i32,)}
     proof ImpliedClause2: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
-    vtable: {impl FnOnce<(i32,)> for test_crate::main::{closure}}::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::main::{impl FnMut<(i32,)> for test_crate::main::{closure}}
@@ -473,7 +465,7 @@ impl FnMut<(i32,)> for test_crate::main::{closure} {
     proof ImpliedClause1: (test_crate::main::{closure}: FnOnce<(i32,)>) = {impl FnOnce<(i32,)> for test_crate::main::{closure}}
     proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
     proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
-    vtable: {impl FnMut<(i32,)> for test_crate::main::{closure}}::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::main::{impl Fn<(i32,)> for test_crate::main::{closure}}
@@ -482,7 +474,7 @@ impl "impl_Fn_for_closure" Fn<(i32,)> for test_crate::main::{closure} {
     proof ImpliedClause1: (test_crate::main::{closure}: FnMut<(i32,)>) = {impl FnMut<(i32,)> for test_crate::main::{closure}}
     proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
     proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
-    vtable: impl_Fn_for_closure::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::main::{impl FnOnce<(i32,)> for test_crate::main::{closure#1}}
@@ -490,7 +482,7 @@ impl FnOnce<(i32,)> for test_crate::main::{closure#1} {
     proof ImpliedClause0: (test_crate::main::{closure#1}: MetaSized) = {built_in impl MetaSized for test_crate::main::{closure#1}}
     proof ImpliedClause1: ((i32,): Sized) = {built_in impl Sized for (i32,)}
     proof ImpliedClause2: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
-    vtable: {impl FnOnce<(i32,)> for test_crate::main::{closure#1}}::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::main::{impl FnMut<(i32,)> for test_crate::main::{closure#1}}
@@ -499,7 +491,7 @@ impl FnMut<(i32,)> for test_crate::main::{closure#1} {
     proof ImpliedClause1: (test_crate::main::{closure#1}: FnOnce<(i32,)>) = {impl FnOnce<(i32,)> for test_crate::main::{closure#1}}
     proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
     proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
-    vtable: {impl FnMut<(i32,)> for test_crate::main::{closure#1}}::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::main::{impl FnOnce<(i32,)> for test_crate::main::{closure#2}}
@@ -507,7 +499,7 @@ impl FnOnce<(i32,)> for test_crate::main::{closure#2} {
     proof ImpliedClause0: (test_crate::main::{closure#2}: MetaSized) = {built_in impl MetaSized for test_crate::main::{closure#2}}
     proof ImpliedClause1: ((i32,): Sized) = {built_in impl Sized for (i32,)}
     proof ImpliedClause2: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
-    vtable: {impl FnOnce<(i32,)> for test_crate::main::{closure#2}}::{vtable}
+    vtable: lazy
 }
 
 

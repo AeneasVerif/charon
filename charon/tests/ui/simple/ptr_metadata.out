@@ -89,7 +89,7 @@ pub fn eq<'_0, '_1>(_1: &'_0 (), _2: &'_1 ()) -> bool
 // Full name: core::cmp::impls::{impl PartialEq<()> for ()}
 impl "impl_PartialEq_unit_for_unit" PartialEq<()> for () {
     fn eq<'_0_1, '_1_1> = eq<'_0_1, '_1_1>
-    vtable: impl_PartialEq_unit_for_unit::{vtable}
+    vtable: lazy
 }
 
 // Full name: core::cmp::impls::{impl Eq for ()}
@@ -106,7 +106,7 @@ pub fn partial_cmp<'_0, '_1>(_1: &'_0 (), _2: &'_1 ()) -> Option<Ordering>[{buil
 impl "impl_PartialOrd_unit_for_unit" PartialOrd<()> for () {
     proof ImpliedClause0: ((): PartialEq<()>) = impl_PartialEq_unit_for_unit
     fn partial_cmp<'_0_1, '_1_1> = partial_cmp<'_0_1, '_1_1>
-    vtable: impl_PartialOrd_unit_for_unit::{vtable}
+    vtable: lazy
 }
 
 // Full name: core::cmp::impls::{impl Ord for ()}::cmp
@@ -212,7 +212,7 @@ where
     TypeConstraint0: TraitClause0::Metadata = (),
 {
     proof ImpliedClause0: (Self: Pointee) = TraitClause0
-    non-dyn-compatible
+    vtable: unknown // vtables of trait alias impls are not supported
 }
 
 // Full name: core::ptr::null

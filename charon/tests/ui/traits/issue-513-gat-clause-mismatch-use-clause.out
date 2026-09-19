@@ -16,7 +16,7 @@ pub fn eq<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> bool
 // Full name: core::cmp::impls::{impl PartialEq<u32> for u32}
 impl "impl_PartialEq_u32_for_u32" PartialEq<u32> for u32 {
     fn eq<'_0_1, '_1_1> = eq<'_0_1, '_1_1>
-    vtable: impl_PartialEq_u32_for_u32::{vtable}
+    vtable: lazy
 }
 
 // Full name: core::marker::MetaSized
@@ -57,14 +57,14 @@ impl "impl_HasAssoc_for_unit" HasAssoc for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
     type Assoc = u32
-    vtable: impl_HasAssoc_for_unit::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl AlsoHasAssoc for ()}
 impl "impl_AlsoHasAssoc_for_unit" AlsoHasAssoc for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: ((): HasAssoc) = impl_HasAssoc_for_unit
-    vtable: impl_AlsoHasAssoc_for_unit::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::Trait

@@ -94,7 +94,7 @@ where
     proof ImpliedClause1: (T: Sized) = TraitClause0
     type Item = T
     fn defaulted<'_0_1, TraitClause0_1: (T: HasAssoc1), TraitClause1_1: (TraitClause0_1::Assoc1: HasAssoc2)> = impl_Trait_for_Empty::defaulted<'_0_1, T>[TraitClause0, TraitClause0_1, TraitClause1_1]
-    vtable: impl_Trait_for_Empty::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl Trait for ()}::defaulted
@@ -118,7 +118,7 @@ impl "impl_Trait_for_unit" Trait for () {
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     type Item = ()
     fn defaulted<'_0_1, TraitClause0_1: ((): HasAssoc1), TraitClause1_1: (TraitClause0_1::Assoc1: HasAssoc2)> = impl_Trait_for_unit::defaulted<'_0_1>[TraitClause0_1, TraitClause1_1]
-    vtable: impl_Trait_for_unit::{vtable}
+    vtable: lazy
 }
 
 

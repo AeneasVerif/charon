@@ -47,7 +47,7 @@ impl "impl_Trait_for_unit" Trait<(dyn DynableTrait<()> + 'static), ()> for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: ((dyn DynableTrait<()> + 'static): MetaSized) = {built_in impl MetaSized for (dyn DynableTrait<()> + 'static)}
     proof ImpliedClause2: ((dyn DynableTrait<()> + 'static): DynableTrait<()>) = DynableTrait<(dyn DynableTrait<()> + 'static), ()>
-    vtable: impl_Trait_for_unit::{vtable}
+    vtable: lazy
 }
 
 

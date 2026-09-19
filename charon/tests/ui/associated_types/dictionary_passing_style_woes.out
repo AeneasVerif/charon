@@ -80,7 +80,7 @@ where
     proof ImpliedClause1: (Clause1_Item: Sized) = TraitClause1::ImpliedClause1
     proof ImpliedClause2: (I: Sized) = TraitClause0
     proof ImpliedClause3: (I: Iterator<Clause1_Item>) = TraitClause1
-    vtable: impl_IntoIterator_for_T::{vtable}<I>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::callee

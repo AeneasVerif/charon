@@ -157,7 +157,7 @@ where
     proof ImpliedClause3: (T: Sized) = TraitClause0
     type Output = T
     fn call_once = {impl FnOnce<(T,)> for identity<T>[TraitClause0]}::call_once<T>[TraitClause0]
-    vtable: {impl FnOnce<(T,)> for identity<T>[TraitClause0]}::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: test_crate::identity::{impl Fn<()> for {closure}<T>[TraitClause0]}::call
@@ -240,7 +240,7 @@ where
     proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
     type Output = ()
     fn call_once = impl_FnOnce_unit_for_closure::call_once<T>[TraitClause0]
-    vtable: impl_FnOnce_unit_for_closure::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: test_crate::identity::{impl FnMut<()> for {closure}<T>[TraitClause0]}
@@ -253,7 +253,7 @@ where
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
     fn call_mut<'_0_1> = call_mut<'_0_1, T>[TraitClause0]
-    vtable: impl_FnMut_unit_for_closure::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: test_crate::identity::{impl Fn<()> for {closure}<T>[TraitClause0]}
@@ -266,7 +266,7 @@ where
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
     fn call<'_0_1> = call<'_0_1, T>[TraitClause0]
-    vtable: impl_Fn_unit_for_closure::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: test_crate::main

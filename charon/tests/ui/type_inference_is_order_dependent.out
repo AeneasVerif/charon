@@ -197,7 +197,7 @@ where
 {
     proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
     proof ImpliedClause1: (U: Sized) = TraitClause1
-    vtable: impl_Left_for_T::{vtable}<T, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl Right<U> for T}
@@ -210,7 +210,7 @@ where
 {
     proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
     proof ImpliedClause1: (U: Sized) = TraitClause1
-    vtable: impl_Right_for_T::{vtable}<T, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+    vtable: lazy
 }
 
 // Full name: test_crate::try_it

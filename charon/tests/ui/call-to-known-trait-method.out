@@ -51,7 +51,7 @@ pub fn eq<'_0, '_1>(_1: &'_0 bool, _2: &'_1 bool) -> bool
 // Full name: core::cmp::impls::{impl PartialEq<bool> for bool}
 impl "impl_PartialEq_bool_for_bool" PartialEq<bool> for bool {
     fn eq<'_0_1, '_1_1> = eq<'_0_1, '_1_1>
-    vtable: impl_PartialEq_bool_for_bool::{vtable}
+    vtable: lazy
 }
 
 // Full name: core::default::Default

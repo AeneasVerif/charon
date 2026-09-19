@@ -88,7 +88,7 @@ where
     proof ImpliedClause0: (Vec<T>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for Vec<T>[TraitClause0, TraitClause1]}
     proof ImpliedClause1: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
     fn borrow<'_0_1> = borrow<'_0_1, T, A>[TraitClause0, TraitClause1]
-    vtable: impl_Borrow_slice_for_Vec::{vtable}<T, A>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: alloc::slice::{impl ToOwned for [T]}::to_owned

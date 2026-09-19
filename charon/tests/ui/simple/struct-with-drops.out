@@ -370,7 +370,7 @@ impl "impl_Drop_for_B" Drop for B {
     proof ImpliedClause0: (B: MetaSized) = {built_in impl MetaSized for B}
     proof ImpliedClause1: (B: Destruct) = impl_Destruct_for_B
     fn drop<'_0_1> = impl_Drop_for_B::drop<'_0_1>
-    vtable: impl_Drop_for_B::{vtable}
+    vtable: lazy
 }
 
 

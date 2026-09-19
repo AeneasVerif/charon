@@ -28,7 +28,7 @@ pub trait HasOutput<Self, Self_Output>
 impl "impl_HasOutput_for_unit" HasOutput<()> for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
-    vtable: impl_HasOutput_for_unit::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::HasOutput2
@@ -43,7 +43,7 @@ pub trait HasOutput2<Self, Self_Clause1_Output>
 impl "impl_HasOutput2_for_unit" HasOutput2<()> for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     proof ImpliedClause1: ((): HasOutput<()>) = impl_HasOutput_for_unit
-    vtable: impl_HasOutput2_for_unit::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::Wrapper
@@ -62,7 +62,7 @@ where
 {
     proof ImpliedClause0: (Wrapper<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Wrapper<T>[TraitClause0]}
     proof ImpliedClause1: (Clause1_Output: Sized) = TraitClause1::ImpliedClause1
-    vtable: impl_HasOutput_for_Wrapper::{vtable}<T>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl HasOutput2<Clause1_Clause1_Output> for Wrapper<T>[TraitClause0]}
@@ -73,7 +73,7 @@ where
 {
     proof ImpliedClause0: (Wrapper<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Wrapper<T>[TraitClause0]}
     proof ImpliedClause1: (Wrapper<T>[TraitClause0]: HasOutput<Clause1_Clause1_Output>) = impl_HasOutput_for_Wrapper<T, Clause1_Clause1_Output>[TraitClause0, TraitClause1::ImpliedClause1]
-    vtable: impl_HasOutput2_for_Wrapper::{vtable}<T>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::take

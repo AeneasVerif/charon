@@ -84,7 +84,7 @@ where
     proof ImpliedClause1: (&'a [T]: Sized) = {built_in impl Sized for &'a [T]}
     type Item = &'a [T]
     fn next<'_0_1> = next<'a, '_0_1, T>[TraitClause0]
-    vtable: impl_Iterator_for_Chunks::{vtable}<'a, T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: core::slice::{[T]}::chunks

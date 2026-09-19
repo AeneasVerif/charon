@@ -16,7 +16,7 @@ pub fn impl_PartialEq_u8_for_u8::eq<'_0, '_1>(_1: &'_0 u8, _2: &'_1 u8) -> bool
 // Full name: core::cmp::impls::{impl PartialEq<u8> for u8}
 impl "impl_PartialEq_u8_for_u8" PartialEq<u8> for u8 {
     fn eq<'_0_1, '_1_1> = impl_PartialEq_u8_for_u8::eq<'_0_1, '_1_1>
-    vtable: impl_PartialEq_u8_for_u8::{vtable}
+    vtable: lazy
 }
 
 // Full name: core::cmp::impls::{impl PartialEq<&'_0 B> for &'_1 A}::eq
@@ -74,7 +74,7 @@ enum Enum {
 // Full name: test_crate::{impl StructuralPartialEq for Enum}
 impl "impl_StructuralPartialEq_for_Enum" StructuralPartialEq for Enum {
     proof ImpliedClause0: (Enum: MetaSized) = {built_in impl MetaSized for Enum}
-    vtable: impl_StructuralPartialEq_for_Enum::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl PartialEq<Enum> for Enum}::eq
@@ -182,7 +182,7 @@ pub fn impl_PartialEq_Enum_for_Enum::eq<'_0, '_1>(self: &'_0 Enum, other: &'_1 E
 // Full name: test_crate::{impl PartialEq<Enum> for Enum}
 impl "impl_PartialEq_Enum_for_Enum" PartialEq<Enum> for Enum {
     fn eq<'_0_1, '_1_1> = impl_PartialEq_Enum_for_Enum::eq<'_0_1, '_1_1>
-    vtable: impl_PartialEq_Enum_for_Enum::{vtable}
+    vtable: lazy
 }
 
 

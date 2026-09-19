@@ -241,7 +241,7 @@ impl FnOnce<()> for __rust_std_internal_init_fn {
     proof ImpliedClause3: (u32: Sized) = {built_in impl Sized for u32}
     type Output = u32
     fn call_once = {impl FnOnce<()> for __rust_std_internal_init_fn}::call_once
-    vtable: {impl FnOnce<()> for __rust_std_internal_init_fn}::{vtable}
+    vtable: lazy
 }
 
 struct test_crate::FOO::{const}::{closure} {}
@@ -344,7 +344,7 @@ impl<'_0> FnOnce<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{b
     proof ImpliedClause3: (*const u32: Sized) = {built_in impl Sized for *const u32}
     type Output = *const u32
     fn call_once = {impl FnOnce<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure}}::call_once<'_0>
-    vtable: {impl FnOnce<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure}}::{vtable}<'_0>
+    vtable: lazy
 }
 
 // Full name: test_crate::FOO::{const}::{impl FnMut<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure}}
@@ -354,7 +354,7 @@ impl<'_0> FnMut<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{bu
     proof ImpliedClause2: ((Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],): Sized) = {built_in impl Sized for (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)}
     proof ImpliedClause3: ((Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],): Tuple) = {built_in impl Tuple for (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)}
     fn call_mut<'_0_1> = {impl FnMut<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure}}::call_mut<'_0, '_0_1>
-    vtable: {impl FnMut<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure}}::{vtable}<'_0>
+    vtable: lazy
 }
 
 // Full name: test_crate::FOO::{const}::{impl Fn<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure}}
@@ -364,7 +364,7 @@ impl<'_0> Fn<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built
     proof ImpliedClause2: ((Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],): Sized) = {built_in impl Sized for (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)}
     proof ImpliedClause3: ((Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],): Tuple) = {built_in impl Tuple for (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)}
     fn call<'_0_1> = {impl Fn<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure}}::call<'_0, '_0_1>
-    vtable: {impl Fn<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure}}::{vtable}<'_0>
+    vtable: lazy
 }
 
 fn test_crate::FOO::{const}::{closure}::{as_fn}<'_0>(arg1: Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}]) -> *const u32
@@ -490,7 +490,7 @@ impl<'_0> FnOnce<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{b
     proof ImpliedClause3: (*const u32: Sized) = {built_in impl Sized for *const u32}
     type Output = *const u32
     fn call_once = {impl FnOnce<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure#1}}::call_once<'_0>
-    vtable: {impl FnOnce<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure#1}}::{vtable}<'_0>
+    vtable: lazy
 }
 
 // Full name: test_crate::FOO::{const}::{impl FnMut<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure#1}}
@@ -500,7 +500,7 @@ impl<'_0> FnMut<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{bu
     proof ImpliedClause2: ((Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],): Sized) = {built_in impl Sized for (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)}
     proof ImpliedClause3: ((Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],): Tuple) = {built_in impl Tuple for (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)}
     fn call_mut<'_0_1> = {impl FnMut<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure#1}}::call_mut<'_0, '_0_1>
-    vtable: {impl FnMut<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure#1}}::{vtable}<'_0>
+    vtable: lazy
 }
 
 // Full name: test_crate::FOO::{const}::{impl Fn<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure#1}}
@@ -510,7 +510,7 @@ impl<'_0> Fn<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built
     proof ImpliedClause2: ((Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],): Sized) = {built_in impl Sized for (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)}
     proof ImpliedClause3: ((Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],): Tuple) = {built_in impl Tuple for (Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)}
     fn call<'_0_1> = {impl Fn<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure#1}}::call<'_0, '_0_1>
-    vtable: {impl Fn<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}],)> for test_crate::FOO::{const}::{closure#1}}::{vtable}<'_0>
+    vtable: lazy
 }
 
 fn test_crate::FOO::{const}::{closure#1}::{as_fn}<'_0>(arg1: Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0 mut Option<u32>[{built_in impl Sized for u32}]}]) -> *const u32
