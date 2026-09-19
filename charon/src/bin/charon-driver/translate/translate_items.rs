@@ -1432,7 +1432,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         item_meta: ItemMeta,
         vtable_item: &hax::ItemRef,
         impl_kind: TransImplSource,
-        vimpl: &hax::VirtualTraitImpl,
+        vimpl: &hax::VirtualTraitImpl<'tcx>,
     ) -> Result<TraitImpl, Error> {
         let span = item_meta.span;
         let src = match impl_kind {
