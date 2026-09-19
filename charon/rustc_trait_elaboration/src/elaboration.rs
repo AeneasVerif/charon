@@ -11,6 +11,8 @@ use rustc_span::{DUMMY_SP, Symbol};
 use rustc_trait_selection::traits::ImplSource;
 use rustc_type_ir::Interner;
 
+pub const DYN_SELF_PARAM_INDEX: u32 = u32::MAX;
+
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 struct ItemClause<'tcx, Id = DefId> {
     id: ItemPredicateId<Id>,
@@ -176,7 +178,7 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         // Pretend there is an extra type parameter in the environment, and use it as `Self` in
         // the dyn predicates. Its index must not clash with the owner's parameters, and must
         // also not depend on the owner, as it would break item identity (see charon#1391)
-        let existential_ty = ParamTy::new(u32::MAX, Symbol::intern("_dyn"));
+        let existential_ty = ParamTy::new(DYN_SELF_PARAM_INDEX, Symbol::intern("_dyn"));
         let self_ty = existential_ty.to_ty(tcx);
         let predicates = epreds.iter().map(|pred| pred.with_self_ty(tcx, self_ty));
         let predicates = ItemPredicates::new_unmapped(DUMMY_SP, predicates);
