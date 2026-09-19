@@ -56,8 +56,8 @@ pub struct ItemRefContents {
     /// Witnesses of the trait clauses required by the item, e.g. `T: Sized` for `Option<T>` or `B:
     /// ToOwned` for `Cow<'a, B>`. Same as above, for associated items this only includes clauses
     /// for the item itself.
-    #[value(self.assoc_trait_proofs().sinto(s))]
-    pub trait_proofs: Vec<TraitProof>,
+    #[value(Default::default())]
+    trait_proofs: LazyTraitProofs,
     /// The item under which this reference was made, if the generics mention its parameters:
     /// the trait proofs may then refer to its local clauses.
     #[value(self.has_owner_param.then(|| s.owner()))]
@@ -73,6 +73,19 @@ pub struct ItemRefContents {
     #[value(self.has_non_lt_param)]
     pub has_non_lt_param: bool,
 }
+
+/// Trait proofs of an `ItemRef`, computed lazily
+#[derive(Clone, Debug, Default)]
+pub struct LazyTraitProofs(std::sync::OnceLock<Vec<TraitProof>>);
+impl std::hash::Hash for LazyTraitProofs {
+    fn hash<H: std::hash::Hasher>(&self, _state: &mut H) {}
+}
+impl PartialEq for LazyTraitProofs {
+    fn eq(&self, _other: &Self) -> bool {
+        true
+    }
+}
+impl Eq for LazyTraitProofs {}
 
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef>
     for rustc_trait_elaboration::ItemRef<'tcx, DefId>
@@ -183,6 +196,27 @@ impl ItemRef {
         item
     }
 
+    /// Witnesses of the trait clauses required by the item, e.g. `T: Sized` for `Option<T>`.
+    pub fn trait_proofs<'tcx, S: UnderOwnerState<'tcx>>(&self, s: &S) -> &[TraitProof] {
+        self.trait_proofs.0.get_or_init(|| {
+            // If the proofs don't depend on the owner, resolve them in the current context.
+            let s = &match &self.owner {
+                Some(owner) => s.with_hax_owner(owner),
+                None => s.with_hax_owner(&s.owner()),
+            };
+            let args = self.rustc_args(s);
+            let trait_proofs = s.with_predicate_searcher(|pred_searcher, state| {
+                pred_searcher.resolve_item_assoc_trait_proofs(
+                    state,
+                    self.def_id.clone(),
+                    args,
+                    self.in_trait.is_some(),
+                )
+            });
+            trait_proofs.sinto(s)
+        })
+    }
+
     /// Construct an `ItemRef` for items that can't have generics (e.g. modules).
     pub fn dummy_without_generics<'tcx, S: BaseState<'tcx>>(s: &S, def_id: DefId) -> ItemRef {
         let content = ItemRefContents {
@@ -266,6 +300,7 @@ impl ItemRef {
         let args = self.rustc_args(s);
         let mut contents = self.contents().clone();
         f(&mut contents.def_id);
+        contents.trait_proofs = Default::default();
         let new = contents.intern(s);
         s.with_global_cache(|cache| {
             cache.reverse_item_refs_map.insert(new.clone(), args);
