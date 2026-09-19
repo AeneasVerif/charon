@@ -138,8 +138,6 @@ pub struct ItemRefContents<'tcx, Id: ItemId = DefId> {
     /// The number of generic arguments excluding the extra inference arguments of closures and
     /// inline consts.
     pub proper_arg_count: usize,
-    /// Witnesses of the trait clauses required by the item, e.g. `T: Sized` for `Option<T>`.
-    pub trait_proofs: Vec<TraitProof<'tcx, Id>>,
     /// If we're referring to a trait associated item, this gives the trait clause/impl we're
     /// referring to, as well as the number of clauses required to mention the trait (cached for
     /// easy access).
@@ -245,7 +243,6 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             trait_info = None;
         }
 
-        let trait_proofs = self.resolve_item_required_predicates(state, def_id.clone(), generics);
         let needs_explicit_self_clause = def_id.takes_explicit_self_clause(state);
         // Rustc gives closures/inline consts extra generics for inference that we don't expose.
         let proper_arg_count = if let Some(parent) = def_id.typeck_parent(state) {
@@ -291,7 +288,6 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             def_id,
             generic_args: generics,
             proper_arg_count,
-            trait_proofs,
             in_trait: trait_info,
             needs_explicit_self_clause,
             has_param: generics.has_param()
@@ -302,6 +298,29 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         };
         content.intern()
     }
+
+    /// Witnesses of the trait clauses required to mention `(def_id, generics)`, e.g. `T: Sized`
+    /// for `Option<T>`. If `in_trait`, this is a trait associated item and we only include the
+    /// clauses for the item itself.
+    pub fn resolve_item_assoc_trait_proofs(
+        &mut self,
+        state: &Id::State<'tcx>,
+        def_id: Id,
+        generics: ty::GenericArgsRef<'tcx>,
+        in_trait: bool,
+    ) -> Vec<TraitProof<'tcx, Id>> {
+        let mut trait_proofs =
+            self.resolve_item_required_predicates(state, def_id.clone(), generics);
+        if in_trait && let Some(tr_def_id) = def_id.parent_of_assoc(state) {
+            let num_trait_req_clauses =
+                ItemPredicates::required_recursively(self.elab_ctx, state, tr_def_id).len();
+            // Assoc consts and methods get an extra `Self: Trait` clause as the first clause, we
+            // skip that one too. Note: that clause is the same as `in_trait`.
+            let start = num_trait_req_clauses + def_id.takes_explicit_self_clause(state) as usize;
+            trait_proofs.drain(..start);
+        }
+        trait_proofs
+    }
 }
 
 impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
@@ -311,7 +330,6 @@ impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
             def_id,
             generic_args: Default::default(),
             proper_arg_count: 0,
-            trait_proofs: Default::default(),
             in_trait: Default::default(),
             needs_explicit_self_clause: false,
             has_param: false,
@@ -325,10 +343,6 @@ impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
     pub fn generics(&self) -> GenericArgsRef<'tcx> {
         self.generic_args
     }
-    /// The trait proofs passed to the item.
-    pub fn trait_proofs(&self) -> &[TraitProof<'tcx, Id>] {
-        &self.trait_proofs
-    }
     /// The generics passed to the item, except for trait associated items these are only the
     /// generics of the method/type/const itself; generics for the trait are available in
     /// `self.in_trait`.
@@ -339,23 +353,6 @@ impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
             0
         };
         &self.generic_args[start..self.proper_arg_count]
-    }
-    /// The trait proofs passed to the item, except for trait associated items these are only the
-    /// proofs of the method/type/const itself.
-    pub fn assoc_trait_proofs(&self) -> &[TraitProof<'tcx, Id>] {
-        let start = if let Some((_, num_trait_req_clauses)) = self.in_trait {
-            // Assoc consts and methods get an extra `Self: Trait` clause as the first clause, we
-            // skip that one too. Note: that clause is the same as `self.in_trait`.
-            num_trait_req_clauses
-                + if self.needs_explicit_self_clause {
-                    1
-                } else {
-                    0
-                }
-        } else {
-            0
-        };
-        &self.trait_proofs[start..]
     }
 }
 
