@@ -67,6 +67,8 @@ pub struct TranslateCtx<'tcx> {
     pub translate_stack: Vec<ItemId>,
     /// Cache of the translated span, as translating one is costly
     pub cached_spans: HashMap<rustc_span::Span, meta::SpanData>,
+    /// Cache of file ids per rustc source file, to avoid recomputing file names for every span.
+    pub cached_file_ids: HashMap<rustc_span::StableSourceFileId, FileId>,
     /// Cache the names to compute them only once each.
     pub cached_names: HashMap<RustcItem, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.

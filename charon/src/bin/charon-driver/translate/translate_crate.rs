@@ -1161,6 +1161,7 @@ pub fn translate<'tcx>(
         processed: Default::default(),
         translate_stack: Default::default(),
         cached_spans: Default::default(),
+        cached_file_ids: Default::default(),
         cached_names: Default::default(),
         cached_item_metas: Default::default(),
         panic_fns: Default::default(),
