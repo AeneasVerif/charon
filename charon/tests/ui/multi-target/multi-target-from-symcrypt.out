@@ -191,7 +191,7 @@ pub fn core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}::eq<'_0, '
 // Full name: core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}
 impl core::cmp::PartialEq<usize> for usize {
     fn eq<'_0_1, '_1_1> = core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}::eq<'_0_1, '_1_1>
-    vtable: core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}::{vtable}
+    vtable: lazy
 }
 
 pub fn core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}::partial_cmp<'_0, '_1>(_1: &'_0 usize, _2: &'_1 usize) -> core::option::Option<core::cmp::Ordering>[{built_in impl core::marker::Sized for core::cmp::Ordering}]
@@ -201,7 +201,7 @@ pub fn core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}::partial_
 impl core::cmp::PartialOrd<usize> for usize {
     proof ImpliedClause0: (usize: core::cmp::PartialEq<usize>) = core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}
     fn partial_cmp<'_0_1, '_1_1> = core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}::partial_cmp<'_0_1, '_1_1>
-    vtable: core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}::{vtable}
+    vtable: lazy
 }
 
 struct (_, _)<A, B>
@@ -300,7 +300,7 @@ where
     proof ImpliedClause1: (A: core::marker::Sized) = TraitClause0
     type Item = A
     fn next<'_0_1> = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[TraitClause0]}::next<'_0_1, A>[TraitClause0, TraitClause1, TraitClause2]
-    vtable: core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[TraitClause0]}::{vtable}<A>[TraitClause0, TraitClause1, TraitClause2]
+    vtable: lazy
 }
 
 pub fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<I>(_1: I) -> I
@@ -352,7 +352,7 @@ where
     proof ImpliedClause2: (TraitClause2::Output: core::marker::MetaSized) = TraitClause2::ImpliedClause2
     type Output = TraitClause2::Output
     fn index<'_0_1> = core::slice::index::{impl core::ops::index::Index<I> for [T]}::index<'_0_1, T, I>[TraitClause0, TraitClause1, TraitClause2]
-    vtable: core::slice::index::{impl core::ops::index::Index<I> for [T]}::{vtable}<T, I>[TraitClause0, TraitClause1, TraitClause2]
+    vtable: lazy
 }
 
 pub fn core::slice::index::{impl core::ops::index::IndexMut<I> for [T]}::index_mut<'_0, T, I>(_1: &'_0 mut [T], _2: I) -> &'_0 mut TraitClause2::Output
@@ -376,7 +376,7 @@ where
     proof ImpliedClause1: ([T]: core::ops::index::Index<I>) = core::slice::index::{impl core::ops::index::Index<I> for [T]}<T, I>[TraitClause0, TraitClause1, TraitClause2]
     proof ImpliedClause2: (I: core::marker::MetaSized) = TraitClause1::ImpliedClause0
     fn index_mut<'_0_1> = core::slice::index::{impl core::ops::index::IndexMut<I> for [T]}::index_mut<'_0_1, T, I>[TraitClause0, TraitClause1, TraitClause2]
-    vtable: core::slice::index::{impl core::ops::index::IndexMut<I> for [T]}::{vtable}<T, I>[TraitClause0, TraitClause1, TraitClause2]
+    vtable: lazy
 }
 
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
@@ -430,7 +430,7 @@ where
     fn get_unchecked_mut = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::get_unchecked_mut<T>[TraitClause0]
     fn index<'_0_1> = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_0_1, T>[TraitClause0]
     fn index_mut<'_0_1> = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index_mut<'_0_1, T>[TraitClause0]
-    vtable: core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 pub fn core::slice::{[T]}::as_ptr<'_0, T>(_1: &'_0 [T]) -> *const T

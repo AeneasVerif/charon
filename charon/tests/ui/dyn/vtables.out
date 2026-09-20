@@ -369,7 +369,7 @@ fn dummy<'_0>(self: &'_0 i32)
 impl "impl_NoParam_for_i32" NoParam for i32 {
     proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
     fn dummy<'_0_1> = dummy<'_0_1>
-    vtable: impl_NoParam_for_i32::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::to_dyn_obj

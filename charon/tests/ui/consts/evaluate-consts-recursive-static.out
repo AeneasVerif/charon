@@ -32,7 +32,7 @@ pub struct Node {
 
 // Full name: test_crate::{impl Sync for Node}
 impl "impl_Sync_for_Node" Sync for Node {
-    vtable: impl_Sync_for_Node::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::CYCLE_A

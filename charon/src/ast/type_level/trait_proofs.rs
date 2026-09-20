@@ -260,7 +260,7 @@ impl TraitRef {
             TraitRefKind::TraitImpl(impl_ref) => krate
                 .trait_impls
                 .get(impl_ref.id)
-                .and_then(|timpl| timpl.vtable.as_ref()),
+                .and_then(|timpl| timpl.vtable.as_vtable()),
             TraitRefKind::BuiltinOrAuto { vtable, .. } => vtable.as_ref(),
             _ => None,
         }

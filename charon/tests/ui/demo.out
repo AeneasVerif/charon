@@ -589,7 +589,7 @@ pub fn impl_Counter_for_usize::incr<'_0>(self: &'_0 mut usize) -> usize
 impl "impl_Counter_for_usize" Counter for usize {
     proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
     fn incr<'_0_1> = impl_Counter_for_usize::incr<'_0_1>
-    vtable: impl_Counter_for_usize::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::use_counter

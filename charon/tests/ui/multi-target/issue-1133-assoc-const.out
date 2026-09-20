@@ -82,7 +82,7 @@ where
     proof ImpliedClause2: (TraitClause2::Output: core::marker::MetaSized) = TraitClause2::ImpliedClause2
     type Output = TraitClause2::Output
     fn index<'_0_1> = core::slice::index::{impl core::ops::index::Index<I> for [T]}::index<'_0_1, T, I>[TraitClause0, TraitClause1, TraitClause2]
-    vtable: core::slice::index::{impl core::ops::index::Index<I> for [T]}::{vtable}<T, I>[TraitClause0, TraitClause1, TraitClause2]
+    vtable: lazy
 }
 
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
@@ -136,7 +136,7 @@ where
     fn get_unchecked_mut = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::get_unchecked_mut<T>[TraitClause0]
     fn index<'_0_1> = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index<'_0_1, T>[TraitClause0]
     fn index_mut<'_0_1> = core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::index_mut<'_0_1, T>[TraitClause0]
-    vtable: core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 struct () {}

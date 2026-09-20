@@ -48,7 +48,7 @@ where
     TypeConstraint0: TraitClause0::Assoc = (),
 {
     proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
-    vtable: impl_SuperTrait_for_T::{vtable}<T>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl Trait for T}
@@ -60,7 +60,7 @@ where
 {
     proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
     proof ImpliedClause1: (T: SuperTrait) = impl_SuperTrait_for_T<T>[TraitClause0, TraitClause1]
-    vtable: impl_Trait_for_T::{vtable}<T>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::main

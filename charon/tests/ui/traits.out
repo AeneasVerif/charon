@@ -204,7 +204,7 @@ impl "impl_BoolTrait_for_bool" BoolTrait for bool {
     proof ImpliedClause0: (bool: MetaSized) = {built_in impl MetaSized for bool}
     fn get_bool<'_0_1> = impl_BoolTrait_for_bool::get_bool<'_0_1>
     fn ret_true<'_0_1> = impl_BoolTrait_for_bool::ret_true<'_0_1>
-    vtable: impl_BoolTrait_for_bool::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::test_bool_trait_bool
@@ -290,7 +290,7 @@ where
     proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
     fn get_bool<'_0_1> = impl_BoolTrait_for_Option::get_bool<'_0_1, T>[TraitClause0]
     fn ret_true<'_0_1> = impl_BoolTrait_for_Option::ret_true<'_0_1, T>[TraitClause0]
-    vtable: impl_BoolTrait_for_Option::{vtable}<T>[TraitClause0]
+    vtable: lazy
 }
 
 // Full name: test_crate::test_bool_trait_option
@@ -388,7 +388,7 @@ pub fn impl_ToU64_for_u64::to_u64(self: u64) -> u64
 impl "impl_ToU64_for_u64" ToU64 for u64 {
     proof ImpliedClause0: (u64: MetaSized) = {built_in impl MetaSized for u64}
     fn to_u64 = impl_ToU64_for_u64::to_u64
-    vtable: impl_ToU64_for_u64::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl ToU64 for (A, A)}::to_u64
@@ -460,7 +460,7 @@ where
 {
     proof ImpliedClause0: ((A, A): MetaSized) = {built_in impl MetaSized for (A, A)}
     fn to_u64 = impl_ToU64_for_tuple::to_u64<A>[TraitClause0, TraitClause1]
-    vtable: impl_ToU64_for_tuple::{vtable}<A>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 pub fn test_crate::f<T>(x: (T, T)) -> u64
@@ -613,7 +613,7 @@ where
 {
     proof ImpliedClause0: (Wrapper<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Wrapper<T>[TraitClause0]}
     fn to_u64 = impl_ToU64_for_Wrapper::to_u64<T>[TraitClause0, TraitClause1]
-    vtable: impl_ToU64_for_Wrapper::{vtable}<T>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::h1
@@ -694,7 +694,7 @@ impl "impl_ToType_bool_for_u64" ToType<bool> for u64 {
     proof ImpliedClause0: (u64: MetaSized) = {built_in impl MetaSized for u64}
     proof ImpliedClause1: (bool: Sized) = {built_in impl Sized for bool}
     fn to_type = impl_ToType_bool_for_u64::to_type
-    vtable: impl_ToType_bool_for_u64::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::OfType
@@ -896,7 +896,7 @@ trait TestTrait<Self>
 impl "impl_TestTrait_for_TestType1" TestTrait for TestType1 {
     proof ImpliedClause0: (TestType1: MetaSized) = {built_in impl MetaSized for TestType1}
     fn test<'_0_1> = impl_TestTrait_for_TestType1::test<'_0_1>
-    vtable: impl_TestTrait_for_TestType1::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::BoolWrapper
@@ -934,7 +934,7 @@ where
     proof ImpliedClause0: (BoolWrapper: MetaSized) = {built_in impl MetaSized for BoolWrapper}
     proof ImpliedClause1: (T: Sized) = TraitClause0
     fn to_type = impl_ToType_for_BoolWrapper::to_type<T>[TraitClause0, TraitClause1]
-    vtable: impl_ToType_for_BoolWrapper::{vtable}<T>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::WithConstTy
@@ -1206,14 +1206,14 @@ pub trait ChildTrait1<Self>
 // Full name: test_crate::{impl ParentTrait1 for usize}
 impl "impl_ParentTrait1_for_usize" ParentTrait1 for usize {
     proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
-    vtable: impl_ParentTrait1_for_usize::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl ChildTrait1 for usize}
 impl "impl_ChildTrait1_for_usize" ChildTrait1 for usize {
     proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
     proof ImpliedClause1: (usize: ParentTrait1) = impl_ParentTrait1_for_usize
-    vtable: impl_ChildTrait1_for_usize::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::Iterator
@@ -1291,7 +1291,7 @@ impl "impl_WithTarget_for_u32" WithTarget for u32 {
     proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
     proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
     type Target = u32
-    vtable: impl_WithTarget_for_u32::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl ParentTrait2 for u32}
@@ -1300,7 +1300,7 @@ impl "impl_ParentTrait2_for_u32" ParentTrait2 for u32 {
     proof ImpliedClause1: (u32: Sized) = {built_in impl Sized for u32}
     proof ImpliedClause2: (u32: WithTarget) = impl_WithTarget_for_u32
     type U = u32
-    vtable: impl_ParentTrait2_for_u32::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl ChildTrait2 for u32}::convert
@@ -1542,7 +1542,7 @@ impl "impl_RecursiveImpl_for_unit" RecursiveImpl for () {
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause2: ((): RecursiveImpl) = impl_RecursiveImpl_for_unit
     type Item = ()
-    vtable: impl_RecursiveImpl_for_unit::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::flabada
@@ -1615,7 +1615,7 @@ impl<'a> FnOnce<(&'a (),)> for for<'a> flabada<'a> {
     proof ImpliedClause3: (Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]: Sized) = {built_in impl Sized for Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]}
     type Output = Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
     fn call_once = call_once<'a>
-    vtable: {impl FnOnce<(&'a (),)> for for<'a> flabada<'a>}::{vtable}<'a>
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl FnMut<(&'a (),)> for for<'a> flabada<'a>}
@@ -1625,7 +1625,7 @@ impl<'a> FnMut<(&'a (),)> for for<'a> flabada<'a> {
     proof ImpliedClause2: ((&'a (),): Sized) = {built_in impl Sized for (&'a (),)}
     proof ImpliedClause3: ((&'a (),): Tuple) = {built_in impl Tuple for (&'a (),)}
     fn call_mut<'_0_1> = call_mut<'a, '_0_1>
-    vtable: {impl FnMut<(&'a (),)> for for<'a> flabada<'a>}::{vtable}<'a>
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl Fn<(&'a (),)> for for<'a> flabada<'a>}
@@ -1635,7 +1635,7 @@ impl<'a> Fn<(&'a (),)> for for<'a> flabada<'a> {
     proof ImpliedClause2: ((&'a (),): Sized) = {built_in impl Sized for (&'a (),)}
     proof ImpliedClause3: ((&'a (),): Tuple) = {built_in impl Tuple for (&'a (),)}
     fn call<'_0_1> = {impl Fn<(&'a (),)> for for<'a> flabada<'a>}::call<'a, '_0_1>
-    vtable: {impl Fn<(&'a (),)> for for<'a> flabada<'a>}::{vtable}<'a>
+    vtable: lazy
 }
 
 pub fn test_crate::call<'a, F>(_1: F)

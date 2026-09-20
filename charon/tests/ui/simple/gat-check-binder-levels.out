@@ -51,7 +51,7 @@ where
 {
     proof ImpliedClause0: (U: MetaSized) = TraitClause1::ImpliedClause0
     proof ImpliedClause1: (T: Sized) = TraitClause0
-    vtable: impl_Link_for_T::{vtable}<T, U>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::Trait

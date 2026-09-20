@@ -1,7 +1,5 @@
 # Final LLBC before serialization:
 
-opaque type core::marker::MetaSized::{vtable}
-
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -34,8 +32,6 @@ struct () {}
 #[diagnostic_item("mem_drop")]
 pub fn drop::<NotCopy>(_1: NotCopy)
 = <opaque>
-
-opaque type core::ops::function::FnOnce::{vtable}
 
 // Full name: core::ops::function::FnOnce
 #[fundamental]
@@ -153,7 +149,7 @@ impl "impl_FnOnce_for_closure" FnOnce<(u8,)> for {closure} {
     proof ImpliedClause0: ({closure}: MetaSized) = {built_in impl MetaSized for {closure}}
     proof ImpliedClause1: ((u8,): Sized) = {built_in impl Sized for (u8,)}
     proof ImpliedClause2: ((u8,): Tuple) = {built_in impl Tuple for (u8,)}
-    vtable: impl_FnOnce_for_closure::{vtable}
+    vtable: lazy
 }
 
 

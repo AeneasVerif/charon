@@ -26,7 +26,7 @@ where
 impl<'a> Trait<'a> for &'a () {
     proof ImpliedClause0: (&'a (): MetaSized) = {built_in impl MetaSized for &'a ()}
     fn method<'b> = method<'a, 'b>
-    vtable: {impl Trait<'a> for &'a ()}::{vtable}<'a>
+    vtable: lazy
 }
 
 // Full name: test_crate::Foo

@@ -299,7 +299,7 @@ impl<'_0> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_0 mut u32,)> for {closure} 
     proof ImpliedClause3: (bool: Sized) = {built_in impl Sized for bool}
     type Output = bool
     fn call_once = call_once<'_0>
-    vtable: impl_FnOnce_tuple_for_closure::{vtable}<'_0>
+    vtable: lazy
 }
 
 // Full name: test_crate::gives_fn::{impl FnMut<(&'_0 mut u32,)> for {closure}}

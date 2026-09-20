@@ -60,7 +60,7 @@ impl "impl_Internal_for_i32" Internal for i32 {
     proof ImpliedClause1: (i32: Sized) = {built_in impl Sized for i32}
     type IntAssoc = i32
     fn internal_method<'_0_1> = internal_method<'_0_1>
-    vtable: impl_Internal_for_i32::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::main

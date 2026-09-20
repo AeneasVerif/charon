@@ -43,7 +43,7 @@ where
     proof ImpliedClause1: (T: Sized) = TraitClause0
     proof ImpliedClause2: (T: QueryTrait) = TraitClause1
     type Query = T
-    vtable: impl_AsQuery_for_T::{vtable}<T>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::TableTrait
@@ -83,7 +83,7 @@ where
     proof ImpliedClause1: (Predicate: Sized) = TraitClause1
     proof ImpliedClause2: (TraitClause3::Output: Sized) = TraitClause3::ImpliedClause2
     type Output = TraitClause3::Output
-    vtable: impl_FilterDsl_for_T::{vtable}<T, Predicate>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+    vtable: lazy
 }
 
 // Full name: test_crate::main

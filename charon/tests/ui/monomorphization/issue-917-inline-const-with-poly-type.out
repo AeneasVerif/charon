@@ -1,7 +1,5 @@
 # Final LLBC before serialization:
 
-opaque type core::marker::MetaSized::{vtable}
-
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -25,10 +23,6 @@ pub trait Tuple<Self>
     non-dyn-compatible
 }
 
-opaque type core::ops::function::Fn::{vtable}
-
-opaque type core::ops::function::FnOnce::{vtable}
-
 // Full name: core::ops::function::FnOnce
 #[fundamental]
 #[lang_item(FnOnce)]
@@ -39,8 +33,6 @@ pub trait FnOnce<Self, Args>
     proof ImpliedClause2: (Args: Tuple)
     vtable: core::ops::function::FnOnce::{vtable}
 }
-
-opaque type core::ops::function::FnMut::{vtable}
 
 // Full name: core::ops::function::FnMut
 #[fundamental]
@@ -211,7 +203,7 @@ impl FnOnce<((),)> for {closure}::<()> {
     proof ImpliedClause0: ({closure}::<()>: MetaSized) = {built_in impl MetaSized for {closure}::<()>}
     proof ImpliedClause1: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause2: (((),): Tuple) = {built_in impl Tuple for ((),)}
-    vtable: {impl FnOnce<((),)> for {closure}::<()>}::{vtable}::<()>
+    vtable: lazy
 }
 
 // Full name: test_crate::foo::{impl FnMut<((),)> for {closure}::<()>}
@@ -220,7 +212,7 @@ impl FnMut<((),)> for {closure}::<()> {
     proof ImpliedClause1: ({closure}::<()>: FnOnce<((),)>) = {impl FnOnce<((),)> for {closure}::<()>}
     proof ImpliedClause2: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause3: (((),): Tuple) = {built_in impl Tuple for ((),)}
-    vtable: {impl FnMut<((),)> for {closure}::<()>}::{vtable}::<()>
+    vtable: lazy
 }
 
 // Full name: test_crate::foo::{impl Fn<((),)> for {closure}::<()>}
@@ -229,7 +221,7 @@ impl Fn<((),)> for {closure}::<()> {
     proof ImpliedClause1: ({closure}::<()>: FnMut<((),)>) = {impl FnMut<((),)> for {closure}::<()>}
     proof ImpliedClause2: (((),): Sized) = {built_in impl Sized for ((),)}
     proof ImpliedClause3: (((),): Tuple) = {built_in impl Tuple for ((),)}
-    vtable: {impl Fn<((),)> for {closure}::<()>}::{vtable}::<()>
+    vtable: lazy
 }
 
 // Full name: test_crate::main

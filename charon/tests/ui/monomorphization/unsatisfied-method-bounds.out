@@ -1,21 +1,11 @@
 # Final LLBC before serialization:
 
-opaque type core::marker::MetaSized::{vtable}
-
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
 struct () {}
-
-struct test_crate::MyIterator::{vtable} {
-  size: usize,
-  align: usize,
-  drop: *const (),
-  method_method: *const (),
-  super_trait_0: &'static core::marker::MetaSized::{vtable},
-}
 
 // Full name: test_crate::MyIterator
 trait MyIterator<Self>

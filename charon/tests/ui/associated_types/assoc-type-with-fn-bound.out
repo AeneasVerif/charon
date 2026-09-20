@@ -111,7 +111,7 @@ where
     proof ImpliedClause1: (F: Sized) = TraitClause1
     proof ImpliedClause2: (F: Fn<(), ()>) = TraitClause0
     fn call<'_0_1> = call<'_0_1, F>[TraitClause0, TraitClause1]
-    vtable: impl_Trait_for_T::{vtable}<F>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::use_foo

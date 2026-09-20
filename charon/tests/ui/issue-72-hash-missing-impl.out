@@ -29,7 +29,7 @@ pub struct DefaultHasher {}
 // Full name: test_crate::{impl Hasher for DefaultHasher}
 impl "impl_Hasher_for_DefaultHasher" Hasher for DefaultHasher {
     proof ImpliedClause0: (DefaultHasher: MetaSized) = {built_in impl MetaSized for DefaultHasher}
-    vtable: impl_Hasher_for_DefaultHasher::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::Hash

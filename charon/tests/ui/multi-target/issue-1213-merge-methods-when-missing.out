@@ -94,7 +94,7 @@ where
     type Item = (TraitClause2::Item, TraitClause3::Item)
     fn next<'_0_1> = core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator for core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]}::next<'_0_1, A, B>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
     fn zip<U, TraitClause0_1: (U: core::marker::Sized), TraitClause1_1: (core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]: core::marker::Sized), TraitClause2_1: (U: core::iter::traits::collect::IntoIterator)> = core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator for core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]}::zip<A, B, U>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause0_1, TraitClause1_1, TraitClause2_1]
-    vtable: core::iter::adapters::zip::{impl core::iter::traits::iterator::Iterator for core::iter::adapters::zip::Zip<A, B>[TraitClause0, TraitClause1]}::{vtable}<A, B>[TraitClause0, TraitClause1, TraitClause2, TraitClause3]
+    vtable: lazy
 }
 
 pub fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<I>(_1: I) -> I
@@ -116,7 +116,7 @@ where
     type Item = TraitClause1::Item
     type IntoIter = I
     fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<I>[TraitClause0, TraitClause1]
-    vtable: core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::{vtable}<I>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 pub fn core::iter::traits::iterator::Iterator::zip<Self, U>(_1: Self, _2: U) -> core::iter::adapters::zip::Zip<Self, TraitClause3::IntoIter>[TraitClause2, TraitClause3::ImpliedClause2]
@@ -161,7 +161,7 @@ where
     type Item = &'a mut T
     fn next<'_0_1> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::next<'a, '_0_1, T>[TraitClause0]
     fn zip<U, TraitClause0_1: (U: core::marker::Sized), TraitClause1_1: (core::slice::iter::IterMut<'a, T>[TraitClause0]: core::marker::Sized), TraitClause2_1: (U: core::iter::traits::collect::IntoIterator)> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::zip<'a, T, U>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
-    vtable: core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::{vtable}<'a, T>[TraitClause0]
+    vtable: lazy
 }
 
 #[diagnostic_item("SliceIter")]
@@ -199,7 +199,7 @@ where
     type Item = &'a T
     fn next<'_0_1> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::next<'a, '_0_1, T>[TraitClause0]
     fn zip<U, TraitClause0_1: (U: core::marker::Sized), TraitClause1_1: (core::slice::iter::Iter<'a, T>[TraitClause0]: core::marker::Sized), TraitClause2_1: (U: core::iter::traits::collect::IntoIterator)> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::zip<'a, T, U>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
-    vtable: core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::{vtable}<'a, T>[TraitClause0]
+    vtable: lazy
 }
 
 #[diagnostic_item("slice_iter")]

@@ -53,7 +53,7 @@ pub fn impl_BoolTrait_for_bool::get_bool<'_0>(self: &'_0 bool) -> bool
 impl "impl_BoolTrait_for_bool" BoolTrait for bool {
     proof ImpliedClause0: (bool: MetaSized) = {built_in impl MetaSized for bool}
     fn get_bool<'_0_1> = impl_BoolTrait_for_bool::get_bool<'_0_1>
-    vtable: impl_BoolTrait_for_bool::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::{impl BoolTrait for Option<T>[TraitClause0]}::get_bool
@@ -99,7 +99,7 @@ where
 {
     proof ImpliedClause0: (Option<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Option<T>[TraitClause0]}
     fn get_bool<'_0_1> = impl_BoolTrait_for_Option::get_bool<'_0_1, T>[TraitClause0, TraitClause1]
-    vtable: impl_BoolTrait_for_Option::{vtable}<T>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::test_bool_trait_option

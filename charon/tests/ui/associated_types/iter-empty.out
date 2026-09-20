@@ -41,7 +41,7 @@ impl "impl_Apply_unit_for_F" Apply<(), ()> for F {
     proof ImpliedClause0: (F: MetaSized) = {built_in impl MetaSized for F}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
-    vtable: impl_Apply_unit_for_F::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::Iter

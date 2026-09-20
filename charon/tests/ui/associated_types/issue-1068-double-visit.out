@@ -34,7 +34,7 @@ pub trait HasType1<Self, Self_Type1>
 impl "impl_HasType1_for_Witness1" HasType1<()> for Witness1 {
     proof ImpliedClause0: (Witness1: MetaSized) = {built_in impl MetaSized for Witness1}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
-    vtable: impl_HasType1_for_Witness1::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::HasType2
@@ -58,7 +58,7 @@ where
 impl "impl_HasType2_for_Witness2" HasType2<Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, impl_HasType1_for_Witness1]> for Witness2 {
     proof ImpliedClause0: (Witness2: MetaSized) = {built_in impl MetaSized for Witness2}
     proof ImpliedClause1: (Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, impl_HasType1_for_Witness1]: Sized) = {built_in impl Sized for Comparator<Witness1, ()>[{built_in impl Sized for Witness1}, impl_HasType1_for_Witness1]}
-    vtable: impl_HasType2_for_Witness2::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::HasType3
@@ -77,7 +77,7 @@ where
 {
     proof ImpliedClause0: (T: MetaSized) = TraitClause0::ImpliedClause0
     proof ImpliedClause1: (Clause1_Type2: Sized) = TraitClause1::ImpliedClause1
-    vtable: impl_HasType3_for_T::{vtable}<T>[TraitClause0, TraitClause1]
+    vtable: lazy
 }
 
 // Full name: test_crate::check

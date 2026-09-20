@@ -1,7 +1,5 @@
 # Final LLBC before serialization:
 
-opaque type core::marker::MetaSized::{vtable}
-
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -25,8 +23,6 @@ pub trait Destruct<Self>
     fn drop_glue<'_0_1>;
     non-dyn-compatible
 }
-
-opaque type core::ops::drop::Drop::{vtable}
 
 // Full name: core::ops::drop::Drop
 #[lang_item(Drop)]
@@ -280,7 +276,7 @@ impl "impl_Destruct_for_Point" Destruct for Point {
 impl "impl_Drop_for_Point" Drop for Point {
     proof ImpliedClause0: (Point: MetaSized) = {built_in impl MetaSized for Point}
     proof ImpliedClause1: (Point: Destruct) = impl_Destruct_for_Point
-    vtable: impl_Drop_for_Point::{vtable}
+    vtable: lazy
 }
 
 // Full name: test_crate::main
