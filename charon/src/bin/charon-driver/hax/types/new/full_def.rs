@@ -1604,6 +1604,10 @@ impl<'tcx> FullDef<'tcx> {
         }
 
         let def_id = self.def_id().as_real_def_id()?;
+        // Statics in `extern` blocks have no value or initializer
+        if s.base().tcx.is_foreign_item(def_id) {
+            return None;
+        }
         let args = self.this().rustc_args(s);
         let ty = inst_binder(
             s.base().tcx,

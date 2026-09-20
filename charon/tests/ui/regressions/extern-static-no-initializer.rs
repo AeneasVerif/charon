@@ -1,4 +1,3 @@
-//@ known-failure
 //@ aux-crate=extern-static-no-initializer-aux.rs
 //@ charon-args=--consts values
 extern "C" {

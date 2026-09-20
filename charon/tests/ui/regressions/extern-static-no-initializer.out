@@ -1,30 +1,55 @@
-error: internal compiler error: /rustc-dev/923c95cdf5ba65cea505aa2ea829f578e1506ed8/compiler/rustc_hir_typeck/src/lib.rs:123:9: can't type-check body of test_crate::{extern#0}::LOCAL
- --> tests/ui/regressions/extern-static-no-initializer.rs:5:5
-  |
-5 |     static LOCAL: i32;
-  |     ^^^^^^^^^^^^^^^^^
+# Final LLBC before serialization:
+
+// Full name: extern_static_no_initializer_aux::FOREIGN
+pub fn FOREIGN() -> i32
+= <extern:FOREIGN>
+
+// Full name: extern_static_no_initializer_aux::FOREIGN
+pub static FOREIGN: i32 = FOREIGN()
+
+struct () {}
+
+// Full name: test_crate::LOCAL
+fn LOCAL() -> i32
+= <extern:LOCAL>
+
+// Full name: test_crate::LOCAL
+static LOCAL: i32 = LOCAL()
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let _1: i32; // anonymous local
+    let _2: *const i32; // anonymous local
+    let _3: i32; // anonymous local
+    let _4: *const i32; // anonymous local
+    let _5: *const i32; // anonymous local
+    let _6: *const i32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_5)
+    _5 = &raw const LOCAL
+    _2 = move _5
+    _1 = copy (*_2)
+    storage_dead(_2)
+    storage_dead(_1)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_6)
+    _6 = &raw const FOREIGN
+    _4 = move _6
+    _3 = copy (*_4)
+    storage_dead(_4)
+    storage_dead(_3)
+    _0 = ()
+    storage_dead(_6)
+    storage_dead(_5)
+    return
+}
 
 
-thread 'rustc' panicked at /rustc-dev/923c95cdf5ba65cea505aa2ea829f578e1506ed8/compiler/rustc_hir_typeck/src/lib.rs:123:9:
-can't type-check body of test_crate::{extern#0}::LOCAL
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting item `test_crate::{extern#0}::LOCAL`.
- --> tests/ui/regressions/extern-static-no-initializer.rs:5:5
-  |
-5 |     static LOCAL: i32;
-  |     ^^^^^^^^^^^^^^^^^
 
-
-thread 'rustc' panicked at /rustc-dev/923c95cdf5ba65cea505aa2ea829f578e1506ed8/compiler/rustc_metadata/src/rmeta/decoder/cstore_impl.rs:291:32:
-extern_static_no_initializer_aux::{extern#0}::FOREIGN does not have eval_static_initializer
-error: Thread panicked when extracting item `extern_static_no_initializer_aux::{extern#0}::FOREIGN`.
- --> tests/ui/regressions/extern-static-no-initializer-aux.rs:3:5
-
-note: the error occurred when translating `extern_static_no_initializer_aux::FOREIGN`, which is (transitively) used at the following location(s):
-  --> tests/ui/regressions/extern-static-no-initializer.rs:10:22
-   |
-10 |     let _ = unsafe { extern_static_no_initializer_aux::FOREIGN };
-   |                      -----------------------------------------
-error: aborting due to 1 previous error
-
-ERROR Code failed to compile
