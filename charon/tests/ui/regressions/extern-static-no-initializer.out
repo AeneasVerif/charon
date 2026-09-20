@@ -1,0 +1,30 @@
+error: internal compiler error: /rustc-dev/923c95cdf5ba65cea505aa2ea829f578e1506ed8/compiler/rustc_hir_typeck/src/lib.rs:123:9: can't type-check body of test_crate::{extern#0}::LOCAL
+ --> tests/ui/regressions/extern-static-no-initializer.rs:5:5
+  |
+5 |     static LOCAL: i32;
+  |     ^^^^^^^^^^^^^^^^^
+
+
+thread 'rustc' panicked at /rustc-dev/923c95cdf5ba65cea505aa2ea829f578e1506ed8/compiler/rustc_hir_typeck/src/lib.rs:123:9:
+can't type-check body of test_crate::{extern#0}::LOCAL
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting item `test_crate::{extern#0}::LOCAL`.
+ --> tests/ui/regressions/extern-static-no-initializer.rs:5:5
+  |
+5 |     static LOCAL: i32;
+  |     ^^^^^^^^^^^^^^^^^
+
+
+thread 'rustc' panicked at /rustc-dev/923c95cdf5ba65cea505aa2ea829f578e1506ed8/compiler/rustc_metadata/src/rmeta/decoder/cstore_impl.rs:291:32:
+extern_static_no_initializer_aux::{extern#0}::FOREIGN does not have eval_static_initializer
+error: Thread panicked when extracting item `extern_static_no_initializer_aux::{extern#0}::FOREIGN`.
+ --> tests/ui/regressions/extern-static-no-initializer-aux.rs:3:5
+
+note: the error occurred when translating `extern_static_no_initializer_aux::FOREIGN`, which is (transitively) used at the following location(s):
+  --> tests/ui/regressions/extern-static-no-initializer.rs:10:22
+   |
+10 |     let _ = unsafe { extern_static_no_initializer_aux::FOREIGN };
+   |                      -----------------------------------------
+error: aborting due to 1 previous error
+
+ERROR Code failed to compile

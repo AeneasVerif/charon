@@ -1,0 +1,62 @@
+
+thread 'rustc' panicked at src/ast/items/item_ids.rs:383:1:
+assertion failed: item.trait_ref.is_none()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting item `alloc4`.
+ --> tests/ui/regressions/closure-fn-ptr-in-raw-memory.rs:1:1
+  |
+1 | //@ known-failure
+  | ^
+
+
+thread 'rustc' panicked at src/ast/items/item_ids.rs:383:1:
+assertion failed: item.trait_ref.is_none()
+error: Thread panicked when extracting item `alloc9`.
+ --> tests/ui/regressions/closure-fn-ptr-in-raw-memory.rs:1:1
+  |
+1 | //@ known-failure
+  | ^
+
+
+thread 'rustc' panicked at src/ast/items/item_ids.rs:383:1:
+assertion failed: item.trait_ref.is_none()
+error: Thread panicked when extracting item `alloc14`.
+ --> tests/ui/regressions/closure-fn-ptr-in-raw-memory.rs:1:1
+  |
+1 | //@ known-failure
+  | ^
+
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_items.rs:420:17:
+assertion failed: assoc.has_value
+error: Thread panicked when extracting item `core::ops::function::FnOnce::call_once`.
+ --> /rustc/library/core/src/ops/function.rs:250:5
+
+note: the error occurred when translating `core::ops::function::FnOnce::call_once`, which is (transitively) used at the following location(s):
+ --> tests/ui/regressions/closure-fn-ptr-in-raw-memory.rs:1:1
+  |
+1 | //@ known-failure
+  | -
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_items.rs:420:17:
+assertion failed: assoc.has_value
+error: Thread panicked when extracting item `core::clone::Clone::clone`.
+ --> /rustc/library/core/src/clone.rs:236:5
+
+note: the error occurred when translating `core::clone::Clone::clone`, which is (transitively) used at the following location(s):
+ --> tests/ui/regressions/closure-fn-ptr-in-raw-memory.rs:1:1
+  |
+1 | //@ known-failure
+  | -
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_items.rs:420:17:
+assertion failed: assoc.has_value
+error: Thread panicked when extracting item `core::ops::function::Fn::call`.
+ --> /rustc/library/core/src/ops/function.rs:79:5
+
+note: the error occurred when translating `core::ops::function::Fn::call`, which is (transitively) used at the following location(s):
+ --> tests/ui/regressions/closure-fn-ptr-in-raw-memory.rs:1:1
+  |
+1 | //@ known-failure
+  | -
+ERROR Charon failed to translate this code (6 errors)
