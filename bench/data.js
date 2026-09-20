@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789826665022,
+  "lastUpdate": 1789904208533,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -13714,6 +13714,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 252.5,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.3,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f733a1d76b8295f23fa9a35d3d48e655a835ee07",
+          "message": "Merge pull request #1460 from soteria-tools/lazy-vtables\n\nBe explicit about lazy vtables",
+          "timestamp": "2026-09-20T11:26:39Z",
+          "tree_id": "e5e32a624750698b0c6d92a8f72f3af56e1eefe7",
+          "url": "https://github.com/AeneasVerif/charon/commit/f733a1d76b8295f23fa9a35d3d48e655a835ee07"
+        },
+        "date": 1789904207502,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 55001162308,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 8.27,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 362,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 19,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 26616074861,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 5.71,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 253.4,
             "unit": "max-rss(MB)"
           },
           {
