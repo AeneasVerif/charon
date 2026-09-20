@@ -148,6 +148,15 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         out
     }
 
+    /// Whether the environment has where-clauses that apply to parameter-free types.
+    /// The solver prioritises these, so trait proofs then depend on the owner.
+    pub fn has_concrete_clauses(&self) -> bool {
+        self.typing_env
+            .param_env
+            .caller_bounds()
+            .any(|clause| !clause.has_non_region_param())
+    }
+
     /// Insert the bound clauses in the search context. Prefer inserting them all at once as this
     /// will give priority to shorter resolution paths. Bound clauses are numbered from `0` in
     /// insertion order.

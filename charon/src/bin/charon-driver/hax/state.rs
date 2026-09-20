@@ -322,5 +322,10 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
         let mut predicate_searcher = base.elab_ctx.predicate_searcher_for(&base_state, owner);
         f(&mut predicate_searcher, &base_state)
     }
+    /// Whether the owner has where-clauses on concrete types, meaning translation of concrete
+    /// items may still depend on the owner.
+    fn owner_has_concrete_clauses(&self) -> bool {
+        self.with_predicate_searcher(|pred_searcher, _| pred_searcher.has_concrete_clauses())
+    }
 }
 impl<'tcx, S: UnderOwnerState<'tcx>> WithItemCacheExt<'tcx> for S {}
