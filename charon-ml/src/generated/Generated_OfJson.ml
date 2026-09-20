@@ -2173,6 +2173,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("format", format);
           ("no_serialize", no_serialize);
           ("skip_borrowck", skip_borrowck);
+          ("erase_body_lifetimes", erase_body_lifetimes);
           ("no_typecheck", no_typecheck);
           ("no_normalize", no_normalize);
           ("no_reorder_decls", no_reorder_decls);
@@ -2249,6 +2250,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* no_serialize = bool_of_json ctx no_serialize in
         let* skip_borrowck = bool_of_json ctx skip_borrowck in
+        let* erase_body_lifetimes = bool_of_json ctx erase_body_lifetimes in
         let* no_typecheck = bool_of_json ctx no_typecheck in
         let* no_normalize = bool_of_json ctx no_normalize in
         let* no_reorder_decls = bool_of_json ctx no_reorder_decls in
@@ -2308,6 +2310,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              format;
              no_serialize;
              skip_borrowck;
+             erase_body_lifetimes;
              no_typecheck;
              no_normalize;
              no_reorder_decls;

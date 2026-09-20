@@ -59,7 +59,7 @@ impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
         body: &'ictx Rc<mir::Body<'tcx>>,
         drop_kind: DropKind,
     ) -> Self {
-        i_ctx.lifetime_freshener = Some(IndexMap::new());
+        i_ctx.lifetime_freshener = (!i_ctx.options.erase_body_lifetimes).then(IndexMap::new);
         let mut user_type_annotations = body.user_type_annotations.clone();
         if let RustcItem::Mono(item) = &i_ctx.item_src.item {
             // `CanonicalUserTypeAnnotation::user_ty` is deliberately not folded when rustc
@@ -703,7 +703,11 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
         Ok(Body::Unstructured(ExprBody {
             span,
             locals: self.locals,
-            bound_body_regions: self.i_ctx.lifetime_freshener.take().unwrap().slot_count(),
+            bound_body_regions: self
+                .i_ctx
+                .lifetime_freshener
+                .take()
+                .map_or(0, |v| v.slot_count()),
             body: self.blocks.make_contiguous(),
             comments,
         }))
