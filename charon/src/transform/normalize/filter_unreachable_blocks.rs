@@ -33,7 +33,7 @@ impl UllbcPass for Transform {
         }
 
         // Update all block ids
-        b.body.dyn_visit_in_body_mut(|bid: &mut BlockId| {
+        b.visit_block_ids_mut(|bid: &mut BlockId| {
             *bid = *bid_map.get(bid).unwrap();
         });
     }

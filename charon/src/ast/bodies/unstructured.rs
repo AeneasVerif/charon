@@ -193,6 +193,13 @@ impl ExprBody {
         }
     }
 
+    /// Apply a function to all the block ids in this body, i.e. the targets of its terminators.
+    pub fn visit_block_ids_mut<F: FnMut(&mut BlockId)>(&mut self, mut f: F) {
+        for block in &mut self.body {
+            block.terminator.targets_mut().into_iter().for_each(&mut f);
+        }
+    }
+
     /// Apply a function to all the statements, in a bottom-up manner.
     pub fn visit_statements<F: FnMut(&mut Statement)>(&mut self, mut f: F) {
         for block in self.body.iter_mut().rev() {
