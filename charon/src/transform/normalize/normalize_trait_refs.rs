@@ -20,7 +20,7 @@ impl VisitAstMut for NormalizeTraitRefs<'_> {
         &mut self,
         value: &mut WithCachedTypeInfo<T>,
     ) -> ControlFlow<Self::Break> {
-        if value.is_normalized() {
+        if value.type_info().is_normalized() {
             ControlFlow::Continue(())
         } else {
             self.visit_inner(value)

@@ -48,7 +48,7 @@ impl TypeInfo {
                 let TypeInfo {
                     max_de_bruijn_id,
                     flags,
-                } = value.info;
+                } = value.type_info();
                 self.info.flags |= flags;
                 if let Some(id) = max_de_bruijn_id {
                     self.visit_de_bruijn_id(&id);
@@ -177,6 +177,42 @@ impl TypeInfo {
         let Continue(()) = visitor.visit(value);
         visitor.info
     }
+
+    /// Whether this value contains an erased or body-local region.
+    pub fn has_erased_or_body_regions(&self) -> bool {
+        self.flags.contains(TypeFlags::HAS_ERASED_OR_BODY_REGIONS)
+    }
+
+    /// The largest `DeBruijnId` mentioned by this item, if any.
+    pub fn max_de_bruijn_id(&self) -> Option<DeBruijnId> {
+        self.max_de_bruijn_id
+    }
+
+    /// Whether this value mentions a type-level variable (region, type, constant, trait).
+    pub fn mentions_var(&self) -> bool {
+        self.max_de_bruijn_id.is_some() || self.flags.contains(TypeFlags::MENTIONS_FREE_VAR)
+    }
+
+    /// Whether this value mentions `TraitRef::SelfClause`.
+    pub fn mentions_self_clause(&self) -> bool {
+        self.flags.contains(TypeFlags::MENTIONS_SELF_CLAUSE)
+    }
+
+    /// Whether this value mentions `SizeExpr::Metadata`.
+    pub fn uses_size_metadata(&self) -> bool {
+        self.flags.contains(TypeFlags::USES_SIZE_METADATA)
+    }
+
+    /// Whether this value mentions nothing from its environment.
+    pub fn is_closed(&self) -> bool {
+        !self.mentions_var() && !self.mentions_self_clause() && !self.uses_size_metadata()
+    }
+
+    /// Whether this value is in normal form. `true` for e.g. the constant `1` or the type
+    /// `SomeStruct<T>`; `false` for e.g. `<T as Trait>::Type` or `SizeOf<T>`.
+    pub fn is_normalized(&self) -> bool {
+        !self.flags.contains(TypeFlags::POTENTIALLY_NORMALIZABLE)
+    }
 }
 
 /// A wrapper that caches type-specific information about the contained value.
@@ -190,6 +226,10 @@ impl<T: TyVisitable> WithCachedTypeInfo<T> {
     pub fn new(value: T) -> Self {
         let info = value.type_info();
         Self { value, info }
+    }
+
+    pub fn type_info(&self) -> TypeInfo {
+        self.info
     }
 
     pub fn with_value_mut<R>(&mut self, f: impl FnOnce(&mut T) -> R) -> R {
