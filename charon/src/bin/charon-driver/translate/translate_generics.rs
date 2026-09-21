@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use std::fmt::Debug;
 use std::mem;
 
@@ -787,7 +787,7 @@ impl LifetimeMutabilityComputer {
             let mut visitor = LtMutabilityVisitor {
                 s,
                 computer: self,
-                set: HashSet::new(),
+                set: HashSet::default(),
             };
 
             let tcx = s.base().tcx;

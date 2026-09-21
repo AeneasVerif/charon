@@ -67,10 +67,14 @@ pub struct TranslateCtx<'tcx> {
     pub translate_stack: Vec<ItemId>,
     /// Cache of the translated span, as translating one is costly
     pub cached_spans: HashMap<rustc_span::Span, meta::SpanData>,
+    /// Cache of file ids per rustc source file, to avoid recomputing file names for every span.
+    pub cached_file_ids: HashMap<rustc_span::StableSourceFileId, FileId>,
     /// Cache the names to compute them only once each.
     pub cached_names: HashMap<RustcItem, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
     pub cached_item_metas: HashMap<TransItemSource, ItemMeta>,
+    /// Functions that are not panic lang items but that we still treat as panics.
+    pub panic_fns: HashSet<rustc_span::def_id::DefId>,
     /// Compute which lifetimes are used in a `&'a mut T`. This is a global fixpoint analysis.
     pub lt_mutability_computer: LifetimeMutabilityComputer,
 }

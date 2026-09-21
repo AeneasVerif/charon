@@ -153,7 +153,7 @@ impl UllbcPass for Transform {
 
             // Shift all block ids in the inner body and point return/unwind to where they should.
             let start_block = outer_body.body.next_idx();
-            inner_body.dyn_visit_in_body_mut(|b: &mut BlockId| {
+            inner_body.visit_block_ids_mut(|b: &mut BlockId| {
                 *b += start_block;
             });
             inner_body

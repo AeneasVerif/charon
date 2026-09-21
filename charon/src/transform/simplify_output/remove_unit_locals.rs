@@ -1,5 +1,5 @@
 use derive_generic_visitor::*;
-use std::collections::HashSet;
+use rustc_hash::FxHashSet as HashSet;
 
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;

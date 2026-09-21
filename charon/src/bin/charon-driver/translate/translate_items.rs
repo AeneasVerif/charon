@@ -64,11 +64,17 @@ impl<'tcx> TranslateCtx<'tcx> {
         item_src: &TransItemSource,
         trans_id: Option<ItemId>,
     ) -> Result<(), Error> {
-        // Translate the meta information
-        let name = self.translate_name(item_src)?;
-        if let Some(trans_id) = trans_id {
-            self.translated.item_names.insert(trans_id, name.clone());
-        }
+        // The name may have already been computed.
+        let name = match trans_id.and_then(|id| self.translated.item_names.get(&id)) {
+            Some(name) => name.clone(),
+            None => {
+                let name = self.translate_name(item_src)?;
+                if let Some(trans_id) = trans_id {
+                    self.translated.item_names.insert(trans_id, name.clone());
+                }
+                name
+            }
+        };
         let opacity = self.opacity_for_name(&name);
         if opacity.is_invisible() {
             // Don't even start translating the item. In particular don't call `hax_def` on it.

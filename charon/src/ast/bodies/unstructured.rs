@@ -3,9 +3,9 @@
 //! In effect, this is a cleaned up version of MIR.
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use macros::{EnumAsGetters, EnumIsA, VariantName};
+use rustc_hash::FxHashMap as HashMap;
 use serde_state::{DeserializeState, SerializeState};
 use smallvec::{SmallVec, smallvec};
-use std::collections::HashMap;
 use std::mem;
 use std::ops::{Index, IndexMut};
 
@@ -190,6 +190,13 @@ impl ExprBody {
     {
         for block in &mut self.body {
             block.transform_sequences_bwd(|seq| f(&mut self.locals, seq));
+        }
+    }
+
+    /// Apply a function to all the block ids in this body, i.e. the targets of its terminators.
+    pub fn visit_block_ids_mut<F: FnMut(&mut BlockId)>(&mut self, mut f: F) {
+        for block in &mut self.body {
+            block.terminator.targets_mut().into_iter().for_each(&mut f);
         }
     }
 

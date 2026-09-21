@@ -159,8 +159,10 @@ where
                 // The value is behind a shared `Arc`, we clone it in order to mutate it.
                 let mut value = self.inner().clone();
                 let ret = f(&mut value);
-                // Re-intern the new value.
-                *self = Self::new(value);
+                // Re-intern the new value if it changed.
+                if value != *self.inner() {
+                    *self = Self::new(value);
+                }
                 ret
             }
         }

@@ -1,7 +1,7 @@
 //! Some passes like [`crate::transform::resugar::reconstruct_asserts`] lead to the apparition of "dangling" blocks,
 //! which are referenced nowhere and thus become unreachable. This pass filters those out.
 
-use std::collections::{HashMap, HashSet};
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
@@ -13,7 +13,7 @@ impl UllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         // Perform a depth-first search to identify all the blocks reachable
         // from the first block.
-        let mut explored: HashSet<BlockId> = HashSet::new();
+        let mut explored: HashSet<BlockId> = HashSet::default();
         let mut to_explore: Vec<BlockId> = vec![BlockId::from_usize(0)];
         while let Some(bid) = to_explore.pop() {
             if explored.contains(&bid) {
@@ -24,7 +24,7 @@ impl UllbcPass for Transform {
         }
 
         // Renumerotate
-        let mut bid_map: HashMap<BlockId, BlockId> = HashMap::new();
+        let mut bid_map: HashMap<BlockId, BlockId> = HashMap::default();
         for (bid, block) in std::mem::take(&mut b.body).into_iter_enumerated() {
             if explored.contains(&bid) {
                 let nbid = b.body.push(block);
@@ -33,7 +33,7 @@ impl UllbcPass for Transform {
         }
 
         // Update all block ids
-        b.body.dyn_visit_in_body_mut(|bid: &mut BlockId| {
+        b.visit_block_ids_mut(|bid: &mut BlockId| {
             *bid = *bid_map.get(bid).unwrap();
         });
     }

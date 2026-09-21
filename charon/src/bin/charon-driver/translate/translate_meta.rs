@@ -140,21 +140,28 @@ impl<'tcx> TranslateCtx<'tcx> {
 
     fn translate_span_data_uncached(&mut self, span: rustc_span::Span) -> meta::SpanData {
         let smap: &rustc_span::source_map::SourceMap = self.tcx.sess.psess.source_map();
-        let filename = smap.span_to_filename(span);
-        let filename = self.translate_filename(filename);
-        let file_id = match &filename {
-            FileName::NotReal(_) => {
-                // For now we forbid not real filenames
-                unimplemented!();
+        let source_file = smap.lookup_source_file(span.lo());
+        let file_id = match self.cached_file_ids.get(&source_file.stable_id) {
+            Some(id) => *id,
+            None => {
+                let filename = self.translate_filename(source_file.name.clone());
+                let file_id = match &filename {
+                    FileName::NotReal(_) => {
+                        // For now we forbid not real filenames
+                        unimplemented!();
+                    }
+                    FileName::Virtual(_) | FileName::Local(_) => self.register_file(filename, span),
+                };
+                self.cached_file_ids.insert(source_file.stable_id, file_id);
+                file_id
             }
-            FileName::Virtual(_) | FileName::Local(_) => self.register_file(filename, span),
         };
 
         let convert_loc = |pos: rustc_span::BytePos| -> Loc {
-            let loc = smap.lookup_char_pos(pos);
+            let (line, _col, col_display) = source_file.lookup_file_pos_with_col_display(pos);
             Loc {
-                line: loc.line as u32,
-                col: loc.col_display as u32,
+                line: line as u32,
+                col: col_display as u32,
             }
         };
         let beg = convert_loc(span.lo());
@@ -826,7 +833,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         use rustc_hir::attrs as hir_attrs;
         match attr {
             hir::Attribute::Parsed(hir_attrs::AttributeKind::DocComment { comment, .. }) => {
-                Some(Attribute::DocComment(comment.to_string()))
+                (!self.options.no_doc_comments).then(|| Attribute::DocComment(comment.to_string()))
             }
             hir::Attribute::Parsed(attr) => self
                 .translate_rustc_attribute_kind(attr)

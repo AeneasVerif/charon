@@ -7,9 +7,9 @@ use itertools::Itertools;
 use macros::VariantIndexArity;
 use petgraph::algo::dijkstra::dijkstra;
 use petgraph::prelude::DiGraphMap;
+use rustc_hash::FxHashSet as HashSet;
 use serde::{Deserialize, Serialize};
 use std::cmp::{Ord, PartialOrd};
-use std::collections::{HashMap, HashSet};
 
 const BACKTRACE_ON_ERR: bool = false;
 
@@ -169,38 +169,22 @@ enum DepNode {
 
 /// Graph of dependencies between erroring definitions and the definitions they came from.
 struct DepGraph {
-    dgraph: DiGraphMap<DepNode, ()>,
+    edges: HashSet<(DepNode, DepNode)>,
 }
 
 impl DepGraph {
     fn new() -> Self {
         DepGraph {
-            dgraph: DiGraphMap::new(),
-        }
-    }
-
-    fn insert_node(&mut self, n: DepNode) {
-        // We have to be careful about duplicate nodes
-        if !self.dgraph.contains_node(n) {
-            self.dgraph.add_node(n);
+            edges: Default::default(),
         }
     }
 
     fn insert_edge(&mut self, from: DepNode, to: DepNode) {
-        self.insert_node(from);
-        self.insert_node(to);
-        if !self.dgraph.contains_edge(from, to) {
-            self.dgraph.add_edge(from, to, ());
-        }
+        self.edges.insert((from, to));
     }
-}
 
-impl std::fmt::Display for DepGraph {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        for (from, to, _) in self.dgraph.all_edges() {
-            writeln!(f, "{from:?} -> {to:?}")?
-        }
-        Ok(())
+    fn graph(&self) -> DiGraphMap<DepNode, (), rustc_hash::FxBuildHasher> {
+        DiGraphMap::from_edges(self.edges.iter().copied())
     }
 }
 
@@ -230,7 +214,7 @@ impl ErrorCtx {
         Self {
             continue_on_failure: true,
             error_on_warnings: false,
-            external_decls_with_errors: HashSet::new(),
+            external_decls_with_errors: HashSet::default(),
             external_dep_graph: DepGraph::new(),
             def_id: None,
             def_id_is_local: false,
@@ -303,8 +287,6 @@ impl ErrorCtx {
             && !is_local
         {
             let src_node = DepNode::External(item_id);
-            self.external_dep_graph.insert_node(src_node);
-
             let tgt_node = match src.span {
                 Some(span) => DepNode::Local(src.src_id, span),
                 None => DepNode::External(src.src_id),
@@ -321,12 +303,12 @@ impl ErrorCtx {
 
         // Use `Dijkstra's` algorithm to find the local items reachable from the current non-local
         // item.
-        let graph = &self.external_dep_graph;
-        let reachable = dijkstra(&graph.dgraph, DepNode::External(id), None, |_| 1);
+        let graph = self.external_dep_graph.graph();
+        let reachable = dijkstra(&graph, DepNode::External(id), None, |_| 1);
         trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
 
         // Collect reachable local spans.
-        let by_file: HashMap<FileId, Vec<Span>> = reachable
+        let by_file: std::collections::HashMap<FileId, Vec<Span>> = reachable
             .iter()
             .filter_map(|(n, _)| match n {
                 DepNode::External(_) => None,

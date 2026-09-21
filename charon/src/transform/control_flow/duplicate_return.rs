@@ -29,7 +29,7 @@
 use crate::ids::Generator;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
-use std::collections::HashMap;
+use rustc_hash::FxHashMap as HashMap;
 
 use crate::transform::ctx::UllbcPass;
 
@@ -63,7 +63,7 @@ impl UllbcPass for Transform {
         // First, introduce fresh ids.
         let mut generator = Generator::new_with_init_value(b.body.next_idx());
         let mut new_blocks = Vec::new();
-        b.body.dyn_visit_in_body_mut(|bid: &mut BlockId| {
+        b.visit_block_ids_mut(|bid: &mut BlockId| {
             if let Some(block) = returns.get(bid) {
                 *bid = generator.fresh_id();
                 new_blocks.push(block.clone());

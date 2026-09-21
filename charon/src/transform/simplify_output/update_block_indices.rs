@@ -17,7 +17,6 @@ impl UllbcPass for Transform {
             mem::take(&mut b.body).map(|block| b.body.push(block));
 
         // Update the ids.
-        b.body
-            .dyn_visit_in_body_mut(|id: &mut BlockId| *id = id_map[*id]);
+        b.visit_block_ids_mut(|id: &mut BlockId| *id = id_map[*id]);
     }
 }
