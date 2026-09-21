@@ -272,6 +272,30 @@ impl ItemRef {
     pub fn with_def_id<'tcx, S: BaseState<'tcx>>(&self, s: &S, def_id: &DefId) -> Self {
         self.mutate_def_id(s, |d| *d = def_id.clone())
     }
+
+    /// The parent of this item if the item inherits the typing context from its parent (e.g. closures and methods).
+    pub fn typing_parent<'tcx, S: BaseState<'tcx>>(&self, s: &S) -> Option<ItemRef> {
+        match self.def_id.kind {
+            DefKind::AssocTy
+            | DefKind::AssocFn
+            | DefKind::AssocConst
+            | DefKind::Closure
+            | DefKind::AnonConst
+            | DefKind::PromotedConst => {
+                let tcx = s.base().tcx;
+                let parent = self.def_id.generics_of(s).parent?.sinto(s);
+                let parent_args = self.rustc_args(s).truncate_to(tcx, parent.generics_of(s));
+                let s = &s.with_hax_owner(&self.def_id);
+                Some(ItemRef::translate_from_hax_def_id(s, parent, parent_args))
+            }
+            DefKind::Ctor(..) | DefKind::Variant => {
+                let parent = self.def_id.parent(s).unwrap();
+                // The parent has the same generics as this item.
+                Some(self.with_def_id(s, &parent))
+            }
+            _ => None,
+        }
+    }
 }
 
 impl std::ops::Deref for ItemRef {

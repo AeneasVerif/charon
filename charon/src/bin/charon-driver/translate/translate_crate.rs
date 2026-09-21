@@ -111,10 +111,7 @@ impl TransItemSource {
                 panic!("Item is not monomorphic: {item:?}")
             }
         } else if let RustcItem::MonoTrait(_) = &item
-            && !matches!(
-                kind,
-                TransItemSourceKind::TraitDecl | TransItemSourceKind::VTable
-            )
+            && !kind.is_for_trait()
         {
             panic!("Item kind {kind:?} should not be translated as monomorphic_trait")
         }
