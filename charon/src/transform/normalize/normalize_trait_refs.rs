@@ -16,6 +16,17 @@ struct NormalizeTraitRefs<'a> {
 }
 
 impl VisitAstMut for NormalizeTraitRefs<'_> {
+    fn visit_with_cached_type_info<T: AstVisitable>(
+        &mut self,
+        value: &mut WithCachedTypeInfo<T>,
+    ) -> ControlFlow<Self::Break> {
+        if value.is_normalized() {
+            ControlFlow::Continue(())
+        } else {
+            self.visit_inner(value)
+        }
+    }
+
     fn exit_trait_ref(&mut self, tref: &mut TraitRef) {
         if self.steps >= MAX_NORMALIZATION_STEPS {
             return;

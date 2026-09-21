@@ -56,6 +56,9 @@ impl<'a> SubstVisitor<'a> {
     }
 
     pub fn visit<T: TyVisitable>(mut self, mut x: T) -> Result<T, GenericsMismatch> {
+        if x.is_closed() {
+            return Ok(x);
+        }
         x.visit_vars(&mut self);
         if self.had_error {
             Err(GenericsMismatch)
@@ -149,7 +152,8 @@ pub trait TyVisitable: Sized + AstVisitable {
 
     /// Whether this value mentions a type-level variable (region, type, constant, trait).
     fn mentions_var(&self) -> bool {
-        self.max_de_bruijn_id().is_some()
+        let info = self.type_info();
+        info.max_de_bruijn_id.is_some() || info.flags.contains(TypeFlags::MENTIONS_FREE_VAR)
     }
 
     /// Whether this value mentions `TraitRef::SelfClause`.
@@ -326,6 +330,11 @@ pub trait TyVisitable: Sized + AstVisitable {
     /// Move the value out of `depth` binders. Returns `None` if it contains a variable bound in
     /// one of these `depth` binders.
     fn move_from_under_binders(mut self, depth: DeBruijnId) -> Option<Self> {
+        match self.max_de_bruijn_id() {
+            None => return Some(self),
+            Some(max) if max < depth => return None,
+            Some(_) => {}
+        }
         self.visit_db_id::<()>(|id| match id.sub(depth) {
             Some(sub) => {
                 *id = sub;
@@ -344,6 +353,10 @@ pub trait TyVisitable: Sized + AstVisitable {
         &mut self,
         f: impl FnMut(&mut DeBruijnId) -> ControlFlow<B>,
     ) -> ControlFlow<B> {
+        if self.max_de_bruijn_id().is_none() {
+            return Continue(());
+        }
+
         struct Wrap<F> {
             f: F,
             depth: DeBruijnId,
@@ -354,21 +367,28 @@ pub trait TyVisitable: Sized + AstVisitable {
         {
             type Break = B;
         }
+        impl<F> VisitorWithBinderDepth for Wrap<F> {
+            fn binder_depth_mut(&mut self) -> &mut DeBruijnId {
+                &mut self.depth
+            }
+        }
         impl<B, F> VisitAstMut for Wrap<F>
         where
             F: FnMut(&mut DeBruijnId) -> ControlFlow<B>,
         {
-            fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                self.depth = self.depth.incr()
+            fn visit<T: AstVisitable>(&mut self, x: &mut T) -> ControlFlow<Self::Break> {
+                VisitWithBinderDepth::new(self).visit(x)
             }
-            fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
-                self.depth = self.depth.decr()
-            }
-            fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                self.depth = self.depth.incr()
-            }
-            fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
-                self.depth = self.depth.decr()
+
+            fn visit_with_cached_type_info<T: AstVisitable>(
+                &mut self,
+                value: &mut WithCachedTypeInfo<T>,
+            ) -> ControlFlow<Self::Break> {
+                if value.max_de_bruijn_id().is_none_or(|max| max < self.depth) {
+                    Continue(())
+                } else {
+                    self.visit_inner(value)
+                }
             }
 
             fn visit_de_bruijn_id(&mut self, x: &mut DeBruijnId) -> ControlFlow<Self::Break> {
@@ -379,15 +399,20 @@ pub trait TyVisitable: Sized + AstVisitable {
                 Continue(())
             }
         }
-        self.drive_mut(&mut Wrap {
+        Wrap {
             f,
             depth: DeBruijnId::zero(),
-        })
+        }
+        .visit(self)
     }
 
     /// Replace all the erased regions by the output of the provided function. Binders levels are
     /// handled automatically.
     fn replace_erased_regions(mut self, f: impl FnMut() -> Region) -> Self {
+        if !self.has_erased_or_body_regions() {
+            return self;
+        }
+
         #[derive(Visitor)]
         struct RefreshErasedRegions<F>(F);
         impl<F: FnMut() -> Region> VarsVisitor for RefreshErasedRegions<F> {

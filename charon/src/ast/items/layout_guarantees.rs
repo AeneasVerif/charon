@@ -268,6 +268,17 @@ impl SizeExpr {
         }
 
         impl VisitAstMut for NormalizeSizeExpr<'_> {
+            fn visit_with_cached_type_info<T: AstVisitable>(
+                &mut self,
+                value: &mut WithCachedTypeInfo<T>,
+            ) -> ControlFlow<Self::Break> {
+                if value.is_normalized() {
+                    Continue(())
+                } else {
+                    self.visit_inner(value)
+                }
+            }
+
             fn exit_size_expr_kind(&mut self, expr: &mut SizeExprKind) {
                 *expr = match expr {
                     SizeExprKind::Constant(constant) => {
