@@ -624,13 +624,6 @@ and fun_decl_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (fun_decl_id, string) result =
   combine_error_msgs st __FUNCTION__ (FunDeclId.id_of_postcard ctx st)
 
-and fun_decl_ref_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
-    (fun_decl_ref, string) result =
-  combine_error_msgs st __FUNCTION__
-    (let* id = fun_decl_id_of_postcard ctx st in
-     let* generics = box_of_postcard generic_args_of_postcard ctx st in
-     Ok ({ id; generics } : fun_decl_ref))
-
 and fun_sig_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (fun_sig, string) result =
   combine_error_msgs st __FUNCTION__
@@ -965,7 +958,7 @@ and provenance_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _0 = global_decl_ref_of_postcard ctx st in
          Ok (ProvGlobal _0)
      | 1 ->
-         let* _0 = fun_decl_ref_of_postcard ctx st in
+         let* _0 = fn_ptr_of_postcard ctx st in
          Ok (ProvFunction _0)
      | 2 -> Ok ProvUnknown
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
@@ -2143,6 +2136,13 @@ and fun_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* src = fun_source_of_postcard ctx st in
      let* body = body_of_postcard ctx st in
      Ok ({ def_id; item_meta; generics; signature; src; body } : fun_decl))
+
+and fun_decl_ref_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (fun_decl_ref, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* id = fun_decl_id_of_postcard ctx st in
+     let* generics = box_of_postcard generic_args_of_postcard ctx st in
+     Ok ({ id; generics } : fun_decl_ref))
 
 and fun_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (fun_source, string) result =

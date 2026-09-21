@@ -246,11 +246,21 @@ fn alloc_provenance<'tcx, S: UnderOwnerState<'tcx>>(
 ) -> ConstantByteProvenance {
     use interpret::GlobalAlloc::*;
     match s.base().tcx.global_alloc(alloc_id) {
-        Function { instance } => ConstantByteProvenance::Function(translate_item_ref(
-            s,
-            instance.def_id(),
-            instance.args,
-        )),
+        Function { instance } => match instance.def {
+            // A stateless closure coerced to a fn pointer. Needs special handling, since the
+            // shim has no DefId.
+            ty::InstanceKind::Shim(ty::ShimKind::ClosureOnce { .. }) => {
+                let ty::TyKind::Closure(def_id, args) = instance.args.type_at(0).kind() else {
+                    unreachable!("ClosureOnce shim on non-closure")
+                };
+                ConstantByteProvenance::ClosureAsFn(ClosureArgs::sfrom(s, *def_id, args))
+            }
+            _ => ConstantByteProvenance::Function(translate_item_ref(
+                s,
+                instance.def_id(),
+                instance.args,
+            )),
+        },
         Static(..) | Memory(..) => match alloc_as_global(s, alloc_id) {
             Some(item) => ConstantByteProvenance::Global(item),
             None => ConstantByteProvenance::Unknown,
