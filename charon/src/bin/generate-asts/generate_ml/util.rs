@@ -159,6 +159,10 @@ impl<'a> GenerateCtx<'a> {
                         if base_ty == "ustr" {
                             base_ty = "string".to_string();
                         }
+                        // We hide this from OCaml
+                        if base_ty == "with_cached_type_info" {
+                            return args.remove(0);
+                        }
                         if base_ty == "indexed_map" {
                             let index_name = args.remove(0); // Remove the index generic param
                             base_ty = format!("{index_name}_map");

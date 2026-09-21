@@ -254,6 +254,7 @@ dependencies = [
  "anstream",
  "anyhow",
  "assert_cmd",
+ "bitflags",
  "clap",
  "convert_case",
  "crates_io_api",

@@ -74,6 +74,7 @@ annotate-snippets = { version = "0.12" }
 anstream = "0.6.18"
 anyhow = "1.0.81"
 assert_cmd = "2.0"
+bitflags = "2.6"
 clap = { version = "4.0", features = ["derive", "env"] }
 convert_case = "0.6.0"
 crates_io_api = { version = "0.11.0", optional = true, default-features = false, features = ["rustls"] }

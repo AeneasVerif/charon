@@ -24,7 +24,7 @@ use crate::ast::*;
     DriveTwo,
 )]
 #[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
-pub struct ConstantExpr(pub HashConsed<(ConstantExprKind, Ty)>);
+pub struct ConstantExpr(pub HashConsed<WithCachedTypeInfo<(ConstantExprKind, Ty)>>);
 
 #[derive(
     Debug,
@@ -237,7 +237,7 @@ macro_rules! static_constant {
 
 impl ConstantExpr {
     pub fn new(kind: ConstantExprKind, ty: Ty) -> Self {
-        Self(HashConsed::new((kind, ty)))
+        Self(HashConsed::new(WithCachedTypeInfo::new((kind, ty))))
     }
 
     pub fn kind(&self) -> &ConstantExprKind {
@@ -252,7 +252,8 @@ impl ConstantExpr {
         &mut self,
         f: impl FnOnce(&mut ConstantExprKind, &mut Ty) -> R,
     ) -> R {
-        self.0.with_inner_mut(|(kind, ty)| f(kind, ty))
+        self.0
+            .with_inner_mut(|contents| contents.with_value_mut(|(kind, ty)| f(kind, ty)))
     }
 
     pub fn mk_unit() -> Self {
@@ -295,6 +296,13 @@ impl ConstantExprKind {
             }
             ScalarTy::Float(_) => None,
         }
+    }
+}
+
+impl std::ops::Deref for ConstantExpr {
+    type Target = WithCachedTypeInfo<(ConstantExprKind, Ty)>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 

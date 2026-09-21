@@ -57,7 +57,7 @@ use derive_generic_visitor::*;
     ),
     // Types that are completely skipped, even by `ZipAst`.
     skip(
-        DeclarationGroup, PredicateOrigin, TargetInfo,
+        DeclarationGroup, PredicateOrigin, TargetInfo, TypeInfo,
         llbc_ast::BlockId, llbc_ast::StatementId,
     ),
     // Types that we unconditionally explore.
@@ -103,6 +103,7 @@ use derive_generic_visitor::*;
         DeBruijnId, Ty, TyKind, Region, TraitRef, TraitRefContents, TraitRefKind,
         GenericArgs, GenericParams, TraitParam, TraitClauseId, TraitTypeConstraint,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,
+        for<T: AstVisitable> WithCachedTypeInfo<T>,
         for<T: AstVisitable> RegionBinder<T>,
         for<T: AstVisitable> Binder<T>,
         llbc_block: llbc_ast::Block, llbc_statement: llbc_ast::Statement,

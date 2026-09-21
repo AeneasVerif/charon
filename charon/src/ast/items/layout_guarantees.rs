@@ -79,7 +79,7 @@ pub enum MetadataValue {
     DriveTwo,
 )]
 #[serde_state(state_implements = DedupSerializerState)]
-pub struct SizeExpr(pub HashConsed<SizeExprKind>);
+pub struct SizeExpr(pub HashConsed<WithCachedTypeInfo<SizeExprKind>>);
 
 #[derive(
     Debug,
@@ -126,7 +126,7 @@ pub enum SizeExprKind {
 
 impl SizeExpr {
     pub fn new(kind: SizeExprKind) -> Self {
-        Self(HashConsed::new(kind))
+        Self(HashConsed::new(WithCachedTypeInfo::new(kind)))
     }
 
     pub fn kind(&self) -> &SizeExprKind {
@@ -134,7 +134,7 @@ impl SizeExpr {
     }
 
     pub fn with_kind_mut<R>(&mut self, f: impl FnOnce(&mut SizeExprKind) -> R) -> R {
-        self.0.with_inner_mut(f)
+        self.0.with_inner_mut(|kind| kind.with_value_mut(f))
     }
 
     pub fn from_usize(value: u128) -> Self {
@@ -580,10 +580,9 @@ impl From<SizeExprKind> for SizeExpr {
 }
 
 impl std::ops::Deref for SizeExpr {
-    type Target = SizeExprKind;
-
+    type Target = WithCachedTypeInfo<SizeExprKind>;
     fn deref(&self) -> &Self::Target {
-        self.kind()
+        &self.0
     }
 }
 
