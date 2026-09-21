@@ -91,7 +91,7 @@ pub trait PointerFamily<Self>
     type Pointer<T>
     where
         TraitClause0_1: (T: Sized),
-        TypeConstraint0: Self::Pointer::ImpliedClause1::Target = T,
+        TypeConstraint0: Self::Pointer<T>[TraitClause0_1]::ImpliedClause1::Target = T,
         proof ImpliedClause0: (Self::Pointer<T>[TraitClause0_1]: Sized),
         proof ImpliedClause1: (Self::Pointer<T>[TraitClause0_1]: Deref);
     fn new<T, TraitClause0_1: (T: Sized)>;

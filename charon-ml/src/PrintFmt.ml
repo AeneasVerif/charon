@@ -812,12 +812,13 @@ and pp_trait_ref_kind (env : fmt_env)
   | ParentClause (tref, clause_id) ->
       Format.fprintf fmt "%a::%s" (pp_trait_ref env) tref
         (trait_clause_id_format_as_implied clause_id)
-  | ItemClause (tref, type_id, clause_id) ->
+  | ItemClause (tref, type_id, generics, clause_id) ->
       let type_name =
         GAstUtils.get_assoc_type_name env.crate
           tref.trait_decl_ref.binder_value.id type_id
       in
-      Format.fprintf fmt "%a::%s::%s" (pp_trait_ref env) tref type_name
+      Format.fprintf fmt "%a::%s%a::%s" (pp_trait_ref env) tref type_name
+        (pp_generic_args env) generics
         (trait_clause_id_format_as_implied clause_id)
   | Dyn -> pp_region_binder pp_trait_decl_ref env fmt (Option.get implements)
   | UnknownTrait msg -> Format.fprintf fmt "UNKNOWN(%s)" msg

@@ -36,7 +36,7 @@ impl "impl_MyTrait_for_S" MyTrait for S {
     type Ret = ()
     where
         TraitClause0_1: (S: Sized),
-        proof ImpliedClause0: (impl_MyTrait_for_S::Ret[TraitClause0_1]: Sized) = impl_MyTrait_for_S::Ret::ImpliedClause0;
+        proof ImpliedClause0: (impl_MyTrait_for_S::Ret[TraitClause0_1]: Sized) = impl_MyTrait_for_S::Ret[TraitClause0_1]::ImpliedClause0;
     vtable: lazy
 }
 

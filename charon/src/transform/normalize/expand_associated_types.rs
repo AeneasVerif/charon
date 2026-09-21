@@ -249,7 +249,7 @@ mod trait_ref_path {
                     path.trait_decl_id = trait_decl_id;
                     Some(path)
                 }
-                TraitRefKind::ItemClause(..)
+                TraitRefKind::ItemClause { .. }
                 | TraitRefKind::TraitImpl(..)
                 | TraitRefKind::BuiltinOrAuto { .. }
                 | TraitRefKind::Dyn
@@ -1029,7 +1029,7 @@ impl UpdateItemBody<'_> {
                 let path = path.on_tref(&TraitRefPath::parent_clause(*clause_id, tref.trait_id()));
                 self.lookup_path_on_trait_ref(&path, parent)
             }
-            TraitRefKind::ItemClause(..) => None,
+            TraitRefKind::ItemClause { .. } => None,
             TraitRefKind::BuiltinOrAuto {
                 parent_trait_refs,
                 types,
@@ -1299,7 +1299,12 @@ impl VisitAstMut for UpdateItemBody<'_> {
                 for (clause_id, clause) in
                     assoc_ty.skip_binder.implied_clauses.iter_mut_enumerated()
                 {
-                    let self_path = TraitRefKind::ItemClause(self_tref.clone(), type_id, clause_id);
+                    let self_path = TraitRefKind::ItemClause {
+                        trait_ref: self_tref.clone(),
+                        type_id,
+                        generics: assoc_ty.params.identity_args(),
+                        clause_id,
+                    };
                     this.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
                 }
             });

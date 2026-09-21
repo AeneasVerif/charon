@@ -559,27 +559,38 @@ and trait_ref_kind =
                                 parent clause 1 of clause 0
             }
           ]} *)
-  | ItemClause of trait_ref * assoc_type_id * trait_clause_id
-      (** A clause defined on an associated type. This variant is only used
-          during translation; after the [lift_associated_item_clauses] pass,
-          clauses on items become [ParentClause]s.
+  | ItemClause of trait_ref * assoc_type_id * generic_args * trait_clause_id
+      (** A clause defined on an associated type.
 
           Example:
           {@rust[
             trait Foo {
-              type W: Bar0 + Bar1 // Bar1 contains a method bar1
-                             ^^^^
+              type W<X>: Bar0 + Bar1 // Bar1 contains a method bar1
+                                ^^^^
                           this is the clause 1 applying to W
             }
 
-            fn f<T : Foo>(x : T::W) {
+            fn f<T: Foo>(x : T::W<u32>) {
               x.bar1();
-              ^^^^^^^
-              ItemClause(Clause(0), W, 1)
-                                    ^^^^
-                                    clause 1 from item W (from local clause 0)
+              ^^^^^^
+              ItemClause {
+                  trait_ref: Clause(0), // start with the [T: Foo] clause
+                  type_id: W, // look at the item [W]
+                  generics: [u32], // with these args
+                  clause_id: 1, // and take the clause 1 of this item
+              }
             }
-          ]} *)
+          ]}
+
+          For associated types without arguments, we turn such clauses into
+          parent clauses of the trait, in the [lift_associated_item_clauses]
+          pass.
+
+          Fields:
+          - [trait_ref]
+          - [type_id]
+          - [generics]: Generic arguments for the associated type.
+          - [clause_id]: Id of the clause among those for this item. *)
   | Self
       (** The implicit [Self: Trait] clause. Present inside trait declarations,
           including trait method declarations. Not present in trait

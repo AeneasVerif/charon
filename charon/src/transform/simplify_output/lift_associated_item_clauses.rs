@@ -76,20 +76,31 @@ impl TransformPass for Transform {
         ctx.translated.dyn_visit_mut(|trkind: &mut TraitRefKind| {
             use TraitRefKind::*;
             match trkind {
-                ItemClause(..) => take_mut::take(trkind, |trkind| {
-                    let ItemClause(tref, type_id, item_clause_id) = trkind else {
+                ItemClause { .. } => take_mut::take(trkind, |trkind| {
+                    let ItemClause {
+                        trait_ref,
+                        type_id,
+                        generics,
+                        clause_id,
+                    } = trkind
+                    else {
                         unreachable!()
                     };
                     let new_id = (|| {
                         let new_id = *trait_item_clause_ids
-                            .get(tref.trait_decl_ref.skip_binder.id)?
+                            .get(trait_ref.trait_decl_ref.skip_binder.id)?
                             .get(type_id)?
-                            .get(item_clause_id)?;
+                            .get(clause_id)?;
                         Some(new_id)
                     })();
                     match new_id {
-                        Some(new_id) => ParentClause(tref, new_id),
-                        None => ItemClause(tref, type_id, item_clause_id),
+                        Some(new_id) => ParentClause(trait_ref, new_id),
+                        None => ItemClause {
+                            trait_ref,
+                            type_id,
+                            generics,
+                            clause_id,
+                        },
                     }
                 }),
                 BuiltinOrAuto {
@@ -100,7 +111,8 @@ impl TransformPass for Transform {
                     for assoc_ty in types.iter_mut() {
                         for tref in std::mem::take(&mut assoc_ty.implied_trait_refs) {
                             // Note: this assumes that we listed the types in the same order as in
-                            // the trait decl, which we do.
+                            // the trait decl, which we do. And that builtin assoc types are never
+                            // GATs, which they so far aren't.
                             parent_trait_refs.push(tref);
                         }
                     }
