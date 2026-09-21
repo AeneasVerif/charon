@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789904208533,
+  "lastUpdate": 1789976062526,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -13778,6 +13778,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 253.4,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.3,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d7f10a4b82bbe0066e1525a63c0cc03e86115141",
+          "message": "Merge pull request #1468 from soteria-tools/stable-dyn-trait\n\nMake auto-trait ordering stable in trait objects",
+          "timestamp": "2026-09-21T07:14:28Z",
+          "tree_id": "0d0195e60ae0cf0f8373ccc9de36e4f5694d9dc4",
+          "url": "https://github.com/AeneasVerif/charon/commit/d7f10a4b82bbe0066e1525a63c0cc03e86115141"
+        },
+        "date": 1789976060833,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 55003273325,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 7.49,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 361.2,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 19,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 26582410457,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 5.44,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 252.5,
             "unit": "max-rss(MB)"
           },
           {
