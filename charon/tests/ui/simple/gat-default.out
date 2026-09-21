@@ -44,7 +44,7 @@ impl "impl_Collection_for_unit" Collection for () {
     type Sibling<U> = Vec<U>[TraitClause0_1, {built_in impl Sized for Global}]
     where
         TraitClause0_1: (U: Sized),
-        proof ImpliedClause0: (impl_Collection_for_unit::Sibling<U>[TraitClause0_1]: Sized) = impl_Collection_for_unit::Sibling::ImpliedClause0;
+        proof ImpliedClause0: (impl_Collection_for_unit::Sibling<U>[TraitClause0_1]: Sized) = impl_Collection_for_unit::Sibling<U>[TraitClause0_1]::ImpliedClause0;
     non-dyn-compatible
 }
 

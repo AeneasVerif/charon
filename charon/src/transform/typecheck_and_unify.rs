@@ -471,6 +471,12 @@ impl VisitAst for TypeCheckVisitor<'_> {
             TraitRefKind::Clause(var) if self.binder_stack.get_var(*var).is_none() => {
                 self.error(format!("Found incorrect clause var: {var}"));
             }
+            TraitRefKind::ItemClause {
+                trait_ref,
+                type_id,
+                generics,
+                ..
+            } => self.assert_matches_trait_type(trait_ref, *type_id, generics),
             TraitRefKind::BuiltinOrAuto {
                 parent_trait_refs,
                 types,

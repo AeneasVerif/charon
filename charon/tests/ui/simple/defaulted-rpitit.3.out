@@ -70,7 +70,7 @@ pub trait MyTrait<Self, T>
     proof ImpliedClause1: (T: Sized)
     type rows_ty<'_0_1> = Empty<T>[Self::ImpliedClause1]
     where
-        TypeConstraint0: Self::rows_ty::ImpliedClause1::Item = T,
+        TypeConstraint0: Self::rows_ty<'_>::ImpliedClause1::Item = T,
         proof ImpliedClause0: (Self::rows_ty<'_0_1>: Sized),
         proof ImpliedClause1: (Self::rows_ty<'_0_1>: Iterator);
     fn rows<'_0_1> = test_crate::MyTrait::rows<'_0_1, Self, T>[Self]
@@ -118,9 +118,9 @@ where
     proof ImpliedClause1: (T: Sized) = TraitClause0
     type rows_ty<'_0_1> = Empty<T>[TraitClause0]
     where
-        TypeConstraint0: impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty::ImpliedClause1::Item = T,
-        proof ImpliedClause0: (impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty<'_0_1>: Sized) = impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty::ImpliedClause0,
-        proof ImpliedClause1: (impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty<'_0_1>: Iterator) = impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty::ImpliedClause1;
+        TypeConstraint0: impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty<'_>::ImpliedClause1::Item = T,
+        proof ImpliedClause0: (impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty<'_0_1>: Sized) = impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty<'_>::ImpliedClause0,
+        proof ImpliedClause1: (impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty<'_0_1>: Iterator) = impl_MyTrait_for_unit<T>[TraitClause0]::rows_ty<'_>::ImpliedClause1;
     fn rows<'_0_1> = impl_MyTrait_for_unit::rows<'_0_1, T>[TraitClause0]
     non-dyn-compatible
 }

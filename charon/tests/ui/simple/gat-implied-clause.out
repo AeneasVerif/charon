@@ -47,6 +47,10 @@ trait Trait<Self>
         TraitClause0_1: (T: Sized),
         proof ImpliedClause0: (Self::NonLifetimeGat<T>[TraitClause0_1]: Sized),
         proof ImpliedClause1: (Self::NonLifetimeGat<T>[TraitClause0_1]: Clone);
+    type ConstGat<const N : usize>
+    where
+        proof ImpliedClause0: (Self::ConstGat<N>: Sized),
+        proof ImpliedClause1: (Self::ConstGat<N>: Clone);
     non-dyn-compatible
 }
 
@@ -66,22 +70,22 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &x
-    _2 = TraitClause1::LifetimeGat::ImpliedClause1::clone<'9>(move _3)
-    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'11>}::drop_glue<'12>] x
+    _2 = TraitClause1::LifetimeGat<'9>::ImpliedClause1::clone<'10>(move _3)
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'12>}::drop_glue<'13>] x
         ↳⚡ storage_dead(x)
             unwind_terminate
         storage_dead(x)
         unwind_continue
     storage_dead(_3)
-    conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'14>}::drop_glue<'15>] _2
-    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'11>}::drop_glue<'12>] x
+    conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'15>}::drop_glue<'16>] _2
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'12>}::drop_glue<'13>] x
         ↳⚡ storage_dead(x)
             unwind_terminate
         storage_dead(x)
         unwind_continue
     storage_dead(_2)
     _0 = ()
-    conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'17>}::drop_glue<'18>] x
+    conditional_drop[{built_in impl Destruct for TraitClause1::LifetimeGat<'18>}::drop_glue<'19>] x
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(x)
@@ -104,7 +108,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = &x
-    _2 = TraitClause1::NonLifetimeGat::ImpliedClause1::clone<'2>(move _3)
+    _2 = TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]::ImpliedClause1::clone<'2>(move _3)
     ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]}::drop_glue<'3>] x
         ↳⚡ storage_dead(x)
             unwind_terminate
@@ -120,6 +124,44 @@ where
     storage_dead(_2)
     _0 = ()
     conditional_drop[{built_in impl Destruct for TraitClause1::NonLifetimeGat<u8>[{built_in impl Sized for u8}]}::drop_glue<'5>] x
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::const_gat_bound
+fn const_gat_bound<X>(x: TraitClause1::ConstGat<4usize>)
+where
+    TraitClause0: (X: Sized),
+    TraitClause1: (X: Trait),
+{
+    let _0: (); // return
+    let x: TraitClause1::ConstGat<4usize>; // arg #1
+    let _2: TraitClause1::ConstGat<4usize>; // anonymous local
+    let _3: &'1 TraitClause1::ConstGat<4usize>; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &x
+    _2 = TraitClause1::ConstGat<4usize>::ImpliedClause1::clone<'2>(move _3)
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::ConstGat<4usize>}::drop_glue<'3>] x
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_3)
+    conditional_drop[{built_in impl Destruct for TraitClause1::ConstGat<4usize>}::drop_glue<'4>] _2
+    ↳⚡ conditional_drop[{built_in impl Destruct for TraitClause1::ConstGat<4usize>}::drop_glue<'3>] x
+        ↳⚡ storage_dead(x)
+            unwind_terminate
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    _0 = ()
+    conditional_drop[{built_in impl Destruct for TraitClause1::ConstGat<4usize>}::drop_glue<'5>] x
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(x)

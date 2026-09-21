@@ -2759,10 +2759,20 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
                 let sub = sub.with_ctx(ctx);
                 write!(f, "{sub}::{}", clause_id.format_as_implied())
             }
-            TraitRefKind::ItemClause(sub, type_id, clause_id) => {
-                write!(f, "{}::", sub.with_ctx(ctx))?;
-                ctx.format_assoc_type_name(f, sub.trait_id(), *type_id)?;
-                write!(f, "::{}", clause_id.format_as_implied())
+            TraitRefKind::ItemClause {
+                trait_ref,
+                type_id,
+                generics,
+                clause_id,
+            } => {
+                write!(f, "{}::", trait_ref.with_ctx(ctx))?;
+                ctx.format_assoc_type_name(f, trait_ref.trait_id(), *type_id)?;
+                write!(
+                    f,
+                    "{}::{}",
+                    generics.with_ctx(ctx),
+                    clause_id.format_as_implied()
+                )
             }
             TraitRefKind::TraitImpl(impl_ref) => {
                 write!(f, "{}", impl_ref.with_ctx(ctx))
