@@ -257,6 +257,9 @@ and cli_options = {
   no_serialize : bool;  (** Don't serialize the final (U)LLBC to a file. *)
   skip_borrowck : bool;
       (** If activated, this skips borrow-checking of the crate. *)
+  erase_body_lifetimes : bool;
+      (** Don't generate distinct [Region::Body] lifetimes inside function
+          bodies; use [Region::Erased] instead. *)
   no_typecheck : bool;  (** Skip the typecheck passes. *)
   no_normalize : bool;  (** Don't normalize associated types. *)
   no_reorder_decls : bool;

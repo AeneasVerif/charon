@@ -191,6 +191,9 @@ Options:
           
           [aliases: --no-borrow-check]
 
+      --erase-body-lifetimes
+          Don't generate distinct `Region::Body` lifetimes inside function bodies; use `Region::Erased` instead
+
       --no-typecheck
           Skip the typecheck passes
 

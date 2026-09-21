@@ -1886,6 +1886,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      in
      let* no_serialize = bool_of_postcard ctx st in
      let* skip_borrowck = bool_of_postcard ctx st in
+     let* erase_body_lifetimes = bool_of_postcard ctx st in
      let* no_typecheck = bool_of_postcard ctx st in
      let* no_normalize = bool_of_postcard ctx st in
      let* no_reorder_decls = bool_of_postcard ctx st in
@@ -1943,6 +1944,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           format;
           no_serialize;
           skip_borrowck;
+          erase_body_lifetimes;
           no_typecheck;
           no_normalize;
           no_reorder_decls;

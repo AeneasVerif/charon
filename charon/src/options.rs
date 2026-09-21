@@ -323,6 +323,10 @@ pub struct CliOpts {
     )]
     #[serde(default)]
     pub skip_borrowck: bool,
+    /// Don't generate distinct `Region::Body` lifetimes inside function bodies; use `Region::Erased` instead.
+    #[clap(long)]
+    #[serde(default)]
+    pub erase_body_lifetimes: bool,
     /// Skip the typecheck passes.
     #[clap(long)]
     #[serde(default)]
@@ -529,6 +533,7 @@ impl CliOpts {
                     self.no_typecheck = true;
                     self.no_reorder_decls = true;
                     self.no_compute_layout_guarantees = true;
+                    self.erase_body_lifetimes = true;
                     self.precise_drops = true;
                     self.consts = Some(ConstHandling::Values);
                     self.ullbc = true;
@@ -739,6 +744,8 @@ pub struct TranslateOptions {
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
     /// List of traits for which we transform associated types to type parameters.
     pub lift_associated_types: Vec<NamePattern>,
+    /// Use `Region::Erased` instead of fresh `Region::Body` lifetimes inside function bodies.
+    pub erase_body_lifetimes: bool,
     /// Skip the typecheck passes.
     pub no_typecheck: bool,
     /// Don't normalize associated types.
@@ -899,6 +906,7 @@ impl TranslateOptions {
             translate_all_methods: options.translate_all_methods,
             eager_vtables: options.eager_vtables,
             duplicate_defaulted_methods: options.duplicate_defaulted_methods,
+            erase_body_lifetimes: options.erase_body_lifetimes,
             no_typecheck: options.no_typecheck,
             no_normalize: options.no_normalize,
             no_reorder_decls: options.no_reorder_decls,
