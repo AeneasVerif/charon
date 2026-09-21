@@ -22,7 +22,7 @@ use serde_state::{DeserializeState, SerializeState};
     DriveTwo,
 )]
 #[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
-pub struct TraitRef(pub HashConsed<TraitRefContents>);
+pub struct TraitRef(pub HashConsed<WithCachedTypeInfo<TraitRefContents>>);
 
 #[derive(
     Debug,
@@ -246,7 +246,7 @@ impl TraitRef {
     /// Get mutable access to the contents. This cloned the value and will re-intern the modified
     /// value at the end of the function.
     pub fn with_contents_mut<R>(&mut self, f: impl FnOnce(&mut TraitRefContents) -> R) -> R {
-        self.0.with_inner_mut(f)
+        self.0.with_inner_mut(|contents| contents.with_value_mut(f))
     }
 
     /// Construct a proof of the chosen parent clause. Returns `None` if the crate is missing the
@@ -281,7 +281,7 @@ impl TraitRef {
 
 impl TraitRefContents {
     pub fn intern(self) -> TraitRef {
-        TraitRef(HashConsed::new(self))
+        TraitRef(HashConsed::new(WithCachedTypeInfo::new(self)))
     }
 }
 
@@ -297,7 +297,7 @@ impl BuiltinImplData {
 }
 
 impl std::ops::Deref for TraitRef {
-    type Target = TraitRefContents;
+    type Target = WithCachedTypeInfo<TraitRefContents>;
     fn deref(&self) -> &Self::Target {
         &self.0
     }

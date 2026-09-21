@@ -8,12 +8,14 @@ use crate::ast::*;
 pub mod regions;
 pub mod substitute;
 pub mod trait_proofs;
+pub mod type_info;
 pub mod types;
 pub mod vars;
 
 pub use regions::*;
 pub use substitute::*;
 pub use trait_proofs::*;
+pub use type_info::*;
 pub use types::*;
 pub use vars::*;
 

@@ -135,6 +135,10 @@ pub(crate) fn generate(
         "TraitTypeConstraintId",
         "charon_lib::ids::index_vec::IndexVec",
         "charon_lib::ids::index_map::IndexMap",
+        "InternalBitFlags",
+        "charon_lib::ast::type_level::type_info::TypeFlags",
+        "charon_lib::ast::type_level::type_info::TypeInfo",
+        "charon_lib::ast::type_level::type_info::WithCachedTypeInfo",
     ];
 
     #[rustfmt::skip]
@@ -160,6 +164,13 @@ pub(crate) fn generate(
         let mut all_types: HashSet<_> = ctx.children_of("TranslatedCrate");
         all_types.insert(ctx.id_from_name("indexmap::map::IndexMap")); // Add this one foreign type
         all_types.remove(&ctx.id_from_name("charon_lib::ids::index_map::IndexMap"));
+        // Hide these from OCaml.
+        all_types.remove(&ctx.id_from_name("InternalBitFlags"));
+        all_types.remove(&ctx.id_from_name("charon_lib::ast::type_level::type_info::TypeFlags"));
+        all_types.remove(&ctx.id_from_name("charon_lib::ast::type_level::type_info::TypeInfo"));
+        all_types.remove(
+            &ctx.id_from_name("charon_lib::ast::type_level::type_info::WithCachedTypeInfo"),
+        );
         let all_llbc_types: HashSet<_> =
             ctx.children_of_many(&["charon_lib::ast::bodies::structured::Block"]);
         let all_ullbc_types: HashSet<_> = ctx.children_of_many(&[

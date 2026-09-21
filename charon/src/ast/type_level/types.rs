@@ -22,7 +22,7 @@ use serde_state::{DeserializeState, SerializeState};
     DriveTwo,
 )]
 #[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
-pub struct Ty(pub HashConsed<TyKind>);
+pub struct Ty(pub HashConsed<WithCachedTypeInfo<TyKind>>);
 
 /// A type.
 ///
@@ -356,7 +356,7 @@ macro_rules! static_type {
 
 impl Ty {
     pub fn new(kind: TyKind) -> Self {
-        Ty(HashConsed::new(kind))
+        Ty(HashConsed::new(WithCachedTypeInfo::new(kind)))
     }
 
     pub fn kind(&self) -> &TyKind {
@@ -364,7 +364,7 @@ impl Ty {
     }
 
     pub fn with_kind_mut<R>(&mut self, f: impl FnOnce(&mut TyKind) -> R) -> R {
-        self.0.with_inner_mut(f)
+        self.0.with_inner_mut(|kind| kind.with_value_mut(f))
     }
 
     /// Return the unit type
@@ -648,9 +648,12 @@ impl From<TyKind> for Ty {
 
 /// Convenience impl.
 impl std::ops::Deref for Ty {
-    type Target = TyKind;
-
+    type Target = WithCachedTypeInfo<TyKind>;
     fn deref(&self) -> &Self::Target {
-        self.kind()
+        &self.0
     }
 }
+
+/// Dummy impl, only there to avoid overflow computing whether our types are `Send` given the giant
+/// recursive knot of types we have.
+unsafe impl Send for Ty {}
