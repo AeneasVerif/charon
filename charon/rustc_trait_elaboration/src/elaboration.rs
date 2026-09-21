@@ -6,6 +6,7 @@ use std::collections::{HashMap, hash_map::Entry};
 
 use rustc_hir::def_id::DefId;
 use rustc_middle::traits::CodegenObligationError;
+use rustc_middle::ty::print::with_no_trimmed_paths;
 use rustc_middle::ty::{self, *};
 use rustc_span::{DUMMY_SP, Symbol};
 use rustc_trait_selection::traits::ImplSource;
@@ -178,7 +179,20 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         // also not depend on the owner, as it would break item identity (see charon#1391)
         let existential_ty = ParamTy::new(u32::MAX, Symbol::intern("_dyn"));
         let self_ty = existential_ty.to_ty(tcx);
-        let predicates = epreds.iter().map(|pred| pred.with_self_ty(tcx, self_ty));
+        // Sort projections and auto traits by path to get the same order on all platforms.
+        // See https://github.com/rust-lang/rust/blob/923c95cdf5ba65cea505aa2ea829f578e1506ed8/compiler/rustc_middle/src/ty/print/pretty.rs#L1474-L1481
+        let predicates = epreds
+            .iter()
+            .sorted_by_cached_key(|pred| match pred.skip_binder() {
+                ExistentialPredicate::Trait(_) => None,
+                ExistentialPredicate::Projection(proj) => {
+                    Some((0, with_no_trimmed_paths!(tcx.def_path_str(proj.def_id))))
+                }
+                ExistentialPredicate::AutoTrait(def_id) => {
+                    Some((1, with_no_trimmed_paths!(tcx.def_path_str(def_id))))
+                }
+            })
+            .map(|pred| pred.with_self_ty(tcx, self_ty));
         let predicates = ItemPredicates::new_unmapped(DUMMY_SP, predicates);
 
         let mut searcher = self.clone();
