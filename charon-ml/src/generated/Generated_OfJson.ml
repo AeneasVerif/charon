@@ -657,16 +657,6 @@ and fun_decl_id_of_json (ctx : of_json_ctx) (js : json) :
     | x -> FunDeclId.id_of_json ctx x
     | _ -> Error "")
 
-and fun_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
-    (fun_decl_ref, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("id", id); ("generics", generics) ] ->
-        let* id = fun_decl_id_of_json ctx id in
-        let* generics = box_of_json generic_args_of_json ctx generics in
-        Ok ({ id; generics } : fun_decl_ref)
-    | _ -> Error "")
-
 and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -1038,7 +1028,7 @@ and provenance_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = global_decl_ref_of_json ctx _0 in
         Ok (ProvGlobal _0)
     | `Assoc [ ("Function", _0) ] ->
-        let* _0 = fun_decl_ref_of_json ctx _0 in
+        let* _0 = fn_ptr_of_json ctx _0 in
         Ok (ProvFunction _0)
     | `String "Unknown" -> Ok ProvUnknown
     | _ -> Error "")
@@ -2551,6 +2541,16 @@ and fun_decl_of_json (ctx : of_json_ctx) (js : json) : (fun_decl, string) result
         let* src = fun_source_of_json ctx src in
         let* body = body_of_json ctx body in
         Ok ({ def_id; item_meta; generics; signature; src; body } : fun_decl)
+    | _ -> Error "")
+
+and fun_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
+    (fun_decl_ref, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("id", id); ("generics", generics) ] ->
+        let* id = fun_decl_id_of_json ctx id in
+        let* generics = box_of_json generic_args_of_json ctx generics in
+        Ok ({ id; generics } : fun_decl_ref)
     | _ -> Error "")
 
 and fun_source_of_json (ctx : of_json_ctx) (js : json) :

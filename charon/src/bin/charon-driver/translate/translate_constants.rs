@@ -68,10 +68,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     hax::ConstantByteProvenance::Global(item) => {
                         Provenance::Global(self.translate_global_decl_ref(span, item)?)
                     }
-                    hax::ConstantByteProvenance::Function(item) => {
-                        let fun_ref: FunDeclRef =
-                            self.translate_item(span, item, TransItemSourceKind::Fun)?;
-                        Provenance::Function(fun_ref)
+                    hax::ConstantByteProvenance::Function(item) => Provenance::Function(
+                        self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?,
+                    ),
+                    hax::ConstantByteProvenance::ClosureAsFn(closure) => {
+                        let fn_ref = self.translate_stateless_closure_as_fn_ref(span, closure)?;
+                        Provenance::Function(self.erase_region_binder(fn_ref).into())
                     }
                     hax::ConstantByteProvenance::Unknown => Provenance::Unknown,
                 };

@@ -196,7 +196,7 @@ pub struct FloatValue {
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Prov"))]
 pub enum Provenance {
     Global(GlobalDeclRef),
-    Function(FunDeclRef),
+    Function(FnPtr),
     Unknown,
 }
 

@@ -1,4 +1,3 @@
-//@ known-failure
 //@ charon-args=--consts values
 #![feature(fn_traits, unboxed_closures)]
 

@@ -104,6 +104,8 @@ pub enum ConstantByteProvenance {
     Global(ItemRef),
     /// A pointer to a function.
     Function(ItemRef),
+    /// A pointer to a stateless closure's function, coerced to a function pointer.
+    ClosureAsFn(ClosureArgs),
     /// A pointer to anything else (an anonymous allocation, a vtable...).
     Unknown,
 }

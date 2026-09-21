@@ -1,62 +1,230 @@
+# Final LLBC before serialization:
 
-thread 'rustc' panicked at src/ast/items/item_ids.rs:383:1:
-assertion failed: item.trait_ref.is_none()
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting item `alloc4`.
- --> tests/ui/regressions/closure-fn-ptr-in-raw-memory.rs:1:1
-  |
-1 | //@ known-failure
-  | ^
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Tuple
+#[fundamental]
+#[lang_item(Tuple)]
+pub trait Tuple<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::mem::maybe_uninit::MaybeUninit
+#[lang_item(MaybeUninit)]
+pub opaque type MaybeUninit<T>
+where
+    TraitClause0: (T: Sized),
+
+// Full name: core::ops::function::FnOnce
+#[fundamental]
+#[lang_item(FnOnce)]
+pub trait FnOnce<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self::Output: Sized)
+    type Output
+    fn call_once;
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+}
+
+// Full name: core::ops::function::FnMut
+#[fundamental]
+#[lang_item(FnMut)]
+pub trait FnMut<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnOnce<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    fn call_mut<'_0_1>;
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
+}
+
+// Full name: core::ops::function::Fn
+#[fundamental]
+#[lang_item(Fn)]
+pub trait Fn<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnMut<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    fn call<'_0_1>;
+    vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
+}
+
+struct () {}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+struct (_,)<A> {
+  _0: A,
+}
+
+static test_crate::{promoted_const}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(&{as_fn}[0], &{as_fn}[1], &{as_fn}[2], &{as_fn}[3], &{as_fn}[4], &{as_fn}[5], &{as_fn}[6], &{as_fn}[7])
+
+static test_crate::{promoted_const#1}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(&{built_in impl Clone for (u8, u8)}::clone<'_>[0], &{built_in impl Clone for (u8, u8)}::clone<'_>[1], &{built_in impl Clone for (u8, u8)}::clone<'_>[2], &{built_in impl Clone for (u8, u8)}::clone<'_>[3], &{built_in impl Clone for (u8, u8)}::clone<'_>[4], &{built_in impl Clone for (u8, u8)}::clone<'_>[5], &{built_in impl Clone for (u8, u8)}::clone<'_>[6], &{built_in impl Clone for (u8, u8)}::clone<'_>[7])
+
+static test_crate::{promoted_const#2}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(&{built_in impl Fn<(u8,)> for fn(u8) -> u8}::call<'_>[0], &{built_in impl Fn<(u8,)> for fn(u8) -> u8}::call<'_>[1], &{built_in impl Fn<(u8,)> for fn(u8) -> u8}::call<'_>[2], &{built_in impl Fn<(u8,)> for fn(u8) -> u8}::call<'_>[3], &{built_in impl Fn<(u8,)> for fn(u8) -> u8}::call<'_>[4], &{built_in impl Fn<(u8,)> for fn(u8) -> u8}::call<'_>[5], &{built_in impl Fn<(u8,)> for fn(u8) -> u8}::call<'_>[6], &{built_in impl Fn<(u8,)> for fn(u8) -> u8}::call<'_>[7])
+
+// Full name: test_crate::A
+struct A {
+  _0: fn() -> u8,
+}
+
+// Full name: test_crate::CLOSURE_STATELESS
+static CLOSURE_STATELESS: &'static A = &test_crate::{promoted_const}
+
+// Full name: test_crate::CLOSURE_STATELESS::{closure}
+struct {closure} {}
+
+// Full name: test_crate::CLOSURE_STATELESS::{impl Fn<()> for {closure}}::call
+fn call<'_0>(_1: &'_0 {closure}, tupled_args: ()) -> u8
+{
+    let _0: u8; // return
+    let _1: &'1 {closure}; // arg #1
+    let tupled_args: (); // arg #2
+
+    storage_live(_0)
+    _0 = const 1u8
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::CLOSURE_STATELESS::{impl FnMut<()> for {closure}}::call_mut
+fn call_mut<'_0>(state: &'_0 mut {closure}, args: ()) -> u8
+{
+    let _0: u8; // return
+    let state: &'_0 mut {closure}; // arg #1
+    let args: (); // arg #2
+    let _3: &'0 {closure}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &(*state)
+    _0 = call<'2>(move _3, move args)
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::CLOSURE_STATELESS::{impl FnOnce<()> for {closure}}::call_once
+fn call_once(_1: {closure}, _2: ()) -> u8
+{
+    let _0: u8; // return
+    let _1: {closure}; // arg #1
+    let _2: (); // arg #2
+    let _3: &'1 mut {closure}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &mut _1
+    _0 = call_mut<'2>(move _3, move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::CLOSURE_STATELESS::{impl FnOnce<()> for {closure}}
+impl "impl_FnOnce_unit_for_closure" FnOnce<()> for {closure} {
+    proof ImpliedClause0: ({closure}: MetaSized) = {built_in impl MetaSized for {closure}}
+    proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
+    proof ImpliedClause3: (u8: Sized) = {built_in impl Sized for u8}
+    type Output = u8
+    fn call_once = call_once
+    vtable: lazy
+}
+
+// Full name: test_crate::CLOSURE_STATELESS::{impl FnMut<()> for {closure}}
+impl "impl_FnMut_unit_for_closure" FnMut<()> for {closure} {
+    proof ImpliedClause0: ({closure}: MetaSized) = {built_in impl MetaSized for {closure}}
+    proof ImpliedClause1: ({closure}: FnOnce<()>) = impl_FnOnce_unit_for_closure
+    proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
+    fn call_mut<'_0_1> = call_mut<'_0_1>
+    vtable: lazy
+}
+
+// Full name: test_crate::CLOSURE_STATELESS::{impl Fn<()> for {closure}}
+impl "impl_Fn_unit_for_closure" Fn<()> for {closure} {
+    proof ImpliedClause0: ({closure}: MetaSized) = {built_in impl MetaSized for {closure}}
+    proof ImpliedClause1: ({closure}: FnMut<()>) = impl_FnMut_unit_for_closure
+    proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
+    proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
+    fn call<'_0_1> = call<'_0_1>
+    vtable: lazy
+}
+
+// Full name: test_crate::CLOSURE_STATELESS::{closure}::{as_fn}
+fn {as_fn}() -> u8
+{
+    let _0: u8; // return
+    let args: (); // local
+    let state: {closure}; // local
+
+    storage_live(_0)
+    storage_live(args)
+    storage_live(state)
+    args = ()
+    state = {closure} {  }
+    _0 = call_once(move state, move args)
+    ↳⚡ storage_dead(state)
+        storage_dead(args)
+        unwind_continue
+    storage_dead(state)
+    storage_dead(args)
+    return
+}
+
+// Full name: test_crate::B
+struct B {
+  _0: fn<'_0_1>(&'_0_1 (u8, u8)) -> (u8, u8),
+}
+
+// Full name: test_crate::BUILTIN_IMPL
+static BUILTIN_IMPL: &'static B = &test_crate::{promoted_const#1}
+
+// Full name: test_crate::C
+struct C {
+  _0: extern "rust-call" fn<'_0_1>(&'_0_1 fn(u8) -> u8, (u8,)) -> u8,
+}
+
+// Full name: test_crate::FN_PTR_CALL
+static FN_PTR_CALL: &'static C = &test_crate::{promoted_const#2}
 
 
-thread 'rustc' panicked at src/ast/items/item_ids.rs:383:1:
-assertion failed: item.trait_ref.is_none()
-error: Thread panicked when extracting item `alloc9`.
- --> tests/ui/regressions/closure-fn-ptr-in-raw-memory.rs:1:1
-  |
-1 | //@ known-failure
-  | ^
 
-
-thread 'rustc' panicked at src/ast/items/item_ids.rs:383:1:
-assertion failed: item.trait_ref.is_none()
-error: Thread panicked when extracting item `alloc14`.
- --> tests/ui/regressions/closure-fn-ptr-in-raw-memory.rs:1:1
-  |
-1 | //@ known-failure
-  | ^
-
-
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_items.rs:420:17:
-assertion failed: assoc.has_value
-error: Thread panicked when extracting item `core::ops::function::FnOnce::call_once`.
- --> /rustc/library/core/src/ops/function.rs:250:5
-
-note: the error occurred when translating `core::ops::function::FnOnce::call_once`, which is (transitively) used at the following location(s):
- --> tests/ui/regressions/closure-fn-ptr-in-raw-memory.rs:1:1
-  |
-1 | //@ known-failure
-  | -
-
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_items.rs:420:17:
-assertion failed: assoc.has_value
-error: Thread panicked when extracting item `core::clone::Clone::clone`.
- --> /rustc/library/core/src/clone.rs:236:5
-
-note: the error occurred when translating `core::clone::Clone::clone`, which is (transitively) used at the following location(s):
- --> tests/ui/regressions/closure-fn-ptr-in-raw-memory.rs:1:1
-  |
-1 | //@ known-failure
-  | -
-
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_items.rs:420:17:
-assertion failed: assoc.has_value
-error: Thread panicked when extracting item `core::ops::function::Fn::call`.
- --> /rustc/library/core/src/ops/function.rs:79:5
-
-note: the error occurred when translating `core::ops::function::Fn::call`, which is (transitively) used at the following location(s):
- --> tests/ui/regressions/closure-fn-ptr-in-raw-memory.rs:1:1
-  |
-1 | //@ known-failure
-  | -
-ERROR Charon failed to translate this code (6 errors)

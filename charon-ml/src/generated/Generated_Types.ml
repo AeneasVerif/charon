@@ -435,7 +435,7 @@ and predicate_origin =
 
 and provenance =
   | ProvGlobal of global_decl_ref
-  | ProvFunction of fun_decl_ref
+  | ProvFunction of fn_ptr
   | ProvUnknown
 
 and ref_kind = RMut | RShared
