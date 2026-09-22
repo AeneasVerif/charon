@@ -194,7 +194,11 @@ impl TransformCtx {
     pub fn for_each_item_mut(&mut self, mut f: impl for<'a> FnMut(&'a mut Self, ItemRefMut<'a>)) {
         for id in self.translated.all_ids() {
             if let Some(mut decl) = self.translated.remove_item_temporarily(id) {
-                f(self, decl.as_mut());
+                let is_local = decl.as_ref().item_meta().is_local;
+                self.with_def_id(id, is_local, |ctx| f(ctx, decl.as_mut()));
+                if self.errors.borrow().item_has_errors(id) {
+                    decl.as_mut().item_meta().has_errors = true;
+                }
                 self.translated.put_item_back(id, decl);
             }
         }

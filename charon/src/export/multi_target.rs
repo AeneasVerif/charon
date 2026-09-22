@@ -357,6 +357,7 @@ impl ZipAst for ItemComparer<'_> {
             opacity: left_opacity,
             lang_item: left_lang_item,
             diagnostic_item: left_diagnostic_item,
+            has_errors: left_has_errors,
         } = left;
         let ItemMeta {
             name: right_name,
@@ -367,6 +368,7 @@ impl ZipAst for ItemComparer<'_> {
             opacity: right_opacity,
             lang_item: right_lang_item,
             diagnostic_item: right_diagnostic_item,
+            has_errors: right_has_errors,
         } = right;
 
         self.visit(left_name, right_name)?;
@@ -375,7 +377,9 @@ impl ZipAst for ItemComparer<'_> {
         self.visit(left_is_local, right_is_local)?;
         self.visit(left_opacity, right_opacity)?;
         self.visit(left_lang_item, right_lang_item)?;
-        self.visit(left_diagnostic_item, right_diagnostic_item)
+        self.visit(left_diagnostic_item, right_diagnostic_item)?;
+        self.visit(left_has_errors, right_has_errors)?;
+        ControlFlow::Continue(())
     }
 
     fn visit_type_decl(&mut self, left: &TypeDecl, right: &TypeDecl) -> ControlFlow<Self::Break> {

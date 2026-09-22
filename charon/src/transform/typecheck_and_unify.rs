@@ -648,6 +648,9 @@ impl TransformPass for Check {
     }
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         ctx.for_each_item_mut(|ctx, item| {
+            if item.as_ref().item_meta().has_errors {
+                return;
+            }
             // Accept type errors within copies of default methods. See docs for
             // `accept_type_errors` for why.
             let accept_type_errors = matches!(

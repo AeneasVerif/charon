@@ -51,6 +51,7 @@ impl Transform {
             attr_info: fun_decl.item_meta.attr_info,
             lang_item: fun_decl.item_meta.lang_item,
             diagnostic_item: fun_decl.item_meta.diagnostic_item,
+            has_errors: fun_decl.item_meta.has_errors,
         };
         fun_decl.src = FunSource::TraitImpl {
             impl_ref: TraitImplRef {

@@ -2841,6 +2841,7 @@ and item_meta_of_json (ctx : of_json_ctx) (js : json) :
           ("opacity", opacity);
           ("lang_item", lang_item);
           ("diagnostic_item", diagnostic_item);
+          ("has_errors", has_errors);
         ] ->
         let* name = name_of_json ctx name in
         let* span = span_of_json ctx span in
@@ -2852,6 +2853,7 @@ and item_meta_of_json (ctx : of_json_ctx) (js : json) :
         let* diagnostic_item =
           option_of_json string_of_json ctx diagnostic_item
         in
+        let* has_errors = bool_of_json ctx has_errors in
         Ok
           ({
              name;
@@ -2862,6 +2864,7 @@ and item_meta_of_json (ctx : of_json_ctx) (js : json) :
              opacity;
              lang_item;
              diagnostic_item;
+             has_errors;
            }
             : item_meta)
     | _ -> Error "")
