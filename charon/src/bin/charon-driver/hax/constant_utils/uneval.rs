@@ -43,7 +43,6 @@ pub(crate) fn scalar_int_to_constant_literal<'tcx, S: UnderOwnerState<'tcx>>(
             let v = x.to_bits_unchecked();
             bits_and_type_to_float_constant_literal(v, kind.sinto(s))
         }
-        ty::Pat(inner, _) => scalar_int_to_constant_literal(s, x, *inner),
         _ => {
             let ty_sinto: Ty = ty.sinto(s);
             supposely_unreachable_fatal!(
@@ -176,9 +175,21 @@ pub(crate) fn valtree_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
     ty: rustc_middle::ty::Ty<'tcx>,
     span: rustc_span::Span,
 ) -> ConstantExpr {
-    let ty = normalize(s.base().tcx, s.typing_env(), ty::Unnormalized::new_wip(ty));
+    let tcx = s.base().tcx;
+    let mut ty = normalize(tcx, s.typing_env(), ty::Unnormalized::new_wip(ty));
+
+    // Reveal opaque types.
+    if let ty::Alias(_, alias) = ty.kind()
+        && let ty::AliasTyKind::Opaque { def_id } = alias.kind
+    {
+        let hidden_ty = tcx.type_of(def_id).instantiate(tcx, alias.args);
+        ty = normalize(tcx, s.typing_env(), hidden_ty);
+    }
 
     let kind = match (&*valtree, ty.kind()) {
+        (_, ty::Pat(inner_ty, _)) => {
+            return valtree_to_constant_expr(s, valtree, *inner_ty, span);
+        }
         (_, ty::Ref(_, inner_ty, _)) => {
             ConstantExprKind::Borrow(valtree_to_constant_expr(s, valtree, *inner_ty, span))
         }
@@ -223,6 +234,11 @@ pub(crate) fn valtree_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
                     })
                     .collect(),
             }
+        }
+        (ty::ValTreeKind::Branch(fields), ty::FnDef(def_id, args)) if fields.is_empty() => {
+            // Note: loss of precision, we erase the bound vars.
+            let args = erase_free_regions(s.base().tcx, args.skip_binder());
+            ConstantExprKind::FnDef(translate_item_ref(s, *def_id, args))
         }
         (ty::ValTreeKind::Leaf(x), ty::RawPtr(_, _)) => {
             let raw_address = x.to_bits_unchecked();

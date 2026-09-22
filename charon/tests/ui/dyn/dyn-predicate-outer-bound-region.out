@@ -1,7 +1,5 @@
 # Final LLBC before serialization:
 
-opaque type core::marker::MetaSized::{vtable}
-
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -73,70 +71,13 @@ struct (_,)<A> {
   _0: A,
 }
 
-// Full name: test_crate::dyn_fn_arg
-pub fn dyn_fn_arg<'a, '_1>(_1: &'_1 (dyn Fn<(&'a i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '_1))
-where
-    RegionOutlives0: 'a: '_1,
-{
-    let _0: (); // return
-    let _1: &'19 (dyn Fn<(&'20 i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '21); // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::hrtb_fn_pointer
-pub fn hrtb_fn_pointer(_1: fn<'a>(&'a (dyn Fn<(&'a u8,), ImpliedClause1::ImpliedClause1::Output = ()> + 'a)))
-{
-    let _0: (); // return
-    let _1: fn<'a>(&'a (dyn Fn<(&'a u8,), ImpliedClause1::ImpliedClause1::Output = ()> + 'a)); // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::hrtb_dyn_fn
-pub fn hrtb_dyn_fn<'_0>(_1: &'_0 (dyn for<'a, '_1_2> Fn<(&'_1_2 (dyn Fn<(&'a i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '_1_2),), ImpliedClause1::ImpliedClause1::Output = ()> + '_0))
-{
-    let _0: (); // return
-    let _1: &'103 (dyn for<'a, '_1_2> Fn<(&'_1_2 (dyn Fn<(&'a i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '_1_2),), ImpliedClause1::ImpliedClause1::Output = ()> + '107); // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    _0 = ()
-    storage_dead(_1)
-    return
-}
-
-struct test_crate::Obj::{vtable}<'a, Ty0> {
-  size: usize,
-  align: usize,
-  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn Obj<'a, V = Ty0>)),
-  super_trait_0: &'static core::marker::MetaSized::{vtable},
-}
-
-// Full name: test_crate::Obj
-pub trait Obj<'a, Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self::V: Sized)
-    type V
-    vtable: test_crate::Obj::{vtable}<'a, Self::V>
-}
-
 // Full name: test_crate::f
-pub fn f<'a, '_1>(_1: &'_1 (dyn Obj<'a, V = i32> + '_1))
+pub fn f<'a, '_1>(_1: &'_1 (dyn Fn<(&'a (),), ImpliedClause1::ImpliedClause1::Output = ()> + '_1))
 where
     RegionOutlives0: 'a: '_1,
 {
     let _0: (); // return
-    let _1: &'7 (dyn Obj<'8, V = i32> + '9); // arg #1
+    let _1: &'19 (dyn Fn<(&'20 (),), ImpliedClause1::ImpliedClause1::Output = ()> + '21); // arg #1
 
     storage_live(_0)
     _0 = ()

@@ -1,0 +1,12 @@
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:46:43:
+Found unexpected `Self`
+                        type when constructing vtable
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting item `test_crate::Callback`.
+  --> tests/ui/dyn/dyn-supertrait-projection-vtable.rs:11:1
+   |
+11 | trait Callback<T: Foo>: Super<T::V, A = ()> {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (1 errors)

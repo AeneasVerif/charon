@@ -2,16 +2,27 @@
 
 struct () {}
 
+// Full name: test_crate::foo
+fn foo() -> foo
+{
+    let _0: foo; // return
+
+    storage_live(_0)
+    _0 = const foo
+    return
+}
+
 // Full name: test_crate::main
 fn main()
 {
     let _0: (); // return
-    let _1: main; // anonymous local
+    let _1: foo; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = const main
+    _1 = foo()
+    ↳⚡ unwind_continue
     storage_dead(_1)
     _0 = ()
     return

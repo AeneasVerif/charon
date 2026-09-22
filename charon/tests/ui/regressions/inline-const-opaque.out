@@ -2,17 +2,24 @@
 
 struct () {}
 
+// Full name: test_crate::opaque
+fn opaque()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
 // Full name: test_crate::main
 fn main()
 {
     let _0: (); // return
-    let _1: main; // anonymous local
 
     storage_live(_0)
     _0 = ()
-    storage_live(_1)
-    _1 = const main
-    storage_dead(_1)
     _0 = ()
     return
 }

@@ -1,5 +1,3 @@
-//@ known-failure
-
 pub trait Trait<'a> {}
 
 pub fn use_type<T: 'static>() {}
