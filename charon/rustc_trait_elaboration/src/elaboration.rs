@@ -110,10 +110,12 @@ pub struct PredicateSearcher<'tcx, Id: ItemId = DefId> {
     /// accessible.
     implicit_self_clause: bool,
     /// Cache the `ItemRef` translations. This is fast because `GenericArgsRef` is interned.
-    pub(crate) item_refs_cache:
-        HashMap<(Id, ty::GenericArgsRef<'tcx>, AssocItemResolution), ItemRef<'tcx, Id>>,
+    pub(crate) item_refs_cache: HashMap<ItemRefKey<'tcx, Id>, ItemRef<'tcx, Id>>,
     /// Cache of trait refs to resolved trait proofs.
     trait_proofs_cache: HashMap<ty::PolyTraitRef<'tcx>, TraitProof<'tcx, Id>>,
+    /// Whether resolutions of concrete (parameter-free) values in this context can be shared
+    /// with other owners, i.e. `!self.has_concrete_clauses()`.
+    pub(crate) has_no_concrete_clauses: bool,
 }
 
 impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
@@ -131,7 +133,9 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             implicit_self_clause: initial_self_pred.is_some(),
             item_refs_cache: Default::default(),
             trait_proofs_cache: Default::default(),
+            has_no_concrete_clauses: false,
         };
+        out.has_no_concrete_clauses = !out.has_concrete_clauses();
         out.insert_predicates(
             state,
             initial_self_pred.map(|clause| ItemClause {
@@ -144,6 +148,15 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             ItemPredicates::required_recursively(elab_ctx, state, owner_id).predicates,
         );
         out
+    }
+
+    /// Whether the environment has where-clauses that apply to parameter-free types.
+    /// The solver prioritises these, so trait proofs then depend on the owner.
+    pub fn has_concrete_clauses(&self) -> bool {
+        self.typing_env
+            .param_env
+            .caller_bounds()
+            .any(|clause| !clause.has_non_region_param())
     }
 
     /// Insert the bound clauses in the search context. Prefer inserting them all at once as this
@@ -417,6 +430,28 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         if let Some(trait_proof) = self.trait_proofs_cache.get(tref).copied() {
             return trait_proof;
         }
+        // Concrete trait refs resolve the same in every owner without concrete clauses.
+        let concrete = self.has_no_concrete_clauses && !tref.has_non_region_param();
+        if concrete
+            && let Some(trait_proof) = self.elab_ctx.concrete_trait_proofs().borrow().get(tref)
+        {
+            return *trait_proof;
+        }
+        let trait_proof = self.resolve_uncached(state, tref);
+        if concrete {
+            self.elab_ctx
+                .concrete_trait_proofs()
+                .borrow_mut()
+                .insert(*tref, trait_proof);
+        }
+        trait_proof
+    }
+
+    fn resolve_uncached(
+        &mut self,
+        state: &Id::State<'tcx>,
+        tref: &PolyTraitRef<'tcx>,
+    ) -> TraitProof<'tcx, Id> {
         use rustc_trait_selection::traits::{
             BuiltinImplSource, ImplSource, ImplSourceUserDefinedData,
         };

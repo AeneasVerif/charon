@@ -64,7 +64,7 @@ mod types {
     use rustc_hir::def_id::{CrateNum, LOCAL_CRATE};
     use rustc_middle::ty;
     use rustc_span::symbol::Symbol;
-    use rustc_trait_elaboration::ElaborationCtx;
+    use rustc_trait_elaboration::{ElaborationCtx, ItemRefKey};
     use std::{cell::RefCell, sync::Arc};
 
     pub struct LocalContextS {
@@ -162,7 +162,7 @@ mod types {
         /// Cache the `Ty` translations.
         pub tys: HashMap<ty::Ty<'tcx>, Ty>,
         /// Cache the `ItemRef` translations. This is fast because `GenericArgsRef` is interned.
-        pub item_refs: HashMap<(DefId, ty::GenericArgsRef<'tcx>, AssocItemResolution), ItemRef>,
+        pub item_refs: HashMap<ItemRefKey<'tcx, DefId>, ItemRef>,
         /// Cache of trait refs to resolved trait proofs.
         pub trait_proofs: HashMap<ty::PolyTraitRef<'tcx>, crate::hax::traits::TraitProof>,
         /// Generics for this item, if it is virtual.
