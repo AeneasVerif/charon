@@ -1,0 +1,21 @@
+error: internal compiler error: /rustc-dev/923c95cdf5ba65cea505aa2ea829f578e1506ed8/compiler/rustc_infer/src/infer/region_constraints/mod.rs:494:21: cannot relate bound region: '!1 == '^1_0.Named(test_crate::f::'a)
+
+
+thread 'rustc' panicked at /rustc-dev/923c95cdf5ba65cea505aa2ea829f578e1506ed8/compiler/rustc_infer/src/infer/region_constraints/mod.rs:494:21:
+cannot relate bound region: '!1 == '^1_0.Named(test_crate::f::'a)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Hax panicked when translating `test_crate::f`.
+ --> tests/ui/dyn/dyn-predicate-outer-bound-region.rs:3:1
+  |
+3 | pub fn f<'a>(_: &dyn Fn(&'a ())) {}
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Item `test_crate::f` caused errors; ignoring.
+ --> tests/ui/dyn/dyn-predicate-outer-bound-region.rs:3:1
+  |
+3 | pub fn f<'a>(_: &dyn Fn(&'a ())) {}
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: aborting due to 1 previous error
+
+ERROR Code failed to compile
