@@ -19,7 +19,7 @@ pub fn enabled() -> bool {
     SETTING.is_some()
 }
 
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Copy, Clone)]
 pub struct Measure {
     pub total: Duration,
     pub own: Duration,

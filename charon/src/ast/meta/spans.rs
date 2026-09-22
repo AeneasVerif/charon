@@ -9,20 +9,8 @@ use std::{borrow::Cow, cmp::Ordering, ops::Range, path::PathBuf};
 generate_index_type!(FileId);
 
 /// A filename.
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    Hash,
-    PartialOrd,
-    Ord,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub enum FileName {
     /// A remapped path (namely paths into stdlib)
     Virtual(PathBuf),
@@ -32,20 +20,8 @@ pub enum FileName {
     NotReal(String),
 }
 
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    Hash,
-    PartialOrd,
-    Ord,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub struct File {
     /// The file identifier.
     #[cfg_attr(feature = "charon_on_charon", charon::opaque)]
@@ -59,21 +35,8 @@ pub struct File {
     pub contents: Option<String>,
 }
 
-#[derive(
-    Debug,
-    Copy,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub struct Loc {
     /// The (1-based) line number.
     pub line: u32,
@@ -82,9 +45,8 @@ pub struct Loc {
 }
 
 /// A snippet of source code within a file.
-#[derive(
-    Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub struct SpanData {
     #[cfg_attr(feature = "charon_on_charon", charon::rename("file"))]
     pub file_id: FileId,
@@ -162,22 +124,15 @@ mod pack {
 
 /// A [`Span`] with its contents laid out, used for serialization and unpacking into a
 /// more readable format.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(
-    Debug,
-    Copy,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
     Serialize,
     Deserialize,
     SerializeState,
     DeserializeState,
     Drive,
     DriveMut,
-    DriveTwo,
+    DriveTwo
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("Span"))]
 #[serde_state(stateless)]

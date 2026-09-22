@@ -91,7 +91,8 @@ mod trait_ref_path {
 
     /// A base clause: the special `Self: Trait` clause present in trait declarations, or a local
     /// clause.
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, EnumIsA, EnumToGetters)]
+    #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    #[derive(EnumIsA, EnumToGetters)]
     pub enum BaseClause {
         SelfClause,
         Local(DeBruijnVar<TraitClauseId>),

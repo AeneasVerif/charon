@@ -14,7 +14,8 @@ pub type ByteCount = u64;
 /// Does not include information about niches.
 /// If the type does not have a fully known layout (e.g. it is ?Sized)
 /// some of the layout parts are not available.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Layout {
     /// The size of the type in bytes.
     pub size: Size,
@@ -38,7 +39,8 @@ pub struct Layout {
 /// Simplified layout of a single variant.
 ///
 /// Maps fields to their offset within the layout.
-#[derive(Debug, Default, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Default, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct VariantLayout {
     /// The offset of each field.
     pub field_offsets: IndexVec<FieldId, OffsetExpr>,
@@ -158,7 +160,8 @@ impl Layout {
 
 /// Decision tree used to determine the active variant by reading memory. Mirrors MiniRust's
 /// `Discriminator`.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(state_implements = DedupSerializerState)]
 pub enum Discriminator {
     /// The variant is known.
@@ -181,7 +184,8 @@ pub enum Discriminator {
 }
 
 /// An expression denoting a size in bytes.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Size {
     /// The size chosen by this rustc run. For sized types, this is a plain integer, and for unsized
     /// types, this is an expression describing how to compute this size based on the values found
@@ -192,7 +196,8 @@ pub struct Size {
 }
 
 /// An expression denoting an offset in bytes.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct OffsetExpr {
     /// The guarantees about this offset that can be relied on according to the Rust Reference.
     pub guarantee: Option<OffsetGuarantee>,
@@ -228,15 +233,13 @@ impl OffsetExpr {
 
 /// Represents whether a type or variant is inhabited. Like rustc's `InhabitedPredicate`, this can
 /// depend on generic parameters and constant values.
-#[derive(
-    Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(state_implements = DedupSerializerState)]
 pub struct InhabitedPredicate(pub HashConsed<InhabitedPredicateKind>);
 
-#[derive(
-    Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(
     feature = "charon_on_charon",
     charon::variants_prefix("InhabitedPredicate")
@@ -455,7 +458,8 @@ impl std::ops::Deref for InhabitedPredicate {
 /// NOTE: This does not include less common/unstable representations such as `#[repr(simd)]`
 /// or the compiler internal `#[repr(linear)]`. Similarly, enum discriminant representations
 /// are encoded in [`Variant::discriminant`] and [`Discriminator`] instead.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize)]
 pub struct ReprOptions {
     pub repr_algo: ReprAlgorithm,
     pub align_modif: Option<AlignmentModifier>,
@@ -466,7 +470,8 @@ pub struct ReprOptions {
 
 /// Describes which layout algorithm is used for representing the corresponding type.
 /// Depends on the `#[repr(...)]` used.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize)]
 pub enum ReprAlgorithm {
     /// The default layout algorithm. Used without an explicit `ŗepr` or for `repr(Rust)`.
     #[default]
@@ -477,13 +482,15 @@ pub enum ReprAlgorithm {
 
 /// Describes modifiers to the alignment and packing of the corresponding type.
 /// Represents `repr(align(n))` and `repr(packed(n))`.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize)]
 pub enum AlignmentModifier {
     Align(ByteCount),
     Pack(ByteCount),
 }
 
-#[derive(Clone, Drive, DriveMut, DriveTwo, SerializeState, DeserializeState)]
+#[derive(Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(stateless)]
 pub struct TargetInfo {
     /// The pointer size of the target in bytes.

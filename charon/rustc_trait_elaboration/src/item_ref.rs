@@ -123,13 +123,13 @@ impl ItemId for DefId {
 }
 
 /// Reference to an item, with generics as well as trait proofs for the required predicates.
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ItemRef<'tcx, Id: ItemId = DefId> {
     // TODO: intern?
     contents: Arc<ItemRefContents<'tcx, Id>>,
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ItemRefContents<'tcx, Id: ItemId = DefId> {
     /// The item being refered to.
     pub def_id: Id,
@@ -160,7 +160,7 @@ impl<'tcx, Id: ItemId> ItemRefContents<'tcx, Id> {
     }
 }
 
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum AssocItemResolution {
     /// Leave trait associated items as plain item references.
     None,

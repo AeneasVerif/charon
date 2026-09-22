@@ -35,7 +35,7 @@ use rustc_span::def_id::DefId as RDefId;
 ///     in_trait = None,
 /// }
 /// ```
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ItemRef {
     pub(crate) contents: HashConsed<ItemRefContents>,
 }
@@ -43,7 +43,7 @@ pub struct ItemRef {
 /// Contents of `ItemRef`.
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: rustc_trait_elaboration::ItemRef<'tcx, DefId>, state: S as s)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ItemRefContents {
     /// The item being refered to.
     #[value(self.def_id.clone())]

@@ -625,7 +625,7 @@ impl VisitAst for TypeCheckVisitor<'_> {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub enum Check {
     /// Check that generics match and unify body lifetimes on a best-effort basis.
     PostTranslation,

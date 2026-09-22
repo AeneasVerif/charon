@@ -461,7 +461,7 @@ impl<'a, T> Substituted<'a, T> {
 /// ensure we don't mix up generics.
 ///
 /// To get the value, use `under_binder_of` or `subst_for`.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct ItemBinder<ItemId, T> {
     pub item_id: ItemId,
     val: T,
@@ -520,7 +520,7 @@ where
 }
 
 /// Dummy item identifier that represents the current item when not ambiguous.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct CurrentItem;
 
 impl<T> ItemBinder<CurrentItem, T> {

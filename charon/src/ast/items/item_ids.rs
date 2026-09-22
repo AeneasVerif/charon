@@ -20,26 +20,16 @@ generate_index_type!(TraitDeclId, "TraitDecl");
 generate_index_type!(TraitImplId, "TraitImpl");
 
 /// The id of a translated item.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
 #[derive(
-    Copy,
-    Clone,
-    Debug,
-    PartialOrd,
-    Ord,
-    PartialEq,
-    Eq,
-    Hash,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    VariantIndexArity,
     Serialize,
     Deserialize,
     SerializeState,
     DeserializeState,
     Drive,
     DriveMut,
-    DriveTwo,
+    DriveTwo
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Id"))]
 #[serde_state(stateless)]
@@ -52,26 +42,16 @@ pub enum ItemId {
 }
 
 /// The id of an associated item within a trait.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
 #[derive(
-    Copy,
-    Clone,
-    Debug,
-    PartialOrd,
-    Ord,
-    PartialEq,
-    Eq,
-    Hash,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    VariantIndexArity,
     Serialize,
     Deserialize,
     SerializeState,
     DeserializeState,
     Drive,
     DriveMut,
-    DriveTwo,
+    DriveTwo
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("AssocId"))]
 #[serde_state(stateless)]
@@ -82,26 +62,16 @@ pub enum AssocItemId {
 }
 
 /// The id of a translated item or associated item definition.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
 #[derive(
-    Copy,
-    Clone,
-    Debug,
-    PartialOrd,
-    Ord,
-    PartialEq,
-    Eq,
-    Hash,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    VariantIndexArity,
     Serialize,
     Deserialize,
     SerializeState,
     DeserializeState,
     Drive,
     DriveMut,
-    DriveTwo,
+    DriveTwo
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Item"))]
 #[serde_state(stateless)]
@@ -114,20 +84,8 @@ pub enum MaybeAssocItemId {
 ///
 /// This includes user-defined ADTs (structs, enums, unions), but also tuples,
 /// boxes, and `str`, which we translate as `struct str([u8])`.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct TypeDeclRef {
     pub id: TypeDeclId,
     pub generics: BoxedArgs,
@@ -136,41 +94,17 @@ pub struct TypeDeclRef {
 }
 
 /// Reference to a function declaration.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct FunDeclRef {
     pub id: FunDeclId,
     /// Generic arguments passed to the function.
     pub generics: BoxedArgs,
 }
 
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    EnumAsGetters,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-    Hash,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumAsGetters)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum FnPtrKind {
     Fun(FunDeclId),
     /// If a trait: the reference to the trait and the id of the trait method.
@@ -179,40 +113,16 @@ pub enum FnPtrKind {
 }
 
 /// Reference to a function, possibly indirected via a trait.
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Clone,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct FnPtr {
     pub kind: Box<FnPtrKind>,
     pub generics: BoxedArgs,
 }
 
 /// Reference to a global declaration.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct GlobalDeclRef {
     pub id: GlobalDeclId,
     pub generics: BoxedArgs,
@@ -226,40 +136,16 @@ pub struct GlobalDeclRef {
 /// ```
 ///
 /// The substitution is: `[String, bool]`.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct TraitDeclRef {
     pub id: TraitDeclId,
     pub generics: BoxedArgs,
 }
 
 /// A reference to a tait impl, using the provided arguments.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct TraitImplRef {
     pub id: TraitImplId,
     pub generics: BoxedArgs,
@@ -330,7 +216,8 @@ impl FnPtr {
 }
 
 /// A generic `*DeclRef`-shaped struct, used when we're generic over the type of item.
-#[derive(Debug, PartialEq, Eq, Clone, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Drive, DriveMut, DriveTwo)]
 pub struct DeclRef<Id> {
     pub id: Id,
     pub generics: BoxedArgs,

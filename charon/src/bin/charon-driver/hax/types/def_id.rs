@@ -27,7 +27,7 @@ sinto_reexport!(rustc_span::symbol::ByteSymbol);
 /// Reflects [`rustc_hir::def::DefKind`]
 #[derive(AdtInto)]
 #[args(<S>, from: rustc_hir::def::DefKind, state: S as tcx)]
-#[derive(Debug, Clone, PartialEq, Hash, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum DefKind {
     Mod,
     Struct,
@@ -81,14 +81,14 @@ pub struct DefId {
     pub(crate) contents: HashConsed<DefIdContents>,
 }
 
-#[derive(Debug, Hash, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DefIdContents {
     pub base: DefIdBase,
     /// The kind of definition this `DefId` points to.
     pub kind: crate::hax::DefKind,
 }
 
-#[derive(Debug, Hash, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum DefIdBase {
     Real(RDefId),
     Promoted(RDefId, PromotedId),
@@ -104,7 +104,7 @@ pub enum DefIdBase {
     Alloc(RAllocId),
 }
 
-#[derive(Debug, Hash, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct VirtualImplAssocItem {
     /// The trait impl.
     pub trait_impl_id: RDefId,
@@ -787,7 +787,8 @@ impl<S> SInto<S, DefId> for DefId {
 
 /// Reflects [`rustc_hir::definitions::DefPathData`]
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, AdtInto)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(AdtInto)]
 #[args(<'ctx, S: UnderOwnerState<'ctx>>, from: rustc_hir::definitions::DefPathData, state: S as s)]
 pub enum DefPathItem {
     CrateRoot {
@@ -815,7 +816,8 @@ pub enum DefPathItem {
     NestedStatic,
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, AdtInto)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(AdtInto)]
 #[args(<'a, S: UnderOwnerState<'a>>, from: rustc_hir::definitions::DisambiguatedDefPathData, state: S as s)]
 /// Reflects [`rustc_hir::definitions::DisambiguatedDefPathData`]
 pub struct DisambiguatedDefPathItem {

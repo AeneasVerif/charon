@@ -23,9 +23,8 @@ pub type ExprBody = GExprBody<BodyContents>;
 
 /// A "basic block", which contains a linear sequence of statements, followed by a terminator, which
 /// is where non-linear control-flow happens.
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("Block"))]
 pub struct BlockData {
     pub statements: Vec<Statement>,
@@ -33,9 +32,8 @@ pub struct BlockData {
 }
 
 /// A statement.
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Statement {
     pub span: Span,
     pub kind: StatementKind,
@@ -44,20 +42,9 @@ pub struct Statement {
     pub comments_before: Vec<String>,
 }
 
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(EnumIsA, EnumAsGetters, VariantName)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum StatementKind {
     Assign(Place, Rvalue),
     /// A call. For now, we don't support dynamic calls (i.e. to a function pointer in memory).
@@ -92,19 +79,9 @@ pub enum StatementKind {
     Nop,
 }
 
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    EnumIsA,
-    EnumAsGetters,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(EnumIsA, EnumAsGetters)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum TerminatorKind {
     Goto {
         target: BlockId,
@@ -153,9 +130,8 @@ pub enum TerminatorKind {
 }
 
 /// A terminator: instruction to execute at the end of a block, which may jump to other blocks.
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Terminator {
     pub span: Span,
     pub kind: TerminatorKind,
@@ -457,7 +433,7 @@ impl Terminator {
 }
 
 /// A statement location within a body.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct StmtLoc {
     pub block: BlockId,
     pub statement: usize,

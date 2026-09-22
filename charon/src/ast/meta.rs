@@ -15,21 +15,9 @@ pub use names::*;
 pub use spans::*;
 
 /// How much to translate for a given item.
-#[derive(
-    Debug,
-    Copy,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    DriveTwo,
-    EnumIsA,
-)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(EnumIsA)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub enum ItemOpacity {
     /// Translate the item fully.
     Transparent,
@@ -53,7 +41,8 @@ pub enum ItemOpacity {
 }
 
 /// Meta information about an item (function, trait decl, trait impl, type decl, global).
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(stateless)]
 pub struct ItemMeta {
     #[serde_state(stateful)]

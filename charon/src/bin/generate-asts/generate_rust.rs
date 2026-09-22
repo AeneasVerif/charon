@@ -19,7 +19,7 @@ type GeneratedTypePrinter =
 type TranslationExprPrinter =
     fn(&Generator<'_>, &mut fmt::Formatter<'_>, &GenericArgs, &str) -> fmt::Result;
 
-#[derive(Clone, Copy)]
+#[derive(Copy, Clone)]
 enum RustcDatatype {
     /// Copy this rustc ADT into Charon's AST.
     Copy {

@@ -15,7 +15,7 @@ pub type PredicateSearcher<'tcx> = elaboration::PredicateSearcher<'tcx, DefId>;
 
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::ImpliedPredicate<'tcx, DefId>, state: S as s)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TraitProofImpliedPredicate {
     AssocItem {
         /// Reference to the item, with generics (for GATs), e.g. the `T` and proof for `T: Clone`
@@ -39,7 +39,7 @@ pub enum TraitProofImpliedPredicate {
 /// concrete `impl Trait for Type {}` item, or `LocalBound` for a context-bound `where T: Trait`.
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::TraitProofKind<'tcx, DefId>, state: S as s)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TraitProofKind {
     /// A concrete `impl Trait for Type {}` item.
     Concrete(ItemRef),
@@ -88,7 +88,7 @@ impl TraitProofKind {
 
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::BuiltinTraitData<'tcx>, state: S as s)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum BuiltinTraitData {
     /// A virtual `Destruct` implementation.
     /// `Destruct` is implemented automatically for all types. For our purposes, we chose to attach
@@ -107,7 +107,7 @@ sinto_reexport!(rustc_type_ir::lang_items::SolverTraitLangItem);
 
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::DestructData<'tcx>, state: S as s)]
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum DestructData {
     /// A drop that does nothing, e.g. for scalars and pointers.
     Noop,
@@ -129,7 +129,8 @@ pub enum DestructData {
 /// concrete implementations for `u8` and `&str`, represented as a tree.
 pub type TraitProof = HashConsed<TraitProofContents>;
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, AdtInto)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::TraitProofContents<'tcx, DefId>, state: S as s)]
 pub struct TraitProofContents {
     /// The trait predicate this is an impl for.

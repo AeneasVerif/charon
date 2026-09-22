@@ -15,7 +15,7 @@ use {
 /// easier to emit trait impls for these types, especially with monomorphization, and it lets
 /// tuples and `str` have a type declaration like other ADTs. This enum identifies these builtin
 /// types.
-#[derive(Debug, Hash, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum SyntheticItem {
     /// Fake ADT representing the `[T; N]` type.
     Array,
@@ -27,7 +27,7 @@ pub enum SyntheticItem {
     Str,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Copy, Clone)]
 pub struct SyntheticItemData<'tcx> {
     generics: &'tcx ty::Generics,
     clauses: &'tcx [ty::Clause<'tcx>],
@@ -39,7 +39,7 @@ pub struct SyntheticItemData<'tcx> {
 /// (`tcx.create_def()`) but I could not figure out a way to use it that didn't end up ICEing
 /// during metadata encoding. So instead I'm reusing the `DefId`s of the generic parameters of the
 /// `core::array::repeat` function because that function had the right kind of generics.
-#[derive(Clone, Copy)]
+#[derive(Copy, Clone)]
 struct GenericParamDefIds {
     ty: RDefId,
     ct: RDefId,

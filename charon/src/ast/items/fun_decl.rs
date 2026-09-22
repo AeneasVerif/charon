@@ -6,7 +6,8 @@ use serde_state::DeserializeState;
 use serde_state::SerializeState;
 
 /// A function definition
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct FunDecl {
     pub def_id: FunDeclId,
     /// The meta data associated with the declaration.
@@ -21,20 +22,8 @@ pub struct FunDecl {
 }
 
 /// A function signature.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct FunSig {
     /// Is the function unsafe or not
     pub is_unsafe: bool,
@@ -46,22 +35,9 @@ pub struct FunSig {
     pub output: Ty,
 }
 
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    VariantName,
-    EnumIsA,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(VariantName, EnumIsA)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(stateless)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Abi"))]
 pub enum Abi {
@@ -72,7 +48,8 @@ pub enum Abi {
 }
 
 /// Where a given function came from.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Fun"))]
 pub enum FunSource {
     /// A normal function.

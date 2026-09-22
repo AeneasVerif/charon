@@ -26,7 +26,9 @@ pub const CHARON_ARGS: &str = "CHARON_ARGS";
 // Note that because we need to transmit the options to the charon driver,
 // we store them in a file before calling this driver (hence the `Serialize`,
 // `Deserialize` options).
-#[derive(Debug, Default, Clone, clap::Args, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(clap::Args)]
+#[derive(Serialize, Deserialize)]
 #[clap(name = "Charon")]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("cli_options"))]
 pub struct CliOpts {
@@ -364,7 +366,9 @@ pub struct CliOpts {
 
 /// The MIR stage to use. This is only relevant for the current crate: for dependencies, only mir
 /// optimized is available (or mir elaborated for consts).
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(ValueEnum)]
+#[derive(Serialize, Deserialize)]
 pub enum MirLevel {
     /// The MIR just after MIR lowering.
     Built,
@@ -380,7 +384,9 @@ pub enum MirLevel {
 
 /// Presets to make it easier to tweak options without breaking dependent projects. Eventually we
 /// should define semantically-meaningful presets instead of project-specific ones.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(ValueEnum)]
+#[derive(Serialize, Deserialize)]
 #[non_exhaustive]
 pub enum Preset {
     /// The default translation used before May 2025. After that, many passes were made optional
@@ -398,9 +404,9 @@ pub enum Preset {
 }
 
 /// How to handle constants and statics.
-#[derive(
-    Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize,
-)]
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(ValueEnum)]
+#[derive(Serialize, Deserialize)]
 pub enum ConstHandling {
     /// Keep consts as calls to their initializer with `ConstantExprKind::Call`, without attempting
     /// to do any const-evaluation. This is the default.
@@ -411,9 +417,9 @@ pub enum ConstHandling {
     Values,
 }
 
-#[derive(
-    Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize,
-)]
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(ValueEnum)]
+#[derive(Serialize, Deserialize)]
 pub enum MonomorphizeMut {
     /// Monomorphize any item instantiated with `&mut`.
     #[default]
@@ -422,7 +428,9 @@ pub enum MonomorphizeMut {
     ExceptTypes,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, ValueEnum, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(ValueEnum)]
+#[derive(Serialize, Deserialize)]
 pub enum SerializationFormatArg {
     Json,
     Postcard,
@@ -430,9 +438,9 @@ pub enum SerializationFormatArg {
     All,
 }
 
-#[derive(
-    Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize,
-)]
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(ValueEnum)]
+#[derive(Serialize, Deserialize)]
 pub enum SerializationFormat {
     #[default]
     Json,

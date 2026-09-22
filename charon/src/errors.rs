@@ -56,7 +56,8 @@ macro_rules! error_assert {
 pub use error_assert;
 
 /// Common error used during the translation.
-#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize)]
 pub struct Error {
     pub span: Span,
     pub msg: String,
@@ -151,7 +152,7 @@ pub fn display_spanned_error(krate: &TranslatedCrate, span: Span, title: &str, l
 /// dependencies, especially if some external dependencies don't extract:
 /// we use this information to tell the user what is the code which
 /// (transitively) lead to the extraction of those problematic dependencies.
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct DepSource {
     pub src_id: ItemId,
     /// The location where the id was referred to. We store `None` for external dependencies as we
@@ -160,7 +161,8 @@ pub struct DepSource {
 }
 
 /// For tracing error dependencies.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(VariantIndexArity)]
 enum DepNode {
     External(ItemId),
     /// We use the span information only for local references

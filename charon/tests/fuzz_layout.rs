@@ -14,7 +14,7 @@ const DYN_SIZE: u128 = 12;
 const DYN_ALIGN: u128 = 4;
 const SLICE_LENGTH: u128 = 3;
 
-#[derive(Clone, Copy, Debug, EnumIsA)]
+#[derive(Debug, Copy, Clone, EnumIsA)]
 enum BoundOp {
     Equal,
     AtLeast,
@@ -30,7 +30,7 @@ impl BoundOp {
 }
 
 /// A lower bound on a size, which is exact unless the expression contained an `at_least`.
-#[derive(Clone, Copy, Debug)]
+#[derive(Debug, Copy, Clone)]
 struct Bound {
     value: u128,
     op: BoundOp,

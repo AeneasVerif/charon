@@ -5,7 +5,8 @@ use macros::{EnumAsGetters, EnumIsA, VariantName};
 use serde_state::{DeserializeState, SerializeState};
 
 /// The predecessor of a field in a struct or enum variant.
-#[derive(Debug, Clone, Copy, PartialEq, SerializeState, DeserializeState)]
+#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(SerializeState, DeserializeState)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Predecessor"))]
 pub enum FieldPredecessor {
     Field(FieldId),
@@ -13,18 +14,9 @@ pub enum FieldPredecessor {
 }
 
 /// Guaranteed facts about a field offset.
-#[derive(
-    Debug,
-    Clone,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone)]
+#[derive(EnumIsA, EnumAsGetters, VariantName)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum OffsetGuarantee {
     /// Guaranteed to be exactly at the given offset.
     AtOffset(SizeExpr),
@@ -36,23 +28,9 @@ pub enum OffsetGuarantee {
 }
 
 /// Layout information given by the metadata of an unsized type.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumIsA, EnumAsGetters, VariantName)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variant_prefix("LayoutValue"))]
 pub enum MetadataValue {
     /// For a DST with `dyn Trait` metadata, this refers to the size found in the metadata.
@@ -64,40 +42,14 @@ pub enum MetadataValue {
 }
 
 /// An expression that represents a size in bytes.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(state_implements = DedupSerializerState)]
 pub struct SizeExpr(pub HashConsed<WithCachedTypeInfo<SizeExprKind>>);
 
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumIsA, EnumAsGetters, VariantName)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("SizeExpr"))]
 pub enum SizeExprKind {
     /// An arbitrary constant of type `usize`.

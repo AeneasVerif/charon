@@ -3,13 +3,13 @@
 /// represented via an identifier stored in a state `State`.
 pub mod source {
     use std::collections::HashMap;
-    #[derive(Clone, Debug)]
+    #[derive(Debug, Clone)]
     pub struct State(pub HashMap<StringId, String>);
 
-    #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+    #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
     pub struct StringId(u32);
 
-    #[derive(Clone, Debug)]
+    #[derive(Debug, Clone)]
     pub enum Literal {
         Integer(u32),
         String(StringId),

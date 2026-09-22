@@ -36,7 +36,7 @@ use rustc_type_ir::lang_items::SolverTraitLangItem;
 use std::hash::Hash;
 use std::ops::Deref;
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum DestructData<'tcx> {
     /// A drop that does nothing, e.g. for scalars and pointers.
     Noop,
@@ -52,7 +52,7 @@ pub enum DestructData<'tcx> {
     },
 }
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum BuiltinTraitData<'tcx> {
     /// A virtual `Destruct` implementation.
     /// `Destruct` is implemented automatically for all types. For our purposes, we chose to attach
@@ -67,7 +67,7 @@ pub enum BuiltinTraitData<'tcx> {
     Other(SolverTraitLangItem),
 }
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ImpliedPredicate<'tcx, Id: ItemId = DefId> {
     AssocItem {
         item: ItemRef<'tcx, Id>,
@@ -82,7 +82,7 @@ pub enum ImpliedPredicate<'tcx, Id: ItemId = DefId> {
 
 /// A predicate bound by a dyn type, together with the extra trait proof needed to translate an
 /// associated type constraint.
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DynPredicate<'tcx, Id: ItemId = DefId> {
     /// The predicate with the dyn binder's fresh type parameter as `Self`.
     pub predicate: ItemPredicate<'tcx, Id>,
@@ -92,7 +92,7 @@ pub struct DynPredicate<'tcx, Id: ItemId = DefId> {
 
 /// A representation of `exists<T: Trait1 + Trait2>(value)`: we create a fresh type parameter and
 /// the appropriate trait clauses. The contained value may refer to both.
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DynBinder<'tcx, T, Id: ItemId = DefId> {
     /// The fresh type parameter used as `Self` in the predicates below.
     pub existential_ty: ty::ParamTy,
@@ -102,7 +102,7 @@ pub struct DynBinder<'tcx, T, Id: ItemId = DefId> {
     pub val: T,
 }
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TraitProofKind<'tcx, Id: ItemId = DefId> {
     /// A concrete `impl Trait for Type {}` item.
     Concrete(ItemRef<'tcx, Id>),
@@ -141,7 +141,7 @@ pub enum TraitProofKind<'tcx, Id: ItemId = DefId> {
     Error(String),
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct TraitProofContents<'tcx, Id: ItemId = DefId> {
     /// The trait predicate this is a proof for.
     pub pred: ty::PolyTraitRef<'tcx>,
@@ -149,7 +149,7 @@ pub struct TraitProofContents<'tcx, Id: ItemId = DefId> {
     pub kind: TraitProofKind<'tcx, Id>,
 }
 
-#[derive(Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct TraitProof<'tcx, Id: ItemId = DefId> {
     contents: Interned<'tcx, TraitProofContents<'tcx, Id>>,
 }

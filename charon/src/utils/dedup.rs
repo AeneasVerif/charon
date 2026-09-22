@@ -15,7 +15,8 @@ use crate::utils::type_map::{Mappable, Mapper, TypeMap};
 
 /// Identifies a deduplicated value amongst the values of its type within a single serialized
 /// output. Ids are allocated in the order in which we serialize the values.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize)]
 pub struct DedupId(u32);
 
 /// A value that we deduplicate in the serialized output. We identify values by equality, hence

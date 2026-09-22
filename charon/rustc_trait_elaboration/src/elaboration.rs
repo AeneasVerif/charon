@@ -12,7 +12,7 @@ use rustc_span::{DUMMY_SP, Symbol};
 use rustc_trait_selection::traits::ImplSource;
 use rustc_type_ir::Interner;
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct ItemClause<'tcx, Id = DefId> {
     id: ItemPredicateId<Id>,
     clause: PolyTraitRef<'tcx>,

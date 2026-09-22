@@ -30,7 +30,7 @@ use crate::utils::{DfsWithPath, ensure_sufficient_stack};
 use crate::{ast::*, register_error};
 
 /// The amount of "flow" reaching a block.
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Default, Copy, Clone)]
 struct Flow(f64);
 
 impl Ord for Flow {
@@ -442,7 +442,7 @@ impl BlockData {
 }
 
 /// See [`ExitInfo::compute_loop_exit_ranks`].
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 struct LoopExitRank {
     /// Prefer regular blocks over blocks reachable only through unwind edges.
     is_unwind_block: Reverse<bool>,
@@ -829,7 +829,7 @@ fn iter_tail_statements(block: &mut tgt::Block, f: &mut impl FnMut(&mut tgt::Sta
 
 type Depth = usize;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Copy, Clone)]
 enum SpecialJumpKind {
     /// This block can be reached by a `continue` to the given depth.
     LoopContinue(Depth),
@@ -843,7 +843,7 @@ enum SpecialJumpKind {
     NextBlock,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Copy, Clone)]
 struct SpecialJump {
     /// The relevant block.
     target_block: BlockId,

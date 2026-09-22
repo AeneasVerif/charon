@@ -210,7 +210,7 @@ struct TargetGroup {
 }
 
 /// How a `TargetGroup` should be merged.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 enum MergeDecision {
     /// Don't merge this group.
     Skip,
@@ -770,7 +770,7 @@ fn remove_unmentioned_methods(krate: &mut TranslatedCrate) {
     type MethodKey = (TraitDeclId, TraitMethodId);
 
     use ReachabilityNode::*;
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
     enum ReachabilityNode {
         Root,
         Method(MethodKey),

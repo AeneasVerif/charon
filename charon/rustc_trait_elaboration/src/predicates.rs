@@ -46,14 +46,14 @@ pub struct BoundsOptions {
     pub remove_traits: HashSet<DefId>,
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum PredicateDirection {
     Required,
     Implied,
 }
 
 /// Uniquely identifies a predicate.
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ItemPredicateId<Id = DefId> {
     /// A predicate that counts as "input" for an item, e.g. `where` clauses on a function or impl.
     /// Numbered in some arbitrary but consistent order.
@@ -85,7 +85,7 @@ impl<Id> ItemPredicateId<Id> {
     }
 }
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ItemPredicate<'tcx, Id = DefId> {
     pub id: ItemPredicateId<Id>,
     pub clause: Clause<'tcx>,

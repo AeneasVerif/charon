@@ -4,21 +4,8 @@ use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use serde_state::DeserializeState;
 use serde_state::SerializeState;
 
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-    PartialEq,
-    Eq,
-    Hash,
-    PartialOrd,
-    Ord,
-)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(stateless)]
 pub struct TraitItemName(pub ustr::Ustr);
 
@@ -60,7 +47,8 @@ generate_index_type!(AssocConstId, "AssocConst");
 /// Of course, this forbids other useful use cases such as visitors implemented
 /// by means of traits.
 #[allow(clippy::type_complexity)]
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct TraitDecl {
     pub def_id: TraitDeclId,
     pub item_meta: ItemMeta,
@@ -101,7 +89,8 @@ pub struct TraitDecl {
 }
 
 /// An associated constant in a trait.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct TraitAssocConst {
     pub name: TraitItemName,
     #[serde_state(stateless)]
@@ -111,7 +100,8 @@ pub struct TraitAssocConst {
 }
 
 /// An associated type in a trait.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct TraitAssocTy {
     pub name: TraitItemName,
     #[serde_state(stateless)]
@@ -122,7 +112,8 @@ pub struct TraitAssocTy {
 }
 
 /// A trait method.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct TraitMethod {
     pub name: TraitItemName,
     pub item_meta: ItemMeta,
@@ -132,7 +123,8 @@ pub struct TraitMethod {
 }
 
 /// Where the trait comes from.
-#[derive(Debug, Clone, Copy, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Copy, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("TraitDecl"))]
 pub enum TraitDeclSource {
     /// A regular trait.

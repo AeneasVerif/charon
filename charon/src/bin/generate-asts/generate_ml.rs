@@ -74,7 +74,7 @@ impl<'a> GenerateCtx<'a> {
 }
 
 /// The kind of code generation to perform.
-#[derive(Clone, Copy)]
+#[derive(Copy, Clone)]
 enum GenerationKind {
     OfJson,
     OfPostcard,
