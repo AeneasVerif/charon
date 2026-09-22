@@ -20,19 +20,8 @@ pub use types::*;
 pub use vars::*;
 
 /// A set of generic arguments.
-#[derive(
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct GenericArgs {
     pub regions: IndexVec<RegionId, Region>,
     pub types: IndexVec<TypeVarId, Ty>,
@@ -44,20 +33,8 @@ pub struct GenericArgs {
 pub type PolyTraitDeclRef = RegionBinder<TraitDeclRef>;
 
 /// .0 outlives .1
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct OutlivesPred<T, U>(pub T, pub U);
 
 pub type RegionOutlives = OutlivesPred<Region, Region>;
@@ -70,20 +47,8 @@ pub type TypeOutlives = OutlivesPred<Ty, Region>;
 /// T : Foo<S = String>
 ///         ^^^^^^^^^^
 /// ```
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct TraitTypeConstraint {
     pub trait_ref: TraitRef,
     pub type_id: AssocTypeId,
@@ -93,20 +58,8 @@ pub struct TraitTypeConstraint {
 pub type BoxedArgs = Box<GenericArgs>;
 
 /// Generic parameters for a declaration, including predicates.
-#[derive(
-    Default,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct GenericParams {
     #[serde_state(stateless)]
     pub regions: IndexVec<RegionId, RegionParam>,
@@ -123,20 +76,8 @@ pub struct GenericParams {
     pub trait_type_constraints: IndexVec<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
 }
 
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("BK"))]
 pub enum BinderKind {
     /// The parameters of a generic associated type.
@@ -155,20 +96,8 @@ pub enum BinderKind {
 /// A value of type `T` bound by generic parameters. Used in any context where we're adding generic
 /// parameters that aren't on the top-level item, e.g. `for<'a>` clauses (uses `RegionBinder` for
 /// now), trait methods, GATs (TODO).
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Binder<T> {
     #[cfg_attr(feature = "charon_on_charon", charon::rename("binder_params"))]
     pub params: GenericParams,
@@ -183,20 +112,8 @@ pub struct Binder<T> {
 
 /// A value of type `T` bound by regions. We should use `binder` instead but this causes name clash
 /// issues in the derived ocaml visitors.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct RegionBinder<T> {
     #[cfg_attr(feature = "charon_on_charon", charon::rename("binder_regions"))]
     #[serde_state(stateless)]

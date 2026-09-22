@@ -4,29 +4,17 @@ use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantName};
 use serde_state::{DeserializeState, SerializeState};
 
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct Place {
     pub kind: PlaceKind,
     pub ty: Ty,
 }
 
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    EnumIsA,
-    EnumAsGetters,
-    EnumToGetters,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(EnumIsA, EnumAsGetters, EnumToGetters)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Place"))]
 pub enum PlaceKind {
     /// A local variable in a function body.
@@ -39,21 +27,9 @@ pub enum PlaceKind {
 }
 
 /// Projects a place to a subplace.
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    EnumIsA,
-    EnumAsGetters,
-    EnumToGetters,
-    VariantName,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(EnumIsA, EnumAsGetters, EnumToGetters, VariantName)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum ProjectionElem {
     /// Dereference a shared/mutable reference, a box, or a raw pointer.
     Deref,

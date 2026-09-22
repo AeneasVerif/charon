@@ -29,7 +29,7 @@ impl Generator<'_> {
         writeln!(f, "use serde::{{Deserialize, Serialize}};")?;
         writeln!(f, "use ustr::Ustr;")?;
         writeln!(f)?;
-        writeln!(f, "#[derive(Debug, Clone, Copy, PartialEq, Eq)]")?;
+        writeln!(f, "#[derive(Debug, Copy, Clone, PartialEq, Eq)]")?;
         writeln!(f, "pub struct FromRustcError;")?;
         writeln!(f)?;
 
@@ -222,9 +222,10 @@ impl Generator<'_> {
     ) -> fmt::Result {
         let rename = format!("Rustc{}", self.type_name(decl.def_id));
         self.fmt_doc_attrs(f, &decl.item_meta.attr_info)?;
+        writeln!(f, "#[derive(Debug, Clone, PartialEq, Eq)]")?;
         writeln!(
             f,
-            "#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]"
+            "#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]"
         )?;
         writeln!(
             f,

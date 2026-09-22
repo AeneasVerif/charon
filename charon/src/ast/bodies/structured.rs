@@ -18,7 +18,8 @@ generate_index_type!(BlockId);
 pub type ExprBody = GExprBody<Block>;
 
 /// A sequence of statements.
-#[derive(Debug, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct Block {
     pub span: Span,
@@ -30,7 +31,8 @@ pub struct Block {
 }
 
 /// A statement, which can contain nested statements inside loops or switchers.
-#[derive(Debug, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Statement {
     pub span: Span,
     /// Integer uniquely identifying this statement among the statmeents in the current body. To
@@ -43,20 +45,9 @@ pub struct Statement {
     pub comments_before: Vec<String>,
 }
 
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    EnumIsA,
-    EnumToGetters,
-    EnumAsGetters,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(EnumIsA, EnumToGetters, EnumAsGetters)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum StatementKind {
     /// Assigns an `Rvalue` to a `Place`. e.g. `let y = x;` could become
     /// `y := move x` which is represented as `Assign(y, Rvalue::Use(Operand::Move(x)))`.

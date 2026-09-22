@@ -9,40 +9,14 @@ use std::vec::Vec;
 use crate::ast::*;
 
 /// A constant expression.
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Clone,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct ConstantExpr(pub HashConsed<WithCachedTypeInfo<(ConstantExprKind, Ty)>>);
 
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Clone,
-    VariantName,
-    EnumIsA,
-    EnumAsGetters,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(VariantName, EnumIsA, EnumAsGetters)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("C"))]
 pub enum ConstantExprKind {
     /// Boolean value.
@@ -127,26 +101,16 @@ pub enum ConstantExprKind {
 }
 
 /// A scalar value.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
 #[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Copy,
-    Clone,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    VariantIndexArity,
-    Hash,
-    PartialOrd,
-    Ord,
     Serialize,
     Deserialize,
     SerializeState,
     DeserializeState,
     Drive,
     DriveMut,
-    DriveTwo,
+    DriveTwo
 )]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Integer"))]
 #[serde_state(stateless)]
@@ -158,20 +122,8 @@ pub enum IntegerValue {
 /// This is simlar to the Scalar value above. However, instead of storing
 /// the float value itself, we store its String representation. This allows
 /// to derive the Eq and Ord traits, which are not implemented for floats
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    Serialize,
-    Deserialize,
-    Hash,
-    PartialOrd,
-    Ord,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub struct FloatValue {
     #[cfg_attr(feature = "charon_on_charon", charon::rename("float_value"))]
     pub value: String,
@@ -179,20 +131,8 @@ pub struct FloatValue {
     pub ty: FloatTy,
 }
 
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Clone,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Prov"))]
 pub enum Provenance {
     Global(GlobalDeclRef),
@@ -202,20 +142,8 @@ pub enum Provenance {
 
 /// A byte, in the MiniRust sense: it can either be uninitialized, a concrete u8 value,
 /// or part of a pointer with provenance (e.g. to a global or a function)
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Clone,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum Byte {
     /// An uninitialized byte
     Uninit,

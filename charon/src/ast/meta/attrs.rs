@@ -4,7 +4,8 @@ use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
 use serde::{Deserialize, Serialize};
 
 /// `#[inline]` built-in attribute.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub enum InlineAttr {
     /// `#[inline]`
     Hint,
@@ -15,20 +16,9 @@ pub enum InlineAttr {
 }
 
 /// Attributes (`#[...]`).
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    EnumIsA,
-    EnumAsGetters,
-    EnumToGetters,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(EnumIsA, EnumAsGetters, EnumToGetters)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Attr"))]
 pub enum Attribute {
     /// Do not translate the body of this item.
@@ -67,7 +57,8 @@ pub enum Attribute {
 }
 
 /// A general attribute.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub struct RawAttribute {
     pub path: String,
     /// The arguments passed to the attribute, if any. We don't distinguish different delimiters or
@@ -76,7 +67,8 @@ pub struct RawAttribute {
 }
 
 /// Information about the attributes and visibility of an item, field or variant..
-#[derive(Debug, Default, Clone, Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub struct AttrInfo {
     /// Attributes (`#[...]`).
     pub attributes: Vec<Attribute>,

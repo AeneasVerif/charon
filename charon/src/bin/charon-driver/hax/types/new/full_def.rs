@@ -10,7 +10,7 @@ use std::cell::OnceCell;
 use std::sync::Arc;
 
 /// Gathers a lot of definition information about a [`rustc_hir::def_id::DefId`].
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct FullDef<'tcx> {
     /// A reference to the current item. If the item was provided with generic args, they are
     /// stored here; otherwise the args are the identity_args for this item.
@@ -222,7 +222,7 @@ impl ItemRef {
 }
 
 /// The combination of type generics and related predicates.
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct ParamEnv {
     /// Generic parameters of the item.
     pub generics: TyGenerics,
@@ -265,7 +265,7 @@ impl ParamEnv {
 }
 
 /// The kind of a constant item.
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub enum ConstKind {
     /// Top-level constant: `const CONST: usize = 42;`
     TopLevel,
@@ -276,7 +276,8 @@ pub enum ConstKind {
 }
 
 /// Reflects [`rustc_hir::attrs::InlineAttr`]
-#[derive(AdtInto, Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(AdtInto)]
 #[args(<'tcx, S: BaseState<'tcx>>, from: rustc_hir::attrs::InlineAttr, state: S as _s)]
 pub enum InlineAttr {
     None,
@@ -291,7 +292,7 @@ pub enum InlineAttr {
 
 /// Imbues [`rustc_hir::def::DefKind`] with a lot of extra information.
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 #[allow(clippy::large_enum_variant)]
 pub enum FullDefKind<'tcx> {
     // Types
@@ -364,7 +365,7 @@ pub enum FullDefKind<'tcx> {
 }
 
 /// ADts (`Struct`, `Enum` and `Union` map to this).
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct Adt<'tcx> {
     def_id: DefId,
     /// The (instantiated) type of this adt.
@@ -403,7 +404,7 @@ impl<'tcx> Adt<'tcx> {
 }
 
 /// Type alias: `type Foo = Bar;`
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct TyAlias {
     param_env: ParamEnv,
     ty: Ty,
@@ -419,7 +420,7 @@ impl TyAlias {
 }
 
 /// Associated type: `trait MyTrait { type Assoc; }`
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct AssocTy<'tcx> {
     def_id: DefId,
     args: Option<ty::GenericArgsRef<'tcx>>,
@@ -456,7 +457,7 @@ impl<'tcx> AssocTy<'tcx> {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct Trait<'tcx> {
     def_id: DefId,
     args: Option<ty::GenericArgsRef<'tcx>>,
@@ -506,7 +507,7 @@ impl<'tcx> Trait<'tcx> {
 }
 
 /// Trait alias: `trait IntIterator = Iterator<Item = i32>;`
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct TraitAlias {
     param_env: ParamEnv,
     implied_predicates: GenericPredicates,
@@ -535,7 +536,7 @@ impl TraitAlias {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct TraitImpl<'tcx> {
     this: ItemRef,
     args: Option<ty::GenericArgsRef<'tcx>>,
@@ -656,7 +657,7 @@ impl<'tcx> TraitImpl<'tcx> {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct InherentImpl<'tcx> {
     def_id: DefId,
     args: Option<ty::GenericArgsRef<'tcx>>,
@@ -705,7 +706,7 @@ fn assoc_items_of<'tcx, S: UnderOwnerState<'tcx>>(
 
 /// The virtual `Fn*` impls of a function item or constructor, which exist iff the function is
 /// `Fn*`-compatible.
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct FnTraitImpls<'tcx> {
     /// The arguments of this function, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
     /// Binds the same variables as the function's `sig`.
@@ -751,7 +752,7 @@ fn fn_def_trait_impls<'tcx, S: UnderOwnerState<'tcx>>(
     })
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct Fn<'tcx> {
     def_id: DefId,
     args: Option<ty::GenericArgsRef<'tcx>>,
@@ -786,7 +787,7 @@ impl<'tcx> Fn<'tcx> {
 
 /// Associated function: `impl MyStruct { fn associated() {} }` or `trait Foo { fn associated()
 /// {} }`
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct AssocFn<'tcx> {
     def_id: DefId,
     args: Option<ty::GenericArgsRef<'tcx>>,
@@ -830,7 +831,7 @@ impl<'tcx> AssocFn<'tcx> {
 }
 
 /// A closure, coroutine, or coroutine-closure.
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct Closure<'tcx> {
     def_id: DefId,
     /// `[closure_ty, tupled_args_ty]`: the args of the `Fn*` traits for this closure.
@@ -905,7 +906,7 @@ impl<'tcx> Closure<'tcx> {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct Const {
     param_env: ParamEnv,
     ty: Ty,
@@ -925,7 +926,7 @@ impl Const {
 }
 
 /// Associated constant: `trait MyTrait { const ASSOC: usize; }`
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct AssocConst {
     param_env: ParamEnv,
     associated_item: AssocItem,
@@ -944,7 +945,7 @@ impl AssocConst {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct Static {
     param_env: ParamEnv,
     /// Whether it's a `unsafe static`, `safe static` (inside extern only) or just a `static`.
@@ -977,7 +978,7 @@ impl Static {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct Mod {
     def_id: DefId,
     /// Computed on demand, see [`Mod::items`].
@@ -992,7 +993,7 @@ impl Mod {
 }
 
 /// An `extern` block.
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct ForeignMod {
     items: Vec<DefId>,
 }
@@ -1004,7 +1005,7 @@ impl ForeignMod {
 }
 
 /// The constructor function of a tuple/unit struct or tuple/unit enum variant.
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct Ctor<'tcx> {
     def_id: DefId,
     args: ty::GenericArgsRef<'tcx>,
@@ -1440,7 +1441,7 @@ fn late_bound_for_def<'tcx, S: UnderOwnerState<'tcx>>(
 
 /// An associated item in a trait impl. This can be an item provided by the trait impl, or an item
 /// that reuses the trait decl default value.
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct ImplAssocItem {
     /// This is `None` for RPTITs.
     pub name: Option<Symbol>,
@@ -1452,7 +1453,7 @@ pub struct ImplAssocItem {
 }
 
 /// The binding context to use when translating a trait impl associated item.
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct TraitItemBinder<T> {
     pub def_id: DefId,
     /// Parameters bound by the item.
@@ -1463,7 +1464,7 @@ pub struct TraitItemBinder<T> {
 }
 
 /// The item is provided by the trait impl.
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct ImplAssocItemValue {
     /// The definition of the item in the trait impl. This is an `AssocTy`, `AssocFn` or
     /// `AssocConst`.
@@ -1485,7 +1486,7 @@ pub struct ImplAssocItemValue {
 
 /// Partial data for a trait impl, used for fake trait impls that we generate ourselves such as
 /// `FnOnce` and `Drop` impls.
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct VirtualTraitImpl<'tcx> {
     /// The trait that is implemented by this impl block.
     pub trait_pred: TraitPredicate,

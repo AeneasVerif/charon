@@ -14,21 +14,8 @@ use serde_state::{DeserializeState, SerializeState};
 use crate::{ast::*, impl_from_enum};
 
 /// The index of a binder, counting from the innermost. See [`DeBruijnVar`] for details.
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Copy,
-    Clone,
-    Hash,
-    PartialOrd,
-    Ord,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[serde(transparent)]
 #[cfg_attr(feature = "charon_on_charon", charon::transparent)]
 pub struct DeBruijnId {
@@ -69,21 +56,8 @@ impl DeBruijnId {
 ///                                      |                            |
 ///                                  Bound(0, c)                 Bound(1, c)
 /// ```
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Copy,
-    Clone,
-    Hash,
-    PartialOrd,
-    Ord,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum DeBruijnVar<Id> {
     /// A variable attached to the nth binder, counting from the innermost.
     Bound(#[serde_state(stateless)] DeBruijnId, Id),
@@ -103,21 +77,8 @@ generate_index_type!(TraitClauseId, "TraitClause");
 generate_index_type!(TraitTypeConstraintId, "TraitTypeConstraint");
 
 /// The variance of a lifetime or type parameter.
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub enum Variance {
     Covariant,
     Invariant,
@@ -130,20 +91,8 @@ pub enum Variance {
 }
 
 /// A type variable in a signature or binder.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub struct TypeParam {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: TypeVarId,
@@ -154,20 +103,8 @@ pub struct TypeParam {
 }
 
 /// A region variable in a signature or binder.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 pub struct RegionParam {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: RegionId,
@@ -183,9 +120,9 @@ pub struct RegionParam {
 
 /// The nature of locations where a given lifetime parameter is used. If this lifetime ever flows
 /// to be used as the lifetime of a mutable reference `&'a mut` then we consider it mutable.
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, EnumIsA,
-)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumIsA)]
+#[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Lt"))]
 pub enum LifetimeMutability {
     /// A lifetime that is used for a mutable reference.
@@ -197,20 +134,8 @@ pub enum LifetimeMutability {
 }
 
 /// A const generic variable in a signature or binder.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct ConstGenericParam {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: ConstGenericVarId,
@@ -222,7 +147,8 @@ pub struct ConstGenericParam {
 
 /// A trait predicate in a signature, of the form `Type: Trait<Args>`. This functions like a
 /// variable binder, to which variables of the form `TraitRefKind::Clause` can refer to.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct TraitParam {
     /// Index identifying the clause among other clauses bound at the same level.
     pub clause_id: TraitClauseId,
@@ -236,20 +162,8 @@ pub struct TraitParam {
 }
 
 /// Where a given predicate came from.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum PredicateOrigin {
     // Note: we use this for globals too, but that's only available with an unstable feature.
     // ```

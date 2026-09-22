@@ -28,18 +28,9 @@ pub use values::*;
 /// unstructured.
 ///
 /// Besides these, some functions have virtual bodies or no body, see the doc for each variant.
-#[derive(
-    Debug,
-    Clone,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-    EnumIsA,
-    EnumAsGetters,
-    EnumToGetters,
-)]
+#[derive(Debug, Clone)]
+#[derive(EnumIsA, EnumAsGetters, EnumToGetters)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(state_implements = DedupSerializerState)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Body"))]
 pub enum Body {
@@ -88,7 +79,8 @@ pub enum Body {
 generate_index_type!(LocalId, "");
 
 /// The local variables of a body.
-#[derive(Debug, Default, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Default, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Locals {
     /// The number of local variables used for the input arguments.
     pub arg_count: usize,
@@ -101,7 +93,8 @@ pub struct Locals {
 }
 
 /// A variable
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Local {
     /// Unique index identifying the variable
     pub index: LocalId,
@@ -118,7 +111,8 @@ pub struct Local {
 /// An expression body.
 /// TODO: arg_count should be stored in GFunDecl below. But then,
 ///       the print is obfuscated and Aeneas may need some refactoring.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("GexprBody"))]
 pub struct GExprBody<T> {
     pub span: Span,
@@ -138,9 +132,8 @@ pub struct GExprBody<T> {
 generate_index_type!(BranchId, "Branch");
 
 /// The value inspected by a switch. Must be of integer, bool or char type.
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Switch"))]
 pub enum SwitchScrutinee {
     /// Inspect the value produced by an operand.
@@ -150,9 +143,8 @@ pub enum SwitchScrutinee {
 }
 
 /// A branching operation.
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct SwitchData {
     /// The value to branch over.
     pub scrutinee: SwitchScrutinee,
@@ -171,9 +163,8 @@ pub struct SwitchData {
 /// A function operand is used in function calls.
 /// It either designates a top-level function, or a place in case
 /// we are using function pointers stored in local variables.
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("FnOp"))]
 pub enum FnOperand {
     /// Regular case: call to a top-level function, trait method, etc.
@@ -182,9 +173,8 @@ pub enum FnOperand {
     Dynamic(Operand),
 }
 
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Call {
     pub func: FnOperand,
     pub args: Vec<Operand>,
@@ -192,9 +182,8 @@ pub struct Call {
 }
 
 /// Statements that only affect borrow-checking. They are no-ops at runtime.
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum BorrowckStatement {
     /// Acts like a read of the place.
     FakeRead(Place),
@@ -219,9 +208,8 @@ pub enum BorrowckStatement {
 /// - Panic
 /// - Undefined behavior (caused by an "assume")
 /// - Unwind termination
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum AbortKind {
     /// A built-in panicking function, or a panic due to a failed built-in check (e.g. for out-of-bounds accesses).
     Panic(Option<Name>),
@@ -234,9 +222,8 @@ pub enum AbortKind {
 /// A `Drop` statement/terminator can mean two things, depending on what MIR phase we retrieved
 /// from rustc: it could be a real drop, or it could be a "conditional drop", which is where drop
 /// may happen depending on whether the borrow-checker determines a drop is needed.
-#[derive(
-    Debug, PartialEq, Eq, Clone, Copy, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum DropKind {
     /// A real drop. This calls `<T as Destruct>::drop_glue(&mut place)` and marks the
     /// place as moved-out-of. Use `--desugar-drops` to transform all such drops to an actual
@@ -269,9 +256,8 @@ pub enum DropKind {
 /// instance) to this. We then eliminate them in [crate::transform::resugar::reconstruct_fallible_operations],
 /// because they're implicit in the semantics of our array accesses etc. Finally we introduce new asserts in
 /// [crate::transform::resugar::reconstruct_asserts].
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("Assertion"))]
 pub struct Assert {
     pub cond: Operand,
@@ -286,9 +272,8 @@ pub struct Assert {
 /// by `reconstruct_fallible_operations` because they're implicit in the semantics of (U)LLBC.
 /// This kind should only be used for error-reporting purposes, as the check itself
 /// is performed in the instructions preceding the assert.
-#[derive(
-    Debug, PartialEq, Eq, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum BuiltinAssertKind {
     BoundsCheck { len: Operand, index: Operand },
     Overflow(BinOp, Operand, Operand),

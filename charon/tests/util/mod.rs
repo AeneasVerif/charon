@@ -17,7 +17,7 @@ use charon_lib::{export::CrateData, logger, options::SerializationFormat};
 #[cfg(feature = "popular-crates-test")]
 pub mod popular_crates;
 
-#[derive(Clone, Copy)]
+#[derive(Copy, Clone)]
 pub enum Action {
     Verify,
     Overwrite,

@@ -6,7 +6,7 @@ use serde_state::{DeserializeState, SerializeState};
 use crate::ast::*;
 
 bitflags::bitflags! {
-    #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
     pub struct TypeFlags: u8 {
         const HAS_ERASED_OR_BODY_REGIONS = 1 << 0;
         const MENTIONS_SELF_CLAUSE = 1 << 1;
@@ -17,7 +17,7 @@ bitflags::bitflags! {
 }
 
 /// Various bits of information about the contents of a type-level value.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TypeInfo {
     pub max_de_bruijn_id: Option<DeBruijnId>,
     pub flags: TypeFlags,
@@ -216,7 +216,8 @@ impl TypeInfo {
 }
 
 /// A wrapper that caches type-specific information about the contained value.
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Drive, DriveTwo)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Drive, DriveTwo)]
 pub struct WithCachedTypeInfo<T> {
     pub value: T,
     info: TypeInfo,

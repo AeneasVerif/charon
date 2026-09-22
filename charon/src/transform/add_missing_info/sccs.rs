@@ -44,7 +44,7 @@ pub fn ordered_scc<Id: NodeTrait + Debug, O: Ord>(
     graph: &DiGraphMap<Id, ()>,
     sort_by: impl Fn(&Id) -> O,
 ) -> Vec<Vec<Id>> {
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
     struct SccId(usize);
 
     let mut sccs = tarjan_scc(graph);

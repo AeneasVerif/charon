@@ -10,7 +10,7 @@ use crate::ids::IndexVec;
 
 use crate::transform::{TransformCtx, ctx::TransformPass};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum ClauseNode {
     /// A special node to indicate clauses that we consider unconditionally used. Unused clauses
     /// will in the end be the ones unreachable from the root.

@@ -1,12 +1,12 @@
 use crate::hax::prelude::*;
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ConstantInt {
     Int(i128, IntTy),
     Uint(u128, UintTy),
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ConstantLiteral {
     Bool(bool),
     Char(char),
@@ -20,7 +20,7 @@ pub enum ConstantLiteral {
 sinto_reexport!(rustc_abi::VariantIdx);
 
 /// Describe the kind of a variant
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum VariantKind {
     Struct,
     Union,
@@ -28,7 +28,7 @@ pub enum VariantKind {
 }
 
 /// The subset of expressions that corresponds to constants.
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ConstantExprKind {
     Literal(ConstantLiteral),
     // Adts (structs, enums, unions) or closures.
@@ -85,7 +85,7 @@ pub enum ConstantExprKind {
 }
 
 /// A byte of an evaluated constant, in the MiniRust sense.
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ConstantByte {
     /// An uninitialized byte (e.g. padding, or the bytes of a union not covered by the active
     /// field).
@@ -98,7 +98,7 @@ pub enum ConstantByte {
 }
 
 /// What a pointer byte in an evaluated constant points to.
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ConstantByteProvenance {
     /// A pointer to a static.
     Global(ItemRef),
@@ -110,7 +110,7 @@ pub enum ConstantByteProvenance {
     Unknown,
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ConstantFieldExpr {
     pub field: DefId,
     pub value: ConstantExpr,

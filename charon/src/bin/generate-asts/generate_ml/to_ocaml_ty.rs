@@ -16,7 +16,7 @@ const MANUAL_IMPLS: &[(&str, &str)] = &[
     ),
 ];
 
-#[derive(Clone, Copy)]
+#[derive(Copy, Clone)]
 pub struct DeriveVisitors {
     pub name: &'static str,
     pub ancestors: &'static [&'static str],

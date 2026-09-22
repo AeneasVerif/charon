@@ -295,7 +295,8 @@ fn test_hash_cons_dedup() {
     use crate::utils::dedup::DedupSerializer;
     use serde_state::{DeserializeState, SerializeState};
     type Ty = HashConsed<TyKind>;
-    #[derive(Debug, Clone, PartialEq, Eq, Hash, SerializeState, DeserializeState)]
+    #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+    #[derive(SerializeState, DeserializeState)]
     #[serde_state(state = DedupSerializer)]
     enum TyKind {
         Bool,

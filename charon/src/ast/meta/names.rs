@@ -17,20 +17,9 @@ pub static BOX_WRITE: &str = "alloc::boxed::Box::write";
 pub static BOX_WRITE_PATTERN: &str = "alloc::boxed::_::write"; // `_` matches an impl block
 
 /// See the comments for [Name]
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-    EnumIsA,
-    EnumAsGetters,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(EnumIsA, EnumAsGetters)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Pe"))]
 pub enum PathElem {
     #[serde_state(stateless)]
@@ -50,9 +39,9 @@ pub enum PathElem {
 }
 
 /// Used for builtin items, rather than hardcoding these as strings.
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, EnumIsA, EnumAsGetters,
-)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(EnumIsA, EnumAsGetters)]
+#[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Pe"))]
 pub enum BuiltinPathElem {
     /// The tuple of the given arity.
@@ -90,20 +79,9 @@ pub enum BuiltinPathElem {
 ///   impl<T> PartialEq for List<T> { ...}
 ///   ```
 /// We distinguish the two.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-    EnumIsA,
-    EnumAsGetters,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(EnumIsA, EnumAsGetters)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("ImplElem"))]
 pub enum ImplElem {
     Ty(Box<Binder<Ty>>),
@@ -146,19 +124,8 @@ pub enum ImplElem {
 /// name clashes anyway. Still, we might want to be more precise in the future.
 ///
 /// Also note that the first path element in the name is always the crate name.
-#[derive(
-    Debug,
-    Default,
-    Clone,
-    PartialEq,
-    Eq,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde(transparent)]
 #[cfg_attr(feature = "charon_on_charon", charon::transparent)]
 pub struct Name {

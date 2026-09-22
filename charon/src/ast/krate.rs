@@ -31,7 +31,8 @@ pub type TargetTriple = String;
 ///
 /// To get a `TranslatedCrate`, run `charon cargo` inside a Rust crate, then deserialize
 /// the resulting `crate_name.llbc` file using [`crate::deserialize_llbc`].
-#[derive(Default, Clone, Drive, DriveMut, DriveTwo, SerializeState, DeserializeState)]
+#[derive(Default, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(state_implements = DedupSerializerState)]
 pub struct TranslatedCrate {
     /// The name of the crate.
@@ -100,9 +101,9 @@ pub struct TranslatedCrate {
 
 /// A (group of) top-level declaration(s), properly reordered.
 /// "G" stands for "generic"
-#[derive(
-    Debug, Clone, VariantIndexArity, VariantName, EnumAsGetters, EnumIsA, Serialize, Deserialize,
-)]
+#[derive(Debug, Clone)]
+#[derive(VariantIndexArity, VariantName, EnumAsGetters, EnumIsA)]
+#[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Group"))]
 pub enum GDeclarationGroup<Id> {
     /// A non-recursive declaration
@@ -112,9 +113,9 @@ pub enum GDeclarationGroup<Id> {
 }
 
 /// A (group of) top-level declaration(s), properly reordered.
-#[derive(
-    Debug, Clone, VariantIndexArity, VariantName, EnumAsGetters, EnumIsA, Serialize, Deserialize,
-)]
+#[derive(Debug, Clone)]
+#[derive(VariantIndexArity, VariantName, EnumAsGetters, EnumIsA)]
+#[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("Group"))]
 pub enum DeclarationGroup {
     /// A type declaration group
@@ -129,7 +130,8 @@ pub enum DeclarationGroup {
     Mixed(GDeclarationGroup<ItemId>),
 }
 
-#[derive(Default, Clone, Drive, DriveMut, DriveTwo, SerializeState, DeserializeState)]
+#[derive(Default, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct AssocItemNames {
     pub types: IndexVec<AssocTypeId, TraitItemName>,
     pub methods: IndexVec<TraitMethodId, TraitItemName>,

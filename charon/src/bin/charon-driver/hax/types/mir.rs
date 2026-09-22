@@ -32,15 +32,15 @@ pub fn name_of_local(
 /// Enumerates the kinds of Mir bodies. TODO: use const generics
 /// instead of an open list of types.
 pub mod mir_kinds {
-    #[derive(Clone, Copy, Debug)]
+    #[derive(Debug, Copy, Clone)]
     pub struct Optimized;
 
-    #[derive(Clone, Copy, Debug)]
+    #[derive(Debug, Copy, Clone)]
     pub struct CTFE;
 
     /// MIR of unknown origin. `body()` returns `None`; this is used to get the bodies provided via
     /// `from_mir` but not attempt to get MIR for functions etc.
-    #[derive(Clone, Copy, Debug)]
+    #[derive(Debug, Copy, Clone)]
     pub struct Unknown;
 
     pub use rustc::*;
@@ -95,14 +95,14 @@ pub use mir_kinds::IsMirKind;
 
 /// The contents of `Operand::Const`.
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct ConstOperand {
     pub span: Span,
     pub ty: Ty,
     pub kind: ConstOperandKind,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub enum ConstOperandKind {
     /// An evaluated constant represented as an expression.
     Value(ConstantExpr),

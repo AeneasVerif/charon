@@ -1,7 +1,7 @@
 use index_vec::Idx;
 use std::marker::PhantomData;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub struct Generator<I: Idx> {
     counter: usize,
     phantom: PhantomData<I>,

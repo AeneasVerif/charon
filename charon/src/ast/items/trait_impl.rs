@@ -16,7 +16,8 @@ use serde_state::SerializeState;
 ///   fn baz(...) { ... }
 /// }
 /// ```
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct TraitImpl {
     pub def_id: TraitImplId,
     pub item_meta: ItemMeta,
@@ -39,20 +40,8 @@ pub struct TraitImpl {
 }
 
 /// The value of a trait associated type.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    SerializeState,
-    DeserializeState,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct TraitAssocTyImpl {
     pub value: Ty,
     /// This matches the corresponding vector in `TraitAssocTy`. In the same way, this is empty
@@ -61,7 +50,8 @@ pub struct TraitAssocTyImpl {
 }
 
 /// Where the impl comes from.
-#[derive(Debug, Clone, SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[derive(Debug, Clone)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_suffix("TraitImpl"))]
 pub enum TraitImplSource {
     /// A regular trait implementation.
@@ -78,17 +68,9 @@ pub enum TraitImplSource {
 }
 
 /// The virtual table instance for a trait implementation.
-#[derive(
-    Debug,
-    Clone,
-    SerializeState,
-    DeserializeState,
-    EnumIsA,
-    EnumAsGetters,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Clone)]
+#[derive(EnumIsA, EnumAsGetters)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum VTableDecl {
     /// The trait is not dyn-compatible, so no vtable exists.
     NotDynCompatible,

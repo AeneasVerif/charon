@@ -33,7 +33,7 @@ use macros::VariantIndexArity;
 /// The id of an untranslated item. Note that a given `DefId` may show up as multiple different
 /// item sources, e.g. a constant will have both a `Global` version (for the constant itself) and a
 /// `FunDecl` one (for its initializer function).
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct TransItemSource {
     pub item: RustcItem,
     pub kind: TransItemSourceKind,
@@ -46,7 +46,7 @@ pub struct TransItemSource {
 ///        associated item lists.
 ///     2. the vtable is translated with erased signature of the methods and without generic types.
 ///        In other words, there is one "opaque" vtable per trait.
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum RustcItem {
     Poly(hax::DefId),
     Mono(hax::ItemRef),
@@ -54,7 +54,8 @@ pub enum RustcItem {
 }
 
 /// The kind of a [`TransItemSource`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(VariantIndexArity)]
 pub enum TransItemSourceKind {
     Global,
     TraitDecl,
@@ -89,7 +90,8 @@ pub enum TransItemSourceKind {
 }
 
 /// The kind of a [`TransItemSourceKind::TraitImpl`].
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(VariantIndexArity)]
 pub enum TransImplSource {
     /// A user-written trait impl with a `DefId`.
     Normal,

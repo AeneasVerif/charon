@@ -6,7 +6,9 @@ use macros::EnumIsA;
 use std::fmt::{self, Debug};
 
 /// Each `GenericArgs` is meant for a corresponding `GenericParams`; this describes which one.
-#[derive(Debug, Clone, Eq, PartialEq, Hash, EnumIsA, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(EnumIsA)]
+#[derive(Drive, DriveMut)]
 pub enum GenericsSource {
     /// A top-level item.
     Item(ItemId),

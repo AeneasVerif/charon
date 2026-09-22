@@ -94,7 +94,7 @@ pub fn callable_virtual_impl<'a, 'tcx>(
         .expect("expected a callable with a Fn* impl")
 }
 
-#[derive(Clone, Copy)]
+#[derive(Copy, Clone)]
 enum Callable<'a> {
     Closure(&'a hax::ClosureArgs),
     FnDef {
@@ -130,7 +130,7 @@ impl<'a> Callable<'a> {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Copy, Clone)]
 struct CallableFnImpls<'a, 'tcx> {
     callable: Callable<'a>,
     /// The virtual impl of the requested `Fn*` trait, if the callable implements it.

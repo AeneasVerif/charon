@@ -1,6 +1,6 @@
 use crate::hax::prelude::*;
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct IndexVec<I: 'static, T: 'static> {
     pub raw: Vec<T>,
     _marker: std::marker::PhantomData<fn(_: &I)>,

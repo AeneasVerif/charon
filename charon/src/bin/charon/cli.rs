@@ -31,7 +31,7 @@ pub enum Charon {
 }
 
 /// Read a llbc or ullbc file and pretty print it.
-#[derive(Args, Debug)]
+#[derive(Debug, Args)]
 pub struct PrettyPrintArgs {
     /// Single file path to llbc or ullbc
     pub file: PathBuf,
@@ -47,7 +47,7 @@ pub struct PrettyPrintArgs {
 }
 
 /// Usage: `charon cargo [charon options] -- [rustc options]`
-#[derive(clap::Args, Debug)]
+#[derive(Debug, clap::Args)]
 pub struct RustcArgs {
     #[command(flatten)]
     pub opts: CliOpts,
@@ -58,7 +58,7 @@ pub struct RustcArgs {
 }
 
 /// Usage: `charon cargo [charon options] -- [cargo build options]`
-#[derive(clap::Args, Debug)]
+#[derive(Debug, clap::Args)]
 pub struct CargoArgs {
     #[command(flatten)]
     pub opts: CliOpts,
@@ -69,7 +69,7 @@ pub struct CargoArgs {
 }
 
 /// Usage: `charon ui_test <file.rs> [charon args]...`
-#[derive(clap::Args, Debug)]
+#[derive(Debug, clap::Args)]
 pub struct UiTestArgs {
     /// Rust UI test file to run.
     pub file: PathBuf,
@@ -80,5 +80,5 @@ pub struct UiTestArgs {
 }
 
 /// Usage: `charon toolchain-path`
-#[derive(clap::Args, Debug)]
+#[derive(Debug, clap::Args)]
 pub struct ToolchainPathArgs {}

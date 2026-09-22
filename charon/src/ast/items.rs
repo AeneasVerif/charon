@@ -21,9 +21,9 @@ pub use trait_impl::*;
 pub use type_decl::*;
 
 /// A translated item.
-#[derive(
-    Debug, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug)]
+#[derive(EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(Drive, DriveMut, DriveTwo)]
 pub enum ItemByVal {
     Type(TypeDecl),
     Fun(FunDecl),
@@ -33,18 +33,9 @@ pub enum ItemByVal {
 }
 
 /// A reference to a translated item.
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    VariantIndexArity,
-    Drive,
-    DriveMut,
-    DriveTwo,
-)]
+#[derive(Debug, Copy, Clone)]
+#[derive(EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(Drive, DriveMut, DriveTwo)]
 pub enum ItemRef<'ctx> {
     Type(&'ctx TypeDecl),
     Fun(&'ctx FunDecl),
@@ -54,9 +45,9 @@ pub enum ItemRef<'ctx> {
 }
 
 /// A mutable reference to a translated item.
-#[derive(
-    Debug, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut, DriveTwo,
-)]
+#[derive(Debug)]
+#[derive(EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(Drive, DriveMut, DriveTwo)]
 pub enum ItemRefMut<'ctx> {
     Type(&'ctx mut TypeDecl),
     Fun(&'ctx mut FunDecl),

@@ -537,7 +537,7 @@ impl VisitBodyMut for IndexVisitor<'_, '_> {
 ///   tmp1 : &mut T = <[_; _] as IndexMut<_>>::index_mut(move tmp0, i)
 ///   *tmp1 = x
 /// ```
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash)]
 enum StdItem {
     ArrayAsSlice,
     ArrayAsMutSlice,
