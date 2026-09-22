@@ -495,7 +495,7 @@ extern "rust-call" fn {impl FnOnce<(&'_0 u32,)> for test_crate::main::{closure#3
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<*mut (dyn FnOnce<(&'_0 u32,), Output = u32> + '1), *mut test_crate::main::{closure#3}>(move _1)
+    _3 = concretize<*mut (dyn FnOnce<(&'_0 u32,), Output = u32> + '2), *mut test_crate::main::{closure#3}>(move _1)
     _0 = {impl FnOnce<(&'_0 u32,)> for test_crate::main::{closure#3}}::call_once<'_0>(move (*_3), move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -519,7 +519,7 @@ where
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_1 mut (dyn FnOnce<(&'_0 u32,), Output = u32> + '1), &'_1 mut test_crate::main::{closure#3}>(move dyn_self)
+    target_self = concretize<&'_1 mut (dyn FnOnce<(&'_0 u32,), Output = u32> + '2), &'_1 mut test_crate::main::{closure#3}>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -559,7 +559,7 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<&'_1 mut (dyn FnMut<(&'_0 u32,), ImpliedClause1::Output = u32> + '2), &'_1 mut test_crate::main::{closure#3}>(move _1)
+    _3 = concretize<&'_1 mut (dyn FnMut<(&'_0 u32,), ImpliedClause1::Output = u32> + '3), &'_1 mut test_crate::main::{closure#3}>(move _1)
     _0 = {impl FnMut<(&'_0 u32,)> for test_crate::main::{closure#3}}::call_mut<'_0, '_1>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -583,7 +583,7 @@ where
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_1 mut (dyn FnMut<(&'_0 u32,), ImpliedClause1::Output = u32> + '2), &'_1 mut test_crate::main::{closure#3}>(move dyn_self)
+    target_self = concretize<&'_1 mut (dyn FnMut<(&'_0 u32,), ImpliedClause1::Output = u32> + '3), &'_1 mut test_crate::main::{closure#3}>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -626,7 +626,7 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<&'_1 (dyn Fn<(&'_0 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '3), &'_1 test_crate::main::{closure#3}>(move _1)
+    _3 = concretize<&'_1 (dyn Fn<(&'_0 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '4), &'_1 test_crate::main::{closure#3}>(move _1)
     _0 = {impl Fn<(&'_0 u32,)> for test_crate::main::{closure#3}}::call<'_0, '_1>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -650,7 +650,7 @@ where
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_1 mut (dyn Fn<(&'_0 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '3), &'_1 mut test_crate::main::{closure#3}>(move dyn_self)
+    target_self = concretize<&'_1 mut (dyn Fn<(&'_0 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '4), &'_1 mut test_crate::main::{closure#3}>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return

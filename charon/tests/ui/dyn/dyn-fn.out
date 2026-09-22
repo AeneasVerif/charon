@@ -192,7 +192,7 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<&'_1 (dyn Fn<(&'_0 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '3), &'_1 {closure}>(move _1)
+    _3 = concretize<&'_1 (dyn Fn<(&'_0 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '4), &'_1 {closure}>(move _1)
     _0 = call<'_0, '_1>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -216,7 +216,7 @@ where
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_1 mut (dyn Fn<(&'_0 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '3), &'_1 mut {closure}>(move dyn_self)
+    target_self = concretize<&'_1 mut (dyn Fn<(&'_0 mut u32,), ImpliedClause1::ImpliedClause1::Output = bool> + '4), &'_1 mut {closure}>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return

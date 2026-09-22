@@ -1,5 +1,3 @@
-//@ known-failure
-
 fn foo() -> impl Copy {
     foo
 }

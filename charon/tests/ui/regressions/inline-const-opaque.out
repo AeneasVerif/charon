@@ -1,29 +1,28 @@
-disabled backtrace
-error[E9999]: Supposely unreachable place in the Rust AST. The label is "valtree_to_expr".
-              This error report happend because some assumption about the Rust AST was broken.
-              
-              Context:
-               - valtree: Branch(
-                  [],
-              )
-               - ty: Alias(
-                  Yes,
-                  Alias {
-                      kind: Opaque {
-                          def_id: test_crate::opaque::{opaque#0},
-                      },
-                      args: [],
-                      ..
-                  },
-              )
-              
+# Final LLBC before serialization:
 
-error: Hax panicked when translating `const main::{constant#0}`.
- --> tests/ui/regressions/inline-const-opaque.rs:6:5
-  |
-6 |     const { opaque() };
-  |     ^^^^^^^^^^^^^^^^^^
+struct () {}
 
-error: aborting due to 1 previous error
+// Full name: test_crate::opaque
+fn opaque()
+{
+    let _0: (); // return
 
-ERROR Code failed to compile
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+
+

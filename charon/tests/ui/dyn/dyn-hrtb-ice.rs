@@ -1,5 +1,3 @@
-//@ known-failure
-
 pub fn dyn_fn_arg<'a>(_: &dyn Fn(&'a i32)) {}
 
 pub fn hrtb_fn_pointer(_: for<'a> fn(&'a dyn Fn(&'a u8))) {}

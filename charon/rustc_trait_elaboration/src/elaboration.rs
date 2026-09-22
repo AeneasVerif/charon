@@ -207,25 +207,32 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             })
             .map(|pred| pred.with_self_ty(tcx, self_ty));
         let predicates = ItemPredicates::new_unmapped(DUMMY_SP, predicates);
+        // Erase regions for the purpose of trait solving.
+        let mut erased_predicates = predicates.clone();
+        for predicate in erased_predicates.iter_mut() {
+            predicate.clause = erase_free_regions(tcx, predicate.clause);
+        }
 
         let mut searcher = self.clone();
-        searcher.insert_bound_predicates(state, predicates.iter());
+        searcher.insert_bound_predicates(state, erased_predicates.iter());
         searcher.typing_env.param_env = param_env_from_clauses(
             tcx,
             self.typing_env
                 .param_env
                 .caller_bounds()
-                .chain(predicates.iter().map(|pred| pred.clause)),
+                .chain(erased_predicates.iter().map(|pred| pred.clause)),
         );
         let val = f(&mut searcher, self_ty);
         let predicates = predicates
             .iter()
-            .map(|predicate| {
-                let projection_trait_proof = predicate.clause.as_projection_clause().map(|proj| {
-                    let alias_ty = proj.skip_binder().projection_term.expect_ty();
-                    let trait_ref = proj.rebind(alias_ty.trait_ref(tcx));
-                    searcher.resolve(state, &trait_ref)
-                });
+            .zip(erased_predicates.iter())
+            .map(|(predicate, erased_predicate)| {
+                let projection_trait_proof =
+                    erased_predicate.clause.as_projection_clause().map(|proj| {
+                        let alias_ty = proj.skip_binder().projection_term.expect_ty();
+                        let trait_ref = proj.rebind(alias_ty.trait_ref(tcx));
+                        searcher.resolve(state, &trait_ref)
+                    });
                 DynPredicate {
                     predicate,
                     projection_trait_proof,

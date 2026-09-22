@@ -1,25 +1,66 @@
-error: Unexpected error: could not find region '1_0
- --> tests/ui/dyn/higher-ranked-dyn-trait-region.rs:1:1
-  |
-1 | //@ known-failure
-  | ^
+# Final LLBC before serialization:
 
-error: Unexpected error: could not find region '1_0
- --> tests/ui/dyn/higher-ranked-dyn-trait-region.rs:1:1
-  |
-1 | //@ known-failure
-  | ^
+opaque type core::marker::MetaSized::{vtable}
 
-error: Unexpected error: could not find region '1_0
- --> tests/ui/dyn/higher-ranked-dyn-trait-region.rs:1:1
-  |
-1 | //@ known-failure
-  | ^
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
 
-error: Unexpected error: could not find region '1_0
- --> tests/ui/dyn/higher-ranked-dyn-trait-region.rs:1:1
-  |
-1 | //@ known-failure
-  | ^
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
 
-ERROR Charon failed to translate this code (4 errors)
+struct () {}
+
+struct test_crate::Trait::{vtable}<'a> {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait<'a>)),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::Trait
+pub trait Trait<'a, Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Trait::{vtable}<'a>
+}
+
+// Full name: test_crate::use_type
+pub fn use_type<T>()
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'static,
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let _1: (); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = use_type<fn<'_0_1>(&'_0_1 (dyn Trait<'_0_1> + '_0_1))>[{built_in impl Sized for fn<'_0_2>(&'_0_2 (dyn Trait<'_0_2> + '_0_2))}]()
+    ↳⚡ unwind_continue
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
+
+

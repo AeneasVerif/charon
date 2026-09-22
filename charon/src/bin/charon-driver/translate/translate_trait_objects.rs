@@ -122,7 +122,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         self.check_at_most_one_pred_has_methods(span, &binder.predicates)?;
 
         // Add a binder that contains the existentially quantified type.
-        self.binding_levels.push(BindingLevel::new(None));
+        self.binding_levels.push(BindingLevel::new_dyn());
 
         // Add the existentially quantified type.
         let ty_id = self.innermost_binder_mut().push_type_var(

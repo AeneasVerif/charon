@@ -16,14 +16,21 @@ UNSUPPORTED_FEATURES = (
     "repr_simd",
     "rustc_private",
     "default_field_values",
+    "specialization",
 )
 
 EXPENSIVE_RUSTC_STRESS_TESTS = {
     "associated-consts/issue-93775.rs",
+    "associated-inherent-types/really_deep_self_ty_mismatch.rs",
     "bench/issue-32062.rs",
-    "closures/many-closures.rs",
+    "checked-type-alias/deep-expansion.rs",
     "closures/issue-72408-nested-closures-exponential.rs",
+    "closures/many-closures.rs",
+    "codegen/normalization-overflow/recursion-issue-118590.rs",
+    "codegen/normalization-overflow/recursion-issue-122823.rs",
+    "codegen/normalization-overflow/recursion-issue-131342.rs",
     "codegen/normalization-overflow/recursion-issue-139659.rs",
+    "codegen/normalization-overflow/recursion-issue-92004.rs",
     "codegen/no-codegen-blowup-in-deeply-nested-struct.rs",
     "debuginfo/debuginfo-inline-callsite-location-macro-1.rs",
     "debuginfo/debuginfo-inline-callsite-location-macro-2.rs",
@@ -34,9 +41,23 @@ EXPENSIVE_RUSTC_STRESS_TESTS = {
     "impl-trait/example-calendar.rs",
     "iterators/issue-58952-filter-type-length.rs",
     "iterators/iter-map-fold-type-length.rs",
+    "limits/type-length-limit-enforcement.rs",
     "macros/type-macros-hlist.rs",
     "match/match-stack-overflow-72933-.rs",
+    "pattern/usefulness/issue-88747.rs",
     "query-system/query_depth.rs",
+    "traits/next-solver/coercion/unfulfilled-unsize-coercion-recursion-limit.rs",
+    "traits/next-solver/coercion/unsize-coercion-recursion-limit.rs",
+    "traits/next-solver/deeply-nested-stalled-on-coroutines.rs",
+    "traits/next-solver/overflow/fcw-overflow-to-ambig-with-constraints.rs",
+    "typeck/nested-generic-traits-performance.rs",
+}
+
+# These check-pass tests intentionally contain code that is accepted by type checking but cannot
+# be translated or monomorphized. Charon inspects more than rustc does for a check-only build.
+UNTRANSLATABLE_CHECK_ONLY_TESTS = {
+    "coercion/vtable-impossible-predicates-async.rs",
+    "type-alias/lack-of-wfcheck.rs",
 }
 
 SPECIAL_UNSUPPORTED_FILES = {
@@ -46,6 +67,7 @@ SPECIAL_UNSUPPORTED_FILES = {
     "attributes/export/exportable.rs",
     "attributes/export/lang-item.rs",
     "cfg/assume-incomplete-release/auxiliary/ver-cfg-rel.rs",
+    "cfg/suggest-alternative-name-on-target.rs",
     "codegen/incorrect-arch-intrinsic.rs",
     "codegen/incorrect-llvm-intrinsic-signature.rs",
     "codegen/unknown-llvm-intrinsic.rs",
@@ -64,6 +86,7 @@ SPECIAL_UNSUPPORTED_FILES = {
     "limits/vtable.rs",
     "link-native-libs/suggest-libname-only-1.rs",
     "link-native-libs/suggest-libname-only-2.rs",
+    "layout/uninitialized-gat-projection-cycle-issue-153205.rs",
     "lint/non-snake-case/non-snake-ffi-issue-31924.rs",
     "lto/issue-11154.rs",
     "macros/auxiliary/macro-comma-support.rs",
@@ -81,7 +104,7 @@ class TestFile:
         self.path = path
         self.path_str = path.as_posix()
         self.lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
-        self.one_line_text = " ".join(self.lines)
+        self.text = "\n".join(self.lines)
         self.scoped_comments = self._scoped_comments()
 
     def _scoped_comments(self) -> list[tuple[set[str], str]]:
@@ -137,10 +160,11 @@ class TestFile:
     def has_feature(self, feature: str) -> bool:
         feature_pattern = re.escape(feature)
         pattern = re.compile(
-            rf"#!\[feature\(\s*{feature_pattern}(?:[^A-Za-z0-9_]|$)"
-            rf"|#!\[feature\([^]]*[^A-Za-z0-9_]{feature_pattern}(?:[^A-Za-z0-9_]|$)"
+            rf"^\s*#!\[(?:cfg_attr\([^,]+,\s*)?feature\([^]]*"
+            rf"(?<![A-Za-z0-9_]){feature_pattern}(?![A-Za-z0-9_])",
+            re.MULTILINE,
         )
-        return pattern.search(self.one_line_text) is not None
+        return pattern.search(self.text) is not None
 
 
 def revision_suffix(rev: str) -> str:
@@ -228,10 +252,13 @@ def has_unsupported_compile_flags(test_file: TestFile, rev: str) -> bool:
             or " -Cllvm-args" in padded
             or " -C llvm-args" in padded
             or " -Zterminal-urls" in padded
+            or " -Z treat-err-as-bug" in padded
+            or " -Ztreat-err-as-bug" in padded
             or " -Zunpretty" in padded
             or " unpretty=" in padded
             or " print-type-sizes " in padded
             or " -Zprint-type-sizes" in padded
+            or " -Zrandomize-layout" in padded
             or " parse-crate-root-only " in padded
             or " -Zparse-crate-root-only" in padded
         ):
@@ -250,10 +277,14 @@ def is_expensive_rustc_stress_test(path: Path) -> bool:
 def unsupported_build_settings(test_file: TestFile, rev: str) -> bool:
     path = test_file.path
     path_parts = set(path.parts)
+    relative_path = test_file.path_str.removeprefix("test-results/")
     return (
-        test_file.path_str.removeprefix("test-results/") in SPECIAL_UNSUPPORTED_FILES
+        relative_path in SPECIAL_UNSUPPORTED_FILES
+        or relative_path in UNTRANSLATABLE_CHECK_ONLY_TESTS
         or (path.parent / "compiletest-ignore-dir").exists()
         or "auxiliary" in path_parts
+        or "compiletest-self-test" in path_parts
+        or "dep-graph" in path_parts
         or test_file.has_revision_magic_comment(rev, "ignore-test")
         or test_file.has_revision_magic_comment(rev, "ignore-auxiliary")
         or test_file.has_revision_magic_comment(rev, "known-bug")
@@ -290,8 +321,11 @@ def rustc_args(test_file: TestFile, rev: str) -> list[str]:
     if edition:
         args.append(f"--edition={edition}")
 
-    if rev and CFG_IDENT_RE.match(rev):
-        args.extend(["--cfg", rev])
+    if rev:
+        # This is how compiletest turns a revision name into its implicit cfg.
+        revision_cfg = rev.lower().replace("-", "_")
+        if CFG_IDENT_RE.match(revision_cfg):
+            args.extend(["--cfg", revision_cfg])
 
     return args
 
@@ -320,6 +354,10 @@ def run_revision(test_file: TestFile, rev: str, charon: str, timeout: int) -> No
         f"{current_case_file}.llbc",
         "--",
         test_file.path.as_posix(),
+        # This is passed unconditionally by compiletest. The next solver
+        # is the nightly default, but most UI tests still exercise the old
+        # solver unless they explicitly opt into the new one.
+        "-Znext-solver=coherence",
         *rustc_args(test_file, rev),
     ]
 

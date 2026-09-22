@@ -740,16 +740,12 @@ pub enum TyKind {
             // note: loss of precision, we erase the bound vars.
             let generics = erase_free_regions(tcx, generics.skip_binder());
             let item = translate_item_ref(s, *fun_id, generics);
-            let tcx = s.base().tcx;
-            let fn_sig = tcx.fn_sig(*fun_id).instantiate(tcx, generics);
-            let fn_sig = Box::new(normalize(tcx, s.typing_env(), fn_sig).sinto(s));
-            TyKind::FnDef { item, fn_sig }
+            TyKind::FnDef { item }
         },
     )]
     /// Reflects [`ty::TyKind::FnDef`]
     FnDef {
         item: ItemRef,
-        fn_sig: Box<PolyFnSig>,
     },
 
     #[custom_arm(

@@ -24,6 +24,9 @@ use charon_lib::utils::CycleDetector;
 /// this level, and various maps from the rustc-internal indices to our indices.
 #[derive(Debug, Default)]
 pub(crate) struct BindingLevel {
+    /// Whether this binding level exists in Hax's De Bruijn indices. `dyn Trait` introduces an
+    /// existential binder in Charon that has no corresponding binder in rustc/Hax.
+    pub is_hax_binder: bool,
     /// The definition whose generics this binding level contains, if this is an item binder.
     pub def_id: Option<hax::DefId>,
     /// The parameters and predicates bound at this level.
@@ -84,8 +87,15 @@ impl BindingLevel {
     pub(crate) fn new(def_id: Option<hax::DefId>) -> Self {
         Self {
             def_id,
+            is_hax_binder: true,
             ..Default::default()
         }
+    }
+
+    pub(crate) fn new_dyn() -> Self {
+        let mut level = Self::new(None);
+        level.is_hax_binder = false;
+        level
     }
 
     /// Important: we must push all the early-bound regions before pushing any other region.
@@ -266,21 +276,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn lookup_bound_region(
         &mut self,
         span: Span,
-        dbid: hax::DebruijnIndex,
+        hax_dbid: hax::DebruijnIndex,
         var: hax::BoundVar,
     ) -> Result<RegionDbVar, Error> {
-        let dbid = DeBruijnId::new(dbid);
-        if let Some(rid) = self
+        if let Some((charon_dbid, level)) = self
             .binding_levels
-            .get(dbid)
-            .and_then(|bl| bl.bound_region_vars.get(var))
+            .iter_enumerated()
+            .filter(|(_, l)| l.is_hax_binder)
+            .nth(hax_dbid)
+            && let Some(rid) = level.bound_region_vars.get(var)
         {
-            Ok(DeBruijnVar::bound(dbid, *rid))
+            Ok(DeBruijnVar::bound(charon_dbid, *rid))
         } else {
             raise_error!(
                 self,
                 span,
-                "Unexpected error: could not find region '{dbid}_{var}"
+                "Unexpected error: could not find region '{hax_dbid}_{var}"
             )
         }
     }
