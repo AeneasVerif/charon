@@ -4,7 +4,11 @@ trait Foo {
     type V;
 }
 
-trait Callback<T: Foo>: Fn(&T, &T::V) {}
+trait Super<X> {
+    type A;
+}
+
+trait Callback<T: Foo>: Super<T::V, A = ()> {}
 
 struct Bar<T: Foo> {
     callback: Box<dyn Callback<T>>,

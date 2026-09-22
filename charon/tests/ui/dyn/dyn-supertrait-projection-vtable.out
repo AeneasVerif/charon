@@ -4,9 +4,9 @@ Found unexpected `Self`
                         type when constructing vtable
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Thread panicked when extracting item `test_crate::Callback`.
- --> tests/ui/dyn/dyn-fn-supertrait-vtable.rs:7:1
-  |
-7 | trait Callback<T: Foo>: Fn(&T, &T::V) {}
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  --> tests/ui/dyn/dyn-supertrait-projection-vtable.rs:11:1
+   |
+11 | trait Callback<T: Foo>: Super<T::V, A = ()> {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ERROR Charon failed to translate this code (1 errors)
