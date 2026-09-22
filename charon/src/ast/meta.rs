@@ -77,6 +77,8 @@ pub struct ItemMeta {
     pub lang_item: Option<LangItem>,
     /// If the item is a rustc diagnostic item, record its internal identifier.
     pub diagnostic_item: Option<String>,
+    /// Whether an error occurred while translating this item.
+    pub has_errors: bool,
 }
 
 impl ItemOpacity {
@@ -115,6 +117,7 @@ impl ItemMeta {
             opacity,
             lang_item: None,
             diagnostic_item: None,
+            has_errors: false,
         }
     }
 }

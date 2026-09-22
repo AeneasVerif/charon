@@ -55,6 +55,12 @@ impl<'tcx> TranslateCtx<'tcx> {
                 ),
             };
         });
+        if let Some(trans_id) = trans_id
+            && self.errors.borrow().item_has_errors(trans_id)
+            && let Some(mut item) = self.translated.get_item_mut(trans_id)
+        {
+            item.item_meta().has_errors = true;
+        }
         // We must be careful not to early-return from this function to not unbalance the stack.
         self.translate_stack.pop();
     }

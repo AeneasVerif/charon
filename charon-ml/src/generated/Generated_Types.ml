@@ -911,6 +911,8 @@ and item_meta = {
   diagnostic_item : string option;
       (** If the item is a rustc diagnostic item, record its internal
           identifier. *)
+  has_errors : bool;
+      (** Whether an error occurred while translating this item. *)
 }
 
 (** How much to translate for a given item. *)

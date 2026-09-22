@@ -195,8 +195,8 @@ pub struct ErrorCtx {
     /// If true, print the warnings as errors, and abort if any errors were raised.
     pub error_on_warnings: bool,
 
-    /// The ids of the external_declarations for which extraction we encountered errors.
-    pub external_decls_with_errors: HashSet<ItemId>,
+    /// The ids of the items for which extraction encountered errors.
+    items_with_errors: HashSet<ItemId>,
     /// Graph of dependencies between items: there is an edge from item `a` to item `b` if `b`
     /// registered the id for `a` during its translation. Because we only use this to report errors
     /// on external items, we only record edges where `a` is an external item.
@@ -214,7 +214,7 @@ impl ErrorCtx {
         Self {
             continue_on_failure: true,
             error_on_warnings: false,
-            external_decls_with_errors: HashSet::default(),
+            items_with_errors: HashSet::default(),
             external_dep_graph: DepGraph::new(),
             def_id: None,
             def_id_is_local: false,
@@ -227,6 +227,9 @@ impl ErrorCtx {
     }
     pub fn has_errors(&self) -> bool {
         self.error_count > 0
+    }
+    pub fn item_has_errors(&self, id: ItemId) -> bool {
+        self.items_with_errors.contains(&id)
     }
 
     /// Report an error without registering anything.
@@ -261,12 +264,12 @@ impl ErrorCtx {
         };
         let err = self.display_error(krate, span, level, msg.to_string());
         self.error_count += 1;
-        // If this item comes from an external crate, after the first error for that item we
-        // display where in the local crate that item was reached from.
-        if !self.def_id_is_local
-            && let Some(id) = self.def_id
-            && self.external_decls_with_errors.insert(id)
+        if let Some(id) = self.def_id
+            && self.items_with_errors.insert(id)
+            && !self.def_id_is_local
         {
+            // If this item comes from an external crate, after the first error for that item
+            // we display where in the local crate that item was reached from.
             self.report_external_dep_error(krate, id);
         }
         if !self.continue_on_failure() {

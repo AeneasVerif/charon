@@ -997,6 +997,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             opacity,
             lang_item,
             diagnostic_item,
+            has_errors: false,
         };
         self.cached_item_metas
             .insert(item_src.clone(), item_meta.clone());
