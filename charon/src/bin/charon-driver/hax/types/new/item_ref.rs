@@ -2,7 +2,9 @@ use crate::hax::prelude::*;
 
 use charon_lib::ast::HashConsed;
 use rustc_middle::ty;
+use rustc_middle::ty::TypeVisitableExt;
 use rustc_span::def_id::DefId as RDefId;
+use std::borrow::Cow;
 
 /// Reference to an item, with generics. Basically any mention of an item (function, type, etc)
 /// uses this.
@@ -56,8 +58,12 @@ pub struct ItemRefContents {
     /// Witnesses of the trait clauses required by the item, e.g. `T: Sized` for `Option<T>` or `B:
     /// ToOwned` for `Cow<'a, B>`. Same as above, for associated items this only includes clauses
     /// for the item itself.
-    #[value(self.assoc_trait_proofs().sinto(s))]
-    pub trait_proofs: Vec<TraitProof>,
+    #[value(Default::default())]
+    trait_proofs: LazyTraitProofs,
+    /// The item under which this reference was made, if the generics mention its parameters:
+    /// the trait proofs may then refer to its local clauses.
+    #[value(self.has_owner_param.then(|| s.owner()))]
+    owner: Option<DefId>,
     /// If we're referring to a trait associated item, this gives the trait clause/impl we're
     /// referring to.
     #[value(self.in_trait.as_ref().map(|(x, _)| x).sinto(s))]
@@ -69,6 +75,19 @@ pub struct ItemRefContents {
     #[value(self.has_non_lt_param)]
     pub has_non_lt_param: bool,
 }
+
+/// Trait proofs of an `ItemRef`, computed lazily
+#[derive(Clone, Debug, Default)]
+pub struct LazyTraitProofs(std::sync::OnceLock<Vec<TraitProof>>);
+impl std::hash::Hash for LazyTraitProofs {
+    fn hash<H: std::hash::Hasher>(&self, _state: &mut H) {}
+}
+impl PartialEq for LazyTraitProofs {
+    fn eq(&self, _other: &Self) -> bool {
+        true
+    }
+}
+impl Eq for LazyTraitProofs {}
 
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef>
     for rustc_trait_elaboration::ItemRef<'tcx, DefId>
@@ -150,6 +169,17 @@ impl ItemRef {
             return item;
         }
 
+        let is_concrete = !generics.has_non_region_param() && !s.owner_has_concrete_clauses();
+        if is_concrete
+            && let Some(item) =
+                s.with_global_cache(|cache| cache.concrete_item_refs.get(&key).cloned())
+        {
+            s.with_cache(|cache| {
+                cache.item_refs.insert(key, item.clone());
+            });
+            return item;
+        }
+
         // Don't resolve if the DefId isn't real.
         let is_real_def_id = hax_def_id.as_real_def_id().is_some();
         let assoc_item_resolution = if is_real_def_id {
@@ -168,15 +198,44 @@ impl ItemRef {
 
         let content: ItemRefContents = item_ref.sinto(s);
         let item = content.intern(s);
-        s.with_cache(|cache| {
-            cache.item_refs.insert(key, item.clone());
-        });
         s.with_global_cache(|cache| {
             cache
                 .reverse_item_refs_map
                 .insert(item.clone(), item_ref.generics());
+            if is_concrete {
+                cache.concrete_item_refs.insert(key.clone(), item.clone());
+            }
+        });
+        s.with_cache(|cache| {
+            cache.item_refs.insert(key, item.clone());
         });
         item
+    }
+
+    /// Witnesses of the trait clauses required by the item, e.g. `T: Sized` for `Option<T>`.
+    pub fn trait_proofs<'tcx, S: UnderOwnerState<'tcx>>(&self, s: &S) -> Cow<'_, [TraitProof]> {
+        let resolve = |owner: &DefId| {
+            let s = &s.with_hax_owner(owner);
+            let args = self.rustc_args(s);
+            let trait_proofs = s.with_predicate_searcher(|pred_searcher, state| {
+                pred_searcher.resolve_item_assoc_trait_proofs(
+                    state,
+                    self.def_id.clone(),
+                    args,
+                    self.in_trait.is_some(),
+                )
+            });
+            trait_proofs.sinto(s)
+        };
+        match &self.owner {
+            // If the proofs depend on the owner, resolve them in the owner's context and cache them.
+            Some(owner) => Cow::Borrowed(self.trait_proofs.0.get_or_init(|| resolve(owner))),
+            // If the proofs don't depend on the owner, but the current owner has concrete clauses, resolve
+            // them in the current context and don't cache them, since they may change.
+            None if s.owner_has_concrete_clauses() => Cow::Owned(resolve(&s.owner())),
+            // If the proofs don't depend on the owner, resolve them in the current context.
+            None => Cow::Borrowed(self.trait_proofs.0.get_or_init(|| resolve(&s.owner()))),
+        }
     }
 
     /// Construct an `ItemRef` for items that can't have generics (e.g. modules).
@@ -185,6 +244,7 @@ impl ItemRef {
             def_id,
             generic_args: Default::default(),
             trait_proofs: Default::default(),
+            owner: None,
             in_trait: Default::default(),
             has_param: false,
             has_non_lt_param: false,
@@ -261,6 +321,7 @@ impl ItemRef {
         let args = self.rustc_args(s);
         let mut contents = self.contents().clone();
         f(&mut contents.def_id);
+        contents.trait_proofs = Default::default();
         let new = contents.intern(s);
         s.with_global_cache(|cache| {
             cache.reverse_item_refs_map.insert(new.clone(), args);

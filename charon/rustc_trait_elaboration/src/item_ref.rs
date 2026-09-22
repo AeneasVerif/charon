@@ -4,8 +4,8 @@ use rustc_hir::{def::DefKind, def_id::DefId};
 use rustc_middle::ty::{self, GenericArg, GenericArgsRef};
 
 use crate::{
-    ItemPredicates, PredicateDirection, PredicateSearcher, TraitProof, TraitProofKind,
-    inherits_parent_clauses, normalize, self_predicate,
+    DYN_SELF_PARAM_INDEX, ItemPredicates, PredicateDirection, PredicateSearcher, TraitProof,
+    TraitProofKind, inherits_parent_clauses, normalize, self_predicate,
 };
 
 /// The identifier of an item; generalizes over rustc's `DefId` to allow for virtual items.
@@ -138,8 +138,6 @@ pub struct ItemRefContents<'tcx, Id: ItemId = DefId> {
     /// The number of generic arguments excluding the extra inference arguments of closures and
     /// inline consts.
     pub proper_arg_count: usize,
-    /// Witnesses of the trait clauses required by the item, e.g. `T: Sized` for `Option<T>`.
-    pub trait_proofs: Vec<TraitProof<'tcx, Id>>,
     /// If we're referring to a trait associated item, this gives the trait clause/impl we're
     /// referring to, as well as the number of clauses required to mention the trait (cached for
     /// easy access).
@@ -148,6 +146,9 @@ pub struct ItemRefContents<'tcx, Id: ItemId = DefId> {
     pub needs_explicit_self_clause: bool,
     /// Whether this contains any reference to a type/lifetime/const parameter.
     pub has_param: bool,
+    /// Whether this mentions the generic parameters of the item under which the reference was made.
+    /// If `false`, the trait proofs for this reference don't depend on the owner.
+    pub has_owner_param: bool,
     /// Whether this contains any reference to a type/const parameter.
     pub has_non_lt_param: bool,
 }
@@ -242,7 +243,6 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             trait_info = None;
         }
 
-        let trait_proofs = self.resolve_item_required_predicates(state, def_id.clone(), generics);
         let needs_explicit_self_clause = def_id.takes_explicit_self_clause(state);
         // Rustc gives closures/inline consts extra generics for inference that we don't expose.
         let proper_arg_count = if let Some(parent) = def_id.typeck_parent(state) {
@@ -251,19 +251,75 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             generics.len()
         };
 
+        // Determine whether this item reference mentions any of the generic parameters of the owner.
+        // We exclude the `dyn` self parameter we add, since that is unrelated to the parent.
+        let has_owner_param = generics.has_param() && {
+            use rustc_middle::ty::{TypeSuperVisitable, TypeVisitable, TypeVisitor};
+            use std::ops::ControlFlow;
+            struct HasOwnerParam;
+            impl<'tcx> TypeVisitor<ty::TyCtxt<'tcx>> for HasOwnerParam {
+                type Result = ControlFlow<()>;
+                fn visit_ty(&mut self, ty: ty::Ty<'tcx>) -> ControlFlow<()> {
+                    match ty.kind() {
+                        ty::Param(p) if p.index != DYN_SELF_PARAM_INDEX => ControlFlow::Break(()),
+                        _ if ty.has_param() => ty.super_visit_with(self),
+                        _ => ControlFlow::Continue(()),
+                    }
+                }
+                fn visit_region(&mut self, r: ty::Region<'tcx>) -> ControlFlow<()> {
+                    if r.is_param() {
+                        ControlFlow::Break(())
+                    } else {
+                        ControlFlow::Continue(())
+                    }
+                }
+                fn visit_const(&mut self, c: ty::Const<'tcx>) -> ControlFlow<()> {
+                    match c.kind() {
+                        ty::ConstKind::Param(_) => ControlFlow::Break(()),
+                        _ if c.has_param() => c.super_visit_with(self),
+                        _ => ControlFlow::Continue(()),
+                    }
+                }
+            }
+            generics.visit_with(&mut HasOwnerParam).is_break()
+        };
+
         let content = ItemRefContents {
             def_id,
             generic_args: generics,
             proper_arg_count,
-            trait_proofs,
             in_trait: trait_info,
             needs_explicit_self_clause,
             has_param: generics.has_param()
                 || generics.has_escaping_bound_vars()
                 || generics.has_free_regions(),
             has_non_lt_param: generics.has_param(),
+            has_owner_param,
         };
         content.intern()
+    }
+
+    /// Witnesses of the trait clauses required to mention `(def_id, generics)`, e.g. `T: Sized`
+    /// for `Option<T>`. If `in_trait`, this is a trait associated item and we only include the
+    /// clauses for the item itself.
+    pub fn resolve_item_assoc_trait_proofs(
+        &mut self,
+        state: &Id::State<'tcx>,
+        def_id: Id,
+        generics: ty::GenericArgsRef<'tcx>,
+        in_trait: bool,
+    ) -> Vec<TraitProof<'tcx, Id>> {
+        let mut trait_proofs =
+            self.resolve_item_required_predicates(state, def_id.clone(), generics);
+        if in_trait && let Some(tr_def_id) = def_id.parent_of_assoc(state) {
+            let num_trait_req_clauses =
+                ItemPredicates::required_recursively(self.elab_ctx, state, tr_def_id).len();
+            // Assoc consts and methods get an extra `Self: Trait` clause as the first clause, we
+            // skip that one too. Note: that clause is the same as `in_trait`.
+            let start = num_trait_req_clauses + def_id.takes_explicit_self_clause(state) as usize;
+            trait_proofs.drain(..start);
+        }
+        trait_proofs
     }
 }
 
@@ -274,11 +330,11 @@ impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
             def_id,
             generic_args: Default::default(),
             proper_arg_count: 0,
-            trait_proofs: Default::default(),
             in_trait: Default::default(),
             needs_explicit_self_clause: false,
             has_param: false,
             has_non_lt_param: false,
+            has_owner_param: false,
         };
         content.intern()
     }
@@ -286,10 +342,6 @@ impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
     /// The generics passed to the item.
     pub fn generics(&self) -> GenericArgsRef<'tcx> {
         self.generic_args
-    }
-    /// The trait proofs passed to the item.
-    pub fn trait_proofs(&self) -> &[TraitProof<'tcx, Id>] {
-        &self.trait_proofs
     }
     /// The generics passed to the item, except for trait associated items these are only the
     /// generics of the method/type/const itself; generics for the trait are available in
@@ -301,23 +353,6 @@ impl<'tcx, Id: ItemId> ItemRef<'tcx, Id> {
             0
         };
         &self.generic_args[start..self.proper_arg_count]
-    }
-    /// The trait proofs passed to the item, except for trait associated items these are only the
-    /// proofs of the method/type/const itself.
-    pub fn assoc_trait_proofs(&self) -> &[TraitProof<'tcx, Id>] {
-        let start = if let Some((_, num_trait_req_clauses)) = self.in_trait {
-            // Assoc consts and methods get an extra `Self: Trait` clause as the first clause, we
-            // skip that one too. Note: that clause is the same as `self.in_trait`.
-            num_trait_req_clauses
-                + if self.needs_explicit_self_clause {
-                    1
-                } else {
-                    0
-                }
-        } else {
-            0
-        };
-        &self.trait_proofs[start..]
     }
 }
 

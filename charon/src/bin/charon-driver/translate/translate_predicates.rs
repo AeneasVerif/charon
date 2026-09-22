@@ -300,10 +300,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     hax::TraitProofImpliedPredicate::AssocItem { item, index, .. } => {
                         let assoc_type_id =
                             self.translate_assoc_type_id(trait_ref.trait_id(), &item.def_id)?;
+                        let trait_proofs = item.trait_proofs(self.hax_state_with_id());
                         let generics = self.translate_generic_args(
                             span,
                             &item.generic_args,
-                            &item.trait_proofs,
+                            &trait_proofs,
                         )?;
                         TraitRefKind::ItemClause {
                             trait_ref,

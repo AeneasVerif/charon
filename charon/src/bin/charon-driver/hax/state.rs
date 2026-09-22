@@ -94,6 +94,11 @@ mod types {
         pub def_ids: HashMap<RDefId, DefId>,
         /// Map that recovers rustc args for a given `ItemRef`.
         pub reverse_item_refs_map: HashMap<ItemRef, ty::GenericArgsRef<'tcx>>,
+        /// Owner-independent cache of item refs whose generics have no parameters.
+        pub concrete_item_refs:
+            HashMap<(DefId, ty::GenericArgsRef<'tcx>, AssocItemResolution), ItemRef>,
+        /// Owner-independent cache of types without parameters.
+        pub concrete_tys: HashMap<ty::Ty<'tcx>, Ty>,
         /// Data for synthetic items. See the `synthetic_items` module.
         pub synthetic_item_data: HashMap<SyntheticItem, SyntheticItemData<'tcx>>,
         /// Anonymous allocations we turned into globals, in encounter order. Used to keep
@@ -321,6 +326,11 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
         let base_state = s.base_state();
         let mut predicate_searcher = base.elab_ctx.predicate_searcher_for(&base_state, owner);
         f(&mut predicate_searcher, &base_state)
+    }
+    /// Whether the owner has where-clauses on concrete types, meaning translation of concrete
+    /// items may still depend on the owner.
+    fn owner_has_concrete_clauses(&self) -> bool {
+        self.with_predicate_searcher(|pred_searcher, _| pred_searcher.has_concrete_clauses())
     }
 }
 impl<'tcx, S: UnderOwnerState<'tcx>> WithItemCacheExt<'tcx> for S {}
