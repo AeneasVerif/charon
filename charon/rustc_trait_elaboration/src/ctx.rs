@@ -6,7 +6,8 @@ use rustc_middle::ty;
 use std::cell::{RefCell, RefMut};
 
 use crate::{
-    BoundsOptions, ItemId, ItemPredicates, PredicateSearcher, TraitProof, TraitProofContents,
+    AssocItemResolution, BoundsOptions, ItemId, ItemPredicates, ItemRef, PredicateSearcher,
+    TraitProof, TraitProofContents,
 };
 
 mod intern {
@@ -93,11 +94,15 @@ impl<'tcx, Id: ItemId> Clone for ElaborationCtx<'tcx, Id> {
 
 impl<'tcx, Id: ItemId> Copy for ElaborationCtx<'tcx, Id> {}
 
+pub type ItemRefKey<'tcx, Id> = (Id, ty::GenericArgsRef<'tcx>, AssocItemResolution);
+
 struct ElaborationData<'tcx, Id: ItemId = DefId> {
     bounds_options: BoundsOptions,
     trait_proofs: intern::TraitProofInterner<'tcx, Id>,
     trait_proofs_arena: TypedArena<TraitProofContents<'tcx, Id>>,
     predicate_searchers: RefCell<FxHashMap<Id, PredicateSearcher<'tcx, Id>>>,
+    concrete_item_refs: RefCell<FxHashMap<ItemRefKey<'tcx, Id>, ItemRef<'tcx, Id>>>,
+    concrete_trait_proofs: RefCell<FxHashMap<ty::PolyTraitRef<'tcx>, TraitProof<'tcx, Id>>>,
     required_predicates: PredicateCache<'tcx, Id>,
     required_recursively_predicates: PredicateCache<'tcx, Id>,
     implied_predicates: PredicateCache<'tcx, Id>,
@@ -110,6 +115,8 @@ impl<'tcx, Id: ItemId> Default for ElaborationData<'tcx, Id> {
             trait_proofs: Default::default(),
             trait_proofs_arena: Default::default(),
             predicate_searchers: Default::default(),
+            concrete_item_refs: Default::default(),
+            concrete_trait_proofs: Default::default(),
             required_predicates: Default::default(),
             required_recursively_predicates: Default::default(),
             implied_predicates: Default::default(),
@@ -171,6 +178,18 @@ impl<'tcx, Id: ItemId> ElaborationCtx<'tcx, Id> {
 
     pub fn bounds_options(&self) -> &BoundsOptions {
         &self.data.bounds_options
+    }
+
+    pub(crate) fn concrete_item_refs(
+        &self,
+    ) -> &'tcx RefCell<FxHashMap<ItemRefKey<'tcx, Id>, ItemRef<'tcx, Id>>> {
+        &self.data.concrete_item_refs
+    }
+
+    pub(crate) fn concrete_trait_proofs(
+        &self,
+    ) -> &'tcx RefCell<FxHashMap<ty::PolyTraitRef<'tcx>, TraitProof<'tcx, Id>>> {
+        &self.data.concrete_trait_proofs
     }
 
     pub fn intern_trait_proof(

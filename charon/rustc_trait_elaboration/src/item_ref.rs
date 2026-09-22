@@ -1,7 +1,7 @@
 use std::{fmt::Debug, hash::Hash, ops::Deref, sync::Arc};
 
 use rustc_hir::{def::DefKind, def_id::DefId};
-use rustc_middle::ty::{self, GenericArg, GenericArgsRef};
+use rustc_middle::ty::{self, GenericArg, GenericArgsRef, TypeVisitableExt};
 
 use crate::{
     ItemPredicates, PredicateDirection, PredicateSearcher, TraitProof, TraitProofKind,
@@ -191,8 +191,19 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         if let Some(entry) = self.item_refs_cache.get(&key) {
             return entry.clone();
         }
+
+        let concrete = self.has_no_concrete_clauses && !generics.has_non_region_param();
+        if concrete && let Some(entry) = self.elab_ctx.concrete_item_refs().borrow().get(&key) {
+            return entry.clone();
+        }
         let item_ref =
             self.resolve_item_reference_uncached(state, def_id, generics, assoc_item_resolution);
+        if concrete {
+            self.elab_ctx
+                .concrete_item_refs()
+                .borrow_mut()
+                .insert(key.clone(), item_ref.clone());
+        }
         self.item_refs_cache.insert(key, item_ref.clone());
         item_ref
     }
