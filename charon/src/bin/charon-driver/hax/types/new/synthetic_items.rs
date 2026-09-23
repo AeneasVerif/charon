@@ -4,17 +4,15 @@ use charon_lib::name_matcher::NamePattern;
 
 use itertools::Itertools;
 use {
+    rustc_attr_ir::LangItem,
     rustc_middle::ty,
     rustc_span::{DUMMY_SP, Symbol},
-    rustc_type_ir::Upcast,
+    rustc_type_ir::{TypeFoldable, TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, Upcast},
 };
 
 /// We create some extra `DefId`s to represent things that rustc doesn't have a `DefId` for. This
-/// makes the pipeline much easier to have "real" def_ids for them.
-/// We generate fake struct-like items for each of: arrays, slices, tuples and `str`. This makes it
-/// easier to emit trait impls for these types, especially with monomorphization, and it lets
-/// tuples and `str` have a type declaration like other ADTs. This enum identifies these builtin
-/// types.
+/// makes the pipeline much easier to have "real" def_ids for them, as we can then solve traits
+/// for them etc, and works well with monomorphization.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum SyntheticItem {
     /// Fake ADT representing the `[T; N]` type.
@@ -25,6 +23,12 @@ pub enum SyntheticItem {
     Tuple(usize),
     /// Fake ADT representing `str`, which wraps a `[u8]`.
     Str,
+    /// Fake item representing a particular shape of function pointer types.
+    /// E.g. `for<'a> fn(&'a u32) -> Adt<'a, u32>` is considered to be an instantiation of the fake
+    /// item `for<'a> fn(&'a A) -> Adt<'a, B>` with `A=B=u32`. Note how the item can therefore
+    /// have trait clauses if some Adt does.
+    /// Every free region, type and constant in the shape is a distinct generic parameter.
+    FnPtr(FnPtrShape),
 }
 
 #[derive(Copy, Clone)]
@@ -32,15 +36,18 @@ pub struct SyntheticItemData<'tcx> {
     generics: &'tcx ty::Generics,
     clauses: &'tcx [ty::Clause<'tcx>],
     param_env: ty::ParamEnv<'tcx>,
+    /// Dummy DefId used for `liberate_bound_regions`.
+    late_bound_scope: Option<RDefId>,
 }
 
 /// This is a pretty criminal hack: I want to generate `ty::Generics` for my fake items. This
 /// requires `DefId`s for the generic parameters. rustc has an affordance for creating new `DefId`s
 /// (`tcx.create_def()`) but I could not figure out a way to use it that didn't end up ICEing
-/// during metadata encoding. So instead I'm reusing the `DefId`s of the generic parameters of the
-/// `core::array::repeat` function because that function had the right kind of generics.
+/// during metadata encoding. So instead I'm reusing the `DefId`s of generic parameters from `core`
+/// functions.
 #[derive(Copy, Clone)]
 struct GenericParamDefIds {
+    lt: RDefId,
     ty: RDefId,
     ct: RDefId,
 }
@@ -67,7 +74,31 @@ impl GenericParamDefIds {
             .find(|param| matches!(param.kind, ty::GenericParamDefKind::Const { .. }))
             .unwrap_or_else(|| panic!("`core::array::repeat` has no const parameter"))
             .def_id;
-        GenericParamDefIds { ty, ct }
+        let panic_info = tcx.require_lang_item(LangItem::PanicInfo, DUMMY_SP);
+        let lt = tcx
+            .generics_of(panic_info)
+            .own_params
+            .iter()
+            .find(|param| matches!(param.kind, ty::GenericParamDefKind::Lifetime))
+            .unwrap_or_else(|| panic!("`PanicInfo` has no lifetime parameter"))
+            .def_id;
+        GenericParamDefIds { lt, ty, ct }
+    }
+}
+
+fn lifetime_param_name(index: usize) -> String {
+    if index < 26 {
+        format!("'{}", (b'a' + index as u8) as char)
+    } else {
+        format!("'r{index}")
+    }
+}
+
+fn type_param_name(index: usize) -> String {
+    if index < 26 {
+        format!("{}", (b'A' + index as u8) as char)
+    } else {
+        format!("T{index}")
     }
 }
 
@@ -78,6 +109,7 @@ impl SyntheticItem {
             SyntheticItem::Slice => "<slice>".to_string(),
             SyntheticItem::Tuple(n) => format!("<tuple_{n}>"),
             SyntheticItem::Str => "<str>".to_string(),
+            SyntheticItem::FnPtr(_) => "<fn_ptr>".to_string(),
         }
     }
 
@@ -101,6 +133,33 @@ impl SyntheticItem {
 
     pub fn param_env<'tcx>(&self, s: &impl BaseState<'tcx>) -> ty::ParamEnv<'tcx> {
         self.data(s).param_env
+    }
+
+    pub fn late_bound_scope<'tcx>(&self, s: &impl BaseState<'tcx>) -> RDefId {
+        self.data(s).late_bound_scope.unwrap()
+    }
+
+    /// Return the type of this constant parameter. `tcx.type_of` can't work here because we're
+    /// reusing a dummy `DefId` for the generic parameter.
+    pub fn const_param_ty<'tcx>(
+        self,
+        s: &impl BaseState<'tcx>,
+        index: u32,
+    ) -> Option<ty::Ty<'tcx>> {
+        if let SyntheticItem::FnPtr(_) = self {
+            self.data(s).clauses.iter().find_map(|clause| {
+                if let ty::ClauseKind::ConstArgHasType(ct, ty) = clause.kind().skip_binder()
+                    && let ty::ConstKind::Param(p) = ct.kind()
+                    && p.index == index
+                {
+                    Some(ty)
+                } else {
+                    None
+                }
+            })
+        } else {
+            None
+        }
     }
 
     pub fn predicates_defined_on<'tcx>(
@@ -139,6 +198,7 @@ impl SyntheticItem {
                 ty::Ty::new_tup(tcx, tys)
             }
             SyntheticItem::Str => tcx.types.str_,
+            SyntheticItem::FnPtr(shape) => shape.ty(s),
         };
         ty::EarlyBinder::bind(tcx, type_of)
     }
@@ -180,7 +240,7 @@ impl<'tcx> GlobalCache<'tcx> {
             let param_def_id = match kind {
                 ty::GenericParamDefKind::Type { .. } => borrowed_param_def_ids.ty,
                 ty::GenericParamDefKind::Const { .. } => borrowed_param_def_ids.ct,
-                ty::GenericParamDefKind::Lifetime => unreachable!(),
+                ty::GenericParamDefKind::Lifetime => borrowed_param_def_ids.lt,
             };
             let index = generics.own_params.len() as u32;
             let param_def = ty::GenericParamDef {
@@ -233,11 +293,7 @@ impl<'tcx> GlobalCache<'tcx> {
             }
             SyntheticItem::Tuple(len) => {
                 let tys = (0..len).map(|i| {
-                    let name: String = if i < 26 {
-                        format!("{}", (b'A' + i as u8) as char)
-                    } else {
-                        format!("T{i}")
-                    };
+                    let name = type_param_name(i);
                     let arg = mk_param(
                         &name,
                         ty::GenericParamDefKind::Type {
@@ -257,6 +313,125 @@ impl<'tcx> GlobalCache<'tcx> {
                 }
             }
             SyntheticItem::Str => {}
+            SyntheticItem::FnPtr(shape) => {
+                use rustc_infer::infer::TyCtxtInferExt;
+                struct Params {
+                    kinds: Vec<Option<ty::GenericParamDefKind>>,
+                }
+
+                impl Params {
+                    fn insert(&mut self, index: usize, kind: ty::GenericParamDefKind) {
+                        if self.kinds.len() <= index {
+                            self.kinds.resize(index + 1, None);
+                        }
+                        self.kinds[index] = Some(kind);
+                    }
+                }
+
+                impl<'tcx> ty::TypeVisitor<ty::TyCtxt<'tcx>> for Params {
+                    type Result = std::ops::ControlFlow<!>;
+
+                    fn visit_ty(&mut self, ty: ty::Ty<'tcx>) -> Self::Result {
+                        if let ty::TyKind::Param(param) = ty.kind() {
+                            self.insert(
+                                param.index as usize,
+                                ty::GenericParamDefKind::Type {
+                                    has_default: false,
+                                    synthetic: false,
+                                },
+                            );
+                        }
+                        ty.super_visit_with(self)
+                    }
+
+                    fn visit_region(&mut self, region: ty::Region<'tcx>) -> Self::Result {
+                        if let ty::ReEarlyParam(param) = region.kind() {
+                            self.insert(param.index as usize, ty::GenericParamDefKind::Lifetime);
+                        }
+                        std::ops::ControlFlow::Continue(())
+                    }
+
+                    fn visit_const(&mut self, ct: ty::Const<'tcx>) -> Self::Result {
+                        if let ty::ConstKind::Param(param) = ct.kind() {
+                            self.insert(
+                                param.index as usize,
+                                ty::GenericParamDefKind::Const { has_default: false },
+                            );
+                        }
+                        ct.super_visit_with(self)
+                    }
+                }
+
+                let sig = shape.sig(s);
+                let mut params = Params { kinds: vec![] };
+                sig.visit_with(&mut params);
+                let mut next_lifetime = 0;
+                let mut next_ty = 0;
+                for (index, kind) in params.kinds.into_iter().enumerate() {
+                    let kind = kind.expect("missing generic parameter in fn pointer shape");
+                    let name = match kind {
+                        ty::GenericParamDefKind::Lifetime => {
+                            let name = lifetime_param_name(next_lifetime);
+                            next_lifetime += 1;
+                            name
+                        }
+                        ty::GenericParamDefKind::Type { .. } => {
+                            let name = type_param_name(next_ty);
+                            next_ty += 1;
+                            name
+                        }
+                        ty::GenericParamDefKind::Const { .. } => format!("C{index}"),
+                    };
+                    mk_param(&name, kind);
+                }
+
+                clauses.extend(sig.skip_binder().inputs_and_output.iter().map(
+                    |ty| -> ty::Clause<'tcx> {
+                        sig.rebind(ty::TraitRef::new(tcx, sized_trait, [ty]))
+                            .upcast(tcx)
+                    },
+                ));
+
+                let infcx = tcx
+                    .infer_ctxt()
+                    .ignoring_regions()
+                    .build(ty::TypingMode::PostAnalysis);
+                let mut wf_clauses = rustc_trait_selection::traits::wf::obligations(
+                    &infcx,
+                    ty::ParamEnv::empty(),
+                    rustc_hir::def_id::CRATE_DEF_ID,
+                    0,
+                    shape.ty(s).into(),
+                    DUMMY_SP,
+                )
+                .into_iter()
+                .flatten()
+                .filter_map(|obligation| obligation.predicate.as_clause())
+                .collect_vec();
+
+                // Remove redundant clauses. This can avoid a silly recursive case where wf for the
+                // fn ptr type may use a clause that references that same type.
+                // See the `RecursiveProof` case in the fn-ptr-fn-traits.rs test.
+                let mut index = 0;
+                while index < wf_clauses.len() {
+                    let clause = wf_clauses[index];
+                    let follows_by_elaboration = ty::elaborate::elaborate(
+                        tcx,
+                        wf_clauses
+                            .iter()
+                            .enumerate()
+                            .filter_map(|(i, clause)| (i != index).then_some(*clause)),
+                    )
+                    .elaborate_sized()
+                    .any(|implied| implied == clause);
+                    if follows_by_elaboration {
+                        wf_clauses.remove(index);
+                    } else {
+                        index += 1;
+                    }
+                }
+                clauses.extend(wf_clauses);
+            }
         }
 
         let clauses = tcx.arena.alloc_from_iter(clauses);
@@ -264,6 +439,8 @@ impl<'tcx> GlobalCache<'tcx> {
             generics: Box::leak(Box::new(generics)),
             clauses,
             param_env: ty::ParamEnv::new(tcx, clauses.iter().copied()),
+            late_bound_scope: matches!(item, SyntheticItem::FnPtr(_))
+                .then(|| tcx.parent(borrowed_param_def_ids.lt)),
         };
         self.synthetic_item_data.insert(item, data);
         data
@@ -278,5 +455,253 @@ impl ItemRef {
     ) -> ItemRef {
         let hax_def_id = DefId::make_synthetic(s, synthetic);
         ItemRef::translate_from_hax_def_id(s, hax_def_id, generics)
+    }
+
+    /// Take a fn pointer and construct a reference to the corresponding synthetic item.
+    pub fn translate_fn_ptr<'tcx, S: UnderOwnerState<'tcx>>(
+        s: &S,
+        sig: ty::PolyFnSig<'tcx>,
+    ) -> ItemRef {
+        let (shape, args) = FnPtrShape::extract_shape(s.base().tcx, sig);
+        Self::translate_synthetic(s, SyntheticItem::FnPtr(shape), args)
+    }
+}
+
+/// Represents the "shape" of a function pointer, i.e. the most general signature we can obtain
+/// from it without breaking the higher-kinded variables. E.g. `for<'a> fn(&'a u32) -> Adt<'a,
+/// u32>` is considered to be an instantiation of the shape `for<'a> fn(&'a A) -> Adt<'a, B>` with
+/// `A=B=u32`.
+///
+/// It's a `PolyFnSig` with erased `'tcx`, to avoid threading that lifetime through `hax::DefId`.
+/// The hax infrastructure never escapes the compiler session, so this should be fine.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub struct FnPtrShape(ty::PolyFnSig<'static>);
+
+impl FnPtrShape {
+    fn erase<'tcx>(sig: ty::PolyFnSig<'tcx>) -> Self {
+        // SAFETY: the extended lifetime never escapes the compiler session.
+        Self(unsafe { std::mem::transmute::<ty::PolyFnSig<'tcx>, ty::PolyFnSig<'static>>(sig) })
+    }
+
+    fn sig<'tcx>(self, _s: &impl BaseState<'tcx>) -> ty::PolyFnSig<'tcx> {
+        // SAFETY: we only use a single compiler session, so this is the same `'tcx`.
+        unsafe { std::mem::transmute::<ty::PolyFnSig<'static>, ty::PolyFnSig<'tcx>>(self.0) }
+    }
+
+    fn ty<'tcx>(self, s: &impl BaseState<'tcx>) -> ty::Ty<'tcx> {
+        ty::Ty::new_fn_ptr(s.base().tcx, self.sig(s))
+    }
+}
+impl std::panic::RefUnwindSafe for FnPtrShape {}
+impl std::panic::UnwindSafe for FnPtrShape {}
+
+impl FnPtrShape {
+    /// Replace each maximal type, region or constant that does not mention a locally-bound variable
+    /// with a distinct generic parameter. We retain only the structure needed to keep higher-order
+    /// variables correctly bound.
+    fn extract_shape<'tcx>(
+        tcx: ty::TyCtxt<'tcx>,
+        sig: ty::PolyFnSig<'tcx>,
+    ) -> (Self, ty::GenericArgsRef<'tcx>) {
+        fn should_freshen<'tcx>(
+            value: &impl ty::TypeVisitable<ty::TyCtxt<'tcx>>,
+            binder_depth: u32,
+        ) -> bool {
+            struct MentionsBoundVar {
+                binder_depth: u32,
+            }
+
+            impl<'tcx> ty::TypeVisitor<ty::TyCtxt<'tcx>> for MentionsBoundVar {
+                type Result = std::ops::ControlFlow<()>;
+
+                fn visit_binder<T>(&mut self, binder: &ty::Binder<'tcx, T>) -> Self::Result
+                where
+                    T: ty::TypeVisitable<ty::TyCtxt<'tcx>>,
+                {
+                    self.binder_depth += 1;
+                    let result = binder.super_visit_with(self);
+                    self.binder_depth -= 1;
+                    result
+                }
+
+                fn visit_ty(&mut self, ty: ty::Ty<'tcx>) -> Self::Result {
+                    if matches!(
+                        ty.kind(),
+                        ty::TyKind::Bound(ty::BoundVarIndexKind::Bound(db), _)
+                            if db.as_u32() < self.binder_depth
+                    ) {
+                        std::ops::ControlFlow::Break(())
+                    } else {
+                        ty.super_visit_with(self)
+                    }
+                }
+
+                fn visit_region(&mut self, region: ty::Region<'tcx>) -> Self::Result {
+                    if matches!(
+                        region.kind(),
+                        ty::ReBound(ty::BoundVarIndexKind::Bound(db), _)
+                            if db.as_u32() < self.binder_depth
+                    ) {
+                        std::ops::ControlFlow::Break(())
+                    } else {
+                        std::ops::ControlFlow::Continue(())
+                    }
+                }
+
+                fn visit_const(&mut self, ct: ty::Const<'tcx>) -> Self::Result {
+                    if matches!(
+                        ct.kind(),
+                        ty::ConstKind::Bound(ty::BoundVarIndexKind::Bound(db), _)
+                            if db.as_u32() < self.binder_depth
+                    ) {
+                        std::ops::ControlFlow::Break(())
+                    } else {
+                        ct.super_visit_with(self)
+                    }
+                }
+            }
+
+            value
+                .visit_with(&mut MentionsBoundVar { binder_depth })
+                .is_continue()
+        }
+
+        // Counts the number of parameters of each kind we'll need.
+        #[derive(Default)]
+        struct Counter {
+            regions: u32,
+            tys: u32,
+            consts: u32,
+            binder_depth: u32,
+        }
+        impl<'tcx> ty::TypeVisitor<ty::TyCtxt<'tcx>> for Counter {
+            type Result = std::ops::ControlFlow<!>;
+
+            fn visit_binder<T>(&mut self, binder: &ty::Binder<'tcx, T>) -> Self::Result
+            where
+                T: ty::TypeVisitable<ty::TyCtxt<'tcx>>,
+            {
+                self.binder_depth += 1;
+                let result = binder.super_visit_with(self);
+                self.binder_depth -= 1;
+                result
+            }
+
+            fn visit_ty(&mut self, ty: ty::Ty<'tcx>) -> Self::Result {
+                if should_freshen(&ty, self.binder_depth) {
+                    self.tys += 1;
+                    std::ops::ControlFlow::Continue(())
+                } else {
+                    ty.super_visit_with(self)
+                }
+            }
+
+            fn visit_region(&mut self, region: ty::Region<'tcx>) -> Self::Result {
+                if should_freshen(&region, self.binder_depth) {
+                    self.regions += 1;
+                }
+                std::ops::ControlFlow::Continue(())
+            }
+
+            fn visit_const(&mut self, ct: ty::Const<'tcx>) -> Self::Result {
+                if should_freshen(&ct, self.binder_depth) {
+                    self.consts += 1;
+                    std::ops::ControlFlow::Continue(())
+                } else {
+                    ct.super_visit_with(self)
+                }
+            }
+        }
+
+        // Replaces each ty/region/const with a fresh param. We assign all lifetime indices first,
+        // then types, then constants, to match rustc's generic argument ordering.
+        struct Freshener<'tcx> {
+            tcx: ty::TyCtxt<'tcx>,
+            next_region: u32,
+            next_ty: u32,
+            next_const: u32,
+            region_count: u32,
+            ty_count: u32,
+            binder_depth: u32,
+            args: Vec<Option<ty::GenericArg<'tcx>>>,
+        }
+        impl<'tcx> ty::TypeFolder<ty::TyCtxt<'tcx>> for Freshener<'tcx> {
+            fn cx(&self) -> ty::TyCtxt<'tcx> {
+                self.tcx
+            }
+
+            fn fold_binder<T>(&mut self, binder: ty::Binder<'tcx, T>) -> ty::Binder<'tcx, T>
+            where
+                T: ty::TypeFoldable<ty::TyCtxt<'tcx>>,
+            {
+                self.binder_depth += 1;
+                let binder = binder.super_fold_with(self);
+                self.binder_depth -= 1;
+                binder
+            }
+
+            fn fold_ty(&mut self, ty: ty::Ty<'tcx>) -> ty::Ty<'tcx> {
+                if should_freshen(&ty, self.binder_depth) {
+                    let index = self.region_count + self.next_ty;
+                    let name = type_param_name(self.next_ty as usize);
+                    self.next_ty += 1;
+                    self.args[index as usize] = Some(ty.into());
+                    ty::Ty::new_param(self.tcx, index, Symbol::intern(&name))
+                } else {
+                    ty.super_fold_with(self)
+                }
+            }
+
+            fn fold_region(&mut self, region: ty::Region<'tcx>) -> ty::Region<'tcx> {
+                if should_freshen(&region, self.binder_depth) {
+                    let index = self.next_region;
+                    let name = lifetime_param_name(self.next_region as usize);
+                    self.next_region += 1;
+                    self.args[index as usize] = Some(region.into());
+                    ty::Region::new_early_param(
+                        self.tcx,
+                        ty::EarlyParamRegion {
+                            index,
+                            name: Symbol::intern(&name),
+                        },
+                    )
+                } else {
+                    region
+                }
+            }
+
+            fn fold_const(&mut self, ct: ty::Const<'tcx>) -> ty::Const<'tcx> {
+                if should_freshen(&ct, self.binder_depth) {
+                    let index = self.region_count + self.ty_count + self.next_const;
+                    self.next_const += 1;
+                    self.args[index as usize] = Some(ct.into());
+                    ty::Const::new_param(
+                        self.tcx,
+                        ty::ParamConst {
+                            index,
+                            name: Symbol::intern(&format!("C{index}")),
+                        },
+                    )
+                } else {
+                    ct.super_fold_with(self)
+                }
+            }
+        }
+
+        let mut counts = Counter::default();
+        sig.visit_with(&mut counts);
+        let mut freshener = Freshener {
+            tcx,
+            next_region: 0,
+            next_ty: 0,
+            next_const: 0,
+            region_count: counts.regions,
+            ty_count: counts.tys,
+            binder_depth: 0,
+            args: vec![None; (counts.regions + counts.tys + counts.consts) as usize],
+        };
+        let shape = sig.fold_with(&mut freshener);
+        let args = tcx.mk_args_from_iter(freshener.args.into_iter().map(Option::unwrap));
+        (Self::erase(shape), args)
     }
 }

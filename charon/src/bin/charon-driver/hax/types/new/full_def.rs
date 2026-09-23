@@ -56,28 +56,52 @@ where
     let kind;
     match def_id.base {
         DefIdBase::Synthetic(item) => {
-            let adt_kind = match item {
-                SyntheticItem::Array => AdtKind::Array,
-                SyntheticItem::Slice => AdtKind::Slice,
-                SyntheticItem::Tuple(..) => AdtKind::Tuple,
-                SyntheticItem::Str => AdtKind::Str,
-            };
-            let param_env = get_param_env(s, args);
-            kind = FullDefKind::Adt(Adt {
-                def_id: def_id.clone(),
-                self_ty: inst_binder(tcx, s.typing_env(), args, def_id.type_of(s)),
-                param_env,
-                adt_kind,
-                variants: [].into_iter().collect(),
-                repr: ReprOptions {
-                    int_specified: false,
-                    typ: Ty::new(s, TyKind::Int(IntTy::Isize)),
-                    align: None,
-                    pack: None,
-                    flags: Default::default(),
-                },
-                destruct_impl: Default::default(),
-            });
+            match item {
+                SyntheticItem::Array
+                | SyntheticItem::Slice
+                | SyntheticItem::Tuple(..)
+                | SyntheticItem::Str => {
+                    let adt_kind = match item {
+                        SyntheticItem::Array => AdtKind::Array,
+                        SyntheticItem::Slice => AdtKind::Slice,
+                        SyntheticItem::Tuple(..) => AdtKind::Tuple,
+                        SyntheticItem::Str => AdtKind::Str,
+                        SyntheticItem::FnPtr(_) => unreachable!(),
+                    };
+                    kind = FullDefKind::Adt(Adt {
+                        def_id: def_id.clone(),
+                        self_ty: inst_binder(tcx, s.typing_env(), args, def_id.type_of(s)),
+                        param_env: get_param_env(s, args),
+                        adt_kind,
+                        variants: [].into_iter().collect(),
+                        repr: ReprOptions {
+                            int_specified: false,
+                            typ: Ty::new(s, TyKind::Int(IntTy::Isize)),
+                            align: None,
+                            pack: None,
+                            flags: Default::default(),
+                        },
+                        destruct_impl: Default::default(),
+                    });
+                }
+                SyntheticItem::FnPtr(_) => {
+                    let self_ty = inst_binder(tcx, s.typing_env(), args, def_id.type_of(s));
+                    let ty::TyKind::FnPtr(sig_tys, header) = self_ty.kind() else {
+                        unreachable!()
+                    };
+                    let sig = sig_tys.with(*header);
+                    let late_bound_scope = item.late_bound_scope(s);
+                    kind = FullDefKind::FnPtr(FnPointer {
+                        def_id: def_id.clone(),
+                        self_ty,
+                        rustc_sig: sig,
+                        param_env: get_param_env(s, args),
+                        sig: sig.sinto(s),
+                        late_bound_scope,
+                        fn_trait_impls: OnceCell::new(),
+                    });
+                }
+            }
 
             source_span = None;
             lang_item = Default::default();
@@ -316,6 +340,11 @@ pub enum FullDefKind<'tcx> {
 
     // Functions
     Fn(Fn<'tcx>),
+    /// Synthetic item representing a particular shape of function pointer types.
+    /// E.g. `for<'a> fn(&'a u32) -> Adt<'a, u32>` is considered to be an instantiation of the fake
+    /// item `for<'a> fn(&'a A) -> Adt<'a, B>` with `A=B=u32`. Note how the item can therefore
+    /// have trait clauses if some Adt does.
+    FnPtr(FnPointer<'tcx>),
     /// Associated function: `impl MyStruct { fn associated() {} }` or `trait Foo { fn associated()
     /// {} }`
     AssocFn(AssocFn<'tcx>),
@@ -719,21 +748,18 @@ pub struct FnTraitImpls<'tcx> {
     pub fn_impl: Box<VirtualTraitImpl<'tcx>>,
 }
 
-/// Compute the `Fn*` impls of the function item owned by `s`, given its (instantiated) signature.
-fn fn_def_trait_impls<'tcx, S: UnderOwnerState<'tcx>>(
+/// Compute the `Fn*` impls of a callable type, given its (instantiated) signature.
+fn callable_trait_impls<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
-    args: Option<ty::GenericArgsRef<'tcx>>,
+    self_ty: ty::Ty<'tcx>,
     fn_sig: ty::PolyFnSig<'tcx>,
+    late_bound_scope: RDefId,
 ) -> Option<FnTraitImpls<'tcx>> {
     let tcx = s.base().tcx;
-    let def_id = s.owner().real_rust_def_id();
-    if !fn_sig.is_fn_trait_compatible() || !tcx.codegen_fn_attrs(def_id).target_features.is_empty()
-    {
+    if !fn_sig.is_fn_trait_compatible() {
         return None;
     }
-    let fn_args = args.unwrap_or_else(|| s.owner().identity_args(s));
-    let self_ty = ty::Ty::new_fn_def(tcx, def_id, fn_sig.rebind(fn_args));
-    let liberated_sig = tcx.liberate_late_bound_regions(def_id, fn_sig);
+    let liberated_sig = tcx.liberate_late_bound_regions(late_bound_scope, fn_sig);
     let input_ty = ty::Ty::new_tup(tcx, liberated_sig.inputs());
     let trait_args = [self_ty, input_ty];
 
@@ -750,6 +776,22 @@ fn fn_def_trait_impls<'tcx, S: UnderOwnerState<'tcx>>(
         fn_mut_impl: virtual_impl_for(s, fn_mut_tref),
         fn_impl: virtual_impl_for(s, fn_tref),
     })
+}
+
+/// Compute the `Fn*` impls of the function item owned by `s`, given its (instantiated) signature.
+fn fn_def_trait_impls<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    args: Option<ty::GenericArgsRef<'tcx>>,
+    fn_sig: ty::PolyFnSig<'tcx>,
+) -> Option<FnTraitImpls<'tcx>> {
+    let tcx = s.base().tcx;
+    let def_id = s.owner().real_rust_def_id();
+    if !tcx.codegen_fn_attrs(def_id).target_features.is_empty() {
+        return None;
+    }
+    let fn_args = args.unwrap_or_else(|| s.owner().identity_args(s));
+    let self_ty = ty::Ty::new_fn_def(tcx, def_id, fn_sig.rebind(fn_args));
+    callable_trait_impls(s, self_ty, fn_sig, def_id)
 }
 
 #[derive(Debug, Clone)]
@@ -825,6 +867,47 @@ impl<'tcx> AssocFn<'tcx> {
         self.fn_trait_impls
             .get_or_init(|| {
                 fn_def_trait_impls(&s.with_hax_owner(&self.def_id), self.args, self.rustc_sig)
+            })
+            .as_ref()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct FnPointer<'tcx> {
+    def_id: DefId,
+    self_ty: ty::Ty<'tcx>,
+    rustc_sig: ty::PolyFnSig<'tcx>,
+    param_env: ParamEnv,
+    sig: PolyFnSig,
+    late_bound_scope: RDefId,
+    fn_trait_impls: OnceCell<Option<FnTraitImpls<'tcx>>>,
+}
+
+impl<'tcx> FnPointer<'tcx> {
+    pub fn param_env(&self) -> &ParamEnv {
+        &self.param_env
+    }
+
+    pub fn sig(&self) -> &PolyFnSig {
+        &self.sig
+    }
+
+    /// DefId we use for `liberate_bound_regions`. We stole some `DefId` from somewhere to serve as
+    /// placeholder here, as this needs to be a real rustc `DefId`. It only matters for matching up
+    /// generics during translation.
+    pub fn late_bound_scope(&self) -> RDefId {
+        self.late_bound_scope
+    }
+
+    pub fn fn_trait_impls(&self, s: &impl BaseState<'tcx>) -> Option<&FnTraitImpls<'tcx>> {
+        self.fn_trait_impls
+            .get_or_init(|| {
+                callable_trait_impls(
+                    &s.with_hax_owner(&self.def_id),
+                    self.self_ty,
+                    self.rustc_sig,
+                    self.late_bound_scope,
+                )
             })
             .as_ref()
     }
@@ -1644,6 +1727,7 @@ impl<'tcx> FullDef<'tcx> {
             FullDefKind::TyAlias(d) => Some(d.param_env()),
             FullDefKind::AssocTy(d) => Some(d.param_env()),
             FullDefKind::Fn(d) => Some(d.param_env()),
+            FullDefKind::FnPtr(d) => Some(d.param_env()),
             FullDefKind::AssocFn(d) => Some(d.param_env()),
             FullDefKind::Closure(d) => Some(d.param_env()),
             FullDefKind::Const(d) => Some(d.param_env()),
@@ -1700,6 +1784,7 @@ impl<'tcx> FullDef<'tcx> {
     pub fn late_bound(&self) -> Binder<()> {
         match self.kind() {
             FullDefKind::Fn(f) => f.sig().as_ref().rebind(()),
+            FullDefKind::FnPtr(f) => f.sig().as_ref().rebind(()),
             FullDefKind::AssocFn(f) => f.sig().as_ref().rebind(()),
             _ => Binder::empty(),
         }

@@ -257,8 +257,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Adt(tref)
             }
 
-            hax::TyKind::Arrow(sig) => {
-                trace!("Arrow");
+            hax::TyKind::FnPtr(sig, _) => {
+                trace!("FnPtr");
                 trace!("bound vars: {:?}", sig.bound_vars);
                 let sig = self.translate_poly_fun_sig(span, sig)?;
                 TyKind::FnPtr(sig)
@@ -433,7 +433,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             .and_then(|synthetic| match synthetic {
                 hax::SyntheticItem::Tuple(_) => Some(BuiltinAdt::Tuple),
                 hax::SyntheticItem::Str => Some(BuiltinAdt::Str),
-                hax::SyntheticItem::Array | hax::SyntheticItem::Slice => None,
+                hax::SyntheticItem::Array
+                | hax::SyntheticItem::Slice
+                | hax::SyntheticItem::FnPtr(_) => None,
             })
             .or_else(|| {
                 (self.hax_def(item).ok()?.lang_item? == sym::owned_box).then_some(BuiltinAdt::Box)

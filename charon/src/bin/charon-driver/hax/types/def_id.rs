@@ -41,6 +41,8 @@ pub enum DefKind {
     AssocTy,
     TyParam,
     Fn,
+    #[disable_mapping]
+    FnPtr,
     Const,
     ConstParam,
     Static {
@@ -96,8 +98,8 @@ pub enum DefIdBase {
     /// generics declared in the trait. We use that context to trait solve the mapping from
     /// declared method generics to implemented method generics.
     ImplAssocItem(VirtualImplAssocItem),
-    /// A completely fictitious item, we use this for arrays, slices and tuples to make
-    /// monomorphization and other shenanigans easier.
+    /// A fictitious item, used to make monomorphization and other shenanigans easier for builtin
+    /// types.
     Synthetic(SyntheticItem),
     /// A global standing for an anonymous const-eval allocation (e.g. the `[42]` in `&[42]`), so
     /// that pointers to the same memory stay aliased.
@@ -342,9 +344,13 @@ impl DefId {
     }
 
     pub fn make_synthetic<'tcx, S: BaseState<'tcx>>(s: &S, synthetic: SyntheticItem) -> Self {
+        let kind = match synthetic {
+            SyntheticItem::FnPtr(_) => DefKind::FnPtr,
+            _ => DefKind::Struct,
+        };
         let contents = DefIdContents {
             base: DefIdBase::Synthetic(synthetic),
-            kind: DefKind::Struct,
+            kind,
         };
         contents.make_def_id(s)
     }
@@ -693,6 +699,7 @@ impl DefId {
             | GlobalAsm
             | Impl { .. }
             | PromotedConst
+            | FnPtr
             | LifetimeParam
             | OpaqueTy
             | SyntheticCoroutineBody

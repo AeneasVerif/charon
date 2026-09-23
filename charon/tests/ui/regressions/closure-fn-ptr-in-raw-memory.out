@@ -83,11 +83,118 @@ struct (_,)<A> {
   _0: A,
 }
 
+// Full name: {impl Fn<(A,)> for fn(A) -> B}::call
+fn {impl Fn<(A,)> for fn(A) -> B}::call<'_0, A, B>(fn_ptr: &'_0 fn(A) -> B, args: (A,)) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+    TypeOutlives0: A: '_0,
+    TypeOutlives1: B: '_0,
+{
+    let _0: B; // return
+    let fn_ptr: &'_0 fn(A) -> B; // arg #1
+    let args: (A,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy (*fn_ptr))(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl FnMut<(A,)> for fn(A) -> B}::call_mut
+fn {impl FnMut<(A,)> for fn(A) -> B}::call_mut<'_0, A, B>(fn_ptr: &'_0 mut fn(A) -> B, args: (A,)) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+    TypeOutlives0: A: '_0,
+    TypeOutlives1: B: '_0,
+{
+    let _0: B; // return
+    let fn_ptr: &'_0 mut fn(A) -> B; // arg #1
+    let args: (A,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy (*fn_ptr))(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl FnOnce<(A,)> for fn(A) -> B}::call_once
+fn {impl FnOnce<(A,)> for fn(A) -> B}::call_once<A, B>(fn_ptr: fn(A) -> B, args: (A,)) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+    let _0: B; // return
+    let fn_ptr: fn(A) -> B; // arg #1
+    let args: (A,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy fn_ptr)(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl FnOnce<(A,)> for fn(A) -> B}
+impl<A, B> FnOnce<(A,)> for fn(A) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+    proof ImpliedClause0: (fn(A) -> B: MetaSized) = {built_in impl MetaSized for fn(A) -> B}
+    proof ImpliedClause1: ((A,): Sized) = {built_in impl Sized for (A,)}
+    proof ImpliedClause2: ((A,): Tuple) = {built_in impl Tuple for (A,)}
+    proof ImpliedClause3: (B: Sized) = TraitClause1
+    type Output = B
+    fn call_once = {impl FnOnce<(A,)> for fn(A) -> B}::call_once<A, B>[TraitClause0, TraitClause1]
+    vtable: lazy
+}
+
+// Full name: {impl FnMut<(A,)> for fn(A) -> B}
+impl<A, B> FnMut<(A,)> for fn(A) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+    proof ImpliedClause0: (fn(A) -> B: MetaSized) = {built_in impl MetaSized for fn(A) -> B}
+    proof ImpliedClause1: (fn(A) -> B: FnOnce<(A,)>) = {impl FnOnce<(A,)> for fn(A) -> B}<A, B>[TraitClause0, TraitClause1]
+    proof ImpliedClause2: ((A,): Sized) = {built_in impl Sized for (A,)}
+    proof ImpliedClause3: ((A,): Tuple) = {built_in impl Tuple for (A,)}
+    fn call_mut<'_0_1> = {impl FnMut<(A,)> for fn(A) -> B}::call_mut<'_0_1, A, B>[TraitClause0, TraitClause1]
+    vtable: lazy
+}
+
+// Full name: {impl Fn<(A,)> for fn(A) -> B}
+impl<A, B> Fn<(A,)> for fn(A) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+    proof ImpliedClause0: (fn(A) -> B: MetaSized) = {built_in impl MetaSized for fn(A) -> B}
+    proof ImpliedClause1: (fn(A) -> B: FnMut<(A,)>) = {impl FnMut<(A,)> for fn(A) -> B}<A, B>[TraitClause0, TraitClause1]
+    proof ImpliedClause2: ((A,): Sized) = {built_in impl Sized for (A,)}
+    proof ImpliedClause3: ((A,): Tuple) = {built_in impl Tuple for (A,)}
+    fn call<'_0_1> = {impl Fn<(A,)> for fn(A) -> B}::call<'_0_1, A, B>[TraitClause0, TraitClause1]
+    vtable: lazy
+}
+
 static test_crate::{promoted_const}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(&{as_fn}[0], &{as_fn}[1], &{as_fn}[2], &{as_fn}[3], &{as_fn}[4], &{as_fn}[5], &{as_fn}[6], &{as_fn}[7])
 
 static test_crate::{promoted_const#1}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(&{built_in impl Clone for (u8, u8)}::clone<'_>[0], &{built_in impl Clone for (u8, u8)}::clone<'_>[1], &{built_in impl Clone for (u8, u8)}::clone<'_>[2], &{built_in impl Clone for (u8, u8)}::clone<'_>[3], &{built_in impl Clone for (u8, u8)}::clone<'_>[4], &{built_in impl Clone for (u8, u8)}::clone<'_>[5], &{built_in impl Clone for (u8, u8)}::clone<'_>[6], &{built_in impl Clone for (u8, u8)}::clone<'_>[7])
 
-static test_crate::{promoted_const#2}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(&{built_in impl Fn<(u8,)> for fn(u8) -> u8}::call<'_>[0], &{built_in impl Fn<(u8,)> for fn(u8) -> u8}::call<'_>[1], &{built_in impl Fn<(u8,)> for fn(u8) -> u8}::call<'_>[2], &{built_in impl Fn<(u8,)> for fn(u8) -> u8}::call<'_>[3], &{built_in impl Fn<(u8,)> for fn(u8) -> u8}::call<'_>[4], &{built_in impl Fn<(u8,)> for fn(u8) -> u8}::call<'_>[5], &{built_in impl Fn<(u8,)> for fn(u8) -> u8}::call<'_>[6], &{built_in impl Fn<(u8,)> for fn(u8) -> u8}::call<'_>[7])
+static test_crate::{promoted_const#2}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(&{impl Fn<(A,)> for fn(A) -> B}<u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}]::call<'_>[0], &{impl Fn<(A,)> for fn(A) -> B}<u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}]::call<'_>[1], &{impl Fn<(A,)> for fn(A) -> B}<u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}]::call<'_>[2], &{impl Fn<(A,)> for fn(A) -> B}<u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}]::call<'_>[3], &{impl Fn<(A,)> for fn(A) -> B}<u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}]::call<'_>[4], &{impl Fn<(A,)> for fn(A) -> B}<u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}]::call<'_>[5], &{impl Fn<(A,)> for fn(A) -> B}<u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}]::call<'_>[6], &{impl Fn<(A,)> for fn(A) -> B}<u8, u8>[{built_in impl Sized for u8}, {built_in impl Sized for u8}]::call<'_>[7])
 
 // Full name: test_crate::A
 struct A {
@@ -101,7 +208,7 @@ static CLOSURE_STATELESS: &'static A = &test_crate::{promoted_const}
 struct {closure} {}
 
 // Full name: test_crate::CLOSURE_STATELESS::{impl Fn<()> for {closure}}::call
-fn call<'_0>(_1: &'_0 {closure}, tupled_args: ()) -> u8
+fn impl_Fn_unit_for_closure::call<'_0>(_1: &'_0 {closure}, tupled_args: ()) -> u8
 {
     let _0: u8; // return
     let _1: &'1 {closure}; // arg #1
@@ -115,7 +222,7 @@ fn call<'_0>(_1: &'_0 {closure}, tupled_args: ()) -> u8
 }
 
 // Full name: test_crate::CLOSURE_STATELESS::{impl FnMut<()> for {closure}}::call_mut
-fn call_mut<'_0>(state: &'_0 mut {closure}, args: ()) -> u8
+fn impl_FnMut_unit_for_closure::call_mut<'_0>(state: &'_0 mut {closure}, args: ()) -> u8
 {
     let _0: u8; // return
     let state: &'_0 mut {closure}; // arg #1
@@ -125,7 +232,7 @@ fn call_mut<'_0>(state: &'_0 mut {closure}, args: ()) -> u8
     storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
-    _0 = call<'2>(move _3, move args)
+    _0 = impl_Fn_unit_for_closure::call<'2>(move _3, move args)
     ↳⚡ storage_dead(_3)
         storage_dead(args)
         storage_dead(state)
@@ -137,7 +244,7 @@ fn call_mut<'_0>(state: &'_0 mut {closure}, args: ()) -> u8
 }
 
 // Full name: test_crate::CLOSURE_STATELESS::{impl FnOnce<()> for {closure}}::call_once
-fn call_once(_1: {closure}, _2: ()) -> u8
+fn impl_FnOnce_unit_for_closure::call_once(_1: {closure}, _2: ()) -> u8
 {
     let _0: u8; // return
     let _1: {closure}; // arg #1
@@ -147,7 +254,7 @@ fn call_once(_1: {closure}, _2: ()) -> u8
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'2>(move _3, move _2)
+    _0 = impl_FnMut_unit_for_closure::call_mut<'2>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -165,7 +272,7 @@ impl "impl_FnOnce_unit_for_closure" FnOnce<()> for {closure} {
     proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
     proof ImpliedClause3: (u8: Sized) = {built_in impl Sized for u8}
     type Output = u8
-    fn call_once = call_once
+    fn call_once = impl_FnOnce_unit_for_closure::call_once
     vtable: lazy
 }
 
@@ -175,7 +282,7 @@ impl "impl_FnMut_unit_for_closure" FnMut<()> for {closure} {
     proof ImpliedClause1: ({closure}: FnOnce<()>) = impl_FnOnce_unit_for_closure
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
-    fn call_mut<'_0_1> = call_mut<'_0_1>
+    fn call_mut<'_0_1> = impl_FnMut_unit_for_closure::call_mut<'_0_1>
     vtable: lazy
 }
 
@@ -185,7 +292,7 @@ impl "impl_Fn_unit_for_closure" Fn<()> for {closure} {
     proof ImpliedClause1: ({closure}: FnMut<()>) = impl_FnMut_unit_for_closure
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
-    fn call<'_0_1> = call<'_0_1>
+    fn call<'_0_1> = impl_Fn_unit_for_closure::call<'_0_1>
     vtable: lazy
 }
 
@@ -201,7 +308,7 @@ fn {as_fn}() -> u8
     storage_live(state)
     args = ()
     state = {closure} {  }
-    _0 = call_once(move state, move args)
+    _0 = impl_FnOnce_unit_for_closure::call_once(move state, move args)
     ↳⚡ storage_dead(state)
         storage_dead(args)
         unwind_continue

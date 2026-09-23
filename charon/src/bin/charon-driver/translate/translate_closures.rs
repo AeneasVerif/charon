@@ -103,6 +103,11 @@ enum Callable<'a> {
         /// The arguments, tupled as the `Fn*` traits take them. Binds the same variables as `sig`.
         tupled_args_ty: &'a hax::Binder<hax::Ty>,
     },
+    FnPtr {
+        item: &'a hax::ItemRef,
+        sig: &'a hax::PolyFnSig,
+        tupled_args_ty: &'a hax::Binder<hax::Ty>,
+    },
 }
 
 impl<'a> Callable<'a> {
@@ -110,6 +115,7 @@ impl<'a> Callable<'a> {
         match self {
             Callable::Closure(args) => &args.item,
             Callable::FnDef { item, .. } => item,
+            Callable::FnPtr { item, .. } => item,
         }
     }
 
@@ -117,6 +123,7 @@ impl<'a> Callable<'a> {
         match self {
             Callable::Closure(args) => &args.fn_sig,
             Callable::FnDef { sig, .. } => sig,
+            Callable::FnPtr { sig, .. } => sig,
         }
     }
 
@@ -126,6 +133,7 @@ impl<'a> Callable<'a> {
         match self {
             Callable::Closure(args) => args.tupled_args_ty.hax_skip_binder_ref(),
             Callable::FnDef { tupled_args_ty, .. } => tupled_args_ty.hax_skip_binder_ref(),
+            Callable::FnPtr { tupled_args_ty, .. } => tupled_args_ty.hax_skip_binder_ref(),
         }
     }
 }
@@ -143,19 +151,21 @@ impl<'a, 'tcx> CallableFnImpls<'a, 'tcx> {
         s: &impl hax::BaseState<'tcx>,
         target_kind: ClosureKind,
     ) -> Option<Self> {
-        let from_fn_def = |sig: &'a hax::PolyFnSig, impls: Option<&'a hax::FnTraitImpls<'tcx>>| {
-            let impls = impls?;
+        let vimpl_from_impls = |impls: &'a hax::FnTraitImpls<'tcx>| -> Option<_> {
+            Some(match target_kind {
+                ClosureKind::FnOnce => impls.fn_once_impl.as_ref(),
+                ClosureKind::FnMut => impls.fn_mut_impl.as_ref(),
+                ClosureKind::Fn => impls.fn_impl.as_ref(),
+            })
+        };
+        let for_fn_def = |sig: &'a hax::PolyFnSig, impls: &'a hax::FnTraitImpls<'tcx>| {
             Some(Self {
                 callable: Callable::FnDef {
                     item: def.this(),
                     sig,
                     tupled_args_ty: &impls.tupled_args_ty,
                 },
-                vimpl: Some(match target_kind {
-                    ClosureKind::FnOnce => &impls.fn_once_impl,
-                    ClosureKind::FnMut => &impls.fn_mut_impl,
-                    ClosureKind::Fn => &impls.fn_impl,
-                }),
+                vimpl: vimpl_from_impls(impls),
             })
         };
         match def.kind() {
@@ -167,9 +177,21 @@ impl<'a, 'tcx> CallableFnImpls<'a, 'tcx> {
                     ClosureKind::Fn => c.fn_impl(s),
                 },
             }),
-            hax::FullDefKind::Fn(f) => from_fn_def(f.sig(), f.fn_trait_impls(s)),
-            hax::FullDefKind::AssocFn(f) => from_fn_def(f.sig(), f.fn_trait_impls(s)),
-            hax::FullDefKind::Ctor(f) => from_fn_def(f.sig(), f.fn_trait_impls(s)),
+            hax::FullDefKind::Fn(f) => for_fn_def(f.sig(), f.fn_trait_impls(s)?),
+            hax::FullDefKind::AssocFn(f) => for_fn_def(f.sig(), f.fn_trait_impls(s)?),
+            hax::FullDefKind::Ctor(f) => for_fn_def(f.sig(), f.fn_trait_impls(s)?),
+            hax::FullDefKind::FnPtr(f) => {
+                let impls = f.fn_trait_impls(s)?;
+                let sig = f.sig();
+                Some(Self {
+                    callable: Callable::FnPtr {
+                        item: def.this(),
+                        sig,
+                        tupled_args_ty: &impls.tupled_args_ty,
+                    },
+                    vimpl: vimpl_from_impls(impls),
+                })
+            }
             _ => None,
         }
     }
@@ -255,9 +277,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         })
     }
 
-    /// If this trait proof is the built-in impl of a `Fn*` trait for a closure or function item,
-    /// return the callable item and the kind of the implemented trait. The returned item has its
-    /// regions erased.
+    /// If this trait proof is the built-in impl of a `Fn*` trait for a closure, function item or
+    /// function pointer, return the callable item and the kind of the implemented trait. The
+    /// returned item has its regions erased.
     pub fn recognize_callable_impl_proof(
         &self,
         trait_proof: &hax::TraitProof,
@@ -287,6 +309,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let item = match callable_ty.kind() {
             hax::TyKind::Closure(closure_args) => &closure_args.item,
             hax::TyKind::FnDef { item, .. } => item,
+            hax::TyKind::FnPtr(_, item) => item,
             _ => return None,
         };
         Some((item.erase(self.hax_state_with_id()), target_kind))
@@ -418,6 +441,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 let fn_ref = self.translate_bound_fn_ptr(span, item, TransItemSourceKind::Fun)?;
                 TyKind::FnDef(fn_ref).into_ty()
             }
+            Callable::FnPtr { sig, .. } => {
+                TyKind::FnPtr(self.translate_poly_fun_sig(span, sig)?).into_ty()
+            }
         })
     }
 
@@ -525,6 +551,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             Callable::FnDef { item, .. } => {
                 self.translate_fn_def_method_body(span, item, signature)
             }
+            Callable::FnPtr { .. } => self.translate_fn_ptr_method_body(span, signature),
         }
     }
 
@@ -731,6 +758,52 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             dest: output,
         });
 
+        Ok(Body::Unstructured(builder.build()))
+    }
+
+    fn translate_fn_ptr_method_body(
+        &mut self,
+        span: Span,
+        signature: &FunSig,
+    ) -> Result<Body, Error> {
+        let mut builder = BodyBuilder::new(span, 2);
+        let output = builder.new_var(None, signature.output.clone());
+        let fn_ptr = builder.new_var(Some("fn_ptr".to_string()), signature.inputs[0].clone());
+        let tupled_args_ty = &signature.inputs[1];
+        let tupled_args = builder.new_var(Some("args".to_string()), tupled_args_ty.clone());
+
+        // `FnOnce::call_once` receives the function pointer directly, whereas `Fn::call` and
+        // `FnMut::call_mut` receive it through a shared or mutable reference respectively.
+        let fn_ptr = if matches!(fn_ptr.ty().kind(), TyKind::FnPtr(..)) {
+            Operand::Copy(fn_ptr)
+        } else {
+            Operand::Copy(fn_ptr.deref())
+        };
+        let TyKind::FnPtr(fn_sig) = fn_ptr.ty().kind() else {
+            unreachable!()
+        };
+        let late_bound_regions = self
+            .innermost_binder()
+            .bound_region_vars
+            .iter()
+            .map(|rid| Region::Var(DeBruijnVar::new_at_zero(*rid)))
+            .collect();
+        let arg_tys = fn_sig.clone().apply(late_bound_regions).inputs;
+        let args = arg_tys
+            .into_iter()
+            .enumerate()
+            .map(|(i, ty)| {
+                let field = tupled_args
+                    .clone()
+                    .project(ProjectionElem::Field(None, FieldId::new(i)), ty);
+                Operand::Move(field)
+            })
+            .collect();
+        builder.call(Call {
+            func: FnOperand::Dynamic(fn_ptr),
+            args,
+            dest: output,
+        });
         Ok(Body::Unstructured(builder.build()))
     }
 

@@ -568,7 +568,15 @@ pub struct GenericParamDef {
             ty::GenericParamDefKind::Type { has_default, synthetic } => GenericParamDefKind::Type { has_default, synthetic },
             ty::GenericParamDefKind::Const { has_default, .. } => {
                 let tcx = s.base().tcx;
-                let ty = tcx.type_of(self.def_id).instantiate_identity();
+                let ty = if let Some(item) = s.owner().as_synthetic(s)
+                    && let Some(ty) = item.const_param_ty(s, self.index)
+                {
+                    // We use a dummy `DefId` for the generic params of synthetic items, so
+                    // `tcx.type_of` would be wrong.
+                    ty::Unnormalized::new(ty)
+                } else {
+                    tcx.type_of(self.def_id).instantiate_identity()
+                };
                 let ty = normalize(tcx, s.typing_env(), ty).sinto(s);
                 GenericParamDefKind::Const { has_default, ty }
             },
@@ -582,6 +590,8 @@ pub struct GenericParamDef {
         let tcx = s.base().tcx;
         match s.owner().as_synthetic(s) {
             Some(Array | Slice | Tuple(_) | Str) => Some(Variance::Covariant),
+            // We could compute it but we won't need it since this item is only used in impls.
+            Some(FnPtr(_)) => None,
             None => {
                 let parent = tcx.parent(self.def_id);
                 match tcx.def_kind(parent) {
@@ -751,11 +761,14 @@ pub enum TyKind {
     #[custom_arm(
         ty::TyKind::FnPtr(tys, header) => {
             let sig = tys.with(*header);
-            TyKind::Arrow(Box::new(sig.sinto(s)))
+            let item = ItemRef::translate_fn_ptr(s, sig);
+            TyKind::FnPtr(Box::new(sig.sinto(s)), item)
         },
     )]
     /// Reflects [`ty::TyKind::FnPtr`]
-    Arrow(Box<PolyFnSig>),
+    /// The `ItemRef` points to a synthetic item we can use to build impls for fn ptr types. See
+    /// `SyntheticItem::FnPtr` for details.
+    FnPtr(Box<PolyFnSig>, ItemRef),
 
     #[custom_arm(
         ty::TyKind::Closure (def_id, generics) => {

@@ -77,8 +77,41 @@ pub enum AssertKind {
 
 struct () {}
 
+// Full name: {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>
+fn {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>() -> core::ops::function::Fn::{vtable}
+= <opaque>
+
+// Full name: {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>
+static {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>: core::ops::function::Fn::{vtable} = {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>()
+
 struct (_,)::<i32> {
   _0: i32,
+}
+
+// Full name: {impl FnOnce<(i32,)> for fn(i32)}
+impl FnOnce<(i32,)> for fn(i32) {
+    proof ImpliedClause0: (fn(i32): MetaSized) = {built_in impl MetaSized for fn(i32)}
+    proof ImpliedClause1: ((i32,): Sized) = {built_in impl Sized for (i32,)}
+    proof ImpliedClause2: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
+    vtable: lazy
+}
+
+// Full name: {impl FnMut<(i32,)> for fn(i32)}
+impl FnMut<(i32,)> for fn(i32) {
+    proof ImpliedClause0: (fn(i32): MetaSized) = {built_in impl MetaSized for fn(i32)}
+    proof ImpliedClause1: (fn(i32): FnOnce<(i32,)>) = {impl FnOnce<(i32,)> for fn(i32)}
+    proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
+    proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
+    vtable: lazy
+}
+
+// Full name: {impl Fn<(i32,)> for fn(i32)}
+impl Fn<(i32,)> for fn(i32) {
+    proof ImpliedClause0: (fn(i32): MetaSized) = {built_in impl MetaSized for fn(i32)}
+    proof ImpliedClause1: (fn(i32): FnMut<(i32,)>) = {impl FnMut<(i32,)> for fn(i32)}
+    proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
+    proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
+    vtable: {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>
 }
 
 struct (_, _)::<&'_ i32, &'_ i32> {
@@ -516,7 +549,7 @@ fn main()
     _4 = move _9
     _3 = &(*_4)
     _2 = &(*_3)
-    boo = unsize_cast<&'6 fn(i32), &'12 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '13), &vtable_of({built_in impl Fn<(i32,)> for fn(i32)})>(move _2)
+    boo = unsize_cast<&'6 fn(i32), &'12 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '13), &{impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>>(move _2)
     storage_dead(_2)
     fake_read(boo)
     set_type(typeof(boo) == &'14 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '15))

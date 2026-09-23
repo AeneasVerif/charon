@@ -158,6 +158,112 @@ impl<A> "impl_Destruct_for_tuple" Destruct for (A,) {
     non-dyn-compatible
 }
 
+// Full name: {impl Fn<(A,), B> for fn(A) -> B}::call
+fn {impl Fn<(A,), B> for fn(A) -> B}::call<'_0, A, B>(fn_ptr: &'_0 fn(A) -> B, args: (A,)) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+    TypeOutlives0: A: '_0,
+    TypeOutlives1: B: '_0,
+{
+    let _0: B; // return
+    let fn_ptr: &'_0 fn(A) -> B; // arg #1
+    let args: (A,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy (*fn_ptr))(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl FnMut<(A,), B> for fn(A) -> B}::call_mut
+fn {impl FnMut<(A,), B> for fn(A) -> B}::call_mut<'_0, A, B>(fn_ptr: &'_0 mut fn(A) -> B, args: (A,)) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+    TypeOutlives0: A: '_0,
+    TypeOutlives1: B: '_0,
+{
+    let _0: B; // return
+    let fn_ptr: &'_0 mut fn(A) -> B; // arg #1
+    let args: (A,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy (*fn_ptr))(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl FnOnce<(A,), B> for fn(A) -> B}::call_once
+fn {impl FnOnce<(A,), B> for fn(A) -> B}::call_once<A, B>(fn_ptr: fn(A) -> B, args: (A,)) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+    let _0: B; // return
+    let fn_ptr: fn(A) -> B; // arg #1
+    let args: (A,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy fn_ptr)(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl FnOnce<(A,), B> for fn(A) -> B}
+impl<A, B> FnOnce<(A,), B> for fn(A) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+    proof ImpliedClause0: (fn(A) -> B: MetaSized) = {built_in impl MetaSized for fn(A) -> B}
+    proof ImpliedClause1: ((A,): Sized) = {built_in impl Sized for (A,)}
+    proof ImpliedClause2: ((A,): Tuple) = {built_in impl Tuple for (A,)}
+    proof ImpliedClause3: (B: Sized) = TraitClause1
+    fn call_once = {impl FnOnce<(A,), B> for fn(A) -> B}::call_once<A, B>[TraitClause0, TraitClause1]
+    vtable: lazy
+}
+
+// Full name: {impl FnMut<(A,), B> for fn(A) -> B}
+impl<A, B> FnMut<(A,), B> for fn(A) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+    proof ImpliedClause0: (fn(A) -> B: MetaSized) = {built_in impl MetaSized for fn(A) -> B}
+    proof ImpliedClause1: (fn(A) -> B: FnOnce<(A,), B>) = {impl FnOnce<(A,), B> for fn(A) -> B}<A, B>[TraitClause0, TraitClause1]
+    proof ImpliedClause2: ((A,): Sized) = {built_in impl Sized for (A,)}
+    proof ImpliedClause3: ((A,): Tuple) = {built_in impl Tuple for (A,)}
+    fn call_mut<'_0_1> = {impl FnMut<(A,), B> for fn(A) -> B}::call_mut<'_0_1, A, B>[TraitClause0, TraitClause1]
+    vtable: lazy
+}
+
+// Full name: {impl Fn<(A,), B> for fn(A) -> B}
+impl<A, B> Fn<(A,), B> for fn(A) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+    proof ImpliedClause0: (fn(A) -> B: MetaSized) = {built_in impl MetaSized for fn(A) -> B}
+    proof ImpliedClause1: (fn(A) -> B: FnMut<(A,), B>) = {impl FnMut<(A,), B> for fn(A) -> B}<A, B>[TraitClause0, TraitClause1]
+    proof ImpliedClause2: ((A,): Sized) = {built_in impl Sized for (A,)}
+    proof ImpliedClause3: ((A,): Tuple) = {built_in impl Tuple for (A,)}
+    fn call<'_0_1> = {impl Fn<(A,), B> for fn(A) -> B}::call<'_0_1, A, B>[TraitClause0, TraitClause1]
+    vtable: lazy
+}
+
 // Full name: test_crate::incr_u32
 pub fn incr_u32(x: u32) -> u32
 {
@@ -1438,7 +1544,7 @@ pub fn test_map_option2(x: Option<u32>[{built_in impl Sized for u32}]) -> Option
     _4 = copy x
     storage_live(_5)
     _5 = copy f
-    _0 = map_option<u32, fn(u32) -> u32>[{built_in impl Sized for u32}, {built_in impl Sized for fn(u32) -> u32}, {built_in impl Fn<(u32,), u32> for fn(u32) -> u32}](move _4, move _5)
+    _0 = map_option<u32, fn(u32) -> u32>[{built_in impl Sized for u32}, {built_in impl Sized for fn(u32) -> u32}, {impl Fn<(A,), B> for fn(A) -> B}<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]](move _4, move _5)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_5)
