@@ -223,7 +223,9 @@ impl<'tcx> TranslateCtx<'tcx> {
                 hax::SyntheticItem::Str => {
                     Some(PathElem::Builtin(BuiltinPathElem::Str, Disambiguator::ZERO))
                 }
-                hax::SyntheticItem::Array | hax::SyntheticItem::Slice => None,
+                hax::SyntheticItem::Array
+                | hax::SyntheticItem::Slice
+                | hax::SyntheticItem::FnPtr(_) => None,
             });
         }
         let path_elem = def_id.path_item(&self.hax_state);

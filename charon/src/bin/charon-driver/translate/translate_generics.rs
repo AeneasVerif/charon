@@ -5,6 +5,7 @@ use std::mem;
 use crate::hax;
 use crate::hax::{BaseState, Symbol};
 use rustc_middle::ty;
+use rustc_span::def_id::DefId as RDefId;
 
 use super::translate_ctx::{ItemTransCtx, TransImplSource, TransItemSourceKind};
 use charon_lib::ast::*;
@@ -29,6 +30,8 @@ pub(crate) struct BindingLevel {
     pub is_hax_binder: bool,
     /// The definition whose generics this binding level contains, if this is an item binder.
     pub def_id: Option<hax::DefId>,
+    /// Dummy rustc `DefId` that we use to `liberate_bound_regions` for our synthetic fn pointer items.
+    pub late_bound_scope_alias: Option<RDefId>,
     /// The parameters and predicates bound at this level.
     pub params: GenericParams,
     /// Rust makes the distinction between early and late-bound region parameters. We do not make
@@ -331,10 +334,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         use hax::LateParamRegionKind::*;
         match &region.kind {
             Anon(index) | NamedAnon(index, _) => {
-                let Some((dbid, binder)) = self
-                    .binding_levels
-                    .iter_enumerated()
-                    .find(|(_, binder)| binder.def_id.as_ref() == Some(&region.scope))
+                let Some((dbid, binder)) =
+                    self.binding_levels.iter_enumerated().find(|(_, binder)| {
+                        binder.def_id.as_ref() == Some(&region.scope)
+                            || binder.late_bound_scope_alias == region.scope.as_real_def_id()
+                    })
                 else {
                     raise_error!(
                         self,
@@ -461,6 +465,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<(), Error> {
         let sig = match def.kind() {
             hax::FullDefKind::Fn(f) => Some(f.sig()),
+            hax::FullDefKind::FnPtr(f) => Some(f.sig()),
             hax::FullDefKind::AssocFn(f) => Some(f.sig()),
             hax::FullDefKind::Ctor(f) => Some(f.sig()),
             _ => None,
@@ -469,6 +474,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let innermost_binder = self.innermost_binder_mut();
             assert!(innermost_binder.bound_region_vars.is_empty());
             innermost_binder.push_params_from_binder(sig.rebind(()))?;
+        }
+        if let hax::FullDefKind::FnPtr(f) = def.kind() {
+            self.innermost_binder_mut().late_bound_scope_alias = Some(f.late_bound_scope());
         }
         Ok(())
     }
@@ -510,6 +518,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 PredicateOrigin::WhereClauseOnType
             }
             FullDefKind::Fn(_)
+            | FullDefKind::FnPtr(_)
             | FullDefKind::AssocFn(_)
             | FullDefKind::Closure(_)
             | FullDefKind::Const(_)
@@ -581,6 +590,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         if let hax::FullDefKind::Fn(_)
+        | hax::FullDefKind::FnPtr(_)
         | hax::FullDefKind::AssocFn(_)
         | hax::FullDefKind::Closure(_)
         | hax::FullDefKind::Ctor(_) = def.kind()
@@ -750,7 +760,7 @@ impl LifetimeMutabilityComputer {
     ) -> Option<&HashSet<u32>> {
         if !matches!(
             item.kind,
-            hax::DefKind::Struct | hax::DefKind::Enum | hax::DefKind::Union
+            hax::DefKind::Struct | hax::DefKind::Enum | hax::DefKind::Union | hax::DefKind::FnPtr
         ) {
             return None;
         }
@@ -803,12 +813,19 @@ impl LifetimeMutabilityComputer {
             };
 
             let tcx = s.base().tcx;
-            let def_id = item.real_rust_def_id();
-            let adt_def = tcx.adt_def(def_id);
-            let generics = item.identity_args(s);
-            for variant in adt_def.variants() {
-                for field in &variant.fields {
-                    field.ty(tcx, generics).visit_with(&mut visitor);
+            if matches!(item.as_synthetic(s), Some(hax::SyntheticItem::FnPtr(_))) {
+                item.type_of(s)
+                    .instantiate_identity()
+                    .skip_normalization()
+                    .visit_with(&mut visitor);
+            } else {
+                let def_id = item.real_rust_def_id();
+                let adt_def = tcx.adt_def(def_id);
+                let generics = item.identity_args(s);
+                for variant in adt_def.variants() {
+                    for field in &variant.fields {
+                        field.ty(tcx, generics).visit_with(&mut visitor);
+                    }
                 }
             }
             let set = visitor.set;

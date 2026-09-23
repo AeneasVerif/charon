@@ -1,0 +1,1023 @@
+# Final LLBC before serialization:
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+fn core::marker::MetaSized::{vtable}::<fn(u32) -> u32>() -> core::marker::MetaSized::{vtable}
+= <opaque>
+
+static core::marker::MetaSized::{vtable}::<fn(u32) -> u32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<fn(u32) -> u32>()
+
+// Full name: core::marker::Tuple
+#[fundamental]
+#[lang_item(Tuple)]
+pub trait Tuple<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct core::ops::function::FnOnce::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  method_call_once: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+struct core::ops::function::FnMut::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  method_call_mut: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+  super_trait_1: &'static core::ops::function::FnOnce::{vtable},
+}
+
+struct core::ops::function::Fn::{vtable} {
+  size: usize,
+  align: usize,
+  drop: *const (),
+  method_call: *const (),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+  super_trait_1: &'static core::ops::function::FnMut::{vtable},
+}
+
+// Full name: core::ops::function::FnOnce
+#[fundamental]
+#[lang_item(FnOnce)]
+pub trait FnOnce<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    vtable: core::ops::function::FnOnce::{vtable}
+}
+
+// Full name: core::ops::function::FnMut
+#[fundamental]
+#[lang_item(FnMut)]
+pub trait FnMut<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnOnce<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    vtable: core::ops::function::FnMut::{vtable}
+}
+
+// Full name: core::ops::function::Fn
+#[fundamental]
+#[lang_item(Fn)]
+pub trait Fn<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnMut<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    vtable: core::ops::function::Fn::{vtable}
+}
+
+struct (_,)::<u32> {
+  _0: u32,
+}
+
+// Full name: {impl FnOnce<(u32,)> for fn(u32) -> u32}::call_once::<u32, u32>
+fn {impl FnOnce<(u32,)> for fn(u32) -> u32}::call_once::<u32, u32>(fn_ptr: fn(u32) -> u32, args: (u32,)) -> u32
+{
+    let _0: u32; // return
+    let fn_ptr: fn(u32) -> u32; // arg #1
+    let args: (u32,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy fn_ptr)(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32>
+extern "rust-call" fn {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32>(_1: *mut (dyn FnOnce<(u32,), Output = u32>), _2: (u32,)) -> u32
+{
+    let _0: u32; // return
+    let _1: *mut (dyn FnOnce<(u32,), Output = u32> + '0); // arg #1
+    let _2: (u32,); // arg #2
+    let _3: *mut fn(u32) -> u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = concretize<*mut (dyn FnOnce<(u32,), Output = u32> + '1), *mut fn(u32) -> u32>(move _1)
+    _0 = {impl FnOnce<(u32,)> for fn(u32) -> u32}::call_once::<u32, u32>(move (*_3), move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32>
+unsafe fn {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_0>(dyn_self: &'_0 mut (dyn FnOnce<(u32,), Output = u32>))
+{
+    let ret: (); // return
+    let dyn_self: &'_0 mut (dyn FnOnce<(u32,), Output = u32> + '0); // arg #1
+    let target_self: &'_0 mut fn(u32) -> u32; // local
+
+    storage_live(ret)
+    ret = ()
+    storage_live(target_self)
+    target_self = concretize<&'_0 mut (dyn FnOnce<(u32,), Output = u32> + '1), &'_0 mut fn(u32) -> u32>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
+    return
+}
+
+// Full name: {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
+fn {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>() -> core::ops::function::FnOnce::{vtable}
+{
+    let ret: core::ops::function::FnOnce::{vtable}; // return
+    let drop: unsafe fn(*mut (dyn FnOnce<(u32,), Output = u32> + '0)); // local
+    let erased_drop: *const (); // local
+    let call_once: extern "rust-call" fn(*mut (dyn FnOnce<(u32,), Output = u32> + '1), (u32,)) -> u32; // local
+    let erased_call_once: *const (); // local
+    let _5: unsafe fn(*mut (dyn FnOnce<(u32,), Output = u32> + '4)); // anonymous local
+    let _6: extern "rust-call" fn(*mut (dyn FnOnce<(u32,), Output = u32> + '8), (u32,)) -> u32; // anonymous local
+    let _7: &'static core::marker::MetaSized::{vtable}; // anonymous local
+
+    storage_live(ret)
+    storage_live(drop)
+    storage_live(erased_drop)
+    storage_live(_5)
+    _5 = cast<{impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'3>, unsafe fn(*mut (dyn FnOnce<(u32,), Output = u32> + '4))>(const {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'3>)
+    drop = move _5
+    erased_drop = cast<unsafe fn(*mut (dyn FnOnce<(u32,), Output = u32> + '5)), *const ()>(move drop)
+    storage_live(call_once)
+    storage_live(erased_call_once)
+    storage_live(_6)
+    _6 = cast<{impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32>, extern "rust-call" fn(*mut (dyn FnOnce<(u32,), Output = u32> + '8), (u32,)) -> u32>(const {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32>)
+    call_once = move _6
+    erased_call_once = cast<extern "rust-call" fn(*mut (dyn FnOnce<(u32,), Output = u32> + '9), (u32,)) -> u32, *const ()>(move call_once)
+    storage_live(_7)
+    _7 = &core::marker::MetaSized::{vtable}::<fn(u32) -> u32>
+    ret = core::ops::function::FnOnce::{vtable} { size: const size_of::<fn(u32) -> u32>(), align: const align_of::<fn(u32) -> u32>(), drop: move erased_drop, method_call_once: move erased_call_once, super_trait_0: move _7 }
+    return
+}
+
+// Full name: {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
+static {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::FnOnce::{vtable} = {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>()
+
+// Full name: {impl FnMut<(u32,)> for fn(u32) -> u32}::call_mut::<u32, u32>
+fn call_mut::<u32, u32><'_0>(fn_ptr: &'_0 mut fn(u32) -> u32, args: (u32,)) -> u32
+{
+    let _0: u32; // return
+    let fn_ptr: &'_0 mut fn(u32) -> u32; // arg #1
+    let args: (u32,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy (*fn_ptr))(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32>
+extern "rust-call" fn {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32><'_0>(_1: &'_0 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32>), _2: (u32,)) -> u32
+{
+    let _0: u32; // return
+    let _1: &'_0 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '0); // arg #1
+    let _2: (u32,); // arg #2
+    let _3: &'_0 mut fn(u32) -> u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = concretize<&'_0 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '1), &'_0 mut fn(u32) -> u32>(move _1)
+    _0 = call_mut::<u32, u32><'_0>(move _3, move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32>
+unsafe fn {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_0>(dyn_self: &'_0 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32>))
+{
+    let ret: (); // return
+    let dyn_self: &'_0 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '0); // arg #1
+    let target_self: &'_0 mut fn(u32) -> u32; // local
+
+    storage_live(ret)
+    ret = ()
+    storage_live(target_self)
+    target_self = concretize<&'_0 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '1), &'_0 mut fn(u32) -> u32>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
+    return
+}
+
+// Full name: {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
+fn {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>() -> core::ops::function::FnMut::{vtable}
+{
+    let ret: core::ops::function::FnMut::{vtable}; // return
+    let drop: unsafe fn(*mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '0)); // local
+    let erased_drop: *const (); // local
+    let call_mut: extern "rust-call" fn<'_0_1>(&'_0_1 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '1), (u32,)) -> u32; // local
+    let erased_call_mut: *const (); // local
+    let _5: unsafe fn(*mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '4)); // anonymous local
+    let _6: extern "rust-call" fn<'_0_1>(&'_0_1 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '9), (u32,)) -> u32; // anonymous local
+    let _7: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _8: &'static core::ops::function::FnOnce::{vtable}; // anonymous local
+
+    storage_live(ret)
+    storage_live(drop)
+    storage_live(erased_drop)
+    storage_live(_5)
+    _5 = cast<{impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'3>, unsafe fn(*mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '4))>(const {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'3>)
+    drop = move _5
+    erased_drop = cast<unsafe fn(*mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '5)), *const ()>(move drop)
+    storage_live(call_mut)
+    storage_live(erased_call_mut)
+    storage_live(_6)
+    _6 = cast<for<'_0_1> {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32><'8>, extern "rust-call" fn<'_0_1>(&'_0_1 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '9), (u32,)) -> u32>(const {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32><'8>)
+    call_mut = move _6
+    erased_call_mut = cast<extern "rust-call" fn<'_0_1>(&'_0_1 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '10), (u32,)) -> u32, *const ()>(move call_mut)
+    storage_live(_7)
+    _7 = &core::marker::MetaSized::{vtable}::<fn(u32) -> u32>
+    storage_live(_8)
+    _8 = &{impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
+    ret = core::ops::function::FnMut::{vtable} { size: const size_of::<fn(u32) -> u32>(), align: const align_of::<fn(u32) -> u32>(), drop: move erased_drop, method_call_mut: move erased_call_mut, super_trait_0: move _7, super_trait_1: move _8 }
+    return
+}
+
+// Full name: {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
+static {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::FnMut::{vtable} = {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>()
+
+// Full name: {impl Fn<(u32,)> for fn(u32) -> u32}::call::<u32, u32>
+fn call::<u32, u32><'_0>(fn_ptr: &'_0 fn(u32) -> u32, args: (u32,)) -> u32
+{
+    let _0: u32; // return
+    let fn_ptr: &'_0 fn(u32) -> u32; // arg #1
+    let args: (u32,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy (*fn_ptr))(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32>
+extern "rust-call" fn {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32><'_0>(_1: &'_0 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32>), _2: (u32,)) -> u32
+{
+    let _0: u32; // return
+    let _1: &'_0 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '0); // arg #1
+    let _2: (u32,); // arg #2
+    let _3: &'_0 fn(u32) -> u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = concretize<&'_0 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '1), &'_0 fn(u32) -> u32>(move _1)
+    _0 = call::<u32, u32><'_0>(move _3, move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32>
+unsafe fn {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_0>(dyn_self: &'_0 mut (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32>))
+{
+    let ret: (); // return
+    let dyn_self: &'_0 mut (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '0); // arg #1
+    let target_self: &'_0 mut fn(u32) -> u32; // local
+
+    storage_live(ret)
+    ret = ()
+    storage_live(target_self)
+    target_self = concretize<&'_0 mut (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '1), &'_0 mut fn(u32) -> u32>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
+    return
+}
+
+// Full name: {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
+fn {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>() -> core::ops::function::Fn::{vtable}
+{
+    let ret: core::ops::function::Fn::{vtable}; // return
+    let drop: unsafe fn(*mut (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '0)); // local
+    let erased_drop: *const (); // local
+    let call: extern "rust-call" fn<'_0_1>(&'_0_1 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '1), (u32,)) -> u32; // local
+    let erased_call: *const (); // local
+    let _5: unsafe fn(*mut (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '4)); // anonymous local
+    let _6: extern "rust-call" fn<'_0_1>(&'_0_1 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32; // anonymous local
+    let _7: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _8: &'static core::ops::function::FnMut::{vtable}; // anonymous local
+
+    storage_live(ret)
+    storage_live(drop)
+    storage_live(erased_drop)
+    storage_live(_5)
+    _5 = cast<{impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'3>, unsafe fn(*mut (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '4))>(const {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'3>)
+    drop = move _5
+    erased_drop = cast<unsafe fn(*mut (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '5)), *const ()>(move drop)
+    storage_live(call)
+    storage_live(erased_call)
+    storage_live(_6)
+    _6 = cast<for<'_0_1> {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32><'8>, extern "rust-call" fn<'_0_1>(&'_0_1 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32>(const {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32><'8>)
+    call = move _6
+    erased_call = cast<extern "rust-call" fn<'_0_1>(&'_0_1 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '10), (u32,)) -> u32, *const ()>(move call)
+    storage_live(_7)
+    _7 = &core::marker::MetaSized::{vtable}::<fn(u32) -> u32>
+    storage_live(_8)
+    _8 = &{impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
+    ret = core::ops::function::Fn::{vtable} { size: const size_of::<fn(u32) -> u32>(), align: const align_of::<fn(u32) -> u32>(), drop: move erased_drop, method_call: move erased_call, super_trait_0: move _7, super_trait_1: move _8 }
+    return
+}
+
+// Full name: {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
+static {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::Fn::{vtable} = {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>()
+
+// Full name: {impl FnOnce<(u32,)> for fn(u32) -> u32}
+impl FnOnce<(u32,)> for fn(u32) -> u32 {
+    proof ImpliedClause0: (fn(u32) -> u32: MetaSized) = {built_in impl MetaSized for fn(u32) -> u32}
+    proof ImpliedClause1: ((u32,): Sized) = {built_in impl Sized for (u32,)}
+    proof ImpliedClause2: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
+    vtable: {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
+}
+
+// Full name: {impl FnMut<(u32,)> for fn(u32) -> u32}
+impl FnMut<(u32,)> for fn(u32) -> u32 {
+    proof ImpliedClause0: (fn(u32) -> u32: MetaSized) = {built_in impl MetaSized for fn(u32) -> u32}
+    proof ImpliedClause1: (fn(u32) -> u32: FnOnce<(u32,)>) = {impl FnOnce<(u32,)> for fn(u32) -> u32}
+    proof ImpliedClause2: ((u32,): Sized) = {built_in impl Sized for (u32,)}
+    proof ImpliedClause3: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
+    vtable: {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
+}
+
+// Full name: {impl Fn<(u32,)> for fn(u32) -> u32}
+impl Fn<(u32,)> for fn(u32) -> u32 {
+    proof ImpliedClause0: (fn(u32) -> u32: MetaSized) = {built_in impl MetaSized for fn(u32) -> u32}
+    proof ImpliedClause1: (fn(u32) -> u32: FnMut<(u32,)>) = {impl FnMut<(u32,)> for fn(u32) -> u32}
+    proof ImpliedClause2: ((u32,): Sized) = {built_in impl Sized for (u32,)}
+    proof ImpliedClause3: ((u32,): Tuple) = {built_in impl Tuple for (u32,)}
+    vtable: {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
+}
+
+// Full name: test_crate::Adt::<'_, u32>
+struct Adt::<'_, u32> {
+  _0: &'_ u32,
+}
+
+struct (_,)::<Adt::<'_, u32>> {
+  _0: Adt::<'_, u32>,
+}
+
+// Full name: {impl FnOnce<(Adt::<'_, u32>,)> for fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>}
+impl<'_0> FnOnce<(Adt::<'_, u32>,)> for fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32> {
+    proof ImpliedClause0: (fn<'_0_2>(Adt::<'_, u32>) -> Adt::<'_, u32>: MetaSized) = {built_in impl MetaSized for fn<'_0_2>(Adt::<'_, u32>) -> Adt::<'_, u32>}
+    proof ImpliedClause1: ((Adt::<'_, u32>,): Sized) = {built_in impl Sized for (Adt::<'_, u32>,)}
+    proof ImpliedClause2: ((Adt::<'_, u32>,): Tuple) = {built_in impl Tuple for (Adt::<'_, u32>,)}
+    vtable: lazy
+}
+
+// Full name: test_crate::ConstAdt::<3usize>
+struct ConstAdt::<3usize> {
+  _0: [u8; 3usize],
+}
+
+struct (_,)::<ConstAdt::<3usize>> {
+  _0: ConstAdt::<3usize>,
+}
+
+// Full name: {impl FnOnce<(ConstAdt::<3usize>,)> for fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>}
+impl FnOnce<(ConstAdt::<3usize>,)> for fn(ConstAdt::<3usize>) -> ConstAdt::<3usize> {
+    proof ImpliedClause0: (fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>: MetaSized) = {built_in impl MetaSized for fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>}
+    proof ImpliedClause1: ((ConstAdt::<3usize>,): Sized) = {built_in impl Sized for (ConstAdt::<3usize>,)}
+    proof ImpliedClause2: ((ConstAdt::<3usize>,): Tuple) = {built_in impl Tuple for (ConstAdt::<3usize>,)}
+    vtable: lazy
+}
+
+struct (_,)::<&'_ u32> {
+  _0: &'_ u32,
+}
+
+// Full name: {impl FnOnce<(&'_ u32,)> for fn(&'_ u32) -> &'_ u32}
+impl FnOnce<(&'_ u32,)> for fn(&'_ u32) -> &'_ u32 {
+    proof ImpliedClause0: (fn(&'_ u32) -> &'_ u32: MetaSized) = {built_in impl MetaSized for fn(&'_ u32) -> &'_ u32}
+    proof ImpliedClause1: ((&'_ u32,): Sized) = {built_in impl Sized for (&'_ u32,)}
+    proof ImpliedClause2: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
+    vtable: lazy
+}
+
+// Full name: test_crate::Plain::<u32>
+struct Plain::<u32> {
+  _0: u32,
+}
+
+struct (_, _)::<Plain::<u32>, &'_ u32> {
+  _0: Plain::<u32>,
+  _1: &'_ u32,
+}
+
+// Full name: {impl FnOnce<(Plain::<u32>, &'_ u32)> for fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32}
+impl<'_0> FnOnce<(Plain::<u32>, &'_ u32)> for fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32 {
+    proof ImpliedClause0: (fn<'_0_2>(Plain::<u32>, &'_0_2 u32) -> &'_0_2 u32: MetaSized) = {built_in impl MetaSized for fn<'_0_2>(Plain::<u32>, &'_0_2 u32) -> &'_0_2 u32}
+    proof ImpliedClause1: ((Plain::<u32>, &'_ u32): Sized) = {built_in impl Sized for (Plain::<u32>, &'_ u32)}
+    proof ImpliedClause2: ((Plain::<u32>, &'_ u32): Tuple) = {built_in impl Tuple for (Plain::<u32>, &'_ u32)}
+    vtable: lazy
+}
+
+struct (_,)::<[&'_ u8; 3usize]> {
+  _0: [&'_ u8; 3usize],
+}
+
+// Full name: {impl FnOnce<([&'_ u8; 3usize],)> for fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]}
+impl<'_0> FnOnce<([&'_ u8; 3usize],)> for fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize] {
+    proof ImpliedClause0: (fn<'_0_2>([&'_0_2 u8; 3usize]) -> [&'_0_2 u8; 3usize]: MetaSized) = {built_in impl MetaSized for fn<'_0_2>([&'_0_2 u8; 3usize]) -> [&'_0_2 u8; 3usize]}
+    proof ImpliedClause1: (([&'_ u8; 3usize],): Sized) = {built_in impl Sized for ([&'_ u8; 3usize],)}
+    proof ImpliedClause2: (([&'_ u8; 3usize],): Tuple) = {built_in impl Tuple for ([&'_ u8; 3usize],)}
+    vtable: lazy
+}
+
+// Full name: {impl FnOnce<([&'_ u8; 3usize],)> for fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]}::call_once::<u8, u8, 3usize, 3usize>
+fn {impl FnOnce<([&'_ u8; 3usize],)> for fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]}::call_once::<u8, u8, 3usize, 3usize><'_0>(fn_ptr: fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], args: ([&'_ u8; 3usize],)) -> [&'_0 u8; 3usize]
+{
+    let _0: [&'_0 u8; 3usize]; // return
+    let fn_ptr: fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]; // arg #1
+    let args: ([&'_ u8; 3usize],); // arg #2
+
+    storage_live(_0)
+    _0 = (copy fn_ptr)(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl FnOnce<(Adt::<'_, u32>,)> for fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>}::call_once::<u32, u32>
+fn {impl FnOnce<(Adt::<'_, u32>,)> for fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>}::call_once::<u32, u32><'_0>(fn_ptr: fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>, args: (Adt::<'_, u32>,)) -> Adt::<'_, u32>
+{
+    let _0: Adt::<'_, u32>; // return
+    let fn_ptr: fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>; // arg #1
+    let args: (Adt::<'_, u32>,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy fn_ptr)(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+struct (_, _)::<u32, bool> {
+  _0: u32,
+  _1: bool,
+}
+
+// Full name: {impl FnOnce<(ConstAdt::<3usize>,)> for fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>}::call_once::<ConstAdt::<3usize>, ConstAdt::<3usize>>
+fn {impl FnOnce<(ConstAdt::<3usize>,)> for fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>}::call_once::<ConstAdt::<3usize>, ConstAdt::<3usize>>(fn_ptr: fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>, args: (ConstAdt::<3usize>,)) -> ConstAdt::<3usize>
+{
+    let _0: ConstAdt::<3usize>; // return
+    let fn_ptr: fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>; // arg #1
+    let args: (ConstAdt::<3usize>,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy fn_ptr)(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl FnOnce<(Plain::<u32>, &'_ u32)> for fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32}::call_once::<Plain::<u32>, u32, u32>
+fn {impl FnOnce<(Plain::<u32>, &'_ u32)> for fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32}::call_once::<Plain::<u32>, u32, u32><'_0>(fn_ptr: fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32, args: (Plain::<u32>, &'_ u32)) -> &'_0 u32
+{
+    let _0: &'_0 u32; // return
+    let fn_ptr: fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32; // arg #1
+    let args: (Plain::<u32>, &'_ u32); // arg #2
+
+    storage_live(_0)
+    _0 = (copy fn_ptr)(move args._0, move args._1)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl FnOnce<(&'_ u32,)> for fn(&'_ u32) -> &'_ u32}::call_once::<&'_ u32, &'_ u32>
+fn {impl FnOnce<(&'_ u32,)> for fn(&'_ u32) -> &'_ u32}::call_once::<&'_ u32, &'_ u32>(fn_ptr: fn(&'_ u32) -> &'_ u32, args: (&'_ u32,)) -> &'_ u32
+{
+    let _0: &'0 u32; // return
+    let fn_ptr: fn(&'1 u32) -> &'2 u32; // arg #1
+    let args: (&'_ u32,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy fn_ptr)(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Trait::{vtable}
+}
+
+// Full name: test_crate::{impl Trait for u32}
+impl "impl_Trait_for_u32" Trait for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    vtable: lazy
+}
+
+// Full name: test_crate::identity
+fn identity<'a>(x: Adt::<'_, u32>) -> Adt::<'_, u32>
+{
+    let _0: Adt::<'_, u32>; // return
+    let x: Adt::<'_, u32>; // arg #1
+
+    storage_live(_0)
+    _0 = move x
+    storage_dead(x)
+    return
+}
+
+fn test_crate::call_once::<'_, fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>>(f: fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>, x: Adt::<'_, u32>) -> Adt::<'_, u32>
+{
+    let _0: Adt::<'_, u32>; // return
+    let f: fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>; // arg #1
+    let x: Adt::<'_, u32>; // arg #2
+    let _3: fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>; // anonymous local
+    let _4: (Adt::<'_, u32>,); // anonymous local
+    let _5: Adt::<'_, u32>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = move f
+    storage_live(_4)
+    storage_live(_5)
+    _5 = move x
+    _4 = (move _5,)
+    _0 = {impl FnOnce<(Adt::<'_, u32>,)> for fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>}::call_once::<u32, u32><'0>(move _3, move _4)
+    ↳⚡ storage_dead(x)
+        storage_dead(f)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(x)
+    storage_dead(f)
+    return
+}
+
+// Full name: test_crate::generic_call_once::<fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>, ConstAdt::<3usize>, ConstAdt::<3usize>>
+fn generic_call_once::<fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>, ConstAdt::<3usize>, ConstAdt::<3usize>>(f: fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>, x: ConstAdt::<3usize>) -> ConstAdt::<3usize>
+{
+    let _0: ConstAdt::<3usize>; // return
+    let f: fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>; // arg #1
+    let x: ConstAdt::<3usize>; // arg #2
+    let _3: fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>; // anonymous local
+    let _4: (ConstAdt::<3usize>,); // anonymous local
+    let _5: ConstAdt::<3usize>; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = move f
+    storage_live(_4)
+    storage_live(_5)
+    _5 = move x
+    _4 = (move _5,)
+    _0 = {impl FnOnce<(ConstAdt::<3usize>,)> for fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>}::call_once::<ConstAdt::<3usize>, ConstAdt::<3usize>>(move _3, move _4)
+    ↳⚡ storage_dead(x)
+        storage_dead(f)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(x)
+    storage_dead(f)
+    return
+}
+
+// Full name: test_crate::generic_call_once::<fn(&'_ u32) -> &'_ u32, &'_ u32, &'_ u32>
+fn generic_call_once::<fn(&'_ u32) -> &'_ u32, &'_ u32, &'_ u32>(f: fn(&'_ u32) -> &'_ u32, x: &'_ u32) -> &'_ u32
+{
+    let _0: &'0 u32; // return
+    let f: fn(&'1 u32) -> &'2 u32; // arg #1
+    let x: &'3 u32; // arg #2
+    let _3: fn(&'4 u32) -> &'5 u32; // anonymous local
+    let _4: (&'_ u32,); // anonymous local
+    let _5: &'6 u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = move f
+    storage_live(_4)
+    storage_live(_5)
+    _5 = move x
+    _4 = (move _5,)
+    _0 = {impl FnOnce<(&'_ u32,)> for fn(&'_ u32) -> &'_ u32}::call_once::<&'_ u32, &'_ u32>(move _3, move _4)
+    ↳⚡ storage_dead(x)
+        storage_dead(f)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(x)
+    storage_dead(f)
+    return
+}
+
+// Full name: test_crate::generic_call_once::<fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], [&'_ u8; 3usize], [&'_ u8; 3usize]>
+fn generic_call_once::<fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], [&'_ u8; 3usize], [&'_ u8; 3usize]>(f: fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], x: [&'_ u8; 3usize]) -> [&'_ u8; 3usize]
+{
+    let _0: [&'0 u8; 3usize]; // return
+    let f: fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]; // arg #1
+    let x: [&'5 u8; 3usize]; // arg #2
+    let _3: fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]; // anonymous local
+    let _4: ([&'_ u8; 3usize],); // anonymous local
+    let _5: [&'10 u8; 3usize]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = move f
+    storage_live(_4)
+    storage_live(_5)
+    _5 = move x
+    _4 = (move _5,)
+    _0 = {impl FnOnce<([&'_ u8; 3usize],)> for fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]}::call_once::<u8, u8, 3usize, 3usize><'13>(move _3, move _4)
+    ↳⚡ storage_dead(x)
+        storage_dead(f)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(x)
+    storage_dead(f)
+    return
+}
+
+// Full name: test_crate::generic_call_once2::<fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32, Plain::<u32>, &'_ u32, &'_ u32>
+fn generic_call_once2::<fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32, Plain::<u32>, &'_ u32, &'_ u32>(f: fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32, x: Plain::<u32>, y: &'_ u32) -> &'_ u32
+{
+    let _0: &'0 u32; // return
+    let f: fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32; // arg #1
+    let x: Plain::<u32>; // arg #2
+    let y: &'1 u32; // arg #3
+    let _4: fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32; // anonymous local
+    let _5: (Plain::<u32>, &'_ u32); // anonymous local
+    let _6: Plain::<u32>; // anonymous local
+    let _7: &'2 u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_4)
+    _4 = move f
+    storage_live(_5)
+    storage_live(_6)
+    _6 = move x
+    storage_live(_7)
+    _7 = move y
+    _5 = (move _6, move _7)
+    _0 = {impl FnOnce<(Plain::<u32>, &'_ u32)> for fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32}::call_once::<Plain::<u32>, u32, u32><'3>(move _4, move _5)
+    ↳⚡ storage_dead(y)
+        storage_dead(x)
+        storage_dead(f)
+        unwind_continue
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(y)
+    storage_dead(x)
+    storage_dead(f)
+    return
+}
+
+// Full name: test_crate::test
+pub fn test<'a>(x: &'a u32) -> &'a u32
+{
+    let _0: &'1 u32; // return
+    let x: &'2 u32; // arg #1
+    let f: fn<'b>(Adt::<'_, u32>) -> Adt::<'_, u32>; // local
+    let _3: Adt::<'_, u32>; // anonymous local
+    let _4: fn<'b>(Adt::<'_, u32>) -> Adt::<'_, u32>; // anonymous local
+    let _5: Adt::<'_, u32>; // anonymous local
+    let _6: &'3 u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(f)
+    f = cast<for<'a> identity<'a>, fn<'b>(Adt::<'_, u32>) -> Adt::<'_, u32>>(const identity<'6>)
+    fake_read(f)
+    set_type(typeof(f) == fn<'b>(Adt::<'_, u32>) -> Adt::<'_, u32>)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy f
+    storage_live(_5)
+    storage_live(_6)
+    _6 = &(*x)
+    _5 = Adt::<'_, u32> { _0: move _6 }
+    storage_dead(_6)
+    _3 = test_crate::call_once::<'_, fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>>(move _4, move _5)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = &(*_3._0)
+    storage_dead(f)
+    storage_dead(_3)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::const_identity::<3usize>
+fn const_identity::<3usize>(x: ConstAdt::<3usize>) -> ConstAdt::<3usize>
+{
+    let _0: ConstAdt::<3usize>; // return
+    let x: ConstAdt::<3usize>; // arg #1
+
+    storage_live(_0)
+    _0 = move x
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::test_const
+pub fn test_const(x: ConstAdt::<3usize>) -> ConstAdt::<3usize>
+{
+    let _0: ConstAdt::<3usize>; // return
+    let x: ConstAdt::<3usize>; // arg #1
+    let f: fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>; // local
+    let _3: fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>; // anonymous local
+    let _4: ConstAdt::<3usize>; // anonymous local
+
+    storage_live(_0)
+    storage_live(f)
+    f = cast<const_identity::<3usize>, fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>>(const const_identity::<3usize>)
+    fake_read(f)
+    set_type(typeof(f) == fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>)
+    storage_live(_3)
+    _3 = copy f
+    storage_live(_4)
+    _4 = move x
+    _0 = generic_call_once::<fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>, ConstAdt::<3usize>, ConstAdt::<3usize>>(move _3, move _4)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(f)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::ref_identity
+fn ref_identity<'_0>(x: &'_0 u32) -> &'_0 u32
+{
+    let _0: &'1 u32; // return
+    let x: &'2 u32; // arg #1
+
+    storage_live(_0)
+    _0 = copy x
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::test_free_region
+pub fn test_free_region<'a>(x: &'a u32) -> &'a u32
+{
+    let _0: &'1 u32; // return
+    let x: &'2 u32; // arg #1
+    let f: fn(&'6 u32) -> &'7 u32; // local
+    let _3: &'8 u32; // anonymous local
+    let _4: fn(&'9 u32) -> &'10 u32; // anonymous local
+    let _5: &'11 u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(f)
+    f = cast<for<'_0_1> ref_identity<'_0_1>, fn(&'12 u32) -> &'13 u32>(const ref_identity<'16>)
+    fake_read(f)
+    set_type(typeof(f) == fn(&'17 u32) -> &'18 u32)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy f
+    storage_live(_5)
+    _5 = &(*x)
+    _3 = generic_call_once::<fn(&'_ u32) -> &'_ u32, &'_ u32, &'_ u32>(move _4, move _5)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    _0 = &(*_3)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(f)
+    storage_dead(_3)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::ignore_plain
+fn ignore_plain<'a>(_1: Plain::<u32>, x: &'a u32) -> &'a u32
+{
+    let _0: &'1 u32; // return
+    let _1: Plain::<u32>; // arg #1
+    let x: &'2 u32; // arg #2
+
+    storage_live(_0)
+    _0 = copy x
+    storage_dead(x)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::test_freshen_whole_adt
+pub fn test_freshen_whole_adt<'a>(x: Plain::<u32>, y: &'a u32) -> &'a u32
+{
+    let _0: &'1 u32; // return
+    let x: Plain::<u32>; // arg #1
+    let y: &'2 u32; // arg #2
+    let f: fn<'b>(Plain::<u32>, &'b u32) -> &'b u32; // local
+    let _4: &'3 u32; // anonymous local
+    let _5: fn<'b>(Plain::<u32>, &'b u32) -> &'b u32; // anonymous local
+    let _6: Plain::<u32>; // anonymous local
+    let _7: &'4 u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(f)
+    f = cast<for<'a> ignore_plain<'a>, fn<'b>(Plain::<u32>, &'b u32) -> &'b u32>(const ignore_plain<'7>)
+    fake_read(f)
+    set_type(typeof(f) == fn<'b>(Plain::<u32>, &'b u32) -> &'b u32)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = copy f
+    storage_live(_6)
+    _6 = move x
+    storage_live(_7)
+    _7 = &(*y)
+    _4 = generic_call_once2::<fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32, Plain::<u32>, &'_ u32, &'_ u32>(move _5, move _6, move _7)
+    ↳⚡ storage_dead(y)
+        storage_dead(x)
+        unwind_continue
+    _0 = &(*_4)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(f)
+    storage_dead(_4)
+    storage_dead(y)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::array_identity
+fn array_identity<'a>(x: [&'a u8; 3usize]) -> [&'a u8; 3usize]
+{
+    let _0: [&'6 u8; 3usize]; // return
+    let x: [&'9 u8; 3usize]; // arg #1
+
+    storage_live(_0)
+    _0 = copy x
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::test_const_under_binder
+pub fn test_const_under_binder<'a>(x: [&'a u8; 3usize]) -> [&'a u8; 3usize]
+{
+    let _0: [&'6 u8; 3usize]; // return
+    let x: [&'9 u8; 3usize]; // arg #1
+    let f: fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize]; // local
+    let _3: fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize]; // anonymous local
+    let _4: [&'20 u8; 3usize]; // anonymous local
+
+    storage_live(_0)
+    storage_live(f)
+    f = cast<for<'a> array_identity<'a>, fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize]>(const array_identity<'27>)
+    fake_read(f)
+    set_type(typeof(f) == fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize])
+    storage_live(_3)
+    _3 = copy f
+    storage_live(_4)
+    _4 = copy x
+    _0 = generic_call_once::<fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], [&'_ u8; 3usize], [&'_ u8; 3usize]>(move _3, move _4)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(f)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::increment
+fn increment(x: u32) -> u32
+{
+    let _0: u32; // return
+    let x: u32; // arg #1
+    let _2: u32; // anonymous local
+    let _3: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_2)
+    _2 = copy x
+    _3 = copy _2 panic.+ const 1u32
+    _0 = move _3
+    storage_dead(_2)
+    storage_dead(_3)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::test_dyn_fn
+pub fn test_dyn_fn(x: u32) -> u32
+{
+    let _0: u32; // return
+    let x: u32; // arg #1
+    let fn_ptr: fn(u32) -> u32; // local
+    let dyn_fn: &'3 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '4); // local
+    let _4: &'6 fn(u32) -> u32; // anonymous local
+    let _5: &'7 fn(u32) -> u32; // anonymous local
+    let _6: &'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9); // anonymous local
+    let _7: (u32,); // anonymous local
+    let _8: u32; // anonymous local
+    let _9: unsafe fn(&'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(fn_ptr)
+    fn_ptr = cast<increment, fn(u32) -> u32>(const increment)
+    fake_read(fn_ptr)
+    set_type(typeof(fn_ptr) == fn(u32) -> u32)
+    storage_live(dyn_fn)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = &fn_ptr
+    _4 = &(*_5)
+    dyn_fn = unsize_cast<&'6 fn(u32) -> u32, &'10 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11), &{impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>>(move _4)
+    storage_dead(_4)
+    fake_read(dyn_fn)
+    set_type(typeof(dyn_fn) == &'12 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '13))
+    storage_dead(_5)
+    storage_live(_6)
+    _6 = &(*dyn_fn) with_metadata(copy dyn_fn.metadata)
+    storage_live(_7)
+    storage_live(_8)
+    _8 = copy x
+    _7 = (move _8,)
+    storage_live(_9)
+    _9 = cast<*const (), unsafe fn(&'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32>(copy (*_6.metadata).method_call)
+    _0 = (copy _9)(move _6, move _7)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(dyn_fn)
+    storage_dead(fn_ptr)
+    storage_dead(x)
+    storage_dead(_9)
+    return
+}
+
+
+

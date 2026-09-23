@@ -349,7 +349,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             Mod | ForeignMod => TransItemSourceKind::Module,
 
             // We skip these
-            ExternCrate | GlobalAsm | Macro { .. } | Use => return None,
+            ExternCrate | FnPtr | GlobalAsm | Macro { .. } | Use => return None,
             // These can happen when doing `--start-from` on a foreign crate. We can skip them
             // because their parents will already have been registered.
             Ctor { .. } | Variant => return None,
@@ -795,6 +795,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         if matches!(
             hax_item.def_id.kind,
             hax::DefKind::Fn
+                | hax::DefKind::FnPtr
                 | hax::DefKind::AssocFn
                 | hax::DefKind::Closure
                 | hax::DefKind::Ctor(..)
@@ -802,6 +803,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let def = self.hax_def(hax_item)?;
             let sig = match def.kind() {
                 hax::FullDefKind::Fn(f) => Some(f.sig()),
+                hax::FullDefKind::FnPtr(f) => Some(f.sig()),
                 hax::FullDefKind::AssocFn(f) => Some(f.sig()),
                 hax::FullDefKind::Ctor(f) => Some(f.sig()),
                 _ => None,

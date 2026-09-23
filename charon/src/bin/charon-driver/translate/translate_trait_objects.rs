@@ -620,17 +620,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let fn_trait_impl = recognize_fn_trait_impl_proof(trait_proof);
         let kind = match &trait_proof.kind {
-            // The marker trait vtable translation pipeline would give incorrect results for the
-            // `Fn*` impl of a function pointer, which has no item to hang the impl off.
-            // FIXME(dyn): translate vtables for the `Fn*` impls of function pointers
-            _ if let Some((self_ty, _)) = &fn_trait_impl
-                && !matches!(
-                    self_ty.hax_skip_binder_ref().kind(),
-                    hax::TyKind::Closure(..) | hax::TyKind::FnDef { .. }
-                ) =>
-            {
-                ConstantExprKind::VTableRef(self.translate_trait_proof(span, trait_proof)?)
-            }
             hax::TraitProofKind::Concrete { .. } | hax::TraitProofKind::Builtin { .. } => {
                 // We could return `VTableRef` but we need to enqueue the translation of the static
                 // so may as well reuse that to normalize a bit.
@@ -648,7 +637,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                     hax::TyKind::Closure(args) => {
                                         (&args.item, TransImplSource::Callable(kind))
                                     }
-                                    hax::TyKind::FnDef { item, .. } => {
+                                    hax::TyKind::FnDef { item, .. }
+                                    | hax::TyKind::FnPtr(_, item) => {
                                         (item, TransImplSource::Callable(kind))
                                     }
                                     _ => unreachable!("builtin `Fn*` impl for {self_ty:?}"),
