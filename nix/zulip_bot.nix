@@ -302,7 +302,7 @@ in
               output_file.write(output)
               output_file.flush()
               output_file.seek(0)
-              upload = client.upload_file(output_file)
+              upload = client.upload_file(output_file.file)
           if upload.get("result") != "success":
               raise RuntimeError(upload.get("msg", "failed to upload Charon output"))
 
