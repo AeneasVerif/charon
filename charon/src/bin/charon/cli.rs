@@ -68,9 +68,13 @@ pub struct CargoArgs {
     pub cargo: Vec<String>,
 }
 
-/// Usage: `charon ui_test <file.rs> [charon args]...`
+/// Usage: `charon ui_test [--revision <rev>] <file.rs> [charon args]...`
 #[derive(Debug, clap::Args)]
 pub struct UiTestArgs {
+    /// The revision to run; required iff the test declares `//@ revisions=...`.
+    #[arg(long)]
+    pub revision: Option<String>,
+
     /// Rust UI test file to run.
     pub file: PathBuf,
 

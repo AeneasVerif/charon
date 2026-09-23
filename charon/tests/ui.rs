@@ -32,7 +32,7 @@ struct MagicComments {
     check_output: bool,
 }
 
-fn parse_magic_comments(input_path: &Path) -> Result<MagicComments> {
+fn parse_magic_comments(input_path: &Path, revision: Option<&str>) -> Result<MagicComments> {
     // Parse the magic comments.
     let mut comments = MagicComments {
         ignore: false,
@@ -43,7 +43,14 @@ fn parse_magic_comments(input_path: &Path) -> Result<MagicComments> {
         let Some(line) = line.strip_prefix("//@") else {
             break;
         };
-        let line = line.trim();
+        let mut line = line.trim();
+        // `//@[rev] comment` only applies to revision `rev`.
+        if let Some((rev, rest)) = line.strip_prefix('[').and_then(|l| l.split_once(']')) {
+            if revision != Some(rev) {
+                continue;
+            }
+            line = rest.trim();
+        }
         if line == "ignore" || line == "skip" {
             comments.ignore = true;
         } else if line == "no-check-output" {
@@ -57,11 +64,12 @@ fn parse_magic_comments(input_path: &Path) -> Result<MagicComments> {
 
 struct Case {
     input_path: PathBuf,
+    revision: Option<String>,
     expected: PathBuf,
     magic_comments: MagicComments,
 }
 
-fn setup_test(input_path: PathBuf) -> Result<Trial> {
+fn setup_tests(input_path: PathBuf) -> Result<Vec<Trial>> {
     let name = input_path
         .to_str()
         .context("test path is not valid UTF-8")?
@@ -70,24 +78,51 @@ fn setup_test(input_path: PathBuf) -> Result<Trial> {
         .strip_prefix("/")
         .context("test path is the tests/ui directory itself")?
         .to_owned();
-    let expected = input_path.with_extension("out");
-    let magic_comments = parse_magic_comments(&input_path)?;
-    let ignore = magic_comments.ignore;
-    let case = Case {
-        input_path,
-        expected,
-        magic_comments,
-    };
-    let trial = Trial::test(name, move || perform_test(&case).map_err(|err| err.into()))
-        .with_ignored_flag(ignore);
-    Ok(trial)
+
+    let revisions = read_to_string(&input_path)?
+        .lines()
+        .map_while(|line| line.strip_prefix("//@"))
+        .find_map(|line| line.trim().strip_prefix("revisions="))
+        .map(|revs| {
+            revs.split(',')
+                .map(|rev| Some(rev.trim().to_owned()))
+                .collect()
+        })
+        .unwrap_or(vec![None]);
+
+    revisions
+        .into_iter()
+        .map(|revision| {
+            let name = match &revision {
+                Some(rev) => format!("{name}#{rev}"),
+                None => name.clone(),
+            };
+            let expected = input_path
+                .with_extension(revision.as_deref().unwrap_or_default())
+                .with_added_extension("out");
+            let magic_comments = parse_magic_comments(&input_path, revision.as_deref())?;
+            let ignore = magic_comments.ignore;
+            let case = Case {
+                input_path: input_path.clone(),
+                revision,
+                expected,
+                magic_comments,
+            };
+            let trial = Trial::test(name, move || perform_test(&case).map_err(|err| err.into()))
+                .with_ignored_flag(ignore);
+            Ok(trial)
+        })
+        .collect()
 }
 
 fn perform_test(test_case: &Case) -> Result<()> {
     let mut cmd = Command::cargo_bin("charon")?;
     cmd.arg("ui_test");
+    if let Some(rev) = &test_case.revision {
+        cmd.arg("--revision").arg(rev);
+    }
     cmd.arg(&test_case.input_path);
-    let cmd_str = format!("charon ui_test {}", test_case.input_path.display());
+    let cmd_str = format!("{:?}", cmd);
 
     let output = cmd.output()?;
     let stderr = String::from_utf8(output.stderr.clone())?;
@@ -133,12 +168,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             Ok(entry) if !file_filter(&entry) => None,
             res => Some(res),
         })
-        .map(|entry| {
-            let entry = entry?;
-            let test = setup_test(entry.into_path())?;
-            Result::Ok(test)
-        })
-        .collect::<Result<_>>()?;
+        .map(|entry| setup_tests(entry?.into_path()))
+        .collect::<Result<Vec<_>>>()?
+        .into_iter()
+        .flatten()
+        .collect();
 
     let args = libtest_mimic::Arguments::from_args();
     libtest_mimic::run(&args, tests).exit()
