@@ -1,3 +1,5 @@
+//@ revisions=default,silenced
+//@[silenced] charon-arg=--opaque={impl core::marker::Destruct for crate::PortableHash}
 //@ charon-args=--precise-drops
 struct KeccakState;
 

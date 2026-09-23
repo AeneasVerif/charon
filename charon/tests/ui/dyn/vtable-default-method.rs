@@ -1,3 +1,5 @@
+//@ revisions=poly,mono
+//@[mono] charon-args=--monomorphize
 pub trait Trait {
     fn base(&self) -> i32;
     fn dflt(&self) -> i32 {

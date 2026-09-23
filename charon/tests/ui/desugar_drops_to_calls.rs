@@ -1,3 +1,5 @@
+//@ revisions=poly,mono
+//@[mono] charon-args=--monomorphize
 //@ charon-args=--precise-drops
 //@ charon-args=--desugar-drops
 

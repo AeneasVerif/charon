@@ -44,11 +44,16 @@ static HELP_STRING: &str = unindent!(
          differs between debug and release mode.
     - `//@ no-default-options`: don't set default options like --hide-allocator
     - `//@ aux-crate=<file path>`: compile this file as a crate dependency.
+
+    A test can be run several times with different options using revisions:
+    - `//@ revisions=<rev1>,<rev2>,...`: declare the revisions; each is a separate test, with
+         output stored in `<file>.<rev>.out`.
+    - `//@[<rev>] <comment>`: a comment that only applies to revision `<rev>`.
     "
 );
 
 pub fn run(args: UiTestArgs) -> Result<ExitStatus> {
-    let magic_comments = parse_magic_comments(&args.file)?;
+    let magic_comments = parse_magic_comments(&args.file, args.revision.as_deref())?;
     if matches!(magic_comments.test_kind, TestKind::Ignore) {
         return Ok(ExitStatus::default());
     }
@@ -111,7 +116,10 @@ pub fn run(args: UiTestArgs) -> Result<ExitStatus> {
         cmd.arg("--no-serialize");
     } else {
         cmd.arg("--dest-file");
-        cmd.arg(args.file.with_extension("")); // extension will be added by format=all
+        let file_name = args
+            .file
+            .with_extension(args.revision.as_deref().unwrap_or_default());
+        cmd.arg(file_name); // extension will be added by format=all
         cmd.arg("--format=all");
     }
     cmd.args(&magic_comments.charon_opts);
@@ -160,7 +168,7 @@ pub fn run(args: UiTestArgs) -> Result<ExitStatus> {
     }
 }
 
-fn parse_magic_comments(input_path: &Path) -> Result<MagicComments> {
+fn parse_magic_comments(input_path: &Path, revision: Option<&str>) -> Result<MagicComments> {
     // Parse the magic comments.
     let mut comments = MagicComments {
         test_kind: TestKind::PrettyLlbc,
@@ -169,12 +177,33 @@ fn parse_magic_comments(input_path: &Path) -> Result<MagicComments> {
         default_options: true,
         auxiliary_crates: Vec::new(),
     };
-    for line in fs::read_to_string(input_path)?.lines() {
+    let mut revisions: Option<Vec<&str>> = None;
+    let contents = fs::read_to_string(input_path)?;
+    for line in contents.lines() {
         let Some(line) = line.strip_prefix("//@") else {
             break;
         };
-        let line = line.trim();
-        if line == "known-panic" {
+        let mut line = line.trim();
+        // `//@[rev] comment` only applies to revision `rev`.
+        if let Some((rev, rest)) = line.strip_prefix('[').and_then(|l| l.split_once(']')) {
+            if revisions.as_ref().is_none_or(|revs| !revs.contains(&rev)) {
+                bail!("`//@[{rev}]` refers to an undeclared revision");
+            }
+            if revision != Some(rev) {
+                continue;
+            }
+            line = rest.trim();
+        }
+        if let Some(revs) = line.strip_prefix("revisions=") {
+            let split_revisions: Vec<_> = revs.split(',').map(str::trim).collect();
+            if revisions.is_some() {
+                bail!("`//@ revisions` may only be given once");
+            }
+            if revision.is_none_or(|rev| !split_revisions.contains(&rev)) {
+                bail!("`--revision` must be passed with one of the revisions {split_revisions:?}");
+            }
+            revisions = Some(split_revisions);
+        } else if line == "known-panic" {
             comments.test_kind = TestKind::KnownPanic;
         } else if line == "known-failure" {
             comments.test_kind = TestKind::KnownFailure;
@@ -212,6 +241,9 @@ fn parse_magic_comments(input_path: &Path) -> Result<MagicComments> {
                 )),
             );
         }
+    }
+    if revisions.is_none() && revision.is_some() {
+        bail!("`--revision` was passed but the test has no revisions");
     }
     Ok(comments)
 }
