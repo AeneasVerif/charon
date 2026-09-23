@@ -1,4 +1,6 @@
-//@ charon-args=--mir elaborated
+//@ revisions=elaborated,optimized
+//@[elaborated] charon-args=--mir elaborated
+//@[optimized] charon-args=--mir optimized
 fn into_inner(b: Box<String>) -> String {
     *b
 }

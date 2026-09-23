@@ -1,3 +1,5 @@
+//@ revisions=poly,mono
+//@[mono] charon-args=--monomorphize
 //! A trait method taking `self: Self` by value is still dyn-compatible; its vtable shim must
 //! take the receiver via `*mut Self` (like rustc's `ShimKind::VTable`) since a `dyn Trait`
 //! value can't be passed directly.

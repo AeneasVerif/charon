@@ -223,8 +223,8 @@ fn drop_slice(_1: Box::<[String], Global>)
     return
 }
 
-// Full name: test_crate::drop_tuple
-fn drop_tuple(_1: (String, String))
+// Full name: test_crate::drop_tuple_string
+fn drop_tuple_string(_1: (String, String))
 {
     let _0: (); // return
     let _1: (String, String); // arg #1

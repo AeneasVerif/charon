@@ -1,3 +1,5 @@
+//@ revisions=default,nodup
+//@[nodup] no-default-options
 trait Trait {
     fn required(&self);
     fn provided1(&self) {
