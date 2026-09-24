@@ -48,7 +48,7 @@ pub trait Clone<Self>
 fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
 pub fn clone<'_0>(_1: &'_0 i32) -> i32
@@ -432,7 +432,7 @@ where
 }
 
 // Full name: test_crate::{impl Modifiable<T> for Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]}::{vtable}
-static impl_Modifiable_for_Box_i32_Global::{vtable}<T>: test_crate::Modifiable::{vtable}<T>
+vtable impl_Modifiable_for_Box_i32_Global::{vtable}<T>: test_crate::Modifiable::{vtable}<T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),

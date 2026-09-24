@@ -19,12 +19,12 @@ pub trait Sized<Self>
 fn core::marker::MetaSized::{vtable}::<i32>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}::<i32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<i32>()
+vtable core::marker::MetaSized::{vtable}::<i32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<i32>()
 
 fn core::marker::MetaSized::{vtable}::<u32>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}::<u32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<u32>()
+vtable core::marker::MetaSized::{vtable}::<u32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<u32>()
 
 struct () {}
 
@@ -123,7 +123,7 @@ fn impl_Trait_bool_for_i32::{vtable}() -> test_crate::Trait::{vtable}
 }
 
 // Full name: test_crate::{impl Trait<bool> for i32}::{vtable}
-static impl_Trait_bool_for_i32::{vtable}: test_crate::Trait::{vtable} = impl_Trait_bool_for_i32::{vtable}()
+vtable impl_Trait_bool_for_i32::{vtable}: test_crate::Trait::{vtable} = impl_Trait_bool_for_i32::{vtable}()
 
 // Full name: test_crate::{impl Trait<bool> for i32}
 impl "impl_Trait_bool_for_i32" Trait<bool> for i32 {
@@ -211,7 +211,7 @@ fn impl_Trait_usize_for_u32::{vtable}() -> test_crate::Trait::{vtable}
 }
 
 // Full name: test_crate::{impl Trait<usize> for u32}::{vtable}
-static impl_Trait_usize_for_u32::{vtable}: test_crate::Trait::{vtable} = impl_Trait_usize_for_u32::{vtable}()
+vtable impl_Trait_usize_for_u32::{vtable}: test_crate::Trait::{vtable} = impl_Trait_usize_for_u32::{vtable}()
 
 // Full name: test_crate::{impl Trait<usize> for u32}
 impl "impl_Trait_usize_for_u32" Trait<usize> for u32 {

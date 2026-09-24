@@ -19,7 +19,7 @@ pub trait Sized<Self>
 fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
 // Full name: alloc::alloc::Global
 #[lang_item(GlobalAlloc)]
@@ -176,7 +176,7 @@ fn impl_Consume_for_S::{vtable}() -> test_crate::Consume::{vtable}
 }
 
 // Full name: test_crate::{impl Consume for S}::{vtable}
-static impl_Consume_for_S::{vtable}: test_crate::Consume::{vtable} = impl_Consume_for_S::{vtable}()
+vtable impl_Consume_for_S::{vtable}: test_crate::Consume::{vtable} = impl_Consume_for_S::{vtable}()
 
 // Full name: test_crate::{impl Consume for S}
 impl "impl_Consume_for_S" Consume for S {
@@ -287,7 +287,7 @@ fn {impl Consume for *mut u32}::{vtable}() -> test_crate::Consume::{vtable}
 }
 
 // Full name: test_crate::{impl Consume for *mut u32}::{vtable}
-static {impl Consume for *mut u32}::{vtable}: test_crate::Consume::{vtable} = {impl Consume for *mut u32}::{vtable}()
+vtable {impl Consume for *mut u32}::{vtable}: test_crate::Consume::{vtable} = {impl Consume for *mut u32}::{vtable}()
 
 // Full name: test_crate::{impl Consume for *mut u32}
 impl Consume for *mut u32 {

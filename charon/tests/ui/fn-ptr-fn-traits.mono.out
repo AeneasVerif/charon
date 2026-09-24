@@ -19,7 +19,7 @@ pub trait Sized<Self>
 fn core::marker::MetaSized::{vtable}::<fn(u32) -> u32>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}::<fn(u32) -> u32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<fn(u32) -> u32>()
+vtable core::marker::MetaSized::{vtable}::<fn(u32) -> u32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<fn(u32) -> u32>()
 
 // Full name: core::marker::Tuple
 #[fundamental]
@@ -182,7 +182,7 @@ fn {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>() -> core::ops
 }
 
 // Full name: {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
-static {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::FnOnce::{vtable} = {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>()
+vtable {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::FnOnce::{vtable} = {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>()
 
 // Full name: {impl FnMut<(u32,)> for fn(u32) -> u32}::call_mut::<u32, u32>
 fn call_mut::<u32, u32><'_0>(fn_ptr: &'_0 mut fn(u32) -> u32, args: (u32,)) -> u32
@@ -274,7 +274,7 @@ fn {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>() -> core::ops:
 }
 
 // Full name: {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
-static {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::FnMut::{vtable} = {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>()
+vtable {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::FnMut::{vtable} = {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>()
 
 // Full name: {impl Fn<(u32,)> for fn(u32) -> u32}::call::<u32, u32>
 fn call::<u32, u32><'_0>(fn_ptr: &'_0 fn(u32) -> u32, args: (u32,)) -> u32
@@ -366,7 +366,7 @@ fn {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>() -> core::ops::fu
 }
 
 // Full name: {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
-static {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::Fn::{vtable} = {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>()
+vtable {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::Fn::{vtable} = {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>()
 
 // Full name: {impl FnOnce<(u32,)> for fn(u32) -> u32}
 impl FnOnce<(u32,)> for fn(u32) -> u32 {

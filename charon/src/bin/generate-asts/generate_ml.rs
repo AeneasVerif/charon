@@ -323,6 +323,7 @@ pub(crate) fn generate(
                     "FunSig",
                     "Error",
                     "AbortKind",
+                    "AsmKind",
                 ]),
                 // These have to be kept separate to avoid field name clashes
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {

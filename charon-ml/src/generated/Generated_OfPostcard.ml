@@ -108,6 +108,15 @@ and aggregate_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (AggregatedRawPtr (_0, _1))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and asm_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (asm_kind, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok Asm
+     | 1 -> Ok NakedAsm
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and assertion_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (assertion, string) result =
   combine_error_msgs st __FUNCTION__
@@ -1519,9 +1528,10 @@ module Ullbc = struct
            Ok (TAssert (assert_, target, on_unwind))
        | 5 ->
            let* asm = string_of_postcard ctx st in
+           let* kind = asm_kind_of_postcard ctx st in
            let* targets = list_of_postcard block_id_of_postcard ctx st in
            let* on_unwind = block_id_of_postcard ctx st in
-           Ok (InlineAsm (asm, targets, on_unwind))
+           Ok (InlineAsm (asm, kind, targets, on_unwind))
        | 6 ->
            let* _0 = abort_kind_of_postcard ctx st in
            Ok (Abort _0)
@@ -1600,9 +1610,10 @@ module Llbc = struct
            Ok (Assert (assert_, on_failure, on_unwind))
        | 8 ->
            let* asm = string_of_postcard ctx st in
+           let* kind = asm_kind_of_postcard ctx st in
            let* targets = list_of_postcard block_of_postcard ctx st in
            let* on_unwind = block_of_postcard ctx st in
-           Ok (InlineAsm (asm, targets, on_unwind))
+           Ok (InlineAsm (asm, kind, targets, on_unwind))
        | 9 ->
            let* call = call_of_postcard ctx st in
            let* on_unwind = block_of_postcard ctx st in
@@ -1739,41 +1750,48 @@ and rustc_attribute_kind_of_postcard (ctx : of_postcard_ctx)
          let* deprecation = rustc_deprecation_of_postcard ctx st in
          let* span = span_of_postcard ctx st in
          Ok (RustcAttributeKindDeprecated (deprecation, span))
-     | 3 -> Ok RustcAttributeKindFundamental
-     | 4 ->
+     | 3 ->
+         let* name = string_of_postcard ctx st in
+         let* span = span_of_postcard ctx st in
+         Ok (RustcAttributeKindExportName (name, span))
+     | 4 -> Ok RustcAttributeKindFundamental
+     | 5 ->
          let* span = span_of_postcard ctx st in
          let* reason = option_of_postcard string_of_postcard ctx st in
          Ok (RustcAttributeKindIgnore (span, reason))
-     | 5 ->
+     | 6 ->
          let* _0 = rustc_inline_attr_of_postcard ctx st in
          let* _1 = span_of_postcard ctx st in
          Ok (RustcAttributeKindInline (_0, _1))
-     | 6 ->
+     | 7 ->
+         let* name = string_of_postcard ctx st in
+         Ok (RustcAttributeKindLinkSection name)
+     | 8 ->
          let* _0 = span_of_postcard ctx st in
          Ok (RustcAttributeKindMayDangle _0)
-     | 7 ->
-         let* _0 = span_of_postcard ctx st in
-         Ok (RustcAttributeKindNaked _0)
-     | 8 -> Ok RustcAttributeKindNoLink
      | 9 ->
          let* _0 = span_of_postcard ctx st in
+         Ok (RustcAttributeKindNaked _0)
+     | 10 -> Ok RustcAttributeKindNoLink
+     | 11 ->
+         let* _0 = span_of_postcard ctx st in
          Ok (RustcAttributeKindNoMangle _0)
-     | 10 ->
+     | 12 ->
          let* _0 = span_of_postcard ctx st in
          Ok (RustcAttributeKindNonExhaustive _0)
-     | 11 ->
+     | 13 ->
          let* _0 = rustc_optimize_attr_of_postcard ctx st in
          let* _1 = span_of_postcard ctx st in
          Ok (RustcAttributeKindOptimize (_0, _1))
-     | 12 ->
+     | 14 ->
          let* align = u64_of_postcard ctx st in
          let* span = span_of_postcard ctx st in
          Ok (RustcAttributeKindRustcAlign (align, span))
-     | 13 -> Ok RustcAttributeKindRustcIntrinsic
-     | 14 ->
+     | 15 -> Ok RustcAttributeKindRustcIntrinsic
+     | 16 ->
          let* reason = option_of_postcard string_of_postcard ctx st in
          Ok (RustcAttributeKindShouldPanic reason)
-     | 15 ->
+     | 17 ->
          let* features =
            list_of_postcard
              (pair_of_postcard string_of_postcard span_of_postcard)
@@ -1782,7 +1800,7 @@ and rustc_attribute_kind_of_postcard (ctx : of_postcard_ctx)
          let* attr_span = span_of_postcard ctx st in
          let* was_forced = bool_of_postcard ctx st in
          Ok (RustcAttributeKindTargetFeature (features, attr_span, was_forced))
-     | 16 ->
+     | 18 ->
          let* _0 = span_of_postcard ctx st in
          Ok (RustcAttributeKindTrackCaller _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
@@ -2244,10 +2262,14 @@ and global_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* __tag = int_of_postcard ctx st in
      match __tag with
-     | 0 -> Ok Static
-     | 1 -> Ok ThreadLocal
-     | 2 -> Ok NamedConst
-     | 3 -> Ok AnonConst
+     | 0 ->
+         let* is_mut = bool_of_postcard ctx st in
+         let* is_safe = bool_of_postcard ctx st in
+         let* is_thread_local = bool_of_postcard ctx st in
+         Ok (Static (is_mut, is_safe, is_thread_local))
+     | 1 -> Ok NamedConst
+     | 2 -> Ok AnonConst
+     | 3 -> Ok VTableGlobal
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and global_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -2374,6 +2396,7 @@ and item_meta_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* source_text = option_of_postcard string_of_postcard ctx st in
      let* attr_info = attr_info_of_postcard ctx st in
      let* is_local = bool_of_postcard ctx st in
+     let* is_extern = bool_of_postcard ctx st in
      let* opacity = item_opacity_of_postcard ctx st in
      let* lang_item = option_of_postcard rustc_lang_item_of_postcard ctx st in
      let* diagnostic_item = option_of_postcard string_of_postcard ctx st in
@@ -2385,6 +2408,7 @@ and item_meta_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           source_text;
           attr_info;
           is_local;
+          is_extern;
           opacity;
           lang_item;
           diagnostic_item;
@@ -2924,6 +2948,7 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* def_id = trait_decl_id_of_postcard ctx st in
      let* item_meta = item_meta_of_postcard ctx st in
      let* src = trait_decl_source_of_postcard ctx st in
+     let* is_unsafe = bool_of_postcard ctx st in
      let* generics = generic_params_of_postcard ctx st in
      let* implied_clauses =
        index_vec_of_postcard trait_clause_id_of_postcard trait_param_of_postcard
@@ -2958,6 +2983,7 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           def_id;
           item_meta;
           src;
+          is_unsafe;
           generics;
           implied_clauses;
           consts;

@@ -54,6 +54,8 @@ pub struct TraitDecl {
     pub item_meta: ItemMeta,
     /// Distinguishes normal traits from trait aliases.
     pub src: TraitDeclSource,
+    /// Whether this is an `unsafe trait`, i.e. implementing it requires `unsafe impl`.
+    pub is_unsafe: bool,
     pub generics: GenericParams,
     /// The "parent" clauses: the supertraits.
     ///

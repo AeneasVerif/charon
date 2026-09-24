@@ -25,7 +25,7 @@ pub fn MUTABLE() -> u8
 }
 
 // Full name: issue_1393_foreign_static_aux::MUTABLE
-pub static MUTABLE: u8 = MUTABLE()
+pub static mut MUTABLE: u8 = MUTABLE()
 
 // Full name: issue_1393_foreign_static_aux::Wrapper
 pub struct Wrapper {

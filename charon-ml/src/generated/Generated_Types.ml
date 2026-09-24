@@ -895,6 +895,8 @@ and item_meta = {
   is_local : bool;
       (** [true] if the type decl is a local type decl, [false] if it comes from
           an external crate. *)
+  is_extern : bool;
+      (** Whether this item is declared in an [extern { .. }] block. *)
   opacity : item_opacity;
       (** Whether this item is considered opaque. For function and globals, this
           means we don't translate the body (the code); for ADTs, this means we

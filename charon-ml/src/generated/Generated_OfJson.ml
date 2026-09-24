@@ -111,6 +111,14 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (AggregatedRawPtr (_0, _1))
     | _ -> Error "")
 
+and asm_kind_of_json (ctx : of_json_ctx) (js : json) : (asm_kind, string) result
+    =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Asm" -> Ok Asm
+    | `String "NakedAsm" -> Ok NakedAsm
+    | _ -> Error "")
+
 and assertion_of_json (ctx : of_json_ctx) (js : json) :
     (assertion, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1744,13 +1752,18 @@ module Ullbc = struct
           [
             ( "InlineAsm",
               `Assoc
-                [ ("asm", asm); ("targets", targets); ("on_unwind", on_unwind) ]
-            );
+                [
+                  ("asm", asm);
+                  ("kind", kind);
+                  ("targets", targets);
+                  ("on_unwind", on_unwind);
+                ] );
           ] ->
           let* asm = string_of_json ctx asm in
+          let* kind = asm_kind_of_json ctx kind in
           let* targets = list_of_json block_id_of_json ctx targets in
           let* on_unwind = block_id_of_json ctx on_unwind in
-          Ok (InlineAsm (asm, targets, on_unwind))
+          Ok (InlineAsm (asm, kind, targets, on_unwind))
       | `Assoc [ ("Abort", _0) ] ->
           let* _0 = abort_kind_of_json ctx _0 in
           Ok (Abort _0)
@@ -1869,13 +1882,18 @@ module Llbc = struct
           [
             ( "InlineAsm",
               `Assoc
-                [ ("asm", asm); ("targets", targets); ("on_unwind", on_unwind) ]
-            );
+                [
+                  ("asm", asm);
+                  ("kind", kind);
+                  ("targets", targets);
+                  ("on_unwind", on_unwind);
+                ] );
           ] ->
           let* asm = string_of_json ctx asm in
+          let* kind = asm_kind_of_json ctx kind in
           let* targets = list_of_json block_of_json ctx targets in
           let* on_unwind = block_of_json ctx on_unwind in
-          Ok (InlineAsm (asm, targets, on_unwind))
+          Ok (InlineAsm (asm, kind, targets, on_unwind))
       | `Assoc [ ("Call", `Assoc [ ("call", call); ("on_unwind", on_unwind) ]) ]
         ->
           let* call = call_of_json ctx call in
@@ -2028,6 +2046,10 @@ and rustc_attribute_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* deprecation = rustc_deprecation_of_json ctx deprecation in
         let* span = span_of_json ctx span in
         Ok (RustcAttributeKindDeprecated (deprecation, span))
+    | `Assoc [ ("ExportName", `Assoc [ ("name", name); ("span", span) ]) ] ->
+        let* name = string_of_json ctx name in
+        let* span = span_of_json ctx span in
+        Ok (RustcAttributeKindExportName (name, span))
     | `String "Fundamental" -> Ok RustcAttributeKindFundamental
     | `Assoc [ ("Ignore", `Assoc [ ("span", span); ("reason", reason) ]) ] ->
         let* span = span_of_json ctx span in
@@ -2037,6 +2059,9 @@ and rustc_attribute_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = rustc_inline_attr_of_json ctx _0 in
         let* _1 = span_of_json ctx _1 in
         Ok (RustcAttributeKindInline (_0, _1))
+    | `Assoc [ ("LinkSection", `Assoc [ ("name", name) ]) ] ->
+        let* name = string_of_json ctx name in
+        Ok (RustcAttributeKindLinkSection name)
     | `Assoc [ ("MayDangle", _0) ] ->
         let* _0 = span_of_json ctx _0 in
         Ok (RustcAttributeKindMayDangle _0)
@@ -2694,10 +2719,23 @@ and global_kind_of_json (ctx : of_json_ctx) (js : json) :
     (global_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `String "Static" -> Ok Static
-    | `String "ThreadLocal" -> Ok ThreadLocal
+    | `Assoc
+        [
+          ( "Static",
+            `Assoc
+              [
+                ("is_mut", is_mut);
+                ("is_safe", is_safe);
+                ("is_thread_local", is_thread_local);
+              ] );
+        ] ->
+        let* is_mut = bool_of_json ctx is_mut in
+        let* is_safe = bool_of_json ctx is_safe in
+        let* is_thread_local = bool_of_json ctx is_thread_local in
+        Ok (Static (is_mut, is_safe, is_thread_local))
     | `String "NamedConst" -> Ok NamedConst
     | `String "AnonConst" -> Ok AnonConst
+    | `String "VTable" -> Ok VTableGlobal
     | _ -> Error "")
 
 and global_source_of_json (ctx : of_json_ctx) (js : json) :
@@ -2844,6 +2882,7 @@ and item_meta_of_json (ctx : of_json_ctx) (js : json) :
           ("source_text", source_text);
           ("attr_info", attr_info);
           ("is_local", is_local);
+          ("is_extern", is_extern);
           ("opacity", opacity);
           ("lang_item", lang_item);
           ("diagnostic_item", diagnostic_item);
@@ -2854,6 +2893,7 @@ and item_meta_of_json (ctx : of_json_ctx) (js : json) :
         let* source_text = option_of_json string_of_json ctx source_text in
         let* attr_info = attr_info_of_json ctx attr_info in
         let* is_local = bool_of_json ctx is_local in
+        let* is_extern = bool_of_json ctx is_extern in
         let* opacity = item_opacity_of_json ctx opacity in
         let* lang_item = option_of_json rustc_lang_item_of_json ctx lang_item in
         let* diagnostic_item =
@@ -2867,6 +2907,7 @@ and item_meta_of_json (ctx : of_json_ctx) (js : json) :
              source_text;
              attr_info;
              is_local;
+             is_extern;
              opacity;
              lang_item;
              diagnostic_item;
@@ -3494,6 +3535,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("def_id", def_id);
           ("item_meta", item_meta);
           ("src", src);
+          ("is_unsafe", is_unsafe);
           ("generics", generics);
           ("implied_clauses", implied_clauses);
           ("consts", consts);
@@ -3504,6 +3546,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* def_id = trait_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
         let* src = trait_decl_source_of_json ctx src in
+        let* is_unsafe = bool_of_json ctx is_unsafe in
         let* generics = generic_params_of_json ctx generics in
         let* implied_clauses =
           index_vec_of_json trait_clause_id_of_json trait_param_of_json ctx
@@ -3538,6 +3581,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
              def_id;
              item_meta;
              src;
+             is_unsafe;
              generics;
              implied_clauses;
              consts;

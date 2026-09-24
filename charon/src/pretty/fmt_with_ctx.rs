@@ -995,9 +995,24 @@ where
 {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let keyword = match self.global_kind {
-            GlobalKind::Static => "static",
-            GlobalKind::ThreadLocal => "thread_local",
+            GlobalKind::Static {
+                is_mut,
+                is_thread_local,
+                is_safe: _,
+            } => {
+                let name = if is_thread_local {
+                    "thread_local"
+                } else {
+                    "static"
+                };
+                if is_mut {
+                    &*format!("{name} mut")
+                } else {
+                    name
+                }
+            }
             GlobalKind::AnonConst | GlobalKind::NamedConst => "const",
+            GlobalKind::VTable => "vtable",
         };
         self.item_meta
             .fmt_item_intro(f, ctx, keyword, self.def_id)?;
@@ -1613,6 +1628,7 @@ impl Display for from_rustc::AttributeKind {
                 }
                 Ok(())
             }
+            AttributeKind::ExportName { name, .. } => write!(f, "export_name = \"{name}\""),
             AttributeKind::Fundamental => write!(f, "fundamental"),
             AttributeKind::Ignore { reason, .. } => {
                 write!(f, "ignore")?;
@@ -1628,6 +1644,7 @@ impl Display for from_rustc::AttributeKind {
                 from_rustc::InlineAttr::Never => write!(f, "inline(never)"),
                 from_rustc::InlineAttr::Force { .. } => write!(f, "rustc_force_inline"),
             },
+            AttributeKind::LinkSection { name } => write!(f, "link_section = \"{name}\""),
             AttributeKind::MayDangle(_) => write!(f, "may_dangle"),
             AttributeKind::Naked(_) => write!(f, "naked"),
             AttributeKind::NoLink => write!(f, "no_link"),
@@ -2273,10 +2290,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             }
             StatementKind::InlineAsm {
                 asm,
+                kind,
                 targets,
                 on_unwind,
             } => {
-                write!(f, "asm!({asm:?})")?;
+                let mac = match kind {
+                    AsmKind::Asm => "asm",
+                    AsmKind::NakedAsm => "naked_asm",
+                };
+                write!(f, "{mac}!({asm:?})")?;
                 if !targets.is_empty() {
                     write!(f, " {{")?;
                     let ctx1 = &ctx.increase_indent();
@@ -2479,6 +2501,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
             }
             TerminatorKind::InlineAsm {
                 asm,
+                kind,
                 targets,
                 on_unwind,
             } => {
@@ -2488,7 +2511,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                     .map(|(i, target)| format!("target {i}: bb{target}"))
                     .chain([format!("unwind: bb{on_unwind}")])
                     .format(", ");
-                write!(f, "asm!({asm:?}) -> {targets}")
+                let mac = match kind {
+                    AsmKind::Asm => "asm",
+                    AsmKind::NakedAsm => "naked_asm",
+                };
+                write!(f, "{mac}!({asm:?}) -> {targets}")
             }
             TerminatorKind::Abort(kind) => write!(f, "{}", kind.with_ctx(ctx)),
             TerminatorKind::Return => write!(f, "return"),

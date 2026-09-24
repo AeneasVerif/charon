@@ -683,8 +683,16 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
 
         let global_kind = match &def.kind {
-            hax::FullDefKind::Static(s) if s.thread_local() => GlobalKind::ThreadLocal,
-            hax::FullDefKind::Static(_) => GlobalKind::Static,
+            hax::FullDefKind::Static(s) => {
+                let is_mut = s.mutability() == hax::Mutability::Mut;
+                let is_safe = s.safety() == hax::Safety::Safe;
+                let is_thread_local = s.thread_local();
+                GlobalKind::Static {
+                    is_mut,
+                    is_safe,
+                    is_thread_local,
+                }
+            }
             hax::FullDefKind::Const(c) if matches!(c.kind(), hax::ConstKind::TopLevel) => {
                 GlobalKind::NamedConst
             }
@@ -746,9 +754,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             hax::FullDefKind::TraitAlias(t) => t.implied_predicates(),
             _ => raise_error!(self, span, "Unexpected definition: {def:?}"),
         };
-        let src = match def.kind() {
-            hax::FullDefKind::Trait(_) => TraitDeclSource::Normal,
-            hax::FullDefKind::TraitAlias(_) => TraitDeclSource::TraitAlias,
+        let (src, is_unsafe) = match def.kind() {
+            hax::FullDefKind::Trait(tr) => (TraitDeclSource::Normal, tr.is_unsafe()),
+            hax::FullDefKind::TraitAlias(_) => (TraitDeclSource::TraitAlias, false),
             _ => unreachable!(),
         };
 
@@ -769,6 +777,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 def_id: trait_decl_id,
                 item_meta,
                 src,
+                is_unsafe,
                 implied_clauses,
                 generics: self.into_generics(),
                 consts: Default::default(),
@@ -844,6 +853,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 def_id: trait_decl_id,
                 item_meta,
                 src,
+                is_unsafe,
                 implied_clauses,
                 generics: self.into_generics(),
                 consts,
@@ -1055,6 +1065,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             def_id: trait_decl_id,
             item_meta,
             src,
+            is_unsafe,
             implied_clauses,
             generics: self.into_generics(),
             consts,

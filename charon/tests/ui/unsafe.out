@@ -299,7 +299,7 @@ fn COUNTER() -> usize
 }
 
 // Full name: test_crate::COUNTER
-static COUNTER: usize = COUNTER()
+static mut COUNTER: usize = COUNTER()
 
 // Full name: test_crate::access_mutable_static
 fn access_mutable_static()

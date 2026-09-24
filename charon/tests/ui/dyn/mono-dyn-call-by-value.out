@@ -10,7 +10,7 @@ pub trait MetaSized<Self>
 fn core::marker::MetaSized::{vtable}::<()>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}::<()>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<()>()
+vtable core::marker::MetaSized::{vtable}::<()>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<()>()
 
 struct () {}
 
@@ -200,7 +200,7 @@ fn impl_T_for_unit::{vtable}() -> test_crate::T::{vtable}
 }
 
 // Full name: test_crate::{impl T for ()}::{vtable}
-static impl_T_for_unit::{vtable}: test_crate::T::{vtable} = impl_T_for_unit::{vtable}()
+vtable impl_T_for_unit::{vtable}: test_crate::T::{vtable} = impl_T_for_unit::{vtable}()
 
 // Full name: test_crate::{impl T for ()}
 impl "impl_T_for_unit" T for () {

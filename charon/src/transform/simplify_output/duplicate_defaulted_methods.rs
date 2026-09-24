@@ -46,6 +46,7 @@ impl Transform {
             name,
             opacity: trait_impl.item_meta.opacity,
             is_local: trait_impl.item_meta.is_local,
+            is_extern: fun_decl.item_meta.is_extern,
             span: trait_impl.item_meta.span,
             source_text: fun_decl.item_meta.source_text,
             attr_info: fun_decl.item_meta.attr_info,

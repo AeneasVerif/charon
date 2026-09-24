@@ -19,7 +19,7 @@ pub trait Sized<Self>
 fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
 struct () {}
 
@@ -206,7 +206,7 @@ fn impl_Trait_for_Struct::{vtable}() -> test_crate::Trait::{vtable}
 }
 
 // Full name: test_crate::{impl Trait for Struct}::{vtable}
-static impl_Trait_for_Struct::{vtable}: test_crate::Trait::{vtable} = impl_Trait_for_Struct::{vtable}()
+vtable impl_Trait_for_Struct::{vtable}: test_crate::Trait::{vtable} = impl_Trait_for_Struct::{vtable}()
 
 // Full name: test_crate::main
 pub fn main()

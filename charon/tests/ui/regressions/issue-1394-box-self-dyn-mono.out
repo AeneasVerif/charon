@@ -10,7 +10,7 @@ pub trait MetaSized<Self>
 fn core::marker::MetaSized::{vtable}::<S>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}::<S>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<S>()
+vtable core::marker::MetaSized::{vtable}::<S>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<S>()
 
 // Full name: alloc::boxed::Box::<S>
 #[fundamental]
@@ -140,7 +140,7 @@ fn impl_Trait_for_S::{vtable}() -> test_crate::Trait::{vtable}
 }
 
 // Full name: test_crate::{impl Trait for S}::{vtable}
-static impl_Trait_for_S::{vtable}: test_crate::Trait::{vtable} = impl_Trait_for_S::{vtable}()
+vtable impl_Trait_for_S::{vtable}: test_crate::Trait::{vtable} = impl_Trait_for_S::{vtable}()
 
 // Full name: test_crate::{impl Trait for S}
 impl "impl_Trait_for_S" Trait for S {
