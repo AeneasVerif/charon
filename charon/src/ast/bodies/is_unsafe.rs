@@ -5,6 +5,9 @@ use crate::{llbc_ast, ullbc_ast};
 /// Whether evaluating this requires `unsafe`, following the rules outlined in
 /// <https://doc.rust-lang.org/book/ch20-01-unsafe-rust.html> and
 /// <https://doc.rust-lang.org/reference/unsafety.html>.
+/// We distinguish between safety of an item (e.g. an unsafe function or trait impl),
+/// and safety of an operation. A safe function can contain unsafe operations, and
+/// an unsafe function may contain no unsafe operations.
 pub trait IsUnsafe {
     fn is_unsafe(&self, krate: &TranslatedCrate) -> bool;
 }
@@ -239,6 +242,45 @@ impl IsUnsafe for ullbc_ast::Terminator {
             | TerminatorKind::Abort(..)
             | TerminatorKind::Return
             | TerminatorKind::UnwindResume => false,
+        }
+    }
+}
+
+/// Whether this attribute is unsafe to use (safety.unsafe-attribute), as listed in attributes.safety
+/// (<https://doc.rust-lang.org/reference/attributes.html>).
+impl IsUnsafe for Attribute {
+    fn is_unsafe(&self, _krate: &TranslatedCrate) -> bool {
+        use from_rustc::AttributeKind::*;
+        matches!(
+            self,
+            Attribute::Builtin(ExportName { .. } | LinkSection { .. } | Naked(..) | NoMangle(..))
+        )
+    }
+}
+
+impl IsUnsafe for ItemMeta {
+    fn is_unsafe(&self, krate: &TranslatedCrate) -> bool {
+        // `safety.unsafe-extern`, see the trait docs.
+        self.is_extern || self.attr_info.attributes.is_unsafe(krate)
+    }
+}
+
+impl IsUnsafe for TraitImpl {
+    fn is_unsafe(&self, krate: &TranslatedCrate) -> bool {
+        // `safety.unsafe-impl`.
+        let trait_is_unsafe = krate
+            .trait_decls
+            .get(self.impl_trait.id)
+            .is_some_and(|decl| decl.is_unsafe);
+        trait_is_unsafe || self.item_meta.is_unsafe(krate)
+    }
+}
+
+impl IsUnsafe for ItemRef<'_> {
+    fn is_unsafe(&self, krate: &TranslatedCrate) -> bool {
+        match self {
+            ItemRef::TraitImpl(timpl) => timpl.is_unsafe(krate),
+            _ => self.item_meta().is_unsafe(krate),
         }
     }
 }
