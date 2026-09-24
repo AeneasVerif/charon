@@ -52,19 +52,11 @@ static SHARED: &'static u32 = &{promoted_const}
 fn main()
 {
     let _0: (); // return
-    let _1: *mut &'2 mut u32; // anonymous local
-    let _2: *mut &'3 mut u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
-    storage_live(_1)
-    storage_live(_2)
-    _2 = &raw mut FOO
-    _1 = move _2
-    (*(*_1)) = const 43u32
-    storage_dead(_1)
+    (*FOO) = const 43u32
     _0 = ()
-    storage_dead(_2)
     return
 }
 

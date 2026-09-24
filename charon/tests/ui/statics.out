@@ -79,48 +79,24 @@ fn shared_static()
 {
     let _0: (); // return
     let _val: usize; // local
-    let _2: &'1 usize; // anonymous local
     let _ref: &'2 usize; // local
-    let _4: &'3 usize; // anonymous local
     let _ptr: *const usize; // local
-    let _6: &'4 usize; // anonymous local
-    let _7: &'5 usize; // anonymous local
-    let _8: &'6 usize; // anonymous local
-    let _9: &'7 usize; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_val)
-    storage_live(_2)
-    storage_live(_7)
-    _7 = &SHARED_STATIC
-    _2 = move _7
-    _val = copy (*_2)
+    _val = copy SHARED_STATIC
     fake_read(_val)
-    storage_dead(_2)
     storage_live(_ref)
-    storage_live(_4)
-    storage_live(_8)
-    _8 = &SHARED_STATIC
-    _4 = move _8
-    _ref = &(*_4)
+    _ref = &SHARED_STATIC
     fake_read(_ref)
     storage_live(_ptr)
-    storage_live(_6)
-    storage_live(_9)
-    _9 = &SHARED_STATIC
-    _6 = move _9
-    _ptr = &raw const (*_6)
+    _ptr = &raw const SHARED_STATIC
     fake_read(_ptr)
     _0 = ()
-    storage_dead(_6)
     storage_dead(_ptr)
-    storage_dead(_4)
     storage_dead(_ref)
     storage_dead(_val)
-    storage_dead(_9)
-    storage_dead(_8)
-    storage_dead(_7)
     return
 }
 
@@ -142,74 +118,34 @@ fn mut_static()
 {
     let _0: (); // return
     let _val: usize; // local
-    let _2: *mut usize; // anonymous local
     let _ref: &'1 usize; // local
-    let _4: *mut usize; // anonymous local
     let _ref_mut: &'3 mut usize; // local
-    let _6: *mut usize; // anonymous local
     let _ptr: *const usize; // local
-    let _8: *mut usize; // anonymous local
     let _ptr_mut: *mut usize; // local
-    let _10: *mut usize; // anonymous local
-    let _11: *mut usize; // anonymous local
-    let _12: *mut usize; // anonymous local
-    let _13: *mut usize; // anonymous local
-    let _14: *mut usize; // anonymous local
-    let _15: *mut usize; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_val)
-    storage_live(_2)
-    storage_live(_11)
-    _11 = &raw mut MUT_STATIC
-    _2 = move _11
-    _val = copy (*_2)
+    _val = copy MUT_STATIC
     fake_read(_val)
-    storage_dead(_2)
     storage_live(_ref)
-    storage_live(_4)
-    storage_live(_12)
-    _12 = &raw mut MUT_STATIC
-    _4 = move _12
-    _ref = &(*_4)
+    _ref = &MUT_STATIC
     fake_read(_ref)
     storage_live(_ref_mut)
-    storage_live(_6)
-    storage_live(_13)
-    _13 = &raw mut MUT_STATIC
-    _6 = move _13
-    _ref_mut = &mut (*_6)
+    _ref_mut = &mut MUT_STATIC
     fake_read(_ref_mut)
     storage_live(_ptr)
-    storage_live(_8)
-    storage_live(_14)
-    _14 = &raw mut MUT_STATIC
-    _8 = move _14
-    _ptr = &raw const (*_8)
+    _ptr = &raw const MUT_STATIC
     fake_read(_ptr)
     storage_live(_ptr_mut)
-    storage_live(_10)
-    storage_live(_15)
-    _15 = &raw mut MUT_STATIC
-    _10 = move _15
-    _ptr_mut = &raw mut (*_10)
+    _ptr_mut = &raw mut MUT_STATIC
     fake_read(_ptr_mut)
     _0 = ()
-    storage_dead(_10)
     storage_dead(_ptr_mut)
-    storage_dead(_8)
     storage_dead(_ptr)
-    storage_dead(_6)
     storage_dead(_ref_mut)
-    storage_dead(_4)
     storage_dead(_ref)
     storage_dead(_val)
-    storage_dead(_15)
-    storage_dead(_14)
-    storage_dead(_13)
-    storage_dead(_12)
-    storage_dead(_11)
     return
 }
 
@@ -247,22 +183,14 @@ fn non_copy_static()
 {
     let _0: (); // return
     let _1: &'1 Foo; // anonymous local
-    let _2: &'2 Foo; // anonymous local
-    let _3: &'3 Foo; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    storage_live(_2)
-    storage_live(_3)
-    _3 = &FOO
-    _2 = move _3
-    _1 = &(*_2)
+    _1 = &FOO
     _0 = method<'5>(move _1)
     ↳⚡ unwind_continue
     storage_dead(_1)
-    storage_dead(_2)
-    storage_dead(_3)
     return
 }
 

@@ -977,6 +977,7 @@ fn unsafe_statements() -> anyhow::Result<()> {
         fn safe_build_union() -> Foo { Foo { one: 0 } }
         fn safe_write_union_field(mut foo: Foo) { foo.one = 1; }
         fn safe_write_nested_union_field(mut bar: Bar) { bar.foo.one = 1; }
+        fn safe_read_safe_extern_static() -> u32 { SAFE_EXTERN_STATIC }
         fn safe_raw_borrow_of_extern_static() -> *const u32 { &raw const EXTERN_STATIC }
         fn safe_raw_borrow_of_deref(p: *const u32) -> *const u32 { &raw const *p }
         #[unsafe(naked)]
