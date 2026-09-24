@@ -939,3 +939,70 @@ fn multiple_deserialize() -> anyhow::Result<()> {
     assert_eq!(ty2_2, ty2_1);
     Ok(())
 }
+
+#[test]
+fn unsafe_statements() -> anyhow::Result<()> {
+    // Test that unsafe statements are indeed considered unsafe, and that safe statements
+    // are not. See `IsUnsafe` for the definition of unsafe things.
+    let crate_data = translate(
+        r#"
+        static mut COUNTER: usize = 0;
+        unsafe extern "C" {
+            static EXTERN_STATIC: u32;
+            safe static SAFE_EXTERN_STATIC: u32;
+        }
+        #[derive(Clone, Copy)]
+        union Foo { one: u64, two: [u32; 2] }
+        union Bar { foo: Foo }
+        unsafe fn dangerous() {}
+        trait Trait { unsafe fn unsafe_method(); fn safe_method(); }
+
+        fn unsafe_deref_raw_ptr(x: *const u32) -> u32 { unsafe { *x } }
+        fn unsafe_call_fn() { unsafe { dangerous() } }
+        fn unsafe_call_method<T: Trait>() { unsafe { T::unsafe_method() } }
+        fn unsafe_call_fn_ptr(f: unsafe fn()) { unsafe { f() } }
+        fn unsafe_read_mutable_static() -> usize { unsafe { COUNTER } }
+        fn unsafe_write_mutable_static() { unsafe { COUNTER = 1 } }
+        fn unsafe_read_extern_static() -> u32 { unsafe { EXTERN_STATIC } }
+        static mut PAIR: (u32, u32) = (0, 0);
+        fn unsafe_raw_borrow_of_mutable_static_field() -> *const u32 { unsafe { &raw const PAIR.0 } }
+        static mut PTR: *const u32 = std::ptr::null();
+        fn unsafe_raw_borrow_through_mutable_static() -> *const u32 { unsafe { &raw const *PTR } }
+        fn unsafe_read_union_field(foo: Foo) -> u64 { unsafe { foo.one } }
+        fn unsafe_asm() { unsafe { core::arch::asm!("nop") } }
+
+        fn safe_raw_ptrs(x: u32) -> (*const u32, *mut usize) { (&raw const x, &raw mut COUNTER) }
+        fn safe_call(f: fn()) { f(); safe_raw_ptrs(0); }
+        fn safe_call_method<T: Trait>() { T::safe_method(); }
+        fn safe_build_union() -> Foo { Foo { one: 0 } }
+        fn safe_write_union_field(mut foo: Foo) { foo.one = 1; }
+        fn safe_write_nested_union_field(mut bar: Bar) { bar.foo.one = 1; }
+        fn safe_raw_borrow_of_extern_static() -> *const u32 { &raw const EXTERN_STATIC }
+        fn safe_raw_borrow_of_deref(p: *const u32) -> *const u32 { &raw const *p }
+        #[unsafe(naked)]
+        extern "C" fn safe_naked_asm() { core::arch::naked_asm!("ret") }
+        "#,
+    )?;
+    for fun in &crate_data.fun_decls {
+        let name = fun.item_meta.name.debug_repr(&crate_data);
+        let Some(name) = name.strip_prefix("test_crate::") else {
+            continue;
+        };
+        let expected = if name.starts_with("unsafe_") {
+            true
+        } else if name.starts_with("safe_") {
+            false
+        } else {
+            continue;
+        };
+        let Body::Structured(body) = &fun.body else {
+            panic!("missing body for {name}")
+        };
+        let mut is_unsafe = false;
+        body.body
+            .statements
+            .dyn_visit_in_body(|st: &Statement| is_unsafe |= st.is_unsafe(&crate_data));
+        assert_eq!(is_unsafe, expected, "{name}");
+    }
+    Ok(())
+}

@@ -11,12 +11,14 @@ use serde_state::DeserializeState;
 use serde_state::SerializeState;
 
 pub mod expressions;
+pub mod is_unsafe;
 pub mod places;
 pub mod structured;
 pub mod unstructured;
 pub mod values;
 
 pub use expressions::*;
+pub use is_unsafe::*;
 pub use places::*;
 pub use values::*;
 
