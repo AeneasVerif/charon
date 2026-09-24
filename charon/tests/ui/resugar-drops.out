@@ -1,0 +1,578 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::ops::drop::Drop
+#[lang_item(Drop)]
+pub trait Drop<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn drop<'_0_1> = core::ops::drop::Drop::drop<'_0_1, Self>[Self]
+    vtable: core::ops::drop::Drop::{vtable}
+}
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(_1: &'_0 mut Self)
+where
+    TraitClause0: (Self: Drop),
+    TypeOutlives0: Self: '_0,
+= <opaque>
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+// Full name: (_, _)::{impl Destruct for (A, B)}::drop_glue
+unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A, B>(_1: &'_0 mut (A, B))
+where
+    TraitClause0: (A: Sized),
+    TypeOutlives0: A: '_0,
+    TypeOutlives1: B: '_0,
+{
+    let _0: (); // return
+    let _1: &'1 mut (A, B); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
+    ↳⚡ drop[{built_in impl Destruct for B}::drop_glue<'4>] (*_1)._1
+        ↳⚡ unwind_terminate
+        unwind_continue
+    drop[{built_in impl Destruct for B}::drop_glue<'3>] (*_1)._1
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: (_, _)::{impl Destruct for (A, B)}
+impl<A, B> "impl_Destruct_for_tuple" Destruct for (A, B)
+where
+    TraitClause0: (A: Sized),
+{
+    fn drop_glue<'_0_1> = impl_Destruct_for_tuple::drop_glue<'_0_1, A, B>[TraitClause0]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::NeedsDrop
+struct NeedsDrop {}
+
+// Full name: test_crate::{impl Drop for NeedsDrop}::drop
+pub fn impl_Drop_for_NeedsDrop::drop<'_0>(self: &'_0 mut NeedsDrop)
+{
+    let _0: (); // return
+    let self: &'1 mut NeedsDrop; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::NeedsDrop::{impl Destruct for NeedsDrop}::drop_glue
+unsafe fn impl_Destruct_for_NeedsDrop::drop_glue<'_0>(_1: &'_0 mut NeedsDrop)
+{
+    let _0: (); // return
+    let _1: &'1 mut NeedsDrop; // arg #1
+    let _2: &'2 mut NeedsDrop; // anonymous local
+    let _3: (); // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _0 = ()
+    _2 = &mut (*_1)
+    _3 = impl_Drop_for_NeedsDrop::drop<'4>(move _2)
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: test_crate::NeedsDrop::{impl Destruct for NeedsDrop}
+impl "impl_Destruct_for_NeedsDrop" Destruct for NeedsDrop {
+    fn drop_glue<'_0_1> = impl_Destruct_for_NeedsDrop::drop_glue<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Drop for NeedsDrop}
+impl "impl_Drop_for_NeedsDrop" Drop for NeedsDrop {
+    proof ImpliedClause0: (NeedsDrop: MetaSized) = {built_in impl MetaSized for NeedsDrop}
+    fn drop<'_0_1> = impl_Drop_for_NeedsDrop::drop<'_0_1>
+    vtable: lazy
+}
+
+// Full name: test_crate::consume
+fn consume<T>(_x: T)
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: (); // return
+    let _x: T; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    drop[{built_in impl Destruct for T}::drop_glue<'0>] _x
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: test_crate::conditional
+pub fn conditional(x: NeedsDrop, move_x: bool)
+{
+    let _0: (); // return
+    let x: NeedsDrop; // arg #1
+    let move_x: bool; // arg #2
+    let _3: bool; // anonymous local
+    let _4: (); // anonymous local
+    let _5: NeedsDrop; // anonymous local
+    let _6: bool; // anonymous local
+
+    storage_live(_0)
+    storage_live(_6)
+    _0 = ()
+    _6 = const false
+    _6 = const true
+    storage_live(_3)
+    _3 = copy move_x
+    if move _3 {
+        storage_live(_4)
+        storage_live(_5)
+        _6 = const false
+        _5 = move x
+        _4 = consume<NeedsDrop>[{built_in impl Sized for NeedsDrop}](move _5)
+        ↳⚡ unwind_continue
+        storage_dead(_5)
+        storage_dead(_4)
+        _0 = ()
+    } else {
+        _0 = ()
+    }
+    storage_dead(_3)
+    if copy _6 {
+    } else {
+        return
+    }
+    drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] x
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: test_crate::pair1
+fn pair1(pair: (NeedsDrop, NeedsDrop))
+{
+    let _0: (); // return
+    let pair: (NeedsDrop, NeedsDrop); // arg #1
+    let _2: bool; // anonymous local
+    let _x_3: (NeedsDrop, NeedsDrop); // local
+    let _x_4: NeedsDrop; // local
+    let _5: bool; // anonymous local
+
+    storage_live(_0)
+    storage_live(_5)
+    _0 = ()
+    _5 = const false
+    _5 = const true
+    storage_live(_2)
+    _2 = const true
+    if move _2 {
+        storage_live(_x_3)
+        _5 = const false
+        _x_3 = move pair
+        _0 = ()
+        drop[impl_Destruct_for_tuple::drop_glue<'0, NeedsDrop, NeedsDrop>[{built_in impl Sized for NeedsDrop}]] _x_3
+        ↳⚡ if copy _5 {
+                drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] pair._1
+                ↳⚡ unwind_terminate
+            } else {
+            }
+            unwind_continue
+        storage_dead(_x_3)
+    } else {
+        storage_live(_x_4)
+        _x_4 = move pair._0
+        _0 = ()
+        drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] _x_4
+        ↳⚡ if copy _5 {
+                drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] pair._1
+                ↳⚡ unwind_terminate
+            } else {
+            }
+            unwind_continue
+        storage_dead(_x_4)
+    }
+    storage_dead(_2)
+    if copy _5 {
+        drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._1
+        ↳⚡ unwind_continue
+    } else {
+    }
+    _5 = const false
+    return
+}
+
+// Full name: test_crate::pair2
+fn pair2(pair: (NeedsDrop, NeedsDrop))
+{
+    let _0: (); // return
+    let pair: (NeedsDrop, NeedsDrop); // arg #1
+    let _2: i32; // anonymous local
+    let _x_3: (NeedsDrop, NeedsDrop); // local
+    let _x_4: NeedsDrop; // local
+    let _x_5: NeedsDrop; // local
+    let _6: bool; // anonymous local
+    let _7: bool; // anonymous local
+    let _8: bool; // anonymous local
+
+    storage_live(_0)
+    storage_live(_6)
+    storage_live(_7)
+    storage_live(_8)
+    _0 = ()
+    _6 = const false
+    _8 = const false
+    _7 = const false
+    _6 = const true
+    _7 = const true
+    _8 = const true
+    storage_live(_2)
+    _2 = const 42i32
+    switch copy _2 {
+        0i32 => {
+            storage_live(_x_3)
+            _6 = const false
+            _7 = const false
+            _8 = const false
+            _x_3 = move pair
+            _0 = ()
+            drop[impl_Destruct_for_tuple::drop_glue<'0, NeedsDrop, NeedsDrop>[{built_in impl Sized for NeedsDrop}]] _x_3
+            ↳⚡ if copy _7 {
+                    drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._0
+                    ↳⚡ unwind_terminate
+                } else {
+                }
+                if copy _8 {
+                    drop[impl_Destruct_for_NeedsDrop::drop_glue<'5>] pair._1
+                    ↳⚡ unwind_terminate
+                } else {
+                }
+                unwind_continue
+            storage_dead(_x_3)
+        },
+        1i32 => {
+            storage_live(_x_4)
+            _7 = const false
+            _x_4 = move pair._0
+            _0 = ()
+            drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] _x_4
+            ↳⚡ if copy _7 {
+                    drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._0
+                    ↳⚡ unwind_terminate
+                } else {
+                }
+                if copy _8 {
+                    drop[impl_Destruct_for_NeedsDrop::drop_glue<'5>] pair._1
+                    ↳⚡ unwind_terminate
+                } else {
+                }
+                unwind_continue
+            storage_dead(_x_4)
+        },
+        2i32 => {
+            storage_live(_x_5)
+            _8 = const false
+            _x_5 = move pair._1
+            _0 = ()
+            drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] _x_5
+            ↳⚡ if copy _7 {
+                    drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._0
+                    ↳⚡ unwind_terminate
+                } else {
+                }
+                if copy _8 {
+                    drop[impl_Destruct_for_NeedsDrop::drop_glue<'5>] pair._1
+                    ↳⚡ unwind_terminate
+                } else {
+                }
+                unwind_continue
+            storage_dead(_x_5)
+        },
+        _ => {
+            _0 = ()
+        },
+    }
+    storage_dead(_2)
+    if copy _7 {
+        drop[impl_Destruct_for_NeedsDrop::drop_glue<'4>] pair._0
+        ↳⚡ if copy _8 {
+                drop[impl_Destruct_for_NeedsDrop::drop_glue<'7>] pair._1
+                ↳⚡ unwind_terminate
+                unwind_continue
+            } else {
+                unwind_continue
+            }
+        if copy _8 {
+            drop[impl_Destruct_for_NeedsDrop::drop_glue<'6>] pair._1
+            ↳⚡ unwind_continue
+            _6 = const false
+            return
+        } else {
+            _6 = const false
+            return
+        }
+    } else {
+        if copy _8 {
+            drop[impl_Destruct_for_NeedsDrop::drop_glue<'6>] pair._1
+            ↳⚡ unwind_continue
+            _6 = const false
+            return
+        } else {
+            _6 = const false
+            return
+        }
+    }
+}
+
+// Full name: test_crate::pair3
+pub fn pair3(pair: (NeedsDrop, NeedsDrop), move_pair: bool, move_first: bool)
+{
+    let _0: (); // return
+    let pair: (NeedsDrop, NeedsDrop); // arg #1
+    let move_pair: bool; // arg #2
+    let move_first: bool; // arg #3
+    let _4: bool; // anonymous local
+    let _x_5: (NeedsDrop, NeedsDrop); // local
+    let _6: bool; // anonymous local
+    let _x_7: NeedsDrop; // local
+    let _8: bool; // anonymous local
+    let _9: bool; // anonymous local
+
+    storage_live(_0)
+    storage_live(_8)
+    storage_live(_9)
+    _0 = ()
+    _9 = const false
+    _8 = const false
+    _9 = const true
+    _8 = const true
+    storage_live(_4)
+    _4 = copy move_pair
+    if move _4 {
+    } else {
+        storage_dead(_4)
+        storage_live(_6)
+        _6 = copy move_first
+        if move _6 {
+            storage_live(_x_7)
+            _8 = const false
+            _x_7 = move pair._0
+            _0 = ()
+            drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] _x_7
+            ↳⚡ if copy _9 {
+                    drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] pair._1
+                    ↳⚡ unwind_terminate
+                } else {
+                }
+                unwind_continue
+            storage_dead(_x_7)
+        } else {
+            _0 = ()
+        }
+        storage_dead(_6)
+        if copy _8 {
+            drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._0
+            ↳⚡ drop[impl_Destruct_for_NeedsDrop::drop_glue<'5>] pair._1
+                ↳⚡ unwind_terminate
+                unwind_continue
+            drop[impl_Destruct_for_NeedsDrop::drop_glue<'4>] pair._1
+            ↳⚡ unwind_continue
+            _9 = const false
+            return
+        } else {
+            drop[impl_Destruct_for_NeedsDrop::drop_glue<'4>] pair._1
+            ↳⚡ unwind_continue
+            _9 = const false
+            return
+        }
+    }
+    storage_live(_x_5)
+    _9 = const false
+    _8 = const false
+    _x_5 = move pair
+    _0 = ()
+    drop[impl_Destruct_for_tuple::drop_glue<'0, NeedsDrop, NeedsDrop>[{built_in impl Sized for NeedsDrop}]] _x_5
+    ↳⚡ if copy _9 {
+            drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] pair._1
+            ↳⚡ unwind_terminate
+        } else {
+        }
+        unwind_continue
+    storage_dead(_x_5)
+    storage_dead(_4)
+    return
+}
+
+// Full name: test_crate::re_assign
+pub fn re_assign(x: NeedsDrop)
+{
+    let _0: (); // return
+    let x: NeedsDrop; // arg #1
+    let _2: bool; // anonymous local
+    let _3: (); // anonymous local
+    let _4: NeedsDrop; // anonymous local
+    let _5: bool; // anonymous local
+    let _6: NeedsDrop; // anonymous local
+    let _7: bool; // anonymous local
+
+    storage_live(_0)
+    storage_live(_7)
+    _0 = ()
+    _7 = const false
+    _7 = const true
+    storage_live(_2)
+    _2 = const true
+    if move _2 {
+        storage_live(_3)
+        storage_live(_4)
+        _7 = const false
+        _4 = move x
+        _3 = consume<NeedsDrop>[{built_in impl Sized for NeedsDrop}](move _4)
+        ↳⚡ if copy _7 {
+                drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] x
+                ↳⚡ unwind_terminate
+            } else {
+            }
+            unwind_continue
+        storage_dead(_4)
+        storage_dead(_3)
+    } else {
+    }
+    storage_dead(_2)
+    storage_live(_5)
+    _5 = const true
+    if move _5 {
+        storage_live(_6)
+        _6 = NeedsDrop {  }
+        if copy _7 {
+            drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] x
+            ↳⚡ _7 = const true
+                x = move _6
+                if copy _7 {
+                    drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] x
+                    ↳⚡ unwind_terminate
+                } else {
+                }
+                unwind_continue
+        } else {
+        }
+        _7 = const true
+        x = move _6
+        storage_dead(_6)
+        _0 = ()
+    } else {
+        _0 = ()
+    }
+    storage_dead(_5)
+    if copy _7 {
+    } else {
+        return
+    }
+    drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] x
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: test_crate::in_loop
+pub fn in_loop(x: NeedsDrop)
+{
+    let _0: (); // return
+    let x: NeedsDrop; // arg #1
+    let _2: bool; // anonymous local
+    let _3: bool; // anonymous local
+    let _4: (); // anonymous local
+    let _5: NeedsDrop; // anonymous local
+    let _6: NeedsDrop; // anonymous local
+    let _7: bool; // anonymous local
+
+    storage_live(_0)
+    storage_live(_7)
+    _0 = ()
+    _7 = const false
+    _7 = const true
+    loop {
+        storage_live(_2)
+        _2 = const true
+        if move _2 {
+            storage_live(_3)
+            _3 = const true
+            if move _3 {
+                storage_live(_4)
+                storage_live(_5)
+                _7 = const false
+                _5 = move x
+                _4 = consume<NeedsDrop>[{built_in impl Sized for NeedsDrop}](move _5)
+                ↳⚡ if copy _7 {
+                        drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] x
+                        ↳⚡ unwind_terminate
+                    } else {
+                    }
+                    unwind_continue
+                storage_dead(_5)
+                storage_dead(_4)
+            } else {
+            }
+            storage_dead(_3)
+            storage_live(_6)
+            _6 = NeedsDrop {  }
+            if copy _7 {
+                drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] x
+                ↳⚡ _7 = const true
+                    x = move _6
+                    if copy _7 {
+                        drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] x
+                        ↳⚡ unwind_terminate
+                    } else {
+                    }
+                    unwind_continue
+            } else {
+            }
+            _7 = const true
+            x = move _6
+            storage_dead(_6)
+            storage_dead(_2)
+            continue 0
+        } else {
+            break 0
+        }
+    }
+    _0 = ()
+    storage_dead(_2)
+    drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] x
+    ↳⚡ unwind_continue
+    return
+}
+
+
+
