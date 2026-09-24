@@ -181,6 +181,10 @@ and cli_options = {
           associated types in their fields. *)
   desugar_drops : bool;
       (** Transform precise drops to the equivalent [drop_glue(&mut p)] call. *)
+  resugar_drops : bool;
+      (** Reconstruct conditional drops from the drop-flags and precise drops
+          introduced by rustc's drop elaboration, when possible. This may leave
+          drop flags if we couldn't identify a known pattern. *)
   ops_to_function_calls : bool;
       (** Transform array-to-slice unsizing and repeat expressions into standard
           library function calls in LLBC. *)

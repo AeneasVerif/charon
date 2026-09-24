@@ -1,5 +1,5 @@
 //@ no-default-options
-//@ charon-args=--mir=elaborated
+//@ charon-args=--mir=elaborated --resugar-drops
 struct NeedsDrop;
 impl Drop for NeedsDrop {
     fn drop(&mut self) {}

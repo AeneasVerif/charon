@@ -148,19 +148,14 @@ pub fn conditional(x: NeedsDrop, move_x: bool)
     let _3: bool; // anonymous local
     let _4: (); // anonymous local
     let _5: NeedsDrop; // anonymous local
-    let _6: bool; // anonymous local
 
     storage_live(_0)
-    storage_live(_6)
     _0 = ()
-    _6 = const false
-    _6 = const true
     storage_live(_3)
     _3 = copy move_x
     if move _3 {
         storage_live(_4)
         storage_live(_5)
-        _6 = const false
         _5 = move x
         _4 = consume<NeedsDrop>[{built_in impl Sized for NeedsDrop}](move _5)
         ↳⚡ unwind_continue
@@ -171,11 +166,7 @@ pub fn conditional(x: NeedsDrop, move_x: bool)
         _0 = ()
     }
     storage_dead(_3)
-    if copy _6 {
-    } else {
-        return
-    }
-    drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] x
+    conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] x
     ↳⚡ unwind_continue
     return
 }
@@ -188,26 +179,18 @@ fn pair1(pair: (NeedsDrop, NeedsDrop))
     let _2: bool; // anonymous local
     let _x_3: (NeedsDrop, NeedsDrop); // local
     let _x_4: NeedsDrop; // local
-    let _5: bool; // anonymous local
 
     storage_live(_0)
-    storage_live(_5)
     _0 = ()
-    _5 = const false
-    _5 = const true
     storage_live(_2)
     _2 = const true
     if move _2 {
         storage_live(_x_3)
-        _5 = const false
         _x_3 = move pair
         _0 = ()
         drop[impl_Destruct_for_tuple::drop_glue<'0, NeedsDrop, NeedsDrop>[{built_in impl Sized for NeedsDrop}]] _x_3
-        ↳⚡ if copy _5 {
-                drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] pair._1
-                ↳⚡ unwind_terminate
-            } else {
-            }
+        ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] pair._1
+            ↳⚡ unwind_terminate
             unwind_continue
         storage_dead(_x_3)
     } else {
@@ -215,21 +198,14 @@ fn pair1(pair: (NeedsDrop, NeedsDrop))
         _x_4 = move pair._0
         _0 = ()
         drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] _x_4
-        ↳⚡ if copy _5 {
-                drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] pair._1
-                ↳⚡ unwind_terminate
-            } else {
-            }
+        ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] pair._1
+            ↳⚡ unwind_terminate
             unwind_continue
         storage_dead(_x_4)
     }
     storage_dead(_2)
-    if copy _5 {
-        drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._1
-        ↳⚡ unwind_continue
-    } else {
-    }
-    _5 = const false
+    conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._1
+    ↳⚡ unwind_continue
     return
 }
 
@@ -243,79 +219,49 @@ fn pair2(pair: (NeedsDrop, NeedsDrop))
     let _x_4: NeedsDrop; // local
     let _x_5: NeedsDrop; // local
     let _6: bool; // anonymous local
-    let _7: bool; // anonymous local
-    let _8: bool; // anonymous local
 
     storage_live(_0)
     storage_live(_6)
-    storage_live(_7)
-    storage_live(_8)
     _0 = ()
     _6 = const false
-    _8 = const false
-    _7 = const false
     _6 = const true
-    _7 = const true
-    _8 = const true
     storage_live(_2)
     _2 = const 42i32
     switch copy _2 {
         0i32 => {
             storage_live(_x_3)
             _6 = const false
-            _7 = const false
-            _8 = const false
             _x_3 = move pair
             _0 = ()
             drop[impl_Destruct_for_tuple::drop_glue<'0, NeedsDrop, NeedsDrop>[{built_in impl Sized for NeedsDrop}]] _x_3
-            ↳⚡ if copy _7 {
-                    drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._0
-                    ↳⚡ unwind_terminate
-                } else {
-                }
-                if copy _8 {
-                    drop[impl_Destruct_for_NeedsDrop::drop_glue<'5>] pair._1
-                    ↳⚡ unwind_terminate
-                } else {
-                }
+            ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._0
+                ↳⚡ unwind_terminate
+                conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'5>] pair._1
+                ↳⚡ unwind_terminate
                 unwind_continue
             storage_dead(_x_3)
         },
         1i32 => {
             storage_live(_x_4)
-            _7 = const false
             _x_4 = move pair._0
             _0 = ()
             drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] _x_4
-            ↳⚡ if copy _7 {
-                    drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._0
-                    ↳⚡ unwind_terminate
-                } else {
-                }
-                if copy _8 {
-                    drop[impl_Destruct_for_NeedsDrop::drop_glue<'5>] pair._1
-                    ↳⚡ unwind_terminate
-                } else {
-                }
+            ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._0
+                ↳⚡ unwind_terminate
+                conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'5>] pair._1
+                ↳⚡ unwind_terminate
                 unwind_continue
             storage_dead(_x_4)
         },
         2i32 => {
             storage_live(_x_5)
-            _8 = const false
             _x_5 = move pair._1
             _0 = ()
             drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] _x_5
-            ↳⚡ if copy _7 {
-                    drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._0
-                    ↳⚡ unwind_terminate
-                } else {
-                }
-                if copy _8 {
-                    drop[impl_Destruct_for_NeedsDrop::drop_glue<'5>] pair._1
-                    ↳⚡ unwind_terminate
-                } else {
-                }
+            ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._0
+                ↳⚡ unwind_terminate
+                conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'5>] pair._1
+                ↳⚡ unwind_terminate
                 unwind_continue
             storage_dead(_x_5)
         },
@@ -324,35 +270,14 @@ fn pair2(pair: (NeedsDrop, NeedsDrop))
         },
     }
     storage_dead(_2)
-    if copy _7 {
-        drop[impl_Destruct_for_NeedsDrop::drop_glue<'4>] pair._0
-        ↳⚡ if copy _8 {
-                drop[impl_Destruct_for_NeedsDrop::drop_glue<'7>] pair._1
-                ↳⚡ unwind_terminate
-                unwind_continue
-            } else {
-                unwind_continue
-            }
-        if copy _8 {
-            drop[impl_Destruct_for_NeedsDrop::drop_glue<'6>] pair._1
-            ↳⚡ unwind_continue
-            _6 = const false
-            return
-        } else {
-            _6 = const false
-            return
-        }
-    } else {
-        if copy _8 {
-            drop[impl_Destruct_for_NeedsDrop::drop_glue<'6>] pair._1
-            ↳⚡ unwind_continue
-            _6 = const false
-            return
-        } else {
-            _6 = const false
-            return
-        }
-    }
+    conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'4>] pair._0
+    ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'7>] pair._1
+        ↳⚡ unwind_terminate
+        unwind_continue
+    conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'6>] pair._1
+    ↳⚡ unwind_continue
+    _6 = const false
+    return
 }
 
 // Full name: test_crate::pair3
@@ -366,17 +291,9 @@ pub fn pair3(pair: (NeedsDrop, NeedsDrop), move_pair: bool, move_first: bool)
     let _x_5: (NeedsDrop, NeedsDrop); // local
     let _6: bool; // anonymous local
     let _x_7: NeedsDrop; // local
-    let _8: bool; // anonymous local
-    let _9: bool; // anonymous local
 
     storage_live(_0)
-    storage_live(_8)
-    storage_live(_9)
     _0 = ()
-    _9 = const false
-    _8 = const false
-    _9 = const true
-    _8 = const true
     storage_live(_4)
     _4 = copy move_pair
     if move _4 {
@@ -386,48 +303,31 @@ pub fn pair3(pair: (NeedsDrop, NeedsDrop), move_pair: bool, move_first: bool)
         _6 = copy move_first
         if move _6 {
             storage_live(_x_7)
-            _8 = const false
             _x_7 = move pair._0
             _0 = ()
             drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] _x_7
-            ↳⚡ if copy _9 {
-                    drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] pair._1
-                    ↳⚡ unwind_terminate
-                } else {
-                }
+            ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] pair._1
+                ↳⚡ unwind_terminate
                 unwind_continue
             storage_dead(_x_7)
         } else {
             _0 = ()
         }
         storage_dead(_6)
-        if copy _8 {
-            drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._0
-            ↳⚡ drop[impl_Destruct_for_NeedsDrop::drop_glue<'5>] pair._1
-                ↳⚡ unwind_terminate
-                unwind_continue
-            drop[impl_Destruct_for_NeedsDrop::drop_glue<'4>] pair._1
-            ↳⚡ unwind_continue
-            _9 = const false
-            return
-        } else {
-            drop[impl_Destruct_for_NeedsDrop::drop_glue<'4>] pair._1
-            ↳⚡ unwind_continue
-            _9 = const false
-            return
-        }
+        conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'3>] pair._0
+        ↳⚡ drop[impl_Destruct_for_NeedsDrop::drop_glue<'5>] pair._1
+            ↳⚡ unwind_terminate
+            unwind_continue
+        drop[impl_Destruct_for_NeedsDrop::drop_glue<'4>] pair._1
+        ↳⚡ unwind_continue
+        return
     }
     storage_live(_x_5)
-    _9 = const false
-    _8 = const false
     _x_5 = move pair
     _0 = ()
     drop[impl_Destruct_for_tuple::drop_glue<'0, NeedsDrop, NeedsDrop>[{built_in impl Sized for NeedsDrop}]] _x_5
-    ↳⚡ if copy _9 {
-            drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] pair._1
-            ↳⚡ unwind_terminate
-        } else {
-        }
+    ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] pair._1
+        ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_x_5)
     storage_dead(_4)
@@ -444,26 +344,18 @@ pub fn re_assign(x: NeedsDrop)
     let _4: NeedsDrop; // anonymous local
     let _5: bool; // anonymous local
     let _6: NeedsDrop; // anonymous local
-    let _7: bool; // anonymous local
 
     storage_live(_0)
-    storage_live(_7)
     _0 = ()
-    _7 = const false
-    _7 = const true
     storage_live(_2)
     _2 = const true
     if move _2 {
         storage_live(_3)
         storage_live(_4)
-        _7 = const false
         _4 = move x
         _3 = consume<NeedsDrop>[{built_in impl Sized for NeedsDrop}](move _4)
-        ↳⚡ if copy _7 {
-                drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] x
-                ↳⚡ unwind_terminate
-            } else {
-            }
+        ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] x
+            ↳⚡ unwind_terminate
             unwind_continue
         storage_dead(_4)
         storage_dead(_3)
@@ -475,19 +367,11 @@ pub fn re_assign(x: NeedsDrop)
     if move _5 {
         storage_live(_6)
         _6 = NeedsDrop {  }
-        if copy _7 {
-            drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] x
-            ↳⚡ _7 = const true
-                x = move _6
-                if copy _7 {
-                    drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] x
-                    ↳⚡ unwind_terminate
-                } else {
-                }
-                unwind_continue
-        } else {
-        }
-        _7 = const true
+        conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] x
+        ↳⚡ x = move _6
+            conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] x
+            ↳⚡ unwind_terminate
+            unwind_continue
         x = move _6
         storage_dead(_6)
         _0 = ()
@@ -495,11 +379,7 @@ pub fn re_assign(x: NeedsDrop)
         _0 = ()
     }
     storage_dead(_5)
-    if copy _7 {
-    } else {
-        return
-    }
-    drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] x
+    conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] x
     ↳⚡ unwind_continue
     return
 }
@@ -514,13 +394,9 @@ pub fn in_loop(x: NeedsDrop)
     let _4: (); // anonymous local
     let _5: NeedsDrop; // anonymous local
     let _6: NeedsDrop; // anonymous local
-    let _7: bool; // anonymous local
 
     storage_live(_0)
-    storage_live(_7)
     _0 = ()
-    _7 = const false
-    _7 = const true
     loop {
         storage_live(_2)
         _2 = const true
@@ -530,14 +406,10 @@ pub fn in_loop(x: NeedsDrop)
             if move _3 {
                 storage_live(_4)
                 storage_live(_5)
-                _7 = const false
                 _5 = move x
                 _4 = consume<NeedsDrop>[{built_in impl Sized for NeedsDrop}](move _5)
-                ↳⚡ if copy _7 {
-                        drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] x
-                        ↳⚡ unwind_terminate
-                    } else {
-                    }
+                ↳⚡ conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] x
+                    ↳⚡ unwind_terminate
                     unwind_continue
                 storage_dead(_5)
                 storage_dead(_4)
@@ -546,19 +418,11 @@ pub fn in_loop(x: NeedsDrop)
             storage_dead(_3)
             storage_live(_6)
             _6 = NeedsDrop {  }
-            if copy _7 {
-                drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] x
-                ↳⚡ _7 = const true
-                    x = move _6
-                    if copy _7 {
-                        drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] x
-                        ↳⚡ unwind_terminate
-                    } else {
-                    }
-                    unwind_continue
-            } else {
-            }
-            _7 = const true
+            conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'2>] x
+            ↳⚡ x = move _6
+                conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] x
+                ↳⚡ unwind_terminate
+                unwind_continue
             x = move _6
             storage_dead(_6)
             storage_dead(_2)

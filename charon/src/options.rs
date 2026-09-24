@@ -214,6 +214,12 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub desugar_drops: bool,
+    /// Reconstruct conditional drops from the drop-flags and precise drops introduced by rustc's
+    /// drop elaboration, when possible. This may leave drop flags if we couldn't identify a known
+    /// pattern.
+    #[clap(long)]
+    #[serde(default)]
+    pub resugar_drops: bool,
     /// Transform array-to-slice unsizing and repeat expressions into standard library function
     /// calls in LLBC.
     #[clap(long)]
@@ -558,6 +564,7 @@ impl CliOpts {
                     self.reconstruct_fallible_operations = true;
                     self.reconstruct_asserts = true;
                     self.reconstruct_matches = true;
+                    self.resugar_drops = true;
                     if !self.monomorphize {
                         self.ops_to_function_calls = true;
                         self.index_to_function_calls = true;
@@ -771,6 +778,8 @@ pub struct TranslateOptions {
     pub no_compute_layout_guarantees: bool,
     /// Transform Drop to Call drop_glue
     pub desugar_drops: bool,
+    /// Reconstruct conditional drops from rustc drop flags.
+    pub resugar_drops: bool,
     /// Add `Destruct` bounds to all generic params.
     pub add_destruct_bounds: bool,
 }
@@ -928,6 +937,7 @@ impl TranslateOptions {
             no_reorder_decls: options.no_reorder_decls,
             no_compute_layout_guarantees: options.no_compute_layout_guarantees,
             desugar_drops: options.desugar_drops,
+            resugar_drops: options.resugar_drops,
             add_destruct_bounds: options.precise_drops,
         }
     }

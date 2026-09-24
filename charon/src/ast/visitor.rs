@@ -209,7 +209,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
     drive(
         Assert, BorrowckStatement, PlaceKind,
         llbc_ast::ExprBody, llbc_ast::StatementKind,
-        ullbc_ast::BlockData, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
+        ullbc_ast::ExprBody, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, SwitchData, SwitchScrutinee,
         Body, Local,
         for<T: BodyVisitable> Box<T>,
@@ -228,6 +228,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
         Operand, Place, ProjectionElem, Rvalue, Locals, LocalId,
         llbc_block: llbc_ast::Block,
         llbc_statement: llbc_ast::Statement,
+        ullbc_block: ullbc_ast::BlockData,
         ullbc_statement: ullbc_ast::Statement,
         ullbc_terminator: ullbc_ast::Terminator,
         ullbc_block_id: ullbc_ast::BlockId,

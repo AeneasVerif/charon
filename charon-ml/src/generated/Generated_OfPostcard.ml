@@ -1857,6 +1857,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* remove_unused_self_clauses = bool_of_postcard ctx st in
      let* remove_adt_clauses = bool_of_postcard ctx st in
      let* desugar_drops = bool_of_postcard ctx st in
+     let* resugar_drops = bool_of_postcard ctx st in
      let* ops_to_function_calls = bool_of_postcard ctx st in
      let* index_to_function_calls = bool_of_postcard ctx st in
      let* treat_box_as_builtin = bool_of_postcard ctx st in
@@ -1918,6 +1919,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           remove_unused_self_clauses;
           remove_adt_clauses;
           desugar_drops;
+          resugar_drops;
           ops_to_function_calls;
           index_to_function_calls;
           treat_box_as_builtin;

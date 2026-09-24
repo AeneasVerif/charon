@@ -43,6 +43,7 @@ pub mod resugar {
     pub mod reconstruct_intrinsics;
     pub mod reconstruct_matches;
     pub mod reconstruct_vec_boxes;
+    pub mod resugar_drops;
 }
 
 /// Passes that make the output simpler/easier to consume.
@@ -121,6 +122,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
 
     // Body cleanup passes on the ullbc.
     let pass = Pass::FusedUnstructuredBody(Box::new([
+        // Reconstruct conditional drops before any pass changes the shape of the CFG.
+        CowBox::Borrowed(&resugar::resugar_drops::Transform),
         // Compute the metadata & insert for Rvalue
         CowBox::Borrowed(&finish_translation::insert_ptr_metadata::Transform),
         // Add the missing assignments to the return value.

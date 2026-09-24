@@ -357,6 +357,10 @@ impl TyKind {
         }
     }
 
+    pub fn is_bool(&self) -> bool {
+        matches!(self, TyKind::Scalar(ScalarTy::Bool))
+    }
+
     pub fn is_str(&self) -> bool {
         match self {
             TyKind::Adt(ty_ref) => ty_ref.is_str(),

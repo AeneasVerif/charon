@@ -2153,6 +2153,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("remove_unused_self_clauses", remove_unused_self_clauses);
           ("remove_adt_clauses", remove_adt_clauses);
           ("desugar_drops", desugar_drops);
+          ("resugar_drops", resugar_drops);
           ("ops_to_function_calls", ops_to_function_calls);
           ("index_to_function_calls", index_to_function_calls);
           ("treat_box_as_builtin", treat_box_as_builtin);
@@ -2223,6 +2224,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* remove_adt_clauses = bool_of_json ctx remove_adt_clauses in
         let* desugar_drops = bool_of_json ctx desugar_drops in
+        let* resugar_drops = bool_of_json ctx resugar_drops in
         let* ops_to_function_calls = bool_of_json ctx ops_to_function_calls in
         let* index_to_function_calls =
           bool_of_json ctx index_to_function_calls
@@ -2292,6 +2294,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              remove_unused_self_clauses;
              remove_adt_clauses;
              desugar_drops;
+             resugar_drops;
              ops_to_function_calls;
              index_to_function_calls;
              treat_box_as_builtin;

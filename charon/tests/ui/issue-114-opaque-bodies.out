@@ -46,17 +46,12 @@ where
     let t: T; // arg #2
     let _3: bool; // anonymous local
     let _4: T; // anonymous local
-    let _5: bool; // anonymous local
 
     storage_live(_0)
-    storage_live(_5)
-    _5 = const false
-    _5 = const true
     storage_live(_3)
     _3 = copy self
     if move _3 {
         storage_live(_4)
-        _5 = const false
         _4 = move t
         _0 = Option::Some { _0: move _4 }
         storage_dead(_4)
@@ -64,19 +59,10 @@ where
         _0 = Option::None {  }
     }
     storage_dead(_3)
-    if copy _5 {
-    } else {
-        storage_dead(_5)
-        storage_dead(t)
-        storage_dead(self)
-        return
-    }
-    drop[TraitClause1::drop_glue<'0>] t
-    ↳⚡ storage_dead(_5)
-        storage_dead(t)
+    conditional_drop[TraitClause1::drop_glue<'0>] t
+    ↳⚡ storage_dead(t)
         storage_dead(self)
         unwind_continue
-    storage_dead(_5)
     storage_dead(t)
     storage_dead(self)
     return

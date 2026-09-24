@@ -432,6 +432,13 @@ impl Terminator {
     }
 }
 
+impl TerminatorKind {
+    /// Replace this terminator with a dummy.
+    pub fn take(&mut self) -> Self {
+        std::mem::replace(self, TerminatorKind::Abort(AbortKind::UndefinedBehavior))
+    }
+}
+
 /// A statement location within a body.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct StmtLoc {
