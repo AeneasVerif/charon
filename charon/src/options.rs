@@ -630,6 +630,9 @@ impl CliOpts {
                 "`--no-serialize` is not compatible with `--format`, the format is only relevant if we serialize"
             );
         }
+        if self.resugar_drops && self.desugar_drops {
+            anyhow::bail!("`--desugar-drops` and `--resugar-drops` are mutually incompatible")
+        }
         Ok(())
     }
 
