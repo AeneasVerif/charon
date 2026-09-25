@@ -1312,6 +1312,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             func: FnOperand::Regular(target_fn),
             args: method_args.into_iter().map(Operand::Move).collect(),
             dest: ret_place,
+            callee_safe: false,
         });
 
         Ok(Body::Unstructured(builder.build()))

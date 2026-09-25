@@ -183,6 +183,10 @@ pub struct Call {
     pub func: FnOperand,
     pub args: Vec<Operand>,
     pub dest: Place,
+    /// Whether calling this function is guaranteed to be safe by the compiler, even if its
+    /// signature is unsafe. Needed to ensure drop glue desugaring and `dyn` method calls is
+    /// considered safe.
+    pub callee_safe: bool,
 }
 
 /// Statements that only affect borrow-checking. They are no-ops at runtime.

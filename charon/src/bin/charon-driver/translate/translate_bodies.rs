@@ -465,6 +465,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     func: FnOperand::Regular(assume_init_fn),
                     args: vec![Operand::Move(input)],
                     dest: initialized_box.clone(),
+                    callee_safe: false,
                 }
             });
 
@@ -500,6 +501,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     func: FnOperand::Regular(into_vec_fn),
                     args: vec![Operand::Move(box_slice)],
                     dest: return_place,
+                    callee_safe: false,
                 }
             });
             builder.build()
@@ -1620,7 +1622,15 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         let func =
             FnOperand::Regular(self.translate_fn_ptr(span, &item, TransItemSourceKind::Fun)?);
         let dest = self.locals.new_var(None, Ty::mk_unit());
-        self.push_nounwind_call(span, Call { func, args, dest });
+        self.push_nounwind_call(
+            span,
+            Call {
+                func,
+                args,
+                dest,
+                callee_safe: false,
+            },
+        );
         Ok(())
     }
 
@@ -1855,10 +1865,13 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             }
         };
         let args = self.translate_arguments(span, args)?;
+        let callee_safe = matches!(op_ty.kind(), ty::TyKind::FnDef(def_id, _)
+            if tcx.fn_sig(*def_id).skip_binder().safety().is_safe());
         let call = Call {
             func: fn_operand,
             args,
             dest: lval,
+            callee_safe,
         };
 
         let target = match target {

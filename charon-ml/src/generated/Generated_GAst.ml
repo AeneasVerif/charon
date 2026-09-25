@@ -108,7 +108,15 @@ and builtin_assert_kind =
   | ResumedAfterPanic
   | ResumedAfterDrop
 
-and call = { func : fn_operand; args : operand list; dest : place }
+and call = {
+  func : fn_operand;
+  args : operand list;
+  dest : place;
+  callee_safe : bool;
+      (** Whether calling this function is guaranteed to be safe by the
+          compiler, even if its signature is unsafe. Needed to ensure drop glue
+          desugaring and [dyn] method calls is considered safe. *)
+}
 
 (** A [Drop] statement/terminator can mean two things, depending on what MIR
     phase we retrieved from rustc: it could be a real drop, or it could be a

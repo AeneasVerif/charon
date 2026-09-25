@@ -956,6 +956,7 @@ fn unsafe_statements() -> anyhow::Result<()> {
         union Bar { foo: Foo }
         unsafe fn dangerous() {}
         trait Trait { unsafe fn unsafe_method(); fn safe_method(); }
+        trait DynTrait { unsafe fn unsafe_method(&self); fn safe_method(&self); }
 
         fn unsafe_deref_raw_ptr(x: *const u32) -> u32 { unsafe { *x } }
         fn unsafe_call_fn() { unsafe { dangerous() } }
@@ -970,6 +971,7 @@ fn unsafe_statements() -> anyhow::Result<()> {
         fn unsafe_raw_borrow_through_mutable_static() -> *const u32 { unsafe { &raw const *PTR } }
         fn unsafe_read_union_field(foo: Foo) -> u64 { unsafe { foo.one } }
         fn unsafe_asm() { unsafe { core::arch::asm!("nop") } }
+        fn unsafe_call_unsafe_dyn_method(s: &dyn DynTrait) { unsafe { s.unsafe_method() } }
 
         fn safe_raw_ptrs(x: u32) -> (*const u32, *mut usize) { (&raw const x, &raw mut COUNTER) }
         fn safe_call(f: fn()) { f(); safe_raw_ptrs(0); }
@@ -982,6 +984,8 @@ fn unsafe_statements() -> anyhow::Result<()> {
         fn safe_raw_borrow_of_deref(p: *const u32) -> *const u32 { &raw const *p }
         #[unsafe(naked)]
         extern "C" fn safe_naked_asm() { core::arch::naked_asm!("ret") }
+        fn safe_call_dyn_method(s: &dyn DynTrait) { s.safe_method() }
+        fn safe_drop_dyn(_s: Box<dyn DynTrait>) {}
         "#,
     )?;
     for fun in &crate_data.fun_decls {

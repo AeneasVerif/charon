@@ -138,7 +138,7 @@ impl IsUnsafe for SwitchData {
 /// Whether the called function is unsafe to call, or evaluating the operands or the destination is.
 impl IsUnsafe for Call {
     fn is_unsafe(&self, krate: &TranslatedCrate) -> bool {
-        self.func.is_unsafe(krate)
+        (self.func.is_unsafe(krate) && !self.callee_safe)
             || self.args.is_unsafe(krate)
             || self.dest.is_unsafe_to_write(krate)
     }

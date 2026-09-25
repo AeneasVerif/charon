@@ -365,7 +365,8 @@ and call_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* func = fn_operand_of_postcard ctx st in
      let* args = list_of_postcard operand_of_postcard ctx st in
      let* dest = place_of_postcard ctx st in
-     Ok ({ func; args; dest } : call))
+     let* callee_safe = bool_of_postcard ctx st in
+     Ok ({ func; args; dest; callee_safe } : call))
 
 and cast_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (cast_kind, string) result =

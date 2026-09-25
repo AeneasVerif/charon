@@ -429,6 +429,7 @@ impl UllbcPass for Transform {
                     func: FnOperand::Regular(fn_ptr),
                     args,
                     dest: box_array_local.clone(),
+                    callee_safe: false,
                 },
                 target: rw.target_bid,
                 on_unwind: rw.drop_on_unwind,
