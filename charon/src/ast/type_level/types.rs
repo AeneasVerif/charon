@@ -3,6 +3,7 @@ use derive_generic_visitor::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 use serde_state::{DeserializeState, SerializeState};
+use std::ops::DerefMut;
 
 /// A type.
 ///
@@ -221,8 +222,32 @@ impl Ty {
         self.0.inner()
     }
 
+    /// Temporarily allow mutation of the `TyKind`, cloning it if needed.
+    pub fn as_mut(&mut self) -> impl DerefMut<Target = TyKind> {
+        struct TyMutRef<T: DerefMut<Target = WithCachedTypeInfo<TyKind>>>(T);
+
+        impl<T: DerefMut<Target = WithCachedTypeInfo<TyKind>>> std::ops::Deref for TyMutRef<T> {
+            type Target = TyKind;
+            fn deref(&self) -> &Self::Target {
+                &self.0
+            }
+        }
+        impl<T: DerefMut<Target = WithCachedTypeInfo<TyKind>>> DerefMut for TyMutRef<T> {
+            fn deref_mut(&mut self) -> &mut Self::Target {
+                self.0.value_mut()
+            }
+        }
+
+        impl<T: DerefMut<Target = WithCachedTypeInfo<TyKind>>> Drop for TyMutRef<T> {
+            fn drop(&mut self) {
+                self.0.recompute_type_info();
+            }
+        }
+
+        TyMutRef(self.0.as_mut())
+    }
     pub fn with_kind_mut<R>(&mut self, f: impl FnOnce(&mut TyKind) -> R) -> R {
-        self.0.with_inner_mut(|kind| kind.with_value_mut(f))
+        f(&mut self.as_mut())
     }
 
     /// Return the unit type

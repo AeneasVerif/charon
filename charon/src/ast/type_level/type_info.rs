@@ -219,7 +219,7 @@ impl TypeInfo {
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(Drive, DriveTwo)]
 pub struct WithCachedTypeInfo<T> {
-    pub value: T,
+    value: T,
     info: TypeInfo,
 }
 
@@ -233,10 +233,18 @@ impl<T: TyVisitable> WithCachedTypeInfo<T> {
         self.info
     }
 
+    /// The caller must ensure [`Self::recompute_type_info`] is called after mutation.
+    pub(super) fn value_mut(&mut self) -> &mut T {
+        &mut self.value
+    }
+    pub(super) fn recompute_type_info(&mut self) {
+        self.info = self.value.type_info();
+    }
+
     pub fn with_value_mut<R>(&mut self, f: impl FnOnce(&mut T) -> R) -> R {
         let ret = f(&mut self.value);
         // Recompute the cached values.
-        self.info = self.value.type_info();
+        self.recompute_type_info();
         ret
     }
 }
