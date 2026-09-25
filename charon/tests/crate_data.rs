@@ -943,7 +943,7 @@ fn multiple_deserialize() -> anyhow::Result<()> {
 #[test]
 fn unsafe_statements() -> anyhow::Result<()> {
     // Test that unsafe statements are indeed considered unsafe, and that safe statements
-    // are not. See `IsUnsafe` for the definition of unsafe things.
+    // are not. See `HasSafety` for the definition of unsafe things.
     let crate_data = translate(
         r#"
         static mut COUNTER: usize = 0;
@@ -994,22 +994,47 @@ fn unsafe_statements() -> anyhow::Result<()> {
             continue;
         };
         let expected = if name.starts_with("unsafe_") {
-            true
+            Safety::Unsafe
         } else if name.starts_with("safe_") {
-            false
+            Safety::Safe
         } else {
             continue;
         };
-        let Body::Structured(body) = &fun.body else {
-            panic!("missing body for {name}")
-        };
-        let mut is_unsafe = false;
-        body.body
-            .statements
-            .dyn_visit_in_body(|st: &Statement| is_unsafe |= st.is_unsafe(&crate_data));
-        assert_eq!(is_unsafe, expected, "{name}");
+        assert_eq!(body_safety(&crate_data, fun), expected, "{name}");
     }
     Ok(())
+}
+
+#[test]
+fn unknown_safety() -> anyhow::Result<()> {
+    // When some information is missing, we can't tell whether an operation is unsafe.
+    let crate_data = translate(
+        r#"//@ charon-args=--opaque test_crate::Opaque --exclude test_crate::excluded
+        union Opaque { one: u64, two: [u32; 2] }
+        fn read_opaque_field(u: Opaque) -> u64 { unsafe { u.one } }
+        unsafe fn excluded() {}
+        fn call_excluded() { unsafe { excluded() } }
+        "#,
+    )?;
+    let items = items_by_name(&crate_data);
+    for name in ["read_opaque_field", "call_excluded"] {
+        let fun = items[&format!("test_crate::{name}")].kind.as_fun().unwrap();
+        let safety = body_safety(&crate_data, fun);
+        assert!(matches!(safety, Safety::Unknown(_)), "{name}: {safety:?}");
+    }
+    Ok(())
+}
+
+/// The combined safety of the statements of this function.
+fn body_safety(crate_data: &TranslatedCrate, fun: &FunDecl) -> Safety {
+    let Body::Structured(body) = &fun.body else {
+        panic!("missing body")
+    };
+    let mut safety = Safety::Safe;
+    body.body.statements.dyn_visit_in_body(|st: &Statement| {
+        safety = safety.clone().or_else(|| st.safety(crate_data))
+    });
+    safety
 }
 
 #[test]
