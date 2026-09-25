@@ -940,6 +940,9 @@ impl<T> GExprBody<T> {
                     None => write!(f, "anonymous local")?,
                 }
             }
+            if let Some(place) = &v.drop_flag_for {
+                write!(f, "; drop flag for {}", place.with_ctx(ctx))?;
+            }
             writeln!(f)?;
         }
 

@@ -259,27 +259,20 @@ fn main()
     let _2: bool; // anonymous local
     let _3: (); // anonymous local
     let _4: Box<u32>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}]; // anonymous local
-    let _5: bool; // anonymous local
 
     storage_live(_0)
-    storage_live(_5)
     _0 = ()
-    _5 = const false
     storage_live(b)
-    _5 = const true
     b = new<u32>[{built_in impl Sized for u32}, {built_in impl Destruct for u32}](const 1u32)
-    ↳⚡ storage_dead(_5)
-        unwind_continue
+    ↳⚡ unwind_continue
     storage_live(_2)
     _2 = const false
     if move _2 {
         storage_live(_3)
         storage_live(_4)
-        _5 = const false
         _4 = move b
         _3 = use_box(move _4)
-        ↳⚡ storage_dead(_5)
-            unwind_continue
+        ↳⚡ unwind_continue
         storage_dead(_4)
         storage_dead(_3)
         _0 = ()
@@ -288,15 +281,9 @@ fn main()
     }
     storage_dead(_2)
     // `b` is dropped implicitly here
-    if copy _5 {
-        drop[impl_Destruct_for_Box::drop_glue<'0, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}]] b
-        ↳⚡ storage_dead(_5)
-            unwind_continue
-    } else {
-    }
-    _5 = const false
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'0, u32, Global>[{built_in impl MetaSized for u32}, {built_in impl Sized for Global}, {built_in impl Destruct for u32}, {built_in impl Destruct for Global}]] b
+    ↳⚡ unwind_continue
     storage_dead(b)
-    storage_dead(_5)
     return
 }
 

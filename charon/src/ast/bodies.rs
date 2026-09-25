@@ -106,6 +106,8 @@ pub struct Local {
     /// The variable type
     #[cfg_attr(feature = "charon_on_charon", charon::rename("local_ty"))]
     pub ty: Ty,
+    /// If this local is a drop flag, this is the place whose initialization state it tracks.
+    pub drop_flag_for: Option<Place>,
 }
 
 /// An expression body.
@@ -329,6 +331,7 @@ impl Locals {
             name,
             span: Span::dummy(),
             ty: ty.clone(),
+            drop_flag_for: None,
         });
         Place::new(local_id, ty)
     }

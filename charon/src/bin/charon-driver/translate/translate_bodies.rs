@@ -570,6 +570,7 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
             name,
             span,
             ty,
+            drop_flag_for: None,
         });
         self.locals_map.insert(rid.as_usize(), local_id);
     }

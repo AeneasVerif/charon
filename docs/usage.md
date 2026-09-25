@@ -1,12 +1,11 @@
 # Usage
 
-To run Charon, you should run the Charon binary from *within* the crate that you
-want to compile, as if you wanted to build the crate with `cargo build`. The
-Charon executable is located at `bin/charon`.
+To run Charon, you should run the `charon cargo` from *within* the crate that you
+want to compile, as if you wanted to build the crate with `cargo build`.
 
-Charon will build the crate and its dependencies, then extract the AST. Charon
-provides various options and flags to tweak its behaviour: you can display a
-detailed documentation with `--help`.
+Charon will build the crate and its dependencies, then extract the crate contents.
+Charon provides various options and flags to tweak its behaviour: you can display a detailed
+documentation with `--help`.
 In particular, you can pretty-print the translated crate with both `--print-ullbc` and `--print-llbc`, depending on the Charon intermediate representation you wish to use.
 
 Charon supports per-crate configuration via the `[package.metadata.charon]` section in `Cargo.toml`. 

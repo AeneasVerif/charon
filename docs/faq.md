@@ -38,6 +38,15 @@ E.g. this way `Iterator` only has `next` until another of its methods is used[^1
 [^1]: The whole "lazy method list" feature was pretty much made specifically for `Iterator` with its
 gajillion default methods and helper types.
 
+## Charon is taking ages 
+
+Try `--preset fast`. This disables a bunch of checks, control-flow reconstruction, skips translating
+`Sized` and `MetaSized`, and uses postcard instead of json for the output. This significantly speeds
+up translation.
+
+Overall Charon is structured around robustness over performance, so we won't try to be competitive
+there. If however your crate takes 15 minutes to translate, do reach out to see if there's anything
+we can do.
 
 ## What is the difference between Charon and `rustc_public`?
 

@@ -141,6 +141,11 @@ impl Place {
         std::iter::successors(Some(self), |place| Some(place.as_projection()?.0))
     }
 
+    /// Whether `self` is the same place as, or a projection of, `parent`.
+    pub fn is_subplace(&self, parent: &Self) -> bool {
+        self.subplaces().any(|place| place == parent)
+    }
+
     pub fn projections(&self) -> impl Iterator<Item = &ProjectionElem> {
         self.subplaces()
             .filter_map(|place| Some(place.as_projection()?.1))

@@ -208,10 +208,9 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
     // Types that we unconditionally explore.
     drive(
         Assert, BorrowckStatement, PlaceKind,
-        llbc_ast::ExprBody, llbc_ast::StatementKind,
-        ullbc_ast::BlockData, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
+        llbc_ast::StatementKind, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, SwitchData, SwitchScrutinee,
-        Body, Local,
+        for<T: BodyVisitable> GExprBody<T>,
         for<T: BodyVisitable> Box<T>,
         for<T: BodyVisitable> Option<T>,
         for<T: BodyVisitable, E: BodyVisitable> Result<T, E>,
@@ -224,10 +223,12 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
     // Types for which we call the corresponding `visit_$ty` method, which by default explores the
     // type but can be overridden.
     override(
+        Body, Locals, Local, LocalId,
         AggregateKind, Call, FnOperand, FnPtr,
-        Operand, Place, ProjectionElem, Rvalue, Locals, LocalId,
+        Operand, Place, ProjectionElem, Rvalue,
         llbc_block: llbc_ast::Block,
         llbc_statement: llbc_ast::Statement,
+        ullbc_block: ullbc_ast::BlockData,
         ullbc_statement: ullbc_ast::Statement,
         ullbc_terminator: ullbc_ast::Terminator,
         ullbc_block_id: ullbc_ast::BlockId,
