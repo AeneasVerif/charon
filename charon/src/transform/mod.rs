@@ -43,7 +43,7 @@ pub mod resugar {
     pub mod reconstruct_fallible_operations;
     pub mod reconstruct_intrinsics;
     pub mod reconstruct_matches;
-    pub mod reconstruct_statics;
+    pub mod reconstruct_static_accesses;
     pub mod reconstruct_vec_boxes;
     pub mod resugar_drops;
 }
@@ -185,7 +185,7 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         CowBox::Borrowed(&resugar::reconstruct_asserts::Transform),
         // Access statics directly instead of through a temporary holding their address.
         // This must happen before [simplify_constants], which splits these temporaries.
-        CowBox::Borrowed(&resugar::reconstruct_statics::Transform),
+        CowBox::Borrowed(&resugar::reconstruct_static_accesses::Transform),
         // Desugar the constants to other values/operands as much as possible.
         CowBox::Borrowed(&simplify_output::simplify_constants::Transform),
         // Introduce intermediate assignments in preparation of the [`builtins_to_function_calls`]

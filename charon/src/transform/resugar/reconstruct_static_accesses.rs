@@ -1,7 +1,7 @@
 //! MIR places can't name statics, so rustc accesses a static through a temporary holding its
 //! address, e.g. `_1 = const {alloc}; _0 = copy (*_1)` where the constant points to the static.
 //! We turn `*_1` back into the static itself and remove the temporary.
-//! This is needed to reliably tell what static accesses are unsafe (see `IsUnsafe`), as rustc
+//! This is needed to reliably tell what static accesses are unsafe (see `HasSafety`), as rustc
 //! will lower safe static access to otherwise unsafe raw pointer accesses.
 use rustc_hash::FxHashMap as HashMap;
 
