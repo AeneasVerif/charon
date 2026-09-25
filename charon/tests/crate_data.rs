@@ -1014,8 +1014,8 @@ fn unsafe_statements() -> anyhow::Result<()> {
 
 #[test]
 fn unsafe_items() -> anyhow::Result<()> {
-    // Test that unsafe items are indeed considered unsafe, and that safe items
-    // are not. See `IsUnsafe` for the definition of unsafe things.
+    // Test that items that are unsafe to declare are indeed considered so, and that other items
+    // are not. See `ItemRef::is_unsafe_to_declare`.
     let crate_data = translate(
         r#"
         struct S;
@@ -1023,10 +1023,13 @@ fn unsafe_items() -> anyhow::Result<()> {
         trait SafeTrait {}
         unsafe impl UnsafeTrait for S {}
         impl SafeTrait for S {}
+        unsafe fn unsafe_fn() {}
 
         unsafe extern "C" {
             fn extern_fn();
             static EXTERN_STATIC: u32;
+            safe fn safe_extern_fn();
+            safe static SAFE_EXTERN_STATIC: u32;
         }
 
         #[unsafe(no_mangle)]
@@ -1045,22 +1048,23 @@ fn unsafe_items() -> anyhow::Result<()> {
     )?;
     let unsafe_items: Vec<String> = crate_data
         .all_items()
-        .filter(|item| item.is_unsafe(&crate_data))
+        .filter(|item| item.is_unsafe_to_declare(&crate_data))
         .map(|item| item.item_meta().name.debug_repr(&crate_data))
         .filter(|name| name.starts_with("test_crate::"))
         .sorted()
-        .unique() // unique to avoid duplicates for globals and their initializer function
         .collect();
     assert_eq!(
         unsafe_items,
         [
             "test_crate::<impl UnsafeTrait for ??>",
             "test_crate::EXTERN_STATIC",
+            "test_crate::SAFE_EXTERN_STATIC",
             "test_crate::export_name",
             "test_crate::extern_fn",
             "test_crate::link_section",
             "test_crate::naked",
             "test_crate::no_mangle",
+            "test_crate::safe_extern_fn",
         ]
     );
     Ok(())
