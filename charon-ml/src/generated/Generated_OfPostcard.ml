@@ -1858,6 +1858,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* remove_adt_clauses = bool_of_postcard ctx st in
      let* desugar_drops = bool_of_postcard ctx st in
      let* resugar_drops = bool_of_postcard ctx st in
+     let* detect_drop_flags = bool_of_postcard ctx st in
      let* ops_to_function_calls = bool_of_postcard ctx st in
      let* index_to_function_calls = bool_of_postcard ctx st in
      let* treat_box_as_builtin = bool_of_postcard ctx st in
@@ -1920,6 +1921,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           remove_adt_clauses;
           desugar_drops;
           resugar_drops;
+          detect_drop_flags;
           ops_to_function_calls;
           index_to_function_calls;
           treat_box_as_builtin;
@@ -2656,7 +2658,8 @@ and local_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* name = option_of_postcard string_of_postcard ctx st in
      let* span = span_of_postcard ctx st in
      let* local_ty = ty_of_postcard ctx st in
-     Ok ({ index; name; span; local_ty } : local))
+     let* drop_flag_for = option_of_postcard place_of_postcard ctx st in
+     Ok ({ index; name; span; local_ty; drop_flag_for } : local))
 
 and locals_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (locals, string) result =

@@ -185,6 +185,9 @@ and cli_options = {
       (** Reconstruct conditional drops from the drop-flags and precise drops
           introduced by rustc's drop elaboration, when possible. This may leave
           drop flags if we couldn't identify a known pattern. *)
+  detect_drop_flags : bool;
+      (** Detect the drop flags inserted by rustc, which are booleans that track
+          initialedness of a place. *)
   ops_to_function_calls : bool;
       (** Transform array-to-slice unsizing and repeat expressions into standard
           library function calls in LLBC. *)

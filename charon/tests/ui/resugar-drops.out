@@ -438,5 +438,118 @@ pub fn in_loop(x: NeedsDrop)
     return
 }
 
+// Full name: test_crate::EnumWithTwoDrops
+enum EnumWithTwoDrops {
+  Pair { _0: NeedsDrop, _1: NeedsDrop },
+  Empty,
+}
+
+// Full name: test_crate::partial_enum_move
+fn partial_enum_move(value: EnumWithTwoDrops, b: bool)
+{
+    let _0: (); // return
+    let value: EnumWithTwoDrops; // arg #1
+    let b: bool; // arg #2
+    let _3: bool; // anonymous local
+    let _4: (); // anonymous local
+    let _5: EnumWithTwoDrops; // anonymous local
+    let _6: isize; // anonymous local
+    let first: NeedsDrop; // local
+    let _8: NeedsDrop; // anonymous local
+    let _9: bool; // anonymous local; drop flag for (value as variant EnumWithTwoDrops::Pair)._1
+    let _10: bool; // anonymous local
+    let _11: isize; // anonymous local
+    let _12: isize; // anonymous local
+
+    storage_live(_0)
+    storage_live(_6)
+    storage_live(_9)
+    storage_live(_10)
+    storage_live(_11)
+    storage_live(_12)
+    _0 = ()
+    _9 = const false
+    _10 = const false
+    _9 = const true
+    _10 = const true
+    storage_live(_3)
+    _3 = copy b
+    if move _3 {
+        storage_live(_4)
+        storage_live(_5)
+        _9 = const false
+        _10 = const false
+        _5 = move value
+        _4 = consume<EnumWithTwoDrops>[{built_in impl Sized for EnumWithTwoDrops}](move _5)
+        ↳⚡ if copy _9 {
+                _12 = @discriminant(value)
+                switch move _12 {
+                    0isize => {
+                        conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] (value as variant EnumWithTwoDrops::Pair)._1
+                        ↳⚡ unwind_terminate
+                    },
+                    _ => {
+                    },
+                }
+            } else {
+            }
+            unwind_continue
+        storage_dead(_5)
+        storage_dead(_4)
+        _0 = ()
+    } else {
+        _6 = @discriminant(value)
+        switch move _6 {
+            0isize => {
+                storage_live(first)
+                first = move (value as variant EnumWithTwoDrops::Pair)._0
+                storage_live(_8)
+                _8 = move first
+                _0 = consume<NeedsDrop>[{built_in impl Sized for NeedsDrop}](move _8)
+                ↳⚡ if copy _9 {
+                        _12 = @discriminant(value)
+                        switch move _12 {
+                            0isize => {
+                                conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] (value as variant EnumWithTwoDrops::Pair)._1
+                                ↳⚡ unwind_terminate
+                            },
+                            _ => {
+                            },
+                        }
+                    } else {
+                    }
+                    unwind_continue
+                storage_dead(_8)
+                storage_dead(first)
+            },
+            1isize => {
+                _0 = ()
+            },
+            _ => {
+                undefined_behavior
+            },
+        }
+    }
+    storage_dead(_3)
+    if copy _9 {
+        _11 = @discriminant(value)
+        switch move _11 {
+            0isize => {
+                conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] (value as variant EnumWithTwoDrops::Pair)._1
+                ↳⚡ unwind_continue
+                _9 = const false
+                return
+            },
+            _ => {
+                _9 = const false
+                return
+            },
+        }
+    } else {
+        _9 = const false
+        return
+    }
+}
+
 
 

@@ -432,7 +432,12 @@ let expr_body_substitute (subst : subst) (body : expr_body) : local list * block
     =
   let locals =
     List.map
-      (fun (v : local) -> { v with local_ty = ty_substitute subst v.local_ty })
+      (fun (v : local) ->
+        {
+          v with
+          local_ty = ty_substitute subst v.local_ty;
+          drop_flag_for = Option.map (place_substitute subst) v.drop_flag_for;
+        })
       body.locals.locals
   in
   let body = block_substitute subst body.body in

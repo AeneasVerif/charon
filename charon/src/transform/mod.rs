@@ -16,6 +16,7 @@ pub mod add_missing_info {
     pub mod add_missing_alias_clauses;
     pub mod compute_layout_guarantees;
     pub mod compute_short_names;
+    pub mod detect_drop_flags;
     pub mod link_specs;
     pub mod recover_body_comments;
     pub mod reorder_decls;
@@ -122,7 +123,10 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
 
     // Body cleanup passes on the ullbc.
     let pass = Pass::FusedUnstructuredBody(Box::new([
-        // Reconstruct conditional drops before any pass changes the shape of the CFG.
+        // Detect which locals are drop flags.
+        CowBox::Borrowed(&add_missing_info::detect_drop_flags::Transform),
+        // Reconstruct conditional drops. Needs to be done before any pass changes the shape of the
+        // CFG.
         CowBox::Borrowed(&resugar::resugar_drops::Transform),
         // Compute the metadata & insert for Rvalue
         CowBox::Borrowed(&finish_translation::insert_ptr_metadata::Transform),

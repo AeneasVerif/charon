@@ -63,3 +63,19 @@ pub fn in_loop(mut x: NeedsDrop) {
         x = NeedsDrop;
     }
 }
+
+enum EnumWithTwoDrops {
+    Pair(NeedsDrop, NeedsDrop),
+    Empty,
+}
+
+fn partial_enum_move(value: EnumWithTwoDrops, b: bool) {
+    if b {
+        consume(value);
+    } else {
+        match value {
+            EnumWithTwoDrops::Pair(first, _) => consume(first),
+            EnumWithTwoDrops::Empty => {}
+        }
+    }
+}

@@ -2154,6 +2154,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("remove_adt_clauses", remove_adt_clauses);
           ("desugar_drops", desugar_drops);
           ("resugar_drops", resugar_drops);
+          ("detect_drop_flags", detect_drop_flags);
           ("ops_to_function_calls", ops_to_function_calls);
           ("index_to_function_calls", index_to_function_calls);
           ("treat_box_as_builtin", treat_box_as_builtin);
@@ -2225,6 +2226,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* remove_adt_clauses = bool_of_json ctx remove_adt_clauses in
         let* desugar_drops = bool_of_json ctx desugar_drops in
         let* resugar_drops = bool_of_json ctx resugar_drops in
+        let* detect_drop_flags = bool_of_json ctx detect_drop_flags in
         let* ops_to_function_calls = bool_of_json ctx ops_to_function_calls in
         let* index_to_function_calls =
           bool_of_json ctx index_to_function_calls
@@ -2295,6 +2297,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              remove_adt_clauses;
              desugar_drops;
              resugar_drops;
+             detect_drop_flags;
              ops_to_function_calls;
              index_to_function_calls;
              treat_box_as_builtin;
@@ -3156,12 +3159,20 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
 and local_of_json (ctx : of_json_ctx) (js : json) : (local, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("index", index); ("name", name); ("span", span); ("ty", ty) ] ->
+    | `Assoc
+        [
+          ("index", index);
+          ("name", name);
+          ("span", span);
+          ("ty", ty);
+          ("drop_flag_for", drop_flag_for);
+        ] ->
         let* index = local_id_of_json ctx index in
         let* name = option_of_json string_of_json ctx name in
         let* span = span_of_json ctx span in
         let* local_ty = ty_of_json ctx ty in
-        Ok ({ index; name; span; local_ty } : local)
+        let* drop_flag_for = option_of_json place_of_json ctx drop_flag_for in
+        Ok ({ index; name; span; local_ty; drop_flag_for } : local)
     | _ -> Error "")
 
 and locals_of_json (ctx : of_json_ctx) (js : json) : (locals, string) result =

@@ -220,6 +220,10 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub resugar_drops: bool,
+    /// Detect the drop flags inserted by rustc, which are booleans that track initialedness of a place.
+    #[clap(long)]
+    #[serde(default)]
+    pub detect_drop_flags: bool,
     /// Transform array-to-slice unsizing and repeat expressions into standard library function
     /// calls in LLBC.
     #[clap(long)]
@@ -780,6 +784,8 @@ pub struct TranslateOptions {
     pub desugar_drops: bool,
     /// Reconstruct conditional drops from rustc drop flags.
     pub resugar_drops: bool,
+    /// Detect rustc drop flags.
+    pub detect_drop_flags: bool,
     /// Add `Destruct` bounds to all generic params.
     pub add_destruct_bounds: bool,
 }
@@ -938,6 +944,7 @@ impl TranslateOptions {
             no_compute_layout_guarantees: options.no_compute_layout_guarantees,
             desugar_drops: options.desugar_drops,
             resugar_drops: options.resugar_drops,
+            detect_drop_flags: options.detect_drop_flags,
             add_destruct_bounds: options.precise_drops,
         }
     }

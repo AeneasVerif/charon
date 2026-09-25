@@ -20,6 +20,10 @@ impl VisitBody for LocalsUsageVisitor {
     fn enter_local_id(&mut self, lid: &LocalId) {
         self.used_locals[*lid] = true;
     }
+    fn visit_local(&mut self, local: &Local) -> ControlFlow<Self::Break> {
+        // Skip the local id.
+        self.visit(&local.drop_flag_for)
+    }
     fn visit_llbc_statement(&mut self, st: &llbc_ast::Statement) -> ControlFlow<Self::Break> {
         match &st.kind {
             llbc_ast::StatementKind::StorageDead(_) | llbc_ast::StatementKind::StorageLive(_) => {
@@ -82,7 +86,7 @@ fn remove_unused_locals<Body: BodyVisitable>(body: &mut GExprBody<Body>) {
             .locals
             .map_ref(|local| body.locals.is_return_or_arg(local.index)),
     };
-    let _ = body.body.drive_body(&mut visitor);
+    body.drive_body(&mut visitor);
     let used_locals = visitor.used_locals;
     trace!("used_locals: {:?}", used_locals);
 
@@ -92,10 +96,8 @@ fn remove_unused_locals<Body: BodyVisitable>(body: &mut GExprBody<Body>) {
     for local in mem::take(&mut body.locals.locals) {
         if used_locals[local.index] {
             let old_id = local.index;
-            let new_id = body
-                .locals
-                .locals
-                .push_with(|index| Local { index, ..local });
+            // The pushed local has the wrong index, which will be fixed by the renumbering pass.
+            let new_id = body.locals.locals.push(local);
             ids_map[old_id] = Some(new_id);
         }
     }
@@ -103,7 +105,7 @@ fn remove_unused_locals<Body: BodyVisitable>(body: &mut GExprBody<Body>) {
 
     // Update all `LocalId`s.
     let mut visitor = LocalsRenumberVisitor { ids_map };
-    let _ = body.body.drive_body_mut(&mut visitor);
+    body.drive_body_mut(&mut visitor);
 }
 
 pub struct Transform;

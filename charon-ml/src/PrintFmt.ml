@@ -1756,10 +1756,15 @@ let pp_locals (env : fmt_env) (indent : string) (fmt : Format.formatter)
         | Some _ -> "local"
         | None -> "anonymous local"
     in
-    Format.fprintf fmt "%slet %s: %s; // %s" indent
+    let drop_flag_for =
+      match var.drop_flag_for with
+      | None -> ""
+      | Some place -> "; drop flag for " ^ place_to_string env place
+    in
+    Format.fprintf fmt "%slet %s: %s; // %s%s" indent
       (local_id_to_string env var.index)
       (ty_to_string env var.local_ty)
-      kind
+      kind drop_flag_for
   in
   pp_sep_list "\n" pp_local_decl fmt locals.locals
 
