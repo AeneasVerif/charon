@@ -986,6 +986,26 @@ fn unsafe_statements() -> anyhow::Result<()> {
         extern "C" fn safe_naked_asm() { core::arch::naked_asm!("ret") }
         fn safe_call_dyn_method(s: &dyn DynTrait) { s.safe_method() }
         fn safe_drop_dyn(_s: Box<dyn DynTrait>) {}
+
+        #[cfg_attr(target_arch = "x86_64", target_feature(enable = "avx"))]
+        #[cfg_attr(target_arch = "aarch64", target_feature(enable = "sve"))]
+        fn with_feature() {}
+        #[cfg_attr(target_arch = "x86_64", target_feature(enable = "avx"))]
+        #[cfg_attr(target_arch = "aarch64", target_feature(enable = "sve"))]
+        unsafe fn with_feature_unsafe() {}
+        fn unsafe_call_target_feature_fn() { unsafe { with_feature() } }
+        #[cfg_attr(target_arch = "x86_64", target_feature(enable = "avx"))]
+        #[cfg_attr(target_arch = "aarch64", target_feature(enable = "sve"))]
+        fn safe_call_target_feature_fn_with_feature() { with_feature() }
+        #[cfg_attr(target_arch = "x86_64", target_feature(enable = "avx2"))]
+        #[cfg_attr(target_arch = "aarch64", target_feature(enable = "sve2"))]
+        fn safe_call_target_feature_fn_with_implied_feature() { with_feature() }
+        #[cfg_attr(target_arch = "x86_64", target_feature(enable = "avx"))]
+        #[cfg_attr(target_arch = "aarch64", target_feature(enable = "sve"))]
+        fn safe_call_target_feature_fn_in_closure() { (|| with_feature())() }
+        #[cfg_attr(target_arch = "x86_64", target_feature(enable = "avx"))]
+        #[cfg_attr(target_arch = "aarch64", target_feature(enable = "sve"))]
+        fn unsafe_call_unsafe_target_feature_fn() { unsafe { with_feature_unsafe() } }
         "#,
     )?;
     for fun in &crate_data.fun_decls {

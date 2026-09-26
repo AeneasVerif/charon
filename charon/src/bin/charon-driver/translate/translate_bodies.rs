@@ -1865,8 +1865,24 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             }
         };
         let args = self.translate_arguments(span, args)?;
-        let callee_safe = matches!(op_ty.kind(), ty::TyKind::FnDef(def_id, _)
-            if tcx.fn_sig(*def_id).skip_binder().safety().is_safe());
+
+        // Safe `#[target_feature]` functions still get an unsafe signature, but calling them is safe if
+        // the caller enables the same (or implying) features (safety.unsafe-target-feature-call).
+        let callee_safe = match op_ty.kind() {
+            ty::TyKind::FnDef(def_id, _) => {
+                let attrs = tcx.codegen_fn_attrs(*def_id);
+                let caller = self.item_src.def_id().as_real_or_promoted();
+                attrs.safe_target_features // whether the user declared the function as safe
+                    && caller.is_some_and(|caller| {
+                        tcx.is_target_feature_call_safe(
+                            &attrs.target_features,
+                            &tcx.body_codegen_attrs(caller).target_features,
+                        )
+                    })
+            }
+            _ => false,
+        };
+
         let call = Call {
             func: fn_operand,
             args,

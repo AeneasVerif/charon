@@ -113,9 +113,10 @@ and call = {
   args : operand list;
   dest : place;
   callee_safe : bool;
-      (** Whether calling this function is guaranteed to be safe by the
-          compiler, even if its signature is unsafe. Needed to ensure drop glue
-          desugaring and [dyn] method calls is considered safe. *)
+      (** Whether the compiler guarantees this call is safe even though the
+          callee's signature is unsafe. Only set in that case: for desugared
+          drops (drop glue is unsafe) and for calls to safe [#[target_feature]]
+          functions from contexts that enable the required features. *)
 }
 
 (** A [Drop] statement/terminator can mean two things, depending on what MIR
