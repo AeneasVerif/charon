@@ -112,4 +112,15 @@ impl ItemMeta {
             has_errors: false,
         }
     }
+
+    /// Whether the item is unsafe to declare: if it is declared in an `extern` block (safety.unsafe-extern),
+    /// or it has an unsafe attribute (safety.unsafe-attribute).
+    pub fn is_unsafe_to_declare(&self) -> bool {
+        self.is_extern
+            || self
+                .attr_info
+                .attributes
+                .iter()
+                .any(|attr| attr.is_unsafe_to_apply())
+    }
 }

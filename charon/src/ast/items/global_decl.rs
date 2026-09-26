@@ -111,4 +111,21 @@ impl GlobalDecl {
             _ => None,
         }
     }
+
+    /// Whether this global is unsafe to access, because it is a mutable or unsafe external static (safety.unsafe-static).
+    pub fn is_unsafe_to_access(&self, _krate: &TranslatedCrate) -> bool {
+        match self.global_kind {
+            GlobalKind::Static {
+                is_mut,
+                is_safe,
+                is_thread_local: _,
+            } => is_mut || !is_safe,
+            GlobalKind::NamedConst | GlobalKind::AnonConst | GlobalKind::VTable => false,
+        }
+    }
+
+    /// Whether this global is unsafe to declare.
+    pub fn is_unsafe_to_declare(&self, _krate: &TranslatedCrate) -> bool {
+        self.item_meta.is_unsafe_to_declare()
+    }
 }

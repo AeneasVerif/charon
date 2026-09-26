@@ -88,4 +88,11 @@ impl TraitImpl {
     pub fn methods(&self) -> impl Iterator<Item = &Binder<FunDeclRef>> {
         self.methods.iter()
     }
+
+    /// Whether this trait impl is unsafe to declare, because the trait is unsafe (safety.unsafe-impl)
+    /// or it has an unsafe attribute (safety.unsafe-attribute).
+    pub fn is_unsafe_to_declare(&self, krate: &TranslatedCrate) -> bool {
+        krate.trait_decls[self.impl_trait.id].is_unsafe_to_implement(krate)
+            || self.item_meta.is_unsafe_to_declare()
+    }
 }
