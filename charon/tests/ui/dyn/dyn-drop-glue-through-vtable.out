@@ -53,7 +53,7 @@ where
     TraitClause0: (T: Destruct),
 
 // Full name: core::alloc::Allocator
-pub trait Allocator<Self>
+pub unsafe trait Allocator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Destruct)

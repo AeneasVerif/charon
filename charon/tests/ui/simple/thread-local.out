@@ -128,7 +128,7 @@ where
     TraitClause1: (D: Sized),
 
 // Full name: std::sys::thread_local::native::lazy::DestroyedState
-pub trait DestroyedState<Self>
+pub unsafe trait DestroyedState<Self>
 {
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (Self: Copy)

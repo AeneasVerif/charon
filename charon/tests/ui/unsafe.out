@@ -158,7 +158,7 @@ pub unsafe fn core::intrinsics::assume(b_1: bool)
 
 // Full name: core::marker::Send
 #[diagnostic_item("Send")]
-pub trait Send<Self>
+pub unsafe trait Send<Self>
 
 // Full name: core::marker::Copy
 #[lang_item(Copy)]
@@ -173,11 +173,11 @@ pub trait Copy<Self>
 // Full name: core::marker::Sync
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
-pub trait Sync<Self>
+pub unsafe trait Sync<Self>
 
 // Full name: core::marker::Freeze
 #[lang_item(Freeze)]
-pub trait Freeze<Self>
+pub unsafe trait Freeze<Self>
 
 // Full name: core::marker::Unpin
 #[lang_item(Unpin)]
@@ -276,7 +276,7 @@ fn deref_raw_ptr()
 }
 
 // Full name: test_crate::Trait
-trait Trait<Self>
+unsafe trait Trait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     vtable: test_crate::Trait::{vtable}

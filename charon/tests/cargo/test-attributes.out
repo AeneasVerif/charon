@@ -39,7 +39,7 @@ where
 pub opaque type NonNull<T>
 
 // Full name: core::alloc::Allocator
-pub trait Allocator<Self>
+pub unsafe trait Allocator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     fn allocate<'_0_1>;
@@ -71,12 +71,12 @@ pub fn from_str<'a>(_1: &'static str) -> Arguments<'a>
 
 // Full name: core::marker::Send
 #[diagnostic_item("Send")]
-pub trait Send<Self>
+pub unsafe trait Send<Self>
 
 // Full name: core::marker::Sync
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
-pub trait Sync<Self>
+pub unsafe trait Sync<Self>
 
 // Full name: core::marker::Tuple
 #[fundamental]

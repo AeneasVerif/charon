@@ -1774,8 +1774,9 @@ let pp_locals (env : fmt_env) (indent : string) (fmt : Format.formatter)
 
 let pp_trait_decl (env : fmt_env) (indent : string) (indent_incr : string)
     (fmt : Format.formatter) (def : trait_decl) : unit =
+  let keyword = if def.is_unsafe then "unsafe trait" else "trait" in
   let intro =
-    item_intro_to_string env indent "trait" (IdTraitDecl def.def_id)
+    item_intro_to_string env indent keyword (IdTraitDecl def.def_id)
       def.item_meta
   in
   let env = fmt_env_replace_generics_and_preds env def.generics in

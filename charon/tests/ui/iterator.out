@@ -186,7 +186,7 @@ where
 }
 
 // Full name: core::num::nonzero::ZeroablePrimitive
-pub trait ZeroablePrimitive<Self>
+pub unsafe trait ZeroablePrimitive<Self>
 {
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (Self: Copy)
@@ -502,7 +502,7 @@ where
     TraitClause1: (I: Iterator),
 
 // Full name: core::iter::adapters::zip::TrustedRandomAccessNoCoerce
-pub trait TrustedRandomAccessNoCoerce<Self>
+pub unsafe trait TrustedRandomAccessNoCoerce<Self>
 {
     proof ImpliedClause0: (Self: Sized)
     const MAY_HAVE_SIDE_EFFECT : bool

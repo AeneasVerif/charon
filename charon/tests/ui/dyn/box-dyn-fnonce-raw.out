@@ -56,7 +56,7 @@ fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable
 vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
 // Full name: core::alloc::Allocator
-pub trait Allocator<Self>
+pub unsafe trait Allocator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     fn allocate<'_0_1>;

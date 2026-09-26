@@ -316,7 +316,7 @@ pub enum AssertKind {
 
 // Full name: core::slice::index::SliceIndex
 #[diagnostic_item("SliceIndex")]
-pub trait SliceIndex<Self, T>
+pub unsafe trait SliceIndex<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: MetaSized)
