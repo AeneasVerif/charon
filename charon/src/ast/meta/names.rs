@@ -265,13 +265,17 @@ impl Name {
     pub fn debug_repr(&self, crate_data: &TranslatedCrate) -> String {
         // Small helper
         let trait_name = |impl_id: TraitImplId| {
-            crate_data
-                .trait_impls
-                .get(impl_id)
-                .and_then(|timpl| crate_data.trait_decls.get(timpl.impl_trait.id))
-                .and_then(|tr| tr.item_meta.name.name.last())
-                .and_then(|p| p.as_ident())
-                .map(|(name, _)| name)
+            let timpl = crate_data.trait_impls.get(impl_id)?;
+            let (name, _) = crate_data
+                .trait_decls
+                .get(timpl.impl_trait.id)?
+                .item_meta
+                .name
+                .name
+                .last()?
+                .as_ident()?;
+            let negative = if timpl.is_negative { "!" } else { "" };
+            Some(format!("{negative}{name}"))
         };
 
         self.name

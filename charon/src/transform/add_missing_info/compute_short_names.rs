@@ -144,6 +144,9 @@ fn trait_impl_short_name(
     let self_ty = self_ty.as_ref()?;
 
     let mut candidate = vec!["impl".to_owned()];
+    if trait_impl.is_negative {
+        candidate.push("not".to_owned());
+    }
     candidate.push(item_to_ident(item_names, trait_id.into())?);
     candidate.extend(args_to_idents(item_names, &partial_trait_ref.generics));
     candidate.push("for".to_owned());

@@ -1077,6 +1077,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
                         // We need to put the first type parameter aside: it is the type for which
                         // we implement the trait.
                         let ctx = &ctx.set_generics(&timpl.generics);
+                        let negative = if timpl.is_negative { "!" } else { "" };
                         let mut impl_trait = timpl.impl_trait.clone();
                         match impl_trait
                             .generics
@@ -1086,12 +1087,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
                             Some(self_ty) => {
                                 let self_ty = self_ty.with_ctx(ctx);
                                 let impl_trait = impl_trait.with_ctx(ctx);
-                                write!(f, "impl {impl_trait} for {self_ty}")?;
+                                write!(f, "impl {negative}{impl_trait} for {self_ty}")?;
                             }
                             // TODO(mono): A monomorphized trait doesn't take arguments.
                             None => {
                                 let impl_trait = impl_trait.with_ctx(ctx);
-                                write!(f, "impl {impl_trait}")?;
+                                write!(f, "impl {negative}{impl_trait}")?;
                             }
                         }
                     }
@@ -2689,7 +2690,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
         if let Some(short_name) = trait_impl_short_name(ctx, self.def_id) {
             write!(f, " \"{}\"", short_name.with_ctx(ctx))?;
         }
-        write!(f, " {impl_trait}{clauses}",)?;
+        let negative = if self.is_negative { "!" } else { "" };
+        write!(f, " {negative}{impl_trait}{clauses}",)?;
 
         let newline = if clauses.is_empty() {
             " ".to_string()

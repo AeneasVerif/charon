@@ -3010,6 +3010,7 @@ and trait_impl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* item_meta = item_meta_of_postcard ctx st in
      let* src = trait_impl_source_of_postcard ctx st in
      let* impl_trait = trait_decl_ref_of_postcard ctx st in
+     let* is_negative = bool_of_postcard ctx st in
      let* generics = generic_params_of_postcard ctx st in
      let* implied_trait_refs =
        index_vec_of_postcard trait_clause_id_of_postcard trait_ref_of_postcard
@@ -3045,6 +3046,7 @@ and trait_impl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           item_meta;
           src;
           impl_trait;
+          is_negative;
           generics;
           implied_trait_refs;
           consts;

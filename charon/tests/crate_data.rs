@@ -1063,11 +1063,13 @@ fn unsafe_items() -> anyhow::Result<()> {
     // are not. See `ItemRef::is_unsafe_to_declare`.
     let crate_data = translate(
         r#"
+        #![feature(negative_impls)]
         struct S;
         unsafe trait UnsafeTrait {}
         trait SafeTrait {}
         unsafe impl UnsafeTrait for S {}
         impl SafeTrait for S {}
+        impl !Send for S {}
         unsafe fn unsafe_fn() {}
 
         unsafe extern "C" {

@@ -884,7 +884,8 @@ and pp_impl_elem (env : fmt_env) (fmt : Format.formatter) (elem : impl_elem) :
       | Some impl ->
           (* Locally replace the generics and the predicates *)
           let env = fmt_env_push_generics_and_preds env impl.generics in
-          Format.fprintf fmt "impl %a"
+          let negative = if impl.is_negative then "!" else "" in
+          Format.fprintf fmt "impl %s%a" negative
             (pp_trait_decl_ref_as_impl env)
             impl.impl_trait
     end
@@ -1876,7 +1877,8 @@ let pp_trait_impl (env : fmt_env) (indent : string) (indent_incr : string)
   in
   let indent1 = indent ^ indent_incr in
   let trait_id = def.impl_trait.id in
-  Format.fprintf fmt "%simpl%s%s %a%s" indent params short_name
+  let negative = if def.is_negative then "!" else "" in
+  Format.fprintf fmt "%simpl%s%s %s%a%s" indent params short_name negative
     (pp_trait_decl_ref_as_impl env)
     def.impl_trait clauses;
   pp_string fmt (if clauses = "" then " {" else "\n{");

@@ -26,6 +26,8 @@ pub struct TraitImpl {
     /// Note that this contains the instantiation of the "parent"
     /// clauses.
     pub impl_trait: TraitDeclRef,
+    /// Whether this is a negative impl (`impl !Trait for Type`).
+    pub is_negative: bool,
     pub generics: GenericParams,
     /// The trait references for the parent clauses (see [TraitDecl]).
     pub implied_trait_refs: IndexVec<TraitClauseId, TraitRef>,
@@ -90,9 +92,9 @@ impl TraitImpl {
     }
 
     /// Whether this trait impl is unsafe to declare, because the trait is unsafe (safety.unsafe-impl)
-    /// or it has an unsafe attribute (safety.unsafe-attribute).
+    /// or it has an unsafe attribute (safety.unsafe-attribute). Negative impls of unsafe traits are safe.
     pub fn is_unsafe_to_declare(&self, krate: &TranslatedCrate) -> bool {
-        krate.trait_decls[self.impl_trait.id].is_unsafe_to_implement(krate)
+        (!self.is_negative && krate.trait_decls[self.impl_trait.id].is_unsafe_to_implement(krate))
             || self.item_meta.is_unsafe_to_declare()
     }
 }

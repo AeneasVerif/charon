@@ -542,6 +542,8 @@ and trait_impl = {
   impl_trait : trait_decl_ref;
       (** The information about the implemented trait. Note that this contains
           the instantiation of the "parent" clauses. *)
+  is_negative : bool;
+      (** Whether this is a negative impl ([impl !Trait for Type]). *)
   generics : generic_params;
   implied_trait_refs : trait_ref list;
       (** The trait references for the parent clauses (see [TraitDecl]). *)
