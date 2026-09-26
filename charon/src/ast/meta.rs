@@ -54,6 +54,8 @@ pub struct ItemMeta {
     pub attr_info: AttrInfo,
     /// `true` if the type decl is a local type decl, `false` if it comes from an external crate.
     pub is_local: bool,
+    /// Whether this item is declared in an `extern { .. }` block.
+    pub is_extern: bool,
     /// Whether this item is considered opaque. For function and globals, this means we don't
     /// translate the body (the code); for ADTs, this means we don't translate the fields/variants.
     /// For traits and trait impls, this doesn't change anything. For modules, this means we don't
@@ -103,10 +105,22 @@ impl ItemMeta {
             source_text: None,
             attr_info: AttrInfo::dummy_public(),
             is_local,
+            is_extern: false,
             opacity,
             lang_item: None,
             diagnostic_item: None,
             has_errors: false,
         }
+    }
+
+    /// Whether the item is unsafe to declare: if it is declared in an `extern` block (safety.unsafe-extern),
+    /// or it has an unsafe attribute (safety.unsafe-attribute).
+    pub fn is_unsafe_to_declare(&self) -> bool {
+        self.is_extern
+            || self
+                .attr_info
+                .attributes
+                .iter()
+                .any(|attr| attr.is_unsafe_to_apply())
     }
 }

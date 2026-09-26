@@ -111,6 +111,18 @@ impl FunDecl {
             body,
         }
     }
+
+    /// Whether this function is unsafe to call, because it is declared `unsafe` (safety.unsafe-call).
+    pub fn is_unsafe_to_call(&self, _krate: &TranslatedCrate) -> bool {
+        self.signature.is_unsafe
+    }
+
+    /// Whether this function is unsafe to declare.
+    pub fn is_unsafe_to_declare(&self, _krate: &TranslatedCrate) -> bool {
+        // The initializer of a global is part of the global's declaration.
+        !matches!(self.src, FunSource::GlobalInitializer(_))
+            && self.item_meta.is_unsafe_to_declare()
+    }
 }
 
 impl Abi {

@@ -4,12 +4,12 @@ opaque type core::marker::Send::{vtable}
 
 // Full name: core::marker::Send
 #[diagnostic_item("Send")]
-pub trait Send<Self>
+pub unsafe trait Send<Self>
 
 fn core::marker::Send::{vtable}<Self>() -> core::marker::Send::{vtable}
 = <opaque>
 
-static core::marker::Send::{vtable}<Self>: core::marker::Send::{vtable} = core::marker::Send::{vtable}<Self>()
+vtable core::marker::Send::{vtable}<Self>: core::marker::Send::{vtable} = core::marker::Send::{vtable}<Self>()
 
 opaque type core::marker::MetaSized::{vtable}
 
@@ -21,7 +21,7 @@ pub trait MetaSized<Self>
 fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
 struct () {}
 
@@ -120,7 +120,7 @@ fn impl_MyTrait_for_MyStruct::{vtable}() -> test_crate::MyTrait::{vtable}
 }
 
 // Full name: test_crate::{impl MyTrait for MyStruct}::{vtable}
-static impl_MyTrait_for_MyStruct::{vtable}: test_crate::MyTrait::{vtable} = impl_MyTrait_for_MyStruct::{vtable}()
+vtable impl_MyTrait_for_MyStruct::{vtable}: test_crate::MyTrait::{vtable} = impl_MyTrait_for_MyStruct::{vtable}()
 
 // Full name: test_crate::{impl MyTrait for MyStruct}
 impl "impl_MyTrait_for_MyStruct" MyTrait for MyStruct {

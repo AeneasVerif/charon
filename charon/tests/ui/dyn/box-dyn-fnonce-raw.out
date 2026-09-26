@@ -53,10 +53,10 @@ pub opaque type NonNull<T>
 fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
 // Full name: core::alloc::Allocator
-pub trait Allocator<Self>
+pub unsafe trait Allocator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     fn allocate<'_0_1>;
@@ -648,7 +648,7 @@ where
 }
 
 // Full name: alloc::boxed::{impl FnOnce<Args> for Box<F, A>[TraitClause1, TraitClause2, TraitClause5]}::{vtable}
-static impl_FnOnce_for_Box::{vtable}<Args, F, A>: core::ops::function::FnOnce::{vtable}<Args, TraitClause4::Output>
+vtable impl_FnOnce_for_Box::{vtable}<Args, F, A>: core::ops::function::FnOnce::{vtable}<Args, TraitClause4::Output>
 where
     TraitClause0: (Args: Sized),
     TraitClause1: (F: MetaSized),

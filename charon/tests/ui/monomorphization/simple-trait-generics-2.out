@@ -19,12 +19,12 @@ pub trait Sized<Self>
 fn core::marker::MetaSized::{vtable}::<i32>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}::<i32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<i32>()
+vtable core::marker::MetaSized::{vtable}::<i32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<i32>()
 
 fn core::marker::MetaSized::{vtable}::<u32>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}::<u32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<u32>()
+vtable core::marker::MetaSized::{vtable}::<u32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<u32>()
 
 struct () {}
 
@@ -123,7 +123,7 @@ fn impl_Trait_bool_for_i32::{vtable}() -> test_crate::Trait::{vtable}
 }
 
 // Full name: test_crate::{impl Trait<bool> for i32}::{vtable}
-static impl_Trait_bool_for_i32::{vtable}: test_crate::Trait::{vtable} = impl_Trait_bool_for_i32::{vtable}()
+vtable impl_Trait_bool_for_i32::{vtable}: test_crate::Trait::{vtable} = impl_Trait_bool_for_i32::{vtable}()
 
 // Full name: test_crate::{impl Trait<bool> for i32}
 impl "impl_Trait_bool_for_i32" Trait<bool> for i32 {
@@ -211,7 +211,7 @@ fn impl_Trait_usize_for_u32::{vtable}() -> test_crate::Trait::{vtable}
 }
 
 // Full name: test_crate::{impl Trait<usize> for u32}::{vtable}
-static impl_Trait_usize_for_u32::{vtable}: test_crate::Trait::{vtable} = impl_Trait_usize_for_u32::{vtable}()
+vtable impl_Trait_usize_for_u32::{vtable}: test_crate::Trait::{vtable} = impl_Trait_usize_for_u32::{vtable}()
 
 // Full name: test_crate::{impl Trait<usize> for u32}
 impl "impl_Trait_usize_for_u32" Trait<usize> for u32 {
@@ -236,8 +236,8 @@ fn main()
     let _10: &'18 (dyn Trait<usize> + '19); // anonymous local
     let _11: &'20 u32; // anonymous local
     let _12: &'21 i32; // anonymous local
-    let _13: unsafe fn(&'8 (dyn Trait<bool> + '9)) -> bool; // anonymous local
-    let _14: unsafe fn(&'18 (dyn Trait<usize> + '19)) -> usize; // anonymous local
+    let _13: fn(&'8 (dyn Trait<bool> + '9)) -> bool; // anonymous local
+    let _14: fn(&'18 (dyn Trait<usize> + '19)) -> usize; // anonymous local
     let _15: &'22 i32; // anonymous local
     let _16: &'31 u32; // anonymous local
     let _17: &'40 i32; // anonymous local
@@ -270,7 +270,7 @@ fn main()
     storage_live(_5)
     _5 = &(*a) with_metadata(copy a.metadata)
     storage_live(_13)
-    _13 = cast<*const (), unsafe fn(&'8 (dyn Trait<bool> + '9)) -> bool>(copy (*_5.metadata).method_comsume)
+    _13 = cast<*const (), fn(&'8 (dyn Trait<bool> + '9)) -> bool>(copy (*_5.metadata).method_comsume)
     _4 = (copy _13)(move _5)
     ↳⚡ storage_dead(_12)
         storage_dead(_11)
@@ -298,7 +298,7 @@ fn main()
     storage_live(_10)
     _10 = &(*b) with_metadata(copy b.metadata)
     storage_live(_14)
-    _14 = cast<*const (), unsafe fn(&'18 (dyn Trait<usize> + '19)) -> usize>(copy (*_10.metadata).method_comsume)
+    _14 = cast<*const (), fn(&'18 (dyn Trait<usize> + '19)) -> usize>(copy (*_10.metadata).method_comsume)
     _9 = (copy _14)(move _10)
     ↳⚡ storage_dead(_12)
         storage_dead(_11)

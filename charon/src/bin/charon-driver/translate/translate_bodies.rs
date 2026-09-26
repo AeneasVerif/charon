@@ -465,6 +465,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     func: FnOperand::Regular(assume_init_fn),
                     args: vec![Operand::Move(input)],
                     dest: initialized_box.clone(),
+                    callee_safe: false,
                 }
             });
 
@@ -500,6 +501,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     func: FnOperand::Regular(into_vec_fn),
                     args: vec![Operand::Move(box_slice)],
                     dest: return_place,
+                    callee_safe: false,
                 }
             });
             builder.build()
@@ -1620,7 +1622,15 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         let func =
             FnOperand::Regular(self.translate_fn_ptr(span, &item, TransItemSourceKind::Fun)?);
         let dest = self.locals.new_var(None, Ty::mk_unit());
-        self.push_nounwind_call(span, Call { func, args, dest });
+        self.push_nounwind_call(
+            span,
+            Call {
+                func,
+                args,
+                dest,
+                callee_safe: false,
+            },
+        );
         Ok(())
     }
 
@@ -1711,6 +1721,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::InlineAsm {
+                asm_macro,
                 template,
                 targets,
                 unwind,
@@ -1722,8 +1733,13 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     .map(|target| self.translate_basic_block_id(*target))
                     .collect();
                 let on_unwind = self.translate_unwind_action(span, unwind);
+                let kind = match asm_macro {
+                    mir::InlineAsmMacro::Asm => AsmKind::Asm,
+                    mir::InlineAsmMacro::NakedAsm => AsmKind::NakedAsm,
+                };
                 ullbc_ast::TerminatorKind::InlineAsm {
                     asm,
+                    kind,
                     targets,
                     on_unwind,
                 }
@@ -1849,10 +1865,38 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             }
         };
         let args = self.translate_arguments(span, args)?;
+
+        let callee_safe = match op_ty.kind() {
+            ty::TyKind::FnDef(def_id, generics) => {
+                // Safe `#[target_feature]` functions still get an unsafe signature, but calling them is safe if
+                // the caller enables the same (or implying) features (safety.unsafe-target-feature-call).
+                let attrs = tcx.codegen_fn_attrs(*def_id);
+                let caller = self.item_src.def_id().as_real_or_promoted();
+                let safe_target_feature = attrs.safe_target_features // whether the user declared the function as safe
+                    && caller.is_some_and(|caller| {
+                        tcx.is_target_feature_call_safe(
+                            &attrs.target_features,
+                            &tcx.body_codegen_attrs(caller).target_features,
+                        )
+                    });
+
+                // In mono mode, trait decls have no methods, so we track the safety of the function here,
+                // and `transform_dyn_trait_calls` moves it into the signature of the called function pointer.
+                let mono_safe_dyn_call = self.monomorphize()
+                    && tcx.trait_of_assoc(*def_id).is_some()
+                    && generics.skip_binder().type_at(0).is_trait()
+                    && tcx.fn_sig(*def_id).skip_binder().safety().is_safe();
+
+                safe_target_feature || mono_safe_dyn_call
+            }
+            _ => false,
+        };
+
         let call = Call {
             func: fn_operand,
             args,
             dest: lval,
+            callee_safe,
         };
 
         let target = match target {

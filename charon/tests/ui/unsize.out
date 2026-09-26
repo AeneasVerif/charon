@@ -163,7 +163,7 @@ fn impl_Display_for_String::{vtable}() -> core::fmt::Display::{vtable}
 = <opaque>
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
-static impl_Display_for_String::{vtable}: core::fmt::Display::{vtable} = impl_Display_for_String::{vtable}()
+vtable impl_Display_for_String::{vtable}: core::fmt::Display::{vtable} = impl_Display_for_String::{vtable}()
 
 // Full name: alloc::sync::Arc
 #[diagnostic_item("Arc")]

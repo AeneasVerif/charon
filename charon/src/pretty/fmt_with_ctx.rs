@@ -995,9 +995,24 @@ where
 {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let keyword = match self.global_kind {
-            GlobalKind::Static => "static",
-            GlobalKind::ThreadLocal => "thread_local",
+            GlobalKind::Static {
+                is_mut,
+                is_thread_local,
+                is_safe: _,
+            } => {
+                let name = if is_thread_local {
+                    "thread_local"
+                } else {
+                    "static"
+                };
+                if is_mut {
+                    &*format!("{name} mut")
+                } else {
+                    name
+                }
+            }
             GlobalKind::AnonConst | GlobalKind::NamedConst => "const",
+            GlobalKind::VTable => "vtable",
         };
         self.item_meta
             .fmt_item_intro(f, ctx, keyword, self.def_id)?;
@@ -1062,6 +1077,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
                         // We need to put the first type parameter aside: it is the type for which
                         // we implement the trait.
                         let ctx = &ctx.set_generics(&timpl.generics);
+                        let negative = if timpl.is_negative { "!" } else { "" };
                         let mut impl_trait = timpl.impl_trait.clone();
                         match impl_trait
                             .generics
@@ -1071,12 +1087,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
                             Some(self_ty) => {
                                 let self_ty = self_ty.with_ctx(ctx);
                                 let impl_trait = impl_trait.with_ctx(ctx);
-                                write!(f, "impl {impl_trait} for {self_ty}")?;
+                                write!(f, "impl {negative}{impl_trait} for {self_ty}")?;
                             }
                             // TODO(mono): A monomorphized trait doesn't take arguments.
                             None => {
                                 let impl_trait = impl_trait.with_ctx(ctx);
-                                write!(f, "impl {impl_trait}")?;
+                                write!(f, "impl {negative}{impl_trait}")?;
                             }
                         }
                     }
@@ -1613,6 +1629,7 @@ impl Display for from_rustc::AttributeKind {
                 }
                 Ok(())
             }
+            AttributeKind::ExportName { name, .. } => write!(f, "export_name = \"{name}\""),
             AttributeKind::Fundamental => write!(f, "fundamental"),
             AttributeKind::Ignore { reason, .. } => {
                 write!(f, "ignore")?;
@@ -1628,6 +1645,7 @@ impl Display for from_rustc::AttributeKind {
                 from_rustc::InlineAttr::Never => write!(f, "inline(never)"),
                 from_rustc::InlineAttr::Force { .. } => write!(f, "rustc_force_inline"),
             },
+            AttributeKind::LinkSection { name } => write!(f, "link_section = \"{name}\""),
             AttributeKind::MayDangle(_) => write!(f, "may_dangle"),
             AttributeKind::Naked(_) => write!(f, "naked"),
             AttributeKind::NoLink => write!(f, "no_link"),
@@ -2273,10 +2291,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             }
             StatementKind::InlineAsm {
                 asm,
+                kind,
                 targets,
                 on_unwind,
             } => {
-                write!(f, "asm!({asm:?})")?;
+                let mac = match kind {
+                    AsmKind::Asm => "asm",
+                    AsmKind::NakedAsm => "naked_asm",
+                };
+                write!(f, "{mac}!({asm:?})")?;
                 if !targets.is_empty() {
                     write!(f, " {{")?;
                     let ctx1 = &ctx.increase_indent();
@@ -2378,7 +2401,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 let ctx = &ctx.increase_indent();
                 write!(f, "loop {{\n{}{tab}}}", body.with_ctx(ctx))
             }
-            StatementKind::Error(s) => write!(f, "@ERROR({})", s),
             StatementKind::Nop => unreachable!(),
         }?;
         writeln!(f)
@@ -2479,6 +2501,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
             }
             TerminatorKind::InlineAsm {
                 asm,
+                kind,
                 targets,
                 on_unwind,
             } => {
@@ -2488,7 +2511,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                     .map(|(i, target)| format!("target {i}: bb{target}"))
                     .chain([format!("unwind: bb{on_unwind}")])
                     .format(", ");
-                write!(f, "asm!({asm:?}) -> {targets}")
+                let mac = match kind {
+                    AsmKind::Asm => "asm",
+                    AsmKind::NakedAsm => "naked_asm",
+                };
+                write!(f, "{mac}!({asm:?}) -> {targets}")
             }
             TerminatorKind::Abort(kind) => write!(f, "{}", kind.with_ctx(ctx)),
             TerminatorKind::Return => write!(f, "return"),
@@ -2522,8 +2549,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
 
+        let keyword = if self.is_unsafe {
+            "unsafe trait"
+        } else {
+            "trait"
+        };
+
         self.item_meta
-            .fmt_item_intro(f, ctx, "trait", self.def_id)?;
+            .fmt_item_intro(f, ctx, keyword, self.def_id)?;
 
         let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         write!(f, "{generics}{clauses}")?;
@@ -2656,7 +2689,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
         if let Some(short_name) = trait_impl_short_name(ctx, self.def_id) {
             write!(f, " \"{}\"", short_name.with_ctx(ctx))?;
         }
-        write!(f, " {impl_trait}{clauses}",)?;
+        let negative = if self.is_negative { "!" } else { "" };
+        write!(f, " {negative}{impl_trait}{clauses}",)?;
 
         let newline = if clauses.is_empty() {
             " ".to_string()

@@ -26,7 +26,7 @@ pub trait Clone<Self>
 
 // Full name: core::clone::TrivialClone
 #[lang_item(TrivialClone)]
-pub trait TrivialClone<Self>
+pub unsafe trait TrivialClone<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Clone)

@@ -10,7 +10,7 @@ pub trait MetaSized<Self>
 fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
 struct () {}
 
@@ -138,7 +138,7 @@ fn impl_Feline_for_HouseCat::{vtable}() -> test_crate::Feline::{vtable}
 }
 
 // Full name: test_crate::{impl Feline for HouseCat}::{vtable}
-static impl_Feline_for_HouseCat::{vtable}: test_crate::Feline::{vtable} = impl_Feline_for_HouseCat::{vtable}()
+vtable impl_Feline_for_HouseCat::{vtable}: test_crate::Feline::{vtable} = impl_Feline_for_HouseCat::{vtable}()
 
 // Full name: test_crate::{impl Feline for HouseCat}
 impl "impl_Feline_for_HouseCat" Feline for HouseCat {
@@ -216,7 +216,7 @@ fn impl_Pettable_for_HouseCat::{vtable}() -> test_crate::Pettable::{vtable}
 }
 
 // Full name: test_crate::{impl Pettable for HouseCat}::{vtable}
-static impl_Pettable_for_HouseCat::{vtable}: test_crate::Pettable::{vtable} = impl_Pettable_for_HouseCat::{vtable}()
+vtable impl_Pettable_for_HouseCat::{vtable}: test_crate::Pettable::{vtable} = impl_Pettable_for_HouseCat::{vtable}()
 
 // Full name: test_crate::{impl Pettable for HouseCat}
 impl "impl_Pettable_for_HouseCat" Pettable for HouseCat {
@@ -300,7 +300,7 @@ fn impl_Cat_for_HouseCat::{vtable}() -> test_crate::Cat::{vtable}
 }
 
 // Full name: test_crate::{impl Cat for HouseCat}::{vtable}
-static impl_Cat_for_HouseCat::{vtable}: test_crate::Cat::{vtable} = impl_Cat_for_HouseCat::{vtable}()
+vtable impl_Cat_for_HouseCat::{vtable}: test_crate::Cat::{vtable} = impl_Cat_for_HouseCat::{vtable}()
 
 // Full name: test_crate::{impl Cat for HouseCat}
 impl "impl_Cat_for_HouseCat" Cat for HouseCat {

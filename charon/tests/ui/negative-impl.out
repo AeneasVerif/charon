@@ -6,13 +6,11 @@ pub unsafe trait Send<Self>
 
 struct () {}
 
-// Full name: test_crate::Foo
-struct Foo {
-  _0: *const (),
-}
+// Full name: test_crate::S
+struct S {}
 
-// Full name: test_crate::{impl Send for Foo}
-impl "impl_Send_for_Foo" Send for Foo {
+// Full name: test_crate::{impl !Send for S}
+impl "impl_not_Send_for_S" !Send for S {
     vtable: lazy
 }
 

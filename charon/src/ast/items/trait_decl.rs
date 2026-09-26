@@ -54,6 +54,8 @@ pub struct TraitDecl {
     pub item_meta: ItemMeta,
     /// Distinguishes normal traits from trait aliases.
     pub src: TraitDeclSource,
+    /// Whether this is an `unsafe trait`, i.e. implementing it requires `unsafe impl`.
+    pub is_unsafe: bool,
     pub generics: GenericParams,
     /// The "parent" clauses: the supertraits.
     ///
@@ -136,6 +138,11 @@ pub enum TraitDeclSource {
 impl TraitDecl {
     pub fn methods(&self) -> impl Iterator<Item = &Binder<TraitMethod>> {
         self.methods.iter()
+    }
+
+    /// Whether this trait is unsafe to implement, because it is declared `unsafe` (safety.unsafe-impl).
+    pub fn is_unsafe_to_implement(&self, _krate: &TranslatedCrate) -> bool {
+        self.is_unsafe
     }
 }
 

@@ -82,7 +82,7 @@ fn {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>() -> core::ops::function::
 = <opaque>
 
 // Full name: {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>
-static {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>: core::ops::function::Fn::{vtable} = {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>()
+vtable {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>: core::ops::function::Fn::{vtable} = {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>()
 
 struct (_,)::<i32> {
   _0: i32,
@@ -531,47 +531,39 @@ fn main()
     let boo: &'3 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '4); // local
     let _2: &'6 fn(i32); // anonymous local
     let _3: &'7 fn(i32); // anonymous local
-    let _4: &'8 fn(i32); // anonymous local
-    let _5: (); // anonymous local
-    let _6: &'9 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '10); // anonymous local
-    let _7: (i32,); // anonymous local
-    let _8: (); // anonymous local
-    let _9: &'11 fn(i32); // anonymous local
+    let _4: (); // anonymous local
+    let _5: &'9 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '10); // anonymous local
+    let _6: (i32,); // anonymous local
+    let _7: (); // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(boo)
     storage_live(_2)
     storage_live(_3)
-    storage_live(_4)
-    storage_live(_9)
-    _9 = &BAR
-    _4 = move _9
-    _3 = &(*_4)
+    _3 = &BAR
     _2 = &(*_3)
     boo = unsize_cast<&'6 fn(i32), &'12 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '13), &{impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>>(move _2)
     storage_dead(_2)
     fake_read(boo)
     set_type(typeof(boo) == &'14 (dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '15))
     storage_dead(_3)
+    storage_live(_4)
     storage_live(_5)
+    _5 = &(*boo) with_metadata(copy boo.metadata)
     storage_live(_6)
-    _6 = &(*boo) with_metadata(copy boo.metadata)
-    storage_live(_7)
-    _7 = (const 42i32,)
-    _5 = Fn<(dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '18), (i32,)>::call<'19>(move _6, move _7)
+    _6 = (const 42i32,)
+    _4 = Fn<(dyn Fn<(i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '18), (i32,)>::call<'19>(move _5, move _6)
     ↳⚡ unwind_continue
-    storage_dead(_7)
     storage_dead(_6)
     storage_dead(_5)
-    storage_live(_8)
-    _8 = foo::<u8>()
-    ↳⚡ unwind_continue
-    storage_dead(_8)
-    _0 = ()
     storage_dead(_4)
+    storage_live(_7)
+    _7 = foo::<u8>()
+    ↳⚡ unwind_continue
+    storage_dead(_7)
+    _0 = ()
     storage_dead(boo)
-    storage_dead(_9)
     return
 }
 

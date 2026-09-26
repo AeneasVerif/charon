@@ -10,12 +10,12 @@ pub trait MetaSized<Self>
 fn core::marker::MetaSized::{vtable}::<S>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}::<S>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<S>()
+vtable core::marker::MetaSized::{vtable}::<S>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<S>()
 
 fn core::marker::MetaSized::{vtable}::<*mut u32>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}::<*mut u32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<*mut u32>()
+vtable core::marker::MetaSized::{vtable}::<*mut u32>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<*mut u32>()
 
 // Full name: alloc::boxed::Box::<S>
 #[fundamental]
@@ -196,7 +196,7 @@ fn impl_Consume_for_S::{vtable}() -> test_crate::Consume::{vtable}
 }
 
 // Full name: test_crate::{impl Consume for S}::{vtable}
-static impl_Consume_for_S::{vtable}: test_crate::Consume::{vtable} = impl_Consume_for_S::{vtable}()
+vtable impl_Consume_for_S::{vtable}: test_crate::Consume::{vtable} = impl_Consume_for_S::{vtable}()
 
 // Full name: test_crate::{impl Consume for S}
 impl "impl_Consume_for_S" Consume for S {
@@ -323,7 +323,7 @@ fn {impl Consume for *mut u32}::{vtable}() -> test_crate::Consume::{vtable}
 }
 
 // Full name: test_crate::{impl Consume for *mut u32}::{vtable}
-static {impl Consume for *mut u32}::{vtable}: test_crate::Consume::{vtable} = {impl Consume for *mut u32}::{vtable}()
+vtable {impl Consume for *mut u32}::{vtable}: test_crate::Consume::{vtable} = {impl Consume for *mut u32}::{vtable}()
 
 // Full name: test_crate::{impl Consume for *mut u32}
 impl Consume for *mut u32 {
@@ -403,8 +403,8 @@ fn main()
     let _7: &'6 mut u32; // anonymous local
     let _v_8: u32; // local
     let _9: &'7 (dyn Consume + '8); // anonymous local
-    let _10: unsafe fn(&'3 (dyn Consume + '4)) -> u32; // anonymous local
-    let _11: unsafe fn(&'7 (dyn Consume + '8)) -> u32; // anonymous local
+    let _10: fn(&'3 (dyn Consume + '4)) -> u32; // anonymous local
+    let _11: fn(&'7 (dyn Consume + '8)) -> u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -416,7 +416,7 @@ fn main()
     storage_live(_3)
     _3 = &(*x) with_metadata(copy x.metadata)
     storage_live(_10)
-    _10 = cast<*const (), unsafe fn(&'3 (dyn Consume + '4)) -> u32>(copy (*_3.metadata).method_read)
+    _10 = cast<*const (), fn(&'3 (dyn Consume + '4)) -> u32>(copy (*_3.metadata).method_read)
     _v_2 = (copy _10)(move _3)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'13>] x
         ↳⚡ storage_dead(_11)
@@ -446,7 +446,7 @@ fn main()
     storage_live(_9)
     _9 = &(*p) with_metadata(copy p.metadata)
     storage_live(_11)
-    _11 = cast<*const (), unsafe fn(&'7 (dyn Consume + '8)) -> u32>(copy (*_9.metadata).method_read)
+    _11 = cast<*const (), fn(&'7 (dyn Consume + '8)) -> u32>(copy (*_9.metadata).method_read)
     _v_8 = (copy _11)(move _9)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'18>] p
         ↳⚡ storage_dead(_11)

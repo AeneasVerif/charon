@@ -46,6 +46,7 @@ impl<'a> UllbcStatementTransformCtx<'a> {
                 func: FnOperand::Regular(fn_ptr.clone()),
                 args: Vec::from([Operand::Move(drop_arg)]),
                 dest: drop_ret,
+                callee_safe: true, // drop_glue is unsafe, but here we know it's safe
             };
             term.kind = TerminatorKind::Call {
                 call,

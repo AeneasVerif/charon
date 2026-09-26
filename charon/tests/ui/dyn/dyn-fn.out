@@ -19,7 +19,7 @@ pub trait Sized<Self>
 fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
 // Full name: core::marker::Tuple
 #[fundamental]
@@ -152,7 +152,7 @@ fn impl_FnMut_tuple_for_closure::{vtable}<'_0>() -> core::ops::function::FnMut::
 = <opaque>
 
 // Full name: test_crate::gives_fn::{impl FnMut<(&'_0 mut u32,)> for {closure}}::{vtable}
-static impl_FnMut_tuple_for_closure::{vtable}<'_0>: core::ops::function::FnMut::{vtable}<(&'_0 mut u32,), bool> = impl_FnMut_tuple_for_closure::{vtable}<'_0>()
+vtable impl_FnMut_tuple_for_closure::{vtable}<'_0>: core::ops::function::FnMut::{vtable}<(&'_0 mut u32,), bool> = impl_FnMut_tuple_for_closure::{vtable}<'_0>()
 
 // Full name: test_crate::gives_fn::{closure}
 struct {closure} {}
@@ -245,7 +245,7 @@ fn impl_Fn_tuple_for_closure::{vtable}<'_0>() -> core::ops::function::Fn::{vtabl
 }
 
 // Full name: test_crate::gives_fn::{impl Fn<(&'_0 mut u32,)> for {closure}}::{vtable}
-static impl_Fn_tuple_for_closure::{vtable}<'_0>: core::ops::function::Fn::{vtable}<(&'_0 mut u32,), bool> = impl_Fn_tuple_for_closure::{vtable}<'_0>()
+vtable impl_Fn_tuple_for_closure::{vtable}<'_0>: core::ops::function::Fn::{vtable}<(&'_0 mut u32,), bool> = impl_Fn_tuple_for_closure::{vtable}<'_0>()
 
 // Full name: test_crate::gives_fn::{impl FnMut<(&'_0 mut u32,)> for {closure}}::call_mut
 fn call_mut<'_0, '_1>(state: &'_1 mut {closure}, args: (&'_0 mut u32,)) -> bool

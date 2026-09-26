@@ -10,7 +10,7 @@ pub trait MetaSized<Self>
 fn core::marker::MetaSized::{vtable}::<()>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}::<()>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<()>()
+vtable core::marker::MetaSized::{vtable}::<()>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<()>()
 
 struct () {}
 
@@ -200,7 +200,7 @@ fn impl_T_for_unit::{vtable}() -> test_crate::T::{vtable}
 }
 
 // Full name: test_crate::{impl T for ()}::{vtable}
-static impl_T_for_unit::{vtable}: test_crate::T::{vtable} = impl_T_for_unit::{vtable}()
+vtable impl_T_for_unit::{vtable}: test_crate::T::{vtable} = impl_T_for_unit::{vtable}()
 
 // Full name: test_crate::{impl T for ()}
 impl "impl_T_for_unit" T for () {
@@ -232,12 +232,12 @@ fn main()
     let _13: &'5 (dyn T + '6); // anonymous local
     let _14: (); // anonymous local
     let _15: (dyn T + '7); // anonymous local
-    let _16: unsafe fn(&'3 (dyn T + '4)); // anonymous local
+    let _16: fn(&'3 (dyn T + '4)); // anonymous local
     let _17: *mut (dyn T + '16); // anonymous local
-    let _18: unsafe fn(*mut (dyn T + '16)); // anonymous local
-    let _19: unsafe fn(&'5 (dyn T + '6)); // anonymous local
+    let _18: fn(*mut (dyn T + '16)); // anonymous local
+    let _19: fn(&'5 (dyn T + '6)); // anonymous local
     let _20: *mut (dyn T + '25); // anonymous local
-    let _21: unsafe fn(*mut (dyn T + '25)); // anonymous local
+    let _21: fn(*mut (dyn T + '25)); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -258,7 +258,7 @@ fn main()
     storage_live(_5)
     _5 = &(*b) with_metadata(copy b.metadata)
     storage_live(_16)
-    _16 = cast<*const (), unsafe fn(&'3 (dyn T + '4))>(copy (*_5.metadata).method_by_ref)
+    _16 = cast<*const (), fn(&'3 (dyn T + '4))>(copy (*_5.metadata).method_by_ref)
     _4 = (copy _16)(move _5)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'13>] b
         ↳⚡ unwind_terminate
@@ -271,7 +271,7 @@ fn main()
     storage_live(_17)
     _17 = &raw mut (*_7) with_metadata(copy _7.metadata)
     storage_live(_18)
-    _18 = cast<*const (), unsafe fn(*mut (dyn T + '16))>(copy (*_17.metadata).method_by_val)
+    _18 = cast<*const (), fn(*mut (dyn T + '16))>(copy (*_17.metadata).method_by_val)
     _6 = (copy _18)(move _17)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'17>] _7
         ↳⚡ unwind_terminate
@@ -308,7 +308,7 @@ fn main()
     storage_live(_13)
     _13 = &(*f)._0 with_metadata(copy f.metadata)
     storage_live(_19)
-    _19 = cast<*const (), unsafe fn(&'5 (dyn T + '6))>(copy (*_13.metadata).method_by_ref)
+    _19 = cast<*const (), fn(&'5 (dyn T + '6))>(copy (*_13.metadata).method_by_ref)
     _12 = (copy _19)(move _13)
     ↳⚡ conditional_drop[{impl Destruct for Box::<Foo::<(dyn T)>, Global>}::drop_glue::<Foo::<(dyn T)>, Global><'24>] f
         ↳⚡ unwind_terminate
@@ -322,7 +322,7 @@ fn main()
     storage_live(_20)
     _20 = &raw mut (*f)._0 with_metadata(copy f.metadata)
     storage_live(_21)
-    _21 = cast<*const (), unsafe fn(*mut (dyn T + '25))>(copy (*_20.metadata).method_by_val)
+    _21 = cast<*const (), fn(*mut (dyn T + '25))>(copy (*_20.metadata).method_by_val)
     _14 = (copy _21)(move _20)
     ↳⚡ conditional_drop[{built_in impl Destruct for (dyn T + '29)}::drop_glue<'30>] _15
         ↳⚡ unwind_terminate

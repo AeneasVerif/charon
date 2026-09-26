@@ -81,6 +81,13 @@ pub enum AttributeKind {
         deprecation: Deprecation,
         span: Span,
     },
+    /// Represents [`#[export_name]`](https://doc.rust-lang.org/reference/abi.html#the-export_name-attribute).
+    ExportName {
+        /// The name to export this item with.
+        /// It may not contain \0 bytes as it will be converted to a null-terminated string.
+        name: Ustr,
+        span: Span,
+    },
     /// Represents `#[fundamental]`.
     Fundamental,
     /// Represents `#[ignore]`
@@ -91,6 +98,8 @@ pub enum AttributeKind {
     },
     /// Represents `#[inline]` and `#[rustc_force_inline]`.
     Inline(InlineAttr, Span),
+    /// Represents [`#[link_section]`](https://doc.rust-lang.org/reference/abi.html#the-link_section-attribute)
+    LinkSection { name: Ustr },
     /// Represents [`#[may_dangle]`](https://std-dev-guide.rust-lang.org/tricky/may-dangle.html).
     MayDangle(Span),
     /// Represents `#[naked]`

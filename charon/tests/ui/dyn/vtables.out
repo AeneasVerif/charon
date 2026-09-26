@@ -29,7 +29,7 @@ pub trait Clone<Self>
 fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
 // Full name: core::clone::impls::{impl Clone for i32}::clone
 pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
@@ -225,7 +225,7 @@ fn impl_Super_i32_for_i32::{vtable}() -> test_crate::Super::{vtable}<i32>
 }
 
 // Full name: test_crate::{impl Super<i32> for i32}::{vtable}
-static impl_Super_i32_for_i32::{vtable}: test_crate::Super::{vtable}<i32> = impl_Super_i32_for_i32::{vtable}()
+vtable impl_Super_i32_for_i32::{vtable}: test_crate::Super::{vtable}<i32> = impl_Super_i32_for_i32::{vtable}()
 
 // Full name: test_crate::{impl Super<i32> for i32}
 impl "impl_Super_i32_for_i32" Super<i32> for i32 {
@@ -315,7 +315,7 @@ fn impl_Checkable_i32_for_i32::{vtable}() -> test_crate::Checkable::{vtable}<i32
 }
 
 // Full name: test_crate::{impl Checkable<i32> for i32}::{vtable}
-static impl_Checkable_i32_for_i32::{vtable}: test_crate::Checkable::{vtable}<i32> = impl_Checkable_i32_for_i32::{vtable}()
+vtable impl_Checkable_i32_for_i32::{vtable}: test_crate::Checkable::{vtable}<i32> = impl_Checkable_i32_for_i32::{vtable}()
 
 // Full name: test_crate::{impl Checkable<i32> for i32}
 impl "impl_Checkable_i32_for_i32" Checkable<i32> for i32 {
@@ -518,7 +518,7 @@ where
 }
 
 // Full name: test_crate::{impl Modifiable<T> for i32}::{vtable}
-static impl_Modifiable_for_i32::{vtable}<T>: test_crate::Modifiable::{vtable}<T>
+vtable impl_Modifiable_for_i32::{vtable}<T>: test_crate::Modifiable::{vtable}<T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
@@ -783,7 +783,7 @@ fn impl_BaseOn_i32_for_i32::{vtable}() -> test_crate::BaseOn::{vtable}<i32>
 }
 
 // Full name: test_crate::{impl BaseOn<i32> for i32}::{vtable}
-static impl_BaseOn_i32_for_i32::{vtable}: test_crate::BaseOn::{vtable}<i32> = impl_BaseOn_i32_for_i32::{vtable}()
+vtable impl_BaseOn_i32_for_i32::{vtable}: test_crate::BaseOn::{vtable}<i32> = impl_BaseOn_i32_for_i32::{vtable}()
 
 // Full name: test_crate::{impl BaseOn<i32> for i32}
 impl "impl_BaseOn_i32_for_i32" BaseOn<i32> for i32 {
@@ -885,7 +885,7 @@ fn impl_BaseOn_i64_for_i32::{vtable}() -> test_crate::BaseOn::{vtable}<i64>
 }
 
 // Full name: test_crate::{impl BaseOn<i64> for i32}::{vtable}
-static impl_BaseOn_i64_for_i32::{vtable}: test_crate::BaseOn::{vtable}<i64> = impl_BaseOn_i64_for_i32::{vtable}()
+vtable impl_BaseOn_i64_for_i32::{vtable}: test_crate::BaseOn::{vtable}<i64> = impl_BaseOn_i64_for_i32::{vtable}()
 
 // Full name: test_crate::{impl BaseOn<i64> for i32}
 impl "impl_BaseOn_i64_for_i32" BaseOn<i64> for i32 {
@@ -995,7 +995,7 @@ fn impl_Both32And64_for_i32::{vtable}() -> test_crate::Both32And64::{vtable}
 }
 
 // Full name: test_crate::{impl Both32And64 for i32}::{vtable}
-static impl_Both32And64_for_i32::{vtable}: test_crate::Both32And64::{vtable} = impl_Both32And64_for_i32::{vtable}()
+vtable impl_Both32And64_for_i32::{vtable}: test_crate::Both32And64::{vtable} = impl_Both32And64_for_i32::{vtable}()
 
 // Full name: test_crate::Alias
 trait Alias<Self>
@@ -1109,7 +1109,7 @@ fn impl_LifetimeTrait_for_i32::{vtable}() -> test_crate::LifetimeTrait::{vtable}
 }
 
 // Full name: test_crate::{impl LifetimeTrait for i32}::{vtable}
-static impl_LifetimeTrait_for_i32::{vtable}: test_crate::LifetimeTrait::{vtable}<i32> = impl_LifetimeTrait_for_i32::{vtable}()
+vtable impl_LifetimeTrait_for_i32::{vtable}: test_crate::LifetimeTrait::{vtable}<i32> = impl_LifetimeTrait_for_i32::{vtable}()
 
 // Full name: test_crate::{impl LifetimeTrait for i32}
 impl "impl_LifetimeTrait_for_i32" LifetimeTrait for i32 {
