@@ -213,8 +213,10 @@ fn transform_dyn_trait_call(
     let fn_ptr_place = if ctx.ctx.options.monomorphize_with_hax {
         // In mono mode, the vtable contains erased function pointers, cast to `*const ()`.
         // This casts back to the expected signature.
+        let is_unsafe = is_drop_glue || !call.callee_safe;
+        call.callee_safe = is_drop_glue;
         let real_sig_ty = TyKind::FnPtr(RegionBinder::empty(FunSig {
-            is_unsafe: true,
+            is_unsafe,
             abi: Abi::rust(),
             is_variadic: false,
             inputs: call.args.iter().map(|op| op.ty().clone()).collect(),

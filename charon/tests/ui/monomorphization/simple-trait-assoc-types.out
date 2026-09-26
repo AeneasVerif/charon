@@ -128,7 +128,7 @@ fn main()
     let _4: (); // anonymous local
     let _5: &'8 (dyn Trait<Item = bool> + '9); // anonymous local
     let _6: &'10 i32; // anonymous local
-    let _7: unsafe fn(&'8 (dyn Trait<Item = bool> + '9)); // anonymous local
+    let _7: fn(&'8 (dyn Trait<Item = bool> + '9)); // anonymous local
     let _8: &'11 i32; // anonymous local
     let _9: &'20 i32; // anonymous local
     let _10: i32; // anonymous local
@@ -157,7 +157,7 @@ fn main()
     storage_live(_5)
     _5 = &(*a) with_metadata(copy a.metadata)
     storage_live(_7)
-    _7 = cast<*const (), unsafe fn(&'8 (dyn Trait<Item = bool> + '9))>(copy (*_5.metadata).method_comsume)
+    _7 = cast<*const (), fn(&'8 (dyn Trait<Item = bool> + '9))>(copy (*_5.metadata).method_comsume)
     _4 = (copy _7)(move _5)
     ↳⚡ storage_dead(_6)
         unwind_continue

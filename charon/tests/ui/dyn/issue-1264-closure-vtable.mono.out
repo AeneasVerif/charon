@@ -1490,9 +1490,9 @@ fn main()
     let _29: &'36 u32; // anonymous local
     let _30: &'37 test_crate::main::{closure#3}; // anonymous local
     let _31: &'38 test_crate::main::{closure}; // anonymous local
-    let _32: unsafe fn(&'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32; // anonymous local
-    let _33: unsafe fn(&'22 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '23), (u32,)) -> u32; // anonymous local
-    let _34: unsafe fn(&'32 (dyn for<'_0_3> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '33), (&'_ u32,)) -> u32; // anonymous local
+    let _32: fn(&'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32; // anonymous local
+    let _33: fn(&'22 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '23), (u32,)) -> u32; // anonymous local
+    let _34: fn(&'32 (dyn for<'_0_3> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '33), (&'_ u32,)) -> u32; // anonymous local
     let _35: &'39 test_crate::main::{closure}; // anonymous local
     let _36: &'66 test_crate::main::{closure#3}; // anonymous local
     let _37: &'76 u32; // anonymous local
@@ -1531,7 +1531,7 @@ fn main()
     storage_live(_6)
     _6 = (const 1u32,)
     storage_live(_32)
-    _32 = cast<*const (), unsafe fn(&'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32>(copy (*_5.metadata).method_call)
+    _32 = cast<*const (), fn(&'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32>(copy (*_5.metadata).method_call)
     _y_4 = (copy _32)(move _5, move _6)
     ↳⚡ storage_dead(_31)
         storage_dead(_30)
@@ -1565,7 +1565,7 @@ fn main()
     storage_live(_15)
     _15 = (const 2u32,)
     storage_live(_33)
-    _33 = cast<*const (), unsafe fn(&'22 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '23), (u32,)) -> u32>(copy (*_14.metadata).method_call)
+    _33 = cast<*const (), fn(&'22 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '23), (u32,)) -> u32>(copy (*_14.metadata).method_call)
     _y_13 = (copy _33)(move _14, move _15)
     ↳⚡ storage_dead(_31)
         storage_dead(_30)
@@ -1741,7 +1741,7 @@ fn main()
     _27 = &(*_28)
     _26 = (move _27,)
     storage_live(_34)
-    _34 = cast<*const (), unsafe fn(&'32 (dyn for<'_0_3> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '33), (&'_ u32,)) -> u32>(copy (*_25.metadata).method_call)
+    _34 = cast<*const (), fn(&'32 (dyn for<'_0_3> Fn<(&'_ u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '33), (&'_ u32,)) -> u32>(copy (*_25.metadata).method_call)
     _y_24 = (copy _34)(move _25, move _26)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn FnOnce<(), Output = u32>), Global>}::drop_glue::<(dyn FnOnce<(), Output = u32>), Global><'80>] _w
         ↳⚡ storage_dead(_31)

@@ -1866,19 +1866,28 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         };
         let args = self.translate_arguments(span, args)?;
 
-        // Safe `#[target_feature]` functions still get an unsafe signature, but calling them is safe if
-        // the caller enables the same (or implying) features (safety.unsafe-target-feature-call).
         let callee_safe = match op_ty.kind() {
-            ty::TyKind::FnDef(def_id, _) => {
+            ty::TyKind::FnDef(def_id, generics) => {
+                // Safe `#[target_feature]` functions still get an unsafe signature, but calling them is safe if
+                // the caller enables the same (or implying) features (safety.unsafe-target-feature-call).
                 let attrs = tcx.codegen_fn_attrs(*def_id);
                 let caller = self.item_src.def_id().as_real_or_promoted();
-                attrs.safe_target_features // whether the user declared the function as safe
+                let safe_target_feature = attrs.safe_target_features // whether the user declared the function as safe
                     && caller.is_some_and(|caller| {
                         tcx.is_target_feature_call_safe(
                             &attrs.target_features,
                             &tcx.body_codegen_attrs(caller).target_features,
                         )
-                    })
+                    });
+
+                // In mono mode, trait decls have no methods, so we track the safety of the function here,
+                // and `transform_dyn_trait_calls` moves it into the signature of the called function pointer.
+                let mono_safe_dyn_call = self.monomorphize()
+                    && tcx.trait_of_assoc(*def_id).is_some()
+                    && generics.skip_binder().type_at(0).is_trait()
+                    && tcx.fn_sig(*def_id).skip_binder().safety().is_safe();
+
+                safe_target_feature || mono_safe_dyn_call
             }
             _ => false,
         };
