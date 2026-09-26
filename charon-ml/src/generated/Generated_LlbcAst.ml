@@ -108,7 +108,6 @@ and statement_kind =
           - [data]
           - [branches] *)
   | Loop of block
-  | Error of string
 [@@deriving
   show,
   eq,

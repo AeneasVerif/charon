@@ -2401,7 +2401,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 let ctx = &ctx.increase_indent();
                 write!(f, "loop {{\n{}{tab}}}", body.with_ctx(ctx))
             }
-            StatementKind::Error(s) => write!(f, "@ERROR({})", s),
             StatementKind::Nop => unreachable!(),
         }?;
         writeln!(f)

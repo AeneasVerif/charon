@@ -123,7 +123,6 @@ pub enum StatementKind {
         branches: IndexVec<BranchId, Block>,
     },
     Loop(Block),
-    Error(String),
 }
 
 /// Ignores statement ids.

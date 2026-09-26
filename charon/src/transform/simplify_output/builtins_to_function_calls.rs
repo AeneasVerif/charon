@@ -671,7 +671,6 @@ impl LlbcPass for Transform {
                     }
                     Nop
                     | UnwindResume
-                    | Error(..)
                     | InlineAsm { .. }
                     | Assert { .. }
                     | Abort(..)

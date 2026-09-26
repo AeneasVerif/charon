@@ -1928,9 +1928,6 @@ module Llbc = struct
       | `Assoc [ ("Loop", _0) ] ->
           let* _0 = block_of_json ctx _0 in
           Ok (Loop _0)
-      | `Assoc [ ("Error", _0) ] ->
-          let* _0 = string_of_json ctx _0 in
-          Ok (Error _0)
       | _ -> Error "")
 end
 

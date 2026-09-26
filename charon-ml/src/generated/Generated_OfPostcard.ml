@@ -1641,9 +1641,6 @@ module Llbc = struct
        | 17 ->
            let* _0 = block_of_postcard ctx st in
            Ok (Loop _0)
-       | 18 ->
-           let* _0 = string_of_postcard ctx st in
-           Ok (Error _0)
        | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 end
 

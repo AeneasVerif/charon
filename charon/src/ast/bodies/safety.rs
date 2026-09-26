@@ -285,8 +285,7 @@ impl HasSafety for llbc_ast::Statement {
             | StatementKind::Break(_)
             | StatementKind::Continue(_)
             | StatementKind::Nop
-            | StatementKind::Loop(_)
-            | StatementKind::Error(_) => Safety::Safe,
+            | StatementKind::Loop(_) => Safety::Safe,
         }
     }
 }
