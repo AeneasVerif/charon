@@ -731,11 +731,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // In mono mode:
         //   1. If the item being registered is a `trait decl`, we construct a
         //      `monomorphic_trait` item source.
-        //   2. Otherwise, if the current `item_trans_ctx` is under a `trait decl`
-        //      or a `vtable`, we construct a `poly` item.
-        //   3. In all other cases, we construct a `mono` item.
-        let mono =
-            self.monomorphize() && (kind.is_for_trait() || !self.item_src.kind.is_for_trait());
+        //   2. Otherwise, if the current item is a `trait decl` or a `vtable`,
+        //      generic items stay polymorphic: they still mention the trait's
+        //      parameters.
+        //   3. A concrete item (no type or const parameter) is the same type
+        //      everywhere. Registering `str` from `trait Buf: AsRef<str>` as
+        //      polymorphic allocates a second decl that is never translated,
+        //      so the impl's parent clause and the trait's implied clause
+        //      name two different `str`s.
+        //   4. In all other cases, we construct a `mono` item.
+        let concrete = !item.has_non_lt_param;
+        let mono = self.monomorphize()
+            && (kind.is_for_trait() || !self.item_src.kind.is_for_trait() || concrete);
         let item_src = TransItemSource::from_item(&item, kind, mono);
         if enqueue {
             self.register_and_enqueue(span, item_src)

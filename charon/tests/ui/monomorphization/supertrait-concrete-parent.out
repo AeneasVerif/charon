@@ -1,0 +1,55 @@
+# Final LLBC before serialization:
+
+// Full name: core::convert::AsRef
+#[diagnostic_item("AsRef")]
+pub trait AsRef<Self, T>
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: alloc::string::String
+#[lang_item(String)]
+pub opaque type String
+
+struct str {
+  _0: [u8],
+}
+
+// Full name: test_crate::Buf
+pub trait Buf<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: AsRef<str>)
+    vtable: test_crate::Buf::{vtable}
+}
+
+// Full name: test_crate::EngineStr
+pub struct EngineStr {
+  _0: String,
+}
+
+// Full name: test_crate::{impl AsRef<str> for EngineStr}
+impl "impl_AsRef_str_for_EngineStr" AsRef<str> for EngineStr {
+    vtable: lazy
+}
+
+// Full name: test_crate::{impl Buf for EngineStr}
+impl "impl_Buf_for_EngineStr" Buf for EngineStr {
+    proof ImpliedClause0: (EngineStr: MetaSized) = {built_in impl MetaSized for EngineStr}
+    proof ImpliedClause1: (EngineStr: AsRef<str>) = impl_AsRef_str_for_EngineStr
+    vtable: lazy
+}
+
+
+
