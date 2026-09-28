@@ -44,6 +44,8 @@
 #[allow(unused_extern_crates)]
 extern crate rustc_hir;
 
+extern crate serde_state_perfect_derive as serde_state;
+
 #[macro_use]
 pub mod ids;
 #[macro_use]
