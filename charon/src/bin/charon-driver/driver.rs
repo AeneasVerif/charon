@@ -151,18 +151,16 @@ fn sysroot_has_target(sysroot: &std::path::Path, target: &str) -> bool {
     sysroot.join("lib").join("rustlib").join(target).is_dir()
 }
 
-/// Where we remember the sysroot that `cargo miri setup` computed.
-fn miri_sysroot_cache_file(target: &str) -> Option<PathBuf> {
+/// Where we tell `cargo miri setup` to build the sysroot for the current toolchain.
+/// We use a per-toolchain directory because Miri's default cache directory (`~/.cache/miri`) is
+/// shared across all toolchains and gets overwritten when switching between Charon versions.
+fn miri_sysroot_cache_dir() -> Option<PathBuf> {
     let toolchain = toolchain_version();
     let cache_dir = match env::var_os("CHARON_CACHE_DIR") {
         Some(dir) => PathBuf::from(dir),
         None => env::home_dir()?.join(".cache").join("charon"),
     };
-    Some(
-        cache_dir
-            .join("full-mir-sysroot-cache")
-            .join(format!("{toolchain}-{target}")),
-    )
+    Some(cache_dir.join("miri-sysroot").join(toolchain))
 }
 
 /// `cargo miri setup` sets up a sysroot containing a standard library built with
@@ -175,13 +173,11 @@ fn setup_miri_sysroot(target: &str) -> Option<PathBuf> {
         return Some(sysroot);
     }
 
-    // Checked if we have this path in cache.
-    if let Some(cache_file) = miri_sysroot_cache_file(target)
-        && let Ok(contents) = std::fs::read_to_string(&cache_file)
-        && let sysroot = PathBuf::from(contents.trim())
-        && sysroot_has_target(&sysroot, target)
+    let cache_sysroot = miri_sysroot_cache_dir();
+    if let Some(sysroot) = &cache_sysroot
+        && sysroot_has_target(sysroot, target)
     {
-        return Some(sysroot);
+        return Some(sysroot.clone());
     }
 
     let mut cmd = Command::new("cargo");
@@ -191,6 +187,9 @@ fn setup_miri_sysroot(target: &str) -> Option<PathBuf> {
         .arg("--print-sysroot")
         .env_remove("RUSTC_WORKSPACE_WRAPPER")
         .env_remove("RUSTC_WRAPPER");
+    if let Some(sysroot) = &cache_sysroot {
+        cmd.env("MIRI_SYSROOT", sysroot);
+    }
 
     let output = match cmd.output() {
         Ok(output) => output,
@@ -216,16 +215,7 @@ fn setup_miri_sysroot(target: &str) -> Option<PathBuf> {
     let stdout = String::from_utf8_lossy(&output.stdout);
     let sysroot = stdout.lines().map(str::trim).find(|line| !line.is_empty());
     match sysroot {
-        Some(sysroot) => {
-            // Memoise where the sysroot is, to avoid a subprocess call for all tests.
-            if let Some(cache_file) = miri_sysroot_cache_file(target)
-                && let Some(cache_dir) = cache_file.parent()
-                && std::fs::create_dir_all(cache_dir).is_ok()
-            {
-                let _ = std::fs::write(&cache_file, sysroot);
-            }
-            Some(PathBuf::from(sysroot))
-        }
+        Some(sysroot) => Some(PathBuf::from(sysroot)),
         None => {
             eprintln!(
                 "warning: `cargo miri setup --print-sysroot` printed no sysroot for target \
