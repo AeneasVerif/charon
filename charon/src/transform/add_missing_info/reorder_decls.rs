@@ -377,19 +377,13 @@ impl VisitAst for DepsForItem<'_> {
 
 fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {
     let mut deps = Deps::default();
-    // Start from the items included in `start_from`. We've mostly only translated items accessible
-    // from that, but some passes render items inaccessible again, which we filter out here.
+    // Start from the items selected as starting points. We've mostly only translated items
+    // accessible from those, but some passes render items inaccessible again, which we filter out
+    // here.
     deps.unprocessed = ctx
         .translated
         .all_items()
-        .filter(|item| {
-            item.item_meta().name.is_builtin()
-                || ctx
-                    .options
-                    .start_from
-                    .iter()
-                    .any(|pat| pat.matches(&ctx.translated, item.item_meta()))
-        })
+        .filter(|item| item.item_meta().name.is_builtin() || item.item_meta().started_from)
         .map(|item| item.id())
         .collect();
 

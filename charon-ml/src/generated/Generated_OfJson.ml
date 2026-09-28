@@ -2844,6 +2844,7 @@ and item_meta_of_json (ctx : of_json_ctx) (js : json) :
           ("source_text", source_text);
           ("attr_info", attr_info);
           ("is_local", is_local);
+          ("started_from", started_from);
           ("opacity", opacity);
           ("lang_item", lang_item);
           ("diagnostic_item", diagnostic_item);
@@ -2854,6 +2855,7 @@ and item_meta_of_json (ctx : of_json_ctx) (js : json) :
         let* source_text = option_of_json string_of_json ctx source_text in
         let* attr_info = attr_info_of_json ctx attr_info in
         let* is_local = bool_of_json ctx is_local in
+        let* started_from = bool_of_json ctx started_from in
         let* opacity = item_opacity_of_json ctx opacity in
         let* lang_item = option_of_json rustc_lang_item_of_json ctx lang_item in
         let* diagnostic_item =
@@ -2867,6 +2869,7 @@ and item_meta_of_json (ctx : of_json_ctx) (js : json) :
              source_text;
              attr_info;
              is_local;
+             started_from;
              opacity;
              lang_item;
              diagnostic_item;

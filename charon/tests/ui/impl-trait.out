@@ -63,29 +63,6 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::Tuple
-#[fundamental]
-#[lang_item(Tuple)]
-pub trait Tuple<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-// Full name: core::ops::function::FnOnce
-#[fundamental]
-#[lang_item(FnOnce)]
-pub trait FnOnce<Self, Args>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Args: Sized)
-    proof ImpliedClause2: (Args: Tuple)
-    proof ImpliedClause3: (Self::Output: Sized)
-    type Output
-    fn call_once;
-    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
-}
-
 struct (_,)<A> {
   _0: A,
 }
@@ -331,21 +308,6 @@ where
     storage_dead(tupled_args)
     storage_dead(_1)
     return
-}
-
-// Full name: test_crate::wrap::{impl FnOnce<(&'_0 U,)> for {closure}<U>[TraitClause0]}
-impl<'_0, U> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_0 U,)> for {closure}<U>[TraitClause0]
-where
-    TraitClause0: (U: Sized),
-    TypeOutlives0: U: '_0,
-{
-    proof ImpliedClause0: ({closure}<U>[TraitClause0]: MetaSized) = {built_in impl MetaSized for {closure}<U>[TraitClause0]}
-    proof ImpliedClause1: ((&'_0 U,): Sized) = {built_in impl Sized for (&'_0 U,)}
-    proof ImpliedClause2: ((&'_0 U,): Tuple) = {built_in impl Tuple for (&'_0 U,)}
-    proof ImpliedClause3: (WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]: Sized) = {built_in impl Sized for WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]}
-    type Output = WrapClone<&'_0 U>[{built_in impl Sized for &'_0 U}, {impl Clone for &'_0 T}<'_, U>]
-    fn call_once = call_once<'_0, U>[TraitClause0]
-    vtable: lazy
 }
 
 // Full name: test_crate::use_wrap

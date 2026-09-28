@@ -130,15 +130,6 @@ where
     return
 }
 
-// Full name: test_crate::List::{impl Destruct for List<T>[TraitClause0]}
-impl<T> "impl_Destruct_for_List" Destruct for List<T>[TraitClause0]
-where
-    TraitClause0: (T: Sized),
-{
-    fn drop_glue<'_0_1> = impl_Destruct_for_List::drop_glue<'_0_1, T>[TraitClause0]
-    non-dyn-compatible
-}
-
 // Full name: test_crate::One
 pub enum One<T1>
 where
@@ -263,15 +254,6 @@ where
         unwind_continue
     storage_dead(_1)
     return
-}
-
-// Full name: test_crate::IdType::{impl Destruct for IdType<T>[TraitClause0]}
-impl<T> "impl_Destruct_for_IdType" Destruct for IdType<T>[TraitClause0]
-where
-    TraitClause0: (T: Sized),
-{
-    fn drop_glue<'_0_1> = impl_Destruct_for_IdType::drop_glue<'_0_1, T>[TraitClause0]
-    non-dyn-compatible
 }
 
 // Full name: test_crate::use_id_type

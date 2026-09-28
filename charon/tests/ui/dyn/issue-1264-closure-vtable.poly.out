@@ -204,12 +204,6 @@ unsafe fn impl_Destruct_for_Droppable::drop_glue<'_0>(_1: &'_0 mut Droppable)
     return
 }
 
-// Full name: test_crate::Droppable::{impl Destruct for Droppable}
-impl "impl_Destruct_for_Droppable" Destruct for Droppable {
-    fn drop_glue<'_0_1> = impl_Destruct_for_Droppable::drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: test_crate::{impl Drop for Droppable}
 impl "impl_Drop_for_Droppable" Drop for Droppable {
     proof ImpliedClause0: (Droppable: MetaSized) = {built_in impl MetaSized for Droppable}
@@ -409,16 +403,6 @@ where
         unwind_continue
     storage_dead(x)
     return
-}
-
-// Full name: test_crate::wrap::{closure}::{impl Destruct for test_crate::wrap::{closure}<T>[TraitClause0]}
-impl<T> Destruct for test_crate::wrap::{closure}<T>[TraitClause0]
-where
-    TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'static,
-{
-    fn drop_glue<'_0_1> = {impl Destruct for test_crate::wrap::{closure}<T>[TraitClause0]}::drop_glue<'_0_1, T>[TraitClause0]
-    non-dyn-compatible
 }
 
 struct test_crate::main::{closure#3} {}
@@ -1806,12 +1790,6 @@ fn main()
     storage_dead(_33)
     storage_dead(_32)
     return
-}
-
-// Full name: test_crate::main::{closure#2}::{impl Destruct for test_crate::main::{closure#2}}
-impl Destruct for test_crate::main::{closure#2} {
-    fn drop_glue<'_0_1> = {impl Destruct for test_crate::main::{closure#2}}::drop_glue<'_0_1>
-    non-dyn-compatible
 }
 
 

@@ -2374,6 +2374,7 @@ and item_meta_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* source_text = option_of_postcard string_of_postcard ctx st in
      let* attr_info = attr_info_of_postcard ctx st in
      let* is_local = bool_of_postcard ctx st in
+     let* started_from = bool_of_postcard ctx st in
      let* opacity = item_opacity_of_postcard ctx st in
      let* lang_item = option_of_postcard rustc_lang_item_of_postcard ctx st in
      let* diagnostic_item = option_of_postcard string_of_postcard ctx st in
@@ -2385,6 +2386,7 @@ and item_meta_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           source_text;
           attr_info;
           is_local;
+          started_from;
           opacity;
           lang_item;
           diagnostic_item;

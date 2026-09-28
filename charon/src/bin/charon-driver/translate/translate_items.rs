@@ -101,16 +101,25 @@ impl<'tcx> TranslateCtx<'tcx> {
             && let Some(body_id) = node.body_id()
         {
             use rustc_hir::intravisit;
-            #[allow(non_local_definitions)]
-            impl<'tcx> intravisit::Visitor<'tcx> for TranslateCtx<'tcx> {
+            struct EnqueueNestedItems<'a, 'tcx> {
+                ctx: &'a mut TranslateCtx<'tcx>,
+                started_from: bool,
+            }
+            impl<'tcx> intravisit::Visitor<'tcx> for EnqueueNestedItems<'_, 'tcx> {
                 fn visit_nested_item(&mut self, id: rustc_hir::ItemId) {
                     let def_id = id.owner_id.def_id.to_def_id();
-                    let def_id = def_id.sinto(&self.hax_state);
-                    self.enqueue_module_item(&def_id);
+                    let def_id = def_id.sinto(&self.ctx.hax_state);
+                    self.ctx.enqueue_module_item(&def_id, self.started_from);
                 }
             }
             let body = self.tcx.hir_body(body_id);
-            intravisit::walk_body(self, body);
+            intravisit::walk_body(
+                &mut EnqueueNestedItems {
+                    ctx: self,
+                    started_from: item_meta.started_from,
+                },
+                body,
+            );
         }
 
         // Initialize the item translation context
@@ -347,17 +356,20 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         match def.kind() {
             hax::FullDefKind::InherentImpl(i) => {
                 for assoc in i.items(self.hax_state()) {
-                    self.t_ctx.enqueue_module_item(&assoc.def_id);
+                    self.t_ctx
+                        .enqueue_module_item(&assoc.def_id, item_meta.started_from);
                 }
             }
             hax::FullDefKind::Mod(m) => {
                 for (_, def_id) in m.items(self.hax_state()) {
-                    self.t_ctx.enqueue_module_item(def_id);
+                    self.t_ctx
+                        .enqueue_module_item(def_id, item_meta.started_from);
                 }
             }
             hax::FullDefKind::ForeignMod(m) => {
                 for def_id in m.items() {
-                    self.t_ctx.enqueue_module_item(def_id);
+                    self.t_ctx
+                        .enqueue_module_item(def_id, item_meta.started_from);
                 }
             }
             _ => panic!("Item should be a module but isn't: {def:?}"),

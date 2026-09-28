@@ -566,15 +566,6 @@ where
     return
 }
 
-// Full name: test_crate::Wrapper::{impl Destruct for Wrapper<T>[TraitClause0]}
-impl<T> "impl_Destruct_for_Wrapper" Destruct for Wrapper<T>[TraitClause0]
-where
-    TraitClause0: (T: Sized),
-{
-    fn drop_glue<'_0_1> = impl_Destruct_for_Wrapper::drop_glue<'_0_1, T>[TraitClause0]
-    non-dyn-compatible
-}
-
 // Full name: test_crate::{impl ToU64 for Wrapper<T>[TraitClause0]}::to_u64
 pub fn impl_ToU64_for_Wrapper::to_u64<T>(self: Wrapper<T>[TraitClause0]) -> u64
 where

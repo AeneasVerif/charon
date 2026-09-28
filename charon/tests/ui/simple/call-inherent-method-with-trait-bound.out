@@ -65,15 +65,6 @@ where
     return
 }
 
-// Full name: test_crate::HashMap::{impl Destruct for HashMap<S>[TraitClause0]}
-impl<S> "impl_Destruct_for_HashMap" Destruct for HashMap<S>[TraitClause0]
-where
-    TraitClause0: (S: Sized),
-{
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, S>[TraitClause0]
-    non-dyn-compatible
-}
-
 pub fn test_crate::{HashMap<S>[TraitClause0]}::get<S, Q, Clause2_Type>(_x: HashMap<S>[TraitClause0], _k: Q)
 where
     TraitClause0: (S: Sized),

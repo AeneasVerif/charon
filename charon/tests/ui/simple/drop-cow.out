@@ -270,18 +270,6 @@ where
     return
 }
 
-// Full name: test_crate::Cow::{impl Destruct for Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]}
-impl<'a, B> "impl_Destruct_for_Cow" Destruct for Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2]
-where
-    TraitClause0: (B: MetaSized),
-    TraitClause1: (B: ToOwned),
-    TraitClause2: (B: Destruct),
-    TypeOutlives0: B: 'a,
-{
-    fn drop_glue<'_0_1> = impl_Destruct_for_Cow::drop_glue<'a, '_0_1, B>[TraitClause0, TraitClause1, TraitClause2]
-    non-dyn-compatible
-}
-
 // Full name: test_crate::drop_cow
 fn drop_cow<'a, B>(_1: Cow<'a, B>[TraitClause0, TraitClause1, TraitClause2])
 where

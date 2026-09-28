@@ -16,14 +16,6 @@ pub trait Sized<Self>
 
 struct () {}
 
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
-
 // Full name: core::ops::drop::Drop
 #[lang_item(Drop)]
 pub trait Drop<Self>
@@ -78,12 +70,6 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut Foo)
     _3 = impl_Drop_for_Foo::drop<'4>(move _2)
     ↳⚡ unwind_continue
     return
-}
-
-// Full name: test_crate::Foo::{impl Destruct for Foo}
-impl "impl_Destruct_for_Foo" Destruct for Foo {
-    fn drop_glue<'_0_1> = drop_glue<'_0_1>
-    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Drop for Foo}

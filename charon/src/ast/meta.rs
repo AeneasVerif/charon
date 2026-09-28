@@ -54,6 +54,9 @@ pub struct ItemMeta {
     pub attr_info: AttrInfo,
     /// `true` if the type decl is a local type decl, `false` if it comes from an external crate.
     pub is_local: bool,
+    /// Whether this item was selected as a starting point for translation (using `--start-from`,
+    /// or by default all the top-level items in the main crate).
+    pub started_from: bool,
     /// Whether this item is considered opaque. For function and globals, this means we don't
     /// translate the body (the code); for ADTs, this means we don't translate the fields/variants.
     /// For traits and trait impls, this doesn't change anything. For modules, this means we don't
@@ -103,6 +106,7 @@ impl ItemMeta {
             source_text: None,
             attr_info: AttrInfo::dummy_public(),
             is_local,
+            started_from: false,
             opacity,
             lang_item: None,
             diagnostic_item: None,

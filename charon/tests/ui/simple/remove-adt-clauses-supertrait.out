@@ -24,28 +24,6 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::Tuple
-#[fundamental]
-#[lang_item(Tuple)]
-pub trait Tuple<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-// Full name: core::ops::function::FnOnce
-#[fundamental]
-#[lang_item(FnOnce)]
-pub trait FnOnce<Self, Args, Self_Output>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Args: Sized)
-    proof ImpliedClause2: (Args: Tuple)
-    proof ImpliedClause3: (Self_Output: Sized)
-    fn call_once;
-    vtable: core::ops::function::FnOnce::{vtable}<Args, Self_Output>
-}
-
 // Full name: test_crate::GrandParent
 trait GrandParent<Self>
 {
@@ -89,38 +67,6 @@ where
         unwind_continue
     storage_dead(x)
     return
-}
-
-// Full name: test_crate::make::{impl FnOnce<(), ()> for {closure}<T>}::call_once
-fn call_once<T>(_1: {closure}<T>, tupled_args: ())
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Child),
-{
-    let _0: (); // return
-    let _1: {closure}<T>; // arg #1
-    let tupled_args: (); // arg #2
-
-    storage_live(_0)
-    _0 = ()
-    _0 = ()
-    storage_dead(tupled_args)
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::make::{impl FnOnce<(), ()> for {closure}<T>}
-impl<T> "impl_FnOnce_unit_for_closure" FnOnce<(), ()> for {closure}<T>
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Child),
-{
-    proof ImpliedClause0: ({closure}<T>: MetaSized) = {built_in impl MetaSized for {closure}<T>}
-    proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
-    proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
-    proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
-    fn call_once = call_once<T>[TraitClause0, TraitClause1]
-    vtable: lazy
 }
 
 

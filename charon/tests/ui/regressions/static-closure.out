@@ -325,32 +325,6 @@ fn BAR() -> fn(i32)
 // Full name: test_crate::BAR
 static BAR: fn(i32) = BAR()
 
-// Full name: test_crate::BAR::{impl FnOnce<(i32,)> for test_crate::BAR::{closure}}
-impl "impl_FnOnce_for_closure" FnOnce<(i32,)> for test_crate::BAR::{closure} {
-    proof ImpliedClause0: (test_crate::BAR::{closure}: MetaSized) = {built_in impl MetaSized for test_crate::BAR::{closure}}
-    proof ImpliedClause1: ((i32,): Sized) = {built_in impl Sized for (i32,)}
-    proof ImpliedClause2: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
-    vtable: lazy
-}
-
-// Full name: test_crate::BAR::{impl FnMut<(i32,)> for test_crate::BAR::{closure}}
-impl "impl_FnMut_for_closure" FnMut<(i32,)> for test_crate::BAR::{closure} {
-    proof ImpliedClause0: (test_crate::BAR::{closure}: MetaSized) = {built_in impl MetaSized for test_crate::BAR::{closure}}
-    proof ImpliedClause1: (test_crate::BAR::{closure}: FnOnce<(i32,)>) = impl_FnOnce_for_closure
-    proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
-    proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
-    vtable: lazy
-}
-
-// Full name: test_crate::BAR::{impl Fn<(i32,)> for test_crate::BAR::{closure}}
-impl "impl_Fn_for_closure" Fn<(i32,)> for test_crate::BAR::{closure} {
-    proof ImpliedClause0: (test_crate::BAR::{closure}: MetaSized) = {built_in impl MetaSized for test_crate::BAR::{closure}}
-    proof ImpliedClause1: (test_crate::BAR::{closure}: FnMut<(i32,)>) = impl_FnMut_for_closure
-    proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
-    proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
-    vtable: lazy
-}
-
 struct test_crate::foo::{closure}::<u8> {}
 
 // Full name: test_crate::foo::{impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::call::<u8>
@@ -496,32 +470,6 @@ fn foo::<u8>()
     _0 = ()
     storage_dead(c)
     return
-}
-
-// Full name: test_crate::foo::{impl FnOnce<(i32,)> for test_crate::foo::{closure}::<u8>}
-impl FnOnce<(i32,)> for test_crate::foo::{closure}::<u8> {
-    proof ImpliedClause0: (test_crate::foo::{closure}::<u8>: MetaSized) = {built_in impl MetaSized for test_crate::foo::{closure}::<u8>}
-    proof ImpliedClause1: ((i32,): Sized) = {built_in impl Sized for (i32,)}
-    proof ImpliedClause2: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
-    vtable: lazy
-}
-
-// Full name: test_crate::foo::{impl FnMut<(i32,)> for test_crate::foo::{closure}::<u8>}
-impl FnMut<(i32,)> for test_crate::foo::{closure}::<u8> {
-    proof ImpliedClause0: (test_crate::foo::{closure}::<u8>: MetaSized) = {built_in impl MetaSized for test_crate::foo::{closure}::<u8>}
-    proof ImpliedClause1: (test_crate::foo::{closure}::<u8>: FnOnce<(i32,)>) = {impl FnOnce<(i32,)> for test_crate::foo::{closure}::<u8>}
-    proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
-    proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
-    vtable: lazy
-}
-
-// Full name: test_crate::foo::{impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}
-impl Fn<(i32,)> for test_crate::foo::{closure}::<u8> {
-    proof ImpliedClause0: (test_crate::foo::{closure}::<u8>: MetaSized) = {built_in impl MetaSized for test_crate::foo::{closure}::<u8>}
-    proof ImpliedClause1: (test_crate::foo::{closure}::<u8>: FnMut<(i32,)>) = {impl FnMut<(i32,)> for test_crate::foo::{closure}::<u8>}
-    proof ImpliedClause2: ((i32,): Sized) = {built_in impl Sized for (i32,)}
-    proof ImpliedClause3: ((i32,): Tuple) = {built_in impl Tuple for (i32,)}
-    vtable: lazy
 }
 
 // Full name: test_crate::main

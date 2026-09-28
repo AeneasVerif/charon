@@ -27,12 +27,6 @@ where
     return
 }
 
-// Full name: test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}
-impl<H> core::marker::Destruct for test_crate::State<H> {
-    fn drop_glue<'_0_1> = test_crate::State::{impl core::marker::Destruct for test_crate::State<H>}::drop_glue<'_0_1, H>
-    non-dyn-compatible
-}
-
 pub fn test_crate::caller<H>(h: H)
 {
     let _0: (); // return

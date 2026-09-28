@@ -1,28 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
-#[fundamental]
-#[lang_item(MetaSized)]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-// Full name: core::marker::Tuple
-#[fundamental]
-#[lang_item(Tuple)]
-pub trait Tuple<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
 // Full name: test_crate::NotCopy
 struct NotCopy {}
 
@@ -32,17 +9,6 @@ struct () {}
 #[diagnostic_item("mem_drop")]
 pub fn drop::<NotCopy>(_1: NotCopy)
 = <opaque>
-
-// Full name: core::ops::function::FnOnce
-#[fundamental]
-#[lang_item(FnOnce)]
-pub trait FnOnce<Self, Args>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Args: Sized)
-    proof ImpliedClause2: (Args: Tuple)
-    vtable: core::ops::function::FnOnce::{vtable}
-}
 
 struct (_,)::<u8> {
   _0: u8,
@@ -142,14 +108,6 @@ fn main()
     _0 = ()
     storage_dead(z)
     return
-}
-
-// Full name: test_crate::main::{impl FnOnce<(u8,)> for {closure}}
-impl "impl_FnOnce_for_closure" FnOnce<(u8,)> for {closure} {
-    proof ImpliedClause0: ({closure}: MetaSized) = {built_in impl MetaSized for {closure}}
-    proof ImpliedClause1: ((u8,): Sized) = {built_in impl Sized for (u8,)}
-    proof ImpliedClause2: ((u8,): Tuple) = {built_in impl Tuple for (u8,)}
-    vtable: lazy
 }
 
 

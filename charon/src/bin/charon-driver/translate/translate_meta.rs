@@ -996,6 +996,8 @@ impl<'tcx> TranslateCtx<'tcx> {
             source_text: def.source_text.clone(),
             attr_info,
             is_local,
+            started_from: !item_src.is_derived_item()
+                && self.started_from.contains(item_src.def_id()),
             opacity,
             lang_item,
             diagnostic_item,
