@@ -1,0 +1,71 @@
+# Final LLBC before serialization:
+
+struct () {}
+
+fn test_crate::{Wrapper<T>[TraitClause0]}::inherent::VALUE() -> u8
+{
+    let _0: u8; // return
+
+    storage_live(_0)
+    _0 = const 1u8
+    return
+}
+
+const test_crate::{Wrapper<T>[TraitClause0]}::inherent::VALUE: u8 = test_crate::{Wrapper<T>[TraitClause0]}::inherent::VALUE()
+
+// Full name: test_crate::{Wrapper::<u8>}::inherent::<u8>
+fn inherent::<u8>() -> u8
+{
+    let _0: u8; // return
+
+    storage_live(_0)
+    _0 = copy test_crate::{Wrapper<T>[TraitClause0]}::inherent::VALUE
+    return
+}
+
+// Full name: test_crate::{impl Trait for Wrapper<T>[TraitClause0]}::method::VALUE
+fn impl_Trait_for_Wrapper::method::VALUE() -> u8
+{
+    let _0: u8; // return
+
+    storage_live(_0)
+    _0 = const 2u8
+    return
+}
+
+// Full name: test_crate::{impl Trait for Wrapper<T>[TraitClause0]}::method::VALUE
+const impl_Trait_for_Wrapper::method::VALUE: u8 = impl_Trait_for_Wrapper::method::VALUE()
+
+// Full name: test_crate::{impl Trait for Wrapper::<u16>}::method::<u16>
+fn method::<u16>() -> u8
+{
+    let _0: u8; // return
+
+    storage_live(_0)
+    _0 = copy impl_Trait_for_Wrapper::method::VALUE
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let _1: u8; // anonymous local
+    let _2: u8; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = inherent::<u8>()
+    ↳⚡ unwind_continue
+    storage_dead(_1)
+    storage_live(_2)
+    _2 = method::<u16>()
+    ↳⚡ unwind_continue
+    storage_dead(_2)
+    _0 = ()
+    return
+}
+
+
+

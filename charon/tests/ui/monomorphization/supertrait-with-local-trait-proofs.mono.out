@@ -1,0 +1,27 @@
+error: Type error after translation:
+       Mismatched trait clause:
+       expected: TraitClause1: ((): Parent<Wrapper>)
+            got: {impl Parent<Wrapper::<u8>> for ()}: Parent<(), Wrapper::<u8>>
+       Visitor stack:
+         charon_lib::ast::items::trait_impl::TraitImpl
+       Binding stack (depth 1):
+         0: 
+  --> tests/ui/monomorphization/supertrait-with-local-trait-proofs.rs:22:1
+   |
+22 | impl Child for () {}
+   | ^^^^^^^^^^^^^^^^^^^^
+
+error: Type error after translation:
+       Mismatched trait clause:
+       expected: TraitClause2: ((): Parent<Wrapper>)
+            got: {impl Parent<Wrapper::<Nested::<u8>>> for ()}: Parent<(), Wrapper::<Nested::<u8>>>
+       Visitor stack:
+         charon_lib::ast::items::trait_impl::TraitImpl
+       Binding stack (depth 1):
+         0: 
+  --> tests/ui/monomorphization/supertrait-with-local-trait-proofs.rs:22:1
+   |
+22 | impl Child for () {}
+   | ^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)

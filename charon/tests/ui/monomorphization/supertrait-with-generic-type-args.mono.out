@@ -1,0 +1,14 @@
+error: Type error after translation:
+       Mismatched trait clause:
+       expected: TraitClause1: ((): Parent<Wrapper>)
+            got: impl_Parent_for_unit: Parent<(), Wrapper::<u8>>
+       Visitor stack:
+         charon_lib::ast::items::trait_impl::TraitImpl
+       Binding stack (depth 1):
+         0: 
+  --> tests/ui/monomorphization/supertrait-with-generic-type-args.rs:13:1
+   |
+13 | impl Child<u8> for () {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (1 errors)
