@@ -1,0 +1,27 @@
+error: Type error after translation:
+       Mismatched trait clause:
+       expected: TraitClause1: ((): Parent<Concrete>)
+            got: impl_Parent_Concrete_for_unit: Parent<(), Concrete>
+       Visitor stack:
+         charon_lib::ast::items::trait_impl::TraitImpl
+       Binding stack (depth 1):
+         0: 
+  --> tests/ui/monomorphization/supertrait-with-concrete-arg.rs:13:1
+   |
+13 | impl Child for () {}
+   | ^^^^^^^^^^^^^^^^^^^^
+
+error: Type error after translation:
+       Mismatched trait clause:
+       expected: TraitClause2: ((): Parent<Wrapper>)
+            got: impl_Parent_for_unit: Parent<(), Wrapper::<u8>>
+       Visitor stack:
+         charon_lib::ast::items::trait_impl::TraitImpl
+       Binding stack (depth 1):
+         0: 
+  --> tests/ui/monomorphization/supertrait-with-concrete-arg.rs:13:1
+   |
+13 | impl Child for () {}
+   | ^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (2 errors)
