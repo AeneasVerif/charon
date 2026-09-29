@@ -59,32 +59,31 @@ fn transform_constant_expr(
                     ctx.rval_to_place(Rvalue::Use(bval, WithRetag::No), bval_ty)
                 }
             };
-            match (rk, metadata) {
-                // Borrow the place.
-                (None, None) => ctx.borrow(place, BorrowKind::Shared),
-                (Some(rk), None) => ctx.raw_borrow(place, rk),
-                // Unsizing borrow.
-                (None, Some(metadata)) => {
-                    let sized_ref = ctx.borrow_to_new_var(place, BorrowKind::Shared, None);
-                    Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Unsize(
-                            sized_ref.ty.clone(),
-                            val.ty().clone(),
-                            metadata.clone(),
-                        )),
-                        Operand::Move(sized_ref),
-                    )
-                }
-                (Some(rk), Some(metadata)) => {
-                    let sized_raw_ref = ctx.raw_borrow_to_new_var(place, rk, None);
-                    Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Unsize(
-                            sized_raw_ref.ty.clone(),
-                            val.ty().clone(),
-                            metadata.clone(),
-                        )),
-                        Operand::Move(sized_raw_ref),
-                    )
+            let ptr_metadata = ctx.compute_place_metadata(&place);
+            let place_ty = place.ty().clone();
+            let ptr = match rk {
+                None => Rvalue::Ref {
+                    place,
+                    kind: BorrowKind::Shared,
+                    ptr_metadata,
+                },
+                Some(kind) => Rvalue::RawPtr {
+                    place,
+                    kind,
+                    ptr_metadata,
+                },
+            };
+            match metadata {
+                None => ptr,
+                Some(metadata) => {
+                    let ptr_ty = match rk {
+                        None => TyKind::Ref(Region::Erased, place_ty, RefKind::Shared),
+                        Some(kind) => TyKind::RawPtr(place_ty, kind),
+                    };
+                    let ptr_ty = ptr_ty.into_ty();
+                    let sized_ptr = ctx.rval_to_place(ptr, ptr_ty.clone());
+                    let cast = CastKind::Unsize(ptr_ty, val.ty().clone(), metadata.clone());
+                    Rvalue::UnaryOp(UnOp::Cast(cast), Operand::Move(sized_ptr))
                 }
             }
         }
