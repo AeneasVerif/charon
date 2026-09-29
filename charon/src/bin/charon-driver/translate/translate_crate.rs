@@ -723,19 +723,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         item: &hax::ItemRef,
         kind: TransItemSourceKind,
     ) -> T {
-        let item = if self.monomorphize() && item.has_param {
+        let mono = self.should_monomorphize_item(item, kind);
+        let item = if mono && item.has_param {
             item.erase(self.hax_state_with_id())
         } else {
             item.clone()
         };
-        // In mono mode:
-        //   1. If the item being registered is a `trait decl`, we construct a
-        //      `monomorphic_trait` item source.
-        //   2. Otherwise, if the current `item_trans_ctx` is under a `trait decl`
-        //      or a `vtable`, we construct a `poly` item.
-        //   3. In all other cases, we construct a `mono` item.
-        let mono =
-            self.monomorphize() && (kind.is_for_trait() || !self.item_src.kind.is_for_trait());
         let item_src = TransItemSource::from_item(&item, kind, mono);
         if enqueue {
             self.register_and_enqueue(span, item_src)
@@ -783,7 +776,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         let id: ItemId = self.register_item_maybe_enqueue(span, enqueue, hax_item, kind);
         // In mono mode, we keep trait decls generic.
-        let mut generics = if self.monomorphize() && !matches!(kind, TransItemSourceKind::TraitDecl)
+        let mut generics = if self.should_monomorphize_item(hax_item, kind)
+            && !matches!(kind, TransItemSourceKind::TraitDecl)
         {
             GenericArgs::empty()
         } else {

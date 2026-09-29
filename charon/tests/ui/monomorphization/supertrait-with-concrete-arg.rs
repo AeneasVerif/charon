@@ -1,6 +1,5 @@
 //@ revisions=poly,mono
 //@[mono] charon-args=--monomorphize
-//@[mono] known-failure
 pub struct Concrete;
 pub struct Wrapper<T>(T);
 
