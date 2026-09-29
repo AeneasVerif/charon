@@ -250,12 +250,6 @@ unsafe fn impl_Destruct_for_PortableHash::drop_glue<'_0, const K : usize>(_1: &'
     return
 }
 
-// Full name: test_crate::PortableHash::{impl Destruct for PortableHash<K>}
-impl<const K : usize> "impl_Destruct_for_PortableHash" Destruct for PortableHash<K> {
-    fn drop_glue<'_0_1> = impl_Destruct_for_PortableHash::drop_glue<'_0_1, K>
-    non-dyn-compatible
-}
-
 // Full name: test_crate::foo
 fn foo(_1: PortableHash<42usize>)
 {

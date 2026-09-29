@@ -381,11 +381,14 @@ impl<'tcx> TranslateCtx<'tcx> {
     /// recursively register the items it refers to. We call this on the crate root and end up
     /// exploring the whole crate.
     #[tracing::instrument(skip(self))]
-    pub fn enqueue_module_item(&mut self, def_id: &hax::DefId) {
+    pub fn enqueue_module_item(&mut self, def_id: &hax::DefId, started_from: bool) {
+        if started_from {
+            self.started_from.insert(def_id.clone());
+        }
         if let Some(trait_def_id) = self.is_method_decl_without_default(def_id) {
             // Don't translate the method itself as it doesn't correspond to an item, translate the
             // trait instead.
-            self.enqueue_module_item(&trait_def_id);
+            self.enqueue_module_item(&trait_def_id, started_from);
             return;
         }
         let Some(kind) = self.base_kind_for_item(def_id) else {
@@ -1160,6 +1163,7 @@ pub fn translate<'tcx>(
         file_to_id: Default::default(),
         items_to_translate: Default::default(),
         processed: Default::default(),
+        started_from: Default::default(),
         translate_stack: Default::default(),
         cached_spans: Default::default(),
         cached_file_ids: Default::default(),
@@ -1190,7 +1194,7 @@ pub fn translate<'tcx>(
                 if let Ok(def_ids) = ctx.resolve_path(Span::dummy(), &pattern, strict) {
                     for def_id in def_ids {
                         let def_id: hax::DefId = def_id.sinto(&ctx.hax_state);
-                        ctx.enqueue_module_item(&def_id);
+                        ctx.enqueue_module_item(&def_id, true);
                     }
                 }
             }
@@ -1204,7 +1208,7 @@ pub fn translate<'tcx>(
                     if !matches!(def_id.kind, hax::DefKind::Mod)
                         && def_id.attrs(tcx).iter().any(|a| a.path_matches(&attr_path))
                     {
-                        ctx.enqueue_module_item(&def_id);
+                        ctx.enqueue_module_item(&def_id, true);
                     }
                 };
                 for ldid in tcx.hir_crate_items(()).definitions() {
@@ -1217,7 +1221,7 @@ pub fn translate<'tcx>(
                     if !matches!(def_id.kind, hax::DefKind::Mod)
                         && def_id.visibility(tcx) == Some(true)
                     {
-                        ctx.enqueue_module_item(&def_id);
+                        ctx.enqueue_module_item(&def_id, true);
                     }
                 };
                 for ldid in tcx.hir_crate_items(()).definitions() {

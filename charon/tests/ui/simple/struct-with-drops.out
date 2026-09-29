@@ -337,12 +337,6 @@ unsafe fn impl_Destruct_for_A::drop_glue<'_0>(_1: &'_0 mut A)
     return
 }
 
-// Full name: test_crate::A::{impl Destruct for A}
-impl "impl_Destruct_for_A" Destruct for A {
-    fn drop_glue<'_0_1> = impl_Destruct_for_A::drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: test_crate::B::{impl Destruct for B}
 impl "impl_Destruct_for_B" Destruct for B {
     fn drop_glue<'_0_1> = impl_Destruct_for_B::drop_glue<'_0_1>

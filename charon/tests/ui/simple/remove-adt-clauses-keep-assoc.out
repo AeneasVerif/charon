@@ -61,16 +61,6 @@ where
     return
 }
 
-// Full name: test_crate::Direct::{impl Destruct for Direct<T>[TraitClause0, TraitClause1]}
-impl<T> "impl_Destruct_for_Direct" Destruct for Direct<T>[TraitClause0, TraitClause1]
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: HasAssoc),
-{
-    fn drop_glue<'_0_1> = impl_Destruct_for_Direct::drop_glue<'_0_1, T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
-}
-
 // Full name: test_crate::BaseWithAssoc
 trait BaseWithAssoc<Self>
 {
@@ -116,16 +106,6 @@ where
     return
 }
 
-// Full name: test_crate::Transitive::{impl Destruct for Transitive<T>[TraitClause0, TraitClause1]}
-impl<T> "impl_Destruct_for_Transitive" Destruct for Transitive<T>[TraitClause0, TraitClause1]
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: DerivedNoAssoc),
-{
-    fn drop_glue<'_0_1> = impl_Destruct_for_Transitive::drop_glue<'_0_1, T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
-}
-
 // Full name: test_crate::MarkerParent
 trait MarkerParent<Self>
 {
@@ -163,16 +143,6 @@ where
         unwind_continue
     storage_dead(_1)
     return
-}
-
-// Full name: test_crate::Marker::{impl Destruct for Marker<T>}
-impl<T> "impl_Destruct_for_Marker" Destruct for Marker<T>
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: MarkerChild),
-{
-    fn drop_glue<'_0_1> = impl_Destruct_for_Marker::drop_glue<'_0_1, T>[TraitClause0, TraitClause1]
-    non-dyn-compatible
 }
 
 // Full name: test_crate::use_all

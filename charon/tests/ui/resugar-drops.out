@@ -110,12 +110,6 @@ unsafe fn impl_Destruct_for_NeedsDrop::drop_glue<'_0>(_1: &'_0 mut NeedsDrop)
     return
 }
 
-// Full name: test_crate::NeedsDrop::{impl Destruct for NeedsDrop}
-impl "impl_Destruct_for_NeedsDrop" Destruct for NeedsDrop {
-    fn drop_glue<'_0_1> = impl_Destruct_for_NeedsDrop::drop_glue<'_0_1>
-    non-dyn-compatible
-}
-
 // Full name: test_crate::{impl Drop for NeedsDrop}
 impl "impl_Drop_for_NeedsDrop" Drop for NeedsDrop {
     proof ImpliedClause0: (NeedsDrop: MetaSized) = {built_in impl MetaSized for NeedsDrop}

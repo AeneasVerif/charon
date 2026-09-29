@@ -41,16 +41,6 @@ fn core::marker::MetaSized::{vtable}::<test_crate::wrap::{closure}::<u32>>() -> 
 
 static core::marker::MetaSized::{vtable}::<test_crate::wrap::{closure}::<u32>>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<test_crate::wrap::{closure}::<u32>>()
 
-struct () {}
-
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
-
 // Full name: core::marker::Tuple
 #[fundamental]
 #[lang_item(Tuple)]
@@ -67,6 +57,8 @@ pub trait Drop<Self>
     proof ImpliedClause0: (Self: MetaSized)
     vtable: core::ops::drop::Drop::{vtable}
 }
+
+struct () {}
 
 struct core::ops::function::FnOnce::{vtable} {
   size: usize,
@@ -236,12 +228,6 @@ unsafe fn impl_Destruct_for_Droppable::drop_glue<'_0>(_1: &'_0 mut Droppable)
     storage_dead(_2)
     storage_dead(_1)
     return
-}
-
-// Full name: test_crate::Droppable::{impl Destruct for Droppable}
-impl "impl_Destruct_for_Droppable" Destruct for Droppable {
-    fn drop_glue<'_0_1> = impl_Destruct_for_Droppable::drop_glue<'_0_1>
-    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Drop for Droppable}
@@ -1897,12 +1883,6 @@ fn main()
     storage_dead(_33)
     storage_dead(_32)
     return
-}
-
-// Full name: test_crate::main::{closure#2}::{impl Destruct for test_crate::main::{closure#2}}
-impl "impl_Destruct_for_closure" Destruct for test_crate::main::{closure#2} {
-    fn drop_glue<'_0_1> = impl_Destruct_for_closure::drop_glue<'_0_1>
-    non-dyn-compatible
 }
 
 

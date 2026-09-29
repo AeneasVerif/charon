@@ -354,6 +354,7 @@ impl ZipAst for ItemComparer<'_> {
             source_text: _,
             attr_info: left_attr_info,
             is_local: left_is_local,
+            started_from: left_started_from,
             opacity: left_opacity,
             lang_item: left_lang_item,
             diagnostic_item: left_diagnostic_item,
@@ -365,6 +366,7 @@ impl ZipAst for ItemComparer<'_> {
             source_text: _,
             attr_info: right_attr_info,
             is_local: right_is_local,
+            started_from: right_started_from,
             opacity: right_opacity,
             lang_item: right_lang_item,
             diagnostic_item: right_diagnostic_item,
@@ -375,6 +377,7 @@ impl ZipAst for ItemComparer<'_> {
         self.visit(left_span, right_span)?;
         self.visit(left_attr_info, right_attr_info)?;
         self.visit(left_is_local, right_is_local)?;
+        self.visit(left_started_from, right_started_from)?;
         self.visit(left_opacity, right_opacity)?;
         self.visit(left_lang_item, right_lang_item)?;
         self.visit(left_diagnostic_item, right_diagnostic_item)?;

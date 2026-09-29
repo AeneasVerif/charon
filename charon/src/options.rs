@@ -684,21 +684,6 @@ pub enum StartFrom {
     Pub,
 }
 
-impl StartFrom {
-    pub fn matches(&self, ctx: &TranslatedCrate, item_meta: &ItemMeta) -> bool {
-        match self {
-            StartFrom::Pattern { pattern, .. } => pattern.matches(ctx, &item_meta.name),
-            StartFrom::Attribute(attr) => item_meta
-                .attr_info
-                .attributes
-                .iter()
-                .filter_map(|a| a.as_unknown())
-                .any(|raw_attr| raw_attr.path == *attr),
-            StartFrom::Pub => item_meta.attr_info.public && item_meta.is_local,
-        }
-    }
-}
-
 /// The options that control translation and transformation.
 pub struct TranslateOptions {
     /// Items from which to start translation.

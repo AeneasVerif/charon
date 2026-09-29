@@ -24,29 +24,6 @@ pub trait Destruct<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::Tuple
-#[fundamental]
-#[lang_item(Tuple)]
-pub trait Tuple<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
-// Full name: core::ops::function::FnOnce
-#[fundamental]
-#[lang_item(FnOnce)]
-pub trait FnOnce<Self, Args>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Args: Sized)
-    proof ImpliedClause2: (Args: Tuple)
-    proof ImpliedClause3: (Self::Output: Sized)
-    type Output
-    fn call_once;
-    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
-}
-
 // Full name: test_crate::HasAssoc
 trait HasAssoc<Self>
 {
@@ -80,39 +57,6 @@ where
         unwind_continue
     storage_dead(x)
     return
-}
-
-// Full name: test_crate::make_closure::{impl FnOnce<()> for {closure}<T>[TraitClause0, TraitClause1]}::call_once
-fn call_once<T>(_1: {closure}<T>[TraitClause0, TraitClause1], tupled_args: ())
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: HasAssoc),
-{
-    let _0: (); // return
-    let _1: {closure}<T>[TraitClause0, TraitClause1]; // arg #1
-    let tupled_args: (); // arg #2
-
-    storage_live(_0)
-    _0 = ()
-    _0 = ()
-    storage_dead(tupled_args)
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::make_closure::{impl FnOnce<()> for {closure}<T>[TraitClause0, TraitClause1]}
-impl<T> "impl_FnOnce_unit_for_closure" FnOnce<()> for {closure}<T>[TraitClause0, TraitClause1]
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: HasAssoc),
-{
-    proof ImpliedClause0: ({closure}<T>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for {closure}<T>[TraitClause0, TraitClause1]}
-    proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
-    proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
-    proof ImpliedClause3: ((): Sized) = {built_in impl Sized for ()}
-    type Output = ()
-    fn call_once = call_once<T>[TraitClause0, TraitClause1]
-    vtable: lazy
 }
 
 

@@ -5,6 +5,15 @@
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
 struct () {}
 
 // Full name: test_crate::foo::{impl Trait for ()}::defaulted
@@ -20,6 +29,44 @@ pub fn impl_Trait_for_unit::defaulted<'_0>(self: &'_0 ())
     return
 }
 
+// Full name: test_crate::foo::Trait
+pub trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn defaulted<'_0_1> = test_crate::foo::Trait::defaulted<'_0_1, Self>[Self]
+    vtable: test_crate::foo::Trait::{vtable}
+}
+
+// Full name: test_crate::foo::{impl Trait for ()}
+impl "impl_Trait_for_unit" Trait for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    fn defaulted<'_0_1> = impl_Trait_for_unit::defaulted<'_0_1>
+    vtable: lazy
+}
+
+// Full name: test_crate::main::takes_trait
+fn takes_trait<'_0, T>(x: &'_0 T)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Trait),
+    TypeOutlives0: T: '_0,
+{
+    let _0: (); // return
+    let x: &'1 T; // arg #1
+    let _2: &'2 T; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = &(*x)
+    _0 = TraitClause1::defaulted<'3>(move _2)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_2)
+    storage_dead(x)
+    return
+}
+
 // Full name: test_crate::main
 fn main()
 {
@@ -27,42 +74,66 @@ fn main()
     let _1: (); // anonymous local
     let _2: &'1 (); // anonymous local
     let _3: &'2 (); // anonymous local
-    let _4: &'3 (); // anonymous local
-    let _5: &'6 (); // anonymous local
-    let _6: (); // anonymous local
+    let _4: (); // anonymous local
+    let _5: &'3 (); // anonymous local
+    let _6: &'4 (); // anonymous local
+    let _7: &'5 (); // anonymous local
+    let _8: &'6 (); // anonymous local
+    let _9: &'9 (); // anonymous local
+    let _10: &'12 (); // anonymous local
+    let _11: (); // anonymous local
+    let _12: &'13 (); // anonymous local
+    let _13: (); // anonymous local
 
-    storage_live(_4)
-    storage_live(_5)
-    storage_live(_6)
-    _6 = ()
-    _5 = &_6
-    _4 = move _5
+    storage_live(_8)
+    storage_live(_10)
+    storage_live(_11)
+    _11 = ()
+    _10 = &_11
+    _8 = move _10
     storage_live(_0)
-    storage_live(_3)
+    storage_live(_6)
+    storage_live(_7)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _3 = move _4
+    storage_live(_3)
+    _7 = move _8
+    _3 = &(*_7)
     _2 = &(*_3)
-    _1 = impl_Trait_for_unit::defaulted<'5>(move _2)
-    ↳⚡ storage_dead(_3)
+    _1 = takes_trait<'8, ()>[{built_in impl Sized for ()}, impl_Trait_for_unit](move _2)
+    ↳⚡ storage_dead(_7)
+        storage_dead(_6)
         unwind_continue
+    storage_live(_9)
+    storage_live(_12)
+    storage_live(_13)
+    _13 = ()
+    _12 = &_13
+    _9 = move _12
     storage_dead(_2)
-    storage_dead(_1)
-    _0 = ()
     storage_dead(_3)
-    storage_dead(_6)
+    storage_dead(_1)
+    storage_live(_4)
+    storage_live(_5)
+    _6 = move _9
+    _5 = &(*_6)
+    _4 = impl_Trait_for_unit::defaulted<'11>(move _5)
+    ↳⚡ storage_dead(_7)
+        storage_dead(_6)
+        unwind_continue
     storage_dead(_5)
     storage_dead(_4)
+    _0 = ()
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_13)
+    storage_dead(_12)
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_dead(_9)
+    storage_dead(_8)
     return
-}
-
-// Full name: test_crate::foo::Trait
-pub trait Trait<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    fn defaulted<'_0_1> = test_crate::foo::Trait::defaulted<'_0_1, Self>[Self]
-    vtable: test_crate::foo::Trait::{vtable}
 }
 
 pub fn test_crate::foo::Trait::defaulted<'_0, Self>(self: &'_0 Self)
@@ -78,13 +149,6 @@ where
     _0 = ()
     storage_dead(self)
     return
-}
-
-// Full name: test_crate::foo::{impl Trait for ()}
-impl "impl_Trait_for_unit" Trait for () {
-    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
-    fn defaulted<'_0_1> = impl_Trait_for_unit::defaulted<'_0_1>
-    vtable: lazy
 }
 
 

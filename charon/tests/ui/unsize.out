@@ -244,15 +244,6 @@ where
     return
 }
 
-// Full name: test_crate::MyPtr::{impl Destruct for MyPtr<T>[TraitClause0]}
-impl<T> "impl_Destruct_for_MyPtr" Destruct for MyPtr<T>[TraitClause0]
-where
-    TraitClause0: (T: MetaSized),
-{
-    fn drop_glue<'_0_1> = impl_Destruct_for_MyPtr::drop_glue<'_0_1, T>[TraitClause0]
-    non-dyn-compatible
-}
-
 fn test_crate::{MyPtr<T>[TraitClause0::ImpliedClause0]}::new<T>(x: T) -> MyPtr<T>[TraitClause0::ImpliedClause0]
 where
     TraitClause0: (T: Sized),

@@ -16,14 +16,6 @@ pub trait Sized<Self>
 
 struct () {}
 
-// Full name: core::marker::Destruct
-#[lang_item(Destruct)]
-pub trait Destruct<Self>
-{
-    fn drop_glue<'_0_1>;
-    non-dyn-compatible
-}
-
 // Full name: core::ops::drop::Drop
 #[lang_item(Drop)]
 pub trait Drop<Self>
@@ -118,15 +110,6 @@ where
     storage_dead(_2)
     storage_dead(_1)
     return
-}
-
-// Full name: test_crate::Foo::{impl Destruct for Foo<T>[TraitClause0]}
-impl<T> "impl_Destruct_for_Foo" Destruct for Foo<T>[TraitClause0]
-where
-    TraitClause0: (T: Sized),
-{
-    fn drop_glue<'_0_1> = impl_Destruct_for_Foo::drop_glue<'_0_1, T>[TraitClause0]
-    non-dyn-compatible
 }
 
 // Full name: test_crate::{impl Drop for Foo<T>[TraitClause0]}

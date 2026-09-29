@@ -895,6 +895,10 @@ and item_meta = {
   is_local : bool;
       (** [true] if the type decl is a local type decl, [false] if it comes from
           an external crate. *)
+  started_from : bool;
+      (** Whether this item was selected as a starting point for translation
+          (using [--start-from], or by default all the top-level items in the
+          main crate). *)
   opacity : item_opacity;
       (** Whether this item is considered opaque. For function and globals, this
           means we don't translate the body (the code); for ADTs, this means we

@@ -63,6 +63,10 @@ pub struct TranslateCtx<'tcx> {
     pub items_to_translate: VecDeque<TransItemSource>,
     /// The declaration we've already processed (successfully or not).
     pub processed: HashSet<TransItemSource>,
+    /// Items that were selected by `--start-from`. Because we don't translate modules or inherent
+    /// impls as separate items, we propagate that info to the contained items, which will also be
+    /// added to this set.
+    pub started_from: HashSet<hax::DefId>,
     /// Stack of the translations currently happening. Used to avoid accidental cycles.
     pub translate_stack: Vec<ItemId>,
     /// Cache of the translated span, as translating one is costly
