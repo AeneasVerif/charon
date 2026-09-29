@@ -261,7 +261,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         }
     }
 
-    fn translate_unsizing_metadata(
+    pub(crate) fn translate_unsizing_metadata(
         &mut self,
         span: Span,
         meta: hax::UnsizingMetadata,

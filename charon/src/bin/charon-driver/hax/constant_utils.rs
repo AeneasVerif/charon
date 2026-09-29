@@ -64,11 +64,12 @@ pub enum ConstantExprKind {
     /// advanced const generics expressions.
     NamedGlobal(ItemRef),
     /// A shared reference to a static variable.
-    Borrow(ConstantExpr),
+    Borrow(ConstantExpr, Option<UnsizingMetadata>),
     /// A raw borrow (`*const` or `*mut`).
     RawBorrow {
         mutability: Mutability,
         arg: ConstantExpr,
+        metadata: Option<UnsizingMetadata>,
     },
     ConstRef {
         id: ParamConst,

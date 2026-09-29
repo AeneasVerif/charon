@@ -146,7 +146,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     ConstantExprKind::Global(global_ref)
                 }
             },
-            hax::ConstantExprKind::Borrow(v)
+            hax::ConstantExprKind::Borrow(v, _)
                 if let hax::ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)) =
                     v.contents.as_ref()
                     && !self.t_ctx.options.unsized_strings =>
@@ -154,50 +154,37 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 ConstantExprKind::Str(s.clone())
             }
 
-            hax::ConstantExprKind::Borrow(v) => {
+            hax::ConstantExprKind::Borrow(v, metadata) => {
                 let mut val = self.translate_constant_expr(span, v)?;
-                let (metadata, new_ty) = match (v.contents.as_ref(), val.ty().kind()) {
-                    (
-                        hax::ConstantExprKind::Array { fields },
-                        TyKind::Slice(subty, ty_is_sized),
-                    ) => {
-                        let len = ConstantExpr::mk_usize(fields.len() as u128);
-                        // the sub-constant is an array, that has it's reference unsized
-                        (
-                            Some(UnsizingMetadata::Length(len.clone())),
-                            Some(Ty::mk_array(subty.clone(), len, ty_is_sized.clone())),
-                        )
-                    }
-
-                    (hax::ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)), _) => {
-                        let len = ConstantExpr::mk_usize(s.len() as u128);
-                        let ty_is_sized = self.translate_sized_proof(span, self.tcx.types.u8)?;
-                        // the sub-constant is an array, that has it's reference unsized
-                        (
-                            Some(UnsizingMetadata::Length(len.clone())),
-                            Some(Ty::mk_array(Ty::mk_u8(), len, ty_is_sized)),
-                        )
-                    }
-
-                    // A reference to an array-typed global, unsized to a slice.
-                    (_, TyKind::Array(_, len, _))
-                        if let TyKind::Ref(_, pointee, _) = ty.kind()
-                            && pointee.is_slice() =>
-                    {
-                        (Some(UnsizingMetadata::Length(len.clone())), None)
-                    }
-
-                    _ => (None, None),
-                };
-                if let Some(new_ty) = new_ty {
-                    val.with_contents_mut(|_, ty| *ty = new_ty);
+                // With `--unsized-strings`, a string literal is the `[u8; N]` behind the `&str`.
+                if let hax::ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)) =
+                    v.contents.as_ref()
+                {
+                    let len = ConstantExpr::mk_usize(s.len() as u128);
+                    let ty_is_sized = self.translate_sized_proof(span, self.tcx.types.u8)?;
+                    let array_ty = Ty::mk_array(Ty::mk_u8(), len, ty_is_sized);
+                    val.with_contents_mut(|_, ty| *ty = array_ty);
                 }
+                let metadata = if let Some(metadata) = metadata {
+                    Some(self.translate_unsizing_metadata(span, metadata.clone())?)
+                } else {
+                    None
+                };
                 ConstantExprKind::Ref(val, metadata)
             }
-            hax::ConstantExprKind::RawBorrow { mutability, arg } => {
+            hax::ConstantExprKind::RawBorrow {
+                mutability,
+                arg,
+                metadata,
+            } => {
                 let arg = self.translate_constant_expr(span, arg)?;
                 let rk = RefKind::mutable(mutability.is_mut());
-                ConstantExprKind::Ptr(rk, arg, None)
+                let metadata = if let Some(metadata) = metadata {
+                    Some(self.translate_unsizing_metadata(span, metadata.clone())?)
+                } else {
+                    None
+                };
+                ConstantExprKind::Ptr(rk, arg, metadata)
             }
             hax::ConstantExprKind::ConstRef { id } => {
                 match self.lookup_const_generic_var(span, id) {

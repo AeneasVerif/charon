@@ -1011,7 +1011,7 @@ impl Align {
 }
 
 /// The metadata to attach to the newly-unsized ptr.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum UnsizingMetadata {
     /// Unsize an array to a slice, storing the length as metadata.
     Length(ConstantExpr),
@@ -1064,7 +1064,7 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
         tcx.struct_lockstep_tails_raw(src_ty, tgt_ty, |ty| normalize(tcx, typing_env, ty));
 
     match (&src_ty.kind(), &tgt_ty.kind()) {
-        (ty::Array(_, len), ty::Slice(_)) => {
+        (ty::Array(_, len), ty::Slice(_) | ty::Str) => {
             let len = len.sinto(s);
             UnsizingMetadata::Length(len)
         }

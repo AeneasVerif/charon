@@ -190,8 +190,21 @@ pub(crate) fn valtree_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
         (_, ty::Pat(inner_ty, _)) => {
             return valtree_to_constant_expr(s, valtree, *inner_ty, span);
         }
+        (ty::ValTreeKind::Branch(fields), ty::Ref(_, inner_ty, _))
+            if let ty::Slice(_) | ty::Str = inner_ty.kind() =>
+        {
+            let len = fields.len() as u64;
+            let pointee_ty = match inner_ty.kind() {
+                ty::Slice(elem) => ty::Ty::new_array(tcx, *elem, len),
+                ty::Str => *inner_ty,
+                _ => unreachable!(),
+            };
+            let val = valtree_to_constant_expr(s, valtree, pointee_ty, span);
+            let len = ty::Const::from_target_usize(tcx, len).sinto(s);
+            ConstantExprKind::Borrow(val, Some(UnsizingMetadata::Length(len)))
+        }
         (_, ty::Ref(_, inner_ty, _)) => {
-            ConstantExprKind::Borrow(valtree_to_constant_expr(s, valtree, *inner_ty, span))
+            ConstantExprKind::Borrow(valtree_to_constant_expr(s, valtree, *inner_ty, span), None)
         }
         (ty::ValTreeKind::Branch(valtrees), ty::Str) => {
             let bytes = valtrees
@@ -402,6 +415,28 @@ fn mplace_to_raw_bytes<'tcx, S: UnderOwnerState<'tcx>>(
     interp_ok(bytes)
 }
 
+/// The metadata of a pointer to `place`, whose type is unsized.
+fn pointer_metadata<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    ecx: &const_eval::CompileTimeInterpCx<'tcx>,
+    place: &rustc_const_eval::interpret::MPlaceTy<'tcx>,
+) -> InterpResult<'tcx, UnsizingMetadata> {
+    use rustc_const_eval::interpret::Projectable;
+    let tcx = s.base().tcx;
+    let tail = tcx.struct_tail_for_codegen(place.layout.ty, s.typing_env());
+    // The sized type the tail would be unsized from.
+    let sized_tail = match tail.kind() {
+        ty::Slice(_) | ty::Str => {
+            let len = place.meta().unwrap_meta().to_target_usize(ecx)?;
+            ty::Ty::new_array(tcx, tail.sequence_element_type(tcx), len)
+        }
+        _ => unreachable!("unexpected unsized tail type {tail:?}"),
+    };
+    let sized_tail = ty::Ty::new_imm_ref(tcx, tcx.lifetimes.re_static, sized_tail);
+    let unsized_tail = ty::Ty::new_imm_ref(tcx, tcx.lifetimes.re_static, tail);
+    interp_ok(compute_unsizing_metadata(s, sized_tail, unsized_tail))
+}
+
 /// Convert the target of a valid pointer. Pointers to globals are kept as references to these
 /// globals, and we fallback to reading the bytes for other cases.
 fn pointee_to_const<'tcx, S: UnderOwnerState<'tcx>>(
@@ -409,14 +444,19 @@ fn pointee_to_const<'tcx, S: UnderOwnerState<'tcx>>(
     span: rustc_span::Span,
     ecx: &const_eval::CompileTimeInterpCx<'tcx>,
     place: rustc_const_eval::interpret::MPlaceTy<'tcx>,
-) -> InterpResult<'tcx, ConstantExpr> {
+) -> InterpResult<'tcx, (ConstantExpr, Option<UnsizingMetadata>)> {
     use rustc_const_eval::interpret::Projectable;
     let tcx = s.base().tcx;
     let ty = place.layout.ty;
 
+    let metadata = match ty.kind() {
+        ty::Slice(_) | ty::Str => Some(pointer_metadata(s, ecx, &place)?),
+        _ => None,
+    };
+    // A slice value is viewed at the corresponding array type.
     let global_ty = match ty.kind() {
         ty::Slice(elem) => Some(ty::Ty::new_array(tcx, *elem, place.len(ecx)?)),
-        // TODO: str? dyn?
+        // TODO: dyn?
         _ if ty.is_sized(tcx, s.typing_env()) => Some(ty),
         _ => None,
     };
@@ -437,10 +477,20 @@ fn pointee_to_const<'tcx, S: UnderOwnerState<'tcx>>(
         && let Some(item) = alloc_as_global(s, alloc_id)
     {
         let kind = ConstantExprKind::NamedGlobal(item);
-        interp_ok(kind.decorate(global_ty.sinto(s), span.sinto(s)))
+        interp_ok((kind.decorate(global_ty.sinto(s), span.sinto(s)), metadata))
     } else {
-        // HACK: fallback to reading the bytes of the pointee
-        op_to_const(s, span, ecx, place.into())
+        // HACK: fallback to reading the bytes of the pointee, at the type of `global_ty`.
+        let place = match global_ty {
+            Some(global_ty) if global_ty != ty => {
+                let layout = tcx
+                    .layout_of(s.typing_env().as_query_input(global_ty))
+                    .unwrap();
+                // retype the place
+                place.offset(rustc_abi::Size::ZERO, layout, ecx)?
+            }
+            _ => place,
+        };
+        interp_ok((op_to_const(s, span, ecx, place.into())?, metadata))
     }
 }
 
@@ -552,12 +602,13 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
                 .filter(|place| ecx.ptr_get_alloc_id(place.ptr(), 0).discard_err().is_some());
             if let Some(place) = place {
                 // Valid pointer case
-                let val = pointee_to_const(s, span, ecx, place)?;
+                let (val, metadata) = pointee_to_const(s, span, ecx, place)?;
                 match ty.kind() {
-                    ty::Ref(..) => ConstantExprKind::Borrow(val),
+                    ty::Ref(..) => ConstantExprKind::Borrow(val, metadata),
                     ty::RawPtr(.., mutability) => ConstantExprKind::RawBorrow {
                         arg: val,
                         mutability: mutability.sinto(s),
+                        metadata,
                     },
                     _ => unreachable!(),
                 }
