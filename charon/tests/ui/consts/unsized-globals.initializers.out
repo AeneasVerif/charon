@@ -424,26 +424,14 @@ pub fn inline_const()
 {
     let _0: (); // return
     let _1: &'1 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
-    let _2: Wrap<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
-    let _3: Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
-    let _4: &'2 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    storage_live(_2)
-    _2 = Wrap { a: const 2u8, b: const [3u16, 4u16] }
-    storage_live(_3)
-    _3 = Outer { x: const 1u32, w: move _2 }
-    storage_live(_4)
-    _4 = &_3
-    _1 = move _4
+    _1 = const &Outer { x: 1u32, w: Wrap { a: 2u8, b: [3u16, 4u16] } } with_metadata(2usize)
     set_type(typeof(_1) <= &'3 Outer<[u16]>[{built_in impl MetaSized for [u16]}])
     storage_dead(_1)
     _0 = ()
-    storage_dead(_4)
-    storage_dead(_3)
-    storage_dead(_2)
     return
 }
 

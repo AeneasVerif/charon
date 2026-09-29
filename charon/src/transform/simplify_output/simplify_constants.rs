@@ -37,14 +37,13 @@ fn transform_constant_expr(
             let cast = UnOp::Cast(CastKind::RawPtr(usize_ty.clone(), val.ty().clone()));
             Rvalue::UnaryOp(cast, Operand::Const(ConstantExpr::new(ptr_usize, usize_ty)))
         }
-        cexpr @ (ConstantExprKind::Ref(..) | ConstantExprKind::Ptr(..)) => {
-            let (rk, bval, metadata) = match cexpr {
-                ConstantExprKind::Ref(bval, metadata) => (None, bval.clone(), metadata.clone()),
-                ConstantExprKind::Ptr(rk, bval, metadata) => {
-                    (Some(*rk), bval.clone(), metadata.clone())
-                }
-                _ => unreachable!(),
-            };
+        cexpr @ (ConstantExprKind::Ref(bval, metadata)
+        | ConstantExprKind::Ptr(_, bval, metadata)) => {
+            let rk = cexpr.as_ptr().map(|(rk, _, _)| *rk);
+
+            if !bval.ty().get_ptr_metadata(ctx.get_crate()).is_none() {
+                return Operand::Const(val);
+            }
 
             // As the value is originally an argument, it must be Sized, hence no metadata
             let place = match bval.kind() {
@@ -53,7 +52,7 @@ fn transform_constant_expr(
                 }
                 _ => {
                     // Recurse on the borrowed value
-                    let bval = transform_constant_expr(ctx, bval);
+                    let bval = transform_constant_expr(ctx, bval.clone());
 
                     // Evaluate the referenced value
                     let bval_ty = bval.ty().clone();
@@ -71,7 +70,7 @@ fn transform_constant_expr(
                         UnOp::Cast(CastKind::Unsize(
                             sized_ref.ty.clone(),
                             val.ty().clone(),
-                            metadata,
+                            metadata.clone(),
                         )),
                         Operand::Move(sized_ref),
                     )
@@ -82,7 +81,7 @@ fn transform_constant_expr(
                         UnOp::Cast(CastKind::Unsize(
                             sized_raw_ref.ty.clone(),
                             val.ty().clone(),
-                            metadata,
+                            metadata.clone(),
                         )),
                         Operand::Move(sized_raw_ref),
                     )

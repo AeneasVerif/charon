@@ -39,11 +39,11 @@ pub enum ConstantExprKind {
     Array(Vec<ConstantExpr>),
     /// A shared reference to a constant value.
     ///
-    /// This is eliminated inside functions if `--raw-consts` is off.
+    /// This is eliminated inside functions if `--raw-consts` is off, unless the pointee is unsized.
     Ref(ConstantExpr, Option<UnsizingMetadata>),
     /// A pointer to a static.
     ///
-    /// This is eliminated inside functions if `--raw-consts` is off.
+    /// This is eliminated inside functions if `--raw-consts` is off, unless the pointee is unsized.
     Ptr(RefKind, ConstantExpr, Option<UnsizingMetadata>),
     /// `str` value.
     Str(String),

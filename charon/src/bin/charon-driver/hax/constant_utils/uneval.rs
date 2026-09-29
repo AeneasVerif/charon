@@ -203,6 +203,14 @@ pub(crate) fn valtree_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
             let len = ty::Const::from_target_usize(tcx, len).sinto(s);
             ConstantExprKind::Borrow(val, Some(UnsizingMetadata::Length(len)))
         }
+        // For other unsized pointees, computing the metadata requires putting them in an allocation.
+        (_, ty::Ref(_, inner_ty, _)) if !inner_ty.is_sized(tcx, s.typing_env()) => {
+            let val = tcx.valtree_to_const_val(ty::Value { ty, valtree });
+            match const_value_to_constant_expr(s, ty, val, span).discard_err() {
+                Some(expr) => return expr,
+                None => fatal!(s[span], "Couldn't read an unsized constant"; {valtree, ty}),
+            }
+        }
         (_, ty::Ref(_, inner_ty, _)) => {
             ConstantExprKind::Borrow(valtree_to_constant_expr(s, valtree, *inner_ty, span), None)
         }
@@ -415,6 +423,17 @@ fn mplace_to_raw_bytes<'tcx, S: UnderOwnerState<'tcx>>(
     interp_ok(bytes)
 }
 
+/// The concrete type behind the `dyn` tail of `place`, found in its vtable.
+fn dyn_concrete_ty<'tcx>(
+    ecx: &const_eval::CompileTimeInterpCx<'tcx>,
+    place: &rustc_const_eval::interpret::MPlaceTy<'tcx>,
+    preds: &'tcx ty::List<ty::PolyExistentialPredicate<'tcx>>,
+) -> InterpResult<'tcx, ty::Ty<'tcx>> {
+    use rustc_const_eval::interpret::Projectable;
+    let vtable = place.meta().unwrap_meta().to_pointer(ecx);
+    ecx.get_ptr_vtable_ty(vtable, Some(preds))
+}
+
 /// The metadata of a pointer to `place`, whose type is unsized.
 fn pointer_metadata<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
@@ -430,6 +449,7 @@ fn pointer_metadata<'tcx, S: UnderOwnerState<'tcx>>(
             let len = place.meta().unwrap_meta().to_target_usize(ecx)?;
             ty::Ty::new_array(tcx, tail.sequence_element_type(tcx), len)
         }
+        ty::Dynamic(preds, ..) => dyn_concrete_ty(ecx, place, preds)?,
         _ => unreachable!("unexpected unsized tail type {tail:?}"),
     };
     let sized_tail = ty::Ty::new_imm_ref(tcx, tcx.lifetimes.re_static, sized_tail);
@@ -449,14 +469,16 @@ fn pointee_to_const<'tcx, S: UnderOwnerState<'tcx>>(
     let tcx = s.base().tcx;
     let ty = place.layout.ty;
 
-    let metadata = match ty.kind() {
-        ty::Slice(_) | ty::Str => Some(pointer_metadata(s, ecx, &place)?),
-        _ => None,
+    let metadata = if ty.is_sized(tcx, s.typing_env()) {
+        None
+    } else {
+        Some(pointer_metadata(s, ecx, &place)?)
     };
-    // A slice value is viewed at the corresponding array type.
+    // A slice or `dyn Trait` value is viewed at the sized type it was unsized from. Other unsized
+    // values (e.g. a `CStr`) have no such type: we read them at their unsized type.
     let global_ty = match ty.kind() {
         ty::Slice(elem) => Some(ty::Ty::new_array(tcx, *elem, place.len(ecx)?)),
-        // TODO: dyn?
+        ty::Dynamic(preds, ..) => Some(dyn_concrete_ty(ecx, &place, preds)?),
         _ if ty.is_sized(tcx, s.typing_env()) => Some(ty),
         _ => None,
     };
@@ -625,8 +647,16 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
             let op = ecx.project_field(&op, FieldIdx::from_u16(0))?;
             *op_to_const(s, span, ecx, op)?.contents
         }
-        ty::Dynamic(..)
-        | ty::Foreign(..)
+        ty::Dynamic(preds, ..) => {
+            let place = op.assert_mem_place();
+            let concrete_ty = dyn_concrete_ty(ecx, &place, preds)?;
+            let layout = (s.base().tcx)
+                .layout_of(s.typing_env().as_query_input(concrete_ty))
+                .unwrap();
+            let place = place.offset(rustc_abi::Size::ZERO, layout, ecx)?;
+            return op_to_const(s, span, ecx, place.into());
+        }
+        ty::Foreign(..)
         | ty::UnsafeBinder(..)
         | ty::CoroutineClosure(..)
         | ty::Coroutine(..)

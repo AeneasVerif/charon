@@ -1,5 +1,4 @@
 //@ revisions=values,initializers
-//@[values] known-failure
 //@[values] charon-args=--consts=values
 //@[initializers] charon-args=--consts=initializers
 

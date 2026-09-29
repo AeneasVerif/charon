@@ -100,6 +100,7 @@ pub struct Field {
 /// their address. It's empty for `Sized` types, and interesting for unsized
 /// aka dynamically-sized types.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumIsA)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(default_state = ())]
 pub enum PtrMetadata {
