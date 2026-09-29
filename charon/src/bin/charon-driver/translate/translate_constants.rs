@@ -8,20 +8,26 @@ use charon_lib::ast::*;
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn translate_constant_literal_to_constant_expr_kind(
         &mut self,
-        _span: Span,
+        span: Span,
         v: &hax::ConstantLiteral,
     ) -> Result<ConstantExprKind, Error> {
         Ok(match v {
             hax::ConstantLiteral::ByteStr(bs) => ConstantExprKind::ByteStr(bs.clone()),
+            // The data backing a string, when we represent strings as unsized [u8]s.
+            hax::ConstantLiteral::Str(str) if self.t_ctx.options.unsized_strings => {
+                ConstantExprKind::RawMemory(str.bytes().map(Byte::Value).collect())
+            }
+            // A `str` value not behind a reference, e.g. the tail of a `str`-tailed DST
             hax::ConstantLiteral::Str(str) => {
-                // We should only get here if we actually want to translate the data
-                // backing the string, when we represent strings as unsized [u8]s
-                assert!(self.t_ctx.options.unsized_strings);
-
-                let str_bytes = str.as_bytes();
-                return Ok(ConstantExprKind::RawMemory(
-                    str_bytes.iter().map(|b| Byte::Value(*b)).collect(),
-                ));
+                let ty_is_sized = self.translate_sized_proof(span, self.tcx.types.u8)?;
+                let bytes = str
+                    .bytes()
+                    .map(|b| IntegerValue::Unsigned(UIntTy::U8, b.into()).to_constant())
+                    .collect();
+                let slice_ty = Ty::mk_slice(Ty::mk_u8(), ty_is_sized);
+                let bytes = ConstantExpr::new(ConstantExprKind::Array(bytes), slice_ty);
+                // we encode `str` as `struct { [u8] }`
+                ConstantExprKind::Adt(None, vec![bytes])
             }
             hax::ConstantLiteral::Char(c) => ConstantExprKind::Char(*c),
             hax::ConstantLiteral::Bool(b) => ConstantExprKind::Bool(*b),
@@ -167,12 +173,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         let len = ConstantExpr::mk_usize(s.len() as u128);
                         let ty_is_sized = self.translate_sized_proof(span, self.tcx.types.u8)?;
                         // the sub-constant is an array, that has it's reference unsized
-                        let subty =
-                            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::U8)))
-                                .into();
                         (
                             Some(UnsizingMetadata::Length(len.clone())),
-                            Some(Ty::mk_array(subty, len, ty_is_sized)),
+                            Some(Ty::mk_array(Ty::mk_u8(), len, ty_is_sized)),
                         )
                     }
 

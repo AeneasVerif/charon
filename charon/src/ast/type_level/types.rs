@@ -244,6 +244,12 @@ impl Ty {
         ))))
     }
 
+    pub fn mk_u8() -> Ty {
+        static_type!(TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(
+            UIntTy::U8
+        ))))
+    }
+
     pub fn mk_array(ty: Ty, len: ConstantExpr, ty_is_sized: Option<TraitRef>) -> Ty {
         TyKind::Array(ty, len, ty_is_sized).into_ty()
     }
