@@ -1,6 +1,6 @@
 error: Type error after translation:
        Mismatched trait clause:
-       expected: TraitClause1: ((): Parent<Wrapper>)
+       expected: TraitClause1: ((): Parent<Wrapper::<u8>>)
             got: {impl Parent<Wrapper::<u8>> for ()}: Parent<(), Wrapper::<u8>>
        Visitor stack:
          charon_lib::ast::items::trait_impl::TraitImpl
@@ -13,7 +13,7 @@ error: Type error after translation:
 
 error: Type error after translation:
        Mismatched trait clause:
-       expected: TraitClause2: ((): Parent<Wrapper>)
+       expected: TraitClause2: ((): Parent<Wrapper::<Nested::<u8>>>)
             got: {impl Parent<Wrapper::<Nested::<u8>>> for ()}: Parent<(), Wrapper::<Nested::<u8>>>
        Visitor stack:
          charon_lib::ast::items::trait_impl::TraitImpl

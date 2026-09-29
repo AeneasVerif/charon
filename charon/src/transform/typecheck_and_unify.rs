@@ -99,6 +99,15 @@ impl TypeCheckVisitor<'_> {
             (TyKind::Adt(a), TyKind::Adt(b)) if a.id == b.id => {
                 self.match_generics(&a.generics, &b.generics)?
             }
+            (TyKind::Adt(a), TyKind::Adt(b))
+                if self.ctx.options.monomorphize_with_hax
+                    && self.ctx.translated.item_name(a.id).mono_args().is_some()
+                        != self.ctx.translated.item_name(b.id).mono_args().is_some() =>
+            {
+                // FIXME(#856): We translate traits polymorphiclaly, which can give rise to having
+                // both the polymorphic and monomophized version of a same type, see e.g.
+                // supertrait-with-generic-type-args.rs. We ignore that for now.
+            }
             (TyKind::Scalar(a), TyKind::Scalar(b)) if a == b => {}
             (TyKind::Never, TyKind::Never) => {}
             (TyKind::Array(aty, ..), TyKind::Array(bty, ..)) => {
