@@ -3538,6 +3538,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("def_id", def_id);
           ("item_meta", item_meta);
           ("src", src);
+          ("is_unsafe", is_unsafe);
           ("generics", generics);
           ("implied_clauses", implied_clauses);
           ("consts", consts);
@@ -3548,6 +3549,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* def_id = trait_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
         let* src = trait_decl_source_of_json ctx src in
+        let* is_unsafe = bool_of_json ctx is_unsafe in
         let* generics = generic_params_of_json ctx generics in
         let* implied_clauses =
           index_vec_of_json trait_clause_id_of_json trait_param_of_json ctx
@@ -3582,6 +3584,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
              def_id;
              item_meta;
              src;
+             is_unsafe;
              generics;
              implied_clauses;
              consts;

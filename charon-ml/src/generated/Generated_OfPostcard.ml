@@ -2949,6 +2949,7 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* def_id = trait_decl_id_of_postcard ctx st in
      let* item_meta = item_meta_of_postcard ctx st in
      let* src = trait_decl_source_of_postcard ctx st in
+     let* is_unsafe = bool_of_postcard ctx st in
      let* generics = generic_params_of_postcard ctx st in
      let* implied_clauses =
        index_vec_of_postcard trait_clause_id_of_postcard trait_param_of_postcard
@@ -2983,6 +2984,7 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           def_id;
           item_meta;
           src;
+          is_unsafe;
           generics;
           implied_clauses;
           consts;

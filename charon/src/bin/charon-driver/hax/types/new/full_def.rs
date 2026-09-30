@@ -6,6 +6,7 @@ use rustc_hir::def::DefKind as RDefKind;
 use rustc_middle::mir;
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
+use rustc_type_ir::Interner;
 use std::cell::OnceCell;
 use std::sync::Arc;
 
@@ -492,6 +493,7 @@ pub struct Trait<'tcx> {
     args: Option<ty::GenericArgsRef<'tcx>>,
     param_env: ParamEnv,
     implied_predicates: GenericPredicates,
+    is_unsafe: bool,
     /// The special `Self: Trait` clause.
     self_predicate: TraitPredicate,
     /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for this trait. This is `Some` iff this
@@ -532,6 +534,10 @@ impl<'tcx> Trait<'tcx> {
     /// trait is dyn-compatible.
     pub fn dyn_self(&self) -> Option<&Ty> {
         self.dyn_self.as_ref()
+    }
+    /// Whether this is an `unsafe trait`, i.e. implementing it requires `unsafe impl`.
+    pub fn is_unsafe(&self) -> bool {
+        self.is_unsafe
     }
 }
 
@@ -1313,6 +1319,7 @@ where
         RDefKind::Trait { .. } => FullDefKind::Trait(Trait {
             def_id: hax_def_id.clone(),
             args,
+            is_unsafe: tcx.trait_is_unsafe(def_id),
             param_env: get_param_env(s, args),
             implied_predicates: get_implied_predicates(s, args),
             self_predicate: get_self_predicate(s, args),

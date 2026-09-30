@@ -11,7 +11,7 @@ struct {vtable} {
 
 // Full name: core::marker::Send
 #[diagnostic_item("Send")]
-pub trait Send<Self>
+pub unsafe trait Send<Self>
 
 // Full name: core::marker::Send::{vtable_drop_shim}::<i32>
 unsafe fn {vtable_drop_shim}::<i32><'_0>(dyn_self: &'_0 mut (dyn Send))

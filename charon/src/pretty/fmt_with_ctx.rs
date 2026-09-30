@@ -2549,8 +2549,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
 
+        let keyword = if self.is_unsafe {
+            "unsafe trait"
+        } else {
+            "trait"
+        };
+
         self.item_meta
-            .fmt_item_intro(f, ctx, "trait", self.def_id)?;
+            .fmt_item_intro(f, ctx, keyword, self.def_id)?;
 
         let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         write!(f, "{generics}{clauses}")?;

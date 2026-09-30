@@ -39,7 +39,7 @@ where
 pub opaque type NonNull<T>
 
 // Full name: core::alloc::Allocator
-pub trait Allocator<Self>
+pub unsafe trait Allocator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     fn allocate<'_0_1>;

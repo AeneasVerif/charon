@@ -429,6 +429,9 @@ and trait_decl = {
   item_meta : item_meta;
   src : trait_decl_source;
       (** Distinguishes normal traits from trait aliases. *)
+  is_unsafe : bool;
+      (** Whether this is an [unsafe trait], i.e. implementing it requires
+          [unsafe impl]. *)
   generics : generic_params;
   implied_clauses : trait_param list;
       (** The "parent" clauses: the supertraits.

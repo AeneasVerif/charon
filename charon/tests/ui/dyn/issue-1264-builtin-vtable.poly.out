@@ -10,7 +10,7 @@ struct core::marker::Send::{vtable} {
 
 // Full name: core::marker::Send
 #[diagnostic_item("Send")]
-pub trait Send<Self>
+pub unsafe trait Send<Self>
 
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
