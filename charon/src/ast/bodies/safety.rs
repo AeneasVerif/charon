@@ -4,7 +4,7 @@ use macros::EnumIsA;
 use crate::ast::*;
 use crate::{llbc_ast, ullbc_ast};
 
-/// Whether something requires `unsafe`.
+/// Whether an operation requires `unsafe`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[derive(EnumIsA)]
 pub enum Safety {
@@ -57,10 +57,12 @@ impl FromIterator<Safety> for Safety {
 /// <https://doc.rust-lang.org/book/ch20-01-unsafe-rust.html> and
 /// <https://doc.rust-lang.org/reference/unsafety.html>.
 ///
-/// This is computed on the translated (U)LLBC, so it can't know which operations the user wrote. In
-/// particular, macros may expand to unsafe operations inside their own `unsafe` blocks: e.g.
-/// `println!("{x}")` expands to unsafe operations. This also means that while this is mostly accurate
-/// with promoted MIR (the default), later MIR phases may make this less accurate in both directions.
+/// This is computed on the translated (U)LLBC, so it can't know exactly what the user wrote. For example,
+/// macros like `println!("{x}")` expand to unsafe operations inside their own `unsafe` blocks. Some safe
+/// operations like slice indexing also expand to a bounds check followed by an unchecked access. Dead code
+/// elimination may hide an unsafe operation. So all in all this will not report exactly the same safety as
+/// rustc sees in the surface code. It is however accurate if you treat (U)LLBC as its own language: we
+/// accurately flag operations that have soundness preconditions.
 ///
 /// We currently don't support unsafe fields and unsafe binders.
 pub trait HasSafety {

@@ -1897,7 +1897,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     break 'safety_fndef CallSafety::Unsafe;
                 }
 
-                // In mono mode, trait decls have no methods, so we track the safety of the function here,
+                // FIXME(#856) In mono mode, trait decls have no methods, so we track the safety of the function here,
                 // and `transform_dyn_trait_calls` moves it into the signature of the called function pointer.
                 let mono_dyn_call = self.monomorphize()
                     && tcx.trait_of_assoc(*def_id).is_some()
