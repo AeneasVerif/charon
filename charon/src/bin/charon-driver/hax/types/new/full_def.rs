@@ -580,6 +580,7 @@ pub struct TraitImpl<'tcx> {
     param_env: ParamEnv,
     /// The trait that is implemented by this impl block.
     trait_pred: TraitPredicate,
+    is_unsafe: bool,
     /// The trait proofs required to satisfy the predicates on the trait declaration. E.g.:
     /// ```ignore
     /// trait Foo: Bar {}
@@ -597,6 +598,10 @@ impl<'tcx> TraitImpl<'tcx> {
     /// The trait that is implemented by this impl block.
     pub fn trait_pred(&self) -> &TraitPredicate {
         &self.trait_pred
+    }
+    /// Whether this is an `unsafe impl`.
+    pub fn is_unsafe(&self) -> bool {
+        self.is_unsafe
     }
     /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for the implemented trait. This is
     /// `Some` iff the trait is dyn-compatible.
@@ -1360,6 +1365,7 @@ where
                     trait_ref,
                     param_env,
                     trait_pred,
+                    is_unsafe: tcx.impl_trait_header(def_id).safety.is_unsafe(),
                     implied_trait_proofs: required_trait_proofs,
                     items: OnceCell::new(),
                 })

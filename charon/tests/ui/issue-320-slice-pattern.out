@@ -182,7 +182,7 @@ where
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}
-impl<T> "impl_SliceIndex_slice_for_usize" SliceIndex<[T]> for usize
+unsafe impl<T> "impl_SliceIndex_slice_for_usize" SliceIndex<[T]> for usize
 where
     TraitClause0: (T: Sized),
 {
@@ -242,7 +242,7 @@ where
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}
-impl<T> "impl_SliceIndex_slice_for_Range_usize" SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]
+unsafe impl<T> "impl_SliceIndex_slice_for_Range_usize" SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]
 where
     TraitClause0: (T: Sized),
 {

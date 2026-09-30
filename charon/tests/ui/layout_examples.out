@@ -96,7 +96,7 @@ pub opaque type NonNull<T>
 // layout: none
 
 // Full name: core::alloc::Allocator
-pub trait Allocator<Self>
+pub unsafe trait Allocator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     fn allocate<'_0_1>;
@@ -275,7 +275,7 @@ impl "impl_Copy_for_NonZeroI32Inner" Copy for NonZeroI32Inner {
 }
 
 // Full name: core::num::nonzero::ZeroablePrimitive
-pub trait ZeroablePrimitive<Self>
+pub unsafe trait ZeroablePrimitive<Self>
 {
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (Self: Copy)
@@ -286,7 +286,7 @@ pub trait ZeroablePrimitive<Self>
 }
 
 // Full name: core::num::nonzero::{impl ZeroablePrimitive for u32}
-impl "impl_ZeroablePrimitive_for_u32" ZeroablePrimitive for u32 {
+unsafe impl "impl_ZeroablePrimitive_for_u32" ZeroablePrimitive for u32 {
     proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
     proof ImpliedClause1: (u32: Copy) = impl_Copy_for_u32
     proof ImpliedClause2: (NonZeroU32Inner: Sized) = {built_in impl Sized for NonZeroU32Inner}
@@ -296,7 +296,7 @@ impl "impl_ZeroablePrimitive_for_u32" ZeroablePrimitive for u32 {
 }
 
 // Full name: core::num::nonzero::{impl ZeroablePrimitive for i32}
-impl "impl_ZeroablePrimitive_for_i32" ZeroablePrimitive for i32 {
+unsafe impl "impl_ZeroablePrimitive_for_i32" ZeroablePrimitive for i32 {
     proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
     proof ImpliedClause1: (i32: Copy) = impl_Copy_for_i32
     proof ImpliedClause2: (NonZeroI32Inner: Sized) = {built_in impl Sized for NonZeroI32Inner}
@@ -340,7 +340,7 @@ pub fn allocate<'_0>(_1: &'_0 Global, _2: Layout) -> Result<NonNull<[u8]>, Alloc
 = <opaque>
 
 // Full name: alloc::alloc::{impl Allocator for Global}
-impl "impl_Allocator_for_Global" Allocator for Global {
+unsafe impl "impl_Allocator_for_Global" Allocator for Global {
     proof ImpliedClause0: (Global: MetaSized) = {built_in impl MetaSized for Global}
     fn allocate<'_0_1> = allocate<'_0_1>
     fn deallocate<'_0_1> = deallocate<'_0_1>

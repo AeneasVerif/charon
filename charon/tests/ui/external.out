@@ -122,7 +122,7 @@ pub unsafe trait ZeroablePrimitive<Self>
 }
 
 // Full name: core::num::nonzero::{impl ZeroablePrimitive for u32}
-impl "impl_ZeroablePrimitive_for_u32" ZeroablePrimitive for u32 {
+unsafe impl "impl_ZeroablePrimitive_for_u32" ZeroablePrimitive for u32 {
     proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
     proof ImpliedClause1: (u32: Copy) = impl_Copy_for_u32
     proof ImpliedClause2: (NonZeroU32Inner: Sized) = {built_in impl Sized for NonZeroU32Inner}

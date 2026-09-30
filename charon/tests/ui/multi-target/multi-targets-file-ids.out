@@ -416,7 +416,7 @@ where
 = <opaque>
 
 // Full name: core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}
-impl<T> core::slice::index::SliceIndex<[T]> for usize
+unsafe impl<T> core::slice::index::SliceIndex<[T]> for usize
 where
     TraitClause0: (T: core::marker::Sized),
 {

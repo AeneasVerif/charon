@@ -31,7 +31,7 @@ pub struct Node {
 }
 
 // Full name: test_crate::{impl Sync for Node}
-impl "impl_Sync_for_Node" Sync for Node {
+unsafe impl "impl_Sync_for_Node" Sync for Node {
     vtable: lazy
 }
 

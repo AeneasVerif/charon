@@ -26,7 +26,7 @@ pub unsafe trait VaArgSafe<Self>
 }
 
 // Full name: core::ffi::va_list::{impl VaArgSafe for i32}
-impl "impl_VaArgSafe_for_i32" VaArgSafe for i32 {
+unsafe impl "impl_VaArgSafe_for_i32" VaArgSafe for i32 {
     proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
     non-dyn-compatible
 }

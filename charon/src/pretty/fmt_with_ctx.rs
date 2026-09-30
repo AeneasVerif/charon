@@ -2685,6 +2685,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
 
         let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         let impl_trait = self.impl_trait.format_as_impl(ctx);
+        if self.is_unsafe {
+            write!(f, "unsafe ")?;
+        }
         write!(f, "impl{generics}")?;
         if let Some(short_name) = trait_impl_short_name(ctx, self.def_id) {
             write!(f, " \"{}\"", short_name.with_ctx(ctx))?;

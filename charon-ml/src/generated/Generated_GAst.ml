@@ -533,6 +533,7 @@ and trait_impl = {
   impl_trait : trait_decl_ref;
       (** The information about the implemented trait. Note that this contains
           the instantiation of the "parent" clauses. *)
+  is_unsafe : bool;  (** Whether this is an [unsafe impl]. *)
   generics : generic_params;
   implied_trait_refs : trait_ref list;
       (** The trait references for the parent clauses (see [TraitDecl]). *)

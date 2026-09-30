@@ -257,7 +257,7 @@ impl "impl_Copy_for_usize" Copy for usize {
 }
 
 // Full name: core::num::nonzero::{impl ZeroablePrimitive for usize}
-impl "impl_ZeroablePrimitive_for_usize" ZeroablePrimitive for usize {
+unsafe impl "impl_ZeroablePrimitive_for_usize" ZeroablePrimitive for usize {
     proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
     proof ImpliedClause1: (usize: Copy) = impl_Copy_for_usize
     proof ImpliedClause2: (NonZeroUsizeInner: Sized) = {built_in impl Sized for NonZeroUsizeInner}

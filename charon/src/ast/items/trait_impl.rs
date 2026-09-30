@@ -26,6 +26,8 @@ pub struct TraitImpl {
     /// Note that this contains the instantiation of the "parent"
     /// clauses.
     pub impl_trait: TraitDeclRef,
+    /// Whether this is an `unsafe impl`.
+    pub is_unsafe: bool,
     pub generics: GenericParams,
     /// The trait references for the parent clauses (see [TraitDecl]).
     pub implied_trait_refs: IndexVec<TraitClauseId, TraitRef>,

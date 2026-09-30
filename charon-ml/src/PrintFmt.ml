@@ -1877,7 +1877,8 @@ let pp_trait_impl (env : fmt_env) (indent : string) (indent_incr : string)
   in
   let indent1 = indent ^ indent_incr in
   let trait_id = def.impl_trait.id in
-  Format.fprintf fmt "%simpl%s%s %a%s" indent params short_name
+  let unsafe = if def.is_unsafe then "unsafe " else "" in
+  Format.fprintf fmt "%s%simpl%s%s %a%s" indent unsafe params short_name
     (pp_trait_decl_ref_as_impl env)
     def.impl_trait clauses;
   pp_string fmt (if clauses = "" then " {" else "\n{");
