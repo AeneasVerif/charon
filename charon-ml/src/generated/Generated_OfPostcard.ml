@@ -1902,6 +1902,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* print_built_llbc = bool_of_postcard ctx st in
      let* print_llbc = bool_of_postcard ctx st in
      let* print_layouts = bool_of_postcard ctx st in
+     let* print_safety = bool_of_postcard ctx st in
      let* dest_dir = option_of_postcard path_buf_of_postcard ctx st in
      let* dest_file = option_of_postcard path_buf_of_postcard ctx st in
      let* no_dedup_serialized_ast = bool_of_postcard ctx st in
@@ -1966,6 +1967,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           print_built_llbc;
           print_llbc;
           print_layouts;
+          print_safety;
           dest_dir;
           dest_file;
           no_dedup_serialized_ast;

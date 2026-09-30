@@ -1,5 +1,5 @@
 //@ rustc-args=--target x86_64-unknown-linux-gnu
-//@ charon-args=--opaque test_crate::Opaque --exclude test_crate::excluded
+//@ charon-args=--print-safety --opaque test_crate::Opaque --exclude test_crate::excluded
 //@ charon-args=--exclude test_crate::ExcludedUnsafeTrait
 #![feature(
     stmt_expr_attributes,

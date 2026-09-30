@@ -2206,6 +2206,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("print_built_llbc", print_built_llbc);
           ("print_llbc", print_llbc);
           ("print_layouts", print_layouts);
+          ("print_safety", print_safety);
           ("dest_dir", dest_dir);
           ("dest_file", dest_file);
           ("no_dedup_serialized_ast", no_dedup_serialized_ast);
@@ -2283,6 +2284,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* print_built_llbc = bool_of_json ctx print_built_llbc in
         let* print_llbc = bool_of_json ctx print_llbc in
         let* print_layouts = bool_of_json ctx print_layouts in
+        let* print_safety = bool_of_json ctx print_safety in
         let* dest_dir = option_of_json path_buf_of_json ctx dest_dir in
         let* dest_file = option_of_json path_buf_of_json ctx dest_file in
         let* no_dedup_serialized_ast =
@@ -2351,6 +2353,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              print_built_llbc;
              print_llbc;
              print_layouts;
+             print_safety;
              dest_dir;
              dest_file;
              no_dedup_serialized_ast;

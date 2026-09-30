@@ -51,6 +51,7 @@ pub trait Clone<Self>
 }
 
 // Full name: core::clone::TrivialClone
+// unsafe to implement
 #[lang_item(TrivialClone)]
 pub unsafe trait TrivialClone<Self>
 {
@@ -188,6 +189,7 @@ impl "impl_Hash_for_unit" Hash for () {
 }
 
 // Full name: core::marker::Send
+// unsafe to implement
 #[diagnostic_item("Send")]
 pub unsafe trait Send<Self>
 
@@ -202,11 +204,13 @@ pub trait Copy<Self>
 }
 
 // Full name: core::marker::Sync
+// unsafe to implement
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
 pub unsafe trait Sync<Self>
 
 // Full name: core::marker::Freeze
+// unsafe to implement
 #[lang_item(Freeze)]
 pub unsafe trait Freeze<Self>
 
@@ -273,6 +277,7 @@ where
 = <opaque>
 
 // Full name: core::slice::index::SliceIndex
+// unsafe to implement
 #[diagnostic_item("SliceIndex")]
 pub unsafe trait SliceIndex<Self, T>
 {
@@ -332,6 +337,7 @@ where
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked_mut
+// unsafe to call
 #[track_caller]
 pub unsafe fn impl_SliceIndex_slice_for_usize::get_unchecked_mut<T>(_1: usize, _2: *mut [T]) -> *mut T
 where
@@ -339,6 +345,7 @@ where
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked
+// unsafe to call
 #[track_caller]
 pub unsafe fn impl_SliceIndex_slice_for_usize::get_unchecked<T>(_1: usize, _2: *const [T]) -> *const T
 where
@@ -360,6 +367,7 @@ where
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}
+// unsafe to declare
 unsafe impl<T> "impl_SliceIndex_slice_for_usize" SliceIndex<[T]> for usize
 where
     TraitClause0: (T: Sized),
@@ -390,6 +398,7 @@ where
     TraitClause1: (type_error("removed allocator parameter"): Sized),
 
 // Full name: alloc::boxed::Box::{impl Destruct for Box<T>[TraitClause0, TraitClause1]}::drop_glue
+// unsafe to call
 unsafe fn drop_glue<'_0, T, A>(_1: &'_0 mut Box<T>[TraitClause0, TraitClause1])
 where
     TraitClause0: (T: MetaSized),
@@ -414,6 +423,7 @@ struct str {
 struct S {}
 
 // Full name: test_crate::UnsafeTrait
+// unsafe to implement
 unsafe trait UnsafeTrait<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
@@ -428,6 +438,7 @@ trait SafeTrait<Self>
 }
 
 // Full name: test_crate::{impl UnsafeTrait for S}
+// unsafe to declare
 unsafe impl "impl_UnsafeTrait_for_S" UnsafeTrait for S {
     proof ImpliedClause0: (S: MetaSized) = {built_in impl MetaSized for S}
     vtable: lazy
@@ -445,6 +456,7 @@ impl "impl_not_Send_for_S" !Send for S {
 }
 
 // Full name: test_crate::{impl ExcludedUnsafeTrait for S}
+// unsafe to declare
 unsafe impl "impl_ExcludedUnsafeTrait_for_S" ExcludedUnsafeTrait for S {
     proof ImpliedClause0: (S: MetaSized) = {built_in impl MetaSized for S}
     vtable: unknown // the vtable struct of the trait is excluded
@@ -475,6 +487,7 @@ where
 }
 
 // Full name: test_crate::{impl Drop for MayDangle<T>[TraitClause0]}
+// unsafe to declare
 unsafe impl<T> "impl_Drop_for_MayDangle" Drop for MayDangle<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
@@ -485,6 +498,7 @@ where
 }
 
 // Full name: test_crate::unsafe_fn
+// unsafe to call
 unsafe fn unsafe_fn()
 {
     let _0: (); // return
@@ -496,6 +510,8 @@ unsafe fn unsafe_fn()
 }
 
 // Full name: test_crate::extern_fn
+// unsafe to declare
+// unsafe to call
 extern unsafe extern "C" fn extern_fn()
 = <extern:extern_fn>
 
@@ -504,9 +520,12 @@ extern fn EXTERN_STATIC() -> u32
 = <extern:EXTERN_STATIC>
 
 // Full name: test_crate::EXTERN_STATIC
+// unsafe to declare
+// unsafe to access
 extern unsafe static EXTERN_STATIC: u32 = EXTERN_STATIC()
 
 // Full name: test_crate::safe_extern_fn
+// unsafe to declare
 extern extern "C" fn safe_extern_fn()
 = <extern:safe_extern_fn>
 
@@ -515,9 +534,11 @@ extern fn SAFE_EXTERN_STATIC() -> u32
 = <extern:SAFE_EXTERN_STATIC>
 
 // Full name: test_crate::SAFE_EXTERN_STATIC
+// unsafe to declare
 extern static SAFE_EXTERN_STATIC: u32 = SAFE_EXTERN_STATIC()
 
 // Full name: test_crate::no_mangle
+// unsafe to declare
 #[no_mangle]
 fn no_mangle()
 {
@@ -530,6 +551,7 @@ fn no_mangle()
 }
 
 // Full name: test_crate::export_name
+// unsafe to declare
 #[export_name = "exported"]
 fn export_name()
 {
@@ -542,6 +564,7 @@ fn export_name()
 }
 
 // Full name: test_crate::link_section
+// unsafe to declare
 #[link_section = ".text.custom"]
 fn link_section()
 {
@@ -554,6 +577,7 @@ fn link_section()
 }
 
 // Full name: test_crate::naked
+// unsafe to declare
 #[naked]
 extern "C" fn naked()
 {
@@ -566,6 +590,7 @@ extern "C" fn naked()
 }
 
 // Full name: test_crate::force_target_feature
+// unsafe to declare
 #[target_feature(force = "avx")]
 fn force_target_feature()
 {
@@ -599,6 +624,7 @@ fn COUNTER() -> usize
 }
 
 // Full name: test_crate::COUNTER
+// unsafe to access
 static mut COUNTER: usize = COUNTER()
 
 // Full name: test_crate::Foo
@@ -628,6 +654,7 @@ impl "impl_Clone_for_Foo" Clone for Foo {
 }
 
 // Full name: test_crate::{impl TrivialClone for Foo}
+// unsafe to declare
 unsafe impl "impl_TrivialClone_for_Foo" TrivialClone for Foo {
     proof ImpliedClause0: (Foo: MetaSized) = {built_in impl MetaSized for Foo}
     proof ImpliedClause1: (Foo: Clone) = impl_Clone_for_Foo
@@ -647,6 +674,7 @@ union Bar {
 }
 
 // Full name: test_crate::dangerous
+// unsafe to call
 unsafe fn dangerous()
 {
     let _0: (); // return
@@ -691,6 +719,7 @@ fn unsafe_deref_raw_ptr(x: *const u32) -> u32
     let x: *const u32; // arg #1
 
     storage_live(_0)
+    // unsafe
     _0 = copy (*x)
     storage_dead(x)
     return
@@ -703,6 +732,7 @@ fn unsafe_call_fn()
 
     storage_live(_0)
     _0 = ()
+    // unsafe
     _0 = dangerous()
     ↳⚡ unwind_continue
     return
@@ -718,6 +748,7 @@ where
 
     storage_live(_0)
     _0 = ()
+    // unsafe
     _0 = TraitClause1::unsafe_method()
     ↳⚡ unwind_continue
     return
@@ -734,6 +765,7 @@ fn unsafe_call_fn_ptr(f: unsafe fn())
     _0 = ()
     storage_live(_2)
     _2 = copy f
+    // unsafe
     _0 = (move _2)()
     ↳⚡ storage_dead(f)
         unwind_continue
@@ -748,6 +780,7 @@ fn unsafe_read_mutable_static() -> usize
     let _0: usize; // return
 
     storage_live(_0)
+    // unsafe
     _0 = copy COUNTER
     return
 }
@@ -759,6 +792,7 @@ fn unsafe_write_mutable_static()
 
     storage_live(_0)
     _0 = ()
+    // unsafe
     COUNTER = const 1usize
     _0 = ()
     return
@@ -770,6 +804,7 @@ fn unsafe_read_extern_static() -> u32
     let _0: u32; // return
 
     storage_live(_0)
+    // unsafe
     _0 = copy EXTERN_STATIC
     return
 }
@@ -785,6 +820,7 @@ fn PAIR() -> (u32, u32)
 }
 
 // Full name: test_crate::PAIR
+// unsafe to access
 static mut PAIR: (u32, u32) = PAIR()
 
 // Full name: test_crate::unsafe_raw_borrow_of_mutable_static_field
@@ -793,6 +829,7 @@ fn unsafe_raw_borrow_of_mutable_static_field() -> *const u32
     let _0: *const u32; // return
 
     storage_live(_0)
+    // unsafe
     _0 = &raw const PAIR._0
     return
 }
@@ -809,6 +846,7 @@ fn PTR() -> *const u32
 }
 
 // Full name: test_crate::PTR
+// unsafe to access
 static mut PTR: *const u32 = PTR()
 
 // Full name: test_crate::unsafe_raw_borrow_through_mutable_static
@@ -817,6 +855,7 @@ fn unsafe_raw_borrow_through_mutable_static() -> *const u32
     let _0: *const u32; // return
 
     storage_live(_0)
+    // unsafe
     _0 = &raw const (*PTR)
     return
 }
@@ -828,6 +867,7 @@ fn unsafe_read_union_field(foo: Foo) -> u64
     let foo: Foo; // arg #1
 
     storage_live(_0)
+    // unsafe
     _0 = copy foo.one
     storage_dead(foo)
     return
@@ -841,6 +881,7 @@ fn unsafe_asm()
     storage_live(_0)
     _0 = ()
     _0 = ()
+    // unsafe
     asm!("nop") {
         target 0 => {
             return
@@ -860,6 +901,7 @@ fn unsafe_call_unsafe_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
     _0 = ()
     storage_live(_2)
     _2 = &(*s) with_metadata(copy s.metadata)
+    // unsafe
     _0 = (copy (*_2.metadata).method_unsafe_method)(move _2)
     ↳⚡ storage_dead(s)
         unwind_continue
@@ -880,8 +922,10 @@ fn unsafe_raw_borrow_of_indexed_union_field(foo: Foo) -> *const u32
     storage_live(_0)
     storage_live(_2)
     _2 = const 0usize
+    // unsafe
     fake_read(foo.two)
     storage_live(_3)
+    // unsafe
     _3 = &foo.two
     storage_live(_4)
     _4 = impl_Index_for_array::index<'_, u32, usize, 2usize>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, impl_Index_for_slice<u32, usize>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<u32>[{built_in impl Sized for u32}]]](move _3, copy _2)
@@ -905,6 +949,7 @@ fn STATIC_FOO() -> Foo
 }
 
 // Full name: test_crate::STATIC_FOO
+// unsafe to access
 static mut STATIC_FOO: Foo = STATIC_FOO()
 
 // Full name: test_crate::unsafe_raw_borrow_of_mutable_static_union_field
@@ -913,6 +958,7 @@ fn unsafe_raw_borrow_of_mutable_static_union_field() -> *const u64
     let _0: *const u64; // return
 
     storage_live(_0)
+    // unsafe
     _0 = &raw const STATIC_FOO.one
     return
 }
@@ -1088,6 +1134,7 @@ fn safe_raw_borrow_of_nested_union_field<'_0>(bar: &'_0 Bar) -> *const u64
 }
 
 // Full name: test_crate::safe_naked_asm
+// unsafe to declare
 #[naked]
 extern "C" fn safe_naked_asm()
 {
@@ -1135,6 +1182,7 @@ fn safe_drop_dyn(_s: Box<(dyn DynTrait + 'static)>[{built_in impl MetaSized for 
 }
 
 // Full name: test_crate::with_feature
+// unsafe to call
 #[target_feature(enable = "avx")]
 unsafe fn with_feature()
 {
@@ -1147,6 +1195,7 @@ unsafe fn with_feature()
 }
 
 // Full name: test_crate::with_feature_unsafe
+// unsafe to call
 #[target_feature(enable = "avx")]
 unsafe fn with_feature_unsafe()
 {
@@ -1165,12 +1214,14 @@ fn unsafe_call_target_feature_fn()
 
     storage_live(_0)
     _0 = ()
+    // unsafe
     _0 = with_feature()
     ↳⚡ unwind_continue
     return
 }
 
 // Full name: test_crate::safe_call_target_feature_fn_with_feature
+// unsafe to call
 #[target_feature(enable = "avx")]
 unsafe fn safe_call_target_feature_fn_with_feature()
 {
@@ -1184,6 +1235,7 @@ unsafe fn safe_call_target_feature_fn_with_feature()
 }
 
 // Full name: test_crate::safe_call_target_feature_fn_with_implied_feature
+// unsafe to call
 #[target_feature(enable = "avx2")]
 unsafe fn safe_call_target_feature_fn_with_implied_feature()
 {
@@ -1217,6 +1269,7 @@ fn {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_closure::{closure
 }
 
 // Full name: test_crate::safe_call_target_feature_fn_in_closure
+// unsafe to call
 #[target_feature(enable = "avx")]
 unsafe fn safe_call_target_feature_fn_in_closure()
 {
@@ -1277,6 +1330,7 @@ fn {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_inline_closure::{
 }
 
 // Full name: test_crate::safe_call_target_feature_fn_in_inline_closure
+// unsafe to call
 #[target_feature(enable = "avx")]
 unsafe fn safe_call_target_feature_fn_in_inline_closure()
 {
@@ -1315,6 +1369,7 @@ unsafe fn safe_call_target_feature_fn_in_inline_closure()
 }
 
 // Full name: test_crate::unsafe_call_unsafe_target_feature_fn
+// unsafe to call
 #[target_feature(enable = "avx")]
 unsafe fn unsafe_call_unsafe_target_feature_fn()
 {
@@ -1322,12 +1377,14 @@ unsafe fn unsafe_call_unsafe_target_feature_fn()
 
     storage_live(_0)
     _0 = ()
+    // unsafe
     _0 = with_feature_unsafe()
     ↳⚡ unwind_continue
     return
 }
 
 // Full name: test_crate::with_forced_feature
+// unsafe to declare
 #[target_feature(force = "avx")]
 fn with_forced_feature()
 {
@@ -1346,12 +1403,14 @@ fn unsafe_call_forced_target_feature_fn()
 
     storage_live(_0)
     _0 = ()
+    // unsafe
     _0 = with_forced_feature()
     ↳⚡ unwind_continue
     return
 }
 
 // Full name: test_crate::safe_call_forced_target_feature_fn_with_feature
+// unsafe to call
 #[target_feature(enable = "avx")]
 unsafe fn safe_call_forced_target_feature_fn_with_feature()
 {
@@ -1374,6 +1433,7 @@ fn unknown_read_opaque_field(u: Opaque) -> u64
     let u: Opaque; // arg #1
 
     storage_live(_0)
+    // unknown safety: 9 is opaque or wasn't translated
     _0 = copy u.0
     storage_dead(u)
     return
@@ -1386,6 +1446,7 @@ fn unknown_call_excluded()
 
     storage_live(_0)
     _0 = ()
+    // unknown safety: 67 wasn't translated
     _0 = excluded()
     ↳⚡ unwind_continue
     return

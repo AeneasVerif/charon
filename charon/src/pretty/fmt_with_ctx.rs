@@ -288,6 +288,23 @@ fn fmt_llbc_unwind_block<C: AstFormatter>(
     Ok(())
 }
 
+/// With `include_safety`, add a comment line if this isn't safe.
+fn fmt_safety_comment<C: AstFormatter>(
+    ctx: &C,
+    f: &mut fmt::Formatter<'_>,
+    x: &impl HasSafety,
+) -> fmt::Result {
+    let tab = ctx.indent();
+    match ctx.get_crate().filter(|_| ctx.include_safety()) {
+        Some(krate) => match x.safety(krate) {
+            Safety::Safe => Ok(()),
+            Safety::Unsafe => writeln!(f, "{tab}// unsafe"),
+            Safety::Unknown(reason) => writeln!(f, "{tab}// unknown safety: {reason}"),
+        },
+        None => Ok(()),
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for ullbc::BlockData {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for statement in &self.statements {
@@ -1171,6 +1188,29 @@ impl ItemMeta {
         };
         if !name_is_full {
             writeln!(f, "// Full name: {}", self.name.full_name(ctx))?;
+        }
+        if ctx.include_safety()
+            && let Some(tr) = ctx.get_crate()
+            && let Some(item) = tr.get_item(id)
+        {
+            let unsafe_to = [
+                ("declare", item.is_unsafe_to_declare(tr)),
+                (
+                    "call",
+                    matches!(item, ItemRef::Fun(d) if d.is_unsafe_to_call(tr)),
+                ),
+                (
+                    "access",
+                    matches!(item, ItemRef::Global(d) if d.is_unsafe_to_access(tr)),
+                ),
+                (
+                    "implement",
+                    matches!(item, ItemRef::TraitDecl(d) if d.is_unsafe_to_implement(tr)),
+                ),
+            ];
+            for (action, _) in unsafe_to.into_iter().filter(|(_, is_unsafe)| *is_unsafe) {
+                writeln!(f, "{tab}// unsafe to {action}")?;
+            }
         }
 
         for attr in &self.attr_info.attributes {
@@ -2197,6 +2237,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
         for line in &self.comments_before {
             writeln!(f, "{tab}// {line}")?;
         }
+        fmt_safety_comment(ctx, f, self)?;
         match &self.kind {
             StatementKind::Assign(place, rvalue) => {
                 write!(f, "{tab}{} = {}", place.with_ctx(ctx), rvalue.with_ctx(ctx),)
@@ -2248,6 +2289,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
         if self.kind.is_nop() {
             return Ok(());
         }
+        fmt_safety_comment(ctx, f, self)?;
         write!(f, "{tab}")?;
         match &self.kind {
             StatementKind::Assign(place, rvalue) => {
@@ -2430,6 +2472,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
         for line in &self.comments_before {
             writeln!(f, "{tab}// {line}")?;
         }
+        fmt_safety_comment(ctx, f, self)?;
         write!(f, "{tab}")?;
         match &self.kind {
             TerminatorKind::Goto { target } => write!(f, "goto bb{target}"),
@@ -2687,6 +2730,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let trait_id = self.impl_trait.id;
         writeln!(f, "// Full name: {}", self.item_meta.name.full_name(ctx))?;
+        if ctx.include_safety()
+            && let Some(tr) = ctx.get_crate()
+            && self.is_unsafe_to_declare(tr)
+        {
+            writeln!(f, "// unsafe to declare")?;
+        }
 
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
