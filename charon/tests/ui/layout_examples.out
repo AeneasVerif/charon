@@ -1,3 +1,413 @@
+# Final LLBC before serialization:
+
+// Full name: core::alloc::layout::Layout
+#[lang_item(AllocLayout)]
+pub opaque type Layout
+// layout:
+//     size: 16usize,
+//     align: 8usize,
+//     discriminator: @Variant0,
+//     inhabited: true,
+//     variants: [
+//         @Variant0: {
+//             offset of 0: 8,
+//             offset of 1: 0,
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: core::alloc::AllocError
+pub struct AllocError {}
+// layout:
+//     size: 0usize (guaranteed: at_least(0usize)),
+//     align: 1usize (guaranteed: at_least(1usize)),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+struct () {}
+// layout:
+//     size: 0usize (guaranteed: at_least(0usize)),
+//     align: 1usize (guaranteed: at_least(1usize)),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::result::Result
+#[diagnostic_item("Result")]
+pub enum Result<T, E>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+{
+  Ok { _0: T },
+  Err { _0: E },
+}
+// layout:
+//     size: ? (guaranteed: at_least(align_to(max((offset_of(Result<T, E>[TraitClause0, TraitClause1].Ok._0) + size_of::<T>()), (offset_of(Result<T, E>[TraitClause0, TraitClause1].Err._0) + size_of::<E>())), max(align_of::<T>(), align_of::<E>())))),
+//     align: ? (guaranteed: at_least(max(align_of::<T>(), align_of::<E>()))),
+//     discriminator: none,
+//     inhabited: (if_inhabited(T) || if_inhabited(E)),
+//     variants: [
+//         Ok: {
+//             offset of _0: ? (guaranteed: aligned(align_of::<T>())),
+//             inhabited: if_inhabited(T),
+//             tagger: [],
+//         },
+//         Err: {
+//             offset of _0: ? (guaranteed: aligned(align_of::<E>())),
+//             inhabited: if_inhabited(E),
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: core::ptr::non_null::NonNull
+#[lang_item(NonNull)]
+pub opaque type NonNull<T>
+// layout: none
+
+// Full name: core::alloc::Allocator
+pub trait Allocator<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn allocate<'_0_1>;
+    fn deallocate<'_0_1>;
+    vtable: core::alloc::Allocator::{vtable}
+}
+
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u32}
+impl "impl_Clone_for_u32" Clone for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for i32}::clone
+pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for i32}
+impl "impl_Clone_for_i32" Clone for i32 {
+    proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
+    fn clone<'_0_1> = impl_Clone_for_i32::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::Error
+pub struct Error {}
+// layout:
+//     size: 0usize (guaranteed: at_least(0usize)),
+//     align: 1usize (guaranteed: at_least(1usize)),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: core::fmt::Formatter
+#[diagnostic_item("Formatter")]
+pub opaque type Formatter<mut 'a>
+where
+    RegionOutlives0: 'a: 'a,
+// layout:
+//     size: 24usize,
+//     align: 8usize,
+//     discriminator: @Variant0,
+//     inhabited: true,
+//     variants: [
+//         @Variant0: {
+//             offset of 0: 16,
+//             offset of 1: 0,
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+opaque type core::fmt::Debug::{vtable}
+// layout: none
+
+// Full name: core::fmt::Debug
+#[diagnostic_item("Debug")]
+pub trait Debug<Self>
+{
+    fn fmt<'_0_1, '_1_1, '_2_1>;
+    vtable: core::fmt::Debug::{vtable}
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for i32}
+impl "impl_Copy_for_i32" Copy for i32 {
+    proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
+    proof ImpliedClause1: (i32: Clone) = impl_Clone_for_i32
+    non-dyn-compatible
+}
+
+// Full name: core::num::niche_types::NonZeroU32Inner
+pub opaque type NonZeroU32Inner
+// layout:
+//     size: 4usize,
+//     align: 4usize,
+//     discriminator: @Variant0,
+//     inhabited: true,
+//     variants: [
+//         @Variant0: {
+//             offset of 0: 0,
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust, transparent),
+
+// Full name: core::num::niche_types::{impl Clone for NonZeroU32Inner}::clone
+pub fn impl_Clone_for_NonZeroU32Inner::clone<'_0>(_1: &'_0 NonZeroU32Inner) -> NonZeroU32Inner
+= <opaque>
+
+// Full name: core::num::niche_types::{impl Clone for NonZeroU32Inner}
+impl "impl_Clone_for_NonZeroU32Inner" Clone for NonZeroU32Inner {
+    proof ImpliedClause0: (NonZeroU32Inner: Sized) = {built_in impl Sized for NonZeroU32Inner}
+    fn clone<'_0_1> = impl_Clone_for_NonZeroU32Inner::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::num::niche_types::NonZeroI32Inner
+pub opaque type NonZeroI32Inner
+// layout:
+//     size: 4usize,
+//     align: 4usize,
+//     discriminator: @Variant0,
+//     inhabited: true,
+//     variants: [
+//         @Variant0: {
+//             offset of 0: 0,
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust, transparent),
+
+// Full name: core::num::niche_types::{impl Clone for NonZeroI32Inner}::clone
+pub fn impl_Clone_for_NonZeroI32Inner::clone<'_0>(_1: &'_0 NonZeroI32Inner) -> NonZeroI32Inner
+= <opaque>
+
+// Full name: core::num::niche_types::{impl Clone for NonZeroI32Inner}
+impl "impl_Clone_for_NonZeroI32Inner" Clone for NonZeroI32Inner {
+    proof ImpliedClause0: (NonZeroI32Inner: Sized) = {built_in impl Sized for NonZeroI32Inner}
+    fn clone<'_0_1> = impl_Clone_for_NonZeroI32Inner::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::num::niche_types::{impl Copy for NonZeroU32Inner}
+impl "impl_Copy_for_NonZeroU32Inner" Copy for NonZeroU32Inner {
+    proof ImpliedClause0: (NonZeroU32Inner: MetaSized) = {built_in impl MetaSized for NonZeroU32Inner}
+    proof ImpliedClause1: (NonZeroU32Inner: Clone) = impl_Clone_for_NonZeroU32Inner
+    non-dyn-compatible
+}
+
+// Full name: core::num::niche_types::{impl Copy for NonZeroI32Inner}
+impl "impl_Copy_for_NonZeroI32Inner" Copy for NonZeroI32Inner {
+    proof ImpliedClause0: (NonZeroI32Inner: MetaSized) = {built_in impl MetaSized for NonZeroI32Inner}
+    proof ImpliedClause1: (NonZeroI32Inner: Clone) = impl_Clone_for_NonZeroI32Inner
+    non-dyn-compatible
+}
+
+// Full name: core::num::nonzero::ZeroablePrimitive
+pub trait ZeroablePrimitive<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    proof ImpliedClause1: (Self: Copy)
+    proof ImpliedClause2: (Self::NonZeroInner: Sized)
+    proof ImpliedClause3: (Self::NonZeroInner: Copy)
+    type NonZeroInner
+    non-dyn-compatible
+}
+
+// Full name: core::num::nonzero::{impl ZeroablePrimitive for u32}
+impl "impl_ZeroablePrimitive_for_u32" ZeroablePrimitive for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    proof ImpliedClause1: (u32: Copy) = impl_Copy_for_u32
+    proof ImpliedClause2: (NonZeroU32Inner: Sized) = {built_in impl Sized for NonZeroU32Inner}
+    proof ImpliedClause3: (NonZeroU32Inner: Copy) = impl_Copy_for_NonZeroU32Inner
+    type NonZeroInner = NonZeroU32Inner
+    non-dyn-compatible
+}
+
+// Full name: core::num::nonzero::{impl ZeroablePrimitive for i32}
+impl "impl_ZeroablePrimitive_for_i32" ZeroablePrimitive for i32 {
+    proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
+    proof ImpliedClause1: (i32: Copy) = impl_Copy_for_i32
+    proof ImpliedClause2: (NonZeroI32Inner: Sized) = {built_in impl Sized for NonZeroI32Inner}
+    proof ImpliedClause3: (NonZeroI32Inner: Copy) = impl_Copy_for_NonZeroI32Inner
+    type NonZeroInner = NonZeroI32Inner
+    non-dyn-compatible
+}
+
+// Full name: core::num::nonzero::NonZero
+#[diagnostic_item("NonZero")]
+pub opaque type NonZero<T>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: ZeroablePrimitive),
+// layout: none
+
+// Full name: alloc::alloc::Global
+#[lang_item(GlobalAlloc)]
+pub struct Global {}
+// layout:
+//     size: 0usize (guaranteed: at_least(0usize)),
+//     align: 1usize (guaranteed: at_least(1usize)),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+// Full name: alloc::alloc::{impl Allocator for Global}::deallocate
+#[track_caller]
+pub unsafe fn deallocate<'_0>(_1: &'_0 Global, _2: NonNull<u8>, _3: Layout)
+= <opaque>
+
+// Full name: alloc::alloc::{impl Allocator for Global}::allocate
+#[track_caller]
+pub fn allocate<'_0>(_1: &'_0 Global, _2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
+= <opaque>
+
+// Full name: alloc::alloc::{impl Allocator for Global}
+impl "impl_Allocator_for_Global" Allocator for Global {
+    proof ImpliedClause0: (Global: MetaSized) = {built_in impl MetaSized for Global}
+    fn allocate<'_0_1> = allocate<'_0_1>
+    fn deallocate<'_0_1> = deallocate<'_0_1>
+    vtable: lazy
+}
+
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T, A>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+// layout: none
+
+// Full name: alloc::string::String
+#[lang_item(String)]
+pub opaque type String
+// layout:
+//     size: 24usize,
+//     align: 8usize,
+//     discriminator: @Variant0,
+//     inhabited: true,
+//     variants: [
+//         @Variant0: {
+//             offset of 0: 0,
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+// layout:
+//     size: ? (guaranteed: at_least(align_to(max((offset_of((_, _)<A, B>[TraitClause0]._0) + size_of::<A>()), (offset_of((_, _)<A, B>[TraitClause0]._1) + size_of::<B>())), max(align_of::<A>(), align_of::<B>())))),
+//     align: ? (guaranteed: at_least(max(align_of::<A>(), align_of::<B>()))),
+//     discriminator: none,
+//     inhabited: (if_inhabited(A) && if_inhabited(B)),
+//     variants: [
+//         _: {
+//             offset of _0: ? (guaranteed: aligned(align_of::<A>())),
+//             offset of _1: ? (guaranteed: aligned(align_of::<B>())),
+//             inhabited: (if_inhabited(A) && if_inhabited(B)),
+//             tagger: [],
+//         },
+//     ],
+//     repr(Rust),
+
+struct str {
+  _0: [u8],
+}
+// layout:
+//     size: slice_length (guaranteed: at_least(align_to((offset_of(str._0) + size_of::<[u8]>()), align_of::<[u8]>()))),
+//     align: 1usize (guaranteed: at_least(align_of::<[u8]>())),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//     ],
+//     repr(Rust),
+
 // Full name: test_crate::SimpleStruct
 struct SimpleStruct {
   x: u32,
@@ -1027,3 +1437,6 @@ enum ReprCEnum {
 //         },
 //     ],
 //     repr(C),
+
+
+

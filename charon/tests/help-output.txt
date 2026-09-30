@@ -178,6 +178,9 @@ Options:
       --print-llbc
           Pretty-print the final LLBC (after all the cleaning micro-passes)
 
+      --print-layouts
+          When pretty-printing, also print the layout of every type declaration
+
       --dest <DEST_DIR>
           The destination directory. Files will be generated as `<dest_dir>/<crate_name>.{u}llbc` for json and `<dest_dir>/<crate_name>.{u}llbc.postcard` for postcard, unless `dest_file` is set. `dest_dir` defaults to the current directory
 
