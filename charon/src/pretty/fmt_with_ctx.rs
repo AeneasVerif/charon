@@ -1667,9 +1667,16 @@ impl Display for from_rustc::AttributeKind {
                 }
                 Ok(())
             }
-            AttributeKind::TargetFeature { features, .. } => {
+            AttributeKind::TargetFeature {
+                features,
+                was_forced,
+                ..
+            } => {
                 let features = features.iter().map(|(feature, _)| feature).format(",");
-                write!(f, "target_feature(enable = \"{features}\")")
+                match was_forced {
+                    false => write!(f, "target_feature(enable = \"{features}\")"),
+                    true => write!(f, "target_feature(force = \"{features}\")"),
+                }
             }
             AttributeKind::TrackCaller(_) => write!(f, "track_caller"),
         }

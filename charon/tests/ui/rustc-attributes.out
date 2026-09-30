@@ -26,5 +26,29 @@ fn link_section()
     return
 }
 
+// Full name: test_crate::target_feature
+#[target_feature(enable = "avx")]
+unsafe fn target_feature()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::force_target_feature
+#[target_feature(force = "avx")]
+fn force_target_feature()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
 
 

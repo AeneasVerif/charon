@@ -1185,9 +1185,10 @@ let pp_rustc_attribute_kind (fmt : Format.formatter)
       Option.iter
         (fun reason -> Format.fprintf fmt "(expected = \"%s\")" reason)
         reason
-  | RustcAttributeKindTargetFeature (features, _, _) ->
+  | RustcAttributeKindTargetFeature (features, _, was_forced) ->
       let features = List.map (fun (feature, _) -> feature) features in
-      Format.fprintf fmt "target_feature(enable = \"%s\")"
+      let key = if was_forced then "force" else "enable" in
+      Format.fprintf fmt "target_feature(%s = \"%s\")" key
         (String.concat "," features)
   | RustcAttributeKindTrackCaller _ -> pp_string fmt "track_caller"
 
