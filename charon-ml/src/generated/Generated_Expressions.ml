@@ -125,10 +125,24 @@ and borrow_kind =
     gives the destination type. *)
 and cast_kind =
   | CastScalar of scalar_type * scalar_type
-      (** Conversion between types in [{Integer, Bool}] Remark: for now we don't
-          support conversions with Char. *)
+      (** Conversion between scalar types. See
+          <https://doc.rust-lang.org/reference/expressions/operator-expr.html#r-expr.as.numeric>
+      *)
   | CastRawPtr of ty * ty
+      (** A conversion between pointer and function pointer types. *)
+  | CastPtrExposeProvenance of ty * scalar_type
+      (** Converts a pointer or function pointer to an address, exposing its
+          provenance. See
+          <https://doc.rust-lang.org/std/primitive.pointer.html#method.expose_provenance>.
+      *)
+  | CastPtrWithExposedProvenance of scalar_type * ty
+      (** Converts an address to a pointer, which picks up exposed provenance.
+          See
+          <https://doc.rust-lang.org/std/ptr/fn.with_exposed_provenance.html>.
+      *)
   | CastFnPtr of ty * ty
+      (** Cast into a function pointer. The source may be a function item or an
+          unsafe function pointer that is made safe. *)
   | CastUnsize of ty * ty * unsizing_metadata
       (** [Unsize coercion](https://doc.rust-lang.org/std/ops/trait.CoerceUnsized.html).
           This is either [[T; N]] -> [[T]] or [T: Trait] -> [dyn Trait]

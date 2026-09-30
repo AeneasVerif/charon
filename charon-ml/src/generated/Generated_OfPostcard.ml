@@ -393,18 +393,26 @@ and cast_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (CastRawPtr (_0, _1))
      | 2 ->
          let* _0 = ty_of_postcard ctx st in
+         let* _1 = scalar_type_of_postcard ctx st in
+         Ok (CastPtrExposeProvenance (_0, _1))
+     | 3 ->
+         let* _0 = scalar_type_of_postcard ctx st in
+         let* _1 = ty_of_postcard ctx st in
+         Ok (CastPtrWithExposedProvenance (_0, _1))
+     | 4 ->
+         let* _0 = ty_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
          Ok (CastFnPtr (_0, _1))
-     | 3 ->
+     | 5 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
          let* _2 = unsizing_metadata_of_postcard ctx st in
          Ok (CastUnsize (_0, _1, _2))
-     | 4 ->
+     | 6 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
          Ok (CastTransmute (_0, _1))
-     | 5 ->
+     | 7 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
          Ok (CastConcretize (_0, _1))

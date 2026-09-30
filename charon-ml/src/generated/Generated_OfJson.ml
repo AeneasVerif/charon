@@ -409,6 +409,14 @@ and cast_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = ty_of_json ctx _0 in
         let* _1 = ty_of_json ctx _1 in
         Ok (CastRawPtr (_0, _1))
+    | `Assoc [ ("PtrExposeProvenance", `List [ _0; _1 ]) ] ->
+        let* _0 = ty_of_json ctx _0 in
+        let* _1 = scalar_type_of_json ctx _1 in
+        Ok (CastPtrExposeProvenance (_0, _1))
+    | `Assoc [ ("PtrWithExposedProvenance", `List [ _0; _1 ]) ] ->
+        let* _0 = scalar_type_of_json ctx _0 in
+        let* _1 = ty_of_json ctx _1 in
+        Ok (CastPtrWithExposedProvenance (_0, _1))
     | `Assoc [ ("FnPtr", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
         let* _1 = ty_of_json ctx _1 in

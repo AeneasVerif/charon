@@ -1297,10 +1297,16 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         ty::adjustment::PointerCoercion::ArrayToPointer,
                         ..,
                     )
-                    | mir::CastKind::FnPtrToPtr
-                    | mir::CastKind::PointerExposeProvenance
-                    | mir::CastKind::PointerWithExposedProvenance => {
-                        CastKind::RawPtr(src_ty, tgt_ty)
+                    | mir::CastKind::FnPtrToPtr => CastKind::RawPtr(src_ty, tgt_ty),
+
+                    mir::CastKind::PointerExposeProvenance => {
+                        CastKind::PtrExposeProvenance(src_ty, *tgt_ty.kind().as_scalar().unwrap())
+                    }
+                    mir::CastKind::PointerWithExposedProvenance => {
+                        CastKind::PtrWithExposedProvenance(
+                            *src_ty.kind().as_scalar().unwrap(),
+                            tgt_ty,
+                        )
                     }
                     mir::CastKind::PointerCoercion(
                         ty::adjustment::PointerCoercion::ClosureFnPointer(_),
