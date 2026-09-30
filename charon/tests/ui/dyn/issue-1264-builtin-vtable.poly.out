@@ -10,7 +10,7 @@ struct core::marker::Send::{vtable} {
 
 // Full name: core::marker::Send
 #[diagnostic_item("Send")]
-pub trait Send<Self>
+pub unsafe trait Send<Self>
 
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
@@ -52,7 +52,7 @@ fn core::marker::Send::{vtable}<Self>() -> core::marker::Send::{vtable}
     return
 }
 
-static core::marker::Send::{vtable}<Self>: core::marker::Send::{vtable} = core::marker::Send::{vtable}<Self>()
+vtable core::marker::Send::{vtable}<Self>: core::marker::Send::{vtable} = core::marker::Send::{vtable}<Self>()
 
 // Full name: test_crate::main
 fn main()

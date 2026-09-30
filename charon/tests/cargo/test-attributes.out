@@ -39,7 +39,7 @@ where
 pub opaque type NonNull<T>
 
 // Full name: core::alloc::Allocator
-pub trait Allocator<Self>
+pub unsafe trait Allocator<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     fn allocate<'_0_1>;
@@ -71,12 +71,12 @@ pub fn from_str<'a>(_1: &'static str) -> Arguments<'a>
 
 // Full name: core::marker::Send
 #[diagnostic_item("Send")]
-pub trait Send<Self>
+pub unsafe trait Send<Self>
 
 // Full name: core::marker::Sync
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
-pub trait Sync<Self>
+pub unsafe trait Sync<Self>
 
 // Full name: core::marker::Tuple
 #[fundamental]
@@ -178,7 +178,7 @@ pub fn allocate<'_0>(_1: &'_0 Global, _2: Layout) -> Result<NonNull<[u8]>, Alloc
 = <opaque>
 
 // Full name: alloc::alloc::{impl Allocator for Global}
-impl "impl_Allocator_for_Global" Allocator for Global {
+unsafe impl "impl_Allocator_for_Global" Allocator for Global {
     proof ImpliedClause0: (Global: MetaSized) = {built_in impl MetaSized for Global}
     fn allocate<'_0_1> = allocate<'_0_1>
     fn deallocate<'_0_1> = deallocate<'_0_1>

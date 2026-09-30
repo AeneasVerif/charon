@@ -135,7 +135,7 @@ fn MUT_STATIC() -> usize
 }
 
 // Full name: test_crate::mut_static::MUT_STATIC
-static MUT_STATIC: usize = MUT_STATIC()
+static mut MUT_STATIC: usize = MUT_STATIC()
 
 // Full name: test_crate::mut_static
 fn mut_static()

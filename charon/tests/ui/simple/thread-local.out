@@ -102,7 +102,7 @@ where
     TraitClause1: (D: Sized),
 
 // Full name: std::sys::thread_local::native::lazy::DestroyedState
-pub trait DestroyedState<Self>
+pub unsafe trait DestroyedState<Self>
 {
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (Self: Copy)
@@ -118,7 +118,7 @@ where
 = <opaque>
 
 // Full name: std::sys::thread_local::native::lazy::{impl DestroyedState for !}
-impl DestroyedState for ! {
+unsafe impl DestroyedState for ! {
     proof ImpliedClause0: (!: Sized) = {built_in impl Sized for !}
     proof ImpliedClause1: (!: Copy) = {impl Copy for !}
     fn register_dtor<'_0_1, T, TraitClause0_1: (T: Sized)> = {impl DestroyedState for !}::register_dtor<'_0_1, T>[TraitClause0_1]
@@ -133,7 +133,7 @@ where
 = <opaque>
 
 // Full name: std::sys::thread_local::native::lazy::{impl DestroyedState for ()}
-impl "impl_DestroyedState_for_unit" DestroyedState for () {
+unsafe impl "impl_DestroyedState_for_unit" DestroyedState for () {
     proof ImpliedClause0: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause1: ((): Copy) = {built_in impl Copy for ()}
     fn register_dtor<'_0_1, T, TraitClause0_1: (T: Sized)> = impl_DestroyedState_for_unit::register_dtor<'_0_1, T>[TraitClause0_1]

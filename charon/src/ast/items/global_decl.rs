@@ -44,10 +44,14 @@ pub struct GlobalDecl {
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum GlobalKind {
-    /// A static.
-    Static,
-    /// A thread-local static.
-    ThreadLocal,
+    /// A static or thread-local static.
+    Static {
+        is_mut: bool,
+        /// `false` for statics declared in an `extern` block without the `safe` qualifier.
+        is_safe: bool,
+        /// `true` for thread-local statics (through `thread_local!` or `#[thread_local]`).
+        is_thread_local: bool,
+    },
     /// A const with a name (either top-level or an associated const in a trait).
     NamedConst,
     /// A const without a name:
@@ -55,6 +59,10 @@ pub enum GlobalKind {
     /// - A const expression in a type (`[u8; sizeof::<T>()]`);
     /// - A promoted constant, automatically lifted from a body (`&0`).
     AnonConst,
+    /// The VTable of a trait implementation. Such globals can only be accessed by the generated
+    /// code -- it is UB to access them from user code.
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("VTableGlobal"))]
+    VTable,
 }
 
 /// Where a given global came from.

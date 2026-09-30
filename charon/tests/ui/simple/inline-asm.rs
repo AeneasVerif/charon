@@ -15,3 +15,8 @@ fn multiple_targets(mut x: u32) -> u32 {
     }
     x
 }
+
+#[unsafe(naked)]
+extern "C" fn naked() {
+    core::arch::naked_asm!("ret")
+}

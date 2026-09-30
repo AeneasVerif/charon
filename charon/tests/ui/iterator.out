@@ -186,7 +186,7 @@ where
 }
 
 // Full name: core::num::nonzero::ZeroablePrimitive
-pub trait ZeroablePrimitive<Self>
+pub unsafe trait ZeroablePrimitive<Self>
 {
     proof ImpliedClause0: (Self: Sized)
     proof ImpliedClause1: (Self: Copy)
@@ -257,7 +257,7 @@ impl "impl_Copy_for_usize" Copy for usize {
 }
 
 // Full name: core::num::nonzero::{impl ZeroablePrimitive for usize}
-impl "impl_ZeroablePrimitive_for_usize" ZeroablePrimitive for usize {
+unsafe impl "impl_ZeroablePrimitive_for_usize" ZeroablePrimitive for usize {
     proof ImpliedClause0: (usize: Sized) = {built_in impl Sized for usize}
     proof ImpliedClause1: (usize: Copy) = impl_Copy_for_usize
     proof ImpliedClause2: (NonZeroUsizeInner: Sized) = {built_in impl Sized for NonZeroUsizeInner}
@@ -502,7 +502,7 @@ where
     TraitClause1: (I: Iterator),
 
 // Full name: core::iter::adapters::zip::TrustedRandomAccessNoCoerce
-pub trait TrustedRandomAccessNoCoerce<Self>
+pub unsafe trait TrustedRandomAccessNoCoerce<Self>
 {
     proof ImpliedClause0: (Self: Sized)
     const MAY_HAVE_SIDE_EFFECT : bool

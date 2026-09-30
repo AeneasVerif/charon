@@ -26,7 +26,7 @@ fn impl_Trait_for_unit::{vtable}() -> test_crate::x::Trait::{vtable}
 = <opaque>
 
 // Full name: test_crate::x::{impl Trait for ()}::{vtable}
-static impl_Trait_for_unit::{vtable}: test_crate::x::Trait::{vtable} = impl_Trait_for_unit::{vtable}()
+vtable impl_Trait_for_unit::{vtable}: test_crate::x::Trait::{vtable} = impl_Trait_for_unit::{vtable}()
 
 // Full name: test_crate::x::{impl Trait for ()}
 impl "impl_Trait_for_unit" Trait for () {

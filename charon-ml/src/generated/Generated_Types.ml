@@ -899,6 +899,8 @@ and item_meta = {
       (** Whether this item was selected as a starting point for translation
           (using [--start-from], or by default all the top-level items in the
           main crate). *)
+  is_extern : bool;
+      (** Whether this item is declared in an [extern { .. }] block. *)
   opacity : item_opacity;
       (** Whether this item is considered opaque. For function and globals, this
           means we don't translate the body (the code); for ADTs, this means we

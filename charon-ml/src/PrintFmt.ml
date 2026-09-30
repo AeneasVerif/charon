@@ -884,7 +884,8 @@ and pp_impl_elem (env : fmt_env) (fmt : Format.formatter) (elem : impl_elem) :
       | Some impl ->
           (* Locally replace the generics and the predicates *)
           let env = fmt_env_push_generics_and_preds env impl.generics in
-          Format.fprintf fmt "impl %a"
+          let negative = if impl.is_negative then "!" else "" in
+          Format.fprintf fmt "impl %s%a" negative
             (pp_trait_decl_ref_as_impl env)
             impl.impl_trait
     end
@@ -1150,6 +1151,8 @@ let pp_rustc_attribute_kind (fmt : Format.formatter)
       in
       let args = List.filter_map (fun x -> x) [ since; note ] in
       if args <> [] then Format.fprintf fmt "(%s)" (String.concat ", " args)
+  | RustcAttributeKindExportName (name, _) ->
+      Format.fprintf fmt "export_name = \"%s\"" name
   | RustcAttributeKindFundamental -> pp_string fmt "fundamental"
   | RustcAttributeKindIgnore (_, reason) ->
       pp_string fmt "ignore";
@@ -1161,6 +1164,8 @@ let pp_rustc_attribute_kind (fmt : Format.formatter)
       | RustcInlineAttrAlways -> pp_string fmt "inline(always)"
       | RustcInlineAttrNever -> pp_string fmt "inline(never)"
       | RustcInlineAttrForce _ -> pp_string fmt "rustc_force_inline")
+  | RustcAttributeKindLinkSection name ->
+      Format.fprintf fmt "link_section = \"%s\"" name
   | RustcAttributeKindMayDangle _ -> pp_string fmt "may_dangle"
   | RustcAttributeKindNaked _ -> pp_string fmt "naked"
   | RustcAttributeKindNoLink -> pp_string fmt "no_link"
@@ -1180,9 +1185,10 @@ let pp_rustc_attribute_kind (fmt : Format.formatter)
       Option.iter
         (fun reason -> Format.fprintf fmt "(expected = \"%s\")" reason)
         reason
-  | RustcAttributeKindTargetFeature (features, _, _) ->
+  | RustcAttributeKindTargetFeature (features, _, was_forced) ->
       let features = List.map (fun (feature, _) -> feature) features in
-      Format.fprintf fmt "target_feature(enable = \"%s\")"
+      let key = if was_forced then "force" else "enable" in
+      Format.fprintf fmt "target_feature(%s = \"%s\")" key
         (String.concat "," features)
   | RustcAttributeKindTrackCaller _ -> pp_string fmt "track_caller"
 
@@ -1285,8 +1291,9 @@ let pp_item_intro (env : fmt_env) (indent : string) (keyword : string)
     | Some id -> indent ^ "#[diagnostic_item(\"" ^ id ^ "\")]\n"
   in
   let public = if meta.attr_info.public then "pub " else "" in
-  Format.fprintf fmt "%s%s%s%s%s%s%s %s" full_name_comment attributes lang_item
-    diagnostic_item indent public keyword name
+  let extern = if meta.is_extern then "extern " else "" in
+  Format.fprintf fmt "%s%s%s%s%s%s%s%s %s" full_name_comment attributes
+    lang_item diagnostic_item indent public extern keyword name
 
 let item_intro_to_string env indent keyword id meta =
   pp_to_string (fun fmt -> pp_item_intro env indent keyword id fmt meta)
@@ -1770,8 +1777,9 @@ let pp_locals (env : fmt_env) (indent : string) (fmt : Format.formatter)
 
 let pp_trait_decl (env : fmt_env) (indent : string) (indent_incr : string)
     (fmt : Format.formatter) (def : trait_decl) : unit =
+  let keyword = if def.is_unsafe then "unsafe trait" else "trait" in
   let intro =
-    item_intro_to_string env indent "trait" (IdTraitDecl def.def_id)
+    item_intro_to_string env indent keyword (IdTraitDecl def.def_id)
       def.item_meta
   in
   let env = fmt_env_replace_generics_and_preds env def.generics in
@@ -1871,7 +1879,10 @@ let pp_trait_impl (env : fmt_env) (indent : string) (indent_incr : string)
   in
   let indent1 = indent ^ indent_incr in
   let trait_id = def.impl_trait.id in
-  Format.fprintf fmt "%simpl%s%s %a%s" indent params short_name
+  let unsafe = if def.is_unsafe then "unsafe " else "" in
+  let negative = if def.is_negative then "!" else "" in
+  Format.fprintf fmt "%s%simpl%s%s %s%a%s" indent unsafe params short_name
+    negative
     (pp_trait_decl_ref_as_impl env)
     def.impl_trait clauses;
   pp_string fmt (if clauses = "" then " {" else "\n{");
@@ -1936,9 +1947,13 @@ let pp_global_decl (env : fmt_env) (indent : string) (indent_incr : string)
     (fmt : Format.formatter) (def : global_decl) : unit =
   let keyword =
     match def.global_kind with
-    | Static -> "static"
-    | ThreadLocal -> "thread_local"
+    | Static (is_mut, is_safe, is_thread_local) ->
+        let unsafe_ = if is_safe then "" else "unsafe " in
+        let name = if is_thread_local then "thread_local" else "static" in
+        let mut_ = if is_mut then " mut" else "" in
+        unsafe_ ^ name ^ mut_
     | NamedConst | AnonConst -> "const"
+    | VTableGlobal -> "vtable"
   in
   let intro =
     item_intro_to_string env indent keyword (IdGlobal def.def_id) def.item_meta
@@ -2035,8 +2050,13 @@ module Llbc = struct
           (pp_print_abort_kind env) on_failure
           (pp_unwind_block env indent indent_incr)
           on_unwind
-    | InlineAsm (asm, targets, on_unwind) ->
-        Format.fprintf fmt "%sasm!(%S)" indent asm;
+    | InlineAsm (asm, kind, targets, on_unwind) ->
+        let mac =
+          match kind with
+          | Asm -> "asm"
+          | NakedAsm -> "naked_asm"
+        in
+        Format.fprintf fmt "%s%s!(%S)" indent mac asm;
         if targets = [] then
           pp_unwind_block env indent indent_incr fmt on_unwind
         else
@@ -2110,7 +2130,6 @@ module Llbc = struct
         Format.fprintf fmt "%sloop {\n%a%s}" indent
           (pp_block env (indent ^ indent_incr) indent_incr)
           loop_blk indent
-    | Error s -> Format.fprintf fmt "%sERROR(' %s')" indent s
 
   and pp_block (env : fmt_env) (indent : string) (indent_incr : string)
       (fmt : Format.formatter) (b : block) : unit =
@@ -2236,7 +2255,12 @@ module Ullbc = struct
         Format.fprintf fmt "%sassert %a -> %s (unwind: %s)" indent
           (pp_print_assertion env) asrt (block_id_to_string tgt)
           (block_id_to_string unwind)
-    | InlineAsm (asm, targets, on_unwind) ->
+    | InlineAsm (asm, kind, targets, on_unwind) ->
+        let mac =
+          match kind with
+          | Asm -> "asm"
+          | NakedAsm -> "naked_asm"
+        in
         let targets =
           List.mapi
             (fun i target ->
@@ -2244,7 +2268,7 @@ module Ullbc = struct
             targets
         in
         let targets = targets @ [ "unwind: " ^ block_id_to_string on_unwind ] in
-        Format.fprintf fmt "%sasm!(%S) -> %s" indent asm
+        Format.fprintf fmt "%s%s!(%S) -> %s" indent mac asm
           (String.concat ", " targets)
     | Abort kind ->
         Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env) kind

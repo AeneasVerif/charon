@@ -998,6 +998,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             is_local,
             started_from: !item_src.is_derived_item()
                 && self.started_from.contains(item_src.def_id()),
+            is_extern: self.is_extern_item(def),
             opacity,
             lang_item,
             diagnostic_item,

@@ -101,12 +101,13 @@ and terminator_kind =
           - [assert]
           - [target]
           - [on_unwind] *)
-  | InlineAsm of string * block_id list * block_id
+  | InlineAsm of string * asm_kind * block_id list * block_id
       (** An inline assembly block. For now we only preserve the template
           string.
 
           Fields:
           - [asm]
+          - [kind]
           - [targets]
           - [on_unwind] *)
   | Abort of abort_kind  (** Handles panics and impossible cases. *)

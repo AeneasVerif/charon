@@ -43,7 +43,7 @@ where
 }
 
 #[diagnostic_item("SliceIndex")]
-pub trait core::slice::index::SliceIndex<Self, T>
+pub unsafe trait core::slice::index::SliceIndex<Self, T>
 {
     proof ImpliedClause0: (Self: core::marker::MetaSized)
     proof ImpliedClause1: (T: core::marker::MetaSized)
@@ -122,7 +122,7 @@ where
 = <opaque>
 
 // Full name: core::slice::index::{impl core::slice::index::SliceIndex<[T]> for usize}
-impl<T> core::slice::index::SliceIndex<[T]> for usize
+unsafe impl<T> core::slice::index::SliceIndex<[T]> for usize
 where
     TraitClause0: (T: core::marker::Sized),
 {

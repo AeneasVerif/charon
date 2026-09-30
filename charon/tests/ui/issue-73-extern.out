@@ -3,18 +3,18 @@
 struct () {}
 
 // Full name: test_crate::foo
-unsafe extern "C" fn foo(_1: i32)
+extern unsafe extern "C" fn foo(_1: i32)
 = <extern:foo>
 
 // Full name: test_crate::CONST
-fn CONST() -> u8
+extern fn CONST() -> u8
 = <extern:CONST>
 
 // Full name: test_crate::CONST
-static CONST: u8 = CONST()
+extern unsafe static CONST: u8 = CONST()
 
 // Full name: test_crate::Type
-opaque type Type
+extern opaque type Type
 
 // Full name: test_crate::use_type
 fn use_type<'_0>(_x: &'_0 Type)

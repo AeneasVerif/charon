@@ -62,7 +62,7 @@ pub trait Hash<Self>
 
 // Full name: core::marker::Send
 #[diagnostic_item("Send")]
-pub trait Send<Self>
+pub unsafe trait Send<Self>
 
 // Full name: core::marker::Copy
 #[lang_item(Copy)]
@@ -77,7 +77,7 @@ pub trait Copy<Self>
 // Full name: core::marker::Sync
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
-pub trait Sync<Self>
+pub unsafe trait Sync<Self>
 
 // Full name: core::marker::Unpin
 #[lang_item(Unpin)]

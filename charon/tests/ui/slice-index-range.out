@@ -614,7 +614,7 @@ where
 
 // Full name: core::slice::index::SliceIndex
 #[diagnostic_item("SliceIndex")]
-pub trait SliceIndex<Self, T>
+pub unsafe trait SliceIndex<Self, T>
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (T: MetaSized)
@@ -1780,7 +1780,7 @@ where
 }
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}
-impl<T> "impl_SliceIndex_slice_for_Range_usize" SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]
+unsafe impl<T> "impl_SliceIndex_slice_for_Range_usize" SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]
 where
     TraitClause0: (T: Sized),
 {

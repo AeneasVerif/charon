@@ -41,5 +41,17 @@ fn multiple_targets(x: u32) -> u32
     ↳⚡ undefined_behavior
 }
 
+// Full name: test_crate::naked
+#[naked]
+extern "C" fn naked()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    naked_asm!("ret")
+    ↳⚡ undefined_behavior
+}
+
 
 

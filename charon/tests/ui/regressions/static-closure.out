@@ -82,7 +82,7 @@ fn {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>() -> core::ops::function::
 = <opaque>
 
 // Full name: {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>
-static {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>: core::ops::function::Fn::{vtable} = {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>()
+vtable {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>: core::ops::function::Fn::{vtable} = {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>()
 
 struct (_,)::<i32> {
   _0: i32,

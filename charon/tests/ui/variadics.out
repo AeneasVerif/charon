@@ -19,14 +19,14 @@ pub trait MetaSized<Self>
 
 // Full name: core::ffi::va_list::VaArgSafe
 #[lang_item(VaArgSafe)]
-pub trait VaArgSafe<Self>
+pub unsafe trait VaArgSafe<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
 }
 
 // Full name: core::ffi::va_list::{impl VaArgSafe for i32}
-impl "impl_VaArgSafe_for_i32" VaArgSafe for i32 {
+unsafe impl "impl_VaArgSafe_for_i32" VaArgSafe for i32 {
     proof ImpliedClause0: (i32: MetaSized) = {built_in impl MetaSized for i32}
     non-dyn-compatible
 }
@@ -120,7 +120,7 @@ pub unsafe extern "C" fn sum(...) -> i32
 }
 
 // Full name: test_crate::foo
-unsafe extern "C" fn foo(_1: u32, _2: u64, ...)
+extern unsafe extern "C" fn foo(_1: u32, _2: u64, ...)
 = <extern:foo>
 
 // Full name: test_crate::call

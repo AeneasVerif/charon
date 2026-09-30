@@ -20,7 +20,7 @@ where
 // Full name: core::marker::Sync
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
-pub trait Sync<Self>
+pub unsafe trait Sync<Self>
 
 struct () {}
 
@@ -31,7 +31,7 @@ pub struct Node {
 }
 
 // Full name: test_crate::{impl Sync for Node}
-impl "impl_Sync_for_Node" Sync for Node {
+unsafe impl "impl_Sync_for_Node" Sync for Node {
     vtable: lazy
 }
 
