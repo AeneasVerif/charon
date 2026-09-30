@@ -465,6 +465,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     func: FnOperand::Regular(assume_init_fn),
                     args: vec![Operand::Move(input)],
                     dest: initialized_box.clone(),
+                    safety: CallSafety::Inherit,
                 }
             });
 
@@ -500,6 +501,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     func: FnOperand::Regular(into_vec_fn),
                     args: vec![Operand::Move(box_slice)],
                     dest: return_place,
+                    safety: CallSafety::Inherit,
                 }
             });
             builder.build()
@@ -1620,7 +1622,15 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         let func =
             FnOperand::Regular(self.translate_fn_ptr(span, &item, TransItemSourceKind::Fun)?);
         let dest = self.locals.new_var(None, Ty::mk_unit());
-        self.push_nounwind_call(span, Call { func, args, dest });
+        self.push_nounwind_call(
+            span,
+            Call {
+                func,
+                args,
+                dest,
+                safety: CallSafety::Inherit,
+            },
+        );
         Ok(())
     }
 
@@ -1855,10 +1865,61 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             }
         };
         let args = self.translate_arguments(span, args)?;
+
+        let safety = match op_ty.kind() {
+            ty::TyKind::FnDef(def_id, generics) => 'safety_fndef: {
+                let sig_is_unsafe = tcx.fn_sig(*def_id).skip_binder().safety().is_unsafe();
+
+                // Safe `#[target_feature]` functions still get an unsafe signature, but calling them is safe if
+                // the caller enables the same (or implying) features (safety.unsafe-target-feature-call).
+                // We also get the inverse: `#[unsafe(force_target_feature)]` functions have a safe signature, but calling
+                // them is unsafe if the caller does not enable the feature.
+                let attrs = tcx.codegen_fn_attrs(*def_id);
+                let caller = self.item_src.def_id().as_real_or_promoted();
+                let caller_features = caller
+                    .map(|caller| tcx.typeck_root_def_id(caller))
+                    .filter(|caller| tcx.def_kind(*caller).has_codegen_attrs())
+                    .map_or(&[][..], |caller| {
+                        &tcx.codegen_fn_attrs(caller).target_features[..]
+                    });
+                let has_feature =
+                    tcx.is_target_feature_call_safe(&attrs.target_features, caller_features);
+                if sig_is_unsafe && attrs.safe_target_features && has_feature {
+                    break 'safety_fndef CallSafety::Safe;
+                } else if !has_feature {
+                    break 'safety_fndef CallSafety::Unsafe;
+                }
+
+                // Explicitly calling a `Drop` method is unsafe.
+                if let Some(trait_id) = tcx.trait_of_assoc(*def_id)
+                    && tcx.is_lang_item(trait_id, LangItem::Drop)
+                {
+                    break 'safety_fndef CallSafety::Unsafe;
+                }
+
+                // In mono mode, trait decls have no methods, so we track the safety of the function here,
+                // and `transform_dyn_trait_calls` moves it into the signature of the called function pointer.
+                let mono_dyn_call = self.monomorphize()
+                    && tcx.trait_of_assoc(*def_id).is_some()
+                    && generics.skip_binder().type_at(0).is_trait();
+                if mono_dyn_call {
+                    break 'safety_fndef if sig_is_unsafe {
+                        CallSafety::Unsafe
+                    } else {
+                        CallSafety::Safe
+                    };
+                }
+
+                CallSafety::Inherit
+            }
+            _ => CallSafety::Inherit,
+        };
+
         let call = Call {
             func: fn_operand,
             args,
             dest: lval,
+            safety,
         };
 
         let target = match target {

@@ -181,6 +181,23 @@ pub struct Call {
     pub func: FnOperand,
     pub args: Vec<Operand>,
     pub dest: Place,
+    pub safety: CallSafety,
+}
+
+/// Whether we statically know something about the safety of this call, that takes
+/// precedence over the safety of the callee's signature.
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(EnumIsA)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+pub enum CallSafety {
+    /// As safe as the callee's signature.
+    Inherit,
+    /// Safe despite an unsafe signature: desugared drops, and calls to safe `#[target_feature]` functions
+    /// from contexts that enable the required features.
+    Safe,
+    /// Unsafe despite a safe signature: calls to `#[target_feature]` functions from contexts
+    /// that don't enable the required features, and explicit calls to `Drop` methods.
+    Unsafe,
 }
 
 /// Statements that only affect borrow-checking. They are no-ops at runtime.

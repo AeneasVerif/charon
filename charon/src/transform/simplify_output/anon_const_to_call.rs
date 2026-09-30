@@ -46,6 +46,7 @@ impl UllbcPass for Transform {
                             )),
                             args: vec![],
                             dest: return_place.clone(),
+                            safety: CallSafety::Inherit,
                         },
                     ));
                     *op = Operand::Move(return_place);

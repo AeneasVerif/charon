@@ -108,7 +108,25 @@ and builtin_assert_kind =
   | ResumedAfterPanic
   | ResumedAfterDrop
 
-and call = { func : fn_operand; args : operand list; dest : place }
+and call = {
+  func : fn_operand;
+  args : operand list;
+  dest : place;
+  safety : call_safety;
+}
+
+(** Whether we statically know something about the safety of this call, that
+    takes precedence over the safety of the callee's signature. *)
+and call_safety =
+  | Inherit  (** As safe as the callee's signature. *)
+  | Safe
+      (** Safe despite an unsafe signature: desugared drops, and calls to safe
+          [#[target_feature]] functions from contexts that enable the required
+          features. *)
+  | Unsafe
+      (** Unsafe despite a safe signature: calls to [#[target_feature]]
+          functions from contexts that don't enable the required features, and
+          explicit calls to [Drop] methods. *)
 
 (** A [Drop] statement/terminator can mean two things, depending on what MIR
     phase we retrieved from rustc: it could be a real drop, or it could be a

@@ -365,7 +365,18 @@ and call_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* func = fn_operand_of_postcard ctx st in
      let* args = list_of_postcard operand_of_postcard ctx st in
      let* dest = place_of_postcard ctx st in
-     Ok ({ func; args; dest } : call))
+     let* safety = call_safety_of_postcard ctx st in
+     Ok ({ func; args; dest; safety } : call))
+
+and call_safety_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (call_safety, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok Inherit
+     | 1 -> Ok Safe
+     | 2 -> Ok Unsafe
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and cast_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (cast_kind, string) result =

@@ -378,11 +378,23 @@ and byte_of_json (ctx : of_json_ctx) (js : json) : (byte, string) result =
 and call_of_json (ctx : of_json_ctx) (js : json) : (call, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("func", func); ("args", args); ("dest", dest) ] ->
+    | `Assoc
+        [ ("func", func); ("args", args); ("dest", dest); ("safety", safety) ]
+      ->
         let* func = fn_operand_of_json ctx func in
         let* args = list_of_json operand_of_json ctx args in
         let* dest = place_of_json ctx dest in
-        Ok ({ func; args; dest } : call)
+        let* safety = call_safety_of_json ctx safety in
+        Ok ({ func; args; dest; safety } : call)
+    | _ -> Error "")
+
+and call_safety_of_json (ctx : of_json_ctx) (js : json) :
+    (call_safety, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Inherit" -> Ok Inherit
+    | `String "Safe" -> Ok Safe
+    | `String "Unsafe" -> Ok Unsafe
     | _ -> Error "")
 
 and cast_kind_of_json (ctx : of_json_ctx) (js : json) :

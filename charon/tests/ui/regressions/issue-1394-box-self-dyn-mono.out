@@ -157,7 +157,7 @@ fn main()
     let _3: S; // anonymous local
     let _4: (); // anonymous local
     let _5: Box::<(dyn Trait), Global>; // anonymous local
-    let _6: unsafe fn(Box::<(dyn Trait), Global>); // anonymous local
+    let _6: fn(Box::<(dyn Trait), Global>); // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -178,7 +178,7 @@ fn main()
     storage_live(_5)
     _5 = move b
     storage_live(_6)
-    _6 = cast<*const (), unsafe fn(Box::<(dyn Trait), Global>)>(copy (*_5.metadata).method_method)
+    _6 = cast<*const (), fn(Box::<(dyn Trait), Global>)>(copy (*_5.metadata).method_method)
     _4 = (copy _6)(move _5)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Trait), Global>}::drop_glue::<(dyn Trait), Global><'3>] _5
         ↳⚡ storage_dead(_6)
