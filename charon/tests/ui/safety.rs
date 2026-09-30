@@ -1,7 +1,10 @@
+//@ revisions=promoted
+//@[promoted] charon-args=--mir promoted
 //@ rustc-args=--target x86_64-unknown-linux-gnu
 //@ charon-args=--print-safety --opaque test_crate::Opaque --exclude test_crate::excluded
 //@ charon-args=--exclude test_crate::ExcludedUnsafeTrait
 #![feature(
+    core_intrinsics,
     stmt_expr_attributes,
     effective_target_features,
     negative_impls,
@@ -107,6 +110,17 @@ fn unsafe_raw_borrow_of_indexed_union_field(foo: Foo) -> *const u32 {
 static mut STATIC_FOO: Foo = Foo { one: 0 };
 fn unsafe_raw_borrow_of_mutable_static_union_field() -> *const u64 {
     unsafe { &raw const STATIC_FOO.one }
+}
+
+// These intrinsics get lowered to MIR operations in the optimized MIR.
+fn unsafe_builtins(x: u32, p: *const u32, s: &[u32], i: usize) {
+    use std::intrinsics;
+    unsafe {
+        let _: i32 = intrinsics::transmute(x);
+        let _: &u32 = intrinsics::slice_get_unchecked(s, i);
+        let _ = intrinsics::unchecked_add(x, 1);
+        let _ = intrinsics::offset(p, 1isize);
+    }
 }
 
 fn safe_raw_ptrs(x: u32) -> (*const u32, *mut usize) {

@@ -2,6 +2,8 @@
 use macros::EnumIsA;
 
 use crate::ast::*;
+use crate::formatter::IntoFormatter;
+use crate::pretty::FmtWithCtx;
 use crate::{llbc_ast, ullbc_ast};
 
 /// Whether an operation requires `unsafe`.
@@ -97,17 +99,20 @@ impl Place {
     /// - it accesses a union field (safety.unsafe-union-access)
     pub fn read_safety(&self, krate: &TranslatedCrate) -> Safety {
         self.subplaces()
-            .map(|place| place.access_safety(krate))
+            .map(|place| place.shallow_safety(krate))
             .collect()
     }
 
-    /// The safety of the outermost access of this place.
-    fn access_safety(&self, krate: &TranslatedCrate) -> Safety {
+    /// The safety of accessing this place, ignoring subplaces.
+    fn shallow_safety(&self, krate: &TranslatedCrate) -> Safety {
         let (sub, proj) = match &self.kind {
             PlaceKind::Global(global_ref) => {
                 return match krate.global_decls.get(global_ref.id) {
                     Some(decl) => decl.is_unsafe_to_access(krate).into(),
-                    None => Safety::Unknown(format!("{:?} wasn't translated", global_ref.id)),
+                    None => Safety::Unknown(format!(
+                        "{} wasn't translated",
+                        global_ref.with_ctx(&krate.into_fmt())
+                    )),
                 };
             }
             PlaceKind::Local(_) => return Safety::Safe,
@@ -129,7 +134,10 @@ impl Place {
                         TypeDeclKind::Struct(_) | TypeDeclKind::Enum(_) | TypeDeclKind::Alias(_),
                     ) => Safety::Safe,
                     Some(TypeDeclKind::Opaque | TypeDeclKind::Error(_)) | None => {
-                        Safety::Unknown(format!("{:?} is opaque or wasn't translated", tref.id))
+                        Safety::Unknown(format!(
+                            "{} is opaque or wasn't translated",
+                            tref.with_ctx(&krate.into_fmt())
+                        ))
                     }
                 }
             }
@@ -171,22 +179,17 @@ impl HasSafety for Rvalue {
             } => {
                 // A raw borrow doesn't access the borrowed place itself. Like rustc, we only skip its
                 // outermost accesses: `&raw const *ptr` is ok, but `&raw const (*ptr).field` isn't.
-                let skipped = match &place.kind {
-                    PlaceKind::Global(_) | PlaceKind::Projection(_, ProjectionElem::Deref) => 1,
-                    _ => place
-                        .subplaces()
-                        .take_while(|place| {
-                            matches!(place.as_projection(), Some((_, ProjectionElem::Field(..))))
-                                && place.access_safety(krate).is_unsafe()
-                        })
-                        .count(),
+                let accessed = match &place.kind {
+                    PlaceKind::Global(_) => None,
+                    PlaceKind::Projection(sub, ProjectionElem::Deref) => Some(&**sub),
+                    _ => place.subplaces().find(|place| {
+                        !matches!(place.as_projection(), Some((_, ProjectionElem::Field(..))))
+                            || !place.shallow_safety(krate).is_unsafe()
+                    }),
                 };
-                let place_safety: Safety = place
-                    .subplaces()
-                    .skip(skipped)
-                    .map(|place| place.access_safety(krate))
-                    .collect();
-                place_safety.or_else(|| ptr_metadata.safety(krate))
+                accessed
+                    .map_or(Safety::Safe, |place| place.read_safety(krate))
+                    .or_else(|| ptr_metadata.safety(krate))
             }
             Rvalue::Ref {
                 place,
@@ -242,7 +245,10 @@ impl HasSafety for FnOperand {
             FnOperand::Regular(fn_ptr) => match fn_ptr.kind.as_ref() {
                 FnPtrKind::Fun(fun_id) => match krate.fun_decls.get(*fun_id) {
                     Some(decl) => decl.signature.safety(krate),
-                    None => Safety::Unknown(format!("{fun_id:?} wasn't translated")),
+                    None => Safety::Unknown(format!(
+                        "{} wasn't translated",
+                        fun_id.with_ctx(&krate.into_fmt())
+                    )),
                 },
                 FnPtrKind::Trait(trait_ref, method_id) => {
                     let trait_id = trait_ref.trait_decl_ref.skip_binder.id;

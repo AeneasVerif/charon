@@ -60,6 +60,17 @@ pub unsafe trait TrivialClone<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u32}
+impl "impl_Clone_for_u32" Clone for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: core::cmp::PartialEq
 #[lang_item(PartialEq)]
 #[diagnostic_item("PartialEq")]
@@ -188,10 +199,89 @@ impl "impl_Hash_for_unit" Hash for () {
     non-dyn-compatible
 }
 
-// Full name: core::marker::Send
+// Full name: core::intrinsics::bounds::BuiltinDeref
 // unsafe to implement
-#[diagnostic_item("Send")]
-pub unsafe trait Send<Self>
+pub unsafe trait BuiltinDeref<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    type Pointee
+    non-dyn-compatible
+}
+
+// Full name: core::intrinsics::bounds::{impl BuiltinDeref for &'_0 T}
+// unsafe to declare
+unsafe impl<'_0, T> BuiltinDeref for &'_0 T
+where
+    TypeOutlives0: T: '_0,
+{
+    proof ImpliedClause0: (&'_0 T: Sized) = {built_in impl Sized for &'_0 T}
+    type Pointee = T
+    non-dyn-compatible
+}
+
+// Full name: core::intrinsics::bounds::{impl BuiltinDeref for *const T}
+// unsafe to declare
+unsafe impl<T> BuiltinDeref for *const T {
+    proof ImpliedClause0: (*const T: Sized) = {built_in impl Sized for *const T}
+    type Pointee = T
+    non-dyn-compatible
+}
+
+// Full name: core::intrinsics::bounds::ChangePointee
+pub trait ChangePointee<Self, U>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: BuiltinDeref)
+    proof ImpliedClause2: (Self::Output: Sized)
+    type Output
+    non-dyn-compatible
+}
+
+// Full name: core::intrinsics::bounds::{impl ChangePointee<U> for &'a T}
+impl<'a, T, U> ChangePointee<U> for &'a T
+where
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: U: 'a,
+{
+    proof ImpliedClause0: (&'a T: MetaSized) = {built_in impl MetaSized for &'a T}
+    proof ImpliedClause1: (&'a T: BuiltinDeref) = {impl BuiltinDeref for &'_0 T}<'_, T>
+    proof ImpliedClause2: (&'a U: Sized) = {built_in impl Sized for &'a U}
+    type Output = &'a U
+    non-dyn-compatible
+}
+
+// Full name: core::intrinsics::transmute
+// unsafe to call
+#[rustc_intrinsic]
+#[diagnostic_item("transmute")]
+pub unsafe fn transmute<Src, Dst>(src_1: Src) -> Dst
+where
+    TraitClause0: (Src: Sized),
+    TraitClause1: (Dst: Sized),
+= <intrinsic:transmute>
+
+// Full name: core::intrinsics::offset
+// unsafe to call
+#[rustc_intrinsic]
+pub unsafe fn offset<Ptr, Delta>(dst_1: Ptr, offset_2: Delta) -> Ptr
+where
+    TraitClause0: (Ptr: Sized),
+    TraitClause1: (Delta: Sized),
+    TraitClause2: (Ptr: BuiltinDeref),
+= <intrinsic:offset>
+
+// Full name: core::intrinsics::slice_get_unchecked
+// unsafe to call
+#[rustc_intrinsic]
+pub unsafe fn slice_get_unchecked<ItemPtr, SlicePtr, T>(slice_ptr_1: SlicePtr, index_2: usize) -> ItemPtr
+where
+    TraitClause0: (ItemPtr: Sized),
+    TraitClause1: (SlicePtr: Sized),
+    TraitClause2: (T: Sized),
+    TraitClause3: (ItemPtr: ChangePointee<[T]>),
+    TypeConstraint0: TraitClause3::ImpliedClause1::Pointee = T,
+    TypeConstraint1: TraitClause3::Output = SlicePtr,
+= <intrinsic:slice_get_unchecked>
 
 // Full name: core::marker::Copy
 #[lang_item(Copy)]
@@ -202,6 +292,27 @@ pub trait Copy<Self>
     proof ImpliedClause1: (Self: Clone)
     non-dyn-compatible
 }
+
+// Full name: core::intrinsics::unchecked_add
+// unsafe to call
+#[rustc_intrinsic]
+pub unsafe fn unchecked_add<T>(x_1: T, y_2: T) -> T
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
+= <intrinsic:unchecked_add>
+
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Send
+// unsafe to implement
+#[diagnostic_item("Send")]
+pub unsafe trait Send<Self>
 
 // Full name: core::marker::Sync
 // unsafe to implement
@@ -635,7 +746,7 @@ union Foo {
 
 // Full name: test_crate::{impl Clone for Foo}::clone
 #[inline(hint)]
-pub fn clone<'_0>(self: &'_0 Foo) -> Foo
+pub fn impl_Clone_for_Foo::clone<'_0>(self: &'_0 Foo) -> Foo
 {
     let _0: Foo; // return
     let self: &'1 Foo; // arg #1
@@ -649,7 +760,7 @@ pub fn clone<'_0>(self: &'_0 Foo) -> Foo
 // Full name: test_crate::{impl Clone for Foo}
 impl "impl_Clone_for_Foo" Clone for Foo {
     proof ImpliedClause0: (Foo: Sized) = {built_in impl Sized for Foo}
-    fn clone<'_0_1> = clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_Foo::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -960,6 +1071,87 @@ fn unsafe_raw_borrow_of_mutable_static_union_field() -> *const u64
     storage_live(_0)
     // unsafe
     _0 = &raw const STATIC_FOO.one
+    return
+}
+
+// Full name: test_crate::unsafe_builtins
+fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
+{
+    let _0: (); // return
+    let x: u32; // arg #1
+    let p: *const u32; // arg #2
+    let s: &'1 [u32]; // arg #3
+    let i: usize; // arg #4
+    let _5: i32; // anonymous local
+    let _6: u32; // anonymous local
+    let _7: &'3 u32; // anonymous local
+    let _8: &'4 [u32]; // anonymous local
+    let _9: usize; // anonymous local
+    let _10: u32; // anonymous local
+    let _11: u32; // anonymous local
+    let _12: *const u32; // anonymous local
+    let _13: *const u32; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_5)
+    storage_live(_6)
+    _6 = copy x
+    // unsafe
+    _5 = transmute<u32, i32>[{built_in impl Sized for u32}, {built_in impl Sized for i32}](move _6)
+    ↳⚡ storage_dead(i)
+        storage_dead(s)
+        storage_dead(p)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_6)
+    set_type(typeof(_5) <= i32)
+    storage_dead(_5)
+    storage_live(_7)
+    storage_live(_8)
+    _8 = copy s
+    storage_live(_9)
+    _9 = copy i
+    // unsafe
+    _7 = slice_get_unchecked<&'6 u32, &'8 [u32], u32>[{built_in impl Sized for &'6 u32}, {built_in impl Sized for &'8 [u32]}, {built_in impl Sized for u32}, {impl ChangePointee<U> for &'a T}<'6, u32, [u32]>](move _8, move _9)
+    ↳⚡ storage_dead(i)
+        storage_dead(s)
+        storage_dead(p)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_9)
+    storage_dead(_8)
+    set_type(typeof(_7) <= &'24 u32)
+    storage_dead(_7)
+    storage_live(_10)
+    storage_live(_11)
+    _11 = copy x
+    // unsafe
+    _10 = unchecked_add<u32>[{built_in impl Sized for u32}, impl_Copy_for_u32](move _11, const 1u32)
+    ↳⚡ storage_dead(i)
+        storage_dead(s)
+        storage_dead(p)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_11)
+    storage_dead(_10)
+    storage_live(_12)
+    storage_live(_13)
+    _13 = copy p
+    // unsafe
+    _12 = offset<*const u32, isize>[{built_in impl Sized for *const u32}, {built_in impl Sized for isize}, {impl BuiltinDeref for *const T}<u32>](move _13, const 1isize)
+    ↳⚡ storage_dead(i)
+        storage_dead(s)
+        storage_dead(p)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_13)
+    storage_dead(_12)
+    _0 = ()
+    storage_dead(i)
+    storage_dead(s)
+    storage_dead(p)
+    storage_dead(x)
     return
 }
 
@@ -1433,7 +1625,7 @@ fn unknown_read_opaque_field(u: Opaque) -> u64
     let u: Opaque; // arg #1
 
     storage_live(_0)
-    // unknown safety: 9 is opaque or wasn't translated
+    // unknown safety: Opaque is opaque or wasn't translated
     _0 = copy u.0
     storage_dead(u)
     return
@@ -1446,7 +1638,7 @@ fn unknown_call_excluded()
 
     storage_live(_0)
     _0 = ()
-    // unknown safety: 67 wasn't translated
+    // unknown safety: excluded wasn't translated
     _0 = excluded()
     ↳⚡ unwind_continue
     return
