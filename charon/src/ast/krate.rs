@@ -337,6 +337,7 @@ impl<'a> IntoFormatter for &'a TranslatedCrate {
     fn into_fmt(self) -> Self::C {
         FmtCtx {
             translated: Some(self),
+            include_layouts: self.options.print_layouts,
             ..Default::default()
         }
     }

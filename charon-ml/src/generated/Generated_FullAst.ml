@@ -247,6 +247,9 @@ and cli_options = {
           loop reconstruction). *)
   print_llbc : bool;
       (** Pretty-print the final LLBC (after all the cleaning micro-passes). *)
+  print_layouts : bool;
+      (** When pretty-printing, also print the layout of every type declaration.
+      *)
   dest_dir : path_buf option;
       (** The destination directory. Files will be generated as
           [<dest_dir>/<crate_name>.{u}llbc] for json and

@@ -306,6 +306,10 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub print_llbc: bool,
+    /// When pretty-printing, also print the layout of every type declaration.
+    #[clap(long)]
+    #[serde(default)]
+    pub print_layouts: bool,
     /// The destination directory. Files will be generated as
     /// `<dest_dir>/<crate_name>.{u}llbc` for json and `<dest_dir>/<crate_name>.{u}llbc.postcard`
     /// for postcard, unless `dest_file` is set. `dest_dir` defaults to the current directory.

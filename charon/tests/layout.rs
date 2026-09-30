@@ -1,8 +1,6 @@
 use itertools::Itertools;
-use std::{fmt::Write, path::PathBuf};
 
 use charon_lib::ast::*;
-use charon_lib::{formatter::IntoFormatter, pretty::FmtWithCtx};
 
 mod util;
 use util::*;
@@ -149,25 +147,5 @@ fn type_layout() -> anyhow::Result<()> {
     );
     assert_chosen("test_crate::PackedUnsized", (0, 0, 3), (14, 2));
 
-    let mut layouts = String::new();
-    let mut fmt = (&crate_data).into_fmt();
-    fmt.include_layouts = true;
-    for tdecl in crate_data.type_decls.iter() {
-        // Skips the builtin ADTs too, whose names start with a `PathElem::Builtin`.
-        let is_local = matches!(
-            tdecl.item_meta.name.name.first().and_then(|e| e.as_ident()),
-            Some((crate_name, _)) if crate_name == "test_crate"
-        );
-        if !is_local {
-            continue;
-        }
-
-        if !layouts.is_empty() {
-            writeln!(layouts)?;
-        }
-        writeln!(layouts, "{}", tdecl.with_ctx(&fmt))?;
-    }
-
-    compare_or_overwrite(layouts, &PathBuf::from("./tests/layout.txt"))?;
     Ok(())
 }
