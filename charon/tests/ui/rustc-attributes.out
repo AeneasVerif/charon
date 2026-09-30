@@ -1,0 +1,30 @@
+# Final LLBC before serialization:
+
+struct () {}
+
+// Full name: test_crate::export_name
+#[export_name = "exported"]
+fn export_name()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::link_section
+#[link_section = "__TEXT,__custom"]
+fn link_section()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+
+

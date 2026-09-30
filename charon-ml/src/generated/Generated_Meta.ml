@@ -194,6 +194,14 @@ and rustc_attribute_kind =
           Fields:
           - [deprecation]
           - [span] *)
+  | RustcAttributeKindExportName of string * span
+      (** Represents
+          [[#[export_name]]](https://doc.rust-lang.org/reference/abi.html#the-export_name-attribute).
+
+          Fields:
+          - [name]: The name to export this item with. It may not contain \0
+            bytes as it will be converted to a null-terminated string.
+          - [span] *)
   | RustcAttributeKindFundamental  (** Represents [#[fundamental]]. *)
   | RustcAttributeKindIgnore of span * string option
       (** Represents [#[ignore]]
@@ -204,6 +212,12 @@ and rustc_attribute_kind =
             [#[ignore = "reason this is ignored"]] *)
   | RustcAttributeKindInline of rustc_inline_attr * span
       (** Represents [#[inline]] and [#[rustc_force_inline]]. *)
+  | RustcAttributeKindLinkSection of string
+      (** Represents
+          [[#[link_section]]](https://doc.rust-lang.org/reference/abi.html#the-link_section-attribute)
+
+          Fields:
+          - [name] *)
   | RustcAttributeKindMayDangle of span
       (** Represents
           [[#[may_dangle]]](https://std-dev-guide.rust-lang.org/tricky/may-dangle.html).

@@ -1747,41 +1747,48 @@ and rustc_attribute_kind_of_postcard (ctx : of_postcard_ctx)
          let* deprecation = rustc_deprecation_of_postcard ctx st in
          let* span = span_of_postcard ctx st in
          Ok (RustcAttributeKindDeprecated (deprecation, span))
-     | 3 -> Ok RustcAttributeKindFundamental
-     | 4 ->
+     | 3 ->
+         let* name = string_of_postcard ctx st in
+         let* span = span_of_postcard ctx st in
+         Ok (RustcAttributeKindExportName (name, span))
+     | 4 -> Ok RustcAttributeKindFundamental
+     | 5 ->
          let* span = span_of_postcard ctx st in
          let* reason = option_of_postcard string_of_postcard ctx st in
          Ok (RustcAttributeKindIgnore (span, reason))
-     | 5 ->
+     | 6 ->
          let* _0 = rustc_inline_attr_of_postcard ctx st in
          let* _1 = span_of_postcard ctx st in
          Ok (RustcAttributeKindInline (_0, _1))
-     | 6 ->
+     | 7 ->
+         let* name = string_of_postcard ctx st in
+         Ok (RustcAttributeKindLinkSection name)
+     | 8 ->
          let* _0 = span_of_postcard ctx st in
          Ok (RustcAttributeKindMayDangle _0)
-     | 7 ->
-         let* _0 = span_of_postcard ctx st in
-         Ok (RustcAttributeKindNaked _0)
-     | 8 -> Ok RustcAttributeKindNoLink
      | 9 ->
          let* _0 = span_of_postcard ctx st in
+         Ok (RustcAttributeKindNaked _0)
+     | 10 -> Ok RustcAttributeKindNoLink
+     | 11 ->
+         let* _0 = span_of_postcard ctx st in
          Ok (RustcAttributeKindNoMangle _0)
-     | 10 ->
+     | 12 ->
          let* _0 = span_of_postcard ctx st in
          Ok (RustcAttributeKindNonExhaustive _0)
-     | 11 ->
+     | 13 ->
          let* _0 = rustc_optimize_attr_of_postcard ctx st in
          let* _1 = span_of_postcard ctx st in
          Ok (RustcAttributeKindOptimize (_0, _1))
-     | 12 ->
+     | 14 ->
          let* align = u64_of_postcard ctx st in
          let* span = span_of_postcard ctx st in
          Ok (RustcAttributeKindRustcAlign (align, span))
-     | 13 -> Ok RustcAttributeKindRustcIntrinsic
-     | 14 ->
+     | 15 -> Ok RustcAttributeKindRustcIntrinsic
+     | 16 ->
          let* reason = option_of_postcard string_of_postcard ctx st in
          Ok (RustcAttributeKindShouldPanic reason)
-     | 15 ->
+     | 17 ->
          let* features =
            list_of_postcard
              (pair_of_postcard string_of_postcard span_of_postcard)
@@ -1790,7 +1797,7 @@ and rustc_attribute_kind_of_postcard (ctx : of_postcard_ctx)
          let* attr_span = span_of_postcard ctx st in
          let* was_forced = bool_of_postcard ctx st in
          Ok (RustcAttributeKindTargetFeature (features, attr_span, was_forced))
-     | 16 ->
+     | 18 ->
          let* _0 = span_of_postcard ctx st in
          Ok (RustcAttributeKindTrackCaller _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))

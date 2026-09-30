@@ -2043,6 +2043,10 @@ and rustc_attribute_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* deprecation = rustc_deprecation_of_json ctx deprecation in
         let* span = span_of_json ctx span in
         Ok (RustcAttributeKindDeprecated (deprecation, span))
+    | `Assoc [ ("ExportName", `Assoc [ ("name", name); ("span", span) ]) ] ->
+        let* name = string_of_json ctx name in
+        let* span = span_of_json ctx span in
+        Ok (RustcAttributeKindExportName (name, span))
     | `String "Fundamental" -> Ok RustcAttributeKindFundamental
     | `Assoc [ ("Ignore", `Assoc [ ("span", span); ("reason", reason) ]) ] ->
         let* span = span_of_json ctx span in
@@ -2052,6 +2056,9 @@ and rustc_attribute_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = rustc_inline_attr_of_json ctx _0 in
         let* _1 = span_of_json ctx _1 in
         Ok (RustcAttributeKindInline (_0, _1))
+    | `Assoc [ ("LinkSection", `Assoc [ ("name", name) ]) ] ->
+        let* name = string_of_json ctx name in
+        Ok (RustcAttributeKindLinkSection name)
     | `Assoc [ ("MayDangle", _0) ] ->
         let* _0 = span_of_json ctx _0 in
         Ok (RustcAttributeKindMayDangle _0)

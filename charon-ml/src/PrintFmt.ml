@@ -1150,6 +1150,8 @@ let pp_rustc_attribute_kind (fmt : Format.formatter)
       in
       let args = List.filter_map (fun x -> x) [ since; note ] in
       if args <> [] then Format.fprintf fmt "(%s)" (String.concat ", " args)
+  | RustcAttributeKindExportName (name, _) ->
+      Format.fprintf fmt "export_name = \"%s\"" name
   | RustcAttributeKindFundamental -> pp_string fmt "fundamental"
   | RustcAttributeKindIgnore (_, reason) ->
       pp_string fmt "ignore";
@@ -1161,6 +1163,8 @@ let pp_rustc_attribute_kind (fmt : Format.formatter)
       | RustcInlineAttrAlways -> pp_string fmt "inline(always)"
       | RustcInlineAttrNever -> pp_string fmt "inline(never)"
       | RustcInlineAttrForce _ -> pp_string fmt "rustc_force_inline")
+  | RustcAttributeKindLinkSection name ->
+      Format.fprintf fmt "link_section = \"%s\"" name
   | RustcAttributeKindMayDangle _ -> pp_string fmt "may_dangle"
   | RustcAttributeKindNaked _ -> pp_string fmt "naked"
   | RustcAttributeKindNoLink -> pp_string fmt "no_link"

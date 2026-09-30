@@ -1613,6 +1613,7 @@ impl Display for from_rustc::AttributeKind {
                 }
                 Ok(())
             }
+            AttributeKind::ExportName { name, .. } => write!(f, "export_name = \"{name}\""),
             AttributeKind::Fundamental => write!(f, "fundamental"),
             AttributeKind::Ignore { reason, .. } => {
                 write!(f, "ignore")?;
@@ -1628,6 +1629,7 @@ impl Display for from_rustc::AttributeKind {
                 from_rustc::InlineAttr::Never => write!(f, "inline(never)"),
                 from_rustc::InlineAttr::Force { .. } => write!(f, "rustc_force_inline"),
             },
+            AttributeKind::LinkSection { name } => write!(f, "link_section = \"{name}\""),
             AttributeKind::MayDangle(_) => write!(f, "may_dangle"),
             AttributeKind::Naked(_) => write!(f, "naked"),
             AttributeKind::NoLink => write!(f, "no_link"),
