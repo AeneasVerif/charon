@@ -49,7 +49,7 @@ fn {vtable}::<i32>() -> {vtable}
 }
 
 // Full name: core::marker::Send::{vtable}::<i32>
-static {vtable}::<i32>: {vtable} = {vtable}::<i32>()
+vtable {vtable}::<i32>: {vtable} = {vtable}::<i32>()
 
 // Full name: test_crate::main
 fn main()

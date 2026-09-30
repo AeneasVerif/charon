@@ -849,12 +849,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             item_meta,
             generics: self.into_generics(),
             src,
-            // it should be static to have its own address
-            global_kind: GlobalKind::Static {
-                is_mut: false,
-                is_safe: true,
-                is_thread_local: false,
-            },
+            global_kind: GlobalKind::VTable,
             ty,
             size,
             align,

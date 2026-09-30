@@ -59,6 +59,10 @@ pub enum GlobalKind {
     /// - A const expression in a type (`[u8; sizeof::<T>()]`);
     /// - A promoted constant, automatically lifted from a body (`&0`).
     AnonConst,
+    /// The VTable of a trait implementation. Such globals can only be accessed by the generated
+    /// code -- it is UB to access them from user code.
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("VTableGlobal"))]
+    VTable,
 }
 
 /// Where a given global came from.

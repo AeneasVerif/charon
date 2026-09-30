@@ -1010,6 +1010,7 @@ where
                 &*format!("{unsafe_}{name}{mut_}")
             }
             GlobalKind::AnonConst | GlobalKind::NamedConst => "const",
+            GlobalKind::VTable => "vtable",
         };
         self.item_meta
             .fmt_item_intro(f, ctx, keyword, self.def_id)?;

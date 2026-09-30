@@ -19,7 +19,7 @@ pub trait Sized<Self>
 fn core::marker::MetaSized::{vtable}::<Pattern::<'_>>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}::<Pattern::<'_>>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<Pattern::<'_>>()
+vtable core::marker::MetaSized::{vtable}::<Pattern::<'_>>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<Pattern::<'_>>()
 
 struct () {}
 
@@ -128,7 +128,7 @@ fn {impl Trait for Pattern::<'_>}::{vtable}::<'_>() -> test_crate::Trait::{vtabl
 }
 
 // Full name: test_crate::{impl Trait for Pattern::<'_>}::{vtable}::<'_>
-static {impl Trait for Pattern::<'_>}::{vtable}::<'_>: test_crate::Trait::{vtable} = {impl Trait for Pattern::<'_>}::{vtable}::<'_>()
+vtable {impl Trait for Pattern::<'_>}::{vtable}::<'_>: test_crate::Trait::{vtable} = {impl Trait for Pattern::<'_>}::{vtable}::<'_>()
 
 // Full name: test_crate::{impl Trait for Pattern::<'_>}
 impl Trait for Pattern::<'_> {

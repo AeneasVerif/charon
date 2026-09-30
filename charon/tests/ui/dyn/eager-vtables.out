@@ -19,7 +19,7 @@ pub trait Sized<Self>
 fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
 // Full name: core::result::Result
 #[diagnostic_item("Result")]
@@ -164,7 +164,7 @@ fn impl_Foo_for_unit::{vtable}() -> test_crate::Foo::{vtable}
 }
 
 // Full name: test_crate::{impl Foo for ()}::{vtable}
-static impl_Foo_for_unit::{vtable}: test_crate::Foo::{vtable} = impl_Foo_for_unit::{vtable}()
+vtable impl_Foo_for_unit::{vtable}: test_crate::Foo::{vtable} = impl_Foo_for_unit::{vtable}()
 
 // Full name: test_crate::{impl Foo for ()}
 impl "impl_Foo_for_unit" Foo for () {

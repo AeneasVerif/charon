@@ -328,6 +328,10 @@ and global_kind =
           - An inline const expression ([const { 1 + 1 }]);
           - A const expression in a type ([[u8; sizeof::<T>()]]);
           - A promoted constant, automatically lifted from a body ([&0]). *)
+  | VTableGlobal
+      (** The VTable of a trait implementation. Such globals can only be
+          accessed by the generated code -- it is UB to access them from user
+          code. *)
 [@@deriving
   show,
   eq,

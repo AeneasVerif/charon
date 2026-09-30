@@ -1946,6 +1946,7 @@ let pp_global_decl (env : fmt_env) (indent : string) (indent_incr : string)
         let mut_ = if is_mut then " mut" else "" in
         unsafe_ ^ name ^ mut_
     | NamedConst | AnonConst -> "const"
+    | VTableGlobal -> "vtable"
   in
   let intro =
     item_intro_to_string env indent keyword (IdGlobal def.def_id) def.item_meta

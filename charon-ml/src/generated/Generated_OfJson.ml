@@ -2735,6 +2735,7 @@ and global_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (Static (is_mut, is_safe, is_thread_local))
     | `String "NamedConst" -> Ok NamedConst
     | `String "AnonConst" -> Ok AnonConst
+    | `String "VTable" -> Ok VTableGlobal
     | _ -> Error "")
 
 and global_source_of_json (ctx : of_json_ctx) (js : json) :

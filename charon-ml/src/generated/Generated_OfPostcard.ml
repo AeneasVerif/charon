@@ -2268,6 +2268,7 @@ and global_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (Static (is_mut, is_safe, is_thread_local))
      | 1 -> Ok NamedConst
      | 2 -> Ok AnonConst
+     | 3 -> Ok VTableGlobal
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and global_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

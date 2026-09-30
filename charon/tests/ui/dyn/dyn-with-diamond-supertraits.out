@@ -24,7 +24,7 @@ pub trait Sized<Self>
 fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
 struct () {}
 
@@ -218,7 +218,7 @@ fn impl_Super_i32_for_i32::{vtable}() -> test_crate::Super::{vtable}<i32>
 }
 
 // Full name: test_crate::{impl Super<i32> for i32}::{vtable}
-static impl_Super_i32_for_i32::{vtable}: test_crate::Super::{vtable}<i32> = impl_Super_i32_for_i32::{vtable}()
+vtable impl_Super_i32_for_i32::{vtable}: test_crate::Super::{vtable}<i32> = impl_Super_i32_for_i32::{vtable}()
 
 // Full name: test_crate::{impl Super<i32> for i32}
 impl "impl_Super_i32_for_i32" Super<i32> for i32 {
@@ -303,7 +303,7 @@ fn impl_Internal_for_i32::{vtable}() -> test_crate::Internal::{vtable}<i32>
 }
 
 // Full name: test_crate::{impl Internal for i32}::{vtable}
-static impl_Internal_for_i32::{vtable}: test_crate::Internal::{vtable}<i32> = impl_Internal_for_i32::{vtable}()
+vtable impl_Internal_for_i32::{vtable}: test_crate::Internal::{vtable}<i32> = impl_Internal_for_i32::{vtable}()
 
 // Full name: test_crate::{impl Internal for i32}
 impl "impl_Internal_for_i32" Internal for i32 {
@@ -392,7 +392,7 @@ fn impl_Left_for_i32::{vtable}() -> test_crate::Left::{vtable}<i32, i32>
 }
 
 // Full name: test_crate::{impl Left for i32}::{vtable}
-static impl_Left_for_i32::{vtable}: test_crate::Left::{vtable}<i32, i32> = impl_Left_for_i32::{vtable}()
+vtable impl_Left_for_i32::{vtable}: test_crate::Left::{vtable}<i32, i32> = impl_Left_for_i32::{vtable}()
 
 // Full name: test_crate::{impl Left for i32}
 impl "impl_Left_for_i32" Left for i32 {
@@ -527,7 +527,7 @@ fn impl_Right_i32_for_i32::{vtable}() -> test_crate::Right::{vtable}<i32, i32, i
 }
 
 // Full name: test_crate::{impl Right<i32> for i32}::{vtable}
-static impl_Right_i32_for_i32::{vtable}: test_crate::Right::{vtable}<i32, i32, i32> = impl_Right_i32_for_i32::{vtable}()
+vtable impl_Right_i32_for_i32::{vtable}: test_crate::Right::{vtable}<i32, i32, i32> = impl_Right_i32_for_i32::{vtable}()
 
 // Full name: test_crate::{impl Right<i32> for i32}
 impl "impl_Right_i32_for_i32" Right<i32> for i32 {
@@ -634,7 +634,7 @@ fn impl_Join_i32_for_i32::{vtable}() -> test_crate::Join::{vtable}<i32, i32, i32
 }
 
 // Full name: test_crate::{impl Join<i32> for i32}::{vtable}
-static impl_Join_i32_for_i32::{vtable}: test_crate::Join::{vtable}<i32, i32, i32, i32, i32> = impl_Join_i32_for_i32::{vtable}()
+vtable impl_Join_i32_for_i32::{vtable}: test_crate::Join::{vtable}<i32, i32, i32, i32, i32> = impl_Join_i32_for_i32::{vtable}()
 
 // Full name: test_crate::{impl Join<i32> for i32}
 impl "impl_Join_i32_for_i32" Join<i32> for i32 {

@@ -19,7 +19,7 @@ pub trait Sized<Self>
 fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
 struct () {}
 
@@ -210,7 +210,7 @@ fn {impl FnOnce<(u32,)> for some_fn}::{vtable}() -> core::ops::function::FnOnce:
 }
 
 // Full name: test_crate::{impl FnOnce<(u32,)> for some_fn}::{vtable}
-static {impl FnOnce<(u32,)> for some_fn}::{vtable}: core::ops::function::FnOnce::{vtable}<(u32,), u32> = {impl FnOnce<(u32,)> for some_fn}::{vtable}()
+vtable {impl FnOnce<(u32,)> for some_fn}::{vtable}: core::ops::function::FnOnce::{vtable}<(u32,), u32> = {impl FnOnce<(u32,)> for some_fn}::{vtable}()
 
 // Full name: test_crate::{impl FnMut<(u32,)> for some_fn}::call_mut
 fn {impl FnMut<(u32,)> for some_fn}::call_mut<'_0>(state: &'_0 mut some_fn, args: (u32,)) -> u32
@@ -290,7 +290,7 @@ fn {impl FnMut<(u32,)> for some_fn}::{vtable}() -> core::ops::function::FnMut::{
 }
 
 // Full name: test_crate::{impl FnMut<(u32,)> for some_fn}::{vtable}
-static {impl FnMut<(u32,)> for some_fn}::{vtable}: core::ops::function::FnMut::{vtable}<(u32,), u32> = {impl FnMut<(u32,)> for some_fn}::{vtable}()
+vtable {impl FnMut<(u32,)> for some_fn}::{vtable}: core::ops::function::FnMut::{vtable}<(u32,), u32> = {impl FnMut<(u32,)> for some_fn}::{vtable}()
 
 // Full name: test_crate::{impl Fn<(u32,)> for some_fn}::call
 fn {impl Fn<(u32,)> for some_fn}::call<'_0>(state: &'_0 some_fn, args: (u32,)) -> u32
@@ -370,7 +370,7 @@ fn {impl Fn<(u32,)> for some_fn}::{vtable}() -> core::ops::function::Fn::{vtable
 }
 
 // Full name: test_crate::{impl Fn<(u32,)> for some_fn}::{vtable}
-static {impl Fn<(u32,)> for some_fn}::{vtable}: core::ops::function::Fn::{vtable}<(u32,), u32> = {impl Fn<(u32,)> for some_fn}::{vtable}()
+vtable {impl Fn<(u32,)> for some_fn}::{vtable}: core::ops::function::Fn::{vtable}<(u32,), u32> = {impl Fn<(u32,)> for some_fn}::{vtable}()
 
 // Full name: test_crate::{impl FnOnce<(u32,)> for some_fn}
 impl FnOnce<(u32,)> for some_fn {
@@ -504,7 +504,7 @@ where
 }
 
 // Full name: test_crate::{impl FnOnce<(T,)> for generic_fn<T>[TraitClause0]}::{vtable}
-static {impl FnOnce<(T,)> for generic_fn<T>[TraitClause0]}::{vtable}<T>: core::ops::function::FnOnce::{vtable}<(T,), T>
+vtable {impl FnOnce<(T,)> for generic_fn<T>[TraitClause0]}::{vtable}<T>: core::ops::function::FnOnce::{vtable}<(T,), T>
 where
     TraitClause0: (T: Sized),
  = {impl FnOnce<(T,)> for generic_fn<T>[TraitClause0]}::{vtable}<T>[TraitClause0]()
@@ -598,7 +598,7 @@ where
 }
 
 // Full name: test_crate::{impl FnMut<(T,)> for generic_fn<T>[TraitClause0]}::{vtable}
-static {impl FnMut<(T,)> for generic_fn<T>[TraitClause0]}::{vtable}<T>: core::ops::function::FnMut::{vtable}<(T,), T>
+vtable {impl FnMut<(T,)> for generic_fn<T>[TraitClause0]}::{vtable}<T>: core::ops::function::FnMut::{vtable}<(T,), T>
 where
     TraitClause0: (T: Sized),
  = {impl FnMut<(T,)> for generic_fn<T>[TraitClause0]}::{vtable}<T>[TraitClause0]()
@@ -692,7 +692,7 @@ where
 }
 
 // Full name: test_crate::{impl Fn<(T,)> for generic_fn<T>[TraitClause0]}::{vtable}
-static {impl Fn<(T,)> for generic_fn<T>[TraitClause0]}::{vtable}<T>: core::ops::function::Fn::{vtable}<(T,), T>
+vtable {impl Fn<(T,)> for generic_fn<T>[TraitClause0]}::{vtable}<T>: core::ops::function::Fn::{vtable}<(T,), T>
 where
     TraitClause0: (T: Sized),
  = {impl Fn<(T,)> for generic_fn<T>[TraitClause0]}::{vtable}<T>[TraitClause0]()
@@ -860,7 +860,7 @@ fn impl_FnOnce_tuple_for_closure::{vtable}() -> core::ops::function::FnOnce::{vt
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u32,)> for {closure}}::{vtable}
-static impl_FnOnce_tuple_for_closure::{vtable}: core::ops::function::FnOnce::{vtable}<(u32,), u32> = impl_FnOnce_tuple_for_closure::{vtable}()
+vtable impl_FnOnce_tuple_for_closure::{vtable}: core::ops::function::FnOnce::{vtable}<(u32,), u32> = impl_FnOnce_tuple_for_closure::{vtable}()
 
 // Full name: test_crate::main::{impl FnMut<(u32,)> for {closure}}::{vtable_method}
 extern "rust-call" fn impl_FnMut_tuple_for_closure::{vtable_method}<'_0>(_1: &'_0 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32>), _2: (u32,)) -> u32
@@ -923,7 +923,7 @@ fn impl_FnMut_tuple_for_closure::{vtable}() -> core::ops::function::FnMut::{vtab
 }
 
 // Full name: test_crate::main::{impl FnMut<(u32,)> for {closure}}::{vtable}
-static impl_FnMut_tuple_for_closure::{vtable}: core::ops::function::FnMut::{vtable}<(u32,), u32> = impl_FnMut_tuple_for_closure::{vtable}()
+vtable impl_FnMut_tuple_for_closure::{vtable}: core::ops::function::FnMut::{vtable}<(u32,), u32> = impl_FnMut_tuple_for_closure::{vtable}()
 
 // Full name: test_crate::main::{impl Fn<(u32,)> for {closure}}::{vtable_method}
 extern "rust-call" fn impl_Fn_tuple_for_closure::{vtable_method}<'_0>(_1: &'_0 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32>), _2: (u32,)) -> u32
@@ -986,7 +986,7 @@ fn impl_Fn_tuple_for_closure::{vtable}() -> core::ops::function::Fn::{vtable}<(u
 }
 
 // Full name: test_crate::main::{impl Fn<(u32,)> for {closure}}::{vtable}
-static impl_Fn_tuple_for_closure::{vtable}: core::ops::function::Fn::{vtable}<(u32,), u32> = impl_Fn_tuple_for_closure::{vtable}()
+vtable impl_Fn_tuple_for_closure::{vtable}: core::ops::function::Fn::{vtable}<(u32,), u32> = impl_Fn_tuple_for_closure::{vtable}()
 
 // Full name: test_crate::main::{impl FnOnce<(u32,)> for {closure}}
 impl "impl_FnOnce_tuple_for_closure" FnOnce<(u32,)> for {closure} {

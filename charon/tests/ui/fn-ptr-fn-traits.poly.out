@@ -19,7 +19,7 @@ pub trait Sized<Self>
 fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
 struct () {}
 
@@ -327,7 +327,7 @@ where
 }
 
 // Full name: {impl FnOnce<(A,)> for fn(A) -> B}::{vtable}
-static {impl FnOnce<(A,)> for fn(A) -> B}::{vtable}<A, B>: core::ops::function::FnOnce::{vtable}<(A,), B>
+vtable {impl FnOnce<(A,)> for fn(A) -> B}::{vtable}<A, B>: core::ops::function::FnOnce::{vtable}<(A,), B>
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
@@ -522,7 +522,7 @@ where
 }
 
 // Full name: {impl FnMut<(A,)> for fn(A) -> B}::{vtable}
-static {impl FnMut<(A,)> for fn(A) -> B}::{vtable}<A, B>: core::ops::function::FnMut::{vtable}<(A,), B>
+vtable {impl FnMut<(A,)> for fn(A) -> B}::{vtable}<A, B>: core::ops::function::FnMut::{vtable}<(A,), B>
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
@@ -624,7 +624,7 @@ where
 }
 
 // Full name: {impl Fn<(A,)> for fn(A) -> B}::{vtable}
-static {impl Fn<(A,)> for fn(A) -> B}::{vtable}<A, B>: core::ops::function::Fn::{vtable}<(A,), B>
+vtable {impl Fn<(A,)> for fn(A) -> B}::{vtable}<A, B>: core::ops::function::Fn::{vtable}<(A,), B>
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
