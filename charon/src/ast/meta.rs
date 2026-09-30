@@ -57,6 +57,8 @@ pub struct ItemMeta {
     /// Whether this item was selected as a starting point for translation (using `--start-from`,
     /// or by default all the top-level items in the main crate).
     pub started_from: bool,
+    /// Whether this item is declared in an `extern { .. }` block.
+    pub is_extern: bool,
     /// Whether this item is considered opaque. For function and globals, this means we don't
     /// translate the body (the code); for ADTs, this means we don't translate the fields/variants.
     /// For traits and trait impls, this doesn't change anything. For modules, this means we don't
@@ -107,6 +109,7 @@ impl ItemMeta {
             attr_info: AttrInfo::dummy_public(),
             is_local,
             started_from: false,
+            is_extern: false,
             opacity,
             lang_item: None,
             diagnostic_item: None,

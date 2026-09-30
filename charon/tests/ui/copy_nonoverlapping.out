@@ -207,7 +207,7 @@ where
 }
 
 // Full name: core::panicking::panic_nounwind_fmt::runtime::panic_impl
-unsafe fn panic_impl<'_0, '_1>(_1: &'_0 PanicInfo<'_1>) -> !
+extern unsafe fn panic_impl<'_0, '_1>(_1: &'_0 PanicInfo<'_1>) -> !
 where
     RegionOutlives0: '_1: '_0,
 = <extern:panic_impl>

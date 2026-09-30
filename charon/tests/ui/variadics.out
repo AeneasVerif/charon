@@ -120,7 +120,7 @@ pub unsafe extern "C" fn sum(...) -> i32
 }
 
 // Full name: test_crate::foo
-unsafe extern "C" fn foo(_1: u32, _2: u64, ...)
+extern unsafe extern "C" fn foo(_1: u32, _2: u64, ...)
 = <extern:foo>
 
 // Full name: test_crate::call

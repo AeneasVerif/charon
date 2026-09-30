@@ -1189,6 +1189,9 @@ impl ItemMeta {
         if self.attr_info.public {
             write!(f, "pub ")?;
         }
+        if self.is_extern {
+            write!(f, "extern ")?;
+        }
         write!(f, "{keyword} {}", name.with_ctx(ctx))
     }
 }

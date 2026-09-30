@@ -261,7 +261,7 @@ fn exclude_me()
 struct Struct {}
 
 // Full name: test_crate::extern_fn
-unsafe extern "C" fn extern_fn(_1: i32)
+extern unsafe extern "C" fn extern_fn(_1: i32)
 = <extern:extern_fn>
 
 

@@ -36,7 +36,7 @@ pub trait Copy<Self>
 
 // Full name: core::ops::function::Code
 #[lang_item(Code)]
-pub opaque type Code
+pub extern opaque type Code
 
 // Full name: core::ptr::non_null::NonNull
 #[lang_item(NonNull)]

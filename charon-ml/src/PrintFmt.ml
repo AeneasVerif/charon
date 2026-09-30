@@ -1289,8 +1289,9 @@ let pp_item_intro (env : fmt_env) (indent : string) (keyword : string)
     | Some id -> indent ^ "#[diagnostic_item(\"" ^ id ^ "\")]\n"
   in
   let public = if meta.attr_info.public then "pub " else "" in
-  Format.fprintf fmt "%s%s%s%s%s%s%s %s" full_name_comment attributes lang_item
-    diagnostic_item indent public keyword name
+  let extern = if meta.is_extern then "extern " else "" in
+  Format.fprintf fmt "%s%s%s%s%s%s%s%s %s" full_name_comment attributes
+    lang_item diagnostic_item indent public extern keyword name
 
 let item_intro_to_string env indent keyword id meta =
   pp_to_string (fun fmt -> pp_item_intro env indent keyword id fmt meta)

@@ -1,20 +1,20 @@
 # Final LLBC before serialization:
 
 // Full name: extern_static_no_initializer_aux::FOREIGN
-pub fn FOREIGN() -> i32
+pub extern fn FOREIGN() -> i32
 = <extern:FOREIGN>
 
 // Full name: extern_static_no_initializer_aux::FOREIGN
-pub unsafe static FOREIGN: i32 = FOREIGN()
+pub extern unsafe static FOREIGN: i32 = FOREIGN()
 
 struct () {}
 
 // Full name: test_crate::LOCAL
-fn LOCAL() -> i32
+extern fn LOCAL() -> i32
 = <extern:LOCAL>
 
 // Full name: test_crate::LOCAL
-unsafe static LOCAL: i32 = LOCAL()
+extern unsafe static LOCAL: i32 = LOCAL()
 
 // Full name: test_crate::main
 fn main()
