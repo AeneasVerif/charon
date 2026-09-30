@@ -1,0 +1,18 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::Send
+#[diagnostic_item("Send")]
+pub unsafe trait Send<Self>
+
+struct () {}
+
+// Full name: test_crate::S
+struct S {}
+
+// Full name: test_crate::{impl !Send for S}
+impl "impl_not_Send_for_S" !Send for S {
+    vtable: lazy
+}
+
+
+

@@ -26,6 +26,8 @@ pub struct TraitImpl {
     /// Note that this contains the instantiation of the "parent"
     /// clauses.
     pub impl_trait: TraitDeclRef,
+    /// Whether this is a negative impl (`impl !Trait for Type`).
+    pub is_negative: bool,
     /// Whether this is an `unsafe impl`.
     pub is_unsafe: bool,
     pub generics: GenericParams,

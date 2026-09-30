@@ -1104,6 +1104,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let trait_pred = timpl.trait_pred();
         let implemented_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
         let trait_id = implemented_trait.id;
+        let is_negative = !trait_pred.is_positive;
         let is_unsafe = timpl.is_unsafe();
 
         // Translate the bare minimum needed for names: `impl_trait`.
@@ -1113,6 +1114,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 item_meta,
                 src: TraitImplSource::Normal,
                 impl_trait: implemented_trait,
+                is_negative,
                 is_unsafe,
                 generics: self.into_generics(),
                 implied_trait_refs: Default::default(),
@@ -1177,6 +1179,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 item_meta,
                 src: TraitImplSource::Normal,
                 impl_trait: implemented_trait,
+                is_negative,
                 is_unsafe,
                 generics: self.into_generics(),
                 implied_trait_refs,
@@ -1349,6 +1352,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             item_meta,
             src: TraitImplSource::Normal,
             impl_trait: implemented_trait,
+            is_negative,
             is_unsafe,
             generics: self.into_generics(),
             implied_trait_refs,
@@ -1397,6 +1401,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             item_meta,
             src: TraitImplSource::TraitAlias,
             impl_trait: implemented_trait,
+            is_negative: false,
             is_unsafe: false,
             generics: self.the_only_binder().params.clone(),
             implied_trait_refs,
@@ -1518,6 +1523,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             item_meta,
             src,
             impl_trait: implemented_trait,
+            is_negative: false,
             is_unsafe: false,
             generics,
             implied_trait_refs,

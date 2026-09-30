@@ -3613,6 +3613,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
           ("item_meta", item_meta);
           ("src", src);
           ("impl_trait", impl_trait);
+          ("is_negative", is_negative);
           ("is_unsafe", is_unsafe);
           ("generics", generics);
           ("implied_trait_refs", implied_trait_refs);
@@ -3625,6 +3626,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
         let* item_meta = item_meta_of_json ctx item_meta in
         let* src = trait_impl_source_of_json ctx src in
         let* impl_trait = trait_decl_ref_of_json ctx impl_trait in
+        let* is_negative = bool_of_json ctx is_negative in
         let* is_unsafe = bool_of_json ctx is_unsafe in
         let* generics = generic_params_of_json ctx generics in
         let* implied_trait_refs =
@@ -3661,6 +3663,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
              item_meta;
              src;
              impl_trait;
+             is_negative;
              is_unsafe;
              generics;
              implied_trait_refs;
