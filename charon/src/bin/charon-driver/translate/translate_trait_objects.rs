@@ -853,6 +853,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             ty,
             size,
             align,
+            ptr_metadata: Operand::mk_const_unit(),
             value,
         })
     }

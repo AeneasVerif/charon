@@ -18,6 +18,8 @@ pub trait Sized<Self>
 pub fn MAX() -> usize
 = <opaque>
 
+struct () {}
+
 // Full name: core::num::{usize}::MAX
 pub const MAX: usize = MAX()
 
@@ -29,8 +31,6 @@ pub opaque type NonNull<T>
 #[track_caller]
 pub unsafe fn new_unchecked<T>(_1: *mut T) -> NonNull<T>
 = <opaque>
-
-struct () {}
 
 struct (_, _)<A, B>
 where

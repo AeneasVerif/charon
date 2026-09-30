@@ -166,7 +166,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     val.with_contents_mut(|_, ty| *ty = array_ty);
                 }
                 let metadata = if let Some(metadata) = metadata {
-                    Some(self.translate_unsizing_metadata(span, metadata.clone())?)
+                    Some(self.translate_unsizing_metadata(span, metadata)?)
                 } else {
                     None
                 };
@@ -180,7 +180,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let arg = self.translate_constant_expr(span, arg)?;
                 let rk = RefKind::mutable(mutability.is_mut());
                 let metadata = if let Some(metadata) = metadata {
-                    Some(self.translate_unsizing_metadata(span, metadata.clone())?)
+                    Some(self.translate_unsizing_metadata(span, metadata)?)
                 } else {
                     None
                 };

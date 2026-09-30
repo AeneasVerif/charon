@@ -10,9 +10,9 @@ pub trait MetaSized<Self>
 fn core::marker::MetaSized::{vtable}::<D>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-vtable core::marker::MetaSized::{vtable}::<D>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<D>()
-
 struct () {}
+
+vtable core::marker::MetaSized::{vtable}::<D>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<D>()
 
 struct test_crate::Sub::{vtable} {
   size: usize,

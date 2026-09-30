@@ -16,6 +16,50 @@ use crate::transform::TransformCtx;
 use crate::transform::ctx::{BodyTransformCtx, UllbcPass, UllbcStatementTransformCtx};
 use crate::ullbc_ast::*;
 
+/// Add a global holding `value`, named like the promoted constants of the current item, and return its place.
+/// `ptr_metadata` is the metadata of pointers to the global.
+fn new_promoted_global(
+    ctx: &mut UllbcStatementTransformCtx<'_>,
+    value: ConstantExpr,
+    ptr_metadata: ConstantExpr,
+) -> GlobalDeclRef {
+    let krate = &mut ctx.ctx.translated;
+    let id = ItemId::Fun(*ctx.def_id);
+    let mut name = krate.item_names.get(&id).unwrap().clone();
+    let promoted_count = krate
+        .global_decls
+        .iter()
+        .filter_map(|g| g.item_meta.name.name.split_last())
+        .filter(|(last, prefix)| {
+            matches!(last, PathElem::Builtin(BuiltinPathElem::PromotedConst, _))
+                && *prefix == name.name.as_slice()
+        })
+        .count();
+    let disambiguator = Disambiguator::new(promoted_count);
+    name.name.push(PathElem::Builtin(
+        BuiltinPathElem::PromotedConst,
+        disambiguator,
+    ));
+    let ty = value.ty().clone();
+    let id = krate.global_decls.push_with(|def_id| GlobalDecl {
+        def_id,
+        item_meta: ItemMeta::dummy_public(ctx.span, name.clone(), true, ItemOpacity::Transparent),
+        generics: GenericParams::empty(),
+        ty: ty.clone(),
+        size: Size::from_expr(SizeExpr::size_of(&ty)),
+        align: Size::from_expr(SizeExpr::align_of(&ty)),
+        ptr_metadata: Operand::Const(ptr_metadata),
+        src: GlobalSource::Normal,
+        global_kind: GlobalKind::AnonConst,
+        value,
+    });
+    krate.item_names.insert(id.into(), name);
+    GlobalDeclRef {
+        id,
+        generics: Box::new(GenericArgs::empty()),
+    }
+}
+
 /// If the constant value is a constant ADT, push `Assign::Aggregate` statements
 /// to the vector of statements, that bind new variables to the ADT parts and
 /// the variable assigned to the complete ADT.
@@ -40,15 +84,22 @@ fn transform_constant_expr(
         cexpr @ (ConstantExprKind::Ref(bval, metadata)
         | ConstantExprKind::Ptr(_, bval, metadata)) => {
             let rk = cexpr.as_ptr().map(|(rk, _, _)| *rk);
+            let bval_is_sized = bval.ty().get_ptr_metadata(ctx.get_crate()).is_none();
 
-            if !bval.ty().get_ptr_metadata(ctx.get_crate()).is_none() {
-                return Operand::Const(val);
-            }
-
-            // As the value is originally an argument, it must be Sized, hence no metadata
             let place = match bval.kind() {
                 ConstantExprKind::Global(global_ref) => {
                     Place::new_global(global_ref.clone(), bval.ty().clone())
+                }
+                // A local can't be unsized, so we put it in a new global
+                _ if !bval_is_sized => {
+                    let meta = match metadata.as_ref().unwrap() {
+                        UnsizingMetadata::Length(meta) | UnsizingMetadata::VTable(_, meta) => meta,
+                        UnsizingMetadata::VTableUpcast(..) | UnsizingMetadata::Unknown => {
+                            unreachable!("unexpected const metadata")
+                        }
+                    };
+                    let global_ref = new_promoted_global(ctx, bval.clone(), meta.clone());
+                    Place::new_global(global_ref, bval.ty().clone())
                 }
                 _ => {
                     // Recurse on the borrowed value
@@ -59,7 +110,11 @@ fn transform_constant_expr(
                     ctx.rval_to_place(Rvalue::Use(bval, WithRetag::No), bval_ty)
                 }
             };
-            let ptr_metadata = ctx.compute_place_metadata(&place);
+            // The metadata of an unsized global may be a vtable reference, which we lower too.
+            let ptr_metadata = match ctx.compute_place_metadata(&place) {
+                Operand::Const(meta) => transform_constant_expr(ctx, meta),
+                ptr_metadata => ptr_metadata,
+            };
             let place_ty = place.ty().clone();
             let ptr = match rk {
                 None => Rvalue::Ref {
@@ -73,7 +128,8 @@ fn transform_constant_expr(
                     ptr_metadata,
                 },
             };
-            match metadata {
+            // A sized place is unsized after being borrowed, if there's metadata.
+            match metadata.clone().filter(|_| bval_is_sized) {
                 None => ptr,
                 Some(metadata) => {
                     let ptr_ty = match rk {
@@ -82,7 +138,7 @@ fn transform_constant_expr(
                     };
                     let ptr_ty = ptr_ty.into_ty();
                     let sized_ptr = ctx.rval_to_place(ptr, ptr_ty.clone());
-                    let cast = CastKind::Unsize(ptr_ty, val.ty().clone(), metadata.clone());
+                    let cast = CastKind::Unsize(ptr_ty, val.ty().clone(), metadata);
                     Rvalue::UnaryOp(UnOp::Cast(cast), Operand::Move(sized_ptr))
                 }
             }

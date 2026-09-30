@@ -10,9 +10,9 @@ pub trait MetaSized<Self>
 fn core::marker::MetaSized::{vtable}::<()>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-vtable core::marker::MetaSized::{vtable}::<()>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<()>()
-
 struct () {}
+
+vtable core::marker::MetaSized::{vtable}::<()>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<()>()
 
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]

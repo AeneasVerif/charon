@@ -18,14 +18,14 @@ pub trait Sized<Self>
 pub fn MAX() -> usize
 = <opaque>
 
+struct () {}
+
 // Full name: core::num::{usize}::MAX
 pub const MAX: usize = MAX()
 
 // Full name: core::num::{u128}::to_ne_bytes
 pub fn to_ne_bytes(_1: u128) -> [u8; 16usize]
 = <opaque>
-
-struct () {}
 
 struct (_, _)<A, B>
 where

@@ -349,7 +349,14 @@ pub trait BodyTransformCtx: Sized {
             place: &Place,
             metadata_ty: &Ty,
         ) -> Option<Operand> {
-            let (subplace, proj) = place.as_projection()?;
+            let (subplace, proj) = match &place.kind {
+                PlaceKind::Local(_) => return None,
+                PlaceKind::Global(gref) => {
+                    let global = ctx.get_crate().global_decls.get(gref.id)?;
+                    return Some(global.ptr_metadata.clone());
+                }
+                PlaceKind::Projection(subplace, proj) => (subplace, proj),
+            };
             match proj {
                 // The outermost deref we encountered gives us the metadata of the place.
                 ProjectionElem::Deref => {
@@ -442,6 +449,7 @@ pub trait BodyTransformCtx: Sized {
 pub struct UllbcStatementTransformCtx<'a> {
     pub ctx: &'a mut TransformCtx,
     pub params: &'a GenericParams,
+    pub def_id: &'a FunDeclId,
     pub locals: &'a mut Locals,
     /// Span of the statement being explored
     pub span: Span,
@@ -541,6 +549,7 @@ impl FunDecl {
             let mut ctx = UllbcStatementTransformCtx {
                 ctx,
                 params: &self.generics,
+                def_id: &self.def_id,
                 locals: &mut body.locals,
                 span: self.item_meta.span,
                 statements: Vec::new(),
@@ -566,6 +575,7 @@ impl FunDecl {
             let mut ctx = UllbcStatementTransformCtx {
                 ctx,
                 params: &self.generics,
+                def_id: &self.def_id,
                 locals: &mut body.locals,
                 span: self.item_meta.span,
                 statements: Vec::new(),

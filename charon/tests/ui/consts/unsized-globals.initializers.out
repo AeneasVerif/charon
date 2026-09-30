@@ -19,21 +19,21 @@ pub trait Sized<Self>
 fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
-static core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+struct () {}
+
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
 opaque type core::marker::Sync::{vtable}
 
 // Full name: core::marker::Sync
 #[lang_item(Sync)]
 #[diagnostic_item("Sync")]
-pub trait Sync<Self>
+pub unsafe trait Sync<Self>
 
 fn core::marker::Sync::{vtable}<Self>() -> core::marker::Sync::{vtable}
 = <opaque>
 
-static core::marker::Sync::{vtable}<Self>: core::marker::Sync::{vtable} = core::marker::Sync::{vtable}<Self>()
-
-struct () {}
+vtable core::marker::Sync::{vtable}<Self>: core::marker::Sync::{vtable} = core::marker::Sync::{vtable}<Self>()
 
 struct (_, _)<A, B>
 where
@@ -227,16 +227,10 @@ pub fn INTERIOR() -> &'static Wrap<[u16]>[{built_in impl MetaSized for [u16]}]
 {
     let _0: &'1 Wrap<[u16]>[{built_in impl MetaSized for [u16]}]; // return
     let _1: &'2 Wrap<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
-    let _2: &'6 &'7 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
-    let _3: &'8 &'9 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
-    storage_live(_2)
-    storage_live(_3)
-    _3 = &STATIC
-    _2 = move _3
-    _1 = &(*(*_2)).w with_metadata(copy (*_2).metadata)
+    _1 = &(*STATIC).w with_metadata(copy STATIC.metadata)
     _0 = &(*_1) with_metadata(copy _1.metadata)
     storage_dead(_1)
     return
@@ -297,7 +291,7 @@ fn impl_Trait_for_u8::{vtable}() -> test_crate::Trait::{vtable}
 }
 
 // Full name: test_crate::{impl Trait for u8}::{vtable}
-static impl_Trait_for_u8::{vtable}: test_crate::Trait::{vtable} = impl_Trait_for_u8::{vtable}()
+vtable impl_Trait_for_u8::{vtable}: test_crate::Trait::{vtable} = impl_Trait_for_u8::{vtable}()
 
 // Full name: test_crate::{impl Trait for u8}
 impl "impl_Trait_for_u8" Trait for u8 {
@@ -312,7 +306,7 @@ pub struct RawPtr {
 }
 
 // Full name: test_crate::{impl Sync for RawPtr}
-impl "impl_Sync_for_RawPtr" Sync for RawPtr {
+unsafe impl "impl_Sync_for_RawPtr" Sync for RawPtr {
     vtable: lazy
 }
 
@@ -419,19 +413,25 @@ pub fn RAW_DYN() -> RawPtr
 // Full name: test_crate::RAW_DYN
 pub static RAW_DYN: RawPtr = RAW_DYN()
 
+pub const test_crate::inline_const::{promoted_const}: Outer<[u16]>[{built_in impl MetaSized for [u16]}] = Outer { x: 1u32, w: Wrap { a: 2u8, b: [3u16, 4u16] } } with_metadata(const 2usize)
+
 // Full name: test_crate::inline_const
 pub fn inline_const()
 {
     let _0: (); // return
     let _1: &'1 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
+    let _2: &'2 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = const &Outer { x: 1u32, w: Wrap { a: 2u8, b: [3u16, 4u16] } } with_metadata(2usize)
+    storage_live(_2)
+    _2 = &test_crate::inline_const::{promoted_const} with_metadata(const 2usize)
+    _1 = move _2
     set_type(typeof(_1) <= &'3 Outer<[u16]>[{built_in impl MetaSized for [u16]}])
     storage_dead(_1)
     _0 = ()
+    storage_dead(_2)
     return
 }
 

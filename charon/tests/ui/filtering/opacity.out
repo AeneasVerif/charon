@@ -48,6 +48,8 @@ where
     return
 }
 
+struct () {}
+
 pub fn core::num::{u64}::MAX() -> u64
 = <opaque>
 
@@ -169,8 +171,6 @@ where
     storage_dead(self)
     return
 }
-
-struct () {}
 
 // Full name: test_crate::foo
 fn foo()

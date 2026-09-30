@@ -1971,9 +1971,14 @@ let pp_global_decl (env : fmt_env) (indent : string) (indent_incr : string)
   let params =
     if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
   in
-  Format.fprintf fmt "%s%s: %a%s%s= %a" intro params (pp_ty env) def.ty clauses
+  let pp_metadata fmt op =
+    if not (ty_is_unit (operand_ty op)) then
+      Format.fprintf fmt " with_metadata(%a)" (pp_operand env) op
+  in
+  Format.fprintf fmt "%s%s: %a%s%s= %a%a" intro params (pp_ty env) def.ty
+    clauses
     (if clauses = "" then " " else "\n ")
-    (pp_constant_expr env) def.value
+    (pp_constant_expr env) def.value pp_metadata def.ptr_metadata
 
 module Llbc = struct
   (** Pretty-printing for LLBC AST (generic functions) *)
