@@ -1,5 +1,8 @@
-//@ revisions=promoted
+//@ revisions=built,promoted,elaborated,optimized
+//@[built] charon-args=--mir built
 //@[promoted] charon-args=--mir promoted
+//@[elaborated] charon-args=--mir elaborated
+//@[optimized] charon-args=--mir optimized
 //@ rustc-args=--target x86_64-unknown-linux-gnu
 //@ charon-args=--print-safety --opaque test_crate::Opaque --exclude test_crate::excluded
 //@ charon-args=--exclude test_crate::ExcludedUnsafeTrait
