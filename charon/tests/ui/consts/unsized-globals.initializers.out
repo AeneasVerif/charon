@@ -343,6 +343,39 @@ pub fn DYN() -> &'static (dyn Trait + 'static)
 // Full name: test_crate::DYN
 pub static DYN: &'static (dyn Trait + 'static) = DYN()
 
+// Full name: test_crate::FOO
+pub fn FOO() -> &'static (dyn Debug + Sync + 'static)
+{
+    let _0: &'3 (dyn Debug + Sync + '4); // return
+    let _1: &'6 i32; // anonymous local
+    let _2: &'7 i32; // anonymous local
+    let _3: &'8 i32; // anonymous local
+    let _4: &'9 i32; // anonymous local
+    let _5: &'12 i32; // anonymous local
+    let _6: i32; // anonymous local
+
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = const 42i32
+    _5 = &_6
+    _4 = move _5
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_1)
+    storage_live(_2)
+    _3 = move _4
+    _2 = &(*_3)
+    _1 = &(*_2)
+    _0 = unsize_cast<&'6 i32, &'10 (dyn Debug + Sync + '11), &{impl#8}::{vtable}>(move _1)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::FOO
+pub static FOO: &'static (dyn Debug + Sync + 'static) = FOO()
+
 // Full name: test_crate::DYN_TAIL
 pub fn DYN_TAIL() -> &'static Wrap<(dyn Trait + 'static)>[{built_in impl MetaSized for (dyn Trait + 'static)}]
 {

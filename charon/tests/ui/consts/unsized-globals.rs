@@ -2,6 +2,8 @@
 //@[values] charon-args=--consts=values
 //@[initializers] charon-args=--consts=initializers
 
+use std::fmt::Debug;
+
 pub struct Wrap<T: ?Sized> {
     a: u8,
     b: T,
@@ -30,6 +32,7 @@ pub struct RawPtr(*const dyn Trait);
 unsafe impl Sync for RawPtr {}
 
 pub static DYN: &dyn Trait = &8;
+pub static FOO: &(dyn Debug + Sync) = &42;
 pub static DYN_TAIL: &Wrap<dyn Trait> = &Wrap { a: 9, b: 10u8 };
 pub static RAW_DYN: RawPtr = RawPtr(&11u8);
 
