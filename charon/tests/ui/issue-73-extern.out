@@ -11,7 +11,7 @@ fn CONST() -> u8
 = <extern:CONST>
 
 // Full name: test_crate::CONST
-static CONST: u8 = CONST()
+unsafe static CONST: u8 = CONST()
 
 // Full name: test_crate::Type
 opaque type Type

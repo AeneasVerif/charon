@@ -2261,10 +2261,13 @@ and global_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* __tag = int_of_postcard ctx st in
      match __tag with
-     | 0 -> Ok Static
-     | 1 -> Ok ThreadLocal
-     | 2 -> Ok NamedConst
-     | 3 -> Ok AnonConst
+     | 0 ->
+         let* is_mut = bool_of_postcard ctx st in
+         let* is_safe = bool_of_postcard ctx st in
+         let* is_thread_local = bool_of_postcard ctx st in
+         Ok (Static (is_mut, is_safe, is_thread_local))
+     | 1 -> Ok NamedConst
+     | 2 -> Ok AnonConst
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and global_source_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

@@ -1940,8 +1940,11 @@ let pp_global_decl (env : fmt_env) (indent : string) (indent_incr : string)
     (fmt : Format.formatter) (def : global_decl) : unit =
   let keyword =
     match def.global_kind with
-    | Static -> "static"
-    | ThreadLocal -> "thread_local"
+    | Static (is_mut, is_safe, is_thread_local) ->
+        let unsafe_ = if is_safe then "" else "unsafe " in
+        let name = if is_thread_local then "thread_local" else "static" in
+        let mut_ = if is_mut then " mut" else "" in
+        unsafe_ ^ name ^ mut_
     | NamedConst | AnonConst -> "const"
   in
   let intro =

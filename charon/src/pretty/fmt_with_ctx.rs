@@ -995,8 +995,20 @@ where
 {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let keyword = match self.global_kind {
-            GlobalKind::Static => "static",
-            GlobalKind::ThreadLocal => "thread_local",
+            GlobalKind::Static {
+                is_mut,
+                is_thread_local,
+                is_safe,
+            } => {
+                let unsafe_ = if is_safe { "" } else { "unsafe " };
+                let name = if is_thread_local {
+                    "thread_local"
+                } else {
+                    "static"
+                };
+                let mut_ = if is_mut { " mut" } else { "" };
+                &*format!("{unsafe_}{name}{mut_}")
+            }
             GlobalKind::AnonConst | GlobalKind::NamedConst => "const",
         };
         self.item_meta

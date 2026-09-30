@@ -2719,8 +2719,20 @@ and global_kind_of_json (ctx : of_json_ctx) (js : json) :
     (global_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `String "Static" -> Ok Static
-    | `String "ThreadLocal" -> Ok ThreadLocal
+    | `Assoc
+        [
+          ( "Static",
+            `Assoc
+              [
+                ("is_mut", is_mut);
+                ("is_safe", is_safe);
+                ("is_thread_local", is_thread_local);
+              ] );
+        ] ->
+        let* is_mut = bool_of_json ctx is_mut in
+        let* is_safe = bool_of_json ctx is_safe in
+        let* is_thread_local = bool_of_json ctx is_thread_local in
+        Ok (Static (is_mut, is_safe, is_thread_local))
     | `String "NamedConst" -> Ok NamedConst
     | `String "AnonConst" -> Ok AnonConst
     | _ -> Error "")

@@ -5,7 +5,7 @@ pub fn FOREIGN() -> i32
 = <extern:FOREIGN>
 
 // Full name: extern_static_no_initializer_aux::FOREIGN
-pub static FOREIGN: i32 = FOREIGN()
+pub unsafe static FOREIGN: i32 = FOREIGN()
 
 struct () {}
 
@@ -14,7 +14,7 @@ fn LOCAL() -> i32
 = <extern:LOCAL>
 
 // Full name: test_crate::LOCAL
-static LOCAL: i32 = LOCAL()
+unsafe static LOCAL: i32 = LOCAL()
 
 // Full name: test_crate::main
 fn main()

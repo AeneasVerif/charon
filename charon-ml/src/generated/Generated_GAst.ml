@@ -311,8 +311,15 @@ type global_decl = {
 }
 
 and global_kind =
-  | Static  (** A static. *)
-  | ThreadLocal  (** A thread-local static. *)
+  | Static of bool * bool * bool
+      (** A static or thread-local static.
+
+          Fields:
+          - [is_mut]
+          - [is_safe]: [false] for statics declared in an [extern] block without
+            the [safe] qualifier.
+          - [is_thread_local]: [true] for thread-local statics (through
+            [thread_local!] or [#[thread_local]]). *)
   | NamedConst
       (** A const with a name (either top-level or an associated const in a
           trait). *)
