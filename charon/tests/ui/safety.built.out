@@ -697,7 +697,8 @@ extern "C" fn naked()
     storage_live(_0)
     _0 = ()
     naked_asm!("ret")
-    ↳⚡ undefined_behavior
+    ↳⚡ // unsafe
+        undefined_behavior
 }
 
 // Full name: test_crate::force_target_feature
@@ -998,7 +999,8 @@ fn unsafe_asm()
             return
         }
     }
-    ↳⚡ undefined_behavior
+    ↳⚡ // unsafe
+        undefined_behavior
 }
 
 // Full name: test_crate::unsafe_call_unsafe_dyn_method
@@ -1040,7 +1042,8 @@ fn unsafe_raw_borrow_of_indexed_union_field(foo: Foo) -> *const u32
     _3 = &foo.two
     storage_live(_4)
     _4 = impl_Index_for_array::index<'_, u32, usize, 2usize>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, impl_Index_for_slice<u32, usize>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<u32>[{built_in impl Sized for u32}]]](move _3, copy _2)
-    ↳⚡ undefined_behavior
+    ↳⚡ // unsafe
+        undefined_behavior
     _0 = &raw const (*_4)
     storage_dead(_2)
     storage_dead(foo)
@@ -1335,7 +1338,8 @@ extern "C" fn safe_naked_asm()
     storage_live(_0)
     _0 = ()
     naked_asm!("ret")
-    ↳⚡ undefined_behavior
+    ↳⚡ // unsafe
+        undefined_behavior
 }
 
 // Full name: test_crate::safe_call_dyn_method

@@ -97,6 +97,7 @@ impl Place {
     /// - it accesses a mutable or non-safe static (safety.unsafe-static)
     /// - it dereferences a raw pointer (safety.unsafe-deref)
     /// - it accesses a union field (safety.unsafe-union-access)
+    /// - it accesses an index or slice, as these are unchecked in MIR.
     pub fn read_safety(&self, krate: &TranslatedCrate) -> Safety {
         self.subplaces()
             .map(|place| place.shallow_safety(krate))
@@ -141,10 +142,7 @@ impl Place {
                     }
                 }
             }
-            ProjectionElem::Index { offset, .. } => offset.safety(krate),
-            ProjectionElem::Subslice { from, to, .. } => {
-                from.safety(krate).or_else(|| to.safety(krate))
-            }
+            ProjectionElem::Index { .. } | ProjectionElem::Subslice { .. } => Safety::Unsafe,
             ProjectionElem::Field(Some(_), _) | ProjectionElem::PtrMetadata => Safety::Safe,
         }
     }
@@ -199,12 +197,48 @@ impl HasSafety for Rvalue {
                 .read_safety(krate)
                 .or_else(|| ptr_metadata.safety(krate)),
             Rvalue::Discriminant(place) | Rvalue::Len(place, ..) => place.read_safety(krate),
-            Rvalue::Use(op, _) | Rvalue::UnaryOp(_, op) | Rvalue::Repeat(op, ..) => {
-                op.safety(krate)
-            }
-            Rvalue::BinaryOp(_, op1, op2) => op1.safety(krate).or_else(|| op2.safety(krate)),
+            Rvalue::UnaryOp(unop, op) => unop.safety(krate).or_else(|| op.safety(krate)),
+            Rvalue::Use(op, _) | Rvalue::Repeat(op, ..) => op.safety(krate),
+            Rvalue::BinaryOp(binop, op1, op2) => binop
+                .safety(krate)
+                .or_else(|| op1.safety(krate).or_else(|| op2.safety(krate))),
             Rvalue::Aggregate(_, ops) => ops.safety(krate),
             Rvalue::NullaryOp(_) => Safety::Safe,
+        }
+    }
+}
+
+impl HasSafety for UnOp {
+    fn safety(&self, krate: &TranslatedCrate) -> Safety {
+        match self {
+            UnOp::Not => Safety::Safe,
+            UnOp::Neg(om) => om.safety(krate),
+            UnOp::Cast(CastKind::Concretize(..) | CastKind::Transmute(..)) => Safety::Unsafe,
+            UnOp::Cast(CastKind::PtrWithExposedProvenance(_, tgt)) if tgt.is_ref() => {
+                Safety::Unsafe
+            }
+            UnOp::Cast(_) => Safety::Safe,
+        }
+    }
+}
+
+impl HasSafety for BinOp {
+    fn safety(&self, krate: &TranslatedCrate) -> Safety {
+        use BinOp::*;
+        match self {
+            Add(om) | Sub(om) | Mul(om) | Div(om) | Rem(om) | Shl(om) | Shr(om) => om.safety(krate),
+            BitXor | BitAnd | BitOr | Eq | Lt | Le | Ne | Ge | Gt | AddChecked | SubChecked
+            | MulChecked | Cmp => Safety::Safe,
+            Offset => Safety::Unsafe,
+        }
+    }
+}
+
+impl HasSafety for OverflowMode {
+    fn safety(&self, _krate: &TranslatedCrate) -> Safety {
+        match self {
+            OverflowMode::UB => Safety::Unsafe,
+            OverflowMode::Panic | OverflowMode::Wrap => Safety::Safe,
         }
     }
 }
@@ -280,6 +314,15 @@ impl HasSafety for BorrowckStatement {
     }
 }
 
+impl HasSafety for AbortKind {
+    fn safety(&self, _krate: &TranslatedCrate) -> Safety {
+        match self {
+            AbortKind::UndefinedBehavior => Safety::Unsafe,
+            AbortKind::Panic(..) | AbortKind::UnwindTerminate => Safety::Safe,
+        }
+    }
+}
+
 /// This doesn't look into nested blocks.
 impl HasSafety for llbc_ast::Statement {
     fn safety(&self, krate: &TranslatedCrate) -> Safety {
@@ -293,13 +336,18 @@ impl HasSafety for llbc_ast::Statement {
                 place.read_safety(krate)
             }
             StatementKind::Borrowck(st) => st.safety(krate),
-            StatementKind::Assert { assert, .. } => assert.cond.safety(krate),
+            StatementKind::Assert {
+                assert, on_failure, ..
+            } => assert
+                .cond
+                .safety(krate)
+                .or_else(|| on_failure.safety(krate)),
             StatementKind::Call { call, .. } => call.safety(krate),
             StatementKind::Switch { data, .. } => data.safety(krate),
             StatementKind::InlineAsm { kind, .. } => kind.is_asm().into(),
+            StatementKind::Abort(k) => k.safety(krate),
             StatementKind::StorageLive(_)
             | StatementKind::StorageDead(_)
-            | StatementKind::Abort(_)
             | StatementKind::Return
             | StatementKind::UnwindResume
             | StatementKind::Break(_)
@@ -321,7 +369,10 @@ impl HasSafety for ullbc_ast::Statement {
             StatementKind::SetDiscriminant(place, _) => place.write_safety(krate),
             StatementKind::PlaceMention(place) => place.read_safety(krate),
             StatementKind::Borrowck(st) => st.safety(krate),
-            StatementKind::Assert { assert, .. } => assert.cond.safety(krate),
+            StatementKind::Assert { assert, on_failure } => assert
+                .cond
+                .safety(krate)
+                .or_else(|| on_failure.safety(krate)),
             StatementKind::StorageLive(_) | StatementKind::StorageDead(_) | StatementKind::Nop => {
                 Safety::Safe
             }
@@ -338,10 +389,10 @@ impl HasSafety for ullbc_ast::Terminator {
             TerminatorKind::Drop { place, .. } => place.read_safety(krate),
             TerminatorKind::Assert { assert, .. } => assert.cond.safety(krate),
             TerminatorKind::InlineAsm { kind, .. } => kind.is_asm().into(),
-            TerminatorKind::Goto { .. }
-            | TerminatorKind::Abort(..)
-            | TerminatorKind::Return
-            | TerminatorKind::UnwindResume => Safety::Safe,
+            TerminatorKind::Abort(k) => k.safety(krate),
+            TerminatorKind::Goto { .. } | TerminatorKind::Return | TerminatorKind::UnwindResume => {
+                Safety::Safe
+            }
         }
     }
 }

@@ -586,7 +586,8 @@ extern "C" fn naked()
     storage_live(_0)
     _0 = ()
     naked_asm!("ret")
-    ↳⚡ undefined_behavior
+    ↳⚡ // unsafe
+        undefined_behavior
 }
 
 // Full name: test_crate::force_target_feature
@@ -891,7 +892,8 @@ fn unsafe_asm()
             return
         }
     }
-    ↳⚡ undefined_behavior
+    ↳⚡ // unsafe
+        undefined_behavior
 }
 
 // Full name: test_crate::unsafe_call_unsafe_dyn_method
@@ -931,7 +933,8 @@ fn unsafe_raw_borrow_of_indexed_union_field(foo: Foo) -> *const u32
     _3 = &foo.two
     storage_live(_4)
     _4 = impl_Index_for_array::index<'_, u32, usize, 2usize>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, impl_Index_for_slice<u32, usize>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<u32>[{built_in impl Sized for u32}]]](move _3, copy _2)
-    ↳⚡ undefined_behavior
+    ↳⚡ // unsafe
+        undefined_behavior
     _0 = &raw const (*_4)
     storage_dead(_2)
     storage_dead(foo)
@@ -990,6 +993,7 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
     storage_live(_5)
     storage_live(_6)
     _6 = copy x
+    // unsafe
     _5 = transmute<u32, i32>(move _6)
     storage_dead(_6)
     storage_dead(_5)
@@ -1002,7 +1006,8 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
     _14 = &(*_8) with_metadata(copy _8.metadata)
     storage_live(_15)
     _15 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _9, move _14)
-    ↳⚡ undefined_behavior
+    ↳⚡ // unsafe
+        undefined_behavior
     _7 = &(*_15)
     storage_dead(_9)
     storage_dead(_8)
@@ -1010,12 +1015,14 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
     storage_live(_10)
     storage_live(_11)
     _11 = copy x
+    // unsafe
     _10 = move _11 ub.+ const 1u32
     storage_dead(_11)
     storage_dead(_10)
     storage_live(_12)
     storage_live(_13)
     _13 = copy p
+    // unsafe
     _12 = move _13 offset const 1isize
     storage_dead(_13)
     storage_dead(_12)
@@ -1209,7 +1216,8 @@ extern "C" fn safe_naked_asm()
     storage_live(_0)
     _0 = ()
     naked_asm!("ret")
-    ↳⚡ undefined_behavior
+    ↳⚡ // unsafe
+        undefined_behavior
 }
 
 // Full name: test_crate::safe_call_dyn_method
