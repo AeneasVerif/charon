@@ -90,6 +90,7 @@ pub enum StatementKind {
     /// An inline assembly block. For now we only preserve the template string.
     InlineAsm {
         asm: String,
+        kind: AsmKind,
         targets: Vec<Block>,
         on_unwind: Block,
     },

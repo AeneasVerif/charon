@@ -1711,6 +1711,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 ullbc_ast::TerminatorKind::Goto { target }
             }
             TerminatorKind::InlineAsm {
+                asm_macro,
                 template,
                 targets,
                 unwind,
@@ -1722,8 +1723,13 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     .map(|target| self.translate_basic_block_id(*target))
                     .collect();
                 let on_unwind = self.translate_unwind_action(span, unwind);
+                let kind = match asm_macro {
+                    mir::InlineAsmMacro::Asm => AsmKind::Asm,
+                    mir::InlineAsmMacro::NakedAsm => AsmKind::NakedAsm,
+                };
                 ullbc_ast::TerminatorKind::InlineAsm {
                     asm,
+                    kind,
                     targets,
                     on_unwind,
                 }

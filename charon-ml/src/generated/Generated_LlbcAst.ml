@@ -76,12 +76,13 @@ and statement_kind =
           - [assert]
           - [on_failure]
           - [on_unwind] *)
-  | InlineAsm of string * block list * block
+  | InlineAsm of string * asm_kind * block list * block
       (** An inline assembly block. For now we only preserve the template
           string.
 
           Fields:
           - [asm]
+          - [kind]
           - [targets]
           - [on_unwind] *)
   | Call of call * block

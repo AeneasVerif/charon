@@ -2035,8 +2035,13 @@ module Llbc = struct
           (pp_print_abort_kind env) on_failure
           (pp_unwind_block env indent indent_incr)
           on_unwind
-    | InlineAsm (asm, targets, on_unwind) ->
-        Format.fprintf fmt "%sasm!(%S)" indent asm;
+    | InlineAsm (asm, kind, targets, on_unwind) ->
+        let mac =
+          match kind with
+          | Asm -> "asm"
+          | NakedAsm -> "naked_asm"
+        in
+        Format.fprintf fmt "%s%s!(%S)" indent mac asm;
         if targets = [] then
           pp_unwind_block env indent indent_incr fmt on_unwind
         else
@@ -2235,7 +2240,12 @@ module Ullbc = struct
         Format.fprintf fmt "%sassert %a -> %s (unwind: %s)" indent
           (pp_print_assertion env) asrt (block_id_to_string tgt)
           (block_id_to_string unwind)
-    | InlineAsm (asm, targets, on_unwind) ->
+    | InlineAsm (asm, kind, targets, on_unwind) ->
+        let mac =
+          match kind with
+          | Asm -> "asm"
+          | NakedAsm -> "naked_asm"
+        in
         let targets =
           List.mapi
             (fun i target ->
@@ -2243,7 +2253,7 @@ module Ullbc = struct
             targets
         in
         let targets = targets @ [ "unwind: " ^ block_id_to_string on_unwind ] in
-        Format.fprintf fmt "%sasm!(%S) -> %s" indent asm
+        Format.fprintf fmt "%s%s!(%S) -> %s" indent mac asm
           (String.concat ", " targets)
     | Abort kind ->
         Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env) kind

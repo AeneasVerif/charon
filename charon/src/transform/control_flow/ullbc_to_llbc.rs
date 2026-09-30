@@ -1034,6 +1034,7 @@ impl<'a> ReconstructCtx<'a> {
             }
             src::TerminatorKind::InlineAsm {
                 asm,
+                kind,
                 targets,
                 on_unwind,
             } => {
@@ -1044,6 +1045,7 @@ impl<'a> ReconstructCtx<'a> {
                 let on_unwind = self.translate_block(*on_unwind);
                 let st = tgt::StatementKind::InlineAsm {
                     asm: asm.clone(),
+                    kind: *kind,
                     targets,
                     on_unwind,
                 };

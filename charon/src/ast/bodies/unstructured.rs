@@ -119,6 +119,7 @@ pub enum TerminatorKind {
     /// An inline assembly block. For now we only preserve the template string.
     InlineAsm {
         asm: String,
+        kind: AsmKind,
         targets: Vec<BlockId>,
         on_unwind: BlockId,
     },

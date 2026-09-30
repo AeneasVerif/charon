@@ -53,7 +53,7 @@ use derive_generic_visitor::*;
         GlobalKind, ItemOpacity, LangItem, LifetimeMutability, OptimizeAttr, OverflowMode,
         ReprOptions, Variance, FieldPredecessor,
         std::ops::RangeInclusive<IntegerValue>,
-        WithRetag, BuiltinPathElem, BranchId,
+        WithRetag, BuiltinPathElem, BranchId, AsmKind,
     ),
     // Types that are completely skipped, even by `ZipAst`.
     skip(
@@ -202,7 +202,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
         TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         NullOp, RefKind, IntegerValue, Span, Ty, TypeDeclId,  UnOp, VariantId,
         TraitRef, ScalarTy, Region, RegionId, (), String, PathBuf, bool, u32, usize,
-        DropKind, Error, Variance, WithRetag, BuiltinAdt, BuiltinPathElem,
+        DropKind, Error, Variance, WithRetag, BuiltinAdt, BuiltinPathElem, AsmKind,
         llbc_ast::BlockId, llbc_ast::StatementId,
     ),
     // Types that we unconditionally explore.

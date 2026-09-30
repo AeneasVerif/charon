@@ -2273,10 +2273,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             }
             StatementKind::InlineAsm {
                 asm,
+                kind,
                 targets,
                 on_unwind,
             } => {
-                write!(f, "asm!({asm:?})")?;
+                let mac = match kind {
+                    AsmKind::Asm => "asm",
+                    AsmKind::NakedAsm => "naked_asm",
+                };
+                write!(f, "{mac}!({asm:?})")?;
                 if !targets.is_empty() {
                     write!(f, " {{")?;
                     let ctx1 = &ctx.increase_indent();
@@ -2478,6 +2483,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
             }
             TerminatorKind::InlineAsm {
                 asm,
+                kind,
                 targets,
                 on_unwind,
             } => {
@@ -2487,7 +2493,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                     .map(|(i, target)| format!("target {i}: bb{target}"))
                     .chain([format!("unwind: bb{on_unwind}")])
                     .format(", ");
-                write!(f, "asm!({asm:?}) -> {targets}")
+                let mac = match kind {
+                    AsmKind::Asm => "asm",
+                    AsmKind::NakedAsm => "naked_asm",
+                };
+                write!(f, "{mac}!({asm:?}) -> {targets}")
             }
             TerminatorKind::Abort(kind) => write!(f, "{}", kind.with_ctx(ctx)),
             TerminatorKind::Return => write!(f, "return"),

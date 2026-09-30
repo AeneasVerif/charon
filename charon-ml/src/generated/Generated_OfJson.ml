@@ -111,6 +111,14 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (AggregatedRawPtr (_0, _1))
     | _ -> Error "")
 
+and asm_kind_of_json (ctx : of_json_ctx) (js : json) : (asm_kind, string) result
+    =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Asm" -> Ok Asm
+    | `String "NakedAsm" -> Ok NakedAsm
+    | _ -> Error "")
+
 and assertion_of_json (ctx : of_json_ctx) (js : json) :
     (assertion, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1744,13 +1752,18 @@ module Ullbc = struct
           [
             ( "InlineAsm",
               `Assoc
-                [ ("asm", asm); ("targets", targets); ("on_unwind", on_unwind) ]
-            );
+                [
+                  ("asm", asm);
+                  ("kind", kind);
+                  ("targets", targets);
+                  ("on_unwind", on_unwind);
+                ] );
           ] ->
           let* asm = string_of_json ctx asm in
+          let* kind = asm_kind_of_json ctx kind in
           let* targets = list_of_json block_id_of_json ctx targets in
           let* on_unwind = block_id_of_json ctx on_unwind in
-          Ok (InlineAsm (asm, targets, on_unwind))
+          Ok (InlineAsm (asm, kind, targets, on_unwind))
       | `Assoc [ ("Abort", _0) ] ->
           let* _0 = abort_kind_of_json ctx _0 in
           Ok (Abort _0)
@@ -1869,13 +1882,18 @@ module Llbc = struct
           [
             ( "InlineAsm",
               `Assoc
-                [ ("asm", asm); ("targets", targets); ("on_unwind", on_unwind) ]
-            );
+                [
+                  ("asm", asm);
+                  ("kind", kind);
+                  ("targets", targets);
+                  ("on_unwind", on_unwind);
+                ] );
           ] ->
           let* asm = string_of_json ctx asm in
+          let* kind = asm_kind_of_json ctx kind in
           let* targets = list_of_json block_of_json ctx targets in
           let* on_unwind = block_of_json ctx on_unwind in
-          Ok (InlineAsm (asm, targets, on_unwind))
+          Ok (InlineAsm (asm, kind, targets, on_unwind))
       | `Assoc [ ("Call", `Assoc [ ("call", call); ("on_unwind", on_unwind) ]) ]
         ->
           let* call = call_of_json ctx call in

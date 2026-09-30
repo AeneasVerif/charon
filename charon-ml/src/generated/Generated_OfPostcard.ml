@@ -108,6 +108,15 @@ and aggregate_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (AggregatedRawPtr (_0, _1))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and asm_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (asm_kind, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok Asm
+     | 1 -> Ok NakedAsm
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and assertion_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (assertion, string) result =
   combine_error_msgs st __FUNCTION__
@@ -1519,9 +1528,10 @@ module Ullbc = struct
            Ok (TAssert (assert_, target, on_unwind))
        | 5 ->
            let* asm = string_of_postcard ctx st in
+           let* kind = asm_kind_of_postcard ctx st in
            let* targets = list_of_postcard block_id_of_postcard ctx st in
            let* on_unwind = block_id_of_postcard ctx st in
-           Ok (InlineAsm (asm, targets, on_unwind))
+           Ok (InlineAsm (asm, kind, targets, on_unwind))
        | 6 ->
            let* _0 = abort_kind_of_postcard ctx st in
            Ok (Abort _0)
@@ -1600,9 +1610,10 @@ module Llbc = struct
            Ok (Assert (assert_, on_failure, on_unwind))
        | 8 ->
            let* asm = string_of_postcard ctx st in
+           let* kind = asm_kind_of_postcard ctx st in
            let* targets = list_of_postcard block_of_postcard ctx st in
            let* on_unwind = block_of_postcard ctx st in
-           Ok (InlineAsm (asm, targets, on_unwind))
+           Ok (InlineAsm (asm, kind, targets, on_unwind))
        | 9 ->
            let* call = call_of_postcard ctx st in
            let* on_unwind = block_of_postcard ctx st in
