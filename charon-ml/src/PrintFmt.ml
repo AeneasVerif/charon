@@ -2110,7 +2110,6 @@ module Llbc = struct
         Format.fprintf fmt "%sloop {\n%a%s}" indent
           (pp_block env (indent ^ indent_incr) indent_incr)
           loop_blk indent
-    | Error s -> Format.fprintf fmt "%sERROR(' %s')" indent s
 
   and pp_block (env : fmt_env) (indent : string) (indent_incr : string)
       (fmt : Format.formatter) (b : block) : unit =
