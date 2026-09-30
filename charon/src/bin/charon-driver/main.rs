@@ -64,6 +64,10 @@ pub enum CharonFailure {
     RustcError,
     Panic,
     Serialize,
+    MiniRustTranslationError,
+    MiniRustPanic,
+    MiniRustUb,
+    MiniRustOther,
 }
 
 impl fmt::Display for CharonFailure {
@@ -76,6 +80,12 @@ impl fmt::Display for CharonFailure {
             )?,
             CharonFailure::Panic => write!(f, "Compilation panicked")?,
             CharonFailure::Serialize => write!(f, "Could not serialize output file")?,
+            CharonFailure::MiniRustTranslationError => {
+                write!(f, "Could not compile the program to MiniRust")?
+            }
+            CharonFailure::MiniRustPanic => write!(f, "MiniRust program panicked")?,
+            CharonFailure::MiniRustUb => write!(f, "MiniRust program encountered UB")?,
+            CharonFailure::MiniRustOther => write!(f, "MiniRust execution failed")?,
         }
         Ok(())
     }
@@ -101,10 +111,36 @@ fn run_charon() -> Result<usize, CharonFailure> {
     let targets = options.targets(&ctx.translated.crate_name);
     trace!("Targets: {:?}", targets);
     let crate_name = ctx.translated.crate_name.clone();
-    charon_lib::timing::time("serialize", || {
-        export::CrateData::new(ctx).serialize_to_files(targets)
-    })
-    .map_err(|()| CharonFailure::Serialize)?;
+    let crate_data = export::CrateData::new(ctx);
+    charon_lib::timing::time("serialize", || crate_data.serialize_to_files(targets))
+        .map_err(|()| CharonFailure::Serialize)?;
+    #[cfg(feature = "minirust")]
+    if options.run_with_minirust {
+        charon_lib::timing::time("run-with-minirust", || {
+            charon_lib::minirust::run::<minirust_rs::prelude::x86_64>(&crate_data.translated)
+        })
+        .map_err(|err| {
+            use charon_lib::minirust::RunError;
+            match err {
+                RunError::Translation(error) => {
+                    anstream::eprintln!(
+                        "{}\n",
+                        error.render(&crate_data.translated, charon_lib::errors::Level::ERROR)
+                    );
+                    CharonFailure::MiniRustTranslationError
+                }
+                RunError::Panic => CharonFailure::MiniRustPanic,
+                RunError::Ub(message) => {
+                    anstream::eprintln!("MiniRust UB: {message}");
+                    CharonFailure::MiniRustUb
+                }
+                RunError::Other(error) => {
+                    anstream::eprintln!("MiniRust execution failed: {error:?}");
+                    CharonFailure::MiniRustOther
+                }
+            }
+        })?;
+    }
     charon_lib::timing::report(&crate_name);
 
     if options.error_on_warnings && error_count != 0 {
@@ -133,8 +169,13 @@ fn main() {
         Err(err) => {
             log::error!("{err}");
             let exit_code = match err {
-                CharonFailure::CharonError(_) | CharonFailure::Serialize => 1,
+                CharonFailure::CharonError(_)
+                | CharonFailure::Serialize
+                | CharonFailure::MiniRustTranslationError => 1,
                 CharonFailure::RustcError => 2,
+                CharonFailure::MiniRustPanic => 3,
+                CharonFailure::MiniRustUb => 4,
+                CharonFailure::MiniRustOther => 5,
                 // This is a real panic, exit with the standard rust panic error code.
                 CharonFailure::Panic => 101,
             };

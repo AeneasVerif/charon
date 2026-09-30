@@ -2234,6 +2234,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("dest_file", dest_file);
           ("no_dedup_serialized_ast", no_dedup_serialized_ast);
           ("format", format);
+          ("run_with_minirust", run_with_minirust);
           ("no_serialize", no_serialize);
           ("skip_borrowck", skip_borrowck);
           ("erase_body_lifetimes", erase_body_lifetimes);
@@ -2319,6 +2320,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* format =
           option_of_json serialization_format_arg_of_json ctx format
         in
+        let* run_with_minirust = bool_of_json ctx run_with_minirust in
         let* no_serialize = bool_of_json ctx no_serialize in
         let* skip_borrowck = bool_of_json ctx skip_borrowck in
         let* erase_body_lifetimes = bool_of_json ctx erase_body_lifetimes in
@@ -2385,6 +2387,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              dest_file;
              no_dedup_serialized_ast;
              format;
+             run_with_minirust;
              no_serialize;
              skip_borrowck;
              erase_body_lifetimes;
@@ -3460,6 +3463,7 @@ and serialization_format_arg_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `String "Json" -> Ok Json
     | `String "Postcard" -> Ok Postcard
+    | `String "MiniRust" -> Ok MiniRust
     | `String "All" -> Ok AllFormats
     | _ -> Error "")
 

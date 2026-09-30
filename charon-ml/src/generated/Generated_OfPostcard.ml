@@ -1925,6 +1925,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* format =
        option_of_postcard serialization_format_arg_of_postcard ctx st
      in
+     let* run_with_minirust = bool_of_postcard ctx st in
      let* no_serialize = bool_of_postcard ctx st in
      let* skip_borrowck = bool_of_postcard ctx st in
      let* erase_body_lifetimes = bool_of_postcard ctx st in
@@ -1989,6 +1990,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           dest_file;
           no_dedup_serialized_ast;
           format;
+          run_with_minirust;
           no_serialize;
           skip_borrowck;
           erase_body_lifetimes;
@@ -2893,7 +2895,8 @@ and serialization_format_arg_of_postcard (ctx : of_postcard_ctx)
      match __tag with
      | 0 -> Ok Json
      | 1 -> Ok Postcard
-     | 2 -> Ok AllFormats
+     | 2 -> Ok MiniRust
+     | 3 -> Ok AllFormats
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and size_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

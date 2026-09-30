@@ -74,7 +74,7 @@ impl Error {
         }
     }
 
-    pub(crate) fn render(&self, krate: &TranslatedCrate, level: Level) -> String {
+    pub fn render(&self, krate: &TranslatedCrate, level: Level) -> String {
         use annotate_snippets::*;
         let span = self.span.data();
 
@@ -98,6 +98,17 @@ impl Error {
         }
 
         Renderer::styled().render(&[group]).to_string()
+    }
+}
+
+/// Attach a source span to an error.
+pub trait ErrorContext<T> {
+    fn context(self, span: Span) -> Result<T, Error>;
+}
+
+impl<T, E: ToString> ErrorContext<T> for Result<T, E> {
+    fn context(self, span: Span) -> Result<T, Error> {
+        self.map_err(|error| Error::new(span, error.to_string()))
     }
 }
 

@@ -238,15 +238,15 @@ impl Ty {
         static_type!(TyKind::Scalar(ScalarTy::Bool))
     }
 
-    pub fn mk_usize() -> Ty {
-        static_type!(TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(
-            UIntTy::Usize
-        ))))
-    }
-
     pub fn mk_u8() -> Ty {
         static_type!(TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(
             UIntTy::U8
+        ))))
+    }
+
+    pub fn mk_usize() -> Ty {
+        static_type!(TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(
+            UIntTy::Usize
         ))))
     }
 
@@ -341,10 +341,7 @@ impl TyKind {
     }
 
     pub fn is_usize(&self) -> bool {
-        matches!(
-            self,
-            TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::Usize)))
-        )
+        self.as_scalar().is_some_and(|s| s.is_usize())
     }
 
     pub fn is_unsigned_scalar(&self) -> bool {
@@ -462,6 +459,10 @@ impl IntegerTy {
 }
 
 impl ScalarTy {
+    pub fn is_usize(&self) -> bool {
+        matches!(self, ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::Usize)))
+    }
+
     /// Important: this returns the target byte count for the types.
     /// Must not be used for host types from rustc.
     pub fn target_size(&self, ptr_size: ByteCount) -> usize {

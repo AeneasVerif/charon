@@ -34,7 +34,7 @@ use charon_lib::{
     export::{CrateData, multi_target},
     formatter::IntoFormatter,
     logger,
-    options::{CHARON_ARGS, CliOpts, SerializationFormat, SerializationFormatArg},
+    options::{CHARON_ARGS, CliOpts, SerializationFormat},
     pretty::FmtWithCtx,
     utils::arg_value,
 };
@@ -135,12 +135,7 @@ fn translate_multi_target(
             .map(|(i, target)| {
                 scope.spawn(move || -> anyhow::Result<_> {
                     let mut opts = options.clone();
-                    let format = match opts.format {
-                        None | Some(SerializationFormatArg::All | SerializationFormatArg::Json) => {
-                            SerializationFormat::Json
-                        }
-                        Some(SerializationFormatArg::Postcard) => SerializationFormat::Postcard,
-                    };
+                    let format = SerializationFormat::Postcard;
                     let extension = format.output_extension(options.ullbc);
                     let temp_file = temp_dir.join(format!("target_{i}.{extension}"));
                     opts.dest_file = Some(temp_file.clone());

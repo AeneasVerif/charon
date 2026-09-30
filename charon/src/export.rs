@@ -1,6 +1,8 @@
 pub mod multi_target;
 
 use crate::ast::*;
+#[cfg(feature = "minirust")]
+use crate::errors::Level;
 use crate::options::SerializationFormat;
 use crate::transform::TransformCtx;
 use serde::{Deserialize, Deserializer, Serialize};
@@ -131,6 +133,15 @@ impl CrateData {
                     return Err(());
                 }
             }
+            #[cfg(feature = "minirust")]
+            SerializationFormat::MiniRust => {
+                if let Err(err) = crate::minirust::serialize(&self.translated, &mut writer) {
+                    anstream::eprintln!("{}\n", err.render(&self.translated, Level::ERROR));
+                    return Err(());
+                }
+            }
+            #[cfg(not(feature = "minirust"))]
+            SerializationFormat::MiniRust => error!("Charon was built without MiniRust support"),
         }
 
         // We canonicalize (i.e., make absolute) the path before printing it; this makes it clearer
@@ -177,6 +188,9 @@ impl CrateData {
                     anyhow::bail!("postcard deserialize error: trailing bytes left in input");
                 }
                 Ok(crate_data)
+            }
+            SerializationFormat::MiniRust => {
+                anyhow::bail!("MiniRust files cannot be read by Charon")
             }
         }
     }

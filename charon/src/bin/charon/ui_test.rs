@@ -8,16 +8,23 @@ use std::{
 
 use crate::cli::UiTestArgs;
 
-enum TestKind {
+enum OutputKind {
     PrettyLlbc,
+    RunWithMiniRust,
+}
+
+enum ExpectedResult {
+    Success,
     KnownFailure,
     KnownPanic,
-    IgnoreWarnings,
-    Ignore,
+    KnownUb,
 }
 
 struct MagicComments {
-    test_kind: TestKind,
+    output: OutputKind,
+    expected: ExpectedResult,
+    ignore_warnings: bool,
+    ignore: bool,
     /// The options with which to run charon.
     charon_opts: Vec<String>,
     /// The options to pass to rustc.
@@ -31,8 +38,10 @@ struct MagicComments {
 static HELP_STRING: &str = unindent!(
     "Options are:
     - `//@ output=pretty-llbc`: record the pretty-printed llbc (default);
+    - `//@ output=run-with-minirust`: run the program in MiniRust and record its stdout;
     - `//@ known-failure`: a test that is expected to fail.
     - `//@ known-panic`: a test that is expected to panic.
+    - `//@ known-ub`: a MiniRust test that is expected to encounter undefined behavior.
     - `//@ ignore-warnings`: a test for which warnings should be ignored (instead of erroring).
     - `//@ ignore`: skip the test.
 
@@ -54,7 +63,7 @@ static HELP_STRING: &str = unindent!(
 
 pub fn run(args: UiTestArgs) -> Result<ExitStatus> {
     let magic_comments = parse_magic_comments(&args.file, args.revision.as_deref())?;
-    if matches!(magic_comments.test_kind, TestKind::Ignore) {
+    if magic_comments.ignore {
         return Ok(ExitStatus::default());
     }
 
@@ -102,17 +111,23 @@ pub fn run(args: UiTestArgs) -> Result<ExitStatus> {
     cmd.arg("rustc");
 
     // Charon args.
-    cmd.arg("--print-llbc");
-    if magic_comments.default_options {
+    let run_with_minirust = matches!(magic_comments.output, OutputKind::RunWithMiniRust);
+    if !run_with_minirust {
+        cmd.arg("--print-llbc");
+    }
+    if magic_comments.default_options && !run_with_minirust {
         cmd.arg("--preset=tests");
     }
-    if !matches!(magic_comments.test_kind, TestKind::IgnoreWarnings) {
+    if !magic_comments.ignore_warnings {
         cmd.arg("--error-on-warnings");
     }
-    if matches!(
-        magic_comments.test_kind,
-        TestKind::KnownPanic | TestKind::KnownFailure
-    ) {
+    if run_with_minirust {
+        cmd.args([
+            "--run-with-minirust",
+            "--no-serialize",
+            "--start-from=crate::main",
+        ]);
+    } else if !matches!(magic_comments.expected, ExpectedResult::Success) {
         cmd.arg("--no-serialize");
     } else {
         cmd.arg("--dest-file");
@@ -139,39 +154,42 @@ pub fn run(args: UiTestArgs) -> Result<ExitStatus> {
     let status = cmd
         .status()
         .context("failed to run `charon rustc` for ui test")?;
-    let status_description = if status.success() {
-        "succeeded"
-    } else if status.code() == Some(101) {
-        "panicked"
-    } else {
-        "failed"
+    let expected_code = match magic_comments.expected {
+        ExpectedResult::Success => return Ok(status),
+        ExpectedResult::KnownFailure => {
+            let failed_compilation = if run_with_minirust {
+                matches!(status.code(), Some(1 | 2))
+            } else {
+                !status.success() && status.code() != Some(101)
+            };
+            if failed_compilation {
+                return Ok(ExitStatus::default());
+            }
+            "failed compilation"
+        }
+        ExpectedResult::KnownPanic => {
+            if status.code() == Some(if run_with_minirust { 3 } else { 101 }) {
+                return Ok(ExitStatus::default());
+            }
+            "a panic"
+        }
+        ExpectedResult::KnownUb => {
+            if status.code() == Some(4) {
+                return Ok(ExitStatus::default());
+            }
+            "undefined behavior"
+        }
     };
-    match magic_comments.test_kind {
-        TestKind::PrettyLlbc | TestKind::IgnoreWarnings => Ok(status),
-        TestKind::KnownPanic if status.code() == Some(101) => Ok(ExitStatus::default()),
-        TestKind::KnownPanic => {
-            bail!(
-                "compilation was expected to panic but instead {}",
-                status_description
-            )
-        }
-        TestKind::KnownFailure if !status.success() && status.code() != Some(101) => {
-            Ok(ExitStatus::default())
-        }
-        TestKind::KnownFailure => {
-            bail!(
-                "compilation was expected to fail but instead {}",
-                status_description
-            )
-        }
-        TestKind::Ignore => unreachable!(),
-    }
+    bail!("expected {expected_code}, but `charon rustc` exited with status {status}")
 }
 
 fn parse_magic_comments(input_path: &Path, revision: Option<&str>) -> Result<MagicComments> {
     // Parse the magic comments.
     let mut comments = MagicComments {
-        test_kind: TestKind::PrettyLlbc,
+        output: OutputKind::PrettyLlbc,
+        expected: ExpectedResult::Success,
+        ignore_warnings: false,
+        ignore: false,
         charon_opts: Vec::new(),
         rustc_opts: Vec::new(),
         default_options: true,
@@ -204,15 +222,19 @@ fn parse_magic_comments(input_path: &Path, revision: Option<&str>) -> Result<Mag
             }
             revisions = Some(split_revisions);
         } else if line == "known-panic" {
-            comments.test_kind = TestKind::KnownPanic;
+            comments.expected = ExpectedResult::KnownPanic;
         } else if line == "known-failure" {
-            comments.test_kind = TestKind::KnownFailure;
+            comments.expected = ExpectedResult::KnownFailure;
+        } else if line == "known-ub" {
+            comments.expected = ExpectedResult::KnownUb;
         } else if line == "ignore-warnings" {
-            comments.test_kind = TestKind::IgnoreWarnings;
+            comments.ignore_warnings = true;
         } else if line == "output=pretty-llbc" {
-            comments.test_kind = TestKind::PrettyLlbc;
+            comments.output = OutputKind::PrettyLlbc;
+        } else if line == "output=run-with-minirust" {
+            comments.output = OutputKind::RunWithMiniRust;
         } else if line == "ignore" || line == "skip" {
-            comments.test_kind = TestKind::Ignore;
+            comments.ignore = true;
         } else if line == "no-default-options" {
             comments.default_options = false;
         } else if line == "no-check-output" {
@@ -244,6 +266,11 @@ fn parse_magic_comments(input_path: &Path, revision: Option<&str>) -> Result<Mag
     }
     if revisions.is_none() && revision.is_some() {
         bail!("`--revision` was passed but the test has no revisions");
+    }
+    if matches!(comments.expected, ExpectedResult::KnownUb)
+        && !matches!(comments.output, OutputKind::RunWithMiniRust)
+    {
+        bail!("`known-ub` requires `output=run-with-minirust`");
     }
     Ok(comments)
 }

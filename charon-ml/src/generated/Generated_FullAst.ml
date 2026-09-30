@@ -269,7 +269,8 @@ and cli_options = {
       (** Don't deduplicate values (types, trait refs) in the .(u)llbc file.
           This makes the file easier to inspect. *)
   format : serialization_format_arg option;
-      (** Serialization format for emitted (U)LLBC files. Defaults to json. *)
+      (** Serialization format for emitted files. Defaults to json. *)
+  run_with_minirust : bool;  (** Run the translated program with MiniRust. *)
   no_serialize : bool;  (** Don't serialize the final (U)LLBC to a file. *)
   skip_borrowck : bool;
       (** If activated, this skips borrow-checking of the crate. *)
@@ -370,7 +371,7 @@ and preset =
   | Soteria
   | Tests
 
-and serialization_format_arg = Json | Postcard | AllFormats
+and serialization_format_arg = Json | Postcard | MiniRust | AllFormats
 
 and target_info = {
   target_pointer_size : int;  (** The pointer size of the target in bytes. *)

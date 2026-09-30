@@ -1,0 +1,2 @@
+MiniRust UB: dereferencing pointer without provenance
+ERROR MiniRust program encountered UB
