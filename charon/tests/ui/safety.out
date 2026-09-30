@@ -746,17 +746,9 @@ fn unsafe_call_fn_ptr(f: unsafe fn())
 fn unsafe_read_mutable_static() -> usize
 {
     let _0: usize; // return
-    let _1: *mut usize; // anonymous local
-    let _2: *mut usize; // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    storage_live(_2)
-    _2 = &raw mut COUNTER
-    _1 = move _2
-    _0 = copy (*_1)
-    storage_dead(_1)
-    storage_dead(_2)
+    _0 = copy COUNTER
     return
 }
 
@@ -764,19 +756,11 @@ fn unsafe_read_mutable_static() -> usize
 fn unsafe_write_mutable_static()
 {
     let _0: (); // return
-    let _1: *mut usize; // anonymous local
-    let _2: *mut usize; // anonymous local
 
     storage_live(_0)
     _0 = ()
-    storage_live(_1)
-    storage_live(_2)
-    _2 = &raw mut COUNTER
-    _1 = move _2
-    (*_1) = const 1usize
+    COUNTER = const 1usize
     _0 = ()
-    storage_dead(_1)
-    storage_dead(_2)
     return
 }
 
@@ -784,17 +768,9 @@ fn unsafe_write_mutable_static()
 fn unsafe_read_extern_static() -> u32
 {
     let _0: u32; // return
-    let _1: *const u32; // anonymous local
-    let _2: *const u32; // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    storage_live(_2)
-    _2 = &raw const EXTERN_STATIC
-    _1 = move _2
-    _0 = copy (*_1)
-    storage_dead(_1)
-    storage_dead(_2)
+    _0 = copy EXTERN_STATIC
     return
 }
 
@@ -815,17 +791,9 @@ static mut PAIR: (u32, u32) = PAIR()
 fn unsafe_raw_borrow_of_mutable_static_field() -> *const u32
 {
     let _0: *const u32; // return
-    let _1: *mut (u32, u32); // anonymous local
-    let _2: *mut (u32, u32); // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    storage_live(_2)
-    _2 = &raw mut PAIR
-    _1 = move _2
-    _0 = &raw const (*_1)._0
-    storage_dead(_1)
-    storage_dead(_2)
+    _0 = &raw const PAIR._0
     return
 }
 
@@ -847,17 +815,9 @@ static mut PTR: *const u32 = PTR()
 fn unsafe_raw_borrow_through_mutable_static() -> *const u32
 {
     let _0: *const u32; // return
-    let _1: *mut *const u32; // anonymous local
-    let _2: *mut *const u32; // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    storage_live(_2)
-    _2 = &raw mut PTR
-    _1 = move _2
-    _0 = &raw const (*(*_1))
-    storage_dead(_1)
-    storage_dead(_2)
+    _0 = &raw const (*PTR)
     return
 }
 
@@ -951,17 +911,9 @@ static mut STATIC_FOO: Foo = STATIC_FOO()
 fn unsafe_raw_borrow_of_mutable_static_union_field() -> *const u64
 {
     let _0: *const u64; // return
-    let _1: *mut Foo; // anonymous local
-    let _2: *mut Foo; // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    storage_live(_2)
-    _2 = &raw mut STATIC_FOO
-    _1 = move _2
-    _0 = &raw const (*_1).one
-    storage_dead(_1)
-    storage_dead(_2)
+    _0 = &raw const STATIC_FOO.one
     return
 }
 
@@ -972,24 +924,16 @@ fn safe_raw_ptrs(x: u32) -> (*const u32, *mut usize)
     let x: u32; // arg #1
     let _2: *const u32; // anonymous local
     let _3: *mut usize; // anonymous local
-    let _4: *mut usize; // anonymous local
-    let _5: *mut usize; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
     _2 = &raw const x
     storage_live(_3)
-    storage_live(_4)
-    storage_live(_5)
-    _5 = &raw mut COUNTER
-    _4 = move _5
-    _3 = &raw mut (*_4)
+    _3 = &raw mut COUNTER
     _0 = (move _2, move _3)
     storage_dead(_3)
     storage_dead(_2)
-    storage_dead(_4)
     storage_dead(x)
-    storage_dead(_5)
     return
 }
 
@@ -1083,17 +1027,9 @@ fn safe_write_nested_union_field(bar: Bar)
 fn safe_read_safe_extern_static() -> u32
 {
     let _0: u32; // return
-    let _1: *const u32; // anonymous local
-    let _2: *const u32; // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    storage_live(_2)
-    _2 = &raw const SAFE_EXTERN_STATIC
-    _1 = move _2
-    _0 = copy (*_1)
-    storage_dead(_1)
-    storage_dead(_2)
+    _0 = copy SAFE_EXTERN_STATIC
     return
 }
 
@@ -1101,17 +1037,9 @@ fn safe_read_safe_extern_static() -> u32
 fn safe_raw_borrow_of_extern_static() -> *const u32
 {
     let _0: *const u32; // return
-    let _1: *const u32; // anonymous local
-    let _2: *const u32; // anonymous local
 
     storage_live(_0)
-    storage_live(_1)
-    storage_live(_2)
-    _2 = &raw const EXTERN_STATIC
-    _1 = move _2
-    _0 = &raw const (*_1)
-    storage_dead(_1)
-    storage_dead(_2)
+    _0 = &raw const EXTERN_STATIC
     return
 }
 

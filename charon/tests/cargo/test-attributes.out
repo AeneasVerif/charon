@@ -764,16 +764,10 @@ pub fn main()
     let _4: [&'40 TestDescAndFn; 3usize]; // anonymous local
     let _5: &'44 TestDescAndFn; // anonymous local
     let _6: &'45 TestDescAndFn; // anonymous local
-    let _7: &'46 TestDescAndFn; // anonymous local
-    let _8: &'47 TestDescAndFn; // anonymous local
-    let _9: &'48 TestDescAndFn; // anonymous local
-    let _10: &'49 TestDescAndFn; // anonymous local
-    let _11: &'50 TestDescAndFn; // anonymous local
-    let _12: &'51 TestDescAndFn; // anonymous local
-    let _13: &'52 TestDescAndFn; // anonymous local
-    let _14: &'53 TestDescAndFn; // anonymous local
-    let _15: &'54 TestDescAndFn; // anonymous local
-    let _16: &'55 TestDescAndFn; // anonymous local
+    let _7: &'47 TestDescAndFn; // anonymous local
+    let _8: &'48 TestDescAndFn; // anonymous local
+    let _9: &'50 TestDescAndFn; // anonymous local
+    let _10: &'51 TestDescAndFn; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -783,31 +777,19 @@ pub fn main()
     storage_live(_4)
     storage_live(_5)
     storage_live(_6)
-    storage_live(_7)
-    storage_live(_14)
-    _14 = &test_attributes::tests::test_foo
-    _7 = move _14
-    _6 = &(*_7)
+    _6 = &test_attributes::tests::test_foo
     _5 = &(*_6)
+    storage_live(_7)
     storage_live(_8)
+    _8 = &test_attributes::tests::test_ignore
+    _7 = &(*_8)
     storage_live(_9)
     storage_live(_10)
-    storage_live(_15)
-    _15 = &test_attributes::tests::test_ignore
-    _10 = move _15
+    _10 = &test_attributes::tests::test_should_panic
     _9 = &(*_10)
-    _8 = &(*_9)
-    storage_live(_11)
-    storage_live(_12)
-    storage_live(_13)
-    storage_live(_16)
-    _16 = &test_attributes::tests::test_should_panic
-    _13 = move _16
-    _12 = &(*_13)
-    _11 = &(*_12)
-    _4 = [move _5, move _8, move _11]
-    storage_dead(_11)
-    storage_dead(_8)
+    _4 = [move _5, move _7, move _9]
+    storage_dead(_9)
+    storage_dead(_7)
     storage_dead(_5)
     _3 = &_4
     _2 = &(*_3)
@@ -816,11 +798,8 @@ pub fn main()
     _0 = test_main_env_args<'68, '69>(move _1)
     ↳⚡ unwind_continue
     storage_dead(_1)
-    storage_dead(_13)
-    storage_dead(_12)
     storage_dead(_10)
-    storage_dead(_9)
-    storage_dead(_7)
+    storage_dead(_8)
     storage_dead(_6)
     storage_dead(_4)
     storage_dead(_3)

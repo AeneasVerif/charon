@@ -53,48 +53,24 @@ fn main()
     let _0: (); // return
     let _1: (&'16 u32, &'17 u32, &'18 u32); // anonymous local
     let _2: &'25 u32; // anonymous local
-    let _3: &'28 &'29 u32; // anonymous local
-    let _4: &'30 u32; // anonymous local
-    let _5: &'31 &'32 u32; // anonymous local
-    let _6: &'33 u32; // anonymous local
-    let _7: &'34 &'35 u32; // anonymous local
-    let _8: &'36 &'37 u32; // anonymous local
-    let _9: &'40 &'41 u32; // anonymous local
-    let _10: &'44 &'45 u32; // anonymous local
+    let _3: &'30 u32; // anonymous local
+    let _4: &'33 u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
+    _2 = copy FIRST
     storage_live(_3)
-    storage_live(_8)
-    _8 = &FIRST
-    _3 = move _8
-    _2 = copy (*_3)
+    _3 = copy SECOND
     storage_live(_4)
-    storage_live(_5)
-    storage_live(_9)
-    _9 = &SECOND
-    _5 = move _9
-    _4 = copy (*_5)
-    storage_live(_6)
-    storage_live(_7)
-    storage_live(_10)
-    _10 = &B
-    _7 = move _10
-    _6 = copy (*_7)
-    _1 = (move _2, move _4, move _6)
-    storage_dead(_6)
+    _4 = copy B
+    _1 = (move _2, move _3, move _4)
     storage_dead(_4)
-    storage_dead(_2)
-    storage_dead(_7)
-    storage_dead(_5)
     storage_dead(_3)
+    storage_dead(_2)
     storage_dead(_1)
     _0 = ()
-    storage_dead(_10)
-    storage_dead(_9)
-    storage_dead(_8)
     return
 }
 
