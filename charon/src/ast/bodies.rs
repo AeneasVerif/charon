@@ -12,12 +12,14 @@ use serde_state::SerializeState;
 
 pub mod expressions;
 pub mod places;
+pub mod safety;
 pub mod structured;
 pub mod unstructured;
 pub mod values;
 
 pub use expressions::*;
 pub use places::*;
+pub use safety::*;
 pub use values::*;
 
 /// The body of a function.

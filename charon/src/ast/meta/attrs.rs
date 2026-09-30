@@ -99,6 +99,27 @@ pub struct AttrInfo {
     pub public: bool,
 }
 
+impl Attribute {
+    /// Whether this attribute is unsafe to apply (safety.unsafe-attribute), as listed in
+    /// attributes.safety (<https://doc.rust-lang.org/reference/attributes.html>).
+    pub fn is_unsafe_to_apply(&self) -> bool {
+        use from_rustc::AttributeKind::*;
+        matches!(
+            self,
+            Attribute::Builtin(
+                ExportName { .. }
+                    | LinkSection { .. }
+                    | Naked(..)
+                    | NoMangle(..)
+                    | TargetFeature {
+                        was_forced: true,
+                        ..
+                    }
+            )
+        )
+    }
+}
+
 impl AttrInfo {
     pub fn dummy_private() -> Self {
         AttrInfo {
