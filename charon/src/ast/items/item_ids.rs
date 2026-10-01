@@ -164,6 +164,10 @@ impl TypeDeclRef {
         self.builtin
     }
 
+    pub fn is_builtin(&self) -> bool {
+        self.builtin.is_some()
+    }
+
     /// Whether this refers to `Box`.
     pub fn is_box(&self) -> bool {
         matches!(self.builtin, Some(BuiltinAdt::Box))

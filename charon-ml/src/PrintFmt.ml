@@ -1446,6 +1446,12 @@ and pp_cast_kind (env : fmt_env) (fmt : Format.formatter) (cast : cast_kind) :
   match cast with
   | CastScalar (src, tgt) ->
       Format.fprintf fmt "cast<%a, %a>" pp_scalar_type src pp_scalar_type tgt
+  | CastPtrExposeProvenance (src, tgt) ->
+      Format.fprintf fmt "cast_expose<%a, %a>" (pp_ty env) src pp_scalar_type
+        tgt
+  | CastPtrWithExposedProvenance (src, tgt) ->
+      Format.fprintf fmt "cast_with_exposed<%a, %a>" pp_scalar_type src
+        (pp_ty env) tgt
   | CastFnPtr (src, tgt) | CastRawPtr (src, tgt) ->
       Format.fprintf fmt "cast<%a, %a>" (pp_ty env) src (pp_ty env) tgt
   | CastTransmute (src, tgt) ->

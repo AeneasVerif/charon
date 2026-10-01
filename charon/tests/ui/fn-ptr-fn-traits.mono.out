@@ -981,7 +981,7 @@ pub fn test_dyn_fn(x: u32) -> u32
     let _6: &'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9); // anonymous local
     let _7: (u32,); // anonymous local
     let _8: u32; // anonymous local
-    let _9: unsafe fn(&'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32; // anonymous local
+    let _9: fn(&'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32; // anonymous local
 
     storage_live(_0)
     storage_live(fn_ptr)
@@ -1005,7 +1005,7 @@ pub fn test_dyn_fn(x: u32) -> u32
     _8 = copy x
     _7 = (move _8,)
     storage_live(_9)
-    _9 = cast<*const (), unsafe fn(&'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32>(copy (*_6.metadata).method_call)
+    _9 = cast<*const (), fn(&'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32>(copy (*_6.metadata).method_call)
     _0 = (copy _9)(move _6, move _7)
     ↳⚡ storage_dead(x)
         unwind_continue

@@ -305,23 +305,15 @@ static mut COUNTER: usize = COUNTER()
 fn access_mutable_static()
 {
     let _0: (); // return
-    let _1: *mut usize; // anonymous local
-    let _2: usize; // anonymous local
-    let _3: *mut usize; // anonymous local
+    let _1: usize; // anonymous local
 
     storage_live(_0)
-    storage_live(_2)
-    _0 = ()
     storage_live(_1)
-    storage_live(_3)
-    _3 = &raw mut COUNTER
-    _1 = move _3
-    _2 = copy (*_1) panic.+ const 1usize
-    (*_1) = move _2
-    storage_dead(_1)
     _0 = ()
-    storage_dead(_2)
-    storage_dead(_3)
+    _1 = copy COUNTER panic.+ const 1usize
+    COUNTER = move _1
+    _0 = ()
+    storage_dead(_1)
     return
 }
 

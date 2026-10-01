@@ -310,6 +310,10 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub print_layouts: bool,
+    /// When pretty-printing, add comments that indicate which items and statements are unsafe.
+    #[clap(long)]
+    #[serde(default)]
+    pub print_safety: bool,
     /// The destination directory. Files will be generated as
     /// `<dest_dir>/<crate_name>.{u}llbc` for json and `<dest_dir>/<crate_name>.{u}llbc.postcard`
     /// for postcard, unless `dest_file` is set. `dest_dir` defaults to the current directory.

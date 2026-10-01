@@ -250,6 +250,9 @@ and cli_options = {
   print_layouts : bool;
       (** When pretty-printing, also print the layout of every type declaration.
       *)
+  print_safety : bool;
+      (** When pretty-printing, add comments that indicate which items and
+          statements are unsafe. *)
   dest_dir : path_buf option;
       (** The destination directory. Files will be generated as
           [<dest_dir>/<crate_name>.{u}llbc] for json and

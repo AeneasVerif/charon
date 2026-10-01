@@ -33,7 +33,7 @@ fn main()
     storage_live(_3)
     storage_live(_4)
     _4 = copy x
-    _3 = cast<*const u8, usize>(move _4)
+    _3 = cast_expose<*const u8, usize>(move _4)
     storage_dead(_4)
     storage_dead(_3)
     _0 = ()

@@ -163,6 +163,18 @@ impl<'ctx> ItemRef<'ctx> {
             ItemRef::TraitImpl(d) => d.dyn_visit(f),
         }
     }
+
+    /// Whether this item is unsafe to declare, i.e. whether whoever declares it discharges a proof
+    /// obligation. Note that declaring an `unsafe fn` or `unsafe trait` is safe: the obligation is on the
+    /// callers/implementors respectively.
+    pub fn is_unsafe_to_declare(&self, krate: &TranslatedCrate) -> bool {
+        match self {
+            ItemRef::Fun(decl) => decl.is_unsafe_to_declare(krate),
+            ItemRef::Global(decl) => decl.is_unsafe_to_declare(krate),
+            ItemRef::TraitImpl(decl) => decl.is_unsafe_to_declare(krate),
+            ItemRef::Type(_) | ItemRef::TraitDecl(_) => self.item_meta().is_unsafe_to_declare(),
+        }
+    }
 }
 
 impl<'ctx> ItemRefMut<'ctx> {

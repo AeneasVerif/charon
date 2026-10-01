@@ -118,6 +118,7 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
                         func: FnOperand::Regular(mk_fn_ptr(ctx, fun_id, generics)),
                         args: vec![operand.clone()],
                         dest: place.clone(),
+                        safety: CallSafety::Inherit,
                     },
                     on_unwind: Block::new_unreachable(statement.span),
                 };
@@ -156,6 +157,7 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
                     func: FnOperand::Regular(mk_fn_ptr(ctx, fun_id, generics)),
                     args: vec![operand.clone()],
                     dest: place.clone(),
+                    safety: CallSafety::Inherit,
                 },
                 on_unwind: Block::new_unreachable(statement.span),
             };
@@ -385,6 +387,7 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
                 func: FnOperand::Regular(index_fn_ptr),
                 args,
                 dest: output_var.clone(),
+                safety: CallSafety::Inherit,
             };
             let kind = StatementKind::Call {
                 call: index_call,

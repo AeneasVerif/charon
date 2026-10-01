@@ -698,6 +698,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     func: fn_op,
                     args: vec![Operand::Move(reborrow), Operand::Move(args)],
                     dest: output,
+                    safety: CallSafety::Inherit,
                 });
 
                 Body::Unstructured(builder.build())
@@ -756,6 +757,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             func: fn_op,
             args,
             dest: output,
+            safety: CallSafety::Inherit,
         });
 
         Ok(Body::Unstructured(builder.build()))
@@ -803,6 +805,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             func: FnOperand::Dynamic(fn_ptr),
             args,
             dest: output,
+            safety: CallSafety::Inherit,
         });
         Ok(Body::Unstructured(builder.build()))
     }
@@ -994,6 +997,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 func: fn_op,
                 args: vec![Operand::Move(state), Operand::Move(args_tupled)],
                 dest: output,
+                safety: CallSafety::Inherit,
             });
 
             Body::Unstructured(builder.build())

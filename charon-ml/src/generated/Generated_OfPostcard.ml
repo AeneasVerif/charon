@@ -365,7 +365,18 @@ and call_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (let* func = fn_operand_of_postcard ctx st in
      let* args = list_of_postcard operand_of_postcard ctx st in
      let* dest = place_of_postcard ctx st in
-     Ok ({ func; args; dest } : call))
+     let* safety = call_safety_of_postcard ctx st in
+     Ok ({ func; args; dest; safety } : call))
+
+and call_safety_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (call_safety, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok Inherit
+     | 1 -> Ok Safe
+     | 2 -> Ok Unsafe
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and cast_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (cast_kind, string) result =
@@ -382,18 +393,26 @@ and cast_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (CastRawPtr (_0, _1))
      | 2 ->
          let* _0 = ty_of_postcard ctx st in
+         let* _1 = scalar_type_of_postcard ctx st in
+         Ok (CastPtrExposeProvenance (_0, _1))
+     | 3 ->
+         let* _0 = scalar_type_of_postcard ctx st in
+         let* _1 = ty_of_postcard ctx st in
+         Ok (CastPtrWithExposedProvenance (_0, _1))
+     | 4 ->
+         let* _0 = ty_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
          Ok (CastFnPtr (_0, _1))
-     | 3 ->
+     | 5 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
          let* _2 = unsizing_metadata_of_postcard ctx st in
          Ok (CastUnsize (_0, _1, _2))
-     | 4 ->
+     | 6 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
          Ok (CastTransmute (_0, _1))
-     | 5 ->
+     | 7 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
          Ok (CastConcretize (_0, _1))
@@ -1891,6 +1910,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* print_built_llbc = bool_of_postcard ctx st in
      let* print_llbc = bool_of_postcard ctx st in
      let* print_layouts = bool_of_postcard ctx st in
+     let* print_safety = bool_of_postcard ctx st in
      let* dest_dir = option_of_postcard path_buf_of_postcard ctx st in
      let* dest_file = option_of_postcard path_buf_of_postcard ctx st in
      let* no_dedup_serialized_ast = bool_of_postcard ctx st in
@@ -1955,6 +1975,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           print_built_llbc;
           print_llbc;
           print_layouts;
+          print_safety;
           dest_dir;
           dest_file;
           no_dedup_serialized_ast;

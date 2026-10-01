@@ -27,6 +27,9 @@ pub trait AstFormatter: Sized {
     fn include_layouts(&self) -> bool {
         false
     }
+    fn include_safety(&self) -> bool {
+        false
+    }
     fn hide_storage_statements(&self) -> bool {
         false
     }
@@ -199,6 +202,7 @@ pub trait AstFormatter: Sized {
 pub struct FmtCtx<'a> {
     pub translated: Option<&'a TranslatedCrate>,
     pub include_layouts: bool,
+    pub include_safety: bool,
     pub hide_storage_statements: bool,
     pub current_type: Option<TypeDeclId>,
     /// Generics form a stack, where each binder introduces a new level. For DeBruijn indices to
@@ -220,6 +224,9 @@ impl<'c> AstFormatter for FmtCtx<'c> {
 
     fn include_layouts(&self) -> bool {
         self.include_layouts
+    }
+    fn include_safety(&self) -> bool {
+        self.include_safety
     }
     fn hide_storage_statements(&self) -> bool {
         self.hide_storage_statements
@@ -369,6 +376,7 @@ impl<'a> FmtCtx<'a> {
         FmtCtx {
             translated: self.translated,
             include_layouts: self.include_layouts,
+            include_safety: self.include_safety,
             hide_storage_statements: self.hide_storage_statements,
             current_type: self.current_type,
             generics: self.generics.clone(),

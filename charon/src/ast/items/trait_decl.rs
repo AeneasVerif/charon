@@ -139,6 +139,11 @@ impl TraitDecl {
     pub fn methods(&self) -> impl Iterator<Item = &Binder<TraitMethod>> {
         self.methods.iter()
     }
+
+    /// Whether this trait is unsafe to implement, because it is declared `unsafe` (safety.unsafe-impl).
+    pub fn is_unsafe_to_implement(&self, _krate: &TranslatedCrate) -> bool {
+        self.is_unsafe
+    }
 }
 
 impl Binder<TraitAssocTy> {

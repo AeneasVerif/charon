@@ -378,11 +378,23 @@ and byte_of_json (ctx : of_json_ctx) (js : json) : (byte, string) result =
 and call_of_json (ctx : of_json_ctx) (js : json) : (call, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("func", func); ("args", args); ("dest", dest) ] ->
+    | `Assoc
+        [ ("func", func); ("args", args); ("dest", dest); ("safety", safety) ]
+      ->
         let* func = fn_operand_of_json ctx func in
         let* args = list_of_json operand_of_json ctx args in
         let* dest = place_of_json ctx dest in
-        Ok ({ func; args; dest } : call)
+        let* safety = call_safety_of_json ctx safety in
+        Ok ({ func; args; dest; safety } : call)
+    | _ -> Error "")
+
+and call_safety_of_json (ctx : of_json_ctx) (js : json) :
+    (call_safety, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Inherit" -> Ok Inherit
+    | `String "Safe" -> Ok Safe
+    | `String "Unsafe" -> Ok Unsafe
     | _ -> Error "")
 
 and cast_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -397,6 +409,14 @@ and cast_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = ty_of_json ctx _0 in
         let* _1 = ty_of_json ctx _1 in
         Ok (CastRawPtr (_0, _1))
+    | `Assoc [ ("PtrExposeProvenance", `List [ _0; _1 ]) ] ->
+        let* _0 = ty_of_json ctx _0 in
+        let* _1 = scalar_type_of_json ctx _1 in
+        Ok (CastPtrExposeProvenance (_0, _1))
+    | `Assoc [ ("PtrWithExposedProvenance", `List [ _0; _1 ]) ] ->
+        let* _0 = scalar_type_of_json ctx _0 in
+        let* _1 = ty_of_json ctx _1 in
+        Ok (CastPtrWithExposedProvenance (_0, _1))
     | `Assoc [ ("FnPtr", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
         let* _1 = ty_of_json ctx _1 in
@@ -2194,6 +2214,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("print_built_llbc", print_built_llbc);
           ("print_llbc", print_llbc);
           ("print_layouts", print_layouts);
+          ("print_safety", print_safety);
           ("dest_dir", dest_dir);
           ("dest_file", dest_file);
           ("no_dedup_serialized_ast", no_dedup_serialized_ast);
@@ -2271,6 +2292,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* print_built_llbc = bool_of_json ctx print_built_llbc in
         let* print_llbc = bool_of_json ctx print_llbc in
         let* print_layouts = bool_of_json ctx print_layouts in
+        let* print_safety = bool_of_json ctx print_safety in
         let* dest_dir = option_of_json path_buf_of_json ctx dest_dir in
         let* dest_file = option_of_json path_buf_of_json ctx dest_file in
         let* no_dedup_serialized_ast =
@@ -2339,6 +2361,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              print_built_llbc;
              print_llbc;
              print_layouts;
+             print_safety;
              dest_dir;
              dest_file;
              no_dedup_serialized_ast;

@@ -338,6 +338,7 @@ impl<'a> IntoFormatter for &'a TranslatedCrate {
         FmtCtx {
             translated: Some(self),
             include_layouts: self.options.print_layouts,
+            include_safety: self.options.print_safety,
             ..Default::default()
         }
     }

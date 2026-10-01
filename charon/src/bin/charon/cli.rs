@@ -41,6 +41,9 @@ pub struct PrettyPrintArgs {
     /// Also print the layout of every type declaration.
     #[arg(long)]
     pub include_layouts: bool,
+    /// Add comments that indicate which items and statements are unsafe.
+    #[arg(long)]
+    pub include_safety: bool,
     /// Hide `StorageLive` and `StorageDead` statements.
     #[arg(long)]
     pub hide_storage_statements: bool,

@@ -177,10 +177,19 @@ pub enum UnOp {
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Cast"))]
 pub enum CastKind {
-    /// Conversion between types in `{Integer, Bool}`
-    /// Remark: for now we don't support conversions with Char.
+    /// Conversion between scalar types.
+    /// See <https://doc.rust-lang.org/reference/expressions/operator-expr.html#r-expr.as.numeric>
     Scalar(ScalarTy, ScalarTy),
+    /// A conversion between pointer and function pointer types.
     RawPtr(Ty, Ty),
+    /// Converts a pointer or function pointer to an address, exposing its provenance.
+    /// See <https://doc.rust-lang.org/std/primitive.pointer.html#method.expose_provenance>.
+    PtrExposeProvenance(Ty, ScalarTy),
+    /// Converts an address to a pointer, which picks up exposed provenance.
+    /// See <https://doc.rust-lang.org/std/ptr/fn.with_exposed_provenance.html>.
+    PtrWithExposedProvenance(ScalarTy, Ty),
+    /// Cast into a function pointer. The source may be a function item or an unsafe function pointer
+    /// that is made safe.
     FnPtr(Ty, Ty),
     /// [Unsize coercion](https://doc.rust-lang.org/std/ops/trait.CoerceUnsized.html). This is
     /// either `[T; N]` -> `[T]` or `T: Trait` -> `dyn Trait` coercions, behind a pointer
