@@ -263,8 +263,7 @@ and binop_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 18 ->
          let* _0 = overflow_mode_of_postcard ctx st in
          Ok (Shr _0)
-     | 19 -> Ok Offset
-     | 20 -> Ok Cmp
+     | 19 -> Ok Cmp
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and binder_of_postcard :
@@ -1082,6 +1081,11 @@ and projection_elem_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* to_ = box_of_postcard operand_of_postcard ctx st in
          let* from_end = bool_of_postcard ctx st in
          Ok (Subslice (from, to_, from_end))
+     | 5 ->
+         let* bytes = box_of_postcard operand_of_postcard ctx st in
+         let* in_bounds = bool_of_postcard ctx st in
+         let* ty = ty_of_postcard ctx st in
+         Ok (Offset (bytes, in_bounds, ty))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and provenance_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

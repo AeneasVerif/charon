@@ -660,6 +660,20 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                         offset,
                         from_end: false,
                     } => mb::index(subplace_expr, self.operand(span, offset)?),
+                    ProjectionElem::Offset {
+                        bytes, in_bounds, ..
+                    } => {
+                        let meta_kind = self.metadata_kind(span, subplace.ty())?;
+                        let pointer = mb::addr_of(subplace_expr, mb::raw_ptr_ty(meta_kind));
+                        let in_bounds = match in_bounds {
+                            true => mb::InBounds::Yes,
+                            false => mb::InBounds::No,
+                        };
+                        mb::deref(
+                            mb::ptr_offset(pointer, self.operand(span, bytes)?, in_bounds),
+                            self.ty(span, &place.ty)?,
+                        )
+                    }
                     ProjectionElem::Index { from_end: true, .. }
                     | ProjectionElem::Subslice { .. }
                     | ProjectionElem::PtrMetadata => {
@@ -791,7 +805,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         right: &Operand,
     ) -> Result<mini::ValueExpr> {
         let left_value = self.operand(span, left)?;
-        let mut right_value = self.operand(span, right)?;
+        let right_value = self.operand(span, right)?;
 
         let overflowing_op = |mode, regular, unchecked| {
             Ok(match mode {
@@ -844,24 +858,6 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 mini::IntBinOp::ShrUnchecked,
             )?),
             BinOp::Cmp => mini::BinOp::Rel(mini::RelOp::Cmp),
-            BinOp::Offset => {
-                let pointee = left
-                    .ty()
-                    .builtin_deref(self.krate)
-                    .ok_or("pointer offset on a non-pointer")
-                    .context(span)?;
-                let (size, _) = self.size_and_align(span, pointee)?;
-                let size = mini::ValueExpr::Constant(
-                    mini::Constant::Int(mini::Int::from(size)),
-                    self.ty(span, right.ty())?,
-                );
-                right_value = mini::ValueExpr::BinOp {
-                    operator: mini::BinOp::Int(mini::IntBinOp::MulUnchecked),
-                    left: mini::GcCow::new(right_value),
-                    right: mini::GcCow::new(size),
-                };
-                mini::BinOp::PtrOffset { inbounds: true }
-            }
         };
 
         if left.ty().is_bool() && matches!(operator, mini::BinOp::Int(_)) {
