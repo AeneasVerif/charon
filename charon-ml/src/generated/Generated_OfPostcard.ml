@@ -581,7 +581,7 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          Ok (CFnPtr _0)
      | 12 ->
          let* _0 = constant_expr_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
+         let* _1 = cast_kind_of_postcard ctx st in
          Ok (CCast (_0, _1))
      | 13 ->
          let* _0 = big_uint_of_postcard ctx st in

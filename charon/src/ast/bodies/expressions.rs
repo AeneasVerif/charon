@@ -170,7 +170,7 @@ pub enum UnOp {
 
 /// For all the variants: the first type gives the source type, the second one gives
 /// the destination type.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(EnumIsA, VariantName)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Cast"))]

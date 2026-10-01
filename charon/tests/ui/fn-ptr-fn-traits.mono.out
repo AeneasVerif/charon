@@ -148,7 +148,7 @@ unsafe fn {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u3
 }
 
 // Full name: {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
-vtable {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::FnOnce::{vtable} = core::ops::function::FnOnce::{vtable} { size: size_of::<fn(u32) -> u32>(), align: align_of::<fn(u32) -> u32>(), drop: cast<*const ()>(fnptr({impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_>)), method_call_once: cast<*const ()>(fnptr({impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32>)), super_trait_0: &core::marker::MetaSized::{vtable}::<fn(u32) -> u32> }
+vtable {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::FnOnce::{vtable} = core::ops::function::FnOnce::{vtable} { size: size_of::<fn(u32) -> u32>(), align: align_of::<fn(u32) -> u32>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<(u32,), Output = u32>)), *const ()>(fnptr({impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_>)), method_call_once: cast<extern "rust-call" fn(*mut (dyn FnOnce<(u32,), Output = u32>), (u32,)) -> u32, *const ()>(fnptr({impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32>)), super_trait_0: &core::marker::MetaSized::{vtable}::<fn(u32) -> u32> }
 
 // Full name: {impl FnMut<(u32,)> for fn(u32) -> u32}::call_mut::<u32, u32>
 fn call_mut::<u32, u32><'_0>(fn_ptr: &'_0 mut fn(u32) -> u32, args: (u32,)) -> u32
@@ -206,7 +206,7 @@ unsafe fn {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32
 }
 
 // Full name: {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
-vtable {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::FnMut::{vtable} = core::ops::function::FnMut::{vtable} { size: size_of::<fn(u32) -> u32>(), align: align_of::<fn(u32) -> u32>(), drop: cast<*const ()>(fnptr({impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_>)), method_call_mut: cast<*const ()>(fnptr({impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32><'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<fn(u32) -> u32>, super_trait_1: &{impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32> }
+vtable {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::FnMut::{vtable} = core::ops::function::FnMut::{vtable} { size: size_of::<fn(u32) -> u32>(), align: align_of::<fn(u32) -> u32>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32>)), *const ()>(fnptr({impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_>)), method_call_mut: cast<extern "rust-call" fn<'_0_1>(&'_0_1 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32>), (u32,)) -> u32, *const ()>(fnptr({impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32><'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<fn(u32) -> u32>, super_trait_1: &{impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32> }
 
 // Full name: {impl Fn<(u32,)> for fn(u32) -> u32}::call::<u32, u32>
 fn call::<u32, u32><'_0>(fn_ptr: &'_0 fn(u32) -> u32, args: (u32,)) -> u32
@@ -264,7 +264,7 @@ unsafe fn {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'
 }
 
 // Full name: {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
-vtable {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::Fn::{vtable} = core::ops::function::Fn::{vtable} { size: size_of::<fn(u32) -> u32>(), align: align_of::<fn(u32) -> u32>(), drop: cast<*const ()>(fnptr({impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_>)), method_call: cast<*const ()>(fnptr({impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32><'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<fn(u32) -> u32>, super_trait_1: &{impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32> }
+vtable {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::Fn::{vtable} = core::ops::function::Fn::{vtable} { size: size_of::<fn(u32) -> u32>(), align: align_of::<fn(u32) -> u32>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32>)), *const ()>(fnptr({impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_>)), method_call: cast<extern "rust-call" fn<'_0_1>(&'_0_1 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32>), (u32,)) -> u32, *const ()>(fnptr({impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32><'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<fn(u32) -> u32>, super_trait_1: &{impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32> }
 
 // Full name: {impl FnOnce<(u32,)> for fn(u32) -> u32}
 impl FnOnce<(u32,)> for fn(u32) -> u32 {

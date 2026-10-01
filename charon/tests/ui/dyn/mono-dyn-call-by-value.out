@@ -157,7 +157,7 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn T))
 }
 
 // Full name: test_crate::{impl T for ()}::{vtable}
-vtable impl_T_for_unit::{vtable}: test_crate::T::{vtable} = test_crate::T::{vtable} { size: size_of::<()>(), align: align_of::<()>(), drop: cast<*const ()>(fnptr({vtable_drop_shim}<'_>)), method_by_ref: cast<*const ()>(fnptr(impl_T_for_unit::by_ref::{vtable_method}<'_>)), method_by_val: cast<*const ()>(fnptr(impl_T_for_unit::by_val::{vtable_method})), super_trait_0: &core::marker::MetaSized::{vtable}::<()> }
+vtable impl_T_for_unit::{vtable}: test_crate::T::{vtable} = test_crate::T::{vtable} { size: size_of::<()>(), align: align_of::<()>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn T)), *const ()>(fnptr({vtable_drop_shim}<'_>)), method_by_ref: cast<fn<'_0_1>(&'_0_1 (dyn T)), *const ()>(fnptr(impl_T_for_unit::by_ref::{vtable_method}<'_>)), method_by_val: cast<fn(*mut (dyn T)), *const ()>(fnptr(impl_T_for_unit::by_val::{vtable_method})), super_trait_0: &core::marker::MetaSized::{vtable}::<()> }
 
 // Full name: test_crate::{impl T for ()}
 impl "impl_T_for_unit" T for () {

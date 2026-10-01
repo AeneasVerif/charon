@@ -640,7 +640,7 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (CFnPtr _0)
     | `Assoc [ ("Cast", `List [ _0; _1 ]) ] ->
         let* _0 = constant_expr_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
+        let* _1 = cast_kind_of_json ctx _1 in
         Ok (CCast (_0, _1))
     | `Assoc [ ("PtrNoProvenance", _0) ] ->
         let* _0 = big_int_of_json ctx _0 in

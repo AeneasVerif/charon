@@ -1082,8 +1082,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                             .expect("vtable trait must be dyn-compatible");
                         let dyn_self = self.translate_ty(span, dyn_self)?;
                         let shim_ty = TyKind::FnPtr(self.drop_glue_fn_ptr_sig(dyn_self)).into_ty();
-                        let shim = ConstantExpr::new(ConstantExprKind::FnPtr(drop_shim), shim_ty);
-                        mk(ConstantExprKind::Cast(shim, ty.clone()))
+                        let shim =
+                            ConstantExpr::new(ConstantExprKind::FnPtr(drop_shim), shim_ty.clone());
+                        mk(ConstantExprKind::Cast(
+                            shim,
+                            CastKind::FnPtr(shim_ty, ty.clone()),
+                        ))
                     } else {
                         mk(ConstantExprKind::FnPtr(drop_shim))
                     }
@@ -1100,8 +1104,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         VtableMethodValue::Const(method) => mk(ConstantExprKind::FnPtr(method)),
                         VtableMethodValue::Cast(cast_ty, method) => {
                             let method =
-                                ConstantExpr::new(ConstantExprKind::FnPtr(method), cast_ty);
-                            mk(ConstantExprKind::Cast(method, ty.clone()))
+                                ConstantExpr::new(ConstantExprKind::FnPtr(method), cast_ty.clone());
+                            mk(ConstantExprKind::Cast(
+                                method,
+                                CastKind::FnPtr(cast_ty, ty.clone()),
+                            ))
                         }
                     }
                 }
