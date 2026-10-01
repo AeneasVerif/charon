@@ -713,14 +713,18 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             _ => panic!("Unexpected def for constant: {def:?}"),
         };
 
-        // With `--consts=values`, try to evaluate the constant/static into a value. This
-        // isn't always possible (e.g. for generic constants or recursive statics), in which
-        // case we fall back to a call to the initializer below. Globals that stand for an
-        // anonymous allocation have no initializer, so they are always evaluated.
+        // Try to evaluate the constant/static into a value if requested. This isn't always
+        // possible (e.g. for generic constants or recursive statics), in which case we fall back
+        // to a call to the initializer below. Globals that stand for an anonymous allocation have
+        // no initializer, so they are always evaluated.
         let is_anon_alloc = matches!(def.def_id().base, hax::DefIdBase::Alloc(..));
-        let value = if (matches!(self.options.consts, ConstHandling::Values) || is_anon_alloc)
-            && let Some(evaluated) = self.evaluate_const_def(def)
-        {
+        let evaluated = match self.options.consts {
+            ConstHandling::Bytes => self.evaluate_const_def_as_bytes(def),
+            ConstHandling::Values => self.evaluate_const_def(def),
+            ConstHandling::Initializers if is_anon_alloc => self.evaluate_const_def(def),
+            ConstHandling::Initializers => None,
+        };
+        let value = if let Some(evaluated) = evaluated {
             self.translate_constant_expr(span, &evaluated)?
         } else {
             // Default: the value is a call to the initializer function, which uses the same

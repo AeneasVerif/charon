@@ -1678,8 +1678,70 @@ impl<'tcx> FullDef<'tcx> {
         }
     }
 
+    /// Evaluate the value of a `Const` or `AssocConst` item as raw memory.
+    pub fn const_value_as_raw_memory<S>(&self, s: &S) -> Option<ConstantExpr>
+    where
+        S: BaseState<'tcx>,
+    {
+        match self.kind() {
+            FullDefKind::Const(_) | FullDefKind::AssocConst(_) => {}
+            _ => panic!("expected a Const or AssocConst definition"),
+        }
+        let s = &s.with_hax_owner(self.def_id());
+        let tcx = s.base().tcx;
+        let args = self.this().rustc_args(s);
+        let (def_id, promoted) = match self.def_id().base {
+            DefIdBase::Real(def_id) => (def_id, None),
+            DefIdBase::Promoted(def_id, promoted) => (def_id, Some(promoted)),
+            _ => return None,
+        };
+        let span = self
+            .source_span
+            .map_or_else(|| tcx.def_span(def_id), Into::into);
+        let uneval = mir::UnevaluatedConst {
+            def: def_id,
+            args,
+            promoted,
+        };
+        let (val, ty) = match tcx.const_eval_resolve(s.typing_env(), uneval, span) {
+            Ok(val) => {
+                let ty = if let Some(promoted) = promoted {
+                    get_promoted_mir(tcx, def_id, promoted).local_decls[mir::Local::ZERO].ty
+                } else {
+                    self.def_id()
+                        .type_of(s)
+                        .instantiate_identity()
+                        .skip_normalization()
+                };
+                let ty = substitute(tcx, s.typing_env(), Some(args), ty);
+                (val, ty)
+            }
+            Err(_) if promoted.is_none() => {
+                let (val, ty) = tcx.trivial_const(def_id)?;
+                (val, substitute(tcx, s.typing_env(), Some(args), ty))
+            }
+            Err(_) => return None,
+        };
+        const_value_to_raw_memory(s, ty, val, span).discard_err()
+    }
+
     /// Evaluate the initializer of a `Static` item.
     pub fn static_value<S>(&self, s: &S) -> Option<ConstantExpr>
+    where
+        S: BaseState<'tcx>,
+    {
+        self.static_value_inner(s, false)
+    }
+
+    /// Evaluate the initializer of a `Static` item as raw memory.
+    pub fn static_value_as_raw_memory<S>(&self, s: &S) -> Option<ConstantExpr>
+    where
+        S: BaseState<'tcx>,
+    {
+        self.static_value_inner(s, true)
+    }
+
+    fn static_value_inner<S>(&self, s: &S, raw_memory: bool) -> Option<ConstantExpr>
     where
         S: BaseState<'tcx>,
     {
@@ -1728,7 +1790,12 @@ impl<'tcx> FullDef<'tcx> {
             alloc_id: s.base().tcx.reserve_and_set_memory_alloc(alloc),
             offset: rustc_abi::Size::ZERO,
         };
-        const_value_to_constant_expr(s, ty, val, s.base().tcx.def_span(def_id)).discard_err()
+        let span = s.base().tcx.def_span(def_id);
+        if raw_memory {
+            const_value_to_raw_memory(s, ty, val, span).discard_err()
+        } else {
+            const_value_to_constant_expr(s, ty, val, span).discard_err()
+        }
     }
 
     /// Returns the generics and predicates for definitions that have those.

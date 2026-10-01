@@ -1131,7 +1131,10 @@ pub fn translate<'tcx>(
         tcx,
         hax::options::Options {
             inline_anon_consts: !translate_options.raw_consts,
-            anon_allocs_as_globals: matches!(translate_options.consts, ConstHandling::Values),
+            anon_allocs_as_globals: matches!(
+                translate_options.consts,
+                ConstHandling::Values | ConstHandling::Bytes
+            ),
         },
         hax::options::BoundsOptions {
             add_destruct_bounds: translate_options.add_destruct_bounds,

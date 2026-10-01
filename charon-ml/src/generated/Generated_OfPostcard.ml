@@ -2031,6 +2031,7 @@ and const_handling_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      match __tag with
      | 0 -> Ok Initializers
      | 1 -> Ok Values
+     | 2 -> Ok Bytes
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and declaration_group_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)

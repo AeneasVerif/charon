@@ -2433,6 +2433,7 @@ and const_handling_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `String "Initializers" -> Ok Initializers
     | `String "Values" -> Ok Values
+    | `String "Bytes" -> Ok Bytes
     | _ -> Error "")
 
 and declaration_group_of_json (ctx : of_json_ctx) (js : json) :

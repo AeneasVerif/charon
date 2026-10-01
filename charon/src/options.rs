@@ -251,10 +251,9 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub raw_consts: bool,
-    /// How to handle constants and statics: whether they should be represented as a call to their
-    /// initializer function, or whether we should attempt to evaluate them into a value. When
-    /// evaluation isn't possible (e.g. the constant is generic, or for recursive statics), we fall
-    /// back to the initializer call.
+    /// How to represent constants and statics: as a call to their initializer function, as an
+    /// evaluated value, or as raw bytes. This is always best-effort: in some cases we only get the
+    /// evaluated constant, and in others we cannot evaluate the constant and keep the initializer.
     #[clap(long)]
     #[serde(default)]
     pub consts: Option<ConstHandling>,
@@ -433,6 +432,9 @@ pub enum ConstHandling {
     /// Try evaluating consts and statics to their final value. If evaluation fails, we fall back to the
     /// initializer call.
     Values,
+    /// Try evaluating consts and statics to raw bytes, using `ConstantExprKind::RawMemory`. If
+    /// evaluation fails, we fall back to the initializer call.
+    Bytes,
 }
 
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -744,8 +746,7 @@ pub struct TranslateOptions {
     pub no_gen_tuple_structs: bool,
     /// Don't inline or evaluate constants.
     pub raw_consts: bool,
-    /// Whether to evaluate the value of named constants and statics, or to keep a call
-    /// to their initializer function.
+    /// How much to evaluate constants and statics.
     pub consts: ConstHandling,
     /// Replace string literal constants with a constant u8 array that gets unsized,
     /// expliciting the fact a string constant has a hidden reference.

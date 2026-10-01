@@ -1,5 +1,6 @@
 use std::{collections::HashMap, mem};
 
+use crate::options::ConstHandling;
 use crate::transform::CowBox;
 use crate::transform::{TransformCtx, ctx::UllbcPass};
 use crate::ullbc_ast::*;
@@ -23,7 +24,9 @@ impl Transform {
 }
 impl UllbcPass for Transform {
     fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
-        !options.raw_consts && !self.anon_consts.is_empty()
+        !options.raw_consts
+            && options.consts != ConstHandling::Bytes
+            && !self.anon_consts.is_empty()
     }
     fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ullbc_ast::ExprBody) {
         for block_id in body.body.indices() {
