@@ -1,0 +1,60 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: test_crate::Wrapper
+pub struct Wrapper<T>
+where
+    TraitClause0: (T: Sized),
+{
+  _0: T,
+}
+
+// Full name: test_crate::Parent
+pub trait Parent<Self, T>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
+    vtable: test_crate::Parent::{vtable}<T>
+}
+
+// Full name: test_crate::Child
+pub trait Child<Self, T>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Parent<Wrapper<T>[Self::ImpliedClause2]>)
+    proof ImpliedClause2: (T: Sized)
+    vtable: test_crate::Child::{vtable}<T>
+}
+
+// Full name: test_crate::{impl Parent<Wrapper<u8>[{built_in impl Sized for u8}]> for ()}
+impl "impl_Parent_Wrapper_for_unit" Parent<Wrapper<u8>[{built_in impl Sized for u8}]> for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: (Wrapper<u8>[{built_in impl Sized for u8}]: Sized) = {built_in impl Sized for Wrapper<u8>[{built_in impl Sized for u8}]}
+    vtable: lazy
+}
+
+// Full name: test_crate::{impl Child<u8> for ()}
+impl "impl_Child_u8_for_unit" Child<u8> for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: ((): Parent<Wrapper<u8>[{built_in impl Sized for u8}]>) = impl_Parent_Wrapper_for_unit
+    proof ImpliedClause2: (u8: Sized) = {built_in impl Sized for u8}
+    vtable: lazy
+}
+
+
+
