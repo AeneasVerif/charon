@@ -759,7 +759,7 @@ fn rename_attribute() -> anyhow::Result<()> {
 #[test]
 fn declaration_groups() -> anyhow::Result<()> {
     let crate_data = translate(
-        r#"
+        r#"//@ charon-arg=--reconstruct-panic-calls
         fn foo() {
             panic!()
         }
@@ -770,8 +770,9 @@ fn declaration_groups() -> anyhow::Result<()> {
         "#,
     )?;
 
-    // There are 2 function items: one for `foo`, and one for the initializer of `Trait::FOO`.
-    assert_eq!(crate_data.fun_decls.iter().count(), 2);
+    // There are 4 function items: `foo`, the initializer of `Trait::FOO`, and two dependencies of
+    // the panic call.
+    assert_eq!(crate_data.fun_decls.iter().count(), 4);
     let initializer = crate_data
         .fun_decls
         .iter()
@@ -789,7 +790,7 @@ fn declaration_groups() -> anyhow::Result<()> {
 
     let decl_groups = crate_data.ordered_decls.unwrap();
     // One of the groups is the declaration of `()`, which every crate has.
-    assert_eq!(decl_groups.len(), 7);
+    assert_eq!(decl_groups.len(), 9);
 
     Ok(())
 }

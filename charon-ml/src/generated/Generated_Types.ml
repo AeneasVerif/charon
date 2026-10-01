@@ -869,6 +869,7 @@ and field_predecessor = PredecessorField of field_id | PredecessorTag
     } *)
 and impl_elem = ImplElemTy of ty binder | ImplElemTrait of trait_impl_id
 
+(** Which marker traits this type implements. *)
 and implements_marker_traits = {
   is_sized : bool;
   is_send : bool;
@@ -1444,8 +1445,8 @@ and type_decl = {
   ptr_metadata : ptr_metadata;
       (** The metadata associated with a pointer to the type. *)
   marker_traits : implements_marker_traits option;
-      (** Whether this type implements the built-in marker traits. This is only
-          known for monomorphized types. *)
+      (** Which built-in marker traits are implemented by this type. This is
+          only known for monomorphic types. *)
 }
 
 and type_decl_kind =

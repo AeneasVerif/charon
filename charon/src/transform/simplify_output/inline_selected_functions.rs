@@ -11,6 +11,12 @@ pub struct Transform {
 impl Transform {
     pub fn new(ctx: &mut TransformCtx) -> CowBox<dyn UllbcPass> {
         let panic_name = Name::from_path(names::EXPLICIT_PANIC_NAME);
+        let panic_explicit = ctx
+            .translated
+            .fun_decls
+            .iter_indexed()
+            .find(|(_, decl)| decl.item_meta.name == panic_name)
+            .map(|(id, _)| id);
 
         // Collect and remove the functions that we want to inline.
         let to_inline = ctx
@@ -18,22 +24,28 @@ impl Transform {
             .fun_decls
             .extract(|_, decl| {
                 decl.body.as_unstructured().is_some_and(|body| {
-                    // If the whole body is only a call to this specific panic function.
-                    // FIXME: also check that the name of the function is `panic_cold_explicit`?
+                    // `panic!` generates a function item named `panic_cold_explicit` that calls
+                    // `panic_explicit`. We inline that function.
                     let block = &body.body[START_BLOCK_ID];
-                    let is_local_panic_fn = if body.body.len() == 2
+                    let is_local_panic_fn = if decl.item_meta.name.short_str()
+                        == Some("panic_cold_explicit")
+                        && matches!(body.body.len(), 2 | 3)
                         && block.statements.is_empty()
-                        && let TerminatorKind::Panic { name, on_unwind } = &block.terminator.kind
-                        && name == &panic_name
-                        && let Some(unwind_block) = body.body.get(*on_unwind)
-                        && unwind_block.statements.is_empty()
+                        && let TerminatorKind::Call { call, .. } = &block.terminator.kind
+                        && let FnOperand::Regular(fn_ptr) = &call.func
+                        && let FnPtrKind::Fun(id) = fn_ptr.kind.as_ref()
+                        && Some(*id) == panic_explicit
                     {
-                        matches!(
-                            unwind_block.terminator.kind,
-                            TerminatorKind::UnwindResume
-                                | TerminatorKind::UnwindTerminate
-                                | TerminatorKind::UndefinedBehavior
-                        )
+                        body.body.iter_enumerated().all(|(id, block)| {
+                            id == START_BLOCK_ID
+                                || block.statements.is_empty()
+                                    && matches!(
+                                        block.terminator.kind,
+                                        TerminatorKind::UnwindResume
+                                            | TerminatorKind::UnwindTerminate
+                                            | TerminatorKind::UndefinedBehavior
+                                    )
+                        })
                     } else {
                         false
                     };

@@ -2219,6 +2219,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("consts", consts);
           ("unsized_strings", unsized_strings);
           ("reconstruct_fallible_operations", reconstruct_fallible_operations);
+          ("reconstruct_panic_calls", reconstruct_panic_calls);
           ("reconstruct_asserts", reconstruct_asserts);
           ("reconstruct_matches", reconstruct_matches);
           ("deallocate_all_locals", deallocate_all_locals);
@@ -2297,6 +2298,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* reconstruct_fallible_operations =
           bool_of_json ctx reconstruct_fallible_operations
         in
+        let* reconstruct_panic_calls =
+          bool_of_json ctx reconstruct_panic_calls
+        in
         let* reconstruct_asserts = bool_of_json ctx reconstruct_asserts in
         let* reconstruct_matches = bool_of_json ctx reconstruct_matches in
         let* deallocate_all_locals = bool_of_json ctx deallocate_all_locals in
@@ -2366,6 +2370,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              consts;
              unsized_strings;
              reconstruct_fallible_operations;
+             reconstruct_panic_calls;
              reconstruct_asserts;
              reconstruct_matches;
              deallocate_all_locals;
@@ -3901,7 +3906,9 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* ptr_metadata = ptr_metadata_of_json ctx ptr_metadata in
         let* marker_traits =
-          option_of_json implements_marker_traits_of_json ctx marker_traits
+          option_of_json
+            (box_of_json implements_marker_traits_of_json)
+            ctx marker_traits
         in
         Ok
           ({

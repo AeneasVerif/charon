@@ -206,8 +206,7 @@ where
   force_no_backtrace: bool,
 }
 
-// Full name: core::panicking::panic_nounwind_fmt::runtime::panic_impl
-extern unsafe fn panic_impl<'_0, '_1>(_1: &'_0 PanicInfo<'_1>) -> !
+extern unsafe fn core::panicking::panic_nounwind_fmt::runtime::panic_impl<'_0, '_1>(_1: &'_0 PanicInfo<'_1>) -> !
 where
     RegionOutlives0: '_1: '_0,
 = <extern:panic_impl>
@@ -311,7 +310,7 @@ fn core::panicking::panic_nounwind_fmt::runtime<'_0>(fmt: Arguments<'_0>, force_
         storage_live(_11)
         _11 = &pi
         _10 = &(*_11)
-        _0 = panic_impl<'27, '28>(move _10)
+        _0 = core::panicking::panic_nounwind_fmt::runtime::panic_impl<'27, '28>(move _10)
         ↳⚡ storage_dead(_11)
             storage_dead(_10)
             storage_dead(pi)

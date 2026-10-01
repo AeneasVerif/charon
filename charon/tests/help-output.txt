@@ -155,6 +155,9 @@ Options:
       --reconstruct-fallible-operations
           Replace "bound checks followed by UB-on-overflow operation" with the corresponding panic-on-overflow operation. This loses unwinding information
 
+      --reconstruct-panic-calls
+          Replace calls to built-in panic functions with a `Panic` terminator
+
       --reconstruct-asserts
           Replace `if x { panic() }` with `assert(x)`
 

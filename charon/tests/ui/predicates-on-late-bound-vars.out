@@ -87,6 +87,10 @@ where
     TypeOutlives1: E: '_0,
 = <opaque>
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::wrap
 fn wrap<'a>(x: &'a u32) -> Option<&'a u32>[{built_in impl Sized for &'a u32}]
 {

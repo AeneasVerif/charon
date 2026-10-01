@@ -79,7 +79,7 @@ Most of `charon-ml` is generated automatically from the Rust definitions. This i
 json deserialization functions. To update the generated code, run `make generate-asts`. In some rare
 cases you will need to update `generate-asts/main.rs` yourself.
 
-Any change to the json serialization must also increment the version in `charon/Cargo.toml`. Both
+Any PR that changes the json serialization must also increment the version in `charon/Cargo.toml`. Both
 Rust and OCaml deserializers check the versions before attempting to deserialize, which greatly
 improves error messages. After incrementing the version number, run `make test`; this will copy that
 version number to `CharonVersoin.ml` which is how `charon-ml` gets informed of it.

@@ -75,6 +75,11 @@ pub enum AssertKind {
   Match,
 }
 
+// Full name: core::panicking::assert_failed::<i32, i32>
+#[track_caller]
+pub fn assert_failed::<i32, i32><'_0, '_1, '_2>(_1: AssertKind, _2: &'_0 i32, _3: &'_1 i32, _4: Option::<Arguments::<'_>>) -> !
+= <opaque>
+
 struct () {}
 
 // Full name: {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>
@@ -137,34 +142,35 @@ fn impl_Fn_for_closure::call<'_0>(_1: &'_0 test_crate::BAR::{closure}, tupled_ar
     let _10: i32; // anonymous local
     let _11: i32; // anonymous local
     let kind: AssertKind; // local
-    let _13: AssertKind; // anonymous local
-    let _14: &'7 i32; // anonymous local
-    let _15: &'8 i32; // anonymous local
-    let _16: &'9 i32; // anonymous local
-    let _17: &'10 i32; // anonymous local
-    let _18: Option::<Arguments::<'_>>; // anonymous local
-    let _19: &'11 i32; // anonymous local
-    let _20: &'12 i32; // anonymous local
-    let _21: &'15 i32; // anonymous local
-    let _22: i32; // anonymous local
+    let _13: !; // anonymous local
+    let _14: AssertKind; // anonymous local
+    let _15: &'7 i32; // anonymous local
+    let _16: &'8 i32; // anonymous local
+    let _17: &'9 i32; // anonymous local
+    let _18: &'10 i32; // anonymous local
+    let _19: Option::<Arguments::<'_>>; // anonymous local
+    let _20: &'11 i32; // anonymous local
+    let _21: &'12 i32; // anonymous local
+    let _22: &'21 i32; // anonymous local
+    let _23: i32; // anonymous local
 
-    storage_live(_20)
     storage_live(_21)
     storage_live(_22)
-    _22 = const 43i32
-    _21 = &_22
-    _20 = move _21
+    storage_live(_23)
+    _23 = const 43i32
+    _22 = &_23
+    _21 = move _22
     storage_live(_0)
     storage_live(a)
-    storage_live(_19)
+    storage_live(_20)
     _0 = ()
     a = move tupled_args._0
     storage_live(_4)
     storage_live(_5)
     _5 = &a
     storage_live(_6)
-    _19 = move _20
-    _6 = &(*_19)
+    _20 = move _21
+    _6 = &(*_20)
     _4 = (move _5, move _6)
     storage_dead(_6)
     storage_dead(_5)
@@ -187,6 +193,7 @@ fn impl_Fn_for_closure::call<'_0>(_1: &'_0 test_crate::BAR::{closure}, tupled_ar
         storage_dead(right_val)
         storage_dead(left_val)
         storage_dead(_4)
+        storage_dead(_20)
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(_17)
@@ -198,9 +205,9 @@ fn impl_Fn_for_closure::call<'_0>(_1: &'_0 test_crate::BAR::{closure}, tupled_ar
         storage_dead(a)
         storage_dead(tupled_args)
         storage_dead(_1)
+        storage_dead(_23)
         storage_dead(_22)
         storage_dead(_21)
-        storage_dead(_20)
         return
     }
     storage_dead(_11)
@@ -209,33 +216,21 @@ fn impl_Fn_for_closure::call<'_0>(_1: &'_0 test_crate::BAR::{closure}, tupled_ar
     kind = AssertKind::Ne {  }
     fake_read(kind)
     storage_live(_13)
-    _13 = move kind
     storage_live(_14)
+    _14 = move kind
     storage_live(_15)
-    _15 = &(*left_val)
-    _14 = &(*_15)
     storage_live(_16)
+    _16 = &(*left_val)
+    _15 = &(*_16)
     storage_live(_17)
-    _17 = &(*right_val)
-    _16 = &(*_17)
     storage_live(_18)
-    _18 = Option::<Arguments::<'_>>::None {  }
-    storage_dead(_19)
-    storage_dead(_18)
-    storage_dead(_17)
-    storage_dead(_16)
-    storage_dead(_15)
-    storage_dead(_14)
-    storage_dead(_13)
-    storage_dead(kind)
-    storage_dead(a)
-    storage_dead(tupled_args)
-    storage_dead(_1)
-    storage_dead(_22)
-    storage_dead(_21)
-    storage_dead(_20)
-    panic(core::panicking::assert_failed::<i32, i32>)
-    ↳⚡ storage_dead(_19)
+    _18 = &(*right_val)
+    _17 = &(*_18)
+    storage_live(_19)
+    _19 = Option::<Arguments::<'_>>::None {  }
+    _13 = assert_failed::<i32, i32><'18, '19, '20>(move _14, move _15, move _17, move _19)
+    ↳⚡ storage_dead(_20)
+        storage_dead(_19)
         storage_dead(_18)
         storage_dead(_17)
         storage_dead(_16)
@@ -355,34 +350,35 @@ fn {impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::call::<u8><'_0>(_1: &
     let _10: i32; // anonymous local
     let _11: i32; // anonymous local
     let kind: AssertKind; // local
-    let _13: AssertKind; // anonymous local
-    let _14: &'7 i32; // anonymous local
-    let _15: &'8 i32; // anonymous local
-    let _16: &'9 i32; // anonymous local
-    let _17: &'10 i32; // anonymous local
-    let _18: Option::<Arguments::<'_>>; // anonymous local
-    let _19: &'11 i32; // anonymous local
-    let _20: &'12 i32; // anonymous local
-    let _21: &'15 i32; // anonymous local
-    let _22: i32; // anonymous local
+    let _13: !; // anonymous local
+    let _14: AssertKind; // anonymous local
+    let _15: &'7 i32; // anonymous local
+    let _16: &'8 i32; // anonymous local
+    let _17: &'9 i32; // anonymous local
+    let _18: &'10 i32; // anonymous local
+    let _19: Option::<Arguments::<'_>>; // anonymous local
+    let _20: &'11 i32; // anonymous local
+    let _21: &'12 i32; // anonymous local
+    let _22: &'21 i32; // anonymous local
+    let _23: i32; // anonymous local
 
-    storage_live(_20)
     storage_live(_21)
     storage_live(_22)
-    _22 = const 43i32
-    _21 = &_22
-    _20 = move _21
+    storage_live(_23)
+    _23 = const 43i32
+    _22 = &_23
+    _21 = move _22
     storage_live(_0)
     storage_live(a)
-    storage_live(_19)
+    storage_live(_20)
     _0 = ()
     a = move tupled_args._0
     storage_live(_4)
     storage_live(_5)
     _5 = &a
     storage_live(_6)
-    _19 = move _20
-    _6 = &(*_19)
+    _20 = move _21
+    _6 = &(*_20)
     _4 = (move _5, move _6)
     storage_dead(_6)
     storage_dead(_5)
@@ -405,6 +401,7 @@ fn {impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::call::<u8><'_0>(_1: &
         storage_dead(right_val)
         storage_dead(left_val)
         storage_dead(_4)
+        storage_dead(_20)
         storage_dead(_19)
         storage_dead(_18)
         storage_dead(_17)
@@ -416,9 +413,9 @@ fn {impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::call::<u8><'_0>(_1: &
         storage_dead(a)
         storage_dead(tupled_args)
         storage_dead(_1)
+        storage_dead(_23)
         storage_dead(_22)
         storage_dead(_21)
-        storage_dead(_20)
         return
     }
     storage_dead(_11)
@@ -427,33 +424,21 @@ fn {impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::call::<u8><'_0>(_1: &
     kind = AssertKind::Ne {  }
     fake_read(kind)
     storage_live(_13)
-    _13 = move kind
     storage_live(_14)
+    _14 = move kind
     storage_live(_15)
-    _15 = &(*left_val)
-    _14 = &(*_15)
     storage_live(_16)
+    _16 = &(*left_val)
+    _15 = &(*_16)
     storage_live(_17)
-    _17 = &(*right_val)
-    _16 = &(*_17)
     storage_live(_18)
-    _18 = Option::<Arguments::<'_>>::None {  }
-    storage_dead(_19)
-    storage_dead(_18)
-    storage_dead(_17)
-    storage_dead(_16)
-    storage_dead(_15)
-    storage_dead(_14)
-    storage_dead(_13)
-    storage_dead(kind)
-    storage_dead(a)
-    storage_dead(tupled_args)
-    storage_dead(_1)
-    storage_dead(_22)
-    storage_dead(_21)
-    storage_dead(_20)
-    panic(core::panicking::assert_failed::<i32, i32>)
-    ↳⚡ storage_dead(_19)
+    _18 = &(*right_val)
+    _17 = &(*_18)
+    storage_live(_19)
+    _19 = Option::<Arguments::<'_>>::None {  }
+    _13 = assert_failed::<i32, i32><'18, '19, '20>(move _14, move _15, move _17, move _19)
+    ↳⚡ storage_dead(_20)
+        storage_dead(_19)
         storage_dead(_18)
         storage_dead(_17)
         storage_dead(_16)

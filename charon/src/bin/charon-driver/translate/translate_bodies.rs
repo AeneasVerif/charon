@@ -1843,27 +1843,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let generics = hax::erase_free_regions(tcx, generics.skip_binder());
                 let item = &hax::translate_item_ref(&self.hax_state, *def_id, generics);
                 trace!("func: {:?}", item.def_id);
-                // There are actually ~30 lang items relating to panic functions; should we list them all here?
-                let is_panic = [LangItem::Panic, LangItem::PanicFmt, LangItem::BeginPanic]
-                    .into_iter()
-                    .any(|lang_item| tcx.is_lang_item(*def_id, lang_item))
-                    || self.t_ctx.panic_fns.contains(def_id);
-                if is_panic {
-                    let item_src = TransItemSource::from_item(
-                        item,
-                        TransItemSourceKind::Fun,
-                        self.monomorphize(),
-                    );
-                    let name = self.t_ctx.translate_name(&item_src)?;
-                    // If the call is `panic!`, then the target is `None`.
-                    // I don't know in which other cases it can be `None`.
-                    assert!(target.is_none());
-                    // We ignore the arguments.
-                    return Ok(TerminatorKind::Panic { name, on_unwind });
-                } else {
-                    let fn_ptr = self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?;
-                    FnOperand::Regular(fn_ptr)
-                }
+                let fn_ptr = self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?;
+                FnOperand::Regular(fn_ptr)
             }
             _ => {
                 // Call to a function pointer.

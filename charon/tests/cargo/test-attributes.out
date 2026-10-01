@@ -140,6 +140,12 @@ where
   Some { _0: T },
 }
 
+// Full name: core::panicking::panic_fmt
+#[track_caller]
+#[lang_item(PanicFmt)]
+pub fn panic_fmt<'_0>(_1: Arguments<'_0>) -> !
+= <opaque>
+
 // Full name: std::process::ExitCode
 pub opaque type ExitCode
 
@@ -487,14 +493,16 @@ pub static test_attributes::tests::test_ignore: TestDescAndFn = test_attributes:
 fn test_attributes::tests::test_should_panic#1()
 {
     let _0: (); // return
-    let _1: Arguments<'1>; // anonymous local
+    let _1: !; // anonymous local
+    let _2: Arguments<'1>; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = from_str<'2>(const "This test should panic")
+    storage_live(_2)
+    _2 = from_str<'2>(const "This test should panic")
     ↳⚡ unwind_continue
-    panic(core::panicking::panic_fmt)
+    _1 = panic_fmt<'6>(move _2)
     ↳⚡ unwind_continue
 }
 

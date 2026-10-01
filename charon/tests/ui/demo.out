@@ -36,6 +36,10 @@ where
   _1: B,
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::choose
 pub fn choose<'a, T>(b: bool, x: &'a mut T, y: &'a mut T) -> &'a mut T
 where
@@ -247,9 +251,6 @@ where
         CList::CCons => {
         },
         CList::CNil => {
-            storage_dead(_11)
-            storage_dead(i)
-            storage_dead(l)
             panic(core::panicking::panic)
             ↳⚡ storage_dead(_11)
                 storage_dead(i)
@@ -277,7 +278,7 @@ where
         _11 = copy _10 panic.- const 1u32
         _9 = move _11
         storage_dead(_10)
-        _7 = list_nth<'10, T>[TraitClause0](move _8, move _9)
+        _7 = list_nth<'12, T>[TraitClause0](move _8, move _9)
         ↳⚡ storage_dead(_11)
             storage_dead(i)
             storage_dead(l)
@@ -337,9 +338,6 @@ where
         CList::CCons => {
         },
         CList::CNil => {
-            storage_dead(_16)
-            storage_dead(i)
-            storage_dead(l)
             panic(core::panicking::panic)
             ↳⚡ storage_dead(_16)
                 storage_dead(i)
@@ -374,7 +372,7 @@ where
         _16 = copy _15 panic.- const 1u32
         _14 = move _16
         storage_dead(_15)
-        _12 = list_nth_mut<'15, T>[TraitClause0](move _13, move _14)
+        _12 = list_nth_mut<'17, T>[TraitClause0](move _13, move _14)
         ↳⚡ storage_dead(_16)
             storage_dead(i)
             storage_dead(l)
@@ -459,9 +457,6 @@ where
             },
         }
     }
-    storage_dead(_7)
-    storage_dead(i)
-    storage_dead(l)
     panic(core::panicking::panic)
     ↳⚡ storage_dead(_7)
         storage_dead(i)

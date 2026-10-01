@@ -277,6 +277,10 @@ where
     TraitClause1: (I: Iterator),
 = <opaque>
 
+struct str {
+  _0: [u8],
+}
+
 struct (_,)<A> {
   _0: A,
 }

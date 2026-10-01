@@ -220,6 +220,9 @@ and cli_options = {
       (** Replace "bound checks followed by UB-on-overflow operation" with the
           corresponding panic-on-overflow operation. This loses unwinding
           information. *)
+  reconstruct_panic_calls : bool;
+      (** Replace calls to built-in panic functions with a [Panic] terminator.
+      *)
   reconstruct_asserts : bool;
       (** Replace [if x { panic() }] with [assert(x)]. *)
   reconstruct_matches : bool;

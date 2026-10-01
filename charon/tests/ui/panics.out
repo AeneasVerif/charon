@@ -43,7 +43,6 @@ fn panic2()
     _1 = from_str<'2>(const "O no!")
     ↳⚡ storage_dead(_1)
         unwind_continue
-    storage_dead(_1)
     panic(core::panicking::panic_fmt)
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -61,7 +60,6 @@ fn panic3()
     _1 = from_str_nonconst<'2>(const "O no!")
     ↳⚡ storage_dead(_1)
         unwind_continue
-    storage_dead(_1)
     panic(core::panicking::panic_fmt)
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -101,7 +99,6 @@ fn panic5()
         _2 = from_str<'2>(const "assert failed")
         ↳⚡ storage_dead(_2)
             unwind_continue
-        storage_dead(_2)
         panic(core::panicking::panic_fmt)
         ↳⚡ storage_dead(_2)
             unwind_continue
@@ -135,7 +132,6 @@ fn panic7()
     _1 = from_str_nonconst<'2>(const "internal error: entered unreachable code: can't reach this")
     ↳⚡ storage_dead(_1)
         unwind_continue
-    storage_dead(_1)
     panic(core::panicking::panic_fmt)
     ↳⚡ storage_dead(_1)
         unwind_continue

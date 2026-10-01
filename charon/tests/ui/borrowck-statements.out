@@ -274,6 +274,10 @@ where
   _1: B,
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: (_, _)::{impl Destruct for (A, B)}::drop_glue
 unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A, B>(_1: &'_0 mut (A, B))
 where
@@ -333,13 +337,12 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
         },
         _ => {
             storage_dead(_3)
-            storage_dead(input)
             panic(core::panicking::panic)
             ↳⚡ storage_dead(input)
                 unwind_continue
         },
     }
-    set_type(typeof(_3) <= &'6 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}])
+    set_type(typeof(_3) <= &'8 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}])
     storage_live(x)
     x = &((*_3) as variant Either::Left)._0._0
     storage_dead(_3)

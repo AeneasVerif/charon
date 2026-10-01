@@ -1908,6 +1908,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* consts = option_of_postcard const_handling_of_postcard ctx st in
      let* unsized_strings = bool_of_postcard ctx st in
      let* reconstruct_fallible_operations = bool_of_postcard ctx st in
+     let* reconstruct_panic_calls = bool_of_postcard ctx st in
      let* reconstruct_asserts = bool_of_postcard ctx st in
      let* reconstruct_matches = bool_of_postcard ctx st in
      let* deallocate_all_locals = bool_of_postcard ctx st in
@@ -1973,6 +1974,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           consts;
           unsized_strings;
           reconstruct_fallible_operations;
+          reconstruct_panic_calls;
           reconstruct_asserts;
           reconstruct_matches;
           deallocate_all_locals;
@@ -3226,7 +3228,9 @@ and type_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      in
      let* ptr_metadata = ptr_metadata_of_postcard ctx st in
      let* marker_traits =
-       option_of_postcard implements_marker_traits_of_postcard ctx st
+       option_of_postcard
+         (box_of_postcard implements_marker_traits_of_postcard)
+         ctx st
      in
      Ok
        ({

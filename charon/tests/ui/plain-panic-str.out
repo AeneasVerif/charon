@@ -32,7 +32,6 @@ fn main()
     _1 = from_str<'2>(const "O no")
     ↳⚡ storage_dead(_1)
         unwind_continue
-    storage_dead(_1)
     panic(core::panicking::panic_fmt)
     ↳⚡ storage_dead(_1)
         unwind_continue

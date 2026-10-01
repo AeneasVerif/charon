@@ -261,6 +261,10 @@ where
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::slice_pat1
 fn slice_pat1()
 {
@@ -422,7 +426,7 @@ fn slice_pat3()
     let _13: usize; // anonymous local
     let _14: usize; // anonymous local
     let _15: &'10 [i32; 4usize]; // anonymous local
-    let _16: &'13 [i32; 4usize]; // anonymous local
+    let _16: &'15 [i32; 4usize]; // anonymous local
     let _17: [i32; 4usize]; // anonymous local
     let _18: &'_ [i32]; // anonymous local
     let _19: &'_ i32; // anonymous local
