@@ -139,7 +139,7 @@ pub fn shr_into_index<'_0>(x: u64, out: &'_0 mut Wrap)
         _4 = index_mut<'6>(move _5, const 0usize) -> bb2 (unwind: bb1);
     }
 
-    bb1: {
+    bb1 (cleanup): {
         unwind_continue;
     }
 
@@ -181,7 +181,7 @@ pub fn shl_into_index_by_var<'_0>(x: u64, n: u32, out: &'_0 mut Wrap)
         _6 = index_mut<'6>(move _7, const 1usize) -> bb2 (unwind: bb1);
     }
 
-    bb1: {
+    bb1 (cleanup): {
         unwind_continue;
     }
 

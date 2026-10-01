@@ -587,6 +587,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             layout,
             // A vtable struct is always sized
             ptr_metadata: PtrMetadata::None,
+            marker_traits: Some(Box::new(ImplementsMarkerTraits {
+                is_sized: true,
+                is_send: true,
+                is_sync: true,
+                is_freeze: true,
+                is_unpin: true,
+            })),
         })
     }
 }

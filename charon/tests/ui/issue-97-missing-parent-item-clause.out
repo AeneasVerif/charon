@@ -16,6 +16,10 @@ pub trait Sized<Self>
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::Ord
 pub trait Ord<Self>
 {
@@ -43,8 +47,9 @@ where
 
     storage_live(_0)
     _0 = ()
-    storage_dead(self)
     panic(core::panicking::panic)
+    ↳⚡ storage_dead(self)
+        unwind_continue
 }
 
 // Full name: test_crate::{impl Ord for u32}

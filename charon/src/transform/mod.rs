@@ -43,6 +43,7 @@ pub mod resugar {
     pub mod reconstruct_fallible_operations;
     pub mod reconstruct_intrinsics;
     pub mod reconstruct_matches;
+    pub mod reconstruct_panic_calls;
     pub mod reconstruct_static_accesses;
     pub mod reconstruct_vec_boxes;
     pub mod resugar_drops;
@@ -152,6 +153,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         simplify_output::anon_const_to_call::Transform::new(ctx),
         // Inline promoted and inline consts, as well as dummy auto-generated panic functions.
         simplify_output::inline_selected_functions::Transform::new(ctx),
+        // Replace calls to built-in panic functions with `Panic` terminators.
+        resugar::reconstruct_panic_calls::Transform::new(ctx),
         // Remove drop statements that are noops.
         CowBox::Borrowed(&simplify_output::filter_trivial_drops::Transform),
         // Inline all asserts that correspond to dynamic checks into statements.

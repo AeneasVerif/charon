@@ -16,6 +16,10 @@ pub trait Sized<Self>
 
 struct () {}
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: test_crate::HasAssoc
 trait HasAssoc<Self>
 {
@@ -49,6 +53,7 @@ where
 
     storage_live(_0)
     panic(core::panicking::panic)
+    ↳⚡ unwind_continue
 }
 
 

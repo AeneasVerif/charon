@@ -8,7 +8,11 @@ module BlockId = IdGen ()
 
 (** A "basic block", which contains a linear sequence of statements, followed by
     a terminator, which is where non-linear control-flow happens. *)
-type block = { statements : statement list; terminator : terminator }
+type block = {
+  statements : statement list;
+  terminator : terminator;
+  is_cleanup : bool;  (** Whether this block is on an unwind path. *)
+}
 
 and block_id = (BlockId.id[@visitors.opaque])
 and blocks = block list
@@ -93,14 +97,6 @@ and terminator_kind =
           - [fn_ptr]: Reference to the [drop_glue] code to call on drop.
           - [target]
           - [on_unwind] *)
-  | TAssert of assertion * block_id * block_id
-      (** Assert that the given condition holds, and if not, unwind to the given
-          block. This is used for bounds checks, overflow checks, etc.
-
-          Fields:
-          - [assert]
-          - [target]
-          - [on_unwind] *)
   | InlineAsm of string * asm_kind * block_id list * block_id
       (** An inline assembly block. For now we only preserve the template
           string.
@@ -110,9 +106,28 @@ and terminator_kind =
           - [kind]
           - [targets]
           - [on_unwind] *)
-  | Abort of abort_kind  (** Handles panics and impossible cases. *)
-  | Return
+  | TAssert of assertion * block_id * block_id
+      (** Assert that the given condition holds, and if not, unwind to the given
+          block. This is used for bounds checks, overflow checks, etc.
+
+          Fields:
+          - [assert]
+          - [target]
+          - [on_unwind] *)
+  | Panic of name * block_id
+      (** Call to a built-in panicking function.
+
+          Fields:
+          - [name]: The name of the function that was called.
+          - [on_unwind] *)
+  | UnwindTerminate
+      (** Unwinding must stop for ABI reasons or because cleanup code panicked
+          again. *)
   | UnwindResume  (** Unwind out of the current function into its caller. *)
+  | Return
+  | UndefinedBehavior
+      (** Reaching this point is undefined behavior in the Rust abstract
+          machine. *)
 [@@deriving
   show,
   eq,

@@ -57,7 +57,7 @@ use derive_generic_visitor::*;
     ),
     // Types that are completely skipped, even by `ZipAst`.
     skip(
-        DeclarationGroup, PredicateOrigin, TargetInfo, TypeInfo,
+        DeclarationGroup, PredicateOrigin, TargetInfo, TypeInfo, ImplementsMarkerTraits,
         llbc_ast::BlockId, llbc_ast::StatementId,
     ),
     // Types that we unconditionally explore.
@@ -200,7 +200,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
     skip(
         AbortKind, BinOp, BorrowKind, BranchId, BuiltinAssertKind, ConstantExpr, FieldId,
         TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
-        NullOp, RefKind, IntegerValue, Span, Ty, TypeDeclId,  UnOp, VariantId,
+        Name, NullOp, RefKind, IntegerValue, Span, Ty, TypeDeclId,  UnOp, VariantId,
         TraitRef, ScalarTy, Region, RegionId, (), String, PathBuf, bool, u32, usize,
         DropKind, Error, Variance, WithRetag, BuiltinAdt, BuiltinPathElem, AsmKind, CallSafety,
         llbc_ast::BlockId, llbc_ast::StatementId,

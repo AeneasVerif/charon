@@ -536,7 +536,7 @@ fn foo()
     let _31: Option<Arguments<'30>>[{built_in impl Sized for Arguments<'30>}]; // anonymous local
     let _32: &'34 u32; // anonymous local
     let _33: &'35 u32; // anonymous local
-    let _34: &'50 u32; // anonymous local
+    let _34: &'56 u32; // anonymous local
     let _35: u32; // anonymous local
     let _36: &'_ [u32; 10usize]; // anonymous local
     let _37: &'_ u32; // anonymous local
@@ -682,20 +682,21 @@ fn foo()
         _29 = &(*_30)
         storage_live(_31)
         _31 = Option::None {  }
-        storage_dead(_32)
-        storage_dead(_31)
-        storage_dead(_30)
-        storage_dead(_29)
-        storage_dead(_28)
-        storage_dead(_27)
-        storage_dead(_26)
-        storage_dead(kind)
         storage_dead(_37)
         storage_dead(_36)
         storage_dead(_35)
         storage_dead(_34)
         storage_dead(_33)
         panic(core::panicking::assert_failed)
+        ↳⚡ storage_dead(_32)
+            storage_dead(_31)
+            storage_dead(_30)
+            storage_dead(_29)
+            storage_dead(_28)
+            storage_dead(_27)
+            storage_dead(_26)
+            storage_dead(kind)
+            unwind_continue
     }
     storage_dead(_24)
     storage_dead(_23)

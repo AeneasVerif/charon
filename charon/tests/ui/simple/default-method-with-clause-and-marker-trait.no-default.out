@@ -1,5 +1,15 @@
 # Final LLBC before serialization:
 
+struct str {
+  _0: [u8],
+}
+
+// Full name: core::panicking::panic
+#[track_caller]
+#[lang_item(Panic)]
+pub fn panic(_1: &'static str) -> !
+= <opaque>
+
 struct () {}
 
 // Full name: test_crate::HasAssoc
@@ -23,9 +33,12 @@ where
     TraitClause1: (T: HasAssoc),
 {
     let _0: TraitClause1::Assoc; // return
+    let _1: !; // anonymous local
 
     storage_live(_0)
-    panic(core::panicking::panic)
+    storage_live(_1)
+    _1 = panic(const "not yet implemented")
+    ↳⚡ unwind_continue
 }
 
 // Full name: test_crate::{impl Trait for T}

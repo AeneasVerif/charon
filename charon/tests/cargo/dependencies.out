@@ -1,8 +1,19 @@
 # Final LLBC before serialization:
 
+// Full name: core::fmt::Error
+pub struct Error {}
+
+// Full name: core::fmt::Formatter
+#[diagnostic_item("Formatter")]
+pub opaque type Formatter<mut 'a>
+where
+    RegionOutlives0: 'a: 'a,
+
 // Full name: core::fmt::Arguments
 #[lang_item(FormatArguments)]
 pub opaque type Arguments<'a>
+
+struct () {}
 
 // Full name: core::marker::MetaSized
 #[fundamental]
@@ -16,6 +27,37 @@ pub trait Sized<Self>
 {
     proof ImpliedClause0: (Self: MetaSized)
     non-dyn-compatible
+}
+
+// Full name: core::result::Result
+#[diagnostic_item("Result")]
+pub enum Result<T, E>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+{
+  Ok { _0: T },
+  Err { _0: E },
+}
+
+// Full name: core::fmt::Debug
+#[diagnostic_item("Debug")]
+pub trait Debug<Self>
+{
+    fn fmt<'_0_1, '_1_1, '_2_1>;
+    vtable: core::fmt::Debug::{vtable}
+}
+
+// Full name: core::fmt::num::{impl Debug for u32}::fmt
+pub fn fmt<'_0, '_1, '_2>(_1: &'_0 u32, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
+where
+    RegionOutlives0: '_2: '_1,
+= <opaque>
+
+// Full name: core::fmt::num::{impl Debug for u32}
+impl "impl_Debug_for_u32" Debug for u32 {
+    fn fmt<'_0_1, '_1_1, '_2_1> = fmt<'_0_1, '_1_1, '_2_1>
+    vtable: lazy
 }
 
 // Full name: core::marker::Tuple
@@ -59,11 +101,21 @@ pub enum AssertKind {
   Match,
 }
 
+// Full name: core::panicking::assert_failed
+#[track_caller]
+pub fn assert_failed<'_0, '_1, '_2, T, U>(_1: AssertKind, _2: &'_0 T, _3: &'_1 U, _4: Option<Arguments<'_2>>[{built_in impl Sized for Arguments<'_2>}]) -> !
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (U: MetaSized),
+    TraitClause2: (T: Debug),
+    TraitClause3: (U: Debug),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: U: '_1,
+= <opaque>
+
 struct (_,)<A> {
   _0: A,
 }
-
-struct () {}
 
 // Full name: take_mut::take
 pub fn take<'_0, T, F>(_1: &'_0 mut T, _2: F)
@@ -163,19 +215,20 @@ fn main()
     let _11: u32; // anonymous local
     let _12: u32; // anonymous local
     let kind: AssertKind; // local
-    let _14: AssertKind; // anonymous local
-    let _15: &'21 u32; // anonymous local
-    let _16: &'22 u32; // anonymous local
-    let _17: &'23 u32; // anonymous local
-    let _18: &'24 u32; // anonymous local
-    let _19: Option<Arguments<'33>>[{built_in impl Sized for Arguments<'33>}]; // anonymous local
-    let _20: &'37 u32; // anonymous local
-    let _21: &'40 u32; // anonymous local
-    let _22: &'55 u32; // anonymous local
-    let _23: u32; // anonymous local
+    let _14: !; // anonymous local
+    let _15: AssertKind; // anonymous local
+    let _16: &'21 u32; // anonymous local
+    let _17: &'22 u32; // anonymous local
+    let _18: &'23 u32; // anonymous local
+    let _19: &'24 u32; // anonymous local
+    let _20: Option<Arguments<'33>>[{built_in impl Sized for Arguments<'33>}]; // anonymous local
+    let _21: &'37 u32; // anonymous local
+    let _22: &'40 u32; // anonymous local
+    let _23: &'61 u32; // anonymous local
+    let _24: u32; // anonymous local
 
     storage_live(_0)
-    storage_live(_20)
+    storage_live(_21)
     _0 = ()
     storage_live(x)
     x = const 0u32
@@ -187,12 +240,12 @@ fn main()
     _3 = &two-phase-mut (*_4)
     _2 = silly_incr<'39>(move _3)
     ↳⚡ unwind_continue
-    storage_live(_21)
     storage_live(_22)
     storage_live(_23)
-    _23 = const 1u32
-    _22 = &_23
-    _21 = move _22
+    storage_live(_24)
+    _24 = const 1u32
+    _23 = &_24
+    _22 = move _23
     storage_dead(_3)
     storage_dead(_4)
     storage_dead(_2)
@@ -200,8 +253,8 @@ fn main()
     storage_live(_6)
     _6 = &x
     storage_live(_7)
-    _20 = move _21
-    _7 = &(*_20)
+    _21 = move _22
+    _7 = &(*_21)
     _5 = (move _6, move _7)
     storage_dead(_7)
     storage_dead(_6)
@@ -223,18 +276,20 @@ fn main()
         kind = AssertKind::Eq {  }
         fake_read(kind)
         storage_live(_14)
-        _14 = move kind
         storage_live(_15)
+        _15 = move kind
         storage_live(_16)
-        _16 = &(*left_val)
-        _15 = &(*_16)
         storage_live(_17)
+        _17 = &(*left_val)
+        _16 = &(*_17)
         storage_live(_18)
-        _18 = &(*right_val)
-        _17 = &(*_18)
         storage_live(_19)
-        _19 = Option::None {  }
-        panic(core::panicking::assert_failed)
+        _19 = &(*right_val)
+        _18 = &(*_19)
+        storage_live(_20)
+        _20 = Option::None {  }
+        _14 = assert_failed<'58, '59, '60, u32, u32>[{built_in impl MetaSized for u32}, {built_in impl MetaSized for u32}, impl_Debug_for_u32, impl_Debug_for_u32](move _15, move _16, move _18, move _20)
+        ↳⚡ unwind_continue
     }
     storage_dead(_12)
     storage_dead(_11)

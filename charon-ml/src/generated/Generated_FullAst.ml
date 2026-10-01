@@ -208,11 +208,10 @@ and cli_options = {
           is also incompatible with [--monomorphize]. *)
   raw_consts : bool;  (** Do not inline or evaluate constants. *)
   consts : const_handling option;
-      (** How to handle constants and statics: whether they should be
-          represented as a call to their initializer function, or whether we
-          should attempt to evaluate them into a value. When evaluation isn't
-          possible (e.g. the constant is generic, or for recursive statics), we
-          fall back to the initializer call. *)
+      (** How to represent constants and statics: as a call to their initializer
+          function, as an evaluated value, or as raw bytes. This is always
+          best-effort: in some cases we only get the evaluated constant, and in
+          others we cannot evaluate the constant and keep the initializer. *)
   unsized_strings : bool;
       (** Replace string literal constants with a constant u8 array that gets
           unsized, expliciting the fact a string constant has a hidden
@@ -221,6 +220,9 @@ and cli_options = {
       (** Replace "bound checks followed by UB-on-overflow operation" with the
           corresponding panic-on-overflow operation. This loses unwinding
           information. *)
+  reconstruct_panic_calls : bool;
+      (** Replace calls to built-in panic functions with a [Panic] terminator.
+      *)
   reconstruct_asserts : bool;
       (** Replace [if x { panic() }] with [assert(x)]. *)
   reconstruct_matches : bool;
@@ -295,6 +297,10 @@ and const_handling =
   | Values
       (** Try evaluating consts and statics to their final value. If evaluation
           fails, we fall back to the initializer call. *)
+  | Bytes
+      (** Try evaluating consts and statics to raw bytes, using
+          [ConstantExprKind::RawMemory]. If evaluation fails, we fall back to
+          the initializer call. *)
 
 (** A (group of) top-level declaration(s), properly reordered. *)
 and declaration_group =

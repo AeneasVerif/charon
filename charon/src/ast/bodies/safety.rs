@@ -345,15 +345,17 @@ impl HasSafety for llbc_ast::Statement {
             StatementKind::Call { call, .. } => call.safety(krate),
             StatementKind::Switch { data, .. } => data.safety(krate),
             StatementKind::InlineAsm { kind, .. } => kind.is_asm().into(),
-            StatementKind::Abort(k) => k.safety(krate),
+            StatementKind::UndefinedBehavior => Safety::Unsafe,
             StatementKind::StorageLive(_)
             | StatementKind::StorageDead(_)
-            | StatementKind::Return
-            | StatementKind::UnwindResume
+            | StatementKind::Nop
+            | StatementKind::Loop(_)
             | StatementKind::Break(_)
             | StatementKind::Continue(_)
-            | StatementKind::Nop
-            | StatementKind::Loop(_) => Safety::Safe,
+            | StatementKind::Return
+            | StatementKind::Panic { .. }
+            | StatementKind::UnwindResume
+            | StatementKind::UnwindTerminate => Safety::Safe,
         }
     }
 }
@@ -389,10 +391,12 @@ impl HasSafety for ullbc_ast::Terminator {
             TerminatorKind::Drop { place, .. } => place.read_safety(krate),
             TerminatorKind::Assert { assert, .. } => assert.cond.safety(krate),
             TerminatorKind::InlineAsm { kind, .. } => kind.is_asm().into(),
-            TerminatorKind::Abort(k) => k.safety(krate),
-            TerminatorKind::Goto { .. } | TerminatorKind::Return | TerminatorKind::UnwindResume => {
-                Safety::Safe
-            }
+            TerminatorKind::UndefinedBehavior => Safety::Unsafe,
+            TerminatorKind::Goto { .. }
+            | TerminatorKind::Return
+            | TerminatorKind::Panic { .. }
+            | TerminatorKind::UnwindResume
+            | TerminatorKind::UnwindTerminate => Safety::Safe,
         }
     }
 }

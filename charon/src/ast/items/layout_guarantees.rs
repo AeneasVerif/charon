@@ -954,6 +954,7 @@ mod tests {
                 kind: TypeDeclKind::Opaque,
                 layout: layouts,
                 ptr_metadata: PtrMetadata::None,
+                marker_traits: None,
             },
         );
         let ty = TyKind::Adt(TypeDeclRef::new(

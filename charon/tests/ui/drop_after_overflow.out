@@ -74,7 +74,7 @@ pub fn impl_Drop_for_Foo::drop<'_0>(self: &'_0 mut Foo)
         _3 = from_str<'4>(const "Dropping Foo\n") -> bb2 (unwind: bb1);
     }
 
-    bb1: {
+    bb1 (cleanup): {
         unwind_continue;
     }
 
@@ -107,7 +107,7 @@ unsafe fn drop_glue<'_0>(_1: &'_0 mut Foo)
         _3 = impl_Drop_for_Foo::drop<'4>(move _2) -> bb2 (unwind: bb1);
     }
 
-    bb1: {
+    bb1 (cleanup): {
         unwind_continue;
     }
 
@@ -144,7 +144,7 @@ fn main()
         assert assert(move _3._1 == false) (overflow) -> bb2 (unwind: bb1);
     }
 
-    bb1: {
+    bb1 (cleanup): {
         conditional_drop[drop_glue<'2>] f -> bb3 (unwind: bb4);
     }
 
@@ -159,11 +159,11 @@ fn main()
         conditional_drop[drop_glue<'3>] f -> bb5 (unwind: bb3);
     }
 
-    bb3: {
+    bb3 (cleanup): {
         unwind_continue;
     }
 
-    bb4: {
+    bb4 (cleanup): {
         unwind_terminate;
     }
 

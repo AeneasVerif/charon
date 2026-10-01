@@ -1670,11 +1670,11 @@ let pp_borrowck_statement (env : fmt_env) (fmt : Format.formatter)
 let pp_abort_kind (env : fmt_env) (fmt : Format.formatter) (a : abort_kind) :
     unit =
   match a with
-  | Panic None -> pp_string fmt "panic"
-  | Panic (Some name) ->
+  | AbortPanic None -> pp_string fmt "panic"
+  | AbortPanic (Some name) ->
       Format.fprintf fmt "panic(%s)" (name_to_string env name)
-  | UndefinedBehavior -> pp_string fmt "undefined_behavior"
-  | UnwindTerminate -> pp_string fmt "unwind_terminate"
+  | AbortUndefinedBehavior -> pp_string fmt "undefined_behavior"
+  | AbortUnwindTerminate -> pp_string fmt "unwind_terminate"
 
 (** Small helper *)
 let pp_fun_sig_with_name (env : fmt_env) (indent : string)
@@ -2085,8 +2085,17 @@ module Llbc = struct
         Format.fprintf fmt "%a%a" (pp_print_call env indent) call
           (pp_unwind_block env indent indent_incr)
           on_unwind
-    | Abort kind ->
-        Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env) kind
+    | Panic (name, on_unwind) ->
+        Format.fprintf fmt "%s%a%a" indent (pp_print_abort_kind env)
+          (AbortPanic (Some name))
+          (pp_unwind_block env indent indent_incr)
+          on_unwind
+    | UndefinedBehavior ->
+        Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env)
+          AbortUndefinedBehavior
+    | UnwindTerminate ->
+        Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env)
+          AbortUnwindTerminate
     | Return -> Format.fprintf fmt "%sreturn" indent
     | UnwindResume -> Format.fprintf fmt "%sunwind_continue" indent
     | Break i -> Format.fprintf fmt "%sbreak %d" indent i
@@ -2281,15 +2290,24 @@ module Ullbc = struct
         let targets = targets @ [ "unwind: " ^ block_id_to_string on_unwind ] in
         Format.fprintf fmt "%s%s!(%S) -> %s" indent mac asm
           (String.concat ", " targets)
-    | Abort kind ->
-        Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env) kind
+    | Panic (name, on_unwind) ->
+        Format.fprintf fmt "%s%a -> (unwind: %s)" indent
+          (pp_print_abort_kind env) (AbortPanic (Some name))
+          (block_id_to_string on_unwind)
+    | UndefinedBehavior ->
+        Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env)
+          AbortUndefinedBehavior
+    | UnwindTerminate ->
+        Format.fprintf fmt "%s%a" indent (pp_print_abort_kind env)
+          AbortUnwindTerminate
     | Return -> Format.fprintf fmt "%sreturn" indent
     | UnwindResume -> Format.fprintf fmt "%sunwind_continue" indent
 
   let pp_block (env : fmt_env) (indent : string) (indent_incr : string)
       (fmt : Format.formatter) (id : BlockId.id) (block : block) : unit =
     let indent1 = indent ^ indent_incr in
-    Format.fprintf fmt "%s%s: {\n" indent (block_id_to_string id);
+    let cleanup = if block.is_cleanup then " (cleanup)" else "" in
+    Format.fprintf fmt "%s%s%s: {\n" indent (block_id_to_string id) cleanup;
     List.iter
       (fun st -> Format.fprintf fmt "%a;\n" (pp_statement env indent1) st)
       block.statements;

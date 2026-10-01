@@ -86,9 +86,9 @@ and abort_kind_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("Panic", _0) ] ->
         let* _0 = option_of_json name_of_json ctx _0 in
-        Ok (Panic _0)
-    | `String "UndefinedBehavior" -> Ok UndefinedBehavior
-    | `String "UnwindTerminate" -> Ok UnwindTerminate
+        Ok (AbortPanic _0)
+    | `String "UndefinedBehavior" -> Ok AbortUndefinedBehavior
+    | `String "UnwindTerminate" -> Ok AbortUnwindTerminate
     | _ -> Error "")
 
 and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -1631,10 +1631,16 @@ module Ullbc = struct
       (Generated_UllbcAst.block, string) result =
     combine_error_msgs js __FUNCTION__
       (match js with
-      | `Assoc [ ("statements", statements); ("terminator", terminator) ] ->
+      | `Assoc
+          [
+            ("statements", statements);
+            ("terminator", terminator);
+            ("is_cleanup", is_cleanup);
+          ] ->
           let* statements = list_of_json statement_of_json ctx statements in
           let* terminator = terminator_of_json ctx terminator in
-          Ok ({ statements; terminator } : Generated_UllbcAst.block)
+          let* is_cleanup = bool_of_json ctx is_cleanup in
+          Ok ({ statements; terminator; is_cleanup } : Generated_UllbcAst.block)
       | _ -> Error "")
 
   and block_id_of_json (ctx : of_json_ctx) (js : json) :
@@ -1756,20 +1762,6 @@ module Ullbc = struct
           Ok (Drop (kind, place, fn_ptr, target, on_unwind))
       | `Assoc
           [
-            ( "Assert",
-              `Assoc
-                [
-                  ("assert", assert_);
-                  ("target", target);
-                  ("on_unwind", on_unwind);
-                ] );
-          ] ->
-          let* assert_ = assertion_of_json ctx assert_ in
-          let* target = block_id_of_json ctx target in
-          let* on_unwind = block_id_of_json ctx on_unwind in
-          Ok (TAssert (assert_, target, on_unwind))
-      | `Assoc
-          [
             ( "InlineAsm",
               `Assoc
                 [
@@ -1784,11 +1776,29 @@ module Ullbc = struct
           let* targets = list_of_json block_id_of_json ctx targets in
           let* on_unwind = block_id_of_json ctx on_unwind in
           Ok (InlineAsm (asm, kind, targets, on_unwind))
-      | `Assoc [ ("Abort", _0) ] ->
-          let* _0 = abort_kind_of_json ctx _0 in
-          Ok (Abort _0)
-      | `String "Return" -> Ok Return
+      | `Assoc
+          [
+            ( "Assert",
+              `Assoc
+                [
+                  ("assert", assert_);
+                  ("target", target);
+                  ("on_unwind", on_unwind);
+                ] );
+          ] ->
+          let* assert_ = assertion_of_json ctx assert_ in
+          let* target = block_id_of_json ctx target in
+          let* on_unwind = block_id_of_json ctx on_unwind in
+          Ok (TAssert (assert_, target, on_unwind))
+      | `Assoc
+          [ ("Panic", `Assoc [ ("name", name); ("on_unwind", on_unwind) ]) ] ->
+          let* name = name_of_json ctx name in
+          let* on_unwind = block_id_of_json ctx on_unwind in
+          Ok (Panic (name, on_unwind))
+      | `String "UnwindTerminate" -> Ok UnwindTerminate
       | `String "UnwindResume" -> Ok UnwindResume
+      | `String "Return" -> Ok Return
+      | `String "UndefinedBehavior" -> Ok UndefinedBehavior
       | _ -> Error "")
 end
 
@@ -1919,18 +1929,6 @@ module Llbc = struct
           let* call = call_of_json ctx call in
           let* on_unwind = block_of_json ctx on_unwind in
           Ok (Call (call, on_unwind))
-      | `Assoc [ ("Abort", _0) ] ->
-          let* _0 = abort_kind_of_json ctx _0 in
-          Ok (Abort _0)
-      | `String "Return" -> Ok Return
-      | `String "UnwindResume" -> Ok UnwindResume
-      | `Assoc [ ("Break", _0) ] ->
-          let* _0 = int_of_json ctx _0 in
-          Ok (Break _0)
-      | `Assoc [ ("Continue", _0) ] ->
-          let* _0 = int_of_json ctx _0 in
-          Ok (Continue _0)
-      | `String "Nop" -> Ok Nop
       | `Assoc [ ("Switch", `Assoc [ ("data", data); ("branches", branches) ]) ]
         ->
           let* data = switch_data_of_json ctx data in
@@ -1941,6 +1939,22 @@ module Llbc = struct
       | `Assoc [ ("Loop", _0) ] ->
           let* _0 = block_of_json ctx _0 in
           Ok (Loop _0)
+      | `Assoc [ ("Break", _0) ] ->
+          let* _0 = int_of_json ctx _0 in
+          Ok (Break _0)
+      | `Assoc [ ("Continue", _0) ] ->
+          let* _0 = int_of_json ctx _0 in
+          Ok (Continue _0)
+      | `Assoc
+          [ ("Panic", `Assoc [ ("name", name); ("on_unwind", on_unwind) ]) ] ->
+          let* name = name_of_json ctx name in
+          let* on_unwind = block_of_json ctx on_unwind in
+          Ok (Panic (name, on_unwind))
+      | `String "UnwindTerminate" -> Ok UnwindTerminate
+      | `String "UnwindResume" -> Ok UnwindResume
+      | `String "Return" -> Ok Return
+      | `String "UndefinedBehavior" -> Ok UndefinedBehavior
+      | `String "Nop" -> Ok Nop
       | _ -> Error "")
 end
 
@@ -2205,6 +2219,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("consts", consts);
           ("unsized_strings", unsized_strings);
           ("reconstruct_fallible_operations", reconstruct_fallible_operations);
+          ("reconstruct_panic_calls", reconstruct_panic_calls);
           ("reconstruct_asserts", reconstruct_asserts);
           ("reconstruct_matches", reconstruct_matches);
           ("deallocate_all_locals", deallocate_all_locals);
@@ -2283,6 +2298,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* reconstruct_fallible_operations =
           bool_of_json ctx reconstruct_fallible_operations
         in
+        let* reconstruct_panic_calls =
+          bool_of_json ctx reconstruct_panic_calls
+        in
         let* reconstruct_asserts = bool_of_json ctx reconstruct_asserts in
         let* reconstruct_matches = bool_of_json ctx reconstruct_matches in
         let* deallocate_all_locals = bool_of_json ctx deallocate_all_locals in
@@ -2352,6 +2370,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              consts;
              unsized_strings;
              reconstruct_fallible_operations;
+             reconstruct_panic_calls;
              reconstruct_asserts;
              reconstruct_matches;
              deallocate_all_locals;
@@ -2427,6 +2446,7 @@ and const_handling_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `String "Initializers" -> Ok Initializers
     | `String "Values" -> Ok Values
+    | `String "Bytes" -> Ok Bytes
     | _ -> Error "")
 
 and declaration_group_of_json (ctx : of_json_ctx) (js : json) :
@@ -2806,6 +2826,28 @@ and rustc_ident_of_json (ctx : of_json_ctx) (js : json) :
         let* name = string_of_json ctx name in
         let* span = span_of_json ctx span in
         Ok ({ name; span } : rustc_ident)
+    | _ -> Error "")
+
+and implements_marker_traits_of_json (ctx : of_json_ctx) (js : json) :
+    (implements_marker_traits, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("is_sized", is_sized);
+          ("is_send", is_send);
+          ("is_sync", is_sync);
+          ("is_freeze", is_freeze);
+          ("is_unpin", is_unpin);
+        ] ->
+        let* is_sized = bool_of_json ctx is_sized in
+        let* is_send = bool_of_json ctx is_send in
+        let* is_sync = bool_of_json ctx is_sync in
+        let* is_freeze = bool_of_json ctx is_freeze in
+        let* is_unpin = bool_of_json ctx is_unpin in
+        Ok
+          ({ is_sized; is_send; is_sync; is_freeze; is_unpin }
+            : implements_marker_traits)
     | _ -> Error "")
 
 and index_map_of_json :
@@ -3852,6 +3894,7 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("kind", kind);
           ("layout", layout);
           ("ptr_metadata", ptr_metadata);
+          ("marker_traits", marker_traits);
         ] ->
         let* def_id = type_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
@@ -3862,8 +3905,22 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           index_map_of_json string_of_json layout_of_json int_of_json ctx layout
         in
         let* ptr_metadata = ptr_metadata_of_json ctx ptr_metadata in
+        let* marker_traits =
+          option_of_json
+            (box_of_json implements_marker_traits_of_json)
+            ctx marker_traits
+        in
         Ok
-          ({ def_id; item_meta; generics; src; kind; layout; ptr_metadata }
+          ({
+             def_id;
+             item_meta;
+             generics;
+             src;
+             kind;
+             layout;
+             ptr_metadata;
+             marker_traits;
+           }
             : type_decl)
     | _ -> Error "")
 

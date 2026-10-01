@@ -398,6 +398,7 @@ impl ZipAst for ItemComparer<'_> {
             // Layouts are allowed to differ per target.
             layout: _,
             ptr_metadata: left_ptr_metadata,
+            marker_traits: left_marker_traits,
         } = left;
         let TypeDecl {
             def_id: right_def_id,
@@ -407,6 +408,7 @@ impl ZipAst for ItemComparer<'_> {
             kind: right_kind,
             layout: _,
             ptr_metadata: right_ptr_metadata,
+            marker_traits: right_marker_traits,
         } = right;
 
         self.visit(left_def_id, right_def_id)?;
@@ -414,7 +416,8 @@ impl ZipAst for ItemComparer<'_> {
         self.visit(left_generics, right_generics)?;
         self.visit(left_src, right_src)?;
         self.visit(left_kind, right_kind)?;
-        self.visit(left_ptr_metadata, right_ptr_metadata)
+        self.visit(left_ptr_metadata, right_ptr_metadata)?;
+        self.visit(left_marker_traits, right_marker_traits)
     }
 }
 

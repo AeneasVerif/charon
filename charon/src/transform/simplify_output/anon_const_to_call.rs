@@ -1,5 +1,6 @@
 use std::{collections::HashMap, mem};
 
+use crate::options::ConstHandling;
 use crate::transform::CowBox;
 use crate::transform::{TransformCtx, ctx::UllbcPass};
 use crate::ullbc_ast::*;
@@ -23,7 +24,9 @@ impl Transform {
 }
 impl UllbcPass for Transform {
     fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
-        !options.raw_consts && !self.anon_consts.is_empty()
+        !options.raw_consts
+            && options.consts != ConstHandling::Bytes
+            && !self.anon_consts.is_empty()
     }
     fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ullbc_ast::ExprBody) {
         for block_id in body.body.indices() {
@@ -53,13 +56,15 @@ impl UllbcPass for Transform {
                 }
             });
             if !new_calls.is_empty() {
+                let is_cleanup = body.body[block_id].is_cleanup;
                 // Move the current block out of the way.
-                let block = mem::replace(&mut body.body[block_id], BlockData::new_unreachable());
+                let block =
+                    mem::replace(&mut body.body[block_id], BlockData::new_unreachable(false));
                 let mut next_block = body.body.push(block);
                 // Each new block jumps to the previous one after completion
                 for (local_id, call) in new_calls {
                     // Const eval mustn't unwind into runtime.
-                    let unwind = body.body.push(BlockData::new_unreachable());
+                    let unwind = body.body.push(BlockData::new_unreachable(true));
                     next_block = body.body.push(BlockData {
                         statements: vec![Statement::new(
                             Span::dummy(),
@@ -73,10 +78,11 @@ impl UllbcPass for Transform {
                                 on_unwind: unwind,
                             },
                         ),
+                        is_cleanup,
                     });
                 }
                 // Instead of the current block, start evaluating the new bodies.
-                body.body[block_id] = BlockData::new_goto(Span::dummy(), next_block);
+                body.body[block_id] = BlockData::new_goto(Span::dummy(), next_block, is_cleanup);
             }
         }
     }

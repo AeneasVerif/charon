@@ -511,6 +511,10 @@ where
     TypeOutlives3: I: '_0,
 = <opaque>
 
+struct str {
+  _0: [u8],
+}
+
 struct (_,)<A> {
   _0: A,
 }
@@ -1810,9 +1814,10 @@ pub fn get_elem_mut<'_0>(ls: &'_0 mut List<usize>[{built_in impl Sized for usize
                 continue 0
             },
             List::Nil => {
-                storage_dead(x)
-                storage_dead(ls)
                 panic(core::panicking::panic)
+                ↳⚡ storage_dead(x)
+                    storage_dead(ls)
+                    unwind_continue
             },
         }
     }
@@ -1876,10 +1881,11 @@ where
             },
         }
     }
-    storage_dead(_8)
-    storage_dead(i)
-    storage_dead(ls)
     panic(core::panicking::panic)
+    ↳⚡ storage_dead(_8)
+        storage_dead(i)
+        storage_dead(ls)
+        unwind_continue
 }
 
 // Full name: test_crate::loop_break_1

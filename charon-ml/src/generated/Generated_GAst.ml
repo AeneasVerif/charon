@@ -28,11 +28,12 @@ type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
     - Undefined behavior (caused by an "assume")
     - Unwind termination *)
 type abort_kind =
-  | Panic of name option
+  | AbortPanic of name option
       (** A built-in panicking function, or a panic due to a failed built-in
           check (e.g. for out-of-bounds accesses). *)
-  | UndefinedBehavior  (** Undefined behavior in the rust abstract machine. *)
-  | UnwindTerminate
+  | AbortUndefinedBehavior
+      (** Undefined behavior in the rust abstract machine. *)
+  | AbortUnwindTerminate
       (** Unwind had to stop for ABI reasons or because cleanup code panicked
           again. *)
 

@@ -89,11 +89,11 @@ and statement_kind =
       (** Fields:
           - [call]
           - [on_unwind] *)
-  | Abort of abort_kind
-      (** Panic also handles "unreachable". We keep the name of the panicking
-          function that was called. *)
-  | Return
-  | UnwindResume  (** Unwind out of the current function into its caller. *)
+  | Switch of switch_data * block list
+      (** Fields:
+          - [data]
+          - [branches] *)
+  | Loop of block
   | Break of int
       (** Break to outer loops. The [usize] gives the index of the outer loop to
           break to: * 0: break to first outer loop (the current loop) * 1: break
@@ -102,12 +102,21 @@ and statement_kind =
       (** Continue to outer loops. The [usize] gives the index of the outer loop
           to continue to: * 0: continue to first outer loop (the current loop) *
           1: continue to second outer loop * ... *)
+  | Panic of name * block
+      (** Call to a built-in panicking function.
+
+          Fields:
+          - [name]: The name of the function that was called.
+          - [on_unwind] *)
+  | UnwindTerminate
+      (** Unwinding must stop for ABI reasons or because cleanup code panicked
+          again. *)
+  | UnwindResume  (** Unwind out of the current function into its caller. *)
+  | Return
+  | UndefinedBehavior
+      (** Reaching this point is undefined behavior in the Rust abstract
+          machine. *)
   | Nop  (** No-op. *)
-  | Switch of switch_data * block list
-      (** Fields:
-          - [data]
-          - [branches] *)
-  | Loop of block
 [@@deriving
   show,
   eq,

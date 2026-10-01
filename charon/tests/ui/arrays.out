@@ -354,6 +354,10 @@ where
   _1: B,
 }
 
+struct str {
+  _0: [u8],
+}
+
 // Full name: {impl Destruct for [T]}::drop_glue
 unsafe fn impl_Destruct_for_slice::drop_glue<'_0, T>(_1: &'_0 mut [T])
 where
@@ -2245,7 +2249,7 @@ pub fn sum2<'_0, '_1>(s: &'_0 [u32], s2: &'_1 [u32]) -> u32
         storage_live(_12)
         storage_live(_13)
         _13 = &(*s) with_metadata(copy s.metadata)
-        _12 = len<'11, u32>[{built_in impl Sized for u32}](move _13)
+        _12 = len<'13, u32>[{built_in impl Sized for u32}](move _13)
         ↳⚡ storage_dead(_21)
             storage_dead(_20)
             storage_dead(_19)

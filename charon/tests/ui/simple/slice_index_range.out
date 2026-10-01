@@ -16,103 +16,108 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     let _0: !; // return
     let start: usize; // arg #1
     let len: usize; // arg #2
-    let _3: Arguments<'1>; // anonymous local
-    let args_4: (&'11 usize, &'12 usize); // local
-    let _5: &'16 usize; // anonymous local
-    let _6: &'17 usize; // anonymous local
-    let args_7: [Argument<'26>; 2usize]; // local
-    let _8: Argument<'30>; // anonymous local
-    let _9: &'31 usize; // anonymous local
-    let _10: Argument<'32>; // anonymous local
-    let _11: &'33 usize; // anonymous local
-    let _12: &'35 [u8; 57usize]; // anonymous local
-    let _13: &'36 [u8; 57usize]; // anonymous local
-    let _14: &'42 [Argument<'43>; 2usize]; // anonymous local
-    let _15: &'47 [Argument<'48>; 2usize]; // anonymous local
-    let _16: &'52 usize; // anonymous local
-    let _17: &'53 usize; // anonymous local
-    let _18: [u8; 57usize]; // anonymous local
-    let _19: &'68 [u8; 57usize]; // anonymous local
+    let _3: !; // anonymous local
+    let _4: Arguments<'1>; // anonymous local
+    let args_5: (&'11 usize, &'12 usize); // local
+    let _6: &'16 usize; // anonymous local
+    let _7: &'17 usize; // anonymous local
+    let args_8: [Argument<'26>; 2usize]; // local
+    let _9: Argument<'30>; // anonymous local
+    let _10: &'31 usize; // anonymous local
+    let _11: Argument<'32>; // anonymous local
+    let _12: &'33 usize; // anonymous local
+    let _13: &'35 [u8; 57usize]; // anonymous local
+    let _14: &'36 [u8; 57usize]; // anonymous local
+    let _15: &'42 [Argument<'43>; 2usize]; // anonymous local
+    let _16: &'47 [Argument<'48>; 2usize]; // anonymous local
+    let _17: &'52 usize; // anonymous local
+    let _18: &'53 usize; // anonymous local
+    let _19: [u8; 57usize]; // anonymous local
+    let _20: &'68 [u8; 57usize]; // anonymous local
 
     storage_live(_0)
-    storage_live(_16)
     storage_live(_17)
-    storage_live(_3)
-    storage_live(args_4)
-    storage_live(_5)
-    _5 = &start
-    storage_live(_6)
-    _6 = &len
-    args_4 = (move _5, move _6)
-    storage_dead(_6)
-    storage_dead(_5)
-    storage_live(args_7)
-    storage_live(_8)
-    storage_live(_9)
-    _16 = copy args_4._0
-    _9 = &(*_16)
-    _8 = new_display<'60, '62, usize>[{built_in impl Sized for usize}, {impl#7}](move _9)
-    ↳⚡ storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(args_7)
-        storage_dead(args_4)
-        storage_dead(_3)
-        storage_dead(len)
-        storage_dead(start)
-        unwind_continue
-    storage_dead(_9)
-    storage_live(_10)
-    storage_live(_11)
-    _17 = copy args_4._1
-    _11 = &(*_17)
-    _10 = new_display<'64, '66, usize>[{built_in impl Sized for usize}, {impl#7}](move _11)
-    ↳⚡ storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(args_7)
-        storage_dead(args_4)
-        storage_dead(_3)
-        storage_dead(len)
-        storage_dead(start)
-        unwind_continue
-    storage_dead(_11)
-    args_7 = [move _8, move _10]
-    storage_dead(_10)
-    storage_dead(_8)
-    storage_live(_12)
-    storage_live(_13)
     storage_live(_18)
-    _18 = [const 18u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 115u8, const 116u8, const 97u8, const 114u8, const 116u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 192u8, const 34u8, const 32u8, const 111u8, const 117u8, const 116u8, const 32u8, const 111u8, const 102u8, const 32u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 102u8, const 111u8, const 114u8, const 32u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 111u8, const 102u8, const 32u8, const 108u8, const 101u8, const 110u8, const 103u8, const 116u8, const 104u8, const 32u8, const 192u8, const 0u8]
-    storage_live(_19)
-    _19 = &_18
-    _13 = move _19
-    _12 = &(*_13)
-    storage_live(_14)
-    storage_live(_15)
-    _15 = &args_7
-    _14 = &(*_15)
-    _3 = core::fmt::{Arguments<'a>}::new<'73, 57usize, 2usize>(move _12, move _14)
-    ↳⚡ storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(args_7)
-        storage_dead(args_4)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(args_5)
+    storage_live(_6)
+    _6 = &start
+    storage_live(_7)
+    _7 = &len
+    args_5 = (move _6, move _7)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_live(args_8)
+    storage_live(_9)
+    storage_live(_10)
+    _17 = copy args_5._0
+    _10 = &(*_17)
+    _9 = new_display<'60, '62, usize>[{built_in impl Sized for usize}, {impl#7}](move _10)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
         storage_dead(_3)
         storage_dead(len)
         storage_dead(start)
         unwind_continue
+    storage_dead(_10)
+    storage_live(_11)
+    storage_live(_12)
+    _18 = copy args_5._1
+    _12 = &(*_18)
+    _11 = new_display<'64, '66, usize>[{built_in impl Sized for usize}, {impl#7}](move _12)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(len)
+        storage_dead(start)
+        unwind_continue
+    storage_dead(_12)
+    args_8 = [move _9, move _11]
+    storage_dead(_11)
+    storage_dead(_9)
+    storage_live(_13)
+    storage_live(_14)
+    storage_live(_19)
+    _19 = [const 18u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 115u8, const 116u8, const 97u8, const 114u8, const 116u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 192u8, const 34u8, const 32u8, const 111u8, const 117u8, const 116u8, const 32u8, const 111u8, const 102u8, const 32u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 102u8, const 111u8, const 114u8, const 32u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 111u8, const 102u8, const 32u8, const 108u8, const 101u8, const 110u8, const 103u8, const 116u8, const 104u8, const 32u8, const 192u8, const 0u8]
+    storage_live(_20)
+    _20 = &_19
+    _14 = move _20
+    _13 = &(*_14)
+    storage_live(_15)
+    storage_live(_16)
+    _16 = &args_8
+    _15 = &(*_16)
+    _4 = core::fmt::{Arguments<'a>}::new<'73, 57usize, 2usize>(move _13, move _15)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(len)
+        storage_dead(start)
+        unwind_continue
+    storage_dead(_16)
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
-    storage_dead(_12)
-    storage_dead(_17)
-    storage_dead(_16)
-    storage_dead(args_7)
-    storage_dead(args_4)
-    storage_dead(_3)
-    storage_dead(len)
-    storage_dead(start)
-    storage_dead(_19)
-    storage_dead(_18)
-    panic(core::panicking::panic_fmt)
+    _3 = panic_fmt<'75>(move _4)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(len)
+        storage_dead(start)
+        unwind_continue
 }
 
 #[track_caller]
@@ -121,103 +126,108 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     let _0: !; // return
     let end: usize; // arg #1
     let len: usize; // arg #2
-    let _3: Arguments<'1>; // anonymous local
-    let args_4: (&'11 usize, &'12 usize); // local
-    let _5: &'16 usize; // anonymous local
-    let _6: &'17 usize; // anonymous local
-    let args_7: [Argument<'26>; 2usize]; // local
-    let _8: Argument<'30>; // anonymous local
-    let _9: &'31 usize; // anonymous local
-    let _10: Argument<'32>; // anonymous local
-    let _11: &'33 usize; // anonymous local
-    let _12: &'35 [u8; 55usize]; // anonymous local
-    let _13: &'36 [u8; 55usize]; // anonymous local
-    let _14: &'42 [Argument<'43>; 2usize]; // anonymous local
-    let _15: &'47 [Argument<'48>; 2usize]; // anonymous local
-    let _16: &'52 usize; // anonymous local
-    let _17: &'53 usize; // anonymous local
-    let _18: [u8; 55usize]; // anonymous local
-    let _19: &'68 [u8; 55usize]; // anonymous local
+    let _3: !; // anonymous local
+    let _4: Arguments<'1>; // anonymous local
+    let args_5: (&'11 usize, &'12 usize); // local
+    let _6: &'16 usize; // anonymous local
+    let _7: &'17 usize; // anonymous local
+    let args_8: [Argument<'26>; 2usize]; // local
+    let _9: Argument<'30>; // anonymous local
+    let _10: &'31 usize; // anonymous local
+    let _11: Argument<'32>; // anonymous local
+    let _12: &'33 usize; // anonymous local
+    let _13: &'35 [u8; 55usize]; // anonymous local
+    let _14: &'36 [u8; 55usize]; // anonymous local
+    let _15: &'42 [Argument<'43>; 2usize]; // anonymous local
+    let _16: &'47 [Argument<'48>; 2usize]; // anonymous local
+    let _17: &'52 usize; // anonymous local
+    let _18: &'53 usize; // anonymous local
+    let _19: [u8; 55usize]; // anonymous local
+    let _20: &'68 [u8; 55usize]; // anonymous local
 
     storage_live(_0)
-    storage_live(_16)
     storage_live(_17)
-    storage_live(_3)
-    storage_live(args_4)
-    storage_live(_5)
-    _5 = &end
-    storage_live(_6)
-    _6 = &len
-    args_4 = (move _5, move _6)
-    storage_dead(_6)
-    storage_dead(_5)
-    storage_live(args_7)
-    storage_live(_8)
-    storage_live(_9)
-    _16 = copy args_4._0
-    _9 = &(*_16)
-    _8 = new_display<'60, '62, usize>[{built_in impl Sized for usize}, {impl#7}](move _9)
-    ↳⚡ storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(args_7)
-        storage_dead(args_4)
-        storage_dead(_3)
-        storage_dead(len)
-        storage_dead(end)
-        unwind_continue
-    storage_dead(_9)
-    storage_live(_10)
-    storage_live(_11)
-    _17 = copy args_4._1
-    _11 = &(*_17)
-    _10 = new_display<'64, '66, usize>[{built_in impl Sized for usize}, {impl#7}](move _11)
-    ↳⚡ storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(args_7)
-        storage_dead(args_4)
-        storage_dead(_3)
-        storage_dead(len)
-        storage_dead(end)
-        unwind_continue
-    storage_dead(_11)
-    args_7 = [move _8, move _10]
-    storage_dead(_10)
-    storage_dead(_8)
-    storage_live(_12)
-    storage_live(_13)
     storage_live(_18)
-    _18 = [const 16u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 101u8, const 110u8, const 100u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 192u8, const 34u8, const 32u8, const 111u8, const 117u8, const 116u8, const 32u8, const 111u8, const 102u8, const 32u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 102u8, const 111u8, const 114u8, const 32u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 111u8, const 102u8, const 32u8, const 108u8, const 101u8, const 110u8, const 103u8, const 116u8, const 104u8, const 32u8, const 192u8, const 0u8]
-    storage_live(_19)
-    _19 = &_18
-    _13 = move _19
-    _12 = &(*_13)
-    storage_live(_14)
-    storage_live(_15)
-    _15 = &args_7
-    _14 = &(*_15)
-    _3 = core::fmt::{Arguments<'a>}::new<'73, 55usize, 2usize>(move _12, move _14)
-    ↳⚡ storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(args_7)
-        storage_dead(args_4)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(args_5)
+    storage_live(_6)
+    _6 = &end
+    storage_live(_7)
+    _7 = &len
+    args_5 = (move _6, move _7)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_live(args_8)
+    storage_live(_9)
+    storage_live(_10)
+    _17 = copy args_5._0
+    _10 = &(*_17)
+    _9 = new_display<'60, '62, usize>[{built_in impl Sized for usize}, {impl#7}](move _10)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
         storage_dead(_3)
         storage_dead(len)
         storage_dead(end)
         unwind_continue
+    storage_dead(_10)
+    storage_live(_11)
+    storage_live(_12)
+    _18 = copy args_5._1
+    _12 = &(*_18)
+    _11 = new_display<'64, '66, usize>[{built_in impl Sized for usize}, {impl#7}](move _12)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(len)
+        storage_dead(end)
+        unwind_continue
+    storage_dead(_12)
+    args_8 = [move _9, move _11]
+    storage_dead(_11)
+    storage_dead(_9)
+    storage_live(_13)
+    storage_live(_14)
+    storage_live(_19)
+    _19 = [const 16u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 101u8, const 110u8, const 100u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 192u8, const 34u8, const 32u8, const 111u8, const 117u8, const 116u8, const 32u8, const 111u8, const 102u8, const 32u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 102u8, const 111u8, const 114u8, const 32u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 111u8, const 102u8, const 32u8, const 108u8, const 101u8, const 110u8, const 103u8, const 116u8, const 104u8, const 32u8, const 192u8, const 0u8]
+    storage_live(_20)
+    _20 = &_19
+    _14 = move _20
+    _13 = &(*_14)
+    storage_live(_15)
+    storage_live(_16)
+    _16 = &args_8
+    _15 = &(*_16)
+    _4 = core::fmt::{Arguments<'a>}::new<'73, 55usize, 2usize>(move _13, move _15)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(len)
+        storage_dead(end)
+        unwind_continue
+    storage_dead(_16)
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
-    storage_dead(_12)
-    storage_dead(_17)
-    storage_dead(_16)
-    storage_dead(args_7)
-    storage_dead(args_4)
-    storage_dead(_3)
-    storage_dead(len)
-    storage_dead(end)
-    storage_dead(_19)
-    storage_dead(_18)
-    panic(core::panicking::panic_fmt)
+    _3 = panic_fmt<'75>(move _4)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(len)
+        storage_dead(end)
+        unwind_continue
 }
 
 #[track_caller]
@@ -226,103 +236,108 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     let _0: !; // return
     let start: usize; // arg #1
     let end: usize; // arg #2
-    let _3: Arguments<'1>; // anonymous local
-    let args_4: (&'11 usize, &'12 usize); // local
-    let _5: &'16 usize; // anonymous local
-    let _6: &'17 usize; // anonymous local
-    let args_7: [Argument<'26>; 2usize]; // local
-    let _8: Argument<'30>; // anonymous local
-    let _9: &'31 usize; // anonymous local
-    let _10: Argument<'32>; // anonymous local
-    let _11: &'33 usize; // anonymous local
-    let _12: &'35 [u8; 40usize]; // anonymous local
-    let _13: &'36 [u8; 40usize]; // anonymous local
-    let _14: &'42 [Argument<'43>; 2usize]; // anonymous local
-    let _15: &'47 [Argument<'48>; 2usize]; // anonymous local
-    let _16: &'52 usize; // anonymous local
-    let _17: &'53 usize; // anonymous local
-    let _18: [u8; 40usize]; // anonymous local
-    let _19: &'68 [u8; 40usize]; // anonymous local
+    let _3: !; // anonymous local
+    let _4: Arguments<'1>; // anonymous local
+    let args_5: (&'11 usize, &'12 usize); // local
+    let _6: &'16 usize; // anonymous local
+    let _7: &'17 usize; // anonymous local
+    let args_8: [Argument<'26>; 2usize]; // local
+    let _9: Argument<'30>; // anonymous local
+    let _10: &'31 usize; // anonymous local
+    let _11: Argument<'32>; // anonymous local
+    let _12: &'33 usize; // anonymous local
+    let _13: &'35 [u8; 40usize]; // anonymous local
+    let _14: &'36 [u8; 40usize]; // anonymous local
+    let _15: &'42 [Argument<'43>; 2usize]; // anonymous local
+    let _16: &'47 [Argument<'48>; 2usize]; // anonymous local
+    let _17: &'52 usize; // anonymous local
+    let _18: &'53 usize; // anonymous local
+    let _19: [u8; 40usize]; // anonymous local
+    let _20: &'68 [u8; 40usize]; // anonymous local
 
     storage_live(_0)
-    storage_live(_16)
     storage_live(_17)
-    storage_live(_3)
-    storage_live(args_4)
-    storage_live(_5)
-    _5 = &start
-    storage_live(_6)
-    _6 = &end
-    args_4 = (move _5, move _6)
-    storage_dead(_6)
-    storage_dead(_5)
-    storage_live(args_7)
-    storage_live(_8)
-    storage_live(_9)
-    _16 = copy args_4._0
-    _9 = &(*_16)
-    _8 = new_display<'60, '62, usize>[{built_in impl Sized for usize}, {impl#7}](move _9)
-    ↳⚡ storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(args_7)
-        storage_dead(args_4)
-        storage_dead(_3)
-        storage_dead(end)
-        storage_dead(start)
-        unwind_continue
-    storage_dead(_9)
-    storage_live(_10)
-    storage_live(_11)
-    _17 = copy args_4._1
-    _11 = &(*_17)
-    _10 = new_display<'64, '66, usize>[{built_in impl Sized for usize}, {impl#7}](move _11)
-    ↳⚡ storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(args_7)
-        storage_dead(args_4)
-        storage_dead(_3)
-        storage_dead(end)
-        storage_dead(start)
-        unwind_continue
-    storage_dead(_11)
-    args_7 = [move _8, move _10]
-    storage_dead(_10)
-    storage_dead(_8)
-    storage_live(_12)
-    storage_live(_13)
     storage_live(_18)
-    _18 = [const 22u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 115u8, const 116u8, const 97u8, const 114u8, const 116u8, const 115u8, const 32u8, const 97u8, const 116u8, const 32u8, const 192u8, const 13u8, const 32u8, const 98u8, const 117u8, const 116u8, const 32u8, const 101u8, const 110u8, const 100u8, const 115u8, const 32u8, const 97u8, const 116u8, const 32u8, const 192u8, const 0u8]
-    storage_live(_19)
-    _19 = &_18
-    _13 = move _19
-    _12 = &(*_13)
-    storage_live(_14)
-    storage_live(_15)
-    _15 = &args_7
-    _14 = &(*_15)
-    _3 = core::fmt::{Arguments<'a>}::new<'73, 40usize, 2usize>(move _12, move _14)
-    ↳⚡ storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(args_7)
-        storage_dead(args_4)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(args_5)
+    storage_live(_6)
+    _6 = &start
+    storage_live(_7)
+    _7 = &end
+    args_5 = (move _6, move _7)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_live(args_8)
+    storage_live(_9)
+    storage_live(_10)
+    _17 = copy args_5._0
+    _10 = &(*_17)
+    _9 = new_display<'60, '62, usize>[{built_in impl Sized for usize}, {impl#7}](move _10)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
         storage_dead(_3)
         storage_dead(end)
         storage_dead(start)
         unwind_continue
+    storage_dead(_10)
+    storage_live(_11)
+    storage_live(_12)
+    _18 = copy args_5._1
+    _12 = &(*_18)
+    _11 = new_display<'64, '66, usize>[{built_in impl Sized for usize}, {impl#7}](move _12)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(end)
+        storage_dead(start)
+        unwind_continue
+    storage_dead(_12)
+    args_8 = [move _9, move _11]
+    storage_dead(_11)
+    storage_dead(_9)
+    storage_live(_13)
+    storage_live(_14)
+    storage_live(_19)
+    _19 = [const 22u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 115u8, const 116u8, const 97u8, const 114u8, const 116u8, const 115u8, const 32u8, const 97u8, const 116u8, const 32u8, const 192u8, const 13u8, const 32u8, const 98u8, const 117u8, const 116u8, const 32u8, const 101u8, const 110u8, const 100u8, const 115u8, const 32u8, const 97u8, const 116u8, const 32u8, const 192u8, const 0u8]
+    storage_live(_20)
+    _20 = &_19
+    _14 = move _20
+    _13 = &(*_14)
+    storage_live(_15)
+    storage_live(_16)
+    _16 = &args_8
+    _15 = &(*_16)
+    _4 = core::fmt::{Arguments<'a>}::new<'73, 40usize, 2usize>(move _13, move _15)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(end)
+        storage_dead(start)
+        unwind_continue
+    storage_dead(_16)
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
-    storage_dead(_12)
-    storage_dead(_17)
-    storage_dead(_16)
-    storage_dead(args_7)
-    storage_dead(args_4)
-    storage_dead(_3)
-    storage_dead(end)
-    storage_dead(start)
-    storage_dead(_19)
-    storage_dead(_18)
-    panic(core::panicking::panic_fmt)
+    _3 = panic_fmt<'75>(move _4)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(end)
+        storage_dead(start)
+        unwind_continue
 }
 
 #[track_caller]
@@ -331,103 +346,108 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     let _0: !; // return
     let end: usize; // arg #1
     let len: usize; // arg #2
-    let _3: Arguments<'1>; // anonymous local
-    let args_4: (&'11 usize, &'12 usize); // local
-    let _5: &'16 usize; // anonymous local
-    let _6: &'17 usize; // anonymous local
-    let args_7: [Argument<'26>; 2usize]; // local
-    let _8: Argument<'30>; // anonymous local
-    let _9: &'31 usize; // anonymous local
-    let _10: Argument<'32>; // anonymous local
-    let _11: &'33 usize; // anonymous local
-    let _12: &'35 [u8; 55usize]; // anonymous local
-    let _13: &'36 [u8; 55usize]; // anonymous local
-    let _14: &'42 [Argument<'43>; 2usize]; // anonymous local
-    let _15: &'47 [Argument<'48>; 2usize]; // anonymous local
-    let _16: &'52 usize; // anonymous local
-    let _17: &'53 usize; // anonymous local
-    let _18: [u8; 55usize]; // anonymous local
-    let _19: &'68 [u8; 55usize]; // anonymous local
+    let _3: !; // anonymous local
+    let _4: Arguments<'1>; // anonymous local
+    let args_5: (&'11 usize, &'12 usize); // local
+    let _6: &'16 usize; // anonymous local
+    let _7: &'17 usize; // anonymous local
+    let args_8: [Argument<'26>; 2usize]; // local
+    let _9: Argument<'30>; // anonymous local
+    let _10: &'31 usize; // anonymous local
+    let _11: Argument<'32>; // anonymous local
+    let _12: &'33 usize; // anonymous local
+    let _13: &'35 [u8; 55usize]; // anonymous local
+    let _14: &'36 [u8; 55usize]; // anonymous local
+    let _15: &'42 [Argument<'43>; 2usize]; // anonymous local
+    let _16: &'47 [Argument<'48>; 2usize]; // anonymous local
+    let _17: &'52 usize; // anonymous local
+    let _18: &'53 usize; // anonymous local
+    let _19: [u8; 55usize]; // anonymous local
+    let _20: &'68 [u8; 55usize]; // anonymous local
 
     storage_live(_0)
-    storage_live(_16)
     storage_live(_17)
-    storage_live(_3)
-    storage_live(args_4)
-    storage_live(_5)
-    _5 = &end
-    storage_live(_6)
-    _6 = &len
-    args_4 = (move _5, move _6)
-    storage_dead(_6)
-    storage_dead(_5)
-    storage_live(args_7)
-    storage_live(_8)
-    storage_live(_9)
-    _16 = copy args_4._0
-    _9 = &(*_16)
-    _8 = new_display<'60, '62, usize>[{built_in impl Sized for usize}, {impl#7}](move _9)
-    ↳⚡ storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(args_7)
-        storage_dead(args_4)
-        storage_dead(_3)
-        storage_dead(len)
-        storage_dead(end)
-        unwind_continue
-    storage_dead(_9)
-    storage_live(_10)
-    storage_live(_11)
-    _17 = copy args_4._1
-    _11 = &(*_17)
-    _10 = new_display<'64, '66, usize>[{built_in impl Sized for usize}, {impl#7}](move _11)
-    ↳⚡ storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(args_7)
-        storage_dead(args_4)
-        storage_dead(_3)
-        storage_dead(len)
-        storage_dead(end)
-        unwind_continue
-    storage_dead(_11)
-    args_7 = [move _8, move _10]
-    storage_dead(_10)
-    storage_dead(_8)
-    storage_live(_12)
-    storage_live(_13)
     storage_live(_18)
-    _18 = [const 16u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 101u8, const 110u8, const 100u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 192u8, const 34u8, const 32u8, const 111u8, const 117u8, const 116u8, const 32u8, const 111u8, const 102u8, const 32u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 102u8, const 111u8, const 114u8, const 32u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 111u8, const 102u8, const 32u8, const 108u8, const 101u8, const 110u8, const 103u8, const 116u8, const 104u8, const 32u8, const 192u8, const 0u8]
-    storage_live(_19)
-    _19 = &_18
-    _13 = move _19
-    _12 = &(*_13)
-    storage_live(_14)
-    storage_live(_15)
-    _15 = &args_7
-    _14 = &(*_15)
-    _3 = core::fmt::{Arguments<'a>}::new<'73, 55usize, 2usize>(move _12, move _14)
-    ↳⚡ storage_dead(_17)
-        storage_dead(_16)
-        storage_dead(args_7)
-        storage_dead(args_4)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(args_5)
+    storage_live(_6)
+    _6 = &end
+    storage_live(_7)
+    _7 = &len
+    args_5 = (move _6, move _7)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_live(args_8)
+    storage_live(_9)
+    storage_live(_10)
+    _17 = copy args_5._0
+    _10 = &(*_17)
+    _9 = new_display<'60, '62, usize>[{built_in impl Sized for usize}, {impl#7}](move _10)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
         storage_dead(_3)
         storage_dead(len)
         storage_dead(end)
         unwind_continue
+    storage_dead(_10)
+    storage_live(_11)
+    storage_live(_12)
+    _18 = copy args_5._1
+    _12 = &(*_18)
+    _11 = new_display<'64, '66, usize>[{built_in impl Sized for usize}, {impl#7}](move _12)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(len)
+        storage_dead(end)
+        unwind_continue
+    storage_dead(_12)
+    args_8 = [move _9, move _11]
+    storage_dead(_11)
+    storage_dead(_9)
+    storage_live(_13)
+    storage_live(_14)
+    storage_live(_19)
+    _19 = [const 16u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 101u8, const 110u8, const 100u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 192u8, const 34u8, const 32u8, const 111u8, const 117u8, const 116u8, const 32u8, const 111u8, const 102u8, const 32u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 102u8, const 111u8, const 114u8, const 32u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 111u8, const 102u8, const 32u8, const 108u8, const 101u8, const 110u8, const 103u8, const 116u8, const 104u8, const 32u8, const 192u8, const 0u8]
+    storage_live(_20)
+    _20 = &_19
+    _14 = move _20
+    _13 = &(*_14)
+    storage_live(_15)
+    storage_live(_16)
+    _16 = &args_8
+    _15 = &(*_16)
+    _4 = core::fmt::{Arguments<'a>}::new<'73, 55usize, 2usize>(move _13, move _15)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(len)
+        storage_dead(end)
+        unwind_continue
+    storage_dead(_16)
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_13)
-    storage_dead(_12)
-    storage_dead(_17)
-    storage_dead(_16)
-    storage_dead(args_7)
-    storage_dead(args_4)
-    storage_dead(_3)
-    storage_dead(len)
-    storage_dead(end)
-    storage_dead(_19)
-    storage_dead(_18)
-    panic(core::panicking::panic_fmt)
+    _3 = panic_fmt<'75>(move _4)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(len)
+        storage_dead(end)
+        unwind_continue
 }
 
 // Full name: core::option::Option

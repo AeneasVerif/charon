@@ -1,5 +1,7 @@
 use charon_lib::ast::from_rustc;
+use charon_lib::formatter::IntoFormatter;
 use charon_lib::llbc_ast::*;
+use charon_lib::pretty::FmtWithCtx;
 use itertools::Itertools;
 use std::collections::HashMap;
 
@@ -61,6 +63,85 @@ fn type_decl() -> anyhow::Result<()> {
     assert_eq!(
         type_decls[0].item_meta.name.debug_repr(&crate_data),
         "test_crate::Struct"
+    );
+    Ok(())
+}
+
+#[test]
+fn marker_traits() -> anyhow::Result<()> {
+    let crate_data = translate(
+        r#"//@ charon-arg=--monomorphize
+        //@ charon-arg=--start-from=crate::main
+        use std::cell::Cell;
+        use std::marker::PhantomPinned;
+
+        struct Everything;
+        struct NotSendOrSync(*const ());
+        struct NotSyncOrFreeze(Cell<u8>);
+        struct NotUnpin(PhantomPinned);
+        struct NotSized([u8]);
+
+        fn main() {
+            let _ = Everything;
+            let _ = NotSendOrSync(std::ptr::null());
+            let _ = NotSyncOrFreeze(Cell::new(0));
+            let _ = NotUnpin(PhantomPinned);
+            let _: Option<&NotSized> = None;
+        }
+        "#,
+    )?;
+    let fmt = crate_data.into_fmt();
+    let marker_traits: HashMap<String, ImplementsMarkerTraits> = user_type_decls(&crate_data)
+        .into_iter()
+        .map(|decl| {
+            let name = decl.item_meta.name.with_ctx(&fmt).to_string();
+            (
+                name.clone(),
+                decl.marker_traits
+                    .as_deref()
+                    .copied()
+                    .unwrap_or_else(|| panic!("missing marker traits for {name}")),
+            )
+        })
+        .collect();
+
+    let all = ImplementsMarkerTraits {
+        is_sized: true,
+        is_send: true,
+        is_sync: true,
+        is_freeze: true,
+        is_unpin: true,
+    };
+    assert_eq!(marker_traits["test_crate::Everything"], all);
+    assert_eq!(
+        marker_traits["test_crate::NotSendOrSync"],
+        ImplementsMarkerTraits {
+            is_send: false,
+            is_sync: false,
+            ..all
+        }
+    );
+    assert_eq!(
+        marker_traits["test_crate::NotSyncOrFreeze"],
+        ImplementsMarkerTraits {
+            is_sync: false,
+            is_freeze: false,
+            ..all
+        }
+    );
+    assert_eq!(
+        marker_traits["test_crate::NotUnpin"],
+        ImplementsMarkerTraits {
+            is_unpin: false,
+            ..all
+        }
+    );
+    assert_eq!(
+        marker_traits["test_crate::NotSized"],
+        ImplementsMarkerTraits {
+            is_sized: false,
+            ..all
+        }
     );
     Ok(())
 }
@@ -678,7 +759,7 @@ fn rename_attribute() -> anyhow::Result<()> {
 #[test]
 fn declaration_groups() -> anyhow::Result<()> {
     let crate_data = translate(
-        r#"
+        r#"//@ charon-arg=--reconstruct-panic-calls
         fn foo() {
             panic!()
         }
@@ -689,8 +770,9 @@ fn declaration_groups() -> anyhow::Result<()> {
         "#,
     )?;
 
-    // There are 2 function items: one for `foo`, and one for the initializer of `Trait::FOO`.
-    assert_eq!(crate_data.fun_decls.iter().count(), 2);
+    // There are 4 function items: `foo`, the initializer of `Trait::FOO`, and two dependencies of
+    // the panic call.
+    assert_eq!(crate_data.fun_decls.iter().count(), 4);
     let initializer = crate_data
         .fun_decls
         .iter()
@@ -708,7 +790,7 @@ fn declaration_groups() -> anyhow::Result<()> {
 
     let decl_groups = crate_data.ordered_decls.unwrap();
     // One of the groups is the declaration of `()`, which every crate has.
-    assert_eq!(decl_groups.len(), 7);
+    assert_eq!(decl_groups.len(), 9);
 
     Ok(())
 }

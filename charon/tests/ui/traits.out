@@ -114,6 +114,10 @@ where
   _1: B,
 }
 
+struct str {
+  _0: [u8],
+}
+
 struct (_,)<A> {
   _0: A,
 }
@@ -1543,8 +1547,9 @@ pub fn flabada<'a>(_x: &'a ()) -> Wrapper<(bool, &'a ())>[{built_in impl Sized f
     let _x: &'16 (); // arg #1
 
     storage_live(_0)
-    storage_dead(_x)
     panic(core::panicking::panic)
+    ↳⚡ storage_dead(_x)
+        unwind_continue
 }
 
 // Full name: test_crate::{impl Fn<(&'a (),)> for for<'a> flabada<'a>}::call
@@ -1681,6 +1686,7 @@ where
 
     storage_live(_0)
     panic(core::panicking::panic)
+    ↳⚡ unwind_continue
 }
 
 

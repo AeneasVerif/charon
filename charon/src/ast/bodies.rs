@@ -231,6 +231,7 @@ pub enum BorrowckStatement {
 /// - Unwind termination
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Abort"))]
 pub enum AbortKind {
     /// A built-in panicking function, or a panic due to a failed built-in check (e.g. for out-of-bounds accesses).
     Panic(Option<Name>),

@@ -108,6 +108,8 @@ pub(crate) struct BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
     pub b_ctx: &'bctx mut BodyTransCtx<'tcx, 'tctx, 'ictx>,
     /// Block onto which we're adding statements.
     pub current_block: BlockId,
+    /// Whether the current block is a cleanup block.
+    pub is_cleanup: bool,
     /// Span of the statement or terminator currently being translated.
     pub span: Span,
     /// List of currently translated statements
@@ -118,10 +120,12 @@ impl<'tcx, 'tctx, 'ictx, 'bctx> BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
     pub(crate) fn new(
         b_ctx: &'bctx mut BodyTransCtx<'tcx, 'tctx, 'ictx>,
         current_block: BlockId,
+        is_cleanup: bool,
     ) -> Self {
         BlockTransCtx {
             b_ctx,
             current_block,
+            is_cleanup,
             span: Span::dummy(),
             statements: Vec::new(),
         }
@@ -131,6 +135,7 @@ impl<'tcx, 'tctx, 'ictx, 'bctx> BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
         let block = BlockData {
             statements: self.statements,
             terminator,
+            is_cleanup: self.is_cleanup,
         };
         self.b_ctx.blocks.set_slot(self.current_block, block);
     }
@@ -138,9 +143,9 @@ impl<'tcx, 'tctx, 'ictx, 'bctx> BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
     /// Used for non-diverging intrinsics.
     fn push_nounwind_call(&mut self, span: Span, call: Call) {
         let target = self.blocks.reserve_slot();
-        let on_unwind = self.blocks.push(
-            Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior)).into_block(),
-        );
+        let on_unwind = self
+            .blocks
+            .push(Terminator::new(span, TerminatorKind::UndefinedBehavior).into_block(true));
         let block = BlockData {
             statements: mem::take(&mut self.statements),
             terminator: Terminator::new(
@@ -151,6 +156,7 @@ impl<'tcx, 'tctx, 'ictx, 'bctx> BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
                     on_unwind,
                 },
             ),
+            is_cleanup: self.is_cleanup,
         };
         let current_block = mem::replace(&mut self.current_block, target);
         self.blocks.set_slot(current_block, block);
@@ -618,7 +624,7 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
         block: &mir::BasicBlockData<'tcx>,
     ) -> Result<(), Error> {
         // Translate the statements
-        let mut block_ctx = BlockTransCtx::new(self, block_id);
+        let mut block_ctx = BlockTransCtx::new(self, block_id, block.is_cleanup);
         for statement in &block.statements {
             trace!("statement: {:?}", statement);
             block_ctx.translate_statement(source_scopes, statement)?;
@@ -1663,15 +1669,11 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 ullbc_ast::TerminatorKind::Switch { data, branches }
             }
             TerminatorKind::UnwindResume => ullbc_ast::TerminatorKind::UnwindResume,
-            TerminatorKind::UnwindTerminate { .. } => {
-                ullbc_ast::TerminatorKind::Abort(AbortKind::UnwindTerminate)
-            }
+            TerminatorKind::UnwindTerminate { .. } => ullbc_ast::TerminatorKind::UnwindTerminate,
             TerminatorKind::Return => ullbc_ast::TerminatorKind::Return,
             // A MIR `Unreachable` terminator indicates undefined behavior of the rust abstract
             // machine.
-            TerminatorKind::Unreachable => {
-                ullbc_ast::TerminatorKind::Abort(AbortKind::UndefinedBehavior)
-            }
+            TerminatorKind::Unreachable => ullbc_ast::TerminatorKind::UndefinedBehavior,
             TerminatorKind::Drop {
                 place,
                 target,
@@ -1841,28 +1843,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let generics = hax::erase_free_regions(tcx, generics.skip_binder());
                 let item = &hax::translate_item_ref(&self.hax_state, *def_id, generics);
                 trace!("func: {:?}", item.def_id);
-                // There are actually ~30 lang items relating to panic functions; should we list them all here?
-                let is_panic = [LangItem::Panic, LangItem::PanicFmt, LangItem::BeginPanic]
-                    .into_iter()
-                    .any(|lang_item| tcx.is_lang_item(*def_id, lang_item))
-                    || self.t_ctx.panic_fns.contains(def_id);
-                if is_panic {
-                    let item_src = TransItemSource::from_item(
-                        item,
-                        TransItemSourceKind::Fun,
-                        self.monomorphize(),
-                    );
-                    let name = self.t_ctx.translate_name(&item_src)?;
-                    // If the call is `panic!`, then the target is `None`.
-                    // I don't know in which other cases it can be `None`.
-                    assert!(target.is_none());
-                    // We ignore the arguments
-                    // TODO: shouldn't we do something with the unwind edge?
-                    return Ok(TerminatorKind::Abort(AbortKind::Panic(Some(name))));
-                } else {
-                    let fn_ptr = self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?;
-                    FnOperand::Regular(fn_ptr)
-                }
+                let fn_ptr = self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?;
+                FnOperand::Regular(fn_ptr)
             }
             _ => {
                 // Call to a function pointer.
@@ -1931,9 +1913,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         let target = match target {
             Some(target) => self.translate_basic_block_id(*target),
             None => {
-                let abort =
-                    Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior));
-                self.blocks.push(abort.into_block())
+                let abort = Terminator::new(span, TerminatorKind::UndefinedBehavior);
+                let is_cleanup = self.is_cleanup;
+                self.blocks.push(abort.into_block(is_cleanup))
             }
         };
 
@@ -1973,17 +1955,15 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         match unwind {
             mir::UnwindAction::Continue => {
                 let unwind_continue = Terminator::new(span, TerminatorKind::UnwindResume);
-                self.blocks.push(unwind_continue.into_block())
+                self.blocks.push(unwind_continue.into_block(true))
             }
             mir::UnwindAction::Unreachable => {
-                let abort =
-                    Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior));
-                self.blocks.push(abort.into_block())
+                let abort = Terminator::new(span, TerminatorKind::UndefinedBehavior);
+                self.blocks.push(abort.into_block(true))
             }
             mir::UnwindAction::Terminate(..) => {
-                let abort =
-                    Terminator::new(span, TerminatorKind::Abort(AbortKind::UnwindTerminate));
-                self.blocks.push(abort.into_block())
+                let abort = Terminator::new(span, TerminatorKind::UnwindTerminate);
+                self.blocks.push(abort.into_block(true))
             }
             mir::UnwindAction::Cleanup(bb) => self.translate_basic_block_id(*bb),
         }

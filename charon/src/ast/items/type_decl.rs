@@ -38,6 +38,9 @@ pub struct TypeDecl {
     pub layout: SeqHashMap<TargetTriple, Layout>,
     /// The metadata associated with a pointer to the type.
     pub ptr_metadata: PtrMetadata,
+    /// Which built-in marker traits are implemented by this type. This is only known for
+    /// monomorphic types.
+    pub marker_traits: Option<Box<ImplementsMarkerTraits>>,
 }
 
 generate_index_type!(VariantId, "Variant");
@@ -143,6 +146,18 @@ pub enum TypeSource {
     },
     /// A type declaration synthesised for a builtin ADT.
     Builtin(BuiltinAdt),
+}
+
+/// Which marker traits this type implements.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[serde_state(stateless)]
+pub struct ImplementsMarkerTraits {
+    pub is_sized: bool,
+    pub is_send: bool,
+    pub is_sync: bool,
+    pub is_freeze: bool,
+    pub is_unpin: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

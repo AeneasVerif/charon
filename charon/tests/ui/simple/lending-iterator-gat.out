@@ -499,9 +499,9 @@ pub fn main()
     let _25: &'55 i32; // anonymous local
     let _26: &'56 i32; // anonymous local
     let _27: &'138 i32; // anonymous local
-    let _28: &'153 i32; // anonymous local
+    let _28: &'159 i32; // anonymous local
     let _29: i32; // anonymous local
-    let _30: &'154 i32; // anonymous local
+    let _30: &'160 i32; // anonymous local
     let _31: i32; // anonymous local
 
     storage_live(_26)
@@ -593,15 +593,6 @@ pub fn main()
         _21 = &(*_22)
         storage_live(_23)
         _23 = Option::None {  }
-        storage_dead(_25)
-        storage_dead(_24)
-        storage_dead(_23)
-        storage_dead(_22)
-        storage_dead(_21)
-        storage_dead(_20)
-        storage_dead(_19)
-        storage_dead(_18)
-        storage_dead(kind)
         storage_dead(_31)
         storage_dead(_30)
         storage_dead(_29)
@@ -609,6 +600,16 @@ pub fn main()
         storage_dead(_27)
         storage_dead(_26)
         panic(core::panicking::assert_failed)
+        ↳⚡ storage_dead(_25)
+            storage_dead(_24)
+            storage_dead(_23)
+            storage_dead(_22)
+            storage_dead(_21)
+            storage_dead(_20)
+            storage_dead(_19)
+            storage_dead(_18)
+            storage_dead(kind)
+            unwind_continue
     }
     storage_dead(_16)
     storage_dead(_15)

@@ -1131,7 +1131,10 @@ pub fn translate<'tcx>(
         tcx,
         hax::options::Options {
             inline_anon_consts: !translate_options.raw_consts,
-            anon_allocs_as_globals: matches!(translate_options.consts, ConstHandling::Values),
+            anon_allocs_as_globals: matches!(
+                translate_options.consts,
+                ConstHandling::Values | ConstHandling::Bytes
+            ),
         },
         hax::options::BoundsOptions {
             add_destruct_bounds: translate_options.add_destruct_bounds,
@@ -1169,21 +1172,9 @@ pub fn translate<'tcx>(
         cached_file_ids: Default::default(),
         cached_names: Default::default(),
         cached_item_metas: Default::default(),
-        panic_fns: Default::default(),
         lt_mutability_computer: Default::default(),
     };
     ctx.register_target_info();
-    ctx.panic_fns = [
-        "core::panicking::assert_failed",
-        &names::EXPLICIT_PANIC_NAME.join("::"),
-    ]
-    .into_iter()
-    .filter_map(|path| {
-        let pat = NamePattern::parse(path).unwrap();
-        super::resolve_path::def_path_def_ids(&ctx.hax_state, &pat, true).ok()
-    })
-    .flatten()
-    .collect();
     ctx.reserve_unit_decl();
     ctx.register_builtin_functions()?;
 

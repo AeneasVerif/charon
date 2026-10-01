@@ -251,10 +251,9 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub raw_consts: bool,
-    /// How to handle constants and statics: whether they should be represented as a call to their
-    /// initializer function, or whether we should attempt to evaluate them into a value. When
-    /// evaluation isn't possible (e.g. the constant is generic, or for recursive statics), we fall
-    /// back to the initializer call.
+    /// How to represent constants and statics: as a call to their initializer function, as an
+    /// evaluated value, or as raw bytes. This is always best-effort: in some cases we only get the
+    /// evaluated constant, and in others we cannot evaluate the constant and keep the initializer.
     #[clap(long)]
     #[serde(default)]
     pub consts: Option<ConstHandling>,
@@ -268,6 +267,10 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub reconstruct_fallible_operations: bool,
+    /// Replace calls to built-in panic functions with a `Panic` terminator.
+    #[clap(long)]
+    #[serde(default)]
+    pub reconstruct_panic_calls: bool,
     /// Replace `if x { panic() }` with `assert(x)`.
     #[clap(long)]
     #[serde(default)]
@@ -433,6 +436,9 @@ pub enum ConstHandling {
     /// Try evaluating consts and statics to their final value. If evaluation fails, we fall back to the
     /// initializer call.
     Values,
+    /// Try evaluating consts and statics to raw bytes, using `ConstantExprKind::RawMemory`. If
+    /// evaluation fails, we fall back to the initializer call.
+    Bytes,
 }
 
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -506,6 +512,7 @@ impl CliOpts {
                     self.index_to_function_calls = true;
                     self.reconstruct_fallible_operations = true;
                     self.reconstruct_asserts = true;
+                    self.reconstruct_panic_calls = true;
                     self.reconstruct_matches = true;
                     self.unbind_item_vars = true;
                     self.duplicate_defaulted_methods = true;
@@ -530,6 +537,7 @@ impl CliOpts {
                     self.ops_to_function_calls = true;
                     self.index_to_function_calls = true;
                     self.reconstruct_fallible_operations = true;
+                    self.reconstruct_panic_calls = true;
                     self.reconstruct_asserts = true;
                     self.reconstruct_matches = true;
                     self.hide_marker_traits = true;
@@ -544,6 +552,7 @@ impl CliOpts {
                     self.hide_allocator = true;
                     self.treat_box_as_builtin = true;
                     self.reconstruct_fallible_operations = true;
+                    self.reconstruct_panic_calls = true;
                     self.reconstruct_asserts = true;
                     self.reconstruct_matches = true;
                     self.lift_associated_types.push("*".to_owned());
@@ -574,6 +583,7 @@ impl CliOpts {
                     self.treat_box_as_builtin = true;
                     self.hide_allocator = true;
                     self.reconstruct_fallible_operations = true;
+                    self.reconstruct_panic_calls = true;
                     self.reconstruct_asserts = true;
                     self.reconstruct_matches = true;
                     self.resugar_drops = true;
@@ -744,8 +754,7 @@ pub struct TranslateOptions {
     pub no_gen_tuple_structs: bool,
     /// Don't inline or evaluate constants.
     pub raw_consts: bool,
-    /// Whether to evaluate the value of named constants and statics, or to keep a call
-    /// to their initializer function.
+    /// How much to evaluate constants and statics.
     pub consts: ConstHandling,
     /// Replace string literal constants with a constant u8 array that gets unsized,
     /// expliciting the fact a string constant has a hidden reference.
@@ -753,6 +762,8 @@ pub struct TranslateOptions {
     /// Replace "bound checks followed by UB-on-overflow operation" with the corresponding
     /// panic-on-overflow operation. This loses unwinding information.
     pub reconstruct_fallible_operations: bool,
+    /// Replace calls to built-in panic functions with a `Panic` terminator.
+    pub reconstruct_panic_calls: bool,
     /// Replace `if x { panic() }` with `assert(x)`.
     pub reconstruct_asserts: bool,
     /// Reconstruct matches on enum variants.
@@ -925,6 +936,7 @@ impl TranslateOptions {
             consts: options.consts.unwrap_or_default(),
             unsized_strings: options.unsized_strings,
             reconstruct_fallible_operations: options.reconstruct_fallible_operations,
+            reconstruct_panic_calls: options.reconstruct_panic_calls,
             reconstruct_asserts: options.reconstruct_asserts,
             reconstruct_matches: options.reconstruct_matches,
             deallocate_all_locals: options.deallocate_all_locals,

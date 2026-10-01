@@ -11,7 +11,12 @@ pub struct Transform {
 impl Transform {
     pub fn new(ctx: &mut TransformCtx) -> CowBox<dyn UllbcPass> {
         let panic_name = Name::from_path(names::EXPLICIT_PANIC_NAME);
-        let panic_terminator = TerminatorKind::Abort(AbortKind::Panic(Some(panic_name)));
+        let panic_explicit = ctx
+            .translated
+            .fun_decls
+            .iter_indexed()
+            .find(|(_, decl)| decl.item_meta.name == panic_name)
+            .map(|(id, _)| id);
 
         // Collect and remove the functions that we want to inline.
         let to_inline = ctx
@@ -19,11 +24,30 @@ impl Transform {
             .fun_decls
             .extract(|_, decl| {
                 decl.body.as_unstructured().is_some_and(|body| {
-                    // If the whole body is only a call to this specific panic function.
-                    // FIXME: also check that the name of the function is `panic_cold_explicit`?
-                    let is_local_panic_fn = body.body.len() == 1 && {
-                        let block = &body.body[0];
-                        block.statements.is_empty() && block.terminator.kind == panic_terminator
+                    // `panic!` generates a function item named `panic_cold_explicit` that calls
+                    // `panic_explicit`. We inline that function.
+                    let block = &body.body[START_BLOCK_ID];
+                    let is_local_panic_fn = if decl.item_meta.name.short_str()
+                        == Some("panic_cold_explicit")
+                        && matches!(body.body.len(), 2 | 3)
+                        && block.statements.is_empty()
+                        && let TerminatorKind::Call { call, .. } = &block.terminator.kind
+                        && let FnOperand::Regular(fn_ptr) = &call.func
+                        && let FnPtrKind::Fun(id) = fn_ptr.kind.as_ref()
+                        && Some(*id) == panic_explicit
+                    {
+                        body.body.iter_enumerated().all(|(id, block)| {
+                            id == START_BLOCK_ID
+                                || block.statements.is_empty()
+                                    && matches!(
+                                        block.terminator.kind,
+                                        TerminatorKind::UnwindResume
+                                            | TerminatorKind::UnwindTerminate
+                                            | TerminatorKind::UndefinedBehavior
+                                    )
+                        })
+                    } else {
+                        false
                     };
                     // The `anon_consts_to_call` pass already transformed references to anon consts
                     // into calls to their initializers so we only have to inline these.
@@ -75,6 +99,7 @@ impl UllbcPass for Transform {
             };
             let target = *target;
             let on_unwind = *on_unwind;
+            let is_cleanup = block.is_cleanup;
             let dest_place = dest.clone();
             let args = args.clone();
             let FnOperand::Regular(fn_ptr) = &func else {
@@ -139,7 +164,7 @@ impl UllbcPass for Transform {
                     .map(|kind| Statement::new(span, kind)),
             );
 
-            let mut final_block = BlockData::new_goto(span, target);
+            let mut final_block = BlockData::new_goto(span, target, is_cleanup);
 
             // The inner body will write to `return_place`, but the outer body expects the value at
             // `dest_place`.
@@ -171,6 +196,11 @@ impl UllbcPass for Transform {
                     }
                     _ => (),
                 });
+            if is_cleanup {
+                for block in &mut inner_body.body {
+                    block.is_cleanup = true;
+                }
+            }
             // At the end of the current block, start evaluating the inner body.
             outer_body.body[block_id].terminator.kind = TerminatorKind::Goto {
                 target: start_block,

@@ -1312,31 +1312,31 @@ fn main()
     let _84: &'127 i32; // anonymous local
     let _85: &'128 i32; // anonymous local
     let _86: &'129 i32; // anonymous local
-    let _87: &'160 i32; // anonymous local
-    let _88: &'168 i32; // anonymous local
-    let _89: &'187 i32; // anonymous local
-    let _90: &'193 i32; // anonymous local
-    let _91: &'194 i64; // anonymous local
-    let _92: &'200 i32; // anonymous local
-    let _93: &'208 i32; // anonymous local
-    let _94: &'213 i32; // anonymous local
-    let _95: &'228 i32; // anonymous local
+    let _87: &'162 i32; // anonymous local
+    let _88: &'170 i32; // anonymous local
+    let _89: &'195 i32; // anonymous local
+    let _90: &'201 i32; // anonymous local
+    let _91: &'202 i64; // anonymous local
+    let _92: &'208 i32; // anonymous local
+    let _93: &'216 i32; // anonymous local
+    let _94: &'221 i32; // anonymous local
+    let _95: &'242 i32; // anonymous local
     let _96: i32; // anonymous local
-    let _97: &'229 i32; // anonymous local
+    let _97: &'243 i32; // anonymous local
     let _98: i32; // anonymous local
-    let _99: &'230 i32; // anonymous local
+    let _99: &'244 i32; // anonymous local
     let _100: i32; // anonymous local
-    let _101: &'231 i32; // anonymous local
+    let _101: &'245 i32; // anonymous local
     let _102: i32; // anonymous local
-    let _103: &'232 i32; // anonymous local
+    let _103: &'246 i32; // anonymous local
     let _104: i32; // anonymous local
-    let _105: &'233 i64; // anonymous local
+    let _105: &'247 i64; // anonymous local
     let _106: i64; // anonymous local
-    let _107: &'234 i32; // anonymous local
+    let _107: &'248 i32; // anonymous local
     let _108: i32; // anonymous local
-    let _109: &'235 i32; // anonymous local
+    let _109: &'249 i32; // anonymous local
     let _110: i32; // anonymous local
-    let _111: &'236 i32; // anonymous local
+    let _111: &'250 i32; // anonymous local
     let _112: i32; // anonymous local
 
     storage_live(_86)
@@ -1449,8 +1449,8 @@ fn main()
     storage_dead(_16)
     _14 = &_15
     _13 = &(*_14)
-    _12 = modify_trait_object<'146, String>[{built_in impl Sized for String}, impl_Clone_for_String](move _13)
-    ↳⚡ conditional_drop[drop_glue<'147>] _15
+    _12 = modify_trait_object<'147, String>[{built_in impl Sized for String}, impl_Clone_for_String](move _13)
+    ↳⚡ conditional_drop[drop_glue<'148>] _15
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1528,8 +1528,8 @@ fn main()
         unwind_continue
     _11 = &_12
     storage_dead(_13)
-    _10 = is_empty<'149>(move _11)
-    ↳⚡ conditional_drop[drop_glue<'150>] _12
+    _10 = is_empty<'150>(move _11)
+    ↳⚡ conditional_drop[drop_glue<'151>] _12
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1581,7 +1581,7 @@ fn main()
             storage_dead(_87)
             storage_dead(_86)
             unwind_terminate
-        conditional_drop[drop_glue<'147>] _15
+        conditional_drop[drop_glue<'148>] _15
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1660,8 +1660,8 @@ fn main()
     if move _10 {
     } else {
         storage_dead(_11)
-        conditional_drop[drop_glue<'152>] _12
-        ↳⚡ conditional_drop[drop_glue<'147>] _15
+        conditional_drop[drop_glue<'153>] _12
+        ↳⚡ conditional_drop[drop_glue<'148>] _15
             ↳⚡ storage_dead(_85)
                 storage_dead(_84)
                 storage_dead(_83)
@@ -1737,7 +1737,7 @@ fn main()
             storage_dead(_32)
             storage_dead(kind_31)
             unwind_continue
-        conditional_drop[drop_glue<'154>] _15
+        conditional_drop[drop_glue<'155>] _15
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1847,29 +1847,6 @@ fn main()
             _35 = &(*_36)
             storage_live(_37)
             _37 = Option::None {  }
-            storage_dead(_85)
-            storage_dead(_84)
-            storage_dead(_83)
-            storage_dead(_82)
-            storage_dead(_81)
-            storage_dead(_80)
-            storage_dead(_79)
-            storage_dead(_78)
-            storage_dead(_77)
-            storage_dead(_76)
-            storage_dead(_75)
-            storage_dead(_74)
-            storage_dead(_73)
-            storage_dead(_72)
-            storage_dead(_71)
-            storage_dead(kind_70)
-            storage_dead(_37)
-            storage_dead(_36)
-            storage_dead(_35)
-            storage_dead(_34)
-            storage_dead(_33)
-            storage_dead(_32)
-            storage_dead(kind_31)
             storage_dead(_112)
             storage_dead(_111)
             storage_dead(_110)
@@ -1898,6 +1875,30 @@ fn main()
             storage_dead(_87)
             storage_dead(_86)
             panic(core::panicking::assert_failed)
+            ↳⚡ storage_dead(_85)
+                storage_dead(_84)
+                storage_dead(_83)
+                storage_dead(_82)
+                storage_dead(_81)
+                storage_dead(_80)
+                storage_dead(_79)
+                storage_dead(_78)
+                storage_dead(_77)
+                storage_dead(_76)
+                storage_dead(_75)
+                storage_dead(_74)
+                storage_dead(_73)
+                storage_dead(_72)
+                storage_dead(_71)
+                storage_dead(kind_70)
+                storage_dead(_37)
+                storage_dead(_36)
+                storage_dead(_35)
+                storage_dead(_34)
+                storage_dead(_33)
+                storage_dead(_32)
+                storage_dead(kind_31)
+                unwind_continue
         }
         storage_live(_88)
         storage_live(_99)
@@ -1922,7 +1923,7 @@ fn main()
         _83 = move _88
         _42 = &(*_83)
         _41 = &(*_42)
-        _40 = to_dyn_obj<'170, i32>[{built_in impl Sized for i32}, impl_NoParam_for_i32](move _41)
+        _40 = to_dyn_obj<'172, i32>[{built_in impl Sized for i32}, impl_NoParam_for_i32](move _41)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -1948,11 +1949,11 @@ fn main()
             storage_dead(kind_31)
             unwind_continue
         _39 = &(*_40) with_metadata(copy _40.metadata)
-        z = unsize_cast<&'67 (dyn NoParam + '68), &'179 (dyn NoParam + '180),  at []>(move _39)
+        z = unsize_cast<&'67 (dyn NoParam + '68), &'187 (dyn NoParam + '188),  at []>(move _39)
         storage_dead(_41)
         storage_dead(_39)
         fake_read(z)
-        set_type(typeof(z) == &'181 (dyn NoParam + '182))
+        set_type(typeof(z) == &'189 (dyn NoParam + '190))
         storage_dead(_42)
         storage_dead(_40)
         storage_live(_43)
@@ -2009,10 +2010,10 @@ fn main()
         _82 = move _89
         _47 = &(*_82)
         _46 = &(*_47)
-        a = unsize_cast<&'80 i32, &'188 (dyn Both32And64 + '189), &impl_Both32And64_for_i32::{vtable}>(move _46)
+        a = unsize_cast<&'80 i32, &'196 (dyn Both32And64 + '197), &impl_Both32And64_for_i32::{vtable}>(move _46)
         storage_dead(_46)
         fake_read(a)
-        set_type(typeof(a) == &'190 (dyn Both32And64 + '191))
+        set_type(typeof(a) == &'198 (dyn Both32And64 + '199))
         storage_dead(_47)
         storage_live(_48)
         storage_live(_49)
@@ -2076,10 +2077,10 @@ fn main()
         _79 = move _92
         _56 = &(*_79)
         _55 = &(*_56)
-        b = unsize_cast<&'94 i32, &'201 (dyn LifetimeTrait<Ty = i32> + '202), &impl_LifetimeTrait_for_i32::{vtable}>(move _55)
+        b = unsize_cast<&'94 i32, &'209 (dyn LifetimeTrait<Ty = i32> + '210), &impl_LifetimeTrait_for_i32::{vtable}>(move _55)
         storage_dead(_55)
         fake_read(b)
-        set_type(typeof(b) == &'203 (dyn LifetimeTrait<Ty = i32> + '204))
+        set_type(typeof(b) == &'211 (dyn LifetimeTrait<Ty = i32> + '212))
         storage_dead(_56)
         storage_live(_57)
         storage_live(_58)
@@ -2087,14 +2088,14 @@ fn main()
         storage_live(_60)
         storage_live(_61)
         _61 = &(*b) with_metadata(copy b.metadata)
-        _60 = unsize_cast<&'105 (dyn LifetimeTrait<Ty = i32> + '106), &'206 (dyn LifetimeTrait<Ty = i32> + '207),  at []>(move _61)
+        _60 = unsize_cast<&'105 (dyn LifetimeTrait<Ty = i32> + '106), &'214 (dyn LifetimeTrait<Ty = i32> + '215),  at []>(move _61)
         storage_dead(_61)
         storage_live(_62)
         storage_live(_63)
         _78 = move _93
         _63 = &(*_78)
         _62 = &(*_63)
-        _59 = use_lifetime_trait<'211, '212>(move _60, move _62)
+        _59 = use_lifetime_trait<'219, '220>(move _60, move _62)
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -2163,29 +2164,6 @@ fn main()
             _74 = &(*_75)
             storage_live(_76)
             _76 = Option::None {  }
-            storage_dead(_85)
-            storage_dead(_84)
-            storage_dead(_83)
-            storage_dead(_82)
-            storage_dead(_81)
-            storage_dead(_80)
-            storage_dead(_79)
-            storage_dead(_78)
-            storage_dead(_77)
-            storage_dead(_76)
-            storage_dead(_75)
-            storage_dead(_74)
-            storage_dead(_73)
-            storage_dead(_72)
-            storage_dead(_71)
-            storage_dead(kind_70)
-            storage_dead(_37)
-            storage_dead(_36)
-            storage_dead(_35)
-            storage_dead(_34)
-            storage_dead(_33)
-            storage_dead(_32)
-            storage_dead(kind_31)
             storage_dead(_112)
             storage_dead(_111)
             storage_dead(_110)
@@ -2214,6 +2192,30 @@ fn main()
             storage_dead(_87)
             storage_dead(_86)
             panic(core::panicking::assert_failed)
+            ↳⚡ storage_dead(_85)
+                storage_dead(_84)
+                storage_dead(_83)
+                storage_dead(_82)
+                storage_dead(_81)
+                storage_dead(_80)
+                storage_dead(_79)
+                storage_dead(_78)
+                storage_dead(_77)
+                storage_dead(_76)
+                storage_dead(_75)
+                storage_dead(_74)
+                storage_dead(_73)
+                storage_dead(_72)
+                storage_dead(_71)
+                storage_dead(kind_70)
+                storage_dead(_37)
+                storage_dead(_36)
+                storage_dead(_35)
+                storage_dead(_34)
+                storage_dead(_33)
+                storage_dead(_32)
+                storage_dead(kind_31)
+                unwind_continue
         }
         storage_dead(_69)
         storage_dead(_68)
@@ -2283,8 +2285,8 @@ fn main()
         return
     }
     storage_dead(_11)
-    conditional_drop[drop_glue<'151>] _12
-    ↳⚡ conditional_drop[drop_glue<'147>] _15
+    conditional_drop[drop_glue<'152>] _12
+    ↳⚡ conditional_drop[drop_glue<'148>] _15
         ↳⚡ storage_dead(_85)
             storage_dead(_84)
             storage_dead(_83)
@@ -2360,7 +2362,7 @@ fn main()
         storage_dead(_32)
         storage_dead(kind_31)
         unwind_continue
-    conditional_drop[drop_glue<'153>] _15
+    conditional_drop[drop_glue<'154>] _15
     ↳⚡ storage_dead(_85)
         storage_dead(_84)
         storage_dead(_83)
@@ -2389,29 +2391,6 @@ fn main()
     storage_dead(_15)
     storage_dead(_14)
     storage_dead(_12)
-    storage_dead(_85)
-    storage_dead(_84)
-    storage_dead(_83)
-    storage_dead(_82)
-    storage_dead(_81)
-    storage_dead(_80)
-    storage_dead(_79)
-    storage_dead(_78)
-    storage_dead(_77)
-    storage_dead(_76)
-    storage_dead(_75)
-    storage_dead(_74)
-    storage_dead(_73)
-    storage_dead(_72)
-    storage_dead(_71)
-    storage_dead(kind_70)
-    storage_dead(_37)
-    storage_dead(_36)
-    storage_dead(_35)
-    storage_dead(_34)
-    storage_dead(_33)
-    storage_dead(_32)
-    storage_dead(kind_31)
     storage_dead(_112)
     storage_dead(_111)
     storage_dead(_110)
@@ -2440,6 +2419,30 @@ fn main()
     storage_dead(_87)
     storage_dead(_86)
     panic(core::panicking::panic)
+    ↳⚡ storage_dead(_85)
+        storage_dead(_84)
+        storage_dead(_83)
+        storage_dead(_82)
+        storage_dead(_81)
+        storage_dead(_80)
+        storage_dead(_79)
+        storage_dead(_78)
+        storage_dead(_77)
+        storage_dead(_76)
+        storage_dead(_75)
+        storage_dead(_74)
+        storage_dead(_73)
+        storage_dead(_72)
+        storage_dead(_71)
+        storage_dead(kind_70)
+        storage_dead(_37)
+        storage_dead(_36)
+        storage_dead(_35)
+        storage_dead(_34)
+        storage_dead(_33)
+        storage_dead(_32)
+        storage_dead(kind_31)
+        unwind_continue
 }
 
 
