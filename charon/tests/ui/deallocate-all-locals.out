@@ -50,7 +50,7 @@ fn sum(x: u32, y: u32) -> u32
         assert assert(move _6._1 == false) (overflow) -> bb2 (unwind: bb1);
     }
 
-    bb1: {
+    bb1 (cleanup): {
         storage_dead(_8);
         storage_dead(_6);
         storage_dead(y);
@@ -94,7 +94,7 @@ fn main()
         _1 = sum(const 1u32, const 2u32) -> bb2 (unwind: bb1);
     }
 
-    bb1: {
+    bb1 (cleanup): {
         unwind_continue;
     }
 

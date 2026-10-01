@@ -27,7 +27,7 @@ fn do_test::<bool>(init: bool, expected: bool)
         _3 = eq<'5, '6>(move _4, move _5) -> bb2 (unwind: bb1);
     }
 
-    bb1: {
+    bb1 (cleanup): {
         storage_dead(expected);
         storage_dead(init);
         unwind_continue;
@@ -58,7 +58,7 @@ fn main()
         _1 = do_test::<bool>(const true, const true) -> bb2 (unwind: bb1);
     }
 
-    bb1: {
+    bb1 (cleanup): {
         unwind_continue;
     }
 

@@ -326,7 +326,7 @@ pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
         _4 = into_iter<Range<i32>[{built_in impl Sized for i32}]>[{built_in impl Sized for Range<i32>[{built_in impl Sized for i32}]}, impl_Iterator_for_Range<i32>[{built_in impl Sized for i32}, impl_Step_for_i32, {built_in impl Destruct for i32}]](move _5) -> bb2 (unwind: bb1);
     }
 
-    bb1: {
+    bb1 (cleanup): {
         storage_dead(_25);
         storage_dead(_10);
         storage_dead(step_in);

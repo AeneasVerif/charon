@@ -62,7 +62,7 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn Foo))
         _0 = foo<'_0>(move _2) -> bb2 (unwind: bb1);
     }
 
-    bb1: {
+    bb1 (cleanup): {
         storage_dead(_2);
         storage_dead(_1);
         unwind_continue;
@@ -171,7 +171,7 @@ fn main()
         _5 = (copy _7)(move _6) -> bb2 (unwind: bb1);
     }
 
-    bb1: {
+    bb1 (cleanup): {
         storage_dead(_7);
         unwind_continue;
     }

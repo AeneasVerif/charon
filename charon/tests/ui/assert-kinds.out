@@ -71,7 +71,7 @@ fn main()
         assert assert(move _3 == true) (bounds_check) -> bb2 (unwind: bb1);
     }
 
-    bb1: {
+    bb1 (cleanup): {
         unwind_continue;
     }
 

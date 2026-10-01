@@ -75,6 +75,7 @@ impl UllbcPass for Transform {
             };
             let target = *target;
             let on_unwind = *on_unwind;
+            let is_cleanup = block.is_cleanup;
             let dest_place = dest.clone();
             let args = args.clone();
             let FnOperand::Regular(fn_ptr) = &func else {
@@ -139,7 +140,7 @@ impl UllbcPass for Transform {
                     .map(|kind| Statement::new(span, kind)),
             );
 
-            let mut final_block = BlockData::new_goto(span, target);
+            let mut final_block = BlockData::new_goto(span, target, is_cleanup);
 
             // The inner body will write to `return_place`, but the outer body expects the value at
             // `dest_place`.
@@ -171,6 +172,11 @@ impl UllbcPass for Transform {
                     }
                     _ => (),
                 });
+            if is_cleanup {
+                for block in &mut inner_body.body {
+                    block.is_cleanup = true;
+                }
+            }
             // At the end of the current block, start evaluating the inner body.
             outer_body.body[block_id].terminator.kind = TerminatorKind::Goto {
                 target: start_block,

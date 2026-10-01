@@ -58,9 +58,11 @@ impl UllbcPass for Transform {
             while let source = &body.body[id]
                 && let TerminatorKind::Goto { target } = source.terminator.kind
                 && let Antecedents::One { .. } = antecedents[target]
+                && source.is_cleanup == body.body[target].is_cleanup
             {
                 antecedents[target] = Antecedents::Zero;
-                let mut target = mem::replace(&mut body.body[target], BlockData::new_unreachable());
+                let mut target =
+                    mem::replace(&mut body.body[target], BlockData::new_unreachable(false));
                 let source = &mut body.body[id];
                 source.statements.append(&mut target.statements);
                 source.terminator = target.terminator;
@@ -75,11 +77,13 @@ impl UllbcPass for Transform {
                 .any(|t| body.body[t].as_trivial_goto().is_some())
             {
                 // Merge any forward goto chains that start here.
-                let mut source = mem::replace(&mut body.body[id], BlockData::new_unreachable());
+                let mut source =
+                    mem::replace(&mut body.body[id], BlockData::new_unreachable(false));
                 for target_id in source.terminator.targets_mut() {
                     visited.clear();
                     visited.insert(id);
                     while let Some(b) = body.body[*target_id].as_trivial_goto()
+                        && source.is_cleanup == body.body[*target_id].is_cleanup
                         && visited.insert(*target_id)
                     {
                         *target_id = b

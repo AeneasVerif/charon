@@ -108,6 +108,8 @@ pub(crate) struct BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
     pub b_ctx: &'bctx mut BodyTransCtx<'tcx, 'tctx, 'ictx>,
     /// Block onto which we're adding statements.
     pub current_block: BlockId,
+    /// Whether the current block is a cleanup block.
+    pub is_cleanup: bool,
     /// Span of the statement or terminator currently being translated.
     pub span: Span,
     /// List of currently translated statements
@@ -118,10 +120,12 @@ impl<'tcx, 'tctx, 'ictx, 'bctx> BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
     pub(crate) fn new(
         b_ctx: &'bctx mut BodyTransCtx<'tcx, 'tctx, 'ictx>,
         current_block: BlockId,
+        is_cleanup: bool,
     ) -> Self {
         BlockTransCtx {
             b_ctx,
             current_block,
+            is_cleanup,
             span: Span::dummy(),
             statements: Vec::new(),
         }
@@ -131,6 +135,7 @@ impl<'tcx, 'tctx, 'ictx, 'bctx> BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
         let block = BlockData {
             statements: self.statements,
             terminator,
+            is_cleanup: self.is_cleanup,
         };
         self.b_ctx.blocks.set_slot(self.current_block, block);
     }
@@ -139,7 +144,8 @@ impl<'tcx, 'tctx, 'ictx, 'bctx> BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
     fn push_nounwind_call(&mut self, span: Span, call: Call) {
         let target = self.blocks.reserve_slot();
         let on_unwind = self.blocks.push(
-            Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior)).into_block(),
+            Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior))
+                .into_block(true),
         );
         let block = BlockData {
             statements: mem::take(&mut self.statements),
@@ -151,6 +157,7 @@ impl<'tcx, 'tctx, 'ictx, 'bctx> BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
                     on_unwind,
                 },
             ),
+            is_cleanup: self.is_cleanup,
         };
         let current_block = mem::replace(&mut self.current_block, target);
         self.blocks.set_slot(current_block, block);
@@ -618,7 +625,7 @@ impl<'tcx> BodyTransCtx<'tcx, '_, '_> {
         block: &mir::BasicBlockData<'tcx>,
     ) -> Result<(), Error> {
         // Translate the statements
-        let mut block_ctx = BlockTransCtx::new(self, block_id);
+        let mut block_ctx = BlockTransCtx::new(self, block_id, block.is_cleanup);
         for statement in &block.statements {
             trace!("statement: {:?}", statement);
             block_ctx.translate_statement(source_scopes, statement)?;
@@ -1933,7 +1940,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             None => {
                 let abort =
                     Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior));
-                self.blocks.push(abort.into_block())
+                let is_cleanup = self.is_cleanup;
+                self.blocks.push(abort.into_block(is_cleanup))
             }
         };
 
@@ -1973,17 +1981,17 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         match unwind {
             mir::UnwindAction::Continue => {
                 let unwind_continue = Terminator::new(span, TerminatorKind::UnwindResume);
-                self.blocks.push(unwind_continue.into_block())
+                self.blocks.push(unwind_continue.into_block(true))
             }
             mir::UnwindAction::Unreachable => {
                 let abort =
                     Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior));
-                self.blocks.push(abort.into_block())
+                self.blocks.push(abort.into_block(true))
             }
             mir::UnwindAction::Terminate(..) => {
                 let abort =
                     Terminator::new(span, TerminatorKind::Abort(AbortKind::UnwindTerminate));
-                self.blocks.push(abort.into_block())
+                self.blocks.push(abort.into_block(true))
             }
             mir::UnwindAction::Cleanup(bb) => self.translate_basic_block_id(*bb),
         }

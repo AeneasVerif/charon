@@ -1459,7 +1459,8 @@ module Ullbc = struct
     combine_error_msgs st __FUNCTION__
       (let* statements = list_of_postcard statement_of_postcard ctx st in
        let* terminator = terminator_of_postcard ctx st in
-       Ok ({ statements; terminator } : Generated_UllbcAst.block))
+       let* is_cleanup = bool_of_postcard ctx st in
+       Ok ({ statements; terminator; is_cleanup } : Generated_UllbcAst.block))
 
   and block_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
       (Generated_UllbcAst.block_id, string) result =

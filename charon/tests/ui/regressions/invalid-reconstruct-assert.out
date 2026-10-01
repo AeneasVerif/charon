@@ -208,7 +208,7 @@ where
         goto bb4;
     }
 
-    bb3: {
+    bb3 (cleanup): {
         storage_dead(_50);
         storage_dead(_49);
         storage_dead(_48);
@@ -305,7 +305,7 @@ where
         _46 = assume(move _38) -> bb19 (unwind: bb20);
     }
 
-    bb11: {
+    bb11 (cleanup): {
         undefined_behavior;
     }
 
@@ -323,11 +323,11 @@ where
         cmp_12 = TraitClause2::call_mut<'20>(move _13, move _14) -> bb16 (unwind: bb15);
     }
 
-    bb14: {
+    bb14 (cleanup): {
         undefined_behavior;
     }
 
-    bb15: {
+    bb15 (cleanup): {
         drop[TraitClause3::drop_glue<'26>] f -> bb22 (unwind: bb23);
     }
 
@@ -343,7 +343,7 @@ where
         _16 = select_unpredictable<usize>[{built_in impl Sized for usize}, {built_in impl Destruct for usize}](move _17, move base, move mid) -> bb24 (unwind: bb15);
     }
 
-    bb17: {
+    bb17 (cleanup): {
         undefined_behavior;
     }
 
@@ -362,7 +362,7 @@ where
         cmp_18 = TraitClause2::call_mut<'25>(move _19, move _20) -> bb21 (unwind: bb15);
     }
 
-    bb20: {
+    bb20 (cleanup): {
         undefined_behavior;
     }
 
@@ -373,7 +373,7 @@ where
         switch copy _40 -> 0i8: bb25, otherwise: bb26;
     }
 
-    bb22: {
+    bb22 (cleanup): {
         storage_dead(_50);
         storage_dead(_49);
         storage_dead(_48);
@@ -397,7 +397,7 @@ where
         unwind_continue;
     }
 
-    bb23: {
+    bb23 (cleanup): {
         storage_dead(_50);
         storage_dead(_49);
         storage_dead(_48);
@@ -476,7 +476,7 @@ where
         _50 = assume(copy cond_28) -> bb36 (unwind: bb37);
     }
 
-    bb31: {
+    bb31 (cleanup): {
         undefined_behavior;
     }
 
@@ -486,7 +486,7 @@ where
         goto bb34;
     }
 
-    bb33: {
+    bb33 (cleanup): {
         undefined_behavior;
     }
 
@@ -496,7 +496,7 @@ where
         drop[TraitClause3::drop_glue<'27>] f -> bb40 (unwind: bb38);
     }
 
-    bb35: {
+    bb35 (cleanup): {
         undefined_behavior;
     }
 
@@ -507,11 +507,11 @@ where
         goto bb34;
     }
 
-    bb37: {
+    bb37 (cleanup): {
         undefined_behavior;
     }
 
-    bb38: {
+    bb38 (cleanup): {
         storage_dead(_50);
         storage_dead(_49);
         storage_dead(_48);
@@ -623,7 +623,7 @@ fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}, tupled_args: (&'_0 u32,)) -> Order
         _0 = cmp<'11, '12>(move _4, move _5) -> bb2 (unwind: bb1);
     }
 
-    bb1: {
+    bb1 (cleanup): {
         storage_dead(_7);
         storage_dead(x);
         storage_dead(tupled_args);
@@ -664,7 +664,7 @@ fn call_once<'_0>(_1: {closure}, _2: (&'_0 u32,)) -> Ordering
         _0 = call_mut<'_0, '9>(move _3, move _2) -> bb2 (unwind: bb1);
     }
 
-    bb1: {
+    bb1 (cleanup): {
         storage_dead(_3);
         storage_dead(_2);
         storage_dead(_1);
@@ -741,7 +741,7 @@ fn main()
         res = binary_search_by<'10, u32, {closure}>[{built_in impl Sized for u32}, {built_in impl Sized for {closure}}, impl_FnMut_tuple_for_closure<'10>, {built_in impl Destruct for {closure}}](move _6, move _8) -> bb2 (unwind: bb1);
     }
 
-    bb1: {
+    bb1 (cleanup): {
         unwind_continue;
     }
 

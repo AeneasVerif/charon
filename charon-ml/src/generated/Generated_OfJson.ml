@@ -1631,10 +1631,16 @@ module Ullbc = struct
       (Generated_UllbcAst.block, string) result =
     combine_error_msgs js __FUNCTION__
       (match js with
-      | `Assoc [ ("statements", statements); ("terminator", terminator) ] ->
+      | `Assoc
+          [
+            ("statements", statements);
+            ("terminator", terminator);
+            ("is_cleanup", is_cleanup);
+          ] ->
           let* statements = list_of_json statement_of_json ctx statements in
           let* terminator = terminator_of_json ctx terminator in
-          Ok ({ statements; terminator } : Generated_UllbcAst.block)
+          let* is_cleanup = bool_of_json ctx is_cleanup in
+          Ok ({ statements; terminator; is_cleanup } : Generated_UllbcAst.block)
       | _ -> Error "")
 
   and block_id_of_json (ctx : of_json_ctx) (js : json) :

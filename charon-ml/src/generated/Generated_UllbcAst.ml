@@ -8,7 +8,11 @@ module BlockId = IdGen ()
 
 (** A "basic block", which contains a linear sequence of statements, followed by
     a terminator, which is where non-linear control-flow happens. *)
-type block = { statements : statement list; terminator : terminator }
+type block = {
+  statements : statement list;
+  terminator : terminator;
+  is_cleanup : bool;  (** Whether this block is on an unwind path. *)
+}
 
 and block_id = (BlockId.id[@visitors.opaque])
 and blocks = block list

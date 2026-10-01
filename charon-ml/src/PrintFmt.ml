@@ -2289,7 +2289,8 @@ module Ullbc = struct
   let pp_block (env : fmt_env) (indent : string) (indent_incr : string)
       (fmt : Format.formatter) (id : BlockId.id) (block : block) : unit =
     let indent1 = indent ^ indent_incr in
-    Format.fprintf fmt "%s%s: {\n" indent (block_id_to_string id);
+    let cleanup = if block.is_cleanup then " (cleanup)" else "" in
+    Format.fprintf fmt "%s%s%s: {\n" indent (block_id_to_string id) cleanup;
     List.iter
       (fun st -> Format.fprintf fmt "%a;\n" (pp_statement env indent1) st)
       block.statements;
