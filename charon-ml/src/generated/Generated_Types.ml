@@ -258,6 +258,58 @@ and byte =
           within the pointer. Note that we do not have an actual value for this
           pointer byte, unlike MiniRust, as that is non-deterministic. *)
 
+(** For all the variants: the first type gives the source type, the second one
+    gives the destination type. *)
+and cast_kind =
+  | CastScalar of scalar_type * scalar_type
+      (** Conversion between scalar types. See
+          <https://doc.rust-lang.org/reference/expressions/operator-expr.html#r-expr.as.numeric>
+      *)
+  | CastRawPtr of ty * ty
+      (** A conversion between pointer and function pointer types. *)
+  | CastPtrExposeProvenance of ty * scalar_type
+      (** Converts a pointer or function pointer to an address, exposing its
+          provenance. See
+          <https://doc.rust-lang.org/std/primitive.pointer.html#method.expose_provenance>.
+      *)
+  | CastPtrWithExposedProvenance of scalar_type * ty
+      (** Converts an address to a pointer, which picks up exposed provenance.
+          See
+          <https://doc.rust-lang.org/std/ptr/fn.with_exposed_provenance.html>.
+      *)
+  | CastFnPtr of ty * ty
+      (** Cast into a function pointer. The source may be a function item or an
+          unsafe function pointer that is made safe. *)
+  | CastUnsize of ty * ty * unsizing_metadata
+      (** [Unsize coercion](https://doc.rust-lang.org/std/ops/trait.CoerceUnsized.html).
+          This is either [[T; N]] -> [[T]] or [T: Trait] -> [dyn Trait]
+          coercions, behind a pointer (reference, [Box], or other type that
+          implements [CoerceUnsized]).
+
+          The special case of [&[T; N]] -> [&[T]] coercion is caught by
+          [UnOp::ArrayToSlice]. *)
+  | CastTransmute of ty * ty
+      (** Reinterprets the bits of a value of one type as another type, i.e.
+          exactly what [[std::mem::transmute]] does. *)
+  | CastConcretize of ty * ty
+      (** Converts a receiver type with [dyn Trait<...>] to a concrete type [T],
+          used in vtable method shims. Valid conversions are references, raw
+          pointers, and (optionally) boxes:
+          - [&[mut] dyn Trait<...>] -> [&[mut] T]
+          - [*[mut] dyn Trait<...>] -> [*[mut] T]
+          - [Box<dyn Trait<...>>] -> [Box<T>] when no [--treat-box-as-builtin]
+
+          For possible receivers, see:
+          <https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility>.
+          Other receivers, e.g., [Rc] should be unpacked before the cast and
+          re-boxed after. FIXME(ssyram): but this is not implemented yet,
+          namely, there may still be something like
+          [Rc<dyn Trait<...>> -> Rc<T>] in the types.
+
+          With [--index-to-function-calls], this also converts [&[T]] to
+          [&[T; N]] (or the mutable equivalents) when an array subslice
+          projection determines the length statically. *)
+
 (** A const generic variable in a signature or binder. *)
 and const_generic_param = {
   index : const_generic_var_id;
@@ -302,9 +354,12 @@ and constant_expr_kind =
       (** A function pointer value; this is a pointer (i.e. an address).
 
           This is eliminated inside functions if [--raw-consts] is off. *)
-  | CCast of constant_expr * ty
-      (** Cast a constant value to another type (e.g. erase a vtable method
-          pointer to [*const ()]). *)
+  | CCast of constant_expr * cast_kind
+      (** Cast a constant value to another type, e.g. erase a vtable method
+          pointer to [*const ()], or reinterpret a pointer to an (untyped)
+          anonymous allocation at another type. A cast to a reference type
+          stands for a cast to the corresponding raw pointer followed by a
+          reborrow. *)
   | CPtrNoProvenance of big_int
       (** A pointer with no provenance (e.g. 0 for the null pointer)
 

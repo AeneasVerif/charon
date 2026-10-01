@@ -106,7 +106,7 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Trait))
 }
 
 // Full name: test_crate::{impl Trait for S}::{vtable}
-vtable impl_Trait_for_S::{vtable}: test_crate::Trait::{vtable} = test_crate::Trait::{vtable} { size: size_of::<S>(), align: align_of::<S>(), drop: cast<*const ()>(fnptr({vtable_drop_shim}<'_>)), method_method: cast<*const ()>(fnptr({vtable_method})), super_trait_0: &core::marker::MetaSized::{vtable}::<S> }
+vtable impl_Trait_for_S::{vtable}: test_crate::Trait::{vtable} = test_crate::Trait::{vtable} { size: size_of::<S>(), align: align_of::<S>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait)), *const ()>(fnptr({vtable_drop_shim}<'_>)), method_method: cast<fn(Box::<(dyn Trait), Global>), *const ()>(fnptr({vtable_method})), super_trait_0: &core::marker::MetaSized::{vtable}::<S> }
 
 // Full name: test_crate::{impl Trait for S}
 impl "impl_Trait_for_S" Trait for S {

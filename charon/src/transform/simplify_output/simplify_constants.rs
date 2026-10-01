@@ -189,16 +189,21 @@ fn transform_constant_expr(
                 )),
             )
         }
-        ConstantExprKind::Cast(value, target_ty) => {
-            let source_ty = value.ty().clone();
-            let target_ty = target_ty.clone();
+        ConstantExprKind::Cast(value, kind) => {
             let value = transform_constant_expr(ctx, value.clone());
-            let cast_kind = if source_ty.is_fn_ptr() | source_ty.is_fn_def() {
-                CastKind::FnPtr(source_ty, target_ty)
+            if let TyKind::Ref(_, pointee, rk) = val.ty().kind() {
+                // Cast to the corresponding raw pointer, then reborrow it as a reference.
+                let raw_ty = TyKind::RawPtr(pointee.clone(), *rk).into_ty();
+                let mut kind = kind.clone();
+                match &mut kind {
+                    CastKind::RawPtr(_, tgt) | CastKind::Unsize(_, tgt, _) => *tgt = raw_ty.clone(),
+                    _ => unreachable!("unexpected cast to a reference: {kind:?}"),
+                }
+                let raw_ptr = ctx.rval_to_place(Rvalue::UnaryOp(UnOp::Cast(kind), value), raw_ty);
+                ctx.borrow(raw_ptr.deref(), (*rk).into())
             } else {
-                CastKind::RawPtr(source_ty, target_ty)
-            };
-            Rvalue::UnaryOp(UnOp::Cast(cast_kind), value)
+                Rvalue::UnaryOp(UnOp::Cast(kind.clone()), value)
+            }
         }
         ConstantExprKind::VTableRef(tref)
             if let Some(vtable_ref) = tref.vtable_ref(&ctx.ctx.translated)

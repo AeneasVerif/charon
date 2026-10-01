@@ -150,7 +150,7 @@ unsafe fn impl_Consume_for_S::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Co
 }
 
 // Full name: test_crate::{impl Consume for S}::{vtable}
-vtable impl_Consume_for_S::{vtable}: test_crate::Consume::{vtable} = test_crate::Consume::{vtable} { size: size_of::<S>(), align: align_of::<S>(), drop: cast<*const ()>(fnptr(impl_Consume_for_S::{vtable_drop_shim}<'_>)), method_consume: cast<*const ()>(fnptr(impl_Consume_for_S::consume::{vtable_method})), method_read: cast<*const ()>(fnptr(impl_Consume_for_S::read::{vtable_method}<'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<S> }
+vtable impl_Consume_for_S::{vtable}: test_crate::Consume::{vtable} = test_crate::Consume::{vtable} { size: size_of::<S>(), align: align_of::<S>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn Consume)), *const ()>(fnptr(impl_Consume_for_S::{vtable_drop_shim}<'_>)), method_consume: cast<fn(*mut (dyn Consume)) -> u32, *const ()>(fnptr(impl_Consume_for_S::consume::{vtable_method})), method_read: cast<fn<'_0_1>(&'_0_1 (dyn Consume)) -> u32, *const ()>(fnptr(impl_Consume_for_S::read::{vtable_method}<'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<S> }
 
 // Full name: test_crate::{impl Consume for S}
 impl "impl_Consume_for_S" Consume for S {
@@ -237,7 +237,7 @@ unsafe fn {impl Consume for *mut u32}::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mu
 }
 
 // Full name: test_crate::{impl Consume for *mut u32}::{vtable}
-vtable {impl Consume for *mut u32}::{vtable}: test_crate::Consume::{vtable} = test_crate::Consume::{vtable} { size: size_of::<*mut u32>(), align: align_of::<*mut u32>(), drop: cast<*const ()>(fnptr({impl Consume for *mut u32}::{vtable_drop_shim}<'_>)), method_consume: cast<*const ()>(fnptr({impl Consume for *mut u32}::consume::{vtable_method})), method_read: cast<*const ()>(fnptr({impl Consume for *mut u32}::read::{vtable_method}<'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<*mut u32> }
+vtable {impl Consume for *mut u32}::{vtable}: test_crate::Consume::{vtable} = test_crate::Consume::{vtable} { size: size_of::<*mut u32>(), align: align_of::<*mut u32>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn Consume)), *const ()>(fnptr({impl Consume for *mut u32}::{vtable_drop_shim}<'_>)), method_consume: cast<fn(*mut (dyn Consume)) -> u32, *const ()>(fnptr({impl Consume for *mut u32}::consume::{vtable_method})), method_read: cast<fn<'_0_1>(&'_0_1 (dyn Consume)) -> u32, *const ()>(fnptr({impl Consume for *mut u32}::read::{vtable_method}<'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<*mut u32> }
 
 // Full name: test_crate::{impl Consume for *mut u32}
 impl Consume for *mut u32 {

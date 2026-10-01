@@ -74,7 +74,7 @@ unsafe fn {vtable_drop_shim}::<()><'_0>(dyn_self: &'_0 mut (dyn Trait))
 }
 
 // Full name: test_crate::{impl Trait for ()}::{vtable}::<()>
-vtable impl_Trait_for_unit::{vtable}::<()>: test_crate::Trait::{vtable} = test_crate::Trait::{vtable} { size: size_of::<()>(), align: align_of::<()>(), drop: cast<*const ()>(fnptr({vtable_drop_shim}::<()><'_>)), method_method: cast<*const ()>(fnptr({vtable_method}::<()><'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<()> }
+vtable impl_Trait_for_unit::{vtable}::<()>: test_crate::Trait::{vtable} = test_crate::Trait::{vtable} { size: size_of::<()>(), align: align_of::<()>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait)), *const ()>(fnptr({vtable_drop_shim}::<()><'_>)), method_method: cast<fn<'_0_1>(&'_0_1 (dyn Trait)) -> usize, *const ()>(fnptr({vtable_method}::<()><'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<()> }
 
 // Full name: test_crate::{impl Trait for ()}
 impl "impl_Trait_for_unit" Trait for () {
