@@ -24,6 +24,7 @@ pub use type_decl::*;
 #[derive(Debug)]
 #[derive(EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
 #[derive(Drive, DriveMut, DriveTwo)]
+#[expect(clippy::large_enum_variant)]
 pub enum ItemByVal {
     Type(TypeDecl),
     Fun(FunDecl),

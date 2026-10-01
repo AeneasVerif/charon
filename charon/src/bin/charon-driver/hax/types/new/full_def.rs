@@ -1649,6 +1649,24 @@ impl<'tcx> FullDef<'tcx> {
         &self.kind
     }
 
+    /// The type of this definition.
+    pub fn type_of<S: UnderOwnerState<'tcx>>(&self, s: &S) -> Option<ty::Ty<'tcx>> {
+        Some(match &self.kind {
+            FullDefKind::Adt(adt) => adt.self_ty,
+            FullDefKind::Closure(closure) => closure.fn_trait_args[0],
+            _ => {
+                let def_id = self.def_id().as_real_def_id()?;
+                let args = self.this().rustc_args(s);
+                inst_binder(
+                    s.base().tcx,
+                    s.typing_env(),
+                    Some(args),
+                    s.base().tcx.type_of(def_id),
+                )
+            }
+        })
+    }
+
     /// Evaluate the value of a `Const` or `AssocConst` item.
     pub fn const_value<S>(&self, s: &S) -> Option<ConstantExpr>
     where

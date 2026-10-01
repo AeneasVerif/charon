@@ -869,6 +869,14 @@ and field_predecessor = PredecessorField of field_id | PredecessorTag
     } *)
 and impl_elem = ImplElemTy of ty binder | ImplElemTrait of trait_impl_id
 
+and implements_marker_traits = {
+  is_sized : bool;
+  is_send : bool;
+  is_sync : bool;
+  is_freeze : bool;
+  is_unpin : bool;
+}
+
 (** Represents whether a type or variant is inhabited. Like rustc's
     [InhabitedPredicate], this can depend on generic parameters and constant
     values. *)
@@ -1435,6 +1443,9 @@ and type_decl = {
           layout, the target has no entry. *)
   ptr_metadata : ptr_metadata;
       (** The metadata associated with a pointer to the type. *)
+  marker_traits : implements_marker_traits option;
+      (** Whether this type implements the built-in marker traits. This is only
+          known for monomorphized types. *)
 }
 
 and type_decl_kind =

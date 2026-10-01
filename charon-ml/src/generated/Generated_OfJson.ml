@@ -2823,6 +2823,28 @@ and rustc_ident_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ name; span } : rustc_ident)
     | _ -> Error "")
 
+and implements_marker_traits_of_json (ctx : of_json_ctx) (js : json) :
+    (implements_marker_traits, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("is_sized", is_sized);
+          ("is_send", is_send);
+          ("is_sync", is_sync);
+          ("is_freeze", is_freeze);
+          ("is_unpin", is_unpin);
+        ] ->
+        let* is_sized = bool_of_json ctx is_sized in
+        let* is_send = bool_of_json ctx is_send in
+        let* is_sync = bool_of_json ctx is_sync in
+        let* is_freeze = bool_of_json ctx is_freeze in
+        let* is_unpin = bool_of_json ctx is_unpin in
+        Ok
+          ({ is_sized; is_send; is_sync; is_freeze; is_unpin }
+            : implements_marker_traits)
+    | _ -> Error "")
+
 and index_map_of_json :
     'a0 'a1 'a2.
     (of_json_ctx -> json -> ('a0, string) result) ->
@@ -3867,6 +3889,7 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("kind", kind);
           ("layout", layout);
           ("ptr_metadata", ptr_metadata);
+          ("marker_traits", marker_traits);
         ] ->
         let* def_id = type_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
@@ -3877,8 +3900,20 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           index_map_of_json string_of_json layout_of_json int_of_json ctx layout
         in
         let* ptr_metadata = ptr_metadata_of_json ctx ptr_metadata in
+        let* marker_traits =
+          option_of_json implements_marker_traits_of_json ctx marker_traits
+        in
         Ok
-          ({ def_id; item_meta; generics; src; kind; layout; ptr_metadata }
+          ({
+             def_id;
+             item_meta;
+             generics;
+             src;
+             kind;
+             layout;
+             ptr_metadata;
+             marker_traits;
+           }
             : type_decl)
     | _ -> Error "")
 

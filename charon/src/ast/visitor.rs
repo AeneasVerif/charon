@@ -57,7 +57,7 @@ use derive_generic_visitor::*;
     ),
     // Types that are completely skipped, even by `ZipAst`.
     skip(
-        DeclarationGroup, PredicateOrigin, TargetInfo, TypeInfo,
+        DeclarationGroup, PredicateOrigin, TargetInfo, TypeInfo, ImplementsMarkerTraits,
         llbc_ast::BlockId, llbc_ast::StatementId,
     ),
     // Types that we unconditionally explore.

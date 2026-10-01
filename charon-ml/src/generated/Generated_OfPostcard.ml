@@ -2330,6 +2330,18 @@ and rustc_ident_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* span = span_of_postcard ctx st in
      Ok ({ name; span } : rustc_ident))
 
+and implements_marker_traits_of_postcard (ctx : of_postcard_ctx)
+    (st : postcard_state) : (implements_marker_traits, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* is_sized = bool_of_postcard ctx st in
+     let* is_send = bool_of_postcard ctx st in
+     let* is_sync = bool_of_postcard ctx st in
+     let* is_freeze = bool_of_postcard ctx st in
+     let* is_unpin = bool_of_postcard ctx st in
+     Ok
+       ({ is_sized; is_send; is_sync; is_freeze; is_unpin }
+         : implements_marker_traits))
+
 and index_map_of_postcard :
     'a0 'a1 'a2.
     (of_postcard_ctx -> postcard_state -> ('a0, string) result) ->
@@ -3213,8 +3225,20 @@ and type_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          int_of_postcard ctx st
      in
      let* ptr_metadata = ptr_metadata_of_postcard ctx st in
+     let* marker_traits =
+       option_of_postcard implements_marker_traits_of_postcard ctx st
+     in
      Ok
-       ({ def_id; item_meta; generics; src; kind; layout; ptr_metadata }
+       ({
+          def_id;
+          item_meta;
+          generics;
+          src;
+          kind;
+          layout;
+          ptr_metadata;
+          marker_traits;
+        }
          : type_decl))
 
 and type_decl_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

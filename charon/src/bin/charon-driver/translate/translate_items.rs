@@ -1,13 +1,14 @@
 use super::translate_crate::*;
 use super::translate_ctx::*;
 use crate::hax;
-use crate::hax::SInto;
+use crate::hax::{HasBase, SInto, UnderOwnerState};
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::options::ConstHandling;
 use charon_lib::pretty::FmtWithCtx;
 use derive_generic_visitor::Visitor;
 use itertools::Itertools;
+use rustc_middle::ty;
 use rustc_span::sym;
 use std::mem;
 use std::ops::ControlFlow;
@@ -495,6 +496,22 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             .map(|l| (self.get_target_triple(), l))
             .collect();
         let ptr_metadata = self.translate_ptr_metadata(span, def.this())?;
+        let marker_traits = self.outermost_generics().is_empty().then(|| {
+            let ty = def.type_of(&self.hax_state).unwrap();
+            let tcx = self.hax_state.base().tcx;
+            let typing_env = self.hax_state.typing_env();
+            let implements = |trait_id| {
+                let tref = ty::Binder::dummy(ty::TraitRef::new(tcx, trait_id, [ty]));
+                !hax::solve_trait(&self.hax_state, tref).kind.is_error()
+            };
+            Box::new(ImplementsMarkerTraits {
+                is_sized: ty.is_sized(tcx, typing_env),
+                is_send: implements(tcx.get_diagnostic_item(sym::Send).unwrap()),
+                is_sync: implements(tcx.lang_items().sync_trait().unwrap()),
+                is_freeze: ty.is_freeze(tcx, typing_env),
+                is_unpin: ty.is_unpin(tcx, typing_env),
+            })
+        });
         Ok(TypeDecl {
             def_id: trans_id,
             item_meta,
@@ -503,6 +520,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             src,
             layout,
             ptr_metadata,
+            marker_traits,
         })
     }
 
