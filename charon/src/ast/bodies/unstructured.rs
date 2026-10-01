@@ -110,6 +110,14 @@ pub enum TerminatorKind {
         target: BlockId,
         on_unwind: BlockId,
     },
+    /// An inline assembly block. For now we only preserve the template string.
+    InlineAsm {
+        asm: String,
+        kind: AsmKind,
+        targets: Vec<BlockId>,
+        on_unwind: BlockId,
+    },
+
     /// Assert that the given condition holds, and if not, unwind to the given block. This is used for
     /// bounds checks, overflow checks, etc.
     #[cfg_attr(feature = "charon_on_charon", charon::rename("TAssert"))]
@@ -118,18 +126,20 @@ pub enum TerminatorKind {
         target: BlockId,
         on_unwind: BlockId,
     },
-    /// An inline assembly block. For now we only preserve the template string.
-    InlineAsm {
-        asm: String,
-        kind: AsmKind,
-        targets: Vec<BlockId>,
+    /// Call to a built-in panicking function.
+    Panic {
+        /// The name of the function that was called.
+        name: Name,
         on_unwind: BlockId,
     },
-    /// Handles panics and impossible cases.
-    Abort(AbortKind),
-    Return,
+    /// Unwinding must stop for ABI reasons or because cleanup code panicked again.
+    UnwindTerminate,
     /// Unwind out of the current function into its caller.
     UnwindResume,
+
+    Return,
+    /// Reaching this point is undefined behavior in the Rust abstract machine.
+    UndefinedBehavior,
 }
 
 /// A terminator: instruction to execute at the end of a block, which may jump to other blocks.
@@ -144,9 +154,8 @@ pub struct Terminator {
 }
 
 impl ExprBody {
-    /// Returns a map from blocks in this body to their abort kind, if they correspond to an
-    /// abort block (ie. a block with only bookkeeping statements and a
-    /// [TerminatorKind::Abort] terminator).
+    /// Returns a map from blocks in this body to their abort kind, if they correspond to an abort
+    /// block (ie. a block with only bookkeeping statements and an unconditional error terminator).
     pub fn as_abort_map(&self) -> HashMap<BlockId, AbortKind> {
         self.body
             .iter_enumerated()
@@ -219,9 +228,13 @@ impl BlockData {
                 st.kind,
                 StatementKind::Nop | StatementKind::StorageLive(_) | StatementKind::StorageDead(_)
             )
-        }) && let TerminatorKind::Abort(abort) = &self.terminator.kind
-        {
-            Some(abort.clone())
+        }) {
+            match &self.terminator.kind {
+                TerminatorKind::Panic { name, .. } => Some(AbortKind::Panic(Some(name.clone()))),
+                TerminatorKind::UndefinedBehavior => Some(AbortKind::UndefinedBehavior),
+                TerminatorKind::UnwindTerminate => Some(AbortKind::UnwindTerminate),
+                _ => None,
+            }
         } else {
             None
         }
@@ -229,11 +242,7 @@ impl BlockData {
 
     /// Build a block that's UB to reach.
     pub fn new_unreachable(is_cleanup: bool) -> Self {
-        Terminator::new(
-            Span::dummy(),
-            TerminatorKind::Abort(AbortKind::UndefinedBehavior),
-        )
-        .into_block(is_cleanup)
+        Terminator::new(Span::dummy(), TerminatorKind::UndefinedBehavior).into_block(is_cleanup)
     }
 
     pub fn targets(&self) -> SmallVec<[BlockId; 2]> {
@@ -347,11 +356,11 @@ impl Terminator {
     pub fn goto(span: Span, target: BlockId) -> Self {
         Self::new(span, TerminatorKind::Goto { target })
     }
-    /// Whether this terminator is an unconditional error (panic).
+    /// Whether this terminator is an unconditional error (panic, UB, or abort).
     pub fn is_error(&self) -> bool {
         use TerminatorKind::*;
         match &self.kind {
-            Abort(..) => true,
+            Panic { .. } | UndefinedBehavior | UnwindTerminate => true,
             Goto { .. }
             | Switch { .. }
             | InlineAsm { .. }
@@ -389,7 +398,11 @@ impl Terminator {
             | TerminatorKind::Assert {
                 target, on_unwind, ..
             } => smallvec![*target, *on_unwind],
-            TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
+            TerminatorKind::Panic { on_unwind, .. } => smallvec![*on_unwind],
+            TerminatorKind::UndefinedBehavior
+            | TerminatorKind::UnwindTerminate
+            | TerminatorKind::Return
+            | TerminatorKind::UnwindResume => {
                 smallvec![]
             }
         }
@@ -412,7 +425,11 @@ impl Terminator {
             | TerminatorKind::Assert {
                 target, on_unwind, ..
             } => smallvec![target, on_unwind],
-            TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
+            TerminatorKind::Panic { on_unwind, .. } => smallvec![on_unwind],
+            TerminatorKind::UndefinedBehavior
+            | TerminatorKind::UnwindTerminate
+            | TerminatorKind::Return
+            | TerminatorKind::UnwindResume => {
                 smallvec![]
             }
         }
@@ -430,7 +447,11 @@ impl Terminator {
             | TerminatorKind::Assert { target, .. } => {
                 smallvec![*target]
             }
-            TerminatorKind::Abort(..) | TerminatorKind::Return | TerminatorKind::UnwindResume => {
+            TerminatorKind::Panic { .. }
+            | TerminatorKind::UndefinedBehavior
+            | TerminatorKind::UnwindTerminate
+            | TerminatorKind::Return
+            | TerminatorKind::UnwindResume => {
                 smallvec![]
             }
         }
@@ -440,7 +461,7 @@ impl Terminator {
 impl TerminatorKind {
     /// Replace this terminator with a dummy.
     pub fn take(&mut self) -> Self {
-        std::mem::replace(self, TerminatorKind::Abort(AbortKind::UndefinedBehavior))
+        std::mem::replace(self, TerminatorKind::UndefinedBehavior)
     }
 }
 

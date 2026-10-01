@@ -86,9 +86,9 @@ and abort_kind_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("Panic", _0) ] ->
         let* _0 = option_of_json name_of_json ctx _0 in
-        Ok (Panic _0)
-    | `String "UndefinedBehavior" -> Ok UndefinedBehavior
-    | `String "UnwindTerminate" -> Ok UnwindTerminate
+        Ok (AbortPanic _0)
+    | `String "UndefinedBehavior" -> Ok AbortUndefinedBehavior
+    | `String "UnwindTerminate" -> Ok AbortUnwindTerminate
     | _ -> Error "")
 
 and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -1762,20 +1762,6 @@ module Ullbc = struct
           Ok (Drop (kind, place, fn_ptr, target, on_unwind))
       | `Assoc
           [
-            ( "Assert",
-              `Assoc
-                [
-                  ("assert", assert_);
-                  ("target", target);
-                  ("on_unwind", on_unwind);
-                ] );
-          ] ->
-          let* assert_ = assertion_of_json ctx assert_ in
-          let* target = block_id_of_json ctx target in
-          let* on_unwind = block_id_of_json ctx on_unwind in
-          Ok (TAssert (assert_, target, on_unwind))
-      | `Assoc
-          [
             ( "InlineAsm",
               `Assoc
                 [
@@ -1790,11 +1776,29 @@ module Ullbc = struct
           let* targets = list_of_json block_id_of_json ctx targets in
           let* on_unwind = block_id_of_json ctx on_unwind in
           Ok (InlineAsm (asm, kind, targets, on_unwind))
-      | `Assoc [ ("Abort", _0) ] ->
-          let* _0 = abort_kind_of_json ctx _0 in
-          Ok (Abort _0)
-      | `String "Return" -> Ok Return
+      | `Assoc
+          [
+            ( "Assert",
+              `Assoc
+                [
+                  ("assert", assert_);
+                  ("target", target);
+                  ("on_unwind", on_unwind);
+                ] );
+          ] ->
+          let* assert_ = assertion_of_json ctx assert_ in
+          let* target = block_id_of_json ctx target in
+          let* on_unwind = block_id_of_json ctx on_unwind in
+          Ok (TAssert (assert_, target, on_unwind))
+      | `Assoc
+          [ ("Panic", `Assoc [ ("name", name); ("on_unwind", on_unwind) ]) ] ->
+          let* name = name_of_json ctx name in
+          let* on_unwind = block_id_of_json ctx on_unwind in
+          Ok (Panic (name, on_unwind))
+      | `String "UnwindTerminate" -> Ok UnwindTerminate
       | `String "UnwindResume" -> Ok UnwindResume
+      | `String "Return" -> Ok Return
+      | `String "UndefinedBehavior" -> Ok UndefinedBehavior
       | _ -> Error "")
 end
 
@@ -1925,18 +1929,6 @@ module Llbc = struct
           let* call = call_of_json ctx call in
           let* on_unwind = block_of_json ctx on_unwind in
           Ok (Call (call, on_unwind))
-      | `Assoc [ ("Abort", _0) ] ->
-          let* _0 = abort_kind_of_json ctx _0 in
-          Ok (Abort _0)
-      | `String "Return" -> Ok Return
-      | `String "UnwindResume" -> Ok UnwindResume
-      | `Assoc [ ("Break", _0) ] ->
-          let* _0 = int_of_json ctx _0 in
-          Ok (Break _0)
-      | `Assoc [ ("Continue", _0) ] ->
-          let* _0 = int_of_json ctx _0 in
-          Ok (Continue _0)
-      | `String "Nop" -> Ok Nop
       | `Assoc [ ("Switch", `Assoc [ ("data", data); ("branches", branches) ]) ]
         ->
           let* data = switch_data_of_json ctx data in
@@ -1947,6 +1939,22 @@ module Llbc = struct
       | `Assoc [ ("Loop", _0) ] ->
           let* _0 = block_of_json ctx _0 in
           Ok (Loop _0)
+      | `Assoc [ ("Break", _0) ] ->
+          let* _0 = int_of_json ctx _0 in
+          Ok (Break _0)
+      | `Assoc [ ("Continue", _0) ] ->
+          let* _0 = int_of_json ctx _0 in
+          Ok (Continue _0)
+      | `Assoc
+          [ ("Panic", `Assoc [ ("name", name); ("on_unwind", on_unwind) ]) ] ->
+          let* name = name_of_json ctx name in
+          let* on_unwind = block_of_json ctx on_unwind in
+          Ok (Panic (name, on_unwind))
+      | `String "UnwindTerminate" -> Ok UnwindTerminate
+      | `String "UnwindResume" -> Ok UnwindResume
+      | `String "Return" -> Ok Return
+      | `String "UndefinedBehavior" -> Ok UndefinedBehavior
+      | `String "Nop" -> Ok Nop
       | _ -> Error "")
 end
 

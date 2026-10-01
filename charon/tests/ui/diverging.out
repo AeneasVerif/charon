@@ -11,6 +11,8 @@ fn my_panic(_x: u32) -> !
     storage_live(_0)
     storage_dead(_x)
     panic(core::panicking::panic)
+    ↳⚡ storage_dead(_x)
+        unwind_continue
 }
 
 // Full name: test_crate::do_something_else

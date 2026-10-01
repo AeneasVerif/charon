@@ -82,9 +82,9 @@ and abort_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      match __tag with
      | 0 ->
          let* _0 = option_of_postcard name_of_postcard ctx st in
-         Ok (Panic _0)
-     | 1 -> Ok UndefinedBehavior
-     | 2 -> Ok UnwindTerminate
+         Ok (AbortPanic _0)
+     | 1 -> Ok AbortUndefinedBehavior
+     | 2 -> Ok AbortUnwindTerminate
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and aggregate_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1542,21 +1542,24 @@ module Ullbc = struct
            let* on_unwind = block_id_of_postcard ctx st in
            Ok (Drop (kind, place, fn_ptr, target, on_unwind))
        | 4 ->
-           let* assert_ = assertion_of_postcard ctx st in
-           let* target = block_id_of_postcard ctx st in
-           let* on_unwind = block_id_of_postcard ctx st in
-           Ok (TAssert (assert_, target, on_unwind))
-       | 5 ->
            let* asm = string_of_postcard ctx st in
            let* kind = asm_kind_of_postcard ctx st in
            let* targets = list_of_postcard block_id_of_postcard ctx st in
            let* on_unwind = block_id_of_postcard ctx st in
            Ok (InlineAsm (asm, kind, targets, on_unwind))
+       | 5 ->
+           let* assert_ = assertion_of_postcard ctx st in
+           let* target = block_id_of_postcard ctx st in
+           let* on_unwind = block_id_of_postcard ctx st in
+           Ok (TAssert (assert_, target, on_unwind))
        | 6 ->
-           let* _0 = abort_kind_of_postcard ctx st in
-           Ok (Abort _0)
-       | 7 -> Ok Return
+           let* name = name_of_postcard ctx st in
+           let* on_unwind = block_id_of_postcard ctx st in
+           Ok (Panic (name, on_unwind))
+       | 7 -> Ok UnwindTerminate
        | 8 -> Ok UnwindResume
+       | 9 -> Ok Return
+       | 10 -> Ok UndefinedBehavior
        | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 end
 
@@ -1639,27 +1642,30 @@ module Llbc = struct
            let* on_unwind = block_of_postcard ctx st in
            Ok (Call (call, on_unwind))
        | 10 ->
-           let* _0 = abort_kind_of_postcard ctx st in
-           Ok (Abort _0)
-       | 11 -> Ok Return
-       | 12 -> Ok UnwindResume
-       | 13 ->
-           let* _0 = usize_of_postcard ctx st in
-           Ok (Break _0)
-       | 14 ->
-           let* _0 = usize_of_postcard ctx st in
-           Ok (Continue _0)
-       | 15 -> Ok Nop
-       | 16 ->
            let* data = switch_data_of_postcard ctx st in
            let* branches =
              index_vec_of_postcard branch_id_of_postcard block_of_postcard ctx
                st
            in
            Ok (Switch (data, branches))
-       | 17 ->
+       | 11 ->
            let* _0 = block_of_postcard ctx st in
            Ok (Loop _0)
+       | 12 ->
+           let* _0 = usize_of_postcard ctx st in
+           Ok (Break _0)
+       | 13 ->
+           let* _0 = usize_of_postcard ctx st in
+           Ok (Continue _0)
+       | 14 ->
+           let* name = name_of_postcard ctx st in
+           let* on_unwind = block_of_postcard ctx st in
+           Ok (Panic (name, on_unwind))
+       | 15 -> Ok UnwindTerminate
+       | 16 -> Ok UnwindResume
+       | 17 -> Ok Return
+       | 18 -> Ok UndefinedBehavior
+       | 19 -> Ok Nop
        | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 end
 

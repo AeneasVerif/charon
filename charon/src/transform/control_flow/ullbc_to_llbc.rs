@@ -971,8 +971,22 @@ impl<'a> ReconstructCtx<'a> {
         let src_span = terminator.span;
 
         match &terminator.kind {
-            src::TerminatorKind::Abort(kind) => {
-                tgt::Statement::new(src_span, tgt::StatementKind::Abort(kind.clone())).into_block()
+            src::TerminatorKind::Panic { name, on_unwind } => {
+                let on_unwind = self.translate_block(*on_unwind);
+                tgt::Statement::new(
+                    src_span,
+                    tgt::StatementKind::Panic {
+                        name: name.clone(),
+                        on_unwind,
+                    },
+                )
+                .into_block()
+            }
+            src::TerminatorKind::UndefinedBehavior => {
+                tgt::Statement::new(src_span, tgt::StatementKind::UndefinedBehavior).into_block()
+            }
+            src::TerminatorKind::UnwindTerminate => {
+                tgt::Statement::new(src_span, tgt::StatementKind::UnwindTerminate).into_block()
             }
             src::TerminatorKind::Return => {
                 tgt::Statement::new(src_span, tgt::StatementKind::Return).into_block()

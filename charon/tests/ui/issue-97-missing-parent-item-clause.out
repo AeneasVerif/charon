@@ -45,6 +45,8 @@ where
     _0 = ()
     storage_dead(self)
     panic(core::panicking::panic)
+    ↳⚡ storage_dead(self)
+        unwind_continue
 }
 
 // Full name: test_crate::{impl Ord for u32}

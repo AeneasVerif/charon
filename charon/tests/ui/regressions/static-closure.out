@@ -235,6 +235,18 @@ fn impl_Fn_for_closure::call<'_0>(_1: &'_0 test_crate::BAR::{closure}, tupled_ar
     storage_dead(_21)
     storage_dead(_20)
     panic(core::panicking::assert_failed::<i32, i32>)
+    ↳⚡ storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_13)
+        storage_dead(kind)
+        storage_dead(a)
+        storage_dead(tupled_args)
+        storage_dead(_1)
+        unwind_continue
 }
 
 // Full name: test_crate::BAR::{impl FnMut<(i32,)> for test_crate::BAR::{closure}}::call_mut
@@ -441,6 +453,18 @@ fn {impl Fn<(i32,)> for test_crate::foo::{closure}::<u8>}::call::<u8><'_0>(_1: &
     storage_dead(_21)
     storage_dead(_20)
     panic(core::panicking::assert_failed::<i32, i32>)
+    ↳⚡ storage_dead(_19)
+        storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(_15)
+        storage_dead(_14)
+        storage_dead(_13)
+        storage_dead(kind)
+        storage_dead(a)
+        storage_dead(tupled_args)
+        storage_dead(_1)
+        unwind_continue
 }
 
 // Full name: test_crate::foo::<u8>

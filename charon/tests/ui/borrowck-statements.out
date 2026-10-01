@@ -335,6 +335,8 @@ pub fn destructure<'a>(input: &'a Either<(u32, u64)>[{built_in impl Sized for (u
             storage_dead(_3)
             storage_dead(input)
             panic(core::panicking::panic)
+            ↳⚡ storage_dead(input)
+                unwind_continue
         },
     }
     set_type(typeof(_3) <= &'6 Either<(u32, u64)>[{built_in impl Sized for (u32, u64)}])

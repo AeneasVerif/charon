@@ -2381,8 +2381,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 write!(f, "{}", call.with_ctx(ctx))?;
                 fmt_llbc_unwind_block(ctx, f, on_unwind)
             }
-            StatementKind::Abort(kind) => {
-                write!(f, "{}", kind.with_ctx(ctx))
+            StatementKind::Panic { name, on_unwind } => {
+                write!(f, "{}", AbortKind::Panic(Some(name.clone())).with_ctx(ctx))?;
+                fmt_llbc_unwind_block(ctx, f, on_unwind)
+            }
+            StatementKind::UndefinedBehavior => {
+                write!(f, "{}", AbortKind::UndefinedBehavior.with_ctx(ctx))
+            }
+            StatementKind::UnwindTerminate => {
+                write!(f, "{}", AbortKind::UnwindTerminate.with_ctx(ctx))
             }
             StatementKind::Return => write!(f, "return"),
             StatementKind::UnwindResume => write!(f, "unwind_continue"),
@@ -2578,7 +2585,17 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                 };
                 write!(f, "{mac}!({asm:?}) -> {targets}")
             }
-            TerminatorKind::Abort(kind) => write!(f, "{}", kind.with_ctx(ctx)),
+            TerminatorKind::Panic { name, on_unwind } => write!(
+                f,
+                "{} -> (unwind: bb{on_unwind})",
+                AbortKind::Panic(Some(name.clone())).with_ctx(ctx)
+            ),
+            TerminatorKind::UndefinedBehavior => {
+                write!(f, "{}", AbortKind::UndefinedBehavior.with_ctx(ctx))
+            }
+            TerminatorKind::UnwindTerminate => {
+                write!(f, "{}", AbortKind::UnwindTerminate.with_ctx(ctx))
+            }
             TerminatorKind::Return => write!(f, "return"),
             TerminatorKind::UnwindResume => write!(f, "unwind_continue"),
         }

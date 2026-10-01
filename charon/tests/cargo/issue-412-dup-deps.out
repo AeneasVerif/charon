@@ -162,6 +162,7 @@ fn main()
         storage_live(_21)
         _21 = Option::None {  }
         panic(core::panicking::assert_failed)
+        ↳⚡ unwind_continue
     }
     storage_dead(_14)
     storage_dead(_13)

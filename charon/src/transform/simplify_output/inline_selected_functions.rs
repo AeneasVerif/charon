@@ -11,7 +11,6 @@ pub struct Transform {
 impl Transform {
     pub fn new(ctx: &mut TransformCtx) -> CowBox<dyn UllbcPass> {
         let panic_name = Name::from_path(names::EXPLICIT_PANIC_NAME);
-        let panic_terminator = TerminatorKind::Abort(AbortKind::Panic(Some(panic_name)));
 
         // Collect and remove the functions that we want to inline.
         let to_inline = ctx
@@ -21,9 +20,22 @@ impl Transform {
                 decl.body.as_unstructured().is_some_and(|body| {
                     // If the whole body is only a call to this specific panic function.
                     // FIXME: also check that the name of the function is `panic_cold_explicit`?
-                    let is_local_panic_fn = body.body.len() == 1 && {
-                        let block = &body.body[0];
-                        block.statements.is_empty() && block.terminator.kind == panic_terminator
+                    let block = &body.body[START_BLOCK_ID];
+                    let is_local_panic_fn = if body.body.len() == 2
+                        && block.statements.is_empty()
+                        && let TerminatorKind::Panic { name, on_unwind } = &block.terminator.kind
+                        && name == &panic_name
+                        && let Some(unwind_block) = body.body.get(*on_unwind)
+                        && unwind_block.statements.is_empty()
+                    {
+                        matches!(
+                            unwind_block.terminator.kind,
+                            TerminatorKind::UnwindResume
+                                | TerminatorKind::UnwindTerminate
+                                | TerminatorKind::UndefinedBehavior
+                        )
+                    } else {
+                        false
                     };
                     // The `anon_consts_to_call` pass already transformed references to anon consts
                     // into calls to their initializers so we only have to inline these.

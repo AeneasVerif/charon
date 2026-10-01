@@ -114,7 +114,8 @@ impl Transform {
             for block in &mut body.body {
                 if matches!(
                     block.terminator.kind,
-                    TerminatorKind::Abort(AbortKind::Panic(..) | AbortKind::UnwindTerminate)
+                    TerminatorKind::Panic { .. }
+                        | TerminatorKind::UnwindTerminate
                         | TerminatorKind::Return
                         | TerminatorKind::UnwindResume
                 ) {
@@ -156,9 +157,9 @@ impl Transform {
             body.body.transform_sequences(|statements| {
                 if !matches!(
                     &statements[0].kind,
-                    llbc_ast::StatementKind::Abort(
-                        AbortKind::Panic(..) | AbortKind::UnwindTerminate
-                    ) | llbc_ast::StatementKind::Return
+                    llbc_ast::StatementKind::Panic { .. }
+                        | llbc_ast::StatementKind::UnwindTerminate
+                        | llbc_ast::StatementKind::Return
                 ) {
                     return Vec::new();
                 }

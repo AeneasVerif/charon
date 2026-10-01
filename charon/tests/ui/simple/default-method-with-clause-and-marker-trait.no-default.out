@@ -26,6 +26,7 @@ where
 
     storage_live(_0)
     panic(core::panicking::panic)
+    ↳⚡ unwind_continue
 }
 
 // Full name: test_crate::{impl Trait for T}

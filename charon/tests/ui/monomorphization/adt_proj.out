@@ -27,6 +27,7 @@ fn main()
         },
         _ => {
             panic(core::panicking::panic)
+            ↳⚡ unwind_continue
         },
     }
     storage_live(n)

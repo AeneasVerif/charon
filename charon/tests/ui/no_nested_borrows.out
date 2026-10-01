@@ -624,6 +624,11 @@ where
         _ => {
             storage_dead(l)
             panic(core::panicking::panic)
+            ↳⚡ conditional_drop[impl_Destruct_for_List::drop_glue<'1, T>[TraitClause0]] l
+                ↳⚡ storage_dead(l)
+                    unwind_terminate
+                storage_dead(l)
+                unwind_continue
         },
     }
     storage_live(hd)

@@ -28,6 +28,7 @@ fn panic1()
     storage_live(_0)
     _0 = ()
     panic(core::panicking::panic)
+    ↳⚡ unwind_continue
 }
 
 // Full name: test_crate::panic2
@@ -44,6 +45,8 @@ fn panic2()
         unwind_continue
     storage_dead(_1)
     panic(core::panicking::panic_fmt)
+    ↳⚡ storage_dead(_1)
+        unwind_continue
 }
 
 // Full name: test_crate::panic3
@@ -60,6 +63,8 @@ fn panic3()
         unwind_continue
     storage_dead(_1)
     panic(core::panicking::panic_fmt)
+    ↳⚡ storage_dead(_1)
+        unwind_continue
 }
 
 // Full name: test_crate::panic4
@@ -98,6 +103,8 @@ fn panic5()
             unwind_continue
         storage_dead(_2)
         panic(core::panicking::panic_fmt)
+        ↳⚡ storage_dead(_2)
+            unwind_continue
     }
     storage_dead(_1)
     _0 = ()
@@ -113,6 +120,7 @@ fn panic6()
     storage_live(_0)
     _0 = ()
     panic(core::panicking::panic)
+    ↳⚡ unwind_continue
 }
 
 // Full name: test_crate::panic7
@@ -129,6 +137,8 @@ fn panic7()
         unwind_continue
     storage_dead(_1)
     panic(core::panicking::panic_fmt)
+    ↳⚡ storage_dead(_1)
+        unwind_continue
 }
 
 // Full name: test_crate::panic8
@@ -139,6 +149,7 @@ fn panic8()
     storage_live(_0)
     _0 = ()
     panic(core::panicking::panic)
+    ↳⚡ unwind_continue
 }
 
 // Full name: test_crate::panic9
@@ -149,6 +160,7 @@ fn panic9()
     storage_live(_0)
     _0 = ()
     panic(std::panicking::begin_panic)
+    ↳⚡ unwind_continue
 }
 
 

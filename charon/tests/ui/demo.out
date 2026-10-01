@@ -251,6 +251,10 @@ where
             storage_dead(i)
             storage_dead(l)
             panic(core::panicking::panic)
+            ↳⚡ storage_dead(_11)
+                storage_dead(i)
+                storage_dead(l)
+                unwind_continue
         },
     }
     storage_live(x)
@@ -337,6 +341,10 @@ where
             storage_dead(i)
             storage_dead(l)
             panic(core::panicking::panic)
+            ↳⚡ storage_dead(_16)
+                storage_dead(i)
+                storage_dead(l)
+                unwind_continue
         },
     }
     storage_live(x)
@@ -455,6 +463,10 @@ where
     storage_dead(i)
     storage_dead(l)
     panic(core::panicking::panic)
+    ↳⚡ storage_dead(_7)
+        storage_dead(i)
+        storage_dead(l)
+        unwind_continue
 }
 
 // Full name: test_crate::i32_id

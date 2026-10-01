@@ -98,12 +98,12 @@ pub enum StatementKind {
         call: Call,
         on_unwind: Block,
     },
-    /// Panic also handles "unreachable". We keep the name of the panicking function that was
-    /// called.
-    Abort(AbortKind),
-    Return,
-    /// Unwind out of the current function into its caller.
-    UnwindResume,
+    Switch {
+        data: SwitchData,
+        branches: IndexVec<BranchId, Block>,
+    },
+
+    Loop(Block),
     /// Break to outer loops.
     /// The `usize` gives the index of the outer loop to break to:
     /// * 0: break to first outer loop (the current loop)
@@ -116,13 +116,23 @@ pub enum StatementKind {
     /// * 1: continue to second outer loop
     /// * ...
     Continue(usize),
+
+    /// Call to a built-in panicking function.
+    Panic {
+        /// The name of the function that was called.
+        name: Name,
+        on_unwind: Block,
+    },
+    /// Unwinding must stop for ABI reasons or because cleanup code panicked again.
+    UnwindTerminate,
+    /// Unwind out of the current function into its caller.
+    UnwindResume,
+
+    Return,
+    /// Reaching this point is undefined behavior in the Rust abstract machine.
+    UndefinedBehavior,
     /// No-op.
     Nop,
-    Switch {
-        data: SwitchData,
-        branches: IndexVec<BranchId, Block>,
-    },
-    Loop(Block),
 }
 
 /// Ignores statement ids.
@@ -150,12 +160,8 @@ impl Block {
         }
     }
 
-    pub fn new_abort(span: Span, kind: AbortKind) -> Self {
-        Statement::new(span, StatementKind::Abort(kind)).into_block()
-    }
-
     pub fn new_unreachable(span: Span) -> Self {
-        Self::new_abort(span, AbortKind::UndefinedBehavior)
+        Statement::new(span, StatementKind::UndefinedBehavior).into_block()
     }
 
     pub fn from_seq(seq: Vec<Statement>) -> Option<Self> {

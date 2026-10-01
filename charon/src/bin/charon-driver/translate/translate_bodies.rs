@@ -143,10 +143,9 @@ impl<'tcx, 'tctx, 'ictx, 'bctx> BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
     /// Used for non-diverging intrinsics.
     fn push_nounwind_call(&mut self, span: Span, call: Call) {
         let target = self.blocks.reserve_slot();
-        let on_unwind = self.blocks.push(
-            Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior))
-                .into_block(true),
-        );
+        let on_unwind = self
+            .blocks
+            .push(Terminator::new(span, TerminatorKind::UndefinedBehavior).into_block(true));
         let block = BlockData {
             statements: mem::take(&mut self.statements),
             terminator: Terminator::new(
@@ -1670,15 +1669,11 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 ullbc_ast::TerminatorKind::Switch { data, branches }
             }
             TerminatorKind::UnwindResume => ullbc_ast::TerminatorKind::UnwindResume,
-            TerminatorKind::UnwindTerminate { .. } => {
-                ullbc_ast::TerminatorKind::Abort(AbortKind::UnwindTerminate)
-            }
+            TerminatorKind::UnwindTerminate { .. } => ullbc_ast::TerminatorKind::UnwindTerminate,
             TerminatorKind::Return => ullbc_ast::TerminatorKind::Return,
             // A MIR `Unreachable` terminator indicates undefined behavior of the rust abstract
             // machine.
-            TerminatorKind::Unreachable => {
-                ullbc_ast::TerminatorKind::Abort(AbortKind::UndefinedBehavior)
-            }
+            TerminatorKind::Unreachable => ullbc_ast::TerminatorKind::UndefinedBehavior,
             TerminatorKind::Drop {
                 place,
                 target,
@@ -1863,9 +1858,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     // If the call is `panic!`, then the target is `None`.
                     // I don't know in which other cases it can be `None`.
                     assert!(target.is_none());
-                    // We ignore the arguments
-                    // TODO: shouldn't we do something with the unwind edge?
-                    return Ok(TerminatorKind::Abort(AbortKind::Panic(Some(name))));
+                    // We ignore the arguments.
+                    return Ok(TerminatorKind::Panic { name, on_unwind });
                 } else {
                     let fn_ptr = self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?;
                     FnOperand::Regular(fn_ptr)
@@ -1938,8 +1932,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         let target = match target {
             Some(target) => self.translate_basic_block_id(*target),
             None => {
-                let abort =
-                    Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior));
+                let abort = Terminator::new(span, TerminatorKind::UndefinedBehavior);
                 let is_cleanup = self.is_cleanup;
                 self.blocks.push(abort.into_block(is_cleanup))
             }
@@ -1984,13 +1977,11 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 self.blocks.push(unwind_continue.into_block(true))
             }
             mir::UnwindAction::Unreachable => {
-                let abort =
-                    Terminator::new(span, TerminatorKind::Abort(AbortKind::UndefinedBehavior));
+                let abort = Terminator::new(span, TerminatorKind::UndefinedBehavior);
                 self.blocks.push(abort.into_block(true))
             }
             mir::UnwindAction::Terminate(..) => {
-                let abort =
-                    Terminator::new(span, TerminatorKind::Abort(AbortKind::UnwindTerminate));
+                let abort = Terminator::new(span, TerminatorKind::UnwindTerminate);
                 self.blocks.push(abort.into_block(true))
             }
             mir::UnwindAction::Cleanup(bb) => self.translate_basic_block_id(*bb),

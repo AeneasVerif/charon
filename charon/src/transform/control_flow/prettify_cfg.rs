@@ -7,15 +7,21 @@ pub struct Transform;
 
 impl Transform {
     fn update_statements(locals: &Locals, seq: &mut [Statement]) -> Vec<Statement> {
-        // Remove double aborts. This can happen when a function call is turned into an `Abort` by
-        // `inline_local_panic_functions`.
+        // Remove consecutive unconditional errors. This can happen when a function call is
+        // replaced by a panic by `inline_local_panic_functions`.
         if let [
             Statement {
-                kind: StatementKind::Abort(_),
+                kind:
+                    StatementKind::Panic { .. }
+                    | StatementKind::UndefinedBehavior
+                    | StatementKind::UnwindTerminate,
                 ..
             },
             Statement {
-                kind: second_abort @ StatementKind::Abort(_),
+                kind:
+                    second_abort @ (StatementKind::Panic { .. }
+                    | StatementKind::UndefinedBehavior
+                    | StatementKind::UnwindTerminate),
                 ..
             },
             ..,
@@ -30,7 +36,10 @@ impl Transform {
                 ..
             },
             Statement {
-                kind: second_abort @ StatementKind::Abort(_),
+                kind:
+                    second_abort @ (StatementKind::Panic { .. }
+                    | StatementKind::UndefinedBehavior
+                    | StatementKind::UnwindTerminate),
                 ..
             },
             ..,

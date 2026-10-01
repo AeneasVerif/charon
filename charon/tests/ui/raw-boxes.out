@@ -1128,6 +1128,7 @@ where
             _11 = from_str<'15>(const "`new_layout.size()` must be greater than or equal to `old_layout.size()`")
             ↳⚡ unwind_continue
             panic(core::panicking::panic_fmt)
+            ↳⚡ unwind_continue
         }
         storage_dead(_9)
         storage_dead(_7)
@@ -1292,6 +1293,7 @@ where
             _11 = from_str<'15>(const "`new_layout.size()` must be greater than or equal to `old_layout.size()`")
             ↳⚡ unwind_continue
             panic(core::panicking::panic_fmt)
+            ↳⚡ unwind_continue
         }
         storage_dead(_9)
         storage_dead(_7)
@@ -1456,6 +1458,7 @@ where
             _11 = from_str<'15>(const "`new_layout.size()` must be smaller than or equal to `old_layout.size()`")
             ↳⚡ unwind_continue
             panic(core::panicking::panic_fmt)
+            ↳⚡ unwind_continue
         }
         storage_dead(_9)
         storage_dead(_7)

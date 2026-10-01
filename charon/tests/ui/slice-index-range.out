@@ -151,6 +151,14 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     storage_dead(_19)
     storage_dead(_18)
     panic(core::panicking::panic_fmt)
+    ↳⚡ storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(args_7)
+        storage_dead(args_4)
+        storage_dead(_3)
+        storage_dead(len)
+        storage_dead(start)
+        unwind_continue
 }
 
 #[track_caller]
@@ -256,6 +264,14 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     storage_dead(_19)
     storage_dead(_18)
     panic(core::panicking::panic_fmt)
+    ↳⚡ storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(args_7)
+        storage_dead(args_4)
+        storage_dead(_3)
+        storage_dead(len)
+        storage_dead(end)
+        unwind_continue
 }
 
 #[track_caller]
@@ -361,6 +377,14 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     storage_dead(_19)
     storage_dead(_18)
     panic(core::panicking::panic_fmt)
+    ↳⚡ storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(args_7)
+        storage_dead(args_4)
+        storage_dead(_3)
+        storage_dead(end)
+        storage_dead(start)
+        unwind_continue
 }
 
 #[track_caller]
@@ -466,6 +490,14 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     storage_dead(_19)
     storage_dead(_18)
     panic(core::panicking::panic_fmt)
+    ↳⚡ storage_dead(_17)
+        storage_dead(_16)
+        storage_dead(args_7)
+        storage_dead(args_4)
+        storage_dead(_3)
+        storage_dead(len)
+        storage_dead(end)
+        unwind_continue
 }
 
 // Full name: core::option::Option

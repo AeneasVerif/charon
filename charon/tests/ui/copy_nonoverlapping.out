@@ -788,6 +788,7 @@ fn unwrap_failed() -> !
 
     storage_live(_0)
     panic(core::panicking::panic)
+    ↳⚡ unwind_continue
 }
 
 // Full name: core::option::{Option<T>[TraitClause0]}::unwrap

@@ -673,7 +673,9 @@ impl LlbcPass for Transform {
                     | UnwindResume
                     | InlineAsm { .. }
                     | Assert { .. }
-                    | Abort(..)
+                    | Panic { .. }
+                    | UndefinedBehavior
+                    | UnwindTerminate
                     | StorageDead(..)
                     | StorageLive(..)
                     | Return

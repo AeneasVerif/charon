@@ -1545,6 +1545,8 @@ pub fn flabada<'a>(_x: &'a ()) -> Wrapper<(bool, &'a ())>[{built_in impl Sized f
     storage_live(_0)
     storage_dead(_x)
     panic(core::panicking::panic)
+    ↳⚡ storage_dead(_x)
+        unwind_continue
 }
 
 // Full name: test_crate::{impl Fn<(&'a (),)> for for<'a> flabada<'a>}::call
@@ -1681,6 +1683,7 @@ where
 
     storage_live(_0)
     panic(core::panicking::panic)
+    ↳⚡ unwind_continue
 }
 
 
