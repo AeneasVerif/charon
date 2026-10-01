@@ -372,7 +372,9 @@ pub trait BodyTransformCtx: Sized {
                 ProjectionElem::Index { .. } => None,
                 // Ptr metadata is always sized.
                 ProjectionElem::PtrMetadata => None,
-                // Subslice must have metadata length, compute the metadata here as `to` - `from`
+                // A subslice of an array is an array.
+                ProjectionElem::Subslice { .. } if subplace.ty.kind().is_array() => None,
+                // A subslice of a slice has metadata length, computed here as `to` - `from`
                 ProjectionElem::Subslice { from, to, from_end } => {
                     let to_idx = ctx.compute_subslice_end_idx(subplace, *to.clone(), *from_end);
                     let diff_place = ctx.fresh_var(None, Ty::mk_usize());
