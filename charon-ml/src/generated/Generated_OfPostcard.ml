@@ -2260,6 +2260,7 @@ and global_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* ty = ty_of_postcard ctx st in
      let* size = size_of_postcard ctx st in
      let* align = size_of_postcard ctx st in
+     let* ptr_metadata = operand_of_postcard ctx st in
      let* src = global_source_of_postcard ctx st in
      let* global_kind = global_kind_of_postcard ctx st in
      let* value = constant_expr_of_postcard ctx st in
@@ -2271,6 +2272,7 @@ and global_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           ty;
           size;
           align;
+          ptr_metadata;
           src;
           global_kind;
           value;

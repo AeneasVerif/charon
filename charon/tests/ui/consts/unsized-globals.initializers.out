@@ -1,0 +1,472 @@
+# Final LLBC before serialization:
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
+= <opaque>
+
+struct () {}
+
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+
+opaque type core::marker::Sync::{vtable}
+
+// Full name: core::marker::Sync
+#[lang_item(Sync)]
+#[diagnostic_item("Sync")]
+pub unsafe trait Sync<Self>
+
+fn core::marker::Sync::{vtable}<Self>() -> core::marker::Sync::{vtable}
+= <opaque>
+
+vtable core::marker::Sync::{vtable}<Self>: core::marker::Sync::{vtable} = core::marker::Sync::{vtable}<Self>()
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+struct str {
+  _0: [u8],
+}
+
+// Full name: test_crate::Wrap
+pub struct Wrap<T>
+where
+    TraitClause0: (T: MetaSized),
+{
+  a: u8,
+  b: T,
+}
+
+// Full name: test_crate::Outer
+pub struct Outer<T>
+where
+    TraitClause0: (T: MetaSized),
+{
+  x: u32,
+  w: Wrap<T>[TraitClause0],
+}
+
+// Full name: test_crate::OUTER
+pub fn OUTER() -> &'static Outer<[u16]>[{built_in impl MetaSized for [u16]}]
+{
+    let _0: &'1 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // return
+    let _1: &'3 Outer<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}]; // anonymous local
+    let _2: &'4 Outer<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}]; // anonymous local
+    let _3: &'5 Outer<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}]; // anonymous local
+    let _4: &'6 Outer<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}]; // anonymous local
+    let _5: &'8 Outer<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}]; // anonymous local
+    let _6: Outer<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}]; // anonymous local
+    let _7: Wrap<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}]; // anonymous local
+    let _8: [u16; 2usize]; // anonymous local
+
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    storage_live(_8)
+    _8 = [const 3u16, const 4u16]
+    _7 = Wrap { a: const 2u8, b: move _8 }
+    _6 = Outer { x: const 1u32, w: move _7 }
+    _5 = &_6
+    _4 = move _5
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_1)
+    storage_live(_2)
+    _3 = move _4
+    _2 = &(*_3)
+    _1 = &(*_2)
+    _0 = unsize_cast<&'3 Outer<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}], &'7 Outer<[u16]>[{built_in impl MetaSized for [u16]}], 2usize>(move _1)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::OUTER
+pub const OUTER: &'static Outer<[u16]>[{built_in impl MetaSized for [u16]}] = OUTER()
+
+// Full name: test_crate::WRAP
+fn WRAP() -> &'static Wrap<[u8]>[{built_in impl MetaSized for [u8]}]
+{
+    let _0: &'1 Wrap<[u8]>[{built_in impl MetaSized for [u8]}]; // return
+    let _1: &'3 Wrap<[u8; 2usize]>[{built_in impl MetaSized for [u8; 2usize]}]; // anonymous local
+    let _2: &'4 Wrap<[u8; 2usize]>[{built_in impl MetaSized for [u8; 2usize]}]; // anonymous local
+    let _3: &'5 Wrap<[u8; 2usize]>[{built_in impl MetaSized for [u8; 2usize]}]; // anonymous local
+    let _4: &'6 Wrap<[u8; 2usize]>[{built_in impl MetaSized for [u8; 2usize]}]; // anonymous local
+    let _5: &'8 Wrap<[u8; 2usize]>[{built_in impl MetaSized for [u8; 2usize]}]; // anonymous local
+    let _6: Wrap<[u8; 2usize]>[{built_in impl MetaSized for [u8; 2usize]}]; // anonymous local
+    let _7: [u8; 2usize]; // anonymous local
+
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = [const 97u8, const 98u8]
+    _6 = Wrap { a: const 5u8, b: move _7 }
+    _5 = &_6
+    _4 = move _5
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_1)
+    storage_live(_2)
+    _3 = move _4
+    _2 = &(*_3)
+    _1 = &(*_2)
+    _0 = unsize_cast<&'3 Wrap<[u8; 2usize]>[{built_in impl MetaSized for [u8; 2usize]}], &'7 Wrap<[u8]>[{built_in impl MetaSized for [u8]}], 2usize>(move _1)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::WRAP
+const WRAP: &'static Wrap<[u8]>[{built_in impl MetaSized for [u8]}] = WRAP()
+
+// Full name: test_crate::TUPLE
+pub fn TUPLE() -> &'static (u8, [u8])
+{
+    let _0: &'1 (u8, [u8]); // return
+    let _1: &'2 (u8, [u8]); // anonymous local
+    let _2: *const (u8, [u8]); // anonymous local
+    let _3: *const Wrap<[u8]>[{built_in impl MetaSized for [u8]}]; // anonymous local
+    let _4: &'4 Wrap<[u8]>[{built_in impl MetaSized for [u8]}]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy WRAP
+    _3 = &raw const (*_4) with_metadata(copy _4.metadata)
+    _2 = cast<*const Wrap<[u8]>[{built_in impl MetaSized for [u8]}], *const (u8, [u8])>(move _3)
+    storage_dead(_3)
+    _1 = &(*_2) with_metadata(copy _2.metadata)
+    _0 = &(*_1) with_metadata(copy _1.metadata)
+    storage_dead(_4)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::TUPLE
+pub const TUPLE: &'static (u8, [u8]) = TUPLE()
+
+// Full name: test_crate::STR_TAIL
+pub fn STR_TAIL() -> &'static Wrap<str>[{built_in impl MetaSized for str}]
+{
+    let _0: &'1 Wrap<str>[{built_in impl MetaSized for str}]; // return
+    let _1: &'2 Wrap<str>[{built_in impl MetaSized for str}]; // anonymous local
+    let _2: *const Wrap<str>[{built_in impl MetaSized for str}]; // anonymous local
+    let _3: *const Wrap<[u8]>[{built_in impl MetaSized for [u8]}]; // anonymous local
+    let _4: &'4 Wrap<[u8]>[{built_in impl MetaSized for [u8]}]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy WRAP
+    _3 = &raw const (*_4) with_metadata(copy _4.metadata)
+    _2 = cast<*const Wrap<[u8]>[{built_in impl MetaSized for [u8]}], *const Wrap<str>[{built_in impl MetaSized for str}]>(move _3)
+    storage_dead(_3)
+    _1 = &(*_2) with_metadata(copy _2.metadata)
+    _0 = &(*_1) with_metadata(copy _1.metadata)
+    storage_dead(_4)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::STR_TAIL
+pub const STR_TAIL: &'static Wrap<str>[{built_in impl MetaSized for str}] = STR_TAIL()
+
+// Full name: test_crate::NESTED
+pub fn NESTED() -> (u8, &'static Outer<[u16]>[{built_in impl MetaSized for [u16]}])
+{
+    let _0: (u8, &'2 Outer<[u16]>[{built_in impl MetaSized for [u16]}]); // return
+
+    storage_live(_0)
+    _0 = (const 7u8, copy OUTER)
+    return
+}
+
+// Full name: test_crate::NESTED
+pub const NESTED: (u8, &'static Outer<[u16]>[{built_in impl MetaSized for [u16]}]) = NESTED()
+
+// Full name: test_crate::STATIC
+pub fn STATIC() -> &'static Outer<[u16]>[{built_in impl MetaSized for [u16]}]
+{
+    let _0: &'1 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // return
+
+    storage_live(_0)
+    _0 = copy OUTER
+    return
+}
+
+// Full name: test_crate::STATIC
+pub static STATIC: &'static Outer<[u16]>[{built_in impl MetaSized for [u16]}] = STATIC()
+
+// Full name: test_crate::INTERIOR
+pub fn INTERIOR() -> &'static Wrap<[u16]>[{built_in impl MetaSized for [u16]}]
+{
+    let _0: &'1 Wrap<[u16]>[{built_in impl MetaSized for [u16]}]; // return
+    let _1: &'2 Wrap<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = &(*STATIC).w with_metadata(copy STATIC.metadata)
+    _0 = &(*_1) with_metadata(copy _1.metadata)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::INTERIOR
+pub static INTERIOR: &'static Wrap<[u16]>[{built_in impl MetaSized for [u16]}] = INTERIOR()
+
+struct test_crate::Trait::{vtable} {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait)),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+  super_trait_1: &'static core::marker::Sync::{vtable},
+}
+
+// Full name: test_crate::Trait
+pub trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Sync)
+    vtable: test_crate::Trait::{vtable}
+}
+
+// Full name: test_crate::{impl Trait for u8}::{vtable_drop_shim}
+unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Trait))
+{
+    let ret: (); // return
+    let dyn_self: &'_0 mut (dyn Trait + '0); // arg #1
+    let target_self: &'_0 mut u8; // local
+
+    storage_live(ret)
+    ret = ()
+    storage_live(target_self)
+    target_self = concretize<&'_0 mut (dyn Trait + '1), &'_0 mut u8>(move dyn_self)
+    storage_dead(target_self)
+    storage_dead(dyn_self)
+    return
+}
+
+// Full name: test_crate::{impl Trait for u8}::{vtable}
+fn impl_Trait_for_u8::{vtable}() -> test_crate::Trait::{vtable}
+{
+    let ret: test_crate::Trait::{vtable}; // return
+    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait + '1)); // anonymous local
+    let _2: &'static core::marker::MetaSized::{vtable}; // anonymous local
+    let _3: &'static core::marker::Sync::{vtable}; // anonymous local
+
+    storage_live(ret)
+    storage_live(_1)
+    _1 = cast<for<'_0_1> {vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait + '1))>(const {vtable_drop_shim}<'0>)
+    storage_live(_2)
+    _2 = &core::marker::MetaSized::{vtable}<u8>
+    storage_live(_3)
+    _3 = &core::marker::Sync::{vtable}<u8>
+    ret = test_crate::Trait::{vtable} { size: const size_of::<u8>(), align: const align_of::<u8>(), drop: move _1, super_trait_0: move _2, super_trait_1: move _3 }
+    return
+}
+
+// Full name: test_crate::{impl Trait for u8}::{vtable}
+vtable impl_Trait_for_u8::{vtable}: test_crate::Trait::{vtable} = impl_Trait_for_u8::{vtable}()
+
+// Full name: test_crate::{impl Trait for u8}
+impl "impl_Trait_for_u8" Trait for u8 {
+    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
+    proof ImpliedClause1: (u8: Sync) = {built_in impl Sync for u8}
+    vtable: impl_Trait_for_u8::{vtable}
+}
+
+// Full name: test_crate::RawPtr
+pub struct RawPtr {
+  _0: *const (dyn Trait + 'static),
+}
+
+// Full name: test_crate::{impl Sync for RawPtr}
+unsafe impl "impl_Sync_for_RawPtr" Sync for RawPtr {
+    vtable: lazy
+}
+
+// Full name: test_crate::DYN
+pub fn DYN() -> &'static (dyn Trait + 'static)
+{
+    let _0: &'3 (dyn Trait + '4); // return
+    let _1: &'6 u8; // anonymous local
+    let _2: &'7 u8; // anonymous local
+    let _3: &'8 u8; // anonymous local
+    let _4: &'9 u8; // anonymous local
+    let _5: &'12 u8; // anonymous local
+    let _6: u8; // anonymous local
+
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = const 8u8
+    _5 = &_6
+    _4 = move _5
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_1)
+    storage_live(_2)
+    _3 = move _4
+    _2 = &(*_3)
+    _1 = &(*_2)
+    _0 = unsize_cast<&'6 u8, &'10 (dyn Trait + '11), &impl_Trait_for_u8::{vtable}>(move _1)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::DYN
+pub static DYN: &'static (dyn Trait + 'static) = DYN()
+
+// Full name: test_crate::FOO
+pub fn FOO() -> &'static (dyn Debug + Sync + 'static)
+{
+    let _0: &'3 (dyn Debug + Sync + '4); // return
+    let _1: &'6 i32; // anonymous local
+    let _2: &'7 i32; // anonymous local
+    let _3: &'8 i32; // anonymous local
+    let _4: &'9 i32; // anonymous local
+    let _5: &'12 i32; // anonymous local
+    let _6: i32; // anonymous local
+
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = const 42i32
+    _5 = &_6
+    _4 = move _5
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_1)
+    storage_live(_2)
+    _3 = move _4
+    _2 = &(*_3)
+    _1 = &(*_2)
+    _0 = unsize_cast<&'6 i32, &'10 (dyn Debug + Sync + '11), &{impl#8}::{vtable}>(move _1)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::FOO
+pub static FOO: &'static (dyn Debug + Sync + 'static) = FOO()
+
+// Full name: test_crate::DYN_TAIL
+pub fn DYN_TAIL() -> &'static Wrap<(dyn Trait + 'static)>[{built_in impl MetaSized for (dyn Trait + 'static)}]
+{
+    let _0: &'10 Wrap<(dyn Trait + '11)>[{built_in impl MetaSized for (dyn Trait + '13)}]; // return
+    let _1: &'15 Wrap<u8>[{built_in impl MetaSized for u8}]; // anonymous local
+    let _2: &'16 Wrap<u8>[{built_in impl MetaSized for u8}]; // anonymous local
+    let _3: &'17 Wrap<u8>[{built_in impl MetaSized for u8}]; // anonymous local
+    let _4: &'18 Wrap<u8>[{built_in impl MetaSized for u8}]; // anonymous local
+    let _5: &'23 Wrap<u8>[{built_in impl MetaSized for u8}]; // anonymous local
+    let _6: Wrap<u8>[{built_in impl MetaSized for u8}]; // anonymous local
+
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _6 = Wrap { a: const 9u8, b: const 10u8 }
+    _5 = &_6
+    _4 = move _5
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_1)
+    storage_live(_2)
+    _3 = move _4
+    _2 = &(*_3)
+    _1 = &(*_2)
+    _0 = unsize_cast<&'15 Wrap<u8>[{built_in impl MetaSized for u8}], &'19 Wrap<(dyn Trait + '20)>[{built_in impl MetaSized for (dyn Trait + '22)}], &impl_Trait_for_u8::{vtable}>(move _1)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::DYN_TAIL
+pub static DYN_TAIL: &'static Wrap<(dyn Trait + 'static)>[{built_in impl MetaSized for (dyn Trait + 'static)}] = DYN_TAIL()
+
+// Full name: test_crate::RAW_DYN
+pub fn RAW_DYN() -> RawPtr
+{
+    let _0: RawPtr; // return
+    let _1: *const (dyn Trait + '2); // anonymous local
+    let _2: *const u8; // anonymous local
+    let _3: &'4 u8; // anonymous local
+    let _4: &'5 u8; // anonymous local
+    let _5: &'6 u8; // anonymous local
+    let _6: &'8 u8; // anonymous local
+    let _7: u8; // anonymous local
+
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = const 11u8
+    _6 = &_7
+    _5 = move _6
+    storage_live(_0)
+    storage_live(_4)
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    _4 = move _5
+    _3 = &(*_4)
+    _2 = &raw const (*_3)
+    _1 = unsize_cast<*const u8, *const (dyn Trait + '7), &impl_Trait_for_u8::{vtable}>(move _2)
+    storage_dead(_2)
+    _0 = RawPtr { _0: move _1 }
+    storage_dead(_3)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::RAW_DYN
+pub static RAW_DYN: RawPtr = RAW_DYN()
+
+pub const test_crate::inline_const::{promoted_const}: Outer<[u16]>[{built_in impl MetaSized for [u16]}] = Outer { x: 1u32, w: Wrap { a: 2u8, b: [3u16, 4u16] } } with_metadata(const 2usize)
+
+// Full name: test_crate::inline_const
+pub fn inline_const()
+{
+    let _0: (); // return
+    let _1: &'1 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
+    let _2: &'2 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    storage_live(_2)
+    _2 = &test_crate::inline_const::{promoted_const} with_metadata(const 2usize)
+    _1 = move _2
+    set_type(typeof(_1) <= &'3 Outer<[u16]>[{built_in impl MetaSized for [u16]}])
+    storage_dead(_1)
+    _0 = ()
+    storage_dead(_2)
+    return
+}
+
+
+

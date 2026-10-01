@@ -5,6 +5,8 @@ struct (_, _)<A, B> {
   _1: B,
 }
 
+struct () {}
+
 // Full name: core::num::{u64}::MAX
 pub fn MAX() -> u64
 {
@@ -645,8 +647,6 @@ pub fn carrying_mul_add(self: u128, b: u128, c: u128, d: u128) -> (u128, u128)
     storage_dead(self)
     return
 }
-
-struct () {}
 
 // Full name: test_crate::mult_u128
 pub fn mult_u128(a: u128, b: u128) -> u128

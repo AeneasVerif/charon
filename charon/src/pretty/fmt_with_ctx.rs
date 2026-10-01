@@ -1058,6 +1058,9 @@ where
         // Value
         let value = self.value.with_ctx(ctx);
         write!(f, "= {value}")?;
+        if !self.ptr_metadata.ty().is_unit() {
+            write!(f, " with_metadata({})", self.ptr_metadata.with_ctx(ctx))?;
+        }
 
         if ctx.include_layouts() {
             let (size, align) = (self.size.with_ctx(ctx), self.align.with_ctx(ctx));

@@ -940,10 +940,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 Some(args.types.into_iter().collect_vec())
             }
             AdtKind::Str => {
-                let u8_ty =
-                    TyKind::Scalar(ScalarTy::Integer(IntegerTy::Unsigned(UIntTy::U8))).into_ty();
                 let u8_is_sized = self.translate_sized_proof(def_span, self.tcx.types.u8)?;
-                Some(vec![Ty::mk_slice(u8_ty, u8_is_sized)])
+                Some(vec![Ty::mk_slice(Ty::mk_u8(), u8_is_sized)])
             }
             _ => None,
         };

@@ -19,6 +19,8 @@ pub trait Sized<Self>
 fn core::marker::MetaSized::{vtable}::<test_crate::main::{closure}>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
+struct () {}
+
 vtable core::marker::MetaSized::{vtable}::<test_crate::main::{closure}>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<test_crate::main::{closure}>()
 
 fn core::marker::MetaSized::{vtable}::<test_crate::main::{closure#1}<'_>>() -> core::marker::MetaSized::{vtable}
@@ -57,8 +59,6 @@ pub trait Drop<Self>
     proof ImpliedClause0: (Self: MetaSized)
     vtable: core::ops::drop::Drop::{vtable}
 }
-
-struct () {}
 
 struct core::ops::function::FnOnce::{vtable} {
   size: usize,

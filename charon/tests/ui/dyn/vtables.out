@@ -26,6 +26,8 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
@@ -63,8 +65,6 @@ pub enum AssertKind {
 // Full name: alloc::string::String
 #[lang_item(String)]
 pub opaque type String
-
-struct () {}
 
 // Full name: alloc::string::String::{impl Destruct for String}::drop_glue
 unsafe fn drop_glue<'_0>(_1: &'_0 mut String)

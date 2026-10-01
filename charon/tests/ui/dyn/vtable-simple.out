@@ -26,6 +26,8 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+struct () {}
+
 fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
@@ -41,8 +43,6 @@ impl "impl_Clone_for_i32" Clone for i32 {
     fn clone<'_0_1> = clone<'_0_1>
     non-dyn-compatible
 }
-
-struct () {}
 
 struct (_, _)<A, B>
 where

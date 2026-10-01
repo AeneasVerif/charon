@@ -10,6 +10,8 @@ pub trait MetaSized<Self>
 fn core::marker::MetaSized::{vtable}::<S>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
+struct () {}
+
 vtable core::marker::MetaSized::{vtable}::<S>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<S>()
 
 fn core::marker::MetaSized::{vtable}::<*mut u32>() -> core::marker::MetaSized::{vtable}
@@ -21,8 +23,6 @@ vtable core::marker::MetaSized::{vtable}::<*mut u32>: core::marker::MetaSized::{
 #[fundamental]
 #[lang_item(OwnedBox)]
 pub opaque type Box::<S, Global>
-
-struct () {}
 
 // Full name: alloc::boxed::Box::{impl Destruct for Box::<S, Global>}::drop_glue::<S, Global>
 unsafe fn {impl Destruct for Box::<S, Global>}::drop_glue::<S, Global><'_0>(_1: &'_0 mut Box::<S, Global>)

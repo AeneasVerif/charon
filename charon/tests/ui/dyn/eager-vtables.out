@@ -19,6 +19,8 @@ pub trait Sized<Self>
 fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
 = <opaque>
 
+struct () {}
+
 vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
 
 // Full name: core::result::Result
@@ -31,8 +33,6 @@ where
   Ok { _0: T },
   Err { _0: E },
 }
-
-struct () {}
 
 struct str {
   _0: [u8],

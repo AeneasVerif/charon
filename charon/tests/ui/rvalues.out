@@ -60,6 +60,8 @@ where
 pub fn MAX() -> f32
 = <opaque>
 
+struct () {}
+
 // Full name: core::f32::{f32}::MAX
 pub const MAX: f32 = MAX()
 
@@ -69,8 +71,6 @@ pub fn MIN() -> f64
 
 // Full name: core::f64::{f64}::MIN
 pub const MIN: f64 = MIN()
-
-struct () {}
 
 struct (_, _)<A, B>
 where

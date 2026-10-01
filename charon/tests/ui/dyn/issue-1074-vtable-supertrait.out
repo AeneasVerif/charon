@@ -9,6 +9,8 @@ pub unsafe trait Send<Self>
 fn core::marker::Send::{vtable}<Self>() -> core::marker::Send::{vtable}
 = <opaque>
 
+struct () {}
+
 vtable core::marker::Send::{vtable}<Self>: core::marker::Send::{vtable} = core::marker::Send::{vtable}<Self>()
 
 opaque type core::marker::MetaSized::{vtable}
@@ -22,8 +24,6 @@ fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable
 = <opaque>
 
 vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
-
-struct () {}
 
 struct test_crate::MyTrait::{vtable} {
   size: usize,

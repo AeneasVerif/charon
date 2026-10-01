@@ -261,12 +261,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         }
     }
 
-    fn translate_unsizing_metadata(
+    pub(crate) fn translate_unsizing_metadata(
         &mut self,
         span: Span,
-        meta: hax::UnsizingMetadata,
+        meta: &hax::UnsizingMetadata,
     ) -> Result<UnsizingMetadata, Error> {
-        Ok(match &meta {
+        Ok(match meta {
             hax::UnsizingMetadata::Length(len) => {
                 let len = self.translate_constant_expr(span, len)?;
                 UnsizingMetadata::Length(len)
@@ -475,7 +475,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     box_array_rust_ty,
                     box_slice_rust_ty,
                 );
-                let meta = self.translate_unsizing_metadata(span, meta)?;
+                let meta = self.translate_unsizing_metadata(span, &meta)?;
                 StatementKind::Assign(
                     box_slice.clone(),
                     Rvalue::UnaryOp(
@@ -1342,7 +1342,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     mir::CastKind::PointerCoercion(ty::adjustment::PointerCoercion::Unsize, ..) => {
                         let meta =
                             hax::compute_unsizing_metadata(&self.hax_state, op_ty, *rust_tgt_ty);
-                        let meta = self.translate_unsizing_metadata(span, meta)?;
+                        let meta = self.translate_unsizing_metadata(span, &meta)?;
                         CastKind::Unsize(src_ty, tgt_ty.clone(), meta)
                     }
                 };

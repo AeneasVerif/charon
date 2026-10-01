@@ -11,11 +11,11 @@ pub fn MAX() -> char
     return
 }
 
+struct () {}
+
 // Full name: core::char::MAX
 #[deprecated(since = "future", note = "replaced by the `MAX` associated constant on `char`")]
 pub const MAX: char = MAX()
-
-struct () {}
 
 // Full name: test_crate::main
 fn main()
