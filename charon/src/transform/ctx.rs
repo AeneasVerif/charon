@@ -365,7 +365,8 @@ pub trait BodyTransformCtx: Sized {
                         .project(ProjectionElem::PtrMetadata, metadata_ty.clone());
                     Some(Operand::Copy(metadata_place))
                 }
-                ProjectionElem::Field { .. } => {
+                // An offset keeps the metadata of the place it starts from.
+                ProjectionElem::Field { .. } | ProjectionElem::Offset { .. } => {
                     compute_place_metadata_inner(ctx, subplace, metadata_ty)
                 }
                 // Indexing for array & slice will only result in sized types, hence no metadata
@@ -405,6 +406,33 @@ pub trait BodyTransformCtx: Sized {
         );
         compute_place_metadata_inner(self, place, &metadata_ty)
             .unwrap_or_else(Operand::mk_const_unit)
+    }
+
+    /// The projection to the place of type `output_ty` located `count * size_of::<ty>()` bytes
+    /// after the current place, or `count` bytes if `ty` is `None` (see `ProjectionElem::Offset`).
+    fn offset_projection(
+        &mut self,
+        count: Operand,
+        ty: Option<&Ty>,
+        in_bounds: bool,
+        output_ty: Ty,
+    ) -> ProjectionElem {
+        let bytes = match ty {
+            None => count,
+            Some(ty) => {
+                let count_ty = count.ty().clone();
+                let size =
+                    ConstantExpr::new(ConstantExprKind::SizeOf(ty.clone()), count_ty.clone());
+                let rval =
+                    Rvalue::BinaryOp(BinOp::Mul(OverflowMode::UB), count, Operand::Const(size));
+                Operand::Copy(self.rval_to_place(rval, count_ty))
+            }
+        };
+        ProjectionElem::Offset {
+            bytes: Box::new(bytes),
+            in_bounds,
+            ty: output_ty,
+        }
     }
 
     /// Create a `&` borrow of the place.

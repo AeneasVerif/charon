@@ -131,6 +131,10 @@ let pp_region_var_groups (fmt : Format.formatter) (gl : region_var_groups) :
     unit =
   pp_sep_list "\n" pp_region_var_group fmt gl
 
+(** The name of the pointer method that corresponds to an offset projection. *)
+let offset_method (in_bounds : bool) : string =
+  if in_bounds then "offset" else "wrapping_offset"
+
 let pp_ref_kind (fmt : Format.formatter) (rk : ref_kind) : unit =
   match rk with
   | RMut -> pp_string fmt "Mut"
@@ -1484,6 +1488,9 @@ let rec pp_projection_elem (env : fmt_env) (subplace : place)
             (variant_id_to_pretty_string variant_id)
             field_name)
   | PtrMetadata -> Format.fprintf fmt "%s.metadata" sub
+  | Offset (n, in_bounds, _) ->
+      Format.fprintf fmt "%s.%s!(%s)" sub (offset_method in_bounds)
+        (operand_to_string env n)
 
 and pp_place (env : fmt_env) (fmt : Format.formatter) (p : place) : unit =
   match p.kind with
@@ -1556,7 +1563,6 @@ and pp_binop (fmt : Format.formatter) (binop : binop) : unit =
   | SubChecked -> pp_string fmt "checked.-"
   | MulChecked -> pp_string fmt "checked.*"
   | Cmp -> pp_string fmt "cmp"
-  | Offset -> pp_string fmt "offset"
 
 and pp_operand (env : fmt_env) (fmt : Format.formatter) (op : operand) : unit =
   match op with

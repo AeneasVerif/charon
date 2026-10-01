@@ -58,6 +58,20 @@ pub enum ProjectionElem {
         to: Box<Operand>,
         from_end: bool,
     },
+    /// For a place `p`, `p.offset(n)` is the place located `n` bytes after `p`, where `n` is a
+    /// signed or unsigned integer. This projection may go out of bounds of the original place, e.g.
+    /// if we initially had a `*const T` pointing into an array. If `in_bounds` is `true` the offset
+    /// must not overflow and must stay within the original allocation, otherwise it uses wrapping
+    /// arithmetic around the address space and may go outside the allocation (just like
+    /// `<*const T>::offset` vs `<*const T>::wrapping_offset`).
+    ///
+    /// An offset may change the type of the place, like a transmute: `ty` is the type of the
+    /// resulting place.
+    Offset {
+        bytes: Box<Operand>,
+        in_bounds: bool,
+        ty: Ty,
+    },
 }
 
 impl Place {
@@ -214,6 +228,7 @@ impl ProjectionElem {
                 }
                 _ => return None,
             },
+            Offset { ty, .. } => ty.clone(),
         })
     }
 }

@@ -1030,7 +1030,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             mir::BinOp::Shr => BinOp::Shr(OverflowMode::Wrap),
             mir::BinOp::ShrUnchecked => BinOp::Shr(OverflowMode::UB),
             mir::BinOp::Cmp => BinOp::Cmp,
-            mir::BinOp::Offset => BinOp::Offset,
+            mir::BinOp::Offset => unreachable!("handled in `translate_mir_rvalue`"),
         })
     }
 
@@ -1369,6 +1369,28 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 };
                 let unop = UnOp::Cast(cast_kind);
                 Ok(Rvalue::UnaryOp(unop, operand))
+            }
+            // `ptr.offset(n)` becomes `&raw (*ptr).offset(n)`.
+            mir::Rvalue::BinaryOp(mir::BinOp::Offset, (ptr, n)) => {
+                let TyKind::RawPtr(pointee, kind) = tgt_ty.kind() else {
+                    raise_error!(self, span, "`Offset` on a non-raw-pointer type")
+                };
+                let ptr = match self.translate_operand(span, ptr)? {
+                    Operand::Copy(p) | Operand::Move(p) => p,
+                    op @ Operand::Const(_) => {
+                        let ty = op.ty().clone();
+                        self.rval_to_place(Rvalue::Use(op, WithRetag::No), ty)
+                    }
+                };
+                let n = self.translate_operand(span, n)?;
+                // MIR's `Offset` is UB if it goes out of bounds.
+                let offset = self.offset_projection(n, Some(pointee), true, pointee.clone());
+                let place = ptr.deref().project(offset, pointee.clone());
+                Ok(Rvalue::RawPtr {
+                    place,
+                    kind: *kind,
+                    ptr_metadata: Self::missing_ptr_metadata(),
+                })
             }
             mir::Rvalue::BinaryOp(binop, (left, right)) => Ok(Rvalue::BinaryOp(
                 self.translate_binaryop_kind(span, *binop)?,

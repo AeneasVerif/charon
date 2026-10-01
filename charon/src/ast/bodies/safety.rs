@@ -142,7 +142,9 @@ impl Place {
                     }
                 }
             }
-            ProjectionElem::Index { .. } | ProjectionElem::Subslice { .. } => Safety::Unsafe,
+            ProjectionElem::Index { .. }
+            | ProjectionElem::Subslice { .. }
+            | ProjectionElem::Offset { .. } => Safety::Unsafe,
             ProjectionElem::Field(Some(_), _) | ProjectionElem::PtrMetadata => Safety::Safe,
         }
     }
@@ -229,7 +231,6 @@ impl HasSafety for BinOp {
             Add(om) | Sub(om) | Mul(om) | Div(om) | Rem(om) | Shl(om) | Shr(om) => om.safety(krate),
             BitXor | BitAnd | BitOr | Eq | Lt | Le | Ne | Ge | Gt | AddChecked | SubChecked
             | MulChecked | Cmp => Safety::Safe,
-            Offset => Safety::Unsafe,
         }
     }
 }
