@@ -27,9 +27,9 @@ fn new_promoted_global(
     let id = ItemId::Fun(*ctx.def_id);
     let mut name = krate.item_names.get(&id).unwrap().clone();
     let promoted_count = krate
-        .global_decls
-        .iter()
-        .filter_map(|g| g.item_meta.name.name.split_last())
+        .item_names
+        .values()
+        .filter_map(|n| n.name.split_last())
         .filter(|(last, prefix)| {
             matches!(last, PathElem::Builtin(BuiltinPathElem::PromotedConst, _))
                 && *prefix == name.name.as_slice()
@@ -110,38 +110,42 @@ fn transform_constant_expr(
                     ctx.rval_to_place(Rvalue::Use(bval, WithRetag::No), bval_ty)
                 }
             };
-            // The metadata of an unsized global may be a vtable reference, which we lower too.
-            let ptr_metadata = match ctx.compute_place_metadata(&place) {
-                Operand::Const(meta) => transform_constant_expr(ctx, meta),
-                ptr_metadata => ptr_metadata,
-            };
-            let place_ty = place.ty().clone();
-            let ptr = match rk {
-                None => Rvalue::Ref {
-                    place,
-                    kind: BorrowKind::Shared,
-                    ptr_metadata,
-                },
-                Some(kind) => Rvalue::RawPtr {
-                    place,
-                    kind,
-                    ptr_metadata,
-                },
-            };
             // A sized place is unsized after being borrowed, if there's metadata.
-            match metadata.clone().filter(|_| bval_is_sized) {
-                None => ptr,
-                Some(metadata) => {
-                    let ptr_ty = match rk {
-                        None => TyKind::Ref(Region::Erased, place_ty, RefKind::Shared),
-                        Some(kind) => TyKind::RawPtr(place_ty, kind),
-                    };
-                    let ptr_ty = ptr_ty.into_ty();
-                    let sized_ptr = ctx.rval_to_place(ptr, ptr_ty.clone());
-                    let cast = CastKind::Unsize(ptr_ty, val.ty().clone(), metadata);
-                    Rvalue::UnaryOp(UnOp::Cast(cast), Operand::Move(sized_ptr))
+            let mut rval = match (rk, metadata.clone().filter(|_| bval_is_sized)) {
+                // Borrow the place.
+                (None, None) => ctx.borrow(place, BorrowKind::Shared),
+                (Some(rk), None) => ctx.raw_borrow(place, rk),
+                // Unsizing borrow.
+                (None, Some(metadata)) => {
+                    let sized_ref = ctx.borrow_to_new_var(place, BorrowKind::Shared, None);
+                    Rvalue::UnaryOp(
+                        UnOp::Cast(CastKind::Unsize(
+                            sized_ref.ty.clone(),
+                            val.ty().clone(),
+                            metadata,
+                        )),
+                        Operand::Move(sized_ref),
+                    )
                 }
+                (Some(rk), Some(metadata)) => {
+                    let sized_raw_ref = ctx.raw_borrow_to_new_var(place, rk, None);
+                    Rvalue::UnaryOp(
+                        UnOp::Cast(CastKind::Unsize(
+                            sized_raw_ref.ty.clone(),
+                            val.ty().clone(),
+                            metadata,
+                        )),
+                        Operand::Move(sized_raw_ref),
+                    )
+                }
+            };
+            // The metadata of an unsized global may be a vtable reference, which we lower too.
+            if let Rvalue::Ref { ptr_metadata, .. } | Rvalue::RawPtr { ptr_metadata, .. } =
+                &mut rval
+            {
+                transform_operand(ctx, ptr_metadata);
             }
+            rval
         }
         ConstantExprKind::Adt(..) if val.ty().is_unit() => {
             // Keep unit constants to avoid adding countless unit locals.
