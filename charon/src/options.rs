@@ -550,7 +550,6 @@ impl CliOpts {
                     self.raw_consts = true;
                 }
                 Preset::Aeneas => {
-                    self.inline_anon_consts = true;
                     self.lift_associated_types.push("*".to_owned());
                     self.treat_box_as_builtin = true;
                     self.ops_to_function_calls = true;
