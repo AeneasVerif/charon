@@ -68,7 +68,7 @@ fn main()
         _2 = const 0usize;
         fake_read(_1);
         _3 = copy _2 < const 3usize;
-        assert assert(move _3 == true) (bounds_check) -> bb1 (unwind: bb8);
+        assert assert(move _3 == true) (bounds_check) -> bb1 (unwind: bb14);
     }
 
     bb1: {
@@ -77,7 +77,7 @@ fn main()
         storage_dead(_1);
         storage_live(_4);
         _5 = const 5i32 checked.* const 10i32;
-        assert assert(move _5._1 == false) (overflow) -> bb2 (unwind: bb8);
+        assert assert(move _5._1 == false) (overflow) -> bb2 (unwind: bb13);
     }
 
     bb2: {
@@ -90,7 +90,7 @@ fn main()
         storage_live(_8);
         _8 = copy x;
         _9 = copy _8 == const -128i8;
-        assert assert(move _9 == false) (overflow_neg) -> bb3 (unwind: bb8);
+        assert assert(move _9 == false) (overflow_neg) -> bb3 (unwind: bb12);
     }
 
     bb3: {
@@ -99,14 +99,14 @@ fn main()
         storage_dead(_7);
         storage_live(_10);
         _11 = const 0i32 == const 0i32;
-        assert assert(move _11 == false) (division_by_zero) -> bb4 (unwind: bb8);
+        assert assert(move _11 == false) (division_by_zero) -> bb4 (unwind: bb11);
     }
 
     bb4: {
         _12 = const 0i32 == const -1i32;
         _13 = const 1i32 == const -2147483648i32;
         _14 = move _12 & move _13;
-        assert assert(move _14 == false) (overflow) -> bb5 (unwind: bb8);
+        assert assert(move _14 == false) (overflow) -> bb5 (unwind: bb10);
     }
 
     bb5: {
@@ -114,7 +114,7 @@ fn main()
         storage_dead(_10);
         storage_live(_15);
         _16 = const 0i32 == const 0i32;
-        assert assert(move _16 == false) (remainder_by_zero) -> bb6 (unwind: bb8);
+        assert assert(move _16 == false) (remainder_by_zero) -> bb6 (unwind: bb9);
     }
 
     bb6: {
@@ -133,6 +133,30 @@ fn main()
     }
 
     bb8 (cleanup): {
+        unwind_continue;
+    }
+
+    bb9 (cleanup): {
+        unwind_continue;
+    }
+
+    bb10 (cleanup): {
+        unwind_continue;
+    }
+
+    bb11 (cleanup): {
+        unwind_continue;
+    }
+
+    bb12 (cleanup): {
+        unwind_continue;
+    }
+
+    bb13 (cleanup): {
+        unwind_continue;
+    }
+
+    bb14 (cleanup): {
         unwind_continue;
     }
 }

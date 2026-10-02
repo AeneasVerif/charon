@@ -47,7 +47,7 @@ fn sum(x: u32, y: u32) -> u32
         storage_live(_5);
         _5 = copy y;
         _6 = copy _4 checked.+ copy _5;
-        assert assert(move _6._1 == false) (overflow) -> bb1 (unwind: bb3);
+        assert assert(move _6._1 == false) (overflow) -> bb1 (unwind: bb4);
     }
 
     bb1: {
@@ -73,6 +73,14 @@ fn sum(x: u32, y: u32) -> u32
     }
 
     bb3 (cleanup): {
+        storage_dead(_8);
+        storage_dead(_6);
+        storage_dead(y);
+        storage_dead(x);
+        unwind_continue;
+    }
+
+    bb4 (cleanup): {
         storage_dead(_8);
         storage_dead(_6);
         storage_dead(y);

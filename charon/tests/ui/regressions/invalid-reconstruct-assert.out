@@ -261,7 +261,7 @@ where
         storage_live(_7);
         _7 = copy size;
         _6 = move _7 > const 1usize;
-        if move _6 -> bb6 else -> bb15;
+        if move _6 -> bb6 else -> bb21;
     }
 
     bb6: {
@@ -307,7 +307,7 @@ where
         _33 = copy self.metadata;
         _32 = copy mid < move _33;
         storage_dead(_33);
-        _45 = assume(move _32) -> bb11 (unwind: bb14);
+        _45 = assume(move _32) -> bb11 (unwind: bb20);
     }
 
     bb11: {
@@ -316,7 +316,7 @@ where
         _15 = &(*_29);
         storage_dead(_29);
         _14 = (copy _15,);
-        cmp_12 = TraitClause2::call_mut<'20>(move _13, move _14) -> bb12 (unwind: bb37);
+        cmp_12 = TraitClause2::call_mut<'20>(move _13, move _14) -> bb12 (unwind: bb17);
     }
 
     bb12: {
@@ -328,7 +328,7 @@ where
         _34 = @discriminant(cmp_12);
         _17 = copy _34 == const 1i8;
         storage_dead(_34);
-        _16 = select_unpredictable<usize>[{built_in impl Sized for usize}, {built_in impl Destruct for usize}](move _17, move base, move mid) -> bb13 (unwind: bb37);
+        _16 = select_unpredictable<usize>[{built_in impl Sized for usize}, {built_in impl Destruct for usize}](move _17, move base, move mid) -> bb13 (unwind: bb14);
     }
 
     bb13: {
@@ -344,162 +344,10 @@ where
     }
 
     bb14 (cleanup): {
-        undefined_behavior;
+        drop[TraitClause3::drop_glue<'26>] f -> bb15 (unwind: bb16);
     }
 
-    bb15: {
-        storage_dead(_7);
-        storage_dead(_6);
-        storage_live(cmp_18);
-        storage_live(_19);
-        _19 = &mut f;
-        storage_live(_20);
-        storage_live(index);
-        index = copy base;
-        storage_live(_35);
-        storage_live(_44);
-        _44 = ub_checks;
-        if move _44 -> bb16 else -> bb19;
-    }
-
-    bb16: {
-        storage_live(_37);
-        _37 = copy self.metadata;
-        _36 = impl_SliceIndex_slice_for_usize::get_unchecked::precondition_check(copy index, move _37) -> bb17 (unwind: bb18);
-    }
-
-    bb17: {
-        storage_dead(_37);
-        goto bb19;
-    }
-
-    bb18 (cleanup): {
-        undefined_behavior;
-    }
-
-    bb19: {
-        storage_live(_38);
-        _39 = copy self.metadata;
-        _38 = copy index < copy _39;
-        _46 = assume(move _38) -> bb20 (unwind: bb40);
-    }
-
-    bb20: {
-        storage_dead(_38);
-        _35 = &raw const (*self)[copy index];
-        _21 = &(*_35);
-        storage_dead(_35);
-        storage_dead(index);
-        _20 = (copy _21,);
-        cmp_18 = TraitClause2::call_mut<'25>(move _19, move _20) -> bb21 (unwind: bb37);
-    }
-
-    bb21: {
-        storage_dead(_20);
-        storage_dead(_19);
-        _40 = @discriminant(cmp_18);
-        switch copy _40 -> 0i8: bb22, otherwise: bb28;
-    }
-
-    bb22: {
-        storage_live(cond_23);
-        storage_live(_24);
-        _24 = copy base;
-        cond_23 = move _24 < copy _39;
-        storage_dead(_24);
-        storage_live(_47);
-        _47 = ub_checks;
-        if move _47 -> bb23 else -> bb25;
-    }
-
-    bb23: {
-        _41 = core::hint::assert_unchecked::precondition_check(copy cond_23) -> bb25 (unwind: bb24);
-    }
-
-    bb24 (cleanup): {
-        undefined_behavior;
-    }
-
-    bb25: {
-        _49 = assume(copy cond_23) -> bb26 (unwind: bb27);
-    }
-
-    bb26: {
-        storage_dead(cond_23);
-        _0 = Result::Ok { _0: move base };
-        goto bb33;
-    }
-
-    bb27 (cleanup): {
-        undefined_behavior;
-    }
-
-    bb28: {
-        storage_live(result);
-        storage_live(_26);
-        storage_live(_27);
-        _27 = copy _40 == const -1i8;
-        _26 = cast<bool, usize>(move _27);
-        storage_dead(_27);
-        result = move base wrap.+ move _26;
-        storage_dead(_26);
-        storage_live(cond_28);
-        cond_28 = copy result <= copy _39;
-        storage_live(_48);
-        _48 = ub_checks;
-        if move _48 -> bb29 else -> bb31;
-    }
-
-    bb29: {
-        _42 = core::hint::assert_unchecked::precondition_check(copy cond_28) -> bb31 (unwind: bb30);
-    }
-
-    bb30 (cleanup): {
-        undefined_behavior;
-    }
-
-    bb31: {
-        _50 = assume(copy cond_28) -> bb32 (unwind: bb36);
-    }
-
-    bb32: {
-        storage_dead(cond_28);
-        _0 = Result::Err { _0: copy result };
-        storage_dead(result);
-        goto bb33;
-    }
-
-    bb33: {
-        storage_dead(cmp_18);
-        storage_dead(size);
-        drop[TraitClause3::drop_glue<'27>] f -> bb34 (unwind: bb35);
-    }
-
-    bb34: {
-        storage_dead(_50);
-        storage_dead(_49);
-        storage_dead(_48);
-        storage_dead(_47);
-        storage_dead(_46);
-        storage_dead(_45);
-        storage_dead(_44);
-        storage_dead(_43);
-        storage_dead(_42);
-        storage_dead(_41);
-        storage_dead(_40);
-        storage_dead(_39);
-        storage_dead(_36);
-        storage_dead(_30);
-        storage_dead(_21);
-        storage_dead(_15);
-        storage_dead(base);
-        storage_dead(f);
-        storage_dead(self);
-        storage_dead(_51);
-        return;
-    }
-
-    bb35 (cleanup): {
+    bb15 (cleanup): {
         storage_dead(_50);
         storage_dead(_49);
         storage_dead(_48);
@@ -523,39 +371,7 @@ where
         unwind_continue;
     }
 
-    bb36 (cleanup): {
-        undefined_behavior;
-    }
-
-    bb37 (cleanup): {
-        drop[TraitClause3::drop_glue<'26>] f -> bb38 (unwind: bb39);
-    }
-
-    bb38 (cleanup): {
-        storage_dead(_50);
-        storage_dead(_49);
-        storage_dead(_48);
-        storage_dead(_47);
-        storage_dead(_46);
-        storage_dead(_45);
-        storage_dead(_44);
-        storage_dead(_43);
-        storage_dead(_42);
-        storage_dead(_41);
-        storage_dead(_40);
-        storage_dead(_39);
-        storage_dead(_36);
-        storage_dead(_30);
-        storage_dead(_21);
-        storage_dead(_15);
-        storage_dead(base);
-        storage_dead(f);
-        storage_dead(self);
-        storage_dead(_51);
-        unwind_continue;
-    }
-
-    bb39 (cleanup): {
+    bb16 (cleanup): {
         storage_dead(_50);
         storage_dead(_49);
         storage_dead(_48);
@@ -579,7 +395,295 @@ where
         unwind_terminate;
     }
 
-    bb40 (cleanup): {
+    bb17 (cleanup): {
+        drop[TraitClause3::drop_glue<'26>] f -> bb18 (unwind: bb19);
+    }
+
+    bb18 (cleanup): {
+        storage_dead(_50);
+        storage_dead(_49);
+        storage_dead(_48);
+        storage_dead(_47);
+        storage_dead(_46);
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_51);
+        unwind_continue;
+    }
+
+    bb19 (cleanup): {
+        storage_dead(_50);
+        storage_dead(_49);
+        storage_dead(_48);
+        storage_dead(_47);
+        storage_dead(_46);
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_51);
+        unwind_terminate;
+    }
+
+    bb20 (cleanup): {
+        undefined_behavior;
+    }
+
+    bb21: {
+        storage_dead(_7);
+        storage_dead(_6);
+        storage_live(cmp_18);
+        storage_live(_19);
+        _19 = &mut f;
+        storage_live(_20);
+        storage_live(index);
+        index = copy base;
+        storage_live(_35);
+        storage_live(_44);
+        _44 = ub_checks;
+        if move _44 -> bb22 else -> bb25;
+    }
+
+    bb22: {
+        storage_live(_37);
+        _37 = copy self.metadata;
+        _36 = impl_SliceIndex_slice_for_usize::get_unchecked::precondition_check(copy index, move _37) -> bb23 (unwind: bb24);
+    }
+
+    bb23: {
+        storage_dead(_37);
+        goto bb25;
+    }
+
+    bb24 (cleanup): {
+        undefined_behavior;
+    }
+
+    bb25: {
+        storage_live(_38);
+        _39 = copy self.metadata;
+        _38 = copy index < copy _39;
+        _46 = assume(move _38) -> bb26 (unwind: bb46);
+    }
+
+    bb26: {
+        storage_dead(_38);
+        _35 = &raw const (*self)[copy index];
+        _21 = &(*_35);
+        storage_dead(_35);
+        storage_dead(index);
+        _20 = (copy _21,);
+        cmp_18 = TraitClause2::call_mut<'25>(move _19, move _20) -> bb27 (unwind: bb43);
+    }
+
+    bb27: {
+        storage_dead(_20);
+        storage_dead(_19);
+        _40 = @discriminant(cmp_18);
+        switch copy _40 -> 0i8: bb28, otherwise: bb34;
+    }
+
+    bb28: {
+        storage_live(cond_23);
+        storage_live(_24);
+        _24 = copy base;
+        cond_23 = move _24 < copy _39;
+        storage_dead(_24);
+        storage_live(_47);
+        _47 = ub_checks;
+        if move _47 -> bb29 else -> bb31;
+    }
+
+    bb29: {
+        _41 = core::hint::assert_unchecked::precondition_check(copy cond_23) -> bb31 (unwind: bb30);
+    }
+
+    bb30 (cleanup): {
+        undefined_behavior;
+    }
+
+    bb31: {
+        _49 = assume(copy cond_23) -> bb32 (unwind: bb33);
+    }
+
+    bb32: {
+        storage_dead(cond_23);
+        _0 = Result::Ok { _0: move base };
+        goto bb39;
+    }
+
+    bb33 (cleanup): {
+        undefined_behavior;
+    }
+
+    bb34: {
+        storage_live(result);
+        storage_live(_26);
+        storage_live(_27);
+        _27 = copy _40 == const -1i8;
+        _26 = cast<bool, usize>(move _27);
+        storage_dead(_27);
+        result = move base wrap.+ move _26;
+        storage_dead(_26);
+        storage_live(cond_28);
+        cond_28 = copy result <= copy _39;
+        storage_live(_48);
+        _48 = ub_checks;
+        if move _48 -> bb35 else -> bb37;
+    }
+
+    bb35: {
+        _42 = core::hint::assert_unchecked::precondition_check(copy cond_28) -> bb37 (unwind: bb36);
+    }
+
+    bb36 (cleanup): {
+        undefined_behavior;
+    }
+
+    bb37: {
+        _50 = assume(copy cond_28) -> bb38 (unwind: bb42);
+    }
+
+    bb38: {
+        storage_dead(cond_28);
+        _0 = Result::Err { _0: copy result };
+        storage_dead(result);
+        goto bb39;
+    }
+
+    bb39: {
+        storage_dead(cmp_18);
+        storage_dead(size);
+        drop[TraitClause3::drop_glue<'27>] f -> bb40 (unwind: bb41);
+    }
+
+    bb40: {
+        storage_dead(_50);
+        storage_dead(_49);
+        storage_dead(_48);
+        storage_dead(_47);
+        storage_dead(_46);
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_51);
+        return;
+    }
+
+    bb41 (cleanup): {
+        storage_dead(_50);
+        storage_dead(_49);
+        storage_dead(_48);
+        storage_dead(_47);
+        storage_dead(_46);
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_51);
+        unwind_continue;
+    }
+
+    bb42 (cleanup): {
+        undefined_behavior;
+    }
+
+    bb43 (cleanup): {
+        drop[TraitClause3::drop_glue<'26>] f -> bb44 (unwind: bb45);
+    }
+
+    bb44 (cleanup): {
+        storage_dead(_50);
+        storage_dead(_49);
+        storage_dead(_48);
+        storage_dead(_47);
+        storage_dead(_46);
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_51);
+        unwind_continue;
+    }
+
+    bb45 (cleanup): {
+        storage_dead(_50);
+        storage_dead(_49);
+        storage_dead(_48);
+        storage_dead(_47);
+        storage_dead(_46);
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_51);
+        unwind_terminate;
+    }
+
+    bb46 (cleanup): {
         undefined_behavior;
     }
 }

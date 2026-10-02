@@ -493,10 +493,11 @@ where
     storage_live(_4)
     _4 = box_new_uninit(copy LAYOUT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]])
     ↳⚡ if copy _7 {
-            drop[{built_in impl Destruct for T}::drop_glue<'0>] x
-            ↳⚡ unwind_terminate
         } else {
+            unwind_continue
         }
+        drop[{built_in impl Destruct for T}::drop_glue<'0>] x
+        ↳⚡ unwind_terminate
         unwind_continue
     _3 = cast<*mut u8, *mut T>(move _4)
     ptr = copy _3
