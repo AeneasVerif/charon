@@ -254,6 +254,15 @@ pub enum BorrowKind {
     UniqueImmutable,
 }
 
+impl BorrowKind {
+    pub fn is_unique(&self) -> bool {
+        matches!(
+            self,
+            BorrowKind::Mut | BorrowKind::TwoPhaseMut | BorrowKind::UniqueImmutable,
+        )
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(EnumIsA, VariantName)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]

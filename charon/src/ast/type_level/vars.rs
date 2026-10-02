@@ -471,6 +471,14 @@ impl<T> BindingStack<T> {
     pub fn iter(&self) -> impl DoubleEndedIterator<Item = &T> + ExactSizeIterator {
         self.stack.iter().rev()
     }
+    /// Iterate mutably over the binding levels, from the innermost (0) out.
+    pub fn iter_mut(&mut self) -> impl DoubleEndedIterator<Item = &mut T> + ExactSizeIterator {
+        self.stack.iter_mut().rev()
+    }
+    /// Iterate over the binding levels, from the innermost (0) out.
+    pub fn into_iter(self) -> impl DoubleEndedIterator<Item = T> + ExactSizeIterator {
+        self.stack.into_iter().rev()
+    }
     /// Iterate over the binding levels, from the innermost (0) out.
     pub fn iter_enumerated(
         &self,
