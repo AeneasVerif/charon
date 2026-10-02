@@ -24,14 +24,32 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
+// Full name: core::array::repeat
+pub fn repeat<T, const N : usize>(_1: T) -> [T; N]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Clone),
+= <opaque>
+
 // Full name: core::clone::impls::{impl Clone for u8}::clone
-pub fn clone<'_0>(_1: &'_0 u8) -> u8
+pub fn impl_Clone_for_u8::clone<'_0>(_1: &'_0 u8) -> u8
 = <opaque>
 
 // Full name: core::clone::impls::{impl Clone for u8}
 impl "impl_Clone_for_u8" Clone for u8 {
     proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
-    fn clone<'_0_1> = clone<'_0_1>
+    fn clone<'_0_1> = impl_Clone_for_u8::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for i32}::clone
+pub fn impl_Clone_for_i32::clone<'_0>(_1: &'_0 i32) -> i32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for i32}
+impl "impl_Clone_for_i32" Clone for i32 {
+    proof ImpliedClause0: (i32: Sized) = {built_in impl Sized for i32}
+    fn clone<'_0_1> = impl_Clone_for_i32::clone<'_0_1>
     non-dyn-compatible
 }
 
@@ -336,6 +354,58 @@ fn multiple_values()
     fake_read(_a)
     _0 = ()
     conditional_drop[impl_Destruct_for_Vec::drop_glue<'2, u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}]] _a
+    ↳⚡ unwind_continue
+    storage_dead(_a)
+    storage_dead(ret)
+    return
+}
+
+// Full name: test_crate::repeated_value
+fn repeated_value()
+{
+    let _0: (); // return
+    let _a: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]; // local
+    let _2: Box<MaybeUninit<[i32; 3usize]>[{built_in impl Sized for [i32; 3usize]}]>[{built_in impl MetaSized for MaybeUninit<[i32; 3usize]>[{built_in impl Sized for [i32; 3usize]}]}, {built_in impl Sized for Global}]; // anonymous local
+    let ret: Vec<i32>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]; // local
+    let x: Box<[i32; 3usize]>[{built_in impl MetaSized for [i32; 3usize]}, {built_in impl Sized for Global}]; // local
+    let y: Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}]; // local
+    let _6: [i32; 3usize]; // anonymous local
+    let _7: Box<[i32; 3usize]>[{built_in impl MetaSized for [i32; 3usize]}, {built_in impl Sized for Global}]; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_a)
+    storage_live(_2)
+    storage_live(_6)
+    _6 = repeat<i32, 3usize>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 1i32)
+    ↳⚡ undefined_behavior
+    storage_live(_7)
+    _7 = new<[i32; 3usize]>[{built_in impl Sized for [i32; 3usize]}](move _6)
+    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'1, MaybeUninit<[i32; 3usize]>[{built_in impl Sized for [i32; 3usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 3usize]>[{built_in impl Sized for [i32; 3usize]}]}, {built_in impl Sized for Global}]] _2
+        ↳⚡ storage_dead(ret)
+            unwind_terminate
+        unwind_continue
+    storage_live(ret)
+    storage_live(x)
+    storage_live(y)
+    storage_dead(_6)
+    x = move _7
+    storage_dead(_7)
+    y = unsize_cast<Box<[i32; 3usize]>[{built_in impl MetaSized for [i32; 3usize]}, {built_in impl Sized for Global}], Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 3usize>(move x)
+    ret = into_vec<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}](move y)
+    ↳⚡ storage_dead(y)
+        storage_dead(x)
+        conditional_drop[impl_Destruct_for_Box::drop_glue<'1, MaybeUninit<[i32; 3usize]>[{built_in impl Sized for [i32; 3usize]}], Global>[{built_in impl MetaSized for MaybeUninit<[i32; 3usize]>[{built_in impl Sized for [i32; 3usize]}]}, {built_in impl Sized for Global}]] _2
+        ↳⚡ storage_dead(ret)
+            unwind_terminate
+        unwind_continue
+    storage_dead(y)
+    storage_dead(x)
+    _a = move ret
+    storage_dead(_2)
+    fake_read(_a)
+    _0 = ()
+    conditional_drop[impl_Destruct_for_Vec::drop_glue<'2, i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}]] _a
     ↳⚡ unwind_continue
     storage_dead(_a)
     storage_dead(ret)

@@ -8,6 +8,10 @@ fn multiple_values() {
     let _a = vec![1u8, 2u8, 3u8];
 }
 
+fn repeated_value() {
+    let _a = vec![1, 1, 1];
+}
+
 fn with_fn_calls() {
     fn foo() -> u8 {
         42
