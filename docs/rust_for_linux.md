@@ -1,4 +1,4 @@
-# Running Charon on Rust-for-Linux's `kernel`
+# Running Charon on Rust-for-Linux's `kernel` crate
 
 Rust-for-Linux's `kernel` crate is built by Kbuild rather than Cargo.
 Running Charon on it requires some acrobatics.
