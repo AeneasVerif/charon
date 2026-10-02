@@ -75,7 +75,8 @@ which leaves more room for errors.
 
 Probably the most reliable part of Charon is the semantics of function bodies:
 not only is it converted rather directly from rustc's MIR,
-but it is also interpreted and compared against Miri by the [Soteria
+but we run it against [`MiniRust`](https://github.com/minirust/minirust)'s test suite,
+and it is also interpreted and compared against Miri by the [Soteria
 Rust](https://soteria-tools.com/docs/features/rust) project,
 which uses Charon.
 

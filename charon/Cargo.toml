@@ -63,6 +63,12 @@ name = "cargo"
 path = "tests/cargo.rs"
 harness = false
 
+[[test]]
+name = "minirust"
+path = "tests/minirust.rs"
+harness = false
+required-features = ["minirust"]
+
 [dependencies]
 hax-adt-into = { path = "./adt-into" }
 macros = { path = "./macros" }
@@ -111,7 +117,7 @@ tracing-subscriber = { version = "0.3", features = [ "env-filter", "std", "fmt",
 tracing-tree = { git = "https://github.com/Nadrieril/tracing-tree", features = [ "time", ] } # Fork with improved formating and timing info.
 tracing.workspace = true
 ustr = { version = "1.1.0", features = ["serde"] }
-wait-timeout = { version = "0.2.0", optional = true }
+wait-timeout = "0.2.0"
 which = "7.0"
 
 [features]
@@ -130,12 +136,12 @@ popular-crates-test = [
     "dep:flate2",
     "dep:reqwest",
     "dep:tar",
-    "dep:wait-timeout",
 ]
 
 [dev-dependencies]
 ignore = "0.4"
 indoc = "2"
+intrinsics = { git = "https://github.com/minirust/minirust", rev = "d821c6e3a3d358fa8a556774dc12b4aa5d0d65ed" }
 libc = "0.2"
 libtest-mimic = "0.8"
 regex = "1"

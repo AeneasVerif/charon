@@ -117,17 +117,11 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
 
         Ok(match &tdecl.kind {
             TypeDeclKind::Struct(fields) => {
-                let variant_layout = layout
-                    .variant_layouts
-                    .get(VariantId::ZERO)
-                    .and_then(Option::as_ref);
+                let variant_layout = layout.variant_layouts[VariantId::ZERO].as_ref();
                 self.tuple_type(span, fields, variant_layout, size, align)?
             }
             TypeDeclKind::Union(_) => {
-                // let variant_layout = layout
-                //     .variant_layouts
-                //     .get(VariantId::ZERO)
-                //     .and_then(Option::as_ref);
+                // let variant_layout = layout.variant_layouts[VariantId::ZERO].as_ref();
                 // let fields = self.fields(span, fields, variant_layout)?;
                 // // FIXME(minirust): compute the precise union chunks. Treating the complete
                 // // allocation as one chunk preserves too much padding for some repr(C) unions.
@@ -152,8 +146,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 let mini_variants = variants
                     .iter_enumerated()
                     .map(|(id, variant)| -> Result<_> {
-                        let variant_layout =
-                            layout.variant_layouts.get(id).and_then(Option::as_ref);
+                        let variant_layout = layout.variant_layouts[id].as_ref();
                         let ty =
                             self.tuple_type(span, &variant.fields, variant_layout, size, align)?;
                         let tagger = variant_layout
@@ -381,13 +374,18 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
 
                     let mut cells: Vec<(mini::Size, mini::Size)> = Vec::new();
                     let mut add_fields = |fields: &IndexVec<FieldId, Field>,
-                                          variant_layout: &VariantLayout|
+                                          variant_layout: Option<&VariantLayout>|
                      -> Result<()> {
                         for (field_id, field) in fields.iter_enumerated() {
-                            let offset = variant_layout.field_offsets[field_id]
-                                .chosen
-                                .ok_or("missing field offset in ADT layout")
-                                .context(span)?;
+                            let offset = match variant_layout {
+                                Some(layout) => layout
+                                    .field_offsets
+                                    .get(field_id)
+                                    .and_then(|offset| offset.chosen)
+                                    .ok_or("missing field offset in ADT layout")
+                                    .context(span)?,
+                                None => 0,
+                            };
                             let field_ty = field.ty.clone().substitute(&tref.generics);
                             let mini::UnsafeCellStrategy::Sized { cells: field_cells } =
                                 self.unsafe_cell_strategy(span, &field_ty)?
@@ -408,10 +406,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
 
                     match &tdecl.kind {
                         TypeDeclKind::Struct(fields) => {
-                            let variant_layout = layout.variant_layouts[VariantId::ZERO]
-                                .as_ref()
-                                .ok_or("missing struct layout")
-                                .context(span)?;
+                            let variant_layout = layout.variant_layouts[VariantId::ZERO].as_ref();
                             add_fields(fields, variant_layout)?;
                         }
                         TypeDeclKind::Enum(variants) => {
@@ -419,7 +414,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                                 if let Some(variant_layout) =
                                     layout.variant_layouts[variant_id].as_ref()
                                 {
-                                    add_fields(&variant.fields, variant_layout)?;
+                                    add_fields(&variant.fields, Some(variant_layout))?;
                                 }
                             }
                         }

@@ -923,6 +923,14 @@ impl TranslateOptions {
             for pat in options.opaque.iter() {
                 opacities.push((pat.to_string(), Opaque));
             }
+            if options.run_with_minirust
+                || matches!(options.format, Some(SerializationFormatArg::MiniRust))
+            {
+                // This is the `intrinsics` crate used by MiniRust's `minimize` test suite. We make
+                // it opaque because we replace the function bodies so we don't need to translate
+                // them.
+                opacities.push(("intrinsics".to_owned(), Opaque));
+            }
             for pat in options.exclude.iter() {
                 opacities.push((pat.to_string(), Invisible));
             }

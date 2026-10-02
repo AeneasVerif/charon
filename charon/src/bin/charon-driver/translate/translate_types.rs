@@ -660,11 +660,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let align = Size::from_expr(align.normalize(Some(&self.translated), None, false));
         let layout = ty_layout.layout;
 
-        let num_variants = match ty.variant_range(self.t_ctx.tcx) {
-            Some(range) => range.end.index(),
-            None => match layout.fields() {
-                r_abi::FieldsShape::Arbitrary { .. } | r_abi::FieldsShape::Union(_) => 1,
-                r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Array { .. } => 0,
+        let num_variants = match kind {
+            TypeDeclKind::Struct(_) | TypeDeclKind::Union(_) => 1,
+            TypeDeclKind::Enum(variants) => variants.len(),
+            _ => match ty.variant_range(self.t_ctx.tcx) {
+                Some(range) => range.end.index(),
+                None => match layout.fields() {
+                    r_abi::FieldsShape::Arbitrary { .. } | r_abi::FieldsShape::Union(_) => 1,
+                    r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Array { .. } => 0,
+                },
             },
         };
         let mut variant_layouts: IndexVec<VariantId, Option<VariantLayout>> =
@@ -846,6 +850,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             .ok()?;
                         variant_layouts[variant_id] =
                             translate_variant_layout_data(&layout, variant_inhabited, vec![]);
+                    }
+                    r_abi::FieldsShape::Array { .. }
+                        if matches!(ty.kind(), ty::Str)
+                            && matches!(kind, TypeDeclKind::Struct(_)) =>
+                    {
+                        // Charon models `str` as a struct containing a single `[u8]` field.
+                        variant_layouts[variant_id] = Some(VariantLayout {
+                            field_offsets: [OffsetExpr::new(0)].into(),
+                            inhabited: InhabitedPredicate::mk_true(),
+                            tagger: vec![],
+                        });
                     }
                     r_abi::FieldsShape::Primitive | r_abi::FieldsShape::Array { .. } => {}
                 }

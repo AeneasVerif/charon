@@ -278,6 +278,7 @@ dependencies = [
  "index_vec",
  "indexmap",
  "indoc",
+ "intrinsics",
  "itertools 0.13.0",
  "lazy_static",
  "libc",
@@ -1191,6 +1192,11 @@ name = "indoc"
 version = "2.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f4c7245a08504955605670dbf141fceab975f15ca21570696aebe9d2e71576bd"
+
+[[package]]
+name = "intrinsics"
+version = "0.1.0"
+source = "git+https://github.com/minirust/minirust?rev=d821c6e3a3d358fa8a556774dc12b4aa5d0d65ed#d821c6e3a3d358fa8a556774dc12b4aa5d0d65ed"
 
 [[package]]
 name = "io-uring"

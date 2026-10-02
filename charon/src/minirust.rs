@@ -10,7 +10,9 @@
 //! - ub_checks/contract_checks/overflow_checks booleans values;
 //! - Unions, because of precise union padding;
 use itertools::Itertools;
-use minirust_rs::{lang::Machine, libspecr::DynWrite, mem::BasicMemory, prelude::TerminationInfo};
+use minirust_rs::{
+    lang::Machine, libspecr::DynWrite, mem::TreeBorrowsMemory, prelude::TerminationInfo,
+};
 use smallvec::{SmallVec, smallvec};
 use std::{io::Write, marker::PhantomData};
 
@@ -155,22 +157,55 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
         let mut functions: mini::Map<mini::FnName, mini::Function> = Default::default();
         for (id, fdecl) in self.krate.fun_decls.iter_enumerated() {
             let span = fdecl.item_meta.span;
-            let mini_function = match &fdecl.body {
-                Body::Unstructured(body) => self.function(span, fdecl, body),
-                Body::Extern(name) if name == "minirust_print" => {
-                    self.make_print_function(span, fdecl)
+            let path = fdecl.item_meta.name.as_slice_uninstantiated();
+            // Recognize the intrinsics used by MiniRust's `minimize` test suite.
+            let intrinsic = match path {
+                [PathElem::Ident(krate, _), PathElem::Ident(item, _)] if krate == "intrinsics" => {
+                    Some(match item.as_str() {
+                        "print" => mini::IntrinsicOp::PrintStdout,
+                        "eprint" => mini::IntrinsicOp::PrintStderr,
+                        "exit" => mini::IntrinsicOp::Exit,
+                        "allocate" => mini::IntrinsicOp::Allocate,
+                        "deallocate" => mini::IntrinsicOp::Deallocate,
+                        "spawn" => mini::IntrinsicOp::Spawn,
+                        "join" => mini::IntrinsicOp::Join,
+                        "create_lock" => mini::IntrinsicOp::Lock(mini::IntrinsicLockOp::Create),
+                        "acquire" => mini::IntrinsicOp::Lock(mini::IntrinsicLockOp::Acquire),
+                        "release" => mini::IntrinsicOp::Lock(mini::IntrinsicLockOp::Release),
+                        "atomic_store" => mini::IntrinsicOp::AtomicStore,
+                        "atomic_load" => mini::IntrinsicOp::AtomicLoad,
+                        "compare_exchange" => mini::IntrinsicOp::AtomicCompareExchange,
+                        "atomic_fetch_add" => {
+                            mini::IntrinsicOp::AtomicFetchAndOp(mini::IntBinOp::Add)
+                        }
+                        "atomic_fetch_sub" => {
+                            mini::IntrinsicOp::AtomicFetchAndOp(mini::IntBinOp::Sub)
+                        }
+                        _ => raise!(span, "unknown MiniRust test intrinsic `{item}`"),
+                    })
                 }
-                Body::Extern(name) if name == "minirust_start_unwind" => {
-                    self.make_start_unwind_function(span, fdecl)
+                _ => None,
+            };
+            let mini_function = if let Some(intrinsic) = intrinsic {
+                self.make_intrinsic_function(span, fdecl, intrinsic)
+            } else {
+                match &fdecl.body {
+                    Body::Unstructured(body) => self.function(span, fdecl, body),
+                    Body::Extern(name) if name == "minirust_print" => {
+                        self.make_intrinsic_function(span, fdecl, mini::IntrinsicOp::PrintStdout)
+                    }
+                    Body::Extern(name) if name == "minirust_start_unwind" => {
+                        self.make_start_unwind_function(span, fdecl)
+                    }
+                    Body::Intrinsic { name, .. } if name == "catch_unwind" => {
+                        self.make_catch_unwind_function(span, fdecl)
+                    }
+                    _ => raise!(
+                        span,
+                        "unable to translate {} to MiniRust",
+                        fdecl.def_id.with_ctx(&self.fmt)
+                    ),
                 }
-                Body::Intrinsic { name, .. } if name == "catch_unwind" => {
-                    self.make_catch_unwind_function(span, fdecl)
-                }
-                _ => raise!(
-                    span,
-                    "unable to translate {} to MiniRust",
-                    fdecl.def_id.with_ctx(&self.fmt)
-                ),
             }?;
             functions.insert(self.fn_name(id), mini_function);
         }
@@ -285,26 +320,22 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         })
     }
 
-    /// Give the `minirust_print` foreign symbol a body that invokes MiniRust's printing primitive.
-    fn make_print_function(&self, span: Span, fdecl: &FunDecl) -> Result<mini::Function> {
+    /// Make a function that invokes the matching MiniRust intrinsic.
+    fn make_intrinsic_function(
+        &self,
+        span: Span,
+        fdecl: &FunDecl,
+        intrinsic: mini::IntrinsicOp,
+    ) -> Result<mini::Function> {
         let signature = &fdecl.signature;
-        check!(
-            span,
-            signature.inputs.len() == 1 && signature.output.is_unit(),
-            "`minirust_print` must have signature `extern fn(integer_or_bool) -> ()`"
-        );
-        check!(
-            span,
-            matches!(
-                signature.inputs[0].kind(),
-                TyKind::Scalar(ScalarTy::Integer(_) | ScalarTy::Bool)
-            ),
-            "`minirust_print` only supports integers and booleans"
-        );
 
         let mut local_ids = Generator::new();
         let ret = self.local_name(local_ids.fresh_id());
-        let argument = self.local_name(local_ids.fresh_id());
+        let arguments: Vec<_> = signature
+            .inputs
+            .iter()
+            .map(|_| self.local_name(local_ids.fresh_id()))
+            .collect();
         let mut block_ids = Generator::new();
         let start = self.block_name(block_ids.fresh_id());
         let return_block = self.block_name(block_ids.fresh_id());
@@ -314,12 +345,13 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             mini::BasicBlock {
                 statements: Default::default(),
                 terminator: mini::Terminator::Intrinsic {
-                    intrinsic: mini::IntrinsicOp::PrintStdout,
-                    arguments: [mini::ValueExpr::Load {
-                        source: mini::GcCow::new(mini::PlaceExpr::Local(argument)),
-                    }]
-                    .into_iter()
-                    .collect(),
+                    intrinsic,
+                    arguments: arguments
+                        .iter()
+                        .map(|argument| mini::ValueExpr::Load {
+                            source: mini::GcCow::new(mini::PlaceExpr::Local(*argument)),
+                        })
+                        .collect(),
                     ret: mini::PlaceExpr::Local(ret),
                     next_block: Some(return_block),
                 },
@@ -336,13 +368,16 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         );
 
         Ok(mini::Function {
-            locals: [
-                (ret, self.ty(span, &signature.output)?),
-                (argument, self.ty(span, &signature.inputs[0])?),
-            ]
-            .into_iter()
-            .collect(),
-            args: [argument].into_iter().collect(),
+            locals: std::iter::once((ret, self.ty(span, &signature.output)?))
+                .chain(
+                    arguments
+                        .iter()
+                        .zip(&signature.inputs)
+                        .map(|(local, ty)| Ok((*local, self.ty(span, ty)?)))
+                        .collect::<Result<Vec<_>>>()?,
+                )
+                .collect(),
+            args: arguments.into_iter().collect(),
             ret,
             calling_convention: self.calling_convention(span, &signature.abi)?,
             blocks,
@@ -1499,7 +1534,7 @@ where
 {
     let translator = TranslateCtx::<T>::new(krate).map_err(RunError::Translation)?;
     let program = translator.translate().map_err(RunError::Translation)?;
-    let mut machine = Machine::<BasicMemory<T>>::new(
+    let mut machine = Machine::<TreeBorrowsMemory<T>>::new(
         program,
         DynWrite::new(std::io::stdout()),
         DynWrite::new(std::io::stderr()),
