@@ -190,7 +190,7 @@ where
         size = copy self.metadata;
         storage_live(_4);
         _4 = copy size;
-        switch copy _4 -> 0usize: bb1, otherwise: bb2;
+        switch copy _4 -> 0usize: bb1, otherwise: bb4;
     }
 
     bb1: {
@@ -199,13 +199,31 @@ where
         _51 = Result::Err { _0: const 0usize };
         _0 = move _51;
         storage_dead(size);
-        drop[TraitClause3::drop_glue<'15>] f -> bb39 (unwind: bb3);
+        drop[TraitClause3::drop_glue<'15>] f -> bb2 (unwind: bb3);
     }
 
     bb2: {
-        storage_dead(_4);
-        base = const 0usize;
-        goto bb4;
+        storage_dead(_50);
+        storage_dead(_49);
+        storage_dead(_48);
+        storage_dead(_47);
+        storage_dead(_46);
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_51);
+        return;
     }
 
     bb3 (cleanup): {
@@ -233,14 +251,20 @@ where
     }
 
     bb4: {
+        storage_dead(_4);
+        base = const 0usize;
+        goto bb5;
+    }
+
+    bb5: {
         storage_live(_6);
         storage_live(_7);
         _7 = copy size;
         _6 = move _7 > const 1usize;
-        if move _6 -> bb5 else -> bb6;
+        if move _6 -> bb6 else -> bb15;
     }
 
-    bb5: {
+    bb6: {
         storage_dead(_7);
         storage_live(half);
         storage_live(_9);
@@ -259,10 +283,71 @@ where
         storage_live(_29);
         storage_live(_43);
         _43 = ub_checks;
-        if move _43 -> bb7 else -> bb8;
+        if move _43 -> bb7 else -> bb10;
     }
 
-    bb6: {
+    bb7: {
+        storage_live(_31);
+        _31 = copy self.metadata;
+        _30 = impl_SliceIndex_slice_for_usize::get_unchecked::precondition_check(copy mid, move _31) -> bb8 (unwind: bb9);
+    }
+
+    bb8: {
+        storage_dead(_31);
+        goto bb10;
+    }
+
+    bb9 (cleanup): {
+        undefined_behavior;
+    }
+
+    bb10: {
+        storage_live(_32);
+        storage_live(_33);
+        _33 = copy self.metadata;
+        _32 = copy mid < move _33;
+        storage_dead(_33);
+        _45 = assume(move _32) -> bb11 (unwind: bb14);
+    }
+
+    bb11: {
+        storage_dead(_32);
+        _29 = &raw const (*self)[copy mid];
+        _15 = &(*_29);
+        storage_dead(_29);
+        _14 = (copy _15,);
+        cmp_12 = TraitClause2::call_mut<'20>(move _13, move _14) -> bb12 (unwind: bb37);
+    }
+
+    bb12: {
+        storage_dead(_14);
+        storage_dead(_13);
+        storage_live(_16);
+        storage_live(_17);
+        storage_live(_34);
+        _34 = @discriminant(cmp_12);
+        _17 = copy _34 == const 1i8;
+        storage_dead(_34);
+        _16 = select_unpredictable<usize>[{built_in impl Sized for usize}, {built_in impl Destruct for usize}](move _17, move base, move mid) -> bb13 (unwind: bb37);
+    }
+
+    bb13: {
+        storage_dead(_17);
+        base = move _16;
+        storage_dead(_16);
+        size = copy size wrap.- copy half;
+        storage_dead(cmp_12);
+        storage_dead(mid);
+        storage_dead(half);
+        storage_dead(_6);
+        goto bb5;
+    }
+
+    bb14 (cleanup): {
+        undefined_behavior;
+    }
+
+    bb15: {
         storage_dead(_7);
         storage_dead(_6);
         storage_live(cmp_18);
@@ -274,106 +359,147 @@ where
         storage_live(_35);
         storage_live(_44);
         _44 = ub_checks;
-        if move _44 -> bb9 else -> bb10;
-    }
-
-    bb7: {
-        storage_live(_31);
-        _31 = copy self.metadata;
-        _30 = impl_SliceIndex_slice_for_usize::get_unchecked::precondition_check(copy mid, move _31) -> bb12 (unwind: bb11);
-    }
-
-    bb8: {
-        storage_live(_32);
-        storage_live(_33);
-        _33 = copy self.metadata;
-        _32 = copy mid < move _33;
-        storage_dead(_33);
-        _45 = assume(move _32) -> bb13 (unwind: bb14);
-    }
-
-    bb9: {
-        storage_live(_37);
-        _37 = copy self.metadata;
-        _36 = impl_SliceIndex_slice_for_usize::get_unchecked::precondition_check(copy index, move _37) -> bb18 (unwind: bb17);
-    }
-
-    bb10: {
-        storage_live(_38);
-        _39 = copy self.metadata;
-        _38 = copy index < copy _39;
-        _46 = assume(move _38) -> bb19 (unwind: bb20);
-    }
-
-    bb11 (cleanup): {
-        undefined_behavior;
-    }
-
-    bb12: {
-        storage_dead(_31);
-        goto bb8;
-    }
-
-    bb13: {
-        storage_dead(_32);
-        _29 = &raw const (*self)[copy mid];
-        _15 = &(*_29);
-        storage_dead(_29);
-        _14 = (copy _15,);
-        cmp_12 = TraitClause2::call_mut<'20>(move _13, move _14) -> bb16 (unwind: bb15);
-    }
-
-    bb14 (cleanup): {
-        undefined_behavior;
-    }
-
-    bb15 (cleanup): {
-        drop[TraitClause3::drop_glue<'26>] f -> bb22 (unwind: bb23);
+        if move _44 -> bb16 else -> bb19;
     }
 
     bb16: {
-        storage_dead(_14);
-        storage_dead(_13);
-        storage_live(_16);
-        storage_live(_17);
-        storage_live(_34);
-        _34 = @discriminant(cmp_12);
-        _17 = copy _34 == const 1i8;
-        storage_dead(_34);
-        _16 = select_unpredictable<usize>[{built_in impl Sized for usize}, {built_in impl Destruct for usize}](move _17, move base, move mid) -> bb24 (unwind: bb15);
+        storage_live(_37);
+        _37 = copy self.metadata;
+        _36 = impl_SliceIndex_slice_for_usize::get_unchecked::precondition_check(copy index, move _37) -> bb17 (unwind: bb18);
     }
 
-    bb17 (cleanup): {
+    bb17: {
+        storage_dead(_37);
+        goto bb19;
+    }
+
+    bb18 (cleanup): {
         undefined_behavior;
     }
 
-    bb18: {
-        storage_dead(_37);
-        goto bb10;
+    bb19: {
+        storage_live(_38);
+        _39 = copy self.metadata;
+        _38 = copy index < copy _39;
+        _46 = assume(move _38) -> bb20 (unwind: bb40);
     }
 
-    bb19: {
+    bb20: {
         storage_dead(_38);
         _35 = &raw const (*self)[copy index];
         _21 = &(*_35);
         storage_dead(_35);
         storage_dead(index);
         _20 = (copy _21,);
-        cmp_18 = TraitClause2::call_mut<'25>(move _19, move _20) -> bb21 (unwind: bb15);
-    }
-
-    bb20 (cleanup): {
-        undefined_behavior;
+        cmp_18 = TraitClause2::call_mut<'25>(move _19, move _20) -> bb21 (unwind: bb37);
     }
 
     bb21: {
         storage_dead(_20);
         storage_dead(_19);
         _40 = @discriminant(cmp_18);
-        switch copy _40 -> 0i8: bb25, otherwise: bb26;
+        switch copy _40 -> 0i8: bb22, otherwise: bb28;
     }
 
-    bb22 (cleanup): {
+    bb22: {
+        storage_live(cond_23);
+        storage_live(_24);
+        _24 = copy base;
+        cond_23 = move _24 < copy _39;
+        storage_dead(_24);
+        storage_live(_47);
+        _47 = ub_checks;
+        if move _47 -> bb23 else -> bb25;
+    }
+
+    bb23: {
+        _41 = core::hint::assert_unchecked::precondition_check(copy cond_23) -> bb25 (unwind: bb24);
+    }
+
+    bb24 (cleanup): {
+        undefined_behavior;
+    }
+
+    bb25: {
+        _49 = assume(copy cond_23) -> bb26 (unwind: bb27);
+    }
+
+    bb26: {
+        storage_dead(cond_23);
+        _0 = Result::Ok { _0: move base };
+        goto bb33;
+    }
+
+    bb27 (cleanup): {
+        undefined_behavior;
+    }
+
+    bb28: {
+        storage_live(result);
+        storage_live(_26);
+        storage_live(_27);
+        _27 = copy _40 == const -1i8;
+        _26 = cast<bool, usize>(move _27);
+        storage_dead(_27);
+        result = move base wrap.+ move _26;
+        storage_dead(_26);
+        storage_live(cond_28);
+        cond_28 = copy result <= copy _39;
+        storage_live(_48);
+        _48 = ub_checks;
+        if move _48 -> bb29 else -> bb31;
+    }
+
+    bb29: {
+        _42 = core::hint::assert_unchecked::precondition_check(copy cond_28) -> bb31 (unwind: bb30);
+    }
+
+    bb30 (cleanup): {
+        undefined_behavior;
+    }
+
+    bb31: {
+        _50 = assume(copy cond_28) -> bb32 (unwind: bb36);
+    }
+
+    bb32: {
+        storage_dead(cond_28);
+        _0 = Result::Err { _0: copy result };
+        storage_dead(result);
+        goto bb33;
+    }
+
+    bb33: {
+        storage_dead(cmp_18);
+        storage_dead(size);
+        drop[TraitClause3::drop_glue<'27>] f -> bb34 (unwind: bb35);
+    }
+
+    bb34: {
+        storage_dead(_50);
+        storage_dead(_49);
+        storage_dead(_48);
+        storage_dead(_47);
+        storage_dead(_46);
+        storage_dead(_45);
+        storage_dead(_44);
+        storage_dead(_43);
+        storage_dead(_42);
+        storage_dead(_41);
+        storage_dead(_40);
+        storage_dead(_39);
+        storage_dead(_36);
+        storage_dead(_30);
+        storage_dead(_21);
+        storage_dead(_15);
+        storage_dead(base);
+        storage_dead(f);
+        storage_dead(self);
+        storage_dead(_51);
+        return;
+    }
+
+    bb35 (cleanup): {
         storage_dead(_50);
         storage_dead(_49);
         storage_dead(_48);
@@ -397,118 +523,12 @@ where
         unwind_continue;
     }
 
-    bb23 (cleanup): {
-        storage_dead(_50);
-        storage_dead(_49);
-        storage_dead(_48);
-        storage_dead(_47);
-        storage_dead(_46);
-        storage_dead(_45);
-        storage_dead(_44);
-        storage_dead(_43);
-        storage_dead(_42);
-        storage_dead(_41);
-        storage_dead(_40);
-        storage_dead(_39);
-        storage_dead(_36);
-        storage_dead(_30);
-        storage_dead(_21);
-        storage_dead(_15);
-        storage_dead(base);
-        storage_dead(f);
-        storage_dead(self);
-        storage_dead(_51);
-        unwind_terminate;
-    }
-
-    bb24: {
-        storage_dead(_17);
-        base = move _16;
-        storage_dead(_16);
-        size = copy size wrap.- copy half;
-        storage_dead(cmp_12);
-        storage_dead(mid);
-        storage_dead(half);
-        storage_dead(_6);
-        goto bb4;
-    }
-
-    bb25: {
-        storage_live(cond_23);
-        storage_live(_24);
-        _24 = copy base;
-        cond_23 = move _24 < copy _39;
-        storage_dead(_24);
-        storage_live(_47);
-        _47 = ub_checks;
-        if move _47 -> bb27 else -> bb28;
-    }
-
-    bb26: {
-        storage_live(result);
-        storage_live(_26);
-        storage_live(_27);
-        _27 = copy _40 == const -1i8;
-        _26 = cast<bool, usize>(move _27);
-        storage_dead(_27);
-        result = move base wrap.+ move _26;
-        storage_dead(_26);
-        storage_live(cond_28);
-        cond_28 = copy result <= copy _39;
-        storage_live(_48);
-        _48 = ub_checks;
-        if move _48 -> bb29 else -> bb30;
-    }
-
-    bb27: {
-        _41 = core::hint::assert_unchecked::precondition_check(copy cond_23) -> bb28 (unwind: bb31);
-    }
-
-    bb28: {
-        _49 = assume(copy cond_23) -> bb32 (unwind: bb33);
-    }
-
-    bb29: {
-        _42 = core::hint::assert_unchecked::precondition_check(copy cond_28) -> bb30 (unwind: bb35);
-    }
-
-    bb30: {
-        _50 = assume(copy cond_28) -> bb36 (unwind: bb37);
-    }
-
-    bb31 (cleanup): {
+    bb36 (cleanup): {
         undefined_behavior;
-    }
-
-    bb32: {
-        storage_dead(cond_23);
-        _0 = Result::Ok { _0: move base };
-        goto bb34;
-    }
-
-    bb33 (cleanup): {
-        undefined_behavior;
-    }
-
-    bb34: {
-        storage_dead(cmp_18);
-        storage_dead(size);
-        drop[TraitClause3::drop_glue<'27>] f -> bb40 (unwind: bb38);
-    }
-
-    bb35 (cleanup): {
-        undefined_behavior;
-    }
-
-    bb36: {
-        storage_dead(cond_28);
-        _0 = Result::Err { _0: copy result };
-        storage_dead(result);
-        goto bb34;
     }
 
     bb37 (cleanup): {
-        undefined_behavior;
+        drop[TraitClause3::drop_glue<'26>] f -> bb38 (unwind: bb39);
     }
 
     bb38 (cleanup): {
@@ -535,7 +555,7 @@ where
         unwind_continue;
     }
 
-    bb39: {
+    bb39 (cleanup): {
         storage_dead(_50);
         storage_dead(_49);
         storage_dead(_48);
@@ -556,31 +576,11 @@ where
         storage_dead(f);
         storage_dead(self);
         storage_dead(_51);
-        return;
+        unwind_terminate;
     }
 
-    bb40: {
-        storage_dead(_50);
-        storage_dead(_49);
-        storage_dead(_48);
-        storage_dead(_47);
-        storage_dead(_46);
-        storage_dead(_45);
-        storage_dead(_44);
-        storage_dead(_43);
-        storage_dead(_42);
-        storage_dead(_41);
-        storage_dead(_40);
-        storage_dead(_39);
-        storage_dead(_36);
-        storage_dead(_30);
-        storage_dead(_21);
-        storage_dead(_15);
-        storage_dead(base);
-        storage_dead(f);
-        storage_dead(self);
-        storage_dead(_51);
-        return;
+    bb40 (cleanup): {
+        undefined_behavior;
     }
 }
 
@@ -620,21 +620,10 @@ fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}, tupled_args: (&'_0 u32,)) -> Order
         _7 = move _8;
         _6 = &(*_7);
         _5 = &(*_6);
-        _0 = cmp<'11, '12>(move _4, move _5) -> bb2 (unwind: bb1);
+        _0 = cmp<'11, '12>(move _4, move _5) -> bb1 (unwind: bb2);
     }
 
-    bb1 (cleanup): {
-        storage_dead(_7);
-        storage_dead(x);
-        storage_dead(tupled_args);
-        storage_dead(_1);
-        storage_dead(_10);
-        storage_dead(_9);
-        storage_dead(_8);
-        unwind_continue;
-    }
-
-    bb2: {
+    bb1: {
         storage_dead(_6);
         storage_dead(_5);
         storage_dead(_4);
@@ -646,6 +635,17 @@ fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}, tupled_args: (&'_0 u32,)) -> Order
         storage_dead(_9);
         storage_dead(_8);
         return;
+    }
+
+    bb2 (cleanup): {
+        storage_dead(_7);
+        storage_dead(x);
+        storage_dead(tupled_args);
+        storage_dead(_1);
+        storage_dead(_10);
+        storage_dead(_9);
+        storage_dead(_8);
+        unwind_continue;
     }
 }
 
@@ -661,21 +661,21 @@ fn call_once<'_0>(_1: {closure}, _2: (&'_0 u32,)) -> Ordering
         storage_live(_0);
         storage_live(_3);
         _3 = &mut _1;
-        _0 = call_mut<'_0, '9>(move _3, move _2) -> bb2 (unwind: bb1);
+        _0 = call_mut<'_0, '9>(move _3, move _2) -> bb1 (unwind: bb2);
     }
 
-    bb1 (cleanup): {
-        storage_dead(_3);
-        storage_dead(_2);
-        storage_dead(_1);
-        unwind_continue;
-    }
-
-    bb2: {
+    bb1: {
         storage_dead(_3);
         storage_dead(_2);
         storage_dead(_1);
         return;
+    }
+
+    bb2 (cleanup): {
+        storage_dead(_3);
+        storage_dead(_2);
+        storage_dead(_1);
+        unwind_continue;
     }
 }
 
@@ -738,14 +738,10 @@ fn main()
         storage_dead(_7);
         storage_live(_8);
         _8 = {closure} {  };
-        res = binary_search_by<'10, u32, {closure}>[{built_in impl Sized for u32}, {built_in impl Sized for {closure}}, impl_FnMut_tuple_for_closure<'10>, {built_in impl Destruct for {closure}}](move _6, move _8) -> bb2 (unwind: bb1);
+        res = binary_search_by<'10, u32, {closure}>[{built_in impl Sized for u32}, {built_in impl Sized for {closure}}, impl_FnMut_tuple_for_closure<'10>, {built_in impl Destruct for {closure}}](move _6, move _8) -> bb1 (unwind: bb2);
     }
 
-    bb1 (cleanup): {
-        unwind_continue;
-    }
-
-    bb2: {
+    bb1: {
         storage_dead(_8);
         storage_dead(_6);
         fake_read(res);
@@ -754,6 +750,10 @@ fn main()
         storage_dead(b);
         storage_dead(a);
         return;
+    }
+
+    bb2 (cleanup): {
+        unwind_continue;
     }
 }
 

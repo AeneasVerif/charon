@@ -59,19 +59,19 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn Foo))
         _0 = ();
         storage_live(_2);
         _2 = concretize<&'_0 (dyn Foo + '1), &'_0 Bar>(move _1);
-        _0 = foo<'_0>(move _2) -> bb2 (unwind: bb1);
+        _0 = foo<'_0>(move _2) -> bb1 (unwind: bb2);
     }
 
-    bb1 (cleanup): {
-        storage_dead(_2);
-        storage_dead(_1);
-        unwind_continue;
-    }
-
-    bb2: {
+    bb1: {
         storage_dead(_2);
         storage_dead(_1);
         return;
+    }
+
+    bb2 (cleanup): {
+        storage_dead(_2);
+        storage_dead(_1);
+        unwind_continue;
     }
 }
 
@@ -168,15 +168,10 @@ fn main()
         _6 = &(*some_foo) with_metadata(copy some_foo.metadata);
         storage_live(_7);
         _7 = cast<*const (), fn(&'8 (dyn Foo + '9))>(copy (*_6.metadata).method_foo);
-        _5 = (copy _7)(move _6) -> bb2 (unwind: bb1);
+        _5 = (copy _7)(move _6) -> bb1 (unwind: bb2);
     }
 
-    bb1 (cleanup): {
-        storage_dead(_7);
-        unwind_continue;
-    }
-
-    bb2: {
+    bb1: {
         storage_dead(_6);
         storage_dead(_5);
         _0 = ();
@@ -184,6 +179,11 @@ fn main()
         storage_dead(bar);
         storage_dead(_7);
         return;
+    }
+
+    bb2 (cleanup): {
+        storage_dead(_7);
+        unwind_continue;
     }
 }
 

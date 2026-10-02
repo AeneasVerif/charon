@@ -68,23 +68,19 @@ fn main()
         _2 = const 0usize;
         fake_read(_1);
         _3 = copy _2 < const 3usize;
-        assert assert(move _3 == true) (bounds_check) -> bb2 (unwind: bb1);
+        assert assert(move _3 == true) (bounds_check) -> bb1 (unwind: bb8);
     }
 
-    bb1 (cleanup): {
-        unwind_continue;
-    }
-
-    bb2: {
+    bb1: {
         _ = _1[copy _2];
         storage_dead(_2);
         storage_dead(_1);
         storage_live(_4);
         _5 = const 5i32 checked.* const 10i32;
-        assert assert(move _5._1 == false) (overflow) -> bb3 (unwind: bb1);
+        assert assert(move _5._1 == false) (overflow) -> bb2 (unwind: bb8);
     }
 
-    bb3: {
+    bb2: {
         _4 = move _5._0;
         storage_dead(_4);
         storage_live(x);
@@ -94,46 +90,50 @@ fn main()
         storage_live(_8);
         _8 = copy x;
         _9 = copy _8 == const -128i8;
-        assert assert(move _9 == false) (overflow_neg) -> bb4 (unwind: bb1);
+        assert assert(move _9 == false) (overflow_neg) -> bb3 (unwind: bb8);
     }
 
-    bb4: {
+    bb3: {
         _7 = wrap.-(move _8);
         storage_dead(_8);
         storage_dead(_7);
         storage_live(_10);
         _11 = const 0i32 == const 0i32;
-        assert assert(move _11 == false) (division_by_zero) -> bb5 (unwind: bb1);
+        assert assert(move _11 == false) (division_by_zero) -> bb4 (unwind: bb8);
     }
 
-    bb5: {
+    bb4: {
         _12 = const 0i32 == const -1i32;
         _13 = const 1i32 == const -2147483648i32;
         _14 = move _12 & move _13;
-        assert assert(move _14 == false) (overflow) -> bb6 (unwind: bb1);
+        assert assert(move _14 == false) (overflow) -> bb5 (unwind: bb8);
     }
 
-    bb6: {
+    bb5: {
         _10 = const 1i32 ub./ const 0i32;
         storage_dead(_10);
         storage_live(_15);
         _16 = const 0i32 == const 0i32;
-        assert assert(move _16 == false) (remainder_by_zero) -> bb7 (unwind: bb1);
+        assert assert(move _16 == false) (remainder_by_zero) -> bb6 (unwind: bb8);
     }
 
-    bb7: {
+    bb6: {
         _17 = const 0i32 == const -1i32;
         _18 = const 1i32 == const -2147483648i32;
         _19 = move _17 & move _18;
-        assert assert(move _19 == false) (overflow) -> bb8 (unwind: bb1);
+        assert assert(move _19 == false) (overflow) -> bb7 (unwind: bb8);
     }
 
-    bb8: {
+    bb7: {
         _15 = const 1i32 ub.% const 0i32;
         storage_dead(_15);
         _0 = ();
         storage_dead(x);
         return;
+    }
+
+    bb8 (cleanup): {
+        unwind_continue;
     }
 }
 

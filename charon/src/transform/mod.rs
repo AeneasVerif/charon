@@ -27,7 +27,6 @@ pub mod add_missing_info {
 pub mod normalize {
     pub mod desugar_drops;
     pub mod expand_associated_types;
-    pub mod filter_unreachable_blocks;
     pub mod normalize_trait_refs;
     pub mod partial_monomorphization;
     pub mod skip_trait_refs_when_known;
@@ -204,10 +203,7 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         CowBox::Borrowed(&simplify_output::remove_unused_locals::Transform),
         // Another round.
         CowBox::Borrowed(&control_flow::merge_goto_chains::Transform),
-        // Filter the "dangling" blocks. Those might have been introduced by, for instance,
-        // [`merge_goto_chains`].
-        CowBox::Borrowed(&normalize::filter_unreachable_blocks::Transform),
-        // Make sure the block ids used in the ULLBC are consecutive
+        // Renumber rechable blocks to be consecutive and in topological order.
         CowBox::Borrowed(&simplify_output::update_block_indices::Transform),
     ]));
     ctx.run_pass(pass);

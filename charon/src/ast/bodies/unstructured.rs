@@ -244,6 +244,10 @@ impl BlockData {
     pub fn new_unreachable(is_cleanup: bool) -> Self {
         Terminator::new(Span::dummy(), TerminatorKind::UndefinedBehavior).into_block(is_cleanup)
     }
+    /// Replace this block with a dummy block.
+    pub fn take(&mut self) -> Self {
+        mem::replace(self, BlockData::new_unreachable(self.is_cleanup))
+    }
 
     pub fn targets(&self) -> SmallVec<[BlockId; 2]> {
         self.terminator.targets()
