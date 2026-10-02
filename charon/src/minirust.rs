@@ -317,6 +317,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             calling_convention: mini::CallingConvention::C,
             blocks,
             start,
+            implicit_writes: true,
         })
     }
 
@@ -382,6 +383,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             calling_convention: self.calling_convention(span, &signature.abi)?,
             blocks,
             start,
+            implicit_writes: true,
         })
     }
 
@@ -531,6 +533,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             calling_convention: self.calling_convention(span, &signature.abi)?,
             blocks,
             start,
+            implicit_writes: true,
         })
     }
 
@@ -587,6 +590,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             calling_convention: self.calling_convention(span, &signature.abi)?,
             blocks,
             start,
+            implicit_writes: true,
         })
     }
 
@@ -704,6 +708,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             calling_convention: self.calling_convention(span, &fdecl.signature.abi)?,
             blocks,
             start: self.block_name(START_BLOCK_ID),
+            implicit_writes: true,
         })
     }
 
@@ -1536,6 +1541,7 @@ where
     let program = translator.translate().map_err(RunError::Translation)?;
     let mut machine = Machine::<TreeBorrowsMemory<T>>::new(
         program,
+        mini::TreeBorrowsParams::default(),
         DynWrite::new(std::io::stdout()),
         DynWrite::new(std::io::stderr()),
     )

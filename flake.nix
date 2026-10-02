@@ -13,9 +13,15 @@
     };
     crane.url = "github:ipetkov/crane";
     jail-nix.url = "sourcehut:~alexdavid/jail.nix";
+    # GitHub flake inputs don't support submodules (https://github.com/NixOS/nix/issues/13571).
+    # Keep this revision in sync with crates/minirust.
+    minirust-src = {
+      url = "github:Nadrieril/minirust/c0b555e5b15accc6c1366b1d911a1bfd49c3d9d0";
+      flake = false;
+    };
   };
 
-  outputs = { self, flake-utils, nixpkgs, rust-overlay, crane, jail-nix, ... }:
+  outputs = { self, flake-utils, nixpkgs, rust-overlay, crane, jail-nix, minirust-src, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
@@ -39,6 +45,7 @@
         charon-unwrapped = pkgs.callPackage ./nix/charon.nix {
           inherit craneLib;
           charonCommit = self.rev or (lib.removeSuffix "-dirty" (self.dirtyRev or "unknown"));
+          minirustSrc = minirust-src;
           miriSysroots = fullMirSysroots;
         };
         charon = pkgs.runCommand "charon"

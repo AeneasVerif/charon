@@ -2,6 +2,7 @@
 charon/target
 charon/*/target
 charon/tests/cargo/**/target
+crates/minirust-rs/target
 
 # Temporary files we don't want to commit
 charon-ml/tests/serialized

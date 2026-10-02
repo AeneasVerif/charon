@@ -278,7 +278,6 @@ dependencies = [
  "index_vec",
  "indexmap",
  "indoc",
- "intrinsics",
  "itertools 0.13.0",
  "lazy_static",
  "libc",
@@ -1194,11 +1193,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f4c7245a08504955605670dbf141fceab975f15ca21570696aebe9d2e71576bd"
 
 [[package]]
-name = "intrinsics"
-version = "0.1.0"
-source = "git+https://github.com/minirust/minirust?rev=d821c6e3a3d358fa8a556774dc12b4aa5d0d65ed#d821c6e3a3d358fa8a556774dc12b4aa5d0d65ed"
-
-[[package]]
 name = "io-uring"
 version = "0.7.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1406,7 +1400,6 @@ checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 [[package]]
 name = "minirust-rs"
 version = "0.1.0"
-source = "git+https://github.com/Nadrieril/a-mir-formality?branch=bump-toolchain#51a3eaf354337c6f7eca19a342ec019f6555a611"
 dependencies = [
  "libspecr",
  "serde",

@@ -23,6 +23,12 @@ build: build-charon-rust build-charon-ml
 .PHONY: build-dev
 build-dev: build-dev-charon-rust build-dev-charon-ml
 
+# Rebuild the vendored crate from the specr spec.
+.PHONY: build-minirust
+build-minirust:
+	cargo install specr-transpile --version 0.1.41 --locked
+	specr-transpile crates/minirust-specr.toml
+
 .PHONY: build-charon-rust
 build-charon-rust:
 	cd charon && $(MAKE)

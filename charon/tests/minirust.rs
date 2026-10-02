@@ -22,6 +22,7 @@ const FAILURES: &[(&str, &[&str])] = &[
         &[
             "pass/align_of_val.rs",
             "pass/array.rs",
+            "pass/catch_unwind.rs",
             "pass/const.rs",
             "pass/enum_direct_tag.rs",
             "pass/enums.rs",
@@ -164,8 +165,6 @@ const FAILURES: &[(&str, &[&str])] = &[
             "ub/tree_borrows/protector/foreign_write_reserved.rs",
         ],
     ),
-    // This one is a toolchain mismatch.
-    ("expected `bool`, found integer", &["pass/catch_unwind.rs"]),
 ];
 
 #[derive(Clone, Copy)]
@@ -347,42 +346,18 @@ fn run_case(case: &Case, intrinsics_crate: &Path) -> Result<()> {
 fn main() -> Result<()> {
     let temp = tempfile::tempdir()?;
 
-    // Find the `intrinsics` package, whose source also contains the minimize test suite.
-    let (intrinsics_dir, tests_dir): (PathBuf, PathBuf) = {
-        let metadata = Command::new("cargo")
-            .args(["metadata", "--format-version=1", "--locked", "--offline"])
-            .current_dir(env!("CARGO_MANIFEST_DIR"))
-            .output()?;
-        if !metadata.status.success() {
-            bail!(
-                "could not locate MiniRust's intrinsics crate:\n{}",
-                String::from_utf8_lossy(&metadata.stderr)
-            );
-        }
-        let metadata: serde_json::Value = serde_json::from_slice(&metadata.stdout)?;
-        let intrinsics_manifest_path = metadata["packages"]
-            .as_array()
-            .context("Cargo metadata has no packages")?
-            .iter()
-            .find(|package| package["name"] == "intrinsics")
-            .and_then(|package| package["manifest_path"].as_str())
-            .context("MiniRust's intrinsics crate is not a dependency")?;
-        let intrinsics_dir = Path::new(intrinsics_manifest_path)
-            .parent()
-            .context("intrinsics manifest has no parent")?
-            .to_owned();
-        let tests_dir = intrinsics_dir
-            .parent()
-            .context("intrinsics is not in minimize")?
-            .join("tests");
-        if !tests_dir.is_dir() {
-            bail!(
-                "MiniRust's minimize suite is not available at {}",
-                tests_dir.display()
-            );
-        }
-        (intrinsics_dir, tests_dir)
-    };
+    let minimize_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .context("Charon has no workspace parent")?
+        .join("crates/minirust/tooling/minimize");
+    let intrinsics_dir = minimize_dir.join("intrinsics");
+    let tests_dir = minimize_dir.join("tests");
+    if !tests_dir.is_dir() {
+        bail!(
+            "MiniRust's minimize suite is not available at {}",
+            tests_dir.display()
+        );
+    }
 
     // Build the intrinsics crate.
     let intrinsics_rlib = {

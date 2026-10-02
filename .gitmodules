@@ -1,0 +1,4 @@
+[submodule "crates/minirust"]
+	path = crates/minirust
+	url = https://github.com/Nadrieril/minirust
+	branch = bump-toolchain

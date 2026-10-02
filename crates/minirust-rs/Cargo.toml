@@ -1,0 +1,8 @@
+[package]
+name = "minirust-rs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+libspecr = "=0.1.41"
+serde = {version = "1.0", features = ["derive"]}
