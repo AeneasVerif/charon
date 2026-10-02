@@ -116,6 +116,22 @@ pub fn mydup#1::hello() -> u32
     return
 }
 
+// Full name: issue_412_dup_deps::main::{promoted_const}
+fn {promoted_const}() -> &'_ u32
+{
+    let _0: &'0 u32; // return
+    let _1: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = const 3u32
+    _0 = &_1
+    return
+}
+
+// Full name: issue_412_dup_deps::main::{promoted_const}
+const {promoted_const}: &'_ u32 = {promoted_const}()
+
 // Full name: issue_412_dup_deps::main
 fn main()
 {
@@ -143,9 +159,6 @@ fn main()
     let _21: &'21 u32; // anonymous local
     let _22: Option<Arguments<'30>>[{built_in impl Sized for Arguments<'30>}]; // anonymous local
     let _23: &'34 u32; // anonymous local
-    let _24: &'35 u32; // anonymous local
-    let _25: &'56 u32; // anonymous local
-    let _26: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_8)
@@ -169,18 +182,12 @@ fn main()
     _8 = copy _6 checked.+ copy _7
     assert(move _8._1 == false) (overflow) else panic
     ↳⚡ unwind_continue
-    storage_live(_24)
-    storage_live(_25)
-    storage_live(_26)
-    _26 = const 3u32
-    _25 = &_26
-    _24 = move _25
     _5 = move _8._0
     storage_dead(_7)
     storage_dead(_6)
     _4 = &_5
     storage_live(_9)
-    _23 = move _24
+    _23 = copy {promoted_const}
     _9 = &(*_23)
     _3 = (move _4, move _9)
     storage_dead(_9)

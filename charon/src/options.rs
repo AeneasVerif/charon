@@ -251,6 +251,12 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub raw_consts: bool,
+    /// Inline anonymous constants, including promoted constants and inline const blocks. This is
+    /// unsound for promoted constants if they're used with a `'static` lifetime, as this will move
+    /// the constant to a local variable.
+    #[clap(long)]
+    #[serde(default)]
+    pub inline_anon_consts: bool,
     /// How to represent constants and statics: as a call to their initializer function, as an
     /// evaluated value, or as raw bytes. This is always best-effort: in some cases we only get the
     /// evaluated constant, and in others we cannot evaluate the constant and keep the initializer.
@@ -517,6 +523,7 @@ impl CliOpts {
         if let Some(preset) = self.preset {
             match preset {
                 Preset::OldDefaults => {
+                    self.inline_anon_consts = true;
                     self.treat_box_as_builtin = true;
                     self.hide_allocator = true;
                     self.ops_to_function_calls = true;
@@ -543,6 +550,7 @@ impl CliOpts {
                     self.raw_consts = true;
                 }
                 Preset::Aeneas => {
+                    self.inline_anon_consts = true;
                     self.lift_associated_types.push("*".to_owned());
                     self.treat_box_as_builtin = true;
                     self.ops_to_function_calls = true;
@@ -560,6 +568,7 @@ impl CliOpts {
                     self.no_gen_tuple_structs = true;
                 }
                 Preset::Eurydice => {
+                    self.inline_anon_consts = true;
                     self.hide_allocator = true;
                     self.treat_box_as_builtin = true;
                     self.reconstruct_fallible_operations = true;
@@ -590,6 +599,7 @@ impl CliOpts {
                     self.ullbc = true;
                 }
                 Preset::Tests => {
+                    self.inline_anon_consts = true;
                     self.no_dedup_serialized_ast = true; // Helps debug
                     self.treat_box_as_builtin = true;
                     self.hide_allocator = true;
@@ -791,6 +801,8 @@ pub struct TranslateOptions {
     pub no_gen_tuple_structs: bool,
     /// Don't inline or evaluate constants.
     pub raw_consts: bool,
+    /// Inline anonymous constants.
+    pub inline_anon_consts: bool,
     /// How much to evaluate constants and statics.
     pub consts: ConstHandling,
     /// Replace string literal constants with a constant u8 array that gets unsized,
@@ -978,6 +990,7 @@ impl TranslateOptions {
             treat_box_as_builtin: options.treat_box_as_builtin,
             no_gen_tuple_structs: options.no_gen_tuple_structs,
             raw_consts: options.raw_consts,
+            inline_anon_consts: options.inline_anon_consts,
             consts: options.consts.unwrap_or_default(),
             unsized_strings: options.unsized_strings,
             reconstruct_fallible_operations: options.reconstruct_fallible_operations,

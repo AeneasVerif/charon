@@ -53,6 +53,22 @@ where
 
 struct () {}
 
+// Full name: test_cargo_toml::included::run::{promoted_const}
+fn {promoted_const}() -> &'_ Option<bool>[{built_in impl Sized for bool}]
+{
+    let _0: &'0 Option<bool>[{built_in impl Sized for bool}]; // return
+    let _1: Option<bool>[{built_in impl Sized for bool}]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = Option::Some { _0: const false }
+    _0 = &_1
+    return
+}
+
+// Full name: test_cargo_toml::included::run::{promoted_const}
+const {promoted_const}: &'_ Option<bool>[{built_in impl Sized for bool}] = {promoted_const}()
+
 // Full name: test_cargo_toml::included::run
 pub fn run()
 {
@@ -60,22 +76,13 @@ pub fn run()
     let _1: bool; // anonymous local
     let _2: &'1 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
     let _3: &'2 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
-    let _4: &'3 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
-    let _5: &'6 Option<bool>[{built_in impl Sized for bool}]; // anonymous local
-    let _6: Option<bool>[{built_in impl Sized for bool}]; // anonymous local
 
-    storage_live(_4)
-    storage_live(_5)
-    storage_live(_6)
-    _6 = Option::Some { _0: const false }
-    _5 = &_6
-    _4 = move _5
     storage_live(_0)
     storage_live(_3)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _3 = move _4
+    _3 = copy {promoted_const}
     _2 = &(*_3)
     _1 = is_some<'5, bool>[{built_in impl Sized for bool}](move _2)
     ↳⚡ unwind_continue

@@ -1905,6 +1905,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* treat_box_as_builtin = bool_of_postcard ctx st in
      let* no_gen_tuple_structs = bool_of_postcard ctx st in
      let* raw_consts = bool_of_postcard ctx st in
+     let* inline_anon_consts = bool_of_postcard ctx st in
      let* consts = option_of_postcard const_handling_of_postcard ctx st in
      let* unsized_strings = bool_of_postcard ctx st in
      let* reconstruct_fallible_operations = bool_of_postcard ctx st in
@@ -1972,6 +1973,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           treat_box_as_builtin;
           no_gen_tuple_structs;
           raw_consts;
+          inline_anon_consts;
           consts;
           unsized_strings;
           reconstruct_fallible_operations;

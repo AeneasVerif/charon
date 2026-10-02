@@ -2,33 +2,26 @@
 
 struct () {}
 
-// Full name: test_crate::REF::{promoted_const}
-fn {promoted_const}() -> &'_ u32
-{
-    let _0: &'0 u32; // return
-    let _1: u32; // anonymous local
-
-    storage_live(_0)
-    storage_live(_1)
-    _1 = const 42u32
-    _0 = &_1
-    return
-}
-
-// Full name: test_crate::REF::{promoted_const}
-const {promoted_const}: &'_ u32 = {promoted_const}()
-
 // Full name: test_crate::REF
 fn REF() -> &'static u32
 {
     let _0: &'1 u32; // return
     let _1: &'2 u32; // anonymous local
     let _2: &'3 u32; // anonymous local
+    let _3: &'4 u32; // anonymous local
+    let _4: &'5 u32; // anonymous local
+    let _5: u32; // anonymous local
 
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = const 42u32
+    _4 = &_5
+    _3 = move _4
     storage_live(_0)
     storage_live(_2)
     storage_live(_1)
-    _2 = const {promoted_const}
+    _2 = move _3
     _1 = &(*_2)
     _0 = &(*_1)
     storage_dead(_1)
