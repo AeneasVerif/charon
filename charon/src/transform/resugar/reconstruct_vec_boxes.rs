@@ -41,10 +41,8 @@ struct Rewrite {
     move_loc: StmtLoc,
     arg_move_loc: StmtLoc,
     span: Span,
-    payload_elems: Vec<Operand>,
-    elem_ty: Ty,
-    elem_ty_is_sized: Option<TraitRef>,
-    len: ConstantExpr,
+    array_value: Rvalue,
+    array_ty: Ty,
     uninit_box: Place,
     branched_before_payload: bool,
     box_array: Place,
@@ -57,10 +55,8 @@ struct Rewrite {
 struct PayloadAssign {
     loc: StmtLoc,
     span: Span,
-    payload_elems: Vec<Operand>,
-    elem_ty: Ty,
-    elem_ty_is_sized: Option<TraitRef>,
-    len: ConstantExpr,
+    array_value: Rvalue,
+    array_ty: Ty,
     branched_before_payload: bool,
 }
 
@@ -91,8 +87,8 @@ fn box_inner(ty: &Ty) -> Option<Ty> {
     Some(generics.types[TypeVarId::from_usize(0)].clone())
 }
 
-/// Given `src`, find the unique statement of the form `src = [elems...]`
-/// where the rvalue is an array aggregate.
+/// Given `src`, find the unique statement of the form `src = [...]` where the rvalue is an array
+/// aggregate or array repeat.
 ///
 /// Also returns whether a straight-line path from `start` hits a branch before reaching the
 /// assignment. We ignore unwind edges; this matches the later rewrite's ability to erase the
@@ -103,7 +99,7 @@ fn find_array_assign(body: &ExprBody, start: BlockId, src_local: LocalId) -> Opt
         for (idx, st) in block.statements.iter().enumerate() {
             let Some((
                 place,
-                Rvalue::Aggregate(AggregateKind::Array(elem_ty, len, elem_ty_is_sized), elems),
+                value @ (Rvalue::Aggregate(AggregateKind::Array(..), _) | Rvalue::Repeat(..)),
             )) = st.kind.as_assign()
             else {
                 continue;
@@ -118,10 +114,8 @@ fn find_array_assign(body: &ExprBody, start: BlockId, src_local: LocalId) -> Opt
             out = Some(PayloadAssign {
                 loc,
                 span: st.span,
-                payload_elems: elems.clone(),
-                elem_ty: elem_ty.clone(),
-                elem_ty_is_sized: elem_ty_is_sized.clone(),
-                len: len.clone(),
+                array_value: value.clone(),
+                array_ty: place.ty().clone(),
                 branched_before_payload: branched_before(body, start, loc.block)?,
             });
         }
@@ -338,7 +332,7 @@ impl UllbcPass for Transform {
                 let box_new_generics = maybe_uninit_ref.generics.as_ref().clone();
                 let uninit_box_l = uninit_box.local_id()?;
 
-                // (*uninit_box).1.0.0 = [payload_elems...]: [elem_ty; len]
+                // (*uninit_box).1.0.0 = [...]
                 let payload = find_array_assign(body, *new_uninit_target, uninit_box_l)?;
 
                 // assume_init(uninit_box2)
@@ -352,10 +346,8 @@ impl UllbcPass for Transform {
                     move_loc: tail.move_loc,
                     arg_move_loc: tail.arg_move_loc,
                     span: payload.span,
-                    payload_elems: payload.payload_elems,
-                    elem_ty: payload.elem_ty,
-                    elem_ty_is_sized: payload.elem_ty_is_sized,
-                    len: payload.len,
+                    array_value: payload.array_value,
+                    array_ty: payload.array_ty,
                     uninit_box,
                     branched_before_payload: payload.branched_before_payload,
                     box_new_generics,
@@ -367,12 +359,7 @@ impl UllbcPass for Transform {
             });
 
         for rw in rewrites.collect::<Vec<_>>() {
-            let array_ty = Ty::mk_array(
-                rw.elem_ty.clone(),
-                rw.len.clone(),
-                rw.elem_ty_is_sized.clone(),
-            );
-            let array_local = body.locals.new_var(None, array_ty.clone());
+            let array_local = body.locals.new_var(None, rw.array_ty);
             let box_array_ty = rw.box_array.ty().clone();
             let box_array_local = body.locals.new_var(None, box_array_ty.clone());
 
@@ -386,17 +373,7 @@ impl UllbcPass for Transform {
                 rw.payload_loc.statement..=rw.payload_loc.statement,
                 [
                     StatementKind::StorageLive(array_lid),
-                    StatementKind::Assign(
-                        array_local.clone(),
-                        Rvalue::Aggregate(
-                            AggregateKind::Array(
-                                rw.elem_ty.clone(),
-                                rw.len.clone(),
-                                rw.elem_ty_is_sized,
-                            ),
-                            rw.payload_elems,
-                        ),
-                    ),
+                    StatementKind::Assign(array_local.clone(), rw.array_value),
                 ]
                 .map(|k| Statement::new(rw.span, k)),
             );
