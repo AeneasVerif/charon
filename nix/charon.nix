@@ -2,6 +2,7 @@
 , charonCommit
 , craneLib
 , lib
+, minirustSrc
 , miriSysroots ? null
 , zlib
 }:
@@ -22,6 +23,11 @@ let
     inherit cargoLock;
     src = cleanedUpSrc;
     RUSTFLAGS = "-D warnings"; # Turn all warnings into errors.
+    postPatch = ''
+      mkdir -p ../crates
+      cp -r ${../crates/minirust-rs} ../crates/minirust-rs
+      cp -r ${minirustSrc} ../crates/minirust
+    '';
   };
 
 in

@@ -333,10 +333,14 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub no_dedup_serialized_ast: bool,
-    /// Serialization format for emitted (U)LLBC files. Defaults to json.
+    /// Serialization format for emitted files. Defaults to json.
     #[clap(long, value_enum)]
     #[serde(default)]
     pub format: Option<SerializationFormatArg>,
+    /// Run the translated program with MiniRust.
+    #[clap(long)]
+    #[serde(default)]
+    pub run_with_minirust: bool,
     /// Don't serialize the final (U)LLBC to a file.
     #[clap(long)]
     #[serde(default)]
@@ -458,6 +462,8 @@ pub enum MonomorphizeMut {
 pub enum SerializationFormatArg {
     Json,
     Postcard,
+    #[value(name = "minirust")]
+    MiniRust,
     #[cfg_attr(feature = "charon_on_charon", charon::rename("AllFormats"))]
     All,
 }
@@ -469,6 +475,8 @@ pub enum SerializationFormat {
     #[default]
     Json,
     Postcard,
+    #[value(name = "minirust")]
+    MiniRust,
 }
 
 impl SerializationFormatArg {
@@ -476,6 +484,7 @@ impl SerializationFormatArg {
         match self {
             SerializationFormatArg::Json => Some(SerializationFormat::Json),
             SerializationFormatArg::Postcard => Some(SerializationFormat::Postcard),
+            SerializationFormatArg::MiniRust => Some(SerializationFormat::MiniRust),
             SerializationFormatArg::All => None,
         }
     }
@@ -486,6 +495,7 @@ impl From<SerializationFormat> for SerializationFormatArg {
         match format {
             SerializationFormat::Json => SerializationFormatArg::Json,
             SerializationFormat::Postcard => SerializationFormatArg::Postcard,
+            SerializationFormat::MiniRust => SerializationFormatArg::MiniRust,
         }
     }
 }
@@ -497,6 +507,7 @@ impl SerializationFormat {
             (false, SerializationFormat::Json) => "llbc",
             (true, SerializationFormat::Postcard) => "ullbc.postcard",
             (false, SerializationFormat::Postcard) => "llbc.postcard",
+            (_, SerializationFormat::MiniRust) => "minirust.json",
         }
     }
 }
@@ -606,6 +617,22 @@ impl CliOpts {
                 }
             }
         }
+
+        if self.run_with_minirust || matches!(self.format, Some(SerializationFormatArg::MiniRust)) {
+            self.monomorphize = true;
+            self.ullbc = true;
+            self.precise_drops = true;
+            self.desugar_drops = true;
+            self.deallocate_all_locals = true;
+            self.treat_box_as_builtin = true;
+            self.extract_opaque_bodies = true;
+            self.consts = Some(ConstHandling::Bytes);
+            self.mir = Some(
+                self.mir
+                    .unwrap_or(MirLevel::Elaborated)
+                    .max(MirLevel::Elaborated),
+            );
+        }
     }
 
     /// Check that the options are meaningful
@@ -647,6 +674,16 @@ impl CliOpts {
             anyhow::bail!(
                 "`--no-serialize` is not compatible with `--format`, the format is only relevant if we serialize"
             );
+        }
+        if self.run_with_minirust || matches!(self.format, Some(SerializationFormatArg::MiniRust)) {
+            if !cfg!(feature = "minirust") {
+                anyhow::bail!(
+                    "MiniRust output is unavailable because Charon was built without the `minirust` feature"
+                );
+            }
+            if !self.targets.is_empty() {
+                anyhow::bail!("MiniRust output does not support multi-target translation");
+            }
         }
         if self.resugar_drops && self.desugar_drops {
             anyhow::bail!("`--desugar-drops` and `--resugar-drops` are mutually incompatible")
@@ -885,6 +922,14 @@ impl TranslateOptions {
             }
             for pat in options.opaque.iter() {
                 opacities.push((pat.to_string(), Opaque));
+            }
+            if options.run_with_minirust
+                || matches!(options.format, Some(SerializationFormatArg::MiniRust))
+            {
+                // This is the `intrinsics` crate used by MiniRust's `minimize` test suite. We make
+                // it opaque because we replace the function bodies so we don't need to translate
+                // them.
+                opacities.push(("intrinsics".to_owned(), Opaque));
             }
             for pat in options.exclude.iter() {
                 opacities.push((pat.to_string(), Invisible));

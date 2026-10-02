@@ -198,9 +198,12 @@ Options:
           Don't deduplicate values (types, trait refs) in the .(u)llbc file. This makes the file easier to inspect
 
       --format <FORMAT>
-          Serialization format for emitted (U)LLBC files. Defaults to json
+          Serialization format for emitted files. Defaults to json
           
-          [possible values: json, postcard, all]
+          [possible values: json, postcard, minirust, all]
+
+      --run-with-minirust
+          Run the translated program with MiniRust
 
       --no-serialize
           Don't serialize the final (U)LLBC to a file

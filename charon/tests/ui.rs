@@ -55,7 +55,7 @@ fn parse_magic_comments(input_path: &Path, revision: Option<&str>) -> Result<Mag
             comments.ignore = true;
         } else if line == "no-check-output" {
             comments.check_output = false;
-        } else if line == "known-panic" || line == "known-failure" {
+        } else if line == "known-panic" || line == "known-failure" || line == "known-ub" {
             comments.output_stream = OutputStream::Stderr;
         }
     }

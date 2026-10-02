@@ -26,7 +26,7 @@ tracing = { version = "0.1", features = ["max_level_trace"] }
 
 [package]
 name = "charon"
-version = "0.1.279"
+version = "0.1.280"
 authors.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -47,6 +47,7 @@ path = "src/bin/charon/main.rs"
 # let it set up the right paths.
 name = "charon-driver"
 path = "src/bin/charon-driver/main.rs"
+required-features = ["rustc"]
 
 [[bin]]
 name = "generate-asts"
@@ -61,6 +62,12 @@ harness = false
 name = "cargo"
 path = "tests/cargo.rs"
 harness = false
+
+[[test]]
+name = "minirust"
+path = "tests/minirust.rs"
+harness = false
+required-features = ["minirust"]
 
 [dependencies]
 hax-adt-into = { path = "./adt-into" }
@@ -87,6 +94,7 @@ indoc = "2"
 itertools.workspace = true
 lazy_static = "1.4.0"
 log = "0.4.17"
+minirust-rs = { path = "../crates/minirust-rs", optional = true }
 nom = "7.1.3"
 paste = "1.0.11"
 petgraph = "0.8.0"
@@ -109,15 +117,17 @@ tracing-subscriber = { version = "0.3", features = [ "env-filter", "std", "fmt",
 tracing-tree = { git = "https://github.com/Nadrieril/tracing-tree", features = [ "time", ] } # Fork with improved formating and timing info.
 tracing.workspace = true
 ustr = { version = "1.1.0", features = ["serde"] }
-wait-timeout = { version = "0.2.0", optional = true }
+wait-timeout = "0.2.0"
 which = "7.0"
 
 [features]
-default = ["rustc"]
+default = ["rustc", "minirust"]
 # Hook into rustc-internal APIs. Needed for the `charon-driver` binary but not
 # the main crate. Pass `--no-default-features` to compile `charon-lib` on a
 # stable toolchain.
 rustc = ["dep:rustc_trait_elaboration"]
+# Enables converting monomorphized ULLBC to MiniRust's serialized format.
+minirust = ["dep:minirust-rs"]
 # Enable the `charon` tool attribute when translating charon with itself.
 charon_on_charon = []
 # This feature enables the `popular-crates` test which runs Charon on the most downloaded crates from crates.io.
@@ -126,7 +136,6 @@ popular-crates-test = [
     "dep:flate2",
     "dep:reqwest",
     "dep:tar",
-    "dep:wait-timeout",
 ]
 
 [dev-dependencies]
@@ -142,3 +151,13 @@ walkdir = "2.3.2"
 
 [package.metadata.rust-analyzer]
 rustc_private = true
+
+[profile.dev.package.minirust-rs]
+opt-level = 3
+
+[patch.crates-io]
+# Fix a toolchain mismatch
+libspecr = { git = "https://github.com/Nadrieril/specr", branch = "bump-toolchain" }
+
+[profile.dev.package.libspecr]
+opt-level = 3

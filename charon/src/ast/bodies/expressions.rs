@@ -225,7 +225,7 @@ pub enum NullOp {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-#[derive(EnumIsA, EnumAsGetters)]
+#[derive(EnumAsGetters)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("B"))]
 pub enum BorrowKind {
@@ -347,6 +347,10 @@ impl BorrowKind {
     pub fn mutable(x: bool) -> Self {
         if x { Self::Mut } else { Self::Shared }
     }
+
+    pub fn is_mut(self) -> bool {
+        matches!(self, Self::Mut | Self::TwoPhaseMut | Self::UniqueImmutable)
+    }
 }
 
 impl BinOp {
@@ -385,10 +389,7 @@ impl UnOp {
 
 impl From<BorrowKind> for RefKind {
     fn from(value: BorrowKind) -> Self {
-        match value {
-            BorrowKind::Shared | BorrowKind::Shallow => RefKind::Shared,
-            BorrowKind::Mut | BorrowKind::TwoPhaseMut | BorrowKind::UniqueImmutable => RefKind::Mut,
-        }
+        RefKind::mutable(value.is_mut())
     }
 }
 
