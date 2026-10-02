@@ -34,6 +34,7 @@
   - [In-Body Lifetime Inference]()
   - [In-Body Comments]()
 - [Misc Other Features]()
+  - [Translating To/Executing With MiniRust](minirust.md)
   - [Specification/Contract Annotations]()
   - [Topological Sorting of Items]()
   - [Associated Type Lifting]()
