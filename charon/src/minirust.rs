@@ -14,7 +14,7 @@ use minirust_rs::{
     lang::Machine, libspecr::DynWrite, mem::TreeBorrowsMemory, prelude::TerminationInfo,
 };
 use smallvec::{SmallVec, smallvec};
-use std::{io::Write, marker::PhantomData};
+use std::{cell::RefCell, io::Write, marker::PhantomData};
 
 use crate::{
     ast::{from_rustc::LangItem, *},
@@ -107,6 +107,8 @@ struct TranslateCtx<'a, T: mini::Target> {
     fmt: FmtCtx<'a>,
     target_name: &'a TargetTriple,
     target: &'a TargetInfo,
+    global_ids: RefCell<Generator<GlobalDeclId>>,
+    string_literals: RefCell<SeqHashMap<String, mini::GlobalName>>,
     mini_target: PhantomData<T>,
 }
 
@@ -129,6 +131,8 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
             fmt: krate.into_fmt(),
             target_name,
             target,
+            global_ids: RefCell::new(Generator::new_with_init_value(krate.global_decls.next_id())),
+            string_literals: RefCell::new(Default::default()),
             mini_target: PhantomData,
         })
     }
@@ -200,6 +204,9 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
                     Body::Intrinsic { name, .. } if name == "catch_unwind" => {
                         self.make_catch_unwind_function(span, fdecl)
                     }
+                    Body::Intrinsic { name, .. } if name == "abort" => {
+                        self.make_intrinsic_function(span, fdecl, mini::IntrinsicOp::Abort)
+                    }
                     Body::Intrinsic { name, .. } if name == "size_of_val" => {
                         self.make_layout_of_val_function(span, fdecl, false)
                     }
@@ -228,6 +235,16 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
                 let mini_global = self.global(gdecl.item_meta.span, gdecl)?;
                 globals.insert(self.global_name(id), mini_global);
             }
+        }
+        for (value, name) in self.string_literals.borrow().iter() {
+            globals.insert(
+                *name,
+                mini::Global {
+                    bytes: value.as_bytes().iter().copied().map(Some).collect(),
+                    relocations: Default::default(),
+                    align: mini::Align::ONE,
+                },
+            );
         }
 
         let main = self
@@ -1574,6 +1591,35 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     .try_collect()?,
                 ty,
             ),
+            ConstantExprKind::Str(value) => {
+                let mini::Type::Ptr(ptr_ty) = ty else {
+                    raise!(span, "string literal has a non-pointer type")
+                };
+                let mut literals = self.string_literals.borrow_mut();
+                let name = if let Some(name) = literals.get(value) {
+                    *name
+                } else {
+                    let name = self.global_name(self.global_ids.borrow_mut().fresh_id());
+                    literals.insert(value.clone(), name);
+                    name
+                };
+                mini::ValueExpr::BinOp {
+                    operator: mini::BinOp::ConstructWidePointer(ptr_ty),
+                    left: mini::GcCow::new(mini::ValueExpr::Constant(
+                        mini::Constant::GlobalPointer(mini::Relocation {
+                            name,
+                            offset: mini::Size::ZERO,
+                        }),
+                        mini::Type::Ptr(mini::PtrType::Raw {
+                            meta_kind: mini::PointerMetaKind::None,
+                        }),
+                    )),
+                    right: mini::GcCow::new(mini::ValueExpr::Constant(
+                        mini::Constant::Int(mini::Int::from(value.len())),
+                        mini::Type::Int(self.int_type(IntegerTy::Unsigned(UIntTy::Usize))),
+                    )),
+                }
+            }
             ConstantExprKind::FnDef(_) => mini::ValueExpr::Tuple(Default::default(), ty),
             ConstantExprKind::FnPtr(fn_ptr) => match *fn_ptr.kind {
                 FnPtrKind::Fun(id) => self.fn_pointer(id),
