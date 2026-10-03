@@ -1157,6 +1157,11 @@ pub fn translate<'tcx>(
         translated: TranslatedCrate {
             crate_name,
             options: cli_options.clone(),
+            runtime_checks: RuntimeChecks {
+                ub_checks: tcx.sess.ub_checks(),
+                overflow_checks: tcx.sess.overflow_checks(),
+                contract_checks: tcx.sess.contract_checks(),
+            },
             ..TranslatedCrate::default()
         },
         method_status: Default::default(),

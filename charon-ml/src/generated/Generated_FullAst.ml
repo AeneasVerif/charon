@@ -376,6 +376,12 @@ and preset =
   | Soteria
   | Tests
 
+and runtime_checks = {
+  ub_checks : bool;
+  overflow_checks : bool;
+  contract_checks : bool;
+}
+
 and serialization_format_arg = Json | Postcard | MiniRust | AllFormats
 
 and target_info = {
@@ -414,6 +420,8 @@ and translated_crate = {
           translated. When translating a crate normally this will have a single
           entry; when using [--targets] this will have one entry per chosen
           target. *)
+  runtime_checks : runtime_checks;
+      (** Values of the runtime checks enabled for this crate. *)
   files : file list;
       (** The source files composing the crate and its dependencies. Each
           [[Span]] refers to a byte range within one of these files. *)

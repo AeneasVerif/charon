@@ -51,7 +51,7 @@ use derive_generic_visitor::*;
         crate::options::CliOpts,
         Abi, BuiltinImplData, Byte, DeprecatedSince, DropKind, Error, FileName,
         GlobalKind, ItemOpacity, LangItem, LifetimeMutability, OptimizeAttr, OverflowMode,
-        ReprOptions, Variance, FieldPredecessor,
+        ReprOptions, RuntimeChecks, Variance, FieldPredecessor,
         std::ops::RangeInclusive<IntegerValue>,
         WithRetag, BuiltinPathElem, BranchId, AsmKind, CallSafety,
     ),
