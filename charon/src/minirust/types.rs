@@ -5,10 +5,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         Ok(match ty.kind() {
             TyKind::Scalar(ScalarTy::Integer(integer)) => mini::Type::Int(self.int_type(*integer)),
             TyKind::Scalar(ScalarTy::Bool) => mini::Type::Bool,
-            TyKind::Scalar(ScalarTy::Char) => mini::Type::Int(mini::IntType {
-                signed: mini::Signedness::Unsigned,
-                size: mini_size(4),
-            }),
+            TyKind::Scalar(ScalarTy::Char) => mb::int_ty(mini::Signedness::Unsigned, mini_size(4)),
             TyKind::Scalar(ScalarTy::Float(_)) => {
                 raise!(span, "MiniRust has no floating-point types")
             }
@@ -56,7 +53,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             TyKind::PtrMetadata(pointee) => match self.metadata_kind(span, pointee)? {
                 mini::PointerMetaKind::None => mini::unit_ty(),
                 mini::PointerMetaKind::ElementCount => {
-                    mini::Type::Int(self.int_type(IntegerTy::Unsigned(UIntTy::Usize)))
+                    mb::int_ty(mini::Signedness::Unsigned, T::PTR_SIZE)
                 }
                 mini::PointerMetaKind::VTablePointer(trait_name) => {
                     mini::Type::Ptr(mini::PtrType::VTablePtr(trait_name))

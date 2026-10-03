@@ -285,6 +285,7 @@ dependencies = [
  "log",
  "macros",
  "minirust-rs",
+ "miniutil",
  "nom",
  "paste",
  "petgraph",
@@ -1403,6 +1404,14 @@ version = "0.1.0"
 dependencies = [
  "libspecr",
  "serde",
+]
+
+[[package]]
+name = "miniutil"
+version = "0.1.0"
+dependencies = [
+ "minirust-rs",
+ "serde_json",
 ]
 
 [[package]]
