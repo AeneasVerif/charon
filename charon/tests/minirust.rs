@@ -18,37 +18,25 @@ const TIMEOUT: Duration = Duration::from_secs(60);
 const FAILURES: &[(&str, &[&str])] = &[
     // Known charon limitations
     (
-        "unsupported MiniRust constant:",
+        "panic_impl to MiniRust",
         &[
-            "pass/array.rs",
-            "pass/catch_unwind.rs",
-            "pass/closure_iterator_combinator.rs",
             "pass/const.rs",
             "pass/enum_direct_tag.rs",
             "pass/enums.rs",
             "pass/fn_def.rs",
             "pass/fn_ptr.rs",
             "pass/iter.rs",
-            "pass/nullary_op.rs",
-            "pass/ops.rs",
-            "pass/ptr.rs",
-            "pass/slice.rs",
             "pass/str.rs",
             "pass/tree_borrows/box-non-unpin.rs",
             "pass/tree_borrows/cell_inside_slice.rs",
-            "pass/tree_borrows/cell_inside_slice_lazy_write_to_surrounding.rs",
             "pass/tree_borrows/end_of_protector.rs",
             "pass/tree_borrows/protector_end_access_special_cases.rs",
             "pass/tree_borrows/sb_fails.rs",
             "pass/tree_borrows/spurious_read.rs",
             "pass/tree_borrows/transmute_unsafecell.rs",
             "pass/tree_borrows/tree_borrows.rs",
-            "pass/tree_borrows/zero_sized_cell_lazy_write_to_surrounding.rs",
             "pass/tuples.rs",
-            "pass/zero_size_access.rs",
             "ub/catch_unwind.rs",
-            "ub/ptr_offset_from_unsigned.rs",
-            "ub/ptr_offset_not_multiple.rs",
             "ub/tree_borrows/core/mutable_ref_child_read_disabled.rs",
             "ub/tree_borrows/core/mutable_ref_child_write_disabled.rs",
             "ub/tree_borrows/core/mutable_ref_child_write_frozen.rs",
@@ -65,6 +53,10 @@ const FAILURES: &[(&str, &[&str])] = &[
             "ub/tree_borrows/protector/reservedim_spurious_write.rs",
             "ub/tree_borrows/protector/zero_size.rs",
         ],
+    ),
+    (
+        "unable to translate raw_eq::<[i32; 4usize]> to MiniRust",
+        &["pass/array.rs"],
     ),
     (
         "MiniRust output does not support `dyn Trait`",
@@ -96,15 +88,24 @@ const FAILURES: &[(&str, &[&str])] = &[
     (
         "can't determine which runtime checks are available",
         &[
+            "pass/catch_unwind.rs",
+            "pass/nullary_op.rs",
+            "pass/ops.rs",
+            "pass/ptr.rs",
+            "pass/slice.rs",
             "pass/tree_borrows/cell_lazy_write_to_surrounding.rs",
+            "pass/tree_borrows/cell_inside_slice_lazy_write_to_surrounding.rs",
+            "pass/tree_borrows/zero_sized_cell_lazy_write_to_surrounding.rs",
             "ub/assume.rs",
+            "ub/ptr_offset_from_unsigned.rs",
+            "ub/ptr_offset_not_multiple.rs",
             "ub/slice_dangling.rs",
         ],
     ),
     // Unexpected translation bugs
     (
         "missing marker-trait information for this type",
-        &["pass/closure.rs"],
+        &["pass/closure.rs", "pass/closure_iterator_combinator.rs"],
     ),
     (
         "Relocation: invalid global name",
@@ -122,7 +123,7 @@ const FAILURES: &[(&str, &[&str])] = &[
     ),
     (
         "unable to translate arith_offset::<u8> to MiniRust",
-        &["ub/ptr_add_overflow.rs"],
+        &["pass/zero_size_access.rs", "ub/ptr_add_overflow.rs"],
     ),
     (
         "Terminator: unwind block has the wrong block kind",
