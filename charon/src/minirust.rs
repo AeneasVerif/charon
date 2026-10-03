@@ -2,6 +2,7 @@
 //!
 //! Unsupported features (we translate this incorrectly):
 //! - Pointers to statics that aren't at offset 0;
+//! - `#[track_caller]`;
 //!
 //! Unsupported features (will raise an error):
 //! - `dyn Trait`;
@@ -112,6 +113,11 @@ struct TranslateCtx<'a, T: mini::Target> {
     mini_target: PhantomData<T>,
 }
 
+enum UnwindSource {
+    ExplicitPayload,
+    OpaquePayload,
+}
+
 impl<'a, T: mini::Target> TranslateCtx<'a, T> {
     fn new(krate: &'a TranslatedCrate) -> Result<Self> {
         let (target_name, target) = krate
@@ -195,11 +201,17 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
             } else {
                 match &fdecl.body {
                     Body::Unstructured(body) => self.function(span, fdecl, body),
+                    Body::Opaque if fdecl.item_meta.lang_item == Some(LangItem::PanicFmt) => {
+                        self.make_unwind_function(span, fdecl, UnwindSource::OpaquePayload)
+                    }
                     Body::Extern(name) if name == "minirust_print" => {
                         self.make_intrinsic_function(span, fdecl, mini::IntrinsicOp::PrintStdout)
                     }
                     Body::Extern(name) if name == "minirust_start_unwind" => {
-                        self.make_start_unwind_function(span, fdecl)
+                        self.make_unwind_function(span, fdecl, UnwindSource::ExplicitPayload)
+                    }
+                    Body::Extern(name) if name == "panic_impl" => {
+                        self.make_unwind_function(span, fdecl, UnwindSource::OpaquePayload)
                     }
                     Body::Intrinsic { name, .. } if name == "catch_unwind" => {
                         self.make_catch_unwind_function(span, fdecl)
@@ -560,18 +572,21 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         })
     }
 
-    /// Give the `minirust_start_unwind` foreign symbol a body that starts unwinding.
-    fn make_start_unwind_function(&self, span: Span, fdecl: &FunDecl) -> Result<mini::Function> {
+    /// Function that starts unwinding.
+    fn make_unwind_function(
+        &self,
+        span: Span,
+        fdecl: &FunDecl,
+        source: UnwindSource,
+    ) -> Result<mini::Function> {
         let signature = &fdecl.signature;
-        check!(
-            span,
-            signature.inputs.len() == 1 && matches!(signature.inputs[0].kind(), TyKind::RawPtr(..)),
-            "`minirust_start_unwind` must take a thin raw-pointer payload"
-        );
+        let [input] = signature.inputs.as_slice() else {
+            raise!(span, "unwind function must take one argument")
+        };
 
         let mut local_ids = Generator::new();
         let ret = self.local_name(local_ids.fresh_id());
-        let payload = self.local_name(local_ids.fresh_id());
+        let arg = self.local_name(local_ids.fresh_id());
         let mut block_ids = Generator::new();
         let start = self.block_name(block_ids.fresh_id());
         let unwind = self.block_name(block_ids.fresh_id());
@@ -581,8 +596,11 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 mini::BasicBlock {
                     statements: Default::default(),
                     terminator: mini::Terminator::StartUnwind {
-                        unwind_payload: mini::ValueExpr::Load {
-                            source: mini::GcCow::new(mini::PlaceExpr::Local(payload)),
+                        unwind_payload: match source {
+                            UnwindSource::ExplicitPayload => mini::ValueExpr::Load {
+                                source: mini::GcCow::new(mini::PlaceExpr::Local(arg)),
+                            },
+                            UnwindSource::OpaquePayload => self.opaque_panic_payload(),
                         },
                         unwind_block: unwind,
                     },
@@ -604,11 +622,11 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         Ok(mini::Function {
             locals: [
                 (ret, self.ty(span, &signature.output)?),
-                (payload, self.ty(span, &signature.inputs[0])?),
+                (arg, self.ty(span, input)?),
             ]
             .into_iter()
             .collect(),
-            args: [payload].into_iter().collect(),
+            args: [arg].into_iter().collect(),
             ret,
             calling_convention: self.calling_convention(span, &signature.abi)?,
             blocks,
@@ -943,10 +961,6 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     fallback,
                 }
             }
-            T::Panic { on_unwind, .. } if is_cleanup => {
-                mini::Terminator::Goto(self.block_name(*on_unwind))
-            }
-            T::Panic { on_unwind, .. } => self.start_unwind(*on_unwind),
             T::UndefinedBehavior => mini::Terminator::Unreachable,
             T::UnwindTerminate => mini::Terminator::Intrinsic {
                 intrinsic: mini::IntrinsicOp::Abort,
@@ -958,21 +972,29 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             T::UnwindResume => mini::Terminator::ResumeUnwind,
             T::Drop { .. } => raise!(span, "MiniRust requires drops to be desugared"),
             T::InlineAsm { .. } => raise!(span, "MiniRust does not support inline assembly"),
+            T::Panic { .. } => raise!(
+                span,
+                "MiniRust output does not support --reconstruct-panic-calls"
+            ),
         })
     }
 
     fn start_unwind(&self, on_unwind: BlockId) -> mini::Terminator {
         mini::Terminator::StartUnwind {
-            // FIXME(minirust): preserve Rust's actual panic payload. For now we use a dangling
-            // pointer.
-            unwind_payload: mini::ValueExpr::Constant(
-                mini::Constant::PointerWithoutProvenance(mini::Int::from(1)),
-                mini::Type::Ptr(mini::PtrType::Raw {
-                    meta_kind: mini::PointerMetaKind::None,
-                }),
-            ),
+            unwind_payload: self.opaque_panic_payload(),
             unwind_block: self.block_name(on_unwind),
         }
+    }
+
+    fn opaque_panic_payload(&self) -> mini::ValueExpr {
+        // FIXME(minirust): preserve Rust's actual panic payload. For now we use a dangling
+        // pointer, as MiniRust only models an opaque raw-pointer payload.
+        mini::ValueExpr::Constant(
+            mini::Constant::PointerWithoutProvenance(mini::Int::from(1)),
+            mini::Type::Ptr(mini::PtrType::Raw {
+                meta_kind: mini::PointerMetaKind::None,
+            }),
+        )
     }
 
     fn place(&self, span: Span, place: &Place) -> Result<mini::PlaceExpr> {
