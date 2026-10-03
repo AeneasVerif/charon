@@ -28,6 +28,7 @@ build-dev: build-dev-charon-rust build-dev-charon-ml
 build-minirust:
 	cargo install specr-transpile --version 0.1.41 --locked
 	specr-transpile crates/minirust-specr.toml
+	cargo fmt --manifest-path crates/minirust-rs/Cargo.toml
 
 .PHONY: build-charon-rust
 build-charon-rust:

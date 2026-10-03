@@ -2274,7 +2274,7 @@ and global_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* ty = ty_of_postcard ctx st in
      let* size = size_of_postcard ctx st in
      let* align = size_of_postcard ctx st in
-     let* ptr_metadata = operand_of_postcard ctx st in
+     let* ptr_metadata = constant_expr_of_postcard ctx st in
      let* src = global_source_of_postcard ctx st in
      let* global_kind = global_kind_of_postcard ctx st in
      let* value = constant_expr_of_postcard ctx st in
@@ -2882,6 +2882,14 @@ and repr_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        ({ repr_algo; align_modif; transparent; explicit_discr_type }
          : repr_options))
 
+and runtime_checks_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (runtime_checks, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* ub_checks = bool_of_postcard ctx st in
+     let* overflow_checks = bool_of_postcard ctx st in
+     let* contract_checks = bool_of_postcard ctx st in
+     Ok ({ ub_checks; overflow_checks; contract_checks } : runtime_checks))
+
 and rustc_rustc_version_of_postcard (ctx : of_postcard_ctx)
     (st : postcard_state) : (rustc_rustc_version, string) result =
   combine_error_msgs st __FUNCTION__
@@ -3143,6 +3151,7 @@ and translated_crate_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
        index_map_of_postcard string_of_postcard target_info_of_postcard
          int_of_postcard ctx st
      in
+     let* runtime_checks = runtime_checks_of_postcard ctx st in
      let* files =
        index_vec_of_postcard file_id_of_postcard file_of_postcard ctx st
      in
@@ -3206,6 +3215,7 @@ and translated_crate_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           crate_name;
           options;
           target_information;
+          runtime_checks;
           files;
           item_names;
           assoc_item_names;

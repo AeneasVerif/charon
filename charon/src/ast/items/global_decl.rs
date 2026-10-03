@@ -31,7 +31,7 @@ pub struct GlobalDecl {
     /// The alignment in bytes of the global's allocation.
     pub align: Size,
     /// The pointer metadata for references to this global (needed for unsized globals).
-    pub ptr_metadata: Operand,
+    pub ptr_metadata: ConstantExpr,
     /// The context of the global: distinguishes normal items from trait-associated items and
     /// vtable instances.
     pub src: GlobalSource,

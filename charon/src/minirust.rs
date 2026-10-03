@@ -2,19 +2,17 @@
 //!
 //! Unsupported features (we translate this incorrectly):
 //! - Pointers to statics that aren't at offset 0;
+//! - `#[track_caller]`;
 //!
 //! Unsupported features (will raise an error):
 //! - `dyn Trait`;
-//! - Unsized ADTs;
-//! - Packed and overaligned layouts;
-//! - ub_checks/contract_checks/overflow_checks booleans values;
+//! - `CoerceUnsized` pointers;
 //! - Unions, because of precise union padding;
 use itertools::Itertools;
-use minirust_rs::{
-    lang::Machine, libspecr::DynWrite, mem::TreeBorrowsMemory, prelude::TerminationInfo,
-};
+use minirust_rs::{mem::TreeBorrowsMemory, prelude::TerminationInfo};
+use miniutil::build as mb;
 use smallvec::{SmallVec, smallvec};
-use std::{io::Write, marker::PhantomData};
+use std::{cell::RefCell, io::Write, marker::PhantomData};
 
 use crate::{
     ast::{from_rustc::LangItem, *},
@@ -24,6 +22,7 @@ use crate::{
     pretty::FmtWithCtx,
     ullbc_ast::{BlockId, START_BLOCK_ID},
 };
+use intrinsics::FunctionBuilder;
 
 mod mini {
     pub use minirust_rs::lang::*;
@@ -50,6 +49,7 @@ macro_rules! check {
     };
 }
 
+mod intrinsics;
 mod types;
 
 fn name(index: u32) -> mini::Name {
@@ -107,6 +107,8 @@ struct TranslateCtx<'a, T: mini::Target> {
     fmt: FmtCtx<'a>,
     target_name: &'a TargetTriple,
     target: &'a TargetInfo,
+    global_ids: RefCell<Generator<GlobalDeclId>>,
+    string_literals: RefCell<SeqHashMap<String, mini::GlobalName>>,
     mini_target: PhantomData<T>,
 }
 
@@ -129,6 +131,8 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
             fmt: krate.into_fmt(),
             target_name,
             target,
+            global_ids: RefCell::new(Generator::new_with_init_value(krate.global_decls.next_id())),
+            string_literals: RefCell::new(Default::default()),
             mini_target: PhantomData,
         })
     }
@@ -157,56 +161,17 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
         let mut functions: mini::Map<mini::FnName, mini::Function> = Default::default();
         for (id, fdecl) in self.krate.fun_decls.iter_enumerated() {
             let span = fdecl.item_meta.span;
-            let path = fdecl.item_meta.name.as_slice_uninstantiated();
-            // Recognize the intrinsics used by MiniRust's `minimize` test suite.
-            let intrinsic = match path {
-                [PathElem::Ident(krate, _), PathElem::Ident(item, _)] if krate == "intrinsics" => {
-                    Some(match item.as_str() {
-                        "print" => mini::IntrinsicOp::PrintStdout,
-                        "eprint" => mini::IntrinsicOp::PrintStderr,
-                        "exit" => mini::IntrinsicOp::Exit,
-                        "allocate" => mini::IntrinsicOp::Allocate,
-                        "deallocate" => mini::IntrinsicOp::Deallocate,
-                        "spawn" => mini::IntrinsicOp::Spawn,
-                        "join" => mini::IntrinsicOp::Join,
-                        "create_lock" => mini::IntrinsicOp::Lock(mini::IntrinsicLockOp::Create),
-                        "acquire" => mini::IntrinsicOp::Lock(mini::IntrinsicLockOp::Acquire),
-                        "release" => mini::IntrinsicOp::Lock(mini::IntrinsicLockOp::Release),
-                        "atomic_store" => mini::IntrinsicOp::AtomicStore,
-                        "atomic_load" => mini::IntrinsicOp::AtomicLoad,
-                        "compare_exchange" => mini::IntrinsicOp::AtomicCompareExchange,
-                        "atomic_fetch_add" => {
-                            mini::IntrinsicOp::AtomicFetchAndOp(mini::IntBinOp::Add)
-                        }
-                        "atomic_fetch_sub" => {
-                            mini::IntrinsicOp::AtomicFetchAndOp(mini::IntBinOp::Sub)
-                        }
-                        _ => raise!(span, "unknown MiniRust test intrinsic `{item}`"),
-                    })
-                }
-                _ => None,
-            };
-            let mini_function = if let Some(intrinsic) = intrinsic {
-                self.make_intrinsic_function(span, fdecl, intrinsic)
+            let mini_function = if let Some(function) = self.lower_intrinsic(fdecl)? {
+                function
+            } else if let Body::Unstructured(body) = &fdecl.body {
+                self.function(span, fdecl, body)?
             } else {
-                match &fdecl.body {
-                    Body::Unstructured(body) => self.function(span, fdecl, body),
-                    Body::Extern(name) if name == "minirust_print" => {
-                        self.make_intrinsic_function(span, fdecl, mini::IntrinsicOp::PrintStdout)
-                    }
-                    Body::Extern(name) if name == "minirust_start_unwind" => {
-                        self.make_start_unwind_function(span, fdecl)
-                    }
-                    Body::Intrinsic { name, .. } if name == "catch_unwind" => {
-                        self.make_catch_unwind_function(span, fdecl)
-                    }
-                    _ => raise!(
-                        span,
-                        "unable to translate {} to MiniRust",
-                        fdecl.def_id.with_ctx(&self.fmt)
-                    ),
-                }
-            }?;
+                raise!(
+                    span,
+                    "unable to translate {} to MiniRust",
+                    fdecl.def_id.with_ctx(&self.fmt)
+                )
+            };
             functions.insert(self.fn_name(id), mini_function);
         }
 
@@ -222,6 +187,16 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
                 let mini_global = self.global(gdecl.item_meta.span, gdecl)?;
                 globals.insert(self.global_name(id), mini_global);
             }
+        }
+        for (value, name) in self.string_literals.borrow().iter() {
+            globals.insert(
+                *name,
+                mini::Global {
+                    bytes: value.as_bytes().iter().copied().map(Some).collect(),
+                    relocations: Default::default(),
+                    align: mini::Align::ONE,
+                },
+            );
         }
 
         let main = self
@@ -256,23 +231,23 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
 impl<T: mini::Target> TranslateCtx<'_, T> {
     /// Make a start function with the right calling convention that just calls into `main()`.
     fn make_start_function(&self, span: Span, main: FunDeclId) -> Result<mini::Function> {
-        let ret = self.local_name(LocalId::ZERO);
-        let mut block_ids = Generator::new();
-        let start = self.block_name(block_ids.fresh_id());
-        let exit = self.block_name(block_ids.fresh_id());
-        let abort = self.block_name(block_ids.fresh_id());
-        let mut blocks = mini::Map::new();
-        let signature = &self.krate.fun_decls[main].signature;
+        let mut signature = self.krate.fun_decls[main].signature.clone();
+        signature.abi = Abi::C;
         check!(
             span,
             signature.inputs.is_empty() && signature.output.is_unit(),
             "MiniRust output only supports an entry point with signature `fn main()`"
         );
-        blocks.insert(
+        let mut builder = FunctionBuilder::new(self, span, &signature)?;
+        let ret = builder.return_local();
+        let start = builder.declare_block();
+        let exit = builder.declare_block();
+        let abort = builder.declare_block();
+        builder.set_block(
             start,
-            mini::BasicBlock {
-                statements: Default::default(),
-                terminator: mini::Terminator::Call {
+            mb::block(
+                &[],
+                mini::Terminator::Call {
                     callee: self.fn_pointer(main),
                     calling_convention: mini::CallingConvention::Rust,
                     arguments: Default::default(),
@@ -280,318 +255,36 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     next_block: Some(exit),
                     unwind_block: Some(abort),
                 },
-                kind: mini::BbKind::Regular,
-            },
+                mini::BbKind::Regular,
+            ),
         );
-        blocks.insert(
+        builder.set_block(
             exit,
-            mini::BasicBlock {
-                statements: Default::default(),
-                terminator: mini::Terminator::Intrinsic {
+            mb::block(
+                &[],
+                mini::Terminator::Intrinsic {
                     intrinsic: mini::IntrinsicOp::Exit,
                     arguments: Default::default(),
                     ret: mini::PlaceExpr::Local(ret),
                     next_block: None,
                 },
-                kind: mini::BbKind::Regular,
-            },
+                mini::BbKind::Regular,
+            ),
         );
-        blocks.insert(
+        builder.set_block(
             abort,
-            mini::BasicBlock {
-                statements: Default::default(),
-                terminator: mini::Terminator::Intrinsic {
+            mb::block(
+                &[],
+                mini::Terminator::Intrinsic {
                     intrinsic: mini::IntrinsicOp::Abort,
                     arguments: Default::default(),
                     ret: mini::PlaceExpr::Local(ret),
                     next_block: None,
                 },
-                kind: mini::BbKind::Catch,
-            },
-        );
-
-        Ok(mini::Function {
-            locals: [(ret, mini::unit_ty())].into_iter().collect(),
-            args: Default::default(),
-            ret,
-            calling_convention: mini::CallingConvention::C,
-            blocks,
-            start,
-            implicit_writes: true,
-        })
-    }
-
-    /// Make a function that invokes the matching MiniRust intrinsic.
-    fn make_intrinsic_function(
-        &self,
-        span: Span,
-        fdecl: &FunDecl,
-        intrinsic: mini::IntrinsicOp,
-    ) -> Result<mini::Function> {
-        let signature = &fdecl.signature;
-
-        let mut local_ids = Generator::new();
-        let ret = self.local_name(local_ids.fresh_id());
-        let arguments: Vec<_> = signature
-            .inputs
-            .iter()
-            .map(|_| self.local_name(local_ids.fresh_id()))
-            .collect();
-        let mut block_ids = Generator::new();
-        let start = self.block_name(block_ids.fresh_id());
-        let return_block = self.block_name(block_ids.fresh_id());
-        let mut blocks = mini::Map::new();
-        blocks.insert(
-            start,
-            mini::BasicBlock {
-                statements: Default::default(),
-                terminator: mini::Terminator::Intrinsic {
-                    intrinsic,
-                    arguments: arguments
-                        .iter()
-                        .map(|argument| mini::ValueExpr::Load {
-                            source: mini::GcCow::new(mini::PlaceExpr::Local(*argument)),
-                        })
-                        .collect(),
-                    ret: mini::PlaceExpr::Local(ret),
-                    next_block: Some(return_block),
-                },
-                kind: mini::BbKind::Regular,
-            },
-        );
-        blocks.insert(
-            return_block,
-            mini::BasicBlock {
-                statements: Default::default(),
-                terminator: mini::Terminator::Return,
-                kind: mini::BbKind::Regular,
-            },
-        );
-
-        Ok(mini::Function {
-            locals: std::iter::once((ret, self.ty(span, &signature.output)?))
-                .chain(
-                    arguments
-                        .iter()
-                        .zip(&signature.inputs)
-                        .map(|(local, ty)| Ok((*local, self.ty(span, ty)?)))
-                        .collect::<Result<Vec<_>>>()?,
-                )
-                .collect(),
-            args: arguments.into_iter().collect(),
-            ret,
-            calling_convention: self.calling_convention(span, &signature.abi)?,
-            blocks,
-            start,
-            implicit_writes: true,
-        })
-    }
-
-    /// Implement `core::intrinsics::catch_unwind` in MiniRust.
-    fn make_catch_unwind_function(&self, span: Span, fdecl: &FunDecl) -> Result<mini::Function> {
-        let signature = &fdecl.signature;
-        check!(
-            span,
-            signature.inputs.len() == 3
-                && matches!(signature.inputs[0].kind(), TyKind::FnPtr(_))
-                && matches!(signature.inputs[1].kind(), TyKind::RawPtr(..))
-                && matches!(signature.inputs[2].kind(), TyKind::FnPtr(_))
-                && signature.output.is_bool(),
-            "unexpected signature for `core::intrinsics::catch_unwind`"
-        );
-
-        let mut local_ids = Generator::new();
-        let ret = self.local_name(local_ids.fresh_id());
-        let try_fn = self.local_name(local_ids.fresh_id());
-        let data = self.local_name(local_ids.fresh_id());
-        let catch_fn = self.local_name(local_ids.fresh_id());
-        let call_ret = self.local_name(local_ids.fresh_id());
-        let payload = self.local_name(local_ids.fresh_id());
-
-        let mut block_ids = Generator::new();
-        let start = self.block_name(block_ids.fresh_id());
-        let returned = self.block_name(block_ids.fresh_id());
-        let get_payload = self.block_name(block_ids.fresh_id());
-        let call_catch = self.block_name(block_ids.fresh_id());
-        let stop_unwind = self.block_name(block_ids.fresh_id());
-        let caught = self.block_name(block_ids.fresh_id());
-        let mut blocks = mini::Map::new();
-
-        let load = |local| mini::ValueExpr::Load {
-            source: mini::GcCow::new(mini::PlaceExpr::Local(local)),
-        };
-        blocks.insert(
-            start,
-            mini::BasicBlock {
-                statements: [
-                    mini::Statement::StorageLive(call_ret),
-                    mini::Statement::StorageLive(payload),
-                ]
-                .into_iter()
-                .collect(),
-                terminator: mini::Terminator::Call {
-                    callee: load(try_fn),
-                    calling_convention: mini::CallingConvention::Rust,
-                    arguments: [mini::ArgumentExpr::ByValue(load(data))]
-                        .into_iter()
-                        .collect(),
-                    ret: mini::PlaceExpr::Local(call_ret),
-                    next_block: Some(returned),
-                    unwind_block: Some(get_payload),
-                },
-                kind: mini::BbKind::Regular,
-            },
-        );
-        blocks.insert(
-            returned,
-            mini::BasicBlock {
-                statements: [mini::Statement::Assign {
-                    destination: mini::PlaceExpr::Local(ret),
-                    source: mini::ValueExpr::Constant(
-                        mini::Constant::Bool(false),
-                        mini::Type::Bool,
-                    ),
-                }]
-                .into_iter()
-                .collect(),
-                terminator: mini::Terminator::Return,
-                kind: mini::BbKind::Regular,
-            },
-        );
-        blocks.insert(
-            get_payload,
-            mini::BasicBlock {
-                statements: Default::default(),
-                terminator: mini::Terminator::Intrinsic {
-                    intrinsic: mini::IntrinsicOp::GetUnwindPayload,
-                    arguments: Default::default(),
-                    ret: mini::PlaceExpr::Local(payload),
-                    next_block: Some(call_catch),
-                },
-                kind: mini::BbKind::Catch,
-            },
-        );
-        blocks.insert(
-            call_catch,
-            mini::BasicBlock {
-                statements: Default::default(),
-                terminator: mini::Terminator::Call {
-                    callee: load(catch_fn),
-                    calling_convention: mini::CallingConvention::Rust,
-                    arguments: [
-                        mini::ArgumentExpr::ByValue(load(data)),
-                        mini::ArgumentExpr::ByValue(load(payload)),
-                    ]
-                    .into_iter()
-                    .collect(),
-                    ret: mini::PlaceExpr::Local(call_ret),
-                    next_block: Some(stop_unwind),
-                    // The intrinsic contract requires this function not to unwind.
-                    unwind_block: None,
-                },
-                kind: mini::BbKind::Catch,
-            },
-        );
-        blocks.insert(
-            stop_unwind,
-            mini::BasicBlock {
-                statements: Default::default(),
-                terminator: mini::Terminator::StopUnwind(caught),
-                kind: mini::BbKind::Catch,
-            },
-        );
-        blocks.insert(
-            caught,
-            mini::BasicBlock {
-                statements: [mini::Statement::Assign {
-                    destination: mini::PlaceExpr::Local(ret),
-                    source: mini::ValueExpr::Constant(mini::Constant::Bool(true), mini::Type::Bool),
-                }]
-                .into_iter()
-                .collect(),
-                terminator: mini::Terminator::Return,
-                kind: mini::BbKind::Regular,
-            },
-        );
-
-        let payload_ty = mini::Type::Ptr(mini::PtrType::Raw {
-            meta_kind: mini::PointerMetaKind::None,
-        });
-        Ok(mini::Function {
-            locals: [
-                (ret, mini::Type::Bool),
-                (try_fn, self.ty(span, &signature.inputs[0])?),
-                (data, self.ty(span, &signature.inputs[1])?),
-                (catch_fn, self.ty(span, &signature.inputs[2])?),
-                (call_ret, mini::unit_ty()),
-                (payload, payload_ty),
-            ]
-            .into_iter()
-            .collect(),
-            args: [try_fn, data, catch_fn].into_iter().collect(),
-            ret,
-            calling_convention: self.calling_convention(span, &signature.abi)?,
-            blocks,
-            start,
-            implicit_writes: true,
-        })
-    }
-
-    /// Give the `minirust_start_unwind` foreign symbol a body that starts unwinding.
-    fn make_start_unwind_function(&self, span: Span, fdecl: &FunDecl) -> Result<mini::Function> {
-        let signature = &fdecl.signature;
-        check!(
-            span,
-            signature.inputs.len() == 1 && matches!(signature.inputs[0].kind(), TyKind::RawPtr(..)),
-            "`minirust_start_unwind` must take a thin raw-pointer payload"
-        );
-
-        let mut local_ids = Generator::new();
-        let ret = self.local_name(local_ids.fresh_id());
-        let payload = self.local_name(local_ids.fresh_id());
-        let mut block_ids = Generator::new();
-        let start = self.block_name(block_ids.fresh_id());
-        let unwind = self.block_name(block_ids.fresh_id());
-        let blocks = [
-            (
-                start,
-                mini::BasicBlock {
-                    statements: Default::default(),
-                    terminator: mini::Terminator::StartUnwind {
-                        unwind_payload: mini::ValueExpr::Load {
-                            source: mini::GcCow::new(mini::PlaceExpr::Local(payload)),
-                        },
-                        unwind_block: unwind,
-                    },
-                    kind: mini::BbKind::Regular,
-                },
+                mini::BbKind::Catch,
             ),
-            (
-                unwind,
-                mini::BasicBlock {
-                    statements: Default::default(),
-                    terminator: mini::Terminator::ResumeUnwind,
-                    kind: mini::BbKind::Cleanup,
-                },
-            ),
-        ]
-        .into_iter()
-        .collect();
-
-        Ok(mini::Function {
-            locals: [
-                (ret, self.ty(span, &signature.output)?),
-                (payload, self.ty(span, &signature.inputs[0])?),
-            ]
-            .into_iter()
-            .collect(),
-            args: [payload].into_iter().collect(),
-            ret,
-            calling_convention: self.calling_convention(span, &signature.abi)?,
-            blocks,
-            start,
-            implicit_writes: true,
-        })
+        );
+        Ok(builder.finish())
     }
 
     fn function(
@@ -666,9 +359,9 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                         let next_block = self.block_name(block_id_gen.fresh_id());
                         blocks.insert(
                             current_block,
-                            mini::BasicBlock {
-                                statements: std::mem::take(&mut statements).into_iter().collect(),
-                                terminator: mini::Terminator::Intrinsic {
+                            mb::block(
+                                &std::mem::take(&mut statements),
+                                mini::Terminator::Intrinsic {
                                     intrinsic,
                                     arguments: [self.operand(statement.span, operand)?]
                                         .into_iter()
@@ -677,7 +370,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                                     next_block: Some(next_block),
                                 },
                                 kind,
-                            },
+                            ),
                         );
                         current_block = next_block;
                     }
@@ -691,14 +384,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 &mut blocks,
                 &mut block_id_gen,
             )?;
-            blocks.insert(
-                current_block,
-                mini::BasicBlock {
-                    statements: statements.into_iter().collect(),
-                    terminator,
-                    kind,
-                },
-            );
+            blocks.insert(current_block, mb::block(&statements, terminator, kind));
         }
 
         Ok(mini::Function {
@@ -785,11 +471,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     let name = self.block_name(block_id_gen.fresh_id());
                     extra_blocks.insert(
                         name,
-                        mini::BasicBlock {
-                            statements: Default::default(),
-                            terminator: mini::Terminator::Unreachable,
-                            kind: mini::BbKind::Regular,
-                        },
+                        mb::block(&[], mini::Terminator::Unreachable, mini::BbKind::Regular),
                     );
                     name
                 };
@@ -835,7 +517,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 target,
                 on_unwind,
             } => {
-                let condition = self.bool_to_int(self.operand(span, &assert.cond)?);
+                let condition = mb::bool_to_int::<u8>(self.operand(span, &assert.cond)?);
                 let success = self.block_name(*target);
                 let failure = if is_cleanup {
                     // A second panic while unwinding follows the pre-existing terminate path.
@@ -844,11 +526,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     let name = self.block_name(block_id_gen.fresh_id());
                     extra_blocks.insert(
                         name,
-                        mini::BasicBlock {
-                            statements: Default::default(),
-                            terminator: self.start_unwind(*on_unwind),
-                            kind: mini::BbKind::Regular,
-                        },
+                        mb::block(&[], self.start_unwind(*on_unwind), mini::BbKind::Regular),
                     );
                     name
                 };
@@ -863,10 +541,6 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     fallback,
                 }
             }
-            T::Panic { on_unwind, .. } if is_cleanup => {
-                mini::Terminator::Goto(self.block_name(*on_unwind))
-            }
-            T::Panic { on_unwind, .. } => self.start_unwind(*on_unwind),
             T::UndefinedBehavior => mini::Terminator::Unreachable,
             T::UnwindTerminate => mini::Terminator::Intrinsic {
                 intrinsic: mini::IntrinsicOp::Abort,
@@ -878,28 +552,36 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             T::UnwindResume => mini::Terminator::ResumeUnwind,
             T::Drop { .. } => raise!(span, "MiniRust requires drops to be desugared"),
             T::InlineAsm { .. } => raise!(span, "MiniRust does not support inline assembly"),
+            T::Panic { .. } => raise!(
+                span,
+                "MiniRust output does not support --reconstruct-panic-calls"
+            ),
         })
     }
 
     fn start_unwind(&self, on_unwind: BlockId) -> mini::Terminator {
         mini::Terminator::StartUnwind {
-            // FIXME(minirust): preserve Rust's actual panic payload. For now we use a dangling
-            // pointer.
-            unwind_payload: mini::ValueExpr::Constant(
-                mini::Constant::PointerWithoutProvenance(mini::Int::from(1)),
-                mini::Type::Ptr(mini::PtrType::Raw {
-                    meta_kind: mini::PointerMetaKind::None,
-                }),
-            ),
+            unwind_payload: self.opaque_panic_payload(),
             unwind_block: self.block_name(on_unwind),
         }
+    }
+
+    fn opaque_panic_payload(&self) -> mini::ValueExpr {
+        // FIXME(minirust): preserve Rust's actual panic payload. For now we use a dangling
+        // pointer, as MiniRust only models an opaque raw-pointer payload.
+        mini::ValueExpr::Constant(
+            mini::Constant::PointerWithoutProvenance(mini::Int::from(1)),
+            mini::Type::Ptr(mini::PtrType::Raw {
+                meta_kind: mini::PointerMetaKind::None,
+            }),
+        )
     }
 
     fn place(&self, span: Span, place: &Place) -> Result<mini::PlaceExpr> {
         Ok(match &place.kind {
             PlaceKind::Local(local) => mini::PlaceExpr::Local(self.local_name(*local)),
-            PlaceKind::Global(gref) => mini::PlaceExpr::Deref {
-                operand: mini::GcCow::new(mini::ValueExpr::Constant(
+            PlaceKind::Global(gref) => {
+                let pointer = mini::ValueExpr::Constant(
                     mini::Constant::GlobalPointer(mini::Relocation {
                         name: self.global_name(gref.id),
                         offset: mini_size(0),
@@ -907,43 +589,41 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     mini::Type::Ptr(mini::PtrType::Raw {
                         meta_kind: mini::PointerMetaKind::None,
                     }),
-                )),
-                ty: self.ty(span, &place.ty)?,
-            },
+                );
+                let meta_kind = self.metadata_kind(span, &place.ty)?;
+                let pointer = if meta_kind == mini::PointerMetaKind::None {
+                    pointer
+                } else {
+                    let metadata = &self.krate.global_decls[gref.id].ptr_metadata;
+                    mb::construct_wide_pointer(
+                        pointer,
+                        self.constant(span, metadata)?,
+                        mb::raw_ptr_ty(meta_kind),
+                    )
+                };
+                mb::deref(pointer, self.ty(span, &place.ty)?)
+            }
             PlaceKind::Projection(subplace, projection) => {
                 let subplace_expr = self.place(span, subplace)?;
                 match projection {
-                    ProjectionElem::Deref => mini::PlaceExpr::Deref {
-                        operand: mini::GcCow::new(mini::ValueExpr::Load {
-                            source: mini::GcCow::new(subplace_expr),
-                        }),
-                        ty: self.ty(span, &place.ty)?,
-                    },
+                    ProjectionElem::Deref => {
+                        mb::deref(mb::load(subplace_expr), self.ty(span, &place.ty)?)
+                    }
                     ProjectionElem::Field(variant, field) => {
                         let subplace_expr = if let Some(variant) = variant {
-                            mini::PlaceExpr::Downcast {
-                                root: mini::GcCow::new(subplace_expr),
-                                discriminant: self.variant_discriminant(
-                                    span,
-                                    subplace.ty(),
-                                    *variant,
-                                )?,
-                            }
+                            mb::downcast(
+                                subplace_expr,
+                                self.variant_discriminant(span, subplace.ty(), *variant)?,
+                            )
                         } else {
                             subplace_expr
                         };
-                        mini::PlaceExpr::Field {
-                            root: mini::GcCow::new(subplace_expr),
-                            field: self.field_name(*field),
-                        }
+                        mb::field(subplace_expr, self.field_name(*field))
                     }
                     ProjectionElem::Index {
                         offset,
                         from_end: false,
-                    } => mini::PlaceExpr::Index {
-                        root: mini::GcCow::new(subplace_expr),
-                        index: mini::GcCow::new(self.operand(span, offset)?),
-                    },
+                    } => mb::index(subplace_expr, self.operand(span, offset)?),
                     ProjectionElem::Index { from_end: true, .. }
                     | ProjectionElem::Subslice { .. }
                     | ProjectionElem::PtrMetadata => {
@@ -960,9 +640,13 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
 
     fn operand(&self, span: Span, operand: &Operand) -> Result<mini::ValueExpr> {
         Ok(match operand {
-            Operand::Copy(place) | Operand::Move(place) => mini::ValueExpr::Load {
-                source: mini::GcCow::new(self.place(span, place)?),
-            },
+            Operand::Copy(place) | Operand::Move(place) => {
+                if let PlaceKind::Projection(pointer, ProjectionElem::PtrMetadata) = &place.kind {
+                    mb::get_metadata(mb::load(self.place(span, pointer)?))
+                } else {
+                    mb::load(self.place(span, place)?)
+                }
+            }
             Operand::Const(value) => self.constant(span, value)?,
         })
     }
@@ -970,15 +654,12 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
     fn switch_value(&self, span: Span, scrutinee: &SwitchScrutinee) -> Result<mini::ValueExpr> {
         let (value, ty) = match scrutinee {
             SwitchScrutinee::Value(operand) => (self.operand(span, operand)?, operand.ty()),
-            SwitchScrutinee::Discriminant(place) => (
-                mini::ValueExpr::GetDiscriminant {
-                    place: mini::GcCow::new(self.place(span, place)?),
-                },
-                place.ty(),
-            ),
+            SwitchScrutinee::Discriminant(place) => {
+                (mb::get_discriminant(self.place(span, place)?), place.ty())
+            }
         };
         if matches!(ty.kind(), TyKind::Scalar(ScalarTy::Bool)) {
-            Ok(self.bool_to_int(value))
+            Ok(mb::bool_to_int::<u8>(value))
         } else {
             Ok(value)
         }
@@ -1007,13 +688,16 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             },
             Rvalue::BinaryOp(op, left, right) => self.binop(span, *op, left, right)?,
             Rvalue::UnaryOp(op, operand) => self.unop(span, op, operand)?,
-            Rvalue::NullaryOp(_) => {
-                // FIXME(minirust): Charon does not translate the session values.
-                raise!(span, "can't determine which runtime checks are available")
+            Rvalue::NullaryOp(op) => {
+                let checks = self.krate.runtime_checks;
+                let value = match op {
+                    NullOp::UbChecks => checks.ub_checks,
+                    NullOp::OverflowChecks => checks.overflow_checks,
+                    NullOp::ContractChecks => checks.contract_checks,
+                };
+                mb::const_bool(value)
             }
-            Rvalue::Discriminant(place) => mini::ValueExpr::GetDiscriminant {
-                place: mini::GcCow::new(self.place(span, place)?),
-            },
+            Rvalue::Discriminant(place) => mb::get_discriminant(self.place(span, place)?),
             Rvalue::Aggregate(kind, operands) => self.aggregate(span, kind, operands)?,
             Rvalue::Len(place, _, known_len) => {
                 if let Some(len) = known_len {
@@ -1025,10 +709,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                             meta_kind: mini::PointerMetaKind::ElementCount,
                         },
                     };
-                    mini::ValueExpr::UnOp {
-                        operator: mini::UnOp::GetMetadata,
-                        operand: mini::GcCow::new(ptr),
-                    }
+                    mb::get_metadata(ptr)
                 }
             }
             Rvalue::Repeat(operand, ty, count, _) => {
@@ -1036,8 +717,11 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     .as_usize_literal()
                     .ok_or("non-concrete array length")
                     .context(span)?;
+                let count = usize::try_from(count)
+                    .map_err(|_| "array length does not fit usize")
+                    .context(span)?;
                 let value = self.operand(span, operand)?;
-                mini::ValueExpr::Tuple((0..count).map(|_| value).collect(), self.ty(span, ty)?)
+                mb::array(&vec![value; count], self.ty(span, ty)?)
             }
         })
     }
@@ -1106,7 +790,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             BinOp::Offset => {
                 let pointee = left
                     .ty()
-                    .builtin_deref()
+                    .builtin_deref(self.krate)
                     .ok_or("pointer offset on a non-pointer")
                     .context(span)?;
                 let (size, _) = self.size_and_align(span, pointee)?;
@@ -1126,10 +810,10 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         if left.ty().is_bool() && matches!(operator, mini::BinOp::Int(_)) {
             let value = mini::ValueExpr::BinOp {
                 operator,
-                left: mini::GcCow::new(self.bool_to_int(left_value)),
-                right: mini::GcCow::new(self.bool_to_int(right_value)),
+                left: mini::GcCow::new(mb::bool_to_int::<u8>(left_value)),
+                right: mini::GcCow::new(mb::bool_to_int::<u8>(right_value)),
             };
-            Ok(self.int_to_bool(value))
+            Ok(mb::transmute(value, mini::Type::Bool))
         } else {
             Ok(mini::ValueExpr::BinOp {
                 operator,
@@ -1143,22 +827,13 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         let mut operand_value = self.operand(span, operand)?;
         let operator = match op {
             UnOp::Not if operand.ty().is_bool() => {
-                let one = mini::ValueExpr::Constant(
-                    mini::Constant::Int(mini::Int::from(1)),
-                    self.ty(span, &Ty::mk_u8())?,
-                );
-                let value = mini::ValueExpr::BinOp {
-                    operator: mini::BinOp::Int(mini::IntBinOp::Sub),
-                    left: mini::GcCow::new(one),
-                    right: mini::GcCow::new(self.bool_to_int(operand_value)),
-                };
-                return Ok(self.int_to_bool(value));
+                return Ok(mb::not(operand_value));
             }
             UnOp::Not => mini::UnOp::Int(mini::IntUnOp::BitNot),
             UnOp::Neg(_) => mini::UnOp::Int(mini::IntUnOp::Neg),
             UnOp::Cast(CastKind::Scalar(source_ty, target_ty)) => {
                 if matches!(source_ty, ScalarTy::Bool) {
-                    operand_value = self.bool_to_int(operand_value);
+                    operand_value = mb::bool_to_int::<u8>(operand_value);
                 }
                 mini::UnOp::Cast(mini::CastOp::IntToInt(match *target_ty {
                     ScalarTy::Integer(ty) => self.int_type(ty),
@@ -1176,14 +851,14 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 let old = self.metadata_kind(
                     span,
                     source_ty
-                        .builtin_deref()
+                        .builtin_deref(self.krate)
                         .ok_or("raw-pointer cast from a non-pointer")
                         .context(span)?,
                 )?;
                 let new = self.metadata_kind(
                     span,
                     target_ty
-                        .builtin_deref()
+                        .builtin_deref(self.krate)
                         .ok_or("raw-pointer cast to a non-pointer")
                         .context(span)?,
                 )?;
@@ -1196,6 +871,10 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     raise!(span, "raw-pointer cast adds metadata")
                 }
             }
+            // Handled at the statement level.
+            UnOp::Cast(
+                CastKind::PtrExposeProvenance(..) | CastKind::PtrWithExposedProvenance(..),
+            ) => unreachable!(),
             UnOp::Cast(CastKind::FnPtr(source_ty, _)) => {
                 match source_ty.kind() {
                     // Turn the function-item ZST into a function pointer.
@@ -1214,10 +893,17 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     ),
                 }
             }
-            // Handled at the statement level.
-            UnOp::Cast(
-                CastKind::PtrExposeProvenance(..) | CastKind::PtrWithExposedProvenance(..),
-            ) => unreachable!(),
+            UnOp::Cast(CastKind::Unsize(_, target_ty, UnsizingMetadata::Length(len))) => {
+                let target_ty = self.ty(span, target_ty)?;
+                let mini::Type::Ptr(_) = target_ty else {
+                    raise!(span, "unsizing target is not a pointer")
+                };
+                return Ok(mb::construct_wide_pointer(
+                    operand_value,
+                    self.constant(span, len)?,
+                    target_ty,
+                ));
+            }
             // FIXME(minirust): add vtable support
             UnOp::Cast(CastKind::Unsize(..) | CastKind::Concretize(..)) => {
                 raise!(span, "MiniRust output does not support `dyn Trait`")
@@ -1259,14 +945,11 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                             .context(span)?,
                         _ => raise!(span, "enum aggregate has non-enum type"),
                     };
-                    mini::ValueExpr::Variant {
+                    mb::variant(
                         discriminant,
-                        data: mini::GcCow::new(mini::ValueExpr::Tuple(
-                            values.into_iter().collect(),
-                            variant_ty,
-                        )),
-                        enum_ty: ty,
-                    }
+                        mini::ValueExpr::Tuple(values.into_iter().collect(), variant_ty),
+                        ty,
+                    )
                 } else {
                     mini::ValueExpr::Tuple(values.into_iter().collect(), ty)
                 }
@@ -1293,38 +976,13 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 let ptr_ty = mini::PtrType::Raw {
                     meta_kind: self.metadata_kind(span, pointee)?,
                 };
-                mini::ValueExpr::BinOp {
-                    operator: mini::BinOp::ConstructWidePointer(ptr_ty),
-                    left: mini::GcCow::new(values[0]),
-                    right: mini::GcCow::new(values[1]),
-                }
+                mb::construct_wide_pointer(values[0], values[1], mini::Type::Ptr(ptr_ty))
             }
         })
     }
 
-    fn transmute(&self, value: mini::ValueExpr, ty: mini::Type) -> mini::ValueExpr {
-        mini::ValueExpr::UnOp {
-            operator: mini::UnOp::Cast(mini::CastOp::Transmute(ty)),
-            operand: mini::GcCow::new(value),
-        }
-    }
-
-    fn bool_to_int(&self, value: mini::ValueExpr) -> mini::ValueExpr {
-        self.transmute(
-            value,
-            mini::Type::Int(self.int_type(IntegerTy::Unsigned(UIntTy::U8))),
-        )
-    }
-
-    fn int_to_bool(&self, value: mini::ValueExpr) -> mini::ValueExpr {
-        self.transmute(value, mini::Type::Bool)
-    }
-
     fn fn_pointer(&self, id: FunDeclId) -> mini::ValueExpr {
-        mini::ValueExpr::Constant(
-            mini::Constant::FnPointer(self.fn_name(id)),
-            mini::Type::Ptr(mini::PtrType::FnPtr),
-        )
+        mb::fn_ptr(self.fn_name(id))
     }
 
     fn calling_convention(&self, span: Span, abi: &Abi) -> Result<mini::CallingConvention> {
@@ -1379,11 +1037,13 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 gdecl.value.with_ctx(&self.fmt)
             )
         };
-        check!(
-            span,
-            u64::try_from(memory.len()).context(span)? == self.size(span, &gdecl.size)?,
-            "global value and layout have different sizes"
-        );
+        if gdecl.ty.get_ptr_metadata(self.krate).is_none() {
+            check!(
+                span,
+                u64::try_from(memory.len()).context(span)? == self.size(span, &gdecl.size)?,
+                "global value and layout have different sizes"
+            );
+        }
         let mut bytes = mini::List::new();
         let mut relocations = mini::List::new();
         for (offset, byte) in memory.iter().enumerate() {
@@ -1427,9 +1087,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
     pub(super) fn constant(&self, span: Span, constant: &ConstantExpr) -> Result<mini::ValueExpr> {
         let ty = self.ty(span, constant.ty())?;
         Ok(match constant.kind() {
-            ConstantExprKind::Bool(value) => {
-                mini::ValueExpr::Constant(mini::Constant::Bool(*value), ty)
-            }
+            ConstantExprKind::Bool(value) => mb::const_bool(*value),
             ConstantExprKind::Integer(value) => {
                 mini::ValueExpr::Constant(mini::Constant::Int(mini_int(*value)), ty)
             }
@@ -1456,11 +1114,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                             .context(span)?,
                         _ => raise!(span, "enum constant translated to non-enum type"),
                     };
-                    mini::ValueExpr::Variant {
-                        discriminant,
-                        data: mini::GcCow::new(mini::ValueExpr::Tuple(values, variant_ty)),
-                        enum_ty: ty,
-                    }
+                    mb::variant(discriminant, mini::ValueExpr::Tuple(values, variant_ty), ty)
                 } else {
                     mini::ValueExpr::Tuple(values, ty)
                 }
@@ -1472,6 +1126,32 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     .try_collect()?,
                 ty,
             ),
+            ConstantExprKind::Str(value) => {
+                let mut literals = self.string_literals.borrow_mut();
+                let name = if let Some(name) = literals.get(value) {
+                    *name
+                } else {
+                    let name = self.global_name(self.global_ids.borrow_mut().fresh_id());
+                    literals.insert(value.clone(), name);
+                    name
+                };
+                mb::construct_wide_pointer(
+                    mini::ValueExpr::Constant(
+                        mini::Constant::GlobalPointer(mini::Relocation {
+                            name,
+                            offset: mini::Size::ZERO,
+                        }),
+                        mini::Type::Ptr(mini::PtrType::Raw {
+                            meta_kind: mini::PointerMetaKind::None,
+                        }),
+                    ),
+                    mini::ValueExpr::Constant(
+                        mini::Constant::Int(mini::Int::from(value.len())),
+                        mb::int_ty(mini::Signedness::Unsigned, T::PTR_SIZE),
+                    ),
+                    ty,
+                )
+            }
             ConstantExprKind::FnDef(_) => mini::ValueExpr::Tuple(Default::default(), ty),
             ConstantExprKind::FnPtr(fn_ptr) => match *fn_ptr.kind {
                 FnPtrKind::Fun(id) => self.fn_pointer(id),
@@ -1539,33 +1219,16 @@ where
 {
     let translator = TranslateCtx::<T>::new(krate).map_err(RunError::Translation)?;
     let program = translator.translate().map_err(RunError::Translation)?;
-    let mut machine = Machine::<TreeBorrowsMemory<T>>::new(
-        program,
-        mini::TreeBorrowsParams::default(),
-        DynWrite::new(std::io::stdout()),
-        DynWrite::new(std::io::stderr()),
-    )
-    .get_internal()
-    .map_err(|error| {
-        RunError::Translation(Error::new(
+    match miniutil::run::run_program::<TreeBorrowsMemory<T>>(program) {
+        TerminationInfo::MachineStop => Ok(()),
+        TerminationInfo::IllFormed(message) => Err(RunError::Translation(Error::new(
             Span::dummy(),
-            format!("MiniRust rejected the program: {error:?}"),
-        ))
-    })?;
-
-    loop {
-        match machine.step().get_internal() {
-            Ok(()) => {}
-            Err(TerminationInfo::MachineStop) => return Ok(()),
-            Err(TerminationInfo::IllFormed(message)) => {
-                return Err(RunError::Translation(Error::new(
-                    Span::dummy(),
-                    format!("MiniRust rejected the program: {message}"),
-                )));
-            }
-            Err(TerminationInfo::Abort) => return Err(RunError::Panic),
-            Err(TerminationInfo::Ub(message)) => return Err(RunError::Ub(message.to_string())),
-            Err(error) => return Err(RunError::Other(error)),
+            format!("MiniRust rejected the program: {message}"),
+        ))),
+        TerminationInfo::Abort => Err(RunError::Panic),
+        TerminationInfo::Ub(message) => Err(RunError::Ub(message.to_string())),
+        error @ (TerminationInfo::Deadlock | TerminationInfo::MemoryLeak) => {
+            Err(RunError::Other(error))
         }
     }
 }

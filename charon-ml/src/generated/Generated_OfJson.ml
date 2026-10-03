@@ -2747,7 +2747,7 @@ and global_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* ty = ty_of_json ctx ty in
         let* size = size_of_json ctx size in
         let* align = size_of_json ctx align in
-        let* ptr_metadata = operand_of_json ctx ptr_metadata in
+        let* ptr_metadata = constant_expr_of_json ctx ptr_metadata in
         let* src = global_source_of_json ctx src in
         let* global_kind = global_kind_of_json ctx global_kind in
         let* value = constant_expr_of_json ctx value in
@@ -3449,6 +3449,22 @@ and repr_options_of_json (ctx : of_json_ctx) (js : json) :
             : repr_options)
     | _ -> Error "")
 
+and runtime_checks_of_json (ctx : of_json_ctx) (js : json) :
+    (runtime_checks, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("ub_checks", ub_checks);
+          ("overflow_checks", overflow_checks);
+          ("contract_checks", contract_checks);
+        ] ->
+        let* ub_checks = bool_of_json ctx ub_checks in
+        let* overflow_checks = bool_of_json ctx overflow_checks in
+        let* contract_checks = bool_of_json ctx contract_checks in
+        Ok ({ ub_checks; overflow_checks; contract_checks } : runtime_checks)
+    | _ -> Error "")
+
 and rustc_rustc_version_of_json (ctx : of_json_ctx) (js : json) :
     (rustc_rustc_version, string) result =
   combine_error_msgs js __FUNCTION__
@@ -3796,6 +3812,7 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
           ("crate_name", crate_name);
           ("options", options);
           ("target_information", target_information);
+          ("runtime_checks", runtime_checks);
           ("files", files);
           ("item_names", item_names);
           ("assoc_item_names", assoc_item_names);
@@ -3813,6 +3830,7 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
           index_map_of_json string_of_json target_info_of_json int_of_json ctx
             target_information
         in
+        let* runtime_checks = runtime_checks_of_json ctx runtime_checks in
         let* files = index_vec_of_json file_id_of_json file_of_json ctx files in
         let* item_names =
           index_map_of_json item_id_of_json name_of_json int_of_json ctx
@@ -3874,6 +3892,7 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
              crate_name;
              options;
              target_information;
+             runtime_checks;
              files;
              item_names;
              assoc_item_names;

@@ -103,7 +103,8 @@ and statement_kind =
           to continue to: * 0: continue to first outer loop (the current loop) *
           1: continue to second outer loop * ... *)
   | Panic of name * block
-      (** Call to a built-in panicking function.
+      (** Call to a built-in panicking function. Only if
+          [--reconstruct-panic-calls] is passed.
 
           Fields:
           - [name]: The name of the function that was called.

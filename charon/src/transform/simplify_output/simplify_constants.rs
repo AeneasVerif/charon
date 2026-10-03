@@ -48,7 +48,7 @@ fn new_promoted_global(
         ty: ty.clone(),
         size: Size::from_expr(SizeExpr::size_of(&ty)),
         align: Size::from_expr(SizeExpr::align_of(&ty)),
-        ptr_metadata: Operand::Const(ptr_metadata),
+        ptr_metadata,
         src: GlobalSource::Normal,
         global_kind: GlobalKind::AnonConst,
         value,

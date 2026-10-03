@@ -117,7 +117,7 @@ pub enum StatementKind {
     /// * ...
     Continue(usize),
 
-    /// Call to a built-in panicking function.
+    /// Call to a built-in panicking function. Only if `--reconstruct-panic-calls` is passed.
     Panic {
         /// The name of the function that was called.
         name: Name,

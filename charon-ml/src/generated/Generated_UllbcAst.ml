@@ -115,7 +115,8 @@ and terminator_kind =
           - [target]
           - [on_unwind] *)
   | Panic of name * block_id
-      (** Call to a built-in panicking function.
+      (** Call to a built-in panicking function. Only if
+          [--reconstruct-panic-calls] is passed.
 
           Fields:
           - [name]: The name of the function that was called.
