@@ -446,7 +446,7 @@ pub fn RAW_DYN() -> RawPtr
 // Full name: test_crate::RAW_DYN
 pub static RAW_DYN: RawPtr = RAW_DYN()
 
-pub const test_crate::inline_const::{promoted_const}: Outer<[u16]>[{built_in impl MetaSized for [u16]}] = Outer { x: 1u32, w: Wrap { a: 2u8, b: [3u16, 4u16] } } with_metadata(const 2usize)
+pub const test_crate::inline_const::{promoted_const}: Outer<[u16]>[{built_in impl MetaSized for [u16]}] = Outer { x: 1u32, w: Wrap { a: 2u8, b: [3u16, 4u16] } } with_metadata(2usize)
 
 // Full name: test_crate::inline_const
 pub fn inline_const()
