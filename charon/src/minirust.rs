@@ -312,13 +312,20 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         let mut blocks = mini::Map::new();
         let mut block_id_gen = Generator::new_with_init_value(body.body.next_idx());
         for (id, block) in body.body.iter_enumerated() {
-            let kind = if block.is_cleanup {
+            let mut current_block = self.block_name(id);
+            let mut statements = Vec::new();
+            if id == START_BLOCK_ID {
+                // Start the function by retagging the function arguments.
+                statements.extend(args.iter().map(|arg| mini::Statement::Validate {
+                    place: mini::PlaceExpr::Local(arg),
+                    fn_entry: true,
+                }));
+            }
+            let block_kind = if block.is_cleanup {
                 mini::BbKind::Cleanup
             } else {
                 mini::BbKind::Regular
             };
-            let mut current_block = self.block_name(id);
-            let mut statements = Vec::new();
             for statement in &block.statements {
                 match &statement.kind {
                     // MiniRust keeps the return place and arguments live for the entire call.
@@ -369,7 +376,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                                     ret: self.place(statement.span, destination)?,
                                     next_block: Some(next_block),
                                 },
-                                kind,
+                                block_kind,
                             ),
                         );
                         current_block = next_block;
@@ -384,7 +391,10 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 &mut blocks,
                 &mut block_id_gen,
             )?;
-            blocks.insert(current_block, mb::block(&statements, terminator, kind));
+            blocks.insert(
+                current_block,
+                mb::block(&statements, terminator, block_kind),
+            );
         }
 
         Ok(mini::Function {

@@ -91,21 +91,6 @@ const FAILURES: &[(&str, &[&str])] = &[
         "MiniRust UB: reached unreachable code",
         &["panic/catch_unwind_abort.rs", "panic/struct_abort.rs"],
     ),
-    (
-        "expected exit 4 and stdout \"\"; got exit status: 0",
-        &[
-            "ub/tree_borrows/protector/child_write_conflicted_reserved.rs",
-            "ub/tree_borrows/protector/deallocate_strong_protector.rs",
-            "ub/tree_borrows/protector/foreign_read_active.rs",
-            "ub/tree_borrows/protector/foreign_write_active.rs",
-            "ub/tree_borrows/protector/foreign_write_frozen.rs",
-            "ub/tree_borrows/protector/foreign_write_reserved.rs",
-            "ub/tree_borrows/protector/non_accessed_conflicted_reserved.rs",
-            "ub/tree_borrows/protector/protector_end_read.rs",
-            "ub/tree_borrows/protector/reservedim_spurious_write.rs",
-            "ub/tree_borrows/protector/zero_size.rs",
-        ],
-    ),
 ];
 
 #[derive(Clone, Copy)]

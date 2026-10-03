@@ -59,11 +59,24 @@ impl FunctionBuilder {
     }
 
     pub(super) fn finish(self) -> mini::Function {
-        let blocks = self
+        // Start the function by retagging the function arguments.
+        let arg_retags = (0..self.arg_count)
+            .map(|index| mini::Statement::Validate {
+                place: mini::PlaceExpr::Local(self.argument(index)),
+                fn_entry: true,
+            })
+            .collect_vec();
+        let mut blocks = self
             .blocks
             .into_iter()
             .map(|block| block.expect("MiniRust block was declared but never defined"))
             .collect_vec();
+        let first_block = &mut blocks[0];
+        first_block.statements = arg_retags
+            .into_iter()
+            .chain(first_block.statements.iter())
+            .collect();
+
         let mut function = mb::function(mb::Ret::Yes, self.arg_count, &self.locals, &blocks);
         function.calling_convention = self.calling_convention;
         function
