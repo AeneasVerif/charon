@@ -7,7 +7,6 @@
 //! Unsupported features (will raise an error):
 //! - `dyn Trait`;
 //! - `CoerceUnsized` pointers;
-//! - Packed and overaligned layouts;
 //! - Unions, because of precise union padding;
 use itertools::Itertools;
 use minirust_rs::{mem::TreeBorrowsMemory, prelude::TerminationInfo};
@@ -718,8 +717,11 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     .as_usize_literal()
                     .ok_or("non-concrete array length")
                     .context(span)?;
+                let count = usize::try_from(count)
+                    .map_err(|_| "array length does not fit usize")
+                    .context(span)?;
                 let value = self.operand(span, operand)?;
-                mini::ValueExpr::Tuple((0..count).map(|_| value).collect(), self.ty(span, ty)?)
+                mb::array(&vec![value; count], self.ty(span, ty)?)
             }
         })
     }

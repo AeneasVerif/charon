@@ -92,29 +92,10 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             })
             .context(span)?;
         let decl_span = tdecl.item_meta.span;
-        match layout.repr.align_modif {
-            Some(AlignmentModifier::Pack(_)) => {
-                raise!(decl_span, "MiniRust output does not support packed layouts")
-            }
-            Some(AlignmentModifier::Align(_)) => {
-                raise!(
-                    decl_span,
-                    "MiniRust output does not support overaligned layouts"
-                )
-            }
-            None => {}
-        }
         Ok(match &tdecl.kind {
             TypeDeclKind::Struct(fields) => {
                 let variant_layout = layout.variant_layouts[VariantId::ZERO].as_ref();
-                self.tuple_type(
-                    span,
-                    fields,
-                    variant_layout,
-                    &layout.size,
-                    &layout.align,
-                    &tref.generics,
-                )?
+                self.tuple_type(span, fields, variant_layout, layout, &tref.generics)?
             }
             TypeDeclKind::Union(_) => {
                 // let variant_layout = layout.variant_layouts[VariantId::ZERO].as_ref();
@@ -149,8 +130,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                             span,
                             &variant.fields,
                             variant_layout,
-                            &layout.size,
-                            &layout.align,
+                            layout,
                             &tref.generics,
                         )?;
                         let tagger = variant_layout
@@ -195,18 +175,24 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         &self,
         span: Span,
         fields: &IndexVec<FieldId, Field>,
-        layout: Option<&VariantLayout>,
-        size: &crate::ast::Size,
-        align: &crate::ast::Size,
+        variant_layout: Option<&VariantLayout>,
+        layout: &crate::ast::Layout,
         generics: &GenericArgs,
     ) -> Result<mini::Type> {
+        let (repr_align, packed_align) = match layout.repr.align_modif {
+            Some(AlignmentModifier::Pack(bytes)) => {
+                (mini::Align::ONE, Some(mini_align(span, bytes)?))
+            }
+            Some(AlignmentModifier::Align(bytes)) => (mini_align(span, bytes)?, None),
+            None => (mini::Align::ONE, None),
+        };
         let mut sized_fields = mini::Fields::new();
-        let mut head_align = mini::Align::ONE;
+        let mut head_align = repr_align;
         let mut unsized_field = None;
         let mut tail_offset = None;
         for (id, field) in fields.iter_enumerated() {
             let ty = self.ty(span, &field.ty.clone().substitute(generics))?;
-            let offset = match layout {
+            let offset = match variant_layout {
                 Some(layout) => layout.field_offsets[id]
                     .chosen
                     .ok_or("missing field offset in ADT layout")
@@ -216,7 +202,8 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             };
             match ty.layout::<T>() {
                 mini::LayoutStrategy::Sized(_, field_align) => {
-                    head_align = head_align.max(field_align);
+                    head_align = head_align
+                        .max(packed_align.map_or(field_align, |packed| field_align.min(packed)));
                     sized_fields.push((mini_size(offset), ty));
                 }
                 _ => {
@@ -234,8 +221,8 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             // Include any padding before the tail in the head.
             Some(offset) => (mini_size(offset), head_align),
             None => (
-                mini_size(self.size(span, size)?),
-                mini_align(span, self.size(span, align)?)?,
+                mini_size(self.size(span, &layout.size)?),
+                mini_align(span, self.size(span, &layout.align)?)?,
             ),
         };
         Ok(mini::Type::Tuple {
@@ -243,7 +230,12 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             sized_head_layout: mini::TupleHeadLayout {
                 end,
                 align: head_align,
-                packed_align: None,
+                // Sized field offsets already encode packing; MiniRust only needs this for a DST tail.
+                packed_align: if tail_offset.is_some() {
+                    packed_align
+                } else {
+                    None
+                },
             },
             unsized_field: mini::GcCow::new(unsized_field),
         })
