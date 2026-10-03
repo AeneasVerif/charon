@@ -18,10 +18,6 @@ const TIMEOUT: Duration = Duration::from_secs(60);
 const FAILURES: &[(&str, &[&str])] = &[
     // Known charon limitations
     (
-        "unable to translate raw_eq::<[i32; 4usize]> to MiniRust",
-        &["pass/array.rs"],
-    ),
-    (
         "MiniRust output does not support `dyn Trait`",
         &[
             "pass/drop.rs",
@@ -47,6 +43,7 @@ const FAILURES: &[(&str, &[&str])] = &[
     (
         "MiniRust output does not support overaligned layouts",
         &[
+            "pass/slice.rs",
             "pass/str.rs",
             "ub/deref_null_ref.rs",
             "ub/deref_unaligned_ref.rs",
@@ -56,32 +53,16 @@ const FAILURES: &[(&str, &[&str])] = &[
         "unable to translate caller_location to MiniRust",
         &[
             "pass/catch_unwind.rs",
+            "pass/ops.rs",
+            "pass/ptr.rs",
             "pass/tree_borrows/cell_lazy_write_to_surrounding.rs",
             "pass/tree_borrows/cell_inside_slice_lazy_write_to_surrounding.rs",
             "pass/tree_borrows/zero_sized_cell_lazy_write_to_surrounding.rs",
+            "ub/assume.rs",
+            "ub/ptr_offset_from_unsigned.rs",
+            "ub/ptr_offset_not_multiple.rs",
             "ub/slice_dangling.rs",
         ],
-    ),
-    ("unable to translate assume to MiniRust", &["ub/assume.rs"]),
-    (
-        "unable to translate cold_path to MiniRust",
-        &["pass/ops.rs"],
-    ),
-    (
-        "unable to translate arith_offset::<i32> to MiniRust",
-        &["pass/ptr.rs"],
-    ),
-    (
-        "unable to translate ptr_offset_from_unsigned::<u8> to MiniRust",
-        &["ub/ptr_offset_from_unsigned.rs"],
-    ),
-    (
-        "unable to translate ptr_offset_from_unsigned::<u16> to MiniRust",
-        &["ub/ptr_offset_not_multiple.rs"],
-    ),
-    (
-        "unable to translate raw_eq::<[i32; 3usize]> to MiniRust",
-        &["pass/slice.rs"],
     ),
     // Unexpected translation bugs
     (
@@ -98,21 +79,14 @@ const FAILURES: &[(&str, &[&str])] = &[
             "pass/overflow.rs",
             "pass/scalar_tuple.rs",
             "pass/small_arrays.rs",
+            "pass/tree_borrows/tree_borrows.rs",
             "pass/tree_borrows/protector_end_access_special_cases.rs",
             "ub/tree_borrows/protector/protector_end_write.rs",
         ],
     ),
     (
         "ValueExpr::Tuple: expression does not match type",
-        &["pass/repeat.rs"],
-    ),
-    (
-        "unable to translate arith_offset::<u8> to MiniRust",
-        &[
-            "pass/tree_borrows/tree_borrows.rs",
-            "pass/zero_size_access.rs",
-            "ub/ptr_add_overflow.rs",
-        ],
+        &["pass/repeat.rs", "pass/tree_borrows/tree_borrows.rs"],
     ),
     (
         "Terminator: unwind block has the wrong block kind",
@@ -382,25 +356,32 @@ fn main() -> Result<()> {
                 .to_string_lossy()
                 .replace('\\', "/");
             for case in gather_cases(path, &case_name, outcome)? {
-                let reason = FAILURES
+                // Because of non-determinism, a single test may trigger different failures
+                // depending on the run.
+                let reasons: Vec<_> = FAILURES
                     .iter()
-                    .find(|(_, paths)| paths.iter().any(|path| case_name.starts_with(path)))
-                    .map(|(reason, _)| *reason);
+                    .filter(|(_, paths)| paths.iter().any(|path| case_name.starts_with(path)))
+                    .map(|(reason, _)| *reason)
+                    .collect();
                 let ignore = case.ignore;
                 let intrinsics_rlib = intrinsics_rlib.clone();
                 trials.push(
                     Trial::test(case.name.clone(), move || {
-                        let result: Result<()> = match (run_case(&case, &intrinsics_rlib), reason) {
-                            (Ok(()), Some(reason)) => Err(anyhow::anyhow!(
-                                "unexpectedly passed; expected failure containing {reason:?}"
+                        let result: Result<()> = match run_case(&case, &intrinsics_rlib) {
+                            Ok(()) if !reasons.is_empty() => Err(anyhow::anyhow!(
+                                "unexpectedly passed; expected failure containing one of {reasons:?}"
                             )),
-                            (Err(error), Some(reason)) if format!("{error:#}").contains(reason) => {
-                                Ok(())
+                            Err(error) if !reasons.is_empty() => {
+                                let error_text = format!("{error:#}");
+                                if reasons.iter().any(|reason| error_text.contains(reason)) {
+                                    Ok(())
+                                } else {
+                                    Err(anyhow::anyhow!(
+                                        "expected failure containing one of {reasons:?}; got:\n{error:#}"
+                                    ))
+                                }
                             }
-                            (Err(error), Some(reason)) => Err(anyhow::anyhow!(
-                                "expected failure containing {reason:?}; got:\n{error:#}"
-                            )),
-                            (result, None) => result,
+                            result => result,
                         };
                         result.map_err(Into::into)
                     })
