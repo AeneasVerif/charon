@@ -22,11 +22,13 @@ let
   craneArgs = {
     inherit cargoLock;
     src = cleanedUpSrc;
-    RUSTFLAGS = "-D warnings"; # Turn all warnings into errors.
+    # RUSTFLAGS overrides .cargo/config.toml, so repeat the recursion limit here.
+    RUSTFLAGS = "-D warnings -Zmin-recursion-limit=256";
     postPatch = ''
       mkdir -p ../crates
       cp -r ${../crates/minirust-rs} ../crates/minirust-rs
       cp -r ${minirustSrc} ../crates/minirust
+      cp -r ${../crates/miniutil} ../crates/miniutil
     '';
   };
 
