@@ -942,6 +942,8 @@ impl TranslateOptions {
                 // it opaque because we replace the function bodies so we don't need to translate
                 // them.
                 opacities.push(("intrinsics".to_owned(), Opaque));
+                // The MiniRust translation models this as a plain unwind.
+                opacities.push(("core::panicking::panic_fmt".to_owned(), Opaque));
             }
             for pat in options.exclude.iter() {
                 opacities.push((pat.to_string(), Invisible));
