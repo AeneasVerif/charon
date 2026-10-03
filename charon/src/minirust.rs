@@ -944,7 +944,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     let metadata = &self.krate.global_decls[gref.id].ptr_metadata;
                     mb::construct_wide_pointer(
                         pointer,
-                        self.operand(span, metadata)?,
+                        self.constant(span, metadata)?,
                         mb::raw_ptr_ty(meta_kind),
                     )
                 };

@@ -1971,9 +1971,9 @@ let pp_global_decl (env : fmt_env) (indent : string) (indent_incr : string)
   let params =
     if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
   in
-  let pp_metadata fmt op =
-    if not (ty_is_unit (operand_ty op)) then
-      Format.fprintf fmt " with_metadata(%a)" (pp_operand env) op
+  let pp_metadata fmt (metadata : constant_expr) =
+    if not (ty_is_unit metadata.ty) then
+      Format.fprintf fmt " with_metadata(%a)" (pp_constant_expr env) metadata
   in
   Format.fprintf fmt "%s%s: %a%s%s= %a%a" intro params (pp_ty env) def.ty
     clauses

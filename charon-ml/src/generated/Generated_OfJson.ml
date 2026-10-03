@@ -2896,7 +2896,7 @@ and global_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* ty = ty_of_json ctx ty in
         let* size = size_of_json ctx size in
         let* align = size_of_json ctx align in
-        let* ptr_metadata = operand_of_json ctx ptr_metadata in
+        let* ptr_metadata = constant_expr_of_json ctx ptr_metadata in
         let* src = global_source_of_json ctx src in
         let* global_kind = global_kind_of_json ctx global_kind in
         let* value = constant_expr_of_json ctx value in

@@ -422,7 +422,7 @@ type global_decl = {
   ty : ty;
   size : size;  (** The size in bytes of the global's allocation. *)
   align : size;  (** The alignment in bytes of the global's allocation. *)
-  ptr_metadata : operand;
+  ptr_metadata : constant_expr;
       (** The pointer metadata for references to this global (needed for unsized
           globals). *)
   src : global_source;
