@@ -21,6 +21,7 @@ const FAILURES: &[(&str, &[&str])] = &[
         "MiniRust output does not support `dyn Trait`",
         &[
             "pass/drop.rs",
+            "pass/str.rs",
             "pass/trait_object.rs",
             "ub/dangling_vtable.rs",
             "ub/wrong_vtable.rs",
@@ -37,24 +38,12 @@ const FAILURES: &[(&str, &[&str])] = &[
         ],
     ),
     (
-        "MiniRust output does not support packed layouts",
-        &["pass/enum_niche_tag.rs", "pass/packed.rs"],
-    ),
-    (
-        "MiniRust output does not support overaligned layouts",
-        &[
-            "pass/slice.rs",
-            "pass/str.rs",
-            "ub/deref_null_ref.rs",
-            "ub/deref_unaligned_ref.rs",
-        ],
-    ),
-    (
         "unable to translate caller_location to MiniRust",
         &[
             "pass/catch_unwind.rs",
             "pass/ops.rs",
             "pass/ptr.rs",
+            "pass/slice.rs",
             "pass/tree_borrows/cell_lazy_write_to_surrounding.rs",
             "pass/tree_borrows/cell_inside_slice_lazy_write_to_surrounding.rs",
             "pass/tree_borrows/zero_sized_cell_lazy_write_to_surrounding.rs",
@@ -83,10 +72,6 @@ const FAILURES: &[(&str, &[&str])] = &[
             "pass/tree_borrows/protector_end_access_special_cases.rs",
             "ub/tree_borrows/protector/protector_end_write.rs",
         ],
-    ),
-    (
-        "ValueExpr::Tuple: expression does not match type",
-        &["pass/repeat.rs", "pass/tree_borrows/tree_borrows.rs"],
     ),
     (
         "Terminator: unwind block has the wrong block kind",
