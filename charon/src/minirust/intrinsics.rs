@@ -125,12 +125,24 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     _ => return Ok(None),
                 },
                 Body::Intrinsic { name, .. } => match name.as_str() {
-                    "catch_unwind" => self.make_catch_unwind_function(span, fdecl)?,
                     "abort" => {
                         self.make_intrinsic_function(span, fdecl, mini::IntrinsicOp::Abort)?
                     }
+                    "assume" => {
+                        self.make_intrinsic_function(span, fdecl, mini::IntrinsicOp::Assume)?
+                    }
+                    "raw_eq" => {
+                        self.make_intrinsic_function(span, fdecl, mini::IntrinsicOp::RawEq)?
+                    }
+                    "catch_unwind" => self.make_catch_unwind_function(span, fdecl)?,
                     "size_of_val" => self.make_layout_of_val_function(span, fdecl, false)?,
                     "align_of_val" => self.make_layout_of_val_function(span, fdecl, true)?,
+                    "cold_path" => self.make_cold_path_function(span, fdecl)?,
+                    "arith_offset" => self.make_arith_offset_function(span, fdecl)?,
+                    "ptr_offset_from" => self.make_ptr_offset_from_function(span, fdecl, false)?,
+                    "ptr_offset_from_unsigned" => {
+                        self.make_ptr_offset_from_function(span, fdecl, true)?
+                    }
                     _ => return Ok(None),
                 },
                 _ => return Ok(None),
@@ -350,6 +362,107 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         } else {
             mb::compute_size(pointee, metadata)
         };
+        builder.set_block(
+            start,
+            mb::block(
+                &[mb::assign(ret, value)],
+                mini::Terminator::Return,
+                mini::BbKind::Regular,
+            ),
+        );
+        Ok(builder.finish())
+    }
+
+    /// `cold_path` is only an optimization hint.
+    fn make_cold_path_function(&self, span: Span, fdecl: &FunDecl) -> Result<mini::Function> {
+        let signature = &fdecl.signature;
+        let mut builder = FunctionBuilder::new(self, span, signature)?;
+        let ret = mini::PlaceExpr::Local(builder.return_local());
+        let start = builder.declare_block();
+        builder.set_block(
+            start,
+            mb::block(
+                &[mb::assign(ret, mb::unit())],
+                mini::Terminator::Return,
+                mini::BbKind::Regular,
+            ),
+        );
+        Ok(builder.finish())
+    }
+
+    /// `arith_offset` wraps pointer arithmetic, unlike an in-bounds pointer offset.
+    fn make_arith_offset_function(&self, span: Span, fdecl: &FunDecl) -> Result<mini::Function> {
+        let signature = &fdecl.signature;
+        let [pointer, offset] = signature.inputs.as_slice() else {
+            raise!(span, "unexpected signature for `arith_offset`");
+        };
+        let pointee = pointer
+            .builtin_deref(self.krate)
+            .ok_or("expected a pointer")
+            .context(span)?;
+        let (size, _) = self.size_and_align(span, pointee)?;
+
+        let mut builder = FunctionBuilder::new(self, span, signature)?;
+        let ret = mini::PlaceExpr::Local(builder.return_local());
+        let pointer = mb::load(mini::PlaceExpr::Local(builder.argument(0)));
+        let offset_value = mb::load(mini::PlaceExpr::Local(builder.argument(1)));
+        let size = mini::ValueExpr::Constant(
+            mini::Constant::Int(mini::Int::from(size)),
+            self.ty(span, offset)?,
+        );
+        let value = mb::ptr_offset(
+            pointer,
+            mb::mul_unchecked(offset_value, size),
+            mb::InBounds::No,
+        );
+        let start = builder.declare_block();
+        builder.set_block(
+            start,
+            mb::block(
+                &[mb::assign(ret, value)],
+                mini::Terminator::Return,
+                mini::BbKind::Regular,
+            ),
+        );
+        Ok(builder.finish())
+    }
+
+    /// Compute a pointer distance in elements, checking divisibility and optional nonnegativity.
+    fn make_ptr_offset_from_function(
+        &self,
+        span: Span,
+        fdecl: &FunDecl,
+        unsigned: bool,
+    ) -> Result<mini::Function> {
+        let signature = &fdecl.signature;
+        let [pointer, _base] = signature.inputs.as_slice() else {
+            raise!(span, "unexpected signature for pointer distance intrinsic");
+        };
+        let pointee = pointer
+            .builtin_deref(self.krate)
+            .ok_or("expected a pointer")
+            .context(span)?;
+        let (size, _) = self.size_and_align(span, pointee)?;
+
+        let mut builder = FunctionBuilder::new(self, span, signature)?;
+        let ret = mini::PlaceExpr::Local(builder.return_local());
+        let pointer = mb::load(mini::PlaceExpr::Local(builder.argument(0)));
+        let base = mb::load(mini::PlaceExpr::Local(builder.argument(1)));
+        let distance = if unsigned {
+            mb::ptr_offset_from_nonneg(pointer, base, mb::InBounds::No)
+        } else {
+            mb::ptr_offset_from(pointer, base, mb::InBounds::No)
+        };
+        let distance = mb::div_exact(
+            distance,
+            mb::const_int_typed::<isize>(mini::Int::from(size)),
+        );
+        let value = if unsigned {
+            mb::int_cast::<usize>(distance)
+        } else {
+            distance
+        };
+        let start = builder.declare_block();
         builder.set_block(
             start,
             mb::block(
