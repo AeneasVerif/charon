@@ -62,7 +62,7 @@ impl Transform {
                     let is_vec_construction_fn = decl.item_meta.diagnostic_item.as_deref()
                         == Some(names::BOX_ASSUME_INIT_INTO_VEC_UNSAFE);
                     is_local_panic_fn
-                        || (is_anon_const_initializer && !ctx.options.raw_consts)
+                        || (is_anon_const_initializer && ctx.options.inline_anon_consts)
                         || (is_vec_construction_fn && ctx.options.treat_box_as_builtin)
                 })
             })

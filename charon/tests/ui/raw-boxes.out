@@ -2130,6 +2130,22 @@ where
     return
 }
 
+// Full name: alloc::boxed::box_new_uninit::{promoted_const}
+fn {promoted_const}() -> &'_ Global
+{
+    let _0: &'0 Global; // return
+    let _1: Global; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = Global {  }
+    _0 = &_1
+    return
+}
+
+// Full name: alloc::boxed::box_new_uninit::{promoted_const}
+const {promoted_const}: &'_ Global = {promoted_const}()
+
 // Full name: alloc::boxed::box_new_uninit
 #[track_caller]
 fn box_new_uninit(layout: Layout) -> *mut u8
@@ -2145,22 +2161,13 @@ fn box_new_uninit(layout: Layout) -> *mut u8
     let _8: !; // anonymous local
     let _9: Layout; // anonymous local
     let _10: &'2 Global; // anonymous local
-    let _11: &'3 Global; // anonymous local
-    let _12: &'6 Global; // anonymous local
-    let _13: Global; // anonymous local
 
-    storage_live(_11)
-    storage_live(_12)
-    storage_live(_13)
-    _13 = Global {  }
-    _12 = &_13
-    _11 = move _12
     storage_live(_0)
     storage_live(_5)
     storage_live(_10)
     storage_live(_2)
     storage_live(_3)
-    _10 = move _11
+    _10 = copy {promoted_const}
     _3 = &(*_10) with_metadata(copy _10.metadata)
     storage_live(_4)
     _4 = copy layout
@@ -2219,10 +2226,11 @@ where
     storage_live(_4)
     _4 = box_new_uninit(copy LAYOUT<T>[impl_SizedTypeProperties_for_T<T>[TraitClause0]])
     ↳⚡ if copy _7 {
-            drop[{built_in impl Destruct for T}::drop_glue<'0>] x
-            ↳⚡ unwind_terminate
         } else {
+            unwind_continue
         }
+        drop[{built_in impl Destruct for T}::drop_glue<'0>] x
+        ↳⚡ unwind_terminate
         unwind_continue
     _3 = cast<*mut u8, *mut T>(move _4)
     ptr = copy _3

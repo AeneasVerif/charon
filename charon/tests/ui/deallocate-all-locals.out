@@ -47,18 +47,10 @@ fn sum(x: u32, y: u32) -> u32
         storage_live(_5);
         _5 = copy y;
         _6 = copy _4 checked.+ copy _5;
-        assert assert(move _6._1 == false) (overflow) -> bb2 (unwind: bb1);
+        assert assert(move _6._1 == false) (overflow) -> bb1 (unwind: bb4);
     }
 
-    bb1 (cleanup): {
-        storage_dead(_8);
-        storage_dead(_6);
-        storage_dead(y);
-        storage_dead(x);
-        unwind_continue;
-    }
-
-    bb2: {
+    bb1: {
         z = move _6._0;
         storage_dead(_5);
         storage_dead(_4);
@@ -66,10 +58,10 @@ fn sum(x: u32, y: u32) -> u32
         storage_live(_7);
         _7 = copy z;
         _8 = copy _7 checked.+ const 1u32;
-        assert assert(move _8._1 == false) (overflow) -> bb3 (unwind: bb1);
+        assert assert(move _8._1 == false) (overflow) -> bb2 (unwind: bb3);
     }
 
-    bb3: {
+    bb2: {
         _0 = move _8._0;
         storage_dead(_7);
         storage_dead(z);
@@ -78,6 +70,22 @@ fn sum(x: u32, y: u32) -> u32
         storage_dead(y);
         storage_dead(x);
         return;
+    }
+
+    bb3 (cleanup): {
+        storage_dead(_8);
+        storage_dead(_6);
+        storage_dead(y);
+        storage_dead(x);
+        unwind_continue;
+    }
+
+    bb4 (cleanup): {
+        storage_dead(_8);
+        storage_dead(_6);
+        storage_dead(y);
+        storage_dead(x);
+        unwind_continue;
     }
 }
 
@@ -91,17 +99,17 @@ fn main()
         storage_live(_0);
         _0 = ();
         storage_live(_1);
-        _1 = sum(const 1u32, const 2u32) -> bb2 (unwind: bb1);
+        _1 = sum(const 1u32, const 2u32) -> bb1 (unwind: bb2);
     }
 
-    bb1 (cleanup): {
-        unwind_continue;
-    }
-
-    bb2: {
+    bb1: {
         storage_dead(_1);
         _0 = ();
         return;
+    }
+
+    bb2 (cleanup): {
+        unwind_continue;
     }
 }
 

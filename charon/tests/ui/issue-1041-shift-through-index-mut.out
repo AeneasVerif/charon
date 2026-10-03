@@ -136,20 +136,20 @@ pub fn shr_into_index<'_0>(x: u64, out: &'_0 mut Wrap)
         storage_live(_4);
         storage_live(_5);
         _5 = &mut (*out);
-        _4 = index_mut<'6>(move _5, const 0usize) -> bb2 (unwind: bb1);
+        _4 = index_mut<'6>(move _5, const 0usize) -> bb1 (unwind: bb2);
     }
 
-    bb1 (cleanup): {
-        unwind_continue;
-    }
-
-    bb2: {
+    bb1: {
         storage_dead(_5);
         (*_4) = move _6;
         storage_dead(_3);
         storage_dead(_4);
         _0 = ();
         return;
+    }
+
+    bb2 (cleanup): {
+        unwind_continue;
     }
 }
 
@@ -178,14 +178,10 @@ pub fn shl_into_index_by_var<'_0>(x: u64, n: u32, out: &'_0 mut Wrap)
         storage_live(_6);
         storage_live(_7);
         _7 = &mut (*out);
-        _6 = index_mut<'6>(move _7, const 1usize) -> bb2 (unwind: bb1);
+        _6 = index_mut<'6>(move _7, const 1usize) -> bb1 (unwind: bb2);
     }
 
-    bb1 (cleanup): {
-        unwind_continue;
-    }
-
-    bb2: {
+    bb1: {
         storage_dead(_7);
         (*_6) = move _8;
         storage_dead(_5);
@@ -193,6 +189,10 @@ pub fn shl_into_index_by_var<'_0>(x: u64, n: u32, out: &'_0 mut Wrap)
         storage_dead(_6);
         _0 = ();
         return;
+    }
+
+    bb2 (cleanup): {
+        unwind_continue;
     }
 }
 

@@ -476,17 +476,19 @@ fn partial_enum_move(value: EnumWithTwoDrops, b: bool)
         _5 = move value
         _4 = consume<EnumWithTwoDrops>[{built_in impl Sized for EnumWithTwoDrops}](move _5)
         ↳⚡ if copy _9 {
-                _12 = @discriminant(value)
-                switch move _12 {
-                    0isize => {
-                        conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] (value as variant EnumWithTwoDrops::Pair)._1
-                        ↳⚡ unwind_terminate
-                    },
-                    _ => {
-                    },
-                }
             } else {
+                unwind_continue
             }
+            _12 = @discriminant(value)
+            switch move _12 {
+                0isize => {
+                },
+                _ => {
+                    unwind_continue
+                },
+            }
+            conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] (value as variant EnumWithTwoDrops::Pair)._1
+            ↳⚡ unwind_terminate
             unwind_continue
         storage_dead(_5)
         storage_dead(_4)
@@ -501,17 +503,19 @@ fn partial_enum_move(value: EnumWithTwoDrops, b: bool)
                 _8 = move first
                 _0 = consume<NeedsDrop>[{built_in impl Sized for NeedsDrop}](move _8)
                 ↳⚡ if copy _9 {
-                        _12 = @discriminant(value)
-                        switch move _12 {
-                            0isize => {
-                                conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] (value as variant EnumWithTwoDrops::Pair)._1
-                                ↳⚡ unwind_terminate
-                            },
-                            _ => {
-                            },
-                        }
                     } else {
+                        unwind_continue
                     }
+                    _12 = @discriminant(value)
+                    switch move _12 {
+                        0isize => {
+                        },
+                        _ => {
+                            unwind_continue
+                        },
+                    }
+                    conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'0>] (value as variant EnumWithTwoDrops::Pair)._1
+                    ↳⚡ unwind_terminate
                     unwind_continue
                 storage_dead(_8)
                 storage_dead(first)
@@ -531,18 +535,14 @@ fn partial_enum_move(value: EnumWithTwoDrops, b: bool)
             0isize => {
                 conditional_drop[impl_Destruct_for_NeedsDrop::drop_glue<'1>] (value as variant EnumWithTwoDrops::Pair)._1
                 ↳⚡ unwind_continue
-                _9 = const false
-                return
             },
             _ => {
-                _9 = const false
-                return
             },
         }
     } else {
-        _9 = const false
-        return
     }
+    _9 = const false
+    return
 }
 
 

@@ -135,6 +135,22 @@ where
   _1: B,
 }
 
+// Full name: test_cargo_dependencies::main::{promoted_const}
+fn {promoted_const}() -> &'_ u32
+{
+    let _0: &'0 u32; // return
+    let _1: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = const 1u32
+    _0 = &_1
+    return
+}
+
+// Full name: test_cargo_dependencies::main::{promoted_const}
+const {promoted_const}: &'_ u32 = {promoted_const}()
+
 // Full name: test_cargo_dependencies::main::silly_incr::{closure}
 struct {closure} {}
 
@@ -223,9 +239,6 @@ fn main()
     let _19: &'24 u32; // anonymous local
     let _20: Option<Arguments<'33>>[{built_in impl Sized for Arguments<'33>}]; // anonymous local
     let _21: &'37 u32; // anonymous local
-    let _22: &'40 u32; // anonymous local
-    let _23: &'61 u32; // anonymous local
-    let _24: u32; // anonymous local
 
     storage_live(_0)
     storage_live(_21)
@@ -240,12 +253,6 @@ fn main()
     _3 = &two-phase-mut (*_4)
     _2 = silly_incr<'39>(move _3)
     ↳⚡ unwind_continue
-    storage_live(_22)
-    storage_live(_23)
-    storage_live(_24)
-    _24 = const 1u32
-    _23 = &_24
-    _22 = move _23
     storage_dead(_3)
     storage_dead(_4)
     storage_dead(_2)
@@ -253,7 +260,7 @@ fn main()
     storage_live(_6)
     _6 = &x
     storage_live(_7)
-    _21 = move _22
+    _21 = copy {promoted_const}
     _7 = &(*_21)
     _5 = (move _6, move _7)
     storage_dead(_7)

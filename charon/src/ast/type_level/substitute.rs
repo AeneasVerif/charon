@@ -364,6 +364,15 @@ pub trait TyVisitable: Sized + AstVisitable {
         .visit(self)
     }
 
+    /// Collect the regions contained in `self`.
+    fn collect_regions(&self) -> impl Iterator<Item = Region> {
+        let mut regions = SeqHashSet::new();
+        self.dyn_visit(|region: &Region| {
+            regions.insert(*region);
+        });
+        regions.into_iter()
+    }
+
     /// Replace all the erased regions by the output of the provided function. Binders levels are
     /// handled automatically.
     fn replace_erased_regions(mut self, f: impl FnMut() -> Region) -> Self {

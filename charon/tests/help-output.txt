@@ -141,6 +141,9 @@ Options:
       --raw-consts
           Do not inline or evaluate constants
 
+      --inline-anon-consts
+          Inline anonymous constants, including promoted constants and inline const blocks. This is unsound for promoted constants if they're used with a `'static` lifetime, as this will move the constant to a local variable
+
       --consts <CONSTS>
           How to represent constants and statics: as a call to their initializer function, as an evaluated value, or as raw bytes. This is always best-effort: in some cases we only get the evaluated constant, and in others we cannot evaluate the constant and keep the initializer
 

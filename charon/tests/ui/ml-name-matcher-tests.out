@@ -283,6 +283,34 @@ impl "impl_Trait_u32_for_tuple_u8_bool" Trait<u32> for (u8, bool) {
     non-dyn-compatible
 }
 
+fn test_crate::foo::{promoted_const}() -> &'_ [bool; 1usize]
+{
+    let _0: &'0 [bool; 1usize]; // return
+    let _1: [bool; 1usize]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = [const false]
+    _0 = &_1
+    return
+}
+
+const test_crate::foo::{promoted_const}: &'_ [bool; 1usize] = test_crate::foo::{promoted_const}()
+
+fn test_crate::foo::{promoted_const#1}() -> &'_ Option<i32>[{built_in impl Sized for i32}]
+{
+    let _0: &'0 Option<i32>[{built_in impl Sized for i32}]; // return
+    let _1: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = Option::Some { _0: const 0i32 }
+    _0 = &_1
+    return
+}
+
+const test_crate::foo::{promoted_const#1}: &'_ Option<i32>[{built_in impl Sized for i32}] = test_crate::foo::{promoted_const#1}()
+
 // Full name: test_crate::foo
 #[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some<'_, i32>")]
 #[pattern::fail(call[0], "core::option::{core::option::Option<@T>}::is_some<_, @T>")]
@@ -308,41 +336,23 @@ fn foo()
     let _9: RangeFrom<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _10: &'10 [bool; 1usize]; // anonymous local
     let _11: &'11 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _12: &'12 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _13: &'15 [bool; 1usize]; // anonymous local
-    let _14: &'20 Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _15: Option<i32>[{built_in impl Sized for i32}]; // anonymous local
-    let _16: &'21 [bool; 1usize]; // anonymous local
-    let _17: [bool; 1usize]; // anonymous local
 
-    storage_live(_12)
-    storage_live(_14)
-    storage_live(_15)
-    _15 = Option::Some { _0: const 0i32 }
-    _14 = &_15
-    _12 = move _14
     storage_live(_0)
     storage_live(_10)
     storage_live(_11)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _11 = move _12
+    _11 = copy test_crate::foo::{promoted_const#1}
     _2 = &(*_11)
     _1 = is_some<'14, i32>[{built_in impl Sized for i32}](move _2)
     ↳⚡ unwind_continue
-    storage_live(_13)
-    storage_live(_16)
-    storage_live(_17)
-    _17 = [const false]
-    _16 = &_17
-    _13 = move _16
     storage_dead(_2)
     storage_dead(_1)
     storage_live(slice)
     storage_live(_4)
     storage_live(_5)
-    _10 = move _13
+    _10 = copy test_crate::foo::{promoted_const}
     _5 = &(*_10)
     _4 = &(*_5)
     slice = as_slice<'_, bool, 1usize>[{built_in impl Sized for bool}](move _4)

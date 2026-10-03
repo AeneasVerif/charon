@@ -20,7 +20,6 @@ const FAILURES: &[(&str, &[&str])] = &[
     (
         "MiniRust output doesn't support unsized types yet",
         &[
-            "pass/align_of_val.rs",
             "pass/array.rs",
             "pass/catch_unwind.rs",
             "pass/const.rs",
@@ -67,6 +66,7 @@ const FAILURES: &[(&str, &[&str])] = &[
     (
         "MiniRust output does not support `dyn Trait`",
         &[
+            "pass/align_of_val.rs",
             "pass/closure_iterator_combinator.rs",
             "pass/drop.rs",
             "pass/slice.rs",

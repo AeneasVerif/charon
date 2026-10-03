@@ -25,11 +25,14 @@
 //!   return 1;
 //! }
 //! ```
+//!
+//! Similarly, give each unwind edge its own cleanup path.
 
 use crate::ids::Generator;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
-use rustc_hash::FxHashMap as HashMap;
+use crate::utils::ensure_sufficient_stack;
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
 use crate::transform::ctx::UllbcPass;
 
@@ -40,6 +43,30 @@ fn is_return_block(block: &BlockData) -> bool {
             .statements
             .iter()
             .all(|st| matches!(st.kind, StatementKind::StorageDead(_)))
+}
+
+/// Duplicate the sub-control-flow-graph reachable from `id`, and return the start of the new path.
+/// Unwind paths may contain loops, we're careful not to break them.
+fn duplicate_unwind_path(
+    blocks: &mut BodyContents,
+    id: BlockId,
+    // Stack of blocks we've already copied along the current path.
+    copied_ancestors: &mut HashMap<BlockId, BlockId>,
+) -> BlockId {
+    ensure_sufficient_stack(|| {
+        if let Some(&copy_id) = copied_ancestors.get(&id) {
+            return copy_id;
+        }
+        let mut block = blocks[id].clone();
+        let new_id = blocks.push(BlockData::new_unreachable(true));
+        copied_ancestors.insert(id, new_id);
+        for target in block.terminator.targets_mut() {
+            *target = duplicate_unwind_path(blocks, *target, copied_ancestors);
+        }
+        copied_ancestors.remove(&id);
+        blocks[new_id] = block;
+        new_id
+    })
 }
 
 impl UllbcPass for Transform {
@@ -73,6 +100,27 @@ impl UllbcPass for Transform {
         // Then introduce the new blocks
         for block in new_blocks {
             let _ = b.body.push(block);
+        }
+
+        // Walk through the control-flow until we find the start of an unwind path, then copy it.
+        let mut pending: Vec<BlockId> = vec![START_BLOCK_ID];
+        let mut visited: HashSet<BlockId> = HashSet::default();
+        let mut ancestors: HashMap<BlockId, BlockId> = HashMap::default();
+        while let Some(id) = pending.pop() {
+            if !visited.insert(id) {
+                continue;
+            }
+            pending.extend(b.body[id].targets_ignoring_unwind());
+            let mut terminator = b.body[id].terminator.clone();
+            let on_unwind = match &mut terminator.kind {
+                TerminatorKind::Call { on_unwind, .. }
+                | TerminatorKind::Drop { on_unwind, .. }
+                | TerminatorKind::Assert { on_unwind, .. }
+                | TerminatorKind::InlineAsm { on_unwind, .. } => on_unwind,
+                _ => continue,
+            };
+            *on_unwind = duplicate_unwind_path(&mut b.body, *on_unwind, &mut ancestors);
+            b.body[id].terminator = terminator;
         }
     }
 }

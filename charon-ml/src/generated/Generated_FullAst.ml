@@ -207,6 +207,11 @@ and cli_options = {
           this makes tuple types ill-typed with respect to their declaration; it
           is also incompatible with [--monomorphize]. *)
   raw_consts : bool;  (** Do not inline or evaluate constants. *)
+  inline_anon_consts : bool;
+      (** Inline anonymous constants, including promoted constants and inline
+          const blocks. This is unsound for promoted constants if they're used
+          with a ['static] lifetime, as this will move the constant to a local
+          variable. *)
   consts : const_handling option;
       (** How to represent constants and statics: as a call to their initializer
           function, as an evaluated value, or as raw bytes. This is always
