@@ -5,7 +5,7 @@
 //!
 //! Unsupported features (will raise an error):
 //! - `dyn Trait`;
-//! - Unsized ADTs;
+//! - `CoerceUnsized` pointers;
 //! - Packed and overaligned layouts;
 //! - ub_checks/contract_checks/overflow_checks booleans values;
 //! - Unions, because of precise union padding;
@@ -199,6 +199,12 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
                     }
                     Body::Intrinsic { name, .. } if name == "catch_unwind" => {
                         self.make_catch_unwind_function(span, fdecl)
+                    }
+                    Body::Intrinsic { name, .. } if name == "size_of_val" => {
+                        self.make_layout_of_val_function(span, fdecl, false)
+                    }
+                    Body::Intrinsic { name, .. } if name == "align_of_val" => {
+                        self.make_layout_of_val_function(span, fdecl, true)
                     }
                     _ => raise!(
                         span,
@@ -594,6 +600,63 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         })
     }
 
+    /// Compute a DST's layout from the metadata carried by its pointer.
+    fn make_layout_of_val_function(
+        &self,
+        span: Span,
+        fdecl: &FunDecl,
+        alignment: bool,
+    ) -> Result<mini::Function> {
+        let signature = &fdecl.signature;
+        let [input] = signature.inputs.as_slice() else {
+            raise!(span, "unexpected signature for layout-of-value intrinsic")
+        };
+        let pointee = self.ty(span, input.builtin_deref(self.krate).unwrap())?;
+
+        let mut local_ids = Generator::new();
+        let ret = self.local_name(local_ids.fresh_id());
+        let arg = self.local_name(local_ids.fresh_id());
+        let start = self.block_name(START_BLOCK_ID);
+        let metadata = mini::ValueExpr::UnOp {
+            operator: mini::UnOp::GetMetadata,
+            operand: mini::GcCow::new(mini::ValueExpr::Load {
+                source: mini::GcCow::new(mini::PlaceExpr::Local(arg)),
+            }),
+        };
+        let operator = if alignment {
+            mini::UnOp::ComputeAlign(pointee)
+        } else {
+            mini::UnOp::ComputeSize(pointee)
+        };
+        let block = mini::BasicBlock {
+            statements: [mini::Statement::Assign {
+                destination: mini::PlaceExpr::Local(ret),
+                source: mini::ValueExpr::UnOp {
+                    operator,
+                    operand: mini::GcCow::new(metadata),
+                },
+            }]
+            .into_iter()
+            .collect(),
+            terminator: mini::Terminator::Return,
+            kind: mini::BbKind::Regular,
+        };
+        Ok(mini::Function {
+            locals: [
+                (ret, self.ty(span, &signature.output)?),
+                (arg, self.ty(span, input)?),
+            ]
+            .into_iter()
+            .collect(),
+            args: [arg].into_iter().collect(),
+            ret,
+            calling_convention: self.calling_convention(span, &signature.abi)?,
+            blocks: [(start, block)].into_iter().collect(),
+            start,
+            implicit_writes: true,
+        })
+    }
+
     fn function(
         &self,
         span: Span,
@@ -898,8 +961,8 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
     fn place(&self, span: Span, place: &Place) -> Result<mini::PlaceExpr> {
         Ok(match &place.kind {
             PlaceKind::Local(local) => mini::PlaceExpr::Local(self.local_name(*local)),
-            PlaceKind::Global(gref) => mini::PlaceExpr::Deref {
-                operand: mini::GcCow::new(mini::ValueExpr::Constant(
+            PlaceKind::Global(gref) => {
+                let pointer = mini::ValueExpr::Constant(
                     mini::Constant::GlobalPointer(mini::Relocation {
                         name: self.global_name(gref.id),
                         offset: mini_size(0),
@@ -907,9 +970,25 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     mini::Type::Ptr(mini::PtrType::Raw {
                         meta_kind: mini::PointerMetaKind::None,
                     }),
-                )),
-                ty: self.ty(span, &place.ty)?,
-            },
+                );
+                let meta_kind = self.metadata_kind(span, &place.ty)?;
+                let pointer = if meta_kind == mini::PointerMetaKind::None {
+                    pointer
+                } else {
+                    let metadata = &self.krate.global_decls[gref.id].ptr_metadata;
+                    mini::ValueExpr::BinOp {
+                        operator: mini::BinOp::ConstructWidePointer(mini::PtrType::Raw {
+                            meta_kind,
+                        }),
+                        left: mini::GcCow::new(pointer),
+                        right: mini::GcCow::new(self.operand(span, metadata)?),
+                    }
+                };
+                mini::PlaceExpr::Deref {
+                    operand: mini::GcCow::new(pointer),
+                    ty: self.ty(span, &place.ty)?,
+                }
+            }
             PlaceKind::Projection(subplace, projection) => {
                 let subplace_expr = self.place(span, subplace)?;
                 match projection {
@@ -960,9 +1039,20 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
 
     fn operand(&self, span: Span, operand: &Operand) -> Result<mini::ValueExpr> {
         Ok(match operand {
-            Operand::Copy(place) | Operand::Move(place) => mini::ValueExpr::Load {
-                source: mini::GcCow::new(self.place(span, place)?),
-            },
+            Operand::Copy(place) | Operand::Move(place) => {
+                if let PlaceKind::Projection(pointer, ProjectionElem::PtrMetadata) = &place.kind {
+                    mini::ValueExpr::UnOp {
+                        operator: mini::UnOp::GetMetadata,
+                        operand: mini::GcCow::new(mini::ValueExpr::Load {
+                            source: mini::GcCow::new(self.place(span, pointer)?),
+                        }),
+                    }
+                } else {
+                    mini::ValueExpr::Load {
+                        source: mini::GcCow::new(self.place(span, place)?),
+                    }
+                }
+            }
             Operand::Const(value) => self.constant(span, value)?,
         })
     }
@@ -1106,7 +1196,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             BinOp::Offset => {
                 let pointee = left
                     .ty()
-                    .builtin_deref()
+                    .builtin_deref(self.krate)
                     .ok_or("pointer offset on a non-pointer")
                     .context(span)?;
                 let (size, _) = self.size_and_align(span, pointee)?;
@@ -1176,14 +1266,14 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 let old = self.metadata_kind(
                     span,
                     source_ty
-                        .builtin_deref()
+                        .builtin_deref(self.krate)
                         .ok_or("raw-pointer cast from a non-pointer")
                         .context(span)?,
                 )?;
                 let new = self.metadata_kind(
                     span,
                     target_ty
-                        .builtin_deref()
+                        .builtin_deref(self.krate)
                         .ok_or("raw-pointer cast to a non-pointer")
                         .context(span)?,
                 )?;
@@ -1196,6 +1286,10 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     raise!(span, "raw-pointer cast adds metadata")
                 }
             }
+            // Handled at the statement level.
+            UnOp::Cast(
+                CastKind::PtrExposeProvenance(..) | CastKind::PtrWithExposedProvenance(..),
+            ) => unreachable!(),
             UnOp::Cast(CastKind::FnPtr(source_ty, _)) => {
                 match source_ty.kind() {
                     // Turn the function-item ZST into a function pointer.
@@ -1214,10 +1308,16 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     ),
                 }
             }
-            // Handled at the statement level.
-            UnOp::Cast(
-                CastKind::PtrExposeProvenance(..) | CastKind::PtrWithExposedProvenance(..),
-            ) => unreachable!(),
+            UnOp::Cast(CastKind::Unsize(_, target_ty, UnsizingMetadata::Length(len))) => {
+                let mini::Type::Ptr(target_ptr) = self.ty(span, target_ty)? else {
+                    raise!(span, "unsizing target is not a pointer")
+                };
+                return Ok(mini::ValueExpr::BinOp {
+                    operator: mini::BinOp::ConstructWidePointer(target_ptr),
+                    left: mini::GcCow::new(operand_value),
+                    right: mini::GcCow::new(self.constant(span, len)?),
+                });
+            }
             // FIXME(minirust): add vtable support
             UnOp::Cast(CastKind::Unsize(..) | CastKind::Concretize(..)) => {
                 raise!(span, "MiniRust output does not support `dyn Trait`")
@@ -1379,11 +1479,13 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 gdecl.value.with_ctx(&self.fmt)
             )
         };
-        check!(
-            span,
-            u64::try_from(memory.len()).context(span)? == self.size(span, &gdecl.size)?,
-            "global value and layout have different sizes"
-        );
+        if gdecl.ty.get_ptr_metadata(self.krate).is_none() {
+            check!(
+                span,
+                u64::try_from(memory.len()).context(span)? == self.size(span, &gdecl.size)?,
+                "global value and layout have different sizes"
+            );
+        }
         let mut bytes = mini::List::new();
         let mut relocations = mini::List::new();
         for (offset, byte) in memory.iter().enumerate() {

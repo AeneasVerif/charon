@@ -18,10 +18,11 @@ const TIMEOUT: Duration = Duration::from_secs(60);
 const FAILURES: &[(&str, &[&str])] = &[
     // Known charon limitations
     (
-        "MiniRust output doesn't support unsized types yet",
+        "unsupported MiniRust constant:",
         &[
             "pass/array.rs",
             "pass/catch_unwind.rs",
+            "pass/closure_iterator_combinator.rs",
             "pass/const.rs",
             "pass/enum_direct_tag.rs",
             "pass/enums.rs",
@@ -31,8 +32,10 @@ const FAILURES: &[(&str, &[&str])] = &[
             "pass/nullary_op.rs",
             "pass/ops.rs",
             "pass/ptr.rs",
-            "pass/size_of_val.rs",
+            "pass/slice.rs",
             "pass/str.rs",
+            "pass/tree_borrows/box-non-unpin.rs",
+            "pass/tree_borrows/cell_inside_slice.rs",
             "pass/tree_borrows/cell_inside_slice_lazy_write_to_surrounding.rs",
             "pass/tree_borrows/end_of_protector.rs",
             "pass/tree_borrows/protector_end_access_special_cases.rs",
@@ -66,20 +69,16 @@ const FAILURES: &[(&str, &[&str])] = &[
     (
         "MiniRust output does not support `dyn Trait`",
         &[
-            "pass/align_of_val.rs",
-            "pass/closure_iterator_combinator.rs",
             "pass/drop.rs",
-            "pass/slice.rs",
             "pass/trait_object.rs",
-            "panic/slice_out_of_bounds.rs",
             "ub/dangling_vtable.rs",
-            "ub/slice_dangling.rs",
             "ub/wrong_vtable.rs",
         ],
     ),
     (
         "MiniRust output does not support unions because we lack padding information",
         &[
+            "pass/size_of_val.rs",
             "pass/stdlib_mir.rs",
             "pass/union.rs",
             "ub/enum_mark_used_bytes.rs",
@@ -99,13 +98,7 @@ const FAILURES: &[(&str, &[&str])] = &[
         &[
             "pass/tree_borrows/cell_lazy_write_to_surrounding.rs",
             "ub/assume.rs",
-        ],
-    ),
-    (
-        "Failed to translate place to MiniRust: _1.metadata",
-        &[
-            "pass/tree_borrows/cell_inside_slice.rs",
-            "ub/tree_borrows/core/cell_inside_slice.rs",
+            "ub/slice_dangling.rs",
         ],
     ),
     // Unexpected translation bugs
@@ -140,13 +133,6 @@ const FAILURES: &[(&str, &[&str])] = &[
     (
         "got exit status: 0, stdout \"100\\n3\\n\"",
         &["pass/relocation2.rs"],
-    ),
-    (
-        "index out of bounds: the len is 0 but the index is 0",
-        &[
-            "pass/tree_borrows/box-non-unpin.rs",
-            "pass/tree_borrows/no_implicit_writes.rs",
-        ],
     ),
     (
         "MiniRust UB: Tree Borrows: local write of Frozen reference",

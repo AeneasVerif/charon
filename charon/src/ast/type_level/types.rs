@@ -429,10 +429,15 @@ impl TyKind {
         }
     }
 
-    pub fn builtin_deref(&self) -> Option<&Ty> {
+    pub fn builtin_deref<'a>(&'a self, krate: &'a TranslatedCrate) -> Option<&'a Ty> {
         match self {
             TyKind::Ref(_, ty, _) | TyKind::RawPtr(ty, _) => Some(ty),
-            TyKind::Adt(ty_ref) if ty_ref.is_box() => Some(&ty_ref.generics.types[0]),
+            TyKind::Adt(tref) if tref.is_box() => tref
+                .generics
+                .types
+                .first()
+                .or_else(|| krate.item_name(tref.id).mono_args()?.types.first()),
+
             _ => None,
         }
     }
