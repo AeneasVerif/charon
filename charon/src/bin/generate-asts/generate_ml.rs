@@ -323,7 +323,7 @@ pub(crate) fn generate(
                     "FunSig",
                     "Error",
                     "AbortKind",
-                    "AsmKind",
+                    "InlineAsm",
                     "CallSafety",
                 ]),
                 // These have to be kept separate to avoid field name clashes

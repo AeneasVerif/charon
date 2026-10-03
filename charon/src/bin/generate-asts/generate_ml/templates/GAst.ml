@@ -11,6 +11,7 @@
 open Generated_Types
 open Generated_Meta
 open Generated_Expressions
+open Generated_Values
 open Identifiers
 
 module FunDeclId = Expressions.FunDeclId
@@ -19,6 +20,7 @@ module TraitDeclId = Types.TraitDeclId
 module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
 module BranchId = IdGen ()
+module AsmOperandId = IdGen ()
 
 (* Imports *)
 type fn_ptr_kind = Types.fn_ptr_kind [@@deriving show, ord]

@@ -361,6 +361,113 @@ impl<C: AstFormatter> FmtWithCtx<C> for Call {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for AsmRegister {
+    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            AsmRegister::Explicit(reg) => write!(f, "{:?}", reg.as_str()),
+            AsmRegister::Class(class) => write!(f, "{class}"),
+        }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for AsmOperand {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            AsmOperand::In { reg, value } => {
+                write!(f, "in({}) {}", reg.with_ctx(ctx), value.with_ctx(ctx))
+            }
+            AsmOperand::Out { reg, late, place } => {
+                let op = if *late { "lateout" } else { "out" };
+                write!(f, "{op}({}) ", reg.with_ctx(ctx))?;
+                match place {
+                    Some(place) => write!(f, "{}", place.with_ctx(ctx)),
+                    None => write!(f, "_"),
+                }
+            }
+            AsmOperand::InOut {
+                reg,
+                late,
+                in_value,
+                out_place,
+            } => {
+                let op = if *late { "inlateout" } else { "inout" };
+                write!(
+                    f,
+                    "{op}({}) {} => ",
+                    reg.with_ctx(ctx),
+                    in_value.with_ctx(ctx)
+                )?;
+                match out_place {
+                    Some(place) => write!(f, "{}", place.with_ctx(ctx)),
+                    None => write!(f, "_"),
+                }
+            }
+            AsmOperand::Const(value) => write!(f, "const {}", value.with_ctx(ctx)),
+            AsmOperand::SymFn(value) => write!(f, "sym {}", value.with_ctx(ctx)),
+            AsmOperand::SymStatic(value) => write!(f, "sym {}", value.with_ctx(ctx)),
+            AsmOperand::Label(branch) => write!(f, "label(branch {})", branch.index()),
+        }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for InlineAsm {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mac = match self.kind {
+            AsmKind::Asm => "asm",
+            AsmKind::NakedAsm => "naked_asm",
+        };
+        let mut template = String::new();
+        for piece in &self.template {
+            match piece {
+                AsmTemplatePiece::Text(text) => {
+                    for c in text.chars() {
+                        if c == '{' || c == '}' {
+                            template.push(c);
+                        }
+                        template.push(c);
+                    }
+                }
+                AsmTemplatePiece::Placeholder {
+                    operand_id,
+                    modifier,
+                    ..
+                } => {
+                    template.push('{');
+                    template.push_str(&operand_id.index().to_string());
+                    if let Some(modifier) = modifier {
+                        template.push(':');
+                        template.push(*modifier);
+                    }
+                    template.push('}');
+                }
+            }
+        }
+        write!(f, "{mac}!({template:?}")?;
+        for operand in &self.operands {
+            write!(f, ", {}", operand.with_ctx(ctx))?;
+        }
+        let options = &self.options;
+        let flags = [
+            (options.pure, "pure"),
+            (options.nomem, "nomem"),
+            (options.readonly, "readonly"),
+            (options.preserves_flags, "preserves_flags"),
+            (options.noreturn, "noreturn"),
+            (options.nostack, "nostack"),
+            (options.att_syntax, "att_syntax"),
+            (options.may_unwind, "may_unwind"),
+        ];
+        let flags = flags
+            .iter()
+            .filter_map(|(set, name)| set.then_some(*name))
+            .collect_vec();
+        if !flags.is_empty() {
+            write!(f, ", options({})", flags.iter().format(", "))?;
+        }
+        write!(f, ")")
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for UnsizingMetadata {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -2351,24 +2458,30 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             }
             StatementKind::InlineAsm {
                 asm,
-                kind,
-                targets,
+                fallthrough,
+                labels,
                 on_unwind,
             } => {
-                let mac = match kind {
-                    AsmKind::Asm => "asm",
-                    AsmKind::NakedAsm => "naked_asm",
-                };
-                write!(f, "{mac}!({asm:?})")?;
-                if !targets.is_empty() {
+                write!(f, "{}", asm.with_ctx(ctx))?;
+                if fallthrough.is_some() || !labels.is_empty() {
                     write!(f, " {{")?;
                     let ctx1 = &ctx.increase_indent();
-                    for (i, target) in targets.iter().enumerate() {
+                    if let Some(target) = fallthrough {
                         let tab = ctx1.indent();
                         let ctx = &ctx1.increase_indent();
                         write!(
                             f,
-                            "\n{tab}target {i} => {{\n{}{tab}}}",
+                            "\n{tab}fallthrough => {{\n{}{tab}}}",
+                            target.with_ctx(ctx)
+                        )?;
+                    }
+                    for (branch, target) in labels.iter_enumerated() {
+                        let tab = ctx1.indent();
+                        let ctx = &ctx1.increase_indent();
+                        write!(
+                            f,
+                            "\n{tab}label {} => {{\n{}{tab}}}",
+                            branch.index(),
                             target.with_ctx(ctx)
                         )?;
                     }
@@ -2569,21 +2682,20 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
             }
             TerminatorKind::InlineAsm {
                 asm,
-                kind,
-                targets,
+                fallthrough,
+                labels,
                 on_unwind,
             } => {
-                let targets = targets
-                    .iter()
-                    .enumerate()
-                    .map(|(i, target)| format!("target {i}: bb{target}"))
-                    .chain([format!("unwind: bb{on_unwind}")])
-                    .format(", ");
-                let mac = match kind {
-                    AsmKind::Asm => "asm",
-                    AsmKind::NakedAsm => "naked_asm",
-                };
-                write!(f, "{mac}!({asm:?}) -> {targets}")
+                let targets =
+                    fallthrough
+                        .iter()
+                        .map(|target| format!("fallthrough: bb{target}"))
+                        .chain(labels.iter_enumerated().map(|(branch, target)| {
+                            format!("label {}: bb{target}", branch.index())
+                        }))
+                        .chain([format!("unwind: bb{on_unwind}")])
+                        .format(", ");
+                write!(f, "{} -> {targets}", asm.with_ctx(ctx))
             }
             TerminatorKind::Panic { name, on_unwind } => write!(
                 f,

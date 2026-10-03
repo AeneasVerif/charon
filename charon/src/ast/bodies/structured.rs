@@ -87,11 +87,14 @@ pub enum StatementKind {
         on_failure: AbortKind,
         on_unwind: Block,
     },
-    /// An inline assembly block. For now we only preserve the template string.
+    /// An inline assembly block.
     InlineAsm {
-        asm: String,
-        kind: AsmKind,
-        targets: Vec<Block>,
+        asm: InlineAsm,
+        /// Next block if the control-flow continues without jumping. Absent for `naked_asm!` and `noreturn`.
+        fallthrough: Option<Block>,
+        /// Targets of [`AsmOperand::Label`] operands.
+        labels: IndexVec<BranchId, Block>,
+        /// Action to be taken if the inline assembly unwinds.
         on_unwind: Block,
     },
     Call {

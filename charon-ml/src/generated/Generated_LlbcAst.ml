@@ -76,15 +76,15 @@ and statement_kind =
           - [assert]
           - [on_failure]
           - [on_unwind] *)
-  | InlineAsm of string * asm_kind * block list * block
-      (** An inline assembly block. For now we only preserve the template
-          string.
+  | InlineAsm of inline_asm * block option * block list * block
+      (** An inline assembly block.
 
           Fields:
           - [asm]
-          - [kind]
-          - [targets]
-          - [on_unwind] *)
+          - [fallthrough]: Next block if the control-flow continues without
+            jumping. Absent for [naked_asm!] and [noreturn].
+          - [labels]: Targets of [[AsmOperand::Label]] operands.
+          - [on_unwind]: Action to be taken if the inline assembly unwinds. *)
   | Call of call * block
       (** Fields:
           - [call]

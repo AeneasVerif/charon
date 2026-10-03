@@ -110,11 +110,14 @@ pub enum TerminatorKind {
         target: BlockId,
         on_unwind: BlockId,
     },
-    /// An inline assembly block. For now we only preserve the template string.
+    /// An inline assembly block.
     InlineAsm {
-        asm: String,
-        kind: AsmKind,
-        targets: Vec<BlockId>,
+        asm: InlineAsm,
+        /// Next block if the control-flow continues without jumping. Absent for `naked_asm!` and `noreturn`.
+        fallthrough: Option<BlockId>,
+        /// Targets of [`AsmOperand::Label`] operands.
+        labels: IndexVec<BranchId, BlockId>,
+        /// Action to be taken if the inline assembly unwinds.
         on_unwind: BlockId,
     },
 
@@ -391,8 +394,16 @@ impl Terminator {
             }
             TerminatorKind::Switch { branches, .. } => branches.iter().copied().collect(),
             TerminatorKind::InlineAsm {
-                targets, on_unwind, ..
-            } => targets.iter().copied().chain([*on_unwind]).collect(),
+                fallthrough,
+                labels,
+                on_unwind,
+                ..
+            } => fallthrough
+                .iter()
+                .copied()
+                .chain(labels.iter().copied())
+                .chain([*on_unwind])
+                .collect(),
             TerminatorKind::Call {
                 target, on_unwind, ..
             }
@@ -418,8 +429,15 @@ impl Terminator {
             }
             TerminatorKind::Switch { branches, .. } => branches.iter_mut().collect(),
             TerminatorKind::InlineAsm {
-                targets, on_unwind, ..
-            } => targets.iter_mut().chain([on_unwind]).collect(),
+                fallthrough,
+                labels,
+                on_unwind,
+                ..
+            } => fallthrough
+                .iter_mut()
+                .chain(labels.iter_mut())
+                .chain([on_unwind])
+                .collect(),
             TerminatorKind::Call {
                 target, on_unwind, ..
             }
@@ -445,7 +463,15 @@ impl Terminator {
                 smallvec![*target]
             }
             TerminatorKind::Switch { branches, .. } => branches.iter().copied().collect(),
-            TerminatorKind::InlineAsm { targets, .. } => targets.iter().copied().collect(),
+            TerminatorKind::InlineAsm {
+                fallthrough,
+                labels,
+                ..
+            } => fallthrough
+                .iter()
+                .copied()
+                .chain(labels.iter().copied())
+                .collect(),
             TerminatorKind::Call { target, .. }
             | TerminatorKind::Drop { target, .. }
             | TerminatorKind::Assert { target, .. } => {

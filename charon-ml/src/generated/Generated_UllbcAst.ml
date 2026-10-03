@@ -97,15 +97,15 @@ and terminator_kind =
           - [fn_ptr]: Reference to the [drop_glue] code to call on drop.
           - [target]
           - [on_unwind] *)
-  | InlineAsm of string * asm_kind * block_id list * block_id
-      (** An inline assembly block. For now we only preserve the template
-          string.
+  | InlineAsm of inline_asm * block_id option * block_id list * block_id
+      (** An inline assembly block.
 
           Fields:
           - [asm]
-          - [kind]
-          - [targets]
-          - [on_unwind] *)
+          - [fallthrough]: Next block if the control-flow continues without
+            jumping. Absent for [naked_asm!] and [noreturn].
+          - [labels]: Targets of [[AsmOperand::Label]] operands.
+          - [on_unwind]: Action to be taken if the inline assembly unwinds. *)
   | TAssert of assertion * block_id * block_id
       (** Assert that the given condition holds, and if not, unwind to the given
           block. This is used for bounds checks, overflow checks, etc.

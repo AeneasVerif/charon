@@ -1980,6 +1980,84 @@ let pp_global_decl (env : fmt_env) (indent : string) (indent_incr : string)
     (if clauses = "" then " " else "\n ")
     (pp_constant_expr env) def.value pp_metadata def.ptr_metadata
 
+let pp_asm_register fmt (reg : asm_register) =
+  match reg with
+  | Explicit name -> Format.fprintf fmt "%S" name
+  | Class name -> pp_string fmt name
+
+let pp_asm_operand env fmt (operand : asm_operand) =
+  match operand with
+  | In (reg, value) ->
+      Format.fprintf fmt "in(%a) %a" pp_asm_register reg (pp_operand env) value
+  | Out (reg, late, place) -> (
+      let op = if late then "lateout" else "out" in
+      Format.fprintf fmt "%s(%a) " op pp_asm_register reg;
+      match place with
+      | Some place -> pp_place env fmt place
+      | None -> pp_string fmt "_")
+  | InOut (reg, late, value, place) -> (
+      let op = if late then "inlateout" else "inout" in
+      Format.fprintf fmt "%s(%a) %a => " op pp_asm_register reg (pp_operand env)
+        value;
+      match place with
+      | Some place -> pp_place env fmt place
+      | None -> pp_string fmt "_")
+  | Const value -> Format.fprintf fmt "const %a" (pp_constant_expr env) value
+  | SymFn value -> Format.fprintf fmt "sym %a" (pp_fn_ptr env) value
+  | SymStatic value ->
+      Format.fprintf fmt "sym %a" (pp_global_decl_ref env) value
+  | Label branch ->
+      Format.fprintf fmt "label(branch %d)" (BranchId.to_int branch)
+
+let pp_print_inline_asm env fmt (asm : inline_asm) =
+  let mac =
+    match asm.kind with
+    | Asm -> "asm"
+    | NakedAsm -> "naked_asm"
+  in
+  let template = Buffer.create 64 in
+  List.iter
+    (function
+      | AsmTemplateText text ->
+          String.iter
+            (fun c ->
+              if c = '{' || c = '}' then Buffer.add_char template c;
+              Buffer.add_char template c)
+            text
+      | AsmTemplatePlaceholder (operand_id, modifier, _) ->
+          Buffer.add_char template '{';
+          Buffer.add_string template
+            (string_of_int (AsmOperandId.to_int operand_id));
+          Option.iter
+            (fun modifier ->
+              Buffer.add_char template ':';
+              Buffer.add_string template (uchar_to_utf8 modifier))
+            modifier;
+          Buffer.add_char template '}')
+    asm.template;
+  Format.fprintf fmt "%s!(%S" mac (Buffer.contents template);
+  List.iter
+    (fun operand -> Format.fprintf fmt ", %a" (pp_asm_operand env) operand)
+    asm.operands;
+  let options = asm.options in
+  let flags =
+    [
+      (options.pure, "pure");
+      (options.nomem, "nomem");
+      (options.readonly, "readonly");
+      (options.preserves_flags, "preserves_flags");
+      (options.noreturn, "noreturn");
+      (options.nostack, "nostack");
+      (options.att_syntax, "att_syntax");
+      (options.may_unwind, "may_unwind");
+    ]
+    |> List.filter_map (fun (enabled, name) ->
+           if enabled then Some name else None)
+  in
+  if flags <> [] then
+    Format.fprintf fmt ", options(%s)" (String.concat ", " flags);
+  pp_string fmt ")"
+
 module Llbc = struct
   (** Pretty-printing for LLBC AST (generic functions) *)
 
@@ -2061,24 +2139,23 @@ module Llbc = struct
           (pp_print_abort_kind env) on_failure
           (pp_unwind_block env indent indent_incr)
           on_unwind
-    | InlineAsm (asm, kind, targets, on_unwind) ->
-        let mac =
-          match kind with
-          | Asm -> "asm"
-          | NakedAsm -> "naked_asm"
-        in
-        Format.fprintf fmt "%s%s!(%S)" indent mac asm;
-        if targets = [] then
+    | InlineAsm (asm, fallthrough, labels, on_unwind) ->
+        Format.fprintf fmt "%s%a" indent (pp_print_inline_asm env) asm;
+        if fallthrough = None && labels = [] then
           pp_unwind_block env indent indent_incr fmt on_unwind
         else
           let indent1 = indent ^ indent_incr in
           Format.fprintf fmt " {";
+          Option.iter
+            (fun target ->
+              pp_branch_block env indent1 indent_incr fmt "fallthrough" target)
+            fallthrough;
           List.iteri
             (fun i target ->
               pp_branch_block env indent1 indent_incr fmt
-                ("target " ^ string_of_int i)
+                ("label " ^ string_of_int i)
                 target)
-            targets;
+            labels;
           Format.fprintf fmt "\n%s}" indent;
           pp_unwind_block env indent indent_incr fmt on_unwind
     | Call (call, on_unwind) ->
@@ -2275,20 +2352,19 @@ module Ullbc = struct
         Format.fprintf fmt "%sassert %a -> %s (unwind: %s)" indent
           (pp_print_assertion env) asrt (block_id_to_string tgt)
           (block_id_to_string unwind)
-    | InlineAsm (asm, kind, targets, on_unwind) ->
-        let mac =
-          match kind with
-          | Asm -> "asm"
-          | NakedAsm -> "naked_asm"
-        in
+    | InlineAsm (asm, fallthrough, labels, on_unwind) ->
         let targets =
-          List.mapi
-            (fun i target ->
-              "target " ^ string_of_int i ^ ": " ^ block_id_to_string target)
-            targets
+          Option.to_list
+            (Option.map
+               (fun target -> "fallthrough: " ^ block_id_to_string target)
+               fallthrough)
+          @ List.mapi
+              (fun i target ->
+                "label " ^ string_of_int i ^ ": " ^ block_id_to_string target)
+              labels
         in
         let targets = targets @ [ "unwind: " ^ block_id_to_string on_unwind ] in
-        Format.fprintf fmt "%s%s!(%S) -> %s" indent mac asm
+        Format.fprintf fmt "%s%a -> %s" indent (pp_print_inline_asm env) asm
           (String.concat ", " targets)
     | Panic (name, on_unwind) ->
         Format.fprintf fmt "%s%a -> (unwind: %s)" indent

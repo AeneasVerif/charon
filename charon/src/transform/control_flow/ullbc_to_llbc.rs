@@ -1048,19 +1048,18 @@ impl<'a> ReconstructCtx<'a> {
             }
             src::TerminatorKind::InlineAsm {
                 asm,
-                kind,
-                targets,
+                fallthrough,
+                labels,
                 on_unwind,
             } => {
-                let targets = targets
-                    .iter()
-                    .map(|target| self.translate_jump(terminator.span, *target))
-                    .collect();
+                let fallthrough =
+                    fallthrough.map(|target| self.translate_jump(terminator.span, target));
+                let labels = labels.map_ref(|target| self.translate_jump(terminator.span, *target));
                 let on_unwind = self.translate_block(*on_unwind);
                 let st = tgt::StatementKind::InlineAsm {
                     asm: asm.clone(),
-                    kind: *kind,
-                    targets,
+                    fallthrough,
+                    labels,
                     on_unwind,
                 };
                 tgt::Statement::new(src_span, st).into_block()

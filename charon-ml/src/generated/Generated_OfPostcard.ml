@@ -117,6 +117,96 @@ and asm_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 1 -> Ok NakedAsm
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and asm_operand_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (asm_operand, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* reg = asm_register_of_postcard ctx st in
+         let* value = operand_of_postcard ctx st in
+         Ok (In (reg, value))
+     | 1 ->
+         let* reg = asm_register_of_postcard ctx st in
+         let* late = bool_of_postcard ctx st in
+         let* place = option_of_postcard place_of_postcard ctx st in
+         Ok (Out (reg, late, place))
+     | 2 ->
+         let* reg = asm_register_of_postcard ctx st in
+         let* late = bool_of_postcard ctx st in
+         let* in_value = operand_of_postcard ctx st in
+         let* out_place = option_of_postcard place_of_postcard ctx st in
+         Ok (InOut (reg, late, in_value, out_place))
+     | 3 ->
+         let* _0 = constant_expr_of_postcard ctx st in
+         Ok (Const _0)
+     | 4 ->
+         let* _0 = fn_ptr_of_postcard ctx st in
+         Ok (SymFn _0)
+     | 5 ->
+         let* _0 = global_decl_ref_of_postcard ctx st in
+         Ok (SymStatic _0)
+     | 6 ->
+         let* _0 = branch_id_of_postcard ctx st in
+         Ok (Label _0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and asm_operand_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (asm_operand_id, string) result =
+  combine_error_msgs st __FUNCTION__ (AsmOperandId.id_of_postcard ctx st)
+
+and asm_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (asm_options, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* pure = bool_of_postcard ctx st in
+     let* nomem = bool_of_postcard ctx st in
+     let* readonly = bool_of_postcard ctx st in
+     let* preserves_flags = bool_of_postcard ctx st in
+     let* noreturn = bool_of_postcard ctx st in
+     let* nostack = bool_of_postcard ctx st in
+     let* att_syntax = bool_of_postcard ctx st in
+     let* may_unwind = bool_of_postcard ctx st in
+     Ok
+       ({
+          pure;
+          nomem;
+          readonly;
+          preserves_flags;
+          noreturn;
+          nostack;
+          att_syntax;
+          may_unwind;
+        }
+         : asm_options))
+
+and asm_register_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (asm_register, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* _0 = string_of_postcard ctx st in
+         Ok (Explicit _0)
+     | 1 ->
+         let* _0 = string_of_postcard ctx st in
+         Ok (Class _0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and asm_template_piece_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
+    : (asm_template_piece, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 ->
+         let* _0 = string_of_postcard ctx st in
+         Ok (AsmTemplateText _0)
+     | 1 ->
+         let* operand_id = asm_operand_id_of_postcard ctx st in
+         let* modifier = option_of_postcard char_of_postcard ctx st in
+         let* span = span_of_postcard ctx st in
+         Ok (AsmTemplatePlaceholder (operand_id, modifier, span))
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and assertion_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (assertion, string) result =
   combine_error_msgs st __FUNCTION__
@@ -772,6 +862,18 @@ and index_vec_of_postcard :
     ('a1 list, string) result =
  fun arg0_of_postcard arg1_of_postcard ctx st ->
   combine_error_msgs st __FUNCTION__ (list_of_postcard arg1_of_postcard ctx st)
+
+and inline_asm_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (inline_asm, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* kind = asm_kind_of_postcard ctx st in
+     let* template = list_of_postcard asm_template_piece_of_postcard ctx st in
+     let* operands =
+       index_vec_of_postcard asm_operand_id_of_postcard asm_operand_of_postcard
+         ctx st
+     in
+     let* options = asm_options_of_postcard ctx st in
+     Ok ({ kind; template; operands; options } : inline_asm))
 
 and int_ty_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (int_ty, string) result =
@@ -1542,11 +1644,14 @@ module Ullbc = struct
            let* on_unwind = block_id_of_postcard ctx st in
            Ok (Drop (kind, place, fn_ptr, target, on_unwind))
        | 4 ->
-           let* asm = string_of_postcard ctx st in
-           let* kind = asm_kind_of_postcard ctx st in
-           let* targets = list_of_postcard block_id_of_postcard ctx st in
+           let* asm = inline_asm_of_postcard ctx st in
+           let* fallthrough = option_of_postcard block_id_of_postcard ctx st in
+           let* labels =
+             index_vec_of_postcard branch_id_of_postcard block_id_of_postcard
+               ctx st
+           in
            let* on_unwind = block_id_of_postcard ctx st in
-           Ok (InlineAsm (asm, kind, targets, on_unwind))
+           Ok (InlineAsm (asm, fallthrough, labels, on_unwind))
        | 5 ->
            let* assert_ = assertion_of_postcard ctx st in
            let* target = block_id_of_postcard ctx st in
@@ -1632,11 +1737,14 @@ module Llbc = struct
            let* on_unwind = block_of_postcard ctx st in
            Ok (Assert (assert_, on_failure, on_unwind))
        | 8 ->
-           let* asm = string_of_postcard ctx st in
-           let* kind = asm_kind_of_postcard ctx st in
-           let* targets = list_of_postcard block_of_postcard ctx st in
+           let* asm = inline_asm_of_postcard ctx st in
+           let* fallthrough = option_of_postcard block_of_postcard ctx st in
+           let* labels =
+             index_vec_of_postcard branch_id_of_postcard block_of_postcard ctx
+               st
+           in
            let* on_unwind = block_of_postcard ctx st in
-           Ok (InlineAsm (asm, kind, targets, on_unwind))
+           Ok (InlineAsm (asm, fallthrough, labels, on_unwind))
        | 9 ->
            let* call = call_of_postcard ctx st in
            let* on_unwind = block_of_postcard ctx st in
