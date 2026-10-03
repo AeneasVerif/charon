@@ -46,25 +46,42 @@ const FAILURES: &[(&str, &[&str])] = &[
     ),
     (
         "MiniRust output does not support overaligned layouts",
-        &["ub/deref_null_ref.rs", "ub/deref_unaligned_ref.rs"],
+        &[
+            "pass/str.rs",
+            "ub/deref_null_ref.rs",
+            "ub/deref_unaligned_ref.rs",
+        ],
     ),
     (
-        "can't determine which runtime checks are available",
+        "unable to translate caller_location to MiniRust",
         &[
             "pass/catch_unwind.rs",
-            "pass/nullary_op.rs",
-            "pass/ops.rs",
-            "pass/ptr.rs",
-            "pass/slice.rs",
-            "pass/str.rs",
             "pass/tree_borrows/cell_lazy_write_to_surrounding.rs",
             "pass/tree_borrows/cell_inside_slice_lazy_write_to_surrounding.rs",
             "pass/tree_borrows/zero_sized_cell_lazy_write_to_surrounding.rs",
-            "ub/assume.rs",
-            "ub/ptr_offset_from_unsigned.rs",
-            "ub/ptr_offset_not_multiple.rs",
             "ub/slice_dangling.rs",
         ],
+    ),
+    ("unable to translate assume to MiniRust", &["ub/assume.rs"]),
+    (
+        "unable to translate cold_path to MiniRust",
+        &["pass/ops.rs"],
+    ),
+    (
+        "unable to translate arith_offset::<i32> to MiniRust",
+        &["pass/ptr.rs"],
+    ),
+    (
+        "unable to translate ptr_offset_from_unsigned::<u8> to MiniRust",
+        &["ub/ptr_offset_from_unsigned.rs"],
+    ),
+    (
+        "unable to translate ptr_offset_from_unsigned::<u16> to MiniRust",
+        &["ub/ptr_offset_not_multiple.rs"],
+    ),
+    (
+        "unable to translate raw_eq::<[i32; 3usize]> to MiniRust",
+        &["pass/slice.rs"],
     ),
     // Unexpected translation bugs
     (
@@ -77,6 +94,7 @@ const FAILURES: &[(&str, &[&str])] = &[
             "pass/casts.rs",
             "pass/const.rs",
             "pass/const_gap.rs",
+            "pass/nullary_op.rs",
             "pass/overflow.rs",
             "pass/scalar_tuple.rs",
             "pass/small_arrays.rs",

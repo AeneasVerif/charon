@@ -219,6 +219,7 @@ pub enum CastKind {
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("Nullop"))]
 pub enum NullOp {
+    /// Returns `true` during const evaluation, and `krate.runtime_checks.ub_checks` at runtime.
     UbChecks,
     OverflowChecks,
     ContractChecks,

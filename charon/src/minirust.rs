@@ -8,7 +8,6 @@
 //! - `dyn Trait`;
 //! - `CoerceUnsized` pointers;
 //! - Packed and overaligned layouts;
-//! - ub_checks/contract_checks/overflow_checks booleans values;
 //! - Unions, because of precise union padding;
 use itertools::Itertools;
 use minirust_rs::{
@@ -1136,9 +1135,14 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             },
             Rvalue::BinaryOp(op, left, right) => self.binop(span, *op, left, right)?,
             Rvalue::UnaryOp(op, operand) => self.unop(span, op, operand)?,
-            Rvalue::NullaryOp(_) => {
-                // FIXME(minirust): Charon does not translate the session values.
-                raise!(span, "can't determine which runtime checks are available")
+            Rvalue::NullaryOp(op) => {
+                let checks = self.krate.runtime_checks;
+                let value = match op {
+                    NullOp::UbChecks => checks.ub_checks,
+                    NullOp::OverflowChecks => checks.overflow_checks,
+                    NullOp::ContractChecks => checks.contract_checks,
+                };
+                mini::ValueExpr::Constant(mini::Constant::Bool(value), mini::Type::Bool)
             }
             Rvalue::Discriminant(place) => mini::ValueExpr::GetDiscriminant {
                 place: mini::GcCow::new(self.place(span, place)?),

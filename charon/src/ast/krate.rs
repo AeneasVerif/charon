@@ -48,6 +48,9 @@ pub struct TranslatedCrate {
     /// entry per chosen target.
     #[serde(with = "SeqHashMapToArray::<TargetTriple, TargetInfo>")]
     pub target_information: SeqHashMap<TargetTriple, TargetInfo>,
+    /// Values of the runtime checks enabled for this crate.
+    #[serde_state(stateless)]
+    pub runtime_checks: RuntimeChecks,
 
     /// The source files composing the crate and its dependencies. Each [`Span`] refers to a byte
     /// range within one of these files.
@@ -84,6 +87,7 @@ pub struct TranslatedCrate {
     pub trait_decls: IndexMap<TraitDeclId, TraitDecl>,
     /// The trait implementations.
     pub trait_impls: IndexMap<TraitImplId, TraitImpl>,
+
     /// This contains a list of all the reachable items in the crate in a stable, logical order
     /// based on crate and file order, then further grouped and sorted such that every item comes
     /// after the items it depends on.
@@ -97,6 +101,14 @@ pub struct TranslatedCrate {
     /// `Some` after translation unless `--no-reorder-decls` is passed.
     #[serde_state(stateless)]
     pub ordered_decls: Option<Vec<DeclarationGroup>>,
+}
+
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
+pub struct RuntimeChecks {
+    pub ub_checks: bool,
+    pub overflow_checks: bool,
+    pub contract_checks: bool,
 }
 
 /// A (group of) top-level declaration(s), properly reordered.
