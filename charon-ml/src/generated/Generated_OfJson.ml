@@ -1780,12 +1780,12 @@ module Ullbc = struct
           [
             ("statements", statements);
             ("terminator", terminator);
-            ("is_cleanup", is_cleanup);
+            ("kind", kind);
           ] ->
           let* statements = list_of_json statement_of_json ctx statements in
           let* terminator = terminator_of_json ctx terminator in
-          let* is_cleanup = bool_of_json ctx is_cleanup in
-          Ok ({ statements; terminator; is_cleanup } : Generated_UllbcAst.block)
+          let* kind = unwind_kind_of_json ctx kind in
+          Ok ({ statements; terminator; kind } : Generated_UllbcAst.block)
       | _ -> Error "")
 
   and block_id_of_json (ctx : of_json_ctx) (js : json) :
@@ -1946,6 +1946,15 @@ module Ullbc = struct
       | `String "UnwindResume" -> Ok UnwindResume
       | `String "Return" -> Ok Return
       | `String "UndefinedBehavior" -> Ok UndefinedBehavior
+      | _ -> Error "")
+
+  and unwind_kind_of_json (ctx : of_json_ctx) (js : json) :
+      (unwind_kind, string) result =
+    combine_error_msgs js __FUNCTION__
+      (match js with
+      | `String "Regular" -> Ok Regular
+      | `String "Cleanup" -> Ok Cleanup
+      | `String "Terminate" -> Ok Terminate
       | _ -> Error "")
 end
 

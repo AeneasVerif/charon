@@ -1108,9 +1108,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for GExprBody<ullbc_ast::BodyContents> {
             let tab = ctx.indent();
             let ctx = &ctx.increase_indent();
             for (bid, block) in body.iter_enumerated() {
-                let cleanup = if block.is_cleanup { " (cleanup)" } else { "" };
+                let kind = match block.kind {
+                    ullbc::UnwindKind::Regular => "",
+                    ullbc::UnwindKind::Cleanup => " (cleanup)",
+                    ullbc::UnwindKind::Terminate => " (terminate)",
+                };
                 writeln!(f)?;
-                writeln!(f, "{tab}bb{}{cleanup}: {{", bid.index())?;
+                writeln!(f, "{tab}bb{}{kind}: {{", bid.index())?;
                 writeln!(f, "{}", block.with_ctx(ctx))?;
                 writeln!(f, "{tab}}}")?;
             }

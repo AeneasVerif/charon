@@ -73,10 +73,6 @@ const FAILURES: &[(&str, &[&str])] = &[
             "ub/tree_borrows/protector/protector_end_write.rs",
         ],
     ),
-    (
-        "Terminator: unwind block has the wrong block kind",
-        &["panic/struct_unwind.rs"],
-    ),
     // Unexpected runtime bugs
     ("has overflowed its stack", &["pass/static.rs"]),
     (

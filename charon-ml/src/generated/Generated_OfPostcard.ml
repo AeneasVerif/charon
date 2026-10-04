@@ -1561,8 +1561,8 @@ module Ullbc = struct
     combine_error_msgs st __FUNCTION__
       (let* statements = list_of_postcard statement_of_postcard ctx st in
        let* terminator = terminator_of_postcard ctx st in
-       let* is_cleanup = bool_of_postcard ctx st in
-       Ok ({ statements; terminator; is_cleanup } : Generated_UllbcAst.block))
+       let* kind = unwind_kind_of_postcard ctx st in
+       Ok ({ statements; terminator; kind } : Generated_UllbcAst.block))
 
   and block_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
       (Generated_UllbcAst.block_id, string) result =
@@ -1665,6 +1665,16 @@ module Ullbc = struct
        | 8 -> Ok UnwindResume
        | 9 -> Ok Return
        | 10 -> Ok UndefinedBehavior
+       | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+  and unwind_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+      (unwind_kind, string) result =
+    combine_error_msgs st __FUNCTION__
+      (let* __tag = int_of_postcard ctx st in
+       match __tag with
+       | 0 -> Ok Regular
+       | 1 -> Ok Cleanup
+       | 2 -> Ok Terminate
        | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 end
 

@@ -176,7 +176,7 @@ fn main()
         unwind_continue;
     }
 
-    bb6 (cleanup): {
+    bb6 (terminate): {
         unwind_terminate;
     }
 }

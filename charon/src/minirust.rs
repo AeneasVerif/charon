@@ -321,10 +321,10 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     fn_entry: true,
                 }));
             }
-            let block_kind = if block.is_cleanup {
-                mini::BbKind::Cleanup
-            } else {
-                mini::BbKind::Regular
+            let block_kind = match block.kind {
+                ullbc_ast::UnwindKind::Regular => mini::BbKind::Regular,
+                ullbc_ast::UnwindKind::Cleanup => mini::BbKind::Cleanup,
+                ullbc_ast::UnwindKind::Terminate => mini::BbKind::Terminate,
             };
             for statement in &block.statements {
                 match &statement.kind {
@@ -387,7 +387,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             }
             let terminator = self.terminator(
                 &block.terminator,
-                block.is_cleanup,
+                block.kind,
                 &mut blocks,
                 &mut block_id_gen,
             )?;
@@ -455,7 +455,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
     fn terminator(
         &self,
         terminator: &ullbc_ast::Terminator,
-        is_cleanup: bool,
+        unwind_kind: ullbc_ast::UnwindKind,
         extra_blocks: &mut mini::Map<mini::BbName, mini::BasicBlock>,
         block_id_gen: &mut Generator<BlockId>,
     ) -> Result<mini::Terminator> {
@@ -529,7 +529,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             } => {
                 let condition = mb::bool_to_int::<u8>(self.operand(span, &assert.cond)?);
                 let success = self.block_name(*target);
-                let failure = if is_cleanup {
+                let failure = if unwind_kind != ullbc_ast::UnwindKind::Regular {
                     // A second panic while unwinding follows the pre-existing terminate path.
                     self.block_name(*on_unwind)
                 } else {
