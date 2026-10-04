@@ -51,9 +51,10 @@ use derive_generic_visitor::*;
         crate::options::CliOpts,
         Abi, BuiltinImplData, Byte, DeprecatedSince, DropKind, Error, FileName,
         GlobalKind, ItemOpacity, LangItem, LifetimeMutability, OptimizeAttr, OverflowMode,
-        ReprOptions, Variance, FieldPredecessor,
+        ReprOptions, RuntimeChecks, Variance, FieldPredecessor,
         std::ops::RangeInclusive<IntegerValue>,
-        WithRetag, BuiltinPathElem, BranchId, AsmOperandId, AsmKind, AsmRegister, AsmOptions, CallSafety,
+        WithRetag, BuiltinPathElem, BranchId, AsmOperandId, AsmKind, AsmRegister, AsmOptions,
+        CallSafety, ullbc_ast::UnwindKind,
     ),
     // Types that are completely skipped, even by `ZipAst`.
     skip(
@@ -202,8 +203,8 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
         TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         Name, NullOp, RefKind, IntegerValue, Span, Ty, TypeDeclId,  UnOp, VariantId,
         TraitRef, ScalarTy, Region, RegionId, (), String, PathBuf, bool, u32, usize,
-        DropKind, Error, Variance, WithRetag, BuiltinAdt, BuiltinPathElem, AsmKind, AsmRegister, AsmOptions, CallSafety,
-        llbc_ast::BlockId, llbc_ast::StatementId,
+        DropKind, Error, Variance, WithRetag, BuiltinAdt, BuiltinPathElem, AsmKind, AsmRegister,
+        AsmOptions, CallSafety, ullbc_ast::UnwindKind, llbc_ast::BlockId, llbc_ast::StatementId,
     ),
     // Types that we unconditionally explore.
     drive(

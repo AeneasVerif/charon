@@ -1,16 +1,18 @@
 use crate::prelude::*;
 use mem::*;
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 enum Value<M: Memory + libspecr::hidden::Obj> {
     /// A mathematical integer, used for `i*`/`u*` types.
     Int(Int),
@@ -21,21 +23,26 @@ enum Value<M: Memory + libspecr::hidden::Obj> {
     /// An n-tuple, used for arrays, structs, tuples (including unit).
     Tuple(List<Value<M>>),
     /// A variant of a sum type, used for enums.
-    Variant { discriminant: Int, data: libspecr::hidden::GcCow<Value<M>> },
+    Variant {
+        discriminant: Int,
+        data: libspecr::hidden::GcCow<Value<M>>,
+    },
     /// Unions are represented as "lists of chunks", where each chunk is just a raw list of bytes.
     Union(List<List<AbstractByte<M::Provenance>>>),
 }
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 struct Place<M: Memory + libspecr::hidden::Obj> {
     ptr: Pointer<M::Provenance>,
     aligned: bool,
@@ -55,13 +62,11 @@ impl Type {
                 if bytes.len() != 1 {
                     panic!("decode of Type::Bool with invalid length");
                 }
-                ret(
-                    match (bytes).index_at(0) {
-                        AbstractByte::Init(0, _) => Value::Bool(false),
-                        AbstractByte::Init(1, _) => Value::Bool(true),
-                        _ => throw!(),
-                    },
-                )
+                ret(match (bytes).index_at(0) {
+                    AbstractByte::Init(0, _) => Value::Bool(false),
+                    AbstractByte::Init(1, _) => Value::Bool(true),
+                    _ => throw!(),
+                })
             }
             Type::Int(IntType { signed, size }) => {
                 if bytes.len() != size.bytes() {
@@ -91,7 +96,11 @@ impl Type {
                     ret(Value::Ptr(ptr.widen(None)))
                 }
             }
-            Type::Tuple { sized_fields, sized_head_layout, unsized_field } => {
+            Type::Tuple {
+                sized_fields,
+                sized_head_layout,
+                unsized_field,
+            } => {
                 let unsized_field = unsized_field.extract();
                 {
                     assert!(
@@ -102,22 +111,15 @@ impl Type {
                     if bytes.len() != size.bytes() {
                         panic!("decode of Type::Tuple with invalid length");
                     }
-                    ret(
-                        Value::Tuple(
-                            sized_fields
-                                .try_map(|(offset, ty)| {
-                                    let subslice = bytes
-                                        .subslice_with_length(
-                                            offset.bytes(),
-                                            ty
-                                                .layout::<M::T>()
-                                                .expect_size("WF ensures all sized tuple fields are sized")
-                                                .bytes(),
-                                        );
-                                    ty.decode::<M>(subslice)
-                                })?,
-                        ),
-                    )
+                    ret(Value::Tuple(sized_fields.try_map(|(offset, ty)| {
+                        let subslice = bytes.subslice_with_length(
+                            offset.bytes(),
+                            ty.layout::<M::T>()
+                                .expect_size("WF ensures all sized tuple fields are sized")
+                                .bytes(),
+                        );
+                        ty.decode::<M>(subslice)
+                    })?))
                 }
             }
             Type::Array { elem, count } => {
@@ -132,18 +134,12 @@ impl Type {
                     }
                     let chunks: List<_> = (Int::ZERO..count)
                         .map(|i| {
-                            bytes
-                                .subslice_with_length(
-                                    i * elem_size.bytes(),
-                                    elem_size.bytes(),
-                                )
+                            bytes.subslice_with_length(i * elem_size.bytes(), elem_size.bytes())
                         })
                         .collect();
-                    ret(
-                        Value::Tuple(
-                            chunks.try_map(|elem_bytes| elem.decode::<M>(elem_bytes))?,
-                        ),
-                    )
+                    ret(Value::Tuple(
+                        chunks.try_map(|elem_bytes| elem.decode::<M>(elem_bytes))?,
+                    ))
                 }
             }
             Type::Union { size, chunks, .. } => {
@@ -152,26 +148,27 @@ impl Type {
                 }
                 let mut chunk_data = list![];
                 for (offset, size) in chunks {
-                    chunk_data
-                        .push(bytes.subslice_with_length(offset.bytes(), size.bytes()));
+                    chunk_data.push(bytes.subslice_with_length(offset.bytes(), size.bytes()));
                 }
                 ret(Value::Union(chunk_data))
             }
-            Type::Enum { variants, discriminator, size, .. } => {
+            Type::Enum {
+                variants,
+                discriminator,
+                size,
+                ..
+            } => {
                 if bytes.len() != size.bytes() {
                     panic!("decode of Type::Enum with invalid length");
                 }
-                let discriminant = decode_discriminant::<
-                    M,
-                >(
-                        |offset, size| ret(
-                            bytes.subslice_with_length(offset.bytes(), size.bytes()),
-                        ),
-                        discriminator,
-                    )
-                    .unwrap()?;
-                let Some(value) = (variants).index_at(discriminant).ty.decode(bytes)
-                else { return None };
+                let discriminant = decode_discriminant::<M>(
+                    |offset, size| ret(bytes.subslice_with_length(offset.bytes(), size.bytes())),
+                    discriminator,
+                )
+                .unwrap()?;
+                let Some(value) = (variants).index_at(discriminant).ty.decode(bytes) else {
+                    return None;
+                };
                 Some(Value::Variant {
                     discriminant,
                     data: libspecr::hidden::GcCow::new(value),
@@ -199,12 +196,12 @@ impl Type {
                 bytes_data.map(|b| AbstractByte::Init(b, None))
             }
             Type::Ptr(ptr_type) => {
-                let Value::Ptr(ptr) = val else { panic!("val is WF for a pointer") };
+                let Value::Ptr(ptr) = val else {
+                    panic!("val is WF for a pointer")
+                };
                 if let Some(pair_ty) = ptr_type.as_wide_pair::<M::T>() {
                     let thin_ptr_value = Value::Ptr(ptr.thin_pointer.widen(None));
-                    let meta_data_value = ptr_type
-                        .meta_kind()
-                        .encode_as_value::<M>(ptr.metadata);
+                    let meta_data_value = ptr_type.meta_kind().encode_as_value::<M>(ptr.metadata);
                     let tuple = Value::Tuple(list![thin_ptr_value, meta_data_value]);
                     pair_ty.encode::<M>(tuple)
                 } else {
@@ -215,7 +212,11 @@ impl Type {
                     encode_ptr::<M>(ptr.thin_pointer)
                 }
             }
-            Type::Tuple { sized_fields, sized_head_layout, unsized_field } => {
+            Type::Tuple {
+                sized_fields,
+                sized_head_layout,
+                unsized_field,
+            } => {
                 let unsized_field = unsized_field.extract();
                 {
                     assert!(
@@ -227,11 +228,7 @@ impl Type {
                     assert_eq!(values.len(), sized_fields.len());
                     let mut bytes = list![AbstractByte::Uninit; size.bytes()];
                     for ((offset, ty), value) in sized_fields.zip(values) {
-                        bytes
-                            .write_subslice_at_index(
-                                offset.bytes(),
-                                ty.encode::<M>(value),
-                            );
+                        bytes.write_subslice_at_index(offset.bytes(), ty.encode::<M>(value));
                     }
                     bytes
                 }
@@ -241,19 +238,22 @@ impl Type {
                 {
                     let Value::Tuple(values) = val else { panic!() };
                     assert_eq!(values.len(), count);
-                    values
-                        .flat_map(|value| {
-                            let bytes = elem.encode::<M>(value);
-                            assert_eq!(
-                                bytes.len(), elem.layout::< M::T > ()
-                                .expect_size("WF ensures array element is sized").bytes()
-                            );
-                            bytes
-                        })
+                    values.flat_map(|value| {
+                        let bytes = elem.encode::<M>(value);
+                        assert_eq!(
+                            bytes.len(),
+                            elem.layout::<M::T>()
+                                .expect_size("WF ensures array element is sized")
+                                .bytes()
+                        );
+                        bytes
+                    })
                 }
             }
             Type::Union { size, chunks, .. } => {
-                let Value::Union(chunk_data) = val else { panic!() };
+                let Value::Union(chunk_data) = val else {
+                    panic!()
+                };
                 assert_eq!(chunk_data.len(), chunks.len());
                 let mut bytes = list![AbstractByte::Uninit; size.bytes()];
                 for ((offset, size), data) in chunks.zip(chunk_data) {
@@ -270,18 +270,19 @@ impl Type {
                     }
                     _ => panic!(),
                 };
-                let Variant { ty: variant, tagger } = (variants).index_at(discriminant);
+                let Variant {
+                    ty: variant,
+                    tagger,
+                } = (variants).index_at(discriminant);
                 let mut bytes = variant.encode(data);
-                encode_discriminant::<
-                    M,
-                >(
-                        |offset, value_bytes| {
-                            bytes.write_subslice_at_index(offset.bytes(), value_bytes);
-                            ret(())
-                        },
-                        tagger,
-                    )
-                    .unwrap();
+                encode_discriminant::<M>(
+                    |offset, value_bytes| {
+                        bytes.write_subslice_at_index(offset.bytes(), value_bytes);
+                        ret(())
+                    },
+                    tagger,
+                )
+                .unwrap();
                 bytes
             }
             Type::Slice { .. } => panic!("encode of Type::Slice"),
@@ -290,44 +291,48 @@ impl Type {
     }
     /// The layout, i.e. the size and align of the type. For `?Sized` types, this needs to be computed.
     pub fn layout<T: Target + libspecr::hidden::Obj>(self) -> LayoutStrategy {
-        use Type::*;
         use LayoutStrategy::Sized;
+        use Type::*;
         match self {
             Int(int_type) => Sized(int_type.size, int_type.align::<T>()),
             Bool => Sized(Size::from_bytes_const(1), Align::ONE),
-            Ptr(p) if p.meta_kind() == PointerMetaKind::None => {
-                Sized(T::PTR_SIZE, T::PTR_ALIGN)
-            }
+            Ptr(p) if p.meta_kind() == PointerMetaKind::None => Sized(T::PTR_SIZE, T::PTR_ALIGN),
             Ptr(_) => Sized(libspecr::Int::from(2) * T::PTR_SIZE, T::PTR_ALIGN),
             Union { size, align, .. } | Enum { size, align, .. } => Sized(size, align),
-            Tuple { sized_head_layout, unsized_field, .. } => {
+            Tuple {
+                sized_head_layout,
+                unsized_field,
+                ..
+            } => {
                 let unsized_field = unsized_field.extract();
                 match unsized_field {
                     None => {
                         let (size, align) = sized_head_layout.head_size_and_align();
                         Sized(size, align)
                     }
-                    Some(tail_ty) => {
-                        LayoutStrategy::Tuple {
-                            head: sized_head_layout,
-                            tail: libspecr::hidden::GcCow::new(tail_ty.layout::<T>()),
-                        }
-                    }
+                    Some(tail_ty) => LayoutStrategy::Tuple {
+                        head: sized_head_layout,
+                        tail: libspecr::hidden::GcCow::new(tail_ty.layout::<T>()),
+                    },
                 }
             }
             Array { elem, count } => {
                 let elem = elem.extract();
                 Sized(
-                    elem.layout::<T>().expect_size("WF ensures array element is sized")
+                    elem.layout::<T>()
+                        .expect_size("WF ensures array element is sized")
                         * count,
-                    elem.layout::<T>().expect_align("WF ensures array element is sized"),
+                    elem.layout::<T>()
+                        .expect_align("WF ensures array element is sized"),
                 )
             }
             Slice { elem } => {
                 let elem = elem.extract();
                 LayoutStrategy::Slice(
-                    elem.layout::<T>().expect_size("WF ensures slice element is sized"),
-                    elem.layout::<T>().expect_align("WF ensures array element is sized"),
+                    elem.layout::<T>()
+                        .expect_size("WF ensures slice element is sized"),
+                    elem.layout::<T>()
+                        .expect_align("WF ensures array element is sized"),
                 )
             }
             TraitObject(trait_name) => LayoutStrategy::TraitObject(trait_name),
@@ -359,23 +364,24 @@ impl Type {
             Ptr(ptr_type) => {
                 ptr_type.check_wf::<T>(prog)?;
             }
-            Tuple { mut sized_fields, unsized_field, sized_head_layout } => {
+            Tuple {
+                mut sized_fields,
+                unsized_field,
+                sized_head_layout,
+            } => {
                 let unsized_field = unsized_field.extract();
                 {
                     sized_fields.sort_by_key(|(offset, _ty)| offset);
                     let mut last_end = Size::ZERO;
                     for (offset, ty) in sized_fields {
                         ty.check_wf::<T>(prog)?;
-                        ensure_wf(
-                            offset >= last_end,
-                            "Type::Tuple: overlapping fields",
-                        )?;
+                        ensure_wf(offset >= last_end, "Type::Tuple: overlapping fields")?;
                         ensure_wf(
                             ty.layout::<T>().is_sized(),
                             "Type::Tuple: unsized field type in head",
                         )?;
-                        last_end = offset
-                            + ty.layout::<T>().expect_size("ensured to be sized above");
+                        last_end =
+                            offset + ty.layout::<T>().expect_size("ensured to be sized above");
                     }
                     if let Some(unsized_field) = unsized_field {
                         unsized_field.check_wf::<T>(prog)?;
@@ -418,7 +424,12 @@ impl Type {
                     elem.check_wf::<T>(prog)?;
                 }
             }
-            Union { fields, size, chunks, align: _ } => {
+            Union {
+                fields,
+                size,
+                chunks,
+                align: _,
+            } => {
                 for (offset, ty) in fields {
                     ty.check_wf::<T>(prog)?;
                     ensure_wf(
@@ -426,9 +437,7 @@ impl Type {
                         "Type::Union: unsized field type",
                     )?;
                     ensure_wf(
-                        size
-                            >= offset
-                                + ty.layout::<T>().expect_size("ensured to be sized above"),
+                        size >= offset + ty.layout::<T>().expect_size("ensured to be sized above"),
                         "Type::Union: field size does not fit union",
                     )?;
                 }
@@ -442,26 +451,28 @@ impl Type {
                 }
                 ensure_wf(size >= last_end, "Type::Union: chunks do not fit union")?;
             }
-            Enum { variants, size, align, discriminator, discriminant_ty } => {
+            Enum {
+                variants,
+                size,
+                align,
+                discriminator,
+                discriminant_ty,
+            } => {
                 for (discriminant, variant) in variants {
                     ensure_wf(
                         discriminant_ty.can_represent(discriminant),
                         "Type::Enum: invalid value for discriminant",
                     )?;
                     variant.ty.check_wf::<T>(prog)?;
-                    let LayoutStrategy::Sized(var_size, var_align) = variant
-                        .ty
-                        .layout::<T>() else {
+                    let LayoutStrategy::Sized(var_size, var_align) = variant.ty.layout::<T>()
+                    else {
                         throw_ill_formed!("Type::Enum: variant type is unsized")
                     };
                     ensure_wf(
                         var_size == size,
                         "Type::Enum: variant size is not the same as enum size",
                     )?;
-                    ensure_wf(
-                        var_align <= align,
-                        "Type::Enum: invalid align requirement",
-                    )?;
+                    ensure_wf(var_align <= align, "Type::Enum: invalid align requirement")?;
                     for (offset, (value_type, value)) in variant.tagger {
                         value_type.check_wf()?;
                         ensure_wf(
@@ -487,7 +498,8 @@ impl Type {
         layout.check_wf::<T>(prog)?;
         layout.check_aligned()?;
         assert_eq!(
-            layout.meta_kind(), self.meta_kind(),
+            layout.meta_kind(),
+            self.meta_kind(),
             "Type::meta_kind() must match the Type::layout()'s kind"
         );
         ret(())
@@ -501,19 +513,22 @@ fn decode_ptr<M: Memory + libspecr::hidden::Obj>(
     }
     let bytes_data = bytes.try_map(|b| b.data())?;
     let addr = M::T::ENDIANNESS.decode(Unsigned, bytes_data);
-    let provenance = bytes
-        .fold_with_idx(
-            (bytes).index_at(0).provenance_frag().map(|frag| frag.provenance),
-            |acc, idx, byte| {
-                if let Some(frag) = byte.provenance_frag() && frag.position == idx
-                    && Some(frag.provenance) == acc
-                {
-                    acc
-                } else {
-                    None
-                }
-            },
-        );
+    let provenance = bytes.fold_with_idx(
+        (bytes)
+            .index_at(0)
+            .provenance_frag()
+            .map(|frag| frag.provenance),
+        |acc, idx, byte| {
+            if let Some(frag) = byte.provenance_frag()
+                && frag.position == idx
+                && Some(frag.provenance) == acc
+            {
+                acc
+            } else {
+                None
+            }
+        },
+    );
     ret(ThinPointer { addr, provenance })
 }
 fn encode_ptr<M: Memory + libspecr::hidden::Obj>(
@@ -522,16 +537,15 @@ fn encode_ptr<M: Memory + libspecr::hidden::Obj>(
     let bytes_data = M::T::ENDIANNESS
         .encode(Unsigned, M::T::PTR_SIZE, ptr.addr)
         .unwrap();
-    bytes_data
-        .map_with_idx(|i, b| AbstractByte::Init(
+    bytes_data.map_with_idx(|i, b| {
+        AbstractByte::Init(
             b,
-            ptr
-                .provenance
-                .map(|provenance| ProvenanceFrag {
-                    provenance,
-                    position: i,
-                }),
-        ))
+            ptr.provenance.map(|provenance| ProvenanceFrag {
+                provenance,
+                position: i,
+            }),
+        )
+    })
 }
 impl PointerMetaKind {
     /// Returns the type of the metadata when used as a value.
@@ -539,9 +553,7 @@ impl PointerMetaKind {
         match self {
             PointerMetaKind::None => unit_type(),
             PointerMetaKind::ElementCount => Type::Int(IntType::usize_ty::<T>()),
-            PointerMetaKind::VTablePointer(trait_name) => {
-                Type::Ptr(PtrType::VTablePtr(trait_name))
-            }
+            PointerMetaKind::VTablePointer(trait_name) => Type::Ptr(PtrType::VTablePtr(trait_name)),
         }
     }
     /// Decodes a value to metadata.
@@ -556,10 +568,7 @@ impl PointerMetaKind {
             (PointerMetaKind::ElementCount, Value::Int(count)) => {
                 Some(PointerMeta::ElementCount(count))
             }
-            (
-                PointerMetaKind::VTablePointer(_),
-                Value::Ptr(ptr),
-            ) if ptr.metadata.is_none() => {
+            (PointerMetaKind::VTablePointer(_), Value::Ptr(ptr)) if ptr.metadata.is_none() => {
                 Some(PointerMeta::VTablePointer(ptr.thin_pointer))
             }
             _ => panic!("PointerMeta::decode_value called with invalid value"),
@@ -576,10 +585,9 @@ impl PointerMetaKind {
             (PointerMetaKind::ElementCount, Some(PointerMeta::ElementCount(count))) => {
                 Value::Int(count)
             }
-            (
-                PointerMetaKind::VTablePointer(_),
-                Some(PointerMeta::VTablePointer(ptr)),
-            ) => Value::Ptr(ptr.widen(None)),
+            (PointerMetaKind::VTablePointer(_), Some(PointerMeta::VTablePointer(ptr))) => {
+                Value::Ptr(ptr.widen(None))
+            }
             _ => panic!("PointerMeta::encode_as_value called with invalid value"),
         }
     }
@@ -592,12 +600,18 @@ impl PtrType {
         }
         let meta_ty = self.meta_kind().ty::<T>();
         assert_eq!(
-            meta_ty.layout::< T > ().expect_size("metadata is always sized"),
-            T::PTR_SIZE, "metadata is assumed to be pointer-sized"
+            meta_ty
+                .layout::<T>()
+                .expect_size("metadata is always sized"),
+            T::PTR_SIZE,
+            "metadata is assumed to be pointer-sized"
         );
         assert_eq!(
-            meta_ty.layout::< T > ().expect_align("metadata is always sized"),
-            T::PTR_ALIGN, "metadata is assumed to be pointer-aligned"
+            meta_ty
+                .layout::<T>()
+                .expect_align("metadata is always sized"),
+            T::PTR_ALIGN,
+            "metadata is assumed to be pointer-aligned"
         );
         let thin_pointer_field = (
             Offset::ZERO,
@@ -647,18 +661,26 @@ fn decode_discriminant<M: Memory + libspecr::hidden::Obj>(
     match discriminator {
         Discriminator::Known(val) => ret(Some(val)),
         Discriminator::Invalid => ret(None),
-        Discriminator::Branch { offset, value_type, children, fallback } => {
+        Discriminator::Branch {
+            offset,
+            value_type,
+            children,
+            fallback,
+        } => {
             let fallback = fallback.extract();
             {
                 let bytes = accessor(offset, value_type.size)?;
-                let Some(Value::Int(val)) = Type::Int(value_type).decode::<M>(bytes)
-                else {
+                let Some(Value::Int(val)) = Type::Int(value_type).decode::<M>(bytes) else {
                     return ret(None);
                 };
                 let next_discriminator = children
                     .iter()
                     .find_map(|((start, end), child)| {
-                        if start <= val && val < end { Some(child) } else { None }
+                        if start <= val && val < end {
+                            Some(child)
+                        } else {
+                            None
+                        }
                     })
                     .unwrap_or(fallback);
                 decode_discriminant::<M>(accessor, next_discriminator)
@@ -698,15 +720,9 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
         match (meta, kind) {
             (None, PointerMetaKind::None) => {}
             (Some(PointerMeta::ElementCount(num)), PointerMetaKind::ElementCount) => {
-                self.check_value(
-                    Value::Int(num),
-                    Type::Int(IntType::usize_ty::<M::T>()),
-                )?
+                self.check_value(Value::Int(num), Type::Int(IntType::usize_ty::<M::T>()))?
             }
-            (
-                Some(PointerMeta::VTablePointer(ptr)),
-                PointerMetaKind::VTablePointer(trait_name),
-            ) => {
+            (Some(PointerMeta::VTablePointer(ptr)), PointerMetaKind::VTablePointer(trait_name)) => {
                 self.check_ptr(ptr.widen(None), PtrType::VTablePtr(trait_name))?;
             }
             _ => throw_ub!("Value::Ptr: invalid metadata"),
@@ -754,14 +770,18 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
     fn check_value(&self, value: Value<M>, ty: Type) -> Result {
         match (value, ty) {
             (Value::Int(i), Type::Int(int_ty)) => {
-                ensure_else_ub(
-                    int_ty.can_represent(i),
-                    "Value::Int: invalid integer value",
-                )?;
+                ensure_else_ub(int_ty.can_represent(i), "Value::Int: invalid integer value")?;
             }
             (Value::Bool(_), Type::Bool) => {}
             (Value::Ptr(ptr), Type::Ptr(ptr_ty)) => self.check_ptr(ptr, ptr_ty)?,
-            (Value::Tuple(vals), Type::Tuple { sized_fields, unsized_field, .. }) => {
+            (
+                Value::Tuple(vals),
+                Type::Tuple {
+                    sized_fields,
+                    unsized_field,
+                    ..
+                },
+            ) => {
                 let unsized_field = unsized_field.extract();
                 {
                     assert!(
@@ -830,7 +850,8 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
     ) -> Result {
         assert!(
             self.check_value(val, ty).is_ok(),
-            "trying to store {val:?} which is ill-formed for {:#?}", ty
+            "trying to store {val:?} which is ill-formed for {:#?}",
+            ty
         );
         let bytes = ty.encode::<M>(val);
         self.mem.store(ptr, bytes, align, atomicity)?;
@@ -843,33 +864,34 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
         align: Align,
         atomicity: Atomicity,
     ) -> Result<Value<M>> {
-        let bytes = self
-            .mem
-            .load(
-                ptr,
-                ty.layout::<M::T>().expect_size("the callers ensure `ty` is sized"),
-                align,
-                atomicity,
-            )?;
-        ret(
-            match ty.decode::<M>(bytes) {
-                Some(val) => {
-                    self.check_value(val, ty)?;
-                    val
-                }
-                None => {
-                    throw_ub!(
-                        "load at type {ty:?} but the data in memory violates the language invariant"
-                    )
-                }
-            },
-        )
+        let bytes = self.mem.load(
+            ptr,
+            ty.layout::<M::T>()
+                .expect_size("the callers ensure `ty` is sized"),
+            align,
+            atomicity,
+        )?;
+        ret(match ty.decode::<M>(bytes) {
+            Some(val) => {
+                self.check_value(val, ty)?;
+                val
+            }
+            None => {
+                throw_ub!(
+                    "load at type {ty:?} but the data in memory violates the language invariant"
+                )
+            }
+        })
     }
     /// Transmutes `val` from `type1` to `type2`.
     fn transmute(&self, val: Value<M>, type1: Type, type2: Type) -> Result<Value<M>> {
         assert!(
-            type1.layout::< M::T > ().expect_size("WF ensures sized operands") == type2
-            .layout::< M::T > ().expect_size("WF ensures sized operands")
+            type1
+                .layout::<M::T>()
+                .expect_size("WF ensures sized operands")
+                == type2
+                    .layout::<M::T>()
+                    .expect_size("WF ensures sized operands")
         );
         let bytes = type1.encode::<M>(val);
         if let Some(raw_value) = type2.decode::<M>(bytes) {
@@ -896,12 +918,10 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
             global_ptrs.insert(global_name, alloc);
         }
         for (global_name, global) in prog.globals {
-            let mut bytes = global
-                .bytes
-                .map(|b| match b {
-                    Some(x) => AbstractByte::Init(x, None),
-                    None => AbstractByte::Uninit,
-                });
+            let mut bytes = global.bytes.map(|b| match b {
+                Some(x) => AbstractByte::Init(x, None),
+                None => AbstractByte::Uninit,
+            });
             for (i, relocation) in global.relocations {
                 let ptr = (global_ptrs)
                     .index_at(relocation.name)
@@ -910,12 +930,12 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 bytes.write_subslice_at_index(i.bytes(), encoded_ptr);
             }
             mem.store(
-                    (global_ptrs).index_at(global_name),
-                    bytes,
-                    global.align,
-                    Atomicity::None,
-                )
-                .unwrap();
+                (global_ptrs).index_at(global_name),
+                bytes,
+                global.align,
+                Atomicity::None,
+            )
+            .unwrap();
         }
         for (fn_name, _function) in prog.functions {
             let alloc = mem.allocate(AllocationKind::Function, Size::ZERO, Align::ONE)?;
@@ -945,7 +965,10 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
     }
     /// To run a MiniRust program, call this in a loop until it throws an `Err` (UB or termination).
     pub fn step(&mut self) -> NdResult {
-        if !self.threads.any(|thread| thread.state == ThreadState::Enabled) {
+        if !self
+            .threads
+            .any(|thread| thread.state == ThreadState::Enabled)
+        {
             throw_deadlock!();
         }
         let prev_step_information = self.reset_data_race_tracking();
@@ -954,15 +977,12 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
             end: Int::from(self.threads.len()),
             divisor: Int::ONE,
         };
-        self.active_thread = pick(
-            distr,
-            |id: ThreadId| {
-                let Some(thread) = self.threads.get(id) else {
-                    return false;
-                };
-                thread.state == ThreadState::Enabled
-            },
-        )?;
+        self.active_thread = pick(distr, |id: ThreadId| {
+            let Some(thread) = self.threads.get(id) else {
+                return false;
+            };
+            thread.state == ThreadState::Enabled
+        })?;
         let frame = self.cur_frame();
         let block = &(frame.func.blocks).index_at(frame.next_block);
         if frame.next_stmt == block.statements.len() {
@@ -975,7 +995,8 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 ret(())
             })?;
         }
-        self.mem.check_data_races(self.active_thread, prev_step_information)?;
+        self.mem
+            .check_data_races(self.active_thread, prev_step_information)?;
         ret(())
     }
     fn active_thread(&self) -> Thread<M> {
@@ -994,42 +1015,34 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
         &mut self,
         f: impl FnOnce(&mut StackFrame<M>, &mut ConcurrentMemory<M>) -> O,
     ) -> O {
-        self.threads
-            .mutate_at(
-                self.active_thread,
-                |thread| thread.mutate_cur_frame(|frame| f(frame, &mut self.mem)),
-            )
+        self.threads.mutate_at(self.active_thread, |thread| {
+            thread.mutate_cur_frame(|frame| f(frame, &mut self.mem))
+        })
     }
     fn try_mutate_cur_frame<O: libspecr::hidden::Obj>(
         &mut self,
         f: impl FnOnce(&mut StackFrame<M>, &mut ConcurrentMemory<M>) -> NdResult<O>,
     ) -> NdResult<O> {
-        self.threads
-            .try_mutate_at(
-                self.active_thread,
-                |thread| thread.try_mutate_cur_frame(|frame| f(frame, &mut self.mem)),
-            )
+        self.threads.try_mutate_at(self.active_thread, |thread| {
+            thread.try_mutate_cur_frame(|frame| f(frame, &mut self.mem))
+        })
     }
     fn mutate_cur_stack<O: libspecr::hidden::Obj>(
         &mut self,
         f: impl FnOnce(&mut List<StackFrame<M>>) -> O,
     ) -> O {
-        self.threads.mutate_at(self.active_thread, |thread| f(&mut thread.stack))
+        self.threads
+            .mutate_at(self.active_thread, |thread| f(&mut thread.stack))
     }
     /// Create a new thread where the first frame calls the given function with the given arguments.
-    fn new_thread(
-        &mut self,
-        func: Function,
-        args: List<(Value<M>, Type)>,
-    ) -> NdResult<ThreadId> {
-        let init_frame = self
-            .create_frame(
-                func,
-                StackPopAction::BottomOfStack,
-                CallingConvention::C,
-                unit_type(),
-                args,
-            )?;
+    fn new_thread(&mut self, func: Function, args: List<(Value<M>, Type)>) -> NdResult<ThreadId> {
+        let init_frame = self.create_frame(
+            func,
+            StackPopAction::BottomOfStack,
+            CallingConvention::C,
+            unit_type(),
+            args,
+        )?;
         let thread = Thread {
             state: ThreadState::Enabled,
             stack: list![init_frame],
@@ -1041,14 +1054,16 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
     }
     /// Look up a function given a pointer.
     fn fn_from_ptr(&self, ptr: Value<M>) -> Result<Function> {
-        if let Value::Ptr(Pointer { thin_pointer: thin_ptr, metadata }) = ptr {
+        if let Value::Ptr(Pointer {
+            thin_pointer: thin_ptr,
+            metadata,
+        }) = ptr
+        {
             if metadata.is_some() {
                 throw_ub!("invalid pointer for function lookup");
             }
-            let Some((func_name, _)) = self
-                .fn_ptrs
-                .iter()
-                .find(|(_, fn_ptr)| *fn_ptr == thin_ptr) else {
+            let Some((func_name, _)) = self.fn_ptrs.iter().find(|(_, fn_ptr)| *fn_ptr == thin_ptr)
+            else {
                 throw_ub!("invalid pointer for function lookup");
             };
             ret((self.prog.functions).index_at(func_name))
@@ -1061,7 +1076,8 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
         let Some((vtable_name, _)) = self
             .vtable_ptrs
             .iter()
-            .find(|(_, vtable_ptr)| *vtable_ptr == ptr) else {
+            .find(|(_, vtable_ptr)| *vtable_ptr == ptr)
+        else {
             throw_ub!("invalid pointer for vtable lookup");
         };
         ret((self.prog.vtables).index_at(vtable_name))
@@ -1109,7 +1125,10 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
     }
     fn eval_statement(&mut self, statement: Statement) -> NdResult {
         match statement {
-            Statement::Assign { destination, source } => {
+            Statement::Assign {
+                destination,
+                source,
+            } => {
                 let (place, ty) = self.eval_place(destination)?;
                 let (val, _) = self.eval_value(source)?;
                 self.place_store(place, val, ty)?;
@@ -1120,24 +1139,20 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 ret(())
             }
             Statement::SetDiscriminant { destination, value } => {
-                let (place, Type::Enum { variants, .. }) = self.eval_place(destination)?
-                else {
+                let (place, Type::Enum { variants, .. }) = self.eval_place(destination)? else {
                     panic!(
                         "setting the discriminant type of a non-enum contradicts well-formedness"
                     );
                 };
                 if !place.aligned {
-                    throw_ub!(
-                        "setting the discriminant of a place based on a misaligned pointer"
-                    );
+                    throw_ub!("setting the discriminant of a place based on a misaligned pointer");
                 }
                 let tagger = match variants.get(value) {
                     Some(Variant { tagger, .. }) => tagger,
                     None => panic!("setting an invalid discriminant ({value})"),
                 };
                 let accessor = |offset: Offset, bytes| {
-                    let ptr = self
-                        .ptr_offset_inbounds(place.ptr.thin_pointer, offset.bytes())?;
+                    let ptr = self.ptr_offset_inbounds(place.ptr.thin_pointer, offset.bytes())?;
                     self.mem.store(ptr, bytes, Align::ONE, Atomicity::None)
                 };
                 encode_discriminant::<M>(accessor, tagger)?;
@@ -1155,23 +1170,19 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 if !p.aligned {
                     throw_ub!("de-initializing a place based on a misaligned pointer");
                 }
-                self.mem
-                    .deinit(
-                        p.ptr.thin_pointer,
-                        ty.layout::<M::T>().expect_size("WF ensures deinits are sized"),
-                        Align::ONE,
-                    )?;
+                self.mem.deinit(
+                    p.ptr.thin_pointer,
+                    ty.layout::<M::T>()
+                        .expect_size("WF ensures deinits are sized"),
+                    Align::ONE,
+                )?;
                 ret(())
             }
             Statement::StorageLive(local) => {
-                self.try_mutate_cur_frame(|frame, mem| {
-                    frame.storage_live(mem, local)
-                })
+                self.try_mutate_cur_frame(|frame, mem| frame.storage_live(mem, local))
             }
             Statement::StorageDead(local) => {
-                self.try_mutate_cur_frame(|frame, mem| {
-                    frame.storage_dead(mem, local)
-                })
+                self.try_mutate_cur_frame(|frame, mem| frame.storage_dead(mem, local))
             }
         }
     }
@@ -1183,60 +1194,44 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
         ret(())
     }
     /// Find all pointers in this value, ensure they are valid, and retag them.
-    fn retag_val(
-        &mut self,
-        val: Value<M>,
-        ty: Type,
-        fn_entry: bool,
-    ) -> Result<Value<M>> {
-        ret(
-            match (val, ty) {
-                (Value::Int(..) | Value::Bool(..) | Value::Union(..), _) => val,
-                (Value::Ptr(ptr), Type::Ptr(ptr_type)) => {
-                    let lookup = self.vtable_lookup();
-                    let val = self
-                        .mutate_cur_frame(|frame, mem| {
-                            mem.retag_ptr(
-                                &mut frame.extra,
-                                ptr,
-                                ptr_type,
-                                fn_entry,
-                                frame.func.implicit_writes,
-                                lookup,
-                            )
-                        })?;
-                    Value::Ptr(val)
-                }
-                (Value::Tuple(vals), Type::Tuple { sized_fields, .. }) => {
-                    Value::Tuple(
-                        vals
-                            .zip(sized_fields)
-                            .try_map(|(val, (_offset, ty))| {
-                                self.retag_val(val, ty, fn_entry)
-                            })?,
+    fn retag_val(&mut self, val: Value<M>, ty: Type, fn_entry: bool) -> Result<Value<M>> {
+        ret(match (val, ty) {
+            (Value::Int(..) | Value::Bool(..) | Value::Union(..), _) => val,
+            (Value::Ptr(ptr), Type::Ptr(ptr_type)) => {
+                let lookup = self.vtable_lookup();
+                let val = self.mutate_cur_frame(|frame, mem| {
+                    mem.retag_ptr(
+                        &mut frame.extra,
+                        ptr,
+                        ptr_type,
+                        fn_entry,
+                        frame.func.implicit_writes,
+                        lookup,
                     )
+                })?;
+                Value::Ptr(val)
+            }
+            (Value::Tuple(vals), Type::Tuple { sized_fields, .. }) => Value::Tuple(
+                vals.zip(sized_fields)
+                    .try_map(|(val, (_offset, ty))| self.retag_val(val, ty, fn_entry))?,
+            ),
+            (Value::Tuple(vals), Type::Array { elem: ty, .. }) => {
+                let ty = ty.extract();
+                Value::Tuple(vals.try_map(|val| self.retag_val(val, ty, fn_entry))?)
+            }
+            (Value::Variant { discriminant, data }, Type::Enum { variants, .. }) => {
+                let data = data.extract();
+                Value::Variant {
+                    discriminant,
+                    data: libspecr::hidden::GcCow::new(self.retag_val(
+                        data,
+                        (variants).index_at(discriminant).ty,
+                        fn_entry,
+                    )?),
                 }
-                (Value::Tuple(vals), Type::Array { elem: ty, .. }) => {
-                    let ty = ty.extract();
-                    Value::Tuple(vals.try_map(|val| self.retag_val(val, ty, fn_entry))?)
-                }
-                (Value::Variant { discriminant, data }, Type::Enum { variants, .. }) => {
-                    let data = data.extract();
-                    Value::Variant {
-                        discriminant,
-                        data: libspecr::hidden::GcCow::new(
-                            self
-                                .retag_val(
-                                    data,
-                                    (variants).index_at(discriminant).ty,
-                                    fn_entry,
-                                )?,
-                        ),
-                    }
-                }
-                _ => panic!("this value does not have that type"),
-            },
-        )
+            }
+            _ => panic!("this value does not have that type"),
+        })
     }
     pub fn lock_create(&mut self) -> LockId {
         let id = self.locks.len();
@@ -1250,22 +1245,14 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
         };
         match lock {
             LockState::Unlocked => {
-                self.locks
-                    .mutate_at(
-                        lock_id,
-                        |lock_state| {
-                            *lock_state = LockState::LockedBy(active);
-                        },
-                    );
+                self.locks.mutate_at(lock_id, |lock_state| {
+                    *lock_state = LockState::LockedBy(active);
+                });
             }
             LockState::LockedBy(_) => {
-                self.threads
-                    .mutate_at(
-                        active,
-                        |thread| {
-                            thread.state = ThreadState::BlockedOnLock(lock_id);
-                        },
-                    );
+                self.threads.mutate_at(active, |thread| {
+                    thread.state = ThreadState::BlockedOnLock(lock_id);
+                });
             }
         }
         ret(())
@@ -1286,38 +1273,23 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                         end: Int::from(self.threads.len()),
                         divisor: Int::ONE,
                     };
-                    let acquirer_id: ThreadId = pick(
-                        distr,
-                        |id: ThreadId| {
-                            let Some(thread) = self.threads.get(id) else {
-                                return false;
-                            };
-                            thread.state == ThreadState::BlockedOnLock(lock_id)
-                        },
-                    )?;
-                    self.threads
-                        .mutate_at(
-                            acquirer_id,
-                            |thread| {
-                                thread.state = ThreadState::Enabled;
-                            },
-                        );
+                    let acquirer_id: ThreadId = pick(distr, |id: ThreadId| {
+                        let Some(thread) = self.threads.get(id) else {
+                            return false;
+                        };
+                        thread.state == ThreadState::BlockedOnLock(lock_id)
+                    })?;
+                    self.threads.mutate_at(acquirer_id, |thread| {
+                        thread.state = ThreadState::Enabled;
+                    });
                     self.synchronized_threads.insert(acquirer_id);
-                    self.locks
-                        .mutate_at(
-                            lock_id,
-                            |lock| {
-                                *lock = LockState::LockedBy(acquirer_id);
-                            },
-                        );
+                    self.locks.mutate_at(lock_id, |lock| {
+                        *lock = LockState::LockedBy(acquirer_id);
+                    });
                 } else {
-                    self.locks
-                        .mutate_at(
-                            lock_id,
-                            |lock| {
-                                *lock = LockState::Unlocked;
-                            },
-                        );
+                    self.locks.mutate_at(lock_id, |lock| {
+                        *lock = LockState::Unlocked;
+                    });
                 }
                 ret(())
             }
@@ -1334,7 +1306,11 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 let vals = exprs.try_map(|e| self.eval_value(e))?.map(|e| e.0);
                 ret((Value::Tuple(vals), ty))
             }
-            ValueExpr::Union { field, expr, union_ty } => {
+            ValueExpr::Union {
+                field,
+                expr,
+                union_ty,
+            } => {
                 let expr = expr.extract();
                 {
                     let Type::Union { fields, size, .. } = union_ty else {
@@ -1343,14 +1319,15 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                     let (offset, expr_ty) = (fields).index_at(field);
                     let mut data = list![AbstractByte::Uninit; size.bytes()];
                     let (val, _) = self.eval_value(expr)?;
-                    data.write_subslice_at_index(
-                        offset.bytes(),
-                        expr_ty.encode::<M>(val),
-                    );
+                    data.write_subslice_at_index(offset.bytes(), expr_ty.encode::<M>(val));
                     ret((union_ty.decode(data).unwrap(), union_ty))
                 }
             }
-            ValueExpr::Variant { enum_ty, discriminant, data } => {
+            ValueExpr::Variant {
+                enum_ty,
+                discriminant,
+                data,
+            } => {
                 let data = data.extract();
                 {
                     ret((
@@ -1366,7 +1343,12 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 let place = place.extract();
                 {
                     let (place, ty) = self.eval_place(place)?;
-                    let Type::Enum { discriminator, discriminant_ty, .. } = ty else {
+                    let Type::Enum {
+                        discriminator,
+                        discriminant_ty,
+                        ..
+                    } = ty
+                    else {
                         panic!("ValueExpr::GetDiscriminant requires enum type");
                     };
                     if !place.aligned {
@@ -1375,16 +1357,12 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                         );
                     }
                     let accessor = |idx: Offset, size: Size| {
-                        let ptr = self
-                            .ptr_offset_inbounds(place.ptr.thin_pointer, idx.bytes())?;
+                        let ptr = self.ptr_offset_inbounds(place.ptr.thin_pointer, idx.bytes())?;
                         self.mem.load(ptr, size, Align::ONE, Atomicity::None)
                     };
-                    let Some(discriminant) = decode_discriminant::<
-                        M,
-                    >(accessor, discriminator)? else {
-                        throw_ub!(
-                            "ValueExpr::GetDiscriminant encountered invalid discriminant."
-                        );
+                    let Some(discriminant) = decode_discriminant::<M>(accessor, discriminator)?
+                    else {
+                        throw_ub!("ValueExpr::GetDiscriminant encountered invalid discriminant.");
                     };
                     ret((Value::Int(discriminant), Type::Int(discriminant_ty)))
                 }
@@ -1403,17 +1381,9 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                     let (place, _ty) = self.eval_place(target)?;
                     self.check_value(Value::Ptr(place.ptr), Type::Ptr(ptr_ty))?;
                     let lookup = self.vtable_lookup();
-                    let ptr = self
-                        .mutate_cur_frame(|frame, mem| {
-                            mem.retag_ptr(
-                                &mut frame.extra,
-                                place.ptr,
-                                ptr_ty,
-                                false,
-                                true,
-                                lookup,
-                            )
-                        })?;
+                    let ptr = self.mutate_cur_frame(|frame, mem| {
+                        mem.retag_ptr(&mut frame.extra, place.ptr, ptr_ty, false, true, lookup)
+                    })?;
                     ret((Value::Ptr(ptr), Type::Ptr(ptr_ty)))
                 }
             }
@@ -1425,7 +1395,11 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                     ret(self.eval_un_op(operator, operand)?)
                 }
             }
-            ValueExpr::BinOp { operator, left, right } => {
+            ValueExpr::BinOp {
+                operator,
+                left,
+                right,
+            } => {
                 let left = left.extract();
                 let right = right.extract();
                 {
@@ -1439,35 +1413,31 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
     }
     /// converts `Constant` to their `Value` counterpart.
     fn eval_constant(&mut self, constant: Constant) -> Result<Value<M>> {
-        ret(
-            match constant {
-                Constant::Int(i) => Value::Int(i),
-                Constant::Bool(b) => Value::Bool(b),
-                Constant::GlobalPointer(relocation) => {
-                    let ptr = (self.global_ptrs)
-                        .index_at(relocation.name)
-                        .wrapping_offset::<M::T>(relocation.offset.bytes());
-                    Value::Ptr(ptr.widen(None))
+        ret(match constant {
+            Constant::Int(i) => Value::Int(i),
+            Constant::Bool(b) => Value::Bool(b),
+            Constant::GlobalPointer(relocation) => {
+                let ptr = (self.global_ptrs)
+                    .index_at(relocation.name)
+                    .wrapping_offset::<M::T>(relocation.offset.bytes());
+                Value::Ptr(ptr.widen(None))
+            }
+            Constant::FnPointer(fn_name) => {
+                let ptr = (self.fn_ptrs).index_at(fn_name);
+                Value::Ptr(ptr.widen(None))
+            }
+            Constant::VTablePointer(vtable_name) => {
+                let ptr = (self.vtable_ptrs).index_at(vtable_name);
+                Value::Ptr(ptr.widen(None))
+            }
+            Constant::PointerWithoutProvenance(addr) => Value::Ptr(
+                ThinPointer {
+                    addr,
+                    provenance: None,
                 }
-                Constant::FnPointer(fn_name) => {
-                    let ptr = (self.fn_ptrs).index_at(fn_name);
-                    Value::Ptr(ptr.widen(None))
-                }
-                Constant::VTablePointer(vtable_name) => {
-                    let ptr = (self.vtable_ptrs).index_at(vtable_name);
-                    Value::Ptr(ptr.widen(None))
-                }
-                Constant::PointerWithoutProvenance(addr) => {
-                    Value::Ptr(
-                        ThinPointer {
-                            addr,
-                            provenance: None,
-                        }
-                            .widen(None),
-                    )
-                }
-            },
-        )
+                .widen(None),
+            ),
+        })
     }
     fn place_load(&mut self, place: Place<M>, ty: Type) -> Result<Value<M>> {
         if !place.aligned {
@@ -1496,20 +1466,18 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
             PlaceExpr::Deref { operand, ty } => {
                 let operand = operand.extract();
                 {
-                    let (Value::Ptr(ptr), Type::Ptr(ptr_type)) = self
-                        .eval_value(operand)? else {
+                    let (Value::Ptr(ptr), Type::Ptr(ptr_type)) = self.eval_value(operand)? else {
                         panic!("dereferencing a non-pointer")
                     };
                     if let Some(pointee) = ptr_type.safe_pointee() {
                         assert!(
                             self.compute_align(pointee.layout, ptr.metadata)
-                            .is_aligned(ptr.thin_pointer.addr)
+                                .is_aligned(ptr.thin_pointer.addr)
                         );
-                        self.mem
-                            .dereferenceable(
-                                ptr.thin_pointer,
-                                self.compute_size(pointee.layout, ptr.metadata),
-                            )?;
+                        self.mem.dereferenceable(
+                            ptr.thin_pointer,
+                            self.compute_size(pointee.layout, ptr.metadata),
+                        )?;
                     }
                     let aligned = self
                         .compute_align(ty.layout::<M::T>(), ptr.metadata)
@@ -1546,12 +1514,8 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                         Type::Union { fields, .. } => (fields).index_at(field),
                         _ => panic!("field projection on non-projectable type"),
                     };
-                    assert!(
-                        offset <= self.compute_size(ty.layout::< M::T > (), root.ptr
-                        .metadata)
-                    );
-                    let ptr = self
-                        .ptr_offset_inbounds(root.ptr.thin_pointer, offset.bytes())?;
+                    assert!(offset <= self.compute_size(ty.layout::<M::T>(), root.ptr.metadata));
+                    let ptr = self.ptr_offset_inbounds(root.ptr.thin_pointer, offset.bytes())?;
                     let ptr = if !field_ty.layout::<M::T>().is_sized() {
                         ptr.widen(root.ptr.metadata)
                     } else {
@@ -1576,9 +1540,8 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                         Type::Slice { elem } => {
                             let elem = elem.extract();
                             {
-                                let Some(PointerMeta::ElementCount(count)) = root
-                                    .ptr
-                                    .metadata else {
+                                let Some(PointerMeta::ElementCount(count)) = root.ptr.metadata
+                                else {
                                     panic!(
                                         "eval_place should always return a ptr which matches meta for the LayoutStrategy of ty"
                                     );
@@ -1596,12 +1559,10 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                         .expect_size("WF ensures array & slice elements are sized");
                     let offset = index * elem_size;
                     assert!(
-                        offset <= self.compute_size(ty.layout::< M::T > (), root.ptr
-                        .metadata),
+                        offset <= self.compute_size(ty.layout::<M::T>(), root.ptr.metadata),
                         "sanity check: the indexed offset should not be outside what the type allows."
                     );
-                    let ptr = self
-                        .ptr_offset_inbounds(root.ptr.thin_pointer, offset.bytes())?;
+                    let ptr = self.ptr_offset_inbounds(root.ptr.thin_pointer, offset.bytes())?;
                     ret((
                         Place {
                             ptr: ptr.widen(None),
@@ -1616,9 +1577,7 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 {
                     let (root, ty) = self.eval_place(root)?;
                     let var_ty = match ty {
-                        Type::Enum { variants, .. } => {
-                            (variants).index_at(discriminant).ty
-                        }
+                        Type::Enum { variants, .. } => (variants).index_at(discriminant).ty,
                         _ => panic!("enum downcast on non-enum"),
                     };
                     ret((root, var_ty))
@@ -1632,7 +1591,11 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 self.jump_to_block(block_name)?;
                 ret(())
             }
-            Terminator::Switch { value, cases, fallback } => {
+            Terminator::Switch {
+                value,
+                cases,
+                fallback,
+            } => {
                 let Value::Int(value) = self.eval_value(value)?.0 else {
                     panic!("switch on a non-integer");
                 };
@@ -1671,13 +1634,12 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 let align = callee_ty
                     .layout::<M::T>()
                     .expect_align("the return value is a local and thus sized");
-                let ret_val = self
-                    .typed_load(
-                        (frame.locals).index_at(frame.func.ret),
-                        callee_ty,
-                        align,
-                        Atomicity::None,
-                    )?;
+                let ret_val = self.typed_load(
+                    (frame.locals).index_at(frame.func.ret),
+                    callee_ty,
+                    align,
+                    Atomicity::None,
+                )?;
                 while let Some(local) = frame.locals.keys().next() {
                     frame.storage_dead(&mut self.mem, local)?;
                 }
@@ -1710,11 +1672,17 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 }
                 ret(())
             }
-            Terminator::StartUnwind { unwind_payload, unwind_block } => {
+            Terminator::StartUnwind {
+                unwind_payload,
+                unwind_block,
+            } => {
                 let (
                     Value::Ptr(unwind_payload),
-                    Type::Ptr(PtrType::Raw { meta_kind: PointerMetaKind::None }),
-                ) = self.eval_value(unwind_payload)? else {
+                    Type::Ptr(PtrType::Raw {
+                        meta_kind: PointerMetaKind::None,
+                    }),
+                ) = self.eval_value(unwind_payload)?
+                else {
                     panic!("StartUnwind: the unwind payload is not a raw pointer");
                 };
                 self.mutate_active_thread(|thread| {
@@ -1741,9 +1709,7 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 self.mem.end_call(frame.extra)?;
                 match frame.stack_pop_action {
                     StackPopAction::BottomOfStack => {
-                        throw_ub!(
-                            "the function at the bottom of the stack must not unwind"
-                        );
+                        throw_ub!("the function at the bottom of the stack must not unwind");
                     }
                     StackPopAction::BackToCaller { unwind_block, .. } => {
                         if let Some(unwind_block) = unwind_block {
@@ -1770,9 +1736,7 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 if let Some(next_block) = next_block {
                     self.jump_to_block(next_block)?;
                 } else {
-                    throw_ub!(
-                        "return from an intrinsic where caller did not specify next block"
-                    );
+                    throw_ub!("return from an intrinsic where caller did not specify next block");
                 }
                 ret(())
             }
@@ -1786,31 +1750,26 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
     }
     /// Prepare a place for being used in-place as a function argument or return value.
     fn prepare_for_inplace_passing(&mut self, place: Place<M>, ty: Type) -> NdResult {
-        self.mem
-            .deinit(
-                place.ptr.thin_pointer,
-                ty
-                    .layout::<M::T>()
-                    .expect_size("WF ensures arguments and return types are sized"),
-                ty
-                    .layout::<M::T>()
-                    .expect_align("WF ensures arguments and return types are sized"),
-            )?;
+        self.mem.deinit(
+            place.ptr.thin_pointer,
+            ty.layout::<M::T>()
+                .expect_size("WF ensures arguments and return types are sized"),
+            ty.layout::<M::T>()
+                .expect_align("WF ensures arguments and return types are sized"),
+        )?;
         ret(())
     }
     /// A helper function to deal with `ArgumentExpr`.
     fn eval_argument(&mut self, val: ArgumentExpr) -> NdResult<(Value<M>, Type)> {
-        ret(
-            match val {
-                ArgumentExpr::ByValue(value) => self.eval_value(value)?,
-                ArgumentExpr::InPlace(place) => {
-                    let (place, ty) = self.eval_place(place)?;
-                    let value = self.place_load(place, ty)?;
-                    self.prepare_for_inplace_passing(place, ty)?;
-                    (value, ty)
-                }
-            },
-        )
+        ret(match val {
+            ArgumentExpr::ByValue(value) => self.eval_value(value)?,
+            ArgumentExpr::InPlace(place) => {
+                let (place, ty) = self.eval_place(place)?;
+                let value = self.place_load(place, ty)?;
+                self.prepare_for_inplace_passing(place, ty)?;
+                (value, ty)
+            }
+        })
     }
     /// Creates a stack frame for the given function, initializes the arguments,
     /// and ensures that calling convention and argument/return value ABIs are all matching up.
@@ -1844,23 +1803,20 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
             throw_ub!("call ABI violation: number of arguments does not agree");
         }
         for (callee_local, (caller_val, caller_ty)) in func.args.zip(caller_args) {
-            if !check_abi_compatibility(
-                caller_ty,
-                (func.locals).index_at(callee_local),
-            ) {
+            if !check_abi_compatibility(caller_ty, (func.locals).index_at(callee_local)) {
                 throw_ub!("call ABI violation: argument types are not compatible");
             }
             let align = caller_ty
                 .layout::<M::T>()
                 .expect_align("WF ensures function arguments are sized");
             self.typed_store(
-                    (frame.locals).index_at(callee_local),
-                    caller_val,
-                    caller_ty,
-                    align,
-                    Atomicity::None,
-                )
-                .unwrap();
+                (frame.locals).index_at(callee_local),
+                caller_val,
+                caller_ty,
+                align,
+                Atomicity::None,
+            )
+            .unwrap();
         }
         ret(frame)
     }
@@ -1879,14 +1835,13 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
             unwind_block,
             ret_val_ptr: caller_ret_place.ptr.thin_pointer,
         };
-        let frame = self
-            .create_frame(
-                callee,
-                stack_pop_action,
-                caller_conv,
-                caller_ret_ty,
-                arguments,
-            )?;
+        let frame = self.create_frame(
+            callee,
+            stack_pop_action,
+            caller_conv,
+            caller_ret_ty,
+            arguments,
+        )?;
         self.mutate_cur_stack(|stack| stack.push(frame));
         ret(())
     }
@@ -1895,18 +1850,15 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
         if active == 0 {
             throw_ub!("the start function must not return");
         }
-        self.threads
-            .mutate_at(
-                active,
-                |thread| {
-                    assert!(thread.stack.len() == 0);
-                    thread.state = ThreadState::Terminated;
-                },
-            );
+        self.threads.mutate_at(active, |thread| {
+            assert!(thread.stack.len() == 0);
+            thread.state = ThreadState::Terminated;
+        });
         for i in ThreadId::ZERO..self.threads.len() {
             if (self.threads).index_at(i).state == ThreadState::BlockedOnJoin(active) {
                 self.synchronized_threads.insert(i);
-                self.threads.mutate_at(i, |thread| thread.state = ThreadState::Enabled)
+                self.threads
+                    .mutate_at(i, |thread| thread.state = ThreadState::Enabled)
             }
         }
         ret(())
@@ -1925,19 +1877,15 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                     panic!("non-integer input to integer operation")
                 };
                 let ret_ty = match op {
-                    IntUnOp::CountOnes => {
-                        IntType {
-                            signed: Unsigned,
-                            size: Size::from_bytes(4).unwrap(),
-                        }
-                    }
+                    IntUnOp::CountOnes => IntType {
+                        signed: Unsigned,
+                        size: Size::from_bytes(4).unwrap(),
+                    },
                     _ => int_ty,
                 };
                 let result = Value::Int(Self::eval_int_un_op(op, operand, int_ty)?);
                 self.check_value(result, Type::Int(ret_ty))
-                    .expect(
-                        "sanity check: result of UnOp::Int does not fit in the return type",
-                    );
+                    .expect("sanity check: result of UnOp::Int does not fit in the return type");
                 ret((result, Type::Int(ret_ty)))
             }
             UnOp::Cast(cast_op) => ret(self.eval_cast_op(cast_op, (operand, op_ty))?),
@@ -1945,15 +1893,22 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 let Value::Ptr(ptr) = operand else {
                     panic!("non-pointer GetThinPointer")
                 };
-                let thin_ptr = Pointer { metadata: None, ..ptr };
+                let thin_ptr = Pointer {
+                    metadata: None,
+                    ..ptr
+                };
                 let thin_ptr_ty = PtrType::Raw {
                     meta_kind: PointerMetaKind::None,
                 };
                 ret((Value::Ptr(thin_ptr), Type::Ptr(thin_ptr_ty)))
             }
             UnOp::GetMetadata => {
-                let Value::Ptr(ptr) = operand else { panic!("non-pointer GetMetadata") };
-                let Type::Ptr(ptr_ty) = op_ty else { panic!("non-pointer GetMetadata") };
+                let Value::Ptr(ptr) = operand else {
+                    panic!("non-pointer GetMetadata")
+                };
+                let Type::Ptr(ptr_ty) = op_ty else {
+                    panic!("non-pointer GetMetadata")
+                };
                 let meta_value = ptr_ty.meta_kind().encode_as_value::<M>(ptr.metadata);
                 let meta_ty = ptr_ty.meta_kind().ty::<M::T>();
                 self.check_value(meta_value, meta_ty)
@@ -1963,12 +1918,18 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
             UnOp::ComputeSize(ty) => {
                 let meta = ty.meta_kind().decode_value::<M>(operand);
                 let size = self.compute_size(ty.layout::<M::T>(), meta);
-                ret((Value::Int(size.bytes()), Type::Int(IntType::usize_ty::<M::T>())))
+                ret((
+                    Value::Int(size.bytes()),
+                    Type::Int(IntType::usize_ty::<M::T>()),
+                ))
             }
             UnOp::ComputeAlign(ty) => {
                 let meta = ty.meta_kind().decode_value::<M>(operand);
                 let align = self.compute_align(ty.layout::<M::T>(), meta);
-                ret((Value::Int(align.bytes()), Type::Int(IntType::usize_ty::<M::T>())))
+                ret((
+                    Value::Int(align.bytes()),
+                    Type::Int(IntType::usize_ty::<M::T>()),
+                ))
             }
             UnOp::VTableMethodLookup(method) => {
                 let (Value::Ptr(ptr), Type::Ptr(_ptr_ty)) = (operand, op_ty) else {
@@ -1985,13 +1946,11 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
     /// but correcting for non-pure effects dependent of the `operand_ty`.
     fn eval_int_un_op(op: IntUnOp, operand: Int, operand_ty: IntType) -> Result<Int> {
         use IntUnOp::*;
-        ret(
-            match op {
-                Neg => operand_ty.bring_in_bounds(-operand),
-                BitNot => operand_ty.bring_in_bounds(!operand),
-                CountOnes => Self::eval_count_ones(operand, operand_ty),
-            },
-        )
+        ret(match op {
+            Neg => operand_ty.bring_in_bounds(-operand),
+            BitNot => operand_ty.bring_in_bounds(!operand),
+            CountOnes => Self::eval_count_ones(operand, operand_ty),
+        })
     }
     fn eval_count_ones(operand: Int, int_ty: IntType) -> Int {
         let mut ones = Int::ZERO;
@@ -2017,7 +1976,9 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 ret((Value::Int(result), Type::Int(int_ty)))
             }
             Transmute(new_ty) => {
-                if old_ty.layout::<M::T>().expect_size("WF ensures transmutes are sized")
+                if old_ty
+                    .layout::<M::T>()
+                    .expect_size("WF ensures transmutes are sized")
                     != new_ty
                         .layout::<M::T>()
                         .expect_size("WF ensures transmutes are sized")
@@ -2067,34 +2028,32 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 };
                 let overflow = !int_ty.can_represent(result);
                 let result = int_ty.bring_in_bounds(result);
-                let value = Value::Tuple(
-                    list![Value::Int::< M > (result), Value::Bool::< M > (overflow)],
-                );
+                let value =
+                    Value::Tuple(list![Value::Int::<M>(result), Value::Bool::<M>(overflow)]);
                 let ty = int_ty.with_overflow::<M::T>();
                 ret((value, ty))
             }
             BinOp::Rel(rel_op) => {
                 let ord = match (l_ty, left, right) {
-                    (Type::Int(_), Value::Int(left), Value::Int(right)) => {
-                        left.cmp(&right)
-                    }
-                    (Type::Bool, Value::Bool(left), Value::Bool(right)) => {
-                        left.cmp(&right)
-                    }
+                    (Type::Int(_), Value::Int(left), Value::Int(right)) => left.cmp(&right),
+                    (Type::Bool, Value::Bool(left), Value::Bool(right)) => left.cmp(&right),
                     (Type::Ptr(_), Value::Ptr(left), Value::Ptr(right)) => {
                         Self::compare_ptr(left, right)
                     }
                     _ => {
-                        panic!(
-                            "relational operator on incomparable type or value-type mismatch"
-                        )
+                        panic!("relational operator on incomparable type or value-type mismatch")
                     }
                 };
                 ret(Self::eval_rel_op(rel_op, ord))
             }
             BinOp::PtrOffset { inbounds } => {
-                let Value::Ptr(Pointer { thin_pointer: left, metadata: None }) = left
-                else { panic!("non-thin-pointer left input to `PtrOffset`") };
+                let Value::Ptr(Pointer {
+                    thin_pointer: left,
+                    metadata: None,
+                }) = left
+                else {
+                    panic!("non-thin-pointer left input to `PtrOffset`")
+                };
                 let Value::Int(right) = right else {
                     panic!("non-integer right input to `PtrOffset`")
                 };
@@ -2106,10 +2065,20 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 ret((Value::Ptr(offset_ptr.widen(None)), l_ty))
             }
             BinOp::PtrOffsetFrom { inbounds, nonneg } => {
-                let Value::Ptr(Pointer { thin_pointer: left, metadata: None }) = left
-                else { panic!("non-thin-pointer left input to `PtrOffsetFrom`") };
-                let Value::Ptr(Pointer { thin_pointer: right, metadata: None }) = right
-                else { panic!("non-thin-pointer right input to `PtrOffsetFrom`") };
+                let Value::Ptr(Pointer {
+                    thin_pointer: left,
+                    metadata: None,
+                }) = left
+                else {
+                    panic!("non-thin-pointer left input to `PtrOffsetFrom`")
+                };
+                let Value::Ptr(Pointer {
+                    thin_pointer: right,
+                    metadata: None,
+                }) = right
+                else {
+                    panic!("non-thin-pointer right input to `PtrOffsetFrom`")
+                };
                 let distance = left.addr - right.addr;
                 let distance = if inbounds {
                     self.mem.signed_dereferenceable(left, -distance)?;
@@ -2128,106 +2097,106 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 ret((Value::Int(distance), Type::Int(isize_int)))
             }
             BinOp::ConstructWidePointer(ptr_ty) => {
-                let Value::Ptr(Pointer { thin_pointer, metadata: None }) = left else {
+                let Value::Ptr(Pointer {
+                    thin_pointer,
+                    metadata: None,
+                }) = left
+                else {
                     panic!("non-thin-pointer left input to `ConstructWidePointer`")
                 };
                 let metadata = ptr_ty.meta_kind().decode_value::<M>(right);
-                let wide_ptr = Value::Ptr(Pointer { thin_pointer, metadata });
+                let wide_ptr = Value::Ptr(Pointer {
+                    thin_pointer,
+                    metadata,
+                });
                 self.check_value(wide_ptr, Type::Ptr(ptr_ty))?;
                 ret((wide_ptr, Type::Ptr(ptr_ty)))
             }
         }
     }
-    fn eval_int_bin_op(
-        op: IntBinOp,
-        left: Int,
-        right: Int,
-        left_ty: IntType,
-    ) -> Result<Int> {
+    fn eval_int_bin_op(op: IntBinOp, left: Int, right: Int, left_ty: IntType) -> Result<Int> {
         use IntBinOp::*;
-        ret(
-            match op {
-                Add => left + right,
-                AddUnchecked => {
-                    let result = left + right;
-                    if !left_ty.can_represent(result) {
-                        throw_ub!("overflow in unchecked add");
-                    }
-                    result
+        ret(match op {
+            Add => left + right,
+            AddUnchecked => {
+                let result = left + right;
+                if !left_ty.can_represent(result) {
+                    throw_ub!("overflow in unchecked add");
                 }
-                Sub => left - right,
-                SubUnchecked => {
-                    let result = left - right;
-                    if !left_ty.can_represent(result) {
-                        throw_ub!("overflow in unchecked sub");
-                    }
-                    result
+                result
+            }
+            Sub => left - right,
+            SubUnchecked => {
+                let result = left - right;
+                if !left_ty.can_represent(result) {
+                    throw_ub!("overflow in unchecked sub");
                 }
-                Mul => left * right,
-                MulUnchecked => {
-                    let result = left * right;
-                    if !left_ty.can_represent(result) {
-                        throw_ub!("overflow in unchecked mul");
-                    }
-                    result
+                result
+            }
+            Mul => left * right,
+            MulUnchecked => {
+                let result = left * right;
+                if !left_ty.can_represent(result) {
+                    throw_ub!("overflow in unchecked mul");
                 }
-                Div => {
-                    if right == 0 {
-                        throw_ub!("division by zero");
-                    }
-                    let result = left / right;
-                    if !left_ty.can_represent(result) {
-                        throw_ub!("overflow in division");
-                    }
-                    result
+                result
+            }
+            Div => {
+                if right == 0 {
+                    throw_ub!("division by zero");
                 }
-                DivExact => {
-                    if right == 0 {
-                        throw_ub!("division by zero");
-                    }
-                    let result = left / right;
-                    if !left_ty.can_represent(result) {
-                        throw_ub!("overflow in division");
-                    }
-                    if left % right != 0 {
-                        throw_ub!("non-zero remainder in exact division");
-                    }
-                    result
+                let result = left / right;
+                if !left_ty.can_represent(result) {
+                    throw_ub!("overflow in division");
                 }
-                Rem => {
-                    if right == 0 {
-                        throw_ub!("modulus of remainder is zero");
-                    }
-                    if !left_ty.can_represent(left / right) {
-                        throw_ub!("overflow in remainder");
-                    }
-                    left % right
+                result
+            }
+            DivExact => {
+                if right == 0 {
+                    throw_ub!("division by zero");
                 }
-                Shl | Shr => {
-                    let bits = left_ty.size.bits();
-                    let offset = right.rem_euclid(bits);
-                    match op {
-                        Shl => left << offset,
-                        Shr => left >> offset,
-                        _ => panic!(),
-                    }
+                let result = left / right;
+                if !left_ty.can_represent(result) {
+                    throw_ub!("overflow in division");
                 }
-                ShlUnchecked | ShrUnchecked => {
-                    let bits = left_ty.size.bits();
-                    if right < 0 || right >= bits {
-                        throw_ub!("overflow in unchecked shift");
-                    }
-                    match op {
-                        ShlUnchecked => left << right,
-                        ShrUnchecked => left >> right,
-                        _ => panic!(),
-                    }
+                if left % right != 0 {
+                    throw_ub!("non-zero remainder in exact division");
                 }
-                BitAnd => left & right,
-                BitOr => left | right,
-                BitXor => left ^ right,
-            },
-        )
+                result
+            }
+            Rem => {
+                if right == 0 {
+                    throw_ub!("modulus of remainder is zero");
+                }
+                if !left_ty.can_represent(left / right) {
+                    throw_ub!("overflow in remainder");
+                }
+                left % right
+            }
+            Shl | Shr => {
+                let bits = left_ty.size.bits();
+                let offset = right.rem_euclid(bits);
+                match op {
+                    Shl => left << offset,
+                    Shr => left >> offset,
+                    _ => panic!(),
+                }
+            }
+            ShlUnchecked | ShrUnchecked => {
+                let bits = left_ty.size.bits();
+                if right < 0 || right >= bits {
+                    throw_ub!("overflow in unchecked shift");
+                }
+                match op {
+                    ShlUnchecked => left << right,
+                    ShrUnchecked => left >> right,
+                    _ => panic!(),
+                }
+            }
+            BitAnd => left & right,
+            BitOr => left | right,
+            BitXor => left ^ right,
+        })
     }
     /// Turns the ordering from the comparasion result into a value, depending on the operation.
     fn eval_rel_op(rel: RelOp, ord: std::cmp::Ordering) -> (Value<M>, Type) {
@@ -2257,13 +2226,10 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
         let thin_cmp = left.thin_pointer.addr.cmp(&right.thin_pointer.addr);
         let meta_cmp = match (left.metadata, right.metadata) {
             (None, None) => std::cmp::Ordering::Equal,
-            (Some(PointerMeta::ElementCount(l)), Some(PointerMeta::ElementCount(r))) => {
-                l.cmp(&r)
+            (Some(PointerMeta::ElementCount(l)), Some(PointerMeta::ElementCount(r))) => l.cmp(&r),
+            (Some(PointerMeta::VTablePointer(l)), Some(PointerMeta::VTablePointer(r))) => {
+                l.addr.cmp(&r.addr)
             }
-            (
-                Some(PointerMeta::VTablePointer(l)),
-                Some(PointerMeta::VTablePointer(r)),
-            ) => l.addr.cmp(&r.addr),
             _ => panic!("unmatching metadata in wide pointer comparasion"),
         };
         thin_cmp.then(meta_cmp)
@@ -2310,9 +2276,7 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
             }
             IntrinsicOp::Lock(IntrinsicLockOp::Acquire) => {
                 if arguments.len() != 1 {
-                    throw_ub!(
-                        "invalid number of arguments for `Acquire` lock intrinsic"
-                    );
+                    throw_ub!("invalid number of arguments for `Acquire` lock intrinsic");
                 }
                 let Value::Int(lock_id) = (arguments).index_at(0).0 else {
                     throw_ub!("invalid first argument to `Acquire` lock intrinsic");
@@ -2325,9 +2289,7 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
             }
             IntrinsicOp::Lock(IntrinsicLockOp::Release) => {
                 if arguments.len() != 1 {
-                    throw_ub!(
-                        "invalid number of arguments for `Release` lock intrinsic"
-                    );
+                    throw_ub!("invalid number of arguments for `Release` lock intrinsic");
                 }
                 let Value::Int(lock_id) = (arguments).index_at(0).0 else {
                     throw_ub!("invalid first argument to `Release` lock intrinsic");
@@ -2344,9 +2306,11 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                         "invalid number of arguments for `PointerExposeProvenance` intrinsic"
                     );
                 }
-                let Value::Ptr(Pointer { thin_pointer: ptr, metadata: None }) = (arguments)
-                    .index_at(0)
-                    .0 else {
+                let Value::Ptr(Pointer {
+                    thin_pointer: ptr,
+                    metadata: None,
+                }) = (arguments).index_at(0).0
+                else {
                     throw_ub!(
                         "invalid argument for `PointerExposeProvenance` intrinsic: not a thin pointer"
                     );
@@ -2357,9 +2321,7 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                         size: M::T::PTR_SIZE,
                     })
                 {
-                    throw_ub!(
-                        "invalid return type for `PointerExposeProvenance` intrinsic"
-                    )
+                    throw_ub!("invalid return type for `PointerExposeProvenance` intrinsic")
                 }
                 self.intptrcast.expose(ptr);
                 ret(Value::Int(ptr.addr))
@@ -2376,9 +2338,7 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                     );
                 };
                 let Type::Ptr(ret_ptr_ty) = ret_ty else {
-                    throw_ub!(
-                        "invalid return type for `PointerWithExposedProvenance` intrinsic"
-                    );
+                    throw_ub!("invalid return type for `PointerWithExposedProvenance` intrinsic");
                 };
                 if ret_ptr_ty.meta_kind() != PointerMetaKind::None {
                     throw_ub!(
@@ -2426,22 +2386,16 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                     throw_ub!("invalid number of arguments for `Allocate` intrinsic");
                 }
                 let Value::Int(size) = (arguments).index_at(0).0 else {
-                    throw_ub!(
-                        "invalid first argument to `Allocate` intrinsic: not an integer"
-                    );
+                    throw_ub!("invalid first argument to `Allocate` intrinsic: not an integer");
                 };
                 let Some(size) = Size::from_bytes(size) else {
                     throw_ub!("invalid size for `Allocate` intrinsic: negative size");
                 };
                 let Value::Int(align) = (arguments).index_at(1).0 else {
-                    throw_ub!(
-                        "invalid second argument to `Allocate` intrinsic: not an integer"
-                    );
+                    throw_ub!("invalid second argument to `Allocate` intrinsic: not an integer");
                 };
                 let Some(align) = Align::from_bytes(align) else {
-                    throw_ub!(
-                        "invalid alignment for `Allocate` intrinsic: not a power of 2"
-                    );
+                    throw_ub!("invalid alignment for `Allocate` intrinsic: not a power of 2");
                 };
                 let Type::Ptr(ret_ptr_ty) = ret_ty else {
                     throw_ub!("invalid return type for `Allocate` intrinsic");
@@ -2456,35 +2410,32 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 if arguments.len() != 3 {
                     throw_ub!("invalid number of arguments for `Deallocate` intrinsic");
                 }
-                let Value::Ptr(Pointer { thin_pointer: ptr, metadata: None }) = (arguments)
-                    .index_at(0)
-                    .0 else {
+                let Value::Ptr(Pointer {
+                    thin_pointer: ptr,
+                    metadata: None,
+                }) = (arguments).index_at(0).0
+                else {
                     throw_ub!(
                         "invalid first argument to `Deallocate` intrinsic: not a thin pointer"
                     );
                 };
                 let Value::Int(size) = (arguments).index_at(1).0 else {
-                    throw_ub!(
-                        "invalid second argument to `Deallocate` intrinsic: not an integer"
-                    );
+                    throw_ub!("invalid second argument to `Deallocate` intrinsic: not an integer");
                 };
                 let Some(size) = Size::from_bytes(size) else {
                     throw_ub!("invalid size for `Deallocate` intrinsic: negative size");
                 };
                 let Value::Int(align) = (arguments).index_at(2).0 else {
-                    throw_ub!(
-                        "invalid third argument to `Deallocate` intrinsic: not an integer"
-                    );
+                    throw_ub!("invalid third argument to `Deallocate` intrinsic: not an integer");
                 };
                 let Some(align) = Align::from_bytes(align) else {
-                    throw_ub!(
-                        "invalid alignment for `Deallocate` intrinsic: not a power of 2"
-                    );
+                    throw_ub!("invalid alignment for `Deallocate` intrinsic: not a power of 2");
                 };
                 if ret_ty != unit_type() {
                     throw_ub!("invalid return type for `Deallocate` intrinsic")
                 }
-                self.mem.deallocate(ptr, AllocationKind::Heap, size, align)?;
+                self.mem
+                    .deallocate(ptr, AllocationKind::Heap, size, align)?;
                 ret(unit_value())
             }
             IntrinsicOp::Spawn => {
@@ -2495,9 +2446,7 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 let func = self.fn_from_ptr(fn_ptr)?;
                 let (data_ptr, data_ptr_ty) = (arguments).index_at(1);
                 if !matches!(data_ptr_ty, Type::Ptr(_)) {
-                    throw_ub!(
-                        "invalid second argument to `Spawn` intrinsic: not a pointer"
-                    );
+                    throw_ub!("invalid second argument to `Spawn` intrinsic: not a pointer");
                 }
                 if !matches!(ret_ty, Type::Int(_)) {
                     throw_ub!("invalid return type for `Spawn` intrinsic")
@@ -2510,9 +2459,7 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                     throw_ub!("invalid number of arguments for `Join` intrinsic");
                 }
                 let Value::Int(thread_id) = (arguments).index_at(0).0 else {
-                    throw_ub!(
-                        "invalid first argument to `Join` intrinsic: not an integer"
-                    );
+                    throw_ub!("invalid first argument to `Join` intrinsic: not an integer");
                 };
                 if ret_ty != unit_type() {
                     throw_ub!("invalid return type for `Join` intrinsic")
@@ -2535,19 +2482,13 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                     );
                 }
                 let Value::Ptr(left) = left else {
-                    throw_ub!(
-                        "invalid first argument to `RawEq` intrinsic: not a pointer"
-                    );
+                    throw_ub!("invalid first argument to `RawEq` intrinsic: not a pointer");
                 };
                 let Value::Ptr(right) = right else {
-                    throw_ub!(
-                        "invalid second argument to `RawEq` intrinsic: not a pointer"
-                    );
+                    throw_ub!("invalid second argument to `RawEq` intrinsic: not a pointer");
                 };
                 let Type::Ptr(l_ty) = l_ty else {
-                    throw_ub!(
-                        "invalid argument type to `RawEq` intrinsic: not a pointer"
-                    );
+                    throw_ub!("invalid argument type to `RawEq` intrinsic: not a pointer");
                 };
                 let left_data = self.load_raw_data(left, l_ty)?;
                 let right_data = self.load_raw_data(right, l_ty)?;
@@ -2557,18 +2498,18 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 if arguments.len() != 2 {
                     throw_ub!("invalid number of arguments for `AtomicStore` intrinsic");
                 }
-                let Value::Ptr(Pointer { thin_pointer: ptr, metadata: None }) = (arguments)
-                    .index_at(0)
-                    .0 else {
+                let Value::Ptr(Pointer {
+                    thin_pointer: ptr,
+                    metadata: None,
+                }) = (arguments).index_at(0).0
+                else {
                     throw_ub!(
                         "invalid first argument to `AtomicStore` intrinsic: not a thin pointer"
                     );
                 };
                 let (val, ty) = (arguments).index_at(1);
                 let LayoutStrategy::Sized(size, _) = ty.layout::<M::T>() else {
-                    throw_ub!(
-                        "invalid second argument to `AtomicStore` intrinsic: unsized type"
-                    );
+                    throw_ub!("invalid second argument to `AtomicStore` intrinsic: unsized type");
                 };
                 let Some(align) = Align::from_bytes(size.bytes()) else {
                     throw_ub!(
@@ -2576,9 +2517,7 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                     );
                 };
                 if size > M::T::MAX_ATOMIC_SIZE {
-                    throw_ub!(
-                        "invalid second argument to `AtomicStore` intrinsic: size too big"
-                    );
+                    throw_ub!("invalid second argument to `AtomicStore` intrinsic: size too big");
                 }
                 if ret_ty != unit_type() {
                     throw_ub!("invalid return type for `AtomicStore` intrinsic")
@@ -2590,9 +2529,11 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 if arguments.len() != 1 {
                     throw_ub!("invalid number of arguments for `AtomicLoad` intrinsic");
                 }
-                let Value::Ptr(Pointer { thin_pointer: ptr, metadata: None }) = (arguments)
-                    .index_at(0)
-                    .0 else {
+                let Value::Ptr(Pointer {
+                    thin_pointer: ptr,
+                    metadata: None,
+                }) = (arguments).index_at(0).0
+                else {
                     throw_ub!(
                         "invalid first argument to `AtomicLoad` intrinsic: not a thin pointer"
                     );
@@ -2606,22 +2547,20 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                     );
                 };
                 if size > M::T::MAX_ATOMIC_SIZE {
-                    throw_ub!(
-                        "invalid return type for `AtomicLoad` intrinsic: size too big"
-                    );
+                    throw_ub!("invalid return type for `AtomicLoad` intrinsic: size too big");
                 }
                 let val = self.typed_load(ptr, ret_ty, align, Atomicity::Atomic)?;
                 ret(val)
             }
             IntrinsicOp::AtomicCompareExchange => {
                 if arguments.len() != 3 {
-                    throw_ub!(
-                        "invalid number of arguments for `AtomicCompareExchange` intrinsic"
-                    );
+                    throw_ub!("invalid number of arguments for `AtomicCompareExchange` intrinsic");
                 }
-                let Value::Ptr(Pointer { thin_pointer: ptr, metadata: None }) = (arguments)
-                    .index_at(0)
-                    .0 else {
+                let Value::Ptr(Pointer {
+                    thin_pointer: ptr,
+                    metadata: None,
+                }) = (arguments).index_at(0).0
+                else {
                     throw_ub!(
                         "invalid first argument to `AtomicCompareExchange` intrinsic: not a thin pointer"
                     );
@@ -2643,7 +2582,9 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                         "invalid return type for `Intrinis::AtomicCompareExchange`: only works with integers"
                     );
                 }
-                let size = ret_ty.layout::<M::T>().expect_size("`ret_ty` is an integer");
+                let size = ret_ty
+                    .layout::<M::T>()
+                    .expect_size("`ret_ty` is an integer");
                 let align = Align::from_bytes(size.bytes()).unwrap();
                 if size > M::T::MAX_ATOMIC_SIZE {
                     throw_ub!(
@@ -2653,18 +2594,19 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 let before = self.typed_load(ptr, ret_ty, align, Atomicity::Atomic)?;
                 if current == before {
                     self.typed_store(ptr, next, ret_ty, align, Atomicity::Atomic)?;
-                } else {}
+                } else {
+                }
                 ret(before)
             }
             IntrinsicOp::AtomicFetchAndOp(op) => {
                 if arguments.len() != 2 {
-                    throw_ub!(
-                        "invalid number of arguments for `AtomicFetchAndOp` intrinsic"
-                    );
+                    throw_ub!("invalid number of arguments for `AtomicFetchAndOp` intrinsic");
                 }
-                let Value::Ptr(Pointer { thin_pointer: ptr, metadata: None }) = (arguments)
-                    .index_at(0)
-                    .0 else {
+                let Value::Ptr(Pointer {
+                    thin_pointer: ptr,
+                    metadata: None,
+                }) = (arguments).index_at(0).0
+                else {
                     throw_ub!(
                         "invalid first argument to `AtomicFetchAndOp` intrinsic: not a thin pointer"
                     );
@@ -2680,31 +2622,28 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                         "invalid return type for `AtomicFetchAndOp` intrinsic: only works with integers"
                     );
                 };
-                let size = ret_ty.layout::<M::T>().expect_size("`ret_ty` is an integer");
+                let size = ret_ty
+                    .layout::<M::T>()
+                    .expect_size("`ret_ty` is an integer");
                 let align = Align::from_bytes(size.bytes()).unwrap();
                 if size > M::T::MAX_ATOMIC_SIZE {
-                    throw_ub!(
-                        "invalid return type for `AtomicFetchAndOp` intrinsic: size too big"
-                    );
+                    throw_ub!("invalid return type for `AtomicFetchAndOp` intrinsic: size too big");
                 }
                 let previous = self.typed_load(ptr, ret_ty, align, Atomicity::Atomic)?;
-                let Value::Int(other_int) = other else { unreachable!() };
-                let Value::Int(previous_int) = previous else { unreachable!() };
-                let next_int = Self::eval_int_bin_op(
-                    op,
-                    previous_int,
-                    other_int,
-                    int_ty,
-                )?;
+                let Value::Int(other_int) = other else {
+                    unreachable!()
+                };
+                let Value::Int(previous_int) = previous else {
+                    unreachable!()
+                };
+                let next_int = Self::eval_int_bin_op(op, previous_int, other_int, int_ty)?;
                 let next = Value::Int(next_int);
                 self.typed_store(ptr, next, ret_ty, align, Atomicity::Atomic)?;
                 ret(previous)
             }
             IntrinsicOp::GetUnwindPayload => {
                 if arguments.len() != 0 {
-                    throw_ub!(
-                        "invalid number of arguments for `GetUnwindPayload` intrinsic"
-                    );
+                    throw_ub!("invalid number of arguments for `GetUnwindPayload` intrinsic");
                 }
                 let Type::Ptr(ret_ptr_ty) = ret_ty else {
                     throw_ub!("invalid return type for `GetUnwindPayload` intrinsic");
@@ -2712,8 +2651,7 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
                 if ret_ptr_ty.meta_kind() != PointerMetaKind::None {
                     throw_ub!("invalid return type for `GetUnwindPayload` intrinsic");
                 }
-                let Some(thin_pointer) = self.active_thread().unwind_payloads.last()
-                else {
+                let Some(thin_pointer) = self.active_thread().unwind_payloads.last() else {
                     throw_ub!("GetUnwindPayload: the payload stack is empty");
                 };
                 let payload_pointer = Value::Ptr(Pointer {
@@ -2728,11 +2666,7 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
         self.mem.leak_check()?;
         throw_machine_stop!();
     }
-    fn eval_print(
-        &mut self,
-        stream: DynWrite,
-        arguments: List<(Value<M>, Type)>,
-    ) -> Result {
+    fn eval_print(&mut self, stream: DynWrite, arguments: List<(Value<M>, Type)>) -> Result {
         for (arg, _) in arguments {
             match arg {
                 Value::Int(i) => write!(stream, "{}\n", i).unwrap(),
@@ -2760,13 +2694,9 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
         match thread.state {
             ThreadState::Terminated => {}
             _ => {
-                self.threads
-                    .mutate_at(
-                        self.active_thread,
-                        |thread| {
-                            thread.state = ThreadState::BlockedOnJoin(thread_id);
-                        },
-                    );
+                self.threads.mutate_at(self.active_thread, |thread| {
+                    thread.state = ThreadState::BlockedOnJoin(thread_id);
+                });
             }
         };
         ret(())
@@ -2779,11 +2709,16 @@ impl<M: Memory + libspecr::hidden::Obj> Machine<M> {
         let PtrType::Ref { pointee, .. } = ptr_ty else {
             throw_ub!("invalid argument to `RawEq` intrinsic: not a reference");
         };
-        let PointeeInfo { layout: LayoutStrategy::Sized(size, align), .. } = pointee
+        let PointeeInfo {
+            layout: LayoutStrategy::Sized(size, align),
+            ..
+        } = pointee
         else {
             throw_ub!("invalid argument to `RawEq` intrinsic: unsized pointee");
         };
-        let bytes = self.mem.load(ptr.thin_pointer, size, align, Atomicity::None)?;
+        let bytes = self
+            .mem
+            .load(ptr.thin_pointer, size, align, Atomicity::None)?;
         let Some(data) = bytes.try_map(|byte| byte.data()) else {
             throw_ub!("invalid argument to `RawEq` intrinsic: byte is uninitialized");
         };
@@ -2795,10 +2730,9 @@ trait DefinedRelation: libspecr::hidden::Obj {
     /// returns whether `self` is less or as defined as `other`
     fn le_defined(self, other: Self) -> bool;
 }
-impl<
-    Provenance: libspecr::hidden::Obj + for<'de> serde::Deserialize<'de>
-        + serde::Serialize,
-> DefinedRelation for AbstractByte<Provenance> {
+impl<Provenance: libspecr::hidden::Obj + for<'de> serde::Deserialize<'de> + serde::Serialize>
+    DefinedRelation for AbstractByte<Provenance>
+{
     fn le_defined(self, other: Self) -> bool {
         use AbstractByte::*;
         match (self, other) {
@@ -2811,10 +2745,9 @@ impl<
         }
     }
 }
-impl<
-    Provenance: libspecr::hidden::Obj + for<'de> serde::Deserialize<'de>
-        + serde::Serialize,
-> DefinedRelation for ThinPointer<Provenance> {
+impl<Provenance: libspecr::hidden::Obj + for<'de> serde::Deserialize<'de> + serde::Serialize>
+    DefinedRelation for ThinPointer<Provenance>
+{
     fn le_defined(self, other: Self) -> bool {
         self.addr == other.addr
             && match (self.provenance, other.provenance) {
@@ -2824,10 +2757,9 @@ impl<
             }
     }
 }
-impl<
-    Provenance: libspecr::hidden::Obj + for<'de> serde::Deserialize<'de>
-        + serde::Serialize,
-> DefinedRelation for PointerMeta<Provenance> {
+impl<Provenance: libspecr::hidden::Obj + for<'de> serde::Deserialize<'de> + serde::Serialize>
+    DefinedRelation for PointerMeta<Provenance>
+{
     fn le_defined(self, other: Self) -> bool {
         match (self, other) {
             (PointerMeta::VTablePointer(ptr1), PointerMeta::VTablePointer(ptr2)) => {
@@ -2837,27 +2769,24 @@ impl<
         }
     }
 }
-impl<
-    Provenance: libspecr::hidden::Obj + for<'de> serde::Deserialize<'de>
-        + serde::Serialize,
-> DefinedRelation for Pointer<Provenance> {
+impl<Provenance: libspecr::hidden::Obj + for<'de> serde::Deserialize<'de> + serde::Serialize>
+    DefinedRelation for Pointer<Provenance>
+{
     fn le_defined(self, other: Self) -> bool {
-        self.thin_pointer.le_defined(other.thin_pointer)
-            && self.metadata.le_defined(other.metadata)
+        self.thin_pointer.le_defined(other.thin_pointer) && self.metadata.le_defined(other.metadata)
     }
 }
 impl<
-    T: DefinedRelation + libspecr::hidden::Obj + for<'de> serde::Deserialize<'de>
-        + serde::Serialize,
-> DefinedRelation for List<T> {
+    T: DefinedRelation + libspecr::hidden::Obj + for<'de> serde::Deserialize<'de> + serde::Serialize,
+> DefinedRelation for List<T>
+{
     fn le_defined(self, other: Self) -> bool {
         self.len() == other.len() && self.zip(other).all(|(l, r)| l.le_defined(r))
     }
 }
-impl<
-    M: Memory + libspecr::hidden::Obj + for<'de> serde::Deserialize<'de>
-        + serde::Serialize,
-> DefinedRelation for Value<M> {
+impl<M: Memory + libspecr::hidden::Obj + for<'de> serde::Deserialize<'de> + serde::Serialize>
+    DefinedRelation for Value<M>
+{
     fn le_defined(self, other: Self) -> bool {
         use Value::*;
         match (self, other) {
@@ -2866,11 +2795,17 @@ impl<
             (Ptr(p1), Ptr(p2)) => p1.le_defined(p2),
             (Tuple(vals1), Tuple(vals2)) => vals1.le_defined(vals2),
             (
-                Variant { discriminant: discriminant1, data: data1 },
-                Variant { discriminant: discriminant2, data: data2 },
+                Variant {
+                    discriminant: discriminant1,
+                    data: data1,
+                },
+                Variant {
+                    discriminant: discriminant2,
+                    data: data2,
+                },
             ) => {
-                let data2 = data2.extract();
                 let data1 = data1.extract();
+                let data2 = data2.extract();
                 discriminant1 == discriminant2 && data1.le_defined(data2)
             }
             (Union(chunks1), Union(chunks2)) => chunks1.le_defined(chunks2),
@@ -2879,9 +2814,9 @@ impl<
     }
 }
 impl<
-    T: DefinedRelation + libspecr::hidden::Obj + for<'de> serde::Deserialize<'de>
-        + serde::Serialize,
-> DefinedRelation for Option<T> {
+    T: DefinedRelation + libspecr::hidden::Obj + for<'de> serde::Deserialize<'de> + serde::Serialize,
+> DefinedRelation for Option<T>
+{
     fn le_defined(self, other: Self) -> bool {
         match (self, other) {
             (None, _) => true,
@@ -2892,8 +2827,7 @@ impl<
 }
 /// This type contains everything that needs to be tracked during the execution
 /// of a MiniRust program.
-#[derive(GcCompat)]
-#[derive(Debug)]
+#[derive(GcCompat, Debug)]
 pub struct Machine<M: Memory + libspecr::hidden::Obj> {
     /// The program we are executing.
     prog: Program,
@@ -2924,17 +2858,19 @@ pub struct Machine<M: Memory + libspecr::hidden::Obj> {
     stderr: DynWrite,
 }
 /// The data that makes up a stack frame.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 struct StackFrame<M: Memory + libspecr::hidden::Obj> {
     /// The function this stack frame belongs to.
     func: Function,
@@ -2952,17 +2888,19 @@ struct StackFrame<M: Memory + libspecr::hidden::Obj> {
     extra: M::FrameExtra,
 }
 /// Defines the behavior when the function returns or resumes unwinding.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 enum StackPopAction<M: Memory + libspecr::hidden::Obj> {
     /// This is the bottom of the stack, there is nothing left to do in this thread.
     BottomOfStack,
@@ -2979,17 +2917,19 @@ enum StackPopAction<M: Memory + libspecr::hidden::Obj> {
         ret_val_ptr: ThinPointer<M::Provenance>,
     },
 }
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub struct Thread<M: Memory + libspecr::hidden::Obj> {
     /// The stack. This is only the "control" part of the stack; the "data" part
     /// lives in memory (and stack and memory are completely disjoint concepts
@@ -3000,17 +2940,19 @@ pub struct Thread<M: Memory + libspecr::hidden::Obj> {
     /// Stores the unwind payloads.
     unwind_payloads: List<ThinPointer<M::Provenance>>,
 }
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum ThreadState {
     /// The thread is enabled and can get executed.
     Enabled,
@@ -3052,11 +2994,7 @@ impl<M: Memory + libspecr::hidden::Obj> StackFrame<M> {
         self.next_block = b;
         self.next_stmt = Int::ZERO;
     }
-    fn storage_live(
-        &mut self,
-        mem: &mut ConcurrentMemory<M>,
-        local: LocalName,
-    ) -> NdResult {
+    fn storage_live(&mut self, mem: &mut ConcurrentMemory<M>, local: LocalName) -> NdResult {
         self.storage_dead(mem, local)?;
         let pointee_size = (self.func.locals)
             .index_at(local)
@@ -3070,11 +3008,7 @@ impl<M: Memory + libspecr::hidden::Obj> StackFrame<M> {
         self.locals.insert(local, ptr);
         ret(())
     }
-    fn storage_dead(
-        &mut self,
-        mem: &mut ConcurrentMemory<M>,
-        local: LocalName,
-    ) -> NdResult {
+    fn storage_dead(&mut self, mem: &mut ConcurrentMemory<M>, local: LocalName) -> NdResult {
         let pointee_size = (self.func.locals)
             .index_at(local)
             .layout::<M::T>()
@@ -3090,17 +3024,19 @@ impl<M: Memory + libspecr::hidden::Obj> StackFrame<M> {
     }
 }
 /// The types of MiniRust.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum Type {
     Int(IntType),
     Bool,
@@ -3120,10 +3056,15 @@ pub enum Type {
         /// then its offset is given by rounding the `end` of `sized_head_layout` up to the alignment of this type.
         unsized_field: libspecr::hidden::GcCow<Option<Type>>,
     },
-    Array { elem: libspecr::hidden::GcCow<Type>, count: Int },
+    Array {
+        elem: libspecr::hidden::GcCow<Type>,
+        count: Int,
+    },
     /// Slices, i.e. `[T]` are unsized types which therefore cannot be represented as values.
     /// This type is also used for strings: `str` are treated as `[u8]`.
-    Slice { elem: libspecr::hidden::GcCow<Type> },
+    Slice {
+        elem: libspecr::hidden::GcCow<Type>,
+    },
     Union {
         /// Fields *may* overlap. Fields only exist for field access place projections,
         /// they are irrelevant for the representation relation.
@@ -3163,33 +3104,37 @@ pub enum Type {
     /// A `dyn TraitName`. Commonly only used behind a pointer.
     TraitObject(TraitName),
 }
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub struct IntType {
     pub signed: Signedness,
     pub size: Size,
 }
 pub type Fields = List<(Offset, Type)>;
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub struct Variant {
     /// The actual type of the variant.
     pub ty: Type,
@@ -3201,17 +3146,19 @@ pub struct Variant {
 }
 /// The decision tree that computes the discriminant out of the tag for a specific
 /// enum type.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum Discriminator {
     /// We know the discriminant.
     Known(Int),
@@ -3254,7 +3201,7 @@ impl IntType {
     }
     /// Generate the return type for IntWithOverflow
     pub fn with_overflow<T: Target + libspecr::hidden::Obj>(&self) -> Type {
-        let fields = list![(Size::ZERO, Type::Int(* self)), (self.size, Type::Bool)];
+        let fields = list![(Size::ZERO, Type::Int(*self)), (self.size, Type::Bool)];
         let align = self.align::<T>();
         let size = self.size + Size::from_bytes(align.bytes()).unwrap();
         Type::Tuple {
@@ -3290,11 +3237,7 @@ impl TupleHeadLayout {
     }
     /// The size and alignment of the full tuple, including the tail.
     /// Given the size and alignment of the tail type.
-    pub fn full_size_and_align(
-        self,
-        tail_size: Size,
-        tail_align: Align,
-    ) -> (Size, Align) {
+    pub fn full_size_and_align(self, tail_size: Size, tail_align: Align) -> (Size, Align) {
         let capped_tail_align = self.capped_tail_align(tail_align);
         let align = capped_tail_align.max(self.align);
         let tail_offset = self.tail_offset(tail_align);
@@ -3346,22 +3289,17 @@ impl LayoutStrategy {
     ) -> (Size, Align) {
         match (self, meta) {
             (LayoutStrategy::Sized(size, align), None) => (size, align),
-            (
-                LayoutStrategy::Slice(elem_size, align),
-                Some(PointerMeta::ElementCount(count)),
-            ) => (count * elem_size, align),
-            (
-                LayoutStrategy::TraitObject(..),
-                Some(PointerMeta::VTablePointer(vtable_ptr)),
-            ) => {
+            (LayoutStrategy::Slice(elem_size, align), Some(PointerMeta::ElementCount(count))) => {
+                (count * elem_size, align)
+            }
+            (LayoutStrategy::TraitObject(..), Some(PointerMeta::VTablePointer(vtable_ptr))) => {
                 let vtable = vtables(vtable_ptr);
                 (vtable.size, vtable.align)
             }
             (LayoutStrategy::Tuple { head, tail }, Some(meta)) => {
                 let tail = tail.extract();
                 {
-                    let (tail_size, tail_align) = tail
-                        .compute_size_and_align(Some(meta), vtables);
+                    let (tail_size, tail_align) = tail.compute_size_and_align(Some(meta), vtables);
                     head.full_size_and_align(tail_size, tail_align)
                 }
             }
@@ -3374,9 +3312,7 @@ impl LayoutStrategy {
         match self {
             LayoutStrategy::Sized(..) => PointerMetaKind::None,
             LayoutStrategy::Slice(..) => PointerMetaKind::ElementCount,
-            LayoutStrategy::TraitObject(trait_name) => {
-                PointerMetaKind::VTablePointer(trait_name)
-            }
+            LayoutStrategy::TraitObject(trait_name) => PointerMetaKind::VTablePointer(trait_name),
             LayoutStrategy::Tuple { tail, .. } => {
                 let tail = tail.extract();
                 tail.meta_kind()
@@ -3406,10 +3342,7 @@ impl LayoutStrategy {
                 {
                     head.check_wf::<T>()?;
                     tail.check_wf::<T>(prog)?;
-                    ensure_wf(
-                        !tail.is_sized(),
-                        "LayoutStrategy: tuple with sized tail",
-                    )?;
+                    ensure_wf(!tail.is_sized(), "LayoutStrategy: tuple with sized tail")?;
                 }
             }
         };
@@ -3453,17 +3386,19 @@ pub fn unit_ty() -> Type {
     }
 }
 /// A "value expression" evaluates to a `Value`.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum ValueExpr {
     /// Just return a constant value.
     Constant(Constant, Type),
@@ -3507,7 +3442,10 @@ pub enum ValueExpr {
         ptr_ty: PtrType,
     },
     /// Unary operators.
-    UnOp { operator: UnOp, operand: libspecr::hidden::GcCow<ValueExpr> },
+    UnOp {
+        operator: UnOp,
+        operand: libspecr::hidden::GcCow<ValueExpr>,
+    },
     /// Binary operators.
     BinOp {
         operator: BinOp,
@@ -3517,17 +3455,19 @@ pub enum ValueExpr {
 }
 /// Constants are basically values, but cannot have explicit provenance.
 /// Currently we do not support Ptr and Union constants.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum Constant {
     /// A mathematical integer, used for `i*`/`u*` types.
     Int(Int),
@@ -3542,17 +3482,19 @@ pub enum Constant {
     /// A pointer with constant address, not pointing into any allocation.
     PointerWithoutProvenance(Address),
 }
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum IntUnOp {
     /// Negate an integer value arithmetically (`x` becomes `-x`).
     Neg,
@@ -3561,17 +3503,19 @@ pub enum IntUnOp {
     /// Used for the intrinsic ˋctpopˋ.
     CountOnes,
 }
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum CastOp {
     /// Argument can be any integer type; returns the given integer type.
     IntToInt(IntType),
@@ -3580,17 +3524,19 @@ pub enum CastOp {
     /// input type, but the operation is UB in that case.
     Transmute(Type),
 }
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum UnOp {
     /// An operation on an integer; returns an integer of the same type.
     Int(IntUnOp),
@@ -3612,17 +3558,19 @@ pub enum UnOp {
     /// The parameter specifies which method of the vtable to look up.
     VTableMethodLookup(TraitMethodName),
 }
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum IntBinOp {
     /// Add two integer values.
     Add,
@@ -3665,17 +3613,19 @@ pub enum IntBinOp {
     /// Bitwise-xor two integer values.
     BitXor,
 }
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum IntBinOpWithOverflow {
     /// Add two integer values, returns a tuple of the result integer
     /// and a bool indicating whether the calculation overflowed.
@@ -3689,17 +3639,19 @@ pub enum IntBinOpWithOverflow {
 }
 /// A relational operator indicates how two values are to be compared.
 /// Unless noted otherwise, these all return a Boolean.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum RelOp {
     /// less than
     Lt,
@@ -3719,17 +3671,19 @@ pub enum RelOp {
     /// * +1 if left >  right
     Cmp,
 }
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum BinOp {
     /// An operation on integers (both must have the same type); returns an integer of the same type.
     Int(IntBinOp),
@@ -3755,22 +3709,27 @@ pub enum BinOp {
     ConstructWidePointer(PtrType),
 }
 /// A "place expression" evaluates to a `Place`.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum PlaceExpr {
     /// Denotes a local variable.
     Local(LocalName),
     /// Dereference a value (of pointer/reference type).
-    Deref { operand: libspecr::hidden::GcCow<ValueExpr>, ty: Type },
+    Deref {
+        operand: libspecr::hidden::GcCow<ValueExpr>,
+        ty: Type,
+    },
     /// Project to a field.
     Field {
         /// The place to base the projection on.
@@ -3793,20 +3752,25 @@ pub enum PlaceExpr {
         discriminant: Int,
     },
 }
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum Statement {
     /// Copy value from `source` to `destination`.
-    Assign { destination: PlaceExpr, source: ValueExpr },
+    Assign {
+        destination: PlaceExpr,
+        source: ValueExpr,
+    },
     /// Evaluate a place without accessing it.
     /// This is the result of translating e.g. `let _ = place;`.
     PlaceMention(PlaceExpr),
@@ -3830,24 +3794,30 @@ pub enum Statement {
     /// Deallocate the backing store for this local.
     StorageDead(LocalName),
 }
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum Terminator {
     /// Just jump to the next block.
     Goto(BbName),
     /// `value` needs to evaluate to a `Value::Int`.
     /// `cases` map those values to blocks to jump to and therefore have to have the equivalent type.
     /// If no value matches we fall back to the block given in `fallback`.
-    Switch { value: ValueExpr, cases: Map<Int, BbName>, fallback: BbName },
+    Switch {
+        value: ValueExpr,
+        cases: Map<Int, BbName>,
+        fallback: BbName,
+    },
     /// If this is ever executed, we have UB.
     Unreachable,
     /// Invoke the given intrinsic operation with the given arguments.
@@ -3904,17 +3874,19 @@ pub enum Terminator {
     ResumeUnwind,
 }
 /// Function arguments can be passed by-value or in-place.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum ArgumentExpr {
     /// Pass a copy of this value to the function.
     ///
@@ -3928,32 +3900,36 @@ pub enum ArgumentExpr {
 ///
 /// The assumption is that if caller and callee agree on the calling convention, and all arguments and the return types
 /// pass `check_abi_compatibility`, then this implies they are ABI-compatible on real implementations.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum CallingConvention {
     Rust,
     C,
 }
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum IntrinsicLockOp {
     Acquire,
     Release,
@@ -3964,17 +3940,19 @@ pub enum IntrinsicLockOp {
 /// they are non-deterministic or mutate the global state.
 /// We also make them intrinsic if they return `()`, because an operand that
 /// does not return anything is kind of odd.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum IntrinsicOp {
     Abort,
     Assume,
@@ -4003,66 +3981,76 @@ pub enum IntrinsicOp {
 }
 /// Opaque types of names for functions, vtables, trait methods, and globals.
 /// The internal representations of these types do not matter.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub struct FnName(pub libspecr::Name);
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub struct GlobalName(pub libspecr::Name);
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub struct VTableName(pub libspecr::Name);
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub struct TraitMethodName(pub libspecr::Name);
 /// A closed MiniRust program.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub struct Program {
     /// Associate a function with each declared function name.
     pub functions: Map<FnName, Function>,
@@ -4076,42 +4064,48 @@ pub struct Program {
     pub vtables: Map<VTableName, VTable>,
 }
 /// Opaque types of names for local variables and basic blocks.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub struct LocalName(pub libspecr::Name);
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub struct BbName(pub libspecr::Name);
 /// A MiniRust function.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub struct Function {
     /// The locals of this function, and their type.
     pub locals: Map<LocalName, Type>,
@@ -4129,34 +4123,38 @@ pub struct Function {
     pub implicit_writes: bool,
 }
 /// A basic block is a sequence of statements followed by a terminator.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub struct BasicBlock {
     pub statements: List<Statement>,
     pub terminator: Terminator,
     pub kind: BbKind,
 }
 /// The kind of a basic block in the CFG.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum BbKind {
     /// Regular blocks may use `Return` and `StartUnwind` but not `ResumeUnwind`.
     Regular,
@@ -4169,17 +4167,19 @@ pub enum BbKind {
     Terminate,
 }
 /// A global allocation.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub struct Global {
     /// The raw bytes of the allocation. `None` represents uninitialized bytes.
     pub bytes: List<Option<u8>>,
@@ -4191,17 +4191,19 @@ pub struct Global {
     pub align: Align,
 }
 /// A pointer into a global allocation.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub struct Relocation {
     /// The name of the global allocation we are pointing into.
     pub name: GlobalName,
@@ -4210,17 +4212,19 @@ pub struct Relocation {
 }
 /// A vtable for a trait-type pair.
 /// This is pointed to by the trait object metadata.
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub struct VTable {
     /// What trait this vtable is for.
     /// All vtables for this trait name have implementation for same set of methods.
@@ -4250,23 +4254,20 @@ impl UnsafeCellStrategy {
         ensure_wf(last_end <= size, "LayoutStrategy: invalid cells")?;
         ret(())
     }
-    fn check_wf<T: Target + libspecr::hidden::Obj>(
-        self,
-        layout: LayoutStrategy,
-    ) -> Result<()> {
+    fn check_wf<T: Target + libspecr::hidden::Obj>(self, layout: LayoutStrategy) -> Result<()> {
         match (self, layout) {
             (UnsafeCellStrategy::Sized { cells }, LayoutStrategy::Sized(size, _)) => {
                 Self::check_cells(cells, size)?;
             }
-            (
-                UnsafeCellStrategy::Slice { element_cells },
-                LayoutStrategy::Slice(size, _),
-            ) => {
+            (UnsafeCellStrategy::Slice { element_cells }, LayoutStrategy::Slice(size, _)) => {
                 Self::check_cells(element_cells, size)?;
             }
             (UnsafeCellStrategy::TraitObject, LayoutStrategy::TraitObject(..)) => {}
             (
-                UnsafeCellStrategy::Tuple { head_cells, tail_cells },
+                UnsafeCellStrategy::Tuple {
+                    head_cells,
+                    tail_cells,
+                },
                 LayoutStrategy::Tuple { head, tail },
             ) => {
                 let tail_cells = tail_cells.extract();
@@ -4300,14 +4301,17 @@ impl Discriminator {
         variants: Map<Int, Variant>,
     ) -> Result<()> {
         match self {
-            Discriminator::Known(discriminant) => {
-                ensure_wf(
-                    variants.get(discriminant).is_some(),
-                    "Discriminator: invalid discriminant",
-                )
-            }
+            Discriminator::Known(discriminant) => ensure_wf(
+                variants.get(discriminant).is_some(),
+                "Discriminator: invalid discriminant",
+            ),
             Discriminator::Invalid => ret(()),
-            Discriminator::Branch { offset, value_type, fallback, children } => {
+            Discriminator::Branch {
+                offset,
+                value_type,
+                fallback,
+                children,
+            } => {
                 let fallback = fallback.extract();
                 {
                     value_type.check_wf()?;
@@ -4316,10 +4320,7 @@ impl Discriminator {
                         "Discriminator: branch offset exceeds size",
                     )?;
                     fallback.check_wf::<T>(size, variants)?;
-                    for (idx, ((start, end), discriminator)) in children
-                        .into_iter()
-                        .enumerate()
-                    {
+                    for (idx, ((start, end), discriminator)) in children.into_iter().enumerate() {
                         ensure_wf(
                             value_type.can_represent(start),
                             "Discriminator: invalid branch start bound",
@@ -4330,12 +4331,11 @@ impl Discriminator {
                         )?;
                         ensure_wf(start < end, "Discriminator: invalid bound values")?;
                         ensure_wf(
-                            children
-                                .keys()
-                                .enumerate()
-                                .all(|(other_idx, (other_start, other_end))| {
+                            children.keys().enumerate().all(
+                                |(other_idx, (other_start, other_end))| {
                                     other_end <= start || other_start >= end || idx == other_idx
-                                }),
+                                },
+                            ),
                             "Discriminator: branch ranges overlap",
                         )?;
                         discriminator.check_wf::<T>(size, variants)?;
@@ -4349,11 +4349,7 @@ impl Discriminator {
 impl Constant {
     /// Check that the constant has the expected type.
     /// Assumes that `ty` has already been checked.
-    fn check_wf<T: Target + libspecr::hidden::Obj>(
-        self,
-        ty: Type,
-        prog: Program,
-    ) -> Result<()> {
+    fn check_wf<T: Target + libspecr::hidden::Obj>(self, ty: Type, prog: Program) -> Result<()> {
         match (self, ty) {
             (Constant::Int(i), Type::Int(int_type)) => {
                 ensure_wf(
@@ -4403,340 +4399,340 @@ impl ValueExpr {
         prog: Program,
     ) -> Result<Type> {
         use ValueExpr::*;
-        ret(
-            match self {
-                Constant(value, ty) => {
-                    ty.check_wf::<T>(prog)?;
-                    value.check_wf::<T>(ty, prog)?;
-                    ty
+        ret(match self {
+            Constant(value, ty) => {
+                ty.check_wf::<T>(prog)?;
+                value.check_wf::<T>(ty, prog)?;
+                ty
+            }
+            Tuple(exprs, t) => {
+                t.check_wf::<T>(prog)?;
+                match t {
+                    Type::Tuple {
+                        sized_fields,
+                        unsized_field,
+                        ..
+                    } => {
+                        let unsized_field = unsized_field.extract();
+                        {
+                            ensure_wf(
+                                unsized_field.is_none(),
+                                "ValueExpr::Tuple: constructing an unsized tuple value",
+                            )?;
+                            ensure_wf(
+                                exprs.len() == sized_fields.len(),
+                                "ValueExpr::Tuple: invalid number of tuple fields",
+                            )?;
+                            for (e, (_offset, ty)) in exprs.zip(sized_fields) {
+                                let checked = e.check_wf::<T>(locals, prog)?;
+                                ensure_wf(
+                                    checked == ty,
+                                    "ValueExpr::Tuple: invalid tuple field type",
+                                )?;
+                            }
+                        }
+                    }
+                    Type::Array { elem, count } => {
+                        let elem = elem.extract();
+                        {
+                            ensure_wf(
+                                exprs.len() == count,
+                                "ValueExpr::Tuple: invalid number of array elements",
+                            )?;
+                            for e in exprs {
+                                let checked = e.check_wf::<T>(locals, prog)?;
+                                ensure_wf(
+                                    checked == elem,
+                                    "ValueExpr::Tuple: invalid array element type",
+                                )?;
+                            }
+                        }
+                    }
+                    _ => {
+                        throw_ill_formed!("ValueExpr::Tuple: expression does not match type")
+                    }
                 }
-                Tuple(exprs, t) => {
-                    t.check_wf::<T>(prog)?;
-                    match t {
-                        Type::Tuple { sized_fields, unsized_field, .. } => {
-                            let unsized_field = unsized_field.extract();
-                            {
-                                ensure_wf(
-                                    unsized_field.is_none(),
-                                    "ValueExpr::Tuple: constructing an unsized tuple value",
-                                )?;
-                                ensure_wf(
-                                    exprs.len() == sized_fields.len(),
-                                    "ValueExpr::Tuple: invalid number of tuple fields",
-                                )?;
-                                for (e, (_offset, ty)) in exprs.zip(sized_fields) {
-                                    let checked = e.check_wf::<T>(locals, prog)?;
+                t
+            }
+            Union {
+                field,
+                expr,
+                union_ty,
+            } => {
+                let expr = expr.extract();
+                {
+                    union_ty.check_wf::<T>(prog)?;
+                    let Type::Union { fields, .. } = union_ty else {
+                        throw_ill_formed!("ValueExpr::Union: invalid type")
+                    };
+                    ensure_wf(
+                        field < fields.len(),
+                        "ValueExpr::Union: invalid field length",
+                    )?;
+                    let (_offset, ty) = (fields).index_at(field);
+                    let checked = expr.check_wf::<T>(locals, prog)?;
+                    ensure_wf(checked == ty, "ValueExpr::Union: invalid field type")?;
+                    union_ty
+                }
+            }
+            Variant {
+                discriminant,
+                data,
+                enum_ty,
+            } => {
+                let data = data.extract();
+                {
+                    let Type::Enum { variants, .. } = enum_ty else {
+                        throw_ill_formed!("ValueExpr::Variant: invalid type")
+                    };
+                    enum_ty.check_wf::<T>(prog)?;
+                    let Some(variant) = variants.get(discriminant) else {
+                        throw_ill_formed!("ValueExpr::Variant: invalid discriminant");
+                    };
+                    let checked = data.check_wf::<T>(locals, prog)?;
+                    ensure_wf(checked == variant.ty, "ValueExpr::Variant: invalid type")?;
+                    enum_ty
+                }
+            }
+            GetDiscriminant { place } => {
+                let place = place.extract();
+                {
+                    let Type::Enum {
+                        discriminant_ty, ..
+                    } = place.check_wf::<T>(locals, prog)?
+                    else {
+                        throw_ill_formed!("ValueExpr::GetDiscriminant: invalid type");
+                    };
+                    Type::Int(discriminant_ty)
+                }
+            }
+            Load { source } => {
+                let source = source.extract();
+                {
+                    let val_ty = source.check_wf::<T>(locals, prog)?;
+                    ensure_wf(
+                        val_ty.layout::<T>().is_sized(),
+                        "ValueExpr::Load: unsized value type",
+                    )?;
+                    val_ty
+                }
+            }
+            AddrOf { target, ptr_ty } => {
+                let target = target.extract();
+                {
+                    ptr_ty.check_wf::<T>(prog)?;
+                    let target_ty = target.check_wf::<T>(locals, prog)?;
+                    ensure_wf(
+                        target_ty.meta_kind() == ptr_ty.meta_kind(),
+                        "ValueExpr::AddrOf: mismatched metadata kind",
+                    )?;
+                    Type::Ptr(ptr_ty)
+                }
+            }
+            UnOp { operator, operand } => {
+                let operand = operand.extract();
+                {
+                    use lang::UnOp::*;
+                    let operand = operand.check_wf::<T>(locals, prog)?;
+                    match operator {
+                        Int(int_op) => {
+                            let Type::Int(int_ty) = operand else {
+                                throw_ill_formed!("UnOp::Int: invalid operand");
+                            };
+                            let ret_ty = match int_op {
+                                IntUnOp::CountOnes => IntType {
+                                    signed: Unsigned,
+                                    size: Size::from_bytes(4).unwrap(),
+                                },
+                                _ => int_ty,
+                            };
+                            Type::Int(ret_ty)
+                        }
+                        Cast(cast_op) => {
+                            use lang::CastOp::*;
+                            match cast_op {
+                                IntToInt(int_ty) => {
                                     ensure_wf(
-                                        checked == ty,
-                                        "ValueExpr::Tuple: invalid tuple field type",
+                                        matches!(operand, Type::Int(_)),
+                                        "Cast::IntToInt: invalid operand",
                                     )?;
+                                    Type::Int(int_ty)
                                 }
-                            }
-                        }
-                        Type::Array { elem, count } => {
-                            let elem = elem.extract();
-                            {
-                                ensure_wf(
-                                    exprs.len() == count,
-                                    "ValueExpr::Tuple: invalid number of array elements",
-                                )?;
-                                for e in exprs {
-                                    let checked = e.check_wf::<T>(locals, prog)?;
+                                Transmute(new_ty) => {
                                     ensure_wf(
-                                        checked == elem,
-                                        "ValueExpr::Tuple: invalid array element type",
+                                        operand.layout::<T>().is_sized(),
+                                        "Cast::Transmute: unsized source type",
                                     )?;
-                                }
-                            }
-                        }
-                        _ => {
-                            throw_ill_formed!(
-                                "ValueExpr::Tuple: expression does not match type"
-                            )
-                        }
-                    }
-                    t
-                }
-                Union { field, expr, union_ty } => {
-                    let expr = expr.extract();
-                    {
-                        union_ty.check_wf::<T>(prog)?;
-                        let Type::Union { fields, .. } = union_ty else {
-                            throw_ill_formed!("ValueExpr::Union: invalid type")
-                        };
-                        ensure_wf(
-                            field < fields.len(),
-                            "ValueExpr::Union: invalid field length",
-                        )?;
-                        let (_offset, ty) = (fields).index_at(field);
-                        let checked = expr.check_wf::<T>(locals, prog)?;
-                        ensure_wf(
-                            checked == ty,
-                            "ValueExpr::Union: invalid field type",
-                        )?;
-                        union_ty
-                    }
-                }
-                Variant { discriminant, data, enum_ty } => {
-                    let data = data.extract();
-                    {
-                        let Type::Enum { variants, .. } = enum_ty else {
-                            throw_ill_formed!("ValueExpr::Variant: invalid type")
-                        };
-                        enum_ty.check_wf::<T>(prog)?;
-                        let Some(variant) = variants.get(discriminant) else {
-                            throw_ill_formed!(
-                                "ValueExpr::Variant: invalid discriminant"
-                            );
-                        };
-                        let checked = data.check_wf::<T>(locals, prog)?;
-                        ensure_wf(
-                            checked == variant.ty,
-                            "ValueExpr::Variant: invalid type",
-                        )?;
-                        enum_ty
-                    }
-                }
-                GetDiscriminant { place } => {
-                    let place = place.extract();
-                    {
-                        let Type::Enum { discriminant_ty, .. } = place
-                            .check_wf::<T>(locals, prog)? else {
-                            throw_ill_formed!(
-                                "ValueExpr::GetDiscriminant: invalid type"
-                            );
-                        };
-                        Type::Int(discriminant_ty)
-                    }
-                }
-                Load { source } => {
-                    let source = source.extract();
-                    {
-                        let val_ty = source.check_wf::<T>(locals, prog)?;
-                        ensure_wf(
-                            val_ty.layout::<T>().is_sized(),
-                            "ValueExpr::Load: unsized value type",
-                        )?;
-                        val_ty
-                    }
-                }
-                AddrOf { target, ptr_ty } => {
-                    let target = target.extract();
-                    {
-                        ptr_ty.check_wf::<T>(prog)?;
-                        let target_ty = target.check_wf::<T>(locals, prog)?;
-                        ensure_wf(
-                            target_ty.meta_kind() == ptr_ty.meta_kind(),
-                            "ValueExpr::AddrOf: mismatched metadata kind",
-                        )?;
-                        Type::Ptr(ptr_ty)
-                    }
-                }
-                UnOp { operator, operand } => {
-                    let operand = operand.extract();
-                    {
-                        use lang::UnOp::*;
-                        let operand = operand.check_wf::<T>(locals, prog)?;
-                        match operator {
-                            Int(int_op) => {
-                                let Type::Int(int_ty) = operand else {
-                                    throw_ill_formed!("UnOp::Int: invalid operand");
-                                };
-                                let ret_ty = match int_op {
-                                    IntUnOp::CountOnes => {
-                                        IntType {
-                                            signed: Unsigned,
-                                            size: Size::from_bytes(4).unwrap(),
-                                        }
-                                    }
-                                    _ => int_ty,
-                                };
-                                Type::Int(ret_ty)
-                            }
-                            Cast(cast_op) => {
-                                use lang::CastOp::*;
-                                match cast_op {
-                                    IntToInt(int_ty) => {
-                                        ensure_wf(
-                                            matches!(operand, Type::Int(_)),
-                                            "Cast::IntToInt: invalid operand",
-                                        )?;
-                                        Type::Int(int_ty)
-                                    }
-                                    Transmute(new_ty) => {
-                                        ensure_wf(
-                                            operand.layout::<T>().is_sized(),
-                                            "Cast::Transmute: unsized source type",
-                                        )?;
-                                        ensure_wf(
-                                            new_ty.layout::<T>().is_sized(),
-                                            "Cast::Transmute: unsized target type",
-                                        )?;
-                                        new_ty
-                                    }
-                                }
-                            }
-                            GetThinPointer => {
-                                ensure_wf(
-                                    matches!(operand, Type::Ptr(_)),
-                                    "UnOp::GetThinPointer: invalid operand: not a pointer",
-                                )?;
-                                Type::Ptr(PtrType::Raw {
-                                    meta_kind: PointerMetaKind::None,
-                                })
-                            }
-                            GetMetadata => {
-                                let Type::Ptr(ptr_ty) = operand else {
-                                    throw_ill_formed!(
-                                        "UnOp::GetMetadata: invalid operand: not a pointer"
-                                    );
-                                };
-                                ptr_ty.meta_kind().ty::<T>()
-                            }
-                            ComputeSize(ty) | ComputeAlign(ty) => {
-                                ty.check_wf::<T>(prog)?;
-                                let meta_ty = ty.meta_kind().ty::<T>();
-                                if operand != meta_ty {
-                                    throw_ill_formed!(
-                                        "UnOp::ComputeSize|ComputeAlign: invalid operand type: not metadata of type"
-                                    );
-                                }
-                                Type::Int(IntType::usize_ty::<T>())
-                            }
-                            VTableMethodLookup(method) => {
-                                let Type::Ptr(PtrType::VTablePtr(trait_name)) = operand
-                                else {
-                                    throw_ill_formed!(
-                                        "UnOp::VTableMethodLookup: invalid operand: not a vtable pointer"
-                                    );
-                                };
-                                let trait_methods = (prog.traits).index_at(trait_name);
-                                ensure_wf(
-                                    trait_methods.contains(method),
-                                    "UnOp::VTableMethodLookup: invalid operand: method doesn't exist in trait",
-                                )?;
-                                Type::Ptr(PtrType::FnPtr)
-                            }
-                        }
-                    }
-                }
-                BinOp { operator, left, right } => {
-                    let right = right.extract();
-                    let left = left.extract();
-                    {
-                        use lang::BinOp::*;
-                        let left = left.check_wf::<T>(locals, prog)?;
-                        let right = right.check_wf::<T>(locals, prog)?;
-                        match operator {
-                            Int(int_op) => {
-                                let Type::Int(left) = left else {
-                                    throw_ill_formed!("BinOp::Int: invalid left type");
-                                };
-                                let Type::Int(right) = right else {
-                                    throw_ill_formed!("BinOp::Int: invalid right type");
-                                };
-                                use IntBinOp::*;
-                                if !matches!(
-                                    int_op, Shl | Shr | ShlUnchecked | ShrUnchecked
-                                ) {
                                     ensure_wf(
-                                        left == right,
-                                        "BinOp:Int: right and left type are not equal",
+                                        new_ty.layout::<T>().is_sized(),
+                                        "Cast::Transmute: unsized target type",
                                     )?;
-                                }
-                                Type::Int(left)
-                            }
-                            IntWithOverflow(_int_op) => {
-                                let Type::Int(int_ty) = left else {
-                                    throw_ill_formed!(
-                                        "BinOp::IntWithOverflow: invalid left type"
-                                    );
-                                };
-                                ensure_wf(
-                                    right == Type::Int(int_ty),
-                                    "BinOp::IntWithOverflow: invalid right type",
-                                )?;
-                                int_ty.with_overflow::<T>()
-                            }
-                            Rel(rel_op) => {
-                                ensure_wf(
-                                    matches!(left, Type::Int(_) | Type::Bool | Type::Ptr(_)),
-                                    "BinOp::Rel: invalid left type",
-                                )?;
-                                ensure_wf(right == left, "BinOp::Rel: invalid right type")?;
-                                match rel_op {
-                                    RelOp::Cmp => Type::Int(IntType::I8),
-                                    _ => Type::Bool,
+                                    new_ty
                                 }
                             }
-                            PtrOffset { inbounds: _ } => {
-                                let Type::Ptr(left_ptr_ty) = left else {
-                                    throw_ill_formed!(
-                                        "BinOp::PtrOffset: invalid left type: not a pointer"
-                                    );
-                                };
-                                if left_ptr_ty.meta_kind() != PointerMetaKind::None {
-                                    throw_ill_formed!(
-                                        "BinOp::PtrOffset: invalid left type: unsized pointee"
-                                    );
-                                }
-                                ensure_wf(
-                                    matches!(right, Type::Int(_)),
-                                    "BinOp::PtrOffset: invalid right type",
-                                )?;
-                                left
+                        }
+                        GetThinPointer => {
+                            ensure_wf(
+                                matches!(operand, Type::Ptr(_)),
+                                "UnOp::GetThinPointer: invalid operand: not a pointer",
+                            )?;
+                            Type::Ptr(PtrType::Raw {
+                                meta_kind: PointerMetaKind::None,
+                            })
+                        }
+                        GetMetadata => {
+                            let Type::Ptr(ptr_ty) = operand else {
+                                throw_ill_formed!(
+                                    "UnOp::GetMetadata: invalid operand: not a pointer"
+                                );
+                            };
+                            ptr_ty.meta_kind().ty::<T>()
+                        }
+                        ComputeSize(ty) | ComputeAlign(ty) => {
+                            ty.check_wf::<T>(prog)?;
+                            let meta_ty = ty.meta_kind().ty::<T>();
+                            if operand != meta_ty {
+                                throw_ill_formed!(
+                                    "UnOp::ComputeSize|ComputeAlign: invalid operand type: not metadata of type"
+                                );
                             }
-                            PtrOffsetFrom { inbounds: _, nonneg: _ } => {
-                                let Type::Ptr(left_ptr_ty) = left else {
-                                    throw_ill_formed!(
-                                        "BinOp::PtrOffsetFrom: invalid left type: not a pointer"
-                                    );
-                                };
-                                if left_ptr_ty.meta_kind() != PointerMetaKind::None {
-                                    throw_ill_formed!(
-                                        "BinOp::PtrOffsetFrom: invalid left type: unsized pointee"
-                                    );
-                                }
-                                let Type::Ptr(right_ptr_ty) = right else {
-                                    throw_ill_formed!(
-                                        "BinOp::PtrOffsetFrom: invalid right type: not a pointer"
-                                    );
-                                };
-                                if right_ptr_ty.meta_kind() != PointerMetaKind::None {
-                                    throw_ill_formed!(
-                                        "BinOp::PtrOffsetFrom: invalid right type: unsized pointee"
-                                    );
-                                }
-                                let isize_int = IntType {
-                                    signed: Signed,
-                                    size: T::PTR_SIZE,
-                                };
-                                Type::Int(isize_int)
-                            }
-                            ConstructWidePointer(ptr_ty) => {
-                                let Type::Ptr(thin_ptr_ty) = left else {
-                                    throw_ill_formed!(
-                                        "BinOp::ConstructWidePointer: invalid left type: not a pointer"
-                                    );
-                                };
-                                if thin_ptr_ty.meta_kind() != PointerMetaKind::None {
-                                    throw_ill_formed!(
-                                        "BinOp::ConstructWidePointer: invalid left type: not a thin pointer"
-                                    );
-                                }
-                                let meta_ty = ptr_ty.meta_kind().ty::<T>();
-                                if right != meta_ty {
-                                    throw_ill_formed!(
-                                        "BinOp::ConstructWidePointer: invalid right type: not metadata of target"
-                                    );
-                                }
-                                Type::Ptr(ptr_ty)
-                            }
+                            Type::Int(IntType::usize_ty::<T>())
+                        }
+                        VTableMethodLookup(method) => {
+                            let Type::Ptr(PtrType::VTablePtr(trait_name)) = operand else {
+                                throw_ill_formed!(
+                                    "UnOp::VTableMethodLookup: invalid operand: not a vtable pointer"
+                                );
+                            };
+                            let trait_methods = (prog.traits).index_at(trait_name);
+                            ensure_wf(
+                                trait_methods.contains(method),
+                                "UnOp::VTableMethodLookup: invalid operand: method doesn't exist in trait",
+                            )?;
+                            Type::Ptr(PtrType::FnPtr)
                         }
                     }
                 }
-            },
-        )
+            }
+            BinOp {
+                operator,
+                left,
+                right,
+            } => {
+                let left = left.extract();
+                let right = right.extract();
+                {
+                    use lang::BinOp::*;
+                    let left = left.check_wf::<T>(locals, prog)?;
+                    let right = right.check_wf::<T>(locals, prog)?;
+                    match operator {
+                        Int(int_op) => {
+                            let Type::Int(left) = left else {
+                                throw_ill_formed!("BinOp::Int: invalid left type");
+                            };
+                            let Type::Int(right) = right else {
+                                throw_ill_formed!("BinOp::Int: invalid right type");
+                            };
+                            use IntBinOp::*;
+                            if !matches!(int_op, Shl | Shr | ShlUnchecked | ShrUnchecked) {
+                                ensure_wf(
+                                    left == right,
+                                    "BinOp:Int: right and left type are not equal",
+                                )?;
+                            }
+                            Type::Int(left)
+                        }
+                        IntWithOverflow(_int_op) => {
+                            let Type::Int(int_ty) = left else {
+                                throw_ill_formed!("BinOp::IntWithOverflow: invalid left type");
+                            };
+                            ensure_wf(
+                                right == Type::Int(int_ty),
+                                "BinOp::IntWithOverflow: invalid right type",
+                            )?;
+                            int_ty.with_overflow::<T>()
+                        }
+                        Rel(rel_op) => {
+                            ensure_wf(
+                                matches!(left, Type::Int(_) | Type::Bool | Type::Ptr(_)),
+                                "BinOp::Rel: invalid left type",
+                            )?;
+                            ensure_wf(right == left, "BinOp::Rel: invalid right type")?;
+                            match rel_op {
+                                RelOp::Cmp => Type::Int(IntType::I8),
+                                _ => Type::Bool,
+                            }
+                        }
+                        PtrOffset { inbounds: _ } => {
+                            let Type::Ptr(left_ptr_ty) = left else {
+                                throw_ill_formed!(
+                                    "BinOp::PtrOffset: invalid left type: not a pointer"
+                                );
+                            };
+                            if left_ptr_ty.meta_kind() != PointerMetaKind::None {
+                                throw_ill_formed!(
+                                    "BinOp::PtrOffset: invalid left type: unsized pointee"
+                                );
+                            }
+                            ensure_wf(
+                                matches!(right, Type::Int(_)),
+                                "BinOp::PtrOffset: invalid right type",
+                            )?;
+                            left
+                        }
+                        PtrOffsetFrom {
+                            inbounds: _,
+                            nonneg: _,
+                        } => {
+                            let Type::Ptr(left_ptr_ty) = left else {
+                                throw_ill_formed!(
+                                    "BinOp::PtrOffsetFrom: invalid left type: not a pointer"
+                                );
+                            };
+                            if left_ptr_ty.meta_kind() != PointerMetaKind::None {
+                                throw_ill_formed!(
+                                    "BinOp::PtrOffsetFrom: invalid left type: unsized pointee"
+                                );
+                            }
+                            let Type::Ptr(right_ptr_ty) = right else {
+                                throw_ill_formed!(
+                                    "BinOp::PtrOffsetFrom: invalid right type: not a pointer"
+                                );
+                            };
+                            if right_ptr_ty.meta_kind() != PointerMetaKind::None {
+                                throw_ill_formed!(
+                                    "BinOp::PtrOffsetFrom: invalid right type: unsized pointee"
+                                );
+                            }
+                            let isize_int = IntType {
+                                signed: Signed,
+                                size: T::PTR_SIZE,
+                            };
+                            Type::Int(isize_int)
+                        }
+                        ConstructWidePointer(ptr_ty) => {
+                            let Type::Ptr(thin_ptr_ty) = left else {
+                                throw_ill_formed!(
+                                    "BinOp::ConstructWidePointer: invalid left type: not a pointer"
+                                );
+                            };
+                            if thin_ptr_ty.meta_kind() != PointerMetaKind::None {
+                                throw_ill_formed!(
+                                    "BinOp::ConstructWidePointer: invalid left type: not a thin pointer"
+                                );
+                            }
+                            let meta_ty = ptr_ty.meta_kind().ty::<T>();
+                            if right != meta_ty {
+                                throw_ill_formed!(
+                                    "BinOp::ConstructWidePointer: invalid right type: not metadata of target"
+                                );
+                            }
+                            Type::Ptr(ptr_ty)
+                        }
+                    }
+                }
+            }
+        })
     }
 }
 impl PlaceExpr {
@@ -4746,108 +4742,100 @@ impl PlaceExpr {
         prog: Program,
     ) -> Result<Type> {
         use PlaceExpr::*;
-        ret(
-            match self {
-                Local(name) => {
-                    match locals.get(name) {
-                        None => throw_ill_formed!("PlaceExpr::Local: unknown local name"),
-                        Some(local) => local,
-                    }
-                }
-                Deref { operand, ty } => {
-                    let operand = operand.extract();
-                    {
-                        ty.check_wf::<T>(prog)?;
-                        let op_ty = operand.check_wf::<T>(locals, prog)?;
-                        let Type::Ptr(op_ptr_ty) = op_ty else {
-                            throw_ill_formed!("PlaceExpr::Deref: invalid operand type");
-                        };
-                        ensure_wf(
-                            op_ptr_ty.meta_kind() == ty.meta_kind(),
-                            "PlaceExpr::Deref: metadata kind of operand and type don't match",
-                        )?;
-                        ty
-                    }
-                }
-                Field { root, field } => {
-                    let root = root.extract();
-                    {
-                        let root = root.check_wf::<T>(locals, prog)?;
-                        let field_ty = match root {
-                            Type::Tuple { sized_fields, unsized_field, .. } => {
-                                let unsized_field = unsized_field.extract();
-                                {
-                                    if field >= 0 && field < sized_fields.len() {
-                                        (sized_fields).index_at(field).1
-                                    } else if field == sized_fields.len() {
-                                        let Some(unsized_ty) = unsized_field else {
-                                            throw_ill_formed!("PlaceExpr::Field: invalid field");
-                                        };
-                                        unsized_ty
-                                    } else {
-                                        throw_ill_formed!("PlaceExpr::Field: invalid field");
-                                    }
-                                }
-                            }
-                            Type::Union { fields, .. } => {
-                                match fields.get(field) {
-                                    None => throw_ill_formed!("PlaceExpr::Field: invalid field"),
-                                    Some(field) => field.1,
-                                }
-                            }
-                            _ => {
-                                throw_ill_formed!(
-                                    "PlaceExpr::Field: expression does not match type"
-                                )
-                            }
-                        };
-                        field_ty
-                    }
-                }
-                Index { root, index } => {
-                    let index = index.extract();
-                    let root = root.extract();
-                    {
-                        let root = root.check_wf::<T>(locals, prog)?;
-                        let index = index.check_wf::<T>(locals, prog)?;
-                        ensure_wf(
-                            matches!(index, Type::Int(_)),
-                            "PlaceExpr::Index: invalid index type",
-                        )?;
-                        match root {
-                            Type::Array { elem, .. } | Type::Slice { elem } => {
-                                let elem = elem.extract();
-                                elem
-                            }
-                            _ => {
-                                throw_ill_formed!(
-                                    "PlaceExpr::Index: expression type is not indexable"
-                                )
-                            }
-                        }
-                    }
-                }
-                Downcast { root, discriminant } => {
-                    let root = root.extract();
-                    {
-                        let root = root.check_wf::<T>(locals, prog)?;
-                        match root {
-                            Type::Enum { variants, .. } => {
-                                let Some(variant) = variants.get(discriminant) else {
-                                    throw_ill_formed!(
-                                        "PlaceExpr::Downcast: invalid discriminant"
-                                    );
-                                };
-                                variant.ty
-                            }
-                            _ => {
-                                throw_ill_formed!("PlaceExpr::Downcast: invalid root type")
-                            }
-                        }
-                    }
-                }
+        ret(match self {
+            Local(name) => match locals.get(name) {
+                None => throw_ill_formed!("PlaceExpr::Local: unknown local name"),
+                Some(local) => local,
             },
-        )
+            Deref { operand, ty } => {
+                let operand = operand.extract();
+                {
+                    ty.check_wf::<T>(prog)?;
+                    let op_ty = operand.check_wf::<T>(locals, prog)?;
+                    let Type::Ptr(op_ptr_ty) = op_ty else {
+                        throw_ill_formed!("PlaceExpr::Deref: invalid operand type");
+                    };
+                    ensure_wf(
+                        op_ptr_ty.meta_kind() == ty.meta_kind(),
+                        "PlaceExpr::Deref: metadata kind of operand and type don't match",
+                    )?;
+                    ty
+                }
+            }
+            Field { root, field } => {
+                let root = root.extract();
+                {
+                    let root = root.check_wf::<T>(locals, prog)?;
+                    let field_ty = match root {
+                        Type::Tuple {
+                            sized_fields,
+                            unsized_field,
+                            ..
+                        } => {
+                            let unsized_field = unsized_field.extract();
+                            {
+                                if field >= 0 && field < sized_fields.len() {
+                                    (sized_fields).index_at(field).1
+                                } else if field == sized_fields.len() {
+                                    let Some(unsized_ty) = unsized_field else {
+                                        throw_ill_formed!("PlaceExpr::Field: invalid field");
+                                    };
+                                    unsized_ty
+                                } else {
+                                    throw_ill_formed!("PlaceExpr::Field: invalid field");
+                                }
+                            }
+                        }
+                        Type::Union { fields, .. } => match fields.get(field) {
+                            None => throw_ill_formed!("PlaceExpr::Field: invalid field"),
+                            Some(field) => field.1,
+                        },
+                        _ => {
+                            throw_ill_formed!("PlaceExpr::Field: expression does not match type")
+                        }
+                    };
+                    field_ty
+                }
+            }
+            Index { root, index } => {
+                let root = root.extract();
+                let index = index.extract();
+                {
+                    let root = root.check_wf::<T>(locals, prog)?;
+                    let index = index.check_wf::<T>(locals, prog)?;
+                    ensure_wf(
+                        matches!(index, Type::Int(_)),
+                        "PlaceExpr::Index: invalid index type",
+                    )?;
+                    match root {
+                        Type::Array { elem, .. } | Type::Slice { elem } => {
+                            let elem = elem.extract();
+                            elem
+                        }
+                        _ => {
+                            throw_ill_formed!("PlaceExpr::Index: expression type is not indexable")
+                        }
+                    }
+                }
+            }
+            Downcast { root, discriminant } => {
+                let root = root.extract();
+                {
+                    let root = root.check_wf::<T>(locals, prog)?;
+                    match root {
+                        Type::Enum { variants, .. } => {
+                            let Some(variant) = variants.get(discriminant) else {
+                                throw_ill_formed!("PlaceExpr::Downcast: invalid discriminant");
+                            };
+                            variant.ty
+                        }
+                        _ => {
+                            throw_ill_formed!("PlaceExpr::Downcast: invalid root type")
+                        }
+                    }
+                }
+            }
+        })
     }
 }
 impl ArgumentExpr {
@@ -4856,12 +4844,10 @@ impl ArgumentExpr {
         locals: Map<LocalName, Type>,
         prog: Program,
     ) -> Result<Type> {
-        ret(
-            match self {
-                ArgumentExpr::ByValue(value) => value.check_wf::<T>(locals, prog)?,
-                ArgumentExpr::InPlace(place) => place.check_wf::<T>(locals, prog)?,
-            },
-        )
+        ret(match self {
+            ArgumentExpr::ByValue(value) => value.check_wf::<T>(locals, prog)?,
+            ArgumentExpr::InPlace(place) => place.check_wf::<T>(locals, prog)?,
+        })
     }
 }
 impl Statement {
@@ -4872,7 +4858,10 @@ impl Statement {
     ) -> Result<()> {
         use Statement::*;
         match self {
-            Assign { destination, source } => {
+            Assign {
+                destination,
+                source,
+            } => {
                 let left = destination.check_wf::<T>(func.locals, prog)?;
                 let right = source.check_wf::<T>(func.locals, prog)?;
                 ensure_wf(
@@ -4880,7 +4869,7 @@ impl Statement {
                     "Statement::Assign: destination and source type differ",
                 )?;
                 assert!(
-                    right.layout::< T > ().is_sized(),
+                    right.layout::<T>().is_sized(),
                     "ValueExpr always return sized types"
                 );
             }
@@ -4888,14 +4877,12 @@ impl Statement {
                 place.check_wf::<T>(func.locals, prog)?;
             }
             SetDiscriminant { destination, value } => {
-                let Type::Enum { variants, .. } = destination
-                    .check_wf::<T>(func.locals, prog)? else {
+                let Type::Enum { variants, .. } = destination.check_wf::<T>(func.locals, prog)?
+                else {
                     throw_ill_formed!("Statement::SetDiscriminant: invalid type");
                 };
                 if variants.get(value) == None {
-                    throw_ill_formed!(
-                        "Statement::SetDiscriminant: invalid discriminant write"
-                    )
+                    throw_ill_formed!("Statement::SetDiscriminant: invalid discriminant write")
                 }
             }
             Validate { place, fn_entry: _ } => {
@@ -4958,7 +4945,11 @@ impl Terminator {
             Goto(block_name) => {
                 func.check_next_block(block_kind, block_name)?;
             }
-            Switch { value, cases, fallback } => {
+            Switch {
+                value,
+                cases,
+                fallback,
+            } => {
                 let ty = value.check_wf::<T>(func.locals, prog)?;
                 let Type::Int(switch_ty) = ty else {
                     throw_ill_formed!("Terminator::Switch: switch is not Int")
@@ -4973,7 +4964,12 @@ impl Terminator {
                 func.check_next_block(block_kind, fallback)?;
             }
             Unreachable => {}
-            Intrinsic { intrinsic, arguments, ret, next_block } => {
+            Intrinsic {
+                intrinsic,
+                arguments,
+                ret,
+                next_block,
+            } => {
                 let ret_ty = ret.check_wf::<T>(func.locals, prog)?;
                 ensure_wf(
                     ret_ty.layout::<T>().is_sized(),
@@ -4989,9 +4985,7 @@ impl Terminator {
                 match intrinsic {
                     IntrinsicOp::AtomicFetchAndOp(op) => {
                         if !is_atomic_binop(op) {
-                            throw_ill_formed!(
-                                "IntrinsicOp::AtomicFetchAndOp: non atomic op"
-                            );
+                            throw_ill_formed!("IntrinsicOp::AtomicFetchAndOp: non atomic op");
                         }
                     }
                     _ => {}
@@ -5038,7 +5032,10 @@ impl Terminator {
                     "Terminator::Return has to be called in a regular block",
                 )?;
             }
-            StartUnwind { unwind_payload, unwind_block } => {
+            StartUnwind {
+                unwind_payload,
+                unwind_block,
+            } => {
                 let payload_type = unwind_payload.check_wf::<T>(func.locals, prog)?;
                 ensure_wf(
                     payload_type
@@ -5073,7 +5070,10 @@ impl Terminator {
 impl Function {
     fn check_wf<T: Target + libspecr::hidden::Obj>(self, prog: Program) -> Result<()> {
         for ty in self.locals.values() {
-            ensure_wf(ty.layout::<T>().is_sized(), "Function: unsized local variable")?;
+            ensure_wf(
+                ty.layout::<T>().is_sized(),
+                "Function: unsized local variable",
+            )?;
             ty.check_wf::<T>(prog)?;
         }
         let mut start_live: Set<LocalName> = Set::new();
@@ -5102,11 +5102,7 @@ impl Function {
         ret(())
     }
     /// Checks whether the next block exists and has the correct block kind.
-    fn check_next_block(
-        self,
-        expected_block_kind: BbKind,
-        next_block_name: BbName,
-    ) -> Result<()> {
+    fn check_next_block(self, expected_block_kind: BbKind, next_block_name: BbName) -> Result<()> {
         let Some(next_block) = self.blocks.get(next_block_name) else {
             throw_ill_formed!("Terminator: next block does not exist");
         };
@@ -5126,9 +5122,7 @@ impl Function {
             BbKind::Regular => list![BbKind::Cleanup, BbKind::Catch],
             BbKind::Cleanup | BbKind::Terminate => list![BbKind::Terminate],
             BbKind::Catch => {
-                throw_ill_formed!(
-                    "Terminator: unwinding is not allowed in a catch block"
-                )
+                throw_ill_formed!("Terminator: unwinding is not allowed in a catch block")
             }
         };
         let Some(unwind_block) = self.blocks.get(unwind_block_name) else {
@@ -5183,7 +5177,10 @@ impl Program {
             ret_layout == LayoutStrategy::Sized(Size::ZERO, Align::ONE),
             "Program: start function return local has invalid layout",
         )?;
-        ensure_wf(start.args.is_empty(), "Program: start function has arguments")?;
+        ensure_wf(
+            start.args.is_empty(),
+            "Program: start function has arguments",
+        )?;
         for (_name, global) in self.globals {
             let size = Size::from_bytes(global.bytes.len()).unwrap();
             for (offset, relocation) in global.relocations {
@@ -5198,12 +5195,7 @@ impl Program {
     }
 }
 impl<M: Memory + libspecr::hidden::Obj> ConcurrentMemory<M> {
-    fn deinit(
-        &mut self,
-        ptr: ThinPointer<M::Provenance>,
-        len: Size,
-        align: Align,
-    ) -> Result {
+    fn deinit(&mut self, ptr: ThinPointer<M::Provenance>, len: Size, align: Align) -> Result {
         self.store(
             ptr,
             list![AbstractByte::Uninit; len.bytes()],
@@ -5213,17 +5205,19 @@ impl<M: Memory + libspecr::hidden::Obj> ConcurrentMemory<M> {
         ret(())
     }
 }
-#[derive(GcCompat)]
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Copy)]
-#[derive(PartialEq)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(PartialOrd)]
-#[derive(Ord)]
-#[derive(serde::Serialize)]
-#[derive(serde::Deserialize)]
+#[derive(
+    GcCompat,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 pub enum LockState {
     Unlocked,
     LockedBy(ThreadId),
@@ -5253,18 +5247,18 @@ fn check_abi_compatibility(caller_ty: Type, callee_ty: Type) -> bool {
                 unsized_field: callee_unsized_field,
             },
         ) => {
-            let callee_unsized_field = callee_unsized_field.extract();
             let caller_unsized_field = caller_unsized_field.extract();
+            let callee_unsized_field = callee_unsized_field.extract();
             {
-                let (caller_size, caller_align) = caller_head_layout
-                    .head_size_and_align();
-                let (callee_size, callee_align) = callee_head_layout
-                    .head_size_and_align();
+                let (caller_size, caller_align) = caller_head_layout.head_size_and_align();
+                let (callee_size, callee_align) = callee_head_layout.head_size_and_align();
                 assert!(
-                    caller_unsized_field.is_none(), "wf ensures all arugments are sized"
+                    caller_unsized_field.is_none(),
+                    "wf ensures all arugments are sized"
                 );
                 assert!(
-                    callee_unsized_field.is_none(), "wf ensures all arugments are sized"
+                    callee_unsized_field.is_none(),
+                    "wf ensures all arugments are sized"
                 );
                 caller_fields.len() == callee_fields.len()
                     && caller_fields
@@ -5272,17 +5266,24 @@ fn check_abi_compatibility(caller_ty: Type, callee_ty: Type) -> bool {
                         .all(|(caller_field, callee_field)| {
                             caller_field.0 == callee_field.0
                                 && check_abi_compatibility(caller_field.1, callee_field.1)
-                        }) && caller_size == callee_size && caller_align == callee_align
+                        })
+                    && caller_size == callee_size
+                    && caller_align == callee_align
             }
         }
         (
-            Type::Array { elem: caller_elem, count: caller_count },
-            Type::Array { elem: callee_elem, count: callee_count },
+            Type::Array {
+                elem: caller_elem,
+                count: caller_count,
+            },
+            Type::Array {
+                elem: callee_elem,
+                count: callee_count,
+            },
         ) => {
-            let callee_elem = callee_elem.extract();
             let caller_elem = caller_elem.extract();
-            check_abi_compatibility(caller_elem, callee_elem)
-                && caller_count == callee_count
+            let callee_elem = callee_elem.extract();
+            check_abi_compatibility(caller_elem, callee_elem) && caller_count == callee_count
         }
         (
             Type::Union {
@@ -5304,7 +5305,9 @@ fn check_abi_compatibility(caller_ty: Type, callee_ty: Type) -> bool {
                     .all(|(caller_field, callee_field)| {
                         caller_field.0 == callee_field.0
                             && check_abi_compatibility(caller_field.1, callee_field.1)
-                    }) && caller_chunks == callee_chunks && caller_size == callee_size
+                    })
+                && caller_chunks == callee_chunks
+                && caller_size == callee_size
                 && caller_align == callee_align
         }
         (
@@ -5327,15 +5330,16 @@ fn check_abi_compatibility(caller_ty: Type, callee_ty: Type) -> bool {
                 && caller_variants
                     .iter()
                     .all(|(caller_discriminant, caller_variant)| {
-                        let Some(callee_variant) = callee_variants
-                            .get(caller_discriminant) else {
+                        let Some(callee_variant) = callee_variants.get(caller_discriminant) else {
                             return false;
                         };
                         check_abi_compatibility(caller_variant.ty, callee_variant.ty)
                             && caller_variant.tagger == callee_variant.tagger
-                    }) && caller_discriminator == callee_discriminator
+                    })
+                && caller_discriminator == callee_discriminator
                 && caller_discriminant_ty == callee_discriminant_ty
-                && caller_size == callee_size && caller_align == callee_align
+                && caller_size == callee_size
+                && caller_align == callee_align
         }
         _ => false,
     }

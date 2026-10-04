@@ -58,7 +58,7 @@ fn duplicate_unwind_path(
             return copy_id;
         }
         let mut block = blocks[id].clone();
-        let new_id = blocks.push(BlockData::new_unreachable(true));
+        let new_id = blocks.push(BlockData::new_unreachable(block.kind));
         copied_ancestors.insert(id, new_id);
         for target in block.terminator.targets_mut() {
             *target = duplicate_unwind_path(blocks, *target, copied_ancestors);

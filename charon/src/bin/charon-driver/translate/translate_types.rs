@@ -894,9 +894,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         TyKind::Ref(..) | TyKind::RawPtr(..) | TyKind::FnPtr(..) => ptr_size,
                         _ => panic!("Unsupported type for `generate_naive_layout`: {ty:?}"),
                     };
-                    size += size_of_ty;
                     // For these types, align == size is good enough.
-                    align = std::cmp::max(align, size);
+                    let align_of_ty = size_of_ty;
+                    size += size_of_ty;
+                    align = std::cmp::max(align, align_of_ty);
                     OffsetExpr::new(offset)
                 });
 

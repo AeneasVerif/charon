@@ -510,6 +510,9 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
         args
   | CFnDef fn_ptr -> pp_fn_ptr env fmt fn_ptr
   | CFnPtr fn_ptr -> Format.fprintf fmt "fnptr(%a)" (pp_fn_ptr env) fn_ptr
+  | CCast (value, ty) ->
+      Format.fprintf fmt "cast<%a>(%a)" (pp_ty env) ty (pp_constant_expr env)
+        value
   | CSizeOf ty -> Format.fprintf fmt "size_of::<%a>()" (pp_ty env) ty
   | CAlignOf ty -> Format.fprintf fmt "align_of::<%a>()" (pp_ty env) ty
   | COffsetOf (ty, opt_variant_id, field_id) ->
@@ -1971,9 +1974,9 @@ let pp_global_decl (env : fmt_env) (indent : string) (indent_incr : string)
   let params =
     if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
   in
-  let pp_metadata fmt op =
-    if not (ty_is_unit (operand_ty op)) then
-      Format.fprintf fmt " with_metadata(%a)" (pp_operand env) op
+  let pp_metadata fmt (metadata : constant_expr) =
+    if not (ty_is_unit metadata.ty) then
+      Format.fprintf fmt " with_metadata(%a)" (pp_constant_expr env) metadata
   in
   Format.fprintf fmt "%s%s: %a%s%s= %a%a" intro params (pp_ty env) def.ty
     clauses
@@ -2382,8 +2385,13 @@ module Ullbc = struct
   let pp_block (env : fmt_env) (indent : string) (indent_incr : string)
       (fmt : Format.formatter) (id : BlockId.id) (block : block) : unit =
     let indent1 = indent ^ indent_incr in
-    let cleanup = if block.is_cleanup then " (cleanup)" else "" in
-    Format.fprintf fmt "%s%s%s: {\n" indent (block_id_to_string id) cleanup;
+    let kind =
+      match block.kind with
+      | Regular -> ""
+      | Cleanup -> " (cleanup)"
+      | Terminate -> " (terminate)"
+    in
+    Format.fprintf fmt "%s%s%s: {\n" indent (block_id_to_string id) kind;
     List.iter
       (fun st -> Format.fprintf fmt "%a;\n" (pp_statement env indent1) st)
       block.statements;

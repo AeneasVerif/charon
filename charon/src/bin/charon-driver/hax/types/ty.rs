@@ -7,6 +7,7 @@ use crate::hax::sinto_as_usize;
 use crate::hax::sinto_todo;
 
 use charon_lib::ast::HashConsed;
+use macros::{EnumAsGetters, EnumIsA};
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
 use rustc_type_ir::inherent::IntoKind;
@@ -413,6 +414,7 @@ pub struct Region {
 /// Reflects both [`ty::GenericArg`] and [`ty::GenericArgKind`]
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(EnumIsA, EnumAsGetters)]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::GenericArgKind<'tcx>, state: S as s)]
 pub enum GenericArg {

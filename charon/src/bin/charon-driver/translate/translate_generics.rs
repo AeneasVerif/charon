@@ -578,7 +578,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             // Add the lifetime generics coming from the higher-kindedness of the signature.
             if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
             | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))
-            | TransItemSourceKind::VTableInstanceInitializer(TransImplSource::Callable(..))
             | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))
             | TransItemSourceKind::CallableMethod(..)
             | TransItemSourceKind::VTableMethod(TransImplSource::Callable(..))

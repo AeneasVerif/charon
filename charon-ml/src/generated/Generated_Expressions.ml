@@ -172,7 +172,12 @@ and cast_kind =
 and local_id = (LocalId.id[@visitors.opaque])
 
 (** Nullary operation *)
-and nullop = UbChecks | OverflowChecks | ContractChecks
+and nullop =
+  | UbChecks
+      (** Returns [true] during const evaluation, and
+          [krate.runtime_checks.ub_checks] at runtime. *)
+  | OverflowChecks
+  | ContractChecks
 
 and operand =
   | Copy of place

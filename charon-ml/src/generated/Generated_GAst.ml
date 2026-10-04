@@ -313,10 +313,11 @@ and global_source =
           - [item_id]: The associated const this corresponds to.
           - [reuses_default]: True if the trait decl had a default value for
             this const and this item is a copy of the default item. *)
-  | VTableInstanceGlobal of trait_impl_ref option
+  | VTableInstanceGlobal of ty * trait_impl_ref option
       (** Defines the vtable for a trait impl.
 
           Fields:
+          - [self_ty]: The concrete type this vtable is for.
           - [impl_ref]: The originating impl. This is [None] in monomorphized
             mode: the vtable global itself identifies the concrete
             instantiation, so we don't translate an impl reference solely to
@@ -422,7 +423,7 @@ type global_decl = {
   ty : ty;
   size : size;  (** The size in bytes of the global's allocation. *)
   align : size;  (** The alignment in bytes of the global's allocation. *)
-  ptr_metadata : operand;
+  ptr_metadata : constant_expr;
       (** The pointer metadata for references to this global (needed for unsized
           globals). *)
   src : global_source;

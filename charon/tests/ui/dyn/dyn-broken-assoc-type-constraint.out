@@ -120,28 +120,10 @@ where
 }
 
 // Full name: test_crate::{impl Broken for T}::{vtable}
-fn impl_Broken_for_T::{vtable}<T>() -> test_crate::Broken::{vtable}<()>
-where
-    TraitClause0: (T: Sized),
-{
-    let ret: test_crate::Broken::{vtable}<()>; // return
-    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn Broken<Assoc = ()> + '1)); // anonymous local
-    let _2: fn<'_0_1>(&'_0_1 (dyn Broken<Assoc = ()> + '3)); // anonymous local
-
-    storage_live(ret)
-    storage_live(_1)
-    _1 = cast<for<'_0_1> {vtable_drop_shim}<'0, T>[TraitClause0], unsafe fn<'_0_1>(&'_0_1 mut (dyn Broken<Assoc = ()> + '1))>(const {vtable_drop_shim}<'0, T>[TraitClause0])
-    storage_live(_2)
-    _2 = cast<for<'_0_1> {vtable_method}<'2, T>[TraitClause0, impl_Foo_for_unit], fn<'_0_1>(&'_0_1 (dyn Broken<Assoc = ()> + '3))>(const {vtable_method}<'2, T>[TraitClause0, impl_Foo_for_unit])
-    ret = test_crate::Broken::{vtable} { size: const size_of::<T>(), align: const align_of::<T>(), drop: move _1, method_broken: move _2, super_trait_0: const &vtable_of(TraitClause0::ImpliedClause0) }
-    return
-}
-
-// Full name: test_crate::{impl Broken for T}::{vtable}
 vtable impl_Broken_for_T::{vtable}<T>: test_crate::Broken::{vtable}<()>
 where
     TraitClause0: (T: Sized),
- = impl_Broken_for_T::{vtable}<T>[TraitClause0]()
+ = test_crate::Broken::{vtable} { size: size_of::<T>(), align: align_of::<T>(), drop: fnptr({vtable_drop_shim}<'_, T>[TraitClause0]), method_broken: fnptr({vtable_method}<'_, T>[TraitClause0, impl_Foo_for_unit]), super_trait_0: &vtable_of(TraitClause0::ImpliedClause0) }
 
 // Full name: test_crate::{impl Broken for T}
 impl<T> "impl_Broken_for_T" Broken for T

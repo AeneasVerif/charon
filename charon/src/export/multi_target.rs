@@ -150,6 +150,7 @@ impl CrateMerger {
             crate_name,
             options: _, // We discard the per-target options we made
             target_information,
+            runtime_checks,
             item_names,
             assoc_item_names,
             short_names: _, // TODO
@@ -163,6 +164,12 @@ impl CrateMerger {
         } = krate;
         if self.merged.translated.crate_name.is_empty() {
             self.merged.translated.crate_name = crate_name;
+            self.merged.translated.runtime_checks = runtime_checks;
+        } else {
+            assert_eq!(
+                self.merged.translated.runtime_checks, runtime_checks,
+                "cannot merge crates with different runtime-check settings"
+            );
         }
         self.merged
             .translated

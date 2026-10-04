@@ -6,12 +6,9 @@ opaque type core::marker::Send::{vtable}
 #[diagnostic_item("Send")]
 pub unsafe trait Send<Self>
 
-fn core::marker::Send::{vtable}<Self>() -> core::marker::Send::{vtable}
-= <opaque>
-
 struct () {}
 
-vtable core::marker::Send::{vtable}<Self>: core::marker::Send::{vtable} = core::marker::Send::{vtable}<Self>()
+vtable core::marker::Send::{vtable}<Self>: core::marker::Send::{vtable} = Opaque(VTable was chosen to be opaque)
 
 opaque type core::marker::MetaSized::{vtable}
 
@@ -20,10 +17,7 @@ opaque type core::marker::MetaSized::{vtable}
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
-fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
-= <opaque>
-
-vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
 
 struct test_crate::MyTrait::{vtable} {
   size: usize,
@@ -98,29 +92,7 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn MyTrait))
 }
 
 // Full name: test_crate::{impl MyTrait for MyStruct}::{vtable}
-fn impl_MyTrait_for_MyStruct::{vtable}() -> test_crate::MyTrait::{vtable}
-{
-    let ret: test_crate::MyTrait::{vtable}; // return
-    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn MyTrait + '1)); // anonymous local
-    let _2: fn<'_0_1>(&'_0_1 (dyn MyTrait + '3)); // anonymous local
-    let _3: &'static core::marker::MetaSized::{vtable}; // anonymous local
-    let _4: &'static core::marker::Send::{vtable}; // anonymous local
-
-    storage_live(ret)
-    storage_live(_1)
-    _1 = cast<for<'_0_1> {vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn MyTrait + '1))>(const {vtable_drop_shim}<'0>)
-    storage_live(_2)
-    _2 = cast<for<'_0_1> {vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn MyTrait + '3))>(const {vtable_method}<'2>)
-    storage_live(_3)
-    _3 = &core::marker::MetaSized::{vtable}<MyStruct>
-    storage_live(_4)
-    _4 = &core::marker::Send::{vtable}<MyStruct>
-    ret = test_crate::MyTrait::{vtable} { size: const size_of::<MyStruct>(), align: const align_of::<MyStruct>(), drop: move _1, method_foo: move _2, super_trait_0: move _3, super_trait_1: move _4 }
-    return
-}
-
-// Full name: test_crate::{impl MyTrait for MyStruct}::{vtable}
-vtable impl_MyTrait_for_MyStruct::{vtable}: test_crate::MyTrait::{vtable} = impl_MyTrait_for_MyStruct::{vtable}()
+vtable impl_MyTrait_for_MyStruct::{vtable}: test_crate::MyTrait::{vtable} = test_crate::MyTrait::{vtable} { size: size_of::<MyStruct>(), align: align_of::<MyStruct>(), drop: fnptr({vtable_drop_shim}<'_>), method_foo: fnptr({vtable_method}<'_>), super_trait_0: &core::marker::MetaSized::{vtable}<MyStruct>, super_trait_1: &core::marker::Send::{vtable}<MyStruct> }
 
 // Full name: test_crate::{impl MyTrait for MyStruct}
 impl "impl_MyTrait_for_MyStruct" MyTrait for MyStruct {

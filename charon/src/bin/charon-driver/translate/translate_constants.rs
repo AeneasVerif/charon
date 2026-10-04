@@ -27,7 +27,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let slice_ty = Ty::mk_slice(Ty::mk_u8(), ty_is_sized);
                 let bytes = ConstantExpr::new(ConstantExprKind::Array(bytes), slice_ty);
                 // we encode `str` as `struct { [u8] }`
-                ConstantExprKind::Adt(None, vec![bytes])
+                ConstantExprKind::Adt(None, [bytes].into())
             }
             hax::ConstantLiteral::Char(c) => ConstantExprKind::Char(*c),
             hax::ConstantLiteral::Bool(b) => ConstantExprKind::Bool(*b),
@@ -104,7 +104,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 self.translate_constant_literal_to_constant_expr_kind(span, lit)?
             }
             hax::ConstantExprKind::Adt { kind, fields } => {
-                let fields: Vec<ConstantExpr> = fields
+                let fields: IndexVec<FieldId, ConstantExpr> = fields
                     .iter()
                     .map(|f| self.translate_constant_expr(span, &f.value))
                     .try_collect()?;
@@ -125,7 +125,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 ConstantExprKind::Array(fields)
             }
             hax::ConstantExprKind::Tuple { fields } => {
-                let fields: Vec<ConstantExpr> = fields
+                let fields: IndexVec<FieldId, ConstantExpr> = fields
                     .iter()
                     // TODO: the user_ty is not always None
                     .map(|f| self.translate_constant_expr(span, f))

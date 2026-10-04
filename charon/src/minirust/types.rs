@@ -5,10 +5,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         Ok(match ty.kind() {
             TyKind::Scalar(ScalarTy::Integer(integer)) => mini::Type::Int(self.int_type(*integer)),
             TyKind::Scalar(ScalarTy::Bool) => mini::Type::Bool,
-            TyKind::Scalar(ScalarTy::Char) => mini::Type::Int(mini::IntType {
-                signed: mini::Signedness::Unsigned,
-                size: mini_size(4),
-            }),
+            TyKind::Scalar(ScalarTy::Char) => mb::int_ty(mini::Signedness::Unsigned, mini_size(4)),
             TyKind::Scalar(ScalarTy::Float(_)) => {
                 raise!(span, "MiniRust has no floating-point types")
             }
@@ -23,12 +20,15 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             TyKind::Slice(elem_ty, _) => mini::Type::Slice {
                 elem: mini::GcCow::new(self.ty(span, elem_ty)?),
             },
-            TyKind::Adt(tref) if tref.is_box() => mini::Type::Ptr(mini::PtrType::Box {
-                pointee: self.pointee_info(span, &tref.generics.types[0])?,
-            }),
-            TyKind::Adt(tref) if tref.is_str() => mini::Type::Slice {
-                elem: mini::GcCow::new(self.ty(span, &Ty::mk_u8())?),
-            },
+            TyKind::Adt(tref) if tref.is_box() => {
+                let pointee = ty
+                    .builtin_deref(self.krate)
+                    .ok_or("Box type is missing its pointee")
+                    .context(span)?;
+                mini::Type::Ptr(mini::PtrType::Box {
+                    pointee: self.pointee_info(span, pointee)?,
+                })
+            }
             TyKind::Adt(tref) => self.adt_type(span, tref)?,
             TyKind::Ref(_, pointee, kind) => mini::Type::Ptr(mini::PtrType::Ref {
                 mutbl: match kind {
@@ -53,16 +53,20 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             TyKind::PtrMetadata(pointee) => match self.metadata_kind(span, pointee)? {
                 mini::PointerMetaKind::None => mini::unit_ty(),
                 mini::PointerMetaKind::ElementCount => {
-                    mini::Type::Int(self.int_type(IntegerTy::Unsigned(UIntTy::Usize)))
+                    mb::int_ty(mini::Signedness::Unsigned, T::PTR_SIZE)
                 }
                 mini::PointerMetaKind::VTablePointer(trait_name) => {
                     mini::Type::Ptr(mini::PtrType::VTablePtr(trait_name))
                 }
             },
-            TyKind::DynTrait(_) => {
-                // FIXME(minirust): support dyn Trait
-                raise!(span, "MiniRust output does not support `dyn Trait`")
-            }
+            TyKind::DynTrait(pred) => mini::Type::TraitObject(
+                self.trait_name(
+                    pred.vtable_ref(self.krate)
+                        .ok_or("missing vtable for dyn trait")
+                        .context(span)?
+                        .id,
+                ),
+            ),
             TyKind::TypeVar(_) | TyKind::TraitType(..) => {
                 raise!(
                     span,
@@ -91,52 +95,40 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 )
             })
             .context(span)?;
-        let decl_span = tdecl.item_meta.span;
-        check!(
-            decl_span,
-            layout.size.chosen.as_ref().is_some_and(|size| matches!(
-                size.kind(),
-                SizeExprKind::Constant(value) if value.as_usize_literal().is_some()
-            )),
-            "MiniRust output does not support unsized ADTs"
-        );
-        match layout.repr.align_modif {
-            Some(AlignmentModifier::Pack(_)) => {
-                raise!(decl_span, "MiniRust output does not support packed layouts")
-            }
-            Some(AlignmentModifier::Align(_)) => {
-                raise!(
-                    decl_span,
-                    "MiniRust output does not support overaligned layouts"
-                )
-            }
-            None => {}
-        }
-        let size = mini_size(self.size(span, &layout.size)?);
-        let align = mini_align(span, self.size(span, &layout.align)?)?;
-
         Ok(match &tdecl.kind {
             TypeDeclKind::Struct(fields) => {
                 let variant_layout = layout.variant_layouts[VariantId::ZERO].as_ref();
-                self.tuple_type(span, fields, variant_layout, size, align)?
+                self.tuple_type(span, fields, variant_layout, layout, &tref.generics)?
             }
-            TypeDeclKind::Union(_) => {
-                // let variant_layout = layout.variant_layouts[VariantId::ZERO].as_ref();
-                // let fields = self.fields(span, fields, variant_layout)?;
-                // // FIXME(minirust): compute the precise union chunks. Treating the complete
-                // // allocation as one chunk preserves too much padding for some repr(C) unions.
-                // mini::Type::Union {
-                //     fields,
-                //     chunks: ????
-                //     size,
-                //     align,
-                // }
-                raise!(
-                    decl_span,
-                    "MiniRust output does not support unions because we lack padding information"
-                )
+            TypeDeclKind::Union(fields) => {
+                let variant_layout = layout.variant_layouts[VariantId::ZERO]
+                    .as_ref()
+                    .ok_or("union has no fields layout")
+                    .context(span)?;
+                let fields = fields
+                    .iter_enumerated()
+                    .map(|(id, field)| -> Result<_> {
+                        let offset = variant_layout.field_offsets[id]
+                            .chosen
+                            .ok_or("missing field offset in union layout")
+                            .context(span)?;
+                        let ty = self.ty(span, &field.ty.clone().substitute(&tref.generics))?;
+                        Ok((mini_size(offset), ty))
+                    })
+                    .try_collect()?;
+                let size = mini_size(self.size(span, &layout.size)?);
+                let align = mini_align(span, self.size(span, &layout.align)?)?;
+                mini::Type::Union {
+                    fields,
+                    // FIXME(minirust): Some bytes may be padding.
+                    chunks: [(mini::Size::ZERO, size)].into_iter().collect(),
+                    size,
+                    align,
+                }
             }
             TypeDeclKind::Enum(variants) => {
+                let size = mini_size(self.size(span, &layout.size)?);
+                let align = mini_align(span, self.size(span, &layout.align)?)?;
                 let discriminant_ty = self.int_type(
                     variants
                         .first()
@@ -147,8 +139,13 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     .iter_enumerated()
                     .map(|(id, variant)| -> Result<_> {
                         let variant_layout = layout.variant_layouts[id].as_ref();
-                        let ty =
-                            self.tuple_type(span, &variant.fields, variant_layout, size, align)?;
+                        let ty = self.tuple_type(
+                            span,
+                            &variant.fields,
+                            variant_layout,
+                            layout,
+                            &tref.generics,
+                        )?;
                         let tagger = variant_layout
                             .map(|layout| {
                                 layout
@@ -179,7 +176,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     align,
                 }
             }
-            TypeDeclKind::Alias(ty) => self.ty(span, ty)?,
+            TypeDeclKind::Alias(ty) => self.ty(span, &ty.clone().substitute(&tref.generics))?,
             TypeDeclKind::Opaque => {
                 raise!(span, "opaque type is not representable in MiniRust")
             }
@@ -191,40 +188,70 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         &self,
         span: Span,
         fields: &IndexVec<FieldId, Field>,
-        layout: Option<&VariantLayout>,
-        size: mini::Size,
-        align: mini::Align,
+        variant_layout: Option<&VariantLayout>,
+        layout: &crate::ast::Layout,
+        generics: &GenericArgs,
     ) -> Result<mini::Type> {
+        let (repr_align, packed_align) = match layout.repr.align_modif {
+            Some(AlignmentModifier::Pack(bytes)) => {
+                (mini::Align::ONE, Some(mini_align(span, bytes)?))
+            }
+            Some(AlignmentModifier::Align(bytes)) => (mini_align(span, bytes)?, None),
+            None => (mini::Align::ONE, None),
+        };
+        let mut sized_fields = mini::Fields::new();
+        let mut head_align = repr_align;
+        let mut unsized_field = None;
+        let mut tail_offset = None;
+        for (id, field) in fields.iter_enumerated() {
+            let ty = self.ty(span, &field.ty.clone().substitute(generics))?;
+            let offset = match variant_layout {
+                Some(layout) => layout.field_offsets[id]
+                    .chosen
+                    .ok_or("missing field offset in ADT layout")
+                    .context(span)?,
+                // An elided enum variant can only contain zero-sized fields.
+                None => 0,
+            };
+            match ty.layout::<T>() {
+                mini::LayoutStrategy::Sized(_, field_align) => {
+                    head_align = head_align
+                        .max(packed_align.map_or(field_align, |packed| field_align.min(packed)));
+                    sized_fields.push((mini_size(offset), ty));
+                }
+                _ => {
+                    check!(
+                        span,
+                        id.index() + 1 == fields.len(),
+                        "non-tail field is unsized"
+                    );
+                    unsized_field = Some(ty);
+                    tail_offset = Some(offset);
+                }
+            }
+        }
+        let (end, head_align) = match tail_offset {
+            // Include any padding before the tail in the head.
+            Some(offset) => (mini_size(offset), head_align),
+            None => (
+                mini_size(self.size(span, &layout.size)?),
+                mini_align(span, self.size(span, &layout.align)?)?,
+            ),
+        };
         Ok(mini::Type::Tuple {
-            sized_fields: self.fields(span, fields, layout)?,
+            sized_fields,
             sized_head_layout: mini::TupleHeadLayout {
-                end: size,
-                align,
-                packed_align: None,
-            },
-            unsized_field: mini::GcCow::new(None),
-        })
-    }
-
-    fn fields(
-        &self,
-        span: Span,
-        fields: &IndexVec<FieldId, Field>,
-        layout: Option<&VariantLayout>,
-    ) -> Result<mini::Fields> {
-        fields
-            .iter_enumerated()
-            .map(|(id, field)| {
-                let offset = if let Some(layout) = layout
-                    && let Some(offset) = layout.field_offsets.get(id)
-                {
-                    offset.chosen.unwrap_or(0)
+                end,
+                align: head_align,
+                // Sized field offsets already encode packing; MiniRust only needs this for a DST tail.
+                packed_align: if tail_offset.is_some() {
+                    packed_align
                 } else {
-                    0
-                };
-                Ok((mini_size(offset), self.ty(span, &field.ty)?))
-            })
-            .try_collect()
+                    None
+                },
+            },
+            unsized_field: mini::GcCow::new(unsized_field),
+        })
     }
 
     fn discriminator(
@@ -332,7 +359,19 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 "MiniRust output requires a monomorphized crate: {}",
                 ty.with_ctx(&self.fmt)
             ),
-            TyKind::DynTrait(_) => raise!(span, "MiniRust output does not support `dyn Trait`"),
+            TyKind::DynTrait(pred) => {
+                let has_bound = |lang_item| {
+                    pred.binder.params.trait_clauses.iter().any(|clause| {
+                        self.krate
+                            .trait_decls
+                            .get(clause.trait_.skip_binder.id)
+                            .is_some_and(|decl| {
+                                decl.item_meta.lang_item.as_ref() == Some(&lang_item)
+                            })
+                    })
+                };
+                (has_bound(LangItem::Freeze), has_bound(LangItem::Unpin))
+            }
             TyKind::Error(error) => raise!(span, "type error: {error}"),
             TyKind::Scalar(_)
             | TyKind::Ref(..)
@@ -344,7 +383,35 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         })
     }
 
-    fn unsafe_cell_strategy(&self, span: Span, ty: &Ty) -> Result<mini::UnsafeCellStrategy> {
+    pub(super) fn unsafe_cell_strategy(
+        &self,
+        span: Span,
+        ty: &Ty,
+    ) -> Result<mini::UnsafeCellStrategy> {
+        /// Strategy that labels every byte as a cell.
+        fn all_cells_strategy(layout: mini::LayoutStrategy) -> mini::UnsafeCellStrategy {
+            let whole_range = |size| {
+                if size == mini::Size::ZERO {
+                    mini::List::new()
+                } else {
+                    [(mini::Size::ZERO, size)].into_iter().collect()
+                }
+            };
+            match layout {
+                mini::LayoutStrategy::Sized(size, _) => mini::UnsafeCellStrategy::Sized {
+                    cells: whole_range(size),
+                },
+                mini::LayoutStrategy::Slice(element_size, _) => mini::UnsafeCellStrategy::Slice {
+                    element_cells: whole_range(element_size),
+                },
+                mini::LayoutStrategy::Tuple { head, tail } => mini::UnsafeCellStrategy::Tuple {
+                    head_cells: whole_range(head.end),
+                    tail_cells: mini::GcCow::new(all_cells_strategy(tail.extract())),
+                },
+                mini::LayoutStrategy::TraitObject(_) => mini::UnsafeCellStrategy::TraitObject,
+            }
+        }
+
         Ok(match ty.kind() {
             TyKind::Adt(tref) => {
                 let tdecl = self
@@ -358,13 +425,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     Some(LangItem::UnsafeCell)
                 ) {
                     let mini_ty = self.ty(span, ty)?;
-                    // FIXME(minirust): support unsized types
-                    let mini::LayoutStrategy::Sized(size, _) = mini_ty.layout::<T>() else {
-                        raise!(span, "expected a sized type")
-                    };
-                    mini::UnsafeCellStrategy::Sized {
-                        cells: [(mini_size(0), size)].into_iter().collect(),
-                    }
+                    all_cells_strategy(mini_ty.layout::<T>())
                 } else {
                     let layout = tdecl
                         .layout
@@ -372,7 +433,9 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                         .ok_or("missing layout for ADT")
                         .context(span)?;
 
-                    let mut cells: Vec<(mini::Size, mini::Size)> = Vec::new();
+                    let mut sized_cells: Vec<(mini::Size, mini::Size)> = Vec::new();
+                    let mut tail_cells = None;
+                    // Add the fields of this variant.
                     let mut add_fields = |fields: &IndexVec<FieldId, Field>,
                                           variant_layout: Option<&VariantLayout>|
                      -> Result<()> {
@@ -387,18 +450,27 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                                 None => 0,
                             };
                             let field_ty = field.ty.clone().substitute(&tref.generics);
-                            let mini::UnsafeCellStrategy::Sized { cells: field_cells } =
-                                self.unsafe_cell_strategy(span, &field_ty)?
-                            else {
-                                raise!(span, "MiniRust output doesn't support unsized types yet")
-                            };
-                            for (field_cell_offset, cell_size) in field_cells {
-                                let field_cell_offset = size_bytes(span, field_cell_offset)?;
-                                let offset = offset
-                                    .checked_add(field_cell_offset)
-                                    .ok_or("UnsafeCell offset overflows u64")
-                                    .context(span)?;
-                                cells.push((mini_size(offset), cell_size));
+                            match self.unsafe_cell_strategy(span, &field_ty)? {
+                                mini::UnsafeCellStrategy::Sized { cells: field_cells } => {
+                                    for (field_cell_offset, cell_size) in field_cells {
+                                        let field_cell_offset =
+                                            size_bytes(span, field_cell_offset)?;
+                                        let offset = offset
+                                            .checked_add(field_cell_offset)
+                                            .ok_or("UnsafeCell offset overflows u64")
+                                            .context(span)?;
+                                        sized_cells.push((mini_size(offset), cell_size));
+                                    }
+                                }
+                                strategy => {
+                                    check!(
+                                        span,
+                                        field_id.index() + 1 == fields.len()
+                                            && tail_cells.is_none(),
+                                        "non-tail field is unsized"
+                                    );
+                                    tail_cells = Some(strategy);
+                                }
                             }
                         }
                         Ok(())
@@ -417,9 +489,16 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                                     add_fields(&variant.fields, Some(variant_layout))?;
                                 }
                             }
+                            check!(
+                                span,
+                                tail_cells.is_none(),
+                                "enum variant has an unsized field"
+                            );
                         }
-                        TypeDeclKind::Union(_) => {
-                            raise!(span, "MiniRust output does not support unions")
+                        TypeDeclKind::Union(fields) => {
+                            let variant_layout = layout.variant_layouts[VariantId::ZERO].as_ref();
+                            add_fields(fields, variant_layout)?;
+                            check!(span, tail_cells.is_none(), "union has an unsized field");
                         }
                         TypeDeclKind::Opaque => {
                             raise!(span, "opaque type is not representable in MiniRust")
@@ -431,12 +510,12 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                             );
                         }
                         TypeDeclKind::Error(error) => raise!(span, "type error: {error}"),
-                    }
+                    };
 
                     // Cells from different enum variants may overlap.
-                    cells.sort_unstable();
+                    sized_cells.sort_unstable();
                     let mut merged_ranges: Vec<(u64, u64)> = Vec::new();
-                    for (offset, size) in cells {
+                    for (offset, size) in sized_cells {
                         let start = size_bytes(span, offset)?;
                         let size = size_bytes(span, size)?;
                         let end = start
@@ -451,11 +530,17 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                             merged_ranges.push((start, end));
                         }
                     }
-                    mini::UnsafeCellStrategy::Sized {
-                        cells: merged_ranges
-                            .into_iter()
-                            .map(|(start, end)| (mini_size(start), mini_size(end - start)))
-                            .collect(),
+                    let sized_cells = merged_ranges
+                        .into_iter()
+                        .map(|(start, end)| (mini_size(start), mini_size(end - start)))
+                        .collect();
+
+                    match tail_cells {
+                        None => mini::UnsafeCellStrategy::Sized { cells: sized_cells },
+                        Some(tail_cells) => mini::UnsafeCellStrategy::Tuple {
+                            head_cells: sized_cells,
+                            tail_cells: mini::GcCow::new(tail_cells),
+                        },
                     }
                 }
             }
@@ -470,11 +555,11 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 else {
                     unreachable!()
                 };
+                let cells = cells.into_iter().collect_vec(); // Make the iterator `Clone`
                 mini::UnsafeCellStrategy::Sized {
-                    cells: cells
-                        .into_iter()
-                        .cartesian_product(0u128..len)
-                        .map(|((offset, cell_size), index)| -> Result<_> {
+                    cells: (0u128..len)
+                        .cartesian_product(cells.iter().copied())
+                        .map(|(index, (offset, cell_size))| -> Result<_> {
                             let index = u64::try_from(index)
                                 .map_err(|_| "array index does not fit u64")
                                 .context(span)?;
@@ -531,10 +616,10 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         Ok(match ty.get_ptr_metadata(self.krate) {
             PtrMetadata::None => mini::PointerMetaKind::None,
             PtrMetadata::Length => mini::PointerMetaKind::ElementCount,
-            PtrMetadata::VTable(_) | PtrMetadata::InheritFrom(_) => {
-                // FIXME(minirust): dyn Trait
-                raise!(span, "MiniRust output does not support `dyn Trait`")
+            PtrMetadata::VTable(tref) => {
+                mini::PointerMetaKind::VTablePointer(self.trait_name(tref.id))
             }
+            PtrMetadata::InheritFrom(_) => raise!(span, "unresolved pointer metadata"),
         })
     }
 

@@ -48,7 +48,7 @@ fn new_promoted_global(
         ty: ty.clone(),
         size: Size::from_expr(SizeExpr::size_of(&ty)),
         align: Size::from_expr(SizeExpr::align_of(&ty)),
-        ptr_metadata: Operand::Const(ptr_metadata),
+        ptr_metadata,
         src: GlobalSource::Normal,
         global_kind: GlobalKind::AnonConst,
         value,
@@ -188,6 +188,17 @@ fn transform_constant_expr(
                     from_ty,
                 )),
             )
+        }
+        ConstantExprKind::Cast(value, target_ty) => {
+            let source_ty = value.ty().clone();
+            let target_ty = target_ty.clone();
+            let value = transform_constant_expr(ctx, value.clone());
+            let cast_kind = if source_ty.is_fn_ptr() | source_ty.is_fn_def() {
+                CastKind::FnPtr(source_ty, target_ty)
+            } else {
+                CastKind::RawPtr(source_ty, target_ty)
+            };
+            Rvalue::UnaryOp(UnOp::Cast(cast_kind), value)
         }
         ConstantExprKind::VTableRef(tref)
             if let Some(vtable_ref) = tref.vtable_ref(&ctx.ctx.translated)

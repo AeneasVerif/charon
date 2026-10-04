@@ -1,4 +1,4 @@
-use std::{collections::HashMap, mem};
+use std::collections::HashMap;
 
 use crate::transform::CowBox;
 use crate::transform::{TransformCtx, ctx::UllbcPass};
@@ -53,15 +53,16 @@ impl UllbcPass for Transform {
                 }
             });
             if !new_calls.is_empty() {
-                let is_cleanup = body.body[block_id].is_cleanup;
+                let kind = body.body[block_id].kind;
                 // Move the current block out of the way.
-                let block =
-                    mem::replace(&mut body.body[block_id], BlockData::new_unreachable(false));
+                let block = body.body[block_id].take();
                 let mut next_block = body.body.push(block);
                 // Each new block jumps to the previous one after completion
                 for (local_id, call) in new_calls {
                     // Const eval mustn't unwind into runtime.
-                    let unwind = body.body.push(BlockData::new_unreachable(true));
+                    let unwind = body
+                        .body
+                        .push(BlockData::new_unreachable(kind.further_unwind_kind()));
                     next_block = body.body.push(BlockData {
                         statements: vec![Statement::new(
                             Span::dummy(),
@@ -75,11 +76,11 @@ impl UllbcPass for Transform {
                                 on_unwind: unwind,
                             },
                         ),
-                        is_cleanup,
+                        kind,
                     });
                 }
                 // Instead of the current block, start evaluating the new bodies.
-                body.body[block_id] = BlockData::new_goto(Span::dummy(), next_block, is_cleanup);
+                body.body[block_id] = BlockData::new_goto(Span::dummy(), next_block, kind);
             }
         }
     }

@@ -148,7 +148,7 @@ fn shared_cleanup()
         unwind_continue;
     }
 
-    bb8 (cleanup): {
+    bb8 (terminate): {
         unwind_terminate;
     }
 
@@ -164,11 +164,11 @@ fn shared_cleanup()
         unwind_continue;
     }
 
-    bb12 (cleanup): {
+    bb12 (terminate): {
         unwind_terminate;
     }
 
-    bb13 (cleanup): {
+    bb13 (terminate): {
         unwind_terminate;
     }
 
@@ -184,11 +184,11 @@ fn shared_cleanup()
         unwind_continue;
     }
 
-    bb17 (cleanup): {
+    bb17 (terminate): {
         unwind_terminate;
     }
 
-    bb18 (cleanup): {
+    bb18 (terminate): {
         unwind_terminate;
     }
 }

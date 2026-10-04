@@ -444,9 +444,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     Disambiguator::ZERO,
                 ));
             }
-            TransItemSourceKind::VTable
-            | TransItemSourceKind::VTableInstance(..)
-            | TransItemSourceKind::VTableInstanceInitializer(..) => {
+            TransItemSourceKind::VTable | TransItemSourceKind::VTableInstance(..) => {
                 name.name.push(PathElem::Builtin(
                     BuiltinPathElem::VTable,
                     Disambiguator::ZERO,

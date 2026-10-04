@@ -7,12 +7,9 @@ opaque type core::marker::MetaSized::{vtable}
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
-fn core::marker::MetaSized::{vtable}::<D>() -> core::marker::MetaSized::{vtable}
-= <opaque>
-
 struct () {}
 
-vtable core::marker::MetaSized::{vtable}::<D>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<D>()
+vtable core::marker::MetaSized::{vtable}::<D>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
 
 struct test_crate::Sub::{vtable} {
   size: usize,
@@ -48,29 +45,7 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Sub))
 }
 
 // Full name: test_crate::{impl Sub for D}::{vtable}
-fn impl_Sub_for_D::{vtable}() -> test_crate::Sub::{vtable}
-{
-    let ret: test_crate::Sub::{vtable}; // return
-    let drop: unsafe fn(*mut (dyn Sub + '0)); // local
-    let erased_drop: *const (); // local
-    let _3: unsafe fn(*mut (dyn Sub + '3)); // anonymous local
-    let _4: &'static core::marker::MetaSized::{vtable}; // anonymous local
-
-    storage_live(ret)
-    storage_live(drop)
-    storage_live(erased_drop)
-    storage_live(_3)
-    _3 = cast<{vtable_drop_shim}<'2>, unsafe fn(*mut (dyn Sub + '3))>(const {vtable_drop_shim}<'2>)
-    drop = move _3
-    erased_drop = cast<unsafe fn(*mut (dyn Sub + '4)), *const ()>(move drop)
-    storage_live(_4)
-    _4 = &core::marker::MetaSized::{vtable}::<D>
-    ret = test_crate::Sub::{vtable} { size: const size_of::<D>(), align: const align_of::<D>(), drop: move erased_drop, super_trait_0: move _4 }
-    return
-}
-
-// Full name: test_crate::{impl Sub for D}::{vtable}
-vtable impl_Sub_for_D::{vtable}: test_crate::Sub::{vtable} = impl_Sub_for_D::{vtable}()
+vtable impl_Sub_for_D::{vtable}: test_crate::Sub::{vtable} = test_crate::Sub::{vtable} { size: size_of::<D>(), align: align_of::<D>(), drop: cast<*const ()>(fnptr({vtable_drop_shim}<'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<D> }
 
 // Full name: test_crate::{impl Sub for D}
 impl "impl_Sub_for_D" Sub for D {

@@ -78,8 +78,6 @@ pub enum TransItemSourceKind {
     VTable,
     /// The static vtable value for a specific impl.
     VTableInstance(TransImplSource),
-    /// The initializer function of the `VTableInstance`.
-    VTableInstanceInitializer(TransImplSource),
     /// Shim function to store a method in a vtable; give a method with `self: Ptr<Self>` argument,
     /// this takes a `Ptr<dyn Trait>` and forwards to the method. For a `Normal` impl the `DefId`
     /// refers to the method implementation; for a `Callable` one it refers to the closure or fn
@@ -171,13 +169,11 @@ impl TransItemSource {
             }
             TransItemSourceKind::DropGlueMethod(TransImplSource::Marker)
             | TransItemSourceKind::VTableInstance(TransImplSource::Marker)
-            | TransItemSourceKind::VTableInstanceInitializer(TransImplSource::Marker)
             | TransItemSourceKind::VTableDropShim(TransImplSource::Marker) => {
                 TransItemSourceKind::TraitDecl
             }
             TransItemSourceKind::DropGlueMethod(impl_kind)
             | TransItemSourceKind::VTableInstance(impl_kind)
-            | TransItemSourceKind::VTableInstanceInitializer(impl_kind)
             | TransItemSourceKind::VTableDropShim(impl_kind) => {
                 TransItemSourceKind::TraitImpl(impl_kind)
             }
@@ -431,13 +427,10 @@ impl<'tcx> TranslateCtx<'tcx> {
                     Global | VTableInstance(..) => {
                         ItemId::Global(self.translated.global_decls.reserve_slot())
                     }
-                    Fun
-                    | CallableMethod(..)
-                    | ClosureAsFnCast
-                    | DropGlueMethod(..)
-                    | VTableInstanceInitializer(..)
-                    | VTableMethod(..)
-                    | VTableDropShim(..) => ItemId::Fun(self.translated.fun_decls.reserve_slot()),
+                    Fun | CallableMethod(..) | ClosureAsFnCast | DropGlueMethod(..)
+                    | VTableMethod(..) | VTableDropShim(..) => {
+                        ItemId::Fun(self.translated.fun_decls.reserve_slot())
+                    }
                     InherentImpl | Module => return None,
                 };
                 // Add the id to the queue of declarations to translate
@@ -837,9 +830,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .extend((0..upvar_regions).map(|_| self.translate_erased_region()));
                 if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
                 | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))
-                | TransItemSourceKind::VTableInstanceInitializer(TransImplSource::Callable(
-                    ..,
-                ))
                 | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))
                 | TransItemSourceKind::CallableMethod(..)
                 | TransItemSourceKind::VTableMethod(TransImplSource::Callable(..))
@@ -1157,6 +1147,11 @@ pub fn translate<'tcx>(
         translated: TranslatedCrate {
             crate_name,
             options: cli_options.clone(),
+            runtime_checks: RuntimeChecks {
+                ub_checks: tcx.sess.ub_checks(),
+                overflow_checks: tcx.sess.overflow_checks(),
+                contract_checks: tcx.sess.contract_checks(),
+            },
             ..TranslatedCrate::default()
         },
         method_status: Default::default(),

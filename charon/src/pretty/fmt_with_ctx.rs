@@ -1108,9 +1108,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for GExprBody<ullbc_ast::BodyContents> {
             let tab = ctx.indent();
             let ctx = &ctx.increase_indent();
             for (bid, block) in body.iter_enumerated() {
-                let cleanup = if block.is_cleanup { " (cleanup)" } else { "" };
+                let kind = match block.kind {
+                    ullbc::UnwindKind::Regular => "",
+                    ullbc::UnwindKind::Cleanup => " (cleanup)",
+                    ullbc::UnwindKind::Terminate => " (terminate)",
+                };
                 writeln!(f)?;
-                writeln!(f, "{tab}bb{}{cleanup}: {{", bid.index())?;
+                writeln!(f, "{tab}bb{}{kind}: {{", bid.index())?;
                 writeln!(f, "{}", block.with_ctx(ctx))?;
                 writeln!(f, "{tab}}}")?;
             }
@@ -1897,11 +1901,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
             }
             ConstantExprKind::ByteStr(v) => write!(f, "{v:?}"),
             ConstantExprKind::Adt(variant_id, values) => {
-                let values = values.iter().map(|v| v.with_ctx(ctx));
                 let ty_ref = self.ty().as_adt().unwrap();
                 if ty_ref.is_tuple() {
                     let trailing_comma = if values.len() == 1 { "," } else { "" };
-                    let values = values.format(", ");
+                    let values = values.iter().map(|v| v.with_ctx(ctx)).format(", ");
                     write!(f, "({values}{trailing_comma})")
                 } else {
                     match variant_id {
@@ -1909,11 +1912,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
                         Some(variant_id) => ctx.format_enum_variant(f, ty_ref.id, *variant_id)?,
                     }
                     write!(f, " {{ ")?;
-                    for (comma, (i, val)) in repeat_except_first(", ").zip(values.enumerate()) {
+                    for (comma, (field_id, val)) in
+                        repeat_except_first(", ").zip(values.iter_enumerated())
+                    {
                         write!(f, "{}", comma.unwrap_or_default())?;
-                        let field_id = FieldId::new(i);
                         ctx.format_field_name(f, ty_ref.id, *variant_id, field_id)?;
-                        write!(f, ": {}", val)?;
+                        write!(f, ": {}", val.with_ctx(ctx))?;
                     }
                     write!(f, " }}")
                 }
@@ -1977,6 +1981,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
             }
             ConstantExprKind::FnPtr(fp) => {
                 write!(f, "fnptr({})", fp.with_ctx(ctx))
+            }
+            ConstantExprKind::Cast(value, ty) => {
+                write!(f, "cast<{}>({})", ty.with_ctx(ctx), value.with_ctx(ctx))
             }
             ConstantExprKind::TypeId(ty) => {
                 write!(f, "TypeId({})", ty.with_ctx(ctx))

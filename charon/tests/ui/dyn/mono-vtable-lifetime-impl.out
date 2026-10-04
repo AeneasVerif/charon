@@ -16,12 +16,9 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-fn core::marker::MetaSized::{vtable}::<Pattern::<'_>>() -> core::marker::MetaSized::{vtable}
-= <opaque>
-
 struct () {}
 
-vtable core::marker::MetaSized::{vtable}::<Pattern::<'_>>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}::<Pattern::<'_>>()
+vtable core::marker::MetaSized::{vtable}::<Pattern::<'_>>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
 
 struct str {
   _0: [u8],
@@ -97,38 +94,7 @@ unsafe fn {vtable_drop_shim}::<'_><'_0>(dyn_self: &'_0 mut (dyn Trait))
 }
 
 // Full name: test_crate::{impl Trait for Pattern::<'_>}::{vtable}::<'_>
-fn {impl Trait for Pattern::<'_>}::{vtable}::<'_>() -> test_crate::Trait::{vtable}
-{
-    let ret: test_crate::Trait::{vtable}; // return
-    let drop: unsafe fn(*mut (dyn Trait + '0)); // local
-    let erased_drop: *const (); // local
-    let method: fn<'_0_1>(&'_0_1 (dyn Trait + '1)); // local
-    let erased_method: *const (); // local
-    let _5: unsafe fn(*mut (dyn Trait + '4)); // anonymous local
-    let _6: fn<'_0_1>(&'_0_1 (dyn Trait + '9)); // anonymous local
-    let _7: &'static core::marker::MetaSized::{vtable}; // anonymous local
-
-    storage_live(ret)
-    storage_live(drop)
-    storage_live(erased_drop)
-    storage_live(_5)
-    _5 = cast<{vtable_drop_shim}::<'_><'3>, unsafe fn(*mut (dyn Trait + '4))>(const {vtable_drop_shim}::<'_><'3>)
-    drop = move _5
-    erased_drop = cast<unsafe fn(*mut (dyn Trait + '5)), *const ()>(move drop)
-    storage_live(method)
-    storage_live(erased_method)
-    storage_live(_6)
-    _6 = cast<for<'_0_1> {vtable_method}::<'_><'8>, fn<'_0_1>(&'_0_1 (dyn Trait + '9))>(const {vtable_method}::<'_><'8>)
-    method = move _6
-    erased_method = cast<fn<'_0_1>(&'_0_1 (dyn Trait + '10)), *const ()>(move method)
-    storage_live(_7)
-    _7 = &core::marker::MetaSized::{vtable}::<Pattern::<'_>>
-    ret = test_crate::Trait::{vtable} { size: const size_of::<Pattern::<'_>>(), align: const align_of::<Pattern::<'_>>(), drop: move erased_drop, method_method: move erased_method, super_trait_0: move _7 }
-    return
-}
-
-// Full name: test_crate::{impl Trait for Pattern::<'_>}::{vtable}::<'_>
-vtable {impl Trait for Pattern::<'_>}::{vtable}::<'_>: test_crate::Trait::{vtable} = {impl Trait for Pattern::<'_>}::{vtable}::<'_>()
+vtable {impl Trait for Pattern::<'_>}::{vtable}::<'_>: test_crate::Trait::{vtable} = test_crate::Trait::{vtable} { size: size_of::<Pattern::<'_>>(), align: align_of::<Pattern::<'_>>(), drop: cast<*const ()>(fnptr({vtable_drop_shim}::<'_><'_>)), method_method: cast<*const ()>(fnptr({vtable_method}::<'_><'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<Pattern::<'_>> }
 
 // Full name: test_crate::{impl Trait for Pattern::<'_>}
 impl Trait for Pattern::<'_> {

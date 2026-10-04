@@ -144,6 +144,7 @@ impl TypeInfo {
                     | ConstantExprKind::ByteStr(..)
                     | ConstantExprKind::FnDef(..)
                     | ConstantExprKind::FnPtr(..)
+                    | ConstantExprKind::Cast(..)
                     | ConstantExprKind::PtrNoProvenance(..)
                     | ConstantExprKind::TypeId(..)
                     | ConstantExprKind::RawMemory(..)

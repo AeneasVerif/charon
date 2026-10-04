@@ -83,11 +83,7 @@ pub fn assert_failed::<i32, i32><'_0, '_1, '_2>(_1: AssertKind, _2: &'_0 i32, _3
 struct () {}
 
 // Full name: {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>
-fn {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>() -> core::ops::function::Fn::{vtable}
-= <opaque>
-
-// Full name: {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>
-vtable {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>: core::ops::function::Fn::{vtable} = {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>()
+vtable {impl Fn<(i32,)> for fn(i32)}::{vtable}::<i32, ()>: core::ops::function::Fn::{vtable} = Opaque(VTable was chosen to be opaque)
 
 struct (_,)::<i32> {
   _0: i32,

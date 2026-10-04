@@ -29,8 +29,20 @@ pub type ExprBody = GExprBody<BodyContents>;
 pub struct BlockData {
     pub statements: Vec<Statement>,
     pub terminator: Terminator,
-    /// Whether this block is on an unwind path.
-    pub is_cleanup: bool,
+    pub kind: UnwindKind,
+}
+
+/// Where a block runs relative to unwinding.
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+pub enum UnwindKind {
+    /// A non-unwind block; it may start unwinding.
+    Regular,
+    /// An unwind block that may continue unwinding.
+    Cleanup,
+    /// An unwind block that may only terminate the execution; used for double-unwinds or unwinding
+    /// across incompatible ABI boundaries.
+    Terminate,
 }
 
 /// A statement.
@@ -129,7 +141,7 @@ pub enum TerminatorKind {
         target: BlockId,
         on_unwind: BlockId,
     },
-    /// Call to a built-in panicking function.
+    /// Call to a built-in panicking function. Only if `--reconstruct-panic-calls` is passed.
     Panic {
         /// The name of the function that was called.
         name: Name,
@@ -203,11 +215,11 @@ impl ExprBody {
 
 impl BlockData {
     /// Build a block that's just a goto terminator.
-    pub fn new_goto(span: Span, target: BlockId, is_cleanup: bool) -> Self {
+    pub fn new_goto(span: Span, target: BlockId, kind: UnwindKind) -> Self {
         BlockData {
             statements: vec![],
             terminator: Terminator::goto(span, target),
-            is_cleanup,
+            kind,
         }
     }
     pub fn as_goto(&self) -> Option<BlockId> {
@@ -244,12 +256,12 @@ impl BlockData {
     }
 
     /// Build a block that's UB to reach.
-    pub fn new_unreachable(is_cleanup: bool) -> Self {
-        Terminator::new(Span::dummy(), TerminatorKind::UndefinedBehavior).into_block(is_cleanup)
+    pub fn new_unreachable(kind: UnwindKind) -> Self {
+        Terminator::new(Span::dummy(), TerminatorKind::UndefinedBehavior).into_block(kind)
     }
     /// Replace this block with a dummy block.
     pub fn take(&mut self) -> Self {
-        mem::replace(self, BlockData::new_unreachable(self.is_cleanup))
+        mem::replace(self, BlockData::new_unreachable(self.kind))
     }
 
     pub fn targets(&self) -> SmallVec<[BlockId; 2]> {
@@ -342,6 +354,17 @@ impl BlockData {
     }
 }
 
+impl UnwindKind {
+    /// The kind of a block reached by unwinding from this one.
+    pub fn further_unwind_kind(self) -> Self {
+        match self {
+            Self::Regular => Self::Cleanup,
+            // Unwinding from an unwind block is not allowed to continue unwinding up the stack.
+            Self::Cleanup | Self::Terminate => Self::Terminate,
+        }
+    }
+}
+
 impl Statement {
     pub fn new(span: Span, kind: StatementKind) -> Self {
         Statement {
@@ -379,11 +402,11 @@ impl Terminator {
         }
     }
 
-    pub fn into_block(self, is_cleanup: bool) -> BlockData {
+    pub fn into_block(self, kind: UnwindKind) -> BlockData {
         BlockData {
             statements: vec![],
             terminator: self,
-            is_cleanup,
+            kind,
         }
     }
 
@@ -547,11 +570,11 @@ pub struct BodyBuilder {
     pub unwind_block: Option<BlockId>,
 }
 
-fn mk_block(span: Span, term: TerminatorKind, is_cleanup: bool) -> BlockData {
+fn mk_block(span: Span, term: TerminatorKind, kind: UnwindKind) -> BlockData {
     BlockData {
         statements: vec![],
         terminator: Terminator::new(span, term),
-        is_cleanup,
+        kind,
     }
 }
 
@@ -567,7 +590,7 @@ impl BodyBuilder {
         let current_block = body.body.push(BlockData {
             statements: Default::default(),
             terminator: Terminator::new(span, TerminatorKind::Return),
-            is_cleanup: false,
+            kind: UnwindKind::Regular,
         });
         Self {
             span,
@@ -614,17 +637,20 @@ impl BodyBuilder {
 
     fn unwind_block(&mut self) -> BlockId {
         *self.unwind_block.get_or_insert_with(|| {
-            self.body
-                .body
-                .push(mk_block(self.span, TerminatorKind::UnwindResume, true))
+            self.body.body.push(mk_block(
+                self.span,
+                TerminatorKind::UnwindResume,
+                UnwindKind::Cleanup,
+            ))
         })
     }
 
     pub fn call(&mut self, call: Call) {
-        let next_block = self
-            .body
-            .body
-            .push(mk_block(self.span, TerminatorKind::Return, false));
+        let next_block = self.body.body.push(mk_block(
+            self.span,
+            TerminatorKind::Return,
+            UnwindKind::Regular,
+        ));
         let term = TerminatorKind::Call {
             target: next_block,
             call,
@@ -635,10 +661,11 @@ impl BodyBuilder {
     }
 
     pub fn insert_drop(&mut self, place: Place, fn_ptr: FnPtr) {
-        let next_block = self
-            .body
-            .body
-            .push(mk_block(self.span, TerminatorKind::Return, false));
+        let next_block = self.body.body.push(mk_block(
+            self.span,
+            TerminatorKind::Return,
+            UnwindKind::Regular,
+        ));
         let term = TerminatorKind::Drop {
             kind: DropKind::Precise,
             place,

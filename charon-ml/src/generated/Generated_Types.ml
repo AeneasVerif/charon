@@ -302,6 +302,9 @@ and constant_expr_kind =
       (** A function pointer value; this is a pointer (i.e. an address).
 
           This is eliminated inside functions if [--raw-consts] is off. *)
+  | CCast of constant_expr * ty
+      (** Cast a constant value to another type (e.g. erase a vtable method
+          pointer to [*const ()]). *)
   | CPtrNoProvenance of big_int
       (** A pointer with no provenance (e.g. 0 for the null pointer)
 

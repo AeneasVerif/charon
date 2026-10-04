@@ -11,7 +11,7 @@ module BlockId = IdGen ()
 type block = {
   statements : statement list;
   terminator : terminator;
-  is_cleanup : bool;  (** Whether this block is on an unwind path. *)
+  kind : unwind_kind;
 }
 
 and block_id = (BlockId.id[@visitors.opaque])
@@ -115,7 +115,8 @@ and terminator_kind =
           - [target]
           - [on_unwind] *)
   | Panic of name * block_id
-      (** Call to a built-in panicking function.
+      (** Call to a built-in panicking function. Only if
+          [--reconstruct-panic-calls] is passed.
 
           Fields:
           - [name]: The name of the function that was called.
@@ -128,6 +129,14 @@ and terminator_kind =
   | UndefinedBehavior
       (** Reaching this point is undefined behavior in the Rust abstract
           machine. *)
+
+(** Where a block runs relative to unwinding. *)
+and unwind_kind =
+  | Regular  (** A non-unwind block; it may start unwinding. *)
+  | Cleanup  (** An unwind block that may continue unwinding. *)
+  | Terminate
+      (** An unwind block that may only terminate the execution; used for
+          double-unwinds or unwinding across incompatible ABI boundaries. *)
 [@@deriving
   show,
   eq,

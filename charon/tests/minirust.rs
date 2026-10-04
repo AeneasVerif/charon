@@ -16,154 +16,47 @@ const TIMEOUT: Duration = Duration::from_secs(60);
 
 // Known failures
 const FAILURES: &[(&str, &[&str])] = &[
-    // Known charon limitations
+    // FIXME: track_caller
     (
-        "MiniRust output doesn't support unsized types yet",
+        "unable to translate caller_location to MiniRust",
         &[
-            "pass/array.rs",
             "pass/catch_unwind.rs",
-            "pass/const.rs",
-            "pass/enum_direct_tag.rs",
-            "pass/enums.rs",
-            "pass/fn_def.rs",
-            "pass/fn_ptr.rs",
-            "pass/iter.rs",
-            "pass/nullary_op.rs",
             "pass/ops.rs",
             "pass/ptr.rs",
-            "pass/size_of_val.rs",
+            "pass/slice.rs",
+            "pass/stdlib_mir.rs",
             "pass/str.rs",
+            "pass/tree_borrows/cell_lazy_write_to_surrounding.rs",
             "pass/tree_borrows/cell_inside_slice_lazy_write_to_surrounding.rs",
-            "pass/tree_borrows/end_of_protector.rs",
-            "pass/tree_borrows/protector_end_access_special_cases.rs",
-            "pass/tree_borrows/sb_fails.rs",
-            "pass/tree_borrows/spurious_read.rs",
-            "pass/tree_borrows/transmute_unsafecell.rs",
-            "pass/tree_borrows/tree_borrows.rs",
             "pass/tree_borrows/zero_sized_cell_lazy_write_to_surrounding.rs",
-            "pass/tuples.rs",
-            "pass/zero_size_access.rs",
-            "ub/catch_unwind.rs",
+            "ub/assume.rs",
             "ub/ptr_offset_from_unsigned.rs",
             "ub/ptr_offset_not_multiple.rs",
-            "ub/tree_borrows/core/mutable_ref_child_read_disabled.rs",
-            "ub/tree_borrows/core/mutable_ref_child_write_disabled.rs",
-            "ub/tree_borrows/core/mutable_ref_child_write_frozen.rs",
-            "ub/tree_borrows/core/offset_access_child_read_disabled.rs",
-            "ub/tree_borrows/core/offset_access_child_write_disabled.rs",
-            "ub/tree_borrows/core/offset_access_child_write_frozen.rs",
-            "ub/tree_borrows/core/overlap_access_child_read_disabled.rs",
-            "ub/tree_borrows/core/shared_ref_child_read_disabled.rs",
-            "ub/tree_borrows/protector/child_write_conflicted_reserved.rs",
-            "ub/tree_borrows/protector/foreign_read_active.rs",
-            "ub/tree_borrows/protector/non_accessed_conflicted_reserved.rs",
-            "ub/tree_borrows/protector/protector_end_read.rs",
-            "ub/tree_borrows/protector/protector_end_write.rs",
-            "ub/tree_borrows/protector/reservedim_spurious_write.rs",
-            "ub/tree_borrows/protector/zero_size.rs",
-        ],
-    ),
-    (
-        "MiniRust output does not support `dyn Trait`",
-        &[
-            "pass/align_of_val.rs",
-            "pass/closure_iterator_combinator.rs",
-            "pass/drop.rs",
-            "pass/slice.rs",
-            "pass/trait_object.rs",
-            "panic/slice_out_of_bounds.rs",
-            "ub/dangling_vtable.rs",
             "ub/slice_dangling.rs",
-            "ub/wrong_vtable.rs",
         ],
     ),
-    (
-        "MiniRust output does not support unions because we lack padding information",
-        &[
-            "pass/stdlib_mir.rs",
-            "pass/union.rs",
-            "ub/enum_mark_used_bytes.rs",
-            "ub/ptr_byte_order_matters.rs",
-        ],
-    ),
-    (
-        "MiniRust output does not support packed layouts",
-        &["pass/enum_niche_tag.rs", "pass/packed.rs"],
-    ),
-    (
-        "MiniRust output does not support overaligned layouts",
-        &["ub/deref_null_ref.rs", "ub/deref_unaligned_ref.rs"],
-    ),
-    (
-        "can't determine which runtime checks are available",
-        &[
-            "pass/tree_borrows/cell_lazy_write_to_surrounding.rs",
-            "ub/assume.rs",
-        ],
-    ),
-    (
-        "Failed to translate place to MiniRust: _1.metadata",
-        &[
-            "pass/tree_borrows/cell_inside_slice.rs",
-            "ub/tree_borrows/core/cell_inside_slice.rs",
-        ],
-    ),
-    // Unexpected translation bugs
-    (
-        "missing marker-trait information for this type",
-        &["pass/closure.rs"],
-    ),
-    (
-        "Relocation: invalid global name",
-        &[
-            "pass/casts.rs",
-            "pass/const_gap.rs",
-            "pass/overflow.rs",
-            "pass/scalar_tuple.rs",
-            "pass/small_arrays.rs",
-        ],
-    ),
-    (
-        "ValueExpr::Tuple: expression does not match type",
-        &["pass/repeat.rs"],
-    ),
-    (
-        "unable to translate arith_offset::<u8> to MiniRust",
-        &["ub/ptr_add_overflow.rs"],
-    ),
-    (
-        "Terminator: unwind block has the wrong block kind",
-        &["panic/struct_unwind.rs"],
-    ),
-    // Unexpected runtime bugs
-    ("has overflowed its stack", &["pass/static.rs"]),
+    // FIXME: union padding
+    ("got exit status: 0", &["ub/enum_mark_used_bytes.rs"]),
+    // FIXME: track offset of pointers into statics
     (
         "got exit status: 0, stdout \"100\\n3\\n\"",
         &["pass/relocation2.rs"],
     ),
-    (
-        "index out of bounds: the len is 0 but the index is 0",
-        &[
-            "pass/tree_borrows/box-non-unpin.rs",
-            "pass/tree_borrows/no_implicit_writes.rs",
-        ],
-    ),
-    (
-        "MiniRust UB: Tree Borrows: local write of Frozen reference",
-        &["pass/atomic.rs"],
-    ),
+    // FIXME: respect panic=abort
     (
         "MiniRust UB: reached unreachable code",
         &["panic/catch_unwind_abort.rs", "panic/struct_abort.rs"],
     ),
+    // Unexpected translation bugs
     (
-        "expected exit 4 and stdout \"\"; got exit status: 0",
-        &[
-            "ub/tree_borrows/protector/deallocate_strong_protector.rs",
-            "ub/tree_borrows/protector/foreign_write_active.rs",
-            "ub/tree_borrows/protector/foreign_write_frozen.rs",
-            "ub/tree_borrows/protector/foreign_write_reserved.rs",
-        ],
+        "missing marker-trait information for this type",
+        &["pass/closure.rs", "pass/closure_iterator_combinator.rs"],
+    ),
+    ("has overflowed its stack", &["pass/static.rs"]),
+    // Unexpected runtime bugs
+    (
+        "MiniRust UB: Tree Borrows: local write of Frozen reference",
+        &["pass/atomic.rs"],
     ),
 ];
 
@@ -364,7 +257,7 @@ fn main() -> Result<()> {
         let intrinsics_rlib = temp.path().join("libintrinsics.rlib");
         let source = intrinsics_dir.join("src/lib.rs");
         let output = Command::cargo_bin("charon")?
-            .args(["rustc", "--no-serialize", "--"])
+            .args(["rustc", "--no-serialize", "--exclude=crate", "--"])
             .arg(&source)
             .args(["--crate-name=intrinsics", "--crate-type=rlib", "-o"])
             .arg(&intrinsics_rlib)
@@ -400,25 +293,32 @@ fn main() -> Result<()> {
                 .to_string_lossy()
                 .replace('\\', "/");
             for case in gather_cases(path, &case_name, outcome)? {
-                let reason = FAILURES
+                // Because of non-determinism, a single test may trigger different failures
+                // depending on the run.
+                let reasons: Vec<_> = FAILURES
                     .iter()
-                    .find(|(_, paths)| paths.iter().any(|path| case_name.starts_with(path)))
-                    .map(|(reason, _)| *reason);
+                    .filter(|(_, paths)| paths.iter().any(|path| case_name.starts_with(path)))
+                    .map(|(reason, _)| *reason)
+                    .collect();
                 let ignore = case.ignore;
                 let intrinsics_rlib = intrinsics_rlib.clone();
                 trials.push(
                     Trial::test(case.name.clone(), move || {
-                        let result: Result<()> = match (run_case(&case, &intrinsics_rlib), reason) {
-                            (Ok(()), Some(reason)) => Err(anyhow::anyhow!(
-                                "unexpectedly passed; expected failure containing {reason:?}"
+                        let result: Result<()> = match run_case(&case, &intrinsics_rlib) {
+                            Ok(()) if !reasons.is_empty() => Err(anyhow::anyhow!(
+                                "unexpectedly passed; expected failure containing one of {reasons:?}"
                             )),
-                            (Err(error), Some(reason)) if format!("{error:#}").contains(reason) => {
-                                Ok(())
+                            Err(error) if !reasons.is_empty() => {
+                                let error_text = format!("{error:#}");
+                                if reasons.iter().any(|reason| error_text.contains(reason)) {
+                                    Ok(())
+                                } else {
+                                    Err(anyhow::anyhow!(
+                                        "expected failure containing one of {reasons:?}; got:\n{error:#}"
+                                    ))
+                                }
                             }
-                            (Err(error), Some(reason)) => Err(anyhow::anyhow!(
-                                "expected failure containing {reason:?}; got:\n{error:#}"
-                            )),
-                            (result, None) => result,
+                            result => result,
                         };
                         result.map_err(Into::into)
                     })

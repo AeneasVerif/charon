@@ -1,7 +1,6 @@
 //! # Micro-pass: merge single-origin gotos into their parent and skip over blocks that consist of
 //! only a goto.
 use rustc_hash::FxHashSet as HashSet;
-use std::mem;
 
 use crate::ids::IndexVec;
 use crate::transform::TransformCtx;
@@ -58,11 +57,10 @@ impl UllbcPass for Transform {
             while let source = &body.body[id]
                 && let TerminatorKind::Goto { target } = source.terminator.kind
                 && let Antecedents::One { .. } = antecedents[target]
-                && source.is_cleanup == body.body[target].is_cleanup
+                && source.kind == body.body[target].kind
             {
                 antecedents[target] = Antecedents::Zero;
-                let mut target =
-                    mem::replace(&mut body.body[target], BlockData::new_unreachable(false));
+                let mut target = body.body[target].take();
                 let source = &mut body.body[id];
                 source.statements.append(&mut target.statements);
                 source.terminator = target.terminator;
@@ -77,13 +75,12 @@ impl UllbcPass for Transform {
                 .any(|t| body.body[t].as_trivial_goto().is_some())
             {
                 // Merge any forward goto chains that start here.
-                let mut source =
-                    mem::replace(&mut body.body[id], BlockData::new_unreachable(false));
+                let mut source = body.body[id].take();
                 for target_id in source.terminator.targets_mut() {
                     visited.clear();
                     visited.insert(id);
                     while let Some(b) = body.body[*target_id].as_trivial_goto()
-                        && source.is_cleanup == body.body[*target_id].is_cleanup
+                        && source.kind == body.body[*target_id].kind
                         && visited.insert(*target_id)
                     {
                         *target_id = b

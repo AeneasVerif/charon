@@ -371,7 +371,7 @@ where
         unwind_continue;
     }
 
-    bb16 (cleanup): {
+    bb16 (terminate): {
         storage_dead(_50);
         storage_dead(_49);
         storage_dead(_48);
@@ -423,7 +423,7 @@ where
         unwind_continue;
     }
 
-    bb19 (cleanup): {
+    bb19 (terminate): {
         storage_dead(_50);
         storage_dead(_49);
         storage_dead(_48);
@@ -659,7 +659,7 @@ where
         unwind_continue;
     }
 
-    bb45 (cleanup): {
+    bb45 (terminate): {
         storage_dead(_50);
         storage_dead(_49);
         storage_dead(_48);

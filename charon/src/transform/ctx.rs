@@ -353,7 +353,7 @@ pub trait BodyTransformCtx: Sized {
                 PlaceKind::Local(_) => return None,
                 PlaceKind::Global(gref) => {
                     let global = ctx.get_crate().global_decls.get(gref.id)?;
-                    return Some(global.ptr_metadata.clone());
+                    return Some(Operand::Const(global.ptr_metadata.clone()));
                 }
                 PlaceKind::Projection(subplace, proj) => (subplace, proj),
             };
