@@ -611,7 +611,9 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (CFloat _0)
     | `Assoc [ ("Adt", `List [ _0; _1 ]) ] ->
         let* _0 = option_of_json variant_id_of_json ctx _0 in
-        let* _1 = list_of_json constant_expr_of_json ctx _1 in
+        let* _1 =
+          index_vec_of_json field_id_of_json constant_expr_of_json ctx _1
+        in
         Ok (CAdt (_0, _1))
     | `Assoc [ ("Array", _0) ] ->
         let* _0 = list_of_json constant_expr_of_json ctx _0 in

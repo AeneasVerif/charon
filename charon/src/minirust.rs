@@ -1342,7 +1342,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         let mut methods = mini::Map::new();
         for (field, kind) in field_map.iter_enumerated() {
             if matches!(kind, VTableField::Drop | VTableField::Method(_)) {
-                let field_val = &fields[field.index()];
+                let field_val = &fields[field];
                 let method = match field_val.kind() {
                     ConstantExprKind::Cast(value, _) => value,
                     _ => field_val,

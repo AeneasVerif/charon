@@ -1901,11 +1901,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
             }
             ConstantExprKind::ByteStr(v) => write!(f, "{v:?}"),
             ConstantExprKind::Adt(variant_id, values) => {
-                let values = values.iter().map(|v| v.with_ctx(ctx));
                 let ty_ref = self.ty().as_adt().unwrap();
                 if ty_ref.is_tuple() {
                     let trailing_comma = if values.len() == 1 { "," } else { "" };
-                    let values = values.format(", ");
+                    let values = values.iter().map(|v| v.with_ctx(ctx)).format(", ");
                     write!(f, "({values}{trailing_comma})")
                 } else {
                     match variant_id {
@@ -1913,11 +1912,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
                         Some(variant_id) => ctx.format_enum_variant(f, ty_ref.id, *variant_id)?,
                     }
                     write!(f, " {{ ")?;
-                    for (comma, (i, val)) in repeat_except_first(", ").zip(values.enumerate()) {
+                    for (comma, (field_id, val)) in
+                        repeat_except_first(", ").zip(values.iter_enumerated())
+                    {
                         write!(f, "{}", comma.unwrap_or_default())?;
-                        let field_id = FieldId::new(i);
                         ctx.format_field_name(f, ty_ref.id, *variant_id, field_id)?;
-                        write!(f, ": {}", val)?;
+                        write!(f, ": {}", val.with_ctx(ctx))?;
                     }
                     write!(f, " }}")
                 }

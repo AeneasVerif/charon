@@ -32,7 +32,7 @@ pub enum ConstantExprKind {
     /// Value of an ADT (struct or enum).
     ///
     /// This is eliminated inside functions if `--raw-consts` is off.
-    Adt(Option<VariantId>, Vec<ConstantExpr>),
+    Adt(Option<VariantId>, IndexVec<FieldId, ConstantExpr>),
     /// Array value.
     ///
     /// This is eliminated inside functions if `--raw-consts` is off.
@@ -188,7 +188,7 @@ impl ConstantExpr {
 
     pub fn mk_unit() -> Self {
         static_constant!(ConstantExpr::new(
-            ConstantExprKind::Adt(None, Vec::new()),
+            ConstantExprKind::Adt(None, IndexVec::new()),
             Ty::mk_unit(),
         ))
     }

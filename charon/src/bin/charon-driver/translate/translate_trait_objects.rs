@@ -1057,7 +1057,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
 
         // Construct a list with one operand per vtable field.
-        let mut aggregate_fields = vec![];
+        let mut aggregate_fields = IndexVec::new();
         for (field, ty) in vtable_data.fields.into_iter().zip(field_tys) {
             let mk = |kind| ConstantExpr::new(kind, ty.clone());
             let constant = match field {

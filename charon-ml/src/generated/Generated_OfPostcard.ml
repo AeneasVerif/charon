@@ -551,7 +551,10 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          Ok (CFloat _0)
      | 4 ->
          let* _0 = option_of_postcard variant_id_of_postcard ctx st in
-         let* _1 = list_of_postcard constant_expr_of_postcard ctx st in
+         let* _1 =
+           index_vec_of_postcard field_id_of_postcard constant_expr_of_postcard
+             ctx st
+         in
          Ok (CAdt (_0, _1))
      | 5 ->
          let* _0 = list_of_postcard constant_expr_of_postcard ctx st in
