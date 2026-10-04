@@ -200,7 +200,8 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
                 GlobalKind::Static {
                     is_thread_local: false,
                     ..
-                } | GlobalKind::AnonConst
+                } | GlobalKind::NamedConst
+                    | GlobalKind::AnonConst
             ) {
                 let mini_global = self.global(gdecl.item_meta.span, gdecl)?;
                 globals.insert(self.global_name(id), mini_global);

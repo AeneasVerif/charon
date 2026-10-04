@@ -57,21 +57,6 @@ const FAILURES: &[(&str, &[&str])] = &[
     ),
     // Unexpected translation bugs
     (
-        "Relocation: invalid global name",
-        &[
-            "pass/casts.rs",
-            "pass/const.rs",
-            "pass/const_gap.rs",
-            "pass/nullary_op.rs",
-            "pass/overflow.rs",
-            "pass/scalar_tuple.rs",
-            "pass/small_arrays.rs",
-            "pass/tree_borrows/tree_borrows.rs",
-            "pass/tree_borrows/protector_end_access_special_cases.rs",
-            "ub/tree_borrows/protector/protector_end_write.rs",
-        ],
-    ),
-    (
         "missing marker-trait information for this type",
         &["pass/closure.rs", "pass/closure_iterator_combinator.rs"],
     ),
