@@ -762,16 +762,18 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         Ok(Some(vtable_ref))
     }
 
-    /// Local helper function to get the vtable struct reference and trait declaration reference
+    /// Get the vtable's source and struct reference.
     fn get_vtable_instance_info(
         &mut self,
         span: Span,
         impl_def: &hax::FullDef<'tcx>,
         impl_kind: TransImplSource,
-    ) -> Result<(Option<TraitImplRef>, TypeDeclRef), Error> {
+    ) -> Result<(GlobalSource, TypeDeclRef), Error> {
         let implemented_trait = self
             .vtable_instance_data(impl_def, impl_kind)
             .implemented_trait_ref;
+        let self_ty =
+            self.translate_ty(span, implemented_trait.generic_args[0].as_type().unwrap())?;
         let vtable_struct_ref = self.translate_vtable_struct_ref(span, implemented_trait)?;
         let impl_ref = if impl_kind == TransImplSource::Marker || self.monomorphize() {
             None
@@ -782,7 +784,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 TransItemSourceKind::TraitImpl(impl_kind),
             )?)
         };
-        Ok((impl_ref, vtable_struct_ref))
+        Ok((
+            GlobalSource::VTableInstance { impl_ref, self_ty },
+            vtable_struct_ref,
+        ))
     }
 
     /// E.g.,
@@ -827,9 +832,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             }
         }
 
-        let (impl_ref, vtable_struct_ref) =
-            self.get_vtable_instance_info(span, impl_def, impl_kind)?;
-        let src = GlobalSource::VTableInstance { impl_ref };
+        let (src, vtable_struct_ref) = self.get_vtable_instance_info(span, impl_def, impl_kind)?;
 
         let ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
         let size = Size::from_expr(SizeExpr::size_of(&ty));

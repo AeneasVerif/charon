@@ -5,7 +5,7 @@
 //! - `#[track_caller]`;
 //!
 //! Unsupported features (will raise an error):
-//! - `dyn Trait`;
+//! - `dyn Trait` upcasting;
 //! - `CoerceUnsized` pointers;
 //! - Unions, because of precise union padding;
 use itertools::Itertools;
@@ -62,7 +62,7 @@ fn mini_size(bytes: u64) -> mini::Size {
 
 fn mini_align(span: Span, bytes: u64) -> Result<mini::Align> {
     mini::Align::from_bytes(bytes)
-        .ok_or("invalid MiniRust alignment")
+        .ok_or_else(|| format!("invalid MiniRust alignment {bytes}"))
         .context(span)
 }
 
@@ -145,6 +145,18 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
         mini::GlobalName(name(id.index() as u32))
     }
 
+    fn trait_name(&self, id: TypeDeclId) -> mini::TraitName {
+        mini::TraitName(name(id.index() as u32))
+    }
+
+    fn vtable_name(&self, id: GlobalDeclId) -> mini::VTableName {
+        mini::VTableName(name(id.index() as u32))
+    }
+
+    fn method_name(&self, id: FieldId) -> mini::TraitMethodName {
+        mini::TraitMethodName(name(id.index() as u32))
+    }
+
     fn local_name(&self, local: LocalId) -> mini::LocalName {
         mini::LocalName(name(local.index() as u32))
     }
@@ -160,6 +172,12 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
     fn translate(&self) -> Result<mini::Program> {
         let mut functions: mini::Map<mini::FnName, mini::Function> = Default::default();
         for (id, fdecl) in self.krate.fun_decls.iter_enumerated() {
+            if let FunSource::GlobalInitializer(init) = &fdecl.src
+                && let Some(gdecl) = self.krate.global_decls.get(init.id)
+                && gdecl.global_kind.is_vtable()
+            {
+                continue;
+            }
             let span = fdecl.item_meta.span;
             let mini_function = if let Some(function) = self.lower_intrinsic(fdecl)? {
                 function
@@ -199,6 +217,28 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
             );
         }
 
+        // For MiniRust, traits are basically just their vtables.
+        let mut traits: mini::Map<mini::TraitName, mini::Set<mini::TraitMethodName>> =
+            mini::Map::new();
+        for (id, tdecl) in self.krate.type_decls.iter_enumerated() {
+            if let TypeSource::VTable { field_map, .. } = &tdecl.src {
+                let methods = field_map
+                    .iter_enumerated()
+                    .filter(|&(_field, kind)| {
+                        matches!(kind, VTableField::Drop | VTableField::Method(_))
+                    })
+                    .map(|(field, _kind)| self.method_name(field))
+                    .collect();
+                traits.insert(self.trait_name(id), methods);
+            }
+        }
+        let mut vtables: mini::Map<mini::VTableName, mini::VTable> = mini::Map::new();
+        for (id, gdecl) in self.krate.global_decls.iter_enumerated() {
+            if matches!(gdecl.global_kind, GlobalKind::VTable) {
+                vtables.insert(self.vtable_name(id), self.vtable(gdecl)?);
+            }
+        }
+
         let main = self
             .krate
             .fun_decls
@@ -220,9 +260,8 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
             functions,
             start,
             globals,
-            // FIXME(minirust): translate vtables
-            traits: Default::default(),
-            vtables: Default::default(),
+            traits,
+            vtables,
         })
     }
 }
@@ -651,7 +690,28 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
     fn operand(&self, span: Span, operand: &Operand) -> Result<mini::ValueExpr> {
         Ok(match operand {
             Operand::Copy(place) | Operand::Move(place) => {
-                if let PlaceKind::Projection(pointer, ProjectionElem::PtrMetadata) = &place.kind {
+                // Charon translates dyn dispatch to a vtable-field read. MiniRust vtables are
+                // opaque, so read the method through its lookup operation.
+                if let PlaceKind::Projection(vtable, ProjectionElem::Field(None, field)) =
+                    &place.kind
+                    && let PlaceKind::Projection(metadata, ProjectionElem::Deref) = &vtable.kind
+                    && let PlaceKind::Projection(pointer, ProjectionElem::PtrMetadata) =
+                        &metadata.kind
+                    && let Some(tref) = vtable.ty.as_adt()
+                    && let TypeSource::VTable { field_map, .. } =
+                        &self.krate.type_decls[tref.id].src
+                    && matches!(
+                        field_map[*field],
+                        VTableField::Drop | VTableField::Method(_)
+                    )
+                {
+                    mb::vtable_method_lookup(
+                        mb::get_metadata(mb::load(self.place(span, pointer)?)),
+                        self.method_name(*field),
+                    )
+                } else if let PlaceKind::Projection(pointer, ProjectionElem::PtrMetadata) =
+                    &place.kind
+                {
                     mb::get_metadata(mb::load(self.place(span, pointer)?))
                 } else {
                     mb::load(self.place(span, place)?)
@@ -856,6 +916,9 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 mini::UnOp::Cast(mini::CastOp::Transmute(self.ty(span, target_ty)?))
             }
             UnOp::Cast(CastKind::RawPtr(source_ty, target_ty)) => {
+                if source_ty.kind().is_fn_ptr() || target_ty.kind().is_fn_ptr() {
+                    return Ok(mb::transmute(operand_value, self.ty(span, target_ty)?));
+                }
                 // MiniRust does not track the type of pointers, so the only effect of this cast is
                 // on metadata.
                 let old = self.metadata_kind(
@@ -914,9 +977,42 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     target_ty,
                 ));
             }
-            // FIXME(minirust): add vtable support
-            UnOp::Cast(CastKind::Unsize(..) | CastKind::Concretize(..)) => {
-                raise!(span, "MiniRust output does not support `dyn Trait`")
+            UnOp::Cast(CastKind::Unsize(_, target_ty, UnsizingMetadata::VTable(_, vtable))) => {
+                let ConstantExprKind::Ref(global, None) = vtable.kind() else {
+                    raise!(span, "unsupported vtable reference")
+                };
+                let ConstantExprKind::Global(gref) = global.kind() else {
+                    raise!(span, "vtable reference does not name a global")
+                };
+                let pointee = target_ty
+                    .builtin_deref(self.krate)
+                    .ok_or("unsizing target is not a pointer")
+                    .context(span)?;
+                let mini::PointerMetaKind::VTablePointer(trait_name) =
+                    self.metadata_kind(span, pointee)?
+                else {
+                    raise!(span, "unsizing target has no vtable metadata")
+                };
+                return Ok(mb::construct_wide_pointer(
+                    operand_value,
+                    mb::const_vtable(self.vtable_name(gref.id), trait_name),
+                    self.ty(span, target_ty)?,
+                ));
+            }
+            UnOp::Cast(CastKind::Unsize(_, target_ty, UnsizingMetadata::VTableUpcast(path))) => {
+                if !path.is_empty() {
+                    raise!(span, "MiniRust does not support supertrait vtable upcasts")
+                }
+                return Ok(mb::transmute(operand_value, self.ty(span, target_ty)?));
+            }
+            UnOp::Cast(CastKind::Concretize(_, target_ty)) => {
+                return Ok(mb::transmute(
+                    mb::get_thin_pointer(operand_value),
+                    self.ty(span, target_ty)?,
+                ));
+            }
+            UnOp::Cast(CastKind::Unsize(..)) => {
+                raise!(span, "unsupported unsizing coercion")
             }
         };
         Ok(mini::ValueExpr::UnOp {
@@ -1215,6 +1311,57 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 "switch case is not an integer constant: {}",
                 constant.with_ctx(&self.fmt)
             ),
+        })
+    }
+}
+
+/// Traits and vtables
+impl<T: mini::Target> TranslateCtx<'_, T> {
+    fn vtable(&self, gdecl: &GlobalDecl) -> Result<mini::VTable> {
+        let span = gdecl.item_meta.span;
+        let tref = gdecl
+            .ty
+            .as_adt()
+            .ok_or("vtable is not an ADT")
+            .context(span)?;
+        let tdecl = &self.krate.type_decls[tref.id];
+        let TypeSource::VTable { field_map, .. } = &tdecl.src else {
+            raise!(span, "vtable global has no vtable type")
+        };
+        let ConstantExprKind::Adt(None, fields) = gdecl.value.kind() else {
+            raise!(span, "MiniRust needs an evaluated vtable value")
+        };
+        let GlobalSource::VTableInstance { self_ty, .. } = &gdecl.src else {
+            raise!(span, "vtable global is not a vtable")
+        };
+        let (size, align) = self.size_and_align(span, self_ty)?;
+        let mini::UnsafeCellStrategy::Sized { cells } = self.unsafe_cell_strategy(span, self_ty)?
+        else {
+            raise!(span, "vtable self type is not sized")
+        };
+        let mut methods = mini::Map::new();
+        for (field, kind) in field_map.iter_enumerated() {
+            if matches!(kind, VTableField::Drop | VTableField::Method(_)) {
+                let field_val = &fields[field.index()];
+                let method = match field_val.kind() {
+                    ConstantExprKind::Cast(value, _) => value,
+                    _ => field_val,
+                };
+                let ConstantExprKind::FnPtr(fn_ptr) = method.kind() else {
+                    raise!(span, "vtable method has no function shim")
+                };
+                let FnPtrKind::Fun(id) = fn_ptr.kind.as_ref() else {
+                    raise!(span, "vtable method did not resolve to a function")
+                };
+                methods.insert(self.method_name(field), self.fn_name(*id));
+            }
+        }
+        Ok(mini::VTable {
+            trait_name: self.trait_name(tref.id),
+            size: mini_size(size),
+            align: mini_align(span, align)?,
+            cells,
+            methods,
         })
     }
 }

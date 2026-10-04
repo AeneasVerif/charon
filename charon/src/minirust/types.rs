@@ -59,10 +59,14 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     mini::Type::Ptr(mini::PtrType::VTablePtr(trait_name))
                 }
             },
-            TyKind::DynTrait(_) => {
-                // FIXME(minirust): support dyn Trait
-                raise!(span, "MiniRust output does not support `dyn Trait`")
-            }
+            TyKind::DynTrait(pred) => mini::Type::TraitObject(
+                self.trait_name(
+                    pred.vtable_ref(self.krate)
+                        .ok_or("missing vtable for dyn trait")
+                        .context(span)?
+                        .id,
+                ),
+            ),
             TyKind::TypeVar(_) | TyKind::TraitType(..) => {
                 raise!(
                     span,
@@ -346,7 +350,19 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 "MiniRust output requires a monomorphized crate: {}",
                 ty.with_ctx(&self.fmt)
             ),
-            TyKind::DynTrait(_) => raise!(span, "MiniRust output does not support `dyn Trait`"),
+            TyKind::DynTrait(pred) => {
+                let has_bound = |lang_item| {
+                    pred.binder.params.trait_clauses.iter().any(|clause| {
+                        self.krate
+                            .trait_decls
+                            .get(clause.trait_.skip_binder.id)
+                            .is_some_and(|decl| {
+                                decl.item_meta.lang_item.as_ref() == Some(&lang_item)
+                            })
+                    })
+                };
+                (has_bound(LangItem::Freeze), has_bound(LangItem::Unpin))
+            }
             TyKind::Error(error) => raise!(span, "type error: {error}"),
             TyKind::Scalar(_)
             | TyKind::Ref(..)
@@ -358,7 +374,11 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         })
     }
 
-    fn unsafe_cell_strategy(&self, span: Span, ty: &Ty) -> Result<mini::UnsafeCellStrategy> {
+    pub(super) fn unsafe_cell_strategy(
+        &self,
+        span: Span,
+        ty: &Ty,
+    ) -> Result<mini::UnsafeCellStrategy> {
         /// Strategy that labels every byte as a cell.
         fn all_cells_strategy(layout: mini::LayoutStrategy) -> mini::UnsafeCellStrategy {
             let whole_range = |size| {
@@ -524,11 +544,11 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 else {
                     unreachable!()
                 };
+                let cells = cells.into_iter().collect_vec(); // Make the iterator `Clone`
                 mini::UnsafeCellStrategy::Sized {
-                    cells: cells
-                        .into_iter()
-                        .cartesian_product(0u128..len)
-                        .map(|((offset, cell_size), index)| -> Result<_> {
+                    cells: (0u128..len)
+                        .cartesian_product(cells.iter().copied())
+                        .map(|(index, (offset, cell_size))| -> Result<_> {
                             let index = u64::try_from(index)
                                 .map_err(|_| "array index does not fit u64")
                                 .context(span)?;
@@ -585,10 +605,10 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         Ok(match ty.get_ptr_metadata(self.krate) {
             PtrMetadata::None => mini::PointerMetaKind::None,
             PtrMetadata::Length => mini::PointerMetaKind::ElementCount,
-            PtrMetadata::VTable(_) | PtrMetadata::InheritFrom(_) => {
-                // FIXME(minirust): dyn Trait
-                raise!(span, "MiniRust output does not support `dyn Trait`")
+            PtrMetadata::VTable(tref) => {
+                mini::PointerMetaKind::VTablePointer(self.trait_name(tref.id))
             }
+            PtrMetadata::InheritFrom(_) => raise!(span, "unresolved pointer metadata"),
         })
     }
 

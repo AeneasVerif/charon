@@ -2981,9 +2981,14 @@ and global_source_of_json (ctx : of_json_ctx) (js : json) :
         let* item_id = assoc_const_id_of_json ctx item_id in
         let* reuses_default = bool_of_json ctx reuses_default in
         Ok (TraitImplGlobal (impl_ref, trait_ref, item_id, reuses_default))
-    | `Assoc [ ("VTableInstance", `Assoc [ ("impl_ref", impl_ref) ]) ] ->
+    | `Assoc
+        [
+          ( "VTableInstance",
+            `Assoc [ ("self_ty", self_ty); ("impl_ref", impl_ref) ] );
+        ] ->
+        let* self_ty = ty_of_json ctx self_ty in
         let* impl_ref = option_of_json trait_impl_ref_of_json ctx impl_ref in
-        Ok (VTableInstanceGlobal impl_ref)
+        Ok (VTableInstanceGlobal (self_ty, impl_ref))
     | _ -> Error "")
 
 and rustc_ident_of_json (ctx : of_json_ctx) (js : json) :

@@ -1,7 +1,8 @@
-use crate::ast::*;
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
-use serde_state::DeserializeState;
-use serde_state::SerializeState;
+use serde_state::{DeserializeState, SerializeState};
+
+use crate::ast::*;
+use macros::EnumIsA;
 
 /// A global variable definition (constant or static).
 #[derive(Debug, Clone)]
@@ -44,6 +45,7 @@ pub struct GlobalDecl {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(EnumIsA)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub enum GlobalKind {
     /// A static or thread-local static.
@@ -95,6 +97,8 @@ pub enum GlobalSource {
     },
     /// Defines the vtable for a trait impl.
     VTableInstance {
+        /// The concrete type this vtable is for.
+        self_ty: Ty,
         /// The originating impl. This is `None` in monomorphized mode: the vtable global itself
         /// identifies the concrete instantiation, so we don't translate an impl reference solely
         /// to record its provenance.

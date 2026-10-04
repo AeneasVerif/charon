@@ -18,20 +18,11 @@ const TIMEOUT: Duration = Duration::from_secs(60);
 const FAILURES: &[(&str, &[&str])] = &[
     // Known charon limitations
     (
-        "MiniRust output does not support `dyn Trait`",
-        &[
-            "pass/drop.rs",
-            "pass/str.rs",
-            "pass/trait_object.rs",
-            "ub/dangling_vtable.rs",
-            "ub/wrong_vtable.rs",
-        ],
-    ),
-    (
         "MiniRust output does not support unions because we lack padding information",
         &[
             "pass/size_of_val.rs",
             "pass/stdlib_mir.rs",
+            "pass/str.rs",
             "pass/union.rs",
             "ub/enum_mark_used_bytes.rs",
             "ub/ptr_byte_order_matters.rs",
