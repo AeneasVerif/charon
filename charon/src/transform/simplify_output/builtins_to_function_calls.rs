@@ -441,6 +441,15 @@ impl VisitBodyMut for IndexVisitor<'_, '_> {
         self.visit_inner_with_mutability(x, true)
     }
 
+    fn visit_asm_operand(&mut self, x: &mut AsmOperand) -> ControlFlow<Infallible> {
+        match x {
+            AsmOperand::Out { .. } | AsmOperand::InOut { .. } => {
+                self.visit_inner_with_mutability(x, true)
+            }
+            _ => self.visit_inner(x),
+        }
+    }
+
     fn visit_fn_operand(&mut self, x: &mut FnOperand) -> ControlFlow<Infallible> {
         match x {
             FnOperand::Regular(_) => self.visit_inner(x),

@@ -119,6 +119,130 @@ and asm_kind_of_json (ctx : of_json_ctx) (js : json) : (asm_kind, string) result
     | `String "NakedAsm" -> Ok NakedAsm
     | _ -> Error "")
 
+and asm_operand_of_json (ctx : of_json_ctx) (js : json) :
+    (asm_operand, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("In", `Assoc [ ("reg", reg); ("value", value) ]) ] ->
+        let* reg = asm_register_of_json ctx reg in
+        let* value = operand_of_json ctx value in
+        Ok (In (reg, value))
+    | `Assoc
+        [ ("Out", `Assoc [ ("reg", reg); ("late", late); ("place", place) ]) ]
+      ->
+        let* reg = asm_register_of_json ctx reg in
+        let* late = bool_of_json ctx late in
+        let* place = option_of_json place_of_json ctx place in
+        Ok (Out (reg, late, place))
+    | `Assoc
+        [
+          ( "InOut",
+            `Assoc
+              [
+                ("reg", reg);
+                ("late", late);
+                ("in_value", in_value);
+                ("out_place", out_place);
+              ] );
+        ] ->
+        let* reg = asm_register_of_json ctx reg in
+        let* late = bool_of_json ctx late in
+        let* in_value = operand_of_json ctx in_value in
+        let* out_place = option_of_json place_of_json ctx out_place in
+        Ok (InOut (reg, late, in_value, out_place))
+    | `Assoc [ ("Const", _0) ] ->
+        let* _0 = constant_expr_of_json ctx _0 in
+        Ok (Const _0)
+    | `Assoc [ ("SymFn", _0) ] ->
+        let* _0 = fn_ptr_of_json ctx _0 in
+        Ok (SymFn _0)
+    | `Assoc [ ("SymStatic", _0) ] ->
+        let* _0 = global_decl_ref_of_json ctx _0 in
+        Ok (SymStatic _0)
+    | `Assoc [ ("Label", _0) ] ->
+        let* _0 = branch_id_of_json ctx _0 in
+        Ok (Label _0)
+    | _ -> Error "")
+
+and asm_operand_id_of_json (ctx : of_json_ctx) (js : json) :
+    (asm_operand_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> AsmOperandId.id_of_json ctx x
+    | _ -> Error "")
+
+and asm_options_of_json (ctx : of_json_ctx) (js : json) :
+    (asm_options, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("pure", pure);
+          ("nomem", nomem);
+          ("readonly", readonly);
+          ("preserves_flags", preserves_flags);
+          ("noreturn", noreturn);
+          ("nostack", nostack);
+          ("att_syntax", att_syntax);
+          ("may_unwind", may_unwind);
+        ] ->
+        let* pure = bool_of_json ctx pure in
+        let* nomem = bool_of_json ctx nomem in
+        let* readonly = bool_of_json ctx readonly in
+        let* preserves_flags = bool_of_json ctx preserves_flags in
+        let* noreturn = bool_of_json ctx noreturn in
+        let* nostack = bool_of_json ctx nostack in
+        let* att_syntax = bool_of_json ctx att_syntax in
+        let* may_unwind = bool_of_json ctx may_unwind in
+        Ok
+          ({
+             pure;
+             nomem;
+             readonly;
+             preserves_flags;
+             noreturn;
+             nostack;
+             att_syntax;
+             may_unwind;
+           }
+            : asm_options)
+    | _ -> Error "")
+
+and asm_register_of_json (ctx : of_json_ctx) (js : json) :
+    (asm_register, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Explicit", _0) ] ->
+        let* _0 = string_of_json ctx _0 in
+        Ok (Explicit _0)
+    | `Assoc [ ("Class", _0) ] ->
+        let* _0 = string_of_json ctx _0 in
+        Ok (Class _0)
+    | _ -> Error "")
+
+and asm_template_piece_of_json (ctx : of_json_ctx) (js : json) :
+    (asm_template_piece, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Text", _0) ] ->
+        let* _0 = string_of_json ctx _0 in
+        Ok (AsmTemplateText _0)
+    | `Assoc
+        [
+          ( "Placeholder",
+            `Assoc
+              [
+                ("operand_id", operand_id);
+                ("modifier", modifier);
+                ("span", span);
+              ] );
+        ] ->
+        let* operand_id = asm_operand_id_of_json ctx operand_id in
+        let* modifier = option_of_json char_of_json ctx modifier in
+        let* span = span_of_json ctx span in
+        Ok (AsmTemplatePlaceholder (operand_id, modifier, span))
+    | _ -> Error "")
+
 and assertion_of_json (ctx : of_json_ctx) (js : json) :
     (assertion, string) result =
   combine_error_msgs js __FUNCTION__
@@ -842,6 +966,27 @@ and index_vec_of_json :
   combine_error_msgs js __FUNCTION__
     (match js with
     | json -> list_of_json arg1_of_json ctx json
+    | _ -> Error "")
+
+and inline_asm_of_json (ctx : of_json_ctx) (js : json) :
+    (inline_asm, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("kind", kind);
+          ("template", template);
+          ("operands", operands);
+          ("options", options);
+        ] ->
+        let* kind = asm_kind_of_json ctx kind in
+        let* template = list_of_json asm_template_piece_of_json ctx template in
+        let* operands =
+          index_vec_of_json asm_operand_id_of_json asm_operand_of_json ctx
+            operands
+        in
+        let* options = asm_options_of_json ctx options in
+        Ok ({ kind; template; operands; options } : inline_asm)
     | _ -> Error "")
 
 and int_ty_of_json (ctx : of_json_ctx) (js : json) : (int_ty, string) result =
@@ -1766,16 +1911,18 @@ module Ullbc = struct
               `Assoc
                 [
                   ("asm", asm);
-                  ("kind", kind);
-                  ("targets", targets);
+                  ("fallthrough", fallthrough);
+                  ("labels", labels);
                   ("on_unwind", on_unwind);
                 ] );
           ] ->
-          let* asm = string_of_json ctx asm in
-          let* kind = asm_kind_of_json ctx kind in
-          let* targets = list_of_json block_id_of_json ctx targets in
+          let* asm = inline_asm_of_json ctx asm in
+          let* fallthrough = option_of_json block_id_of_json ctx fallthrough in
+          let* labels =
+            index_vec_of_json branch_id_of_json block_id_of_json ctx labels
+          in
           let* on_unwind = block_id_of_json ctx on_unwind in
-          Ok (InlineAsm (asm, kind, targets, on_unwind))
+          Ok (InlineAsm (asm, fallthrough, labels, on_unwind))
       | `Assoc
           [
             ( "Assert",
@@ -1914,16 +2061,18 @@ module Llbc = struct
               `Assoc
                 [
                   ("asm", asm);
-                  ("kind", kind);
-                  ("targets", targets);
+                  ("fallthrough", fallthrough);
+                  ("labels", labels);
                   ("on_unwind", on_unwind);
                 ] );
           ] ->
-          let* asm = string_of_json ctx asm in
-          let* kind = asm_kind_of_json ctx kind in
-          let* targets = list_of_json block_of_json ctx targets in
+          let* asm = inline_asm_of_json ctx asm in
+          let* fallthrough = option_of_json block_of_json ctx fallthrough in
+          let* labels =
+            index_vec_of_json branch_id_of_json block_of_json ctx labels
+          in
           let* on_unwind = block_of_json ctx on_unwind in
-          Ok (InlineAsm (asm, kind, targets, on_unwind))
+          Ok (InlineAsm (asm, fallthrough, labels, on_unwind))
       | `Assoc [ ("Call", `Assoc [ ("call", call); ("on_unwind", on_unwind) ]) ]
         ->
           let* call = call_of_json ctx call in

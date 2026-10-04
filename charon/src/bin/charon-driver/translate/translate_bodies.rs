@@ -1731,24 +1731,138 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             TerminatorKind::InlineAsm {
                 asm_macro,
                 template,
+                operands,
+                options,
                 targets,
                 unwind,
                 ..
             } => {
-                let asm = rustc_ast::ast::InlineAsmTemplatePiece::to_string(template);
-                let targets = targets
-                    .iter()
-                    .map(|target| self.translate_basic_block_id(*target))
-                    .collect();
-                let on_unwind = self.translate_unwind_action(span, unwind);
+                use rustc_ast::ast::InlineAsmOptions as O;
                 let kind = match asm_macro {
                     mir::InlineAsmMacro::Asm => AsmKind::Asm,
                     mir::InlineAsmMacro::NakedAsm => AsmKind::NakedAsm,
                 };
+                let options = AsmOptions {
+                    pure: options.contains(O::PURE),
+                    nomem: options.contains(O::NOMEM),
+                    readonly: options.contains(O::READONLY),
+                    preserves_flags: options.contains(O::PRESERVES_FLAGS),
+                    noreturn: options.contains(O::NORETURN),
+                    nostack: options.contains(O::NOSTACK),
+                    att_syntax: options.contains(O::ATT_SYNTAX),
+                    may_unwind: options.contains(O::MAY_UNWIND),
+                };
+                let template = template
+                    .iter()
+                    .map(|piece| match piece {
+                        rustc_ast::ast::InlineAsmTemplatePiece::String(text) => {
+                            AsmTemplatePiece::Text(text.to_string().into())
+                        }
+                        rustc_ast::ast::InlineAsmTemplatePiece::Placeholder {
+                            operand_idx,
+                            modifier,
+                            span,
+                        } => AsmTemplatePiece::Placeholder {
+                            operand_id: AsmOperandId::from_usize(*operand_idx),
+                            modifier: *modifier,
+                            span: self.translate_span(span),
+                        },
+                    })
+                    .collect();
+                let has_fallthrough = matches!(kind, AsmKind::Asm) && !options.noreturn;
+                let translate_reg = |reg: &rustc_target::asm::InlineAsmRegOrRegClass| match reg {
+                    rustc_target::asm::InlineAsmRegOrRegClass::Reg(reg) => {
+                        AsmRegister::Explicit(reg.name().to_string().into())
+                    }
+                    rustc_target::asm::InlineAsmRegOrRegClass::RegClass(class) => {
+                        AsmRegister::Class(class.name().to_string().into())
+                    }
+                };
+                let operands = operands
+                    .iter()
+                    .map(|operand| {
+                        Ok(match operand {
+                            mir::InlineAsmOperand::In { reg, value } => AsmOperand::In {
+                                reg: translate_reg(reg),
+                                value: self.translate_operand(span, value)?,
+                            },
+                            mir::InlineAsmOperand::Out { reg, late, place } => AsmOperand::Out {
+                                reg: translate_reg(reg),
+                                late: *late,
+                                place: place
+                                    .as_ref()
+                                    .map(|place| self.translate_place(span, place))
+                                    .transpose()?,
+                            },
+                            mir::InlineAsmOperand::InOut {
+                                reg,
+                                late,
+                                in_value,
+                                out_place,
+                            } => AsmOperand::InOut {
+                                reg: translate_reg(reg),
+                                late: *late,
+                                in_value: self.translate_operand(span, in_value)?,
+                                out_place: out_place
+                                    .as_ref()
+                                    .map(|place| self.translate_place(span, place))
+                                    .transpose()?,
+                            },
+                            mir::InlineAsmOperand::Const { value } => {
+                                let Operand::Const(value) = self.translate_operand(
+                                    span,
+                                    &mir::Operand::Constant(value.clone()),
+                                )?
+                                else {
+                                    unreachable!("inline asm const operand is not a constant")
+                                };
+                                AsmOperand::Const(value)
+                            }
+                            mir::InlineAsmOperand::SymFn { value } => {
+                                let Operand::Const(value) = self.translate_operand(
+                                    span,
+                                    &mir::Operand::Constant(value.clone()),
+                                )?
+                                else {
+                                    unreachable!("inline asm function symbol is not a constant")
+                                };
+                                let ConstantExprKind::FnDef(fn_ptr) = value.kind() else {
+                                    unreachable!("inline asm function symbol is not a function")
+                                };
+                                AsmOperand::SymFn(fn_ptr.clone())
+                            }
+                            mir::InlineAsmOperand::SymStatic { def_id } => {
+                                let item = hax::translate_item_ref(
+                                    &self.hax_state,
+                                    *def_id,
+                                    ty::GenericArgs::empty(),
+                                );
+                                AsmOperand::SymStatic(self.translate_global_decl_ref(span, &item)?)
+                            }
+                            mir::InlineAsmOperand::Label { target_index } => AsmOperand::Label(
+                                BranchId::from_usize(*target_index - usize::from(has_fallthrough)),
+                            ),
+                        })
+                    })
+                    .collect::<Result<IndexVec<AsmOperandId, _>, Error>>()?;
+                let fallthrough =
+                    has_fallthrough.then(|| self.translate_basic_block_id(targets[0]));
+                let labels = targets
+                    .iter()
+                    .skip(usize::from(has_fallthrough))
+                    .map(|target| self.translate_basic_block_id(*target))
+                    .collect();
+                let on_unwind = self.translate_unwind_action(span, unwind);
+                let asm = InlineAsm {
+                    kind,
+                    template,
+                    operands,
+                    options,
+                };
                 ullbc_ast::TerminatorKind::InlineAsm {
                     asm,
-                    kind,
-                    targets,
+                    fallthrough,
+                    labels,
                     on_unwind,
                 }
             }

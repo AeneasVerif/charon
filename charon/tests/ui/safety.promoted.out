@@ -995,7 +995,7 @@ fn unsafe_asm()
     _0 = ()
     // unsafe
     asm!("nop") {
-        target 0 => {
+        fallthrough => {
             return
         }
     }

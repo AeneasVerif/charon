@@ -53,7 +53,7 @@ use derive_generic_visitor::*;
         GlobalKind, ItemOpacity, LangItem, LifetimeMutability, OptimizeAttr, OverflowMode,
         ReprOptions, Variance, FieldPredecessor,
         std::ops::RangeInclusive<IntegerValue>,
-        WithRetag, BuiltinPathElem, BranchId, AsmKind, CallSafety,
+        WithRetag, BuiltinPathElem, BranchId, AsmOperandId, AsmKind, AsmRegister, AsmOptions, CallSafety,
     ),
     // Types that are completely skipped, even by `ZipAst`.
     skip(
@@ -63,7 +63,7 @@ use derive_generic_visitor::*;
     // Types that we unconditionally explore.
     drive(
         Assert, AttributeKind, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAdt, BuiltinAssertKind,
-        Call, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
+        Call, InlineAsm, AsmTemplatePiece, AsmOperand, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Deprecation, Disambiguator, DynPredicate, Field, FieldId, File, FloatTy, FloatValue,
         FnOperand, FnPtrKind, InlineAttr, IntegerTy, IntTy, UIntTy, ScalarTy,
         Ident, from_rustc::InlineAttr,
@@ -198,16 +198,16 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
     visitor(drive_body_mut(&mut VisitBodyMut)),
     // Types that are ignored when encountered.
     skip(
-        AbortKind, BinOp, BorrowKind, BranchId, BuiltinAssertKind, ConstantExpr, FieldId,
+        AbortKind, BinOp, BorrowKind, BranchId, AsmOperandId, AsmTemplatePiece, BuiltinAssertKind, ConstantExpr, FieldId,
         TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         Name, NullOp, RefKind, IntegerValue, Span, Ty, TypeDeclId,  UnOp, VariantId,
         TraitRef, ScalarTy, Region, RegionId, (), String, PathBuf, bool, u32, usize,
-        DropKind, Error, Variance, WithRetag, BuiltinAdt, BuiltinPathElem, AsmKind, CallSafety,
+        DropKind, Error, Variance, WithRetag, BuiltinAdt, BuiltinPathElem, AsmKind, AsmRegister, AsmOptions, CallSafety,
         llbc_ast::BlockId, llbc_ast::StatementId,
     ),
     // Types that we unconditionally explore.
     drive(
-        Assert, BorrowckStatement, PlaceKind,
+        Assert, InlineAsm, BorrowckStatement, PlaceKind,
         llbc_ast::StatementKind, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, SwitchData, SwitchScrutinee,
         for<T: BodyVisitable> GExprBody<T>,
@@ -224,7 +224,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
     // type but can be overridden.
     override(
         Body, Locals, Local, LocalId,
-        AggregateKind, Call, FnOperand, FnPtr,
+        AggregateKind, AsmOperand, Call, FnOperand, FnPtr,
         Operand, Place, ProjectionElem, Rvalue,
         llbc_block: llbc_ast::Block,
         llbc_statement: llbc_ast::Statement,

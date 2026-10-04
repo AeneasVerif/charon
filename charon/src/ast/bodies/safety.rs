@@ -344,7 +344,7 @@ impl HasSafety for llbc_ast::Statement {
                 .or_else(|| on_failure.safety(krate)),
             StatementKind::Call { call, .. } => call.safety(krate),
             StatementKind::Switch { data, .. } => data.safety(krate),
-            StatementKind::InlineAsm { kind, .. } => kind.is_asm().into(),
+            StatementKind::InlineAsm { asm, .. } => asm.kind.is_asm().into(),
             StatementKind::UndefinedBehavior => Safety::Unsafe,
             StatementKind::StorageLive(_)
             | StatementKind::StorageDead(_)
@@ -390,7 +390,7 @@ impl HasSafety for ullbc_ast::Terminator {
             TerminatorKind::Call { call, .. } => call.safety(krate),
             TerminatorKind::Drop { place, .. } => place.read_safety(krate),
             TerminatorKind::Assert { assert, .. } => assert.cond.safety(krate),
-            TerminatorKind::InlineAsm { kind, .. } => kind.is_asm().into(),
+            TerminatorKind::InlineAsm { asm, .. } => asm.kind.is_asm().into(),
             TerminatorKind::UndefinedBehavior => Safety::Unsafe,
             TerminatorKind::Goto { .. }
             | TerminatorKind::Return
