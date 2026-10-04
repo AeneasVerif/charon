@@ -286,7 +286,7 @@ fn main() -> Result<()> {
         let intrinsics_rlib = temp.path().join("libintrinsics.rlib");
         let source = intrinsics_dir.join("src/lib.rs");
         let output = Command::cargo_bin("charon")?
-            .args(["rustc", "--no-serialize", "--"])
+            .args(["rustc", "--no-serialize", "--exclude=crate", "--"])
             .arg(&source)
             .args(["--crate-name=intrinsics", "--crate-type=rlib", "-o"])
             .arg(&intrinsics_rlib)
