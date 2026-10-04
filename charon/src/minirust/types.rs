@@ -95,27 +95,36 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 )
             })
             .context(span)?;
-        let decl_span = tdecl.item_meta.span;
         Ok(match &tdecl.kind {
             TypeDeclKind::Struct(fields) => {
                 let variant_layout = layout.variant_layouts[VariantId::ZERO].as_ref();
                 self.tuple_type(span, fields, variant_layout, layout, &tref.generics)?
             }
-            TypeDeclKind::Union(_) => {
-                // let variant_layout = layout.variant_layouts[VariantId::ZERO].as_ref();
-                // let fields = self.fields(span, fields, variant_layout)?;
-                // // FIXME(minirust): compute the precise union chunks. Treating the complete
-                // // allocation as one chunk preserves too much padding for some repr(C) unions.
-                // mini::Type::Union {
-                //     fields,
-                //     chunks: ????
-                //     size,
-                //     align,
-                // }
-                raise!(
-                    decl_span,
-                    "MiniRust output does not support unions because we lack padding information"
-                )
+            TypeDeclKind::Union(fields) => {
+                let variant_layout = layout.variant_layouts[VariantId::ZERO]
+                    .as_ref()
+                    .ok_or("union has no fields layout")
+                    .context(span)?;
+                let fields = fields
+                    .iter_enumerated()
+                    .map(|(id, field)| -> Result<_> {
+                        let offset = variant_layout.field_offsets[id]
+                            .chosen
+                            .ok_or("missing field offset in union layout")
+                            .context(span)?;
+                        let ty = self.ty(span, &field.ty.clone().substitute(&tref.generics))?;
+                        Ok((mini_size(offset), ty))
+                    })
+                    .try_collect()?;
+                let size = mini_size(self.size(span, &layout.size)?);
+                let align = mini_align(span, self.size(span, &layout.align)?)?;
+                mini::Type::Union {
+                    fields,
+                    // FIXME(minirust): Some bytes may be padding.
+                    chunks: [(mini::Size::ZERO, size)].into_iter().collect(),
+                    size,
+                    align,
+                }
             }
             TypeDeclKind::Enum(variants) => {
                 let size = mini_size(self.size(span, &layout.size)?);
@@ -486,8 +495,10 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                                 "enum variant has an unsized field"
                             );
                         }
-                        TypeDeclKind::Union(_) => {
-                            raise!(span, "MiniRust output does not support unions")
+                        TypeDeclKind::Union(fields) => {
+                            let variant_layout = layout.variant_layouts[VariantId::ZERO].as_ref();
+                            add_fields(fields, variant_layout)?;
+                            check!(span, tail_cells.is_none(), "union has an unsized field");
                         }
                         TypeDeclKind::Opaque => {
                             raise!(span, "opaque type is not representable in MiniRust")

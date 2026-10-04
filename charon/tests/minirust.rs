@@ -16,18 +16,6 @@ const TIMEOUT: Duration = Duration::from_secs(60);
 
 // Known failures
 const FAILURES: &[(&str, &[&str])] = &[
-    // FIXME: precise union padding
-    (
-        "MiniRust output does not support unions because we lack padding information",
-        &[
-            "pass/size_of_val.rs",
-            "pass/stdlib_mir.rs",
-            "pass/str.rs",
-            "pass/union.rs",
-            "ub/enum_mark_used_bytes.rs",
-            "ub/ptr_byte_order_matters.rs",
-        ],
-    ),
     // FIXME: track_caller
     (
         "unable to translate caller_location to MiniRust",
@@ -36,6 +24,7 @@ const FAILURES: &[(&str, &[&str])] = &[
             "pass/ops.rs",
             "pass/ptr.rs",
             "pass/slice.rs",
+            "pass/stdlib_mir.rs",
             "pass/tree_borrows/cell_lazy_write_to_surrounding.rs",
             "pass/tree_borrows/cell_inside_slice_lazy_write_to_surrounding.rs",
             "pass/tree_borrows/zero_sized_cell_lazy_write_to_surrounding.rs",
@@ -45,6 +34,13 @@ const FAILURES: &[(&str, &[&str])] = &[
             "ub/slice_dangling.rs",
         ],
     ),
+    // FIXME: char validity in MiniRust
+    (
+        "MiniRust does not support the `char` type",
+        &["pass/str.rs"],
+    ),
+    // FIXME: union padding
+    ("got exit status: 0", &["ub/enum_mark_used_bytes.rs"]),
     // FIXME: track offset of pointers into statics
     (
         "got exit status: 0, stdout \"100\\n3\\n\"",
