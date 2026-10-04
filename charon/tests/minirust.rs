@@ -16,7 +16,7 @@ const TIMEOUT: Duration = Duration::from_secs(60);
 
 // Known failures
 const FAILURES: &[(&str, &[&str])] = &[
-    // Known charon limitations
+    // FIXME: precise union padding
     (
         "MiniRust output does not support unions because we lack padding information",
         &[
@@ -28,6 +28,7 @@ const FAILURES: &[(&str, &[&str])] = &[
             "ub/ptr_byte_order_matters.rs",
         ],
     ),
+    // FIXME: track_caller
     (
         "unable to translate caller_location to MiniRust",
         &[
@@ -44,11 +45,17 @@ const FAILURES: &[(&str, &[&str])] = &[
             "ub/slice_dangling.rs",
         ],
     ),
-    // Unexpected translation bugs
+    // FIXME: track offset of pointers into statics
     (
-        "missing marker-trait information for this type",
-        &["pass/closure.rs", "pass/closure_iterator_combinator.rs"],
+        "got exit status: 0, stdout \"100\\n3\\n\"",
+        &["pass/relocation2.rs"],
     ),
+    // FIXME: respect panic=abort
+    (
+        "MiniRust UB: reached unreachable code",
+        &["panic/catch_unwind_abort.rs", "panic/struct_abort.rs"],
+    ),
+    // Unexpected translation bugs
     (
         "Relocation: invalid global name",
         &[
@@ -64,19 +71,15 @@ const FAILURES: &[(&str, &[&str])] = &[
             "ub/tree_borrows/protector/protector_end_write.rs",
         ],
     ),
-    // Unexpected runtime bugs
-    ("has overflowed its stack", &["pass/static.rs"]),
     (
-        "got exit status: 0, stdout \"100\\n3\\n\"",
-        &["pass/relocation2.rs"],
+        "missing marker-trait information for this type",
+        &["pass/closure.rs", "pass/closure_iterator_combinator.rs"],
     ),
+    ("has overflowed its stack", &["pass/static.rs"]),
+    // Unexpected runtime bugs
     (
         "MiniRust UB: Tree Borrows: local write of Frozen reference",
         &["pass/atomic.rs"],
-    ),
-    (
-        "MiniRust UB: reached unreachable code",
-        &["panic/catch_unwind_abort.rs", "panic/struct_abort.rs"],
     ),
 ];
 
