@@ -25,6 +25,7 @@ const FAILURES: &[(&str, &[&str])] = &[
             "pass/ptr.rs",
             "pass/slice.rs",
             "pass/stdlib_mir.rs",
+            "pass/str.rs",
             "pass/tree_borrows/cell_lazy_write_to_surrounding.rs",
             "pass/tree_borrows/cell_inside_slice_lazy_write_to_surrounding.rs",
             "pass/tree_borrows/zero_sized_cell_lazy_write_to_surrounding.rs",
@@ -33,11 +34,6 @@ const FAILURES: &[(&str, &[&str])] = &[
             "ub/ptr_offset_not_multiple.rs",
             "ub/slice_dangling.rs",
         ],
-    ),
-    // FIXME: char validity in MiniRust
-    (
-        "MiniRust does not support the `char` type",
-        &["pass/str.rs"],
     ),
     // FIXME: union padding
     ("got exit status: 0", &["ub/enum_mark_used_bytes.rs"]),

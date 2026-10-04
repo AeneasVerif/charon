@@ -1198,8 +1198,10 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             ConstantExprKind::Integer(value) => {
                 mini::ValueExpr::Constant(mini::Constant::Int(mini_int(*value)), ty)
             }
-            // FIXME(minirust): MiniRust does not check the validity of chars.
-            ConstantExprKind::Char(_) => raise!(span, "MiniRust does not support the `char` type"),
+            ConstantExprKind::Char(value) => mini::ValueExpr::Constant(
+                mini::Constant::Int(mini::Int::from(u32::from(*value))),
+                ty,
+            ),
             ConstantExprKind::Adt(variant, fields) => {
                 let values = fields
                     .iter()
