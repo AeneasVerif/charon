@@ -228,14 +228,6 @@ impl<'tcx> TranslateCtx<'tcx> {
                     bt_ctx.translate_vtable_instance(id, item_meta, &def, impl_kind)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
-            &TransItemSourceKind::VTableInstanceInitializer(impl_kind) => {
-                let Some(ItemId::Fun(id)) = trans_id else {
-                    unreachable!()
-                };
-                let fun_decl =
-                    bt_ctx.translate_vtable_instance_init(id, item_meta, &def, impl_kind)?;
-                self.translated.fun_decls.set_slot(id, fun_decl);
-            }
             &TransItemSourceKind::VTableMethod(impl_kind) => {
                 let Some(ItemId::Fun(id)) = trans_id else {
                     unreachable!()

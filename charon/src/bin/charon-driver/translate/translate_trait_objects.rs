@@ -14,13 +14,13 @@ use charon_lib::formatter::IntoFormatter;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 
-// Vtable method values that are used to vtable initilization functions.
-// In poly mode, they are const values of shim function pointers direcly filled in vtable fields.
-// In mono mode, they are used for construction of casting statements (see `mk_cast` in `gen_vtable_instance_init_body` for details).
+/// A vtable method pointer.
+///
+/// In monomorphized mode, it must be cast to the erased field type.
 enum VtableMethodValue {
-    Const(ConstantExprKind),
-    /// The method name, type of the shim function pointer, and shim function pointer.
-    Cast((String, Ty, FnPtr)),
+    Const(FnPtr),
+    /// The type of the shim function pointer and shim function pointer.
+    Cast(Ty, FnPtr),
 }
 
 /// Takes a `T` valid in the context of a trait ref and transforms it into a `T` valid in the
@@ -831,25 +831,20 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             self.get_vtable_instance_info(span, impl_def, impl_kind)?;
         let src = GlobalSource::VTableInstance { impl_ref };
 
-        // Initializer function for this global.
-        let init = self.register_item(
-            span,
-            impl_def.this(),
-            TransItemSourceKind::VTableInstanceInitializer(impl_kind),
-        );
-        let ty = Ty::new(TyKind::Adt(vtable_struct_ref));
+        let ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
         let size = Size::from_expr(SizeExpr::size_of(&ty));
         let align = Size::from_expr(SizeExpr::align_of(&ty));
-        let value = ConstantExpr::new(
-            ConstantExprKind::Call(
-                FnPtr::new(
-                    FnPtrKind::Fun(init),
-                    self.outermost_generics().identity_args(),
-                ),
-                vec![],
-            ),
-            ty.clone(),
-        );
+        let kind = if item_meta.opacity.with_private_contents().is_opaque() {
+            ConstantExprKind::Opaque("VTable was chosen to be opaque".to_string())
+        } else if matches!(
+            impl_kind,
+            TransImplSource::Marker | TransImplSource::Normal | TransImplSource::Callable(..)
+        ) {
+            self.gen_vtable_value(span, impl_def, vtable_struct_ref, impl_kind)?
+        } else {
+            ConstantExprKind::Opaque("Couldn't compute vtable field".to_string())
+        };
+        let value = ConstantExpr::new(kind, ty.clone());
 
         Ok(GlobalDecl {
             def_id: global_id,
@@ -946,7 +941,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 // In mono mode the vtable fields are erased pointers, so we must compute the real type of
                 // each shim to cast it from.
                 if !self.monomorphize() {
-                    return Ok(VtableMethodValue::Const(ConstantExprKind::FnPtr(shim)));
+                    return Ok(VtableMethodValue::Const(shim));
                 }
 
                 // Manually translate region params for dyn trait.
@@ -982,11 +977,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 }
 
                 self.mark_method_as_used(trait_id, method_id);
-                let method_name = self
-                    .translated
-                    .assoc_item_name(trait_id, method_id)
-                    .to_string();
-                Ok(VtableMethodValue::Cast((method_name, method_ty, shim)))
+                Ok(VtableMethodValue::Cast(method_ty, shim))
             }
             &VTableMethodSource::FnTraitShim(item, impl_source, vtable_sig) => {
                 let shim = self.translate_fn_ptr(
@@ -995,7 +986,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     TransItemSourceKind::VTableMethod(impl_source),
                 )?;
                 if !self.monomorphize() {
-                    return Ok(VtableMethodValue::Const(ConstantExprKind::FnPtr(shim)));
+                    return Ok(VtableMethodValue::Const(shim));
                 }
                 // In mono mode the vtable field is an erased pointer, so we must compute the real
                 // type of the shim to cast from.
@@ -1003,28 +994,19 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     ctx.translate_fun_sig(span, sig)
                 })?;
                 let method_ty = TyKind::FnPtr(bound_sig).into_ty();
-                let method_name = self
-                    .translated
-                    .assoc_item_name(trait_id, method_id)
-                    .to_string();
-                Ok(VtableMethodValue::Cast((method_name, method_ty, shim)))
+                Ok(VtableMethodValue::Cast(method_ty, shim))
             }
         }
     }
 
-    /// Generate the body of the vtable instance function.
-    /// ```ignore
-    /// let ret@0 : VTable;
-    /// ret@0 = VTable { ... };
-    /// return;
-    /// ```
-    fn gen_vtable_instance_init_body(
+    /// Generate the vtable value.
+    fn gen_vtable_value(
         &mut self,
         span: Span,
         impl_def: &hax::FullDef<'tcx>,
         vtable_struct_ref: TypeDeclRef,
         impl_kind: TransImplSource,
-    ) -> Result<Body, Error> {
+    ) -> Result<ConstantExprKind, Error> {
         let VTableInstanceData {
             implemented_trait_ref,
             implied_trait_proofs,
@@ -1043,10 +1025,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // The type this impl is for.
         let self_ty = &implemented_trait.generics.types[0];
 
-        let mut builder = BodyBuilder::new(span, 0);
-        let ret_ty = Ty::new(TyKind::Adt(vtable_struct_ref.clone()));
-        let ret_place = builder.new_var(Some("ret".into()), ret_ty.clone());
-
         let vtable_data =
             self.prepare_vtable_fields(&poly_trait_def, trait_id, poly_trait.implied_predicates())?;
         // Retrieve the expected field types from the struct definition. This avoids complicated
@@ -1059,7 +1037,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             };
             let fields = match &vtable_def.kind {
                 TypeDeclKind::Struct(fields) => fields,
-                TypeDeclKind::Opaque => return Ok(Body::Opaque),
+                TypeDeclKind::Opaque => {
+                    return Ok(ConstantExprKind::Opaque(
+                        "VTable was chosen to be opaque".to_string(),
+                    ));
+                }
                 TypeDeclKind::Error(error) => return Err(Error::new(span, error.clone())),
                 _ => unreachable!(),
             };
@@ -1074,59 +1056,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Construct a list with one operand per vtable field.
         let mut aggregate_fields = vec![];
         for (field, ty) in vtable_data.fields.into_iter().zip(field_tys) {
-            // In poly mode, all fields of vtables can be filled with const values.
-            let mk_const = |kind| Operand::Const(ConstantExpr::new(kind, ty.clone()));
-            // In mono mode, we need to additioanlly cast shim function pointers to opaque ones before filling them.
-            // Therefore, `mk_cast` receives `(method_name, method_ty, method_shim)` to construct casting statements.
-            // For example, for the trait declaration and trait implementation in Rust:
-            // ```
-            // trait Trait {
-            //      fn method(&self);
-            // }
-            // impl Trait for i32 {
-            //      fn method(&self) {}
-            // }
-            // ```
-            //  , `mk_cast` will generate the followging statements inside the vtable initialization function:
-            // ```
-            // fn vtable_init() -> vtable {
-            //      ...
-            //      let method_local: fn<'_0_1>(&'_0_1 (dyn Trait + '1));
-            //      let cast_local: *const ();
-            //
-            //      method_local = const {shim}<'1>
-            //      cast_local = cast<fn<'_0_1>(&'_0_1 (dyn Trait + '2)), *const ()>(move method_local)
-            //      ...
-            // }
-            // ```
-            let mut mk_cast = |(method_name, method_ty, method_shim): (String, Ty, FnPtr)| {
-                let method_local = builder.new_var(Some(method_name.clone()), method_ty.clone());
-                let shim = Rvalue::Use(
-                    Operand::Const(ConstantExpr::new(
-                        ConstantExprKind::FnPtr(method_shim.clone()),
-                        method_ty.clone(),
-                    )),
-                    WithRetag::No,
-                );
-                let cast_local = builder.new_var(
-                    Some("erased_".to_string() + method_name.as_str()),
-                    ty.clone(),
-                );
-                let cast = Rvalue::UnaryOp(
-                    UnOp::Cast(CastKind::RawPtr(
-                        method_local.ty().clone(),
-                        cast_local.ty().clone(),
-                    )),
-                    Operand::Move(method_local.clone()),
-                );
-
-                builder.push_statement(StatementKind::Assign(method_local.clone(), shim));
-                builder.push_statement(StatementKind::Assign(cast_local.clone(), cast));
-                Operand::Move(cast_local)
-            };
-            let op = match field {
-                TrVTableField::Size => mk_const(ConstantExprKind::SizeOf(self_ty.clone())),
-                TrVTableField::Align => mk_const(ConstantExprKind::AlignOf(self_ty.clone())),
+            let mk = |kind| ConstantExpr::new(kind, ty.clone());
+            let constant = match field {
+                TrVTableField::Size => mk(ConstantExprKind::SizeOf(self_ty.clone())),
+                TrVTableField::Align => mk(ConstantExprKind::AlignOf(self_ty.clone())),
                 TrVTableField::Drop => {
                     let drop_shim = self.translate_item(
                         span,
@@ -1134,31 +1067,18 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         TransItemSourceKind::VTableDropShim(impl_kind),
                     )?;
                     if self.monomorphize() {
-                        // manually compute the type of drop shim function.
-                        let hax::FullDefKind::Trait(t) = trait_def.kind() else {
-                            panic!()
+                        let hax::FullDefKind::Trait(trait_def) = trait_def.kind() else {
+                            unreachable!()
                         };
-
-                        let Some(dyn_self) = t.dyn_self() else {
-                            panic!(
-                                "MONO: Trying to generate a vtable for a non-dyn-compatible trait"
-                            )
-                        };
-                        let ref_dyn_self =
-                            TyKind::RawPtr(self.translate_ty(span, dyn_self)?, RefKind::Mut)
-                                .into_ty();
-                        let signature = FunSig {
-                            is_unsafe: true,
-                            abi: Abi::rust(),
-                            is_variadic: false,
-                            inputs: vec![ref_dyn_self.clone()],
-                            output: Ty::mk_unit(),
-                        };
-                        let drop_ty = Ty::new(TyKind::FnPtr(RegionBinder::empty(signature)));
-
-                        mk_cast(("drop".to_string(), drop_ty.clone(), drop_shim))
+                        let dyn_self = trait_def
+                            .dyn_self()
+                            .expect("vtable trait must be dyn-compatible");
+                        let dyn_self = self.translate_ty(span, dyn_self)?;
+                        let shim_ty = TyKind::FnPtr(self.drop_glue_fn_ptr_sig(dyn_self)).into_ty();
+                        let shim = ConstantExpr::new(ConstantExprKind::FnPtr(drop_shim), shim_ty);
+                        mk(ConstantExprKind::Cast(shim, ty.clone()))
                     } else {
-                        mk_const(ConstantExprKind::FnPtr(drop_shim))
+                        mk(ConstantExprKind::FnPtr(drop_shim))
                     }
                 }
                 TrVTableField::Method(method_id, _) => {
@@ -1170,82 +1090,23 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         &methods,
                     )?;
                     match value {
-                        VtableMethodValue::Const(const_kind) => mk_const(const_kind),
-                        VtableMethodValue::Cast(method) => mk_cast(method),
+                        VtableMethodValue::Const(method) => mk(ConstantExprKind::FnPtr(method)),
+                        VtableMethodValue::Cast(cast_ty, method) => {
+                            let method =
+                                ConstantExpr::new(ConstantExprKind::FnPtr(method), cast_ty);
+                            mk(ConstantExprKind::Cast(method, ty.clone()))
+                        }
                     }
                 }
                 TrVTableField::SuperTrait(clause_id, _) => {
                     let trait_proof = &implied_trait_proofs[clause_id.index()];
-                    Operand::Const(self.translate_vtable_instance_const(span, trait_proof)?)
+                    self.translate_vtable_instance_const(span, trait_proof)?
                 }
             };
-            aggregate_fields.push(op);
+            aggregate_fields.push(constant);
         }
 
-        // Construct the final struct.
-        builder.push_statement(StatementKind::Assign(
-            ret_place,
-            Rvalue::Aggregate(
-                AggregateKind::Adt(vtable_struct_ref.clone(), None, None),
-                aggregate_fields,
-            ),
-        ));
-
-        Ok(Body::Unstructured(builder.build()))
-    }
-
-    pub(crate) fn translate_vtable_instance_init(
-        mut self,
-        init_func_id: FunDeclId,
-        item_meta: ItemMeta,
-        impl_def: &hax::FullDef<'tcx>,
-        impl_kind: TransImplSource,
-    ) -> Result<FunDecl, Error> {
-        let span = item_meta.span;
-
-        let (_, vtable_struct_ref) = self.get_vtable_instance_info(span, impl_def, impl_kind)?;
-
-        let init_for = self.register_item(
-            span,
-            impl_def.this(),
-            TransItemSourceKind::VTableInstance(impl_kind),
-        );
-        let src = FunSource::GlobalInitializer(GlobalDeclRef {
-            id: init_for,
-            generics: Box::new(self.outermost_generics().identity_args()),
-        });
-
-        // Signature: `() -> VTable`.
-        let sig = FunSig {
-            is_unsafe: false,
-            abi: Abi::rust(),
-            is_variadic: false,
-            inputs: vec![],
-            output: Ty::new(TyKind::Adt(vtable_struct_ref.clone())),
-        };
-
-        let body = match impl_kind {
-            _ if item_meta.opacity.with_private_contents().is_opaque() => Body::Opaque,
-            TransImplSource::Marker | TransImplSource::Normal | TransImplSource::Callable(..) => {
-                self.gen_vtable_instance_init_body(span, impl_def, vtable_struct_ref, impl_kind)?
-            }
-            _ => {
-                raise_error!(
-                    self,
-                    span,
-                    "Don't know how to generate a vtable for a virtual impl {impl_kind:?}"
-                );
-            }
-        };
-
-        Ok(FunDecl {
-            def_id: init_func_id,
-            item_meta,
-            generics: self.into_generics(),
-            signature: Box::new(sig),
-            src,
-            body,
-        })
+        Ok(ConstantExprKind::Adt(None, aggregate_fields))
     }
 
     /// The target vtable shim body looks like:

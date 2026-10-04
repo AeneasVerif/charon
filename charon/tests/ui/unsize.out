@@ -159,11 +159,7 @@ impl "impl_Display_for_String" Display for String {
 }
 
 // Full name: alloc::string::{impl Display for String}::{vtable}
-fn impl_Display_for_String::{vtable}() -> core::fmt::Display::{vtable}
-= <opaque>
-
-// Full name: alloc::string::{impl Display for String}::{vtable}
-vtable impl_Display_for_String::{vtable}: core::fmt::Display::{vtable} = impl_Display_for_String::{vtable}()
+vtable impl_Display_for_String::{vtable}: core::fmt::Display::{vtable} = Opaque(VTable was chosen to be opaque)
 
 // Full name: alloc::sync::Arc
 #[diagnostic_item("Arc")]

@@ -40,19 +40,7 @@ unsafe fn {vtable_drop_shim}<'_0, Self>(dyn_self: &'_0 mut (dyn Send))
     return
 }
 
-fn core::marker::Send::{vtable}<Self>() -> core::marker::Send::{vtable}
-{
-    let ret: core::marker::Send::{vtable}; // return
-    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn Send + '1)); // anonymous local
-
-    storage_live(ret)
-    storage_live(_1)
-    _1 = cast<for<'_0_1> {vtable_drop_shim}<'0, Self>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Send + '1))>(const {vtable_drop_shim}<'0, Self>)
-    ret = core::marker::Send::{vtable} { size: const size_of::<Self>(), align: const align_of::<Self>(), drop: move _1 }
-    return
-}
-
-vtable core::marker::Send::{vtable}<Self>: core::marker::Send::{vtable} = core::marker::Send::{vtable}<Self>()
+vtable core::marker::Send::{vtable}<Self>: core::marker::Send::{vtable} = core::marker::Send::{vtable} { size: size_of::<Self>(), align: align_of::<Self>(), drop: fnptr({vtable_drop_shim}<'_, Self>) }
 
 // Full name: test_crate::main
 fn main()

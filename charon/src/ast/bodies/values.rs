@@ -55,6 +55,8 @@ pub enum ConstantExprKind {
     ///
     /// This is eliminated inside functions if `--raw-consts` is off.
     FnPtr(FnPtr),
+    /// Cast a constant value to another type (e.g. erase a vtable method pointer to `*const ()`).
+    Cast(ConstantExpr, Ty),
     /// A pointer with no provenance (e.g. 0 for the null pointer)
     ///
     /// This is eliminated inside functions if `--raw-consts` is off.

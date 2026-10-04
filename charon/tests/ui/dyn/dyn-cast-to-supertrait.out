@@ -7,12 +7,9 @@ opaque type core::marker::MetaSized::{vtable}
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
-fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
-= <opaque>
-
 struct () {}
 
-vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
 
 struct test_crate::Feline::{vtable} {
   size: usize,
@@ -119,26 +116,7 @@ unsafe fn impl_Feline_for_HouseCat::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (
 }
 
 // Full name: test_crate::{impl Feline for HouseCat}::{vtable}
-fn impl_Feline_for_HouseCat::{vtable}() -> test_crate::Feline::{vtable}
-{
-    let ret: test_crate::Feline::{vtable}; // return
-    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn Feline + '1)); // anonymous local
-    let _2: fn<'_0_1>(&'_0_1 (dyn Feline + '3)); // anonymous local
-    let _3: &'static core::marker::MetaSized::{vtable}; // anonymous local
-
-    storage_live(ret)
-    storage_live(_1)
-    _1 = cast<for<'_0_1> impl_Feline_for_HouseCat::{vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Feline + '1))>(const impl_Feline_for_HouseCat::{vtable_drop_shim}<'0>)
-    storage_live(_2)
-    _2 = cast<for<'_0_1> impl_Feline_for_HouseCat::hunt::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Feline + '3))>(const impl_Feline_for_HouseCat::hunt::{vtable_method}<'2>)
-    storage_live(_3)
-    _3 = &core::marker::MetaSized::{vtable}<HouseCat>
-    ret = test_crate::Feline::{vtable} { size: const size_of::<HouseCat>(), align: const align_of::<HouseCat>(), drop: move _1, method_hunt: move _2, super_trait_0: move _3 }
-    return
-}
-
-// Full name: test_crate::{impl Feline for HouseCat}::{vtable}
-vtable impl_Feline_for_HouseCat::{vtable}: test_crate::Feline::{vtable} = impl_Feline_for_HouseCat::{vtable}()
+vtable impl_Feline_for_HouseCat::{vtable}: test_crate::Feline::{vtable} = test_crate::Feline::{vtable} { size: size_of::<HouseCat>(), align: align_of::<HouseCat>(), drop: fnptr(impl_Feline_for_HouseCat::{vtable_drop_shim}<'_>), method_hunt: fnptr(impl_Feline_for_HouseCat::hunt::{vtable_method}<'_>), super_trait_0: &core::marker::MetaSized::{vtable}<HouseCat> }
 
 // Full name: test_crate::{impl Feline for HouseCat}
 impl "impl_Feline_for_HouseCat" Feline for HouseCat {
@@ -197,26 +175,7 @@ unsafe fn impl_Pettable_for_HouseCat::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut
 }
 
 // Full name: test_crate::{impl Pettable for HouseCat}::{vtable}
-fn impl_Pettable_for_HouseCat::{vtable}() -> test_crate::Pettable::{vtable}
-{
-    let ret: test_crate::Pettable::{vtable}; // return
-    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn Pettable + '1)); // anonymous local
-    let _2: fn<'_0_1>(&'_0_1 (dyn Pettable + '3)); // anonymous local
-    let _3: &'static core::marker::MetaSized::{vtable}; // anonymous local
-
-    storage_live(ret)
-    storage_live(_1)
-    _1 = cast<for<'_0_1> impl_Pettable_for_HouseCat::{vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Pettable + '1))>(const impl_Pettable_for_HouseCat::{vtable_drop_shim}<'0>)
-    storage_live(_2)
-    _2 = cast<for<'_0_1> impl_Pettable_for_HouseCat::pet::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Pettable + '3))>(const impl_Pettable_for_HouseCat::pet::{vtable_method}<'2>)
-    storage_live(_3)
-    _3 = &core::marker::MetaSized::{vtable}<HouseCat>
-    ret = test_crate::Pettable::{vtable} { size: const size_of::<HouseCat>(), align: const align_of::<HouseCat>(), drop: move _1, method_pet: move _2, super_trait_0: move _3 }
-    return
-}
-
-// Full name: test_crate::{impl Pettable for HouseCat}::{vtable}
-vtable impl_Pettable_for_HouseCat::{vtable}: test_crate::Pettable::{vtable} = impl_Pettable_for_HouseCat::{vtable}()
+vtable impl_Pettable_for_HouseCat::{vtable}: test_crate::Pettable::{vtable} = test_crate::Pettable::{vtable} { size: size_of::<HouseCat>(), align: align_of::<HouseCat>(), drop: fnptr(impl_Pettable_for_HouseCat::{vtable_drop_shim}<'_>), method_pet: fnptr(impl_Pettable_for_HouseCat::pet::{vtable_method}<'_>), super_trait_0: &core::marker::MetaSized::{vtable}<HouseCat> }
 
 // Full name: test_crate::{impl Pettable for HouseCat}
 impl "impl_Pettable_for_HouseCat" Pettable for HouseCat {
@@ -275,32 +234,7 @@ unsafe fn impl_Cat_for_HouseCat::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn
 }
 
 // Full name: test_crate::{impl Cat for HouseCat}::{vtable}
-fn impl_Cat_for_HouseCat::{vtable}() -> test_crate::Cat::{vtable}
-{
-    let ret: test_crate::Cat::{vtable}; // return
-    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn Cat + '1)); // anonymous local
-    let _2: fn<'_0_1>(&'_0_1 (dyn Cat + '3)); // anonymous local
-    let _3: &'static core::marker::MetaSized::{vtable}; // anonymous local
-    let _4: &'static test_crate::Feline::{vtable}; // anonymous local
-    let _5: &'static test_crate::Pettable::{vtable}; // anonymous local
-
-    storage_live(ret)
-    storage_live(_1)
-    _1 = cast<for<'_0_1> impl_Cat_for_HouseCat::{vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Cat + '1))>(const impl_Cat_for_HouseCat::{vtable_drop_shim}<'0>)
-    storage_live(_2)
-    _2 = cast<for<'_0_1> impl_Cat_for_HouseCat::meow::{vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Cat + '3))>(const impl_Cat_for_HouseCat::meow::{vtable_method}<'2>)
-    storage_live(_3)
-    _3 = &core::marker::MetaSized::{vtable}<HouseCat>
-    storage_live(_4)
-    _4 = &impl_Feline_for_HouseCat::{vtable}
-    storage_live(_5)
-    _5 = &impl_Pettable_for_HouseCat::{vtable}
-    ret = test_crate::Cat::{vtable} { size: const size_of::<HouseCat>(), align: const align_of::<HouseCat>(), drop: move _1, method_meow: move _2, super_trait_0: move _3, super_trait_1: move _4, super_trait_2: move _5 }
-    return
-}
-
-// Full name: test_crate::{impl Cat for HouseCat}::{vtable}
-vtable impl_Cat_for_HouseCat::{vtable}: test_crate::Cat::{vtable} = impl_Cat_for_HouseCat::{vtable}()
+vtable impl_Cat_for_HouseCat::{vtable}: test_crate::Cat::{vtable} = test_crate::Cat::{vtable} { size: size_of::<HouseCat>(), align: align_of::<HouseCat>(), drop: fnptr(impl_Cat_for_HouseCat::{vtable_drop_shim}<'_>), method_meow: fnptr(impl_Cat_for_HouseCat::meow::{vtable_method}<'_>), super_trait_0: &core::marker::MetaSized::{vtable}<HouseCat>, super_trait_1: &impl_Feline_for_HouseCat::{vtable}, super_trait_2: &impl_Pettable_for_HouseCat::{vtable} }
 
 // Full name: test_crate::{impl Cat for HouseCat}
 impl "impl_Cat_for_HouseCat" Cat for HouseCat {

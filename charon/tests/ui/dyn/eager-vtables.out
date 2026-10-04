@@ -16,12 +16,9 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
-= <opaque>
-
 struct () {}
 
-vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
 
 // Full name: core::result::Result
 #[diagnostic_item("Result")]
@@ -145,26 +142,7 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Foo))
 }
 
 // Full name: test_crate::{impl Foo for ()}::{vtable}
-fn impl_Foo_for_unit::{vtable}() -> test_crate::Foo::{vtable}
-{
-    let ret: test_crate::Foo::{vtable}; // return
-    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn Foo + '1)); // anonymous local
-    let _2: fn<'_0_1>(&'_0_1 (dyn Foo + '3)); // anonymous local
-    let _3: &'static core::marker::MetaSized::{vtable}; // anonymous local
-
-    storage_live(ret)
-    storage_live(_1)
-    _1 = cast<for<'_0_1> {vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Foo + '1))>(const {vtable_drop_shim}<'0>)
-    storage_live(_2)
-    _2 = cast<for<'_0_1> {vtable_method}<'2>, fn<'_0_1>(&'_0_1 (dyn Foo + '3))>(const {vtable_method}<'2>)
-    storage_live(_3)
-    _3 = &core::marker::MetaSized::{vtable}<()>
-    ret = test_crate::Foo::{vtable} { size: const size_of::<()>(), align: const align_of::<()>(), drop: move _1, method_bar: move _2, super_trait_0: move _3 }
-    return
-}
-
-// Full name: test_crate::{impl Foo for ()}::{vtable}
-vtable impl_Foo_for_unit::{vtable}: test_crate::Foo::{vtable} = impl_Foo_for_unit::{vtable}()
+vtable impl_Foo_for_unit::{vtable}: test_crate::Foo::{vtable} = test_crate::Foo::{vtable} { size: size_of::<()>(), align: align_of::<()>(), drop: fnptr({vtable_drop_shim}<'_>), method_bar: fnptr({vtable_method}<'_>), super_trait_0: &core::marker::MetaSized::{vtable}<()> }
 
 // Full name: test_crate::{impl Foo for ()}
 impl "impl_Foo_for_unit" Foo for () {

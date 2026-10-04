@@ -189,6 +189,17 @@ fn transform_constant_expr(
                 )),
             )
         }
+        ConstantExprKind::Cast(value, target_ty) => {
+            let source_ty = value.ty().clone();
+            let target_ty = target_ty.clone();
+            let value = transform_constant_expr(ctx, value.clone());
+            let cast_kind = if source_ty.is_fn_ptr() | source_ty.is_fn_def() {
+                CastKind::FnPtr(source_ty, target_ty)
+            } else {
+                CastKind::RawPtr(source_ty, target_ty)
+            };
+            Rvalue::UnaryOp(UnOp::Cast(cast_kind), value)
+        }
         ConstantExprKind::VTableRef(tref)
             if let Some(vtable_ref) = tref.vtable_ref(&ctx.ctx.translated)
                 && let TyKind::Ref(_, vtable_ty, _) = val.ty().kind() =>

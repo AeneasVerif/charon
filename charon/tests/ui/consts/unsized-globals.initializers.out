@@ -16,12 +16,9 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
-= <opaque>
-
 struct () {}
 
-vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
 
 opaque type core::marker::Sync::{vtable}
 
@@ -30,10 +27,7 @@ opaque type core::marker::Sync::{vtable}
 #[diagnostic_item("Sync")]
 pub unsafe trait Sync<Self>
 
-fn core::marker::Sync::{vtable}<Self>() -> core::marker::Sync::{vtable}
-= <opaque>
-
-vtable core::marker::Sync::{vtable}<Self>: core::marker::Sync::{vtable} = core::marker::Sync::{vtable}<Self>()
+vtable core::marker::Sync::{vtable}<Self>: core::marker::Sync::{vtable} = Opaque(VTable was chosen to be opaque)
 
 struct (_, _)<A, B>
 where
@@ -272,26 +266,7 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Trait))
 }
 
 // Full name: test_crate::{impl Trait for u8}::{vtable}
-fn impl_Trait_for_u8::{vtable}() -> test_crate::Trait::{vtable}
-{
-    let ret: test_crate::Trait::{vtable}; // return
-    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait + '1)); // anonymous local
-    let _2: &'static core::marker::MetaSized::{vtable}; // anonymous local
-    let _3: &'static core::marker::Sync::{vtable}; // anonymous local
-
-    storage_live(ret)
-    storage_live(_1)
-    _1 = cast<for<'_0_1> {vtable_drop_shim}<'0>, unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait + '1))>(const {vtable_drop_shim}<'0>)
-    storage_live(_2)
-    _2 = &core::marker::MetaSized::{vtable}<u8>
-    storage_live(_3)
-    _3 = &core::marker::Sync::{vtable}<u8>
-    ret = test_crate::Trait::{vtable} { size: const size_of::<u8>(), align: const align_of::<u8>(), drop: move _1, super_trait_0: move _2, super_trait_1: move _3 }
-    return
-}
-
-// Full name: test_crate::{impl Trait for u8}::{vtable}
-vtable impl_Trait_for_u8::{vtable}: test_crate::Trait::{vtable} = impl_Trait_for_u8::{vtable}()
+vtable impl_Trait_for_u8::{vtable}: test_crate::Trait::{vtable} = test_crate::Trait::{vtable} { size: size_of::<u8>(), align: align_of::<u8>(), drop: fnptr({vtable_drop_shim}<'_>), super_trait_0: &core::marker::MetaSized::{vtable}<u8>, super_trait_1: &core::marker::Sync::{vtable}<u8> }
 
 // Full name: test_crate::{impl Trait for u8}
 impl "impl_Trait_for_u8" Trait for u8 {

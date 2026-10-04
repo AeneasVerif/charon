@@ -16,12 +16,9 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-fn core::marker::MetaSized::{vtable}<Self>() -> core::marker::MetaSized::{vtable}
-= <opaque>
-
 struct () {}
 
-vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = core::marker::MetaSized::{vtable}<Self>()
+vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
 
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
@@ -305,33 +302,11 @@ where
 }
 
 // Full name: {impl FnOnce<(A,)> for fn(A) -> B}::{vtable}
-fn {impl FnOnce<(A,)> for fn(A) -> B}::{vtable}<A, B>() -> core::ops::function::FnOnce::{vtable}<(A,), B>
-where
-    TraitClause0: (A: Sized),
-    TraitClause1: (B: Sized),
-{
-    let ret: core::ops::function::FnOnce::{vtable}<(A,), B>; // return
-    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<(A,), Output = B> + '1)); // anonymous local
-    let _2: extern "rust-call" fn(*mut (dyn FnOnce<(A,), Output = B> + '2), (A,)) -> B; // anonymous local
-    let _3: &'static core::marker::MetaSized::{vtable}; // anonymous local
-
-    storage_live(ret)
-    storage_live(_1)
-    _1 = cast<for<'_0_1> {impl FnOnce<(A,)> for fn(A) -> B}::{vtable_drop_shim}<'0, A, B>[TraitClause0, TraitClause1], unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<(A,), Output = B> + '1))>(const {impl FnOnce<(A,)> for fn(A) -> B}::{vtable_drop_shim}<'0, A, B>[TraitClause0, TraitClause1])
-    storage_live(_2)
-    _2 = cast<{impl FnOnce<(A,)> for fn(A) -> B}::{vtable_method}<A, B>[TraitClause0, TraitClause1], extern "rust-call" fn(*mut (dyn FnOnce<(A,), Output = B> + '2), (A,)) -> B>(const {impl FnOnce<(A,)> for fn(A) -> B}::{vtable_method}<A, B>[TraitClause0, TraitClause1])
-    storage_live(_3)
-    _3 = &core::marker::MetaSized::{vtable}<fn(A) -> B>
-    ret = core::ops::function::FnOnce::{vtable} { size: const size_of::<fn(A) -> B>(), align: const align_of::<fn(A) -> B>(), drop: move _1, method_call_once: move _2, super_trait_0: move _3 }
-    return
-}
-
-// Full name: {impl FnOnce<(A,)> for fn(A) -> B}::{vtable}
 vtable {impl FnOnce<(A,)> for fn(A) -> B}::{vtable}<A, B>: core::ops::function::FnOnce::{vtable}<(A,), B>
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
- = {impl FnOnce<(A,)> for fn(A) -> B}::{vtable}<A, B>[TraitClause0, TraitClause1]()
+ = core::ops::function::FnOnce::{vtable} { size: size_of::<fn(A) -> B>(), align: align_of::<fn(A) -> B>(), drop: fnptr({impl FnOnce<(A,)> for fn(A) -> B}::{vtable_drop_shim}<'_, A, B>[TraitClause0, TraitClause1]), method_call_once: fnptr({impl FnOnce<(A,)> for fn(A) -> B}::{vtable_method}<A, B>[TraitClause0, TraitClause1]), super_trait_0: &core::marker::MetaSized::{vtable}<fn(A) -> B> }
 
 // Full name: {impl FnOnce<(A,)> for fn(A) -> B}
 impl<A, B> FnOnce<(A,)> for fn(A) -> B
@@ -497,36 +472,11 @@ where
 }
 
 // Full name: {impl FnMut<(A,)> for fn(A) -> B}::{vtable}
-fn {impl FnMut<(A,)> for fn(A) -> B}::{vtable}<A, B>() -> core::ops::function::FnMut::{vtable}<(A,), B>
-where
-    TraitClause0: (A: Sized),
-    TraitClause1: (B: Sized),
-{
-    let ret: core::ops::function::FnMut::{vtable}<(A,), B>; // return
-    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn FnMut<(A,), ImpliedClause1::Output = B> + '1)); // anonymous local
-    let _2: extern "rust-call" fn<'_0_1>(&'_0_1 mut (dyn FnMut<(A,), ImpliedClause1::Output = B> + '3), (A,)) -> B; // anonymous local
-    let _3: &'static core::marker::MetaSized::{vtable}; // anonymous local
-    let _4: &'static core::ops::function::FnOnce::{vtable}<(A,), B>; // anonymous local
-
-    storage_live(ret)
-    storage_live(_1)
-    _1 = cast<for<'_0_1> {impl FnMut<(A,)> for fn(A) -> B}::{vtable_drop_shim}<'0, A, B>[TraitClause0, TraitClause1], unsafe fn<'_0_1>(&'_0_1 mut (dyn FnMut<(A,), ImpliedClause1::Output = B> + '1))>(const {impl FnMut<(A,)> for fn(A) -> B}::{vtable_drop_shim}<'0, A, B>[TraitClause0, TraitClause1])
-    storage_live(_2)
-    _2 = cast<for<'_0_1> {impl FnMut<(A,)> for fn(A) -> B}::{vtable_method}<'2, A, B>[TraitClause0, TraitClause1], extern "rust-call" fn<'_0_1>(&'_0_1 mut (dyn FnMut<(A,), ImpliedClause1::Output = B> + '3), (A,)) -> B>(const {impl FnMut<(A,)> for fn(A) -> B}::{vtable_method}<'2, A, B>[TraitClause0, TraitClause1])
-    storage_live(_3)
-    _3 = &core::marker::MetaSized::{vtable}<fn(A) -> B>
-    storage_live(_4)
-    _4 = &{impl FnOnce<(A,)> for fn(A) -> B}::{vtable}<A, B>[TraitClause0, TraitClause1]
-    ret = core::ops::function::FnMut::{vtable} { size: const size_of::<fn(A) -> B>(), align: const align_of::<fn(A) -> B>(), drop: move _1, method_call_mut: move _2, super_trait_0: move _3, super_trait_1: move _4 }
-    return
-}
-
-// Full name: {impl FnMut<(A,)> for fn(A) -> B}::{vtable}
 vtable {impl FnMut<(A,)> for fn(A) -> B}::{vtable}<A, B>: core::ops::function::FnMut::{vtable}<(A,), B>
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
- = {impl FnMut<(A,)> for fn(A) -> B}::{vtable}<A, B>[TraitClause0, TraitClause1]()
+ = core::ops::function::FnMut::{vtable} { size: size_of::<fn(A) -> B>(), align: align_of::<fn(A) -> B>(), drop: fnptr({impl FnMut<(A,)> for fn(A) -> B}::{vtable_drop_shim}<'_, A, B>[TraitClause0, TraitClause1]), method_call_mut: fnptr({impl FnMut<(A,)> for fn(A) -> B}::{vtable_method}<'_, A, B>[TraitClause0, TraitClause1]), super_trait_0: &core::marker::MetaSized::{vtable}<fn(A) -> B>, super_trait_1: &{impl FnOnce<(A,)> for fn(A) -> B}::{vtable}<A, B>[TraitClause0, TraitClause1] }
 
 // Full name: {impl Fn<(A,)> for fn(A) -> B}::call
 fn call<'_0, A, B>(fn_ptr: &'_0 fn(A) -> B, args: (A,)) -> B
@@ -599,36 +549,11 @@ where
 }
 
 // Full name: {impl Fn<(A,)> for fn(A) -> B}::{vtable}
-fn {impl Fn<(A,)> for fn(A) -> B}::{vtable}<A, B>() -> core::ops::function::Fn::{vtable}<(A,), B>
-where
-    TraitClause0: (A: Sized),
-    TraitClause1: (B: Sized),
-{
-    let ret: core::ops::function::Fn::{vtable}<(A,), B>; // return
-    let _1: unsafe fn<'_0_1>(&'_0_1 mut (dyn Fn<(A,), ImpliedClause1::ImpliedClause1::Output = B> + '1)); // anonymous local
-    let _2: extern "rust-call" fn<'_0_1>(&'_0_1 (dyn Fn<(A,), ImpliedClause1::ImpliedClause1::Output = B> + '3), (A,)) -> B; // anonymous local
-    let _3: &'static core::marker::MetaSized::{vtable}; // anonymous local
-    let _4: &'static core::ops::function::FnMut::{vtable}<(A,), B>; // anonymous local
-
-    storage_live(ret)
-    storage_live(_1)
-    _1 = cast<for<'_0_1> {impl Fn<(A,)> for fn(A) -> B}::{vtable_drop_shim}<'0, A, B>[TraitClause0, TraitClause1], unsafe fn<'_0_1>(&'_0_1 mut (dyn Fn<(A,), ImpliedClause1::ImpliedClause1::Output = B> + '1))>(const {impl Fn<(A,)> for fn(A) -> B}::{vtable_drop_shim}<'0, A, B>[TraitClause0, TraitClause1])
-    storage_live(_2)
-    _2 = cast<for<'_0_1> {impl Fn<(A,)> for fn(A) -> B}::{vtable_method}<'2, A, B>[TraitClause0, TraitClause1], extern "rust-call" fn<'_0_1>(&'_0_1 (dyn Fn<(A,), ImpliedClause1::ImpliedClause1::Output = B> + '3), (A,)) -> B>(const {impl Fn<(A,)> for fn(A) -> B}::{vtable_method}<'2, A, B>[TraitClause0, TraitClause1])
-    storage_live(_3)
-    _3 = &core::marker::MetaSized::{vtable}<fn(A) -> B>
-    storage_live(_4)
-    _4 = &{impl FnMut<(A,)> for fn(A) -> B}::{vtable}<A, B>[TraitClause0, TraitClause1]
-    ret = core::ops::function::Fn::{vtable} { size: const size_of::<fn(A) -> B>(), align: const align_of::<fn(A) -> B>(), drop: move _1, method_call: move _2, super_trait_0: move _3, super_trait_1: move _4 }
-    return
-}
-
-// Full name: {impl Fn<(A,)> for fn(A) -> B}::{vtable}
 vtable {impl Fn<(A,)> for fn(A) -> B}::{vtable}<A, B>: core::ops::function::Fn::{vtable}<(A,), B>
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
- = {impl Fn<(A,)> for fn(A) -> B}::{vtable}<A, B>[TraitClause0, TraitClause1]()
+ = core::ops::function::Fn::{vtable} { size: size_of::<fn(A) -> B>(), align: align_of::<fn(A) -> B>(), drop: fnptr({impl Fn<(A,)> for fn(A) -> B}::{vtable_drop_shim}<'_, A, B>[TraitClause0, TraitClause1]), method_call: fnptr({impl Fn<(A,)> for fn(A) -> B}::{vtable_method}<'_, A, B>[TraitClause0, TraitClause1]), super_trait_0: &core::marker::MetaSized::{vtable}<fn(A) -> B>, super_trait_1: &{impl FnMut<(A,)> for fn(A) -> B}::{vtable}<A, B>[TraitClause0, TraitClause1] }
 
 // Full name: {impl FnMut<(A,)> for fn(A) -> B}
 impl<A, B> FnMut<(A,)> for fn(A) -> B

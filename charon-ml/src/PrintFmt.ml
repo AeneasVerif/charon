@@ -510,6 +510,9 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
         args
   | CFnDef fn_ptr -> pp_fn_ptr env fmt fn_ptr
   | CFnPtr fn_ptr -> Format.fprintf fmt "fnptr(%a)" (pp_fn_ptr env) fn_ptr
+  | CCast (value, ty) ->
+      Format.fprintf fmt "cast<%a>(%a)" (pp_ty env) ty (pp_constant_expr env)
+        value
   | CSizeOf ty -> Format.fprintf fmt "size_of::<%a>()" (pp_ty env) ty
   | CAlignOf ty -> Format.fprintf fmt "align_of::<%a>()" (pp_ty env) ty
   | COffsetOf (ty, opt_variant_id, field_id) ->

@@ -1172,6 +1172,9 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     )
                 }
             },
+            ConstantExprKind::Cast(value, target_ty) => {
+                mb::transmute(self.constant(span, value)?, self.ty(span, target_ty)?)
+            }
             ConstantExprKind::PtrNoProvenance(value) => mini::ValueExpr::Constant(
                 mini::Constant::PointerWithoutProvenance(mini::Int::from(*value)),
                 ty,

@@ -578,49 +578,53 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* _0 = fn_ptr_of_postcard ctx st in
          Ok (CFnPtr _0)
      | 12 ->
+         let* _0 = constant_expr_of_postcard ctx st in
+         let* _1 = ty_of_postcard ctx st in
+         Ok (CCast (_0, _1))
+     | 13 ->
          let* _0 = big_uint_of_postcard ctx st in
          Ok (CPtrNoProvenance _0)
-     | 13 ->
+     | 14 ->
          let* _0 = ty_of_postcard ctx st in
          Ok (CTypeId _0)
-     | 14 ->
+     | 15 ->
          let* _0 = list_of_postcard byte_of_postcard ctx st in
          Ok (CRawMemory _0)
-     | 15 ->
+     | 16 ->
          let* _0 =
            de_bruijn_var_of_postcard const_generic_var_id_of_postcard ctx st
          in
          Ok (CVar _0)
-     | 16 ->
+     | 17 ->
          let* _0 = global_decl_ref_of_postcard ctx st in
          Ok (CGlobal _0)
-     | 17 ->
+     | 18 ->
          let* _0 = fn_ptr_of_postcard ctx st in
          let* _1 = list_of_postcard constant_expr_of_postcard ctx st in
          Ok (CCall (_0, _1))
-     | 18 ->
+     | 19 ->
          let* _0 = trait_ref_of_postcard ctx st in
          let* _1 = assoc_const_id_of_postcard ctx st in
          Ok (CTraitConst (_0, _1))
-     | 19 ->
+     | 20 ->
          let* _0 = trait_ref_of_postcard ctx st in
          Ok (CVTableRef _0)
-     | 20 ->
+     | 21 ->
          let* _0 = type_decl_ref_of_postcard ctx st in
          let* _1 = variant_id_of_postcard ctx st in
          Ok (CDiscriminant (_0, _1))
-     | 21 ->
-         let* _0 = ty_of_postcard ctx st in
-         Ok (CSizeOf _0)
      | 22 ->
          let* _0 = ty_of_postcard ctx st in
-         Ok (CAlignOf _0)
+         Ok (CSizeOf _0)
      | 23 ->
+         let* _0 = ty_of_postcard ctx st in
+         Ok (CAlignOf _0)
+     | 24 ->
          let* _0 = type_decl_ref_of_postcard ctx st in
          let* _1 = option_of_postcard variant_id_of_postcard ctx st in
          let* _2 = field_id_of_postcard ctx st in
          Ok (COffsetOf (_0, _1, _2))
-     | 24 ->
+     | 25 ->
          let* _0 = string_of_postcard ctx st in
          Ok (COpaque _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))

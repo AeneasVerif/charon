@@ -1982,6 +1982,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
             ConstantExprKind::FnPtr(fp) => {
                 write!(f, "fnptr({})", fp.with_ctx(ctx))
             }
+            ConstantExprKind::Cast(value, ty) => {
+                write!(f, "cast<{}>({})", ty.with_ctx(ctx), value.with_ctx(ctx))
+            }
             ConstantExprKind::TypeId(ty) => {
                 write!(f, "TypeId({})", ty.with_ctx(ctx))
             }
