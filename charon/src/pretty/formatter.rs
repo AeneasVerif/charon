@@ -208,7 +208,7 @@ pub struct FmtCtx<'a> {
     /// Generics form a stack, where each binder introduces a new level. For DeBruijn indices to
     /// work, we keep the innermost parameters at the start of the vector.
     pub generics: BindingStack<Cow<'a, GenericParams>>,
-    pub local_names: Option<IndexVec<LocalId, String>>,
+    pub local_names: Option<Cow<'a, IndexVec<LocalId, String>>>,
     pub indent_level: usize,
 }
 
@@ -252,7 +252,7 @@ impl<'c> AstFormatter for FmtCtx<'c> {
     }
     fn set_locals<'a>(&'a self, locals: &'a Locals) -> Self::Reborrow<'a> {
         FmtCtx {
-            local_names: Some(compute_local_names(locals)),
+            local_names: Some(Cow::Owned(compute_local_names(locals))),
             ..self.reborrow()
         }
     }
@@ -379,8 +379,9 @@ impl<'a> FmtCtx<'a> {
             include_safety: self.include_safety,
             hide_storage_statements: self.hide_storage_statements,
             current_type: self.current_type,
-            generics: self.generics.clone(),
-            local_names: self.local_names.clone(),
+            // Reborrow as `Cow::Borrowed` so a `Cow::Owned` binder is not deep-cloned.
+            generics: self.generics.map_ref(|g| Cow::Borrowed(g.as_ref())),
+            local_names: self.local_names.as_deref().map(Cow::Borrowed),
             indent_level: self.indent_level,
         }
     }
