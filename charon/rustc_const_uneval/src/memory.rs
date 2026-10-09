@@ -301,13 +301,9 @@ impl<'tcx> ConstReader<'tcx> {
             | ty::CoroutineClosure(..)
             | ty::Coroutine(..)
             | ty::CoroutineWitness(..) => ConstKind::Unsupported("Unhandled constant type"),
-            ty::Alias(..)
-            | ty::Param(..)
-            | ty::Bound(..)
-            | ty::Placeholder(..)
-            | ty::Infer(..)
-            | ty::Never
-            | ty::Error(..) => {
+            // E.g. a trivial const read with generic arguments.
+            ty::Alias(..) | ty::Param(..) => ConstKind::Unsupported("constant of generic type"),
+            ty::Bound(..) | ty::Placeholder(..) | ty::Infer(..) | ty::Never | ty::Error(..) => {
                 unreachable!("evaluated constant of invalid type {ty:?}")
             }
         };
