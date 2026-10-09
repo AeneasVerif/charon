@@ -3,6 +3,7 @@
 use crate::*;
 use rustc_const_eval::const_eval;
 use rustc_span::Span;
+use rustc_trait_elaboration::normalize;
 
 impl<'tcx> ConstReader<'tcx> {
     /// Evaluate `src` and read it back. `span` is the location rustc should blame for problems
@@ -20,7 +21,7 @@ impl<'tcx> ConstReader<'tcx> {
         let (val, ty) = match src {
             ConstSource::Value(val, ty) => (val, ty),
         };
-        self.read_const_value(span, val, ty, mode)
+        self.read_const_value(span, val, self.normalize(ty), mode)
     }
 
     /// Read `val`, a value of type `ty` in const-eval memory.
@@ -42,5 +43,9 @@ impl<'tcx> ConstReader<'tcx> {
             }),
         };
         Ok(read.report_err()?)
+    }
+
+    fn normalize(&self, ty: Ty<'tcx>) -> Ty<'tcx> {
+        normalize(self.tcx, self.typing_env, ty::Unnormalized::new_wip(ty))
     }
 }
