@@ -276,58 +276,111 @@ pub(crate) fn valtree_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
     kind.decorate(ty.sinto(s), span.sinto(s))
 }
 
-/// The provenance to give to the bytes of a pointer into the given allocation.
-fn alloc_provenance<'tcx, S: UnderOwnerState<'tcx>>(
+/// A global allocation. The host is in charge of naming it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum GlobalRef {
+    /// A static item.
+    Static(RDefId),
+    /// An allocation without a corresponding item: an anonymous allocation, or a nested static
+    /// (e.g. the `[1, 2]` in `static S: &[u8] = &[1, 2]`).
+    Alloc(interpret::AllocId),
+}
+
+/// What an allocation stands for.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum AllocTarget<'tcx> {
+    /// A function.
+    Fn(ty::Instance<'tcx>),
+    /// A global.
+    Global(GlobalRef),
+    /// A vtable. It's UB to read a vtable's data, so these are only reachable as provenance.
+    VTable(
+        ty::Ty<'tcx>,
+        &'tcx ty::List<ty::PolyExistentialPredicate<'tcx>>,
+    ),
+    /// The allocation backing a `TypeId`.
+    TypeId(ty::Ty<'tcx>),
+}
+
+/// Classify the given allocation.
+fn alloc_target<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     alloc_id: interpret::AllocId,
-) -> ConstantByteProvenance {
-    use interpret::GlobalAlloc::*;
-    match s.base().tcx.global_alloc(alloc_id) {
-        Function { instance } => match instance.def {
-            // A stateless closure coerced to a fn pointer. Needs special handling, since the
-            // shim has no DefId.
-            ty::InstanceKind::Shim(ty::ShimKind::ClosureOnce { .. }) => {
-                let ty::TyKind::Closure(def_id, args) = instance.args.type_at(0).kind() else {
-                    unreachable!("ClosureOnce shim on non-closure")
-                };
-                ConstantByteProvenance::ClosureAsFn(ClosureArgs::sfrom(s, *def_id, args))
-            }
-            _ => ConstantByteProvenance::Function(translate_item_ref(
-                s,
-                instance.def_id(),
-                instance.args,
-            )),
-        },
-        Static(..) | Memory(..) => match alloc_as_global(s, alloc_id) {
-            Some(item) => ConstantByteProvenance::Global(item),
-            None => ConstantByteProvenance::Unknown,
-        },
-        // TODO: TypeIds
-        // VTables are not reachable here, I believe: it's UB to attempt reading a VTable's data.
-        TypeId { .. } | VTable(..) => ConstantByteProvenance::Unknown,
+) -> AllocTarget<'tcx> {
+    use interpret::GlobalAlloc;
+    let tcx = s.base().tcx;
+    match tcx.global_alloc(alloc_id) {
+        GlobalAlloc::Function { instance } => AllocTarget::Fn(instance),
+        GlobalAlloc::Static(def_id)
+            if let rustc_hir::def::DefKind::Static { nested: false, .. } = tcx.def_kind(def_id) =>
+        {
+            AllocTarget::Global(GlobalRef::Static(def_id))
+        }
+        GlobalAlloc::Static(_) | GlobalAlloc::Memory(_) => {
+            AllocTarget::Global(GlobalRef::Alloc(alloc_id))
+        }
+        GlobalAlloc::VTable(ty, preds) => AllocTarget::VTable(ty, preds),
+        GlobalAlloc::TypeId { ty } => AllocTarget::TypeId(ty),
     }
 }
 
-/// The global that an allocation corresponds to, if any.
-fn alloc_as_global<'tcx, S: UnderOwnerState<'tcx>>(
-    s: &S,
-    alloc_id: interpret::AllocId,
-) -> Option<ItemRef> {
-    use interpret::GlobalAlloc::*;
-    let tcx = s.base().tcx;
-    match tcx.global_alloc(alloc_id) {
+/// Whether we refer to `global` by name in pointers to it, rather than inlining its contents.
+fn is_named_global<'tcx, S: UnderOwnerState<'tcx>>(s: &S, global: GlobalRef) -> bool {
+    match global {
+        GlobalRef::Static(_) => true,
         // TODO: nested statics are synthetic items that make the rest of the machinery ICE, so we
-        // don't turn them into named globals yet.
-        Static(did)
-            if let rustc_hir::def::DefKind::Static { nested: false, .. } = tcx.def_kind(did) =>
-        {
-            Some(translate_item_ref(s, did, Default::default()))
+        // don't name them yet.
+        GlobalRef::Alloc(alloc_id) => {
+            s.base().options.anon_allocs_as_globals
+                && matches!(
+                    s.base().tcx.global_alloc(alloc_id),
+                    interpret::GlobalAlloc::Memory(_)
+                )
         }
-        Memory(_) if s.base().options.anon_allocs_as_globals => {
-            let def_id = DefId::make_anon_alloc(s, alloc_id);
-            Some(ItemRef::dummy_without_generics(s, def_id))
+    }
+}
+
+/// The global standing for `self`, which must be named (see `is_named_global`).
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef> for GlobalRef {
+    fn sinto(&self, s: &S) -> ItemRef {
+        match *self {
+            GlobalRef::Static(did) => translate_item_ref(s, did, Default::default()),
+            GlobalRef::Alloc(alloc_id) => {
+                let def_id = DefId::make_anon_alloc(s, alloc_id);
+                ItemRef::dummy_without_generics(s, def_id)
+            }
         }
-        _ => None,
+    }
+}
+
+/// The provenance to give to the bytes of a pointer into the given allocation.
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantByteProvenance> for AllocTarget<'tcx> {
+    fn sinto(&self, s: &S) -> ConstantByteProvenance {
+        match *self {
+            AllocTarget::Fn(instance) => match instance.def {
+                // A stateless closure coerced to a fn pointer. Needs special handling, since the
+                // shim has no DefId.
+                ty::InstanceKind::Shim(ty::ShimKind::ClosureOnce { .. }) => {
+                    let ty::TyKind::Closure(def_id, args) = instance.args.type_at(0).kind() else {
+                        unreachable!("ClosureOnce shim on non-closure")
+                    };
+                    ConstantByteProvenance::ClosureAsFn(ClosureArgs::sfrom(s, *def_id, args))
+                }
+                _ => ConstantByteProvenance::Function(translate_item_ref(
+                    s,
+                    instance.def_id(),
+                    instance.args,
+                )),
+            },
+            AllocTarget::Global(global) if is_named_global(s, global) => {
+                ConstantByteProvenance::Global(global.sinto(s))
+            }
+            // TODO: TypeIds
+            // VTables are not reachable here, I believe: it's UB to attempt reading a VTable's data.
+            AllocTarget::Global(_) | AllocTarget::VTable(..) | AllocTarget::TypeId(..) => {
+                ConstantByteProvenance::Unknown
+            }
+        }
     }
 }
 
@@ -363,7 +416,7 @@ fn imm_to_raw_bytes<'tcx, S: UnderOwnerState<'tcx>>(
                 }
             }
             interpret::Scalar::Ptr(ptr, size) => {
-                let prov = alloc_provenance(s, ptr.provenance.alloc_id());
+                let prov = alloc_target(s, ptr.provenance.alloc_id()).sinto(s);
                 for i in 0..size.get() {
                     bytes[offset.bytes_usize() + i as usize] =
                         ConstantByte::Provenance(prov.clone(), i);
@@ -411,7 +464,7 @@ fn mplace_to_raw_bytes<'tcx, S: UnderOwnerState<'tcx>>(
         .collect();
 
     for (prov_range, prov) in alloc.provenance().get_range(range, ecx) {
-        let prov = alloc_provenance(s, prov.alloc_id());
+        let prov = alloc_target(s, prov.alloc_id()).sinto(s);
         for i in 0..prov_range.size.bytes() {
             let pos = prov_range.start + Size::from_bytes(i);
             if range.start <= pos && pos < range.end() {
@@ -487,18 +540,21 @@ fn pointee_to_const<'tcx, S: UnderOwnerState<'tcx>>(
     // TODO: A view over an anonymous allocation must cover exactly the whole allocation.
     // Our constant pointers don't have a way to indicate their offset, so if there's a
     // mismatch it would be wrong.
-    let covers_alloc = |global_ty| match tcx.global_alloc(alloc_id) {
-        interpret::GlobalAlloc::Memory(alloc) => tcx
-            .layout_of(s.typing_env().as_query_input(global_ty))
-            .is_ok_and(|layout| layout.size == alloc.inner().size()),
-        _ => true,
+    let covers_alloc = |global_ty, global| match global {
+        GlobalRef::Alloc(_) => {
+            let alloc = tcx.global_alloc(alloc_id).unwrap_memory();
+            tcx.layout_of(s.typing_env().as_query_input(global_ty))
+                .is_ok_and(|layout| layout.size == alloc.inner().size())
+        }
+        GlobalRef::Static(_) => true,
     };
     if let Some(global_ty) = global_ty
         && offset == rustc_abi::Size::ZERO
-        && covers_alloc(global_ty)
-        && let Some(item) = alloc_as_global(s, alloc_id)
+        && let AllocTarget::Global(global) = alloc_target(s, alloc_id)
+        && is_named_global(s, global)
+        && covers_alloc(global_ty, global)
     {
-        let kind = ConstantExprKind::NamedGlobal(item);
+        let kind = ConstantExprKind::NamedGlobal(global.sinto(s));
         interp_ok((kind.decorate(global_ty.sinto(s), span.sinto(s)), metadata))
     } else {
         // HACK: fallback to reading the bytes of the pointee, at the type of `global_ty`.
