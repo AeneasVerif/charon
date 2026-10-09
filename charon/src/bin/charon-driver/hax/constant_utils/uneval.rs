@@ -1,6 +1,6 @@
-//! Translate constants to hax: type-system constants, and the values read by `reader`.
-use super::reader::{AllocTarget, Byte, ConstReader, GlobalRef, PtrTarget};
+//! Translate constants to hax: type-system constants, and the values read by `rustc_const_uneval`.
 use super::*;
+use rustc_const_uneval::{AllocTarget, Byte, ConstReader, GlobalRef, PtrTarget};
 use rustc_middle::ty;
 
 impl ConstantLiteral {
@@ -279,7 +279,7 @@ fn const_reader<'tcx, S: UnderOwnerState<'tcx>>(s: &S) -> ConstReader<'tcx> {
     ConstReader {
         tcx: s.base().tcx,
         typing_env: s.typing_env(),
-        config: super::reader::Config {
+        config: rustc_const_uneval::Config {
             anon_allocs_as_globals: s.base().options.anon_allocs_as_globals,
         },
     }
@@ -329,9 +329,9 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantByteProvenance> for AllocT
     }
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for super::reader::Const<'tcx> {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for rustc_const_uneval::Const<'tcx> {
     fn sinto(&self, s: &S) -> ConstantExpr {
-        use super::reader::ConstKind;
+        use rustc_const_uneval::ConstKind;
         let tcx = s.base().tcx;
         // The value of a pattern type is described at its base type.
         let ty = match self.ty.kind() {
