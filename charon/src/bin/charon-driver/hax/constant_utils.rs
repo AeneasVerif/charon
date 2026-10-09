@@ -126,7 +126,7 @@ pub type ConstantExpr = Decorated<ConstantExprKind>;
 // For ConstantKind we merge all the cases (Ty, Val, Unevaluated) into one
 pub type ConstantKind = ConstantExpr;
 
-pub use self::reader::*;
+pub use self::reader::{ConstSource, ReadMode};
 pub use self::uneval::*;
 mod reader;
 mod uneval;
