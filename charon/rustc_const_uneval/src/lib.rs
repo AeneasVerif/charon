@@ -1,6 +1,14 @@
 //! Read evaluated constants back into structured values, using rustc's const-eval interpreter.
 //! This only depends on rustc: naming the items and allocations we encounter is left to the
 //! caller.
+#![feature(rustc_private)]
+
+extern crate rustc_abi;
+extern crate rustc_const_eval;
+extern crate rustc_hir;
+extern crate rustc_middle;
+extern crate rustc_span;
+
 mod eval;
 mod memory;
 
@@ -47,8 +55,6 @@ pub enum ReadError<'tcx> {
     /// generic to have a layout.
     NotLoadable,
     /// The interpreter failed while reading back the evaluated value.
-    // Only read through `Debug`.
-    #[allow(dead_code)]
     Read(interpret::InterpErrorInfo<'tcx>),
 }
 

@@ -1,6 +1,6 @@
 //! Evaluating constants with rustc's const-eval. This is the one place that knows how to get the
 //! value of each kind of constant.
-use super::*;
+use crate::*;
 use rustc_const_eval::const_eval;
 use rustc_span::Span;
 

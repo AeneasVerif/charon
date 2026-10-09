@@ -126,7 +126,6 @@ pub type ConstantExpr = Decorated<ConstantExprKind>;
 // For ConstantKind we merge all the cases (Ty, Val, Unevaluated) into one
 pub type ConstantKind = ConstantExpr;
 
-pub use self::reader::{ConstSource, ReadMode};
 pub use self::uneval::*;
-mod reader;
+pub use rustc_const_uneval::{ConstSource, ReadMode};
 mod uneval;

@@ -1,5 +1,5 @@
 //! Reading values out of const-eval memory.
-use super::*;
+use crate::*;
 use interpret::GlobalAlloc;
 use rustc_abi::{FieldIdx, Size};
 use rustc_const_eval::const_eval::CompileTimeInterpCx;
