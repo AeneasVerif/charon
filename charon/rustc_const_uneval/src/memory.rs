@@ -278,7 +278,12 @@ impl<'tcx> ConstReader<'tcx> {
                     fields,
                 }
             }
-            ty::Str => ConstKind::Str(ecx.read_str(&op.assert_mem_place())?.to_owned()),
+            ty::Str => {
+                let place = op.assert_mem_place();
+                let len = Size::from_bytes(place.len(ecx)?);
+                let bytes = ecx.read_bytes_ptr_strip_provenance(place.ptr(), len)?;
+                ConstKind::str(bytes.to_vec())
+            }
             ty::FnDef(..) => ConstKind::fn_def(ty),
             ty::FnPtr(..) => {
                 let fn_ptr = ecx.read_pointer(&op)?;

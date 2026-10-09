@@ -346,6 +346,9 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for rustc_const_unev
                 ConstantExprKind::Literal(ConstantLiteral::PtrNoProvenance(*addr))
             }
             ConstKind::Str(str) => ConstantExprKind::Literal(ConstantLiteral::Str(str.clone())),
+            ConstKind::ByteStr(bytes) => {
+                ConstantExprKind::Literal(ConstantLiteral::ByteStr(bytes.clone()))
+            }
             ConstKind::Aggregate { variant, fields } => {
                 let fields = fields.iter().map(|field| field.sinto(s));
                 match ty.kind() {

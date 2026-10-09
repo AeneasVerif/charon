@@ -81,6 +81,8 @@ pub enum ConstKind<'tcx> {
     PtrNoProvenance(u128),
     /// A string slice.
     Str(String),
+    /// A `str` constant that isn't valid UTF-8.
+    ByteStr(Vec<u8>),
     /// A struct, enum, tuple, closure, array or slice. `variant` is set for structs and enums.
     Aggregate {
         variant: Option<VariantIdx>,
@@ -107,6 +109,14 @@ pub enum ConstKind<'tcx> {
 }
 
 impl<'tcx> ConstKind<'tcx> {
+    /// A `str` constant with the given bytes.
+    fn str(bytes: Vec<u8>) -> Self {
+        match String::from_utf8(bytes) {
+            Ok(str) => ConstKind::Str(str),
+            Err(err) => ConstKind::ByteStr(err.into_bytes()),
+        }
+    }
+
     /// The value of the function item type `ty`.
     fn fn_def(ty: Ty<'tcx>) -> Self {
         let ty::FnDef(def, args) = *ty.kind() else {
