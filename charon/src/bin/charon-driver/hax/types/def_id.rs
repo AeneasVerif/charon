@@ -649,14 +649,12 @@ impl DefId {
             DefIdBase::Synthetic(synthetic) => synthetic.type_of(s),
             DefIdBase::ImplAssocItem(id) => tcx.type_of(id.item_decl_id),
             DefIdBase::Alloc(alloc_id) => {
-                // `MaybeUninit<[u8; N]>`
-                let size = tcx.global_alloc(alloc_id).unwrap_memory().inner().size();
-                let bytes = ty::Ty::new_array(tcx, tcx.types.u8, size.bytes());
-                let maybe_uninit =
-                    tcx.require_lang_item(rustc_attr_ir::LangItem::MaybeUninit, DUMMY_SP);
-                let ty =
-                    ty::Ty::new_adt(tcx, tcx.adt_def(maybe_uninit), tcx.mk_args(&[bytes.into()]));
-                ty::EarlyBinder::bind(tcx, ty)
+                let reader = rustc_const_uneval::ConstReader {
+                    tcx,
+                    typing_env: self.typing_env(s),
+                    config: Default::default(),
+                };
+                ty::EarlyBinder::bind(tcx, reader.global_ty(GlobalRef::Alloc(alloc_id)))
             }
         }
     }

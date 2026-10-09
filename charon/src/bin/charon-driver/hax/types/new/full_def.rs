@@ -1768,53 +1768,17 @@ impl<'tcx> FullDef<'tcx> {
             _ => panic!("expected a Static definition"),
         }
         let s = &s.with_hax_owner(self.def_id());
-
-        if let DefIdBase::Alloc(alloc_id) = self.def_id().base {
-            // If this is an allocation, it is untyped and we need to read it as raw memory.
-            let val = mir::ConstValue::Indirect {
-                alloc_id,
-                offset: rustc_abi::Size::ZERO,
-            };
-            let ty = self.def_id().type_of(s).instantiate_identity();
-            let src = ConstSource::Value(val, ty.skip_normalization());
-            return read_const(s, rustc_span::DUMMY_SP, src, ReadMode::Bytes);
-        }
-
-        let def_id = self.def_id().as_real_def_id()?;
-        // Statics in `extern` blocks have no value or initializer
-        if s.base().tcx.is_foreign_item(def_id) {
-            return None;
-        }
-        let args = self.this().rustc_args(s);
-        let ty = inst_binder(
-            s.base().tcx,
-            s.typing_env(),
-            Some(args),
-            self.def_id().type_of(s),
-        );
-        let alloc = s.base().tcx.eval_static_initializer(def_id).ok()?;
-        // A static whose type has interior mutability gets a mutable allocation, which
-        // const-eval refuses to read. We don't care though, so we reintern it as immutable.
-        let alloc = if alloc.inner().mutability.is_mut() {
-            let mut alloc = alloc.inner().clone();
-            alloc.mutability = rustc_middle::mir::Mutability::Not;
-            s.base().tcx.mk_const_alloc(alloc)
-        } else {
-            alloc
+        let (global, span) = match self.def_id().base {
+            DefIdBase::Real(def_id) => (GlobalRef::Static(def_id), s.base().tcx.def_span(def_id)),
+            DefIdBase::Alloc(alloc_id) => (GlobalRef::Alloc(alloc_id), rustc_span::DUMMY_SP),
+            _ => return None,
         };
-        // `eval_static_initializer` returns an interned allocation without an `AllocId`; give it
-        // one so we can inspect it through the existing `ConstValue` path.
-        let val = mir::ConstValue::Indirect {
-            alloc_id: s.base().tcx.reserve_and_set_memory_alloc(alloc),
-            offset: rustc_abi::Size::ZERO,
-        };
-        let span = s.base().tcx.def_span(def_id);
         let mode = if raw_memory {
             ReadMode::Bytes
         } else {
             ReadMode::Structured
         };
-        read_const(s, span, ConstSource::Value(val, ty), mode)
+        read_const(s, span, ConstSource::Global(global), mode)
     }
 
     /// Returns the generics and predicates for definitions that have those.

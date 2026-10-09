@@ -127,5 +127,5 @@ pub type ConstantExpr = Decorated<ConstantExprKind>;
 pub type ConstantKind = ConstantExpr;
 
 pub use self::uneval::*;
-pub use rustc_const_uneval::{ConstSource, ReadMode};
+pub use rustc_const_uneval::{ConstSource, GlobalRef, ReadMode};
 mod uneval;
