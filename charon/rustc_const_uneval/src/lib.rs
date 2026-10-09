@@ -14,6 +14,8 @@ mod eval;
 mod memory;
 mod valtree;
 
+pub use eval::promoted_body;
+
 use rustc_abi::VariantIdx;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::{self, interpret};
@@ -37,8 +39,21 @@ pub struct ConstReader<'tcx> {
 /// A constant that we can ask rustc to evaluate.
 #[derive(Debug, Clone, Copy)]
 pub enum ConstSource<'tcx> {
+    /// A `const` item or associated const.
+    Item {
+        def_id: DefId,
+        args: ty::GenericArgsRef<'tcx>,
+    },
+    /// A promoted constant in the body of `def_id`.
+    Promoted {
+        def_id: DefId,
+        args: ty::GenericArgsRef<'tcx>,
+        promoted: mir::Promoted,
+    },
     /// The contents of a global, viewed at type [`ConstReader::global_ty`].
     Global(GlobalRef),
+    /// A type-system constant, e.g. an array length or an inline `const {}` block.
+    TyConst(ty::AliasConst<'tcx>),
     /// An already-evaluated type-system constant.
     ValTree(ty::Value<'tcx>),
     /// An already-evaluated constant, e.g. found in MIR.

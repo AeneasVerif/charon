@@ -728,12 +728,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // to a call to the initializer below. Globals that stand for an anonymous allocation have
         // no initializer, so they are always evaluated.
         let is_anon_alloc = matches!(def.def_id().base, hax::DefIdBase::Alloc(..));
-        let evaluated = match self.options.consts {
-            ConstHandling::Bytes => self.evaluate_const_def_as_bytes(def),
-            ConstHandling::Values => self.evaluate_const_def(def),
-            ConstHandling::Initializers if is_anon_alloc => self.evaluate_const_def(def),
+        let mode = match self.options.consts {
+            ConstHandling::Bytes => Some(hax::ReadMode::Bytes),
+            ConstHandling::Values => Some(hax::ReadMode::Structured),
+            ConstHandling::Initializers if is_anon_alloc => Some(hax::ReadMode::Structured),
             ConstHandling::Initializers => None,
         };
+        let evaluated = mode.and_then(|mode| def.evaluate(self.hax_state_with_id(), mode));
         let value = if let Some(evaluated) = evaluated {
             self.translate_constant_expr(span, &evaluated)?
         } else {
