@@ -152,25 +152,25 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef> for GlobalRef {
     }
 }
 
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, FnPtrTarget> for rustc_const_uneval::FnTarget<'tcx> {
+    fn sinto(&self, s: &S) -> FnPtrTarget {
+        use rustc_const_uneval::FnTarget;
+        match *self {
+            FnTarget::Instance(instance) => {
+                FnPtrTarget::Fn(translate_item_ref(s, instance.def_id(), instance.args))
+            }
+            FnTarget::ClosureAsFn(def_id, args) => {
+                FnPtrTarget::ClosureAsFn(ClosureArgs::sfrom(s, def_id, args))
+            }
+        }
+    }
+}
+
 /// The provenance to give to the bytes of a pointer into the given allocation.
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantByteProvenance> for AllocTarget<'tcx> {
     fn sinto(&self, s: &S) -> ConstantByteProvenance {
         match *self {
-            AllocTarget::Fn(instance) => match instance.def {
-                // A stateless closure coerced to a fn pointer. Needs special handling, since the
-                // shim has no DefId.
-                ty::InstanceKind::Shim(ty::ShimKind::ClosureOnce { .. }) => {
-                    let ty::TyKind::Closure(def_id, args) = instance.args.type_at(0).kind() else {
-                        unreachable!("ClosureOnce shim on non-closure")
-                    };
-                    ConstantByteProvenance::ClosureAsFn(ClosureArgs::sfrom(s, *def_id, args))
-                }
-                _ => ConstantByteProvenance::Function(translate_item_ref(
-                    s,
-                    instance.def_id(),
-                    instance.args,
-                )),
-            },
+            AllocTarget::Fn(target) => ConstantByteProvenance::Function(target.sinto(s)),
             AllocTarget::Global(global) if const_reader(s).is_named_global(global) => {
                 ConstantByteProvenance::Global(global.sinto(s))
             }
@@ -245,9 +245,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for rustc_const_unev
             ConstKind::FnDef { def, args } => {
                 ConstantExprKind::FnDef(translate_item_ref(s, *def, args))
             }
-            ConstKind::FnPtr(instance) => {
-                ConstantExprKind::FnPtr(translate_item_ref(s, instance.def_id(), instance.args))
-            }
+            ConstKind::FnPtr(target) => ConstantExprKind::FnPtr(target.sinto(s)),
             ConstKind::Ptr { target, unsize } => {
                 let metadata = unsize.map(|unsize| {
                     let ref_to = |ty| ty::Ty::new_imm_ref(tcx, tcx.lifetimes.re_static, ty);

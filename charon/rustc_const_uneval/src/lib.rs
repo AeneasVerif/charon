@@ -119,7 +119,7 @@ pub enum ConstKind<'tcx> {
         args: ty::GenericArgsRef<'tcx>,
     },
     /// A function pointer.
-    FnPtr(ty::Instance<'tcx>),
+    FnPtr(FnTarget<'tcx>),
     /// A valid reference or raw pointer; `ty` tells which.
     Ptr {
         target: PtrTarget<'tcx>,
@@ -195,11 +195,35 @@ pub enum GlobalRef {
     Alloc(interpret::AllocId),
 }
 
+/// The function a function pointer points to.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum FnTarget<'tcx> {
+    /// The function of an instance.
+    Instance(ty::Instance<'tcx>),
+    /// A stateless closure, with the given def id and generic arguments, coerced to a function
+    /// pointer. The function is then a shim that has no `DefId`.
+    ClosureAsFn(DefId, ty::GenericArgsRef<'tcx>),
+}
+
+impl<'tcx> FnTarget<'tcx> {
+    fn new(instance: ty::Instance<'tcx>) -> Self {
+        match instance.def {
+            ty::InstanceKind::Shim(ty::ShimKind::ClosureOnce { .. }) => {
+                let ty::Closure(def_id, args) = *instance.args.type_at(0).kind() else {
+                    unreachable!("ClosureOnce shim on non-closure")
+                };
+                FnTarget::ClosureAsFn(def_id, args)
+            }
+            _ => FnTarget::Instance(instance),
+        }
+    }
+}
+
 /// What an allocation stands for, from the point of view of pointers into it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AllocTarget<'tcx> {
     /// A function.
-    Fn(ty::Instance<'tcx>),
+    Fn(FnTarget<'tcx>),
     /// A global.
     Global(GlobalRef),
     /// A vtable. It's UB to read a vtable's data, so these are only reachable as provenance.
