@@ -4,6 +4,7 @@
 #![feature(rustc_private)]
 
 extern crate rustc_abi;
+extern crate rustc_attr_ir;
 extern crate rustc_const_eval;
 extern crate rustc_hir;
 extern crate rustc_middle;
@@ -36,6 +37,8 @@ pub struct ConstReader<'tcx> {
 /// A constant that we can ask rustc to evaluate.
 #[derive(Debug, Clone, Copy)]
 pub enum ConstSource<'tcx> {
+    /// The contents of a global, viewed at type [`ConstReader::global_ty`].
+    Global(GlobalRef),
     /// An already-evaluated type-system constant.
     ValTree(ty::Value<'tcx>),
     /// An already-evaluated constant, e.g. found in MIR.
@@ -54,6 +57,9 @@ pub enum ReadMode {
 /// Why [`ConstReader::read`] failed.
 #[derive(Debug)]
 pub enum ReadError<'tcx> {
+    /// Rustc can't evaluate the constant, e.g. because it is generic, its evaluation failed, or
+    /// it is an extern static.
+    NotEvaluable,
     /// The const-eval interpreter can't load the evaluated value, e.g. because its type is too
     /// generic to have a layout.
     NotLoadable,

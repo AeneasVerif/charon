@@ -1,6 +1,6 @@
 //! Translate constants to hax: type-system constants, and the values read by `rustc_const_uneval`.
 use super::*;
-use rustc_const_uneval::{AllocTarget, Byte, ConstReader, GlobalRef, PtrTarget};
+use rustc_const_uneval::{AllocTarget, Byte, ConstReader, PtrTarget, ReadError};
 use rustc_middle::ty;
 
 #[tracing::instrument(level = "trace", skip(s))]
@@ -335,6 +335,7 @@ pub fn read_const<'tcx, S: UnderOwnerState<'tcx>>(
 ) -> Option<ConstantExpr> {
     match const_reader(s).read(span, src, mode) {
         Ok(val) => Some(val.sinto(s)),
+        Err(ReadError::NotEvaluable) => None,
         Err(err) => {
             warning!(s[span], "Couldn't convert constant back to an expression"; {src, err});
             None
