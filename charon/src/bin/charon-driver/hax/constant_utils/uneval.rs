@@ -476,38 +476,24 @@ fn mplace_to_raw_bytes<'tcx, S: UnderOwnerState<'tcx>>(
     interp_ok(bytes)
 }
 
-/// The concrete type behind the `dyn` tail of `place`, found in its vtable.
-fn dyn_concrete_ty<'tcx>(
+/// The sized type that `tail`, the unsized tail of `place`, was unsized from. This is found in the
+/// metadata of the place.
+fn sized_tail<'tcx>(
     ecx: &const_eval::CompileTimeInterpCx<'tcx>,
     place: &rustc_const_eval::interpret::MPlaceTy<'tcx>,
-    preds: &'tcx ty::List<ty::PolyExistentialPredicate<'tcx>>,
+    tail: ty::Ty<'tcx>,
 ) -> InterpResult<'tcx, ty::Ty<'tcx>> {
     use rustc_const_eval::interpret::Projectable;
-    let vtable = place.meta().unwrap_meta().to_pointer(ecx);
-    ecx.get_ptr_vtable_ty(vtable, Some(preds))
-}
-
-/// The metadata of a pointer to `place`, whose type is unsized.
-fn pointer_metadata<'tcx, S: UnderOwnerState<'tcx>>(
-    s: &S,
-    ecx: &const_eval::CompileTimeInterpCx<'tcx>,
-    place: &rustc_const_eval::interpret::MPlaceTy<'tcx>,
-) -> InterpResult<'tcx, UnsizingMetadata> {
-    use rustc_const_eval::interpret::Projectable;
-    let tcx = s.base().tcx;
-    let tail = tcx.struct_tail_for_codegen(place.layout.ty, s.typing_env());
-    // The sized type the tail would be unsized from.
-    let sized_tail = match tail.kind() {
+    let tcx = *ecx.tcx;
+    let meta = place.meta().unwrap_meta();
+    interp_ok(match tail.kind() {
         ty::Slice(_) | ty::Str => {
-            let len = place.meta().unwrap_meta().to_target_usize(ecx)?;
+            let len = meta.to_target_usize(ecx)?;
             ty::Ty::new_array(tcx, tail.sequence_element_type(tcx), len)
         }
-        ty::Dynamic(preds, ..) => dyn_concrete_ty(ecx, place, preds)?,
+        ty::Dynamic(preds, ..) => ecx.get_ptr_vtable_ty(meta.to_pointer(ecx), Some(preds))?,
         _ => unreachable!("unexpected unsized tail type {tail:?}"),
-    };
-    let sized_tail = ty::Ty::new_imm_ref(tcx, tcx.lifetimes.re_static, sized_tail);
-    let unsized_tail = ty::Ty::new_imm_ref(tcx, tcx.lifetimes.re_static, tail);
-    interp_ok(compute_unsizing_metadata(s, sized_tail, unsized_tail))
+    })
 }
 
 /// Convert the target of a valid pointer. Pointers to globals are kept as references to these
@@ -522,18 +508,17 @@ fn pointee_to_const<'tcx, S: UnderOwnerState<'tcx>>(
     let tcx = s.base().tcx;
     let ty = place.layout.ty;
 
-    let metadata = if ty.is_sized(tcx, s.typing_env()) {
-        None
+    let (global_ty, metadata) = if place.layout.is_sized() {
+        (Some(ty), None)
     } else {
-        Some(pointer_metadata(s, ecx, &place)?)
-    };
-    // A slice or `dyn Trait` value is viewed at the sized type it was unsized from. Other unsized
-    // values (e.g. a `CStr`) have no such type: we read them at their unsized type.
-    let global_ty = match ty.kind() {
-        ty::Slice(elem) => Some(ty::Ty::new_array(tcx, *elem, place.len(ecx)?)),
-        ty::Dynamic(preds, ..) => Some(dyn_concrete_ty(ecx, &place, preds)?),
-        _ if ty.is_sized(tcx, s.typing_env()) => Some(ty),
-        _ => None,
+        let tail = tcx.struct_tail_for_codegen(ty, s.typing_env());
+        let sized_tail = sized_tail(ecx, &place, tail)?;
+        // A slice or `dyn Trait` value is viewed at the sized type it was unsized from. Other
+        // unsized values (e.g. a `CStr`) have no such type: we read them at their unsized type.
+        let global_ty = matches!(ty.kind(), ty::Slice(_) | ty::Dynamic(..)).then_some(sized_tail);
+        let ref_to = |ty| ty::Ty::new_imm_ref(tcx, tcx.lifetimes.re_static, ty);
+        let metadata = compute_unsizing_metadata(s, ref_to(sized_tail), ref_to(tail));
+        (global_ty, Some(metadata))
     };
 
     let (alloc_id, offset, _) = ecx.ptr_get_alloc_id(place.ptr(), 0)?;
@@ -703,9 +688,9 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
             let op = ecx.project_field(&op, FieldIdx::from_u16(0))?;
             *op_to_const(s, span, ecx, op)?.contents
         }
-        ty::Dynamic(preds, ..) => {
+        ty::Dynamic(..) => {
             let place = op.assert_mem_place();
-            let concrete_ty = dyn_concrete_ty(ecx, &place, preds)?;
+            let concrete_ty = sized_tail(ecx, &place, ty)?;
             let layout = (s.base().tcx)
                 .layout_of(s.typing_env().as_query_input(concrete_ty))
                 .unwrap();
