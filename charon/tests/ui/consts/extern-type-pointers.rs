@@ -2,7 +2,6 @@
 //@[values] charon-args=--consts=values
 //@[bytes] charon-args=--consts=bytes
 //@ ignore-warnings
-//@[values] known-failure
 // Pointers to an extern type.
 #![feature(extern_types)]
 #![allow(unused)]
