@@ -1687,8 +1687,8 @@ impl<'tcx> FullDef<'tcx> {
             // Const-evaluation gives up on a const that isn't monomorphic. For "trivial" consts,
             // we can still read the value directly.
             let (val, ty) = tcx.trivial_const(def_id)?;
-            let expr = const_value_to_constant_expr(s, ty, val, tcx.def_span(def_id));
-            return expr.discard_err();
+            let src = ConstSource::Value(val, ty);
+            return read_const(s, tcx.def_span(def_id), src, ReadMode::Structured);
         };
         match c.kind() {
             ty::ConstKind::Error(..) => None,
@@ -1740,7 +1740,7 @@ impl<'tcx> FullDef<'tcx> {
             }
             Err(_) => return None,
         };
-        const_value_to_raw_memory(s, ty, val, span).discard_err()
+        read_const(s, span, ConstSource::Value(val, ty), ReadMode::Bytes)
     }
 
     /// Evaluate the initializer of a `Static` item.
@@ -1776,8 +1776,8 @@ impl<'tcx> FullDef<'tcx> {
                 offset: rustc_abi::Size::ZERO,
             };
             let ty = self.def_id().type_of(s).instantiate_identity();
-            let span = rustc_span::DUMMY_SP;
-            return const_value_to_raw_memory(s, ty.skip_normalization(), val, span).discard_err();
+            let src = ConstSource::Value(val, ty.skip_normalization());
+            return read_const(s, rustc_span::DUMMY_SP, src, ReadMode::Bytes);
         }
 
         let def_id = self.def_id().as_real_def_id()?;
@@ -1809,11 +1809,12 @@ impl<'tcx> FullDef<'tcx> {
             offset: rustc_abi::Size::ZERO,
         };
         let span = s.base().tcx.def_span(def_id);
-        if raw_memory {
-            const_value_to_raw_memory(s, ty, val, span).discard_err()
+        let mode = if raw_memory {
+            ReadMode::Bytes
         } else {
-            const_value_to_constant_expr(s, ty, val, span).discard_err()
-        }
+            ReadMode::Structured
+        };
+        read_const(s, span, ConstSource::Value(val, ty), mode)
     }
 
     /// Returns the generics and predicates for definitions that have those.

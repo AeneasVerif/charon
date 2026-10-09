@@ -153,20 +153,13 @@ fn translate_mir_const<'tcx, S: UnderOwnerState<'tcx>>(
     let tcx = s.base().tcx;
     match konst {
         Const::Val(const_value, ty) => {
-            let evaluated = const_value_to_constant_expr(s, ty, const_value, span);
-            match evaluated.report_err() {
-                Ok(val) => Value(val),
-                Err(err) => {
-                    warning!(
-                        s[span], "Couldn't convert constant back to an expression";
-                        {const_value, ty, err}
-                    );
-                    Value(
-                        ConstantExprKind::Todo("ConstEvalVal".into())
-                            .decorate(ty.sinto(s), span.sinto(s)),
-                    )
-                }
-            }
+            let src = ConstSource::Value(const_value, ty);
+            Value(
+                read_const(s, span, src, ReadMode::Structured).unwrap_or_else(|| {
+                    ConstantExprKind::Todo("ConstEvalVal".into())
+                        .decorate(ty.sinto(s), span.sinto(s))
+                }),
+            )
         }
         Const::Ty(_ty, c) => Value(c.sinto(s)),
         Const::Unevaluated(ucv, _) => {
