@@ -3,18 +3,6 @@ use super::*;
 use rustc_const_uneval::{AllocTarget, Byte, ConstReader, GlobalRef, PtrTarget};
 use rustc_middle::ty;
 
-impl ConstantLiteral {
-    /// Rustc always represents string constants as `&[u8]`, but this
-    /// is not nice to consume. This associated function interpret
-    /// bytes as an unicode string, and as a byte string otherwise.
-    fn byte_str(bytes: Vec<u8>) -> Self {
-        match String::from_utf8(bytes.clone()) {
-            Ok(s) => Self::Str(s),
-            Err(_) => Self::ByteStr(bytes),
-        }
-    }
-}
-
 #[tracing::instrument(level = "trace", skip(s))]
 pub(crate) fn scalar_int_to_constant_literal<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
@@ -147,7 +135,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Const<'tcx> 
                 }
             }
 
-            ty::ConstKind::Value(val) => valtree_to_constant_expr(s, val.valtree, val.ty, span),
+            ty::ConstKind::Value(val) => val.sinto(s),
             ty::ConstKind::Error(_) => fatal!(s[span], "ty::ConstKind::Error"),
             ty::ConstKind::Expr(e) => fatal!(s[span], "ty::ConstKind::Expr {:#?}", e),
 
@@ -162,116 +150,14 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Const<'tcx> 
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Value<'tcx> {
     #[tracing::instrument(level = "trace", skip(s))]
     fn sinto(&self, s: &S) -> ConstantExpr {
-        valtree_to_constant_expr(s, self.valtree, self.ty, rustc_span::DUMMY_SP)
+        let span = rustc_span::DUMMY_SP;
+        read_const(s, span, ConstSource::ValTree(*self), ReadMode::Structured).unwrap_or_else(
+            || {
+                ConstantExprKind::Todo("ConstValTree".into())
+                    .decorate(self.ty.sinto(s), span.sinto(s))
+            },
+        )
     }
-}
-
-#[tracing::instrument(level = "trace", skip(s))]
-pub(crate) fn valtree_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
-    s: &S,
-    valtree: rustc_middle::ty::ValTree<'tcx>,
-    ty: rustc_middle::ty::Ty<'tcx>,
-    span: rustc_span::Span,
-) -> ConstantExpr {
-    let tcx = s.base().tcx;
-    let mut ty = normalize(tcx, s.typing_env(), ty::Unnormalized::new_wip(ty));
-
-    // Reveal opaque types.
-    if let ty::Alias(_, alias) = ty.kind()
-        && let ty::AliasTyKind::Opaque { def_id } = alias.kind
-    {
-        let hidden_ty = tcx.type_of(def_id).instantiate(tcx, alias.args);
-        ty = normalize(tcx, s.typing_env(), hidden_ty);
-    }
-
-    let kind = match (&*valtree, ty.kind()) {
-        (_, ty::Pat(inner_ty, _)) => {
-            return valtree_to_constant_expr(s, valtree, *inner_ty, span);
-        }
-        (ty::ValTreeKind::Branch(fields), ty::Ref(_, inner_ty, _))
-            if let ty::Slice(_) | ty::Str = inner_ty.kind() =>
-        {
-            let len = fields.len() as u64;
-            let pointee_ty = match inner_ty.kind() {
-                ty::Slice(elem) => ty::Ty::new_array(tcx, *elem, len),
-                ty::Str => *inner_ty,
-                _ => unreachable!(),
-            };
-            let val = valtree_to_constant_expr(s, valtree, pointee_ty, span);
-            let len = ty::Const::from_target_usize(tcx, len).sinto(s);
-            ConstantExprKind::Borrow(val, Some(UnsizingMetadata::Length(len)))
-        }
-        // For other unsized pointees, computing the metadata requires putting them in an allocation.
-        (_, ty::Ref(_, inner_ty, _)) if !inner_ty.is_sized(tcx, s.typing_env()) => {
-            let val = tcx.valtree_to_const_val(ty::Value { ty, valtree });
-            match read_const(s, span, ConstSource::Value(val, ty), ReadMode::Structured) {
-                Some(expr) => return expr,
-                None => fatal!(s[span], "Couldn't read an unsized constant"; {valtree, ty}),
-            }
-        }
-        (_, ty::Ref(_, inner_ty, _)) => {
-            ConstantExprKind::Borrow(valtree_to_constant_expr(s, valtree, *inner_ty, span), None)
-        }
-        (ty::ValTreeKind::Branch(valtrees), ty::Str) => {
-            let bytes = valtrees
-                .iter()
-                .map(|x| match x.try_to_leaf() {
-                    Some(leaf) => leaf.to_u8(),
-                    None => fatal!(
-                        s[span],
-                        "Expected a flat list of leaves while translating \
-                            a str literal, got a arbitrary valtree."
-                    ),
-                })
-                .collect();
-            ConstantExprKind::Literal(ConstantLiteral::byte_str(bytes))
-        }
-        (ty::ValTreeKind::Branch(fields), ty::Array(..) | ty::Slice(..) | ty::Tuple(..)) => {
-            let fields = fields.iter().map(|field| field.sinto(s)).collect();
-            match ty.kind() {
-                ty::Array(..) | ty::Slice(..) => ConstantExprKind::Array { fields },
-                ty::Tuple(_) => ConstantExprKind::Tuple { fields },
-                _ => unreachable!(),
-            }
-        }
-        (ty::ValTreeKind::Branch(_), ty::Adt(def, _)) => {
-            let contents: rustc_middle::ty::DestructuredAdtConst =
-                ty::Value { valtree, ty }.destructure_adt_const();
-
-            let fields = contents.fields.iter().copied();
-            let variant_idx = contents.variant;
-            let variant_def = &def.variant(variant_idx);
-
-            ConstantExprKind::Adt {
-                kind: get_variant_kind(def, variant_idx, s),
-                fields: fields
-                    .into_iter()
-                    .zip(&variant_def.fields)
-                    .map(|(value, field)| ConstantFieldExpr {
-                        field: field.did.sinto(s),
-                        value: value.sinto(s),
-                    })
-                    .collect(),
-            }
-        }
-        (ty::ValTreeKind::Branch(fields), ty::FnDef(def_id, args)) if fields.is_empty() => {
-            // Note: loss of precision, we erase the bound vars.
-            let args = erase_free_regions(s.base().tcx, args.skip_binder());
-            ConstantExprKind::FnDef(translate_item_ref(s, *def_id, args))
-        }
-        (ty::ValTreeKind::Leaf(x), ty::RawPtr(_, _)) => {
-            let raw_address = x.to_bits_unchecked();
-            ConstantExprKind::Literal(ConstantLiteral::PtrNoProvenance(raw_address))
-        }
-        (ty::ValTreeKind::Leaf(x), _) => {
-            ConstantExprKind::Literal(scalar_int_to_constant_literal(s, *x, ty))
-        }
-        _ => supposely_unreachable_fatal!(
-            s[span], "valtree_to_expr";
-            {valtree, ty}
-        ),
-    };
-    kind.decorate(ty.sinto(s), span.sinto(s))
 }
 
 /// The reader for constants evaluated in the current context.
