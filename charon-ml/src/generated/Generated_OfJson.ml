@@ -2347,6 +2347,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc
         [
           ("ullbc", ullbc);
+          ("no_code_duplication", no_code_duplication);
           ("precise_drops", precise_drops);
           ("mir", mir);
           ("rustc_args", rustc_args);
@@ -2412,6 +2413,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("preset", preset);
         ] ->
         let* ullbc = bool_of_json ctx ullbc in
+        let* no_code_duplication = bool_of_json ctx no_code_duplication in
         let* precise_drops = bool_of_json ctx precise_drops in
         let* mir = option_of_json mir_level_of_json ctx mir in
         let* rustc_args = list_of_json string_of_json ctx rustc_args in
@@ -2502,6 +2504,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         Ok
           ({
              ullbc;
+             no_code_duplication;
              precise_drops;
              mir;
              rustc_args;
