@@ -1,0 +1,15 @@
+error: internal compiler error: /Users/opale/.rustup/toolchains/nightly-2026-09-17-aarch64-apple-darwin/lib/rustlib/rustc-src/rust/compiler/rustc_const_eval/src/interpret/place.rs:39:17: expected wide pointer extra data (e.g. slice length or trait object vtable)
+
+
+thread 'rustc' panicked at /Users/opale/.rustup/toolchains/nightly-2026-09-17-aarch64-apple-darwin/lib/rustlib/rustc-src/rust/compiler/rustc_const_eval/src/interpret/place.rs:39:17:
+expected wide pointer extra data (e.g. slice length or trait object vtable)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+warning: Thread panicked when extracting item `test_crate::EXTERN`.
+  --> tests/ui/consts/extern-type-pointers.rs:16:1
+   |
+16 | static EXTERN: Sync<*const Opaque> = Sync(&X as *const u8 as *const Opaque);
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: aborting due to 1 previous error
+
+ERROR Code failed to compile
