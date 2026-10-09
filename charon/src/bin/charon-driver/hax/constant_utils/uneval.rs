@@ -206,7 +206,7 @@ pub(crate) fn valtree_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
         // For other unsized pointees, computing the metadata requires putting them in an allocation.
         (_, ty::Ref(_, inner_ty, _)) if !inner_ty.is_sized(tcx, s.typing_env()) => {
             let val = tcx.valtree_to_const_val(ty::Value { ty, valtree });
-            match const_value_to_constant_expr(s, ty, val, span).discard_err() {
+            match read_const(s, span, ConstSource::Value(val, ty), ReadMode::Structured) {
                 Some(expr) => return expr,
                 None => fatal!(s[span], "Couldn't read an unsized constant"; {valtree, ty}),
             }
@@ -713,29 +713,47 @@ fn op_to_const<'tcx, S: UnderOwnerState<'tcx>>(
     interp_ok(val)
 }
 
-pub fn const_value_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
-    s: &S,
-    ty: rustc_middle::ty::Ty<'tcx>,
-    val: mir::ConstValue,
-    span: rustc_span::Span,
-) -> InterpResult<'tcx, ConstantExpr> {
-    let tcx = s.base().tcx;
-    let typing_env = s.typing_env();
-    let (ecx, op) =
-        const_eval::mk_eval_cx_for_const_val(tcx.at(span), typing_env, val, ty).unwrap();
-    op_to_const(s, span, &ecx, op)
+/// A constant that we can ask rustc to evaluate.
+#[derive(Debug, Clone, Copy)]
+pub enum ConstSource<'tcx> {
+    /// An already-evaluated constant, e.g. found in MIR.
+    Value(mir::ConstValue, ty::Ty<'tcx>),
 }
 
-/// Like `const_value_to_constant_expr`, but untyped.
-pub fn const_value_to_raw_memory<'tcx, S: UnderOwnerState<'tcx>>(
+/// How to read back an evaluated constant.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ReadMode {
+    /// As a structured value (literals, ADTs, references...).
+    Structured,
+    /// As raw bytes (`ConstantExprKind::Memory`).
+    Bytes,
+}
+
+/// Evaluate `src` and read it back as a `ConstantExpr`.
+pub fn read_const<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
-    ty: rustc_middle::ty::Ty<'tcx>,
-    val: mir::ConstValue,
     span: rustc_span::Span,
-) -> InterpResult<'tcx, ConstantExpr> {
+    src: ConstSource<'tcx>,
+    mode: ReadMode,
+) -> Option<ConstantExpr> {
     let tcx = s.base().tcx;
-    let (ecx, op) =
-        const_eval::mk_eval_cx_for_const_val(tcx.at(span), s.typing_env(), val, ty).unwrap();
-    let bytes = op_to_raw_bytes(s, &ecx, &op)?;
-    interp_ok(ConstantExprKind::Memory(bytes).decorate(ty.sinto(s), span.sinto(s)))
+    let ConstSource::Value(val, ty) = src;
+    let Some((ecx, op)) =
+        const_eval::mk_eval_cx_for_const_val(tcx.at(span), s.typing_env(), val, ty)
+    else {
+        warning!(s[span], "Couldn't convert constant back to an expression"; {src});
+        return None;
+    };
+    let read = match mode {
+        ReadMode::Structured => op_to_const(s, span, &ecx, op),
+        ReadMode::Bytes => op_to_raw_bytes(s, &ecx, &op)
+            .map(|bytes| ConstantExprKind::Memory(bytes).decorate(ty.sinto(s), span.sinto(s))),
+    };
+    match read.report_err() {
+        Ok(expr) => Some(expr),
+        Err(err) => {
+            warning!(s[span], "Couldn't convert constant back to an expression"; {src, err});
+            None
+        }
+    }
 }
