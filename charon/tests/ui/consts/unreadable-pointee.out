@@ -1,0 +1,11 @@
+
+thread 'rustc' panicked at rustc_const_uneval/src/memory.rs:209:57:
+called `Result::unwrap()` on an `Err` value: SizeOverflow([u8; usize::MAX])
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting item `test_crate::HUGE`.
+ --> tests/ui/consts/unreadable-pointee.rs:7:1
+  |
+7 | pub static HUGE: Wrapper = Wrapper(std::ptr::slice_from_raw_parts(&0u8, usize::MAX));
+  | ^^^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (1 errors)

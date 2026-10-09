@@ -1,0 +1,215 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Tuple
+#[fundamental]
+#[lang_item(Tuple)]
+pub trait Tuple<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::ops::function::FnOnce
+#[fundamental]
+#[lang_item(FnOnce)]
+pub trait FnOnce<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Args: Sized)
+    proof ImpliedClause2: (Args: Tuple)
+    proof ImpliedClause3: (Self::Output: Sized)
+    type Output
+    fn call_once;
+    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
+}
+
+// Full name: core::ops::function::FnMut
+#[fundamental]
+#[lang_item(FnMut)]
+pub trait FnMut<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnOnce<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    fn call_mut<'_0_1>;
+    vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
+}
+
+// Full name: core::ops::function::Fn
+#[fundamental]
+#[lang_item(Fn)]
+pub trait Fn<Self, Args>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: FnMut<Args>)
+    proof ImpliedClause2: (Args: Sized)
+    proof ImpliedClause3: (Args: Tuple)
+    fn call<'_0_1>;
+    vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
+}
+
+struct () {}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+struct (_,)<A> {
+  _0: A,
+}
+
+// Full name: {impl Fn<(A,)> for fn(A) -> B}::call
+fn {impl Fn<(A,)> for fn(A) -> B}::call<'_0, A, B>(fn_ptr: &'_0 fn(A) -> B, args: (A,)) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+    TypeOutlives0: A: '_0,
+    TypeOutlives1: B: '_0,
+{
+    let _0: B; // return
+    let fn_ptr: &'_0 fn(A) -> B; // arg #1
+    let args: (A,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy (*fn_ptr))(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl FnMut<(A,)> for fn(A) -> B}::call_mut
+fn {impl FnMut<(A,)> for fn(A) -> B}::call_mut<'_0, A, B>(fn_ptr: &'_0 mut fn(A) -> B, args: (A,)) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+    TypeOutlives0: A: '_0,
+    TypeOutlives1: B: '_0,
+{
+    let _0: B; // return
+    let fn_ptr: &'_0 mut fn(A) -> B; // arg #1
+    let args: (A,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy (*fn_ptr))(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl FnOnce<(A,)> for fn(A) -> B}::call_once
+fn {impl FnOnce<(A,)> for fn(A) -> B}::call_once<A, B>(fn_ptr: fn(A) -> B, args: (A,)) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+    let _0: B; // return
+    let fn_ptr: fn(A) -> B; // arg #1
+    let args: (A,); // arg #2
+
+    storage_live(_0)
+    _0 = (copy fn_ptr)(move args._0)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl FnOnce<(A,)> for fn(A) -> B}
+impl<A, B> FnOnce<(A,)> for fn(A) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+    proof ImpliedClause0: (fn(A) -> B: MetaSized) = {built_in impl MetaSized for fn(A) -> B}
+    proof ImpliedClause1: ((A,): Sized) = {built_in impl Sized for (A,)}
+    proof ImpliedClause2: ((A,): Tuple) = {built_in impl Tuple for (A,)}
+    proof ImpliedClause3: (B: Sized) = TraitClause1
+    type Output = B
+    fn call_once = {impl FnOnce<(A,)> for fn(A) -> B}::call_once<A, B>[TraitClause0, TraitClause1]
+    vtable: lazy
+}
+
+// Full name: {impl FnMut<(A,)> for fn(A) -> B}
+impl<A, B> FnMut<(A,)> for fn(A) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+    proof ImpliedClause0: (fn(A) -> B: MetaSized) = {built_in impl MetaSized for fn(A) -> B}
+    proof ImpliedClause1: (fn(A) -> B: FnOnce<(A,)>) = {impl FnOnce<(A,)> for fn(A) -> B}<A, B>[TraitClause0, TraitClause1]
+    proof ImpliedClause2: ((A,): Sized) = {built_in impl Sized for (A,)}
+    proof ImpliedClause3: ((A,): Tuple) = {built_in impl Tuple for (A,)}
+    fn call_mut<'_0_1> = {impl FnMut<(A,)> for fn(A) -> B}::call_mut<'_0_1, A, B>[TraitClause0, TraitClause1]
+    vtable: lazy
+}
+
+// Full name: {impl Fn<(A,)> for fn(A) -> B}
+impl<A, B> Fn<(A,)> for fn(A) -> B
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+    proof ImpliedClause0: (fn(A) -> B: MetaSized) = {built_in impl MetaSized for fn(A) -> B}
+    proof ImpliedClause1: (fn(A) -> B: FnMut<(A,)>) = {impl FnMut<(A,)> for fn(A) -> B}<A, B>[TraitClause0, TraitClause1]
+    proof ImpliedClause2: ((A,): Sized) = {built_in impl Sized for (A,)}
+    proof ImpliedClause3: ((A,): Tuple) = {built_in impl Tuple for (A,)}
+    fn call<'_0_1> = {impl Fn<(A,)> for fn(A) -> B}::call<'_0_1, A, B>[TraitClause0, TraitClause1]
+    vtable: lazy
+}
+
+// Full name: test_crate::A
+struct A {
+  _0: fn() -> u8,
+}
+
+// Full name: test_crate::CLOSURE_STATELESS
+static CLOSURE_STATELESS: &'static A = RawMemory(&test_crate::{promoted_const}[0], &test_crate::{promoted_const}[1], &test_crate::{promoted_const}[2], &test_crate::{promoted_const}[3], &test_crate::{promoted_const}[4], &test_crate::{promoted_const}[5], &test_crate::{promoted_const}[6], &test_crate::{promoted_const}[7])
+
+// Full name: test_crate::B
+struct B {
+  _0: fn<'_0_1>(&'_0_1 (u8, u8)) -> (u8, u8),
+}
+
+// Full name: test_crate::BUILTIN_IMPL
+static BUILTIN_IMPL: &'static B = RawMemory(&test_crate::{promoted_const#1}[0], &test_crate::{promoted_const#1}[1], &test_crate::{promoted_const#1}[2], &test_crate::{promoted_const#1}[3], &test_crate::{promoted_const#1}[4], &test_crate::{promoted_const#1}[5], &test_crate::{promoted_const#1}[6], &test_crate::{promoted_const#1}[7])
+
+// Full name: test_crate::C
+struct C {
+  _0: extern "rust-call" fn<'_0_1>(&'_0_1 fn(u8) -> u8, (u8,)) -> u8,
+}
+
+// Full name: test_crate::FN_PTR_CALL
+static FN_PTR_CALL: &'static C = RawMemory(&test_crate::{promoted_const#2}[0], &test_crate::{promoted_const#2}[1], &test_crate::{promoted_const#2}[2], &test_crate::{promoted_const#2}[3], &test_crate::{promoted_const#2}[4], &test_crate::{promoted_const#2}[5], &test_crate::{promoted_const#2}[6], &test_crate::{promoted_const#2}[7])
+
+// Full name: test_crate::CLOSURE_BY_VALUE
+static CLOSURE_BY_VALUE: A = RawMemory(&test_crate::CLOSURE_BY_VALUE::{closure}::{as_fn}[0], &test_crate::CLOSURE_BY_VALUE::{closure}::{as_fn}[1], &test_crate::CLOSURE_BY_VALUE::{closure}::{as_fn}[2], &test_crate::CLOSURE_BY_VALUE::{closure}::{as_fn}[3], &test_crate::CLOSURE_BY_VALUE::{closure}::{as_fn}[4], &test_crate::CLOSURE_BY_VALUE::{closure}::{as_fn}[5], &test_crate::CLOSURE_BY_VALUE::{closure}::{as_fn}[6], &test_crate::CLOSURE_BY_VALUE::{closure}::{as_fn}[7])
+
+
+
