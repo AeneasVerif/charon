@@ -14,13 +14,31 @@ enum Evaluated<'tcx> {
     Value(mir::ConstValue, Ty<'tcx>),
 }
 
+/// Call `f` on the MIR of the given promoted constant.
+pub fn promoted_body<'tcx, R>(
+    tcx: TyCtxt<'tcx>,
+    def_id: DefId,
+    promoted: mir::Promoted,
+    f: impl FnOnce(&mir::Body<'tcx>) -> R,
+) -> R {
+    // The promoteds of a local item are stolen once its MIR is optimized.
+    if let Some(local_def_id) = def_id.as_local() {
+        let (_, promoteds) = tcx.mir_promoted(local_def_id);
+        if !promoteds.is_stolen() {
+            return f(&promoteds.borrow()[promoted]);
+        }
+    }
+    f(&tcx.promoted_mir(def_id)[promoted])
+}
+
 impl<'tcx> ConstReader<'tcx> {
     /// Evaluate `src` and read it back. `span` is the location rustc should blame for problems
     /// with the evaluation.
     ///
     /// Fails with:
-    /// - [`ReadError::NotEvaluable`] if rustc can't evaluate the constant: if its evaluation
-    ///   fails or if it's an extern static;
+    /// - [`ReadError::NotEvaluable`] if rustc can't evaluate the constant: if it is generic (and
+    ///   not trivial, i.e. its value isn't stored directly by rustc), if its evaluation fails, if
+    ///   it's an extern static, or if it's a promoted read in [`ReadMode::Structured`];
     /// - [`ReadError::NotLoadable`] if the interpreter can't load the evaluated value;
     /// - [`ReadError::Read`] if reading the loaded value fails.
     pub fn read(
@@ -29,7 +47,7 @@ impl<'tcx> ConstReader<'tcx> {
         src: ConstSource<'tcx>,
         mode: ReadMode,
     ) -> Result<Const<'tcx>, ReadError<'tcx>> {
-        match self.evaluate(src)? {
+        match self.evaluate(span, src, mode)? {
             Evaluated::ValTree(value) if mode == ReadMode::Structured => {
                 self.read_valtree(span, value)
             }
@@ -43,9 +61,73 @@ impl<'tcx> ConstReader<'tcx> {
     }
 
     /// Ask rustc for the value of `src`.
-    fn evaluate(&self, src: ConstSource<'tcx>) -> Result<Evaluated<'tcx>, ReadError<'tcx>> {
+    fn evaluate(
+        &self,
+        span: Span,
+        src: ConstSource<'tcx>,
+        mode: ReadMode,
+    ) -> Result<Evaluated<'tcx>, ReadError<'tcx>> {
         let tcx = self.tcx;
+        let instantiate = |ty, args| ty::EarlyBinder::bind(tcx, ty).instantiate(tcx, args);
         Ok(match src {
+            ConstSource::Item { def_id, args } => {
+                let evaluated = match mode {
+                    ReadMode::Structured => {
+                        let kind = ty::AliasConstKind::new_from_def_id(
+                            tcx,
+                            def_id,
+                            ty::AliasConstInherentArgsKind::Impl,
+                        );
+                        let uv = ty::AliasConst::new(tcx, kind, args);
+                        if let Some(value) = self.eval_to_valtree(span, uv) {
+                            return Ok(Evaluated::ValTree(value));
+                        }
+                        None
+                    }
+                    ReadMode::Bytes => {
+                        let uv = mir::UnevaluatedConst {
+                            def: def_id,
+                            args,
+                            promoted: None,
+                        };
+                        let ty = tcx
+                            .type_of(def_id)
+                            .instantiate_identity()
+                            .skip_normalization();
+                        let val = tcx.const_eval_resolve(self.typing_env, uv, span).ok();
+                        val.map(|val| (val, ty))
+                    }
+                };
+                // Otherwise, we can still read the value of "trivial" consts, which rustc
+                // stores directly. This works even for generic consts.
+                let (val, ty) = evaluated
+                    .or_else(|| tcx.trivial_const(def_id))
+                    .ok_or(ReadError::NotEvaluable)?;
+                Evaluated::Value(val, instantiate(ty, args).skip_normalization())
+            }
+            ConstSource::Promoted {
+                def_id,
+                args,
+                promoted,
+            } => {
+                // We can't go through valtrees for promoteds as we can't name them as type-level
+                // constants, so we only read them as bytes.
+                if mode == ReadMode::Structured {
+                    return Err(ReadError::NotEvaluable);
+                }
+                let uv = mir::UnevaluatedConst {
+                    def: def_id,
+                    args,
+                    promoted: Some(promoted),
+                };
+                let val = tcx
+                    .const_eval_resolve(self.typing_env, uv, span)
+                    .map_err(|_| ReadError::NotEvaluable)?;
+                let ty = promoted_body(tcx, def_id, promoted, |body| {
+                    body.local_decls[mir::RETURN_PLACE].ty
+                });
+                Evaluated::Value(val, instantiate(ty, args).skip_normalization())
+            }
             ConstSource::Global(global) => {
                 let alloc_id = match global {
                     // Statics in `extern` blocks have no initializer.
@@ -79,8 +161,36 @@ impl<'tcx> ConstReader<'tcx> {
                 };
                 Evaluated::Value(val, self.global_ty(global))
             }
+            ConstSource::TyConst(uv) => {
+                let value = self.eval_to_valtree(span, uv);
+                Evaluated::ValTree(value.ok_or(ReadError::NotEvaluable)?)
+            }
             ConstSource::ValTree(value) => Evaluated::ValTree(value),
             ConstSource::Value(val, ty) => Evaluated::Value(val, ty),
+        })
+    }
+
+    /// Evaluate a type-level constant to a valtree. Returns `None` if the constant is generic, if
+    /// its evaluation fails, or if its type has no valtree representation.
+    fn eval_to_valtree(&self, span: Span, uv: ty::AliasConst<'tcx>) -> Option<ty::Value<'tcx>> {
+        use ty::TypeVisitableExt;
+        let tcx = self.tcx;
+        if uv.has_non_region_param() {
+            return None;
+        }
+        let def = uv.kind.opt_def_id()?;
+        let erased_uv = tcx.erase_and_anonymize_regions(uv);
+        let valtree = tcx
+            .const_eval_resolve_for_typeck(self.typing_env, erased_uv, span)
+            .ok()?
+            .ok()?;
+        let ty = tcx
+            .type_of(def)
+            .instantiate(tcx, uv.args)
+            .skip_normalization();
+        Some(ty::Value {
+            ty: self.normalize(ty),
+            valtree,
         })
     }
 

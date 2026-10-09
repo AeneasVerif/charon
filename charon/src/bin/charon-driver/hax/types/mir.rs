@@ -124,24 +124,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstOperand> for mir::ConstOperan
     }
 }
 
-/// Retrieve the MIR for a promoted body.
-pub fn get_promoted_mir<'tcx>(
-    tcx: ty::TyCtxt<'tcx>,
-    def_id: RDefId,
-    promoted_id: mir::Promoted,
-) -> mir::Body<'tcx> {
-    if let Some(local_def_id) = def_id.as_local() {
-        let (_, promoteds) = tcx.mir_promoted(local_def_id);
-        if !promoteds.is_stolen() {
-            promoteds.borrow()[promoted_id].clone()
-        } else {
-            tcx.promoted_mir(def_id)[promoted_id].clone()
-        }
-    } else {
-        tcx.promoted_mir(def_id)[promoted_id].clone()
-    }
-}
-
 /// Translate a MIR constant.
 fn translate_mir_const<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,

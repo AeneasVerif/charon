@@ -224,32 +224,4 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let c = self.catch_sinto(span, c)?;
         self.translate_constant_expr(span, &c)
     }
-
-    /// Evaluates a global definition to a [`ConstantExpr`], if possible.
-    pub(crate) fn evaluate_const_def(
-        &mut self,
-        def: &hax::FullDef<'tcx>,
-    ) -> Option<hax::Decorated<hax::ConstantExprKind>> {
-        match def.kind() {
-            hax::FullDefKind::Const(_) | hax::FullDefKind::AssocConst(_) => {
-                def.const_value(self.hax_state_with_id())
-            }
-            hax::FullDefKind::Static(_) => def.static_value(self.hax_state_with_id()),
-            _ => None,
-        }
-    }
-
-    /// Evaluates a global definition to its byte representation, if possible.
-    pub(crate) fn evaluate_const_def_as_bytes(
-        &mut self,
-        def: &hax::FullDef<'tcx>,
-    ) -> Option<hax::Decorated<hax::ConstantExprKind>> {
-        match def.kind() {
-            hax::FullDefKind::Const(_) | hax::FullDefKind::AssocConst(_) => {
-                def.const_value_as_raw_memory(self.hax_state_with_id())
-            }
-            hax::FullDefKind::Static(_) => def.static_value_as_raw_memory(self.hax_state_with_id()),
-            _ => None,
-        }
-    }
 }

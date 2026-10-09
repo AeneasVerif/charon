@@ -123,9 +123,6 @@ pub struct ConstantFieldExpr {
 /// two construct to one same `ConstantExpr` type.
 pub type ConstantExpr = Decorated<ConstantExprKind>;
 
-// For ConstantKind we merge all the cases (Ty, Val, Unevaluated) into one
-pub type ConstantKind = ConstantExpr;
-
 pub use self::uneval::*;
 pub use rustc_const_uneval::{ConstSource, GlobalRef, ReadMode};
 mod uneval;

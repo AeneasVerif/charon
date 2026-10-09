@@ -218,7 +218,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Retrieve the body
         if let Some(body) = self.get_mir(def.this(), span)? {
             Ok(self.translate_body(span, body, &def.source_text))
-        } else if let Some(value) = self.evaluate_const_def(def) {
+        } else if let Some(value) =
+            def.evaluate(self.hax_state_with_id(), hax::ReadMode::Structured)
+        {
             // For globals without MIR, generate a body by evaluating the global. This is how we
             // get the value of statics (which have no cross-crate MIR at all) and of "trivial"
             // consts (whose value rustc stores directly instead of encoding MIR for it).
