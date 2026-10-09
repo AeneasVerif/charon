@@ -6,6 +6,7 @@
 use itertools::Itertools;
 use rustc_attr_ir::LangItem;
 use rustc_hash::FxHashMap as HashMap;
+use std::borrow::Cow;
 use std::collections::VecDeque;
 use std::mem;
 use std::ops::Deref;
@@ -2164,7 +2165,7 @@ impl<'a> IntoFormatter for &'a BodyTransCtx<'_, '_, '_> {
     type C = FmtCtx<'a>;
     fn into_fmt(self) -> Self::C {
         FmtCtx {
-            local_names: Some(compute_local_names(&self.locals)),
+            local_names: Some(Cow::Owned(compute_local_names(&self.locals))),
             ..self.i_ctx.into_fmt()
         }
     }
