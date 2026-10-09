@@ -1,3 +1,5 @@
+//@ charon-args=--targets x86_64-unknown-linux-gnu
+
 fn main() {
     unsafe {
         core::arch::asm!("nop");
