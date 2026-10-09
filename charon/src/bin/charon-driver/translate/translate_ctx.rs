@@ -245,6 +245,26 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         )
     }
 
+    /// Whether to translate this particular item monomorphically.
+    pub fn should_monomorphize_item(&self, item: &hax::ItemRef, kind: TransItemSourceKind) -> bool {
+        if self.options.monomorphize_with_hax {
+            // If an item takes no arguments, translate it monomorphically even in poly context.
+            let is_already_mono = !item.has_non_lt_param;
+            // If the context is monomorphic, propagate this unless we're in a trait context and
+            // translating a non-trait item. That's because traits and trait-derived items have a
+            // special mono-trait mode that's actually polymorphic, so other items referenced by
+            // the trait must be translated polymorphically. See e.g.
+            // supertrait-with-generic-type-args.rs.
+            // FIXME(#856): Get rid of this logic.
+            let propagate_mono =
+                self.monomorphize() && (kind.is_for_trait() || !self.item_src.kind.is_for_trait());
+            is_already_mono || propagate_mono
+        } else {
+            // In poly mono, never monomorphize anything.
+            false
+        }
+    }
+
     pub fn span_err(&self, span: Span, msg: &str, level: Level) -> Error {
         self.t_ctx.span_err(span, msg, level)
     }
