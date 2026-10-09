@@ -1,82 +1,34 @@
-//! Reading evaluated constants back.
-use super::super::*;
-use rustc_const_eval::const_eval;
-use rustc_const_eval::interpret::{FnVal, InterpResult, interp_ok};
-use rustc_middle::mir::interpret;
-use rustc_middle::{mir, ty};
-
+//! Read evaluated constants back into structured values, using rustc's const-eval interpreter.
+//! This only depends on rustc: naming the items and allocations we encounter is left to the
+//! caller.
+mod eval;
 mod memory;
-pub(crate) use memory::*;
 
-/// A global allocation. The host is in charge of naming it.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum GlobalRef {
-    /// A static item.
-    Static(RDefId),
-    /// An allocation without a corresponding item: an anonymous allocation, or a nested static
-    /// (e.g. the `[1, 2]` in `static S: &[u8] = &[1, 2]`).
-    Alloc(interpret::AllocId),
+use rustc_abi::VariantIdx;
+use rustc_hir::def_id::DefId;
+use rustc_middle::mir::{self, interpret};
+use rustc_middle::ty::{self, Ty, TyCtxt};
+
+/// The options that affect how constants are read.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Config {
+    /// Whether to refer to anonymous allocations (e.g. the bytes of `b"foo"`) as globals, or to
+    /// inline their contents at each use.
+    pub anon_allocs_as_globals: bool,
 }
 
-/// What an allocation stands for.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum AllocTarget<'tcx> {
-    /// A function.
-    Fn(ty::Instance<'tcx>),
-    /// A global.
-    Global(GlobalRef),
-    /// A vtable. It's UB to read a vtable's data, so these are only reachable as provenance.
-    VTable(
-        ty::Ty<'tcx>,
-        &'tcx ty::List<ty::PolyExistentialPredicate<'tcx>>,
-    ),
-    /// The allocation backing a `TypeId`.
-    TypeId(ty::Ty<'tcx>),
-}
-
-/// Classify the given allocation.
-fn alloc_target<'tcx, S: UnderOwnerState<'tcx>>(
-    s: &S,
-    alloc_id: interpret::AllocId,
-) -> AllocTarget<'tcx> {
-    use interpret::GlobalAlloc;
-    let tcx = s.base().tcx;
-    match tcx.global_alloc(alloc_id) {
-        GlobalAlloc::Function { instance } => AllocTarget::Fn(instance),
-        GlobalAlloc::Static(def_id)
-            if let rustc_hir::def::DefKind::Static { nested: false, .. } = tcx.def_kind(def_id) =>
-        {
-            AllocTarget::Global(GlobalRef::Static(def_id))
-        }
-        GlobalAlloc::Static(_) | GlobalAlloc::Memory(_) => {
-            AllocTarget::Global(GlobalRef::Alloc(alloc_id))
-        }
-        GlobalAlloc::VTable(ty, preds) => AllocTarget::VTable(ty, preds),
-        GlobalAlloc::TypeId { ty } => AllocTarget::TypeId(ty),
-    }
-}
-
-/// Whether we refer to `global` by name in pointers to it, rather than inlining its contents.
-pub(crate) fn is_named_global<'tcx, S: UnderOwnerState<'tcx>>(s: &S, global: GlobalRef) -> bool {
-    match global {
-        GlobalRef::Static(_) => true,
-        // TODO: nested statics are synthetic items that make the rest of the machinery ICE, so we
-        // don't name them yet.
-        GlobalRef::Alloc(alloc_id) => {
-            s.base().options.anon_allocs_as_globals
-                && matches!(
-                    s.base().tcx.global_alloc(alloc_id),
-                    interpret::GlobalAlloc::Memory(_)
-                )
-        }
-    }
+/// Evaluates and reads constants in a given typing environment.
+pub struct ConstReader<'tcx> {
+    pub tcx: TyCtxt<'tcx>,
+    pub typing_env: ty::TypingEnv<'tcx>,
+    pub config: Config,
 }
 
 /// A constant that we can ask rustc to evaluate.
 #[derive(Debug, Clone, Copy)]
 pub enum ConstSource<'tcx> {
     /// An already-evaluated constant, e.g. found in MIR.
-    Value(mir::ConstValue, ty::Ty<'tcx>),
+    Value(mir::ConstValue, Ty<'tcx>),
 }
 
 /// How to read back an evaluated constant.
@@ -84,6 +36,132 @@ pub enum ConstSource<'tcx> {
 pub enum ReadMode {
     /// As a structured value (literals, ADTs, references...).
     Structured,
-    /// As raw bytes (`ConstantExprKind::Memory`).
+    /// As raw bytes ([`ConstKind::Memory`]).
     Bytes,
+}
+
+/// Why [`ConstReader::read`] failed.
+#[derive(Debug)]
+pub enum ReadError<'tcx> {
+    /// The const-eval interpreter can't load the evaluated value, e.g. because its type is too
+    /// generic to have a layout.
+    NotLoadable,
+    /// The interpreter failed while reading back the evaluated value.
+    // Only read through `Debug`.
+    #[allow(dead_code)]
+    Read(interpret::InterpErrorInfo<'tcx>),
+}
+
+impl<'tcx> From<interpret::InterpErrorInfo<'tcx>> for ReadError<'tcx> {
+    fn from(err: interpret::InterpErrorInfo<'tcx>) -> Self {
+        ReadError::Read(err)
+    }
+}
+
+/// A constant of type `ty`, read back from its evaluated representation.
+#[derive(Debug, Clone)]
+pub struct Const<'tcx> {
+    pub ty: Ty<'tcx>,
+    pub kind: ConstKind<'tcx>,
+}
+
+/// The value of a constant. A pattern-typed value keeps its pattern type, and its kind is that of
+/// the base type.
+#[derive(Debug, Clone)]
+pub enum ConstKind<'tcx> {
+    /// A boolean, character, integer or float.
+    Scalar(ty::ScalarInt),
+    /// A pointer without provenance, i.e. a plain address.
+    PtrNoProvenance(u128),
+    /// A string slice.
+    Str(String),
+    /// A struct, enum, tuple, closure, array or slice. `variant` is set for structs and enums.
+    Aggregate {
+        variant: Option<VariantIdx>,
+        fields: Vec<Const<'tcx>>,
+    },
+    /// A function item. This is a ZST, unlike `FnPtr`.
+    FnDef {
+        def: DefId,
+        args: ty::GenericArgsRef<'tcx>,
+    },
+    /// A function pointer.
+    FnPtr(ty::Instance<'tcx>),
+    /// A valid reference or raw pointer; `ty` tells which.
+    Ptr {
+        target: PtrTarget<'tcx>,
+        /// For a wide pointer, how to recover it from a thin pointer to the target.
+        unsize: Option<Unsize<'tcx>>,
+    },
+    /// The raw bytes of the value. Used for values that have no structured representation (e.g.
+    /// unions).
+    Memory(Vec<Byte<'tcx>>),
+    /// A valid constant that we can't represent.
+    Unsupported(&'static str),
+}
+
+impl<'tcx> ConstKind<'tcx> {
+    /// The value of the function item type `ty`.
+    fn fn_def(ty: Ty<'tcx>) -> Self {
+        let ty::FnDef(def, args) = *ty.kind() else {
+            unreachable!("expected a function item type, got {ty:?}")
+        };
+        ConstKind::FnDef {
+            def,
+            args: args.no_bound_vars().expect("bound variables in FnDef"),
+        }
+    }
+}
+
+/// What a pointer points to.
+#[derive(Debug, Clone)]
+pub enum PtrTarget<'tcx> {
+    /// A global, viewed at type `ty`.
+    Global { global: GlobalRef, ty: Ty<'tcx> },
+    /// The value behind the pointer, when we don't refer to its global by name.
+    Inline(Box<Const<'tcx>>),
+}
+
+/// The unsizing that turns a thin pointer to the target of a pointer into the actual wide pointer:
+/// the unsized tail `to` of the pointee was unsized from the sized type `from`.
+#[derive(Debug, Clone, Copy)]
+pub struct Unsize<'tcx> {
+    pub from: Ty<'tcx>,
+    pub to: Ty<'tcx>,
+}
+
+/// A byte of an evaluated constant, in the MiniRust sense.
+#[derive(Debug, Clone, Copy)]
+pub enum Byte<'tcx> {
+    /// An uninitialized byte (e.g. padding, or the bytes of a union not covered by the active
+    /// field).
+    Uninit,
+    /// A concrete byte value.
+    Value(u8),
+    /// A byte of a pointer into the given allocation. The `u8` is the index of this byte within the
+    /// pointer.
+    Ptr(AllocTarget<'tcx>, u8),
+}
+
+/// A global allocation. The host is in charge of naming it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum GlobalRef {
+    /// A static item.
+    Static(DefId),
+    /// An allocation without a corresponding item: an anonymous allocation, or a nested static
+    /// (e.g. the `[1, 2]` in `static S: &[u8] = &[1, 2]`).
+    Alloc(interpret::AllocId),
+}
+
+/// What an allocation stands for, from the point of view of pointers into it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum AllocTarget<'tcx> {
+    /// A function.
+    Fn(ty::Instance<'tcx>),
+    /// A global.
+    Global(GlobalRef),
+    /// A vtable. It's UB to read a vtable's data, so these are only reachable as provenance.
+    VTable(Ty<'tcx>, &'tcx ty::List<ty::PolyExistentialPredicate<'tcx>>),
+    /// The allocation backing a `TypeId`.
+    TypeId(Ty<'tcx>),
 }

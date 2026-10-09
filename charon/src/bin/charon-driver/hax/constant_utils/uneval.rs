@@ -1,6 +1,6 @@
-//! Reconstruct structured expressions from rustc's various constant representations.
+//! Translate constants to hax: type-system constants, and the values read by `reader`.
+use super::reader::{AllocTarget, Byte, ConstReader, GlobalRef, PtrTarget};
 use super::*;
-use rustc_const_eval::const_eval;
 use rustc_middle::ty;
 
 impl ConstantLiteral {
@@ -274,8 +274,18 @@ pub(crate) fn valtree_to_constant_expr<'tcx, S: UnderOwnerState<'tcx>>(
     kind.decorate(ty.sinto(s), span.sinto(s))
 }
 
+/// The reader for constants evaluated in the current context.
+fn const_reader<'tcx, S: UnderOwnerState<'tcx>>(s: &S) -> ConstReader<'tcx> {
+    ConstReader {
+        tcx: s.base().tcx,
+        typing_env: s.typing_env(),
+        config: super::reader::Config {
+            anon_allocs_as_globals: s.base().options.anon_allocs_as_globals,
+        },
+    }
+}
 
-/// The global standing for `self`, which must be named (see `is_named_global`).
+/// The global standing for `self`, which must be named (see `ConstReader::is_named_global`).
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef> for GlobalRef {
     fn sinto(&self, s: &S) -> ItemRef {
         match *self {
@@ -307,7 +317,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantByteProvenance> for AllocT
                     instance.args,
                 )),
             },
-            AllocTarget::Global(global) if is_named_global(s, global) => {
+            AllocTarget::Global(global) if const_reader(s).is_named_global(global) => {
                 ConstantByteProvenance::Global(global.sinto(s))
             }
             // TODO: TypeIds
@@ -319,7 +329,113 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantByteProvenance> for AllocT
     }
 }
 
-
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for super::reader::Const<'tcx> {
+    fn sinto(&self, s: &S) -> ConstantExpr {
+        use super::reader::ConstKind;
+        let tcx = s.base().tcx;
+        // The value of a pattern type is described at its base type.
+        let ty = match self.ty.kind() {
+            ty::Pat(base_ty, _) => *base_ty,
+            _ => self.ty,
+        };
+        let kind = match &self.kind {
+            ConstKind::Scalar(scalar_int) => {
+                ConstantExprKind::Literal(scalar_int_to_constant_literal(s, *scalar_int, ty))
+            }
+            ConstKind::PtrNoProvenance(addr) => {
+                ConstantExprKind::Literal(ConstantLiteral::PtrNoProvenance(*addr))
+            }
+            ConstKind::Str(str) => ConstantExprKind::Literal(ConstantLiteral::Str(str.clone())),
+            ConstKind::Aggregate { variant, fields } => {
+                let fields = fields.iter().map(|field| field.sinto(s));
+                match ty.kind() {
+                    ty::Adt(adt_def, _) => {
+                        let variant = variant.unwrap();
+                        ConstantExprKind::Adt {
+                            kind: get_variant_kind(adt_def, variant, s),
+                            fields: fields
+                                .zip(&adt_def.variant(variant).fields)
+                                .map(|(value, field)| ConstantFieldExpr {
+                                    field: field.did.sinto(s),
+                                    value,
+                                })
+                                .collect(),
+                        }
+                    }
+                    ty::Closure(def_id, _) => {
+                        let def_id: DefId = def_id.sinto(s);
+                        ConstantExprKind::Adt {
+                            kind: VariantKind::Struct,
+                            fields: fields
+                                .map(|value| ConstantFieldExpr {
+                                    // HACK: Closure fields don't have their own def_id, but Charon
+                                    // doesn't use field DefIds so we put a dummy one.
+                                    field: def_id.clone(),
+                                    value,
+                                })
+                                .collect(),
+                        }
+                    }
+                    ty::Tuple(_) => ConstantExprKind::Tuple {
+                        fields: fields.collect(),
+                    },
+                    ty::Array(..) | ty::Slice(..) => ConstantExprKind::Array {
+                        fields: fields.collect(),
+                    },
+                    _ => unreachable!("unexpected aggregate type {ty:?}"),
+                }
+            }
+            ConstKind::FnDef { def, args } => {
+                ConstantExprKind::FnDef(translate_item_ref(s, *def, args))
+            }
+            ConstKind::FnPtr(instance) => {
+                ConstantExprKind::FnPtr(translate_item_ref(s, instance.def_id(), instance.args))
+            }
+            ConstKind::Ptr { target, unsize } => {
+                let metadata = unsize.map(|unsize| {
+                    let ref_to = |ty| ty::Ty::new_imm_ref(tcx, tcx.lifetimes.re_static, ty);
+                    compute_unsizing_metadata(s, ref_to(unsize.from), ref_to(unsize.to))
+                });
+                let arg = match target {
+                    PtrTarget::Global { global, ty } => Decorated {
+                        contents: Box::new(ConstantExprKind::NamedGlobal(global.sinto(s))),
+                        ty: ty.sinto(s),
+                    },
+                    PtrTarget::Inline(val) => val.sinto(s),
+                };
+                match ty.kind() {
+                    ty::Ref(..) => ConstantExprKind::Borrow(arg, metadata),
+                    ty::RawPtr(_, mutability) => ConstantExprKind::RawBorrow {
+                        mutability: mutability.sinto(s),
+                        arg,
+                        metadata,
+                    },
+                    _ => unreachable!("unexpected pointer type {ty:?}"),
+                }
+            }
+            ConstKind::Memory(bytes) => {
+                // The bytes of a pointer share their provenance; we convert it only once.
+                let mut last_prov: Option<(AllocTarget, ConstantByteProvenance)> = None;
+                let bytes = bytes.iter().map(|byte| match *byte {
+                    Byte::Uninit => ConstantByte::Uninit,
+                    Byte::Value(v) => ConstantByte::Value(v),
+                    Byte::Ptr(target, i) => {
+                        if last_prov.as_ref().is_none_or(|(last, _)| *last != target) {
+                            last_prov = Some((target, target.sinto(s)));
+                        }
+                        ConstantByte::Provenance(last_prov.as_ref().unwrap().1.clone(), i)
+                    }
+                });
+                ConstantExprKind::Memory(bytes.collect())
+            }
+            ConstKind::Unsupported(msg) => ConstantExprKind::Todo(msg.to_string()),
+        };
+        Decorated {
+            contents: Box::new(kind),
+            ty: self.ty.sinto(s),
+        }
+    }
+}
 
 /// Evaluate `src` and read it back as a `ConstantExpr`.
 pub fn read_const<'tcx, S: UnderOwnerState<'tcx>>(
@@ -328,21 +444,8 @@ pub fn read_const<'tcx, S: UnderOwnerState<'tcx>>(
     src: ConstSource<'tcx>,
     mode: ReadMode,
 ) -> Option<ConstantExpr> {
-    let tcx = s.base().tcx;
-    let ConstSource::Value(val, ty) = src;
-    let Some((ecx, op)) =
-        const_eval::mk_eval_cx_for_const_val(tcx.at(span), s.typing_env(), val, ty)
-    else {
-        warning!(s[span], "Couldn't convert constant back to an expression"; {src});
-        return None;
-    };
-    let read = match mode {
-        ReadMode::Structured => op_to_const(s, span, &ecx, op),
-        ReadMode::Bytes => op_to_raw_bytes(s, &ecx, &op)
-            .map(|bytes| ConstantExprKind::Memory(bytes).decorate(ty.sinto(s), span.sinto(s))),
-    };
-    match read.report_err() {
-        Ok(expr) => Some(expr),
+    match const_reader(s).read(span, src, mode) {
+        Ok(val) => Some(val.sinto(s)),
         Err(err) => {
             warning!(s[span], "Couldn't convert constant back to an expression"; {src, err});
             None
