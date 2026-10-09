@@ -45,6 +45,7 @@
 - [Limitations](limitations.md)
 - [Internals](internals.md)
   - [`rustc_trait_elaboration`](internals/rustc_trait_elaboration.md)
+  - [`rustc_const_uneval`](internals/rustc_const_uneval.md)
   - [`hax`](internals/hax.md)
   - [`charon_lib`](internals/charon_lib.md)
   - [Charon translation](internals/charon-translation.md)
