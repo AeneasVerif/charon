@@ -118,13 +118,14 @@ impl<'tcx> ConstKind<'tcx> {
     }
 
     /// The value of the function item type `ty`.
-    fn fn_def(ty: Ty<'tcx>) -> Self {
+    fn fn_def(tcx: TyCtxt<'tcx>, ty: Ty<'tcx>) -> Self {
         let ty::FnDef(def, args) = *ty.kind() else {
             unreachable!("expected a function item type, got {ty:?}")
         };
         ConstKind::FnDef {
             def,
-            args: args.no_bound_vars().expect("bound variables in FnDef"),
+            // Note: loss of precision, we erase the bound vars.
+            args: rustc_trait_elaboration::erase_free_regions(tcx, args.skip_binder()),
         }
     }
 }

@@ -284,7 +284,7 @@ impl<'tcx> ConstReader<'tcx> {
                 let bytes = ecx.read_bytes_ptr_strip_provenance(place.ptr(), len)?;
                 ConstKind::str(bytes.to_vec())
             }
-            ty::FnDef(..) => ConstKind::fn_def(ty),
+            ty::FnDef(..) => ConstKind::fn_def(self.tcx, ty),
             ty::FnPtr(..) => {
                 let fn_ptr = ecx.read_pointer(&op)?;
                 let FnVal::Instance(instance) = ecx.get_ptr_fn(fn_ptr)?;
