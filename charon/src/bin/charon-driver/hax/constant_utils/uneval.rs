@@ -121,9 +121,7 @@ fn const_reader<'tcx, S: UnderOwnerState<'tcx>>(s: &S) -> ConstReader<'tcx> {
     ConstReader {
         tcx: s.base().tcx,
         typing_env: s.typing_env(),
-        config: rustc_const_uneval::Config {
-            anon_allocs_as_globals: s.base().options.anon_allocs_as_globals,
-        },
+        config: s.base().options.consts,
     }
 }
 

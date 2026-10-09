@@ -19,17 +19,26 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::mem::maybe_uninit::MaybeUninit
+#[lang_item(MaybeUninit)]
+pub opaque type MaybeUninit<T>
+where
+    TraitClause0: (T: Sized),
+
 struct () {}
 
 struct str {
   _0: [u8],
 }
 
+// Full name: test_crate::{promoted_const}
+static {promoted_const}: MaybeUninit<[u8; 5usize]>[{built_in impl Sized for [u8; 5usize]}] = RawMemory(0x68, 0x65, 0x6c, 0x6c, 0x6f)
+
 // Full name: test_crate::STR
-pub static STR: &'static str = &RawMemory(0x68, 0x65, 0x6c, 0x6c, 0x6f) with_metadata(5usize)
+pub static STR: &'static str = unsize_cast<&'_ str, 5usize>(cast<*const [u8; 5usize]>(&raw const {promoted_const}))
 
 // Full name: test_crate::STR_SUFFIX
-pub static STR_SUFFIX: &'static str = &RawMemory(0x65, 0x6c, 0x6c, 0x6f) with_metadata(4usize)
+pub static STR_SUFFIX: &'static str = &{promoted_const}.offset!(1isize) with_metadata(4usize)
 
 // Full name: test_crate::CSTR
 pub static CSTR: &'static CStr = &CStr { 0: [104i8, 105i8, 0i8] } with_metadata(3usize)
