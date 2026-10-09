@@ -32,12 +32,7 @@ impl<'tcx> ConstReader<'tcx> {
     pub fn is_named_global(&self, global: GlobalRef) -> bool {
         match global {
             GlobalRef::Static(_) => true,
-            GlobalRef::Alloc(alloc_id) => {
-                self.config.anon_allocs_as_globals
-                    // TODO: nested statics are synthetic items that make the rest of the machinery
-                    // ICE, so we don't name them yet.
-                    && matches!(self.tcx.global_alloc(alloc_id), GlobalAlloc::Memory(_))
-            }
+            GlobalRef::Alloc(_) => self.config.anon_allocs_as_globals,
         }
     }
 

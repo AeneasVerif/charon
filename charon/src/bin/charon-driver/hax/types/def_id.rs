@@ -387,11 +387,7 @@ impl DefId {
     pub fn make_anon_alloc<'tcx, S: BaseState<'tcx>>(s: &S, alloc_id: RAllocId) -> Self {
         let tcx = s.base().tcx;
         s.with_global_cache(|cache| cache.anon_allocs.insert(alloc_id));
-        let mutability = tcx
-            .global_alloc(alloc_id)
-            .unwrap_memory()
-            .inner()
-            .mutability;
+        let mutability = GlobalRef::Alloc(alloc_id).mutability(tcx);
         let contents = DefIdContents {
             base: DefIdBase::Alloc(alloc_id),
             kind: DefKind::Static {
@@ -650,12 +646,7 @@ impl DefId {
             DefIdBase::Synthetic(synthetic) => synthetic.type_of(s),
             DefIdBase::ImplAssocItem(id) => tcx.type_of(id.item_decl_id),
             DefIdBase::Alloc(alloc_id) => {
-                let reader = rustc_const_uneval::ConstReader {
-                    tcx,
-                    typing_env: self.typing_env(s),
-                    config: Default::default(),
-                };
-                ty::EarlyBinder::bind(tcx, reader.global_ty(GlobalRef::Alloc(alloc_id)))
+                ty::EarlyBinder::bind(tcx, rustc_const_uneval::alloc_as_untyped_ty(tcx, alloc_id))
             }
         }
     }
