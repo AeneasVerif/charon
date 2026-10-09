@@ -144,6 +144,8 @@ pub struct Deps {
     graph: DiGraphMap<ItemId, ()>,
     unprocessed: Vec<ItemId>,
     visited: HashSet<ItemId>,
+    /// Callable impls have no method references in monomorphic mode.
+    closure_methods: HashMap<TraitImplId, FunDeclId>,
 }
 
 /// We use this when computing the graph
@@ -355,7 +357,19 @@ impl VisitAst for DepsForItem<'_> {
         Continue(())
     }
     // Sources are reverse dependencies; exploring them is likely to create dependency cycles.
-    fn visit_type_source(&mut self, _: &TypeSource) -> ControlFlow<Self::Break> {
+    fn visit_type_source(&mut self, src: &TypeSource) -> ControlFlow<Self::Break> {
+        if let TypeSource::Closure { info } = src {
+            let impl_ref = match info.kind {
+                ClosureKind::Fn => info.fn_impl.as_ref().unwrap(),
+                ClosureKind::FnMut => info.fn_mut_impl.as_ref().unwrap(),
+                ClosureKind::FnOnce => &info.fn_once_impl,
+            };
+            if let Some(&method) = self.deps.closure_methods.get(&impl_ref.skip_binder.id) {
+                // Opaque code can call the closure. Keep the body reachable without adding a
+                // reverse dependency from the state type to the method that uses it.
+                self.insert_node(method);
+            }
+        }
         Continue(())
     }
     fn visit_fun_source(&mut self, src: &FunSource) -> ControlFlow<Self::Break> {
@@ -377,6 +391,16 @@ impl VisitAst for DepsForItem<'_> {
 
 fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {
     let mut deps = Deps::default();
+    if ctx.options.monomorphize_with_hax {
+        for fun in ctx.translated.fun_decls.iter() {
+            if let FunSource::TraitImpl { impl_ref, .. } = &fun.src
+                && let Some(timpl) = ctx.translated.trait_impls.get(impl_ref.id)
+                && matches!(timpl.src, TraitImplSource::Closure { .. })
+            {
+                deps.closure_methods.insert(impl_ref.id, fun.def_id);
+            }
+        }
+    }
     // Start from the items selected as starting points. We've mostly only translated items
     // accessible from those, but some passes render items inaccessible again, which we filter out
     // here.
