@@ -1,7 +1,6 @@
 //@ revisions=values,bytes
 //@[values] charon-args=--consts=values
 //@[bytes] charon-args=--consts=bytes
-//@[values] known-failure
 use std::mem::transmute;
 
 trait Trait {}

@@ -94,6 +94,19 @@ fn transform_constant_expr(
                 base = sub;
             }
             let mut place = match &base.kind {
+                // We view a vtable at type `()`, so we go through a pointer cast.
+                GlobalPlaceKind::Global(GlobalProvenance::Global(global_ref))
+                    if let Some(decl) = ctx.ctx.translated.global_decls.get(global_ref.id)
+                        && matches!(decl.src, GlobalSource::VTableInstance { .. }) =>
+                {
+                    let decl_ty = decl.ty.clone().substitute(&global_ref.generics);
+                    let vtable = Place::new_global(global_ref.clone(), decl_ty);
+                    let vtable_ptr = ctx.raw_borrow_to_new_var(vtable, RefKind::Shared, None);
+                    let ptr_ty = TyKind::RawPtr(base.ty.clone(), RefKind::Shared).into_ty();
+                    let cast = UnOp::Cast(CastKind::RawPtr(ptr_ty.clone()));
+                    let rval = Rvalue::UnaryOp(cast, Operand::Move(vtable_ptr));
+                    ctx.rval_to_place(rval, ptr_ty).deref()
+                }
                 GlobalPlaceKind::Global(GlobalProvenance::Global(global_ref)) => {
                     Place::new_global(global_ref.clone(), base.ty.clone())
                 }
