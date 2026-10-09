@@ -1,0 +1,517 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn impl_Clone_for_u32::clone<'_0>(_1: &'_0 u32) -> u32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u32}
+impl "impl_Clone_for_u32" Clone for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    fn clone<'_0_1> = impl_Clone_for_u32::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::cmp::PartialEq
+#[lang_item(PartialEq)]
+#[diagnostic_item("PartialEq")]
+pub trait PartialEq<Self, Rhs>
+{
+    fn eq<'_0_1, '_1_1>;
+    vtable: core::cmp::PartialEq::{vtable}<Rhs>
+}
+
+// Full name: core::cmp::Ordering
+#[lang_item(OrderingEnum)]
+pub enum Ordering {
+  Less,
+  Equal,
+  Greater,
+}
+
+// Full name: core::option::Option
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some { _0: T },
+}
+
+// Full name: core::cmp::PartialOrd
+#[lang_item(PartialOrd)]
+#[diagnostic_item("PartialOrd")]
+pub trait PartialOrd<Self, Rhs>
+{
+    proof ImpliedClause0: (Self: PartialEq<Rhs>)
+    fn partial_cmp<'_0_1, '_1_1>;
+    vtable: core::cmp::PartialOrd::{vtable}<Rhs>
+}
+
+// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}::eq
+pub fn impl_PartialEq_u32_for_u32::eq<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> bool
+= <opaque>
+
+// Full name: core::cmp::impls::{impl PartialEq<u32> for u32}
+impl "impl_PartialEq_u32_for_u32" PartialEq<u32> for u32 {
+    fn eq<'_0_1, '_1_1> = impl_PartialEq_u32_for_u32::eq<'_0_1, '_1_1>
+    vtable: lazy
+}
+
+// Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}::partial_cmp
+pub fn impl_PartialOrd_u32_for_u32::partial_cmp<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> Option<Ordering>[{built_in impl Sized for Ordering}]
+= <opaque>
+
+// Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}
+impl "impl_PartialOrd_u32_for_u32" PartialOrd<u32> for u32 {
+    proof ImpliedClause0: (u32: PartialEq<u32>) = impl_PartialEq_u32_for_u32
+    fn partial_cmp<'_0_1, '_1_1> = impl_PartialOrd_u32_for_u32::partial_cmp<'_0_1, '_1_1>
+    vtable: lazy
+}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+// Full name: core::iter::range::Step
+#[diagnostic_item("range_step")]
+pub trait Step<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    proof ImpliedClause1: (Self: Clone)
+    proof ImpliedClause2: (Self: PartialOrd<Self>)
+    fn steps_between<'_0_1, '_1_1>;
+    fn forward_checked;
+    fn forward_overflowing;
+    fn backward_checked;
+    fn backward_overflowing;
+    non-dyn-compatible
+}
+
+// Full name: core::iter::range::{impl Step for u32}::backward_overflowing
+pub fn backward_overflowing(_1: u32, _2: usize) -> (u32, bool)
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for u32}::forward_overflowing
+pub fn forward_overflowing(_1: u32, _2: usize) -> (u32, bool)
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for u32}::backward_checked
+pub fn backward_checked(_1: u32, _2: usize) -> Option<u32>[{built_in impl Sized for u32}]
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for u32}::forward_checked
+pub fn forward_checked(_1: u32, _2: usize) -> Option<u32>[{built_in impl Sized for u32}]
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for u32}::steps_between
+pub fn steps_between<'_0, '_1>(_1: &'_0 u32, _2: &'_1 u32) -> (usize, Option<usize>[{built_in impl Sized for usize}])
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for u32}
+impl "impl_Step_for_u32" Step for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
+    proof ImpliedClause2: (u32: PartialOrd<u32>) = impl_PartialOrd_u32_for_u32
+    fn steps_between<'_0_1, '_1_1> = steps_between<'_0_1, '_1_1>
+    fn forward_checked = forward_checked
+    fn forward_overflowing = forward_overflowing
+    fn backward_checked = backward_checked
+    fn backward_overflowing = backward_overflowing
+    non-dyn-compatible
+}
+
+// Full name: core::ops::range::Range
+#[lang_item(Range)]
+pub struct Range<Idx>
+where
+    TraitClause0: (Idx: Sized),
+{
+  start: Idx,
+  end: Idx,
+}
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::iter::traits::iterator::Iterator
+#[lang_item(Iterator)]
+#[diagnostic_item("Iterator")]
+pub trait Iterator<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::Item: Sized)
+    type Item
+    fn next<'_0_1>;
+    vtable: core::iter::traits::iterator::Iterator::{vtable}<Self::Item>
+}
+
+// Full name: core::iter::range::{impl Iterator for Range<A>[TraitClause0]}::next
+pub fn next<'_0, A>(_1: &'_0 mut Range<A>[TraitClause0]) -> Option<A>[TraitClause0]
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (A: Step),
+    TraitClause2: (A: Destruct),
+    TypeOutlives0: A: '_0,
+= <opaque>
+
+// Full name: core::iter::range::{impl Iterator for Range<A>[TraitClause0]}
+impl<A> "impl_Iterator_for_Range" Iterator for Range<A>[TraitClause0]
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (A: Step),
+    TraitClause2: (A: Destruct),
+{
+    proof ImpliedClause0: (Range<A>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Range<A>[TraitClause0]}
+    proof ImpliedClause1: (A: Sized) = TraitClause0
+    type Item = A
+    fn next<'_0_1> = next<'_0_1, A>[TraitClause0, TraitClause1, TraitClause2]
+    vtable: lazy
+}
+
+// Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
+pub fn into_iter<I>(_1: I) -> I
+where
+    TraitClause0: (I: Sized),
+    TraitClause1: (I: Iterator),
+= <opaque>
+
+// Full name: core::ops::control_flow::ControlFlow
+#[diagnostic_item("ControlFlow")]
+pub enum ControlFlow<B, C>
+where
+    TraitClause0: (B: Sized),
+    TraitClause1: (C: Sized),
+{
+  Continue { _0: C },
+  Break { _0: B },
+}
+
+// Full name: core::option::{impl Try for Option<T>[TraitClause0]}::branch
+pub fn branch<T>(_1: Option<T>[TraitClause0]) -> ControlFlow<Option<!>[{built_in impl Sized for !}], T>[{built_in impl Sized for Option<!>[{built_in impl Sized for !}]}, TraitClause0]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::option::{impl FromResidual<Option<!>[{built_in impl Sized for !}]> for Option<T>[TraitClause0]}::from_residual
+pub fn from_residual<T>(_1: Option<!>[{built_in impl Sized for !}]) -> Option<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+struct (_,)<A> {
+  _0: A,
+}
+
+// Full name: test_crate::from_aux
+pub fn from_aux() -> u32
+{
+    let _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 2u32
+    return
+}
+
+// Full name: test_crate::included
+pub fn included() -> u32
+{
+    let _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 3u32
+    return
+}
+
+// Full name: test_crate::from_included_local
+pub fn from_included_local() -> u32
+{
+    let _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 4u32
+    return
+}
+
+// Full name: test_crate::from_included
+pub fn from_included() -> u32
+{
+    let _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 4u32
+    return
+}
+
+// Full name: test_crate::pathmod::in_pathmod
+pub fn in_pathmod() -> u32
+{
+    let _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 5u32
+    return
+}
+
+// Full name: test_crate::from_pathmod
+pub fn from_pathmod() -> u32
+{
+    let _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 6u32
+    return
+}
+
+// Full name: test_crate::pathmod::from_pathmod_local
+pub fn from_pathmod_local() -> u32
+{
+    let _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 6u32
+    return
+}
+
+// Full name: test_crate::local
+pub fn local() -> u32
+{
+    let _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 1u32
+    return
+}
+
+// Full name: test_crate::nested
+pub fn nested() -> u32
+{
+    let _0: u32; // return
+
+    storage_live(_0)
+    _0 = const 1u32
+    return
+}
+
+// Full name: test_crate::Derived
+pub struct Derived {
+  _0: u32,
+}
+
+// Full name: test_crate::{impl Clone for Derived}::clone
+#[inline(hint)]
+pub fn impl_Clone_for_Derived::clone<'_0>(self: &'_0 Derived) -> Derived
+{
+    let _0: Derived; // return
+    let self: &'1 Derived; // arg #1
+    let _2: u32; // anonymous local
+    let _3: &'3 u32; // anonymous local
+    let _4: &'4 u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &(*self)._0
+    _3 = &(*_4)
+    _2 = impl_Clone_for_u32::clone<'6>(move _3)
+    ↳⚡ storage_dead(self)
+        unwind_continue
+    storage_dead(_3)
+    _0 = Derived { _0: move _2 }
+    storage_dead(_4)
+    storage_dead(_2)
+    storage_dead(self)
+    return
+}
+
+// Full name: test_crate::{impl Clone for Derived}
+impl "impl_Clone_for_Derived" Clone for Derived {
+    proof ImpliedClause0: (Derived: Sized) = {built_in impl Sized for Derived}
+    fn clone<'_0_1> = impl_Clone_for_Derived::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::macro_expr
+pub fn macro_expr(x: u32) -> u32
+{
+    let _0: u32; // return
+    let x: u32; // arg #1
+    let _2: u32; // anonymous local
+    let _3: u32; // anonymous local
+    let _4: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_4)
+    storage_live(_2)
+    _2 = copy x
+    storage_live(_3)
+    _3 = copy x
+    _4 = copy _2 panic.+ copy _3
+    _0 = move _4
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_4)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::desugarings
+pub fn desugarings(x: Option<u32>[{built_in impl Sized for u32}]) -> Option<u32>[{built_in impl Sized for u32}]
+{
+    let _0: Option<u32>[{built_in impl Sized for u32}]; // return
+    let x: Option<u32>[{built_in impl Sized for u32}]; // arg #1
+    let sum: u32; // local
+    let _3: Range<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let _4: Range<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let _5: u32; // anonymous local
+    let _6: ControlFlow<Option<!>[{built_in impl Sized for !}], u32>[{built_in impl Sized for Option<!>[{built_in impl Sized for !}]}, {built_in impl Sized for u32}]; // anonymous local
+    let _7: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let residual: Option<!>[{built_in impl Sized for !}]; // local
+    let _9: Option<!>[{built_in impl Sized for !}]; // anonymous local
+    let val: u32; // local
+    let iter: Range<u32>[{built_in impl Sized for u32}]; // local
+    let _12: Option<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let _13: &'1 mut Range<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let _14: &'2 mut Range<u32>[{built_in impl Sized for u32}]; // anonymous local
+    let i: u32; // local
+    let _16: u32; // anonymous local
+    let _17: u32; // anonymous local
+    let _18: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_17)
+    storage_live(sum)
+    sum = const 0u32
+    fake_read(sum)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = copy x
+    _6 = branch<u32>[{built_in impl Sized for u32}](move _7)
+    ↳⚡ storage_dead(_17)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_7)
+    match _6 {
+        ControlFlow::Continue => {
+        },
+        ControlFlow::Break => {
+            storage_live(residual)
+            residual = copy (_6 as variant ControlFlow::Break)._0
+            storage_live(_9)
+            _9 = copy residual
+            _0 = from_residual<u32>[{built_in impl Sized for u32}](move _9)
+            ↳⚡ storage_dead(_17)
+                storage_dead(x)
+                unwind_continue
+            storage_dead(_9)
+            storage_dead(residual)
+            storage_dead(_5)
+            storage_dead(_4)
+            storage_dead(_6)
+            storage_dead(_3)
+            storage_dead(sum)
+            storage_dead(_17)
+            storage_dead(x)
+            return
+        },
+    }
+    storage_live(val)
+    val = copy (_6 as variant ControlFlow::Continue)._0
+    _5 = copy val
+    storage_dead(val)
+    _4 = Range { start: const 0u32, end: move _5 }
+    storage_dead(_5)
+    _3 = into_iter<Range<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for Range<u32>[{built_in impl Sized for u32}]}, impl_Iterator_for_Range<u32>[{built_in impl Sized for u32}, impl_Step_for_u32, {built_in impl Destruct for u32}]](move _4)
+    ↳⚡ storage_dead(_17)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_4)
+    storage_live(iter)
+    iter = move _3
+    loop {
+        storage_live(_12)
+        storage_live(_13)
+        storage_live(_14)
+        _14 = &mut iter
+        _13 = &two-phase-mut (*_14)
+        _12 = next<'4, u32>[{built_in impl Sized for u32}, impl_Step_for_u32, {built_in impl Destruct for u32}](move _13)
+        ↳⚡ storage_dead(_17)
+            storage_dead(x)
+            unwind_continue
+        storage_dead(_13)
+        match _12 {
+            Option::None => {
+                break 0
+            },
+            Option::Some => {
+            },
+        }
+        storage_live(i)
+        i = copy (_12 as variant Option::Some)._0
+        storage_live(_16)
+        _16 = copy i
+        _17 = copy sum panic.+ copy _16
+        sum = move _17
+        storage_dead(_16)
+        storage_dead(i)
+        storage_dead(_14)
+        storage_dead(_12)
+        continue 0
+    }
+    storage_dead(_14)
+    storage_dead(_12)
+    storage_dead(iter)
+    storage_dead(_6)
+    storage_dead(_3)
+    storage_live(_18)
+    _18 = copy sum
+    _0 = Option::Some { _0: move _18 }
+    storage_dead(_18)
+    storage_dead(sum)
+    storage_dead(_17)
+    storage_dead(x)
+    return
+}
+
+
+
