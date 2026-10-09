@@ -190,7 +190,7 @@ where
     vtable: lazy
 }
 
-static test_crate::{promoted_const}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(&{as_fn}[0], &{as_fn}[1], &{as_fn}[2], &{as_fn}[3], &{as_fn}[4], &{as_fn}[5], &{as_fn}[6], &{as_fn}[7])
+static test_crate::{promoted_const}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(&test_crate::CLOSURE_STATELESS::{closure}::{as_fn}[0], &test_crate::CLOSURE_STATELESS::{closure}::{as_fn}[1], &test_crate::CLOSURE_STATELESS::{closure}::{as_fn}[2], &test_crate::CLOSURE_STATELESS::{closure}::{as_fn}[3], &test_crate::CLOSURE_STATELESS::{closure}::{as_fn}[4], &test_crate::CLOSURE_STATELESS::{closure}::{as_fn}[5], &test_crate::CLOSURE_STATELESS::{closure}::{as_fn}[6], &test_crate::CLOSURE_STATELESS::{closure}::{as_fn}[7])
 
 static test_crate::{promoted_const#1}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(&{built_in impl Clone for (u8, u8)}::clone<'_>[0], &{built_in impl Clone for (u8, u8)}::clone<'_>[1], &{built_in impl Clone for (u8, u8)}::clone<'_>[2], &{built_in impl Clone for (u8, u8)}::clone<'_>[3], &{built_in impl Clone for (u8, u8)}::clone<'_>[4], &{built_in impl Clone for (u8, u8)}::clone<'_>[5], &{built_in impl Clone for (u8, u8)}::clone<'_>[6], &{built_in impl Clone for (u8, u8)}::clone<'_>[7])
 
@@ -219,6 +219,89 @@ struct C {
 
 // Full name: test_crate::FN_PTR_CALL
 static FN_PTR_CALL: &'static C = &test_crate::{promoted_const#2}
+
+struct test_crate::CLOSURE_BY_VALUE::{closure} {}
+
+// Full name: test_crate::CLOSURE_BY_VALUE::{impl Fn<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call
+fn {impl Fn<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call<'_0>(_1: &'_0 test_crate::CLOSURE_BY_VALUE::{closure}, tupled_args: ()) -> u8
+{
+    let _0: u8; // return
+    let _1: &'1 test_crate::CLOSURE_BY_VALUE::{closure}; // arg #1
+    let tupled_args: (); // arg #2
+
+    storage_live(_0)
+    _0 = const 2u8
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::CLOSURE_BY_VALUE::{impl FnMut<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call_mut
+fn {impl FnMut<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::CLOSURE_BY_VALUE::{closure}, args: ()) -> u8
+{
+    let _0: u8; // return
+    let state: &'_0 mut test_crate::CLOSURE_BY_VALUE::{closure}; // arg #1
+    let args: (); // arg #2
+    let _3: &'0 test_crate::CLOSURE_BY_VALUE::{closure}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &(*state)
+    _0 = {impl Fn<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call<'2>(move _3, move args)
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::CLOSURE_BY_VALUE::{impl FnOnce<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call_once
+fn {impl FnOnce<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call_once(_1: test_crate::CLOSURE_BY_VALUE::{closure}, _2: ()) -> u8
+{
+    let _0: u8; // return
+    let _1: test_crate::CLOSURE_BY_VALUE::{closure}; // arg #1
+    let _2: (); // arg #2
+    let _3: &'1 mut test_crate::CLOSURE_BY_VALUE::{closure}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &mut _1
+    _0 = {impl FnMut<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call_mut<'2>(move _3, move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+fn test_crate::CLOSURE_BY_VALUE::{closure}::{as_fn}() -> u8
+{
+    let _0: u8; // return
+    let args: (); // local
+    let state: test_crate::CLOSURE_BY_VALUE::{closure}; // local
+
+    storage_live(_0)
+    storage_live(args)
+    storage_live(state)
+    args = ()
+    state = test_crate::CLOSURE_BY_VALUE::{closure} {  }
+    _0 = {impl FnOnce<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call_once(move state, move args)
+    ↳⚡ storage_dead(state)
+        storage_dead(args)
+        unwind_continue
+    storage_dead(state)
+    storage_dead(args)
+    return
+}
+
+// Full name: test_crate::CLOSURE_BY_VALUE
+static CLOSURE_BY_VALUE: A = A { _0: fnptr(test_crate::CLOSURE_BY_VALUE::{closure}::{as_fn}) }
 
 
 

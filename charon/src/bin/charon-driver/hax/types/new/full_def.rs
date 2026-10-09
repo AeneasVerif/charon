@@ -112,10 +112,14 @@ where
             let parent_def_id = rust_def_id.sinto(s);
             let parent_def = parent_def_id.full_def_maybe_instantiated(s, args);
             let param_env = ParamEnv::empty(s, Some(parent_def.this()));
-            let body = get_promoted_mir(tcx, rust_def_id, promoted_id);
-            source_span = Some(body.span);
-
-            let ty = body.local_decls[rustc_middle::mir::Local::ZERO].ty;
+            let (span, ty) =
+                rustc_const_uneval::promoted_body(tcx, rust_def_id, promoted_id, |body| {
+                    (
+                        body.span,
+                        body.local_decls[rustc_middle::mir::RETURN_PLACE].ty,
+                    )
+                });
+            source_span = Some(span);
             let ty = substitute(tcx, s.typing_env(), args, ty).sinto(s);
             kind = FullDefKind::Const(Const {
                 param_env,
@@ -1667,153 +1671,43 @@ impl<'tcx> FullDef<'tcx> {
         })
     }
 
-    /// Evaluate the value of a `Const` or `AssocConst` item.
-    pub fn const_value<S>(&self, s: &S) -> Option<ConstantExpr>
+    /// Evaluate the value of a `Const`, `AssocConst` or `Static` item. Returns `None` for other
+    /// items, or if the item can't be evaluated (see [`read_const`]).
+    pub fn evaluate<S>(&self, s: &S, mode: ReadMode) -> Option<ConstantExpr>
     where
         S: BaseState<'tcx>,
     {
-        match self.kind() {
-            FullDefKind::Const(_) | FullDefKind::AssocConst(_) => {}
-            _ => panic!("expected a Const or AssocConst definition"),
-        }
         let s = &s.with_hax_owner(self.def_id());
         let tcx = s.base().tcx;
-        let def_id = self.def_id().as_real_def_id()?;
-        let args = self.this().rustc_args(s);
-        let kind =
-            ty::AliasConstKind::new_from_def_id(tcx, def_id, ty::AliasConstInherentArgsKind::Impl);
-        let uneval = ty::AliasConst::new(tcx, kind, args);
-        let Some(c) = eval_ty_constant(s, uneval) else {
-            // Const-evaluation gives up on a const that isn't monomorphic. For "trivial" consts,
-            // we can still read the value directly.
-            let (val, ty) = tcx.trivial_const(def_id)?;
-            let expr = const_value_to_constant_expr(s, ty, val, tcx.def_span(def_id));
-            return expr.discard_err();
-        };
-        match c.kind() {
-            ty::ConstKind::Error(..) => None,
-            _ => Some(c.sinto(s)),
-        }
-    }
-
-    /// Evaluate the value of a `Const` or `AssocConst` item as raw memory.
-    pub fn const_value_as_raw_memory<S>(&self, s: &S) -> Option<ConstantExpr>
-    where
-        S: BaseState<'tcx>,
-    {
-        match self.kind() {
-            FullDefKind::Const(_) | FullDefKind::AssocConst(_) => {}
-            _ => panic!("expected a Const or AssocConst definition"),
-        }
-        let s = &s.with_hax_owner(self.def_id());
-        let tcx = s.base().tcx;
-        let args = self.this().rustc_args(s);
-        let (def_id, promoted) = match self.def_id().base {
-            DefIdBase::Real(def_id) => (def_id, None),
-            DefIdBase::Promoted(def_id, promoted) => (def_id, Some(promoted)),
+        let (src, span) = match (self.kind(), self.def_id().base) {
+            (FullDefKind::Const(_) | FullDefKind::AssocConst(_), DefIdBase::Real(def_id)) => {
+                let args = self.this().rustc_args(s);
+                (ConstSource::Item { def_id, args }, tcx.def_span(def_id))
+            }
+            (FullDefKind::Const(_), DefIdBase::Promoted(def_id, promoted)) => {
+                let args = self.this().rustc_args(s);
+                let src = ConstSource::Promoted {
+                    def_id,
+                    args,
+                    promoted,
+                };
+                // The span of the promoted expression.
+                let span = self
+                    .source_span
+                    .map_or_else(|| tcx.def_span(def_id), Into::into);
+                (src, span)
+            }
+            (FullDefKind::Static(_), DefIdBase::Real(def_id)) => {
+                let src = ConstSource::Global(GlobalRef::Static(def_id));
+                (src, tcx.def_span(def_id))
+            }
+            (FullDefKind::Static(_), DefIdBase::Alloc(alloc_id)) => {
+                let src = ConstSource::Global(GlobalRef::Alloc(alloc_id));
+                (src, rustc_span::DUMMY_SP)
+            }
             _ => return None,
         };
-        let span = self
-            .source_span
-            .map_or_else(|| tcx.def_span(def_id), Into::into);
-        let uneval = mir::UnevaluatedConst {
-            def: def_id,
-            args,
-            promoted,
-        };
-        let (val, ty) = match tcx.const_eval_resolve(s.typing_env(), uneval, span) {
-            Ok(val) => {
-                let ty = if let Some(promoted) = promoted {
-                    get_promoted_mir(tcx, def_id, promoted).local_decls[mir::Local::ZERO].ty
-                } else {
-                    self.def_id()
-                        .type_of(s)
-                        .instantiate_identity()
-                        .skip_normalization()
-                };
-                let ty = substitute(tcx, s.typing_env(), Some(args), ty);
-                (val, ty)
-            }
-            Err(_) if promoted.is_none() => {
-                let (val, ty) = tcx.trivial_const(def_id)?;
-                (val, substitute(tcx, s.typing_env(), Some(args), ty))
-            }
-            Err(_) => return None,
-        };
-        const_value_to_raw_memory(s, ty, val, span).discard_err()
-    }
-
-    /// Evaluate the initializer of a `Static` item.
-    pub fn static_value<S>(&self, s: &S) -> Option<ConstantExpr>
-    where
-        S: BaseState<'tcx>,
-    {
-        self.static_value_inner(s, false)
-    }
-
-    /// Evaluate the initializer of a `Static` item as raw memory.
-    pub fn static_value_as_raw_memory<S>(&self, s: &S) -> Option<ConstantExpr>
-    where
-        S: BaseState<'tcx>,
-    {
-        self.static_value_inner(s, true)
-    }
-
-    fn static_value_inner<S>(&self, s: &S, raw_memory: bool) -> Option<ConstantExpr>
-    where
-        S: BaseState<'tcx>,
-    {
-        match self.kind() {
-            FullDefKind::Static(_) => {}
-            _ => panic!("expected a Static definition"),
-        }
-        let s = &s.with_hax_owner(self.def_id());
-
-        if let DefIdBase::Alloc(alloc_id) = self.def_id().base {
-            // If this is an allocation, it is untyped and we need to read it as raw memory.
-            let val = mir::ConstValue::Indirect {
-                alloc_id,
-                offset: rustc_abi::Size::ZERO,
-            };
-            let ty = self.def_id().type_of(s).instantiate_identity();
-            let span = rustc_span::DUMMY_SP;
-            return const_value_to_raw_memory(s, ty.skip_normalization(), val, span).discard_err();
-        }
-
-        let def_id = self.def_id().as_real_def_id()?;
-        // Statics in `extern` blocks have no value or initializer
-        if s.base().tcx.is_foreign_item(def_id) {
-            return None;
-        }
-        let args = self.this().rustc_args(s);
-        let ty = inst_binder(
-            s.base().tcx,
-            s.typing_env(),
-            Some(args),
-            self.def_id().type_of(s),
-        );
-        let alloc = s.base().tcx.eval_static_initializer(def_id).ok()?;
-        // A static whose type has interior mutability gets a mutable allocation, which
-        // const-eval refuses to read. We don't care though, so we reintern it as immutable.
-        let alloc = if alloc.inner().mutability.is_mut() {
-            let mut alloc = alloc.inner().clone();
-            alloc.mutability = rustc_middle::mir::Mutability::Not;
-            s.base().tcx.mk_const_alloc(alloc)
-        } else {
-            alloc
-        };
-        // `eval_static_initializer` returns an interned allocation without an `AllocId`; give it
-        // one so we can inspect it through the existing `ConstValue` path.
-        let val = mir::ConstValue::Indirect {
-            alloc_id: s.base().tcx.reserve_and_set_memory_alloc(alloc),
-            offset: rustc_abi::Size::ZERO,
-        };
-        let span = s.base().tcx.def_span(def_id);
-        if raw_memory {
-            const_value_to_raw_memory(s, ty, val, span).discard_err()
-        } else {
-            const_value_to_constant_expr(s, ty, val, span).discard_err()
-        }
+        read_const(s, span, src, mode)
     }
 
     /// Returns the generics and predicates for definitions that have those.

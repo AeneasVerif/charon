@@ -1,0 +1,83 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Sync
+#[lang_item(Sync)]
+#[diagnostic_item("Sync")]
+pub unsafe trait Sync<Self>
+
+struct () {}
+
+// Full name: core::num::{usize}::MAX
+pub const MAX: usize = 18446744073709551615usize
+
+// Full name: core::ptr::slice_from_raw_parts
+#[diagnostic_item("ptr_slice_from_raw_parts")]
+pub fn slice_from_raw_parts<T>(_1: *const T, _2: usize) -> *const [T]
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: test_crate::Wrapper
+pub struct Wrapper {
+  _0: *const [u8],
+}
+
+// Full name: test_crate::{impl Sync for Wrapper}
+unsafe impl "impl_Sync_for_Wrapper" Sync for Wrapper {
+    vtable: lazy
+}
+
+// Full name: test_crate::HUGE
+pub fn HUGE() -> Wrapper
+{
+    let _0: Wrapper; // return
+    let _1: *const [u8]; // anonymous local
+    let _2: *const u8; // anonymous local
+    let _3: &'1 u8; // anonymous local
+    let _4: &'2 u8; // anonymous local
+    let _5: &'3 u8; // anonymous local
+    let _6: &'4 u8; // anonymous local
+    let _7: u8; // anonymous local
+
+    storage_live(_5)
+    storage_live(_6)
+    storage_live(_7)
+    _7 = const 0u8
+    _6 = &_7
+    _5 = move _6
+    storage_live(_0)
+    storage_live(_4)
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    _4 = move _5
+    _3 = &(*_4)
+    _2 = &raw const (*_3)
+    _1 = slice_from_raw_parts<u8>[{built_in impl Sized for u8}](move _2, copy MAX)
+    ↳⚡ unwind_continue
+    storage_dead(_2)
+    _0 = Wrapper { _0: move _1 }
+    storage_dead(_3)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::HUGE
+pub static HUGE: Wrapper = HUGE()
+
+
+

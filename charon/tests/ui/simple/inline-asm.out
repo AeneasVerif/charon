@@ -1,16 +1,12 @@
-# Final LLBC before serialization:
-
-// Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
-pub trait MetaSized<Self>
+pub trait core::marker::MetaSized<Self>
 
-// Full name: core::marker::Sized
 #[fundamental]
 #[lang_item(Sized)]
-pub trait Sized<Self>
+pub trait core::marker::Sized<Self>
 {
-    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause0: (Self: core::marker::MetaSized)
     non-dyn-compatible
 }
 
@@ -18,14 +14,13 @@ struct () {}
 
 struct (_, _)<A, B>
 where
-    TraitClause0: (A: Sized),
+    TraitClause0: (A: core::marker::Sized),
 {
   _0: A,
   _1: B,
 }
 
-// Full name: test_crate::main
-fn main()
+fn test_crate::main()
 {
     let _0: (); // return
 
@@ -40,8 +35,7 @@ fn main()
     ↳⚡ undefined_behavior
 }
 
-// Full name: test_crate::multiple_targets
-fn multiple_targets(x: u32) -> u32
+fn test_crate::multiple_targets(x: u32) -> u32
 {
     let _0: u32; // return
     let x: u32; // arg #1
@@ -63,8 +57,7 @@ fn multiple_targets(x: u32) -> u32
     ↳⚡ undefined_behavior
 }
 
-// Full name: test_crate::ASM_STATIC
-fn ASM_STATIC() -> u64
+fn test_crate::ASM_STATIC() -> u64
 {
     let _0: u64; // return
 
@@ -73,11 +66,9 @@ fn ASM_STATIC() -> u64
     return
 }
 
-// Full name: test_crate::ASM_STATIC
-static ASM_STATIC: u64 = ASM_STATIC()
+static test_crate::ASM_STATIC: u64 = test_crate::ASM_STATIC()
 
-// Full name: test_crate::asm_target
-fn asm_target()
+fn test_crate::asm_target()
 {
     let _0: (); // return
 
@@ -87,8 +78,7 @@ fn asm_target()
     return
 }
 
-// Full name: test_crate::operands_and_options
-fn operands_and_options(x: u64) -> u64
+fn test_crate::operands_and_options(x: u64) -> u64
 {
     let _0: u64; // return
     let x: u64; // arg #1
@@ -103,7 +93,7 @@ fn operands_and_options(x: u64) -> u64
     storage_live(output)
     storage_live(_3)
     _3 = copy x
-    asm!("mov {1}, {0}\n/* {{literal}} {0:e} {2} {3} {4} */", in(reg) move _3, lateout(reg) output, const 7i32, sym asm_target, sym ASM_STATIC, options(nomem, preserves_flags, nostack)) {
+    asm!("mov {1}, {0}\n/* {{literal}} {0:e} {2} {3} {4} */", in(reg) move _3, lateout(reg) output, const 7i32, sym test_crate::asm_target, sym test_crate::ASM_STATIC, options(nomem, preserves_flags, nostack)) {
         fallthrough => {
             storage_dead(_3)
             asm!("mov {0}, {0}", inout(reg) copy x => x, options(pure, nomem)) {
@@ -133,8 +123,7 @@ fn operands_and_options(x: u64) -> u64
     ↳⚡ undefined_behavior
 }
 
-// Full name: test_crate::asm_noreturn
-fn asm_noreturn() -> !
+fn test_crate::asm_noreturn() -> !
 {
     let _0: !; // return
 
@@ -143,8 +132,7 @@ fn asm_noreturn() -> !
     ↳⚡ undefined_behavior
 }
 
-// Full name: test_crate::label_noreturn
-fn label_noreturn()
+fn test_crate::label_noreturn()
 {
     let _0: (); // return
 
@@ -159,9 +147,8 @@ fn label_noreturn()
     ↳⚡ undefined_behavior
 }
 
-// Full name: test_crate::naked
 #[naked]
-extern "C" fn naked()
+extern "C" fn test_crate::naked()
 {
     let _0: (); // return
 
@@ -170,6 +157,5 @@ extern "C" fn naked()
     naked_asm!("ret")
     ↳⚡ undefined_behavior
 }
-
 
 

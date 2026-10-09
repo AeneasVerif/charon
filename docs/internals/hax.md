@@ -14,7 +14,9 @@ much as possible.
 
 The clever parts of hax are:
 - Trait proof solving, using [`rustc_trait_elaboration`](./rustc_trait_elaboration.md);
-- Constant evaluation and unevaluation, because rustc's constant representations are a bit complex;
+- Constant evaluation and unevaluation, because rustc's constant representations are a bit complex.
+  Evaluating constants and reading them back into structured values is done by the
+  [`rustc_const_uneval`](./rustc_const_uneval.md) subcrate, which hax then translates;
 - Monomorphization: `FullDef` can be created for a given item with or without a specific choice of
   generic arguments. If with arguments, then everything in the item is substituted and normalized,
   therefore monomorphizing the item. That's how Charon can support monomorphization that's

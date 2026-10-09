@@ -124,24 +124,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstOperand> for mir::ConstOperan
     }
 }
 
-/// Retrieve the MIR for a promoted body.
-pub fn get_promoted_mir<'tcx>(
-    tcx: ty::TyCtxt<'tcx>,
-    def_id: RDefId,
-    promoted_id: mir::Promoted,
-) -> mir::Body<'tcx> {
-    if let Some(local_def_id) = def_id.as_local() {
-        let (_, promoteds) = tcx.mir_promoted(local_def_id);
-        if !promoteds.is_stolen() {
-            promoteds.borrow()[promoted_id].clone()
-        } else {
-            tcx.promoted_mir(def_id)[promoted_id].clone()
-        }
-    } else {
-        tcx.promoted_mir(def_id)[promoted_id].clone()
-    }
-}
-
 /// Translate a MIR constant.
 fn translate_mir_const<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
@@ -153,20 +135,13 @@ fn translate_mir_const<'tcx, S: UnderOwnerState<'tcx>>(
     let tcx = s.base().tcx;
     match konst {
         Const::Val(const_value, ty) => {
-            let evaluated = const_value_to_constant_expr(s, ty, const_value, span);
-            match evaluated.report_err() {
-                Ok(val) => Value(val),
-                Err(err) => {
-                    warning!(
-                        s[span], "Couldn't convert constant back to an expression";
-                        {const_value, ty, err}
-                    );
-                    Value(
-                        ConstantExprKind::Todo("ConstEvalVal".into())
-                            .decorate(ty.sinto(s), span.sinto(s)),
-                    )
-                }
-            }
+            let src = ConstSource::Value(const_value, ty);
+            Value(
+                read_const(s, span, src, ReadMode::Structured).unwrap_or_else(|| {
+                    ConstantExprKind::Todo("ConstEvalVal".into())
+                        .decorate(ty.sinto(s), span.sinto(s))
+                }),
+            )
         }
         Const::Ty(_ty, c) => Value(c.sinto(s)),
         Const::Unevaluated(ucv, _) => {

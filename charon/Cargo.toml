@@ -3,6 +3,7 @@ exclude = ["tests/popular-crates"]
 members = [
     "adt-into",
     "macros",
+    "rustc_const_uneval",
     "rustc_trait_elaboration",
 ]
 
@@ -72,6 +73,7 @@ required-features = ["minirust"]
 [dependencies]
 hax-adt-into = { path = "./adt-into" }
 macros = { path = "./macros" }
+rustc_const_uneval = { path = "./rustc_const_uneval", optional = true }
 rustc_trait_elaboration = { path = "./rustc_trait_elaboration", optional = true }
 
 annotate-snippets = { version = "0.12" }
@@ -126,7 +128,7 @@ default = ["rustc", "minirust"]
 # Hook into rustc-internal APIs. Needed for the `charon-driver` binary but not
 # the main crate. Pass `--no-default-features` to compile `charon-lib` on a
 # stable toolchain.
-rustc = ["dep:rustc_trait_elaboration"]
+rustc = ["dep:rustc_const_uneval", "dep:rustc_trait_elaboration"]
 # Enables converting monomorphized ULLBC to MiniRust's serialized format.
 minirust = ["dep:minirust-rs", "dep:miniutil"]
 # Enable the `charon` tool attribute when translating charon with itself.

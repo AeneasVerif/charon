@@ -74,16 +74,29 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     hax::ConstantByteProvenance::Global(item) => {
                         Provenance::Global(self.translate_global_decl_ref(span, item)?)
                     }
-                    hax::ConstantByteProvenance::Function(item) => Provenance::Function(
-                        self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?,
-                    ),
-                    hax::ConstantByteProvenance::ClosureAsFn(closure) => {
-                        let fn_ref = self.translate_stateless_closure_as_fn_ref(span, closure)?;
-                        Provenance::Function(self.erase_region_binder(fn_ref).into())
+                    hax::ConstantByteProvenance::Function(target) => {
+                        Provenance::Function(self.translate_fn_ptr_target(span, target)?)
                     }
                     hax::ConstantByteProvenance::Unknown => Provenance::Unknown,
                 };
                 Byte::Provenance(prov, *offset)
+            }
+        })
+    }
+
+    /// The function pointed to by a function pointer.
+    fn translate_fn_ptr_target(
+        &mut self,
+        span: Span,
+        target: &hax::FnPtrTarget,
+    ) -> Result<FnPtr, Error> {
+        Ok(match target {
+            hax::FnPtrTarget::Fn(item) => {
+                self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?
+            }
+            hax::FnPtrTarget::ClosureAsFn(closure) => {
+                let fn_ref = self.translate_stateless_closure_as_fn_ref(span, closure)?;
+                self.erase_region_binder(fn_ref).into()
             }
         })
     }
@@ -196,9 +209,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let fn_ptr = self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?;
                 ConstantExprKind::FnDef(fn_ptr)
             }
-            hax::ConstantExprKind::FnPtr(item) => {
-                let fn_ptr = self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?;
-                ConstantExprKind::FnPtr(fn_ptr)
+            hax::ConstantExprKind::FnPtr(target) => {
+                ConstantExprKind::FnPtr(self.translate_fn_ptr_target(span, target)?)
             }
             hax::ConstantExprKind::Memory(bytes) => {
                 let bytes: Vec<Byte> = bytes
@@ -223,33 +235,5 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<ConstantExpr, Error> {
         let c = self.catch_sinto(span, c)?;
         self.translate_constant_expr(span, &c)
-    }
-
-    /// Evaluates a global definition to a [`ConstantExpr`], if possible.
-    pub(crate) fn evaluate_const_def(
-        &mut self,
-        def: &hax::FullDef<'tcx>,
-    ) -> Option<hax::Decorated<hax::ConstantExprKind>> {
-        match def.kind() {
-            hax::FullDefKind::Const(_) | hax::FullDefKind::AssocConst(_) => {
-                def.const_value(self.hax_state_with_id())
-            }
-            hax::FullDefKind::Static(_) => def.static_value(self.hax_state_with_id()),
-            _ => None,
-        }
-    }
-
-    /// Evaluates a global definition to its byte representation, if possible.
-    pub(crate) fn evaluate_const_def_as_bytes(
-        &mut self,
-        def: &hax::FullDef<'tcx>,
-    ) -> Option<hax::Decorated<hax::ConstantExprKind>> {
-        match def.kind() {
-            hax::FullDefKind::Const(_) | hax::FullDefKind::AssocConst(_) => {
-                def.const_value_as_raw_memory(self.hax_state_with_id())
-            }
-            hax::FullDefKind::Static(_) => def.static_value_as_raw_memory(self.hax_state_with_id()),
-            _ => None,
-        }
     }
 }

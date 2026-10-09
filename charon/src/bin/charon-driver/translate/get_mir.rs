@@ -113,7 +113,9 @@ fn get_mir_for_def_id_and_level<'tcx>(
             }
         }
         hax::DefIdBase::Promoted(rust_def_id, promoted_id) => {
-            Some(hax::get_promoted_mir(tcx, rust_def_id, promoted_id))
+            let body =
+                rustc_const_uneval::promoted_body(tcx, rust_def_id, promoted_id, Clone::clone);
+            Some(body)
         }
         hax::DefIdBase::Alloc(..) => None,
         _ => unreachable!(),
