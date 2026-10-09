@@ -161,7 +161,7 @@ impl<'tcx> ConstReader<'tcx> {
         });
         let Some((place, alloc_id, offset)) = pointee else {
             // Invalid pointer; try reading it as a raw address
-            let int = ecx.read_scalar(op)?.try_to_scalar_int().unwrap();
+            let int = ecx.read_scalar(op)?.to_scalar_int()?;
             let kind = ConstKind::PtrNoProvenance(int.to_uint(int.size()));
             return interp_ok(Const {
                 ty: op.layout.ty,
@@ -187,7 +187,7 @@ impl<'tcx> ConstReader<'tcx> {
 
         let target = match view_ty {
             Some(view_ty) => {
-                let layout = tcx.layout_of(self.typing_env.as_query_input(view_ty));
+                let layout = ecx.layout_of(view_ty)?;
                 if offset == Size::ZERO
                     && let AllocTarget::Global(global) = self.alloc_target(alloc_id)
                     && self.is_named_global(global)
@@ -195,7 +195,7 @@ impl<'tcx> ConstReader<'tcx> {
                     // allocation. Our constant pointers don't have a way to indicate their offset,
                     // so if there's a mismatch it would be wrong.
                     && (matches!(global, GlobalRef::Static(_))
-                        || layout.is_ok_and(|layout| layout.size == ecx.get_alloc_info(alloc_id).size))
+                        || layout.size == ecx.get_alloc_info(alloc_id).size)
                 {
                     PtrTarget::Global {
                         global,
@@ -206,7 +206,7 @@ impl<'tcx> ConstReader<'tcx> {
                     let place = if view_ty == ty {
                         place
                     } else {
-                        place.offset(Size::ZERO, layout.unwrap(), ecx)?
+                        place.offset(Size::ZERO, layout, ecx)?
                     };
                     PtrTarget::Inline(Box::new(self.read_op(ecx, place.into())?))
                 }
@@ -240,7 +240,7 @@ impl<'tcx> ConstReader<'tcx> {
         };
         let kind = match ty.kind() {
             ty::Char | ty::Bool | ty::Uint(_) | ty::Int(_) | ty::Float(_) => {
-                ConstKind::Scalar(ecx.read_scalar(&op)?.try_to_scalar_int().unwrap())
+                ConstKind::Scalar(ecx.read_scalar(&op)?.to_scalar_int()?)
             }
             ty::Adt(adt_def, ..) if adt_def.is_union() => {
                 ConstKind::Memory(self.read_raw_bytes(ecx, &op)?)
@@ -293,10 +293,7 @@ impl<'tcx> ConstReader<'tcx> {
             ty::Dynamic(..) => {
                 let place = op.assert_mem_place();
                 let concrete_ty = self.sized_tail(ecx, &place, ty)?;
-                let layout = (self.tcx)
-                    .layout_of(self.typing_env.as_query_input(concrete_ty))
-                    .unwrap();
-                let place = place.offset(Size::ZERO, layout, ecx)?;
+                let place = place.offset(Size::ZERO, ecx.layout_of(concrete_ty)?, ecx)?;
                 return self.read_op(ecx, place.into());
             }
             ty::Foreign(..)

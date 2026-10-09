@@ -1,4 +1,3 @@
-//@ known-failure
 //@ charon-args=--consts=values
 // The pointee of this pointer is too big to have a layout, so we can't read it.
 pub struct Wrapper(*const [u8]);
