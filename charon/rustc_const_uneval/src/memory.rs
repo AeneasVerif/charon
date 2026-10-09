@@ -28,14 +28,6 @@ impl<'tcx> ConstReader<'tcx> {
         }
     }
 
-    /// Whether we refer to `global` by name in pointers to it, rather than inlining its contents.
-    pub fn is_named_global(&self, global: GlobalRef) -> bool {
-        match global {
-            GlobalRef::Static(_) => true,
-            GlobalRef::Alloc(_) => self.config.anon_allocs_as_globals,
-        }
-    }
-
     /// Read the raw bytes of an evaluated operand, keeping track of uninitialized bytes and pointer
     /// provenance.
     pub(crate) fn read_raw_bytes(

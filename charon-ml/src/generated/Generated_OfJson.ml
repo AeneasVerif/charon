@@ -1011,7 +1011,6 @@ and global_provenance_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("TypeId", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (ProvTypeId _0)
-    | `String "Unknown" -> Ok ProvUnknown
     | _ -> Error "")
 
 and hash_consed_of_json :

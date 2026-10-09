@@ -1182,9 +1182,6 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                             raise!(span, "MiniRust globals cannot contain function pointers")
                         }
                         GlobalProvenance::TypeId(_) => unreachable!(),
-                        GlobalProvenance::Unknown => {
-                            raise!(span, "global contains a pointer with unknown provenance")
-                        }
                     };
                     // FIXME(minirust): MiniRust does not seem to support pointer fragments
                     if *pointer_byte == 0 {
