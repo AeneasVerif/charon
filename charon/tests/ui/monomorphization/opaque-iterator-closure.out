@@ -1,7 +1,7 @@
 # Final LLBC before serialization:
 
-// Full name: core::iter::adapters::map::Map::<Range::<u32>, {closure}>
-pub opaque type Map::<Range::<u32>, {closure}>
+// Full name: core::iter::adapters::map::Map::<Range::<u32>, test_crate::main::{closure}>
+pub opaque type Map::<Range::<u32>, test_crate::main::{closure}>
 
 // Full name: core::option::Option::<u32>
 #[lang_item(Option)]
@@ -11,8 +11,8 @@ pub enum Option::<u32> {
   Some { _0: u32 },
 }
 
-// Full name: core::iter::adapters::map::{impl Iterator for Map::<Range::<u32>, {closure}>}::next::<u32, Range::<u32>, {closure}>
-pub fn next::<u32, Range::<u32>, {closure}><'_0>(_1: &'_0 mut Map::<Range::<u32>, {closure}>) -> Option::<u32>
+// Full name: core::iter::adapters::map::{impl Iterator for Map::<Range::<u32>, test_crate::main::{closure}>}::next::<u32, Range::<u32>, test_crate::main::{closure}>
+pub fn next::<u32, Range::<u32>, test_crate::main::{closure}><'_0>(_1: &'_0 mut Map::<Range::<u32>, test_crate::main::{closure}>) -> Option::<u32>
 = <opaque>
 
 // Full name: core::marker::MetaSized
@@ -29,8 +29,7 @@ pub trait Iterator<Self>
     vtable: core::iter::traits::iterator::Iterator::{vtable}
 }
 
-// Full name: test_crate::main::{closure}
-struct {closure} {}
+struct test_crate::main::{closure} {}
 
 // Full name: core::ops::range::Range::<u32>
 #[lang_item(Range)]
@@ -39,12 +38,20 @@ pub struct Range::<u32> {
   end: u32,
 }
 
-// Full name: core::iter::traits::iterator::Iterator::map::<Range::<u32>, u32, {closure}>
+// Full name: core::iter::traits::iterator::Iterator::map::<Range::<u32>, u32, test_crate::main::{closure}>
 #[diagnostic_item("IteratorMap")]
-pub fn map::<Range::<u32>, u32, {closure}>(_1: Range::<u32>, _2: {closure}) -> Map::<Range::<u32>, {closure}>
+pub fn map::<Range::<u32>, u32, test_crate::main::{closure}>(_1: Range::<u32>, _2: test_crate::main::{closure}) -> Map::<Range::<u32>, test_crate::main::{closure}>
 = <opaque>
 
+// Full name: test_crate::Thing
+struct Thing {}
+
 struct () {}
+
+// Full name: core::mem::drop::<Thing>
+#[diagnostic_item("mem_drop")]
+pub fn drop::<Thing>(_1: Thing)
+= <opaque>
 
 struct (_,)::<u32> {
   _0: u32,
@@ -75,15 +82,38 @@ fn callback(x: u32) -> u32
     return
 }
 
+struct test_crate::main::{closure#1}<'_0> {
+  _0: &'_0 u32,
+}
+
+// Full name: test_crate::apply_fn::<test_crate::main::{closure#1}<'_>>
+fn apply_fn::<test_crate::main::{closure#1}<'_>>(_1: test_crate::main::{closure#1}<'_>) -> u32
+= <opaque>
+
+struct test_crate::main::{closure#2} {
+  _0: Thing,
+}
+
+// Full name: test_crate::apply_once::<test_crate::main::{closure#2}>
+fn apply_once::<test_crate::main::{closure#2}>(_1: test_crate::main::{closure#2}) -> u32
+= <opaque>
+
 // Full name: test_crate::main
 fn main()
 {
     let _0: (); // return
-    let iter: Map::<Range::<u32>, {closure}>; // local
+    let iter: Map::<Range::<u32>, test_crate::main::{closure}>; // local
     let _2: Range::<u32>; // anonymous local
-    let _3: {closure}; // anonymous local
+    let _3: test_crate::main::{closure}; // anonymous local
     let _4: Option::<u32>; // anonymous local
-    let _5: &'1 mut Map::<Range::<u32>, {closure}>; // anonymous local
+    let _5: &'1 mut Map::<Range::<u32>, test_crate::main::{closure}>; // anonymous local
+    let offset: u32; // local
+    let _7: u32; // anonymous local
+    let _8: test_crate::main::{closure#1}<'3>; // anonymous local
+    let _9: &'5 u32; // anonymous local
+    let thing: Thing; // local
+    let _11: u32; // anonymous local
+    let _12: test_crate::main::{closure#2}; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -91,8 +121,8 @@ fn main()
     storage_live(_2)
     _2 = Range::<u32> { start: const 0u32, end: const 1u32 }
     storage_live(_3)
-    _3 = {closure} {  }
-    iter = map::<Range::<u32>, u32, {closure}>(move _2, move _3)
+    _3 = test_crate::main::{closure} {  }
+    iter = map::<Range::<u32>, u32, test_crate::main::{closure}>(move _2, move _3)
     ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
@@ -100,20 +130,45 @@ fn main()
     storage_live(_4)
     storage_live(_5)
     _5 = &two-phase-mut iter
-    _4 = next::<u32, Range::<u32>, {closure}><'3>(move _5)
+    _4 = next::<u32, Range::<u32>, test_crate::main::{closure}><'7>(move _5)
     ↳⚡ unwind_continue
     storage_dead(_5)
     storage_dead(_4)
+    storage_live(offset)
+    offset = const 1u32
+    fake_read(offset)
+    storage_live(_7)
+    storage_live(_8)
+    storage_live(_9)
+    _9 = &offset
+    _8 = test_crate::main::{closure#1} { _0: move _9 }
+    storage_dead(_9)
+    _7 = apply_fn::<test_crate::main::{closure#1}<'_>>(move _8)
+    ↳⚡ unwind_continue
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_live(thing)
+    thing = Thing {  }
+    fake_read(thing)
+    storage_live(_11)
+    storage_live(_12)
+    _12 = test_crate::main::{closure#2} { _0: move thing }
+    _11 = apply_once::<test_crate::main::{closure#2}>(move _12)
+    ↳⚡ unwind_continue
+    storage_dead(_12)
+    storage_dead(_11)
     _0 = ()
+    storage_dead(thing)
+    storage_dead(offset)
     storage_dead(iter)
     return
 }
 
-// Full name: test_crate::main::{impl FnMut<(u32,)> for {closure}}::call_mut
-fn call_mut<'_0>(_1: &'_0 mut {closure}, tupled_args: (u32,)) -> u32
+// Full name: test_crate::main::{impl FnMut<(u32,)> for test_crate::main::{closure}}::call_mut
+fn call_mut<'_0>(_1: &'_0 mut test_crate::main::{closure}, tupled_args: (u32,)) -> u32
 {
     let _0: u32; // return
-    let _1: &'1 mut {closure}; // arg #1
+    let _1: &'1 mut test_crate::main::{closure}; // arg #1
     let tupled_args: (u32,); // arg #2
     let x: u32; // local
     let _4: u32; // anonymous local
@@ -129,6 +184,85 @@ fn call_mut<'_0>(_1: &'_0 mut {closure}, tupled_args: (u32,)) -> u32
         storage_dead(_1)
         unwind_continue
     storage_dead(_4)
+    storage_dead(x)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::main::{impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::call
+fn call<'_0, '_1>(_1: &'_1 test_crate::main::{closure#1}<'_0>, tupled_args: (u32,)) -> u32
+where
+    RegionOutlives0: '_0: '_1,
+{
+    let _0: u32; // return
+    let _1: &'1 test_crate::main::{closure#1}<'_0>; // arg #1
+    let tupled_args: (u32,); // arg #2
+    let x: u32; // local
+    let _4: u32; // anonymous local
+    let _5: u32; // anonymous local
+    let _6: u32; // anonymous local
+    let _7: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(x)
+    storage_live(_7)
+    x = move tupled_args._0
+    storage_live(_4)
+    storage_live(_5)
+    _5 = copy x
+    storage_live(_6)
+    _6 = copy (*(*_1)._0)
+    _7 = copy _5 panic.+ copy _6
+    _4 = move _7
+    storage_dead(_6)
+    storage_dead(_5)
+    _0 = callback(move _4)
+    ↳⚡ storage_dead(_7)
+        storage_dead(x)
+        storage_dead(tupled_args)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_4)
+    storage_dead(_7)
+    storage_dead(x)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::main::{impl FnOnce<(u32,)> for test_crate::main::{closure#2}}::call_once
+fn call_once(_1: test_crate::main::{closure#2}, tupled_args: (u32,)) -> u32
+{
+    let _0: u32; // return
+    let _1: test_crate::main::{closure#2}; // arg #1
+    let tupled_args: (u32,); // arg #2
+    let x: u32; // local
+    let _4: (); // anonymous local
+    let _5: Thing; // anonymous local
+    let _6: u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(x)
+    x = move tupled_args._0
+    storage_live(_4)
+    storage_live(_5)
+    _5 = move _1._0
+    _4 = drop::<Thing>(move _5)
+    ↳⚡ storage_dead(x)
+        storage_dead(tupled_args)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_live(_6)
+    _6 = copy x
+    _0 = callback(move _6)
+    ↳⚡ storage_dead(x)
+        storage_dead(tupled_args)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_6)
     storage_dead(x)
     storage_dead(tupled_args)
     storage_dead(_1)
