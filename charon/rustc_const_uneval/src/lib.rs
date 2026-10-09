@@ -11,6 +11,7 @@ extern crate rustc_span;
 
 mod eval;
 mod memory;
+mod valtree;
 
 use rustc_abi::VariantIdx;
 use rustc_hir::def_id::DefId;
@@ -35,6 +36,8 @@ pub struct ConstReader<'tcx> {
 /// A constant that we can ask rustc to evaluate.
 #[derive(Debug, Clone, Copy)]
 pub enum ConstSource<'tcx> {
+    /// An already-evaluated type-system constant.
+    ValTree(ty::Value<'tcx>),
     /// An already-evaluated constant, e.g. found in MIR.
     Value(mir::ConstValue, Ty<'tcx>),
 }
@@ -71,8 +74,8 @@ pub struct Const<'tcx> {
     pub kind: ConstKind<'tcx>,
 }
 
-/// The value of a constant. A pattern-typed value keeps its pattern type, and its kind is that of
-/// the base type.
+/// The value of a constant. A pattern-typed value read from memory keeps its pattern type, and its
+/// kind is that of the base type; when read from a valtree it is read at the base type.
 #[derive(Debug, Clone)]
 pub enum ConstKind<'tcx> {
     /// A boolean, character, integer or float.

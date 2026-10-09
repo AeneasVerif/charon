@@ -18,14 +18,23 @@ impl<'tcx> ConstReader<'tcx> {
         src: ConstSource<'tcx>,
         mode: ReadMode,
     ) -> Result<Const<'tcx>, ReadError<'tcx>> {
-        let (val, ty) = match src {
-            ConstSource::Value(val, ty) => (val, ty),
-        };
-        self.read_const_value(span, val, self.normalize(ty), mode)
+        match src {
+            ConstSource::ValTree(value) if mode == ReadMode::Structured => {
+                self.read_valtree(span, value)
+            }
+            ConstSource::ValTree(value) => {
+                let ty = self.normalize(value.ty);
+                let val = self.tcx.valtree_to_const_val(ty::Value { ty, ..value });
+                self.read_const_value(span, val, ty, mode)
+            }
+            ConstSource::Value(val, ty) => {
+                self.read_const_value(span, val, self.normalize(ty), mode)
+            }
+        }
     }
 
     /// Read `val`, a value of type `ty` in const-eval memory.
-    fn read_const_value(
+    pub(crate) fn read_const_value(
         &self,
         span: Span,
         val: mir::ConstValue,
@@ -45,7 +54,7 @@ impl<'tcx> ConstReader<'tcx> {
         Ok(read.report_err()?)
     }
 
-    fn normalize(&self, ty: Ty<'tcx>) -> Ty<'tcx> {
+    pub(crate) fn normalize(&self, ty: Ty<'tcx>) -> Ty<'tcx> {
         normalize(self.tcx, self.typing_env, ty::Unnormalized::new_wip(ty))
     }
 }
