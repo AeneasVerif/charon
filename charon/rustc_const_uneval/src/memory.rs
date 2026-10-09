@@ -170,19 +170,19 @@ impl<'tcx> ConstReader<'tcx> {
         };
 
         let ty = place.layout.ty;
-        let (view_ty, unsize) = if place.layout.is_sized() {
-            (Some(ty), None)
-        } else {
+        let unsize = if place.meta().has_meta() {
             let tail = tcx.struct_tail_for_codegen(ty, self.typing_env);
-            let sized_tail = self.sized_tail(ecx, &place, tail)?;
-            // A slice or `dyn Trait` value is viewed at the sized type it was unsized from. Other
-            // unsized values (e.g. a `CStr`) have no such type: we read them at their unsized type.
-            let view_ty = matches!(ty.kind(), ty::Slice(_) | ty::Dynamic(..)).then_some(sized_tail);
-            let unsize = Unsize {
-                from: sized_tail,
-                to: tail,
-            };
-            (view_ty, Some(unsize))
+            let from = self.sized_tail(ecx, &place, tail)?;
+            Some(Unsize { from, to: tail })
+        } else {
+            None
+        };
+        // A slice or `dyn Trait` value is viewed at the sized type it was unsized from. Other
+        // unsized values (e.g. a `CStr`) have no such type: we read them at their unsized type.
+        let view_ty = match ty.kind() {
+            _ if place.layout.is_sized() => Some(ty),
+            ty::Slice(_) | ty::Dynamic(..) => unsize.map(|unsize| unsize.from),
+            _ => None,
         };
 
         let target = match view_ty {
