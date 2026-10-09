@@ -1,6 +1,7 @@
-//! Read evaluated constants back into structured values, using rustc's const-eval interpreter.
-//! This only depends on rustc: naming the items and allocations we encounter is left to the
-//! caller.
+//! Evaluate constants with rustc and read their values back into structured [`Const`]s.
+//!
+//! The entry point is [`ConstReader::read`], which evaluates a [`ConstSource`] and reads the
+//! result either as a structured value or as raw bytes (see [`ReadMode`]).
 #![feature(rustc_private)]
 
 extern crate rustc_abi;
