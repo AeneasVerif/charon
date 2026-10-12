@@ -235,20 +235,18 @@ let list_of_postcard
     (a_of_postcard : 'ctx -> postcard_state -> ('a, string) result) (ctx : 'ctx)
     (st : postcard_state) : ('a list, string) result =
   let* len = usize_of_postcard ctx st in
-  if len > 1_000_000 then
-    Error
-      ("suspicious postcard sequence length " ^ string_of_int len
-     ^ " (varint read at byte "
-      ^ string_of_int (pos_in st.ic)
-      ^ ")")
-  else
-    let rec loop i acc =
-      if i <= 0 then Ok (List.rev acc)
-      else
-        let* x = a_of_postcard ctx st in
-        loop (i - 1) (x :: acc)
-    in
-    loop len []
+  (* this is a little scary, but we never access the array unless we have
+     computed all indices, so it's fine. going through an array is more memory
+     efficient than a list, which we would have to reverse. *)
+  let arr = Array.make len (Obj.magic 0) in
+  let rec loop i =
+    if i == len then Ok (Array.to_list arr)
+    else
+      let* x = a_of_postcard ctx st in
+      Array.set arr i x;
+      loop (i + 1)
+  in
+  loop 0
 
 let option_of_postcard
     (a_of_postcard : 'ctx -> postcard_state -> ('a, string) result) (ctx : 'ctx)
