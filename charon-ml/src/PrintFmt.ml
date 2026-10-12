@@ -235,12 +235,12 @@ let generic_params_at_dbid (env : fmt_env) (dbid : int) : generic_params option
       if dbid > 0 && index >= 0 then List.nth_opt env.generics index else None
 
 let find_short_name (env : fmt_env) (id : item_id) : name option =
-  match List.assoc_opt id env.crate.short_names with
+  match AnyDeclIdMap.find_opt id env.crate.short_names with
   | Some name -> Some name
-  | None -> List.assoc_opt id env.crate.item_names
+  | None -> AnyDeclIdMap.find_opt id env.crate.item_names
 
 let has_short_name (env : fmt_env) (id : item_id) : name option =
-  List.assoc_opt id env.crate.short_names
+  AnyDeclIdMap.find_opt id env.crate.short_names
 
 let item_id_to_pretty_string (id : item_id) : string =
   match id with
