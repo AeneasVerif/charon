@@ -1995,6 +1995,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (cli_options, string) result =
   combine_error_msgs st __FUNCTION__
     (let* ullbc = bool_of_postcard ctx st in
+     let* no_code_duplication = bool_of_postcard ctx st in
      let* precise_drops = bool_of_postcard ctx st in
      let* mir = option_of_postcard mir_level_of_postcard ctx st in
      let* rustc_args = list_of_postcard string_of_postcard ctx st in
@@ -2065,6 +2066,7 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      Ok
        ({
           ullbc;
+          no_code_duplication;
           precise_drops;
           mir;
           rustc_args;

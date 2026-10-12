@@ -79,6 +79,13 @@ and cli_options = {
   ullbc : bool;
       (** Extract the unstructured LLBC (i.e., don't reconstruct the
           control-flow) *)
+  no_code_duplication : bool;
+      (** Reconstruct the control-flow without duplicating blocks: a block
+          reachable from several branches is emitted once, and the branches
+          [break] forward to it out of an enclosing [loop]. This can shrink
+          bodies a lot, at the cost of control-flow that is harder to read. Note
+          that consumers which expect [if]/[loop]-shaped bodies (e.g. aeneas)
+          may not support the result. *)
   precise_drops : bool;
       (** Whether to precisely translate drops and drop-related code. For this,
           we add explicit [Destruct] bounds to all generic parameters and set

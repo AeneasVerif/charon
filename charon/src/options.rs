@@ -36,6 +36,14 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub ullbc: bool,
+    /// Reconstruct the control-flow without duplicating blocks: a block reachable from several
+    /// branches is emitted once, and the branches `break` forward to it out of an enclosing
+    /// `loop`. This can shrink bodies a lot, at the cost of control-flow that is harder to read.
+    /// Note that consumers which expect `if`/`loop`-shaped bodies (e.g. aeneas) may not support
+    /// the result.
+    #[clap(long)]
+    #[serde(default)]
+    pub no_code_duplication: bool,
     /// Whether to precisely translate drops and drop-related code. For this, we add explicit
     /// `Destruct` bounds to all generic parameters and set the MIR level to at least `elaborated`.
     ///
@@ -786,6 +794,9 @@ pub struct TranslateOptions {
     pub monomorphize_with_hax: bool,
     /// Extract the unstructured LLBC (i.e., don't reconstruct the control-flow)
     pub ullbc: bool,
+    /// Reconstruct the control-flow by breaking forward out of enclosing loops instead of
+    /// duplicating the blocks reachable from several branches.
+    pub no_code_duplication: bool,
     /// Transform array-to-slice unsizing and repeat expressions into standard library function
     /// calls in LLBC.
     pub ops_to_function_calls: bool,
@@ -984,6 +995,7 @@ impl TranslateOptions {
             remove_adt_clauses: options.remove_adt_clauses,
             monomorphize_with_hax: options.monomorphize,
             ullbc: options.ullbc,
+            no_code_duplication: options.no_code_duplication,
             ops_to_function_calls: options.ops_to_function_calls,
             index_to_function_calls: options.index_to_function_calls,
             print_built_llbc: options.print_built_llbc,
