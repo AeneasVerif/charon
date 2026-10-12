@@ -10,9 +10,7 @@ module BlockId = IdGen ()
 (** A sequence of statements. *)
 type block = {
   span : span;
-  block_id : block_id;
-      (** Integer uniquely identifying this block. To simplify things we
-          generate globally-fresh ids when creating a new [Block]. *)
+  block_id : block_id;  (** An integer uniquely identifying this block. *)
   statements : statement list;
 }
 
@@ -23,9 +21,7 @@ and block_id = (BlockId.id[@visitors.opaque])
 and statement = {
   span : span;
   statement_id : statement_id;
-      (** Integer uniquely identifying this statement among the statmeents in
-          the current body. To simplify things we generate globally-fresh ids
-          when creating a new [Statement]. *)
+      (** An integer uniquely identifying this statement. *)
   kind : statement_kind;
   comments_before : string list;  (** Comments that precede this statement. *)
 }
@@ -95,13 +91,15 @@ and statement_kind =
           - [branches] *)
   | Loop of block
   | Break of int
-      (** Break to outer loops. The [usize] gives the index of the outer loop to
-          break to: * 0: break to first outer loop (the current loop) * 1: break
-          to second outer loop * ... *)
+      (** Break out of one or more loops. The [usize] gives the index of the
+          loop to break from, counting inside-out: * 0: break from the innermost
+          loop (the current loop) * 1: break from the second innermost loop *
+          ... *)
   | Continue of int
-      (** Continue to outer loops. The [usize] gives the index of the outer loop
-          to continue to: * 0: continue to first outer loop (the current loop) *
-          1: continue to second outer loop * ... *)
+      (** Continue to the start of a loop. The [usize] gives the index of the
+          loop to continue to, counting inside-out: * 0: continue to the start
+          of the innermost loop (the current loop) * 1: continue to the start of
+          the second innermost loop * ... *)
   | Panic of name * block
       (** Call to a built-in panicking function. Only if
           [--reconstruct-panic-calls] is passed.

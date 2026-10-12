@@ -23,8 +23,7 @@ pub type ExprBody = GExprBody<Block>;
 #[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct Block {
     pub span: Span,
-    /// Integer uniquely identifying this block. To simplify things we generate globally-fresh ids
-    /// when creating a new `Block`.
+    /// An integer uniquely identifying this block.
     #[cfg_attr(feature = "charon_on_charon", charon::rename("block_id"))]
     pub id: BlockId,
     pub statements: Vec<Statement>,
@@ -35,8 +34,7 @@ pub struct Block {
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct Statement {
     pub span: Span,
-    /// Integer uniquely identifying this statement among the statmeents in the current body. To
-    /// simplify things we generate globally-fresh ids when creating a new `Statement`.
+    /// An integer uniquely identifying this statement.
     #[cfg_attr(feature = "charon_on_charon", charon::rename("statement_id"))]
     pub id: StatementId,
     pub kind: StatementKind,
@@ -107,16 +105,16 @@ pub enum StatementKind {
     },
 
     Loop(Block),
-    /// Break to outer loops.
-    /// The `usize` gives the index of the outer loop to break to:
-    /// * 0: break to first outer loop (the current loop)
-    /// * 1: break to second outer loop
+    /// Break out of one or more loops.
+    /// The `usize` gives the index of the loop to break from, counting inside-out:
+    /// * 0: break from the innermost loop (the current loop)
+    /// * 1: break from the second innermost loop
     /// * ...
     Break(usize),
-    /// Continue to outer loops.
-    /// The `usize` gives the index of the outer loop to continue to:
-    /// * 0: continue to first outer loop (the current loop)
-    /// * 1: continue to second outer loop
+    /// Continue to the start of a loop.
+    /// The `usize` gives the index of the loop to continue to, counting inside-out:
+    /// * 0: continue to the start of the innermost loop (the current loop)
+    /// * 1: continue to the start of the second innermost loop
     /// * ...
     Continue(usize),
 
