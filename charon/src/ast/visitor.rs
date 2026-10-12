@@ -199,7 +199,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
     visitor(drive_body_mut(&mut VisitBodyMut)),
     // Types that are ignored when encountered.
     skip(
-        AbortKind, BinOp, BorrowKind, BranchId, AsmOperandId, AsmTemplatePiece, BuiltinAssertKind, ConstantExpr, FieldId,
+        AbortKind, BinOp, BorrowKind, BranchId, AsmOperandId, AsmTemplatePiece, ConstantExpr, FieldId,
         TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, RegionArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         Name, NullOp, RefKind, IntegerValue, Span, Ty, TypeDeclId, UnOp, VariantId,
         TraitRef, PolyTraitRef, ScalarTy, Region, RegionId, (), String, PathBuf, bool, u32, usize,
@@ -208,7 +208,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
     ),
     // Types that we unconditionally explore.
     drive(
-        Assert, InlineAsm, BorrowckStatement, PlaceKind,
+        Assert, BuiltinAssertKind, InlineAsm, BorrowckStatement, PlaceKind,
         llbc_ast::StatementKind, ullbc_ast::StatementKind,
         ullbc_ast::TerminatorKind, SwitchData, SwitchScrutinee,
         for<T: BodyVisitable> GExprBody<T>,
