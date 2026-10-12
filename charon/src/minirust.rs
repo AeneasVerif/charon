@@ -8,6 +8,12 @@
 //! Unsupported features (will raise an error):
 //! - `dyn Trait` upcasting;
 //! - `CoerceUnsized` pointers;
+//!
+//! Unsupported features due to lack of support in MiniRust:
+//! - Pattern types, and `char` validity;
+//! - Floats;
+//! - Inline assembly;
+//! - Calling conventions other than Rust and C;
 use itertools::Itertools;
 use minirust_rs::{mem::TreeBorrowsMemory, prelude::TerminationInfo};
 use miniutil::build as mb;

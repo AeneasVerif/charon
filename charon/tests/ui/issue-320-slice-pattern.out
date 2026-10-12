@@ -278,8 +278,9 @@ fn slice_pat1()
     let _7: &'_ [i32; 4usize]; // anonymous local
     let _8: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _9: &'_ [i32]; // anonymous local
-    let _10: &'_ [i32; 4usize]; // anonymous local
-    let _11: &'_ i32; // anonymous local
+    let _10: &'_ [i32; 2usize]; // anonymous local
+    let _11: &'_ [i32; 4usize]; // anonymous local
+    let _12: &'_ i32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -303,19 +304,22 @@ fn slice_pat1()
     storage_live(_9)
     _9 = impl_Index_for_array::index<'_, i32, Range<usize>[{built_in impl Sized for usize}], 4usize>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Index_for_slice<i32, Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_SliceIndex_slice_for_Range_usize<i32>[{built_in impl Sized for i32}]]](move _7, move _8)
     ↳⚡ undefined_behavior
-    _b = copy (*_9)
-    storage_live(_c)
     storage_live(_10)
-    _10 = &array
+    _10 = concretize<&'_ [i32], &'_ [i32; 2usize]>(move _9)
+    _b = copy (*_10)
+    storage_live(_c)
     storage_live(_11)
-    _11 = impl_Index_for_array::index<'_, i32, usize, 4usize>[{built_in impl Sized for i32}, {built_in impl Sized for usize}, impl_Index_for_slice<i32, usize>[{built_in impl Sized for i32}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<i32>[{built_in impl Sized for i32}]]](move _10, const 3usize)
+    _11 = &array
+    storage_live(_12)
+    _12 = impl_Index_for_array::index<'_, i32, usize, 4usize>[{built_in impl Sized for i32}, {built_in impl Sized for usize}, impl_Index_for_slice<i32, usize>[{built_in impl Sized for i32}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<i32>[{built_in impl Sized for i32}]]](move _11, const 3usize)
     ↳⚡ undefined_behavior
-    _c = copy (*_11)
+    _c = copy (*_12)
     _0 = ()
     storage_dead(_c)
     storage_dead(_b)
     storage_dead(_a)
     storage_dead(array)
+    storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
@@ -344,8 +348,9 @@ fn slice_pat2()
     let _12: &'_ [i32; 4usize]; // anonymous local
     let _13: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
     let _14: &'_ [i32]; // anonymous local
-    let _15: &'_ [i32; 4usize]; // anonymous local
-    let _16: &'_ i32; // anonymous local
+    let _15: &'_ [i32; 2usize]; // anonymous local
+    let _16: &'_ [i32; 4usize]; // anonymous local
+    let _17: &'_ i32; // anonymous local
 
     storage_live(_7)
     storage_live(_8)
@@ -380,20 +385,23 @@ fn slice_pat2()
     storage_live(_14)
     _14 = impl_Index_for_array::index<'_, i32, Range<usize>[{built_in impl Sized for usize}], 4usize>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_Index_for_slice<i32, Range<usize>[{built_in impl Sized for usize}]>[{built_in impl Sized for i32}, {built_in impl Sized for Range<usize>[{built_in impl Sized for usize}]}, impl_SliceIndex_slice_for_Range_usize<i32>[{built_in impl Sized for i32}]]](move _12, move _13)
     ↳⚡ undefined_behavior
-    _b = &(*_14)
-    storage_live(_c)
     storage_live(_15)
-    _15 = &(*array_ref)
+    _15 = concretize<&'_ [i32], &'_ [i32; 2usize]>(move _14)
+    _b = &(*_15)
+    storage_live(_c)
     storage_live(_16)
-    _16 = impl_Index_for_array::index<'_, i32, usize, 4usize>[{built_in impl Sized for i32}, {built_in impl Sized for usize}, impl_Index_for_slice<i32, usize>[{built_in impl Sized for i32}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<i32>[{built_in impl Sized for i32}]]](move _15, const 3usize)
+    _16 = &(*array_ref)
+    storage_live(_17)
+    _17 = impl_Index_for_array::index<'_, i32, usize, 4usize>[{built_in impl Sized for i32}, {built_in impl Sized for usize}, impl_Index_for_slice<i32, usize>[{built_in impl Sized for i32}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<i32>[{built_in impl Sized for i32}]]](move _16, const 3usize)
     ↳⚡ undefined_behavior
-    _c = &(*_16)
+    _c = &(*_17)
     _0 = ()
     storage_dead(_c)
     storage_dead(_b)
     storage_dead(_a)
     storage_dead(array_ref)
     storage_dead(_6)
+    storage_dead(_17)
     storage_dead(_16)
     storage_dead(_15)
     storage_dead(_14)
