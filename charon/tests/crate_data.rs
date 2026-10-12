@@ -796,6 +796,72 @@ fn declaration_groups() -> anyhow::Result<()> {
 }
 
 #[test]
+fn impl_const_initializer_declaration_groups() -> anyhow::Result<()> {
+    let crate_data = translate(
+        r#"
+        pub trait Bits {
+            const WIDTH: u32;
+            const SHIFT: u32 = Self::WIDTH - 1;
+            const MASK: u64;
+        }
+        impl Bits for u8 {
+            const WIDTH: u32 = 8;
+            const MASK: u64 = 1 << Self::SHIFT;
+        }
+        impl<const N: usize> Bits for [u8; N] {
+            const WIDTH: u32 = N as u32;
+            const MASK: u64 = 1 << Self::SHIFT;
+        }
+        pub fn mask() -> u64 { <u8 as Bits>::MASK }
+        pub fn generic_mask<const N: usize>() -> u64 { <[u8; N] as Bits>::MASK }
+        "#,
+    )?;
+    let groups = crate_data.ordered_decls.as_ref().unwrap();
+    assert!(
+        groups
+            .iter()
+            .all(|group| !matches!(group, DeclarationGroup::Mixed(_))),
+        "associated consts must not form a mixed recursive group with their impl"
+    );
+
+    let position = |id: ItemId| {
+        groups
+            .iter()
+            .position(|group| group.get_ids().contains(&id))
+            .unwrap()
+    };
+    let mut checked_impls = std::collections::HashSet::new();
+    let mut checked_masks = std::collections::HashSet::new();
+    for initializer in crate_data.fun_decls.iter() {
+        let FunSource::GlobalInitializer(global_ref) = &initializer.src else {
+            continue;
+        };
+        let global = &crate_data.global_decls[global_ref.id];
+        let GlobalSource::TraitImpl { impl_ref, .. } = &global.src else {
+            continue;
+        };
+        // An impl uses its const, and the const uses its initializer. The reference to
+        // Self in the initializer must not turn these dependencies into a cycle.
+        assert!(position(initializer.def_id.into()) < position(global.def_id.into()));
+        assert!(position(global.def_id.into()) < position(impl_ref.id.into()));
+        checked_impls.insert(impl_ref.id);
+        if global.item_meta.name.short_str() == Some("MASK") {
+            checked_masks.insert(impl_ref.id);
+        }
+    }
+    assert_eq!(
+        checked_impls.len(),
+        2,
+        "both concrete and generic impls must be exercised"
+    );
+    assert_eq!(
+        checked_masks, checked_impls,
+        "both impls must retain their MASK initializer"
+    );
+    Ok(())
+}
+
+#[test]
 fn adt_constructor_source() -> anyhow::Result<()> {
     let crate_data = translate(
         r#"

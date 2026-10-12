@@ -236,6 +236,19 @@ impl Deps {
                 src: GlobalSource::TraitImpl { impl_ref, .. },
                 ..
             }) => for_item.parent_trait_impl = Some(impl_ref.id),
+            // An associated const's initializer belongs to the same impl as the const.
+            ItemRef::Fun(FunDecl {
+                src: FunSource::GlobalInitializer(global_ref),
+                ..
+            }) => {
+                if let Some(GlobalDecl {
+                    src: GlobalSource::TraitImpl { impl_ref, .. },
+                    ..
+                }) = ctx.translated.global_decls.get(global_ref.id)
+                {
+                    for_item.parent_trait_impl = Some(impl_ref.id);
+                }
+            }
             _ => {}
         }
 
