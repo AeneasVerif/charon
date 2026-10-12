@@ -1,6 +1,42 @@
 (** Basic utilities for postcard deserialization. *)
 
-type postcard_state = { ic : in_channel }
+(** We use our own buffer rather than moving the [in_channel], which is more
+    performant. *)
+type postcard_state = {
+  ic : in_channel;
+  buf : Bytes.t;
+  mutable buf_pos : int;  (** The next byte to read in [buf]. *)
+  mutable buf_len : int;  (** The number of bytes read into [buf]. *)
+  mutable buf_ofs : int;  (** The position in the input of [buf]'s start. *)
+}
+
+let state_of_channel (ic : in_channel) : postcard_state =
+  {
+    ic;
+    buf = Bytes.create 65536;
+    buf_pos = 0;
+    buf_len = 0;
+    buf_ofs = pos_in ic;
+  }
+
+(** The position of the next byte to read in the input. *)
+let[@inline] pos (st : postcard_state) : int = st.buf_ofs + st.buf_pos
+
+(** Moves to the given position of the input. *)
+let[@inline] seek (st : postcard_state) (pos : int) : unit =
+  seek_in st.ic pos;
+  st.buf_pos <- 0;
+  st.buf_len <- 0;
+  st.buf_ofs <- pos
+
+(** Reads more input into the buffer; [false] if the end of the input is
+    reached. *)
+let[@inline] refill (st : postcard_state) : bool =
+  st.buf_ofs <- st.buf_ofs + st.buf_len;
+  st.buf_pos <- 0;
+  st.buf_len <- input st.ic st.buf 0 (Bytes.length st.buf);
+  st.buf_len > 0
+
 type input_format_hint = Json | Postcard | Empty
 
 (** Attempts detecting the format of a string, which corresponds to the first N
@@ -30,12 +66,12 @@ let format_hint_of_file (file : string) : (input_format_hint, string) result =
 (** Same as [format_hint_of_file], but operates on an already-opened in_channel
     and restores the position after reading the sample. *)
 let format_hint_of_postcard (st : postcard_state) : input_format_hint =
-  let pos = pos_in st.ic in
-  seek_in st.ic 0;
+  let pos = pos st in
+  seek st 0;
   let sample_len = min 64 (in_channel_length st.ic) in
   let sample = really_input_string st.ic sample_len in
   let hint = format_hint_of_string sample in
-  seek_in st.ic pos;
+  seek st pos;
   hint
 
 let ( let* ) o f =
@@ -45,7 +81,7 @@ let ( let* ) o f =
 
 let with_state_of_file (file : string)
     (f : postcard_state -> ('a, string) result) : ('a, string) result =
-  try In_channel.with_open_bin file (fun ic -> f { ic })
+  try In_channel.with_open_bin file (fun ic -> f (state_of_channel ic))
   with Sys_error e -> Error e
 
 let combine_error_msgs (st : postcard_state) (msg : string)
@@ -53,63 +89,77 @@ let combine_error_msgs (st : postcard_state) (msg : string)
   match res with
   | Ok x -> Ok x
   | Error e ->
-      let rem = in_channel_length st.ic - pos_in st.ic in
+      let pos = pos st in
+      let rem = in_channel_length st.ic - pos in
       let n = if rem < 8 then rem else 8 in
-      let pos = pos_in st.ic in
+      seek st pos;
       let preview =
-        List.init n (fun i -> try input_byte st.ic with End_of_file -> 0)
+        List.init n (fun _ -> try input_byte st.ic with End_of_file -> 0)
         |> List.map (fun b -> Printf.sprintf "%02x" b)
         |> String.concat " "
       in
+      seek st pos;
       Error
         (msg ^ " failed at byte " ^ string_of_int pos ^ " (next: " ^ preview
        ^ "): " ^ e)
 
 let take_u8 (st : postcard_state) : (int, string) result =
-  try Ok (input_byte st.ic)
-  with End_of_file ->
-    Error "unexpected end of postcard input, expected 1 more byte"
+  if st.buf_pos < st.buf_len || refill st then (
+    let b = Bytes.unsafe_get st.buf st.buf_pos in
+    st.buf_pos <- st.buf_pos + 1;
+    Ok (Char.code b))
+  else Error "unexpected end of postcard input, expected 1 more byte"
 
 let take_bytes (st : postcard_state) (len : int) : (bytes, string) result =
-  try
-    let bytes = Bytes.create len in
-    really_input st.ic bytes 0 len;
-    Ok bytes
-  with End_of_file ->
-    Error
-      ("unexpected end of postcard input, expected " ^ string_of_int len
-     ^ " more bytes")
+  let bytes = Bytes.create len in
+  let rec loop ofs =
+    if ofs >= len then Ok bytes
+    else if st.buf_pos < st.buf_len || refill st then (
+      let n = min (len - ofs) (st.buf_len - st.buf_pos) in
+      Bytes.blit st.buf st.buf_pos bytes ofs n;
+      st.buf_pos <- st.buf_pos + n;
+      loop (ofs + n))
+    else
+      Error
+        ("unexpected end of postcard input, expected " ^ string_of_int len
+       ^ " more bytes")
+  in
+  loop 0
 
-let read_varint_z ~(max_bytes : int) ~(max_last : int) (st : postcard_state) :
-    (Z.t, string) result =
-  let rec loop (i : int) (shift : int) (acc : Z.t) : (Z.t, string) result =
+(** Reads a varint of at most [max_bytes] bytes, whose last byte is at most
+    [max_last], as an OCaml int of at most [bits] bits (taken as unsigned). *)
+let read_varint ~(max_bytes : int) ~(max_last : int) ~(bits : int)
+    (st : postcard_state) : (int, string) result =
+  let rec loop (i : int) (shift : int) (acc : int) : (int, string) result =
     if i >= max_bytes then Error "invalid postcard varint"
     else
       let* raw = take_u8 st in
       let payload = raw land 0x7F in
-      let acc = Z.logor acc (Z.shift_left (Z.of_int payload) shift) in
-      let has_more = raw land 0x80 <> 0 in
-      if not has_more then
-        if i = max_bytes - 1 && raw > max_last then
-          Error "invalid postcard varint terminal byte"
-        else Ok acc
-      else loop (i + 1) (shift + 7) acc
+      if payload <> 0 && (shift >= bits || payload lsr (bits - shift) <> 0) then
+        Error "integer out of OCaml int range"
+      else
+        let acc = acc lor (payload lsl shift) in
+        let has_more = raw land 0x80 <> 0 in
+        if not has_more then
+          if i = max_bytes - 1 && raw > max_last then
+            Error "invalid postcard varint terminal byte"
+          else Ok acc
+        else loop (i + 1) (shift + 7) acc
   in
-  loop 0 0 Z.zero
+  loop 0 0 0
 
-let z_to_int (z : Z.t) : (int, string) result =
-  if Z.geq z Z.zero && Z.leq z (Z.of_int max_int) then Ok (Z.to_int z)
-  else Error "integer out of OCaml int range"
+(** Unsigned integers, of at most 62 bits. *)
+let read_unsigned ~max_bytes ~max_last st =
+  read_varint ~max_bytes ~max_last ~bits:62 st
 
-let z_to_i (z : Z.t) : (Z.t, string) result =
-  let one = Z.one in
-  if Z.equal (Z.logand z one) Z.zero then Ok (Z.shift_right z 1)
-  else Ok Z.(neg (add (shift_right z 1) one))
+(** Zigzag-encoded signed integers, of at most 63 bits. *)
+let read_signed ~max_bytes ~max_last st =
+  let* z = read_varint ~max_bytes ~max_last ~bits:63 st in
+  Ok ((z lsr 1) lxor -(z land 1))
 
 let usize_of_postcard (_ctx : 'ctx) (st : postcard_state) : (int, string) result
     =
-  let* z = read_varint_z ~max_bytes:10 ~max_last:1 st in
-  z_to_int z
+  read_unsigned ~max_bytes:10 ~max_last:1 st
 
 let bool_of_postcard (_ctx : 'ctx) (st : postcard_state) : (bool, string) result
     =
@@ -120,41 +170,29 @@ let bool_of_postcard (_ctx : 'ctx) (st : postcard_state) : (bool, string) result
   | _ -> Error "invalid postcard bool"
 
 let int_of_postcard (_ctx : 'ctx) (st : postcard_state) : (int, string) result =
-  let* z = read_varint_z ~max_bytes:5 ~max_last:15 st in
-  z_to_int z
+  read_unsigned ~max_bytes:5 ~max_last:15 st
 
 let u16_of_postcard (_ctx : 'ctx) (st : postcard_state) : (int, string) result =
-  let* z = read_varint_z ~max_bytes:3 ~max_last:3 st in
-  z_to_int z
+  read_unsigned ~max_bytes:3 ~max_last:3 st
 
 let u32_of_postcard (_ctx : 'ctx) (st : postcard_state) : (int, string) result =
-  let* z = read_varint_z ~max_bytes:5 ~max_last:15 st in
-  z_to_int z
+  read_unsigned ~max_bytes:5 ~max_last:15 st
 
 let u64_of_postcard (_ctx : 'ctx) (st : postcard_state) : (int, string) result =
-  let* z = read_varint_z ~max_bytes:10 ~max_last:1 st in
-  z_to_int z
+  read_unsigned ~max_bytes:10 ~max_last:1 st
 
 let i16_of_postcard (_ctx : 'ctx) (st : postcard_state) : (int, string) result =
-  let* z = read_varint_z ~max_bytes:3 ~max_last:3 st in
-  let* s = z_to_i z in
-  z_to_int s
+  read_signed ~max_bytes:3 ~max_last:3 st
 
 let i32_of_postcard (_ctx : 'ctx) (st : postcard_state) : (int, string) result =
-  let* z = read_varint_z ~max_bytes:5 ~max_last:15 st in
-  let* s = z_to_i z in
-  z_to_int s
+  read_signed ~max_bytes:5 ~max_last:15 st
 
 let i64_of_postcard (_ctx : 'ctx) (st : postcard_state) : (int, string) result =
-  let* z = read_varint_z ~max_bytes:10 ~max_last:1 st in
-  let* s = z_to_i z in
-  z_to_int s
+  read_signed ~max_bytes:10 ~max_last:1 st
 
 let isize_of_postcard (_ctx : 'ctx) (st : postcard_state) : (int, string) result
     =
-  let* z = read_varint_z ~max_bytes:10 ~max_last:1 st in
-  let* s = z_to_i z in
-  z_to_int s
+  read_signed ~max_bytes:10 ~max_last:1 st
 
 let u8_of_postcard (_ctx : 'ctx) (st : postcard_state) : (int, string) result =
   take_u8 st
@@ -299,7 +337,7 @@ let key_value_pair_of_postcard
 
 let ensure_eof (st : postcard_state) : (unit, string) result =
   let len = in_channel_length st.ic in
-  let pos = pos_in st.ic in
+  let pos = pos st in
   if pos >= len then Ok ()
   else
     Format.kasprintf Result.error
