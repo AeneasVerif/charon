@@ -13,7 +13,7 @@ jobs:
           ocaml-compiler: 4.13.1
       - run: rustup component add rustfmt
       - run: cd charon && cargo +stable build --lib --no-default-features
-      - run: opam install . --deps-only
+      - run: opam install . --deps-only --with-test
       - run: opam install ocamlformat odoc
       - run: opam exec -- make build
       - run: IN_CI=1 opam exec -- make test
