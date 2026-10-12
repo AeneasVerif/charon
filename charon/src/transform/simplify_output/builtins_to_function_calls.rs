@@ -399,8 +399,25 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
             output_var
         };
 
-        // Update the place.
-        *place = output_var.project(ProjectionElem::Deref, output_inner_ty);
+        // Slice patterns make array subslices that are themselves arrays. We cast the slice
+        // returned by indexing into that array.
+        let output_var =
+            if matches!(pe, Subslice { .. }) && matches!(place.ty().kind(), TyKind::Array(..)) {
+                let array_ref_ty =
+                    TyKind::Ref(Region::Erased, place.ty().clone(), mutability).into_ty();
+                let array_ref_var = self.ctx.fresh_var(None, array_ref_ty.clone());
+                self.ctx.insert_assn_stmt(
+                    array_ref_var.clone(),
+                    Rvalue::UnaryOp(
+                        UnOp::Cast(CastKind::Concretize(output_var.ty().clone(), array_ref_ty)),
+                        Operand::Move(output_var),
+                    ),
+                );
+                array_ref_var
+            } else {
+                output_var
+            };
+        *place = output_var.project(ProjectionElem::Deref, place.ty().clone());
     }
 
     /// Calls `self.visit_inner()` with `mutability` pushed on the stack.

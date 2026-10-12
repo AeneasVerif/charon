@@ -160,14 +160,18 @@ and cast_kind =
           pointers, and (optionally) boxes:
           - [&[mut] dyn Trait<...>] -> [&[mut] T]
           - [*[mut] dyn Trait<...>] -> [*[mut] T]
-          - [Box<dyn Trait<...>>] -> [Box<T>] when no [--raw-boxes]
+          - [Box<dyn Trait<...>>] -> [Box<T>] when no [--treat-box-as-builtin]
 
           For possible receivers, see:
           <https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility>.
           Other receivers, e.g., [Rc] should be unpacked before the cast and
           re-boxed after. FIXME(ssyram): but this is not implemented yet,
           namely, there may still be something like
-          [Rc<dyn Trait<...>> -> Rc<T>] in the types. *)
+          [Rc<dyn Trait<...>> -> Rc<T>] in the types.
+
+          With [--index-to-function-calls], this also converts [&[T]] to
+          [&[T; N]] (or the mutable equivalents) when an array subslice
+          projection determines the length statically. *)
 
 and local_id = (LocalId.id[@visitors.opaque])
 
