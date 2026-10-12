@@ -35,9 +35,9 @@ type crate = {
   options : cli_options;
   target_information : (string * target_info) list;
   runtime_checks : runtime_checks;
-  item_names : (item_id * name) list;
+  item_names : name AnyDeclIdMap.t;
   assoc_item_names : assoc_item_names TraitDeclId.Map.t;
-  short_names : (item_id * name) list;
+  short_names : name AnyDeclIdMap.t;
   declarations : declaration_group list option;
   type_decls : type_decl TypeDeclId.Map.t;
   fun_decls : fun_decl FunDeclId.Map.t;
