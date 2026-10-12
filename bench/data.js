@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791802373278,
+  "lastUpdate": 1791810422901,
   "repoUrl": "https://github.com/AeneasVerif/charon",
   "entries": {
     "Benchmark": [
@@ -16018,6 +16018,70 @@ window.BENCHMARK_DATA = {
           {
             "name": "libsignal-crypto",
             "value": 253,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 4.7,
+            "unit": "output-size(MB)"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "Nadrieril@users.noreply.github.com",
+            "name": "Nadrieril",
+            "username": "Nadrieril"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8cd132f77748c7b8a74658094abf84164dd15fb4",
+          "message": "Merge pull request #1518 from Nadrieril/fix-1511\n\nFix the output type of known-length array subslices",
+          "timestamp": "2026-10-12T12:55:22Z",
+          "tree_id": "f59897c9a17cfdb1a8247cc58b3de62437ad1e18",
+          "url": "https://github.com/AeneasVerif/charon/commit/8cd132f77748c7b8a74658094abf84164dd15fb4"
+        },
+        "date": 1791810420884,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 52600269464,
+            "unit": "instructions"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 7.21,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 365.9,
+            "unit": "max-rss(MB)"
+          },
+          {
+            "name": "SparsePostQuantumRatchet",
+            "value": 23.5,
+            "unit": "output-size(MB)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 8855394971,
+            "unit": "instructions"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 2.11,
+            "unit": "wall-clock(s)"
+          },
+          {
+            "name": "libsignal-crypto",
+            "value": 252.5,
             "unit": "max-rss(MB)"
           },
           {
