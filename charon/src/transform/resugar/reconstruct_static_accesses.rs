@@ -34,9 +34,11 @@ impl UllbcPass for Transform {
                     // `Ref` for non-mut statics, `Ptr` for `static mut` and extern statics
                     Rvalue::Use(Operand::Const(c), _)
                         if let ConstantExprKind::Ref(pointee, _)
-                        | ConstantExprKind::Ptr(_, pointee, _) = c.kind() =>
+                        | ConstantExprKind::Ptr(_, pointee, _) = c.kind()
+                            && let GlobalPlaceKind::Global(GlobalProvenance::Global(global)) =
+                                &pointee.kind =>
                     {
-                        pointee.kind().as_global()?
+                        global
                     }
                     // Thread-local statics are accessed through `Rvalue::ThreadLocalRef` in MIR.
                     Rvalue::Ref { place, .. } | Rvalue::RawPtr { place, .. } => {

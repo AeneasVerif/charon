@@ -63,14 +63,17 @@ pub enum ConstantExprKind {
     /// If `options.inline_anon_consts` is `false`, this is also used for inline const blocks and
     /// advanced const generics expressions.
     NamedGlobal(ItemRef),
-    /// A shared reference to a static variable.
-    Borrow(ConstantExpr, Option<UnsizingMetadata>),
-    /// A raw borrow (`*const` or `*mut`).
-    RawBorrow {
-        mutability: Mutability,
-        arg: ConstantExpr,
+    /// A reference or raw pointer (as given by the type of this constant) to a place inside a
+    /// constant value: `projections` applied to `base`, each with the type of the place it
+    /// reaches.
+    Ptr {
+        base: ConstantPtrBase,
+        projections: Vec<(ConstantProjectionElem, Ty)>,
         metadata: Option<UnsizingMetadata>,
     },
+    /// Casts a thin pointer to the type of this constant. If metadata is given, this is an
+    /// unsizing cast from the pointee of the given pointer.
+    PtrCast(ConstantExpr, Option<UnsizingMetadata>),
     ConstRef {
         id: ParamConst,
     },
@@ -83,6 +86,34 @@ pub enum ConstantExprKind {
     /// is left as an exercice to the consumer.
     Memory(Vec<ConstantByte>),
     Todo(String),
+}
+
+/// The place a constant pointer starts from.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum ConstantPtrBase {
+    /// The allocation behind this provenance, of the given type.
+    Global(ConstantByteProvenance, Ty),
+    /// A constant value that isn't stored in an allocation we name.
+    Value(ConstantExpr),
+}
+
+/// Projects a place inside the pointee of a constant pointer.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum ConstantProjectionElem {
+    /// A field of a struct, tuple or closure, or of the given variant of an enum.
+    Field(Option<VariantIdx>, FieldIdx),
+    /// An element of an array.
+    Index(u64),
+    /// The subarray `array[from..to]`.
+    Subslice { from: u64, to: u64 },
+    /// The place `count * size_of(ty)` bytes after the current place, or
+    /// `count` bytes if `ty` is `None`. If `in_bounds` is `false`, this may point outside of the
+    /// allocation.
+    Offset {
+        count: i64,
+        ty: Option<Ty>,
+        in_bounds: bool,
+    },
 }
 
 /// A byte of an evaluated constant, in the MiniRust sense.
@@ -112,8 +143,8 @@ pub enum FnPtrTarget {
 pub enum ConstantByteProvenance {
     /// A pointer to a static.
     Global(ItemRef),
-    /// A pointer to a function.
-    Function(FnPtrTarget),
+    /// A pointer to a function, with the type of function pointers to it.
+    Function(FnPtrTarget, Ty),
     /// A pointer to anything else (an anonymous allocation, a vtable...).
     Unknown,
 }

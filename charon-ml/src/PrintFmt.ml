@@ -471,11 +471,11 @@ and pp_trait_impl_ref (env : fmt_env) (fmt : Format.formatter)
   Format.fprintf fmt "%a%a" (pp_trait_impl_id env) iref.id (pp_generic_args env)
     iref.generics
 
-and pp_provenance (env : fmt_env) (fmt : Format.formatter) (pv : provenance) :
-    unit =
+and pp_provenance (env : fmt_env) (fmt : Format.formatter)
+    (pv : global_provenance) : unit =
   match pv with
   | ProvGlobal gref -> Format.fprintf fmt "&%a" (pp_global_decl_ref env) gref
-  | ProvFunction fn_ptr -> Format.fprintf fmt "&%a" (pp_fn_ptr env) fn_ptr
+  | ProvFunction (fn_ptr, _) -> Format.fprintf fmt "&%a" (pp_fn_ptr env) fn_ptr
   | ProvUnknown -> pp_string fmt "&?"
 
 and pp_byte (env : fmt_env) (fmt : Format.formatter) (cv : byte) : unit =
@@ -591,7 +591,7 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
   | CGlobal gref -> pp_global_decl_ref env fmt gref
   | CPtrNoProvenance n -> Format.fprintf fmt "no-provenance %s" (Z.to_string n)
   | CRef (c, meta) ->
-      Format.fprintf fmt "&%a" (pp_constant_expr env) c;
+      Format.fprintf fmt "&%a" (pp_global_place env) c;
       Option.iter
         (fun meta ->
           Format.fprintf fmt " with_metadata(%a)" (pp_unsizing_metadata env)
@@ -603,7 +603,7 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
         | RShared -> "&raw const"
         | RMut -> "&raw mut"
       in
-      Format.fprintf fmt "%s %a" ref_kind (pp_constant_expr env) c;
+      Format.fprintf fmt "%s %a" ref_kind (pp_global_place env) c;
       Option.iter
         (fun meta ->
           Format.fprintf fmt " with_metadata(%a)" (pp_unsizing_metadata env)
@@ -636,6 +636,56 @@ and pp_match_pattern (env : fmt_env) (fmt : Format.formatter)
 
 and constant_expr_to_string env cv =
   pp_to_string (fun fmt -> pp_constant_expr env fmt cv)
+
+and pp_global_place (env : fmt_env) (fmt : Format.formatter) (p : global_place)
+    : unit =
+  match p.global_place_kind with
+  | GlobalPlaceGlobal (ProvGlobal gref) -> pp_global_decl_ref env fmt gref
+  | GlobalPlaceGlobal (ProvFunction (fn_ptr, _)) -> pp_fn_ptr env fmt fn_ptr
+  | GlobalPlaceGlobal ProvUnknown -> pp_string fmt "?"
+  | GlobalPlaceValue c -> pp_constant_expr env fmt c
+  | GlobalPlaceProjection (subplace, proj) -> (
+      let sub = pp_to_string (fun fmt -> pp_global_place env fmt subplace) in
+      match proj with
+      | CProjField (variant_id, field_id) ->
+          pp_field_projection env sub subplace.global_place_ty fmt variant_id
+            field_id
+      | CProjIndex i -> Format.fprintf fmt "%s[%a]" sub pp_integer_value i
+      | CProjSubslice (from, to_) ->
+          Format.fprintf fmt "%s[%a..%a]" sub pp_integer_value from
+            pp_integer_value to_
+      | CProjOffset (count, None, in_bounds) ->
+          Format.fprintf fmt "%s.%s!(%a)" sub (offset_method in_bounds)
+            pp_integer_value count
+      | CProjOffset (count, Some ty, in_bounds) ->
+          Format.fprintf fmt "%s.%s!(%a * size_of::<%a>())" sub
+            (offset_method in_bounds) pp_integer_value count (pp_ty env) ty)
+
+(** Formats the projection of field [fid] of [sub], which has type [sub_ty]. *)
+and pp_field_projection (env : fmt_env) (sub : string) (sub_ty : ty)
+    (fmt : Format.formatter) (opt_variant_id : variant_id option)
+    (fid : field_id) : unit =
+  (* The type of the sub-place tells us which declaration the field comes
+     from. *)
+  let adt = ty_as_opt_adt sub_ty in
+  let field_name =
+    match
+      Option.bind adt (fun adt ->
+          adt_field_to_string env adt.id opt_variant_id fid)
+    with
+    | Some field_name -> field_name
+    | None -> FieldId.to_string fid
+  in
+  match (opt_variant_id, adt) with
+  | None, _ -> Format.fprintf fmt "%s.%s" sub field_name
+  | Some variant_id, Some adt ->
+      Format.fprintf fmt "(%s as variant %a).%s" sub
+        (pp_adt_variant env adt.id)
+        variant_id field_name
+  | Some variant_id, None ->
+      Format.fprintf fmt "(%s as variant %s).%s" sub
+        (variant_id_to_pretty_string variant_id)
+        field_name
 
 and pp_fn_ptr_kind (env : fmt_env) (fmt : Format.formatter) (r : fn_ptr_kind) :
     unit =
@@ -1482,28 +1532,8 @@ let rec pp_projection_elem (env : fmt_env) (subplace : place)
         else operand_to_string env to_
       in
       Format.fprintf fmt "%s[%s..%s]" sub (operand_to_string env from) to_
-  | Field (opt_variant_id, fid) -> (
-      (* The type of the sub-place tells us which declaration the field comes
-         from. *)
-      let adt = ty_as_opt_adt subplace.ty in
-      let field_name =
-        match
-          Option.bind adt (fun adt ->
-              adt_field_to_string env adt.id opt_variant_id fid)
-        with
-        | Some field_name -> field_name
-        | None -> FieldId.to_string fid
-      in
-      match (opt_variant_id, adt) with
-      | None, _ -> Format.fprintf fmt "%s.%s" sub field_name
-      | Some variant_id, Some adt ->
-          Format.fprintf fmt "(%s as variant %a).%s" sub
-            (pp_adt_variant env adt.id)
-            variant_id field_name
-      | Some variant_id, None ->
-          Format.fprintf fmt "(%s as variant %s).%s" sub
-            (variant_id_to_pretty_string variant_id)
-            field_name)
+  | Field (opt_variant_id, fid) ->
+      pp_field_projection env sub subplace.ty fmt opt_variant_id fid
   | PtrMetadata -> Format.fprintf fmt "%s.metadata" sub
   | Offset (n, in_bounds, _) ->
       Format.fprintf fmt "%s.%s!(%s)" sub (offset_method in_bounds)

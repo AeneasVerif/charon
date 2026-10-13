@@ -1642,16 +1642,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                 match projection {
                     ProjectionElem::Deref => write!(f, "(*{sub})"),
                     ProjectionElem::Field(variant_id, field_id) => {
-                        let tref = subplace.ty().as_adt().unwrap();
-                        match variant_id {
-                            None => write!(f, "{sub}.")?,
-                            Some(variant_id) => {
-                                write!(f, "({sub} as variant ")?;
-                                ctx.format_enum_variant(f, tref.id, *variant_id)?;
-                                write!(f, ").")?;
-                            }
-                        }
-                        ctx.format_field_name(f, tref.id, *variant_id, *field_id)
+                        fmt_field_projection(ctx, f, sub, subplace.ty(), *variant_id, *field_id)
                     }
                     ProjectionElem::PtrMetadata => write!(f, "{sub}.metadata"),
                     ProjectionElem::Index {
@@ -1690,6 +1681,67 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
             }
         }
     }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for GlobalPlace {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.kind {
+            GlobalPlaceKind::Global(prov) => prov.fmt_with_ctx(ctx, f),
+            GlobalPlaceKind::Value(value) => value.fmt_with_ctx(ctx, f),
+            GlobalPlaceKind::Projection(subplace, projection) => {
+                let sub = subplace.with_ctx(ctx);
+                match projection {
+                    ConstProjectionElem::Field(variant_id, field_id) => {
+                        fmt_field_projection(ctx, f, sub, &subplace.ty, *variant_id, *field_id)
+                    }
+                    ConstProjectionElem::Index(i) => write!(f, "{sub}[{i}]"),
+                    ConstProjectionElem::Subslice { from, to } => write!(f, "{sub}[{from}..{to}]"),
+                    ConstProjectionElem::Offset {
+                        count,
+                        ty,
+                        in_bounds,
+                    } => {
+                        let method = if *in_bounds {
+                            "offset"
+                        } else {
+                            "wrapping_offset"
+                        };
+                        match ty {
+                            None => write!(f, "{sub}.{method}!({count})"),
+                            Some(ty) => write!(
+                                f,
+                                "{sub}.{method}!({count} * size_of::<{}>())",
+                                ty.with_ctx(ctx)
+                            ),
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Formats the projection of field `field_id` of `sub`, which has type `sub_ty`.
+fn fmt_field_projection<C: AstFormatter>(
+    ctx: &C,
+    f: &mut fmt::Formatter<'_>,
+    sub: impl Display,
+    sub_ty: &Ty,
+    variant_id: Option<VariantId>,
+    field_id: FieldId,
+) -> fmt::Result {
+    let Some(tref) = sub_ty.as_adt() else {
+        return write!(f, "{sub}.{field_id}");
+    };
+    match variant_id {
+        None => write!(f, "{sub}.")?,
+        Some(variant_id) => {
+            write!(f, "({sub} as variant ")?;
+            ctx.format_enum_variant(f, tref.id, variant_id)?;
+            write!(f, ").")?;
+        }
+    }
+    ctx.format_field_name(f, tref.id, variant_id, field_id)
 }
 
 impl<C: AstFormatter> FmtWithCtx<C> for PolyTraitDeclRef {
@@ -1875,17 +1927,17 @@ impl<C: AstFormatter> FmtWithCtx<C> for Byte {
         match self {
             Byte::Value(x) => write!(f, "{:#04x}", x),
             Byte::Uninit => write!(f, "--"),
-            Byte::Provenance(p, ofs) => write!(f, "{}[{}]", p.with_ctx(ctx), ofs),
+            Byte::Provenance(p, ofs) => write!(f, "&{}[{}]", p.with_ctx(ctx), ofs),
         }
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for Provenance {
+impl<C: AstFormatter> FmtWithCtx<C> for GlobalProvenance {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Provenance::Global(g) => write!(f, "&{}", g.with_ctx(ctx)),
-            Provenance::Function(func) => write!(f, "&{}", func.with_ctx(ctx)),
-            Provenance::Unknown => write!(f, "&?"),
+            GlobalProvenance::Global(g) => g.fmt_with_ctx(ctx, f),
+            GlobalProvenance::Function(func, _) => func.fmt_with_ctx(ctx, f),
+            GlobalProvenance::Unknown => write!(f, "?"),
         }
     }
 }
