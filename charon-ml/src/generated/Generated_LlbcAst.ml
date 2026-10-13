@@ -136,3 +136,78 @@ and statement_kind =
       ancestors = [ "map_trait_impl" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
+
+let rec hash_block : block -> int =
+ fun (x : block) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine 0 (hash_span x.span))
+       (hash_block_id x.block_id))
+    ((HashBasic.hash_list hash_statement) x.statements)
+
+and hash_block_id : block_id -> int = fun (x : block_id) -> BlockId.hash_id x
+
+and hash_statement : statement -> int =
+ fun (x : statement) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine 0 (hash_span x.span))
+          (hash_statement_id x.statement_id))
+       (hash_statement_kind x.kind))
+    ((HashBasic.hash_list HashBasic.hash_string) x.comments_before)
+
+and hash_statement_id : statement_id -> int =
+ fun (x : statement_id) -> StatementId.hash_id x
+
+and hash_statement_kind : statement_kind -> int =
+ fun (x : statement_kind) ->
+  match x with
+  | Assign (x0, x1) ->
+      HashBasic.combine (HashBasic.combine 0 (hash_place x0)) (hash_rvalue x1)
+  | SetDiscriminant (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 1 (hash_place x0))
+        (hash_variant_id x1)
+  | StorageLive x0 -> HashBasic.combine 2 (hash_local_id x0)
+  | StorageDead x0 -> HashBasic.combine 3 (hash_local_id x0)
+  | PlaceMention x0 -> HashBasic.combine 4 (hash_place x0)
+  | Borrowck x0 -> HashBasic.combine 5 (hash_borrowck_statement x0)
+  | Drop (x0, x1, x2, x3) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine
+              (HashBasic.combine 6 (hash_place x0))
+              (hash_fn_ptr x1))
+           (hash_drop_kind x2))
+        (hash_block x3)
+  | Assert (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 7 (hash_assertion x0))
+           (hash_abort_kind x1))
+        (hash_block x2)
+  | InlineAsm (x0, x1, x2, x3) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine
+              (HashBasic.combine 8 (hash_inline_asm x0))
+              ((HashBasic.hash_option hash_block) x1))
+           ((HashBasic.hash_list hash_block) x2))
+        (hash_block x3)
+  | Call (x0, x1) ->
+      HashBasic.combine (HashBasic.combine 9 (hash_call x0)) (hash_block x1)
+  | Switch (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 10 (hash_switch_data x0))
+        ((HashBasic.hash_list hash_block) x1)
+  | Loop x0 -> HashBasic.combine 11 (hash_block x0)
+  | Break x0 -> HashBasic.combine 12 (HashBasic.hash_int x0)
+  | Continue x0 -> HashBasic.combine 13 (HashBasic.hash_int x0)
+  | Panic (x0, x1) ->
+      HashBasic.combine (HashBasic.combine 14 (hash_name x0)) (hash_block x1)
+  | UnwindTerminate -> 15
+  | UnwindResume -> 16
+  | Return -> 17
+  | UndefinedBehavior -> 18
+  | Nop -> 19

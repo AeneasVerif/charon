@@ -50,6 +50,7 @@ module type Id = sig
     val add_in_place : id -> 'a -> 'a t ref -> unit
     val to_list : 'a t -> (id * 'a) list
     val values : 'a t -> 'a list
+    val hash : ('a -> int) -> 'a t -> int
 
     (** Visitor helpers for the [visitors] ppx. *)
 
@@ -123,6 +124,7 @@ module type Id = sig
 
   val compare_id : id -> id -> int
   val equal_id : id -> id -> bool
+  val hash_id : id -> int
   val max : id -> id -> id
   val min : id -> id -> id
   val pp_generator : Format.formatter -> generator -> unit
@@ -177,6 +179,7 @@ module IdGen () : Id = struct
   type generator = id [@@deriving show]
 
   let to_string = string_of_int
+  let hash_id = HashBasic.hash_int
 
   module Ord = struct
     type t = id
@@ -199,6 +202,12 @@ module IdGen () : Id = struct
     let add_in_place id x m = m := add id x !m
     let to_list m = bindings m
     let values m = List.map (fun (_k, v) -> v) (bindings m)
+
+    let hash hash_a m =
+      fold
+        (fun k v h -> HashBasic.combine (HashBasic.combine h k) (hash_a v))
+        m 0
+
     let visit_iter visit_a env m = iter (fun _ v -> visit_a env v) m
     let visit_map visit_a env m = map (fun v -> visit_a env v) m
 

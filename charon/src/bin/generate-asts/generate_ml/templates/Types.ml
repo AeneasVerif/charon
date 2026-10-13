@@ -44,6 +44,16 @@ and 'a trait_method_id_map = 'a TraitMethodId.Map.t
 and 'a assoc_type_id_map = 'a AssocTypeId.Map.t [@@deriving show, eq, ord]
 and 'a assoc_const_id_map = 'a AssocConstId.Map.t [@@deriving show, eq, ord]
 
+let hash_fun_decl_id_map = FunDeclId.Map.hash
+let hash_global_decl_id_map = GlobalDeclId.Map.hash
+let hash_type_decl_id_map = TypeDeclId.Map.hash
+let hash_trait_decl_id_map = TraitDeclId.Map.hash
+let hash_trait_impl_id_map = TraitImplId.Map.hash
+let hash_trait_method_id_map = TraitMethodId.Map.hash
+let hash_assoc_type_id_map = AssocTypeId.Map.hash
+let hash_assoc_const_id_map = AssocConstId.Map.hash
+let hash_range_inclusive hash_a (x, y) = HashBasic.combine (hash_a x) (hash_a y)
+
 
 (* __REPLACE0__ *)
 

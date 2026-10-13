@@ -344,3 +344,197 @@ and with_retag = NoRetag | YesRetag
       ancestors = [ "map_type_decl" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
+
+let rec hash_aggregate_kind : aggregate_kind -> int =
+ fun (x : aggregate_kind) ->
+  match x with
+  | AggregatedAdt (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 0 (hash_type_decl_ref x0))
+           ((HashBasic.hash_option hash_variant_id) x1))
+        ((HashBasic.hash_option hash_field_id) x2)
+  | AggregatedArray (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 1 (hash_ty x0))
+           (hash_constant_expr x1))
+        ((HashBasic.hash_option hash_trait_ref) x2)
+  | AggregatedRawPtr (x0, x1) ->
+      HashBasic.combine (HashBasic.combine 2 (hash_ty x0)) (hash_ref_kind x1)
+
+and hash_binop : binop -> int =
+ fun (x : binop) ->
+  match x with
+  | BitXor -> 0
+  | BitAnd -> 1
+  | BitOr -> 2
+  | Eq -> 3
+  | Lt -> 4
+  | Le -> 5
+  | Ne -> 6
+  | Ge -> 7
+  | Gt -> 8
+  | Add x0 -> HashBasic.combine 9 (hash_overflow_mode x0)
+  | Sub x0 -> HashBasic.combine 10 (hash_overflow_mode x0)
+  | Mul x0 -> HashBasic.combine 11 (hash_overflow_mode x0)
+  | Div x0 -> HashBasic.combine 12 (hash_overflow_mode x0)
+  | Rem x0 -> HashBasic.combine 13 (hash_overflow_mode x0)
+  | AddChecked -> 14
+  | SubChecked -> 15
+  | MulChecked -> 16
+  | Shl x0 -> HashBasic.combine 17 (hash_overflow_mode x0)
+  | Shr x0 -> HashBasic.combine 18 (hash_overflow_mode x0)
+  | Offset -> 19
+  | Cmp -> 20
+
+and hash_borrow_kind : borrow_kind -> int =
+ fun (x : borrow_kind) ->
+  match x with
+  | BShared -> 0
+  | BMut -> 1
+  | BTwoPhaseMut -> 2
+  | BShallow -> 3
+  | BUniqueImmutable -> 4
+
+and hash_cast_kind : cast_kind -> int =
+ fun (x : cast_kind) ->
+  match x with
+  | CastScalar (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 0 (hash_scalar_type x0))
+        (hash_scalar_type x1)
+  | CastRawPtr (x0, x1) ->
+      HashBasic.combine (HashBasic.combine 1 (hash_ty x0)) (hash_ty x1)
+  | CastPtrExposeProvenance (x0, x1) ->
+      HashBasic.combine (HashBasic.combine 2 (hash_ty x0)) (hash_scalar_type x1)
+  | CastPtrWithExposedProvenance (x0, x1) ->
+      HashBasic.combine (HashBasic.combine 3 (hash_scalar_type x0)) (hash_ty x1)
+  | CastFnPtr (x0, x1) ->
+      HashBasic.combine (HashBasic.combine 4 (hash_ty x0)) (hash_ty x1)
+  | CastUnsize (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine (HashBasic.combine 5 (hash_ty x0)) (hash_ty x1))
+        (hash_unsizing_metadata x2)
+  | CastTransmute (x0, x1) ->
+      HashBasic.combine (HashBasic.combine 6 (hash_ty x0)) (hash_ty x1)
+  | CastConcretize (x0, x1) ->
+      HashBasic.combine (HashBasic.combine 7 (hash_ty x0)) (hash_ty x1)
+
+and hash_local_id : local_id -> int = fun (x : local_id) -> LocalId.hash_id x
+
+and hash_nullop : nullop -> int =
+ fun (x : nullop) ->
+  match x with
+  | UbChecks -> 0
+  | OverflowChecks -> 1
+  | ContractChecks -> 2
+
+and hash_operand : operand -> int =
+ fun (x : operand) ->
+  match x with
+  | Copy x0 -> HashBasic.combine 0 (hash_place x0)
+  | Move x0 -> HashBasic.combine 1 (hash_place x0)
+  | Constant x0 -> HashBasic.combine 2 (hash_constant_expr x0)
+
+and hash_overflow_mode : overflow_mode -> int =
+ fun (x : overflow_mode) ->
+  match x with
+  | OPanic -> 0
+  | OUB -> 1
+  | OWrap -> 2
+
+and hash_place : place -> int =
+ fun (x : place) ->
+  HashBasic.combine
+    (HashBasic.combine 0 (hash_place_kind x.kind))
+    (hash_ty x.ty)
+
+and hash_place_kind : place_kind -> int =
+ fun (x : place_kind) ->
+  match x with
+  | PlaceLocal x0 -> HashBasic.combine 0 (hash_local_id x0)
+  | PlaceProjection (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 1 (hash_place x0))
+        (hash_projection_elem x1)
+  | PlaceGlobal x0 -> HashBasic.combine 2 (hash_global_decl_ref x0)
+
+and hash_projection_elem : projection_elem -> int =
+ fun (x : projection_elem) ->
+  match x with
+  | Deref -> 0
+  | Field (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 1 ((HashBasic.hash_option hash_variant_id) x0))
+        (hash_field_id x1)
+  | PtrMetadata -> 2
+  | ProjIndex (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 3 (hash_operand x0))
+        (HashBasic.hash_bool x1)
+  | Subslice (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 4 (hash_operand x0))
+           (hash_operand x1))
+        (HashBasic.hash_bool x2)
+
+and hash_rvalue : rvalue -> int =
+ fun (x : rvalue) ->
+  match x with
+  | Use (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 0 (hash_operand x0))
+        (hash_with_retag x1)
+  | RvRef (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 1 (hash_place x0))
+           (hash_borrow_kind x1))
+        (hash_operand x2)
+  | RawPtr (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 2 (hash_place x0))
+           (hash_ref_kind x1))
+        (hash_operand x2)
+  | BinaryOp (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 3 (hash_binop x0))
+           (hash_operand x1))
+        (hash_operand x2)
+  | UnaryOp (x0, x1) ->
+      HashBasic.combine (HashBasic.combine 4 (hash_unop x0)) (hash_operand x1)
+  | NullaryOp x0 -> HashBasic.combine 5 (hash_nullop x0)
+  | Discriminant x0 -> HashBasic.combine 6 (hash_place x0)
+  | Aggregate (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 7 (hash_aggregate_kind x0))
+        ((HashBasic.hash_list hash_operand) x1)
+  | Len (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine (HashBasic.combine 8 (hash_place x0)) (hash_ty x1))
+        ((HashBasic.hash_option hash_constant_expr) x2)
+  | Repeat (x0, x1, x2, x3) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine
+              (HashBasic.combine 9 (hash_operand x0))
+              (hash_ty x1))
+           (hash_constant_expr x2))
+        ((HashBasic.hash_option hash_trait_ref) x3)
+
+and hash_unop : unop -> int =
+ fun (x : unop) ->
+  match x with
+  | Not -> 0
+  | Neg x0 -> HashBasic.combine 1 (hash_overflow_mode x0)
+  | Cast x0 -> HashBasic.combine 2 (hash_cast_kind x0)
+
+and hash_with_retag : with_retag -> int =
+ fun (x : with_retag) ->
+  match x with
+  | NoRetag -> 0
+  | YesRetag -> 1

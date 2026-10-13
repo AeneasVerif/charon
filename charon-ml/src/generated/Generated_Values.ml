@@ -6,6 +6,8 @@ include Uchar
 (** A char value *)
 type char_value = (Uchar.t[@visitors.opaque]) [@@deriving show, eq, ord]
 
+let hash_char_value = Uchar.hash
+
 (* Ancestors for the scalar visitors *)
 class ['self] iter_scalar_base =
   object (self : 'self)
@@ -92,3 +94,61 @@ and u_int_ty = Usize | U8 | U16 | U32 | U64 | U128
       ancestors = [ "mapreduce_scalar_base" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
+
+let rec hash_float_type : float_type -> int =
+ fun (x : float_type) ->
+  match x with
+  | F16 -> 0
+  | F32 -> 1
+  | F64 -> 2
+  | F128 -> 3
+
+and hash_float_value : float_value -> int =
+ fun (x : float_value) ->
+  HashBasic.combine
+    (HashBasic.combine 0 (HashBasic.hash_string x.float_value))
+    (hash_float_type x.float_ty)
+
+and hash_int_ty : int_ty -> int =
+ fun (x : int_ty) ->
+  match x with
+  | Isize -> 0
+  | I8 -> 1
+  | I16 -> 2
+  | I32 -> 3
+  | I64 -> 4
+  | I128 -> 5
+
+and hash_integer_type : integer_type -> int =
+ fun (x : integer_type) ->
+  match x with
+  | Signed x0 -> HashBasic.combine 0 (hash_int_ty x0)
+  | Unsigned x0 -> HashBasic.combine 1 (hash_u_int_ty x0)
+
+and hash_integer_value : integer_value -> int =
+ fun (x : integer_value) ->
+  match x with
+  | UnsignedInteger (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 0 (hash_u_int_ty x0))
+        (hash_big_int x1)
+  | SignedInteger (x0, x1) ->
+      HashBasic.combine (HashBasic.combine 1 (hash_int_ty x0)) (hash_big_int x1)
+
+and hash_scalar_type : scalar_type -> int =
+ fun (x : scalar_type) ->
+  match x with
+  | TInteger x0 -> HashBasic.combine 0 (hash_integer_type x0)
+  | TFloat x0 -> HashBasic.combine 1 (hash_float_type x0)
+  | TBool -> 2
+  | TChar -> 3
+
+and hash_u_int_ty : u_int_ty -> int =
+ fun (x : u_int_ty) ->
+  match x with
+  | Usize -> 0
+  | U8 -> 1
+  | U16 -> 2
+  | U32 -> 3
+  | U64 -> 4
+  | U128 -> 5
