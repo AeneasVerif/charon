@@ -4,7 +4,7 @@ include BigInt
 include Uchar
 
 (** A char value *)
-type char_value = (Uchar.t[@visitors.opaque]) [@@deriving show, eq, ord]
+type char_value = (Uchar.t[@visitors.opaque]) [@@deriving show, eq, ord, hash]
 
 (* Ancestors for the scalar visitors *)
 class ['self] iter_scalar_base =
@@ -60,6 +60,7 @@ and u_int_ty = Usize | U8 | U16 | U32 | U64 | U128
   show,
   eq,
   ord,
+  hash,
   visitors
     {
       name = "iter_scalar";
