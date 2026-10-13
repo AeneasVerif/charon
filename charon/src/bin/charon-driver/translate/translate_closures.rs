@@ -410,8 +410,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         use ClosureKind::*;
         let kind = translate_closure_kind(&args.kind);
 
-        // Opaque callees may invoke this closure without exposing a call in their MIR.
-        // Reference its native body, leaving adapters for the other Fn* traits lazy.
         let closure_body =
             self.translate_item(span, &args.item, TransItemSourceKind::CallableMethod(kind))?;
 
