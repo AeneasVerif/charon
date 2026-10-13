@@ -20,6 +20,6 @@ module AssocTypeId = IdGen ()
 module AssocConstId = IdGen ()
 
 type path_buf = string
-[@@deriving show, ord, eq]
+[@@deriving show, ord, eq, hash]
 
 (* __REPLACE0__ *)

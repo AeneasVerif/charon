@@ -36,6 +36,7 @@
  (depends
   logs
   ppx_deriving
+  (ppx_deriving_hash (>= 0.1.5))
   unionFind
   (visitors (>= 20260520))
   yojson
