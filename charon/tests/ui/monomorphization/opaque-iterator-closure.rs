@@ -21,7 +21,11 @@ fn apply_once(f: impl FnOnce(u32) -> u32) -> u32 {
 struct Thing;
 
 fn main() {
-    let mut iter = (0..1).map(|x| callback(x));
+    let mut total = 0;
+    let mut iter = (0..1).map(|x| {
+        total += x;
+        callback(total)
+    });
     let _ = iter.next();
 
     let offset = 1;
