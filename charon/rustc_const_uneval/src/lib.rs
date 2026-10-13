@@ -13,6 +13,7 @@ extern crate rustc_span;
 
 mod eval;
 mod memory;
+mod pointer;
 mod valtree;
 
 pub use eval::promoted_body;
