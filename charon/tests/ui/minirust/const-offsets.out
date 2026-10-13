@@ -1,0 +1,2 @@
+MiniRust UB: dereferencing pointer outside the bounds of its allocation
+ERROR MiniRust program encountered UB

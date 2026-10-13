@@ -1,0 +1,126 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::cell::UnsafeCell
+#[lang_item(UnsafeCell)]
+pub opaque type UnsafeCell<T>
+where
+    TraitClause0: (T: MetaSized),
+
+pub fn core::cell::{UnsafeCell<T>[TraitClause0]}::get<'_0, T>(_1: &'_0 UnsafeCell<T>[TraitClause0]) -> *mut T
+where
+    TraitClause0: (T: MetaSized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Sync
+#[lang_item(Sync)]
+#[diagnostic_item("Sync")]
+pub unsafe trait Sync<Self>
+
+struct () {}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+// Full name: test_crate::Tr
+pub trait Tr<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self::S: Sized)
+    type S
+    vtable: test_crate::Tr::{vtable}<Self::S>
+}
+
+// Full name: test_crate::Inner
+pub struct Inner {
+  v: u32,
+}
+
+// Full name: test_crate::{impl Tr for u8}
+impl "impl_Tr_for_u8" Tr for u8 {
+    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
+    proof ImpliedClause1: (Inner: Sized) = {built_in impl Sized for Inner}
+    type S = Inner
+    vtable: lazy
+}
+
+// Full name: test_crate::W
+pub struct W<T>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Tr),
+{
+  _0: TraitClause1::S,
+}
+
+// Full name: test_crate::X
+pub static X: W<u8>[{built_in impl Sized for u8}, impl_Tr_for_u8] = W { _0: Inner { v: 5u32 } }
+
+// Full name: test_crate::P
+pub static P: &'static u32 = &X
+
+// Full name: test_crate::Sy
+pub struct Sy<T>
+where
+    TraitClause0: (T: Sized),
+{
+  _0: T,
+}
+
+// Full name: test_crate::{impl Sync for Sy<T>[TraitClause0]}
+unsafe impl<T> "impl_Sync_for_Sy" Sync for Sy<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    vtable: lazy
+}
+
+// Full name: test_crate::CELL
+pub static CELL: Sy<UnsafeCell<(u8, u32)>[{built_in impl MetaSized for (u8, u32)}]>[{built_in impl Sized for UnsafeCell<(u8, u32)>[{built_in impl MetaSized for (u8, u32)}]}] = Sy { _0: UnsafeCell { 0: (1u8, 2u32) } }
+
+// Full name: test_crate::CELL_FIELD
+pub fn CELL_FIELD() -> Sy<*mut u32>[{built_in impl Sized for *mut u32}]
+{
+    let _0: Sy<*mut u32>[{built_in impl Sized for *mut u32}]; // return
+    let _1: *mut u32; // anonymous local
+    let _2: *mut (u8, u32); // anonymous local
+    let _3: &'1 UnsafeCell<(u8, u32)>[{built_in impl MetaSized for (u8, u32)}]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = &CELL._0
+    _2 = core::cell::{UnsafeCell<T>[TraitClause0]}::get<'6, (u8, u32)>[{built_in impl MetaSized for (u8, u32)}](move _3)
+    ↳⚡ unwind_continue
+    storage_dead(_3)
+    _1 = &raw mut (*_2)._1
+    _0 = Sy { _0: move _1 }
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::CELL_FIELD
+pub static CELL_FIELD: Sy<*mut u32>[{built_in impl Sized for *mut u32}] = CELL_FIELD()
+
+
+
