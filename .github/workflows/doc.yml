@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: peaceiris/actions-mdbook@v2
         with:
           mdbook-version: '0.5.4'
