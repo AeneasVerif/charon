@@ -185,13 +185,13 @@ pub enum Byte<'tcx> {
     Ptr(AllocTarget<'tcx>, u8),
 }
 
-/// A global allocation. The host is in charge of naming it.
+/// A global allocation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum GlobalRef {
     /// A static item.
     Static(DefId),
-    /// An allocation without a corresponding item: an anonymous allocation, or a nested static
-    /// (e.g. the `[1, 2]` in `static S: &[u8] = &[1, 2]`).
+    /// An allocation without a corresponding static item: a referenced constant, a `str` literal,
+    /// or a promoted static (e.g. the `[1, 2]` in `static S: &[u8] = &[1, 2]`).
     Alloc(interpret::AllocId),
 }
 

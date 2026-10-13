@@ -123,6 +123,8 @@ impl<'tcx> ConstReader<'tcx> {
                 let val = tcx
                     .const_eval_resolve(self.typing_env, uv, span)
                     .map_err(|_| ReadError::NotEvaluable)?;
+                // Promoteds aren't items so `type_of` doesn't work for them; instead we read
+                // their type off the return place of their MIR body.
                 let ty = promoted_body(tcx, def_id, promoted, |body| {
                     body.local_decls[mir::RETURN_PLACE].ty
                 });
@@ -151,6 +153,7 @@ impl<'tcx> ConstReader<'tcx> {
                         // `eval_static_initializer` returns an interned allocation without an
                         // `AllocId`; give it one so we can read it like any other allocation.
                         // This creates a fresh `AllocId` each time we read the static.
+                        // FIXME: this breaks sharing.
                         tcx.reserve_and_set_memory_alloc(alloc)
                     }
                     GlobalRef::Alloc(alloc_id) => alloc_id,
