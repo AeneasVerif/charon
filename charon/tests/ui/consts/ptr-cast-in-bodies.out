@@ -1,0 +1,113 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: ptr_cast_in_bodies_aux::Sync
+pub struct Sync<T>
+where
+    TraitClause0: (T: Sized),
+{
+  _0: T,
+}
+
+// Full name: ptr_cast_in_bodies_aux::END
+pub fn END() -> Sync<*const u32>[{built_in impl Sized for *const u32}]
+= <missing>
+
+struct () {}
+
+// Full name: ptr_cast_in_bodies_aux::END
+pub static END: Sync<*const u32>[{built_in impl Sized for *const u32}] = END()
+
+// Full name: ptr_cast_in_bodies_aux::BYTE
+pub fn BYTE() -> Sync<*const u16>[{built_in impl Sized for *const u16}]
+{
+    let _0: Sync<*const u16>[{built_in impl Sized for *const u16}]; // return
+    let _1: u16; // anonymous local
+    let _2: *const u16; // anonymous local
+    let _3: Sync<*const u16>[{built_in impl Sized for *const u16}]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = noretag const 512u16
+    storage_live(_2)
+    _2 = &raw const _1
+    storage_live(_3)
+    _3 = Sync { _0: move _2 }
+    _0 = noretag move _3
+    return
+}
+
+// Full name: ptr_cast_in_bodies_aux::BYTE
+pub static BYTE: Sync<*const u16>[{built_in impl Sized for *const u16}] = BYTE()
+
+// Full name: ptr_cast_in_bodies_aux::OOB
+pub fn OOB() -> Sync<*const u32>[{built_in impl Sized for *const u32}]
+= <missing>
+
+// Full name: ptr_cast_in_bodies_aux::OOB
+pub static OOB: Sync<*const u32>[{built_in impl Sized for *const u32}] = OOB()
+
+// Full name: ptr_cast_in_bodies_aux::FN_RAW
+pub fn FN_RAW() -> Sync<*const ()>[{built_in impl Sized for *const ()}]
+{
+    let _0: Sync<*const ()>[{built_in impl Sized for *const ()}]; // return
+    let _1: (); // anonymous local
+    let _2: *const (); // anonymous local
+    let _3: Sync<*const ()>[{built_in impl Sized for *const ()}]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = ()
+    storage_live(_2)
+    _2 = &raw const _1
+    storage_live(_3)
+    _3 = Sync { _0: move _2 }
+    _0 = noretag move _3
+    return
+}
+
+// Full name: ptr_cast_in_bodies_aux::FN_RAW
+pub static FN_RAW: Sync<*const ()>[{built_in impl Sized for *const ()}] = FN_RAW()
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let _1: &'1 Sync<*const u32>[{built_in impl Sized for *const u32}]; // anonymous local
+    let _2: &'4 Sync<*const u16>[{built_in impl Sized for *const u16}]; // anonymous local
+    let _3: &'6 Sync<*const u32>[{built_in impl Sized for *const u32}]; // anonymous local
+    let _4: &'9 Sync<*const ()>[{built_in impl Sized for *const ()}]; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = &END
+    storage_dead(_1)
+    storage_live(_2)
+    _2 = &BYTE
+    storage_dead(_2)
+    storage_live(_3)
+    _3 = &OOB
+    storage_dead(_3)
+    storage_live(_4)
+    _4 = &FN_RAW
+    storage_dead(_4)
+    _0 = ()
+    return
+}
+
+
+
