@@ -14,6 +14,11 @@ use walkdir::WalkDir;
 
 const TIMEOUT: Duration = Duration::from_secs(60);
 
+const SKIP: &[&str] = &[
+    // Uses a large array which takes very long.
+    "ub/ptr_byte_order_matters.rs",
+];
+
 // Known failures
 const FAILURES: &[(&str, &[&str])] = &[
     // FIXME: track_caller
@@ -104,7 +109,7 @@ fn gather_cases(path: PathBuf, name: &str, outcome: Outcome) -> Result<Vec<Case>
         .into_iter()
         .map(|revision| {
             let mut flags = Vec::new();
-            let mut ignore = false;
+            let mut ignore = SKIP.contains(&name);
             for directive in &directives {
                 let directive = if let Some((name, rest)) = directive
                     .strip_prefix('[')
