@@ -248,7 +248,7 @@ let annotated_rust_tests test_file =
   let ctx = ctx_from_crate crate in
   let env = PatternTest.mk_env ctx test_file in
   let all_pass =
-    T.FunDeclId.Map.for_all
+    T.FunDeclId.HashMap.for_all
       (fun _ (decl : fun_decl) ->
         let attrs =
           List.filter_map

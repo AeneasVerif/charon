@@ -144,7 +144,7 @@ let lookup_trait_impl_method (timpl : trait_impl) (id : trait_method_id) :
 (** Resolve an [assoc_item_id] to a name. *)
 let get_assoc_item_name (crate : crate) (trait_id : trait_decl_id)
     (id : assoc_item_id) : trait_item_name =
-  let names = TraitDeclId.Map.find trait_id crate.assoc_item_names in
+  let names = TraitDeclId.HashMap.find trait_id crate.assoc_item_names in
   match id with
   | AssocIdMethod id -> TraitMethodId.nth names.methods id
   | AssocIdConst id -> AssocConstId.nth names.consts id
@@ -153,19 +153,19 @@ let get_assoc_item_name (crate : crate) (trait_id : trait_decl_id)
 (** Resolve a [trait_method_id] to a name. *)
 let get_method_name (crate : crate) (trait_id : trait_decl_id)
     (id : trait_method_id) : trait_item_name =
-  let names = TraitDeclId.Map.find trait_id crate.assoc_item_names in
+  let names = TraitDeclId.HashMap.find trait_id crate.assoc_item_names in
   TraitMethodId.nth names.methods id
 
 (** Resolve a [assoc_type_id] to a name. *)
 let get_assoc_type_name (crate : crate) (trait_id : trait_decl_id)
     (id : assoc_type_id) : trait_item_name =
-  let names = TraitDeclId.Map.find trait_id crate.assoc_item_names in
+  let names = TraitDeclId.HashMap.find trait_id crate.assoc_item_names in
   AssocTypeId.nth names.types id
 
 (** Resolve a [assoc_const_id] to a name. *)
 let get_assoc_const_name (crate : crate) (trait_id : trait_decl_id)
     (id : assoc_const_id) : trait_item_name =
-  let names = TraitDeclId.Map.find trait_id crate.assoc_item_names in
+  let names = TraitDeclId.HashMap.find trait_id crate.assoc_item_names in
   AssocConstId.nth names.consts id
 
 let g_declaration_group_to_list (g : 'a g_declaration_group) : 'a list =
