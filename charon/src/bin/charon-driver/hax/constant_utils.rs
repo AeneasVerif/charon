@@ -77,7 +77,7 @@ pub enum ConstantExprKind {
     /// A function definition, corresponding to a particular item. This is a ZST, unlike `FnPtr`.
     FnDef(ItemRef),
     /// A function pointer. This is an actual pointer to that function.
-    FnPtr(ItemRef),
+    FnPtr(FnPtrTarget),
     /// A blob of memory containing the byte representation of the value. This can occur when
     /// evaluating MIR constants (e.g. unions). Interpreting this back to a structured value
     /// is left as an exercice to the consumer.
@@ -98,15 +98,22 @@ pub enum ConstantByte {
     Provenance(ConstantByteProvenance, u8),
 }
 
+/// The function a function pointer points to.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum FnPtrTarget {
+    /// The function of an item.
+    Fn(ItemRef),
+    /// A stateless closure coerced to a function pointer.
+    ClosureAsFn(ClosureArgs),
+}
+
 /// What a pointer byte in an evaluated constant points to.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ConstantByteProvenance {
     /// A pointer to a static.
     Global(ItemRef),
     /// A pointer to a function.
-    Function(ItemRef),
-    /// A pointer to a stateless closure's function, coerced to a function pointer.
-    ClosureAsFn(ClosureArgs),
+    Function(FnPtrTarget),
     /// A pointer to anything else (an anonymous allocation, a vtable...).
     Unknown,
 }
@@ -123,8 +130,6 @@ pub struct ConstantFieldExpr {
 /// two construct to one same `ConstantExpr` type.
 pub type ConstantExpr = Decorated<ConstantExprKind>;
 
-// For ConstantKind we merge all the cases (Ty, Val, Unevaluated) into one
-pub type ConstantKind = ConstantExpr;
-
 pub use self::uneval::*;
+pub use rustc_const_uneval::{ConstSource, GlobalRef, ReadMode};
 mod uneval;

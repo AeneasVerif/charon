@@ -1,0 +1,41 @@
+# Final LLBC before serialization:
+
+struct () {}
+
+// Full name: test_crate::AS_FN
+static AS_FN: fn() -> u8 = RawMemory(&test_crate::AS_FN::{closure}::{as_fn}[0], &test_crate::AS_FN::{closure}::{as_fn}[1], &test_crate::AS_FN::{closure}::{as_fn}[2], &test_crate::AS_FN::{closure}::{as_fn}[3], &test_crate::AS_FN::{closure}::{as_fn}[4], &test_crate::AS_FN::{closure}::{as_fn}[5], &test_crate::AS_FN::{closure}::{as_fn}[6], &test_crate::AS_FN::{closure}::{as_fn}[7])
+
+struct test_crate::mk_closure::{closure} {}
+
+// Full name: test_crate::Closure
+type Closure = test_crate::mk_closure::{closure}
+
+// Full name: test_crate::mk_closure
+fn mk_closure() -> test_crate::mk_closure::{closure}
+{
+    let _0: test_crate::mk_closure::{closure}; // return
+
+    storage_live(_0)
+    _0 = test_crate::mk_closure::{closure} {  }
+    return
+}
+
+// Full name: test_crate::mk_closure::{impl Fn<()> for test_crate::mk_closure::{closure}}::call
+fn {impl Fn<()> for test_crate::mk_closure::{closure}}::call<'_0>(_1: &'_0 test_crate::mk_closure::{closure}, tupled_args: ()) -> u8
+{
+    let _0: u8; // return
+    let _1: &'1 test_crate::mk_closure::{closure}; // arg #1
+    let tupled_args: (); // arg #2
+
+    storage_live(_0)
+    _0 = const 2u8
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::CALL_ONCE
+static CALL_ONCE: extern "rust-call" fn(test_crate::mk_closure::{closure}, ()) -> u8 = RawMemory(&test_crate::mk_closure::{closure}::{as_fn}[0], &test_crate::mk_closure::{closure}::{as_fn}[1], &test_crate::mk_closure::{closure}::{as_fn}[2], &test_crate::mk_closure::{closure}::{as_fn}[3], &test_crate::mk_closure::{closure}::{as_fn}[4], &test_crate::mk_closure::{closure}::{as_fn}[5], &test_crate::mk_closure::{closure}::{as_fn}[6], &test_crate::mk_closure::{closure}::{as_fn}[7])
+
+
+

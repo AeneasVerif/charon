@@ -1,0 +1,62 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+#[lang_item(Sync)]
+#[diagnostic_item("Sync")]
+pub unsafe trait core::marker::Sync<Self>
+
+struct () {}
+
+struct test_crate::Sync<T>
+where
+    TraitClause0: (T: Sized),
+{
+  _0: T,
+}
+
+// Full name: test_crate::{impl core::marker::Sync for test_crate::Sync<T>[TraitClause0]}
+unsafe impl<T> "impl_Sync_for_Sync" core::marker::Sync for test_crate::Sync<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    vtable: lazy
+}
+
+// Full name: test_crate::Opaque
+extern opaque type Opaque
+
+// Full name: test_crate::X
+static X: u8 = 0u8
+
+// Full name: test_crate::EXTERN
+static EXTERN: test_crate::Sync<*const Opaque>[{built_in impl Sized for *const Opaque}] = test_crate::Sync { _0: &raw const Opaque(Unhandled constant type) }
+
+// Full name: test_crate::EXTERN_NO_PROVENANCE
+static EXTERN_NO_PROVENANCE: test_crate::Sync<*const Opaque>[{built_in impl Sized for *const Opaque}] = test_crate::Sync { _0: no-provenance 8 }
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+
+

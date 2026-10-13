@@ -195,7 +195,25 @@ impl ProjectionElem {
                 }
             }
             PtrMetadata => ty.get_ptr_metadata(krate).into_type(),
-            Index { .. } | Subslice { .. } => ty.as_array_or_slice()?.clone(),
+            Index { .. } => ty.as_array_or_slice()?.clone(),
+            Subslice { from, to, from_end } => match ty.kind() {
+                TyKind::Slice(..) => ty.clone(),
+                TyKind::Array(elem, len, ty_is_sized) => {
+                    let lit = |op: &Operand| op.as_const()?.as_usize_literal();
+                    let (from, to) = (lit(from)?, lit(to)?);
+                    let len = if *from_end {
+                        len.as_usize_literal()?.checked_sub(from + to)?
+                    } else {
+                        to.checked_sub(from)?
+                    };
+                    Ty::mk_array(
+                        elem.clone(),
+                        ConstantExpr::mk_usize(len),
+                        ty_is_sized.clone(),
+                    )
+                }
+                _ => return None,
+            },
         })
     }
 }
