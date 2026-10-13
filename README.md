@@ -85,7 +85,7 @@ and install OPAM on the way (same instructions).
 For Charon-ML, we use **OCaml 4.14.0** (`opam switch create 4.14.0+options`) but any
 recent version will do. In particular, **OCaml 5** works.
 
-The dependencies can be installed with `opam install . --deps-only`.
+The dependencies can be installed with `opam install . --deps-only --with-test`.
 
 You can then run `make build-charon-ml` to build the ML library, or even simply
 `make` to build the whole project (Rust and OCaml). Finally, you can run the
