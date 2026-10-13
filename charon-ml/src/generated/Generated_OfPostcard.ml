@@ -2137,6 +2137,7 @@ and closure_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (closure_info, string) result =
   combine_error_msgs st __FUNCTION__
     (let* kind = closure_kind_of_postcard ctx st in
+     let* closure_body = fun_decl_ref_of_postcard ctx st in
      let* fn_once_impl =
        region_binder_of_postcard trait_impl_ref_of_postcard ctx st
      in
@@ -2151,7 +2152,9 @@ and closure_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          ctx st
      in
      let* signature = region_binder_of_postcard fun_sig_of_postcard ctx st in
-     Ok ({ kind; fn_once_impl; fn_mut_impl; fn_impl; signature } : closure_info))
+     Ok
+       ({ kind; closure_body; fn_once_impl; fn_mut_impl; fn_impl; signature }
+         : closure_info))
 
 and closure_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (closure_kind, string) result =

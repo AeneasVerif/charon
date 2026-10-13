@@ -809,6 +809,8 @@ and builtin_path_elem =
 (** Additional information for closures. *)
 and closure_info = {
   kind : closure_kind;
+  closure_body : fun_decl_ref;
+      (** The native call method containing this closure's body. *)
   fn_once_impl : trait_impl_ref region_binder;
       (** The [FnOnce] implementation of this closure -- always exists. *)
   fn_mut_impl : trait_impl_ref region_binder option;

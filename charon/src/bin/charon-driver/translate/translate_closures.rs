@@ -410,12 +410,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         use ClosureKind::*;
         let kind = translate_closure_kind(&args.kind);
 
-        if self.monomorphize() {
-            // Opaque callees may invoke this closure without exposing a call in their MIR.
-            // Keep its body reachable, but leave the adapters for the other Fn* traits lazy.
-            let _: FunDeclId =
-                self.register_item(span, &args.item, TransItemSourceKind::CallableMethod(kind));
-        }
+        // Opaque callees may invoke this closure without exposing a call in their MIR.
+        // Reference its native body, leaving adapters for the other Fn* traits lazy.
+        let closure_body =
+            self.translate_item(span, &args.item, TransItemSourceKind::CallableMethod(kind))?;
 
         let fn_once_impl = self.translate_closure_bound_impl_ref(span, args, FnOnce)?;
         let fn_mut_impl = if matches!(kind, FnMut | Fn) {
@@ -431,6 +429,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let signature = self.translate_poly_fun_sig(span, &args.fn_sig)?;
         Ok(ClosureInfo {
             kind,
+            closure_body,
             fn_once_impl,
             fn_mut_impl,
             fn_impl,

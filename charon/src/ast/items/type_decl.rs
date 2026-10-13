@@ -177,6 +177,8 @@ pub enum VTableField {
 pub struct ClosureInfo {
     #[serde_state(stateless)]
     pub kind: ClosureKind,
+    /// The native call method containing this closure's body.
+    pub closure_body: FunDeclRef,
     /// The `FnOnce` implementation of this closure -- always exists.
     pub fn_once_impl: RegionBinder<TraitImplRef>,
     /// The `FnMut` implementation of this closure, if any.
