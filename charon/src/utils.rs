@@ -1,4 +1,6 @@
 use itertools::Itertools;
+use std::{cell::Cell, mem::DropGuard};
+
 use macros::EnumAsGetters;
 
 pub mod dedup;
@@ -405,10 +407,23 @@ const RED_ZONE: usize = 100 * 1024; // 100k
 // on. Values taken from rustc.
 const STACK_PER_RECURSION: usize = 1024 * 1024; // 1MB
 
+// Bound runaway recursion even when `stacker` could keep allocating more stacks.
+const MAX_STACK_DEPTH: usize = 1024;
+
+thread_local! {
+    static STACK_DEPTH: Cell<usize> = const { Cell::new(0) };
+}
+
 /// Grows the stack on demand to prevent stack overflow. Call this in strategic locations to "break
 /// up" recursive calls. E.g. most statement visitors can benefit from this.
 #[inline]
+#[track_caller]
 pub fn ensure_sufficient_stack<R>(f: impl FnOnce() -> R) -> R {
+    let depth = STACK_DEPTH.get();
+    assert!(depth < MAX_STACK_DEPTH, "stack depth limit exceeded");
+    STACK_DEPTH.set(depth + 1);
+    // Re-set the depth on return or unwind.
+    let _guard = DropGuard::new((), |()| STACK_DEPTH.set(depth));
     stacker::maybe_grow(RED_ZONE, STACK_PER_RECURSION, f)
 }
 
@@ -447,4 +462,18 @@ pub fn arg_values<'a, T: AsRef<str>>(
 
 pub fn arg_value<'a, T: AsRef<str>>(args: &'a [T], needle: &'a str) -> Option<&'a str> {
     arg_values(args, needle).next()
+}
+
+#[test]
+fn catch_stack_overflow() {
+    fn recurse(depth: usize) {
+        ensure_sufficient_stack(|| {
+            if depth > 0 {
+                recurse(depth - 1);
+            }
+        });
+    }
+
+    assert!(std::panic::catch_unwind(|| recurse(1024)).is_err());
+    assert_eq!(ensure_sufficient_stack(|| 42), 42);
 }
