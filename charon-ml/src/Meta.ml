@@ -15,10 +15,12 @@ end
 module FileNameSet = Collections.MakeSet (OrderedFileName)
 module FileNameMap = Collections.MakeMap (OrderedFileName)
 
-module OrderedAnyDeclId : Collections.OrderedType with type t = item_id = struct
+module OrderedAnyDeclId : Collections.HashedType with type t = item_id = struct
   type t = item_id
 
   let compare = compare_item_id
+  let equal = equal_item_id
+  let hash = hash_item_id
   let to_string = show_item_id
   let pp_t fmt x = Format.pp_print_string fmt (show_item_id x)
   let show_t = show_item_id
@@ -26,3 +28,5 @@ end
 
 module AnyDeclIdSet = Collections.MakeSet (OrderedAnyDeclId)
 module AnyDeclIdMap = Collections.MakeMap (OrderedAnyDeclId)
+module AnyDeclIdHashMap = Collections.MakeHashMap (OrderedAnyDeclId)
+module AnyDeclIdHashSet = Collections.MakeHashSet (OrderedAnyDeclId)
