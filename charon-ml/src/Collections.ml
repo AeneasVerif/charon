@@ -434,6 +434,220 @@ module MakeSet (Ord : OrderedType) : Set with type elt = Ord.t = struct
     (s, add, mem)
 end
 
+(** We need [compare] in addition to [equal]/[hash] to print the bindings in a
+    deterministic order. *)
+module type HashedType = sig
+  include OrderedType
+  include Hashtbl.HashedType with type t := t
+end
+
+(** An immutable hash map: it is built in one go by {!of_list} or {!of_seq}, and
+    can't be modified afterwards. This makes it safe to share between domains.
+
+    The iteration functions ({!iter}, {!fold}, {!to_seq}) don't follow any
+    particular order, while {!bindings}, {!keys}, {!values} and the printing
+    functions sort the bindings by key. *)
+module type HashMap = sig
+  type key
+  type 'a t
+
+  (** If a key appears several times, the last binding wins. *)
+  val of_list : (key * 'a) list -> 'a t
+
+  (** If a key appears several times, the last binding wins. *)
+  val of_seq : (key * 'a) Seq.t -> 'a t
+
+  val is_empty : 'a t -> bool
+  val cardinal : 'a t -> int
+  val mem : key -> 'a t -> bool
+  val find : key -> 'a t -> 'a
+  val find_opt : key -> 'a t -> 'a option
+  val iter : (key -> 'a -> unit) -> 'a t -> unit
+  val fold : (key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
+  val for_all : (key -> 'a -> bool) -> 'a t -> bool
+  val exists : (key -> 'a -> bool) -> 'a t -> bool
+  val to_seq : 'a t -> (key * 'a) Seq.t
+  val bindings : 'a t -> (key * 'a) list
+  val keys : 'a t -> key list
+  val values : 'a t -> 'a list
+  val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+
+  (** The following functions return a fresh map. *)
+
+  val map : ('a -> 'b) -> 'a t -> 'b t
+  val filter : (key -> 'a -> bool) -> 'a t -> 'a t
+  val filter_map : (key -> 'a -> 'b option) -> 'a t -> 'b t
+
+  (** See {!Map.to_string} *)
+  val to_string : string option -> ('a -> string) -> 'a t -> string
+
+  val pp : (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a t -> unit
+  val show : ('a -> string) -> 'a t -> string
+end
+
+module MakeHashMap (Key : HashedType) : HashMap with type key = Key.t = struct
+  module H = Hashtbl.Make (Key)
+
+  (* The signature hides the functions that modify the table. *)
+  include H
+
+  let of_list bl =
+    let m = H.create (List.length bl) in
+    List.iter (fun (key, e) -> H.replace m key e) bl;
+    m
+
+  let is_empty m = H.length m = 0
+  let cardinal = H.length
+  let mem k m = H.mem m k
+  let find k m = H.find m k
+  let find_opt k m = H.find_opt m k
+  let for_all f m = Seq.for_all (fun (k, v) -> f k v) (H.to_seq m)
+  let exists f m = Seq.exists (fun (k, v) -> f k v) (H.to_seq m)
+
+  let bindings m =
+    List.sort
+      (fun (k0, _) (k1, _) -> Key.compare k0 k1)
+      (List.of_seq (to_seq m))
+
+  let keys m = List.map fst (bindings m)
+  let values m = List.map snd (bindings m)
+
+  let filter_map f m =
+    let m' = H.create (H.length m) in
+    H.iter (fun k v -> Option.iter (H.replace m' k) (f k v)) m;
+    m'
+
+  let filter f m = filter_map (fun k v -> if f k v then Some v else None) m
+  let map f m = filter_map (fun _ v -> Some (f v)) m
+
+  let equal eq m0 m1 =
+    H.length m0 = H.length m1
+    && for_all
+         (fun k v ->
+           match H.find_opt m1 k with
+           | Some v' -> eq v v'
+           | None -> false)
+         m0
+
+  let to_string indent_opt a_to_string m =
+    let indent, break =
+      match indent_opt with
+      | Some indent -> (indent, "\n")
+      | None -> ("", " ")
+    in
+    let sep = "," ^ break in
+    let ls =
+      List.map
+        (fun (key, v) -> indent ^ Key.to_string key ^ " -> " ^ a_to_string v)
+        (bindings m)
+    in
+    match ls with
+    | [] -> "{}"
+    | _ -> "{" ^ break ^ String.concat sep ls ^ " }"
+
+  let pp (pp_a : Format.formatter -> 'a -> unit) (fmt : Format.formatter)
+      (m : 'a t) : unit =
+    let pp_string = F.pp_print_string fmt in
+    let pp_space () = F.pp_print_space fmt () in
+    pp_string "{";
+    F.pp_open_box fmt 2;
+    List.iter
+      (fun (key, x) ->
+        Key.pp_t fmt key;
+        pp_space ();
+        pp_string "->";
+        pp_space ();
+        pp_a fmt x;
+        pp_string ",";
+        F.pp_print_break fmt 1 0)
+      (bindings m);
+    F.pp_close_box fmt ();
+    F.pp_print_break fmt 0 0;
+    pp_string "}"
+
+  let show show_a m = to_string None show_a m
+end
+
+(** An immutable hash set, see {!HashMap}. *)
+module type HashSet = sig
+  type elt
+  type t
+
+  val of_list : elt list -> t
+  val of_seq : elt Seq.t -> t
+  val is_empty : t -> bool
+  val cardinal : t -> int
+  val mem : elt -> t -> bool
+  val iter : (elt -> unit) -> t -> unit
+  val fold : (elt -> 'a -> 'a) -> t -> 'a -> 'a
+  val for_all : (elt -> bool) -> t -> bool
+  val exists : (elt -> bool) -> t -> bool
+  val to_seq : t -> elt Seq.t
+
+  (** Sorted *)
+  val elements : t -> elt list
+
+  (** Returns a fresh set *)
+  val filter : (elt -> bool) -> t -> t
+
+  val equal : t -> t -> bool
+
+  (** See {!Set.to_string} *)
+  val to_string : string option -> t -> string
+
+  val pp : Format.formatter -> t -> unit
+  val show : t -> string
+end
+
+module MakeHashSet (Elt : HashedType) : HashSet with type elt = Elt.t = struct
+  module M = MakeHashMap (Elt)
+
+  type elt = Elt.t
+  type t = unit M.t
+
+  let of_list l = M.of_list (List.map (fun e -> (e, ())) l)
+  let of_seq s = M.of_seq (Seq.map (fun e -> (e, ())) s)
+  let is_empty = M.is_empty
+  let cardinal = M.cardinal
+  let mem = M.mem
+  let iter f s = M.iter (fun e () -> f e) s
+  let fold f s acc = M.fold (fun e () acc -> f e acc) s acc
+  let for_all f s = M.for_all (fun e () -> f e) s
+  let exists f s = M.exists (fun e () -> f e) s
+  let to_seq s = Seq.map fst (M.to_seq s)
+  let elements = M.keys
+  let filter f s = M.filter (fun e () -> f e) s
+  let equal s0 s1 = M.equal (fun () () -> true) s0 s1
+
+  let to_string indent_opt s =
+    let indent, break =
+      match indent_opt with
+      | Some indent -> (indent, "\n")
+      | None -> ("", " ")
+    in
+    let sep = "," ^ break in
+    let ls = List.map (fun e -> indent ^ Elt.to_string e) (elements s) in
+    match ls with
+    | [] -> "{}"
+    | _ -> "{" ^ break ^ String.concat sep ls ^ " }"
+
+  let pp (fmt : Format.formatter) (s : t) : unit =
+    let pp_string = F.pp_print_string fmt in
+    pp_string "{";
+    F.pp_open_box fmt 2;
+    List.iter
+      (fun x ->
+        Elt.pp_t fmt x;
+        pp_string ",";
+        F.pp_print_break fmt 1 0)
+      (elements s);
+    F.pp_close_box fmt ();
+    F.pp_print_break fmt 0 0;
+    pp_string "}"
+
+  let show s = to_string None s
+end
+
 (** A map where the bindings are injective (i.e., if two keys are distinct,
     their bindings are distinct).
 
