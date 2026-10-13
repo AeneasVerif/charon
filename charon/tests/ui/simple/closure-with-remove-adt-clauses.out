@@ -69,6 +69,26 @@ where
     return
 }
 
+// Full name: test_crate::f::{impl Fn<(), T> for test_crate::f::{closure}<'_0, T>}::call
+fn {impl Fn<(), T> for test_crate::f::{closure}<'_0, T>}::call<'_0, '_1, T>(_1: &'_1 test_crate::f::{closure}<'_0, T>, tupled_args: ()) -> T
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: '_0: '_1,
+{
+    let _0: T; // return
+    let _1: &'1 test_crate::f::{closure}<'_0, T>; // arg #1
+    let tupled_args: (); // arg #2
+
+    storage_live(_0)
+    _0 = copy (*(*_1)._0)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
 struct test_crate::g::{closure}<'_0, T>
 where
     TypeOutlives0: T: '_0,
@@ -98,6 +118,26 @@ where
     _0 = ()
     storage_dead(_c)
     storage_dead(x)
+    return
+}
+
+// Full name: test_crate::g::{impl Fn<(), T> for test_crate::g::{closure}<'_0, T>}::call
+fn {impl Fn<(), T> for test_crate::g::{closure}<'_0, T>}::call<'_0, '_1, T>(_1: &'_1 test_crate::g::{closure}<'_0, T>, tupled_args: ()) -> T
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: '_0: '_1,
+{
+    let _0: T; // return
+    let _1: &'1 test_crate::g::{closure}<'_0, T>; // arg #1
+    let tupled_args: (); // arg #2
+
+    storage_live(_0)
+    _0 = copy (*(*_1)._0)
+    storage_dead(tupled_args)
+    storage_dead(_1)
     return
 }
 

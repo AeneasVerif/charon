@@ -2579,12 +2579,14 @@ and closure_info_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc
         [
           ("kind", kind);
+          ("closure_body", closure_body);
           ("fn_once_impl", fn_once_impl);
           ("fn_mut_impl", fn_mut_impl);
           ("fn_impl", fn_impl);
           ("signature", signature);
         ] ->
         let* kind = closure_kind_of_json ctx kind in
+        let* closure_body = fun_decl_ref_of_json ctx closure_body in
         let* fn_once_impl =
           region_binder_of_json trait_impl_ref_of_json ctx fn_once_impl
         in
@@ -2600,7 +2602,7 @@ and closure_info_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* signature = region_binder_of_json fun_sig_of_json ctx signature in
         Ok
-          ({ kind; fn_once_impl; fn_mut_impl; fn_impl; signature }
+          ({ kind; closure_body; fn_once_impl; fn_mut_impl; fn_impl; signature }
             : closure_info)
     | _ -> Error "")
 

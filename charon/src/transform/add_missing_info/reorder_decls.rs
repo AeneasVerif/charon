@@ -368,7 +368,12 @@ impl VisitAst for DepsForItem<'_> {
         Continue(())
     }
     // Sources are reverse dependencies; exploring them is likely to create dependency cycles.
-    fn visit_type_source(&mut self, _: &TypeSource) -> ControlFlow<Self::Break> {
+    fn visit_type_source(&mut self, src: &TypeSource) -> ControlFlow<Self::Break> {
+        if let TypeSource::Closure { info } = src {
+            // Make the closure body reachable but don't consider the closure struct to depend on it.
+            self.insert_node(info.closure_body.id);
+            info.closure_body.generics.drive(self)?;
+        }
         Continue(())
     }
     fn visit_fun_source(&mut self, src: &FunSource) -> ControlFlow<Self::Break> {

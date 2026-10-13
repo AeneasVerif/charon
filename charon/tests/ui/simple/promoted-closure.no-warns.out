@@ -43,5 +43,23 @@ pub fn foo() -> &'static {closure}
     return
 }
 
+// Full name: test_crate::foo::{impl Fn<(u32,)> for {closure}}::call
+fn call<'_0>(_1: &'_0 {closure}, tupled_args: (u32,)) -> u32
+{
+    let _0: u32; // return
+    let _1: &'1 {closure}; // arg #1
+    let tupled_args: (u32,); // arg #2
+    let x: u32; // local
+
+    storage_live(_0)
+    storage_live(x)
+    x = move tupled_args._0
+    _0 = copy x
+    storage_dead(x)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
 
 

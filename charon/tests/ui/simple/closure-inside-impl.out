@@ -54,5 +54,29 @@ where
     return
 }
 
+// Full name: test_crate::{Foo<F>[TraitClause0]}::method::{impl Fn<((),)> for {closure}<F, T>[TraitClause0, TraitClause1]}::call
+fn call<'_0, F, T>(_1: &'_0 {closure}<F, T>[TraitClause0, TraitClause1], tupled_args: ((),))
+where
+    TraitClause0: (F: Sized),
+    TraitClause1: (T: Sized),
+    TypeOutlives0: F: '_0,
+    TypeOutlives1: T: '_0,
+{
+    let _0: (); // return
+    let _1: &'1 {closure}<F, T>[TraitClause0, TraitClause1]; // arg #1
+    let tupled_args: ((),); // arg #2
+    let _x: (); // local
+
+    storage_live(_0)
+    storage_live(_x)
+    _0 = ()
+    _x = move tupled_args._0
+    _0 = ()
+    storage_dead(_x)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
 
 
