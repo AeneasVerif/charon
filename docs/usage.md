@@ -53,3 +53,9 @@ by means of micro-passes. Depending on the need, we could make them optional and
 flags. If you want to know more about the details, see `transformation_passes` in
 `src/bin/charon-driver/driver.rs`, which applies the micro-passes one after the other.
 
+## Determinism
+
+The output of Charon is deterministic, for a given Charon version and options passed to it. This
+includes warning/error messages emitted by Charon itself.
+Note: the warning/error messages emitted by rustc may show up in nondeterministic order; use
+`--rustc-arg=-Zunstable-options --rustc-arg=--jobs-frontend=sync` to make that deterministic too.
