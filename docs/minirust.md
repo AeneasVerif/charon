@@ -15,3 +15,25 @@ Charon will use its monomorphized translation when translating to MiniRust.
 
 MiniRust also serves as the semantic definition of Charon: if there is doubt about the semantics of
 a statement, the translation to MiniRust in `src/minirust.rs` is considered authoritative.
+
+## Known unsupported features
+
+The translation to MiniRust currently has these limitations:
+
+### Not supported by MiniRust
+
+- Pattern types, and `char` validity;
+- Floats;
+- Inline assembly;
+- Calling conventions other than Rust and C.
+
+### Translated unsoundly
+
+- Pointers to statics that aren't at offset 0;
+- `#[track_caller]`: we don't pass the called information;
+- Precise union padding: we preserve every byte of a union, including bytes Rust may treat as padding.
+
+### Rejected with an error, but supported by MiniRust
+
+- `dyn Trait` upcasting;
+- `CoerceUnsized` pointers.
