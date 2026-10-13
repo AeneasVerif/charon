@@ -1,0 +1,185 @@
+# Final LLBC before serialization:
+
+struct () {}
+
+struct test_crate::AS_FN::{closure} {}
+
+// Full name: test_crate::AS_FN::{impl Fn<()> for test_crate::AS_FN::{closure}}::call
+fn {impl Fn<()> for test_crate::AS_FN::{closure}}::call<'_0>(_1: &'_0 test_crate::AS_FN::{closure}, tupled_args: ()) -> u8
+{
+    let _0: u8; // return
+    let _1: &'1 test_crate::AS_FN::{closure}; // arg #1
+    let tupled_args: (); // arg #2
+
+    storage_live(_0)
+    _0 = const 1u8
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::AS_FN::{impl FnMut<()> for test_crate::AS_FN::{closure}}::call_mut
+fn {impl FnMut<()> for test_crate::AS_FN::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::AS_FN::{closure}, args: ()) -> u8
+{
+    let _0: u8; // return
+    let state: &'_0 mut test_crate::AS_FN::{closure}; // arg #1
+    let args: (); // arg #2
+    let _3: &'0 test_crate::AS_FN::{closure}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &(*state)
+    _0 = {impl Fn<()> for test_crate::AS_FN::{closure}}::call<'2>(move _3, move args)
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::AS_FN::{impl FnOnce<()> for test_crate::AS_FN::{closure}}::call_once
+fn {impl FnOnce<()> for test_crate::AS_FN::{closure}}::call_once(_1: test_crate::AS_FN::{closure}, _2: ()) -> u8
+{
+    let _0: u8; // return
+    let _1: test_crate::AS_FN::{closure}; // arg #1
+    let _2: (); // arg #2
+    let _3: &'1 mut test_crate::AS_FN::{closure}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &mut _1
+    _0 = {impl FnMut<()> for test_crate::AS_FN::{closure}}::call_mut<'2>(move _3, move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+fn test_crate::AS_FN::{closure}::{as_fn}() -> u8
+{
+    let _0: u8; // return
+    let args: (); // local
+    let state: test_crate::AS_FN::{closure}; // local
+
+    storage_live(_0)
+    storage_live(args)
+    storage_live(state)
+    args = ()
+    state = test_crate::AS_FN::{closure} {  }
+    _0 = {impl FnOnce<()> for test_crate::AS_FN::{closure}}::call_once(move state, move args)
+    ↳⚡ storage_dead(state)
+        storage_dead(args)
+        unwind_continue
+    storage_dead(state)
+    storage_dead(args)
+    return
+}
+
+// Full name: test_crate::AS_FN
+static AS_FN: fn() -> u8 = fnptr(test_crate::AS_FN::{closure}::{as_fn})
+
+struct test_crate::mk_closure::{closure} {}
+
+// Full name: test_crate::Closure
+type Closure = test_crate::mk_closure::{closure}
+
+// Full name: test_crate::mk_closure
+fn mk_closure() -> test_crate::mk_closure::{closure}
+{
+    let _0: test_crate::mk_closure::{closure}; // return
+
+    storage_live(_0)
+    _0 = test_crate::mk_closure::{closure} {  }
+    return
+}
+
+// Full name: test_crate::mk_closure::{impl Fn<()> for test_crate::mk_closure::{closure}}::call
+fn {impl Fn<()> for test_crate::mk_closure::{closure}}::call<'_0>(_1: &'_0 test_crate::mk_closure::{closure}, tupled_args: ()) -> u8
+{
+    let _0: u8; // return
+    let _1: &'1 test_crate::mk_closure::{closure}; // arg #1
+    let tupled_args: (); // arg #2
+
+    storage_live(_0)
+    _0 = const 2u8
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::mk_closure::{impl FnMut<()> for test_crate::mk_closure::{closure}}::call_mut
+fn {impl FnMut<()> for test_crate::mk_closure::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::mk_closure::{closure}, args: ()) -> u8
+{
+    let _0: u8; // return
+    let state: &'_0 mut test_crate::mk_closure::{closure}; // arg #1
+    let args: (); // arg #2
+    let _3: &'0 test_crate::mk_closure::{closure}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &(*state)
+    _0 = {impl Fn<()> for test_crate::mk_closure::{closure}}::call<'2>(move _3, move args)
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::mk_closure::{impl FnOnce<()> for test_crate::mk_closure::{closure}}::call_once
+fn {impl FnOnce<()> for test_crate::mk_closure::{closure}}::call_once(_1: test_crate::mk_closure::{closure}, _2: ()) -> u8
+{
+    let _0: u8; // return
+    let _1: test_crate::mk_closure::{closure}; // arg #1
+    let _2: (); // arg #2
+    let _3: &'1 mut test_crate::mk_closure::{closure}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &mut _1
+    _0 = {impl FnMut<()> for test_crate::mk_closure::{closure}}::call_mut<'2>(move _3, move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+fn test_crate::mk_closure::{closure}::{as_fn}() -> u8
+{
+    let _0: u8; // return
+    let args: (); // local
+    let state: test_crate::mk_closure::{closure}; // local
+
+    storage_live(_0)
+    storage_live(args)
+    storage_live(state)
+    args = ()
+    state = test_crate::mk_closure::{closure} {  }
+    _0 = {impl FnOnce<()> for test_crate::mk_closure::{closure}}::call_once(move state, move args)
+    ↳⚡ storage_dead(state)
+        storage_dead(args)
+        unwind_continue
+    storage_dead(state)
+    storage_dead(args)
+    return
+}
+
+// Full name: test_crate::CALL_ONCE
+static CALL_ONCE: extern "rust-call" fn(test_crate::mk_closure::{closure}, ()) -> u8 = fnptr(test_crate::mk_closure::{closure}::{as_fn})
+
+
+
