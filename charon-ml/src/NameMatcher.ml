@@ -546,7 +546,7 @@ and match_pattern_with_type_decl_id (ctx : ctx) (c : match_config) (m : maps)
     (generics : T.generic_args) : bool =
   match (builtin, pid) with
   | None, _ ->
-      let d = T.TypeDeclId.Map.find id ctx.crate.type_decls in
+      let d = T.TypeDeclId.HashMap.find id ctx.crate.type_decls in
       match_name_with_generics ctx c ~m pid d.item_meta.name generics
   | Some TTuple, _ -> false
   | ( Some TBox,
@@ -630,9 +630,9 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
 and match_expr_with_trait_impl_id (ctx : ctx) (c : match_config) (ptr : expr)
     (impl_id : T.TraitImplId.id) : bool =
   (* Lookup the trait implementation *)
-  let impl = T.TraitImplId.Map.find impl_id ctx.crate.trait_impls in
+  let impl = T.TraitImplId.HashMap.find impl_id ctx.crate.trait_impls in
   (* Lookup the trait declaration *)
-  let d = T.TraitDeclId.Map.find impl.impl_trait.id ctx.crate.trait_decls in
+  let d = T.TraitDeclId.HashMap.find impl.impl_trait.id ctx.crate.trait_decls in
   (* Match *)
   match ptr with
   | EComp pid ->
@@ -643,7 +643,9 @@ and match_expr_with_trait_impl_id (ctx : ctx) (c : match_config) (ptr : expr)
 and match_trait_decl_ref (ctx : ctx) (c : match_config) (m : maps)
     (pid : pattern) (tr : T.trait_decl_ref) : bool =
   (* Lookup the trait declaration *)
-  let d = T.TraitDeclId.Map.find tr.id ctx.crate.trait_decls in
+  let d = T.TraitDeclId.HashMap.find tr.binder_value.id ctx.crate.trait_decls in
+  (* Push a region group in the map, if necessary - TODO: make this more precise *)
+  let m = maps_push_bound_regions_group_if_nonempty m tr.binder_regions in
   (* Match the trait decl ref *)
   match_name_with_generics ctx c ~m pid d.item_meta.name tr.generics
 
@@ -711,7 +713,7 @@ and match_expr_with_const_generic (ctx : ctx) (c : match_config) (m : maps)
   | EVar pv, _ -> opt_update_cmap c m pv cg
   | EComp pat, CGlobal gref ->
       (* Lookup the decl and match the name *)
-      let d = T.GlobalDeclId.Map.find gref.id ctx.crate.global_decls in
+      let d = T.GlobalDeclId.HashMap.find gref.id ctx.crate.global_decls in
       match_name ctx c pat d.item_meta.name
   | _ -> false
 
@@ -720,7 +722,7 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : T.fn_ptr)
   match func.kind with
   | Fun fid ->
       (* Lookup the function decl *)
-      let d = Types.FunDeclId.Map.find fid ctx.crate.fun_decls in
+      let d = Types.FunDeclId.HashMap.find fid ctx.crate.fun_decls in
       (* Match the pattern on the name of the function. *)
       let match_function_name =
         let ret =
@@ -954,7 +956,7 @@ and impl_elem_to_pattern (ctx : ctx) (c : to_pat_config) (impl : T.impl_elem) :
   | ImplElemTy bound_ty ->
       PImpl (ty_to_pattern ctx c bound_ty.binder_params bound_ty.binder_value)
   | ImplElemTrait impl_id ->
-      let impl = T.TraitImplId.Map.find impl_id ctx.crate.trait_impls in
+      let impl = T.TraitImplId.HashMap.find impl_id ctx.crate.trait_impls in
       PImpl (trait_decl_ref_to_pattern ctx c impl.generics impl.impl_trait)
 
 and trait_decl_ref_to_pattern (ctx : ctx) (c : to_pat_config)
@@ -962,7 +964,7 @@ and trait_decl_ref_to_pattern (ctx : ctx) (c : to_pat_config)
   (* Compute the constraints map *)
   let m = compute_constraints_map params in
   (* Lookup the declaration *)
-  let d = T.TraitDeclId.Map.find tr.id ctx.crate.trait_decls in
+  let d = T.TraitDeclId.HashMap.find tr.id ctx.crate.trait_decls in
   EComp (name_with_generics_to_pattern_aux ctx c m d.item_meta.name tr.generics)
 
 and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
@@ -972,7 +974,7 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
       match tref.builtin with
       | None ->
           (* Lookup the declaration *)
-          let d = T.TypeDeclId.Map.find tref.id ctx.crate.type_decls in
+          let d = T.TypeDeclId.HashMap.find tref.id ctx.crate.type_decls in
           EComp
             (name_with_generics_to_pattern_aux ctx c m d.item_meta.name
                tref.generics)
@@ -1044,7 +1046,15 @@ and trait_ref_item_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
     (item_generics : T.generic_args) : pattern =
   if c.use_trait_decl_refs then
     let trait_decl_ref = trait_ref.trait_decl_ref in
-    let d = T.TraitDeclId.Map.find trait_decl_ref.id ctx.crate.trait_decls in
+    let d =
+      T.TraitDeclId.HashMap.find trait_decl_ref.binder_value.id
+        ctx.crate.trait_decls
+    in
+    (* Push a regions map if necessary - TODO: make this more precise *)
+    let m =
+      constraints_map_push_regions_map_if_nonempty m
+        trait_decl_ref.binder_regions
+    in
     let name =
       name_with_generics_to_pattern_aux ctx c m d.item_meta.name
         trait_decl_ref.generics
@@ -1074,7 +1084,7 @@ and constant_expr_to_pattern (ctx : ctx) (c : to_pat_config) (m : constraints)
       raise
         (Failure "Float, string and byte string literals are not valid in names")
   | CGlobal gref ->
-      let d = T.GlobalDeclId.Map.find gref.id ctx.crate.global_decls in
+      let d = T.GlobalDeclId.HashMap.find gref.id ctx.crate.global_decls in
       let n =
         name_with_generics_to_pattern_aux ctx c m d.item_meta.name gref.generics
       in
@@ -1144,7 +1154,7 @@ let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
   let pat =
     match func.kind with
     | Fun fid ->
-        let d = Types.FunDeclId.Map.find fid ctx.crate.fun_decls in
+        let d = Types.FunDeclId.HashMap.find fid ctx.crate.fun_decls in
         name_with_generics_to_pattern_aux ctx c m d.item_meta.name func.generics
     | TraitMethod (tr, method_id) ->
         let method_name =

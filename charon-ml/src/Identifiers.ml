@@ -76,6 +76,8 @@ module type Id = sig
   with type key = id
 
   module InjSubst : C.InjMap with type key = id and type elem = id
+  module HashMap : C.HashMap with type key = id
+  module HashSet : C.HashSet with type elt = id
 
   val zero : id
   val generator_zero : generator
@@ -168,6 +170,9 @@ module type Id = sig
   (** Transforms a list into a map, where each map key is he index that the
       element had in the list. *)
   val map_of_indexed_list : 'a option list -> 'a Map.t
+
+  (** See {!map_of_indexed_list} *)
+  val hash_map_of_indexed_list : 'a option list -> 'a HashMap.t
 end
 
 (** Generative functor for identifiers.
@@ -225,6 +230,8 @@ module IdGen () : Id = struct
   end
 
   module InjSubst = C.MakeInjMap (Ord) (Ord)
+  module HashMap = C.MakeHashMap (Ord)
+  module HashSet = C.MakeHashSet (Ord)
 
   let zero = 0
   let generator_zero = 0
@@ -298,6 +305,17 @@ module IdGen () : Id = struct
 
   let map_of_indexed_list (list : 'a option list) : 'a Map.t =
     Map.of_list
+      (List.filter_map
+         (fun x -> x)
+         (mapi
+            (fun i x ->
+              match x with
+              | None -> None
+              | Some x -> Some (i, x))
+            list))
+
+  let hash_map_of_indexed_list (list : 'a option list) : 'a HashMap.t =
+    HashMap.of_list
       (List.filter_map
          (fun x -> x)
          (mapi

@@ -1603,7 +1603,7 @@ and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* types =
           (fun ctx json ->
-            Result.map AssocTypeId.map_of_indexed_list
+            Result.map assoc_type_id_map_of_indexed_list
               (opt_indexed_map_of_json assoc_type_id_of_json
                  trait_assoc_ty_impl_of_json ctx json))
             ctx types
@@ -3863,14 +3863,14 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* consts =
           (fun ctx json ->
-            Result.map AssocConstId.map_of_indexed_list
+            Result.map assoc_const_id_map_of_indexed_list
               (opt_indexed_map_of_json assoc_const_id_of_json
                  trait_assoc_const_of_json ctx json))
             ctx consts
         in
         let* types =
           (fun ctx json ->
-            Result.map AssocTypeId.map_of_indexed_list
+            Result.map assoc_type_id_map_of_indexed_list
               (opt_indexed_map_of_json assoc_type_id_of_json
                  (binder_of_json trait_assoc_ty_of_json)
                  ctx json))
@@ -3878,7 +3878,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* methods =
           (fun ctx json ->
-            Result.map TraitMethodId.map_of_indexed_list
+            Result.map trait_method_id_map_of_indexed_list
               (opt_indexed_map_of_json trait_method_id_of_json
                  (binder_of_json trait_method_of_json)
                  ctx json))
@@ -3941,14 +3941,14 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* consts =
           (fun ctx json ->
-            Result.map AssocConstId.map_of_indexed_list
+            Result.map assoc_const_id_map_of_indexed_list
               (opt_indexed_map_of_json assoc_const_id_of_json
                  global_decl_ref_of_json ctx json))
             ctx consts
         in
         let* types =
           (fun ctx json ->
-            Result.map AssocTypeId.map_of_indexed_list
+            Result.map assoc_type_id_map_of_indexed_list
               (opt_indexed_map_of_json assoc_type_id_of_json
                  (binder_of_json trait_assoc_ty_impl_of_json)
                  ctx json))
@@ -3956,7 +3956,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* methods =
           (fun ctx json ->
-            Result.map TraitMethodId.map_of_indexed_list
+            Result.map trait_method_id_map_of_indexed_list
               (opt_indexed_map_of_json trait_method_id_of_json
                  (binder_of_json fun_decl_ref_of_json)
                  ctx json))
@@ -4053,7 +4053,7 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* assoc_item_names =
           (fun ctx json ->
-            Result.map TraitDeclId.map_of_indexed_list
+            Result.map trait_decl_id_map_of_indexed_list
               (opt_indexed_map_of_json trait_decl_id_of_json
                  assoc_item_names_of_json ctx json))
             ctx assoc_item_names
@@ -4064,35 +4064,35 @@ and translated_crate_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* type_decls =
           (fun ctx json ->
-            Result.map TypeDeclId.map_of_indexed_list
+            Result.map type_decl_id_map_of_indexed_list
               (opt_indexed_map_of_json type_decl_id_of_json type_decl_of_json
                  ctx json))
             ctx type_decls
         in
         let* fun_decls =
           (fun ctx json ->
-            Result.map FunDeclId.map_of_indexed_list
+            Result.map fun_decl_id_map_of_indexed_list
               (opt_indexed_map_of_json fun_decl_id_of_json fun_decl_of_json ctx
                  json))
             ctx fun_decls
         in
         let* global_decls =
           (fun ctx json ->
-            Result.map GlobalDeclId.map_of_indexed_list
+            Result.map global_decl_id_map_of_indexed_list
               (opt_indexed_map_of_json global_decl_id_of_json
                  global_decl_of_json ctx json))
             ctx global_decls
         in
         let* trait_decls =
           (fun ctx json ->
-            Result.map TraitDeclId.map_of_indexed_list
+            Result.map trait_decl_id_map_of_indexed_list
               (opt_indexed_map_of_json trait_decl_id_of_json trait_decl_of_json
                  ctx json))
             ctx trait_decls
         in
         let* trait_impls =
           (fun ctx json ->
-            Result.map TraitImplId.map_of_indexed_list
+            Result.map trait_impl_id_map_of_indexed_list
               (opt_indexed_map_of_json trait_impl_id_of_json trait_impl_of_json
                  ctx json))
             ctx trait_impls

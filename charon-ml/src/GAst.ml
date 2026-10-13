@@ -34,14 +34,14 @@ type crate = {
   name : string;
   options : cli_options;
   target_information : (string * target_info) list;
-  item_names : name AnyDeclIdMap.t;
-  assoc_item_names : assoc_item_names TraitDeclId.Map.t;
-  short_names : name AnyDeclIdMap.t;
+  item_names : name AnyDeclIdHashMap.t;
+  assoc_item_names : assoc_item_names TraitDeclId.HashMap.t;
+  short_names : name AnyDeclIdHashMap.t;
   declarations : declaration_group list option;
-  type_decls : type_decl TypeDeclId.Map.t;
-  fun_decls : fun_decl FunDeclId.Map.t;
-  global_decls : global_decl GlobalDeclId.Map.t;
-  trait_decls : trait_decl TraitDeclId.Map.t;
-  trait_impls : trait_impl TraitImplId.Map.t;
+  type_decls : type_decl TypeDeclId.HashMap.t;
+  fun_decls : fun_decl FunDeclId.HashMap.t;
+  global_decls : global_decl GlobalDeclId.HashMap.t;
+  trait_decls : trait_decl TraitDeclId.HashMap.t;
+  trait_impls : trait_impl TraitImplId.HashMap.t;
 }
 [@@deriving show]
