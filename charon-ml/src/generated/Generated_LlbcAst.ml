@@ -121,6 +121,7 @@ and statement_kind =
   show,
   eq,
   ord,
+  hash,
   visitors
     {
       name = "iter_statement_base";

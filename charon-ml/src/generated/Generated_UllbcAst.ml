@@ -142,6 +142,7 @@ and unwind_kind =
   show,
   eq,
   ord,
+  hash,
   visitors
     {
       name = "iter_ullbc_ast";

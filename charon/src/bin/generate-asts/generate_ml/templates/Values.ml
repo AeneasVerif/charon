@@ -3,6 +3,6 @@ include BigInt
 include Uchar
 
 (** A char value *)
-type char_value = Uchar.t [@visitors.opaque] [@@deriving show, eq, ord]
+type char_value = Uchar.t [@visitors.opaque] [@@deriving show, eq, ord, hash]
 
 (* __REPLACE0__ *)

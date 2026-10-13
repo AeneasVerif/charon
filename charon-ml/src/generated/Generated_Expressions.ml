@@ -275,6 +275,7 @@ and with_retag = NoRetag | YesRetag
   show,
   eq,
   ord,
+  hash,
   visitors
     {
       name = "iter_rvalue";
