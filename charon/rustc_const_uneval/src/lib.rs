@@ -17,7 +17,7 @@ mod valtree;
 
 pub use eval::promoted_body;
 
-use rustc_abi::VariantIdx;
+use rustc_abi::{ExternAbi, VariantIdx};
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::{self, interpret};
 use rustc_middle::ty::{self, Ty, TyCtxt};
@@ -206,13 +206,24 @@ pub enum FnTarget<'tcx> {
 }
 
 impl<'tcx> FnTarget<'tcx> {
-    fn new(instance: ty::Instance<'tcx>) -> Self {
+    /// The target of a pointer to `instance`. `ptr_ty` is the type of the pointer, if known.
+    fn new(instance: ty::Instance<'tcx>, ptr_ty: Option<Ty<'tcx>>) -> Self {
         match instance.def {
+            // FIXME: in raw memory we don't know the type of the pointer, so we assume
+            // we are going to the FnOnce shim
             ty::InstanceKind::Shim(ty::ShimKind::ClosureOnce { .. }) => {
                 let ty::Closure(def_id, args) = *instance.args.type_at(0).kind() else {
                     unreachable!("ClosureOnce shim on non-closure")
                 };
-                FnTarget::ClosureAsFn(def_id, args)
+                let is_call_once = ptr_ty.is_some_and(
+                    |ty| matches!(ty.kind(), ty::FnPtr(_, hdr) if hdr.abi() == ExternAbi::RustCall),
+                );
+                // Only non-capturing closures can be coerced to function pointers.
+                if args.as_closure().upvar_tys().is_empty() && !is_call_once {
+                    FnTarget::ClosureAsFn(def_id, args)
+                } else {
+                    FnTarget::Instance(instance)
+                }
             }
             _ => FnTarget::Instance(instance),
         }

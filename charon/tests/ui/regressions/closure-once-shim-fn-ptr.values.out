@@ -62,7 +62,8 @@ fn {impl FnOnce<()> for test_crate::AS_FN::{closure}}::call_once(_1: test_crate:
     return
 }
 
-fn test_crate::AS_FN::{closure}::{as_fn}() -> u8
+// Full name: test_crate::AS_FN::{closure}::{as_fn}
+fn {as_fn}() -> u8
 {
     let _0: u8; // return
     let args: (); // local
@@ -83,7 +84,7 @@ fn test_crate::AS_FN::{closure}::{as_fn}() -> u8
 }
 
 // Full name: test_crate::AS_FN
-static AS_FN: fn() -> u8 = fnptr(test_crate::AS_FN::{closure}::{as_fn})
+static AS_FN: fn() -> u8 = fnptr({as_fn})
 
 struct test_crate::mk_closure::{closure} {}
 
@@ -158,28 +159,8 @@ fn {impl FnOnce<()> for test_crate::mk_closure::{closure}}::call_once(_1: test_c
     return
 }
 
-fn test_crate::mk_closure::{closure}::{as_fn}() -> u8
-{
-    let _0: u8; // return
-    let args: (); // local
-    let state: test_crate::mk_closure::{closure}; // local
-
-    storage_live(_0)
-    storage_live(args)
-    storage_live(state)
-    args = ()
-    state = test_crate::mk_closure::{closure} {  }
-    _0 = {impl FnOnce<()> for test_crate::mk_closure::{closure}}::call_once(move state, move args)
-    ↳⚡ storage_dead(state)
-        storage_dead(args)
-        unwind_continue
-    storage_dead(state)
-    storage_dead(args)
-    return
-}
-
 // Full name: test_crate::CALL_ONCE
-static CALL_ONCE: extern "rust-call" fn(test_crate::mk_closure::{closure}, ()) -> u8 = fnptr(test_crate::mk_closure::{closure}::{as_fn})
+static CALL_ONCE: extern "rust-call" fn(test_crate::mk_closure::{closure}, ()) -> u8 = fnptr({impl FnOnce<()> for test_crate::mk_closure::{closure}}::call_once)
 
 
 

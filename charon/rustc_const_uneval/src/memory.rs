@@ -13,7 +13,7 @@ impl<'tcx> ConstReader<'tcx> {
     pub(crate) fn alloc_target(&self, alloc_id: interpret::AllocId) -> AllocTarget<'tcx> {
         let tcx = self.tcx;
         match tcx.global_alloc(alloc_id) {
-            GlobalAlloc::Function { instance } => AllocTarget::Fn(FnTarget::new(instance)),
+            GlobalAlloc::Function { instance } => AllocTarget::Fn(FnTarget::new(instance, None)),
             GlobalAlloc::Static(def_id)
                 if let DefKind::Static { nested: false, .. } = tcx.def_kind(def_id) =>
             {
@@ -288,7 +288,7 @@ impl<'tcx> ConstReader<'tcx> {
             ty::FnPtr(..) => {
                 let fn_ptr = ecx.read_pointer(&op)?;
                 let FnVal::Instance(instance) = ecx.get_ptr_fn(fn_ptr)?;
-                ConstKind::FnPtr(FnTarget::new(instance))
+                ConstKind::FnPtr(FnTarget::new(instance, Some(ty)))
             }
             ty::RawPtr(..) | ty::Ref(..) => return self.read_pointer(ecx, &op),
             ty::Pat(..) => {
