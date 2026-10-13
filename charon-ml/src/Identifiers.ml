@@ -35,7 +35,7 @@ module type Id = sig
   (** Id generator - simply a counter *)
   type generator
 
-  module Ord : C.OrderedType with type t = id
+  module Ord : C.HashedType with type t = id
 
   module Set : sig
     include C.Set
@@ -184,6 +184,8 @@ module IdGen () : Id = struct
     type t = id
 
     let compare = compare
+    let equal = Int.equal
+    let hash = hash_id
     let to_string = to_string
     let pp_t = pp_id
     let show_t = show_id
