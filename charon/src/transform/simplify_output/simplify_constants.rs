@@ -81,17 +81,40 @@ fn transform_constant_expr(
             let cast = UnOp::Cast(CastKind::RawPtr(usize_ty.clone(), val.ty().clone()));
             Rvalue::UnaryOp(cast, Operand::Const(ConstantExpr::new(ptr_usize, usize_ty)))
         }
-        cexpr @ (ConstantExprKind::Ref(bval, metadata)
-        | ConstantExprKind::Ptr(_, bval, metadata)) => {
+        cexpr @ (ConstantExprKind::Ref(gplace, metadata)
+        | ConstantExprKind::Ptr(_, gplace, metadata)) => {
             let rk = cexpr.as_ptr().map(|(rk, _, _)| *rk);
-            let bval_is_sized = bval.ty().get_ptr_metadata(ctx.get_crate()).is_none();
+            let bval_is_sized = gplace.ty.get_ptr_metadata(ctx.get_crate()).is_none();
 
-            let place = match bval.kind() {
-                ConstantExprKind::Global(global_ref) => {
-                    Place::new_global(global_ref.clone(), bval.ty().clone())
+            // Peel off the projections, from the outermost one.
+            let mut projs = vec![];
+            let mut base = gplace;
+            while let GlobalPlaceKind::Projection(sub, proj) = &base.kind {
+                projs.push((proj, &base.ty));
+                base = sub;
+            }
+            let mut place = match &base.kind {
+                GlobalPlaceKind::Global(GlobalProvenance::Global(global_ref)) => {
+                    Place::new_global(global_ref.clone(), base.ty.clone())
                 }
+                GlobalPlaceKind::Global(GlobalProvenance::Function(fn_ptr, fn_ptr_ty)) => {
+                    let fn_ptr = ConstantExpr::new(
+                        ConstantExprKind::FnPtr(fn_ptr.clone()),
+                        fn_ptr_ty.clone(),
+                    );
+                    let fn_ptr = transform_constant_expr(ctx, fn_ptr);
+                    let ptr_ty = TyKind::RawPtr(base.ty.clone(), RefKind::Shared).into_ty();
+                    let cast = UnOp::Cast(CastKind::RawPtr(fn_ptr_ty.clone(), ptr_ty.clone()));
+                    ctx.rval_to_place(Rvalue::UnaryOp(cast, fn_ptr), ptr_ty)
+                        .deref()
+                }
+                GlobalPlaceKind::Global(GlobalProvenance::Unknown) => {
+                    let kind = ConstantExprKind::Opaque("pointer with unknown provenance".into());
+                    return Operand::Const(ConstantExpr::new(kind, val.ty().clone()));
+                }
+                GlobalPlaceKind::Projection(..) => unreachable!(),
                 // A local can't be unsized, so we put it in a new global
-                _ if !bval_is_sized => {
+                GlobalPlaceKind::Value(bval) if !bval_is_sized => {
                     let meta = match metadata.as_ref().unwrap() {
                         UnsizingMetadata::Length(meta) | UnsizingMetadata::VTable(_, meta) => meta,
                         UnsizingMetadata::VTableUpcast(..) | UnsizingMetadata::Unknown => {
@@ -101,7 +124,7 @@ fn transform_constant_expr(
                     let global_ref = new_promoted_global(ctx, bval.clone(), meta.clone());
                     Place::new_global(global_ref, bval.ty().clone())
                 }
-                _ => {
+                GlobalPlaceKind::Value(bval) => {
                     // Recurse on the borrowed value
                     let bval = transform_constant_expr(ctx, bval.clone());
 
@@ -110,6 +133,29 @@ fn transform_constant_expr(
                     ctx.rval_to_place(Rvalue::Use(bval, WithRetag::No), bval_ty)
                 }
             };
+            for (proj, proj_ty) in projs.into_iter().rev() {
+                let op = |n: IntegerValue| Box::new(Operand::Const(n.to_constant()));
+                let proj = match *proj {
+                    ConstProjectionElem::Field(variant_id, field_id) => {
+                        ProjectionElem::Field(variant_id, field_id)
+                    }
+                    ConstProjectionElem::Index(i) => ProjectionElem::Index {
+                        offset: op(i),
+                        from_end: false,
+                    },
+                    ConstProjectionElem::Subslice { from, to } => ProjectionElem::Subslice {
+                        from: op(from),
+                        to: op(to),
+                        from_end: false,
+                    },
+                    ConstProjectionElem::Offset {
+                        count,
+                        ref ty,
+                        in_bounds,
+                    } => ctx.offset_projection(*op(count), ty.as_ref(), in_bounds, proj_ty.clone()),
+                };
+                place = place.project(proj, proj_ty.clone());
+            }
             // A sized place is unsized after being borrowed, if there's metadata.
             let mut rval = match (rk, metadata.clone().filter(|_| bval_is_sized)) {
                 // Borrow the place.
@@ -209,10 +255,7 @@ fn transform_constant_expr(
             if let Some(vtable_ref) = tref.vtable_ref(&ctx.ctx.translated)
                 && let TyKind::Ref(_, vtable_ty, _) = val.ty().kind() =>
         {
-            let inner = ConstantExpr::new(
-                ConstantExprKind::Global(vtable_ref.clone()),
-                vtable_ty.clone(),
-            );
+            let inner = GlobalPlace::new_global(vtable_ref.clone(), vtable_ty.clone());
             val.with_contents_mut(|kind, _| *kind = ConstantExprKind::Ref(inner, None));
             // Normalize further into a place access.
             return transform_constant_expr(ctx, val);

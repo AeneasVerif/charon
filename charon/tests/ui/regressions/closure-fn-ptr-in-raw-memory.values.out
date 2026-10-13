@@ -202,7 +202,7 @@ struct A {
 }
 
 // Full name: test_crate::CLOSURE_STATELESS
-static CLOSURE_STATELESS: &'static A = &test_crate::{promoted_const}
+static CLOSURE_STATELESS: &'static A = cast<*const MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}], &'_ A>(&raw const test_crate::{promoted_const})
 
 // Full name: test_crate::B
 struct B {
@@ -210,7 +210,7 @@ struct B {
 }
 
 // Full name: test_crate::BUILTIN_IMPL
-static BUILTIN_IMPL: &'static B = &test_crate::{promoted_const#1}
+static BUILTIN_IMPL: &'static B = cast<*const MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}], &'_ B>(&raw const test_crate::{promoted_const#1})
 
 // Full name: test_crate::C
 struct C {
@@ -218,7 +218,7 @@ struct C {
 }
 
 // Full name: test_crate::FN_PTR_CALL
-static FN_PTR_CALL: &'static C = &test_crate::{promoted_const#2}
+static FN_PTR_CALL: &'static C = cast<*const MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}], &'_ C>(&raw const test_crate::{promoted_const#2})
 
 struct test_crate::CLOSURE_BY_VALUE::{closure} {}
 

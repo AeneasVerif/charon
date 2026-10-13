@@ -24,32 +24,6 @@ pub opaque type MaybeUninit<T>
 where
     TraitClause0: (T: Sized),
 
-// Full name: core::ptr::const_ptr::{*const T}::cast
-#[diagnostic_item("const_ptr_cast")]
-pub fn cast<T, U>(_1: *const T) -> *const U
-where
-    TraitClause0: (U: Sized),
-= <opaque>
-
-// Full name: core::ptr::const_ptr::{*const T}::add
-#[track_caller]
-pub unsafe fn add<T>(_1: *const T, _2: usize) -> *const T
-where
-    TraitClause0: (T: Sized),
-= <opaque>
-
-// Full name: core::ptr::const_ptr::{*const T}::wrapping_add
-pub fn wrapping_add<T>(_1: *const T, _2: usize) -> *const T
-where
-    TraitClause0: (T: Sized),
-= <opaque>
-
-// Full name: core::ptr::const_ptr::{*const T}::wrapping_sub
-pub fn wrapping_sub<T>(_1: *const T, _2: usize) -> *const T
-where
-    TraitClause0: (T: Sized),
-= <opaque>
-
 struct () {}
 
 struct (_, _)<A, B>
@@ -82,67 +56,19 @@ where
 static ARR: [u32; 3usize] = [1u32, 2u32, 3u32]
 
 // Full name: test_crate::SECOND
-static SECOND: &'static u32 = &2u32
+static SECOND: &'static u32 = &ARR[1usize]
 
 // Full name: test_crate::SUFFIX
-static SUFFIX: &'static [u32] = &[2u32, 3u32] with_metadata(2usize)
+static SUFFIX: &'static [u32] = &ARR[1usize..3usize] with_metadata(2usize)
 
 // Full name: test_crate::END
-fn END() -> test_crate::Sync<*const u32>[{built_in impl Sized for *const u32}]
-{
-    let _0: test_crate::Sync<*const u32>[{built_in impl Sized for *const u32}]; // return
-    let _1: *const u32; // anonymous local
-    let _2: *const u32; // anonymous local
-    let _3: *const [u32; 3usize]; // anonymous local
-
-    storage_live(_0)
-    storage_live(_1)
-    storage_live(_2)
-    storage_live(_3)
-    _3 = &raw const ARR
-    _2 = cast<[u32; 3usize], u32>[{built_in impl Sized for u32}](move _3)
-    ↳⚡ unwind_continue
-    storage_dead(_3)
-    _1 = add<u32>[{built_in impl Sized for u32}](move _2, const 3usize)
-    ↳⚡ unwind_continue
-    storage_dead(_2)
-    _0 = test_crate::Sync { _0: move _1 }
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::END
-static END: test_crate::Sync<*const u32>[{built_in impl Sized for *const u32}] = END()
+static END: test_crate::Sync<*const u32>[{built_in impl Sized for *const u32}] = test_crate::Sync { _0: &raw const ARR.offset!(3isize * size_of::<u32>()) }
 
 // Full name: test_crate::BYTE
-static BYTE: test_crate::Sync<*const u8>[{built_in impl Sized for *const u8}] = test_crate::Sync { _0: &raw const 0u8 }
+static BYTE: test_crate::Sync<*const u8>[{built_in impl Sized for *const u8}] = test_crate::Sync { _0: &raw const ARR[1usize].offset!(1isize * size_of::<u8>()) }
 
 // Full name: test_crate::BEFORE
-fn BEFORE() -> test_crate::Sync<*const u32>[{built_in impl Sized for *const u32}]
-{
-    let _0: test_crate::Sync<*const u32>[{built_in impl Sized for *const u32}]; // return
-    let _1: *const u32; // anonymous local
-    let _2: *const u32; // anonymous local
-    let _3: *const [u32; 3usize]; // anonymous local
-
-    storage_live(_0)
-    storage_live(_1)
-    storage_live(_2)
-    storage_live(_3)
-    _3 = &raw const ARR
-    _2 = cast<[u32; 3usize], u32>[{built_in impl Sized for u32}](move _3)
-    ↳⚡ unwind_continue
-    storage_dead(_3)
-    _1 = wrapping_sub<u32>[{built_in impl Sized for u32}](move _2, const 1usize)
-    ↳⚡ unwind_continue
-    storage_dead(_2)
-    _0 = test_crate::Sync { _0: move _1 }
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::BEFORE
-static BEFORE: test_crate::Sync<*const u32>[{built_in impl Sized for *const u32}] = BEFORE()
+static BEFORE: test_crate::Sync<*const u32>[{built_in impl Sized for *const u32}] = test_crate::Sync { _0: &raw const ARR.wrapping_offset!(-1isize * size_of::<u32>()) }
 
 // Full name: test_crate::E
 enum E {
@@ -154,13 +80,13 @@ enum E {
 static E0: E = E::B { _0: 4u16, _1: 5u32 }
 
 // Full name: test_crate::E0_FIELD
-static E0_FIELD: &'static u32 = &5u32
+static E0_FIELD: &'static u32 = &(E0 as variant E::B)._1
 
 // Full name: test_crate::ANON
-static ANON: &'static (u32, u32) = &{promoted_const}
+static ANON: &'static (u32, u32) = cast<*const MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}], &'_ (u32, u32)>(&raw const {promoted_const})
 
 // Full name: test_crate::ANON_SECOND
-static ANON_SECOND: &'static u32 = &2u32
+static ANON_SECOND: &'static u32 = &{promoted_const}.offset!(1isize * size_of::<u32>())
 
 // Full name: test_crate::foo
 fn foo()
@@ -174,33 +100,10 @@ fn foo()
 }
 
 // Full name: test_crate::FN_PTR
-static FN_PTR: test_crate::Sync<*const ()>[{built_in impl Sized for *const ()}] = test_crate::Sync { _0: &raw const () }
+static FN_PTR: test_crate::Sync<*const ()>[{built_in impl Sized for *const ()}] = test_crate::Sync { _0: &raw const foo }
 
 // Full name: test_crate::FN_OFFSET
-fn FN_OFFSET() -> test_crate::Sync<*const u8>[{built_in impl Sized for *const u8}]
-{
-    let _0: test_crate::Sync<*const u8>[{built_in impl Sized for *const u8}]; // return
-    let _1: *const u8; // anonymous local
-    let _2: *const u8; // anonymous local
-    let _3: fn(); // anonymous local
-
-    storage_live(_0)
-    storage_live(_1)
-    storage_live(_2)
-    storage_live(_3)
-    _3 = cast<foo, fn()>(const foo)
-    _2 = cast<fn(), *const u8>(move _3)
-    storage_dead(_3)
-    _1 = wrapping_add<u8>[{built_in impl Sized for u8}](move _2, const 1usize)
-    ↳⚡ unwind_continue
-    storage_dead(_2)
-    _0 = test_crate::Sync { _0: move _1 }
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::FN_OFFSET
-static FN_OFFSET: test_crate::Sync<*const u8>[{built_in impl Sized for *const u8}] = FN_OFFSET()
+static FN_OFFSET: test_crate::Sync<*const u8>[{built_in impl Sized for *const u8}] = test_crate::Sync { _0: &raw const foo.wrapping_offset!(1isize * size_of::<u8>()) }
 
 // Full name: test_crate::main
 fn main()

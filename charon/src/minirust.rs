@@ -974,7 +974,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 let ConstantExprKind::Ref(global, None) = vtable.kind() else {
                     raise!(span, "unsupported vtable reference")
                 };
-                let ConstantExprKind::Global(gref) = global.kind() else {
+                let GlobalPlaceKind::Global(GlobalProvenance::Global(gref)) = &global.kind else {
                     raise!(span, "vtable reference does not name a global")
                 };
                 let pointee = target_ty
@@ -1151,11 +1151,11 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 Byte::Value(value) => bytes.push(Some(*value)),
                 Byte::Provenance(provenance, pointer_byte) => {
                     let name = match provenance {
-                        Provenance::Global(gref) => self.global_name(gref.id),
-                        Provenance::Function(_) => {
+                        GlobalProvenance::Global(gref) => self.global_name(gref.id),
+                        GlobalProvenance::Function(..) => {
                             raise!(span, "MiniRust globals cannot contain function pointers")
                         }
-                        Provenance::Unknown => {
+                        GlobalProvenance::Unknown => {
                             raise!(span, "global contains a pointer with unknown provenance")
                         }
                     };

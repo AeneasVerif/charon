@@ -658,8 +658,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         ctx.translate_vtable_instance_ref(span, tref, impl_item, impl_kind)
                     })?;
                 let vtable_instance = self.erase_region_binder(vtable_instance);
-                let vtable_instance =
-                    ConstantExpr::new(ConstantExprKind::Global(vtable_instance), vtbl_ty);
+                let vtable_instance = GlobalPlace::new_global(vtable_instance, vtbl_ty);
                 ConstantExprKind::Ref(vtable_instance, None)
             }
             _ => ConstantExprKind::VTableRef(self.translate_trait_proof(span, trait_proof)?),

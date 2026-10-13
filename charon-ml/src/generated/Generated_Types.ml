@@ -253,7 +253,7 @@ and builtin_impl_data =
 and byte =
   | Uninit  (** An uninitialized byte *)
   | Value of int  (** A concrete byte value *)
-  | Provenance of provenance * int
+  | Provenance of global_provenance * int
       (** A byte that is part of a pointer with provenance. The u8 is the offset
           within the pointer. Note that we do not have an actual value for this
           pointer byte, unlike MiniRust, as that is non-deterministic. *)
@@ -321,6 +321,29 @@ and const_generic_param = {
 
 and const_generic_var_id = (ConstGenericVarId.id[@visitors.opaque])
 
+(** A projection inside the pointee of a [Ref]/[Ptr] constant. This is a
+    constant version of [[ProjectionElem]]. *)
+and const_projection_elem =
+  | CProjField of variant_id option * field_id
+      (** Project to the field of an ADT. *)
+  | CProjIndex of integer_value
+      (** Project to the element of an array at the given index. *)
+  | CProjSubslice of integer_value * integer_value
+      (** Project to the subarray [array[from..to]].
+
+          Fields:
+          - [from]
+          - [to] *)
+  | CProjOffset of integer_value * ty option * bool
+      (** Like [ProjectionElem::Offset]: the place located
+          [count * size_of::<ty>()] bytes after the current place (or [count]
+          bytes if [ty] is [None]).
+
+          Fields:
+          - [count]
+          - [ty]
+          - [in_bounds] *)
+
 (** A constant expression. *)
 and constant_expr = { kind : constant_expr_kind; ty : ty }
 
@@ -337,12 +360,12 @@ and constant_expr_kind =
       (** Array value.
 
           This is eliminated inside functions if [--raw-consts] is off. *)
-  | CRef of constant_expr * unsizing_metadata option
-      (** A shared reference to a constant value.
+  | CRef of global_place * unsizing_metadata option
+      (** A shared reference to a constant place.
 
           This is eliminated inside functions if [--raw-consts] is off. *)
-  | CPtr of ref_kind * constant_expr * unsizing_metadata option
-      (** A pointer to a static.
+  | CPtr of ref_kind * global_place * unsizing_metadata option
+      (** A raw pointer to a constant place.
 
           This is eliminated inside functions if [--raw-consts] is off. *)
   | CStr of string  (** [str] value. *)
@@ -355,11 +378,8 @@ and constant_expr_kind =
 
           This is eliminated inside functions if [--raw-consts] is off. *)
   | CCast of constant_expr * cast_kind
-      (** Cast a constant value to another type, e.g. erase a vtable method
-          pointer to [*const ()], or reinterpret a pointer to an (untyped)
-          anonymous allocation at another type. A cast to a reference type
-          stands for a cast to the corresponding raw pointer followed by a
-          reborrow. *)
+      (** Cast a constant value to another type (e.g. erase a vtable method
+          pointer to [*const ()]). *)
   | CPtrNoProvenance of big_int
       (** A pointer with no provenance (e.g. 0 for the null pointer)
 
@@ -464,6 +484,33 @@ and generic_params = {
 (** Reference to a global declaration. *)
 and global_decl_ref = { id : global_decl_id; generics : generic_args }
 
+(** The place a [Ref]/[Ptr] constant points to, e.g. [GLOBAL.0[1]]. This is a
+    constant version of [[Place]]. *)
+and global_place = {
+  global_place_kind : global_place_kind;
+  global_place_ty : ty;
+      (** The type of the place, which can't always be computed from the type of
+          the global (e.g. for fields of opaque types). *)
+}
+
+and global_place_kind =
+  | GlobalPlaceGlobal of global_provenance
+      (** The allocation behind this provenance. *)
+  | GlobalPlaceValue of constant_expr
+      (** A constant value that isn't stored in a global, e.g. the pointee of a
+          reference in a const generic argument. It has no projections. *)
+  | GlobalPlaceProjection of global_place * const_projection_elem
+      (** A subplace of a place. *)
+
+(** Provenance is the location in memory a pointer (or the byte of a pointer,
+    see [[Byte]]) points to. [GlobalProvenance] represents a compile-time
+    provenance. See <https://doc.rust-lang.org/std/ptr/index.html#provenance> *)
+and global_provenance =
+  | ProvGlobal of global_decl_ref
+  | ProvFunction of fn_ptr * ty
+      (** A function, with the type of function pointers to it. *)
+  | ProvUnknown
+
 (** Hash-consed data structure: a reference-counted wrapper that guarantees that
     two equal value will be stored at the same address. This makes it possible
     to use the pointer address as a hash value. *)
@@ -493,11 +540,6 @@ and predicate_origin =
   | WhereClauseOnTrait
   | TraitItem of assoc_type_id
   | OriginDyn  (** Clauses that are part of a [dyn Trait] type. *)
-
-and provenance =
-  | ProvGlobal of global_decl_ref
-  | ProvFunction of fn_ptr
-  | ProvUnknown
 
 and ref_kind = RMut | RShared
 
