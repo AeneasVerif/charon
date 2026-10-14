@@ -24,6 +24,9 @@ pub enum Charon {
     ToolchainPath(ToolchainPathArgs),
     /// Print the rustc toolchain version used by charon.
     ToolchainVersion,
+    /// Print the path to the sysroot charon would use with the given options. In the default
+    /// case, this sets up the full-MIR sysroot if needed.
+    PrintSysroot(PrintSysrootArgs),
     /// Pretty-print the given llbc file.
     PrettyPrint(PrettyPrintArgs),
     /// Print the version.
@@ -89,3 +92,14 @@ pub struct UiTestArgs {
 /// Usage: `charon toolchain-path`
 #[derive(Debug, clap::Args)]
 pub struct ToolchainPathArgs {}
+
+/// Usage: `charon print-sysroot [--sysroot <sysroot>] [--target <target>]`
+#[derive(Debug, clap::Args)]
+pub struct PrintSysrootArgs {
+    /// Same as the `--sysroot` option of `charon rustc` and `charon cargo`.
+    #[arg(long)]
+    pub sysroot: Option<String>,
+    /// The target to get the sysroot for. Defaults to the host.
+    #[arg(long)]
+    pub target: Option<String>,
+}

@@ -276,6 +276,38 @@ fn filename_conflict() -> Result<()> {
 }
 
 #[test]
+fn charon_print_sysroot() -> Result<()> {
+    let toolchain_path = charon(&["toolchain-path"], ".", |stdout, _| Ok(stdout))?;
+    charon(
+        &["print-sysroot", "--sysroot=default"],
+        ".",
+        |stdout, cmd| {
+            ensure!(
+                stdout == toolchain_path,
+                "`{cmd}`: expected {toolchain_path:?}, got {stdout:?}"
+            );
+            Ok(())
+        },
+    )?;
+    charon(&["print-sysroot", "--sysroot=/foo"], ".", |stdout, cmd| {
+        ensure!(
+            stdout == "/foo\n",
+            "`{cmd}`: expected \"/foo\", got {stdout:?}"
+        );
+        Ok(())
+    })?;
+    charon(&["print-sysroot"], ".", |stdout, cmd| {
+        let path = PathBuf::from(stdout.trim_end());
+        ensure!(
+            path.join("lib").join("rustlib").is_dir(),
+            "`{cmd}`: {} isn't a sysroot",
+            path.display()
+        );
+        Ok(())
+    })
+}
+
+#[test]
 fn charon_toolchain_path() -> Result<()> {
     let args = &["toolchain-path"];
     charon(args, ".", |stdout, cmd| {
