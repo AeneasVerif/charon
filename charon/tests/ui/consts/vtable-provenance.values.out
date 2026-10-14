@@ -1,0 +1,8 @@
+error: Unsupported constant: "pointer into a vtable"
+  --> tests/ui/consts/vtable-provenance.rs:15:1
+   |
+15 | / static VTABLE: Sy<*const u8> =
+16 | |     Sy(unsafe { transmute::<&(dyn Trait + Sync), [*const u8; 2]>(DYN)[1] });
+   | |____________________________________________________________________________^
+
+ERROR Charon failed to translate this code (1 errors)
