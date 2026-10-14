@@ -1,0 +1,72 @@
+# Final LLBC before serialization:
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::Sync
+#[lang_item(Sync)]
+#[diagnostic_item("Sync")]
+pub unsafe trait Sync<Self>
+
+struct () {}
+
+struct test_crate::Trait::{vtable} {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait)),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Trait::{vtable}
+}
+
+// Full name: test_crate::{impl Trait for u8}
+impl "impl_Trait_for_u8" Trait for u8 {
+    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
+    vtable: lazy
+}
+
+// Full name: test_crate::Sy
+struct Sy<T>
+where
+    TraitClause0: (T: Sized),
+{
+  _0: T,
+}
+
+// Full name: test_crate::{impl Sync for Sy<T>[TraitClause0]}
+unsafe impl<T> "impl_Sync_for_Sy" Sync for Sy<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+{
+    vtable: lazy
+}
+
+// Full name: test_crate::DYN
+const DYN: &'static (dyn Trait + Sync + 'static) = RawMemory(&{promoted_const}[0], &{promoted_const}[1], &{promoted_const}[2], &{promoted_const}[3], &{promoted_const}[4], &{promoted_const}[5], &{promoted_const}[6], &{promoted_const}[7], &?[0], &?[1], &?[2], &?[3], &?[4], &?[5], &?[6], &?[7])
+
+// Full name: test_crate::DYN_REF
+static DYN_REF: &'static (dyn Trait + Sync + 'static) = RawMemory(&{promoted_const}[0], &{promoted_const}[1], &{promoted_const}[2], &{promoted_const}[3], &{promoted_const}[4], &{promoted_const}[5], &{promoted_const}[6], &{promoted_const}[7], &?[0], &?[1], &?[2], &?[3], &?[4], &?[5], &?[6], &?[7])
+
+// Full name: test_crate::VTABLE
+static VTABLE: Sy<*const u8>[{built_in impl Sized for *const u8}] = RawMemory(&?[0], &?[1], &?[2], &?[3], &?[4], &?[5], &?[6], &?[7])
+
+
+
