@@ -1,0 +1,53 @@
+error: Unsupported constant: "pointer outside of its allocation"
+  --> tests/ui/consts/type-id-provenance.rs:19:1
+   |
+19 | static TID: TypeId = TypeId::of::<u8>();
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Unsupported constant: "pointer outside of its allocation"
+  --> tests/ui/consts/type-id-provenance.rs:19:1
+   |
+19 | static TID: TypeId = TypeId::of::<u8>();
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Unsupported constant: "pointer outside of its allocation"
+  --> tests/ui/consts/type-id-provenance.rs:21:1
+   |
+21 | / static TID_SWAPPED: TypeId = {
+22 | |     let mut ptrs = unsafe { transmute::<TypeId, [*const u8; N]>(TypeId::of::<u8>()) };
+23 | |     ptrs.swap(0, 1);
+24 | |     unsafe { transmute::<[*const u8; N], TypeId>(ptrs) }
+25 | | };
+   | |__^
+
+error: Unsupported constant: "pointer outside of its allocation"
+  --> tests/ui/consts/type-id-provenance.rs:21:1
+   |
+21 | / static TID_SWAPPED: TypeId = {
+22 | |     let mut ptrs = unsafe { transmute::<TypeId, [*const u8; N]>(TypeId::of::<u8>()) };
+23 | |     ptrs.swap(0, 1);
+24 | |     unsafe { transmute::<[*const u8; N], TypeId>(ptrs) }
+25 | | };
+   | |__^
+
+error: Unsupported constant: "pointer outside of its allocation"
+  --> tests/ui/consts/type-id-provenance.rs:27:1
+   |
+27 | static mut TID_PTRS: [*const u8; N] = unsafe { transmute(TypeId::of::<u8>()) };
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Unsupported constant: "pointer outside of its allocation"
+  --> tests/ui/consts/type-id-provenance.rs:27:1
+   |
+27 | static mut TID_PTRS: [*const u8; N] = unsafe { transmute(TypeId::of::<u8>()) };
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Unsupported constant: "pointer outside of its allocation"
+  --> tests/ui/consts/type-id-provenance.rs:29:1
+   |
+29 | / static mut TID_PTR_OFFSET: *const u8 = unsafe {
+30 | |     transmute::<TypeId, [*const u8; N]>(TypeId::of::<u8>())[0].wrapping_add(size_of::<*const u8>())
+31 | | };
+   | |__^
+
+ERROR Charon failed to translate this code (7 errors)
