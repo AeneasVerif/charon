@@ -81,6 +81,7 @@ Guidance for AI agents working on Charon.
 - Prefer precise flags over using `--preset` as this makes more obvious which pass is at fault.
 - Changes to the generated output are to be double-checked: they can often indicate a bug.
   Well-motivated changes are however totally fine.
+- Do not add unit or `crate_data` tests for things that can be observed in the ui tests outputs.
 - Always do a full `make test && make clippy` at the end of a change.
 
 ## OCaml vs Rust

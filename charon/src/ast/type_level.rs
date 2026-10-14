@@ -114,10 +114,15 @@ pub struct Binder<T> {
 /// issues in the derived ocaml visitors.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
 pub struct RegionBinder<T> {
     #[cfg_attr(feature = "charon_on_charon", charon::rename("binder_regions"))]
     #[serde_state(stateless)]
     pub regions: IndexVec<RegionId, RegionParam>,
+    /// Outlives relations involving the bound regions.
+    pub regions_outlive: Vec<RegionBinder<RegionOutlives>>,
+    /// Outlives relations involving the bound regions.
+    pub types_outlive: Vec<RegionBinder<TypeOutlives>>,
     /// Named this way to highlight accesses to the inner value that might be handling parameters
     /// incorrectly. Prefer using helper methods.
     #[cfg_attr(feature = "charon_on_charon", charon::rename("binder_value"))]
@@ -575,6 +580,8 @@ impl<T> RegionBinder<T> {
     {
         RegionBinder {
             regions: Default::default(),
+            regions_outlive: Default::default(),
+            types_outlive: Default::default(),
             skip_binder: x.move_under_binder(),
         }
     }
@@ -582,6 +589,8 @@ impl<T> RegionBinder<T> {
     pub fn map<U>(self, f: impl FnOnce(T) -> U) -> RegionBinder<U> {
         RegionBinder {
             regions: self.regions,
+            regions_outlive: self.regions_outlive,
+            types_outlive: self.types_outlive,
             skip_binder: f(self.skip_binder),
         }
     }
@@ -589,6 +598,8 @@ impl<T> RegionBinder<T> {
     pub fn map_ref<U>(&self, f: impl FnOnce(&T) -> U) -> RegionBinder<U> {
         RegionBinder {
             regions: self.regions.clone(),
+            regions_outlive: self.regions_outlive.clone(),
+            types_outlive: self.types_outlive.clone(),
             skip_binder: f(&self.skip_binder),
         }
     }

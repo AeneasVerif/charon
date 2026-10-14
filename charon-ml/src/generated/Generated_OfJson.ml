@@ -1242,12 +1242,32 @@ and region_binder_of_json :
  fun arg0_of_json ctx js ->
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("regions", regions); ("skip_binder", skip_binder) ] ->
+    | `Assoc
+        [
+          ("regions", regions);
+          ("regions_outlive", regions_outlive);
+          ("types_outlive", types_outlive);
+          ("skip_binder", skip_binder);
+        ] ->
         let* binder_regions =
           index_vec_of_json region_id_of_json region_param_of_json ctx regions
         in
+        let* regions_outlive =
+          list_of_json
+            (region_binder_of_json
+               (outlives_pred_of_json region_of_json region_of_json))
+            ctx regions_outlive
+        in
+        let* types_outlive =
+          list_of_json
+            (region_binder_of_json
+               (outlives_pred_of_json ty_of_json region_of_json))
+            ctx types_outlive
+        in
         let* binder_value = arg0_of_json ctx skip_binder in
-        Ok ({ binder_regions; binder_value } : _ region_binder)
+        Ok
+          ({ binder_regions; regions_outlive; types_outlive; binder_value }
+            : _ region_binder)
     | _ -> Error "")
 
 and region_id_of_json (ctx : of_json_ctx) (js : json) :

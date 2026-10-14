@@ -186,14 +186,28 @@ let st_substitute_visitor =
 
     method! visit_region_binder visit_value (subst : subst) x =
       (* Note that we don't visit the bound variables. *)
-      let { binder_regions; binder_value } = x in
+      let { binder_regions; regions_outlive; types_outlive; binder_value } =
+        x
+      in
       (* Crucial: we shift the substitution to be valid under this binder. *)
       let subst = shift_subst subst in
       let binder_regions =
         self#visit_list self#visit_region_param subst binder_regions
       in
+      let regions_outlive =
+        self#visit_list
+          (self#visit_region_binder
+             (self#visit_outlives_pred self#visit_region self#visit_region))
+          subst regions_outlive
+      in
+      let types_outlive =
+        self#visit_list
+          (self#visit_region_binder
+             (self#visit_outlives_pred self#visit_ty self#visit_region))
+          subst types_outlive
+      in
       let binder_value = visit_value subst binder_value in
-      { binder_regions; binder_value }
+      { binder_regions; regions_outlive; types_outlive; binder_value }
 
     method! visit_RVar (subst : subst) var = subst.r_subst var
     method! visit_TVar (subst : subst) var = subst.ty_subst var
@@ -694,7 +708,13 @@ let lookup_fndef_sig (crate : crate) (fn_ptr : fn_ptr region_binder) :
           fun_decl.signature
       in
       (* Rebind everything *)
-      Some { binder_regions = fn_ptr.binder_regions; binder_value = fn_sig }
+      Some
+        {
+          binder_regions = fn_ptr.binder_regions;
+          regions_outlive = fn_ptr.regions_outlive;
+          types_outlive = fn_ptr.types_outlive;
+          binder_value = fn_sig;
+        }
   | _ -> None
 
 (* Construct a set of generic arguments in the scope of `params` that matches
@@ -733,4 +753,6 @@ let trait_decl_ref_to_poly_trait_decl_ref (pred : trait_decl_ref) :
     binder_value =
       st_substitute_visitor#visit_trait_decl_ref move_under_binder_subst pred;
     binder_regions = [];
+    regions_outlive = [];
+    types_outlive = [];
   }

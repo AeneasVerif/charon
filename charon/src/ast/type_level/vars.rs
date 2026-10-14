@@ -2,7 +2,7 @@
 //! generics and trait clauses. The relevant definitions are in this module.
 use std::{
     borrow::Borrow,
-    ops::{Index, IndexMut},
+    ops::{Deref, DerefMut, Index, IndexMut, RangeFrom},
 };
 
 use derive_generic_visitor::{Drive, DriveMut, DriveTwo};
@@ -425,34 +425,56 @@ impl<T> BindingStack<T> {
         Self { stack: vec![] }
     }
 
-    pub fn is_empty(&self) -> bool {
-        self.stack.is_empty()
-    }
-    pub fn len(&self) -> usize {
-        self.stack.len()
-    }
-    pub fn depth(&self) -> DeBruijnId {
-        DeBruijnId::new(self.stack.len() - 1)
-    }
-    /// Map a bound variable to ids binding depth.
-    pub fn as_bound_var<Id>(&self, var: DeBruijnVar<Id>) -> (DeBruijnId, Id) {
-        match var {
-            DeBruijnVar::Bound(dbid, varid) => (dbid, varid),
-            DeBruijnVar::Free(varid) => (self.depth(), varid),
-        }
-    }
     pub fn push(&mut self, x: T) {
         self.stack.push(x);
     }
     pub fn pop(&mut self) -> Option<T> {
         self.stack.pop()
     }
-    /// Helper that computes the real index into `self.stack`.
+    /// Iterate over the binding levels, from the innermost (0) out.
+    pub fn into_iter(self) -> impl DoubleEndedIterator<Item = T> + ExactSizeIterator {
+        self.stack.into_iter().rev()
+    }
+}
+
+/// A borrowed portion of a [`BindingStack`].
+#[repr(transparent)]
+pub struct BinderSlice<T>([T]);
+
+impl<T> BinderSlice<T> {
+    fn from_slice(stack: &[T]) -> &Self {
+        // SAFETY: BinderStackSlice is a transparent wrapper around [T].
+        unsafe { &*(stack as *const [T] as *const Self) }
+    }
+
+    fn from_slice_mut(stack: &mut [T]) -> &mut Self {
+        // SAFETY: BinderStackSlice is a transparent wrapper around [T].
+        unsafe { &mut *(stack as *mut [T] as *mut Self) }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+    pub fn depth(&self) -> DeBruijnId {
+        DeBruijnId::new(self.0.len() - 1)
+    }
+
+    /// Map a bound variable to its binding depth.
+    pub fn as_bound_var<Id>(&self, var: DeBruijnVar<Id>) -> (DeBruijnId, Id) {
+        match var {
+            DeBruijnVar::Bound(dbid, varid) => (dbid, varid),
+            DeBruijnVar::Free(varid) => (self.depth(), varid),
+        }
+    }
+    /// Helper that computes the real index into the underlying slice.
     fn real_index(&self, id: DeBruijnId) -> Option<usize> {
-        self.stack.len().checked_sub(id.index + 1)
+        self.0.len().checked_sub(id.index + 1)
     }
     pub fn get(&self, id: DeBruijnId) -> Option<&T> {
-        self.stack.get(self.real_index(id)?)
+        self.0.get(self.real_index(id)?)
     }
     pub fn get_var<'a, Id: Idx, Inner>(&'a self, var: DeBruijnVar<Id>) -> Option<&'a Inner::Output>
     where
@@ -465,19 +487,22 @@ impl<T> BindingStack<T> {
     }
     pub fn get_mut(&mut self, id: DeBruijnId) -> Option<&mut T> {
         let index = self.real_index(id)?;
-        self.stack.get_mut(index)
+        self.0.get_mut(index)
     }
+
     /// Iterate over the binding levels, from the innermost (0) out.
     pub fn iter(&self) -> impl DoubleEndedIterator<Item = &T> + ExactSizeIterator {
-        self.stack.iter().rev()
+        self.0.iter().rev()
     }
     /// Iterate mutably over the binding levels, from the innermost (0) out.
     pub fn iter_mut(&mut self) -> impl DoubleEndedIterator<Item = &mut T> + ExactSizeIterator {
-        self.stack.iter_mut().rev()
+        self.0.iter_mut().rev()
     }
     /// Iterate over the binding levels, from the innermost (0) out.
-    pub fn into_iter(self) -> impl DoubleEndedIterator<Item = T> + ExactSizeIterator {
-        self.stack.into_iter().rev()
+    pub fn indices(
+        &self,
+    ) -> impl DoubleEndedIterator<Item = DeBruijnId> + ExactSizeIterator + use<T> {
+        (0..self.0.len()).map(DeBruijnId::new)
     }
     /// Iterate over the binding levels, from the innermost (0) out.
     pub fn iter_enumerated(
@@ -487,23 +512,58 @@ impl<T> BindingStack<T> {
             .enumerate()
             .map(|(i, x)| (DeBruijnId::new(i), x))
     }
+    /// Iterate over the binding levels, from the innermost (0) out.
+    pub fn iter_mut_enumerated(
+        &mut self,
+    ) -> impl DoubleEndedIterator<Item = (DeBruijnId, &mut T)> + ExactSizeIterator {
+        self.iter_mut()
+            .enumerate()
+            .map(|(i, x)| (DeBruijnId::new(i), x))
+    }
+
     pub fn map_ref<'a, U>(&'a self, f: impl FnMut(&'a T) -> U) -> BindingStack<U> {
         BindingStack {
-            stack: self.stack.iter().map(f).collect(),
+            stack: self.0.iter().map(f).collect(),
         }
     }
 
+    /// Find the outermost binder where the given `U` can be moved to.
+    pub fn place_at_outermost<U>(&mut self, val: &U) -> (U, &mut T)
+    where
+        U: TyVisitable + Clone,
+    {
+        for (depth, binder) in self.iter_mut_enumerated().rev() {
+            if let Some(val) = val.clone().move_from_under_binders(depth) {
+                return (val, binder);
+            }
+        }
+        // Binder level `0` always works.
+        unreachable!()
+    }
+
     pub fn innermost(&self) -> &T {
-        self.stack.last().unwrap()
+        self.0.last().unwrap()
     }
     pub fn innermost_mut(&mut self) -> &mut T {
-        self.stack.last_mut().unwrap()
+        self.0.last_mut().unwrap()
     }
     pub fn outermost(&self) -> &T {
-        self.stack.first().unwrap()
+        self.0.first().unwrap()
     }
     pub fn outermost_mut(&mut self) -> &mut T {
-        self.stack.first_mut().unwrap()
+        self.0.first_mut().unwrap()
+    }
+}
+
+impl<T> Deref for BindingStack<T> {
+    type Target = BinderSlice<T>;
+    fn deref(&self) -> &Self::Target {
+        BinderSlice::from_slice(&self.stack)
+    }
+}
+impl<T> DerefMut for BindingStack<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        BinderSlice::from_slice_mut(&mut self.stack)
     }
 }
 
@@ -521,14 +581,29 @@ impl<T: std::fmt::Debug> std::fmt::Debug for BindingStack<T> {
     }
 }
 
-impl<T> Index<DeBruijnId> for BindingStack<T> {
+impl<T> Index<DeBruijnId> for BinderSlice<T> {
     type Output = T;
     fn index(&self, id: DeBruijnId) -> &Self::Output {
         self.get(id).unwrap()
     }
 }
-impl<T> IndexMut<DeBruijnId> for BindingStack<T> {
+impl<T> IndexMut<DeBruijnId> for BinderSlice<T> {
     fn index_mut(&mut self, id: DeBruijnId) -> &mut Self::Output {
         self.get_mut(id).unwrap()
+    }
+}
+
+/// `self[depth..]` represents the binding stack seen from `depth`.
+impl<T> Index<RangeFrom<DeBruijnId>> for BinderSlice<T> {
+    type Output = BinderSlice<T>;
+    fn index(&self, range: RangeFrom<DeBruijnId>) -> &Self::Output {
+        let end = self.0.len() - range.start.index;
+        BinderSlice::from_slice(&self.0[..end])
+    }
+}
+impl<T> IndexMut<RangeFrom<DeBruijnId>> for BinderSlice<T> {
+    fn index_mut(&mut self, range: RangeFrom<DeBruijnId>) -> &mut Self::Output {
+        let end = self.0.len() - range.start.index;
+        BinderSlice::from_slice_mut(&mut self.0[..end])
     }
 }

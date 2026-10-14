@@ -747,7 +747,12 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : T.fn_ptr)
             (* TODO: recover the method generics somehow *)
             let method_generics = TypesUtils.empty_generic_args in
             match_trait_decl_ref_item ctx c (mk_empty_maps ()) p
-              { binder_value = trait_ref; binder_regions = [] }
+              {
+                binder_value = trait_ref;
+                binder_regions = [];
+                regions_outlive = [];
+                types_outlive = [];
+              }
               (T.AssocIdMethod item_id) method_generics
         | _ -> false
       in
