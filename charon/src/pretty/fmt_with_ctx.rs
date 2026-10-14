@@ -853,12 +853,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for RegionBinder<FunSig> {
         }
 
         write!(f, "fn")?;
-        if !self.regions.is_empty() {
-            write!(
-                f,
-                "<{}>",
-                self.regions.iter().map(|r| r.with_ctx(ctx)).format(", ")
-            )?;
+        let params = self.fmt_params_with_ctx(ctx);
+        if !params.is_empty() {
+            write!(f, "<{params}>")?;
         }
         let is_empty = inputs.is_empty();
         let inputs = inputs.iter().map(|x| x.with_ctx(ctx)).format(", ");
@@ -2105,6 +2102,30 @@ impl<C: AstFormatter> FmtWithCtx<C> for Region {
 }
 
 impl<T> RegionBinder<T> {
+    fn fmt_params_with_ctx<C: AstFormatter>(&self, ctx: &C) -> String {
+        let mut params = self
+            .regions
+            .iter()
+            .map(|r| r.with_ctx(ctx))
+            .format(", ")
+            .to_string();
+        let predicates = self
+            .types_outlive
+            .iter()
+            .map(|pred| pred.fmt_as_for(ctx))
+            .chain(self.regions_outlive.iter().map(|pred| pred.fmt_as_for(ctx)))
+            .format(", ")
+            .to_string();
+        if !predicates.is_empty() {
+            if !params.is_empty() {
+                params.push(' ');
+            }
+            params.push_str("where ");
+            params.push_str(&predicates);
+        }
+        params
+    }
+
     /// Format the parameters and contents of this binder and returns the resulting strings.
     fn fmt_split<'a, C>(&'a self, ctx: &'a C) -> (String, String)
     where
@@ -2124,11 +2145,7 @@ impl<T> RegionBinder<T> {
     {
         let ctx = &ctx.push_bound_regions(&self.regions);
         (
-            self.regions
-                .iter()
-                .map(|r| r.with_ctx(ctx))
-                .format(", ")
-                .to_string(),
+            self.fmt_params_with_ctx(ctx),
             fmt_inner(ctx, &self.skip_binder),
         )
     }

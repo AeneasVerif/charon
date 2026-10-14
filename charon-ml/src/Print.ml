@@ -116,7 +116,7 @@ let region_to_string env r = PrintFmt.region_to_string env r
 
 let region_binder_to_string value_to_string env rb =
   PrintFmt.pp_to_string (fun fmt ->
-      PrintFmt.pp_region_binder
+      PrintFmt.pp_region_binder PrintFmt.ty_to_string
         (fun env fmt value ->
           Format.pp_print_string fmt (value_to_string env value))
         env fmt rb)

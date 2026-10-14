@@ -970,6 +970,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 // Add regions. this is ad-hoc...
                 let method_ty = Ty::new(TyKind::FnPtr(RegionBinder {
                     regions: self.outermost_generics().regions.clone(),
+                    regions_outlive: self.outermost_generics().regions_outlive.clone(),
+                    types_outlive: self.outermost_generics().types_outlive.clone(),
                     skip_binder: signature,
                 }));
 

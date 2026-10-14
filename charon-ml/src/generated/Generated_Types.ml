@@ -456,6 +456,10 @@ and region =
     this causes name clash issues in the derived ocaml visitors. *)
 and 'a0 region_binder = {
   binder_regions : region_param list;
+  regions_outlive : (region, region) outlives_pred region_binder list;
+      (** Outlives relations involving the bound regions. *)
+  types_outlive : (ty, region) outlives_pred region_binder list;
+      (** Outlives relations involving the bound regions. *)
   binder_value : 'a0;
       (** Named this way to highlight accesses to the inner value that might be
           handling parameters incorrectly. Prefer using helper methods. *)

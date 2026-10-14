@@ -155,6 +155,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let self_ty = self_ty.move_under_binder();
         RegionBinder {
             regions: params.regions,
+            regions_outlive: params.regions_outlive,
+            types_outlive: params.types_outlive,
             skip_binder: self.drop_glue_method_sig(self_ty, region),
         }
     }

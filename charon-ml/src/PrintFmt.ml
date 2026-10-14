@@ -341,23 +341,55 @@ let region_to_string (env : fmt_env) (r : region) : string =
   | RBody id -> "'" ^ RegionId.to_string id
   | RVar var -> region_db_var_to_string env var
 
-let pp_region_binder (pp_value : fmt_env -> Format.formatter -> 'c -> unit)
-    (env : fmt_env) (fmt : Format.formatter) (rb : 'c region_binder) : unit =
-  let env = fmt_env_push_regions env rb.binder_regions in
-  match rb.binder_regions with
-  | [] -> pp_value env fmt rb.binder_value
-  | _ ->
-      Format.fprintf fmt "for<%a> %a"
-        (pp_sep_list ", " (fun fmt region ->
-             pp_string fmt (region_param_to_string env region)))
-        rb.binder_regions (pp_value env) rb.binder_value
+let rec region_binder_params_to_string :
+    'a. (fmt_env -> ty -> string) -> fmt_env -> 'a region_binder -> string =
+ fun ty_to_string env rb ->
+  let regions = List.map (region_param_to_string env) rb.binder_regions in
+  let types_outlive =
+    List.map
+      (region_binder_to_string ty_to_string
+         (fun env (ty, region) ->
+           ty_to_string env ty ^ ": " ^ region_to_string env region)
+         env)
+      rb.types_outlive
+  in
+  let regions_outlive =
+    List.map
+      (region_binder_to_string ty_to_string
+         (fun env (r1, r2) ->
+           region_to_string env r1 ^ ": " ^ region_to_string env r2)
+         env)
+      rb.regions_outlive
+  in
+  let predicates = types_outlive @ regions_outlive in
+  String.concat ", " regions
+  ^
+  if predicates = [] then ""
+  else
+    (if regions = [] then "" else " ")
+    ^ "where "
+    ^ String.concat ", " predicates
 
-let region_binder_to_string (value_to_string : fmt_env -> 'c -> string)
-    (env : fmt_env) (rb : 'c region_binder) : string =
-  pp_to_string (fun fmt ->
-      pp_region_binder
-        (fun env fmt value -> pp_string fmt (value_to_string env value))
-        env fmt rb)
+and region_binder_to_string :
+    'a.
+    (fmt_env -> ty -> string) ->
+    (fmt_env -> 'a -> string) ->
+    fmt_env ->
+    'a region_binder ->
+    string =
+ fun ty_to_string value_to_string env rb ->
+  let env = fmt_env_push_regions env rb.binder_regions in
+  let params = region_binder_params_to_string ty_to_string env rb in
+  (if params = "" then "" else "for<" ^ params ^ "> ")
+  ^ value_to_string env rb.binder_value
+
+let pp_region_binder ty_to_string
+    (pp_value : fmt_env -> Format.formatter -> 'c -> unit) (env : fmt_env)
+    (fmt : Format.formatter) (rb : 'c region_binder) : unit =
+  let env = fmt_env_push_regions env rb.binder_regions in
+  let params = region_binder_params_to_string ty_to_string env rb in
+  if params <> "" then Format.fprintf fmt "for<%s> " params;
+  pp_value env fmt rb.binder_value
 
 let abi_name (abi : abi) : string =
   match abi with
@@ -635,11 +667,8 @@ and pp_ty (env : fmt_env) (fmt : Format.formatter) (ty : ty) : unit =
       let unsafe = if is_unsafe then "unsafe " else "" in
       let abi = abi_prefix abi in
       Format.fprintf fmt "%s%sfn" unsafe abi;
-      if binder.binder_regions <> [] then
-        Format.fprintf fmt "<%a>"
-          (pp_sep_list ", " (fun fmt region ->
-               pp_string fmt (region_param_to_string env region)))
-          binder.binder_regions;
+      let params = region_binder_params_to_string ty_to_string env binder in
+      if params <> "" then Format.fprintf fmt "<%s>" params;
       if is_variadic && inputs = [] then Format.fprintf fmt "(...)"
       else if is_variadic then
         Format.fprintf fmt "(%a, ...)" (pp_sep_list ", " (pp_ty env)) inputs
@@ -648,11 +677,8 @@ and pp_ty (env : fmt_env) (fmt : Format.formatter) (ty : ty) : unit =
         Format.fprintf fmt " -> %a" (pp_ty env) output
   | TFnDef f ->
       let env = fmt_env_push_regions env f.binder_regions in
-      if f.binder_regions <> [] then
-        Format.fprintf fmt "for<%a> "
-          (pp_sep_list ", " (fun fmt region ->
-               pp_string fmt (region_param_to_string env region)))
-          f.binder_regions;
+      let params = region_binder_params_to_string ty_to_string env f in
+      if params <> "" then Format.fprintf fmt "for<%s> " params;
       pp_fn_ptr env fmt f.binder_value
   | TDynTrait pred -> Format.fprintf fmt "(dyn %a)" (pp_dyn_predicate env) pred
   | TArray (ty, len, _) ->
@@ -722,7 +748,7 @@ and pp_dyn_trait_clause (env : fmt_env)
     if params <> [] then
       Format.fprintf fmt "<%a>" (pp_sep_list ", " pp_string) params
   in
-  pp_region_binder pp_trait env fmt clause.trait
+  pp_region_binder ty_to_string pp_trait env fmt clause.trait
 
 and dyn_trait_clause_to_string env constraints clause =
   pp_to_string (fun fmt -> pp_dyn_trait_clause env constraints clause fmt)
@@ -733,7 +759,7 @@ and dyn_types_outlive_to_string (env : fmt_env)
   | _, RErased -> None
   | _, region ->
       Some
-        (region_binder_to_string
+        (region_binder_to_string ty_to_string
            (fun env (_, region) -> region_to_string env region)
            env rb)
 
@@ -798,7 +824,7 @@ and pp_trait_ref_kind (env : fmt_env)
       let implements = Option.get implements in
       let types = AssocTypeId.Map.to_list types in
       Format.fprintf fmt "{built_in impl %a"
-        (pp_region_binder pp_trait_decl_ref_as_impl env)
+        (pp_region_binder ty_to_string pp_trait_decl_ref_as_impl env)
         implements;
       if types <> [] then
         Format.fprintf fmt " where %a"
@@ -823,7 +849,9 @@ and pp_trait_ref_kind (env : fmt_env)
       Format.fprintf fmt "%a::%s%a::%s" (pp_trait_ref env) tref type_name
         (pp_generic_args env) generics
         (trait_clause_id_format_as_implied clause_id)
-  | Dyn -> pp_region_binder pp_trait_decl_ref env fmt (Option.get implements)
+  | Dyn ->
+      pp_region_binder ty_to_string pp_trait_decl_ref env fmt
+        (Option.get implements)
   | UnknownTrait msg -> Format.fprintf fmt "UNKNOWN(%s)" msg
 
 and pp_trait_ref (env : fmt_env) (fmt : Format.formatter) (tr : trait_ref) :
@@ -858,7 +886,7 @@ and pp_trait_decl_ref_as_pred (env : fmt_env) (fmt : Format.formatter)
 
 and pp_poly_trait_decl_ref_as_pred (env : fmt_env) (fmt : Format.formatter)
     (tr : trait_decl_ref region_binder) : unit =
-  pp_region_binder
+  pp_region_binder ty_to_string
     (fun env fmt tr ->
       Format.fprintf fmt "(%a)" (pp_trait_decl_ref_as_pred env) tr)
     env fmt tr
@@ -1058,7 +1086,7 @@ let generic_clauses_to_strings (env : fmt_env) (generics : generic_params) :
     List.mapi
       (fun i rb ->
         "RegionOutlives" ^ string_of_int i ^ ": "
-        ^ region_binder_to_string outlive_to_string env rb)
+        ^ region_binder_to_string ty_to_string outlive_to_string env rb)
       generics.regions_outlive
   in
   let types_outlive =
@@ -1068,14 +1096,15 @@ let generic_clauses_to_strings (env : fmt_env) (generics : generic_params) :
     List.mapi
       (fun i rb ->
         "TypeOutlives" ^ string_of_int i ^ ": "
-        ^ region_binder_to_string outlive_to_string env rb)
+        ^ region_binder_to_string ty_to_string outlive_to_string env rb)
       generics.types_outlive
   in
   let trait_type_constraints =
     List.mapi
       (fun i rb ->
         "TypeConstraint" ^ string_of_int i ^ ": "
-        ^ region_binder_to_string trait_type_constraint_to_string env rb)
+        ^ region_binder_to_string ty_to_string trait_type_constraint_to_string
+            env rb)
       generics.trait_type_constraints
   in
   List.concat

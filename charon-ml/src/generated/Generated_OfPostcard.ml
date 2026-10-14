@@ -1136,8 +1136,22 @@ and region_binder_of_postcard :
        index_vec_of_postcard region_id_of_postcard region_param_of_postcard ctx
          st
      in
+     let* regions_outlive =
+       list_of_postcard
+         (region_binder_of_postcard
+            (outlives_pred_of_postcard region_of_postcard region_of_postcard))
+         ctx st
+     in
+     let* types_outlive =
+       list_of_postcard
+         (region_binder_of_postcard
+            (outlives_pred_of_postcard ty_of_postcard region_of_postcard))
+         ctx st
+     in
      let* binder_value = arg0_of_postcard ctx st in
-     Ok ({ binder_regions; binder_value } : _ region_binder))
+     Ok
+       ({ binder_regions; regions_outlive; types_outlive; binder_value }
+         : _ region_binder))
 
 and region_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (region_id, string) result =

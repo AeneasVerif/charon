@@ -850,6 +850,8 @@ mod wrappers {
         ) -> ControlFlow<Self::Break> {
             self.0.binder_stack_mut().push(GenericParams {
                 regions: binder.regions.clone(),
+                regions_outlive: binder.regions_outlive.clone(),
+                types_outlive: binder.types_outlive.clone(),
                 ..Default::default()
             });
             self.visit_inner(binder)?;
@@ -879,6 +881,8 @@ mod wrappers {
         ) -> ControlFlow<Self::Break> {
             self.0.binder_stack_mut().push(GenericParams {
                 regions: binder.regions.clone(),
+                regions_outlive: binder.regions_outlive.clone(),
+                types_outlive: binder.types_outlive.clone(),
                 ..Default::default()
             });
             self.visit_inner(binder)?;
