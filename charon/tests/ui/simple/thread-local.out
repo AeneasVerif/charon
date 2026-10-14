@@ -168,7 +168,7 @@ where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: 'static,
 
-pub unsafe fn std::thread::local::{LocalKey<T>[TraitClause0]}::new<T>(_1: fn<'_0_1>(Option<&'_0_1 mut Option<T>[TraitClause0]>[{built_in impl Sized for &'_0_1 mut Option<T>[TraitClause0]}]) -> *const T) -> LocalKey<T>[TraitClause0]
+pub unsafe fn std::thread::local::{LocalKey<T>[TraitClause0]}::new<T>(_1: fn<'_0_1 where T: '_0_1>(Option<&'_0_1 mut Option<T>[TraitClause0]>[{built_in impl Sized for &'_0_1 mut Option<T>[TraitClause0]}]) -> *const T) -> LocalKey<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: 'static,

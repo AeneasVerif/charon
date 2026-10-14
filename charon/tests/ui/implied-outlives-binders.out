@@ -1,0 +1,109 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: test_crate::function_pointer
+pub fn function_pointer<T>(_1: fn<'a where T: 'a>(&'a T))
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: (); // return
+    let _1: fn<'a>(&'a T); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::nested_function_pointer
+pub fn nested_function_pointer<T>(_1: fn<'a where T: 'a>(fn<'b where T: 'b>(&'b T), &'a T))
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: (); // return
+    let _1: fn<'a>(fn<'b>(&'b T), &'a T); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::outermost_binder
+pub fn outermost_binder<T>(_1: fn<'a where T: 'a>(fn<'b>(&'a T)))
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: (); // return
+    let _1: fn<'a>(fn<'b>(&'a T)); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::region_outlives
+pub fn region_outlives<'b, T>(_1: fn<'a where 'b: 'a>(&'a &'b T))
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'b,
+{
+    let _0: (); // return
+    let _1: fn<'a>(&'a &'3 T); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::reference_to_function_pointer
+pub fn reference_to_function_pointer<'a>(_1: &'a fn<'b>(&'b u32))
+{
+    let _0: (); // return
+    let _1: &'1 fn<'b>(&'b u32); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::reference_with_outer_region
+pub fn reference_with_outer_region<'a, 'c>(_1: &'a fn<'b>(&'c u32))
+where
+    RegionOutlives0: 'c: 'a,
+{
+    let _0: (); // return
+    let _1: &'4 fn<'b>(&'5 u32); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    storage_dead(_1)
+    return
+}
+
+
+

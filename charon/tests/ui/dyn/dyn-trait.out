@@ -150,7 +150,7 @@ fn combine()
 = <opaque>
 
 // Full name: test_crate::foo
-fn foo<'_0, '_1, T>(_1: &'_0 (dyn for<'a> Fn<(&'a T,), ImpliedClause1::ImpliedClause1::Output = T> + 'static), _2: &'_1 (dyn PartialEq<Option<T>[TraitClause0]> + '_1))
+fn foo<'_0, '_1, T>(_1: &'_0 (dyn for<'a where T: 'a> Fn<(&'a T,), ImpliedClause1::ImpliedClause1::Output = T> + 'static), _2: &'_1 (dyn PartialEq<Option<T>[TraitClause0]> + '_1))
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,

@@ -496,7 +496,7 @@ where
 
 // Full name: test_crate::map_option_pointer_ref
 #[allow(clippy::manual_map, clippy::needless_lifetimes)]
-pub fn map_option_pointer_ref<'a, T, F>(x_1: &'a Option<T>[TraitClause0], f: fn<'_0_1>(&'_0_1 T) -> T) -> Option<T>[TraitClause0]
+pub fn map_option_pointer_ref<'a, T, F>(x_1: &'a Option<T>[TraitClause0], f: fn<'_0_1 where T: '_0_1>(&'_0_1 T) -> T) -> Option<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (F: Sized),
