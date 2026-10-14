@@ -36,13 +36,13 @@ use charon_lib::{
     logger,
     options::{CHARON_ARGS, CliOpts, SerializationFormat},
     pretty::FmtWithCtx,
-    utils::arg_value,
+    utils::{arg_value, arg_values},
 };
 use clap::Parser;
 use cli::{Charon, Cli};
 use itertools::Itertools;
-use std::{env, process::ExitStatus};
-use toolchain::{toolchain_path, toolchain_version};
+use std::{env, path::PathBuf, process::ExitStatus};
+use toolchain::{CHARON_SYSROOT_VAR, setup_miri_sysroot, toolchain_path, toolchain_version};
 
 #[macro_use]
 extern crate charon_lib;
@@ -208,11 +208,24 @@ fn translate_with_cargo(
     cmd.env_remove("CARGO_PRIMARY_PACKAGE");
     cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
     cmd.arg("build");
-    if arg_value(&cargo_args, "--target").is_none() {
-        // Make sure the build target is explicitly set. This is needed to detect which crates are
-        // proc-macro/build-script in `charon-driver`.
-        cmd.arg("--target");
-        cmd.arg(&get_rustc_version()?.host);
+    let target = match arg_values(&cargo_args, "--target").collect_vec().as_slice() {
+        [target] => target.to_string(),
+        // We resolve a single sysroot for all the crates we build.
+        [_, _, ..] => anyhow::bail!(
+            "passing several `--target` flags to cargo isn't supported; \
+            use charon's `--targets` option instead"
+        ),
+        [] => {
+            // Make sure the build target is explicitly set. This is needed to detect which crates
+            // are proc-macro/build-script in `charon-driver`.
+            let host = get_rustc_version()?.host;
+            cmd.arg("--target");
+            cmd.arg(&host);
+            host
+        }
+    };
+    if let Some(sysroot) = miri_sysroot(options.sysroot.as_deref(), &target) {
+        cmd.env(CHARON_SYSROOT_VAR, sysroot);
     }
     cmd.args(cargo_args);
     trace!("running {cmd:?}");
@@ -227,15 +240,19 @@ fn translate_without_cargo(mut options: CliOpts) -> anyhow::Result<ExitStatus> {
     ensure_rustup();
     options.validate()?;
     let mut cmd = toolchain::driver_cmd()?;
-    let is_specified = |arg| {
-        let mut iter = options.rustc_args.iter();
-        iter.any(|input| input.starts_with(arg))
+    let target = match arg_value(&options.rustc_args, "--target") {
+        Some(target) => target.to_owned(),
+        None => {
+            // Make sure the build target is explicitly set. This is needed to detect which crates
+            // are proc-macro/build-script in `charon-driver`.
+            let host = get_rustc_version()?.host;
+            cmd.arg("--target");
+            cmd.arg(&host);
+            host
+        }
     };
-    if !is_specified("--target") {
-        // Make sure the build target is explicitly set. This is needed to detect which crates are
-        // proc-macro/build-script in `charon-driver`.
-        cmd.arg("--target");
-        cmd.arg(&get_rustc_version()?.host);
+    if let Some(sysroot) = miri_sysroot(options.sysroot.as_deref(), &target) {
+        cmd.env(CHARON_SYSROOT_VAR, sysroot);
     }
     cmd.args(std::mem::take(&mut options.rustc_args));
     cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
@@ -244,6 +261,16 @@ fn translate_without_cargo(mut options: CliOpts) -> anyhow::Result<ExitStatus> {
         .expect("could not run charon-driver")
         .wait()
         .expect("failed to wait for charon-driver?"))
+}
+
+/// In the default case, or with `--sysroot=miri`, we ask Miri to build a full-MIR sysroot for the
+/// given target. Returns `None` if the user chose another sysroot, or if Miri's setup failed.
+fn miri_sysroot(sysroot: Option<&str>, target: &str) -> Option<PathBuf> {
+    match sysroot {
+        // TODO: add non-miri sysroot we build ourselves, see #1475
+        None | Some("miri") => setup_miri_sysroot(target),
+        Some(_) => None,
+    }
 }
 
 fn get_rustc_version() -> anyhow::Result<rustc_version::VersionMeta> {

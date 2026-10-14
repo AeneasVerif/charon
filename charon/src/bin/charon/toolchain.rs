@@ -120,6 +120,10 @@ pub fn toolchain_path() -> Result<PathBuf> {
     Ok(PathBuf::from(stdout.trim_end()))
 }
 
+/// The environment variable through which `charon` tells `charon-driver` which full-MIR sysroot to
+/// use, if any.
+pub const CHARON_SYSROOT_VAR: &str = "CHARON_RESOLVED_MIRI_SYSROOT";
+
 /// Whether this sysroot provides libraries for the given target.
 fn sysroot_has_target(sysroot: &std::path::Path, target: &str) -> bool {
     sysroot.join("lib").join("rustlib").join(target).is_dir()
@@ -154,7 +158,16 @@ pub fn setup_miri_sysroot(target: &str) -> Option<PathBuf> {
         return Some(sysroot.clone());
     }
 
-    let mut cmd = Command::new("cargo");
+    let mut cmd = match in_toolchain("cargo") {
+        Ok(cmd) => cmd,
+        Err(err) => {
+            eprintln!(
+                "warning: failed to find `cargo` to run `cargo miri setup` for target `{target}`; \
+                falling back to rustc's default sysroot: {err}"
+            );
+            return None;
+        }
+    };
     cmd.arg("miri")
         .arg("setup")
         .arg(format!("--target={target}"))

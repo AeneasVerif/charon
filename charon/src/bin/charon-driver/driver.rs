@@ -1,6 +1,6 @@
 //! Run the rustc compiler with our custom options and hooks.
 use crate::CharonFailure;
-use crate::toolchain::setup_miri_sysroot;
+use crate::toolchain::CHARON_SYSROOT_VAR;
 use crate::translate::translate_crate;
 use charon_lib::errors::ErrorCtx;
 use charon_lib::options::{self, CliOpts};
@@ -215,12 +215,12 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
         && sysroot != "miri"
     {
         compiler_args.push(format!("--sysroot={sysroot}"));
-    } else if let Some(target) = target
-        && let Some(sysroot) = setup_miri_sysroot(target)
+    } else if target.is_some()
+        && let Ok(sysroot) = env::var(CHARON_SYSROOT_VAR)
     {
-        // In the default case, or `--sysroot=miri`, we ask Miri to build a full-mir syroot for us.
-        compiler_args.push(format!("--sysroot={}", sysroot.display()));
-        // The Miri sysroot doesn't support codegen.
+        // Charon built a sysroot for us to use.
+        compiler_args.push(format!("--sysroot={sysroot}"));
+        // The Miri sysroot (which is what Charon builds atm) doesn't support codegen.
         codegen = false;
     }
 
