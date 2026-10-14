@@ -25,3 +25,23 @@ where
     for<'a> <&'a Result<T, U> as IntoIterator>::Item: Copy,
 {
 }
+
+pub trait Hrtb<T> {}
+
+pub trait WithGat {
+    type Gat<'a>: for<'b> Hrtb<(&'a (), &'b ())>;
+}
+
+pub struct S;
+pub struct G;
+
+impl<'a, 'b> Hrtb<(&'a (), &'b ())> for G {}
+
+pub trait WithParent: for<'a> Hrtb<&'a ()> {}
+
+impl<'a> Hrtb<&'a ()> for S {}
+impl WithParent for S {}
+
+impl WithGat for S {
+    type Gat<'a> = G;
+}

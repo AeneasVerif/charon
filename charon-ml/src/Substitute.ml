@@ -291,6 +291,13 @@ let trait_ref_kind_erase_regions (tr : trait_ref_kind) : trait_ref_kind =
 let generic_args_erase_regions (tr : generic_args) : generic_args =
   generic_args_substitute erase_regions_subst tr
 
+let poly_trait_ref_erase_binder (tr : poly_trait_ref) : trait_ref =
+  let subst =
+    subst_remove_binder_zero
+      { error_sb_subst with r_sb_subst = (fun _ -> RErased) }
+  in
+  trait_ref_substitute subst tr.binder_value
+
 (** Erase the regions in a type and perform a substitution *)
 let erase_regions_substitute_types (subst : subst) (ty : ty) : ty =
   let subst = { subst with r_subst = (fun _ -> RErased) } in
@@ -349,10 +356,10 @@ let make_trait_subst (var_ids : TraitClauseId.id list)
   fun varid -> TraitClauseId.Map.find varid map
 
 let make_trait_subst_from_clauses (clauses : trait_param list)
-    (trs : trait_ref list) : TraitClauseId.id -> trait_ref_kind =
+    (trs : poly_trait_ref list) : TraitClauseId.id -> trait_ref_kind =
   make_trait_subst
     (List.map (fun (x : trait_param) -> x.clause_id) clauses)
-    (List.map (fun (x : trait_ref) -> x.kind) trs)
+    (List.map (fun x -> (poly_trait_ref_erase_binder x).kind) trs)
 
 let make_sb_subst_from_generics (params : generic_params) (args : generic_args)
     (tr_self : trait_ref_kind) : single_binder_subst =
@@ -640,7 +647,7 @@ let instantiate_method (trait_self : trait_ref_kind)
 
 (** Helper *)
 let instantiate_trait_method (trait_ref : trait_ref) =
-  let trait_generics = trait_ref.trait_decl_ref.binder_value.generics in
+  let trait_generics = trait_ref.trait_decl_ref.generics in
   let trait_self = trait_ref.kind in
   instantiate_method trait_self trait_generics
 
@@ -742,7 +749,14 @@ let bound_identity_args (params : generic_params) : generic_args =
       List.map
         (fun (clause : trait_param) ->
           let kind = s.tr_sb_subst clause.clause_id in
-          { kind; trait_decl_ref = clause.trait })
+          {
+            clause.trait with
+            binder_value =
+              {
+                kind = trait_ref_kind_substitute move_under_binder_subst kind;
+                trait_decl_ref = clause.trait.binder_value;
+              };
+          })
         params.trait_clauses;
   }
 

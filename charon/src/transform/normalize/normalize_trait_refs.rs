@@ -8,7 +8,7 @@ const MAX_NORMALIZATION_STEPS: usize = 100;
 
 #[derive(Visitor)]
 struct NormalizeTraitRefs<'a> {
-    impl_parent_refs: &'a IndexMap<TraitImplId, IndexVec<TraitClauseId, TraitRef>>,
+    impl_parent_refs: &'a IndexMap<TraitImplId, IndexVec<TraitClauseId, PolyTraitRef>>,
     /// Charon can end up with self-referential clauses, see e.g.
     /// `issue-1078-default-assoc-ty-self-ref-clause.rs`. Therefore we simply give up normalizing
     /// after a number of steps.
@@ -39,7 +39,8 @@ impl VisitAstMut for NormalizeTraitRefs<'_> {
                     };
                     let mut proof = ItemBinder::new(impl_ref.id, proof[*clause_id].clone())
                         .substitute(ItemBinder::new(CurrentItem, &impl_ref.generics))
-                        .under_current_binder();
+                        .under_current_binder()
+                        .erase();
                     if *tref == proof {
                         return;
                     }
@@ -54,7 +55,7 @@ impl VisitAstMut for NormalizeTraitRefs<'_> {
                     let Some(proof) = parent_trait_refs.get(*clause_id) else {
                         return;
                     };
-                    proof.clone()
+                    proof.clone().erase()
                 }
                 _ => return,
             };

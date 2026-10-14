@@ -295,10 +295,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
                 // Compute the supertrait path from the source tref to the target
                 // tref.
-                let mut target_tref = &binder.skip_binder;
+                let target_proof = binder.skip_binder.clone().erase();
+                let mut target_tref = &target_proof;
                 let mut clause_path: Vec<(TraitDeclId, TraitClauseId)> = vec![];
                 while let TraitRefKind::ParentClause(tref, id) = &target_tref.kind {
-                    clause_path.push((tref.trait_decl_ref.skip_binder.id, *id));
+                    clause_path.push((tref.trait_id(), *id));
                     target_tref = tref;
                 }
 
@@ -798,7 +799,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             let Some(copy_proof) = hax::solve_copy(&self.hax_state, rust_elem_ty) else {
                 return Ok(None);
             };
-            let ty_is_copy = self.translate_trait_proof(span, &copy_proof)?;
+            let ty_is_copy = self
+                .translate_trait_proof(span, &copy_proof)?
+                .no_bound_vars();
             Ok(Some(Rvalue::Repeat(
                 Operand::Const(field),
                 elem_ty.clone(),
@@ -1253,7 +1256,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let ty_is_copy = {
                     let rust_ty = operand.ty(self.local_decls, self.tcx);
                     hax::solve_copy(&self.hax_state, rust_ty)
-                        .map(|proof| self.translate_trait_proof(span, &proof))
+                        .map(|proof| {
+                            self.translate_trait_proof(span, &proof)
+                                .map(|p| p.no_bound_vars())
+                        })
                         .transpose()?
                 };
                 let c = self.translate_ty_constant_expr(span, cnst)?;

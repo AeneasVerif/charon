@@ -535,7 +535,7 @@ pub fn main()
     _8 = &mut sum
     _7 = {closure} { _0: move _8 }
     storage_dead(_8)
-    _5 = for_each<Option<&'76 i32>[{built_in impl Sized for &'76 i32}], {closure}<'78>>[{built_in impl Sized for Option<&'76 i32>[{built_in impl Sized for &'76 i32}]}, {built_in impl Sized for {closure}<'78>}, impl_LendingIterator_for_Option<'76, i32>[{built_in impl Sized for i32}], impl_FnMut_tuple_for_closure<'78, '137>](move _6, move _7)
+    _5 = for_each<Option<&'76 i32>[{built_in impl Sized for &'76 i32}], {closure}<'78>>[{built_in impl Sized for Option<&'76 i32>[{built_in impl Sized for &'76 i32}]}, {built_in impl Sized for {closure}<'78>}, impl_LendingIterator_for_Option<'76, i32>[{built_in impl Sized for i32}], for<'a> impl_FnMut_tuple_for_closure<'78, '137>](move _6, move _7)
     ↳⚡ storage_dead(_25)
         storage_dead(_24)
         storage_dead(_23)

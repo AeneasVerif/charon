@@ -59,7 +59,7 @@ impl FnPtrKind {
         match self {
             FnPtrKind::Fun(fun_id) => GenericsSource::item(*fun_id),
             FnPtrKind::Trait(trait_ref, name) => {
-                GenericsSource::Method(trait_ref.trait_decl_ref.skip_binder.id, *name)
+                GenericsSource::Method(trait_ref.trait_id(), *name)
             }
         }
     }

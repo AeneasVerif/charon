@@ -208,5 +208,69 @@ where
     vtable: lazy
 }
 
+// Full name: test_crate::Hrtb
+pub trait Hrtb<Self, T>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
+    vtable: test_crate::Hrtb::{vtable}<T>
+}
+
+// Full name: test_crate::WithGat
+pub trait WithGat<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    type Gat<'a>
+    where
+        proof ImpliedClause0: (Self::Gat<'a>: Sized),
+        proof ImpliedClause1: for<'b> (Self::Gat<'a>: Hrtb<(&'a (), &'b ())>);
+    non-dyn-compatible
+}
+
+// Full name: test_crate::S
+pub struct S {}
+
+// Full name: test_crate::G
+pub struct G {}
+
+// Full name: test_crate::{impl Hrtb<(&'a (), &'b ())> for G}
+impl<'a, 'b> "impl_Hrtb_tuple_for_G" Hrtb<(&'a (), &'b ())> for G {
+    proof ImpliedClause0: (G: MetaSized) = {built_in impl MetaSized for G}
+    proof ImpliedClause1: ((&'a (), &'b ()): Sized) = {built_in impl Sized for (&'a (), &'b ())}
+    vtable: lazy
+}
+
+// Full name: test_crate::WithParent
+pub trait WithParent<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: for<'a> (Self: Hrtb<&'a ()>)
+    vtable: test_crate::WithParent::{vtable}
+}
+
+// Full name: test_crate::{impl Hrtb<&'a ()> for S}
+impl<'a> "impl_Hrtb_for_S" Hrtb<&'a ()> for S {
+    proof ImpliedClause0: (S: MetaSized) = {built_in impl MetaSized for S}
+    proof ImpliedClause1: (&'a (): Sized) = {built_in impl Sized for &'a ()}
+    vtable: lazy
+}
+
+// Full name: test_crate::{impl WithParent for S}
+impl "impl_WithParent_for_S" WithParent for S {
+    proof ImpliedClause0: (S: MetaSized) = {built_in impl MetaSized for S}
+    for<'a> proof ImpliedClause1: (S: Hrtb<&'a ()>) = impl_Hrtb_for_S<'_>
+    vtable: lazy
+}
+
+// Full name: test_crate::{impl WithGat for S}
+impl "impl_WithGat_for_S" WithGat for S {
+    proof ImpliedClause0: (S: MetaSized) = {built_in impl MetaSized for S}
+    type Gat<'a> = G
+    where
+        proof ImpliedClause0: (G: Sized) = {built_in impl Sized for G},
+        for<'b> proof ImpliedClause1: (G: Hrtb<(&'a (), &'b ())>) = impl_Hrtb_tuple_for_G<'_, '_>;
+    non-dyn-compatible
+}
+
 
 

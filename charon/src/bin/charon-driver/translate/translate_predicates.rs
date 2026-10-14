@@ -203,7 +203,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 //         ^^^^^^^^^^
                 // ```
                 let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
-                    let trait_ref = ctx.translate_trait_proof(span, &p.trait_proof)?;
+                    let trait_ref = ctx.translate_trait_proof(span, &p.trait_proof)?.erase();
                     let ty = ctx.translate_ty(span, &p.ty)?;
                     let type_id =
                         ctx.translate_assoc_type_id(trait_ref.trait_id(), &p.assoc_item.def_id)?;
@@ -243,7 +243,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         impl_sources: &[hax::TraitProof],
-    ) -> Result<IndexVec<TraitClauseId, TraitRef>, Error> {
+    ) -> Result<IndexVec<TraitClauseId, PolyTraitRef>, Error> {
         impl_sources
             .iter()
             .map(|x| self.translate_trait_proof(span, x))
@@ -255,14 +255,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         trait_proof: &hax::TraitProof,
-    ) -> Result<TraitRef, Error> {
+    ) -> Result<PolyTraitRef, Error> {
         let trait_decl_ref = self.translate_poly_trait_ref(span, &trait_proof.pred)?;
 
         match self.translate_trait_proof_aux(span, trait_proof, trait_decl_ref.clone()) {
             Ok(res) => Ok(res),
             Err(err) => {
                 register_error!(self, span, "Error during trait resolution: {}", &err.msg);
-                Ok(TraitRef::new(
+                Ok(PolyTraitRef::new(
                     TraitRefKind::Unknown(err.msg),
                     trait_decl_ref,
                 ))
@@ -275,7 +275,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         impl_source: &hax::TraitProof,
         trait_decl_ref: PolyTraitDeclRef,
-    ) -> Result<TraitRef, Error> {
+    ) -> Result<PolyTraitRef, Error> {
         trace!("trait_proof: {:#?}", impl_source);
         use crate::hax::DestructData;
         use crate::hax::TraitProofKind;
@@ -295,7 +295,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 base,
                 path: path_elem,
             } => {
-                let trait_ref = self.translate_trait_proof(span, base)?;
+                let trait_ref = self.translate_trait_proof(span, base)?.erase();
                 match path_elem {
                     hax::TraitProofImpliedPredicate::AssocItem { item, index, .. } => {
                         let assoc_type_id =
@@ -335,10 +335,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .trait_clauses
                         .clone()
                         .substitute(&args)
-                        .map(|clause| TraitRef::new(TraitRefKind::Dyn, clause.trait_));
+                        .map(|clause| PolyTraitRef::new(TraitRefKind::Dyn, clause.trait_));
                     args
                 };
-                let trait_ref = bound_proof.apply(&args);
+                let trait_ref = bound_proof.apply(&args).erase();
                 assert_eq!(trait_ref.trait_id(), trait_decl_ref.skip_binder.id);
                 trait_ref.kind.clone()
             }
@@ -446,6 +446,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TraitRefKind::Unknown(msg.clone())
             }
         };
-        Ok(TraitRef::new(kind, trait_decl_ref))
+        Ok(PolyTraitRef::new(kind, trait_decl_ref))
     }
 }

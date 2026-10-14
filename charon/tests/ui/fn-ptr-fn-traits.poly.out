@@ -231,7 +231,7 @@ where
     proof ImpliedClause2: ((Adt<'_0, A>[TraitClause2, TraitClause3],): Tuple) = {built_in impl Tuple for (Adt<'_0, A>[TraitClause2, TraitClause3],)}
     proof ImpliedClause3: (Adt<'_0, B>[TraitClause4, TraitClause5]: Sized) = TraitClause1
     type Output = Adt<'_0, B>[TraitClause4, TraitClause5]
-    fn call_once = {impl FnOnce<(Adt<'_0, A>[TraitClause2, TraitClause3],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5]}::call_once<'_0, A, B>[TraitClause0, TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5]
+    fn call_once = {impl FnOnce<(Adt<'_0, A>[TraitClause2, TraitClause3],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5]}::call_once<'_0, A, B>[for<'_0_2> TraitClause0, for<'_0_2> TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5]
     vtable: lazy
 }
 
@@ -359,7 +359,7 @@ where
     proof ImpliedClause2: ((A, &'_0 B): Tuple) = {built_in impl Tuple for (A, &'_0 B)}
     proof ImpliedClause3: (&'_0 C: Sized) = TraitClause2
     type Output = &'_0 C
-    fn call_once = {impl FnOnce<(A, &'_0 B)> for fn<'_0_1 where B: '_0_1, C: '_0_1>(A, &'_0_1 B) -> &'_0_1 C}::call_once<'_0, A, B, C>[TraitClause0, TraitClause1, TraitClause2]
+    fn call_once = {impl FnOnce<(A, &'_0 B)> for fn<'_0_1 where B: '_0_1, C: '_0_1>(A, &'_0_1 B) -> &'_0_1 C}::call_once<'_0, A, B, C>[for<'_0_2> TraitClause0, for<'_0_2> TraitClause1, for<'_0_2> TraitClause2]
     vtable: lazy
 }
 
@@ -397,7 +397,7 @@ where
     proof ImpliedClause2: (([&'_0 A; C2],): Tuple) = {built_in impl Tuple for ([&'_0 A; C2],)}
     proof ImpliedClause3: ([&'_0 B; C3]: Sized) = TraitClause1
     type Output = [&'_0 B; C3]
-    fn call_once = {impl FnOnce<([&'_0 A; C2],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]}::call_once<'_0, A, B, C2, C3>[TraitClause0, TraitClause1]
+    fn call_once = {impl FnOnce<([&'_0 A; C2],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]}::call_once<'_0, A, B, C2, C3>[for<'_0_2> TraitClause0, for<'_0_2> TraitClause1]
     vtable: lazy
 }
 
@@ -918,7 +918,7 @@ pub fn test<'a>(x: &'a u32) -> &'a u32
     _6 = &(*x)
     _5 = Adt { _0: move _6 }
     storage_dead(_6)
-    _3 = test_crate::call_once<'11, fn<'_0_1>(Adt<'_0_1, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'_0_1, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]>[{built_in impl Sized for fn<'_0_2>(Adt<'_0_2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'_0_2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]}, {impl FnOnce<(Adt<'_0, A>[TraitClause2, TraitClause3],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5]}<'11, u32, u32>[{built_in impl for<'_0_1> Sized for Adt<'_0_1, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]}, {built_in impl for<'_0_1> Sized for Adt<'_0_1, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]}, {built_in impl Sized for u32}, impl_Trait_for_u32, {built_in impl Sized for u32}, impl_Trait_for_u32]](move _4, move _5)
+    _3 = test_crate::call_once<'11, fn<'_0_1>(Adt<'_0_1, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'_0_1, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]>[{built_in impl Sized for fn<'_0_2>(Adt<'_0_2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]) -> Adt<'_0_2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]}, {impl FnOnce<(Adt<'_0, A>[TraitClause2, TraitClause3],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5]}<'11, u32, u32>[for<'_0_2> {built_in impl Sized for Adt<'_0_2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]}, for<'_0_2> {built_in impl Sized for Adt<'_0_2, u32>[{built_in impl Sized for u32}, impl_Trait_for_u32]}, {built_in impl Sized for u32}, impl_Trait_for_u32, {built_in impl Sized for u32}, impl_Trait_for_u32]](move _4, move _5)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_5)
@@ -1065,7 +1065,7 @@ pub fn test_freshen_whole_adt<'a>(x: Plain<u32>[{built_in impl Sized for u32}], 
     _6 = move x
     storage_live(_7)
     _7 = &(*y)
-    _4 = generic_call_once2<fn<'_0_1>(Plain<u32>[{built_in impl Sized for u32}], &'_0_1 u32) -> &'_0_1 u32, Plain<u32>[{built_in impl Sized for u32}], &'9 u32, &'10 u32>[{built_in impl Sized for fn<'_0_2>(Plain<u32>[{built_in impl Sized for u32}], &'_0_2 u32) -> &'_0_2 u32}, {built_in impl Sized for Plain<u32>[{built_in impl Sized for u32}]}, {built_in impl Sized for &'9 u32}, {built_in impl Sized for &'10 u32}, {impl FnOnce<(A, &'_0 B)> for fn<'_0_1 where B: '_0_1, C: '_0_1>(A, &'_0_1 B) -> &'_0_1 C}<'9, Plain<u32>[{built_in impl Sized for u32}], u32, u32>[{built_in impl for<'_0_1> Sized for Plain<u32>[{built_in impl Sized for u32}]}, {built_in impl for<'_0_1> Sized for &'_0_1 u32}, {built_in impl for<'_0_1> Sized for &'_0_1 u32}]](move _5, move _6, move _7)
+    _4 = generic_call_once2<fn<'_0_1>(Plain<u32>[{built_in impl Sized for u32}], &'_0_1 u32) -> &'_0_1 u32, Plain<u32>[{built_in impl Sized for u32}], &'9 u32, &'10 u32>[{built_in impl Sized for fn<'_0_2>(Plain<u32>[{built_in impl Sized for u32}], &'_0_2 u32) -> &'_0_2 u32}, {built_in impl Sized for Plain<u32>[{built_in impl Sized for u32}]}, {built_in impl Sized for &'9 u32}, {built_in impl Sized for &'10 u32}, {impl FnOnce<(A, &'_0 B)> for fn<'_0_1 where B: '_0_1, C: '_0_1>(A, &'_0_1 B) -> &'_0_1 C}<'9, Plain<u32>[{built_in impl Sized for u32}], u32, u32>[for<'_0_2> {built_in impl Sized for Plain<u32>[{built_in impl Sized for u32}]}, for<'_0_2> {built_in impl Sized for &'_0_2 u32}, for<'_0_2> {built_in impl Sized for &'_0_2 u32}]](move _5, move _6, move _7)
     ↳⚡ storage_dead(y)
         storage_dead(x)
         unwind_continue
@@ -1110,7 +1110,7 @@ pub fn test_const_under_binder<'a>(x: [&'a u8; 3usize]) -> [&'a u8; 3usize]
     _3 = copy f
     storage_live(_4)
     _4 = copy x
-    _0 = generic_call_once<fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], [&'67 u8; 3usize], [&'71 u8; 3usize]>[{built_in impl Sized for fn<'_0_2>([&'_0_2 u8; 3usize]) -> [&'_0_2 u8; 3usize]}, {built_in impl Sized for [&'67 u8; 3usize]}, {built_in impl Sized for [&'71 u8; 3usize]}, {impl FnOnce<([&'_0 A; C2],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]}<'67, u8, u8, 3usize, 3usize>[{built_in impl for<'_0_1> Sized for [&'_0_1 u8; 3usize]}, {built_in impl for<'_0_1> Sized for [&'_0_1 u8; 3usize]}]](move _3, move _4)
+    _0 = generic_call_once<fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize], [&'67 u8; 3usize], [&'71 u8; 3usize]>[{built_in impl Sized for fn<'_0_2>([&'_0_2 u8; 3usize]) -> [&'_0_2 u8; 3usize]}, {built_in impl Sized for [&'67 u8; 3usize]}, {built_in impl Sized for [&'71 u8; 3usize]}, {impl FnOnce<([&'_0 A; C2],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]}<'67, u8, u8, 3usize, 3usize>[for<'_0_2> {built_in impl Sized for [&'_0_2 u8; 3usize]}, for<'_0_2> {built_in impl Sized for [&'_0_2 u8; 3usize]}]](move _3, move _4)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_4)

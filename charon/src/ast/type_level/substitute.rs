@@ -1,6 +1,5 @@
 use crate::ast::*;
 use derive_generic_visitor::*;
-use std::borrow::Cow;
 use std::convert::Infallible;
 use std::fmt::Debug;
 use std::iter::Iterator;
@@ -71,11 +70,11 @@ impl<'a> SubstVisitor<'a> {
     fn process_var<Id, T>(
         &mut self,
         var: DeBruijnVar<Id>,
-        get: impl Fn(Id) -> Option<&'a T>,
+        get: impl Fn(Id) -> Option<T>,
     ) -> Option<T>
     where
         Id: Copy,
-        T: Clone + TyVisitable,
+        T: TyVisitable,
         DeBruijnVar<Id>: Into<T>,
     {
         match var {
@@ -85,7 +84,7 @@ impl<'a> SubstVisitor<'a> {
                     DeBruijnVar::Bound(dbid, varid).into()
                 } else {
                     match get(varid) {
-                        Some(v) => v.clone(),
+                        Some(v) => v,
                         None => {
                             self.had_error = true;
                             return None;
@@ -99,21 +98,34 @@ impl<'a> SubstVisitor<'a> {
 }
 impl VarsVisitor for SubstVisitor<'_> {
     fn visit_region_var(&mut self, v: RegionDbVar) -> Option<Region> {
-        self.process_var(v, |id| self.generics.regions.get(id))
+        self.process_var(v, |id| self.generics.regions.get(id).cloned())
     }
     fn visit_type_var(&mut self, v: TypeDbVar) -> Option<Ty> {
-        self.process_var(v, |id| self.generics.types.get(id))
+        self.process_var(v, |id| self.generics.types.get(id).cloned())
     }
     fn visit_const_generic_var(&mut self, v: ConstGenericDbVar) -> Option<ConstantExprKind> {
         self.process_var(v, |id| {
-            self.generics.const_generics.get(id).map(|c| c.kind())
+            self.generics
+                .const_generics
+                .get(id)
+                .map(|c| c.kind().clone())
         })
     }
     fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
         if self.explicits_only {
             None
         } else {
-            self.process_var(v, |id| Some(&self.generics.trait_refs.get(id)?.kind))
+            self.process_var(v, |id| {
+                Some(
+                    self.generics
+                        .trait_refs
+                        .get(id)?
+                        .clone()
+                        .erase()
+                        .kind
+                        .clone(),
+                )
+            })
         }
     }
     fn visit_self_clause(&mut self) -> Option<TraitRefKind> {
@@ -240,13 +252,11 @@ pub trait TyVisitable: Sized + AstVisitable {
     }
     /// Substitute the generic variables as well as the `TraitRefKind::SelfId` trait ref.
     fn substitute_with_tref(self, tref: &TraitRef) -> Self {
-        let pred = tref.trait_decl_ref.clone().erase();
-        self.substitute_with_self(&pred.generics, &tref.kind)
+        self.substitute_with_self(&tref.trait_decl_ref.generics, &tref.kind)
     }
     /// Substitute the generic variables as well as the `TraitRefKind::SelfId` trait ref.
     fn try_substitute_with_tref(self, tref: &TraitRef) -> Result<Self, GenericsMismatch> {
-        let pred = tref.trait_decl_ref.clone().erase();
-        self.try_substitute_with_self(&pred.generics, &tref.kind)
+        self.try_substitute_with_self(&tref.trait_decl_ref.generics, &tref.kind)
     }
 
     fn try_substitute(self, generics: &GenericArgs) -> Result<Self, GenericsMismatch> {
@@ -399,7 +409,7 @@ impl<T: AstVisitable> TyVisitable for T {}
 #[derive(Debug, Clone)]
 pub struct Substituted<'a, T> {
     pub val: &'a T,
-    pub generics: Cow<'a, GenericArgs>,
+    pub generics: &'a GenericArgs,
     pub trait_self: Option<&'a TraitRefKind>,
 }
 
@@ -407,7 +417,7 @@ impl<'a, T> Substituted<'a, T> {
     pub fn new(val: &'a T, generics: &'a GenericArgs) -> Self {
         Self {
             val,
-            generics: Cow::Borrowed(generics),
+            generics,
             trait_self: None,
         }
     }
@@ -418,14 +428,14 @@ impl<'a, T> Substituted<'a, T> {
     ) -> Self {
         Self {
             val,
-            generics: Cow::Borrowed(generics),
+            generics,
             trait_self: Some(trait_self),
         }
     }
     pub fn new_for_trait_ref(val: &'a T, tref: &'a TraitRef) -> Self {
         Self {
             val,
-            generics: Cow::Owned(*tref.trait_decl_ref.clone().erase().generics),
+            generics: &tref.trait_decl_ref.generics,
             trait_self: Some(&tref.kind),
         }
     }
@@ -433,7 +443,7 @@ impl<'a, T> Substituted<'a, T> {
     pub fn rebind<U>(&self, val: &'a U) -> Substituted<'a, U> {
         Substituted {
             val,
-            generics: self.generics.clone(),
+            generics: self.generics,
             trait_self: self.trait_self,
         }
     }
@@ -449,11 +459,11 @@ impl<'a, T> Substituted<'a, T> {
         T: TyVisitable + Clone,
     {
         match self.trait_self {
-            None => self.val.clone().try_substitute(&self.generics),
+            None => self.val.clone().try_substitute(self.generics),
             Some(trait_self) => self
                 .val
                 .clone()
-                .try_substitute_with_self(&self.generics, trait_self),
+                .try_substitute_with_self(self.generics, trait_self),
         }
     }
 

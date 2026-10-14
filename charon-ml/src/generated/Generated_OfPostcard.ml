@@ -328,7 +328,7 @@ and borrowck_statement_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* _1 = region_of_postcard ctx st in
          Ok (SetOutlives (_0, _1))
      | 3 ->
-         let* _0 = trait_ref_of_postcard ctx st in
+         let* _0 = poly_trait_ref_of_postcard ctx st in
          Ok (PredicateHolds _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
@@ -610,7 +610,7 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* _1 = assoc_const_id_of_postcard ctx st in
          Ok (CTraitConst (_0, _1))
      | 20 ->
-         let* _0 = trait_ref_of_postcard ctx st in
+         let* _0 = poly_trait_ref_of_postcard ctx st in
          Ok (CVTableRef _0)
      | 21 ->
          let* _0 = type_decl_ref_of_postcard ctx st in
@@ -773,8 +773,8 @@ and generic_args_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          constant_expr_of_postcard ctx st
      in
      let* trait_refs =
-       index_vec_of_postcard trait_clause_id_of_postcard trait_ref_of_postcard
-         ctx st
+       index_vec_of_postcard trait_clause_id_of_postcard
+         poly_trait_ref_of_postcard ctx st
      in
      Ok ({ regions; types; const_generics; trait_refs } : generic_args))
 
@@ -1048,6 +1048,11 @@ and place_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (PlaceGlobal _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and poly_trait_ref_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (poly_trait_ref, string) result =
+  combine_error_msgs st __FUNCTION__
+    (region_binder_of_postcard trait_ref_of_postcard ctx st)
+
 and predicate_origin_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (predicate_origin, string) result =
   combine_error_msgs st __FUNCTION__
@@ -1282,8 +1287,8 @@ and trait_assoc_ty_impl_of_postcard (ctx : of_postcard_ctx)
   combine_error_msgs st __FUNCTION__
     (let* value = ty_of_postcard ctx st in
      let* implied_trait_refs =
-       index_vec_of_postcard trait_clause_id_of_postcard trait_ref_of_postcard
-         ctx st
+       index_vec_of_postcard trait_clause_id_of_postcard
+         poly_trait_ref_of_postcard ctx st
      in
      Ok ({ value; implied_trait_refs } : trait_assoc_ty_impl))
 
@@ -1336,9 +1341,7 @@ and trait_ref_contents_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
     : (trait_ref_contents, string) result =
   combine_error_msgs st __FUNCTION__
     (let* kind = trait_ref_kind_of_postcard ctx st in
-     let* trait_decl_ref =
-       region_binder_of_postcard trait_decl_ref_of_postcard ctx st
-     in
+     let* trait_decl_ref = trait_decl_ref_of_postcard ctx st in
      Ok ({ kind; trait_decl_ref } : trait_ref_contents))
 
 and trait_ref_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1369,7 +1372,7 @@ and trait_ref_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* builtin_data = builtin_impl_data_of_postcard ctx st in
          let* parent_trait_refs =
            index_vec_of_postcard trait_clause_id_of_postcard
-             trait_ref_of_postcard ctx st
+             poly_trait_ref_of_postcard ctx st
          in
          let* types =
            (fun ctx st ->
@@ -1538,7 +1541,7 @@ and unsizing_metadata_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* _0 = constant_expr_of_postcard ctx st in
          Ok (MetaLength _0)
      | 1 ->
-         let* _0 = trait_ref_of_postcard ctx st in
+         let* _0 = poly_trait_ref_of_postcard ctx st in
          let* _1 = constant_expr_of_postcard ctx st in
          Ok (MetaVTable (_0, _1))
      | 2 ->
@@ -3217,8 +3220,8 @@ and trait_impl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* is_unsafe = bool_of_postcard ctx st in
      let* generics = generic_params_of_postcard ctx st in
      let* implied_trait_refs =
-       index_vec_of_postcard trait_clause_id_of_postcard trait_ref_of_postcard
-         ctx st
+       index_vec_of_postcard trait_clause_id_of_postcard
+         poly_trait_ref_of_postcard ctx st
      in
      let* consts =
        (fun ctx st ->

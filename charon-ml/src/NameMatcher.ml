@@ -641,18 +641,15 @@ and match_expr_with_trait_impl_id (ctx : ctx) (c : match_config) (ptr : expr)
   | EPrimAdt _ | ERef _ | EVar _ | ENever | EArrow _ | ERawPtr _ -> false
 
 and match_trait_decl_ref (ctx : ctx) (c : match_config) (m : maps)
-    (pid : pattern) (tr : T.trait_decl_ref T.region_binder) : bool =
+    (pid : pattern) (tr : T.trait_decl_ref) : bool =
   (* Lookup the trait declaration *)
-  let d = T.TraitDeclId.Map.find tr.binder_value.id ctx.crate.trait_decls in
-  (* Push a region group in the map, if necessary - TODO: make this more precise *)
-  let m = maps_push_bound_regions_group_if_nonempty m tr.binder_regions in
+  let d = T.TraitDeclId.Map.find tr.id ctx.crate.trait_decls in
   (* Match the trait decl ref *)
-  match_name_with_generics ctx c ~m pid d.item_meta.name
-    tr.binder_value.generics
+  match_name_with_generics ctx c ~m pid d.item_meta.name tr.generics
 
 and match_trait_decl_ref_item (ctx : ctx) (c : match_config) (m : maps)
-    (pid : pattern) (tr : T.trait_decl_ref T.region_binder)
-    (item_id : T.assoc_item_id) (generics : T.generic_args) : bool =
+    (pid : pattern) (tr : T.trait_decl_ref) (item_id : T.assoc_item_id)
+    (generics : T.generic_args) : bool =
   if c.match_with_trait_decl_refs then
     (* We match the trait decl ref *)
     (* We split the pattern between the trait decl ref and the associated item name *)
@@ -663,9 +660,7 @@ and match_trait_decl_ref_item (ctx : ctx) (c : match_config) (m : maps)
     (* Match the item name *)
     match pitem_name with
     | PIdent (pitem_name, pd, pgenerics) ->
-        let item_name =
-          GAstUtils.get_assoc_item_name ctx.crate tr.binder_value.id item_id
-        in
+        let item_name = GAstUtils.get_assoc_item_name ctx.crate tr.id item_id in
         pitem_name = item_name && pd = 0
         && match_generic_args ctx c (mk_empty_maps ()) pgenerics generics
     | PWild -> true
@@ -746,13 +741,7 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : T.fn_ptr)
             in
             (* TODO: recover the method generics somehow *)
             let method_generics = TypesUtils.empty_generic_args in
-            match_trait_decl_ref_item ctx c (mk_empty_maps ()) p
-              {
-                binder_value = trait_ref;
-                binder_regions = [];
-                regions_outlive = [];
-                types_outlive = [];
-              }
+            match_trait_decl_ref_item ctx c (mk_empty_maps ()) p trait_ref
               (T.AssocIdMethod item_id) method_generics
         | _ -> false
       in
@@ -1009,8 +998,8 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
           ref_kind_to_pattern rk )
   | TTraitType (trait_ref, type_id, generics) ->
       let type_name =
-        GAstUtils.get_assoc_type_name ctx.crate
-          trait_ref.trait_decl_ref.binder_value.id type_id
+        GAstUtils.get_assoc_type_name ctx.crate trait_ref.trait_decl_ref.id
+          type_id
       in
       let name =
         trait_ref_item_with_generics_to_pattern ctx c m trait_ref type_name
@@ -1055,18 +1044,10 @@ and trait_ref_item_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
     (item_generics : T.generic_args) : pattern =
   if c.use_trait_decl_refs then
     let trait_decl_ref = trait_ref.trait_decl_ref in
-    let d =
-      T.TraitDeclId.Map.find trait_decl_ref.binder_value.id
-        ctx.crate.trait_decls
-    in
-    (* Push a regions map if necessary - TODO: make this more precise *)
-    let m =
-      constraints_map_push_regions_map_if_nonempty m
-        trait_decl_ref.binder_regions
-    in
+    let d = T.TraitDeclId.Map.find trait_decl_ref.id ctx.crate.trait_decls in
     let name =
       name_with_generics_to_pattern_aux ctx c m d.item_meta.name
-        trait_decl_ref.binder_value.generics
+        trait_decl_ref.generics
     in
     let item_generics = generic_args_to_pattern ctx c m item_generics in
     let name = name @ [ PIdent (item_name, 0, item_generics) ] in
@@ -1167,8 +1148,7 @@ let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
         name_with_generics_to_pattern_aux ctx c m d.item_meta.name func.generics
     | TraitMethod (tr, method_id) ->
         let method_name =
-          GAstUtils.get_method_name ctx.crate tr.trait_decl_ref.binder_value.id
-            method_id
+          GAstUtils.get_method_name ctx.crate tr.trait_decl_ref.id method_id
         in
         trait_ref_item_with_generics_to_pattern ctx c m tr method_name
           func.generics

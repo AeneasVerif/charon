@@ -32,7 +32,7 @@ fn mk_fn_ptr(ctx: &TransformCtx, id: ItemId, mut generics: GenericArgs) -> FnPtr
         };
         generics
             .trait_refs
-            .push(TraitRef::new(kind, trait_decl_ref));
+            .push(PolyTraitRef::new(kind, trait_decl_ref));
     }
     let fun_id = *id.as_fun().unwrap();
     FnPtr::new(FnPtrKind::Fun(fun_id), generics)
@@ -51,8 +51,7 @@ fn method_impl_trait_ref(
     };
     let impl_ref = impl_ref.clone().substitute(fun_generics);
     let trait_impl = ctx.translated.trait_impls.get(impl_ref.id)?;
-    let trait_decl_ref =
-        RegionBinder::empty(trait_impl.impl_trait.clone().substitute(&impl_ref.generics));
+    let trait_decl_ref = trait_impl.impl_trait.clone().substitute(&impl_ref.generics);
     Some(TraitRef::new(
         TraitRefKind::TraitImpl(impl_ref),
         trait_decl_ref,
@@ -111,7 +110,11 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
                     [Region::Erased].into(),
                     [elem_ty.clone()].into(),
                     [len.clone()].into(),
-                    elem_ty_is_sized.iter().cloned().collect(),
+                    elem_ty_is_sized
+                        .iter()
+                        .cloned()
+                        .map(PolyTraitRef::empty)
+                        .collect(),
                 );
                 statement.kind = StatementKind::Call {
                     call: Call {
@@ -150,7 +153,12 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
                 [].into(),
                 [ty.clone()].into(),
                 [len.clone()].into(),
-                ty_is_sized.iter().cloned().chain([ty_is_clone]).collect(),
+                ty_is_sized
+                    .iter()
+                    .cloned()
+                    .map(PolyTraitRef::empty)
+                    .chain([ty_is_clone])
+                    .collect(),
             );
             statement.kind = StatementKind::Call {
                 call: Call {
@@ -218,7 +226,11 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
             [Region::Erased].into(),
             [ty.clone()].into(),
             [].into(),
-            ty_is_sized.iter().cloned().collect(),
+            ty_is_sized
+                .iter()
+                .cloned()
+                .map(PolyTraitRef::empty)
+                .collect(),
         );
         let index_fn_ptr = mk_fn_ptr(self.ctx.ctx, index_fun_id, index_generics);
         let index_ty = index_fun.signature.inputs[0]
@@ -336,7 +348,7 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
                         types: Default::default(),
                         vtable: None,
                     },
-                    trait_decl_ref,
+                    trait_decl_ref.no_bound_vars(),
                 ))
             } else {
                 None
@@ -346,6 +358,7 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
                 .cloned()
                 .chain(index_ty_is_sized.iter().cloned())
                 .chain([slice_index_trait_ref])
+                .map(PolyTraitRef::empty)
                 .collect();
             let slice_fn_ptr = mk_fn_ptr(self.ctx.ctx, slice_fun_id, slice_generics);
             let Some(slice_trait_ref) =
@@ -368,6 +381,7 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
                     .cloned()
                     .chain(index_ty_is_sized)
                     .chain([slice_trait_ref])
+                    .map(PolyTraitRef::empty)
                     .collect(),
             );
             (

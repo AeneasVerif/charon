@@ -820,7 +820,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
         let self_trait_ref = TraitRef::new(
             TraitRefKind::SelfId,
-            RegionBinder::empty(self.translate_trait_predicate(span, t.self_predicate())?),
+            self.translate_trait_predicate(span, t.self_predicate())?,
         );
 
         // Translate the associated items
@@ -1044,7 +1044,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     let assoc_const = bound_assoc_const.apply(&{
                         let mut generics = GenericArgs::empty();
                         // Provide the `Self` clause.
-                        generics.trait_refs.push(self_trait_ref.clone());
+                        generics
+                            .trait_refs
+                            .push(PolyTraitRef::empty(self_trait_ref.clone()));
                         generics
                     });
                     consts.set_slot_extend(assoc_const_id, assoc_const);
@@ -1147,7 +1149,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 id: def_id,
                 generics: Box::new(self.the_only_binder().params.identity_args()),
             }),
-            RegionBinder::empty(implemented_trait.clone()),
+            implemented_trait.clone(),
         );
 
         let vtable = self.translate_trait_impl_vtable(
@@ -1299,7 +1301,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         None => {
                             let mut generics = implemented_trait.generics.as_ref().clone();
                             // For default consts, we add an extra `Self` predicate.
-                            generics.trait_refs.push(self_predicate.clone());
+                            generics
+                                .trait_refs
+                                .push(PolyTraitRef::empty(self_predicate.clone()));
                             generics
                         }
                     };

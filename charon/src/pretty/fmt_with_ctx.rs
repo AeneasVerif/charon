@@ -1676,34 +1676,30 @@ impl<C: AstFormatter> FmtWithCtx<C> for PolyTraitDeclRef {
 }
 
 impl PolyTraitDeclRef {
+    fn format_as_pred<'a, C: AstFormatter + 'a>(&'a self, ctx: &'a C) -> impl Display + 'a {
+        self.fmt_as_for_with(ctx, |ctx, pred| format!("({})", pred.format_as_pred(ctx)))
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for PolyTraitRef {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0.fmt_as_for(ctx))
+    }
+}
+
+impl PolyTraitRef {
     fn fmt_trait_proof<'a, C: AstFormatter + 'a>(
         &'a self,
         id: TraitClauseId,
-        value: Option<&'a TraitRef>,
         ctx: &'a C,
     ) -> impl Display + 'a {
-        std::fmt::from_fn(move |f| {
-            write!(
-                f,
-                "proof {}: {}",
+        self.0.fmt_as_for_with(ctx, |ctx, trait_ref| {
+            format!(
+                "proof {}: ({}) = {}",
                 id.format_as_implied(),
-                self.format_as_pred(ctx)
-            )?;
-            if let Some(value) = value {
-                write!(f, " = {}", value.with_ctx(ctx))?;
-            }
-            Ok(())
-        })
-    }
-
-    fn format_as_pred<'a, C: AstFormatter + 'a>(&'a self, ctx: &'a C) -> impl Display + 'a {
-        std::fmt::from_fn(move |f| {
-            let ctx = &ctx.push_bound_regions(&self.regions);
-            if !self.regions.is_empty() {
-                let regions = self.regions.iter().map(|r| r.with_ctx(ctx));
-                write!(f, "for<{}> ", regions.format(", "))?;
-            }
-            write!(f, "({})", self.skip_binder.format_as_pred(ctx))
+                trait_ref.trait_decl_ref.format_as_pred(ctx),
+                trait_ref.with_ctx(ctx),
+            )
         })
     }
 }
@@ -2784,9 +2780,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
             for c in &self.implied_clauses {
                 writeln!(
                     f,
-                    "{TAB_INCR}{}",
-                    c.trait_.fmt_trait_proof(c.clause_id, None, ctx)
-                )?;
+                    "{TAB_INCR}proof {}: {}",
+                    c.clause_id.format_as_implied(),
+                    c.trait_.format_as_pred(ctx)
+                )?
             }
             for assoc_const in &self.consts {
                 let name = &assoc_const.name;
@@ -2801,10 +2798,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
                     .formatted_clauses(ctx)
                     .map(|x| x.to_string())
                     .chain(assoc_ty.skip_binder.implied_clauses.iter().map(|clause| {
-                        clause
-                            .trait_
-                            .fmt_trait_proof(clause.clause_id, None, ctx)
-                            .to_string()
+                        format!(
+                            "proof {}: {}",
+                            clause.clause_id.format_as_implied(),
+                            clause.trait_.format_as_pred(ctx)
+                        )
                     }));
                 let params = if assoc_ty.params.has_explicits() {
                     format!("<{}>", assoc_ty.params.formatted_params(ctx).format(", "))
@@ -2928,13 +2926,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
             || !self.methods.is_empty();
         if any_item {
             for (id, trait_ref) in self.implied_trait_refs.iter_enumerated() {
-                writeln!(
-                    f,
-                    "{TAB_INCR}{}",
-                    trait_ref
-                        .trait_decl_ref
-                        .fmt_trait_proof(id, Some(trait_ref), ctx)
-                )?;
+                writeln!(f, "{TAB_INCR}{}", trait_ref.fmt_trait_proof(id, ctx))?;
             }
             for (const_id, global) in self.consts.iter_enumerated() {
                 write!(f, "{TAB_INCR}const ")?;
@@ -2958,12 +2950,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                             .skip_binder
                             .implied_trait_refs
                             .iter_enumerated()
-                            .map(|(id, trait_ref)| {
-                                trait_ref
-                                    .trait_decl_ref
-                                    .fmt_trait_proof(id, Some(trait_ref), ctx)
-                                    .to_string()
-                            }),
+                            .map(|(id, trait_ref)| trait_ref.fmt_trait_proof(id, ctx).to_string()),
                     );
                 write!(f, "{TAB_INCR}type ")?;
                 ctx.format_assoc_type_name(f, trait_id, type_id)?;
@@ -3039,12 +3026,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
             }
             TraitRefKind::Clause(id) => write!(f, "{}", id.with_ctx(ctx)),
             TraitRefKind::BuiltinOrAuto { types, .. } => {
-                let impl_trait = self.trait_decl_ref.fmt_as_for_with(ctx, |ctx, trait_ref| {
-                    trait_ref.format_as_impl(ctx).to_string()
-                });
+                let impl_trait = self.trait_decl_ref.format_as_impl(ctx);
                 write!(f, "{{built_in impl {impl_trait}")?;
                 if !types.is_empty() {
-                    let trait_id = self.trait_decl_ref.skip_binder.id;
+                    let trait_id = self.trait_decl_ref.id;
                     let types = types
                         .iter_indexed()
                         .map(|(type_id, assoc_ty)| {

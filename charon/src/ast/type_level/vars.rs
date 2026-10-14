@@ -238,13 +238,13 @@ impl ConstGenericParam {
 
 impl TraitParam {
     /// Constructs the trait ref that refers to this clause.
-    pub fn identity_tref(&self) -> TraitRef {
+    pub fn identity_tref(&self) -> PolyTraitRef {
         self.identity_tref_at_depth(DeBruijnId::zero())
     }
 
     /// Like `identity_tref` but uses variables bound at the given depth.
-    pub fn identity_tref_at_depth(&self, depth: DeBruijnId) -> TraitRef {
-        TraitRef::new(
+    pub fn identity_tref_at_depth(&self, depth: DeBruijnId) -> PolyTraitRef {
+        PolyTraitRef::new(
             TraitRefKind::Clause(DeBruijnVar::bound(depth, self.clause_id)),
             self.trait_.clone().move_under_binders(depth),
         )

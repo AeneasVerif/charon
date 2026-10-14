@@ -877,7 +877,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             .in_trait
             .as_ref()
             .map(|trait_proof| self.translate_trait_proof(span, trait_proof))
-            .transpose()?;
+            .transpose()?
+            .map(PolyTraitRef::erase);
 
         let item = DeclRef {
             id,
@@ -965,7 +966,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             return Ok(None);
         }
 
-        let trait_ref = self.translate_trait_proof(span, in_trait)?;
+        let trait_ref = self.translate_trait_proof(span, in_trait)?.erase();
         let generics = self.translate_generic_args(span, &item.generic_args, &item.trait_proofs)?;
         self.translate_region_binder(span, &f.sig().as_ref().rebind(()), |ctx, _| {
             let method_id = ctx.translate_trait_method_id(trait_ref.trait_id(), &item.def_id)?;

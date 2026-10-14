@@ -477,7 +477,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let self_trait_ref = TraitRef::new(
             TraitRefKind::SelfId,
-            RegionBinder::empty(self.translate_trait_predicate(span, self_predicate)?),
+            self.translate_trait_predicate(span, self_predicate)?,
         );
         let trait_id = self_trait_ref.trait_id();
 

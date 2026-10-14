@@ -18,7 +18,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             return Ok(None);
         }
         let proof = hax::solve_sized(&self.hax_state, ty);
-        self.translate_trait_proof(span, &proof).map(Some)
+        self.translate_trait_proof(span, &proof)
+            .map(PolyTraitRef::no_bound_vars)
+            .map(Some)
     }
 
     /// Translate an erased region. If we're inside a body, this will return a fresh body region
@@ -152,12 +154,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
             hax::TyKind::Alias(alias) => match &alias.kind {
                 hax::AliasKind::Projection(item) => {
-                    let trait_ref = self.translate_trait_proof(
-                        span,
-                        item.in_trait
-                            .as_ref()
-                            .expect("projection without a trait_ref?"),
-                    )?;
+                    let trait_ref = self
+                        .translate_trait_proof(
+                            span,
+                            item.in_trait
+                                .as_ref()
+                                .expect("projection without a trait_ref?"),
+                        )?
+                        .erase();
                     let assoc_type_id =
                         self.translate_assoc_type_id(trait_ref.trait_id(), &item.def_id)?;
                     let generics =
@@ -185,7 +189,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let item_ty_is_sized = if self.options.hide_marker_traits {
                     None
                 } else {
-                    Some(self.translate_trait_proof(span, &item_ref.trait_proofs[0])?)
+                    Some(
+                        self.translate_trait_proof(span, &item_ref.trait_proofs[0])?
+                            .no_bound_vars(),
+                    )
                 };
                 let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
                 assert!(args.types.len() == 1 && args.const_generics.len() == 1);
@@ -205,7 +212,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let item_ty_is_sized = if self.options.hide_marker_traits {
                     None
                 } else {
-                    Some(self.translate_trait_proof(span, &item_ref.trait_proofs[0])?)
+                    Some(
+                        self.translate_trait_proof(span, &item_ref.trait_proofs[0])?
+                            .no_bound_vars(),
+                    )
                 };
                 let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
                 assert!(args.types.len() == 1);

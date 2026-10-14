@@ -1,5 +1,5 @@
 
-thread 'main' panicked at src/transform/normalize/expand_associated_types.rs:1389:9:
+thread 'main' panicked at src/transform/normalize/expand_associated_types.rs:1385:9:
 stack depth limit exceeded
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ERROR Compilation panicked

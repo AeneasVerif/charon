@@ -48,13 +48,13 @@ fn normalize_default_method_call_on_known_impl(
         return None;
     };
     // If the first trait proof (for the self clause) is a known impl.
-    let impl_ref = fn_ptr
+    let impl_trait_ref = fn_ptr
         .generics
         .trait_refs
-        .get(TraitClauseId::ZERO)
-        .as_ref()?
-        .kind
-        .as_trait_impl()?;
+        .get(TraitClauseId::ZERO)?
+        .clone()
+        .no_bound_vars();
+    let impl_ref = impl_trait_ref.kind.as_trait_impl()?;
     let method_generics = {
         let generics = &fn_ptr.generics;
         let trait_generics = trait_ref.generics.as_ref();

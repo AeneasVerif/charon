@@ -285,7 +285,7 @@ impl HasSafety for FnOperand {
                     )),
                 },
                 FnPtrKind::Trait(trait_ref, method_id) => {
-                    let trait_id = trait_ref.trait_decl_ref.skip_binder.id;
+                    let trait_id = trait_ref.trait_id();
                     let method = krate
                         .trait_decls
                         .get(trait_id)

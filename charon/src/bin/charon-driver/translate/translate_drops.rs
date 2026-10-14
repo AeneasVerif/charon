@@ -24,7 +24,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         ty: ty::Ty<'tcx>,
     ) -> Result<FnPtr, Error> {
         let trait_proof = hax::solve_destruct(self.hax_state_with_id(), ty);
-        let tref = self.translate_trait_proof(span, &trait_proof)?;
+        let tref = self
+            .translate_trait_proof(span, &trait_proof)?
+            .no_bound_vars();
         let method_id = self.translate_drop_glue_method_id(
             &trait_proof.pred.hax_skip_binder_ref().def_id,
             tref.trait_id(),

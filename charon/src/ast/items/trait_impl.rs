@@ -32,7 +32,7 @@ pub struct TraitImpl {
     pub is_unsafe: bool,
     pub generics: GenericParams,
     /// The trait references for the parent clauses (see [TraitDecl]).
-    pub implied_trait_refs: IndexVec<TraitClauseId, TraitRef>,
+    pub implied_trait_refs: IndexVec<TraitClauseId, PolyTraitRef>,
     /// The implemented associated constants.
     pub consts: IndexMap<AssocConstId, GlobalDeclRef>,
     /// The implemented associated types.
@@ -50,7 +50,7 @@ pub struct TraitAssocTyImpl {
     pub value: Ty,
     /// This matches the corresponding vector in `TraitAssocTy`. In the same way, this is empty
     /// after the `lift_associated_item_clauses` pass.
-    pub implied_trait_refs: IndexVec<TraitClauseId, TraitRef>,
+    pub implied_trait_refs: IndexVec<TraitClauseId, PolyTraitRef>,
 }
 
 /// Where the impl comes from.
