@@ -102,6 +102,22 @@ pub fn main() -> Result<()> {
             println!("{}", path.display());
             ExitStatus::default()
         }
+        Charon::PrintSysroot(args) => {
+            let target = match args.target {
+                Some(target) => target,
+                None => get_rustc_version()?.host,
+            };
+            // Mirrors how `charon-driver` picks a sysroot.
+            let sysroot = match miri_sysroot(args.sysroot.as_deref(), &target) {
+                Some(sysroot) => sysroot,
+                None => match args.sysroot.as_deref() {
+                    None | Some("default" | "miri") => toolchain_path()?,
+                    Some(sysroot) => sysroot.into(),
+                },
+            };
+            println!("{}", sysroot.display());
+            ExitStatus::default()
+        }
         Charon::ToolchainVersion => {
             println!("{}", toolchain_version());
             ExitStatus::default()
