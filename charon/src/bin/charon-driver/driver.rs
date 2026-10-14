@@ -1,6 +1,6 @@
 //! Run the rustc compiler with our custom options and hooks.
 use crate::CharonFailure;
-use crate::toolchain::toolchain_version;
+use crate::toolchain::setup_miri_sysroot;
 use crate::translate::translate_crate;
 use charon_lib::errors::ErrorCtx;
 use charon_lib::options::{self, CliOpts};
@@ -15,8 +15,6 @@ use rustc_middle::util::Providers;
 use rustc_session::config::{OutputType, OutputTypes};
 use rustc_span::ErrorGuaranteed;
 use std::num::NonZero;
-use std::path::PathBuf;
-use std::process::Command;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{env, fmt};
 
@@ -143,86 +141,6 @@ fn check_late_rustc_errors(tcx: TyCtxt<'_>) {
 
     if tcx.dcx().err_count() == 0 {
         let _ = tcx.collect_and_partition_mono_items(());
-    }
-}
-
-/// Whether this sysroot provides libraries for the given target.
-fn sysroot_has_target(sysroot: &std::path::Path, target: &str) -> bool {
-    sysroot.join("lib").join("rustlib").join(target).is_dir()
-}
-
-/// Where we tell `cargo miri setup` to build the sysroot for the current toolchain.
-/// We use a per-toolchain directory because Miri's default cache directory (`~/.cache/miri`) is
-/// shared across all toolchains and gets overwritten when switching between Charon versions.
-fn miri_sysroot_cache_dir() -> Option<PathBuf> {
-    let toolchain = toolchain_version();
-    let cache_dir = match env::var_os("CHARON_CACHE_DIR") {
-        Some(dir) => PathBuf::from(dir),
-        None => env::home_dir()?.join(".cache").join("charon"),
-    };
-    Some(cache_dir.join("miri-sysroot").join(toolchain))
-}
-
-/// `cargo miri setup` sets up a sysroot containing a standard library built with
-/// `-Zalways-encode-mir`.
-fn setup_miri_sysroot(target: &str) -> Option<PathBuf> {
-    if let Some(root) = env::var_os("CHARON_MIRI_SYSROOTS")
-        && let sysroot = PathBuf::from(root)
-        && sysroot_has_target(&sysroot, target)
-    {
-        return Some(sysroot);
-    }
-
-    let cache_sysroot = miri_sysroot_cache_dir();
-    if let Some(sysroot) = &cache_sysroot
-        && sysroot_has_target(sysroot, target)
-    {
-        return Some(sysroot.clone());
-    }
-
-    let mut cmd = Command::new("cargo");
-    cmd.arg("miri")
-        .arg("setup")
-        .arg(format!("--target={target}"))
-        .arg("--print-sysroot")
-        .env_remove("RUSTC_WORKSPACE_WRAPPER")
-        .env_remove("RUSTC_WRAPPER");
-    if let Some(sysroot) = &cache_sysroot {
-        cmd.env("MIRI_SYSROOT", sysroot);
-    }
-
-    let output = match cmd.output() {
-        Ok(output) => output,
-        Err(err) => {
-            eprintln!(
-                "warning: failed to run `cargo miri setup` for target `{target}`; \
-                falling back to rustc's default sysroot: {err}"
-            );
-            return None;
-        }
-    };
-
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        eprintln!(
-            "warning: `cargo miri setup` failed for target `{target}`; \
-            falling back to rustc's default sysroot: {}",
-            stderr.trim()
-        );
-        return None;
-    }
-
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let sysroot = stdout.lines().map(str::trim).find(|line| !line.is_empty());
-    match sysroot {
-        Some(sysroot) => Some(PathBuf::from(sysroot)),
-        None => {
-            eprintln!(
-                "warning: `cargo miri setup --print-sysroot` printed no sysroot for target \
-                `{target}`; falling back to rustc's default sysroot"
-            );
-            None
-        }
     }
 }
 
