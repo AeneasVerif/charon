@@ -147,6 +147,7 @@ class ['self] map_crate =
         name;
         options;
         target_information;
+        runtime_checks;
         item_names;
         declarations;
         type_decls;
@@ -186,6 +187,7 @@ class ['self] map_crate =
         name;
         options;
         target_information;
+        runtime_checks;
         item_names;
         declarations;
         type_decls;
@@ -277,6 +279,7 @@ class ['self] iter_crate =
         name;
         options;
         target_information;
+        runtime_checks = _;
         item_names = _;
         declarations;
         type_decls;

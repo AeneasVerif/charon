@@ -40,6 +40,7 @@ let crate_of_json (js : json) : (crate, string) result =
             name = crate.crate_name;
             options = crate.options;
             target_information = crate.target_information;
+            runtime_checks = crate.runtime_checks;
             item_names = crate.item_names;
             assoc_item_names = crate.assoc_item_names;
             short_names = crate.short_names;
