@@ -22,4 +22,6 @@ module AssocConstId = IdGen ()
 type path_buf = string
 [@@deriving show, ord, eq]
 
+let hash_path_buf = HashBasic.hash_string
+
 (* __REPLACE0__ *)

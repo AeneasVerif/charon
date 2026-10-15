@@ -403,6 +403,256 @@ and switch_scrutinee =
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
 
+let rec hash_abort_kind : abort_kind -> int =
+ fun (x : abort_kind) ->
+  match x with
+  | AbortPanic x0 -> HashBasic.combine 0 ((HashBasic.hash_option hash_name) x0)
+  | AbortUndefinedBehavior -> 1
+  | AbortUnwindTerminate -> 2
+
+and hash_asm_kind : asm_kind -> int =
+ fun (x : asm_kind) ->
+  match x with
+  | Asm -> 0
+  | NakedAsm -> 1
+
+and hash_asm_operand : asm_operand -> int =
+ fun (x : asm_operand) ->
+  match x with
+  | In (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 0 (hash_asm_register x0))
+        (hash_operand x1)
+  | Out (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 1 (hash_asm_register x0))
+           (HashBasic.hash_bool x1))
+        ((HashBasic.hash_option hash_place) x2)
+  | InOut (x0, x1, x2, x3) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine
+              (HashBasic.combine 2 (hash_asm_register x0))
+              (HashBasic.hash_bool x1))
+           (hash_operand x2))
+        ((HashBasic.hash_option hash_place) x3)
+  | Const x0 -> HashBasic.combine 3 (hash_constant_expr x0)
+  | SymFn x0 -> HashBasic.combine 4 (hash_fn_ptr x0)
+  | SymStatic x0 -> HashBasic.combine 5 (hash_global_decl_ref x0)
+  | Label x0 -> HashBasic.combine 6 (hash_branch_id x0)
+
+and hash_asm_operand_id : asm_operand_id -> int =
+ fun (x : asm_operand_id) -> AsmOperandId.hash_id x
+
+and hash_asm_options : asm_options -> int =
+ fun (x : asm_options) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine
+             (HashBasic.combine
+                (HashBasic.combine
+                   (HashBasic.combine
+                      (HashBasic.combine 0 (HashBasic.hash_bool x.pure))
+                      (HashBasic.hash_bool x.nomem))
+                   (HashBasic.hash_bool x.readonly))
+                (HashBasic.hash_bool x.preserves_flags))
+             (HashBasic.hash_bool x.noreturn))
+          (HashBasic.hash_bool x.nostack))
+       (HashBasic.hash_bool x.att_syntax))
+    (HashBasic.hash_bool x.may_unwind)
+
+and hash_asm_register : asm_register -> int =
+ fun (x : asm_register) ->
+  match x with
+  | Explicit x0 -> HashBasic.combine 0 (HashBasic.hash_string x0)
+  | Class x0 -> HashBasic.combine 1 (HashBasic.hash_string x0)
+
+and hash_asm_template_piece : asm_template_piece -> int =
+ fun (x : asm_template_piece) ->
+  match x with
+  | AsmTemplateText x0 -> HashBasic.combine 0 (HashBasic.hash_string x0)
+  | AsmTemplatePlaceholder (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 1 (hash_asm_operand_id x0))
+           ((HashBasic.hash_option hash_char_value) x1))
+        (hash_span x2)
+
+and hash_assertion : assertion -> int =
+ fun (x : assertion) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine 0 (hash_operand x.cond))
+       (HashBasic.hash_bool x.expected))
+    ((HashBasic.hash_option hash_builtin_assert_kind) x.check_kind)
+
+and hash_borrowck_statement : borrowck_statement -> int =
+ fun (x : borrowck_statement) ->
+  match x with
+  | FakeRead x0 -> HashBasic.combine 0 (hash_place x0)
+  | SetType (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine (HashBasic.combine 1 (hash_place x0)) (hash_ty x1))
+        (hash_variance x2)
+  | SetOutlives (x0, x1) ->
+      HashBasic.combine (HashBasic.combine 2 (hash_ty x0)) (hash_region x1)
+  | PredicateHolds x0 -> HashBasic.combine 3 (hash_trait_ref x0)
+
+and hash_branch_id : branch_id -> int =
+ fun (x : branch_id) -> BranchId.hash_id x
+
+and hash_builtin_assert_kind : builtin_assert_kind -> int =
+ fun (x : builtin_assert_kind) ->
+  match x with
+  | BoundsCheck (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 0 (hash_operand x0))
+        (hash_operand x1)
+  | Overflow (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 1 (hash_binop x0))
+           (hash_operand x1))
+        (hash_operand x2)
+  | OverflowNeg x0 -> HashBasic.combine 2 (hash_operand x0)
+  | DivisionByZero x0 -> HashBasic.combine 3 (hash_operand x0)
+  | RemainderByZero x0 -> HashBasic.combine 4 (hash_operand x0)
+  | MisalignedPointerDereference (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 5 (hash_operand x0))
+        (hash_operand x1)
+  | NullPointerDereference -> 6
+  | NullReferenceCreated -> 7
+  | InvalidEnumConstruction x0 -> HashBasic.combine 8 (hash_operand x0)
+  | ResumedAfterReturn -> 9
+  | ResumedAfterPanic -> 10
+  | ResumedAfterDrop -> 11
+
+and hash_call : call -> int =
+ fun (x : call) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine 0 (hash_fn_operand x.func))
+          ((HashBasic.hash_list hash_operand) x.args))
+       (hash_place x.dest))
+    (hash_call_safety x.safety)
+
+and hash_call_safety : call_safety -> int =
+ fun (x : call_safety) ->
+  match x with
+  | Inherit -> 0
+  | Safe -> 1
+  | Unsafe -> 2
+
+and hash_drop_kind : drop_kind -> int =
+ fun (x : drop_kind) ->
+  match x with
+  | Precise -> 0
+  | Conditional -> 1
+
+and hash_error : error -> int =
+ fun (x : error) ->
+  HashBasic.combine
+    (HashBasic.combine 0 (hash_span x.span))
+    (HashBasic.hash_string x.msg)
+
+and hash_fn_operand : fn_operand -> int =
+ fun (x : fn_operand) ->
+  match x with
+  | FnOpRegular x0 -> HashBasic.combine 0 (hash_fn_ptr x0)
+  | FnOpDynamic x0 -> HashBasic.combine 1 (hash_operand x0)
+
+and hash_fun_source : fun_source -> int =
+ fun (x : fun_source) ->
+  match x with
+  | NormalFun -> 0
+  | AdtConstructorFun -> 1
+  | TraitDefaultFun (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 2 (hash_trait_decl_ref x0))
+        (hash_trait_method_id x1)
+  | TraitImplFun (x0, x1, x2, x3) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine
+              (HashBasic.combine 3 (hash_trait_impl_ref x0))
+              (hash_trait_decl_ref x1))
+           (hash_trait_method_id x2))
+        (HashBasic.hash_bool x3)
+  | VTableShimFun -> 4
+  | GlobalInitializerFun x0 -> HashBasic.combine 5 (hash_global_decl_ref x0)
+  | TargetDependentFun x0 -> HashBasic.combine 6 (hash_fun_decl_ref x0)
+
+and hash_global_source : global_source -> int =
+ fun (x : global_source) ->
+  match x with
+  | NormalGlobal -> 0
+  | TraitDefaultGlobal (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 1 (hash_trait_decl_ref x0))
+        (hash_assoc_const_id x1)
+  | TraitImplGlobal (x0, x1, x2, x3) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine
+              (HashBasic.combine 2 (hash_trait_impl_ref x0))
+              (hash_trait_decl_ref x1))
+           (hash_assoc_const_id x2))
+        (HashBasic.hash_bool x3)
+  | VTableInstanceGlobal (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 3 (hash_ty x0))
+        ((HashBasic.hash_option hash_trait_impl_ref) x1)
+
+and hash_inline_asm : inline_asm -> int =
+ fun (x : inline_asm) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine 0 (hash_asm_kind x.kind))
+          ((HashBasic.hash_list hash_asm_template_piece) x.template))
+       ((HashBasic.hash_list hash_asm_operand) x.operands))
+    (hash_asm_options x.options)
+
+and hash_local : local -> int =
+ fun (x : local) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine
+             (HashBasic.combine 0 (hash_local_id x.index))
+             ((HashBasic.hash_option HashBasic.hash_string) x.name))
+          (hash_span x.span))
+       (hash_ty x.local_ty))
+    ((HashBasic.hash_option hash_place) x.drop_flag_for)
+
+and hash_locals : locals -> int =
+ fun (x : locals) ->
+  HashBasic.combine
+    (HashBasic.combine 0 (HashBasic.hash_int x.arg_count))
+    ((HashBasic.hash_list hash_local) x.locals)
+
+and hash_switch_data : switch_data -> int =
+ fun (x : switch_data) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine 0 (hash_switch_scrutinee x.scrutinee))
+       ((HashBasic.hash_list (fun (x0, x1) ->
+             HashBasic.combine
+               (HashBasic.combine 0 (hash_constant_expr x0))
+               (hash_branch_id x1)))
+          x.branches))
+    ((HashBasic.hash_option hash_branch_id) x.fallback)
+
+and hash_switch_scrutinee : switch_scrutinee -> int =
+ fun (x : switch_scrutinee) ->
+  match x with
+  | SwitchValue x0 -> HashBasic.combine 0 (hash_operand x0)
+  | SwitchDiscriminant x0 -> HashBasic.combine 1 (hash_place x0)
+
 (** A global variable definition (constant or static). *)
 type global_decl = {
   def_id : global_decl_id;
@@ -481,6 +731,41 @@ and global_kind =
       ancestors = [ "map_fun_sig" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
+
+let rec hash_global_decl : global_decl -> int =
+ fun (x : global_decl) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine
+             (HashBasic.combine
+                (HashBasic.combine
+                   (HashBasic.combine
+                      (HashBasic.combine
+                         (HashBasic.combine
+                            (HashBasic.combine 0 (hash_global_decl_id x.def_id))
+                            (hash_item_meta x.item_meta))
+                         (hash_generic_params x.generics))
+                      (hash_ty x.ty))
+                   (hash_size x.size))
+                (hash_size x.align))
+             (hash_constant_expr x.ptr_metadata))
+          (hash_global_source x.src))
+       (hash_global_kind x.global_kind))
+    (hash_constant_expr x.value)
+
+and hash_global_kind : global_kind -> int =
+ fun (x : global_kind) ->
+  match x with
+  | Static (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 0 (HashBasic.hash_bool x0))
+           (HashBasic.hash_bool x1))
+        (HashBasic.hash_bool x2)
+  | NamedConst -> 1
+  | AnonConst -> 2
+  | VTableGlobal -> 3
 
 class ['self] iter_trait_decl_base =
   object (self : 'self)
@@ -633,6 +918,67 @@ and trait_method = {
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
 
+let rec hash_trait_assoc_const : trait_assoc_const -> int =
+ fun (x : trait_assoc_const) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine 0 (hash_trait_item_name x.name))
+          (hash_attr_info x.attr_info))
+       (hash_ty x.ty))
+    ((HashBasic.hash_option hash_global_decl_ref) x.default)
+
+and hash_trait_assoc_ty : trait_assoc_ty -> int =
+ fun (x : trait_assoc_ty) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine 0 (hash_trait_item_name x.name))
+          (hash_attr_info x.attr_info))
+       ((HashBasic.hash_option hash_trait_assoc_ty_impl) x.default))
+    ((HashBasic.hash_list hash_trait_param) x.implied_clauses)
+
+and hash_trait_decl : trait_decl -> int =
+ fun (x : trait_decl) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine
+             (HashBasic.combine
+                (HashBasic.combine
+                   (HashBasic.combine
+                      (HashBasic.combine
+                         (HashBasic.combine
+                            (HashBasic.combine 0 (hash_trait_decl_id x.def_id))
+                            (hash_item_meta x.item_meta))
+                         (hash_trait_decl_source x.src))
+                      (HashBasic.hash_bool x.is_unsafe))
+                   (hash_generic_params x.generics))
+                ((HashBasic.hash_list hash_trait_param) x.implied_clauses))
+             ((hash_assoc_const_id_map hash_trait_assoc_const) x.consts))
+          ((hash_assoc_type_id_map (hash_binder hash_trait_assoc_ty)) x.types))
+       ((hash_trait_method_id_map (hash_binder hash_trait_method)) x.methods))
+    ((HashBasic.hash_option hash_type_decl_ref) x.vtable)
+
+and hash_trait_decl_source : trait_decl_source -> int =
+ fun (x : trait_decl_source) ->
+  match x with
+  | NormalTraitDecl -> 0
+  | TraitAliasTraitDecl -> 1
+
+and hash_trait_item_name : trait_item_name -> int =
+ fun (x : trait_item_name) -> HashBasic.hash_string x
+
+and hash_trait_method : trait_method -> int =
+ fun (x : trait_method) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine 0 (hash_trait_item_name x.name))
+          (hash_item_meta x.item_meta))
+       (hash_fun_sig x.signature))
+    ((HashBasic.hash_option hash_fun_decl_ref) x.default)
+
 (** An expression body. TODO: arg_count should be stored in GFunDecl below. But
     then, the print is obfuscated and Aeneas may need some refactoring. *)
 type 'a0 gexpr_body = {
@@ -723,3 +1069,57 @@ and v_table_decl =
       ancestors = [ "map_trait_decl" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
+
+let rec hash_gexpr_body : 'a0. ('a0 -> int) -> 'a0 gexpr_body -> int =
+ fun hash_a0 (x : _ gexpr_body) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine 0 (hash_span x.span))
+          (HashBasic.hash_int x.bound_body_regions))
+       (hash_locals x.locals))
+    (hash_a0 x.body)
+
+and hash_trait_impl : trait_impl -> int =
+ fun (x : trait_impl) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine
+             (HashBasic.combine
+                (HashBasic.combine
+                   (HashBasic.combine
+                      (HashBasic.combine
+                         (HashBasic.combine
+                            (HashBasic.combine
+                               (HashBasic.combine
+                                  (HashBasic.combine 0
+                                     (hash_trait_impl_id x.def_id))
+                                  (hash_item_meta x.item_meta))
+                               (hash_trait_impl_source x.src))
+                            (hash_trait_decl_ref x.impl_trait))
+                         (HashBasic.hash_bool x.is_negative))
+                      (HashBasic.hash_bool x.is_unsafe))
+                   (hash_generic_params x.generics))
+                ((HashBasic.hash_list hash_trait_ref) x.implied_trait_refs))
+             ((hash_assoc_const_id_map hash_global_decl_ref) x.consts))
+          ((hash_assoc_type_id_map (hash_binder hash_trait_assoc_ty_impl))
+             x.types))
+       ((hash_trait_method_id_map (hash_binder hash_fun_decl_ref)) x.methods))
+    (hash_v_table_decl x.vtable)
+
+and hash_trait_impl_source : trait_impl_source -> int =
+ fun (x : trait_impl_source) ->
+  match x with
+  | NormalTraitImpl -> 0
+  | TraitAliasTraitImpl -> 1
+  | ClosureTraitImpl x0 -> HashBasic.combine 2 (hash_closure_kind x0)
+  | DestructTraitImpl -> 3
+
+and hash_v_table_decl : v_table_decl -> int =
+ fun (x : v_table_decl) ->
+  match x with
+  | NotDynCompatible -> 0
+  | Lazy -> 1
+  | VTableInstance x0 -> HashBasic.combine 2 (hash_global_decl_ref x0)
+  | UnknownVTable x0 -> HashBasic.combine 3 (HashBasic.hash_string x0)

@@ -439,7 +439,7 @@ impl<'a> GenerateCtx<'a> {
         let opaque_for_visitors = self.names_to_type_id_set(&["Name"]);
         let manual_impls = self.names_to_type_id_map(MANUAL_IMPLS);
         let decls = tys
-            .into_iter()
+            .iter()
             .enumerate()
             .map(|(i, ty)| {
                 let co_recursive = i != 0;
@@ -447,7 +447,11 @@ impl<'a> GenerateCtx<'a> {
             })
             .join("\n");
         match visitors {
-            Some(visitors) => self.add_visitors_to_decls(visitors, decls),
+            Some(visitors) => {
+                let decls = self.add_visitors_to_decls(visitors, decls);
+                let hashes = self.type_decls_to_hash(&tys);
+                format!("{decls}\n{hashes}")
+            }
             None => decls,
         }
     }

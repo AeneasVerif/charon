@@ -16,6 +16,7 @@ use std::path::PathBuf;
 
 use self::to_ocaml_ty::DeriveVisitors;
 
+mod hash;
 mod of_json;
 mod of_postcard;
 mod to_ocaml_ty;

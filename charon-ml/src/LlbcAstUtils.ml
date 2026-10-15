@@ -8,7 +8,7 @@ open LlbcAst
 
 (** Returns a list of all functions in a crate *)
 let fun_decl_list_from_crate (crate : crate) : fun_decl list =
-  snd (List.split (FunDeclId.Map.bindings crate.fun_decls))
+  snd (List.split (FunDeclId.HashMap.bindings crate.fun_decls))
 
 (** Returns a list option of all arguments of a functions If a function does not
     have a body, it cannot access the locals field where the arguments are so it
@@ -48,23 +48,23 @@ let crate_get_item_meta (m : crate) (id : item_id) : Types.item_meta option =
   | IdType id ->
       Option.map
         (fun (d : Types.type_decl) -> d.item_meta)
-        (Types.TypeDeclId.Map.find_opt id m.type_decls)
+        (Types.TypeDeclId.HashMap.find_opt id m.type_decls)
   | IdFun id ->
       Option.map
         (fun (d : fun_decl) -> d.item_meta)
-        (FunDeclId.Map.find_opt id m.fun_decls)
+        (FunDeclId.HashMap.find_opt id m.fun_decls)
   | IdGlobal id ->
       Option.map
         (fun (d : global_decl) -> d.item_meta)
-        (GlobalDeclId.Map.find_opt id m.global_decls)
+        (GlobalDeclId.HashMap.find_opt id m.global_decls)
   | IdTraitDecl id ->
       Option.map
         (fun (d : trait_decl) -> d.item_meta)
-        (TraitDeclId.Map.find_opt id m.trait_decls)
+        (TraitDeclId.HashMap.find_opt id m.trait_decls)
   | IdTraitImpl id ->
       Option.map
         (fun (d : trait_impl) -> d.item_meta)
-        (TraitImplId.Map.find_opt id m.trait_impls)
+        (TraitImplId.HashMap.find_opt id m.trait_impls)
 
 class ['self] map_crate =
   object (self : 'self)
@@ -170,17 +170,19 @@ class ['self] map_crate =
         Option.map (List.map (self#visit_declaration_group env)) declarations
       in
       let type_decls =
-        TypeDeclId.Map.map (self#visit_type_decl env) type_decls
+        TypeDeclId.HashMap.map (self#visit_type_decl env) type_decls
       in
-      let fun_decls = FunDeclId.Map.map (self#visit_fun_decl env) fun_decls in
+      let fun_decls =
+        FunDeclId.HashMap.map (self#visit_fun_decl env) fun_decls
+      in
       let global_decls =
-        GlobalDeclId.Map.map (self#visit_global_decl env) global_decls
+        GlobalDeclId.HashMap.map (self#visit_global_decl env) global_decls
       in
       let trait_decls =
-        TraitDeclId.Map.map (self#visit_trait_decl env) trait_decls
+        TraitDeclId.HashMap.map (self#visit_trait_decl env) trait_decls
       in
       let trait_impls =
-        TraitImplId.Map.map (self#visit_trait_impl env) trait_impls
+        TraitImplId.HashMap.map (self#visit_trait_impl env) trait_impls
       in
       {
         name;
@@ -292,11 +294,13 @@ class ['self] iter_crate =
       self#visit_string env name;
       self#visit_cli_options env options;
       Option.iter (List.iter (self#visit_declaration_group env)) declarations;
-      TypeDeclId.Map.iter (fun _ -> self#visit_type_decl env) type_decls;
-      FunDeclId.Map.iter (fun _ -> self#visit_fun_decl env) fun_decls;
-      GlobalDeclId.Map.iter (fun _ -> self#visit_global_decl env) global_decls;
-      TraitDeclId.Map.iter (fun _ -> self#visit_trait_decl env) trait_decls;
-      TraitImplId.Map.iter (fun _ -> self#visit_trait_impl env) trait_impls
+      TypeDeclId.HashMap.iter (fun _ -> self#visit_type_decl env) type_decls;
+      FunDeclId.HashMap.iter (fun _ -> self#visit_fun_decl env) fun_decls;
+      GlobalDeclId.HashMap.iter
+        (fun _ -> self#visit_global_decl env)
+        global_decls;
+      TraitDeclId.HashMap.iter (fun _ -> self#visit_trait_decl env) trait_decls;
+      TraitImplId.HashMap.iter (fun _ -> self#visit_trait_impl env) trait_impls
   end
 
 (** This visitor keeps track of the last (most precise) span it found, together

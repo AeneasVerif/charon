@@ -19,6 +19,8 @@ module AssocConstId = IdGen ()
 
 type path_buf = string [@@deriving show, ord, eq]
 
+let hash_path_buf = HashBasic.hash_string
+
 (* Ancestors for the meta visitors *)
 class ['self] iter_meta_base =
   object (self : 'self)
@@ -432,3 +434,240 @@ and type_decl_id = (TypeDeclId.id[@visitors.opaque])
       ancestors = [ "mapreduce_meta_base" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
+
+let rec hash_assoc_const_id : assoc_const_id -> int =
+ fun (x : assoc_const_id) -> AssocConstId.hash_id x
+
+and hash_assoc_item_id : assoc_item_id -> int =
+ fun (x : assoc_item_id) ->
+  match x with
+  | AssocIdType x0 -> HashBasic.combine 0 (hash_assoc_type_id x0)
+  | AssocIdMethod x0 -> HashBasic.combine 1 (hash_trait_method_id x0)
+  | AssocIdConst x0 -> HashBasic.combine 2 (hash_assoc_const_id x0)
+
+and hash_assoc_type_id : assoc_type_id -> int =
+ fun (x : assoc_type_id) -> AssocTypeId.hash_id x
+
+and hash_attr_info : attr_info -> int =
+ fun (x : attr_info) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine 0
+             ((HashBasic.hash_list hash_attribute) x.attributes))
+          ((HashBasic.hash_option hash_inline_attr) x.inline))
+       ((HashBasic.hash_option HashBasic.hash_string) x.rename))
+    (HashBasic.hash_bool x.public)
+
+and hash_attribute : attribute -> int =
+ fun (x : attribute) ->
+  match x with
+  | AttrOpaque -> 0
+  | AttrExclude -> 1
+  | AttrRename x0 -> HashBasic.combine 2 (HashBasic.hash_string x0)
+  | AttrVariantsPrefix x0 -> HashBasic.combine 3 (HashBasic.hash_string x0)
+  | AttrVariantsSuffix x0 -> HashBasic.combine 4 (HashBasic.hash_string x0)
+  | AttrTransparent -> 5
+  | AttrIsContract (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 6 (HashBasic.hash_string x0))
+        (hash_maybe_assoc_item_id x1)
+  | AttrHasContract (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 7 (HashBasic.hash_string x0))
+        (hash_fun_decl_id x1)
+  | AttrDocComment x0 -> HashBasic.combine 8 (HashBasic.hash_string x0)
+  | AttrBuiltin x0 -> HashBasic.combine 9 (hash_rustc_attribute_kind x0)
+  | AttrUnknown x0 -> HashBasic.combine 10 (hash_raw_attribute x0)
+
+and hash_rustc_attribute_kind : rustc_attribute_kind -> int =
+ fun (x : rustc_attribute_kind) ->
+  match x with
+  | RustcAttributeKindAutomaticallyDerived -> 0
+  | RustcAttributeKindCold -> 1
+  | RustcAttributeKindDeprecated (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 2 (hash_rustc_deprecation x0))
+        (hash_span x1)
+  | RustcAttributeKindExportName (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 3 (HashBasic.hash_string x0))
+        (hash_span x1)
+  | RustcAttributeKindFundamental -> 4
+  | RustcAttributeKindIgnore (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 5 (hash_span x0))
+        ((HashBasic.hash_option HashBasic.hash_string) x1)
+  | RustcAttributeKindInline (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 6 (hash_rustc_inline_attr x0))
+        (hash_span x1)
+  | RustcAttributeKindLinkSection x0 ->
+      HashBasic.combine 7 (HashBasic.hash_string x0)
+  | RustcAttributeKindMayDangle x0 -> HashBasic.combine 8 (hash_span x0)
+  | RustcAttributeKindNaked x0 -> HashBasic.combine 9 (hash_span x0)
+  | RustcAttributeKindNoLink -> 10
+  | RustcAttributeKindNoMangle x0 -> HashBasic.combine 11 (hash_span x0)
+  | RustcAttributeKindNonExhaustive x0 -> HashBasic.combine 12 (hash_span x0)
+  | RustcAttributeKindOptimize (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 13 (hash_rustc_optimize_attr x0))
+        (hash_span x1)
+  | RustcAttributeKindRustcAlign (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 14 (HashBasic.hash_int x0))
+        (hash_span x1)
+  | RustcAttributeKindRustcIntrinsic -> 15
+  | RustcAttributeKindShouldPanic x0 ->
+      HashBasic.combine 16 ((HashBasic.hash_option HashBasic.hash_string) x0)
+  | RustcAttributeKindTargetFeature (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 17
+              ((HashBasic.hash_list (fun (x0, x1) ->
+                    HashBasic.combine
+                      (HashBasic.combine 0 (HashBasic.hash_string x0))
+                      (hash_span x1)))
+                 x0))
+           (hash_span x1))
+        (HashBasic.hash_bool x2)
+  | RustcAttributeKindTrackCaller x0 -> HashBasic.combine 18 (hash_span x0)
+
+and hash_rustc_deprecated_since : rustc_deprecated_since -> int =
+ fun (x : rustc_deprecated_since) ->
+  match x with
+  | RustcDeprecatedSinceRustcVersion x0 ->
+      HashBasic.combine 0 (hash_rustc_rustc_version x0)
+  | RustcDeprecatedSinceFuture -> 1
+  | RustcDeprecatedSinceNonStandard x0 ->
+      HashBasic.combine 2 (HashBasic.hash_string x0)
+  | RustcDeprecatedSinceUnspecified -> 3
+  | RustcDeprecatedSinceErr -> 4
+
+and hash_rustc_deprecation : rustc_deprecation -> int =
+ fun (x : rustc_deprecation) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine 0 (hash_rustc_deprecated_since x.since))
+       ((HashBasic.hash_option hash_rustc_ident) x.note))
+    ((HashBasic.hash_option HashBasic.hash_string) x.suggestion)
+
+and hash_file : file -> int =
+ fun (x : file) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine 0 (hash_file_name x.name))
+       (HashBasic.hash_string x.crate_name))
+    ((HashBasic.hash_option HashBasic.hash_string) x.contents)
+
+and hash_file_id : file_id -> int = fun (x : file_id) -> hash_file x
+
+and hash_file_name : file_name -> int =
+ fun (x : file_name) ->
+  match x with
+  | Virtual x0 -> HashBasic.combine 0 (hash_path_buf x0)
+  | Local x0 -> HashBasic.combine 1 (hash_path_buf x0)
+  | NotReal x0 -> HashBasic.combine 2 (HashBasic.hash_string x0)
+
+and hash_fun_decl_id : fun_decl_id -> int =
+ fun (x : fun_decl_id) -> FunDeclId.hash_id x
+
+and hash_global_decl_id : global_decl_id -> int =
+ fun (x : global_decl_id) -> GlobalDeclId.hash_id x
+
+and hash_rustc_ident : rustc_ident -> int =
+ fun (x : rustc_ident) ->
+  HashBasic.combine
+    (HashBasic.combine 0 (HashBasic.hash_string x.name))
+    (hash_span x.span)
+
+and hash_inline_attr : inline_attr -> int =
+ fun (x : inline_attr) ->
+  match x with
+  | Hint -> 0
+  | Never -> 1
+  | Always -> 2
+
+and hash_rustc_inline_attr : rustc_inline_attr -> int =
+ fun (x : rustc_inline_attr) ->
+  match x with
+  | RustcInlineAttrNone -> 0
+  | RustcInlineAttrHint -> 1
+  | RustcInlineAttrAlways -> 2
+  | RustcInlineAttrNever -> 3
+  | RustcInlineAttrForce (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 4 (hash_span x0))
+        ((HashBasic.hash_option HashBasic.hash_string) x1)
+
+and hash_item_id : item_id -> int =
+ fun (x : item_id) ->
+  match x with
+  | IdType x0 -> HashBasic.combine 0 (hash_type_decl_id x0)
+  | IdTraitDecl x0 -> HashBasic.combine 1 (hash_trait_decl_id x0)
+  | IdTraitImpl x0 -> HashBasic.combine 2 (hash_trait_impl_id x0)
+  | IdFun x0 -> HashBasic.combine 3 (hash_fun_decl_id x0)
+  | IdGlobal x0 -> HashBasic.combine 4 (hash_global_decl_id x0)
+
+and hash_loc : loc -> int =
+ fun (x : loc) ->
+  HashBasic.combine
+    (HashBasic.combine 0 (HashBasic.hash_int x.line))
+    (HashBasic.hash_int x.col)
+
+and hash_maybe_assoc_item_id : maybe_assoc_item_id -> int =
+ fun (x : maybe_assoc_item_id) ->
+  match x with
+  | ItemFree x0 -> HashBasic.combine 0 (hash_item_id x0)
+  | ItemAssoc (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 1 (hash_trait_decl_id x0))
+        (hash_assoc_item_id x1)
+
+and hash_rustc_optimize_attr : rustc_optimize_attr -> int =
+ fun (x : rustc_optimize_attr) ->
+  match x with
+  | RustcOptimizeAttrDefault -> 0
+  | RustcOptimizeAttrDoNotOptimize -> 1
+  | RustcOptimizeAttrSpeed -> 2
+  | RustcOptimizeAttrSize -> 3
+
+and hash_raw_attribute : raw_attribute -> int =
+ fun (x : raw_attribute) ->
+  HashBasic.combine
+    (HashBasic.combine 0 (HashBasic.hash_string x.path))
+    ((HashBasic.hash_option HashBasic.hash_string) x.args)
+
+and hash_rustc_rustc_version : rustc_rustc_version -> int =
+ fun (x : rustc_rustc_version) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine 0 (HashBasic.hash_int x.major))
+       (HashBasic.hash_int x.minor))
+    (HashBasic.hash_int x.patch)
+
+and hash_span : span -> int =
+ fun (x : span) ->
+  HashBasic.combine
+    (HashBasic.combine 0 (hash_span_data x.data))
+    ((HashBasic.hash_option hash_span_data) x.generated_from_span)
+
+and hash_span_data : span_data -> int =
+ fun (x : span_data) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine 0 (hash_file_id x.file))
+       (hash_loc x.beg_loc))
+    (hash_loc x.end_loc)
+
+and hash_trait_decl_id : trait_decl_id -> int =
+ fun (x : trait_decl_id) -> TraitDeclId.hash_id x
+
+and hash_trait_impl_id : trait_impl_id -> int =
+ fun (x : trait_impl_id) -> TraitImplId.hash_id x
+
+and hash_trait_method_id : trait_method_id -> int =
+ fun (x : trait_method_id) -> TraitMethodId.hash_id x
+
+and hash_type_decl_id : type_decl_id -> int =
+ fun (x : type_decl_id) -> TypeDeclId.hash_id x

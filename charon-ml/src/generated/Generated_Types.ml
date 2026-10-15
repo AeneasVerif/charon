@@ -33,14 +33,31 @@ type 'a range_inclusive = 'a * 'a [@@deriving show, ord, eq]
 type trait_type_constraint_id = TraitTypeConstraintId.id
 [@@deriving show, ord, eq]
 
-type 'a fun_decl_id_map = 'a FunDeclId.Map.t
-and 'a global_decl_id_map = 'a GlobalDeclId.Map.t
-and 'a type_decl_id_map = 'a TypeDeclId.Map.t
-and 'a trait_decl_id_map = 'a TraitDeclId.Map.t
-and 'a trait_impl_id_map = 'a TraitImplId.Map.t
-and 'a trait_method_id_map = 'a TraitMethodId.Map.t
+(* The crate's item tables are built once when loading the crate and then only
+   read, hence hash maps. *)
+type 'a fun_decl_id_map = 'a FunDeclId.HashMap.t
+and 'a global_decl_id_map = 'a GlobalDeclId.HashMap.t
+and 'a type_decl_id_map = 'a TypeDeclId.HashMap.t
+and 'a trait_decl_id_map = 'a TraitDeclId.HashMap.t
+and 'a trait_impl_id_map = 'a TraitImplId.HashMap.t [@@deriving show]
+
+type 'a trait_method_id_map = 'a TraitMethodId.Map.t
 and 'a assoc_type_id_map = 'a AssocTypeId.Map.t [@@deriving show, eq, ord]
 and 'a assoc_const_id_map = 'a AssocConstId.Map.t [@@deriving show, eq, ord]
+
+(* Used by the deserializers. *)
+let fun_decl_id_map_of_indexed_list = FunDeclId.hash_map_of_indexed_list
+let global_decl_id_map_of_indexed_list = GlobalDeclId.hash_map_of_indexed_list
+let type_decl_id_map_of_indexed_list = TypeDeclId.hash_map_of_indexed_list
+let trait_decl_id_map_of_indexed_list = TraitDeclId.hash_map_of_indexed_list
+let trait_impl_id_map_of_indexed_list = TraitImplId.hash_map_of_indexed_list
+let trait_method_id_map_of_indexed_list = TraitMethodId.map_of_indexed_list
+let assoc_type_id_map_of_indexed_list = AssocTypeId.map_of_indexed_list
+let assoc_const_id_map_of_indexed_list = AssocConstId.map_of_indexed_list
+let hash_trait_method_id_map = TraitMethodId.Map.hash
+let hash_assoc_type_id_map = AssocTypeId.Map.hash
+let hash_assoc_const_id_map = AssocConstId.Map.hash
+let hash_range_inclusive hash_a (x, y) = HashBasic.combine (hash_a x) (hash_a y)
 
 (** The index of a binder, counting from the innermost. See [[DeBruijnVar]] for
     details. *)
@@ -124,6 +141,24 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
       ancestors = [ "mapreduce_scalar" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
+
+let rec hash_de_bruijn_id : de_bruijn_id -> int =
+ fun (x : de_bruijn_id) -> HashBasic.hash_int x
+
+and hash_de_bruijn_var : 'a0. ('a0 -> int) -> 'a0 de_bruijn_var -> int =
+ fun hash_a0 (x : _ de_bruijn_var) ->
+  match x with
+  | Bound (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 0 (hash_de_bruijn_id x0))
+        (hash_a0 x1)
+  | Free x0 -> HashBasic.combine 1 (hash_a0 x0)
+
+and hash_trait_clause_id : trait_clause_id -> int =
+ fun (x : trait_clause_id) -> TraitClauseId.hash_id x
+
+and hash_type_var_id : type_var_id -> int =
+ fun (x : type_var_id) -> TypeVarId.hash_id x
 
 class ['self] iter_ty_base =
   object (self : 'self)
@@ -796,6 +831,467 @@ and variant_id = (VariantId.id[@visitors.opaque])
       ancestors = [ "map_ty_base" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
+
+let rec hash_abi : abi -> int =
+ fun (x : abi) ->
+  match x with
+  | AbiRust -> 0
+  | AbiC -> 1
+  | AbiOther x0 -> HashBasic.combine 2 (HashBasic.hash_string x0)
+
+and hash_binder : 'a0. ('a0 -> int) -> 'a0 binder -> int =
+ fun hash_a0 (x : _ binder) ->
+  HashBasic.combine
+    (HashBasic.combine 0 (hash_generic_params x.binder_params))
+    (hash_a0 x.binder_value)
+
+and hash_binder_kind : binder_kind -> int =
+ fun (x : binder_kind) ->
+  match x with
+  | BKTraitType (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 0 (hash_trait_decl_id x0))
+        (hash_assoc_type_id x1)
+  | BKTraitMethod (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 1 (hash_trait_decl_id x0))
+        (hash_trait_method_id x1)
+  | BKInherentImplBlock -> 2
+  | BKDyn -> 3
+  | BKOther -> 4
+
+and hash_builtin_adt : builtin_adt -> int =
+ fun (x : builtin_adt) ->
+  match x with
+  | TTuple -> 0
+  | TBox -> 1
+  | TStr -> 2
+
+and hash_builtin_impl_data : builtin_impl_data -> int =
+ fun (x : builtin_impl_data) ->
+  match x with
+  | BuiltinAuto -> 0
+  | BuiltinSized -> 1
+  | BuiltinMetaSized -> 2
+  | BuiltinPointeeSized -> 3
+  | BuiltinCopy -> 4
+  | BuiltinClone -> 5
+  | BuiltinTuple -> 6
+  | BuiltinTransmute -> 7
+  | BuiltinUnsize -> 8
+  | BuiltinPointee -> 9
+  | BuiltinDiscriminantKind -> 10
+  | BuiltinFn -> 11
+  | BuiltinFnMut -> 12
+  | BuiltinFnOnce -> 13
+  | BuiltinFnPtr -> 14
+  | BuiltinAsyncFn -> 15
+  | BuiltinAsyncFnMut -> 16
+  | BuiltinAsyncFnOnce -> 17
+  | BuiltinCoroutine -> 18
+  | BuiltinFuture -> 19
+  | BuiltinTryAsDynCompatible -> 20
+  | BuiltinNoopDestruct -> 21
+  | BuiltinUntrackedDestruct -> 22
+  | BuiltinRemovedAdtClause -> 23
+
+and hash_byte : byte -> int =
+ fun (x : byte) ->
+  match x with
+  | Uninit -> 0
+  | Value x0 -> HashBasic.combine 1 (HashBasic.hash_int x0)
+  | Provenance (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 2 (hash_provenance x0))
+        (HashBasic.hash_int x1)
+
+and hash_const_generic_param : const_generic_param -> int =
+ fun (x : const_generic_param) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine 0 (hash_const_generic_var_id x.index))
+       (HashBasic.hash_string x.name))
+    (hash_ty x.ty)
+
+and hash_const_generic_var_id : const_generic_var_id -> int =
+ fun (x : const_generic_var_id) -> ConstGenericVarId.hash_id x
+
+and hash_constant_expr : constant_expr -> int =
+ fun (x : constant_expr) ->
+  HashBasic.combine (hash_constant_expr_kind x.kind) (hash_ty x.ty)
+
+and hash_constant_expr_kind : constant_expr_kind -> int =
+ fun (x : constant_expr_kind) ->
+  match x with
+  | CBool x0 -> HashBasic.combine 0 (HashBasic.hash_bool x0)
+  | CInteger x0 -> HashBasic.combine 1 (hash_integer_value x0)
+  | CChar x0 -> HashBasic.combine 2 (hash_char_value x0)
+  | CFloat x0 -> HashBasic.combine 3 (hash_float_value x0)
+  | CAdt (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 4 ((HashBasic.hash_option hash_variant_id) x0))
+        ((HashBasic.hash_list hash_constant_expr) x1)
+  | CArray x0 ->
+      HashBasic.combine 5 ((HashBasic.hash_list hash_constant_expr) x0)
+  | CRef (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 6 (hash_constant_expr x0))
+        ((HashBasic.hash_option hash_unsizing_metadata) x1)
+  | CPtr (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 7 (hash_ref_kind x0))
+           (hash_constant_expr x1))
+        ((HashBasic.hash_option hash_unsizing_metadata) x2)
+  | CStr x0 -> HashBasic.combine 8 (HashBasic.hash_string x0)
+  | CByteStr x0 ->
+      HashBasic.combine 9 ((HashBasic.hash_list HashBasic.hash_int) x0)
+  | CFnDef x0 -> HashBasic.combine 10 (hash_fn_ptr x0)
+  | CFnPtr x0 -> HashBasic.combine 11 (hash_fn_ptr x0)
+  | CCast (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 12 (hash_constant_expr x0))
+        (hash_ty x1)
+  | CPtrNoProvenance x0 -> HashBasic.combine 13 (hash_big_int x0)
+  | CTypeId x0 -> HashBasic.combine 14 (hash_ty x0)
+  | CRawMemory x0 -> HashBasic.combine 15 ((HashBasic.hash_list hash_byte) x0)
+  | CVar x0 ->
+      HashBasic.combine 16 ((hash_de_bruijn_var hash_const_generic_var_id) x0)
+  | CGlobal x0 -> HashBasic.combine 17 (hash_global_decl_ref x0)
+  | CCall (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 18 (hash_fn_ptr x0))
+        ((HashBasic.hash_list hash_constant_expr) x1)
+  | CTraitConst (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 19 (hash_trait_ref x0))
+        (hash_assoc_const_id x1)
+  | CVTableRef x0 -> HashBasic.combine 20 (hash_trait_ref x0)
+  | CDiscriminant (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 21 (hash_type_decl_ref x0))
+        (hash_variant_id x1)
+  | CSizeOf x0 -> HashBasic.combine 22 (hash_ty x0)
+  | CAlignOf x0 -> HashBasic.combine 23 (hash_ty x0)
+  | COffsetOf (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 24 (hash_type_decl_ref x0))
+           ((HashBasic.hash_option hash_variant_id) x1))
+        (hash_field_id x2)
+  | COpaque x0 -> HashBasic.combine 25 (HashBasic.hash_string x0)
+
+and hash_dyn_predicate : dyn_predicate -> int =
+ fun (x : dyn_predicate) -> HashBasic.combine 0 ((hash_binder hash_ty) x.binder)
+
+and hash_field_id : field_id -> int = fun (x : field_id) -> FieldId.hash_id x
+
+and hash_fn_ptr : fn_ptr -> int =
+ fun (x : fn_ptr) ->
+  HashBasic.combine
+    (HashBasic.combine 0 (hash_fn_ptr_kind x.kind))
+    (hash_generic_args x.generics)
+
+and hash_fn_ptr_kind : fn_ptr_kind -> int =
+ fun (x : fn_ptr_kind) ->
+  match x with
+  | Fun x0 -> HashBasic.combine 0 (hash_fun_decl_id x0)
+  | TraitMethod (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 1 (hash_trait_ref x0))
+        (hash_trait_method_id x1)
+
+and hash_fun_decl_ref : fun_decl_ref -> int =
+ fun (x : fun_decl_ref) ->
+  HashBasic.combine
+    (HashBasic.combine 0 (hash_fun_decl_id x.id))
+    (hash_generic_args x.generics)
+
+and hash_fun_sig : fun_sig -> int =
+ fun (x : fun_sig) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine
+             (HashBasic.combine 0 (HashBasic.hash_bool x.is_unsafe))
+             (hash_abi x.abi))
+          (HashBasic.hash_bool x.is_variadic))
+       ((HashBasic.hash_list hash_ty) x.inputs))
+    (hash_ty x.output)
+
+and hash_generic_args : generic_args -> int =
+ fun (x : generic_args) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine 0 ((HashBasic.hash_list hash_region) x.regions))
+          ((HashBasic.hash_list hash_ty) x.types))
+       ((HashBasic.hash_list hash_constant_expr) x.const_generics))
+    ((HashBasic.hash_list hash_trait_ref) x.trait_refs)
+
+and hash_generic_params : generic_params -> int =
+ fun (x : generic_params) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine
+             (HashBasic.combine
+                (HashBasic.combine
+                   (HashBasic.combine 0
+                      ((HashBasic.hash_list hash_region_param) x.regions))
+                   ((HashBasic.hash_list hash_type_param) x.types))
+                ((HashBasic.hash_list hash_const_generic_param)
+                   x.const_generics))
+             ((HashBasic.hash_list hash_trait_param) x.trait_clauses))
+          ((HashBasic.hash_list
+              (hash_region_binder (hash_outlives_pred hash_region hash_region)))
+             x.regions_outlive))
+       ((HashBasic.hash_list
+           (hash_region_binder (hash_outlives_pred hash_ty hash_region)))
+          x.types_outlive))
+    ((HashBasic.hash_list (hash_region_binder hash_trait_type_constraint))
+       x.trait_type_constraints)
+
+and hash_global_decl_ref : global_decl_ref -> int =
+ fun (x : global_decl_ref) ->
+  HashBasic.combine
+    (HashBasic.combine 0 (hash_global_decl_id x.id))
+    (hash_generic_args x.generics)
+
+and hash_hash_consed : 'a0. ('a0 -> int) -> 'a0 hash_consed -> int =
+ fun hash_a0 (x : _ hash_consed) -> hash_a0 x
+
+and hash_lifetime_mutability : lifetime_mutability -> int =
+ fun (x : lifetime_mutability) ->
+  match x with
+  | LtMutable -> 0
+  | LtShared -> 1
+  | LtUnknown -> 2
+
+and hash_outlives_pred :
+    'a0 'a1. ('a0 -> int) -> ('a1 -> int) -> ('a0, 'a1) outlives_pred -> int =
+ fun hash_a0 hash_a1 (x : (_, _) outlives_pred) ->
+  let x0, x1 = x in
+  HashBasic.combine (HashBasic.combine 0 (hash_a0 x0)) (hash_a1 x1)
+
+and hash_predicate_origin : predicate_origin -> int =
+ fun (x : predicate_origin) ->
+  match x with
+  | WhereClauseOnFn -> 0
+  | WhereClauseOnType -> 1
+  | WhereClauseOnImpl -> 2
+  | TraitSelf -> 3
+  | WhereClauseOnTrait -> 4
+  | TraitItem x0 -> HashBasic.combine 5 (hash_assoc_type_id x0)
+  | OriginDyn -> 6
+
+and hash_provenance : provenance -> int =
+ fun (x : provenance) ->
+  match x with
+  | ProvGlobal x0 -> HashBasic.combine 0 (hash_global_decl_ref x0)
+  | ProvFunction x0 -> HashBasic.combine 1 (hash_fn_ptr x0)
+  | ProvUnknown -> 2
+
+and hash_ref_kind : ref_kind -> int =
+ fun (x : ref_kind) ->
+  match x with
+  | RMut -> 0
+  | RShared -> 1
+
+and hash_region : region -> int =
+ fun (x : region) ->
+  match x with
+  | RVar x0 -> HashBasic.combine 0 ((hash_de_bruijn_var hash_region_id) x0)
+  | RStatic -> 1
+  | RBody x0 -> HashBasic.combine 2 (hash_region_id x0)
+  | RErased -> 3
+
+and hash_region_binder : 'a0. ('a0 -> int) -> 'a0 region_binder -> int =
+ fun hash_a0 (x : _ region_binder) ->
+  HashBasic.combine
+    (HashBasic.combine 0
+       ((HashBasic.hash_list hash_region_param) x.binder_regions))
+    (hash_a0 x.binder_value)
+
+and hash_region_id : region_id -> int =
+ fun (x : region_id) -> RegionId.hash_id x
+
+and hash_region_param : region_param -> int =
+ fun (x : region_param) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine 0 (hash_region_id x.index))
+          ((HashBasic.hash_option HashBasic.hash_string) x.name))
+       (hash_variance x.variance))
+    (hash_lifetime_mutability x.mutability)
+
+and hash_trait_assoc_ty_impl : trait_assoc_ty_impl -> int =
+ fun (x : trait_assoc_ty_impl) ->
+  HashBasic.combine
+    (HashBasic.combine 0 (hash_ty x.value))
+    ((HashBasic.hash_list hash_trait_ref) x.implied_trait_refs)
+
+and hash_trait_decl_ref : trait_decl_ref -> int =
+ fun (x : trait_decl_ref) ->
+  HashBasic.combine
+    (HashBasic.combine 0 (hash_trait_decl_id x.id))
+    (hash_generic_args x.generics)
+
+and hash_trait_impl_ref : trait_impl_ref -> int =
+ fun (x : trait_impl_ref) ->
+  HashBasic.combine
+    (HashBasic.combine 0 (hash_trait_impl_id x.id))
+    (hash_generic_args x.generics)
+
+and hash_trait_param : trait_param -> int =
+ fun (x : trait_param) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine 0 (hash_trait_clause_id x.clause_id))
+          ((HashBasic.hash_option hash_span) x.span))
+       (hash_predicate_origin x.origin))
+    ((hash_region_binder hash_trait_decl_ref) x.trait)
+
+and hash_trait_ref : trait_ref -> int =
+ fun (x : trait_ref) -> (hash_hash_consed hash_trait_ref_contents) x
+
+and hash_trait_ref_contents : trait_ref_contents -> int =
+ fun (x : trait_ref_contents) ->
+  HashBasic.combine
+    (HashBasic.combine 0 (hash_trait_ref_kind x.kind))
+    ((hash_region_binder hash_trait_decl_ref) x.trait_decl_ref)
+
+and hash_trait_ref_kind : trait_ref_kind -> int =
+ fun (x : trait_ref_kind) ->
+  match x with
+  | TraitImpl x0 -> HashBasic.combine 0 (hash_trait_impl_ref x0)
+  | Clause x0 ->
+      HashBasic.combine 1 ((hash_de_bruijn_var hash_trait_clause_id) x0)
+  | ParentClause (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 2 (hash_trait_ref x0))
+        (hash_trait_clause_id x1)
+  | ItemClause (x0, x1, x2, x3) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine
+              (HashBasic.combine 3 (hash_trait_ref x0))
+              (hash_assoc_type_id x1))
+           (hash_generic_args x2))
+        (hash_trait_clause_id x3)
+  | Self -> 4
+  | BuiltinOrAuto (x0, x1, x2, x3) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine
+              (HashBasic.combine 5 (hash_builtin_impl_data x0))
+              ((HashBasic.hash_list hash_trait_ref) x1))
+           ((hash_assoc_type_id_map hash_trait_assoc_ty_impl) x2))
+        ((HashBasic.hash_option hash_global_decl_ref) x3)
+  | Dyn -> 6
+  | UnknownTrait x0 -> HashBasic.combine 7 (HashBasic.hash_string x0)
+
+and hash_trait_type_constraint : trait_type_constraint -> int =
+ fun (x : trait_type_constraint) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine 0 (hash_trait_ref x.trait_ref))
+       (hash_assoc_type_id x.type_id))
+    (hash_ty x.ty)
+
+and hash_ty : ty -> int = fun (x : ty) -> (hash_hash_consed hash_ty_kind) x
+
+and hash_ty_kind : ty_kind -> int =
+ fun (x : ty_kind) ->
+  match x with
+  | TScalar x0 -> HashBasic.combine 0 (hash_scalar_type x0)
+  | TArray (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 1 (hash_ty x0))
+           (hash_constant_expr x1))
+        ((HashBasic.hash_option hash_trait_ref) x2)
+  | TSlice (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 2 (hash_ty x0))
+        ((HashBasic.hash_option hash_trait_ref) x1)
+  | TAdt x0 -> HashBasic.combine 3 (hash_type_decl_ref x0)
+  | TRef (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine (HashBasic.combine 4 (hash_region x0)) (hash_ty x1))
+        (hash_ref_kind x2)
+  | TRawPtr (x0, x1) ->
+      HashBasic.combine (HashBasic.combine 5 (hash_ty x0)) (hash_ref_kind x1)
+  | TFnDef x0 -> HashBasic.combine 6 ((hash_region_binder hash_fn_ptr) x0)
+  | TFnPtr x0 -> HashBasic.combine 7 ((hash_region_binder hash_fun_sig) x0)
+  | TDynTrait x0 -> HashBasic.combine 8 (hash_dyn_predicate x0)
+  | TPattern (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 9 (hash_ty x0))
+        (hash_type_pattern x1)
+  | TNever -> 10
+  | TVar x0 -> HashBasic.combine 11 ((hash_de_bruijn_var hash_type_var_id) x0)
+  | TTraitType (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 12 (hash_trait_ref x0))
+           (hash_assoc_type_id x1))
+        (hash_generic_args x2)
+  | TPtrMetadata x0 -> HashBasic.combine 13 (hash_ty x0)
+  | TError x0 -> HashBasic.combine 14 (HashBasic.hash_string x0)
+
+and hash_type_decl_ref : type_decl_ref -> int =
+ fun (x : type_decl_ref) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine 0 (hash_type_decl_id x.id))
+       (hash_generic_args x.generics))
+    ((HashBasic.hash_option hash_builtin_adt) x.builtin)
+
+and hash_type_param : type_param -> int =
+ fun (x : type_param) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine 0 (hash_type_var_id x.index))
+       (HashBasic.hash_string x.name))
+    (hash_variance x.variance)
+
+and hash_type_pattern : type_pattern -> int =
+ fun (x : type_pattern) ->
+  match x with
+  | Range (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 0 (hash_constant_expr x0))
+        (hash_constant_expr x1)
+  | OrPattern x0 ->
+      HashBasic.combine 1 ((HashBasic.hash_list hash_type_pattern) x0)
+  | NotNull -> 2
+
+and hash_unsizing_metadata : unsizing_metadata -> int =
+ fun (x : unsizing_metadata) ->
+  match x with
+  | MetaLength x0 -> HashBasic.combine 0 (hash_constant_expr x0)
+  | MetaVTable (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 1 (hash_trait_ref x0))
+        (hash_constant_expr x1)
+  | MetaVTableUpcast x0 ->
+      HashBasic.combine 2 ((HashBasic.hash_list hash_field_id) x0)
+  | MetaUnknown -> 3
+
+and hash_variance : variance -> int =
+ fun (x : variance) ->
+  match x with
+  | Covariant -> 0
+  | Invariant -> 1
+  | Contravariant -> 2
+  | Bivariant -> 3
+  | VaUnknown -> 4
+
+and hash_variant_id : variant_id -> int =
+ fun (x : variant_id) -> VariantId.hash_id x
 
 (** Describes modifiers to the alignment and packing of the corresponding type.
     Represents [repr(align(n))] and [repr(packed(n))]. *)
@@ -1557,3 +2053,579 @@ and variant_layout = {
       ancestors = [ "map_ty" ];
       nude = true (* Don't inherit VisitorsRuntime *);
     }]
+
+let rec hash_alignment_modifier : alignment_modifier -> int =
+ fun (x : alignment_modifier) ->
+  match x with
+  | Align x0 -> HashBasic.combine 0 (HashBasic.hash_int x0)
+  | Pack x0 -> HashBasic.combine 1 (HashBasic.hash_int x0)
+
+and hash_builtin_path_elem : builtin_path_elem -> int =
+ fun (x : builtin_path_elem) ->
+  match x with
+  | PeTuple x0 -> HashBasic.combine 0 (HashBasic.hash_int x0)
+  | PeStr -> 1
+  | PeClosure -> 2
+  | PeUse -> 3
+  | PeAnonConst -> 4
+  | PePromotedConst -> 5
+  | PeClosureAsFn -> 6
+  | PeDropGlue -> 7
+  | PeVTable -> 8
+  | PeVTableMethod -> 9
+  | PeVTableDropShim -> 10
+
+and hash_closure_info : closure_info -> int =
+ fun (x : closure_info) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine
+             (HashBasic.combine
+                (HashBasic.combine 0 (hash_closure_kind x.kind))
+                (hash_fun_decl_ref x.closure_body))
+             ((hash_region_binder hash_trait_impl_ref) x.fn_once_impl))
+          ((HashBasic.hash_option (hash_region_binder hash_trait_impl_ref))
+             x.fn_mut_impl))
+       ((HashBasic.hash_option (hash_region_binder hash_trait_impl_ref))
+          x.fn_impl))
+    ((hash_region_binder hash_fun_sig) x.signature)
+
+and hash_closure_kind : closure_kind -> int =
+ fun (x : closure_kind) ->
+  match x with
+  | Fn -> 0
+  | FnMut -> 1
+  | FnOnce -> 2
+
+and hash_disambiguator : disambiguator -> int =
+ fun (x : disambiguator) -> Disambiguator.hash_id x
+
+and hash_discriminator : discriminator -> int =
+ fun (x : discriminator) ->
+  match x with
+  | Known x0 -> HashBasic.combine 0 (hash_variant_id x0)
+  | Invalid -> 1
+  | Branch (x0, x1, x2, x3) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine
+              (HashBasic.combine 2 (hash_offset_expr x0))
+              (hash_integer_type x1))
+           ((HashBasic.hash_list (fun (x0, x1) ->
+                 HashBasic.combine
+                   (HashBasic.combine 0
+                      ((hash_range_inclusive hash_integer_value) x0))
+                   (hash_discriminator x1)))
+              x2))
+        (hash_discriminator x3)
+
+and hash_field : field -> int =
+ fun (x : field) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine
+             (HashBasic.combine 0 (hash_span x.span))
+             (hash_attr_info x.attr_info))
+          (HashBasic.hash_string x.field_name))
+       (HashBasic.hash_bool x.is_positional))
+    (hash_ty x.field_ty)
+
+and hash_field_predecessor : field_predecessor -> int =
+ fun (x : field_predecessor) ->
+  match x with
+  | PredecessorField x0 -> HashBasic.combine 0 (hash_field_id x0)
+  | PredecessorTag -> 1
+
+and hash_impl_elem : impl_elem -> int =
+ fun (x : impl_elem) ->
+  match x with
+  | ImplElemTy x0 -> HashBasic.combine 0 ((hash_binder hash_ty) x0)
+  | ImplElemTrait x0 -> HashBasic.combine 1 (hash_trait_impl_id x0)
+
+and hash_implements_marker_traits : implements_marker_traits -> int =
+ fun (x : implements_marker_traits) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine
+             (HashBasic.combine 0 (HashBasic.hash_bool x.is_sized))
+             (HashBasic.hash_bool x.is_send))
+          (HashBasic.hash_bool x.is_sync))
+       (HashBasic.hash_bool x.is_freeze))
+    (HashBasic.hash_bool x.is_unpin)
+
+and hash_inhabited_predicate : inhabited_predicate -> int =
+ fun (x : inhabited_predicate) ->
+  (hash_hash_consed hash_inhabited_predicate_kind) x
+
+and hash_inhabited_predicate_kind : inhabited_predicate_kind -> int =
+ fun (x : inhabited_predicate_kind) ->
+  match x with
+  | InhabitedPredicateTrue -> 0
+  | InhabitedPredicateFalse -> 1
+  | InhabitedPredicateConstIsZero x0 ->
+      HashBasic.combine 2 (hash_constant_expr x0)
+  | InhabitedPredicateGenericType x0 -> HashBasic.combine 3 (hash_ty x0)
+  | InhabitedPredicateAnd x0 ->
+      HashBasic.combine 4 ((HashBasic.hash_list hash_inhabited_predicate) x0)
+  | InhabitedPredicateOr x0 ->
+      HashBasic.combine 5 ((HashBasic.hash_list hash_inhabited_predicate) x0)
+
+and hash_item_meta : item_meta -> int =
+ fun (x : item_meta) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine
+             (HashBasic.combine
+                (HashBasic.combine
+                   (HashBasic.combine
+                      (HashBasic.combine
+                         (HashBasic.combine
+                            (HashBasic.combine
+                               (HashBasic.combine 0 (hash_name x.name))
+                               (hash_span x.span))
+                            ((HashBasic.hash_option HashBasic.hash_string)
+                               x.source_text))
+                         (hash_attr_info x.attr_info))
+                      (HashBasic.hash_bool x.is_local))
+                   (HashBasic.hash_bool x.started_from))
+                (HashBasic.hash_bool x.is_extern))
+             (hash_item_opacity x.opacity))
+          ((HashBasic.hash_option hash_rustc_lang_item) x.lang_item))
+       ((HashBasic.hash_option HashBasic.hash_string) x.diagnostic_item))
+    (HashBasic.hash_bool x.has_errors)
+
+and hash_item_opacity : item_opacity -> int =
+ fun (x : item_opacity) ->
+  match x with
+  | Transparent -> 0
+  | Foreign -> 1
+  | ItemOpaque -> 2
+  | Invisible -> 3
+
+and hash_rustc_lang_item : rustc_lang_item -> int =
+ fun (x : rustc_lang_item) ->
+  match x with
+  | RustcLangItemSized -> 0
+  | RustcLangItemMetaSized -> 1
+  | RustcLangItemPointeeSized -> 2
+  | RustcLangItemUnsize -> 3
+  | RustcLangItemAlignOf -> 4
+  | RustcLangItemSizeOf -> 5
+  | RustcLangItemOffsetOf -> 6
+  | RustcLangItemStructuralPeq -> 7
+  | RustcLangItemCopy -> 8
+  | RustcLangItemClone -> 9
+  | RustcLangItemCloneFn -> 10
+  | RustcLangItemUseCloned -> 11
+  | RustcLangItemTrivialClone -> 12
+  | RustcLangItemSync -> 13
+  | RustcLangItemDiscriminantKind -> 14
+  | RustcLangItemDiscriminant -> 15
+  | RustcLangItemPointeeTrait -> 16
+  | RustcLangItemMetadata -> 17
+  | RustcLangItemDynMetadata -> 18
+  | RustcLangItemNonNull -> 19
+  | RustcLangItemFreeze -> 20
+  | RustcLangItemUnsafeUnpin -> 21
+  | RustcLangItemFnPtrTrait -> 22
+  | RustcLangItemFnPtrAsPtr -> 23
+  | RustcLangItemFnPtrFromPtr -> 24
+  | RustcLangItemCode -> 25
+  | RustcLangItemDrop -> 26
+  | RustcLangItemDestruct -> 27
+  | RustcLangItemAsyncDrop -> 28
+  | RustcLangItemAsyncDropInPlace -> 29
+  | RustcLangItemCoerceUnsized -> 30
+  | RustcLangItemDispatchFromDyn -> 31
+  | RustcLangItemTryAsDyn -> 32
+  | RustcLangItemTransmuteOpts -> 33
+  | RustcLangItemTransmuteTrait -> 34
+  | RustcLangItemAdd -> 35
+  | RustcLangItemSub -> 36
+  | RustcLangItemMul -> 37
+  | RustcLangItemDiv -> 38
+  | RustcLangItemRem -> 39
+  | RustcLangItemNeg -> 40
+  | RustcLangItemNot -> 41
+  | RustcLangItemBitXor -> 42
+  | RustcLangItemBitAnd -> 43
+  | RustcLangItemBitOr -> 44
+  | RustcLangItemShl -> 45
+  | RustcLangItemShr -> 46
+  | RustcLangItemAddAssign -> 47
+  | RustcLangItemSubAssign -> 48
+  | RustcLangItemMulAssign -> 49
+  | RustcLangItemDivAssign -> 50
+  | RustcLangItemRemAssign -> 51
+  | RustcLangItemBitXorAssign -> 52
+  | RustcLangItemBitAndAssign -> 53
+  | RustcLangItemBitOrAssign -> 54
+  | RustcLangItemShlAssign -> 55
+  | RustcLangItemShrAssign -> 56
+  | RustcLangItemIndex -> 57
+  | RustcLangItemIndexMut -> 58
+  | RustcLangItemUnsafeCell -> 59
+  | RustcLangItemCovariantUnsafeCell -> 60
+  | RustcLangItemUnsafePinned -> 61
+  | RustcLangItemVaArgSafe -> 62
+  | RustcLangItemVaList -> 63
+  | RustcLangItemComplex -> 64
+  | RustcLangItemDeref -> 65
+  | RustcLangItemDerefMut -> 66
+  | RustcLangItemDerefPure -> 67
+  | RustcLangItemDerefTarget -> 68
+  | RustcLangItemReceiver -> 69
+  | RustcLangItemReceiverTarget -> 70
+  | RustcLangItemLegacyReceiver -> 71
+  | RustcLangItemFn -> 72
+  | RustcLangItemFnMut -> 73
+  | RustcLangItemFnOnce -> 74
+  | RustcLangItemFnStatic -> 75
+  | RustcLangItemAsyncFn -> 76
+  | RustcLangItemAsyncFnMut -> 77
+  | RustcLangItemAsyncFnOnce -> 78
+  | RustcLangItemAsyncFnOnceOutput -> 79
+  | RustcLangItemCallOnceFuture -> 80
+  | RustcLangItemCallRefFuture -> 81
+  | RustcLangItemAsyncFnKindHelper -> 82
+  | RustcLangItemAsyncFnKindUpvars -> 83
+  | RustcLangItemFnOnceOutput -> 84
+  | RustcLangItemIterator -> 85
+  | RustcLangItemFusedIterator -> 86
+  | RustcLangItemFuture -> 87
+  | RustcLangItemFutureOutput -> 88
+  | RustcLangItemAsyncIterator -> 89
+  | RustcLangItemCoroutineState -> 90
+  | RustcLangItemCoroutine -> 91
+  | RustcLangItemCoroutineReturn -> 92
+  | RustcLangItemCoroutineYield -> 93
+  | RustcLangItemCoroutineResume -> 94
+  | RustcLangItemUnpin -> 95
+  | RustcLangItemPin -> 96
+  | RustcLangItemOrderingEnum -> 97
+  | RustcLangItemPartialEq -> 98
+  | RustcLangItemPartialOrd -> 99
+  | RustcLangItemCVoid -> 100
+  | RustcLangItemType -> 101
+  | RustcLangItemTypeGeneric -> 102
+  | RustcLangItemTypeId -> 103
+  | RustcLangItemPanic -> 104
+  | RustcLangItemPanicNounwind -> 105
+  | RustcLangItemPanicFmt -> 106
+  | RustcLangItemPanicDisplay -> 107
+  | RustcLangItemConstPanicFmt -> 108
+  | RustcLangItemPanicBoundsCheck -> 109
+  | RustcLangItemPanicMisalignedPointerDereference -> 110
+  | RustcLangItemPanicInfo -> 111
+  | RustcLangItemPanicLocation -> 112
+  | RustcLangItemPanicImpl -> 113
+  | RustcLangItemPanicCannotUnwind -> 114
+  | RustcLangItemPanicInCleanup -> 115
+  | RustcLangItemPanicAddOverflow -> 116
+  | RustcLangItemPanicSubOverflow -> 117
+  | RustcLangItemPanicMulOverflow -> 118
+  | RustcLangItemPanicDivOverflow -> 119
+  | RustcLangItemPanicRemOverflow -> 120
+  | RustcLangItemPanicNegOverflow -> 121
+  | RustcLangItemPanicShrOverflow -> 122
+  | RustcLangItemPanicShlOverflow -> 123
+  | RustcLangItemPanicDivZero -> 124
+  | RustcLangItemPanicRemZero -> 125
+  | RustcLangItemPanicCoroutineResumed -> 126
+  | RustcLangItemPanicAsyncFnResumed -> 127
+  | RustcLangItemPanicAsyncGenFnResumed -> 128
+  | RustcLangItemPanicGenFnNone -> 129
+  | RustcLangItemPanicCoroutineResumedPanic -> 130
+  | RustcLangItemPanicAsyncFnResumedPanic -> 131
+  | RustcLangItemPanicAsyncGenFnResumedPanic -> 132
+  | RustcLangItemPanicGenFnNonePanic -> 133
+  | RustcLangItemPanicNullPointerDereference -> 134
+  | RustcLangItemPanicNullReferenceConstructed -> 135
+  | RustcLangItemPanicInvalidEnumConstruction -> 136
+  | RustcLangItemPanicCoroutineResumedDrop -> 137
+  | RustcLangItemPanicAsyncFnResumedDrop -> 138
+  | RustcLangItemPanicAsyncGenFnResumedDrop -> 139
+  | RustcLangItemPanicGenFnNoneDrop -> 140
+  | RustcLangItemBeginPanic -> 141
+  | RustcLangItemFormatArgument -> 142
+  | RustcLangItemFormatArguments -> 143
+  | RustcLangItemDropGlue -> 144
+  | RustcLangItemAllocLayout -> 145
+  | RustcLangItemStart -> 146
+  | RustcLangItemEhPersonality -> 147
+  | RustcLangItemCompilerMove -> 148
+  | RustcLangItemCompilerCopy -> 149
+  | RustcLangItemOwnedBox -> 150
+  | RustcLangItemGlobalAlloc -> 151
+  | RustcLangItemPhantomData -> 152
+  | RustcLangItemManuallyDrop -> 153
+  | RustcLangItemMaybeDangling -> 154
+  | RustcLangItemBikeshedGuaranteedNoDrop -> 155
+  | RustcLangItemMaybeUninit -> 156
+  | RustcLangItemTermination -> 157
+  | RustcLangItemTry -> 158
+  | RustcLangItemTuple -> 159
+  | RustcLangItemSliceLen -> 160
+  | RustcLangItemTryTraitFromResidual -> 161
+  | RustcLangItemTryTraitFromOutput -> 162
+  | RustcLangItemTryTraitBranch -> 163
+  | RustcLangItemTryTraitFromYeet -> 164
+  | RustcLangItemResidualIntoTryType -> 165
+  | RustcLangItemCoercePointeeValidated -> 166
+  | RustcLangItemConstParamTy -> 167
+  | RustcLangItemPoll -> 168
+  | RustcLangItemPollReady -> 169
+  | RustcLangItemPollPending -> 170
+  | RustcLangItemAsyncGenReady -> 171
+  | RustcLangItemAsyncGenPending -> 172
+  | RustcLangItemAsyncGenFinished -> 173
+  | RustcLangItemResumeTy -> 174
+  | RustcLangItemGetContext -> 175
+  | RustcLangItemContext -> 176
+  | RustcLangItemFuturePoll -> 177
+  | RustcLangItemAsyncIteratorPollNext -> 178
+  | RustcLangItemIntoAsyncIterIntoIter -> 179
+  | RustcLangItemOption -> 180
+  | RustcLangItemOptionSome -> 181
+  | RustcLangItemOptionNone -> 182
+  | RustcLangItemResultOk -> 183
+  | RustcLangItemResultErr -> 184
+  | RustcLangItemControlFlowContinue -> 185
+  | RustcLangItemControlFlowBreak -> 186
+  | RustcLangItemIntoFutureIntoFuture -> 187
+  | RustcLangItemIntoIterIntoIter -> 188
+  | RustcLangItemIteratorNext -> 189
+  | RustcLangItemPinNewUnchecked -> 190
+  | RustcLangItemRangeFrom -> 191
+  | RustcLangItemRangeFull -> 192
+  | RustcLangItemRangeInclusiveStruct -> 193
+  | RustcLangItemRangeInclusiveNew -> 194
+  | RustcLangItemRange -> 195
+  | RustcLangItemRangeToInclusive -> 196
+  | RustcLangItemRangeTo -> 197
+  | RustcLangItemRangeMax -> 198
+  | RustcLangItemRangeMin -> 199
+  | RustcLangItemRangeSub -> 200
+  | RustcLangItemRangeFromCopy -> 201
+  | RustcLangItemRangeCopy -> 202
+  | RustcLangItemRangeInclusiveCopy -> 203
+  | RustcLangItemRangeToInclusiveCopy -> 204
+  | RustcLangItemString -> 205
+  | RustcLangItemCStr -> 206
+  | RustcLangItemContractBuildCheckEnsures -> 207
+  | RustcLangItemContractCheckRequires -> 208
+  | RustcLangItemDefaultTrait4 -> 209
+  | RustcLangItemDefaultTrait3 -> 210
+  | RustcLangItemDefaultTrait2 -> 211
+  | RustcLangItemDefaultTrait1 -> 212
+  | RustcLangItemContractCheckEnsures -> 213
+  | RustcLangItemReborrow -> 214
+  | RustcLangItemCoerceShared -> 215
+  | RustcLangItemFieldRepresentingType -> 216
+  | RustcLangItemField -> 217
+  | RustcLangItemFieldBase -> 218
+  | RustcLangItemFieldType -> 219
+  | RustcLangItemFieldOffset -> 220
+  | RustcLangItemFrom -> 221
+  | RustcLangItemFromFn -> 222
+  | RustcLangItemFnPtr -> 223
+
+and hash_layout : layout -> int =
+ fun (x : layout) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine
+             (HashBasic.combine
+                (HashBasic.combine 0 (hash_size x.size))
+                (hash_size x.align))
+             ((HashBasic.hash_option hash_discriminator) x.discriminator))
+          (hash_inhabited_predicate x.inhabited))
+       ((HashBasic.hash_list (HashBasic.hash_option hash_variant_layout))
+          x.variant_layouts))
+    (hash_repr_options x.repr)
+
+and hash_metadata_value : metadata_value -> int =
+ fun (x : metadata_value) ->
+  match x with
+  | DynSize -> 0
+  | DynAlign -> 1
+  | SliceLength -> 2
+
+and hash_name : name -> int =
+ fun (x : name) -> (HashBasic.hash_list hash_path_elem) x
+
+and hash_offset_expr : offset_expr -> int =
+ fun (x : offset_expr) ->
+  HashBasic.combine
+    (HashBasic.combine 0
+       ((HashBasic.hash_option hash_offset_guarantee) x.guarantee))
+    ((HashBasic.hash_option HashBasic.hash_int) x.chosen)
+
+and hash_offset_guarantee : offset_guarantee -> int =
+ fun (x : offset_guarantee) ->
+  match x with
+  | AtOffset x0 -> HashBasic.combine 0 (hash_size_expr x0)
+  | GuaranteedAlignment x0 -> HashBasic.combine 1 (hash_size_expr x0)
+  | ReprCField x0 -> HashBasic.combine 2 (hash_field_predecessor x0)
+
+and hash_path_elem : path_elem -> int =
+ fun (x : path_elem) ->
+  match x with
+  | PeIdent (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 0 (HashBasic.hash_string x0))
+        (hash_disambiguator x1)
+  | PeImpl x0 -> HashBasic.combine 1 (hash_impl_elem x0)
+  | PeInstantiated x0 ->
+      HashBasic.combine 2 ((hash_binder hash_generic_args) x0)
+  | PeTarget x0 -> HashBasic.combine 3 (HashBasic.hash_string x0)
+  | PeBuiltin (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 4 (hash_builtin_path_elem x0))
+        (hash_disambiguator x1)
+
+and hash_ptr_metadata : ptr_metadata -> int =
+ fun (x : ptr_metadata) ->
+  match x with
+  | NoMetadata -> 0
+  | Length -> 1
+  | VTable x0 -> HashBasic.combine 2 (hash_type_decl_ref x0)
+  | InheritFrom x0 -> HashBasic.combine 3 (hash_ty x0)
+
+and hash_repr_algorithm : repr_algorithm -> int =
+ fun (x : repr_algorithm) ->
+  match x with
+  | Rust -> 0
+  | C -> 1
+
+and hash_repr_options : repr_options -> int =
+ fun (x : repr_options) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine 0 (hash_repr_algorithm x.repr_algo))
+          ((HashBasic.hash_option hash_alignment_modifier) x.align_modif))
+       (HashBasic.hash_bool x.transparent))
+    ((HashBasic.hash_option hash_integer_type) x.explicit_discr_type)
+
+and hash_size : size -> int =
+ fun (x : size) ->
+  HashBasic.combine
+    (HashBasic.combine 0 ((HashBasic.hash_option hash_size_expr) x.chosen))
+    ((HashBasic.hash_option hash_size_expr) x.guarantee)
+
+and hash_size_expr : size_expr -> int =
+ fun (x : size_expr) -> (hash_hash_consed hash_size_expr_kind) x
+
+and hash_size_expr_kind : size_expr_kind -> int =
+ fun (x : size_expr_kind) ->
+  match x with
+  | SizeExprConstant x0 -> HashBasic.combine 0 (hash_constant_expr x0)
+  | SizeExprFromMetadata x0 -> HashBasic.combine 1 (hash_metadata_value x0)
+  | SizeExprMax x0 ->
+      HashBasic.combine 2 ((HashBasic.hash_list hash_size_expr) x0)
+  | SizeExprMin x0 ->
+      HashBasic.combine 3 ((HashBasic.hash_list hash_size_expr) x0)
+  | SizeExprPlus (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 4 (hash_size_expr x0))
+        (hash_size_expr x1)
+  | SizeExprScale (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 5 (hash_size_expr x0))
+        (hash_constant_expr x1)
+  | SizeExprAtLeast x0 -> HashBasic.combine 6 (hash_size_expr x0)
+  | SizeExprAlignTo (x0, x1) ->
+      HashBasic.combine
+        (HashBasic.combine 7 (hash_size_expr x0))
+        (hash_size_expr x1)
+  | SizeExprIfInhabited (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 8 (hash_ty x0))
+           (hash_size_expr x1))
+        (hash_size_expr x2)
+
+and hash_type_decl : type_decl -> int =
+ fun (x : type_decl) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine
+             (HashBasic.combine
+                (HashBasic.combine
+                   (HashBasic.combine
+                      (HashBasic.combine 0 (hash_type_decl_id x.def_id))
+                      (hash_item_meta x.item_meta))
+                   (hash_generic_params x.generics))
+                (hash_type_source x.src))
+             (hash_type_decl_kind x.kind))
+          ((HashBasic.hash_list (fun (k, v) ->
+                HashBasic.combine (HashBasic.hash_string k) (hash_layout v)))
+             x.layout))
+       (hash_ptr_metadata x.ptr_metadata))
+    ((HashBasic.hash_option hash_implements_marker_traits) x.marker_traits)
+
+and hash_type_decl_kind : type_decl_kind -> int =
+ fun (x : type_decl_kind) ->
+  match x with
+  | Struct x0 -> HashBasic.combine 0 ((HashBasic.hash_list hash_field) x0)
+  | Enum x0 -> HashBasic.combine 1 ((HashBasic.hash_list hash_variant) x0)
+  | Union x0 -> HashBasic.combine 2 ((HashBasic.hash_list hash_field) x0)
+  | Opaque -> 3
+  | Alias x0 -> HashBasic.combine 4 (hash_ty x0)
+  | TDeclError x0 -> HashBasic.combine 5 (HashBasic.hash_string x0)
+
+and hash_type_source : type_source -> int =
+ fun (x : type_source) ->
+  match x with
+  | NormalType -> 0
+  | ClosureType x0 -> HashBasic.combine 1 (hash_closure_info x0)
+  | VTableType (x0, x1, x2) ->
+      HashBasic.combine
+        (HashBasic.combine
+           (HashBasic.combine 2 (hash_dyn_predicate x0))
+           ((HashBasic.hash_list hash_v_table_field) x1))
+        ((HashBasic.hash_list (HashBasic.hash_option hash_field_id)) x2)
+  | BuiltinType x0 -> HashBasic.combine 3 (hash_builtin_adt x0)
+
+and hash_v_table_field : v_table_field -> int =
+ fun (x : v_table_field) ->
+  match x with
+  | VTableSize -> 0
+  | VTableAlign -> 1
+  | VTableDrop -> 2
+  | VTableMethod x0 -> HashBasic.combine 3 (hash_trait_method_id x0)
+  | VTableSuperTrait x0 -> HashBasic.combine 4 (hash_trait_clause_id x0)
+
+and hash_variant : variant -> int =
+ fun (x : variant) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine
+          (HashBasic.combine
+             (HashBasic.combine
+                (HashBasic.combine 0 (hash_variant_id x.id))
+                (hash_span x.span))
+             (hash_attr_info x.attr_info))
+          (HashBasic.hash_string x.variant_name))
+       ((HashBasic.hash_list hash_field) x.fields))
+    (hash_integer_value x.discriminant)
+
+and hash_variant_layout : variant_layout -> int =
+ fun (x : variant_layout) ->
+  HashBasic.combine
+    (HashBasic.combine
+       (HashBasic.combine 0
+          ((HashBasic.hash_list hash_offset_expr) x.field_offsets))
+       (hash_inhabited_predicate x.inhabited))
+    ((HashBasic.hash_list (fun (x0, x1) ->
+          HashBasic.combine
+            (HashBasic.combine 0 (HashBasic.hash_int x0))
+            (hash_integer_value x1)))
+       x.tagger)
