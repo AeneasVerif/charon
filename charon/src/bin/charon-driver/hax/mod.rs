@@ -7,7 +7,6 @@ pub mod state;
 mod constant_utils;
 mod types;
 
-mod index_vec;
 mod prelude;
 
 pub use prelude::*;
