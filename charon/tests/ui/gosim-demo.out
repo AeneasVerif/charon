@@ -40,6 +40,13 @@ where
     TypeOutlives0: T: 'a,
     TypeOutlives1: T: 'a,
 
+// Full name: core::slice::iter::{impl IntoIterator for &'a [T]}::into_iter
+pub fn into_iter<'a, T>(_1: &'a [T]) -> Iter<'a, T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+= <opaque>
+
 // Full name: core::slice::iter::{impl Iterator for Iter<'a, T>[TraitClause0]}::next
 pub fn next<'a, '_1, T>(_1: &'_1 mut Iter<'a, T>[TraitClause0]) -> Option<&'a T>[{built_in impl Sized for &'a T}]
 where
@@ -47,13 +54,6 @@ where
     TypeOutlives0: T: 'a,
     TypeOutlives1: T: '_1,
     RegionOutlives0: 'a: '_1,
-= <opaque>
-
-// Full name: core::slice::iter::{impl IntoIterator for &'a [T]}::into_iter
-pub fn into_iter<'a, T>(_1: &'a [T]) -> Iter<'a, T>[TraitClause0]
-where
-    TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
 = <opaque>
 
 struct () {}

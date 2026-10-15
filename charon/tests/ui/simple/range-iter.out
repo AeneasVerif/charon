@@ -98,12 +98,12 @@ pub trait Step<Self>
 pub fn backward_overflowing(_1: usize, _2: usize) -> (usize, bool)
 = <opaque>
 
-// Full name: core::iter::range::{impl Step for usize}::forward_overflowing
-pub fn forward_overflowing(_1: usize, _2: usize) -> (usize, bool)
-= <opaque>
-
 // Full name: core::iter::range::{impl Step for usize}::backward_checked
 pub fn backward_checked(_1: usize, _2: usize) -> Option<usize>
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for usize}::forward_overflowing
+pub fn forward_overflowing(_1: usize, _2: usize) -> (usize, bool)
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for usize}::forward_checked

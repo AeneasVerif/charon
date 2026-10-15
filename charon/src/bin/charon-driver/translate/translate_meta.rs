@@ -177,9 +177,6 @@ impl<'tcx> TranslateCtx<'tcx> {
         source_scopes: &rustc_index::IndexVec<mir::SourceScope, mir::SourceScopeData>,
         source_info: &mir::SourceInfo,
     ) -> Span {
-        // Translate the span
-        let data = self.translate_span_data(source_info.span);
-
         // Lookup the top-most inlined parent scope.
         let mut parent_span = None;
         let mut scope_data = &source_scopes[source_info.scope];
@@ -189,15 +186,34 @@ impl<'tcx> TranslateCtx<'tcx> {
         }
 
         if let Some(parent_span) = parent_span {
+            let data = self.translate_span_data(source_info.span);
             let parent_span = self.translate_span_data(parent_span);
             Span::new(parent_span, Some(data))
         } else {
-            Span::new(data, None)
+            self.translate_span(&source_info.span)
         }
     }
 
     pub(crate) fn translate_span(&mut self, span: &rustc_span::Span) -> Span {
-        Span::new(self.translate_span_data(*span), None)
+        // If the span comes from a macro expansion, point to the outermost macro call and record
+        // the span inside the macro as `generated_from_span`. We skip compiler desugarings
+        // `ExpnKind::Desugaring` since their spans already point to user code.
+        let macro_call = span
+            .macro_backtrace()
+            .filter(|expn| matches!(expn.kind, rustc_span::ExpnKind::Macro(..)))
+            .last();
+        let data = self.translate_span_data(*span);
+        match macro_call {
+            Some(expn) => {
+                // Code that already points to the macro call doesn't need a `generated_from_span`.
+                if expn.call_site.source_equal(*span) {
+                    Span::new(data, None)
+                } else {
+                    Span::new(self.translate_span_data(expn.call_site), Some(data))
+                }
+            }
+            None => Span::new(data, None),
+        }
     }
 
     pub(crate) fn def_span(&mut self, def_id: &hax::DefId) -> Span {

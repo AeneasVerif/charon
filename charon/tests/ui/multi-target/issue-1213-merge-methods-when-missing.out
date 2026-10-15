@@ -127,57 +127,12 @@ where
     TraitClause3: (U: core::iter::traits::collect::IntoIterator),
 = <opaque>
 
-pub opaque type core::slice::iter::IterMut<mut 'a, T>
-where
-    TraitClause0: (T: core::marker::Sized),
-    TypeOutlives0: T: 'a,
-    TypeOutlives1: T: 'a,
-
-pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut core::slice::iter::IterMut<'a, T>[TraitClause0]) -> core::option::Option<&'a mut T>[{built_in impl core::marker::Sized for &'a mut T}]
-where
-    TraitClause0: (T: core::marker::Sized),
-    TypeOutlives0: T: 'a,
-    TypeOutlives1: T: '_1,
-    RegionOutlives0: 'a: '_1,
-= <opaque>
-
-pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::zip<'a, T, U>(_1: core::slice::iter::IterMut<'a, T>[TraitClause0], _2: U) -> core::iter::adapters::zip::Zip<core::slice::iter::IterMut<'a, T>[TraitClause0], TraitClause3::IntoIter>[TraitClause2, TraitClause3::ImpliedClause2]
-where
-    TraitClause0: (T: core::marker::Sized),
-    TraitClause1: (U: core::marker::Sized),
-    TraitClause2: (core::slice::iter::IterMut<'a, T>[TraitClause0]: core::marker::Sized),
-    TraitClause3: (U: core::iter::traits::collect::IntoIterator),
-    TypeOutlives0: T: 'a,
-= <opaque>
-
-// Full name: core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}
-impl<'a, T> core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]
-where
-    TraitClause0: (T: core::marker::Sized),
-    TypeOutlives0: T: 'a,
-{
-    proof ImpliedClause0: (core::slice::iter::IterMut<'a, T>[TraitClause0]: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for core::slice::iter::IterMut<'a, T>[TraitClause0]}
-    proof ImpliedClause1: (&'a mut T: core::marker::Sized) = {built_in impl core::marker::Sized for &'a mut T}
-    type Item = &'a mut T
-    fn next<'_0_1> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::next<'a, '_0_1, T>[TraitClause0]
-    fn zip<U, TraitClause0_1: (U: core::marker::Sized), TraitClause1_1: (core::slice::iter::IterMut<'a, T>[TraitClause0]: core::marker::Sized), TraitClause2_1: (U: core::iter::traits::collect::IntoIterator)> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::zip<'a, T, U>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
-    vtable: lazy
-}
-
 #[diagnostic_item("SliceIter")]
 pub opaque type core::slice::iter::Iter<'a, T>
 where
     TraitClause0: (T: core::marker::Sized),
     TypeOutlives0: T: 'a,
     TypeOutlives1: T: 'a,
-
-pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut core::slice::iter::Iter<'a, T>[TraitClause0]) -> core::option::Option<&'a T>[{built_in impl core::marker::Sized for &'a T}]
-where
-    TraitClause0: (T: core::marker::Sized),
-    TypeOutlives0: T: 'a,
-    TypeOutlives1: T: '_1,
-    RegionOutlives0: 'a: '_1,
-= <opaque>
 
 pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::zip<'a, T, U>(_1: core::slice::iter::Iter<'a, T>[TraitClause0], _2: U) -> core::iter::adapters::zip::Zip<core::slice::iter::Iter<'a, T>[TraitClause0], TraitClause3::IntoIter>[TraitClause2, TraitClause3::ImpliedClause2]
 where
@@ -186,6 +141,14 @@ where
     TraitClause2: (core::slice::iter::Iter<'a, T>[TraitClause0]: core::marker::Sized),
     TraitClause3: (U: core::iter::traits::collect::IntoIterator),
     TypeOutlives0: T: 'a,
+= <opaque>
+
+pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut core::slice::iter::Iter<'a, T>[TraitClause0]) -> core::option::Option<&'a T>[{built_in impl core::marker::Sized for &'a T}]
+where
+    TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
 = <opaque>
 
 // Full name: core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}
@@ -199,6 +162,43 @@ where
     type Item = &'a T
     fn next<'_0_1> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::next<'a, '_0_1, T>[TraitClause0]
     fn zip<U, TraitClause0_1: (U: core::marker::Sized), TraitClause1_1: (core::slice::iter::Iter<'a, T>[TraitClause0]: core::marker::Sized), TraitClause2_1: (U: core::iter::traits::collect::IntoIterator)> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[TraitClause0]}::zip<'a, T, U>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
+    vtable: lazy
+}
+
+pub opaque type core::slice::iter::IterMut<mut 'a, T>
+where
+    TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: 'a,
+
+pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::zip<'a, T, U>(_1: core::slice::iter::IterMut<'a, T>[TraitClause0], _2: U) -> core::iter::adapters::zip::Zip<core::slice::iter::IterMut<'a, T>[TraitClause0], TraitClause3::IntoIter>[TraitClause2, TraitClause3::ImpliedClause2]
+where
+    TraitClause0: (T: core::marker::Sized),
+    TraitClause1: (U: core::marker::Sized),
+    TraitClause2: (core::slice::iter::IterMut<'a, T>[TraitClause0]: core::marker::Sized),
+    TraitClause3: (U: core::iter::traits::collect::IntoIterator),
+    TypeOutlives0: T: 'a,
+= <opaque>
+
+pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::next<'a, '_1, T>(_1: &'_1 mut core::slice::iter::IterMut<'a, T>[TraitClause0]) -> core::option::Option<&'a mut T>[{built_in impl core::marker::Sized for &'a mut T}]
+where
+    TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: 'a,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: 'a: '_1,
+= <opaque>
+
+// Full name: core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}
+impl<'a, T> core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]
+where
+    TraitClause0: (T: core::marker::Sized),
+    TypeOutlives0: T: 'a,
+{
+    proof ImpliedClause0: (core::slice::iter::IterMut<'a, T>[TraitClause0]: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for core::slice::iter::IterMut<'a, T>[TraitClause0]}
+    proof ImpliedClause1: (&'a mut T: core::marker::Sized) = {built_in impl core::marker::Sized for &'a mut T}
+    type Item = &'a mut T
+    fn next<'_0_1> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::next<'a, '_0_1, T>[TraitClause0]
+    fn zip<U, TraitClause0_1: (U: core::marker::Sized), TraitClause1_1: (core::slice::iter::IterMut<'a, T>[TraitClause0]: core::marker::Sized), TraitClause2_1: (U: core::iter::traits::collect::IntoIterator)> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::IterMut<'a, T>[TraitClause0]}::zip<'a, T, U>[TraitClause0, TraitClause0_1, TraitClause1_1, TraitClause2_1]
     vtable: lazy
 }
 

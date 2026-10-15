@@ -121,12 +121,12 @@ pub trait Step<Self>
 pub fn backward_overflowing(_1: i32, _2: usize) -> (i32, bool)
 = <opaque>
 
-// Full name: core::iter::range::{impl Step for i32}::forward_overflowing
-pub fn forward_overflowing(_1: i32, _2: usize) -> (i32, bool)
-= <opaque>
-
 // Full name: core::iter::range::{impl Step for i32}::backward_checked
 pub fn backward_checked(_1: i32, _2: usize) -> Option<i32>[{built_in impl Sized for i32}]
+= <opaque>
+
+// Full name: core::iter::range::{impl Step for i32}::forward_overflowing
+pub fn forward_overflowing(_1: i32, _2: usize) -> (i32, bool)
 = <opaque>
 
 // Full name: core::iter::range::{impl Step for i32}::forward_checked

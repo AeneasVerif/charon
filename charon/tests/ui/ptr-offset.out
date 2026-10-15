@@ -21,18 +21,11 @@ where
     TypeOutlives0: T: '_0,
 = <opaque>
 
-struct (_, _)<A, B>
+// Full name: core::mem::size_of
+#[diagnostic_item("mem_size_of")]
+pub fn size_of<T>() -> usize
 where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
-}
-
-struct () {}
-
-// Full name: core::ptr::const_ptr::{*const T}::addr
-pub fn addr<T>(_1: *const T) -> usize
+    TraitClause0: (T: Sized),
 = <opaque>
 
 // Full name: core::option::Option
@@ -46,13 +39,50 @@ where
   Some { _0: T },
 }
 
+// Full name: core::num::{isize}::checked_mul
+pub fn checked_mul(_1: isize, _2: isize) -> Option<isize>[{built_in impl Sized for isize}]
+= <opaque>
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
 // Full name: core::num::{usize}::overflowing_add_signed
 pub fn overflowing_add_signed(_1: usize, _2: isize) -> (usize, bool)
 = <opaque>
 
-// Full name: core::num::{isize}::checked_mul
-pub fn checked_mul(_1: isize, _2: isize) -> Option<isize>[{built_in impl Sized for isize}]
+// Full name: core::panicking::panic_nounwind_fmt
+#[track_caller]
+pub fn panic_nounwind_fmt<'_0>(_1: Arguments<'_0>, _2: bool) -> !
 = <opaque>
+
+// Full name: core::ptr::const_ptr::{*const T}::addr
+pub fn addr<T>(_1: *const T) -> usize
+= <opaque>
+
+struct () {}
+
+// Full name: core::ub_checks::check_language_ub
+fn check_language_ub() -> bool
+= <opaque>
+
+struct str {
+  _0: [u8],
+}
+
+struct (_, _, _)<A, B, C>
+where
+    TraitClause0: (A: Sized),
+    TraitClause1: (B: Sized),
+{
+  _0: A,
+  _1: B,
+  _2: C,
+}
 
 // Full name: core::ptr::const_ptr::{*const T}::offset::runtime_offset_nowrap::runtime
 fn runtime(this: *const (), count: isize, size: usize) -> bool
@@ -136,36 +166,6 @@ fn runtime(this: *const (), count: isize, size: usize) -> bool
     storage_dead(count)
     storage_dead(this)
     return
-}
-
-// Full name: core::mem::size_of
-#[diagnostic_item("mem_size_of")]
-pub fn size_of<T>() -> usize
-where
-    TraitClause0: (T: Sized),
-= <opaque>
-
-// Full name: core::panicking::panic_nounwind_fmt
-#[track_caller]
-pub fn panic_nounwind_fmt<'_0>(_1: Arguments<'_0>, _2: bool) -> !
-= <opaque>
-
-// Full name: core::ub_checks::check_language_ub
-fn check_language_ub() -> bool
-= <opaque>
-
-struct str {
-  _0: [u8],
-}
-
-struct (_, _, _)<A, B, C>
-where
-    TraitClause0: (A: Sized),
-    TraitClause1: (B: Sized),
-{
-  _0: A,
-  _1: B,
-  _2: C,
 }
 
 // Full name: core::ptr::const_ptr::{*const T}::offset::runtime_offset_nowrap

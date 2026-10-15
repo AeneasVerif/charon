@@ -284,6 +284,82 @@ fn spans() -> anyhow::Result<()> {
 }
 
 #[test]
+fn macro_spans() -> anyhow::Result<()> {
+    let crate_data = translate_rust_file("tests/ui/macro-spans.rs")?;
+    let repr = |span: Span| {
+        let repr_data = |data: SpanData| {
+            let file_name = crate_data.files[data.file_id].name.to_string();
+            let file_name = file_name.rsplit('/').next().unwrap().to_owned();
+            format!("{file_name}:{}-{}", data.beg, data.end)
+        };
+        match span.generated_from_span() {
+            Some(generated_from) => {
+                format!(
+                    "{} <- {}",
+                    repr_data(span.data()),
+                    repr_data(generated_from)
+                )
+            }
+            None => repr_data(span.data()),
+        }
+    };
+
+    let mut lines = vec![];
+    for item in crate_data
+        .all_items()
+        .filter(|item| item.item_meta().is_local)
+    {
+        let name = item.item_meta().name.debug_repr(&crate_data);
+        lines.push(format!("{name}: {}", repr(item.item_meta().span)));
+        let ItemRef::Fun(fun) = item else { continue };
+        let mut stmt_spans = vec![];
+        let body = fun.body.as_structured().unwrap();
+        body.body
+            .dyn_visit_in_body(|st: &Statement| stmt_spans.push(st.span));
+        match name.as_str() {
+            // Show the statements of a function that uses a macro in its body.
+            "test_crate::macro_expr" => {
+                for span in stmt_spans.into_iter().map(repr).dedup() {
+                    lines.push(format!("    {span}"));
+                }
+            }
+            // Desugarings (`for`, `?`) aren't macros: their spans already point to user code.
+            "test_crate::desugarings" => {
+                assert!(
+                    stmt_spans
+                        .iter()
+                        .all(|span| span.generated_from_span().is_none())
+                )
+            }
+            _ => {}
+        }
+    }
+    let expected = indoc::indoc!(
+        "
+        test_crate::Derived: macro-spans.rs:30:0-30:24
+        test_crate::<impl Clone for ??>: macro-spans.rs:29:9-29:14
+        test_crate::local: macro-spans.rs:11:0-11:15 <- macro-spans.rs:6:8-8:9
+        test_crate::nested: macro-spans.rs:18:0-18:14 <- macro-spans.rs:6:8-8:9
+        test_crate::from_aux: macro-spans.rs:20:0-20:39 <- macro-spans-aux.rs:5:8-7:9
+        test_crate::included: macro-spans-included.rs:3:0-5:1
+        test_crate::from_included_local: macro-spans-included.rs:14:0-14:38 <- macro-spans-included.rs:9:8-11:9
+        test_crate::from_included: macro-spans.rs:23:0-23:32 <- macro-spans-included.rs:9:8-11:9
+        test_crate::from_pathmod: macro-spans.rs:27:0-27:39 <- macro-spans-pathmod.rs:9:8-11:9
+        test_crate::macro_expr: macro-spans.rs:37:0-39:1
+            macro-spans.rs:38:12-38:13
+            macro-spans.rs:38:4-38:14 <- macro-spans.rs:34:8-34:12
+            macro-spans.rs:38:4-38:14 <- macro-spans.rs:34:11-34:12
+            macro-spans.rs:39:1-39:1
+        test_crate::desugarings: macro-spans.rs:41:0-47:1
+        test_crate::pathmod::in_pathmod: macro-spans-pathmod.rs:3:0-5:1
+        test_crate::pathmod::from_pathmod_local: macro-spans-pathmod.rs:15:0-15:36 <- macro-spans-pathmod.rs:9:8-11:9
+        test_crate::<impl Clone for ??>::clone: macro-spans.rs:29:9-29:14"
+    );
+    assert_eq!(lines.join("\n"), expected.trim_start());
+    Ok(())
+}
+
+#[test]
 fn predicate_origins() -> anyhow::Result<()> {
     use PredicateOrigin::*;
     let crate_data = translate(
