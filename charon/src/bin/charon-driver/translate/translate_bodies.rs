@@ -1039,7 +1039,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         span: Span,
         mir_place: &mir::Place<'tcx>,
     ) -> Result<Place, Error> {
-        use crate::hax::{HasBase, SInto};
+        use crate::hax::{BaseState, SInto};
         use rustc_middle::ty;
 
         let tcx = self.hax_state.base().tcx;

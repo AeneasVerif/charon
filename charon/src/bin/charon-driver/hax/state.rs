@@ -1,7 +1,7 @@
 use crate::hax::prelude::*;
 use rustc_middle::ty::{self, TyCtxt};
 
-mod types {
+mod base {
     use crate::hax::prelude::*;
     use itertools::Itertools;
     use rustc_hash::FxHashMap;
@@ -143,61 +143,11 @@ mod types {
     }
 }
 
-#[derive(Clone)]
-pub struct State<Base, Owner> {
-    pub base: Base,
-    pub owner: Owner,
-}
+pub use self::base::*;
 
-pub trait HasBase<'tcx> {
-    fn base(self: &Self) -> types::Base<'tcx>;
-}
-impl<'tcx, Owner> HasBase<'tcx> for State<types::Base<'tcx>, Owner> {
-    fn base(self: &Self) -> types::Base<'tcx> {
-        self.base.clone()
-    }
-}
+pub trait BaseState<'tcx>: Sized {
+    fn base(&self) -> Base<'tcx>;
 
-pub trait HasOwner {
-    fn owner(self: &Self) -> DefId;
-}
-impl<Base> HasOwner for State<Base, DefId> {
-    fn owner(self: &Self) -> DefId {
-        self.owner.clone()
-    }
-}
-
-pub use self::types::*;
-
-pub type StateWithBase<'tcx> = State<Base<'tcx>, ()>;
-pub type StateWithOwner<'tcx> = State<Base<'tcx>, DefId>;
-
-impl<'tcx> StateWithBase<'tcx> {
-    pub fn new(
-        tcx: rustc_middle::ty::TyCtxt<'tcx>,
-        options: crate::hax::options::Options,
-        bounds_options: crate::hax::options::BoundsOptions,
-    ) -> Self {
-        Self {
-            base: Base::new(tcx, options, bounds_options),
-            owner: (),
-        }
-    }
-}
-
-impl<'tcx, A: HasBase<'tcx>, B> HasBase<'tcx> for (A, B) {
-    fn base(&self) -> Base<'tcx> {
-        self.0.base()
-    }
-}
-
-impl<A: HasOwner, B> HasOwner for (A, B) {
-    fn owner(&self) -> DefId {
-        self.0.owner()
-    }
-}
-
-pub trait BaseState<'tcx>: HasBase<'tcx> + Clone {
     fn tcx(&self) -> TyCtxt<'tcx> {
         self.base().tcx
     }
@@ -224,27 +174,7 @@ pub trait BaseState<'tcx>: HasBase<'tcx> + Clone {
             owner: (),
         }
     }
-}
-impl<'tcx, T: HasBase<'tcx> + Clone> BaseState<'tcx> for T {}
 
-/// State of anything below an `owner`.
-pub trait UnderOwnerState<'tcx>: BaseState<'tcx> + HasOwner {
-    fn param_env(&self) -> ty::ParamEnv<'tcx> {
-        self.owner().param_env(self)
-    }
-    fn typing_env(&self) -> ty::TypingEnv<'tcx> {
-        self.owner().typing_env(self)
-    }
-    fn as_state_with_owner(&self) -> StateWithOwner<'tcx> {
-        State {
-            base: self.base(),
-            owner: self.owner(),
-        }
-    }
-}
-impl<'tcx, T: BaseState<'tcx> + HasOwner> UnderOwnerState<'tcx> for T {}
-
-pub trait WithGlobalCacheExt<'tcx>: BaseState<'tcx> {
     /// Access the global cache. You must not call `sinto` within this function as this will likely
     /// result in `BorrowMut` panics.
     fn with_global_cache<T>(&self, f: impl FnOnce(&mut GlobalCache<'tcx>) -> T) -> T {
@@ -258,9 +188,24 @@ pub trait WithGlobalCacheExt<'tcx>: BaseState<'tcx> {
         self.with_global_cache(|cache| f(cache.per_item.entry(def_id.clone()).or_default()))
     }
 }
-impl<'tcx, S: BaseState<'tcx>> WithGlobalCacheExt<'tcx> for S {}
 
-pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
+pub trait UnderOwnerState<'tcx>: BaseState<'tcx> {
+    fn owner(&self) -> DefId;
+
+    fn param_env(&self) -> ty::ParamEnv<'tcx> {
+        self.owner().param_env(self)
+    }
+    fn typing_env(&self) -> ty::TypingEnv<'tcx> {
+        self.owner().typing_env(self)
+    }
+
+    fn as_state_with_owner(&self) -> StateWithOwner<'tcx> {
+        State {
+            base: self.base(),
+            owner: self.owner(),
+        }
+    }
+
     /// Access the cache for the current item. You must not call `sinto` within this function as
     /// this will likely result in `BorrowMut` panics.
     fn with_cache<T>(&self, f: impl FnOnce(&mut ItemCache<'tcx>) -> T) -> T {
@@ -278,4 +223,46 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
         f(&mut predicate_searcher, &base_state)
     }
 }
-impl<'tcx, S: UnderOwnerState<'tcx>> WithItemCacheExt<'tcx> for S {}
+
+#[derive(Clone)]
+pub struct State<'tcx, Owner> {
+    pub base: Base<'tcx>,
+    pub owner: Owner,
+}
+
+pub type StateWithBase<'tcx> = State<'tcx, ()>;
+pub type StateWithOwner<'tcx> = State<'tcx, DefId>;
+
+impl<'tcx> StateWithBase<'tcx> {
+    pub fn new(
+        tcx: rustc_middle::ty::TyCtxt<'tcx>,
+        options: crate::hax::options::Options,
+        bounds_options: crate::hax::options::BoundsOptions,
+    ) -> Self {
+        Self {
+            base: Base::new(tcx, options, bounds_options),
+            owner: (),
+        }
+    }
+}
+impl<'tcx, O> BaseState<'tcx> for State<'tcx, O> {
+    fn base(&self) -> Base<'tcx> {
+        self.base.clone()
+    }
+}
+impl<'tcx> UnderOwnerState<'tcx> for StateWithOwner<'tcx> {
+    fn owner(&self) -> DefId {
+        self.owner.clone()
+    }
+}
+
+impl<'tcx, A: BaseState<'tcx>, B> BaseState<'tcx> for (A, B) {
+    fn base(&self) -> Base<'tcx> {
+        self.0.base()
+    }
+}
+impl<'tcx, A: UnderOwnerState<'tcx>, B> UnderOwnerState<'tcx> for (A, B) {
+    fn owner(&self) -> DefId {
+        self.0.owner()
+    }
+}

@@ -1,7 +1,7 @@
 use super::translate_crate::*;
 use super::translate_ctx::*;
 use crate::hax;
-use crate::hax::{HasBase, SInto, UnderOwnerState};
+use crate::hax::{BaseState, SInto, UnderOwnerState};
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::options::ConstHandling;
