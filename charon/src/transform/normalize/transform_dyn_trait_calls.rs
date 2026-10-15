@@ -246,7 +246,7 @@ fn transform_dyn_trait_call(
         unreachable!("vtable method is not a function pointer")
     };
     let method_region_count = sig.regions.len();
-    let regions = fn_ptr
+    let regions: RegionArgs = fn_ptr
         .generics
         .regions
         .iter()

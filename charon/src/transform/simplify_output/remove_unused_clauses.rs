@@ -88,7 +88,7 @@ impl VisitAst for BuildGraphVisitor<'_> {
     }
 
     fn enter_trait_ref_kind(&mut self, x: &TraitRefKind) {
-        if let TraitRefKind::Clause(var) = x
+        if let TraitRefKind::Clause(var, _) = x
             && let Some(clause_id) = var.bound_at_depth(self.binder_depth)
         {
             self.graph.add_edge(
@@ -133,7 +133,7 @@ impl VisitAstMut for RemoveClausesVisitor<'_> {
     }
 
     fn visit_trait_ref_kind(&mut self, x: &mut TraitRefKind) -> ControlFlow<Self::Break> {
-        if let TraitRefKind::Clause(var) = x
+        if let TraitRefKind::Clause(var, _) = x
             && let Some(clause_id) = var.bound_at_depth_mut(self.binder_depth)
             && let Some(remap) = self.remaps.get(&self.current_item)
         {

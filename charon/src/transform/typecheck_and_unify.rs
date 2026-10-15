@@ -487,9 +487,17 @@ impl VisitAst for TypeCheckVisitor<'_> {
     }
     fn enter_trait_ref(&mut self, x: &TraitRef) {
         match &x.kind {
-            TraitRefKind::Clause(var) if self.binder_stack.get_var(*var).is_none() => {
-                self.error(format!("Found incorrect clause var: {var}"));
-            }
+            TraitRefKind::Clause(var, args) => match self.binder_stack.get_var(*var) {
+                None => self.error(format!("Found incorrect clause var: {var}")),
+                Some(clause) if args.regions.len() != clause.trait_.regions.len() => {
+                    self.error(format!(
+                        "Clause {var} expects {} region args, got {}",
+                        clause.trait_.regions.len(),
+                        args.regions.len()
+                    ))
+                }
+                Some(_) => {}
+            },
             TraitRefKind::ItemClause {
                 trait_ref,
                 type_id,

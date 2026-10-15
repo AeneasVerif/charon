@@ -53,11 +53,13 @@ fn dynify<T: TyVisitable>(mut x: T, new_self: Option<Ty>, for_method: bool) -> T
             }
         }
 
-        fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
+        fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<ClauseReplacement> {
             if let DeBruijnVar::Bound(DeBruijnId::ZERO, clause_id) = v {
                 if self.for_method && clause_id == TraitClauseId::ZERO {
                     // That's the `Self` clause.
-                    Some(TraitRefKind::Dyn)
+                    Some(ClauseReplacement::Proof(RegionBinder::empty(
+                        TraitRefKind::Dyn,
+                    )))
                 } else {
                     panic!("Found unexpected clause var when constructing vtable: {v}")
                 }
@@ -143,11 +145,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         if self.monomorphize() {
             struct ShiftDynClauseVars;
             impl VarsVisitor for ShiftDynClauseVars {
-                fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
+                fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<ClauseReplacement> {
                     if let DeBruijnVar::Bound(DeBruijnId::ZERO, clause_id) = v
                         && let Some(new_id) = clause_id.index().checked_sub(1)
                     {
-                        return Some(TraitRefKind::Clause(DeBruijnVar::Bound(
+                        return Some(ClauseReplacement::Var(DeBruijnVar::Bound(
                             DeBruijnId::ZERO,
                             TraitClauseId::new(new_id),
                         )));

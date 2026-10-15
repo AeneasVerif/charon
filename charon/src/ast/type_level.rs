@@ -19,9 +19,6 @@ pub use type_info::*;
 pub use types::*;
 pub use vars::*;
 
-/// A set of region arguments, typically meant to instantiate a `RegionBinder`.
-pub type RegionArgs = IndexVec<RegionId, Region>;
-
 /// A set of generic arguments.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
@@ -30,6 +27,13 @@ pub struct GenericArgs {
     pub types: IndexVec<TypeVarId, Ty>,
     pub const_generics: IndexVec<ConstGenericVarId, ConstantExpr>,
     pub trait_refs: IndexVec<TraitClauseId, PolyTraitRef>,
+}
+
+/// Region arguments used to instantiate a [`RegionBinder`].
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+pub struct RegionArgs {
+    pub regions: IndexVec<RegionId, Region>,
 }
 
 /// A quantified trait predicate, e.g. `for<'a> Type<'a>: Trait<'a, Args>`.
@@ -228,6 +232,30 @@ impl GenericArgs {
     }
 }
 
+impl RegionArgs {
+    pub fn empty() -> Self {
+        Self {
+            regions: Default::default(),
+        }
+    }
+
+    pub fn erased(len: usize) -> Self {
+        Self::new(std::iter::repeat_n(Region::Erased, len).collect())
+    }
+
+    pub fn new(regions: IndexVec<RegionId, Region>) -> Self {
+        Self { regions }
+    }
+
+    pub fn iter(&self) -> impl DoubleEndedIterator<Item = &Region> + ExactSizeIterator {
+        self.regions.iter()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.regions.is_empty()
+    }
+}
+
 impl GenericParams {
     pub fn empty() -> Self {
         Self::default()
@@ -357,10 +385,10 @@ impl GenericParams {
         // The contents of `other` may refer to its own trait clauses, so we must shift clause ids.
         struct ShiftClausesVisitor(usize);
         impl VarsVisitor for ShiftClausesVisitor {
-            fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
+            fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<ClauseReplacement> {
                 if let DeBruijnVar::Bound(DeBruijnId::ZERO, clause_id) = v {
                     // Replace clause 0 and decrement the others.
-                    Some(TraitRefKind::Clause(DeBruijnVar::Bound(
+                    Some(ClauseReplacement::Var(DeBruijnVar::Bound(
                         DeBruijnId::ZERO,
                         clause_id + self.0,
                     )))
@@ -498,7 +526,7 @@ impl<T: AstVisitable> Binder<Binder<T>> {
                 }
             }
             fn enter_trait_ref_kind(&mut self, x: &mut TraitRefKind) {
-                if let TraitRefKind::Clause(var) = x
+                if let TraitRefKind::Clause(var, _) = x
                     && let Some(id) = var.bound_at_depth_mut(self.binder_depth)
                 {
                     *id += self.shift_by.trait_clauses.len();
@@ -617,15 +645,12 @@ impl<T> RegionBinder<T> {
     }
 
     /// Substitute the bound variables with the given lifetimes.
-    pub fn apply(self, regions: IndexVec<RegionId, Region>) -> T
+    pub fn apply(self, args: RegionArgs) -> T
     where
         T: TyVisitable,
     {
-        assert_eq!(regions.len(), self.regions.len());
-        let args = GenericArgs {
-            regions,
-            ..GenericArgs::empty()
-        };
+        assert_eq!(args.regions.len(), self.regions.len());
+        let args = GenericArgs::new_lifetimes(args.regions);
         self.skip_binder.substitute_inner_binder(&args)
     }
 
@@ -644,8 +669,8 @@ impl<T> RegionBinder<T> {
     where
         T: TyVisitable,
     {
-        let regions = self.regions.map_ref_indexed(|_, _| Region::Erased);
-        self.apply(regions)
+        let args = RegionArgs::erased(self.regions.len());
+        self.apply(args)
     }
 }
 
@@ -686,3 +711,9 @@ mk_index_impls!(GenericParams.regions[RegionId]: RegionParam);
 mk_index_impls!(GenericParams.types[TypeVarId]: TypeParam);
 mk_index_impls!(GenericParams.const_generics[ConstGenericVarId]: ConstGenericParam);
 mk_index_impls!(GenericParams.trait_clauses[TraitClauseId]: TraitParam);
+
+impl FromIterator<Region> for RegionArgs {
+    fn from_iter<T: IntoIterator<Item = Region>>(iter: T) -> Self {
+        Self::new(iter.into_iter().collect())
+    }
+}

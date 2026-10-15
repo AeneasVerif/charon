@@ -21,13 +21,30 @@ pub trait VarsVisitor {
     fn visit_const_generic_var(&mut self, _v: ConstGenericDbVar) -> Option<ConstantExprKind> {
         None
     }
-    fn visit_clause_var(&mut self, _v: ClauseDbVar) -> Option<TraitRefKind> {
+    fn visit_clause_var(&mut self, _v: ClauseDbVar) -> Option<ClauseReplacement> {
         None
     }
     fn visit_self_clause(&mut self) -> Option<TraitRefKind> {
         None
     }
     fn visit_metadata_value(&mut self, _value: &MetadataValue) {}
+}
+
+/// A replacement for a clause variable, expressed as seen from the outside of the value being
+/// visited.
+pub enum ClauseReplacement {
+    /// Replace this clause variable with another, which must be for the same predicate. This is
+    /// distinct from `Proof` to avoid infinite recursion when calling `apply`.
+    Var(ClauseDbVar),
+    /// Replace this clause variable with the given proof kind. The proof kind will be instantiated
+    /// with the clause regions then used as replacement.
+    Proof(RegionBinder<TraitRefKind>),
+}
+
+impl From<ClauseDbVar> for ClauseReplacement {
+    fn from(var: ClauseDbVar) -> Self {
+        Self::Var(var)
+    }
 }
 
 /// Visitor for the [TyVisitable::substitute] function.
@@ -74,7 +91,6 @@ impl<'a> SubstVisitor<'a> {
     ) -> Option<T>
     where
         Id: Copy,
-        T: TyVisitable,
         DeBruijnVar<Id>: Into<T>,
     {
         match var {
@@ -111,20 +127,14 @@ impl VarsVisitor for SubstVisitor<'_> {
                 .map(|c| c.kind().clone())
         })
     }
-    fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
+    fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<ClauseReplacement> {
         if self.explicits_only {
             None
         } else {
             self.process_var(v, |id| {
-                Some(
-                    self.generics
-                        .trait_refs
-                        .get(id)?
-                        .clone()
-                        .erase()
-                        .kind
-                        .clone(),
-                )
+                let tref = self.generics.trait_refs.get(id)?;
+                let bound_kind = tref.0.map_ref(|tref| tref.kind.clone());
+                Some(ClauseReplacement::Proof(bound_kind))
             })
         }
     }
@@ -208,11 +218,19 @@ pub trait TyVisitable: Sized + AstVisitable {
                             *kind = new_kind.move_under_binders(self.depth);
                         }
                     }
-                    TraitRefKind::Clause(var) => {
+                    TraitRefKind::Clause(var, regions) => {
                         if let Some(var) = var.move_out_from_depth(self.depth)
-                            && let Some(new_kind) = self.v.visit_clause_var(var)
+                            && let Some(replacement) = self.v.visit_clause_var(var)
                         {
-                            *kind = new_kind.move_under_binders(self.depth);
+                            *kind = match replacement {
+                                ClauseReplacement::Var(new_var) => TraitRefKind::Clause(
+                                    new_var.move_under_binders(self.depth),
+                                    regions.clone(),
+                                ),
+                                ClauseReplacement::Proof(proof) => {
+                                    proof.move_under_binders(self.depth).apply(regions.clone())
+                                }
+                            };
                         }
                     }
                     _ => {}

@@ -1979,10 +1979,16 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 // Call to a function pointer.
                 let op = self.translate_operand(span, func)?;
                 let regions = match op.ty().kind() {
-                    TyKind::FnPtr(sig) => sig
-                        .regions
-                        .map_ref_indexed(|_, _| self.translate_erased_region()),
-                    _ => IndexVec::new(),
+                    TyKind::FnPtr(sig) => RegionArgs::new(
+                        sig.regions
+                            .map_ref_indexed(|_, _| self.translate_erased_region()),
+                    ),
+                    _ => raise_error!(
+                        self,
+                        span,
+                        "expected a function pointer for call operand, got {}",
+                        op.ty().with_ctx(&self.into_fmt())
+                    ),
                 };
                 FnOperand::Dynamic(op, regions)
             }

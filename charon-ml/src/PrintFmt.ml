@@ -711,7 +711,7 @@ and dyn_trait_type_constraint_to_string (env : fmt_env)
         target_clause_and_path
           (trait_clause_id_format_as_implied clause_id :: path)
           parent
-    | Clause (Bound (_, clause_id)) | Clause (Free clause_id) ->
+    | Clause (Bound (_, clause_id), _) | Clause (Free clause_id, _) ->
         Some (clause_id, List.rev path)
     | _ -> None
   in
@@ -837,7 +837,7 @@ and pp_trait_ref_kind (env : fmt_env) (implements : trait_decl_ref option)
                Format.fprintf fmt "%s  = %a" name (pp_ty env) assoc_ty.value))
           types;
       pp_string fmt "}"
-  | Clause id -> pp_string fmt (trait_db_var_to_string env id)
+  | Clause (id, _) -> pp_string fmt (trait_db_var_to_string env id)
   | ParentClause (tref, clause_id) ->
       Format.fprintf fmt "%a::%s" (pp_trait_ref env) tref
         (trait_clause_id_format_as_implied clause_id)
@@ -1656,7 +1656,7 @@ let pp_fn_operand (env : fmt_env) (fmt : Format.formatter) (op : fn_operand) :
     unit =
   match op with
   | FnOpRegular func -> pp_fn_ptr env fmt func
-  | FnOpDynamic (op, regions) ->
+  | FnOpDynamic (op, { regions }) ->
       Format.fprintf fmt "(%a)" (pp_operand env) op;
       if regions <> [] then
         Format.fprintf fmt "<%a>"

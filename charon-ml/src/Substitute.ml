@@ -25,7 +25,7 @@ type subst = {
   ty_subst : TypeVarId.id de_bruijn_var -> ty;
   cg_subst : ConstGenericVarId.id de_bruijn_var -> constant_expr_kind;
       (** Substitution from *local* trait clause to trait instance *)
-  tr_subst : TraitClauseId.id de_bruijn_var -> trait_ref_kind;
+  tr_subst : TraitClauseId.id de_bruijn_var -> region_args -> trait_ref_kind;
       (** Substitution for the [Self] trait instance *)
   tr_self : trait_ref_kind;
 }
@@ -36,7 +36,7 @@ type single_binder_subst = {
   r_sb_subst : RegionId.id -> region;
   ty_sb_subst : TypeVarId.id -> ty;
   cg_sb_subst : ConstGenericVarId.id -> constant_expr_kind;
-  tr_sb_subst : TraitClauseId.id -> trait_ref_kind;
+  tr_sb_subst : TraitClauseId.id -> region_args -> trait_ref_kind;
       (** Substitution for the [Self] trait instance *)
   tr_sb_self : trait_ref_kind;
 }
@@ -46,7 +46,7 @@ let empty_subst : subst =
     r_subst = (fun var -> RVar var);
     ty_subst = (fun var -> TVar var);
     cg_subst = (fun var -> CVar var);
-    tr_subst = (fun var -> Clause var);
+    tr_subst = (fun var regions -> Clause (var, regions));
     tr_self = Self;
   }
 
@@ -164,9 +164,10 @@ let shift_subst (subst : subst) : subst =
         (st_shift_visitor#visit_constant_expr_kind 1)
         (compose subst.cg_subst decr_db_var);
     tr_subst =
-      compose
-        (st_shift_visitor#visit_trait_ref_kind 1)
-        (compose subst.tr_subst decr_db_var);
+      (fun var regions ->
+        st_shift_visitor#visit_trait_ref_kind 1
+          (subst.tr_subst (decr_db_var var)
+             (st_shift_visitor#visit_region_args (-1) regions)));
     tr_self = subst.tr_self;
   }
 
@@ -212,7 +213,11 @@ let st_substitute_visitor =
     method! visit_RVar (subst : subst) var = subst.r_subst var
     method! visit_TVar (subst : subst) var = subst.ty_subst var
     method! visit_CVar (subst : subst) var = subst.cg_subst var
-    method! visit_Clause (subst : subst) var = subst.tr_subst var
+
+    method! visit_Clause (subst : subst) var regions =
+      let regions = self#visit_region_args subst regions in
+      subst.tr_subst var regions
+
     method! visit_Self (subst : subst) = subst.tr_self
   end
 
@@ -348,18 +353,24 @@ let make_const_generic_subst_from_vars (vars : const_generic_param list)
     (List.map (fun (x : const_generic_param) -> x.index) vars)
     cgs
 
-(** Create a trait substitution from a list of trait clause ids and a list of
-    trait refs *)
-let make_trait_subst (var_ids : TraitClauseId.id list)
-    (trs : trait_ref_kind list) : TraitClauseId.id -> trait_ref_kind =
-  let map = TraitClauseId.Map.of_list (List.combine var_ids trs) in
-  fun varid -> TraitClauseId.Map.find varid map
-
+(** Instantiate the proof supplied for an in-scope clause with that clause's
+    region arguments. *)
 let make_trait_subst_from_clauses (clauses : trait_param list)
-    (trs : poly_trait_ref list) : TraitClauseId.id -> trait_ref_kind =
-  make_trait_subst
-    (List.map (fun (x : trait_param) -> x.clause_id) clauses)
-    (List.map (fun x -> (poly_trait_ref_erase_binder x).kind) trs)
+    (trs : poly_trait_ref list) :
+    TraitClauseId.id -> region_args -> trait_ref_kind =
+  let map =
+    TraitClauseId.Map.of_list
+      (List.combine
+         (List.map (fun (x : trait_param) -> x.clause_id) clauses)
+         trs)
+  in
+  fun varid regions ->
+    let tr = TraitClauseId.Map.find varid map in
+    let r_sb_subst =
+      make_region_subst_from_vars tr.binder_regions regions.regions
+    in
+    let subst = subst_remove_binder_zero { error_sb_subst with r_sb_subst } in
+    (trait_ref_substitute subst tr.binder_value).kind
 
 let make_sb_subst_from_generics (params : generic_params) (args : generic_args)
     (tr_self : trait_ref_kind) : single_binder_subst =
@@ -748,12 +759,20 @@ let bound_identity_args (params : generic_params) : generic_args =
     trait_refs =
       List.map
         (fun (clause : trait_param) ->
-          let kind = s.tr_sb_subst clause.clause_id in
           {
             clause.trait with
             binder_value =
               {
-                kind = trait_ref_kind_substitute move_under_binder_subst kind;
+                kind =
+                  Clause
+                    ( Bound (1, clause.clause_id),
+                      {
+                        regions =
+                          List.map
+                            (fun (r : region_param) ->
+                              RVar (Bound (0, r.index)))
+                            clause.trait.binder_regions;
+                      } );
                 trait_decl_ref = clause.trait.binder_value;
               };
           })

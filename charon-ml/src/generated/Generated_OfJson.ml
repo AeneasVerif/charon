@@ -783,7 +783,7 @@ and fn_operand_of_json (ctx : of_json_ctx) (js : json) :
         Ok (FnOpRegular _0)
     | `Assoc [ ("Dynamic", `List [ _0; _1 ]) ] ->
         let* _0 = operand_of_json ctx _0 in
-        let* _1 = index_vec_of_json region_id_of_json region_of_json ctx _1 in
+        let* _1 = region_args_of_json ctx _1 in
         Ok (FnOpDynamic (_0, _1))
     | _ -> Error "")
 
@@ -1241,6 +1241,17 @@ and region_of_json (ctx : of_json_ctx) (js : json) : (region, string) result =
     | `String "Erased" -> Ok RErased
     | _ -> Error "")
 
+and region_args_of_json (ctx : of_json_ctx) (js : json) :
+    (region_args, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("regions", regions) ] ->
+        let* regions =
+          index_vec_of_json region_id_of_json region_of_json ctx regions
+        in
+        Ok ({ regions } : region_args)
+    | _ -> Error "")
+
 and region_binder_of_json :
     'a0.
     (of_json_ctx -> json -> ('a0, string) result) ->
@@ -1546,9 +1557,10 @@ and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("TraitImpl", _0) ] ->
         let* _0 = trait_impl_ref_of_json ctx _0 in
         Ok (TraitImpl _0)
-    | `Assoc [ ("Clause", _0) ] ->
+    | `Assoc [ ("Clause", `List [ _0; _1 ]) ] ->
         let* _0 = de_bruijn_var_of_json trait_clause_id_of_json ctx _0 in
-        Ok (Clause _0)
+        let* _1 = region_args_of_json ctx _1 in
+        Ok (Clause (_0, _1))
     | `Assoc [ ("ParentClause", `List [ _0; _1 ]) ] ->
         let* _0 = trait_ref_of_json ctx _0 in
         let* _1 = trait_clause_id_of_json ctx _1 in

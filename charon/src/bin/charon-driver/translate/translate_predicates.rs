@@ -100,9 +100,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 })
                 .enumerate()
             {
-                self.innermost_binder_mut()
-                    .trait_preds
-                    .insert(pred.id.clone(), next_clause_id + i);
+                self.innermost_binder_mut().trait_preds.insert(
+                    pred.id.clone(),
+                    (next_clause_id + i, pred.clause.kind.bound_vars.len()),
+                );
             }
         }
 
@@ -176,7 +177,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .trait_preds
                         .get(&pred.id)
                         .unwrap();
-                    debug_assert_eq!(clause_id, *expected_clause_id);
+                    debug_assert_eq!(clause_id, expected_clause_id.0);
                 }
             }
             ClauseKind::RegionOutlives(p) => {
@@ -288,7 +289,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             TraitProofKind::SelfProof => TraitRefKind::SelfId,
             TraitProofKind::LocalBound(id) => match self.lookup_clause_var(span, id) {
-                Ok(var) => TraitRefKind::Clause(var),
+                Ok((var, region_count)) => {
+                    TraitRefKind::Clause(var, RegionArgs::erased(region_count))
+                }
                 Err(err) => TraitRefKind::Unknown(err.msg),
             },
             TraitProofKind::Derived {

@@ -94,3 +94,4 @@ changes, this must be propagated. Use `make generate-asts` to regenerate the gen
 
 Any change to the AST must come with a version bump to make the deserializers emit nice errors. Just
 bump the patch version in `Cargo.toml` then run `make test` at the root to propagate the changes.
+Only bump the version once per branch, no need to bump every commit.

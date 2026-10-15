@@ -974,16 +974,21 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     // clause available in trait declarations.
                     struct ReplaceSelfVisitor;
                     impl VarsVisitor for ReplaceSelfVisitor {
-                        fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
+                        fn visit_clause_var(
+                            &mut self,
+                            v: ClauseDbVar,
+                        ) -> Option<ClauseReplacement> {
                             if let DeBruijnVar::Bound(DeBruijnId::ZERO, clause_id) = v {
                                 // Replace clause 0 and decrement the others.
                                 Some(if let Some(new_id) = clause_id.index().checked_sub(1) {
-                                    TraitRefKind::Clause(DeBruijnVar::Bound(
+                                    ClauseReplacement::Var(DeBruijnVar::Bound(
                                         DeBruijnId::ZERO,
                                         TraitClauseId::new(new_id),
                                     ))
                                 } else {
-                                    TraitRefKind::SelfId
+                                    ClauseReplacement::Proof(RegionBinder::empty(
+                                        TraitRefKind::SelfId,
+                                    ))
                                 })
                             } else {
                                 None
@@ -1245,7 +1250,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                         TransItemSourceKind::Fun,
                                     )?;
                                     // FIXME(#513): the regions may not match.
-                                    let late_bound_regions = ctx
+                                    let late_bound_regions: RegionArgs = ctx
                                         .innermost_binder()
                                         .bound_region_vars
                                         .iter()
@@ -1436,6 +1441,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         {
             struct FixSelfVisitor {
                 binder_depth: DeBruijnId,
+                clause_regions: IndexVec<TraitClauseId, usize>,
             }
             struct UnhandledSelf;
             impl Visitor for FixSelfVisitor {
@@ -1459,18 +1465,23 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         TraitRefKind::ParentClause(sub, clause_id)
                             if matches!(sub.kind, TraitRefKind::SelfId) =>
                         {
-                            *kind = TraitRefKind::Clause(DeBruijnVar::bound(
-                                self.binder_depth,
-                                *clause_id,
-                            ))
+                            *kind = TraitRefKind::Clause(
+                                DeBruijnVar::bound(self.binder_depth, *clause_id),
+                                RegionArgs::erased(self.clause_regions[*clause_id]),
+                            )
                         }
                         _ => (),
                     }
                     self.visit_inner(kind)
                 }
             }
+            let clause_regions = timpl
+                .generics
+                .trait_clauses
+                .map_ref(|clause| clause.trait_.regions.len());
             match timpl.drive_mut(&mut FixSelfVisitor {
                 binder_depth: DeBruijnId::zero(),
+                clause_regions,
             }) {
                 ControlFlow::Continue(()) => {}
                 ControlFlow::Break(UnhandledSelf) => {
