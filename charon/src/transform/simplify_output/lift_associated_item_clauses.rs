@@ -82,6 +82,7 @@ impl TransformPass for Transform {
                         type_id,
                         generics,
                         clause_id,
+                        clause_args,
                     } = trkind
                     else {
                         unreachable!()
@@ -94,12 +95,13 @@ impl TransformPass for Transform {
                         Some(new_id)
                     })();
                     match new_id {
-                        Some(new_id) => ParentClause(trait_ref, new_id),
+                        Some(new_id) => ParentClause(trait_ref, new_id, clause_args),
                         None => ItemClause {
                             trait_ref,
                             type_id,
                             generics,
                             clause_id,
+                            clause_args,
                         },
                     }
                 }),

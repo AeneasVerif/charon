@@ -707,7 +707,7 @@ and dyn_trait_type_constraint_to_string (env : fmt_env)
     (ttc : trait_type_constraint) : (trait_clause_id * string) option =
   let rec target_clause_and_path path (tref : trait_ref) =
     match tref.kind with
-    | ParentClause (parent, clause_id) ->
+    | ParentClause (parent, clause_id, _) ->
         target_clause_and_path
           (trait_clause_id_format_as_implied clause_id :: path)
           parent
@@ -838,10 +838,10 @@ and pp_trait_ref_kind (env : fmt_env) (implements : trait_decl_ref option)
           types;
       pp_string fmt "}"
   | Clause (id, _) -> pp_string fmt (trait_db_var_to_string env id)
-  | ParentClause (tref, clause_id) ->
+  | ParentClause (tref, clause_id, _) ->
       Format.fprintf fmt "%a::%s" (pp_trait_ref env) tref
         (trait_clause_id_format_as_implied clause_id)
-  | ItemClause (tref, type_id, generics, clause_id) ->
+  | ItemClause (tref, type_id, generics, clause_id, _) ->
       let type_name =
         GAstUtils.get_assoc_type_name env.crate tref.trait_decl_ref.id type_id
       in

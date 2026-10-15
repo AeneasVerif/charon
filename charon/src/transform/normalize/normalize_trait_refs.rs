@@ -31,7 +31,7 @@ impl VisitAstMut for NormalizeTraitRefs<'_> {
         if self.steps >= MAX_NORMALIZATION_STEPS {
             return;
         }
-        if let TraitRefKind::ParentClause(parent, clause_id) = &tref.kind {
+        if let TraitRefKind::ParentClause(parent, clause_id, clause_args) = &tref.kind {
             *tref = match &parent.kind {
                 TraitRefKind::TraitImpl(impl_ref) => {
                     let Some(proof) = self.impl_parent_refs.get(impl_ref.id) else {
@@ -40,7 +40,7 @@ impl VisitAstMut for NormalizeTraitRefs<'_> {
                     let mut proof = ItemBinder::new(impl_ref.id, proof[*clause_id].clone())
                         .substitute(ItemBinder::new(CurrentItem, &impl_ref.generics))
                         .under_current_binder()
-                        .erase();
+                        .apply(clause_args.clone());
                     if *tref == proof {
                         return;
                     }
@@ -55,7 +55,7 @@ impl VisitAstMut for NormalizeTraitRefs<'_> {
                     let Some(proof) = parent_trait_refs.get(*clause_id) else {
                         return;
                     };
-                    proof.clone().erase()
+                    proof.clone().apply(clause_args.clone())
                 }
                 _ => return,
             };

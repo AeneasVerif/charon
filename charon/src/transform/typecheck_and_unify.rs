@@ -498,12 +498,46 @@ impl VisitAst for TypeCheckVisitor<'_> {
                 }
                 Some(_) => {}
             },
+            TraitRefKind::ParentClause(parent, clause_id, args) => {
+                if let Some(clause) = self
+                    .ctx
+                    .translated
+                    .trait_decls
+                    .get(parent.trait_id())
+                    .and_then(|decl| decl.implied_clauses.get(*clause_id))
+                    && args.regions.len() != clause.trait_.regions.len()
+                {
+                    self.error(format!(
+                        "Parent clause {clause_id} expects {} region args, got {}",
+                        clause.trait_.regions.len(),
+                        args.regions.len()
+                    ));
+                }
+            }
             TraitRefKind::ItemClause {
                 trait_ref,
                 type_id,
                 generics,
-                ..
-            } => self.assert_matches_trait_type(trait_ref, *type_id, generics),
+                clause_id,
+                clause_args,
+            } => {
+                self.assert_matches_trait_type(trait_ref, *type_id, generics);
+                if let Some(clause) = self
+                    .ctx
+                    .translated
+                    .trait_decls
+                    .get(trait_ref.trait_id())
+                    .and_then(|decl| decl.types.get(*type_id))
+                    .and_then(|assoc_ty| assoc_ty.skip_binder.implied_clauses.get(*clause_id))
+                    && clause_args.regions.len() != clause.trait_.regions.len()
+                {
+                    self.error(format!(
+                        "Item clause {clause_id} expects {} region args, got {}",
+                        clause.trait_.regions.len(),
+                        clause_args.regions.len()
+                    ));
+                }
+            }
             TraitRefKind::BuiltinOrAuto {
                 parent_trait_refs,
                 types,

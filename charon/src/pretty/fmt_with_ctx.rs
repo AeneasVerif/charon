@@ -618,7 +618,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
                 let mut tref = &cstr.trait_ref;
                 loop {
                     match &tref.kind {
-                        TraitRefKind::ParentClause(parent_trait_ref, clause_id) => {
+                        TraitRefKind::ParentClause(parent_trait_ref, clause_id, _) => {
                             path.push(*clause_id);
                             tref = parent_trait_ref;
                         }
@@ -3012,7 +3012,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.kind {
             TraitRefKind::SelfId => write!(f, "Self"),
-            TraitRefKind::ParentClause(sub, clause_id) => {
+            TraitRefKind::ParentClause(sub, clause_id, _) => {
                 let sub = sub.with_ctx(ctx);
                 write!(f, "{sub}::{}", clause_id.format_as_implied())
             }
@@ -3021,6 +3021,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
                 type_id,
                 generics,
                 clause_id,
+                ..
             } => {
                 write!(f, "{}::", trait_ref.with_ctx(ctx))?;
                 ctx.format_assoc_type_name(f, trait_ref.trait_id(), *type_id)?;

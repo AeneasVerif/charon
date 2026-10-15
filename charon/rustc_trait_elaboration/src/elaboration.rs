@@ -35,24 +35,6 @@ fn initial_self_pred<'tcx, Id: ItemId>(
     }
 }
 
-#[tracing::instrument(level = "trace", skip(elab_ctx, state))]
-fn parents_trait_predicates<'tcx, Id: ItemId>(
-    elab_ctx: ElaborationCtx<'tcx, Id>,
-    state: &Id::State<'tcx>,
-    self_trait_ref: PolyTraitRef<'tcx>,
-) -> Vec<PolyTraitRef<'tcx>> {
-    let tcx = elab_ctx.tcx;
-    let def_id = Id::from_rust_def_id(state, self_trait_ref.def_id());
-    ItemPredicates::implied(elab_ctx, state, def_id)
-        .iter()
-        // Substitute with the `self` args so that the clause makes sense in the
-        // outside context.
-        .map(|pred| pred.clause.instantiate_supertrait(tcx, self_trait_ref))
-        .filter_map(|pred| pred.as_trait_clause())
-        .map(|pred| pred.to_poly_trait_ref())
-        .collect()
-}
-
 /// A trait proof we have in our context.
 #[derive(Debug, Clone)]
 struct Candidate<'tcx, Id: ItemId = DefId> {
@@ -321,16 +303,34 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         new_candidates: Vec<Candidate<'tcx, Id>>,
     ) {
         let elab_ctx = self.elab_ctx;
+        let tcx = elab_ctx.tcx;
         // Then recursively add their parents. This way ensures a breadth-first order,
         // which means we select the shortest path when looking up predicates.
         self.insert_candidates(
             state,
             new_candidates.into_iter().flat_map(|candidate| {
-                parents_trait_predicates(elab_ctx, state, candidate.pred)
+                let def_id = Id::from_rust_def_id(state, candidate.pred.def_id());
+                ItemPredicates::implied(elab_ctx, state, def_id)
+                    .predicates
                     .into_iter()
+                    .filter(|pred| pred.clause.as_trait_clause().is_some())
                     .enumerate()
-                    .map(move |(index, parent_pred)| {
-                        candidate.push(elab_ctx, parent_pred, ImpliedPredicate::Parent { index })
+                    .map(|(index, pred)| {
+                        let pred_id = ImpliedPredicate::Parent {
+                            index,
+                            bound_region_count: pred.clause.kind().bound_vars().len(),
+                        };
+                        (pred_id, pred)
+                    })
+                    // Substitute with the `self` args so that the clause makes sense in the
+                    // outside context. This merges nested region binders.
+                    .map(move |(pred_id, pred)| {
+                        let pred = pred.clause.instantiate_supertrait(tcx, candidate.pred);
+                        (pred_id, pred)
+                    })
+                    .map(move |(pred_id, pred)| {
+                        let pred = pred.as_trait_clause().unwrap().to_poly_trait_ref();
+                        candidate.push(elab_ctx, pred, pred_id)
                     })
             }),
         );
@@ -372,26 +372,26 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
             ItemPredicates::implied(self.elab_ctx, state, Id::from_rust_def_id(state, *def_id));
         let item_bounds = item_bounds
             .iter_trait_clauses()
-            // Substitute the item generics
-            .map(|(_, tref)| {
-                EarlyBinder::bind(tcx, tref)
+            .enumerate()
+            .map(|(index, (_, tref))| {
+                let bound_region_count = tref.bound_vars().len();
+                // Substitute the item generics
+                let pred = EarlyBinder::bind(tcx, tref)
                     .instantiate(tcx, args)
-                    .skip_normalization()
-            })
-            .enumerate();
+                    .skip_normalization();
+                let pred_id = ImpliedPredicate::AssocItem {
+                    item: item_ref.clone(),
+                    index,
+                    bound_region_count,
+                };
+                (pred_id, pred)
+            });
 
         // Add all the bounds on the corresponding associated item.
         self.insert_candidates(
             state,
-            item_bounds.map(|(index, pred)| {
-                Candidate::from_trait_proof(proof.push(
-                    elab_ctx,
-                    pred,
-                    ImpliedPredicate::AssocItem {
-                        item: item_ref.clone(),
-                        index,
-                    },
-                ))
+            item_bounds.map(|(pred_id, pred)| {
+                Candidate::from_trait_proof(proof.push(elab_ctx, pred, pred_id))
             }),
         );
     }

@@ -73,10 +73,14 @@ pub enum ImpliedPredicate<'tcx, Id: ItemId = DefId> {
         item: ItemRef<'tcx, Id>,
         /// The index of this predicate among the trait predicates returned by `ItemPredicates::Implied`.
         index: usize,
+        /// Number of regions bound by the corresponding clause.
+        bound_region_count: usize,
     },
     Parent {
         /// The index of this predicate among the trait predicates returned by `ItemPredicates::Implied`.
         index: usize,
+        /// Number of regions bound by the corresponding clause.
+        bound_region_count: usize,
     },
 }
 

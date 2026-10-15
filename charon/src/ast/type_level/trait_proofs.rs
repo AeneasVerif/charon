@@ -70,7 +70,7 @@ pub enum TraitRefKind {
     ///                     parent clause 1 of clause 0
     /// }
     /// ```
-    ParentClause(TraitRef, TraitClauseId),
+    ParentClause(TraitRef, TraitClauseId, RegionArgs),
 
     /// A clause defined on an associated type.
     ///
@@ -90,6 +90,7 @@ pub enum TraitRefKind {
     ///       type_id: W, // look at the item `W`
     ///       generics: [u32], // with these args
     ///       clause_id: 1, // and take the clause 1 of this item
+    ///       clause_args: [],
     ///   }
     /// }
     /// ```
@@ -103,6 +104,8 @@ pub enum TraitRefKind {
         generics: GenericArgs,
         /// Id of the clause among those for this item.
         clause_id: TraitClauseId,
+        /// Region arguments that instantiate the higher-ranked item clause.
+        clause_args: RegionArgs,
     },
 
     /// The implicit `Self: Trait` clause. Present inside trait declarations, including trait
@@ -218,10 +221,11 @@ impl TraitRef {
             .trait_
             .clone()
             .substitute_with_tref(&self);
-        Some(PolyTraitRef::new(
-            TraitRefKind::ParentClause(self, clause_id),
-            trait_decl_ref,
-        ))
+        let regions = trait_decl_ref.identity_region_args();
+        Some(PolyTraitRef(trait_decl_ref.map(|pred| {
+            let kind = TraitRefKind::ParentClause(self.move_under_binder(), clause_id, regions);
+            TraitRef::new(kind, pred)
+        })))
     }
 
     pub fn vtable_ref<'a>(&'a self, krate: &'a TranslatedCrate) -> Option<&'a GlobalDeclRef> {
@@ -256,6 +260,11 @@ impl PolyTraitRef {
         self.0.no_bound_vars()
     }
 
+    /// Instantiate the bound regions with the given arguments.
+    pub fn apply(self, args: RegionArgs) -> TraitRef {
+        self.0.apply(args)
+    }
+
     /// Instantiate the bound regions with erased regions.
     pub fn erase(self) -> TraitRef {
         self.0.erase()
@@ -274,6 +283,16 @@ impl PolyTraitRef {
             self.0
                 .map_ref_opt(|tref| tref.vtable_ref(krate).cloned())?
                 .erase(),
+        )
+    }
+}
+
+impl PolyTraitDeclRef {
+    /// The region arguments at depth 0 corresponding to this tref's bound regions.
+    pub fn identity_region_args(&self) -> RegionArgs {
+        RegionArgs::new(
+            self.regions
+                .map_ref_indexed(|id, _| Region::Var(DeBruijnVar::bound(DeBruijnId::ZERO, id))),
         )
     }
 }
