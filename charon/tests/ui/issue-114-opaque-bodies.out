@@ -138,6 +138,17 @@ pub fn core::num::{i64}::MAX() -> i64
 
 pub const core::num::{i64}::MAX: i64 = core::num::{i64}::MAX()
 
+pub fn core::num::{i64}::MIN() -> i64
+{
+    let _0: i64; // return
+
+    storage_live(_0)
+    _0 = ~(copy core::num::{i64}::MAX)
+    return
+}
+
+pub const core::num::{i64}::MIN: i64 = core::num::{i64}::MIN()
+
 pub fn core::num::{u32}::MAX() -> u32
 {
     let _0: u32; // return
@@ -174,17 +185,6 @@ pub fn core::num::{i32}::MIN() -> i32
 }
 
 pub const core::num::{i32}::MIN: i32 = core::num::{i32}::MIN()
-
-pub fn core::num::{i64}::MIN() -> i64
-{
-    let _0: i64; // return
-
-    storage_live(_0)
-    _0 = ~(copy core::num::{i64}::MAX)
-    return
-}
-
-pub const core::num::{i64}::MIN: i64 = core::num::{i64}::MIN()
 
 // Full name: core::convert::num::{impl From<i32> for i64}::from
 pub fn from(small: i32) -> i64
@@ -248,11 +248,6 @@ pub fn from(small: i32) -> i64
 #[lang_item(PhantomData)]
 pub struct PhantomData<T> {}
 
-// Full name: core::num::niche_types::UsizeNoHighBit
-pub struct UsizeNoHighBit {
-  _0: usize is 0usize..=9223372036854775807usize,
-}
-
 pub fn core::num::{usize}::MAX() -> usize
 {
     let _0: usize; // return
@@ -263,6 +258,11 @@ pub fn core::num::{usize}::MAX() -> usize
 }
 
 pub const core::num::{usize}::MAX: usize = core::num::{usize}::MAX()
+
+// Full name: core::num::niche_types::UsizeNoHighBit
+pub struct UsizeNoHighBit {
+  _0: usize is 0usize..=9223372036854775807usize,
+}
 
 // Full name: core::ptr::non_null::NonNull
 #[lang_item(NonNull)]

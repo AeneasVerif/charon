@@ -1,5 +1,71 @@
 # Final LLBC before serialization:
 
+// Full name: core::option::Option
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some { _0: T },
+}
+
+// Full name: core::slice::index::SliceIndex
+#[diagnostic_item("SliceIndex")]
+pub unsafe trait SliceIndex<Self, T>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: MetaSized)
+    proof ImpliedClause2: (Self::Output: MetaSized)
+    type Output
+    fn get<'_0_1>;
+    fn get_mut<'_0_1>;
+    fn get_unchecked;
+    fn get_unchecked_mut;
+    #[track_caller]
+    fn index<'_0_1>;
+    #[track_caller]
+    fn index_mut<'_0_1>;
+    vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
+}
+
+// Full name: core::slice::index::{impl Index<I> for [T]}::index
+pub fn impl_Index_for_slice::index<'_0, T, I>(self: &'_0 [T], index: I) -> &'_0 TraitClause2::Output
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (I: Sized),
+    TraitClause2: (I: SliceIndex<[T]>),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: TraitClause2::Output: '_0,
+    TypeOutlives2: I: '_0,
+{
+    let _0: &'1 TraitClause2::Output; // return
+    let self: &'3 [T]; // arg #1
+    let index: I; // arg #2
+    let _3: &'4 TraitClause2::Output; // anonymous local
+    let _4: I; // anonymous local
+    let _5: &'5 [T]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = move index
+    storage_live(_5)
+    _5 = &(*self) with_metadata(copy self.metadata)
+    _3 = TraitClause2::index<'6>(move _4, move _5)
+    ↳⚡ storage_dead(index)
+        storage_dead(self)
+        unwind_continue
+    _0 = &(*_3) with_metadata(copy _3.metadata)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(index)
+    storage_dead(self)
+    return
+}
+
 struct (_, _)<A, B>
 where
     TraitClause0: (A: Sized),
@@ -11,117 +77,7 @@ where
 struct () {}
 
 #[track_caller]
-fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: usize) -> !
-{
-    let _0: !; // return
-    let start: usize; // arg #1
-    let len: usize; // arg #2
-    let _3: !; // anonymous local
-    let _4: Arguments<'1>; // anonymous local
-    let args_5: (&'11 usize, &'12 usize); // local
-    let _6: &'16 usize; // anonymous local
-    let _7: &'17 usize; // anonymous local
-    let args_8: [Argument<'26>; 2usize]; // local
-    let _9: Argument<'30>; // anonymous local
-    let _10: &'31 usize; // anonymous local
-    let _11: Argument<'32>; // anonymous local
-    let _12: &'33 usize; // anonymous local
-    let _13: &'35 [u8; 57usize]; // anonymous local
-    let _14: &'36 [u8; 57usize]; // anonymous local
-    let _15: &'42 [Argument<'43>; 2usize]; // anonymous local
-    let _16: &'47 [Argument<'48>; 2usize]; // anonymous local
-    let _17: &'52 usize; // anonymous local
-    let _18: &'53 usize; // anonymous local
-    let _19: [u8; 57usize]; // anonymous local
-    let _20: &'68 [u8; 57usize]; // anonymous local
-
-    storage_live(_0)
-    storage_live(_17)
-    storage_live(_18)
-    storage_live(_3)
-    storage_live(_4)
-    storage_live(args_5)
-    storage_live(_6)
-    _6 = &start
-    storage_live(_7)
-    _7 = &len
-    args_5 = (move _6, move _7)
-    storage_dead(_7)
-    storage_dead(_6)
-    storage_live(args_8)
-    storage_live(_9)
-    storage_live(_10)
-    _17 = copy args_5._0
-    _10 = &(*_17)
-    _9 = new_display<'60, '62, usize>[{built_in impl Sized for usize}, {impl#7}](move _10)
-    ↳⚡ storage_dead(_18)
-        storage_dead(_17)
-        storage_dead(args_8)
-        storage_dead(args_5)
-        storage_dead(_4)
-        storage_dead(_3)
-        storage_dead(len)
-        storage_dead(start)
-        unwind_continue
-    storage_dead(_10)
-    storage_live(_11)
-    storage_live(_12)
-    _18 = copy args_5._1
-    _12 = &(*_18)
-    _11 = new_display<'64, '66, usize>[{built_in impl Sized for usize}, {impl#7}](move _12)
-    ↳⚡ storage_dead(_18)
-        storage_dead(_17)
-        storage_dead(args_8)
-        storage_dead(args_5)
-        storage_dead(_4)
-        storage_dead(_3)
-        storage_dead(len)
-        storage_dead(start)
-        unwind_continue
-    storage_dead(_12)
-    args_8 = [move _9, move _11]
-    storage_dead(_11)
-    storage_dead(_9)
-    storage_live(_13)
-    storage_live(_14)
-    storage_live(_19)
-    _19 = [const 18u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 115u8, const 116u8, const 97u8, const 114u8, const 116u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 192u8, const 34u8, const 32u8, const 111u8, const 117u8, const 116u8, const 32u8, const 111u8, const 102u8, const 32u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 102u8, const 111u8, const 114u8, const 32u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 111u8, const 102u8, const 32u8, const 108u8, const 101u8, const 110u8, const 103u8, const 116u8, const 104u8, const 32u8, const 192u8, const 0u8]
-    storage_live(_20)
-    _20 = &_19
-    _14 = move _20
-    _13 = &(*_14)
-    storage_live(_15)
-    storage_live(_16)
-    _16 = &args_8
-    _15 = &(*_16)
-    _4 = core::fmt::{Arguments<'a>}::new<'73, 57usize, 2usize>(move _13, move _15)
-    ↳⚡ storage_dead(_18)
-        storage_dead(_17)
-        storage_dead(args_8)
-        storage_dead(args_5)
-        storage_dead(_4)
-        storage_dead(_3)
-        storage_dead(len)
-        storage_dead(start)
-        unwind_continue
-    storage_dead(_16)
-    storage_dead(_15)
-    storage_dead(_14)
-    storage_dead(_13)
-    _3 = panic_fmt<'75>(move _4)
-    ↳⚡ storage_dead(_18)
-        storage_dead(_17)
-        storage_dead(args_8)
-        storage_dead(args_5)
-        storage_dead(_4)
-        storage_dead(_3)
-        storage_dead(len)
-        storage_dead(start)
-        unwind_continue
-}
-
-#[track_caller]
-fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: usize) -> !
 {
     let _0: !; // return
     let end: usize; // arg #1
@@ -225,6 +181,32 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
         storage_dead(args_5)
         storage_dead(_4)
         storage_dead(_3)
+        storage_dead(len)
+        storage_dead(end)
+        unwind_continue
+}
+
+#[track_caller]
+fn core::slice::index::slice_index_fail::do_panic#3(end: usize, len: usize) -> !
+{
+    let _0: !; // return
+    let end: usize; // arg #1
+    let len: usize; // arg #2
+    let _3: (usize, usize); // anonymous local
+    let _4: usize; // anonymous local
+    let _5: usize; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy end
+    storage_live(_5)
+    _5 = copy len
+    _3 = (move _4, move _5)
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = core::slice::index::slice_index_fail::do_panic#3::runtime(move _3._0, move _3._1)
+    ↳⚡ storage_dead(_3)
         storage_dead(len)
         storage_dead(end)
         unwind_continue
@@ -341,7 +323,33 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
 }
 
 #[track_caller]
-fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic#2(start: usize, end: usize) -> !
+{
+    let _0: !; // return
+    let start: usize; // arg #1
+    let end: usize; // arg #2
+    let _3: (usize, usize); // anonymous local
+    let _4: usize; // anonymous local
+    let _5: usize; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy start
+    storage_live(_5)
+    _5 = copy end
+    _3 = (move _4, move _5)
+    storage_dead(_5)
+    storage_dead(_4)
+    _0 = core::slice::index::slice_index_fail::do_panic#2::runtime(move _3._0, move _3._1)
+    ↳⚡ storage_dead(_3)
+        storage_dead(end)
+        storage_dead(start)
+        unwind_continue
+}
+
+#[track_caller]
+fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: usize) -> !
 {
     let _0: !; // return
     let end: usize; // arg #1
@@ -450,43 +458,6 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
         unwind_continue
 }
 
-// Full name: core::option::Option
-#[lang_item(Option)]
-#[diagnostic_item("Option")]
-pub enum Option<T>
-where
-    TraitClause0: (T: Sized),
-{
-  None,
-  Some { _0: T },
-}
-
-#[track_caller]
-fn core::slice::index::slice_index_fail::do_panic(start: usize, len: usize) -> !
-{
-    let _0: !; // return
-    let start: usize; // arg #1
-    let len: usize; // arg #2
-    let _3: (usize, usize); // anonymous local
-    let _4: usize; // anonymous local
-    let _5: usize; // anonymous local
-
-    storage_live(_0)
-    storage_live(_3)
-    storage_live(_4)
-    _4 = copy start
-    storage_live(_5)
-    _5 = copy len
-    _3 = (move _4, move _5)
-    storage_dead(_5)
-    storage_dead(_4)
-    _0 = core::slice::index::slice_index_fail::do_panic::runtime(move _3._0, move _3._1)
-    ↳⚡ storage_dead(_3)
-        storage_dead(len)
-        storage_dead(start)
-        unwind_continue
-}
-
 #[track_caller]
 fn core::slice::index::slice_index_fail::do_panic#1(end: usize, len: usize) -> !
 {
@@ -514,11 +485,121 @@ fn core::slice::index::slice_index_fail::do_panic#1(end: usize, len: usize) -> !
 }
 
 #[track_caller]
-fn core::slice::index::slice_index_fail::do_panic#2(start: usize, end: usize) -> !
+fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: usize) -> !
 {
     let _0: !; // return
     let start: usize; // arg #1
-    let end: usize; // arg #2
+    let len: usize; // arg #2
+    let _3: !; // anonymous local
+    let _4: Arguments<'1>; // anonymous local
+    let args_5: (&'11 usize, &'12 usize); // local
+    let _6: &'16 usize; // anonymous local
+    let _7: &'17 usize; // anonymous local
+    let args_8: [Argument<'26>; 2usize]; // local
+    let _9: Argument<'30>; // anonymous local
+    let _10: &'31 usize; // anonymous local
+    let _11: Argument<'32>; // anonymous local
+    let _12: &'33 usize; // anonymous local
+    let _13: &'35 [u8; 57usize]; // anonymous local
+    let _14: &'36 [u8; 57usize]; // anonymous local
+    let _15: &'42 [Argument<'43>; 2usize]; // anonymous local
+    let _16: &'47 [Argument<'48>; 2usize]; // anonymous local
+    let _17: &'52 usize; // anonymous local
+    let _18: &'53 usize; // anonymous local
+    let _19: [u8; 57usize]; // anonymous local
+    let _20: &'68 [u8; 57usize]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_17)
+    storage_live(_18)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(args_5)
+    storage_live(_6)
+    _6 = &start
+    storage_live(_7)
+    _7 = &len
+    args_5 = (move _6, move _7)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_live(args_8)
+    storage_live(_9)
+    storage_live(_10)
+    _17 = copy args_5._0
+    _10 = &(*_17)
+    _9 = new_display<'60, '62, usize>[{built_in impl Sized for usize}, {impl#7}](move _10)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(len)
+        storage_dead(start)
+        unwind_continue
+    storage_dead(_10)
+    storage_live(_11)
+    storage_live(_12)
+    _18 = copy args_5._1
+    _12 = &(*_18)
+    _11 = new_display<'64, '66, usize>[{built_in impl Sized for usize}, {impl#7}](move _12)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(len)
+        storage_dead(start)
+        unwind_continue
+    storage_dead(_12)
+    args_8 = [move _9, move _11]
+    storage_dead(_11)
+    storage_dead(_9)
+    storage_live(_13)
+    storage_live(_14)
+    storage_live(_19)
+    _19 = [const 18u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 115u8, const 116u8, const 97u8, const 114u8, const 116u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 192u8, const 34u8, const 32u8, const 111u8, const 117u8, const 116u8, const 32u8, const 111u8, const 102u8, const 32u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 102u8, const 111u8, const 114u8, const 32u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 111u8, const 102u8, const 32u8, const 108u8, const 101u8, const 110u8, const 103u8, const 116u8, const 104u8, const 32u8, const 192u8, const 0u8]
+    storage_live(_20)
+    _20 = &_19
+    _14 = move _20
+    _13 = &(*_14)
+    storage_live(_15)
+    storage_live(_16)
+    _16 = &args_8
+    _15 = &(*_16)
+    _4 = core::fmt::{Arguments<'a>}::new<'73, 57usize, 2usize>(move _13, move _15)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(len)
+        storage_dead(start)
+        unwind_continue
+    storage_dead(_16)
+    storage_dead(_15)
+    storage_dead(_14)
+    storage_dead(_13)
+    _3 = panic_fmt<'75>(move _4)
+    ↳⚡ storage_dead(_18)
+        storage_dead(_17)
+        storage_dead(args_8)
+        storage_dead(args_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(len)
+        storage_dead(start)
+        unwind_continue
+}
+
+#[track_caller]
+fn core::slice::index::slice_index_fail::do_panic(start: usize, len: usize) -> !
+{
+    let _0: !; // return
+    let start: usize; // arg #1
+    let len: usize; // arg #2
     let _3: (usize, usize); // anonymous local
     let _4: usize; // anonymous local
     let _5: usize; // anonymous local
@@ -528,96 +609,15 @@ fn core::slice::index::slice_index_fail::do_panic#2(start: usize, end: usize) ->
     storage_live(_4)
     _4 = copy start
     storage_live(_5)
-    _5 = copy end
-    _3 = (move _4, move _5)
-    storage_dead(_5)
-    storage_dead(_4)
-    _0 = core::slice::index::slice_index_fail::do_panic#2::runtime(move _3._0, move _3._1)
-    ↳⚡ storage_dead(_3)
-        storage_dead(end)
-        storage_dead(start)
-        unwind_continue
-}
-
-#[track_caller]
-fn core::slice::index::slice_index_fail::do_panic#3(end: usize, len: usize) -> !
-{
-    let _0: !; // return
-    let end: usize; // arg #1
-    let len: usize; // arg #2
-    let _3: (usize, usize); // anonymous local
-    let _4: usize; // anonymous local
-    let _5: usize; // anonymous local
-
-    storage_live(_0)
-    storage_live(_3)
-    storage_live(_4)
-    _4 = copy end
-    storage_live(_5)
     _5 = copy len
     _3 = (move _4, move _5)
     storage_dead(_5)
     storage_dead(_4)
-    _0 = core::slice::index::slice_index_fail::do_panic#3::runtime(move _3._0, move _3._1)
+    _0 = core::slice::index::slice_index_fail::do_panic::runtime(move _3._0, move _3._1)
     ↳⚡ storage_dead(_3)
         storage_dead(len)
-        storage_dead(end)
+        storage_dead(start)
         unwind_continue
-}
-
-// Full name: core::slice::index::SliceIndex
-#[diagnostic_item("SliceIndex")]
-pub unsafe trait SliceIndex<Self, T>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (T: MetaSized)
-    proof ImpliedClause2: (Self::Output: MetaSized)
-    type Output
-    fn get<'_0_1>;
-    fn get_mut<'_0_1>;
-    fn get_unchecked;
-    fn get_unchecked_mut;
-    #[track_caller]
-    fn index<'_0_1>;
-    #[track_caller]
-    fn index_mut<'_0_1>;
-    vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
-}
-
-// Full name: core::slice::index::{impl Index<I> for [T]}::index
-pub fn impl_Index_for_slice::index<'_0, T, I>(self: &'_0 [T], index: I) -> &'_0 TraitClause2::Output
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (I: Sized),
-    TraitClause2: (I: SliceIndex<[T]>),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: TraitClause2::Output: '_0,
-    TypeOutlives2: I: '_0,
-{
-    let _0: &'1 TraitClause2::Output; // return
-    let self: &'3 [T]; // arg #1
-    let index: I; // arg #2
-    let _3: &'4 TraitClause2::Output; // anonymous local
-    let _4: I; // anonymous local
-    let _5: &'5 [T]; // anonymous local
-
-    storage_live(_0)
-    storage_live(_3)
-    storage_live(_4)
-    _4 = move index
-    storage_live(_5)
-    _5 = &(*self) with_metadata(copy self.metadata)
-    _3 = TraitClause2::index<'6>(move _4, move _5)
-    ↳⚡ storage_dead(index)
-        storage_dead(self)
-        unwind_continue
-    _0 = &(*_3) with_metadata(copy _3.metadata)
-    storage_dead(_5)
-    storage_dead(_4)
-    storage_dead(_3)
-    storage_dead(index)
-    storage_dead(self)
-    return
 }
 
 // Full name: core::slice::index::slice_index_fail

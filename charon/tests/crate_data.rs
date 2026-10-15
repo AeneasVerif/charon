@@ -338,21 +338,21 @@ fn macro_spans() -> anyhow::Result<()> {
         "
         test_crate::Derived: macro-spans.rs:30:0-30:24
         test_crate::<impl Clone for ??>: macro-spans.rs:29:9-29:14
-        test_crate::local: macro-spans.rs:6:8-8:9
-        test_crate::nested: macro-spans.rs:6:8-8:9
-        test_crate::from_aux: macro-spans-aux.rs:5:8-7:9
+        test_crate::local: macro-spans.rs:11:0-11:15 <- macro-spans.rs:6:8-8:9
+        test_crate::nested: macro-spans.rs:18:0-18:14 <- macro-spans.rs:6:8-8:9
+        test_crate::from_aux: macro-spans.rs:20:0-20:39 <- macro-spans-aux.rs:5:8-7:9
         test_crate::included: macro-spans-included.rs:3:0-5:1
-        test_crate::from_included_local: macro-spans-included.rs:9:8-11:9
-        test_crate::from_included: macro-spans-included.rs:9:8-11:9
-        test_crate::from_pathmod: macro-spans-pathmod.rs:9:8-11:9
+        test_crate::from_included_local: macro-spans-included.rs:14:0-14:38 <- macro-spans-included.rs:9:8-11:9
+        test_crate::from_included: macro-spans.rs:23:0-23:32 <- macro-spans-included.rs:9:8-11:9
+        test_crate::from_pathmod: macro-spans.rs:27:0-27:39 <- macro-spans-pathmod.rs:9:8-11:9
         test_crate::macro_expr: macro-spans.rs:37:0-39:1
             macro-spans.rs:38:12-38:13
-            macro-spans.rs:34:8-34:12
-            macro-spans.rs:34:11-34:12
+            macro-spans.rs:38:4-38:14 <- macro-spans.rs:34:8-34:12
+            macro-spans.rs:38:4-38:14 <- macro-spans.rs:34:11-34:12
             macro-spans.rs:39:1-39:1
         test_crate::desugarings: macro-spans.rs:41:0-47:1
         test_crate::pathmod::in_pathmod: macro-spans-pathmod.rs:3:0-5:1
-        test_crate::pathmod::from_pathmod_local: macro-spans-pathmod.rs:9:8-11:9
+        test_crate::pathmod::from_pathmod_local: macro-spans-pathmod.rs:15:0-15:36 <- macro-spans-pathmod.rs:9:8-11:9
         test_crate::<impl Clone for ??>::clone: macro-spans.rs:29:9-29:14"
     );
     assert_eq!(lines.join("\n"), expected.trim_start());

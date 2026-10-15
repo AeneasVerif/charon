@@ -41,6 +41,23 @@ pub trait core::marker::Copy<Self>
     non-dyn-compatible
 }
 
+pub fn core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t}::clone<'_0>(_1: &'_0 core::core_arch::arm_shared::neon::uint16x8_t) -> core::core_arch::arm_shared::neon::uint16x8_t
+= <opaque>
+
+// Full name: core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t}
+impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t {
+    proof ImpliedClause0: (core::core_arch::arm_shared::neon::uint16x8_t: core::marker::Sized) = {built_in impl core::marker::Sized for core::core_arch::arm_shared::neon::uint16x8_t}
+    fn clone<'_0_1> = core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t}::clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::core_arch::arm_shared::neon::{impl core::marker::Copy for core::core_arch::arm_shared::neon::uint16x8_t}
+impl core::marker::Copy for core::core_arch::arm_shared::neon::uint16x8_t {
+    proof ImpliedClause0: (core::core_arch::arm_shared::neon::uint16x8_t: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for core::core_arch::arm_shared::neon::uint16x8_t}
+    proof ImpliedClause1: (core::core_arch::arm_shared::neon::uint16x8_t: core::clone::Clone) = core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t}
+    non-dyn-compatible
+}
+
 pub opaque type core::core_arch::x86::__m128i
 
 pub fn core::core_arch::x86::{impl core::clone::Clone for core::core_arch::x86::__m128i}::clone<'_0>(_1: &'_0 core::core_arch::x86::__m128i) -> core::core_arch::x86::__m128i
@@ -57,23 +74,6 @@ impl core::clone::Clone for core::core_arch::x86::__m128i {
 impl core::marker::Copy for core::core_arch::x86::__m128i {
     proof ImpliedClause0: (core::core_arch::x86::__m128i: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for core::core_arch::x86::__m128i}
     proof ImpliedClause1: (core::core_arch::x86::__m128i: core::clone::Clone) = core::core_arch::x86::{impl core::clone::Clone for core::core_arch::x86::__m128i}
-    non-dyn-compatible
-}
-
-pub fn core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t}::clone<'_0>(_1: &'_0 core::core_arch::arm_shared::neon::uint16x8_t) -> core::core_arch::arm_shared::neon::uint16x8_t
-= <opaque>
-
-// Full name: core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t}
-impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t {
-    proof ImpliedClause0: (core::core_arch::arm_shared::neon::uint16x8_t: core::marker::Sized) = {built_in impl core::marker::Sized for core::core_arch::arm_shared::neon::uint16x8_t}
-    fn clone<'_0_1> = core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t}::clone<'_0_1>
-    non-dyn-compatible
-}
-
-// Full name: core::core_arch::arm_shared::neon::{impl core::marker::Copy for core::core_arch::arm_shared::neon::uint16x8_t}
-impl core::marker::Copy for core::core_arch::arm_shared::neon::uint16x8_t {
-    proof ImpliedClause0: (core::core_arch::arm_shared::neon::uint16x8_t: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for core::core_arch::arm_shared::neon::uint16x8_t}
-    proof ImpliedClause1: (core::core_arch::arm_shared::neon::uint16x8_t: core::clone::Clone) = core::core_arch::arm_shared::neon::{impl core::clone::Clone for core::core_arch::arm_shared::neon::uint16x8_t}
     non-dyn-compatible
 }
 
@@ -229,10 +229,10 @@ pub trait core::iter::range::Step<Self>
 pub fn core::iter::range::{impl core::iter::range::Step for usize}::backward_overflowing(_1: usize, _2: usize) -> (usize, bool)
 = <opaque>
 
-pub fn core::iter::range::{impl core::iter::range::Step for usize}::forward_overflowing(_1: usize, _2: usize) -> (usize, bool)
+pub fn core::iter::range::{impl core::iter::range::Step for usize}::backward_checked(_1: usize, _2: usize) -> core::option::Option<usize>[{built_in impl core::marker::Sized for usize}]
 = <opaque>
 
-pub fn core::iter::range::{impl core::iter::range::Step for usize}::backward_checked(_1: usize, _2: usize) -> core::option::Option<usize>[{built_in impl core::marker::Sized for usize}]
+pub fn core::iter::range::{impl core::iter::range::Step for usize}::forward_overflowing(_1: usize, _2: usize) -> (usize, bool)
 = <opaque>
 
 pub fn core::iter::range::{impl core::iter::range::Step for usize}::forward_checked(_1: usize, _2: usize) -> core::option::Option<usize>[{built_in impl core::marker::Sized for usize}]

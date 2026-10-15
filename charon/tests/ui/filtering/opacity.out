@@ -55,6 +55,11 @@ pub fn core::num::{u64}::MAX() -> u64
 
 pub const core::num::{u64}::MAX: u64 = core::num::{u64}::MAX()
 
+pub fn core::num::{u64}::MIN() -> u64
+= <opaque>
+
+pub const core::num::{u64}::MIN: u64 = core::num::{u64}::MIN()
+
 pub fn core::num::{u32}::MAX() -> u32
 = <opaque>
 
@@ -64,11 +69,6 @@ pub fn core::num::{u32}::MIN() -> u32
 = <opaque>
 
 pub const core::num::{u32}::MIN: u32 = core::num::{u32}::MIN()
-
-pub fn core::num::{u64}::MIN() -> u64
-= <opaque>
-
-pub const core::num::{u64}::MIN: u64 = core::num::{u64}::MIN()
 
 // Full name: core::convert::num::{impl From<u32> for u64}::from
 pub fn from(small: u32) -> u64

@@ -88,9 +88,9 @@ pub struct SpanData {
 // lines, or point into a very large file or a very long line -- are stored in `WIDE_SPANS` and
 // referred to by index.
 // Some numbers to back this up:
-// - For serde 1.0.228, out of 246K spans, 12 didn't fit
-// - For regex 1.11.1, out of 136K spans, 25 didn't fit
-// - For syn 2.0.104, out of 800K spans, 36 didn't fit
+// - For serde 1.0.228, out of 453K spans, 1398 didn't fit
+// - For regex 1.11.1, out of 213K spans, 623 didn't fit
+// - For syn 2.0.104, out of 8.5M spans, 3094 didn't fit
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Span(u64);
 
@@ -148,7 +148,7 @@ pub struct SerializedSpan {
 /// refer to them by index. Entries are deduplicated so equal spans have equal representations.
 ///
 /// This table is global and never shrinks. In practice this is fine; for instance, syn 2.0.104
-/// only had distinct 36 spans here.
+/// only had 3094 distinct spans here compared to a total of 8.5M spans.
 static WIDE_SPANS: LazyLock<Mutex<WideSpans>> = LazyLock::new(Default::default);
 
 #[derive(Default)]

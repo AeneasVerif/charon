@@ -1561,67 +1561,6 @@ where
     return
 }
 
-#[diagnostic_item("const_ptr_cast")]
-pub fn core::ptr::const_ptr::{*const T}::cast<T, U>(self: *const T) -> *const U
-where
-    TraitClause0: (U: Sized),
-{
-    let _0: *const U; // return
-    let self: *const T; // arg #1
-    let _2: *const U; // anonymous local
-    let _3: *const T; // anonymous local
-
-    storage_live(_0)
-    storage_live(_2)
-    storage_live(_3)
-    _3 = copy self
-    _2 = cast<*const T, *const U>(move _3)
-    _0 = copy _2
-    storage_dead(_3)
-    storage_dead(_2)
-    return
-}
-
-// Full name: core::ptr::const_ptr::{*const T}::addr
-pub fn addr<T>(self: *const T) -> usize
-{
-    let _0: usize; // return
-    let self: *const T; // arg #1
-    let _2: *const (); // anonymous local
-    let _3: *const T; // anonymous local
-
-    storage_live(_0)
-    storage_live(_2)
-    storage_live(_3)
-    _3 = copy self
-    _2 = core::ptr::const_ptr::{*const T}::cast<T, ()>[{built_in impl Sized for ()}](move _3)
-    ↳⚡ unwind_continue
-    storage_dead(_3)
-    _0 = transmute<*const (), usize>(move _2)
-    storage_dead(_2)
-    return
-}
-
-// Full name: core::ptr::const_ptr::{*const T}::is_null::runtime
-fn runtime(ptr: *const u8) -> bool
-{
-    let _0: bool; // return
-    let ptr: *const u8; // arg #1
-    let _2: usize; // anonymous local
-    let _3: *const u8; // anonymous local
-
-    storage_live(_0)
-    storage_live(_2)
-    storage_live(_3)
-    _3 = copy ptr
-    _2 = addr<u8>(move _3)
-    ↳⚡ unwind_continue
-    storage_dead(_3)
-    _0 = move _2 == const 0usize
-    storage_dead(_2)
-    return
-}
-
 // Full name: core::marker::Destruct
 #[lang_item(Destruct)]
 pub trait Destruct<Self>
@@ -1721,6 +1660,67 @@ where
 
 struct (_,)<A> {
   _0: A,
+}
+
+#[diagnostic_item("const_ptr_cast")]
+pub fn core::ptr::const_ptr::{*const T}::cast<T, U>(self: *const T) -> *const U
+where
+    TraitClause0: (U: Sized),
+{
+    let _0: *const U; // return
+    let self: *const T; // arg #1
+    let _2: *const U; // anonymous local
+    let _3: *const T; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy self
+    _2 = cast<*const T, *const U>(move _3)
+    _0 = copy _2
+    storage_dead(_3)
+    storage_dead(_2)
+    return
+}
+
+// Full name: core::ptr::const_ptr::{*const T}::addr
+pub fn addr<T>(self: *const T) -> usize
+{
+    let _0: usize; // return
+    let self: *const T; // arg #1
+    let _2: *const (); // anonymous local
+    let _3: *const T; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy self
+    _2 = core::ptr::const_ptr::{*const T}::cast<T, ()>[{built_in impl Sized for ()}](move _3)
+    ↳⚡ unwind_continue
+    storage_dead(_3)
+    _0 = transmute<*const (), usize>(move _2)
+    storage_dead(_2)
+    return
+}
+
+// Full name: core::ptr::const_ptr::{*const T}::is_null::runtime
+fn runtime(ptr: *const u8) -> bool
+{
+    let _0: bool; // return
+    let ptr: *const u8; // arg #1
+    let _2: usize; // anonymous local
+    let _3: *const u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy ptr
+    _2 = addr<u8>(move _3)
+    ↳⚡ unwind_continue
+    storage_dead(_3)
+    _0 = move _2 == const 0usize
+    storage_dead(_2)
+    return
 }
 
 #[diagnostic_item("ptr_const_is_null")]
