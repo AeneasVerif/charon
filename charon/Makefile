@@ -3,6 +3,7 @@ all: build
 
 .PHONY: build
 build: format
+	git submodule update --init --recursive
 	CARGO_PROFILE_RELEASE_DEBUG=true cargo build --release
 
 .PHONY: format
