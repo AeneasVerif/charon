@@ -1,2 +1,0 @@
-[build]
-rustflags = ["-Zmin-recursion-limit=256"]
