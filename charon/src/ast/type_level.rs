@@ -26,7 +26,7 @@ pub struct GenericArgs {
     pub regions: IndexVec<RegionId, Region>,
     pub types: IndexVec<TypeVarId, Ty>,
     pub const_generics: IndexVec<ConstGenericVarId, ConstantExpr>,
-    pub trait_refs: IndexVec<TraitClauseId, TraitRef>,
+    pub trait_refs: IndexVec<TraitClauseId, PolyTraitRef>,
 }
 
 /// A quantified trait predicate, e.g. `for<'a> Type<'a>: Trait<'a, Args>`.
@@ -165,7 +165,7 @@ impl GenericArgs {
         regions: IndexVec<RegionId, Region>,
         types: IndexVec<TypeVarId, Ty>,
         const_generics: IndexVec<ConstGenericVarId, ConstantExpr>,
-        trait_refs: IndexVec<TraitClauseId, TraitRef>,
+        trait_refs: IndexVec<TraitClauseId, PolyTraitRef>,
     ) -> Self {
         Self {
             regions,
@@ -604,6 +604,15 @@ impl<T> RegionBinder<T> {
         }
     }
 
+    pub fn map_ref_opt<U>(&self, f: impl FnOnce(&T) -> Option<U>) -> Option<RegionBinder<U>> {
+        Some(RegionBinder {
+            regions: self.regions.clone(),
+            regions_outlive: self.regions_outlive.clone(),
+            types_outlive: self.types_outlive.clone(),
+            skip_binder: f(&self.skip_binder)?,
+        })
+    }
+
     /// Substitute the bound variables with the given lifetimes.
     pub fn apply(self, regions: IndexVec<RegionId, Region>) -> T
     where
@@ -615,6 +624,16 @@ impl<T> RegionBinder<T> {
             ..GenericArgs::empty()
         };
         self.skip_binder.substitute_inner_binder(&args)
+    }
+
+    /// Extract the contents when we now the binder binds nothing.
+    #[track_caller]
+    pub fn no_bound_vars(self) -> T
+    where
+        T: TyVisitable,
+    {
+        assert!(self.regions.is_empty());
+        self.skip_binder.move_from_under_binder().unwrap()
     }
 
     /// Substitute the bound variables with erased lifetimes.
@@ -659,7 +678,7 @@ macro_rules! mk_index_impls {
 mk_index_impls!(GenericArgs.regions[RegionId]: Region);
 mk_index_impls!(GenericArgs.types[TypeVarId]: Ty);
 mk_index_impls!(GenericArgs.const_generics[ConstGenericVarId]: ConstantExpr);
-mk_index_impls!(GenericArgs.trait_refs[TraitClauseId]: TraitRef);
+mk_index_impls!(GenericArgs.trait_refs[TraitClauseId]: PolyTraitRef);
 mk_index_impls!(GenericParams.regions[RegionId]: RegionParam);
 mk_index_impls!(GenericParams.types[TypeVarId]: TypeParam);
 mk_index_impls!(GenericParams.const_generics[ConstGenericVarId]: ConstGenericParam);

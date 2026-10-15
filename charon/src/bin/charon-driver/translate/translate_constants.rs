@@ -147,7 +147,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             hax::ConstantExprKind::NamedGlobal(item) => match &item.in_trait {
                 Some(trait_proof) => {
-                    let trait_ref = self.translate_trait_proof(span, trait_proof)?;
+                    let trait_ref = self.translate_trait_proof(span, trait_proof)?.erase();
                     // Trait consts can't have their own generics.
                     assert!(item.generic_args.is_empty());
                     let const_id =

@@ -105,7 +105,7 @@ pub fn hrtb_fn_pointer(_1: fn<'a>(&'a (dyn Fn<(&'a u8,), ImpliedClause1::Implied
 pub fn hrtb_dyn_fn<'_0>(_1: &'_0 (dyn for<'a, '_1_2 where 'a: '_1_2> Fn<(&'_1_2 (dyn Fn<(&'a i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '_1_2),), ImpliedClause1::ImpliedClause1::Output = ()> + '_0))
 {
     let _0: (); // return
-    let _1: &'103 (dyn for<'a, '_1_2> Fn<(&'_1_2 (dyn Fn<(&'a i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '_1_2),), ImpliedClause1::ImpliedClause1::Output = ()> + '107); // arg #1
+    let _1: &'109 (dyn for<'a, '_1_2> Fn<(&'_1_2 (dyn Fn<(&'a i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '_1_2),), ImpliedClause1::ImpliedClause1::Output = ()> + '113); // arg #1
 
     storage_live(_0)
     _0 = ()

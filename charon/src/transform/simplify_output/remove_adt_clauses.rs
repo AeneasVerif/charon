@@ -120,9 +120,9 @@ impl VisitAstMut for RemoveAdtClausesVisitor<'_> {
 /// inside the synthesized parents, and the visitor never re-enters them.
 fn build_removed_clause_placeholder(
     translated: &TranslatedCrate,
-    trait_decl_ref: &PolyTraitDeclRef,
+    trait_decl_ref: &TraitDeclRef,
 ) -> TraitRefKind {
-    let trait_id = trait_decl_ref.skip_binder.id;
+    let trait_id = trait_decl_ref.id;
     let stub_tref = TraitRef::new(
         TraitRefKind::BuiltinOrAuto {
             builtin_data: BuiltinImplData::RemovedAdtClause,
@@ -132,7 +132,7 @@ fn build_removed_clause_placeholder(
         },
         trait_decl_ref.clone(),
     );
-    let parent_trait_refs: IndexVec<TraitClauseId, TraitRef> = translated
+    let parent_trait_refs: IndexVec<TraitClauseId, PolyTraitRef> = translated
         .trait_decls
         .get(trait_id)
         .map(|tdecl| {
@@ -140,8 +140,9 @@ fn build_removed_clause_placeholder(
                 .iter()
                 .map(|s| {
                     let parent: TraitParam = s.substitute();
-                    let kind = build_removed_clause_placeholder(translated, &parent.trait_);
-                    TraitRef::new(kind, parent.trait_)
+                    let erased_parent = parent.trait_.clone().erase();
+                    let kind = build_removed_clause_placeholder(translated, &erased_parent);
+                    PolyTraitRef::new(kind, parent.trait_)
                 })
                 .collect()
         })

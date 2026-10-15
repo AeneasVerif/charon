@@ -223,7 +223,7 @@ pub enum BorrowckStatement {
     SetOutlives(Ty, Region),
     /// Require a trait predicate to hold. For example, the `Copy` bound in
     /// `let x: impl Copy = value` produces `PredicateHolds(typeof(x): Copy)`.
-    PredicateHolds(TraitRef),
+    PredicateHolds(PolyTraitRef),
 }
 
 /// (U)LLBC is a language with side-effects: a statement may abort in a way that isn't tracked by

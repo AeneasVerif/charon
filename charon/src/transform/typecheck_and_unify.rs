@@ -147,13 +147,10 @@ impl TypeCheckVisitor<'_> {
 
     fn match_poly_trait_decl_refs(
         &mut self,
-        a: &RegionBinder<TraitDeclRef>,
-        b: &RegionBinder<TraitDeclRef>,
+        a: &PolyTraitDeclRef,
+        b: &PolyTraitDeclRef,
     ) -> Result<(), TypeError> {
-        let a = a.clone().erase();
-        let b = b.clone().erase();
-        self.match_trait_decl_refs(&a, &b)?;
-        Ok(())
+        self.match_trait_decl_refs(&a.clone().erase(), &b.clone().erase())
     }
 
     fn match_trait_ref_against_itself(&mut self, tref: &TraitRef) -> Result<(), TypeError> {
@@ -164,14 +161,24 @@ impl TypeCheckVisitor<'_> {
                 .clone()
                 .try_substitute(&trait_impl_ref.generics)
         {
-            let pred = tref.trait_decl_ref.clone().erase();
-            self.match_trait_decl_refs(&pred, &target_pred)?;
+            self.match_trait_decl_refs(&tref.trait_decl_ref, &target_pred)?;
         }
         Ok(())
     }
 
-    fn match_trait_refs(&mut self, a: &TraitRef, b: &TraitRef) -> Result<(), TypeError> {
-        self.match_poly_trait_decl_refs(&a.trait_decl_ref, &b.trait_decl_ref)
+    fn match_poly_trait_ref_against_itself(
+        &mut self,
+        tref: &PolyTraitRef,
+    ) -> Result<(), TypeError> {
+        self.match_trait_ref_against_itself(&tref.clone().erase())
+    }
+
+    fn match_poly_trait_refs(
+        &mut self,
+        a: &PolyTraitRef,
+        b: &PolyTraitRef,
+    ) -> Result<(), TypeError> {
+        self.match_poly_trait_decl_refs(&a.pred(), &b.pred())
     }
 
     fn match_generics(&mut self, a: &GenericArgs, b: &GenericArgs) -> Result<(), TypeError> {
@@ -189,7 +196,7 @@ impl TypeCheckVisitor<'_> {
             self.match_tys(a, b)?;
         }
         for (a, b) in a.trait_refs.iter().zip(b.trait_refs.iter()) {
-            self.match_trait_refs(a, b)?;
+            self.match_poly_trait_refs(a, b)?;
         }
         Ok(())
     }
@@ -274,25 +281,37 @@ impl TypeCheckVisitor<'_> {
         &mut self,
         _params_fmt: &FmtCtx<'_>,
         tclause: Substituted<'_, TraitParam>,
-        tref: &TraitRef,
+        tref: &PolyTraitRef,
     ) {
+        let expected_regions = tclause.val.trait_.regions.len();
+        let actual_regions = tref.0.regions.len();
+        if expected_regions != actual_regions {
+            let args_fmt = &self.val_fmt_ctx();
+            let tref = tref.with_ctx(args_fmt);
+            self.error(format!(
+                "Mismatched bound regions in trait proof:\
+                \nexpected: {expected_regions}\
+                \n     got: {actual_regions} in {tref}"
+            ));
+        }
         if let Ok(clause) = tclause.try_substitute() {
+            let tref_pred = tref.pred();
             if self
-                .match_poly_trait_decl_refs(&clause.trait_, &tref.trait_decl_ref)
+                .match_poly_trait_decl_refs(&clause.trait_, &tref_pred)
                 .is_err()
             {
                 let args_fmt = &self.val_fmt_ctx();
                 let clause = clause.with_ctx(args_fmt);
-                let tref_pred = tref.trait_decl_ref.with_ctx(args_fmt);
+                let tref_pred = tref_pred.with_ctx(args_fmt);
                 let tref = tref.with_ctx(args_fmt);
                 self.error(format!(
                     "Mismatched trait clause:\
                     \nexpected: {clause}\
                     \n     got: {tref}: {tref_pred}"
                 ));
-            } else if self.match_trait_ref_against_itself(tref).is_err() {
+            } else if self.match_poly_trait_ref_against_itself(tref).is_err() {
                 let args_fmt = &self.val_fmt_ctx();
-                let tref_pred = tref.trait_decl_ref.with_ctx(args_fmt);
+                let tref_pred = tref_pred.with_ctx(args_fmt);
                 let tref = tref.with_ctx(args_fmt);
                 self.error(format!(
                     "Incoherent trait reference:\
@@ -306,7 +325,7 @@ impl TypeCheckVisitor<'_> {
         &mut self,
         params_fmt: &FmtCtx<'_>,
         clauses: Substituted<'_, IndexVec<TraitClauseId, TraitParam>>,
-        trefs: &IndexVec<TraitClauseId, TraitRef>,
+        trefs: &IndexVec<TraitClauseId, PolyTraitRef>,
         kind: &str,
         target: &GenericsSource,
     ) {
@@ -380,7 +399,7 @@ impl TypeCheckVisitor<'_> {
         method_id: TraitMethodId,
         args: &GenericArgs,
     ) {
-        let trait_id = trait_ref.trait_decl_ref.skip_binder.id;
+        let trait_id = trait_ref.trait_decl_ref.id;
         let target = &GenericsSource::Method(trait_id, method_id);
         let Some(trait_decl) = self.ctx.translated.trait_decls.get(trait_id) else {
             return;
@@ -482,7 +501,7 @@ impl VisitAst for TypeCheckVisitor<'_> {
                 types,
                 ..
             } => {
-                let trait_id = x.trait_decl_ref.skip_binder.id;
+                let trait_id = x.trait_decl_ref.id;
                 let target = GenericsSource::item(trait_id);
                 let Some(tdecl) = self.ctx.translated.trait_decls.get(trait_id) else {
                     return;
@@ -587,12 +606,32 @@ impl VisitAst for TypeCheckVisitor<'_> {
             "trait parent clauses",
             &GenericsSource::item(timpl.impl_trait.id),
         );
-        // TODO: check type clauses
         let types_match = timpl.types.elem_count() == tdecl.types.elem_count();
         if !types_match {
             self.error(
                 "The associated types supplied by the trait impl don't match the trait decl.",
             )
+        }
+        for (type_id, impl_ty) in timpl.types.iter_indexed() {
+            let Some(decl_ty) = tdecl.types.get(type_id) else {
+                continue;
+            };
+            let Ok(decl_ty) =
+                Substituted::new_for_trait(decl_ty, &timpl.impl_trait.generics, &impl_tref_kind)
+                    .try_substitute()
+            else {
+                continue;
+            };
+            let item_args = impl_ty.params.identity_args();
+            let clauses = Substituted::new(&decl_ty.skip_binder.implied_clauses, &item_args);
+            let fmt = tdecl_fmt.push_binder(Cow::Borrowed(&decl_ty.params));
+            self.assert_clauses_match(
+                &fmt,
+                clauses,
+                &impl_ty.skip_binder.implied_trait_refs,
+                "associated type clauses",
+                &GenericsSource::TraitType(tdecl.def_id, type_id),
+            );
         }
         let consts_match = timpl.consts.elem_count() == tdecl.consts.elem_count();
         if !consts_match {

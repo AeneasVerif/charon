@@ -377,7 +377,7 @@ and borrowck_statement_of_json (ctx : of_json_ctx) (js : json) :
         let* _1 = region_of_json ctx _1 in
         Ok (SetOutlives (_0, _1))
     | `Assoc [ ("PredicateHolds", _0) ] ->
-        let* _0 = trait_ref_of_json ctx _0 in
+        let* _0 = poly_trait_ref_of_json ctx _0 in
         Ok (PredicateHolds _0)
     | _ -> Error "")
 
@@ -667,7 +667,7 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _1 = assoc_const_id_of_json ctx _1 in
         Ok (CTraitConst (_0, _1))
     | `Assoc [ ("VTableRef", _0) ] ->
-        let* _0 = trait_ref_of_json ctx _0 in
+        let* _0 = poly_trait_ref_of_json ctx _0 in
         Ok (CVTableRef _0)
     | `Assoc [ ("Discriminant", `List [ _0; _1 ]) ] ->
         let* _0 = type_decl_ref_of_json ctx _0 in
@@ -856,7 +856,7 @@ and generic_args_of_json (ctx : of_json_ctx) (js : json) :
             ctx const_generics
         in
         let* trait_refs =
-          index_vec_of_json trait_clause_id_of_json trait_ref_of_json ctx
+          index_vec_of_json trait_clause_id_of_json poly_trait_ref_of_json ctx
             trait_refs
         in
         Ok ({ regions; types; const_generics; trait_refs } : generic_args)
@@ -1158,6 +1158,13 @@ and place_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (PlaceGlobal _0)
     | _ -> Error "")
 
+and poly_trait_ref_of_json (ctx : of_json_ctx) (js : json) :
+    (poly_trait_ref, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> region_binder_of_json trait_ref_of_json ctx x
+    | _ -> Error "")
+
 and predicate_origin_of_json (ctx : of_json_ctx) (js : json) :
     (predicate_origin, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1441,7 +1448,7 @@ and trait_assoc_ty_impl_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("value", value); ("implied_trait_refs", implied_trait_refs) ] ->
         let* value = ty_of_json ctx value in
         let* implied_trait_refs =
-          index_vec_of_json trait_clause_id_of_json trait_ref_of_json ctx
+          index_vec_of_json trait_clause_id_of_json poly_trait_ref_of_json ctx
             implied_trait_refs
         in
         Ok ({ value; implied_trait_refs } : trait_assoc_ty_impl)
@@ -1527,9 +1534,7 @@ and trait_ref_contents_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("kind", kind); ("trait_decl_ref", trait_decl_ref) ] ->
         let* kind = trait_ref_kind_of_json ctx kind in
-        let* trait_decl_ref =
-          region_binder_of_json trait_decl_ref_of_json ctx trait_decl_ref
-        in
+        let* trait_decl_ref = trait_decl_ref_of_json ctx trait_decl_ref in
         Ok ({ kind; trait_decl_ref } : trait_ref_contents)
     | _ -> Error "")
 
@@ -1577,7 +1582,7 @@ and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
         ] ->
         let* builtin_data = builtin_impl_data_of_json ctx builtin_data in
         let* parent_trait_refs =
-          index_vec_of_json trait_clause_id_of_json trait_ref_of_json ctx
+          index_vec_of_json trait_clause_id_of_json poly_trait_ref_of_json ctx
             parent_trait_refs
         in
         let* types =
@@ -1758,7 +1763,7 @@ and unsizing_metadata_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = constant_expr_of_json ctx _0 in
         Ok (MetaLength _0)
     | `Assoc [ ("VTable", `List [ _0; _1 ]) ] ->
-        let* _0 = trait_ref_of_json ctx _0 in
+        let* _0 = poly_trait_ref_of_json ctx _0 in
         let* _1 = constant_expr_of_json ctx _1 in
         Ok (MetaVTable (_0, _1))
     | `Assoc [ ("VTableUpcast", _0) ] ->
@@ -3915,7 +3920,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
         let* is_unsafe = bool_of_json ctx is_unsafe in
         let* generics = generic_params_of_json ctx generics in
         let* implied_trait_refs =
-          index_vec_of_json trait_clause_id_of_json trait_ref_of_json ctx
+          index_vec_of_json trait_clause_id_of_json poly_trait_ref_of_json ctx
             implied_trait_refs
         in
         let* consts =

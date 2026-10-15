@@ -276,7 +276,7 @@ pub enum UnsizingMetadata {
     Length(ConstantExpr),
     /// Cast from a sized value to a `dyn Trait` value. The `TraitRef` is the proof of the `dyn
     /// Trait` predicate; the constant expression is a reference to the vtable `static` value.
-    VTable(TraitRef, ConstantExpr),
+    VTable(PolyTraitRef, ConstantExpr),
     /// Cast from `dyn Trait` to `dyn OtherTrait`. The fields indicate how to retreive the vtable:
     /// it's always either the same we already had, or the vtable for a (possibly nested) supertrait.
     ///

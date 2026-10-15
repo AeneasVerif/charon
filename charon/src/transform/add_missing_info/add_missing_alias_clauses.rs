@@ -26,7 +26,8 @@ impl<'a> ClauseExtractor<'a> {
 
     /// Move a trait ref out of the binders to make it a trait clause. Collects all the region
     /// binders on the way to here into a single binder to make a HRTB.
-    fn extract_trait_clause(&self, mut trait_: PolyTraitDeclRef) -> Option<PolyTraitDeclRef> {
+    fn extract_trait_clause(&self, trait_: TraitDeclRef) -> Option<PolyTraitDeclRef> {
+        let mut trait_ = RegionBinder::empty(trait_);
         // Iterate over the binders on the way to this trait ref, skipping the first binder (the
         // item binder).
         let mut scope_regions = Vec::new();

@@ -88,7 +88,7 @@ pub enum ConstantExprKind {
     /// emitted a vtable item.
     ///
     /// This is eliminated if `--raw-consts` is off.
-    VTableRef(TraitRef),
+    VTableRef(PolyTraitRef),
     /// The integer discriminant value corresponding to this enum variant.
     Discriminant(TypeDeclRef, VariantId),
     /// The size of the given type.

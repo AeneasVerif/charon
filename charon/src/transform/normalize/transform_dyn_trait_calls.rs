@@ -158,7 +158,7 @@ fn transform_dyn_trait_call(
         call.args[0] = Operand::Move(dyn_trait_place.clone());
     }
 
-    let dyn_pred = dyn_proof.trait_decl_ref.clone().erase();
+    let dyn_pred = dyn_proof.trait_decl_ref.clone();
     let dyn_ty = &dyn_pred.generics.types[0];
     let PtrMetadata::VTable(receiver_vtable_ref) = dyn_ty.get_ptr_metadata(&ctx.ctx.translated)
     else {

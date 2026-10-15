@@ -168,7 +168,7 @@ and borrowck_statement =
       (** Require a type to outlive a region. For example, the ['a] bound in
           [let x: impl Copy + 'a = value] produces [SetOutlives(typeof(x), 'a)].
       *)
-  | PredicateHolds of trait_ref
+  | PredicateHolds of poly_trait_ref
       (** Require a trait predicate to hold. For example, the [Copy] bound in
           [let x: impl Copy = value] produces [PredicateHolds(typeof(x): Copy)].
       *)
@@ -664,7 +664,7 @@ and trait_impl = {
       (** Whether this is a negative impl ([impl !Trait for Type]). *)
   is_unsafe : bool;  (** Whether this is an [unsafe impl]. *)
   generics : generic_params;
-  implied_trait_refs : trait_ref list;
+  implied_trait_refs : poly_trait_ref list;
       (** The trait references for the parent clauses (see [TraitDecl]). *)
   consts : global_decl_ref assoc_const_id_map;
       (** The implemented associated constants. *)

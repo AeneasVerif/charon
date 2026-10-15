@@ -530,12 +530,14 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
   | CVar var -> pp_string fmt (const_generic_db_var_to_string env var)
   | CTraitConst (trait_ref, const_id) ->
       let name =
-        GAstUtils.get_assoc_const_name env.crate
-          trait_ref.trait_decl_ref.binder_value.id const_id
+        GAstUtils.get_assoc_const_name env.crate trait_ref.trait_decl_ref.id
+          const_id
       in
       Format.fprintf fmt "%a::%s" (pp_trait_ref env) trait_ref name
   | CVTableRef trait_ref ->
-      Format.fprintf fmt "&vtable_of(%a)" (pp_trait_ref env) trait_ref
+      Format.fprintf fmt "&vtable_of(%a)"
+        (pp_region_binder ty_to_string pp_trait_ref env)
+        trait_ref
   | CCall (fn_ptr, args) ->
       Format.fprintf fmt "%a(%a)" (pp_fn_ptr env) fn_ptr
         (pp_sep_list ", " (pp_constant_expr env))
@@ -612,8 +614,8 @@ and pp_fn_ptr_kind (env : fmt_env) (fmt : Format.formatter) (r : fn_ptr_kind) :
   match r with
   | TraitMethod (trait_ref, method_id) ->
       let method_name =
-        GAstUtils.get_method_name env.crate
-          trait_ref.trait_decl_ref.binder_value.id method_id
+        GAstUtils.get_method_name env.crate trait_ref.trait_decl_ref.id
+          method_id
       in
       Format.fprintf fmt "%a::%s" (pp_trait_ref env) trait_ref method_name
   | Fun fid -> pp_fun_decl_id env fmt fid
@@ -643,8 +645,8 @@ and pp_ty (env : fmt_env) (fmt : Format.formatter) (ty : ty) : unit =
       Format.fprintf fmt "%a is %a" (pp_ty env) ty (pp_type_pattern env) pat
   | TTraitType (trait_ref, type_id, generics) ->
       let type_name =
-        GAstUtils.get_assoc_type_name env.crate
-          trait_ref.trait_decl_ref.binder_value.id type_id
+        GAstUtils.get_assoc_type_name env.crate trait_ref.trait_decl_ref.id
+          type_id
       in
       Format.fprintf fmt "%a::%s%a" (pp_trait_ref env) trait_ref type_name
         (pp_generic_args env) generics
@@ -717,8 +719,8 @@ and dyn_trait_type_constraint_to_string (env : fmt_env)
   | None -> None
   | Some (clause_id, path) ->
       let type_name =
-        GAstUtils.get_assoc_type_name env.crate
-          ttc.trait_ref.trait_decl_ref.binder_value.id ttc.type_id
+        GAstUtils.get_assoc_type_name env.crate ttc.trait_ref.trait_decl_ref.id
+          ttc.type_id
       in
       let path =
         match path with
@@ -799,7 +801,7 @@ and generic_args_to_strings (env : fmt_env) (generics : generic_args) :
   let types = List.map (ty_to_string env) types in
   let cgs = List.map (constant_expr_to_string env) const_generics in
   let params = List.flatten [ regions; types; cgs ] in
-  let trait_refs = List.map (trait_ref_to_string env) trait_refs in
+  let trait_refs = List.map (poly_trait_ref_to_string env) trait_refs in
   (params, trait_refs)
 
 and pp_generic_args (env : fmt_env) (fmt : Format.formatter)
@@ -814,9 +816,8 @@ and pp_generic_args_for_fn (env : fmt_env) (fmt : Format.formatter)
     (generics : generic_args) : unit =
   pp_generic_args env fmt generics
 
-and pp_trait_ref_kind (env : fmt_env)
-    (implements : trait_decl_ref region_binder option) (fmt : Format.formatter)
-    (kind : trait_ref_kind) : unit =
+and pp_trait_ref_kind (env : fmt_env) (implements : trait_decl_ref option)
+    (fmt : Format.formatter) (kind : trait_ref_kind) : unit =
   match kind with
   | Self -> pp_string fmt "Self"
   | TraitImpl impl_ref -> pp_trait_impl_ref env fmt impl_ref
@@ -824,15 +825,14 @@ and pp_trait_ref_kind (env : fmt_env)
       let implements = Option.get implements in
       let types = AssocTypeId.Map.to_list types in
       Format.fprintf fmt "{built_in impl %a"
-        (pp_region_binder ty_to_string pp_trait_decl_ref_as_impl env)
+        (pp_trait_decl_ref_as_impl env)
         implements;
       if types <> [] then
         Format.fprintf fmt " where %a"
           (pp_sep_list ", "
              (fun fmt (type_id, (assoc_ty : trait_assoc_ty_impl)) ->
                let name =
-                 GAstUtils.get_assoc_type_name env.crate
-                   implements.binder_value.id type_id
+                 GAstUtils.get_assoc_type_name env.crate implements.id type_id
                in
                Format.fprintf fmt "%s  = %a" name (pp_ty env) assoc_ty.value))
           types;
@@ -843,23 +843,24 @@ and pp_trait_ref_kind (env : fmt_env)
         (trait_clause_id_format_as_implied clause_id)
   | ItemClause (tref, type_id, generics, clause_id) ->
       let type_name =
-        GAstUtils.get_assoc_type_name env.crate
-          tref.trait_decl_ref.binder_value.id type_id
+        GAstUtils.get_assoc_type_name env.crate tref.trait_decl_ref.id type_id
       in
       Format.fprintf fmt "%a::%s%a::%s" (pp_trait_ref env) tref type_name
         (pp_generic_args env) generics
         (trait_clause_id_format_as_implied clause_id)
-  | Dyn ->
-      pp_region_binder ty_to_string pp_trait_decl_ref env fmt
-        (Option.get implements)
+  | Dyn -> pp_trait_decl_ref env fmt (Option.get implements)
   | UnknownTrait msg -> Format.fprintf fmt "UNKNOWN(%s)" msg
 
 and pp_trait_ref (env : fmt_env) (fmt : Format.formatter) (tr : trait_ref) :
     unit =
   pp_trait_ref_kind env (Some tr.trait_decl_ref) fmt tr.kind
 
-and trait_ref_to_string env tr =
+and trait_ref_to_string env (tr : trait_ref) =
   pp_to_string (fun fmt -> pp_trait_ref env fmt tr)
+
+and poly_trait_ref_to_string env (tr : poly_trait_ref) =
+  pp_to_string (fun fmt ->
+      pp_region_binder ty_to_string pp_trait_ref env fmt tr)
 
 and pp_trait_decl_ref (env : fmt_env) (fmt : Format.formatter)
     (tr : trait_decl_ref) : unit =
@@ -901,6 +902,16 @@ and pp_trait_proof (env : fmt_env) (fmt : Format.formatter)
   match value with
   | None -> ()
   | Some value -> Format.fprintf fmt " = %a" (pp_trait_ref env) value
+
+and pp_poly_trait_proof (env : fmt_env) (fmt : Format.formatter)
+    (clause_id : trait_clause_id) (trait_ref : poly_trait_ref) : unit =
+  pp_region_binder ty_to_string
+    (fun env fmt trait_ref ->
+      Format.fprintf fmt "proof %s: (%a) = %a"
+        (trait_clause_id_format_as_implied clause_id)
+        (pp_trait_decl_ref_as_pred env)
+        trait_ref.trait_decl_ref (pp_trait_ref env) trait_ref)
+    env fmt trait_ref
 
 and pp_impl_elem (env : fmt_env) (fmt : Format.formatter) (elem : impl_elem) :
     unit =
@@ -1066,8 +1077,7 @@ let pp_trait_type_constraint (env : fmt_env) (fmt : Format.formatter)
     (ttc : trait_type_constraint) : unit =
   let { trait_ref; type_id; ty } = ttc in
   let type_name =
-    GAstUtils.get_assoc_type_name env.crate
-      trait_ref.trait_decl_ref.binder_value.id type_id
+    GAstUtils.get_assoc_type_name env.crate trait_ref.trait_decl_ref.id type_id
   in
   Format.fprintf fmt "%s::%s = %s"
     (trait_ref_to_string env trait_ref)
@@ -1697,7 +1707,9 @@ let pp_borrowck_statement (env : fmt_env) (fmt : Format.formatter)
       Format.fprintf fmt "set_outlives(%s, %s)" (ty_to_string env ty)
         (region_to_string env region)
   | PredicateHolds predicate ->
-      Format.fprintf fmt "predicate_holds(%a)" (pp_trait_ref env) predicate
+      Format.fprintf fmt "predicate_holds(%a)"
+        (pp_region_binder ty_to_string pp_trait_ref env)
+        predicate
 
 let pp_abort_kind (env : fmt_env) (fmt : Format.formatter) (a : abort_kind) :
     unit =
@@ -1929,8 +1941,7 @@ let pp_trait_impl (env : fmt_env) (indent : string) (indent_incr : string)
     (fun i trait_ref ->
       Format.fprintf fmt "%s%a\n" indent1
         (fun fmt (clause_id, trait_ref) ->
-          pp_trait_proof env fmt clause_id trait_ref.trait_decl_ref
-            (Some trait_ref))
+          pp_poly_trait_proof env fmt clause_id trait_ref)
         (TraitClauseId.of_int i, trait_ref))
     def.implied_trait_refs;
   AssocConstId.Map.to_list def.consts
@@ -1955,8 +1966,8 @@ let pp_trait_impl (env : fmt_env) (indent : string) (indent_incr : string)
            @ List.mapi
                (fun i trait_ref ->
                  pp_to_string (fun fmt ->
-                     pp_trait_proof env fmt (TraitClauseId.of_int i)
-                       trait_ref.trait_decl_ref (Some trait_ref)))
+                     pp_poly_trait_proof env fmt (TraitClauseId.of_int i)
+                       trait_ref))
                bound_ty.binder_value.implied_trait_refs
          in
          Format.fprintf fmt "%stype %s%s = %s%s\n" indent1 name params

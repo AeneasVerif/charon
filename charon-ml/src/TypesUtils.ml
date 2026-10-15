@@ -213,7 +213,7 @@ let empty_generic_args : generic_args =
   { regions = []; types = []; const_generics = []; trait_refs = [] }
 
 let mk_generic_args (regions : region list) (types : ty list)
-    (const_generics : constant_expr list) (trait_refs : trait_ref list) :
+    (const_generics : constant_expr list) (trait_refs : poly_trait_ref list) :
     generic_args =
   { regions; types; const_generics; trait_refs }
 
@@ -247,7 +247,14 @@ let generic_args_of_params span (generics : generic_params) : generic_args =
   let trait_refs =
     List.map
       (fun (c : trait_param) ->
-        { kind = Clause (Free c.clause_id); trait_decl_ref = c.trait })
+        {
+          c.trait with
+          binder_value =
+            {
+              kind = Clause (Free c.clause_id);
+              trait_decl_ref = c.trait.binder_value;
+            };
+        })
       generics.trait_clauses
   in
   { regions; types; const_generics; trait_refs }

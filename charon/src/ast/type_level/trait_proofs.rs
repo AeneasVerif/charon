@@ -4,7 +4,7 @@ use derive_generic_visitor::*;
 use macros::{EnumAsGetters, EnumIsA};
 use serde_state::{DeserializeState, SerializeState};
 
-/// A reference to a trait.
+/// A proof of a trait predicate.
 ///
 /// This type is hash-consed, `TraitRefContents` contains the actual data.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -16,9 +16,15 @@ pub struct TraitRef(pub HashConsed<WithCachedTypeInfo<TraitRefContents>>);
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 pub struct TraitRefContents {
     pub kind: TraitRefKind,
-    /// Not necessary, but useful
-    pub trait_decl_ref: PolyTraitDeclRef,
+    /// The predicate that is proven by that trait proof.
+    // FIXME: rename to `pred`
+    pub trait_decl_ref: TraitDeclRef,
 }
+
+/// A proof of a higher-ranked trait predicate.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+pub struct PolyTraitRef(pub RegionBinder<TraitRef>);
 
 /// Identifier of a trait instance.
 /// This is derived from the trait resolution.
@@ -118,7 +124,7 @@ pub enum TraitRefKind {
         /// Exactly like the same field on `TraitImpl`: the `TraitRef`s required to satisfy the
         /// implied predicates on the trait declaration. E.g. since `FnMut: FnOnce`, a built-in `T:
         /// FnMut` impl would have a `TraitRef` for `T: FnOnce`.
-        parent_trait_refs: IndexVec<TraitClauseId, TraitRef>,
+        parent_trait_refs: IndexVec<TraitClauseId, PolyTraitRef>,
         /// The values of the associated types for this trait.
         types: IndexMap<AssocTypeId, TraitAssocTyImpl>,
         /// The vtable value for this builtin implementation, if we generated one.
@@ -182,7 +188,7 @@ pub enum BuiltinImplData {
 }
 
 impl TraitRef {
-    pub fn new(kind: TraitRefKind, trait_decl_ref: PolyTraitDeclRef) -> Self {
+    pub fn new(kind: TraitRefKind, trait_decl_ref: TraitDeclRef) -> Self {
         TraitRefContents {
             kind,
             trait_decl_ref,
@@ -191,7 +197,7 @@ impl TraitRef {
     }
 
     pub fn trait_id(&self) -> TraitDeclId {
-        self.trait_decl_ref.skip_binder.id
+        self.trait_decl_ref.id
     }
 
     /// Get mutable access to the contents. This cloned the value and will re-intern the modified
@@ -206,13 +212,13 @@ impl TraitRef {
         self,
         krate: &TranslatedCrate,
         clause_id: TraitClauseId,
-    ) -> Option<Self> {
+    ) -> Option<PolyTraitRef> {
         let trait_decl = krate.trait_decls.get(self.trait_id())?;
         let trait_decl_ref = trait_decl.implied_clauses[clause_id]
             .trait_
             .clone()
             .substitute_with_tref(&self);
-        Some(Self::new(
+        Some(PolyTraitRef::new(
             TraitRefKind::ParentClause(self, clause_id),
             trait_decl_ref,
         ))
@@ -227,6 +233,48 @@ impl TraitRef {
             TraitRefKind::BuiltinOrAuto { vtable, .. } => vtable.as_ref(),
             _ => None,
         }
+    }
+}
+
+impl PolyTraitRef {
+    /// Build a proof of a higher-ranked predicate.
+    pub fn new(kind: TraitRefKind, trait_decl_ref: PolyTraitDeclRef) -> Self {
+        Self(
+            trait_decl_ref
+                .map(|trait_decl_ref| TraitRef::new(kind.move_under_binder(), trait_decl_ref)),
+        )
+    }
+
+    /// Wrap a non-higher-ranked proof in an empty binder.
+    pub fn empty(trait_ref: TraitRef) -> Self {
+        Self(RegionBinder::empty(trait_ref))
+    }
+
+    /// Extract the non-higher-ranked traitproof when we now the binder binds nothing.
+    #[track_caller]
+    pub fn no_bound_vars(self) -> TraitRef {
+        self.0.no_bound_vars()
+    }
+
+    /// Instantiate the bound regions with erased regions.
+    pub fn erase(self) -> TraitRef {
+        self.0.erase()
+    }
+
+    pub fn trait_id(&self) -> TraitDeclId {
+        self.0.skip_binder.trait_id()
+    }
+
+    pub fn pred(&self) -> PolyTraitDeclRef {
+        self.0.map_ref(|tref| tref.trait_decl_ref.clone())
+    }
+
+    pub fn vtable_ref<'a>(&'a self, krate: &'a TranslatedCrate) -> Option<GlobalDeclRef> {
+        Some(
+            self.0
+                .map_ref_opt(|tref| tref.vtable_ref(krate).cloned())?
+                .erase(),
+        )
     }
 }
 

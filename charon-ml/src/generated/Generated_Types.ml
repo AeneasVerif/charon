@@ -329,7 +329,7 @@ and constant_expr_kind =
               const C : usize = 32; // <-
             }
           ]} *)
-  | CVTableRef of trait_ref
+  | CVTableRef of poly_trait_ref
       (** A reference to the vtable [static] item for this trait ref. This can
           be normalized if we emitted a vtable item.
 
@@ -389,7 +389,7 @@ and generic_args = {
   regions : region list;
   types : ty list;
   const_generics : constant_expr list;
-  trait_refs : trait_ref list;
+  trait_refs : poly_trait_ref list;
 }
 
 (** Generic parameters for a declaration, including predicates. *)
@@ -425,6 +425,9 @@ and lifetime_mutability =
 
 (** .0 outlives .1 *)
 and ('a0, 'a1) outlives_pred = 'a0 * 'a1
+
+(** A proof of a higher-ranked trait predicate. *)
+and poly_trait_ref = trait_ref region_binder
 
 (** Where a given predicate came from. *)
 and predicate_origin =
@@ -484,7 +487,7 @@ and region_param = {
 (** The value of a trait associated type. *)
 and trait_assoc_ty_impl = {
   value : ty;
-  implied_trait_refs : trait_ref list;
+  implied_trait_refs : poly_trait_ref list;
       (** This matches the corresponding vector in [TraitAssocTy]. In the same
           way, this is empty after the [lift_associated_item_clauses] pass. *)
 }
@@ -516,15 +519,15 @@ and trait_param = {
   trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
 }
 
-(** A reference to a trait.
+(** A proof of a trait predicate.
 
     This type is hash-consed, [TraitRefContents] contains the actual data. *)
 and trait_ref = trait_ref_contents hash_consed
 
 and trait_ref_contents = {
   kind : trait_ref_kind;
-  trait_decl_ref : trait_decl_ref region_binder;
-      (** Not necessary, but useful *)
+  trait_decl_ref : trait_decl_ref;
+      (** The predicate that is proven by that trait proof. *)
 }
 
 (** Identifier of a trait instance. This is derived from the trait resolution.
@@ -604,7 +607,7 @@ and trait_ref_kind =
           implementations as we can use [TraitImpl] intead. *)
   | BuiltinOrAuto of
       builtin_impl_data
-      * trait_ref list
+      * poly_trait_ref list
       * trait_assoc_ty_impl assoc_type_id_map
       * global_decl_ref option
       (** A trait implementation that is computed by the compiler, such as for
@@ -740,7 +743,7 @@ and type_pattern =
 
 and unsizing_metadata =
   | MetaLength of constant_expr  (** Cast from [[T; N]] to [[T]]. *)
-  | MetaVTable of trait_ref * constant_expr
+  | MetaVTable of poly_trait_ref * constant_expr
       (** Cast from a sized value to a [dyn Trait] value. The [TraitRef] is the
           proof of the [dyn Trait] predicate; the constant expression is a
           reference to the vtable [static] value. *)

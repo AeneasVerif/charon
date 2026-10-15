@@ -195,7 +195,7 @@ mod trait_ref_path {
                 let tdecl = tdecl.as_trait_decl()?;
                 let clause = &tdecl.implied_clauses[parent_id];
                 let pred = clause.trait_.clone().try_substitute_with_tref(&tref).ok()?;
-                tref = TraitRef::new(TraitRefKind::ParentClause(tref, parent_id), pred);
+                tref = TraitRef::new(TraitRefKind::ParentClause(tref, parent_id), pred.erase());
             }
             Some(tref)
         }
@@ -756,7 +756,7 @@ impl<'a> ComputeItemModifications<'a> {
             TypeConstraintSet::from_constraints(&params.trait_type_constraints);
         // Clauses may provide more type constraints.
         for clause in &params.trait_clauses {
-            let tref = clause.identity_tref();
+            let tref = clause.identity_tref().erase();
             self.add_constraints_for_tref(&mut type_constraints, &tref);
         }
         type_constraints
@@ -841,16 +841,16 @@ impl<'a> ComputeItemModifications<'a> {
                 let mut type_constraints = self.compute_constraint_set(&tr.generics);
                 let self_tref = TraitRef::new(
                     TraitRefKind::SelfId,
-                    RegionBinder::empty(TraitDeclRef {
+                    TraitDeclRef {
                         id: tr.def_id,
                         generics: Box::new(tr.generics.identity_args()),
-                    }),
+                    },
                 );
                 // Inherit known constraints from implied clauses.
                 for (clause_id, clause) in tr.implied_clauses.iter_enumerated() {
                     let tref = TraitRef::new(
                         TraitRefKind::ParentClause(self_tref.clone(), clause_id),
-                        clause.trait_.clone(),
+                        clause.trait_.clone().erase(),
                     );
                     self.add_constraints_for_tref(&mut type_constraints, &tref);
                 }
@@ -932,13 +932,12 @@ impl<'a> ComputeItemModifications<'a> {
             // we get the value of the `Output` assoc type using the proof of `Self: FnOnce` in
             // its implied clauses.
             for (clause_id, tref) in timpl.implied_trait_refs.iter_enumerated() {
+                let tref = tref.clone().erase();
                 let clause_path = TraitRefPath::parent_clause(clause_id, tref.trait_id());
                 let pred = &tref.trait_decl_ref;
-                if let Some(pred) = pred.skip_binder.clone().move_from_under_binder()
-                    // This takes a `&mut self`, so we reborrow it shared below.
-                    && let _ = self.compute_trait_modifications(pred.id)
-                    && let Some(trait_mods) = self.trait_modifications[pred.id].as_processed()
-                {
+                // This takes a `&mut self`, so we reborrow it shared below.
+                let _ = self.compute_trait_modifications(pred.id);
+                if let Some(trait_mods) = self.trait_modifications[pred.id].as_processed() {
                     for path in trait_mods.required_extra_params() {
                         if let Some(ty) = path.on_real_tref(&self.ctx.translated, tref.clone()) {
                             // This will get normalized further by `lookup_type_replacement`.
@@ -1045,15 +1044,12 @@ impl UpdateItemBody<'_> {
                     .map(|assoc_ty| assoc_ty.value.clone()),
                 Some((parent_clause_id, sub_path)) => {
                     let parent_ref = &parent_trait_refs[parent_clause_id];
-                    self.lookup_path_on_trait_ref(&sub_path, parent_ref)
+                    self.lookup_path_on_trait_ref(&sub_path, &parent_ref.clone().erase())
                 }
             },
             TraitRefKind::Dyn => {
                 let pred = &tref.trait_decl_ref;
-                let self_ty = pred.skip_binder.generics.types[0]
-                    .clone()
-                    .move_from_under_binder()
-                    .unwrap();
+                let self_ty = pred.generics.types[0].clone();
                 if self_ty.is_error() {
                     return None;
                 }
@@ -1086,16 +1082,16 @@ impl UpdateItemBody<'_> {
         for path in modifications.required_extra_params() {
             let mut path = path.clone();
             let base_tref = match path.tref.base {
-                BaseClause::SelfClause => self_path.as_ref().unwrap(),
+                BaseClause::SelfClause => self_path.as_ref().unwrap().clone(),
                 BaseClause::Local(var) => {
                     let clause_id = var
                         .bound_at_depth(DeBruijnId::zero())
                         .expect("found replacement not at binder level 0?");
                     path = path.pop_base();
-                    &args.trait_refs[clause_id]
+                    args.trait_refs[clause_id].clone().erase()
                 }
             };
-            let ty = if let Some(ty) = self.lookup_path_on_trait_ref(&path, base_tref) {
+            let ty = if let Some(ty) = self.lookup_path_on_trait_ref(&path, &base_tref) {
                 ty.clone()
             } else {
                 let fmt_ctx = &self.ctx.into_fmt();
@@ -1159,7 +1155,7 @@ impl UpdateItemBody<'_> {
     fn process_trait_decl_ref(&mut self, tref: &mut TraitDeclRef, self_path: TraitRefKind) {
         trace!("{tref:?}, {self_path:?}");
         let target = GenericsSource::item(tref.id);
-        let self_tref = TraitRef::new(self_path, RegionBinder::empty(tref.clone()));
+        let self_tref = TraitRef::new(self_path, tref.clone());
         self.update_generics(&mut tref.generics, target, Some(self_tref));
     }
 
@@ -1181,7 +1177,7 @@ impl UpdateItemBody<'_> {
             TypeConstraintSet::from_constraints(&binder.params.trait_type_constraints);
         // Clauses may provide more type constraints.
         for clause in &binder.params.trait_clauses {
-            let tref = clause.identity_tref();
+            let tref = clause.identity_tref().erase();
             if let Some(tmods) = self
                 .item_modifications
                 .get(&GenericsSource::item(tref.trait_id()))
@@ -1239,9 +1235,9 @@ impl VisitAstMut for UpdateItemBody<'_> {
     // Process trait refs
     fn enter_trait_ref_contents(&mut self, tref: &mut TraitRefContents) {
         trace!("{tref:?}");
-        self.process_poly_trait_decl_ref(&mut tref.trait_decl_ref, tref.kind.clone());
+        self.process_trait_decl_ref(&mut tref.trait_decl_ref, tref.kind.clone());
         if let TraitRefKind::BuiltinOrAuto { types, .. } = &mut tref.kind {
-            let target = GenericsSource::item(tref.trait_decl_ref.skip_binder.id);
+            let target = GenericsSource::item(tref.trait_decl_ref.id);
             if let Some(decl_modifs) = self.item_modifications.get(&target) {
                 assert!(decl_modifs.required_extra_assoc_types().count() == 0);
                 if decl_modifs.add_type_params {
@@ -1287,10 +1283,10 @@ impl VisitAstMut for UpdateItemBody<'_> {
     fn enter_trait_decl(&mut self, tdecl: &mut TraitDecl) {
         let self_tref = TraitRef::new(
             TraitRefKind::SelfId,
-            RegionBinder::empty(TraitDeclRef {
+            TraitDeclRef {
                 id: tdecl.def_id,
                 generics: Box::new(tdecl.generics.identity_args()),
-            }),
+            },
         );
         for (clause_id, clause) in tdecl.implied_clauses.iter_mut_enumerated() {
             let self_path = TraitRefKind::ParentClause(self_tref.clone(), clause_id);
@@ -1368,7 +1364,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
         match x.kind.as_ref() {
             FnPtrKind::Fun(id) => self.update_item_generics(*id, &mut x.generics),
             FnPtrKind::Trait(trait_ref, method_name) => {
-                let trait_id = trait_ref.trait_decl_ref.skip_binder.id;
+                let trait_id = trait_ref.trait_decl_ref.id;
                 self.update_generics(
                     &mut x.generics,
                     GenericsSource::Method(trait_id, *method_name),
@@ -1469,10 +1465,10 @@ impl TransformPass for Transform {
                 // trait stays unchanged.
                 let self_tref = TraitRef::new(
                     TraitRefKind::SelfId,
-                    RegionBinder::empty(TraitDeclRef {
+                    TraitDeclRef {
                         id: tr.def_id,
                         generics: Box::new(tr.generics.identity_args()),
-                    }),
+                    },
                 );
                 let trait_def_id = tr.def_id;
                 modifications.compute_replacements(|path| {
