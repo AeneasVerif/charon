@@ -595,12 +595,21 @@ and const_projection_elem_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc
         [
           ( "Offset",
-            `Assoc [ ("count", count); ("ty", ty); ("in_bounds", in_bounds) ] );
+            `Assoc
+              [
+                ("count", count);
+                ("ty", ty);
+                ("in_bounds", in_bounds);
+                ("pointee_is_sized", pointee_is_sized);
+              ] );
         ] ->
         let* count = integer_value_of_json ctx count in
         let* ty = option_of_json ty_of_json ctx ty in
         let* in_bounds = bool_of_json ctx in_bounds in
-        Ok (CProjOffset (count, ty, in_bounds))
+        let* pointee_is_sized =
+          option_of_json trait_ref_of_json ctx pointee_is_sized
+        in
+        Ok (CProjOffset (count, ty, in_bounds, pointee_is_sized))
     | _ -> Error "")
 
 and constant_expr_of_json (ctx : of_json_ctx) (js : json) :
@@ -1273,12 +1282,19 @@ and projection_elem_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc
         [
           ( "Offset",
-            `Assoc [ ("bytes", bytes); ("in_bounds", in_bounds); ("ty", ty) ] );
+            `Assoc
+              [
+                ("bytes", bytes);
+                ("in_bounds", in_bounds);
+                ("ty", ty);
+                ("ty_is_sized", ty_is_sized);
+              ] );
         ] ->
         let* bytes = box_of_json operand_of_json ctx bytes in
         let* in_bounds = bool_of_json ctx in_bounds in
         let* ty = ty_of_json ctx ty in
-        Ok (Offset (bytes, in_bounds, ty))
+        let* ty_is_sized = option_of_json trait_ref_of_json ctx ty_is_sized in
+        Ok (Offset (bytes, in_bounds, ty, ty_is_sized))
     | _ -> Error "")
 
 and ref_kind_of_json (ctx : of_json_ctx) (js : json) : (ref_kind, string) result

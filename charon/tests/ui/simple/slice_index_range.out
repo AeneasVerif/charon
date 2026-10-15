@@ -812,7 +812,7 @@ where
     _9 = copy offset
     storage_live(_12)
     _12 = move _9 ub.* const size_of::<T>()
-    ptr_7 = &raw const (*_8).offset!(copy _12) with_metadata(copy _8.metadata)
+    ptr_7 = &raw const (*_8).offset!(copy _12)
     storage_dead(_9)
     storage_dead(_8)
     storage_live(_10)
@@ -866,7 +866,7 @@ where
     _9 = copy offset
     storage_live(_12)
     _12 = move _9 ub.* const size_of::<T>()
-    ptr_7 = &raw mut (*_8).offset!(copy _12) with_metadata(copy _8.metadata)
+    ptr_7 = &raw mut (*_8).offset!(copy _12)
     storage_dead(_9)
     storage_dead(_8)
     storage_live(_10)

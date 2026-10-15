@@ -539,7 +539,10 @@ and const_projection_elem_of_postcard (ctx : of_postcard_ctx)
          let* count = integer_value_of_postcard ctx st in
          let* ty = option_of_postcard ty_of_postcard ctx st in
          let* in_bounds = bool_of_postcard ctx st in
-         Ok (CProjOffset (count, ty, in_bounds))
+         let* pointee_is_sized =
+           option_of_postcard trait_ref_of_postcard ctx st
+         in
+         Ok (CProjOffset (count, ty, in_bounds, pointee_is_sized))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and constant_expr_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1155,7 +1158,8 @@ and projection_elem_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* bytes = box_of_postcard operand_of_postcard ctx st in
          let* in_bounds = bool_of_postcard ctx st in
          let* ty = ty_of_postcard ctx st in
-         Ok (Offset (bytes, in_bounds, ty))
+         let* ty_is_sized = option_of_postcard trait_ref_of_postcard ctx st in
+         Ok (Offset (bytes, in_bounds, ty, ty_is_sized))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and ref_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

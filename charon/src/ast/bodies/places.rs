@@ -66,11 +66,12 @@ pub enum ProjectionElem {
     /// `<*const T>::offset` vs `<*const T>::wrapping_offset`).
     ///
     /// An offset may change the type of the place, like a transmute: `ty` is the type of the
-    /// resulting place.
+    /// resulting place, which is `T: Sized` as proven by `ty_is_sized`.
     Offset {
         bytes: Box<Operand>,
         in_bounds: bool,
         ty: Ty,
+        ty_is_sized: Option<TraitRef>,
     },
 }
 

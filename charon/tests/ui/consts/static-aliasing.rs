@@ -24,6 +24,10 @@ static E0_FIELD: &u32 = match &E0 {
 // Into an anonymous allocation.
 static ANON: &(u32, u32) = &(1, 2);
 static ANON_SECOND: &u32 = &ANON.1;
+// Into an anonymous allocation, at an unsized type.
+trait Trait: std::marker::Sync {}
+impl Trait for u8 {}
+static ANON_DYN: &dyn Trait = &(&(42u8, 12u8)).1;
 
 // Into a function.
 fn foo() {}

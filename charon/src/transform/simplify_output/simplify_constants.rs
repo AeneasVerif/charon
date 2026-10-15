@@ -152,7 +152,14 @@ fn transform_constant_expr(
                         count,
                         ref ty,
                         in_bounds,
-                    } => ctx.offset_projection(*op(count), ty.as_ref(), in_bounds, proj_ty.clone()),
+                        ref pointee_is_sized,
+                    } => ctx.offset_projection(
+                        *op(count),
+                        ty.as_ref(),
+                        in_bounds,
+                        proj_ty.clone(),
+                        pointee_is_sized.clone(),
+                    ),
                 };
                 place = place.project(proj, proj_ty.clone());
             }

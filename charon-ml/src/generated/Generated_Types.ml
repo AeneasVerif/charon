@@ -334,15 +334,17 @@ and const_projection_elem =
           Fields:
           - [from]
           - [to] *)
-  | CProjOffset of integer_value * ty option * bool
+  | CProjOffset of integer_value * ty option * bool * trait_ref option
       (** Like [ProjectionElem::Offset]: the place located
           [count * size_of::<ty>()] bytes after the current place (or [count]
-          bytes if [ty] is [None]).
+          bytes if [ty] is [None]). [pointee_is_sized] is the proof that the
+          pointee type is sized.
 
           Fields:
           - [count]
           - [ty]
-          - [in_bounds] *)
+          - [in_bounds]
+          - [pointee_is_sized] *)
 
 (** A constant expression. *)
 and constant_expr = { kind : constant_expr_kind; ty : ty }
@@ -488,9 +490,7 @@ and global_decl_ref = { id : global_decl_id; generics : generic_args }
     constant version of [[Place]]. *)
 and global_place = {
   global_place_kind : global_place_kind;
-  global_place_ty : ty;
-      (** The type of the place, which can't always be computed from the type of
-          the global (e.g. for fields of opaque types). *)
+  global_place_ty : ty;  (** The type of the place. *)
 }
 
 and global_place_kind =

@@ -188,7 +188,7 @@ and projection_elem =
           - [from]
           - [to]
           - [from_end] *)
-  | Offset of operand * bool * ty
+  | Offset of operand * bool * ty * trait_ref option
       (** For a place [p], [p.offset(n)] is the place located [n] bytes after
           [p], where [n] is a signed or unsigned integer. This projection may go
           out of bounds of the original place, e.g. if we initially had a
@@ -199,12 +199,14 @@ and projection_elem =
           [<*const T>::wrapping_offset]).
 
           An offset may change the type of the place, like a transmute: [ty] is
-          the type of the resulting place.
+          the type of the resulting place, which is [T: Sized] as proven by
+          [ty_is_sized].
 
           Fields:
           - [bytes]
           - [in_bounds]
-          - [ty] *)
+          - [ty]
+          - [ty_is_sized] *)
 
 (** An expression that evaluates to a value. This is the RHS of an assignment.
 *)

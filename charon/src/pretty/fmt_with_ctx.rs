@@ -1706,6 +1706,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for GlobalPlace {
                         count,
                         ty,
                         in_bounds,
+                        ..
                     } => {
                         let method = if *in_bounds {
                             "offset"
