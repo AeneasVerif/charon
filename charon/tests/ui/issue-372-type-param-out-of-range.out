@@ -70,7 +70,7 @@ where
     TraitClause0: (K: Sized),
     TraitClause1: (F: Sized),
     TraitClause2: for<'_0_1> (F: FnMut<(&'_0_1 u32,)>),
-    TypeConstraint0: for<'_0_1> TraitClause2::ImpliedClause1::Output = (),
+    TypeConstraint0: for<'_0_1> TraitClause2<'_>::ImpliedClause1::Output = (),
 {
     let _0: (); // return
 
@@ -86,7 +86,7 @@ where
     TraitClause0: (K: Sized),
     TraitClause1: (F: Sized),
     TraitClause2: for<'b> (F: FnMut<(&'b u32,)>),
-    TypeConstraint0: for<'b> TraitClause2::ImpliedClause1::Output = (),
+    TypeConstraint0: for<'b> TraitClause2<'_>::ImpliedClause1::Output = (),
 {
     let _0: (); // return
 
@@ -103,7 +103,7 @@ pub fn test_crate::{T}::f<F>()
 where
     TraitClause0: (F: Sized),
     TraitClause1: for<'_0_1> (F: FnMut<(&'_0_1 u32,)>),
-    TypeConstraint0: for<'_0_1> TraitClause1::ImpliedClause1::Output = (),
+    TypeConstraint0: for<'_0_1> TraitClause1<'_>::ImpliedClause1::Output = (),
 {
     let _0: (); // return
 

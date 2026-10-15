@@ -1370,13 +1370,15 @@ and trait_ref_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 2 ->
          let* _0 = trait_ref_of_postcard ctx st in
          let* _1 = trait_clause_id_of_postcard ctx st in
-         Ok (ParentClause (_0, _1))
+         let* _2 = region_args_of_postcard ctx st in
+         Ok (ParentClause (_0, _1, _2))
      | 3 ->
          let* trait_ref = trait_ref_of_postcard ctx st in
          let* type_id = assoc_type_id_of_postcard ctx st in
          let* generics = generic_args_of_postcard ctx st in
          let* clause_id = trait_clause_id_of_postcard ctx st in
-         Ok (ItemClause (trait_ref, type_id, generics, clause_id))
+         let* clause_args = region_args_of_postcard ctx st in
+         Ok (ItemClause (trait_ref, type_id, generics, clause_id, clause_args))
      | 4 -> Ok Self
      | 5 ->
          let* builtin_data = builtin_impl_data_of_postcard ctx st in

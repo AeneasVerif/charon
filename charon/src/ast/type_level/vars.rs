@@ -237,15 +237,6 @@ impl ConstGenericParam {
 }
 
 impl TraitParam {
-    /// The region arguments at depth 0 corresponding to this clause's bound regions.
-    pub fn identity_region_args(&self) -> RegionArgs {
-        RegionArgs::new(
-            self.trait_
-                .regions
-                .map_ref_indexed(|id, _| Region::Var(DeBruijnVar::bound(DeBruijnId::ZERO, id))),
-        )
-    }
-
     /// Constructs the trait ref that refers to this clause.
     pub fn identity_tref(&self) -> PolyTraitRef {
         self.identity_tref_at_depth(DeBruijnId::zero())
@@ -253,7 +244,7 @@ impl TraitParam {
 
     /// Like `identity_tref` but uses variables bound at the given depth.
     pub fn identity_tref_at_depth(&self, depth: DeBruijnId) -> PolyTraitRef {
-        let regions = self.identity_region_args();
+        let regions = self.trait_.identity_region_args();
         PolyTraitRef(
             self.trait_
                 .clone()

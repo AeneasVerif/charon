@@ -300,7 +300,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             } => {
                 let trait_ref = self.translate_trait_proof(span, base)?.erase();
                 match path_elem {
-                    hax::TraitProofImpliedPredicate::AssocItem { item, index, .. } => {
+                    hax::TraitProofImpliedPredicate::AssocItem {
+                        item,
+                        index,
+                        bound_region_count,
+                    } => {
                         let assoc_type_id =
                             self.translate_assoc_type_id(trait_ref.trait_id(), &item.def_id)?;
                         let generics = self.translate_generic_args(
@@ -313,11 +317,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             type_id: assoc_type_id,
                             generics,
                             clause_id: TraitClauseId::new(*index),
+                            clause_args: RegionArgs::erased(*bound_region_count),
                         }
                     }
-                    hax::TraitProofImpliedPredicate::Parent { index, .. } => {
-                        TraitRefKind::ParentClause(trait_ref, TraitClauseId::new(*index))
-                    }
+                    hax::TraitProofImpliedPredicate::Parent {
+                        index,
+                        bound_region_count,
+                    } => TraitRefKind::ParentClause(
+                        trait_ref,
+                        TraitClauseId::new(*index),
+                        RegionArgs::erased(*bound_region_count),
+                    ),
                 }
             }
             TraitProofKind::Dyn(proof) => {

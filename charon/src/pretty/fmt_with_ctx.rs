@@ -618,7 +618,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
                 let mut tref = &cstr.trait_ref;
                 loop {
                     match &tref.kind {
-                        TraitRefKind::ParentClause(parent_trait_ref, clause_id) => {
+                        TraitRefKind::ParentClause(parent_trait_ref, clause_id, _) => {
                             path.push(*clause_id);
                             tref = parent_trait_ref;
                         }
@@ -937,6 +937,16 @@ impl<C: AstFormatter> FmtWithCtx<C> for GenericArgs {
             write!(f, "[{}]", self.fmt_implicits(ctx).format(", "))?;
         }
         Ok(())
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for RegionArgs {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.is_empty() {
+            Ok(())
+        } else {
+            write!(f, "<{}>", self.iter().map(|r| r.with_ctx(ctx)).format(", "))
+        }
     }
 }
 
@@ -3012,29 +3022,38 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.kind {
             TraitRefKind::SelfId => write!(f, "Self"),
-            TraitRefKind::ParentClause(sub, clause_id) => {
+            TraitRefKind::ParentClause(sub, clause_id, args) => {
                 let sub = sub.with_ctx(ctx);
-                write!(f, "{sub}::{}", clause_id.format_as_implied())
+                write!(
+                    f,
+                    "{sub}::{}{}",
+                    clause_id.format_as_implied(),
+                    args.with_ctx(ctx)
+                )
             }
             TraitRefKind::ItemClause {
                 trait_ref,
                 type_id,
                 generics,
                 clause_id,
+                clause_args,
             } => {
                 write!(f, "{}::", trait_ref.with_ctx(ctx))?;
                 ctx.format_assoc_type_name(f, trait_ref.trait_id(), *type_id)?;
                 write!(
                     f,
-                    "{}::{}",
+                    "{}::{}{}",
                     generics.with_ctx(ctx),
-                    clause_id.format_as_implied()
+                    clause_id.format_as_implied(),
+                    clause_args.with_ctx(ctx),
                 )
             }
             TraitRefKind::TraitImpl(impl_ref) => {
                 write!(f, "{}", impl_ref.with_ctx(ctx))
             }
-            TraitRefKind::Clause(id, _) => write!(f, "{}", id.with_ctx(ctx)),
+            TraitRefKind::Clause(id, args) => {
+                write!(f, "{}{}", id.with_ctx(ctx), args.with_ctx(ctx))
+            }
             TraitRefKind::BuiltinOrAuto { types, .. } => {
                 let impl_trait = self.trait_decl_ref.format_as_impl(ctx);
                 write!(f, "{{built_in impl {impl_trait}")?;

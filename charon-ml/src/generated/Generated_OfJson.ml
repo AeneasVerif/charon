@@ -1561,10 +1561,11 @@ and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = de_bruijn_var_of_json trait_clause_id_of_json ctx _0 in
         let* _1 = region_args_of_json ctx _1 in
         Ok (Clause (_0, _1))
-    | `Assoc [ ("ParentClause", `List [ _0; _1 ]) ] ->
+    | `Assoc [ ("ParentClause", `List [ _0; _1; _2 ]) ] ->
         let* _0 = trait_ref_of_json ctx _0 in
         let* _1 = trait_clause_id_of_json ctx _1 in
-        Ok (ParentClause (_0, _1))
+        let* _2 = region_args_of_json ctx _2 in
+        Ok (ParentClause (_0, _1, _2))
     | `Assoc
         [
           ( "ItemClause",
@@ -1574,13 +1575,15 @@ and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
                 ("type_id", type_id);
                 ("generics", generics);
                 ("clause_id", clause_id);
+                ("clause_args", clause_args);
               ] );
         ] ->
         let* trait_ref = trait_ref_of_json ctx trait_ref in
         let* type_id = assoc_type_id_of_json ctx type_id in
         let* generics = generic_args_of_json ctx generics in
         let* clause_id = trait_clause_id_of_json ctx clause_id in
-        Ok (ItemClause (trait_ref, type_id, generics, clause_id))
+        let* clause_args = region_args_of_json ctx clause_args in
+        Ok (ItemClause (trait_ref, type_id, generics, clause_id, clause_args))
     | `String "SelfId" -> Ok Self
     | `Assoc
         [

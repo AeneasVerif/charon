@@ -195,7 +195,11 @@ mod trait_ref_path {
                 let tdecl = tdecl.as_trait_decl()?;
                 let clause = &tdecl.implied_clauses[parent_id];
                 let pred = clause.trait_.clone().try_substitute_with_tref(&tref).ok()?;
-                tref = TraitRef::new(TraitRefKind::ParentClause(tref, parent_id), pred.erase());
+                let erased_args = RegionArgs::erased(pred.regions.len());
+                tref = TraitRef::new(
+                    TraitRefKind::ParentClause(tref, parent_id, erased_args.clone()),
+                    pred.apply(erased_args),
+                );
             }
             Some(tref)
         }
@@ -248,7 +252,7 @@ mod trait_ref_path {
                     parent_path: vec![],
                     trait_decl_id,
                 }),
-                TraitRefKind::ParentClause(tref, id) => {
+                TraitRefKind::ParentClause(tref, id, _) => {
                     let mut path = tref.to_path()?;
                     path.parent_path.push(*id);
                     path.trait_decl_id = trait_decl_id;
@@ -849,7 +853,11 @@ impl<'a> ComputeItemModifications<'a> {
                 // Inherit known constraints from implied clauses.
                 for (clause_id, clause) in tr.implied_clauses.iter_enumerated() {
                     let tref = TraitRef::new(
-                        TraitRefKind::ParentClause(self_tref.clone(), clause_id),
+                        TraitRefKind::ParentClause(
+                            self_tref.clone(),
+                            clause_id,
+                            RegionArgs::erased(clause.trait_.regions.len()),
+                        ),
                         clause.trait_.clone().erase(),
                     );
                     self.add_constraints_for_tref(&mut type_constraints, &tref);
@@ -1029,7 +1037,7 @@ impl UpdateItemBody<'_> {
                 let path = path.on_tref(&tref.to_path().unwrap());
                 self.lookup_type_replacement(&path)
             }
-            TraitRefKind::ParentClause(parent, clause_id) => {
+            TraitRefKind::ParentClause(parent, clause_id, _) => {
                 let path = path.on_tref(&TraitRefPath::parent_clause(*clause_id, tref.trait_id()));
                 self.lookup_path_on_trait_ref(&path, parent)
             }
@@ -1289,7 +1297,11 @@ impl VisitAstMut for UpdateItemBody<'_> {
             },
         );
         for (clause_id, clause) in tdecl.implied_clauses.iter_mut_enumerated() {
-            let self_path = TraitRefKind::ParentClause(self_tref.clone(), clause_id);
+            let self_path = TraitRefKind::ParentClause(
+                self_tref.clone(),
+                clause_id,
+                RegionArgs::erased(clause.trait_.regions.len()),
+            );
             self.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
         }
         for (type_id, assoc_ty) in tdecl.types.iter_mut_enumerated() {
@@ -1305,6 +1317,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
                         type_id,
                         generics: assoc_ty.params.identity_args(),
                         clause_id,
+                        clause_args: RegionArgs::erased(clause.trait_.regions.len()),
                     };
                     this.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
                 }
@@ -1314,7 +1327,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
     fn enter_generic_params(&mut self, params: &mut GenericParams) {
         for (clause_id, clause) in params.trait_clauses.iter_mut_enumerated() {
             self.under_binder(Default::default(), |this| {
-                let regions = clause.identity_region_args(); // Binds level 0
+                let regions = clause.trait_.identity_region_args(); // Binds level 0
                 let self_path =
                     TraitRefKind::Clause(DeBruijnVar::bound(DeBruijnId::one(), clause_id), regions);
                 this.process_trait_decl_ref(&mut clause.trait_.skip_binder, self_path);

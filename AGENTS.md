@@ -45,6 +45,8 @@ Guidance for AI agents working on Charon.
 - Once you're done with a change, review it from the pov of an architect: does it use the right
   abstractions for the job, does it make use or/enforce the important invariants, will the code be
   easy to evolve.
+- Personal preference: `map`/`and_then` and similar combinators should be avoided unless they really
+  clarify the code. Use `?` if available, and if-let chains when sensible.
 
 - I will likely work in the same repo in parallel to start cleaning up your changes; I try not to
   interfere too much but don't be surprised.

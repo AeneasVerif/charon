@@ -229,9 +229,9 @@ where
     proof ImpliedClause0: (fn<'_0_2>(Adt<'_0_2, A>[TraitClause2, TraitClause3]) -> Adt<'_0_2, B>[TraitClause4, TraitClause5]: MetaSized) = {built_in impl MetaSized for fn<'_0_2>(Adt<'_0_2, A>[TraitClause2, TraitClause3]) -> Adt<'_0_2, B>[TraitClause4, TraitClause5]}
     proof ImpliedClause1: ((Adt<'_0, A>[TraitClause2, TraitClause3],): Sized) = {built_in impl Sized for (Adt<'_0, A>[TraitClause2, TraitClause3],)}
     proof ImpliedClause2: ((Adt<'_0, A>[TraitClause2, TraitClause3],): Tuple) = {built_in impl Tuple for (Adt<'_0, A>[TraitClause2, TraitClause3],)}
-    proof ImpliedClause3: (Adt<'_0, B>[TraitClause4, TraitClause5]: Sized) = TraitClause1
+    proof ImpliedClause3: (Adt<'_0, B>[TraitClause4, TraitClause5]: Sized) = TraitClause1<'_>
     type Output = Adt<'_0, B>[TraitClause4, TraitClause5]
-    fn call_once = {impl FnOnce<(Adt<'_0, A>[TraitClause2, TraitClause3],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5]}::call_once<'_0, A, B>[for<'_0_2> TraitClause0, for<'_0_2> TraitClause1, TraitClause2, TraitClause3, TraitClause4, TraitClause5]
+    fn call_once = {impl FnOnce<(Adt<'_0, A>[TraitClause2, TraitClause3],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5]}::call_once<'_0, A, B>[for<'_0_2> TraitClause0<'_>, for<'_0_2> TraitClause1<'_>, TraitClause2, TraitClause3, TraitClause4, TraitClause5]
     vtable: lazy
 }
 
@@ -357,9 +357,9 @@ where
     proof ImpliedClause0: (fn<'_0_2>(A, &'_0_2 B) -> &'_0_2 C: MetaSized) = {built_in impl MetaSized for fn<'_0_2>(A, &'_0_2 B) -> &'_0_2 C}
     proof ImpliedClause1: ((A, &'_0 B): Sized) = {built_in impl Sized for (A, &'_0 B)}
     proof ImpliedClause2: ((A, &'_0 B): Tuple) = {built_in impl Tuple for (A, &'_0 B)}
-    proof ImpliedClause3: (&'_0 C: Sized) = TraitClause2
+    proof ImpliedClause3: (&'_0 C: Sized) = TraitClause2<'_>
     type Output = &'_0 C
-    fn call_once = {impl FnOnce<(A, &'_0 B)> for fn<'_0_1 where B: '_0_1, C: '_0_1>(A, &'_0_1 B) -> &'_0_1 C}::call_once<'_0, A, B, C>[for<'_0_2> TraitClause0, for<'_0_2> TraitClause1, for<'_0_2> TraitClause2]
+    fn call_once = {impl FnOnce<(A, &'_0 B)> for fn<'_0_1 where B: '_0_1, C: '_0_1>(A, &'_0_1 B) -> &'_0_1 C}::call_once<'_0, A, B, C>[for<'_0_2> TraitClause0<'_>, for<'_0_2> TraitClause1<'_>, for<'_0_2> TraitClause2<'_>]
     vtable: lazy
 }
 
@@ -395,9 +395,9 @@ where
     proof ImpliedClause0: (fn<'_0_2>([&'_0_2 A; C2]) -> [&'_0_2 B; C3]: MetaSized) = {built_in impl MetaSized for fn<'_0_2>([&'_0_2 A; C2]) -> [&'_0_2 B; C3]}
     proof ImpliedClause1: (([&'_0 A; C2],): Sized) = {built_in impl Sized for ([&'_0 A; C2],)}
     proof ImpliedClause2: (([&'_0 A; C2],): Tuple) = {built_in impl Tuple for ([&'_0 A; C2],)}
-    proof ImpliedClause3: ([&'_0 B; C3]: Sized) = TraitClause1
+    proof ImpliedClause3: ([&'_0 B; C3]: Sized) = TraitClause1<'_>
     type Output = [&'_0 B; C3]
-    fn call_once = {impl FnOnce<([&'_0 A; C2],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]}::call_once<'_0, A, B, C2, C3>[for<'_0_2> TraitClause0, for<'_0_2> TraitClause1]
+    fn call_once = {impl FnOnce<([&'_0 A; C2],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]}::call_once<'_0, A, B, C2, C3>[for<'_0_2> TraitClause0<'_>, for<'_0_2> TraitClause1<'_>]
     vtable: lazy
 }
 

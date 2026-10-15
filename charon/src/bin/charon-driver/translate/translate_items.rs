@@ -1441,7 +1441,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         {
             struct FixSelfVisitor {
                 binder_depth: DeBruijnId,
-                clause_regions: IndexVec<TraitClauseId, usize>,
             }
             struct UnhandledSelf;
             impl Visitor for FixSelfVisitor {
@@ -1462,12 +1461,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 ) -> ControlFlow<Self::Break> {
                     match kind {
                         TraitRefKind::SelfId => return ControlFlow::Break(UnhandledSelf),
-                        TraitRefKind::ParentClause(sub, clause_id)
+                        TraitRefKind::ParentClause(sub, clause_id, clause_args)
                             if matches!(sub.kind, TraitRefKind::SelfId) =>
                         {
                             *kind = TraitRefKind::Clause(
                                 DeBruijnVar::bound(self.binder_depth, *clause_id),
-                                RegionArgs::erased(self.clause_regions[*clause_id]),
+                                clause_args.clone(),
                             )
                         }
                         _ => (),
@@ -1475,13 +1474,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     self.visit_inner(kind)
                 }
             }
-            let clause_regions = timpl
-                .generics
-                .trait_clauses
-                .map_ref(|clause| clause.trait_.regions.len());
             match timpl.drive_mut(&mut FixSelfVisitor {
                 binder_depth: DeBruijnId::zero(),
-                clause_regions,
             }) {
                 ControlFlow::Continue(()) => {}
                 ControlFlow::Break(UnhandledSelf) => {

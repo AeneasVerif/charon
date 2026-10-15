@@ -45,7 +45,7 @@ fn transform_dyn_trait_call(
     };
     let mut dyn_proof = trait_ref;
     let mut supertrait_path = vec![];
-    while let TraitRefKind::ParentClause(parent, clause_id) = &dyn_proof.kind {
+    while let TraitRefKind::ParentClause(parent, clause_id, _) = &dyn_proof.kind {
         supertrait_path.push(*clause_id);
         dyn_proof = parent;
     }

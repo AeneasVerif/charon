@@ -298,7 +298,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 let target_proof = binder.skip_binder.clone().erase();
                 let mut target_tref = &target_proof;
                 let mut clause_path: Vec<(TraitDeclId, TraitClauseId)> = vec![];
-                while let TraitRefKind::ParentClause(tref, id) = &target_tref.kind {
+                while let TraitRefKind::ParentClause(tref, id, _) = &target_tref.kind {
                     clause_path.push((tref.trait_id(), *id));
                     target_tref = tref;
                 }
