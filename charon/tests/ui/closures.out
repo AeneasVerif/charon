@@ -522,14 +522,14 @@ where
             _5 = copy f
             storage_live(_6)
             _6 = &(*x_3)
-            _4 = (move _5)(move _6)
+            _4 = (move _5)<'5>(move _6)
             ↳⚡ storage_dead(f)
                 storage_dead(x_1)
                 unwind_continue
             storage_dead(_6)
             storage_dead(_5)
             _0 = Option::Some { _0: move _4 }
-            conditional_drop[{built_in impl Destruct for T}::drop_glue<'5>] _4
+            conditional_drop[{built_in impl Destruct for T}::drop_glue<'6>] _4
             ↳⚡ storage_dead(f)
                 storage_dead(x_1)
                 unwind_continue
@@ -937,7 +937,7 @@ pub fn test_closure_ref_u32<'a>(x: &'a u32) -> &'a u32
     _5 = copy f
     storage_live(_6)
     _6 = &(*x)
-    _4 = (move _5)(move _6)
+    _4 = (move _5)<'7>(move _6)
     ↳⚡ storage_dead(x)
         unwind_continue
     _0 = &(*_4)
@@ -1080,7 +1080,7 @@ where
     _5 = copy f
     storage_live(_6)
     _6 = &(*x)
-    _4 = (move _5)(move _6)
+    _4 = (move _5)<'7>(move _6)
     ↳⚡ storage_dead(x)
         unwind_continue
     _0 = &(*_4)
@@ -1238,7 +1238,7 @@ where
     _5 = copy f
     storage_live(_6)
     _6 = &(*x)
-    _4 = (move _5)(move _6)
+    _4 = (move _5)<'15>(move _6)
     ↳⚡ storage_dead(x)
         unwind_continue
     _0 = &(*_4)
@@ -2059,7 +2059,7 @@ pub fn test_regions_casted<'a>(x: &'a u32) -> u32
     storage_live(_6)
     _6 = &x
     _5 = &(*_6)
-    _0 = (move _4)(move _5)
+    _0 = (move _4)<'20>(move _5)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_5)

@@ -241,8 +241,23 @@ fn transform_dyn_trait_call(
         method_field_place
     };
 
-    // Transform the original call to use the function pointer
-    call.func = FnOperand::Dynamic(Operand::Copy(fn_ptr_place));
+    // The function pointer in the vtable binds the method late-bound regions.
+    let TyKind::FnPtr(sig) = fn_ptr_place.ty().kind() else {
+        unreachable!("vtable method is not a function pointer")
+    };
+    let method_region_count = sig.regions.len();
+    let regions = fn_ptr
+        .generics
+        .regions
+        .iter()
+        .rev()
+        .take(method_region_count)
+        .rev()
+        .copied()
+        .collect();
+
+    // Transform the original call to use the function pointer.
+    call.func = FnOperand::Dynamic(Operand::Copy(fn_ptr_place), regions);
 
     Ok(())
 }

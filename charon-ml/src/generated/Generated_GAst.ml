@@ -258,7 +258,9 @@ and error = { span : span; msg : string }
 and fn_operand =
   | FnOpRegular of fn_ptr
       (** Regular case: call to a top-level function, trait method, etc. *)
-  | FnOpDynamic of operand  (** Use of a function pointer. *)
+  | FnOpDynamic of operand * region list
+      (** Call through a function pointer, instantiated with the given regions.
+      *)
 
 (** Where a given function came from. *)
 and fun_source =

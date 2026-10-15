@@ -175,8 +175,8 @@ pub struct SwitchData {
 pub enum FnOperand {
     /// Regular case: call to a top-level function, trait method, etc.
     Regular(FnPtr),
-    /// Use of a function pointer.
-    Dynamic(Operand),
+    /// Call through a function pointer, instantiated with the given regions.
+    Dynamic(Operand, RegionArgs),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

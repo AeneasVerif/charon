@@ -263,7 +263,7 @@ impl HasSafety for Call {
         };
         callee_safety
             .or_else(|| match &self.func {
-                FnOperand::Dynamic(op) => op.safety(krate),
+                FnOperand::Dynamic(op, _) => op.safety(krate),
                 FnOperand::Regular(_) => Safety::Safe,
             })
             .or_else(|| self.args.safety(krate))
@@ -298,7 +298,7 @@ impl HasSafety for FnOperand {
                     }
                 }
             },
-            FnOperand::Dynamic(op) => op.ty().kind().as_fn_ptr().unwrap().safety(krate),
+            FnOperand::Dynamic(op, _) => op.ty().kind().as_fn_ptr().unwrap().safety(krate),
         }
     }
 }

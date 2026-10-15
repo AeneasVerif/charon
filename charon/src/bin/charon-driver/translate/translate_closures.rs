@@ -792,13 +792,13 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let TyKind::FnPtr(fn_sig) = fn_ptr.ty().kind() else {
             unreachable!()
         };
-        let late_bound_regions = self
+        let late_bound_regions: RegionArgs = self
             .innermost_binder()
             .bound_region_vars
             .iter()
             .map(|rid| Region::Var(DeBruijnVar::new_at_zero(*rid)))
             .collect();
-        let arg_tys = fn_sig.clone().apply(late_bound_regions).inputs;
+        let arg_tys = fn_sig.clone().apply(late_bound_regions.clone()).inputs;
         let args = arg_tys
             .into_iter()
             .enumerate()
@@ -810,7 +810,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             })
             .collect();
         builder.call(Call {
-            func: FnOperand::Dynamic(fn_ptr),
+            func: FnOperand::Dynamic(fn_ptr, late_bound_regions),
             args,
             dest: output,
             safety: CallSafety::Inherit,

@@ -1015,7 +1015,7 @@ fn unsafe_call_unsafe_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
     storage_live(_2)
     _2 = &(*s) with_metadata(copy s.metadata)
     // unsafe
-    _0 = (copy (*_2.metadata).method_unsafe_method)(move _2)
+    _0 = (copy (*_2.metadata).method_unsafe_method)<'10>(move _2)
     ↳⚡ storage_dead(s)
         unwind_continue
     storage_dead(_2)
@@ -1353,7 +1353,7 @@ fn safe_call_dyn_method<'_0>(s: &'_0 (dyn DynTrait + '_0))
     _0 = ()
     storage_live(_2)
     _2 = &(*s) with_metadata(copy s.metadata)
-    _0 = (copy (*_2.metadata).method_safe_method)(move _2)
+    _0 = (copy (*_2.metadata).method_safe_method)<'10>(move _2)
     ↳⚡ storage_dead(s)
         unwind_continue
     storage_dead(_2)

@@ -720,7 +720,17 @@ impl<C: AstFormatter> FmtWithCtx<C> for FnOperand {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             FnOperand::Regular(func) => write!(f, "{}", func.with_ctx(ctx)),
-            FnOperand::Dynamic(op) => write!(f, "({})", op.with_ctx(ctx)),
+            FnOperand::Dynamic(op, regions) => {
+                write!(f, "({})", op.with_ctx(ctx))?;
+                if !regions.is_empty() {
+                    write!(
+                        f,
+                        "<{}>",
+                        regions.iter().map(|r| r.with_ctx(ctx)).format(", ")
+                    )?;
+                }
+                Ok(())
+            }
         }
     }
 }

@@ -142,8 +142,8 @@ fn main()
     let _25: &'11 char; // anonymous local
     let _26: (); // anonymous local
     let _27: &'12 char; // anonymous local
-    let _28: &'21 char; // anonymous local
-    let _29: &'25 char; // anonymous local
+    let _28: &'25 char; // anonymous local
+    let _29: &'30 char; // anonymous local
     let _30: char; // anonymous local
 
     storage_live(_0)
@@ -171,7 +171,7 @@ fn main()
     storage_live(_8)
     _8 = &a
     _7 = &(*_8)
-    _5 = (move _6)(move _7)
+    _5 = (move _6)<'21>(move _7)
     ↳⚡ storage_dead(_27)
         unwind_continue
     storage_dead(_7)
@@ -188,7 +188,7 @@ fn main()
     storage_live(_13)
     _13 = &a
     _12 = &(*_13)
-    _10 = (move _11)(move _12)
+    _10 = (move _11)<'22>(move _12)
     ↳⚡ storage_dead(_27)
         unwind_continue
     storage_dead(_12)
@@ -202,7 +202,7 @@ fn main()
     storage_live(_17)
     _17 = &b
     _16 = &(*_17)
-    _14 = (move _15)(move _16)
+    _14 = (move _15)<'23>(move _16)
     ↳⚡ storage_dead(_27)
         unwind_continue
     storage_dead(_16)
@@ -216,7 +216,7 @@ fn main()
     storage_live(_21)
     _21 = &b
     _20 = &(*_21)
-    _18 = (move _19)(move _20)
+    _18 = (move _19)<'24>(move _20)
     ↳⚡ storage_dead(_27)
         unwind_continue
     storage_live(_28)
@@ -237,7 +237,7 @@ fn main()
     _27 = move _28
     _25 = &(*_27)
     _24 = &(*_25)
-    _22 = (move _23)(move _24)
+    _22 = (move _23)<'26>(move _24)
     ↳⚡ storage_dead(_27)
         unwind_continue
     storage_dead(_24)
@@ -245,7 +245,7 @@ fn main()
     storage_dead(_25)
     storage_dead(_22)
     storage_live(_26)
-    _26 = takes_closure::<for<'a> foo::<u32><'a>>(const foo::<u32><'24>)
+    _26 = takes_closure::<for<'a> foo::<u32><'a>>(const foo::<u32><'29>)
     ↳⚡ storage_dead(_27)
         unwind_continue
     storage_dead(_26)

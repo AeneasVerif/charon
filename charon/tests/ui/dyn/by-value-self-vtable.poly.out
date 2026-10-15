@@ -332,7 +332,7 @@ fn main()
     storage_live(_v_2)
     storage_live(_3)
     _3 = &(*x) with_metadata(copy x.metadata)
-    _v_2 = (copy (*_3.metadata).method_read)(move _3)
+    _v_2 = (copy (*_3.metadata).method_read)<'23>(move _3)
     ↳⚡ conditional_drop[drop_glue<'38, (dyn Consume + '33), Global>[{built_in impl MetaSized for (dyn Consume + '33)}, {built_in impl Sized for Global}]] x
         ↳⚡ unwind_terminate
         unwind_continue
@@ -356,7 +356,7 @@ fn main()
     storage_live(_v_8)
     storage_live(_9)
     _9 = &(*p) with_metadata(copy p.metadata)
-    _v_8 = (copy (*_9.metadata).method_read)(move _9)
+    _v_8 = (copy (*_9.metadata).method_read)<'42>(move _9)
     ↳⚡ conditional_drop[drop_glue<'57, (dyn Consume + '52), Global>[{built_in impl MetaSized for (dyn Consume + '52)}, {built_in impl Sized for Global}]] p
         ↳⚡ unwind_terminate
         conditional_drop[drop_glue<'38, (dyn Consume + '33), Global>[{built_in impl MetaSized for (dyn Consume + '33)}, {built_in impl Sized for Global}]] x

@@ -1,0 +1,60 @@
+# Final LLBC before serialization:
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+struct () {}
+
+struct test_crate::Processor::{vtable}<'x> {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn Processor<'x>)),
+  method_process: fn<'a, '_1_1>(&'_1_1 (dyn Processor<'x>), &'a u32) -> &'a u32,
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::Processor
+pub trait Processor<'x, Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn process<'a, '_1_1>;
+    vtable: test_crate::Processor::{vtable}<'x>
+}
+
+// Full name: test_crate::call
+pub fn call<'a, 'x, '_2>(processor: &'_2 (dyn Processor<'x> + '_2), input: &'a u32) -> &'a u32
+where
+    RegionOutlives0: 'x: '_2,
+{
+    let _0: &'1 u32; // return
+    let processor: &'7 (dyn Processor<'8> + '9); // arg #1
+    let input: &'10 u32; // arg #2
+    let _3: &'11 u32; // anonymous local
+    let _4: &'12 (dyn Processor<'13> + '14); // anonymous local
+    let _5: &'15 u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &(*processor) with_metadata(copy processor.metadata)
+    storage_live(_5)
+    _5 = &(*input)
+    _3 = (copy (*_4.metadata).method_process)<'25, '26>(move _4, move _5)
+    ↳⚡ storage_dead(input)
+        storage_dead(processor)
+        unwind_continue
+    _0 = &(*_3)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(input)
+    storage_dead(processor)
+    return
+}
+
+
+

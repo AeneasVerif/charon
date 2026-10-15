@@ -1978,7 +1978,13 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             _ => {
                 // Call to a function pointer.
                 let op = self.translate_operand(span, func)?;
-                FnOperand::Dynamic(op)
+                let regions = match op.ty().kind() {
+                    TyKind::FnPtr(sig) => sig
+                        .regions
+                        .map_ref_indexed(|_, _| self.translate_erased_region()),
+                    _ => IndexVec::new(),
+                };
+                FnOperand::Dynamic(op, regions)
             }
         };
         let args = self.translate_arguments(span, args)?;

@@ -206,7 +206,7 @@ where
     let args: (Adt<'_0, A>[TraitClause2, TraitClause3],); // arg #2
 
     storage_live(_0)
-    _0 = (copy fn_ptr)(move args._0)
+    _0 = (copy fn_ptr)<'_0>(move args._0)
     ↳⚡ storage_dead(args)
         storage_dead(fn_ptr)
         unwind_continue
@@ -337,7 +337,7 @@ where
     let args: (A, &'_0 B); // arg #2
 
     storage_live(_0)
-    _0 = (copy fn_ptr)(move args._0, move args._1)
+    _0 = (copy fn_ptr)<'_0>(move args._0, move args._1)
     ↳⚡ storage_dead(args)
         storage_dead(fn_ptr)
         unwind_continue
@@ -376,7 +376,7 @@ where
     let args: ([&'_0 A; C2],); // arg #2
 
     storage_live(_0)
-    _0 = (copy fn_ptr)(move args._0)
+    _0 = (copy fn_ptr)<'_0>(move args._0)
     ↳⚡ storage_dead(args)
         storage_dead(fn_ptr)
         unwind_continue
@@ -1174,7 +1174,7 @@ pub fn test_dyn_fn(x: u32) -> u32
     storage_live(_8)
     _8 = copy x
     _7 = (move _8,)
-    _0 = (copy (*_6.metadata).method_call)(move _6, move _7)
+    _0 = (copy (*_6.metadata).method_call)<'17>(move _6, move _7)
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_8)
