@@ -26,7 +26,7 @@ impl<'a> ClauseExtractor<'a> {
 
     /// Move a trait ref out of the binders to make it a trait clause. Collects all the region
     /// binders on the way to here into a single binder to make a HRTB.
-    fn extract_trait_clause(&self, trait_: TraitDeclRef) -> Option<PolyTraitDeclRef> {
+    fn extract_trait_clause(&self, trait_: TraitDeclRef) -> Option<(PolyTraitDeclRef, RegionArgs)> {
         let mut trait_ = RegionBinder::empty(trait_);
         // Iterate over the binders on the way to this trait ref, skipping the first binder (the
         // item binder).
@@ -41,6 +41,13 @@ impl<'a> ClauseExtractor<'a> {
                 scope_regions.push((dbid, old_id, new_id));
             }
         }
+
+        let region_args = RegionArgs::new(
+            scope_regions
+                .iter()
+                .map(|(dbid, id, _)| Region::Var(DeBruijnVar::bound(*dbid, *id)))
+                .collect(),
+        );
 
         if !scope_regions.is_empty() {
             // Make all the region variables point at the outer binder.
@@ -89,7 +96,8 @@ impl<'a> ClauseExtractor<'a> {
             .visit(&mut trait_.skip_binder);
         }
 
-        trait_.move_from_under_binders(self.binder_stack.depth())
+        let trait_ = trait_.move_from_under_binders(self.binder_stack.depth())?;
+        Some((trait_, region_args))
     }
 }
 
@@ -106,7 +114,8 @@ impl VisitAstMut for ClauseExtractor<'_> {
 
     fn exit_trait_ref_contents(&mut self, tref: &mut TraitRefContents) {
         if matches!(tref.kind, TraitRefKind::Unknown(_))
-            && let Some(trait_) = self.extract_trait_clause(tref.trait_decl_ref.clone())
+            && let Some((trait_, region_args)) =
+                self.extract_trait_clause(tref.trait_decl_ref.clone())
         {
             let clause_id = if let Some(clause_id) = self.extracted_clauses.get(&trait_) {
                 *clause_id
@@ -120,8 +129,10 @@ impl VisitAstMut for ClauseExtractor<'_> {
                 self.extracted_clauses.insert(trait_, clause_id);
                 clause_id
             };
-            tref.kind =
-                TraitRefKind::Clause(DeBruijnVar::bound(self.binder_stack.depth(), clause_id));
+            tref.kind = TraitRefKind::Clause(
+                DeBruijnVar::bound(self.binder_stack.depth(), clause_id),
+                region_args,
+            );
         }
     }
 }

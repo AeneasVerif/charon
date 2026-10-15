@@ -622,7 +622,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
                             path.push(*clause_id);
                             tref = parent_trait_ref;
                         }
-                        &TraitRefKind::Clause(DeBruijnVar::Bound(_, clause_id)) => {
+                        &TraitRefKind::Clause(DeBruijnVar::Bound(_, clause_id), _) => {
                             tgt_clause = Some(clause_id);
                             break;
                         }
@@ -3034,7 +3034,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
             TraitRefKind::TraitImpl(impl_ref) => {
                 write!(f, "{}", impl_ref.with_ctx(ctx))
             }
-            TraitRefKind::Clause(id) => write!(f, "{}", id.with_ctx(ctx)),
+            TraitRefKind::Clause(id, _) => write!(f, "{}", id.with_ctx(ctx)),
             TraitRefKind::BuiltinOrAuto { types, .. } => {
                 let impl_trait = self.trait_decl_ref.format_as_impl(ctx);
                 write!(f, "{{built_in impl {impl_trait}")?;

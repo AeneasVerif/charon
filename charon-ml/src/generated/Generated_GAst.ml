@@ -362,9 +362,6 @@ and locals = {
           - the remaining locals, used for the intermediate computations *)
 }
 
-(** Region arguments used to instantiate a [[RegionBinder]]. *)
-and region_args = { regions : region list }
-
 (** A branching operation. *)
 and switch_data = {
   scrutinee : switch_scrutinee;  (** The value to branch over. *)

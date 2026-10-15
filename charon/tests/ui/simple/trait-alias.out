@@ -113,6 +113,68 @@ where
     vtable: unknown // vtables of trait alias impls are not supported
 }
 
+// Full name: test_crate::Borrowed
+trait Borrowed<'a, Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Borrowed::{vtable}<'a>
+}
+
+// Full name: test_crate::{impl Borrowed<'a> for Struct}
+impl<'a> "impl_Borrowed_for_Struct" Borrowed<'a> for Struct {
+    proof ImpliedClause0: (Struct: MetaSized) = {built_in impl MetaSized for Struct}
+    vtable: lazy
+}
+
+// Full name: test_crate::HrtbAlias
+trait HrtbAlias<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: for<'a> (Self: Borrowed<'a>)
+    vtable: test_crate::HrtbAlias::{vtable}
+}
+
+// Full name: test_crate::HrtbAlias::{impl HrtbAlias for Self}
+impl<Self> "impl_HrtbAlias_for_T" HrtbAlias for Self
+where
+    TraitClause0: (Self: MetaSized),
+    TraitClause1: for<'a> (Self: Borrowed<'a>),
+{
+    proof ImpliedClause0: (Self: MetaSized) = TraitClause0
+    for<'a> proof ImpliedClause1: (Self: Borrowed<'a>) = TraitClause1
+    vtable: unknown // vtables of trait alias impls are not supported
+}
+
+// Full name: test_crate::takes_hrtb_alias
+fn takes_hrtb_alias<T>()
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: HrtbAlias),
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::use_hrtb_alias
+fn use_hrtb_alias()
+{
+    let _0: (); // return
+    let _1: (); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = takes_hrtb_alias<Struct>[{built_in impl Sized for Struct}, impl_HrtbAlias_for_T<Struct>[{built_in impl MetaSized for Struct}, for<'a> impl_Borrowed_for_Struct<'0>]]()
+    ↳⚡ unwind_continue
+    storage_dead(_1)
+    _0 = ()
+    return
+}
+
 // Full name: test_crate::takes_alias
 fn takes_alias<T>(x: T)
 where

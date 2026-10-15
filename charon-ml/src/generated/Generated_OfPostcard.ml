@@ -1365,7 +1365,8 @@ and trait_ref_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _0 =
            de_bruijn_var_of_postcard trait_clause_id_of_postcard ctx st
          in
-         Ok (Clause _0)
+         let* _1 = region_args_of_postcard ctx st in
+         Ok (Clause (_0, _1))
      | 2 ->
          let* _0 = trait_ref_of_postcard ctx st in
          let* _1 = trait_clause_id_of_postcard ctx st in

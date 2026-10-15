@@ -40,7 +40,7 @@ pub enum TraitRefKind {
     /// A specific top-level implementation item.
     TraitImpl(TraitImplRef),
 
-    /// One of the local clauses.
+    /// One of the local clauses, instantiated with the given region arguments.
     ///
     /// Example:
     /// ```text
@@ -48,7 +48,7 @@ pub enum TraitRefKind {
     ///                    ^^^^^^^
     ///                    Clause(0)
     /// ```
-    Clause(ClauseDbVar),
+    Clause(ClauseDbVar, RegionArgs),
 
     /// A parent clause
     ///

@@ -53,8 +53,9 @@ pub(crate) struct BindingLevel {
     pub type_vars_map: HashMap<u32, TypeVarId>,
     /// The map from rust const generic variables to translated const generic variable indices.
     pub const_generic_vars_map: HashMap<u32, ConstGenericVarId>,
-    /// The map from trait predicates to translated trait clause indices.
-    pub trait_preds: HashMap<hax::GenericPredicateId, TraitClauseId>,
+    /// The map from trait predicates to the translated trait clause indices, and the number of
+    /// bound higher-kinded regions.
+    pub trait_preds: HashMap<hax::GenericPredicateId, (TraitClauseId, usize)>,
     /// The types of the captured variables, when we're translating a closure item. This is
     /// translated early because this translation requires adding new lifetime generics to the
     /// current binder.
@@ -394,12 +395,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         id: &hax::GenericPredicateId,
-    ) -> Result<ClauseDbVar, Error> {
-        self.lookup_param(
+    ) -> Result<(ClauseDbVar, usize), Error> {
+        let var = self.lookup_param(
             span,
             |bl| bl.trait_preds.get(id).copied(),
             || format!("the trait clause variable {id:?}"),
-        )
+        )?;
+        Ok(match var {
+            DeBruijnVar::Bound(depth, (id, regions)) => (DeBruijnVar::Bound(depth, id), regions),
+            DeBruijnVar::Free(_) => unreachable!(),
+        })
     }
 
     pub(crate) fn push_generic_params(&mut self, generics: &hax::TyGenerics) -> Result<(), Error> {

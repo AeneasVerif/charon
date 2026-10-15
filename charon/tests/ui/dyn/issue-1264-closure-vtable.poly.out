@@ -1187,25 +1187,25 @@ fn main()
     let _18: Box<test_crate::main::{closure#2}>[{built_in impl MetaSized for test_crate::main::{closure#2}}, {built_in impl Sized for Global}]; // anonymous local
     let _19: test_crate::main::{closure#2}; // anonymous local
     let _w: Box<(dyn FnOnce<(), Output = u32> + '39)>[{built_in impl MetaSized for (dyn FnOnce<(), Output = u32> + '41)}, {built_in impl Sized for Global}]; // local
-    let k: &'51 (dyn for<'_0_2> Fn<(&'_0_2 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '52); // local
-    let _22: &'57 test_crate::main::{closure#3}; // anonymous local
-    let _23: &'58 test_crate::main::{closure#3}; // anonymous local
+    let k: &'52 (dyn for<'_0_2> Fn<(&'_0_2 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '53); // local
+    let _22: &'59 test_crate::main::{closure#3}; // anonymous local
+    let _23: &'60 test_crate::main::{closure#3}; // anonymous local
     let _y_24: u32; // local
-    let _25: &'59 (dyn for<'_0_2> Fn<(&'_0_2 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '60); // anonymous local
-    let _26: (&'65 u32,); // anonymous local
-    let _27: &'66 u32; // anonymous local
-    let _28: &'67 u32; // anonymous local
-    let _29: &'68 u32; // anonymous local
-    let _30: &'69 test_crate::main::{closure#3}; // anonymous local
-    let _31: &'70 test_crate::main::{closure}; // anonymous local
-    let _32: &'71 test_crate::main::{closure}; // anonymous local
-    let _33: &'120 test_crate::main::{closure#3}; // anonymous local
-    let _34: &'139 u32; // anonymous local
-    let _35: &'205 test_crate::main::{closure}; // anonymous local
+    let _25: &'61 (dyn for<'_0_2> Fn<(&'_0_2 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '62); // anonymous local
+    let _26: (&'68 u32,); // anonymous local
+    let _27: &'69 u32; // anonymous local
+    let _28: &'70 u32; // anonymous local
+    let _29: &'71 u32; // anonymous local
+    let _30: &'72 test_crate::main::{closure#3}; // anonymous local
+    let _31: &'73 test_crate::main::{closure}; // anonymous local
+    let _32: &'74 test_crate::main::{closure}; // anonymous local
+    let _33: &'123 test_crate::main::{closure#3}; // anonymous local
+    let _34: &'145 u32; // anonymous local
+    let _35: &'212 test_crate::main::{closure}; // anonymous local
     let _36: test_crate::main::{closure}; // anonymous local
-    let _37: &'206 test_crate::main::{closure#3}; // anonymous local
+    let _37: &'213 test_crate::main::{closure#3}; // anonymous local
     let _38: test_crate::main::{closure#3}; // anonymous local
-    let _39: &'207 u32; // anonymous local
+    let _39: &'214 u32; // anonymous local
     let _40: u32; // anonymous local
 
     storage_live(_32)
@@ -1225,17 +1225,17 @@ fn main()
     _31 = move _32
     _3 = &(*_31)
     _2 = &(*_3)
-    f = unsize_cast<&'6 test_crate::main::{closure}, &'72 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '73), &{impl Fn<(u32,)> for test_crate::main::{closure}}::{vtable}>(move _2)
+    f = unsize_cast<&'6 test_crate::main::{closure}, &'75 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '76), &{impl Fn<(u32,)> for test_crate::main::{closure}}::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(f)
-    set_type(typeof(f) == &'74 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '75))
+    set_type(typeof(f) == &'77 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '78))
     storage_dead(_3)
     storage_live(_y_4)
     storage_live(_5)
     _5 = &(*f) with_metadata(copy f.metadata)
     storage_live(_6)
     _6 = (const 1u32,)
-    _y_4 = (copy (*_5.metadata).method_call)<'79>(move _5, move _6)
+    _y_4 = (copy (*_5.metadata).method_call)<'82>(move _5, move _6)
     ↳⚡ storage_dead(_31)
         storage_dead(_30)
         storage_dead(_29)
@@ -1257,17 +1257,17 @@ fn main()
     storage_dead(_12)
     _10 = &_11
     _9 = &(*_10)
-    g = unsize_cast<&'15 test_crate::main::{closure#1}<'16>, &'82 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '83), &{impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::{vtable}<'89>>(move _9)
+    g = unsize_cast<&'15 test_crate::main::{closure#1}<'16>, &'85 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '86), &{impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::{vtable}<'92>>(move _9)
     storage_dead(_9)
     fake_read(g)
-    set_type(typeof(g) == &'90 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '91))
+    set_type(typeof(g) == &'93 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '94))
     storage_dead(_10)
     storage_live(_y_13)
     storage_live(_14)
     _14 = &(*g) with_metadata(copy g.metadata)
     storage_live(_15)
     _15 = (const 2u32,)
-    _y_13 = (copy (*_14.metadata).method_call)<'95>(move _14, move _15)
+    _y_13 = (copy (*_14.metadata).method_call)<'98>(move _14, move _15)
     ↳⚡ storage_dead(_31)
         storage_dead(_30)
         storage_dead(_29)
@@ -1284,7 +1284,7 @@ fn main()
     storage_live(_19)
     _19 = test_crate::main::{closure#2} { _0: move d }
     _18 = new<test_crate::main::{closure#2}>[{built_in impl Sized for test_crate::main::{closure#2}}](move _19)
-    ↳⚡ conditional_drop[{impl Destruct for test_crate::main::{closure#2}}::drop_glue<'96>] _19
+    ↳⚡ conditional_drop[{impl Destruct for test_crate::main::{closure#2}}::drop_glue<'99>] _19
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
@@ -1299,7 +1299,7 @@ fn main()
             storage_dead(_32)
             unwind_terminate
         // A closure with a higher-ranked signature.
-        conditional_drop[impl_Destruct_for_Droppable::drop_glue<'101>] d
+        conditional_drop[impl_Destruct_for_Droppable::drop_glue<'104>] d
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
@@ -1317,9 +1317,9 @@ fn main()
         storage_dead(_30)
         storage_dead(_29)
         unwind_continue
-    _h = unsize_cast<Box<test_crate::main::{closure#2}>[{built_in impl MetaSized for test_crate::main::{closure#2}}, {built_in impl Sized for Global}], Box<(dyn FnOnce<(), Output = Droppable> + '97)>[{built_in impl MetaSized for (dyn FnOnce<(), Output = Droppable> + '99)}, {built_in impl Sized for Global}], &{impl FnOnce<()> for test_crate::main::{closure#2}}::{vtable}>(move _18)
-    conditional_drop[impl_Destruct_for_Box::drop_glue<'100, test_crate::main::{closure#2}, Global>[{built_in impl MetaSized for test_crate::main::{closure#2}}, {built_in impl Sized for Global}]] _18
-    ↳⚡ conditional_drop[{impl Destruct for test_crate::main::{closure#2}}::drop_glue<'96>] _19
+    _h = unsize_cast<Box<test_crate::main::{closure#2}>[{built_in impl MetaSized for test_crate::main::{closure#2}}, {built_in impl Sized for Global}], Box<(dyn FnOnce<(), Output = Droppable> + '100)>[{built_in impl MetaSized for (dyn FnOnce<(), Output = Droppable> + '102)}, {built_in impl Sized for Global}], &{impl FnOnce<()> for test_crate::main::{closure#2}}::{vtable}>(move _18)
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'103, test_crate::main::{closure#2}, Global>[{built_in impl MetaSized for test_crate::main::{closure#2}}, {built_in impl Sized for Global}]] _18
+    ↳⚡ conditional_drop[{impl Destruct for test_crate::main::{closure#2}}::drop_glue<'99>] _19
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
@@ -1333,7 +1333,7 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             unwind_terminate
-        conditional_drop[impl_Destruct_for_Droppable::drop_glue<'101>] d
+        conditional_drop[impl_Destruct_for_Droppable::drop_glue<'104>] d
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
@@ -1354,10 +1354,10 @@ fn main()
     storage_dead(_19)
     storage_dead(_18)
     fake_read(_h)
-    set_type(typeof(_h) == Box<(dyn FnOnce<(), Output = Droppable> + '102)>[{built_in impl MetaSized for (dyn FnOnce<(), Output = Droppable> + '104)}, {built_in impl Sized for Global}])
+    set_type(typeof(_h) == Box<(dyn FnOnce<(), Output = Droppable> + '105)>[{built_in impl MetaSized for (dyn FnOnce<(), Output = Droppable> + '107)}, {built_in impl Sized for Global}])
     storage_live(_w)
     _w = wrap<u32>[{built_in impl Sized for u32}](const 3u32)
-    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'119, (dyn FnOnce<(), Output = Droppable> + '114), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = Droppable> + '114)}, {built_in impl Sized for Global}]] _h
+    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'122, (dyn FnOnce<(), Output = Droppable> + '117), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = Droppable> + '117)}, {built_in impl Sized for Global}]] _h
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
@@ -1371,7 +1371,7 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             unwind_terminate
-        conditional_drop[impl_Destruct_for_Droppable::drop_glue<'101>] d
+        conditional_drop[impl_Destruct_for_Droppable::drop_glue<'104>] d
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
@@ -1408,10 +1408,10 @@ fn main()
     _30 = move _33
     _23 = &(*_30)
     _22 = &(*_23)
-    k = unsize_cast<&'57 test_crate::main::{closure#3}, &'121 (dyn for<'_0_2> Fn<(&'_0_2 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '122), &{impl Fn<(&'_0 u32,)> for test_crate::main::{closure#3}}::{vtable}<'128>>(move _22)
+    k = unsize_cast<&'59 test_crate::main::{closure#3}, &'124 (dyn for<'_0_2> Fn<(&'_0_2 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '125), &{impl Fn<(&'_0 u32,)> for test_crate::main::{closure#3}}::{vtable}<'132>>(move _22)
     storage_dead(_22)
     fake_read(k)
-    set_type(typeof(k) == &'130 (dyn for<'_0_2> Fn<(&'_0_2 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '131))
+    set_type(typeof(k) == &'134 (dyn for<'_0_2> Fn<(&'_0_2 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '135))
     storage_dead(_23)
     storage_live(_y_24)
     storage_live(_25)
@@ -1423,8 +1423,8 @@ fn main()
     _28 = &(*_29)
     _27 = &(*_28)
     _26 = (move _27,)
-    _y_24 = (copy (*_25.metadata).method_call)<'158>(move _25, move _26)
-    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'173, (dyn FnOnce<(), Output = u32> + '168), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = u32> + '168)}, {built_in impl Sized for Global}]] _w
+    _y_24 = (copy (*_25.metadata).method_call)<'165>(move _25, move _26)
+    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'180, (dyn FnOnce<(), Output = u32> + '175), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = u32> + '175)}, {built_in impl Sized for Global}]] _w
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
@@ -1438,7 +1438,7 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             unwind_terminate
-        conditional_drop[impl_Destruct_for_Box::drop_glue<'119, (dyn FnOnce<(), Output = Droppable> + '114), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = Droppable> + '114)}, {built_in impl Sized for Global}]] _h
+        conditional_drop[impl_Destruct_for_Box::drop_glue<'122, (dyn FnOnce<(), Output = Droppable> + '117), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = Droppable> + '117)}, {built_in impl Sized for Global}]] _h
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
@@ -1452,7 +1452,7 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             unwind_terminate
-        conditional_drop[impl_Destruct_for_Droppable::drop_glue<'101>] d
+        conditional_drop[impl_Destruct_for_Droppable::drop_glue<'104>] d
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
@@ -1478,8 +1478,8 @@ fn main()
     _0 = ()
     storage_dead(_y_24)
     storage_dead(k)
-    conditional_drop[impl_Destruct_for_Box::drop_glue<'188, (dyn FnOnce<(), Output = u32> + '183), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = u32> + '183)}, {built_in impl Sized for Global}]] _w
-    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'119, (dyn FnOnce<(), Output = Droppable> + '114), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = Droppable> + '114)}, {built_in impl Sized for Global}]] _h
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'195, (dyn FnOnce<(), Output = u32> + '190), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = u32> + '190)}, {built_in impl Sized for Global}]] _w
+    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'122, (dyn FnOnce<(), Output = Droppable> + '117), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = Droppable> + '117)}, {built_in impl Sized for Global}]] _h
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
@@ -1493,7 +1493,7 @@ fn main()
             storage_dead(_33)
             storage_dead(_32)
             unwind_terminate
-        conditional_drop[impl_Destruct_for_Droppable::drop_glue<'101>] d
+        conditional_drop[impl_Destruct_for_Droppable::drop_glue<'104>] d
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
@@ -1512,8 +1512,8 @@ fn main()
         storage_dead(_29)
         unwind_continue
     storage_dead(_w)
-    conditional_drop[impl_Destruct_for_Box::drop_glue<'203, (dyn FnOnce<(), Output = Droppable> + '198), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = Droppable> + '198)}, {built_in impl Sized for Global}]] _h
-    ↳⚡ conditional_drop[impl_Destruct_for_Droppable::drop_glue<'101>] d
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'210, (dyn FnOnce<(), Output = Droppable> + '205), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = Droppable> + '205)}, {built_in impl Sized for Global}]] _h
+    ↳⚡ conditional_drop[impl_Destruct_for_Droppable::drop_glue<'104>] d
         ↳⚡ storage_dead(_31)
             storage_dead(_30)
             storage_dead(_29)
@@ -1532,7 +1532,7 @@ fn main()
         storage_dead(_29)
         unwind_continue
     storage_dead(_h)
-    conditional_drop[impl_Destruct_for_Droppable::drop_glue<'204>] d
+    conditional_drop[impl_Destruct_for_Droppable::drop_glue<'211>] d
     ↳⚡ storage_dead(_31)
         storage_dead(_30)
         storage_dead(_29)

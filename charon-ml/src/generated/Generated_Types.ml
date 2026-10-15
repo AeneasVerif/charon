@@ -455,6 +455,9 @@ and region =
           body. *)
   | RErased  (** Erased region *)
 
+(** Region arguments used to instantiate a [[RegionBinder]]. *)
+and region_args = { regions : region list }
+
 (** A value of type [T] bound by regions. We should use [binder] instead but
     this causes name clash issues in the derived ocaml visitors. *)
 and 'a0 region_binder = {
@@ -539,8 +542,9 @@ and trait_ref_contents = {
 and trait_ref_kind =
   | TraitImpl of trait_impl_ref
       (** A specific top-level implementation item. *)
-  | Clause of trait_clause_id de_bruijn_var
-      (** One of the local clauses.
+  | Clause of trait_clause_id de_bruijn_var * region_args
+      (** One of the local clauses, instantiated with the given region
+          arguments.
 
           Example:
           {@rust[

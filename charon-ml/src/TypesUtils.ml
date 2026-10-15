@@ -251,7 +251,15 @@ let generic_args_of_params span (generics : generic_params) : generic_args =
           c.trait with
           binder_value =
             {
-              kind = Clause (Free c.clause_id);
+              kind =
+                Clause
+                  ( Free c.clause_id,
+                    {
+                      regions =
+                        List.map
+                          (fun (r : region_param) -> RVar (Bound (0, r.index)))
+                          c.trait.binder_regions;
+                    } );
               trait_decl_ref = c.trait.binder_value;
             };
         })

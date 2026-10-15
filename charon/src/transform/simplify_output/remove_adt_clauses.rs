@@ -96,7 +96,7 @@ impl VisitAstMut for RemoveAdtClausesVisitor<'_> {
     }
 
     fn enter_trait_ref(&mut self, tref: &mut TraitRef) {
-        let TraitRefKind::Clause(var) = &tref.kind else {
+        let TraitRefKind::Clause(var, _) = &tref.kind else {
             return;
         };
         if self

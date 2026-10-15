@@ -237,6 +237,15 @@ impl ConstGenericParam {
 }
 
 impl TraitParam {
+    /// The region arguments at depth 0 corresponding to this clause's bound regions.
+    pub fn identity_region_args(&self) -> RegionArgs {
+        RegionArgs::new(
+            self.trait_
+                .regions
+                .map_ref_indexed(|id, _| Region::Var(DeBruijnVar::bound(DeBruijnId::ZERO, id))),
+        )
+    }
+
     /// Constructs the trait ref that refers to this clause.
     pub fn identity_tref(&self) -> PolyTraitRef {
         self.identity_tref_at_depth(DeBruijnId::zero())
@@ -244,9 +253,20 @@ impl TraitParam {
 
     /// Like `identity_tref` but uses variables bound at the given depth.
     pub fn identity_tref_at_depth(&self, depth: DeBruijnId) -> PolyTraitRef {
-        PolyTraitRef::new(
-            TraitRefKind::Clause(DeBruijnVar::bound(depth, self.clause_id)),
-            self.trait_.clone().move_under_binders(depth),
+        let regions = self.identity_region_args();
+        PolyTraitRef(
+            self.trait_
+                .clone()
+                .move_under_binders(depth)
+                .map(|trait_decl_ref| {
+                    TraitRef::new(
+                        TraitRefKind::Clause(
+                            DeBruijnVar::bound(depth.incr(), self.clause_id),
+                            regions,
+                        ),
+                        trait_decl_ref,
+                    )
+                }),
         )
     }
 }
@@ -287,7 +307,6 @@ pub type ClauseDbVar = DeBruijnVar<TraitClauseId>;
 impl_from_enum!(Region::Var(RegionDbVar));
 impl_from_enum!(TyKind::TypeVar(TypeDbVar));
 impl_from_enum!(ConstantExprKind::Var(ConstGenericDbVar));
-impl_from_enum!(TraitRefKind::Clause(ClauseDbVar));
 impl From<TypeDbVar> for Ty {
     fn from(x: TypeDbVar) -> Self {
         TyKind::TypeVar(x).into_ty()

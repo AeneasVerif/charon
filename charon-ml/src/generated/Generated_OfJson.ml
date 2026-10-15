@@ -1557,9 +1557,10 @@ and trait_ref_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("TraitImpl", _0) ] ->
         let* _0 = trait_impl_ref_of_json ctx _0 in
         Ok (TraitImpl _0)
-    | `Assoc [ ("Clause", _0) ] ->
+    | `Assoc [ ("Clause", `List [ _0; _1 ]) ] ->
         let* _0 = de_bruijn_var_of_json trait_clause_id_of_json ctx _0 in
-        Ok (Clause _0)
+        let* _1 = region_args_of_json ctx _1 in
+        Ok (Clause (_0, _1))
     | `Assoc [ ("ParentClause", `List [ _0; _1 ]) ] ->
         let* _0 = trait_ref_of_json ctx _0 in
         let* _1 = trait_clause_id_of_json ctx _1 in

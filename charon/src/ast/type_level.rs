@@ -385,10 +385,10 @@ impl GenericParams {
         // The contents of `other` may refer to its own trait clauses, so we must shift clause ids.
         struct ShiftClausesVisitor(usize);
         impl VarsVisitor for ShiftClausesVisitor {
-            fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<TraitRefKind> {
+            fn visit_clause_var(&mut self, v: ClauseDbVar) -> Option<ClauseReplacement> {
                 if let DeBruijnVar::Bound(DeBruijnId::ZERO, clause_id) = v {
                     // Replace clause 0 and decrement the others.
-                    Some(TraitRefKind::Clause(DeBruijnVar::Bound(
+                    Some(ClauseReplacement::Var(DeBruijnVar::Bound(
                         DeBruijnId::ZERO,
                         clause_id + self.0,
                     )))
@@ -526,7 +526,7 @@ impl<T: AstVisitable> Binder<Binder<T>> {
                 }
             }
             fn enter_trait_ref_kind(&mut self, x: &mut TraitRefKind) {
-                if let TraitRefKind::Clause(var) = x
+                if let TraitRefKind::Clause(var, _) = x
                     && let Some(id) = var.bound_at_depth_mut(self.binder_depth)
                 {
                     *id += self.shift_by.trait_clauses.len();

@@ -243,7 +243,7 @@ mod trait_ref_path {
                     parent_path: vec![],
                     trait_decl_id,
                 }),
-                TraitRefKind::Clause(id) => Some(TraitRefPath {
+                TraitRefKind::Clause(id, _) => Some(TraitRefPath {
                     base: BaseClause::Local(*id),
                     parent_path: vec![],
                     trait_decl_id,
@@ -1313,8 +1313,12 @@ impl VisitAstMut for UpdateItemBody<'_> {
     }
     fn enter_generic_params(&mut self, params: &mut GenericParams) {
         for (clause_id, clause) in params.trait_clauses.iter_mut_enumerated() {
-            let self_path = TraitRefKind::Clause(DeBruijnVar::new_at_zero(clause_id));
-            self.process_poly_trait_decl_ref(&mut clause.trait_, self_path);
+            self.under_binder(Default::default(), |this| {
+                let regions = clause.identity_region_args(); // Binds level 0
+                let self_path =
+                    TraitRefKind::Clause(DeBruijnVar::bound(DeBruijnId::one(), clause_id), regions);
+                this.process_trait_decl_ref(&mut clause.trait_.skip_binder, self_path);
+            });
         }
     }
     fn enter_fun_source(&mut self, kind: &mut FunSource) {
@@ -1327,7 +1331,10 @@ impl VisitAstMut for UpdateItemBody<'_> {
             // Inside method declarations, the implicit `Self` clause is the first clause.
             FunSource::TraitDefault { trait_ref, .. } => self.process_trait_decl_ref(
                 trait_ref,
-                TraitRefKind::Clause(DeBruijnVar::new_at_zero(TraitClauseId::ZERO)),
+                TraitRefKind::Clause(
+                    DeBruijnVar::new_at_zero(TraitClauseId::ZERO),
+                    RegionArgs::empty(),
+                ),
             ),
             FunSource::TraitImpl {
                 impl_ref,
@@ -1343,7 +1350,10 @@ impl VisitAstMut for UpdateItemBody<'_> {
             // Inside trait default values, the implicit `Self` clause is the first clause.
             GlobalSource::TraitDefault { trait_ref, .. } => self.process_trait_decl_ref(
                 trait_ref,
-                TraitRefKind::Clause(DeBruijnVar::new_at_zero(TraitClauseId::ZERO)),
+                TraitRefKind::Clause(
+                    DeBruijnVar::new_at_zero(TraitClauseId::ZERO),
+                    RegionArgs::empty(),
+                ),
             ),
             GlobalSource::TraitImpl {
                 impl_ref,
