@@ -39,6 +39,12 @@ impl<'a, 'b> Hrtb<(&'a (), &'b ())> for G {}
 
 pub trait WithParent: for<'a> Hrtb<&'a ()> {}
 
+fn needs_parent<X: Hrtb<&'static ()>>() {}
+
+fn use_parent<T: WithParent>() {
+    needs_parent::<T>();
+}
+
 impl<'a> Hrtb<&'a ()> for S {}
 impl WithParent for S {}
 

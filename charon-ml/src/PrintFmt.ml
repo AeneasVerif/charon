@@ -341,6 +341,13 @@ let region_to_string (env : fmt_env) (r : region) : string =
   | RBody id -> "'" ^ RegionId.to_string id
   | RVar var -> region_db_var_to_string env var
 
+let pp_region_args (env : fmt_env) (fmt : Format.formatter) (args : region_args)
+    : unit =
+  if args.regions <> [] then
+    Format.fprintf fmt "<%a>"
+      (pp_sep_list ", " pp_string)
+      (List.map (region_to_string env) args.regions)
+
 let rec region_binder_params_to_string :
     'a. (fmt_env -> ty -> string) -> fmt_env -> 'a region_binder -> string =
  fun ty_to_string env rb ->
@@ -837,17 +844,22 @@ and pp_trait_ref_kind (env : fmt_env) (implements : trait_decl_ref option)
                Format.fprintf fmt "%s  = %a" name (pp_ty env) assoc_ty.value))
           types;
       pp_string fmt "}"
-  | Clause (id, _) -> pp_string fmt (trait_db_var_to_string env id)
-  | ParentClause (tref, clause_id, _) ->
-      Format.fprintf fmt "%a::%s" (pp_trait_ref env) tref
+  | Clause (id, args) ->
+      Format.fprintf fmt "%s%a"
+        (trait_db_var_to_string env id)
+        (pp_region_args env) args
+  | ParentClause (tref, clause_id, args) ->
+      Format.fprintf fmt "%a::%s%a" (pp_trait_ref env) tref
         (trait_clause_id_format_as_implied clause_id)
-  | ItemClause (tref, type_id, generics, clause_id, _) ->
+        (pp_region_args env) args
+  | ItemClause (tref, type_id, generics, clause_id, clause_args) ->
       let type_name =
         GAstUtils.get_assoc_type_name env.crate tref.trait_decl_ref.id type_id
       in
-      Format.fprintf fmt "%a::%s%a::%s" (pp_trait_ref env) tref type_name
+      Format.fprintf fmt "%a::%s%a::%s%a" (pp_trait_ref env) tref type_name
         (pp_generic_args env) generics
         (trait_clause_id_format_as_implied clause_id)
+        (pp_region_args env) clause_args
   | Dyn -> pp_trait_decl_ref env fmt (Option.get implements)
   | UnknownTrait msg -> Format.fprintf fmt "UNKNOWN(%s)" msg
 

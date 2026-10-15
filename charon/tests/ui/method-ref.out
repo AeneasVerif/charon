@@ -114,7 +114,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (F: Sized),
     TraitClause2: for<'_0_1, '_1_1> (F: FnOnce<(&'_0_1 T, &'_1_1 T)>),
-    TypeConstraint0: for<'_0_1, '_1_1> TraitClause2::Output = Ordering,
+    TypeConstraint0: for<'_0_1, '_1_1> TraitClause2<'_, '_>::Output = Ordering,
 {
     let _0: (); // return
     let _1: F; // arg #1

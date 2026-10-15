@@ -141,7 +141,7 @@ where
     TraitClause1: for<'a> (Self: Borrowed<'a>),
 {
     proof ImpliedClause0: (Self: MetaSized) = TraitClause0
-    for<'a> proof ImpliedClause1: (Self: Borrowed<'a>) = TraitClause1
+    for<'a> proof ImpliedClause1: (Self: Borrowed<'a>) = TraitClause1<'a>
     vtable: unknown // vtables of trait alias impls are not supported
 }
 

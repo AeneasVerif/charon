@@ -147,7 +147,7 @@ fn foo<F>(_f: F)
 where
     TraitClause0: (F: Sized),
     TraitClause1: for<'a> (F: FnMut<(&'a (),)>),
-    TypeConstraint0: for<'a> TraitClause1::ImpliedClause1::Output = (),
+    TypeConstraint0: for<'a> TraitClause1<'_>::ImpliedClause1::Output = (),
 {
     let _0: (); // return
     let _f: F; // arg #1
@@ -202,7 +202,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (U: Sized),
     TraitClause2: for<'a> (&'a Result<T, U>[TraitClause0, TraitClause1]: IntoIterator),
-    TraitClause3: for<'a> (TraitClause2::Item: Copy),
+    TraitClause3: for<'a> (TraitClause2<'_>::Item: Copy),
 {
     proof ImpliedClause0: (Result<T, U>[TraitClause0, TraitClause1]: MetaSized) = {built_in impl MetaSized for Result<T, U>[TraitClause0, TraitClause1]}
     vtable: lazy
@@ -246,6 +246,39 @@ pub trait WithParent<Self>
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: for<'a> (Self: Hrtb<&'a ()>)
     vtable: test_crate::WithParent::{vtable}
+}
+
+// Full name: test_crate::needs_parent
+fn needs_parent<X>()
+where
+    TraitClause0: (X: Sized),
+    TraitClause1: (X: Hrtb<&'static ()>),
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::use_parent
+fn use_parent<T>()
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: WithParent),
+{
+    let _0: (); // return
+    let _1: (); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = needs_parent<T>[TraitClause0, TraitClause1::ImpliedClause1<'_>]()
+    ↳⚡ unwind_continue
+    storage_dead(_1)
+    _0 = ()
+    return
 }
 
 // Full name: test_crate::{impl Hrtb<&'a ()> for S}

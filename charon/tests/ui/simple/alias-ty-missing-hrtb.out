@@ -29,7 +29,7 @@ pub trait HasLifetimeAssoc<'a, Self>
 pub type FnAlias<B>
 where
     TraitClause0: (B: Sized),
-    TraitClause1: for<'a> (B: HasLifetimeAssoc<'a>), = fn<'a>(TraitClause1::Assoc)
+    TraitClause1: for<'a> (B: HasLifetimeAssoc<'a>), = fn<'a>(TraitClause1<'a>::Assoc)
 
 // Full name: test_crate::HasTwoLifetimeAssoc
 pub trait HasTwoLifetimeAssoc<'a, 'b, Self>
@@ -44,7 +44,7 @@ pub trait HasTwoLifetimeAssoc<'a, 'b, Self>
 pub type NestedFnAlias<B>
 where
     TraitClause0: (B: Sized),
-    TraitClause1: for<'a, 'b> (B: HasTwoLifetimeAssoc<'a, 'b>), = fn<'a>(fn<'b>(TraitClause1::Assoc))
+    TraitClause1: for<'a, 'b> (B: HasTwoLifetimeAssoc<'a, 'b>), = fn<'a>(fn<'b>(TraitClause1<'a, 'b>::Assoc))
 
 // Full name: test_crate::HasMixedLifetimeAssoc
 pub trait HasMixedLifetimeAssoc<'outer, 'late, Self>
@@ -59,7 +59,7 @@ pub trait HasMixedLifetimeAssoc<'outer, 'late, Self>
 pub type MixedFnAlias<'outer, B>
 where
     TraitClause0: (B: Sized),
-    TraitClause1: for<'late> (B: HasMixedLifetimeAssoc<'outer, 'late>), = fn<'late>(TraitClause1::Assoc)
+    TraitClause1: for<'late> (B: HasMixedLifetimeAssoc<'outer, 'late>), = fn<'late>(TraitClause1<'late>::Assoc)
 
 
 
