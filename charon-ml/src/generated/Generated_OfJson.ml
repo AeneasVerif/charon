@@ -781,9 +781,10 @@ and fn_operand_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Regular", _0) ] ->
         let* _0 = fn_ptr_of_json ctx _0 in
         Ok (FnOpRegular _0)
-    | `Assoc [ ("Dynamic", _0) ] ->
+    | `Assoc [ ("Dynamic", `List [ _0; _1 ]) ] ->
         let* _0 = operand_of_json ctx _0 in
-        Ok (FnOpDynamic _0)
+        let* _1 = index_vec_of_json region_id_of_json region_of_json ctx _1 in
+        Ok (FnOpDynamic (_0, _1))
     | _ -> Error "")
 
 and fn_ptr_of_json (ctx : of_json_ctx) (js : json) : (fn_ptr, string) result =

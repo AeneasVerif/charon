@@ -721,7 +721,10 @@ and fn_operand_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (FnOpRegular _0)
      | 1 ->
          let* _0 = operand_of_postcard ctx st in
-         Ok (FnOpDynamic _0)
+         let* _1 =
+           index_vec_of_postcard region_id_of_postcard region_of_postcard ctx st
+         in
+         Ok (FnOpDynamic (_0, _1))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and fn_ptr_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

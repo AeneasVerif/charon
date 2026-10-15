@@ -376,7 +376,7 @@ fn {impl FnOnce<([&'_ u8; 3usize],)> for fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0
     let args: ([&'_ u8; 3usize],); // arg #2
 
     storage_live(_0)
-    _0 = (copy fn_ptr)(move args._0)
+    _0 = (copy fn_ptr)<'_0>(move args._0)
     ↳⚡ storage_dead(args)
         storage_dead(fn_ptr)
         unwind_continue
@@ -393,7 +393,7 @@ fn {impl FnOnce<(Adt::<'_, u32>,)> for fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u3
     let args: (Adt::<'_, u32>,); // arg #2
 
     storage_live(_0)
-    _0 = (copy fn_ptr)(move args._0)
+    _0 = (copy fn_ptr)<'_0>(move args._0)
     ↳⚡ storage_dead(args)
         storage_dead(fn_ptr)
         unwind_continue
@@ -432,7 +432,7 @@ fn {impl FnOnce<(Plain::<u32>, &'_ u32)> for fn<'_0_1>(Plain::<u32>, &'_0_1 u32)
     let args: (Plain::<u32>, &'_ u32); // arg #2
 
     storage_live(_0)
-    _0 = (copy fn_ptr)(move args._0, move args._1)
+    _0 = (copy fn_ptr)<'_0>(move args._0, move args._1)
     ↳⚡ storage_dead(args)
         storage_dead(fn_ptr)
         unwind_continue

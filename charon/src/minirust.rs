@@ -539,7 +539,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                             raise!(span, "trait-method call remained after monomorphization")
                         }
                     },
-                    FnOperand::Dynamic(operand) => self.operand(span, operand)?,
+                    FnOperand::Dynamic(operand, _) => self.operand(span, operand)?,
                 },
                 calling_convention: self.callee_convention(span, &call.func)?,
                 arguments: call
@@ -1121,7 +1121,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     raise!(span, "trait-method call remained after monomorphization")
                 }
             },
-            FnOperand::Dynamic(operand) => match operand.ty().kind() {
+            FnOperand::Dynamic(operand, _) => match operand.ty().kind() {
                 TyKind::FnPtr(signature) => &signature.skip_binder,
                 _ => raise!(span, "dynamic callee is not a function pointer"),
             },

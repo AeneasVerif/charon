@@ -19,6 +19,9 @@ pub use type_info::*;
 pub use types::*;
 pub use vars::*;
 
+/// A set of region arguments, typically meant to instantiate a `RegionBinder`.
+pub type RegionArgs = IndexVec<RegionId, Region>;
+
 /// A set of generic arguments.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]

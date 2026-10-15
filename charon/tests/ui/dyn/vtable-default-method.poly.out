@@ -220,7 +220,7 @@ pub fn main()
     storage_live(_4)
     storage_live(_5)
     _5 = &(*b) with_metadata(copy b.metadata)
-    _4 = (copy (*_5.metadata).method_dflt)(move _5)
+    _4 = (copy (*_5.metadata).method_dflt)<'19>(move _5)
     ↳⚡ storage_dead(_6)
         unwind_continue
     storage_dead(_5)
