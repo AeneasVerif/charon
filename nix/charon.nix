@@ -43,21 +43,31 @@ craneLib.buildPackage (
     ];
     # It's important to pass the same `RUSTFLAGS` to dependencies otherwise we'll have to rebuild them.
     cargoArtifacts = craneLib.buildDepsOnly craneArgs;
+
+    # Build with `cargo test` to avoid building everything twice; Crane
+    # installs the binaries from this build log.
+    buildPhaseCargoCommand = ''
+      cargoBuildLog=$(mktemp cargoBuildLogXXXX.json)
+      cargo test --profile release --no-run --locked --message-format json-render-diagnostics >"$cargoBuildLog"
+    '';
+
     checkPhaseCargoCommand = ''
       ${lib.optionalString (miriSysroots != null) ''export CHARON_MIRI_SYSROOTS="${miriSysroots}"''}
       CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo test --profile release --locked
       # We also re-generate the generated AST files.
       mkdir -p src/bin/generate-asts/generated
-      CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo run --release --locked --bin generate-asts
-
-      # While running tests we also outputted llbc files. We export them for charon-ml tests.
-      mkdir -p $out
-      cp -r tests/ui $out/tests-llbc
-      cp src/bin/generate-asts/generated/charon-itself.ullbc $out/tests-llbc
+      CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 target/release/generate-asts
 
       # Export the generated files to later check if they match the committed files.
       mkdir -p $out/generated-asts
       cp src/bin/generate-asts/generated/*.ml $out/generated-asts
+    '';
+
+    # Export the llbc files after Crane's post-install hook to avoid it looking
+    # for path through all these files.
+    postFixup = ''
+      cp -r tests/ui $out/tests-llbc
+      cp src/bin/generate-asts/generated/charon-itself.ullbc $out/tests-llbc
     '';
 
     passthru.check-fmt = craneLib.cargoFmt craneArgs;
