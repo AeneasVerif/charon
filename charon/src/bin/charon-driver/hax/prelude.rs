@@ -15,5 +15,4 @@ pub use self::rustc::*;
 pub mod rustc {
     pub use crate::hax::rustc_utils::*;
     pub use crate::hax::state::*;
-    pub use crate::hax::utils::*;
 }

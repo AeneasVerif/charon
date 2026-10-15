@@ -3,7 +3,6 @@
 
 mod rustc_utils;
 pub mod state;
-mod utils;
 
 mod constant_utils;
 mod types;
