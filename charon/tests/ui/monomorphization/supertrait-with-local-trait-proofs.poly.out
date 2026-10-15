@@ -1,0 +1,101 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: test_crate::Bound
+pub trait Bound<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Bound::{vtable}
+}
+
+// Full name: test_crate::{impl Bound for u8}
+impl "impl_Bound_for_u8" Bound for u8 {
+    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
+    vtable: lazy
+}
+
+// Full name: test_crate::Nested
+pub struct Nested<T>
+where
+    TraitClause0: (T: Sized),
+{
+  _0: T,
+}
+
+// Full name: test_crate::{impl Bound for Nested<T>[TraitClause0]}
+impl<T> "impl_Bound_for_Nested" Bound for Nested<T>[TraitClause0]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Bound),
+{
+    proof ImpliedClause0: (Nested<T>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Nested<T>[TraitClause0]}
+    vtable: lazy
+}
+
+// Full name: test_crate::Wrapper
+pub struct Wrapper<T>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Bound),
+{
+  _0: T,
+}
+
+// Full name: test_crate::Parent
+pub trait Parent<Self, T>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: Sized)
+    vtable: test_crate::Parent::{vtable}<T>
+}
+
+// Full name: test_crate::Child
+pub trait Child<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Parent<Wrapper<u8>[{built_in impl Sized for u8}, Self::ImpliedClause3]>)
+    proof ImpliedClause2: (Self: Parent<Wrapper<Nested<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Nested<u8>[{built_in impl Sized for u8}]}, impl_Bound_for_Nested<u8>[{built_in impl Sized for u8}, Self::ImpliedClause3]]>)
+    proof ImpliedClause3: (u8: Bound)
+    vtable: test_crate::Child::{vtable}
+}
+
+// Full name: test_crate::{impl Parent<Wrapper<u8>[{built_in impl Sized for u8}, impl_Bound_for_u8]> for ()}
+impl Parent<Wrapper<u8>[{built_in impl Sized for u8}, impl_Bound_for_u8]> for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: (Wrapper<u8>[{built_in impl Sized for u8}, impl_Bound_for_u8]: Sized) = {built_in impl Sized for Wrapper<u8>[{built_in impl Sized for u8}, impl_Bound_for_u8]}
+    vtable: lazy
+}
+
+// Full name: test_crate::{impl Parent<Wrapper<Nested<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Nested<u8>[{built_in impl Sized for u8}]}, impl_Bound_for_Nested<u8>[{built_in impl Sized for u8}, impl_Bound_for_u8]]> for ()}
+impl Parent<Wrapper<Nested<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Nested<u8>[{built_in impl Sized for u8}]}, impl_Bound_for_Nested<u8>[{built_in impl Sized for u8}, impl_Bound_for_u8]]> for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: (Wrapper<Nested<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Nested<u8>[{built_in impl Sized for u8}]}, impl_Bound_for_Nested<u8>[{built_in impl Sized for u8}, impl_Bound_for_u8]]: Sized) = {built_in impl Sized for Wrapper<Nested<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Nested<u8>[{built_in impl Sized for u8}]}, impl_Bound_for_Nested<u8>[{built_in impl Sized for u8}, impl_Bound_for_u8]]}
+    vtable: lazy
+}
+
+// Full name: test_crate::{impl Child for ()}
+impl "impl_Child_for_unit" Child for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    proof ImpliedClause1: ((): Parent<Wrapper<u8>[{built_in impl Sized for u8}, impl_Bound_for_u8]>) = {impl Parent<Wrapper<u8>[{built_in impl Sized for u8}, impl_Bound_for_u8]> for ()}
+    proof ImpliedClause2: ((): Parent<Wrapper<Nested<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Nested<u8>[{built_in impl Sized for u8}]}, impl_Bound_for_Nested<u8>[{built_in impl Sized for u8}, impl_Bound_for_u8]]>) = {impl Parent<Wrapper<Nested<u8>[{built_in impl Sized for u8}]>[{built_in impl Sized for Nested<u8>[{built_in impl Sized for u8}]}, impl_Bound_for_Nested<u8>[{built_in impl Sized for u8}, impl_Bound_for_u8]]> for ()}
+    proof ImpliedClause3: (u8: Bound) = impl_Bound_for_u8
+    vtable: lazy
+}
+
+
+

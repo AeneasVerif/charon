@@ -1130,8 +1130,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let is_negative = !trait_pred.is_positive;
         let is_unsafe = timpl.is_unsafe();
 
-        // Translate the bare minimum needed for names: `impl_trait`.
+        // Translate the bare minimum needed for names.
         if self.is_poly_in_mono(&self.item_src) {
+            let implied_trait_refs =
+                self.translate_trait_proofs(span, timpl.implied_trait_proofs())?;
             return Ok(TraitImpl {
                 def_id,
                 item_meta,
@@ -1140,7 +1142,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 is_negative,
                 is_unsafe,
                 generics: self.into_generics(),
-                implied_trait_refs: Default::default(),
+                implied_trait_refs,
                 consts: Default::default(),
                 types: Default::default(),
                 methods: Default::default(),

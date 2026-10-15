@@ -245,6 +245,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         )
     }
 
+    /// Whether to translate this particular item monomorphically.
+    pub fn should_monomorphize_item(&self, item: &hax::ItemRef, kind: TransItemSourceKind) -> bool {
+        // Traits and vtables use `MonoTrait` in mono mode. Other items are translated
+        // monomorphically when their arguments are concrete, even if the context is poly.
+        self.options.monomorphize_with_hax && (kind.is_for_trait() || !item.has_non_lt_param)
+    }
+
     pub fn span_err(&self, span: Span, msg: &str, level: Level) -> Error {
         self.t_ctx.span_err(span, msg, level)
     }
