@@ -1,5 +1,6 @@
 //! Translate constants to hax: type-system constants, and the values read by `rustc_const_uneval`.
 use super::*;
+use annotate_snippets::Level;
 use rustc_const_uneval::{AllocTarget, Byte, ConstReader, PtrTarget, ReadError};
 use rustc_middle::ty;
 
@@ -11,11 +12,11 @@ fn scalar_int_to_constant_literal<'tcx, S: UnderOwnerState<'tcx>>(
 ) -> ConstantLiteral {
     match ty.kind() {
         ty::Char => ConstantLiteral::Char(
-            char::try_from(x).s_expect(s, "scalar_int_to_constant_literal: expected a char"),
+            char::try_from(x).expect("scalar_int_to_constant_literal: expected a char"),
         ),
         ty::Bool => ConstantLiteral::Bool(
             x.try_to_bool()
-                .s_expect(s, "scalar_int_to_constant_literal: expected a bool"),
+                .expect("scalar_int_to_constant_literal: expected a bool"),
         ),
         ty::Int(kind) => {
             let v = x.to_int(x.size());
@@ -29,14 +30,7 @@ fn scalar_int_to_constant_literal<'tcx, S: UnderOwnerState<'tcx>>(
             let v = x.to_bits_unchecked();
             bits_and_type_to_float_constant_literal(v, kind.sinto(s))
         }
-        _ => {
-            let ty_sinto: Ty = ty.sinto(s);
-            supposely_unreachable_fatal!(
-                s,
-                "scalar_int_to_constant_literal_ExpectedLiteralType";
-                { ty, ty_sinto, x }
-            )
-        }
+        _ => unreachable!("not a literal type: {ty:?}"),
     }
 }
 
@@ -72,10 +66,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Const<'tcx> 
                 let kind = ConstantExprKind::ConstRef { id: p.sinto(s) };
                 kind.decorate(ty.sinto(s), span.sinto(s))
             }
-            ty::ConstKind::Infer(..) => {
-                fatal!(s[span], "ty::ConstKind::Infer node? {:#?}", self)
-            }
-
             ty::ConstKind::Alias(_, ucv) => {
                 let def = ucv
                     .kind
@@ -102,15 +92,13 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Const<'tcx> 
                     kind.decorate(ty.sinto(s), span.sinto(s))
                 }
             }
-
             ty::ConstKind::Value(val) => val.sinto(s),
-            ty::ConstKind::Error(_) => fatal!(s[span], "ty::ConstKind::Error"),
-            ty::ConstKind::Expr(e) => fatal!(s[span], "ty::ConstKind::Expr {:#?}", e),
-
-            ty::ConstKind::Bound(i, bound) => {
-                supposely_unreachable_fatal!(s[span], "ty::ConstKind::Bound"; {i, bound})
+            _ => {
+                let msg = format!("unexpected constant kind: {self:?}");
+                s.raise(Level::ERROR, span, msg.clone());
+                let ty = Ty::new(s, TyKind::Error);
+                ConstantExprKind::Todo(msg).decorate(ty, span.sinto(s))
             }
-            _ => fatal!(s[span], "unexpected case"),
         }
     }
 }
@@ -303,7 +291,11 @@ pub fn read_const<'tcx, S: UnderOwnerState<'tcx>>(
         Ok(val) => Some(val.sinto(s)),
         Err(ReadError::NotEvaluable) => None,
         Err(err) => {
-            warning!(s[span], "Couldn't convert constant back to an expression"; {src, err});
+            s.raise(
+                Level::WARNING,
+                span,
+                format!("Couldn't convert constant {src:?} back to an expression: {err:?}"),
+            );
             None
         }
     }

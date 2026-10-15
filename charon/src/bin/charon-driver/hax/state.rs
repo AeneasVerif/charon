@@ -1,4 +1,5 @@
 use crate::hax::prelude::*;
+use annotate_snippets::Level;
 use rustc_middle::ty::{self, TyCtxt};
 
 mod base {
@@ -150,6 +151,18 @@ pub trait BaseState<'tcx>: Sized {
 
     fn tcx(&self) -> TyCtxt<'tcx> {
         self.base().tcx
+    }
+
+    /// Raise an error or warning.
+    fn raise(&self, level: Level, span: Span, msg: String) {
+        let backtrace = std::backtrace::Backtrace::capture();
+        eprintln!("{}", backtrace);
+        let dcx = self.tcx().dcx();
+        if level == Level::ERROR {
+            dcx.span_err(span, msg);
+        } else {
+            dcx.span_warn(span, msg);
+        }
     }
 
     /// Create a state with the given owner.
