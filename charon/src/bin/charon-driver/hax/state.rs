@@ -1,61 +1,5 @@
 use crate::hax::prelude::*;
-use paste::paste;
 use rustc_middle::ty::{self, TyCtxt};
-
-macro_rules! mk_aux {
-    ($state:ident {$($lts:lifetime)*} $field:ident {$($field_type:tt)+} {$($gen:tt)*} {$($gen_full:tt)*} {$($params:tt)*} {$($fields:tt)*}) => {
-        paste ! {
-            pub trait [<Has $field:camel>]<$($lts,)*> {
-                fn $field(self: &Self) -> $($field_type)+<$($lts)*>;
-            }
-            impl<$($lts,)*$($gen)*> [<Has $field:camel>]<$($lts,)*> for $state<$($params)*> {
-                fn $field(self: &Self) -> $($field_type)+<$($lts)*> {
-                    self.$field.clone()
-                }
-            }
-        }
-    };
-}
-macro_rules! mk {
-    (struct $state:ident<$($glts:lifetime),*> {$($field:ident : {$($lts:lifetime),*} $field_type:ty),*$(,)?}) => {
-        mk!(@$state {} {$($field)*} {$($field: {$($lts),*} {$field_type},)*});
-    };
-    (@$state:ident {$($acc:tt)*} $fields:tt {
-        $field:ident : $lts:tt $field_type:tt
-        $(,$($rest:tt)*)?
-    }) => {mk!(@$state {
-        $($acc)* $fields $field: $lts $field_type,
-    } $fields {$($($rest)*)?} );};
-    (@$state:ident $body:tt $fields:tt {$(,)?}) => { mk! (@@ $state $body ); };
-    (@@$state:ident {$({$($fields:tt)*} $field:ident : {$($lts:lifetime)*} {$($field_type:tt)+},)*}) => {
-        paste! {
-            #[derive(Clone)]
-            pub struct $state<$([<$field:camel>],)*>{
-                $(pub $field: [<$field:camel>],)*
-            }
-        }
-        $(
-            macro_rules! __inner_helper {
-                ($gen:tt {$$($full_gen:tt)*} {$$($params:tt)*} $field $$($rest:tt)*) => {
-                    paste! {__inner_helper!(
-                        $gen {$$($full_gen)*[<$field:camel>],}
-                        {$$($params)*$($field_type)+<$($lts,)*>,} $$($rest)*
-                    );}
-                };
-                ({$$($gen:tt)*} {$$($full_gen:tt)*} {$$($params:tt)*} $i:ident $$($rest:tt)*) => {
-                    paste! {__inner_helper!(
-                        {$$($gen)*[<$i:camel>],} {$$($full_gen)*[<$i:camel>],}
-                        {$$($params)*[<$i:camel>],} $$($rest)*
-                    );}
-                };
-                ($gen:tt $full_gen:tt $params:tt $$(,)?) => {
-                    mk_aux!($state {$($lts)*} $field {$($field_type)+} $gen $full_gen $params {$($fields)*});
-                };
-            }
-            __inner_helper!({} {} {} $($fields)*);
-        )*
-    };
-}
 
 mod types {
     use crate::hax::prelude::*;
@@ -199,12 +143,29 @@ mod types {
     }
 }
 
-mk!(
-    struct State<'tcx> {
-        base: {'tcx} types::Base,
-        owner: {} DefId,
+#[derive(Clone)]
+pub struct State<Base, Owner> {
+    pub base: Base,
+    pub owner: Owner,
+}
+
+pub trait HasBase<'tcx> {
+    fn base(self: &Self) -> types::Base<'tcx>;
+}
+impl<'tcx, Owner> HasBase<'tcx> for State<types::Base<'tcx>, Owner> {
+    fn base(self: &Self) -> types::Base<'tcx> {
+        self.base.clone()
     }
-);
+}
+
+pub trait HasOwner {
+    fn owner(self: &Self) -> DefId;
+}
+impl<Base> HasOwner for State<Base, DefId> {
+    fn owner(self: &Self) -> DefId {
+        self.owner.clone()
+    }
+}
 
 pub use self::types::*;
 
