@@ -726,7 +726,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         item: &hax::ItemRef,
         signature: &FunSig,
     ) -> Result<Body, Error> {
-        let late_bound_regions = self
+        let late_bound_regions: RegionArgs = self
             .innermost_binder()
             .bound_region_vars
             .iter()

@@ -66,7 +66,7 @@ use derive_generic_visitor::*;
         Assert, AttributeKind, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAdt, BuiltinAssertKind,
         Call, InlineAsm, AsmTemplatePiece, AsmOperand, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
         Deprecation, Disambiguator, DynPredicate, Field, FieldId, File, FloatTy, FloatValue,
-        FnOperand, FnPtrKind, InlineAttr, IntegerTy, IntTy, UIntTy, ScalarTy,
+        FnOperand, FnPtrKind, InlineAttr, IntegerTy, IntTy, UIntTy, RegionArgs, ScalarTy,
         Ident, from_rustc::InlineAttr,
         llbc_ast::ExprBody, llbc_ast::StatementKind,
         Loc, Locals, NullOp, Operand, PathElem, PlaceKind,
@@ -200,7 +200,7 @@ impl<K: BodyVisitable + Hash + Eq, T: BodyVisitable> BodyVisitable for SeqHashMa
     // Types that are ignored when encountered.
     skip(
         AbortKind, BinOp, BorrowKind, BranchId, AsmOperandId, AsmTemplatePiece, BuiltinAssertKind, ConstantExpr, FieldId,
-        TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
+        TypeDeclRef, FunDeclId, FunDeclRef, FnPtrKind, GenericArgs, RegionArgs, GlobalDeclRef, IntegerTy, IntTy, UIntTy,
         Name, NullOp, RefKind, IntegerValue, Span, Ty, TypeDeclId, UnOp, VariantId,
         TraitRef, PolyTraitRef, ScalarTy, Region, RegionId, (), String, PathBuf, bool, u32, usize,
         DropKind, Error, Variance, WithRetag, BuiltinAdt, BuiltinPathElem, AsmKind, AsmRegister,

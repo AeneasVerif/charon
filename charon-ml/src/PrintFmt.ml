@@ -1656,7 +1656,7 @@ let pp_fn_operand (env : fmt_env) (fmt : Format.formatter) (op : fn_operand) :
     unit =
   match op with
   | FnOpRegular func -> pp_fn_ptr env fmt func
-  | FnOpDynamic (op, regions) ->
+  | FnOpDynamic (op, { regions }) ->
       Format.fprintf fmt "(%a)" (pp_operand env) op;
       if regions <> [] then
         Format.fprintf fmt "<%a>"

@@ -258,7 +258,7 @@ and error = { span : span; msg : string }
 and fn_operand =
   | FnOpRegular of fn_ptr
       (** Regular case: call to a top-level function, trait method, etc. *)
-  | FnOpDynamic of operand * region list
+  | FnOpDynamic of operand * region_args
       (** Call through a function pointer, instantiated with the given regions.
       *)
 
@@ -361,6 +361,9 @@ and locals = {
           - the [arg_count] input arguments
           - the remaining locals, used for the intermediate computations *)
 }
+
+(** Region arguments used to instantiate a [[RegionBinder]]. *)
+and region_args = { regions : region list }
 
 (** A branching operation. *)
 and switch_data = {

@@ -1245,7 +1245,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                         TransItemSourceKind::Fun,
                                     )?;
                                     // FIXME(#513): the regions may not match.
-                                    let late_bound_regions = ctx
+                                    let late_bound_regions: RegionArgs = ctx
                                         .innermost_binder()
                                         .bound_region_vars
                                         .iter()

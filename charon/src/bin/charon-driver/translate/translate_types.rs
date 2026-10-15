@@ -39,7 +39,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let regions = b
             .regions
             .map_ref_indexed(|_, _| self.translate_erased_region());
-        b.apply(regions)
+        b.apply(RegionArgs::new(regions))
     }
 
     // Translate a region
