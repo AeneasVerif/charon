@@ -110,8 +110,7 @@ pub enum ConstantExprKind {
 pub struct GlobalPlace {
     #[cfg_attr(feature = "charon_on_charon", charon::rename("global_place_kind"))]
     pub kind: GlobalPlaceKind,
-    /// The type of the place, which can't always be computed from the type of the global (e.g.
-    /// for fields of opaque types).
+    /// The type of the place.
     #[cfg_attr(feature = "charon_on_charon", charon::rename("global_place_ty"))]
     pub ty: Ty,
 }
@@ -172,11 +171,13 @@ pub enum ConstProjectionElem {
         to: IntegerValue,
     },
     /// Like `ProjectionElem::Offset`: the place located `count * size_of::<ty>()` bytes after the
-    /// current place (or `count` bytes if `ty` is `None`).
+    /// current place (or `count` bytes if `ty` is `None`). `pointee_is_sized` is the proof that the
+    /// pointee type is sized.
     Offset {
         count: IntegerValue,
         ty: Option<Ty>,
         in_bounds: bool,
+        pointee_is_sized: Option<TraitRef>,
     },
 }
 

@@ -654,10 +654,10 @@ and pp_global_place (env : fmt_env) (fmt : Format.formatter) (p : global_place)
       | CProjSubslice (from, to_) ->
           Format.fprintf fmt "%s[%a..%a]" sub pp_integer_value from
             pp_integer_value to_
-      | CProjOffset (count, None, in_bounds) ->
+      | CProjOffset (count, None, in_bounds, _) ->
           Format.fprintf fmt "%s.%s!(%a)" sub (offset_method in_bounds)
             pp_integer_value count
-      | CProjOffset (count, Some ty, in_bounds) ->
+      | CProjOffset (count, Some ty, in_bounds, _) ->
           Format.fprintf fmt "%s.%s!(%a * size_of::<%a>())" sub
             (offset_method in_bounds) pp_integer_value count (pp_ty env) ty)
 
@@ -1535,7 +1535,7 @@ let rec pp_projection_elem (env : fmt_env) (subplace : place)
   | Field (opt_variant_id, fid) ->
       pp_field_projection env sub subplace.ty fmt opt_variant_id fid
   | PtrMetadata -> Format.fprintf fmt "%s.metadata" sub
-  | Offset (n, in_bounds, _) ->
+  | Offset (n, in_bounds, _, _) ->
       Format.fprintf fmt "%s.%s!(%s)" sub (offset_method in_bounds)
         (operand_to_string env n)
 

@@ -228,6 +228,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             count,
                             ref ty,
                             in_bounds,
+                            ref pointee_is_sized,
                         } => ConstProjectionElem::Offset {
                             count: IntegerValue::Signed(IntTy::Isize, count as i128),
                             ty: ty
@@ -235,6 +236,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                                 .map(|ty| self.translate_ty(span, ty))
                                 .transpose()?,
                             in_bounds,
+                            pointee_is_sized: self
+                                .options
+                                .hide_marker_traits
+                                .then_some(self.translate_trait_proof(span, pointee_is_sized))
+                                .transpose()?
+                                .map(|p| p.no_bound_vars()),
                         },
                     };
                     place = place.project(proj, self.translate_ty(span, proj_ty)?);

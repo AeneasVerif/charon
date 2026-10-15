@@ -91,7 +91,7 @@ pub fn OOB() -> Sync<*const u32>[{built_in impl Sized for *const u32}]
 
     storage_live(_0)
     storage_live(_1)
-    _1 = const -1isize ub.* const size_of::<u32>()
+    _1 = const -1isize wrap.* const size_of::<u32>()
     storage_live(_2)
     _2 = &raw const ARR.wrapping_offset!(copy _1)
     storage_live(_3)

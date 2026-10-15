@@ -108,11 +108,12 @@ pub enum ConstantProjectionElem {
     Subslice { from: u64, to: u64 },
     /// The place `count * size_of(ty)` bytes after the current place, or
     /// `count` bytes if `ty` is `None`. If `in_bounds` is `false`, this may point outside of the
-    /// allocation.
+    /// allocation. `pointee_is_sized` proves that the resulting place is sized.
     Offset {
         count: i64,
         ty: Option<Ty>,
         in_bounds: bool,
+        pointee_is_sized: TraitProof,
     },
 }
 

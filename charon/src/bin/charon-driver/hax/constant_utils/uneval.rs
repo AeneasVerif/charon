@@ -261,7 +261,29 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for rustc_const_unev
                         };
                         let projections = projections
                             .iter()
-                            .map(|(proj, ty)| (proj.sinto(s), ty.sinto(s)))
+                            .map(|(proj, ty)| {
+                                use rustc_const_uneval::Projection;
+                                let proj = match *proj {
+                                    Projection::Field(variant, field) => {
+                                        ConstantProjectionElem::Field(variant, field)
+                                    }
+                                    Projection::Index(i) => ConstantProjectionElem::Index(i),
+                                    Projection::Subslice { from, to } => {
+                                        ConstantProjectionElem::Subslice { from, to }
+                                    }
+                                    Projection::Offset {
+                                        count,
+                                        ty: elem_ty,
+                                        in_bounds,
+                                    } => ConstantProjectionElem::Offset {
+                                        count,
+                                        ty: elem_ty.sinto(s),
+                                        in_bounds,
+                                        pointee_is_sized: solve_sized(s, *ty),
+                                    },
+                                };
+                                (proj, ty.sinto(s))
+                            })
                             .collect();
                         (ConstantPtrBase::Global(prov, ty.sinto(s)), projections)
                     }
@@ -296,28 +318,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for rustc_const_unev
         Decorated {
             contents: Box::new(kind),
             ty: self.ty.sinto(s),
-        }
-    }
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantProjectionElem>
-    for rustc_const_uneval::Projection<'tcx>
-{
-    fn sinto(&self, s: &S) -> ConstantProjectionElem {
-        use rustc_const_uneval::Projection;
-        match *self {
-            Projection::Field(variant, field) => ConstantProjectionElem::Field(variant, field),
-            Projection::Index(i) => ConstantProjectionElem::Index(i),
-            Projection::Subslice { from, to } => ConstantProjectionElem::Subslice { from, to },
-            Projection::Offset {
-                count,
-                ty,
-                in_bounds,
-            } => ConstantProjectionElem::Offset {
-                count,
-                ty: ty.sinto(s),
-                in_bounds,
-            },
         }
     }
 }

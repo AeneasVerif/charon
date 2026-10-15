@@ -1418,6 +1418,11 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let TyKind::RawPtr(pointee, kind) = tgt_ty.kind() else {
                     raise_error!(self, span, "`Offset` on a non-raw-pointer type")
                 };
+                let rust_pointee = ptr
+                    .ty(self.local_decls, self.tcx)
+                    .builtin_deref(true)
+                    .unwrap();
+                let pointee_is_sized = self.translate_sized_proof(span, rust_pointee)?;
                 let ptr = match self.translate_operand(span, ptr)? {
                     Operand::Copy(p) | Operand::Move(p) => p,
                     op @ Operand::Const(_) => {
@@ -1427,12 +1432,18 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 };
                 let n = self.translate_operand(span, n)?;
                 // MIR's `Offset` is UB if it goes out of bounds.
-                let offset = self.offset_projection(n, Some(pointee), true, pointee.clone());
+                let offset = self.offset_projection(
+                    n,
+                    Some(pointee),
+                    true,
+                    pointee.clone(),
+                    pointee_is_sized,
+                );
                 let place = ptr.deref().project(offset, pointee.clone());
                 Ok(Rvalue::RawPtr {
                     place,
                     kind: *kind,
-                    ptr_metadata: Self::missing_ptr_metadata(),
+                    ptr_metadata: Operand::mk_const_unit(),
                 })
             }
             mir::Rvalue::BinaryOp(binop, (left, right)) => Ok(Rvalue::BinaryOp(
