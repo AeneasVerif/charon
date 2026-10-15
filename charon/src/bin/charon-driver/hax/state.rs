@@ -197,23 +197,19 @@ mod types {
             }
         }
     }
-
-    pub type UnitBinder<'tcx> = rustc_middle::ty::Binder<'tcx, ()>;
 }
 
 mk!(
     struct State<'tcx> {
         base: {'tcx} types::Base,
         owner: {} DefId,
-        binder: {'tcx} types::UnitBinder,
     }
 );
 
 pub use self::types::*;
 
-pub type StateWithBase<'tcx> = State<Base<'tcx>, (), ()>;
-pub type StateWithOwner<'tcx> = State<Base<'tcx>, DefId, ()>;
-pub type StateWithBinder<'tcx> = State<Base<'tcx>, DefId, types::UnitBinder<'tcx>>;
+pub type StateWithBase<'tcx> = State<Base<'tcx>, ()>;
+pub type StateWithOwner<'tcx> = State<Base<'tcx>, DefId>;
 
 impl<'tcx> StateWithBase<'tcx> {
     pub fn new(
@@ -224,8 +220,19 @@ impl<'tcx> StateWithBase<'tcx> {
         Self {
             base: Base::new(tcx, options, bounds_options),
             owner: (),
-            binder: (),
         }
+    }
+}
+
+impl<'tcx, A: HasBase<'tcx>, B> HasBase<'tcx> for (A, B) {
+    fn base(&self) -> Base<'tcx> {
+        self.0.base()
+    }
+}
+
+impl<A: HasOwner, B> HasOwner for (A, B) {
+    fn owner(&self) -> DefId {
+        self.0.owner()
     }
 }
 
@@ -241,7 +248,6 @@ pub trait BaseState<'tcx>: HasBase<'tcx> + Clone {
         State {
             owner: owner.clone(),
             base,
-            binder: (),
         }
     }
     /// Create a state with the given owner.
@@ -255,7 +261,6 @@ pub trait BaseState<'tcx>: HasBase<'tcx> + Clone {
         State {
             base: self.base(),
             owner: (),
-            binder: (),
         }
     }
 }
@@ -269,25 +274,14 @@ pub trait UnderOwnerState<'tcx>: BaseState<'tcx> + HasOwner {
     fn typing_env(&self) -> ty::TypingEnv<'tcx> {
         self.owner().typing_env(self)
     }
-    fn with_base(&self, base: types::Base<'tcx>) -> StateWithOwner<'tcx> {
-        State {
-            owner: self.owner().clone(),
-            base,
-            binder: (),
-        }
-    }
-    fn with_binder(&self, binder: types::UnitBinder<'tcx>) -> StateWithBinder<'tcx> {
+    fn as_state_with_owner(&self) -> StateWithOwner<'tcx> {
         State {
             base: self.base(),
-            owner: self.owner().clone(),
-            binder,
+            owner: self.owner(),
         }
     }
 }
 impl<'tcx, T: BaseState<'tcx> + HasOwner> UnderOwnerState<'tcx> for T {}
-
-/// State of anything below a binder.
-pub trait UnderBinderState<'tcx> = UnderOwnerState<'tcx> + HasBinder<'tcx>;
 
 pub trait WithGlobalCacheExt<'tcx>: BaseState<'tcx> {
     /// Access the global cache. You must not call `sinto` within this function as this will likely
