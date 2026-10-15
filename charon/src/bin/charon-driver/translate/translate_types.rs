@@ -3,8 +3,7 @@ use rustc_middle::ty;
 use rustc_span::sym;
 
 use super::translate_ctx::*;
-use crate::hax::{self, UnderOwnerState};
-use crate::hax::{HasOwner, Visibility};
+use crate::hax::{self, UnderOwnerState, Visibility};
 use charon_lib::ast::*;
 use charon_lib::ids::IndexVec;
 

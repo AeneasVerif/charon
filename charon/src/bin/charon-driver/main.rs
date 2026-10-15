@@ -13,9 +13,7 @@
 #![feature(deref_patterns)]
 #![feature(iter_array_chunks)]
 #![feature(iterator_try_collect)]
-#![feature(macro_metavar_expr)]
 #![feature(sized_hierarchy)]
-#![feature(trait_alias)]
 #![feature(type_changing_struct_update)]
 
 extern crate rustc_abi;

@@ -202,6 +202,27 @@ impl<'tcx> TranslateCtx<'tcx> {
 }
 
 impl<'tcx> ItemTransCtx<'tcx, '_> {
+    /// Translate the names of the arguments of this definition, if they are available,
+    /// otherwise naming arguments `arg0`, `arg1`, etc.
+    /// Note that the names of the arguments are not always available, even when
+    /// we can retrieve the MIR body, in which case we also fall back to `argN`.
+    pub fn translate_argument_names(
+        &mut self,
+        span: Span,
+        def: &hax::FullDef<'tcx>,
+        n_args: usize,
+    ) -> Vec<Option<String>> {
+        let Ok(Some(body)) = self.get_mir(def.this(), span) else {
+            return vec![None; n_args];
+        };
+        body.local_decls
+            .iter_enumerated()
+            .skip(1)
+            .take(body.arg_count)
+            .map(|(index, _)| hax::name_of_local(index, &body.var_debug_info))
+            .collect()
+    }
+
     /// Translate the MIR body of this definition if it has one. Catches any error and returns
     /// `Body::Error` instead
     pub fn translate_def_body(&mut self, span: Span, def: &hax::FullDef<'tcx>) -> Body {
@@ -1039,7 +1060,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         span: Span,
         mir_place: &mir::Place<'tcx>,
     ) -> Result<Place, Error> {
-        use crate::hax::{HasBase, SInto};
+        use crate::hax::{BaseState, SInto};
         use rustc_middle::ty;
 
         let tcx = self.hax_state.base().tcx;

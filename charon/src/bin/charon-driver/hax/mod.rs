@@ -3,12 +3,10 @@
 
 mod rustc_utils;
 pub mod state;
-mod utils;
 
 mod constant_utils;
 mod types;
 
-mod index_vec;
 mod prelude;
 
 pub use prelude::*;

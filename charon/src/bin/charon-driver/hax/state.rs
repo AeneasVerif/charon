@@ -1,63 +1,8 @@
 use crate::hax::prelude::*;
-use paste::paste;
+use annotate_snippets::Level;
 use rustc_middle::ty::{self, TyCtxt};
 
-macro_rules! mk_aux {
-    ($state:ident {$($lts:lifetime)*} $field:ident {$($field_type:tt)+} {$($gen:tt)*} {$($gen_full:tt)*} {$($params:tt)*} {$($fields:tt)*}) => {
-        paste ! {
-            pub trait [<Has $field:camel>]<$($lts,)*> {
-                fn $field(self: &Self) -> $($field_type)+<$($lts)*>;
-            }
-            impl<$($lts,)*$($gen)*> [<Has $field:camel>]<$($lts,)*> for $state<$($params)*> {
-                fn $field(self: &Self) -> $($field_type)+<$($lts)*> {
-                    self.$field.clone()
-                }
-            }
-        }
-    };
-}
-macro_rules! mk {
-    (struct $state:ident<$($glts:lifetime),*> {$($field:ident : {$($lts:lifetime),*} $field_type:ty),*$(,)?}) => {
-        mk!(@$state {} {$($field)*} {$($field: {$($lts),*} {$field_type},)*});
-    };
-    (@$state:ident {$($acc:tt)*} $fields:tt {
-        $field:ident : $lts:tt $field_type:tt
-        $(,$($rest:tt)*)?
-    }) => {mk!(@$state {
-        $($acc)* $fields $field: $lts $field_type,
-    } $fields {$($($rest)*)?} );};
-    (@$state:ident $body:tt $fields:tt {$(,)?}) => { mk! (@@ $state $body ); };
-    (@@$state:ident {$({$($fields:tt)*} $field:ident : {$($lts:lifetime)*} {$($field_type:tt)+},)*}) => {
-        paste! {
-            #[derive(Clone)]
-            pub struct $state<$([<$field:camel>],)*>{
-                $(pub $field: [<$field:camel>],)*
-            }
-        }
-        $(
-            macro_rules! __inner_helper {
-                ($gen:tt {$$($full_gen:tt)*} {$$($params:tt)*} $field $$($rest:tt)*) => {
-                    paste! {__inner_helper!(
-                        $gen {$$($full_gen)*[<$field:camel>],}
-                        {$$($params)*$($field_type)+<$($lts,)*>,} $$($rest)*
-                    );}
-                };
-                ({$$($gen:tt)*} {$$($full_gen:tt)*} {$$($params:tt)*} $i:ident $$($rest:tt)*) => {
-                    paste! {__inner_helper!(
-                        {$$($gen)*[<$i:camel>],} {$$($full_gen)*[<$i:camel>],}
-                        {$$($params)*[<$i:camel>],} $$($rest)*
-                    );}
-                };
-                ($gen:tt $full_gen:tt $params:tt $$(,)?) => {
-                    mk_aux!($state {$($lts)*} $field {$($field_type)+} $gen $full_gen $params {$($fields)*});
-                };
-            }
-            __inner_helper!({} {} {} $($fields)*);
-        )*
-    };
-}
-
-mod types {
+mod base {
     use crate::hax::prelude::*;
     use itertools::Itertools;
     use rustc_hash::FxHashMap;
@@ -197,41 +142,27 @@ mod types {
             }
         }
     }
-
-    pub type UnitBinder<'tcx> = rustc_middle::ty::Binder<'tcx, ()>;
 }
 
-mk!(
-    struct State<'tcx> {
-        base: {'tcx} types::Base,
-        owner: {} DefId,
-        binder: {'tcx} types::UnitBinder,
-    }
-);
+pub use self::base::*;
 
-pub use self::types::*;
+pub trait BaseState<'tcx>: Sized {
+    fn base(&self) -> Base<'tcx>;
 
-pub type StateWithBase<'tcx> = State<Base<'tcx>, (), ()>;
-pub type StateWithOwner<'tcx> = State<Base<'tcx>, DefId, ()>;
-pub type StateWithBinder<'tcx> = State<Base<'tcx>, DefId, types::UnitBinder<'tcx>>;
-
-impl<'tcx> StateWithBase<'tcx> {
-    pub fn new(
-        tcx: rustc_middle::ty::TyCtxt<'tcx>,
-        options: crate::hax::options::Options,
-        bounds_options: crate::hax::options::BoundsOptions,
-    ) -> Self {
-        Self {
-            base: Base::new(tcx, options, bounds_options),
-            owner: (),
-            binder: (),
-        }
-    }
-}
-
-pub trait BaseState<'tcx>: HasBase<'tcx> + Clone {
     fn tcx(&self) -> TyCtxt<'tcx> {
         self.base().tcx
+    }
+
+    /// Raise an error or warning.
+    fn raise(&self, level: Level, span: Span, msg: String) {
+        let backtrace = std::backtrace::Backtrace::capture();
+        eprintln!("{}", backtrace);
+        let dcx = self.tcx().dcx();
+        if level == Level::ERROR {
+            dcx.span_err(span, msg);
+        } else {
+            dcx.span_warn(span, msg);
+        }
     }
 
     /// Create a state with the given owner.
@@ -241,7 +172,6 @@ pub trait BaseState<'tcx>: HasBase<'tcx> + Clone {
         State {
             owner: owner.clone(),
             base,
-            binder: (),
         }
     }
     /// Create a state with the given owner.
@@ -255,41 +185,9 @@ pub trait BaseState<'tcx>: HasBase<'tcx> + Clone {
         State {
             base: self.base(),
             owner: (),
-            binder: (),
         }
     }
-}
-impl<'tcx, T: HasBase<'tcx> + Clone> BaseState<'tcx> for T {}
 
-/// State of anything below an `owner`.
-pub trait UnderOwnerState<'tcx>: BaseState<'tcx> + HasOwner {
-    fn param_env(&self) -> ty::ParamEnv<'tcx> {
-        self.owner().param_env(self)
-    }
-    fn typing_env(&self) -> ty::TypingEnv<'tcx> {
-        self.owner().typing_env(self)
-    }
-    fn with_base(&self, base: types::Base<'tcx>) -> StateWithOwner<'tcx> {
-        State {
-            owner: self.owner().clone(),
-            base,
-            binder: (),
-        }
-    }
-    fn with_binder(&self, binder: types::UnitBinder<'tcx>) -> StateWithBinder<'tcx> {
-        State {
-            base: self.base(),
-            owner: self.owner().clone(),
-            binder,
-        }
-    }
-}
-impl<'tcx, T: BaseState<'tcx> + HasOwner> UnderOwnerState<'tcx> for T {}
-
-/// State of anything below a binder.
-pub trait UnderBinderState<'tcx> = UnderOwnerState<'tcx> + HasBinder<'tcx>;
-
-pub trait WithGlobalCacheExt<'tcx>: BaseState<'tcx> {
     /// Access the global cache. You must not call `sinto` within this function as this will likely
     /// result in `BorrowMut` panics.
     fn with_global_cache<T>(&self, f: impl FnOnce(&mut GlobalCache<'tcx>) -> T) -> T {
@@ -303,9 +201,24 @@ pub trait WithGlobalCacheExt<'tcx>: BaseState<'tcx> {
         self.with_global_cache(|cache| f(cache.per_item.entry(def_id.clone()).or_default()))
     }
 }
-impl<'tcx, S: BaseState<'tcx>> WithGlobalCacheExt<'tcx> for S {}
 
-pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
+pub trait UnderOwnerState<'tcx>: BaseState<'tcx> {
+    fn owner(&self) -> DefId;
+
+    fn param_env(&self) -> ty::ParamEnv<'tcx> {
+        self.owner().param_env(self)
+    }
+    fn typing_env(&self) -> ty::TypingEnv<'tcx> {
+        self.owner().typing_env(self)
+    }
+
+    fn as_state_with_owner(&self) -> StateWithOwner<'tcx> {
+        State {
+            base: self.base(),
+            owner: self.owner(),
+        }
+    }
+
     /// Access the cache for the current item. You must not call `sinto` within this function as
     /// this will likely result in `BorrowMut` panics.
     fn with_cache<T>(&self, f: impl FnOnce(&mut ItemCache<'tcx>) -> T) -> T {
@@ -323,4 +236,46 @@ pub trait WithItemCacheExt<'tcx>: UnderOwnerState<'tcx> {
         f(&mut predicate_searcher, &base_state)
     }
 }
-impl<'tcx, S: UnderOwnerState<'tcx>> WithItemCacheExt<'tcx> for S {}
+
+#[derive(Clone)]
+pub struct State<'tcx, Owner> {
+    pub base: Base<'tcx>,
+    pub owner: Owner,
+}
+
+pub type StateWithBase<'tcx> = State<'tcx, ()>;
+pub type StateWithOwner<'tcx> = State<'tcx, DefId>;
+
+impl<'tcx> StateWithBase<'tcx> {
+    pub fn new(
+        tcx: rustc_middle::ty::TyCtxt<'tcx>,
+        options: crate::hax::options::Options,
+        bounds_options: crate::hax::options::BoundsOptions,
+    ) -> Self {
+        Self {
+            base: Base::new(tcx, options, bounds_options),
+            owner: (),
+        }
+    }
+}
+impl<'tcx, O> BaseState<'tcx> for State<'tcx, O> {
+    fn base(&self) -> Base<'tcx> {
+        self.base.clone()
+    }
+}
+impl<'tcx> UnderOwnerState<'tcx> for StateWithOwner<'tcx> {
+    fn owner(&self) -> DefId {
+        self.owner.clone()
+    }
+}
+
+impl<'tcx, A: BaseState<'tcx>, B> BaseState<'tcx> for (A, B) {
+    fn base(&self) -> Base<'tcx> {
+        self.0.base()
+    }
+}
+impl<'tcx, A: UnderOwnerState<'tcx>, B> UnderOwnerState<'tcx> for (A, B) {
+    fn owner(&self) -> DefId {
+        self.0.owner()
+    }
+}

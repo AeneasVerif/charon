@@ -1213,11 +1213,15 @@ pub struct ProjectionPredicate {
     pub ty: Ty,
 }
 
-impl<'tcx, S: UnderBinderState<'tcx>> SInto<S, ProjectionPredicate> for ty::ProjectionClause<'tcx> {
-    fn sinto(&self, s: &S) -> ProjectionPredicate {
+pub type UnitBinder<'tcx> = ty::Binder<'tcx, ()>;
+
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<(S, UnitBinder<'tcx>), ProjectionPredicate>
+    for ty::ProjectionClause<'tcx>
+{
+    fn sinto(&self, s: &(S, UnitBinder<'tcx>)) -> ProjectionPredicate {
         let tcx = s.base().tcx;
         let alias_ty = &self.projection_term.expect_ty();
-        let poly_trait_ref = s.binder().rebind(alias_ty.trait_ref(tcx));
+        let poly_trait_ref = s.1.rebind(alias_ty.trait_ref(tcx));
         let Term::Ty(ty) = self.term.sinto(s) else {
             unreachable!()
         };
@@ -1232,7 +1236,7 @@ impl<'tcx, S: UnderBinderState<'tcx>> SInto<S, ProjectionPredicate> for ty::Proj
 
 /// Reflects [`ty::ClauseKind`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderBinderState<'tcx>>, from: ty::ClauseKind<'tcx>, state: S as tcx)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::ClauseKind<'tcx>, state: (S, UnitBinder<'tcx>) as tcx)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ClauseKind {
     Trait(TraitPredicate),
@@ -1420,7 +1424,7 @@ impl<'tcx> BinderVariances<'tcx> for ty::TraitClause<'tcx> {}
 
 impl<'tcx, S: UnderOwnerState<'tcx>, T1, T2> SInto<S, Binder<T2>> for ty::Binder<'tcx, T1>
 where
-    T1: SInto<StateWithBinder<'tcx>, T2> + BinderVariances<'tcx>,
+    T1: SInto<(StateWithOwner<'tcx>, UnitBinder<'tcx>), T2> + BinderVariances<'tcx>,
 {
     fn sinto(&self, s: &S) -> Binder<T2> {
         let variances = T1::variances(s.base().tcx, self);
@@ -1434,8 +1438,11 @@ where
             }
         }
         let value = {
-            let under_binder_s = &s.with_binder(self.as_ref().map_bound(|_| ()));
-            self.as_ref().skip_binder().sinto(under_binder_s)
+            // Keep the binder in the context, for when we translate predicates and such. This
+            // erases a preexisting binder in context, which is fine because we only need it
+            // immediately.
+            let under_binder_s = (s.as_state_with_owner(), self.as_ref().map_bound(|_| ()));
+            self.as_ref().skip_binder().sinto(&under_binder_s)
         };
         Binder { value, bound_vars }
     }
@@ -1602,7 +1609,7 @@ sinto_todo!(rustc_middle::ty, NormalizesTo<'tcx>);
 
 /// Reflects [`ty::PredicateKind`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderBinderState<'tcx>>, from: ty::PredicateKind<'tcx>, state: S as tcx)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::PredicateKind<'tcx>, state: (S, UnitBinder<'tcx>) as tcx)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum PredicateKind {
     Clause(ClauseKind),
