@@ -419,12 +419,26 @@ thread_local! {
 #[inline]
 #[track_caller]
 pub fn ensure_sufficient_stack<R>(f: impl FnOnce() -> R) -> R {
+    match try_ensure_sufficient_stack(f) {
+        Ok(value) => value,
+        Err(_) => panic!("stack depth limit exceeded"),
+    }
+}
+
+#[derive(Debug)]
+pub struct StackDepthLimitExceeded;
+
+/// Like `ensure_sufficient_stack`, but lets callers recover when recursion is too deep.
+#[inline]
+pub fn try_ensure_sufficient_stack<R>(f: impl FnOnce() -> R) -> Result<R, StackDepthLimitExceeded> {
     let depth = STACK_DEPTH.get();
-    assert!(depth < MAX_STACK_DEPTH, "stack depth limit exceeded");
+    if depth >= MAX_STACK_DEPTH {
+        return Err(StackDepthLimitExceeded);
+    }
     STACK_DEPTH.set(depth + 1);
     // Re-set the depth on return or unwind.
     let _guard = DropGuard::new((), |()| STACK_DEPTH.set(depth));
-    stacker::maybe_grow(RED_ZONE, STACK_PER_RECURSION, f)
+    Ok(stacker::maybe_grow(RED_ZONE, STACK_PER_RECURSION, f))
 }
 
 /// Returns the values of the command-line options that match `find_arg`. The options are built-in
@@ -466,14 +480,16 @@ pub fn arg_value<'a, T: AsRef<str>>(args: &'a [T], needle: &'a str) -> Option<&'
 
 #[test]
 fn catch_stack_overflow() {
-    fn recurse(depth: usize) {
-        ensure_sufficient_stack(|| {
+    fn recurse(depth: usize) -> Result<(), StackDepthLimitExceeded> {
+        try_ensure_sufficient_stack(|| {
             if depth > 0 {
-                recurse(depth - 1);
+                recurse(depth - 1)
+            } else {
+                Ok(())
             }
-        });
+        })?
     }
 
-    assert!(std::panic::catch_unwind(|| recurse(1024)).is_err());
-    assert_eq!(ensure_sufficient_stack(|| 42), 42);
+    assert!(recurse(1024).is_err());
+    assert_eq!(try_ensure_sufficient_stack(|| 42).unwrap(), 42);
 }

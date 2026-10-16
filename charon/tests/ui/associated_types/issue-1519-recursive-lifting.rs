@@ -1,4 +1,4 @@
-//@ known-panic
+//@ known-failure
 //@ charon-args=--lift-associated-types=*
 pub trait HasAssoc {
     type Assoc;

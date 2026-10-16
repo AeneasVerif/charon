@@ -241,8 +241,8 @@ impl ErrorCtx {
     pub fn has_errors(&self) -> bool {
         self.error_count > 0
     }
-    pub fn item_has_errors(&self, id: ItemId) -> bool {
-        self.items_with_errors.contains(&id)
+    pub fn item_has_errors(&self, id: impl Into<ItemId>) -> bool {
+        self.items_with_errors.contains(&id.into())
     }
 
     /// Report an error without registering anything.

@@ -4,6 +4,7 @@ use crate::formatter::{FmtCtx, IntoFormatter};
 use crate::llbc_ast;
 use crate::options::TranslateOptions;
 use crate::pretty::FmtWithCtx;
+use crate::register_error;
 use crate::transform::CowBox;
 use crate::ullbc_ast;
 use std::cell::RefCell;
@@ -121,24 +122,29 @@ impl TransformCtx {
         self.options.opacity_for_name(&self.translated, name)
     }
 
-    pub(crate) fn with_def_id<F, T>(
+    /// Run an item transformation with its error context, reporting any panic on that item.
+    pub(crate) fn with_def_id(
         &mut self,
         def_id: impl Into<ItemId>,
         def_id_is_local: bool,
-        f: F,
-    ) -> T
-    where
-        F: FnOnce(&mut Self) -> T,
-    {
+        span: Span,
+        f: impl FnOnce(&mut Self),
+    ) {
+        let def_id = def_id.into();
         let mut errors = self.errors.borrow_mut();
-        let current_def_id = errors.def_id.replace(def_id.into());
+        let current_def_id = errors.def_id.replace(def_id);
         let current_def_id_is_local = mem::replace(&mut errors.def_id_is_local, def_id_is_local);
         drop(errors); // important: release the refcell "lock"
-        let ret = f(self);
+        if std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(self))).is_err() {
+            register_error!(
+                self,
+                span,
+                "Thread panicked while transforming item `{def_id:?}`."
+            );
+        }
         let mut errors = self.errors.borrow_mut();
         errors.def_id = current_def_id;
         errors.def_id_is_local = current_def_id_is_local;
-        ret
     }
 
     /// Mutably iterate over the bodies.
@@ -153,8 +159,11 @@ impl TransformCtx {
                 let mut body = mem::replace(&mut decl.body, Body::Opaque);
                 let fun_decl_id = decl.def_id;
                 let is_local = decl.item_meta.is_local;
-                self.with_def_id(fun_decl_id, is_local, |ctx| f(ctx, &mut body));
-                self.translated.fun_decls[id].body = body;
+                let span = decl.item_meta.span;
+                self.with_def_id(fun_decl_id, is_local, span, |ctx| f(ctx, &mut body));
+                let decl = &mut self.translated.fun_decls[id];
+                decl.body = body;
+                decl.item_meta.has_errors |= self.errors.borrow().item_has_errors(fun_decl_id);
             }
         }
     }
@@ -168,7 +177,9 @@ impl TransformCtx {
             if let Some(mut decl) = self.translated.fun_decls.remove(id) {
                 let fun_decl_id = decl.def_id;
                 let is_local = decl.item_meta.is_local;
-                self.with_def_id(fun_decl_id, is_local, |ctx| f(ctx, &mut decl));
+                let span = decl.item_meta.span;
+                self.with_def_id(fun_decl_id, is_local, span, |ctx| f(ctx, &mut decl));
+                decl.item_meta.has_errors |= self.errors.borrow().item_has_errors(fun_decl_id);
                 self.translated.fun_decls.set_slot(id, decl);
             }
         }
@@ -183,7 +194,9 @@ impl TransformCtx {
             if let Some(mut decl) = self.translated.type_decls.remove(id) {
                 let type_decl_id = decl.def_id;
                 let is_local = decl.item_meta.is_local;
-                self.with_def_id(type_decl_id, is_local, |ctx| f(ctx, &mut decl));
+                let span = decl.item_meta.span;
+                self.with_def_id(type_decl_id, is_local, span, |ctx| f(ctx, &mut decl));
+                decl.item_meta.has_errors |= self.errors.borrow().item_has_errors(type_decl_id);
                 self.translated.type_decls.set_slot(id, decl);
             }
         }
@@ -195,10 +208,9 @@ impl TransformCtx {
         for id in self.translated.all_ids() {
             if let Some(mut decl) = self.translated.remove_item_temporarily(id) {
                 let is_local = decl.as_ref().item_meta().is_local;
-                self.with_def_id(id, is_local, |ctx| f(ctx, decl.as_mut()));
-                if self.errors.borrow().item_has_errors(id) {
-                    decl.as_mut().item_meta().has_errors = true;
-                }
+                let span = decl.as_ref().item_meta().span;
+                self.with_def_id(id, is_local, span, |ctx| f(ctx, decl.as_mut()));
+                decl.as_mut().item_meta().has_errors |= self.errors.borrow().item_has_errors(id);
                 self.translated.put_item_back(id, decl);
             }
         }
