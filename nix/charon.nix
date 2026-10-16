@@ -4,6 +4,8 @@
 , lib
 , minirustSrc
 , miriSysroots ? null
+, rustToolchain
+, stdenv
 , zlib
 }:
 
@@ -56,6 +58,10 @@ craneLib.buildPackage (
       CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo test --profile release --locked
       # We also re-generate the generated AST files.
       mkdir -p src/bin/generate-asts/generated
+      ${lib.optionalString stdenv.isDarwin ''
+        # Cargo sets this for tests; the direct invocation needs it too.
+        export DYLD_FALLBACK_LIBRARY_PATH="${rustToolchain}/lib''${DYLD_FALLBACK_LIBRARY_PATH:+:$DYLD_FALLBACK_LIBRARY_PATH}"
+      ''}
       CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 target/release/generate-asts
 
       # Export the generated files to later check if they match the committed files.
