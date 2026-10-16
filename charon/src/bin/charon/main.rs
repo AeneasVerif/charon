@@ -71,6 +71,11 @@ pub fn main() -> Result<()> {
         }
         Charon::Cargo(subcmd_cargo) => {
             let mut options = subcmd_cargo.opts;
+            if let Some(toml) = toml_config::read_toml() {
+                options = toml.apply(options);
+            }
+            options.apply_preset();
+            options.validate()?;
             let targets = std::mem::take(&mut options.targets);
             if targets.is_empty() {
                 translate_with_cargo(options, subcmd_cargo.cargo)?
@@ -85,6 +90,8 @@ pub fn main() -> Result<()> {
         Charon::Rustc(mut subcmd_rustc) => {
             let mut options = subcmd_rustc.opts;
             options.rustc_args.append(&mut subcmd_rustc.rustc);
+            options.apply_preset();
+            options.validate()?;
             let targets = std::mem::take(&mut options.targets);
             if targets.is_empty() {
                 translate_without_cargo(options)?
@@ -134,10 +141,9 @@ pub fn main() -> Result<()> {
 /// Run translation once per target (in parallel), then merge the results.
 fn translate_multi_target(
     targets: Vec<String>,
-    mut options: CliOpts,
+    options: CliOpts,
     translate_one: impl Fn(CliOpts, &str) -> anyhow::Result<ExitStatus> + Sync,
 ) -> anyhow::Result<ExitStatus> {
-    options.apply_preset();
     let temp_dir = tempfile::tempdir().context("failed to create temp dir")?;
 
     // Translate each target in its own thread.
@@ -157,8 +163,6 @@ fn translate_multi_target(
                     opts.dest_file = Some(temp_file.clone());
                     // Don't recurse into multi-target.
                     opts.targets.clear();
-                    // Don't re-apply preset
-                    opts.preset = None;
                     // Suppress per-target printing; we'll print the merged result.
                     opts.print_ullbc = false;
                     opts.print_llbc = false;
@@ -207,15 +211,8 @@ fn translate_multi_target(
     Ok(ExitStatus::default())
 }
 
-fn translate_with_cargo(
-    mut options: CliOpts,
-    cargo_args: Vec<String>,
-) -> anyhow::Result<ExitStatus> {
+fn translate_with_cargo(options: CliOpts, cargo_args: Vec<String>) -> anyhow::Result<ExitStatus> {
     ensure_rustup();
-    if let Some(toml) = toml_config::read_toml() {
-        options = toml.apply(options);
-    }
-    options.validate()?;
     let mut cmd = toolchain::in_toolchain("cargo")?;
     cmd.env("RUSTC_WRAPPER", toolchain::driver_path());
     // We pass a random value to prevent cargo from considering a charon run cacheable.
@@ -254,7 +251,6 @@ fn translate_with_cargo(
 
 fn translate_without_cargo(mut options: CliOpts) -> anyhow::Result<ExitStatus> {
     ensure_rustup();
-    options.validate()?;
     let mut cmd = toolchain::driver_cmd()?;
     let target = match arg_value(&options.rustc_args, "--target") {
         Some(target) => target.to_owned(),
