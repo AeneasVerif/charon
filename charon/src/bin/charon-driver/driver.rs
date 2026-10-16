@@ -192,7 +192,7 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
     // Retrieve the Charon options by deserializing them from the environment variable
     // (cargo-charon serialized the arguments and stored them in a specific environment
     // variable before calling cargo with `RUSTC_WRAPPER=charon-driver`).
-    let mut options = match env::var(options::CHARON_ARGS)
+    let options = match env::var(options::CHARON_ARGS)
         .ok()
         .map(|opts| serde_json::from_str::<options::CliOpts>(&opts).unwrap())
     {
@@ -230,8 +230,6 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
         run_compiler_with_callbacks(compiler_args, &mut RunCompilerNormallyCallbacks)?;
         None
     } else {
-        options.apply_preset();
-
         error_ctx.continue_on_failure = !options.abort_on_error;
         error_ctx.error_on_warnings = options.error_on_warnings;
 

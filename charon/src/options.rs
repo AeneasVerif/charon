@@ -614,7 +614,9 @@ impl CliOpts {
                     self.reconstruct_panic_calls = true;
                     self.reconstruct_asserts = true;
                     self.reconstruct_matches = true;
-                    self.resugar_drops = true;
+                    if !self.desugar_drops {
+                        self.resugar_drops = true;
+                    }
                     if !self.monomorphize {
                         self.ops_to_function_calls = true;
                         self.index_to_function_calls = true;
