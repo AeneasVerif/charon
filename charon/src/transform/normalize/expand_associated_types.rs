@@ -79,7 +79,7 @@ use crate::{
     ids::IndexMap,
     pretty::FmtWithCtx,
     register_error,
-    utils::{CycleDetector, ensure_sufficient_stack},
+    utils::{CycleDetector, StackDepthLimitExceeded, try_ensure_sufficient_stack},
 };
 
 use crate::transform::{TransformCtx, ctx::TransformPass, utils::GenericsSource};
@@ -972,7 +972,6 @@ impl<'a> ComputeItemModifications<'a> {
 /// The tricky part is that to update `GenericArgs` that apply to traits, we need to know the
 /// `TraitRef` they apply to in order to get the values of the appropriate types. To do this,
 /// `visit_generic_args` will skip `GenericArgs` meant for traits, and we must manually catch
-#[derive(Visitor)]
 struct UpdateItemBody<'a> {
     /// Warning: we keep the ctx around but we can't meaningfully use it for inspecting items as we
     /// remporarily remove them for in-place modification.
@@ -983,6 +982,10 @@ struct UpdateItemBody<'a> {
     item_modifications: &'a HashMap<GenericsSource, ItemModifications>,
     // It's a reversed stack, for when we go under binders.
     type_replacements: BindingStack<TypeConstraintSet>,
+}
+
+impl Visitor for UpdateItemBody<'_> {
+    type Break = StackDepthLimitExceeded;
 }
 
 impl UpdateItemBody<'_> {
@@ -1405,7 +1408,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
 
     // Normalize associated types.
     fn visit_ty_kind(&mut self, kind: &mut TyKind) -> ControlFlow<Self::Break> {
-        ensure_sufficient_stack(|| {
+        match try_ensure_sufficient_stack(|| {
             if let TyKind::TraitType(tref, type_id, _args) = kind {
                 let path = TraitRefPath::self_ref(tref.trait_id()).with_assoc_type(*type_id);
                 if let Some(new_ty) = self.lookup_path_on_trait_ref(&path, tref) {
@@ -1420,7 +1423,13 @@ impl VisitAstMut for UpdateItemBody<'_> {
                 }
             }
             self.visit_inner(kind)
-        })
+        }) {
+            Ok(flow) => flow,
+            Err(err) => {
+                *kind = TyKind::Error("Stack depth limit exceeded".to_owned());
+                Break(err)
+            }
+        }
     }
 
     // Track span for more precise error messages.
@@ -1536,13 +1545,16 @@ impl TransformPass for Transform {
             // Update the rest of the items: all the `GenericArgs` and the non-top-level binders
             // (trait methods and inherent impls in `Name`s).
             let is_type_alias = matches!(&item, ItemRefMut::Type(tdecl) if matches!(tdecl.kind, TypeDeclKind::Alias(..)));
-            let _ = item.drive_mut(&mut UpdateItemBody {
+            let mut visitor = UpdateItemBody {
                 ctx,
                 span,
                 is_type_alias,
                 item_modifications: &item_modifications,
                 type_replacements: BindingStack::new(type_replacements),
-            });
+            };
+            if let Break(_) = item.drive_mut(&mut visitor) {
+                register_error!(ctx, visitor.span, "Stack depth limit exceeded while expanding associated types");
+            }
         });
     }
 }
