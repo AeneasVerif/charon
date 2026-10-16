@@ -617,7 +617,10 @@ and pp_cast_kind (env : fmt_env) (fmt : Format.formatter) (cast : cast_kind) :
   | CastPtrWithExposedProvenance (src, tgt) ->
       Format.fprintf fmt "cast_with_exposed<%a, %a>" pp_scalar_type src
         (pp_ty env) tgt
-  | CastFnPtr (src, tgt) | CastRawPtr (src, tgt) ->
+  | CastFnDefToFnPtr -> Format.pp_print_string fmt "fn_def_to_fn_ptr"
+  | CastFnPtrToUnsafe -> Format.pp_print_string fmt "fn_ptr_to_unsafe"
+  | CastSubtype tgt -> Format.fprintf fmt "subtype<%a>" (pp_ty env) tgt
+  | CastRawPtr (src, tgt) ->
       Format.fprintf fmt "cast<%a, %a>" (pp_ty env) src (pp_ty env) tgt
   | CastTransmute (src, tgt) ->
       Format.fprintf fmt "transmute<%a, %a>" (pp_ty env) src (pp_ty env) tgt

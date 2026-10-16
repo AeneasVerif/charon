@@ -84,7 +84,7 @@ fn {as_fn}() -> u8
 }
 
 // Full name: test_crate::AS_FN
-static AS_FN: fn() -> u8 = fnptr({as_fn})
+static AS_FN: fn() -> u8 = fn_def_to_fn_ptr({as_fn})
 
 struct test_crate::mk_closure::{closure} {}
 
@@ -160,7 +160,7 @@ fn {impl FnOnce<()> for test_crate::mk_closure::{closure}}::call_once(_1: test_c
 }
 
 // Full name: test_crate::CALL_ONCE
-static CALL_ONCE: extern "rust-call" fn(test_crate::mk_closure::{closure}, ()) -> u8 = fnptr({impl FnOnce<()> for test_crate::mk_closure::{closure}}::call_once)
+static CALL_ONCE: extern "rust-call" fn(test_crate::mk_closure::{closure}, ()) -> u8 = fn_def_to_fn_ptr({impl FnOnce<()> for test_crate::mk_closure::{closure}}::call_once)
 
 
 

@@ -471,7 +471,7 @@ pub fn test_attributes::tests::test_ignore() -> TestDescAndFn
     storage_live(_7)
     storage_live(_8)
     _8 = test_attributes::tests::test_ignore::{closure} {  }
-    _7 = cast<test_attributes::tests::test_ignore::{closure}::{as_fn}, fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]>(const test_attributes::tests::test_ignore::{closure}::{as_fn})
+    _7 = fn_def_to_fn_ptr(const test_attributes::tests::test_ignore::{closure}::{as_fn})
     storage_dead(_8)
     _6 = TestFn::StaticTestFn { _0: move _7 }
     storage_dead(_7)
@@ -609,7 +609,7 @@ pub fn test_attributes::tests::test_should_panic() -> TestDescAndFn
     storage_live(_7)
     storage_live(_8)
     _8 = test_attributes::tests::test_should_panic::{closure} {  }
-    _7 = cast<test_attributes::tests::test_should_panic::{closure}::{as_fn}, fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]>(const test_attributes::tests::test_should_panic::{closure}::{as_fn})
+    _7 = fn_def_to_fn_ptr(const test_attributes::tests::test_should_panic::{closure}::{as_fn})
     storage_dead(_8)
     _6 = TestFn::StaticTestFn { _0: move _7 }
     storage_dead(_7)
@@ -745,7 +745,7 @@ pub fn test_attributes::tests::test_foo() -> TestDescAndFn
     storage_live(_7)
     storage_live(_8)
     _8 = test_attributes::tests::test_foo::{closure} {  }
-    _7 = cast<test_attributes::tests::test_foo::{closure}::{as_fn}, fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]>(const test_attributes::tests::test_foo::{closure}::{as_fn})
+    _7 = fn_def_to_fn_ptr(const test_attributes::tests::test_foo::{closure}::{as_fn})
     storage_dead(_8)
     _6 = TestFn::StaticTestFn { _0: move _7 }
     storage_dead(_7)

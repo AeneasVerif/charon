@@ -116,6 +116,9 @@ pub struct RegionParam {
     /// lifetime parameter belongs to an ADT. This is a global analysis that looks even into opaque
     /// items. When unsure, err on the side of assuming mutability.
     pub mutability: LifetimeMutability,
+    /// Whether this region is "late bound", which means that it is unconstrained by the trait
+    /// system and thus may be used in a `for<..>` binder.
+    pub late_bound: bool,
 }
 
 /// The nature of locations where a given lifetime parameter is used. If this lifetime ever flows
@@ -226,6 +229,7 @@ impl RegionParam {
             name,
             variance,
             mutability: LifetimeMutability::Unknown,
+            late_bound: false,
         }
     }
 }

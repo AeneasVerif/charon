@@ -1086,7 +1086,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                             ConstantExpr::new(ConstantExprKind::FnPtr(drop_shim), shim_ty.clone());
                         mk(ConstantExprKind::Cast(
                             shim,
-                            CastKind::FnPtr(shim_ty, ty.clone()),
+                            CastKind::RawPtr(shim_ty, ty.clone()),
                         ))
                     } else {
                         mk(ConstantExprKind::FnPtr(drop_shim))
@@ -1107,7 +1107,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                 ConstantExpr::new(ConstantExprKind::FnPtr(method), cast_ty.clone());
                             mk(ConstantExprKind::Cast(
                                 method,
-                                CastKind::FnPtr(cast_ty, ty.clone()),
+                                CastKind::RawPtr(cast_ty, ty.clone()),
                             ))
                         }
                     }

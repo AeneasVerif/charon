@@ -489,20 +489,21 @@ and cast_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _0 = scalar_type_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
          Ok (CastPtrWithExposedProvenance (_0, _1))
-     | 4 ->
+     | 4 -> Ok CastFnDefToFnPtr
+     | 5 -> Ok CastFnPtrToUnsafe
+     | 6 ->
          let* _0 = ty_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         Ok (CastFnPtr (_0, _1))
-     | 5 ->
+         Ok (CastSubtype _0)
+     | 7 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
          let* _2 = unsizing_metadata_of_postcard ctx st in
          Ok (CastUnsize (_0, _1, _2))
-     | 6 ->
+     | 8 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
          Ok (CastTransmute (_0, _1))
-     | 7 ->
+     | 9 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = ty_of_postcard ctx st in
          Ok (CastConcretize (_0, _1))
@@ -1178,7 +1179,8 @@ and region_param_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* name = option_of_postcard string_of_postcard ctx st in
      let* variance = variance_of_postcard ctx st in
      let* mutability = lifetime_mutability_of_postcard ctx st in
-     Ok ({ index; name; variance; mutability } : region_param))
+     let* late_bound = bool_of_postcard ctx st in
+     Ok ({ index; name; variance; mutability; late_bound } : region_param))
 
 and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (rvalue, string) result =

@@ -301,7 +301,7 @@ fn test_crate::CLOSURE_BY_VALUE::{closure}::{as_fn}() -> u8
 }
 
 // Full name: test_crate::CLOSURE_BY_VALUE
-static CLOSURE_BY_VALUE: A = A { _0: fnptr(test_crate::CLOSURE_BY_VALUE::{closure}::{as_fn}) }
+static CLOSURE_BY_VALUE: A = A { _0: fn_def_to_fn_ptr(test_crate::CLOSURE_BY_VALUE::{closure}::{as_fn}) }
 
 
 

@@ -277,9 +277,14 @@ and cast_kind =
           See
           <https://doc.rust-lang.org/std/ptr/fn.with_exposed_provenance.html>.
       *)
-  | CastFnPtr of ty * ty
-      (** Cast into a function pointer. The source may be a function item or an
-          unsafe function pointer that is made safe. *)
+  | CastFnDefToFnPtr
+      (** Turn a function item into a function pointer, binding exactly its
+          late-bound regions. *)
+  | CastFnPtrToUnsafe
+      (** Convert a safe function pointer to an unsafe function pointer with the
+          same signature. *)
+  | CastSubtype of ty
+      (** Convert a value to a supertype; this has no runtime effect. *)
   | CastUnsize of ty * ty * unsizing_metadata
       (** [Unsize coercion](https://doc.rust-lang.org/std/ops/trait.CoerceUnsized.html).
           This is either [[T; N]] -> [[T]] or [T: Trait] -> [dyn Trait]
@@ -355,11 +360,8 @@ and constant_expr_kind =
 
           This is eliminated inside functions if [--raw-consts] is off. *)
   | CCast of constant_expr * cast_kind
-      (** Cast a constant value to another type, e.g. erase a vtable method
-          pointer to [*const ()], or reinterpret a pointer to an (untyped)
-          anonymous allocation at another type. A cast to a reference type
-          stands for a cast to the corresponding raw pointer followed by a
-          reborrow. *)
+      (** Cast a constant value to another type (e.g. erase a vtable method
+          pointer to [*const ()]). *)
   | CPtrNoProvenance of big_int
       (** A pointer with no provenance (e.g. 0 for the null pointer)
 
@@ -540,6 +542,10 @@ and region_param = {
           Only [true] if this lifetime parameter belongs to an ADT. This is a
           global analysis that looks even into opaque items. When unsure, err on
           the side of assuming mutability. *)
+  late_bound : bool;
+      (** Whether this region is "late bound", which means that it is
+          unconstrained by the trait system and thus may be used in a [for<..>]
+          binder. *)
 }
 
 (** The value of a trait associated type. *)

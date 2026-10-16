@@ -1,8 +1,16 @@
+//@ charon-args=--consts=values
+
 #![allow(dead_code)]
 #![allow(late_bound_lifetime_arguments)]
 
 fn identity<'a>(x: &'a u8) -> &'a u8 {
     x
+}
+
+static UNSAFE_IDENTITY: for<'a> unsafe fn(&'a u8) -> &'a u8 = identity;
+
+fn widen_safety(f: fn()) -> unsafe fn() {
+    f
 }
 
 fn with_early_and_late<'a, 'b>(x: &'a u8, y: &'b u8) -> &'b u8

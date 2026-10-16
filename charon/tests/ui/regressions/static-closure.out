@@ -320,7 +320,7 @@ fn BAR() -> fn(i32)
     storage_live(_0)
     storage_live(_1)
     _1 = test_crate::BAR::{closure} {  }
-    _0 = cast<{as_fn}, fn(i32)>(const {as_fn})
+    _0 = fn_def_to_fn_ptr(const {as_fn})
     storage_dead(_1)
     return
 }

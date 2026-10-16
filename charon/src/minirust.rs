@@ -909,7 +909,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     ScalarTy::Float(_) => raise!(span, "float unexpected in a scalar cast"),
                 }))
             }
-            UnOp::Cast(CastKind::Transmute(_, target_ty)) => {
+            UnOp::Cast(CastKind::Transmute(_, target_ty) | CastKind::Subtype(target_ty)) => {
                 mini::UnOp::Cast(mini::CastOp::Transmute(self.ty(span, target_ty)?))
             }
             UnOp::Cast(CastKind::RawPtr(source_ty, target_ty)) => {
@@ -945,8 +945,8 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             UnOp::Cast(
                 CastKind::PtrExposeProvenance(..) | CastKind::PtrWithExposedProvenance(..),
             ) => unreachable!(),
-            UnOp::Cast(CastKind::FnPtr(source_ty, _)) => {
-                match source_ty.kind() {
+            UnOp::Cast(CastKind::FnDefToFnPtr) => {
+                match operand.ty().kind() {
                     // Turn the function-item ZST into a function pointer.
                     TyKind::FnDef(fn_ptr) => {
                         let FnPtrKind::Fun(id) = *fn_ptr.skip_binder.kind else {
@@ -954,14 +954,16 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                         };
                         return Ok(self.fn_pointer(id));
                     }
-                    // MiniRust function pointer values are untyped.
-                    TyKind::FnPtr(..) => return Ok(operand_value),
                     _ => raise!(
                         span,
                         "unexpected type for function pointer cast: {}",
-                        source_ty.with_ctx(&self.fmt)
+                        operand.ty().with_ctx(&self.fmt)
                     ),
                 }
+            }
+            // MiniRust function pointer values are untyped.
+            UnOp::Cast(CastKind::FnPtrToUnsafe) => {
+                return Ok(operand_value);
             }
             UnOp::Cast(CastKind::Unsize(_, target_ty, UnsizingMetadata::Length(len))) => {
                 let target_ty = self.ty(span, target_ty)?;
@@ -1267,7 +1269,20 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     )
                 }
             },
-            ConstantExprKind::Cast(value, CastKind::FnPtr(..) | CastKind::RawPtr(..)) => {
+            ConstantExprKind::Cast(value, CastKind::FnDefToFnPtr) => {
+                let ConstantExprKind::FnDef(fn_ptr) = value.kind() else {
+                    raise!(span, "expected a function item in fn_def_to_fn_ptr")
+                };
+                let FnPtrKind::Fun(id) = *fn_ptr.kind else {
+                    raise!(span, "method reference remained after monomorphization")
+                };
+                self.fn_pointer(id)
+            }
+            ConstantExprKind::Cast(value, CastKind::FnPtrToUnsafe) => self.constant(span, value)?,
+            ConstantExprKind::Cast(value, CastKind::Subtype(..)) => {
+                mb::transmute(self.constant(span, value)?, ty)
+            }
+            ConstantExprKind::Cast(value, CastKind::RawPtr(..)) => {
                 mb::transmute(self.constant(span, value)?, ty)
             }
             ConstantExprKind::PtrNoProvenance(value) => mini::ValueExpr::Constant(

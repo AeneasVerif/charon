@@ -242,7 +242,7 @@ fn ptr_casts()
     storage_dead(_14)
     storage_live(_15)
     storage_live(_16)
-    _16 = cast<test_crate::ptr_casts::foo, fn()>(const test_crate::ptr_casts::foo)
+    _16 = fn_def_to_fn_ptr(const test_crate::ptr_casts::foo)
     _15 = cast<fn(), *const u8>(move _16)
     storage_dead(_16)
     storage_dead(_15)
@@ -382,14 +382,15 @@ fn fn_casts()
     let _5: {closure}; // anonymous local
     let _6: unsafe fn(u8); // anonymous local
     let _7: {closure}; // anonymous local
+    let _8: fn(u8); // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = cast<test_crate::fn_casts::foo, fn()>(const test_crate::fn_casts::foo)
+    _1 = fn_def_to_fn_ptr(const test_crate::fn_casts::foo)
     storage_dead(_1)
     storage_live(_2)
-    _2 = cast<bar, unsafe fn()>(const bar)
+    _2 = fn_def_to_fn_ptr(const bar)
     storage_dead(_2)
     storage_live(closure)
     closure = {closure} {  }
@@ -397,17 +398,20 @@ fn fn_casts()
     storage_live(_4)
     storage_live(_5)
     _5 = copy closure
-    _4 = cast<{as_fn}, fn(u8)>(const {as_fn})
+    _4 = fn_def_to_fn_ptr(const {as_fn})
     storage_dead(_5)
     storage_dead(_4)
     storage_live(_6)
     storage_live(_7)
     _7 = copy closure
-    _6 = cast<{as_fn}, unsafe fn(u8)>(const {as_fn})
+    storage_live(_8)
+    _8 = fn_def_to_fn_ptr(const {as_fn})
+    _6 = fn_ptr_to_unsafe(move _8)
     storage_dead(_7)
     storage_dead(_6)
     _0 = ()
     storage_dead(closure)
+    storage_dead(_8)
     return
 }
 

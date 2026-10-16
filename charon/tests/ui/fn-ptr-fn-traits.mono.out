@@ -647,7 +647,7 @@ pub fn test<'a>(x: &'a u32) -> &'a u32
 
     storage_live(_0)
     storage_live(f)
-    f = cast<for<'a> identity<'a>, fn<'b>(Adt::<'_, u32>) -> Adt::<'_, u32>>(const identity<'6>)
+    f = fn_def_to_fn_ptr(const identity<'6>)
     fake_read(f)
     set_type(typeof(f) == fn<'b>(Adt::<'_, u32>) -> Adt::<'_, u32>)
     storage_live(_3)
@@ -693,7 +693,7 @@ pub fn test_const(x: ConstAdt::<3usize>) -> ConstAdt::<3usize>
 
     storage_live(_0)
     storage_live(f)
-    f = cast<const_identity::<3usize>, fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>>(const const_identity::<3usize>)
+    f = fn_def_to_fn_ptr(const const_identity::<3usize>)
     fake_read(f)
     set_type(typeof(f) == fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>)
     storage_live(_3)
@@ -734,7 +734,7 @@ pub fn test_free_region<'a>(x: &'a u32) -> &'a u32
 
     storage_live(_0)
     storage_live(f)
-    f = cast<for<'_0_1> ref_identity<'_0_1>, fn(&'12 u32) -> &'13 u32>(const ref_identity<'16>)
+    f = fn_def_to_fn_ptr(const ref_identity<'16>)
     fake_read(f)
     set_type(typeof(f) == fn(&'17 u32) -> &'18 u32)
     storage_live(_3)
@@ -782,7 +782,7 @@ pub fn test_freshen_whole_adt<'a>(x: Plain::<u32>, y: &'a u32) -> &'a u32
 
     storage_live(_0)
     storage_live(f)
-    f = cast<for<'a> ignore_plain<'a>, fn<'b>(Plain::<u32>, &'b u32) -> &'b u32>(const ignore_plain<'7>)
+    f = fn_def_to_fn_ptr(const ignore_plain<'7>)
     fake_read(f)
     set_type(typeof(f) == fn<'b>(Plain::<u32>, &'b u32) -> &'b u32)
     storage_live(_4)
@@ -830,7 +830,7 @@ pub fn test_const_under_binder<'a>(x: [&'a u8; 3usize]) -> [&'a u8; 3usize]
 
     storage_live(_0)
     storage_live(f)
-    f = cast<for<'a> array_identity<'a>, fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize]>(const array_identity<'27>)
+    f = fn_def_to_fn_ptr(const array_identity<'27>)
     fake_read(f)
     set_type(typeof(f) == fn<'b>([&'b u8; 3usize]) -> [&'b u8; 3usize])
     storage_live(_3)
@@ -883,7 +883,7 @@ pub fn test_dyn_fn(x: u32) -> u32
 
     storage_live(_0)
     storage_live(fn_ptr)
-    fn_ptr = cast<increment, fn(u32) -> u32>(const increment)
+    fn_ptr = fn_def_to_fn_ptr(const increment)
     fake_read(fn_ptr)
     set_type(typeof(fn_ptr) == fn(u32) -> u32)
     storage_live(dyn_fn)

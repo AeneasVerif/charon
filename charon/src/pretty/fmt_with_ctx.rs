@@ -497,7 +497,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
             CastKind::PtrWithExposedProvenance(src, tgt) => {
                 write!(f, "cast_with_exposed<{src}, {}>", tgt.with_ctx(ctx))
             }
-            CastKind::FnPtr(src, tgt) | CastKind::RawPtr(src, tgt) => {
+            CastKind::FnDefToFnPtr => write!(f, "fn_def_to_fn_ptr"),
+            CastKind::FnPtrToUnsafe => write!(f, "fn_ptr_to_unsafe"),
+            CastKind::Subtype(tgt) => write!(f, "subtype<{}>", tgt.with_ctx(ctx)),
+            CastKind::RawPtr(src, tgt) => {
                 write!(f, "cast<{}, {}>", src.with_ctx(ctx), tgt.with_ctx(ctx))
             }
             CastKind::Unsize(src, tgt, meta) => write!(

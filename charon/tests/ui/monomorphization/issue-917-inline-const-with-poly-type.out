@@ -115,7 +115,7 @@ fn foo::<()>(x: ())
     storage_live(_6)
     storage_live(_7)
     _7 = {closure}::<()> {  }
-    _6 = cast<{as_fn}::<()>, fn(())>(const {as_fn}::<()>)
+    _6 = fn_def_to_fn_ptr(const {as_fn}::<()>)
     storage_dead(_7)
     _5 = move _6
     storage_live(_0)

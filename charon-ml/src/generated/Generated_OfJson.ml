@@ -541,10 +541,11 @@ and cast_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = scalar_type_of_json ctx _0 in
         let* _1 = ty_of_json ctx _1 in
         Ok (CastPtrWithExposedProvenance (_0, _1))
-    | `Assoc [ ("FnPtr", `List [ _0; _1 ]) ] ->
+    | `String "FnDefToFnPtr" -> Ok CastFnDefToFnPtr
+    | `String "FnPtrToUnsafe" -> Ok CastFnPtrToUnsafe
+    | `Assoc [ ("Subtype", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        Ok (CastFnPtr (_0, _1))
+        Ok (CastSubtype _0)
     | `Assoc [ ("Unsize", `List [ _0; _1; _2 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
         let* _1 = ty_of_json ctx _1 in
@@ -1306,12 +1307,14 @@ and region_param_of_json (ctx : of_json_ctx) (js : json) :
           ("name", name);
           ("variance", variance);
           ("mutability", mutability);
+          ("late_bound", late_bound);
         ] ->
         let* index = region_id_of_json ctx index in
         let* name = option_of_json string_of_json ctx name in
         let* variance = variance_of_json ctx variance in
         let* mutability = lifetime_mutability_of_json ctx mutability in
-        Ok ({ index; name; variance; mutability } : region_param)
+        let* late_bound = bool_of_json ctx late_bound in
+        Ok ({ index; name; variance; mutability; late_bound } : region_param)
     | _ -> Error "")
 
 and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =

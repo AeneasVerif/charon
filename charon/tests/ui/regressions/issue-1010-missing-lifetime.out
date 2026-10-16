@@ -148,7 +148,7 @@ fn main()
     storage_live(_3)
     storage_live(_4)
     _4 = test_crate::main::{closure#1} {  }
-    _3 = cast<for<'_0_1> {as_fn}<'_0_1>, fn(&'3 u16)>(const {as_fn}<'5>)
+    _3 = fn_def_to_fn_ptr(const {as_fn}<'5>)
     storage_dead(_4)
     _2 = make_early<'7, u16>[{built_in impl Sized for u16}](move _3)
     ↳⚡ unwind_continue

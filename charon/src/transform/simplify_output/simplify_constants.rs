@@ -177,18 +177,6 @@ fn transform_constant_expr(
                 fields,
             )
         }
-        ConstantExprKind::FnPtr(fptr) if let TyKind::FnPtr(sig) = val.ty().kind() => {
-            let from_ty =
-                TyKind::FnDef(sig.clone().map(|_| fptr.clone().move_under_binder())).into_ty();
-            let to_ty = TyKind::FnPtr(sig.clone()).into_ty();
-            Rvalue::UnaryOp(
-                UnOp::Cast(CastKind::FnPtr(from_ty.clone(), to_ty)),
-                Operand::Const(ConstantExpr::new(
-                    ConstantExprKind::FnDef(fptr.clone()),
-                    from_ty,
-                )),
-            )
-        }
         ConstantExprKind::Cast(value, kind) => {
             let value = transform_constant_expr(ctx, value.clone());
             if let TyKind::Ref(_, pointee, rk) = val.ty().kind() {

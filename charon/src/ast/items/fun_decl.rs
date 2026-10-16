@@ -125,6 +125,129 @@ impl FunDecl {
         !matches!(self.src, FunSource::GlobalInitializer(_))
             && self.item_meta.is_unsafe_to_declare()
     }
+
+    /// The function pointer signature of this item, binding its late-bound regions.
+    pub fn as_fn_ptr(&self) -> RegionBinder<FunSig> {
+        struct RebindLateRegions<'a> {
+            late_regions: &'a IndexVec<RegionId, Option<RegionId>>,
+        }
+
+        impl VarsVisitor for RebindLateRegions<'_> {
+            fn visit_region_var(&mut self, var: RegionDbVar) -> Option<Region> {
+                let DeBruijnVar::Bound(depth, id) = var else {
+                    return None;
+                };
+                if depth == DeBruijnId::one() {
+                    self.late_regions[id].map(|id| Region::Var(DeBruijnVar::new_at_zero(id)))
+                } else {
+                    None
+                }
+            }
+        }
+
+        let mut regions = IndexVec::new();
+        let late_regions = self.generics.regions.map_ref(|param| {
+            if param.late_bound {
+                Some(regions.push_with(|index| RegionParam {
+                    index,
+                    ..param.clone()
+                }))
+            } else {
+                None
+            }
+        });
+        let mut signature = self.signature.as_ref().clone().move_under_binder();
+        signature.visit_vars(&mut RebindLateRegions {
+            late_regions: &late_regions,
+        });
+        RegionBinder {
+            regions,
+            // Late-bound regions are guaranteed to not be involved in any non-implied outlives
+            // relations.
+            regions_outlive: Vec::new(),
+            types_outlive: Vec::new(),
+            skip_binder: signature,
+        }
+    }
+}
+
+impl RegionBinder<FunSig> {
+    /// Infer how the bound regions of `self` appear in `target`. The returned binder binds the
+    /// same regions as `target`; other lifetimes may differ.
+    pub fn infer_region_mapping(&self, target: &Self) -> Option<RegionBinder<RegionArgs>> {
+        struct RegionMapping {
+            regions: IndexVec<RegionId, Option<Region>>,
+            depth: DeBruijnId,
+        }
+
+        impl Visitor for RegionMapping {
+            type Break = ();
+        }
+
+        impl ZipAst for RegionMapping {
+            fn visit_region_param(
+                &mut self,
+                _source: &RegionParam,
+                _target: &RegionParam,
+            ) -> ControlFlow<()> {
+                // Binder positions identify regions; names and metadata need not match.
+                ControlFlow::Continue(())
+            }
+
+            fn visit_region(&mut self, source: &Region, target: &Region) -> ControlFlow<()> {
+                // We're only concerned with mapping bound variables.
+                if let Region::Var(var @ DeBruijnVar::Bound(depth, _)) = source
+                    && *depth <= self.depth
+                {
+                    if let Some(id) = var.bound_at_depth(self.depth) {
+                        let Some(target) = (*target).move_from_under_binders(self.depth) else {
+                            return ControlFlow::Break(());
+                        };
+                        let mapped = &mut self.regions[id];
+                        if let Some(previous) = mapped
+                            && *previous != target
+                        {
+                            return ControlFlow::Break(());
+                        }
+                        *mapped = Some(target);
+                        ControlFlow::Continue(())
+                    } else if source != target {
+                        ControlFlow::Break(())
+                    } else {
+                        ControlFlow::Continue(())
+                    }
+                } else {
+                    ControlFlow::Continue(())
+                }
+            }
+
+            fn visit_region_binder<T: AstVisitable>(
+                &mut self,
+                source: &RegionBinder<T>,
+                target: &RegionBinder<T>,
+            ) -> ControlFlow<()> {
+                self.depth = self.depth.incr();
+                let result = self.visit_inner(source, target);
+                self.depth = self.depth.decr();
+                result
+            }
+        }
+
+        let mut mapping = RegionMapping {
+            regions: self.regions.map_ref_indexed(|_, _| None),
+            depth: DeBruijnId::zero(),
+        };
+        if ZipAst::visit(&mut mapping, &self.skip_binder, &target.skip_binder).is_break() {
+            return None;
+        }
+        let regions = RegionArgs::new(mapping.regions.into_iter().collect::<Option<_>>()?);
+        Some(RegionBinder {
+            regions: target.regions.clone(),
+            regions_outlive: target.regions_outlive.clone(),
+            types_outlive: target.types_outlive.clone(),
+            skip_binder: regions,
+        })
+    }
 }
 
 impl Abi {

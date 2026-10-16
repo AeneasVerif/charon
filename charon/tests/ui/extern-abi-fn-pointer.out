@@ -32,7 +32,7 @@ pub fn get_rust_fn() -> fn(u32) -> u32
     let _0: fn(u32) -> u32; // return
 
     storage_live(_0)
-    _0 = cast<rust_id, fn(u32) -> u32>(const rust_id)
+    _0 = fn_def_to_fn_ptr(const rust_id)
     return
 }
 
@@ -42,7 +42,7 @@ pub fn get_c_fn() -> extern "C" fn(u32) -> u32
     let _0: extern "C" fn(u32) -> u32; // return
 
     storage_live(_0)
-    _0 = cast<c_id, extern "C" fn(u32) -> u32>(const c_id)
+    _0 = fn_def_to_fn_ptr(const c_id)
     return
 }
 

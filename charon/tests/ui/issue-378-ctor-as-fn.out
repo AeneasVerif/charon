@@ -52,7 +52,7 @@ fn F() -> fn(u8) -> Option<u8>[{built_in impl Sized for u8}]
     let _0: fn(u8) -> Option<u8>[{built_in impl Sized for u8}]; // return
 
     storage_live(_0)
-    _0 = cast<Some<u8>[{built_in impl Sized for u8}], fn(u8) -> Option<u8>[{built_in impl Sized for u8}]>(const Some<u8>[{built_in impl Sized for u8}])
+    _0 = fn_def_to_fn_ptr(const Some<u8>[{built_in impl Sized for u8}])
     return
 }
 
@@ -160,7 +160,7 @@ fn main()
     storage_live(f_4)
     storage_live(_5)
     _5 = copy f_1
-    f_4 = cast<Some<u8>[{built_in impl Sized for u8}], fn(u8) -> Option<u8>[{built_in impl Sized for u8}]>(move _5)
+    f_4 = fn_def_to_fn_ptr(move _5)
     storage_dead(_5)
     fake_read(f_4)
     set_type(typeof(f_4) == fn(u8) -> Option<u8>[{built_in impl Sized for u8}])

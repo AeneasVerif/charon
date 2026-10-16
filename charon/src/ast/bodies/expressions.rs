@@ -188,9 +188,12 @@ pub enum CastKind {
     /// Converts an address to a pointer, which picks up exposed provenance.
     /// See <https://doc.rust-lang.org/std/ptr/fn.with_exposed_provenance.html>.
     PtrWithExposedProvenance(ScalarTy, Ty),
-    /// Cast into a function pointer. The source may be a function item or an unsafe function pointer
-    /// that is made safe.
-    FnPtr(Ty, Ty),
+    /// Turn a function item into a function pointer, binding exactly its late-bound regions.
+    FnDefToFnPtr,
+    /// Convert a safe function pointer to an unsafe function pointer with the same signature.
+    FnPtrToUnsafe,
+    /// Convert a value to a supertype; this has no runtime effect.
+    Subtype(Ty),
     /// [Unsize coercion](https://doc.rust-lang.org/std/ops/trait.CoerceUnsized.html). This is
     /// either `[T; N]` -> `[T]` or `T: Trait` -> `dyn Trait` coercions, behind a pointer
     /// (reference, `Box`, or other type that implements `CoerceUnsized`).
