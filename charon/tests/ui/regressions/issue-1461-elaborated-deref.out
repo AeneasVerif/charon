@@ -1,0 +1,243 @@
+# Final LLBC before serialization:
+
+// Full name: core::alloc::layout::Layout
+#[lang_item(AllocLayout)]
+pub opaque type Layout
+
+// Full name: core::alloc::AllocError
+pub struct AllocError {}
+
+struct () {}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::result::Result
+#[diagnostic_item("Result")]
+pub enum Result<T, E>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+{
+  Ok { _0: T },
+  Err { _0: E },
+}
+
+// Full name: core::ptr::non_null::NonNull
+#[lang_item(NonNull)]
+pub opaque type NonNull<T>
+
+// Full name: core::alloc::Allocator
+pub unsafe trait Allocator<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn allocate<'_0_1>;
+    fn deallocate<'_0_1>;
+    vtable: core::alloc::Allocator::{vtable}
+}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index_mut
+pub fn impl_SliceIndex_slice_for_usize::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+// Full name: core::slice::{[T]}::split_at_mut
+#[track_caller]
+pub fn split_at_mut<'_0, T>(_1: &'_0 mut [T], _2: usize) -> (&'_0 mut [T], &'_0 mut [T])
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: alloc::alloc::Global
+#[lang_item(GlobalAlloc)]
+pub struct Global {}
+
+// Full name: alloc::alloc::{impl Allocator for Global}::deallocate
+#[track_caller]
+pub unsafe fn deallocate<'_0>(_1: &'_0 Global, _2: NonNull<u8>, _3: Layout)
+= <opaque>
+
+// Full name: alloc::alloc::{impl Allocator for Global}::allocate
+#[track_caller]
+pub fn allocate<'_0>(_1: &'_0 Global, _2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
+= <opaque>
+
+// Full name: alloc::alloc::{impl Allocator for Global}
+unsafe impl "impl_Allocator_for_Global" Allocator for Global {
+    proof ImpliedClause0: (Global: MetaSized) = {built_in impl MetaSized for Global}
+    fn allocate<'_0_1> = allocate<'_0_1>
+    fn deallocate<'_0_1> = deallocate<'_0_1>
+    vtable: lazy
+}
+
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub opaque type Box<T, A>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+
+struct (_,)<A> {
+  _0: A,
+}
+
+// Full name: (_,)::{impl Destruct for (A,)}::drop_glue
+unsafe fn drop_glue<'_0, A>(_1: &'_0 mut (A,))
+where
+    TypeOutlives0: A: '_0,
+{
+    let _0: (); // return
+    let _1: &'1 mut (A,); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: (_,)::{impl Destruct for (A,)}
+impl<A> "impl_Destruct_for_tuple" Destruct for (A,) {
+    fn drop_glue<'_0_1> = drop_glue<'_0_1, A>
+    non-dyn-compatible
+}
+
+// Full name: test_crate::shared
+pub fn shared<'_0, '_1>(arr: (&'_0 mut (&'_1 mut (u64,),),))
+where
+    RegionOutlives0: '_1: '_0,
+{
+    let _0: (); // return
+    let arr: (&'6 mut (&'7 mut (u64,),),); // arg #1
+    let _2: &'8 mut (&'9 mut (u64,),); // anonymous local
+    let _3: &'10 mut (u64,); // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _0 = ()
+    _2 = noretag copy arr._0
+    _3 = noretag copy (*_2)._0
+    (*_3)._0 = const 0u64
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::mutable
+pub fn mutable<'_0, '_1>(arr: (&'_0 (&'_1 (u64,),),))
+where
+    RegionOutlives0: '_1: '_0,
+{
+    let _0: (); // return
+    let arr: (&'6 (&'7 (u64,),),); // arg #1
+    let _2: u64; // anonymous local
+    let _3: &'8 (&'9 (u64,),); // anonymous local
+    let _4: &'10 (u64,); // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    _0 = ()
+    storage_live(_2)
+    _3 = noretag copy arr._0
+    _4 = noretag copy (*_3)._0
+    _2 = copy (*_4)._0
+    storage_dead(_2)
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::boxed
+pub fn boxed(arr: (Box<(Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],), Global>[{built_in impl MetaSized for (Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],))
+{
+    let _0: (); // return
+    let arr: (Box<(Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],), Global>[{built_in impl MetaSized for (Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],); // arg #1
+    let _2: Box<(Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],), Global>[{built_in impl MetaSized for (Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
+    let _3: Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _0 = ()
+    _2 = noretag copy arr._0
+    _3 = noretag copy (*_2)._0
+    (*_3)._0 = const 0u64
+    _0 = ()
+    drop[drop_glue<'0, Box<(Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],), Global>[{built_in impl MetaSized for (Box<(u64,), Global>[{built_in impl MetaSized for (u64,)}, {built_in impl Sized for Global}, impl_Allocator_for_Global],)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>] arr
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: test_crate::f
+pub fn f<'_0>(ctx: &'_0 mut [u64])
+{
+    let _0: (); // return
+    let ctx: &'1 mut [u64]; // arg #1
+    let acc: (&'10 mut [u64], &'11 mut [u64]); // local
+    let _3: &'15 mut [u64]; // anonymous local
+    let _4: usize; // anonymous local
+    let _5: &'16 mut [u64]; // anonymous local
+    let _6: &'17 mut [u64]; // anonymous local
+    let _7: &'_ mut [u64]; // anonymous local
+    let _8: &'_ mut u64; // anonymous local
+
+    storage_live(_0)
+    storage_live(_5)
+    storage_live(_6)
+    _0 = ()
+    storage_live(acc)
+    storage_live(_3)
+    _3 = &two-phase-mut (*ctx) with_metadata(copy ctx.metadata)
+    acc = split_at_mut<'19, u64>[{built_in impl Sized for u64}](move _3, const 0usize)
+    ↳⚡ unwind_continue
+    storage_dead(_3)
+    storage_live(_4)
+    _4 = const 0usize
+    _5 = noretag copy acc._1
+    _6 = noretag copy acc._1
+    storage_live(_7)
+    _7 = &mut (*_6) with_metadata(copy _6.metadata)
+    storage_live(_8)
+    _8 = impl_SliceIndex_slice_for_usize::index_mut<'_, u64>[{built_in impl Sized for u64}](copy _4, move _7)
+    ↳⚡ undefined_behavior
+    (*_8) = const 0u64
+    storage_dead(_4)
+    _0 = ()
+    storage_dead(acc)
+    return
+}
+
+
+
