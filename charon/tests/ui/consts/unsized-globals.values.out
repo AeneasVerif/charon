@@ -145,16 +145,16 @@ unsafe impl "impl_Sync_for_RawPtr" Sync for RawPtr {
 }
 
 // Full name: test_crate::DYN
-pub static DYN: &'static (dyn Trait + 'static) = &test_crate::{promoted_const} with_metadata(&impl_Trait_for_u8::{vtable})
+pub static DYN: &'static (dyn Trait + 'static) = unsize_cast<*const u8, &'_ (dyn Trait), &impl_Trait_for_u8::{vtable}>(cast<*const MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}], *const u8>(&raw const test_crate::{promoted_const}))
 
 // Full name: test_crate::FOO
-pub static FOO: &'static (dyn Debug + Sync + 'static) = &test_crate::{promoted_const#1} with_metadata(&{impl#8}::{vtable})
+pub static FOO: &'static (dyn Debug + Sync + 'static) = unsize_cast<*const i32, &'_ (dyn Debug + Sync), &{impl#8}::{vtable}>(cast<*const MaybeUninit<[u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}], *const i32>(&raw const test_crate::{promoted_const#1}))
 
 // Full name: test_crate::DYN_TAIL
 pub static DYN_TAIL: &'static Wrap<(dyn Trait + 'static)>[{built_in impl MetaSized for (dyn Trait + 'static)}] = &Wrap { a: 9u8, b: 10u8 } with_metadata(&impl_Trait_for_u8::{vtable})
 
 // Full name: test_crate::RAW_DYN
-pub static RAW_DYN: RawPtr = RawPtr { _0: &raw const test_crate::{promoted_const#2} with_metadata(&impl_Trait_for_u8::{vtable}) }
+pub static RAW_DYN: RawPtr = RawPtr { _0: unsize_cast<*const u8, *const (dyn Trait), &impl_Trait_for_u8::{vtable}>(cast<*const MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}], *const u8>(&raw const test_crate::{promoted_const#2})) }
 
 pub const test_crate::inline_const::{promoted_const}: Outer<[u16]>[{built_in impl MetaSized for [u16]}] = Outer { x: 1u32, w: Wrap { a: 2u8, b: [3u16, 4u16] } } with_metadata(2usize)
 

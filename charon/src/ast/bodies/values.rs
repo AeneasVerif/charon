@@ -37,14 +37,14 @@ pub enum ConstantExprKind {
     ///
     /// This is eliminated inside functions if `--raw-consts` is off.
     Array(Vec<ConstantExpr>),
-    /// A shared reference to a constant value.
+    /// A shared reference to a constant place.
     ///
     /// This is eliminated inside functions if `--raw-consts` is off.
-    Ref(ConstantExpr, Option<UnsizingMetadata>),
-    /// A pointer to a static.
+    Ref(GlobalPlace, Option<UnsizingMetadata>),
+    /// A raw pointer to a constant place.
     ///
     /// This is eliminated inside functions if `--raw-consts` is off.
-    Ptr(RefKind, ConstantExpr, Option<UnsizingMetadata>),
+    Ptr(RefKind, GlobalPlace, Option<UnsizingMetadata>),
     /// `str` value.
     Str(String),
     /// Byte string value.
@@ -56,7 +56,7 @@ pub enum ConstantExprKind {
     /// This is eliminated inside functions if `--raw-consts` is off.
     FnPtr(FnPtr),
     /// Cast a constant value to another type (e.g. erase a vtable method pointer to `*const ()`).
-    Cast(ConstantExpr, Ty),
+    Cast(ConstantExpr, CastKind),
     /// A pointer with no provenance (e.g. 0 for the null pointer)
     ///
     /// This is eliminated inside functions if `--raw-consts` is off.
@@ -102,6 +102,85 @@ pub enum ConstantExprKind {
     Opaque(String),
 }
 
+/// The place a `Ref`/`Ptr` constant points to, e.g. `GLOBAL.0[1]`. This is a constant version of
+/// [`Place`].
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[serde_state(state_implements = DedupSerializerState)] // Avoid corecursive impls due to perfect derive
+pub struct GlobalPlace {
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("global_place_kind"))]
+    pub kind: GlobalPlaceKind,
+    /// The type of the place.
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("global_place_ty"))]
+    pub ty: Ty,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(EnumIsA, EnumAsGetters)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("GlobalPlace"))]
+pub enum GlobalPlaceKind {
+    /// The allocation behind this provenance.
+    Global(GlobalProvenance),
+    /// A constant value that isn't stored in a global, e.g. the pointee of a reference in a const
+    /// generic argument. It has no projections.
+    // TODO: put these values in globals, to preserve sharing
+    Value(ConstantExpr),
+    /// A subplace of a place.
+    Projection(Box<GlobalPlace>, ConstProjectionElem),
+}
+
+impl GlobalPlace {
+    pub fn new_global(global: GlobalDeclRef, ty: Ty) -> Self {
+        GlobalPlace {
+            kind: GlobalPlaceKind::Global(GlobalProvenance::Global(global)),
+            ty,
+        }
+    }
+
+    pub fn new_value(value: ConstantExpr) -> Self {
+        GlobalPlace {
+            ty: value.ty().clone(),
+            kind: GlobalPlaceKind::Value(value),
+        }
+    }
+
+    pub fn project(self, elem: ConstProjectionElem, ty: Ty) -> Self {
+        GlobalPlace {
+            kind: GlobalPlaceKind::Projection(Box::new(self), elem),
+            ty,
+        }
+    }
+}
+
+/// A projection inside the pointee of a `Ref`/`Ptr` constant. This is a constant version of
+/// [`ProjectionElem`].
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("CProj"))]
+pub enum ConstProjectionElem {
+    /// Project to the field of an ADT.
+    Field(Option<VariantId>, FieldId),
+    /// Project to the element of an array at the given index.
+    #[serde_state(stateless)]
+    Index(IntegerValue),
+    /// Project to the subarray `array[from..to]`.
+    #[serde_state(stateless)]
+    Subslice {
+        from: IntegerValue,
+        to: IntegerValue,
+    },
+    /// Like `ProjectionElem::Offset`: the place located `count * size_of::<ty>()` bytes after the
+    /// current place (or `count` bytes if `ty` is `None`). `pointee_is_sized` is the proof that the
+    /// pointee type is sized.
+    Offset {
+        count: IntegerValue,
+        ty: Option<Ty>,
+        in_bounds: bool,
+        pointee_is_sized: Option<TraitRef>,
+    },
+}
+
 /// A scalar value.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
@@ -133,12 +212,16 @@ pub struct FloatValue {
     pub ty: FloatTy,
 }
 
+/// Provenance is the location in memory a pointer (or the byte of a pointer, see [`Byte`])
+/// points to. `GlobalProvenance` represents a compile-time provenance.
+/// See <https://doc.rust-lang.org/std/ptr/index.html#provenance>
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Prov"))]
-pub enum Provenance {
+pub enum GlobalProvenance {
     Global(GlobalDeclRef),
-    Function(FnPtr),
+    /// A function, with the type of function pointers to it.
+    Function(FnPtr, Ty),
     Unknown,
 }
 
@@ -154,7 +237,7 @@ pub enum Byte {
     /// A byte that is part of a pointer with provenance. The u8 is the offset within the
     /// pointer. Note that we do not have an actual value for this pointer byte, unlike
     /// MiniRust, as that is non-deterministic.
-    Provenance(Provenance, u8),
+    Provenance(GlobalProvenance, u8),
 }
 
 macro_rules! static_constant {

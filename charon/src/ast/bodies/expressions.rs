@@ -150,8 +150,6 @@ pub enum BinOp {
     Shl(OverflowMode),
     /// Fails if the shift is bigger than the bit-size of the type.
     Shr(OverflowMode),
-    /// `BinOp(Offset, ptr, n)` for `ptr` a pointer to type `T` offsets `ptr` by `n * size_of::<T>()`.
-    Offset,
     /// `BinOp(Cmp, a, b)` returns `-1u8` if `a < b`, `0u8` if `a == b`, and `1u8` if `a > b`.
     Cmp,
 }
@@ -172,7 +170,7 @@ pub enum UnOp {
 
 /// For all the variants: the first type gives the source type, the second one gives
 /// the destination type.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(EnumIsA, VariantName)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("Cast"))]

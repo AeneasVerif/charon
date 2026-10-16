@@ -292,11 +292,13 @@ where
     let _8: usize; // anonymous local
     let _9: *const T; // anonymous local
     let _10: isize; // anonymous local
+    let _11: isize; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = check_language_ub()
-    ↳⚡ storage_dead(count)
+    ↳⚡ storage_dead(_11)
+        storage_dead(count)
         storage_dead(self)
         unwind_continue
     if move _3 {
@@ -310,7 +312,8 @@ where
         _7 = copy count
         storage_live(_8)
         _8 = size_of<T>[TraitClause0]()
-        ↳⚡ storage_dead(count)
+        ↳⚡ storage_dead(_11)
+            storage_dead(count)
             storage_dead(self)
             unwind_continue
         _4 = precondition_check(move _5, move _7, move _8)
@@ -326,9 +329,12 @@ where
     _9 = copy self
     storage_live(_10)
     _10 = copy count
-    _0 = move _9 offset move _10
+    storage_live(_11)
+    _11 = move _10 ub.* const size_of::<T>()
+    _0 = &raw const (*_9).offset!(copy _11)
     storage_dead(_10)
     storage_dead(_9)
+    storage_dead(_11)
     storage_dead(count)
     storage_dead(self)
     return

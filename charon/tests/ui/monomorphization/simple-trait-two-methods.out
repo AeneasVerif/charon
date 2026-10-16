@@ -110,7 +110,7 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Trait))
 }
 
 // Full name: test_crate::{impl Trait for i32}::{vtable}
-vtable impl_Trait_for_i32::{vtable}: test_crate::Trait::{vtable} = test_crate::Trait::{vtable} { size: size_of::<i32>(), align: align_of::<i32>(), drop: cast<*const ()>(fnptr({vtable_drop_shim}<'_>)), method_consume: cast<*const ()>(fnptr(impl_Trait_for_i32::consume::{vtable_method}<'_>)), method_another: cast<*const ()>(fnptr(impl_Trait_for_i32::another::{vtable_method}<'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<i32> }
+vtable impl_Trait_for_i32::{vtable}: test_crate::Trait::{vtable} = test_crate::Trait::{vtable} { size: size_of::<i32>(), align: align_of::<i32>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait)), *const ()>(fnptr({vtable_drop_shim}<'_>)), method_consume: cast<fn<'_0_1>(&'_0_1 (dyn Trait)), *const ()>(fnptr(impl_Trait_for_i32::consume::{vtable_method}<'_>)), method_another: cast<fn<'_0_1>(&'_0_1 (dyn Trait)), *const ()>(fnptr(impl_Trait_for_i32::another::{vtable_method}<'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<i32> }
 
 // Full name: test_crate::{impl Trait for i32}
 impl "impl_Trait_for_i32" Trait for i32 {

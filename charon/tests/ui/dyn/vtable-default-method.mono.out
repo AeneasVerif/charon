@@ -128,7 +128,7 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Trait))
 }
 
 // Full name: test_crate::{impl Trait for Struct}::{vtable}
-vtable impl_Trait_for_Struct::{vtable}: test_crate::Trait::{vtable} = test_crate::Trait::{vtable} { size: size_of::<Struct>(), align: align_of::<Struct>(), drop: cast<*const ()>(fnptr({vtable_drop_shim}<'_>)), method_base: cast<*const ()>(fnptr(impl_Trait_for_Struct::base::{vtable_method}<'_>)), method_dflt: cast<*const ()>(fnptr(test_crate::Trait::dflt::{vtable_method}::<Struct><'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<Struct> }
+vtable impl_Trait_for_Struct::{vtable}: test_crate::Trait::{vtable} = test_crate::Trait::{vtable} { size: size_of::<Struct>(), align: align_of::<Struct>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait)), *const ()>(fnptr({vtable_drop_shim}<'_>)), method_base: cast<fn<'_0_1>(&'_0_1 (dyn Trait)) -> i32, *const ()>(fnptr(impl_Trait_for_Struct::base::{vtable_method}<'_>)), method_dflt: cast<fn<'_0_1>(&'_0_1 (dyn Trait)) -> i32, *const ()>(fnptr(test_crate::Trait::dflt::{vtable_method}::<Struct><'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<Struct> }
 
 // Full name: test_crate::{impl Trait for Struct}
 impl "impl_Trait_for_Struct" Trait for Struct {

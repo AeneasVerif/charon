@@ -86,7 +86,7 @@ unsafe fn impl_Trait_bool_for_i32::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (d
 }
 
 // Full name: test_crate::{impl Trait<bool> for i32}::{vtable}
-vtable impl_Trait_bool_for_i32::{vtable}: test_crate::Trait::{vtable} = test_crate::Trait::{vtable} { size: size_of::<i32>(), align: align_of::<i32>(), drop: cast<*const ()>(fnptr(impl_Trait_bool_for_i32::{vtable_drop_shim}<'_>)), method_comsume: cast<*const ()>(fnptr(impl_Trait_bool_for_i32::comsume::{vtable_method}<'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<i32> }
+vtable impl_Trait_bool_for_i32::{vtable}: test_crate::Trait::{vtable} = test_crate::Trait::{vtable} { size: size_of::<i32>(), align: align_of::<i32>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait<bool>)), *const ()>(fnptr(impl_Trait_bool_for_i32::{vtable_drop_shim}<'_>)), method_comsume: cast<fn<'_0_1>(&'_0_1 (dyn Trait<bool>)) -> bool, *const ()>(fnptr(impl_Trait_bool_for_i32::comsume::{vtable_method}<'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<i32> }
 
 // Full name: test_crate::{impl Trait<bool> for i32}
 impl "impl_Trait_bool_for_i32" Trait<bool> for i32 {
@@ -143,7 +143,7 @@ unsafe fn impl_Trait_usize_for_u32::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (
 }
 
 // Full name: test_crate::{impl Trait<usize> for u32}::{vtable}
-vtable impl_Trait_usize_for_u32::{vtable}: test_crate::Trait::{vtable} = test_crate::Trait::{vtable} { size: size_of::<u32>(), align: align_of::<u32>(), drop: cast<*const ()>(fnptr(impl_Trait_usize_for_u32::{vtable_drop_shim}<'_>)), method_comsume: cast<*const ()>(fnptr(impl_Trait_usize_for_u32::comsume::{vtable_method}<'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<u32> }
+vtable impl_Trait_usize_for_u32::{vtable}: test_crate::Trait::{vtable} = test_crate::Trait::{vtable} { size: size_of::<u32>(), align: align_of::<u32>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait<usize>)), *const ()>(fnptr(impl_Trait_usize_for_u32::{vtable_drop_shim}<'_>)), method_comsume: cast<fn<'_0_1>(&'_0_1 (dyn Trait<usize>)) -> usize, *const ()>(fnptr(impl_Trait_usize_for_u32::comsume::{vtable_method}<'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<u32> }
 
 // Full name: test_crate::{impl Trait<usize> for u32}
 impl "impl_Trait_usize_for_u32" Trait<usize> for u32 {

@@ -80,9 +80,6 @@ and binop =
       (** Fails if the shift is bigger than the bit-size of the type. *)
   | Shr of overflow_mode
       (** Fails if the shift is bigger than the bit-size of the type. *)
-  | Offset
-      (** [BinOp(Offset, ptr, n)] for [ptr] a pointer to type [T] offsets [ptr]
-          by [n * size_of::<T>()]. *)
   | Cmp
       (** [BinOp(Cmp, a, b)] returns [-1u8] if [a < b], [0u8] if [a == b], and
           [1u8] if [a > b]. *)
@@ -120,58 +117,6 @@ and borrow_kind =
           See
           <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.MutBorrowKind.html#variant.ClosureCapture>.
       *)
-
-(** For all the variants: the first type gives the source type, the second one
-    gives the destination type. *)
-and cast_kind =
-  | CastScalar of scalar_type * scalar_type
-      (** Conversion between scalar types. See
-          <https://doc.rust-lang.org/reference/expressions/operator-expr.html#r-expr.as.numeric>
-      *)
-  | CastRawPtr of ty * ty
-      (** A conversion between pointer and function pointer types. *)
-  | CastPtrExposeProvenance of ty * scalar_type
-      (** Converts a pointer or function pointer to an address, exposing its
-          provenance. See
-          <https://doc.rust-lang.org/std/primitive.pointer.html#method.expose_provenance>.
-      *)
-  | CastPtrWithExposedProvenance of scalar_type * ty
-      (** Converts an address to a pointer, which picks up exposed provenance.
-          See
-          <https://doc.rust-lang.org/std/ptr/fn.with_exposed_provenance.html>.
-      *)
-  | CastFnPtr of ty * ty
-      (** Cast into a function pointer. The source may be a function item or an
-          unsafe function pointer that is made safe. *)
-  | CastUnsize of ty * ty * unsizing_metadata
-      (** [Unsize coercion](https://doc.rust-lang.org/std/ops/trait.CoerceUnsized.html).
-          This is either [[T; N]] -> [[T]] or [T: Trait] -> [dyn Trait]
-          coercions, behind a pointer (reference, [Box], or other type that
-          implements [CoerceUnsized]).
-
-          The special case of [&[T; N]] -> [&[T]] coercion is caught by
-          [UnOp::ArrayToSlice]. *)
-  | CastTransmute of ty * ty
-      (** Reinterprets the bits of a value of one type as another type, i.e.
-          exactly what [[std::mem::transmute]] does. *)
-  | CastConcretize of ty * ty
-      (** Converts a receiver type with [dyn Trait<...>] to a concrete type [T],
-          used in vtable method shims. Valid conversions are references, raw
-          pointers, and (optionally) boxes:
-          - [&[mut] dyn Trait<...>] -> [&[mut] T]
-          - [*[mut] dyn Trait<...>] -> [*[mut] T]
-          - [Box<dyn Trait<...>>] -> [Box<T>] when no [--treat-box-as-builtin]
-
-          For possible receivers, see:
-          <https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility>.
-          Other receivers, e.g., [Rc] should be unpacked before the cast and
-          re-boxed after. FIXME(ssyram): but this is not implemented yet,
-          namely, there may still be something like
-          [Rc<dyn Trait<...>> -> Rc<T>] in the types.
-
-          With [--index-to-function-calls], this also converts [&[T]] to
-          [&[T; N]] (or the mutable equivalents) when an array subslice
-          projection determines the length statically. *)
 
 and local_id = (LocalId.id[@visitors.opaque])
 
@@ -243,6 +188,25 @@ and projection_elem =
           - [from]
           - [to]
           - [from_end] *)
+  | Offset of operand * bool * ty * trait_ref option
+      (** For a place [p], [p.offset(n)] is the place located [n] bytes after
+          [p], where [n] is a signed or unsigned integer. This projection may go
+          out of bounds of the original place, e.g. if we initially had a
+          [*const T] pointing into an array. If [in_bounds] is [true] the offset
+          must not overflow and must stay within the original allocation,
+          otherwise it uses wrapping arithmetic around the address space and may
+          go outside the allocation (just like [<*const T>::offset] vs
+          [<*const T>::wrapping_offset]).
+
+          An offset may change the type of the place, like a transmute: [ty] is
+          the type of the resulting place, which is [T: Sized] as proven by
+          [ty_is_sized].
+
+          Fields:
+          - [bytes]
+          - [in_bounds]
+          - [ty]
+          - [ty_is_sized] *)
 
 (** An expression that evaluates to a value. This is the RHS of an assignment.
 *)

@@ -985,8 +985,9 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
     let _11: u32; // anonymous local
     let _12: *const u32; // anonymous local
     let _13: *const u32; // anonymous local
-    let _14: &'_ [u32]; // anonymous local
-    let _15: &'_ u32; // anonymous local
+    let _14: isize; // anonymous local
+    let _15: &'_ [u32]; // anonymous local
+    let _16: &'_ u32; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1002,13 +1003,13 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
     _8 = copy s
     storage_live(_9)
     _9 = copy i
-    storage_live(_14)
-    _14 = &(*_8) with_metadata(copy _8.metadata)
     storage_live(_15)
-    _15 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _9, move _14)
+    _15 = &(*_8) with_metadata(copy _8.metadata)
+    storage_live(_16)
+    _16 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _9, move _15)
     ↳⚡ // unsafe
         undefined_behavior
-    _7 = &(*_15)
+    _7 = &(*_16)
     storage_dead(_9)
     storage_dead(_8)
     storage_dead(_7)
@@ -1022,17 +1023,21 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
     storage_live(_12)
     storage_live(_13)
     _13 = copy p
+    storage_live(_14)
     // unsafe
-    _12 = move _13 offset const 1isize
+    _14 = const 1isize ub.* const size_of::<u32>()
+    // unsafe
+    _12 = &raw const (*_13).offset!(copy _14)
     storage_dead(_13)
     storage_dead(_12)
     _0 = ()
+    storage_dead(_14)
     storage_dead(i)
     storage_dead(s)
     storage_dead(p)
     storage_dead(x)
+    storage_dead(_16)
     storage_dead(_15)
-    storage_dead(_14)
     return
 }
 

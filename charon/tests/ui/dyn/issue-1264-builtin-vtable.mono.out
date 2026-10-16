@@ -30,7 +30,7 @@ unsafe fn {vtable_drop_shim}::<i32><'_0>(dyn_self: &'_0 mut (dyn Send))
 }
 
 // Full name: core::marker::Send::{vtable}::<i32>
-vtable {vtable}::<i32>: {vtable} = {vtable} { size: size_of::<i32>(), align: align_of::<i32>(), drop: cast<*const ()>(fnptr({vtable_drop_shim}::<i32><'_>)) }
+vtable {vtable}::<i32>: {vtable} = {vtable} { size: size_of::<i32>(), align: align_of::<i32>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn Send)), *const ()>(fnptr({vtable_drop_shim}::<i32><'_>)) }
 
 // Full name: test_crate::main
 fn main()
