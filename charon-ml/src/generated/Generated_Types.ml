@@ -258,21 +258,20 @@ and byte =
           within the pointer. Note that we do not have an actual value for this
           pointer byte, unlike MiniRust, as that is non-deterministic. *)
 
-(** For all the variants: the first type gives the source type, the second one
-    gives the destination type. *)
+(** Cast the operand to a new type. *)
 and cast_kind =
-  | CastScalar of scalar_type * scalar_type
+  | CastScalar of scalar_type
       (** Conversion between scalar types. See
           <https://doc.rust-lang.org/reference/expressions/operator-expr.html#r-expr.as.numeric>
       *)
-  | CastRawPtr of ty * ty
-      (** A conversion between pointer and function pointer types. *)
-  | CastPtrExposeProvenance of ty * scalar_type
+  | CastRawPtr of ty
+      (** Convert a raw pointer or function pointer to a raw pointer. *)
+  | CastPtrExposeProvenance
       (** Converts a pointer or function pointer to an address, exposing its
           provenance. See
           <https://doc.rust-lang.org/std/primitive.pointer.html#method.expose_provenance>.
       *)
-  | CastPtrWithExposedProvenance of scalar_type * ty
+  | CastPtrWithExposedProvenance of ty
       (** Converts an address to a pointer, which picks up exposed provenance.
           See
           <https://doc.rust-lang.org/std/ptr/fn.with_exposed_provenance.html>.
@@ -285,7 +284,7 @@ and cast_kind =
           same signature. *)
   | CastSubtype of ty
       (** Convert a value to a supertype; this has no runtime effect. *)
-  | CastUnsize of ty * ty * unsizing_metadata
+  | CastUnsize of ty * unsizing_metadata
       (** [Unsize coercion](https://doc.rust-lang.org/std/ops/trait.CoerceUnsized.html).
           This is either [[T; N]] -> [[T]] or [T: Trait] -> [dyn Trait]
           coercions, behind a pointer (reference, [Box], or other type that
@@ -293,10 +292,10 @@ and cast_kind =
 
           The special case of [&[T; N]] -> [&[T]] coercion is caught by
           [UnOp::ArrayToSlice]. *)
-  | CastTransmute of ty * ty
+  | CastTransmute of ty
       (** Reinterprets the bits of a value of one type as another type, i.e.
           exactly what [[std::mem::transmute]] does. *)
-  | CastConcretize of ty * ty
+  | CastConcretize of ty
       (** Converts a receiver type with [dyn Trait<...>] to a concrete type [T],
           used in vtable method shims. Valid conversions are references, raw
           pointers, and (optionally) boxes:

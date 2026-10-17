@@ -374,27 +374,17 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                         destination,
                         Rvalue::UnaryOp(
                             UnOp::Cast(
-                                cast @ (CastKind::PtrExposeProvenance(..)
+                                cast @ (CastKind::PtrExposeProvenance
                                 | CastKind::PtrWithExposedProvenance(..)),
                             ),
                             operand,
                         ),
                     ) => {
                         let intrinsic = match cast {
-                            CastKind::PtrExposeProvenance(_, target) => {
-                                check!(
-                                    statement.span,
-                                    target.is_usize(),
-                                    "MiniRust only supports exposing pointer provenance to `usize`"
-                                );
+                            CastKind::PtrExposeProvenance => {
                                 mini::IntrinsicOp::PointerExposeProvenance
                             }
-                            CastKind::PtrWithExposedProvenance(source, _) => {
-                                check!(
-                                    statement.span,
-                                    source.is_usize(),
-                                    "MiniRust only supports creating a pointer from `usize`"
-                                );
+                            CastKind::PtrWithExposedProvenance(_) => {
                                 mini::IntrinsicOp::PointerWithExposedProvenance
                             }
                             _ => unreachable!(),
@@ -898,8 +888,8 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             }
             UnOp::Not => mini::UnOp::Int(mini::IntUnOp::BitNot),
             UnOp::Neg(_) => mini::UnOp::Int(mini::IntUnOp::Neg),
-            UnOp::Cast(CastKind::Scalar(source_ty, target_ty)) => {
-                if matches!(source_ty, ScalarTy::Bool) {
+            UnOp::Cast(CastKind::Scalar(target_ty)) => {
+                if operand.ty().is_bool() {
                     operand_value = mb::bool_to_int::<u8>(operand_value);
                 }
                 mini::UnOp::Cast(mini::CastOp::IntToInt(match *target_ty {
@@ -909,10 +899,11 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     ScalarTy::Float(_) => raise!(span, "float unexpected in a scalar cast"),
                 }))
             }
-            UnOp::Cast(CastKind::Transmute(_, target_ty) | CastKind::Subtype(target_ty)) => {
+            UnOp::Cast(CastKind::Transmute(target_ty) | CastKind::Subtype(target_ty)) => {
                 mini::UnOp::Cast(mini::CastOp::Transmute(self.ty(span, target_ty)?))
             }
-            UnOp::Cast(CastKind::RawPtr(source_ty, target_ty)) => {
+            UnOp::Cast(CastKind::RawPtr(target_ty)) => {
+                let source_ty = operand.ty();
                 if source_ty.kind().is_fn_ptr() || target_ty.kind().is_fn_ptr() {
                     return Ok(mb::transmute(operand_value, self.ty(span, target_ty)?));
                 }
@@ -942,9 +933,9 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 }
             }
             // Handled at the statement level.
-            UnOp::Cast(
-                CastKind::PtrExposeProvenance(..) | CastKind::PtrWithExposedProvenance(..),
-            ) => unreachable!(),
+            UnOp::Cast(CastKind::PtrExposeProvenance | CastKind::PtrWithExposedProvenance(..)) => {
+                unreachable!()
+            }
             UnOp::Cast(CastKind::FnDefToFnPtr) => {
                 match operand.ty().kind() {
                     // Turn the function-item ZST into a function pointer.
@@ -965,7 +956,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             UnOp::Cast(CastKind::FnPtrToUnsafe) => {
                 return Ok(operand_value);
             }
-            UnOp::Cast(CastKind::Unsize(_, target_ty, UnsizingMetadata::Length(len))) => {
+            UnOp::Cast(CastKind::Unsize(target_ty, UnsizingMetadata::Length(len))) => {
                 let target_ty = self.ty(span, target_ty)?;
                 let mini::Type::Ptr(_) = target_ty else {
                     raise!(span, "unsizing target is not a pointer")
@@ -976,7 +967,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     target_ty,
                 ));
             }
-            UnOp::Cast(CastKind::Unsize(_, target_ty, UnsizingMetadata::VTable(_, vtable))) => {
+            UnOp::Cast(CastKind::Unsize(target_ty, UnsizingMetadata::VTable(_, vtable))) => {
                 let ConstantExprKind::Ref(global, None) = vtable.kind() else {
                     raise!(span, "unsupported vtable reference")
                 };
@@ -998,13 +989,13 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     self.ty(span, target_ty)?,
                 ));
             }
-            UnOp::Cast(CastKind::Unsize(_, target_ty, UnsizingMetadata::VTableUpcast(path))) => {
+            UnOp::Cast(CastKind::Unsize(target_ty, UnsizingMetadata::VTableUpcast(path))) => {
                 if !path.is_empty() {
                     raise!(span, "MiniRust does not support supertrait vtable upcasts")
                 }
                 return Ok(mb::transmute(operand_value, self.ty(span, target_ty)?));
             }
-            UnOp::Cast(CastKind::Concretize(_, target_ty)) => {
+            UnOp::Cast(CastKind::Concretize(target_ty)) => {
                 return Ok(mb::transmute(
                     mb::get_thin_pointer(operand_value),
                     self.ty(span, target_ty)?,

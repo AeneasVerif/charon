@@ -318,7 +318,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
         _50 = impl_SliceIndex_slice_for_usize::index<'_, u8>[{built_in impl Sized for u8}](copy _14, move _49)
         ↳⚡ undefined_behavior
         _13 = copy (*_50)
-        b1 = cast<u8, i16>(move _13)
+        b1 = cast<i16>(move _13)
         storage_dead(_13)
         fake_read(b1)
         storage_dead(_14)
@@ -332,7 +332,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
         _52 = impl_SliceIndex_slice_for_usize::index<'_, u8>[{built_in impl Sized for u8}](copy _17, move _51)
         ↳⚡ undefined_behavior
         _16 = copy (*_52)
-        b2 = cast<u8, i16>(move _16)
+        b2 = cast<i16>(move _16)
         storage_dead(_16)
         fake_read(b2)
         storage_dead(_17)
@@ -346,7 +346,7 @@ fn f2<'_0, '_1>(a: &'_0 [u8], result: &'_1 mut [i16]) -> usize
         _54 = impl_SliceIndex_slice_for_usize::index<'_, u8>[{built_in impl Sized for u8}](copy _20, move _53)
         ↳⚡ undefined_behavior
         _19 = copy (*_54)
-        b3 = cast<u8, i16>(move _19)
+        b3 = cast<i16>(move _19)
         storage_dead(_19)
         fake_read(b3)
         storage_dead(_20)

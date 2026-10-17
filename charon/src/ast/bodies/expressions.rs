@@ -170,8 +170,7 @@ pub enum UnOp {
     Cast(CastKind),
 }
 
-/// For all the variants: the first type gives the source type, the second one gives
-/// the destination type.
+/// Cast the operand to a new type.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(EnumIsA, VariantName)]
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
@@ -179,15 +178,15 @@ pub enum UnOp {
 pub enum CastKind {
     /// Conversion between scalar types.
     /// See <https://doc.rust-lang.org/reference/expressions/operator-expr.html#r-expr.as.numeric>
-    Scalar(ScalarTy, ScalarTy),
-    /// A conversion between pointer and function pointer types.
-    RawPtr(Ty, Ty),
+    Scalar(ScalarTy),
+    /// Convert a raw pointer or function pointer to a raw pointer.
+    RawPtr(Ty),
     /// Converts a pointer or function pointer to an address, exposing its provenance.
     /// See <https://doc.rust-lang.org/std/primitive.pointer.html#method.expose_provenance>.
-    PtrExposeProvenance(Ty, ScalarTy),
+    PtrExposeProvenance,
     /// Converts an address to a pointer, which picks up exposed provenance.
     /// See <https://doc.rust-lang.org/std/ptr/fn.with_exposed_provenance.html>.
-    PtrWithExposedProvenance(ScalarTy, Ty),
+    PtrWithExposedProvenance(Ty),
     /// Turn a function item into a function pointer, binding exactly its late-bound regions.
     FnDefToFnPtr,
     /// Convert a safe function pointer to an unsafe function pointer with the same signature.
@@ -199,10 +198,10 @@ pub enum CastKind {
     /// (reference, `Box`, or other type that implements `CoerceUnsized`).
     ///
     /// The special case of `&[T; N]` -> `&[T]` coercion is caught by `UnOp::ArrayToSlice`.
-    Unsize(Ty, Ty, UnsizingMetadata),
+    Unsize(Ty, UnsizingMetadata),
     /// Reinterprets the bits of a value of one type as another type, i.e. exactly what
     /// [`std::mem::transmute`] does.
-    Transmute(Ty, Ty),
+    Transmute(Ty),
     /// Converts a receiver type with `dyn Trait<...>` to a concrete type `T`, used in vtable method shims.
     /// Valid conversions are references, raw pointers, and (optionally) boxes:
     /// - `&[mut] dyn Trait<...>` -> `&[mut] T`
@@ -216,7 +215,7 @@ pub enum CastKind {
     ///
     /// With `--index-to-function-calls`, this also converts `&[T]` to `&[T; N]` (or the mutable
     /// equivalents) when an array subslice projection determines the length statically.
-    Concretize(Ty, Ty),
+    Concretize(Ty),
 }
 
 /// Nullary operation

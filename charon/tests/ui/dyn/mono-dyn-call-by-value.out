@@ -108,7 +108,7 @@ fn impl_T_for_unit::by_val::{vtable_method}(_1: *mut (dyn T))
     storage_live(_0)
     _0 = ()
     storage_live(_2)
-    _2 = concretize<*mut (dyn T + '1), *mut ()>(move _1)
+    _2 = concretize<*mut ()>(move _1)
     _0 = by_val(move (*_2))
     ↳⚡ unwind_continue
     return
@@ -136,7 +136,7 @@ fn impl_T_for_unit::by_ref::{vtable_method}<'_0>(_1: &'_0 (dyn T))
     storage_live(_0)
     _0 = ()
     storage_live(_2)
-    _2 = concretize<&'_0 (dyn T + '1), &'_0 ()>(move _1)
+    _2 = concretize<&'_0 ()>(move _1)
     _0 = by_ref<'_0>(move _2)
     ↳⚡ unwind_continue
     return
@@ -152,12 +152,12 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn T))
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn T + '1), &'_0 mut ()>(move dyn_self)
+    target_self = concretize<&'_0 mut ()>(move dyn_self)
     return
 }
 
 // Full name: test_crate::{impl T for ()}::{vtable}
-vtable impl_T_for_unit::{vtable}: test_crate::T::{vtable} = test_crate::T::{vtable} { size: size_of::<()>(), align: align_of::<()>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn T)), *const ()>(fnptr({vtable_drop_shim}<'_>)), method_by_ref: cast<fn<'_0_1>(&'_0_1 (dyn T)), *const ()>(fnptr(impl_T_for_unit::by_ref::{vtable_method}<'_>)), method_by_val: cast<fn(*mut (dyn T)), *const ()>(fnptr(impl_T_for_unit::by_val::{vtable_method})), super_trait_0: &core::marker::MetaSized::{vtable}::<()> }
+vtable impl_T_for_unit::{vtable}: test_crate::T::{vtable} = test_crate::T::{vtable} { size: size_of::<()>(), align: align_of::<()>(), drop: cast<*const ()>(fnptr({vtable_drop_shim}<'_>)), method_by_ref: cast<*const ()>(fnptr(impl_T_for_unit::by_ref::{vtable_method}<'_>)), method_by_val: cast<*const ()>(fnptr(impl_T_for_unit::by_val::{vtable_method})), super_trait_0: &core::marker::MetaSized::{vtable}::<()> }
 
 // Full name: test_crate::{impl T for ()}
 impl "impl_T_for_unit" T for () {
@@ -204,7 +204,7 @@ fn main()
     _3 = ()
     _2 = alloc::boxed::{Box::<(), Global>}::new::<()>(move _3)
     ↳⚡ unwind_continue
-    b = unsize_cast<Box::<(), Global>, Box::<(dyn T), Global>, &impl_T_for_unit::{vtable}>(move _2)
+    b = unsize_cast<Box::<(dyn T), Global>, &impl_T_for_unit::{vtable}>(move _2)
     conditional_drop[{impl Destruct for Box::<(), Global>}::drop_glue::<(), Global><'8>] _2
     ↳⚡ unwind_continue
     storage_dead(_3)
@@ -215,7 +215,7 @@ fn main()
     storage_live(_5)
     _5 = &(*b) with_metadata(copy b.metadata)
     storage_live(_16)
-    _16 = cast<*const (), fn(&'3 (dyn T + '4))>(copy (*_5.metadata).method_by_ref)
+    _16 = cast<fn(&'3 (dyn T + '4))>(copy (*_5.metadata).method_by_ref)
     _4 = (copy _16)(move _5)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'13>] b
         ↳⚡ unwind_terminate
@@ -228,7 +228,7 @@ fn main()
     storage_live(_17)
     _17 = &raw mut (*_7) with_metadata(copy _7.metadata)
     storage_live(_18)
-    _18 = cast<*const (), fn(*mut (dyn T + '16))>(copy (*_17.metadata).method_by_val)
+    _18 = cast<fn(*mut (dyn T + '16))>(copy (*_17.metadata).method_by_val)
     _6 = (copy _18)(move _17)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'17>] _7
         ↳⚡ unwind_terminate
@@ -252,7 +252,7 @@ fn main()
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'13>] b
         ↳⚡ unwind_terminate
         unwind_continue
-    f = unsize_cast<Box::<Foo::<()>, Global>, Box::<Foo::<(dyn T)>, Global>, &impl_T_for_unit::{vtable}>(move _9)
+    f = unsize_cast<Box::<Foo::<(dyn T)>, Global>, &impl_T_for_unit::{vtable}>(move _9)
     conditional_drop[{impl Destruct for Box::<Foo::<()>, Global>}::drop_glue::<Foo::<()>, Global><'19>] _9
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn T), Global>}::drop_glue::<(dyn T), Global><'13>] b
         ↳⚡ unwind_terminate
@@ -265,7 +265,7 @@ fn main()
     storage_live(_13)
     _13 = &(*f)._0 with_metadata(copy f.metadata)
     storage_live(_19)
-    _19 = cast<*const (), fn(&'5 (dyn T + '6))>(copy (*_13.metadata).method_by_ref)
+    _19 = cast<fn(&'5 (dyn T + '6))>(copy (*_13.metadata).method_by_ref)
     _12 = (copy _19)(move _13)
     ↳⚡ conditional_drop[{impl Destruct for Box::<Foo::<(dyn T)>, Global>}::drop_glue::<Foo::<(dyn T)>, Global><'24>] f
         ↳⚡ unwind_terminate
@@ -279,7 +279,7 @@ fn main()
     storage_live(_20)
     _20 = &raw mut (*f)._0 with_metadata(copy f.metadata)
     storage_live(_21)
-    _21 = cast<*const (), fn(*mut (dyn T + '25))>(copy (*_20.metadata).method_by_val)
+    _21 = cast<fn(*mut (dyn T + '25))>(copy (*_20.metadata).method_by_val)
     _14 = (copy _21)(move _20)
     ↳⚡ conditional_drop[{built_in impl Destruct for (dyn T + '29)}::drop_glue<'30>] _15
         ↳⚡ unwind_terminate

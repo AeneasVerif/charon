@@ -67,7 +67,7 @@ where
             storage_live(_4)
             storage_live(_5)
             _5 = &e
-            _4 = unsize_cast<&'6 E, &'7 (dyn Debug + '8), &vtable_of(TraitClause2)>(copy _5)
+            _4 = unsize_cast<&'7 (dyn Debug + '8), &vtable_of(TraitClause2)>(copy _5)
             _3 = unwrap_failed<'11, '12>(const "called `Result::unwrap()` on an `Err` value", move _4)
             ↳⚡ drop[{built_in impl Destruct for E}::drop_glue<'15>] e
                 ↳⚡ storage_dead(_5)

@@ -119,7 +119,7 @@ extern "rust-call" fn {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_method}:
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<*mut (dyn FnOnce<(u32,), Output = u32> + '1), *mut fn(u32) -> u32>(move _1)
+    _3 = concretize<*mut fn(u32) -> u32>(move _1)
     _0 = {impl FnOnce<(u32,)> for fn(u32) -> u32}::call_once::<u32, u32>(move (*_3), move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -141,14 +141,14 @@ unsafe fn {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u3
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn FnOnce<(u32,), Output = u32> + '1), &'_0 mut fn(u32) -> u32>(move dyn_self)
+    target_self = concretize<&'_0 mut fn(u32) -> u32>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
 }
 
 // Full name: {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
-vtable {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::FnOnce::{vtable} = core::ops::function::FnOnce::{vtable} { size: size_of::<fn(u32) -> u32>(), align: align_of::<fn(u32) -> u32>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn FnOnce<(u32,), Output = u32>)), *const ()>(fnptr({impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_>)), method_call_once: cast<extern "rust-call" fn(*mut (dyn FnOnce<(u32,), Output = u32>), (u32,)) -> u32, *const ()>(fnptr({impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32>)), super_trait_0: &core::marker::MetaSized::{vtable}::<fn(u32) -> u32> }
+vtable {impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::FnOnce::{vtable} = core::ops::function::FnOnce::{vtable} { size: size_of::<fn(u32) -> u32>(), align: align_of::<fn(u32) -> u32>(), drop: cast<*const ()>(fnptr({impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_>)), method_call_once: cast<*const ()>(fnptr({impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32>)), super_trait_0: &core::marker::MetaSized::{vtable}::<fn(u32) -> u32> }
 
 // Full name: {impl FnMut<(u32,)> for fn(u32) -> u32}::call_mut::<u32, u32>
 fn call_mut::<u32, u32><'_0>(fn_ptr: &'_0 mut fn(u32) -> u32, args: (u32,)) -> u32
@@ -177,7 +177,7 @@ extern "rust-call" fn {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_method}::
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<&'_0 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '1), &'_0 mut fn(u32) -> u32>(move _1)
+    _3 = concretize<&'_0 mut fn(u32) -> u32>(move _1)
     _0 = call_mut::<u32, u32><'_0>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -199,14 +199,14 @@ unsafe fn {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '1), &'_0 mut fn(u32) -> u32>(move dyn_self)
+    target_self = concretize<&'_0 mut fn(u32) -> u32>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
 }
 
 // Full name: {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
-vtable {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::FnMut::{vtable} = core::ops::function::FnMut::{vtable} { size: size_of::<fn(u32) -> u32>(), align: align_of::<fn(u32) -> u32>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32>)), *const ()>(fnptr({impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_>)), method_call_mut: cast<extern "rust-call" fn<'_0_1>(&'_0_1 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32>), (u32,)) -> u32, *const ()>(fnptr({impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32><'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<fn(u32) -> u32>, super_trait_1: &{impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32> }
+vtable {impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::FnMut::{vtable} = core::ops::function::FnMut::{vtable} { size: size_of::<fn(u32) -> u32>(), align: align_of::<fn(u32) -> u32>(), drop: cast<*const ()>(fnptr({impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_>)), method_call_mut: cast<*const ()>(fnptr({impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32><'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<fn(u32) -> u32>, super_trait_1: &{impl FnOnce<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32> }
 
 // Full name: {impl Fn<(u32,)> for fn(u32) -> u32}::call::<u32, u32>
 fn call::<u32, u32><'_0>(fn_ptr: &'_0 fn(u32) -> u32, args: (u32,)) -> u32
@@ -235,7 +235,7 @@ extern "rust-call" fn {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u3
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<&'_0 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '1), &'_0 fn(u32) -> u32>(move _1)
+    _3 = concretize<&'_0 fn(u32) -> u32>(move _1)
     _0 = call::<u32, u32><'_0>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -257,14 +257,14 @@ unsafe fn {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '1), &'_0 mut fn(u32) -> u32>(move dyn_self)
+    target_self = concretize<&'_0 mut fn(u32) -> u32>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
 }
 
 // Full name: {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
-vtable {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::Fn::{vtable} = core::ops::function::Fn::{vtable} { size: size_of::<fn(u32) -> u32>(), align: align_of::<fn(u32) -> u32>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32>)), *const ()>(fnptr({impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_>)), method_call: cast<extern "rust-call" fn<'_0_1>(&'_0_1 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32>), (u32,)) -> u32, *const ()>(fnptr({impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32><'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<fn(u32) -> u32>, super_trait_1: &{impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32> }
+vtable {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>: core::ops::function::Fn::{vtable} = core::ops::function::Fn::{vtable} { size: size_of::<fn(u32) -> u32>(), align: align_of::<fn(u32) -> u32>(), drop: cast<*const ()>(fnptr({impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_drop_shim}::<u32, u32><'_>)), method_call: cast<*const ()>(fnptr({impl Fn<(u32,)> for fn(u32) -> u32}::{vtable_method}::<u32, u32><'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<fn(u32) -> u32>, super_trait_1: &{impl FnMut<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32> }
 
 // Full name: {impl FnOnce<(u32,)> for fn(u32) -> u32}
 impl FnOnce<(u32,)> for fn(u32) -> u32 {
@@ -891,7 +891,7 @@ pub fn test_dyn_fn(x: u32) -> u32
     storage_live(_5)
     _5 = &fn_ptr
     _4 = &(*_5)
-    dyn_fn = unsize_cast<&'6 fn(u32) -> u32, &'10 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11), &{impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>>(move _4)
+    dyn_fn = unsize_cast<&'10 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11), &{impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>>(move _4)
     storage_dead(_4)
     fake_read(dyn_fn)
     set_type(typeof(dyn_fn) == &'12 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '13))
@@ -903,7 +903,7 @@ pub fn test_dyn_fn(x: u32) -> u32
     _8 = copy x
     _7 = (move _8,)
     storage_live(_9)
-    _9 = cast<*const (), fn(&'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32>(copy (*_6.metadata).method_call)
+    _9 = cast<fn(&'8 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '9), (u32,)) -> u32>(copy (*_6.metadata).method_call)
     _0 = (copy _9)(move _6, move _7)
     ↳⚡ storage_dead(x)
         unwind_continue

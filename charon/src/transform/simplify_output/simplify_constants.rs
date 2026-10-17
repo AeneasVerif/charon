@@ -78,7 +78,7 @@ fn transform_constant_expr(
         ConstantExprKind::PtrNoProvenance(ptr) => {
             let usize_ty = Ty::mk_usize();
             let ptr_usize = ConstantExprKind::Integer(IntegerValue::Unsigned(UIntTy::Usize, *ptr));
-            let cast = UnOp::Cast(CastKind::RawPtr(usize_ty.clone(), val.ty().clone()));
+            let cast = UnOp::Cast(CastKind::RawPtr(val.ty().clone()));
             Rvalue::UnaryOp(cast, Operand::Const(ConstantExpr::new(ptr_usize, usize_ty)))
         }
         cexpr @ (ConstantExprKind::Ref(bval, metadata)
@@ -119,22 +119,14 @@ fn transform_constant_expr(
                 (None, Some(metadata)) => {
                     let sized_ref = ctx.borrow_to_new_var(place, BorrowKind::Shared, None);
                     Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Unsize(
-                            sized_ref.ty.clone(),
-                            val.ty().clone(),
-                            metadata,
-                        )),
+                        UnOp::Cast(CastKind::Unsize(val.ty().clone(), metadata)),
                         Operand::Move(sized_ref),
                     )
                 }
                 (Some(rk), Some(metadata)) => {
                     let sized_raw_ref = ctx.raw_borrow_to_new_var(place, rk, None);
                     Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Unsize(
-                            sized_raw_ref.ty.clone(),
-                            val.ty().clone(),
-                            metadata,
-                        )),
+                        UnOp::Cast(CastKind::Unsize(val.ty().clone(), metadata)),
                         Operand::Move(sized_raw_ref),
                     )
                 }
@@ -184,7 +176,7 @@ fn transform_constant_expr(
                 let raw_ty = TyKind::RawPtr(pointee.clone(), *rk).into_ty();
                 let mut kind = kind.clone();
                 match &mut kind {
-                    CastKind::RawPtr(_, tgt) | CastKind::Unsize(_, tgt, _) => *tgt = raw_ty.clone(),
+                    CastKind::RawPtr(tgt) | CastKind::Unsize(tgt, _) => *tgt = raw_ty.clone(),
                     _ => unreachable!("unexpected cast to a reference: {kind:?}"),
                 }
                 let raw_ptr = ctx.rval_to_place(Rvalue::UnaryOp(UnOp::Cast(kind), value), raw_ty);

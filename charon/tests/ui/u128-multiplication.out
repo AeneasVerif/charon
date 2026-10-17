@@ -28,7 +28,7 @@ fn MASK() -> u128
 
     storage_live(_0)
     storage_live(_1)
-    _1 = cast<u64, u128>(copy MAX)
+    _1 = cast<u128>(copy MAX)
     _0 = copy _1
     storage_dead(_1)
     return
@@ -593,7 +593,7 @@ pub fn carrying_mul_add(self: u128, b: u128, c: u128, d: u128) -> (u128, u128)
     storage_live(_15)
     storage_live(_16)
     _16 = copy carry_11
-    _15 = cast<bool, u128>(move _16)
+    _15 = cast<u128>(move _16)
     storage_dead(_16)
     _17 = copy high panic.+ copy _15
     high = move _17
@@ -621,7 +621,7 @@ pub fn carrying_mul_add(self: u128, b: u128, c: u128, d: u128) -> (u128, u128)
     storage_live(_23)
     storage_live(_24)
     _24 = copy carry_19
-    _23 = cast<bool, u128>(move _24)
+    _23 = cast<u128>(move _24)
     storage_dead(_24)
     _25 = copy high panic.+ copy _23
     high = move _25

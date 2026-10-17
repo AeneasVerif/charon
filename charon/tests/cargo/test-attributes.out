@@ -802,7 +802,7 @@ pub fn main()
     storage_dead(_5)
     _3 = &_4
     _2 = &(*_3)
-    _1 = unsize_cast<&'30 [&'31 TestDescAndFn; 3usize], &'61 [&'62 TestDescAndFn], 3usize>(move _2)
+    _1 = unsize_cast<&'61 [&'62 TestDescAndFn], 3usize>(move _2)
     storage_dead(_2)
     _0 = test_main_env_args<'68, '69>(move _1)
     ↳⚡ unwind_continue

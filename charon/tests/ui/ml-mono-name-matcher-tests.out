@@ -121,7 +121,7 @@ fn foo()
     _10 = copy test_crate::foo::{promoted_const}
     _5 = &(*_10)
     _4 = &(*_5)
-    slice = unsize_cast<&'5 [bool; 1usize], &'16 [bool], 1usize>(move _4)
+    slice = unsize_cast<&'16 [bool], 1usize>(move _4)
     storage_dead(_4)
     fake_read(slice)
     set_type(typeof(slice) == &'17 [bool])

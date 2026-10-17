@@ -511,7 +511,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 StatementKind::Assign(
                     box_slice.clone(),
                     Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Unsize(box_array_ty, box_slice_ty, meta)),
+                        UnOp::Cast(CastKind::Unsize(box_slice_ty, meta)),
                         Operand::Move(initialized_box),
                     ),
                 )
@@ -1319,7 +1319,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
 
                 // Translate the operand
                 let mut operand = self.translate_operand(span, mir_operand)?;
-                let src_ty = operand.ty().clone();
 
                 let mut cast_kind = match cast_kind {
                     mir::CastKind::IntToInt
@@ -1327,8 +1326,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     | mir::CastKind::FloatToInt
                     | mir::CastKind::FloatToFloat => {
                         let tgt_ty = *tgt_ty.kind().as_scalar().unwrap();
-                        let src_ty = *src_ty.kind().as_scalar().unwrap();
-                        CastKind::Scalar(src_ty, tgt_ty)
+                        CastKind::Scalar(tgt_ty)
                     }
                     mir::CastKind::PtrToPtr
                     | mir::CastKind::PointerCoercion(
@@ -1339,16 +1337,11 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         ty::adjustment::PointerCoercion::ArrayToPointer,
                         ..,
                     )
-                    | mir::CastKind::FnPtrToPtr => CastKind::RawPtr(src_ty, tgt_ty.clone()),
+                    | mir::CastKind::FnPtrToPtr => CastKind::RawPtr(tgt_ty.clone()),
 
-                    mir::CastKind::PointerExposeProvenance => {
-                        CastKind::PtrExposeProvenance(src_ty, *tgt_ty.kind().as_scalar().unwrap())
-                    }
+                    mir::CastKind::PointerExposeProvenance => CastKind::PtrExposeProvenance,
                     mir::CastKind::PointerWithExposedProvenance => {
-                        CastKind::PtrWithExposedProvenance(
-                            *src_ty.kind().as_scalar().unwrap(),
-                            tgt_ty.clone(),
-                        )
+                        CastKind::PtrWithExposedProvenance(tgt_ty.clone())
                     }
                     mir::CastKind::PointerCoercion(
                         ty::adjustment::PointerCoercion::ClosureFnPointer(_),
@@ -1380,14 +1373,14 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         ..,
                     ) => CastKind::FnPtrToUnsafe,
                     mir::CastKind::Transmute | mir::CastKind::BoxDerefTransmute => {
-                        CastKind::Transmute(src_ty, tgt_ty.clone())
+                        CastKind::Transmute(tgt_ty.clone())
                     }
                     mir::CastKind::Subtype => CastKind::Subtype(tgt_ty.clone()),
                     mir::CastKind::PointerCoercion(ty::adjustment::PointerCoercion::Unsize, ..) => {
                         let meta =
                             hax::compute_unsizing_metadata(&self.hax_state, op_ty, *rust_tgt_ty);
                         let meta = self.translate_unsizing_metadata(span, &meta)?;
-                        CastKind::Unsize(src_ty, tgt_ty.clone(), meta)
+                        CastKind::Unsize(tgt_ty.clone(), meta)
                     }
                 };
 

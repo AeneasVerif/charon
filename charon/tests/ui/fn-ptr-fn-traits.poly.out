@@ -268,7 +268,7 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<*mut (dyn FnOnce<(A,), Output = B> + '1), *mut fn(A) -> B>(move _1)
+    _3 = concretize<*mut fn(A) -> B>(move _1)
     _0 = {impl FnOnce<(A,)> for fn(A) -> B}::call_once<A, B>[TraitClause0, TraitClause1](move (*_3), move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -295,7 +295,7 @@ where
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn FnOnce<(A,), Output = B> + '1), &'_0 mut fn(A) -> B>(move dyn_self)
+    target_self = concretize<&'_0 mut fn(A) -> B>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -438,7 +438,7 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<&'_0 mut (dyn FnMut<(A,), ImpliedClause1::Output = B> + '1), &'_0 mut fn(A) -> B>(move _1)
+    _3 = concretize<&'_0 mut fn(A) -> B>(move _1)
     _0 = call_mut<'_0, A, B>[TraitClause0, TraitClause1](move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -465,7 +465,7 @@ where
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn FnMut<(A,), ImpliedClause1::Output = B> + '1), &'_0 mut fn(A) -> B>(move dyn_self)
+    target_self = concretize<&'_0 mut fn(A) -> B>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -515,7 +515,7 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<&'_0 (dyn Fn<(A,), ImpliedClause1::ImpliedClause1::Output = B> + '1), &'_0 fn(A) -> B>(move _1)
+    _3 = concretize<&'_0 fn(A) -> B>(move _1)
     _0 = call<'_0, A, B>[TraitClause0, TraitClause1](move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -542,7 +542,7 @@ where
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn Fn<(A,), ImpliedClause1::ImpliedClause1::Output = B> + '1), &'_0 mut fn(A) -> B>(move dyn_self)
+    target_self = concretize<&'_0 mut fn(A) -> B>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -1163,7 +1163,7 @@ pub fn test_dyn_fn(x: u32) -> u32
     storage_live(_5)
     _5 = &fn_ptr
     _4 = &(*_5)
-    dyn_fn = unsize_cast<&'6 fn(u32) -> u32, &'10 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11), &{impl Fn<(A,)> for fn(A) -> B}::{vtable}<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]>(move _4)
+    dyn_fn = unsize_cast<&'10 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '11), &{impl Fn<(A,)> for fn(A) -> B}::{vtable}<u32, u32>[{built_in impl Sized for u32}, {built_in impl Sized for u32}]>(move _4)
     storage_dead(_4)
     fake_read(dyn_fn)
     set_type(typeof(dyn_fn) == &'12 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '13))

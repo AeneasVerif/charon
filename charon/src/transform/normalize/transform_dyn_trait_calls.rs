@@ -229,10 +229,7 @@ fn transform_dyn_trait_call(
         .into_ty();
         let fn_ptr_place = ctx.fresh_var(None, real_sig_ty);
         let rval_cast = Rvalue::UnaryOp(
-            UnOp::Cast(CastKind::RawPtr(
-                method_field_place.ty().clone(),
-                fn_ptr_place.ty().clone(),
-            )),
+            UnOp::Cast(CastKind::RawPtr(fn_ptr_place.ty().clone())),
             Operand::Copy(method_field_place),
         );
         ctx.insert_assn_stmt(fn_ptr_place.clone(), rval_cast);

@@ -615,7 +615,7 @@ pub unsafe fn new_unchecked(align: usize) -> Alignment
     storage_dead(_2)
     storage_live(_5)
     _5 = copy align
-    _0 = transmute<usize, Alignment>(move _5)
+    _0 = transmute<Alignment>(move _5)
     storage_dead(_5)
     storage_dead(align)
     return
@@ -679,7 +679,7 @@ pub fn core::num::{isize}::MAX() -> isize
     storage_live(_0)
     storage_live(_1)
     _1 = copy core::num::{usize}::MAX panic.>> const 1i32
-    _0 = cast<usize, isize>(move _1)
+    _0 = cast<isize>(move _1)
     storage_dead(_1)
     return
 }
@@ -720,7 +720,7 @@ where
             storage_live(n)
             n = copy _1
             storage_live(_3)
-            _3 = cast<isize, usize>(copy core::num::{isize}::MAX)
+            _3 = cast<usize>(copy core::num::{isize}::MAX)
             storage_live(_4)
             _4 = copy n
             _0 = move _3 panic./ move _4
@@ -971,12 +971,12 @@ where
         storage_live(_6)
         storage_live(_7)
         _7 = copy src
-        _6 = cast<*const T, *const ()>(move _7)
+        _6 = cast<*const ()>(move _7)
         storage_dead(_7)
         storage_live(_8)
         storage_live(_9)
         _9 = copy dst
-        _8 = cast<*mut T, *mut ()>(move _9)
+        _8 = cast<*mut ()>(move _9)
         storage_dead(_9)
         storage_live(_10)
         _10 = core::mem::size_of<T>[TraitClause0]()

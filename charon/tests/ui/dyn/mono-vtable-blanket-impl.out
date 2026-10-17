@@ -47,7 +47,7 @@ fn {vtable_method}::<()><'_0>(_1: &'_0 (dyn Trait)) -> usize
 
     storage_live(_0)
     storage_live(_2)
-    _2 = concretize<&'_0 (dyn Trait + '1), &'_0 ()>(move _1)
+    _2 = concretize<&'_0 ()>(move _1)
     _0 = method::<()><'_0>(move _2)
     ↳⚡ storage_dead(_2)
         storage_dead(_1)
@@ -67,14 +67,14 @@ unsafe fn {vtable_drop_shim}::<()><'_0>(dyn_self: &'_0 mut (dyn Trait))
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn Trait + '1), &'_0 mut ()>(move dyn_self)
+    target_self = concretize<&'_0 mut ()>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
 }
 
 // Full name: test_crate::{impl Trait for ()}::{vtable}::<()>
-vtable impl_Trait_for_unit::{vtable}::<()>: test_crate::Trait::{vtable} = test_crate::Trait::{vtable} { size: size_of::<()>(), align: align_of::<()>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait)), *const ()>(fnptr({vtable_drop_shim}::<()><'_>)), method_method: cast<fn<'_0_1>(&'_0_1 (dyn Trait)) -> usize, *const ()>(fnptr({vtable_method}::<()><'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<()> }
+vtable impl_Trait_for_unit::{vtable}::<()>: test_crate::Trait::{vtable} = test_crate::Trait::{vtable} { size: size_of::<()>(), align: align_of::<()>(), drop: cast<*const ()>(fnptr({vtable_drop_shim}::<()><'_>)), method_method: cast<*const ()>(fnptr({vtable_method}::<()><'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<()> }
 
 // Full name: test_crate::{impl Trait for ()}
 impl "impl_Trait_for_unit" Trait for () {
@@ -96,10 +96,10 @@ pub fn f<'_0>(x: &'_0 ()) -> &'_0 (dyn Trait + '_0)
     storage_live(_3)
     storage_live(_4)
     _4 = &(*x)
-    _3 = unsize_cast<&'11 (), &'12 (dyn Trait + '13), &impl_Trait_for_unit::{vtable}::<()>>(move _4)
+    _3 = unsize_cast<&'12 (dyn Trait + '13), &impl_Trait_for_unit::{vtable}::<()>>(move _4)
     storage_dead(_4)
     _2 = &(*_3) with_metadata(copy _3.metadata)
-    _0 = unsize_cast<&'7 (dyn Trait + '8), &'15 (dyn Trait + '16),  at []>(move _2)
+    _0 = unsize_cast<&'15 (dyn Trait + '16),  at []>(move _2)
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(x)

@@ -475,20 +475,14 @@ and cast_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      match __tag with
      | 0 ->
          let* _0 = scalar_type_of_postcard ctx st in
-         let* _1 = scalar_type_of_postcard ctx st in
-         Ok (CastScalar (_0, _1))
+         Ok (CastScalar _0)
      | 1 ->
          let* _0 = ty_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         Ok (CastRawPtr (_0, _1))
-     | 2 ->
-         let* _0 = ty_of_postcard ctx st in
-         let* _1 = scalar_type_of_postcard ctx st in
-         Ok (CastPtrExposeProvenance (_0, _1))
+         Ok (CastRawPtr _0)
+     | 2 -> Ok CastPtrExposeProvenance
      | 3 ->
-         let* _0 = scalar_type_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         Ok (CastPtrWithExposedProvenance (_0, _1))
+         let* _0 = ty_of_postcard ctx st in
+         Ok (CastPtrWithExposedProvenance _0)
      | 4 -> Ok CastFnDefToFnPtr
      | 5 -> Ok CastFnPtrToUnsafe
      | 6 ->
@@ -496,17 +490,14 @@ and cast_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (CastSubtype _0)
      | 7 ->
          let* _0 = ty_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         let* _2 = unsizing_metadata_of_postcard ctx st in
-         Ok (CastUnsize (_0, _1, _2))
+         let* _1 = unsizing_metadata_of_postcard ctx st in
+         Ok (CastUnsize (_0, _1))
      | 8 ->
          let* _0 = ty_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         Ok (CastTransmute (_0, _1))
+         Ok (CastTransmute _0)
      | 9 ->
          let* _0 = ty_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         Ok (CastConcretize (_0, _1))
+         Ok (CastConcretize _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and const_generic_param_of_postcard (ctx : of_postcard_ctx)

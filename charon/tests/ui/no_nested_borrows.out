@@ -314,7 +314,7 @@ pub fn cast_u32_to_i32(x: u32) -> i32
     storage_live(_0)
     storage_live(_2)
     _2 = copy x
-    _0 = cast<u32, i32>(move _2)
+    _0 = cast<i32>(move _2)
     storage_dead(_2)
     storage_dead(x)
     return
@@ -330,7 +330,7 @@ pub fn cast_bool_to_i32(x: bool) -> i32
     storage_live(_0)
     storage_live(_2)
     _2 = copy x
-    _0 = cast<bool, i32>(move _2)
+    _0 = cast<i32>(move _2)
     storage_dead(_2)
     storage_dead(x)
     return

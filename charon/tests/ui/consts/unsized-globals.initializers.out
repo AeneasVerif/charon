@@ -89,7 +89,7 @@ pub fn OUTER() -> &'static Outer<[u16]>[{built_in impl MetaSized for [u16]}]
     _3 = move _4
     _2 = &(*_3)
     _1 = &(*_2)
-    _0 = unsize_cast<&'3 Outer<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}], &'7 Outer<[u16]>[{built_in impl MetaSized for [u16]}], 2usize>(move _1)
+    _0 = unsize_cast<&'7 Outer<[u16]>[{built_in impl MetaSized for [u16]}], 2usize>(move _1)
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -125,7 +125,7 @@ fn WRAP() -> &'static Wrap<[u8]>[{built_in impl MetaSized for [u8]}]
     _3 = move _4
     _2 = &(*_3)
     _1 = &(*_2)
-    _0 = unsize_cast<&'3 Wrap<[u8; 2usize]>[{built_in impl MetaSized for [u8; 2usize]}], &'7 Wrap<[u8]>[{built_in impl MetaSized for [u8]}], 2usize>(move _1)
+    _0 = unsize_cast<&'7 Wrap<[u8]>[{built_in impl MetaSized for [u8]}], 2usize>(move _1)
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -150,7 +150,7 @@ pub fn TUPLE() -> &'static (u8, [u8])
     storage_live(_4)
     _4 = copy WRAP
     _3 = &raw const (*_4) with_metadata(copy _4.metadata)
-    _2 = cast<*const Wrap<[u8]>[{built_in impl MetaSized for [u8]}], *const (u8, [u8])>(move _3)
+    _2 = cast<*const (u8, [u8])>(move _3)
     storage_dead(_3)
     _1 = &(*_2) with_metadata(copy _2.metadata)
     _0 = &(*_1) with_metadata(copy _1.metadata)
@@ -178,7 +178,7 @@ pub fn STR_TAIL() -> &'static Wrap<str>[{built_in impl MetaSized for str}]
     storage_live(_4)
     _4 = copy WRAP
     _3 = &raw const (*_4) with_metadata(copy _4.metadata)
-    _2 = cast<*const Wrap<[u8]>[{built_in impl MetaSized for [u8]}], *const Wrap<str>[{built_in impl MetaSized for str}]>(move _3)
+    _2 = cast<*const Wrap<str>[{built_in impl MetaSized for str}]>(move _3)
     storage_dead(_3)
     _1 = &(*_2) with_metadata(copy _2.metadata)
     _0 = &(*_1) with_metadata(copy _1.metadata)
@@ -259,7 +259,7 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Trait))
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn Trait + '1), &'_0 mut u8>(move dyn_self)
+    target_self = concretize<&'_0 mut u8>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -309,7 +309,7 @@ pub fn DYN() -> &'static (dyn Trait + 'static)
     _3 = move _4
     _2 = &(*_3)
     _1 = &(*_2)
-    _0 = unsize_cast<&'6 u8, &'10 (dyn Trait + '11), &impl_Trait_for_u8::{vtable}>(move _1)
+    _0 = unsize_cast<&'10 (dyn Trait + '11), &impl_Trait_for_u8::{vtable}>(move _1)
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -342,7 +342,7 @@ pub fn FOO() -> &'static (dyn Debug + Sync + 'static)
     _3 = move _4
     _2 = &(*_3)
     _1 = &(*_2)
-    _0 = unsize_cast<&'6 i32, &'10 (dyn Debug + Sync + '11), &{impl#8}::{vtable}>(move _1)
+    _0 = unsize_cast<&'10 (dyn Debug + Sync + '11), &{impl#8}::{vtable}>(move _1)
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -375,7 +375,7 @@ pub fn DYN_TAIL() -> &'static Wrap<(dyn Trait + 'static)>[{built_in impl MetaSiz
     _3 = move _4
     _2 = &(*_3)
     _1 = &(*_2)
-    _0 = unsize_cast<&'15 Wrap<u8>[{built_in impl MetaSized for u8}], &'19 Wrap<(dyn Trait + '20)>[{built_in impl MetaSized for (dyn Trait + '22)}], &impl_Trait_for_u8::{vtable}>(move _1)
+    _0 = unsize_cast<&'19 Wrap<(dyn Trait + '20)>[{built_in impl MetaSized for (dyn Trait + '22)}], &impl_Trait_for_u8::{vtable}>(move _1)
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -410,7 +410,7 @@ pub fn RAW_DYN() -> RawPtr
     _4 = move _5
     _3 = &(*_4)
     _2 = &raw const (*_3)
-    _1 = unsize_cast<*const u8, *const (dyn Trait + '7), &impl_Trait_for_u8::{vtable}>(move _2)
+    _1 = unsize_cast<*const (dyn Trait + '7), &impl_Trait_for_u8::{vtable}>(move _2)
     storage_dead(_2)
     _0 = RawPtr { _0: move _1 }
     storage_dead(_3)

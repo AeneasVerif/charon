@@ -994,7 +994,7 @@ fn unsafe_builtins<'_0>(x: u32, p: *const u32, s: &'_0 [u32], i: usize)
     storage_live(_6)
     _6 = copy x
     // unsafe
-    _5 = transmute<u32, i32>(move _6)
+    _5 = transmute<i32>(move _6)
     storage_dead(_6)
     storage_dead(_5)
     storage_live(_7)

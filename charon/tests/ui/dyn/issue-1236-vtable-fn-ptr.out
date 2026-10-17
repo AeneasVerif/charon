@@ -55,7 +55,7 @@ fn {vtable_method}<'_0>(_1: &'_0 (dyn Foo))
         storage_live(_0);
         _0 = ();
         storage_live(_2);
-        _2 = concretize<&'_0 (dyn Foo + '1), &'_0 Bar>(move _1);
+        _2 = concretize<&'_0 Bar>(move _1);
         _0 = foo<'_0>(move _2) -> bb1 (unwind: bb2);
     }
 
@@ -83,7 +83,7 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Foo))
         storage_live(ret);
         ret = ();
         storage_live(target_self);
-        target_self = concretize<&'_0 mut (dyn Foo + '1), &'_0 mut Bar>(move dyn_self);
+        target_self = concretize<&'_0 mut Bar>(move dyn_self);
         storage_dead(target_self);
         storage_dead(dyn_self);
         return;
@@ -91,7 +91,7 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Foo))
 }
 
 // Full name: test_crate::{impl Foo for Bar}::{vtable}
-vtable impl_Foo_for_Bar::{vtable}: test_crate::Foo::{vtable} = test_crate::Foo::{vtable} { size: size_of::<Bar>(), align: align_of::<Bar>(), drop: cast<unsafe fn<'_0_1>(&'_0_1 mut (dyn Foo)), *const ()>(fnptr({vtable_drop_shim}<'_>)), method_foo: cast<fn<'_0_1>(&'_0_1 (dyn Foo)), *const ()>(fnptr({vtable_method}<'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<Bar> }
+vtable impl_Foo_for_Bar::{vtable}: test_crate::Foo::{vtable} = test_crate::Foo::{vtable} { size: size_of::<Bar>(), align: align_of::<Bar>(), drop: cast<*const ()>(fnptr({vtable_drop_shim}<'_>)), method_foo: cast<*const ()>(fnptr({vtable_method}<'_>)), super_trait_0: &core::marker::MetaSized::{vtable}::<Bar> }
 
 // Full name: test_crate::{impl Foo for Bar}
 impl "impl_Foo_for_Bar" Foo for Bar {
@@ -122,7 +122,7 @@ fn main()
         storage_live(_4);
         _4 = &bar;
         _3 = &(*_4);
-        some_foo = unsize_cast<&'6 Bar, &'10 (dyn Foo + '11), &impl_Foo_for_Bar::{vtable}>(move _3);
+        some_foo = unsize_cast<&'10 (dyn Foo + '11), &impl_Foo_for_Bar::{vtable}>(move _3);
         storage_dead(_3);
         fake_read(some_foo);
         set_type(typeof(some_foo) == &'12 (dyn Foo + '13));
@@ -131,7 +131,7 @@ fn main()
         storage_live(_6);
         _6 = &(*some_foo) with_metadata(copy some_foo.metadata);
         storage_live(_7);
-        _7 = cast<*const (), fn(&'8 (dyn Foo + '9))>(copy (*_6.metadata).method_foo);
+        _7 = cast<fn(&'8 (dyn Foo + '9))>(copy (*_6.metadata).method_foo);
         _5 = (copy _7)(move _6) -> bb1 (unwind: bb2);
     }
 

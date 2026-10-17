@@ -269,7 +269,7 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<*mut (dyn FnOnce<(), Output = T> + '1), *mut test_crate::wrap::{closure}<T>[TraitClause0]>(move _1)
+    _3 = concretize<*mut test_crate::wrap::{closure}<T>[TraitClause0]>(move _1)
     _0 = {impl FnOnce<()> for test_crate::wrap::{closure}<T>[TraitClause0]}::call_once<T>[TraitClause0](move (*_3), move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -295,8 +295,8 @@ where
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn FnOnce<(), Output = T> + '1), &'_0 mut test_crate::wrap::{closure}<T>[TraitClause0]>(move dyn_self)
-    drop[{impl Destruct for test_crate::wrap::{closure}<T>[TraitClause0]}::drop_glue<'3, T>[TraitClause0]] (*target_self)
+    target_self = concretize<&'_0 mut test_crate::wrap::{closure}<T>[TraitClause0]>(move dyn_self)
+    drop[{impl Destruct for test_crate::wrap::{closure}<T>[TraitClause0]}::drop_glue<'2, T>[TraitClause0]] (*target_self)
     ↳⚡ storage_dead(target_self)
         storage_dead(dyn_self)
         unwind_continue
@@ -353,7 +353,7 @@ where
             unwind_terminate
         storage_dead(x)
         unwind_continue
-    _2 = unsize_cast<Box<test_crate::wrap::{closure}<T>[TraitClause0]>[{built_in impl MetaSized for test_crate::wrap::{closure}<T>[TraitClause0]}, {built_in impl Sized for Global}], Box<(dyn FnOnce<(), Output = T> + '13)>[{built_in impl MetaSized for (dyn FnOnce<(), Output = T> + '15)}, {built_in impl Sized for Global}], &{impl FnOnce<()> for test_crate::wrap::{closure}<T>[TraitClause0]}::{vtable}<T>[TraitClause0]>(move _3)
+    _2 = unsize_cast<Box<(dyn FnOnce<(), Output = T> + '13)>[{built_in impl MetaSized for (dyn FnOnce<(), Output = T> + '15)}, {built_in impl Sized for Global}], &{impl FnOnce<()> for test_crate::wrap::{closure}<T>[TraitClause0]}::{vtable}<T>[TraitClause0]>(move _3)
     conditional_drop[impl_Destruct_for_Box::drop_glue<'16, test_crate::wrap::{closure}<T>[TraitClause0], Global>[{built_in impl MetaSized for test_crate::wrap::{closure}<T>[TraitClause0]}, {built_in impl Sized for Global}]] _3
     ↳⚡ conditional_drop[{impl Destruct for test_crate::wrap::{closure}<T>[TraitClause0]}::drop_glue<'12, T>[TraitClause0]] _4
         ↳⚡ storage_dead(x)
@@ -365,7 +365,7 @@ where
         unwind_continue
     storage_dead(_4)
     storage_dead(_3)
-    _0 = unsize_cast<Box<(dyn FnOnce<(), Output = T> + '9)>[{built_in impl MetaSized for (dyn FnOnce<(), Output = T> + '11)}, {built_in impl Sized for Global}], Box<(dyn FnOnce<(), Output = T> + '18)>[{built_in impl MetaSized for (dyn FnOnce<(), Output = T> + '20)}, {built_in impl Sized for Global}],  at []>(move _2)
+    _0 = unsize_cast<Box<(dyn FnOnce<(), Output = T> + '18)>[{built_in impl MetaSized for (dyn FnOnce<(), Output = T> + '20)}, {built_in impl Sized for Global}],  at []>(move _2)
     conditional_drop[impl_Destruct_for_Box::drop_glue<'35, (dyn FnOnce<(), Output = T> + '30), Global>[{built_in impl MetaSized for (dyn FnOnce<(), Output = T> + '30)}, {built_in impl Sized for Global}]] _2
     ↳⚡ conditional_drop[{built_in impl Destruct for T}::drop_glue<'17>] x
         ↳⚡ storage_dead(x)
@@ -454,7 +454,7 @@ extern "rust-call" fn {impl FnOnce<(&'_0 u32,)> for test_crate::main::{closure#3
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<*mut (dyn FnOnce<(&'_0 u32,), Output = u32> + '2), *mut test_crate::main::{closure#3}>(move _1)
+    _3 = concretize<*mut test_crate::main::{closure#3}>(move _1)
     _0 = {impl FnOnce<(&'_0 u32,)> for test_crate::main::{closure#3}}::call_once<'_0>(move (*_3), move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -478,7 +478,7 @@ where
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_1 mut (dyn FnOnce<(&'_0 u32,), Output = u32> + '2), &'_1 mut test_crate::main::{closure#3}>(move dyn_self)
+    target_self = concretize<&'_1 mut test_crate::main::{closure#3}>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -499,7 +499,7 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<&'_1 mut (dyn FnMut<(&'_0 u32,), ImpliedClause1::Output = u32> + '3), &'_1 mut test_crate::main::{closure#3}>(move _1)
+    _3 = concretize<&'_1 mut test_crate::main::{closure#3}>(move _1)
     _0 = {impl FnMut<(&'_0 u32,)> for test_crate::main::{closure#3}}::call_mut<'_0, '_1>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -523,7 +523,7 @@ where
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_1 mut (dyn FnMut<(&'_0 u32,), ImpliedClause1::Output = u32> + '3), &'_1 mut test_crate::main::{closure#3}>(move dyn_self)
+    target_self = concretize<&'_1 mut test_crate::main::{closure#3}>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -544,7 +544,7 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<&'_1 (dyn Fn<(&'_0 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '4), &'_1 test_crate::main::{closure#3}>(move _1)
+    _3 = concretize<&'_1 test_crate::main::{closure#3}>(move _1)
     _0 = {impl Fn<(&'_0 u32,)> for test_crate::main::{closure#3}}::call<'_0, '_1>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -568,7 +568,7 @@ where
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_1 mut (dyn Fn<(&'_0 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '4), &'_1 mut test_crate::main::{closure#3}>(move dyn_self)
+    target_self = concretize<&'_1 mut test_crate::main::{closure#3}>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -655,7 +655,7 @@ extern "rust-call" fn {impl FnOnce<()> for test_crate::main::{closure#2}}::{vtab
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<*mut (dyn FnOnce<(), Output = Droppable> + '1), *mut test_crate::main::{closure#2}>(move _1)
+    _3 = concretize<*mut test_crate::main::{closure#2}>(move _1)
     _0 = {impl FnOnce<()> for test_crate::main::{closure#2}}::call_once(move (*_3), move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -677,8 +677,8 @@ unsafe fn {impl FnOnce<()> for test_crate::main::{closure#2}}::{vtable_drop_shim
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn FnOnce<(), Output = Droppable> + '1), &'_0 mut test_crate::main::{closure#2}>(move dyn_self)
-    drop[{impl Destruct for test_crate::main::{closure#2}}::drop_glue<'3>] (*target_self)
+    target_self = concretize<&'_0 mut test_crate::main::{closure#2}>(move dyn_self)
+    drop[{impl Destruct for test_crate::main::{closure#2}}::drop_glue<'2>] (*target_self)
     ↳⚡ storage_dead(target_self)
         storage_dead(dyn_self)
         unwind_continue
@@ -793,7 +793,7 @@ extern "rust-call" fn {impl FnOnce<(u32,)> for test_crate::main::{closure#1}<'_0
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<*mut (dyn FnOnce<(u32,), Output = u32> + '1), *mut test_crate::main::{closure#1}<'_0>>(move _1)
+    _3 = concretize<*mut test_crate::main::{closure#1}<'_0>>(move _1)
     _0 = {impl FnOnce<(u32,)> for test_crate::main::{closure#1}<'_0>}::call_once<'_0>(move (*_3), move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -815,7 +815,7 @@ unsafe fn {impl FnOnce<(u32,)> for test_crate::main::{closure#1}<'_0>}::{vtable_
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_1 mut (dyn FnOnce<(u32,), Output = u32> + '1), &'_1 mut test_crate::main::{closure#1}<'_0>>(move dyn_self)
+    target_self = concretize<&'_1 mut test_crate::main::{closure#1}<'_0>>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -834,7 +834,7 @@ extern "rust-call" fn {impl FnMut<(u32,)> for test_crate::main::{closure#1}<'_0>
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<&'_1 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '1), &'_1 mut test_crate::main::{closure#1}<'_0>>(move _1)
+    _3 = concretize<&'_1 mut test_crate::main::{closure#1}<'_0>>(move _1)
     _0 = {impl FnMut<(u32,)> for test_crate::main::{closure#1}<'_0>}::call_mut<'_0, '_1>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -856,7 +856,7 @@ unsafe fn {impl FnMut<(u32,)> for test_crate::main::{closure#1}<'_0>}::{vtable_d
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_1 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '1), &'_1 mut test_crate::main::{closure#1}<'_0>>(move dyn_self)
+    target_self = concretize<&'_1 mut test_crate::main::{closure#1}<'_0>>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -875,7 +875,7 @@ extern "rust-call" fn {impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<&'_1 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '1), &'_1 test_crate::main::{closure#1}<'_0>>(move _1)
+    _3 = concretize<&'_1 test_crate::main::{closure#1}<'_0>>(move _1)
     _0 = {impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::call<'_0, '_1>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -897,7 +897,7 @@ unsafe fn {impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::{vtable_drop
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_1 mut (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '1), &'_1 mut test_crate::main::{closure#1}<'_0>>(move dyn_self)
+    target_self = concretize<&'_1 mut test_crate::main::{closure#1}<'_0>>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -1019,7 +1019,7 @@ extern "rust-call" fn {impl FnOnce<(u32,)> for test_crate::main::{closure}}::{vt
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<*mut (dyn FnOnce<(u32,), Output = u32> + '1), *mut test_crate::main::{closure}>(move _1)
+    _3 = concretize<*mut test_crate::main::{closure}>(move _1)
     _0 = {impl FnOnce<(u32,)> for test_crate::main::{closure}}::call_once(move (*_3), move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -1041,7 +1041,7 @@ unsafe fn {impl FnOnce<(u32,)> for test_crate::main::{closure}}::{vtable_drop_sh
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn FnOnce<(u32,), Output = u32> + '1), &'_0 mut test_crate::main::{closure}>(move dyn_self)
+    target_self = concretize<&'_0 mut test_crate::main::{closure}>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -1060,7 +1060,7 @@ extern "rust-call" fn {impl FnMut<(u32,)> for test_crate::main::{closure}}::{vta
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<&'_0 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '1), &'_0 mut test_crate::main::{closure}>(move _1)
+    _3 = concretize<&'_0 mut test_crate::main::{closure}>(move _1)
     _0 = {impl FnMut<(u32,)> for test_crate::main::{closure}}::call_mut<'_0>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -1082,7 +1082,7 @@ unsafe fn {impl FnMut<(u32,)> for test_crate::main::{closure}}::{vtable_drop_shi
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn FnMut<(u32,), ImpliedClause1::Output = u32> + '1), &'_0 mut test_crate::main::{closure}>(move dyn_self)
+    target_self = concretize<&'_0 mut test_crate::main::{closure}>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -1101,7 +1101,7 @@ extern "rust-call" fn {impl Fn<(u32,)> for test_crate::main::{closure}}::{vtable
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<&'_0 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '1), &'_0 test_crate::main::{closure}>(move _1)
+    _3 = concretize<&'_0 test_crate::main::{closure}>(move _1)
     _0 = {impl Fn<(u32,)> for test_crate::main::{closure}}::call<'_0>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -1123,7 +1123,7 @@ unsafe fn {impl Fn<(u32,)> for test_crate::main::{closure}}::{vtable_drop_shim}<
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '1), &'_0 mut test_crate::main::{closure}>(move dyn_self)
+    target_self = concretize<&'_0 mut test_crate::main::{closure}>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -1225,7 +1225,7 @@ fn main()
     _31 = move _32
     _3 = &(*_31)
     _2 = &(*_3)
-    f = unsize_cast<&'6 test_crate::main::{closure}, &'75 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '76), &{impl Fn<(u32,)> for test_crate::main::{closure}}::{vtable}>(move _2)
+    f = unsize_cast<&'75 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '76), &{impl Fn<(u32,)> for test_crate::main::{closure}}::{vtable}>(move _2)
     storage_dead(_2)
     fake_read(f)
     set_type(typeof(f) == &'77 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '78))
@@ -1257,7 +1257,7 @@ fn main()
     storage_dead(_12)
     _10 = &_11
     _9 = &(*_10)
-    g = unsize_cast<&'15 test_crate::main::{closure#1}<'16>, &'85 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '86), &{impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::{vtable}<'92>>(move _9)
+    g = unsize_cast<&'85 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '86), &{impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::{vtable}<'92>>(move _9)
     storage_dead(_9)
     fake_read(g)
     set_type(typeof(g) == &'93 (dyn Fn<(u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '94))
@@ -1317,7 +1317,7 @@ fn main()
         storage_dead(_30)
         storage_dead(_29)
         unwind_continue
-    _h = unsize_cast<Box<test_crate::main::{closure#2}>[{built_in impl MetaSized for test_crate::main::{closure#2}}, {built_in impl Sized for Global}], Box<(dyn FnOnce<(), Output = Droppable> + '100)>[{built_in impl MetaSized for (dyn FnOnce<(), Output = Droppable> + '102)}, {built_in impl Sized for Global}], &{impl FnOnce<()> for test_crate::main::{closure#2}}::{vtable}>(move _18)
+    _h = unsize_cast<Box<(dyn FnOnce<(), Output = Droppable> + '100)>[{built_in impl MetaSized for (dyn FnOnce<(), Output = Droppable> + '102)}, {built_in impl Sized for Global}], &{impl FnOnce<()> for test_crate::main::{closure#2}}::{vtable}>(move _18)
     conditional_drop[impl_Destruct_for_Box::drop_glue<'103, test_crate::main::{closure#2}, Global>[{built_in impl MetaSized for test_crate::main::{closure#2}}, {built_in impl Sized for Global}]] _18
     ↳⚡ conditional_drop[{impl Destruct for test_crate::main::{closure#2}}::drop_glue<'99>] _19
         ↳⚡ storage_dead(_31)
@@ -1408,7 +1408,7 @@ fn main()
     _30 = move _33
     _23 = &(*_30)
     _22 = &(*_23)
-    k = unsize_cast<&'59 test_crate::main::{closure#3}, &'124 (dyn for<'_0_2> Fn<(&'_0_2 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '125), &{impl Fn<(&'_0 u32,)> for test_crate::main::{closure#3}}::{vtable}<'132>>(move _22)
+    k = unsize_cast<&'124 (dyn for<'_0_2> Fn<(&'_0_2 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '125), &{impl Fn<(&'_0 u32,)> for test_crate::main::{closure#3}}::{vtable}<'132>>(move _22)
     storage_dead(_22)
     fake_read(k)
     set_type(typeof(k) == &'134 (dyn for<'_0_2> Fn<(&'_0_2 u32,), ImpliedClause1::ImpliedClause1::Output = u32> + '135))

@@ -1084,10 +1084,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         let shim_ty = TyKind::FnPtr(self.drop_glue_fn_ptr_sig(dyn_self)).into_ty();
                         let shim =
                             ConstantExpr::new(ConstantExprKind::FnPtr(drop_shim), shim_ty.clone());
-                        mk(ConstantExprKind::Cast(
-                            shim,
-                            CastKind::RawPtr(shim_ty, ty.clone()),
-                        ))
+                        mk(ConstantExprKind::Cast(shim, CastKind::RawPtr(ty.clone())))
                     } else {
                         mk(ConstantExprKind::FnPtr(drop_shim))
                     }
@@ -1105,10 +1102,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         VtableMethodValue::Cast(cast_ty, method) => {
                             let method =
                                 ConstantExpr::new(ConstantExprKind::FnPtr(method), cast_ty.clone());
-                            mk(ConstantExprKind::Cast(
-                                method,
-                                CastKind::RawPtr(cast_ty, ty.clone()),
-                            ))
+                            mk(ConstantExprKind::Cast(method, CastKind::RawPtr(ty.clone())))
                         }
                     }
                 }
@@ -1136,7 +1130,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     /// local target_self@(N+1) : TargetReceiverTy;
     /// // perform some conversion to cast / re-box the shim receiver to the target receiver
     /// ...
-    /// target_self@(N+1) := concretize_cast<ShimReceiverTy, TargetReceiverTy>(shim_self@1);
+    /// target_self@(N+1) := concretize<TargetReceiverTy>(shim_self@1);
     /// // call the impl function and assign the result to ret@0
     /// ret@0 := impl_func(target_self@(N+1), arg1@2, ..., argN@N);
     /// ```
@@ -1144,7 +1138,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     /// For a method that takes `self: Self` by value, the shim receiver is `*mut dyn Trait`, so
     /// we concretize the pointer and move out of it:
     /// ```ignore
-    /// target_self@(N+1) := concretize_cast<*mut dyn Trait, *mut TargetReceiverTy>(shim_self@1);
+    /// target_self@(N+1) := concretize<*mut TargetReceiverTy>(shim_self@1);
     /// ret@0 := impl_func(move (*target_self@(N+1)), arg1@2, ..., argN@N);
     /// ```
     fn translate_vtable_shim_body(
@@ -1183,10 +1177,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // FIXME: need to unpack & re-pack the structure for cases like `Rc`, `Arc`, `Pin` and
         // (when --raw-boxes is on) `Box`
         let rval = Rvalue::UnaryOp(
-            UnOp::Cast(CastKind::Concretize(
-                shim_self.ty().clone(),
-                target_self.ty().clone(),
-            )),
+            UnOp::Cast(CastKind::Concretize(target_self.ty().clone())),
             Operand::Move(shim_self.clone()),
         );
         builder.push_statement(StatementKind::Assign(target_self.clone(), rval));
@@ -1209,7 +1200,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     /// // the target receiver of the drop_shim
     /// local target_self@2 : TargetReceiverTy;
     /// // perform some conversion to cast / re-box the drop_shim receiver to the target receiver
-    /// target_self@2 := concretize_cast<ShimReceiverTy, TargetReceiverTy>(shim_self@1);
+    /// target_self@2 := concretize<TargetReceiverTy>(shim_self@1);
     /// Drop(*target_self@2);
     /// ```
     fn translate_vtable_drop_shim_body(
@@ -1227,10 +1218,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Perform the core concretization cast.
         let rval = Rvalue::UnaryOp(
-            UnOp::Cast(CastKind::Concretize(
-                dyn_self.ty().clone(),
-                target_self.ty().clone(),
-            )),
+            UnOp::Cast(CastKind::Concretize(target_self.ty().clone())),
             Operand::Move(dyn_self.clone()),
         );
         builder.push_statement(StatementKind::Assign(target_self.clone(), rval));

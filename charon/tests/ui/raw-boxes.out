@@ -44,7 +44,7 @@ pub fn core::ptr::non_null::{NonNull<T>}::as_ptr<T>(self: NonNull<T>) -> *mut T
     storage_live(_0)
     storage_live(_2)
     _2 = copy self
-    _0 = transmute<NonNull<T>, *mut T>(move _2)
+    _0 = transmute<*mut T>(move _2)
     storage_dead(_2)
     return
 }
@@ -69,10 +69,10 @@ where
     _4 = core::ptr::non_null::{NonNull<T>}::as_ptr<T>(move _5)
     ↳⚡ unwind_continue
     storage_dead(_5)
-    _3 = cast<*mut T, *mut U>(move _4)
+    _3 = cast<*mut U>(move _4)
     _2 = copy _3
     storage_dead(_4)
-    _0 = transmute<*mut U, NonNull<U>>(move _2)
+    _0 = transmute<NonNull<U>>(move _2)
     storage_dead(_3)
     storage_dead(_2)
     return
@@ -140,7 +140,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = copy self
-    _2 = cast<*mut [T], *const [T]>(move _3)
+    _2 = cast<*const [T]>(move _3)
     storage_dead(_3)
     _0 = metadata<[T]>(move _2)
     ↳⚡ unwind_continue
@@ -335,7 +335,7 @@ where
             storage_live(n)
             n = copy _1
             storage_live(_3)
-            _3 = cast<isize, usize>(copy core::num::{isize}::MAX)
+            _3 = cast<usize>(copy core::num::{isize}::MAX)
             storage_live(_4)
             _4 = copy n
             _5 = copy _4 == const 0usize
@@ -475,7 +475,7 @@ pub unsafe fn core::mem::alignment::{Alignment}::new_unchecked(align: usize) -> 
     storage_dead(_2)
     storage_live(_5)
     _5 = copy align
-    _0 = transmute<usize, Alignment>(move _5)
+    _0 = transmute<Alignment>(move _5)
     storage_dead(_5)
     return
 }
@@ -640,7 +640,7 @@ where
         storage_live(_6)
         storage_live(_7)
         _7 = copy dst
-        _6 = cast<*mut T, *const ()>(move _7)
+        _6 = cast<*const ()>(move _7)
         storage_dead(_7)
         storage_live(_8)
         _8 = core::mem::align_of<T>[TraitClause0]()
@@ -910,7 +910,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut 
         storage_live(_16)
         storage_live(_17)
         _17 = copy dst
-        _16 = cast<*mut (), *const ()>(move _17)
+        _16 = cast<*const ()>(move _17)
         storage_dead(_17)
         storage_live(_18)
         _18 = copy align
@@ -927,7 +927,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut 
             storage_live(_21)
             storage_live(_22)
             _22 = copy dst
-            _21 = cast<*mut (), *const ()>(move _22)
+            _21 = cast<*const ()>(move _22)
             storage_dead(_22)
             storage_live(_23)
             _23 = copy size
@@ -1020,12 +1020,12 @@ where
         storage_live(_6)
         storage_live(_7)
         _7 = copy src
-        _6 = cast<*const T, *const ()>(move _7)
+        _6 = cast<*const ()>(move _7)
         storage_dead(_7)
         storage_live(_8)
         storage_live(_9)
         _9 = copy dst
-        _8 = cast<*mut T, *mut ()>(move _9)
+        _8 = cast<*mut ()>(move _9)
         storage_dead(_9)
         storage_live(_10)
         _10 = core::mem::size_of<T>[TraitClause0]()
@@ -1185,7 +1185,7 @@ where
     _25 = copy ptr
     _24 = core::ptr::non_null::{NonNull<T>}::as_ptr<u8>(move _25)
     ↳⚡ unwind_continue
-    _23 = cast<*mut u8, *const u8>(move _24)
+    _23 = cast<*const u8>(move _24)
     storage_dead(_25)
     storage_dead(_24)
     storage_live(_26)
@@ -1352,7 +1352,7 @@ where
     _25 = copy ptr
     _24 = core::ptr::non_null::{NonNull<T>}::as_ptr<u8>(move _25)
     ↳⚡ unwind_continue
-    _23 = cast<*mut u8, *const u8>(move _24)
+    _23 = cast<*const u8>(move _24)
     storage_dead(_25)
     storage_dead(_24)
     storage_live(_26)
@@ -1519,7 +1519,7 @@ where
     _25 = copy ptr
     _24 = core::ptr::non_null::{NonNull<T>}::as_ptr<u8>(move _25)
     ↳⚡ unwind_continue
-    _23 = cast<*mut u8, *const u8>(move _24)
+    _23 = cast<*const u8>(move _24)
     storage_dead(_25)
     storage_dead(_24)
     storage_live(_26)
@@ -1676,7 +1676,7 @@ where
     storage_live(_2)
     storage_live(_3)
     _3 = copy self
-    _2 = cast<*const T, *const U>(move _3)
+    _2 = cast<*const U>(move _3)
     _0 = copy _2
     storage_dead(_3)
     storage_dead(_2)
@@ -1698,7 +1698,7 @@ pub fn addr<T>(self: *const T) -> usize
     _2 = core::ptr::const_ptr::{*const T}::cast<T, ()>[{built_in impl Sized for ()}](move _3)
     ↳⚡ unwind_continue
     storage_dead(_3)
-    _0 = transmute<*const (), usize>(move _2)
+    _0 = transmute<usize>(move _2)
     storage_dead(_2)
     return
 }
@@ -1737,7 +1737,7 @@ pub fn core::ptr::const_ptr::{*const T}::is_null<T>(self: *const T) -> bool
     storage_live(ptr)
     storage_live(_3)
     _3 = copy self
-    ptr = cast<*const T, *const u8>(move _3)
+    ptr = cast<*const u8>(move _3)
     storage_dead(_3)
     storage_live(_4)
     storage_live(_5)
@@ -1785,9 +1785,9 @@ pub fn cast_const<T>(self: *mut T) -> *const T
     storage_live(_3)
     storage_live(_4)
     _4 = copy self
-    _3 = cast<*mut T, *const T>(move _4)
+    _3 = cast<*const T>(move _4)
     storage_dead(_4)
-    _2 = cast<*const T, *const T>(move _3)
+    _2 = cast<*const T>(move _3)
     _0 = copy _2
     storage_dead(_3)
     storage_dead(_2)
@@ -1875,7 +1875,7 @@ pub unsafe fn core::ptr::non_null::{NonNull<T>}::new_unchecked<T>(ptr: *mut T) -
         storage_live(_4)
         storage_live(_5)
         _5 = copy ptr
-        _4 = cast<*mut T, *mut ()>(move _5)
+        _4 = cast<*mut ()>(move _5)
         storage_dead(_5)
         _3 = core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(move _4)
         ↳⚡ undefined_behavior
@@ -1886,7 +1886,7 @@ pub unsafe fn core::ptr::non_null::{NonNull<T>}::new_unchecked<T>(ptr: *mut T) -
     storage_dead(_2)
     storage_live(_6)
     _6 = copy ptr
-    _0 = transmute<*mut T, NonNull<T>>(move _6)
+    _0 = transmute<NonNull<T>>(move _6)
     storage_dead(_6)
     return
 }
@@ -2036,7 +2036,7 @@ where
     _6 = copy ptr
     _5 = core::ptr::unique::{Unique<T>}::as_ptr<T>(move _6)
     ↳⚡ unwind_continue
-    _4 = cast<*mut T, *const T>(move _5)
+    _4 = cast<*const T>(move _5)
     storage_dead(_6)
     storage_dead(_5)
     layout = for_value_raw<T>[TraitClause0](move _4)
@@ -2112,7 +2112,7 @@ where
     storage_live(_5)
     storage_live(_6)
     _0 = ()
-    _6 = transmute<NonNull<T>, *const T>(copy (*_1)._0.pointer)
+    _6 = transmute<*const T>(copy (*_1)._0.pointer)
     drop[{built_in impl Destruct for T}::drop_glue<'4>] (*_6)
     ↳⚡ _4 = &mut (*_1)
         _5 = drop<'8, T, A>[TraitClause0, TraitClause1, TraitClause2](move _4)
@@ -2232,7 +2232,7 @@ where
         drop[{built_in impl Destruct for T}::drop_glue<'0>] x
         ↳⚡ unwind_terminate
         unwind_continue
-    _3 = cast<*mut u8, *mut T>(move _4)
+    _3 = cast<*mut T>(move _4)
     ptr = copy _3
     storage_dead(_4)
     storage_dead(_3)
@@ -2243,7 +2243,7 @@ where
     storage_dead(_5)
     storage_live(_6)
     _6 = copy ptr
-    _0 = transmute<*mut T, Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl#0}]>(move _6)
+    _0 = transmute<Box<T, Global>[TraitClause0::ImpliedClause0, {built_in impl Sized for Global}, {impl#0}]>(move _6)
     storage_dead(_6)
     storage_dead(ptr)
     return
@@ -2336,7 +2336,7 @@ where
     ↳⚡ unwind_continue
     storage_dead(_7)
     _8 = copy (*_6)
-    _9 = transmute<Unique<T>, *const T>(copy _8._0)
+    _9 = transmute<*const T>(copy _8._0)
     _5 = &mut (*_9) with_metadata(copy _9.metadata)
     _4 = &raw mut (*_5) with_metadata(copy _5.metadata)
     _0 = copy _4
@@ -2396,7 +2396,7 @@ where
     ↳⚡ unwind_continue
     storage_dead(_6)
     _14 = copy (*_5)
-    _15 = transmute<Unique<T>, *const T>(copy _14._0)
+    _15 = transmute<*const T>(copy _14._0)
     ptr = &raw mut (*_15) with_metadata(copy _15.metadata)
     storage_live(alloc)
     storage_live(_8)
@@ -2526,9 +2526,9 @@ unsafe fn foo()
     ↳⚡ unwind_continue
     storage_dead(_7)
     storage_live(i)
-    _9 = transmute<Unique<i32>, *const i32>(copy b_6._0)
+    _9 = transmute<*const i32>(copy b_6._0)
     i = copy (*_9)
-    _10 = transmute<Unique<i32>, *const i32>(copy b_6._0)
+    _10 = transmute<*const i32>(copy b_6._0)
     (*_10) = const 42i32
     _0 = ()
     storage_dead(i)

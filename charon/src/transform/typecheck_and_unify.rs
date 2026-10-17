@@ -679,8 +679,8 @@ impl VisitAst for TypeCheckVisitor<'_> {
         }
     }
     fn visit_rvalue(&mut self, x: &Rvalue) -> ::std::ops::ControlFlow<Self::Break> {
-        if let Rvalue::UnaryOp(UnOp::Cast(CastKind::Concretize(src, tar)), _) = x {
-            self.check_concretization_ty_match(src, tar);
+        if let Rvalue::UnaryOp(UnOp::Cast(CastKind::Concretize(tar)), operand) = x {
+            self.check_concretization_ty_match(operand.ty(), tar);
         }
         Continue(())
     }

@@ -525,40 +525,31 @@ and cast_kind_of_json (ctx : of_json_ctx) (js : json) :
     (cast_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Scalar", `List [ _0; _1 ]) ] ->
+    | `Assoc [ ("Scalar", _0) ] ->
         let* _0 = scalar_type_of_json ctx _0 in
-        let* _1 = scalar_type_of_json ctx _1 in
-        Ok (CastScalar (_0, _1))
-    | `Assoc [ ("RawPtr", `List [ _0; _1 ]) ] ->
+        Ok (CastScalar _0)
+    | `Assoc [ ("RawPtr", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        Ok (CastRawPtr (_0, _1))
-    | `Assoc [ ("PtrExposeProvenance", `List [ _0; _1 ]) ] ->
+        Ok (CastRawPtr _0)
+    | `String "PtrExposeProvenance" -> Ok CastPtrExposeProvenance
+    | `Assoc [ ("PtrWithExposedProvenance", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
-        let* _1 = scalar_type_of_json ctx _1 in
-        Ok (CastPtrExposeProvenance (_0, _1))
-    | `Assoc [ ("PtrWithExposedProvenance", `List [ _0; _1 ]) ] ->
-        let* _0 = scalar_type_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        Ok (CastPtrWithExposedProvenance (_0, _1))
+        Ok (CastPtrWithExposedProvenance _0)
     | `String "FnDefToFnPtr" -> Ok CastFnDefToFnPtr
     | `String "FnPtrToUnsafe" -> Ok CastFnPtrToUnsafe
     | `Assoc [ ("Subtype", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CastSubtype _0)
-    | `Assoc [ ("Unsize", `List [ _0; _1; _2 ]) ] ->
+    | `Assoc [ ("Unsize", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        let* _2 = unsizing_metadata_of_json ctx _2 in
-        Ok (CastUnsize (_0, _1, _2))
-    | `Assoc [ ("Transmute", `List [ _0; _1 ]) ] ->
+        let* _1 = unsizing_metadata_of_json ctx _1 in
+        Ok (CastUnsize (_0, _1))
+    | `Assoc [ ("Transmute", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        Ok (CastTransmute (_0, _1))
-    | `Assoc [ ("Concretize", `List [ _0; _1 ]) ] ->
+        Ok (CastTransmute _0)
+    | `Assoc [ ("Concretize", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        Ok (CastConcretize (_0, _1))
+        Ok (CastConcretize _0)
     | _ -> Error "")
 
 and const_generic_param_of_json (ctx : of_json_ctx) (js : json) :
