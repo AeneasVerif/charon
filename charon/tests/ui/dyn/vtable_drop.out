@@ -368,7 +368,7 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<&'_0 mut (dyn Modifiable<T> + '1), &'_0 mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]>(move _1)
+    _3 = concretize<&'_0 mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]>(move _1)
     _0 = modify<'_0, '_1, T>[TraitClause0, TraitClause1, TraitClause2](move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -395,8 +395,8 @@ where
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn Modifiable<T> + '1), &'_0 mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]>(move dyn_self)
-    drop[impl_Destruct_for_Box::drop_glue<'3, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]] (*target_self)
+    target_self = concretize<&'_0 mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]>(move dyn_self)
+    drop[impl_Destruct_for_Box::drop_glue<'2, i32, Global>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]] (*target_self)
     ↳⚡ storage_dead(target_self)
         storage_dead(dyn_self)
         unwind_continue
@@ -455,7 +455,7 @@ where
         unwind_continue
     _4 = &mut _5
     _3 = &mut (*_4)
-    x = unsize_cast<&'8 mut Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}], &'13 mut (dyn Modifiable<T> + '14), &impl_Modifiable_for_Box_i32_Global::{vtable}<T>[TraitClause0, TraitClause1, TraitClause2]>(move _3)
+    x = unsize_cast<&'13 mut (dyn Modifiable<T> + '14), &impl_Modifiable_for_Box_i32_Global::{vtable}<T>[TraitClause0, TraitClause1, TraitClause2]>(move _3)
     storage_dead(_3)
     storage_dead(_4)
     storage_live(_6)

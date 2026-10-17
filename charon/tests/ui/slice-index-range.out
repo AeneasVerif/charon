@@ -866,7 +866,7 @@ where
     storage_live(_5)
     storage_live(_6)
     _6 = copy ptr_1
-    _5 = cast<*const [T], *const T>(move _6)
+    _5 = cast<*const T>(move _6)
     ptr_4 = copy _5
     storage_dead(_6)
     storage_dead(_5)
@@ -916,7 +916,7 @@ where
     storage_live(_5)
     storage_live(_6)
     _6 = copy ptr_1
-    _5 = cast<*mut [T], *mut T>(move _6)
+    _5 = cast<*mut T>(move _6)
     ptr_4 = copy _5
     storage_dead(_6)
     storage_dead(_5)

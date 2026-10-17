@@ -475,37 +475,29 @@ and cast_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      match __tag with
      | 0 ->
          let* _0 = scalar_type_of_postcard ctx st in
-         let* _1 = scalar_type_of_postcard ctx st in
-         Ok (CastScalar (_0, _1))
+         Ok (CastScalar _0)
      | 1 ->
          let* _0 = ty_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         Ok (CastRawPtr (_0, _1))
-     | 2 ->
-         let* _0 = ty_of_postcard ctx st in
-         let* _1 = scalar_type_of_postcard ctx st in
-         Ok (CastPtrExposeProvenance (_0, _1))
+         Ok (CastRawPtr _0)
+     | 2 -> Ok CastPtrExposeProvenance
      | 3 ->
-         let* _0 = scalar_type_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         Ok (CastPtrWithExposedProvenance (_0, _1))
-     | 4 ->
          let* _0 = ty_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         Ok (CastFnPtr (_0, _1))
-     | 5 ->
-         let* _0 = ty_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         let* _2 = unsizing_metadata_of_postcard ctx st in
-         Ok (CastUnsize (_0, _1, _2))
+         Ok (CastPtrWithExposedProvenance _0)
+     | 4 -> Ok CastFnDefToFnPtr
+     | 5 -> Ok CastFnPtrToUnsafe
      | 6 ->
          let* _0 = ty_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         Ok (CastTransmute (_0, _1))
+         Ok (CastSubtype _0)
      | 7 ->
          let* _0 = ty_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         Ok (CastConcretize (_0, _1))
+         let* _1 = unsizing_metadata_of_postcard ctx st in
+         Ok (CastUnsize (_0, _1))
+     | 8 ->
+         let* _0 = ty_of_postcard ctx st in
+         Ok (CastTransmute _0)
+     | 9 ->
+         let* _0 = ty_of_postcard ctx st in
+         Ok (CastConcretize _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and const_generic_param_of_postcard (ctx : of_postcard_ctx)
@@ -582,7 +574,7 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          Ok (CFnPtr _0)
      | 12 ->
          let* _0 = constant_expr_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
+         let* _1 = cast_kind_of_postcard ctx st in
          Ok (CCast (_0, _1))
      | 13 ->
          let* _0 = big_uint_of_postcard ctx st in
@@ -1178,7 +1170,8 @@ and region_param_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* name = option_of_postcard string_of_postcard ctx st in
      let* variance = variance_of_postcard ctx st in
      let* mutability = lifetime_mutability_of_postcard ctx st in
-     Ok ({ index; name; variance; mutability } : region_param))
+     let* late_bound = bool_of_postcard ctx st in
+     Ok ({ index; name; variance; mutability; late_bound } : region_param))
 
 and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (rvalue, string) result =

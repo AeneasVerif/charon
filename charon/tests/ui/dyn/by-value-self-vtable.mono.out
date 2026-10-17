@@ -92,7 +92,7 @@ fn impl_Consume_for_S::read::{vtable_method}<'_0>(_1: &'_0 (dyn Consume)) -> u32
 
     storage_live(_0)
     storage_live(_2)
-    _2 = concretize<&'_0 (dyn Consume + '1), &'_0 S>(move _1)
+    _2 = concretize<&'_0 S>(move _1)
     _0 = impl_Consume_for_S::read<'_0>(move _2)
     ↳⚡ storage_dead(_2)
         storage_dead(_1)
@@ -123,7 +123,7 @@ fn impl_Consume_for_S::consume::{vtable_method}(_1: *mut (dyn Consume)) -> u32
 
     storage_live(_0)
     storage_live(_2)
-    _2 = concretize<*mut (dyn Consume + '1), *mut S>(move _1)
+    _2 = concretize<*mut S>(move _1)
     _0 = impl_Consume_for_S::consume(move (*_2))
     ↳⚡ storage_dead(_2)
         storage_dead(_1)
@@ -143,7 +143,7 @@ unsafe fn impl_Consume_for_S::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Co
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn Consume + '1), &'_0 mut S>(move dyn_self)
+    target_self = concretize<&'_0 mut S>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -179,7 +179,7 @@ fn {impl Consume for *mut u32}::read::{vtable_method}<'_0>(_1: &'_0 (dyn Consume
 
     storage_live(_0)
     storage_live(_2)
-    _2 = concretize<&'_0 (dyn Consume + '1), &'_0 *mut u32>(move _1)
+    _2 = concretize<&'_0 *mut u32>(move _1)
     _0 = {impl Consume for *mut u32}::read<'_0>(move _2)
     ↳⚡ storage_dead(_2)
         storage_dead(_1)
@@ -210,7 +210,7 @@ fn {impl Consume for *mut u32}::consume::{vtable_method}(_1: *mut (dyn Consume))
 
     storage_live(_0)
     storage_live(_2)
-    _2 = concretize<*mut (dyn Consume + '1), *mut *mut u32>(move _1)
+    _2 = concretize<*mut *mut u32>(move _1)
     _0 = {impl Consume for *mut u32}::consume(move (*_2))
     ↳⚡ storage_dead(_2)
         storage_dead(_1)
@@ -230,7 +230,7 @@ unsafe fn {impl Consume for *mut u32}::{vtable_drop_shim}<'_0>(dyn_self: &'_0 mu
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn Consume + '1), &'_0 mut *mut u32>(move dyn_self)
+    target_self = concretize<&'_0 mut *mut u32>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -260,12 +260,12 @@ fn mk() -> Box::<(dyn Consume), Global>
     _3 = S { _0: const 42u32 }
     _2 = alloc::boxed::{Box::<S, Global>}::new::<S>(move _3)
     ↳⚡ unwind_continue
-    _1 = unsize_cast<Box::<S, Global>, Box::<(dyn Consume), Global>, &impl_Consume_for_S::{vtable}>(move _2)
+    _1 = unsize_cast<Box::<(dyn Consume), Global>, &impl_Consume_for_S::{vtable}>(move _2)
     conditional_drop[{impl Destruct for Box::<S, Global>}::drop_glue::<S, Global><'0>] _2
     ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)
-    _0 = unsize_cast<Box::<(dyn Consume), Global>, Box::<(dyn Consume), Global>,  at []>(move _1)
+    _0 = unsize_cast<Box::<(dyn Consume), Global>,  at []>(move _1)
     conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'1>] _1
     ↳⚡ unwind_continue
     storage_dead(_1)
@@ -289,13 +289,13 @@ fn mk_ptr(x: *mut u32) -> Box::<(dyn Consume), Global>
     _3 = alloc::boxed::{Box::<*mut u32, Global>}::new::<*mut u32>(move _4)
     ↳⚡ storage_dead(x)
         unwind_continue
-    _2 = unsize_cast<Box::<*mut u32, Global>, Box::<(dyn Consume), Global>, &{impl Consume for *mut u32}::{vtable}>(move _3)
+    _2 = unsize_cast<Box::<(dyn Consume), Global>, &{impl Consume for *mut u32}::{vtable}>(move _3)
     conditional_drop[{impl Destruct for Box::<*mut u32, Global>}::drop_glue::<*mut u32, Global><'0>] _3
     ↳⚡ storage_dead(x)
         unwind_continue
     storage_dead(_4)
     storage_dead(_3)
-    _0 = unsize_cast<Box::<(dyn Consume), Global>, Box::<(dyn Consume), Global>,  at []>(move _2)
+    _0 = unsize_cast<Box::<(dyn Consume), Global>,  at []>(move _2)
     conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'1>] _2
     ↳⚡ storage_dead(x)
         unwind_continue
@@ -330,7 +330,7 @@ fn main()
     storage_live(_3)
     _3 = &(*x) with_metadata(copy x.metadata)
     storage_live(_10)
-    _10 = cast<*const (), fn(&'3 (dyn Consume + '4)) -> u32>(copy (*_3.metadata).method_read)
+    _10 = cast<fn(&'3 (dyn Consume + '4)) -> u32>(copy (*_3.metadata).method_read)
     _v_2 = (copy _10)(move _3)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'13>] x
         ↳⚡ storage_dead(_11)
@@ -360,7 +360,7 @@ fn main()
     storage_live(_9)
     _9 = &(*p) with_metadata(copy p.metadata)
     storage_live(_11)
-    _11 = cast<*const (), fn(&'7 (dyn Consume + '8)) -> u32>(copy (*_9.metadata).method_read)
+    _11 = cast<fn(&'7 (dyn Consume + '8)) -> u32>(copy (*_9.metadata).method_read)
     _v_8 = (copy _11)(move _9)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Consume), Global>}::drop_glue::<(dyn Consume), Global><'18>] p
         ↳⚡ storage_dead(_11)

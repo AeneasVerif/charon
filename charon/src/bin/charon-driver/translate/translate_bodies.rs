@@ -511,7 +511,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 StatementKind::Assign(
                     box_slice.clone(),
                     Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Unsize(box_array_ty, box_slice_ty, meta)),
+                        UnOp::Cast(CastKind::Unsize(box_slice_ty, meta)),
                         Operand::Move(initialized_box),
                     ),
                 )
@@ -1319,16 +1319,14 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
 
                 // Translate the operand
                 let mut operand = self.translate_operand(span, mir_operand)?;
-                let src_ty = operand.ty().clone();
 
-                let cast_kind = match cast_kind {
+                let mut cast_kind = match cast_kind {
                     mir::CastKind::IntToInt
                     | mir::CastKind::IntToFloat
                     | mir::CastKind::FloatToInt
                     | mir::CastKind::FloatToFloat => {
                         let tgt_ty = *tgt_ty.kind().as_scalar().unwrap();
-                        let src_ty = *src_ty.kind().as_scalar().unwrap();
-                        CastKind::Scalar(src_ty, tgt_ty)
+                        CastKind::Scalar(tgt_ty)
                     }
                     mir::CastKind::PtrToPtr
                     | mir::CastKind::PointerCoercion(
@@ -1339,16 +1337,11 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         ty::adjustment::PointerCoercion::ArrayToPointer,
                         ..,
                     )
-                    | mir::CastKind::FnPtrToPtr => CastKind::RawPtr(src_ty, tgt_ty),
+                    | mir::CastKind::FnPtrToPtr => CastKind::RawPtr(tgt_ty.clone()),
 
-                    mir::CastKind::PointerExposeProvenance => {
-                        CastKind::PtrExposeProvenance(src_ty, *tgt_ty.kind().as_scalar().unwrap())
-                    }
+                    mir::CastKind::PointerExposeProvenance => CastKind::PtrExposeProvenance,
                     mir::CastKind::PointerWithExposedProvenance => {
-                        CastKind::PtrWithExposedProvenance(
-                            *src_ty.kind().as_scalar().unwrap(),
-                            tgt_ty,
-                        )
+                        CastKind::PtrWithExposedProvenance(tgt_ty.clone())
                     }
                     mir::CastKind::PointerCoercion(
                         ty::adjustment::PointerCoercion::ClosureFnPointer(_),
@@ -1369,27 +1362,56 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                             ConstantExprKind::FnDef(fn_ptr),
                             src_ty.clone(),
                         ));
-                        CastKind::FnPtr(src_ty, tgt_ty)
+                        CastKind::FnDefToFnPtr
                     }
                     mir::CastKind::PointerCoercion(
-                        ty::adjustment::PointerCoercion::UnsafeFnPointer
-                        | ty::adjustment::PointerCoercion::ReifyFnPointer(_),
+                        ty::adjustment::PointerCoercion::ReifyFnPointer(_),
                         ..,
-                    ) => CastKind::FnPtr(src_ty, tgt_ty),
+                    ) => CastKind::FnDefToFnPtr,
+                    mir::CastKind::PointerCoercion(
+                        ty::adjustment::PointerCoercion::UnsafeFnPointer,
+                        ..,
+                    ) => CastKind::FnPtrToUnsafe,
                     mir::CastKind::Transmute | mir::CastKind::BoxDerefTransmute => {
-                        CastKind::Transmute(src_ty, tgt_ty)
+                        CastKind::Transmute(tgt_ty.clone())
                     }
-                    // TODO
-                    mir::CastKind::Subtype => CastKind::Transmute(src_ty, tgt_ty),
+                    mir::CastKind::Subtype => CastKind::Subtype(tgt_ty.clone()),
                     mir::CastKind::PointerCoercion(ty::adjustment::PointerCoercion::Unsize, ..) => {
                         let meta =
                             hax::compute_unsizing_metadata(&self.hax_state, op_ty, *rust_tgt_ty);
                         let meta = self.translate_unsizing_metadata(span, &meta)?;
-                        CastKind::Unsize(src_ty, tgt_ty.clone(), meta)
+                        CastKind::Unsize(tgt_ty.clone(), meta)
                     }
                 };
-                let unop = UnOp::Cast(cast_kind);
-                Ok(Rvalue::UnaryOp(unop, operand))
+
+                // We're more precise than rustc: we separate "cast to fn ptr" and "safety cast",
+                // so we reconstruct the distinction here.
+                if let CastKind::FnDefToFnPtr = cast_kind {
+                    let rustc_sig = match op_ty.kind() {
+                        ty::TyKind::FnDef(..) => op_ty.fn_sig(self.tcx),
+                        ty::TyKind::Closure(_, args) => {
+                            hax::closure_sig(self.tcx, args.as_closure())
+                        }
+                        _ => unreachable!("Expected a function definition or closure"),
+                    };
+                    let rustc_fn_ptr = ty::Ty::new_fn_ptr(self.tcx, rustc_sig);
+                    let intermediate_ty = self.translate_rustc_ty(span, &rustc_fn_ptr)?;
+                    let (TyKind::FnPtr(interm), TyKind::FnPtr(target)) =
+                        (intermediate_ty.kind(), tgt_ty.kind())
+                    else {
+                        raise_error!(self, span, "Expected function pointers in fn pointer cast")
+                    };
+                    if interm.skip_binder.is_unsafe != target.skip_binder.is_unsafe {
+                        let local = self.rval_to_place(
+                            Rvalue::UnaryOp(UnOp::Cast(CastKind::FnDefToFnPtr), operand),
+                            intermediate_ty.clone(),
+                        );
+                        operand = Operand::Move(local);
+                        cast_kind = CastKind::FnPtrToUnsafe;
+                    }
+                }
+
+                Ok(Rvalue::UnaryOp(UnOp::Cast(cast_kind), operand))
             }
             mir::Rvalue::BinaryOp(binop, (left, right)) => Ok(Rvalue::BinaryOp(
                 self.translate_binaryop_kind(span, *binop)?,

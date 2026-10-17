@@ -1,0 +1,406 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+// Full name: test_crate::identity
+fn identity<'a>(x: &'a u8) -> &'a u8
+{
+    let _0: &'1 u8; // return
+    let x: &'2 u8; // arg #1
+
+    storage_live(_0)
+    _0 = copy x
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::UNSAFE_IDENTITY
+static UNSAFE_IDENTITY: unsafe fn<'a>(&'a u8) -> &'a u8 = fn_ptr_to_unsafe(fn_def_to_fn_ptr(identity<'_>))
+
+// Full name: test_crate::widen_safety
+fn widen_safety(f: fn()) -> unsafe fn()
+{
+    let _0: unsafe fn(); // return
+    let f: fn(); // arg #1
+    let _2: fn(); // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    _2 = copy f
+    _0 = fn_ptr_to_unsafe(move _2)
+    storage_dead(_2)
+    storage_dead(f)
+    return
+}
+
+// Full name: test_crate::with_early_and_late
+fn with_early_and_late<'a, 'b>(x: &'a u8, y: &'b u8) -> &'b u8
+where
+    TraitClause0: (&'a u8: Sized),
+{
+    let _0: &'1 u8; // return
+    let x: &'2 u8; // arg #1
+    let y: &'3 u8; // arg #2
+
+    storage_live(_0)
+    _0 = copy y
+    storage_dead(y)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::from_fn_def
+fn from_fn_def<'a>(x: &'a u8) -> &'a u8
+{
+    let _0: &'1 u8; // return
+    let x: &'2 u8; // arg #1
+    let f: fn<'b>(&'b u8) -> &'b u8; // local
+    let g: unsafe fn<'b>(&'5 u8, &'b u8) -> &'b u8; // local
+    let _4: &'6 u8; // anonymous local
+    let _5: unsafe fn<'b>(&'7 u8, &'b u8) -> &'b u8; // anonymous local
+    let _6: &'8 u8; // anonymous local
+    let _7: &'9 u8; // anonymous local
+    let _8: &'10 u8; // anonymous local
+    let _9: fn<'b>(&'b u8) -> &'b u8; // anonymous local
+    let _10: &'11 u8; // anonymous local
+    let _11: fn<'b>(&'39 u8, &'b u8) -> &'b u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(f)
+    f = fn_def_to_fn_ptr(const identity<'14>)
+    fake_read(f)
+    set_type(typeof(f) == fn<'b>(&'b u8) -> &'b u8)
+    storage_live(g)
+    storage_live(_11)
+    _11 = fn_def_to_fn_ptr(const with_early_and_late<'28, '36>[{built_in impl Sized for &'30 u8}])
+    g = fn_ptr_to_unsafe(move _11)
+    fake_read(g)
+    set_type(typeof(g) == unsafe fn<'b>(&'40 u8, &'b u8) -> &'b u8)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = copy g
+    storage_live(_6)
+    _6 = copy x
+    storage_live(_7)
+    storage_live(_8)
+    storage_live(_9)
+    _9 = copy f
+    storage_live(_10)
+    _10 = &(*x)
+    _8 = (move _9)<'41>(move _10)
+    ↳⚡ storage_dead(_11)
+        storage_dead(x)
+        unwind_continue
+    _7 = &(*_8)
+    storage_dead(_10)
+    storage_dead(_9)
+    _4 = (move _5)<'42>(move _6, move _7)
+    ↳⚡ storage_dead(_11)
+        storage_dead(x)
+        unwind_continue
+    _0 = &(*_4)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(g)
+    storage_dead(f)
+    storage_dead(_8)
+    storage_dead(_4)
+    storage_dead(_11)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::from_inline_const
+fn from_inline_const<'a>(x: &'a u8) -> &'a u8
+{
+    let _0: &'1 u8; // return
+    let x: &'2 u8; // arg #1
+    let f: fn<'b>(&'b u8) -> &'b u8; // local
+    let _3: &'3 u8; // anonymous local
+    let _4: fn<'b>(&'b u8) -> &'b u8; // anonymous local
+    let _5: &'4 u8; // anonymous local
+    let _6: fn<'b>(&'b u8) -> &'b u8; // anonymous local
+    let _7: fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8; // anonymous local
+
+    storage_live(_6)
+    storage_live(_7)
+    _7 = fn_def_to_fn_ptr(const identity<'8>)
+    _6 = move _7
+    storage_live(_0)
+    storage_live(f)
+    f = move _6
+    fake_read(f)
+    set_type(typeof(f) == fn<'b>(&'b u8) -> &'b u8)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy f
+    storage_live(_5)
+    _5 = &(*x)
+    _3 = (move _4)<'5>(move _5)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    _0 = &(*_3)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(f)
+    storage_dead(_3)
+    storage_dead(x)
+    storage_dead(_7)
+    storage_dead(_6)
+    return
+}
+
+// Full name: test_crate::from_closure::{closure}
+struct {closure} {}
+
+// Full name: test_crate::from_closure::{impl Fn<(&'_1 u8, &'_0 u8)> for {closure}}::call
+fn call<'_0, '_1, '_2>(_1: &'_2 {closure}, tupled_args: (&'_1 u8, &'_0 u8)) -> &'_0 u8
+{
+    let _0: &'1 u8; // return
+    let _1: &'3 {closure}; // arg #1
+    let tupled_args: (&'_1 u8, &'_0 u8); // arg #2
+    let _3: &'4 u8; // anonymous local
+    let y: &'5 u8; // local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(y)
+    _3 = move tupled_args._0
+    y = move tupled_args._1
+    _0 = copy y
+    storage_dead(y)
+    storage_dead(_3)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::from_closure::{impl FnMut<(&'_1 u8, &'_0 u8)> for {closure}}::call_mut
+fn call_mut<'_0, '_1, '_2>(state: &'_2 mut {closure}, args: (&'_1 u8, &'_0 u8)) -> &'_0 u8
+{
+    let _0: &'_0 u8; // return
+    let state: &'_2 mut {closure}; // arg #1
+    let args: (&'_1 u8, &'_0 u8); // arg #2
+    let _3: &'2 {closure}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &(*state)
+    _0 = call<'_0, '_1, '4>(move _3, move args)
+    ↳⚡ storage_dead(_3)
+        storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::from_closure::{impl FnOnce<(&'_1 u8, &'_0 u8)> for {closure}}::call_once
+fn call_once<'_0, '_1>(_1: {closure}, _2: (&'_1 u8, &'_0 u8)) -> &'_0 u8
+{
+    let _0: &'1 u8; // return
+    let _1: {closure}; // arg #1
+    let _2: (&'10 u8, &'11 u8); // arg #2
+    let _3: &'16 mut {closure}; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &mut _1
+    _0 = call_mut<'_0, '_1, '33>(move _3, move _2)
+    ↳⚡ storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::from_closure::{closure}::{as_fn}
+fn {as_fn}<'_0, '_1>(arg1: &'_1 u8, arg2: &'_0 u8) -> &'_0 u8
+{
+    let _0: &'_0 u8; // return
+    let arg1: &'_1 u8; // arg #1
+    let arg2: &'_0 u8; // arg #2
+    let args: (&'_1 u8, &'_0 u8); // local
+    let state: {closure}; // local
+
+    storage_live(_0)
+    storage_live(args)
+    storage_live(state)
+    args = (move arg1, move arg2)
+    state = {closure} {  }
+    _0 = call_once<'_0, '_1>(move state, move args)
+    ↳⚡ storage_dead(state)
+        storage_dead(args)
+        storage_dead(arg2)
+        storage_dead(arg1)
+        unwind_continue
+    storage_dead(state)
+    storage_dead(args)
+    storage_dead(arg2)
+    storage_dead(arg1)
+    return
+}
+
+// Full name: test_crate::from_closure
+fn from_closure<'a>(x: &'a u8) -> &'a u8
+{
+    let _0: &'1 u8; // return
+    let x: &'2 u8; // arg #1
+    let f: unsafe fn<'b>(&'5 u8, &'b u8) -> &'b u8; // local
+    let _3: {closure}; // anonymous local
+    let _4: &'6 u8; // anonymous local
+    let _5: unsafe fn<'b>(&'7 u8, &'b u8) -> &'b u8; // anonymous local
+    let _6: &'8 u8; // anonymous local
+    let _7: &'9 u8; // anonymous local
+    let _8: fn<'_0_1, '_1_1>(&'_1_1 u8, &'_0_1 u8) -> &'_0_1 u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(f)
+    storage_live(_3)
+    _3 = {closure} {  }
+    storage_live(_8)
+    _8 = fn_def_to_fn_ptr(const {as_fn}<'13, '14>)
+    f = fn_ptr_to_unsafe(move _8)
+    storage_dead(_3)
+    fake_read(f)
+    set_type(typeof(f) == unsafe fn<'b>(&'15 u8, &'b u8) -> &'b u8)
+    storage_live(_4)
+    storage_live(_5)
+    _5 = copy f
+    storage_live(_6)
+    _6 = copy x
+    storage_live(_7)
+    _7 = &(*x)
+    _4 = (move _5)<'16>(move _6, move _7)
+    ↳⚡ storage_dead(_8)
+        storage_dead(x)
+        unwind_continue
+    _0 = &(*_4)
+    storage_dead(_7)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(f)
+    storage_dead(_4)
+    storage_dead(_8)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::from_fn_ptr
+fn from_fn_ptr(f: fn<'a, 'b>(&'a u8, &'b u8) -> &'a u8)
+{
+    let _0: (); // return
+    let f: fn<'a, 'b>(&'a u8, &'b u8) -> &'a u8; // arg #1
+    let _2: unsafe fn<'x, 'y>(&'y u8, &'x u8) -> &'y u8; // anonymous local
+    let _3: fn<'a, 'b>(&'a u8, &'b u8) -> &'a u8; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy f
+    _2 = fn_ptr_to_unsafe(move _3)
+    storage_dead(_3)
+    set_type(typeof(_2) <= unsafe fn<'x, 'y>(&'y u8, &'x u8) -> &'y u8)
+    storage_dead(_2)
+    _0 = ()
+    storage_dead(f)
+    return
+}
+
+// Full name: test_crate::nested_binder
+fn nested_binder(f: fn<'a>(fn<'b>(&'a u8, &'b u8)))
+{
+    let _0: (); // return
+    let f: fn<'a>(fn<'b>(&'a u8, &'b u8)); // arg #1
+    let _2: unsafe fn<'x>(fn<'y>(&'x u8, &'y u8)); // anonymous local
+    let _3: fn<'a>(fn<'b>(&'a u8, &'b u8)); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy f
+    _2 = fn_ptr_to_unsafe(move _3)
+    storage_dead(_3)
+    set_type(typeof(_2) <= unsafe fn<'x>(fn<'y>(&'x u8, &'y u8)))
+    storage_dead(_2)
+    _0 = ()
+    storage_dead(f)
+    return
+}
+
+// Full name: test_crate::nested_binder_swapped
+fn nested_binder_swapped(f: fn<'a, 'b>(fn<'c>(&'a (), &'b (), &'c ())))
+{
+    let _0: (); // return
+    let f: fn<'a, 'b>(fn<'c>(&'a (), &'b (), &'c ())); // arg #1
+    let _2: unsafe fn<'x, 'y>(fn<'z>(&'y (), &'x (), &'z ())); // anonymous local
+    let _3: fn<'a, 'b>(fn<'c>(&'a (), &'b (), &'c ())); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy f
+    _2 = fn_ptr_to_unsafe(move _3)
+    storage_dead(_3)
+    set_type(typeof(_2) <= unsafe fn<'x, 'y>(fn<'z>(&'y (), &'x (), &'z ())))
+    storage_dead(_2)
+    _0 = ()
+    storage_dead(f)
+    return
+}
+
+// Full name: test_crate::doubly_nested_binder
+fn doubly_nested_binder(f: fn<'a>(fn<'b>(fn<'c>(&'a (), &'b (), &'c ()))))
+{
+    let _0: (); // return
+    let f: fn<'a>(fn<'b>(fn<'c>(&'a (), &'b (), &'c ()))); // arg #1
+    let _2: unsafe fn<'x>(fn<'y>(fn<'z>(&'x (), &'y (), &'z ()))); // anonymous local
+    let _3: fn<'a>(fn<'b>(fn<'c>(&'a (), &'b (), &'c ()))); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    _3 = copy f
+    _2 = fn_ptr_to_unsafe(move _3)
+    storage_dead(_3)
+    set_type(typeof(_2) <= unsafe fn<'x>(fn<'y>(fn<'z>(&'x (), &'y (), &'z ()))))
+    storage_dead(_2)
+    _0 = ()
+    storage_dead(f)
+    return
+}
+
+
+

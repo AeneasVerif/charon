@@ -78,7 +78,7 @@ fn transform_constant_expr(
         ConstantExprKind::PtrNoProvenance(ptr) => {
             let usize_ty = Ty::mk_usize();
             let ptr_usize = ConstantExprKind::Integer(IntegerValue::Unsigned(UIntTy::Usize, *ptr));
-            let cast = UnOp::Cast(CastKind::RawPtr(usize_ty.clone(), val.ty().clone()));
+            let cast = UnOp::Cast(CastKind::RawPtr(val.ty().clone()));
             Rvalue::UnaryOp(cast, Operand::Const(ConstantExpr::new(ptr_usize, usize_ty)))
         }
         cexpr @ (ConstantExprKind::Ref(bval, metadata)
@@ -119,22 +119,14 @@ fn transform_constant_expr(
                 (None, Some(metadata)) => {
                     let sized_ref = ctx.borrow_to_new_var(place, BorrowKind::Shared, None);
                     Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Unsize(
-                            sized_ref.ty.clone(),
-                            val.ty().clone(),
-                            metadata,
-                        )),
+                        UnOp::Cast(CastKind::Unsize(val.ty().clone(), metadata)),
                         Operand::Move(sized_ref),
                     )
                 }
                 (Some(rk), Some(metadata)) => {
                     let sized_raw_ref = ctx.raw_borrow_to_new_var(place, rk, None);
                     Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Unsize(
-                            sized_raw_ref.ty.clone(),
-                            val.ty().clone(),
-                            metadata,
-                        )),
+                        UnOp::Cast(CastKind::Unsize(val.ty().clone(), metadata)),
                         Operand::Move(sized_raw_ref),
                     )
                 }
@@ -177,28 +169,21 @@ fn transform_constant_expr(
                 fields,
             )
         }
-        ConstantExprKind::FnPtr(fptr) if let TyKind::FnPtr(sig) = val.ty().kind() => {
-            let from_ty =
-                TyKind::FnDef(sig.clone().map(|_| fptr.clone().move_under_binder())).into_ty();
-            let to_ty = TyKind::FnPtr(sig.clone()).into_ty();
-            Rvalue::UnaryOp(
-                UnOp::Cast(CastKind::FnPtr(from_ty.clone(), to_ty)),
-                Operand::Const(ConstantExpr::new(
-                    ConstantExprKind::FnDef(fptr.clone()),
-                    from_ty,
-                )),
-            )
-        }
-        ConstantExprKind::Cast(value, target_ty) => {
-            let source_ty = value.ty().clone();
-            let target_ty = target_ty.clone();
+        ConstantExprKind::Cast(value, kind) => {
             let value = transform_constant_expr(ctx, value.clone());
-            let cast_kind = if source_ty.is_fn_ptr() | source_ty.is_fn_def() {
-                CastKind::FnPtr(source_ty, target_ty)
+            if let TyKind::Ref(_, pointee, rk) = val.ty().kind() {
+                // Cast to the corresponding raw pointer, then reborrow it as a reference.
+                let raw_ty = TyKind::RawPtr(pointee.clone(), *rk).into_ty();
+                let mut kind = kind.clone();
+                match &mut kind {
+                    CastKind::RawPtr(tgt) | CastKind::Unsize(tgt, _) => *tgt = raw_ty.clone(),
+                    _ => unreachable!("unexpected cast to a reference: {kind:?}"),
+                }
+                let raw_ptr = ctx.rval_to_place(Rvalue::UnaryOp(UnOp::Cast(kind), value), raw_ty);
+                ctx.borrow(raw_ptr.deref(), (*rk).into())
             } else {
-                CastKind::RawPtr(source_ty, target_ty)
-            };
-            Rvalue::UnaryOp(UnOp::Cast(cast_kind), value)
+                Rvalue::UnaryOp(UnOp::Cast(kind.clone()), value)
+            }
         }
         ConstantExprKind::VTableRef(tref)
             if let Some(vtable_ref) = tref.vtable_ref(&ctx.ctx.translated)

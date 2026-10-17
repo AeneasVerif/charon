@@ -79,7 +79,7 @@ fn {vtable_method}(_1: Box::<(dyn Trait), Global>)
     storage_live(_0)
     _0 = ()
     storage_live(_2)
-    _2 = concretize<Box::<(dyn Trait), Global>, Box::<S, Global>>(move _1)
+    _2 = concretize<Box::<S, Global>>(move _1)
     _0 = method(move _2)
     ↳⚡ storage_dead(_2)
         storage_dead(_1)
@@ -99,7 +99,7 @@ unsafe fn {vtable_drop_shim}<'_0>(dyn_self: &'_0 mut (dyn Trait))
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn Trait + '1), &'_0 mut S>(move dyn_self)
+    target_self = concretize<&'_0 mut S>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -133,7 +133,7 @@ fn main()
     _3 = S {  }
     _2 = new::<S>(move _3)
     ↳⚡ unwind_continue
-    b = unsize_cast<Box::<S, Global>, Box::<(dyn Trait), Global>, &impl_Trait_for_S::{vtable}>(move _2)
+    b = unsize_cast<Box::<(dyn Trait), Global>, &impl_Trait_for_S::{vtable}>(move _2)
     conditional_drop[{impl Destruct for Box::<S, Global>}::drop_glue::<S, Global><'0>] _2
     ↳⚡ unwind_continue
     storage_dead(_3)
@@ -144,7 +144,7 @@ fn main()
     storage_live(_5)
     _5 = move b
     storage_live(_6)
-    _6 = cast<*const (), fn(Box::<(dyn Trait), Global>)>(copy (*_5.metadata).method_method)
+    _6 = cast<fn(Box::<(dyn Trait), Global>)>(copy (*_5.metadata).method_method)
     _4 = (copy _6)(move _5)
     ↳⚡ conditional_drop[{impl Destruct for Box::<(dyn Trait), Global>}::drop_glue::<(dyn Trait), Global><'3>] _5
         ↳⚡ storage_dead(_6)

@@ -112,7 +112,7 @@ where
 
     storage_live(_0)
     storage_live(_3)
-    _3 = concretize<&'_0 mut (dyn Modifiable<T> + '1), &'_0 mut i32>(move _1)
+    _3 = concretize<&'_0 mut i32>(move _1)
     _0 = modify<'_0, '_1, T>[TraitClause0, TraitClause1](move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
@@ -138,7 +138,7 @@ where
     storage_live(ret)
     ret = ()
     storage_live(target_self)
-    target_self = concretize<&'_0 mut (dyn Modifiable<T> + '1), &'_0 mut i32>(move dyn_self)
+    target_self = concretize<&'_0 mut i32>(move dyn_self)
     storage_dead(target_self)
     storage_dead(dyn_self)
     return
@@ -187,7 +187,7 @@ where
     _5 = const 199i32
     _4 = &mut _5
     _3 = &mut (*_4)
-    x = unsize_cast<&'8 mut i32, &'13 mut (dyn Modifiable<T> + '14), &impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]>(move _3)
+    x = unsize_cast<&'13 mut (dyn Modifiable<T> + '14), &impl_Modifiable_for_i32::{vtable}<T>[TraitClause0, TraitClause1]>(move _3)
     storage_dead(_3)
     fake_read(x)
     set_type(typeof(x) == &'15 mut (dyn Modifiable<T> + '16))

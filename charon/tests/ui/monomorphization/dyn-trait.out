@@ -93,7 +93,7 @@ fn main()
     storage_live(_7)
     _7 = &str
     _6 = &(*_7)
-    _5 = unsize_cast<&'9 String, &'14 (dyn Display + '15), &impl_Display_for_String::{vtable}>(move _6)
+    _5 = unsize_cast<&'14 (dyn Display + '15), &impl_Display_for_String::{vtable}>(move _6)
     storage_dead(_6)
     _4 = dyn_to_string<'17>(move _5)
     ↳⚡ conditional_drop[drop_glue<'18>] str

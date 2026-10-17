@@ -33,7 +33,7 @@ pub fn without_provenance_mut::<()>(addr: usize) -> *mut ()
     storage_live(_0)
     storage_live(_2)
     _2 = copy addr
-    _0 = transmute<usize, *mut ()>(move _2)
+    _0 = transmute<*mut ()>(move _2)
     storage_dead(_2)
     return
 }
@@ -53,7 +53,7 @@ pub fn without_provenance::<()>(addr: usize) -> *const ()
     _3 = copy addr
     _2 = without_provenance_mut::<()>(move _3)
     ↳⚡ unwind_continue
-    _0 = cast<*mut (), *const ()>(move _2)
+    _0 = cast<*const ()>(move _2)
     storage_dead(_3)
     storage_dead(_2)
     return

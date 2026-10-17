@@ -513,7 +513,7 @@ fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate:
         storage_dead(dst)
         unwind_continue
     storage_dead(_5)
-    _3 = cast<*mut u16, *mut core::core_arch::x86::__m128i>(move _4)
+    _3 = cast<*mut core::core_arch::x86::__m128i>(move _4)
     storage_dead(_4)
     storage_live(_7)
     _7 = copy val
@@ -550,7 +550,7 @@ fn test_crate::ntt_xmm::{impl test_crate::NttIntrinsicsInterface for test_crate:
     ↳⚡ storage_dead(src)
         unwind_continue
     storage_dead(_4)
-    _2 = cast<*const u16, *const core::core_arch::x86::__m128i>(move _3)
+    _2 = cast<*const core::core_arch::x86::__m128i>(move _3)
     storage_dead(_3)
     _0 = core::core_arch::x86::sse2::_mm_loadu_si128(move _2)
     ↳⚡ storage_dead(src)

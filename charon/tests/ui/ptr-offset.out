@@ -110,7 +110,7 @@ fn runtime(this: *const (), count: isize, size: usize) -> bool
     storage_live(_7)
     storage_live(_8)
     _8 = copy size
-    _7 = cast<usize, isize>(move _8)
+    _7 = cast<isize>(move _8)
     storage_dead(_8)
     _5 = checked_mul(move _6, move _7)
     ↳⚡ storage_dead(size)
@@ -304,7 +304,7 @@ where
         storage_live(_5)
         storage_live(_6)
         _6 = copy self
-        _5 = cast<*const T, *const ()>(move _6)
+        _5 = cast<*const ()>(move _6)
         storage_dead(_6)
         storage_live(_7)
         _7 = copy count

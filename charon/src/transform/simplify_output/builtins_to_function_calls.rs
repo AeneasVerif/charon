@@ -83,12 +83,12 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
         StatementKind::Assign(
             place,
             Rvalue::UnaryOp(
-                UnOp::Cast(CastKind::Unsize(src_ty, tgt_ty, UnsizingMetadata::Length(_))),
+                UnOp::Cast(CastKind::Unsize(tgt_ty, UnsizingMetadata::Length(_))),
                 operand,
             ),
         ) => {
             if let (TyKind::Ref(_, src_ty, src_kind), TyKind::Ref(_, tgt_ty, tgt_kind)) =
-                (src_ty.kind(), tgt_ty.kind())
+                (operand.ty().kind(), tgt_ty.kind())
                 && let TyKind::Array(elem_ty, len, elem_ty_is_sized) = src_ty.kind()
                 && let TyKind::Slice(..) = tgt_ty.kind()
             {
@@ -423,7 +423,7 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
                 self.ctx.insert_assn_stmt(
                     array_ref_var.clone(),
                     Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Concretize(output_var.ty().clone(), array_ref_ty)),
+                        UnOp::Cast(CastKind::Concretize(array_ref_ty)),
                         Operand::Move(output_var),
                     ),
                 );

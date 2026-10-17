@@ -18,7 +18,7 @@ fn main()
     _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _2 = cast<usize, *const u8>(const 1usize)
+    _2 = cast<*const u8>(const 1usize)
     storage_live(_3)
     _3 = NonNull { 0: move _2 }
     _1 = move _3

@@ -551,8 +551,8 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
         args
   | CFnDef fn_ptr -> pp_fn_ptr env fmt fn_ptr
   | CFnPtr fn_ptr -> Format.fprintf fmt "fnptr(%a)" (pp_fn_ptr env) fn_ptr
-  | CCast (value, ty) ->
-      Format.fprintf fmt "cast<%a>(%a)" (pp_ty env) ty (pp_constant_expr env)
+  | CCast (value, kind) ->
+      Format.fprintf fmt "%a(%a)" (pp_cast_kind env) kind (pp_constant_expr env)
         value
   | CSizeOf ty -> Format.fprintf fmt "size_of::<%a>()" (pp_ty env) ty
   | CAlignOf ty -> Format.fprintf fmt "align_of::<%a>()" (pp_ty env) ty
@@ -605,6 +605,23 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
           Format.fprintf fmt " with_metadata(%a)" (pp_unsizing_metadata env)
             meta)
         meta
+
+and pp_cast_kind (env : fmt_env) (fmt : Format.formatter) (cast : cast_kind) :
+    unit =
+  match cast with
+  | CastScalar tgt -> Format.fprintf fmt "cast<%a>" pp_scalar_type tgt
+  | CastPtrExposeProvenance -> Format.pp_print_string fmt "cast_expose"
+  | CastPtrWithExposedProvenance tgt ->
+      Format.fprintf fmt "cast_with_exposed<%a>" (pp_ty env) tgt
+  | CastFnDefToFnPtr -> Format.pp_print_string fmt "fn_def_to_fn_ptr"
+  | CastFnPtrToUnsafe -> Format.pp_print_string fmt "fn_ptr_to_unsafe"
+  | CastSubtype tgt -> Format.fprintf fmt "subtype<%a>" (pp_ty env) tgt
+  | CastRawPtr tgt -> Format.fprintf fmt "cast<%a>" (pp_ty env) tgt
+  | CastTransmute tgt -> Format.fprintf fmt "transmute<%a>" (pp_ty env) tgt
+  | CastUnsize (tgt, meta) ->
+      Format.fprintf fmt "unsize_cast<%a, %a>" (pp_ty env) tgt
+        (pp_unsizing_metadata env) meta
+  | CastConcretize tgt -> Format.fprintf fmt "concretize<%a>" (pp_ty env) tgt
 
 and pp_match_pattern (env : fmt_env) (fmt : Format.formatter)
     (cv : constant_expr) : unit =
@@ -1494,27 +1511,6 @@ and pp_place (env : fmt_env) (fmt : Format.formatter) (p : place) : unit =
         (pp_generic_args env) global_ref.generics
 
 and place_to_string env p = pp_to_string (fun fmt -> pp_place env fmt p)
-
-and pp_cast_kind (env : fmt_env) (fmt : Format.formatter) (cast : cast_kind) :
-    unit =
-  match cast with
-  | CastScalar (src, tgt) ->
-      Format.fprintf fmt "cast<%a, %a>" pp_scalar_type src pp_scalar_type tgt
-  | CastPtrExposeProvenance (src, tgt) ->
-      Format.fprintf fmt "cast_expose<%a, %a>" (pp_ty env) src pp_scalar_type
-        tgt
-  | CastPtrWithExposedProvenance (src, tgt) ->
-      Format.fprintf fmt "cast_with_exposed<%a, %a>" pp_scalar_type src
-        (pp_ty env) tgt
-  | CastFnPtr (src, tgt) | CastRawPtr (src, tgt) ->
-      Format.fprintf fmt "cast<%a, %a>" (pp_ty env) src (pp_ty env) tgt
-  | CastTransmute (src, tgt) ->
-      Format.fprintf fmt "transmute<%a, %a>" (pp_ty env) src (pp_ty env) tgt
-  | CastUnsize (src, tgt, meta) ->
-      Format.fprintf fmt "unsize_cast<%a, %a, %a>" (pp_ty env) src (pp_ty env)
-        tgt (pp_unsizing_metadata env) meta
-  | CastConcretize (src, tgt) ->
-      Format.fprintf fmt "concretize<%a, %a>" (pp_ty env) src (pp_ty env) tgt
 
 and pp_nullop (env : fmt_env) (fmt : Format.formatter) (op : nullop) : unit =
   match op with

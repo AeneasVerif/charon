@@ -137,7 +137,7 @@ unsafe fn impl_Destruct_for_array::drop_glue::<String, 4usize><'_0>(_1: &'_0 mut
     storage_live(_0)
     storage_live(_2)
     _0 = ()
-    _2 = unsize_cast<&'1 mut [String; 4usize], &'4 mut [String], 4usize>(move _1)
+    _2 = unsize_cast<&'4 mut [String], 4usize>(move _1)
     _0 = drop_glue::<[String]><'6>(move _2)
     ↳⚡ storage_dead(_2)
         storage_dead(_1)

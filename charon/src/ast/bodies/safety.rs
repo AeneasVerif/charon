@@ -214,10 +214,17 @@ impl HasSafety for UnOp {
             UnOp::Not => Safety::Safe,
             UnOp::Neg(om) => om.safety(krate),
             UnOp::Cast(CastKind::Concretize(..) | CastKind::Transmute(..)) => Safety::Unsafe,
-            UnOp::Cast(CastKind::PtrWithExposedProvenance(_, tgt)) if tgt.is_ref() => {
-                Safety::Unsafe
-            }
-            UnOp::Cast(_) => Safety::Safe,
+            UnOp::Cast(CastKind::PtrWithExposedProvenance(tgt)) if tgt.is_ref() => Safety::Unsafe,
+            UnOp::Cast(
+                CastKind::Scalar(..)
+                | CastKind::Subtype(..)
+                | CastKind::RawPtr(..)
+                | CastKind::PtrExposeProvenance
+                | CastKind::PtrWithExposedProvenance(..)
+                | CastKind::Unsize(..)
+                | CastKind::FnDefToFnPtr
+                | CastKind::FnPtrToUnsafe,
+            ) => Safety::Safe,
         }
     }
 }

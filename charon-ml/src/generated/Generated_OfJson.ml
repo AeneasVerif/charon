@@ -525,39 +525,31 @@ and cast_kind_of_json (ctx : of_json_ctx) (js : json) :
     (cast_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Scalar", `List [ _0; _1 ]) ] ->
+    | `Assoc [ ("Scalar", _0) ] ->
         let* _0 = scalar_type_of_json ctx _0 in
-        let* _1 = scalar_type_of_json ctx _1 in
-        Ok (CastScalar (_0, _1))
-    | `Assoc [ ("RawPtr", `List [ _0; _1 ]) ] ->
+        Ok (CastScalar _0)
+    | `Assoc [ ("RawPtr", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        Ok (CastRawPtr (_0, _1))
-    | `Assoc [ ("PtrExposeProvenance", `List [ _0; _1 ]) ] ->
+        Ok (CastRawPtr _0)
+    | `String "PtrExposeProvenance" -> Ok CastPtrExposeProvenance
+    | `Assoc [ ("PtrWithExposedProvenance", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
-        let* _1 = scalar_type_of_json ctx _1 in
-        Ok (CastPtrExposeProvenance (_0, _1))
-    | `Assoc [ ("PtrWithExposedProvenance", `List [ _0; _1 ]) ] ->
-        let* _0 = scalar_type_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        Ok (CastPtrWithExposedProvenance (_0, _1))
-    | `Assoc [ ("FnPtr", `List [ _0; _1 ]) ] ->
+        Ok (CastPtrWithExposedProvenance _0)
+    | `String "FnDefToFnPtr" -> Ok CastFnDefToFnPtr
+    | `String "FnPtrToUnsafe" -> Ok CastFnPtrToUnsafe
+    | `Assoc [ ("Subtype", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        Ok (CastFnPtr (_0, _1))
-    | `Assoc [ ("Unsize", `List [ _0; _1; _2 ]) ] ->
+        Ok (CastSubtype _0)
+    | `Assoc [ ("Unsize", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        let* _2 = unsizing_metadata_of_json ctx _2 in
-        Ok (CastUnsize (_0, _1, _2))
-    | `Assoc [ ("Transmute", `List [ _0; _1 ]) ] ->
+        let* _1 = unsizing_metadata_of_json ctx _1 in
+        Ok (CastUnsize (_0, _1))
+    | `Assoc [ ("Transmute", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        Ok (CastTransmute (_0, _1))
-    | `Assoc [ ("Concretize", `List [ _0; _1 ]) ] ->
+        Ok (CastTransmute _0)
+    | `Assoc [ ("Concretize", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        Ok (CastConcretize (_0, _1))
+        Ok (CastConcretize _0)
     | _ -> Error "")
 
 and const_generic_param_of_json (ctx : of_json_ctx) (js : json) :
@@ -641,7 +633,7 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (CFnPtr _0)
     | `Assoc [ ("Cast", `List [ _0; _1 ]) ] ->
         let* _0 = constant_expr_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
+        let* _1 = cast_kind_of_json ctx _1 in
         Ok (CCast (_0, _1))
     | `Assoc [ ("PtrNoProvenance", _0) ] ->
         let* _0 = big_int_of_json ctx _0 in
@@ -1306,12 +1298,14 @@ and region_param_of_json (ctx : of_json_ctx) (js : json) :
           ("name", name);
           ("variance", variance);
           ("mutability", mutability);
+          ("late_bound", late_bound);
         ] ->
         let* index = region_id_of_json ctx index in
         let* name = option_of_json string_of_json ctx name in
         let* variance = variance_of_json ctx variance in
         let* mutability = lifetime_mutability_of_json ctx mutability in
-        Ok ({ index; name; variance; mutability } : region_param)
+        let* late_bound = bool_of_json ctx late_bound in
+        Ok ({ index; name; variance; mutability; late_bound } : region_param)
     | _ -> Error "")
 
 and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =

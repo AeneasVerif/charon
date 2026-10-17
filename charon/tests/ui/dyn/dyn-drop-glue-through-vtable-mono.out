@@ -48,7 +48,7 @@ unsafe fn drop_glue::<(dyn T)><'_0>(_1: &'_0 mut (dyn T))
     drop_arg = &mut (*_1) with_metadata(copy _1.metadata)
     storage_live(drop_ret)
     storage_live(_4)
-    _4 = cast<*const (), unsafe fn(&'_ mut (dyn T + '2))>(copy (*drop_arg.metadata).drop)
+    _4 = cast<unsafe fn(&'_ mut (dyn T + '2))>(copy (*drop_arg.metadata).drop)
     drop_ret = (copy _4)(move drop_arg)
     ↳⚡ unwind_continue
     return

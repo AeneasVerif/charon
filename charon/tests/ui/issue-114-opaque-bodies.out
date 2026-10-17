@@ -131,7 +131,7 @@ pub fn core::num::{i64}::MAX() -> i64
     storage_live(_0)
     storage_live(_1)
     _1 = copy core::num::{u64}::MAX panic.>> const 1i32
-    _0 = cast<u64, i64>(move _1)
+    _0 = cast<i64>(move _1)
     storage_dead(_1)
     return
 }
@@ -168,7 +168,7 @@ pub fn core::num::{i32}::MAX() -> i32
     storage_live(_0)
     storage_live(_1)
     _1 = copy core::num::{u32}::MAX panic.>> const 1i32
-    _0 = cast<u32, i32>(move _1)
+    _0 = cast<i32>(move _1)
     storage_dead(_1)
     return
 }
@@ -207,9 +207,9 @@ pub fn from(small: i32) -> i64
     if move _2 {
         storage_live(_3)
         storage_live(_4)
-        _4 = cast<i64, i128>(copy core::num::{i64}::MIN)
+        _4 = cast<i128>(copy core::num::{i64}::MIN)
         storage_live(_5)
-        _5 = cast<i32, i128>(copy core::num::{i32}::MIN)
+        _5 = cast<i128>(copy core::num::{i32}::MIN)
         _3 = move _4 <= move _5
         assert(move _3 == true) else panic(core::panicking::panic)
         ↳⚡ unwind_continue
@@ -224,9 +224,9 @@ pub fn from(small: i32) -> i64
     if move _6 {
         storage_live(_7)
         storage_live(_8)
-        _8 = cast<i32, u128>(copy core::num::{i32}::MAX)
+        _8 = cast<u128>(copy core::num::{i32}::MAX)
         storage_live(_9)
-        _9 = cast<i64, u128>(copy core::num::{i64}::MAX)
+        _9 = cast<u128>(copy core::num::{i64}::MAX)
         _7 = move _8 <= move _9
         assert(move _7 == true) else panic(core::panicking::panic)
         ↳⚡ unwind_continue
@@ -238,7 +238,7 @@ pub fn from(small: i32) -> i64
     storage_dead(_6)
     storage_live(_10)
     _10 = copy small
-    _0 = cast<i32, i64>(move _10)
+    _0 = cast<i64>(move _10)
     storage_dead(_10)
     storage_dead(small)
     return

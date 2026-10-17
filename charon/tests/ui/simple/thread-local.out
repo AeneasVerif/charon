@@ -460,12 +460,12 @@ where
     if move _3 {
         storage_live(_4)
         _4 = test_crate::FOO::{const}::{closure} {  }
-        _2 = cast<for<'_0_1> test_crate::FOO::{const}::{closure}::{as_fn}<'_0_1>, fn<'_0_1>(Option<&'_0_1 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0_1 mut Option<u32>[{built_in impl Sized for u32}]}]) -> *const u32>(const test_crate::FOO::{const}::{closure}::{as_fn}<'13>)
+        _2 = fn_def_to_fn_ptr(const test_crate::FOO::{const}::{closure}::{as_fn}<'13>)
         storage_dead(_4)
     } else {
         storage_live(_5)
         _5 = test_crate::FOO::{const}::{closure#1} {  }
-        _2 = cast<for<'_0_1> test_crate::FOO::{const}::{closure#1}::{as_fn}<'_0_1>, fn<'_0_1>(Option<&'_0_1 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0_1 mut Option<u32>[{built_in impl Sized for u32}]}]) -> *const u32>(const test_crate::FOO::{const}::{closure#1}::{as_fn}<'17>)
+        _2 = fn_def_to_fn_ptr(const test_crate::FOO::{const}::{closure#1}::{as_fn}<'19>)
         storage_dead(_5)
     }
     storage_dead(_3)

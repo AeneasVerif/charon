@@ -125,6 +125,7 @@ impl BindingLevel {
             name,
             variance,
             mutability,
+            late_bound: false,
         });
         self.early_region_vars.insert(region, rid);
         self.region_vars_by_def_id.insert(def_id, rid);
@@ -144,10 +145,10 @@ impl BindingLevel {
             Named(def_id, symbol) => (translate_region_name(symbol), Some(def_id)),
             ClosureEnv => (Some("@env".to_owned()), None),
         };
-        let rid = self
-            .params
-            .regions
-            .push_with(|index| RegionParam::new(index, name, variance));
+        let rid = self.params.regions.push_with(|index| RegionParam {
+            late_bound: true,
+            ..RegionParam::new(index, name, variance)
+        });
         self.bound_region_vars.push(rid);
         if let Some(def_id) = def_id {
             self.region_vars_by_def_id.insert(def_id, rid);

@@ -490,29 +490,23 @@ impl<C: AstFormatter> FmtWithCtx<C> for UnsizingMetadata {
 impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            CastKind::Scalar(src, tgt) => write!(f, "cast<{src}, {tgt}>"),
-            CastKind::PtrExposeProvenance(src, tgt) => {
-                write!(f, "cast_expose<{}, {tgt}>", src.with_ctx(ctx))
+            CastKind::Scalar(tgt) => write!(f, "cast<{tgt}>"),
+            CastKind::PtrExposeProvenance => write!(f, "cast_expose"),
+            CastKind::PtrWithExposedProvenance(tgt) => {
+                write!(f, "cast_with_exposed<{}>", tgt.with_ctx(ctx))
             }
-            CastKind::PtrWithExposedProvenance(src, tgt) => {
-                write!(f, "cast_with_exposed<{src}, {}>", tgt.with_ctx(ctx))
-            }
-            CastKind::FnPtr(src, tgt) | CastKind::RawPtr(src, tgt) => {
-                write!(f, "cast<{}, {}>", src.with_ctx(ctx), tgt.with_ctx(ctx))
-            }
-            CastKind::Unsize(src, tgt, meta) => write!(
+            CastKind::FnDefToFnPtr => write!(f, "fn_def_to_fn_ptr"),
+            CastKind::FnPtrToUnsafe => write!(f, "fn_ptr_to_unsafe"),
+            CastKind::Subtype(tgt) => write!(f, "subtype<{}>", tgt.with_ctx(ctx)),
+            CastKind::RawPtr(tgt) => write!(f, "cast<{}>", tgt.with_ctx(ctx)),
+            CastKind::Unsize(tgt, meta) => write!(
                 f,
-                "unsize_cast<{}, {}, {}>",
-                src.with_ctx(ctx),
+                "unsize_cast<{}, {}>",
                 tgt.with_ctx(ctx),
                 meta.with_ctx(ctx)
             ),
-            CastKind::Transmute(src, tgt) => {
-                write!(f, "transmute<{}, {}>", src.with_ctx(ctx), tgt.with_ctx(ctx))
-            }
-            CastKind::Concretize(ty, ty1) => {
-                write!(f, "concretize<{}, {}>", ty.with_ctx(ctx), ty1.with_ctx(ctx))
-            }
+            CastKind::Transmute(tgt) => write!(f, "transmute<{}>", tgt.with_ctx(ctx)),
+            CastKind::Concretize(tgt) => write!(f, "concretize<{}>", tgt.with_ctx(ctx)),
         }
     }
 }
@@ -1995,8 +1989,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
             ConstantExprKind::FnPtr(fp) => {
                 write!(f, "fnptr({})", fp.with_ctx(ctx))
             }
-            ConstantExprKind::Cast(value, ty) => {
-                write!(f, "cast<{}>({})", ty.with_ctx(ctx), value.with_ctx(ctx))
+            ConstantExprKind::Cast(value, kind) => {
+                write!(f, "{}({})", kind.with_ctx(ctx), value.with_ctx(ctx))
             }
             ConstantExprKind::TypeId(ty) => {
                 write!(f, "TypeId({})", ty.with_ctx(ctx))

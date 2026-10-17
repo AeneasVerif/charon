@@ -543,7 +543,7 @@ where
         storage_live(_26);
         storage_live(_27);
         _27 = copy _40 == const -1i8;
-        _26 = cast<bool, usize>(move _27);
+        _26 = cast<usize>(move _27);
         storage_dead(_27);
         result = move base wrap.+ move _26;
         storage_dead(_26);
@@ -829,7 +829,7 @@ fn main()
         storage_live(_4);
         _4 = &a;
         _3 = &(*_4);
-        b = unsize_cast<&'3 [u32; 5usize], &'7 [u32], 5usize>(move _3);
+        b = unsize_cast<&'7 [u32], 5usize>(move _3);
         storage_dead(_3);
         fake_read(b);
         set_type(typeof(b) == &'8 [u32]);
@@ -838,7 +838,7 @@ fn main()
         storage_live(_6);
         storage_live(_7);
         _7 = &a;
-        _6 = unsize_cast<&'6 [u32; 5usize], &'9 [u32], 5usize>(move _7);
+        _6 = unsize_cast<&'9 [u32], 5usize>(move _7);
         storage_dead(_7);
         storage_live(_8);
         _8 = {closure} {  };

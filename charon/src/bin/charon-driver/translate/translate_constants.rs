@@ -1,5 +1,6 @@
 //! Functions to translate constants to LLBC.
 use crate::hax;
+use crate::hax::state::UnderOwnerState;
 use rustc_middle::ty;
 
 use super::translate_ctx::*;
@@ -75,7 +76,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         Provenance::Global(self.translate_global_decl_ref(span, item)?)
                     }
                     hax::ConstantByteProvenance::Function(target) => {
-                        Provenance::Function(self.translate_fn_ptr_target(span, target)?)
+                        let fn_ptr = self.translate_bound_fn_ptr_target(span, target)?;
+                        Provenance::Function(self.erase_region_binder(fn_ptr))
                     }
                     hax::ConstantByteProvenance::Unknown => Provenance::Unknown,
                 };
@@ -85,19 +87,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// The function pointed to by a function pointer.
-    fn translate_fn_ptr_target(
+    fn translate_bound_fn_ptr_target(
         &mut self,
         span: Span,
         target: &hax::FnPtrTarget,
-    ) -> Result<FnPtr, Error> {
+    ) -> Result<RegionBinder<FnPtr>, Error> {
         Ok(match target {
             hax::FnPtrTarget::Fn(item) => {
-                self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?
+                self.translate_bound_fn_ptr(span, item, TransItemSourceKind::Fun)?
             }
-            hax::FnPtrTarget::ClosureAsFn(closure) => {
-                let fn_ref = self.translate_stateless_closure_as_fn_ref(span, closure)?;
-                self.erase_region_binder(fn_ref).into()
-            }
+            hax::FnPtrTarget::ClosureAsFn(closure) => self
+                .translate_stateless_closure_as_fn_ref(span, closure)?
+                .map(FnPtr::from),
         })
     }
 
@@ -210,7 +211,42 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 ConstantExprKind::FnDef(fn_ptr)
             }
             hax::ConstantExprKind::FnPtr(target) => {
-                ConstantExprKind::FnPtr(self.translate_fn_ptr_target(span, target)?)
+                let rustc_sig = match target {
+                    hax::FnPtrTarget::Fn(item) => {
+                        let args = item.rustc_args(self.hax_state_with_id());
+                        let sig = self.tcx.fn_sig(item.def_id.real_rust_def_id());
+                        hax::inst_binder(
+                            self.tcx,
+                            self.hax_state_with_id().typing_env(),
+                            Some(args),
+                            sig,
+                        )
+                    }
+                    hax::FnPtrTarget::ClosureAsFn(closure) => {
+                        let args = closure.item.rustc_args(self.hax_state_with_id());
+                        hax::closure_sig(self.tcx, args.as_closure())
+                    }
+                };
+                let rustc_fn_ptr = ty::Ty::new_fn_ptr(self.tcx, rustc_sig);
+                let source_ty = self.translate_rustc_ty(span, &rustc_fn_ptr)?;
+                let fn_ptr = self.translate_bound_fn_ptr_target(span, target)?;
+                let fn_def = ConstantExpr::new(
+                    ConstantExprKind::FnDef(self.erase_region_binder(fn_ptr.clone())),
+                    TyKind::FnDef(fn_ptr).into_ty(),
+                );
+                let kind = ConstantExprKind::Cast(fn_def, CastKind::FnDefToFnPtr);
+                let (TyKind::FnPtr(source), TyKind::FnPtr(target)) = (source_ty.kind(), ty.kind())
+                else {
+                    unreachable!("expected function pointer types")
+                };
+                if source.skip_binder.is_unsafe != target.skip_binder.is_unsafe {
+                    ConstantExprKind::Cast(
+                        ConstantExpr::new(kind, source_ty),
+                        CastKind::FnPtrToUnsafe,
+                    )
+                } else {
+                    kind
+                }
             }
             hax::ConstantExprKind::Memory(bytes) => {
                 let bytes: Vec<Byte> = bytes
