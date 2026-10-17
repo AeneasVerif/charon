@@ -316,36 +316,21 @@ where
     let arg: &'3 T; // arg #2
     let _3: (i32, bool); // anonymous local
     let _4: &'4 T; // anonymous local
-    let _5: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // anonymous local
-    let _6: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // anonymous local
-    let _7: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
-    storage_live(_5)
-    storage_live(_6)
-    storage_live(_7)
-    _5 = noretag copy (*self)
-    _3 = copy (*_5) checked.+ const 1i32
-    _6 = noretag copy (*self)
+    _3 = copy (*(*self)) checked.+ const 1i32
     assert(move _3._1 == false) (overflow) else panic
     ↳⚡ unwind_continue
-    _7 = noretag copy (*self)
-    (*_7) = move _3._0
+    (*(*self)) = move _3._0
     storage_live(_4)
     _4 = &(*arg)
     _0 = TraitClause1::clone<'5>(move _4)
-    ↳⚡ storage_dead(_7)
-        storage_dead(_6)
-        storage_dead(_5)
-        storage_dead(_3)
+    ↳⚡ storage_dead(_3)
         storage_dead(arg)
         storage_dead(self)
         unwind_continue
     storage_dead(_4)
-    storage_dead(_7)
-    storage_dead(_6)
-    storage_dead(_5)
     storage_dead(_3)
     storage_dead(arg)
     storage_dead(self)
