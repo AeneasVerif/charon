@@ -53,7 +53,7 @@ where
 
     storage_live(_0)
     storage_live(i)
-    i = move tupled_args._0
+    i = noretag move tupled_args._0
     storage_live(_4)
     _4 = &(*(*_1)._0)
     storage_live(_5)

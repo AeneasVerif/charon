@@ -410,7 +410,7 @@ where
     storage_live(item)
     storage_live(_5)
     _0 = ()
-    item = move tupled_args._0
+    item = noretag move tupled_args._0
     storage_live(_4)
     _4 = copy (*item)
     _5 = copy (*(*_1)._0) panic.+ copy _4

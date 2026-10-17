@@ -385,7 +385,7 @@ where
     storage_live(_6)
     storage_live(_7)
     _0 = ()
-    _2 = copy _1.metadata
+    _2 = noretag copy _1.metadata
     _3 = const 0usize
     loop {
         _7 = copy _3 == copy _2
@@ -2969,7 +2969,7 @@ fn slice_pattern_4<'_0>(x: &'_0 [()])
     storage_live(_4)
     storage_live(_5)
     _0 = ()
-    _3 = copy x.metadata
+    _3 = noretag copy x.metadata
     _2 = move _3
     _4 = const 1usize
     _5 = move _2 == move _4

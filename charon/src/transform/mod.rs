@@ -39,6 +39,7 @@ pub mod resugar {
     pub mod move_asserts_to_statements;
     pub mod reconstruct_asserts;
     pub mod reconstruct_box_derefs;
+    pub mod reconstruct_copy_for_deref;
     pub mod reconstruct_fallible_operations;
     pub mod reconstruct_intrinsics;
     pub mod reconstruct_matches;
@@ -165,6 +166,8 @@ pub fn run_transformation_passes(options: &CliOpts, ctx: &mut TransformCtx) {
         // of the CFG.
         // This must be done early as some resugaring passes depend on it.
         CowBox::Borrowed(&control_flow::merge_goto_chains::Transform),
+        // Undo the splitting of places at derefs done in elaborated MIR.
+        CowBox::Borrowed(&resugar::reconstruct_copy_for_deref::Transform),
         // Remove overflow/div-by-zero/bounds checks since they are already part of the
         // arithmetic/array operation in the semantics of (U)LLBC.
         // **WARNING**: this pass uses the fact that the dynamic checks introduced by Rustc use a

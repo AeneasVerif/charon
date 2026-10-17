@@ -66,7 +66,7 @@ where
 
     storage_live(_0)
     storage_live(_z)
-    _z = move tupled_args._0
+    _z = noretag move tupled_args._0
     storage_live(_4)
     _4 = &(*(*_1)._0)
     _0 = TraitClause1::clone<'6>(move _4)
@@ -108,7 +108,7 @@ where
 
     storage_live(_0)
     storage_live(_y)
-    _y = move tupled_args._0
+    _y = noretag move tupled_args._0
     storage_live(_4)
     _4 = &(*(*_1)._0)
     _0 = test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure} { _0: move _4 }

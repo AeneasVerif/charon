@@ -44,7 +44,7 @@ fn slice_pattern_end<'_0>(x: &'_0 [()])
     storage_live(_4)
     storage_live(_5)
     _0 = ()
-    _3 = copy x.metadata
+    _3 = noretag copy x.metadata
     _2 = move _3
     _4 = const 1usize
     _5 = move _2 >= move _4

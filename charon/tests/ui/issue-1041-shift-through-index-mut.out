@@ -141,7 +141,7 @@ pub fn shr_into_index<'_0>(x: u64, out: &'_0 mut Wrap)
 
     bb1: {
         storage_dead(_5);
-        (*_4) = move _6;
+        (*_4) = noretag move _6;
         storage_dead(_3);
         storage_dead(_4);
         _0 = ();
@@ -183,7 +183,7 @@ pub fn shl_into_index_by_var<'_0>(x: u64, n: u32, out: &'_0 mut Wrap)
 
     bb1: {
         storage_dead(_7);
-        (*_6) = move _8;
+        (*_6) = noretag move _8;
         storage_dead(_5);
         storage_dead(_4);
         storage_dead(_6);

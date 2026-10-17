@@ -246,7 +246,7 @@ fn {impl Fn<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_
 
     storage_live(_0)
     storage_live(__rust_std_internal_init)
-    __rust_std_internal_init = move tupled_args._0
+    __rust_std_internal_init = noretag move tupled_args._0
     storage_live(_4)
     _4 = &test_crate::FOO::{const}::{closure#1}::__RUST_STD_INTERNAL_VAL
     storage_live(_5)
@@ -355,7 +355,7 @@ fn {impl Fn<(Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]>[{built_
 
     storage_live(_0)
     storage_live(__rust_std_internal_init)
-    __rust_std_internal_init = move tupled_args._0
+    __rust_std_internal_init = noretag move tupled_args._0
     storage_live(_4)
     _4 = &test_crate::FOO::{const}::{closure}::__RUST_STD_INTERNAL_VAL
     storage_live(_5)

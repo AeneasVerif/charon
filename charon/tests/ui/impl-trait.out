@@ -299,7 +299,7 @@ where
 
     storage_live(_0)
     storage_live(x)
-    x = move tupled_args._0
+    x = noretag move tupled_args._0
     storage_live(_4)
     _4 = &(*x)
     _0 = WrapClone { _0: move _4 }

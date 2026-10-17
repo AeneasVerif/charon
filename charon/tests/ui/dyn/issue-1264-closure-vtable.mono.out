@@ -328,7 +328,7 @@ fn {impl Fn<(&'_ u32,)> for test_crate::main::{closure#3}}::call<'_0, '_1>(_1: &
 
     storage_live(_0)
     storage_live(x)
-    x = move tupled_args._0
+    x = noretag move tupled_args._0
     _0 = copy (*x)
     storage_dead(x)
     storage_dead(tupled_args)
@@ -635,7 +635,7 @@ where
     storage_live(_0)
     storage_live(x)
     storage_live(_6)
-    x = move tupled_args._0
+    x = noretag move tupled_args._0
     storage_live(_4)
     _4 = copy x
     storage_live(_5)
@@ -861,7 +861,7 @@ fn {impl Fn<(u32,)> for test_crate::main::{closure}}::call<'_0>(_1: &'_0 test_cr
     storage_live(_0)
     storage_live(x)
     storage_live(_5)
-    x = move tupled_args._0
+    x = noretag move tupled_args._0
     storage_live(_4)
     _4 = copy x
     _5 = copy _4 panic.+ const 1u32

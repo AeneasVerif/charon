@@ -32,7 +32,7 @@ where
     let _0: usize; // return
 
     storage_live(_0)
-    _0 = const 42usize
+    _0 = noretag const 42usize
     return
 }
 

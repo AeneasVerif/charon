@@ -167,7 +167,7 @@ fn call_once(_1: {closure}, tupled_args: (u32,)) -> u32
     storage_live(_0)
     storage_live(y)
     storage_live(_5)
-    y = move tupled_args._0
+    y = noretag move tupled_args._0
     storage_live(_4)
     _4 = copy y
     _5 = copy _4 checked.+ const 1u32

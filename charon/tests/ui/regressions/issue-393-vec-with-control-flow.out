@@ -151,7 +151,7 @@ pub fn next(b: bool) -> Option<Vec<u8>[{built_in impl Sized for u8}, {built_in i
     storage_live(x)
     storage_live(y)
     storage_dead(_11)
-    x = move _12
+    x = noretag move _12
     storage_dead(_12)
     y = unsize_cast<Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}], 1usize>(move x)
     ret = into_vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}](move y)

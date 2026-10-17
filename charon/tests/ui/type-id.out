@@ -31,7 +31,7 @@ where
     let ret: TypeId; // return
 
     storage_live(ret)
-    ret = const TypeId(T)
+    ret = noretag const TypeId(T)
     return
 }
 

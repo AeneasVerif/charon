@@ -165,7 +165,7 @@ fn multiple_adjacent()
     storage_live(x_8)
     storage_live(y_9)
     storage_dead(_16)
-    x_8 = move _17
+    x_8 = noretag move _17
     storage_dead(_17)
     y_9 = unsize_cast<Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}], 1usize>(move x_8)
     ret_7 = into_vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}](move y_9)
@@ -203,7 +203,7 @@ fn multiple_adjacent()
     storage_live(x_11)
     storage_live(y_12)
     storage_dead(_18)
-    x_11 = move _19
+    x_11 = noretag move _19
     storage_dead(_19)
     y_12 = unsize_cast<Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}], 1usize>(move x_11)
     ret_10 = into_vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}](move y_12)
@@ -251,7 +251,7 @@ fn multiple_adjacent()
     storage_live(x_14)
     storage_live(y_15)
     storage_dead(_20)
-    x_14 = move _21
+    x_14 = noretag move _21
     storage_dead(_21)
     y_15 = unsize_cast<Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}], 1usize>(move x_14)
     ret_13 = into_vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}](move y_15)
@@ -337,7 +337,7 @@ fn multiple_values()
     storage_live(x)
     storage_live(y)
     storage_dead(_6)
-    x = move _7
+    x = noretag move _7
     storage_dead(_7)
     y = unsize_cast<Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}], 3usize>(move x)
     ret = into_vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}](move y)
@@ -389,7 +389,7 @@ fn repeated_value()
     storage_live(x)
     storage_live(y)
     storage_dead(_6)
-    x = move _7
+    x = noretag move _7
     storage_dead(_7)
     y = unsize_cast<Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 3usize>(move x)
     ret = into_vec<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}](move y)
@@ -469,7 +469,7 @@ fn with_fn_calls()
     storage_live(x)
     storage_live(y)
     storage_dead(_9)
-    x = move _10
+    x = noretag move _10
     storage_dead(_10)
     y = unsize_cast<Box<[u8]>[{built_in impl MetaSized for [u8]}, {built_in impl Sized for Global}], 2usize>(move x)
     ret = into_vec<u8, Global>[{built_in impl Sized for u8}, {built_in impl Sized for Global}](move y)

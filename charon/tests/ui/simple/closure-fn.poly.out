@@ -203,8 +203,8 @@ where
     storage_live(_9)
     storage_live(_11)
     storage_live(_13)
-    x = move tupled_args._0
-    y = move tupled_args._1
+    x = noretag move tupled_args._0
+    y = noretag move tupled_args._1
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)

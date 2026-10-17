@@ -39,7 +39,7 @@ where
     storage_live(_0)
     storage_live(x)
     storage_live(_6)
-    x = move tupled_args._0
+    x = noretag move tupled_args._0
     storage_live(_4)
     _4 = copy x
     storage_live(_5)
@@ -99,7 +99,7 @@ where
     storage_live(x)
     storage_live(_4)
     storage_live(_7)
-    x = move tupled_args._0
+    x = noretag move tupled_args._0
     _4 = copy (*(*_1)._0) panic.+ const 1u8
     (*(*_1)._0) = move _4
     storage_live(_5)
@@ -159,7 +159,7 @@ fn call_once(_1: test_crate::main::{closure#2}, tupled_args: (u8,)) -> u8
     storage_live(_0)
     storage_live(x)
     storage_live(_7)
-    x = move tupled_args._0
+    x = noretag move tupled_args._0
     storage_live(_4)
     storage_live(_5)
     _5 = move _1._0
