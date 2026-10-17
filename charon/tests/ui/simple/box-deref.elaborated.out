@@ -145,7 +145,7 @@ fn reborrow<'_0>(b: &'_0 mut Box<String>[{built_in impl MetaSized for String}, {
     storage_live(_2)
     storage_live(_3)
     _3 = &mut (*b)
-    _4 = copy (*_3)
+    _4 = noretag copy (*_3)
     _2 = &mut (*_4)
     _0 = &mut (*_2)
     storage_dead(_3)

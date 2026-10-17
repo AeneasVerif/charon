@@ -53,7 +53,7 @@ fn call<'_0>(_1: &'_0 {closure}, tupled_args: (u32,)) -> u32
 
     storage_live(_0)
     storage_live(x)
-    x = move tupled_args._0
+    x = noretag move tupled_args._0
     _0 = copy x
     storage_dead(x)
     storage_dead(tupled_args)

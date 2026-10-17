@@ -137,7 +137,7 @@ where
     storage_live(_6)
     storage_live(_7)
     _0 = ()
-    _2 = copy _1.metadata
+    _2 = noretag copy _1.metadata
     _3 = const 0usize
     loop {
         _7 = copy _3 == copy _2

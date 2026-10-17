@@ -20,7 +20,7 @@ fn call::<()><'_0>(_1: &'_0 {closure}::<()>, tupled_args: ((),))
     storage_live(_0)
     storage_live(x)
     _0 = ()
-    x = move tupled_args._0
+    x = noretag move tupled_args._0
     _0 = ()
     storage_dead(x)
     storage_dead(tupled_args)

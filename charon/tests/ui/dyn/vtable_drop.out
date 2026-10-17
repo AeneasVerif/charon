@@ -171,7 +171,7 @@ where
     storage_live(_6)
     storage_live(_7)
     _0 = ()
-    _2 = copy _1.metadata
+    _2 = noretag copy _1.metadata
     _3 = const 0usize
     loop {
         _7 = copy _3 == copy _2
@@ -325,12 +325,12 @@ where
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)
-    _5 = copy (*self)
+    _5 = noretag copy (*self)
     _3 = copy (*_5) checked.+ const 1i32
-    _6 = copy (*self)
+    _6 = noretag copy (*self)
     assert(move _3._1 == false) (overflow) else panic
     ↳⚡ unwind_continue
-    _7 = copy (*self)
+    _7 = noretag copy (*self)
     (*_7) = move _3._0
     storage_live(_4)
     _4 = &(*arg)

@@ -77,7 +77,7 @@ where
     storage_live(_0)
     storage_live(_x)
     _0 = ()
-    _x = move tupled_args._0
+    _x = noretag move tupled_args._0
     _0 = ()
     storage_dead(_x)
     storage_dead(tupled_args)

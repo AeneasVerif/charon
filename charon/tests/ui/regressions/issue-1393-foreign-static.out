@@ -20,7 +20,7 @@ pub fn MUTABLE() -> u8
     let _0: u8; // return
 
     storage_live(_0)
-    _0 = const 42u8
+    _0 = noretag const 42u8
     return
 }
 
@@ -44,7 +44,7 @@ pub fn DANGLING() -> Wrapper
     _1 = cast<*const u8>(const 4usize)
     storage_live(_2)
     _2 = Wrapper { _0: move _1 }
-    _0 = move _2
+    _0 = noretag move _2
     return
 }
 
@@ -59,7 +59,7 @@ where
     let _0: u8; // return
 
     storage_live(_0)
-    _0 = const 128u8
+    _0 = noretag const 128u8
     return
 }
 

@@ -102,7 +102,7 @@ fn main()
     storage_live(x)
     storage_live(y)
     storage_dead(_6)
-    x = move _7
+    x = noretag move _7
     storage_dead(_7)
     y = unsize_cast<Box<[i32]>[{built_in impl MetaSized for [i32]}, {built_in impl Sized for Global}], 1usize>(move x)
     ret = into_vec<i32, Global>[{built_in impl Sized for i32}, {built_in impl Sized for Global}](move y)

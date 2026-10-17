@@ -125,7 +125,7 @@ fn call_once(_1: {closure}, tupled_args: (u8,)) -> u8
     storage_live(_0)
     storage_live(x)
     storage_live(_7)
-    x = move tupled_args._0
+    x = noretag move tupled_args._0
     storage_live(_4)
     storage_live(_5)
     _5 = move _1._0

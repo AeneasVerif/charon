@@ -859,7 +859,7 @@ fn unsafe_raw_borrow_through_mutable_static() -> *const u32
     storage_live(_0)
     storage_live(_1)
     // unsafe
-    _1 = copy PTR
+    _1 = noretag copy PTR
     _0 = &raw const (*_1)
     storage_dead(_1)
     return

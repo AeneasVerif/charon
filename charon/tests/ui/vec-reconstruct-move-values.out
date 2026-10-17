@@ -129,7 +129,7 @@ fn move_values(flag: bool)
     storage_live(x_12)
     storage_live(y_13)
     storage_dead(_17)
-    x_12 = move _18
+    x_12 = noretag move _18
     storage_dead(_18)
     y_13 = unsize_cast<Box<[NoCopy]>[{built_in impl MetaSized for [NoCopy]}, {built_in impl Sized for Global}], 1usize>(move x_12)
     ret_11 = into_vec<NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}](move y_13)
@@ -178,7 +178,7 @@ fn move_values(flag: bool)
         storage_live(x_15)
         storage_live(y_16)
         storage_dead(_19)
-        x_15 = move _20
+        x_15 = noretag move _20
         storage_dead(_20)
         y_16 = unsize_cast<Box<[NoCopy]>[{built_in impl MetaSized for [NoCopy]}, {built_in impl Sized for Global}], 1usize>(move x_15)
         ret_14 = into_vec<NoCopy, Global>[{built_in impl Sized for NoCopy}, {built_in impl Sized for Global}](move y_16)

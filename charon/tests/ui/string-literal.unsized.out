@@ -53,7 +53,7 @@ fn FOO() -> &'static str
 
     storage_live(_0)
     storage_live(_1)
-    _1 = const RawMemory(0x68, 0x65, 0x6c, 0x6c, 0x6f)
+    _1 = noretag const RawMemory(0x68, 0x65, 0x6c, 0x6c, 0x6f)
     storage_live(_2)
     _2 = &_1
     storage_live(_3)
@@ -110,7 +110,7 @@ fn main()
     storage_live(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = const RawMemory(0x48, 0x65, 0x6c, 0x6c, 0x6f)
+    _4 = noretag const RawMemory(0x48, 0x65, 0x6c, 0x6c, 0x6f)
     storage_live(_5)
     _5 = &_4
     storage_live(_6)

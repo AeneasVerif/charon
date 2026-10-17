@@ -188,8 +188,8 @@ fn call<'_0, '_1, '_2>(_1: &'_2 {closure}, tupled_args: (&'_1 u8, &'_0 u8)) -> &
     storage_live(_0)
     storage_live(_3)
     storage_live(y)
-    _3 = move tupled_args._0
-    y = move tupled_args._1
+    _3 = noretag move tupled_args._0
+    y = noretag move tupled_args._1
     _0 = copy y
     storage_dead(y)
     storage_dead(_3)

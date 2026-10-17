@@ -474,7 +474,7 @@ fn slice_pat3()
     fake_read(slice)
     set_type(typeof(slice) == &'12 [i32])
     storage_dead(_3)
-    _8 = copy slice.metadata
+    _8 = noretag copy slice.metadata
     _7 = move _8
     _9 = const 2usize
     _10 = move _7 >= move _9
@@ -566,7 +566,7 @@ fn slice_pat4<'_0>(x: &'_0 [u32])
     storage_live(_4)
     storage_live(_5)
     _0 = ()
-    _3 = copy x.metadata
+    _3 = noretag copy x.metadata
     _2 = move _3
     _4 = const 1usize
     _5 = move _2 == move _4
@@ -629,7 +629,7 @@ fn slice_pat5<'_0>(x: &'_0 Unsized)
     _0 = ()
     _ = (*x)._0
     _3 = &raw const (*x)._0 with_metadata(copy x.metadata)
-    _4 = copy _3.metadata
+    _4 = noretag copy _3.metadata
     _2 = move _4
     _5 = const 1usize
     _6 = move _2 == move _5

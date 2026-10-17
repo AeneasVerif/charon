@@ -49,7 +49,7 @@ fn {impl Fn<(&'_0 u16,)> for test_crate::main::{closure#1}}::call<'_0, '_1>(_1: 
     storage_live(_0)
     storage_live(_3)
     _0 = ()
-    _3 = move tupled_args._0
+    _3 = noretag move tupled_args._0
     _0 = ()
     storage_dead(_3)
     storage_dead(tupled_args)
@@ -169,7 +169,7 @@ fn {impl Fn<(&'_0 u8,)> for test_crate::main::{closure}}::call<'_0, '_1>(_1: &'_
     storage_live(_0)
     storage_live(_3)
     _0 = ()
-    _3 = move tupled_args._0
+    _3 = noretag move tupled_args._0
     _0 = ()
     storage_dead(_3)
     storage_dead(tupled_args)

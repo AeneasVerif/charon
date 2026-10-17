@@ -132,7 +132,7 @@ pub fn inline_ref_scalar() -> &'static i32
 
     storage_live(_0)
     storage_live(_1)
-    _1 = const 42i32
+    _1 = noretag const 42i32
     storage_live(_2)
     _2 = &_1
     _0 = move _2

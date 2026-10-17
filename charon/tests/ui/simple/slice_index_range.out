@@ -117,7 +117,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     storage_live(args_8)
     storage_live(_9)
     storage_live(_10)
-    _17 = copy args_5._0
+    _17 = noretag copy args_5._0
     _10 = &(*_17)
     _9 = new_display<'60, '62, usize>[{built_in impl Sized for usize}, {impl#7}](move _10)
     ↳⚡ storage_dead(_18)
@@ -132,7 +132,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     storage_dead(_10)
     storage_live(_11)
     storage_live(_12)
-    _18 = copy args_5._1
+    _18 = noretag copy args_5._1
     _12 = &(*_18)
     _11 = new_display<'64, '66, usize>[{built_in impl Sized for usize}, {impl#7}](move _12)
     ↳⚡ storage_dead(_18)
@@ -253,7 +253,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     storage_live(args_8)
     storage_live(_9)
     storage_live(_10)
-    _17 = copy args_5._0
+    _17 = noretag copy args_5._0
     _10 = &(*_17)
     _9 = new_display<'60, '62, usize>[{built_in impl Sized for usize}, {impl#7}](move _10)
     ↳⚡ storage_dead(_18)
@@ -268,7 +268,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     storage_dead(_10)
     storage_live(_11)
     storage_live(_12)
-    _18 = copy args_5._1
+    _18 = noretag copy args_5._1
     _12 = &(*_18)
     _11 = new_display<'64, '66, usize>[{built_in impl Sized for usize}, {impl#7}](move _12)
     ↳⚡ storage_dead(_18)
@@ -389,7 +389,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     storage_live(args_8)
     storage_live(_9)
     storage_live(_10)
-    _17 = copy args_5._0
+    _17 = noretag copy args_5._0
     _10 = &(*_17)
     _9 = new_display<'60, '62, usize>[{built_in impl Sized for usize}, {impl#7}](move _10)
     ↳⚡ storage_dead(_18)
@@ -404,7 +404,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     storage_dead(_10)
     storage_live(_11)
     storage_live(_12)
-    _18 = copy args_5._1
+    _18 = noretag copy args_5._1
     _12 = &(*_18)
     _11 = new_display<'64, '66, usize>[{built_in impl Sized for usize}, {impl#7}](move _12)
     ↳⚡ storage_dead(_18)
@@ -525,7 +525,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     storage_live(args_8)
     storage_live(_9)
     storage_live(_10)
-    _17 = copy args_5._0
+    _17 = noretag copy args_5._0
     _10 = &(*_17)
     _9 = new_display<'60, '62, usize>[{built_in impl Sized for usize}, {impl#7}](move _10)
     ↳⚡ storage_dead(_18)
@@ -540,7 +540,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     storage_dead(_10)
     storage_live(_11)
     storage_live(_12)
-    _18 = copy args_5._1
+    _18 = noretag copy args_5._1
     _12 = &(*_18)
     _11 = new_display<'64, '66, usize>[{built_in impl Sized for usize}, {impl#7}](move _12)
     ↳⚡ storage_dead(_18)

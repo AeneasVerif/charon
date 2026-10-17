@@ -122,7 +122,7 @@ pub fn metadata<T>(ptr: *const T) -> {built_in impl Pointee for T}::Metadata
     storage_live(_0)
     storage_live(_2)
     _2 = copy ptr
-    _0 = copy _2.metadata
+    _0 = noretag copy _2.metadata
     storage_dead(_2)
     return
 }
@@ -2335,7 +2335,7 @@ where
     _6 = deref_mut<'7, Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]>[{built_in impl MetaSized for Box<T, Global>[TraitClause0, {built_in impl Sized for Global}, {impl#0}]}](move _7)
     ↳⚡ unwind_continue
     storage_dead(_7)
-    _8 = copy (*_6)
+    _8 = noretag copy (*_6)
     _9 = transmute<*const T>(copy _8._0)
     _5 = &mut (*_9) with_metadata(copy _9.metadata)
     _4 = &raw mut (*_5) with_metadata(copy _5.metadata)
@@ -2395,7 +2395,7 @@ where
     _5 = deref_mut<'11, Box<T, A>[TraitClause0, TraitClause1, TraitClause2]>[{built_in impl MetaSized for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}](move _6)
     ↳⚡ unwind_continue
     storage_dead(_6)
-    _14 = copy (*_5)
+    _14 = noretag copy (*_5)
     _15 = transmute<*const T>(copy _14._0)
     ptr = &raw mut (*_15) with_metadata(copy _15.metadata)
     storage_live(alloc)

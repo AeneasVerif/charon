@@ -240,8 +240,8 @@ where
     storage_live(_0)
     storage_live(x)
     storage_live(y)
-    x = move tupled_args.0
-    y = move tupled_args.1
+    x = noretag move tupled_args.0
+    y = noretag move tupled_args.1
     storage_live(_5)
     _5 = copy y
     if move _5 {

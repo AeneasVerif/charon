@@ -464,7 +464,7 @@ fn call_mut<'_0>(_1: &'_0 mut {closure}, tupled_args: (i32,)) -> i32
 
     storage_live(_0)
     storage_live(v)
-    v = move tupled_args._0
+    v = noretag move tupled_args._0
     _0 = copy v
     storage_dead(v)
     storage_dead(tupled_args)
