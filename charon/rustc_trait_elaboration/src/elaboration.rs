@@ -235,7 +235,12 @@ impl<'tcx, Id: ItemId> PredicateSearcher<'tcx, Id> {
         target: PolyTraitRef<'tcx>,
     ) -> DynBinder<'tcx, TraitProof<'tcx, Id>, Id> {
         let tcx = self.elab_ctx.tcx;
-        let Dynamic(predicates, _) = target.skip_binder().self_ty().kind() else {
+        let self_ty = normalize(
+            tcx,
+            self.typing_env,
+            Unnormalized::new_wip(target.self_ty()),
+        );
+        let Dynamic(predicates, _) = self_ty.skip_binder().kind() else {
             panic!("a dyn trait proof should have a dyn Self type")
         };
         self.resolve_for_dyn(state, predicates, |searcher, self_ty| {
