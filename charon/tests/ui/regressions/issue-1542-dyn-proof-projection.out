@@ -1,0 +1,142 @@
+# Final LLBC before serialization:
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::ops::deref::Deref
+#[lang_item(Deref)]
+#[diagnostic_item("Deref")]
+pub trait Deref<Self>
+{
+    proof ImpliedClause0: (Self::Target: MetaSized)
+    type Target
+    fn deref<'_0_1>;
+    vtable: core::ops::deref::Deref::{vtable}<Self::Target>
+}
+
+// Full name: core::ops::deref::{impl Deref for &'_0 T}::deref
+#[diagnostic_item("noop_method_deref")]
+pub fn deref<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_1 T
+where
+    TraitClause0: (T: MetaSized),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: T: '_1,
+    RegionOutlives0: '_0: '_1,
+= <opaque>
+
+// Full name: core::ops::deref::{impl Deref for &'_0 T}
+impl<'_0, T> Deref for &'_0 T
+where
+    TraitClause0: (T: MetaSized),
+    TypeOutlives0: T: '_0,
+{
+    proof ImpliedClause0: (T: MetaSized) = TraitClause0
+    type Target = T
+    fn deref<'_0_1> = deref<'_0, '_0_1, T>[TraitClause0]
+    vtable: lazy
+}
+
+struct test_crate::Trait::{vtable} {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn Trait)),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::Trait
+trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::Trait::{vtable}
+}
+
+// Full name: test_crate::Wrap
+struct Wrap<P>
+where
+    TraitClause0: (P: Sized),
+{
+  _0: P,
+}
+
+// Full name: test_crate::{impl Trait for Wrap<P>[TraitClause0]}
+impl<P> "impl_Trait_for_Wrap" Trait for Wrap<P>[TraitClause0]
+where
+    TraitClause0: (P: Sized),
+    TraitClause1: (P: Deref),
+    TraitClause2: (TraitClause1::Target: Trait),
+{
+    proof ImpliedClause0: (Wrap<P>[TraitClause0]: MetaSized) = {built_in impl MetaSized for Wrap<P>[TraitClause0]}
+    vtable: lazy
+}
+
+// Full name: test_crate::use_trait
+fn use_trait<T>(_1: T)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Trait),
+{
+    let _0: (); // return
+    let _1: T; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    conditional_drop[{built_in impl Destruct for T}::drop_glue<'0>] _1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::pass_to_wrap
+fn pass_to_wrap<'_0>(p: &'_0 (dyn Trait + '_0))
+{
+    let _0: (); // return
+    let p: &'3 (dyn Trait + '4); // arg #1
+    let _2: (); // anonymous local
+    let _3: Wrap<&'22 (dyn Trait + '23)>[{built_in impl Sized for &'22 (dyn Trait + '29)}]; // anonymous local
+    let _4: &'30 (dyn Trait + '31); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = copy p
+    _3 = Wrap { _0: move _4 }
+    storage_dead(_4)
+    _2 = use_trait<Wrap<&'75 (dyn Trait + '70)>[{built_in impl Sized for &'75 (dyn Trait + '76)}]>[{built_in impl Sized for Wrap<&'75 (dyn Trait + '98)>[{built_in impl Sized for &'75 (dyn Trait + '104)}]}, impl_Trait_for_Wrap<&'75 (dyn Trait + '190)>[{built_in impl Sized for &'75 (dyn Trait + '195)}, {impl Deref for &'_0 T}<'75, (dyn Trait + '212)>[{built_in impl MetaSized for (dyn Trait + '214)}], Trait<(dyn Trait + '218)>]](move _3)
+    ↳⚡ storage_dead(p)
+        unwind_continue
+    storage_dead(_3)
+    storage_dead(_2)
+    _0 = ()
+    storage_dead(p)
+    return
+}
+
+
+
