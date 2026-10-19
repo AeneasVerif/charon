@@ -28,5 +28,7 @@ pub mod options {
         pub inline_anon_consts: bool,
         /// How to read evaluated constants.
         pub consts: rustc_const_uneval::Config,
+        /// Whether `Box<T>` is treated as a built-in pointer rather than as a struct.
+        pub treat_box_as_builtin: bool,
     }
 }

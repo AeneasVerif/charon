@@ -589,8 +589,13 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
     tgt_ty: ty::Ty<'tcx>,
 ) -> (Vec<FieldIdx>, UnsizingMetadata<'tcx>) {
     let tcx = s.base().tcx;
-    let (Some(src_ty), Some(tgt_ty)) = (src_ty.builtin_deref(true), tgt_ty.builtin_deref(true))
-    else {
+    // Unless boxes are built-in, we go through their fields like for other smart pointers.
+    let builtin_deref = |ty: ty::Ty<'tcx>| {
+        (!ty.is_box() || s.base().options.treat_box_as_builtin)
+            .then(|| ty.builtin_deref(true))
+            .flatten()
+    };
+    let (Some(src_ty), Some(tgt_ty)) = (builtin_deref(src_ty), builtin_deref(tgt_ty)) else {
         // Like `rustc_monomorphize::custom_coerce_unsize_info`: for a `CoerceUnsized` struct
         // (e.g. `Rc`), find the impl and recurse into the field it coerces.
         return match (src_ty.kind(), tgt_ty.kind()) {
