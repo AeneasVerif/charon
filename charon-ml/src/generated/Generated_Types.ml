@@ -302,13 +302,11 @@ and cast_kind =
           - [&[mut] dyn Trait<...>] -> [&[mut] T]
           - [*[mut] dyn Trait<...>] -> [*[mut] T]
           - [Box<dyn Trait<...>>] -> [Box<T>] when no [--treat-box-as-builtin]
+          - smart-pointers, e.g. [Rc<dyn Trait<...>>] -> [Rc<T>] or
+            [Pin<&mut dyn Trait<...>>] -> [Pin<&mut T>]
 
           For possible receivers, see:
           <https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility>.
-          Other receivers, e.g., [Rc] should be unpacked before the cast and
-          re-boxed after. FIXME(ssyram): but this is not implemented yet,
-          namely, there may still be something like
-          [Rc<dyn Trait<...>> -> Rc<T>] in the types.
 
           With [--index-to-function-calls], this also converts [&[T]] to
           [&[T; N]] (or the mutable equivalents) when an array subslice

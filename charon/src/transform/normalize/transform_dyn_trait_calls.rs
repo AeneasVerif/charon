@@ -16,6 +16,8 @@
 //! ```text
 //! @0 := (move (*@receiver.ptr_metadata).method_check)(move (@receiver), move (@args)) // Call through function pointer
 //! ```
+use itertools::Itertools;
+
 use super::super::ctx::UllbcPass;
 use crate::{
     errors::Error,
@@ -28,6 +30,32 @@ use crate::{
     },
     ullbc_ast::*,
 };
+
+/// Project into the place of a potential smart-pointer receivers (e.g. `Rc<dyn Trait>`)
+/// until we find the builtin pointer or Box.
+fn receiver_fat_ptr(translated: &TranslatedCrate, mut place: Place) -> Place {
+    while let TyKind::Adt(tref) = place.ty().kind()
+        && !tref.is_box()
+        && let Some(decl) = translated.type_decls.get(tref.id)
+        && let TypeDeclKind::Struct(fields) = &decl.kind
+    {
+        let candidates = fields.iter_enumerated().filter_map(|(field_id, field)| {
+            let ty = field.ty.clone().substitute(&tref.generics);
+            let is_phantom = ty
+                .as_adt_id()
+                .and_then(|id| translated.type_decls.get(id))
+                .is_some_and(|d| d.item_meta.lang_item == Some(from_rustc::LangItem::PhantomData));
+            let mut mentions_dyn = false;
+            ty.dyn_visit(|ty: &TyKind| mentions_dyn |= ty.is_dyn_trait());
+            (mentions_dyn && !is_phantom).then_some((field_id, ty))
+        });
+        let Ok((field_id, field_ty)) = candidates.exactly_one() else {
+            break;
+        };
+        place = place.project(ProjectionElem::Field(None, field_id), field_ty);
+    }
+    place
+}
 
 /// Transform a call to a trait method on a dyn trait object
 fn transform_dyn_trait_call(
@@ -171,7 +199,7 @@ fn transform_dyn_trait_call(
 
     let receiver_vtable_ty = TyKind::Adt(receiver_vtable_ref).into_ty();
     let ptr_to_vtable_ty = Ty::new(TyKind::RawPtr(receiver_vtable_ty.clone(), RefKind::Shared));
-    let mut method_vtable_place = dyn_trait_place
+    let mut method_vtable_place = receiver_fat_ptr(&ctx.ctx.translated, dyn_trait_place)
         .project(ProjectionElem::PtrMetadata, ptr_to_vtable_ty)
         .project(ProjectionElem::Deref, receiver_vtable_ty);
 
