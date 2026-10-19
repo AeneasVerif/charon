@@ -223,7 +223,7 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
                 let methods = field_map
                     .iter_enumerated()
                     .filter(|&(_field, kind)| {
-                        matches!(kind, VTableField::Drop | VTableField::Method(_))
+                        matches!(kind, VTableField::Drop | VTableField::Method(..))
                     })
                     .map(|(field, _kind)| self.method_name(field))
                     .collect();
@@ -704,7 +704,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                         &self.krate.type_decls[tref.id].src
                     && matches!(
                         field_map[*field],
-                        VTableField::Drop | VTableField::Method(_)
+                        VTableField::Drop | VTableField::Method(..)
                     )
                 {
                     mb::vtable_method_lookup(
@@ -953,7 +953,15 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             UnOp::Cast(CastKind::FnPtrToUnsafe) => {
                 return Ok(operand_value);
             }
-            UnOp::Cast(CastKind::Unsize(target_ty, UnsizingMetadata::Length(len))) => {
+            UnOp::Cast(CastKind::Unsize(_, _, path) | CastKind::Concretize(_, path))
+                if !path.is_empty() =>
+            {
+                raise!(
+                    span,
+                    "MiniRust does not support casts through smart pointers"
+                )
+            }
+            UnOp::Cast(CastKind::Unsize(target_ty, UnsizingMetadata::Length(len), _)) => {
                 let target_ty = self.ty(span, target_ty)?;
                 let mini::Type::Ptr(_) = target_ty else {
                     raise!(span, "unsizing target is not a pointer")
@@ -964,7 +972,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     target_ty,
                 ));
             }
-            UnOp::Cast(CastKind::Unsize(target_ty, UnsizingMetadata::VTable(_, vtable))) => {
+            UnOp::Cast(CastKind::Unsize(target_ty, UnsizingMetadata::VTable(_, vtable), _)) => {
                 let ConstantExprKind::Ref(global, None) = vtable.kind() else {
                     raise!(span, "unsupported vtable reference")
                 };
@@ -986,13 +994,13 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     self.ty(span, target_ty)?,
                 ));
             }
-            UnOp::Cast(CastKind::Unsize(target_ty, UnsizingMetadata::VTableUpcast(path))) => {
+            UnOp::Cast(CastKind::Unsize(target_ty, UnsizingMetadata::VTableUpcast(path), _)) => {
                 if !path.is_empty() {
                     raise!(span, "MiniRust does not support supertrait vtable upcasts")
                 }
                 return Ok(mb::transmute(operand_value, self.ty(span, target_ty)?));
             }
-            UnOp::Cast(CastKind::Concretize(target_ty)) => {
+            UnOp::Cast(CastKind::Concretize(target_ty, _)) => {
                 return Ok(mb::transmute(
                     mb::get_thin_pointer(operand_value),
                     self.ty(span, target_ty)?,
@@ -1368,7 +1376,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
         };
         let mut methods = mini::Map::new();
         for (field, kind) in field_map.iter_enumerated() {
-            if matches!(kind, VTableField::Drop | VTableField::Method(_)) {
+            if matches!(kind, VTableField::Drop | VTableField::Method(..)) {
                 let field_val = &fields[field];
                 let method = match field_val.kind() {
                     ConstantExprKind::Cast(value, _) => value,

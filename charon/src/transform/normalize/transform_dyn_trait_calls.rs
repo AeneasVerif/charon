@@ -64,11 +64,11 @@ fn transform_dyn_trait_call(
         .and_then(|decl| decl.item_meta.lang_item.as_ref())
         == Some(&from_rustc::LangItem::Destruct);
 
-    let (vtable_tref, target_field) = if is_drop_glue {
+    let vtable_tref = if is_drop_glue {
         supertrait_path.clear(); // we actually don't need to go up; the drop is here!
-        (dyn_proof, VTableField::Drop)
+        dyn_proof
     } else {
-        (trait_ref, VTableField::Method(*method_id))
+        trait_ref
     };
 
     // Get the type of the vtable struct.
@@ -100,9 +100,12 @@ fn transform_dyn_trait_call(
         return Ok(()); // Weird
     };
     // Retrieve the target field from the vtable struct definition.
-    let Some((method_field_id, _)) = field_map
-        .iter_enumerated()
-        .find(|(_, field)| **field == target_field)
+    let Some((method_field_id, target_field)) =
+        field_map.iter_enumerated().find(|(_, field)| match field {
+            VTableField::Drop => is_drop_glue,
+            VTableField::Method(id, _) => !is_drop_glue && id == method_id,
+            _ => false,
+        })
     else {
         let vtable_name = vtable_decl_ref.id.with_ctx(fmt_ctx).to_string();
         raise_error!(
@@ -112,6 +115,11 @@ fn transform_dyn_trait_call(
             method_id,
             vtable_name
         );
+    };
+
+    let receiver_path = match target_field {
+        VTableField::Method(_, path) => path.clone(),
+        _ => vec![],
     };
 
     let method_field = &fields[method_field_id];
@@ -171,7 +179,12 @@ fn transform_dyn_trait_call(
 
     let receiver_vtable_ty = TyKind::Adt(receiver_vtable_ref).into_ty();
     let ptr_to_vtable_ty = Ty::new(TyKind::RawPtr(receiver_vtable_ty.clone(), RefKind::Shared));
-    let mut method_vtable_place = dyn_trait_place
+    let Some(receiver_ptr) = receiver_path.iter().try_fold(dyn_trait_place, |p, field| {
+        p.project_auto_ty(&ctx.ctx.translated, ProjectionElem::Field(None, *field))
+    }) else {
+        raise_error!(ctx.ctx, ctx.span, "Could not project into dyn receiver");
+    };
+    let mut method_vtable_place = receiver_ptr
         .project(ProjectionElem::PtrMetadata, ptr_to_vtable_ty)
         .project(ProjectionElem::Deref, receiver_vtable_ty);
 

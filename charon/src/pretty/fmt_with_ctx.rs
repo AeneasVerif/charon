@@ -498,14 +498,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
             CastKind::FnPtrToUnsafe => write!(f, "fn_ptr_to_unsafe"),
             CastKind::Subtype(tgt) => write!(f, "subtype<{}>", tgt.with_ctx(ctx)),
             CastKind::RawPtr(tgt) => write!(f, "cast<{}>", tgt.with_ctx(ctx)),
-            CastKind::Unsize(tgt, meta) => write!(
+            CastKind::Unsize(tgt, meta, _) => write!(
                 f,
                 "unsize_cast<{}, {}>",
                 tgt.with_ctx(ctx),
                 meta.with_ctx(ctx)
             ),
             CastKind::Transmute(tgt) => write!(f, "transmute<{}>", tgt.with_ctx(ctx)),
-            CastKind::Concretize(tgt) => write!(f, "concretize<{}>", tgt.with_ctx(ctx)),
+            CastKind::Concretize(tgt, _) => write!(f, "concretize<{}>", tgt.with_ctx(ctx)),
         }
     }
 }

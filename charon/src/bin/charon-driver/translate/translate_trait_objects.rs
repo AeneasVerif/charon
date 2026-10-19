@@ -181,7 +181,7 @@ pub enum TrVTableField<'tcx> {
     Size,
     Align,
     Drop,
-    Method(TraitMethodId, hax::Binder<hax::TyFnSig<'tcx>>),
+    Method(TraitMethodId, hax::Binder<hax::TyFnSig<'tcx>>, MetadataPath),
     SuperTrait(TraitClauseId, hax::Clause<'tcx>),
 }
 
@@ -324,7 +324,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     && let Some(sig) = f.vtable_sig(self.hax_state())
                 {
                     let id = self.translate_trait_method_id_no_enqueue(trait_id, item_def_id)?;
-                    fields.push(TrVTableField::Method(id, sig));
+                    let path =
+                        self.translate_metadata_path(&f.vtable_receiver_path(self.hax_state()));
+                    fields.push(TrVTableField::Method(id, sig, path));
                 }
             }
         }
@@ -393,7 +395,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         ("drop".into(), drop_ty)
                     }
                 }
-                TrVTableField::Method(item_id, sig) => {
+                TrVTableField::Method(item_id, sig, _) => {
                     let item_name = self
                         .translated
                         .assoc_item_name(self_trait_ref.trait_id(), *item_id);
@@ -505,12 +507,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             let kind = TypeDeclKind::Struct(fields);
             let l = self.generate_naive_layout(span, &kind)?;
             supertrait_map = vtable_data.supertrait_map;
-            field_map = vtable_data.fields.map_ref(|tr_field| match *tr_field {
+            field_map = vtable_data.fields.map_ref(|tr_field| match tr_field {
                 TrVTableField::Size => VTableField::Size,
                 TrVTableField::Align => VTableField::Align,
                 TrVTableField::Drop => VTableField::Drop,
-                TrVTableField::Method(id, ..) => VTableField::Method(id),
-                TrVTableField::SuperTrait(clause_id, ..) => VTableField::SuperTrait(clause_id),
+                TrVTableField::Method(id, _, path) => VTableField::Method(*id, path.clone()),
+                TrVTableField::SuperTrait(clause_id, ..) => VTableField::SuperTrait(*clause_id),
             });
             let layout = [(self.get_target_triple(), l)].into();
             (kind, layout)
@@ -1088,7 +1090,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         mk(ConstantExprKind::FnPtr(drop_shim))
                     }
                 }
-                TrVTableField::Method(method_id, _) => {
+                TrVTableField::Method(method_id, ..) => {
                     let value = self.vtable_method_value(
                         span,
                         trait_id,
@@ -1146,6 +1148,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         target_receiver: &Ty,
         shim_signature: &FunSig,
         receiver_is_by_value: bool,
+        receiver_path: MetadataPath,
         target_fn: FnPtr,
     ) -> Result<Body, Error> {
         let mut builder = BodyBuilder::new(span, shim_signature.inputs.len());
@@ -1176,7 +1179,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // FIXME: need to unpack & re-pack the structure for cases like `Rc`, `Arc`, `Pin` and
         // (when --raw-boxes is on) `Box`
         let rval = Rvalue::UnaryOp(
-            UnOp::Cast(CastKind::Concretize(target_self.ty().clone())),
+            UnOp::Cast(CastKind::Concretize(
+                target_self.ty().clone(),
+                receiver_path,
+            )),
             Operand::Move(shim_self.clone()),
         );
         builder.push_statement(StatementKind::Assign(target_self.clone(), rval));
@@ -1217,7 +1223,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Perform the core concretization cast.
         let rval = Rvalue::UnaryOp(
-            UnOp::Cast(CastKind::Concretize(target_self.ty().clone())),
+            UnOp::Cast(CastKind::Concretize(target_self.ty().clone(), vec![])),
             Operand::Move(dyn_self.clone()),
         );
         builder.push_statement(StatementKind::Assign(target_self.clone(), rval));
@@ -1311,6 +1317,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // the concrete receiver we will cast to
         let target_receiver: Ty;
         let receiver_is_by_value: bool;
+        // the path to the pointer carrying the vtable in the receiver.
+        let receiver_path: MetadataPath;
         // the item that implements the method.
         let target_item: TransItemSourceKind;
 
@@ -1351,6 +1359,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 }
             };
             receiver_is_by_value = target_kind == ClosureKind::FnOnce;
+            receiver_path = vec![];
             target_item = TransItemSourceKind::CallableMethod(target_kind);
         } else {
             let hax::FullDefKind::AssocFn(f) = def.kind() else {
@@ -1375,6 +1384,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     .implemented_trait_item_id()
                     .real_rust_def_id(),
             );
+            receiver_path = self.translate_metadata_path(&f.vtable_receiver_path(self.hax_state()));
             target_item = TransItemSourceKind::Fun;
         };
 
@@ -1396,6 +1406,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 &target_receiver,
                 &signature,
                 receiver_is_by_value,
+                receiver_path,
                 target_fn,
             )?
         };
