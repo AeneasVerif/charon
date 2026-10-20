@@ -490,13 +490,15 @@ and cast_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 7 ->
          let* _0 = ty_of_postcard ctx st in
          let* _1 = unsizing_metadata_of_postcard ctx st in
-         Ok (CastUnsize (_0, _1))
+         let* _2 = list_of_postcard field_id_of_postcard ctx st in
+         Ok (CastUnsize (_0, _1, _2))
      | 8 ->
          let* _0 = ty_of_postcard ctx st in
          Ok (CastTransmute _0)
      | 9 ->
          let* _0 = ty_of_postcard ctx st in
-         Ok (CastConcretize _0)
+         let* _1 = list_of_postcard field_id_of_postcard ctx st in
+         Ok (CastConcretize (_0, _1))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and const_generic_param_of_postcard (ctx : of_postcard_ctx)

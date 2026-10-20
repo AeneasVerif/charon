@@ -186,6 +186,10 @@ impl<'tcx> TranslateCtx<'tcx> {
         FieldId::new(id.index())
     }
 
+    pub fn translate_metadata_path(&self, path: &[hax::FieldIdx]) -> MetadataPath {
+        path.iter().map(|id| self.translate_field_id(*id)).collect()
+    }
+
     fn translate_borrow_kind(&self, borrow_kind: mir::BorrowKind) -> BorrowKind {
         match borrow_kind {
             mir::BorrowKind::Shared => BorrowKind::Shared,
@@ -502,16 +506,17 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             });
 
             builder.push_statement({
-                let meta = hax::compute_unsizing_metadata(
+                let (path, meta) = hax::compute_unsizing_metadata(
                     &self.hax_state,
                     box_array_rust_ty,
                     box_slice_rust_ty,
                 );
                 let meta = self.translate_unsizing_metadata(span, &meta)?;
+                let path = self.translate_metadata_path(&path);
                 StatementKind::Assign(
                     box_slice.clone(),
                     Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Unsize(box_slice_ty, meta)),
+                        UnOp::Cast(CastKind::Unsize(box_slice_ty, meta, path)),
                         Operand::Move(initialized_box),
                     ),
                 )
@@ -1377,10 +1382,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     }
                     mir::CastKind::Subtype => CastKind::Subtype(tgt_ty.clone()),
                     mir::CastKind::PointerCoercion(ty::adjustment::PointerCoercion::Unsize, ..) => {
-                        let meta =
+                        let (path, meta) =
                             hax::compute_unsizing_metadata(&self.hax_state, op_ty, *rust_tgt_ty);
                         let meta = self.translate_unsizing_metadata(span, &meta)?;
-                        CastKind::Unsize(tgt_ty.clone(), meta)
+                        CastKind::Unsize(tgt_ty.clone(), meta, self.translate_metadata_path(&path))
                     }
                 };
 

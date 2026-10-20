@@ -284,7 +284,7 @@ and cast_kind =
           same signature. *)
   | CastSubtype of ty
       (** Convert a value to a supertype; this has no runtime effect. *)
-  | CastUnsize of ty * unsizing_metadata
+  | CastUnsize of ty * unsizing_metadata * field_id list
       (** [Unsize coercion](https://doc.rust-lang.org/std/ops/trait.CoerceUnsized.html).
           This is either [[T; N]] -> [[T]] or [T: Trait] -> [dyn Trait]
           coercions, behind a pointer (reference, [Box], or other type that
@@ -295,7 +295,7 @@ and cast_kind =
   | CastTransmute of ty
       (** Reinterprets the bits of a value of one type as another type, i.e.
           exactly what [[std::mem::transmute]] does. *)
-  | CastConcretize of ty
+  | CastConcretize of ty * field_id list
       (** Converts a receiver type with [dyn Trait<...>] to a concrete type [T],
           used in vtable method shims. Valid conversions are references, raw
           pointers, and (optionally) boxes:

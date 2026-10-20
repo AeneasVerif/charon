@@ -172,14 +172,14 @@ fn transform_constant_expr(
                 (None, Some(metadata)) => {
                     let sized_ref = ctx.borrow_to_new_var(place, BorrowKind::Shared, None);
                     Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Unsize(val.ty().clone(), metadata)),
+                        UnOp::Cast(CastKind::Unsize(val.ty().clone(), metadata, vec![])),
                         Operand::Move(sized_ref),
                     )
                 }
                 (Some(rk), Some(metadata)) => {
                     let sized_raw_ref = ctx.raw_borrow_to_new_var(place, rk, None);
                     Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Unsize(val.ty().clone(), metadata)),
+                        UnOp::Cast(CastKind::Unsize(val.ty().clone(), metadata, vec![])),
                         Operand::Move(sized_raw_ref),
                     )
                 }
@@ -229,7 +229,7 @@ fn transform_constant_expr(
                 let raw_ty = TyKind::RawPtr(pointee.clone(), *rk).into_ty();
                 let mut kind = kind.clone();
                 match &mut kind {
-                    CastKind::RawPtr(tgt) | CastKind::Unsize(tgt, _) => *tgt = raw_ty.clone(),
+                    CastKind::RawPtr(tgt) | CastKind::Unsize(tgt, ..) => *tgt = raw_ty.clone(),
                     _ => unreachable!("unexpected cast to a reference: {kind:?}"),
                 }
                 let raw_ptr = ctx.rval_to_place(Rvalue::UnaryOp(UnOp::Cast(kind), value), raw_ty);

@@ -83,7 +83,7 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
         StatementKind::Assign(
             place,
             Rvalue::UnaryOp(
-                UnOp::Cast(CastKind::Unsize(tgt_ty, UnsizingMetadata::Length(_))),
+                UnOp::Cast(CastKind::Unsize(tgt_ty, UnsizingMetadata::Length(_), _)),
                 operand,
             ),
         ) => {
@@ -423,7 +423,7 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
                 self.ctx.insert_assn_stmt(
                     array_ref_var.clone(),
                     Rvalue::UnaryOp(
-                        UnOp::Cast(CastKind::Concretize(array_ref_ty)),
+                        UnOp::Cast(CastKind::Concretize(array_ref_ty, vec![])),
                         Operand::Move(output_var),
                     ),
                 );
