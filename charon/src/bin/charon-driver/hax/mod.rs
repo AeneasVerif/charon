@@ -29,5 +29,7 @@ pub mod options {
         /// Whether to turn anonymous const-eval allocations (e.g. the bytes of `b"foo"`) into
         /// `RawMemory` globals, or to inline their contents at each use.
         pub anon_allocs_as_globals: bool,
+        /// Whether `Box<T>` is treated as a built-in pointer rather than as a struct.
+        pub treat_box_as_builtin: bool,
     }
 }

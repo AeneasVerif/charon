@@ -329,7 +329,7 @@ pub fn call_box(x: Box<(dyn T + 'static), Global>[{built_in impl MetaSized for (
     _0 = ()
     storage_live(_2)
     _2 = move x
-    _0 = (copy (*_2.metadata).method_by_box)(move _2)
+    _0 = (copy (*_2._0.pointer.pointer.metadata).method_by_box)(move _2)
     ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'28, (dyn T + '23), Global>[{built_in impl MetaSized for (dyn T + '23)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] _2
         ↳⚡ unwind_terminate
         conditional_drop[impl_Destruct_for_Box::drop_glue<'58, (dyn T + '53), Global>[{built_in impl MetaSized for (dyn T + '53)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] x
@@ -415,7 +415,7 @@ pub fn call_pin_box(x: Pin<Box<(dyn T + 'static), Global>[{built_in impl MetaSiz
     _0 = ()
     storage_live(_2)
     _2 = move x
-    _0 = (copy (*_2.pointer.metadata).method_by_pin_box)(move _2)
+    _0 = (copy (*_2.pointer._0.pointer.pointer.metadata).method_by_pin_box)(move _2)
     ↳⚡ conditional_drop[impl_Destruct_for_Pin::drop_glue<'140, Box<(dyn T + '110), Global>[{built_in impl MetaSized for (dyn T + '112)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + '110), Global>[{built_in impl MetaSized for (dyn T + '112)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]] _2
         ↳⚡ unwind_terminate
         conditional_drop[impl_Destruct_for_Pin::drop_glue<'298, Box<(dyn T + '268), Global>[{built_in impl MetaSized for (dyn T + '270)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + '268), Global>[{built_in impl MetaSized for (dyn T + '270)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]] x

@@ -32,18 +32,18 @@ use crate::{
 };
 
 /// Project into the place of a potential smart-pointer receivers (e.g. `Rc<dyn Trait>`)
-/// until we find the builtin pointer or Box.
-fn receiver_fat_ptr(translated: &TranslatedCrate, mut place: Place) -> Place {
+/// until we find the builtin pointer, or Box if boxes are treated as builtin.
+fn receiver_fat_ptr(ctx: &TransformCtx, mut place: Place) -> Place {
     while let TyKind::Adt(tref) = place.ty().kind()
-        && !tref.is_box()
-        && let Some(decl) = translated.type_decls.get(tref.id)
+        && !(tref.is_box() && ctx.options.treat_box_as_builtin)
+        && let Some(decl) = ctx.translated.type_decls.get(tref.id)
         && let TypeDeclKind::Struct(fields) = &decl.kind
     {
         let candidates = fields.iter_enumerated().filter_map(|(field_id, field)| {
             let ty = field.ty.clone().substitute(&tref.generics);
             let is_phantom = ty
                 .as_adt_id()
-                .and_then(|id| translated.type_decls.get(id))
+                .and_then(|id| ctx.translated.type_decls.get(id))
                 .is_some_and(|d| d.item_meta.lang_item == Some(from_rustc::LangItem::PhantomData));
             let mut mentions_dyn = false;
             ty.dyn_visit(|ty: &TyKind| mentions_dyn |= ty.is_dyn_trait());
@@ -199,7 +199,7 @@ fn transform_dyn_trait_call(
 
     let receiver_vtable_ty = TyKind::Adt(receiver_vtable_ref).into_ty();
     let ptr_to_vtable_ty = Ty::new(TyKind::RawPtr(receiver_vtable_ty.clone(), RefKind::Shared));
-    let mut method_vtable_place = receiver_fat_ptr(&ctx.ctx.translated, dyn_trait_place)
+    let mut method_vtable_place = receiver_fat_ptr(ctx.ctx, dyn_trait_place)
         .project(ProjectionElem::PtrMetadata, ptr_to_vtable_ty)
         .project(ProjectionElem::Deref, receiver_vtable_ty);
 
