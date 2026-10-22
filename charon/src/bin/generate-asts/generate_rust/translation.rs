@@ -35,6 +35,7 @@ impl Generator<'_> {
         writeln!(f, "use rustc_attr_ir::lang_items::*;")?;
         writeln!(f, "use rustc_hir::attrs::*;")?;
         writeln!(f, "use rustc_span::symbol::*;")?;
+        writeln!(f, "use rustc_target::spec::*;")?;
         writeln!(f)?;
         writeln!(f, "impl<'tcx> TranslateCtx<'tcx> {{")?;
         self.fmt_public_translate_functions(f)?;

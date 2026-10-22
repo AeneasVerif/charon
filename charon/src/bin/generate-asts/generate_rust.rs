@@ -82,10 +82,25 @@ impl RustcDatatypes {
                 ]),
             },
         );
-        datatypes.insert(
+        for path in [
             "rustc_attr_ir::lang_items::LangItem",
-            Copy {
-                selected_variants: None,
+            "rustc_target::spec::Arch",
+            "rustc_target::spec::Os",
+            "rustc_target::spec::Env",
+            "rustc_target::spec::CfgAbi",
+        ] {
+            datatypes.insert(
+                path,
+                Copy {
+                    selected_variants: None,
+                },
+            );
+        }
+        datatypes.insert(
+            "alloc::borrow::Cow",
+            Special {
+                fmt_type: |_, f, _| write!(f, "Ustr"),
+                fmt_translation: |_, f, _, value| write!(f, "({value}).as_ref().into()"),
             },
         );
         datatypes.insert(

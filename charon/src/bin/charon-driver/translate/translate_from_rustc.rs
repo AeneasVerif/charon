@@ -16,6 +16,7 @@ use rustc_ast::attr::version::*;
 use rustc_attr_ir::lang_items::*;
 use rustc_hir::attrs::*;
 use rustc_span::symbol::*;
+use rustc_target::spec::*;
 
 impl<'tcx> TranslateCtx<'tcx> {
     pub(crate) fn translate_rustc_attribute_kind(
@@ -30,6 +31,34 @@ impl<'tcx> TranslateCtx<'tcx> {
         value: &LangItem,
     ) -> Result<from_rustc::LangItem, FromRustcError> {
         self.translate_lang_item_from_rustc(value)
+    }
+
+    pub(crate) fn translate_rustc_arch(
+        &mut self,
+        value: &Arch,
+    ) -> Result<from_rustc::Arch, FromRustcError> {
+        self.translate_arch_from_rustc(value)
+    }
+
+    pub(crate) fn translate_rustc_os(
+        &mut self,
+        value: &Os,
+    ) -> Result<from_rustc::Os, FromRustcError> {
+        self.translate_os_from_rustc(value)
+    }
+
+    pub(crate) fn translate_rustc_env(
+        &mut self,
+        value: &Env,
+    ) -> Result<from_rustc::Env, FromRustcError> {
+        self.translate_env_from_rustc(value)
+    }
+
+    pub(crate) fn translate_rustc_cfg_abi(
+        &mut self,
+        value: &CfgAbi,
+    ) -> Result<from_rustc::CfgAbi, FromRustcError> {
+        self.translate_cfg_abi_from_rustc(value)
     }
 
     fn translate_attribute_kind_from_rustc(
@@ -371,6 +400,166 @@ impl<'tcx> TranslateCtx<'tcx> {
             LangItem::From => Ok(from_rustc::LangItem::From),
             LangItem::FromFn => Ok(from_rustc::LangItem::FromFn),
             LangItem::FnPtr => Ok(from_rustc::LangItem::FnPtr),
+            // If the below is reached, the code is not up-to-date with the rustc version
+            _ => Err(FromRustcError),
+        }
+    }
+
+    fn translate_arch_from_rustc(
+        &mut self,
+        value: &Arch,
+    ) -> Result<from_rustc::Arch, FromRustcError> {
+        match value {
+            Arch::AArch64 => Ok(from_rustc::Arch::AArch64),
+            Arch::AmdGpu => Ok(from_rustc::Arch::AmdGpu),
+            Arch::Arm => Ok(from_rustc::Arch::Arm),
+            Arch::Arm64EC => Ok(from_rustc::Arch::Arm64EC),
+            Arch::Avr => Ok(from_rustc::Arch::Avr),
+            Arch::Bpf => Ok(from_rustc::Arch::Bpf),
+            Arch::CSky => Ok(from_rustc::Arch::CSky),
+            Arch::Hexagon => Ok(from_rustc::Arch::Hexagon),
+            Arch::LoongArch32 => Ok(from_rustc::Arch::LoongArch32),
+            Arch::LoongArch64 => Ok(from_rustc::Arch::LoongArch64),
+            Arch::M68k => Ok(from_rustc::Arch::M68k),
+            Arch::Mips => Ok(from_rustc::Arch::Mips),
+            Arch::Mips32r6 => Ok(from_rustc::Arch::Mips32r6),
+            Arch::Mips64 => Ok(from_rustc::Arch::Mips64),
+            Arch::Mips64r6 => Ok(from_rustc::Arch::Mips64r6),
+            Arch::Msp430 => Ok(from_rustc::Arch::Msp430),
+            Arch::Nvptx64 => Ok(from_rustc::Arch::Nvptx64),
+            Arch::PowerPC => Ok(from_rustc::Arch::PowerPC),
+            Arch::PowerPC64 => Ok(from_rustc::Arch::PowerPC64),
+            Arch::RiscV32 => Ok(from_rustc::Arch::RiscV32),
+            Arch::RiscV64 => Ok(from_rustc::Arch::RiscV64),
+            Arch::S390x => Ok(from_rustc::Arch::S390x),
+            Arch::Sparc => Ok(from_rustc::Arch::Sparc),
+            Arch::Sparc64 => Ok(from_rustc::Arch::Sparc64),
+            Arch::SpirV => Ok(from_rustc::Arch::SpirV),
+            Arch::Wasm32 => Ok(from_rustc::Arch::Wasm32),
+            Arch::Wasm64 => Ok(from_rustc::Arch::Wasm64),
+            Arch::X86 => Ok(from_rustc::Arch::X86),
+            Arch::X86_64 => Ok(from_rustc::Arch::X86_64),
+            Arch::Xtensa => Ok(from_rustc::Arch::Xtensa),
+            Arch::Other(_0) => Ok(from_rustc::Arch::Other((_0).as_ref().into())),
+            // If the below is reached, the code is not up-to-date with the rustc version
+            _ => Err(FromRustcError),
+        }
+    }
+
+    fn translate_os_from_rustc(&mut self, value: &Os) -> Result<from_rustc::Os, FromRustcError> {
+        match value {
+            Os::Aix => Ok(from_rustc::Os::Aix),
+            Os::AmdHsa => Ok(from_rustc::Os::AmdHsa),
+            Os::Android => Ok(from_rustc::Os::Android),
+            Os::Cuda => Ok(from_rustc::Os::Cuda),
+            Os::Cygwin => Ok(from_rustc::Os::Cygwin),
+            Os::Dragonfly => Ok(from_rustc::Os::Dragonfly),
+            Os::Emscripten => Ok(from_rustc::Os::Emscripten),
+            Os::EspIdf => Ok(from_rustc::Os::EspIdf),
+            Os::FreeBsd => Ok(from_rustc::Os::FreeBsd),
+            Os::Fuchsia => Ok(from_rustc::Os::Fuchsia),
+            Os::Haiku => Ok(from_rustc::Os::Haiku),
+            Os::HelenOs => Ok(from_rustc::Os::HelenOs),
+            Os::Hermit => Ok(from_rustc::Os::Hermit),
+            Os::Horizon => Ok(from_rustc::Os::Horizon),
+            Os::Hurd => Ok(from_rustc::Os::Hurd),
+            Os::Illumos => Ok(from_rustc::Os::Illumos),
+            Os::IOs => Ok(from_rustc::Os::IOs),
+            Os::L4Re => Ok(from_rustc::Os::L4Re),
+            Os::Linux => Ok(from_rustc::Os::Linux),
+            Os::LynxOs178 => Ok(from_rustc::Os::LynxOs178),
+            Os::MacOs => Ok(from_rustc::Os::MacOs),
+            Os::Managarm => Ok(from_rustc::Os::Managarm),
+            Os::Motor => Ok(from_rustc::Os::Motor),
+            Os::NetBsd => Ok(from_rustc::Os::NetBsd),
+            Os::None => Ok(from_rustc::Os::None),
+            Os::Nto => Ok(from_rustc::Os::Nto),
+            Os::NuttX => Ok(from_rustc::Os::NuttX),
+            Os::OpenBsd => Ok(from_rustc::Os::OpenBsd),
+            Os::Ps3 => Ok(from_rustc::Os::Ps3),
+            Os::Psp => Ok(from_rustc::Os::Psp),
+            Os::Psx => Ok(from_rustc::Os::Psx),
+            Os::Qnx => Ok(from_rustc::Os::Qnx),
+            Os::Qurt => Ok(from_rustc::Os::Qurt),
+            Os::Redox => Ok(from_rustc::Os::Redox),
+            Os::Rtems => Ok(from_rustc::Os::Rtems),
+            Os::Solaris => Ok(from_rustc::Os::Solaris),
+            Os::SolidAsp3 => Ok(from_rustc::Os::SolidAsp3),
+            Os::TeeOs => Ok(from_rustc::Os::TeeOs),
+            Os::Trusty => Ok(from_rustc::Os::Trusty),
+            Os::TvOs => Ok(from_rustc::Os::TvOs),
+            Os::Uefi => Ok(from_rustc::Os::Uefi),
+            Os::VexOs => Ok(from_rustc::Os::VexOs),
+            Os::VisionOs => Ok(from_rustc::Os::VisionOs),
+            Os::Vita => Ok(from_rustc::Os::Vita),
+            Os::VxWorks => Ok(from_rustc::Os::VxWorks),
+            Os::Wasi => Ok(from_rustc::Os::Wasi),
+            Os::WatchOs => Ok(from_rustc::Os::WatchOs),
+            Os::Windows => Ok(from_rustc::Os::Windows),
+            Os::Xous => Ok(from_rustc::Os::Xous),
+            Os::Zkvm => Ok(from_rustc::Os::Zkvm),
+            Os::Unknown => Ok(from_rustc::Os::Unknown),
+            Os::Other(_0) => Ok(from_rustc::Os::Other((_0).as_ref().into())),
+            // If the below is reached, the code is not up-to-date with the rustc version
+            _ => Err(FromRustcError),
+        }
+    }
+
+    fn translate_env_from_rustc(&mut self, value: &Env) -> Result<from_rustc::Env, FromRustcError> {
+        match value {
+            Env::Gnu => Ok(from_rustc::Env::Gnu),
+            Env::MacAbi => Ok(from_rustc::Env::MacAbi),
+            Env::Mlibc => Ok(from_rustc::Env::Mlibc),
+            Env::Msvc => Ok(from_rustc::Env::Msvc),
+            Env::Musl => Ok(from_rustc::Env::Musl),
+            Env::Newlib => Ok(from_rustc::Env::Newlib),
+            Env::Nto70 => Ok(from_rustc::Env::Nto70),
+            Env::Nto71 => Ok(from_rustc::Env::Nto71),
+            Env::Nto71IoSock => Ok(from_rustc::Env::Nto71IoSock),
+            Env::Ohos => Ok(from_rustc::Env::Ohos),
+            Env::Relibc => Ok(from_rustc::Env::Relibc),
+            Env::Sgx => Ok(from_rustc::Env::Sgx),
+            Env::Sim => Ok(from_rustc::Env::Sim),
+            Env::P1 => Ok(from_rustc::Env::P1),
+            Env::P2 => Ok(from_rustc::Env::P2),
+            Env::P3 => Ok(from_rustc::Env::P3),
+            Env::Uclibc => Ok(from_rustc::Env::Uclibc),
+            Env::V5 => Ok(from_rustc::Env::V5),
+            Env::Unspecified => Ok(from_rustc::Env::Unspecified),
+            Env::Other(_0) => Ok(from_rustc::Env::Other((_0).as_ref().into())),
+            // If the below is reached, the code is not up-to-date with the rustc version
+            _ => Err(FromRustcError),
+        }
+    }
+
+    fn translate_cfg_abi_from_rustc(
+        &mut self,
+        value: &CfgAbi,
+    ) -> Result<from_rustc::CfgAbi, FromRustcError> {
+        match value {
+            CfgAbi::Abi64 => Ok(from_rustc::CfgAbi::Abi64),
+            CfgAbi::AbiV2 => Ok(from_rustc::CfgAbi::AbiV2),
+            CfgAbi::AbiV2Hf => Ok(from_rustc::CfgAbi::AbiV2Hf),
+            CfgAbi::Eabi => Ok(from_rustc::CfgAbi::Eabi),
+            CfgAbi::EabiHf => Ok(from_rustc::CfgAbi::EabiHf),
+            CfgAbi::ElfV1 => Ok(from_rustc::CfgAbi::ElfV1),
+            CfgAbi::ElfV2 => Ok(from_rustc::CfgAbi::ElfV2),
+            CfgAbi::Fortanix => Ok(from_rustc::CfgAbi::Fortanix),
+            CfgAbi::Ilp32 => Ok(from_rustc::CfgAbi::Ilp32),
+            CfgAbi::Ilp32e => Ok(from_rustc::CfgAbi::Ilp32e),
+            CfgAbi::Llvm => Ok(from_rustc::CfgAbi::Llvm),
+            CfgAbi::MacAbi => Ok(from_rustc::CfgAbi::MacAbi),
+            CfgAbi::Pauthtest => Ok(from_rustc::CfgAbi::Pauthtest),
+            CfgAbi::Sim => Ok(from_rustc::CfgAbi::Sim),
+            CfgAbi::SoftFloat => Ok(from_rustc::CfgAbi::SoftFloat),
+            CfgAbi::Spe => Ok(from_rustc::CfgAbi::Spe),
+            CfgAbi::Uwp => Ok(from_rustc::CfgAbi::Uwp),
+            CfgAbi::VecDefault => Ok(from_rustc::CfgAbi::VecDefault),
+            CfgAbi::VecExtAbi => Ok(from_rustc::CfgAbi::VecExtAbi),
+            CfgAbi::X32 => Ok(from_rustc::CfgAbi::X32),
+            CfgAbi::V8Plus => Ok(from_rustc::CfgAbi::V8Plus),
+            CfgAbi::Unspecified => Ok(from_rustc::CfgAbi::Unspecified),
+            CfgAbi::Other(_0) => Ok(from_rustc::CfgAbi::Other((_0).as_ref().into())),
             // If the below is reached, the code is not up-to-date with the rustc version
             _ => Err(FromRustcError),
         }

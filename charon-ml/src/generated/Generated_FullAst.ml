@@ -16,7 +16,47 @@ open Generated_Expressions
 open Generated_Meta
 open Identifiers
 
-type assoc_item_names = {
+type rustc_arch =
+  | RustcArchAArch64
+  | RustcArchAmdGpu
+  | RustcArchArm
+  | RustcArchArm64EC
+  | RustcArchAvr
+  | RustcArchBpf
+  | RustcArchCSky
+  | RustcArchHexagon
+  | RustcArchLoongArch32
+  | RustcArchLoongArch64
+  | RustcArchM68k
+  | RustcArchMips
+  | RustcArchMips32r6
+  | RustcArchMips64
+  | RustcArchMips64r6
+  | RustcArchMsp430
+  | RustcArchNvptx64
+  | RustcArchPowerPC
+  | RustcArchPowerPC64
+  | RustcArchRiscV32
+  | RustcArchRiscV64
+  | RustcArchS390x
+  | RustcArchSparc
+  | RustcArchSparc64
+  | RustcArchSpirV
+  | RustcArchWasm32
+  | RustcArchWasm64
+  | RustcArchX86
+  | RustcArchX86_64
+  | RustcArchXtensa
+  | RustcArchOther of string
+      (** The vast majority of the time, the compiler deals with a fixed set of
+          values, so it is convenient for them to be represented in an enum.
+          However, it is possible to have arbitrary values in a target JSON file
+          (which can be parsed when [--target] is specified). This might occur,
+          for example, for an out-of-tree codegen backend that supports a value
+          (e.g. architecture or OS) that rustc currently doesn't know about.
+          This variant exists as an escape hatch for such cases. *)
+
+and assoc_item_names = {
   types : trait_item_name list;
   methods : trait_item_name list;
   consts : trait_item_name list;
@@ -74,6 +114,41 @@ and body =
           charon. *)
   | ErrorBody of error
       (** We encountered an error while translating this body. *)
+
+(** An enum representing possible values for [cfg(target_abi)]. This field is
+    not forwarded to LLVM so it does not by itself affect codegen. See the
+    [cfg_abi] field of [[TargetOptions]] for more details. *)
+and rustc_cfg_abi =
+  | RustcCfgAbiAbi64
+  | RustcCfgAbiAbiV2
+  | RustcCfgAbiAbiV2Hf
+  | RustcCfgAbiEabi
+  | RustcCfgAbiEabiHf
+  | RustcCfgAbiElfV1
+  | RustcCfgAbiElfV2
+  | RustcCfgAbiFortanix
+  | RustcCfgAbiIlp32
+  | RustcCfgAbiIlp32e
+  | RustcCfgAbiLlvm
+  | RustcCfgAbiMacAbi
+  | RustcCfgAbiPauthtest
+  | RustcCfgAbiSim
+  | RustcCfgAbiSoftFloat
+  | RustcCfgAbiSpe
+  | RustcCfgAbiUwp
+  | RustcCfgAbiVecDefault
+  | RustcCfgAbiVecExtAbi
+  | RustcCfgAbiX32
+  | RustcCfgAbiV8Plus
+  | RustcCfgAbiUnspecified
+  | RustcCfgAbiOther of string
+      (** The vast majority of the time, the compiler deals with a fixed set of
+          values, so it is convenient for them to be represented in an enum.
+          However, it is possible to have arbitrary values in a target JSON file
+          (which can be parsed when [--target] is specified). This might occur,
+          for example, for an out-of-tree codegen backend that supports a value
+          (e.g. architecture or OS) that rustc currently doesn't know about.
+          This variant exists as an escape hatch for such cases. *)
 
 and cli_options = {
   ullbc : bool;
@@ -328,6 +403,35 @@ and declaration_group =
   | MixedGroup of item_id g_declaration_group
       (** Anything that doesn't fit into these categories. *)
 
+and rustc_env =
+  | RustcEnvGnu
+  | RustcEnvMacAbi
+  | RustcEnvMlibc
+  | RustcEnvMsvc
+  | RustcEnvMusl
+  | RustcEnvNewlib
+  | RustcEnvNto70
+  | RustcEnvNto71
+  | RustcEnvNto71IoSock
+  | RustcEnvOhos
+  | RustcEnvRelibc
+  | RustcEnvSgx
+  | RustcEnvSim
+  | RustcEnvP1
+  | RustcEnvP2
+  | RustcEnvP3
+  | RustcEnvUclibc
+  | RustcEnvV5
+  | RustcEnvUnspecified
+  | RustcEnvOther of string
+      (** The vast majority of the time, the compiler deals with a fixed set of
+          values, so it is convenient for them to be represented in an enum.
+          However, it is possible to have arbitrary values in a target JSON file
+          (which can be parsed when [--target] is specified). This might occur,
+          for example, for an out-of-tree codegen backend that supports a value
+          (e.g. architecture or OS) that rustc currently doesn't know about.
+          This variant exists as an escape hatch for such cases. *)
+
 (** A function definition *)
 and fun_decl = {
   def_id : fun_decl_id;
@@ -367,6 +471,67 @@ and monomorphize_mut =
   | ExceptTypes
       (** Monomorphize all non-typedecl items instantiated with [&mut]. *)
 
+and rustc_os =
+  | RustcOsAix
+  | RustcOsAmdHsa
+  | RustcOsAndroid
+  | RustcOsCuda
+  | RustcOsCygwin
+  | RustcOsDragonfly
+  | RustcOsEmscripten
+  | RustcOsEspIdf
+  | RustcOsFreeBsd
+  | RustcOsFuchsia
+  | RustcOsHaiku
+  | RustcOsHelenOs
+  | RustcOsHermit
+  | RustcOsHorizon
+  | RustcOsHurd
+  | RustcOsIllumos
+  | RustcOsIOs
+  | RustcOsL4Re
+  | RustcOsLinux
+  | RustcOsLynxOs178
+  | RustcOsMacOs
+  | RustcOsManagarm
+  | RustcOsMotor
+  | RustcOsNetBsd
+  | RustcOsNone
+  | RustcOsNto
+  | RustcOsNuttX
+  | RustcOsOpenBsd
+  | RustcOsPs3
+  | RustcOsPsp
+  | RustcOsPsx
+  | RustcOsQnx
+  | RustcOsQurt
+  | RustcOsRedox
+  | RustcOsRtems
+  | RustcOsSolaris
+  | RustcOsSolidAsp3
+  | RustcOsTeeOs
+  | RustcOsTrusty
+  | RustcOsTvOs
+  | RustcOsUefi
+  | RustcOsVexOs
+  | RustcOsVisionOs
+  | RustcOsVita
+  | RustcOsVxWorks
+  | RustcOsWasi
+  | RustcOsWatchOs
+  | RustcOsWindows
+  | RustcOsXous
+  | RustcOsZkvm
+  | RustcOsUnknown
+  | RustcOsOther of string
+      (** The vast majority of the time, the compiler deals with a fixed set of
+          values, so it is convenient for them to be represented in an enum.
+          However, it is possible to have arbitrary values in a target JSON file
+          (which can be parsed when [--target] is specified). This might occur,
+          for example, for an out-of-tree codegen backend that supports a value
+          (e.g. architecture or OS) that rustc currently doesn't know about.
+          This variant exists as an escape hatch for such cases. *)
+
 (** Presets to make it easier to tweak options without breaking dependent
     projects. Eventually we should define semantically-meaningful presets
     instead of project-specific ones. *)
@@ -392,6 +557,12 @@ and runtime_checks = {
 and serialization_format_arg = Json | Postcard | MiniRust | AllFormats
 
 and target_info = {
+  arch : rustc_arch;
+      (** The target architecture, as seen by [cfg(target_arch)]. *)
+  vendor : string;  (** The target vendor, as seen by [cfg(target_vendor)]. *)
+  os : rustc_os;  (** The target OS, as seen by [cfg(target_os)]. *)
+  env : rustc_env;  (** The target environment, as seen by [cfg(target_env)]. *)
+  cfg_abi : rustc_cfg_abi;  (** The target ABI, as seen by [cfg(target_abi)]. *)
   target_pointer_size : int;  (** The pointer size of the target in bytes. *)
   is_little_endian : bool;
       (** Whether the target platform uses little endian byte order. *)

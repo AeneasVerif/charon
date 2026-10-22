@@ -1887,6 +1887,46 @@ and alignment_modifier_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          Ok (Pack _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and rustc_arch_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (rustc_arch, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok RustcArchAArch64
+     | 1 -> Ok RustcArchAmdGpu
+     | 2 -> Ok RustcArchArm
+     | 3 -> Ok RustcArchArm64EC
+     | 4 -> Ok RustcArchAvr
+     | 5 -> Ok RustcArchBpf
+     | 6 -> Ok RustcArchCSky
+     | 7 -> Ok RustcArchHexagon
+     | 8 -> Ok RustcArchLoongArch32
+     | 9 -> Ok RustcArchLoongArch64
+     | 10 -> Ok RustcArchM68k
+     | 11 -> Ok RustcArchMips
+     | 12 -> Ok RustcArchMips32r6
+     | 13 -> Ok RustcArchMips64
+     | 14 -> Ok RustcArchMips64r6
+     | 15 -> Ok RustcArchMsp430
+     | 16 -> Ok RustcArchNvptx64
+     | 17 -> Ok RustcArchPowerPC
+     | 18 -> Ok RustcArchPowerPC64
+     | 19 -> Ok RustcArchRiscV32
+     | 20 -> Ok RustcArchRiscV64
+     | 21 -> Ok RustcArchS390x
+     | 22 -> Ok RustcArchSparc
+     | 23 -> Ok RustcArchSparc64
+     | 24 -> Ok RustcArchSpirV
+     | 25 -> Ok RustcArchWasm32
+     | 26 -> Ok RustcArchWasm64
+     | 27 -> Ok RustcArchX86
+     | 28 -> Ok RustcArchX86_64
+     | 29 -> Ok RustcArchXtensa
+     | 30 ->
+         let* _0 = string_of_postcard ctx st in
+         Ok (RustcArchOther _0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and assoc_item_id_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (assoc_item_id, string) result =
   combine_error_msgs st __FUNCTION__
@@ -2067,6 +2107,38 @@ and body_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 7 ->
          let* _0 = error_of_postcard ctx st in
          Ok (ErrorBody _0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and rustc_cfg_abi_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (rustc_cfg_abi, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok RustcCfgAbiAbi64
+     | 1 -> Ok RustcCfgAbiAbiV2
+     | 2 -> Ok RustcCfgAbiAbiV2Hf
+     | 3 -> Ok RustcCfgAbiEabi
+     | 4 -> Ok RustcCfgAbiEabiHf
+     | 5 -> Ok RustcCfgAbiElfV1
+     | 6 -> Ok RustcCfgAbiElfV2
+     | 7 -> Ok RustcCfgAbiFortanix
+     | 8 -> Ok RustcCfgAbiIlp32
+     | 9 -> Ok RustcCfgAbiIlp32e
+     | 10 -> Ok RustcCfgAbiLlvm
+     | 11 -> Ok RustcCfgAbiMacAbi
+     | 12 -> Ok RustcCfgAbiPauthtest
+     | 13 -> Ok RustcCfgAbiSim
+     | 14 -> Ok RustcCfgAbiSoftFloat
+     | 15 -> Ok RustcCfgAbiSpe
+     | 16 -> Ok RustcCfgAbiUwp
+     | 17 -> Ok RustcCfgAbiVecDefault
+     | 18 -> Ok RustcCfgAbiVecExtAbi
+     | 19 -> Ok RustcCfgAbiX32
+     | 20 -> Ok RustcCfgAbiV8Plus
+     | 21 -> Ok RustcCfgAbiUnspecified
+     | 22 ->
+         let* _0 = string_of_postcard ctx st in
+         Ok (RustcCfgAbiOther _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -2334,6 +2406,35 @@ and discriminator_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          in
          let* fallback = box_of_postcard discriminator_of_postcard ctx st in
          Ok (Branch (offset, int_ty, children, fallback))
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
+and rustc_env_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (rustc_env, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok RustcEnvGnu
+     | 1 -> Ok RustcEnvMacAbi
+     | 2 -> Ok RustcEnvMlibc
+     | 3 -> Ok RustcEnvMsvc
+     | 4 -> Ok RustcEnvMusl
+     | 5 -> Ok RustcEnvNewlib
+     | 6 -> Ok RustcEnvNto70
+     | 7 -> Ok RustcEnvNto71
+     | 8 -> Ok RustcEnvNto71IoSock
+     | 9 -> Ok RustcEnvOhos
+     | 10 -> Ok RustcEnvRelibc
+     | 11 -> Ok RustcEnvSgx
+     | 12 -> Ok RustcEnvSim
+     | 13 -> Ok RustcEnvP1
+     | 14 -> Ok RustcEnvP2
+     | 15 -> Ok RustcEnvP3
+     | 16 -> Ok RustcEnvUclibc
+     | 17 -> Ok RustcEnvV5
+     | 18 -> Ok RustcEnvUnspecified
+     | 19 ->
+         let* _0 = string_of_postcard ctx st in
+         Ok (RustcEnvOther _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and error_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -3031,6 +3132,67 @@ and rustc_optimize_attr_of_postcard (ctx : of_postcard_ctx)
      | 3 -> Ok RustcOptimizeAttrSize
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
+and rustc_os_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
+    (rustc_os, string) result =
+  combine_error_msgs st __FUNCTION__
+    (let* __tag = int_of_postcard ctx st in
+     match __tag with
+     | 0 -> Ok RustcOsAix
+     | 1 -> Ok RustcOsAmdHsa
+     | 2 -> Ok RustcOsAndroid
+     | 3 -> Ok RustcOsCuda
+     | 4 -> Ok RustcOsCygwin
+     | 5 -> Ok RustcOsDragonfly
+     | 6 -> Ok RustcOsEmscripten
+     | 7 -> Ok RustcOsEspIdf
+     | 8 -> Ok RustcOsFreeBsd
+     | 9 -> Ok RustcOsFuchsia
+     | 10 -> Ok RustcOsHaiku
+     | 11 -> Ok RustcOsHelenOs
+     | 12 -> Ok RustcOsHermit
+     | 13 -> Ok RustcOsHorizon
+     | 14 -> Ok RustcOsHurd
+     | 15 -> Ok RustcOsIllumos
+     | 16 -> Ok RustcOsIOs
+     | 17 -> Ok RustcOsL4Re
+     | 18 -> Ok RustcOsLinux
+     | 19 -> Ok RustcOsLynxOs178
+     | 20 -> Ok RustcOsMacOs
+     | 21 -> Ok RustcOsManagarm
+     | 22 -> Ok RustcOsMotor
+     | 23 -> Ok RustcOsNetBsd
+     | 24 -> Ok RustcOsNone
+     | 25 -> Ok RustcOsNto
+     | 26 -> Ok RustcOsNuttX
+     | 27 -> Ok RustcOsOpenBsd
+     | 28 -> Ok RustcOsPs3
+     | 29 -> Ok RustcOsPsp
+     | 30 -> Ok RustcOsPsx
+     | 31 -> Ok RustcOsQnx
+     | 32 -> Ok RustcOsQurt
+     | 33 -> Ok RustcOsRedox
+     | 34 -> Ok RustcOsRtems
+     | 35 -> Ok RustcOsSolaris
+     | 36 -> Ok RustcOsSolidAsp3
+     | 37 -> Ok RustcOsTeeOs
+     | 38 -> Ok RustcOsTrusty
+     | 39 -> Ok RustcOsTvOs
+     | 40 -> Ok RustcOsUefi
+     | 41 -> Ok RustcOsVexOs
+     | 42 -> Ok RustcOsVisionOs
+     | 43 -> Ok RustcOsVita
+     | 44 -> Ok RustcOsVxWorks
+     | 45 -> Ok RustcOsWasi
+     | 46 -> Ok RustcOsWatchOs
+     | 47 -> Ok RustcOsWindows
+     | 48 -> Ok RustcOsXous
+     | 49 -> Ok RustcOsZkvm
+     | 50 -> Ok RustcOsUnknown
+     | 51 ->
+         let* _0 = string_of_postcard ctx st in
+         Ok (RustcOsOther _0)
+     | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
+
 and preset_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (preset, string) result =
   combine_error_msgs st __FUNCTION__
@@ -3173,7 +3335,12 @@ and size_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
 and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (target_info, string) result =
   combine_error_msgs st __FUNCTION__
-    (let* target_pointer_size = u64_of_postcard ctx st in
+    (let* arch = rustc_arch_of_postcard ctx st in
+     let* vendor = string_of_postcard ctx st in
+     let* os = rustc_os_of_postcard ctx st in
+     let* env = rustc_env_of_postcard ctx st in
+     let* cfg_abi = rustc_cfg_abi_of_postcard ctx st in
+     let* target_pointer_size = u64_of_postcard ctx st in
      let* is_little_endian = bool_of_postcard ctx st in
      let* c_enum_smallest_repr_ty = int_ty_of_postcard ctx st in
      let* primitive_alignments =
@@ -3182,6 +3349,11 @@ and target_info_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      in
      Ok
        ({
+          arch;
+          vendor;
+          os;
+          env;
+          cfg_abi;
           target_pointer_size;
           is_little_endian;
           c_enum_smallest_repr_ty;

@@ -673,7 +673,21 @@ impl<'tcx> TranslateCtx<'tcx> {
             rustc_abi::Integer::I128 => IntTy::I128,
         };
 
+        let target = &self.tcx.sess.target;
         let info = TargetInfo {
+            arch: self
+                .translate_rustc_arch(&target.arch)
+                .expect("all rustc Arch variants should be translated"),
+            vendor: target.vendor_symbol().to_string(),
+            os: self
+                .translate_rustc_os(&target.os)
+                .expect("all rustc Os variants should be translated"),
+            env: self
+                .translate_rustc_env(&target.env)
+                .expect("all rustc Env variants should be translated"),
+            cfg_abi: self
+                .translate_rustc_cfg_abi(&target.cfg_abi)
+                .expect("all rustc CfgAbi variants should be translated"),
             target_pointer_size: target_data.pointer_size().bytes(),
             is_little_endian: matches!(target_data.endian, rustc_abi::Endian::Little),
             c_enum_smallest_repr_ty,

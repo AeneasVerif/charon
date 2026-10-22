@@ -595,6 +595,195 @@ pub enum LangItem {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("RustcArch"))]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("RustcArch"))]
+pub enum Arch {
+    AArch64,
+    AmdGpu,
+    Arm,
+    Arm64EC,
+    Avr,
+    Bpf,
+    CSky,
+    Hexagon,
+    LoongArch32,
+    LoongArch64,
+    M68k,
+    Mips,
+    Mips32r6,
+    Mips64,
+    Mips64r6,
+    Msp430,
+    Nvptx64,
+    PowerPC,
+    PowerPC64,
+    RiscV32,
+    RiscV64,
+    S390x,
+    Sparc,
+    Sparc64,
+    SpirV,
+    Wasm32,
+    Wasm64,
+    X86,
+    X86_64,
+    Xtensa,
+    /// The vast majority of the time, the compiler deals with a fixed
+    /// set of values, so it is convenient for them to be represented in
+    /// an enum. However, it is possible to have arbitrary values in a
+    /// target JSON file (which can be parsed when `--target` is
+    /// specified). This might occur, for example, for an out-of-tree
+    /// codegen backend that supports a value (e.g. architecture or OS)
+    /// that rustc currently doesn't know about. This variant exists as
+    /// an escape hatch for such cases.
+    Other(Ustr),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("RustcOs"))]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("RustcOs"))]
+pub enum Os {
+    Aix,
+    AmdHsa,
+    Android,
+    Cuda,
+    Cygwin,
+    Dragonfly,
+    Emscripten,
+    EspIdf,
+    FreeBsd,
+    Fuchsia,
+    Haiku,
+    HelenOs,
+    Hermit,
+    Horizon,
+    Hurd,
+    Illumos,
+    IOs,
+    L4Re,
+    Linux,
+    LynxOs178,
+    MacOs,
+    Managarm,
+    Motor,
+    NetBsd,
+    None,
+    Nto,
+    NuttX,
+    OpenBsd,
+    Ps3,
+    Psp,
+    Psx,
+    Qnx,
+    Qurt,
+    Redox,
+    Rtems,
+    Solaris,
+    SolidAsp3,
+    TeeOs,
+    Trusty,
+    TvOs,
+    Uefi,
+    VexOs,
+    VisionOs,
+    Vita,
+    VxWorks,
+    Wasi,
+    WatchOs,
+    Windows,
+    Xous,
+    Zkvm,
+    Unknown,
+    /// The vast majority of the time, the compiler deals with a fixed
+    /// set of values, so it is convenient for them to be represented in
+    /// an enum. However, it is possible to have arbitrary values in a
+    /// target JSON file (which can be parsed when `--target` is
+    /// specified). This might occur, for example, for an out-of-tree
+    /// codegen backend that supports a value (e.g. architecture or OS)
+    /// that rustc currently doesn't know about. This variant exists as
+    /// an escape hatch for such cases.
+    Other(Ustr),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("RustcEnv"))]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("RustcEnv"))]
+pub enum Env {
+    Gnu,
+    MacAbi,
+    Mlibc,
+    Msvc,
+    Musl,
+    Newlib,
+    Nto70,
+    Nto71,
+    Nto71IoSock,
+    Ohos,
+    Relibc,
+    Sgx,
+    Sim,
+    P1,
+    P2,
+    P3,
+    Uclibc,
+    V5,
+    Unspecified,
+    /// The vast majority of the time, the compiler deals with a fixed
+    /// set of values, so it is convenient for them to be represented in
+    /// an enum. However, it is possible to have arbitrary values in a
+    /// target JSON file (which can be parsed when `--target` is
+    /// specified). This might occur, for example, for an out-of-tree
+    /// codegen backend that supports a value (e.g. architecture or OS)
+    /// that rustc currently doesn't know about. This variant exists as
+    /// an escape hatch for such cases.
+    Other(Ustr),
+}
+
+/// An enum representing possible values for `cfg(target_abi)`.
+/// This field is not forwarded to LLVM so it does not by itself affect codegen.
+/// See the `cfg_abi` field of [`TargetOptions`] for more details.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("RustcCfgAbi"))]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("RustcCfgAbi"))]
+pub enum CfgAbi {
+    Abi64,
+    AbiV2,
+    AbiV2Hf,
+    Eabi,
+    EabiHf,
+    ElfV1,
+    ElfV2,
+    Fortanix,
+    Ilp32,
+    Ilp32e,
+    Llvm,
+    MacAbi,
+    Pauthtest,
+    Sim,
+    SoftFloat,
+    Spe,
+    Uwp,
+    VecDefault,
+    VecExtAbi,
+    X32,
+    V8Plus,
+    Unspecified,
+    /// The vast majority of the time, the compiler deals with a fixed
+    /// set of values, so it is convenient for them to be represented in
+    /// an enum. However, it is possible to have arbitrary values in a
+    /// target JSON file (which can be parsed when `--target` is
+    /// specified). This might occur, for example, for an out-of-tree
+    /// codegen backend that supports a value (e.g. architecture or OS)
+    /// that rustc currently doesn't know about. This variant exists as
+    /// an escape hatch for such cases.
+    Other(Ustr),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
 #[cfg_attr(feature = "charon_on_charon", charon::rename("RustcDeprecation"))]
 pub struct Deprecation {
     pub since: DeprecatedSince,

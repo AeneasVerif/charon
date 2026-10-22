@@ -493,6 +493,16 @@ pub enum AlignmentModifier {
 #[derive(SerializeState, DeserializeState, Drive, DriveMut, DriveTwo)]
 #[serde_state(stateless)]
 pub struct TargetInfo {
+    /// The target architecture, as seen by `cfg(target_arch)`.
+    pub arch: from_rustc::Arch,
+    /// The target vendor, as seen by `cfg(target_vendor)`.
+    pub vendor: String,
+    /// The target OS, as seen by `cfg(target_os)`.
+    pub os: from_rustc::Os,
+    /// The target environment, as seen by `cfg(target_env)`.
+    pub env: from_rustc::Env,
+    /// The target ABI, as seen by `cfg(target_abi)`.
+    pub cfg_abi: from_rustc::CfgAbi,
     /// The pointer size of the target in bytes.
     pub target_pointer_size: ByteCount,
     /// Whether the target platform uses little endian byte order.

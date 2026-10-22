@@ -2248,6 +2248,45 @@ and alignment_modifier_of_json (ctx : of_json_ctx) (js : json) :
         Ok (Pack _0)
     | _ -> Error "")
 
+and rustc_arch_of_json (ctx : of_json_ctx) (js : json) :
+    (rustc_arch, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "AArch64" -> Ok RustcArchAArch64
+    | `String "AmdGpu" -> Ok RustcArchAmdGpu
+    | `String "Arm" -> Ok RustcArchArm
+    | `String "Arm64EC" -> Ok RustcArchArm64EC
+    | `String "Avr" -> Ok RustcArchAvr
+    | `String "Bpf" -> Ok RustcArchBpf
+    | `String "CSky" -> Ok RustcArchCSky
+    | `String "Hexagon" -> Ok RustcArchHexagon
+    | `String "LoongArch32" -> Ok RustcArchLoongArch32
+    | `String "LoongArch64" -> Ok RustcArchLoongArch64
+    | `String "M68k" -> Ok RustcArchM68k
+    | `String "Mips" -> Ok RustcArchMips
+    | `String "Mips32r6" -> Ok RustcArchMips32r6
+    | `String "Mips64" -> Ok RustcArchMips64
+    | `String "Mips64r6" -> Ok RustcArchMips64r6
+    | `String "Msp430" -> Ok RustcArchMsp430
+    | `String "Nvptx64" -> Ok RustcArchNvptx64
+    | `String "PowerPC" -> Ok RustcArchPowerPC
+    | `String "PowerPC64" -> Ok RustcArchPowerPC64
+    | `String "RiscV32" -> Ok RustcArchRiscV32
+    | `String "RiscV64" -> Ok RustcArchRiscV64
+    | `String "S390x" -> Ok RustcArchS390x
+    | `String "Sparc" -> Ok RustcArchSparc
+    | `String "Sparc64" -> Ok RustcArchSparc64
+    | `String "SpirV" -> Ok RustcArchSpirV
+    | `String "Wasm32" -> Ok RustcArchWasm32
+    | `String "Wasm64" -> Ok RustcArchWasm64
+    | `String "X86" -> Ok RustcArchX86
+    | `String "X86_64" -> Ok RustcArchX86_64
+    | `String "Xtensa" -> Ok RustcArchXtensa
+    | `Assoc [ ("Other", _0) ] ->
+        let* _0 = string_of_json ctx _0 in
+        Ok (RustcArchOther _0)
+    | _ -> Error "")
+
 and assoc_item_id_of_json (ctx : of_json_ctx) (js : json) :
     (assoc_item_id, string) result =
   combine_error_msgs js __FUNCTION__
@@ -2450,6 +2489,37 @@ and body_of_json (ctx : of_json_ctx) (js : json) : (body, string) result =
     | `Assoc [ ("Error", _0) ] ->
         let* _0 = error_of_json ctx _0 in
         Ok (ErrorBody _0)
+    | _ -> Error "")
+
+and rustc_cfg_abi_of_json (ctx : of_json_ctx) (js : json) :
+    (rustc_cfg_abi, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Abi64" -> Ok RustcCfgAbiAbi64
+    | `String "AbiV2" -> Ok RustcCfgAbiAbiV2
+    | `String "AbiV2Hf" -> Ok RustcCfgAbiAbiV2Hf
+    | `String "Eabi" -> Ok RustcCfgAbiEabi
+    | `String "EabiHf" -> Ok RustcCfgAbiEabiHf
+    | `String "ElfV1" -> Ok RustcCfgAbiElfV1
+    | `String "ElfV2" -> Ok RustcCfgAbiElfV2
+    | `String "Fortanix" -> Ok RustcCfgAbiFortanix
+    | `String "Ilp32" -> Ok RustcCfgAbiIlp32
+    | `String "Ilp32e" -> Ok RustcCfgAbiIlp32e
+    | `String "Llvm" -> Ok RustcCfgAbiLlvm
+    | `String "MacAbi" -> Ok RustcCfgAbiMacAbi
+    | `String "Pauthtest" -> Ok RustcCfgAbiPauthtest
+    | `String "Sim" -> Ok RustcCfgAbiSim
+    | `String "SoftFloat" -> Ok RustcCfgAbiSoftFloat
+    | `String "Spe" -> Ok RustcCfgAbiSpe
+    | `String "Uwp" -> Ok RustcCfgAbiUwp
+    | `String "VecDefault" -> Ok RustcCfgAbiVecDefault
+    | `String "VecExtAbi" -> Ok RustcCfgAbiVecExtAbi
+    | `String "X32" -> Ok RustcCfgAbiX32
+    | `String "V8Plus" -> Ok RustcCfgAbiV8Plus
+    | `String "Unspecified" -> Ok RustcCfgAbiUnspecified
+    | `Assoc [ ("Other", _0) ] ->
+        let* _0 = string_of_json ctx _0 in
+        Ok (RustcCfgAbiOther _0)
     | _ -> Error "")
 
 and cli_options_of_json (ctx : of_json_ctx) (js : json) :
@@ -2816,6 +2886,34 @@ and discriminator_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* fallback = box_of_json discriminator_of_json ctx fallback in
         Ok (Branch (offset, int_ty, children, fallback))
+    | _ -> Error "")
+
+and rustc_env_of_json (ctx : of_json_ctx) (js : json) :
+    (rustc_env, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Gnu" -> Ok RustcEnvGnu
+    | `String "MacAbi" -> Ok RustcEnvMacAbi
+    | `String "Mlibc" -> Ok RustcEnvMlibc
+    | `String "Msvc" -> Ok RustcEnvMsvc
+    | `String "Musl" -> Ok RustcEnvMusl
+    | `String "Newlib" -> Ok RustcEnvNewlib
+    | `String "Nto70" -> Ok RustcEnvNto70
+    | `String "Nto71" -> Ok RustcEnvNto71
+    | `String "Nto71IoSock" -> Ok RustcEnvNto71IoSock
+    | `String "Ohos" -> Ok RustcEnvOhos
+    | `String "Relibc" -> Ok RustcEnvRelibc
+    | `String "Sgx" -> Ok RustcEnvSgx
+    | `String "Sim" -> Ok RustcEnvSim
+    | `String "P1" -> Ok RustcEnvP1
+    | `String "P2" -> Ok RustcEnvP2
+    | `String "P3" -> Ok RustcEnvP3
+    | `String "Uclibc" -> Ok RustcEnvUclibc
+    | `String "V5" -> Ok RustcEnvV5
+    | `String "Unspecified" -> Ok RustcEnvUnspecified
+    | `Assoc [ ("Other", _0) ] ->
+        let* _0 = string_of_json ctx _0 in
+        Ok (RustcEnvOther _0)
     | _ -> Error "")
 
 and error_of_json (ctx : of_json_ctx) (js : json) : (error, string) result =
@@ -3667,6 +3765,66 @@ and rustc_optimize_attr_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Size" -> Ok RustcOptimizeAttrSize
     | _ -> Error "")
 
+and rustc_os_of_json (ctx : of_json_ctx) (js : json) : (rustc_os, string) result
+    =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Aix" -> Ok RustcOsAix
+    | `String "AmdHsa" -> Ok RustcOsAmdHsa
+    | `String "Android" -> Ok RustcOsAndroid
+    | `String "Cuda" -> Ok RustcOsCuda
+    | `String "Cygwin" -> Ok RustcOsCygwin
+    | `String "Dragonfly" -> Ok RustcOsDragonfly
+    | `String "Emscripten" -> Ok RustcOsEmscripten
+    | `String "EspIdf" -> Ok RustcOsEspIdf
+    | `String "FreeBsd" -> Ok RustcOsFreeBsd
+    | `String "Fuchsia" -> Ok RustcOsFuchsia
+    | `String "Haiku" -> Ok RustcOsHaiku
+    | `String "HelenOs" -> Ok RustcOsHelenOs
+    | `String "Hermit" -> Ok RustcOsHermit
+    | `String "Horizon" -> Ok RustcOsHorizon
+    | `String "Hurd" -> Ok RustcOsHurd
+    | `String "Illumos" -> Ok RustcOsIllumos
+    | `String "IOs" -> Ok RustcOsIOs
+    | `String "L4Re" -> Ok RustcOsL4Re
+    | `String "Linux" -> Ok RustcOsLinux
+    | `String "LynxOs178" -> Ok RustcOsLynxOs178
+    | `String "MacOs" -> Ok RustcOsMacOs
+    | `String "Managarm" -> Ok RustcOsManagarm
+    | `String "Motor" -> Ok RustcOsMotor
+    | `String "NetBsd" -> Ok RustcOsNetBsd
+    | `String "None" -> Ok RustcOsNone
+    | `String "Nto" -> Ok RustcOsNto
+    | `String "NuttX" -> Ok RustcOsNuttX
+    | `String "OpenBsd" -> Ok RustcOsOpenBsd
+    | `String "Ps3" -> Ok RustcOsPs3
+    | `String "Psp" -> Ok RustcOsPsp
+    | `String "Psx" -> Ok RustcOsPsx
+    | `String "Qnx" -> Ok RustcOsQnx
+    | `String "Qurt" -> Ok RustcOsQurt
+    | `String "Redox" -> Ok RustcOsRedox
+    | `String "Rtems" -> Ok RustcOsRtems
+    | `String "Solaris" -> Ok RustcOsSolaris
+    | `String "SolidAsp3" -> Ok RustcOsSolidAsp3
+    | `String "TeeOs" -> Ok RustcOsTeeOs
+    | `String "Trusty" -> Ok RustcOsTrusty
+    | `String "TvOs" -> Ok RustcOsTvOs
+    | `String "Uefi" -> Ok RustcOsUefi
+    | `String "VexOs" -> Ok RustcOsVexOs
+    | `String "VisionOs" -> Ok RustcOsVisionOs
+    | `String "Vita" -> Ok RustcOsVita
+    | `String "VxWorks" -> Ok RustcOsVxWorks
+    | `String "Wasi" -> Ok RustcOsWasi
+    | `String "WatchOs" -> Ok RustcOsWatchOs
+    | `String "Windows" -> Ok RustcOsWindows
+    | `String "Xous" -> Ok RustcOsXous
+    | `String "Zkvm" -> Ok RustcOsZkvm
+    | `String "Unknown" -> Ok RustcOsUnknown
+    | `Assoc [ ("Other", _0) ] ->
+        let* _0 = string_of_json ctx _0 in
+        Ok (RustcOsOther _0)
+    | _ -> Error "")
+
 and preset_of_json (ctx : of_json_ctx) (js : json) : (preset, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -3843,11 +4001,21 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc
         [
+          ("arch", arch);
+          ("vendor", vendor);
+          ("os", os);
+          ("env", env);
+          ("cfg_abi", cfg_abi);
           ("target_pointer_size", target_pointer_size);
           ("is_little_endian", is_little_endian);
           ("c_enum_smallest_repr_ty", c_enum_smallest_repr_ty);
           ("primitive_alignments", primitive_alignments);
         ] ->
+        let* arch = rustc_arch_of_json ctx arch in
+        let* vendor = string_of_json ctx vendor in
+        let* os = rustc_os_of_json ctx os in
+        let* env = rustc_env_of_json ctx env in
+        let* cfg_abi = rustc_cfg_abi_of_json ctx cfg_abi in
         let* target_pointer_size = int_of_json ctx target_pointer_size in
         let* is_little_endian = bool_of_json ctx is_little_endian in
         let* c_enum_smallest_repr_ty =
@@ -3859,6 +4027,11 @@ and target_info_of_json (ctx : of_json_ctx) (js : json) :
         in
         Ok
           ({
+             arch;
+             vendor;
+             os;
+             env;
+             cfg_abi;
              target_pointer_size;
              is_little_endian;
              c_enum_smallest_repr_ty;
