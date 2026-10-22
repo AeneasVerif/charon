@@ -80,9 +80,6 @@ and binop =
       (** Fails if the shift is bigger than the bit-size of the type. *)
   | Shr of overflow_mode
       (** Fails if the shift is bigger than the bit-size of the type. *)
-  | Offset
-      (** [BinOp(Offset, ptr, n)] for [ptr] a pointer to type [T] offsets [ptr]
-          by [n * size_of::<T>()]. *)
   | Cmp
       (** [BinOp(Cmp, a, b)] returns [-1u8] if [a < b], [0u8] if [a == b], and
           [1u8] if [a > b]. *)
@@ -191,6 +188,25 @@ and projection_elem =
           - [from]
           - [to]
           - [from_end] *)
+  | Offset of operand * bool * ty * trait_ref option
+      (** For a place [p], [p.offset(n)] is the place located [n] bytes after
+          [p], where [n] is a signed or unsigned integer. This projection may go
+          out of bounds of the original place, e.g. if we initially had a
+          [*const T] pointing into an array. If [in_bounds] is [true] the offset
+          must not overflow and must stay within the original allocation,
+          otherwise it uses wrapping arithmetic around the address space and may
+          go outside the allocation (just like [<*const T>::offset] vs
+          [<*const T>::wrapping_offset]).
+
+          An offset may change the type of the place, like a transmute: [ty] is
+          the type of the resulting place, which is [T: Sized] as proven by
+          [ty_is_sized].
+
+          Fields:
+          - [bytes]
+          - [in_bounds]
+          - [ty]
+          - [ty_is_sized] *)
 
 (** An expression that evaluates to a value. This is the RHS of an assignment.
 *)

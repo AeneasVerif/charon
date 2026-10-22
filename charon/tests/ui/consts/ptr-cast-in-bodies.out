@@ -1,0 +1,166 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: ptr_cast_in_bodies_aux::Sync
+pub struct Sync<T>
+where
+    TraitClause0: (T: Sized),
+{
+  _0: T,
+}
+
+// Full name: ptr_cast_in_bodies_aux::ARR
+pub fn ARR() -> [u32; 3usize]
+{
+    let _0: [u32; 3usize]; // return
+    let _1: [u32; 3usize]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = [const 1u32, const 2u32, const 3u32]
+    _0 = noretag move _1
+    return
+}
+
+struct () {}
+
+// Full name: ptr_cast_in_bodies_aux::ARR
+pub static ARR: [u32; 3usize] = ARR()
+
+// Full name: ptr_cast_in_bodies_aux::END
+pub fn END() -> Sync<*const u32>[{built_in impl Sized for *const u32}]
+{
+    let _0: Sync<*const u32>[{built_in impl Sized for *const u32}]; // return
+    let _1: isize; // anonymous local
+    let _2: *const u32; // anonymous local
+    let _3: Sync<*const u32>[{built_in impl Sized for *const u32}]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = const 3isize ub.* const size_of::<u32>()
+    storage_live(_2)
+    _2 = &raw const ARR.offset!(copy _1)
+    storage_live(_3)
+    _3 = Sync { _0: move _2 }
+    _0 = noretag move _3
+    return
+}
+
+// Full name: ptr_cast_in_bodies_aux::END
+pub static END: Sync<*const u32>[{built_in impl Sized for *const u32}] = END()
+
+// Full name: ptr_cast_in_bodies_aux::BYTE
+pub fn BYTE() -> Sync<*const u16>[{built_in impl Sized for *const u16}]
+{
+    let _0: Sync<*const u16>[{built_in impl Sized for *const u16}]; // return
+    let _1: *const u16; // anonymous local
+    let _2: Sync<*const u16>[{built_in impl Sized for *const u16}]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = &raw const ARR.offset!(const 3isize)
+    storage_live(_2)
+    _2 = Sync { _0: move _1 }
+    _0 = noretag move _2
+    return
+}
+
+// Full name: ptr_cast_in_bodies_aux::BYTE
+pub static BYTE: Sync<*const u16>[{built_in impl Sized for *const u16}] = BYTE()
+
+// Full name: ptr_cast_in_bodies_aux::OOB
+pub fn OOB() -> Sync<*const u32>[{built_in impl Sized for *const u32}]
+{
+    let _0: Sync<*const u32>[{built_in impl Sized for *const u32}]; // return
+    let _1: isize; // anonymous local
+    let _2: *const u32; // anonymous local
+    let _3: Sync<*const u32>[{built_in impl Sized for *const u32}]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = const -1isize wrap.* const size_of::<u32>()
+    storage_live(_2)
+    _2 = &raw const ARR.wrapping_offset!(copy _1)
+    storage_live(_3)
+    _3 = Sync { _0: move _2 }
+    _0 = noretag move _3
+    return
+}
+
+// Full name: ptr_cast_in_bodies_aux::OOB
+pub static OOB: Sync<*const u32>[{built_in impl Sized for *const u32}] = OOB()
+
+// Full name: ptr_cast_in_bodies_aux::foo
+pub fn foo() -> u8
+{
+    let _0: u8; // return
+
+    storage_live(_0)
+    _0 = const 1u8
+    return
+}
+
+// Full name: ptr_cast_in_bodies_aux::FN_RAW
+pub fn FN_RAW() -> Sync<*const ()>[{built_in impl Sized for *const ()}]
+{
+    let _0: Sync<*const ()>[{built_in impl Sized for *const ()}]; // return
+    let _1: *const (); // anonymous local
+    let _2: *const (); // anonymous local
+    let _3: Sync<*const ()>[{built_in impl Sized for *const ()}]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = cast<*const ()>(const fnptr(foo))
+    storage_live(_2)
+    _2 = &raw const (*_1)
+    storage_live(_3)
+    _3 = Sync { _0: move _2 }
+    _0 = noretag move _3
+    return
+}
+
+// Full name: ptr_cast_in_bodies_aux::FN_RAW
+pub static FN_RAW: Sync<*const ()>[{built_in impl Sized for *const ()}] = FN_RAW()
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let _1: &'1 Sync<*const u32>[{built_in impl Sized for *const u32}]; // anonymous local
+    let _2: &'4 Sync<*const u16>[{built_in impl Sized for *const u16}]; // anonymous local
+    let _3: &'6 Sync<*const u32>[{built_in impl Sized for *const u32}]; // anonymous local
+    let _4: &'9 Sync<*const ()>[{built_in impl Sized for *const ()}]; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = &END
+    storage_dead(_1)
+    storage_live(_2)
+    _2 = &BYTE
+    storage_dead(_2)
+    storage_live(_3)
+    _3 = &OOB
+    storage_dead(_3)
+    storage_live(_4)
+    _4 = &FN_RAW
+    storage_dead(_4)
+    _0 = ()
+    return
+}
+
+
+

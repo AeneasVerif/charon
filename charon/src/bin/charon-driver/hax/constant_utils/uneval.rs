@@ -158,7 +158,10 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, FnPtrTarget> for rustc_const_uneva
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantByteProvenance> for AllocTarget<'tcx> {
     fn sinto(&self, s: &S) -> ConstantByteProvenance {
         match *self {
-            AllocTarget::Fn(target) => ConstantByteProvenance::Function(target.sinto(s)),
+            AllocTarget::Fn(target) => {
+                let fn_ptr_ty = target.fn_ptr_ty(s.base().tcx, s.typing_env());
+                ConstantByteProvenance::Function(target.sinto(s), fn_ptr_ty.sinto(s))
+            }
             AllocTarget::Global(global) if const_reader(s).is_named_global(global) => {
                 ConstantByteProvenance::Global(global.sinto(s))
             }
@@ -179,6 +182,12 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for rustc_const_unev
         let ty = match self.ty.kind() {
             ty::Pat(base_ty, _) => *base_ty,
             _ => self.ty,
+        };
+        let unsizing_metadata = |unsize: &Option<rustc_const_uneval::Unsize<'tcx>>| {
+            unsize.map(|unsize| {
+                let ref_to = |ty| ty::Ty::new_imm_ref(tcx, tcx.lifetimes.re_static, ty);
+                compute_unsizing_metadata(s, ref_to(unsize.from), ref_to(unsize.to))
+            })
         };
         let kind = match &self.kind {
             ConstKind::Scalar(scalar_int) => {
@@ -235,26 +244,59 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for rustc_const_unev
             }
             ConstKind::FnPtr(target) => ConstantExprKind::FnPtr(target.sinto(s)),
             ConstKind::Ptr { target, unsize } => {
-                let metadata = unsize.map(|unsize| {
-                    let ref_to = |ty| ty::Ty::new_imm_ref(tcx, tcx.lifetimes.re_static, ty);
-                    compute_unsizing_metadata(s, ref_to(unsize.from), ref_to(unsize.to))
-                });
-                let arg = match target {
-                    PtrTarget::Global { global, ty } => Decorated {
-                        contents: Box::new(ConstantExprKind::NamedGlobal(global.sinto(s))),
-                        ty: ty.sinto(s),
-                    },
-                    PtrTarget::Inline(val) => val.sinto(s),
+                let metadata = unsizing_metadata(unsize);
+                let (base, projections) = match target {
+                    PtrTarget::Global {
+                        target,
+                        ty,
+                        projections,
+                    } => {
+                        let prov = match *target {
+                            // We name the globals we point into, even the ones that we otherwise
+                            // inline.
+                            AllocTarget::Global(global) => {
+                                ConstantByteProvenance::Global(global.sinto(s))
+                            }
+                            _ => target.sinto(s),
+                        };
+                        let projections = projections
+                            .iter()
+                            .map(|(proj, ty)| {
+                                use rustc_const_uneval::Projection;
+                                let proj = match *proj {
+                                    Projection::Field(variant, field) => {
+                                        ConstantProjectionElem::Field(variant, field)
+                                    }
+                                    Projection::Index(i) => ConstantProjectionElem::Index(i),
+                                    Projection::Subslice { from, to } => {
+                                        ConstantProjectionElem::Subslice { from, to }
+                                    }
+                                    Projection::Offset {
+                                        count,
+                                        ty: elem_ty,
+                                        in_bounds,
+                                    } => ConstantProjectionElem::Offset {
+                                        count,
+                                        ty: elem_ty.sinto(s),
+                                        in_bounds,
+                                        pointee_is_sized: solve_sized(s, *ty),
+                                    },
+                                };
+                                (proj, ty.sinto(s))
+                            })
+                            .collect();
+                        (ConstantPtrBase::Global(prov, ty.sinto(s)), projections)
+                    }
+                    PtrTarget::Inline(val) => (ConstantPtrBase::Value(val.sinto(s)), vec![]),
                 };
-                match ty.kind() {
-                    ty::Ref(..) => ConstantExprKind::Borrow(arg, metadata),
-                    ty::RawPtr(_, mutability) => ConstantExprKind::RawBorrow {
-                        mutability: mutability.sinto(s),
-                        arg,
-                        metadata,
-                    },
-                    _ => unreachable!("unexpected pointer type {ty:?}"),
+                ConstantExprKind::Ptr {
+                    base,
+                    projections,
+                    metadata,
                 }
+            }
+            ConstKind::PtrCast { ptr, unsize } => {
+                ConstantExprKind::PtrCast(ptr.sinto(s), unsizing_metadata(unsize))
             }
             ConstKind::Memory(bytes) => {
                 // The bytes of a pointer share their provenance; we convert it only once.

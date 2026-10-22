@@ -738,6 +738,7 @@ where
     let _9: usize; // anonymous local
     let _10: *const T; // anonymous local
     let _11: usize; // anonymous local
+    let _12: usize; // anonymous local
 
     storage_live(_0)
     storage_live(ptr_4)
@@ -753,7 +754,9 @@ where
     _8 = copy ptr_4
     storage_live(_9)
     _9 = copy offset
-    ptr_7 = move _8 offset move _9
+    storage_live(_12)
+    _12 = move _9 ub.* const size_of::<T>()
+    ptr_7 = &raw const (*_8).offset!(copy _12)
     storage_dead(_9)
     storage_dead(_8)
     storage_live(_10)
@@ -765,6 +768,7 @@ where
     storage_dead(_10)
     storage_dead(ptr_7)
     storage_dead(ptr_4)
+    storage_dead(_12)
     storage_dead(len)
     storage_dead(offset)
     storage_dead(ptr_1)
@@ -788,6 +792,7 @@ where
     let _9: usize; // anonymous local
     let _10: *mut T; // anonymous local
     let _11: usize; // anonymous local
+    let _12: usize; // anonymous local
 
     storage_live(_0)
     storage_live(ptr_4)
@@ -803,7 +808,9 @@ where
     _8 = copy ptr_4
     storage_live(_9)
     _9 = copy offset
-    ptr_7 = move _8 offset move _9
+    storage_live(_12)
+    _12 = move _9 ub.* const size_of::<T>()
+    ptr_7 = &raw mut (*_8).offset!(copy _12)
     storage_dead(_9)
     storage_dead(_8)
     storage_live(_10)
@@ -815,6 +822,7 @@ where
     storage_dead(_10)
     storage_dead(ptr_7)
     storage_dead(ptr_4)
+    storage_dead(_12)
     storage_dead(len)
     storage_dead(offset)
     storage_dead(ptr_1)

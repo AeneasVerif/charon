@@ -380,6 +380,8 @@ pub trait BodyTransformCtx: Sized {
                 ProjectionElem::Field { .. } => {
                     compute_place_metadata_inner(ctx, subplace, metadata_ty)
                 }
+                // The pointee of an offset is sized, hence no metadata.
+                ProjectionElem::Offset { .. } => None,
                 // Indexing for array & slice will only result in sized types, hence no metadata
                 ProjectionElem::Index { .. } => None,
                 // Ptr metadata is always sized.
@@ -417,6 +419,40 @@ pub trait BodyTransformCtx: Sized {
         );
         compute_place_metadata_inner(self, place, &metadata_ty)
             .unwrap_or_else(Operand::mk_const_unit)
+    }
+
+    /// The projection to the place of type `output_ty` located `count * size_of::<ty>()` bytes
+    /// after the current place, or `count` bytes if `ty` is `None` (see `ProjectionElem::Offset`).
+    /// `output_is_sized` is the proof that `output_ty` is sized.
+    fn offset_projection(
+        &mut self,
+        count: Operand,
+        ty: Option<&Ty>,
+        in_bounds: bool,
+        output_ty: Ty,
+        ty_is_sized: Option<TraitRef>,
+    ) -> ProjectionElem {
+        let bytes = match ty {
+            None => count,
+            Some(ty) => {
+                let count_ty = count.ty().clone();
+                let size =
+                    ConstantExpr::new(ConstantExprKind::SizeOf(ty.clone()), count_ty.clone());
+                let mode = if in_bounds {
+                    OverflowMode::UB
+                } else {
+                    OverflowMode::Wrap
+                };
+                let rval = Rvalue::BinaryOp(BinOp::Mul(mode), count, Operand::Const(size));
+                Operand::Copy(self.rval_to_place(rval, count_ty))
+            }
+        };
+        ProjectionElem::Offset {
+            bytes: Box::new(bytes),
+            in_bounds,
+            ty: output_ty,
+            ty_is_sized,
+        }
     }
 
     /// Create a `&` borrow of the place.

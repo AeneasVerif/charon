@@ -64,12 +64,12 @@ use derive_generic_visitor::*;
     // Types that we unconditionally explore.
     drive(
         Assert, AttributeKind, BinderKind, BinOp, BorrowckStatement, BorrowKind, BuiltinAdt, BuiltinAssertKind,
-        Call, InlineAsm, AsmTemplatePiece, AsmOperand, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId,
+        Call, InlineAsm, AsmTemplatePiece, AsmOperand, CastKind, ClosureInfo, ClosureKind, ConstGenericParam, ConstGenericVarId, ConstProjectionElem,
         Deprecation, Disambiguator, DynPredicate, Field, FieldId, File, FloatTy, FloatValue,
         FnOperand, FnPtrKind, InlineAttr, IntegerTy, IntTy, UIntTy, RegionArgs, ScalarTy,
         Ident, from_rustc::InlineAttr,
         llbc_ast::ExprBody, llbc_ast::StatementKind,
-        Loc, Locals, NullOp, Operand, PathElem, PlaceKind,
+        Loc, Locals, NullOp, Operand, PathElem, PlaceKind, GlobalPlaceKind, GlobalProvenance,
         RawAttribute, RefKind, RegionId, IntegerValue, TraitItemName, TraitMethodId, AssocTypeId, AssocConstId, AssocItemId, MaybeAssocItemId,
         TranslatedCrate, TypeDeclKind, TypeParam, TypePattern, TypeVarId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::StatementKind,
@@ -111,7 +111,7 @@ use derive_generic_visitor::*;
         ullbc_statement: ullbc_ast::Statement, ullbc_terminator: ullbc_ast::Terminator,
         AbortKind, AggregateKind, FnPtr, FunSig,
         ConstantExpr, ConstantExprKind, Layout, InhabitedPredicate, InhabitedPredicateKind, SizeExpr,
-        SizeExprKind, MetadataValue, Place, ProjectionElem, Rvalue, Body,
+        SizeExprKind, MetadataValue, Place, GlobalPlace, ProjectionElem, Rvalue, Body,
     )
 )]
 pub trait AstVisitable: Any {
