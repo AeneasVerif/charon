@@ -590,6 +590,7 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
       Format.fprintf fmt "[%a]" (pp_sep_list ", " (pp_constant_expr env)) fields
   | CGlobal gref -> pp_global_decl_ref env fmt gref
   | CPtrNoProvenance n -> Format.fprintf fmt "no-provenance %s" (Z.to_string n)
+  | CExternSymbol name -> Format.fprintf fmt "&raw const <extern:%s>" name
   | CRef (c, meta) ->
       Format.fprintf fmt "&%a" (pp_global_place env) c;
       Option.iter

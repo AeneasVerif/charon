@@ -735,7 +735,26 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             ConstHandling::Initializers => None,
         };
         let evaluated = mode.and_then(|mode| def.evaluate(self.hax_state_with_id(), mode));
-        let value = if let Some(evaluated) = evaluated {
+        let value = if let hax::FullDefKind::Static(_) = def.kind()
+            && let Some(rust_def_id) = def.def_id().as_real_def_id()
+            && self
+                .t_ctx
+                .tcx
+                .codegen_fn_attrs(rust_def_id)
+                .import_linkage
+                .is_some()
+            && let Some(symbol) = self.t_ctx.extern_item_symbol_name(def)
+        {
+            // A foreign static with `#[linkage]` holds the address of the symbol it names.
+            let addr = ConstantExpr::new(
+                ConstantExprKind::ExternSymbol(symbol),
+                Ty::new(TyKind::RawPtr(Ty::mk_unit(), RefKind::Shared)),
+            );
+            ConstantExpr::new(
+                ConstantExprKind::Cast(addr, CastKind::Transmute(ty.clone())),
+                ty.clone(),
+            )
+        } else if let Some(evaluated) = evaluated {
             self.translate_constant_expr(span, &evaluated)?
         } else {
             // Default: the value is a call to the initializer function, which uses the same

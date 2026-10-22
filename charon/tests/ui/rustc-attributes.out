@@ -77,12 +77,7 @@ fn force_target_feature()
 
 // Full name: test_crate::extern_weak
 #[linkage = "extern_weak"]
-extern fn extern_weak() -> Option<unsafe extern "C" fn()>[{built_in impl Sized for unsafe extern "C" fn()}]
-= <extern:extern_weak>
-
-// Full name: test_crate::extern_weak
-#[linkage = "extern_weak"]
-extern unsafe static extern_weak: Option<unsafe extern "C" fn()>[{built_in impl Sized for unsafe extern "C" fn()}] = extern_weak()
+extern unsafe static extern_weak: Option<unsafe extern "C" fn()>[{built_in impl Sized for unsafe extern "C" fn()}] = transmute<Option<unsafe extern "C" fn()>[{built_in impl Sized for unsafe extern "C" fn()}]>(&raw const <extern:extern_weak>)
 
 
 

@@ -2087,6 +2087,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
                 write!(f, ")")
             }
             ConstantExprKind::PtrNoProvenance(v) => write!(f, "no-provenance {v}"),
+            ConstantExprKind::ExternSymbol(name) => write!(f, "&raw const <extern:{name}>"),
             ConstantExprKind::RawMemory(bytes) => {
                 let bytes = bytes.iter().map(|v| v.with_ctx(ctx)).format(", ");
                 write!(f, "RawMemory({})", bytes)

@@ -146,6 +146,7 @@ impl TypeInfo {
                     | ConstantExprKind::FnPtr(..)
                     | ConstantExprKind::Cast(..)
                     | ConstantExprKind::PtrNoProvenance(..)
+                    | ConstantExprKind::ExternSymbol(..)
                     | ConstantExprKind::TypeId(..)
                     | ConstantExprKind::RawMemory(..)
                     | ConstantExprKind::Opaque(..) => {}

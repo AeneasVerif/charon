@@ -672,6 +672,9 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("PtrNoProvenance", _0) ] ->
         let* _0 = big_int_of_json ctx _0 in
         Ok (CPtrNoProvenance _0)
+    | `Assoc [ ("ExternSymbol", _0) ] ->
+        let* _0 = string_of_json ctx _0 in
+        Ok (CExternSymbol _0)
     | `Assoc [ ("TypeId", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CTypeId _0)
