@@ -1877,6 +1877,20 @@ impl Display for from_rustc::AttributeKind {
                 from_rustc::InlineAttr::Force { .. } => write!(f, "rustc_force_inline"),
             },
             AttributeKind::LinkSection { name } => write!(f, "link_section = \"{name}\""),
+            AttributeKind::Linkage(linkage, _) => {
+                let linkage = match linkage {
+                    from_rustc::Linkage::AvailableExternally => "available_externally",
+                    from_rustc::Linkage::Common => "common",
+                    from_rustc::Linkage::ExternalWeak => "extern_weak",
+                    from_rustc::Linkage::External => "external",
+                    from_rustc::Linkage::Internal => "internal",
+                    from_rustc::Linkage::LinkOnceAny => "linkonce",
+                    from_rustc::Linkage::LinkOnceODR => "linkonce_odr",
+                    from_rustc::Linkage::WeakAny => "weak",
+                    from_rustc::Linkage::WeakODR => "weak_odr",
+                };
+                write!(f, "linkage = \"{linkage}\"")
+            }
             AttributeKind::MayDangle(_) => write!(f, "may_dangle"),
             AttributeKind::Naked(_) => write!(f, "naked"),
             AttributeKind::NoLink => write!(f, "no_link"),

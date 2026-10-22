@@ -95,6 +95,10 @@ impl<'tcx> TranslateCtx<'tcx> {
             AttributeKind::LinkSection { name } => Ok(from_rustc::AttributeKind::LinkSection {
                 name: (name).to_string().into(),
             }),
+            AttributeKind::Linkage(_0, _1) => Ok(from_rustc::AttributeKind::Linkage(
+                self.translate_linkage_from_rustc(_0)?,
+                self.translate_span(_1),
+            )),
             AttributeKind::MayDangle(_0) => Ok(from_rustc::AttributeKind::MayDangle(
                 self.translate_span(_0),
             )),
@@ -598,6 +602,25 @@ impl<'tcx> TranslateCtx<'tcx> {
                     .map(|value| Ok((value).to_string().into()))
                     .transpose()?,
             }),
+            // If the below is reached, the code is not up-to-date with the rustc version
+            _ => Err(FromRustcError),
+        }
+    }
+
+    fn translate_linkage_from_rustc(
+        &mut self,
+        value: &Linkage,
+    ) -> Result<from_rustc::Linkage, FromRustcError> {
+        match value {
+            Linkage::AvailableExternally => Ok(from_rustc::Linkage::AvailableExternally),
+            Linkage::Common => Ok(from_rustc::Linkage::Common),
+            Linkage::ExternalWeak => Ok(from_rustc::Linkage::ExternalWeak),
+            Linkage::External => Ok(from_rustc::Linkage::External),
+            Linkage::Internal => Ok(from_rustc::Linkage::Internal),
+            Linkage::LinkOnceAny => Ok(from_rustc::Linkage::LinkOnceAny),
+            Linkage::LinkOnceODR => Ok(from_rustc::Linkage::LinkOnceODR),
+            Linkage::WeakAny => Ok(from_rustc::Linkage::WeakAny),
+            Linkage::WeakODR => Ok(from_rustc::Linkage::WeakODR),
             // If the below is reached, the code is not up-to-date with the rustc version
             _ => Err(FromRustcError),
         }

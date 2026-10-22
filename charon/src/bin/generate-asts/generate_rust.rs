@@ -68,6 +68,7 @@ impl RustcDatatypes {
                     "Ignore",
                     "Inline",
                     "LinkSection",
+                    "Linkage",
                     "MayDangle",
                     "Naked",
                     "NoLink",

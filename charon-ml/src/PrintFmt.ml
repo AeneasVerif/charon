@@ -1291,6 +1291,20 @@ let pp_rustc_attribute_kind (fmt : Format.formatter)
       | RustcInlineAttrForce _ -> pp_string fmt "rustc_force_inline")
   | RustcAttributeKindLinkSection name ->
       Format.fprintf fmt "link_section = \"%s\"" name
+  | RustcAttributeKindLinkage (linkage, _) ->
+      let linkage =
+        match linkage with
+        | RustcLinkageAvailableExternally -> "available_externally"
+        | RustcLinkageCommon -> "common"
+        | RustcLinkageExternalWeak -> "extern_weak"
+        | RustcLinkageExternal -> "external"
+        | RustcLinkageInternal -> "internal"
+        | RustcLinkageLinkOnceAny -> "linkonce"
+        | RustcLinkageLinkOnceODR -> "linkonce_odr"
+        | RustcLinkageWeakAny -> "weak"
+        | RustcLinkageWeakODR -> "weak_odr"
+      in
+      Format.fprintf fmt "linkage = \"%s\"" linkage
   | RustcAttributeKindMayDangle _ -> pp_string fmt "may_dangle"
   | RustcAttributeKindNaked _ -> pp_string fmt "naked"
   | RustcAttributeKindNoLink -> pp_string fmt "no_link"

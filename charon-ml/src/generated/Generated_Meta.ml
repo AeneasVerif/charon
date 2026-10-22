@@ -218,6 +218,8 @@ and rustc_attribute_kind =
 
           Fields:
           - [name] *)
+  | RustcAttributeKindLinkage of rustc_linkage * span
+      (** Represents [#[linkage]]. *)
   | RustcAttributeKindMayDangle of span
       (** Represents
           [[#[may_dangle]]](https://std-dev-guide.rust-lang.org/tricky/may-dangle.html).
@@ -332,6 +334,22 @@ and item_id =
   | IdTraitImpl of trait_impl_id
   | IdFun of fun_decl_id
   | IdGlobal of global_decl_id
+
+(** Possible values for the [#[linkage]] attribute, allowing to specify the
+    linkage type for a [MonoItem].
+
+    See <https://llvm.org/docs/LangRef.html#linkage-types> for more details
+    about these variants. *)
+and rustc_linkage =
+  | RustcLinkageAvailableExternally
+  | RustcLinkageCommon
+  | RustcLinkageExternalWeak
+  | RustcLinkageExternal
+  | RustcLinkageInternal
+  | RustcLinkageLinkOnceAny
+  | RustcLinkageLinkOnceODR
+  | RustcLinkageWeakAny
+  | RustcLinkageWeakODR
 
 and loc = {
   line : int;  (** The (1-based) line number. *)
