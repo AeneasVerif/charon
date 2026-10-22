@@ -118,7 +118,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             self.make_intrinsic_function(span, fdecl, intrinsic_op)?
         } else if let Some(lang_item) = &fdecl.item_meta.lang_item {
             match lang_item {
-                LangItem::PanicFmt => {
+                LangItem::PanicFmt | LangItem::PanicImpl => {
                     self.make_unwind_function(span, fdecl, UnwindSource::OpaquePayload)?
                 }
                 _ => return Ok(None),
@@ -131,9 +131,6 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     }
                     "minirust_start_unwind" => {
                         self.make_unwind_function(span, fdecl, UnwindSource::ExplicitPayload)?
-                    }
-                    "panic_impl" => {
-                        self.make_unwind_function(span, fdecl, UnwindSource::OpaquePayload)?
                     }
                     _ => return Ok(None),
                 },

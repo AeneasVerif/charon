@@ -16,6 +16,17 @@ extern unsafe static CONST: u8 = CONST()
 // Full name: test_crate::Type
 extern opaque type Type
 
+// Full name: test_crate::bar
+extern unsafe extern "C" fn bar()
+= <extern:real_bar>
+
+// Full name: test_crate::STATIC
+extern fn STATIC() -> u8
+= <extern:REAL_STATIC>
+
+// Full name: test_crate::STATIC
+extern unsafe static STATIC: u8 = STATIC()
+
 // Full name: test_crate::use_type
 fn use_type<'_0>(_x: &'_0 Type)
 {

@@ -35,6 +35,10 @@ extern unsafe static weak_fn: Option<unsafe extern "C" fn(i32) -> i32>[{built_in
 #[linkage = "extern_weak"]
 extern unsafe static weak_data: *mut u8 = transmute<*mut u8>(&raw const <extern:weak_data>)
 
+// Full name: test_crate::weak_renamed
+#[linkage = "extern_weak"]
+extern unsafe static weak_renamed: *const u8 = transmute<*const u8>(&raw const <extern:real_weak_renamed>)
+
 // Full name: test_crate::main
 fn main()
 {
