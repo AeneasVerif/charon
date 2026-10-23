@@ -435,16 +435,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Vec<GenericArg>> for ty::GenericAr
     }
 }
 
-/// Reflects both [`ty::GenericArg`] and [`ty::GenericArgKind`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: BaseState<'tcx>>, from: rustc_ast::ast::LitIntType, state: S as gstate)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum LitIntType {
-    Signed(IntTy),
-    Unsigned(UintTy),
-    Unsuffixed,
-}
-
 /// Reflects partially [`ty::InferTy`]
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

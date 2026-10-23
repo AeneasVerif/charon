@@ -6,9 +6,11 @@ use crate::hax::{BaseState, SInto};
 use anyhow::bail;
 use charon_lib::name_matcher::NamePattern;
 use itertools::Itertools;
-use rustc_ast::Mutability;
+
 use rustc_hir::def_id::{CrateNum, DefId, LOCAL_CRATE};
-use rustc_middle::ty::{self, FloatTy, IntTy, TyCtxt, UintTy, fast_reject::SimplifiedType};
+use rustc_middle::ty::{
+    self, FloatTy, IntTy, Mutability, TyCtxt, UintTy, fast_reject::SimplifiedType,
+};
 use rustc_span::symbol::Symbol;
 
 fn find_primitive_impls<'tcx>(
