@@ -18,7 +18,7 @@ mod valtree;
 
 pub use eval::promoted_body;
 
-use rustc_abi::{ExternAbi, FieldIdx, VariantIdx};
+use rustc_abi::{ExternAbi, FieldIdx, Size, VariantIdx};
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::{self, interpret};
 use rustc_middle::ty::{self, Ty, TyCtxt};
@@ -216,9 +216,9 @@ pub enum Byte<'tcx> {
     Uninit,
     /// A concrete byte value.
     Value(u8),
-    /// A byte of a pointer into the given allocation. The `u8` is the index of this byte within the
-    /// pointer.
-    Ptr(AllocTarget<'tcx>, u8),
+    /// A byte of a pointer at the given offset into the given allocation. The `u8` is the index of
+    /// this byte within the pointer.
+    Ptr(AllocTarget<'tcx>, Size, u8),
 }
 
 /// A global allocation.

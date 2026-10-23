@@ -68,9 +68,10 @@ impl<'tcx> ConstReader<'tcx> {
                     }
                 }
                 interpret::Scalar::Ptr(ptr, size) => {
-                    let target = self.alloc_target(ptr.provenance.alloc_id());
+                    let (prov, ptr_offset) = ptr.into_raw_parts();
+                    let target = self.alloc_target(prov.alloc_id());
                     for i in 0..size.get() {
-                        bytes[offset.bytes_usize() + i as usize] = Byte::Ptr(target, i);
+                        bytes[offset.bytes_usize() + i as usize] = Byte::Ptr(target, ptr_offset, i);
                     }
                 }
             };
@@ -114,12 +115,25 @@ impl<'tcx> ConstReader<'tcx> {
             .collect();
 
         // A pointer may straddle the boundaries of `range`.
+        let ptr_size = self.tcx.data_layout.pointer_size();
         for (prov_range, prov) in alloc.provenance().get_range(range, ecx) {
             let target = self.alloc_target(prov.alloc_id());
+            // This is either a whole pointer, or a single byte of one whose index and pointer
+            // bytes are stored with its provenance.
+            let (first_idx, ptr_bytes) = if prov_range.size == ptr_size {
+                (0, alloc.get_bytes_unchecked(prov_range))
+            } else {
+                let frag = alloc.provenance().get_byte(prov_range.start, ecx).unwrap();
+                (frag.idx, &frag.bytes[..ptr_size.bytes_usize()])
+            };
+            let ptr_offset =
+                interpret::read_target_uint(self.tcx.data_layout.endian, ptr_bytes).unwrap();
+            let ptr_offset = Size::from_bytes(ptr_offset);
             for i in 0..prov_range.size.bytes() {
                 let pos = prov_range.start + Size::from_bytes(i);
                 if range.start <= pos && pos < range.end() {
-                    bytes[(pos - range.start).bytes_usize()] = Byte::Ptr(target, i as u8);
+                    bytes[(pos - range.start).bytes_usize()] =
+                        Byte::Ptr(target, ptr_offset, first_idx + i as u8);
                 }
             }
         }

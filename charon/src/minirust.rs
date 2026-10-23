@@ -1142,7 +1142,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             match byte {
                 Byte::Uninit => bytes.push(None),
                 Byte::Value(value) => bytes.push(Some(*value)),
-                Byte::Provenance(provenance, pointer_byte) => {
+                Byte::Provenance(provenance, ptr_offset, pointer_byte) => {
                     let name = match provenance {
                         GlobalProvenance::Global(gref) => self.global_name(gref.id),
                         GlobalProvenance::Function(..) => {
@@ -1158,9 +1158,9 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                             mini_size(u64::try_from(offset).context(span)?),
                             mini::Relocation {
                                 name,
-                                // FIXME(minirust): Charon's raw bytes do not record the offset
-                                // within the target allocation.
-                                offset: mini::Size::ZERO,
+                                offset: mini_size(
+                                    u64::try_from(ptr_offset.to_bits()).context(span)?,
+                                ),
                             },
                         ));
                     }

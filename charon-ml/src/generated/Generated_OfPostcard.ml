@@ -444,8 +444,9 @@ and byte_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          Ok (Value _0)
      | 2 ->
          let* _0 = global_provenance_of_postcard ctx st in
-         let* _1 = u8_of_postcard ctx st in
-         Ok (Provenance (_0, _1))
+         let* _1 = integer_value_of_postcard ctx st in
+         let* _2 = u8_of_postcard ctx st in
+         Ok (Provenance (_0, _1, _2))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and call_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

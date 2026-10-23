@@ -253,10 +253,11 @@ and builtin_impl_data =
 and byte =
   | Uninit  (** An uninitialized byte *)
   | Value of int  (** A concrete byte value *)
-  | Provenance of global_provenance * int
-      (** A byte that is part of a pointer with provenance. The u8 is the offset
-          within the pointer. Note that we do not have an actual value for this
-          pointer byte, unlike MiniRust, as that is non-deterministic. *)
+  | Provenance of global_provenance * integer_value * int
+      (** A byte that is part of a pointer with provenance, at the given offset
+          into the pointee. The u8 is the index of this byte within the pointer.
+          Note that we do not have an actual value for this pointer byte, unlike
+          MiniRust, as that is non-deterministic. *)
 
 (** Cast the operand to a new type. *)
 and cast_kind =

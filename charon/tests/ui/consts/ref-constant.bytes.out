@@ -35,7 +35,7 @@ static ARR: [u32; 3usize] = RawMemory(0x0a, 0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 
 const ARR_START: *const u32 = RawMemory(&ARR[0], &ARR[1], &ARR[2], &ARR[3], &ARR[4], &ARR[5], &ARR[6], &ARR[7])
 
 // Full name: test_crate::ARR_INDICES
-const ARR_INDICES: [*const u32; 4usize] = RawMemory(&ARR[0], &ARR[1], &ARR[2], &ARR[3], &ARR[4], &ARR[5], &ARR[6], &ARR[7], &ARR[0], &ARR[1], &ARR[2], &ARR[3], &ARR[4], &ARR[5], &ARR[6], &ARR[7], &ARR[0], &ARR[1], &ARR[2], &ARR[3], &ARR[4], &ARR[5], &ARR[6], &ARR[7], &ARR[0], &ARR[1], &ARR[2], &ARR[3], &ARR[4], &ARR[5], &ARR[6], &ARR[7])
+const ARR_INDICES: [*const u32; 4usize] = RawMemory(&ARR[0], &ARR[1], &ARR[2], &ARR[3], &ARR[4], &ARR[5], &ARR[6], &ARR[7], &ARR+4[0], &ARR+4[1], &ARR+4[2], &ARR+4[3], &ARR+4[4], &ARR+4[5], &ARR+4[6], &ARR+4[7], &ARR+8[0], &ARR+8[1], &ARR+8[2], &ARR+8[3], &ARR+8[4], &ARR+8[5], &ARR+8[6], &ARR+8[7], &ARR+12[0], &ARR+12[1], &ARR+12[2], &ARR+12[3], &ARR+12[4], &ARR+12[5], &ARR+12[6], &ARR+12[7])
 
 
 

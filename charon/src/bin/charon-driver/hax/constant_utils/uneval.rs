@@ -295,11 +295,12 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr<'tcx>>
                 let bytes = bytes.iter().map(|byte| match *byte {
                     Byte::Uninit => ConstantByte::Uninit,
                     Byte::Value(v) => ConstantByte::Value(v),
-                    Byte::Ptr(target, i) => {
+                    Byte::Ptr(target, offset, i) => {
                         if last_prov.as_ref().is_none_or(|(last, _)| *last != target) {
                             last_prov = Some((target, target.sinto(s)));
                         }
-                        ConstantByte::Provenance(last_prov.as_ref().unwrap().1.clone(), i)
+                        let prov = last_prov.as_ref().unwrap().1.clone();
+                        ConstantByte::Provenance(prov, offset.bytes(), i)
                     }
                 });
                 ConstantExprKind::Memory(bytes.collect())

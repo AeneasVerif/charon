@@ -1,5 +1,4 @@
 //@ output=run-with-minirust
-//@ known-ub
 // Constant pointers with projections and offsets into globals.
 unsafe extern "Rust" {
     safe fn minirust_print(value: u32);

@@ -240,10 +240,10 @@ pub enum Byte {
     Uninit,
     /// A concrete byte value
     Value(u8),
-    /// A byte that is part of a pointer with provenance. The u8 is the offset within the
-    /// pointer. Note that we do not have an actual value for this pointer byte, unlike
-    /// MiniRust, as that is non-deterministic.
-    Provenance(GlobalProvenance, u8),
+    /// A byte that is part of a pointer with provenance, at the given offset into the pointee.
+    /// The u8 is the index of this byte within the pointer. Note that we do not have an actual
+    /// value for this pointer byte, unlike MiniRust, as that is non-deterministic.
+    Provenance(GlobalProvenance, IntegerValue, u8),
 }
 
 macro_rules! static_constant {

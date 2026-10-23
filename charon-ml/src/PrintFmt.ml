@@ -482,7 +482,11 @@ and pp_byte (env : fmt_env) (fmt : Format.formatter) (cv : byte) : unit =
   match cv with
   | Uninit -> pp_string fmt "--"
   | Value b -> Format.fprintf fmt "0x%02x" b
-  | Provenance (p, i) -> Format.fprintf fmt "%a[%d]" (pp_provenance env) p i
+  | Provenance (p, ofs, i) ->
+      let ofs = Scalars.get_val ofs in
+      if Z.equal ofs Z.zero then
+        Format.fprintf fmt "%a[%d]" (pp_provenance env) p i
+      else Format.fprintf fmt "%a+%a[%d]" (pp_provenance env) p pp_big_int ofs i
 
 and pp_unsizing_metadata (env : fmt_env) (fmt : Format.formatter)
     (meta : unsizing_metadata) : unit =
