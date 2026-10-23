@@ -14,10 +14,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<ConstantExprKind, Error> {
         Ok(match v {
             hax::ConstantLiteral::ByteStr(bs) => ConstantExprKind::ByteStr(bs.clone()),
-            // The data backing a string, when we represent strings as unsized [u8]s.
-            hax::ConstantLiteral::Str(str) if self.t_ctx.options.unsized_strings => {
-                ConstantExprKind::RawMemory(str.bytes().map(Byte::Value).collect())
-            }
             // A `str` value not behind a reference, e.g. the tail of a `str`-tailed DST
             hax::ConstantLiteral::Str(str) => {
                 let ty_is_sized = self.translate_sized_proof(span, self.tcx.types.u8)?;
@@ -175,8 +171,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 ..
             } if ty.is_ref()
                 && let hax::ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)) =
-                    arg.contents.as_ref()
-                && !self.t_ctx.options.unsized_strings =>
+                    arg.contents.as_ref() =>
             {
                 ConstantExprKind::Str(s.clone())
             }
@@ -191,20 +186,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         ty: self.translate_ty(span, base_ty)?,
                     },
                     hax::ConstantPtrBase::Value(arg) => {
-                        let mut val = self.translate_constant_expr(span, arg)?;
-                        // With `--unsized-strings`, a string literal is the `[u8; N]` behind the
-                        // `&str`.
-                        if ty.is_ref()
-                            && let hax::ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)) =
-                                arg.contents.as_ref()
-                        {
-                            let len = ConstantExpr::mk_usize(s.len() as u128);
-                            let ty_is_sized =
-                                self.translate_sized_proof(span, self.tcx.types.u8)?;
-                            let array_ty = Ty::mk_array(Ty::mk_u8(), len, ty_is_sized);
-                            val.with_contents_mut(|_, ty| *ty = array_ty);
-                        }
-                        GlobalPlace::new_value(val)
+                        GlobalPlace::new_value(self.translate_constant_expr(span, arg)?)
                     }
                 };
                 for (proj, proj_ty) in projections {

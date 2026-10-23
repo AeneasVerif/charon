@@ -1,0 +1,62 @@
+# Final LLBC before serialization:
+
+// Full name: core::ffi::c_str::CStr
+#[lang_item(CStr)]
+#[diagnostic_item("cstr_type")]
+pub opaque type CStr
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::mem::maybe_uninit::MaybeUninit
+#[lang_item(MaybeUninit)]
+pub opaque type MaybeUninit<T>
+where
+    TraitClause0: (T: Sized),
+
+struct () {}
+
+struct str {
+  _0: [u8],
+}
+
+// Full name: test_crate::{promoted_const}
+static {promoted_const}: MaybeUninit<[u8; 5usize]>[{built_in impl Sized for [u8; 5usize]}] = RawMemory(0x68, 0x65, 0x6c, 0x6c, 0x6f)
+
+// Full name: test_crate::STR
+pub static STR: &'static str = unsize_cast<&'_ str, 5usize>(cast<*const [u8; 5usize]>(&raw const {promoted_const}))
+
+// Full name: test_crate::STR_SUFFIX
+pub static STR_SUFFIX: &'static str = &{promoted_const}.offset!(1isize) with_metadata(4usize)
+
+// Full name: test_crate::CSTR
+pub static CSTR: &'static CStr = &CStr { 0: [104i8, 105i8, 0i8] } with_metadata(3usize)
+
+// Full name: test_crate::W
+pub struct W<T>
+where
+    TraitClause0: (T: MetaSized),
+{
+  _0: u8,
+  _1: T,
+}
+
+// Full name: test_crate::WS
+pub static WS: W<[u8; 2usize]>[{built_in impl MetaSized for [u8; 2usize]}] = W { _0: 0u8, _1: [1u8, 2u8] }
+
+// Full name: test_crate::W_SLICE
+pub static W_SLICE: &'static W<[u8]>[{built_in impl MetaSized for [u8]}] = &W { _0: 0u8, _1: [1u8, 2u8] } with_metadata(2usize)
+
+
+

@@ -36,12 +36,10 @@ impl<'tcx> ConstReader<'tcx> {
         } else {
             None
         };
-        // A slice or `dyn Trait` value is viewed at the sized type it was unsized from. Other
-        // unsized values (e.g. a `CStr`) have no such type: we read them at their unsized type.
-        let view_ty = match ty.kind() {
-            _ if place.layout.is_sized() => Some(ty),
-            ty::Slice(_) | ty::Dynamic(..) => unsize.map(|unsize| unsize.from),
-            _ => None,
+        // The sized type at which we view the pointee, if any.
+        let view_ty = match unsize {
+            None => place.layout.is_sized().then_some(ty),
+            Some(unsize) => self.is_viewed_unsized_from(ty).then_some(unsize.from),
         };
 
         let alloc_target = self.alloc_target(alloc_id);
@@ -121,6 +119,16 @@ impl<'tcx> ConstReader<'tcx> {
             ty: op.layout.ty,
             kind,
         })
+    }
+
+    /// Whether we view a value of the unsized type `ty` at the sized type it was unsized from: a
+    /// slice or `dyn Trait` value is, and so is a `str` with `unsized_strings`.
+    pub(crate) fn is_viewed_unsized_from(&self, ty: Ty<'tcx>) -> bool {
+        match ty.kind() {
+            ty::Slice(_) | ty::Dynamic(..) => true,
+            ty::Str => self.config.unsized_strings,
+            _ => false,
+        }
     }
 
     /// Express the place of type `ty` located `offset` bytes into `global` (whose allocation

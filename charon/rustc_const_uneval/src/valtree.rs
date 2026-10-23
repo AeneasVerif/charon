@@ -31,10 +31,10 @@ impl<'tcx> ConstReader<'tcx> {
                 let len = fields.len() as u64;
                 // The array the pointee was unsized from.
                 let array_ty = Ty::new_array(tcx, inner_ty.sequence_element_type(tcx), len);
-                // We read slices at that array type, but `str`s as themselves.
-                let pointee_ty = match inner_ty.kind() {
-                    ty::Slice(_) => array_ty,
-                    _ => *inner_ty,
+                let pointee_ty = if self.is_viewed_unsized_from(*inner_ty) {
+                    array_ty
+                } else {
+                    *inner_ty
                 };
                 ConstKind::Ptr {
                     target: PtrTarget::Inline(Box::new(read_at(pointee_ty, valtree)?)),
