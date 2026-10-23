@@ -94,7 +94,6 @@ pub mod mir_kinds {
 pub use mir_kinds::IsMirKind;
 
 /// The contents of `Operand::Const`.
-
 #[derive(Debug, Clone)]
 pub struct ConstOperand {
     pub span: Span,
@@ -138,8 +137,7 @@ fn translate_mir_const<'tcx, S: UnderOwnerState<'tcx>>(
             let src = ConstSource::Value(const_value, ty);
             Value(
                 read_const(s, span, src, ReadMode::Structured).unwrap_or_else(|| {
-                    ConstantExprKind::Todo("ConstEvalVal".into())
-                        .decorate(ty.sinto(s), span.sinto(s))
+                    ConstantExpr::new(ConstantExprKind::Todo("ConstEvalVal".into()), ty.sinto(s))
                 }),
             )
         }

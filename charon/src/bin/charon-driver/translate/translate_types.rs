@@ -175,23 +175,20 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
             },
 
-            hax::TyKind::Adt(item) => {
-                let tref = self.translate_type_decl_ref(span, item)?;
+            hax::TyKind::Adt(adt) => {
+                let tref = self.translate_type_decl_ref(span, &adt.item)?;
                 TyKind::Adt(tref)
             }
-            hax::TyKind::Str(item_ref) => {
-                let tref = self.translate_type_decl_ref(span, item_ref)?;
+            hax::TyKind::Str(str_ty) => {
+                let tref = self.translate_type_decl_ref(span, &str_ty.item)?;
                 TyKind::Adt(tref)
             }
-            hax::TyKind::Array(item_ref) => {
-                // `Sized` is the first predicate if we're not hiding marker traits.
-                let item_ty_is_sized = if self.options.hide_marker_traits {
-                    None
+            hax::TyKind::Array(array) => {
+                let item_ref = &array.item;
+                let item_ty_is_sized = if let Some(proof) = array.element_sized_proof() {
+                    Some(self.translate_trait_proof(span, proof)?.no_bound_vars())
                 } else {
-                    Some(
-                        self.translate_trait_proof(span, &item_ref.trait_proofs[0])?
-                            .no_bound_vars(),
-                    )
+                    None
                 };
                 let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
                 assert!(args.types.len() == 1 && args.const_generics.len() == 1);
@@ -201,45 +198,42 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     item_ty_is_sized,
                 )
             }
-            hax::TyKind::Pat(ty, pat) => {
-                let ty = self.translate_ty(span, ty)?;
-                let pat = self.translate_pattern(span, pat)?;
+            hax::TyKind::Pat(pattern) => {
+                let ty = self.translate_ty(span, &pattern.ty)?;
+                let pat = self.translate_pattern(span, &pattern.pat)?;
                 TyKind::Pattern(ty, pat)
             }
-            hax::TyKind::Slice(item_ref) => {
-                // `Sized` is the first predicate if we're not hiding marker traits.
-                let item_ty_is_sized = if self.options.hide_marker_traits {
-                    None
+            hax::TyKind::Slice(slice) => {
+                let item_ref = &slice.item;
+                let item_ty_is_sized = if let Some(proof) = slice.element_sized_proof() {
+                    Some(self.translate_trait_proof(span, proof)?.no_bound_vars())
                 } else {
-                    Some(
-                        self.translate_trait_proof(span, &item_ref.trait_proofs[0])?
-                            .no_bound_vars(),
-                    )
+                    None
                 };
                 let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
                 assert!(args.types.len() == 1);
                 TyKind::Slice(args.types.pop().unwrap(), item_ty_is_sized)
             }
-            hax::TyKind::Tuple(item_ref) => {
-                let tref = self.translate_type_decl_ref(span, item_ref)?;
+            hax::TyKind::Tuple(tuple) => {
+                let tref = self.translate_type_decl_ref(span, &tuple.item)?;
                 TyKind::Adt(tref)
             }
-            hax::TyKind::Ref(region, ty, mutability) => {
+            hax::TyKind::Ref(reference) => {
                 trace!("Ref");
 
-                let region = self.translate_region(span, region)?;
-                let ty = self.translate_ty(span, ty)?;
-                let kind = if mutability.is_mut() {
+                let region = self.translate_region(span, &reference.region)?;
+                let ty = self.translate_ty(span, &reference.ty)?;
+                let kind = if reference.mutbl.is_mut() {
                     RefKind::Mut
                 } else {
                     RefKind::Shared
                 };
                 TyKind::Ref(region, ty, kind)
             }
-            hax::TyKind::RawPtr(ty, mutbl) => {
-                trace!("RawPtr: {:?}", (ty, mutbl));
-                let ty = self.translate_ty(span, ty)?;
-                let kind = if mutbl.is_mut() {
+            hax::TyKind::RawPtr(ptr) => {
+                trace!("RawPtr: {:?}", (&ptr.ty, &ptr.mutbl));
+                let ty = self.translate_ty(span, &ptr.ty)?;
+                let kind = if ptr.mutbl.is_mut() {
                     RefKind::Mut
                 } else {
                     RefKind::Shared
@@ -261,19 +255,20 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
             }
 
-            hax::TyKind::Foreign(item) => {
-                let tref = self.translate_type_decl_ref(span, item)?;
+            hax::TyKind::Foreign(foreign) => {
+                let tref = self.translate_type_decl_ref(span, &foreign.item)?;
                 TyKind::Adt(tref)
             }
 
-            hax::TyKind::FnPtr(sig, _) => {
+            hax::TyKind::FnPtr(fn_ptr) => {
                 trace!("FnPtr");
-                trace!("bound vars: {:?}", sig.bound_vars);
-                let sig = self.translate_poly_fun_sig(span, sig)?;
+                trace!("bound vars: {:?}", fn_ptr.sig.bound_vars);
+                let sig = self.translate_poly_fun_sig(span, &fn_ptr.sig)?;
                 TyKind::FnPtr(sig)
             }
-            hax::TyKind::FnDef { item, .. } => {
-                let fnref = self.translate_bound_fn_ptr(span, item, TransItemSourceKind::Fun)?;
+            hax::TyKind::FnDef(fn_def) => {
+                let fnref =
+                    self.translate_bound_fn_ptr(span, &fn_def.item, TransItemSourceKind::Fun)?;
                 TyKind::FnDef(fnref)
             }
             hax::TyKind::Closure(args) => {
@@ -281,24 +276,23 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Adt(tref)
             }
 
-            hax::TyKind::Dynamic(dyn_binder, region) => {
+            hax::TyKind::DynTrait(dyn_trait) => {
                 // self.check_no_monomorphize(span)?;
                 // Translate the region outside the binder.
-                let region = self.translate_region(span, region)?;
+                let region = self.translate_region(span, &dyn_trait.region)?;
 
-                let binder = self.translate_dyn_binder(span, dyn_binder, |ctx, ty, ()| {
-                    let region = region.move_under_binder();
-                    ctx.innermost_binder_mut()
-                        .params
-                        .types_outlive
-                        .push(RegionBinder::empty(OutlivesPred(ty.clone(), region)));
-                    Ok(ty)
-                })?;
+                let binder =
+                    self.translate_dyn_binder(span, &dyn_trait.binder, |ctx, ty, ()| {
+                        let region = region.move_under_binder();
+                        ctx.innermost_binder_mut()
+                            .params
+                            .types_outlive
+                            .push(RegionBinder::empty(OutlivesPred(ty.clone(), region)));
+                        Ok(ty)
+                    })?;
 
-                if let hax::ClauseKind::Trait(trait_predicate) = dyn_binder.predicates.predicates[0]
-                    .clause
-                    .kind
-                    .hax_skip_binder_ref()
+                if let Some(clause) = dyn_trait.principal_trait_clause()
+                    && let hax::ClauseKind::Trait(trait_predicate) = clause.hax_skip_binder_ref()
                 {
                     // TODO(dyn): for now, we consider traits with associated types to not be dyn
                     // compatible because we don't know how to handle them; for these we skip
@@ -322,7 +316,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             hax::TyKind::Coroutine(..) => {
                 raise_error!(self, span, "Coroutine types are not supported yet")
             }
-            hax::TyKind::Bound(_, _) => {
+            hax::TyKind::Bound(_) => {
                 raise_error!(self, span, "Unexpected type kind: bound")
             }
             hax::TyKind::Placeholder(_) => {
@@ -485,19 +479,26 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             _ if everything_is_sized || tail_ty.is_sized(tcx, ty_env) => PtrMetadata::None,
             ty::Str | ty::Slice(..) => PtrMetadata::Length,
             ty::Dynamic(..) => match hax_ty.kind() {
-                hax::TyKind::Dynamic(dyn_binder, _) => {
-                    let vtable = self.translate_dyn_binder(span, dyn_binder, |ctx, _, _| {
-                        ctx.translate_region_binder(
-                            span,
-                            &dyn_binder.predicates.predicates[0].clause.kind,
-                            |ctx, kind: &hax::ClauseKind| {
-                                let hax::ClauseKind::Trait(trait_predicate) = kind else {
-                                    unreachable!()
-                                };
-                                ctx.translate_vtable_struct_ref(span, &trait_predicate.trait_ref)
-                            },
-                        )
-                    })?;
+                hax::TyKind::DynTrait(dyn_trait) => {
+                    let principal_clause = dyn_trait
+                        .principal_trait_clause()
+                        .expect("expected a principal trait for vtable metadata");
+                    let vtable =
+                        self.translate_dyn_binder(span, &dyn_trait.binder, |ctx, _, _| {
+                            ctx.translate_region_binder(
+                                span,
+                                principal_clause,
+                                |ctx, kind: &hax::ClauseKind| {
+                                    let hax::ClauseKind::Trait(trait_predicate) = kind else {
+                                        unreachable!()
+                                    };
+                                    ctx.translate_vtable_struct_ref(
+                                        span,
+                                        &trait_predicate.trait_ref,
+                                    )
+                                },
+                            )
+                        })?;
                     let vtable = vtable
                         .skip_binder
                         .try_substitute(&GenericArgs::empty())

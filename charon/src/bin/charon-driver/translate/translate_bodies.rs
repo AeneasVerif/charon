@@ -411,10 +411,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Get the `[T; N]` and `A` parameters.
         let (array_rust_ty, alloc_rust_ty) = {
             let input_box_rust_args = {
-                let hax::TyKind::Adt(input_box_item) = hax_sig.inputs[0].kind() else {
+                let hax::TyKind::Adt(input_box) = hax_sig.inputs[0].kind() else {
                     raise_error!(self, span, "expected a boxed input in the hax signature");
                 };
-                input_box_item.rustc_args(self.hax_state_with_id())
+                input_box.item.rustc_args(self.hax_state_with_id())
             };
             let maybe_uninit_array_rust_ty = input_box_rust_args[0].as_type().unwrap();
             let alloc_rust_ty = input_box_rust_args[1].as_type().unwrap();
@@ -809,14 +809,14 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         if fields.len() >= 2
             && let Ok(field) = fields.dedup().exactly_one()
         {
-            let hax::TyKind::Array(item_ref) = array_ty.kind() else {
+            let hax::TyKind::Array(array) = array_ty.kind() else {
                 panic!("expected an array type")
             };
             let translated_array_ty = self.translate_ty(span, array_ty)?;
             let TyKind::Array(elem_ty, len, _) = translated_array_ty.kind() else {
                 unreachable!()
             };
-            let rust_elem_ty = item_ref.rustc_args(&self.hax_state).type_at(0);
+            let rust_elem_ty = array.item.rustc_args(&self.hax_state).type_at(0);
             let Some(copy_proof) = hax::solve_copy(&self.hax_state, rust_elem_ty) else {
                 return Ok(None);
             };
@@ -1350,7 +1350,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         let hax_op_ty: hax::Ty = self.catch_sinto(span, &op_ty)?;
                         // We model casts of closures to function pointers by generating a new
                         // function item without the closure's state, that calls the actual closure.
-                        let hax::TyKind::Closure(closure, ..) = hax_op_ty.kind() else {
+                        let hax::TyKind::Closure(closure) = hax_op_ty.kind() else {
                             unreachable!("Non-closure type in PointerCoercion::ClosureFnPointer");
                         };
                         let fn_ref: RegionBinder<FunDeclRef> =
@@ -1551,7 +1551,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     mir::AggregateKind::Closure(def_id, generics) => {
-                        let args = hax::ClosureArgs::sfrom(&self.hax_state, *def_id, generics);
+                        let args = hax::ClosureTy::sfrom(&self.hax_state, *def_id, generics);
                         let tref = self.translate_closure_type_ref(span, &args)?;
                         let akind = AggregateKind::Adt(tref, None, None);
                         Ok(Rvalue::Aggregate(akind, operands_t))

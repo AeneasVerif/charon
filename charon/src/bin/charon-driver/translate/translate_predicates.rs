@@ -380,17 +380,17 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         TraitRefKind::TraitImpl(impl_ref)
                     }
                     hax::BuiltinTraitData::Destruct(DestructData::Glue { ty, .. }) => {
-                        let (hax::TyKind::Adt(item)
-                        | hax::TyKind::Closure(hax::ClosureArgs { item, .. })
-                        | hax::TyKind::Array(item)
-                        | hax::TyKind::Slice(item)
-                        | hax::TyKind::Tuple(item)) = ty.kind()
-                        else {
-                            raise_error!(
+                        let item = match ty.kind() {
+                            hax::TyKind::Adt(adt) => &adt.item,
+                            hax::TyKind::Closure(closure) => &closure.item,
+                            hax::TyKind::Array(array) => &array.item,
+                            hax::TyKind::Slice(slice) => &slice.item,
+                            hax::TyKind::Tuple(tuple) => &tuple.item,
+                            _ => raise_error!(
                                 self,
                                 span,
                                 "failed to translate drop glue for type {ty:?}"
-                            )
+                            ),
                         };
                         TraitRefKind::TraitImpl(self.translate_trait_impl_ref(
                             span,

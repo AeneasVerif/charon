@@ -1,174 +1,357 @@
-//! Copies of the relevant type-level types. These are semantically-rich representations of
-//! type-level concepts such as types and trait references.
-use rustc_hash::FxHashMap as HashMap;
+//! Hax representations of Rust types and related type operations.
+
+use super::predicates::resolve_for_dyn;
 
 use crate::hax::prelude::*;
-use crate::hax::sinto_as_usize;
-use crate::hax::sinto_todo;
 
 use charon_lib::ast::HashConsed;
-use macros::{EnumAsGetters, EnumIsA};
 use rustc_middle::ty;
 use rustc_middle::ty::inherent::IntoKind;
 use rustc_span::def_id::DefId as RDefId;
 
 sinto_reexport!(rustc_abi::ExternAbi);
 
-/// Generic container for decorating items with a type, a span,
-/// attributes and other meta-data.
+/// Reflects [`rustc_middle::ty::Ty`]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Ty {
+    pub(crate) kind: HashConsed<TyKind>,
+}
+
+impl Ty {
+    pub fn new<'tcx, S: BaseState<'tcx>>(_s: &S, kind: TyKind) -> Self {
+        let kind = HashConsed::new(kind);
+        Ty { kind }
+    }
+
+    pub fn kind(&self) -> &TyKind {
+        self.kind.inner()
+    }
+
+    /// If this type represents something that implements the `Fn*` traits, return the
+    /// corresponding item.
+    pub fn callable_item(&self) -> Option<&ItemRef> {
+        match self.kind() {
+            TyKind::Closure(closure) => Some(&closure.item),
+            TyKind::FnDef(fn_def) => Some(&fn_def.item),
+            TyKind::FnPtr(fn_ptr) => Some(&fn_ptr.item),
+            _ => None,
+        }
+    }
+}
+
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Ty> for rustc_middle::ty::Ty<'tcx> {
+    fn sinto(&self, s: &S) -> Ty {
+        if let Some(ty) = s.with_cache(|cache| cache.tys.get(self).cloned()) {
+            return ty;
+        }
+        let kind: TyKind = self.kind().sinto(s);
+        let ty = Ty::new(s, kind);
+        s.with_cache(|cache| {
+            cache.tys.insert(*self, ty.clone());
+        });
+        ty
+    }
+}
+
+/// Reflects [`ty::TyKind`]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum TyKind {
+    Bool,
+    Char,
+    Int(IntTy),
+    Uint(UintTy),
+    Float(FloatTy),
+    FnDef(FnDefTy),
+    FnPtr(FnPtrTy),
+    Closure(ClosureTy),
+    Adt(AdtTy),
+    Foreign(ForeignTy),
+    Array(ArrayTy),
+    Pat(PatTy),
+    Slice(SliceTy),
+    Tuple(TupleTy),
+    Str(StrTy),
+    RawPtr(RawPtrTy),
+    Ref(RefTy),
+    DynTrait(DynTraitTy),
+    Coroutine(CoroutineTy),
+    Never,
+    Alias(Alias),
+    Param(ParamTy),
+    Bound(BoundTyRef),
+    Placeholder(PlaceholderTy),
+    Infer(InferTy),
+    Error,
+    Todo(String),
+}
+
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TyKind> for ty::TyKind<'tcx> {
+    #[tracing::instrument(level = "trace", skip(s))]
+    fn sinto(&self, s: &S) -> TyKind {
+        let base = s.base();
+        let tcx = base.tcx;
+        match self {
+            Self::Bool => TyKind::Bool,
+            Self::Char => TyKind::Char,
+            Self::Int(int_ty) => TyKind::Int(int_ty.sinto(s)),
+            Self::Uint(uint_ty) => TyKind::Uint(uint_ty.sinto(s)),
+            Self::Float(float_ty) => TyKind::Float(float_ty.sinto(s)),
+            Self::FnDef(fun_id, generics) => {
+                // Note: loss of precision, we erase the bound vars.
+                let generics = erase_free_regions(tcx, generics.skip_binder());
+                TyKind::FnDef(FnDefTy {
+                    item: translate_item_ref(s, *fun_id, generics),
+                })
+            }
+            Self::FnPtr(tys, header) => {
+                let sig = tys.with(*header);
+                let item = ItemRef::translate_fn_ptr(s, sig);
+                TyKind::FnPtr(FnPtrTy {
+                    sig: Box::new(sig.sinto(s)),
+                    item,
+                })
+            }
+            Self::Closure(def_id, generics) => {
+                TyKind::Closure(ClosureTy::sfrom(s, *def_id, generics))
+            }
+            Self::Adt(adt_def, generics) => TyKind::Adt(AdtTy {
+                item: translate_item_ref(s, adt_def.did(), generics),
+            }),
+            Self::Foreign(def_id) => TyKind::Foreign(ForeignTy {
+                item: translate_item_ref(s, *def_id, Default::default()),
+            }),
+            Self::Array(ty, len) => {
+                let args = tcx.mk_args(&[(*ty).into(), (*len).into()]);
+                let sized_trait = tcx.lang_items().sized_trait().unwrap();
+                TyKind::Array(ArrayTy {
+                    item: ItemRef::translate_synthetic(s, SyntheticItem::Array, args),
+                    has_sized_proof: !base
+                        .elab_ctx
+                        .bounds_options()
+                        .remove_traits
+                        .contains(&sized_trait),
+                })
+            }
+            Self::Pat(ty, pat) => TyKind::Pat(PatTy {
+                ty: ty.sinto(s),
+                pat: pat.sinto(s),
+            }),
+            Self::Slice(ty) => {
+                let args = tcx.mk_args(&[(*ty).into()]);
+                let sized_trait = tcx.lang_items().sized_trait().unwrap();
+                TyKind::Slice(SliceTy {
+                    item: ItemRef::translate_synthetic(s, SyntheticItem::Slice, args),
+                    has_sized_proof: !base
+                        .elab_ctx
+                        .bounds_options()
+                        .remove_traits
+                        .contains(&sized_trait),
+                })
+            }
+            Self::Tuple(tys) => {
+                let args = tcx.mk_args_from_iter(tys.into_iter().map(ty::GenericArg::from));
+                TyKind::Tuple(TupleTy {
+                    item: ItemRef::translate_synthetic(s, SyntheticItem::Tuple(tys.len()), args),
+                })
+            }
+            Self::Str => {
+                let args = tcx.mk_args(&[]);
+                TyKind::Str(StrTy {
+                    item: ItemRef::translate_synthetic(s, SyntheticItem::Str, args),
+                })
+            }
+            Self::RawPtr(ty, mutbl) => TyKind::RawPtr(RawPtrTy {
+                ty: ty.sinto(s),
+                mutbl: mutbl.sinto(s),
+            }),
+            Self::Ref(region, ty, mutbl) => TyKind::Ref(RefTy {
+                region: region.sinto(s),
+                ty: ty.sinto(s),
+                mutbl: mutbl.sinto(s),
+            }),
+            Self::Dynamic(preds, region) => TyKind::DynTrait(DynTraitTy {
+                binder: resolve_for_dyn(s, preds, |_, _| ()),
+                region: region.sinto(s),
+            }),
+            Self::Coroutine(def_id, generics) => TyKind::Coroutine(CoroutineTy {
+                item: translate_item_ref(s, *def_id, generics),
+            }),
+            Self::Never => TyKind::Never,
+            Self::Alias(_, alias_ty) => Alias::from(s, alias_ty),
+            Self::Param(param) => TyKind::Param(param.sinto(s)),
+            Self::Bound(index, ty) => TyKind::Bound(BoundTyRef {
+                index: index.sinto(s),
+                ty: ty.sinto(s),
+            }),
+            Self::Placeholder(placeholder) => TyKind::Placeholder(placeholder.sinto(s)),
+            Self::Infer(infer) => TyKind::Infer(infer.sinto(s)),
+            Self::Error(..) => TyKind::Error,
+            other => TyKind::Todo(format!("{other:?}")),
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Decorated<T> {
+pub struct FnDefTy {
+    pub item: ItemRef,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct FnPtrTy {
+    pub sig: Box<PolyFnSig>,
+    /// Points to a synthetic item used to build impls for function pointer types.
+    pub item: ItemRef,
+}
+
+/// Reflects [`ty::ClosureArgs`]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ClosureTy {
+    pub item: ItemRef,
+    /// The base kind of this closure. The kinds are ordered by inclusion: any `Fn` works as an
+    /// `FnMut`, and any `FnMut` works as an `FnOnce`.
+    pub kind: ClosureKind,
+    /// The signature of the function that the closure implements, e.g. `fn(A, B, C) -> D`.
+    pub fn_sig: PolyFnSig,
+    /// The arguments of the closure, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
+    /// Binds the same variables as `fn_sig`.
+    pub tupled_args_ty: Binder<Ty>,
+    /// The set of captured variables. Together they form the state of the closure.
+    pub upvar_tys: Vec<Ty>,
+}
+
+impl ClosureTy {
+    /// Iterate over the upvars that are borrows with erased regions. These may require allocating
+    /// fresh regions.
+    pub fn iter_upvar_borrows(&self) -> impl Iterator<Item = &Ty> {
+        self.upvar_tys.iter().filter(|ty| {
+            matches!(
+                ty.kind(),
+                TyKind::Ref(RefTy {
+                    region: Region {
+                        kind: RegionKind::ReErased
+                    },
+                    ..
+                })
+            )
+        })
+    }
+
+    // Manual implementation because we need the `def_id` of the closure.
+    pub fn sfrom<'tcx, S>(s: &S, def_id: RDefId, from: ty::GenericArgsRef<'tcx>) -> Self
+    where
+        S: UnderOwnerState<'tcx>,
+    {
+        let tcx = s.base().tcx;
+        let closure = from.as_closure();
+        let item = translate_item_ref(s, def_id, from);
+        let sig = closure_sig(tcx, closure);
+        ClosureTy {
+            item,
+            kind: closure.kind().sinto(s),
+            tupled_args_ty: tupled_args_ty(s, sig).sinto(s),
+            fn_sig: sig.sinto(s),
+            upvar_tys: closure.upvar_tys().sinto(s),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct AdtTy {
+    pub item: ItemRef,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ForeignTy {
+    pub item: ItemRef,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ArrayTy {
+    pub item: ItemRef,
+    has_sized_proof: bool,
+}
+
+impl ArrayTy {
+    /// The `Sized` proof for the element type, if we're not hiding `Sized`.
+    pub fn element_sized_proof(&self) -> Option<&TraitProof> {
+        if self.has_sized_proof {
+            Some(&self.item.trait_proofs[0])
+        } else {
+            None
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct PatTy {
     pub ty: Ty,
-    pub contents: Box<T>,
+    pub pat: Pattern,
 }
-
-/// Reflects [`ty::ParamTy`]
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::ParamTy, state: S as gstate)]
-pub struct ParamTy {
-    pub index: u32,
-    pub name: Symbol,
+pub struct SliceTy {
+    pub item: ItemRef,
+    has_sized_proof: bool,
 }
 
-/// Reflects [`ty::ParamConst`]
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(AdtInto)]
-#[args(<S>, from: ty::ParamConst, state: S as gstate)]
-pub struct ParamConst {
-    pub index: u32,
-    pub name: Symbol,
-}
-
-/// A predicate without `Self`, for use in `dyn Trait`.
-///
-/// Reflects [`ty::ExistentialPredicate`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::ExistentialPredicate<'tcx>, state: S as state)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ExistentialPredicate {
-    /// E.g. `From<u64>`. Note that this isn't `T: From<u64>` with a given `T`, this is just
-    /// `From<u64>`. Could be written `?: From<u64>`.
-    Trait(ExistentialTraitRef),
-    /// E.g. `Iterator::Item = u64`. Could be written `<? as Iterator>::Item = u64`.
-    Projection(ExistentialProjection),
-    /// E.g. `Send`.
-    AutoTrait(DefId),
-}
-
-/// Reflects [`ty::ExistentialTraitRef`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::ExistentialTraitRef<'tcx>, state: S as state)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExistentialTraitRef {
-    pub def_id: DefId,
-    pub args: Vec<GenericArg>,
-}
-
-/// Reflects [`ty::ExistentialProjection`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::ExistentialProjection<'tcx>, state: S as state)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExistentialProjection {
-    pub def_id: DefId,
-    pub args: Vec<GenericArg>,
-    pub term: Term,
-}
-
-/// Reflects [`ty::BoundTyKind`]
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundTyKind<'tcx>, state: S as s)]
-pub enum BoundTyKind {
-    Anon,
-    #[custom_arm(&FROM_TYPE::Param(def_id) => TO_TYPE::Param(def_id.sinto(s), s.base().tcx.item_name(def_id).sinto(s)),)]
-    Param(DefId, Symbol),
-}
-
-/// Reflects [`ty::BoundTy`]
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundTy<'tcx>, state: S as s)]
-pub struct BoundTy {
-    pub var: BoundVar,
-    pub kind: BoundTyKind,
-}
-
-sinto_as_usize!(rustc_middle::ty, BoundVar);
-
-/// Reflects [`ty::BoundRegionKind`]
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundRegionKind<'tcx>, state: S as s)]
-pub enum BoundRegionKind {
-    Anon,
-    NamedForPrinting(Symbol),
-    #[custom_arm(&FROM_TYPE::Named(def_id) => TO_TYPE::Named(def_id.sinto(s), s.base().tcx.item_name(def_id).sinto(s)),)]
-    Named(DefId, Symbol),
-    ClosureEnv,
-}
-
-/// Reflects [`ty::BoundRegion`]
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundRegion<'tcx>, state: S as s)]
-pub struct BoundRegion {
-    pub var: BoundVar,
-    pub kind: BoundRegionKind,
-}
-
-/// Reflects [`ty::PlaceholderRegion`]
-pub type PlaceholderRegion = Placeholder<BoundRegion>;
-/// Reflects [`ty::PlaceholderConst`]
-pub type PlaceholderConst = Placeholder<BoundVar>;
-/// Reflects [`ty::PlaceholderType`]
-pub type PlaceholderType = Placeholder<BoundTy>;
-
-/// Reflects [`ty::Placeholder`]
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Placeholder<T> {
-    pub bound: T,
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>, T: SInto<S, U>, U> SInto<S, Placeholder<U>>
-    for ty::Placeholder<ty::TyCtxt<'tcx>, T>
-{
-    fn sinto(&self, s: &S) -> Placeholder<U> {
-        Placeholder {
-            bound: self.bound.sinto(s),
+impl SliceTy {
+    /// The `Sized` proof for the element type, if we're not hiding `Sized`.
+    pub fn element_sized_proof(&self) -> Option<&TraitProof> {
+        if self.has_sized_proof {
+            Some(&self.item.trait_proofs[0])
+        } else {
+            None
         }
     }
 }
 
-/// Reflects [`rustc_middle::infer::canonical::Canonical`]
-
-#[derive(Debug, Clone)]
-pub struct Canonical<T> {
-    pub value: T,
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TupleTy {
+    pub item: ItemRef,
 }
-/// Reflects [`ty::CanonicalUserType`]
-pub type CanonicalUserType = Canonical<UserType>;
 
-impl<'tcx, S: UnderOwnerState<'tcx>, T: SInto<S, U>, U> SInto<S, Canonical<U>>
-    for rustc_middle::infer::canonical::Canonical<'tcx, T>
-{
-    fn sinto(&self, s: &S) -> Canonical<U> {
-        Canonical {
-            value: self.value.sinto(s),
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct StrTy {
+    pub item: ItemRef,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct RawPtrTy {
+    pub ty: Ty,
+    pub mutbl: Mutability,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct RefTy {
+    pub region: Region,
+    pub ty: Ty,
+    pub mutbl: Mutability,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct DynTraitTy {
+    pub binder: DynBinder<()>,
+    pub region: Region,
+}
+
+impl DynTraitTy {
+    /// The principal trait clause, if any.
+    pub fn principal_trait_clause(&self) -> Option<&Binder<ClauseKind>> {
+        let clause = &self.binder.predicates.predicates.first()?.clause.kind;
+        if matches!(clause.hax_skip_binder_ref(), ClauseKind::Trait(_)) {
+            Some(clause)
+        } else {
+            None
         }
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct CoroutineTy {
+    pub item: ItemRef,
 }
 
 /// Reflects [`ty::UserSelfTy`]
-
 #[derive(Debug, Clone, AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::UserSelfTy<'tcx>, state: S as gstate)]
 pub struct UserSelfTy {
@@ -177,7 +360,6 @@ pub struct UserSelfTy {
 }
 
 /// Reflects [`ty::UserArgs`]
-
 #[derive(Debug, Clone, AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::UserArgs<'tcx>, state: S as gstate)]
 pub struct UserArgs {
@@ -188,7 +370,6 @@ pub struct UserArgs {
 /// Reflects [`ty::UserType`]: this is currently
 /// disabled, and everything is printed as debug in the
 /// [`UserType::Todo`] variant.
-
 #[derive(Debug, Clone, AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::UserType<'tcx>, state: S as _s)]
 pub enum UserType {
@@ -218,238 +399,14 @@ pub enum UserType {
     Todo(String),
 }
 
-/// Reflects [`ty::VariantDiscr`]
-
-#[derive(Debug, Clone, AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::VariantDiscr, state: S as gstate)]
-pub enum DiscriminantDefinition {
-    Explicit(DefId),
-    Relative(u32),
-}
-
-/// Reflects [`ty::util::Discr`]
-
-#[derive(Debug, Clone, AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::util::Discr<'tcx>, state: S as gstate)]
-pub struct DiscriminantValue {
-    pub val: u128,
-    pub ty: Ty,
-}
-
-/// Reflects [`ty::Visibility`]
-
-#[derive(Debug, Clone)]
-pub enum Visibility<Id> {
-    Public,
-    Restricted(Id),
-}
-
-impl<S, T: SInto<S, U>, U> SInto<S, Visibility<U>> for ty::Visibility<T> {
-    fn sinto(&self, s: &S) -> Visibility<U> {
-        use ty::Visibility as T;
-        match self {
-            T::Public => Visibility::Public,
-            T::Restricted(id) => Visibility::Restricted(id.sinto(s)),
-        }
-    }
-}
-
-/// Reflects [`ty::FieldDef`]
-
-#[derive(Debug, Clone)]
-pub struct FieldDef {
-    pub did: DefId,
-    /// Field definition of [tuple
-    /// structs](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#using-tuple-structs-without-named-fields-to-create-different-types)
-    /// are anonymous, in that case `name` is [`None`].
-    pub name: Option<Symbol>,
-    pub vis: Visibility<DefId>,
-    pub ty: Ty,
-    pub span: Span,
-}
-
-impl FieldDef {
-    pub fn sfrom<'tcx, S: UnderOwnerState<'tcx>>(
-        s: &S,
-        fdef: &ty::FieldDef,
-        instantiate: ty::GenericArgsRef<'tcx>,
-    ) -> FieldDef {
-        let tcx = s.base().tcx;
-        let ty = normalize(tcx, s.typing_env(), fdef.ty(tcx, instantiate)).sinto(s);
-        let name = {
-            let name = fdef.name.sinto(s);
-            let is_user_provided = {
-                // SH: Note that the only way I found of checking if the user wrote the name or if it
-                // is just an integer generated by rustc is by checking if it is just made of
-                // numerals...
-                name.to_string().parse::<usize>().is_err()
-            };
-            is_user_provided.then_some(name)
-        };
-
-        FieldDef {
-            did: fdef.did.sinto(s),
-            name,
-            vis: fdef.vis.map_id(|mod_id| mod_id.to_def_id()).sinto(s),
-            ty,
-            span: tcx.def_span(fdef.did).sinto(s),
-        }
-    }
-}
-
-/// Reflects [`ty::VariantDef`]
-
-#[derive(Debug, Clone)]
-pub struct VariantDef {
-    pub def_id: DefId,
-    pub ctor: Option<(CtorKind, DefId)>,
-    pub name: Symbol,
-    pub discr_def: DiscriminantDefinition,
-    pub discr_val: DiscriminantValue,
-    /// The definitions of the fields on this variant. In case of [tuple
-    /// structs/variants](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#using-tuple-structs-without-named-fields-to-create-different-types),
-    /// the fields are anonymous, otherwise fields are named.
-    pub fields: IndexVec<FieldIdx, FieldDef>,
-    /// Span of the definition of the variant
-    pub span: Span,
-}
-
-impl VariantDef {
-    pub(crate) fn sfrom<'tcx, S: UnderOwnerState<'tcx>>(
-        s: &S,
-        def: &ty::VariantDef,
-        discr_val: ty::util::Discr<'tcx>,
-        instantiate: Option<ty::GenericArgsRef<'tcx>>,
-    ) -> Self {
-        let def_id = def.def_id.sinto(s);
-        let instantiate = instantiate.unwrap_or_else(|| def_id.identity_args(s));
-        VariantDef {
-            def_id,
-            ctor: def.ctor.sinto(s),
-            name: def.name.sinto(s),
-            discr_def: def.discr.sinto(s),
-            discr_val: discr_val.sinto(s),
-            fields: def
-                .fields
-                .iter()
-                .map(|f| FieldDef::sfrom(s, f, instantiate))
-                .collect(),
-            span: s.base().tcx.def_span(def.def_id).sinto(s),
-        }
-    }
-}
-
-/// Reflects [`ty::EarlyParamRegion`]
-
+/// Reflects [`rustc_ast::ast::LitIntType`]
+#[derive(AdtInto)]
+#[args(<'tcx, S: BaseState<'tcx>>, from: rustc_ast::ast::LitIntType, state: S as gstate)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::EarlyParamRegion, state: S as s)]
-pub struct EarlyParamRegion {
-    pub index: u32,
-    pub name: Symbol,
-}
-
-/// Reflects [`ty::LateParamRegion`]
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::LateParamRegion<'tcx>, state: S as s)]
-pub struct LateParamRegion {
-    pub scope: DefId,
-    pub kind: LateParamRegionKind,
-}
-
-/// Reflects [`ty::LateParamRegionKind`]
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::LateParamRegionKind, state: S as s)]
-pub enum LateParamRegionKind {
-    Anon(u32),
-    NamedAnon(u32, Symbol),
-    #[custom_arm(&FROM_TYPE::Named(def_id) => TO_TYPE::Named(def_id.sinto(s), s.base().tcx.item_name(def_id).sinto(s)),)]
-    Named(DefId, Symbol),
-    ClosureEnv,
-}
-
-/// Reflects [`ty::RegionKind`]
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::RegionKind<'tcx>, state: S as gstate)]
-pub enum RegionKind {
-    ReEarlyParam(EarlyParamRegion),
-    ReBound(BoundVarIndexKind, BoundRegion),
-    ReLateParam(LateParamRegion),
-    ReStatic,
-    ReVar(RegionVid),
-    RePlaceholder(PlaceholderRegion),
-    ReErased,
-    ReError(ErrorGuaranteed),
-}
-
-/// Reflects [`ty::BoundVarIndexKind`]
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundVarIndexKind, state: S as gstate)]
-pub enum BoundVarIndexKind {
-    Bound(DebruijnIndex),
-    Canonical,
-}
-
-sinto_as_usize!(rustc_middle::ty, DebruijnIndex);
-sinto_as_usize!(rustc_middle::ty, RegionVid);
-
-/// Reflects [`ty::Region`]
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::Region<'tcx>, state: S as s)]
-pub struct Region {
-    #[value(self.kind().sinto(s))]
-    pub kind: RegionKind,
-}
-
-/// Reflects both [`ty::GenericArg`] and [`ty::GenericArgKind`]
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(EnumIsA, EnumAsGetters)]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::GenericArgKind<'tcx>, state: S as s)]
-pub enum GenericArg {
-    Lifetime(Region),
-    Type(Ty),
-    Const(ConstantExpr),
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, GenericArg> for ty::GenericArg<'tcx> {
-    fn sinto(&self, s: &S) -> GenericArg {
-        self.kind().sinto(s)
-    }
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Vec<GenericArg>> for ty::GenericArgsRef<'tcx> {
-    fn sinto(&self, s: &S) -> Vec<GenericArg> {
-        self.iter().map(|v| v.kind().sinto(s)).collect()
-    }
-}
-
-/// Reflects partially [`ty::InferTy`]
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[derive(AdtInto)]
-#[args(<'tcx, S>, from: ty::InferTy, state: S as gstate)]
-pub enum InferTy {
-    #[custom_arm(FROM_TYPE::TyVar(..) => TO_TYPE::TyVar,)]
-    TyVar, /*TODO?*/
-    #[custom_arm(FROM_TYPE::IntVar(..) => TO_TYPE::IntVar,)]
-    IntVar, /*TODO?*/
-    #[custom_arm(FROM_TYPE::FloatVar(..) => TO_TYPE::FloatVar,)]
-    FloatVar, /*TODO?*/
-    FreshTy(u32),
-    FreshIntTy(u32),
-    FreshFloatTy(u32),
+pub enum LitIntType {
+    Signed(IntTy),
+    Unsigned(UintTy),
+    Unsuffixed,
 }
 
 /// Reflects [`ty::IntTy`]
@@ -534,93 +491,6 @@ impl<S, U, T: SInto<S, U>> SInto<S, Vec<U>> for ty::List<T> {
     }
 }
 
-/// Reflects [`ty::Variance`]
-#[derive(AdtInto)]
-#[args(<S>, from: ty::Variance, state: S as _s)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Variance {
-    Covariant,
-    Invariant,
-    Contravariant,
-    Bivariant,
-}
-
-/// Reflects [`ty::GenericParamDef`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::GenericParamDef, state: S as s)]
-#[derive(Debug, Clone)]
-pub struct GenericParamDef {
-    pub name: Symbol,
-    pub def_id: DefId,
-    pub index: u32,
-    pub pure_wrt_drop: bool,
-    #[value(
-        match self.kind {
-            ty::GenericParamDefKind::Lifetime => GenericParamDefKind::Lifetime,
-            ty::GenericParamDefKind::Type { has_default, synthetic } => GenericParamDefKind::Type { has_default, synthetic },
-            ty::GenericParamDefKind::Const { has_default, .. } => {
-                let tcx = s.base().tcx;
-                let ty = if let Some(item) = s.owner().as_synthetic(s)
-                    && let Some(ty) = item.const_param_ty(s, self.index)
-                {
-                    // We use a dummy `DefId` for the generic params of synthetic items, so
-                    // `tcx.type_of` would be wrong.
-                    ty::Unnormalized::new(ty)
-                } else {
-                    tcx.type_of(self.def_id).instantiate_identity()
-                };
-                let ty = normalize(tcx, s.typing_env(), ty).sinto(s);
-                GenericParamDefKind::Const { has_default, ty }
-            },
-        }
-    )]
-    pub kind: GenericParamDefKind,
-    /// Variance of this type parameter, if sensible.
-    #[value({
-        use SyntheticItem::*;
-        use rustc_hir::def::DefKind::*;
-        let tcx = s.base().tcx;
-        match s.owner().as_synthetic(s) {
-            Some(Array | Slice | Tuple(_) | Str) => Some(Variance::Covariant),
-            // We could compute it but we won't need it since this item is only used in impls.
-            Some(FnPtr(_)) => None,
-            None => {
-                let parent = tcx.parent(self.def_id);
-                match tcx.def_kind(parent) {
-                    Fn | AssocFn | Enum | Struct | Union | Ctor(..) | OpaqueTy => {
-                        tcx.variances_of(parent).get(self.index as usize).sinto(s)
-                    }
-                    _ => None,
-                }
-            }
-        }
-    })]
-    pub variance: Option<Variance>,
-}
-
-/// Reflects [`ty::GenericParamDefKind`]
-
-#[derive(Debug, Clone)]
-pub enum GenericParamDefKind {
-    Lifetime,
-    Type { has_default: bool, synthetic: bool },
-    Const { has_default: bool, ty: Ty },
-}
-
-/// Reflects [`ty::Generics`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::Generics, state: S as state)]
-#[derive(Debug, Clone)]
-pub struct TyGenerics {
-    pub parent: Option<DefId>,
-    pub parent_count: usize,
-    #[from(own_params)]
-    pub params: Vec<GenericParamDef>,
-    // pub param_def_id_to_index: FxHashMap<DefId, u32>,
-    pub has_self: bool,
-    pub has_late_bound_regions: Option<Span>,
-}
-
 /// This type merges the information from
 /// [`ty::AliasTyKind`] and [`ty::AliasTy`].
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -693,212 +563,6 @@ impl Alias {
     }
 }
 
-/// Reflects [`rustc_middle::ty::Ty`]
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Ty {
-    pub(crate) kind: HashConsed<TyKind>,
-}
-
-impl Ty {
-    pub fn new<'tcx, S: BaseState<'tcx>>(_s: &S, kind: TyKind) -> Self {
-        let kind = HashConsed::new(kind);
-        Ty { kind }
-    }
-
-    pub fn kind(&self) -> &TyKind {
-        self.kind.inner()
-    }
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Ty> for rustc_middle::ty::Ty<'tcx> {
-    fn sinto(&self, s: &S) -> Ty {
-        if let Some(ty) = s.with_cache(|cache| cache.tys.get(self).cloned()) {
-            return ty;
-        }
-        let kind: TyKind = self.kind().sinto(s);
-        let ty = Ty::new(s, kind);
-        s.with_cache(|cache| {
-            cache.tys.insert(*self, ty.clone());
-        });
-        ty
-    }
-}
-
-/// Reflects [`ty::TyKind`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::TyKind<'tcx>, state: S as s)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum TyKind {
-    Bool,
-    Char,
-    Int(IntTy),
-    Uint(UintTy),
-    Float(FloatTy),
-
-    #[custom_arm(
-        ty::TyKind::FnDef(fun_id, generics) => {
-            let tcx = s.base().tcx;
-            // note: loss of precision, we erase the bound vars.
-            let generics = erase_free_regions(tcx, generics.skip_binder());
-            let item = translate_item_ref(s, *fun_id, generics);
-            TyKind::FnDef { item }
-        },
-    )]
-    /// Reflects [`ty::TyKind::FnDef`]
-    FnDef {
-        item: ItemRef,
-    },
-
-    #[custom_arm(
-        ty::TyKind::FnPtr(tys, header) => {
-            let sig = tys.with(*header);
-            let item = ItemRef::translate_fn_ptr(s, sig);
-            TyKind::FnPtr(Box::new(sig.sinto(s)), item)
-        },
-    )]
-    /// Reflects [`ty::TyKind::FnPtr`]
-    /// The `ItemRef` points to a synthetic item we can use to build impls for fn ptr types. See
-    /// `SyntheticItem::FnPtr` for details.
-    FnPtr(Box<PolyFnSig>, ItemRef),
-
-    #[custom_arm(
-        ty::TyKind::Closure (def_id, generics) => {
-            TyKind::Closure(ClosureArgs::sfrom(s, *def_id, generics))
-        },
-    )]
-    Closure(ClosureArgs),
-
-    #[custom_arm(FROM_TYPE::Adt(adt_def, generics) => TO_TYPE::Adt(translate_item_ref(s, adt_def.did(), generics)),)]
-    Adt(ItemRef),
-    #[custom_arm(FROM_TYPE::Foreign(def_id) => TO_TYPE::Foreign(translate_item_ref(s, *def_id, Default::default())),)]
-    Foreign(ItemRef),
-    /// The `ItemRef` uses the fake `Array` def_id.
-    #[custom_arm(FROM_TYPE::Array(ty, len) => TO_TYPE::Array({
-        let args = s.base().tcx.mk_args(&[(*ty).into(), (*len).into()]);
-        ItemRef::translate_synthetic(s, SyntheticItem::Array, args)
-    }),)]
-    Array(ItemRef),
-    Pat(Ty, Pattern),
-    /// The `ItemRef` uses the fake `Slice` def_id.
-    #[custom_arm(FROM_TYPE::Slice(ty) => TO_TYPE::Slice({
-        let args = s.base().tcx.mk_args(&[(*ty).into()]);
-        ItemRef::translate_synthetic(s, SyntheticItem::Slice, args)
-    }),)]
-    Slice(ItemRef),
-    /// The `ItemRef` uses the fake `Tuple` def_id.
-    #[custom_arm(FROM_TYPE::Tuple(tys) => TO_TYPE::Tuple({
-        let args = s.base().tcx.mk_args_from_iter(tys.into_iter().map(ty::GenericArg::from));
-        ItemRef::translate_synthetic(s, SyntheticItem::Tuple(tys.len()), args)
-    }),)]
-    Tuple(ItemRef),
-    /// The `ItemRef` uses the fake `Str` def_id.
-    #[custom_arm(FROM_TYPE::Str => TO_TYPE::Str({
-        let args = s.base().tcx.mk_args(&[]);
-        ItemRef::translate_synthetic(s, SyntheticItem::Str, args)
-    }),)]
-    Str(ItemRef),
-    RawPtr(Ty, Mutability),
-    Ref(Region, Ty, Mutability),
-    #[custom_arm(FROM_TYPE::Dynamic(preds, region) => TyKind::Dynamic(resolve_for_dyn(s, preds, |_, _| ()), region.sinto(s)),)]
-    Dynamic(DynBinder<()>, Region),
-    #[custom_arm(FROM_TYPE::Coroutine(def_id, generics) => TO_TYPE::Coroutine(translate_item_ref(s, *def_id, generics)),)]
-    Coroutine(ItemRef),
-    Never,
-    #[custom_arm(FROM_TYPE::Alias(_is_rigid, alias_ty) => Alias::from(s, alias_ty),)]
-    Alias(Alias),
-    Param(ParamTy),
-    Bound(BoundVarIndexKind, BoundTy),
-    Placeholder(PlaceholderType),
-    Infer(InferTy),
-    #[custom_arm(FROM_TYPE::Error(..) => TO_TYPE::Error,)]
-    Error,
-    #[todo]
-    Todo(String),
-}
-
-/// A representation of `exists<T: Trait1 + Trait2>(value)`: we create a fresh type id and the
-/// appropriate trait clauses. The contained value may refer to the fresh ty and the in-scope trait
-/// clauses. This is used to represent types related to `dyn Trait`.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct DynBinder<T> {
-    /// Fresh type parameter that we use as the `Self` type in the prediates below.
-    pub existential_ty: ParamTy,
-    /// Clauses that define the trait object. These clauses use the fresh type parameter above
-    /// as `Self` type.
-    pub predicates: GenericPredicates,
-    /// The value inside the binder.
-    pub val: T,
-}
-
-impl<'tcx, S, T, U> SInto<S, DynBinder<U>> for rustc_trait_elaboration::DynBinder<'tcx, T, DefId>
-where
-    S: UnderOwnerState<'tcx>,
-    T: SInto<S, U>,
-{
-    fn sinto(&self, s: &S) -> DynBinder<U> {
-        DynBinder {
-            existential_ty: self.existential_ty.sinto(s),
-            predicates: GenericPredicates {
-                predicates: self.predicates.sinto(s),
-            },
-            val: self.val.sinto(s),
-        }
-    }
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, GenericPredicate>
-    for rustc_trait_elaboration::DynPredicate<'tcx, DefId>
-{
-    fn sinto(&self, s: &S) -> GenericPredicate {
-        let tcx = s.base().tcx;
-        let pred = &self.predicate;
-        if let Some(projection) = pred.clause.as_projection_clause() {
-            let trait_proof = self
-                .projection_trait_proof
-                .expect("projection predicates should have a trait proof")
-                .sinto(s);
-            let bound_vars = projection.bound_vars().sinto(s);
-            let projection = projection.skip_binder();
-            let alias_ty = projection.projection_term.expect_ty();
-            let Term::Ty(ty) = projection.term.sinto(s) else {
-                unreachable!()
-            };
-            let item = tcx.associated_item(alias_ty_kind_def_id(alias_ty.kind));
-            GenericPredicate {
-                id: pred.id.sinto(s),
-                clause: Clause {
-                    kind: Binder {
-                        value: ClauseKind::Projection(ProjectionPredicate {
-                            trait_proof,
-                            assoc_item: AssocItem::sfrom(s, &item),
-                            ty,
-                        }),
-                        bound_vars,
-                    },
-                },
-                span: pred.span.sinto(s),
-            }
-        } else {
-            assert!(self.projection_trait_proof.is_none());
-            pred.sinto(s)
-        }
-    }
-}
-
-fn resolve_for_dyn<'tcx, S, T, U>(
-    s: &S,
-    epreds: &'tcx ty::List<ty::Binder<'tcx, ty::ExistentialPredicate<'tcx>>>,
-    f: impl FnOnce(&mut PredicateSearcher<'tcx>, ty::Ty<'tcx>) -> T,
-) -> DynBinder<U>
-where
-    S: UnderOwnerState<'tcx>,
-    T: SInto<S, U>,
-{
-    s.with_predicate_searcher(|searcher, state| searcher.resolve_for_dyn(state, epreds, f))
-        .sinto(s)
-}
-
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::pattern::PatternKind<'tcx>, state: S as gstate)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -924,82 +588,6 @@ pub struct CanonicalUserTypeAnnotation {
     pub user_ty: CanonicalUserType,
     pub span: Span,
     pub inferred_ty: Ty,
-}
-
-/// Reflects [`ty::AdtKind`]
-
-#[derive(Debug, Copy, Clone)]
-pub enum AdtKind {
-    Struct,
-    Union,
-    Enum,
-    /// We sometimes pretend arrays are an ADT and generate a `FullDef` for them.
-    Array,
-    /// We sometimes pretend slices are an ADT and generate a `FullDef` for them.
-    Slice,
-    /// Tuples get a type declaration of their own, we always generate a `FullDef` for them.
-    Tuple,
-    /// `str` gets a type declaration of its own, we always generate a `FullDef` for it.
-    Str,
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, AdtKind> for ty::AdtKind {
-    fn sinto(&self, _s: &S) -> AdtKind {
-        match self {
-            ty::AdtKind::Struct => AdtKind::Struct,
-            ty::AdtKind::Union => AdtKind::Union,
-            ty::AdtKind::Enum => AdtKind::Enum,
-        }
-    }
-}
-
-/// Reflects [`rustc_abi::ReprOptions`].
-
-#[derive(Debug, Clone, AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: rustc_abi::ReprOptions, state: S as s)]
-pub struct ReprOptions {
-    /// Whether an explicit integer representation was specified.
-    #[value(self.int.is_some())]
-    pub int_specified: bool,
-    /// The actual discriminant type resulting from the representation options.
-    #[value({
-        use rustc_middle::ty::util::IntTypeExt;
-        self.discr_type().to_ty(s.base().tcx).sinto(s)
-    })]
-    pub typ: Ty,
-    pub align: Option<Align>,
-    pub pack: Option<Align>,
-    #[value(ReprFlags { is_c: self.c(), is_transparent: self.transparent(), is_simd: self.simd() })]
-    pub flags: ReprFlags,
-}
-
-/// The representation flags without the ones irrelevant outside of rustc.
-
-#[derive(Debug, Default, Clone)]
-pub struct ReprFlags {
-    pub is_c: bool,
-    pub is_transparent: bool,
-    pub is_simd: bool,
-}
-
-/// Reflects [`rustc_abi::Align`]. We store the exponent of the alignment.
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-#[derive(AdtInto)]
-#[args(<'tcx, S: BaseState<'tcx>>, from: rustc_abi::Align, state: S as _s)]
-pub struct Align {
-    /// The real alignment is `1 << (pow2_plus_one - 1)`. We store `pow2 + 1` to have a niche.
-    #[value({
-           std::num::NonZeroU8::new(self.bytes().trailing_zeros() as u8 + 1).unwrap()
-        })]
-    pow2_plus_one: std::num::NonZeroU8,
-}
-
-impl Align {
-    /// The alignment in bytes.
-    pub fn bytes(self) -> u64 {
-        1 << (self.pow2_plus_one.get() - 1)
-    }
 }
 
 /// The metadata to attach to the newly-unsized ptr.
@@ -1113,350 +701,6 @@ pub struct TyFnSig {
 /// Reflects [`ty::PolyFnSig`]
 pub type PolyFnSig = Binder<TyFnSig>;
 
-/// Reflects [`ty::TraitRef`]
-/// Contains the def_id and arguments passed to the trait. The first type argument is the `Self`
-/// type. The trait proofs are the _required_ predicate for this trait; currently they are always
-/// empty because we consider all trait predicates as implied.
-/// `self.in_trait` is always `None` because a trait can't be associated to another one.
-pub type TraitRef = ItemRef;
-
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TraitRef> for ty::TraitRef<'tcx> {
-    fn sinto(&self, s: &S) -> TraitRef {
-        translate_item_ref(s, self.def_id, self.args)
-    }
-}
-
-/// Reflects [`ty::TraitClause`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::TraitClause<'tcx>, state: S as tcx)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct TraitPredicate {
-    pub trait_ref: TraitRef,
-    #[map(*x == ty::ClausePolarity::Positive)]
-    #[from(polarity)]
-    pub is_positive: bool,
-}
-
-/// Reflects [`ty::OutlivesPredicate`] as a named struct
-/// instead of a tuple struct. This is because the script converting
-/// JSONSchema types to OCaml doesn't support tuple structs, and this
-/// is the only tuple struct in the whole AST.
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct OutlivesPredicate<T> {
-    pub lhs: T,
-    pub rhs: Region,
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>, T, U> SInto<S, OutlivesPredicate<U>>
-    for ty::OutlivesClause<'tcx, T>
-where
-    T: SInto<S, U>,
-{
-    fn sinto(&self, s: &S) -> OutlivesPredicate<U> where {
-        OutlivesPredicate {
-            lhs: self.0.sinto(s),
-            rhs: self.1.sinto(s),
-        }
-    }
-}
-
-/// Reflects [`ty::RegionOutlivesPredicate`]
-pub type RegionOutlivesPredicate = OutlivesPredicate<Region>;
-/// Reflects [`ty::TypeOutlivesPredicate`]
-pub type TypeOutlivesPredicate = OutlivesPredicate<Ty>;
-
-/// Reflects [`ty::Term`]
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Term {
-    Ty(Ty),
-    Const(ConstantExpr),
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Term> for ty::Term<'tcx> {
-    fn sinto(&self, s: &S) -> Term {
-        use ty::TermKind;
-        match self.kind() {
-            TermKind::Ty(ty) => Term::Ty(ty.sinto(s)),
-            TermKind::Const(c) => Term::Const(c.sinto(s)),
-        }
-    }
-}
-
-/// Expresses a constraints over an associated type.
-///
-/// For instance:
-/// ```text
-/// fn f<T : Foo<S = String>>(...)
-///              ^^^^^^^^^^
-/// ```
-/// (provided the trait `Foo` has an associated type `S`).
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ProjectionPredicate {
-    /// The `impl Trait for Ty` in `Ty: Trait<..., Type = U>`.
-    pub trait_proof: TraitProof,
-    /// The `Type` in `Ty: Trait<..., Type = U>`.
-    pub assoc_item: AssocItem,
-    /// The type `U` in `Ty: Trait<..., Type = U>`.
-    pub ty: Ty,
-}
-
-pub type UnitBinder<'tcx> = ty::Binder<'tcx, ()>;
-
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<(S, UnitBinder<'tcx>), ProjectionPredicate>
-    for ty::ProjectionClause<'tcx>
-{
-    fn sinto(&self, s: &(S, UnitBinder<'tcx>)) -> ProjectionPredicate {
-        let tcx = s.base().tcx;
-        let alias_ty = &self.projection_term.expect_ty();
-        let poly_trait_ref = s.1.rebind(alias_ty.trait_ref(tcx));
-        let Term::Ty(ty) = self.term.sinto(s) else {
-            unreachable!()
-        };
-        let item = tcx.associated_item(alias_ty_kind_def_id(alias_ty.kind));
-        ProjectionPredicate {
-            trait_proof: solve_trait(s, poly_trait_ref),
-            assoc_item: AssocItem::sfrom(s, &item),
-            ty,
-        }
-    }
-}
-
-/// Reflects [`ty::ClauseKind`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::ClauseKind<'tcx>, state: (S, UnitBinder<'tcx>) as tcx)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ClauseKind {
-    Trait(TraitPredicate),
-    RegionOutlives(RegionOutlivesPredicate),
-    TypeOutlives(TypeOutlivesPredicate),
-    Projection(ProjectionPredicate),
-    ConstArgHasType(ConstantExpr, Ty),
-    WellFormed(Term),
-    ConstEvaluatable(ConstantExpr),
-    HostEffect(HostEffectClause),
-    UnstableFeature(Symbol),
-}
-
-sinto_todo!(rustc_middle::ty, HostEffectClause<'tcx>);
-
-/// Reflects [`ty::Clause`] and adds a hash-consed predicate identifier.
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Clause {
-    pub kind: Binder<ClauseKind>,
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause> for ty::Clause<'tcx> {
-    fn sinto(&self, s: &S) -> Clause {
-        let kind = self.kind().sinto(s);
-        Clause { kind }
-    }
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause> for ty::PolyTraitClause<'tcx> {
-    fn sinto(&self, s: &S) -> Clause {
-        let kind: Binder<_> = self.sinto(s);
-        let kind: Binder<ClauseKind> = kind.map(ClauseKind::Trait);
-        Clause { kind }
-    }
-}
-
-/// Reflects [`ty::Predicate`] and adds a hash-consed predicate identifier.
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Predicate {
-    pub kind: Binder<PredicateKind>,
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Predicate> for ty::Predicate<'tcx> {
-    fn sinto(&self, s: &S) -> Predicate {
-        let kind = self.kind().sinto(s);
-        Predicate { kind }
-    }
-}
-
-/// Reflects [`ty::BoundVariableKind`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::BoundVariableKind<'tcx>, state: S as tcx)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum BoundVariableKind {
-    Ty(BoundTyKind),
-    #[custom_arm(
-        &FROM_TYPE::Region(region) => TO_TYPE::Region(region.sinto(tcx), None),
-    )]
-    Region(BoundRegionKind, Option<Variance>),
-    Const,
-}
-
-/// Reflects [`ty::Binder`]
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Binder<T> {
-    pub value: T,
-    pub bound_vars: Vec<BoundVariableKind>,
-}
-
-impl Binder<()> {
-    pub fn empty() -> Self {
-        Binder {
-            value: (),
-            bound_vars: vec![],
-        }
-    }
-}
-
-impl<T> Binder<T> {
-    pub fn as_ref(&self) -> Binder<&T> {
-        Binder {
-            value: &self.value,
-            bound_vars: self.bound_vars.clone(),
-        }
-    }
-
-    pub fn hax_skip_binder(self) -> T {
-        self.value
-    }
-
-    pub fn hax_skip_binder_ref(&self) -> &T {
-        &self.value
-    }
-
-    pub fn map<U>(self, f: impl FnOnce(T) -> U) -> Binder<U> {
-        Binder {
-            value: f(self.value),
-            bound_vars: self.bound_vars,
-        }
-    }
-
-    pub fn inner_mut(&mut self) -> &mut T {
-        &mut self.value
-    }
-
-    pub fn rebind<U>(&self, value: U) -> Binder<U> {
-        self.as_ref().map(|_| value)
-    }
-}
-
-/// Uniquely identifies a predicate.
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: traits::ItemPredicateId<DefId>, state: S as s)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum GenericPredicateId {
-    /// A predicate that counts as "input" for an item, e.g. `where` clauses on a function or impl.
-    /// Numbered in some arbitrary but consistent order.
-    Required(DefId, u32),
-    /// A predicate that counts as "output" of an item, e.g. supertrait clauses in a trait. Note
-    /// that we count `where` clauses on a trait as implied.
-    /// Numbered in some arbitrary but consistent order.
-    Implied(DefId, u32),
-    /// Predicate inside a non-item binder, e.g. within a `dyn Trait`.
-    /// Numbered in some arbitrary but consistent order.
-    Unmapped(u32),
-    /// The special `Self: Trait` clause available within trait `Trait`.
-    TraitSelf,
-}
-
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: traits::ItemPredicate<'tcx, DefId>, state: S as s)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct GenericPredicate {
-    pub id: GenericPredicateId,
-    pub clause: Clause,
-    pub span: Span,
-}
-
-/// Reflects [`ty::GenericPredicates`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: traits::ItemPredicates<'tcx, DefId>, state: S as s)]
-#[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
-pub struct GenericPredicates {
-    pub predicates: Vec<GenericPredicate>,
-}
-
-impl GenericPredicates {
-    pub fn iter(&self) -> impl Iterator<Item = &GenericPredicate> {
-        self.predicates.iter()
-    }
-    /// Iter only on trait clauses.
-    pub fn iter_trait_clauses(&self) -> impl Iterator<Item = &GenericPredicate> {
-        self.iter()
-            .filter(|pred| matches!(pred.clause.kind.hax_skip_binder_ref(), ClauseKind::Trait(_)))
-    }
-}
-
-/// Lets types declare how to compute the variance of bound parameters.
-trait BinderVariances<'tcx>: Sized {
-    fn variances(
-        _tcx: ty::TyCtxt<'tcx>,
-        _binder: &ty::Binder<'tcx, Self>,
-    ) -> HashMap<ty::BoundVar, ty::Variance> {
-        HashMap::default()
-    }
-}
-
-impl<'tcx> BinderVariances<'tcx> for ty::FnSig<'tcx> {
-    fn variances(
-        tcx: ty::TyCtxt<'tcx>,
-        binder: &ty::Binder<'tcx, Self>,
-    ) -> HashMap<ty::BoundVar, ty::Variance> {
-        fn_sig_bound_region_variances(tcx, *binder)
-    }
-}
-
-impl<'tcx> BinderVariances<'tcx> for ty::Ty<'tcx> {}
-impl<'tcx> BinderVariances<'tcx> for ty::ClauseKind<'tcx> {}
-impl<'tcx> BinderVariances<'tcx> for ty::PredicateKind<'tcx> {}
-impl<'tcx> BinderVariances<'tcx> for ty::TraitRef<'tcx> {}
-impl<'tcx> BinderVariances<'tcx> for ty::TraitClause<'tcx> {}
-
-impl<'tcx, S: UnderOwnerState<'tcx>, T1, T2> SInto<S, Binder<T2>> for ty::Binder<'tcx, T1>
-where
-    T1: SInto<(StateWithOwner<'tcx>, UnitBinder<'tcx>), T2> + BinderVariances<'tcx>,
-{
-    fn sinto(&self, s: &S) -> Binder<T2> {
-        let variances = T1::variances(s.base().tcx, self);
-        let mut bound_vars = self.bound_vars().sinto(s);
-        for (index, var) in bound_vars.iter_mut().enumerate() {
-            if let BoundVariableKind::Region(_, variance) = var {
-                *variance = variances
-                    .get(&ty::BoundVar::from_usize(index))
-                    .copied()
-                    .sinto(s);
-            }
-        }
-        let value = {
-            // Keep the binder in the context, for when we translate predicates and such. This
-            // erases a preexisting binder in context, which is fine because we only need it
-            // immediately.
-            let under_binder_s = (s.as_state_with_owner(), self.as_ref().map_bound(|_| ()));
-            self.as_ref().skip_binder().sinto(&under_binder_s)
-        };
-        Binder { value, bound_vars }
-    }
-}
-
-/// Reflects [`ty::SubtypePredicate`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::SubtypePredicate<'tcx>, state: S as tcx)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct SubtypePredicate {
-    pub a_is_expected: bool,
-    pub a: Ty,
-    pub b: Ty,
-}
-
-/// Reflects [`ty::CoercePredicate`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::CoercePredicate<'tcx>, state: S as tcx)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct CoercePredicate {
-    pub a: Ty,
-    pub b: Ty,
-}
-
 /// The arguments of the given signature, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
 /// The result binds the same variables as the signature it comes from, so that the two agree on
 /// the regions they use.
@@ -1530,61 +774,6 @@ pub fn closure_sig<'tcx>(
     ty::Binder::bind_with_vars(unbound_sig, bound_vars)
 }
 
-/// Reflects [`ty::ClosureArgs`]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-
-pub struct ClosureArgs {
-    pub item: ItemRef,
-    /// The base kind of this closure. The kinds are ordered by inclusion: any `Fn` works as an
-    /// `FnMut`, and any `FnMut` works as an `FnOnce`.
-    pub kind: ClosureKind,
-    /// The signature of the function that the closure implements, e.g. `fn(A, B, C) -> D`.
-    pub fn_sig: PolyFnSig,
-    /// The arguments of the closure, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
-    /// Binds the same variables as `fn_sig`.
-    pub tupled_args_ty: Binder<Ty>,
-    /// The set of captured variables. Together they form the state of the closure.
-    pub upvar_tys: Vec<Ty>,
-}
-
-impl ClosureArgs {
-    /// Iterate over the upvars that are borrows with erased regions. These may require allocating
-    /// fresh regions.
-    pub fn iter_upvar_borrows(&self) -> impl Iterator<Item = &Ty> {
-        self.upvar_tys.iter().filter(|ty| {
-            matches!(
-                ty.kind(),
-                TyKind::Ref(
-                    Region {
-                        kind: RegionKind::ReErased
-                    },
-                    ..
-                )
-            )
-        })
-    }
-}
-
-impl ClosureArgs {
-    // Manual implementation because we need the `def_id` of the closure.
-    pub fn sfrom<'tcx, S>(s: &S, def_id: RDefId, from: ty::GenericArgsRef<'tcx>) -> Self
-    where
-        S: UnderOwnerState<'tcx>,
-    {
-        let tcx = s.base().tcx;
-        let closure = from.as_closure();
-        let item = translate_item_ref(s, def_id, from);
-        let sig = closure_sig(tcx, closure);
-        ClosureArgs {
-            item,
-            kind: closure.kind().sinto(s),
-            tupled_args_ty: tupled_args_ty(s, sig).sinto(s),
-            fn_sig: sig.sinto(s),
-            upvar_tys: closure.upvar_tys().sinto(s),
-        }
-    }
-}
-
 /// Reflects [`ty::ClosureKind`]
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::ClosureKind, state: S as _tcx)]
@@ -1593,175 +782,4 @@ pub enum ClosureKind {
     Fn,
     FnMut,
     FnOnce,
-}
-
-sinto_todo!(rustc_middle::ty, NormalizesTo<'tcx>);
-
-/// Reflects [`ty::PredicateKind`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::PredicateKind<'tcx>, state: (S, UnitBinder<'tcx>) as tcx)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum PredicateKind {
-    Clause(ClauseKind),
-    DynCompatible(DefId),
-    Subtype(SubtypePredicate),
-    Coerce(CoercePredicate),
-    ConstEquate(ConstantExpr, ConstantExpr),
-    Ambiguous,
-    NormalizesTo(NormalizesTo),
-}
-
-/// Reflects [`ty::AssocItem`]
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct AssocItem {
-    pub def_id: DefId,
-    /// This is `None` for RPTITs.
-    pub name: Option<Symbol>,
-    pub kind: AssocKind,
-    pub container: AssocItemContainer,
-    /// Whether this item has a value (e.g. this is `false` for trait methods without default
-    /// implementations).
-    pub has_value: bool,
-}
-
-impl AssocItem {
-    pub fn sfrom<'tcx, S: BaseState<'tcx>>(s: &S, item: &ty::AssocItem) -> AssocItem {
-        Self::sfrom_instantiated(s, item, None)
-    }
-
-    /// Translate an `AssocItem` and optionally instantiate it with the provided arguments.
-    pub fn sfrom_instantiated<'tcx, S: BaseState<'tcx>>(
-        s: &S,
-        item: &ty::AssocItem,
-        item_args: Option<ty::GenericArgsRef<'tcx>>,
-    ) -> AssocItem {
-        let tcx = s.base().tcx;
-        // We want to solve traits in the context of this item.
-        let item_def_id = item.def_id.sinto(s);
-        let s = &s.with_hax_owner(&item_def_id);
-        let item_args = item_args.unwrap_or_else(|| item_def_id.identity_args(s));
-        let container_id = item.container_id(tcx);
-        let container_args = item_args.truncate_to(tcx, tcx.generics_of(container_id));
-        let container = match item.container {
-            ty::AssocContainer::Trait => {
-                let trait_ref =
-                    ty::TraitRef::new_from_args(tcx, container_id, container_args).sinto(s);
-                AssocItemContainer::TraitContainer { trait_ref }
-            }
-            ty::AssocContainer::TraitImpl(implemented_item_id) => {
-                let implemented_item_id = implemented_item_id.unwrap();
-                let item = translate_item_ref(s, container_id, container_args);
-                let implemented_trait_ref = tcx
-                    .impl_trait_ref(container_id)
-                    .instantiate(tcx, container_args);
-                let implemented_trait_ref = normalize(tcx, s.typing_env(), implemented_trait_ref);
-                let implemented_trait_item = {
-                    let implemented_item_id = implemented_item_id.sinto(s);
-                    let generics =
-                        item_args.rebase_onto(tcx, container_id, implemented_trait_ref.args);
-                    // Don't resolve, otherwise we'll always get the impl item id back.
-                    ItemRef::translate_from_hax_def_id_maybe_resolve(
-                        s,
-                        implemented_item_id,
-                        generics,
-                        AssocItemResolution::None,
-                    )
-                };
-                AssocItemContainer::TraitImplContainer {
-                    impl_: item,
-                    implemented_trait_ref: implemented_trait_ref.sinto(s),
-                    implemented_trait_item,
-                    overrides_default: tcx.defaultness(implemented_item_id).has_value(),
-                }
-            }
-            ty::AssocContainer::InherentImpl => AssocItemContainer::InherentImplContainer {
-                impl_id: container_id.sinto(s),
-            },
-        };
-        let name = match item.opt_name() {
-            None if let ty::AssocKind::Type { data } = item.kind
-                && let ty::AssocTypeData::Rpitit(rpitit) = data =>
-            {
-                let (ty::ImplTraitInTraitData::Trait { fn_def_id, .. }
-                | ty::ImplTraitInTraitData::Impl { fn_def_id, .. }) = rpitit;
-                let fn_name = tcx.item_name(fn_def_id);
-                let name = Symbol::intern(&format!("{fn_name}_ty"));
-                Some(name)
-            }
-            opt_name => opt_name,
-        };
-        AssocItem {
-            def_id: item.def_id.sinto(s),
-            name,
-            kind: item.kind.sinto(s),
-            container,
-            has_value: item.defaultness(tcx).has_value(),
-        }
-    }
-
-    /// The `DefId` of the item being implemented.
-    pub fn implemented_trait_item_id(&self) -> &DefId {
-        match &self.container {
-            AssocItemContainer::TraitImplContainer {
-                implemented_trait_item,
-                ..
-            } => &implemented_trait_item.def_id,
-            _ => &self.def_id,
-        }
-    }
-}
-
-/// Reflects [`ty::AssocKind`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: BaseState<'tcx>>, from: ty::AssocKind, state: S as _tcx)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum AssocKind {
-    Const { name: Symbol },
-    Fn { name: Symbol, has_self: bool },
-    Type { data: AssocTypeData },
-}
-
-/// Reflects [`ty::AssocTypeData`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: BaseState<'tcx>>, from: ty::AssocTypeData, state: S as _tcx)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum AssocTypeData {
-    Normal(Symbol),
-    Rpitit(ImplTraitInTraitData),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum AssocItemContainer {
-    TraitContainer {
-        trait_ref: TraitRef,
-    },
-    TraitImplContainer {
-        /// Reference to the def_id of the impl block.
-        impl_: ItemRef,
-        /// The trait ref implemented by the impl block.
-        implemented_trait_ref: TraitRef,
-        /// The the associated item (in the trait declaration) that is being implemented.
-        implemented_trait_item: ItemRef,
-        /// Whether the corresponding trait item had a default (and therefore this one overrides
-        /// it).
-        overrides_default: bool,
-    },
-    InherentImplContainer {
-        impl_id: DefId,
-    },
-}
-
-/// Reflects [`ty::ImplTraitInTraitData`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: BaseState<'tcx>>, from: ty::ImplTraitInTraitData, state: S as _s)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ImplTraitInTraitData {
-    Trait {
-        fn_def_id: DefId,
-        opaque_def_id: DefId,
-    },
-    Impl {
-        fn_def_id: DefId,
-    },
 }

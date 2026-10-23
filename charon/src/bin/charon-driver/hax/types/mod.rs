@@ -1,12 +1,20 @@
+mod adt;
 mod def_id;
 mod mir;
 mod new;
+mod predicates;
+mod traits;
 mod ty;
+mod vars;
 
+pub use adt::*;
 pub use def_id::*;
 pub use mir::*;
 pub use new::*;
+pub use predicates::*;
+pub use traits::*;
 pub use ty::*;
+pub use vars::*;
 
 use crate::hax::prelude::*;
 use crate::hax::sinto_todo;

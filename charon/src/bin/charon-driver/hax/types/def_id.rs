@@ -791,7 +791,6 @@ impl<S> SInto<S, DefId> for DefId {
 }
 
 /// Reflects [`rustc_hir::definitions::DefPathData`]
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[derive(AdtInto)]
 #[args(<'ctx, S: UnderOwnerState<'ctx>>, from: rustc_hir::definitions::DefPathData, state: S as s)]

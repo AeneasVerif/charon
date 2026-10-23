@@ -320,7 +320,6 @@ pub enum InlineAttr {
 }
 
 /// Imbues [`rustc_hir::def::DefKind`] with a lot of extra information.
-
 #[derive(Debug, Clone)]
 #[allow(clippy::large_enum_variant)]
 pub enum FullDefKind<'tcx> {
@@ -939,7 +938,7 @@ pub struct Closure<'tcx> {
     /// those of the item in which it is defined. We hide the special weird generics that rustc
     /// uses internally for inference on closures.
     param_env: ParamEnv,
-    args: ClosureArgs,
+    args: ClosureTy,
     inline: InlineAttr,
     /// Computed on demand, see the accessors below.
     fn_once_impl: OnceCell<Box<VirtualTraitImpl<'tcx>>>,
@@ -955,7 +954,7 @@ impl<'tcx> Closure<'tcx> {
     pub fn param_env(&self) -> &ParamEnv {
         &self.param_env
     }
-    pub fn args(&self) -> &ClosureArgs {
+    pub fn args(&self) -> &ClosureTy {
         &self.args
     }
     pub fn inline(&self) -> &InlineAttr {
@@ -1416,7 +1415,7 @@ where
                 kind: closure.kind(),
                 param_env: get_param_env(s, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
-                args: ClosureArgs::sfrom(s, def_id, closure_args),
+                args: ClosureTy::sfrom(s, def_id, closure_args),
                 fn_once_impl: Default::default(),
                 fn_mut_impl: Default::default(),
                 fn_impl: Default::default(),
