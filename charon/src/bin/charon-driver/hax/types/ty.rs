@@ -9,8 +9,8 @@ use crate::hax::sinto_todo;
 use charon_lib::ast::HashConsed;
 use macros::{EnumAsGetters, EnumIsA};
 use rustc_middle::ty;
+use rustc_middle::ty::inherent::IntoKind;
 use rustc_span::def_id::DefId as RDefId;
-use rustc_type_ir::inherent::IntoKind;
 
 sinto_reexport!(rustc_abi::ExternAbi);
 
@@ -59,18 +59,18 @@ pub enum ExistentialPredicate {
     AutoTrait(DefId),
 }
 
-/// Reflects [`rustc_type_ir::ExistentialTraitRef`]
+/// Reflects [`ty::ExistentialTraitRef`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: rustc_type_ir::ExistentialTraitRef<ty::TyCtxt<'tcx>>, state: S as state)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::ExistentialTraitRef<'tcx>, state: S as state)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ExistentialTraitRef {
     pub def_id: DefId,
     pub args: Vec<GenericArg>,
 }
 
-/// Reflects [`rustc_type_ir::ExistentialProjection`]
+/// Reflects [`ty::ExistentialProjection`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: rustc_type_ir::ExistentialProjection<ty::TyCtxt<'tcx>>, state: S as state)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::ExistentialProjection<'tcx>, state: S as state)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ExistentialProjection {
     pub def_id: DefId,
@@ -462,9 +462,9 @@ pub enum InferTy {
     FreshFloatTy(u32),
 }
 
-/// Reflects [`rustc_type_ir::IntTy`]
+/// Reflects [`ty::IntTy`]
 #[derive(AdtInto)]
-#[args(<S>, from: rustc_type_ir::IntTy, state: S as _s)]
+#[args(<S>, from: ty::IntTy, state: S as _s)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum IntTy {
     Isize,
@@ -475,9 +475,9 @@ pub enum IntTy {
     I128,
 }
 
-/// Reflects [`rustc_type_ir::FloatTy`]
+/// Reflects [`ty::FloatTy`]
 #[derive(AdtInto)]
-#[args(<S>, from: rustc_type_ir::FloatTy, state: S as _s)]
+#[args(<S>, from: ty::FloatTy, state: S as _s)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum FloatTy {
     F16,
@@ -486,9 +486,9 @@ pub enum FloatTy {
     F128,
 }
 
-/// Reflects [`rustc_type_ir::UintTy`]
+/// Reflects [`ty::UintTy`]
 #[derive(AdtInto)]
-#[args(<S>, from: rustc_type_ir::UintTy, state: S as _s)]
+#[args(<S>, from: ty::UintTy, state: S as _s)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum UintTy {
     Usize,
@@ -670,7 +670,7 @@ impl Alias {
     fn from<'tcx, S: UnderOwnerState<'tcx>>(s: &S, alias_ty: &ty::AliasTy<'tcx>) -> TyKind {
         let tcx = s.base().tcx;
         let typing_env = s.typing_env();
-        use rustc_type_ir::AliasTyKind as RustAliasKind;
+        use ty::AliasTyKind as RustAliasKind;
 
         // Try to normalize the alias first.
         let ty = ty::Ty::new_alias(tcx, ty::IsRigid::No, *alias_ty);
@@ -1484,8 +1484,8 @@ pub fn closure_sig<'tcx>(
     tcx: ty::TyCtxt<'tcx>,
     closure: ty::ClosureArgs<ty::TyCtxt<'tcx>>,
 ) -> ty::PolyFnSig<'tcx> {
-    use rustc_type_ir::TypeFoldable;
-    use rustc_type_ir::TypeSuperFoldable;
+    use ty::TypeFoldable;
+    use ty::TypeSuperFoldable;
 
     struct RegionUnEraserVisitor<'tcx> {
         tcx: ty::TyCtxt<'tcx>,

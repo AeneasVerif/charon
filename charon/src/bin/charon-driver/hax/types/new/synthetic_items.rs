@@ -5,9 +5,10 @@ use charon_lib::name_matcher::NamePattern;
 use itertools::Itertools;
 use {
     rustc_hir::attrs::LangItem,
-    rustc_middle::ty,
+    rustc_middle::ty::{
+        self, TypeFoldable, TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, Upcast,
+    },
     rustc_span::{DUMMY_SP, Symbol},
-    rustc_type_ir::{TypeFoldable, TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, Upcast},
 };
 
 /// We create some extra `DefId`s to represent things that rustc doesn't have a `DefId` for. This
