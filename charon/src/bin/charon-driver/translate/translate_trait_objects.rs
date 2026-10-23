@@ -643,18 +643,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                             }
                             // This is a builtin `Fn*` impl for a callable.
                             (_, Some((self_ty, kind))) => {
-                                match self_ty.hax_skip_binder_ref().kind() {
-                                    hax::TyKind::Closure(args) => {
-                                        (&args.item, TransImplSource::Callable(kind))
-                                    }
-                                    hax::TyKind::FnDef(fn_def) => {
-                                        (&fn_def.item, TransImplSource::Callable(kind))
-                                    }
-                                    hax::TyKind::FnPtr(fn_ptr) => {
-                                        (&fn_ptr.item, TransImplSource::Callable(kind))
-                                    }
-                                    _ => unreachable!("builtin `Fn*` impl for {self_ty:?}"),
-                                }
+                                let Some(item) = self_ty.hax_skip_binder_ref().callable_item()
+                                else {
+                                    unreachable!("builtin `Fn*` impl for {self_ty:?}")
+                                };
+                                (item, TransImplSource::Callable(kind))
                             }
                             (_, None) => (tref, TransImplSource::Marker),
                         };

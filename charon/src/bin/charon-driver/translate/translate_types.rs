@@ -185,14 +185,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             hax::TyKind::Array(array) => {
                 let item_ref = &array.item;
-                // `Sized` is the first predicate if we're not hiding marker traits.
-                let item_ty_is_sized = if self.options.hide_marker_traits {
-                    None
+                let item_ty_is_sized = if let Some(proof) = array.element_sized_proof() {
+                    Some(self.translate_trait_proof(span, proof)?.no_bound_vars())
                 } else {
-                    Some(
-                        self.translate_trait_proof(span, &item_ref.trait_proofs[0])?
-                            .no_bound_vars(),
-                    )
+                    None
                 };
                 let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
                 assert!(args.types.len() == 1 && args.const_generics.len() == 1);
@@ -209,14 +205,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             hax::TyKind::Slice(slice) => {
                 let item_ref = &slice.item;
-                // `Sized` is the first predicate if we're not hiding marker traits.
-                let item_ty_is_sized = if self.options.hide_marker_traits {
-                    None
+                let item_ty_is_sized = if let Some(proof) = slice.element_sized_proof() {
+                    Some(self.translate_trait_proof(span, proof)?.no_bound_vars())
                 } else {
-                    Some(
-                        self.translate_trait_proof(span, &item_ref.trait_proofs[0])?
-                            .no_bound_vars(),
-                    )
+                    None
                 };
                 let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
                 assert!(args.types.len() == 1);
@@ -299,11 +291,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         Ok(ty)
                     })?;
 
-                if let hax::ClauseKind::Trait(trait_predicate) =
-                    dyn_trait.binder.predicates.predicates[0]
-                        .clause
-                        .kind
-                        .hax_skip_binder_ref()
+                if let Some(clause) = dyn_trait.principal_trait_clause()
+                    && let hax::ClauseKind::Trait(trait_predicate) = clause.hax_skip_binder_ref()
                 {
                     // TODO(dyn): for now, we consider traits with associated types to not be dyn
                     // compatible because we don't know how to handle them; for these we skip
@@ -491,11 +480,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             ty::Str | ty::Slice(..) => PtrMetadata::Length,
             ty::Dynamic(..) => match hax_ty.kind() {
                 hax::TyKind::DynTrait(dyn_trait) => {
+                    let principal_clause = dyn_trait
+                        .principal_trait_clause()
+                        .expect("expected a principal trait for vtable metadata");
                     let vtable =
                         self.translate_dyn_binder(span, &dyn_trait.binder, |ctx, _, _| {
                             ctx.translate_region_binder(
                                 span,
-                                &dyn_trait.binder.predicates.predicates[0].clause.kind,
+                                principal_clause,
                                 |ctx, kind: &hax::ClauseKind| {
                                     let hax::ClauseKind::Trait(trait_predicate) = kind else {
                                         unreachable!()

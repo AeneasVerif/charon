@@ -308,12 +308,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         else {
             return None;
         };
-        let item = match callable_ty.kind() {
-            hax::TyKind::Closure(closure_args) => &closure_args.item,
-            hax::TyKind::FnDef(fn_def) => &fn_def.item,
-            hax::TyKind::FnPtr(fn_ptr) => &fn_ptr.item,
-            _ => return None,
-        };
+        let item = callable_ty.callable_item()?;
         Some((item.erase(self.hax_state_with_id()), target_kind))
     }
 

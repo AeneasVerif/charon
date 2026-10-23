@@ -26,6 +26,17 @@ impl Ty {
     pub fn kind(&self) -> &TyKind {
         self.kind.inner()
     }
+
+    /// If this type represents something that implements the `Fn*` traits, return the
+    /// corresponding item.
+    pub fn callable_item(&self) -> Option<&ItemRef> {
+        match self.kind() {
+            TyKind::Closure(closure) => Some(&closure.item),
+            TyKind::FnDef(fn_def) => Some(&fn_def.item),
+            TyKind::FnPtr(fn_ptr) => Some(&fn_ptr.item),
+            _ => None,
+        }
+    }
 }
 
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Ty> for rustc_middle::ty::Ty<'tcx> {
@@ -109,9 +120,16 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TyKind> for ty::TyKind<'tcx> {
                 item: translate_item_ref(s, *def_id, Default::default()),
             }),
             Self::Array(ty, len) => {
-                let args = s.base().tcx.mk_args(&[(*ty).into(), (*len).into()]);
+                let base = s.base();
+                let args = base.tcx.mk_args(&[(*ty).into(), (*len).into()]);
+                let sized_trait = base.tcx.lang_items().sized_trait().unwrap();
                 TyKind::Array(ArrayTy {
                     item: ItemRef::translate_synthetic(s, SyntheticItem::Array, args),
+                    has_sized_proof: !base
+                        .elab_ctx
+                        .bounds_options()
+                        .remove_traits
+                        .contains(&sized_trait),
                 })
             }
             Self::Pat(ty, pat) => TyKind::Pat(PatTy {
@@ -119,9 +137,16 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TyKind> for ty::TyKind<'tcx> {
                 pat: pat.sinto(s),
             }),
             Self::Slice(ty) => {
-                let args = s.base().tcx.mk_args(&[(*ty).into()]);
+                let base = s.base();
+                let args = base.tcx.mk_args(&[(*ty).into()]);
+                let sized_trait = base.tcx.lang_items().sized_trait().unwrap();
                 TyKind::Slice(SliceTy {
                     item: ItemRef::translate_synthetic(s, SyntheticItem::Slice, args),
+                    has_sized_proof: !base
+                        .elab_ctx
+                        .bounds_options()
+                        .remove_traits
+                        .contains(&sized_trait),
                 })
             }
             Self::Tuple(tys) => {
@@ -247,6 +272,18 @@ pub struct ForeignTy {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ArrayTy {
     pub item: ItemRef,
+    has_sized_proof: bool,
+}
+
+impl ArrayTy {
+    /// The `Sized` proof for the element type, if we're not hiding `Sized`.
+    pub fn element_sized_proof(&self) -> Option<&TraitProof> {
+        if self.has_sized_proof {
+            Some(&self.item.trait_proofs[0])
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -258,6 +295,18 @@ pub struct PatTy {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SliceTy {
     pub item: ItemRef,
+    has_sized_proof: bool,
+}
+
+impl SliceTy {
+    /// The `Sized` proof for the element type, if we're not hiding `Sized`.
+    pub fn element_sized_proof(&self) -> Option<&TraitProof> {
+        if self.has_sized_proof {
+            Some(&self.item.trait_proofs[0])
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -287,6 +336,18 @@ pub struct RefTy {
 pub struct DynTraitTy {
     pub binder: DynBinder<()>,
     pub region: Region,
+}
+
+impl DynTraitTy {
+    /// The principal trait clause, if any.
+    pub fn principal_trait_clause(&self) -> Option<&Binder<ClauseKind>> {
+        let clause = &self.binder.predicates.predicates.first()?.clause.kind;
+        if matches!(clause.hax_skip_binder_ref(), ClauseKind::Trait(_)) {
+            Some(clause)
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
