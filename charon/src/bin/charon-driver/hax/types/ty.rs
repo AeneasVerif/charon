@@ -88,6 +88,8 @@ pub enum TyKind {
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TyKind> for ty::TyKind<'tcx> {
     #[tracing::instrument(level = "trace", skip(s))]
     fn sinto(&self, s: &S) -> TyKind {
+        let base = s.base();
+        let tcx = base.tcx;
         match self {
             Self::Bool => TyKind::Bool,
             Self::Char => TyKind::Char,
@@ -95,7 +97,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TyKind> for ty::TyKind<'tcx> {
             Self::Uint(uint_ty) => TyKind::Uint(uint_ty.sinto(s)),
             Self::Float(float_ty) => TyKind::Float(float_ty.sinto(s)),
             Self::FnDef(fun_id, generics) => {
-                let tcx = s.base().tcx;
                 // Note: loss of precision, we erase the bound vars.
                 let generics = erase_free_regions(tcx, generics.skip_binder());
                 TyKind::FnDef(FnDefTy {
@@ -120,9 +121,8 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TyKind> for ty::TyKind<'tcx> {
                 item: translate_item_ref(s, *def_id, Default::default()),
             }),
             Self::Array(ty, len) => {
-                let base = s.base();
-                let args = base.tcx.mk_args(&[(*ty).into(), (*len).into()]);
-                let sized_trait = base.tcx.lang_items().sized_trait().unwrap();
+                let args = tcx.mk_args(&[(*ty).into(), (*len).into()]);
+                let sized_trait = tcx.lang_items().sized_trait().unwrap();
                 TyKind::Array(ArrayTy {
                     item: ItemRef::translate_synthetic(s, SyntheticItem::Array, args),
                     has_sized_proof: !base
@@ -137,9 +137,8 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TyKind> for ty::TyKind<'tcx> {
                 pat: pat.sinto(s),
             }),
             Self::Slice(ty) => {
-                let base = s.base();
-                let args = base.tcx.mk_args(&[(*ty).into()]);
-                let sized_trait = base.tcx.lang_items().sized_trait().unwrap();
+                let args = tcx.mk_args(&[(*ty).into()]);
+                let sized_trait = tcx.lang_items().sized_trait().unwrap();
                 TyKind::Slice(SliceTy {
                     item: ItemRef::translate_synthetic(s, SyntheticItem::Slice, args),
                     has_sized_proof: !base
@@ -150,16 +149,13 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TyKind> for ty::TyKind<'tcx> {
                 })
             }
             Self::Tuple(tys) => {
-                let args = s
-                    .base()
-                    .tcx
-                    .mk_args_from_iter(tys.into_iter().map(ty::GenericArg::from));
+                let args = tcx.mk_args_from_iter(tys.into_iter().map(ty::GenericArg::from));
                 TyKind::Tuple(TupleTy {
                     item: ItemRef::translate_synthetic(s, SyntheticItem::Tuple(tys.len()), args),
                 })
             }
             Self::Str => {
-                let args = s.base().tcx.mk_args(&[]);
+                let args = tcx.mk_args(&[]);
                 TyKind::Str(StrTy {
                     item: ItemRef::translate_synthetic(s, SyntheticItem::Str, args),
                 })
