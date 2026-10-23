@@ -1120,6 +1120,7 @@ pub fn translate<'tcx>(
                 translate_options.consts,
                 ConstHandling::Values | ConstHandling::Bytes
             ),
+            treat_box_as_builtin: translate_options.treat_box_as_builtin,
         },
         hax::options::BoundsOptions {
             add_destruct_bounds: translate_options.add_destruct_bounds,

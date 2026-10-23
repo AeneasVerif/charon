@@ -259,7 +259,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let ptr = self.translate_constant_expr(span, ptr)?;
                 let kind = if let Some(metadata) = metadata {
                     let metadata = self.translate_unsizing_metadata(span, metadata)?;
-                    CastKind::Unsize(ty.clone(), metadata)
+                    CastKind::Unsize(ty.clone(), metadata, vec![])
                 } else {
                     CastKind::RawPtr(ty.clone())
                 };

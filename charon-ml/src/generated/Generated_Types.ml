@@ -284,7 +284,7 @@ and cast_kind =
           same signature. *)
   | CastSubtype of ty
       (** Convert a value to a supertype; this has no runtime effect. *)
-  | CastUnsize of ty * unsizing_metadata
+  | CastUnsize of ty * unsizing_metadata * field_id list
       (** [Unsize coercion](https://doc.rust-lang.org/std/ops/trait.CoerceUnsized.html).
           This is either [[T; N]] -> [[T]] or [T: Trait] -> [dyn Trait]
           coercions, behind a pointer (reference, [Box], or other type that
@@ -295,20 +295,18 @@ and cast_kind =
   | CastTransmute of ty
       (** Reinterprets the bits of a value of one type as another type, i.e.
           exactly what [[std::mem::transmute]] does. *)
-  | CastConcretize of ty
+  | CastConcretize of ty * field_id list
       (** Converts a receiver type with [dyn Trait<...>] to a concrete type [T],
           used in vtable method shims. Valid conversions are references, raw
           pointers, and (optionally) boxes:
           - [&[mut] dyn Trait<...>] -> [&[mut] T]
           - [*[mut] dyn Trait<...>] -> [*[mut] T]
           - [Box<dyn Trait<...>>] -> [Box<T>] when no [--treat-box-as-builtin]
+          - smart-pointers, e.g. [Rc<dyn Trait<...>>] -> [Rc<T>] or
+            [Pin<&mut dyn Trait<...>>] -> [Pin<&mut T>]
 
           For possible receivers, see:
           <https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility>.
-          Other receivers, e.g., [Rc] should be unpacked before the cast and
-          re-boxed after. FIXME(ssyram): but this is not implemented yet,
-          namely, there may still be something like
-          [Rc<dyn Trait<...>> -> Rc<T>] in the types.
 
           With [--index-to-function-calls], this also converts [&[T]] to
           [&[T; N]] (or the mutable equivalents) when an array subslice

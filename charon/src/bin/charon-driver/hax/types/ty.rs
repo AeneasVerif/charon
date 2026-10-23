@@ -1029,12 +1029,15 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     src_ty: ty::Ty<'tcx>,
     tgt_ty: ty::Ty<'tcx>,
-) -> UnsizingMetadata {
-    // TODO: also pass the list of fields we go through in the unsizing metadata.
-
+) -> (Vec<FieldIdx>, UnsizingMetadata) {
     let tcx = s.base().tcx;
-    let (Some(src_ty), Some(tgt_ty)) = (src_ty.builtin_deref(true), tgt_ty.builtin_deref(true))
-    else {
+    // Unless boxes are built-in, we go through their fields like for other smart pointers.
+    let builtin_deref = |ty: ty::Ty<'tcx>| {
+        (!ty.is_box() || s.base().options.treat_box_as_builtin)
+            .then(|| ty.builtin_deref(true))
+            .flatten()
+    };
+    let (Some(src_ty), Some(tgt_ty)) = (builtin_deref(src_ty), builtin_deref(tgt_ty)) else {
         // Like `rustc_monomorphize::custom_coerce_unsize_info`: for a `CoerceUnsized` struct
         // (e.g. `Rc`), find the impl and recurse into the field it coerces.
         return match (src_ty.kind(), tgt_ty.kind()) {
@@ -1049,23 +1052,24 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
                 let info = tcx
                     .coerce_unsized_info(impl_ref.def_id.real_rust_def_id())
                     .unwrap();
-                // TODO: just accumulate this field index as we recurse down, for the consumer.
                 let ty::adjustment::CustomCoerceUnsized::Struct(i) = info.custom_kind.unwrap();
                 let field = &def.non_enum_variant().fields[i];
                 let typing_env = s.typing_env();
                 let src_ty = normalize(tcx, typing_env, field.ty(tcx, src_args));
                 let tgt_ty = normalize(tcx, typing_env, field.ty(tcx, tgt_args));
-                compute_unsizing_metadata(s, src_ty, tgt_ty)
+                let (mut path, meta) = compute_unsizing_metadata(s, src_ty, tgt_ty);
+                path.insert(0, i);
+                (path, meta)
             }
             (ty::Pat(a, _), ty::Pat(b, _)) => compute_unsizing_metadata(s, *a, *b),
-            _ => UnsizingMetadata::Unknown,
+            _ => (vec![], UnsizingMetadata::Unknown),
         };
     };
     let typing_env = s.typing_env();
     let (src_ty, tgt_ty) =
         tcx.struct_lockstep_tails_raw(src_ty, tgt_ty, |ty| normalize(tcx, typing_env, ty));
 
-    match (&src_ty.kind(), &tgt_ty.kind()) {
+    let meta = match (&src_ty.kind(), &tgt_ty.kind()) {
         (ty::Array(_, len), ty::Slice(_) | ty::Str) => {
             let len = len.sinto(s);
             UnsizingMetadata::Length(len)
@@ -1100,7 +1104,8 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
             UnsizingMetadata::DirectVTable(trait_proof)
         }
         _ => UnsizingMetadata::Unknown,
-    }
+    };
+    (vec![], meta)
 }
 
 /// Reflects [`ty::FnSig`]

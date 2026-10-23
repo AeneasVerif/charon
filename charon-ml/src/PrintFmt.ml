@@ -622,10 +622,11 @@ and pp_cast_kind (env : fmt_env) (fmt : Format.formatter) (cast : cast_kind) :
   | CastSubtype tgt -> Format.fprintf fmt "subtype<%a>" (pp_ty env) tgt
   | CastRawPtr tgt -> Format.fprintf fmt "cast<%a>" (pp_ty env) tgt
   | CastTransmute tgt -> Format.fprintf fmt "transmute<%a>" (pp_ty env) tgt
-  | CastUnsize (tgt, meta) ->
+  | CastUnsize (tgt, meta, _) ->
       Format.fprintf fmt "unsize_cast<%a, %a>" (pp_ty env) tgt
         (pp_unsizing_metadata env) meta
-  | CastConcretize tgt -> Format.fprintf fmt "concretize<%a>" (pp_ty env) tgt
+  | CastConcretize (tgt, _) ->
+      Format.fprintf fmt "concretize<%a>" (pp_ty env) tgt
 
 and pp_match_pattern (env : fmt_env) (fmt : Format.formatter)
     (cv : constant_expr) : unit =

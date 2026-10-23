@@ -1146,6 +1146,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         target_receiver: &Ty,
         shim_signature: &FunSig,
         receiver_is_by_value: bool,
+        receiver_path: MetadataPath,
         target_fn: FnPtr,
     ) -> Result<Body, Error> {
         let mut builder = BodyBuilder::new(span, shim_signature.inputs.len());
@@ -1176,7 +1177,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // FIXME: need to unpack & re-pack the structure for cases like `Rc`, `Arc`, `Pin` and
         // (when --raw-boxes is on) `Box`
         let rval = Rvalue::UnaryOp(
-            UnOp::Cast(CastKind::Concretize(target_self.ty().clone())),
+            UnOp::Cast(CastKind::Concretize(
+                target_self.ty().clone(),
+                receiver_path,
+            )),
             Operand::Move(shim_self.clone()),
         );
         builder.push_statement(StatementKind::Assign(target_self.clone(), rval));
@@ -1217,7 +1221,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Perform the core concretization cast.
         let rval = Rvalue::UnaryOp(
-            UnOp::Cast(CastKind::Concretize(target_self.ty().clone())),
+            UnOp::Cast(CastKind::Concretize(target_self.ty().clone(), vec![])),
             Operand::Move(dyn_self.clone()),
         );
         builder.push_statement(StatementKind::Assign(target_self.clone(), rval));
@@ -1311,6 +1315,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // the concrete receiver we will cast to
         let target_receiver: Ty;
         let receiver_is_by_value: bool;
+        // the path to the pointer carrying the vtable in the receiver.
+        let receiver_path: MetadataPath;
         // the item that implements the method.
         let target_item: TransItemSourceKind;
 
@@ -1351,6 +1357,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 }
             };
             receiver_is_by_value = target_kind == ClosureKind::FnOnce;
+            receiver_path = vec![];
             target_item = TransItemSourceKind::CallableMethod(target_kind);
         } else {
             let hax::FullDefKind::AssocFn(f) = def.kind() else {
@@ -1375,6 +1382,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     .implemented_trait_item_id()
                     .real_rust_def_id(),
             );
+            receiver_path = self.translate_metadata_path(&f.vtable_receiver_path(self.hax_state()));
             target_item = TransItemSourceKind::Fun;
         };
 
@@ -1396,6 +1404,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 &target_receiver,
                 &signature,
                 receiver_is_by_value,
+                receiver_path,
                 target_fn,
             )?
         };
