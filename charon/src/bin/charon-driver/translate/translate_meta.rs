@@ -946,13 +946,9 @@ impl<'tcx> TranslateCtx<'tcx> {
         if !self.is_extern_item(def) {
             return None;
         }
-        let path_item = def.def_id().path_item(&self.hax_state);
-        match path_item.data {
-            hax::DefPathItem::ValueNs(name) | hax::DefPathItem::TypeNs(name) => {
-                Some(name.to_string())
-            }
-            _ => None,
-        }
+        let def_id = def.def_id().as_real_def_id()?;
+        let instance = rustc_middle::ty::Instance::mono(self.tcx, def_id);
+        Some(self.tcx.symbol_name(instance).name.to_string())
     }
 
     /// Compute the meta information for a Rust item.
@@ -977,6 +973,13 @@ impl<'tcx> TranslateCtx<'tcx> {
                 .def_id()
                 .as_real_def_id()
                 .and_then(|id| self.tcx.as_lang_item(id))
+                .or_else(|| {
+                    // For weak lang items (e.g. `panic_impl`), rustc only maps the lang item to its
+                    // definition, so we look at the `#[lang]` attribute of their `extern` declaration.
+                    self.is_extern_item(def)
+                        .then(|| rustc_attr_ir::find_attr!(&def.attributes, Lang(item) => *item))
+                        .flatten()
+                })
                 .map(|lang_item| {
                     self.translate_rustc_lang_item(&lang_item)
                         .expect("all rustc LangItem variants should be translated")

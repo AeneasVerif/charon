@@ -390,6 +390,9 @@ and constant_expr_kind =
       (** A pointer with no provenance (e.g. 0 for the null pointer)
 
           This is eliminated inside functions if [--raw-consts] is off. *)
+  | CExternSymbol of string
+      (** The address of a linker symbol, as a [*const ()]. The address may be
+          null, if the symbol wasn't defined at link time. *)
   | CTypeId of ty  (** The [TypeId] value for a type. *)
   | CRawMemory of byte list
       (** Raw memory value obtained from constant evaluation. Used when a more

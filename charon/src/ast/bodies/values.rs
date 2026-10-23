@@ -61,6 +61,9 @@ pub enum ConstantExprKind {
     ///
     /// This is eliminated inside functions if `--raw-consts` is off.
     PtrNoProvenance(#[serde(with = "scalar_value_ser_de")] u128),
+    /// The address of a linker symbol, as a `*const ()`. The address may be null, if the
+    /// symbol wasn't defined at link time.
+    ExternSymbol(String),
     /// The `TypeId` value for a type.
     TypeId(Ty),
     /// Raw memory value obtained from constant evaluation. Used when a more structured

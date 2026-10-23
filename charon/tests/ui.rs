@@ -128,6 +128,14 @@ fn perform_test(test_case: &Case) -> Result<()> {
     let stderr = String::from_utf8(output.stderr.clone())?;
     let stdout = String::from_utf8(output.stdout.clone())?;
 
+    // Hide the crate hash from mangled symbols (e.g. `#[rustc_std_internal_symbol]`), as it
+    // depends on the toolchain. The "_RNvCs" bit is a constant!
+    static MANGLED_RE: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"_RNvCs[0-9A-Za-z]+_").unwrap());
+    let stdout = MANGLED_RE
+        .replace_all(&stdout, "_RNvCs<hash>_")
+        .into_owned();
+
     // Hide thread id from the output.
     static RE: LazyLock<Regex> =
         LazyLock::new(|| Regex::new(r"thread '(\w+)' \(\d+\) (panicked|has overflowed)").unwrap());

@@ -672,6 +672,9 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("PtrNoProvenance", _0) ] ->
         let* _0 = big_int_of_json ctx _0 in
         Ok (CPtrNoProvenance _0)
+    | `Assoc [ ("ExternSymbol", _0) ] ->
+        let* _0 = string_of_json ctx _0 in
+        Ok (CExternSymbol _0)
     | `Assoc [ ("TypeId", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CTypeId _0)
@@ -2408,6 +2411,10 @@ and rustc_attribute_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("LinkSection", `Assoc [ ("name", name) ]) ] ->
         let* name = string_of_json ctx name in
         Ok (RustcAttributeKindLinkSection name)
+    | `Assoc [ ("Linkage", `List [ _0; _1 ]) ] ->
+        let* _0 = rustc_linkage_of_json ctx _0 in
+        let* _1 = span_of_json ctx _1 in
+        Ok (RustcAttributeKindLinkage (_0, _1))
     | `Assoc [ ("MayDangle", _0) ] ->
         let* _0 = span_of_json ctx _0 in
         Ok (RustcAttributeKindMayDangle _0)
@@ -3656,6 +3663,21 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
         Ok
           ({ size; align; discriminator; inhabited; variant_layouts; repr }
             : layout)
+    | _ -> Error "")
+
+and rustc_linkage_of_json (ctx : of_json_ctx) (js : json) :
+    (rustc_linkage, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "AvailableExternally" -> Ok RustcLinkageAvailableExternally
+    | `String "Common" -> Ok RustcLinkageCommon
+    | `String "ExternalWeak" -> Ok RustcLinkageExternalWeak
+    | `String "External" -> Ok RustcLinkageExternal
+    | `String "Internal" -> Ok RustcLinkageInternal
+    | `String "LinkOnceAny" -> Ok RustcLinkageLinkOnceAny
+    | `String "LinkOnceODR" -> Ok RustcLinkageLinkOnceODR
+    | `String "WeakAny" -> Ok RustcLinkageWeakAny
+    | `String "WeakODR" -> Ok RustcLinkageWeakODR
     | _ -> Error "")
 
 and local_of_json (ctx : of_json_ctx) (js : json) : (local, string) result =

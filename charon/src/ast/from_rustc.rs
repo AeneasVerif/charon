@@ -100,6 +100,8 @@ pub enum AttributeKind {
     Inline(InlineAttr, Span),
     /// Represents [`#[link_section]`](https://doc.rust-lang.org/reference/abi.html#the-link_section-attribute)
     LinkSection { name: Ustr },
+    /// Represents `#[linkage]`.
+    Linkage(Linkage, Span),
     /// Represents [`#[may_dangle]`](https://std-dev-guide.rust-lang.org/tricky/may-dangle.html).
     MayDangle(Span),
     /// Represents `#[naked]`
@@ -814,6 +816,26 @@ pub enum InlineAttr {
         attr_span: Span,
         reason: Option<Ustr>,
     },
+}
+
+/// Possible values for the `#[linkage]` attribute, allowing to specify the
+/// linkage type for a `MonoItem`.
+///
+/// See <https://llvm.org/docs/LangRef.html#linkage-types> for more details about these variants.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Drive, DriveMut, DriveTwo)]
+#[cfg_attr(feature = "charon_on_charon", charon::rename("RustcLinkage"))]
+#[cfg_attr(feature = "charon_on_charon", charon::variants_prefix("RustcLinkage"))]
+pub enum Linkage {
+    AvailableExternally,
+    Common,
+    ExternalWeak,
+    External,
+    Internal,
+    LinkOnceAny,
+    LinkOnceODR,
+    WeakAny,
+    WeakODR,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

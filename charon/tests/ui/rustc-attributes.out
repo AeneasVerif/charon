@@ -1,5 +1,30 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::option::Option
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some { _0: T },
+}
+
 struct () {}
 
 // Full name: test_crate::export_name
@@ -49,6 +74,10 @@ fn force_target_feature()
     _0 = ()
     return
 }
+
+// Full name: test_crate::extern_weak
+#[linkage = "extern_weak"]
+extern unsafe static extern_weak: Option<unsafe extern "C" fn()>[{built_in impl Sized for unsafe extern "C" fn()}] = transmute<Option<unsafe extern "C" fn()>[{built_in impl Sized for unsafe extern "C" fn()}]>(&raw const <extern:extern_weak>)
 
 
 
