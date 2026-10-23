@@ -1,5 +1,5 @@
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:46:43:
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_trait_objects.rs:47:43:
 Found unexpected `Self`
                         type when constructing vtable
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

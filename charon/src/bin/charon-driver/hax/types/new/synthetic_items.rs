@@ -4,7 +4,7 @@ use charon_lib::name_matcher::NamePattern;
 
 use itertools::Itertools;
 use {
-    rustc_attr_ir::LangItem,
+    rustc_hir::attrs::LangItem,
     rustc_middle::ty,
     rustc_span::{DUMMY_SP, Symbol},
     rustc_type_ir::{TypeFoldable, TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, Upcast},

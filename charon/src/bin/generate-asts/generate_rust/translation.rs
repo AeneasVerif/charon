@@ -31,8 +31,7 @@ impl Generator<'_> {
             f,
             "use charon_lib::ast::from_rustc::{{self, FromRustcError}};"
         )?;
-        writeln!(f, "use rustc_ast::attr::version::*;")?;
-        writeln!(f, "use rustc_attr_ir::lang_items::*;")?;
+        writeln!(f, "use rustc_hir::attrs::lang_items::*;")?;
         writeln!(f, "use rustc_hir::attrs::*;")?;
         writeln!(f, "use rustc_span::symbol::*;")?;
         writeln!(f, "use rustc_target::spec::*;")?;

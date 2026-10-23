@@ -977,7 +977,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     // For weak lang items (e.g. `panic_impl`), rustc only maps the lang item to its
                     // definition, so we look at the `#[lang]` attribute of their `extern` declaration.
                     self.is_extern_item(def)
-                        .then(|| rustc_attr_ir::find_attr!(&def.attributes, Lang(item) => *item))
+                        .then(|| rustc_hir::attrs::find_attr!(&def.attributes, Lang(item) => *item))
                         .flatten()
                 })
                 .map(|lang_item| {

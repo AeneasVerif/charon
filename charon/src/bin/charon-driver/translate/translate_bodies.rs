@@ -4,8 +4,8 @@
 //! independently.
 
 use itertools::Itertools;
-use rustc_attr_ir::LangItem;
 use rustc_hash::FxHashMap as HashMap;
+use rustc_hir::attrs::LangItem;
 use std::borrow::Cow;
 use std::collections::VecDeque;
 use std::mem;

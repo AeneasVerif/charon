@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use rustc_hir::attrs::LangItem;
 use rustc_span::kw;
 use std::mem;
 
@@ -358,7 +359,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         assert!(
             tref.def_id
                 .as_real_def_id()
-                .is_some_and(|id| self.tcx.is_lang_item(id, rustc_attr_ir::LangItem::Destruct)),
+                .is_some_and(|id| self.tcx.is_lang_item(id, LangItem::Destruct)),
             "unexpected non-dyn compatible supertrait: {:?}",
             tref.def_id
         );

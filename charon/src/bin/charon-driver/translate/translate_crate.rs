@@ -311,7 +311,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                     && match trait_ref.self_ty().kind() {
                         ty::Uint(ty::UintTy::Usize) => true,
                         ty::Adt(def, args) => {
-                            tcx.is_lang_item(def.did(), rustc_attr_ir::LangItem::Range)
+                            tcx.is_lang_item(def.did(), rustc_hir::attrs::LangItem::Range)
                                 && args.type_at(0) == tcx.types.usize
                         }
                         _ => false,

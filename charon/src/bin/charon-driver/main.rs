@@ -19,7 +19,6 @@
 extern crate rustc_abi;
 extern crate rustc_ast;
 extern crate rustc_ast_pretty;
-extern crate rustc_attr_ir;
 extern crate rustc_driver;
 extern crate rustc_hir;
 extern crate rustc_index;
