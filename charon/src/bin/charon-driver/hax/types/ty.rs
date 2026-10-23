@@ -11,6 +11,129 @@ use rustc_middle::ty::inherent::IntoKind;
 
 sinto_reexport!(rustc_abi::ExternAbi);
 
+/// Reflects [`rustc_middle::ty::Ty`]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Ty {
+    pub(crate) kind: HashConsed<TyKind>,
+}
+
+impl Ty {
+    pub fn new<'tcx, S: BaseState<'tcx>>(_s: &S, kind: TyKind) -> Self {
+        let kind = HashConsed::new(kind);
+        Ty { kind }
+    }
+
+    pub fn kind(&self) -> &TyKind {
+        self.kind.inner()
+    }
+}
+
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Ty> for rustc_middle::ty::Ty<'tcx> {
+    fn sinto(&self, s: &S) -> Ty {
+        if let Some(ty) = s.with_cache(|cache| cache.tys.get(self).cloned()) {
+            return ty;
+        }
+        let kind: TyKind = self.kind().sinto(s);
+        let ty = Ty::new(s, kind);
+        s.with_cache(|cache| {
+            cache.tys.insert(*self, ty.clone());
+        });
+        ty
+    }
+}
+
+/// Reflects [`ty::TyKind`]
+#[derive(AdtInto)]
+#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::TyKind<'tcx>, state: S as s)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum TyKind {
+    Bool,
+    Char,
+    Int(IntTy),
+    Uint(UintTy),
+    Float(FloatTy),
+
+    #[custom_arm(
+        ty::TyKind::FnDef(fun_id, generics) => {
+            let tcx = s.base().tcx;
+            // note: loss of precision, we erase the bound vars.
+            let generics = erase_free_regions(tcx, generics.skip_binder());
+            let item = translate_item_ref(s, *fun_id, generics);
+            TyKind::FnDef { item }
+        },
+    )]
+    /// Reflects [`ty::TyKind::FnDef`]
+    FnDef {
+        item: ItemRef,
+    },
+
+    #[custom_arm(
+        ty::TyKind::FnPtr(tys, header) => {
+            let sig = tys.with(*header);
+            let item = ItemRef::translate_fn_ptr(s, sig);
+            TyKind::FnPtr(Box::new(sig.sinto(s)), item)
+        },
+    )]
+    /// Reflects [`ty::TyKind::FnPtr`]
+    /// The `ItemRef` points to a synthetic item we can use to build impls for fn ptr types. See
+    /// `SyntheticItem::FnPtr` for details.
+    FnPtr(Box<PolyFnSig>, ItemRef),
+
+    #[custom_arm(
+        ty::TyKind::Closure (def_id, generics) => {
+            TyKind::Closure(ClosureArgs::sfrom(s, *def_id, generics))
+        },
+    )]
+    Closure(ClosureArgs),
+
+    #[custom_arm(FROM_TYPE::Adt(adt_def, generics) => TO_TYPE::Adt(translate_item_ref(s, adt_def.did(), generics)),)]
+    Adt(ItemRef),
+    #[custom_arm(FROM_TYPE::Foreign(def_id) => TO_TYPE::Foreign(translate_item_ref(s, *def_id, Default::default())),)]
+    Foreign(ItemRef),
+    /// The `ItemRef` uses the fake `Array` def_id.
+    #[custom_arm(FROM_TYPE::Array(ty, len) => TO_TYPE::Array({
+        let args = s.base().tcx.mk_args(&[(*ty).into(), (*len).into()]);
+        ItemRef::translate_synthetic(s, SyntheticItem::Array, args)
+    }),)]
+    Array(ItemRef),
+    Pat(Ty, Pattern),
+    /// The `ItemRef` uses the fake `Slice` def_id.
+    #[custom_arm(FROM_TYPE::Slice(ty) => TO_TYPE::Slice({
+        let args = s.base().tcx.mk_args(&[(*ty).into()]);
+        ItemRef::translate_synthetic(s, SyntheticItem::Slice, args)
+    }),)]
+    Slice(ItemRef),
+    /// The `ItemRef` uses the fake `Tuple` def_id.
+    #[custom_arm(FROM_TYPE::Tuple(tys) => TO_TYPE::Tuple({
+        let args = s.base().tcx.mk_args_from_iter(tys.into_iter().map(ty::GenericArg::from));
+        ItemRef::translate_synthetic(s, SyntheticItem::Tuple(tys.len()), args)
+    }),)]
+    Tuple(ItemRef),
+    /// The `ItemRef` uses the fake `Str` def_id.
+    #[custom_arm(FROM_TYPE::Str => TO_TYPE::Str({
+        let args = s.base().tcx.mk_args(&[]);
+        ItemRef::translate_synthetic(s, SyntheticItem::Str, args)
+    }),)]
+    Str(ItemRef),
+    RawPtr(Ty, Mutability),
+    Ref(Region, Ty, Mutability),
+    #[custom_arm(FROM_TYPE::Dynamic(preds, region) => TyKind::Dynamic(resolve_for_dyn(s, preds, |_, _| ()), region.sinto(s)),)]
+    Dynamic(DynBinder<()>, Region),
+    #[custom_arm(FROM_TYPE::Coroutine(def_id, generics) => TO_TYPE::Coroutine(translate_item_ref(s, *def_id, generics)),)]
+    Coroutine(ItemRef),
+    Never,
+    #[custom_arm(FROM_TYPE::Alias(_is_rigid, alias_ty) => Alias::from(s, alias_ty),)]
+    Alias(Alias),
+    Param(ParamTy),
+    Bound(BoundVarIndexKind, BoundTy),
+    Placeholder(PlaceholderType),
+    Infer(InferTy),
+    #[custom_arm(FROM_TYPE::Error(..) => TO_TYPE::Error,)]
+    Error,
+    #[todo]
+    Todo(String),
+}
+
 /// Reflects [`ty::UserSelfTy`]
 #[derive(Debug, Clone, AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::UserSelfTy<'tcx>, state: S as gstate)]
@@ -221,129 +344,6 @@ impl Alias {
             def_id: alias_ty_kind_def_id(alias_ty.kind).sinto(s),
         })
     }
-}
-
-/// Reflects [`rustc_middle::ty::Ty`]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Ty {
-    pub(crate) kind: HashConsed<TyKind>,
-}
-
-impl Ty {
-    pub fn new<'tcx, S: BaseState<'tcx>>(_s: &S, kind: TyKind) -> Self {
-        let kind = HashConsed::new(kind);
-        Ty { kind }
-    }
-
-    pub fn kind(&self) -> &TyKind {
-        self.kind.inner()
-    }
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Ty> for rustc_middle::ty::Ty<'tcx> {
-    fn sinto(&self, s: &S) -> Ty {
-        if let Some(ty) = s.with_cache(|cache| cache.tys.get(self).cloned()) {
-            return ty;
-        }
-        let kind: TyKind = self.kind().sinto(s);
-        let ty = Ty::new(s, kind);
-        s.with_cache(|cache| {
-            cache.tys.insert(*self, ty.clone());
-        });
-        ty
-    }
-}
-
-/// Reflects [`ty::TyKind`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::TyKind<'tcx>, state: S as s)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum TyKind {
-    Bool,
-    Char,
-    Int(IntTy),
-    Uint(UintTy),
-    Float(FloatTy),
-
-    #[custom_arm(
-        ty::TyKind::FnDef(fun_id, generics) => {
-            let tcx = s.base().tcx;
-            // note: loss of precision, we erase the bound vars.
-            let generics = erase_free_regions(tcx, generics.skip_binder());
-            let item = translate_item_ref(s, *fun_id, generics);
-            TyKind::FnDef { item }
-        },
-    )]
-    /// Reflects [`ty::TyKind::FnDef`]
-    FnDef {
-        item: ItemRef,
-    },
-
-    #[custom_arm(
-        ty::TyKind::FnPtr(tys, header) => {
-            let sig = tys.with(*header);
-            let item = ItemRef::translate_fn_ptr(s, sig);
-            TyKind::FnPtr(Box::new(sig.sinto(s)), item)
-        },
-    )]
-    /// Reflects [`ty::TyKind::FnPtr`]
-    /// The `ItemRef` points to a synthetic item we can use to build impls for fn ptr types. See
-    /// `SyntheticItem::FnPtr` for details.
-    FnPtr(Box<PolyFnSig>, ItemRef),
-
-    #[custom_arm(
-        ty::TyKind::Closure (def_id, generics) => {
-            TyKind::Closure(ClosureArgs::sfrom(s, *def_id, generics))
-        },
-    )]
-    Closure(ClosureArgs),
-
-    #[custom_arm(FROM_TYPE::Adt(adt_def, generics) => TO_TYPE::Adt(translate_item_ref(s, adt_def.did(), generics)),)]
-    Adt(ItemRef),
-    #[custom_arm(FROM_TYPE::Foreign(def_id) => TO_TYPE::Foreign(translate_item_ref(s, *def_id, Default::default())),)]
-    Foreign(ItemRef),
-    /// The `ItemRef` uses the fake `Array` def_id.
-    #[custom_arm(FROM_TYPE::Array(ty, len) => TO_TYPE::Array({
-        let args = s.base().tcx.mk_args(&[(*ty).into(), (*len).into()]);
-        ItemRef::translate_synthetic(s, SyntheticItem::Array, args)
-    }),)]
-    Array(ItemRef),
-    Pat(Ty, Pattern),
-    /// The `ItemRef` uses the fake `Slice` def_id.
-    #[custom_arm(FROM_TYPE::Slice(ty) => TO_TYPE::Slice({
-        let args = s.base().tcx.mk_args(&[(*ty).into()]);
-        ItemRef::translate_synthetic(s, SyntheticItem::Slice, args)
-    }),)]
-    Slice(ItemRef),
-    /// The `ItemRef` uses the fake `Tuple` def_id.
-    #[custom_arm(FROM_TYPE::Tuple(tys) => TO_TYPE::Tuple({
-        let args = s.base().tcx.mk_args_from_iter(tys.into_iter().map(ty::GenericArg::from));
-        ItemRef::translate_synthetic(s, SyntheticItem::Tuple(tys.len()), args)
-    }),)]
-    Tuple(ItemRef),
-    /// The `ItemRef` uses the fake `Str` def_id.
-    #[custom_arm(FROM_TYPE::Str => TO_TYPE::Str({
-        let args = s.base().tcx.mk_args(&[]);
-        ItemRef::translate_synthetic(s, SyntheticItem::Str, args)
-    }),)]
-    Str(ItemRef),
-    RawPtr(Ty, Mutability),
-    Ref(Region, Ty, Mutability),
-    #[custom_arm(FROM_TYPE::Dynamic(preds, region) => TyKind::Dynamic(resolve_for_dyn(s, preds, |_, _| ()), region.sinto(s)),)]
-    Dynamic(DynBinder<()>, Region),
-    #[custom_arm(FROM_TYPE::Coroutine(def_id, generics) => TO_TYPE::Coroutine(translate_item_ref(s, *def_id, generics)),)]
-    Coroutine(ItemRef),
-    Never,
-    #[custom_arm(FROM_TYPE::Alias(_is_rigid, alias_ty) => Alias::from(s, alias_ty),)]
-    Alias(Alias),
-    Param(ParamTy),
-    Bound(BoundVarIndexKind, BoundTy),
-    Placeholder(PlaceholderType),
-    Infer(InferTy),
-    #[custom_arm(FROM_TYPE::Error(..) => TO_TYPE::Error,)]
-    Error,
-    #[todo]
-    Todo(String),
 }
 
 #[derive(AdtInto)]
