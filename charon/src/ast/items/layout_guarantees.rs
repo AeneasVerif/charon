@@ -559,6 +559,11 @@ mod tests {
         krate.target_information.insert(
             target.clone(),
             TargetInfo {
+                arch: from_rustc::Arch::Other("test".into()),
+                vendor: "unknown".to_owned(),
+                os: from_rustc::Os::Unknown,
+                env: from_rustc::Env::Unspecified,
+                cfg_abi: from_rustc::CfgAbi::Unspecified,
                 target_pointer_size: 8,
                 is_little_endian: true,
                 c_enum_smallest_repr_ty: IntTy::I32,
@@ -840,6 +845,11 @@ mod tests {
             krate.target_information.insert(
                 triple.to_owned(),
                 TargetInfo {
+                    arch: from_rustc::Arch::Other("test".into()),
+                    vendor: "unknown".to_owned(),
+                    os: from_rustc::Os::Unknown,
+                    env: from_rustc::Env::Unspecified,
+                    cfg_abi: from_rustc::CfgAbi::Unspecified,
                     target_pointer_size: pointer_size,
                     is_little_endian: true,
                     c_enum_smallest_repr_ty: IntTy::I32,

@@ -1131,6 +1131,28 @@ fn issue_1184_target_dispatch_unbound_item_generics() -> anyhow::Result<()> {
 }
 
 #[test]
+fn target_info_cfg_values() -> anyhow::Result<()> {
+    let crate_data =
+        translate("//@ charon-args=--targets=i686-unknown-linux-gnu,x86_64-pc-windows-msvc")?;
+
+    let linux = &crate_data.target_information["i686-unknown-linux-gnu"];
+    // The arch is the `cfg(target_arch)` value, not the first component of the triple.
+    assert_eq!(linux.arch, from_rustc::Arch::X86);
+    assert_eq!(linux.vendor, "unknown");
+    assert_eq!(linux.os, from_rustc::Os::Linux);
+    assert_eq!(linux.env, from_rustc::Env::Gnu);
+    assert_eq!(linux.cfg_abi, from_rustc::CfgAbi::Unspecified);
+
+    let windows = &crate_data.target_information["x86_64-pc-windows-msvc"];
+    assert_eq!(windows.arch, from_rustc::Arch::X86_64);
+    assert_eq!(windows.vendor, "pc");
+    assert_eq!(windows.os, from_rustc::Os::Windows);
+    assert_eq!(windows.env, from_rustc::Env::Msvc);
+    assert_eq!(windows.cfg_abi, from_rustc::CfgAbi::Unspecified);
+    Ok(())
+}
+
+#[test]
 fn multiple_deserialize() -> anyhow::Result<()> {
     // Test that deserializing deduplicated values from two different invocations of Charon works
     // correctly. This is non-obvious because `HashConsId`s will overlap between two invocations,
