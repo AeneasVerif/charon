@@ -25,6 +25,11 @@ pub const NESTED: (u8, &Outer<[u16]>) = (7, OUTER);
 
 pub static STATIC: &Outer<[u16]> = OUTER;
 pub static INTERIOR: &Wrap<[u16]> = &STATIC.w;
+pub static SIZED: Outer<[u16; 2]> = Outer {
+    x: 1,
+    w: Wrap { a: 2, b: [3, 4] },
+};
+pub static SIZED_INTERIOR: &Wrap<[u16]> = &SIZED.w;
 
 pub trait Trait: Sync {}
 impl Trait for u8 {}

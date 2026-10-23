@@ -92,6 +92,12 @@ pub static STATIC: &'static Outer<[u16]>[{built_in impl MetaSized for [u16]}] = 
 // Full name: test_crate::INTERIOR
 pub static INTERIOR: &'static Wrap<[u16]>[{built_in impl MetaSized for [u16]}] = &Wrap { a: 2u8, b: [3u16, 4u16] } with_metadata(2usize)
 
+// Full name: test_crate::SIZED
+pub static SIZED: Outer<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}] = Outer { x: 1u32, w: Wrap { a: 2u8, b: [3u16, 4u16] } }
+
+// Full name: test_crate::SIZED_INTERIOR
+pub static SIZED_INTERIOR: &'static Wrap<[u16]>[{built_in impl MetaSized for [u16]}] = &Wrap { a: 2u8, b: [3u16, 4u16] } with_metadata(2usize)
+
 struct test_crate::Trait::{vtable} {
   size: usize,
   align: usize,
