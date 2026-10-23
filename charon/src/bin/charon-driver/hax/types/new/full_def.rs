@@ -320,7 +320,6 @@ pub enum InlineAttr {
 }
 
 /// Imbues [`rustc_hir::def::DefKind`] with a lot of extra information.
-
 #[derive(Debug, Clone)]
 #[allow(clippy::large_enum_variant)]
 pub enum FullDefKind<'tcx> {

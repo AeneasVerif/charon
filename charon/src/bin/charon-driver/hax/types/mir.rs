@@ -94,7 +94,6 @@ pub mod mir_kinds {
 pub use mir_kinds::IsMirKind;
 
 /// The contents of `Operand::Const`.
-
 #[derive(Debug, Clone)]
 pub struct ConstOperand {
     pub span: Span,
