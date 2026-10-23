@@ -43,7 +43,7 @@ fn bits_and_type_to_float_constant_literal(bits: u128, ty: FloatTy) -> ConstantL
         FloatTy::F64 => ieee::Double::from_bits(bits).to_string(),
         FloatTy::F128 => ieee::Quad::from_bits(bits).to_string(),
     };
-    ConstantLiteral::Float(string, ty)
+    ConstantLiteral::Float(string, bits, ty)
 }
 
 impl ConstantExprKind {

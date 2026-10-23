@@ -10,7 +10,7 @@ pub enum ConstantInt {
 pub enum ConstantLiteral {
     Bool(bool),
     Char(char),
-    Float(String, FloatTy),
+    Float(String, u128, FloatTy),
     Int(ConstantInt),
     PtrNoProvenance(u128),
     Str(String),

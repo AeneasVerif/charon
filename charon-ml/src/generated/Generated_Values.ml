@@ -38,7 +38,11 @@ type float_type = F16 | F32 | F64 | F128
 (** This is simlar to the Scalar value above. However, instead of storing the
     float value itself, we store its String representation. This allows to
     derive the Eq and Ord traits, which are not implemented for floats *)
-and float_value = { float_value : string; float_ty : float_type }
+and float_value = {
+  float_value : string;
+  float_bits : big_int;
+  float_ty : float_type;
+}
 
 and int_ty = Isize | I8 | I16 | I32 | I64 | I128
 and integer_type = Signed of int_ty | Unsigned of u_int_ty

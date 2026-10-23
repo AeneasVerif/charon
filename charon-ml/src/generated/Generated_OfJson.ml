@@ -797,10 +797,11 @@ and float_value_of_json (ctx : of_json_ctx) (js : json) :
     (float_value, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("value", value); ("ty", ty) ] ->
+    | `Assoc [ ("value", value); ("bits", bits); ("ty", ty) ] ->
         let* float_value = string_of_json ctx value in
+        let* float_bits = big_int_of_json ctx bits in
         let* float_ty = float_type_of_json ctx ty in
-        Ok ({ float_value; float_ty } : float_value)
+        Ok ({ float_value; float_bits; float_ty } : float_value)
     | _ -> Error "")
 
 and fn_operand_of_json (ctx : of_json_ctx) (js : json) :

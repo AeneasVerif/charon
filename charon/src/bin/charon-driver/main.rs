@@ -17,7 +17,6 @@
 #![feature(type_changing_struct_update)]
 
 extern crate rustc_abi;
-extern crate rustc_apfloat;
 extern crate rustc_ast;
 extern crate rustc_ast_pretty;
 extern crate rustc_attr_ir;

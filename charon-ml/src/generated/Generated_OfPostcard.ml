@@ -728,8 +728,9 @@ and float_value_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (float_value, string) result =
   combine_error_msgs st __FUNCTION__
     (let* float_value = string_of_postcard ctx st in
+     let* float_bits = big_uint_of_postcard ctx st in
      let* float_ty = float_type_of_postcard ctx st in
-     Ok ({ float_value; float_ty } : float_value))
+     Ok ({ float_value; float_bits; float_ty } : float_value))
 
 and fn_operand_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (fn_operand, string) result =
