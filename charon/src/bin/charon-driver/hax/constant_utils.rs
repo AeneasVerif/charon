@@ -156,11 +156,24 @@ pub struct ConstantFieldExpr {
     pub value: ConstantExpr,
 }
 
-/// Rustc has different representation for constants: one for MIR
+/// Rustc has different representations for constants: one for MIR
 /// ([`rustc_middle::mir::Const`]), one for the type system
 /// ([`rustc_middle::ty::ConstKind`]). For simplicity hax maps those
-/// two construct to one same `ConstantExpr` type.
-pub type ConstantExpr = Decorated<ConstantExprKind>;
+/// two constructs to the same `ConstantExpr` type.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ConstantExpr {
+    pub kind: Box<ConstantExprKind>,
+    pub ty: Ty,
+}
+
+impl ConstantExpr {
+    pub fn new(kind: ConstantExprKind, ty: Ty) -> Self {
+        Self {
+            kind: Box::new(kind),
+            ty,
+        }
+    }
+}
 
 pub use self::uneval::*;
 pub use rustc_const_uneval::{ConstSource, GlobalRef, ReadMode};

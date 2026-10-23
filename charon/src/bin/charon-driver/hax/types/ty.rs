@@ -14,15 +14,6 @@ use rustc_span::def_id::DefId as RDefId;
 
 sinto_reexport!(rustc_abi::ExternAbi);
 
-/// Generic container for decorating items with a type, a span,
-/// attributes and other meta-data.
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Decorated<T> {
-    pub ty: Ty,
-    pub contents: Box<T>,
-}
-
 /// Reflects [`ty::ParamTy`]
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

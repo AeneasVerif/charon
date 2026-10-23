@@ -46,15 +46,6 @@ fn bits_and_type_to_float_constant_literal(bits: u128, ty: FloatTy) -> ConstantL
     ConstantLiteral::Float(string, bits, ty)
 }
 
-impl ConstantExprKind {
-    pub fn decorate(self, ty: Ty, _span: Span) -> Decorated<Self> {
-        Decorated {
-            contents: Box::new(self),
-            ty,
-        }
-    }
-}
-
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Const<'tcx> {
     #[tracing::instrument(level = "trace", skip(s))]
     fn sinto(&self, s: &S) -> ConstantExpr {
@@ -64,7 +55,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Const<'tcx> 
             ty::ConstKind::Param(p) => {
                 let ty = p.find_const_ty_from_env(s.param_env());
                 let kind = ConstantExprKind::ConstRef { id: p.sinto(s) };
-                kind.decorate(ty.sinto(s), span.sinto(s))
+                ConstantExpr::new(kind, ty.sinto(s))
             }
             ty::ConstKind::Alias(_, ucv) => {
                 let def = ucv
@@ -81,15 +72,11 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Const<'tcx> 
                 {
                     val
                 } else {
-                    use rustc_middle::query::QueryKey;
-                    let span = tcx
-                        .def_ident_span(def)
-                        .unwrap_or_else(|| def.default_span(tcx));
                     let item = translate_item_ref(s, def, ucv.args);
                     let kind = ConstantExprKind::NamedGlobal(item);
                     let ty = tcx.type_of(def).instantiate(tcx, ucv.args);
                     let ty = normalize(tcx, s.typing_env(), ty);
-                    kind.decorate(ty.sinto(s), span.sinto(s))
+                    ConstantExpr::new(kind, ty.sinto(s))
                 }
             }
             ty::ConstKind::Value(val) => val.sinto(s),
@@ -97,7 +84,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Const<'tcx> 
                 let msg = format!("unexpected constant kind: {self:?}");
                 s.raise(Level::ERROR, span, msg.clone());
                 let ty = Ty::new(s, TyKind::Error);
-                ConstantExprKind::Todo(msg).decorate(ty, span.sinto(s))
+                ConstantExpr::new(ConstantExprKind::Todo(msg), ty)
             }
         }
     }
@@ -109,8 +96,10 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Value<'tcx> 
         let span = rustc_span::DUMMY_SP;
         read_const(s, span, ConstSource::ValTree(*self), ReadMode::Structured).unwrap_or_else(
             || {
-                ConstantExprKind::Todo("ConstValTree".into())
-                    .decorate(self.ty.sinto(s), span.sinto(s))
+                ConstantExpr::new(
+                    ConstantExprKind::Todo("ConstValTree".into()),
+                    self.ty.sinto(s),
+                )
             },
         )
     }
@@ -313,10 +302,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for rustc_const_unev
             }
             ConstKind::Unsupported(msg) => ConstantExprKind::Todo(msg.to_string()),
         };
-        Decorated {
-            contents: Box::new(kind),
-            ty: self.ty.sinto(s),
-        }
+        ConstantExpr::new(kind, self.ty.sinto(s))
     }
 }
 
