@@ -904,7 +904,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         span: Span,
         user_ty: &mir::UserTypeProjection,
     ) -> Result<(Ty, Vec<BorrowckStatement>), Error> {
-        use rustc_infer::infer::canonical::CanonicalExt;
+        use rustc_trait_selection::infer::canonical::CanonicalExt;
 
         let annotation = self.user_type_annotations[user_ty.base].clone();
         let canonical = *annotation.user_ty;

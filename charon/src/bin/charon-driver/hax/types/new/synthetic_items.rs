@@ -315,7 +315,7 @@ impl<'tcx> GlobalCache<'tcx> {
             }
             SyntheticItem::Str => {}
             SyntheticItem::FnPtr(shape) => {
-                use rustc_infer::infer::TyCtxtInferExt;
+                use rustc_trait_selection::infer::TyCtxtInferExt;
                 struct Params {
                     kinds: Vec<Option<ty::GenericParamDefKind>>,
                 }
