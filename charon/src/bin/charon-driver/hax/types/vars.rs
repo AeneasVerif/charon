@@ -41,6 +41,12 @@ pub struct BoundTy {
     pub kind: BoundTyKind,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct BoundTyRef {
+    pub index: BoundVarIndexKind,
+    pub ty: BoundTy,
+}
+
 sinto_as_usize!(rustc_middle::ty, BoundVar);
 
 /// Reflects [`ty::BoundRegionKind`]
@@ -69,7 +75,7 @@ pub type PlaceholderRegion = Placeholder<BoundRegion>;
 /// Reflects [`ty::PlaceholderConst`]
 pub type PlaceholderConst = Placeholder<BoundVar>;
 /// Reflects [`ty::PlaceholderType`]
-pub type PlaceholderType = Placeholder<BoundTy>;
+pub type PlaceholderTy = Placeholder<BoundTy>;
 
 /// Reflects [`ty::Placeholder`]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

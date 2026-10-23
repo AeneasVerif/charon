@@ -96,7 +96,7 @@ pub fn callable_virtual_impl<'a, 'tcx>(
 
 #[derive(Copy, Clone)]
 enum Callable<'a> {
-    Closure(&'a hax::ClosureArgs),
+    Closure(&'a hax::ClosureTy),
     FnDef {
         item: &'a hax::ItemRef,
         sig: &'a hax::PolyFnSig,
@@ -310,8 +310,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
         let item = match callable_ty.kind() {
             hax::TyKind::Closure(closure_args) => &closure_args.item,
-            hax::TyKind::FnDef { item, .. } => item,
-            hax::TyKind::FnPtr(_, item) => item,
+            hax::TyKind::FnDef(fn_def) => &fn_def.item,
+            hax::TyKind::FnPtr(fn_ptr) => &fn_ptr.item,
             _ => return None,
         };
         Some((item.erase(self.hax_state_with_id()), target_kind))
@@ -350,7 +350,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn translate_closure_type_ref(
         &mut self,
         span: Span,
-        closure: &hax::ClosureArgs,
+        closure: &hax::ClosureTy,
     ) -> Result<TypeDeclRef, Error> {
         self.translate_type_decl_ref(span, &closure.item)
     }
@@ -361,7 +361,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn translate_stateless_closure_as_fn_ref(
         &mut self,
         span: Span,
-        closure: &hax::ClosureArgs,
+        closure: &hax::ClosureTy,
     ) -> Result<RegionBinder<FunDeclRef>, Error> {
         let kind = TransItemSourceKind::ClosureAsFnCast;
         let bound_dref = self.translate_callable_bound_ref_with_late_bound(
@@ -378,7 +378,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn translate_closure_bound_impl_ref(
         &mut self,
         span: Span,
-        closure: &hax::ClosureArgs,
+        closure: &hax::ClosureTy,
         target_kind: ClosureKind,
     ) -> Result<RegionBinder<TraitImplRef>, Error> {
         let kind = TransItemSourceKind::TraitImpl(TransImplSource::Callable(target_kind));
@@ -407,7 +407,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn translate_closure_info(
         &mut self,
         span: Span,
-        args: &hax::ClosureArgs,
+        args: &hax::ClosureTy,
     ) -> Result<ClosureInfo, Error> {
         use ClosureKind::*;
         let kind = translate_closure_kind(&args.kind);
@@ -459,7 +459,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn translate_closure_upvar_tys(
         &mut self,
         span: Span,
-        args: &hax::ClosureArgs,
+        args: &hax::ClosureTy,
     ) -> Result<IndexVec<FieldId, Ty>, Error> {
         args.upvar_tys
             .iter()
@@ -470,7 +470,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn translate_closure_adt(
         &mut self,
         span: Span,
-        _args: &hax::ClosureArgs,
+        _args: &hax::ClosureTy,
     ) -> Result<TypeDeclKind, Error> {
         let fields: IndexVec<FieldId, Field> = self
             .the_only_binder()
@@ -568,7 +568,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         span: Span,
         def: &hax::FullDef<'tcx>,
         target_kind: ClosureKind,
-        args: &hax::ClosureArgs,
+        args: &hax::ClosureTy,
         signature: &FunSig,
     ) -> Result<Body, Error> {
         use ClosureKind::*;

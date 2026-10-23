@@ -6,8 +6,8 @@ use crate::hax::prelude::*;
 
 use charon_lib::ast::HashConsed;
 use rustc_middle::ty;
-use rustc_span::def_id::DefId as RDefId;
 use rustc_middle::ty::inherent::IntoKind;
+use rustc_span::def_id::DefId as RDefId;
 
 sinto_reexport!(rustc_abi::ExternAbi);
 
@@ -43,8 +43,6 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Ty> for rustc_middle::ty::Ty<'tcx>
 }
 
 /// Reflects [`ty::TyKind`]
-#[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::TyKind<'tcx>, state: S as s)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TyKind {
     Bool,
@@ -52,86 +50,248 @@ pub enum TyKind {
     Int(IntTy),
     Uint(UintTy),
     Float(FloatTy),
-
-    #[custom_arm(
-        ty::TyKind::FnDef(fun_id, generics) => {
-            let tcx = s.base().tcx;
-            // note: loss of precision, we erase the bound vars.
-            let generics = erase_free_regions(tcx, generics.skip_binder());
-            let item = translate_item_ref(s, *fun_id, generics);
-            TyKind::FnDef { item }
-        },
-    )]
-    /// Reflects [`ty::TyKind::FnDef`]
-    FnDef {
-        item: ItemRef,
-    },
-
-    #[custom_arm(
-        ty::TyKind::FnPtr(tys, header) => {
-            let sig = tys.with(*header);
-            let item = ItemRef::translate_fn_ptr(s, sig);
-            TyKind::FnPtr(Box::new(sig.sinto(s)), item)
-        },
-    )]
-    /// Reflects [`ty::TyKind::FnPtr`]
-    /// The `ItemRef` points to a synthetic item we can use to build impls for fn ptr types. See
-    /// `SyntheticItem::FnPtr` for details.
-    FnPtr(Box<PolyFnSig>, ItemRef),
-
-    #[custom_arm(
-        ty::TyKind::Closure (def_id, generics) => {
-            TyKind::Closure(ClosureArgs::sfrom(s, *def_id, generics))
-        },
-    )]
-    Closure(ClosureArgs),
-
-    #[custom_arm(FROM_TYPE::Adt(adt_def, generics) => TO_TYPE::Adt(translate_item_ref(s, adt_def.did(), generics)),)]
-    Adt(ItemRef),
-    #[custom_arm(FROM_TYPE::Foreign(def_id) => TO_TYPE::Foreign(translate_item_ref(s, *def_id, Default::default())),)]
-    Foreign(ItemRef),
-    /// The `ItemRef` uses the fake `Array` def_id.
-    #[custom_arm(FROM_TYPE::Array(ty, len) => TO_TYPE::Array({
-        let args = s.base().tcx.mk_args(&[(*ty).into(), (*len).into()]);
-        ItemRef::translate_synthetic(s, SyntheticItem::Array, args)
-    }),)]
-    Array(ItemRef),
-    Pat(Ty, Pattern),
-    /// The `ItemRef` uses the fake `Slice` def_id.
-    #[custom_arm(FROM_TYPE::Slice(ty) => TO_TYPE::Slice({
-        let args = s.base().tcx.mk_args(&[(*ty).into()]);
-        ItemRef::translate_synthetic(s, SyntheticItem::Slice, args)
-    }),)]
-    Slice(ItemRef),
-    /// The `ItemRef` uses the fake `Tuple` def_id.
-    #[custom_arm(FROM_TYPE::Tuple(tys) => TO_TYPE::Tuple({
-        let args = s.base().tcx.mk_args_from_iter(tys.into_iter().map(ty::GenericArg::from));
-        ItemRef::translate_synthetic(s, SyntheticItem::Tuple(tys.len()), args)
-    }),)]
-    Tuple(ItemRef),
-    /// The `ItemRef` uses the fake `Str` def_id.
-    #[custom_arm(FROM_TYPE::Str => TO_TYPE::Str({
-        let args = s.base().tcx.mk_args(&[]);
-        ItemRef::translate_synthetic(s, SyntheticItem::Str, args)
-    }),)]
-    Str(ItemRef),
-    RawPtr(Ty, Mutability),
-    Ref(Region, Ty, Mutability),
-    #[custom_arm(FROM_TYPE::Dynamic(preds, region) => TyKind::Dynamic(resolve_for_dyn(s, preds, |_, _| ()), region.sinto(s)),)]
-    Dynamic(DynBinder<()>, Region),
-    #[custom_arm(FROM_TYPE::Coroutine(def_id, generics) => TO_TYPE::Coroutine(translate_item_ref(s, *def_id, generics)),)]
-    Coroutine(ItemRef),
+    FnDef(FnDefTy),
+    FnPtr(FnPtrTy),
+    Closure(ClosureTy),
+    Adt(AdtTy),
+    Foreign(ForeignTy),
+    Array(ArrayTy),
+    Pat(PatTy),
+    Slice(SliceTy),
+    Tuple(TupleTy),
+    Str(StrTy),
+    RawPtr(RawPtrTy),
+    Ref(RefTy),
+    DynTrait(DynTraitTy),
+    Coroutine(CoroutineTy),
     Never,
-    #[custom_arm(FROM_TYPE::Alias(_is_rigid, alias_ty) => Alias::from(s, alias_ty),)]
     Alias(Alias),
     Param(ParamTy),
-    Bound(BoundVarIndexKind, BoundTy),
-    Placeholder(PlaceholderType),
+    Bound(BoundTyRef),
+    Placeholder(PlaceholderTy),
     Infer(InferTy),
-    #[custom_arm(FROM_TYPE::Error(..) => TO_TYPE::Error,)]
     Error,
-    #[todo]
     Todo(String),
+}
+
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TyKind> for ty::TyKind<'tcx> {
+    #[tracing::instrument(level = "trace", skip(s))]
+    fn sinto(&self, s: &S) -> TyKind {
+        match self {
+            Self::Bool => TyKind::Bool,
+            Self::Char => TyKind::Char,
+            Self::Int(int_ty) => TyKind::Int(int_ty.sinto(s)),
+            Self::Uint(uint_ty) => TyKind::Uint(uint_ty.sinto(s)),
+            Self::Float(float_ty) => TyKind::Float(float_ty.sinto(s)),
+            Self::FnDef(fun_id, generics) => {
+                let tcx = s.base().tcx;
+                // Note: loss of precision, we erase the bound vars.
+                let generics = erase_free_regions(tcx, generics.skip_binder());
+                TyKind::FnDef(FnDefTy {
+                    item: translate_item_ref(s, *fun_id, generics),
+                })
+            }
+            Self::FnPtr(tys, header) => {
+                let sig = tys.with(*header);
+                let item = ItemRef::translate_fn_ptr(s, sig);
+                TyKind::FnPtr(FnPtrTy {
+                    sig: Box::new(sig.sinto(s)),
+                    item,
+                })
+            }
+            Self::Closure(def_id, generics) => {
+                TyKind::Closure(ClosureTy::sfrom(s, *def_id, generics))
+            }
+            Self::Adt(adt_def, generics) => TyKind::Adt(AdtTy {
+                item: translate_item_ref(s, adt_def.did(), generics),
+            }),
+            Self::Foreign(def_id) => TyKind::Foreign(ForeignTy {
+                item: translate_item_ref(s, *def_id, Default::default()),
+            }),
+            Self::Array(ty, len) => {
+                let args = s.base().tcx.mk_args(&[(*ty).into(), (*len).into()]);
+                TyKind::Array(ArrayTy {
+                    item: ItemRef::translate_synthetic(s, SyntheticItem::Array, args),
+                })
+            }
+            Self::Pat(ty, pat) => TyKind::Pat(PatTy {
+                ty: ty.sinto(s),
+                pat: pat.sinto(s),
+            }),
+            Self::Slice(ty) => {
+                let args = s.base().tcx.mk_args(&[(*ty).into()]);
+                TyKind::Slice(SliceTy {
+                    item: ItemRef::translate_synthetic(s, SyntheticItem::Slice, args),
+                })
+            }
+            Self::Tuple(tys) => {
+                let args = s
+                    .base()
+                    .tcx
+                    .mk_args_from_iter(tys.into_iter().map(ty::GenericArg::from));
+                TyKind::Tuple(TupleTy {
+                    item: ItemRef::translate_synthetic(s, SyntheticItem::Tuple(tys.len()), args),
+                })
+            }
+            Self::Str => {
+                let args = s.base().tcx.mk_args(&[]);
+                TyKind::Str(StrTy {
+                    item: ItemRef::translate_synthetic(s, SyntheticItem::Str, args),
+                })
+            }
+            Self::RawPtr(ty, mutbl) => TyKind::RawPtr(RawPtrTy {
+                ty: ty.sinto(s),
+                mutbl: mutbl.sinto(s),
+            }),
+            Self::Ref(region, ty, mutbl) => TyKind::Ref(RefTy {
+                region: region.sinto(s),
+                ty: ty.sinto(s),
+                mutbl: mutbl.sinto(s),
+            }),
+            Self::Dynamic(preds, region) => TyKind::DynTrait(DynTraitTy {
+                binder: resolve_for_dyn(s, preds, |_, _| ()),
+                region: region.sinto(s),
+            }),
+            Self::Coroutine(def_id, generics) => TyKind::Coroutine(CoroutineTy {
+                item: translate_item_ref(s, *def_id, generics),
+            }),
+            Self::Never => TyKind::Never,
+            Self::Alias(_, alias_ty) => Alias::from(s, alias_ty),
+            Self::Param(param) => TyKind::Param(param.sinto(s)),
+            Self::Bound(index, ty) => TyKind::Bound(BoundTyRef {
+                index: index.sinto(s),
+                ty: ty.sinto(s),
+            }),
+            Self::Placeholder(placeholder) => TyKind::Placeholder(placeholder.sinto(s)),
+            Self::Infer(infer) => TyKind::Infer(infer.sinto(s)),
+            Self::Error(..) => TyKind::Error,
+            other => TyKind::Todo(format!("{other:?}")),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct FnDefTy {
+    pub item: ItemRef,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct FnPtrTy {
+    pub sig: Box<PolyFnSig>,
+    /// Points to a synthetic item used to build impls for function pointer types.
+    pub item: ItemRef,
+}
+
+/// Reflects [`ty::ClosureArgs`]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ClosureTy {
+    pub item: ItemRef,
+    /// The base kind of this closure. The kinds are ordered by inclusion: any `Fn` works as an
+    /// `FnMut`, and any `FnMut` works as an `FnOnce`.
+    pub kind: ClosureKind,
+    /// The signature of the function that the closure implements, e.g. `fn(A, B, C) -> D`.
+    pub fn_sig: PolyFnSig,
+    /// The arguments of the closure, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
+    /// Binds the same variables as `fn_sig`.
+    pub tupled_args_ty: Binder<Ty>,
+    /// The set of captured variables. Together they form the state of the closure.
+    pub upvar_tys: Vec<Ty>,
+}
+
+impl ClosureTy {
+    /// Iterate over the upvars that are borrows with erased regions. These may require allocating
+    /// fresh regions.
+    pub fn iter_upvar_borrows(&self) -> impl Iterator<Item = &Ty> {
+        self.upvar_tys.iter().filter(|ty| {
+            matches!(
+                ty.kind(),
+                TyKind::Ref(RefTy {
+                    region: Region {
+                        kind: RegionKind::ReErased
+                    },
+                    ..
+                })
+            )
+        })
+    }
+
+    // Manual implementation because we need the `def_id` of the closure.
+    pub fn sfrom<'tcx, S>(s: &S, def_id: RDefId, from: ty::GenericArgsRef<'tcx>) -> Self
+    where
+        S: UnderOwnerState<'tcx>,
+    {
+        let tcx = s.base().tcx;
+        let closure = from.as_closure();
+        let item = translate_item_ref(s, def_id, from);
+        let sig = closure_sig(tcx, closure);
+        ClosureTy {
+            item,
+            kind: closure.kind().sinto(s),
+            tupled_args_ty: tupled_args_ty(s, sig).sinto(s),
+            fn_sig: sig.sinto(s),
+            upvar_tys: closure.upvar_tys().sinto(s),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct AdtTy {
+    pub item: ItemRef,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ForeignTy {
+    pub item: ItemRef,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ArrayTy {
+    pub item: ItemRef,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct PatTy {
+    pub ty: Ty,
+    pub pat: Pattern,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct SliceTy {
+    pub item: ItemRef,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TupleTy {
+    pub item: ItemRef,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct StrTy {
+    pub item: ItemRef,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct RawPtrTy {
+    pub ty: Ty,
+    pub mutbl: Mutability,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct RefTy {
+    pub region: Region,
+    pub ty: Ty,
+    pub mutbl: Mutability,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct DynTraitTy {
+    pub binder: DynBinder<()>,
+    pub region: Region,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct CoroutineTy {
+    pub item: ItemRef,
 }
 
 /// Reflects [`ty::UserSelfTy`]
@@ -555,61 +715,6 @@ pub fn closure_sig<'tcx>(
     let unbound_sig = sig.skip_binder().fold_with(&mut visitor);
     let bound_vars = tcx.mk_bound_variable_kinds(&visitor.bound_vars);
     ty::Binder::bind_with_vars(unbound_sig, bound_vars)
-}
-
-/// Reflects [`ty::ClosureArgs`]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-
-pub struct ClosureArgs {
-    pub item: ItemRef,
-    /// The base kind of this closure. The kinds are ordered by inclusion: any `Fn` works as an
-    /// `FnMut`, and any `FnMut` works as an `FnOnce`.
-    pub kind: ClosureKind,
-    /// The signature of the function that the closure implements, e.g. `fn(A, B, C) -> D`.
-    pub fn_sig: PolyFnSig,
-    /// The arguments of the closure, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
-    /// Binds the same variables as `fn_sig`.
-    pub tupled_args_ty: Binder<Ty>,
-    /// The set of captured variables. Together they form the state of the closure.
-    pub upvar_tys: Vec<Ty>,
-}
-
-impl ClosureArgs {
-    /// Iterate over the upvars that are borrows with erased regions. These may require allocating
-    /// fresh regions.
-    pub fn iter_upvar_borrows(&self) -> impl Iterator<Item = &Ty> {
-        self.upvar_tys.iter().filter(|ty| {
-            matches!(
-                ty.kind(),
-                TyKind::Ref(
-                    Region {
-                        kind: RegionKind::ReErased
-                    },
-                    ..
-                )
-            )
-        })
-    }
-}
-
-impl ClosureArgs {
-    // Manual implementation because we need the `def_id` of the closure.
-    pub fn sfrom<'tcx, S>(s: &S, def_id: RDefId, from: ty::GenericArgsRef<'tcx>) -> Self
-    where
-        S: UnderOwnerState<'tcx>,
-    {
-        let tcx = s.base().tcx;
-        let closure = from.as_closure();
-        let item = translate_item_ref(s, def_id, from);
-        let sig = closure_sig(tcx, closure);
-        ClosureArgs {
-            item,
-            kind: closure.kind().sinto(s),
-            tupled_args_ty: tupled_args_ty(s, sig).sinto(s),
-            fn_sig: sig.sinto(s),
-            upvar_tys: closure.upvar_tys().sinto(s),
-        }
-    }
 }
 
 /// Reflects [`ty::ClosureKind`]

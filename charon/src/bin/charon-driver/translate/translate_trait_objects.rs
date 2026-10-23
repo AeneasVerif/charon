@@ -647,9 +647,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                     hax::TyKind::Closure(args) => {
                                         (&args.item, TransImplSource::Callable(kind))
                                     }
-                                    hax::TyKind::FnDef { item, .. }
-                                    | hax::TyKind::FnPtr(_, item) => {
-                                        (item, TransImplSource::Callable(kind))
+                                    hax::TyKind::FnDef(fn_def) => {
+                                        (&fn_def.item, TransImplSource::Callable(kind))
+                                    }
+                                    hax::TyKind::FnPtr(fn_ptr) => {
+                                        (&fn_ptr.item, TransImplSource::Callable(kind))
                                     }
                                     _ => unreachable!("builtin `Fn*` impl for {self_ty:?}"),
                                 }

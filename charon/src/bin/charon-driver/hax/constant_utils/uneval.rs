@@ -135,7 +135,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, FnPtrTarget> for rustc_const_uneva
                 FnPtrTarget::Fn(translate_item_ref(s, instance.def_id(), instance.args))
             }
             FnTarget::ClosureAsFn(def_id, args) => {
-                FnPtrTarget::ClosureAsFn(ClosureArgs::sfrom(s, def_id, args))
+                FnPtrTarget::ClosureAsFn(ClosureTy::sfrom(s, def_id, args))
             }
         }
     }

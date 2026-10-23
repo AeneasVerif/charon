@@ -136,7 +136,7 @@ pub enum FnPtrTarget {
     /// The function of an item.
     Fn(ItemRef),
     /// A stateless closure coerced to a function pointer.
-    ClosureAsFn(ClosureArgs),
+    ClosureAsFn(ClosureTy),
 }
 
 /// What a pointer byte in an evaluated constant points to.
