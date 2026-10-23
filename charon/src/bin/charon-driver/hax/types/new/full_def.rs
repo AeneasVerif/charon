@@ -1,12 +1,12 @@
 use crate::hax::prelude::*;
 
-use rustc_attr_ir::LangItem;
 use rustc_hir as hir;
+use rustc_hir::attrs::LangItem;
 use rustc_hir::def::DefKind as RDefKind;
 use rustc_middle::mir;
 use rustc_middle::ty;
+use rustc_middle::ty::Interner;
 use rustc_span::def_id::DefId as RDefId;
-use rustc_type_ir::Interner;
 use std::cell::OnceCell;
 use std::sync::Arc;
 

@@ -12,8 +12,7 @@
 
 use super::translate_ctx::TranslateCtx;
 use charon_lib::ast::from_rustc::{self, FromRustcError};
-use rustc_ast::attr::version::*;
-use rustc_attr_ir::lang_items::*;
+use rustc_hir::attrs::lang_items::*;
 use rustc_hir::attrs::*;
 use rustc_span::symbol::*;
 use rustc_target::spec::*;

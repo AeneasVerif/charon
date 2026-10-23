@@ -107,7 +107,7 @@ pub enum BuiltinTraitData {
     Other(SolverTraitLangItem),
 }
 
-sinto_reexport!(rustc_type_ir::lang_items::SolverTraitLangItem);
+sinto_reexport!(rustc_middle::ty::lang_items::SolverTraitLangItem);
 
 #[derive(AdtInto)]
 #[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::DestructData<'tcx>, state: S as s)]

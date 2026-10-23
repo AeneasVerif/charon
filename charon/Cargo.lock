@@ -257,7 +257,7 @@ dependencies = [
 
 [[package]]
 name = "charon"
-version = "0.1.296"
+version = "0.1.297"
 dependencies = [
  "annotate-snippets",
  "anstream",
@@ -292,6 +292,7 @@ dependencies = [
  "regex",
  "reqwest",
  "rustc-hash",
+ "rustc_apfloat",
  "rustc_const_uneval",
  "rustc_trait_elaboration",
  "rustc_version",
@@ -1977,6 +1978,16 @@ name = "rustc-hash"
 version = "2.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94300abf3f1ae2e2b8ffb7b58043de3d399c73fa6f4b73826402a5c457614dbe"
+
+[[package]]
+name = "rustc_apfloat"
+version = "0.2.3+llvm-462a31f5a5ab"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "486c2179b4796f65bfe2ee33679acf0927ac83ecf583ad6c91c3b4570911b9ad"
+dependencies = [
+ "bitflags",
+ "smallvec",
+]
 
 [[package]]
 name = "rustc_const_uneval"

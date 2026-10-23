@@ -573,7 +573,8 @@ pub fn drop_glue_shim<'tcx>(
     instantiate: Option<ty::GenericArgsRef<'tcx>>,
 ) -> mir::Body<'tcx> {
     let tcx = s.base().tcx;
-    let drop_glue = tcx.require_lang_item(rustc_attr_ir::LangItem::DropGlue, rustc_span::DUMMY_SP);
+    let drop_glue =
+        tcx.require_lang_item(rustc_hir::attrs::LangItem::DropGlue, rustc_span::DUMMY_SP);
     let ty = inst_binder(tcx, s.typing_env(), instantiate, def_id.type_of(s));
     let mut body = rustc_mir_transform::build_drop_shim(tcx, drop_glue, Some(ty), s.typing_env());
     // Set the mir phase so that charon knows the contained drops are precise.

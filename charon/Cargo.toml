@@ -27,7 +27,7 @@ tracing = { version = "0.1", features = ["max_level_trace"] }
 
 [package]
 name = "charon"
-version = "0.1.296"
+version = "0.1.297"
 authors.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -121,6 +121,7 @@ tracing.workspace = true
 ustr = { version = "1.1.0", features = ["serde"] }
 wait-timeout = "0.2.0"
 which = "7.0"
+rustc_apfloat = "0.2.3"
 
 [features]
 default = ["rustc", "minirust"]

@@ -42,15 +42,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 };
                 ConstantExprKind::Integer(scalar)
             }
-            hax::ConstantLiteral::Float(value, float_type) => {
+            hax::ConstantLiteral::Float(value, bits, float_type) => {
                 let value = value.clone();
+                let bits = *bits;
                 let ty = match float_type {
                     hax::FloatTy::F16 => FloatTy::F16,
                     hax::FloatTy::F32 => FloatTy::F32,
                     hax::FloatTy::F64 => FloatTy::F64,
                     hax::FloatTy::F128 => FloatTy::F128,
                 };
-                ConstantExprKind::Float(FloatValue { value, ty })
+                ConstantExprKind::Float(FloatValue { value, bits, ty })
             }
             hax::ConstantLiteral::PtrNoProvenance(v) => {
                 return Ok(ConstantExprKind::PtrNoProvenance(*v));

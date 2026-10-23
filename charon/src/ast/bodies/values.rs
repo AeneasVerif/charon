@@ -211,6 +211,9 @@ pub enum IntegerValue {
 pub struct FloatValue {
     #[cfg_attr(feature = "charon_on_charon", charon::rename("float_value"))]
     pub value: String,
+    #[cfg_attr(feature = "charon_on_charon", charon::rename("float_bits"))]
+    #[serde(with = "scalar_value_ser_de")]
+    pub bits: u128,
     #[cfg_attr(feature = "charon_on_charon", charon::rename("float_ty"))]
     pub ty: FloatTy,
 }
