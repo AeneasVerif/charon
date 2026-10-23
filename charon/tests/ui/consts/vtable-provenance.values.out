@@ -31,7 +31,8 @@ pub opaque type MaybeUninit<T>
 where
     TraitClause0: (T: Sized),
 
-static test_crate::{promoted_const}: MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}] = RawMemory(0x00)
+// Full name: test_crate::{promoted_const}
+static {promoted_const}: MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}] = RawMemory(0x00)
 
 struct test_crate::Trait::{vtable} {
   size: usize,
@@ -89,40 +90,10 @@ where
 }
 
 // Full name: test_crate::DYN
-fn DYN() -> &'static (dyn Trait + Sync + 'static)
-{
-    let _0: &'3 (dyn Trait + Sync + '4); // return
-    let _1: &'6 u8; // anonymous local
-    let _2: &'7 u8; // anonymous local
-    let _3: &'8 u8; // anonymous local
-    let _4: &'9 u8; // anonymous local
-    let _5: &'12 u8; // anonymous local
-    let _6: u8; // anonymous local
-
-    storage_live(_4)
-    storage_live(_5)
-    storage_live(_6)
-    _6 = const 0u8
-    _5 = &_6
-    _4 = move _5
-    storage_live(_0)
-    storage_live(_3)
-    storage_live(_1)
-    storage_live(_2)
-    _3 = move _4
-    _2 = &(*_3)
-    _1 = &(*_2)
-    _0 = unsize_cast<&'10 (dyn Trait + Sync + '11), &impl_Trait_for_u8::{vtable}>(move _1)
-    storage_dead(_2)
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::DYN
-const DYN: &'static (dyn Trait + Sync + 'static) = DYN()
+const DYN: &'static (dyn Trait + Sync + 'static) = unsize_cast<&'_ (dyn Trait + Sync), &impl_Trait_for_u8::{vtable}>(cast<*const u8>(&raw const {promoted_const}))
 
 // Full name: test_crate::DYN_REF
-static DYN_REF: &'static (dyn Trait + Sync + 'static) = unsize_cast<&'_ (dyn Trait + Sync), &impl_Trait_for_u8::{vtable}>(cast<*const u8>(&raw const test_crate::{promoted_const}))
+static DYN_REF: &'static (dyn Trait + Sync + 'static) = unsize_cast<&'_ (dyn Trait + Sync), &impl_Trait_for_u8::{vtable}>(cast<*const u8>(&raw const {promoted_const}))
 
 // Full name: test_crate::VTABLE
 static VTABLE: Sy<*const u8>[{built_in impl Sized for *const u8}] = Sy { _0: cast<*const u8>(&raw const impl_Trait_for_u8::{vtable}) }

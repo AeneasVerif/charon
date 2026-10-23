@@ -19,6 +19,12 @@ pub trait Sized<Self>
 #[diagnostic_item("Sync")]
 pub unsafe trait Sync<Self>
 
+// Full name: core::mem::maybe_uninit::MaybeUninit
+#[lang_item(MaybeUninit)]
+pub opaque type MaybeUninit<T>
+where
+    TraitClause0: (T: Sized),
+
 struct () {}
 
 // Full name: core::num::{usize}::MAX
@@ -31,6 +37,8 @@ where
     TraitClause0: (T: Sized),
 = <opaque>
 
+static test_crate::{promoted_const}: MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}] = RawMemory(0x00)
+
 // Full name: test_crate::Wrapper
 pub struct Wrapper {
   _0: *const [u8],
@@ -41,6 +49,8 @@ unsafe impl "impl_Sync_for_Wrapper" Sync for Wrapper {
     vtable: lazy
 }
 
+const test_crate::HUGE::{promoted_const}: &'_ u8 = cast<&'_ u8>(&raw const test_crate::{promoted_const})
+
 // Full name: test_crate::HUGE
 pub fn HUGE() -> Wrapper
 {
@@ -49,22 +59,13 @@ pub fn HUGE() -> Wrapper
     let _2: *const u8; // anonymous local
     let _3: &'1 u8; // anonymous local
     let _4: &'2 u8; // anonymous local
-    let _5: &'3 u8; // anonymous local
-    let _6: &'4 u8; // anonymous local
-    let _7: u8; // anonymous local
 
-    storage_live(_5)
-    storage_live(_6)
-    storage_live(_7)
-    _7 = const 0u8
-    _6 = &_7
-    _5 = move _6
     storage_live(_0)
     storage_live(_4)
     storage_live(_1)
     storage_live(_2)
     storage_live(_3)
-    _4 = move _5
+    _4 = copy test_crate::HUGE::{promoted_const}
     _3 = &(*_4)
     _2 = &raw const (*_3)
     _1 = slice_from_raw_parts<u8>[{built_in impl Sized for u8}](move _2, copy MAX)

@@ -14,84 +14,28 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
-// Full name: core::ptr::const_ptr::{*const T}::cast
-#[diagnostic_item("const_ptr_cast")]
-pub fn cast<T, U>(_1: *const T) -> *const U
-where
-    TraitClause0: (U: Sized),
-= <opaque>
-
-// Full name: core::ptr::const_ptr::{*const T}::add
-#[track_caller]
-pub unsafe fn add<T>(_1: *const T, _2: usize) -> *const T
+// Full name: core::mem::maybe_uninit::MaybeUninit
+#[lang_item(MaybeUninit)]
+pub opaque type MaybeUninit<T>
 where
     TraitClause0: (T: Sized),
-= <opaque>
 
 struct () {}
 
+// Full name: test_crate::{promoted_const}
+static {promoted_const}: MaybeUninit<[u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}] = RawMemory(0x2a, 0x00, 0x00, 0x00)
+
 // Full name: test_crate::REF
-const REF: &'static u32 = &42u32
+const REF: &'static u32 = cast<&'_ u32>(&raw const {promoted_const})
 
 // Full name: test_crate::ARR
 static ARR: [u32; 3usize] = [10u32, 20u32, 30u32]
 
 // Full name: test_crate::ARR_START
-fn ARR_START() -> *const u32
-{
-    let _0: *const u32; // return
-    let _1: *const [u32; 3usize]; // anonymous local
-
-    storage_live(_0)
-    storage_live(_1)
-    _1 = &raw const ARR
-    _0 = cast<[u32; 3usize], u32>[{built_in impl Sized for u32}](move _1)
-    ↳⚡ unwind_continue
-    storage_dead(_1)
-    return
-}
-
-// Full name: test_crate::ARR_START
-const ARR_START: *const u32 = ARR_START()
+const ARR_START: *const u32 = &raw const ARR[0usize]
 
 // Full name: test_crate::ARR_INDICES
-fn ARR_INDICES() -> [*const u32; 4usize]
-{
-    let _0: [*const u32; 4usize]; // return
-    let _1: [*const u32; 4usize]; // anonymous local
-    let _2: [*const u32; 4usize]; // anonymous local
-    let _3: *const u32; // anonymous local
-    let _4: *const u32; // anonymous local
-    let _5: *const u32; // anonymous local
-    let _6: *const u32; // anonymous local
-
-    storage_live(_1)
-    storage_live(_2)
-    storage_live(_3)
-    _3 = add<u32>[{built_in impl Sized for u32}](const ARR_START, const 0usize)
-    ↳⚡ undefined_behavior
-    storage_live(_4)
-    _4 = add<u32>[{built_in impl Sized for u32}](const ARR_START, const 1usize)
-    ↳⚡ undefined_behavior
-    storage_live(_5)
-    _5 = add<u32>[{built_in impl Sized for u32}](const ARR_START, const 2usize)
-    ↳⚡ undefined_behavior
-    storage_live(_6)
-    _6 = add<u32>[{built_in impl Sized for u32}](const ARR_START, const 3usize)
-    ↳⚡ undefined_behavior
-    _2 = [move _3, move _4, move _5, move _6]
-    storage_dead(_6)
-    storage_dead(_5)
-    storage_dead(_4)
-    storage_dead(_3)
-    _1 = move _2
-    storage_live(_0)
-    _0 = move _1
-    return
-}
-
-// Full name: test_crate::ARR_INDICES
-const ARR_INDICES: [*const u32; 4usize] = ARR_INDICES()
+const ARR_INDICES: [*const u32; 4usize] = [&raw const ARR[0usize], &raw const ARR[1usize], &raw const ARR[2usize], &raw const ARR.offset!(3isize * size_of::<u32>())]
 
 
 
