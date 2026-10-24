@@ -1672,7 +1672,7 @@ impl<'tcx> FullDef<'tcx> {
 
     /// Evaluate the value of a `Const`, `AssocConst` or `Static` item. Returns `None` for other
     /// items, or if the item can't be evaluated (see [`read_const`]).
-    pub fn evaluate<S>(&self, s: &S, mode: ReadMode) -> Option<ConstantExpr<'tcx>>
+    pub fn evaluate<S>(&self, s: &S, mode: ReadMode) -> Option<rustc_const_uneval::Const<'tcx>>
     where
         S: BaseState<'tcx>,
     {

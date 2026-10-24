@@ -133,7 +133,7 @@ pub type TypeOutlivesPredicate<'tcx> = OutlivesPredicate<Ty<'tcx>>;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Term<'tcx> {
     Ty(Ty<'tcx>),
-    Const(ConstantExpr<'tcx>),
+    Const(ty::Const<'tcx>),
 }
 
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Term<'tcx>> for ty::Term<'tcx> {
@@ -141,7 +141,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Term<'tcx>> for ty::Term<'tcx> {
         use ty::TermKind;
         match self.kind() {
             TermKind::Ty(ty) => Term::Ty(ty.sinto(s)),
-            TermKind::Const(c) => Term::Const(c.sinto(s)),
+            TermKind::Const(c) => Term::Const(c),
         }
     }
 }
@@ -192,9 +192,9 @@ pub enum ClauseKind<'tcx> {
     RegionOutlives(RegionOutlivesPredicate),
     TypeOutlives(TypeOutlivesPredicate<'tcx>),
     Projection(ProjectionPredicate<'tcx>),
-    ConstArgHasType(ConstantExpr<'tcx>, Ty<'tcx>),
+    ConstArgHasType(ty::Const<'tcx>, Ty<'tcx>),
     WellFormed(Term<'tcx>),
-    ConstEvaluatable(ConstantExpr<'tcx>),
+    ConstEvaluatable(ty::Const<'tcx>),
     HostEffect(HostEffectClause),
     UnstableFeature(Symbol),
 }
@@ -313,7 +313,7 @@ pub enum PredicateKind<'tcx> {
     DynCompatible(DefId),
     Subtype(SubtypePredicate<'tcx>),
     Coerce(CoercePredicate<'tcx>),
-    ConstEquate(ConstantExpr<'tcx>, ConstantExpr<'tcx>),
+    ConstEquate(ty::Const<'tcx>, ty::Const<'tcx>),
     Ambiguous,
     NormalizesTo(NormalizesTo),
 }

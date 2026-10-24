@@ -185,7 +185,14 @@ pub struct Region {
 pub enum GenericArg<'tcx> {
     Lifetime(Region),
     Type(Ty<'tcx>),
-    Const(ConstantExpr<'tcx>),
+    Const(ty::Const<'tcx>),
+}
+
+/// We keep type-level constants as-is; charon translates them directly.
+impl<'tcx, S> SInto<S, ty::Const<'tcx>> for ty::Const<'tcx> {
+    fn sinto(&self, _s: &S) -> ty::Const<'tcx> {
+        *self
+    }
 }
 
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, GenericArg<'tcx>> for ty::GenericArg<'tcx> {

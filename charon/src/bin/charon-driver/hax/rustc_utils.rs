@@ -331,21 +331,6 @@ pub(crate) fn can_have_generics<'tcx>(tcx: ty::TyCtxt<'tcx>, def_id: RDefId) -> 
     )
 }
 
-pub(crate) fn get_variant_kind<'s, S: UnderOwnerState<'s>>(
-    adt_def: &ty::AdtDef<'s>,
-    variant_index: rustc_abi::VariantIdx,
-    _s: &S,
-) -> VariantKind {
-    if adt_def.is_struct() {
-        VariantKind::Struct
-    } else if adt_def.is_union() {
-        VariantKind::Union
-    } else {
-        let index = variant_index;
-        VariantKind::Enum { index }
-    }
-}
-
 /// Gets the children of a module.
 pub fn get_mod_children<'tcx>(
     tcx: ty::TyCtxt<'tcx>,

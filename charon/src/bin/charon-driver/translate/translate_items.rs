@@ -40,7 +40,8 @@ impl<'tcx> TranslateCtx<'tcx> {
             let res = {
                 // Stopgap measure because there are still many panics in charon and hax.
                 let mut ctx = std::panic::AssertUnwindSafe(&mut ctx);
-                std::panic::catch_unwind(move || ctx.translate_item_aux(item_src, trans_id))
+                let item_src = std::panic::AssertUnwindSafe(item_src);
+                std::panic::catch_unwind(move || ctx.translate_item_aux(*item_src, trans_id))
             };
             match res {
                 Ok(Ok(())) => return,

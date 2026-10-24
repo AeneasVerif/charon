@@ -299,7 +299,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<UnsizingMetadata, Error> {
         Ok(match meta {
             hax::UnsizingMetadata::Length(len) => {
-                let len = self.translate_constant_expr(span, len)?;
+                let len = self.translate_ty_constant_expr(span, len)?;
                 UnsizingMetadata::Length(len)
             }
             hax::UnsizingMetadata::DirectVTable(trait_proof) => {
@@ -1227,6 +1227,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                             return Ok(Operand::Move(local));
                         }
                         Operand::Const(constant)
+                    }
+                    hax::ConstOperandKind::Ty(c) => {
+                        Operand::Const(self.translate_ty_constant_expr(span, c)?)
                     }
                     hax::ConstOperandKind::Promoted(item) => {
                         // A promoted constant that could not be evaluated.

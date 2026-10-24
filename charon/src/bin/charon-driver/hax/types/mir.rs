@@ -103,8 +103,10 @@ pub struct ConstOperand<'tcx> {
 
 #[derive(Debug, Clone)]
 pub enum ConstOperandKind<'tcx> {
-    /// An evaluated constant represented as an expression.
-    Value(ConstantExpr<'tcx>),
+    /// An evaluated constant.
+    Value(rustc_const_uneval::Const<'tcx>),
+    /// A type-level constant.
+    Ty(ty::Const<'tcx>),
     /// Part of a MIR body that was promoted to be a constant. May not be evaluatable because of
     /// generics.
     /// It's a reference to the `DefId` of the constant. Note that rustc does not give a `DefId` to
@@ -129,19 +131,20 @@ fn translate_mir_const<'tcx, S: UnderOwnerState<'tcx>>(
     span: rustc_span::Span,
     konst: mir::Const<'tcx>,
 ) -> ConstOperandKind<'tcx> {
-    use ConstOperandKind::{Promoted, Value};
+    use ConstOperandKind::*;
     use rustc_middle::mir::Const;
     let tcx = s.base().tcx;
     match konst {
         Const::Val(const_value, ty) => {
             let src = ConstSource::Value(const_value, ty);
-            Value(
-                read_const(s, span, src, ReadMode::Structured).unwrap_or_else(|| {
-                    ConstantExpr::new(ConstantExprKind::Todo("ConstEvalVal".into()), ty.sinto(s))
-                }),
-            )
+            Value(read_const(s, span, src, ReadMode::Structured).unwrap_or(
+                rustc_const_uneval::Const {
+                    ty,
+                    kind: rustc_const_uneval::ConstKind::Unsupported("ConstEvalVal"),
+                },
+            ))
         }
-        Const::Ty(_ty, c) => Value(c.sinto(s)),
+        Const::Ty(_ty, c) => Ty(c),
         Const::Unevaluated(ucv, _) => {
             match ucv.promoted {
                 Some(promoted) => {
@@ -154,9 +157,10 @@ fn translate_mir_const<'tcx, S: UnderOwnerState<'tcx>>(
                     let ucv = ucv.shrink(tcx);
                     // We go through a `ty::Const`. This loses info that `ValTree`s don't capture
                     // such as data in padding bytes.
-                    let val =
-                        ty::Const::new(tcx, ty::ConstKind::Alias(ty::IsRigid::No, ucv)).sinto(s);
-                    Value(val)
+                    Ty(ty::Const::new(
+                        tcx,
+                        ty::ConstKind::Alias(ty::IsRigid::No, ucv),
+                    ))
                 }
             }
         }
