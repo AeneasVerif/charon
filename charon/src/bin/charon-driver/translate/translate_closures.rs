@@ -106,8 +106,6 @@ struct Callable<'tcx, 'a> {
     kind: CallableKind,
     item: &'a hax::ItemRef<'tcx>,
     sig: &'a hax::PolyFnSig<'tcx>,
-    /// The arguments, tupled as the `Fn*` traits take them. Binds the same variables as `sig`.
-    tupled_args_ty: &'a hax::Binder<hax::Ty<'tcx>>,
 }
 
 impl<'tcx, 'a> Callable<'tcx, 'a> {
@@ -115,13 +113,11 @@ impl<'tcx, 'a> Callable<'tcx, 'a> {
         s: &impl hax::BaseState<'tcx>,
         closure: &'a hax::ClosureTy<'tcx>,
         sig: &'a hax::PolyFnSig<'tcx>,
-        tupled_args_ty: &'a hax::Binder<hax::Ty<'tcx>>,
     ) -> Self {
         Self {
             item: &closure.item,
             kind: CallableKind::Closure(translate_closure_kind(&closure.kind(s))),
             sig,
-            tupled_args_ty,
         }
     }
 
@@ -133,7 +129,6 @@ impl<'tcx, 'a> Callable<'tcx, 'a> {
             item: def.this(),
             kind: CallableKind::Closure(translate_closure_kind(closure.kind())),
             sig: closure.sig(),
-            tupled_args_ty: closure.tupled_args_ty(),
         }
     }
 
@@ -147,12 +142,6 @@ impl<'tcx, 'a> Callable<'tcx, 'a> {
 
     fn sig(self) -> &'a hax::PolyFnSig<'tcx> {
         self.sig
-    }
-
-    /// The arguments, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`. This is under the
-    /// same binder as `sig`.
-    fn tupled_args_ty(self) -> &'a hax::Ty<'tcx> {
-        self.tupled_args_ty.hax_skip_binder_ref()
     }
 }
 
@@ -182,7 +171,6 @@ impl<'a, 'tcx> CallableFnImpls<'a, 'tcx> {
                     kind: CallableKind::FnDef,
                     item: def.this(),
                     sig,
-                    tupled_args_ty: &impls.tupled_args_ty,
                 },
                 vimpl: vimpl_from_impls(impls),
             })
@@ -203,7 +191,6 @@ impl<'a, 'tcx> CallableFnImpls<'a, 'tcx> {
                         kind: CallableKind::FnPtr,
                         item: def.this(),
                         sig,
-                        tupled_args_ty: &impls.tupled_args_ty,
                     },
                     vimpl: vimpl_from_impls(impls),
                 })
@@ -376,8 +363,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<RegionBinder<FunDeclRef>, Error> {
         let kind = TransItemSourceKind::ClosureAsFnCast;
         let sig = closure.fn_sig(self.hax_state());
-        let tupled_args_ty = closure.tupled_args_ty(self.hax_state());
-        let callable = Callable::for_closure(self.hax_state(), closure, &sig, &tupled_args_ty);
+        let callable = Callable::for_closure(self.hax_state(), closure, &sig);
         let bound_dref = self.translate_callable_bound_ref_with_late_bound(span, callable, kind)?;
         Ok(bound_dref.map(|dref| dref.try_into().unwrap()))
     }
@@ -547,7 +533,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
 
         let tupled_args_ty = self
-            .translate_ty(span, callable.tupled_args_ty())?
+            .translate_ty(span, &callable.sig().hax_skip_binder_ref().tupled_inputs)?
             .move_under_binder();
         fun_sig.inputs = vec![state_ty, tupled_args_ty];
 
@@ -1001,7 +987,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 .map(|(i, ty)| builder.new_var(Some(format!("arg{}", i + 1)), ty.clone()))
                 .collect();
             let args_tupled_ty =
-                self.translate_ty(span, closure.tupled_args_ty().hax_skip_binder_ref())?;
+                self.translate_ty(span, &closure.sig().hax_skip_binder_ref().tupled_inputs)?;
             let args_tupled = builder.new_var(Some("args".to_string()), args_tupled_ty.clone());
             let state = builder.new_var(Some("state".to_string()), state_ty.clone());
 

@@ -750,9 +750,6 @@ fn assoc_items_of<'tcx, S: UnderOwnerState<'tcx>>(
 /// The virtual `Fn*` impls of a callable type.
 #[derive(Debug, Clone)]
 pub struct FnTraitImpls<'tcx> {
-    /// The arguments, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
-    /// Binds the same variables as the callable's `sig`.
-    pub tupled_args_ty: Binder<Ty<'tcx>>,
     /// Info required to construct a virtual `FnOnce` impl for this callable.
     pub fn_once_impl: Box<VirtualTraitImpl<'tcx>>,
     /// Info required to construct a virtual `FnMut` impl, if the callable implements it.
@@ -784,7 +781,6 @@ fn callable_trait_impls<'tcx, S: UnderOwnerState<'tcx>>(
     let fn_mut_tref = ty::TraitRef::new(tcx, fn_mut_trait, trait_args);
     let fn_tref = ty::TraitRef::new(tcx, fn_trait, trait_args);
     Some(FnTraitImpls {
-        tupled_args_ty: tupled_args_ty(s, fn_sig).sinto(s),
         fn_once_impl: virtual_impl_for(s, fn_once_tref),
         fn_mut_impl: Some(virtual_impl_for(s, fn_mut_tref)),
         fn_impl: Some(virtual_impl_for(s, fn_tref)),
@@ -938,8 +934,6 @@ pub struct Closure<'tcx> {
     /// uses internally for inference on closures.
     param_env: ParamEnv<'tcx>,
     sig: PolyFnSig<'tcx>,
-    /// The arguments, tupled as the `Fn*` traits take them. Binds the same variables as `sig`.
-    tupled_args_ty: Binder<Ty<'tcx>>,
     /// The captured variables, which together form the closure's state.
     upvar_tys: Vec<Ty<'tcx>>,
     inline: InlineAttr,
@@ -960,9 +954,6 @@ impl<'tcx> Closure<'tcx> {
     }
     pub fn sig(&self) -> &PolyFnSig<'tcx> {
         &self.sig
-    }
-    pub fn tupled_args_ty(&self) -> &Binder<Ty<'tcx>> {
-        &self.tupled_args_ty
     }
     pub fn upvar_tys(&self) -> &[Ty<'tcx>] {
         &self.upvar_tys
@@ -986,7 +977,6 @@ impl<'tcx> Closure<'tcx> {
     /// The virtual `Fn*` impls supported by this closure.
     pub fn fn_trait_impls(&self, s: &impl BaseState<'tcx>) -> &FnTraitImpls<'tcx> {
         self.fn_trait_impls.get_or_init(|| FnTraitImpls {
-            tupled_args_ty: self.tupled_args_ty.clone(),
             fn_once_impl: self.virtual_impl(s, LangItem::FnOnce, &self.fn_trait_args),
             fn_mut_impl: matches!(self.kind, ClosureKind::FnMut | ClosureKind::Fn)
                 .then(|| self.virtual_impl(s, LangItem::FnMut, &self.fn_trait_args)),
@@ -1406,7 +1396,7 @@ where
             };
             let closure = closure_args.as_closure();
             let sig = closure_sig(tcx, closure);
-            let tupled_args_ty = tupled_args_ty(s, sig);
+            let tupled_args_ty = sig.map_bound(|sig| ty::Ty::new_tup(tcx, sig.inputs()));
             let input_ty = tcx.liberate_late_bound_regions(def_id, tupled_args_ty);
             FullDefKind::Closure(Closure {
                 def_id: hax_def_id.clone(),
@@ -1415,7 +1405,6 @@ where
                 param_env: get_param_env(s, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 sig: sig.sinto(s),
-                tupled_args_ty: tupled_args_ty.sinto(s),
                 upvar_tys: closure.upvar_tys().sinto(s),
                 fn_trait_impls: Default::default(),
                 destruct_impl: Default::default(),

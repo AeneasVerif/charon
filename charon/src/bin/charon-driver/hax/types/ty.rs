@@ -225,15 +225,6 @@ impl<'tcx> ClosureTy<'tcx> {
         closure_sig(s.tcx(), args.as_closure()).sinto(s)
     }
 
-    /// The arguments, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
-    /// Binds the same variables as `fn_sig()`.
-    pub fn tupled_args_ty(&self, s: &impl BaseState<'tcx>) -> Binder<Ty<'tcx>> {
-        let s = &s.with_hax_owner(&self.item.def_id);
-        let args = self.item.rustc_args(s);
-        let sig = closure_sig(s.tcx(), args.as_closure());
-        tupled_args_ty(s, sig).sinto(s)
-    }
-
     // Manual implementation because we need the `def_id` of the closure.
     pub fn sfrom<S>(s: &S, def_id: RDefId, from: ty::GenericArgsRef<'tcx>) -> Self
     where
@@ -677,6 +668,9 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
 pub struct TyFnSig<'tcx> {
     #[value(self.inputs().sinto(s))]
     pub inputs: Vec<Ty<'tcx>>,
+    /// The inputs tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
+    #[value(ty::Ty::new_tup(s.base().tcx, self.inputs()).sinto(s))]
+    pub tupled_inputs: Ty<'tcx>,
     #[value(self.output().sinto(s))]
     pub output: Ty<'tcx>,
     #[value(self.c_variadic())]
@@ -689,17 +683,6 @@ pub struct TyFnSig<'tcx> {
 
 /// Reflects [`ty::PolyFnSig`]
 pub type PolyFnSig<'tcx> = Binder<TyFnSig<'tcx>>;
-
-/// The arguments of the given signature, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
-/// The result binds the same variables as the signature it comes from, so that the two agree on
-/// the regions they use.
-pub fn tupled_args_ty<'tcx>(
-    s: &impl UnderOwnerState<'tcx>,
-    sig: ty::PolyFnSig<'tcx>,
-) -> ty::Binder<'tcx, ty::Ty<'tcx>> {
-    let tcx = s.base().tcx;
-    sig.map_bound(|sig| ty::Ty::new_tup(tcx, sig.inputs()))
-}
 
 /// Retrieve a closure's signature, recovering the regions that rustc erased as fresh bound
 /// regions.
