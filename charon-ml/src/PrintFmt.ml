@@ -476,6 +476,7 @@ and pp_provenance (env : fmt_env) (fmt : Format.formatter)
   match pv with
   | ProvGlobal gref -> Format.fprintf fmt "&%a" (pp_global_decl_ref env) gref
   | ProvFunction (fn_ptr, _) -> Format.fprintf fmt "&%a" (pp_fn_ptr env) fn_ptr
+  | ProvTypeId ty -> Format.fprintf fmt "&TypeId(%a)" (pp_ty env) ty
   | ProvUnknown -> pp_string fmt "&?"
 
 and pp_byte (env : fmt_env) (fmt : Format.formatter) (cv : byte) : unit =
@@ -647,6 +648,8 @@ and pp_global_place (env : fmt_env) (fmt : Format.formatter) (p : global_place)
   match p.global_place_kind with
   | GlobalPlaceGlobal (ProvGlobal gref) -> pp_global_decl_ref env fmt gref
   | GlobalPlaceGlobal (ProvFunction (fn_ptr, _)) -> pp_fn_ptr env fmt fn_ptr
+  | GlobalPlaceGlobal (ProvTypeId ty) ->
+      Format.fprintf fmt "TypeId(%a)" (pp_ty env) ty
   | GlobalPlaceGlobal ProvUnknown -> pp_string fmt "?"
   | GlobalPlaceValue c -> pp_constant_expr env fmt c
   | GlobalPlaceProjection (subplace, proj) -> (

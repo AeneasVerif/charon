@@ -1,12 +1,10 @@
 //@ revisions=values32,bytes32,values64,bytes64
 //@[values32] charon-args=--consts=values
 //@[values32] rustc-args=--target i686-unknown-linux-gnu
-//@[values32] known-failure
 //@[bytes32] charon-args=--consts=bytes
 //@[bytes32] rustc-args=--target i686-unknown-linux-gnu
 //@[values64] charon-args=--consts=values
 //@[values64] rustc-args=--target x86_64-unknown-linux-gnu
-//@[values64] known-failure
 //@[bytes64] charon-args=--consts=bytes
 //@[bytes64] rustc-args=--target x86_64-unknown-linux-gnu
 

@@ -1148,6 +1148,9 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                         GlobalProvenance::Function(..) => {
                             raise!(span, "MiniRust globals cannot contain function pointers")
                         }
+                        GlobalProvenance::TypeId(_) => {
+                            raise!(span, "MiniRust globals cannot contain type ids")
+                        }
                         GlobalProvenance::Unknown => {
                             raise!(span, "global contains a pointer with unknown provenance")
                         }

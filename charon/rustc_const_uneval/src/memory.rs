@@ -2,6 +2,7 @@
 use crate::*;
 use interpret::GlobalAlloc;
 use rustc_abi::{FieldIdx, Size};
+use rustc_attr_ir::LangItem;
 use rustc_const_eval::const_eval::CompileTimeInterpCx;
 use rustc_const_eval::interpret::{
     FnVal, ImmTy, Immediate, InterpResult, MPlaceTy, OpTy, Projectable, interp_ok,
@@ -71,7 +72,8 @@ impl<'tcx> ConstReader<'tcx> {
                     let (prov, ptr_offset) = ptr.into_raw_parts();
                     let target = self.alloc_target(prov.alloc_id());
                     for i in 0..size.get() {
-                        bytes[offset.bytes_usize() + i as usize] = Byte::Ptr(target, ptr_offset, i);
+                        bytes[offset.bytes_usize() + i as usize] =
+                            self.ptr_byte(target, ptr_offset, i);
                     }
                 }
             };
@@ -133,7 +135,7 @@ impl<'tcx> ConstReader<'tcx> {
                 let pos = prov_range.start + Size::from_bytes(i);
                 if range.start <= pos && pos < range.end() {
                     bytes[(pos - range.start).bytes_usize()] =
-                        Byte::Ptr(target, ptr_offset, first_idx + i as u8);
+                        self.ptr_byte(target, ptr_offset, first_idx + i as u8);
                 }
             }
         }
@@ -160,6 +162,54 @@ impl<'tcx> ConstReader<'tcx> {
         })
     }
 
+    /// The type whose `TypeId` `op` is.
+    fn read_type_id(
+        &self,
+        ecx: &CompileTimeInterpCx<'tcx>,
+        op: &OpTy<'tcx>,
+    ) -> InterpResult<'tcx, Option<Ty<'tcx>>> {
+        let bytes = self.read_raw_bytes(ecx, op)?;
+        if let Some(&Byte::Ptr(AllocTarget::TypeId(ty), ..)) = bytes.first()
+            && bytes.iter().enumerate().all(|(k, &byte)| {
+                matches!(byte, Byte::Ptr(AllocTarget::TypeId(byte_ty), offset, i)
+                    if byte_ty == ty && offset == Size::ZERO && i as usize == k)
+            })
+        {
+            return interp_ok(Some(ty));
+        }
+        interp_ok(None)
+    }
+
+    /// The byte at index `i` of a pointer at `offset` into `target`.
+    ///
+    /// Use this, rather than building a [`Byte::Ptr`] manually, as this does some tricks to
+    /// avoid leaking the hash of `TypeId` targets (which are encoded in the pointer's offset).
+    fn ptr_byte(&self, target: AllocTarget<'tcx>, offset: Size, i: u8) -> Byte<'tcx> {
+        if let AllocTarget::TypeId(ty) = target {
+            let ptr_size = self.tcx.data_layout.pointer_size();
+            let hash = self.type_id_hash(ty);
+            // if nothing matches, we assume chunk 0 and leak the (relative) offset :(
+            let chunk = hash.iter().position(|&h| h == offset.bytes()).unwrap_or(0);
+            let offset = ptr_size.truncate(offset.bytes().wrapping_sub(hash[chunk]).into());
+            let i = chunk as u8 * ptr_size.bytes() as u8 + i;
+            return Byte::Ptr(target, Size::from_bytes(offset), i);
+        }
+        Byte::Ptr(target, offset, i)
+    }
+
+    /// The values of the pointers that make up the `TypeId` of `ty`.
+    fn type_id_hash(&self, ty: Ty<'tcx>) -> Vec<u64> {
+        let dl = &self.tcx.data_layout;
+        let hash = self.tcx.type_id_hash(ty).as_u128();
+        let hash = match dl.endian {
+            rustc_abi::Endian::Little => hash.to_le_bytes(),
+            rustc_abi::Endian::Big => hash.to_be_bytes(),
+        };
+        hash.chunks(dl.pointer_size().bytes_usize())
+            .map(|chunk| interpret::read_target_uint(dl.endian, chunk).unwrap() as u64)
+            .collect()
+    }
+
     /// Read an evaluated operand back as a structured constant.
     pub(crate) fn read_op(
         &self,
@@ -184,6 +234,12 @@ impl<'tcx> ConstReader<'tcx> {
             }
             ty::Adt(adt_def, ..) if adt_def.is_union() => {
                 ConstKind::Memory(self.read_raw_bytes(ecx, &op)?)
+            }
+            ty::Adt(adt_def, ..)
+                if self.tcx.is_lang_item(adt_def.did(), LangItem::TypeId)
+                    && let Some(ty) = self.read_type_id(ecx, &op)? =>
+            {
+                ConstKind::TypeId(ty)
             }
             ty::Adt(adt_def, ..) => {
                 let variant = ecx.read_discriminant(&op)?;

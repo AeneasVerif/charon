@@ -24,16 +24,16 @@ struct () {}
 const N: usize = RawMemory(0x04, 0x00, 0x00, 0x00)
 
 // Full name: test_crate::TID
-static TID: TypeId = RawMemory(&?+688249893[0], &?+688249893[1], &?+688249893[2], &?+688249893[3], &?+657296664[0], &?+657296664[1], &?+657296664[2], &?+657296664[3], &?+1999960239[0], &?+1999960239[1], &?+1999960239[2], &?+1999960239[3], &?+3484508718[0], &?+3484508718[1], &?+3484508718[2], &?+3484508718[3])
+static TID: TypeId = RawMemory(&TypeId(u8)[0], &TypeId(u8)[1], &TypeId(u8)[2], &TypeId(u8)[3], &TypeId(u8)[4], &TypeId(u8)[5], &TypeId(u8)[6], &TypeId(u8)[7], &TypeId(u8)[8], &TypeId(u8)[9], &TypeId(u8)[10], &TypeId(u8)[11], &TypeId(u8)[12], &TypeId(u8)[13], &TypeId(u8)[14], &TypeId(u8)[15])
 
 // Full name: test_crate::TID_SWAPPED
-static TID_SWAPPED: TypeId = RawMemory(&?+657296664[0], &?+657296664[1], &?+657296664[2], &?+657296664[3], &?+688249893[0], &?+688249893[1], &?+688249893[2], &?+688249893[3], &?+1999960239[0], &?+1999960239[1], &?+1999960239[2], &?+1999960239[3], &?+3484508718[0], &?+3484508718[1], &?+3484508718[2], &?+3484508718[3])
+static TID_SWAPPED: TypeId = RawMemory(&TypeId(u8)[4], &TypeId(u8)[5], &TypeId(u8)[6], &TypeId(u8)[7], &TypeId(u8)[0], &TypeId(u8)[1], &TypeId(u8)[2], &TypeId(u8)[3], &TypeId(u8)[8], &TypeId(u8)[9], &TypeId(u8)[10], &TypeId(u8)[11], &TypeId(u8)[12], &TypeId(u8)[13], &TypeId(u8)[14], &TypeId(u8)[15])
 
 // Full name: test_crate::TID_PTRS
-static mut TID_PTRS: [*const u8; 4usize] = RawMemory(&?+688249893[0], &?+688249893[1], &?+688249893[2], &?+688249893[3], &?+657296664[0], &?+657296664[1], &?+657296664[2], &?+657296664[3], &?+1999960239[0], &?+1999960239[1], &?+1999960239[2], &?+1999960239[3], &?+3484508718[0], &?+3484508718[1], &?+3484508718[2], &?+3484508718[3])
+static mut TID_PTRS: [*const u8; 4usize] = RawMemory(&TypeId(u8)[0], &TypeId(u8)[1], &TypeId(u8)[2], &TypeId(u8)[3], &TypeId(u8)[4], &TypeId(u8)[5], &TypeId(u8)[6], &TypeId(u8)[7], &TypeId(u8)[8], &TypeId(u8)[9], &TypeId(u8)[10], &TypeId(u8)[11], &TypeId(u8)[12], &TypeId(u8)[13], &TypeId(u8)[14], &TypeId(u8)[15])
 
 // Full name: test_crate::TID_PTR_OFFSET
-static mut TID_PTR_OFFSET: *const u8 = RawMemory(&?+688249897[0], &?+688249897[1], &?+688249897[2], &?+688249897[3])
+static mut TID_PTR_OFFSET: *const u8 = RawMemory(&TypeId(u8)+4[0], &TypeId(u8)+4[1], &TypeId(u8)+4[2], &TypeId(u8)+4[3])
 
 
 

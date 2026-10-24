@@ -43,6 +43,14 @@ impl<'tcx> ConstReader<'tcx> {
                 kind,
             });
         };
+        // A pointer into the allocation of a `TypeId` can only be expressed as bytes.
+        if let AllocTarget::TypeId(_) = self.alloc_target(alloc_id) {
+            let kind = ConstKind::Memory(self.read_raw_bytes(ecx, op)?);
+            return interp_ok(Const {
+                ty: op.layout.ty,
+                kind,
+            });
+        }
 
         let ty = place.layout.ty;
         let unsize = if place.meta().has_meta() {

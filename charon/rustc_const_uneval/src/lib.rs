@@ -123,6 +123,8 @@ pub enum ConstKind<'tcx> {
     },
     /// A function pointer.
     FnPtr(FnTarget<'tcx>),
+    /// The `TypeId` of this type.
+    TypeId(Ty<'tcx>),
     /// A valid reference or raw pointer; `ty` tells which.
     Ptr {
         target: PtrTarget<'tcx>,
@@ -168,7 +170,7 @@ impl<'tcx> ConstKind<'tcx> {
 #[derive(Debug, Clone)]
 pub enum PtrTarget<'tcx> {
     /// A place inside a global (anything with provenance): `projections` applied to the allocation
-    /// of `target`, whose type is `ty`. A function has no contents, so its type is `()`.
+    /// of `target`, whose type is `ty`. Allocations without contents have type `()`.
     Global {
         target: AllocTarget<'tcx>,
         ty: Ty<'tcx>,

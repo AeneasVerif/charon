@@ -228,6 +228,10 @@ pub enum GlobalProvenance {
     Global(GlobalDeclRef),
     /// A function, with the type of function pointers to it.
     Function(FnPtr, Ty),
+    /// The allocation backing the `TypeId` of this type. Note that `TypeId`s always have 16 bytes
+    /// worth of provenance, regardless of the platform's pointer size, so [`Byte::Provenance`]'s byte index can
+    /// go up to 16! In other words, the bytes of a full `TypeId` are `Provenance(TypeId(ty), 0, 0..16)`.
+    TypeId(Ty),
     Unknown,
 }
 
