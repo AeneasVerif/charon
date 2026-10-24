@@ -933,12 +933,11 @@ pub struct Closure<'tcx> {
     def_id: DefId,
     /// `[closure_ty, tupled_args_ty]`: the args of the `Fn*` traits for this closure.
     fn_trait_args: [ty::Ty<'tcx>; 2],
-    kind: ty::ClosureKind,
+    kind: ClosureKind,
     /// This param env is empty because the (early-bound) generics of a closure are the same as
     /// those of the item in which it is defined. We hide the special weird generics that rustc
     /// uses internally for inference on closures.
     param_env: ParamEnv<'tcx>,
-    args: ClosureTy<'tcx>,
     sig: PolyFnSig<'tcx>,
     /// The arguments, tupled as the `Fn*` traits take them. Binds the same variables as `sig`.
     tupled_args_ty: Binder<Ty<'tcx>>,
@@ -959,8 +958,8 @@ impl<'tcx> Closure<'tcx> {
     pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
     }
-    pub fn args(&self) -> &ClosureTy<'tcx> {
-        &self.args
+    pub fn kind(&self) -> &ClosureKind {
+        &self.kind
     }
     pub fn sig(&self) -> &PolyFnSig<'tcx> {
         &self.sig
@@ -996,7 +995,7 @@ impl<'tcx> Closure<'tcx> {
     pub fn fn_mut_impl(&self, s: &impl BaseState<'tcx>) -> Option<&VirtualTraitImpl<'tcx>> {
         self.fn_mut_impl
             .get_or_init(|| {
-                matches!(self.kind, ty::ClosureKind::FnMut | ty::ClosureKind::Fn)
+                matches!(self.kind, ClosureKind::FnMut | ClosureKind::Fn)
                     .then(|| self.virtual_impl(s, LangItem::FnMut, &self.fn_trait_args))
             })
             .as_deref()
@@ -1005,7 +1004,7 @@ impl<'tcx> Closure<'tcx> {
     pub fn fn_impl(&self, s: &impl BaseState<'tcx>) -> Option<&VirtualTraitImpl<'tcx>> {
         self.fn_impl
             .get_or_init(|| {
-                matches!(self.kind, ty::ClosureKind::Fn)
+                matches!(self.kind, ClosureKind::Fn)
                     .then(|| self.virtual_impl(s, LangItem::Fn, &self.fn_trait_args))
             })
             .as_deref()
@@ -1427,10 +1426,9 @@ where
             FullDefKind::Closure(Closure {
                 def_id: hax_def_id.clone(),
                 fn_trait_args: [closure_ty, input_ty],
-                kind: closure.kind(),
+                kind: closure.kind().sinto(s),
                 param_env: get_param_env(s, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
-                args: ClosureTy::sfrom(s, def_id, closure_args),
                 sig: sig.sinto(s),
                 tupled_args_ty: tupled_args_ty.sinto(s),
                 upvar_tys: closure.upvar_tys().sinto(s),

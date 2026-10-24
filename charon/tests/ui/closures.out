@@ -1141,12 +1141,12 @@ where
     let _0: &'_1 T; // return
     let state: &'_2 mut test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1]; // arg #1
     let args: (&'_1 T,); // arg #2
-    let _3: &'1 test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1]; // anonymous local
+    let _3: &'0 test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &(*state)
-    _0 = {impl Fn<(&'_1 T,), &'_1 T> for test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '7, T>[TraitClause0, TraitClause1](move _3, move args)
+    _0 = {impl Fn<(&'_1 T,), &'_1 T> for test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '2, T>[TraitClause0, TraitClause1](move _3, move args)
     ↳⚡ storage_dead(_3)
         storage_dead(args)
         storage_dead(state)

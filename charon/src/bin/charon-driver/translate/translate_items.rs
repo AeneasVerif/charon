@@ -455,8 +455,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let span = item_meta.span;
 
         // Get the kind of the type decl.
-        let src = if let hax::FullDefKind::Closure(c) = def.kind() {
-            let info = self.translate_closure_info(span, c)?;
+        let src = if let hax::FullDefKind::Closure(_) = def.kind() {
+            let info = self.translate_closure_info(span, def)?;
             TypeSource::Closure { info }
         } else if let Some(builtin) = self.recognize_builtin_adt(def.this()) {
             TypeSource::Builtin(builtin)
@@ -474,7 +474,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 self.translate_ty(span, a.ty()).map(TypeDeclKind::Alias)
             }
             hax::FullDefKind::Adt(_) => self.translate_adt_def(trans_id, span, &item_meta, def),
-            hax::FullDefKind::Closure(c) => self.translate_closure_adt(span, c.args()),
+            hax::FullDefKind::Closure(_) => self.translate_closure_adt(span),
             _ => panic!("Unexpected item when translating types: {def:?}"),
         };
 

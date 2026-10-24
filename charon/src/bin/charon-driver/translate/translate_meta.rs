@@ -643,7 +643,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             let kind = match target_def.kind() {
                 // Point at the method that contains the closure code.
                 hax::FullDefKind::Closure(c) => TransItemSourceKind::CallableMethod(
-                    super::translate_closures::translate_closure_kind(&c.args().kind),
+                    super::translate_closures::translate_closure_kind(c.kind()),
                 ),
                 _ => self
                     .base_kind_for_item(&target_def_id)
