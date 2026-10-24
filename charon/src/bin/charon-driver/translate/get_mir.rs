@@ -15,7 +15,7 @@ use super::translate_ctx::ItemTransCtx;
 impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn get_mir(
         &mut self,
-        item_ref: &hax::ItemRef,
+        item_ref: &hax::ItemRef<'tcx>,
         span: Span,
     ) -> Result<Option<mir::Body<'tcx>>, Error> {
         let _guard = charon_lib::timing::scope("get-mir");
@@ -32,7 +32,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         }
     }
 
-    fn get_mir_inner(&mut self, item_ref: &hax::ItemRef) -> Result<Option<mir::Body<'tcx>>, Error> {
+    fn get_mir_inner(
+        &mut self,
+        item_ref: &hax::ItemRef<'tcx>,
+    ) -> Result<Option<mir::Body<'tcx>>, Error> {
         let tcx = self.t_ctx.tcx;
         let mir_level = self.t_ctx.options.mir_level;
         let def_id = &item_ref.def_id;

@@ -67,7 +67,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// regions...).
     pub(crate) fn register_predicates(
         &mut self,
-        preds: &hax::GenericPredicates,
+        preds: &hax::GenericPredicates<'tcx>,
         origin: PredicateOrigin,
     ) -> Result<(), Error> {
         self.translate_predicates(preds, origin, None)?;
@@ -78,7 +78,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// generics (type parameters, regions...).
     pub(crate) fn translate_predicates(
         &mut self,
-        preds: &hax::GenericPredicates,
+        preds: &hax::GenericPredicates<'tcx>,
         origin: PredicateOrigin,
         // Either put clauses there or in the innermost binder.
         mut trait_clauses: Option<&mut IndexVec<TraitClauseId, TraitParam>>,
@@ -116,7 +116,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_poly_trait_ref(
         &mut self,
         span: Span,
-        bound_trait_ref: &hax::Binder<hax::TraitRef>,
+        bound_trait_ref: &hax::Binder<hax::TraitRef<'tcx>>,
     ) -> Result<PolyTraitDeclRef, Error> {
         self.translate_region_binder(span, bound_trait_ref, move |ctx, trait_ref| {
             ctx.translate_trait_ref(span, trait_ref)
@@ -126,7 +126,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_trait_predicate(
         &mut self,
         span: Span,
-        trait_pred: &hax::TraitPredicate,
+        trait_pred: &hax::TraitPredicate<'tcx>,
     ) -> Result<TraitDeclRef, Error> {
         // we don't handle negative trait predicates.
         assert!(trait_pred.is_positive);
@@ -136,14 +136,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_trait_ref(
         &mut self,
         span: Span,
-        trait_ref: &hax::TraitRef,
+        trait_ref: &hax::TraitRef<'tcx>,
     ) -> Result<TraitDeclRef, Error> {
         self.translate_trait_decl_ref(span, trait_ref)
     }
 
     pub(crate) fn translate_predicate(
         &mut self,
-        pred: &hax::GenericPredicate,
+        pred: &hax::GenericPredicate<'tcx>,
         mut origin: PredicateOrigin,
         // Either put clauses there or in the innermost binder.
         mut trait_clauses: Option<&mut IndexVec<TraitClauseId, TraitParam>>,
@@ -243,7 +243,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_trait_proofs(
         &mut self,
         span: Span,
-        impl_sources: &[hax::TraitProof],
+        impl_sources: &[hax::TraitProof<'tcx>],
     ) -> Result<IndexVec<TraitClauseId, PolyTraitRef>, Error> {
         impl_sources
             .iter()
@@ -255,7 +255,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_trait_proof(
         &mut self,
         span: Span,
-        trait_proof: &hax::TraitProof,
+        trait_proof: &hax::TraitProof<'tcx>,
     ) -> Result<PolyTraitRef, Error> {
         let trait_decl_ref = self.translate_poly_trait_ref(span, &trait_proof.pred)?;
 
@@ -274,7 +274,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_trait_proof_aux(
         &mut self,
         span: Span,
-        impl_source: &hax::TraitProof,
+        impl_source: &hax::TraitProof<'tcx>,
         trait_decl_ref: PolyTraitDeclRef,
     ) -> Result<PolyTraitRef, Error> {
         trace!("trait_proof: {:#?}", impl_source);

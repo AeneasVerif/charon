@@ -7,38 +7,38 @@ use rustc_middle::ty;
 /// type. The trait proofs are the _required_ predicate for this trait; currently they are always
 /// empty because we consider all trait predicates as implied.
 /// `self.in_trait` is always `None` because a trait can't be associated to another one.
-pub type TraitRef = ItemRef;
+pub type TraitRef<'tcx> = ItemRef<'tcx>;
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TraitRef> for ty::TraitRef<'tcx> {
-    fn sinto(&self, s: &S) -> TraitRef {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TraitRef<'tcx>> for ty::TraitRef<'tcx> {
+    fn sinto(&self, s: &S) -> TraitRef<'tcx> {
         translate_item_ref(s, self.def_id, self.args)
     }
 }
 
 /// Reflects [`ty::AssocItem`]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct AssocItem {
+pub struct AssocItem<'tcx> {
     pub def_id: DefId,
     /// This is `None` for RPTITs.
     pub name: Option<Symbol>,
     pub kind: AssocKind,
-    pub container: AssocItemContainer,
+    pub container: AssocItemContainer<'tcx>,
     /// Whether this item has a value (e.g. this is `false` for trait methods without default
     /// implementations).
     pub has_value: bool,
 }
 
-impl AssocItem {
-    pub fn sfrom<'tcx, S: BaseState<'tcx>>(s: &S, item: &ty::AssocItem) -> AssocItem {
+impl<'tcx> AssocItem<'tcx> {
+    pub fn sfrom<S: BaseState<'tcx>>(s: &S, item: &ty::AssocItem) -> AssocItem<'tcx> {
         Self::sfrom_instantiated(s, item, None)
     }
 
     /// Translate an `AssocItem` and optionally instantiate it with the provided arguments.
-    pub fn sfrom_instantiated<'tcx, S: BaseState<'tcx>>(
+    pub fn sfrom_instantiated<S: BaseState<'tcx>>(
         s: &S,
         item: &ty::AssocItem,
         item_args: Option<ty::GenericArgsRef<'tcx>>,
-    ) -> AssocItem {
+    ) -> AssocItem<'tcx> {
         let tcx = s.base().tcx;
         // We want to solve traits in the context of this item.
         let item_def_id = item.def_id.sinto(s);
@@ -135,17 +135,17 @@ pub enum AssocTypeData {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum AssocItemContainer {
+pub enum AssocItemContainer<'tcx> {
     TraitContainer {
-        trait_ref: TraitRef,
+        trait_ref: TraitRef<'tcx>,
     },
     TraitImplContainer {
         /// Reference to the def_id of the impl block.
-        impl_: ItemRef,
+        impl_: ItemRef<'tcx>,
         /// The trait ref implemented by the impl block.
-        implemented_trait_ref: TraitRef,
+        implemented_trait_ref: TraitRef<'tcx>,
         /// The the associated item (in the trait declaration) that is being implemented.
-        implemented_trait_item: ItemRef,
+        implemented_trait_item: ItemRef<'tcx>,
         /// Whether the corresponding trait item had a default (and therefore this one overrides
         /// it).
         overrides_default: bool,

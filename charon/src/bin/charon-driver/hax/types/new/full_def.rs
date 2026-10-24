@@ -15,7 +15,7 @@ use std::sync::Arc;
 pub struct FullDef<'tcx> {
     /// A reference to the current item. If the item was provided with generic args, they are
     /// stored here; otherwise the args are the identity_args for this item.
-    pub this: ItemRef,
+    pub this: ItemRef<'tcx>,
     /// The span of the definition of this item (e.g. for a function this is is signature).
     pub span: Span,
     /// The span of the whole definition (including e.g. the function body).
@@ -216,9 +216,9 @@ impl DefId {
     }
 }
 
-impl ItemRef {
+impl<'tcx> ItemRef<'tcx> {
     /// Get the full definition of the item, instantiated with the provided generics.
-    pub fn instantiated_full_def<'tcx, S>(&self, s: &S) -> Arc<FullDef<'tcx>>
+    pub fn instantiated_full_def<S>(&self, s: &S) -> Arc<FullDef<'tcx>>
     where
         S: BaseState<'tcx>,
     {
@@ -227,7 +227,7 @@ impl ItemRef {
     }
 
     /// Get the drop glue shim for this. Panics if the `DefKind` isn't appropriate.
-    pub fn drop_glue_shim<'tcx, S>(&self, s: &S) -> mir::Body<'tcx>
+    pub fn drop_glue_shim<S>(&self, s: &S) -> mir::Body<'tcx>
     where
         S: BaseState<'tcx>,
     {
@@ -238,7 +238,7 @@ impl ItemRef {
 
     /// For `FnMut`&`Fn` closures: the MIR for the `call_once` method; it simply calls
     /// `call_mut`.
-    pub fn closure_once_shim<'tcx, S>(&self, s: &S) -> Option<mir::Body<'tcx>>
+    pub fn closure_once_shim<S>(&self, s: &S) -> Option<mir::Body<'tcx>>
     where
         S: BaseState<'tcx>,
     {
@@ -252,17 +252,17 @@ impl ItemRef {
 
 /// The combination of type generics and related predicates.
 #[derive(Debug, Clone)]
-pub struct ParamEnv {
+pub struct ParamEnv<'tcx> {
     /// Generic parameters of the item.
-    pub generics: TyGenerics,
+    pub generics: TyGenerics<'tcx>,
     /// Required predicates for the item (see `traits::utils::required_predicates`).
-    pub predicates: GenericPredicates,
+    pub predicates: GenericPredicates<'tcx>,
     /// A reference to the parent of this item, with appropriate args.
-    pub parent: Option<ItemRef>,
+    pub parent: Option<ItemRef<'tcx>>,
 }
 
-impl ParamEnv {
-    pub fn for_each_generics<'tcx>(
+impl<'tcx> ParamEnv<'tcx> {
+    pub fn for_each_generics(
         &self,
         s: &impl BaseState<'tcx>,
         f: &mut impl FnMut(&GenericParamDef),
@@ -276,7 +276,7 @@ impl ParamEnv {
         }
     }
 
-    pub fn empty<'tcx>(s: &impl BaseState<'tcx>, parent: Option<&ItemRef>) -> ParamEnv {
+    pub fn empty(s: &impl BaseState<'tcx>, parent: Option<&ItemRef<'tcx>>) -> ParamEnv<'tcx> {
         ParamEnv {
             generics: TyGenerics {
                 parent: parent.map(|p| p.def_id.clone()),
@@ -327,7 +327,7 @@ pub enum FullDefKind<'tcx> {
     /// ADts (`Struct`, `Enum` and `Union` map to this variant).
     Adt(Adt<'tcx>),
     /// Type alias: `type Foo = Bar;`
-    TyAlias(TyAlias),
+    TyAlias(TyAlias<'tcx>),
     /// Type from an `extern` block.
     ForeignTy,
     /// Associated type: `trait MyTrait { type Assoc; }`
@@ -338,7 +338,7 @@ pub enum FullDefKind<'tcx> {
     // Traits
     Trait(Trait<'tcx>),
     /// Trait alias: `trait IntIterator = Iterator<Item = i32>;`
-    TraitAlias(TraitAlias),
+    TraitAlias(TraitAlias<'tcx>),
     TraitImpl(TraitImpl<'tcx>),
     InherentImpl(InherentImpl<'tcx>),
 
@@ -356,10 +356,10 @@ pub enum FullDefKind<'tcx> {
     Closure(Closure<'tcx>),
 
     // Constants
-    Const(Const),
+    Const(Const<'tcx>),
     /// Associated constant: `trait MyTrait { const ASSOC: usize; }`
-    AssocConst(AssocConst),
-    Static(Static),
+    AssocConst(AssocConst<'tcx>),
+    Static(Static<'tcx>),
 
     // Crates and modules
     ExternCrate,
@@ -403,26 +403,26 @@ pub struct Adt<'tcx> {
     def_id: DefId,
     /// The (instantiated) type of this adt.
     self_ty: ty::Ty<'tcx>,
-    param_env: ParamEnv,
+    param_env: ParamEnv<'tcx>,
     adt_kind: AdtKind,
-    variants: IndexVec<VariantIdx, VariantDef>,
-    repr: ReprOptions,
+    variants: IndexVec<VariantIdx, VariantDef<'tcx>>,
+    repr: ReprOptions<'tcx>,
     /// Info required to construct a virtual `Drop` impl for this adt.
     /// Computed on demand, see [`Adt::destruct_impl`].
     destruct_impl: OnceCell<Box<VirtualTraitImpl<'tcx>>>,
 }
 
 impl<'tcx> Adt<'tcx> {
-    pub fn param_env(&self) -> &ParamEnv {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
     }
     pub fn adt_kind(&self) -> AdtKind {
         self.adt_kind
     }
-    pub fn variants(&self) -> &IndexVec<VariantIdx, VariantDef> {
+    pub fn variants(&self) -> &IndexVec<VariantIdx, VariantDef<'tcx>> {
         &self.variants
     }
-    pub fn repr(&self) -> &ReprOptions {
+    pub fn repr(&self) -> &ReprOptions<'tcx> {
         &self.repr
     }
     /// Info required to construct a virtual `Drop` impl for this adt.
@@ -438,16 +438,16 @@ impl<'tcx> Adt<'tcx> {
 
 /// Type alias: `type Foo = Bar;`
 #[derive(Debug, Clone)]
-pub struct TyAlias {
-    param_env: ParamEnv,
-    ty: Ty,
+pub struct TyAlias<'tcx> {
+    param_env: ParamEnv<'tcx>,
+    ty: Ty<'tcx>,
 }
 
-impl TyAlias {
-    pub fn param_env(&self) -> &ParamEnv {
+impl<'tcx> TyAlias<'tcx> {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
     }
-    pub fn ty(&self) -> &Ty {
+    pub fn ty(&self) -> &Ty<'tcx> {
         &self.ty
     }
 }
@@ -457,25 +457,25 @@ impl TyAlias {
 pub struct AssocTy<'tcx> {
     def_id: DefId,
     args: Option<ty::GenericArgsRef<'tcx>>,
-    param_env: ParamEnv,
-    implied_predicates: GenericPredicates,
-    associated_item: AssocItem,
+    param_env: ParamEnv<'tcx>,
+    implied_predicates: GenericPredicates<'tcx>,
+    associated_item: AssocItem<'tcx>,
 }
 
 impl<'tcx> AssocTy<'tcx> {
-    pub fn param_env(&self) -> &ParamEnv {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
     }
-    pub fn implied_predicates(&self) -> &GenericPredicates {
+    pub fn implied_predicates(&self) -> &GenericPredicates<'tcx> {
         &self.implied_predicates
     }
-    pub fn associated_item(&self) -> &AssocItem {
+    pub fn associated_item(&self) -> &AssocItem<'tcx> {
         &self.associated_item
     }
     /// The value for this associated type, along with proofs of the required predicates. If
     /// we're in a trait decl, this has a value iff the type has a default; if we're in a trait
     /// impl, this has a value iff the impl provides its own value for it.
-    pub fn value(&self, s: &impl BaseState<'tcx>) -> Option<(Ty, Vec<TraitProof>)> {
+    pub fn value(&self, s: &impl BaseState<'tcx>) -> Option<(Ty<'tcx>, Vec<TraitProof<'tcx>>)> {
         let s = &s.with_hax_owner(&self.def_id);
         let tcx = s.base().tcx;
         let def_id = self.def_id.real_rust_def_id();
@@ -494,30 +494,30 @@ impl<'tcx> AssocTy<'tcx> {
 pub struct Trait<'tcx> {
     def_id: DefId,
     args: Option<ty::GenericArgsRef<'tcx>>,
-    param_env: ParamEnv,
-    implied_predicates: GenericPredicates,
+    param_env: ParamEnv<'tcx>,
+    implied_predicates: GenericPredicates<'tcx>,
     is_unsafe: bool,
     /// The special `Self: Trait` clause.
-    self_predicate: TraitPredicate,
+    self_predicate: TraitPredicate<'tcx>,
     /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for this trait. This is `Some` iff this
     /// trait is dyn-compatible.
-    dyn_self: Option<Ty>,
+    dyn_self: Option<Ty<'tcx>>,
     /// Computed on demand, see [`Trait::implied_trait_proofs`].
-    implied_trait_proofs: OnceCell<Vec<TraitProof>>,
+    implied_trait_proofs: OnceCell<Vec<TraitProof<'tcx>>>,
     /// Computed on demand, see [`Trait::items`].
-    items: OnceCell<Vec<AssocItem>>,
+    items: OnceCell<Vec<AssocItem<'tcx>>>,
 }
 
 impl<'tcx> Trait<'tcx> {
-    pub fn param_env(&self) -> &ParamEnv {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
     }
-    pub fn implied_predicates(&self) -> &GenericPredicates {
+    pub fn implied_predicates(&self) -> &GenericPredicates<'tcx> {
         &self.implied_predicates
     }
     /// Proofs of the implied predicates. Most often uses the `Self` clause, except for builtin
     /// traits like `Sized`.
-    pub fn implied_trait_proofs(&self, s: &impl BaseState<'tcx>) -> &[TraitProof] {
+    pub fn implied_trait_proofs(&self, s: &impl BaseState<'tcx>) -> &[TraitProof<'tcx>] {
         self.implied_trait_proofs.get_or_init(|| {
             let s = &s.with_hax_owner(&self.def_id);
             let args = self.args.unwrap_or_else(|| self.def_id.identity_args(s));
@@ -525,17 +525,17 @@ impl<'tcx> Trait<'tcx> {
         })
     }
     /// The special `Self: Trait` clause.
-    pub fn self_predicate(&self) -> &TraitPredicate {
+    pub fn self_predicate(&self) -> &TraitPredicate<'tcx> {
         &self.self_predicate
     }
     /// Associated items, in definition order.
-    pub fn items(&self, s: &impl BaseState<'tcx>) -> &[AssocItem] {
+    pub fn items(&self, s: &impl BaseState<'tcx>) -> &[AssocItem<'tcx>] {
         self.items
             .get_or_init(|| assoc_items_of(&s.with_hax_owner(&self.def_id), self.args))
     }
     /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for this trait. This is `Some` iff this
     /// trait is dyn-compatible.
-    pub fn dyn_self(&self) -> Option<&Ty> {
+    pub fn dyn_self(&self) -> Option<&Ty<'tcx>> {
         self.dyn_self.as_ref()
     }
     /// Whether this is an `unsafe trait`, i.e. implementing it requires `unsafe impl`.
@@ -546,60 +546,60 @@ impl<'tcx> Trait<'tcx> {
 
 /// Trait alias: `trait IntIterator = Iterator<Item = i32>;`
 #[derive(Debug, Clone)]
-pub struct TraitAlias {
-    param_env: ParamEnv,
-    implied_predicates: GenericPredicates,
+pub struct TraitAlias<'tcx> {
+    param_env: ParamEnv<'tcx>,
+    implied_predicates: GenericPredicates<'tcx>,
     /// The special `Self: Trait` clause.
-    self_predicate: TraitPredicate,
+    self_predicate: TraitPredicate<'tcx>,
     /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for this trait. This is `Some` iff this
     /// trait is dyn-compatible.
-    dyn_self: Option<Ty>,
+    dyn_self: Option<Ty<'tcx>>,
 }
 
-impl TraitAlias {
-    pub fn param_env(&self) -> &ParamEnv {
+impl<'tcx> TraitAlias<'tcx> {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
     }
-    pub fn implied_predicates(&self) -> &GenericPredicates {
+    pub fn implied_predicates(&self) -> &GenericPredicates<'tcx> {
         &self.implied_predicates
     }
     /// The special `Self: Trait` clause.
-    pub fn self_predicate(&self) -> &TraitPredicate {
+    pub fn self_predicate(&self) -> &TraitPredicate<'tcx> {
         &self.self_predicate
     }
     /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for this trait. This is `Some` iff this
     /// trait is dyn-compatible.
-    pub fn dyn_self(&self) -> Option<&Ty> {
+    pub fn dyn_self(&self) -> Option<&Ty<'tcx>> {
         self.dyn_self.as_ref()
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct TraitImpl<'tcx> {
-    this: ItemRef,
+    this: ItemRef<'tcx>,
     args: Option<ty::GenericArgsRef<'tcx>>,
     /// The implemented trait, instantiated with `args` if relevant.
     trait_ref: ty::TraitRef<'tcx>,
-    param_env: ParamEnv,
+    param_env: ParamEnv<'tcx>,
     /// The trait that is implemented by this impl block.
-    trait_pred: TraitPredicate,
+    trait_pred: TraitPredicate<'tcx>,
     is_unsafe: bool,
     /// The trait proofs required to satisfy the predicates on the trait declaration. E.g.:
     /// ```ignore
     /// trait Foo: Bar {}
     /// impl Foo for () {} // would supply a proof for `Self: Bar`.
     /// ```
-    implied_trait_proofs: Vec<TraitProof>,
+    implied_trait_proofs: Vec<TraitProof<'tcx>>,
     /// Computed on demand, see [`TraitImpl::items`].
-    items: OnceCell<Vec<ImplAssocItem>>,
+    items: OnceCell<Vec<ImplAssocItem<'tcx>>>,
 }
 
 impl<'tcx> TraitImpl<'tcx> {
-    pub fn param_env(&self) -> &ParamEnv {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
     }
     /// The trait that is implemented by this impl block.
-    pub fn trait_pred(&self) -> &TraitPredicate {
+    pub fn trait_pred(&self) -> &TraitPredicate<'tcx> {
         &self.trait_pred
     }
     /// Whether this is an `unsafe impl`.
@@ -608,7 +608,7 @@ impl<'tcx> TraitImpl<'tcx> {
     }
     /// `dyn Trait<Args.., Ty = <Self as Trait>::Ty..>` for the implemented trait. This is
     /// `Some` iff the trait is dyn-compatible.
-    pub fn dyn_self(&self, s: &impl BaseState<'tcx>) -> Option<Ty> {
+    pub fn dyn_self(&self, s: &impl BaseState<'tcx>) -> Option<Ty<'tcx>> {
         let s = &s.with_hax_owner(&self.this.def_id);
         dyn_self_ty(s.base().tcx, s.typing_env(), self.trait_ref).sinto(s)
     }
@@ -617,15 +617,15 @@ impl<'tcx> TraitImpl<'tcx> {
     /// trait Foo: Bar {}
     /// impl Foo for () {} // would supply a proof for `Self: Bar`.
     /// ```
-    pub fn implied_trait_proofs(&self) -> &[TraitProof] {
+    pub fn implied_trait_proofs(&self) -> &[TraitProof<'tcx>] {
         &self.implied_trait_proofs
     }
     /// Associated items, in the order of the trait declaration. Includes defaulted items.
-    pub fn items(&self, s: &impl BaseState<'tcx>) -> &[ImplAssocItem] {
+    pub fn items(&self, s: &impl BaseState<'tcx>) -> &[ImplAssocItem<'tcx>] {
         self.items.get_or_init(|| self.compute_items(s))
     }
 
-    fn compute_items(&self, s: &impl BaseState<'tcx>) -> Vec<ImplAssocItem> {
+    fn compute_items(&self, s: &impl BaseState<'tcx>) -> Vec<ImplAssocItem<'tcx>> {
         use std::collections::HashMap;
         let this = &self.this;
         let s = &s.with_hax_owner(&this.def_id);
@@ -704,23 +704,23 @@ impl<'tcx> TraitImpl<'tcx> {
 pub struct InherentImpl<'tcx> {
     def_id: DefId,
     args: Option<ty::GenericArgsRef<'tcx>>,
-    param_env: ParamEnv,
+    param_env: ParamEnv<'tcx>,
     /// The type to which this block applies.
-    ty: Ty,
+    ty: Ty<'tcx>,
     /// Computed on demand, see [`InherentImpl::items`].
-    items: OnceCell<Vec<AssocItem>>,
+    items: OnceCell<Vec<AssocItem<'tcx>>>,
 }
 
 impl<'tcx> InherentImpl<'tcx> {
-    pub fn param_env(&self) -> &ParamEnv {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
     }
     /// The type to which this block applies.
-    pub fn ty(&self) -> &Ty {
+    pub fn ty(&self) -> &Ty<'tcx> {
         &self.ty
     }
     /// Associated items, in definition order.
-    pub fn items(&self, s: &impl BaseState<'tcx>) -> &[AssocItem] {
+    pub fn items(&self, s: &impl BaseState<'tcx>) -> &[AssocItem<'tcx>] {
         self.items
             .get_or_init(|| assoc_items_of(&s.with_hax_owner(&self.def_id), self.args))
     }
@@ -730,7 +730,7 @@ impl<'tcx> InherentImpl<'tcx> {
 fn assoc_items_of<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     args: Option<ty::GenericArgsRef<'tcx>>,
-) -> Vec<AssocItem> {
+) -> Vec<AssocItem<'tcx>> {
     let tcx = s.base().tcx;
     let def_id = s.owner().real_rust_def_id();
     tcx.associated_items(def_id)
@@ -753,7 +753,7 @@ fn assoc_items_of<'tcx, S: UnderOwnerState<'tcx>>(
 pub struct FnTraitImpls<'tcx> {
     /// The arguments of this function, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
     /// Binds the same variables as the function's `sig`.
-    pub tupled_args_ty: Binder<Ty>,
+    pub tupled_args_ty: Binder<Ty<'tcx>>,
     /// Info required to construct a virtual `FnOnce` impl for this function.
     pub fn_once_impl: Box<VirtualTraitImpl<'tcx>>,
     /// Info required to construct a virtual `FnMut` impl for this function.
@@ -814,21 +814,21 @@ pub struct Fn<'tcx> {
     args: Option<ty::GenericArgsRef<'tcx>>,
     /// The signature, instantiated with `args` if relevant.
     rustc_sig: ty::PolyFnSig<'tcx>,
-    param_env: ParamEnv,
+    param_env: ParamEnv<'tcx>,
     inline: InlineAttr,
-    sig: PolyFnSig,
+    sig: PolyFnSig<'tcx>,
     /// Computed on demand, see [`Fn::fn_trait_impls`].
     fn_trait_impls: OnceCell<Option<FnTraitImpls<'tcx>>>,
 }
 
 impl<'tcx> Fn<'tcx> {
-    pub fn param_env(&self) -> &ParamEnv {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
     }
     pub fn inline(&self) -> &InlineAttr {
         &self.inline
     }
-    pub fn sig(&self) -> &PolyFnSig {
+    pub fn sig(&self) -> &PolyFnSig<'tcx> {
         &self.sig
     }
     /// The virtual `Fn*` impls for this function, if it is `Fn*`-compatible.
@@ -849,19 +849,19 @@ pub struct AssocFn<'tcx> {
     args: Option<ty::GenericArgsRef<'tcx>>,
     /// The signature, instantiated with `args` if relevant.
     rustc_sig: ty::PolyFnSig<'tcx>,
-    param_env: ParamEnv,
-    associated_item: AssocItem,
+    param_env: ParamEnv<'tcx>,
+    associated_item: AssocItem<'tcx>,
     inline: InlineAttr,
-    sig: PolyFnSig,
+    sig: PolyFnSig<'tcx>,
     /// Computed on demand, see [`AssocFn::fn_trait_impls`].
     fn_trait_impls: OnceCell<Option<FnTraitImpls<'tcx>>>,
 }
 
 impl<'tcx> AssocFn<'tcx> {
-    pub fn param_env(&self) -> &ParamEnv {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
     }
-    pub fn associated_item(&self) -> &AssocItem {
+    pub fn associated_item(&self) -> &AssocItem<'tcx> {
         &self.associated_item
     }
     pub fn inline(&self) -> &InlineAttr {
@@ -870,10 +870,10 @@ impl<'tcx> AssocFn<'tcx> {
     /// The function signature when this method is used in a vtable. `None` if this method is not
     /// vtable safe. `Some(sig)` if it is vtable safe, where `sig` is the trait method declaration's
     /// signature with `Self` replaced by `dyn Trait` and associated types normalized.
-    pub fn vtable_sig(&self, s: &impl BaseState<'tcx>) -> Option<PolyFnSig> {
+    pub fn vtable_sig(&self, s: &impl BaseState<'tcx>) -> Option<PolyFnSig<'tcx>> {
         gen_vtable_sig(&s.with_hax_owner(&self.def_id), self.args)
     }
-    pub fn sig(&self) -> &PolyFnSig {
+    pub fn sig(&self) -> &PolyFnSig<'tcx> {
         &self.sig
     }
     /// The virtual `Fn*` impls for this function, if it is `Fn*`-compatible.
@@ -891,18 +891,18 @@ pub struct FnPointer<'tcx> {
     def_id: DefId,
     self_ty: ty::Ty<'tcx>,
     rustc_sig: ty::PolyFnSig<'tcx>,
-    param_env: ParamEnv,
-    sig: PolyFnSig,
+    param_env: ParamEnv<'tcx>,
+    sig: PolyFnSig<'tcx>,
     late_bound_scope: RDefId,
     fn_trait_impls: OnceCell<Option<FnTraitImpls<'tcx>>>,
 }
 
 impl<'tcx> FnPointer<'tcx> {
-    pub fn param_env(&self) -> &ParamEnv {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
     }
 
-    pub fn sig(&self) -> &PolyFnSig {
+    pub fn sig(&self) -> &PolyFnSig<'tcx> {
         &self.sig
     }
 
@@ -937,8 +937,8 @@ pub struct Closure<'tcx> {
     /// This param env is empty because the (early-bound) generics of a closure are the same as
     /// those of the item in which it is defined. We hide the special weird generics that rustc
     /// uses internally for inference on closures.
-    param_env: ParamEnv,
-    args: ClosureTy,
+    param_env: ParamEnv<'tcx>,
+    args: ClosureTy<'tcx>,
     inline: InlineAttr,
     /// Computed on demand, see the accessors below.
     fn_once_impl: OnceCell<Box<VirtualTraitImpl<'tcx>>>,
@@ -951,10 +951,10 @@ impl<'tcx> Closure<'tcx> {
     /// This param env is empty because the (early-bound) generics of a closure are the same as
     /// those of the item in which it is defined. We hide the special weird generics that rustc
     /// uses internally for inference on closures.
-    pub fn param_env(&self) -> &ParamEnv {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
     }
-    pub fn args(&self) -> &ClosureTy {
+    pub fn args(&self) -> &ClosureTy<'tcx> {
         &self.args
     }
     pub fn inline(&self) -> &InlineAttr {
@@ -1004,17 +1004,17 @@ impl<'tcx> Closure<'tcx> {
 }
 
 #[derive(Debug, Clone)]
-pub struct Const {
-    param_env: ParamEnv,
-    ty: Ty,
+pub struct Const<'tcx> {
+    param_env: ParamEnv<'tcx>,
+    ty: Ty<'tcx>,
     kind: ConstKind,
 }
 
-impl Const {
-    pub fn param_env(&self) -> &ParamEnv {
+impl<'tcx> Const<'tcx> {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
     }
-    pub fn ty(&self) -> &Ty {
+    pub fn ty(&self) -> &Ty<'tcx> {
         &self.ty
     }
     pub fn kind(&self) -> &ConstKind {
@@ -1024,38 +1024,38 @@ impl Const {
 
 /// Associated constant: `trait MyTrait { const ASSOC: usize; }`
 #[derive(Debug, Clone)]
-pub struct AssocConst {
-    param_env: ParamEnv,
-    associated_item: AssocItem,
-    ty: Ty,
+pub struct AssocConst<'tcx> {
+    param_env: ParamEnv<'tcx>,
+    associated_item: AssocItem<'tcx>,
+    ty: Ty<'tcx>,
 }
 
-impl AssocConst {
-    pub fn param_env(&self) -> &ParamEnv {
+impl<'tcx> AssocConst<'tcx> {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
     }
-    pub fn associated_item(&self) -> &AssocItem {
+    pub fn associated_item(&self) -> &AssocItem<'tcx> {
         &self.associated_item
     }
-    pub fn ty(&self) -> &Ty {
+    pub fn ty(&self) -> &Ty<'tcx> {
         &self.ty
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct Static {
-    param_env: ParamEnv,
+pub struct Static<'tcx> {
+    param_env: ParamEnv<'tcx>,
     /// Whether it's a `unsafe static`, `safe static` (inside extern only) or just a `static`.
     safety: Safety,
     /// Whether it's a `static mut` or just a `static`.
     mutability: Mutability,
     /// Whether it's a `#[thread_local] static`.
     thread_local: bool,
-    ty: Ty,
+    ty: Ty<'tcx>,
 }
 
-impl Static {
-    pub fn param_env(&self) -> &ParamEnv {
+impl<'tcx> Static<'tcx> {
+    pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
     }
     /// Whether it's a `unsafe static`, `safe static` (inside extern only) or just a `static`.
@@ -1070,7 +1070,7 @@ impl Static {
     pub fn thread_local(&self) -> bool {
         self.thread_local
     }
-    pub fn ty(&self) -> &Ty {
+    pub fn ty(&self) -> &Ty<'tcx> {
         &self.ty
     }
 }
@@ -1111,9 +1111,9 @@ pub struct Ctor<'tcx> {
     adt_def_id: DefId,
     ctor_of: CtorOf,
     variant_id: VariantIdx,
-    fields: IndexVec<FieldIdx, FieldDef>,
-    output_ty: Ty,
-    sig: PolyFnSig,
+    fields: IndexVec<FieldIdx, FieldDef<'tcx>>,
+    output_ty: Ty<'tcx>,
+    sig: PolyFnSig<'tcx>,
     /// Computed on demand, see [`Ctor::fn_trait_impls`].
     fn_trait_impls: OnceCell<Option<FnTraitImpls<'tcx>>>,
 }
@@ -1128,13 +1128,13 @@ impl<'tcx> Ctor<'tcx> {
     pub fn variant_id(&self) -> VariantIdx {
         self.variant_id
     }
-    pub fn fields(&self) -> &IndexVec<FieldIdx, FieldDef> {
+    pub fn fields(&self) -> &IndexVec<FieldIdx, FieldDef<'tcx>> {
         &self.fields
     }
-    pub fn output_ty(&self) -> &Ty {
+    pub fn output_ty(&self) -> &Ty<'tcx> {
         &self.output_ty
     }
-    pub fn sig(&self) -> &PolyFnSig {
+    pub fn sig(&self) -> &PolyFnSig<'tcx> {
         &self.sig
     }
     /// The virtual `Fn*` impls for this constructor.
@@ -1184,7 +1184,7 @@ fn gen_vtable_sig<'tcx>(
     // The state that owns the method DefId
     s: &impl UnderOwnerState<'tcx>,
     args: Option<ty::GenericArgsRef<'tcx>>,
-) -> Option<PolyFnSig> {
+) -> Option<PolyFnSig<'tcx>> {
     let method_def_id = s.owner().as_real_def_id().unwrap();
     let tcx = s.base().tcx;
     let assoc_item = tcx.associated_item(method_def_id);
@@ -1234,7 +1234,7 @@ fn vtable_sig_with_dyn_self<'tcx>(
     s: &impl UnderOwnerState<'tcx>,
     method_decl_id: RDefId,
     dyn_self: ty::Ty<'tcx>,
-) -> PolyFnSig {
+) -> PolyFnSig<'tcx> {
     let tcx = s.base().tcx;
     // dyn_self is of form `dyn Trait<Args...>`, we extract the trait args
     let ty::Dynamic(preds, _) = dyn_self.kind() else {
@@ -1268,7 +1268,7 @@ fn vtable_sig_with_dyn_self<'tcx>(
 // may contain a type/const/trait reference.
 fn translate_full_def_kind<'tcx, S>(
     s: &S,
-    this: &ItemRef,
+    this: &ItemRef<'tcx>,
     args: Option<ty::GenericArgsRef<'tcx>>,
 ) -> FullDefKind<'tcx>
 where
@@ -1541,22 +1541,22 @@ fn late_bound_for_def<'tcx, S: UnderOwnerState<'tcx>>(
 /// An associated item in a trait impl. This can be an item provided by the trait impl, or an item
 /// that reuses the trait decl default value.
 #[derive(Debug, Clone)]
-pub struct ImplAssocItem {
+pub struct ImplAssocItem<'tcx> {
     /// This is `None` for RPTITs.
     pub name: Option<Symbol>,
     /// The definition of the item from the trait declaration. This is an `AssocTy`, `AssocFn` or
     /// `AssocConst`.
     pub decl_def_id: DefId,
     /// The value of the implemented item, if any.
-    pub value: Option<TraitItemBinder<ImplAssocItemValue>>,
+    pub value: Option<TraitItemBinder<'tcx, ImplAssocItemValue<'tcx>>>,
 }
 
 /// The binding context to use when translating a trait impl associated item.
 #[derive(Debug, Clone)]
-pub struct TraitItemBinder<T> {
+pub struct TraitItemBinder<'tcx, T> {
     pub def_id: DefId,
     /// Parameters bound by the item.
-    pub param_env: ParamEnv,
+    pub param_env: ParamEnv<'tcx>,
     /// Late-bound parameters, if any.
     pub late_bound: Binder<()>,
     pub skip_binder: T,
@@ -1564,12 +1564,12 @@ pub struct TraitItemBinder<T> {
 
 /// The item is provided by the trait impl.
 #[derive(Debug, Clone)]
-pub struct ImplAssocItemValue {
+pub struct ImplAssocItemValue<'tcx> {
     /// The definition of the item in the trait impl. This is an `AssocTy`, `AssocFn` or
     /// `AssocConst`.
-    pub item: ItemRef,
+    pub item: ItemRef<'tcx>,
     /// Value of the associated type, if carried directly. `None` for methods and consts.
-    pub assoc_ty_value: Option<Ty>,
+    pub assoc_ty_value: Option<Ty<'tcx>>,
     /// Trait proofs for the implied associated type bounds. E.g.:
     /// ```ignore
     /// trait Foo {
@@ -1580,7 +1580,7 @@ pub struct ImplAssocItemValue {
     /// }
     /// ```
     /// Empty for methods and consts.
-    pub implied_trait_proofs: Vec<TraitProof>,
+    pub implied_trait_proofs: Vec<TraitProof<'tcx>>,
 }
 
 /// Partial data for a trait impl, used for fake trait impls that we generate ourselves such as
@@ -1588,11 +1588,11 @@ pub struct ImplAssocItemValue {
 #[derive(Debug, Clone)]
 pub struct VirtualTraitImpl<'tcx> {
     /// The trait that is implemented by this impl block.
-    pub trait_pred: TraitPredicate,
+    pub trait_pred: TraitPredicate<'tcx>,
     /// The trait proofs required to satisfy the predicates on the trait declaration.
-    pub implied_trait_proofs: Vec<TraitProof>,
+    pub implied_trait_proofs: Vec<TraitProof<'tcx>>,
     /// The associated types and their predicates, in definition order.
-    pub types: Vec<(Ty, Vec<TraitProof>)>,
+    pub types: Vec<(Ty<'tcx>, Vec<TraitProof<'tcx>>)>,
     /// The methods, in definition order.
     pub methods: Vec<DefId>,
     /// The item under which this impl was built.
@@ -1600,14 +1600,14 @@ pub struct VirtualTraitImpl<'tcx> {
     /// The trait ref of the implemented trait, for `dyn_data`.
     trait_ref: ty::TraitRef<'tcx>,
     /// Computed on demand, see [`VirtualTraitImpl::dyn_self`].
-    dyn_data: OnceCell<Option<(Ty, Vec<PolyFnSig>)>>,
+    dyn_data: OnceCell<Option<(Ty<'tcx>, Vec<PolyFnSig<'tcx>>)>>,
 }
 
 impl<'tcx> VirtualTraitImpl<'tcx> {
     /// The `dyn Trait<..>` type for the implemented trait ref and the vtable signatures of the
     /// methods (in definition order), if the trait is dyn-compatible. This is only needed for
     /// vtables so we compute it on demand.
-    fn dyn_data(&self, s: &impl BaseState<'tcx>) -> Option<&(Ty, Vec<PolyFnSig>)> {
+    fn dyn_data(&self, s: &impl BaseState<'tcx>) -> Option<&(Ty<'tcx>, Vec<PolyFnSig<'tcx>>)> {
         self.dyn_data
             .get_or_init(|| {
                 let s = &s.with_hax_owner(&self.owner);
@@ -1629,11 +1629,11 @@ impl<'tcx> VirtualTraitImpl<'tcx> {
             .as_ref()
     }
     /// The `dyn Trait<..>` type for the implemented trait ref, if dyn-compatible.
-    pub fn dyn_self(&self, s: &impl BaseState<'tcx>) -> Option<Ty> {
+    pub fn dyn_self(&self, s: &impl BaseState<'tcx>) -> Option<Ty<'tcx>> {
         self.dyn_data(s).map(|(dyn_self, _)| dyn_self.clone())
     }
     /// The vtable signature of the `i`th method, if the trait is dyn-compatible.
-    pub fn vtable_sig(&self, s: &impl BaseState<'tcx>, i: usize) -> Option<&PolyFnSig> {
+    pub fn vtable_sig(&self, s: &impl BaseState<'tcx>, i: usize) -> Option<&PolyFnSig<'tcx>> {
         self.dyn_data(s).map(|(_, sigs)| &sigs[i])
     }
 }
@@ -1644,7 +1644,7 @@ impl<'tcx> FullDef<'tcx> {
     }
 
     /// Reference to the item itself.
-    pub fn this(&self) -> &ItemRef {
+    pub fn this(&self) -> &ItemRef<'tcx> {
         &self.this
     }
 
@@ -1672,7 +1672,7 @@ impl<'tcx> FullDef<'tcx> {
 
     /// Evaluate the value of a `Const`, `AssocConst` or `Static` item. Returns `None` for other
     /// items, or if the item can't be evaluated (see [`read_const`]).
-    pub fn evaluate<S>(&self, s: &S, mode: ReadMode) -> Option<ConstantExpr>
+    pub fn evaluate<S>(&self, s: &S, mode: ReadMode) -> Option<ConstantExpr<'tcx>>
     where
         S: BaseState<'tcx>,
     {
@@ -1710,7 +1710,7 @@ impl<'tcx> FullDef<'tcx> {
     }
 
     /// Returns the generics and predicates for definitions that have those.
-    pub fn param_env(&self) -> Option<&ParamEnv> {
+    pub fn param_env(&self) -> Option<&ParamEnv<'tcx>> {
         match self.kind() {
             FullDefKind::Adt(d) => Some(d.param_env()),
             FullDefKind::Trait(d) => Some(d.param_env()),
@@ -1731,7 +1731,7 @@ impl<'tcx> FullDef<'tcx> {
     }
 
     /// Return the parent of this item if the item inherits the typing context from its parent.
-    pub fn typing_parent(&self, s: &impl BaseState<'tcx>) -> Option<ItemRef> {
+    pub fn typing_parent(&self, s: &impl BaseState<'tcx>) -> Option<ItemRef<'tcx>> {
         self.this().typing_parent(s)
     }
 
@@ -1827,7 +1827,7 @@ impl<'tcx> FullDef<'tcx> {
     }
 }
 
-impl ImplAssocItem {
+impl<'tcx> ImplAssocItem<'tcx> {
     /// The id of the item declaration.
     pub fn decl_def_id(&self) -> &DefId {
         &self.decl_def_id
@@ -1841,7 +1841,7 @@ impl ImplAssocItem {
 fn get_self_predicate<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     args: Option<ty::GenericArgsRef<'tcx>>,
-) -> TraitPredicate {
+) -> TraitPredicate<'tcx> {
     use ty::Upcast;
     let tcx = s.base().tcx;
     let pred: ty::TraitClause = self_trait_ref(s, args).no_bound_vars().unwrap().upcast(tcx);
@@ -1929,7 +1929,7 @@ where
 fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     args: Option<ty::GenericArgsRef<'tcx>>,
-) -> ParamEnv {
+) -> ParamEnv<'tcx> {
     let tcx = s.base().tcx;
     let owner = s.owner();
     // Rustc adds generic params to closures and inline consts for impl details purposes; we hide these.
@@ -1971,7 +1971,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
 fn get_implied_predicates<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     args: Option<ty::GenericArgsRef<'tcx>>,
-) -> GenericPredicates {
+) -> GenericPredicates<'tcx> {
     let tcx = s.base().tcx;
     let owner = s.owner();
     let typing_env = s.typing_env();

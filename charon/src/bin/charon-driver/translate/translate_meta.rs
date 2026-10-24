@@ -227,7 +227,7 @@ impl<'tcx> TranslateCtx<'tcx> {
     fn path_elem_for_def(
         &mut self,
         span: Span,
-        item: &RustcItem,
+        item: &RustcItem<'tcx>,
     ) -> Result<Option<PathElem>, Error> {
         let def_id = item.def_id();
         if let Some(synthetic) = def_id.as_synthetic(&self.hax_state) {
@@ -381,7 +381,7 @@ impl<'tcx> TranslateCtx<'tcx> {
     /// The names we will generate for `foo` and `bar` are:
     /// `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(0)), Ident("foo")]`
     /// `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(1)), Ident("bar")]`
-    fn name_for_item(&mut self, item: &RustcItem) -> Result<Name, Error> {
+    fn name_for_item(&mut self, item: &RustcItem<'tcx>) -> Result<Name, Error> {
         if let Some(name) = self.cached_names.get(item) {
             return Ok(name.clone());
         }
@@ -413,7 +413,7 @@ impl<'tcx> TranslateCtx<'tcx> {
 
     /// Compute the name for an item.
     /// Internal function, use `translate_name`.
-    pub fn name_for_src(&mut self, src: &TransItemSource) -> Result<Name, Error> {
+    pub fn name_for_src(&mut self, src: &TransItemSource<'tcx>) -> Result<Name, Error> {
         let mut name = if let Some(parent) = src.parent() {
             self.name_for_src(&parent)?
         } else {
@@ -483,7 +483,7 @@ impl<'tcx> TranslateCtx<'tcx> {
     }
 
     /// Retrieve the name for an item.
-    pub fn translate_name(&mut self, src: &TransItemSource) -> Result<Name, Error> {
+    pub fn translate_name(&mut self, src: &TransItemSource<'tcx>) -> Result<Name, Error> {
         let mut name = self.name_for_src(src)?;
         // Push the generics used for monomorphization, if any. We skip mono trait impls as the
         // generics are already included in the `PathElem::Impl` reference.
@@ -955,7 +955,7 @@ impl<'tcx> TranslateCtx<'tcx> {
     pub(crate) fn translate_item_meta(
         &mut self,
         def: &hax::FullDef<'tcx>,
-        item_src: &TransItemSource,
+        item_src: &TransItemSource<'tcx>,
         name: Name,
         name_opacity: ItemOpacity,
     ) -> ItemMeta {

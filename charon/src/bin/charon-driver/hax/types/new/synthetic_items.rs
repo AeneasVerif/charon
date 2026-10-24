@@ -448,21 +448,21 @@ impl<'tcx> GlobalCache<'tcx> {
     }
 }
 
-impl ItemRef {
-    pub fn translate_synthetic<'tcx, S: UnderOwnerState<'tcx>>(
+impl<'tcx> ItemRef<'tcx> {
+    pub fn translate_synthetic<S: UnderOwnerState<'tcx>>(
         s: &S,
         synthetic: SyntheticItem,
         generics: ty::GenericArgsRef<'tcx>,
-    ) -> ItemRef {
+    ) -> ItemRef<'tcx> {
         let hax_def_id = DefId::make_synthetic(s, synthetic);
         ItemRef::translate_from_hax_def_id(s, hax_def_id, generics)
     }
 
     /// Take a fn pointer and construct a reference to the corresponding synthetic item.
-    pub fn translate_fn_ptr<'tcx, S: UnderOwnerState<'tcx>>(
+    pub fn translate_fn_ptr<S: UnderOwnerState<'tcx>>(
         s: &S,
         sig: ty::PolyFnSig<'tcx>,
-    ) -> ItemRef {
+    ) -> ItemRef<'tcx> {
         let (shape, args) = FnPtrShape::extract_shape(s.base().tcx, sig);
         Self::translate_synthetic(s, SyntheticItem::FnPtr(shape), args)
     }

@@ -295,7 +295,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub(crate) fn translate_unsizing_metadata(
         &mut self,
         span: Span,
-        meta: &hax::UnsizingMetadata,
+        meta: &hax::UnsizingMetadata<'tcx>,
     ) -> Result<UnsizingMetadata, Error> {
         Ok(match meta {
             hax::UnsizingMetadata::Length(len) => {
@@ -803,7 +803,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
     fn try_reconstruct_array_repeat(
         &mut self,
         span: Span,
-        array_ty: &hax::Ty,
+        array_ty: &hax::Ty<'tcx>,
         fields: impl ExactSizeIterator<Item = ConstantExpr>,
     ) -> Result<Option<Rvalue>, Error> {
         if fields.len() >= 2

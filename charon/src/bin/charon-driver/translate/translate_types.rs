@@ -108,7 +108,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// regions can be translated in several manners (non-erased region or erased
     /// regions), in which case the return type is different.
     #[tracing::instrument(skip(self, span))]
-    pub(crate) fn translate_ty(&mut self, span: Span, hax_ty: &hax::Ty) -> Result<Ty, Error> {
+    pub(crate) fn translate_ty(&mut self, span: Span, hax_ty: &hax::Ty<'tcx>) -> Result<Ty, Error> {
         let mut ty = if let Some(ty) = self
             .innermost_binder()
             .type_trans_cache
@@ -132,7 +132,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(ty)
     }
 
-    fn translate_ty_inner(&mut self, span: Span, ty: &hax::Ty) -> Result<Ty, Error> {
+    fn translate_ty_inner(&mut self, span: Span, ty: &hax::Ty<'tcx>) -> Result<Ty, Error> {
         trace!("{:?}", ty);
         let kind = match ty.kind() {
             hax::TyKind::Bool => TyKind::Scalar(ScalarTy::Bool),
@@ -336,7 +336,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub fn translate_pattern(
         &mut self,
         span: Span,
-        pat: &hax::Pattern,
+        pat: &hax::Pattern<'tcx>,
     ) -> Result<TypePattern, Error> {
         Ok(match pat {
             hax::Pattern::Range { start, end } => TypePattern::Range(
@@ -365,11 +365,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub fn translate_poly_fun_sig(
         &mut self,
         span: Span,
-        sig: &hax::Binder<hax::TyFnSig>,
+        sig: &hax::Binder<hax::TyFnSig<'tcx>>,
     ) -> Result<RegionBinder<FunSig>, Error> {
         self.translate_region_binder(span, sig, |ctx, sig| ctx.translate_fun_sig(span, sig))
     }
-    pub fn translate_fun_sig(&mut self, span: Span, sig: &hax::TyFnSig) -> Result<FunSig, Error> {
+    pub fn translate_fun_sig(
+        &mut self,
+        span: Span,
+        sig: &hax::TyFnSig<'tcx>,
+    ) -> Result<FunSig, Error> {
         let inputs = sig
             .inputs
             .iter()
@@ -397,8 +401,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub fn translate_generic_args(
         &mut self,
         span: Span,
-        substs: &[hax::GenericArg],
-        trait_refs: &[hax::TraitProof],
+        substs: &[hax::GenericArg<'tcx>],
+        trait_refs: &[hax::TraitProof<'tcx>],
     ) -> Result<GenericArgs, Error> {
         use crate::hax::GenericArg::*;
         trace!("{:?}", substs);
@@ -430,7 +434,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Whether Rust treats this type specially, i.e. whether it is a tuple, `str` or `Box`.
-    pub(crate) fn recognize_builtin_adt(&mut self, item: &hax::ItemRef) -> Option<BuiltinAdt> {
+    pub(crate) fn recognize_builtin_adt(
+        &mut self,
+        item: &hax::ItemRef<'tcx>,
+    ) -> Option<BuiltinAdt> {
         item.def_id
             .as_synthetic(self.hax_state())
             .and_then(|synthetic| match synthetic {
@@ -451,7 +458,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub fn translate_ptr_metadata(
         &mut self,
         span: Span,
-        item: &hax::ItemRef,
+        item: &hax::ItemRef<'tcx>,
     ) -> Result<PtrMetadata, Error> {
         // prepare the call to the method
         use rustc_middle::ty;
@@ -471,7 +478,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             |ty| hax::normalize(tcx, ty_env, ty),
             || {},
         );
-        let hax_ty: hax::Ty = self.t_ctx.catch_sinto(hax_state, span, &tail_ty)?;
+        let hax_ty: hax::Ty<'tcx> = self.t_ctx.catch_sinto(hax_state, span, &tail_ty)?;
 
         // If we're hiding `Sized`, let's consider everything to be sized.
         let everything_is_sized = self.t_ctx.options.hide_marker_traits;
@@ -1100,7 +1107,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn translate_discriminant(
         &mut self,
         def_span: Span,
-        discr: &hax::DiscriminantValue,
+        discr: &hax::DiscriminantValue<'tcx>,
     ) -> Result<IntegerValue, Error> {
         let ty = self.translate_ty(def_span, &discr.ty)?;
         let scalar_ty = ty.kind().as_scalar().unwrap();

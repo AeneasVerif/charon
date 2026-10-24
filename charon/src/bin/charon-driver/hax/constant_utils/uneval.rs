@@ -46,9 +46,9 @@ fn bits_and_type_to_float_constant_literal(bits: u128, ty: FloatTy) -> ConstantL
     ConstantLiteral::Float(string, bits, ty)
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Const<'tcx> {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr<'tcx>> for ty::Const<'tcx> {
     #[tracing::instrument(level = "trace", skip(s))]
-    fn sinto(&self, s: &S) -> ConstantExpr {
+    fn sinto(&self, s: &S) -> ConstantExpr<'tcx> {
         let tcx = s.base().tcx;
         let span = rustc_span::DUMMY_SP;
         match self.kind() {
@@ -90,9 +90,9 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Const<'tcx> 
     }
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for ty::Value<'tcx> {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr<'tcx>> for ty::Value<'tcx> {
     #[tracing::instrument(level = "trace", skip(s))]
-    fn sinto(&self, s: &S) -> ConstantExpr {
+    fn sinto(&self, s: &S) -> ConstantExpr<'tcx> {
         let span = rustc_span::DUMMY_SP;
         read_const(s, span, ConstSource::ValTree(*self), ReadMode::Structured).unwrap_or_else(
             || {
@@ -115,8 +115,8 @@ fn const_reader<'tcx, S: UnderOwnerState<'tcx>>(s: &S) -> ConstReader<'tcx> {
 }
 
 /// The global standing for `self`, which must be named (see `ConstReader::is_named_global`).
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef> for GlobalRef {
-    fn sinto(&self, s: &S) -> ItemRef {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef<'tcx>> for GlobalRef {
+    fn sinto(&self, s: &S) -> ItemRef<'tcx> {
         match *self {
             GlobalRef::Static(did) => translate_item_ref(s, did, Default::default()),
             GlobalRef::Alloc(alloc_id) => {
@@ -127,8 +127,10 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef> for GlobalRef {
     }
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, FnPtrTarget> for rustc_const_uneval::FnTarget<'tcx> {
-    fn sinto(&self, s: &S) -> FnPtrTarget {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, FnPtrTarget<'tcx>>
+    for rustc_const_uneval::FnTarget<'tcx>
+{
+    fn sinto(&self, s: &S) -> FnPtrTarget<'tcx> {
         use rustc_const_uneval::FnTarget;
         match *self {
             FnTarget::Instance(instance) => {
@@ -142,8 +144,8 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, FnPtrTarget> for rustc_const_uneva
 }
 
 /// The provenance to give to the bytes of a pointer into the given allocation.
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantByteProvenance> for AllocTarget<'tcx> {
-    fn sinto(&self, s: &S) -> ConstantByteProvenance {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantByteProvenance<'tcx>> for AllocTarget<'tcx> {
+    fn sinto(&self, s: &S) -> ConstantByteProvenance<'tcx> {
         match *self {
             AllocTarget::Fn(target) => {
                 let fn_ptr_ty = target.fn_ptr_ty(s.base().tcx, s.typing_env());
@@ -161,8 +163,10 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantByteProvenance> for AllocT
     }
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr> for rustc_const_uneval::Const<'tcx> {
-    fn sinto(&self, s: &S) -> ConstantExpr {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr<'tcx>>
+    for rustc_const_uneval::Const<'tcx>
+{
+    fn sinto(&self, s: &S) -> ConstantExpr<'tcx> {
         use rustc_const_uneval::ConstKind;
         let tcx = s.base().tcx;
         // The value of a pattern type is described at its base type.
@@ -312,7 +316,7 @@ pub fn read_const<'tcx, S: UnderOwnerState<'tcx>>(
     span: rustc_span::Span,
     src: ConstSource<'tcx>,
     mode: ReadMode,
-) -> Option<ConstantExpr> {
+) -> Option<ConstantExpr<'tcx>> {
     match const_reader(s).read(span, src, mode) {
         Ok(val) => Some(val.sinto(s)),
         Err(ReadError::NotEvaluable) => None,

@@ -24,7 +24,7 @@ use charon_lib::utils::CycleDetector;
 /// At each level, we store two things: a `GenericParams` that contains the parameters bound at
 /// this level, and various maps from the rustc-internal indices to our indices.
 #[derive(Debug, Default)]
-pub(crate) struct BindingLevel {
+pub(crate) struct BindingLevel<'tcx> {
     /// Whether this binding level exists in Hax's De Bruijn indices. `dyn Trait` introduces an
     /// existential binder in Charon that has no corresponding binder in rustc/Hax.
     pub is_hax_binder: bool,
@@ -68,7 +68,7 @@ pub(crate) struct BindingLevel {
     /// Cache the translation of types. This harnesses the deduplication of `Ty` that hax does.
     // Important: we can't reuse type caches from earlier binders as the new binder may change what
     // a given variable resolves to.
-    pub type_trans_cache: HashMap<hax::Ty, Ty>,
+    pub type_trans_cache: HashMap<hax::Ty<'tcx>, Ty>,
 }
 
 /// Small helper: we ignore some region names (when they are equal to "'_")
@@ -87,7 +87,7 @@ fn translate_variance(variance: Option<&hax::Variance>) -> Variance {
     }
 }
 
-impl BindingLevel {
+impl<'tcx> BindingLevel<'tcx> {
     pub(crate) fn new(def_id: Option<hax::DefId>) -> Self {
         Self {
             def_id,
@@ -240,26 +240,26 @@ impl BindingLevel {
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Get the only binding level. Panics if there are other binding levels.
-    pub(crate) fn the_only_binder(&self) -> &BindingLevel {
+    pub(crate) fn the_only_binder(&self) -> &BindingLevel<'tcx> {
         assert_eq!(self.binding_levels.len(), 1);
         self.innermost_binder()
     }
     /// Get the only binding level. Panics if there are other binding levels.
-    pub(crate) fn the_only_binder_mut(&mut self) -> &mut BindingLevel {
+    pub(crate) fn the_only_binder_mut(&mut self) -> &mut BindingLevel<'tcx> {
         assert_eq!(self.binding_levels.len(), 1);
         self.innermost_binder_mut()
     }
 
-    pub(crate) fn outermost_binder(&self) -> &BindingLevel {
+    pub(crate) fn outermost_binder(&self) -> &BindingLevel<'tcx> {
         self.binding_levels.outermost()
     }
-    pub(crate) fn outermost_binder_mut(&mut self) -> &mut BindingLevel {
+    pub(crate) fn outermost_binder_mut(&mut self) -> &mut BindingLevel<'tcx> {
         self.binding_levels.outermost_mut()
     }
-    pub(crate) fn innermost_binder(&self) -> &BindingLevel {
+    pub(crate) fn innermost_binder(&self) -> &BindingLevel<'tcx> {
         self.binding_levels.innermost()
     }
-    pub(crate) fn innermost_binder_mut(&mut self) -> &mut BindingLevel {
+    pub(crate) fn innermost_binder_mut(&mut self) -> &mut BindingLevel<'tcx> {
         self.binding_levels.innermost_mut()
     }
 
@@ -408,14 +408,20 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
-    pub(crate) fn push_generic_params(&mut self, generics: &hax::TyGenerics) -> Result<(), Error> {
+    pub(crate) fn push_generic_params(
+        &mut self,
+        generics: &hax::TyGenerics<'tcx>,
+    ) -> Result<(), Error> {
         for param in &generics.params {
             self.push_generic_param(param)?;
         }
         Ok(())
     }
 
-    pub(crate) fn push_generic_param(&mut self, param: &hax::GenericParamDef) -> Result<(), Error> {
+    pub(crate) fn push_generic_param(
+        &mut self,
+        param: &hax::GenericParamDef<'tcx>,
+    ) -> Result<(), Error> {
         let variance = translate_variance(param.variance.as_ref());
         match &param.kind {
             hax::GenericParamDefKind::Lifetime => {
@@ -542,7 +548,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     fn push_param_env_without_parents(
         &mut self,
-        param_env: &hax::ParamEnv,
+        param_env: &hax::ParamEnv<'tcx>,
         origin: PredicateOrigin,
     ) -> Result<(), Error> {
         self.push_generic_params(&param_env.generics)?;
@@ -680,7 +686,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         _span: Span,
         kind: BinderKind,
-        binder: &hax::TraitItemBinder<T>,
+        binder: &hax::TraitItemBinder<'tcx, T>,
         predicate_origin: PredicateOrigin,
         f: F,
     ) -> Result<Binder<U>, Error>

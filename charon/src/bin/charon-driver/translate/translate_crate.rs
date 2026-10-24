@@ -34,8 +34,8 @@ use macros::VariantIndexArity;
 /// item sources, e.g. a constant will have both a `Global` version (for the constant itself) and a
 /// `FunDecl` one (for its initializer function).
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct TransItemSource {
-    pub item: RustcItem,
+pub struct TransItemSource<'tcx> {
+    pub item: RustcItem<'tcx>,
     pub kind: TransItemSourceKind,
 }
 
@@ -47,9 +47,9 @@ pub struct TransItemSource {
 ///     2. the vtable is translated with erased signature of the methods and without generic types.
 ///        In other words, there is one "opaque" vtable per trait.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum RustcItem {
+pub enum RustcItem<'tcx> {
     Poly(hax::DefId),
-    Mono(hax::ItemRef),
+    Mono(hax::ItemRef<'tcx>),
     MonoTrait(hax::DefId),
 }
 
@@ -104,8 +104,8 @@ pub enum TransImplSource {
     Marker,
 }
 
-impl TransItemSource {
-    pub fn new(item: RustcItem, kind: TransItemSourceKind) -> Self {
+impl<'tcx> TransItemSource<'tcx> {
+    pub fn new(item: RustcItem<'tcx>, kind: TransItemSourceKind) -> Self {
         if let RustcItem::Mono(item) = &item {
             if item.has_non_lt_param {
                 panic!("Item is not monomorphic: {item:?}")
@@ -120,7 +120,11 @@ impl TransItemSource {
 
     /// Refers to the given item. Depending on `monomorphize`, this chooses between the monomorphic
     /// and polymorphic versions of the item.
-    pub fn from_item(item: &hax::ItemRef, kind: TransItemSourceKind, monomorphize: bool) -> Self {
+    pub fn from_item(
+        item: &hax::ItemRef<'tcx>,
+        kind: TransItemSourceKind,
+        monomorphize: bool,
+    ) -> Self {
         if monomorphize {
             if kind.is_for_trait() {
                 Self::monomorphic_trait(&item.def_id, kind)
@@ -138,7 +142,7 @@ impl TransItemSource {
     }
 
     /// Refers to the monomorphic version of this item.
-    pub fn monomorphic(item: &hax::ItemRef, kind: TransItemSourceKind) -> Self {
+    pub fn monomorphic(item: &hax::ItemRef<'tcx>, kind: TransItemSourceKind) -> Self {
         Self::new(RustcItem::Mono(item.clone()), kind)
     }
 
@@ -212,7 +216,7 @@ impl TransItemSourceKind {
     }
 }
 
-impl RustcItem {
+impl<'tcx> RustcItem<'tcx> {
     pub fn def_id(&self) -> &hax::DefId {
         match self {
             RustcItem::Poly(def_id) => def_id,
@@ -414,7 +418,7 @@ impl<'tcx> TranslateCtx<'tcx> {
     pub(crate) fn register_no_enqueue<T: TryFrom<ItemId>>(
         &mut self,
         dep_src: &Option<DepSource>,
-        src: &TransItemSource,
+        src: &TransItemSource<'tcx>,
     ) -> Option<T> {
         let item_id = match self.id_map.get(src) {
             Some(tid) => *tid,
@@ -453,7 +457,7 @@ impl<'tcx> TranslateCtx<'tcx> {
     pub(crate) fn register_and_enqueue<T: TryFrom<ItemId>>(
         &mut self,
         dep_src: &Option<DepSource>,
-        item_src: TransItemSource,
+        item_src: TransItemSource<'tcx>,
     ) -> Option<T> {
         let id = self.register_no_enqueue(dep_src, &item_src);
         self.items_to_translate.push_back(item_src);
@@ -710,7 +714,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn register_and_enqueue<T: TryFrom<ItemId>>(
         &mut self,
         span: Span,
-        item_src: TransItemSource,
+        item_src: TransItemSource<'tcx>,
     ) -> T {
         let dep_src = self.make_dep_source(span);
         self.t_ctx.register_and_enqueue(&dep_src, item_src).unwrap()
@@ -719,7 +723,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn register_no_enqueue<T: TryFrom<ItemId>>(
         &mut self,
         span: Span,
-        src: &TransItemSource,
+        src: &TransItemSource<'tcx>,
     ) -> T {
         let dep_src = self.make_dep_source(span);
         self.t_ctx.register_no_enqueue(&dep_src, src).unwrap()
@@ -730,7 +734,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         enqueue: bool,
-        item: &hax::ItemRef,
+        item: &hax::ItemRef<'tcx>,
         kind: TransItemSourceKind,
     ) -> T {
         let mono = self.should_monomorphize_item(item, kind);
@@ -751,7 +755,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn register_item<T: TryFrom<ItemId>>(
         &mut self,
         span: Span,
-        item: &hax::ItemRef,
+        item: &hax::ItemRef<'tcx>,
         kind: TransItemSourceKind,
     ) -> T {
         self.register_item_maybe_enqueue(span, true, item, kind)
@@ -762,7 +766,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn register_item_no_enqueue<T: TryFrom<ItemId>>(
         &mut self,
         span: Span,
-        item: &hax::ItemRef,
+        item: &hax::ItemRef<'tcx>,
         kind: TransItemSourceKind,
     ) -> T {
         self.register_item_maybe_enqueue(span, false, item, kind)
@@ -772,7 +776,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_item_maybe_enqueue<T: TryFrom<DeclRef<ItemId>>>(
         &mut self,
         span: Span,
-        hax_item: &hax::ItemRef,
+        hax_item: &hax::ItemRef<'tcx>,
         kind: TransItemSourceKind,
         enqueue: bool,
     ) -> Result<T, Error> {
@@ -904,7 +908,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_item<T: TryFrom<DeclRef<ItemId>>>(
         &mut self,
         span: Span,
-        item: &hax::ItemRef,
+        item: &hax::ItemRef<'tcx>,
         kind: TransItemSourceKind,
     ) -> Result<T, Error> {
         self.translate_item_maybe_enqueue(span, item, kind, true)
@@ -914,7 +918,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_type_decl_ref(
         &mut self,
         span: Span,
-        item: &hax::ItemRef,
+        item: &hax::ItemRef<'tcx>,
     ) -> Result<TypeDeclRef, Error> {
         self.translate_type_decl_ref_maybe_enqueue(span, item, TransItemSourceKind::Type, true)
     }
@@ -924,7 +928,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_type_decl_ref_maybe_enqueue(
         &mut self,
         span: Span,
-        item: &hax::ItemRef,
+        item: &hax::ItemRef<'tcx>,
         kind: TransItemSourceKind,
         enqueue: bool,
     ) -> Result<TypeDeclRef, Error> {
@@ -958,7 +962,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn translate_method_decl_fn_ptr(
         &mut self,
         span: Span,
-        item: &hax::ItemRef,
+        item: &hax::ItemRef<'tcx>,
     ) -> Result<Option<RegionBinder<FnPtr>>, Error> {
         let Some(in_trait) = &item.in_trait else {
             return Ok(None);
@@ -992,7 +996,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_unbound_fn_ptr_maybe_enqueue(
         &mut self,
         span: Span,
-        item: &hax::ItemRef,
+        item: &hax::ItemRef<'tcx>,
         kind: TransItemSourceKind,
         enqueue: bool,
     ) -> Result<FnPtr, Error> {
@@ -1029,7 +1033,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_bound_fn_ptr_maybe_enqueue(
         &mut self,
         span: Span,
-        item: &hax::ItemRef,
+        item: &hax::ItemRef<'tcx>,
         kind: TransItemSourceKind,
         enqueue: bool,
     ) -> Result<RegionBinder<FnPtr>, Error> {
@@ -1051,7 +1055,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_bound_fn_ptr(
         &mut self,
         span: Span,
-        item: &hax::ItemRef,
+        item: &hax::ItemRef<'tcx>,
         kind: TransItemSourceKind,
     ) -> Result<RegionBinder<FnPtr>, Error> {
         self.translate_bound_fn_ptr_maybe_enqueue(span, item, kind, true)
@@ -1060,7 +1064,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_bound_fn_ptr_no_enqueue(
         &mut self,
         span: Span,
-        item: &hax::ItemRef,
+        item: &hax::ItemRef<'tcx>,
         kind: TransItemSourceKind,
     ) -> Result<RegionBinder<FnPtr>, Error> {
         self.translate_bound_fn_ptr_maybe_enqueue(span, item, kind, false)
@@ -1071,7 +1075,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_fn_ptr(
         &mut self,
         span: Span,
-        item: &hax::ItemRef,
+        item: &hax::ItemRef<'tcx>,
         kind: TransItemSourceKind,
     ) -> Result<FnPtr, Error> {
         let fn_ptr = self.translate_bound_fn_ptr(span, item, kind)?;
@@ -1082,7 +1086,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_global_decl_ref(
         &mut self,
         span: Span,
-        item: &hax::ItemRef,
+        item: &hax::ItemRef<'tcx>,
     ) -> Result<GlobalDeclRef, Error> {
         self.translate_item(span, item, TransItemSourceKind::Global)
     }
@@ -1090,7 +1094,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_trait_decl_ref(
         &mut self,
         span: Span,
-        item: &hax::ItemRef,
+        item: &hax::ItemRef<'tcx>,
     ) -> Result<TraitDeclRef, Error> {
         self.translate_item(span, item, TransItemSourceKind::TraitDecl)
     }
@@ -1098,7 +1102,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_trait_impl_ref(
         &mut self,
         span: Span,
-        item: &hax::ItemRef,
+        item: &hax::ItemRef<'tcx>,
         kind: TransImplSource,
     ) -> Result<TraitImplRef, Error> {
         self.translate_item(span, item, TransItemSourceKind::TraitImpl(kind))

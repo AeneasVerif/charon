@@ -14,7 +14,7 @@ use std::mem;
 use std::ops::ControlFlow;
 
 impl<'tcx> TranslateCtx<'tcx> {
-    pub(crate) fn translate_item(&mut self, item_src: &TransItemSource) {
+    pub(crate) fn translate_item(&mut self, item_src: &TransItemSource<'tcx>) {
         let _guard = charon_lib::timing::scope_lazy("translate-item", || {
             let kind = format!("{:?}", item_src.kind);
             kind.split('(').next().unwrap().to_owned()
@@ -68,7 +68,7 @@ impl<'tcx> TranslateCtx<'tcx> {
 
     pub(crate) fn translate_item_aux(
         &mut self,
-        item_src: &TransItemSource,
+        item_src: &TransItemSource<'tcx>,
         trans_id: Option<ItemId>,
     ) -> Result<(), Error> {
         // The name may have already been computed.
@@ -1520,7 +1520,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         def_id: TraitImplId,
         item_meta: ItemMeta,
-        vtable_item: &hax::ItemRef,
+        vtable_item: &hax::ItemRef<'tcx>,
         impl_kind: TransImplSource,
         vimpl: &hax::VirtualTraitImpl<'tcx>,
     ) -> Result<TraitImpl, Error> {

@@ -38,7 +38,7 @@ mod base {
         /// Map rustc def ids to their hax counterpart.
         pub def_ids: HashMap<RDefId, DefId>,
         /// Map that recovers rustc args for a given `ItemRef`.
-        pub reverse_item_refs_map: HashMap<ItemRef, ty::GenericArgsRef<'tcx>>,
+        pub reverse_item_refs_map: HashMap<ItemRef<'tcx>, ty::GenericArgsRef<'tcx>>,
         /// Data for synthetic items. See the `synthetic_items` module.
         pub synthetic_item_data: HashMap<SyntheticItem, SyntheticItemData<'tcx>>,
         /// Anonymous allocations we turned into globals, in encounter order. Used to keep
@@ -105,11 +105,11 @@ mod base {
         pub full_defs:
             HashMap<(Option<PromotedId>, Option<ty::GenericArgsRef<'tcx>>), Arc<FullDef<'tcx>>>,
         /// Cache the `Ty` translations.
-        pub tys: HashMap<ty::Ty<'tcx>, Ty>,
+        pub tys: HashMap<ty::Ty<'tcx>, Ty<'tcx>>,
         /// Cache the `ItemRef` translations. This is fast because `GenericArgsRef` is interned.
-        pub item_refs: HashMap<ItemRefKey<'tcx, DefId>, ItemRef>,
+        pub item_refs: HashMap<ItemRefKey<'tcx, DefId>, ItemRef<'tcx>>,
         /// Cache of trait refs to resolved trait proofs.
-        pub trait_proofs: HashMap<ty::PolyTraitRef<'tcx>, crate::hax::traits::TraitProof>,
+        pub trait_proofs: HashMap<ty::PolyTraitRef<'tcx>, crate::hax::traits::TraitProof<'tcx>>,
         /// Generics for this item, if it is virtual.
         pub virtual_generics: Option<&'tcx ty::Generics>,
     }

@@ -12,10 +12,10 @@ pub enum DiscriminantDefinition {
 
 /// Reflects [`ty::util::Discr`]
 #[derive(Debug, Clone, AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::util::Discr<'tcx>, state: S as gstate)]
-pub struct DiscriminantValue {
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::util::Discr<'tcx>, state: S as gstate)]
+pub struct DiscriminantValue<'tcx> {
     pub val: u128,
-    pub ty: Ty,
+    pub ty: Ty<'tcx>,
 }
 
 /// Reflects [`ty::Visibility`]
@@ -37,23 +37,23 @@ impl<S, T: SInto<S, U>, U> SInto<S, Visibility<U>> for ty::Visibility<T> {
 
 /// Reflects [`ty::FieldDef`]
 #[derive(Debug, Clone)]
-pub struct FieldDef {
+pub struct FieldDef<'tcx> {
     pub did: DefId,
     /// Field definition of [tuple
     /// structs](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#using-tuple-structs-without-named-fields-to-create-different-types)
     /// are anonymous, in that case `name` is [`None`].
     pub name: Option<Symbol>,
     pub vis: Visibility<DefId>,
-    pub ty: Ty,
+    pub ty: Ty<'tcx>,
     pub span: Span,
 }
 
-impl FieldDef {
-    pub fn sfrom<'tcx, S: UnderOwnerState<'tcx>>(
+impl<'tcx> FieldDef<'tcx> {
+    pub fn sfrom<S: UnderOwnerState<'tcx>>(
         s: &S,
         fdef: &ty::FieldDef,
         instantiate: ty::GenericArgsRef<'tcx>,
-    ) -> FieldDef {
+    ) -> FieldDef<'tcx> {
         let tcx = s.base().tcx;
         let ty = normalize(tcx, s.typing_env(), fdef.ty(tcx, instantiate)).sinto(s);
         let name = {
@@ -79,22 +79,22 @@ impl FieldDef {
 
 /// Reflects [`ty::VariantDef`]
 #[derive(Debug, Clone)]
-pub struct VariantDef {
+pub struct VariantDef<'tcx> {
     pub def_id: DefId,
     pub ctor: Option<(CtorKind, DefId)>,
     pub name: Symbol,
     pub discr_def: DiscriminantDefinition,
-    pub discr_val: DiscriminantValue,
+    pub discr_val: DiscriminantValue<'tcx>,
     /// The definitions of the fields on this variant. In case of [tuple
     /// structs/variants](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#using-tuple-structs-without-named-fields-to-create-different-types),
     /// the fields are anonymous, otherwise fields are named.
-    pub fields: IndexVec<FieldIdx, FieldDef>,
+    pub fields: IndexVec<FieldIdx, FieldDef<'tcx>>,
     /// Span of the definition of the variant
     pub span: Span,
 }
 
-impl VariantDef {
-    pub(crate) fn sfrom<'tcx, S: UnderOwnerState<'tcx>>(
+impl<'tcx> VariantDef<'tcx> {
+    pub(crate) fn sfrom<S: UnderOwnerState<'tcx>>(
         s: &S,
         def: &ty::VariantDef,
         discr_val: ty::util::Discr<'tcx>,
@@ -146,8 +146,8 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, AdtKind> for ty::AdtKind {
 
 /// Reflects [`rustc_abi::ReprOptions`].
 #[derive(Debug, Clone, AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: rustc_abi::ReprOptions, state: S as s)]
-pub struct ReprOptions {
+#[args(< S: UnderOwnerState<'tcx>>, from: rustc_abi::ReprOptions, state: S as s)]
+pub struct ReprOptions<'tcx> {
     /// Whether an explicit integer representation was specified.
     #[value(self.int.is_some())]
     pub int_specified: bool,
@@ -156,7 +156,7 @@ pub struct ReprOptions {
         use rustc_middle::ty::util::IntTypeExt;
         self.discr_type().to_ty(s.base().tcx).sinto(s)
     })]
-    pub typ: Ty,
+    pub typ: Ty<'tcx>,
     pub align: Option<Align>,
     pub pack: Option<Align>,
     #[value(ReprFlags { is_c: self.c(), is_transparent: self.transparent(), is_simd: self.simd() })]

@@ -181,21 +181,21 @@ pub struct Region {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[derive(EnumIsA, EnumAsGetters)]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::GenericArgKind<'tcx>, state: S as s)]
-pub enum GenericArg {
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::GenericArgKind<'tcx>, state: S as s)]
+pub enum GenericArg<'tcx> {
     Lifetime(Region),
-    Type(Ty),
-    Const(ConstantExpr),
+    Type(Ty<'tcx>),
+    Const(ConstantExpr<'tcx>),
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, GenericArg> for ty::GenericArg<'tcx> {
-    fn sinto(&self, s: &S) -> GenericArg {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, GenericArg<'tcx>> for ty::GenericArg<'tcx> {
+    fn sinto(&self, s: &S) -> GenericArg<'tcx> {
         self.kind().sinto(s)
     }
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Vec<GenericArg>> for ty::GenericArgsRef<'tcx> {
-    fn sinto(&self, s: &S) -> Vec<GenericArg> {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Vec<GenericArg<'tcx>>> for ty::GenericArgsRef<'tcx> {
+    fn sinto(&self, s: &S) -> Vec<GenericArg<'tcx>> {
         self.iter().map(|v| v.kind().sinto(s)).collect()
     }
 }
@@ -229,9 +229,9 @@ pub enum Variance {
 
 /// Reflects [`ty::GenericParamDef`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::GenericParamDef, state: S as s)]
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::GenericParamDef, state: S as s)]
 #[derive(Debug, Clone)]
-pub struct GenericParamDef {
+pub struct GenericParamDef<'tcx> {
     pub name: Symbol,
     pub def_id: DefId,
     pub index: u32,
@@ -256,7 +256,7 @@ pub struct GenericParamDef {
             },
         }
     )]
-    pub kind: GenericParamDefKind,
+    pub kind: GenericParamDefKind<'tcx>,
     /// Variance of this type parameter, if sensible.
     #[value({
         use SyntheticItem::*;
@@ -282,21 +282,21 @@ pub struct GenericParamDef {
 
 /// Reflects [`ty::GenericParamDefKind`]
 #[derive(Debug, Clone)]
-pub enum GenericParamDefKind {
+pub enum GenericParamDefKind<'tcx> {
     Lifetime,
     Type { has_default: bool, synthetic: bool },
-    Const { has_default: bool, ty: Ty },
+    Const { has_default: bool, ty: Ty<'tcx> },
 }
 
 /// Reflects [`ty::Generics`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::Generics, state: S as state)]
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::Generics, state: S as state)]
 #[derive(Debug, Clone)]
-pub struct TyGenerics {
+pub struct TyGenerics<'tcx> {
     pub parent: Option<DefId>,
     pub parent_count: usize,
     #[from(own_params)]
-    pub params: Vec<GenericParamDef>,
+    pub params: Vec<GenericParamDef<'tcx>>,
     // pub param_def_id_to_index: FxHashMap<DefId, u32>,
     pub has_self: bool,
     pub has_late_bound_regions: Option<Span>,
@@ -369,22 +369,23 @@ impl<T> Binder<T> {
 /// appropriate trait clauses. The contained value may refer to the fresh ty and the in-scope trait
 /// clauses. This is used to represent types related to `dyn Trait`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct DynBinder<T> {
+pub struct DynBinder<'tcx, T> {
     /// Fresh type parameter that we use as the `Self` type in the predicates below.
     pub existential_ty: ParamTy,
     /// Clauses that define the trait object. These clauses use the fresh type parameter above
     /// as `Self` type.
-    pub predicates: GenericPredicates,
+    pub predicates: GenericPredicates<'tcx>,
     /// The value inside the binder.
     pub val: T,
 }
 
-impl<'tcx, S, T, U> SInto<S, DynBinder<U>> for rustc_trait_elaboration::DynBinder<'tcx, T, DefId>
+impl<'tcx, S, T, U> SInto<S, DynBinder<'tcx, U>>
+    for rustc_trait_elaboration::DynBinder<'tcx, T, DefId>
 where
     S: UnderOwnerState<'tcx>,
     T: SInto<S, U>,
 {
-    fn sinto(&self, s: &S) -> DynBinder<U> {
+    fn sinto(&self, s: &S) -> DynBinder<'tcx, U> {
         DynBinder {
             existential_ty: self.existential_ty.sinto(s),
             predicates: GenericPredicates {
