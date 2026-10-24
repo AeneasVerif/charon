@@ -47,7 +47,7 @@ fn bits_and_type_to_float_constant_literal(bits: u128, ty: FloatTy) -> ConstantL
 }
 
 /// The reader for constants evaluated in the current context.
-fn const_reader<'tcx, S: UnderOwnerState<'tcx>>(s: &S) -> ConstReader<'tcx> {
+pub fn const_reader<'tcx, S: UnderOwnerState<'tcx>>(s: &S) -> ConstReader<'tcx> {
     ConstReader {
         tcx: s.base().tcx,
         typing_env: s.typing_env(),
@@ -251,15 +251,15 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr<'tcx>>
     }
 }
 
-/// Evaluate `src` and read it back as a `ConstantExpr`.
+/// Evaluate `src` and read it back.
 pub fn read_const<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     span: rustc_span::Span,
     src: ConstSource<'tcx>,
     mode: ReadMode,
-) -> Option<ConstantExpr<'tcx>> {
+) -> Option<rustc_const_uneval::Const<'tcx>> {
     match const_reader(s).read(span, src, mode) {
-        Ok(val) => Some(val.sinto(s)),
+        Ok(val) => Some(val),
         Err(ReadError::NotEvaluable) => None,
         Err(err) => {
             s.raise(

@@ -103,8 +103,8 @@ pub struct ConstOperand<'tcx> {
 
 #[derive(Debug, Clone)]
 pub enum ConstOperandKind<'tcx> {
-    /// An evaluated constant represented as an expression.
-    Value(ConstantExpr<'tcx>),
+    /// An evaluated constant.
+    Value(rustc_const_uneval::Const<'tcx>),
     /// A type-level constant.
     Ty(ty::Const<'tcx>),
     /// Part of a MIR body that was promoted to be a constant. May not be evaluatable because of
@@ -139,7 +139,10 @@ fn translate_mir_const<'tcx, S: UnderOwnerState<'tcx>>(
             let src = ConstSource::Value(const_value, ty);
             Value(
                 read_const(s, span, src, ReadMode::Structured).unwrap_or_else(|| {
-                    ConstantExpr::new(ConstantExprKind::Todo("ConstEvalVal".into()), ty.sinto(s))
+                    rustc_const_uneval::Const {
+                        ty,
+                        kind: rustc_const_uneval::ConstKind::Unsupported("ConstEvalVal"),
+                    }
                 }),
             )
         }
