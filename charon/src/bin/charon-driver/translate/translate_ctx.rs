@@ -49,9 +49,9 @@ pub struct TranslateCtx<'tcx> {
     pub method_status: IndexMap<TraitDeclId, IndexVec<TraitMethodId, MethodStatus>>,
 
     /// The map from rustc id to translated id.
-    pub id_map: HashMap<TransItemSource, ItemId>,
+    pub id_map: HashMap<TransItemSource<'tcx>, ItemId>,
     /// The reverse map of ids.
-    pub reverse_id_map: HashMap<ItemId, TransItemSource>,
+    pub reverse_id_map: HashMap<ItemId, TransItemSource<'tcx>>,
     /// Map from rustc id to associated item id
     pub assoc_item_id_map: HashMap<hax::DefId, AssocItemId>,
     /// The reverse filename map.
@@ -60,9 +60,9 @@ pub struct TranslateCtx<'tcx> {
     /// Context for tracking and reporting errors.
     pub errors: RefCell<ErrorCtx>,
     /// The declarations we came accross and which we haven't translated yet.
-    pub items_to_translate: VecDeque<TransItemSource>,
+    pub items_to_translate: VecDeque<TransItemSource<'tcx>>,
     /// The declaration we've already processed (successfully or not).
-    pub processed: HashSet<TransItemSource>,
+    pub processed: HashSet<TransItemSource<'tcx>>,
     /// Items that were selected by `--start-from`. Because we don't translate modules or inherent
     /// impls as separate items, we propagate that info to the contained items, which will also be
     /// added to this set.
@@ -74,9 +74,9 @@ pub struct TranslateCtx<'tcx> {
     /// Cache of file ids per rustc source file, to avoid recomputing file names for every span.
     pub cached_file_ids: HashMap<rustc_span::StableSourceFileId, FileId>,
     /// Cache the names to compute them only once each.
-    pub cached_names: HashMap<RustcItem, Name>,
+    pub cached_names: HashMap<RustcItem<'tcx>, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
-    pub cached_item_metas: HashMap<TransItemSource, ItemMeta>,
+    pub cached_item_metas: HashMap<TransItemSource<'tcx>, ItemMeta>,
     /// Compute which lifetimes are used in a `&'a mut T`. This is a global fixpoint analysis.
     pub lt_mutability_computer: LifetimeMutabilityComputer,
 }
@@ -105,7 +105,7 @@ impl Default for MethodStatus {
 /// Augments the [TranslateCtx] with type-level variables.
 pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     /// The definition we are currently extracting.
-    pub item_src: TransItemSource,
+    pub item_src: TransItemSource<'tcx>,
     /// The id of the definition we are currently extracting, if there is one.
     pub item_id: Option<ItemId>,
     /// The translation context containing the top-level definitions/ids.
@@ -119,7 +119,7 @@ pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     /// The stack of generic parameter binders for the current context. Each binder introduces an
     /// entry in this stack, with the entry as index `0` being the innermost binder. These
     /// parameters are referenced using [`DeBruijnVar`]; see there for details.
-    pub binding_levels: BindingStack<BindingLevel>,
+    pub binding_levels: BindingStack<BindingLevel<'tcx>>,
     /// When `Some`, translate any erased lifetime to a fresh `Region::Body` lifetime.
     pub lifetime_freshener: Option<IndexMap<RegionId, ()>>,
 }
@@ -177,7 +177,10 @@ impl<'tcx> TranslateCtx<'tcx> {
 
     /// Return the definition for this item. This uses the polymorphic or monomorphic definition
     /// depending on user choice.
-    pub fn hax_def_for_item(&mut self, item: &RustcItem) -> Result<Arc<hax::FullDef<'tcx>>, Error> {
+    pub fn hax_def_for_item(
+        &mut self,
+        item: &RustcItem<'tcx>,
+    ) -> Result<Arc<hax::FullDef<'tcx>>, Error> {
         let def_id = item.def_id();
         let span = self.def_span(def_id);
         if let RustcItem::Mono(item_ref) = item
@@ -220,7 +223,7 @@ impl<'tcx> TranslateCtx<'tcx> {
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(
-        item_src: TransItemSource,
+        item_src: TransItemSource<'tcx>,
         item_id: Option<ItemId>,
         t_ctx: &'ctx mut TranslateCtx<'tcx>,
     ) -> Self {
@@ -273,7 +276,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     /// Return the definition for this item. This uses the polymorphic or monomorphic definition
     /// depending on user choice. For `TraitDecl` or `VTable`, we always use polymorphic definitions.
-    pub fn hax_def(&mut self, item: &hax::ItemRef) -> Result<Arc<hax::FullDef<'tcx>>, Error> {
+    pub fn hax_def(&mut self, item: &hax::ItemRef<'tcx>) -> Result<Arc<hax::FullDef<'tcx>>, Error> {
         let item = if self.monomorphize() && !self.item_src.kind.is_for_trait() {
             RustcItem::Mono(item.clone())
         } else {

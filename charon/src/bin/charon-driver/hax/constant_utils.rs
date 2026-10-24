@@ -29,18 +29,18 @@ pub enum VariantKind {
 
 /// The subset of expressions that corresponds to constants.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ConstantExprKind {
+pub enum ConstantExprKind<'tcx> {
     Literal(ConstantLiteral),
     // Adts (structs, enums, unions) or closures.
     Adt {
         kind: VariantKind,
-        fields: Vec<ConstantFieldExpr>,
+        fields: Vec<ConstantFieldExpr<'tcx>>,
     },
     Array {
-        fields: Vec<ConstantExpr>,
+        fields: Vec<ConstantExpr<'tcx>>,
     },
     Tuple {
-        fields: Vec<ConstantExpr>,
+        fields: Vec<ConstantExpr<'tcx>>,
     },
     /// A top-level or associated constant.
     ///
@@ -62,44 +62,44 @@ pub enum ConstantExprKind {
     ///
     /// If `options.inline_anon_consts` is `false`, this is also used for inline const blocks and
     /// advanced const generics expressions.
-    NamedGlobal(ItemRef),
+    NamedGlobal(ItemRef<'tcx>),
     /// A reference or raw pointer (as given by the type of this constant) to a place inside a
     /// constant value: `projections` applied to `base`, each with the type of the place it
     /// reaches.
     Ptr {
-        base: ConstantPtrBase,
-        projections: Vec<(ConstantProjectionElem, Ty)>,
-        metadata: Option<UnsizingMetadata>,
+        base: ConstantPtrBase<'tcx>,
+        projections: Vec<(ConstantProjectionElem<'tcx>, Ty<'tcx>)>,
+        metadata: Option<UnsizingMetadata<'tcx>>,
     },
     /// Casts a thin pointer to the type of this constant. If metadata is given, this is an
     /// unsizing cast from the pointee of the given pointer.
-    PtrCast(ConstantExpr, Option<UnsizingMetadata>),
+    PtrCast(ConstantExpr<'tcx>, Option<UnsizingMetadata<'tcx>>),
     ConstRef {
         id: ParamConst,
     },
     /// A function definition, corresponding to a particular item. This is a ZST, unlike `FnPtr`.
-    FnDef(ItemRef),
+    FnDef(ItemRef<'tcx>),
     /// A function pointer. This is an actual pointer to that function.
-    FnPtr(FnPtrTarget),
+    FnPtr(FnPtrTarget<'tcx>),
     /// A blob of memory containing the byte representation of the value. This can occur when
     /// evaluating MIR constants (e.g. unions). Interpreting this back to a structured value
     /// is left as an exercice to the consumer.
-    Memory(Vec<ConstantByte>),
+    Memory(Vec<ConstantByte<'tcx>>),
     Todo(String),
 }
 
 /// The place a constant pointer starts from.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ConstantPtrBase {
+pub enum ConstantPtrBase<'tcx> {
     /// The allocation behind this provenance, of the given type.
-    Global(ConstantByteProvenance, Ty),
+    Global(ConstantByteProvenance<'tcx>, Ty<'tcx>),
     /// A constant value that isn't stored in an allocation we name.
-    Value(ConstantExpr),
+    Value(ConstantExpr<'tcx>),
 }
 
 /// Projects a place inside the pointee of a constant pointer.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ConstantProjectionElem {
+pub enum ConstantProjectionElem<'tcx> {
     /// A field of a struct, tuple or closure, or of the given variant of an enum.
     Field(Option<VariantIdx>, FieldIdx),
     /// An element of an array.
@@ -111,15 +111,15 @@ pub enum ConstantProjectionElem {
     /// allocation. `pointee_is_sized` proves that the resulting place is sized.
     Offset {
         count: i64,
-        ty: Option<Ty>,
+        ty: Option<Ty<'tcx>>,
         in_bounds: bool,
-        pointee_is_sized: TraitProof,
+        pointee_is_sized: TraitProof<'tcx>,
     },
 }
 
 /// A byte of an evaluated constant, in the MiniRust sense.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ConstantByte {
+pub enum ConstantByte<'tcx> {
     /// An uninitialized byte (e.g. padding, or the bytes of a union not covered by the active
     /// field).
     Uninit,
@@ -127,33 +127,33 @@ pub enum ConstantByte {
     Value(u8),
     /// A byte that is part of a pointer with provenance. The `u8` is the offset of this byte
     /// within the pointer.
-    Provenance(ConstantByteProvenance, u8),
+    Provenance(ConstantByteProvenance<'tcx>, u8),
 }
 
 /// The function a function pointer points to.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum FnPtrTarget {
+pub enum FnPtrTarget<'tcx> {
     /// The function of an item.
-    Fn(ItemRef),
+    Fn(ItemRef<'tcx>),
     /// A stateless closure coerced to a function pointer.
-    ClosureAsFn(ClosureTy),
+    ClosureAsFn(ClosureTy<'tcx>),
 }
 
 /// What a pointer byte in an evaluated constant points to.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ConstantByteProvenance {
+pub enum ConstantByteProvenance<'tcx> {
     /// A pointer to a static.
-    Global(ItemRef),
+    Global(ItemRef<'tcx>),
     /// A pointer to a function, with the type of function pointers to it.
-    Function(FnPtrTarget, Ty),
+    Function(FnPtrTarget<'tcx>, Ty<'tcx>),
     /// A pointer to anything else (an anonymous allocation, a vtable...).
     Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ConstantFieldExpr {
+pub struct ConstantFieldExpr<'tcx> {
     pub field: DefId,
-    pub value: ConstantExpr,
+    pub value: ConstantExpr<'tcx>,
 }
 
 /// Rustc has different representations for constants: one for MIR
@@ -161,13 +161,13 @@ pub struct ConstantFieldExpr {
 /// ([`rustc_middle::ty::ConstKind`]). For simplicity hax maps those
 /// two constructs to the same `ConstantExpr` type.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ConstantExpr {
-    pub kind: Box<ConstantExprKind>,
-    pub ty: Ty,
+pub struct ConstantExpr<'tcx> {
+    pub kind: Box<ConstantExprKind<'tcx>>,
+    pub ty: Ty<'tcx>,
 }
 
-impl ConstantExpr {
-    pub fn new(kind: ConstantExprKind, ty: Ty) -> Self {
+impl<'tcx> ConstantExpr<'tcx> {
+    pub fn new(kind: ConstantExprKind<'tcx>, ty: Ty<'tcx>) -> Self {
         Self {
             kind: Box::new(kind),
             ty,

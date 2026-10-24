@@ -9,14 +9,15 @@ pub use rustc_trait_elaboration::{
 };
 
 use crate::hax::prelude::*;
-use charon_lib::ast::HashConsed;
+use rustc_data_structures::intern::Interned;
+use std::ops::Deref;
 
 pub type PredicateSearcher<'tcx> = elaboration::PredicateSearcher<'tcx, DefId>;
 
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::ImpliedPredicate<'tcx, DefId>, state: S as s)]
+#[args(< S: UnderOwnerState<'tcx> >, from: elaboration::ImpliedPredicate<'tcx, DefId>, state: S as s)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum TraitProofImpliedPredicate {
+pub enum TraitProofImpliedPredicate<'tcx> {
     AssocItem {
         /// Reference to the item, with generics (for GATs), e.g. the `T` and proof for `T: Clone`
         /// in the following example:
@@ -25,7 +26,7 @@ pub enum TraitProofImpliedPredicate {
         ///     type Type<T: Clone>: Debug;
         /// }
         /// ```
-        item: ItemRef,
+        item: ItemRef<'tcx>,
         /// The index of this predicate among the trait predicates returned by `ItemPredicates::Implied`.
         index: usize,
         /// Number of regions bound by the corresponding clause.
@@ -42,11 +43,11 @@ pub enum TraitProofImpliedPredicate {
 /// The source of a particular trait implementation. Most often this is either `Concrete` for a
 /// concrete `impl Trait for Type {}` item, or `LocalBound` for a context-bound `where T: Trait`.
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::TraitProofKind<'tcx, DefId>, state: S as s)]
+#[args(< S: UnderOwnerState<'tcx> >, from: elaboration::TraitProofKind<'tcx, DefId>, state: S as s)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum TraitProofKind {
+pub enum TraitProofKind<'tcx> {
     /// A concrete `impl Trait for Type {}` item.
-    Concrete(ItemRef),
+    Concrete(ItemRef<'tcx>),
     /// A context-bound clause like `where T: Trait`.
     LocalBound(GenericPredicateId),
     /// The implicit `Self: Trait` clause present inside a `trait Trait {}` item.
@@ -60,30 +61,30 @@ pub enum TraitProofKind {
     /// built-in implementation.
     /// The proof describes how to prove the current predicate in the context of the `dyn Trait`
     /// self type, e.g. for `<dyn Trait as Supertrait>`.
-    Dyn(DynBinder<TraitProof>),
+    Dyn(DynBinder<'tcx, TraitProof<'tcx>>),
     /// A built-in trait whose implementation is computed by the compiler, such as `FnMut`. This
     /// morally points to an invisible `impl` block; as such it contains the information we may
     /// need from one.
     Builtin {
         /// Extra data for the given trait.
-        trait_data: BuiltinTraitData,
+        trait_data: BuiltinTraitData<'tcx>,
         /// The trait proofs required to satisfy the implied predicates on the trait declaration.
         /// E.g. since `FnMut: FnOnce`, a built-in `T: FnMut` impl would have a proof for
         /// `T: FnOnce`.
-        proofs: Vec<TraitProof>,
+        proofs: Vec<TraitProof<'tcx>>,
         /// The values of the associated types for this trait.
-        types: Vec<(DefId, Ty, Vec<TraitProof>)>,
+        types: Vec<(DefId, Ty<'tcx>, Vec<TraitProof<'tcx>>)>,
     },
     /// A predicate implied by `base` by following `path`.
     Derived {
-        base: TraitProof,
-        path: TraitProofImpliedPredicate,
+        base: TraitProof<'tcx>,
+        path: TraitProofImpliedPredicate<'tcx>,
     },
     /// An error happened while resolving traits.
     Error(String),
 }
 
-impl TraitProofKind {
+impl<'tcx> TraitProofKind<'tcx> {
     /// Returns `true` if this is an error proof.
     pub fn is_error(&self) -> bool {
         matches!(self, TraitProofKind::Error(_))
@@ -91,14 +92,14 @@ impl TraitProofKind {
 }
 
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::BuiltinTraitData<'tcx>, state: S as s)]
+#[args(< S: UnderOwnerState<'tcx> >, from: elaboration::BuiltinTraitData<'tcx>, state: S as s)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum BuiltinTraitData {
+pub enum BuiltinTraitData<'tcx> {
     /// A virtual `Destruct` implementation.
     /// `Destruct` is implemented automatically for all types. For our purposes, we chose to attach
     /// the information about `drop_glue` to that trait. This data tells us what kind of
     /// `drop_glue` the target type has.
-    Destruct(DestructData),
+    Destruct(DestructData<'tcx>),
     /// A trait alias.
     Alias,
     /// An auto-trait.
@@ -110,9 +111,9 @@ pub enum BuiltinTraitData {
 sinto_reexport!(rustc_middle::ty::lang_items::SolverTraitLangItem);
 
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::DestructData<'tcx>, state: S as s)]
+#[args(< S: UnderOwnerState<'tcx> >, from: elaboration::DestructData<'tcx>, state: S as s)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum DestructData {
+pub enum DestructData<'tcx> {
     /// A drop that does nothing, e.g. for scalars and pointers.
     Noop,
     /// An implicit `Destruct` local clause, if the `resolve_destruct_bounds` option is `false`. If
@@ -123,7 +124,7 @@ pub enum DestructData {
     /// The `drop_glue` is known and non-trivial.
     Glue {
         /// The type we're generating glue for.
-        ty: Ty,
+        ty: Ty<'tcx>,
     },
 }
 
@@ -131,21 +132,39 @@ pub enum DestructData {
 /// need to combine several concrete trait implementation items. For example, `((1u8, 2u8),
 /// "hello").clone()` combines the generic implementation of `Clone` for `(A, B)` with the
 /// concrete implementations for `u8` and `&str`, represented as a tree.
-pub type TraitProof = HashConsed<TraitProofContents>;
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TraitProof<'tcx> {
+    contents: Interned<'tcx, TraitProofContents<'tcx>>,
+}
+
+impl<'tcx> Deref for TraitProof<'tcx> {
+    type Target = TraitProofContents<'tcx>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.contents
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx> >, from: elaboration::TraitProofContents<'tcx, DefId>, state: S as s)]
-pub struct TraitProofContents {
+#[args(< S: UnderOwnerState<'tcx> >, from: elaboration::TraitProofContents<'tcx, DefId>, state: S as s)]
+pub struct TraitProofContents<'tcx> {
     /// The trait predicate this is an impl for.
-    pub pred: Binder<TraitRef>,
+    pub pred: Binder<TraitRef<'tcx>>,
     /// The kind of implemention of the root of the tree.
-    pub kind: TraitProofKind,
+    pub kind: TraitProofKind<'tcx>,
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TraitProof> for elaboration::TraitProof<'tcx, DefId> {
-    fn sinto(&self, s: &S) -> TraitProof {
-        HashConsed::new(self.contents().sinto(s))
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TraitProof<'tcx>>
+    for elaboration::TraitProof<'tcx, DefId>
+{
+    fn sinto(&self, s: &S) -> TraitProof<'tcx> {
+        TraitProof {
+            contents: s
+                .base()
+                .trait_proof_interner
+                .intern(self.contents().sinto(s)),
+        }
     }
 }
 
@@ -156,7 +175,7 @@ pub fn super_clause_to_clause_and_trait_proof<'tcx, S: UnderOwnerState<'tcx>>(
     impl_did: rustc_span::def_id::DefId,
     clause: rustc_middle::ty::Clause<'tcx>,
     span: rustc_span::Span,
-) -> Option<(Clause, TraitProof, Span)> {
+) -> Option<(Clause<'tcx>, TraitProof<'tcx>, Span)> {
     let tcx = s.base().tcx;
     if !matches!(
         tcx.def_kind(impl_did),
@@ -186,7 +205,7 @@ pub fn super_clause_to_clause_and_trait_proof<'tcx, S: UnderOwnerState<'tcx>>(
 pub fn solve_trait<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     trait_ref: rustc_middle::ty::PolyTraitRef<'tcx>,
-) -> TraitProof {
+) -> TraitProof<'tcx> {
     if let Some(trait_proof) = s.with_cache(|cache| cache.trait_proofs.get(&trait_ref).cloned()) {
         return trait_proof;
     }
@@ -204,7 +223,7 @@ pub fn translate_item_ref<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     def_id: RDefId,
     generics: ty::GenericArgsRef<'tcx>,
-) -> ItemRef {
+) -> ItemRef<'tcx> {
     ItemRef::translate(s, def_id, generics)
 }
 
@@ -215,7 +234,7 @@ pub fn solve_item_implied_traits<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     def_id: RDefId,
     generics: ty::GenericArgsRef<'tcx>,
-) -> Vec<TraitProof> {
+) -> Vec<TraitProof<'tcx>> {
     let predicates = ItemPredicates::implied(s.base().elab_ctx, &s.base_state(), def_id.sinto(s));
     solve_item_traits_inner(s, generics, predicates)
 }
@@ -226,7 +245,7 @@ fn solve_item_traits_inner<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     generics: ty::GenericArgsRef<'tcx>,
     predicates: ItemPredicates<'tcx, DefId>,
-) -> Vec<TraitProof> {
+) -> Vec<TraitProof<'tcx>> {
     let tcx = s.base().tcx;
     let typing_env = s.typing_env();
     predicates
@@ -244,7 +263,7 @@ pub fn self_clause_for_item<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     def_id: RDefId,
     generics: rustc_middle::ty::GenericArgsRef<'tcx>,
-) -> Option<TraitProof> {
+) -> Option<TraitProof<'tcx>> {
     let tcx = s.base().tcx;
 
     let tr_def_id = tcx.trait_of_assoc(def_id)?;
@@ -261,7 +280,7 @@ pub fn self_clause_for_item<'tcx, S: UnderOwnerState<'tcx>>(
 }
 
 /// Solve the `T: Sized` predicate.
-pub fn solve_sized<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> TraitProof {
+pub fn solve_sized<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> TraitProof<'tcx> {
     let tcx = s.base().tcx;
     let sized_trait = tcx.lang_items().sized_trait().unwrap();
     let ty = erase_free_regions(tcx, ty);
@@ -270,7 +289,10 @@ pub fn solve_sized<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> T
 }
 
 /// Solve the `T: Copy` predicate.
-pub fn solve_copy<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> Option<TraitProof> {
+pub fn solve_copy<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    ty: ty::Ty<'tcx>,
+) -> Option<TraitProof<'tcx>> {
     let tcx = s.base().tcx;
     let copy_trait = tcx.lang_items().copy_trait().unwrap();
     let ty = erase_free_regions(tcx, ty);
@@ -280,7 +302,7 @@ pub fn solve_copy<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> Op
 }
 
 /// Solve the `T: Destruct` predicate.
-pub fn solve_destruct<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> TraitProof {
+pub fn solve_destruct<'tcx, S: UnderOwnerState<'tcx>>(s: &S, ty: ty::Ty<'tcx>) -> TraitProof<'tcx> {
     let tcx = s.base().tcx;
     let destruct_trait = tcx.lang_items().destruct_trait().unwrap();
     let tref = ty::Binder::dummy(ty::TraitRef::new(tcx, destruct_trait, [ty]));

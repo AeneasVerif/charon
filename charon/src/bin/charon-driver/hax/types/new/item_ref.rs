@@ -1,6 +1,6 @@
 use crate::hax::prelude::*;
 
-use charon_lib::ast::HashConsed;
+use rustc_data_structures::intern::Interned;
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
 
@@ -36,15 +36,15 @@ use rustc_span::def_id::DefId as RDefId;
 /// }
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ItemRef {
-    pub(crate) contents: HashConsed<ItemRefContents>,
+pub struct ItemRef<'tcx> {
+    pub(crate) contents: Interned<'tcx, ItemRefContents<'tcx>>,
 }
 
 /// Contents of `ItemRef`.
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: rustc_trait_elaboration::ItemRef<'tcx, DefId>, state: S as s)]
+#[args(< S: UnderOwnerState<'tcx>>, from: rustc_trait_elaboration::ItemRef<'tcx, DefId>, state: S as s)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ItemRefContents {
+pub struct ItemRefContents<'tcx> {
     /// The item being refered to.
     #[value(self.def_id.clone())]
     pub def_id: DefId,
@@ -52,16 +52,16 @@ pub struct ItemRefContents {
     /// the method/type/const itself; generics for the traits are available in
     /// `in_trait.unwrap().trait`.
     #[value(self.assoc_generics().sinto(s))]
-    pub generic_args: Vec<GenericArg>,
+    pub generic_args: Vec<GenericArg<'tcx>>,
     /// Witnesses of the trait clauses required by the item, e.g. `T: Sized` for `Option<T>` or `B:
     /// ToOwned` for `Cow<'a, B>`. Same as above, for associated items this only includes clauses
     /// for the item itself.
     #[value(self.assoc_trait_proofs().sinto(s))]
-    pub trait_proofs: Vec<TraitProof>,
+    pub trait_proofs: Vec<TraitProof<'tcx>>,
     /// If we're referring to a trait associated item, this gives the trait clause/impl we're
     /// referring to.
     #[value(self.in_trait.as_ref().map(|(x, _)| x).sinto(s))]
-    pub in_trait: Option<TraitProof>,
+    pub in_trait: Option<TraitProof<'tcx>>,
     /// Whether this contains any reference to a type/lifetime/const parameter.
     #[value(self.has_param)]
     pub has_param: bool,
@@ -70,10 +70,10 @@ pub struct ItemRefContents {
     pub has_non_lt_param: bool,
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef>
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef<'tcx>>
     for rustc_trait_elaboration::ItemRef<'tcx, DefId>
 {
-    fn sinto(&self, s: &S) -> ItemRef {
+    fn sinto(&self, s: &S) -> ItemRef<'tcx> {
         let content: ItemRefContents = self.sinto(s);
         let item = content.intern(s);
         s.with_global_cache(|cache| {
@@ -85,20 +85,21 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef>
     }
 }
 
-impl ItemRefContents {
-    fn intern<'tcx, S: BaseState<'tcx>>(self, _s: &S) -> ItemRef {
-        let contents = HashConsed::new(self);
-        ItemRef { contents }
+impl<'tcx> ItemRefContents<'tcx> {
+    fn intern(self, s: &impl BaseState<'tcx>) -> ItemRef<'tcx> {
+        ItemRef {
+            contents: s.base().item_ref_interner.intern(self),
+        }
     }
 }
 
-impl ItemRef {
+impl<'tcx> ItemRef<'tcx> {
     /// The main way to obtain an `ItemRef`: from a `def_id` and generics.
-    pub fn translate<'tcx, S: UnderOwnerState<'tcx>>(
+    pub fn translate<S: UnderOwnerState<'tcx>>(
         s: &S,
         def_id: RDefId,
         generics: ty::GenericArgsRef<'tcx>,
-    ) -> ItemRef {
+    ) -> ItemRef<'tcx> {
         let hax_def_id = def_id.sinto(s);
         Self::translate_from_hax_def_id(s, hax_def_id, generics)
     }
@@ -112,11 +113,11 @@ impl ItemRef {
     /// For instance, `<u32 as From<u8>>::from` produces a [`ItemRef`] with a [`DefId`] looking
     /// like `core::convert::num::Impl#42::from` when `resolve_impl` is `true`,
     /// `core::convert::From::from` otherwise.
-    pub fn translate_from_hax_def_id<'tcx, S: UnderOwnerState<'tcx>>(
+    pub fn translate_from_hax_def_id<S: UnderOwnerState<'tcx>>(
         s: &S,
         hax_def_id: DefId,
         generics: ty::GenericArgsRef<'tcx>,
-    ) -> ItemRef {
+    ) -> ItemRef<'tcx> {
         Self::translate_from_hax_def_id_maybe_resolve(
             s,
             hax_def_id,
@@ -125,11 +126,11 @@ impl ItemRef {
         )
     }
 
-    pub fn translate_projection<'tcx, S: UnderOwnerState<'tcx>>(
+    pub fn translate_projection<S: UnderOwnerState<'tcx>>(
         s: &S,
         def_id: RDefId,
         generics: ty::GenericArgsRef<'tcx>,
-    ) -> ItemRef {
+    ) -> ItemRef<'tcx> {
         let hax_def_id = def_id.sinto(s);
         Self::translate_from_hax_def_id_maybe_resolve(
             s,
@@ -139,12 +140,12 @@ impl ItemRef {
         )
     }
 
-    pub fn translate_from_hax_def_id_maybe_resolve<'tcx, S: UnderOwnerState<'tcx>>(
+    pub fn translate_from_hax_def_id_maybe_resolve<S: UnderOwnerState<'tcx>>(
         s: &S,
         hax_def_id: DefId,
         generics: ty::GenericArgsRef<'tcx>,
         assoc_item_resolution: AssocItemResolution,
-    ) -> ItemRef {
+    ) -> ItemRef<'tcx> {
         let key = (hax_def_id.clone(), generics, assoc_item_resolution);
         if let Some(item) = s.with_cache(|cache| cache.item_refs.get(&key).cloned()) {
             return item;
@@ -166,7 +167,7 @@ impl ItemRef {
             )
         });
 
-        let content: ItemRefContents = item_ref.sinto(s);
+        let content: ItemRefContents<'tcx> = item_ref.sinto(s);
         let item = content.intern(s);
         s.with_cache(|cache| {
             cache.item_refs.insert(key, item.clone());
@@ -180,7 +181,7 @@ impl ItemRef {
     }
 
     /// Construct an `ItemRef` for items that can't have generics (e.g. modules).
-    pub fn dummy_without_generics<'tcx, S: BaseState<'tcx>>(s: &S, def_id: DefId) -> ItemRef {
+    pub fn dummy_without_generics<S: BaseState<'tcx>>(s: &S, def_id: DefId) -> ItemRef<'tcx> {
         let content = ItemRefContents {
             def_id,
             generic_args: Default::default(),
@@ -200,7 +201,7 @@ impl ItemRef {
 
     /// For an `ItemRef` that refers to a trait, this returns values for each of the non-gat
     /// associated types of this trait and its parents, in a fixed order.
-    pub fn trait_associated_types<'tcx, S: UnderOwnerState<'tcx>>(&self, s: &S) -> Vec<Ty> {
+    pub fn trait_associated_types<S: UnderOwnerState<'tcx>>(&self, s: &S) -> Vec<Ty<'tcx>> {
         if !matches!(self.def_id.kind, DefKind::Trait | DefKind::TraitAlias) {
             panic!("`ItemRef::trait_associated_types` expected a trait")
         }
@@ -218,7 +219,7 @@ impl ItemRef {
     }
 
     /// Erase lifetimes from the generic arguments of this item.
-    pub fn erase<'tcx, S: UnderOwnerState<'tcx>>(&self, s: &S) -> Self {
+    pub fn erase<S: UnderOwnerState<'tcx>>(&self, s: &S) -> Self {
         let args = self.rustc_args(s);
         let args = erase_and_norm(
             s.base().tcx,
@@ -229,7 +230,7 @@ impl ItemRef {
     }
 
     /// Reconstruct this item reference with the requested associated item resolution.
-    pub fn re_resolve<'tcx, S: UnderOwnerState<'tcx>>(
+    pub fn re_resolve<S: UnderOwnerState<'tcx>>(
         &self,
         s: &S,
         assoc_item_resolution: AssocItemResolution,
@@ -242,22 +243,18 @@ impl ItemRef {
         )
     }
 
-    pub fn contents(&self) -> &ItemRefContents {
+    pub fn contents(&self) -> &ItemRefContents<'tcx> {
         &self.contents
     }
 
     /// Recover the original rustc args that generated this `ItemRef`. Will panic if the `ItemRef`
     /// was built by hand instead of using `translate_item_ref`.
-    pub fn rustc_args<'tcx, S: BaseState<'tcx>>(&self, s: &S) -> ty::GenericArgsRef<'tcx> {
+    pub fn rustc_args<S: BaseState<'tcx>>(&self, s: &S) -> ty::GenericArgsRef<'tcx> {
         s.with_global_cache(|cache| *cache.reverse_item_refs_map.get(self).unwrap())
     }
 
     /// Mutate the `DefId`, keeping the same generic args.
-    pub fn mutate_def_id<'tcx, S: BaseState<'tcx>>(
-        &self,
-        s: &S,
-        f: impl FnOnce(&mut DefId),
-    ) -> Self {
+    pub fn mutate_def_id<S: BaseState<'tcx>>(&self, s: &S, f: impl FnOnce(&mut DefId)) -> Self {
         let args = self.rustc_args(s);
         let mut contents = self.contents().clone();
         f(&mut contents.def_id);
@@ -269,12 +266,12 @@ impl ItemRef {
     }
 
     /// Set the `DefId`, keeping the same generic args.
-    pub fn with_def_id<'tcx, S: BaseState<'tcx>>(&self, s: &S, def_id: &DefId) -> Self {
+    pub fn with_def_id<S: BaseState<'tcx>>(&self, s: &S, def_id: &DefId) -> Self {
         self.mutate_def_id(s, |d| *d = def_id.clone())
     }
 
     /// The parent of this item if the item inherits the typing context from its parent (e.g. closures and methods).
-    pub fn typing_parent<'tcx, S: BaseState<'tcx>>(&self, s: &S) -> Option<ItemRef> {
+    pub fn typing_parent<S: BaseState<'tcx>>(&self, s: &S) -> Option<ItemRef<'tcx>> {
         match self.def_id.kind {
             DefKind::AssocTy
             | DefKind::AssocFn
@@ -298,8 +295,8 @@ impl ItemRef {
     }
 }
 
-impl std::ops::Deref for ItemRef {
-    type Target = ItemRefContents;
+impl<'tcx> std::ops::Deref for ItemRef<'tcx> {
+    type Target = ItemRefContents<'tcx>;
     fn deref(&self) -> &Self::Target {
         self.contents()
     }

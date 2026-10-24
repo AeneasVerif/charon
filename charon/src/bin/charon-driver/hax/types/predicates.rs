@@ -7,41 +7,41 @@ use rustc_middle::ty;
 ///
 /// Reflects [`ty::ExistentialPredicate`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::ExistentialPredicate<'tcx>, state: S as state)]
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::ExistentialPredicate<'tcx>, state: S as state)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ExistentialPredicate {
+pub enum ExistentialPredicate<'tcx> {
     /// E.g. `From<u64>`. Note that this isn't `T: From<u64>` with a given `T`, this is just
     /// `From<u64>`. Could be written `?: From<u64>`.
-    Trait(ExistentialTraitRef),
+    Trait(ExistentialTraitRef<'tcx>),
     /// E.g. `Iterator::Item = u64`. Could be written `<? as Iterator>::Item = u64`.
-    Projection(ExistentialProjection),
+    Projection(ExistentialProjection<'tcx>),
     /// E.g. `Send`.
     AutoTrait(DefId),
 }
 
 /// Reflects [`ty::ExistentialTraitRef`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::ExistentialTraitRef<'tcx>, state: S as state)]
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::ExistentialTraitRef<'tcx>, state: S as state)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExistentialTraitRef {
+pub struct ExistentialTraitRef<'tcx> {
     pub def_id: DefId,
-    pub args: Vec<GenericArg>,
+    pub args: Vec<GenericArg<'tcx>>,
 }
 
 /// Reflects [`ty::ExistentialProjection`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::ExistentialProjection<'tcx>, state: S as state)]
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::ExistentialProjection<'tcx>, state: S as state)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExistentialProjection {
+pub struct ExistentialProjection<'tcx> {
     pub def_id: DefId,
-    pub args: Vec<GenericArg>,
-    pub term: Term,
+    pub args: Vec<GenericArg<'tcx>>,
+    pub term: Term<'tcx>,
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, GenericPredicate>
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, GenericPredicate<'tcx>>
     for rustc_trait_elaboration::DynPredicate<'tcx, DefId>
 {
-    fn sinto(&self, s: &S) -> GenericPredicate {
+    fn sinto(&self, s: &S) -> GenericPredicate<'tcx> {
         let tcx = s.base().tcx;
         let pred = &self.predicate;
         if let Some(projection) = pred.clause.as_projection_clause() {
@@ -81,7 +81,7 @@ pub(super) fn resolve_for_dyn<'tcx, S, T, U>(
     s: &S,
     epreds: &'tcx ty::List<ty::Binder<'tcx, ty::ExistentialPredicate<'tcx>>>,
     f: impl FnOnce(&mut PredicateSearcher<'tcx>, ty::Ty<'tcx>) -> T,
-) -> DynBinder<U>
+) -> DynBinder<'tcx, U>
 where
     S: UnderOwnerState<'tcx>,
     T: SInto<S, U>,
@@ -92,10 +92,10 @@ where
 
 /// Reflects [`ty::TraitClause`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::TraitClause<'tcx>, state: S as tcx)]
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::TraitClause<'tcx>, state: S as tcx)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct TraitPredicate {
-    pub trait_ref: TraitRef,
+pub struct TraitPredicate<'tcx> {
+    pub trait_ref: TraitRef<'tcx>,
     #[map(*x == ty::ClausePolarity::Positive)]
     #[from(polarity)]
     pub is_positive: bool,
@@ -127,17 +127,17 @@ where
 /// Reflects [`ty::RegionOutlivesPredicate`]
 pub type RegionOutlivesPredicate = OutlivesPredicate<Region>;
 /// Reflects [`ty::TypeOutlivesPredicate`]
-pub type TypeOutlivesPredicate = OutlivesPredicate<Ty>;
+pub type TypeOutlivesPredicate<'tcx> = OutlivesPredicate<Ty<'tcx>>;
 
 /// Reflects [`ty::Term`]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Term {
-    Ty(Ty),
-    Const(ConstantExpr),
+pub enum Term<'tcx> {
+    Ty(Ty<'tcx>),
+    Const(ConstantExpr<'tcx>),
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Term> for ty::Term<'tcx> {
-    fn sinto(&self, s: &S) -> Term {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Term<'tcx>> for ty::Term<'tcx> {
+    fn sinto(&self, s: &S) -> Term<'tcx> {
         use ty::TermKind;
         match self.kind() {
             TermKind::Ty(ty) => Term::Ty(ty.sinto(s)),
@@ -155,19 +155,19 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Term> for ty::Term<'tcx> {
 /// ```
 /// (provided the trait `Foo` has an associated type `S`).
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ProjectionPredicate {
+pub struct ProjectionPredicate<'tcx> {
     /// The `impl Trait for Ty` in `Ty: Trait<..., Type = U>`.
-    pub trait_proof: TraitProof,
+    pub trait_proof: TraitProof<'tcx>,
     /// The `Type` in `Ty: Trait<..., Type = U>`.
-    pub assoc_item: AssocItem,
+    pub assoc_item: AssocItem<'tcx>,
     /// The type `U` in `Ty: Trait<..., Type = U>`.
-    pub ty: Ty,
+    pub ty: Ty<'tcx>,
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<(S, UnitBinder<'tcx>), ProjectionPredicate>
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<(S, UnitBinder<'tcx>), ProjectionPredicate<'tcx>>
     for ty::ProjectionClause<'tcx>
 {
-    fn sinto(&self, s: &(S, UnitBinder<'tcx>)) -> ProjectionPredicate {
+    fn sinto(&self, s: &(S, UnitBinder<'tcx>)) -> ProjectionPredicate<'tcx> {
         let tcx = s.base().tcx;
         let alias_ty = &self.projection_term.expect_ty();
         let poly_trait_ref = s.1.rebind(alias_ty.trait_ref(tcx));
@@ -185,16 +185,16 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<(S, UnitBinder<'tcx>), ProjectionPred
 
 /// Reflects [`ty::ClauseKind`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::ClauseKind<'tcx>, state: (S, UnitBinder<'tcx>) as tcx)]
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::ClauseKind<'tcx>, state: (S, UnitBinder<'tcx>) as tcx)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ClauseKind {
-    Trait(TraitPredicate),
+pub enum ClauseKind<'tcx> {
+    Trait(TraitPredicate<'tcx>),
     RegionOutlives(RegionOutlivesPredicate),
-    TypeOutlives(TypeOutlivesPredicate),
-    Projection(ProjectionPredicate),
-    ConstArgHasType(ConstantExpr, Ty),
-    WellFormed(Term),
-    ConstEvaluatable(ConstantExpr),
+    TypeOutlives(TypeOutlivesPredicate<'tcx>),
+    Projection(ProjectionPredicate<'tcx>),
+    ConstArgHasType(ConstantExpr<'tcx>, Ty<'tcx>),
+    WellFormed(Term<'tcx>),
+    ConstEvaluatable(ConstantExpr<'tcx>),
     HostEffect(HostEffectClause),
     UnstableFeature(Symbol),
 }
@@ -203,19 +203,19 @@ sinto_todo!(rustc_middle::ty, HostEffectClause<'tcx>);
 
 /// Reflects [`ty::Clause`] and adds a hash-consed predicate identifier.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Clause {
-    pub kind: Binder<ClauseKind>,
+pub struct Clause<'tcx> {
+    pub kind: Binder<ClauseKind<'tcx>>,
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause> for ty::Clause<'tcx> {
-    fn sinto(&self, s: &S) -> Clause {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause<'tcx>> for ty::Clause<'tcx> {
+    fn sinto(&self, s: &S) -> Clause<'tcx> {
         let kind = self.kind().sinto(s);
         Clause { kind }
     }
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause> for ty::PolyTraitClause<'tcx> {
-    fn sinto(&self, s: &S) -> Clause {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause<'tcx>> for ty::PolyTraitClause<'tcx> {
+    fn sinto(&self, s: &S) -> Clause<'tcx> {
         let kind: Binder<_> = self.sinto(s);
         let kind: Binder<ClauseKind> = kind.map(ClauseKind::Trait);
         Clause { kind }
@@ -224,12 +224,12 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Clause> for ty::PolyTraitClause<'t
 
 /// Reflects [`ty::Predicate`] and adds a hash-consed predicate identifier.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Predicate {
-    pub kind: Binder<PredicateKind>,
+pub struct Predicate<'tcx> {
+    pub kind: Binder<PredicateKind<'tcx>>,
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Predicate> for ty::Predicate<'tcx> {
-    fn sinto(&self, s: &S) -> Predicate {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Predicate<'tcx>> for ty::Predicate<'tcx> {
+    fn sinto(&self, s: &S) -> Predicate<'tcx> {
         let kind = self.kind().sinto(s);
         Predicate { kind }
     }
@@ -255,64 +255,65 @@ pub enum GenericPredicateId {
 }
 
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: traits::ItemPredicate<'tcx, DefId>, state: S as s)]
+#[args(< S: UnderOwnerState<'tcx>>, from: traits::ItemPredicate<'tcx, DefId>, state: S as s)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct GenericPredicate {
+pub struct GenericPredicate<'tcx> {
     pub id: GenericPredicateId,
-    pub clause: Clause,
+    pub clause: Clause<'tcx>,
     pub span: Span,
 }
 
 /// Reflects [`ty::GenericPredicates`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: traits::ItemPredicates<'tcx, DefId>, state: S as s)]
+#[args(< S: UnderOwnerState<'tcx>>, from: traits::ItemPredicates<'tcx, DefId>, state: S as s)]
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
-pub struct GenericPredicates {
-    pub predicates: Vec<GenericPredicate>,
+pub struct GenericPredicates<'tcx> {
+    pub predicates: Vec<GenericPredicate<'tcx>>,
 }
 
-impl GenericPredicates {
-    pub fn iter(&self) -> impl Iterator<Item = &GenericPredicate> {
+impl<'tcx> GenericPredicates<'tcx> {
+    pub fn iter(&self) -> impl Iterator<Item = &GenericPredicate<'tcx>> {
         self.predicates.iter()
     }
     /// Iter only on trait clauses.
-    pub fn iter_trait_clauses(&self) -> impl Iterator<Item = &GenericPredicate> {
-        self.iter()
-            .filter(|pred| matches!(pred.clause.kind.hax_skip_binder_ref(), ClauseKind::Trait(_)))
+    pub fn iter_trait_clauses(&self) -> impl Iterator<Item = &GenericPredicate<'tcx>> {
+        self.iter().filter(move |pred| {
+            matches!(pred.clause.kind.hax_skip_binder_ref(), ClauseKind::Trait(_))
+        })
     }
 }
 
 /// Reflects [`ty::SubtypePredicate`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::SubtypePredicate<'tcx>, state: S as tcx)]
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::SubtypePredicate<'tcx>, state: S as tcx)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct SubtypePredicate {
+pub struct SubtypePredicate<'tcx> {
     pub a_is_expected: bool,
-    pub a: Ty,
-    pub b: Ty,
+    pub a: Ty<'tcx>,
+    pub b: Ty<'tcx>,
 }
 
 /// Reflects [`ty::CoercePredicate`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::CoercePredicate<'tcx>, state: S as tcx)]
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::CoercePredicate<'tcx>, state: S as tcx)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct CoercePredicate {
-    pub a: Ty,
-    pub b: Ty,
+pub struct CoercePredicate<'tcx> {
+    pub a: Ty<'tcx>,
+    pub b: Ty<'tcx>,
 }
 
 sinto_todo!(rustc_middle::ty, NormalizesTo<'tcx>);
 
 /// Reflects [`ty::PredicateKind`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::PredicateKind<'tcx>, state: (S, UnitBinder<'tcx>) as tcx)]
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::PredicateKind<'tcx>, state: (S, UnitBinder<'tcx>) as tcx)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum PredicateKind {
-    Clause(ClauseKind),
+pub enum PredicateKind<'tcx> {
+    Clause(ClauseKind<'tcx>),
     DynCompatible(DefId),
-    Subtype(SubtypePredicate),
-    Coerce(CoercePredicate),
-    ConstEquate(ConstantExpr, ConstantExpr),
+    Subtype(SubtypePredicate<'tcx>),
+    Coerce(CoercePredicate<'tcx>),
+    ConstEquate(ConstantExpr<'tcx>, ConstantExpr<'tcx>),
     Ambiguous,
     NormalizesTo(NormalizesTo),
 }

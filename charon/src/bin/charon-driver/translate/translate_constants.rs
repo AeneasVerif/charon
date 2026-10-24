@@ -62,7 +62,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn translate_constant_byte(
         &mut self,
         span: Span,
-        b: &hax::ConstantByte,
+        b: &hax::ConstantByte<'tcx>,
     ) -> Result<Byte, Error> {
         Ok(match b {
             hax::ConstantByte::Uninit => Byte::Uninit,
@@ -76,7 +76,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn translate_provenance(
         &mut self,
         span: Span,
-        prov: &hax::ConstantByteProvenance,
+        prov: &hax::ConstantByteProvenance<'tcx>,
     ) -> Result<GlobalProvenance, Error> {
         Ok(match prov {
             hax::ConstantByteProvenance::Global(item) => {
@@ -97,7 +97,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn translate_bound_fn_ptr_target(
         &mut self,
         span: Span,
-        target: &hax::FnPtrTarget,
+        target: &hax::FnPtrTarget<'tcx>,
     ) -> Result<RegionBinder<FnPtr>, Error> {
         Ok(match target {
             hax::FnPtrTarget::Fn(item) => {
@@ -115,7 +115,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_constant_expr(
         &mut self,
         span: Span,
-        v: &hax::ConstantExpr,
+        v: &hax::ConstantExpr<'tcx>,
     ) -> Result<ConstantExpr, Error> {
         let ty = self.translate_ty(span, &v.ty)?;
         let kind = match v.kind.as_ref() {

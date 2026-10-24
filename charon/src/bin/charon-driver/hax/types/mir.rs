@@ -95,25 +95,25 @@ pub use mir_kinds::IsMirKind;
 
 /// The contents of `Operand::Const`.
 #[derive(Debug, Clone)]
-pub struct ConstOperand {
+pub struct ConstOperand<'tcx> {
     pub span: Span,
-    pub ty: Ty,
-    pub kind: ConstOperandKind,
+    pub ty: Ty<'tcx>,
+    pub kind: ConstOperandKind<'tcx>,
 }
 
 #[derive(Debug, Clone)]
-pub enum ConstOperandKind {
+pub enum ConstOperandKind<'tcx> {
     /// An evaluated constant represented as an expression.
-    Value(ConstantExpr),
+    Value(ConstantExpr<'tcx>),
     /// Part of a MIR body that was promoted to be a constant. May not be evaluatable because of
     /// generics.
     /// It's a reference to the `DefId` of the constant. Note that rustc does not give a `DefId` to
     /// promoted constants, but we do in hax.
-    Promoted(ItemRef),
+    Promoted(ItemRef<'tcx>),
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstOperand> for mir::ConstOperand<'tcx> {
-    fn sinto(&self, s: &S) -> ConstOperand {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstOperand<'tcx>> for mir::ConstOperand<'tcx> {
+    fn sinto(&self, s: &S) -> ConstOperand<'tcx> {
         let kind = translate_mir_const(s, self.span, self.const_);
         ConstOperand {
             span: self.span.sinto(s),
@@ -128,7 +128,7 @@ fn translate_mir_const<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     span: rustc_span::Span,
     konst: mir::Const<'tcx>,
-) -> ConstOperandKind {
+) -> ConstOperandKind<'tcx> {
     use ConstOperandKind::{Promoted, Value};
     use rustc_middle::mir::Const;
     let tcx = s.base().tcx;

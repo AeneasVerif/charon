@@ -1,4 +1,3 @@
-use rustc_arena::TypedArena;
 use rustc_data_structures::sharded::ShardedHashMap;
 use rustc_hash::FxHashMap;
 use rustc_hir::def_id::DefId;
@@ -10,71 +9,71 @@ use crate::{
     TraitProof, TraitProofContents,
 };
 
-mod intern {
+pub mod intern {
+    use rustc_arena::TypedArena;
     use rustc_data_structures::intern::Interned;
     use rustc_data_structures::sharded::{IntoPointer, ShardedHashMap};
     use std::borrow::Borrow;
     use std::hash::{Hash, Hasher};
 
-    use crate::{ItemId, TraitProofContents};
+    /// Storage for deduplicated values. The values handed out are compared by address.
+    pub struct Interner<'tcx, T: Eq + Hash> {
+        values: ShardedHashMap<InternedValue<'tcx, T>, ()>,
+        arena: TypedArena<T>,
+    }
 
-    pub struct TraitProofInterner<'tcx, Id: ItemId>(
-        ShardedHashMap<InternedTraitProof<'tcx, Id>, ()>,
-    );
-
-    impl<'tcx, Id: ItemId> Default for TraitProofInterner<'tcx, Id> {
+    impl<'tcx, T: Eq + Hash> Default for Interner<'tcx, T> {
         fn default() -> Self {
-            Self(Default::default())
+            Self {
+                values: Default::default(),
+                arena: Default::default(),
+            }
         }
     }
 
-    impl<'tcx, Id: ItemId> TraitProofInterner<'tcx, Id> {
-        pub(crate) fn intern(
-            &self,
-            contents: TraitProofContents<'tcx, Id>,
-            f: impl Fn(TraitProofContents<'tcx, Id>) -> &'tcx TraitProofContents<'tcx, Id>,
-        ) -> Interned<'tcx, TraitProofContents<'tcx, Id>> {
+    impl<'tcx, T: Eq + Hash> Interner<'tcx, T> {
+        pub fn intern(&'tcx self, value: T) -> Interned<'tcx, T> {
             let interned = self
-                .0
-                .intern(contents, |contents| InternedTraitProof(f(contents)));
+                .values
+                .intern(value, |value| InternedValue(self.arena.alloc(value)));
             Interned::new_unchecked(interned.0)
         }
     }
 
     // This mirrors rustc's `InternedInSet`: the value lives in the arena and the set stores this
     // copyable pointer wrapper. Equality and hashing still use the pointed-to contents, so
-    // `ShardedHashMap::intern` can find an existing arena value before allocating a new one.
-    struct InternedTraitProof<'tcx, Id: ItemId>(&'tcx TraitProofContents<'tcx, Id>);
+    // `ShardedHashMap::intern` can find an existing arena value if any.
+    struct InternedValue<'tcx, T>(&'tcx T);
 
-    impl<'tcx, Id: ItemId> Clone for InternedTraitProof<'tcx, Id> {
+    impl<T> Clone for InternedValue<'_, T> {
         fn clone(&self) -> Self {
             *self
         }
     }
 
-    impl<'tcx, Id: ItemId> Copy for InternedTraitProof<'tcx, Id> {}
+    impl<T> Copy for InternedValue<'_, T> {}
 
-    impl<'tcx, Id: ItemId> IntoPointer for InternedTraitProof<'tcx, Id> {
+    impl<T> IntoPointer for InternedValue<'_, T> {
         fn into_pointer(&self) -> *const () {
-            self.0 as *const _ as *const ()
+            self.0 as *const T as *const ()
         }
     }
 
-    impl<'tcx, Id: ItemId> Borrow<TraitProofContents<'tcx, Id>> for InternedTraitProof<'tcx, Id> {
-        fn borrow(&self) -> &TraitProofContents<'tcx, Id> {
+    impl<T> Borrow<T> for InternedValue<'_, T> {
+        fn borrow(&self) -> &T {
             self.0
         }
     }
 
-    impl<'tcx, Id: ItemId> PartialEq for InternedTraitProof<'tcx, Id> {
+    impl<T: Eq> PartialEq for InternedValue<'_, T> {
         fn eq(&self, other: &Self) -> bool {
             self.0 == other.0
         }
     }
 
-    impl<'tcx, Id: ItemId> Eq for InternedTraitProof<'tcx, Id> {}
+    impl<T: Eq> Eq for InternedValue<'_, T> {}
 
-    impl<'tcx, Id: ItemId> Hash for InternedTraitProof<'tcx, Id> {
+    impl<T: Hash> Hash for InternedValue<'_, T> {
         fn hash<H: Hasher>(&self, state: &mut H) {
             self.0.hash(state);
         }
@@ -98,8 +97,7 @@ pub type ItemRefKey<'tcx, Id> = (Id, ty::GenericArgsRef<'tcx>, AssocItemResoluti
 
 struct ElaborationData<'tcx, Id: ItemId = DefId> {
     bounds_options: BoundsOptions,
-    trait_proofs: intern::TraitProofInterner<'tcx, Id>,
-    trait_proofs_arena: TypedArena<TraitProofContents<'tcx, Id>>,
+    trait_proofs: intern::Interner<'tcx, TraitProofContents<'tcx, Id>>,
     predicate_searchers: RefCell<FxHashMap<Id, PredicateSearcher<'tcx, Id>>>,
     concrete_item_refs: RefCell<FxHashMap<ItemRefKey<'tcx, Id>, ItemRef<'tcx, Id>>>,
     concrete_trait_proofs: RefCell<FxHashMap<ty::PolyTraitRef<'tcx>, TraitProof<'tcx, Id>>>,
@@ -113,7 +111,6 @@ impl<'tcx, Id: ItemId> Default for ElaborationData<'tcx, Id> {
         Self {
             bounds_options: Default::default(),
             trait_proofs: Default::default(),
-            trait_proofs_arena: Default::default(),
             predicate_searchers: Default::default(),
             concrete_item_refs: Default::default(),
             concrete_trait_proofs: Default::default(),
@@ -156,9 +153,7 @@ impl<'tcx, Id: ItemId> ElaborationData<'tcx, Id> {
         &'tcx self,
         contents: TraitProofContents<'tcx, Id>,
     ) -> TraitProof<'tcx, Id> {
-        let interned = self
-            .trait_proofs
-            .intern(contents, |contents| self.trait_proofs_arena.alloc(contents));
+        let interned = self.trait_proofs.intern(contents);
         TraitProof { contents: interned }
     }
 }

@@ -85,7 +85,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn check_at_most_one_pred_has_methods(
         &mut self,
         span: Span,
-        preds: &hax::GenericPredicates,
+        preds: &hax::GenericPredicates<'tcx>,
     ) -> Result<(), Error> {
         // Only the first clause is allowed to have methods.
         for pred in preds.predicates.iter().skip(1) {
@@ -116,7 +116,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn translate_dyn_binder<T, U>(
         &mut self,
         span: Span,
-        binder: &hax::DynBinder<T>,
+        binder: &hax::DynBinder<'tcx, T>,
         f: impl FnOnce(&mut Self, Ty, &T) -> Result<U, Error>,
     ) -> Result<Binder<U>, Error> {
         // This is a robustness check: the current version of Rustc
@@ -177,30 +177,34 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 /// Vtable field info used for translation (same deal as `charon_lib::VTableField` but with
 /// different data).
 #[derive(Debug)]
-pub enum TrVTableField {
+pub enum TrVTableField<'tcx> {
     Size,
     Align,
     Drop,
-    Method(TraitMethodId, hax::Binder<hax::TyFnSig>),
-    SuperTrait(TraitClauseId, hax::Clause),
+    Method(TraitMethodId, hax::Binder<hax::TyFnSig<'tcx>>),
+    SuperTrait(TraitClauseId, hax::Clause<'tcx>),
 }
 
-pub struct VTableData {
-    pub fields: IndexVec<FieldId, TrVTableField>,
+pub struct VTableData<'tcx> {
+    pub fields: IndexVec<FieldId, TrVTableField<'tcx>>,
     pub supertrait_map: IndexVec<TraitClauseId, Option<FieldId>>,
 }
 
 /// What we need to know about an impl to fill in its vtable.
-struct VTableInstanceData<'a> {
-    implemented_trait_ref: &'a hax::TraitRef,
-    implied_trait_proofs: &'a [hax::TraitProof],
-    methods: VTableMethodSource<'a>,
+struct VTableInstanceData<'tcx, 'a> {
+    implemented_trait_ref: &'a hax::TraitRef<'tcx>,
+    implied_trait_proofs: &'a [hax::TraitProof<'tcx>],
+    methods: VTableMethodSource<'tcx, 'a>,
 }
 
 /// Where the shims stored in a vtable's method fields come from.
-enum VTableMethodSource<'a> {
-    ImplMethods(IndexVec<TraitMethodId, &'a hax::ImplAssocItem>),
-    FnTraitShim(&'a hax::ItemRef, TransImplSource, &'a hax::PolyFnSig),
+enum VTableMethodSource<'tcx, 'a> {
+    ImplMethods(IndexVec<TraitMethodId, &'a hax::ImplAssocItem<'tcx>>),
+    FnTraitShim(
+        &'a hax::ItemRef<'tcx>,
+        TransImplSource,
+        &'a hax::PolyFnSig<'tcx>,
+    ),
 }
 
 /// Generate the vtable struct.
@@ -216,7 +220,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     }
 
     /// Check whether this trait ref is of the form `Self: Trait<...>`.
-    fn pred_is_for_self(&self, tref: &hax::TraitRef) -> bool {
+    fn pred_is_for_self(&self, tref: &hax::TraitRef<'tcx>) -> bool {
         let first_ty = tref
             .generic_args
             .iter()
@@ -240,7 +244,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn translate_vtable_struct_ref(
         &mut self,
         span: Span,
-        tref: &hax::TraitRef,
+        tref: &hax::TraitRef<'tcx>,
     ) -> Result<TypeDeclRef, Error> {
         Ok(self
             .translate_vtable_struct_ref_maybe_enqueue(true, span, tref)?
@@ -250,7 +254,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn translate_vtable_struct_ref_no_enqueue(
         &mut self,
         span: Span,
-        tref: &hax::TraitRef,
+        tref: &hax::TraitRef<'tcx>,
     ) -> Result<Option<TypeDeclRef>, Error> {
         self.translate_vtable_struct_ref_maybe_enqueue(false, span, tref)
     }
@@ -260,7 +264,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         enqueue: bool,
         span: Span,
-        tref: &hax::TraitRef,
+        tref: &hax::TraitRef<'tcx>,
     ) -> Result<Option<TypeDeclRef>, Error> {
         if !self.trait_is_dyn_compatible(&tref.def_id) {
             return Ok(None);
@@ -297,8 +301,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         poly_trait_def: &hax::FullDef<'tcx>,
         trait_id: TraitDeclId,
-        implied_predicates: &hax::GenericPredicates,
-    ) -> Result<VTableData, Error> {
+        implied_predicates: &hax::GenericPredicates<'tcx>,
+    ) -> Result<VTableData<'tcx>, Error> {
         let mut supertrait_map: IndexVec<TraitClauseId, _> =
             (0..implied_predicates.predicates.len())
                 .map(|_| None)
@@ -355,7 +359,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     /// dyn-compatible.
     /// We use this function to ensure that any non dyn-compatible super-trait is
     /// Destruct and can be safely ignored.
-    fn assert_is_destruct(&self, tref: &hax::TraitRef) {
+    fn assert_is_destruct(&self, tref: &hax::TraitRef<'tcx>) {
         assert!(
             tref.def_id
                 .as_real_def_id()
@@ -369,7 +373,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         span: Span,
         self_trait_ref: &TraitRef,
-        vtable_data: &VTableData,
+        vtable_data: &VTableData<'tcx>,
     ) -> Result<IndexVec<FieldId, Field>, Error> {
         let mut fields = IndexVec::new();
         let mut supertrait_counter = 0..;
@@ -607,7 +611,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn translate_vtable_instance_const(
         &mut self,
         span: Span,
-        trait_proof: &hax::TraitProof,
+        trait_proof: &hax::TraitProof<'tcx>,
     ) -> Result<ConstantExpr, Error> {
         let tref = trait_proof.pred.hax_skip_binder_ref();
         if !self.trait_is_dyn_compatible(&tref.def_id) {
@@ -667,8 +671,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn translate_vtable_instance_ref(
         &mut self,
         span: Span,
-        trait_ref: &hax::TraitRef,
-        vtable_item: &hax::ItemRef,
+        trait_ref: &hax::TraitRef<'tcx>,
+        vtable_item: &hax::ItemRef<'tcx>,
         impl_kind: TransImplSource,
     ) -> Result<GlobalDeclRef, Error> {
         Ok(self
@@ -685,8 +689,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn translate_vtable_instance_ref_no_enqueue(
         &mut self,
         span: Span,
-        trait_ref: &hax::TraitRef,
-        vtable_item: &hax::ItemRef,
+        trait_ref: &hax::TraitRef<'tcx>,
+        vtable_item: &hax::ItemRef<'tcx>,
         impl_kind: TransImplSource,
     ) -> Result<Option<GlobalDeclRef>, Error> {
         self.translate_vtable_instance_ref_maybe_enqueue(
@@ -703,8 +707,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn translate_trait_impl_vtable(
         &mut self,
         span: Span,
-        trait_ref: &hax::TraitRef,
-        vtable_item: &hax::ItemRef,
+        trait_ref: &hax::TraitRef<'tcx>,
+        vtable_item: &hax::ItemRef<'tcx>,
         impl_kind: TransImplSource,
     ) -> Result<VTableDecl, Error> {
         let Some(vtable_struct) = self.translate_vtable_struct_ref_no_enqueue(span, trait_ref)?
@@ -739,8 +743,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &mut self,
         enqueue: bool,
         span: Span,
-        trait_ref: &hax::TraitRef,
-        vtable_item: &hax::ItemRef,
+        trait_ref: &hax::TraitRef<'tcx>,
+        vtable_item: &hax::ItemRef<'tcx>,
         impl_kind: TransImplSource,
     ) -> Result<Option<GlobalDeclRef>, Error> {
         if !self.trait_is_dyn_compatible(&trait_ref.def_id) {
@@ -865,7 +869,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         &self,
         impl_def: &'a hax::FullDef<'tcx>,
         impl_kind: TransImplSource,
-    ) -> VTableInstanceData<'a> {
+    ) -> VTableInstanceData<'tcx, 'a> {
         match (impl_kind, impl_def.kind()) {
             // The def is the closure or fn item; the impl is one of its virtual `Fn*` impls.
             (TransImplSource::Callable(target_kind), _) => {
@@ -912,8 +916,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         span: Span,
         trait_id: TraitDeclId,
         method_id: TraitMethodId,
-        implemented_trait: &hax::TraitRef,
-        methods: &VTableMethodSource<'_>,
+        implemented_trait: &hax::TraitRef<'tcx>,
+        methods: &VTableMethodSource<'tcx, '_>,
     ) -> Result<VtableMethodValue, Error> {
         match methods {
             VTableMethodSource::ImplMethods(methods) => {
@@ -1203,7 +1207,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         span: Span,
         shim_receiver: &Ty,
         target_receiver: &Ty,
-        trait_pred: &TraitPredicate,
+        trait_pred: &TraitPredicate<'tcx>,
     ) -> Result<Body, Error> {
         let mut builder = BodyBuilder::new(span, 1);
 

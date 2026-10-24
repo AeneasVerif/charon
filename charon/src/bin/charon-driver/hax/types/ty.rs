@@ -4,7 +4,7 @@ use super::predicates::resolve_for_dyn;
 
 use crate::hax::prelude::*;
 
-use charon_lib::ast::HashConsed;
+use rustc_data_structures::intern::Interned;
 use rustc_middle::ty;
 use rustc_middle::ty::inherent::IntoKind;
 use rustc_span::def_id::DefId as RDefId;
@@ -13,23 +13,24 @@ sinto_reexport!(rustc_abi::ExternAbi);
 
 /// Reflects [`rustc_middle::ty::Ty`]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Ty {
-    pub(crate) kind: HashConsed<TyKind>,
+pub struct Ty<'tcx> {
+    pub(crate) kind: Interned<'tcx, TyKind<'tcx>>,
 }
 
-impl Ty {
-    pub fn new<'tcx, S: BaseState<'tcx>>(_s: &S, kind: TyKind) -> Self {
-        let kind = HashConsed::new(kind);
-        Ty { kind }
+impl<'tcx> Ty<'tcx> {
+    pub fn new<S: BaseState<'tcx>>(s: &S, kind: TyKind<'tcx>) -> Self {
+        Ty {
+            kind: s.base().ty_interner.intern(kind),
+        }
     }
 
-    pub fn kind(&self) -> &TyKind {
-        self.kind.inner()
+    pub fn kind(&self) -> &TyKind<'tcx> {
+        &self.kind
     }
 
     /// If this type represents something that implements the `Fn*` traits, return the
     /// corresponding item.
-    pub fn callable_item(&self) -> Option<&ItemRef> {
+    pub fn callable_item(&self) -> Option<&ItemRef<'tcx>> {
         match self.kind() {
             TyKind::Closure(closure) => Some(&closure.item),
             TyKind::FnDef(fn_def) => Some(&fn_def.item),
@@ -39,12 +40,12 @@ impl Ty {
     }
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Ty> for rustc_middle::ty::Ty<'tcx> {
-    fn sinto(&self, s: &S) -> Ty {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Ty<'tcx>> for rustc_middle::ty::Ty<'tcx> {
+    fn sinto(&self, s: &S) -> Ty<'tcx> {
         if let Some(ty) = s.with_cache(|cache| cache.tys.get(self).cloned()) {
             return ty;
         }
-        let kind: TyKind = self.kind().sinto(s);
+        let kind: TyKind<'tcx> = self.kind().sinto(s);
         let ty = Ty::new(s, kind);
         s.with_cache(|cache| {
             cache.tys.insert(*self, ty.clone());
@@ -55,28 +56,28 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Ty> for rustc_middle::ty::Ty<'tcx>
 
 /// Reflects [`ty::TyKind`]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum TyKind {
+pub enum TyKind<'tcx> {
     Bool,
     Char,
     Int(IntTy),
     Uint(UintTy),
     Float(FloatTy),
-    FnDef(FnDefTy),
-    FnPtr(FnPtrTy),
-    Closure(ClosureTy),
-    Adt(AdtTy),
-    Foreign(ForeignTy),
-    Array(ArrayTy),
-    Pat(PatTy),
-    Slice(SliceTy),
-    Tuple(TupleTy),
-    Str(StrTy),
-    RawPtr(RawPtrTy),
-    Ref(RefTy),
-    DynTrait(DynTraitTy),
-    Coroutine(CoroutineTy),
+    FnDef(FnDefTy<'tcx>),
+    FnPtr(FnPtrTy<'tcx>),
+    Closure(ClosureTy<'tcx>),
+    Adt(AdtTy<'tcx>),
+    Foreign(ForeignTy<'tcx>),
+    Array(ArrayTy<'tcx>),
+    Pat(PatTy<'tcx>),
+    Slice(SliceTy<'tcx>),
+    Tuple(TupleTy<'tcx>),
+    Str(StrTy<'tcx>),
+    RawPtr(RawPtrTy<'tcx>),
+    Ref(RefTy<'tcx>),
+    DynTrait(DynTraitTy<'tcx>),
+    Coroutine(CoroutineTy<'tcx>),
     Never,
-    Alias(Alias),
+    Alias(Alias<'tcx>),
     Param(ParamTy),
     Bound(BoundTyRef),
     Placeholder(PlaceholderTy),
@@ -85,9 +86,9 @@ pub enum TyKind {
     Todo(String),
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TyKind> for ty::TyKind<'tcx> {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TyKind<'tcx>> for ty::TyKind<'tcx> {
     #[tracing::instrument(level = "trace", skip(s))]
-    fn sinto(&self, s: &S) -> TyKind {
+    fn sinto(&self, s: &S) -> TyKind<'tcx> {
         let base = s.base();
         let tcx = base.tcx;
         match self {
@@ -192,37 +193,37 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TyKind> for ty::TyKind<'tcx> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct FnDefTy {
-    pub item: ItemRef,
+pub struct FnDefTy<'tcx> {
+    pub item: ItemRef<'tcx>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct FnPtrTy {
-    pub sig: Box<PolyFnSig>,
+pub struct FnPtrTy<'tcx> {
+    pub sig: Box<PolyFnSig<'tcx>>,
     /// Points to a synthetic item used to build impls for function pointer types.
-    pub item: ItemRef,
+    pub item: ItemRef<'tcx>,
 }
 
 /// Reflects [`ty::ClosureArgs`]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ClosureTy {
-    pub item: ItemRef,
+pub struct ClosureTy<'tcx> {
+    pub item: ItemRef<'tcx>,
     /// The base kind of this closure. The kinds are ordered by inclusion: any `Fn` works as an
     /// `FnMut`, and any `FnMut` works as an `FnOnce`.
     pub kind: ClosureKind,
     /// The signature of the function that the closure implements, e.g. `fn(A, B, C) -> D`.
-    pub fn_sig: PolyFnSig,
+    pub fn_sig: PolyFnSig<'tcx>,
     /// The arguments of the closure, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
     /// Binds the same variables as `fn_sig`.
-    pub tupled_args_ty: Binder<Ty>,
+    pub tupled_args_ty: Binder<Ty<'tcx>>,
     /// The set of captured variables. Together they form the state of the closure.
-    pub upvar_tys: Vec<Ty>,
+    pub upvar_tys: Vec<Ty<'tcx>>,
 }
 
-impl ClosureTy {
+impl<'tcx> ClosureTy<'tcx> {
     /// Iterate over the upvars that are borrows with erased regions. These may require allocating
     /// fresh regions.
-    pub fn iter_upvar_borrows(&self) -> impl Iterator<Item = &Ty> {
+    pub fn iter_upvar_borrows(&self) -> impl Iterator<Item = &Ty<'tcx>> {
         self.upvar_tys.iter().filter(|ty| {
             matches!(
                 ty.kind(),
@@ -237,7 +238,7 @@ impl ClosureTy {
     }
 
     // Manual implementation because we need the `def_id` of the closure.
-    pub fn sfrom<'tcx, S>(s: &S, def_id: RDefId, from: ty::GenericArgsRef<'tcx>) -> Self
+    pub fn sfrom<S>(s: &S, def_id: RDefId, from: ty::GenericArgsRef<'tcx>) -> Self
     where
         S: UnderOwnerState<'tcx>,
     {
@@ -256,24 +257,24 @@ impl ClosureTy {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct AdtTy {
-    pub item: ItemRef,
+pub struct AdtTy<'tcx> {
+    pub item: ItemRef<'tcx>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ForeignTy {
-    pub item: ItemRef,
+pub struct ForeignTy<'tcx> {
+    pub item: ItemRef<'tcx>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ArrayTy {
-    pub item: ItemRef,
+pub struct ArrayTy<'tcx> {
+    pub item: ItemRef<'tcx>,
     has_sized_proof: bool,
 }
 
-impl ArrayTy {
+impl<'tcx> ArrayTy<'tcx> {
     /// The `Sized` proof for the element type, if we're not hiding `Sized`.
-    pub fn element_sized_proof(&self) -> Option<&TraitProof> {
+    pub fn element_sized_proof(&self) -> Option<&TraitProof<'tcx>> {
         if self.has_sized_proof {
             Some(&self.item.trait_proofs[0])
         } else {
@@ -283,20 +284,20 @@ impl ArrayTy {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct PatTy {
-    pub ty: Ty,
-    pub pat: Pattern,
+pub struct PatTy<'tcx> {
+    pub ty: Ty<'tcx>,
+    pub pat: Pattern<'tcx>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct SliceTy {
-    pub item: ItemRef,
+pub struct SliceTy<'tcx> {
+    pub item: ItemRef<'tcx>,
     has_sized_proof: bool,
 }
 
-impl SliceTy {
+impl<'tcx> SliceTy<'tcx> {
     /// The `Sized` proof for the element type, if we're not hiding `Sized`.
-    pub fn element_sized_proof(&self) -> Option<&TraitProof> {
+    pub fn element_sized_proof(&self) -> Option<&TraitProof<'tcx>> {
         if self.has_sized_proof {
             Some(&self.item.trait_proofs[0])
         } else {
@@ -306,37 +307,37 @@ impl SliceTy {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct TupleTy {
-    pub item: ItemRef,
+pub struct TupleTy<'tcx> {
+    pub item: ItemRef<'tcx>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct StrTy {
-    pub item: ItemRef,
+pub struct StrTy<'tcx> {
+    pub item: ItemRef<'tcx>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct RawPtrTy {
-    pub ty: Ty,
+pub struct RawPtrTy<'tcx> {
+    pub ty: Ty<'tcx>,
     pub mutbl: Mutability,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct RefTy {
+pub struct RefTy<'tcx> {
     pub region: Region,
-    pub ty: Ty,
+    pub ty: Ty<'tcx>,
     pub mutbl: Mutability,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct DynTraitTy {
-    pub binder: DynBinder<()>,
+pub struct DynTraitTy<'tcx> {
+    pub binder: DynBinder<'tcx, ()>,
     pub region: Region,
 }
 
-impl DynTraitTy {
+impl<'tcx> DynTraitTy<'tcx> {
     /// The principal trait clause, if any.
-    pub fn principal_trait_clause(&self) -> Option<&Binder<ClauseKind>> {
+    pub fn principal_trait_clause(&self) -> Option<&Binder<ClauseKind<'tcx>>> {
         let clause = &self.binder.predicates.predicates.first()?.clause.kind;
         if matches!(clause.hax_skip_binder_ref(), ClauseKind::Trait(_)) {
             Some(clause)
@@ -347,24 +348,24 @@ impl DynTraitTy {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct CoroutineTy {
-    pub item: ItemRef,
+pub struct CoroutineTy<'tcx> {
+    pub item: ItemRef<'tcx>,
 }
 
 /// Reflects [`ty::UserSelfTy`]
 #[derive(Debug, Clone, AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::UserSelfTy<'tcx>, state: S as gstate)]
-pub struct UserSelfTy {
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::UserSelfTy<'tcx>, state: S as gstate)]
+pub struct UserSelfTy<'tcx> {
     pub impl_def_id: DefId,
-    pub self_ty: Ty,
+    pub self_ty: Ty<'tcx>,
 }
 
 /// Reflects [`ty::UserArgs`]
 #[derive(Debug, Clone, AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::UserArgs<'tcx>, state: S as gstate)]
-pub struct UserArgs {
-    pub args: Vec<GenericArg>,
-    pub user_self_ty: Option<UserSelfTy>,
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::UserArgs<'tcx>, state: S as gstate)]
+pub struct UserArgs<'tcx> {
+    pub args: Vec<GenericArg<'tcx>>,
+    pub user_self_ty: Option<UserSelfTy<'tcx>>,
 }
 
 /// Reflects [`ty::UserType`]: this is currently
@@ -478,10 +479,10 @@ impl ToString for UintTy {
 
 /// Reflects [`ty::TypeAndMut`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::TypeAndMut<'tcx>, state: S as gstate)]
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::TypeAndMut<'tcx>, state: S as gstate)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct TypeAndMut {
-    pub ty: Ty,
+pub struct TypeAndMut<'tcx> {
+    pub ty: Ty<'tcx>,
     pub mutbl: Mutability,
 }
 
@@ -494,23 +495,23 @@ impl<S, U, T: SInto<S, U>> SInto<S, Vec<U>> for ty::List<T> {
 /// This type merges the information from
 /// [`ty::AliasTyKind`] and [`ty::AliasTy`].
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Alias {
-    pub kind: AliasKind,
-    pub args: Vec<GenericArg>,
+pub struct Alias<'tcx> {
+    pub kind: AliasKind<'tcx>,
+    pub args: Vec<GenericArg<'tcx>>,
     pub def_id: DefId,
 }
 
 /// Reflects [`rustc_middle::ty::AliasTyKind`].
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum AliasKind {
+pub enum AliasKind<'tcx> {
     /// The projection of a trait type: `<Ty as Trait<...>>::Type<...>`
-    Projection(ItemRef),
+    Projection(ItemRef<'tcx>),
     /// An associated type in an inherent impl.
     Inherent,
     /// An `impl Trait` opaque type.
     Opaque {
         /// The real type hidden inside this opaque type.
-        hidden_ty: Ty,
+        hidden_ty: Ty<'tcx>,
     },
     /// A type alias that references opaque types. Likely to always be normalized away.
     Free,
@@ -525,9 +526,9 @@ pub fn alias_ty_kind_def_id<'tcx>(kind: ty::AliasTyKind<'tcx>) -> RDefId {
     }
 }
 
-impl Alias {
+impl<'tcx> Alias<'tcx> {
     #[tracing::instrument(level = "trace", skip(s))]
-    fn from<'tcx, S: UnderOwnerState<'tcx>>(s: &S, alias_ty: &ty::AliasTy<'tcx>) -> TyKind {
+    fn from<S: UnderOwnerState<'tcx>>(s: &S, alias_ty: &ty::AliasTy<'tcx>) -> TyKind<'tcx> {
         let tcx = s.base().tcx;
         let typing_env = s.typing_env();
         use ty::AliasTyKind as RustAliasKind;
@@ -564,41 +565,41 @@ impl Alias {
 }
 
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::pattern::PatternKind<'tcx>, state: S as gstate)]
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::pattern::PatternKind<'tcx>, state: S as gstate)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Pattern {
+pub enum Pattern<'tcx> {
     Range {
-        start: ConstantExpr,
-        end: ConstantExpr,
+        start: ConstantExpr<'tcx>,
+        end: ConstantExpr<'tcx>,
     },
-    Or(Vec<Pattern>),
+    Or(Vec<Pattern<'tcx>>),
     NotNull,
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Pattern> for ty::Pattern<'tcx> {
-    fn sinto(&self, s: &S) -> Pattern {
+impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, Pattern<'tcx>> for ty::Pattern<'tcx> {
+    fn sinto(&self, s: &S) -> Pattern<'tcx> {
         self.kind().sinto(s)
     }
 }
 /// Reflects [`ty::CanonicalUserTypeAnnotation`]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::CanonicalUserTypeAnnotation<'tcx>, state: S as gstate)]
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::CanonicalUserTypeAnnotation<'tcx>, state: S as gstate)]
 #[derive(Debug, Clone)]
-pub struct CanonicalUserTypeAnnotation {
+pub struct CanonicalUserTypeAnnotation<'tcx> {
     pub user_ty: CanonicalUserType,
     pub span: Span,
-    pub inferred_ty: Ty,
+    pub inferred_ty: Ty<'tcx>,
 }
 
 /// The metadata to attach to the newly-unsized ptr.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum UnsizingMetadata {
+pub enum UnsizingMetadata<'tcx> {
     /// Unsize an array to a slice, storing the length as metadata.
-    Length(ConstantExpr),
+    Length(ConstantExpr<'tcx>),
     /// Unsize a non-dyn type to a dyn type, adding a vtable pointer as metadata.
-    DirectVTable(TraitProof),
+    DirectVTable(TraitProof<'tcx>),
     /// Unsize a dyn-type to another dyn-type, (optionally) indexing within the current vtable.
-    NestedVTable(DynBinder<TraitProof>),
+    NestedVTable(DynBinder<'tcx, TraitProof<'tcx>>),
     /// Couldn't compute
     Unknown,
 }
@@ -607,7 +608,7 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     src_ty: ty::Ty<'tcx>,
     tgt_ty: ty::Ty<'tcx>,
-) -> UnsizingMetadata {
+) -> UnsizingMetadata<'tcx> {
     // TODO: also pass the list of fields we go through in the unsizing metadata.
 
     let tcx = s.base().tcx;
@@ -684,12 +685,12 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
 /// Reflects [`ty::FnSig`]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[derive(AdtInto)]
-#[args(<'tcx, S: UnderOwnerState<'tcx>>, from: ty::FnSig<'tcx>, state: S as s)]
-pub struct TyFnSig {
+#[args(< S: UnderOwnerState<'tcx>>, from: ty::FnSig<'tcx>, state: S as s)]
+pub struct TyFnSig<'tcx> {
     #[value(self.inputs().sinto(s))]
-    pub inputs: Vec<Ty>,
+    pub inputs: Vec<Ty<'tcx>>,
     #[value(self.output().sinto(s))]
-    pub output: Ty,
+    pub output: Ty<'tcx>,
     #[value(self.c_variadic())]
     pub c_variadic: bool,
     #[value(self.safety())]
@@ -699,7 +700,7 @@ pub struct TyFnSig {
 }
 
 /// Reflects [`ty::PolyFnSig`]
-pub type PolyFnSig = Binder<TyFnSig>;
+pub type PolyFnSig<'tcx> = Binder<TyFnSig<'tcx>>;
 
 /// The arguments of the given signature, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
 /// The result binds the same variables as the signature it comes from, so that the two agree on
