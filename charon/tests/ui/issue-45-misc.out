@@ -455,7 +455,7 @@ where
 struct {closure} {}
 
 // Full name: test_crate::map::{impl FnMut<(i32,)> for {closure}}::call_mut
-fn call_mut<'_0>(_1: &'_0 mut {closure}, tupled_args: (i32,)) -> i32
+extern "rust-call" fn call_mut<'_0>(_1: &'_0 mut {closure}, tupled_args: (i32,)) -> i32
 {
     let _0: i32; // return
     let _1: &'1 mut {closure}; // arg #1
@@ -473,7 +473,7 @@ fn call_mut<'_0>(_1: &'_0 mut {closure}, tupled_args: (i32,)) -> i32
 }
 
 // Full name: test_crate::map::{impl FnOnce<(i32,)> for {closure}}::call_once
-fn call_once(_1: {closure}, _2: (i32,)) -> i32
+extern "rust-call" fn call_once(_1: {closure}, _2: (i32,)) -> i32
 {
     let _0: i32; // return
     let _1: {closure}; // arg #1

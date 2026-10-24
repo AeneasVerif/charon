@@ -159,7 +159,7 @@ impl<A> "impl_Destruct_for_tuple" Destruct for (A,) {
 }
 
 // Full name: {impl Fn<(A,), B> for fn(A) -> B}::call
-fn {impl Fn<(A,), B> for fn(A) -> B}::call<'_0, A, B>(fn_ptr: &'_0 fn(A) -> B, args: (A,)) -> B
+extern "rust-call" fn {impl Fn<(A,), B> for fn(A) -> B}::call<'_0, A, B>(fn_ptr: &'_0 fn(A) -> B, args: (A,)) -> B
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
@@ -181,7 +181,7 @@ where
 }
 
 // Full name: {impl FnMut<(A,), B> for fn(A) -> B}::call_mut
-fn {impl FnMut<(A,), B> for fn(A) -> B}::call_mut<'_0, A, B>(fn_ptr: &'_0 mut fn(A) -> B, args: (A,)) -> B
+extern "rust-call" fn {impl FnMut<(A,), B> for fn(A) -> B}::call_mut<'_0, A, B>(fn_ptr: &'_0 mut fn(A) -> B, args: (A,)) -> B
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
@@ -203,7 +203,7 @@ where
 }
 
 // Full name: {impl FnOnce<(A,), B> for fn(A) -> B}::call_once
-fn {impl FnOnce<(A,), B> for fn(A) -> B}::call_once<A, B>(fn_ptr: fn(A) -> B, args: (A,)) -> B
+extern "rust-call" fn {impl FnOnce<(A,), B> for fn(A) -> B}::call_once<A, B>(fn_ptr: fn(A) -> B, args: (A,)) -> B
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
@@ -285,7 +285,7 @@ pub fn incr_u32(x: u32) -> u32
 }
 
 // Full name: test_crate::{impl Fn<(u32,), u32> for incr_u32}::call
-pub fn {impl Fn<(u32,), u32> for incr_u32}::call<'_0>(state: &'_0 incr_u32, args: (u32,)) -> u32
+pub extern "rust-call" fn {impl Fn<(u32,), u32> for incr_u32}::call<'_0>(state: &'_0 incr_u32, args: (u32,)) -> u32
 {
     let _0: u32; // return
     let state: &'_0 incr_u32; // arg #1
@@ -302,7 +302,7 @@ pub fn {impl Fn<(u32,), u32> for incr_u32}::call<'_0>(state: &'_0 incr_u32, args
 }
 
 // Full name: test_crate::{impl FnMut<(u32,), u32> for incr_u32}::call_mut
-pub fn {impl FnMut<(u32,), u32> for incr_u32}::call_mut<'_0>(state: &'_0 mut incr_u32, args: (u32,)) -> u32
+pub extern "rust-call" fn {impl FnMut<(u32,), u32> for incr_u32}::call_mut<'_0>(state: &'_0 mut incr_u32, args: (u32,)) -> u32
 {
     let _0: u32; // return
     let state: &'_0 mut incr_u32; // arg #1
@@ -319,7 +319,7 @@ pub fn {impl FnMut<(u32,), u32> for incr_u32}::call_mut<'_0>(state: &'_0 mut inc
 }
 
 // Full name: test_crate::{impl FnOnce<(u32,), u32> for incr_u32}::call_once
-pub fn {impl FnOnce<(u32,), u32> for incr_u32}::call_once(state: incr_u32, args: (u32,)) -> u32
+pub extern "rust-call" fn {impl FnOnce<(u32,), u32> for incr_u32}::call_once(state: incr_u32, args: (u32,)) -> u32
 {
     let _0: u32; // return
     let state: incr_u32; // arg #1
@@ -567,7 +567,7 @@ pub fn test_map_option1(x: Option<u32>[{built_in impl Sized for u32}]) -> Option
 struct test_crate::test_closure_u32::{closure} {}
 
 // Full name: test_crate::test_closure_u32::{impl Fn<(u32,), u32> for test_crate::test_closure_u32::{closure}}::call
-fn {impl Fn<(u32,), u32> for test_crate::test_closure_u32::{closure}}::call<'_0>(_1: &'_0 test_crate::test_closure_u32::{closure}, tupled_args: (u32,)) -> u32
+extern "rust-call" fn {impl Fn<(u32,), u32> for test_crate::test_closure_u32::{closure}}::call<'_0>(_1: &'_0 test_crate::test_closure_u32::{closure}, tupled_args: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 test_crate::test_closure_u32::{closure}; // arg #1
@@ -585,7 +585,7 @@ fn {impl Fn<(u32,), u32> for test_crate::test_closure_u32::{closure}}::call<'_0>
 }
 
 // Full name: test_crate::test_closure_u32::{impl FnMut<(u32,), u32> for test_crate::test_closure_u32::{closure}}::call_mut
-fn {impl FnMut<(u32,), u32> for test_crate::test_closure_u32::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::test_closure_u32::{closure}, args: (u32,)) -> u32
+extern "rust-call" fn {impl FnMut<(u32,), u32> for test_crate::test_closure_u32::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::test_closure_u32::{closure}, args: (u32,)) -> u32
 {
     let _0: u32; // return
     let state: &'_0 mut test_crate::test_closure_u32::{closure}; // arg #1
@@ -607,7 +607,7 @@ fn {impl FnMut<(u32,), u32> for test_crate::test_closure_u32::{closure}}::call_m
 }
 
 // Full name: test_crate::test_closure_u32::{impl FnOnce<(u32,), u32> for test_crate::test_closure_u32::{closure}}::call_once
-fn {impl FnOnce<(u32,), u32> for test_crate::test_closure_u32::{closure}}::call_once(_1: test_crate::test_closure_u32::{closure}, _2: (u32,)) -> u32
+extern "rust-call" fn {impl FnOnce<(u32,), u32> for test_crate::test_closure_u32::{closure}}::call_once(_1: test_crate::test_closure_u32::{closure}, _2: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: test_crate::test_closure_u32::{closure}; // arg #1
@@ -686,7 +686,7 @@ pub fn test_closure_u32(x: u32) -> u32
 struct test_crate::test_closure_u32s::{closure} {}
 
 // Full name: test_crate::test_closure_u32s::{impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::{closure}}::call
-fn {impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::{closure}}::call<'_0>(_1: &'_0 test_crate::test_closure_u32s::{closure}, tupled_args: (u32, u32)) -> u32
+extern "rust-call" fn {impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::{closure}}::call<'_0>(_1: &'_0 test_crate::test_closure_u32s::{closure}, tupled_args: (u32, u32)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 test_crate::test_closure_u32s::{closure}; // arg #1
@@ -720,7 +720,7 @@ fn {impl Fn<(u32, u32), u32> for test_crate::test_closure_u32s::{closure}}::call
 }
 
 // Full name: test_crate::test_closure_u32s::{impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::{closure}}::call_mut
-fn {impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::test_closure_u32s::{closure}, args: (u32, u32)) -> u32
+extern "rust-call" fn {impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::test_closure_u32s::{closure}, args: (u32, u32)) -> u32
 {
     let _0: u32; // return
     let state: &'_0 mut test_crate::test_closure_u32s::{closure}; // arg #1
@@ -742,7 +742,7 @@ fn {impl FnMut<(u32, u32), u32> for test_crate::test_closure_u32s::{closure}}::c
 }
 
 // Full name: test_crate::test_closure_u32s::{impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::{closure}}::call_once
-fn {impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::{closure}}::call_once(_1: test_crate::test_closure_u32s::{closure}, _2: (u32, u32)) -> u32
+extern "rust-call" fn {impl FnOnce<(u32, u32), u32> for test_crate::test_closure_u32s::{closure}}::call_once(_1: test_crate::test_closure_u32s::{closure}, _2: (u32, u32)) -> u32
 {
     let _0: u32; // return
     let _1: test_crate::test_closure_u32s::{closure}; // arg #1
@@ -828,7 +828,7 @@ pub fn test_closure_u32s(x: u32) -> u32
 struct test_crate::test_closure_ref_u32::{closure} {}
 
 // Full name: test_crate::test_closure_ref_u32::{impl Fn<(&'_0 u32,), &'_0 u32> for test_crate::test_closure_ref_u32::{closure}}::call
-fn {impl Fn<(&'_0 u32,), &'_0 u32> for test_crate::test_closure_ref_u32::{closure}}::call<'_0, '_1>(_1: &'_1 test_crate::test_closure_ref_u32::{closure}, tupled_args: (&'_0 u32,)) -> &'_0 u32
+extern "rust-call" fn {impl Fn<(&'_0 u32,), &'_0 u32> for test_crate::test_closure_ref_u32::{closure}}::call<'_0, '_1>(_1: &'_1 test_crate::test_closure_ref_u32::{closure}, tupled_args: (&'_0 u32,)) -> &'_0 u32
 {
     let _0: &'1 u32; // return
     let _1: &'3 test_crate::test_closure_ref_u32::{closure}; // arg #1
@@ -846,7 +846,7 @@ fn {impl Fn<(&'_0 u32,), &'_0 u32> for test_crate::test_closure_ref_u32::{closur
 }
 
 // Full name: test_crate::test_closure_ref_u32::{impl FnMut<(&'_0 u32,), &'_0 u32> for test_crate::test_closure_ref_u32::{closure}}::call_mut
-fn {impl FnMut<(&'_0 u32,), &'_0 u32> for test_crate::test_closure_ref_u32::{closure}}::call_mut<'_0, '_1>(state: &'_1 mut test_crate::test_closure_ref_u32::{closure}, args: (&'_0 u32,)) -> &'_0 u32
+extern "rust-call" fn {impl FnMut<(&'_0 u32,), &'_0 u32> for test_crate::test_closure_ref_u32::{closure}}::call_mut<'_0, '_1>(state: &'_1 mut test_crate::test_closure_ref_u32::{closure}, args: (&'_0 u32,)) -> &'_0 u32
 {
     let _0: &'_0 u32; // return
     let state: &'_1 mut test_crate::test_closure_ref_u32::{closure}; // arg #1
@@ -868,7 +868,7 @@ fn {impl FnMut<(&'_0 u32,), &'_0 u32> for test_crate::test_closure_ref_u32::{clo
 }
 
 // Full name: test_crate::test_closure_ref_u32::{impl FnOnce<(&'_0 u32,), &'_0 u32> for test_crate::test_closure_ref_u32::{closure}}::call_once
-fn {impl FnOnce<(&'_0 u32,), &'_0 u32> for test_crate::test_closure_ref_u32::{closure}}::call_once<'_0>(_1: test_crate::test_closure_ref_u32::{closure}, _2: (&'_0 u32,)) -> &'_0 u32
+extern "rust-call" fn {impl FnOnce<(&'_0 u32,), &'_0 u32> for test_crate::test_closure_ref_u32::{closure}}::call_once<'_0>(_1: test_crate::test_closure_ref_u32::{closure}, _2: (&'_0 u32,)) -> &'_0 u32
 {
     let _0: &'1 u32; // return
     let _1: test_crate::test_closure_ref_u32::{closure}; // arg #1
@@ -955,7 +955,7 @@ where
 {}
 
 // Full name: test_crate::test_closure_ref_param::{impl Fn<(&'_0 T,), &'_0 T> for test_crate::test_closure_ref_param::{closure}<T>[TraitClause0]}::call
-fn {impl Fn<(&'_0 T,), &'_0 T> for test_crate::test_closure_ref_param::{closure}<T>[TraitClause0]}::call<'_0, '_1, T>(_1: &'_1 test_crate::test_closure_ref_param::{closure}<T>[TraitClause0], tupled_args: (&'_0 T,)) -> &'_0 T
+extern "rust-call" fn {impl Fn<(&'_0 T,), &'_0 T> for test_crate::test_closure_ref_param::{closure}<T>[TraitClause0]}::call<'_0, '_1, T>(_1: &'_1 test_crate::test_closure_ref_param::{closure}<T>[TraitClause0], tupled_args: (&'_0 T,)) -> &'_0 T
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_1,
@@ -977,7 +977,7 @@ where
 }
 
 // Full name: test_crate::test_closure_ref_param::{impl FnMut<(&'_0 T,), &'_0 T> for test_crate::test_closure_ref_param::{closure}<T>[TraitClause0]}::call_mut
-fn {impl FnMut<(&'_0 T,), &'_0 T> for test_crate::test_closure_ref_param::{closure}<T>[TraitClause0]}::call_mut<'_0, '_1, T>(state: &'_1 mut test_crate::test_closure_ref_param::{closure}<T>[TraitClause0], args: (&'_0 T,)) -> &'_0 T
+extern "rust-call" fn {impl FnMut<(&'_0 T,), &'_0 T> for test_crate::test_closure_ref_param::{closure}<T>[TraitClause0]}::call_mut<'_0, '_1, T>(state: &'_1 mut test_crate::test_closure_ref_param::{closure}<T>[TraitClause0], args: (&'_0 T,)) -> &'_0 T
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_1,
@@ -1003,7 +1003,7 @@ where
 }
 
 // Full name: test_crate::test_closure_ref_param::{impl FnOnce<(&'_0 T,), &'_0 T> for test_crate::test_closure_ref_param::{closure}<T>[TraitClause0]}::call_once
-fn {impl FnOnce<(&'_0 T,), &'_0 T> for test_crate::test_closure_ref_param::{closure}<T>[TraitClause0]}::call_once<'_0, T>(_1: test_crate::test_closure_ref_param::{closure}<T>[TraitClause0], _2: (&'_0 T,)) -> &'_0 T
+extern "rust-call" fn {impl FnOnce<(&'_0 T,), &'_0 T> for test_crate::test_closure_ref_param::{closure}<T>[TraitClause0]}::call_once<'_0, T>(_1: test_crate::test_closure_ref_param::{closure}<T>[TraitClause0], _2: (&'_0 T,)) -> &'_0 T
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,
@@ -1106,7 +1106,7 @@ where
 {}
 
 // Full name: test_crate::test_closure_ref_early_bound::{impl Fn<(&'_1 T,), &'_1 T> for test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1]}::call
-fn {impl Fn<(&'_1 T,), &'_1 T> for test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, T>(_1: &'_2 test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1], tupled_args: (&'_1 T,)) -> &'_1 T
+extern "rust-call" fn {impl Fn<(&'_1 T,), &'_1 T> for test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, T>(_1: &'_2 test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1], tupled_args: (&'_1 T,)) -> &'_1 T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait<'a>),
@@ -1130,7 +1130,7 @@ where
 }
 
 // Full name: test_crate::test_closure_ref_early_bound::{impl FnMut<(&'_1 T,), &'_1 T> for test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1]}::call_mut
-fn {impl FnMut<(&'_1 T,), &'_1 T> for test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1]}::call_mut<'a, '_1, '_2, T>(state: &'_2 mut test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1], args: (&'_1 T,)) -> &'_1 T
+extern "rust-call" fn {impl FnMut<(&'_1 T,), &'_1 T> for test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1]}::call_mut<'a, '_1, '_2, T>(state: &'_2 mut test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1], args: (&'_1 T,)) -> &'_1 T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait<'a>),
@@ -1158,7 +1158,7 @@ where
 }
 
 // Full name: test_crate::test_closure_ref_early_bound::{impl FnOnce<(&'_1 T,), &'_1 T> for test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1]}::call_once
-fn {impl FnOnce<(&'_1 T,), &'_1 T> for test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1]}::call_once<'a, '_1, T>(_1: test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1], _2: (&'_1 T,)) -> &'_1 T
+extern "rust-call" fn {impl FnOnce<(&'_1 T,), &'_1 T> for test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1]}::call_once<'a, '_1, T>(_1: test_crate::test_closure_ref_early_bound::{closure}<'a, T>[TraitClause0, TraitClause1], _2: (&'_1 T,)) -> &'_1 T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait<'a>),
@@ -1253,7 +1253,7 @@ where
 struct test_crate::test_map_option2::{closure} {}
 
 // Full name: test_crate::test_map_option2::{impl Fn<(u32,), u32> for test_crate::test_map_option2::{closure}}::call
-fn {impl Fn<(u32,), u32> for test_crate::test_map_option2::{closure}}::call<'_0>(_1: &'_0 test_crate::test_map_option2::{closure}, tupled_args: (u32,)) -> u32
+extern "rust-call" fn {impl Fn<(u32,), u32> for test_crate::test_map_option2::{closure}}::call<'_0>(_1: &'_0 test_crate::test_map_option2::{closure}, tupled_args: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 test_crate::test_map_option2::{closure}; // arg #1
@@ -1279,7 +1279,7 @@ fn {impl Fn<(u32,), u32> for test_crate::test_map_option2::{closure}}::call<'_0>
 }
 
 // Full name: test_crate::test_map_option2::{impl FnMut<(u32,), u32> for test_crate::test_map_option2::{closure}}::call_mut
-fn {impl FnMut<(u32,), u32> for test_crate::test_map_option2::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::test_map_option2::{closure}, args: (u32,)) -> u32
+extern "rust-call" fn {impl FnMut<(u32,), u32> for test_crate::test_map_option2::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::test_map_option2::{closure}, args: (u32,)) -> u32
 {
     let _0: u32; // return
     let state: &'_0 mut test_crate::test_map_option2::{closure}; // arg #1
@@ -1301,7 +1301,7 @@ fn {impl FnMut<(u32,), u32> for test_crate::test_map_option2::{closure}}::call_m
 }
 
 // Full name: test_crate::test_map_option2::{impl FnOnce<(u32,), u32> for test_crate::test_map_option2::{closure}}::call_once
-fn {impl FnOnce<(u32,), u32> for test_crate::test_map_option2::{closure}}::call_once(_1: test_crate::test_map_option2::{closure}, _2: (u32,)) -> u32
+extern "rust-call" fn {impl FnOnce<(u32,), u32> for test_crate::test_map_option2::{closure}}::call_once(_1: test_crate::test_map_option2::{closure}, _2: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: test_crate::test_map_option2::{closure}; // arg #1
@@ -1395,7 +1395,7 @@ where
 }
 
 // Full name: test_crate::{impl Fn<(T,), T> for id<T>[TraitClause0]}::call
-pub fn {impl Fn<(T,), T> for id<T>[TraitClause0]}::call<'_0, T>(state: &'_0 id<T>[TraitClause0], args: (T,)) -> T
+pub extern "rust-call" fn {impl Fn<(T,), T> for id<T>[TraitClause0]}::call<'_0, T>(state: &'_0 id<T>[TraitClause0], args: (T,)) -> T
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,
@@ -1415,7 +1415,7 @@ where
 }
 
 // Full name: test_crate::{impl FnMut<(T,), T> for id<T>[TraitClause0]}::call_mut
-pub fn {impl FnMut<(T,), T> for id<T>[TraitClause0]}::call_mut<'_0, T>(state: &'_0 mut id<T>[TraitClause0], args: (T,)) -> T
+pub extern "rust-call" fn {impl FnMut<(T,), T> for id<T>[TraitClause0]}::call_mut<'_0, T>(state: &'_0 mut id<T>[TraitClause0], args: (T,)) -> T
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,
@@ -1435,7 +1435,7 @@ where
 }
 
 // Full name: test_crate::{impl FnOnce<(T,), T> for id<T>[TraitClause0]}::call_once
-pub fn {impl FnOnce<(T,), T> for id<T>[TraitClause0]}::call_once<T>(state: id<T>[TraitClause0], args: (T,)) -> T
+pub extern "rust-call" fn {impl FnOnce<(T,), T> for id<T>[TraitClause0]}::call_once<T>(state: id<T>[TraitClause0], args: (T,)) -> T
 where
     TraitClause0: (T: Sized),
 {
@@ -1567,7 +1567,7 @@ where
 
 // Full name: test_crate::{impl Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call
 #[allow(clippy::redundant_clone)]
-pub fn {impl Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call<'_0, T>(state: &'_0 id_clone<T>[TraitClause0, TraitClause1], args: (T,)) -> T
+pub extern "rust-call" fn {impl Fn<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call<'_0, T>(state: &'_0 id_clone<T>[TraitClause0, TraitClause1], args: (T,)) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
@@ -1589,7 +1589,7 @@ where
 
 // Full name: test_crate::{impl FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_mut
 #[allow(clippy::redundant_clone)]
-pub fn {impl FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_mut<'_0, T>(state: &'_0 mut id_clone<T>[TraitClause0, TraitClause1], args: (T,)) -> T
+pub extern "rust-call" fn {impl FnMut<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_mut<'_0, T>(state: &'_0 mut id_clone<T>[TraitClause0, TraitClause1], args: (T,)) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
@@ -1611,7 +1611,7 @@ where
 
 // Full name: test_crate::{impl FnOnce<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_once
 #[allow(clippy::redundant_clone)]
-pub fn {impl FnOnce<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_once<T>(state: id_clone<T>[TraitClause0, TraitClause1], args: (T,)) -> T
+pub extern "rust-call" fn {impl FnOnce<(T,), T> for id_clone<T>[TraitClause0, TraitClause1]}::call_once<T>(state: id_clone<T>[TraitClause0, TraitClause1], args: (T,)) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
@@ -1761,7 +1761,7 @@ pub fn test_map_option_id_clone(x: Option<u32>[{built_in impl Sized for u32}]) -
 struct test_crate::test_map_option3::{closure} {}
 
 // Full name: test_crate::test_map_option3::{impl Fn<(u32,), u32> for test_crate::test_map_option3::{closure}}::call
-fn {impl Fn<(u32,), u32> for test_crate::test_map_option3::{closure}}::call<'_0>(_1: &'_0 test_crate::test_map_option3::{closure}, tupled_args: (u32,)) -> u32
+extern "rust-call" fn {impl Fn<(u32,), u32> for test_crate::test_map_option3::{closure}}::call<'_0>(_1: &'_0 test_crate::test_map_option3::{closure}, tupled_args: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 test_crate::test_map_option3::{closure}; // arg #1
@@ -1787,7 +1787,7 @@ fn {impl Fn<(u32,), u32> for test_crate::test_map_option3::{closure}}::call<'_0>
 }
 
 // Full name: test_crate::test_map_option3::{impl FnMut<(u32,), u32> for test_crate::test_map_option3::{closure}}::call_mut
-fn {impl FnMut<(u32,), u32> for test_crate::test_map_option3::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::test_map_option3::{closure}, args: (u32,)) -> u32
+extern "rust-call" fn {impl FnMut<(u32,), u32> for test_crate::test_map_option3::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::test_map_option3::{closure}, args: (u32,)) -> u32
 {
     let _0: u32; // return
     let state: &'_0 mut test_crate::test_map_option3::{closure}; // arg #1
@@ -1809,7 +1809,7 @@ fn {impl FnMut<(u32,), u32> for test_crate::test_map_option3::{closure}}::call_m
 }
 
 // Full name: test_crate::test_map_option3::{impl FnOnce<(u32,), u32> for test_crate::test_map_option3::{closure}}::call_once
-fn {impl FnOnce<(u32,), u32> for test_crate::test_map_option3::{closure}}::call_once(_1: test_crate::test_map_option3::{closure}, _2: (u32,)) -> u32
+extern "rust-call" fn {impl FnOnce<(u32,), u32> for test_crate::test_map_option3::{closure}}::call_once(_1: test_crate::test_map_option3::{closure}, _2: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: test_crate::test_map_option3::{closure}; // arg #1
@@ -1885,7 +1885,7 @@ pub fn test_map_option3(x: Option<u32>[{built_in impl Sized for u32}]) -> Option
 struct test_crate::test_regions::{closure} {}
 
 // Full name: test_crate::test_regions::{impl Fn<(&'_0 &'_1 u32,), u32> for test_crate::test_regions::{closure}}::call
-fn {impl Fn<(&'_0 &'_1 u32,), u32> for test_crate::test_regions::{closure}}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::test_regions::{closure}, tupled_args: (&'_0 &'_1 u32,)) -> u32
+extern "rust-call" fn {impl Fn<(&'_0 &'_1 u32,), u32> for test_crate::test_regions::{closure}}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::test_regions::{closure}, tupled_args: (&'_0 &'_1 u32,)) -> u32
 where
     RegionOutlives0: '_1: '_0,
 {
@@ -1942,7 +1942,7 @@ pub fn test_regions<'a>(x: &'a u32) -> u32
 struct test_crate::test_regions_casted::{closure} {}
 
 // Full name: test_crate::test_regions_casted::{impl Fn<(&'_0 &'_1 u32,), u32> for test_crate::test_regions_casted::{closure}}::call
-fn {impl Fn<(&'_0 &'_1 u32,), u32> for test_crate::test_regions_casted::{closure}}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::test_regions_casted::{closure}, tupled_args: (&'_0 &'_1 u32,)) -> u32
+extern "rust-call" fn {impl Fn<(&'_0 &'_1 u32,), u32> for test_crate::test_regions_casted::{closure}}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::test_regions_casted::{closure}, tupled_args: (&'_0 &'_1 u32,)) -> u32
 where
     RegionOutlives0: '_1: '_0,
 {
@@ -1962,7 +1962,7 @@ where
 }
 
 // Full name: test_crate::test_regions_casted::{impl FnMut<(&'_0 &'_1 u32,), u32> for test_crate::test_regions_casted::{closure}}::call_mut
-fn {impl FnMut<(&'_0 &'_1 u32,), u32> for test_crate::test_regions_casted::{closure}}::call_mut<'_0, '_1, '_2>(state: &'_2 mut test_crate::test_regions_casted::{closure}, args: (&'_0 &'_1 u32,)) -> u32
+extern "rust-call" fn {impl FnMut<(&'_0 &'_1 u32,), u32> for test_crate::test_regions_casted::{closure}}::call_mut<'_0, '_1, '_2>(state: &'_2 mut test_crate::test_regions_casted::{closure}, args: (&'_0 &'_1 u32,)) -> u32
 where
     RegionOutlives0: '_1: '_0,
 {
@@ -1986,7 +1986,7 @@ where
 }
 
 // Full name: test_crate::test_regions_casted::{impl FnOnce<(&'_0 &'_1 u32,), u32> for test_crate::test_regions_casted::{closure}}::call_once
-fn {impl FnOnce<(&'_0 &'_1 u32,), u32> for test_crate::test_regions_casted::{closure}}::call_once<'_0, '_1>(_1: test_crate::test_regions_casted::{closure}, _2: (&'_0 &'_1 u32,)) -> u32
+extern "rust-call" fn {impl FnOnce<(&'_0 &'_1 u32,), u32> for test_crate::test_regions_casted::{closure}}::call_once<'_0, '_1>(_1: test_crate::test_regions_casted::{closure}, _2: (&'_0 &'_1 u32,)) -> u32
 where
     RegionOutlives0: '_1: '_0,
 {
@@ -2076,7 +2076,7 @@ struct test_crate::test_closure_capture::{closure}<'_0, '_1> {
 }
 
 // Full name: test_crate::test_closure_capture::{impl Fn<(u32,), u32> for test_crate::test_closure_capture::{closure}<'_0, '_1>}::call
-fn {impl Fn<(u32,), u32> for test_crate::test_closure_capture::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::test_closure_capture::{closure}<'_0, '_1>, tupled_args: (u32,)) -> u32
+extern "rust-call" fn {impl Fn<(u32,), u32> for test_crate::test_closure_capture::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::test_closure_capture::{closure}<'_0, '_1>, tupled_args: (u32,)) -> u32
 where
     RegionOutlives0: '_0: '_2,
     RegionOutlives1: '_1: '_2,
@@ -2169,7 +2169,7 @@ where
 {}
 
 // Full name: test_crate::test_closure_clone::{impl Fn<(T,), T> for test_crate::test_closure_clone::{closure}<T>[TraitClause0, TraitClause1]}::call
-fn {impl Fn<(T,), T> for test_crate::test_closure_clone::{closure}<T>[TraitClause0, TraitClause1]}::call<'_0, T>(_1: &'_0 test_crate::test_closure_clone::{closure}<T>[TraitClause0, TraitClause1], tupled_args: (T,)) -> T
+extern "rust-call" fn {impl Fn<(T,), T> for test_crate::test_closure_clone::{closure}<T>[TraitClause0, TraitClause1]}::call<'_0, T>(_1: &'_0 test_crate::test_closure_clone::{closure}<T>[TraitClause0, TraitClause1], tupled_args: (T,)) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
@@ -2267,7 +2267,7 @@ where
 struct test_crate::test_array_map::{closure} {}
 
 // Full name: test_crate::test_array_map::{impl FnMut<(i32,), i32> for test_crate::test_array_map::{closure}}::call_mut
-fn {impl FnMut<(i32,), i32> for test_crate::test_array_map::{closure}}::call_mut<'_0>(_1: &'_0 mut test_crate::test_array_map::{closure}, tupled_args: (i32,)) -> i32
+extern "rust-call" fn {impl FnMut<(i32,), i32> for test_crate::test_array_map::{closure}}::call_mut<'_0>(_1: &'_0 mut test_crate::test_array_map::{closure}, tupled_args: (i32,)) -> i32
 {
     let _0: i32; // return
     let _1: &'1 mut test_crate::test_array_map::{closure}; // arg #1
@@ -2285,7 +2285,7 @@ fn {impl FnMut<(i32,), i32> for test_crate::test_array_map::{closure}}::call_mut
 }
 
 // Full name: test_crate::test_array_map::{impl FnOnce<(i32,), i32> for test_crate::test_array_map::{closure}}::call_once
-fn {impl FnOnce<(i32,), i32> for test_crate::test_array_map::{closure}}::call_once(_1: test_crate::test_array_map::{closure}, _2: (i32,)) -> i32
+extern "rust-call" fn {impl FnOnce<(i32,), i32> for test_crate::test_array_map::{closure}}::call_once(_1: test_crate::test_array_map::{closure}, _2: (i32,)) -> i32
 {
     let _0: i32; // return
     let _1: test_crate::test_array_map::{closure}; // arg #1
@@ -2353,7 +2353,7 @@ struct test_crate::test_fnmut_with_ref::{closure}<'_0> {
 }
 
 // Full name: test_crate::test_fnmut_with_ref::{impl FnMut<(&'_1 usize,), ()> for test_crate::test_fnmut_with_ref::{closure}<'_0>}::call_mut
-fn {impl FnMut<(&'_1 usize,), ()> for test_crate::test_fnmut_with_ref::{closure}<'_0>}::call_mut<'_0, '_1, '_2>(_1: &'_2 mut test_crate::test_fnmut_with_ref::{closure}<'_0>, tupled_args: (&'_1 usize,))
+extern "rust-call" fn {impl FnMut<(&'_1 usize,), ()> for test_crate::test_fnmut_with_ref::{closure}<'_0>}::call_mut<'_0, '_1, '_2>(_1: &'_2 mut test_crate::test_fnmut_with_ref::{closure}<'_0>, tupled_args: (&'_1 usize,))
 where
     RegionOutlives0: '_0: '_2,
 {

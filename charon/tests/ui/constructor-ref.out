@@ -74,7 +74,7 @@ where
 }
 
 // Full name: test_crate::Wrapper::{impl FnOnce<(T,)> for Value<T>[TraitClause0]}::call_once
-fn call_once<T>(state: Value<T>[TraitClause0], args: (T,)) -> Wrapper<T>[TraitClause0]
+extern "rust-call" fn call_once<T>(state: Value<T>[TraitClause0], args: (T,)) -> Wrapper<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
 {

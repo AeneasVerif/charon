@@ -94,7 +94,7 @@ struct (_,)<A> {
 }
 
 // Full name: {impl Fn<(A,)> for fn(A) -> B}::call
-fn {impl Fn<(A,)> for fn(A) -> B}::call<'_0, A, B>(fn_ptr: &'_0 fn(A) -> B, args: (A,)) -> B
+extern "rust-call" fn {impl Fn<(A,)> for fn(A) -> B}::call<'_0, A, B>(fn_ptr: &'_0 fn(A) -> B, args: (A,)) -> B
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
@@ -116,7 +116,7 @@ where
 }
 
 // Full name: {impl FnMut<(A,)> for fn(A) -> B}::call_mut
-fn {impl FnMut<(A,)> for fn(A) -> B}::call_mut<'_0, A, B>(fn_ptr: &'_0 mut fn(A) -> B, args: (A,)) -> B
+extern "rust-call" fn {impl FnMut<(A,)> for fn(A) -> B}::call_mut<'_0, A, B>(fn_ptr: &'_0 mut fn(A) -> B, args: (A,)) -> B
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
@@ -138,7 +138,7 @@ where
 }
 
 // Full name: {impl FnOnce<(A,)> for fn(A) -> B}::call_once
-fn {impl FnOnce<(A,)> for fn(A) -> B}::call_once<A, B>(fn_ptr: fn(A) -> B, args: (A,)) -> B
+extern "rust-call" fn {impl FnOnce<(A,)> for fn(A) -> B}::call_once<A, B>(fn_ptr: fn(A) -> B, args: (A,)) -> B
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
@@ -203,7 +203,7 @@ where
 struct test_crate::CLOSURE_STATELESS::{closure} {}
 
 // Full name: test_crate::CLOSURE_STATELESS::{impl Fn<()> for test_crate::CLOSURE_STATELESS::{closure}}::call
-fn {impl Fn<()> for test_crate::CLOSURE_STATELESS::{closure}}::call<'_0>(_1: &'_0 test_crate::CLOSURE_STATELESS::{closure}, tupled_args: ()) -> u8
+extern "rust-call" fn {impl Fn<()> for test_crate::CLOSURE_STATELESS::{closure}}::call<'_0>(_1: &'_0 test_crate::CLOSURE_STATELESS::{closure}, tupled_args: ()) -> u8
 {
     let _0: u8; // return
     let _1: &'1 test_crate::CLOSURE_STATELESS::{closure}; // arg #1
@@ -217,7 +217,7 @@ fn {impl Fn<()> for test_crate::CLOSURE_STATELESS::{closure}}::call<'_0>(_1: &'_
 }
 
 // Full name: test_crate::CLOSURE_STATELESS::{impl FnMut<()> for test_crate::CLOSURE_STATELESS::{closure}}::call_mut
-fn {impl FnMut<()> for test_crate::CLOSURE_STATELESS::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::CLOSURE_STATELESS::{closure}, args: ()) -> u8
+extern "rust-call" fn {impl FnMut<()> for test_crate::CLOSURE_STATELESS::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::CLOSURE_STATELESS::{closure}, args: ()) -> u8
 {
     let _0: u8; // return
     let state: &'_0 mut test_crate::CLOSURE_STATELESS::{closure}; // arg #1
@@ -239,7 +239,7 @@ fn {impl FnMut<()> for test_crate::CLOSURE_STATELESS::{closure}}::call_mut<'_0>(
 }
 
 // Full name: test_crate::CLOSURE_STATELESS::{impl FnOnce<()> for test_crate::CLOSURE_STATELESS::{closure}}::call_once
-fn {impl FnOnce<()> for test_crate::CLOSURE_STATELESS::{closure}}::call_once(_1: test_crate::CLOSURE_STATELESS::{closure}, _2: ()) -> u8
+extern "rust-call" fn {impl FnOnce<()> for test_crate::CLOSURE_STATELESS::{closure}}::call_once(_1: test_crate::CLOSURE_STATELESS::{closure}, _2: ()) -> u8
 {
     let _0: u8; // return
     let _1: test_crate::CLOSURE_STATELESS::{closure}; // arg #1
@@ -313,7 +313,7 @@ static FN_PTR_CALL: &'static C = RawMemory(&test_crate::{promoted_const#2}[0], &
 struct test_crate::CLOSURE_BY_VALUE::{closure} {}
 
 // Full name: test_crate::CLOSURE_BY_VALUE::{impl Fn<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call
-fn {impl Fn<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call<'_0>(_1: &'_0 test_crate::CLOSURE_BY_VALUE::{closure}, tupled_args: ()) -> u8
+extern "rust-call" fn {impl Fn<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call<'_0>(_1: &'_0 test_crate::CLOSURE_BY_VALUE::{closure}, tupled_args: ()) -> u8
 {
     let _0: u8; // return
     let _1: &'1 test_crate::CLOSURE_BY_VALUE::{closure}; // arg #1
@@ -327,7 +327,7 @@ fn {impl Fn<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call<'_0>(_1: &'_0
 }
 
 // Full name: test_crate::CLOSURE_BY_VALUE::{impl FnMut<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call_mut
-fn {impl FnMut<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::CLOSURE_BY_VALUE::{closure}, args: ()) -> u8
+extern "rust-call" fn {impl FnMut<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::CLOSURE_BY_VALUE::{closure}, args: ()) -> u8
 {
     let _0: u8; // return
     let state: &'_0 mut test_crate::CLOSURE_BY_VALUE::{closure}; // arg #1
@@ -349,7 +349,7 @@ fn {impl FnMut<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call_mut<'_0>(s
 }
 
 // Full name: test_crate::CLOSURE_BY_VALUE::{impl FnOnce<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call_once
-fn {impl FnOnce<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call_once(_1: test_crate::CLOSURE_BY_VALUE::{closure}, _2: ()) -> u8
+extern "rust-call" fn {impl FnOnce<()> for test_crate::CLOSURE_BY_VALUE::{closure}}::call_once(_1: test_crate::CLOSURE_BY_VALUE::{closure}, _2: ()) -> u8
 {
     let _0: u8; // return
     let _1: test_crate::CLOSURE_BY_VALUE::{closure}; // arg #1

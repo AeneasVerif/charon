@@ -222,7 +222,7 @@ impl "impl_Drop_for_Droppable" Drop for Droppable {
 }
 
 // Full name: test_crate::wrap::{impl FnOnce<()> for test_crate::wrap::{closure}::<u32>}::call_once::<u32>
-fn {impl FnOnce<()> for test_crate::wrap::{closure}::<u32>}::call_once::<u32>(_1: test_crate::wrap::{closure}::<u32>, tupled_args: ()) -> u32
+extern "rust-call" fn {impl FnOnce<()> for test_crate::wrap::{closure}::<u32>}::call_once::<u32>(_1: test_crate::wrap::{closure}::<u32>, tupled_args: ()) -> u32
 {
     let _0: u32; // return
     let _1: test_crate::wrap::{closure}::<u32>; // arg #1
@@ -319,7 +319,7 @@ fn wrap::<u32>(x: u32) -> Box::<(dyn FnOnce<(), Output = u32>), Global>
 struct test_crate::main::{closure#3} {}
 
 // Full name: test_crate::main::{impl Fn<(&'_ u32,)> for test_crate::main::{closure#3}}::call
-fn {impl Fn<(&'_ u32,)> for test_crate::main::{closure#3}}::call<'_0, '_1>(_1: &'_1 test_crate::main::{closure#3}, tupled_args: (&'_ u32,)) -> u32
+extern "rust-call" fn {impl Fn<(&'_ u32,)> for test_crate::main::{closure#3}}::call<'_0, '_1>(_1: &'_1 test_crate::main::{closure#3}, tupled_args: (&'_ u32,)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 test_crate::main::{closure#3}; // arg #1
@@ -337,7 +337,7 @@ fn {impl Fn<(&'_ u32,)> for test_crate::main::{closure#3}}::call<'_0, '_1>(_1: &
 }
 
 // Full name: test_crate::main::{impl FnMut<(&'_ u32,)> for test_crate::main::{closure#3}}::call_mut
-fn {impl FnMut<(&'_ u32,)> for test_crate::main::{closure#3}}::call_mut<'_0, '_1>(state: &'_1 mut test_crate::main::{closure#3}, args: (&'_ u32,)) -> u32
+extern "rust-call" fn {impl FnMut<(&'_ u32,)> for test_crate::main::{closure#3}}::call_mut<'_0, '_1>(state: &'_1 mut test_crate::main::{closure#3}, args: (&'_ u32,)) -> u32
 {
     let _0: u32; // return
     let state: &'_1 mut test_crate::main::{closure#3}; // arg #1
@@ -359,7 +359,7 @@ fn {impl FnMut<(&'_ u32,)> for test_crate::main::{closure#3}}::call_mut<'_0, '_1
 }
 
 // Full name: test_crate::main::{impl FnOnce<(&'_ u32,)> for test_crate::main::{closure#3}}::call_once
-fn {impl FnOnce<(&'_ u32,)> for test_crate::main::{closure#3}}::call_once<'_0>(_1: test_crate::main::{closure#3}, _2: (&'_ u32,)) -> u32
+extern "rust-call" fn {impl FnOnce<(&'_ u32,)> for test_crate::main::{closure#3}}::call_once<'_0>(_1: test_crate::main::{closure#3}, _2: (&'_ u32,)) -> u32
 {
     let _0: u32; // return
     let _1: test_crate::main::{closure#3}; // arg #1
@@ -545,7 +545,7 @@ unsafe fn impl_Destruct_for_closure::drop_glue<'_0>(_1: &'_0 mut test_crate::mai
 }
 
 // Full name: test_crate::main::{impl FnOnce<()> for test_crate::main::{closure#2}}::call_once
-fn impl_FnOnce_unit_for_closure::call_once(_1: test_crate::main::{closure#2}, tupled_args: ()) -> Droppable
+extern "rust-call" fn impl_FnOnce_unit_for_closure::call_once(_1: test_crate::main::{closure#2}, tupled_args: ()) -> Droppable
 {
     let _0: Droppable; // return
     let _1: test_crate::main::{closure#2}; // arg #1
@@ -620,7 +620,7 @@ struct test_crate::main::{closure#1}<'_0> {
 }
 
 // Full name: test_crate::main::{impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::call
-fn {impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::call<'_0, '_1>(_1: &'_1 test_crate::main::{closure#1}<'_0>, tupled_args: (u32,)) -> u32
+extern "rust-call" fn {impl Fn<(u32,)> for test_crate::main::{closure#1}<'_0>}::call<'_0, '_1>(_1: &'_1 test_crate::main::{closure#1}<'_0>, tupled_args: (u32,)) -> u32
 where
     RegionOutlives0: '_0: '_1,
 {
@@ -652,7 +652,7 @@ where
 }
 
 // Full name: test_crate::main::{impl FnMut<(u32,)> for test_crate::main::{closure#1}<'_0>}::call_mut
-fn {impl FnMut<(u32,)> for test_crate::main::{closure#1}<'_0>}::call_mut<'_0, '_1>(state: &'_1 mut test_crate::main::{closure#1}<'_0>, args: (u32,)) -> u32
+extern "rust-call" fn {impl FnMut<(u32,)> for test_crate::main::{closure#1}<'_0>}::call_mut<'_0, '_1>(state: &'_1 mut test_crate::main::{closure#1}<'_0>, args: (u32,)) -> u32
 where
     RegionOutlives0: '_0: '_1,
 {
@@ -676,7 +676,7 @@ where
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u32,)> for test_crate::main::{closure#1}<'_0>}::call_once
-fn {impl FnOnce<(u32,)> for test_crate::main::{closure#1}<'_0>}::call_once<'_0>(_1: test_crate::main::{closure#1}<'_0>, _2: (u32,)) -> u32
+extern "rust-call" fn {impl FnOnce<(u32,)> for test_crate::main::{closure#1}<'_0>}::call_once<'_0>(_1: test_crate::main::{closure#1}<'_0>, _2: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: test_crate::main::{closure#1}<'_0>; // arg #1
@@ -849,7 +849,7 @@ impl<'_0> Fn<(u32,)> for test_crate::main::{closure#1}<'_0> {
 struct test_crate::main::{closure} {}
 
 // Full name: test_crate::main::{impl Fn<(u32,)> for test_crate::main::{closure}}::call
-fn {impl Fn<(u32,)> for test_crate::main::{closure}}::call<'_0>(_1: &'_0 test_crate::main::{closure}, tupled_args: (u32,)) -> u32
+extern "rust-call" fn {impl Fn<(u32,)> for test_crate::main::{closure}}::call<'_0>(_1: &'_0 test_crate::main::{closure}, tupled_args: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 test_crate::main::{closure}; // arg #1
@@ -875,7 +875,7 @@ fn {impl Fn<(u32,)> for test_crate::main::{closure}}::call<'_0>(_1: &'_0 test_cr
 }
 
 // Full name: test_crate::main::{impl FnMut<(u32,)> for test_crate::main::{closure}}::call_mut
-fn {impl FnMut<(u32,)> for test_crate::main::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::main::{closure}, args: (u32,)) -> u32
+extern "rust-call" fn {impl FnMut<(u32,)> for test_crate::main::{closure}}::call_mut<'_0>(state: &'_0 mut test_crate::main::{closure}, args: (u32,)) -> u32
 {
     let _0: u32; // return
     let state: &'_0 mut test_crate::main::{closure}; // arg #1
@@ -897,7 +897,7 @@ fn {impl FnMut<(u32,)> for test_crate::main::{closure}}::call_mut<'_0>(state: &'
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u32,)> for test_crate::main::{closure}}::call_once
-fn {impl FnOnce<(u32,)> for test_crate::main::{closure}}::call_once(_1: test_crate::main::{closure}, _2: (u32,)) -> u32
+extern "rust-call" fn {impl FnOnce<(u32,)> for test_crate::main::{closure}}::call_once(_1: test_crate::main::{closure}, _2: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: test_crate::main::{closure}; // arg #1

@@ -99,7 +99,7 @@ impl<'_0> "impl_From_for_S" From<&'_0 u64> for S {
 }
 
 // Full name: test_crate::{impl From<&'_0 u64> for S}::{impl FnMut<(&'_0 u64,)> for from<'_0>}::call_mut
-pub fn call_mut<'_0, '_1>(state: &'_1 mut from<'_0>, args: (&'_0 u64,)) -> S
+pub extern "rust-call" fn call_mut<'_0, '_1>(state: &'_1 mut from<'_0>, args: (&'_0 u64,)) -> S
 where
     RegionOutlives0: '_0: '_1,
 {
@@ -118,7 +118,7 @@ where
 }
 
 // Full name: test_crate::{impl From<&'_0 u64> for S}::{impl FnOnce<(&'_0 u64,)> for from<'_0>}::call_once
-pub fn call_once<'_0>(state: from<'_0>, args: (&'_0 u64,)) -> S
+pub extern "rust-call" fn call_once<'_0>(state: from<'_0>, args: (&'_0 u64,)) -> S
 {
     let _0: S; // return
     let state: from<'_0>; // arg #1

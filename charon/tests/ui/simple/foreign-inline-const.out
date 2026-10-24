@@ -55,7 +55,7 @@ where
 struct () {}
 
 // Full name: closure_inside_inline_const::foo::{const}::{impl Fn<()> for {closure}<T>[TraitClause0]}::call
-fn call<'_0, T>(_1: &'_0 {closure}<T>[TraitClause0], tupled_args: ()) -> i32
+extern "rust-call" fn call<'_0, T>(_1: &'_0 {closure}<T>[TraitClause0], tupled_args: ()) -> i32
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,

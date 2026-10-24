@@ -102,7 +102,7 @@ where
 }
 
 // Full name: test_crate::{impl FnOnce<(T,)> for identity<T>[TraitClause0]}::call_once
-pub fn {impl FnOnce<(T,)> for identity<T>[TraitClause0]}::call_once<T>(state: identity<T>[TraitClause0], args: (T,)) -> T
+pub extern "rust-call" fn {impl FnOnce<(T,)> for identity<T>[TraitClause0]}::call_once<T>(state: identity<T>[TraitClause0], args: (T,)) -> T
 where
     TraitClause0: (T: Sized),
 {
@@ -135,7 +135,7 @@ where
 }
 
 // Full name: test_crate::identity::{impl Fn<()> for {closure}<T>[TraitClause0]}::call
-fn call<'_0, T>(_1: &'_0 {closure}<T>[TraitClause0], tupled_args: ())
+extern "rust-call" fn call<'_0, T>(_1: &'_0 {closure}<T>[TraitClause0], tupled_args: ())
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,

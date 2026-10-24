@@ -25,10 +25,11 @@ The translation to MiniRust currently has these limitations:
 - Pattern types, and `char` validity;
 - Floats;
 - Inline assembly;
-- Calling conventions other than Rust and C.
+- Calling conventions other than Rust, C, and `rust-call`.
 
 ### Translated unsoundly
 
+- The `rust-call` ABI is treated as the normal Rust ABI;
 - Pointers to statics that aren't at offset 0;
 - `#[track_caller]`: we don't pass the called information;
 - Precise union padding: we preserve every byte of a union, including bytes Rust may treat as padding.

@@ -371,7 +371,7 @@ fn test_attributes::tests::test_ignore#1()
 struct test_attributes::tests::test_ignore::{closure} {}
 
 // Full name: test_attributes::tests::test_ignore::{impl Fn<()> for test_attributes::tests::test_ignore::{closure}}::call
-fn {impl Fn<()> for test_attributes::tests::test_ignore::{closure}}::call<'_0>(_1: &'_0 test_attributes::tests::test_ignore::{closure}, tupled_args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+extern "rust-call" fn {impl Fn<()> for test_attributes::tests::test_ignore::{closure}}::call<'_0>(_1: &'_0 test_attributes::tests::test_ignore::{closure}, tupled_args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
     let _1: &'1 test_attributes::tests::test_ignore::{closure}; // arg #1
@@ -389,7 +389,7 @@ fn {impl Fn<()> for test_attributes::tests::test_ignore::{closure}}::call<'_0>(_
 }
 
 // Full name: test_attributes::tests::test_ignore::{impl FnMut<()> for test_attributes::tests::test_ignore::{closure}}::call_mut
-fn {impl FnMut<()> for test_attributes::tests::test_ignore::{closure}}::call_mut<'_0>(state: &'_0 mut test_attributes::tests::test_ignore::{closure}, args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+extern "rust-call" fn {impl FnMut<()> for test_attributes::tests::test_ignore::{closure}}::call_mut<'_0>(state: &'_0 mut test_attributes::tests::test_ignore::{closure}, args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
     let state: &'_0 mut test_attributes::tests::test_ignore::{closure}; // arg #1
@@ -405,7 +405,7 @@ fn {impl FnMut<()> for test_attributes::tests::test_ignore::{closure}}::call_mut
 }
 
 // Full name: test_attributes::tests::test_ignore::{impl FnOnce<()> for test_attributes::tests::test_ignore::{closure}}::call_once
-fn {impl FnOnce<()> for test_attributes::tests::test_ignore::{closure}}::call_once(_1: test_attributes::tests::test_ignore::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_ignore::{closure}}::call_once(_1: test_attributes::tests::test_ignore::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
     let _1: test_attributes::tests::test_ignore::{closure}; // arg #1
@@ -509,7 +509,7 @@ fn test_attributes::tests::test_should_panic#1()
 struct test_attributes::tests::test_should_panic::{closure} {}
 
 // Full name: test_attributes::tests::test_should_panic::{impl Fn<()> for test_attributes::tests::test_should_panic::{closure}}::call
-fn {impl Fn<()> for test_attributes::tests::test_should_panic::{closure}}::call<'_0>(_1: &'_0 test_attributes::tests::test_should_panic::{closure}, tupled_args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+extern "rust-call" fn {impl Fn<()> for test_attributes::tests::test_should_panic::{closure}}::call<'_0>(_1: &'_0 test_attributes::tests::test_should_panic::{closure}, tupled_args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
     let _1: &'1 test_attributes::tests::test_should_panic::{closure}; // arg #1
@@ -527,7 +527,7 @@ fn {impl Fn<()> for test_attributes::tests::test_should_panic::{closure}}::call<
 }
 
 // Full name: test_attributes::tests::test_should_panic::{impl FnMut<()> for test_attributes::tests::test_should_panic::{closure}}::call_mut
-fn {impl FnMut<()> for test_attributes::tests::test_should_panic::{closure}}::call_mut<'_0>(state: &'_0 mut test_attributes::tests::test_should_panic::{closure}, args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+extern "rust-call" fn {impl FnMut<()> for test_attributes::tests::test_should_panic::{closure}}::call_mut<'_0>(state: &'_0 mut test_attributes::tests::test_should_panic::{closure}, args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
     let state: &'_0 mut test_attributes::tests::test_should_panic::{closure}; // arg #1
@@ -543,7 +543,7 @@ fn {impl FnMut<()> for test_attributes::tests::test_should_panic::{closure}}::ca
 }
 
 // Full name: test_attributes::tests::test_should_panic::{impl FnOnce<()> for test_attributes::tests::test_should_panic::{closure}}::call_once
-fn {impl FnOnce<()> for test_attributes::tests::test_should_panic::{closure}}::call_once(_1: test_attributes::tests::test_should_panic::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_should_panic::{closure}}::call_once(_1: test_attributes::tests::test_should_panic::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
     let _1: test_attributes::tests::test_should_panic::{closure}; // arg #1
@@ -645,7 +645,7 @@ fn test_attributes::tests::test_foo#1()
 struct test_attributes::tests::test_foo::{closure} {}
 
 // Full name: test_attributes::tests::test_foo::{impl Fn<()> for test_attributes::tests::test_foo::{closure}}::call
-fn {impl Fn<()> for test_attributes::tests::test_foo::{closure}}::call<'_0>(_1: &'_0 test_attributes::tests::test_foo::{closure}, tupled_args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+extern "rust-call" fn {impl Fn<()> for test_attributes::tests::test_foo::{closure}}::call<'_0>(_1: &'_0 test_attributes::tests::test_foo::{closure}, tupled_args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
     let _1: &'1 test_attributes::tests::test_foo::{closure}; // arg #1
@@ -663,7 +663,7 @@ fn {impl Fn<()> for test_attributes::tests::test_foo::{closure}}::call<'_0>(_1: 
 }
 
 // Full name: test_attributes::tests::test_foo::{impl FnMut<()> for test_attributes::tests::test_foo::{closure}}::call_mut
-fn {impl FnMut<()> for test_attributes::tests::test_foo::{closure}}::call_mut<'_0>(state: &'_0 mut test_attributes::tests::test_foo::{closure}, args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+extern "rust-call" fn {impl FnMut<()> for test_attributes::tests::test_foo::{closure}}::call_mut<'_0>(state: &'_0 mut test_attributes::tests::test_foo::{closure}, args: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
     let state: &'_0 mut test_attributes::tests::test_foo::{closure}; // arg #1
@@ -679,7 +679,7 @@ fn {impl FnMut<()> for test_attributes::tests::test_foo::{closure}}::call_mut<'_
 }
 
 // Full name: test_attributes::tests::test_foo::{impl FnOnce<()> for test_attributes::tests::test_foo::{closure}}::call_once
-fn {impl FnOnce<()> for test_attributes::tests::test_foo::{closure}}::call_once(_1: test_attributes::tests::test_foo::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
+extern "rust-call" fn {impl FnOnce<()> for test_attributes::tests::test_foo::{closure}}::call_once(_1: test_attributes::tests::test_foo::{closure}, _2: ()) -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]
 {
     let _0: Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // return
     let _1: test_attributes::tests::test_foo::{closure}; // arg #1

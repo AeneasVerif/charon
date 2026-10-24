@@ -416,7 +416,7 @@ where
 }
 
 // Full name: test_crate::{impl FnOnce<(T,)> for identity<T>[TraitClause0]}::call_once
-fn call_once<T>(state: identity<T>[TraitClause0], args: (T,)) -> T
+extern "rust-call" fn call_once<T>(state: identity<T>[TraitClause0], args: (T,)) -> T
 where
     TraitClause0: (T: Sized),
 {

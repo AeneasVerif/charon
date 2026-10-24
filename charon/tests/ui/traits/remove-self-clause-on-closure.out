@@ -37,7 +37,7 @@ where
 }
 
 // Full name: test_crate::Trait::method::{impl Fn<(), usize> for {closure}<Self>}::call
-fn call<'_0, Self>(_1: &'_0 {closure}<Self>, tupled_args: ()) -> usize
+extern "rust-call" fn call<'_0, Self>(_1: &'_0 {closure}<Self>, tupled_args: ()) -> usize
 where
     TypeOutlives0: Self: '_0,
 {

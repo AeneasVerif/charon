@@ -1553,7 +1553,7 @@ pub fn flabada<'a>(_x: &'a ()) -> Wrapper<(bool, &'a ())>[{built_in impl Sized f
 }
 
 // Full name: test_crate::{impl Fn<(&'a (),)> for for<'a> flabada<'a>}::call
-pub fn {impl Fn<(&'a (),)> for for<'a> flabada<'a>}::call<'a, '_1>(state: &'_1 for<'a> flabada<'a>, args: (&'a (),)) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
+pub extern "rust-call" fn {impl Fn<(&'a (),)> for for<'a> flabada<'a>}::call<'a, '_1>(state: &'_1 for<'a> flabada<'a>, args: (&'a (),)) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
 {
     let _0: Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]; // return
     let state: &'_1 for<'a> flabada<'a>; // arg #1
@@ -1570,7 +1570,7 @@ pub fn {impl Fn<(&'a (),)> for for<'a> flabada<'a>}::call<'a, '_1>(state: &'_1 f
 }
 
 // Full name: test_crate::{impl FnMut<(&'a (),)> for for<'a> flabada<'a>}::call_mut
-pub fn call_mut<'a, '_1>(state: &'_1 mut for<'a> flabada<'a>, args: (&'a (),)) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
+pub extern "rust-call" fn call_mut<'a, '_1>(state: &'_1 mut for<'a> flabada<'a>, args: (&'a (),)) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
 {
     let _0: Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]; // return
     let state: &'_1 mut for<'a> flabada<'a>; // arg #1
@@ -1587,7 +1587,7 @@ pub fn call_mut<'a, '_1>(state: &'_1 mut for<'a> flabada<'a>, args: (&'a (),)) -
 }
 
 // Full name: test_crate::{impl FnOnce<(&'a (),)> for for<'a> flabada<'a>}::call_once
-pub fn call_once<'a>(state: for<'a> flabada<'a>, args: (&'a (),)) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
+pub extern "rust-call" fn call_once<'a>(state: for<'a> flabada<'a>, args: (&'a (),)) -> Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]
 {
     let _0: Wrapper<(bool, &'a ())>[{built_in impl Sized for (bool, &'a ())}]; // return
     let state: for<'a> flabada<'a>; // arg #1

@@ -177,7 +177,7 @@ fn from_inline_const<'a>(x: &'a u8) -> &'a u8
 struct {closure} {}
 
 // Full name: test_crate::from_closure::{impl Fn<(&'_1 u8, &'_0 u8)> for {closure}}::call
-fn call<'_0, '_1, '_2>(_1: &'_2 {closure}, tupled_args: (&'_1 u8, &'_0 u8)) -> &'_0 u8
+extern "rust-call" fn call<'_0, '_1, '_2>(_1: &'_2 {closure}, tupled_args: (&'_1 u8, &'_0 u8)) -> &'_0 u8
 {
     let _0: &'1 u8; // return
     let _1: &'3 {closure}; // arg #1
@@ -199,7 +199,7 @@ fn call<'_0, '_1, '_2>(_1: &'_2 {closure}, tupled_args: (&'_1 u8, &'_0 u8)) -> &
 }
 
 // Full name: test_crate::from_closure::{impl FnMut<(&'_1 u8, &'_0 u8)> for {closure}}::call_mut
-fn call_mut<'_0, '_1, '_2>(state: &'_2 mut {closure}, args: (&'_1 u8, &'_0 u8)) -> &'_0 u8
+extern "rust-call" fn call_mut<'_0, '_1, '_2>(state: &'_2 mut {closure}, args: (&'_1 u8, &'_0 u8)) -> &'_0 u8
 {
     let _0: &'_0 u8; // return
     let state: &'_2 mut {closure}; // arg #1
@@ -221,7 +221,7 @@ fn call_mut<'_0, '_1, '_2>(state: &'_2 mut {closure}, args: (&'_1 u8, &'_0 u8)) 
 }
 
 // Full name: test_crate::from_closure::{impl FnOnce<(&'_1 u8, &'_0 u8)> for {closure}}::call_once
-fn call_once<'_0, '_1>(_1: {closure}, _2: (&'_1 u8, &'_0 u8)) -> &'_0 u8
+extern "rust-call" fn call_once<'_0, '_1>(_1: {closure}, _2: (&'_1 u8, &'_0 u8)) -> &'_0 u8
 {
     let _0: &'1 u8; // return
     let _1: {closure}; // arg #1

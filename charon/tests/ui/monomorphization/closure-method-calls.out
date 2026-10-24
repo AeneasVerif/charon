@@ -14,7 +14,7 @@ struct (_, _)::<i32, bool> {
 struct test_crate::main::{closure} {}
 
 // Full name: test_crate::main::{impl Fn<(i32,)> for test_crate::main::{closure}}::call
-fn impl_Fn_for_closure::call<'_0>(_1: &'_0 test_crate::main::{closure}, tupled_args: (i32,)) -> i32
+extern "rust-call" fn impl_Fn_for_closure::call<'_0>(_1: &'_0 test_crate::main::{closure}, tupled_args: (i32,)) -> i32
 {
     let _0: i32; // return
     let _1: &'1 test_crate::main::{closure}; // arg #1
@@ -89,7 +89,7 @@ fn plain(x: i32) -> i32
 }
 
 // Full name: test_crate::{impl Fn<(i32,)> for plain}::call
-fn {impl Fn<(i32,)> for plain}::call<'_0>(state: &'_0 plain, args: (i32,)) -> i32
+extern "rust-call" fn {impl Fn<(i32,)> for plain}::call<'_0>(state: &'_0 plain, args: (i32,)) -> i32
 {
     let _0: i32; // return
     let state: &'_0 plain; // arg #1
@@ -137,7 +137,7 @@ fn apply::<plain>(f: plain, x: i32) -> i32
 struct test_crate::main::{closure#1} {}
 
 // Full name: test_crate::main::{impl FnMut<(i32,)> for test_crate::main::{closure#1}}::call_mut
-fn {impl FnMut<(i32,)> for test_crate::main::{closure#1}}::call_mut<'_0>(_1: &'_0 mut test_crate::main::{closure#1}, tupled_args: (i32,)) -> i32
+extern "rust-call" fn {impl FnMut<(i32,)> for test_crate::main::{closure#1}}::call_mut<'_0>(_1: &'_0 mut test_crate::main::{closure#1}, tupled_args: (i32,)) -> i32
 {
     let _0: i32; // return
     let _1: &'1 mut test_crate::main::{closure#1}; // arg #1
@@ -192,7 +192,7 @@ fn apply_mut::<test_crate::main::{closure#1}>(f: test_crate::main::{closure#1}, 
 }
 
 // Full name: test_crate::{impl FnMut<(i32,)> for plain}::call_mut
-fn {impl FnMut<(i32,)> for plain}::call_mut<'_0>(state: &'_0 mut plain, args: (i32,)) -> i32
+extern "rust-call" fn {impl FnMut<(i32,)> for plain}::call_mut<'_0>(state: &'_0 mut plain, args: (i32,)) -> i32
 {
     let _0: i32; // return
     let state: &'_0 mut plain; // arg #1
@@ -240,7 +240,7 @@ fn apply_mut::<plain>(f: plain, x: i32) -> i32
 struct test_crate::main::{closure#2} {}
 
 // Full name: test_crate::main::{impl FnOnce<(i32,)> for test_crate::main::{closure#2}}::call_once
-fn {impl FnOnce<(i32,)> for test_crate::main::{closure#2}}::call_once(_1: test_crate::main::{closure#2}, tupled_args: (i32,)) -> i32
+extern "rust-call" fn {impl FnOnce<(i32,)> for test_crate::main::{closure#2}}::call_once(_1: test_crate::main::{closure#2}, tupled_args: (i32,)) -> i32
 {
     let _0: i32; // return
     let _1: test_crate::main::{closure#2}; // arg #1
@@ -295,7 +295,7 @@ fn apply_once::<test_crate::main::{closure#2}>(f: test_crate::main::{closure#2},
 }
 
 // Full name: test_crate::{impl FnOnce<(i32,)> for plain}::call_once
-fn {impl FnOnce<(i32,)> for plain}::call_once(state: plain, args: (i32,)) -> i32
+extern "rust-call" fn {impl FnOnce<(i32,)> for plain}::call_once(state: plain, args: (i32,)) -> i32
 {
     let _0: i32; // return
     let state: plain; // arg #1

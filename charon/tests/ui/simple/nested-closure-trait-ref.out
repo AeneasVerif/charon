@@ -70,7 +70,7 @@ where
 }
 
 // Full name: test_crate::foo::{impl FnOnce<()> for test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]}::call_once
-fn {impl FnOnce<()> for test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]}::call_once<T>(_1: test_crate::foo::{closure}<T>[TraitClause0, TraitClause1], tupled_args: ()) -> test_crate::foo::{closure}::{closure}<T>[TraitClause0, TraitClause1]
+extern "rust-call" fn {impl FnOnce<()> for test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]}::call_once<T>(_1: test_crate::foo::{closure}<T>[TraitClause0, TraitClause1], tupled_args: ()) -> test_crate::foo::{closure}::{closure}<T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
@@ -139,7 +139,7 @@ where
 }
 
 // Full name: test_crate::foo::{closure}::{impl Fn<()> for test_crate::foo::{closure}::{closure}<T>[TraitClause0, TraitClause1]}::call
-fn call<'_0, T>(_1: &'_0 test_crate::foo::{closure}::{closure}<T>[TraitClause0, TraitClause1], tupled_args: ()) -> T
+extern "rust-call" fn call<'_0, T>(_1: &'_0 test_crate::foo::{closure}::{closure}<T>[TraitClause0, TraitClause1], tupled_args: ()) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),

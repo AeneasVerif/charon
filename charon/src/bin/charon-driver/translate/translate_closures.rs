@@ -536,6 +536,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             .translate_ty(span, &callable.sig().hax_skip_binder_ref().tupled_inputs)?
             .move_under_binder();
         fun_sig.inputs = vec![state_ty, tupled_args_ty];
+        fun_sig.abi = Abi::Other("rust-call".into());
 
         Ok(RegionBinder {
             regions: bound_regions,
