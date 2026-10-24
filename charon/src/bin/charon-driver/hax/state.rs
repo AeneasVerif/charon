@@ -9,7 +9,7 @@ mod base {
     use rustc_hir::def_id::{CrateNum, LOCAL_CRATE};
     use rustc_middle::ty;
     use rustc_span::symbol::Symbol;
-    use rustc_trait_elaboration::{ElaborationCtx, ItemRefKey};
+    use rustc_trait_elaboration::{ElaborationCtx, ItemRefKey, intern::Interner};
     use std::{cell::RefCell, sync::Arc};
 
     pub struct LocalContextS {
@@ -116,6 +116,9 @@ mod base {
 
     #[derive(Clone)]
     pub struct Base<'tcx> {
+        pub ty_interner: &'tcx Interner<'tcx, TyKind<'tcx>>,
+        pub trait_proof_interner: &'tcx Interner<'tcx, TraitProofContents<'tcx>>,
+        pub item_ref_interner: &'tcx Interner<'tcx, ItemRefContents<'tcx>>,
         pub options: Rc<crate::hax::options::Options>,
         pub local_ctx: Rc<RefCell<LocalContextS>>,
         pub opt_def_id: Option<rustc_hir::def_id::DefId>,
@@ -132,6 +135,9 @@ mod base {
         ) -> Self {
             Self {
                 tcx,
+                ty_interner: Box::leak(Box::default()),
+                trait_proof_interner: Box::leak(Box::default()),
+                item_ref_interner: Box::leak(Box::default()),
                 cache: Default::default(),
                 options: Rc::new(options),
                 // Always prefer `s.owner_id()` to `s.base().opt_def_id`.

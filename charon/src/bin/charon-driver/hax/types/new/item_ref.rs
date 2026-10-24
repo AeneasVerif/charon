@@ -1,8 +1,8 @@
 use crate::hax::prelude::*;
 
+use rustc_data_structures::intern::Interned;
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
-use std::sync::Arc;
 
 /// Reference to an item, with generics. Basically any mention of an item (function, type, etc)
 /// uses this.
@@ -37,7 +37,7 @@ use std::sync::Arc;
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ItemRef<'tcx> {
-    pub(crate) contents: Arc<ItemRefContents<'tcx>>,
+    pub(crate) contents: Interned<'tcx, ItemRefContents<'tcx>>,
 }
 
 /// Contents of `ItemRef`.
@@ -86,9 +86,10 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef<'tcx>>
 }
 
 impl<'tcx> ItemRefContents<'tcx> {
-    fn intern<S: BaseState<'tcx>>(self, _s: &S) -> ItemRef<'tcx> {
-        let contents = Arc::new(self);
-        ItemRef { contents }
+    fn intern(self, s: &impl BaseState<'tcx>) -> ItemRef<'tcx> {
+        ItemRef {
+            contents: s.base().item_ref_interner.intern(self),
+        }
     }
 }
 

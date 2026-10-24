@@ -9,9 +9,8 @@ pub use rustc_trait_elaboration::{
 };
 
 use crate::hax::prelude::*;
-use std::marker::PhantomData;
+use rustc_data_structures::intern::Interned;
 use std::ops::Deref;
-use std::sync::Arc;
 
 pub type PredicateSearcher<'tcx> = elaboration::PredicateSearcher<'tcx, DefId>;
 
@@ -135,8 +134,7 @@ pub enum DestructData<'tcx> {
 /// concrete implementations for `u8` and `&str`, represented as a tree.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct TraitProof<'tcx> {
-    contents: Arc<TraitProofContents<'tcx>>,
-    marker: PhantomData<&'tcx ()>,
+    contents: Interned<'tcx, TraitProofContents<'tcx>>,
 }
 
 impl<'tcx> Deref for TraitProof<'tcx> {
@@ -162,8 +160,10 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TraitProof<'tcx>>
 {
     fn sinto(&self, s: &S) -> TraitProof<'tcx> {
         TraitProof {
-            contents: Arc::new(self.contents().sinto(s)),
-            marker: PhantomData,
+            contents: s
+                .base()
+                .trait_proof_interner
+                .intern(self.contents().sinto(s)),
         }
     }
 }

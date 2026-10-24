@@ -4,27 +4,23 @@ use super::predicates::resolve_for_dyn;
 
 use crate::hax::prelude::*;
 
+use rustc_data_structures::intern::Interned;
 use rustc_middle::ty;
 use rustc_middle::ty::inherent::IntoKind;
 use rustc_span::def_id::DefId as RDefId;
-use std::marker::PhantomData;
-use std::sync::Arc;
 
 sinto_reexport!(rustc_abi::ExternAbi);
 
 /// Reflects [`rustc_middle::ty::Ty`]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Ty<'tcx> {
-    pub(crate) kind: Arc<TyKind<'tcx>>,
-    marker: PhantomData<&'tcx ()>,
+    pub(crate) kind: Interned<'tcx, TyKind<'tcx>>,
 }
 
 impl<'tcx> Ty<'tcx> {
-    pub fn new<S: BaseState<'tcx>>(_s: &S, kind: TyKind<'tcx>) -> Self {
-        let kind = Arc::new(kind);
+    pub fn new<S: BaseState<'tcx>>(s: &S, kind: TyKind<'tcx>) -> Self {
         Ty {
-            kind,
-            marker: PhantomData,
+            kind: s.base().ty_interner.intern(kind),
         }
     }
 
