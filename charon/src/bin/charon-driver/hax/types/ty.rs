@@ -4,27 +4,27 @@ use super::predicates::resolve_for_dyn;
 
 use crate::hax::prelude::*;
 
-use charon_lib::ast::HashConsed;
 use rustc_middle::ty;
 use rustc_middle::ty::inherent::IntoKind;
 use rustc_span::def_id::DefId as RDefId;
+use std::sync::Arc;
 
 sinto_reexport!(rustc_abi::ExternAbi);
 
 /// Reflects [`rustc_middle::ty::Ty`]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Ty {
-    pub(crate) kind: HashConsed<TyKind>,
+    pub(crate) kind: Arc<TyKind>,
 }
 
 impl Ty {
     pub fn new<'tcx, S: BaseState<'tcx>>(_s: &S, kind: TyKind) -> Self {
-        let kind = HashConsed::new(kind);
+        let kind = Arc::new(kind);
         Ty { kind }
     }
 
     pub fn kind(&self) -> &TyKind {
-        self.kind.inner()
+        &self.kind
     }
 
     /// If this type represents something that implements the `Fn*` traits, return the

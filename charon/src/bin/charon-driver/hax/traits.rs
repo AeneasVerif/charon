@@ -9,7 +9,7 @@ pub use rustc_trait_elaboration::{
 };
 
 use crate::hax::prelude::*;
-use charon_lib::ast::HashConsed;
+use std::sync::Arc;
 
 pub type PredicateSearcher<'tcx> = elaboration::PredicateSearcher<'tcx, DefId>;
 
@@ -131,7 +131,7 @@ pub enum DestructData {
 /// need to combine several concrete trait implementation items. For example, `((1u8, 2u8),
 /// "hello").clone()` combines the generic implementation of `Clone` for `(A, B)` with the
 /// concrete implementations for `u8` and `&str`, represented as a tree.
-pub type TraitProof = HashConsed<TraitProofContents>;
+pub type TraitProof = Arc<TraitProofContents>;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[derive(AdtInto)]
@@ -145,7 +145,7 @@ pub struct TraitProofContents {
 
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TraitProof> for elaboration::TraitProof<'tcx, DefId> {
     fn sinto(&self, s: &S) -> TraitProof {
-        HashConsed::new(self.contents().sinto(s))
+        Arc::new(self.contents().sinto(s))
     }
 }
 

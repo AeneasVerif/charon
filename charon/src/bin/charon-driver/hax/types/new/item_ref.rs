@@ -1,8 +1,8 @@
 use crate::hax::prelude::*;
 
-use charon_lib::ast::HashConsed;
 use rustc_middle::ty;
 use rustc_span::def_id::DefId as RDefId;
+use std::sync::Arc;
 
 /// Reference to an item, with generics. Basically any mention of an item (function, type, etc)
 /// uses this.
@@ -37,7 +37,7 @@ use rustc_span::def_id::DefId as RDefId;
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ItemRef {
-    pub(crate) contents: HashConsed<ItemRefContents>,
+    pub(crate) contents: Arc<ItemRefContents>,
 }
 
 /// Contents of `ItemRef`.
@@ -87,7 +87,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef>
 
 impl ItemRefContents {
     fn intern<'tcx, S: BaseState<'tcx>>(self, _s: &S) -> ItemRef {
-        let contents = HashConsed::new(self);
+        let contents = Arc::new(self);
         ItemRef { contents }
     }
 }
