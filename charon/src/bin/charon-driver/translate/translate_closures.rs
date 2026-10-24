@@ -111,12 +111,22 @@ struct Callable<'tcx, 'a> {
 }
 
 impl<'tcx, 'a> Callable<'tcx, 'a> {
-    fn for_closure(closure: &'a hax::ClosureTy<'tcx>) -> Self {
+    fn for_closure(closure: &'a hax::ClosureTy<'tcx>, sig: &'a hax::PolyFnSig<'tcx>) -> Self {
         Self {
             item: &closure.item,
             kind: CallableKind::Closure(translate_closure_kind(&closure.kind)),
-            sig: &closure.fn_sig,
+            sig,
             tupled_args_ty: &closure.tupled_args_ty,
+        }
+    }
+
+    fn for_closure_def(closure: &'a hax::Closure<'tcx>) -> Self {
+        let closure_ty: &'a hax::ClosureTy<'tcx> = closure.args();
+        Self {
+            item: &closure_ty.item,
+            kind: CallableKind::Closure(translate_closure_kind(&closure_ty.kind)),
+            sig: closure.sig(),
+            tupled_args_ty: &closure_ty.tupled_args_ty,
         }
     }
 
@@ -172,7 +182,7 @@ impl<'a, 'tcx> CallableFnImpls<'a, 'tcx> {
         };
         match def.kind() {
             hax::FullDefKind::Closure(c) => Some(Self {
-                callable: Callable::for_closure(c.args()),
+                callable: Callable::for_closure_def(c),
                 vimpl: match target_kind {
                     ClosureKind::FnOnce => Some(c.fn_once_impl(s)),
                     ClosureKind::FnMut => c.fn_mut_impl(s),
@@ -362,9 +372,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         closure: &hax::ClosureTy<'tcx>,
     ) -> Result<RegionBinder<FunDeclRef>, Error> {
         let kind = TransItemSourceKind::ClosureAsFnCast;
+        let sig = closure.fn_sig(self.hax_state());
         let bound_dref = self.translate_callable_bound_ref_with_late_bound(
             span,
-            Callable::for_closure(closure),
+            Callable::for_closure(closure, &sig),
             kind,
         )?;
         Ok(bound_dref.map(|dref| dref.try_into().unwrap()))
@@ -382,7 +393,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let kind = TransItemSourceKind::TraitImpl(TransImplSource::Callable(target_kind));
         let bound_dref = self.translate_callable_bound_ref_with_late_bound(
             span,
-            Callable::for_closure(closure.args()),
+            Callable::for_closure_def(closure),
             kind,
         )?;
         Ok(bound_dref.map(|dref| dref.try_into().unwrap()))
@@ -425,7 +436,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         } else {
             None
         };
-        let signature = self.translate_poly_fun_sig(span, &args.fn_sig)?;
+        let signature = self.translate_poly_fun_sig(span, closure.sig())?;
         Ok(ClosureInfo {
             kind,
             closure_body,
@@ -960,8 +971,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         );
 
         // Translate the function signature
-        let signature = self.translate_fun_sig(span, closure_args.fn_sig.hax_skip_binder_ref())?;
-        let state_ty = self.get_callable_state_ty(span, Callable::for_closure(closure_args))?;
+        let signature = self.translate_fun_sig(span, closure.sig().hax_skip_binder_ref())?;
+        let state_ty = self.get_callable_state_ty(span, Callable::for_closure_def(closure))?;
 
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Body::Opaque

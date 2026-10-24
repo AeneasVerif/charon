@@ -211,16 +211,21 @@ pub struct ClosureTy<'tcx> {
     /// The base kind of this closure. The kinds are ordered by inclusion: any `Fn` works as an
     /// `FnMut`, and any `FnMut` works as an `FnOnce`.
     pub kind: ClosureKind,
-    /// The signature of the function that the closure implements, e.g. `fn(A, B, C) -> D`.
-    pub fn_sig: PolyFnSig<'tcx>,
     /// The arguments of the closure, tupled as the `Fn*` traits take them, e.g. `(A, B, C)`.
-    /// Binds the same variables as `fn_sig`.
+    /// Binds the same variables as `fn_sig()`.
     pub tupled_args_ty: Binder<Ty<'tcx>>,
     /// The set of captured variables. Together they form the state of the closure.
     pub upvar_tys: Vec<Ty<'tcx>>,
 }
 
 impl<'tcx> ClosureTy<'tcx> {
+    /// The signature of the function that this closure implements, e.g. `fn(A, B, C) -> D`.
+    pub fn fn_sig(&self, s: &impl BaseState<'tcx>) -> PolyFnSig<'tcx> {
+        let s = &s.with_hax_owner(&self.item.def_id);
+        let args = self.item.rustc_args(s);
+        closure_sig(s.tcx(), args.as_closure()).sinto(s)
+    }
+
     /// Iterate over the upvars that are borrows with erased regions. These may require allocating
     /// fresh regions.
     pub fn iter_upvar_borrows(&self) -> impl Iterator<Item = &Ty<'tcx>> {
@@ -250,7 +255,6 @@ impl<'tcx> ClosureTy<'tcx> {
             item,
             kind: closure.kind().sinto(s),
             tupled_args_ty: tupled_args_ty(s, sig).sinto(s),
-            fn_sig: sig.sinto(s),
             upvar_tys: closure.upvar_tys().sinto(s),
         }
     }

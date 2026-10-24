@@ -596,7 +596,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | TransItemSourceKind::ClosureAsFnCast = kind
             {
                 self.the_only_binder_mut()
-                    .push_params_from_binder(closure_args.fn_sig.rebind(()))?;
+                    .push_params_from_binder(c.sig().rebind(()))?;
             }
         }
 

@@ -848,8 +848,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 | TransItemSourceKind::ClosureAsFnCast = kind
                 {
                     generics.regions.extend(
-                        closure_args
-                            .fn_sig
+                        c.sig()
                             .bound_vars
                             .iter()
                             .map(|_| self.translate_erased_region()),

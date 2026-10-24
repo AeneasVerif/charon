@@ -939,6 +939,7 @@ pub struct Closure<'tcx> {
     /// uses internally for inference on closures.
     param_env: ParamEnv<'tcx>,
     args: ClosureTy<'tcx>,
+    sig: PolyFnSig<'tcx>,
     inline: InlineAttr,
     /// Computed on demand, see the accessors below.
     fn_once_impl: OnceCell<Box<VirtualTraitImpl<'tcx>>>,
@@ -956,6 +957,9 @@ impl<'tcx> Closure<'tcx> {
     }
     pub fn args(&self) -> &ClosureTy<'tcx> {
         &self.args
+    }
+    pub fn sig(&self) -> &PolyFnSig<'tcx> {
+        &self.sig
     }
     pub fn inline(&self) -> &InlineAttr {
         &self.inline
@@ -1407,7 +1411,8 @@ where
                 unreachable!()
             };
             let closure = closure_args.as_closure();
-            let input_ty = tupled_args_ty(s, closure_sig(tcx, closure));
+            let sig = closure_sig(tcx, closure);
+            let input_ty = tupled_args_ty(s, sig);
             let input_ty = tcx.liberate_late_bound_regions(def_id, input_ty);
             FullDefKind::Closure(Closure {
                 def_id: hax_def_id.clone(),
@@ -1416,6 +1421,7 @@ where
                 param_env: get_param_env(s, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 args: ClosureTy::sfrom(s, def_id, closure_args),
+                sig: sig.sinto(s),
                 fn_once_impl: Default::default(),
                 fn_mut_impl: Default::default(),
                 fn_impl: Default::default(),
