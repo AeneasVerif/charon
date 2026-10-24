@@ -1,6 +1,7 @@
 //! Functions to translate constants to LLBC.
 use crate::hax;
-use crate::hax::state::UnderOwnerState;
+use crate::hax::SInto;
+use crate::hax::state::{BaseState, UnderOwnerState};
 use rustc_middle::ty;
 
 use super::translate_ctx::*;
@@ -151,20 +152,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .try_collect()?;
                 ConstantExprKind::Adt(None, fields)
             }
-            hax::ConstantExprKind::NamedGlobal(item) => match &item.in_trait {
-                Some(trait_proof) => {
-                    let trait_ref = self.translate_trait_proof(span, trait_proof)?.erase();
-                    // Trait consts can't have their own generics.
-                    assert!(item.generic_args.is_empty());
-                    let const_id =
-                        self.translate_assoc_const_id(trait_ref.trait_id(), &item.def_id)?;
-                    ConstantExprKind::TraitConst(trait_ref, const_id)
-                }
-                None => {
-                    let global_ref = self.translate_global_decl_ref(span, item)?;
-                    ConstantExprKind::Global(global_ref)
-                }
-            },
             hax::ConstantExprKind::Ptr {
                 base: hax::ConstantPtrBase::Value(arg),
                 ..
@@ -246,12 +233,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 };
                 ConstantExprKind::Cast(ptr, kind)
             }
-            hax::ConstantExprKind::ConstRef { id } => {
-                match self.lookup_const_generic_var(span, id) {
-                    Ok(var) => ConstantExprKind::Var(var),
-                    Err(err) => ConstantExprKind::Opaque(err.msg),
-                }
-            }
             hax::ConstantExprKind::FnDef(item) => {
                 let fn_ptr = self.translate_fn_ptr(span, item, TransItemSourceKind::Fun)?;
                 ConstantExprKind::FnDef(fn_ptr)
@@ -315,7 +296,65 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         c: &ty::Const<'tcx>,
     ) -> Result<ConstantExpr, Error> {
-        let c = self.catch_sinto(span, c)?;
-        self.translate_constant_expr(span, &c)
+        let tcx = self.tcx;
+        let s = self.hax_state_with_id();
+        let (kind, ty) = match c.kind() {
+            ty::ConstKind::Param(p) => {
+                let ty = p.find_const_ty_from_env(s.param_env());
+                let kind = match self.lookup_const_generic_var(span, &p.sinto(s)) {
+                    Ok(var) => ConstantExprKind::Var(var),
+                    Err(err) => ConstantExprKind::Opaque(err.msg),
+                };
+                (kind, ty)
+            }
+            ty::ConstKind::Alias(_, ucv) => {
+                let def = ucv
+                    .kind
+                    .opt_def_id()
+                    .expect("AliasConstKind with no def id?");
+                let src = hax::ConstSource::TyConst(ucv);
+                if s.base().options.inline_anon_consts
+                    // Rustc hoists inline `const {}` blocks and constant expressions into
+                    // separate `AnonConst` items. This is internal to rustc, so we prefer inlining
+                    // their value.
+                    && matches!(tcx.def_kind(def), rustc_hir::def::DefKind::AnonConst)
+                    && let Some(val) =
+                        hax::read_const(s, tcx.def_span(def), src, hax::ReadMode::Structured)
+                {
+                    return self.translate_constant_expr(span, &val);
+                }
+                let item = hax::translate_item_ref(s, def, ucv.args);
+                let ty = tcx.type_of(def).instantiate(tcx, ucv.args);
+                let ty = hax::normalize(tcx, s.typing_env(), ty);
+                let kind = match &item.in_trait {
+                    Some(trait_proof) => {
+                        let trait_ref = self.translate_trait_proof(span, trait_proof)?.erase();
+                        // Trait consts can't have their own generics.
+                        assert!(item.generic_args.is_empty());
+                        let const_id =
+                            self.translate_assoc_const_id(trait_ref.trait_id(), &item.def_id)?;
+                        ConstantExprKind::TraitConst(trait_ref, const_id)
+                    }
+                    None => {
+                        let global_ref = self.translate_global_decl_ref(span, &item)?;
+                        ConstantExprKind::Global(global_ref)
+                    }
+                };
+                (kind, ty)
+            }
+            ty::ConstKind::Value(val) => {
+                let src = hax::ConstSource::ValTree(val);
+                match hax::read_const(s, rustc_span::DUMMY_SP, src, hax::ReadMode::Structured) {
+                    Some(val) => return self.translate_constant_expr(span, &val),
+                    None => {
+                        register_error!(self, span, "Unsupported constant: ConstValTree");
+                        (ConstantExprKind::Opaque("ConstValTree".into()), val.ty)
+                    }
+                }
+            }
+            _ => raise_error!(self, span, "Unexpected constant kind: {c:?}"),
+        };
+        let ty = self.translate_rustc_ty(span, &ty)?;
+        Ok(ConstantExpr::new(kind, ty))
     }
 }

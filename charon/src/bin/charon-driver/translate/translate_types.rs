@@ -340,8 +340,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<TypePattern, Error> {
         Ok(match pat {
             hax::Pattern::Range { start, end } => TypePattern::Range(
-                self.translate_constant_expr(span, start)?,
-                self.translate_constant_expr(span, end)?,
+                self.translate_ty_constant_expr(span, start)?,
+                self.translate_ty_constant_expr(span, end)?,
             ),
             hax::Pattern::Or(patterns) => TypePattern::OrPattern(
                 patterns
@@ -419,7 +419,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     regions.push(self.translate_region(span, region)?);
                 }
                 Const(c) => {
-                    const_generics.push(self.translate_constant_expr(span, c)?);
+                    const_generics.push(self.translate_ty_constant_expr(span, c)?);
                 }
             }
         }

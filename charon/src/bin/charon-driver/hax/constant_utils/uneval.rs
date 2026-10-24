@@ -46,65 +46,6 @@ fn bits_and_type_to_float_constant_literal(bits: u128, ty: FloatTy) -> ConstantL
     ConstantLiteral::Float(string, bits, ty)
 }
 
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr<'tcx>> for ty::Const<'tcx> {
-    #[tracing::instrument(level = "trace", skip(s))]
-    fn sinto(&self, s: &S) -> ConstantExpr<'tcx> {
-        let tcx = s.base().tcx;
-        let span = rustc_span::DUMMY_SP;
-        match self.kind() {
-            ty::ConstKind::Param(p) => {
-                let ty = p.find_const_ty_from_env(s.param_env());
-                let kind = ConstantExprKind::ConstRef { id: p.sinto(s) };
-                ConstantExpr::new(kind, ty.sinto(s))
-            }
-            ty::ConstKind::Alias(_, ucv) => {
-                let def = ucv
-                    .kind
-                    .opt_def_id()
-                    .expect("AliasConstKind with no def id?");
-                let src = ConstSource::TyConst(ucv);
-                if s.base().options.inline_anon_consts
-                    // Rustc hoists inline `const {}` blocks and constant expressions into
-                    // separate `AnonConst` items. This is internal to rustc, so we prefer inlining
-                    // their value.
-                    && matches!(tcx.def_kind(def), rustc_hir::def::DefKind::AnonConst)
-                    && let Some(val) = read_const(s, tcx.def_span(def), src, ReadMode::Structured)
-                {
-                    val
-                } else {
-                    let item = translate_item_ref(s, def, ucv.args);
-                    let kind = ConstantExprKind::NamedGlobal(item);
-                    let ty = tcx.type_of(def).instantiate(tcx, ucv.args);
-                    let ty = normalize(tcx, s.typing_env(), ty);
-                    ConstantExpr::new(kind, ty.sinto(s))
-                }
-            }
-            ty::ConstKind::Value(val) => val.sinto(s),
-            _ => {
-                let msg = format!("unexpected constant kind: {self:?}");
-                s.raise(Level::ERROR, span, msg.clone());
-                let ty = Ty::new(s, TyKind::Error);
-                ConstantExpr::new(ConstantExprKind::Todo(msg), ty)
-            }
-        }
-    }
-}
-
-impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr<'tcx>> for ty::Value<'tcx> {
-    #[tracing::instrument(level = "trace", skip(s))]
-    fn sinto(&self, s: &S) -> ConstantExpr<'tcx> {
-        let span = rustc_span::DUMMY_SP;
-        read_const(s, span, ConstSource::ValTree(*self), ReadMode::Structured).unwrap_or_else(
-            || {
-                ConstantExpr::new(
-                    ConstantExprKind::Todo("ConstValTree".into()),
-                    self.ty.sinto(s),
-                )
-            },
-        )
-    }
-}
-
 /// The reader for constants evaluated in the current context.
 fn const_reader<'tcx, S: UnderOwnerState<'tcx>>(s: &S) -> ConstReader<'tcx> {
     ConstReader {

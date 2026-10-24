@@ -191,7 +191,8 @@ impl<'tcx> TranslateCtx<'tcx> {
         // Hax takes care of caching the translation.
         let _guard = charon_lib::timing::scope("hax-full-def");
         let unwind_safe_s = std::panic::AssertUnwindSafe(&self.hax_state);
-        std::panic::catch_unwind(move || match item {
+        let item = std::panic::AssertUnwindSafe(item);
+        std::panic::catch_unwind(move || match *item {
             RustcItem::Poly(def_id) => def_id.full_def(*unwind_safe_s),
             RustcItem::Mono(item_ref) => item_ref.instantiated_full_def(*unwind_safe_s),
             RustcItem::MonoTrait(def_id) => def_id.full_def(*unwind_safe_s),

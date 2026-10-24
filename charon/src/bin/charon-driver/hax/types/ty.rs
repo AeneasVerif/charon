@@ -569,8 +569,8 @@ impl<'tcx> Alias<'tcx> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Pattern<'tcx> {
     Range {
-        start: ConstantExpr<'tcx>,
-        end: ConstantExpr<'tcx>,
+        start: ty::Const<'tcx>,
+        end: ty::Const<'tcx>,
     },
     Or(Vec<Pattern<'tcx>>),
     NotNull,
@@ -595,7 +595,7 @@ pub struct CanonicalUserTypeAnnotation<'tcx> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum UnsizingMetadata<'tcx> {
     /// Unsize an array to a slice, storing the length as metadata.
-    Length(ConstantExpr<'tcx>),
+    Length(ty::Const<'tcx>),
     /// Unsize a non-dyn type to a dyn type, adding a vtable pointer as metadata.
     DirectVTable(TraitProof<'tcx>),
     /// Unsize a dyn-type to another dyn-type, (optionally) indexing within the current vtable.
@@ -645,10 +645,7 @@ pub fn compute_unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
         tcx.struct_lockstep_tails_raw(src_ty, tgt_ty, |ty| normalize(tcx, typing_env, ty));
 
     match (&src_ty.kind(), &tgt_ty.kind()) {
-        (ty::Array(_, len), ty::Slice(_) | ty::Str) => {
-            let len = len.sinto(s);
-            UnsizingMetadata::Length(len)
-        }
+        (ty::Array(_, len), ty::Slice(_) | ty::Str) => UnsizingMetadata::Length(*len),
         (ty::Dynamic(from_preds, _), ty::Dynamic(to_preds, ..)) => {
             let trait_proof = resolve_for_dyn(s, from_preds, |searcher, fresh_ty| {
                 let to_pred = if let Some(to_principal) = to_preds.principal() {

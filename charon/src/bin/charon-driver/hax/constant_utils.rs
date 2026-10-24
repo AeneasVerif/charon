@@ -42,27 +42,6 @@ pub enum ConstantExprKind<'tcx> {
     Tuple {
         fields: Vec<ConstantExpr<'tcx>>,
     },
-    /// A top-level or associated constant.
-    ///
-    /// Remark: constants *can* have generic parameters.
-    /// Example:
-    /// ```text
-    /// struct V<const N: usize, T> {
-    ///   x: [T; N],
-    /// }
-    ///
-    /// impl<const N: usize, T> V<N, T> {
-    ///   const LEN: usize = N; // This has generics <N, T>
-    /// }
-    ///
-    /// impl Foo for Bar {
-    ///   const C : usize = 32; // <-
-    /// }
-    /// ```
-    ///
-    /// If `options.inline_anon_consts` is `false`, this is also used for inline const blocks and
-    /// advanced const generics expressions.
-    NamedGlobal(ItemRef<'tcx>),
     /// A reference or raw pointer (as given by the type of this constant) to a place inside a
     /// constant value: `projections` applied to `base`, each with the type of the place it
     /// reaches.
@@ -74,9 +53,6 @@ pub enum ConstantExprKind<'tcx> {
     /// Casts a thin pointer to the type of this constant. If metadata is given, this is an
     /// unsizing cast from the pointee of the given pointer.
     PtrCast(ConstantExpr<'tcx>, Option<UnsizingMetadata<'tcx>>),
-    ConstRef {
-        id: ParamConst,
-    },
     /// A function definition, corresponding to a particular item. This is a ZST, unlike `FnPtr`.
     FnDef(ItemRef<'tcx>),
     /// A function pointer. This is an actual pointer to that function.

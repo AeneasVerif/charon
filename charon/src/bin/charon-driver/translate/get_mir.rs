@@ -21,7 +21,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let _guard = charon_lib::timing::scope("get-mir");
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut *self);
-        let res = panic::catch_unwind(move || this.get_mir_inner(item_ref));
+        let item_ref = panic::AssertUnwindSafe(item_ref);
+        let res = panic::catch_unwind(move || this.get_mir_inner(*item_ref));
         match res {
             Ok(Ok(body)) => Ok(body),
             // Translation error
