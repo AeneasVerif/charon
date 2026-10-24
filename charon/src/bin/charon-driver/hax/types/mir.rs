@@ -137,14 +137,12 @@ fn translate_mir_const<'tcx, S: UnderOwnerState<'tcx>>(
     match konst {
         Const::Val(const_value, ty) => {
             let src = ConstSource::Value(const_value, ty);
-            Value(
-                read_const(s, span, src, ReadMode::Structured).unwrap_or_else(|| {
-                    rustc_const_uneval::Const {
-                        ty,
-                        kind: rustc_const_uneval::ConstKind::Unsupported("ConstEvalVal"),
-                    }
-                }),
-            )
+            Value(read_const(s, span, src, ReadMode::Structured).unwrap_or(
+                rustc_const_uneval::Const {
+                    ty,
+                    kind: rustc_const_uneval::ConstKind::Unsupported("ConstEvalVal"),
+                },
+            ))
         }
         Const::Ty(_ty, c) => Ty(c),
         Const::Unevaluated(ucv, _) => {
