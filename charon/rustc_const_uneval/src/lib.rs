@@ -168,7 +168,7 @@ impl<'tcx> ConstKind<'tcx> {
 #[derive(Debug, Clone)]
 pub enum PtrTarget<'tcx> {
     /// A place inside a global (anything with provenance): `projections` applied to the allocation
-    /// of `target`, whose type is `ty`. A function has no contents, so its type is `()`.
+    /// of `target`, whose type is `ty`. Allocations without contents have type `()`.
     Global {
         target: AllocTarget<'tcx>,
         ty: Ty<'tcx>,

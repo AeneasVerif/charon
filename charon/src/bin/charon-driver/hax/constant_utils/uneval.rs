@@ -143,6 +143,17 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, FnPtrTarget<'tcx>>
     }
 }
 
+/// The metadata of a pointer to a value of type `from` unsized to type `to`.
+fn unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    from: ty::Ty<'tcx>,
+    to: ty::Ty<'tcx>,
+) -> UnsizingMetadata {
+    let from = ty::Ty::new_imm_ptr(s.base().tcx, from);
+    let to = ty::Ty::new_imm_ptr(s.base().tcx, to);
+    compute_unsizing_metadata(s, from, to)
+}
+
 /// The provenance to give to the bytes of a pointer into the given allocation.
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantByteProvenance<'tcx>> for AllocTarget<'tcx> {
     fn sinto(&self, s: &S) -> ConstantByteProvenance<'tcx> {
@@ -154,11 +165,16 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantByteProvenance<'tcx>> for 
             AllocTarget::Global(global) if const_reader(s).is_named_global(global) => {
                 ConstantByteProvenance::Global(global.sinto(s))
             }
-            // TODO: TypeIds
-            // VTables are not reachable here, I believe: it's UB to attempt reading a VTable's data.
-            AllocTarget::Global(_) | AllocTarget::VTable(..) | AllocTarget::TypeId(..) => {
-                ConstantByteProvenance::Unknown
+            AllocTarget::VTable(ty, preds) => {
+                let tcx = s.base().tcx;
+                let dyn_ty = ty::Ty::new_dynamic(tcx, preds, tcx.lifetimes.re_erased);
+                match unsizing_metadata(s, ty, dyn_ty) {
+                    UnsizingMetadata::DirectVTable(proof) => ConstantByteProvenance::VTable(proof),
+                    _ => ConstantByteProvenance::Unknown,
+                }
             }
+            // TODO: TypeIds
+            AllocTarget::Global(_) | AllocTarget::TypeId(..) => ConstantByteProvenance::Unknown,
         }
     }
 }
@@ -168,17 +184,13 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr<'tcx>>
 {
     fn sinto(&self, s: &S) -> ConstantExpr<'tcx> {
         use rustc_const_uneval::ConstKind;
-        let tcx = s.base().tcx;
         // The value of a pattern type is described at its base type.
         let ty = match self.ty.kind() {
             ty::Pat(base_ty, _) => *base_ty,
             _ => self.ty,
         };
         let unsizing_metadata = |unsize: &Option<rustc_const_uneval::Unsize<'tcx>>| {
-            unsize.map(|unsize| {
-                let ref_to = |ty| ty::Ty::new_imm_ref(tcx, tcx.lifetimes.re_static, ty);
-                compute_unsizing_metadata(s, ref_to(unsize.from), ref_to(unsize.to))
-            })
+            unsize.map(|unsize| unsizing_metadata(s, unsize.from, unsize.to))
         };
         let kind = match &self.kind {
             ConstKind::Scalar(scalar_int) => {

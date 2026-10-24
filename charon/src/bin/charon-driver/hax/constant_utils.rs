@@ -146,6 +146,8 @@ pub enum ConstantByteProvenance<'tcx> {
     Global(ItemRef<'tcx>),
     /// A pointer to a function, with the type of function pointers to it.
     Function(FnPtrTarget<'tcx>, Ty<'tcx>),
+    /// A pointer to the vtable of this trait implementation.
+    VTable(TraitProof<'tcx>),
     /// A pointer to anything else (an anonymous allocation, a vtable...).
     Unknown,
 }
