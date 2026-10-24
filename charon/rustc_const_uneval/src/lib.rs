@@ -18,7 +18,7 @@ mod valtree;
 
 pub use eval::promoted_body;
 
-use rustc_abi::{ExternAbi, FieldIdx, VariantIdx};
+use rustc_abi::{ExternAbi, FieldIdx, Size, VariantIdx};
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::{self, interpret};
 use rustc_middle::ty::{self, Ty, TyCtxt};
@@ -123,6 +123,8 @@ pub enum ConstKind<'tcx> {
     },
     /// A function pointer.
     FnPtr(FnTarget<'tcx>),
+    /// The `TypeId` of this type.
+    TypeId(Ty<'tcx>),
     /// A valid reference or raw pointer; `ty` tells which.
     Ptr {
         target: PtrTarget<'tcx>,
@@ -168,7 +170,7 @@ impl<'tcx> ConstKind<'tcx> {
 #[derive(Debug, Clone)]
 pub enum PtrTarget<'tcx> {
     /// A place inside a global (anything with provenance): `projections` applied to the allocation
-    /// of `target`, whose type is `ty`. A function has no contents, so its type is `()`.
+    /// of `target`, whose type is `ty`. Allocations without contents have type `()`.
     Global {
         target: AllocTarget<'tcx>,
         ty: Ty<'tcx>,
@@ -216,9 +218,9 @@ pub enum Byte<'tcx> {
     Uninit,
     /// A concrete byte value.
     Value(u8),
-    /// A byte of a pointer into the given allocation. The `u8` is the index of this byte within the
-    /// pointer.
-    Ptr(AllocTarget<'tcx>, u8),
+    /// A byte of a pointer at the given offset into the given allocation. The `u8` is the index of
+    /// this byte within the pointer.
+    Ptr(AllocTarget<'tcx>, Size, u8),
 }
 
 /// A global allocation.

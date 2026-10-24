@@ -253,10 +253,11 @@ and builtin_impl_data =
 and byte =
   | Uninit  (** An uninitialized byte *)
   | Value of int  (** A concrete byte value *)
-  | Provenance of global_provenance * int
-      (** A byte that is part of a pointer with provenance. The u8 is the offset
-          within the pointer. Note that we do not have an actual value for this
-          pointer byte, unlike MiniRust, as that is non-deterministic. *)
+  | Provenance of global_provenance * integer_value * int
+      (** A byte that is part of a pointer with provenance, at the given offset
+          into the pointee. The u8 is the index of this byte within the pointer.
+          Note that we do not have an actual value for this pointer byte, unlike
+          MiniRust, as that is non-deterministic. *)
 
 (** Cast the operand to a new type. *)
 and cast_kind =
@@ -516,6 +517,12 @@ and global_provenance =
   | ProvGlobal of global_decl_ref
   | ProvFunction of fn_ptr * ty
       (** A function, with the type of function pointers to it. *)
+  | ProvTypeId of ty
+      (** The allocation backing the [TypeId] of this type. Note that [TypeId]s
+          always have 16 bytes worth of provenance, regardless of the platform's
+          pointer size, so [[Byte::Provenance]]'s byte index can go up to 16! In
+          other words, the bytes of a full [TypeId] are
+          [Provenance(TypeId(ty), 0, 0..16)]. *)
   | ProvUnknown
 
 (** Hash-consed data structure: a reference-counted wrapper that guarantees that

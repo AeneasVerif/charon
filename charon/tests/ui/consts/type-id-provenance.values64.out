@@ -1,0 +1,39 @@
+# Final LLBC before serialization:
+
+// Full name: core::any::TypeId
+#[lang_item(TypeId)]
+pub opaque type TypeId
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: test_crate::N
+const N: usize = 2usize
+
+// Full name: test_crate::TID
+static TID: TypeId = TypeId(u8)
+
+// Full name: test_crate::TID_SWAPPED
+static TID_SWAPPED: TypeId = TypeId { 0: [RawMemory(&TypeId(u8)[8], &TypeId(u8)[9], &TypeId(u8)[10], &TypeId(u8)[11], &TypeId(u8)[12], &TypeId(u8)[13], &TypeId(u8)[14], &TypeId(u8)[15]), RawMemory(&TypeId(u8)[0], &TypeId(u8)[1], &TypeId(u8)[2], &TypeId(u8)[3], &TypeId(u8)[4], &TypeId(u8)[5], &TypeId(u8)[6], &TypeId(u8)[7])] }
+
+// Full name: test_crate::TID_PTRS
+static mut TID_PTRS: [*const u8; 2usize] = [RawMemory(&TypeId(u8)[0], &TypeId(u8)[1], &TypeId(u8)[2], &TypeId(u8)[3], &TypeId(u8)[4], &TypeId(u8)[5], &TypeId(u8)[6], &TypeId(u8)[7]), RawMemory(&TypeId(u8)[8], &TypeId(u8)[9], &TypeId(u8)[10], &TypeId(u8)[11], &TypeId(u8)[12], &TypeId(u8)[13], &TypeId(u8)[14], &TypeId(u8)[15])]
+
+// Full name: test_crate::TID_PTR_OFFSET
+static mut TID_PTR_OFFSET: *const u8 = RawMemory(&TypeId(u8)+8[0], &TypeId(u8)+8[1], &TypeId(u8)+8[2], &TypeId(u8)+8[3], &TypeId(u8)+8[4], &TypeId(u8)+8[5], &TypeId(u8)+8[6], &TypeId(u8)+8[7])
+
+
+
