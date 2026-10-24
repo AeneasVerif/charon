@@ -261,7 +261,7 @@ fn ptr_casts()
 struct {closure} {}
 
 // Full name: test_crate::fn_casts::{impl Fn<(u8,)> for {closure}}::call
-fn call<'_0>(_1: &'_0 {closure}, tupled_args: (u8,))
+extern "rust-call" fn call<'_0>(_1: &'_0 {closure}, tupled_args: (u8,))
 {
     let _0: (); // return
     let _1: &'1 {closure}; // arg #1
@@ -280,7 +280,7 @@ fn call<'_0>(_1: &'_0 {closure}, tupled_args: (u8,))
 }
 
 // Full name: test_crate::fn_casts::{impl FnMut<(u8,)> for {closure}}::call_mut
-fn call_mut<'_0>(state: &'_0 mut {closure}, args: (u8,))
+extern "rust-call" fn call_mut<'_0>(state: &'_0 mut {closure}, args: (u8,))
 {
     let _0: (); // return
     let state: &'_0 mut {closure}; // arg #1
@@ -303,7 +303,7 @@ fn call_mut<'_0>(state: &'_0 mut {closure}, args: (u8,))
 }
 
 // Full name: test_crate::fn_casts::{impl FnOnce<(u8,)> for {closure}}::call_once
-fn call_once(_1: {closure}, _2: (u8,))
+extern "rust-call" fn call_once(_1: {closure}, _2: (u8,))
 {
     let _0: (); // return
     let _1: {closure}; // arg #1

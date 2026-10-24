@@ -24,7 +24,7 @@ struct test_crate::main::{closure}<'_0> {
 }
 
 // Full name: test_crate::main::{impl Fn<(u8,)> for test_crate::main::{closure}<'_0>}::call
-fn call<'_0, '_1>(_1: &'_1 test_crate::main::{closure}<'_0>, tupled_args: (u8,)) -> u8
+extern "rust-call" fn call<'_0, '_1>(_1: &'_1 test_crate::main::{closure}<'_0>, tupled_args: (u8,)) -> u8
 where
     RegionOutlives0: '_0: '_1,
 {
@@ -82,7 +82,7 @@ struct test_crate::main::{closure#1}<'_0> {
 }
 
 // Full name: test_crate::main::{impl FnMut<(u8,)> for test_crate::main::{closure#1}<'_0>}::call_mut
-fn call_mut<'_0, '_1>(_1: &'_1 mut test_crate::main::{closure#1}<'_0>, tupled_args: (u8,)) -> u8
+extern "rust-call" fn call_mut<'_0, '_1>(_1: &'_1 mut test_crate::main::{closure#1}<'_0>, tupled_args: (u8,)) -> u8
 where
     RegionOutlives0: '_0: '_1,
 {
@@ -145,7 +145,7 @@ struct test_crate::main::{closure#2} {
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8,)> for test_crate::main::{closure#2}}::call_once
-fn call_once(_1: test_crate::main::{closure#2}, tupled_args: (u8,)) -> u8
+extern "rust-call" fn call_once(_1: test_crate::main::{closure#2}, tupled_args: (u8,)) -> u8
 {
     let _0: u8; // return
     let _1: test_crate::main::{closure#2}; // arg #1

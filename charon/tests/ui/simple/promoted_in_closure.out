@@ -21,7 +21,7 @@ fn main()
 }
 
 // Full name: test_crate::main::{impl Fn<()> for {closure}}::call
-fn call<'_0>(_1: &'_0 {closure}, tupled_args: ())
+extern "rust-call" fn call<'_0>(_1: &'_0 {closure}, tupled_args: ())
 {
     let _0: (); // return
     let _1: &'1 {closure}; // arg #1

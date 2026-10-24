@@ -72,7 +72,7 @@ trait Ord<Self>
 }
 
 // Full name: test_crate::Ord::{impl FnOnce<(&'_0 Self, &'_1 Self)> for for<'_0_1, '_1_1> TraitClause0::cmp<'_0_1, '_1_1>}::call_once
-fn call_once<'_0, '_1, Self>(state: for<'_0_1, '_1_1> TraitClause0::cmp<'_0_1, '_1_1>, args: (&'_0 Self, &'_1 Self)) -> Ordering
+extern "rust-call" fn call_once<'_0, '_1, Self>(state: for<'_0_1, '_1_1> TraitClause0::cmp<'_0_1, '_1_1>, args: (&'_0 Self, &'_1 Self)) -> Ordering
 where
     TraitClause0: (Self: Ord),
     TypeOutlives0: Self: '_0,

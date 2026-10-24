@@ -873,7 +873,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         match (impl_kind, impl_def.kind()) {
             // The def is the closure or fn item; the impl is one of its virtual `Fn*` impls.
             (TransImplSource::Callable(target_kind), _) => {
-                let vimpl = callable_virtual_impl(impl_def, self.hax_state(), target_kind);
+                let vimpl = callable_virtual_impl(self.hax_state(), impl_def, target_kind);
                 let vtable_sig = vimpl
                     .vtable_sig(self.hax_state(), 0)
                     .expect("a callable with a vtable must be dyn-compatible");
@@ -1245,7 +1245,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let (dyn_self, trait_pred) = match (impl_kind, impl_def.kind()) {
             // The def is the closure or fn item; the impl is one of its virtual `Fn*` impls.
             (TransImplSource::Callable(target_kind), _) => {
-                let vimpl = callable_virtual_impl(impl_def, self.hax_state(), target_kind);
+                let vimpl = callable_virtual_impl(self.hax_state(), impl_def, target_kind);
                 (vimpl.dyn_self(self.hax_state()), &vimpl.trait_pred)
             }
             (TransImplSource::Normal, hax::FullDefKind::TraitImpl(timpl)) => {
@@ -1315,7 +1315,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         let target_item: TransItemSourceKind;
 
         if let TransImplSource::Callable(target_kind) = impl_kind {
-            let vimpl = callable_virtual_impl(def, self.hax_state(), target_kind);
+            let vimpl = callable_virtual_impl(self.hax_state(), def, target_kind);
             let vtable_sig = vimpl
                 .vtable_sig(self.hax_state(), 0)
                 .expect("a callable with a vtable must be dyn-compatible");

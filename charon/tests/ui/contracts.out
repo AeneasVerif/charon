@@ -23,7 +23,7 @@ struct {closure} {}
 
 // Full name: test_crate::function::{impl Fn<()> for {closure}}::call
 #[charon::has_contract(kind = "pre", contract = closure_precondition)]
-fn call<'_0>(_1: &'_0 {closure}, tupled_args: ())
+extern "rust-call" fn call<'_0>(_1: &'_0 {closure}, tupled_args: ())
 {
     let _0: (); // return
     let _1: &'1 {closure}; // arg #1

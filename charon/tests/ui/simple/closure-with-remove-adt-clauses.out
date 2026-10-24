@@ -70,7 +70,7 @@ where
 }
 
 // Full name: test_crate::f::{impl Fn<(), T> for test_crate::f::{closure}<'_0, T>}::call
-fn {impl Fn<(), T> for test_crate::f::{closure}<'_0, T>}::call<'_0, '_1, T>(_1: &'_1 test_crate::f::{closure}<'_0, T>, tupled_args: ()) -> T
+extern "rust-call" fn {impl Fn<(), T> for test_crate::f::{closure}<'_0, T>}::call<'_0, '_1, T>(_1: &'_1 test_crate::f::{closure}<'_0, T>, tupled_args: ()) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
@@ -122,7 +122,7 @@ where
 }
 
 // Full name: test_crate::g::{impl Fn<(), T> for test_crate::g::{closure}<'_0, T>}::call
-fn {impl Fn<(), T> for test_crate::g::{closure}<'_0, T>}::call<'_0, '_1, T>(_1: &'_1 test_crate::g::{closure}<'_0, T>, tupled_args: ()) -> T
+extern "rust-call" fn {impl Fn<(), T> for test_crate::g::{closure}<'_0, T>}::call<'_0, '_1, T>(_1: &'_1 test_crate::g::{closure}<'_0, T>, tupled_args: ()) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),

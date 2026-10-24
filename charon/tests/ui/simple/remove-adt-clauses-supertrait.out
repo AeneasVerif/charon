@@ -70,7 +70,7 @@ where
 }
 
 // Full name: test_crate::make::{impl FnOnce<(), ()> for {closure}<T>}::call_once
-fn call_once<T>(_1: {closure}<T>, tupled_args: ())
+extern "rust-call" fn call_once<T>(_1: {closure}<T>, tupled_args: ())
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Child),

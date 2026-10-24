@@ -33,7 +33,7 @@ fn foo::<u32><'a>(x: &'a u32)
 }
 
 // Full name: test_crate::{impl Fn<(&'_ u32,)> for for<'a> foo::<u32><'a>}::call::<u32>
-fn call::<u32><'a, '_1>(state: &'_1 for<'a> foo::<u32><'a>, args: (&'_ u32,))
+extern "rust-call" fn call::<u32><'a, '_1>(state: &'_1 for<'a> foo::<u32><'a>, args: (&'_ u32,))
 {
     let _0: (); // return
     let state: &'_1 for<'a> foo::<u32><'a>; // arg #1

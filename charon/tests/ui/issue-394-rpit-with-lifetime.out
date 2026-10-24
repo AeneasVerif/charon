@@ -82,7 +82,7 @@ where
 struct {closure}<'a> {}
 
 // Full name: test_crate::sparse_transitions::{impl FnMut<()> for {closure}<'a>}::call_mut
-fn call_mut<'a, '_1>(_1: &'_1 mut {closure}<'a>, tupled_args: ()) -> Option<u8>[{built_in impl Sized for u8}]
+extern "rust-call" fn call_mut<'a, '_1>(_1: &'_1 mut {closure}<'a>, tupled_args: ()) -> Option<u8>[{built_in impl Sized for u8}]
 where
     RegionOutlives0: 'a: '_1,
 {
@@ -98,7 +98,7 @@ where
 }
 
 // Full name: test_crate::sparse_transitions::{impl FnOnce<()> for {closure}<'a>}::call_once
-fn call_once<'a>(_1: {closure}<'a>, _2: ()) -> Option<u8>[{built_in impl Sized for u8}]
+extern "rust-call" fn call_once<'a>(_1: {closure}<'a>, _2: ()) -> Option<u8>[{built_in impl Sized for u8}]
 {
     let _0: Option<u8>[{built_in impl Sized for u8}]; // return
     let _1: {closure}<'a>; // arg #1

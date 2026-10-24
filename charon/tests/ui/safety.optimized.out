@@ -1330,7 +1330,7 @@ unsafe fn safe_call_target_feature_fn_with_implied_feature()
 struct test_crate::safe_call_target_feature_fn_in_closure::{closure} {}
 
 // Full name: test_crate::safe_call_target_feature_fn_in_closure::{impl Fn<()> for test_crate::safe_call_target_feature_fn_in_closure::{closure}}::call
-fn {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_closure::{closure}}::call<'_0>(_1: &'_0 test_crate::safe_call_target_feature_fn_in_closure::{closure}, tupled_args: ())
+extern "rust-call" fn {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_closure::{closure}}::call<'_0>(_1: &'_0 test_crate::safe_call_target_feature_fn_in_closure::{closure}, tupled_args: ())
 {
     let _0: (); // return
     let _1: &'1 test_crate::safe_call_target_feature_fn_in_closure::{closure}; // arg #1
@@ -1391,7 +1391,7 @@ struct test_crate::safe_call_target_feature_fn_in_inline_closure::{closure} {}
 
 // Full name: test_crate::safe_call_target_feature_fn_in_inline_closure::{impl Fn<()> for test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}}::call
 #[inline(always)]
-fn {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}}::call<'_0>(_1: &'_0 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}, tupled_args: ())
+extern "rust-call" fn {impl Fn<()> for test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}}::call<'_0>(_1: &'_0 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}, tupled_args: ())
 {
     let _0: (); // return
     let _1: &'1 test_crate::safe_call_target_feature_fn_in_inline_closure::{closure}; // arg #1

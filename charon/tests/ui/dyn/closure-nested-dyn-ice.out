@@ -108,7 +108,7 @@ pub fn closure()
 }
 
 // Full name: test_crate::closure::{impl Fn<(&'_0 (dyn Fn<(Box<(dyn Send + '_1)>[{built_in impl MetaSized for (dyn Send + '_1)}, {built_in impl Sized for Global}],), ImpliedClause1::ImpliedClause1::Output = ()> + '_0),)> for {closure}}::call
-fn call<'_0, '_1, '_2, '_3>(_1: &'_3 {closure}, tupled_args: (&'_0 (dyn Fn<(Box<(dyn Send + '_1)>[{built_in impl MetaSized for (dyn Send + '_1)}, {built_in impl Sized for Global}],), ImpliedClause1::ImpliedClause1::Output = ()> + '_0),))
+extern "rust-call" fn call<'_0, '_1, '_2, '_3>(_1: &'_3 {closure}, tupled_args: (&'_0 (dyn Fn<(Box<(dyn Send + '_1)>[{built_in impl MetaSized for (dyn Send + '_1)}, {built_in impl Sized for Global}],), ImpliedClause1::ImpliedClause1::Output = ()> + '_0),))
 where
     RegionOutlives0: '_1: '_0,
 {

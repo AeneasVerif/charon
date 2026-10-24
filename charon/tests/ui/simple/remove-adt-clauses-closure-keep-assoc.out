@@ -60,7 +60,7 @@ where
 }
 
 // Full name: test_crate::make_closure::{impl FnOnce<()> for {closure}<T>[TraitClause0, TraitClause1]}::call_once
-fn call_once<T>(_1: {closure}<T>[TraitClause0, TraitClause1], tupled_args: ())
+extern "rust-call" fn call_once<T>(_1: {closure}<T>[TraitClause0, TraitClause1], tupled_args: ())
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: HasAssoc),

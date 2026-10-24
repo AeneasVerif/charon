@@ -36,7 +36,7 @@ where
 }
 
 // Full name: test_crate::call_fn::{impl Fn<(usize,)> for {closure}<'_0, '_1>}::call
-fn call<'_0, '_1, '_2>(_1: &'_2 {closure}<'_0, '_1>, tupled_args: (usize,)) -> u8
+extern "rust-call" fn call<'_0, '_1, '_2>(_1: &'_2 {closure}<'_0, '_1>, tupled_args: (usize,)) -> u8
 where
     RegionOutlives0: '_1: '_0,
     RegionOutlives1: '_0: '_2,

@@ -190,7 +190,7 @@ where
 }
 
 // Full name: {impl FnOnce<(Adt<'_0, A>[TraitClause2, TraitClause3],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5]}::call_once
-fn {impl FnOnce<(Adt<'_0, A>[TraitClause2, TraitClause3],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5]}::call_once<'_0, A, B>(fn_ptr: fn<'_0_1 where A: '_0_1, B: '_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5], args: (Adt<'_0, A>[TraitClause2, TraitClause3],)) -> Adt<'_0, B>[TraitClause4, TraitClause5]
+extern "rust-call" fn {impl FnOnce<(Adt<'_0, A>[TraitClause2, TraitClause3],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5]}::call_once<'_0, A, B>(fn_ptr: fn<'_0_1 where A: '_0_1, B: '_0_1>(Adt<'_0_1, A>[TraitClause2, TraitClause3]) -> Adt<'_0_1, B>[TraitClause4, TraitClause5], args: (Adt<'_0, A>[TraitClause2, TraitClause3],)) -> Adt<'_0, B>[TraitClause4, TraitClause5]
 where
     TraitClause0: for<'_0_1> (Adt<'_0_1, A>[TraitClause2, TraitClause3]: Sized),
     TraitClause1: for<'_0_1> (Adt<'_0_1, B>[TraitClause4, TraitClause5]: Sized),
@@ -236,7 +236,7 @@ where
 }
 
 // Full name: {impl FnOnce<(A,)> for fn(A) -> B}::call_once
-fn {impl FnOnce<(A,)> for fn(A) -> B}::call_once<A, B>(fn_ptr: fn(A) -> B, args: (A,)) -> B
+extern "rust-call" fn {impl FnOnce<(A,)> for fn(A) -> B}::call_once<A, B>(fn_ptr: fn(A) -> B, args: (A,)) -> B
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
@@ -324,7 +324,7 @@ where
 }
 
 // Full name: {impl FnOnce<(A, &'_0 B)> for fn<'_0_1 where B: '_0_1, C: '_0_1>(A, &'_0_1 B) -> &'_0_1 C}::call_once
-fn {impl FnOnce<(A, &'_0 B)> for fn<'_0_1 where B: '_0_1, C: '_0_1>(A, &'_0_1 B) -> &'_0_1 C}::call_once<'_0, A, B, C>(fn_ptr: fn<'_0_1 where B: '_0_1, C: '_0_1>(A, &'_0_1 B) -> &'_0_1 C, args: (A, &'_0 B)) -> &'_0 C
+extern "rust-call" fn {impl FnOnce<(A, &'_0 B)> for fn<'_0_1 where B: '_0_1, C: '_0_1>(A, &'_0_1 B) -> &'_0_1 C}::call_once<'_0, A, B, C>(fn_ptr: fn<'_0_1 where B: '_0_1, C: '_0_1>(A, &'_0_1 B) -> &'_0_1 C, args: (A, &'_0 B)) -> &'_0 C
 where
     TraitClause0: for<'_0_1> (A: Sized),
     TraitClause1: for<'_0_1> (&'_0_1 B: Sized),
@@ -364,7 +364,7 @@ where
 }
 
 // Full name: {impl FnOnce<([&'_0 A; C2],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]}::call_once
-fn {impl FnOnce<([&'_0 A; C2],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]}::call_once<'_0, A, B, const C2 : usize, const C3 : usize>(fn_ptr: fn<'_0_1 where A: '_0_1, B: '_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3], args: ([&'_0 A; C2],)) -> [&'_0 B; C3]
+extern "rust-call" fn {impl FnOnce<([&'_0 A; C2],)> for fn<'_0_1 where A: '_0_1, B: '_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3]}::call_once<'_0, A, B, const C2 : usize, const C3 : usize>(fn_ptr: fn<'_0_1 where A: '_0_1, B: '_0_1>([&'_0_1 A; C2]) -> [&'_0_1 B; C3], args: ([&'_0 A; C2],)) -> [&'_0 B; C3]
 where
     TraitClause0: for<'_0_1> ([&'_0_1 A; C2]: Sized),
     TraitClause1: for<'_0_1> ([&'_0_1 B; C3]: Sized),
@@ -402,7 +402,7 @@ where
 }
 
 // Full name: {impl FnMut<(A,)> for fn(A) -> B}::call_mut
-fn call_mut<'_0, A, B>(fn_ptr: &'_0 mut fn(A) -> B, args: (A,)) -> B
+extern "rust-call" fn call_mut<'_0, A, B>(fn_ptr: &'_0 mut fn(A) -> B, args: (A,)) -> B
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),
@@ -479,7 +479,7 @@ where
  = core::ops::function::FnMut::{vtable} { size: size_of::<fn(A) -> B>(), align: align_of::<fn(A) -> B>(), drop: fnptr({impl FnMut<(A,)> for fn(A) -> B}::{vtable_drop_shim}<'_, A, B>[TraitClause0, TraitClause1]), method_call_mut: fnptr({impl FnMut<(A,)> for fn(A) -> B}::{vtable_method}<'_, A, B>[TraitClause0, TraitClause1]), super_trait_0: &core::marker::MetaSized::{vtable}<fn(A) -> B>, super_trait_1: &{impl FnOnce<(A,)> for fn(A) -> B}::{vtable}<A, B>[TraitClause0, TraitClause1] }
 
 // Full name: {impl Fn<(A,)> for fn(A) -> B}::call
-fn call<'_0, A, B>(fn_ptr: &'_0 fn(A) -> B, args: (A,)) -> B
+extern "rust-call" fn call<'_0, A, B>(fn_ptr: &'_0 fn(A) -> B, args: (A,)) -> B
 where
     TraitClause0: (A: Sized),
     TraitClause1: (B: Sized),

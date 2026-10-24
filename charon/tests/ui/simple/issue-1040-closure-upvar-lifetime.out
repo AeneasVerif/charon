@@ -29,7 +29,7 @@ pub fn foo<'_0>(s: &'_0 u8)
 }
 
 // Full name: test_crate::foo::{impl Fn<()> for {closure}<'_0>}::call
-fn call<'_0, '_1, '_2>(_1: &'_2 {closure}<'_0>, tupled_args: ()) -> &'_1 u8
+extern "rust-call" fn call<'_0, '_1, '_2>(_1: &'_2 {closure}<'_0>, tupled_args: ()) -> &'_1 u8
 where
     RegionOutlives0: '_0: '_2,
 {

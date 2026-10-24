@@ -692,7 +692,7 @@ where
 struct {closure} {}
 
 // Full name: test_crate::main::{impl FnMut<(&'_0 u32,)> for {closure}}::call_mut
-fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}, tupled_args: (&'_0 u32,)) -> Ordering
+extern "rust-call" fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}, tupled_args: (&'_0 u32,)) -> Ordering
 {
     let _0: Ordering; // return
     let _1: &'1 mut {closure}; // arg #1
@@ -754,7 +754,7 @@ fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}, tupled_args: (&'_0 u32,)) -> Order
 }
 
 // Full name: test_crate::main::{impl FnOnce<(&'_0 u32,)> for {closure}}::call_once
-fn call_once<'_0>(_1: {closure}, _2: (&'_0 u32,)) -> Ordering
+extern "rust-call" fn call_once<'_0>(_1: {closure}, _2: (&'_0 u32,)) -> Ordering
 {
     let _0: Ordering; // return
     let _1: {closure}; // arg #1

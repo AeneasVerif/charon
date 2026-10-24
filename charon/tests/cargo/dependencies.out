@@ -155,7 +155,7 @@ const {promoted_const}: &'_ u32 = {promoted_const}()
 struct {closure} {}
 
 // Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32,)> for {closure}}::call_once
-fn call_once(_1: {closure}, tupled_args: (u32,)) -> u32
+extern "rust-call" fn call_once(_1: {closure}, tupled_args: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: {closure}; // arg #1

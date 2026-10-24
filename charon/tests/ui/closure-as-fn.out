@@ -6,7 +6,7 @@ struct () {}
 struct {closure} {}
 
 // Full name: test_crate::main::{impl Fn<()> for {closure}}::call
-fn call<'_0>(_1: &'_0 {closure}, tupled_args: ())
+extern "rust-call" fn call<'_0>(_1: &'_0 {closure}, tupled_args: ())
 {
     let _0: (); // return
     let _1: &'1 {closure}; // arg #1
@@ -25,7 +25,7 @@ fn call<'_0>(_1: &'_0 {closure}, tupled_args: ())
 }
 
 // Full name: test_crate::main::{impl FnMut<()> for {closure}}::call_mut
-fn call_mut<'_0>(state: &'_0 mut {closure}, args: ())
+extern "rust-call" fn call_mut<'_0>(state: &'_0 mut {closure}, args: ())
 {
     let _0: (); // return
     let state: &'_0 mut {closure}; // arg #1
@@ -48,7 +48,7 @@ fn call_mut<'_0>(state: &'_0 mut {closure}, args: ())
 }
 
 // Full name: test_crate::main::{impl FnOnce<()> for {closure}}::call_once
-fn call_once(_1: {closure}, _2: ())
+extern "rust-call" fn call_once(_1: {closure}, _2: ())
 {
     let _0: (); // return
     let _1: {closure}; // arg #1

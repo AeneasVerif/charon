@@ -39,7 +39,7 @@ where
 struct test_crate::main::{closure#1} {}
 
 // Full name: test_crate::main::{impl Fn<(&'_0 u16,)> for test_crate::main::{closure#1}}::call
-fn {impl Fn<(&'_0 u16,)> for test_crate::main::{closure#1}}::call<'_0, '_1>(_1: &'_1 test_crate::main::{closure#1}, tupled_args: (&'_0 u16,))
+extern "rust-call" fn {impl Fn<(&'_0 u16,)> for test_crate::main::{closure#1}}::call<'_0, '_1>(_1: &'_1 test_crate::main::{closure#1}, tupled_args: (&'_0 u16,))
 {
     let _0: (); // return
     let _1: &'1 test_crate::main::{closure#1}; // arg #1
@@ -58,7 +58,7 @@ fn {impl Fn<(&'_0 u16,)> for test_crate::main::{closure#1}}::call<'_0, '_1>(_1: 
 }
 
 // Full name: test_crate::main::{impl FnMut<(&'_0 u16,)> for test_crate::main::{closure#1}}::call_mut
-fn {impl FnMut<(&'_0 u16,)> for test_crate::main::{closure#1}}::call_mut<'_0, '_1>(state: &'_1 mut test_crate::main::{closure#1}, args: (&'_0 u16,))
+extern "rust-call" fn {impl FnMut<(&'_0 u16,)> for test_crate::main::{closure#1}}::call_mut<'_0, '_1>(state: &'_1 mut test_crate::main::{closure#1}, args: (&'_0 u16,))
 {
     let _0: (); // return
     let state: &'_1 mut test_crate::main::{closure#1}; // arg #1
@@ -81,7 +81,7 @@ fn {impl FnMut<(&'_0 u16,)> for test_crate::main::{closure#1}}::call_mut<'_0, '_
 }
 
 // Full name: test_crate::main::{impl FnOnce<(&'_0 u16,)> for test_crate::main::{closure#1}}::call_once
-fn {impl FnOnce<(&'_0 u16,)> for test_crate::main::{closure#1}}::call_once<'_0>(_1: test_crate::main::{closure#1}, _2: (&'_0 u16,))
+extern "rust-call" fn {impl FnOnce<(&'_0 u16,)> for test_crate::main::{closure#1}}::call_once<'_0>(_1: test_crate::main::{closure#1}, _2: (&'_0 u16,))
 {
     let _0: (); // return
     let _1: test_crate::main::{closure#1}; // arg #1
@@ -159,7 +159,7 @@ fn main()
 }
 
 // Full name: test_crate::main::{impl Fn<(&'_0 u8,)> for test_crate::main::{closure}}::call
-fn {impl Fn<(&'_0 u8,)> for test_crate::main::{closure}}::call<'_0, '_1>(_1: &'_1 test_crate::main::{closure}, tupled_args: (&'_0 u8,))
+extern "rust-call" fn {impl Fn<(&'_0 u8,)> for test_crate::main::{closure}}::call<'_0, '_1>(_1: &'_1 test_crate::main::{closure}, tupled_args: (&'_0 u8,))
 {
     let _0: (); // return
     let _1: &'1 test_crate::main::{closure}; // arg #1

@@ -51,7 +51,7 @@ struct test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3> {
 }
 
 // Full name: test_crate::main::{impl Fn<()> for test_crate::main::{closure}}::call
-fn {impl Fn<()> for test_crate::main::{closure}}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::main::{closure}, tupled_args: ()) -> test_crate::main::{closure}::{closure}<'_, '_, '_, '_>
+extern "rust-call" fn {impl Fn<()> for test_crate::main::{closure}}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::main::{closure}, tupled_args: ()) -> test_crate::main::{closure}::{closure}<'_, '_, '_, '_>
 {
     let _0: test_crate::main::{closure}::{closure}<'4, '5, '6, '7>; // return
     let _1: &'9 test_crate::main::{closure}; // arg #1
@@ -70,7 +70,7 @@ fn {impl Fn<()> for test_crate::main::{closure}}::call<'_0, '_1, '_2>(_1: &'_2 t
 }
 
 // Full name: test_crate::main::{closure}::{impl Fn<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::call
-fn {impl Fn<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::call<'_0, '_1, '_2, '_3, '_4, '_5>(_1: &'_5 test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>, tupled_args: ()) -> bar<&'_ ()>[{built_in impl Sized for &'_ ()}]
+extern "rust-call" fn {impl Fn<()> for test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>}::call<'_0, '_1, '_2, '_3, '_4, '_5>(_1: &'_5 test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3>, tupled_args: ()) -> bar<&'_ ()>[{built_in impl Sized for &'_ ()}]
 where
     RegionOutlives0: '_0: '_5,
     RegionOutlives1: '_1: '_5,

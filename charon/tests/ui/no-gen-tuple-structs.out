@@ -226,7 +226,7 @@ struct {closure}<'_0> {
 }
 
 // Full name: test_crate::use_closure::{impl Fn<(u32, bool)> for {closure}<'_0>}::call
-fn call<'_0, '_1>(_1: &'_1 {closure}<'_0>, tupled_args: (u32, bool)) -> u32
+extern "rust-call" fn call<'_0, '_1>(_1: &'_1 {closure}<'_0>, tupled_args: (u32, bool)) -> u32
 where
     RegionOutlives0: '_0: '_1,
 {
@@ -264,7 +264,7 @@ where
 }
 
 // Full name: test_crate::use_closure::{impl FnMut<(u32, bool)> for {closure}<'_0>}::call_mut
-fn call_mut<'_0, '_1>(state: &'_1 mut {closure}<'_0>, args: (u32, bool)) -> u32
+extern "rust-call" fn call_mut<'_0, '_1>(state: &'_1 mut {closure}<'_0>, args: (u32, bool)) -> u32
 where
     RegionOutlives0: '_0: '_1,
 {
@@ -288,7 +288,7 @@ where
 }
 
 // Full name: test_crate::use_closure::{impl FnOnce<(u32, bool)> for {closure}<'_0>}::call_once
-fn call_once<'_0>(_1: {closure}<'_0>, _2: (u32, bool)) -> u32
+extern "rust-call" fn call_once<'_0>(_1: {closure}<'_0>, _2: (u32, bool)) -> u32
 {
     let _0: u32; // return
     let _1: {closure}<'_0>; // arg #1

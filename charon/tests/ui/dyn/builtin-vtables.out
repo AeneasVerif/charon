@@ -133,7 +133,7 @@ fn some_fn(x: u32) -> u32
 }
 
 // Full name: test_crate::{impl FnOnce<(u32,)> for some_fn}::call_once
-fn {impl FnOnce<(u32,)> for some_fn}::call_once(state: some_fn, args: (u32,)) -> u32
+extern "rust-call" fn {impl FnOnce<(u32,)> for some_fn}::call_once(state: some_fn, args: (u32,)) -> u32
 {
     let _0: u32; // return
     let state: some_fn; // arg #1
@@ -191,7 +191,7 @@ unsafe fn {impl FnOnce<(u32,)> for some_fn}::{vtable_drop_shim}<'_0>(dyn_self: &
 vtable {impl FnOnce<(u32,)> for some_fn}::{vtable}: core::ops::function::FnOnce::{vtable}<(u32,), u32> = core::ops::function::FnOnce::{vtable} { size: size_of::<some_fn>(), align: align_of::<some_fn>(), drop: fnptr({impl FnOnce<(u32,)> for some_fn}::{vtable_drop_shim}<'_>), method_call_once: fnptr({impl FnOnce<(u32,)> for some_fn}::{vtable_method}), super_trait_0: &core::marker::MetaSized::{vtable}<some_fn> }
 
 // Full name: test_crate::{impl FnMut<(u32,)> for some_fn}::call_mut
-fn {impl FnMut<(u32,)> for some_fn}::call_mut<'_0>(state: &'_0 mut some_fn, args: (u32,)) -> u32
+extern "rust-call" fn {impl FnMut<(u32,)> for some_fn}::call_mut<'_0>(state: &'_0 mut some_fn, args: (u32,)) -> u32
 {
     let _0: u32; // return
     let state: &'_0 mut some_fn; // arg #1
@@ -249,7 +249,7 @@ unsafe fn {impl FnMut<(u32,)> for some_fn}::{vtable_drop_shim}<'_0>(dyn_self: &'
 vtable {impl FnMut<(u32,)> for some_fn}::{vtable}: core::ops::function::FnMut::{vtable}<(u32,), u32> = core::ops::function::FnMut::{vtable} { size: size_of::<some_fn>(), align: align_of::<some_fn>(), drop: fnptr({impl FnMut<(u32,)> for some_fn}::{vtable_drop_shim}<'_>), method_call_mut: fnptr({impl FnMut<(u32,)> for some_fn}::{vtable_method}<'_>), super_trait_0: &core::marker::MetaSized::{vtable}<some_fn>, super_trait_1: &{impl FnOnce<(u32,)> for some_fn}::{vtable} }
 
 // Full name: test_crate::{impl Fn<(u32,)> for some_fn}::call
-fn {impl Fn<(u32,)> for some_fn}::call<'_0>(state: &'_0 some_fn, args: (u32,)) -> u32
+extern "rust-call" fn {impl Fn<(u32,)> for some_fn}::call<'_0>(state: &'_0 some_fn, args: (u32,)) -> u32
 {
     let _0: u32; // return
     let state: &'_0 some_fn; // arg #1
@@ -355,7 +355,7 @@ where
 }
 
 // Full name: test_crate::{impl FnOnce<(T,)> for generic_fn<T>[TraitClause0]}::call_once
-fn {impl FnOnce<(T,)> for generic_fn<T>[TraitClause0]}::call_once<T>(state: generic_fn<T>[TraitClause0], args: (T,)) -> T
+extern "rust-call" fn {impl FnOnce<(T,)> for generic_fn<T>[TraitClause0]}::call_once<T>(state: generic_fn<T>[TraitClause0], args: (T,)) -> T
 where
     TraitClause0: (T: Sized),
 {
@@ -423,7 +423,7 @@ where
  = core::ops::function::FnOnce::{vtable} { size: size_of::<generic_fn<T>[TraitClause0]>(), align: align_of::<generic_fn<T>[TraitClause0]>(), drop: fnptr({impl FnOnce<(T,)> for generic_fn<T>[TraitClause0]}::{vtable_drop_shim}<'_, T>[TraitClause0]), method_call_once: fnptr({impl FnOnce<(T,)> for generic_fn<T>[TraitClause0]}::{vtable_method}<T>[TraitClause0]), super_trait_0: &core::marker::MetaSized::{vtable}<generic_fn<T>[TraitClause0]> }
 
 // Full name: test_crate::{impl FnMut<(T,)> for generic_fn<T>[TraitClause0]}::call_mut
-fn {impl FnMut<(T,)> for generic_fn<T>[TraitClause0]}::call_mut<'_0, T>(state: &'_0 mut generic_fn<T>[TraitClause0], args: (T,)) -> T
+extern "rust-call" fn {impl FnMut<(T,)> for generic_fn<T>[TraitClause0]}::call_mut<'_0, T>(state: &'_0 mut generic_fn<T>[TraitClause0], args: (T,)) -> T
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,
@@ -493,7 +493,7 @@ where
  = core::ops::function::FnMut::{vtable} { size: size_of::<generic_fn<T>[TraitClause0]>(), align: align_of::<generic_fn<T>[TraitClause0]>(), drop: fnptr({impl FnMut<(T,)> for generic_fn<T>[TraitClause0]}::{vtable_drop_shim}<'_, T>[TraitClause0]), method_call_mut: fnptr({impl FnMut<(T,)> for generic_fn<T>[TraitClause0]}::{vtable_method}<'_, T>[TraitClause0]), super_trait_0: &core::marker::MetaSized::{vtable}<generic_fn<T>[TraitClause0]>, super_trait_1: &{impl FnOnce<(T,)> for generic_fn<T>[TraitClause0]}::{vtable}<T>[TraitClause0] }
 
 // Full name: test_crate::{impl Fn<(T,)> for generic_fn<T>[TraitClause0]}::call
-fn {impl Fn<(T,)> for generic_fn<T>[TraitClause0]}::call<'_0, T>(state: &'_0 generic_fn<T>[TraitClause0], args: (T,)) -> T
+extern "rust-call" fn {impl Fn<(T,)> for generic_fn<T>[TraitClause0]}::call<'_0, T>(state: &'_0 generic_fn<T>[TraitClause0], args: (T,)) -> T
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,
@@ -606,7 +606,7 @@ where
 struct {closure} {}
 
 // Full name: test_crate::main::{impl Fn<(u32,)> for {closure}}::call
-fn impl_Fn_tuple_for_closure::call<'_0>(_1: &'_0 {closure}, tupled_args: (u32,)) -> u32
+extern "rust-call" fn impl_Fn_tuple_for_closure::call<'_0>(_1: &'_0 {closure}, tupled_args: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: &'1 {closure}; // arg #1
@@ -624,7 +624,7 @@ fn impl_Fn_tuple_for_closure::call<'_0>(_1: &'_0 {closure}, tupled_args: (u32,))
 }
 
 // Full name: test_crate::main::{impl FnMut<(u32,)> for {closure}}::call_mut
-fn impl_FnMut_tuple_for_closure::call_mut<'_0>(state: &'_0 mut {closure}, args: (u32,)) -> u32
+extern "rust-call" fn impl_FnMut_tuple_for_closure::call_mut<'_0>(state: &'_0 mut {closure}, args: (u32,)) -> u32
 {
     let _0: u32; // return
     let state: &'_0 mut {closure}; // arg #1
@@ -646,7 +646,7 @@ fn impl_FnMut_tuple_for_closure::call_mut<'_0>(state: &'_0 mut {closure}, args: 
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u32,)> for {closure}}::call_once
-fn impl_FnOnce_tuple_for_closure::call_once(_1: {closure}, _2: (u32,)) -> u32
+extern "rust-call" fn impl_FnOnce_tuple_for_closure::call_once(_1: {closure}, _2: (u32,)) -> u32
 {
     let _0: u32; // return
     let _1: {closure}; // arg #1

@@ -823,8 +823,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .map(|_| self.translate_erased_region()),
                 );
             } else if let hax::FullDefKind::Closure(c) = def.kind() {
-                let closure_args = c.args();
-                let upvar_regions = if self.item_src.def_id() == &closure_args.item.def_id {
+                let upvar_regions = if self.item_src.def_id() == def.def_id() {
                     assert!(self.outermost_binder().closure_upvar_tys.is_some());
                     self.outermost_binder().closure_upvar_regions.len()
                 } else {
@@ -848,8 +847,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 | TransItemSourceKind::ClosureAsFnCast = kind
                 {
                     generics.regions.extend(
-                        closure_args
-                            .fn_sig
+                        c.sig()
                             .bound_vars
                             .iter()
                             .map(|_| self.translate_erased_region()),
