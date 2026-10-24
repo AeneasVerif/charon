@@ -67,9 +67,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(match b {
             hax::ConstantByte::Uninit => Byte::Uninit,
             hax::ConstantByte::Value(v) => Byte::Value(*v),
-            hax::ConstantByte::Provenance(prov, offset) => {
-                Byte::Provenance(self.translate_provenance(span, prov)?, *offset)
-            }
+            hax::ConstantByte::Provenance(prov, offset, i) => Byte::Provenance(
+                self.translate_provenance(span, prov)?,
+                IntegerValue::mk_usize(*offset as u128),
+                *i,
+            ),
         })
     }
 
@@ -88,6 +90,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     self.erase_region_binder(fn_ptr),
                     self.translate_ty(span, fn_ptr_ty)?,
                 )
+            }
+            hax::ConstantByteProvenance::TypeId(ty) => {
+                GlobalProvenance::TypeId(self.translate_ty(span, ty)?)
             }
             hax::ConstantByteProvenance::Unknown => GlobalProvenance::Unknown,
         })
@@ -293,6 +298,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 } else {
                     kind
                 }
+            }
+            hax::ConstantExprKind::TypeId(ty) => {
+                ConstantExprKind::TypeId(self.translate_ty(span, ty)?)
             }
             hax::ConstantExprKind::Memory(bytes) => {
                 let bytes: Vec<Byte> = bytes

@@ -8,6 +8,7 @@ use itertools::Itertools;
 use minirust_rs::{mem::TreeBorrowsMemory, prelude::TerminationInfo};
 use miniutil::build as mb;
 use smallvec::{SmallVec, smallvec};
+use std::hash::{DefaultHasher, Hash, Hasher};
 use std::{cell::RefCell, io::Write, marker::PhantomData};
 
 use crate::{
@@ -1142,12 +1143,27 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             match byte {
                 Byte::Uninit => bytes.push(None),
                 Byte::Value(value) => bytes.push(Some(*value)),
-                Byte::Provenance(provenance, pointer_byte) => {
+                // MiniRust doesn't have TypeId provenance so we lower it to a hash of the type.
+                Byte::Provenance(GlobalProvenance::TypeId(ty), ptr_offset, i) => {
+                    let ptr_size = size_bytes(span, T::PTR_SIZE)?;
+                    let (chunk, i) = (*i as u64 / ptr_size, *i as u64 % ptr_size);
+                    let mut hasher = DefaultHasher::new();
+                    (ty, chunk).hash(&mut hasher);
+                    let ptr = hasher.finish().wrapping_add(ptr_offset.to_bits() as u64);
+                    let shift = if T::ENDIANNESS == mini::LittleEndian {
+                        i
+                    } else {
+                        ptr_size - 1 - i
+                    };
+                    bytes.push(Some((ptr >> (8 * shift)) as u8));
+                }
+                Byte::Provenance(provenance, ptr_offset, pointer_byte) => {
                     let name = match provenance {
                         GlobalProvenance::Global(gref) => self.global_name(gref.id),
                         GlobalProvenance::Function(..) => {
                             raise!(span, "MiniRust globals cannot contain function pointers")
                         }
+                        GlobalProvenance::TypeId(_) => unreachable!(),
                         GlobalProvenance::Unknown => {
                             raise!(span, "global contains a pointer with unknown provenance")
                         }
@@ -1158,9 +1174,9 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                             mini_size(u64::try_from(offset).context(span)?),
                             mini::Relocation {
                                 name,
-                                // FIXME(minirust): Charon's raw bytes do not record the offset
-                                // within the target allocation.
-                                offset: mini::Size::ZERO,
+                                offset: mini_size(
+                                    u64::try_from(ptr_offset.to_bits()).context(span)?,
+                                ),
                             },
                         ));
                     }

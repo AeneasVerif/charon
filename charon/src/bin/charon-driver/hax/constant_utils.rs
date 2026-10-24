@@ -81,6 +81,8 @@ pub enum ConstantExprKind<'tcx> {
     FnDef(ItemRef<'tcx>),
     /// A function pointer. This is an actual pointer to that function.
     FnPtr(FnPtrTarget<'tcx>),
+    /// The `TypeId` of this type.
+    TypeId(Ty<'tcx>),
     /// A blob of memory containing the byte representation of the value. This can occur when
     /// evaluating MIR constants (e.g. unions). Interpreting this back to a structured value
     /// is left as an exercice to the consumer.
@@ -125,9 +127,9 @@ pub enum ConstantByte<'tcx> {
     Uninit,
     /// A concrete byte value.
     Value(u8),
-    /// A byte that is part of a pointer with provenance. The `u8` is the offset of this byte
-    /// within the pointer.
-    Provenance(ConstantByteProvenance<'tcx>, u8),
+    /// A byte that is part of a pointer with provenance, at the given offset into the pointee
+    /// allocation. The `u8` is the index of this byte within the pointer.
+    Provenance(ConstantByteProvenance<'tcx>, u64, u8),
 }
 
 /// The function a function pointer points to.
@@ -146,6 +148,8 @@ pub enum ConstantByteProvenance<'tcx> {
     Global(ItemRef<'tcx>),
     /// A pointer to a function, with the type of function pointers to it.
     Function(FnPtrTarget<'tcx>, Ty<'tcx>),
+    /// The TypeId of a type.
+    TypeId(Ty<'tcx>),
     /// A pointer to anything else (an anonymous allocation, a vtable...).
     Unknown,
 }

@@ -154,11 +154,9 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantByteProvenance<'tcx>> for 
             AllocTarget::Global(global) if const_reader(s).is_named_global(global) => {
                 ConstantByteProvenance::Global(global.sinto(s))
             }
-            // TODO: TypeIds
+            AllocTarget::TypeId(ty) => ConstantByteProvenance::TypeId(ty.sinto(s)),
             // VTables are not reachable here, I believe: it's UB to attempt reading a VTable's data.
-            AllocTarget::Global(_) | AllocTarget::VTable(..) | AllocTarget::TypeId(..) => {
-                ConstantByteProvenance::Unknown
-            }
+            AllocTarget::Global(_) | AllocTarget::VTable(..) => ConstantByteProvenance::Unknown,
         }
     }
 }
@@ -295,15 +293,17 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantExpr<'tcx>>
                 let bytes = bytes.iter().map(|byte| match *byte {
                     Byte::Uninit => ConstantByte::Uninit,
                     Byte::Value(v) => ConstantByte::Value(v),
-                    Byte::Ptr(target, i) => {
+                    Byte::Ptr(target, offset, i) => {
                         if last_prov.as_ref().is_none_or(|(last, _)| *last != target) {
                             last_prov = Some((target, target.sinto(s)));
                         }
-                        ConstantByte::Provenance(last_prov.as_ref().unwrap().1.clone(), i)
+                        let prov = last_prov.as_ref().unwrap().1.clone();
+                        ConstantByte::Provenance(prov, offset.bytes(), i)
                     }
                 });
                 ConstantExprKind::Memory(bytes.collect())
             }
+            ConstKind::TypeId(ty) => ConstantExprKind::TypeId(ty.sinto(s)),
             ConstKind::Unsupported(msg) => ConstantExprKind::Todo(msg.to_string()),
         };
         ConstantExpr::new(kind, self.ty.sinto(s))

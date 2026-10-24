@@ -228,6 +228,10 @@ pub enum GlobalProvenance {
     Global(GlobalDeclRef),
     /// A function, with the type of function pointers to it.
     Function(FnPtr, Ty),
+    /// The allocation backing the `TypeId` of this type. Note that `TypeId`s always have 16 bytes
+    /// worth of provenance, regardless of the platform's pointer size, so [`Byte::Provenance`]'s byte index can
+    /// go up to 16! In other words, the bytes of a full `TypeId` are `Provenance(TypeId(ty), 0, 0..16)`.
+    TypeId(Ty),
     Unknown,
 }
 
@@ -240,10 +244,10 @@ pub enum Byte {
     Uninit,
     /// A concrete byte value
     Value(u8),
-    /// A byte that is part of a pointer with provenance. The u8 is the offset within the
-    /// pointer. Note that we do not have an actual value for this pointer byte, unlike
-    /// MiniRust, as that is non-deterministic.
-    Provenance(GlobalProvenance, u8),
+    /// A byte that is part of a pointer with provenance, at the given offset into the pointee.
+    /// The u8 is the index of this byte within the pointer. Note that we do not have an actual
+    /// value for this pointer byte, unlike MiniRust, as that is non-deterministic.
+    Provenance(GlobalProvenance, IntegerValue, u8),
 }
 
 macro_rules! static_constant {

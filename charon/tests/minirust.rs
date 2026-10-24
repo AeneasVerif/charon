@@ -42,11 +42,6 @@ const FAILURES: &[(&str, &[&str])] = &[
     ),
     // FIXME: union padding
     ("got exit status: 0", &["ub/enum_mark_used_bytes.rs"]),
-    // FIXME: track offset of pointers into statics
-    (
-        "got exit status: 0, stdout \"100\\n3\\n\"",
-        &["pass/relocation2.rs"],
-    ),
     // FIXME: respect panic=abort
     (
         "MiniRust UB: reached unreachable code",

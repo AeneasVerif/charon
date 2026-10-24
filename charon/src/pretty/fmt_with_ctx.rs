@@ -1942,7 +1942,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for Byte {
         match self {
             Byte::Value(x) => write!(f, "{:#04x}", x),
             Byte::Uninit => write!(f, "--"),
-            Byte::Provenance(p, ofs) => write!(f, "&{}[{}]", p.with_ctx(ctx), ofs),
+            Byte::Provenance(p, ofs, i) => {
+                write!(f, "&{}", p.with_ctx(ctx))?;
+                if ofs.to_bits() != 0 {
+                    write!(f, "+{}", ofs.to_bits())?;
+                }
+                write!(f, "[{i}]")
+            }
         }
     }
 }
@@ -1952,6 +1958,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for GlobalProvenance {
         match self {
             GlobalProvenance::Global(g) => g.fmt_with_ctx(ctx, f),
             GlobalProvenance::Function(func, _) => func.fmt_with_ctx(ctx, f),
+            GlobalProvenance::TypeId(ty) => write!(f, "TypeId({})", ty.with_ctx(ctx)),
             GlobalProvenance::Unknown => write!(f, "?"),
         }
     }

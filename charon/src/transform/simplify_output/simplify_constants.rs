@@ -108,6 +108,10 @@ fn transform_constant_expr(
                     ctx.rval_to_place(Rvalue::UnaryOp(cast, fn_ptr), ptr_ty)
                         .deref()
                 }
+                GlobalPlaceKind::Global(GlobalProvenance::TypeId(_)) => {
+                    let kind = ConstantExprKind::Opaque("pointer into a `TypeId`".into());
+                    return Operand::Const(ConstantExpr::new(kind, val.ty().clone()));
+                }
                 GlobalPlaceKind::Global(GlobalProvenance::Unknown) => {
                     let kind = ConstantExprKind::Opaque("pointer with unknown provenance".into());
                     return Operand::Const(ConstantExpr::new(kind, val.ty().clone()));

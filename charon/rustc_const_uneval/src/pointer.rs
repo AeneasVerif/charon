@@ -2,9 +2,25 @@
 use crate::*;
 use rustc_abi::{FieldIdx, FieldsShape, Size};
 use rustc_const_eval::const_eval::CompileTimeInterpCx;
-use rustc_const_eval::interpret::{InterpResult, MPlaceTy, OpTy, Projectable, interp_ok};
+use rustc_const_eval::interpret::{AllocId, InterpResult, MPlaceTy, OpTy, Projectable, interp_ok};
 
 impl<'tcx> ConstReader<'tcx> {
+    /// Whether this allocation target should be read through a pointer -- it is otherwise
+    /// read directly, breaking sharing.
+    fn should_use_pointer(&self, tgt: AllocTarget, in_bounds: bool, alloc_id: AllocId) -> bool {
+        match tgt {
+            AllocTarget::Global(global) => {
+                self.is_named_global(global)
+                    // We can't read the pointee of a pointer outside of its allocation, so we
+                    // name the allocation even if we otherwise inline them.
+                    ||  !in_bounds
+                        && matches!(self.tcx.global_alloc(alloc_id), interpret::GlobalAlloc::Memory(_))
+            }
+            AllocTarget::Fn(_) => true,
+            AllocTarget::VTable(..) | AllocTarget::TypeId(..) => false,
+        }
+    }
+
     /// Read a reference or raw pointer. Pointers to globals that we name are kept as pointers to
     /// these globals, and we fall back to reading the pointee for other cases.
     pub(crate) fn read_pointer(
@@ -27,6 +43,14 @@ impl<'tcx> ConstReader<'tcx> {
                 kind,
             });
         };
+        // A pointer into the allocation of a `TypeId` can only be expressed as bytes.
+        if let AllocTarget::TypeId(_) = self.alloc_target(alloc_id) {
+            let kind = ConstKind::Memory(self.read_raw_bytes(ecx, op)?);
+            return interp_ok(Const {
+                ty: op.layout.ty,
+                kind,
+            });
+        }
 
         let ty = place.layout.ty;
         let unsize = if place.meta().has_meta() {
@@ -46,20 +70,10 @@ impl<'tcx> ConstReader<'tcx> {
         // A pointer outside of its allocation (one-past-the-end is fine) needs a wrapping offset.
         let in_bounds = offset <= ecx.get_alloc_info(alloc_id).size;
         let kind = if let Some(view_ty) = view_ty
-            && match alloc_target {
-                AllocTarget::Global(global) => {
-                    self.is_named_global(global)
-                        // We can't read the pointee of a pointer outside of its allocation, so we
-                        // name the allocation even if we otherwise inline them.
-                        || !in_bounds
-                            && matches!(tcx.global_alloc(alloc_id), interpret::GlobalAlloc::Memory(_))
-                }
-                AllocTarget::Fn(_) => true,
-                AllocTarget::VTable(..) | AllocTarget::TypeId(..) => false,
-            }
-            && let Some((decl_ty, projections, end_ty)) =
-                self.place_in_global(ecx, &place, alloc_target, offset, in_bounds, view_ty)
+            && self.should_use_pointer(alloc_target, in_bounds, alloc_id)
         {
+            let (decl_ty, projections, end_ty) =
+                self.place_in_global(ecx, &place, alloc_target, offset, in_bounds, view_ty)?;
             let target = PtrTarget::Global {
                 target: alloc_target,
                 ty: decl_ty,
@@ -143,10 +157,10 @@ impl<'tcx> ConstReader<'tcx> {
         offset: Size,
         in_bounds: bool,
         ty: Ty<'tcx>,
-    ) -> Option<(Ty<'tcx>, ProjectionPath<'tcx>, Ty<'tcx>)> {
+    ) -> InterpResult<'tcx, (Ty<'tcx>, ProjectionPath<'tcx>, Ty<'tcx>)> {
         let tcx = self.tcx;
         let ty = tcx.erase_and_anonymize_regions(ty);
-        let size = ecx.layout_of(ty).ok()?.size;
+        let size = ecx.layout_of(ty)?.size;
         let decl_ty = match global {
             AllocTarget::Global(global) => tcx.erase_and_anonymize_regions(self.global_ty(global)),
             // Other allocations have no contents.
@@ -158,7 +172,7 @@ impl<'tcx> ConstReader<'tcx> {
         {
             let (prov, _) = place.ptr().into_raw_parts();
             let ptr = interpret::Pointer::new(prov, Size::ZERO);
-            let base = ecx.ptr_to_mplace(ptr, ecx.layout_of(decl_ty).ok()?);
+            let base = ecx.ptr_to_mplace(ptr, ecx.layout_of(decl_ty)?);
             structural_path(ecx, base, offset, ty, size)
         } else {
             // The offset of a pointer outside of its allocation may be negative.
@@ -171,7 +185,7 @@ impl<'tcx> ConstReader<'tcx> {
             let end_ty = if proj.is_some() { ty } else { decl_ty };
             (proj.map(|proj| (proj, ty)).into_iter().collect(), end_ty)
         };
-        Some((decl_ty, path, end_ty))
+        interp_ok((decl_ty, path, end_ty))
     }
 }
 
