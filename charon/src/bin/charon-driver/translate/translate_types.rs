@@ -272,7 +272,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::FnDef(fnref)
             }
             hax::TyKind::Closure(args) => {
-                let tref = self.translate_closure_type_ref(span, args)?;
+                let tref = self.translate_closure_type_ref(span, &args.item)?;
                 TyKind::Adt(tref)
             }
 

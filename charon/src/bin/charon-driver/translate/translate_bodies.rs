@@ -1551,8 +1551,8 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     mir::AggregateKind::Closure(def_id, generics) => {
-                        let args = hax::ClosureTy::sfrom(&self.hax_state, *def_id, generics);
-                        let tref = self.translate_closure_type_ref(span, &args)?;
+                        let item = hax::translate_item_ref(&self.hax_state, *def_id, generics);
+                        let tref = self.translate_closure_type_ref(span, &item)?;
                         let akind = AggregateKind::Adt(tref, None, None);
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
