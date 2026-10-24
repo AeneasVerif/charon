@@ -25,7 +25,7 @@ type float_type = Values.float_type [@@deriving show, ord, eq]
 type scalar_type = Values.scalar_type [@@deriving show, ord, eq]
 
 (* A range that includes both endpoints. *)
-type 'a range_inclusive = 'a * 'a [@@deriving show, ord, eq]
+type 'a range_inclusive = 'a * 'a [@@deriving show, ord, eq, hash]
 
 (* Manually implemented because no type uses it (we use plain lists instead of
    vectors in generic_params), which causes visitor inference problems if we
@@ -33,14 +33,29 @@ type 'a range_inclusive = 'a * 'a [@@deriving show, ord, eq]
 type trait_type_constraint_id = TraitTypeConstraintId.id
 [@@deriving show, ord, eq]
 
-type 'a fun_decl_id_map = 'a FunDeclId.Map.t
-and 'a global_decl_id_map = 'a GlobalDeclId.Map.t
-and 'a type_decl_id_map = 'a TypeDeclId.Map.t
-and 'a trait_decl_id_map = 'a TraitDeclId.Map.t
-and 'a trait_impl_id_map = 'a TraitImplId.Map.t
-and 'a trait_method_id_map = 'a TraitMethodId.Map.t
-and 'a assoc_type_id_map = 'a AssocTypeId.Map.t [@@deriving show, eq, ord]
-and 'a assoc_const_id_map = 'a AssocConstId.Map.t [@@deriving show, eq, ord]
+(* The crate's item tables are built once when loading the crate and then only
+   read, hence hash maps. *)
+type 'a fun_decl_id_map = 'a FunDeclId.HashMap.t
+and 'a global_decl_id_map = 'a GlobalDeclId.HashMap.t
+and 'a type_decl_id_map = 'a TypeDeclId.HashMap.t
+and 'a trait_decl_id_map = 'a TraitDeclId.HashMap.t
+and 'a trait_impl_id_map = 'a TraitImplId.HashMap.t [@@deriving show]
+
+type 'a trait_method_id_map = 'a TraitMethodId.Map.t
+and 'a assoc_type_id_map = 'a AssocTypeId.Map.t [@@deriving show, eq, ord, hash]
+
+and 'a assoc_const_id_map = 'a AssocConstId.Map.t
+[@@deriving show, eq, ord, hash]
+
+(* Used by the deserializers. *)
+let fun_decl_id_map_of_indexed_list = FunDeclId.hash_map_of_indexed_list
+let global_decl_id_map_of_indexed_list = GlobalDeclId.hash_map_of_indexed_list
+let type_decl_id_map_of_indexed_list = TypeDeclId.hash_map_of_indexed_list
+let trait_decl_id_map_of_indexed_list = TraitDeclId.hash_map_of_indexed_list
+let trait_impl_id_map_of_indexed_list = TraitImplId.hash_map_of_indexed_list
+let trait_method_id_map_of_indexed_list = TraitMethodId.map_of_indexed_list
+let assoc_type_id_map_of_indexed_list = AssocTypeId.map_of_indexed_list
+let assoc_const_id_map_of_indexed_list = AssocConstId.map_of_indexed_list
 
 (** The index of a binder, counting from the innermost. See [[DeBruijnVar]] for
     details. *)
@@ -92,6 +107,7 @@ and type_var_id = (TypeVarId.id[@visitors.opaque])
   show,
   eq,
   ord,
+  hash,
   visitors
     {
       name = "iter_type_vars";
@@ -888,6 +904,7 @@ and variant_id = (VariantId.id[@visitors.opaque])
   show,
   eq,
   ord,
+  hash,
   visitors
     {
       name = "iter_ty";
@@ -1649,6 +1666,7 @@ and variant_layout = {
   show,
   eq,
   ord,
+  hash,
   visitors
     {
       name = "iter_type_decl";

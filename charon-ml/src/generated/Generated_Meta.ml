@@ -17,7 +17,7 @@ module TraitMethodId = IdGen ()
 module AssocTypeId = IdGen ()
 module AssocConstId = IdGen ()
 
-type path_buf = string [@@deriving show, ord, eq]
+type path_buf = string [@@deriving show, ord, eq, hash]
 
 (* Ancestors for the meta visitors *)
 class ['self] iter_meta_base =
@@ -418,6 +418,7 @@ and type_decl_id = (TypeDeclId.id[@visitors.opaque])
   show,
   eq,
   ord,
+  hash,
   visitors
     {
       name = "iter_meta";

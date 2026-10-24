@@ -1441,7 +1441,7 @@ and trait_ref_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          in
          let* types =
            (fun ctx st ->
-             Result.map AssocTypeId.map_of_indexed_list
+             Result.map assoc_type_id_map_of_indexed_list
                (opt_indexed_map_of_postcard assoc_type_id_of_postcard
                   trait_assoc_ty_impl_of_postcard ctx st))
              ctx st
@@ -3420,14 +3420,14 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      in
      let* consts =
        (fun ctx st ->
-         Result.map AssocConstId.map_of_indexed_list
+         Result.map assoc_const_id_map_of_indexed_list
            (opt_indexed_map_of_postcard assoc_const_id_of_postcard
               trait_assoc_const_of_postcard ctx st))
          ctx st
      in
      let* types =
        (fun ctx st ->
-         Result.map AssocTypeId.map_of_indexed_list
+         Result.map assoc_type_id_map_of_indexed_list
            (opt_indexed_map_of_postcard assoc_type_id_of_postcard
               (binder_of_postcard trait_assoc_ty_of_postcard)
               ctx st))
@@ -3435,7 +3435,7 @@ and trait_decl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      in
      let* methods =
        (fun ctx st ->
-         Result.map TraitMethodId.map_of_indexed_list
+         Result.map trait_method_id_map_of_indexed_list
            (opt_indexed_map_of_postcard trait_method_id_of_postcard
               (binder_of_postcard trait_method_of_postcard)
               ctx st))
@@ -3482,14 +3482,14 @@ and trait_impl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      in
      let* consts =
        (fun ctx st ->
-         Result.map AssocConstId.map_of_indexed_list
+         Result.map assoc_const_id_map_of_indexed_list
            (opt_indexed_map_of_postcard assoc_const_id_of_postcard
               global_decl_ref_of_postcard ctx st))
          ctx st
      in
      let* types =
        (fun ctx st ->
-         Result.map AssocTypeId.map_of_indexed_list
+         Result.map assoc_type_id_map_of_indexed_list
            (opt_indexed_map_of_postcard assoc_type_id_of_postcard
               (binder_of_postcard trait_assoc_ty_impl_of_postcard)
               ctx st))
@@ -3497,7 +3497,7 @@ and trait_impl_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      in
      let* methods =
        (fun ctx st ->
-         Result.map TraitMethodId.map_of_indexed_list
+         Result.map trait_method_id_map_of_indexed_list
            (opt_indexed_map_of_postcard trait_method_id_of_postcard
               (binder_of_postcard fun_decl_ref_of_postcard)
               ctx st))
@@ -3566,7 +3566,7 @@ and translated_crate_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      in
      let* assoc_item_names =
        (fun ctx st ->
-         Result.map TraitDeclId.map_of_indexed_list
+         Result.map trait_decl_id_map_of_indexed_list
            (opt_indexed_map_of_postcard trait_decl_id_of_postcard
               assoc_item_names_of_postcard ctx st))
          ctx st
@@ -3577,35 +3577,35 @@ and translated_crate_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      in
      let* type_decls =
        (fun ctx st ->
-         Result.map TypeDeclId.map_of_indexed_list
+         Result.map type_decl_id_map_of_indexed_list
            (opt_indexed_map_of_postcard type_decl_id_of_postcard
               type_decl_of_postcard ctx st))
          ctx st
      in
      let* fun_decls =
        (fun ctx st ->
-         Result.map FunDeclId.map_of_indexed_list
+         Result.map fun_decl_id_map_of_indexed_list
            (opt_indexed_map_of_postcard fun_decl_id_of_postcard
               fun_decl_of_postcard ctx st))
          ctx st
      in
      let* global_decls =
        (fun ctx st ->
-         Result.map GlobalDeclId.map_of_indexed_list
+         Result.map global_decl_id_map_of_indexed_list
            (opt_indexed_map_of_postcard global_decl_id_of_postcard
               global_decl_of_postcard ctx st))
          ctx st
      in
      let* trait_decls =
        (fun ctx st ->
-         Result.map TraitDeclId.map_of_indexed_list
+         Result.map trait_decl_id_map_of_indexed_list
            (opt_indexed_map_of_postcard trait_decl_id_of_postcard
               trait_decl_of_postcard ctx st))
          ctx st
      in
      let* trait_impls =
        (fun ctx st ->
-         Result.map TraitImplId.map_of_indexed_list
+         Result.map trait_impl_id_map_of_indexed_list
            (opt_indexed_map_of_postcard trait_impl_id_of_postcard
               trait_impl_of_postcard ctx st))
          ctx st
