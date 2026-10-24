@@ -208,12 +208,16 @@ pub struct FnPtrTy<'tcx> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ClosureTy<'tcx> {
     pub item: ItemRef<'tcx>,
-    /// The base kind of this closure. The kinds are ordered by inclusion: any `Fn` works as an
-    /// `FnMut`, and any `FnMut` works as an `FnOnce`.
-    pub kind: ClosureKind,
 }
 
 impl<'tcx> ClosureTy<'tcx> {
+    /// The base kind of this closure. The kinds are ordered by inclusion: any `Fn` works as an
+    /// `FnMut`, and any `FnMut` works as an `FnOnce`.
+    pub fn kind(&self, s: &impl BaseState<'tcx>) -> ClosureKind {
+        let s = &s.with_hax_owner(&self.item.def_id);
+        self.item.rustc_args(s).as_closure().kind().sinto(s)
+    }
+
     /// The signature of the function that this closure implements, e.g. `fn(A, B, C) -> D`.
     pub fn fn_sig(&self, s: &impl BaseState<'tcx>) -> PolyFnSig<'tcx> {
         let s = &s.with_hax_owner(&self.item.def_id);
@@ -235,12 +239,8 @@ impl<'tcx> ClosureTy<'tcx> {
     where
         S: UnderOwnerState<'tcx>,
     {
-        let closure = from.as_closure();
         let item = translate_item_ref(s, def_id, from);
-        ClosureTy {
-            item,
-            kind: closure.kind().sinto(s),
-        }
+        ClosureTy { item }
     }
 }
 
