@@ -169,11 +169,11 @@ impl<'a, 'tcx> CallableFnImpls<'a, 'tcx> {
         target_kind: ClosureKind,
     ) -> Option<Self> {
         let vimpl_from_impls = |impls: &'a hax::FnTraitImpls<'tcx>| -> Option<_> {
-            Some(match target_kind {
-                ClosureKind::FnOnce => impls.fn_once_impl.as_ref(),
-                ClosureKind::FnMut => impls.fn_mut_impl.as_ref(),
-                ClosureKind::Fn => impls.fn_impl.as_ref(),
-            })
+            match target_kind {
+                ClosureKind::FnOnce => Some(impls.fn_once_impl.as_ref()),
+                ClosureKind::FnMut => impls.fn_mut_impl.as_deref(),
+                ClosureKind::Fn => impls.fn_impl.as_deref(),
+            }
         };
         let for_fn_def = |sig: &'a hax::PolyFnSig<'tcx>, impls: &'a hax::FnTraitImpls<'tcx>| {
             Some(Self {
@@ -189,11 +189,7 @@ impl<'a, 'tcx> CallableFnImpls<'a, 'tcx> {
         match def.kind() {
             hax::FullDefKind::Closure(c) => Some(Self {
                 callable: Callable::for_closure_def(def),
-                vimpl: match target_kind {
-                    ClosureKind::FnOnce => Some(c.fn_once_impl(s)),
-                    ClosureKind::FnMut => c.fn_mut_impl(s),
-                    ClosureKind::Fn => c.fn_impl(s),
-                },
+                vimpl: vimpl_from_impls(c.fn_trait_impls(s)),
             }),
             hax::FullDefKind::Fn(f) => for_fn_def(f.sig(), f.fn_trait_impls(s)?),
             hax::FullDefKind::AssocFn(f) => for_fn_def(f.sig(), f.fn_trait_impls(s)?),
