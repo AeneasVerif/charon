@@ -111,12 +111,16 @@ struct Callable<'tcx, 'a> {
 }
 
 impl<'tcx, 'a> Callable<'tcx, 'a> {
-    fn for_closure(closure: &'a hax::ClosureTy<'tcx>, sig: &'a hax::PolyFnSig<'tcx>) -> Self {
+    fn for_closure(
+        closure: &'a hax::ClosureTy<'tcx>,
+        sig: &'a hax::PolyFnSig<'tcx>,
+        tupled_args_ty: &'a hax::Binder<hax::Ty<'tcx>>,
+    ) -> Self {
         Self {
             item: &closure.item,
             kind: CallableKind::Closure(translate_closure_kind(&closure.kind)),
             sig,
-            tupled_args_ty: &closure.tupled_args_ty,
+            tupled_args_ty,
         }
     }
 
@@ -126,7 +130,7 @@ impl<'tcx, 'a> Callable<'tcx, 'a> {
             item: &closure_ty.item,
             kind: CallableKind::Closure(translate_closure_kind(&closure_ty.kind)),
             sig: closure.sig(),
-            tupled_args_ty: &closure_ty.tupled_args_ty,
+            tupled_args_ty: closure.tupled_args_ty(),
         }
     }
 
@@ -373,9 +377,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     ) -> Result<RegionBinder<FunDeclRef>, Error> {
         let kind = TransItemSourceKind::ClosureAsFnCast;
         let sig = closure.fn_sig(self.hax_state());
+        let tupled_args_ty = closure.tupled_args_ty(self.hax_state());
         let bound_dref = self.translate_callable_bound_ref_with_late_bound(
             span,
-            Callable::for_closure(closure, &sig),
+            Callable::for_closure(closure, &sig, &tupled_args_ty),
             kind,
         )?;
         Ok(bound_dref.map(|dref| dref.try_into().unwrap()))
@@ -474,9 +479,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub fn translate_closure_upvar_tys(
         &mut self,
         span: Span,
-        args: &hax::ClosureTy<'tcx>,
+        closure: &hax::Closure<'tcx>,
     ) -> Result<IndexVec<FieldId, Ty>, Error> {
-        args.upvar_tys
+        closure
+            .upvar_tys()
             .iter()
             .map(|ty| self.translate_ty(span, ty))
             .try_collect()
@@ -964,11 +970,11 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         trace!("About to translate closure as fn:\n{:?}", def.def_id());
 
-        let closure_args = closure.args();
         assert!(
-            closure_args.upvar_tys.is_empty(),
+            closure.upvar_tys().is_empty(),
             "Only stateless closures can be translated as functions"
         );
+        let closure_args = closure.args();
 
         // Translate the function signature
         let signature = self.translate_fun_sig(span, closure.sig().hax_skip_binder_ref())?;
@@ -1003,7 +1009,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 .map(|(i, ty)| builder.new_var(Some(format!("arg{}", i + 1)), ty.clone()))
                 .collect();
             let args_tupled_ty =
-                self.translate_ty(span, closure_args.tupled_args_ty.hax_skip_binder_ref())?;
+                self.translate_ty(span, closure.tupled_args_ty().hax_skip_binder_ref())?;
             let args_tupled = builder.new_var(Some("args".to_string()), args_tupled_ty.clone());
             let state = builder.new_var(Some("state".to_string()), state_ty.clone());
 

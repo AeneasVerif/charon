@@ -940,6 +940,10 @@ pub struct Closure<'tcx> {
     param_env: ParamEnv<'tcx>,
     args: ClosureTy<'tcx>,
     sig: PolyFnSig<'tcx>,
+    /// The arguments, tupled as the `Fn*` traits take them. Binds the same variables as `sig`.
+    tupled_args_ty: Binder<Ty<'tcx>>,
+    /// The captured variables, which together form the closure's state.
+    upvar_tys: Vec<Ty<'tcx>>,
     inline: InlineAttr,
     /// Computed on demand, see the accessors below.
     fn_once_impl: OnceCell<Box<VirtualTraitImpl<'tcx>>>,
@@ -960,6 +964,12 @@ impl<'tcx> Closure<'tcx> {
     }
     pub fn sig(&self) -> &PolyFnSig<'tcx> {
         &self.sig
+    }
+    pub fn tupled_args_ty(&self) -> &Binder<Ty<'tcx>> {
+        &self.tupled_args_ty
+    }
+    pub fn upvar_tys(&self) -> &[Ty<'tcx>] {
+        &self.upvar_tys
     }
     pub fn inline(&self) -> &InlineAttr {
         &self.inline
@@ -1412,8 +1422,8 @@ where
             };
             let closure = closure_args.as_closure();
             let sig = closure_sig(tcx, closure);
-            let input_ty = tupled_args_ty(s, sig);
-            let input_ty = tcx.liberate_late_bound_regions(def_id, input_ty);
+            let tupled_args_ty = tupled_args_ty(s, sig);
+            let input_ty = tcx.liberate_late_bound_regions(def_id, tupled_args_ty);
             FullDefKind::Closure(Closure {
                 def_id: hax_def_id.clone(),
                 fn_trait_args: [closure_ty, input_ty],
@@ -1422,6 +1432,8 @@ where
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 args: ClosureTy::sfrom(s, def_id, closure_args),
                 sig: sig.sinto(s),
+                tupled_args_ty: tupled_args_ty.sinto(s),
+                upvar_tys: closure.upvar_tys().sinto(s),
                 fn_once_impl: Default::default(),
                 fn_mut_impl: Default::default(),
                 fn_impl: Default::default(),
