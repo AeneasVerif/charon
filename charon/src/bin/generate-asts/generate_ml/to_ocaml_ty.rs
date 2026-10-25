@@ -426,7 +426,7 @@ impl<'a> GenerateCtx<'a> {
                 )
             })
             .format(", ");
-        write!(&mut decls, "\n[@@deriving show, eq, ord, {visitors}]").unwrap();
+        write!(&mut decls, "\n[@@deriving show, eq, ord, hash, {visitors}]").unwrap();
         decls
     }
 

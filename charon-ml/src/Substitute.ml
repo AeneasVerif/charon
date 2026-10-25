@@ -553,9 +553,9 @@ let instantiate_name_generics (binder : Types.generic_args Types.binder)
 (** The arguments this type was declared with, i.e. the ones it had before
     (partial) monomorphization: monomorphization moves the arguments of an item
     into its name, so we look for them there. *)
-let type_decl_ref_generics (type_decls : type_decl TypeDeclId.Map.t)
+let type_decl_ref_generics (type_decls : type_decl TypeDeclId.HashMap.t)
     (tref : type_decl_ref) : generic_args =
-  match TypeDeclId.Map.find_opt tref.id type_decls with
+  match TypeDeclId.HashMap.find_opt tref.id type_decls with
   | Some decl -> (
       match List.rev decl.item_meta.name with
       | PeInstantiated binder :: _ ->
@@ -687,7 +687,7 @@ let lookup_and_subst_trait_impl_method (timpl : trait_impl)
 *)
 let lookup_method_sig (crate : crate) (trait_id : trait_decl_id)
     (id : trait_method_id) : fun_sig binder item_binder option =
-  let* tdecl = TraitDeclId.Map.find_opt trait_id crate.trait_decls in
+  let* tdecl = TraitDeclId.HashMap.find_opt trait_id crate.trait_decls in
   let* {
          item_binder_params : generic_params = trait_params;
          item_binder_value : trait_method binder =
@@ -716,7 +716,7 @@ let lookup_fndef_sig (crate : crate) (fn_ptr : fn_ptr region_binder) :
   match fn_ptr.binder_value.kind with
   | Fun fun_decl_id ->
       let* fun_decl =
-        LlbcAst.FunDeclId.Map.find_opt fun_decl_id crate.fun_decls
+        LlbcAst.FunDeclId.HashMap.find_opt fun_decl_id crate.fun_decls
       in
       (* Substitute the signature to be valid under the binder. *)
       let fn_sig =

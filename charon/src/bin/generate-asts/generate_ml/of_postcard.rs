@@ -221,9 +221,9 @@ impl<'a> GenerateCtx<'a> {
                 }
                 let mut expr = expr.into_iter().map(|f| format!("({f})")).join(" ");
                 if wrap_in_map {
-                    let index_name = self.type_to_rust_name(&tref.generics.types[0]).unwrap();
+                    let index_name = self.type_to_ocaml_name(&tref.generics.types[0]);
                     expr = format!(
-                        "(fun ctx st -> Result.map {index_name}.map_of_indexed_list ({expr} ctx st))"
+                        "(fun ctx st -> Result.map {index_name}_map_of_indexed_list ({expr} ctx st))"
                     );
                 }
                 expr

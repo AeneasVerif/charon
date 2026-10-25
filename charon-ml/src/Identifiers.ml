@@ -35,7 +35,7 @@ module type Id = sig
   (** Id generator - simply a counter *)
   type generator
 
-  module Ord : C.OrderedType with type t = id
+  module Ord : C.HashedType with type t = id
 
   module Set : sig
     include C.Set
@@ -50,6 +50,7 @@ module type Id = sig
     val add_in_place : id -> 'a -> 'a t ref -> unit
     val to_list : 'a t -> (id * 'a) list
     val values : 'a t -> 'a list
+    val hash : ('a -> int) -> 'a t -> int
 
     (** Visitor helpers for the [visitors] ppx. *)
 
@@ -75,6 +76,8 @@ module type Id = sig
   with type key = id
 
   module InjSubst : C.InjMap with type key = id and type elem = id
+  module HashMap : C.HashMap with type key = id
+  module HashSet : C.HashSet with type elt = id
 
   val zero : id
   val generator_zero : generator
@@ -123,6 +126,7 @@ module type Id = sig
 
   val compare_id : id -> id -> int
   val equal_id : id -> id -> bool
+  val hash_id : id -> int
   val max : id -> id -> id
   val min : id -> id -> id
   val pp_generator : Format.formatter -> generator -> unit
@@ -166,6 +170,9 @@ module type Id = sig
   (** Transforms a list into a map, where each map key is he index that the
       element had in the list. *)
   val map_of_indexed_list : 'a option list -> 'a Map.t
+
+  (** See {!map_of_indexed_list} *)
+  val hash_map_of_indexed_list : 'a option list -> 'a HashMap.t
 end
 
 (** Generative functor for identifiers.
@@ -173,7 +180,7 @@ end
     See {!Id}. *)
 module IdGen () : Id = struct
   (* TODO: use Z.t *)
-  type id = int [@@deriving show]
+  type id = int [@@deriving show, hash]
   type generator = id [@@deriving show]
 
   let to_string = string_of_int
@@ -182,6 +189,8 @@ module IdGen () : Id = struct
     type t = id
 
     let compare = compare
+    let equal = Int.equal
+    let hash = hash_id
     let to_string = to_string
     let pp_t = pp_id
     let show_t = show_id
@@ -199,6 +208,7 @@ module IdGen () : Id = struct
     let add_in_place id x m = m := add id x !m
     let to_list m = bindings m
     let values m = List.map (fun (_k, v) -> v) (bindings m)
+    let hash hash_a m = fold (fun k v h -> (31 * ((31 * h) + k)) + hash_a v) m 0
     let visit_iter visit_a env m = iter (fun _ v -> visit_a env v) m
     let visit_map visit_a env m = map (fun v -> visit_a env v) m
 
@@ -214,6 +224,8 @@ module IdGen () : Id = struct
   end
 
   module InjSubst = C.MakeInjMap (Ord) (Ord)
+  module HashMap = C.MakeHashMap (Ord)
+  module HashSet = C.MakeHashSet (Ord)
 
   let zero = 0
   let generator_zero = 0
@@ -287,6 +299,17 @@ module IdGen () : Id = struct
 
   let map_of_indexed_list (list : 'a option list) : 'a Map.t =
     Map.of_list
+      (List.filter_map
+         (fun x -> x)
+         (mapi
+            (fun i x ->
+              match x with
+              | None -> None
+              | Some x -> Some (i, x))
+            list))
+
+  let hash_map_of_indexed_list (list : 'a option list) : 'a HashMap.t =
+    HashMap.of_list
       (List.filter_map
          (fun x -> x)
          (mapi
