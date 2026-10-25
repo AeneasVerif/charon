@@ -58,10 +58,10 @@ where
     RegionOutlives1: '_1: '_2,
 {
     let _0: (); // return
-    let _1: &'2 {closure}<'a, '_1, T>[TraitClause0, TraitClause1]; // arg #1
+    let _1: &'5 {closure}<'a, '_1, T>[TraitClause0, TraitClause1]; // arg #1
     let tupled_args: (&'_1 u8,); // arg #2
-    let x: &'5 u8; // local
-    let _4: &'6 u8; // anonymous local
+    let x: &'8 u8; // local
+    let _4: &'9 u8; // anonymous local
 
     storage_live(_0)
     storage_live(x)

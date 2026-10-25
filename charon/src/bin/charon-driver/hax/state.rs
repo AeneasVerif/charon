@@ -37,8 +37,6 @@ mod base {
         pub per_item: HashMap<DefId, ItemCache<'tcx>>,
         /// Map rustc def ids to their hax counterpart.
         pub def_ids: HashMap<RDefId, DefId>,
-        /// Map that recovers rustc args for a given `ItemRef`.
-        pub reverse_item_refs_map: HashMap<ItemRef<'tcx>, ty::GenericArgsRef<'tcx>>,
         /// Data for synthetic items. See the `synthetic_items` module.
         pub synthetic_item_data: HashMap<SyntheticItem, SyntheticItemData<'tcx>>,
         /// Anonymous allocations we turned into globals, in encounter order. Used to keep
