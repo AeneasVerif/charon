@@ -1,3 +1,4 @@
+//@ rustc-args=--target x86_64-unknown-linux-gnu
 //@ revisions=values,unsized_strings
 //@[values] charon-args=--consts=values
 //@[unsized_strings] charon-args=--consts=values --unsized-strings
