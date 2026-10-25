@@ -1039,8 +1039,8 @@ and item_meta = {
           an external crate. *)
   started_from : bool;
       (** Whether this item was selected as a starting point for translation
-          (using [--start-from], or by default all the top-level items in the
-          main crate). *)
+          (using [--start-from], or by default the main crate), or contained in
+          one. *)
   is_extern : bool;
       (** Whether this item is declared in an [extern { .. }] block. *)
   opacity : item_opacity;

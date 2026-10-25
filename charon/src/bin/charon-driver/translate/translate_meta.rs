@@ -276,7 +276,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                         // a body translation context.
                         let item_src =
                             TransItemSource::new(item.clone(), TransItemSourceKind::InherentImpl);
-                        let item_id = ItemOrModuleId::Module(item_src.def_id().clone());
+                        let item_id = ItemOrModuleId::Module(item_src.def_id().real_rust_def_id());
                         let mut bt_ctx = ItemTransCtx::new(item_src, item_id, self);
                         bt_ctx.translate_item_generics(
                             span,
@@ -1014,8 +1014,8 @@ impl<'tcx> TranslateCtx<'tcx> {
             source_text: def.source_text.clone(),
             attr_info,
             is_local,
-            started_from: !item_src.is_derived_item()
-                && self.started_from.contains(item_src.def_id()),
+            // Computed by `compute_started_from` after translation.
+            started_from: false,
             is_extern: self.is_extern_item(def),
             opacity,
             lang_item,

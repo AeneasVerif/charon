@@ -27,13 +27,6 @@ struct (_, _)::<u64, bool> {
   _1: bool,
 }
 
-// Full name: test_crate::MyConfig
-pub trait MyConfig<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
 // Full name: test_crate::Concrete
 pub struct Concrete {}
 

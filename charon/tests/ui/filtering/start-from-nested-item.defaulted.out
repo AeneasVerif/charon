@@ -60,5 +60,16 @@ where
     TraitClause0: (Self: Trait),
  = VALUE<Self>[TraitClause0]()
 
+// Full name: test_crate::outer::inner::Trait::VALUE::in_default_const
+fn in_default_const()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
 
 

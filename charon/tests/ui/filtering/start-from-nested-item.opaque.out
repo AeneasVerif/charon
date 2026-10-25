@@ -30,6 +30,17 @@ fn h()
     return
 }
 
+// Full name: test_crate::a::b::g::in_g
+fn in_g()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
 // Full name: test_crate::Foo
 trait Foo<Self>
 {
@@ -53,6 +64,16 @@ where
     return
 }
 
+fn test_crate::Foo::f::in_default()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
 // Full name: test_crate::{impl Foo for ()}::f
 fn impl_Foo_for_unit::f<'_0>(self: &'_0 ())
 {
@@ -71,6 +92,17 @@ impl "impl_Foo_for_unit" Foo for () {
     proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
     fn f<'_0_1> = impl_Foo_for_unit::f<'_0_1>
     vtable: lazy
+}
+
+// Full name: test_crate::{impl Foo for ()}::f::in_impl
+fn impl_Foo_for_unit::f::in_impl()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
 }
 
 // Full name: test_crate::outer::inner::Trait
@@ -126,6 +158,28 @@ impl "impl_Trait_for_unit" Trait for () {
     fn required = required
     fn defaulted = impl_Trait_for_unit::defaulted
     non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Trait for ()}::required::in_impl
+fn impl_Trait_for_unit::required::in_impl()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Trait for ()}::VALUE::in_impl_const
+fn in_impl_const()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
 }
 
 pub fn test_crate::outer::inner::Trait::defaulted<Self>()

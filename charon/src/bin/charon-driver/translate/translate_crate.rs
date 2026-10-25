@@ -15,6 +15,7 @@
 //! opaque, its signature/"outer shell" will be translated (e.g. for functions that's the
 //! signature) but not its contents.
 use itertools::Itertools;
+use petgraph::visit::{Dfs, Walker};
 use rustc_middle::ty::{self, TyCtxt};
 use rustc_span::{def_id::DefId, sym};
 use std::cell::RefCell;
@@ -227,13 +228,12 @@ impl<'tcx> RustcItem<'tcx> {
 }
 
 impl<'tcx> TranslateCtx<'tcx> {
-    /// If this is a method declaration without a default, return the `DefId` of its parent trait.
-    fn is_method_decl_without_default(&mut self, def_id: &hax::DefId) -> Option<hax::DefId> {
+    /// If this is a trait method declaration, return the `DefId` of its parent trait.
+    fn as_trait_method_decl(&mut self, def_id: &hax::DefId) -> Option<hax::DefId> {
         if matches!(def_id.kind, hax::DefKind::AssocFn)
             && let def = self.poly_hax_def(def_id).ok()?
             && let hax::FullDefKind::AssocFn(f) = def.kind()
             && let associated_item = f.associated_item()
-            && !associated_item.has_value
             && let hax::AssocItemContainer::TraitContainer { trait_ref } =
                 &associated_item.container
         {
@@ -381,19 +381,22 @@ impl<'tcx> TranslateCtx<'tcx> {
     /// recursively register the items it refers to. We call this on the crate root and end up
     /// exploring the whole crate.
     #[tracing::instrument(skip(self))]
-    pub fn enqueue_module_item(&mut self, def_id: &hax::DefId, started_from: bool) {
-        if started_from {
-            self.started_from.insert(def_id.clone());
+    pub fn enqueue_module_item(
+        &mut self,
+        def_id: &hax::DefId,
+        // Item that contains this one.
+        parent: ContainmentNode,
+    ) -> Option<ItemOrModuleId> {
+        if let Some(trait_def_id) = self.as_trait_method_decl(def_id) {
+            // Selecting a method also selects its containing trait. Mark the method used so
+            // its default body is enqueued even if the trait is opaque.
+            let trait_item_id = self.enqueue_module_item(&trait_def_id, parent)?;
+            let trait_id = trait_item_id.expect_item();
+            let method_id = self.translate_trait_method_id(trait_id, def_id).ok()?;
+            self.record_containment(parent, ContainmentNode::TraitMethod(trait_id, method_id));
+            return Some(trait_item_id);
         }
-        if let Some(trait_def_id) = self.is_method_decl_without_default(def_id) {
-            // Don't translate the method itself as it doesn't correspond to an item, translate the
-            // trait instead.
-            self.enqueue_module_item(&trait_def_id, started_from);
-            return;
-        }
-        let Some(kind) = self.base_kind_for_item(def_id) else {
-            return;
-        };
+        let kind = self.base_kind_for_item(def_id)?;
         let item_src = if self.options.monomorphize_with_hax {
             if let Ok(def) = self.poly_hax_def(def_id)
                 && !def.has_any_generics()
@@ -402,12 +405,48 @@ impl<'tcx> TranslateCtx<'tcx> {
                 TransItemSource::monomorphic(def.this(), kind)
             } else {
                 // Skip polymorphic items and items that cause errors.
-                return;
+                return None;
             }
         } else {
             TransItemSource::polymorphic(def_id, kind)
         };
-        self.register_and_enqueue(&None, item_src);
+        let id = self.register_and_enqueue(&None, item_src);
+        self.record_containment(parent, id);
+        Some(id)
+    }
+
+    /// Record that the parent contains the child, for the purposes of computing which items are
+    /// included in the "started from" set.
+    pub(crate) fn record_containment(
+        &mut self,
+        parent: impl Into<ContainmentNode>,
+        child: impl Into<ContainmentNode>,
+    ) {
+        self.containment_graph
+            .add_edge(parent.into(), child.into(), ());
+    }
+
+    /// Use the computed `containment_graph` to deduce which items should be considered as being
+    /// targeted by `--start-from`, which then affects which items are used to compute used
+    /// declarations.
+    fn compute_started_from(&mut self) {
+        let reachable: HashSet<_> = Dfs::new(&self.containment_graph, ContainmentNode::Start)
+            .iter(&self.containment_graph)
+            .collect();
+        for node in &reachable {
+            if let ContainmentNode::Item(ItemOrModuleId::Item(id)) = node
+                && let Some(mut item) = self.translated.get_item_mut(*id)
+            {
+                item.item_meta().started_from = true;
+            }
+        }
+        // Trait declarations also store method metadata.
+        for tdecl in self.translated.trait_decls.iter_mut() {
+            for (method_id, method) in tdecl.methods.iter_mut_indexed() {
+                let node = ContainmentNode::TraitMethod(tdecl.def_id, method_id);
+                method.skip_binder.item_meta.started_from = reachable.contains(&node);
+            }
+        }
     }
 
     /// Whether this item is polymorphic, while we are in monomorphic mode.
@@ -436,7 +475,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                         ItemId::Fun(self.translated.fun_decls.reserve_slot())
                     }
                     InherentImpl | Module => {
-                        return ItemOrModuleId::Module(src.def_id().clone());
+                        return ItemOrModuleId::Module(src.def_id().real_rust_def_id());
                     }
                 };
                 // Add the id to the queue of declarations to translate
@@ -1184,7 +1223,7 @@ pub fn translate<'tcx>(
         file_to_id: Default::default(),
         items_to_translate: Default::default(),
         processed: Default::default(),
-        started_from: Default::default(),
+        containment_graph: Default::default(),
         translate_stack: Default::default(),
         cached_spans: Default::default(),
         cached_file_ids: Default::default(),
@@ -1203,7 +1242,7 @@ pub fn translate<'tcx>(
                 if let Ok(def_ids) = ctx.resolve_path(Span::dummy(), &pattern, strict) {
                     for def_id in def_ids {
                         let def_id: hax::DefId = def_id.sinto(&ctx.hax_state);
-                        ctx.enqueue_module_item(&def_id, true);
+                        ctx.enqueue_module_item(&def_id, ContainmentNode::Start);
                     }
                 }
             }
@@ -1217,7 +1256,7 @@ pub fn translate<'tcx>(
                     if !matches!(def_id.kind, hax::DefKind::Mod)
                         && def_id.attrs(tcx).iter().any(|a| a.path_matches(&attr_path))
                     {
-                        ctx.enqueue_module_item(&def_id, true);
+                        ctx.enqueue_module_item(&def_id, ContainmentNode::Start);
                     }
                 };
                 for ldid in tcx.hir_crate_items(()).definitions() {
@@ -1230,7 +1269,7 @@ pub fn translate<'tcx>(
                     if !matches!(def_id.kind, hax::DefKind::Mod)
                         && def_id.visibility(tcx) == Some(true)
                     {
-                        ctx.enqueue_module_item(&def_id, true);
+                        ctx.enqueue_module_item(&def_id, ContainmentNode::Start);
                     }
                 };
                 for ldid in tcx.hir_crate_items(()).definitions() {
@@ -1268,6 +1307,7 @@ pub fn translate<'tcx>(
     // Remove methods not marked as "used". They are never called and we made sure not to translate
     // them. This removes them from the traits and impls.
     ctx.remove_unused_methods();
+    ctx.compute_started_from();
 
     // Return the context, dropping the hax state and rustc `tcx`.
     Ok(TransformCtx {

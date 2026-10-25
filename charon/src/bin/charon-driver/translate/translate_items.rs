@@ -30,14 +30,13 @@ impl<'tcx> TranslateCtx<'tcx> {
             );
             return;
         }
-        self.translate_stack.push(trans_id.clone());
+        self.translate_stack.push(trans_id);
         self.with_def_id(def_id, &trans_id, |mut ctx| {
             let span = ctx.def_span(def_id);
             // Catch cycles
             let res = {
                 // Stopgap measure because there are still many panics in charon and hax.
                 let mut ctx = std::panic::AssertUnwindSafe(&mut ctx);
-                let trans_id = trans_id.clone();
                 std::panic::catch_unwind(move || ctx.translate_item_aux(item_src, trans_id))
             };
             match res {
@@ -105,27 +104,27 @@ impl<'tcx> TranslateCtx<'tcx> {
             use rustc_hir::intravisit;
             struct EnqueueNestedItems<'a, 'tcx> {
                 ctx: &'a mut TranslateCtx<'tcx>,
-                started_from: bool,
+                parent: ContainmentNode,
             }
             impl<'tcx> intravisit::Visitor<'tcx> for EnqueueNestedItems<'_, 'tcx> {
                 fn visit_nested_item(&mut self, id: rustc_hir::ItemId) {
                     let def_id = id.owner_id.def_id.to_def_id();
                     let def_id = def_id.sinto(&self.ctx.hax_state);
-                    self.ctx.enqueue_module_item(&def_id, self.started_from);
+                    self.ctx.enqueue_module_item(&def_id, self.parent);
                 }
             }
             let body = self.tcx.hir_body(body_id);
             intravisit::walk_body(
                 &mut EnqueueNestedItems {
                     ctx: self,
-                    started_from: item_meta.started_from,
+                    parent: trans_id.into(),
                 },
                 body,
             );
         }
 
         // Initialize the item translation context
-        let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id.clone(), self);
+        let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
         trace!(
             "About to translate item `{:?}` as a {:?}; \
             target_id={trans_id:?}, mono={}",
@@ -323,23 +322,21 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         if !item_meta.opacity.is_transparent() {
             return;
         }
+        let this: ContainmentNode = self.item_id.into();
         match def.kind() {
             hax::FullDefKind::InherentImpl(i) => {
                 for assoc in i.items(self.hax_state()) {
-                    self.t_ctx
-                        .enqueue_module_item(&assoc.def_id, item_meta.started_from);
+                    self.t_ctx.enqueue_module_item(&assoc.def_id, this);
                 }
             }
             hax::FullDefKind::Mod(m) => {
                 for (_, def_id) in m.items(self.hax_state()) {
-                    self.t_ctx
-                        .enqueue_module_item(def_id, item_meta.started_from);
+                    self.t_ctx.enqueue_module_item(def_id, this);
                 }
             }
             hax::FullDefKind::ForeignMod(m) => {
                 for def_id in m.items() {
-                    self.t_ctx
-                        .enqueue_module_item(def_id, item_meta.started_from);
+                    self.t_ctx.enqueue_module_item(def_id, this);
                 }
             }
             _ => panic!("Item should be a module but isn't: {def:?}"),
@@ -914,6 +911,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     let method_opacity = self.opacity_for_name(&method_name);
                     let method_item_meta =
                         self.translate_item_meta(&item_def, &item_src, method_name, method_opacity);
+                    let method_containment_id =
+                        ContainmentNode::TraitMethod(trait_decl_id, trait_method_id);
                     // By default we only enqueue required methods (those that don't have a default
                     // impl). If the trait is transparent, we enqueue all its methods.
                     if self.options.translate_all_methods
@@ -921,11 +920,16 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         || !hax_item.has_value
                     {
                         self.mark_method_as_used(trait_decl_id, trait_method_id);
+                        self.record_containment(
+                            ItemId::TraitDecl(trait_decl_id),
+                            method_containment_id,
+                        );
                     }
                     let default_fun_id = f.associated_item().has_value.then(|| {
                         let fun_id = self.register_no_enqueue(item_span, &item_src);
                         // Register this method.
                         self.register_method_impl(trait_decl_id, trait_method_id, fun_id);
+                        self.record_containment(method_containment_id, ItemId::Fun(fun_id));
                         fun_id
                     });
 
@@ -1019,6 +1023,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                 // The parameters of the constant are the same as those of the item that
                                 // declares them.
                                 let id = ctx.register_and_enqueue(item_span, item_src);
+                                if item_meta.opacity.is_transparent() {
+                                    ctx.record_containment(
+                                        ItemId::TraitDecl(trait_decl_id),
+                                        ItemId::Global(id),
+                                    );
+                                }
                                 let generics = ctx
                                     .outermost_binder()
                                     .params
@@ -1289,6 +1299,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         trait_method_id,
                         bound_fn_ref.skip_binder.id,
                     );
+                    if item_meta.opacity.is_transparent() && impl_item.value.is_some() {
+                        self.record_containment(
+                            ItemId::TraitImpl(def_id),
+                            ItemId::Fun(bound_fn_ref.skip_binder.id),
+                        );
+                    }
 
                     // We insert the `Binder<FunDeclRef>` unconditionally here; we'll remove the
                     // ones that correspond to unused methods at the end of translation.
@@ -1297,6 +1313,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 hax::DefKind::AssocConst => {
                     let assoc_const_id = *assoc_item_id.as_const().unwrap();
                     let id = self.register_and_enqueue(item_span, item_src);
+                    if item_meta.opacity.is_transparent() && impl_item.value.is_some() {
+                        self.record_containment(ItemId::TraitImpl(def_id), ItemId::Global(id));
+                    }
                     // The parameters of the constant are the same as those of the item that
                     // declares them.
                     let generics = match &impl_item.value {
