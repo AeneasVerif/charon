@@ -13,7 +13,7 @@ where
     RegionOutlives0: '_0: '_1,
 {
     let _0: (); // return
-    let _1: &'1 mut {closure}<'_0>; // arg #1
+    let _1: &'2 mut {closure}<'_0>; // arg #1
     let tupled_args: (); // arg #2
     let _3: i32; // anonymous local
 

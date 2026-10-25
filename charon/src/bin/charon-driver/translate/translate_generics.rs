@@ -9,7 +9,6 @@ use rustc_span::def_id::DefId as RDefId;
 
 use super::translate_ctx::{ItemTransCtx, TransImplSource, TransItemSourceKind};
 use charon_lib::ast::*;
-use charon_lib::ids::IndexVec;
 use charon_lib::utils::CycleDetector;
 
 /// A level of binding for type-level variables. Each item has a top-level binding level
@@ -45,7 +44,7 @@ pub(crate) struct BindingLevel<'tcx> {
     pub region_vars_by_def_id: HashMap<hax::DefId, RegionId>,
     /// The map from rust late/bound regions to translated region indices.
     pub bound_region_vars: Vec<RegionId>,
-    /// Extra lifetimes unerased from the closure signature. Hax represents them with placeholder
+    /// Extra lifetimes unerased from the closure arguments. Hax represents them with placeholder
     /// regions; they are parameters of the closure struct.
     pub closure_extra_self_regions: HashMap<hax::PlaceholderRegion, RegionId>,
     /// Region added for the lifetime bound in the signature of the `call`/`call_mut` methods.
@@ -59,12 +58,6 @@ pub(crate) struct BindingLevel<'tcx> {
     /// The map from trait predicates to the translated trait clause indices, and the number of
     /// bound higher-kinded regions.
     pub trait_preds: HashMap<hax::GenericPredicateId, (TraitClauseId, usize)>,
-    /// The types of the captured variables, when we're translating a closure item. This is
-    /// translated early because this translation requires adding new lifetime generics to the
-    /// current binder.
-    pub closure_upvar_tys: Option<IndexVec<FieldId, Ty>>,
-    /// The regions we added for the upvars.
-    pub closure_upvar_regions: Vec<RegionId>,
     /// RPITIT can cause region names to be reused. To avoid clashes in our output, we rename
     /// duplicate names.
     pub used_region_names: HashSet<Symbol>,
@@ -159,19 +152,7 @@ impl<'tcx> BindingLevel<'tcx> {
         rid
     }
 
-    /// Add a region for an upvar in a closure.
-    pub fn push_upvar_region(&mut self) -> RegionId {
-        // We musn't push to `bound_region_vars` because that will contain the higher-kinded
-        // signature lifetimes (if any) and they must be lookup-able.
-        let region_id = self
-            .params
-            .regions
-            .push_with(|index| RegionParam::new(index, None, Variance::Unknown));
-        self.closure_upvar_regions.push(region_id);
-        region_id
-    }
-
-    /// Extra lifetimes unerased from the closure signature. Hax represents them with placeholder
+    /// Extra lifetimes unerased from the closure arguments. Hax represents them with placeholder
     /// regions; they are parameters of the closure struct.
     pub fn push_closure_extra_self_region(&mut self, region: hax::PlaceholderRegion) {
         let region_id = self
@@ -589,17 +570,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.push_late_bound_generics_for_def(span, def)?;
 
         if let hax::FullDefKind::Closure(c) = def.kind() {
-            // Add the lifetime generics coming from the upvars. We translate the upvar types early
-            // to know what lifetimes are needed.
-            let upvar_tys = self.translate_closure_upvar_tys(span, c)?;
-            // Add new lifetimes params to replace the erased ones.
-            let upvar_tys = upvar_tys.replace_erased_regions(|| {
-                let region_id = self.the_only_binder_mut().push_upvar_region();
-                Region::Var(DeBruijnVar::new_at_zero(region_id))
-            });
-            self.the_only_binder_mut().closure_upvar_tys = Some(upvar_tys);
-
-            for region in c.extra_regions_inferred_from_signature() {
+            for region in c.extra_early_regions() {
                 self.the_only_binder_mut()
                     .push_closure_extra_self_region(region.clone());
             }

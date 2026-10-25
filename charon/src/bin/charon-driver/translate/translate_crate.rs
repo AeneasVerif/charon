@@ -871,20 +871,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 );
             } else if let hax::FullDefKind::Closure(c) = def.kind() {
                 // The regions bound in the closure struct that don't come from its parent.
-                let adt_self_regions = if self.item_src.def_id() == def.def_id() {
-                    assert!(self.outermost_binder().closure_upvar_tys.is_some());
-                    self.outermost_binder().closure_upvar_regions.len()
-                        + c.extra_regions_inferred_from_signature().len()
-                } else {
-                    // If we're not translating a closure item, fetch the closure adt
-                    // definition and add enough erased lifetimes to match its number of
-                    // arguments.
-                    let adt_decl_id: ItemId =
-                        self.register_item(span, hax_item, TransItemSourceKind::Type);
-                    let adt_decl = self.get_or_translate(adt_decl_id)?;
-                    let adt_generics = adt_decl.generic_params();
-                    adt_generics.regions.len() - generics.regions.len()
-                };
+                // TODO: Recover these arguments from the closure type.
+                let adt_self_regions = c.extra_early_regions().len();
                 generics
                     .regions
                     .extend((0..adt_self_regions).map(|_| self.translate_erased_region()));

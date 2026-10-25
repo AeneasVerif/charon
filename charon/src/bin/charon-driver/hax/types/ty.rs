@@ -99,7 +99,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, TyKind<'tcx>> for ty::TyKind<'tcx>
             Self::Float(float_ty) => TyKind::Float(float_ty.sinto(s)),
             Self::FnDef(fun_id, generics) => {
                 // Note: loss of precision, we erase the bound vars.
-                let generics = erase_free_regions(tcx, generics.skip_binder());
+                let generics = tcx.instantiate_bound_regions_with_erased(*generics);
                 TyKind::FnDef(FnDefTy {
                     item: translate_item_ref(s, *fun_id, generics),
                 })

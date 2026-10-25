@@ -79,15 +79,16 @@ where
 = <opaque>
 
 // Full name: test_crate::sparse_transitions::{closure}
-struct {closure}<'a> {}
+struct {closure}<'a, '_1> {}
 
-// Full name: test_crate::sparse_transitions::{impl FnMut<()> for {closure}<'a>}::call_mut
-extern "rust-call" fn call_mut<'a, '_1>(_1: &'_1 mut {closure}<'a>, tupled_args: ()) -> Option<u8>[{built_in impl Sized for u8}]
+// Full name: test_crate::sparse_transitions::{impl FnMut<()> for {closure}<'a, '_1>}::call_mut
+extern "rust-call" fn call_mut<'a, '_1, '_2>(_1: &'_2 mut {closure}<'a, '_1>, tupled_args: ()) -> Option<u8>[{built_in impl Sized for u8}]
 where
-    RegionOutlives0: 'a: '_1,
+    RegionOutlives0: 'a: '_2,
+    RegionOutlives1: '_1: '_2,
 {
     let _0: Option<u8>[{built_in impl Sized for u8}]; // return
-    let _1: &'1 mut {closure}<'a>; // arg #1
+    let _1: &'3 mut {closure}<'a, '_1>; // arg #1
     let tupled_args: (); // arg #2
 
     storage_live(_0)
@@ -97,18 +98,18 @@ where
     return
 }
 
-// Full name: test_crate::sparse_transitions::{impl FnOnce<()> for {closure}<'a>}::call_once
-extern "rust-call" fn call_once<'a>(_1: {closure}<'a>, _2: ()) -> Option<u8>[{built_in impl Sized for u8}]
+// Full name: test_crate::sparse_transitions::{impl FnOnce<()> for {closure}<'a, '_1>}::call_once
+extern "rust-call" fn call_once<'a, '_1>(_1: {closure}<'a, '_1>, _2: ()) -> Option<u8>[{built_in impl Sized for u8}]
 {
     let _0: Option<u8>[{built_in impl Sized for u8}]; // return
-    let _1: {closure}<'a>; // arg #1
+    let _1: {closure}<'a, '_1>; // arg #1
     let _2: (); // arg #2
-    let _3: &'1 mut {closure}<'a>; // anonymous local
+    let _3: &'3 mut {closure}<'a, '_1>; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'a, '4>(move _3, move _2)
+    _0 = call_mut<'a, '_1, '8>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -119,37 +120,37 @@ extern "rust-call" fn call_once<'a>(_1: {closure}<'a>, _2: ()) -> Option<u8>[{bu
     return
 }
 
-// Full name: test_crate::sparse_transitions::{impl FnOnce<()> for {closure}<'a>}
-impl<'a> "impl_FnOnce_unit_for_closure" FnOnce<()> for {closure}<'a> {
-    proof ImpliedClause0: ({closure}<'a>: MetaSized) = {built_in impl MetaSized for {closure}<'a>}
+// Full name: test_crate::sparse_transitions::{impl FnOnce<()> for {closure}<'a, '_1>}
+impl<'a, '_1> "impl_FnOnce_unit_for_closure" FnOnce<()> for {closure}<'a, '_1> {
+    proof ImpliedClause0: ({closure}<'a, '_1>: MetaSized) = {built_in impl MetaSized for {closure}<'a, '_1>}
     proof ImpliedClause1: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause2: ((): Tuple) = {built_in impl Tuple for ()}
     proof ImpliedClause3: (Option<u8>[{built_in impl Sized for u8}]: Sized) = {built_in impl Sized for Option<u8>[{built_in impl Sized for u8}]}
     type Output = Option<u8>[{built_in impl Sized for u8}]
-    fn call_once = call_once<'a>
+    fn call_once = call_once<'a, '_1>
     vtable: lazy
 }
 
-// Full name: test_crate::sparse_transitions::{impl FnMut<()> for {closure}<'a>}
-impl<'a> "impl_FnMut_unit_for_closure" FnMut<()> for {closure}<'a> {
-    proof ImpliedClause0: ({closure}<'a>: MetaSized) = {built_in impl MetaSized for {closure}<'a>}
-    proof ImpliedClause1: ({closure}<'a>: FnOnce<()>) = impl_FnOnce_unit_for_closure<'a>
+// Full name: test_crate::sparse_transitions::{impl FnMut<()> for {closure}<'a, '_1>}
+impl<'a, '_1> "impl_FnMut_unit_for_closure" FnMut<()> for {closure}<'a, '_1> {
+    proof ImpliedClause0: ({closure}<'a, '_1>: MetaSized) = {built_in impl MetaSized for {closure}<'a, '_1>}
+    proof ImpliedClause1: ({closure}<'a, '_1>: FnOnce<()>) = impl_FnOnce_unit_for_closure<'a, '_1>
     proof ImpliedClause2: ((): Sized) = {built_in impl Sized for ()}
     proof ImpliedClause3: ((): Tuple) = {built_in impl Tuple for ()}
-    fn call_mut<'_0_1> = call_mut<'a, '_0_1>
+    fn call_mut<'_0_1> = call_mut<'a, '_1, '_0_1>
     vtable: lazy
 }
 
 // Full name: test_crate::sparse_transitions
-fn sparse_transitions<'a>() -> FromFn<{closure}<'a>>[{built_in impl Sized for {closure}<'a>}]
+fn sparse_transitions<'a>() -> FromFn<{closure}<'a, '_>>[{built_in impl Sized for {closure}<'a, '_>}]
 {
-    let _0: FromFn<{closure}<'8>>[{built_in impl Sized for {closure}<'8>}]; // return
-    let _1: {closure}<'12>; // anonymous local
+    let _0: FromFn<{closure}<'16, '17>>[{built_in impl Sized for {closure}<'16, '17>}]; // return
+    let _1: {closure}<'24, '25>; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
     _1 = {closure} {  }
-    _0 = from_fn<u8, {closure}<'15>>[{built_in impl Sized for u8}, {built_in impl Sized for {closure}<'15>}, impl_FnMut_unit_for_closure<'15>](move _1)
+    _0 = from_fn<u8, {closure}<'30, '31>>[{built_in impl Sized for u8}, {built_in impl Sized for {closure}<'30, '31>}, impl_FnMut_unit_for_closure<'30, '31>](move _1)
     ↳⚡ unwind_continue
     storage_dead(_1)
     return

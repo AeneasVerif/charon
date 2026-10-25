@@ -448,7 +448,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 self.translate_ty(span, a.ty()).map(TypeDeclKind::Alias)
             }
             hax::FullDefKind::Adt(_) => self.translate_adt_def(trans_id, span, &item_meta, def),
-            hax::FullDefKind::Closure(_) => self.translate_closure_adt(span),
+            hax::FullDefKind::Closure(c) => self.translate_closure_adt(span, c),
             _ => panic!("Unexpected item when translating types: {def:?}"),
         };
 

@@ -457,38 +457,25 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         })
     }
 
-    /// Translate the types of the captured variables. Should be called only in
-    /// `translate_item_generics`. If you need these types, fetch them in
-    /// `outermost_binder().closure_upvar_tys`.
-    pub fn translate_closure_upvar_tys(
+    pub fn translate_closure_adt(
         &mut self,
         span: Span,
         closure: &hax::Closure<'tcx>,
-    ) -> Result<IndexVec<FieldId, Ty>, Error> {
-        closure
+    ) -> Result<TypeDeclKind, Error> {
+        let fields = closure
             .upvar_tys()
             .iter()
-            .map(|ty| self.translate_ty(span, ty))
-            .try_collect()
-    }
-
-    pub fn translate_closure_adt(&mut self, span: Span) -> Result<TypeDeclKind, Error> {
-        let fields: IndexVec<FieldId, Field> = self
-            .the_only_binder()
-            .closure_upvar_tys
-            .as_ref()
-            .unwrap()
-            .iter()
-            .cloned()
             .enumerate()
-            .map(|(field_id, ty)| Field {
-                span,
-                attr_info: AttrInfo::dummy_private(),
-                name: format!("_{field_id}"),
-                is_positional: true,
-                ty,
+            .map(|(field_id, ty)| -> Result<_, Error> {
+                Ok(Field {
+                    span,
+                    attr_info: AttrInfo::dummy_private(),
+                    name: format!("_{field_id}"),
+                    is_positional: true,
+                    ty: self.translate_ty(span, ty)?,
+                })
             })
-            .collect();
+            .try_collect()?;
         Ok(TypeDeclKind::Struct(fields))
     }
 

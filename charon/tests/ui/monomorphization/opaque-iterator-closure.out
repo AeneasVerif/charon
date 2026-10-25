@@ -176,7 +176,7 @@ where
     RegionOutlives0: '_0: '_1,
 {
     let _0: u32; // return
-    let _1: &'1 mut test_crate::main::{closure}<'_0>; // arg #1
+    let _1: &'2 mut test_crate::main::{closure}<'_0>; // arg #1
     let tupled_args: (u32,); // arg #2
     let x: u32; // local
     let _4: u32; // anonymous local
@@ -214,7 +214,7 @@ where
     RegionOutlives0: '_0: '_1,
 {
     let _0: u32; // return
-    let _1: &'1 test_crate::main::{closure#1}<'_0>; // arg #1
+    let _1: &'2 test_crate::main::{closure#1}<'_0>; // arg #1
     let tupled_args: (u32,); // arg #2
     let x: u32; // local
     let _4: u32; // anonymous local
