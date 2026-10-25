@@ -16,8 +16,7 @@ impl<'tcx> ConstReader<'tcx> {
                     ||  !in_bounds
                         && matches!(self.tcx.global_alloc(alloc_id), interpret::GlobalAlloc::Memory(_))
             }
-            AllocTarget::Fn(_) => true,
-            AllocTarget::VTable(..) | AllocTarget::TypeId(..) => false,
+            AllocTarget::Fn(_) | AllocTarget::VTable(..) | AllocTarget::TypeId(..) => true,
         }
     }
 
@@ -115,9 +114,6 @@ impl<'tcx> ConstReader<'tcx> {
             }
         } else if !in_bounds {
             ConstKind::Unsupported("pointer outside of its allocation")
-        } else if let AllocTarget::VTable(..) = alloc_target {
-            // A vtable has no global we can point into, and const-eval can't read its contents.
-            ConstKind::Unsupported("pointer into a vtable")
         } else {
             // HACK: fallback to reading the value of the pointee, at type `view_ty`.
             let place = match view_ty {
