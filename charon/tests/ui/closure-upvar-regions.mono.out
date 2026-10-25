@@ -1,297 +1,420 @@
-error: Type error after translation:
-       Mismatched regions:
-       target: test_crate::generic_closure::{closure}::<&'_ u8>
-       expected: ['_0, '_1, '_2]
-            got: []
-       Visitor stack:
-         charon_lib::ast::items::item_ids::TypeDeclRef
-         charon_lib::ast::type_level::types::TyKind
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>>
-         charon_lib::ast::type_level::types::Ty
-         charon_lib::ast::items::type_decl::Field
-         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::items::type_decl::FieldId, charon_lib::ast::items::type_decl::Field>
-         charon_lib::ast::items::type_decl::TypeDeclKind
-         charon_lib::ast::items::type_decl::TypeDecl
-       Binding stack (depth 1):
-         0: <'_0, '_1, '_2, '_3>
-  --> tests/ui/closure-upvar-regions.rs:25:5
-   |
-25 |     move || inner()
-   |     ^^^^^^^^^^^^^^^
+# Final LLBC before serialization:
 
-error: Type error after translation:
-       Mismatched regions:
-       target: test_crate::generic_closure::{closure}::<&'_ u8>
-       expected: ['_0, '_1, '_2]
-            got: []
-       Visitor stack:
-         charon_lib::ast::items::item_ids::TypeDeclRef
-         charon_lib::ast::type_level::types::TyKind
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>>
-         charon_lib::ast::type_level::types::Ty
-         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::type_level::vars::TypeVarId, charon_lib::ast::type_level::types::Ty>
-         charon_lib::ast::type_level::GenericArgs
-         alloc::boxed::Box<charon_lib::ast::type_level::GenericArgs>
-         charon_lib::ast::items::item_ids::TraitDeclRef
-         charon_lib::ast::items::trait_impl::TraitImpl
-       Binding stack (depth 1):
-         0: <'_0, '_1, '_2>
-  --> tests/ui/closure-upvar-regions.rs:18:5
-   |
-18 |     move || x
-   |     ^^^^^^^^^
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
 
-error: Type error after translation:
-       Mismatched regions:
-       target: test_crate::generic_closure::{closure}::<&'_ u8>
-       expected: ['_0, '_1, '_2]
-            got: []
-       Visitor stack:
-         charon_lib::ast::items::item_ids::TypeDeclRef
-         charon_lib::ast::type_level::types::TyKind
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>>
-         charon_lib::ast::type_level::types::Ty
-         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::type_level::vars::TypeVarId, charon_lib::ast::type_level::types::Ty>
-         charon_lib::ast::type_level::GenericArgs
-         alloc::boxed::Box<charon_lib::ast::type_level::GenericArgs>
-         charon_lib::ast::items::item_ids::TraitDeclRef
-         charon_lib::ast::type_level::trait_proofs::TraitRefContents
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::trait_proofs::TraitRefContents>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::trait_proofs::TraitRefContents>>
-         charon_lib::ast::type_level::trait_proofs::TraitRef
-         charon_lib::ast::type_level::RegionBinder<charon_lib::ast::type_level::trait_proofs::TraitRef>
-         charon_lib::ast::type_level::trait_proofs::PolyTraitRef
-         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::type_level::vars::TraitClauseId, charon_lib::ast::type_level::trait_proofs::PolyTraitRef>
-         charon_lib::ast::items::trait_impl::TraitImpl
-       Binding stack (depth 2):
-         0: 
-         1: <'_0, '_1, '_2>
-  --> tests/ui/closure-upvar-regions.rs:18:5
-   |
-18 |     move || x
-   |     ^^^^^^^^^
+struct () {}
 
-error: Type error after translation:
-       Mismatched regions:
-       target: test_crate::generic_closure::{closure}::<&'_ u8>
-       expected: ['_0, '_1, '_2]
-            got: []
-       Visitor stack:
-         charon_lib::ast::items::item_ids::TypeDeclRef
-         charon_lib::ast::type_level::types::TyKind
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>>
-         charon_lib::ast::type_level::types::Ty
-         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::type_level::vars::TypeVarId, charon_lib::ast::type_level::types::Ty>
-         charon_lib::ast::type_level::GenericArgs
-         alloc::boxed::Box<charon_lib::ast::type_level::GenericArgs>
-         charon_lib::ast::items::item_ids::TraitDeclRef
-         charon_lib::ast::type_level::trait_proofs::TraitRefContents
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::trait_proofs::TraitRefContents>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::trait_proofs::TraitRefContents>>
-         charon_lib::ast::type_level::trait_proofs::TraitRef
-         charon_lib::ast::type_level::RegionBinder<charon_lib::ast::type_level::trait_proofs::TraitRef>
-         charon_lib::ast::type_level::trait_proofs::PolyTraitRef
-         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::type_level::vars::TraitClauseId, charon_lib::ast::type_level::trait_proofs::PolyTraitRef>
-         charon_lib::ast::items::trait_impl::TraitImpl
-       Binding stack (depth 2):
-         0: 
-         1: <'_0, '_1, '_2>
-  --> tests/ui/closure-upvar-regions.rs:18:5
-   |
-18 |     move || x
-   |     ^^^^^^^^^
+struct (_,)::<&'_ u8> {
+  _0: &'_ u8,
+}
 
-error: Type error after translation:
-       Mismatched regions:
-       target: test_crate::generic_closure::{closure}::<&'_ u8>
-       expected: ['_0, '_1, '_2]
-            got: []
-       Visitor stack:
-         charon_lib::ast::items::item_ids::TypeDeclRef
-         charon_lib::ast::type_level::types::TyKind
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>>
-         charon_lib::ast::type_level::types::Ty
-         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::type_level::vars::TypeVarId, charon_lib::ast::type_level::types::Ty>
-         charon_lib::ast::type_level::GenericArgs
-         alloc::boxed::Box<charon_lib::ast::type_level::GenericArgs>
-         charon_lib::ast::items::item_ids::TraitDeclRef
-         charon_lib::ast::items::trait_impl::TraitImpl
-       Binding stack (depth 1):
-         0: <'_0, '_1, '_2>
-  --> tests/ui/closure-upvar-regions.rs:18:5
-   |
-18 |     move || x
-   |     ^^^^^^^^^
+struct test_crate::captured_ref::{closure}<'_0, '_1> {
+  _0: &'_1 u8,
+}
 
-error: Type error after translation:
-       Mismatched regions:
-       target: test_crate::generic_closure::{closure}::<&'_ u8>
-       expected: ['_0, '_1, '_2]
-            got: []
-       Visitor stack:
-         charon_lib::ast::items::item_ids::TypeDeclRef
-         charon_lib::ast::type_level::types::TyKind
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>>
-         charon_lib::ast::type_level::types::Ty
-         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::type_level::vars::TypeVarId, charon_lib::ast::type_level::types::Ty>
-         charon_lib::ast::type_level::GenericArgs
-         alloc::boxed::Box<charon_lib::ast::type_level::GenericArgs>
-         charon_lib::ast::items::item_ids::TraitDeclRef
-         charon_lib::ast::type_level::trait_proofs::TraitRefContents
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::trait_proofs::TraitRefContents>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::trait_proofs::TraitRefContents>>
-         charon_lib::ast::type_level::trait_proofs::TraitRef
-         charon_lib::ast::type_level::RegionBinder<charon_lib::ast::type_level::trait_proofs::TraitRef>
-         charon_lib::ast::type_level::trait_proofs::PolyTraitRef
-         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::type_level::vars::TraitClauseId, charon_lib::ast::type_level::trait_proofs::PolyTraitRef>
-         charon_lib::ast::items::trait_impl::TraitImpl
-       Binding stack (depth 2):
-         0: 
-         1: <'_0, '_1, '_2>
-  --> tests/ui/closure-upvar-regions.rs:18:5
-   |
-18 |     move || x
-   |     ^^^^^^^^^
+// Full name: test_crate::captured_ref
+pub fn captured_ref<'a>(x: &'a u8) -> test_crate::captured_ref::{closure}<'_, '_>
+{
+    let _0: test_crate::captured_ref::{closure}<'2, '3>; // return
+    let x: &'5 u8; // arg #1
 
-error: Type error after translation:
-       Mismatched regions:
-       target: test_crate::generic_closure::{closure}::<&'_ u8>
-       expected: ['_0, '_1, '_2]
-            got: []
-       Visitor stack:
-         charon_lib::ast::items::item_ids::TypeDeclRef
-         charon_lib::ast::type_level::types::TyKind
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>>
-         charon_lib::ast::type_level::types::Ty
-         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::type_level::vars::TypeVarId, charon_lib::ast::type_level::types::Ty>
-         charon_lib::ast::type_level::GenericArgs
-         alloc::boxed::Box<charon_lib::ast::type_level::GenericArgs>
-         charon_lib::ast::items::item_ids::TraitDeclRef
-         charon_lib::ast::items::trait_impl::TraitImpl
-       Binding stack (depth 1):
-         0: <'_0, '_1, '_2>
-  --> tests/ui/closure-upvar-regions.rs:18:5
-   |
-18 |     move || x
-   |     ^^^^^^^^^
+    storage_live(_0)
+    _0 = test_crate::captured_ref::{closure} { _0: copy x }
+    storage_dead(x)
+    return
+}
 
-error: Type error after translation:
-       Mismatched regions:
-       target: test_crate::generic_closure::{closure}::<&'_ u8>
-       expected: ['_0, '_1, '_2]
-            got: []
-       Visitor stack:
-         charon_lib::ast::items::item_ids::TypeDeclRef
-         charon_lib::ast::type_level::types::TyKind
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>>
-         charon_lib::ast::type_level::types::Ty
-         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::type_level::vars::TypeVarId, charon_lib::ast::type_level::types::Ty>
-         charon_lib::ast::type_level::GenericArgs
-         alloc::boxed::Box<charon_lib::ast::type_level::GenericArgs>
-         charon_lib::ast::items::item_ids::TraitDeclRef
-         charon_lib::ast::type_level::trait_proofs::TraitRefContents
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::trait_proofs::TraitRefContents>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::trait_proofs::TraitRefContents>>
-         charon_lib::ast::type_level::trait_proofs::TraitRef
-         charon_lib::ast::type_level::RegionBinder<charon_lib::ast::type_level::trait_proofs::TraitRef>
-         charon_lib::ast::type_level::trait_proofs::PolyTraitRef
-         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::type_level::vars::TraitClauseId, charon_lib::ast::type_level::trait_proofs::PolyTraitRef>
-         charon_lib::ast::items::trait_impl::TraitImpl
-       Binding stack (depth 2):
-         0: 
-         1: <'_0, '_1, '_2>
-  --> tests/ui/closure-upvar-regions.rs:18:5
-   |
-18 |     move || x
-   |     ^^^^^^^^^
+// Full name: test_crate::captured_ref::{impl Fn<()> for test_crate::captured_ref::{closure}<'_0, '_1>}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::captured_ref::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::captured_ref::{closure}<'_0, '_1>, tupled_args: ()) -> &'_0 u8
+where
+    RegionOutlives0: '_0: '_2,
+    RegionOutlives1: '_1: '_2,
+{
+    let _0: &'1 u8; // return
+    let _1: &'5 test_crate::captured_ref::{closure}<'_0, '_1>; // arg #1
+    let tupled_args: (); // arg #2
 
-error: Type error after translation:
-       Mismatched regions:
-       target: test_crate::generic_closure::{closure}::<&'_ u8>
-       expected: ['_0, '_1, '_2]
-            got: []
-       Visitor stack:
-         charon_lib::ast::items::item_ids::TypeDeclRef
-         charon_lib::ast::type_level::types::TyKind
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>>
-         charon_lib::ast::type_level::types::Ty
-         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::type_level::vars::TypeVarId, charon_lib::ast::type_level::types::Ty>
-         charon_lib::ast::type_level::GenericArgs
-         alloc::boxed::Box<charon_lib::ast::type_level::GenericArgs>
-         charon_lib::ast::items::item_ids::TraitDeclRef
-         charon_lib::ast::type_level::trait_proofs::TraitRefContents
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::trait_proofs::TraitRefContents>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::trait_proofs::TraitRefContents>>
-         charon_lib::ast::type_level::trait_proofs::TraitRef
-         charon_lib::ast::type_level::RegionBinder<charon_lib::ast::type_level::trait_proofs::TraitRef>
-         charon_lib::ast::type_level::trait_proofs::PolyTraitRef
-         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::type_level::vars::TraitClauseId, charon_lib::ast::type_level::trait_proofs::PolyTraitRef>
-         charon_lib::ast::items::trait_impl::TraitImpl
-       Binding stack (depth 2):
-         0: 
-         1: <'_0, '_1, '_2>
-  --> tests/ui/closure-upvar-regions.rs:18:5
-   |
-18 |     move || x
-   |     ^^^^^^^^^
+    storage_live(_0)
+    _0 = copy (*_1)._0
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
 
-error: Type error after translation:
-       Mismatched regions:
-       target: test_crate::generic_closure::{closure}::<&'_ u8>
-       expected: ['_0, '_1, '_2]
-            got: []
-       Visitor stack:
-         charon_lib::ast::items::item_ids::TypeDeclRef
-         charon_lib::ast::type_level::types::TyKind
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>>
-         charon_lib::ast::type_level::types::Ty
-         charon_lib::ast::type_level::types::TyKind
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>>
-         charon_lib::ast::type_level::types::Ty
-         alloc::vec::Vec<charon_lib::ast::type_level::types::Ty>
-         charon_lib::ast::items::fun_decl::FunSig
-         alloc::boxed::Box<charon_lib::ast::items::fun_decl::FunSig>
-         charon_lib::ast::items::fun_decl::FunDecl
-       Binding stack (depth 1):
-         0: <'_0, '_1, '_2, '_3>
-  --> tests/ui/closure-upvar-regions.rs:18:5
-   |
-18 |     move || x
-   |     ^^^^^^^^^
+struct test_crate::captured_closure::{closure}<'_0, '_1> {
+  _0: &'_1 u8,
+}
 
-error: Type error after translation:
-       Mismatched regions:
-       target: test_crate::generic_closure::{closure}::<&'_ u8>
-       expected: ['_0, '_1, '_2]
-            got: []
-       Visitor stack:
-         charon_lib::ast::items::item_ids::TypeDeclRef
-         charon_lib::ast::type_level::types::TyKind
-         charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>
-         charon_lib::utils::hash_cons::HashConsed<charon_lib::ast::type_level::type_info::WithCachedTypeInfo<charon_lib::ast::type_level::types::TyKind>>
-         charon_lib::ast::type_level::types::Ty
-         charon_lib::ids::index_vec::IndexVec<charon_lib::ast::type_level::vars::TypeVarId, charon_lib::ast::type_level::types::Ty>
-         charon_lib::ast::type_level::GenericArgs
-         alloc::boxed::Box<charon_lib::ast::type_level::GenericArgs>
-         charon_lib::ast::items::item_ids::TraitDeclRef
-         charon_lib::ast::items::fun_decl::FunSource
-         charon_lib::ast::items::fun_decl::FunDecl
-       Binding stack (depth 1):
-         0: <'_0, '_1, '_2, '_3>
-  --> tests/ui/closure-upvar-regions.rs:18:5
-   |
-18 |     move || x
-   |     ^^^^^^^^^
+struct test_crate::captured_closure::{closure#1}<'_0, '_1, '_2> {
+  _0: test_crate::captured_closure::{closure}<'_, '_>,
+}
 
-ERROR Charon failed to translate this code (11 errors)
+// Full name: test_crate::captured_closure
+pub fn captured_closure<'a>(x: &'a u8) -> test_crate::captured_closure::{closure#1}<'_, '_, '_>
+{
+    let _0: test_crate::captured_closure::{closure#1}<'3, '4, '5>; // return
+    let x: &'7 u8; // arg #1
+    let inner: test_crate::captured_closure::{closure}<'10, '11>; // local
+
+    storage_live(_0)
+    storage_live(inner)
+    inner = test_crate::captured_closure::{closure} { _0: copy x }
+    fake_read(inner)
+    _0 = test_crate::captured_closure::{closure#1} { _0: copy inner }
+    storage_dead(inner)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::captured_closure::{impl Fn<()> for test_crate::captured_closure::{closure}<'_0, '_1>}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::captured_closure::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::captured_closure::{closure}<'_0, '_1>, tupled_args: ()) -> &'_0 u8
+where
+    RegionOutlives0: '_0: '_2,
+    RegionOutlives1: '_1: '_2,
+{
+    let _0: &'1 u8; // return
+    let _1: &'5 test_crate::captured_closure::{closure}<'_0, '_1>; // arg #1
+    let tupled_args: (); // arg #2
+
+    storage_live(_0)
+    _0 = copy (*_1)._0
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::captured_closure::{impl Fn<()> for test_crate::captured_closure::{closure#1}<'_0, '_1, '_2>}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::captured_closure::{closure#1}<'_0, '_1, '_2>}::call<'_0, '_1, '_2, '_3>(_1: &'_3 test_crate::captured_closure::{closure#1}<'_0, '_1, '_2>, tupled_args: ()) -> &'_0 u8
+where
+    RegionOutlives0: '_0: '_3,
+    RegionOutlives1: '_1: '_3,
+    RegionOutlives2: '_2: '_3,
+{
+    let _0: &'1 u8; // return
+    let _1: &'6 test_crate::captured_closure::{closure#1}<'_0, '_1, '_2>; // arg #1
+    let tupled_args: (); // arg #2
+    let _3: &'7 u8; // anonymous local
+    let _4: &'13 test_crate::captured_closure::{closure}<'14, '15>; // anonymous local
+    let _5: (); // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &(*_1)._0
+    storage_live(_5)
+    _5 = ()
+    _3 = {impl Fn<()> for test_crate::captured_closure::{closure}<'_0, '_1>}::call<'18, '19, '21>(move _4, move _5)
+    ↳⚡ storage_dead(tupled_args)
+        storage_dead(_1)
+        unwind_continue
+    _0 = &(*_3)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+struct test_crate::generic_closure::{closure}::<&'_ u8> {
+  _0: &'_ u8,
+}
+
+// Full name: test_crate::generic_closure::<&'_ u8>
+fn generic_closure::<&'_ u8>(x: &'_ u8) -> test_crate::generic_closure::{closure}::<&'_ u8>
+{
+    let _0: test_crate::generic_closure::{closure}::<&'_ u8>; // return
+    let x: &'0 u8; // arg #1
+
+    storage_live(_0)
+    _0 = test_crate::generic_closure::{closure}::<&'_ u8> { _0: copy x }
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::generic_closure::{impl Fn<()> for test_crate::generic_closure::{closure}::<&'_ u8>}::call::<&'_ u8>
+extern "rust-call" fn {impl Fn<()> for test_crate::generic_closure::{closure}::<&'_ u8>}::call::<&'_ u8><'_0>(_1: &'_0 test_crate::generic_closure::{closure}::<&'_ u8>, tupled_args: ()) -> &'_ u8
+{
+    let _0: &'1 u8; // return
+    let _1: &'3 test_crate::generic_closure::{closure}::<&'_ u8>; // arg #1
+    let tupled_args: (); // arg #2
+
+    storage_live(_0)
+    _0 = copy (*_1)._0
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+struct test_crate::captured_generic_closure::{closure}<'_0, '_1> {
+  _0: test_crate::generic_closure::{closure}::<&'_ u8>,
+}
+
+// Full name: test_crate::captured_generic_closure
+pub fn captured_generic_closure<'a>(x: &'a u8) -> test_crate::captured_generic_closure::{closure}<'_, '_>
+{
+    let _0: test_crate::captured_generic_closure::{closure}<'2, '3>; // return
+    let x: &'5 u8; // arg #1
+    let inner: test_crate::generic_closure::{closure}::<&'_ u8>; // local
+    let _3: &'6 u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(inner)
+    storage_live(_3)
+    _3 = copy x
+    inner = generic_closure::<&'_ u8>(move _3)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_3)
+    fake_read(inner)
+    _0 = test_crate::captured_generic_closure::{closure} { _0: move inner }
+    storage_dead(inner)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::captured_generic_closure::{impl Fn<()> for test_crate::captured_generic_closure::{closure}<'_0, '_1>}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::captured_generic_closure::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::captured_generic_closure::{closure}<'_0, '_1>, tupled_args: ()) -> &'_0 u8
+where
+    RegionOutlives0: '_0: '_2,
+    RegionOutlives1: '_1: '_2,
+{
+    let _0: &'1 u8; // return
+    let _1: &'5 test_crate::captured_generic_closure::{closure}<'_0, '_1>; // arg #1
+    let tupled_args: (); // arg #2
+    let _3: &'6 u8; // anonymous local
+    let _4: &'8 test_crate::generic_closure::{closure}::<&'_ u8>; // anonymous local
+    let _5: (); // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &(*_1)._0
+    storage_live(_5)
+    _5 = ()
+    _3 = {impl Fn<()> for test_crate::generic_closure::{closure}::<&'_ u8>}::call::<&'_ u8><'10>(move _4, move _5)
+    ↳⚡ storage_dead(tupled_args)
+        storage_dead(_1)
+        unwind_continue
+    _0 = &(*_3)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+struct test_crate::captured_fn_ptr::{closure} {
+  _0: fn<'a>(&'a u8) -> &'a u8,
+}
+
+// Full name: test_crate::captured_fn_ptr
+pub fn captured_fn_ptr(f: fn<'a>(&'a u8) -> &'a u8) -> test_crate::captured_fn_ptr::{closure}
+{
+    let _0: test_crate::captured_fn_ptr::{closure}; // return
+    let f: fn<'a>(&'a u8) -> &'a u8; // arg #1
+
+    storage_live(_0)
+    _0 = test_crate::captured_fn_ptr::{closure} { _0: copy f }
+    storage_dead(f)
+    return
+}
+
+// Full name: test_crate::captured_fn_ptr::{impl Fn<(&'_ u8,)> for test_crate::captured_fn_ptr::{closure}}::call
+extern "rust-call" fn {impl Fn<(&'_ u8,)> for test_crate::captured_fn_ptr::{closure}}::call<'_0, '_1>(_1: &'_1 test_crate::captured_fn_ptr::{closure}, tupled_args: (&'_ u8,)) -> &'_0 u8
+{
+    let _0: &'1 u8; // return
+    let _1: &'3 test_crate::captured_fn_ptr::{closure}; // arg #1
+    let tupled_args: (&'_ u8,); // arg #2
+    let x: &'4 u8; // local
+    let _4: &'5 u8; // anonymous local
+    let _5: fn<'a>(&'a u8) -> &'a u8; // anonymous local
+    let _6: &'6 u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(x)
+    x = noretag move tupled_args._0
+    storage_live(_4)
+    storage_live(_5)
+    _5 = copy (*_1)._0
+    storage_live(_6)
+    _6 = &(*x)
+    _4 = (move _5)<'7>(move _6)
+    ↳⚡ storage_dead(x)
+        storage_dead(tupled_args)
+        storage_dead(_1)
+        unwind_continue
+    _0 = &(*_4)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(x)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+struct test_crate::captured_fn_ptr_with_free_region::{closure}<'_0, '_1> {
+  _0: fn<'b>(&'b u8) -> &'_1 u8,
+}
+
+struct test_crate::captured_fn_ptr_with_free_region::{closure}<'_0, '_1> {
+  _0: fn<'b>(&'b u8) -> &'_1 u8,
+}
+
+// Full name: test_crate::captured_fn_ptr_with_free_region
+pub fn captured_fn_ptr_with_free_region<'a>(f: fn<'b>(&'b u8) -> &'a u8) -> test_crate::captured_fn_ptr_with_free_region::{closure}<'_, '_>
+{
+    let _0: test_crate::captured_fn_ptr_with_free_region::{closure}<'2, '3>; // return
+    let f: fn<'b>(&'b u8) -> &'6 u8; // arg #1
+
+    storage_live(_0)
+    _0 = test_crate::captured_fn_ptr_with_free_region::{closure} { _0: copy f }
+    storage_dead(f)
+    return
+}
+
+// Full name: test_crate::captured_fn_ptr_with_free_region::{impl Fn<(&'_ u8,)> for test_crate::captured_fn_ptr_with_free_region::{closure}<'_0, '_1>}::call
+extern "rust-call" fn {impl Fn<(&'_ u8,)> for test_crate::captured_fn_ptr_with_free_region::{closure}<'_0, '_1>}::call<'_0, '_1, '_2, '_3>(_1: &'_3 test_crate::captured_fn_ptr_with_free_region::{closure}<'_0, '_1>, tupled_args: (&'_ u8,)) -> &'_0 u8
+where
+    RegionOutlives0: '_0: '_3,
+    RegionOutlives1: '_1: '_3,
+{
+    let _0: &'1 u8; // return
+    let _1: &'5 test_crate::captured_fn_ptr_with_free_region::{closure}<'_0, '_1>; // arg #1
+    let tupled_args: (&'_ u8,); // arg #2
+    let x: &'6 u8; // local
+    let _4: fn<'b>(&'b u8) -> &'9 u8; // anonymous local
+    let _5: &'10 u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(x)
+    x = noretag move tupled_args._0
+    storage_live(_4)
+    _4 = copy (*_1)._0
+    storage_live(_5)
+    _5 = &(*x)
+    _0 = (move _4)<'12>(move _5)
+    ↳⚡ storage_dead(x)
+        storage_dead(tupled_args)
+        storage_dead(_1)
+        unwind_continue
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(x)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::WithItem
+trait WithItem<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    vtable: test_crate::WithItem::{vtable}
+}
+
+// Full name: test_crate::{impl WithItem for ()}
+impl "impl_WithItem_for_unit" WithItem for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    vtable: lazy
+}
+
+struct test_crate::generic_assoc_closure::{closure}::<()><'_0, '_1> {
+  _0: &'_1 u8,
+}
+
+// Full name: test_crate::generic_assoc_closure::<()>
+fn generic_assoc_closure::<()><'a>(x: &'a u8) -> test_crate::generic_assoc_closure::{closure}::<()><'_, '_>
+{
+    let _0: test_crate::generic_assoc_closure::{closure}::<()><'2, '3>; // return
+    let x: &'5 u8; // arg #1
+
+    storage_live(_0)
+    _0 = test_crate::generic_assoc_closure::{closure}::<()> { _0: copy x }
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::generic_assoc_closure::{impl Fn<()> for test_crate::generic_assoc_closure::{closure}::<()><'_0, '_1>}::call::<()>
+extern "rust-call" fn {impl Fn<()> for test_crate::generic_assoc_closure::{closure}::<()><'_0, '_1>}::call::<()><'_0, '_1, '_2>(_1: &'_2 test_crate::generic_assoc_closure::{closure}::<()><'_0, '_1>, tupled_args: ()) -> &'_0 u8
+where
+    RegionOutlives0: '_0: '_2,
+    RegionOutlives1: '_1: '_2,
+{
+    let _0: &'1 u8; // return
+    let _1: &'5 test_crate::generic_assoc_closure::{closure}::<()><'_0, '_1>; // arg #1
+    let tupled_args: (); // arg #2
+
+    storage_live(_0)
+    _0 = copy (*_1)._0
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+struct test_crate::captured_assoc_closure::{closure}<'_0, '_1> {
+  _0: test_crate::generic_assoc_closure::{closure}::<()><'_, '_>,
+}
+
+// Full name: test_crate::captured_assoc_closure
+pub fn captured_assoc_closure<'a>(x: &'a u8) -> test_crate::captured_assoc_closure::{closure}<'_, '_>
+{
+    let _0: test_crate::captured_assoc_closure::{closure}<'2, '3>; // return
+    let x: &'5 u8; // arg #1
+    let inner: test_crate::generic_assoc_closure::{closure}::<()><'8, '9>; // local
+    let _3: &'10 u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(inner)
+    storage_live(_3)
+    _3 = &(*x)
+    inner = generic_assoc_closure::<()><'12>(move _3)
+    ↳⚡ storage_dead(x)
+        unwind_continue
+    storage_dead(_3)
+    fake_read(inner)
+    _0 = test_crate::captured_assoc_closure::{closure} { _0: move inner }
+    storage_dead(inner)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::captured_assoc_closure::{impl Fn<()> for test_crate::captured_assoc_closure::{closure}<'_0, '_1>}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::captured_assoc_closure::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::captured_assoc_closure::{closure}<'_0, '_1>, tupled_args: ()) -> &'_0 u8
+where
+    RegionOutlives0: '_0: '_2,
+    RegionOutlives1: '_1: '_2,
+{
+    let _0: &'1 u8; // return
+    let _1: &'5 test_crate::captured_assoc_closure::{closure}<'_0, '_1>; // arg #1
+    let tupled_args: (); // arg #2
+    let _3: &'6 u8; // anonymous local
+    let _4: &'12 test_crate::generic_assoc_closure::{closure}::<()><'13, '14>; // anonymous local
+    let _5: (); // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &(*_1)._0
+    storage_live(_5)
+    _5 = ()
+    _3 = {impl Fn<()> for test_crate::generic_assoc_closure::{closure}::<()><'_0, '_1>}::call::<()><'17, '18, '20>(move _4, move _5)
+    ↳⚡ storage_dead(tupled_args)
+        storage_dead(_1)
+        unwind_continue
+    _0 = &(*_3)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(tupled_args)
+    storage_dead(_1)
+    return
+}
+
+
+

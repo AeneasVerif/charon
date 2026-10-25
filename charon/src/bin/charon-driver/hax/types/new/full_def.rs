@@ -167,6 +167,16 @@ where
         }
     }
 
+    // We added some placeholder regions in scope, put them also in `this()`. See
+    // `Closure.extra_early_regions`.
+    let this = if let FullDefKind::Closure(closure) = &kind {
+        let ty::Closure(_, args) = *closure.fn_trait_args[0].kind() else {
+            unreachable!()
+        };
+        ItemRef::translate_from_hax_def_id(s, def_id.clone(), args)
+    } else {
+        this
+    };
     let attributes = def_id.attrs(tcx).to_vec();
     let visibility = def_id.visibility(tcx);
     let source_text = source_span
@@ -1017,17 +1027,23 @@ impl<'tcx> Closure<'tcx> {
     }
 }
 
-/// Visit the closure arguments and replace erased regions with placeholders so they can become lifetime
-/// parameters of the closure struct.
-fn closure_args_with_placeholders<'tcx, S: UnderOwnerState<'tcx>>(
+/// Construct identity args with any erased regions replaced with placeholder regions. Only
+/// sensible for items that can have erased regions in their args, like closures.
+fn identity_args_with_placeholders<'tcx, S: UnderOwnerState<'tcx>>(
     s: &S,
     def_id: RDefId,
-    closure: ty::ClosureArgs<ty::TyCtxt<'tcx>>,
-) -> (ty::ClosureArgs<ty::TyCtxt<'tcx>>, Vec<PlaceholderRegion>) {
+) -> (ty::GenericArgsRef<'tcx>, Vec<ty::PlaceholderRegion<'tcx>>) {
     let tcx = s.base().tcx;
-    let marker = rustc_span::Symbol::intern(&format!("__charon_closure_region_{def_id:?}"));
+    let type_of = tcx
+        .type_of(def_id)
+        .instantiate_identity()
+        .skip_normalization();
+    let ty::Closure(_, args) = *type_of.kind() else {
+        unreachable!()
+    };
+    let marker = rustc_span::Symbol::intern(&format!("__unerased_region_{def_id:?}"));
     let mut extra_regions = Vec::new();
-    let args = ty::fold_regions(tcx, closure.args, |region, _| {
+    let args = ty::fold_regions(tcx, args, |region, _| {
         if region.is_erased() {
             let placeholder = ty::PlaceholderRegion::new(
                 ty::UniverseIndex::ROOT,
@@ -1036,13 +1052,13 @@ fn closure_args_with_placeholders<'tcx, S: UnderOwnerState<'tcx>>(
                     kind: ty::BoundRegionKind::NamedForPrinting(marker),
                 },
             );
-            extra_regions.push(placeholder.sinto(s));
+            extra_regions.push(placeholder);
             ty::Region::new_placeholder(tcx, placeholder)
         } else {
             region
         }
     });
-    (args.as_closure(), extra_regions)
+    (args, extra_regions)
 }
 
 #[derive(Debug, Clone)]
@@ -1445,12 +1461,8 @@ where
             })
         }
         RDefKind::Closure { .. } => {
-            let closure_ty = type_of_self();
-            let ty::TyKind::Closure(_, closure_args) = closure_ty.kind() else {
-                unreachable!()
-            };
-            let (closure, extra_regions) =
-                closure_args_with_placeholders(s, def_id, closure_args.as_closure());
+            let (closure_args, extra_regions) = identity_args_with_placeholders(s, def_id);
+            let closure = substitute(tcx, s.typing_env(), args, closure_args).as_closure();
             let closure_ty = ty::Ty::new_closure(tcx, def_id, closure.args);
 
             let raw_sig = closure.sig();
@@ -1459,7 +1471,7 @@ where
             FullDefKind::Closure(Closure {
                 def_id: hax_def_id.clone(),
                 fn_trait_args: [closure_ty, input_ty],
-                extra_early_regions: extra_regions,
+                extra_early_regions: extra_regions.sinto(s),
                 kind: closure.kind().sinto(s),
                 param_env: get_param_env(s, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),

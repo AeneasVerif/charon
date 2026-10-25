@@ -44,9 +44,9 @@ where
     RegionOutlives0: '_0: '_1,
 {
     let _0: (); // return
-    let _1: &'2 test_crate::main::{closure#1}<'_0>; // arg #1
+    let _1: &'6 test_crate::main::{closure#1}<'_0>; // arg #1
     let tupled_args: (&'_0 u16,); // arg #2
-    let _3: &'4 u16; // anonymous local
+    let _3: &'8 u16; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -89,14 +89,14 @@ extern "rust-call" fn {impl FnOnce<(&'_0 u16,)> for test_crate::main::{closure#1
 {
     let _0: (); // return
     let _1: test_crate::main::{closure#1}<'_0>; // arg #1
-    let _2: (&'3 u16,); // arg #2
-    let _3: &'5 mut test_crate::main::{closure#1}<'_0>; // anonymous local
+    let _2: (&'7 u16,); // arg #2
+    let _3: &'9 mut test_crate::main::{closure#1}<'_0>; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _0 = ()
     _3 = &mut _1
-    _0 = {impl FnMut<(&'_0 u16,)> for test_crate::main::{closure#1}<'_0>}::call_mut<'_0, '11>(move _3, move _2)
+    _0 = {impl FnMut<(&'_0 u16,)> for test_crate::main::{closure#1}<'_0>}::call_mut<'_0, '20>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -141,7 +141,7 @@ fn main()
     let _1: test_crate::main::{closure}; // anonymous local
     let _2: (); // anonymous local
     let _3: fn(&'2 u16); // anonymous local
-    let _4: test_crate::main::{closure#1}<'4>; // anonymous local
+    let _4: test_crate::main::{closure#1}<'8>; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -152,9 +152,9 @@ fn main()
     storage_live(_3)
     storage_live(_4)
     _4 = test_crate::main::{closure#1} {  }
-    _3 = fn_def_to_fn_ptr(const {as_fn}<'7>)
+    _3 = fn_def_to_fn_ptr(const {as_fn}<'13>)
     storage_dead(_4)
-    _2 = make_early<'10, u16>[{built_in impl Sized for u16}](move _3)
+    _2 = make_early<'16, u16>[{built_in impl Sized for u16}](move _3)
     ↳⚡ unwind_continue
     storage_dead(_3)
     storage_dead(_2)

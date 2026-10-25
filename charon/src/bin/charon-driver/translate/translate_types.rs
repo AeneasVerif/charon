@@ -1,6 +1,8 @@
 use itertools::Itertools;
 use rustc_middle::ty;
 use rustc_span::sym;
+use rustc_trait_elaboration::ItemId;
+use std::ops::ControlFlow;
 
 use super::translate_ctx::*;
 use crate::hax::{self, UnderOwnerState, Visibility};
@@ -410,8 +412,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
-    /// Translate an item's generic arguments. Don't call directly; use `translate_xxx_ref` as much
-    /// as possible.
+    /// Translate an item's base generic arguments. This does not include extra arguments coming
+    /// from unerasing lifetimes or derived items; don't call directly; use `translate_xxx_ref` as
+    /// much as possible.
     pub fn translate_generic_args(
         &mut self,
         span: Span,
@@ -436,8 +439,31 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         item: &hax::ItemRef<'tcx>,
         include_trait_refs: bool,
     ) -> Result<GenericArgs, Error> {
+        // Items that have a typeck parent use their extra arguments for inference variables that
+        // we don't translate directly. Instead, use `translate_closure_region_args` to extract the
+        // arguments we do translate.
+        // TODO: inline consts.
+        let substs = if let Some(parent) = item.def_id.typeck_parent(self.hax_state()) {
+            &item.generic_args[..parent.generics_of(self.hax_state()).count()]
+        } else {
+            &item.generic_args
+        };
+        let mut args = self.translate_raw_generic_args(span, substs)?;
+        if include_trait_refs {
+            args.trait_refs = self.translate_trait_proofs(span, &item.trait_proofs)?;
+        }
+        Ok(args)
+    }
+
+    /// Translate a raw list of generic arguments. This does not produce the arguments of a Charon
+    /// item: use `translate_generic_args` for item references.
+    fn translate_raw_generic_args(
+        &mut self,
+        span: Span,
+        substs: &[hax::GenericArg<'tcx>],
+    ) -> Result<GenericArgs, Error> {
         let mut args = GenericArgs::empty();
-        for arg in &item.generic_args {
+        for arg in substs {
             match arg {
                 hax::GenericArg::Type(ty) => {
                     args.types.push(self.translate_ty(span, ty)?);
@@ -451,10 +477,132 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
             }
         }
-        if include_trait_refs {
-            args.trait_refs = self.translate_trait_proofs(span, &item.trait_proofs)?;
-        }
         Ok(args)
+    }
+
+    /// In rustc/hax, closures take a few extra generic types, which get inferred and represent
+    /// their upvars and signature. Instead of these types, we add lifetime parameters. This
+    /// method extracts the value of the lifetime parameters in question.
+    pub(crate) fn translate_closure_region_args(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef<'tcx>,
+    ) -> Result<Vec<Region>, Error> {
+        let def = self.poly_hax_def(&item.def_id)?;
+        let hax::FullDefKind::Closure(closure) = def.kind() else {
+            unreachable!()
+        };
+        let num_regions = closure.extra_early_regions().len();
+        if num_regions == 0 || self.options.monomorphize_with_hax {
+            return Ok((0..num_regions)
+                .map(|_| self.translate_erased_region())
+                .collect());
+        }
+        let actual = self.translate_raw_generic_args(span, &item.generic_args)?;
+
+        // We start from the original full closure args (with placeholder lifetimes), and
+        // instantiate+normalize them. This is crucial because the closure def may contain an
+        // associated type which has gotten normalized in `item`. Thankfully (I sure damn hope)
+        // going from erased to unerased lifetims can't make more normalization available, so this
+        // should guarantee that the types match structurally.
+        let template = hax::substitute(
+            self.tcx,
+            self.hax_state.typing_env(),
+            Some(item.rustc_args(self.hax_state())),
+            def.this().rustc_args(self.hax_state()),
+        );
+        let template: Vec<hax::GenericArg<'tcx>> = self.catch_sinto(span, &template)?;
+
+        // Translate the template arguments, with free regions instead of the placeholder ones.
+        let template = {
+            let template = self.inside_binder(BinderKind::Other, None, |this| {
+                let binder = this.innermost_binder_mut();
+                binder.is_hax_binder = false;
+                for region in closure.extra_early_regions() {
+                    binder.push_closure_extra_self_region(region.clone());
+                }
+                this.translate_raw_generic_args(span, &template)
+            })?;
+            // Turn the regions we care about into `Free` regions.
+            let liberated_regions = template
+                .params
+                .regions
+                .map_ref_indexed(|id, _| Region::Var(DeBruijnVar::Free(id)));
+            template.apply(&GenericArgs::new_lifetimes(liberated_regions))
+        };
+
+        struct RegionMapping {
+            args: charon_lib::ids::IndexVec<RegionId, Option<Region>>,
+            depth: DeBruijnId,
+        }
+        impl Visitor for RegionMapping {
+            type Break = ();
+        }
+        impl ZipAst for RegionMapping {
+            fn visit_region_param(&mut self, _: &RegionParam, _: &RegionParam) -> ControlFlow<()> {
+                ControlFlow::Continue(())
+            }
+
+            fn visit_region(&mut self, source: &Region, target: &Region) -> ControlFlow<()> {
+                if let Region::Var(DeBruijnVar::Free(id)) = *source
+                    && !matches!(target, Region::Erased | Region::Body(_))
+                {
+                    let Some(target) = target.move_from_under_binders(self.depth) else {
+                        return ControlFlow::Break(());
+                    };
+                    let slot = &mut self.args[id];
+                    if slot.is_none_or(|previous| previous == target) {
+                        *slot = Some(target);
+                    } else {
+                        return ControlFlow::Break(());
+                    }
+                }
+                ControlFlow::Continue(())
+            }
+
+            fn visit_binder<T: AstVisitable>(
+                &mut self,
+                source: &Binder<T>,
+                target: &Binder<T>,
+            ) -> ControlFlow<()> {
+                self.depth = self.depth.incr();
+                let result = self.visit_inner(source, target);
+                self.depth = self.depth.decr();
+                result
+            }
+
+            fn visit_region_binder<T: AstVisitable>(
+                &mut self,
+                source: &RegionBinder<T>,
+                target: &RegionBinder<T>,
+            ) -> ControlFlow<()> {
+                self.depth = self.depth.incr();
+                let result = self.visit_inner(source, target);
+                self.depth = self.depth.decr();
+                result
+            }
+        }
+        let mut mapping = RegionMapping {
+            args: (0..num_regions).map(|_| None).collect(),
+            depth: DeBruijnId::zero(),
+        };
+        error_assert!(
+            self,
+            span,
+            ZipAst::visit(&mut mapping, &template, &actual).is_continue(),
+            "Closure arguments don't match their definition: {:?} vs {:?}",
+            template,
+            actual
+        );
+        // Normalization may discard a parameter, for example through an associated type.
+        Ok(mapping
+            .args
+            .into_iter()
+            .map(|r| match r {
+                Some(r) => r,
+                None => self.translate_erased_region(),
+            })
+            .collect())
     }
 
     /// Whether Rust treats this type specially, i.e. whether it is a tuple, `str` or `Box`.

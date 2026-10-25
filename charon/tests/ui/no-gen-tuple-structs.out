@@ -231,7 +231,7 @@ where
     RegionOutlives0: '_0: '_1,
 {
     let _0: u32; // return
-    let _1: &'2 {closure}<'_0>; // arg #1
+    let _1: &'5 {closure}<'_0>; // arg #1
     let tupled_args: (u32, bool); // arg #2
     let x: u32; // local
     let y: bool; // local
@@ -293,12 +293,12 @@ extern "rust-call" fn call_once<'_0>(_1: {closure}<'_0>, _2: (u32, bool)) -> u32
     let _0: u32; // return
     let _1: {closure}<'_0>; // arg #1
     let _2: (u32, bool); // arg #2
-    let _3: &'2 mut {closure}<'_0>; // anonymous local
+    let _3: &'5 mut {closure}<'_0>; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &mut _1
-    _0 = call_mut<'_0, '5>(move _3, move _2)
+    _0 = call_mut<'_0, '12>(move _3, move _2)
     ↳⚡ storage_dead(_3)
         storage_dead(_2)
         storage_dead(_1)
@@ -345,8 +345,8 @@ fn use_closure(z: u32) -> u32
 {
     let _0: u32; // return
     let z: u32; // arg #1
-    let _2: {closure}<'1>; // anonymous local
-    let _3: &'3 u32; // anonymous local
+    let _2: {closure}<'4>; // anonymous local
+    let _3: &'5 u32; // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -354,7 +354,7 @@ fn use_closure(z: u32) -> u32
     _3 = &z
     _2 = {closure} { _0: move _3 }
     storage_dead(_3)
-    _0 = call_closure<{closure}<'6>>[{built_in impl Sized for {closure}<'6>}, impl_Fn_unit_for_closure<'6>](move _2)
+    _0 = call_closure<{closure}<'12>>[{built_in impl Sized for {closure}<'12>}, impl_Fn_unit_for_closure<'12>](move _2)
     ↳⚡ storage_dead(z)
         unwind_continue
     storage_dead(_2)

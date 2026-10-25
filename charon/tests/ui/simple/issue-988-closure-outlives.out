@@ -38,7 +38,7 @@ where
     RegionOutlives0: '_0: '_1,
 {
     let _0: u8; // return
-    let _1: &'2 {closure}<'_0>; // arg #1
+    let _1: &'5 {closure}<'_0>; // arg #1
     let tupled_args: (usize,); // arg #2
     let i: usize; // local
     let _4: usize; // anonymous local
@@ -71,9 +71,9 @@ pub fn call_fn_shared<'_0>(a: &'_0 [u8], i: usize) -> u8
     let _0: u8; // return
     let a: &'1 [u8]; // arg #1
     let i: usize; // arg #2
-    let read: {closure}<'3>; // local
-    let _4: &'4 [u8]; // anonymous local
-    let _5: &'7 {closure}<'8>; // anonymous local
+    let read: {closure}<'5>; // local
+    let _4: &'6 [u8]; // anonymous local
+    let _5: &'9 {closure}<'10>; // anonymous local
     let _6: (usize,); // anonymous local
     let _7: usize; // anonymous local
 
@@ -90,7 +90,7 @@ pub fn call_fn_shared<'_0>(a: &'_0 [u8], i: usize) -> u8
     storage_live(_7)
     _7 = copy i
     _6 = (move _7,)
-    _0 = call<'12, '13>(move _5, move _6)
+    _0 = call<'19, '20>(move _5, move _6)
     ↳⚡ storage_dead(i)
         storage_dead(a)
         unwind_continue

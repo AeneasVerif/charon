@@ -1,6 +1,5 @@
 //@ revisions=poly,mono
 //@ charon-args=--include=core::ops::function
-//@[mono] known-failure
 //@[mono] charon-args=--monomorphize
 
 pub fn captured_ref<'a>(x: &'a u8) -> impl Fn() -> &'a u8 {
@@ -51,5 +50,24 @@ fn generic_assoc_closure<'a, T: WithItem>(x: &'a T::Item) -> impl Fn() -> &'a T:
 // Substitution can normalize a captured associated type before the closure is matched.
 pub fn captured_assoc_closure<'a>(x: &'a u8) -> impl Fn() -> &'a u8 {
     let inner = generic_assoc_closure::<()>(x);
+    move || inner()
+}
+
+trait WithLifetimeItem<'a> {
+    type Item: Copy;
+}
+
+fn lifetime_assoc_closure<'a, T: WithLifetimeItem<'a>>(
+    x: <T as WithLifetimeItem<'a>>::Item,
+) -> impl Fn() -> <T as WithLifetimeItem<'a>>::Item {
+    move || x
+}
+
+// The closure captures an associated type whose lifetime argument may be erased. At this
+// use site, the stronger bound normalizes that type to a reference with a known lifetime.
+pub fn captured_lifetime_assoc_closure<'a, T: WithLifetimeItem<'a, Item = &'a ()>>(
+    x: &'a (),
+) -> impl Fn() -> &'a () {
+    let inner = lifetime_assoc_closure::<'a, T>(x);
     move || inner()
 }

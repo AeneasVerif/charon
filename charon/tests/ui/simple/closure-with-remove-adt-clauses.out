@@ -52,8 +52,8 @@ where
 {
     let _0: (); // return
     let x: &'1 T; // arg #1
-    let _c: test_crate::f::{closure}<'3, T>; // local
-    let _3: &'4 T; // anonymous local
+    let _c: test_crate::f::{closure}<'5, T>; // local
+    let _3: &'6 T; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -79,7 +79,7 @@ where
     RegionOutlives0: '_0: '_1,
 {
     let _0: T; // return
-    let _1: &'2 test_crate::f::{closure}<'_0, T>; // arg #1
+    let _1: &'5 test_crate::f::{closure}<'_0, T>; // arg #1
     let tupled_args: (); // arg #2
 
     storage_live(_0)
@@ -104,8 +104,8 @@ where
 {
     let _0: (); // return
     let x: T; // arg #1
-    let _c: test_crate::g::{closure}<'1, T>; // local
-    let _3: &'3 T; // anonymous local
+    let _c: test_crate::g::{closure}<'4, T>; // local
+    let _3: &'5 T; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -131,7 +131,7 @@ where
     RegionOutlives0: '_0: '_1,
 {
     let _0: T; // return
-    let _1: &'2 test_crate::g::{closure}<'_0, T>; // arg #1
+    let _1: &'5 test_crate::g::{closure}<'_0, T>; // arg #1
     let tupled_args: (); // arg #2
 
     storage_live(_0)

@@ -35,7 +35,7 @@ struct test_crate::main::{closure}<'_0, '_1> {}
 fn main()
 {
     let _0: (); // return
-    let _1: test_crate::main::{closure}<'2, '3>; // anonymous local
+    let _1: test_crate::main::{closure}<'88, '89>; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -51,19 +51,19 @@ struct test_crate::main::{closure}::{closure}<'_0, '_1> {
 }
 
 // Full name: test_crate::main::{impl Fn<()> for test_crate::main::{closure}<'_0, '_1>}::call
-extern "rust-call" fn {impl Fn<()> for test_crate::main::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::main::{closure}<'_0, '_1>, tupled_args: ()) -> test_crate::main::{closure}::{closure}<'_, '_>
+extern "rust-call" fn {impl Fn<()> for test_crate::main::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::main::{closure}<'_0, '_1>, tupled_args: ()) -> test_crate::main::{closure}::{closure}<'_0, '_1>
 where
     RegionOutlives0: '_0: '_2,
     RegionOutlives1: '_1: '_2,
 {
-    let _0: test_crate::main::{closure}::{closure}<'2, '3>; // return
-    let _1: &'7 test_crate::main::{closure}<'_0, '_1>; // arg #1
+    let _0: test_crate::main::{closure}::{closure}<'50, '51>; // return
+    let _1: &'141 test_crate::main::{closure}<'_0, '_1>; // arg #1
     let tupled_args: (); // arg #2
-    let i: bar<&'16 ()>[{built_in impl Sized for &'16 ()}]; // local
+    let i: bar<&'142 ()>[{built_in impl Sized for &'142 ()}]; // local
 
     storage_live(_0)
     storage_live(i)
-    i = const bar<&'25 ()>[{built_in impl Sized for &'27 ()}]
+    i = const bar<&'151 ()>[{built_in impl Sized for &'153 ()}]
     fake_read(i)
     _0 = test_crate::main::{closure}::{closure} { _0: copy i }
     storage_dead(i)
@@ -79,7 +79,7 @@ where
     RegionOutlives1: '_1: '_2,
 {
     let _0: bar<&'8 ()>[{built_in impl Sized for &'8 ()}]; // return
-    let _1: &'15 test_crate::main::{closure}::{closure}<'_0, '_1>; // arg #1
+    let _1: &'55 test_crate::main::{closure}::{closure}<'_0, '_1>; // arg #1
     let tupled_args: (); // arg #2
 
     storage_live(_0)

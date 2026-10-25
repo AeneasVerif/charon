@@ -871,11 +871,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 );
             } else if let hax::FullDefKind::Closure(c) = def.kind() {
                 // The regions bound in the closure struct that don't come from its parent.
-                // TODO: Recover these arguments from the closure type.
-                let adt_self_regions = c.extra_early_regions().len();
-                generics
-                    .regions
-                    .extend((0..adt_self_regions).map(|_| self.translate_erased_region()));
+                let regions = self.translate_closure_region_args(span, hax_item)?;
+                generics.regions.extend(regions);
                 if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
                 | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))
                 | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))
