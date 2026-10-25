@@ -168,7 +168,7 @@ where
     }
 
     // We added some placeholder regions in scope, put them also in `this()`. See
-    // `Closure.extra_early_regions`.
+    // `ParamEnv.extra_early_regions`.
     let this = if let FullDefKind::Closure(closure) = &kind {
         let ty::Closure(_, args) = *closure.fn_trait_args[0].kind() else {
             unreachable!()
@@ -265,6 +265,9 @@ impl<'tcx> ItemRef<'tcx> {
 pub struct ParamEnv<'tcx> {
     /// Generic parameters of the item.
     pub generics: TyGenerics<'tcx>,
+    /// Extra early regions that we add to replace regions that rustc normally erases. We represent
+    /// them with placeholders so the types that mention them can still flow through rustc APIs.
+    pub extra_early_regions: Vec<PlaceholderRegion>,
     /// Required predicates for the item (see `traits::utils::required_predicates`).
     pub predicates: GenericPredicates<'tcx>,
     /// A reference to the parent of this item, with appropriate args.
@@ -298,6 +301,7 @@ impl<'tcx> ParamEnv<'tcx> {
                 has_late_bound_regions: None,
             },
             predicates: GenericPredicates { predicates: vec![] },
+            extra_early_regions: vec![],
             parent: parent.cloned(),
         }
     }
@@ -957,13 +961,11 @@ pub struct Closure<'tcx> {
     /// mentioned as well.
     fn_trait_args: [ty::Ty<'tcx>; 2],
     kind: ClosureKind,
-    /// This param env is empty because the (early-bound) generics of a closure are the same as
-    /// those of the item in which it is defined. We hide the special weird generics that rustc
-    /// uses internally for inference on closures.
+    /// The closure inherits its ordinary generics from its parent. It does have type parameters,
+    /// used by rustc for inference purposes. These are hidden from the `ParamEnv`. Any erased
+    /// lifetimes found in these inferred generics are replaced with placeholder regions, stored in
+    /// `extra_early_regions`.
     param_env: ParamEnv<'tcx>,
-    /// Extra region parameters that we represent as placeholder regions as rustc otherwise erases
-    /// them.
-    extra_early_regions: Vec<PlaceholderRegion>,
     sig: PolyFnSig<'tcx>,
     /// The captured variables, which together form the closure's state.
     upvar_tys: Vec<Ty<'tcx>>,
@@ -974,16 +976,8 @@ pub struct Closure<'tcx> {
 }
 
 impl<'tcx> Closure<'tcx> {
-    /// This param env is empty because the (early-bound) generics of a closure are the same as
-    /// those of the item in which it is defined. We hide the special weird generics that rustc
-    /// uses internally for inference on closures.
     pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
-    }
-    /// Extra early regions that are normally erased by rustc. We use placeholder regions instead
-    /// of normal early regions so that these types can flow into rustc APIs normally.
-    pub fn extra_early_regions(&self) -> &[PlaceholderRegion] {
-        &self.extra_early_regions
     }
     pub fn kind(&self) -> &ClosureKind {
         &self.kind
@@ -1470,12 +1464,14 @@ where
             let input_ty = tcx.liberate_late_bound_regions(def_id, raw_sig).inputs()[0];
             FullDefKind::Closure(Closure {
                 def_id: hax_def_id.clone(),
-                fn_trait_args: [closure_ty, input_ty],
-                extra_early_regions: extra_regions.sinto(s),
                 kind: closure.kind().sinto(s),
-                param_env: get_param_env(s, args),
+                param_env: ParamEnv {
+                    extra_early_regions: extra_regions.sinto(s),
+                    ..get_param_env(s, args)
+                },
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 sig: sig.sinto(s),
+                fn_trait_args: [closure_ty, input_ty],
                 upvar_tys: closure.upvar_tys().sinto(s),
                 fn_trait_impls: Default::default(),
                 destruct_impl: Default::default(),
@@ -2023,6 +2019,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
     match args {
         None => ParamEnv {
             generics,
+            extra_early_regions: vec![],
             predicates: if is_typeck_child {
                 GenericPredicates::default()
             } else {
@@ -2037,6 +2034,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
                 params: Default::default(),
                 ..generics
             },
+            extra_early_regions: vec![],
             predicates: GenericPredicates::default(),
             parent,
         },

@@ -154,7 +154,7 @@ impl<'tcx> BindingLevel<'tcx> {
 
     /// Extra lifetimes unerased from the closure arguments. Hax represents them with placeholder
     /// regions; they are parameters of the closure struct.
-    pub fn push_closure_extra_self_region(&mut self, region: hax::PlaceholderRegion) {
+    pub fn push_unerased_region(&mut self, region: hax::PlaceholderRegion) {
         let region_id = self
             .params
             .regions
@@ -546,6 +546,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         origin: PredicateOrigin,
     ) -> Result<(), Error> {
         self.push_generic_params(&param_env.generics)?;
+        for region in &param_env.extra_early_regions {
+            self.innermost_binder_mut()
+                .push_unerased_region(region.clone());
+        }
         self.register_predicates(&param_env.predicates, origin)?;
         Ok(())
     }
@@ -570,11 +574,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.push_late_bound_generics_for_def(span, def)?;
 
         if let hax::FullDefKind::Closure(c) = def.kind() {
-            for region in c.extra_early_regions() {
-                self.the_only_binder_mut()
-                    .push_closure_extra_self_region(region.clone());
-            }
-
             // Add the lifetime generics coming from the higher-kindedness of the signature.
             if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
             | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))

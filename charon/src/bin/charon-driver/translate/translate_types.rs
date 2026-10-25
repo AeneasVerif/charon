@@ -492,7 +492,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let hax::FullDefKind::Closure(closure) = def.kind() else {
             unreachable!()
         };
-        let num_regions = closure.extra_early_regions().len();
+        let num_regions = closure.param_env().extra_early_regions.len();
         if num_regions == 0 || self.options.monomorphize_with_hax {
             return Ok((0..num_regions)
                 .map(|_| self.translate_erased_region())
@@ -518,8 +518,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let template = self.inside_binder(BinderKind::Other, None, |this| {
                 let binder = this.innermost_binder_mut();
                 binder.is_hax_binder = false;
-                for region in closure.extra_early_regions() {
-                    binder.push_closure_extra_self_region(region.clone());
+                for region in &closure.param_env().extra_early_regions {
+                    binder.push_unerased_region(region.clone());
                 }
                 this.translate_raw_generic_args(span, &template)
             })?;
