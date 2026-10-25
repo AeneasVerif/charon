@@ -79,6 +79,20 @@ pub fn test_const_under_binder<'a>(x: [&'a u8; 3]) -> [&'a u8; 3] {
     generic_call_once(f, x)
 }
 
+fn swap<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8) {
+    (y, x)
+}
+
+// Both virtual impls must preserve which input lifetime each output refers to.
+pub fn test_fn_def_regions<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8) {
+    generic_call_once2(swap, x, y)
+}
+
+pub fn test_fn_ptr_regions<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8) {
+    let f: for<'c, 'd> fn(&'c u8, &'d u8) -> (&'d u8, &'c u8) = swap;
+    generic_call_once2(f, x, y)
+}
+
 fn increment(x: u32) -> u32 {
     x + 1
 }

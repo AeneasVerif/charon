@@ -697,15 +697,15 @@ where
     RegionOutlives0: '_0: '_1,
 {
     let _0: Ordering; // return
-    let _1: &'1 mut {closure}<'_0>; // arg #1
+    let _1: &'2 mut {closure}<'_0>; // arg #1
     let tupled_args: (&'_0 u32,); // arg #2
-    let x: &'3 u32; // local
-    let _4: &'4 u32; // anonymous local
-    let _5: &'5 u32; // anonymous local
-    let _6: &'6 u32; // anonymous local
-    let _7: &'7 u32; // anonymous local
-    let _8: &'8 u32; // anonymous local
-    let _9: &'13 u32; // anonymous local
+    let x: &'4 u32; // local
+    let _4: &'5 u32; // anonymous local
+    let _5: &'6 u32; // anonymous local
+    let _6: &'7 u32; // anonymous local
+    let _7: &'8 u32; // anonymous local
+    let _8: &'9 u32; // anonymous local
+    let _9: &'14 u32; // anonymous local
     let _10: u32; // anonymous local
 
     bb0: {
@@ -726,7 +726,7 @@ where
         _7 = move _8;
         _6 = &(*_7);
         _5 = &(*_6);
-        _0 = cmp<'11, '12>(move _4, move _5) -> bb1 (unwind: bb2);
+        _0 = cmp<'12, '13>(move _4, move _5) -> bb1 (unwind: bb2);
     }
 
     bb1: {
@@ -760,14 +760,14 @@ extern "rust-call" fn call_once<'_0>(_1: {closure}<'_0>, _2: (&'_0 u32,)) -> Ord
 {
     let _0: Ordering; // return
     let _1: {closure}<'_0>; // arg #1
-    let _2: (&'2 u32,); // arg #2
-    let _3: &'4 mut {closure}<'_0>; // anonymous local
+    let _2: (&'3 u32,); // arg #2
+    let _3: &'5 mut {closure}<'_0>; // anonymous local
 
     bb0: {
         storage_live(_0);
         storage_live(_3);
         _3 = &mut _1;
-        _0 = call_mut<'_0, '10>(move _3, move _2) -> bb1 (unwind: bb2);
+        _0 = call_mut<'_0, '11>(move _3, move _2) -> bb1 (unwind: bb2);
     }
 
     bb1: {

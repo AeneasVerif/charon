@@ -492,60 +492,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         Ok(TypeDeclKind::Struct(fields))
     }
 
-    /// Given an item that is callable, generate the signature of the
-    /// `call_once`/`call_mut`/`call` method (depending on `target_kind`).
-    fn translate_callable_method_sig(
-        &mut self,
-        def: &hax::FullDef<'tcx>,
-        span: Span,
-        callable: Callable<'tcx, '_>,
-        target_kind: ClosureKind,
-    ) -> Result<RegionBinder<FunSig>, Error> {
-        let signature = callable.sig();
-        trace!(
-            "signature of callable {:?}:\n{:?}",
-            def.def_id(),
-            signature.value,
-        );
-
-        let mut bound_regions = IndexVec::new();
-        let mut fun_sig = self
-            .translate_fun_sig(span, signature.hax_skip_binder_ref())?
-            .move_under_binder();
-        let state_ty = self
-            .get_callable_state_ty(span, callable)?
-            .move_under_binder();
-
-        // Depending on the kind of the closure generated, add a reference
-        let state_ty = match target_kind {
-            ClosureKind::FnOnce => state_ty,
-            ClosureKind::Fn | ClosureKind::FnMut => {
-                let rid = bound_regions
-                    .push_with(|index| RegionParam::new(index, None, Variance::Covariant));
-                let r = Region::Var(DeBruijnVar::new_at_zero(rid));
-                let mutability = if target_kind == ClosureKind::Fn {
-                    RefKind::Shared
-                } else {
-                    RefKind::Mut
-                };
-                TyKind::Ref(r, state_ty, mutability).into_ty()
-            }
-        };
-
-        let tupled_args_ty = self
-            .translate_ty(span, &callable.sig().hax_skip_binder_ref().tupled_inputs)?
-            .move_under_binder();
-        fun_sig.inputs = vec![state_ty, tupled_args_ty];
-        fun_sig.abi = Abi::Other("rust-call".into());
-
-        Ok(RegionBinder {
-            regions: bound_regions,
-            regions_outlive: Vec::new(),
-            types_outlive: Vec::new(),
-            skip_binder: fun_sig,
-        })
-    }
-
     fn translate_callable_method_body(
         &mut self,
         span: Span,
@@ -842,7 +788,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         // Hax gives us trait-related information for the impl we're building.
         let vimpl = callable_impls.vimpl.unwrap();
         let implemented_trait = self.translate_trait_predicate(span, &vimpl.trait_pred)?;
-        let method_id = self.translate_trait_method_id(implemented_trait.id, &vimpl.methods[0])?;
+        let method = &vimpl.methods[0];
+        let method_id = self.translate_trait_method_id(implemented_trait.id, &method.def_id)?;
 
         let impl_ref = self.translate_callable_impl_ref(span, callable.item(), target_kind)?;
         let src = FunSource::TraitImpl {
@@ -853,7 +800,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         };
 
         // Translate the function signature
-        let bound_sig = self.translate_callable_method_sig(def, span, callable, target_kind)?;
+        let bound_sig = self.translate_poly_fun_sig(span, &method.sig)?;
         // We give it the lifetime parameter we had prepared for that purpose.
         let signature = bound_sig.apply(
             self.the_only_binder()
@@ -907,7 +854,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         // Construct the `call_*` method reference.
         let trait_decl_id = timpl.impl_trait.id;
-        let trait_method_id = self.translate_trait_method_id(trait_decl_id, &vimpl.methods[0])?;
+        let trait_method_id =
+            self.translate_trait_method_id(trait_decl_id, &vimpl.methods[0].def_id)?;
         let call_fn_binder = {
             let kind = TransItemSourceKind::CallableMethod(target_kind);
             let bound_method_ref: RegionBinder<DeclRef<ItemId>> = self

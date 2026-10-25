@@ -943,6 +943,8 @@ impl<'tcx> FnPointer<'tcx> {
 pub struct Closure<'tcx> {
     def_id: DefId,
     /// `[closure_ty, tupled_args_ty]`: the args of the `Fn*` traits for this closure.
+    /// The signature's bound regions are liberated in these types, and the `extra_regions` may be
+    /// mentioned as well.
     fn_trait_args: [ty::Ty<'tcx>; 2],
     kind: ClosureKind,
     /// This param env is empty because the (early-bound) generics of a closure are the same as
@@ -1038,10 +1040,7 @@ fn closure_sig_with_placeholders<'tcx, S: UnderOwnerState<'tcx>>(
             region
         }
     });
-    (
-        tcx.signature_unclosure(sig, hir::Safety::Safe),
-        extra_regions,
-    )
+    (sig, extra_regions)
 }
 
 #[derive(Debug, Clone)]
@@ -1449,9 +1448,21 @@ where
                 unreachable!()
             };
             let closure = closure_args.as_closure();
-            let (sig, extra_regions) = closure_sig_with_placeholders(s, def_id, closure);
-            let tupled_args_ty = sig.map_bound(|sig| ty::Ty::new_tup(tcx, sig.inputs()));
-            let input_ty = tcx.liberate_late_bound_regions(def_id, tupled_args_ty);
+            let (raw_sig, extra_regions) = closure_sig_with_placeholders(s, def_id, closure);
+            // Rebuild the closure args with the unerased `extra_regions`.
+            let closure_args = ty::ClosureArgs::new(
+                tcx,
+                ty::ClosureArgsParts {
+                    parent_args: closure.parent_args(),
+                    closure_kind_ty: closure.kind_ty(),
+                    closure_sig_as_fn_ptr_ty: ty::Ty::new_fn_ptr(tcx, raw_sig),
+                    tupled_upvars_ty: closure.tupled_upvars_ty(),
+                },
+            );
+            let closure_ty = ty::Ty::new_closure(tcx, def_id, closure_args.args);
+
+            let sig = tcx.signature_unclosure(raw_sig, hir::Safety::Safe);
+            let input_ty = tcx.liberate_late_bound_regions(def_id, raw_sig).inputs()[0];
             FullDefKind::Closure(Closure {
                 def_id: hax_def_id.clone(),
                 fn_trait_args: [closure_ty, input_ty],
@@ -1637,13 +1648,20 @@ pub struct VirtualTraitImpl<'tcx> {
     /// The associated types and their predicates, in definition order.
     pub types: Vec<(Ty<'tcx>, Vec<TraitProof<'tcx>>)>,
     /// The methods, in definition order.
-    pub methods: Vec<DefId>,
+    pub methods: Vec<VirtualTraitMethod<'tcx>>,
     /// The item under which this impl was built.
     owner: DefId,
     /// The trait ref of the implemented trait, for `dyn_data`.
     trait_ref: ty::TraitRef<'tcx>,
     /// Computed on demand, see [`VirtualTraitImpl::dyn_self`].
     dyn_data: OnceCell<Option<(Ty<'tcx>, Vec<PolyFnSig<'tcx>>)>>,
+}
+
+/// A method of a virtual trait impl.
+#[derive(Debug, Clone)]
+pub struct VirtualTraitMethod<'tcx> {
+    pub def_id: DefId,
+    pub sig: PolyFnSig<'tcx>,
 }
 
 impl<'tcx> VirtualTraitImpl<'tcx> {
@@ -1666,7 +1684,7 @@ impl<'tcx> VirtualTraitImpl<'tcx> {
                     .methods
                     .iter()
                     .map(|method| {
-                        vtable_sig_with_dyn_self(s, method.real_rust_def_id(), dyn_self).sinto(s)
+                        vtable_sig_with_dyn_self(s, method.def_id.real_rust_def_id(), dyn_self).sinto(s)
                     })
                     .collect();
                 Some((dyn_self.sinto(s), vtable_sigs))
@@ -1958,7 +1976,14 @@ where
         .associated_items(trait_ref.def_id)
         .in_definition_order()
         .filter(|assoc| matches!(assoc.kind, ty::AssocKind::Fn { .. }))
-        .map(|assoc| assoc.def_id.sinto(s))
+        .map(|assoc| {
+            let sig = tcx.fn_sig(assoc.def_id).instantiate(tcx, trait_ref.args);
+            let sig = normalize(tcx, s.typing_env(), sig);
+            VirtualTraitMethod {
+                def_id: assoc.def_id.sinto(s),
+                sig: sig.sinto(s),
+            }
+        })
         .collect();
     Box::new(VirtualTraitImpl {
         trait_pred,

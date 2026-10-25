@@ -57,13 +57,13 @@ where
     RegionOutlives1: '_1: '_2,
 {
     let _0: test_crate::main::{closure}::{closure}<'5, '6, '7, '8, '9>; // return
-    let _1: &'11 test_crate::main::{closure}<'_0, '_1>; // arg #1
+    let _1: &'13 test_crate::main::{closure}<'_0, '_1>; // arg #1
     let tupled_args: (); // arg #2
-    let i: bar<&'20 ()>[{built_in impl Sized for &'20 ()}]; // local
+    let i: bar<&'22 ()>[{built_in impl Sized for &'22 ()}]; // local
 
     storage_live(_0)
     storage_live(i)
-    i = const bar<&'29 ()>[{built_in impl Sized for &'31 ()}]
+    i = const bar<&'31 ()>[{built_in impl Sized for &'33 ()}]
     fake_read(i)
     _0 = test_crate::main::{closure}::{closure} { _0: copy i }
     storage_dead(i)
@@ -82,7 +82,7 @@ where
     RegionOutlives4: '_4: '_5,
 {
     let _0: bar<&'0 ()>[{built_in impl Sized for &'0 ()}]; // return
-    let _1: &'5 test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3, '_4>; // arg #1
+    let _1: &'10 test_crate::main::{closure}::{closure}<'_0, '_1, '_2, '_3, '_4>; // arg #1
     let tupled_args: (); // arg #2
 
     storage_live(_0)

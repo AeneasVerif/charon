@@ -29,7 +29,7 @@ where
     RegionOutlives1: '_1: '_2,
 {
     let _0: &'0 u8; // return
-    let _1: &'2 test_crate::captured_ref::{closure}<'_0, '_1>; // arg #1
+    let _1: &'4 test_crate::captured_ref::{closure}<'_0, '_1>; // arg #1
     let tupled_args: (); // arg #2
 
     storage_live(_0)
@@ -71,7 +71,7 @@ where
     RegionOutlives1: '_1: '_2,
 {
     let _0: &'0 u8; // return
-    let _1: &'2 test_crate::captured_closure::{closure}<'_0, '_1>; // arg #1
+    let _1: &'4 test_crate::captured_closure::{closure}<'_0, '_1>; // arg #1
     let tupled_args: (); // arg #2
 
     storage_live(_0)
@@ -89,10 +89,10 @@ where
     RegionOutlives2: '_2: '_3,
 {
     let _0: &'1 u8; // return
-    let _1: &'3 test_crate::captured_closure::{closure#1}<'_0, '_1, '_2>; // arg #1
+    let _1: &'6 test_crate::captured_closure::{closure#1}<'_0, '_1, '_2>; // arg #1
     let tupled_args: (); // arg #2
-    let _3: &'4 u8; // anonymous local
-    let _4: &'8 test_crate::captured_closure::{closure}<'9, '10>; // anonymous local
+    let _3: &'7 u8; // anonymous local
+    let _4: &'11 test_crate::captured_closure::{closure}<'12, '13>; // anonymous local
     let _5: (); // anonymous local
 
     storage_live(_0)
@@ -101,7 +101,7 @@ where
     _4 = &(*_1)._0
     storage_live(_5)
     _5 = ()
-    _3 = {impl Fn<()> for test_crate::captured_closure::{closure}<'_0, '_1>}::call<'13, '14, '16>(move _4, move _5)
+    _3 = {impl Fn<()> for test_crate::captured_closure::{closure}<'_0, '_1>}::call<'16, '17, '19>(move _4, move _5)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
         unwind_continue
