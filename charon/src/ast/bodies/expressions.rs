@@ -196,7 +196,7 @@ pub enum CastKind {
     /// (reference, `Box`, or other type that implements `CoerceUnsized`).
     ///
     /// The special case of `&[T; N]` -> `&[T]` coercion is caught by `UnOp::ArrayToSlice`.
-    Unsize(Ty, UnsizingMetadata),
+    Unsize(Ty, UnsizingMetadata, MetadataPath),
     /// Reinterprets the bits of a value of one type as another type, i.e. exactly what
     /// [`std::mem::transmute`] does.
     Transmute(Ty),
@@ -205,15 +205,16 @@ pub enum CastKind {
     /// - `&[mut] dyn Trait<...>` -> `&[mut] T`
     /// - `*[mut] dyn Trait<...>` -> `*[mut] T`
     /// - `Box<dyn Trait<...>>` -> `Box<T>` when no `--treat-box-as-builtin`
+    /// - smart-pointers, e.g. `Rc<dyn Trait<...>>` -> `Rc<T>` or
+    ///   `Pin<&mut dyn Trait<...>>` -> `Pin<&mut T>`
     ///
     /// For possible receivers, see: <https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility>.
-    /// Other receivers, e.g., `Rc` should be unpacked before the cast and re-boxed after.
-    /// FIXME(ssyram): but this is not implemented yet, namely, there may still be
-    ///     something like `Rc<dyn Trait<...>> -> Rc<T>` in the types.
     ///
     /// With `--index-to-function-calls`, this also converts `&[T]` to `&[T; N]` (or the mutable
     /// equivalents) when an array subslice projection determines the length statically.
-    Concretize(Ty),
+    // FIXME(#855): smart-pointer receivers should rather be unpacked before the cast and re-packed after,
+    // so that the cast only ever applies to built-in pointers.
+    Concretize(Ty, MetadataPath),
 }
 
 /// Nullary operation
@@ -266,6 +267,11 @@ impl BorrowKind {
         )
     }
 }
+
+/// For `Unsize` and `Concretize` casts, the fields to follow from the cast value to the built-in
+/// pointer whose metadata is changed, e.g. `[ptr, pointer]` for `Rc<T>`. Empty for built-in
+/// pointers.
+pub type MetadataPath = Vec<FieldId>;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[derive(EnumIsA, VariantName)]

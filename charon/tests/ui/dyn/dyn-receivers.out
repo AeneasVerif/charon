@@ -1,0 +1,431 @@
+# Final LLBC before serialization:
+
+// Full name: core::alloc::layout::Layout
+#[lang_item(AllocLayout)]
+pub opaque type Layout
+
+// Full name: core::alloc::AllocError
+pub struct AllocError {}
+
+struct () {}
+
+opaque type core::marker::MetaSized::{vtable}
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::result::Result
+#[diagnostic_item("Result")]
+pub enum Result<T, E>
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (E: Sized),
+{
+  Ok { _0: T },
+  Err { _0: E },
+}
+
+// Full name: core::ptr::non_null::NonNull
+#[lang_item(NonNull)]
+pub struct NonNull<T> {
+  pointer: *const T is !null,
+}
+
+// Full name: core::alloc::Allocator
+pub unsafe trait Allocator<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn allocate<'_0_1>;
+    fn deallocate<'_0_1>;
+    vtable: core::alloc::Allocator::{vtable}
+}
+
+// Full name: core::marker::PhantomData
+#[lang_item(PhantomData)]
+pub struct PhantomData<T> {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::pin::Pin
+#[fundamental]
+#[lang_item(Pin)]
+pub struct Pin<Ptr>
+where
+    TraitClause0: (Ptr: Sized),
+{
+  pointer: Ptr,
+}
+
+// Full name: core::pin::Pin::{impl Destruct for Pin<Ptr>[TraitClause0]}::drop_glue
+unsafe fn impl_Destruct_for_Pin::drop_glue<'_0, Ptr>(_1: &'_0 mut Pin<Ptr>[TraitClause0])
+where
+    TraitClause0: (Ptr: Sized),
+    TypeOutlives0: Ptr: '_0,
+{
+    let _0: (); // return
+    let _1: &'1 mut Pin<Ptr>[TraitClause0]; // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    drop[{built_in impl Destruct for Ptr}::drop_glue<'2>] (*_1).pointer
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: core::ptr::unique::Unique
+pub struct Unique<T> {
+  pointer: NonNull<T>,
+  _marker: PhantomData<T>,
+}
+
+// Full name: alloc::alloc::Global
+#[lang_item(GlobalAlloc)]
+pub struct Global {}
+
+// Full name: alloc::alloc::{impl Allocator for Global}::deallocate
+#[track_caller]
+pub unsafe fn deallocate<'_0>(_1: &'_0 Global, _2: NonNull<u8>, _3: Layout)
+= <opaque>
+
+// Full name: alloc::alloc::{impl Allocator for Global}::allocate
+#[track_caller]
+pub fn allocate<'_0>(_1: &'_0 Global, _2: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
+= <opaque>
+
+// Full name: alloc::alloc::{impl Allocator for Global}
+unsafe impl "impl_Allocator_for_Global" Allocator for Global {
+    proof ImpliedClause0: (Global: MetaSized) = {built_in impl MetaSized for Global}
+    fn allocate<'_0_1> = allocate<'_0_1>
+    fn deallocate<'_0_1> = deallocate<'_0_1>
+    vtable: lazy
+}
+
+// Full name: alloc::boxed::Box
+#[fundamental]
+#[lang_item(OwnedBox)]
+pub struct Box<T, A>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+{
+  _0: Unique<T>,
+  _1: A,
+}
+
+// Full name: alloc::boxed::{impl Drop for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop
+pub fn impl_Drop_for_Box::drop<'_0, T, A>(_1: &'_0 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2])
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
+= <opaque>
+
+// Full name: alloc::boxed::Box::{impl Destruct for Box<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_glue
+unsafe fn impl_Destruct_for_Box::drop_glue<'_0, T, A>(_1: &'_0 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2])
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
+{
+    let _0: (); // return
+    let _1: &'1 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
+    let _2: &'2 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let _3: (); // anonymous local
+    let _4: &'3 mut Box<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let _5: (); // anonymous local
+    let _6: *const T; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _0 = ()
+    _6 = transmute<*const T>(copy (*_1)._0.pointer)
+    drop[{built_in impl Destruct for T}::drop_glue<'4>] (*_6)
+    ↳⚡ _4 = &mut (*_1)
+        _5 = impl_Drop_for_Box::drop<'8, T, A>[TraitClause0, TraitClause1, TraitClause2](move _4)
+        ↳⚡ unwind_terminate
+        drop[{built_in impl Destruct for A}::drop_glue<'9>] (*_1)._1
+        ↳⚡ unwind_terminate
+        unwind_continue
+    _2 = &mut (*_1)
+    _3 = impl_Drop_for_Box::drop<'6, T, A>[TraitClause0, TraitClause1, TraitClause2](move _2)
+    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'9>] (*_1)._1
+        ↳⚡ unwind_terminate
+        unwind_continue
+    drop[{built_in impl Destruct for A}::drop_glue<'10>] (*_1)._1
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: alloc::rc::RcInner
+opaque type RcInner<T>
+where
+    TraitClause0: (T: MetaSized),
+
+// Full name: alloc::rc::Rc
+#[diagnostic_item("Rc")]
+pub struct Rc<T, A>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+{
+  ptr: NonNull<RcInner<T>[TraitClause0]>,
+  phantom: PhantomData<RcInner<T>[TraitClause0]>,
+  alloc: A,
+}
+
+// Full name: alloc::rc::{impl Drop for Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop
+pub fn impl_Drop_for_Rc::drop<'_0, T, A>(_1: &'_0 mut Rc<T, A>[TraitClause0, TraitClause1, TraitClause2])
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
+= <opaque>
+
+// Full name: alloc::rc::Rc::{impl Destruct for Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_glue
+unsafe fn impl_Destruct_for_Rc::drop_glue<'_0, T, A>(_1: &'_0 mut Rc<T, A>[TraitClause0, TraitClause1, TraitClause2])
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
+{
+    let _0: (); // return
+    let _1: &'1 mut Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
+    let _2: &'2 mut Rc<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let _3: (); // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _0 = ()
+    _2 = &mut (*_1)
+    _3 = impl_Drop_for_Rc::drop<'4, T, A>[TraitClause0, TraitClause1, TraitClause2](move _2)
+    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'5>] (*_1).alloc
+        ↳⚡ unwind_terminate
+        unwind_continue
+    drop[{built_in impl Destruct for A}::drop_glue<'6>] (*_1).alloc
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: alloc::sync::ArcInner
+opaque type ArcInner<T>
+where
+    TraitClause0: (T: MetaSized),
+
+// Full name: alloc::sync::Arc
+#[diagnostic_item("Arc")]
+pub struct Arc<T, A>
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+{
+  ptr: NonNull<ArcInner<T>[TraitClause0]>,
+  phantom: PhantomData<ArcInner<T>[TraitClause0]>,
+  alloc: A,
+}
+
+// Full name: alloc::sync::{impl Drop for Arc<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop
+pub fn impl_Drop_for_Arc::drop<'_0, T, A>(_1: &'_0 mut Arc<T, A>[TraitClause0, TraitClause1, TraitClause2])
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
+= <opaque>
+
+// Full name: alloc::sync::Arc::{impl Destruct for Arc<T, A>[TraitClause0, TraitClause1, TraitClause2]}::drop_glue
+unsafe fn impl_Destruct_for_Arc::drop_glue<'_0, T, A>(_1: &'_0 mut Arc<T, A>[TraitClause0, TraitClause1, TraitClause2])
+where
+    TraitClause0: (T: MetaSized),
+    TraitClause1: (A: Sized),
+    TraitClause2: (A: Allocator),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: A: '_0,
+{
+    let _0: (); // return
+    let _1: &'1 mut Arc<T, A>[TraitClause0, TraitClause1, TraitClause2]; // arg #1
+    let _2: &'2 mut Arc<T, A>[TraitClause0, TraitClause1, TraitClause2]; // anonymous local
+    let _3: (); // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    _0 = ()
+    _2 = &mut (*_1)
+    _3 = impl_Drop_for_Arc::drop<'4, T, A>[TraitClause0, TraitClause1, TraitClause2](move _2)
+    ↳⚡ drop[{built_in impl Destruct for A}::drop_glue<'5>] (*_1).alloc
+        ↳⚡ unwind_terminate
+        unwind_continue
+    drop[{built_in impl Destruct for A}::drop_glue<'6>] (*_1).alloc
+    ↳⚡ unwind_continue
+    return
+}
+
+struct test_crate::T::{vtable} {
+  size: usize,
+  align: usize,
+  drop: unsafe fn<'_0_1>(&'_0_1 mut (dyn T)),
+  method_by_box: fn(Box<(dyn T), Global>[{built_in impl MetaSized for (dyn T)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]),
+  method_by_rc: fn(Rc<(dyn T), Global>[{built_in impl MetaSized for (dyn T)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]),
+  method_by_arc: fn(Arc<(dyn T), Global>[{built_in impl MetaSized for (dyn T)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]),
+  method_by_pin_mut: fn<'_0_1>(Pin<&'_0_1 mut (dyn T)>[{built_in impl Sized for &'_0_1 mut (dyn T)}]),
+  method_by_pin_box: fn(Pin<Box<(dyn T), Global>[{built_in impl MetaSized for (dyn T)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T), Global>[{built_in impl MetaSized for (dyn T)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]),
+  super_trait_0: &'static core::marker::MetaSized::{vtable},
+}
+
+// Full name: test_crate::T
+trait T<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    fn by_box;
+    fn by_rc;
+    fn by_arc;
+    fn by_pin_mut<'_0_1>;
+    fn by_pin_box;
+    vtable: test_crate::T::{vtable}
+}
+
+// Full name: test_crate::call_box
+pub fn call_box(x: Box<(dyn T + 'static), Global>[{built_in impl MetaSized for (dyn T + 'static)}, {built_in impl Sized for Global}, impl_Allocator_for_Global])
+{
+    let _0: (); // return
+    let x: Box<(dyn T + '6), Global>[{built_in impl MetaSized for (dyn T + '8)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // arg #1
+    let _2: Box<(dyn T + '9), Global>[{built_in impl MetaSized for (dyn T + '11)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = move x
+    _0 = (copy (*_2._0.pointer.pointer.metadata).method_by_box)(move _2)
+    ↳⚡ conditional_drop[impl_Destruct_for_Box::drop_glue<'28, (dyn T + '23), Global>[{built_in impl MetaSized for (dyn T + '23)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] _2
+        ↳⚡ unwind_terminate
+        conditional_drop[impl_Destruct_for_Box::drop_glue<'58, (dyn T + '53), Global>[{built_in impl MetaSized for (dyn T + '53)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] x
+        ↳⚡ unwind_terminate
+        unwind_continue
+    storage_dead(_2)
+    conditional_drop[impl_Destruct_for_Box::drop_glue<'43, (dyn T + '38), Global>[{built_in impl MetaSized for (dyn T + '38)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] x
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: test_crate::call_rc
+pub fn call_rc(x: Rc<(dyn T + 'static), Global>[{built_in impl MetaSized for (dyn T + 'static)}, {built_in impl Sized for Global}, impl_Allocator_for_Global])
+{
+    let _0: (); // return
+    let x: Rc<(dyn T + '6), Global>[{built_in impl MetaSized for (dyn T + '8)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // arg #1
+    let _2: Rc<(dyn T + '9), Global>[{built_in impl MetaSized for (dyn T + '11)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = move x
+    _0 = (copy (*_2.ptr.pointer.metadata).method_by_rc)(move _2)
+    ↳⚡ conditional_drop[impl_Destruct_for_Rc::drop_glue<'28, (dyn T + '23), Global>[{built_in impl MetaSized for (dyn T + '23)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] _2
+        ↳⚡ unwind_terminate
+        conditional_drop[impl_Destruct_for_Rc::drop_glue<'58, (dyn T + '53), Global>[{built_in impl MetaSized for (dyn T + '53)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] x
+        ↳⚡ unwind_terminate
+        unwind_continue
+    storage_dead(_2)
+    conditional_drop[impl_Destruct_for_Rc::drop_glue<'43, (dyn T + '38), Global>[{built_in impl MetaSized for (dyn T + '38)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] x
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: test_crate::call_arc
+pub fn call_arc(x: Arc<(dyn T + 'static), Global>[{built_in impl MetaSized for (dyn T + 'static)}, {built_in impl Sized for Global}, impl_Allocator_for_Global])
+{
+    let _0: (); // return
+    let x: Arc<(dyn T + '6), Global>[{built_in impl MetaSized for (dyn T + '8)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // arg #1
+    let _2: Arc<(dyn T + '9), Global>[{built_in impl MetaSized for (dyn T + '11)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = move x
+    _0 = (copy (*_2.ptr.pointer.metadata).method_by_arc)(move _2)
+    ↳⚡ conditional_drop[impl_Destruct_for_Arc::drop_glue<'28, (dyn T + '23), Global>[{built_in impl MetaSized for (dyn T + '23)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] _2
+        ↳⚡ unwind_terminate
+        conditional_drop[impl_Destruct_for_Arc::drop_glue<'58, (dyn T + '53), Global>[{built_in impl MetaSized for (dyn T + '53)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] x
+        ↳⚡ unwind_terminate
+        unwind_continue
+    storage_dead(_2)
+    conditional_drop[impl_Destruct_for_Arc::drop_glue<'43, (dyn T + '38), Global>[{built_in impl MetaSized for (dyn T + '38)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]] x
+    ↳⚡ unwind_continue
+    return
+}
+
+// Full name: test_crate::call_pin_mut
+pub fn call_pin_mut<'_0>(x: Pin<&'_0 mut (dyn T + '_0)>[{built_in impl Sized for &'_0 mut (dyn T + '_0)}])
+{
+    let _0: (); // return
+    let x: Pin<&'20 mut (dyn T + '21)>[{built_in impl Sized for &'20 mut (dyn T + '27)}]; // arg #1
+    let _2: Pin<&'28 mut (dyn T + '29)>[{built_in impl Sized for &'28 mut (dyn T + '35)}]; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = move x
+    _0 = (copy (*_2.pointer.metadata).method_by_pin_mut)<'38>(move _2)
+    ↳⚡ unwind_continue
+    storage_dead(_2)
+    return
+}
+
+// Full name: test_crate::call_pin_box
+pub fn call_pin_box(x: Pin<Box<(dyn T + 'static), Global>[{built_in impl MetaSized for (dyn T + 'static)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + 'static), Global>[{built_in impl MetaSized for (dyn T + 'static)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}])
+{
+    let _0: (); // return
+    let x: Pin<Box<(dyn T + '36), Global>[{built_in impl MetaSized for (dyn T + '38)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + '45), Global>[{built_in impl MetaSized for (dyn T + '47)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]; // arg #1
+    let _2: Pin<Box<(dyn T + '48), Global>[{built_in impl MetaSized for (dyn T + '50)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + '57), Global>[{built_in impl MetaSized for (dyn T + '59)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_2)
+    _2 = move x
+    _0 = (copy (*_2.pointer._0.pointer.pointer.metadata).method_by_pin_box)(move _2)
+    ↳⚡ conditional_drop[impl_Destruct_for_Pin::drop_glue<'140, Box<(dyn T + '110), Global>[{built_in impl MetaSized for (dyn T + '112)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + '110), Global>[{built_in impl MetaSized for (dyn T + '112)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]] _2
+        ↳⚡ unwind_terminate
+        conditional_drop[impl_Destruct_for_Pin::drop_glue<'298, Box<(dyn T + '268), Global>[{built_in impl MetaSized for (dyn T + '270)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + '268), Global>[{built_in impl MetaSized for (dyn T + '270)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]] x
+        ↳⚡ unwind_terminate
+        unwind_continue
+    storage_dead(_2)
+    conditional_drop[impl_Destruct_for_Pin::drop_glue<'219, Box<(dyn T + '189), Global>[{built_in impl MetaSized for (dyn T + '191)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]>[{built_in impl Sized for Box<(dyn T + '189), Global>[{built_in impl MetaSized for (dyn T + '191)}, {built_in impl Sized for Global}, impl_Allocator_for_Global]}]] x
+    ↳⚡ unwind_continue
+    return
+}
+
+
+

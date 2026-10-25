@@ -540,16 +540,18 @@ and cast_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Subtype", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CastSubtype _0)
-    | `Assoc [ ("Unsize", `List [ _0; _1 ]) ] ->
+    | `Assoc [ ("Unsize", `List [ _0; _1; _2 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
         let* _1 = unsizing_metadata_of_json ctx _1 in
-        Ok (CastUnsize (_0, _1))
+        let* _2 = list_of_json field_id_of_json ctx _2 in
+        Ok (CastUnsize (_0, _1, _2))
     | `Assoc [ ("Transmute", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CastTransmute _0)
-    | `Assoc [ ("Concretize", _0) ] ->
+    | `Assoc [ ("Concretize", `List [ _0; _1 ]) ] ->
         let* _0 = ty_of_json ctx _0 in
-        Ok (CastConcretize _0)
+        let* _1 = list_of_json field_id_of_json ctx _1 in
+        Ok (CastConcretize (_0, _1))
     | _ -> Error "")
 
 and const_generic_param_of_json (ctx : of_json_ctx) (js : json) :
@@ -4512,9 +4514,10 @@ and v_table_field_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Size" -> Ok VTableSize
     | `String "Align" -> Ok VTableAlign
     | `String "Drop" -> Ok VTableDrop
-    | `Assoc [ ("Method", _0) ] ->
+    | `Assoc [ ("Method", `List [ _0; _1 ]) ] ->
         let* _0 = trait_method_id_of_json ctx _0 in
-        Ok (VTableMethod _0)
+        let* _1 = list_of_json field_id_of_json ctx _1 in
+        Ok (VTableMethod (_0, _1))
     | `Assoc [ ("SuperTrait", _0) ] ->
         let* _0 = trait_clause_id_of_json ctx _0 in
         Ok (VTableSuperTrait _0)

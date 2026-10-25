@@ -1139,6 +1139,7 @@ pub fn translate<'tcx>(
                 ),
                 unsized_strings: translate_options.unsized_strings,
             },
+            treat_box_as_builtin: translate_options.treat_box_as_builtin,
         },
         hax::options::BoundsOptions {
             add_destruct_bounds: translate_options.add_destruct_bounds,

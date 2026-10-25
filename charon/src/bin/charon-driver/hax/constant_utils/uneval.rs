@@ -151,7 +151,9 @@ fn unsizing_metadata<'tcx, S: UnderOwnerState<'tcx>>(
 ) -> UnsizingMetadata<'tcx> {
     let from = ty::Ty::new_imm_ptr(s.base().tcx, from);
     let to = ty::Ty::new_imm_ptr(s.base().tcx, to);
-    compute_unsizing_metadata(s, from, to)
+    let (path, metadata) = compute_unsizing_metadata(s, from, to);
+    assert!(path.is_empty(), "Non-empty unsize path in const ptr");
+    metadata
 }
 
 /// The provenance to give to the bytes of a pointer into the given allocation.

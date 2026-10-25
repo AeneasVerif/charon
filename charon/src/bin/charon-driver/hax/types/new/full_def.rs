@@ -866,7 +866,23 @@ impl<'tcx> AssocFn<'tcx> {
     /// vtable safe. `Some(sig)` if it is vtable safe, where `sig` is the trait method declaration's
     /// signature with `Self` replaced by `dyn Trait` and associated types normalized.
     pub fn vtable_sig(&self, s: &impl BaseState<'tcx>) -> Option<PolyFnSig<'tcx>> {
-        gen_vtable_sig(&s.with_hax_owner(&self.def_id), self.args)
+        let (s, sig) = gen_vtable_sig(&s.with_hax_owner(&self.def_id), self.args)?;
+        Some(sig.sinto(&s))
+    }
+    /// For a vtable-safe method, the fields to follow from its vtable receiver to the built-in
+    /// pointer that carries the vtable.
+    pub fn vtable_receiver_path(&self, s: &impl BaseState<'tcx>) -> Vec<FieldIdx> {
+        let Some((s, vtable_sig)) = gen_vtable_sig(&s.with_hax_owner(&self.def_id), self.args)
+        else {
+            return vec![];
+        };
+        let tcx = s.base().tcx;
+        let receiver = tcx
+            .instantiate_bound_regions_with_erased(vtable_sig)
+            .inputs()[0];
+        // The path doesn't depend on the source type, so we can use the trivial `dyn T -> dyn T`,
+        // which doesn't panic if `Source: ?Sized`.
+        compute_unsizing_metadata(&s, receiver, receiver).0
     }
     pub fn sig(&self) -> &PolyFnSig<'tcx> {
         &self.sig
@@ -1168,11 +1184,13 @@ fn adjust_by_value_vtable_receiver<'tcx>(
     })
 }
 
+/// The vtable signature of the method, along with the state of the method's container in which it
+/// lives.
 fn gen_vtable_sig<'tcx>(
     // The state that owns the method DefId
     s: &impl UnderOwnerState<'tcx>,
     args: Option<ty::GenericArgsRef<'tcx>>,
-) -> Option<PolyFnSig<'tcx>> {
+) -> Option<(StateWithOwner<'tcx>, ty::PolyFnSig<'tcx>)> {
     let method_def_id = s.owner().as_real_def_id().unwrap();
     let tcx = s.base().tcx;
     let assoc_item = tcx.associated_item(method_def_id);
@@ -1213,7 +1231,8 @@ fn gen_vtable_sig<'tcx>(
         }
     }?;
 
-    Some(vtable_sig_with_dyn_self(s, method_decl_id, dyn_self))
+    let sig = vtable_sig_with_dyn_self(s, method_decl_id, dyn_self);
+    Some((s.clone(), sig))
 }
 
 /// The signature of `method_decl_id` as stored in a vtable, i.e. with its `Self` type replaced by
@@ -1222,7 +1241,7 @@ fn vtable_sig_with_dyn_self<'tcx>(
     s: &impl UnderOwnerState<'tcx>,
     method_decl_id: RDefId,
     dyn_self: ty::Ty<'tcx>,
-) -> PolyFnSig<'tcx> {
+) -> ty::PolyFnSig<'tcx> {
     let tcx = s.base().tcx;
     // dyn_self is of form `dyn Trait<Args...>`, we extract the trait args
     let ty::Dynamic(preds, _) = dyn_self.kind() else {
@@ -1243,9 +1262,7 @@ fn vtable_sig_with_dyn_self<'tcx>(
     // Instantiate and normalize the signature.
     let method_decl_sig = tcx.fn_sig(method_decl_id).instantiate(tcx, trait_args);
     let normalized_sig = normalize(tcx, s.typing_env(), method_decl_sig);
-    let normalized_sig = adjust_by_value_vtable_receiver(tcx, method_decl_id, normalized_sig);
-
-    normalized_sig.sinto(s)
+    adjust_by_value_vtable_receiver(tcx, method_decl_id, normalized_sig)
 }
 
 /// Construct the `FullDefKind` for this item.
@@ -1610,7 +1627,9 @@ impl<'tcx> VirtualTraitImpl<'tcx> {
                 let vtable_sigs = self
                     .methods
                     .iter()
-                    .map(|method| vtable_sig_with_dyn_self(s, method.real_rust_def_id(), dyn_self))
+                    .map(|method| {
+                        vtable_sig_with_dyn_self(s, method.real_rust_def_id(), dyn_self).sinto(s)
+                    })
                     .collect();
                 Some((dyn_self.sinto(s), vtable_sigs))
             })
