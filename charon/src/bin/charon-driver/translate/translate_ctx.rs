@@ -24,6 +24,30 @@ pub(crate) use charon_lib::errors::{
     DepSource, ErrorCtx, Level, error_assert, raise_error, register_error,
 };
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum ItemOrModuleId {
+    Item(ItemId),
+    /// A module, foreign module, or inherent impl.
+    Module(hax::DefId),
+}
+
+impl ItemOrModuleId {
+    pub fn as_item(&self) -> Option<ItemId> {
+        match self {
+            Self::Item(id) => Some(*id),
+            Self::Module(_) => None,
+        }
+    }
+
+    pub fn expect_item<T: TryFrom<ItemId>>(&self) -> T {
+        self.as_item()
+            .expect("expected a translated item")
+            .try_into()
+            .ok()
+            .expect("unexpected item kind")
+    }
+}
+
 /// Translation context used while translating the crate data into our representation.
 pub struct TranslateCtx<'tcx> {
     /// The Rust compiler type context
@@ -68,7 +92,7 @@ pub struct TranslateCtx<'tcx> {
     /// added to this set.
     pub started_from: HashSet<hax::DefId>,
     /// Stack of the translations currently happening. Used to avoid accidental cycles.
-    pub translate_stack: Vec<ItemId>,
+    pub translate_stack: Vec<ItemOrModuleId>,
     /// Cache of the translated span, as translating one is costly
     pub cached_spans: HashMap<rustc_span::Span, meta::SpanData>,
     /// Cache of file ids per rustc source file, to avoid recomputing file names for every span.
@@ -106,8 +130,8 @@ impl Default for MethodStatus {
 pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     /// The definition we are currently extracting.
     pub item_src: TransItemSource<'tcx>,
-    /// The id of the definition we are currently extracting, if there is one.
-    pub item_id: Option<ItemId>,
+    /// The id of the definition we are currently extracting.
+    pub item_id: ItemOrModuleId,
     /// The translation context containing the top-level definitions/ids.
     pub t_ctx: &'ctx mut TranslateCtx<'tcx>,
     /// The Hax context with the current `DefId`.
@@ -202,14 +226,14 @@ impl<'tcx> TranslateCtx<'tcx> {
     pub(crate) fn with_def_id<F, T>(
         &mut self,
         def_id: &hax::DefId,
-        item_id: Option<ItemId>,
+        item_id: &ItemOrModuleId,
         f: F,
     ) -> T
     where
         F: FnOnce(&mut Self) -> T,
     {
         let mut errors = self.errors.borrow_mut();
-        let current_def_id = mem::replace(&mut errors.def_id, item_id);
+        let current_def_id = mem::replace(&mut errors.def_id, item_id.as_item());
         let current_def_id_is_local = mem::replace(&mut errors.def_id_is_local, def_id.is_local());
         drop(errors); // important: release the refcell "lock"
         let ret = f(self);
@@ -224,7 +248,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(
         item_src: TransItemSource<'tcx>,
-        item_id: Option<ItemId>,
+        item_id: ItemOrModuleId,
         t_ctx: &'ctx mut TranslateCtx<'tcx>,
     ) -> Self {
         use crate::hax::BaseState;

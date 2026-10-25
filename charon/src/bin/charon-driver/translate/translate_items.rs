@@ -21,25 +21,23 @@ impl<'tcx> TranslateCtx<'tcx> {
         });
         let trans_id = self.register_no_enqueue(&None, item_src);
         let def_id = item_src.def_id();
-        if let Some(trans_id) = trans_id {
-            if self.translate_stack.contains(&trans_id) {
-                register_error!(
-                    self,
-                    Span::dummy(),
-                    "Cycle detected while translating {def_id:?}! Stack: {:?}",
-                    &self.translate_stack
-                );
-                return;
-            } else {
-                self.translate_stack.push(trans_id);
-            }
+        if self.translate_stack.contains(&trans_id) {
+            register_error!(
+                self,
+                Span::dummy(),
+                "Cycle detected while translating {def_id:?}! Stack: {:?}",
+                &self.translate_stack
+            );
+            return;
         }
-        self.with_def_id(def_id, trans_id, |mut ctx| {
+        self.translate_stack.push(trans_id.clone());
+        self.with_def_id(def_id, &trans_id, |mut ctx| {
             let span = ctx.def_span(def_id);
             // Catch cycles
             let res = {
                 // Stopgap measure because there are still many panics in charon and hax.
                 let mut ctx = std::panic::AssertUnwindSafe(&mut ctx);
+                let trans_id = trans_id.clone();
                 std::panic::catch_unwind(move || ctx.translate_item_aux(item_src, trans_id))
             };
             match res {
@@ -56,7 +54,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                 ),
             };
         });
-        if let Some(trans_id) = trans_id
+        if let Some(trans_id) = trans_id.as_item()
             && self.errors.borrow().item_has_errors(trans_id)
             && let Some(mut item) = self.translated.get_item_mut(trans_id)
         {
@@ -69,14 +67,17 @@ impl<'tcx> TranslateCtx<'tcx> {
     pub(crate) fn translate_item_aux(
         &mut self,
         item_src: &TransItemSource<'tcx>,
-        trans_id: Option<ItemId>,
+        trans_id: ItemOrModuleId,
     ) -> Result<(), Error> {
         // The name may have already been computed.
-        let name = match trans_id.and_then(|id| self.translated.item_names.get(&id)) {
+        let name = match trans_id
+            .as_item()
+            .and_then(|id| self.translated.item_names.get(&id))
+        {
             Some(name) => name.clone(),
             None => {
                 let name = self.translate_name(item_src)?;
-                if let Some(trans_id) = trans_id {
+                if let Some(trans_id) = trans_id.as_item() {
                     self.translated.item_names.insert(trans_id, name.clone());
                 }
                 name
@@ -124,7 +125,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         }
 
         // Initialize the item translation context
-        let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id, self);
+        let mut bt_ctx = ItemTransCtx::new(item_src.clone(), trans_id.clone(), self);
         trace!(
             "About to translate item `{:?}` as a {:?}; \
             target_id={trans_id:?}, mono={}",
@@ -143,37 +144,27 @@ impl<'tcx> TranslateCtx<'tcx> {
                 bt_ctx.register_module(item_meta, &def);
             }
             TransItemSourceKind::Type => {
-                let Some(ItemId::Type(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let ty = bt_ctx.translate_type_decl(id, item_meta, &def)?;
                 self.translated.type_decls.set_slot(id, ty);
             }
             TransItemSourceKind::Fun => {
-                let Some(ItemId::Fun(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_fun_decl(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             TransItemSourceKind::Global => {
-                let Some(ItemId::Global(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let global_decl = bt_ctx.translate_global(id, item_meta, &def)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
             TransItemSourceKind::TraitDecl => {
-                let Some(ItemId::TraitDecl(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let trait_decl = bt_ctx.translate_trait_decl(id, item_meta, &def)?;
                 self.translated.trait_decls.set_slot(id, trait_decl);
             }
             TransItemSourceKind::TraitImpl(kind) => {
-                let Some(ItemId::TraitImpl(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 // In Mono mode, only user-defined trait is supported for now.
                 let trait_impl = match kind {
                     TransImplSource::Normal => bt_ctx.translate_trait_impl(id, item_meta, &def)?,
@@ -193,52 +184,38 @@ impl<'tcx> TranslateCtx<'tcx> {
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
             &TransItemSourceKind::CallableMethod(kind) => {
-                let Some(ItemId::Fun(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             TransItemSourceKind::ClosureAsFnCast => {
-                let Some(ItemId::Fun(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_stateless_closure_as_fn(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             &TransItemSourceKind::DropGlueMethod(impl_kind) => {
-                let Some(ItemId::Fun(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_drop_glue_method(id, item_meta, &def, impl_kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             TransItemSourceKind::VTable => {
-                let Some(ItemId::Type(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let ty_decl = bt_ctx.translate_vtable_struct(id, item_meta, &def)?;
                 self.translated.type_decls.set_slot(id, ty_decl);
             }
             &TransItemSourceKind::VTableInstance(impl_kind) => {
-                let Some(ItemId::Global(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let global_decl =
                     bt_ctx.translate_vtable_instance(id, item_meta, &def, impl_kind)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
             &TransItemSourceKind::VTableMethod(impl_kind) => {
-                let Some(ItemId::Fun(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_vtable_shim(id, item_meta, &def, impl_kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             &TransItemSourceKind::VTableDropShim(impl_kind) => {
-                let Some(ItemId::Fun(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_vtable_drop_shim(id, item_meta, &def, impl_kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }

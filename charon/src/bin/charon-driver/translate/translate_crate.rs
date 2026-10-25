@@ -270,7 +270,7 @@ impl<'tcx> TranslateCtx<'tcx> {
     fn register_polymorphic_function(&mut self, def_id: DefId) -> FunDeclId {
         let def_id = def_id.sinto(&self.hax_state);
         let item = TransItemSource::polymorphic(&def_id, TransItemSourceKind::Fun);
-        self.register_and_enqueue(&None, item).unwrap()
+        self.register_and_enqueue(&None, item).expect_item()
     }
 
     fn register_poly_function_by_path(&mut self, path: &str) -> Result<FunDeclId, Error> {
@@ -407,7 +407,7 @@ impl<'tcx> TranslateCtx<'tcx> {
         } else {
             TransItemSource::polymorphic(def_id, kind)
         };
-        let _: Option<ItemId> = self.register_and_enqueue(&None, item_src);
+        self.register_and_enqueue(&None, item_src);
     }
 
     /// Whether this item is polymorphic, while we are in monomorphic mode.
@@ -415,11 +415,11 @@ impl<'tcx> TranslateCtx<'tcx> {
         self.options.monomorphize_with_hax && matches!(item_src.item, RustcItem::Poly(..))
     }
 
-    pub(crate) fn register_no_enqueue<T: TryFrom<ItemId>>(
+    pub(crate) fn register_no_enqueue(
         &mut self,
         dep_src: &Option<DepSource>,
         src: &TransItemSource<'tcx>,
-    ) -> Option<T> {
+    ) -> ItemOrModuleId {
         let item_id = match self.id_map.get(src) {
             Some(tid) => *tid,
             None => {
@@ -435,7 +435,9 @@ impl<'tcx> TranslateCtx<'tcx> {
                     | VTableMethod(..) | VTableDropShim(..) => {
                         ItemId::Fun(self.translated.fun_decls.reserve_slot())
                     }
-                    InherentImpl | Module => return None,
+                    InherentImpl | Module => {
+                        return ItemOrModuleId::Module(src.def_id().clone());
+                    }
                 };
                 // Add the id to the queue of declarations to translate
                 self.id_map.insert(src.clone(), trans_id);
@@ -450,15 +452,15 @@ impl<'tcx> TranslateCtx<'tcx> {
         self.errors
             .borrow_mut()
             .register_dep_source(dep_src, item_id, src.def_id().is_local());
-        item_id.try_into().ok()
+        ItemOrModuleId::Item(item_id)
     }
 
     /// Register this item source and enqueue it for translation.
-    pub(crate) fn register_and_enqueue<T: TryFrom<ItemId>>(
+    pub(crate) fn register_and_enqueue(
         &mut self,
         dep_src: &Option<DepSource>,
         item_src: TransItemSource<'tcx>,
-    ) -> Option<T> {
+    ) -> ItemOrModuleId {
         let id = self.register_no_enqueue(dep_src, &item_src);
         self.items_to_translate.push_back(item_src);
         id
@@ -604,12 +606,16 @@ impl<'tcx> TranslateCtx<'tcx> {
         } else {
             TransItemSource::polymorphic(&def_id, TransItemSourceKind::Type)
         };
-        let id: Option<TypeDeclId> = if self.options.no_gen_tuple_structs {
+        let id = if self.options.no_gen_tuple_structs {
             self.register_and_enqueue(&None, item_src)
         } else {
             self.register_no_enqueue(&None, &item_src)
         };
-        assert_eq!(id, Some(TypeDeclId::UNIT), "the unit type must come first");
+        assert_eq!(
+            id,
+            ItemOrModuleId::Item(TypeDeclId::UNIT.into()),
+            "the unit type must come first"
+        );
     }
 
     pub(crate) fn register_target_info(&mut self) {
@@ -705,7 +711,7 @@ impl<'tcx> TranslateCtx<'tcx> {
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {
         Some(DepSource {
-            src_id: self.item_id?,
+            src_id: self.item_id.as_item()?,
             span: self.item_src.def_id().is_local().then_some(span),
         })
     }
@@ -717,7 +723,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         item_src: TransItemSource<'tcx>,
     ) -> T {
         let dep_src = self.make_dep_source(span);
-        self.t_ctx.register_and_enqueue(&dep_src, item_src).unwrap()
+        self.t_ctx
+            .register_and_enqueue(&dep_src, item_src)
+            .expect_item()
     }
 
     pub(crate) fn register_no_enqueue<T: TryFrom<ItemId>>(
@@ -726,7 +734,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         src: &TransItemSource<'tcx>,
     ) -> T {
         let dep_src = self.make_dep_source(span);
-        self.t_ctx.register_no_enqueue(&dep_src, src).unwrap()
+        self.t_ctx.register_no_enqueue(&dep_src, src).expect_item()
     }
 
     /// Register this item and maybe enqueue it for translation.
