@@ -6,15 +6,15 @@ struct (_,)::<&'_ u8> {
   _0: &'_ u8,
 }
 
-struct test_crate::captured_ref::{closure}<'_0> {
+struct test_crate::captured_ref::{closure}<'_0, '_1> {
   _0: &'_0 u8,
 }
 
 // Full name: test_crate::captured_ref
-pub fn captured_ref<'a>(x: &'a u8) -> test_crate::captured_ref::{closure}<'_>
+pub fn captured_ref<'a>(x: &'a u8) -> test_crate::captured_ref::{closure}<'_, '_>
 {
-    let _0: test_crate::captured_ref::{closure}<'1>; // return
-    let x: &'3 u8; // arg #1
+    let _0: test_crate::captured_ref::{closure}<'2, '3>; // return
+    let x: &'5 u8; // arg #1
 
     storage_live(_0)
     _0 = test_crate::captured_ref::{closure} { _0: copy x }
@@ -22,13 +22,14 @@ pub fn captured_ref<'a>(x: &'a u8) -> test_crate::captured_ref::{closure}<'_>
     return
 }
 
-// Full name: test_crate::captured_ref::{impl Fn<()> for test_crate::captured_ref::{closure}<'_0>}::call
-extern "rust-call" fn {impl Fn<()> for test_crate::captured_ref::{closure}<'_0>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::captured_ref::{closure}<'_0>, tupled_args: ()) -> &'_1 u8
+// Full name: test_crate::captured_ref::{impl Fn<()> for test_crate::captured_ref::{closure}<'_0, '_1>}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::captured_ref::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::captured_ref::{closure}<'_0, '_1>, tupled_args: ()) -> &'_1 u8
 where
     RegionOutlives0: '_0: '_2,
+    RegionOutlives1: '_1: '_2,
 {
     let _0: &'0 u8; // return
-    let _1: &'2 test_crate::captured_ref::{closure}<'_0>; // arg #1
+    let _1: &'2 test_crate::captured_ref::{closure}<'_0, '_1>; // arg #1
     let tupled_args: (); // arg #2
 
     storage_live(_0)
@@ -38,20 +39,20 @@ where
     return
 }
 
-struct test_crate::captured_closure::{closure}<'_0> {
+struct test_crate::captured_closure::{closure}<'_0, '_1> {
   _0: &'_0 u8,
 }
 
-struct test_crate::captured_closure::{closure#1}<'_0> {
-  _0: test_crate::captured_closure::{closure}<'_0>,
+struct test_crate::captured_closure::{closure#1}<'_0, '_1, '_2> {
+  _0: test_crate::captured_closure::{closure}<'_0, '_1>,
 }
 
 // Full name: test_crate::captured_closure
-pub fn captured_closure<'a>(x: &'a u8) -> test_crate::captured_closure::{closure#1}<'_>
+pub fn captured_closure<'a>(x: &'a u8) -> test_crate::captured_closure::{closure#1}<'_, '_, '_>
 {
-    let _0: test_crate::captured_closure::{closure#1}<'1>; // return
-    let x: &'3 u8; // arg #1
-    let inner: test_crate::captured_closure::{closure}<'5>; // local
+    let _0: test_crate::captured_closure::{closure#1}<'3, '4, '5>; // return
+    let x: &'7 u8; // arg #1
+    let inner: test_crate::captured_closure::{closure}<'10, '11>; // local
 
     storage_live(_0)
     storage_live(inner)
@@ -63,13 +64,14 @@ pub fn captured_closure<'a>(x: &'a u8) -> test_crate::captured_closure::{closure
     return
 }
 
-// Full name: test_crate::captured_closure::{impl Fn<()> for test_crate::captured_closure::{closure}<'_0>}::call
-extern "rust-call" fn {impl Fn<()> for test_crate::captured_closure::{closure}<'_0>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::captured_closure::{closure}<'_0>, tupled_args: ()) -> &'_1 u8
+// Full name: test_crate::captured_closure::{impl Fn<()> for test_crate::captured_closure::{closure}<'_0, '_1>}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::captured_closure::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::captured_closure::{closure}<'_0, '_1>, tupled_args: ()) -> &'_1 u8
 where
     RegionOutlives0: '_0: '_2,
+    RegionOutlives1: '_1: '_2,
 {
     let _0: &'0 u8; // return
-    let _1: &'2 test_crate::captured_closure::{closure}<'_0>; // arg #1
+    let _1: &'2 test_crate::captured_closure::{closure}<'_0, '_1>; // arg #1
     let tupled_args: (); // arg #2
 
     storage_live(_0)
@@ -79,16 +81,18 @@ where
     return
 }
 
-// Full name: test_crate::captured_closure::{impl Fn<()> for test_crate::captured_closure::{closure#1}<'_0>}::call
-extern "rust-call" fn {impl Fn<()> for test_crate::captured_closure::{closure#1}<'_0>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::captured_closure::{closure#1}<'_0>, tupled_args: ()) -> &'_1 u8
+// Full name: test_crate::captured_closure::{impl Fn<()> for test_crate::captured_closure::{closure#1}<'_0, '_1, '_2>}::call
+extern "rust-call" fn {impl Fn<()> for test_crate::captured_closure::{closure#1}<'_0, '_1, '_2>}::call<'_0, '_1, '_2, '_3>(_1: &'_3 test_crate::captured_closure::{closure#1}<'_0, '_1, '_2>, tupled_args: ()) -> &'_2 u8
 where
-    RegionOutlives0: '_0: '_2,
+    RegionOutlives0: '_0: '_3,
+    RegionOutlives1: '_1: '_3,
+    RegionOutlives2: '_2: '_3,
 {
     let _0: &'1 u8; // return
-    let _1: &'3 test_crate::captured_closure::{closure#1}<'_0>; // arg #1
+    let _1: &'3 test_crate::captured_closure::{closure#1}<'_0, '_1, '_2>; // arg #1
     let tupled_args: (); // arg #2
     let _3: &'4 u8; // anonymous local
-    let _4: &'7 test_crate::captured_closure::{closure}<'8>; // anonymous local
+    let _4: &'8 test_crate::captured_closure::{closure}<'9, '10>; // anonymous local
     let _5: (); // anonymous local
 
     storage_live(_0)
@@ -97,7 +101,7 @@ where
     _4 = &(*_1)._0
     storage_live(_5)
     _5 = ()
-    _3 = {impl Fn<()> for test_crate::captured_closure::{closure}<'_0>}::call<'10, '11, '13>(move _4, move _5)
+    _3 = {impl Fn<()> for test_crate::captured_closure::{closure}<'_0, '_1>}::call<'13, '14, '16>(move _4, move _5)
     ↳⚡ storage_dead(tupled_args)
         storage_dead(_1)
         unwind_continue

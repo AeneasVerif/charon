@@ -689,66 +689,12 @@ pub struct TyFnSig<'tcx> {
 /// Reflects [`ty::PolyFnSig`]
 pub type PolyFnSig<'tcx> = Binder<TyFnSig<'tcx>>;
 
-/// Retrieve a closure's signature, recovering the regions that rustc erased as fresh bound
-/// regions.
+/// Retrieve a closure's signature.
 pub fn closure_sig<'tcx>(
     tcx: ty::TyCtxt<'tcx>,
     closure: ty::ClosureArgs<ty::TyCtxt<'tcx>>,
 ) -> ty::PolyFnSig<'tcx> {
-    use ty::TypeFoldable;
-    use ty::TypeSuperFoldable;
-
-    struct RegionUnEraserVisitor<'tcx> {
-        tcx: ty::TyCtxt<'tcx>,
-        depth: u32,
-        bound_vars: Vec<ty::BoundVariableKind<'tcx>>,
-    }
-
-    impl<'tcx> ty::TypeFolder<ty::TyCtxt<'tcx>> for RegionUnEraserVisitor<'tcx> {
-        fn cx(&self) -> ty::TyCtxt<'tcx> {
-            self.tcx
-        }
-
-        fn fold_ty(&mut self, ty: ty::Ty<'tcx>) -> ty::Ty<'tcx> {
-            ty.super_fold_with(self)
-        }
-
-        fn fold_binder<T>(&mut self, t: ty::Binder<'tcx, T>) -> ty::Binder<'tcx, T>
-        where
-            T: ty::TypeFoldable<ty::TyCtxt<'tcx>>,
-        {
-            self.depth += 1;
-            let t = t.super_fold_with(self);
-            self.depth -= 1;
-            t
-        }
-
-        fn fold_region(&mut self, r: ty::Region<'tcx>) -> ty::Region<'tcx> {
-            // Replace erased regions with fresh bound regions.
-            if r.is_erased() {
-                let bound_region = ty::BoundRegion {
-                    var: ty::BoundVar::from_usize(self.bound_vars.len()),
-                    kind: ty::BoundRegionKind::Anon,
-                };
-                self.bound_vars
-                    .push(ty::BoundVariableKind::Region(bound_region.kind));
-                ty::Region::new_bound(self.tcx, ty::DebruijnIndex::from(self.depth), bound_region)
-            } else {
-                r
-            }
-        }
-    }
-
-    let sig = closure.sig();
-    let sig = tcx.signature_unclosure(sig, rustc_hir::Safety::Safe);
-    let mut visitor = RegionUnEraserVisitor {
-        tcx,
-        depth: 0,
-        bound_vars: sig.bound_vars().iter().collect(),
-    };
-    let unbound_sig = sig.skip_binder().fold_with(&mut visitor);
-    let bound_vars = tcx.mk_bound_variable_kinds(&visitor.bound_vars);
-    ty::Binder::bind_with_vars(unbound_sig, bound_vars)
+    tcx.signature_unclosure(closure.sig(), rustc_hir::Safety::Safe)
 }
 
 /// Reflects [`ty::ClosureKind`]

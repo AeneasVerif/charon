@@ -29,35 +29,36 @@ trait Accept<'a, Self>
 }
 
 // Full name: test_crate::make::{closure}
-struct {closure}<'a, T>
+struct {closure}<'a, '_1, T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Accept<'a>),
 {}
 
 // Full name: test_crate::make
-fn make<'a, T>() -> {closure}<'a, T>[TraitClause0, TraitClause1]
+fn make<'a, T>() -> {closure}<'a, '_, T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Accept<'a>),
 {
-    let _0: {closure}<'2, T>[TraitClause0, TraitClause1]; // return
+    let _0: {closure}<'3, '4, T>[TraitClause0, TraitClause1]; // return
 
     storage_live(_0)
     _0 = {closure} {  }
     return
 }
 
-// Full name: test_crate::make::{impl Fn<(&'_1 u8,)> for {closure}<'a, T>[TraitClause0, TraitClause1]}::call
-extern "rust-call" fn call<'a, '_1, '_2, T>(_1: &'_2 {closure}<'a, T>[TraitClause0, TraitClause1], tupled_args: (&'_1 u8,))
+// Full name: test_crate::make::{impl Fn<(&'_1 u8,)> for {closure}<'a, '_1, T>[TraitClause0, TraitClause1]}::call
+extern "rust-call" fn call<'a, '_1, '_2, T>(_1: &'_2 {closure}<'a, '_1, T>[TraitClause0, TraitClause1], tupled_args: (&'_1 u8,))
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Accept<'a>),
     TypeOutlives0: T: '_2,
     RegionOutlives0: 'a: '_2,
+    RegionOutlives1: '_1: '_2,
 {
     let _0: (); // return
-    let _1: &'2 {closure}<'a, T>[TraitClause0, TraitClause1]; // arg #1
+    let _1: &'2 {closure}<'a, '_1, T>[TraitClause0, TraitClause1]; // arg #1
     let tupled_args: (&'_1 u8,); // arg #2
     let x: &'5 u8; // local
     let _4: &'6 u8; // anonymous local

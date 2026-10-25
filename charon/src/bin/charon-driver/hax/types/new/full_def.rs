@@ -949,6 +949,9 @@ pub struct Closure<'tcx> {
     /// those of the item in which it is defined. We hide the special weird generics that rustc
     /// uses internally for inference on closures.
     param_env: ParamEnv<'tcx>,
+    /// Extra region parameters that we represent as placeholder regions as rustc otherwise erases
+    /// them.
+    extra_regions: Vec<PlaceholderRegion>,
     sig: PolyFnSig<'tcx>,
     /// The captured variables, which together form the closure's state.
     upvar_tys: Vec<Ty<'tcx>>,
@@ -964,6 +967,9 @@ impl<'tcx> Closure<'tcx> {
     /// uses internally for inference on closures.
     pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
+    }
+    pub fn extra_regions_inferred_from_signature(&self) -> &[PlaceholderRegion] {
+        &self.extra_regions
     }
     pub fn kind(&self) -> &ClosureKind {
         &self.kind
@@ -1005,6 +1011,37 @@ impl<'tcx> Closure<'tcx> {
         self.destruct_impl
             .get_or_init(|| self.virtual_impl(s, LangItem::Destruct, &self.fn_trait_args[..1]))
     }
+}
+
+/// Visit the signature and replase erased regions with placeholders so they can become lifetime
+/// parameters of the closure struct.
+fn closure_sig_with_placeholders<'tcx, S: UnderOwnerState<'tcx>>(
+    s: &S,
+    def_id: RDefId,
+    closure: ty::ClosureArgs<ty::TyCtxt<'tcx>>,
+) -> (ty::PolyFnSig<'tcx>, Vec<PlaceholderRegion>) {
+    let tcx = s.base().tcx;
+    let marker = rustc_span::Symbol::intern(&format!("__charon_closure_region_{def_id:?}"));
+    let mut extra_regions = Vec::new();
+    let sig = ty::fold_regions(tcx, closure.sig(), |region, _| {
+        if region.is_erased() {
+            let placeholder = ty::PlaceholderRegion::new(
+                ty::UniverseIndex::ROOT,
+                ty::BoundRegion {
+                    var: ty::BoundVar::from_usize(extra_regions.len()),
+                    kind: ty::BoundRegionKind::NamedForPrinting(marker),
+                },
+            );
+            extra_regions.push(placeholder.sinto(s));
+            ty::Region::new_placeholder(tcx, placeholder)
+        } else {
+            region
+        }
+    });
+    (
+        tcx.signature_unclosure(sig, hir::Safety::Safe),
+        extra_regions,
+    )
 }
 
 #[derive(Debug, Clone)]
@@ -1412,12 +1449,13 @@ where
                 unreachable!()
             };
             let closure = closure_args.as_closure();
-            let sig = closure_sig(tcx, closure);
+            let (sig, extra_regions) = closure_sig_with_placeholders(s, def_id, closure);
             let tupled_args_ty = sig.map_bound(|sig| ty::Ty::new_tup(tcx, sig.inputs()));
             let input_ty = tcx.liberate_late_bound_regions(def_id, tupled_args_ty);
             FullDefKind::Closure(Closure {
                 def_id: hax_def_id.clone(),
                 fn_trait_args: [closure_ty, input_ty],
+                extra_regions,
                 kind: closure.kind().sinto(s),
                 param_env: get_param_env(s, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),

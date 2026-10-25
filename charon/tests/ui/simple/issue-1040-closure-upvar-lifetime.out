@@ -3,7 +3,7 @@
 struct () {}
 
 // Full name: test_crate::foo::{closure}
-struct {closure}<'_0> {
+struct {closure}<'_0, '_1> {
   _0: &'_0 u8,
 }
 
@@ -12,8 +12,8 @@ pub fn foo<'_0>(s: &'_0 u8)
 {
     let _0: (); // return
     let s: &'1 u8; // arg #1
-    let _2: {closure}<'3>; // anonymous local
-    let _3: &'4 u8; // anonymous local
+    let _2: {closure}<'4, '5>; // anonymous local
+    let _3: &'6 u8; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -28,13 +28,14 @@ pub fn foo<'_0>(s: &'_0 u8)
     return
 }
 
-// Full name: test_crate::foo::{impl Fn<()> for {closure}<'_0>}::call
-extern "rust-call" fn call<'_0, '_1, '_2>(_1: &'_2 {closure}<'_0>, tupled_args: ()) -> &'_1 u8
+// Full name: test_crate::foo::{impl Fn<()> for {closure}<'_0, '_1>}::call
+extern "rust-call" fn call<'_0, '_1, '_2>(_1: &'_2 {closure}<'_0, '_1>, tupled_args: ()) -> &'_1 u8
 where
     RegionOutlives0: '_0: '_2,
+    RegionOutlives1: '_1: '_2,
 {
     let _0: &'0 u8; // return
-    let _1: &'2 {closure}<'_0>; // arg #1
+    let _1: &'2 {closure}<'_0, '_1>; // arg #1
     let tupled_args: (); // arg #2
 
     storage_live(_0)

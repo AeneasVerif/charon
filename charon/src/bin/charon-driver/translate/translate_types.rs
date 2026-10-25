@@ -62,7 +62,21 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 Err(_) => Region::Erased,
             }),
             ReLateParam(region) => Ok(Region::Var(self.lookup_late_param_region(span, region)?)),
-            ReVar(..) | RePlaceholder(..) => {
+            RePlaceholder(placeholder) => {
+                // We use placeholders to track some closure regions that rustc erases.
+                for (dbid, level) in self.binding_levels.iter_enumerated() {
+                    if let Some(&rid) = level.closure_extra_self_regions.get(placeholder) {
+                        return Ok(Region::Var(DeBruijnVar::bound(dbid, rid)));
+                    }
+                }
+                if let hax::BoundRegionKind::NamedForPrinting(name) = placeholder.bound.kind
+                    && name.to_string().starts_with("__charon_closure_region_")
+                {
+                    return Ok(self.translate_erased_region());
+                }
+                raise_error!(self, span, "Unexpected placeholder region: {region:?}")
+            }
+            ReVar(..) => {
                 // Shouldn't exist outside of type inference.
                 raise_error!(
                     self,

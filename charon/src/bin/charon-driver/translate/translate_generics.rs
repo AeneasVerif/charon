@@ -45,6 +45,9 @@ pub(crate) struct BindingLevel<'tcx> {
     pub region_vars_by_def_id: HashMap<hax::DefId, RegionId>,
     /// The map from rust late/bound regions to translated region indices.
     pub bound_region_vars: Vec<RegionId>,
+    /// Extra lifetimes unerased from the closure signature. Hax represents them with placeholder
+    /// regions; they are parameters of the closure struct.
+    pub closure_extra_self_regions: HashMap<hax::PlaceholderRegion, RegionId>,
     /// Region added for the lifetime bound in the signature of the `call`/`call_mut` methods.
     pub closure_call_method_region: Option<RegionId>,
     /// Region added for the borrow accepted by a drop glue method or vtable drop shim.
@@ -166,6 +169,16 @@ impl<'tcx> BindingLevel<'tcx> {
             .push_with(|index| RegionParam::new(index, None, Variance::Unknown));
         self.closure_upvar_regions.push(region_id);
         region_id
+    }
+
+    /// Extra lifetimes unerased from the closure signature. Hax represents them with placeholder
+    /// regions; they are parameters of the closure struct.
+    pub fn push_closure_extra_self_region(&mut self, region: hax::PlaceholderRegion) {
+        let region_id = self
+            .params
+            .regions
+            .push_with(|index| RegionParam::new(index, None, Variance::Unknown));
+        self.closure_extra_self_regions.insert(region, region_id);
     }
 
     pub fn push_drop_glue_region(&mut self) -> RegionId {
@@ -585,6 +598,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 Region::Var(DeBruijnVar::new_at_zero(region_id))
             });
             self.the_only_binder_mut().closure_upvar_tys = Some(upvar_tys);
+
+            for region in c.extra_regions_inferred_from_signature() {
+                self.the_only_binder_mut()
+                    .push_closure_extra_self_region(region.clone());
+            }
 
             // Add the lifetime generics coming from the higher-kindedness of the signature.
             if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))

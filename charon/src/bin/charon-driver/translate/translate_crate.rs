@@ -870,9 +870,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .map(|_| self.translate_erased_region()),
                 );
             } else if let hax::FullDefKind::Closure(c) = def.kind() {
-                let upvar_regions = if self.item_src.def_id() == def.def_id() {
+                // The regions bound in the closure struct that don't come from its parent.
+                let adt_self_regions = if self.item_src.def_id() == def.def_id() {
                     assert!(self.outermost_binder().closure_upvar_tys.is_some());
                     self.outermost_binder().closure_upvar_regions.len()
+                        + c.extra_regions_inferred_from_signature().len()
                 } else {
                     // If we're not translating a closure item, fetch the closure adt
                     // definition and add enough erased lifetimes to match its number of
@@ -885,7 +887,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 };
                 generics
                     .regions
-                    .extend((0..upvar_regions).map(|_| self.translate_erased_region()));
+                    .extend((0..adt_self_regions).map(|_| self.translate_erased_region()));
                 if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
                 | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))
                 | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))
