@@ -177,8 +177,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .erase();
                     let assoc_type_id =
                         self.translate_assoc_type_id(trait_ref.trait_id(), &item.def_id)?;
-                    let generics =
-                        self.translate_generic_args(span, &item.generic_args, &item.trait_proofs)?;
+                    let generics = self.translate_generic_args(span, item)?;
                     TyKind::TraitType(trait_ref, assoc_type_id, generics)
                 }
                 hax::AliasKind::Opaque { hidden_ty, .. } => {
@@ -204,7 +203,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 } else {
                     None
                 };
-                let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
+                let mut args = self.translate_generic_args_without_trait_refs(span, item_ref)?;
                 assert!(args.types.len() == 1 && args.const_generics.len() == 1);
                 TyKind::Array(
                     args.types.pop().unwrap(),
@@ -224,7 +223,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 } else {
                     None
                 };
-                let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
+                let mut args = self.translate_generic_args_without_trait_refs(span, item_ref)?;
                 assert!(args.types.len() == 1);
                 TyKind::Slice(args.types.pop().unwrap(), item_ty_is_sized)
             }
@@ -411,40 +410,51 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
-    /// Translate generic args. Don't call directly; use `translate_xxx_ref` as much as possible.
+    /// Translate an item's generic arguments. Don't call directly; use `translate_xxx_ref` as much
+    /// as possible.
     pub fn translate_generic_args(
         &mut self,
         span: Span,
-        substs: &[hax::GenericArg<'tcx>],
-        trait_refs: &[hax::TraitProof<'tcx>],
+        item: &hax::ItemRef<'tcx>,
     ) -> Result<GenericArgs, Error> {
-        use crate::hax::GenericArg::*;
-        trace!("{:?}", substs);
+        self.translate_generic_args_inner(span, item, true)
+    }
 
-        let mut regions = IndexVec::new();
-        let mut types = IndexVec::new();
-        let mut const_generics = IndexVec::new();
-        for param in substs {
-            match param {
-                Type(param_ty) => {
-                    types.push(self.translate_ty(span, param_ty)?);
+    /// Translate the same arguments without their trait proofs, e.g. for an instantiated name.
+    /// Don't call directly; use `translate_xxx_ref` as much as possible.
+    pub fn translate_generic_args_without_trait_refs(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef<'tcx>,
+    ) -> Result<GenericArgs, Error> {
+        self.translate_generic_args_inner(span, item, false)
+    }
+
+    fn translate_generic_args_inner(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef<'tcx>,
+        include_trait_refs: bool,
+    ) -> Result<GenericArgs, Error> {
+        let mut args = GenericArgs::empty();
+        for arg in &item.generic_args {
+            match arg {
+                hax::GenericArg::Type(ty) => {
+                    args.types.push(self.translate_ty(span, ty)?);
                 }
-                Lifetime(region) => {
-                    regions.push(self.translate_region(span, region)?);
+                hax::GenericArg::Lifetime(region) => {
+                    args.regions.push(self.translate_region(span, region)?);
                 }
-                Const(c) => {
-                    const_generics.push(self.translate_constant_expr(span, c)?);
+                hax::GenericArg::Const(c) => {
+                    args.const_generics
+                        .push(self.translate_constant_expr(span, c)?);
                 }
             }
         }
-        let trait_refs = self.translate_trait_proofs(span, trait_refs)?;
-
-        Ok(GenericArgs {
-            regions,
-            types,
-            const_generics,
-            trait_refs,
-        })
+        if include_trait_refs {
+            args.trait_refs = self.translate_trait_proofs(span, &item.trait_proofs)?;
+        }
+        Ok(args)
     }
 
     /// Whether Rust treats this type specially, i.e. whether it is a tuple, `str` or `Box`.
@@ -983,7 +993,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let synthetic_fields = match adt_kind {
             AdtKind::Tuple => {
                 let item = def.this();
-                let args = self.translate_generic_args(def_span, &item.generic_args, &[])?;
+                let args = self.translate_generic_args_without_trait_refs(def_span, item)?;
                 Some(args.types.into_iter().collect_vec())
             }
             AdtKind::Str => {

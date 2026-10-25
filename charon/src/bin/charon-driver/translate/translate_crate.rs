@@ -842,7 +842,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         {
             GenericArgs::empty()
         } else {
-            self.translate_generic_args(span, &hax_item.generic_args, &hax_item.trait_proofs)?
+            self.translate_generic_args(span, hax_item)?
         };
 
         // Add regions to make sure the item args match the params we set up in
@@ -972,9 +972,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             _ => None,
         };
         if builtin == Some(BuiltinAdt::Tuple) && self.t_ctx.options.no_gen_tuple_structs {
-            let mut generics = self.translate_generic_args(span, &item.generic_args, &[])?;
             // The declaration has no clauses, so we drop the `Sized` proofs of the fields.
-            generics.trait_refs.clear();
+            let generics = self.translate_generic_args_without_trait_refs(span, item)?;
             return Ok(TypeDeclRef {
                 id: TypeDeclId::UNIT,
                 generics: Box::new(generics),
@@ -1014,7 +1013,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         let trait_ref = self.translate_trait_proof(span, in_trait)?.erase();
-        let generics = self.translate_generic_args(span, &item.generic_args, &item.trait_proofs)?;
+        let generics = self.translate_generic_args(span, item)?;
         self.translate_region_binder(span, &f.sig().as_ref().rebind(()), |ctx, _| {
             let method_id = ctx.translate_trait_method_id(trait_ref.trait_id(), &item.def_id)?;
             let fn_kind = FnPtrKind::Trait(trait_ref.move_under_binder(), method_id);

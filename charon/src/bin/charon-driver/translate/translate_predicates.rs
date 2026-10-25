@@ -307,11 +307,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     } => {
                         let assoc_type_id =
                             self.translate_assoc_type_id(trait_ref.trait_id(), &item.def_id)?;
-                        let generics = self.translate_generic_args(
-                            span,
-                            &item.generic_args,
-                            &item.trait_proofs,
-                        )?;
+                        let generics = self.translate_generic_args(span, item)?;
                         TraitRefKind::ItemClause {
                             trait_ref,
                             type_id: assoc_type_id,

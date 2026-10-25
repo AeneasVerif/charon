@@ -551,10 +551,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
     pub(crate) fn build_type_id_body(
         &mut self,
         span: Span,
-        def: &hax::FullDef<'tcx>,
         signature: &FunSig,
     ) -> Result<Body, Error> {
-        let generics = self.translate_generic_args(span, &def.this().generic_args, &[])?;
+        let generics = self.outermost_generics().identity_args();
         let type_id_ty = generics.types[0].clone();
 
         let mut builder = BodyBuilder::new(span, signature.inputs.len());

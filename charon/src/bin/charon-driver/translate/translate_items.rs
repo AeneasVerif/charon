@@ -594,7 +594,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             .map(|i| i.name.to_ident_string());
 
         let body = if intrinsic_name.as_deref() == Some("type_id") {
-            self.build_type_id_body(span, def, &signature)?
+            self.build_type_id_body(span, &signature)?
         } else if let Some(name) = intrinsic_name {
             let arg_names = self.translate_argument_names(span, def, signature.inputs.len());
             Body::Intrinsic { name, arg_names }
