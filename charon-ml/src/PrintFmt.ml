@@ -2192,7 +2192,9 @@ module Llbc = struct
     List.iter
       (fun line -> Format.fprintf fmt "%s// %s\n" indent line)
       st.comments_before;
-    pp_statement_kind env indent indent_incr fmt st.kind
+    match st.kind with
+    | Nop -> ()
+    | kind -> pp_statement_kind env indent indent_incr fmt kind
 
   and pp_unwind_block (env : fmt_env) (indent : string) (indent_incr : string)
       (fmt : Format.formatter) (on_unwind : block) : unit =
@@ -2346,16 +2348,13 @@ module Llbc = struct
 
   and pp_block (env : fmt_env) (indent : string) (indent_incr : string)
       (fmt : Format.formatter) (b : block) : unit =
-    match b.statements with
-    | [] -> ()
-    | st :: statements ->
+    List.iter
+      (fun st ->
         pp_statement env indent indent_incr fmt st;
-        List.iter
-          (fun st ->
-            pp_string fmt "\n";
-            pp_statement env indent indent_incr fmt st)
-          statements;
-        pp_string fmt "\n"
+        match st.kind with
+        | Nop -> ()
+        | _ -> pp_string fmt "\n")
+      b.statements
 end
 
 module Ullbc = struct

@@ -910,7 +910,7 @@ impl<'a> ReconstructCtx<'a> {
 
     fn translate_statement(&self, st: &src::Statement) -> tgt::Statement {
         let span = st.span;
-        let st = match st.kind.clone() {
+        let kind = match st.kind.clone() {
             src::StatementKind::Assign(place, rvalue) => tgt::StatementKind::Assign(place, rvalue),
             src::StatementKind::SetDiscriminant(place, variant_id) => {
                 tgt::StatementKind::SetDiscriminant(place, variant_id)
@@ -926,7 +926,9 @@ impl<'a> ReconstructCtx<'a> {
             src::StatementKind::Borrowck(statement) => tgt::StatementKind::Borrowck(statement),
             src::StatementKind::Nop => tgt::StatementKind::Nop,
         };
-        tgt::Statement::new(span, st)
+        let mut translated = tgt::Statement::new(span, kind);
+        translated.comments_before = st.comments_before.clone();
+        translated
     }
 
     /// Translate a jump to the given block. The span is used to create the jump statement, if any.
