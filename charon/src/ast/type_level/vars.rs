@@ -28,17 +28,21 @@ impl DeBruijnId {
 
 /// Type-level variable.
 ///
-/// Variables are bound in groups. Each item has a top-level binding group in its `generic_params`
-/// field, and then inner binders are possible using the `RegionBinder<T>` and `Binder<T>` types.
-/// Each variable is linked to exactly one binder. The `Id` then identifies the specific variable
-/// among all those bound in that group.
+/// Variables are bound in binders, which each bind a set of variables. The `DeBruijnId` identifies
+/// the binder (counting outward), and the `Id` identifies the variable among all those bound at
+/// that level.
+///
+/// There are two kinds of binders: `RegionBinder`s bind only regions, and occur whenever there can
+/// be a `for<...>` in Rust, e.g. function pointers types; `Binder`s can bind any type-level
+/// variable (types, const, and trait clauses), and are used for `dyn Trait` types as well as trait
+/// methods. Each item also works as a binder, using its `generic_params` as parameters.
 ///
 /// For instance, we have the following:
 /// ```text
 /// fn f<'a, 'b>(x: for<'c> fn(&'b u8, &'c u16, for<'d> fn(&'b u32, &'c u64, &'d u128)) -> u64) {}
 ///      ^^^^^^         ^^       ^       ^          ^^       ^        ^        ^
 ///        |       inner binder  |       |     inner binder  |        |        |
-///  top-level binder            |       |                   |        |        |
+///    item binder               |       |                   |        |        |
 ///                        Bound(1, b)   |              Bound(2, b)   |     Bound(0, d)
 ///                                      |                            |
 ///                                  Bound(0, c)                 Bound(1, c)
@@ -61,8 +65,10 @@ impl DeBruijnId {
 pub enum DeBruijnVar<Id> {
     /// A variable attached to the nth binder, counting from the innermost.
     Bound(#[serde_state(stateless)] DeBruijnId, Id),
-    /// A variable attached to the outermost binder (the one on the item). This is not used within
-    /// Charon itself, instead ewe insert it at the end if `--unbind-item-vars` is set.
+    /// A variable not attached to a particular binder. Can be used for various purposes which
+    /// manipulating types, e.g. as inference variables or placeholders. If `--unbind-item-vars` is
+    /// set, we use `Free` variables to refer to the item binders; `Free` variables should not
+    /// otherwise be found in the output of running `charon`.
     Free(Id),
 }
 
@@ -476,7 +482,8 @@ impl<T> BinderSlice<T> {
         DeBruijnId::new(self.0.len() - 1)
     }
 
-    /// Map a bound variable to its binding depth.
+    /// Map a bound variable to its binding depth. Considers free variables to be bound at the
+    /// outermost binder, like when `--unbind-item-vars` is set.
     pub fn as_bound_var<Id>(&self, var: DeBruijnVar<Id>) -> (DeBruijnId, Id) {
         match var {
             DeBruijnVar::Bound(dbid, varid) => (dbid, varid),

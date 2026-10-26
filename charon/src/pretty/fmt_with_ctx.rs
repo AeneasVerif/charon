@@ -538,7 +538,7 @@ impl<Id: Display> Display for DeBruijnVar<Id> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Bound(dbid, varid) => write!(f, "Bound({dbid}, {varid})"),
-            Self::Free(varid) => write!(f, "{varid}"),
+            Self::Free(varid) => write!(f, "Free({varid})"),
         }
     }
 }
