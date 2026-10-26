@@ -51,8 +51,9 @@ pub(crate) struct BindingLevel<'tcx> {
     pub closure_call_method_region: Option<RegionId>,
     /// Region added for the borrow accepted by a drop glue method or vtable drop shim.
     pub drop_glue_region: Option<RegionId>,
-    /// The map from rust type variable indices to translated type variable indices.
-    pub type_vars_map: HashMap<u32, TypeVarId>,
+    /// The map from rust type variable indices to the value they take in this scope. Ordinary
+    /// parameters map to type variables; inference-only parameters map to their known types.
+    pub type_vars_map: HashMap<u32, Ty>,
     /// The map from rust const generic variables to translated const generic variable indices.
     pub const_generic_vars_map: HashMap<u32, ConstGenericVarId>,
     /// The map from trait predicates to the translated trait clause indices, and the number of
@@ -191,7 +192,10 @@ impl<'tcx> BindingLevel<'tcx> {
             name,
             variance,
         });
-        self.type_vars_map.insert(rid, var_id);
+        self.type_vars_map.insert(
+            rid,
+            TyKind::TypeVar(DeBruijnVar::new_at_zero(var_id)).into_ty(),
+        );
         var_id
     }
 
@@ -295,15 +299,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn lookup_param<Id: Copy>(
+    pub(crate) fn lookup_param<T: TyVisitable>(
         &mut self,
         span: Span,
-        f: impl for<'a> Fn(&'a BindingLevel) -> Option<Id>,
+        f: impl for<'a> Fn(&'a BindingLevel) -> Option<T>,
         mk_err: impl FnOnce() -> String,
-    ) -> Result<DeBruijnVar<Id>, Error> {
-        for (dbid, bl) in self.binding_levels.iter_enumerated() {
-            if let Some(id) = f(bl) {
-                return Ok(DeBruijnVar::bound(dbid, id));
+    ) -> Result<T, Error> {
+        for (depth, bl) in self.binding_levels.iter_enumerated() {
+            if let Some(x) = f(bl) {
+                return Ok(x.move_under_binders(depth));
             }
         }
         let err = mk_err();
@@ -317,7 +321,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<RegionDbVar, Error> {
         self.lookup_param(
             span,
-            |bl| bl.early_region_vars.get(region).copied(),
+            |bl| {
+                bl.early_region_vars
+                    .get(region)
+                    .copied()
+                    .map(DeBruijnVar::new_at_zero)
+            },
             || format!("the region variable {region:?}"),
         )
     }
@@ -353,7 +362,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             Named(def_id, _) => self.lookup_param(
                 span,
-                |bl| bl.region_vars_by_def_id.get(def_id).copied(),
+                |bl| {
+                    bl.region_vars_by_def_id
+                        .get(def_id)
+                        .copied()
+                        .map(DeBruijnVar::new_at_zero)
+                },
                 || format!("the late-bound region variable {region:?}"),
             ),
             ClosureEnv => {
@@ -366,10 +380,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         param: &hax::ParamTy,
-    ) -> Result<TypeDbVar, Error> {
+    ) -> Result<Ty, Error> {
         self.lookup_param(
             span,
-            |bl| bl.type_vars_map.get(&param.index).copied(),
+            |bl| bl.type_vars_map.get(&param.index).cloned(),
             || format!("the type variable {}", param.name),
         )
     }
@@ -381,7 +395,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<ConstGenericDbVar, Error> {
         self.lookup_param(
             span,
-            |bl| bl.const_generic_vars_map.get(&param.index).copied(),
+            |bl| {
+                bl.const_generic_vars_map
+                    .get(&param.index)
+                    .copied()
+                    .map(DeBruijnVar::new_at_zero)
+            },
             || format!("the const generic variable {}", param.name),
         )
     }
@@ -391,15 +410,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         id: &hax::GenericPredicateId,
     ) -> Result<(ClauseDbVar, usize), Error> {
-        let var = self.lookup_param(
+        self.lookup_param(
             span,
-            |bl| bl.trait_preds.get(id).copied(),
+            |bl| {
+                let (id, regions) = bl.trait_preds.get(id).copied()?;
+                Some((DeBruijnVar::new_at_zero(id), regions))
+            },
             || format!("the trait clause variable {id:?}"),
-        )?;
-        Ok(match var {
-            DeBruijnVar::Bound(depth, (id, regions)) => (DeBruijnVar::Bound(depth, id), regions),
-            DeBruijnVar::Free(_) => unreachable!(),
-        })
+        )
     }
 
     pub(crate) fn push_generic_params(
@@ -438,7 +456,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     mutability,
                 );
             }
-            hax::GenericParamDefKind::Type { .. } => {
+            hax::GenericParamDefKind::Type {
+                inference_value: Some(ty),
+                ..
+            } => {
+                // Inference-only type parameter, as used in closures and inline consts. We record
+                // their known value in case a nested item references the parameter.
+                let span = self.def_span(&param.def_id);
+                let ty = self.translate_ty(span, ty)?;
+                self.innermost_binder_mut()
+                    .type_vars_map
+                    .insert(param.index, ty);
+            }
+            hax::GenericParamDefKind::Type {
+                inference_value: None,
+                ..
+            } => {
                 let _ =
                     self.innermost_binder_mut()
                         .push_type_var(param.index, param.name, variance);
@@ -545,11 +578,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         param_env: &hax::ParamEnv<'tcx>,
         origin: PredicateOrigin,
     ) -> Result<(), Error> {
-        self.push_generic_params(&param_env.generics)?;
         for region in &param_env.extra_early_regions {
             self.innermost_binder_mut()
                 .push_unerased_region(region.clone());
         }
+        self.push_generic_params(&param_env.generics)?;
         self.register_predicates(&param_env.predicates, origin)?;
         Ok(())
     }

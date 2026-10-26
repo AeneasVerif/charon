@@ -258,14 +258,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
             hax::TyKind::Param(param) => {
                 // A type parameter, for example `T` in `fn f<T>(x : T) {}`.
-                // Note that this type parameter may actually have been
-                // instantiated (in our environment, we may map it to another
-                // type): we just have to look it up.
-                // Note that if we are using this function to translate a field
-                // type in a type definition, it should actually map to a type
-                // parameter.
                 match self.lookup_type_var(span, param) {
-                    Ok(var) => TyKind::TypeVar(var),
+                    Ok(ty) => ty.kind().clone(),
                     Err(err) => TyKind::Error(err.msg),
                 }
             }

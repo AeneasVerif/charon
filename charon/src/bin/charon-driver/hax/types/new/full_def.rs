@@ -297,8 +297,6 @@ impl<'tcx> ParamEnv<'tcx> {
                     .map(|parent| parent.def_id.generics_of(s).count())
                     .unwrap_or(0),
                 params: vec![],
-                has_self: false,
-                has_late_bound_regions: None,
             },
             predicates: GenericPredicates { predicates: vec![] },
             extra_early_regions: vec![],
@@ -1459,16 +1457,26 @@ where
             let closure = substitute(tcx, s.typing_env(), args, closure_args).as_closure();
             let closure_ty = ty::Ty::new_closure(tcx, def_id, closure.args);
 
+            let mut param_env = get_param_env(s, args);
+            param_env.extra_early_regions = extra_regions.sinto(s);
+            // Record the value of the inference-only type vars.
+            for param in &mut param_env.generics.params {
+                let GenericParamDefKind::Type {
+                    inference_value, ..
+                } = &mut param.kind
+                else {
+                    unreachable!("closure inference parameters must be types")
+                };
+                *inference_value = Some(closure.args[param.index as usize].expect_ty().sinto(s));
+            }
+
             let raw_sig = closure.sig();
             let sig = tcx.signature_unclosure(raw_sig, hir::Safety::Safe);
             let input_ty = tcx.liberate_late_bound_regions(def_id, raw_sig).inputs()[0];
             FullDefKind::Closure(Closure {
                 def_id: hax_def_id.clone(),
                 kind: closure.kind().sinto(s),
-                param_env: ParamEnv {
-                    extra_early_regions: extra_regions.sinto(s),
-                    ..get_param_env(s, args)
-                },
+                param_env,
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 sig: sig.sinto(s),
                 fn_trait_args: [closure_ty, input_ty],
@@ -1484,27 +1492,39 @@ where
                 _ => unreachable!(),
             };
 
-            let self_ty = if matches!(kind, ConstKind::AnonConst)
+            let mut param_env = get_param_env(s, args);
+
+            if matches!(kind, ConstKind::AnonConst)
                 && tcx.anon_const_kind(def_id) == ty::AnonConstKind::NonTypeSystemInline
-                && let get_ret_ty = (|body: &mir::Body<'tcx>| body.local_decls[mir::Local::ZERO].ty)
-                && let Some(ret_ty) = mir_kinds::CTFE::get_mir(tcx, def_id, get_ret_ty)
-                    .or_else(|| mir_kinds::Optimized::get_mir(tcx, def_id, get_ret_ty))
+                && args.is_none()
             {
+                let get_ret_ty = |body: &mir::Body<'tcx>| body.local_decls[mir::Local::ZERO].ty;
+                let ret_ty = mir_kinds::CTFE::get_mir(tcx, def_id, get_ret_ty)
+                    .or_else(|| mir_kinds::Optimized::get_mir(tcx, def_id, get_ret_ty))
+                    .expect("could not compute the type of this inline const: {def_id:?}");
                 // Inline consts have a special `<const_ty>` param added to them for type inference
-                // purposes. `tcx.type_of` returns that, which is not useful to us. Instead, we get
-                // the real type from the MIR body which is sad but works.
-                inst_binder(
+                // purposes. `tcx.type_of` returns that parameter, so we get the real type from the
+                // MIR body which is sad but works.
+                let ty = inst_binder(
                     tcx,
                     s.typing_env(),
                     args,
                     ty::EarlyBinder::bind(tcx, ret_ty),
-                )
-            } else {
-                type_of_self()
-            };
+                );
+                assert_eq!(param_env.generics.params.len(), 1);
+                // Record the value of the var.
+                let GenericParamDefKind::Type {
+                    inference_value, ..
+                } = &mut param_env.generics.params[0].kind
+                else {
+                    unreachable!("inline const inference parameters must be types")
+                };
+                *inference_value = Some(ty.sinto(s));
+            }
+
             FullDefKind::Const(Const {
-                param_env: get_param_env(s, args),
-                ty: self_ty.sinto(s),
+                param_env,
+                ty: type_of_self().sinto(s),
                 kind,
             })
         }
@@ -1685,7 +1705,8 @@ impl<'tcx> VirtualTraitImpl<'tcx> {
                     .methods
                     .iter()
                     .map(|method| {
-                        vtable_sig_with_dyn_self(s, method.def_id.real_rust_def_id(), dyn_self).sinto(s)
+                        vtable_sig_with_dyn_self(s, method.def_id.real_rust_def_id(), dyn_self)
+                            .sinto(s)
                     })
                     .collect();
                 Some((dyn_self.sinto(s), vtable_sigs))
@@ -1802,7 +1823,7 @@ impl<'tcx> FullDef<'tcx> {
     /// Whether the item has any generics at all (including parent generics).
     pub fn has_any_generics(&self) -> bool {
         match self.param_env() {
-            Some(p) => p.generics.parent_count != 0 || !p.generics.params.is_empty(),
+            Some(p) => p.generics.parent_count != 0 || self.has_own_generics(),
             None => false,
         }
     }
@@ -1828,7 +1849,7 @@ impl<'tcx> FullDef<'tcx> {
                     } else {
                         !p.predicates.predicates.is_empty()
                     };
-                !p.generics.params.is_empty() || has_predicates
+                self.has_own_generics() || has_predicates
             }
             None => false,
         }
@@ -2003,12 +2024,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
 ) -> ParamEnv<'tcx> {
     let tcx = s.base().tcx;
     let owner = s.owner();
-    // Rustc adds generic params to closures and inline consts for impl details purposes; we hide these.
-    let is_typeck_child = owner.is_typeck_child(s);
-    let mut generics = owner.generics_of(s).sinto(s);
-    if is_typeck_child {
-        generics.params = Default::default();
-    }
+    let generics = owner.generics_of(s).sinto(s);
 
     let parent = generics.parent.as_ref().map(|parent| {
         let parent_args = args
@@ -2020,7 +2036,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
         None => ParamEnv {
             generics,
             extra_early_regions: vec![],
-            predicates: if is_typeck_child {
+            predicates: if owner.is_typeck_child(s) {
                 GenericPredicates::default()
             } else {
                 owner.required_predicates(s).sinto(s)
