@@ -1,32 +1,11 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::MetaSized
-#[fundamental]
-#[lang_item(MetaSized)]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
 // Full name: core::mem::size_of::<()>
 #[diagnostic_item("mem_size_of")]
 pub fn size_of::<()>() -> usize
 = <opaque>
 
 struct () {}
-
-// Full name: test_crate::SizedTypeProperties
-pub trait SizedTypeProperties<Self>
-{
-    proof ImpliedClause0: (Self: Sized)
-    non-dyn-compatible
-}
 
 // Full name: test_crate::SizedTypeProperties::IS_ZST::<()>
 pub fn IS_ZST::<()>() -> bool

@@ -114,10 +114,6 @@ where
   _1: B,
 }
 
-struct str {
-  _0: [u8],
-}
-
 struct (_,)<A> {
   _0: A,
 }
@@ -145,15 +141,6 @@ where
         unwind_continue
     storage_dead(_1)
     return
-}
-
-// Full name: (_, _)::{impl Destruct for (A, B)}
-impl<A, B> "impl_Destruct_for_tuple" Destruct for (A, B)
-where
-    TraitClause0: (A: Sized),
-{
-    fn drop_glue<'_0_1> = impl_Destruct_for_tuple::drop_glue<'_0_1, A, B>[TraitClause0]
-    non-dyn-compatible
 }
 
 // Full name: test_crate::BoolTrait

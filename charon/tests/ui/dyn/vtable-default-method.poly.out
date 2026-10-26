@@ -7,26 +7,9 @@ opaque type core::marker::MetaSized::{vtable}
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
 struct () {}
 
 vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
-
-struct (_, _)<A, B>
-where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
-}
 
 struct test_crate::Trait::{vtable} {
   size: usize,

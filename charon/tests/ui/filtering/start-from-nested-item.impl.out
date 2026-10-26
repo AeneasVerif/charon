@@ -1,0 +1,117 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+struct () {}
+
+// Full name: test_crate::outer::inner::Trait
+pub trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    const VALUE : ()
+    fn required;
+    fn defaulted = test_crate::outer::inner::Trait::defaulted<Self>[Self]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Trait for ()}::VALUE
+pub fn impl_Trait_for_unit::VALUE()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Trait for ()}::VALUE
+pub const impl_Trait_for_unit::VALUE: () = impl_Trait_for_unit::VALUE()
+
+// Full name: test_crate::{impl Trait for ()}::required
+pub fn required()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Trait for ()}::defaulted
+pub fn impl_Trait_for_unit::defaulted()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Trait for ()}
+impl "impl_Trait_for_unit" Trait for () {
+    proof ImpliedClause0: ((): MetaSized) = {built_in impl MetaSized for ()}
+    const VALUE = impl_Trait_for_unit::VALUE
+    fn required = required
+    fn defaulted = impl_Trait_for_unit::defaulted
+    non-dyn-compatible
+}
+
+// Full name: test_crate::{impl Trait for ()}::required::in_impl
+fn in_impl()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::{impl Trait for ()}::VALUE::in_impl_const
+fn in_impl_const()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+pub fn test_crate::outer::inner::Trait::defaulted<Self>()
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+pub fn test_crate::outer::inner::Trait::VALUE<Self>()
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+pub const test_crate::outer::inner::Trait::VALUE<Self>: ()
+where
+    TraitClause0: (Self: Trait),
+ = test_crate::outer::inner::Trait::VALUE<Self>[TraitClause0]()
+
+
+

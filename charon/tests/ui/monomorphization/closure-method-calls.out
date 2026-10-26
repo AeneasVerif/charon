@@ -6,11 +6,6 @@ struct (_,)::<i32> {
   _0: i32,
 }
 
-struct (_, _)::<i32, bool> {
-  _0: i32,
-  _1: bool,
-}
-
 struct test_crate::main::{closure} {}
 
 // Full name: test_crate::main::{impl Fn<(i32,)> for test_crate::main::{closure}}::call

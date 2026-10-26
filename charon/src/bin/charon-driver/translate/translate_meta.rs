@@ -276,7 +276,8 @@ impl<'tcx> TranslateCtx<'tcx> {
                         // a body translation context.
                         let item_src =
                             TransItemSource::new(item.clone(), TransItemSourceKind::InherentImpl);
-                        let mut bt_ctx = ItemTransCtx::new(item_src, None, self);
+                        let item_id = ItemOrModuleId::Module(item_src.def_id().real_rust_def_id());
+                        let mut bt_ctx = ItemTransCtx::new(item_src, item_id, self);
                         bt_ctx.translate_item_generics(
                             span,
                             &full_def,
@@ -296,7 +297,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                                 item.clone(),
                                 TransItemSourceKind::TraitImpl(TransImplSource::Normal),
                             );
-                            self.register_and_enqueue(&None, item_src).unwrap()
+                            self.register_and_enqueue(&None, item_src).expect_item()
                         };
                         ImplElem::Trait(impl_id)
                     }
@@ -437,7 +438,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                 if let TransImplSource::Callable(..) = kind {
                     let _ = name.name.pop(); // Pop the `{closure}`
                 }
-                let impl_id = self.register_and_enqueue(&None, src.clone()).unwrap();
+                let impl_id = self.register_and_enqueue(&None, src.clone()).expect_item();
                 name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
             }
             TransItemSourceKind::TraitImpl(TransImplSource::Marker) => {
@@ -491,7 +492,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             && !item_ref.generic_args.is_empty()
             && !matches!(src.kind, TransItemSourceKind::TraitImpl(..))
         {
-            let trans_id = self.register_no_enqueue(&None, src).unwrap();
+            let trans_id = self.register_no_enqueue(&None, src);
             let span = self.def_span(&item_ref.def_id);
             let mut bt_ctx = ItemTransCtx::new(src.clone(), trans_id, self);
             let binder = bt_ctx.inside_binder(BinderKind::Other, None, |bt_ctx| {
@@ -634,7 +635,7 @@ impl<'tcx> TranslateCtx<'tcx> {
             let kind = TransItemSourceKind::TraitDecl;
             let trait_src =
                 TransItemSource::from_item(trait_ref, kind, self.options.monomorphize_with_hax);
-            let trait_id = self.register_and_enqueue(&None, trait_src).unwrap();
+            let trait_id = self.register_and_enqueue(&None, trait_src).expect_item();
             let item_id = self
                 .translate_assoc_item_id(trait_id, &target_def_id)
                 .map_err(|err| err.msg)?;
@@ -654,7 +655,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                 kind,
                 self.options.monomorphize_with_hax,
             );
-            let item_id: ItemId = self.register_and_enqueue(&None, target_src).unwrap();
+            let item_id: ItemId = self.register_and_enqueue(&None, target_src).expect_item();
             Ok(MaybeAssocItemId::Free(item_id))
         }
     }
@@ -1013,8 +1014,8 @@ impl<'tcx> TranslateCtx<'tcx> {
             source_text: def.source_text.clone(),
             attr_info,
             is_local,
-            started_from: !item_src.is_derived_item()
-                && self.started_from.contains(item_src.def_id()),
+            // Computed by `compute_started_from` after translation.
+            started_from: false,
             is_extern: self.is_extern_item(def),
             opacity,
             lang_item,

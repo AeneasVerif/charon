@@ -239,10 +239,6 @@ impl "impl_BuildHasher_for_RandomState" BuildHasher for RandomState {
 #[lang_item(GlobalAlloc)]
 pub struct Global {}
 
-struct str {
-  _0: [u8],
-}
-
 // Full name: test_crate::get_or_insert
 pub fn get_or_insert<'_0>(map: &'_0 mut HashMap<u32, u32, RandomState, Global>[{built_in impl Sized for u32}, {built_in impl Sized for u32}, {built_in impl Sized for RandomState}, {built_in impl Sized for Global}]) -> &'_0 u32
 {

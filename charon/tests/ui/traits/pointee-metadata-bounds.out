@@ -143,10 +143,6 @@ pub trait Pointee<Self>
     non-dyn-compatible
 }
 
-struct str {
-  _0: [u8],
-}
-
 // Full name: test_crate::assert_copy
 fn assert_copy<T>()
 where

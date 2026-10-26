@@ -401,7 +401,7 @@ fn compute_declarations_graph(ctx: &TransformCtx) -> DiGraphMap<ItemId, ()> {
     deps.unprocessed = ctx
         .translated
         .all_items()
-        .filter(|item| item.item_meta().name.is_builtin() || item.item_meta().started_from)
+        .filter(|item| item.item_meta().started_from)
         .map(|item| item.id())
         .collect();
 

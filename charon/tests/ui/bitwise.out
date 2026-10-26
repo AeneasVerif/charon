@@ -1,7 +1,5 @@
 # Final LLBC before serialization:
 
-struct () {}
-
 // Full name: test_crate::shift_u32
 pub fn shift_u32(a: u32) -> u32
 {

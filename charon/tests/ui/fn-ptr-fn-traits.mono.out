@@ -292,80 +292,8 @@ impl Fn<(u32,)> for fn(u32) -> u32 {
     vtable: {impl Fn<(u32,)> for fn(u32) -> u32}::{vtable}::<u32, u32>
 }
 
-// Full name: test_crate::Adt::<'_, u32>
-struct Adt::<'_, u32> {
-  _0: &'_ u32,
-}
-
-struct (_,)::<Adt::<'_, u32>> {
-  _0: Adt::<'_, u32>,
-}
-
-// Full name: {impl FnOnce<(Adt::<'_, u32>,)> for fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>}
-impl<'_0> FnOnce<(Adt::<'_, u32>,)> for fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32> {
-    proof ImpliedClause0: (fn<'_0_2>(Adt::<'_, u32>) -> Adt::<'_, u32>: MetaSized) = {built_in impl MetaSized for fn<'_0_2>(Adt::<'_, u32>) -> Adt::<'_, u32>}
-    proof ImpliedClause1: ((Adt::<'_, u32>,): Sized) = {built_in impl Sized for (Adt::<'_, u32>,)}
-    proof ImpliedClause2: ((Adt::<'_, u32>,): Tuple) = {built_in impl Tuple for (Adt::<'_, u32>,)}
-    vtable: lazy
-}
-
-// Full name: test_crate::ConstAdt::<3usize>
-struct ConstAdt::<3usize> {
-  _0: [u8; 3usize],
-}
-
-struct (_,)::<ConstAdt::<3usize>> {
-  _0: ConstAdt::<3usize>,
-}
-
-// Full name: {impl FnOnce<(ConstAdt::<3usize>,)> for fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>}
-impl FnOnce<(ConstAdt::<3usize>,)> for fn(ConstAdt::<3usize>) -> ConstAdt::<3usize> {
-    proof ImpliedClause0: (fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>: MetaSized) = {built_in impl MetaSized for fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>}
-    proof ImpliedClause1: ((ConstAdt::<3usize>,): Sized) = {built_in impl Sized for (ConstAdt::<3usize>,)}
-    proof ImpliedClause2: ((ConstAdt::<3usize>,): Tuple) = {built_in impl Tuple for (ConstAdt::<3usize>,)}
-    vtable: lazy
-}
-
-struct (_,)::<&'_ u32> {
-  _0: &'_ u32,
-}
-
-// Full name: {impl FnOnce<(&'_ u32,)> for fn(&'_ u32) -> &'_ u32}
-impl FnOnce<(&'_ u32,)> for fn(&'_ u32) -> &'_ u32 {
-    proof ImpliedClause0: (fn(&'_ u32) -> &'_ u32: MetaSized) = {built_in impl MetaSized for fn(&'_ u32) -> &'_ u32}
-    proof ImpliedClause1: ((&'_ u32,): Sized) = {built_in impl Sized for (&'_ u32,)}
-    proof ImpliedClause2: ((&'_ u32,): Tuple) = {built_in impl Tuple for (&'_ u32,)}
-    vtable: lazy
-}
-
-// Full name: test_crate::Plain::<u32>
-struct Plain::<u32> {
-  _0: u32,
-}
-
-struct (_, _)::<Plain::<u32>, &'_ u32> {
-  _0: Plain::<u32>,
-  _1: &'_ u32,
-}
-
-// Full name: {impl FnOnce<(Plain::<u32>, &'_ u32)> for fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32}
-impl<'_0> FnOnce<(Plain::<u32>, &'_ u32)> for fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32 {
-    proof ImpliedClause0: (fn<'_0_2>(Plain::<u32>, &'_0_2 u32) -> &'_0_2 u32: MetaSized) = {built_in impl MetaSized for fn<'_0_2>(Plain::<u32>, &'_0_2 u32) -> &'_0_2 u32}
-    proof ImpliedClause1: ((Plain::<u32>, &'_ u32): Sized) = {built_in impl Sized for (Plain::<u32>, &'_ u32)}
-    proof ImpliedClause2: ((Plain::<u32>, &'_ u32): Tuple) = {built_in impl Tuple for (Plain::<u32>, &'_ u32)}
-    vtable: lazy
-}
-
 struct (_,)::<[&'_ u8; 3usize]> {
   _0: [&'_ u8; 3usize],
-}
-
-// Full name: {impl FnOnce<([&'_ u8; 3usize],)> for fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]}
-impl<'_0> FnOnce<([&'_ u8; 3usize],)> for fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize] {
-    proof ImpliedClause0: (fn<'_0_2>([&'_0_2 u8; 3usize]) -> [&'_0_2 u8; 3usize]: MetaSized) = {built_in impl MetaSized for fn<'_0_2>([&'_0_2 u8; 3usize]) -> [&'_0_2 u8; 3usize]}
-    proof ImpliedClause1: (([&'_ u8; 3usize],): Sized) = {built_in impl Sized for ([&'_ u8; 3usize],)}
-    proof ImpliedClause2: (([&'_ u8; 3usize],): Tuple) = {built_in impl Tuple for ([&'_ u8; 3usize],)}
-    vtable: lazy
 }
 
 // Full name: {impl FnOnce<([&'_ u8; 3usize],)> for fn<'_0_1>([&'_0_1 u8; 3usize]) -> [&'_0_1 u8; 3usize]}::call_once::<u8, u8, 3usize, 3usize>
@@ -385,6 +313,15 @@ extern "rust-call" fn {impl FnOnce<([&'_ u8; 3usize],)> for fn<'_0_1>([&'_0_1 u8
     return
 }
 
+// Full name: test_crate::Adt::<'_, u32>
+struct Adt::<'_, u32> {
+  _0: &'_ u32,
+}
+
+struct (_,)::<Adt::<'_, u32>> {
+  _0: Adt::<'_, u32>,
+}
+
 // Full name: {impl FnOnce<(Adt::<'_, u32>,)> for fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>}::call_once::<u32, u32>
 extern "rust-call" fn {impl FnOnce<(Adt::<'_, u32>,)> for fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>}::call_once::<u32, u32><'_0>(fn_ptr: fn<'_0_1>(Adt::<'_, u32>) -> Adt::<'_, u32>, args: (Adt::<'_, u32>,)) -> Adt::<'_, u32>
 {
@@ -402,9 +339,13 @@ extern "rust-call" fn {impl FnOnce<(Adt::<'_, u32>,)> for fn<'_0_1>(Adt::<'_, u3
     return
 }
 
-struct (_, _)::<u32, bool> {
-  _0: u32,
-  _1: bool,
+// Full name: test_crate::ConstAdt::<3usize>
+struct ConstAdt::<3usize> {
+  _0: [u8; 3usize],
+}
+
+struct (_,)::<ConstAdt::<3usize>> {
+  _0: ConstAdt::<3usize>,
 }
 
 // Full name: {impl FnOnce<(ConstAdt::<3usize>,)> for fn(ConstAdt::<3usize>) -> ConstAdt::<3usize>}::call_once::<ConstAdt::<3usize>, ConstAdt::<3usize>>
@@ -424,6 +365,16 @@ extern "rust-call" fn {impl FnOnce<(ConstAdt::<3usize>,)> for fn(ConstAdt::<3usi
     return
 }
 
+// Full name: test_crate::Plain::<u32>
+struct Plain::<u32> {
+  _0: u32,
+}
+
+struct (_, _)::<Plain::<u32>, &'_ u32> {
+  _0: Plain::<u32>,
+  _1: &'_ u32,
+}
+
 // Full name: {impl FnOnce<(Plain::<u32>, &'_ u32)> for fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32}::call_once::<Plain::<u32>, u32, u32>
 extern "rust-call" fn {impl FnOnce<(Plain::<u32>, &'_ u32)> for fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32}::call_once::<Plain::<u32>, u32, u32><'_0>(fn_ptr: fn<'_0_1>(Plain::<u32>, &'_0_1 u32) -> &'_0_1 u32, args: (Plain::<u32>, &'_ u32)) -> &'_0 u32
 {
@@ -439,6 +390,10 @@ extern "rust-call" fn {impl FnOnce<(Plain::<u32>, &'_ u32)> for fn<'_0_1>(Plain:
     storage_dead(args)
     storage_dead(fn_ptr)
     return
+}
+
+struct (_,)::<&'_ u32> {
+  _0: &'_ u32,
 }
 
 // Full name: {impl FnOnce<(&'_ u32,)> for fn(&'_ u32) -> &'_ u32}::call_once::<&'_ u32, &'_ u32>

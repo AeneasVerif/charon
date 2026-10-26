@@ -21,20 +21,17 @@ impl<'tcx> TranslateCtx<'tcx> {
         });
         let trans_id = self.register_no_enqueue(&None, item_src);
         let def_id = item_src.def_id();
-        if let Some(trans_id) = trans_id {
-            if self.translate_stack.contains(&trans_id) {
-                register_error!(
-                    self,
-                    Span::dummy(),
-                    "Cycle detected while translating {def_id:?}! Stack: {:?}",
-                    &self.translate_stack
-                );
-                return;
-            } else {
-                self.translate_stack.push(trans_id);
-            }
+        if self.translate_stack.contains(&trans_id) {
+            register_error!(
+                self,
+                Span::dummy(),
+                "Cycle detected while translating {def_id:?}! Stack: {:?}",
+                &self.translate_stack
+            );
+            return;
         }
-        self.with_def_id(def_id, trans_id, |mut ctx| {
+        self.translate_stack.push(trans_id);
+        self.with_def_id(def_id, &trans_id, |mut ctx| {
             let span = ctx.def_span(def_id);
             // Catch cycles
             let res = {
@@ -56,7 +53,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                 ),
             };
         });
-        if let Some(trans_id) = trans_id
+        if let Some(trans_id) = trans_id.as_item()
             && self.errors.borrow().item_has_errors(trans_id)
             && let Some(mut item) = self.translated.get_item_mut(trans_id)
         {
@@ -69,14 +66,17 @@ impl<'tcx> TranslateCtx<'tcx> {
     pub(crate) fn translate_item_aux(
         &mut self,
         item_src: &TransItemSource<'tcx>,
-        trans_id: Option<ItemId>,
+        trans_id: ItemOrModuleId,
     ) -> Result<(), Error> {
         // The name may have already been computed.
-        let name = match trans_id.and_then(|id| self.translated.item_names.get(&id)) {
+        let name = match trans_id
+            .as_item()
+            .and_then(|id| self.translated.item_names.get(&id))
+        {
             Some(name) => name.clone(),
             None => {
                 let name = self.translate_name(item_src)?;
-                if let Some(trans_id) = trans_id {
+                if let Some(trans_id) = trans_id.as_item() {
                     self.translated.item_names.insert(trans_id, name.clone());
                 }
                 name
@@ -104,20 +104,20 @@ impl<'tcx> TranslateCtx<'tcx> {
             use rustc_hir::intravisit;
             struct EnqueueNestedItems<'a, 'tcx> {
                 ctx: &'a mut TranslateCtx<'tcx>,
-                started_from: bool,
+                parent: ContainmentNode,
             }
             impl<'tcx> intravisit::Visitor<'tcx> for EnqueueNestedItems<'_, 'tcx> {
                 fn visit_nested_item(&mut self, id: rustc_hir::ItemId) {
                     let def_id = id.owner_id.def_id.to_def_id();
                     let def_id = def_id.sinto(&self.ctx.hax_state);
-                    self.ctx.enqueue_module_item(&def_id, self.started_from);
+                    self.ctx.enqueue_module_item(&def_id, self.parent);
                 }
             }
             let body = self.tcx.hir_body(body_id);
             intravisit::walk_body(
                 &mut EnqueueNestedItems {
                     ctx: self,
-                    started_from: item_meta.started_from,
+                    parent: trans_id.into(),
                 },
                 body,
             );
@@ -143,37 +143,27 @@ impl<'tcx> TranslateCtx<'tcx> {
                 bt_ctx.register_module(item_meta, &def);
             }
             TransItemSourceKind::Type => {
-                let Some(ItemId::Type(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let ty = bt_ctx.translate_type_decl(id, item_meta, &def)?;
                 self.translated.type_decls.set_slot(id, ty);
             }
             TransItemSourceKind::Fun => {
-                let Some(ItemId::Fun(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_fun_decl(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             TransItemSourceKind::Global => {
-                let Some(ItemId::Global(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let global_decl = bt_ctx.translate_global(id, item_meta, &def)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
             TransItemSourceKind::TraitDecl => {
-                let Some(ItemId::TraitDecl(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let trait_decl = bt_ctx.translate_trait_decl(id, item_meta, &def)?;
                 self.translated.trait_decls.set_slot(id, trait_decl);
             }
             TransItemSourceKind::TraitImpl(kind) => {
-                let Some(ItemId::TraitImpl(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 // In Mono mode, only user-defined trait is supported for now.
                 let trait_impl = match kind {
                     TransImplSource::Normal => bt_ctx.translate_trait_impl(id, item_meta, &def)?,
@@ -193,52 +183,38 @@ impl<'tcx> TranslateCtx<'tcx> {
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
             &TransItemSourceKind::CallableMethod(kind) => {
-                let Some(ItemId::Fun(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             TransItemSourceKind::ClosureAsFnCast => {
-                let Some(ItemId::Fun(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_stateless_closure_as_fn(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             &TransItemSourceKind::DropGlueMethod(impl_kind) => {
-                let Some(ItemId::Fun(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_drop_glue_method(id, item_meta, &def, impl_kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             TransItemSourceKind::VTable => {
-                let Some(ItemId::Type(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let ty_decl = bt_ctx.translate_vtable_struct(id, item_meta, &def)?;
                 self.translated.type_decls.set_slot(id, ty_decl);
             }
             &TransItemSourceKind::VTableInstance(impl_kind) => {
-                let Some(ItemId::Global(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let global_decl =
                     bt_ctx.translate_vtable_instance(id, item_meta, &def, impl_kind)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
             &TransItemSourceKind::VTableMethod(impl_kind) => {
-                let Some(ItemId::Fun(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_vtable_shim(id, item_meta, &def, impl_kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             &TransItemSourceKind::VTableDropShim(impl_kind) => {
-                let Some(ItemId::Fun(id)) = trans_id else {
-                    unreachable!()
-                };
+                let id = trans_id.expect_item();
                 let fun_decl = bt_ctx.translate_vtable_drop_shim(id, item_meta, &def, impl_kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
@@ -346,23 +322,21 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         if !item_meta.opacity.is_transparent() {
             return;
         }
+        let this: ContainmentNode = self.item_id.into();
         match def.kind() {
             hax::FullDefKind::InherentImpl(i) => {
                 for assoc in i.items(self.hax_state()) {
-                    self.t_ctx
-                        .enqueue_module_item(&assoc.def_id, item_meta.started_from);
+                    self.t_ctx.enqueue_module_item(&assoc.def_id, this);
                 }
             }
             hax::FullDefKind::Mod(m) => {
                 for (_, def_id) in m.items(self.hax_state()) {
-                    self.t_ctx
-                        .enqueue_module_item(def_id, item_meta.started_from);
+                    self.t_ctx.enqueue_module_item(def_id, this);
                 }
             }
             hax::FullDefKind::ForeignMod(m) => {
                 for def_id in m.items() {
-                    self.t_ctx
-                        .enqueue_module_item(def_id, item_meta.started_from);
+                    self.t_ctx.enqueue_module_item(def_id, this);
                 }
             }
             _ => panic!("Item should be a module but isn't: {def:?}"),
@@ -937,6 +911,8 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     let method_opacity = self.opacity_for_name(&method_name);
                     let method_item_meta =
                         self.translate_item_meta(&item_def, &item_src, method_name, method_opacity);
+                    let method_containment_id =
+                        ContainmentNode::TraitMethod(trait_decl_id, trait_method_id);
                     // By default we only enqueue required methods (those that don't have a default
                     // impl). If the trait is transparent, we enqueue all its methods.
                     if self.options.translate_all_methods
@@ -944,11 +920,16 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         || !hax_item.has_value
                     {
                         self.mark_method_as_used(trait_decl_id, trait_method_id);
+                        self.record_containment(
+                            ItemId::TraitDecl(trait_decl_id),
+                            method_containment_id,
+                        );
                     }
                     let default_fun_id = f.associated_item().has_value.then(|| {
                         let fun_id = self.register_no_enqueue(item_span, &item_src);
                         // Register this method.
                         self.register_method_impl(trait_decl_id, trait_method_id, fun_id);
+                        self.record_containment(method_containment_id, ItemId::Fun(fun_id));
                         fun_id
                     });
 
@@ -1042,6 +1023,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                                 // The parameters of the constant are the same as those of the item that
                                 // declares them.
                                 let id = ctx.register_and_enqueue(item_span, item_src);
+                                if item_meta.opacity.is_transparent() {
+                                    ctx.record_containment(
+                                        ItemId::TraitDecl(trait_decl_id),
+                                        ItemId::Global(id),
+                                    );
+                                }
                                 let generics = ctx
                                     .outermost_binder()
                                     .params
@@ -1312,6 +1299,12 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                         trait_method_id,
                         bound_fn_ref.skip_binder.id,
                     );
+                    if item_meta.opacity.is_transparent() && impl_item.value.is_some() {
+                        self.record_containment(
+                            ItemId::TraitImpl(def_id),
+                            ItemId::Fun(bound_fn_ref.skip_binder.id),
+                        );
+                    }
 
                     // We insert the `Binder<FunDeclRef>` unconditionally here; we'll remove the
                     // ones that correspond to unused methods at the end of translation.
@@ -1320,6 +1313,9 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 hax::DefKind::AssocConst => {
                     let assoc_const_id = *assoc_item_id.as_const().unwrap();
                     let id = self.register_and_enqueue(item_span, item_src);
+                    if item_meta.opacity.is_transparent() && impl_item.value.is_some() {
+                        self.record_containment(ItemId::TraitImpl(def_id), ItemId::Global(id));
+                    }
                     // The parameters of the constant are the same as those of the item that
                     // declares them.
                     let generics = match &impl_item.value {

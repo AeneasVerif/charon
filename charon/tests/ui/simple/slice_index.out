@@ -21,8 +21,6 @@ where
     TypeOutlives0: T: '_0,
 = <opaque>
 
-struct () {}
-
 // Full name: test_crate::first
 pub fn first<'_0>(s: &'_0 [u32]) -> u32
 {

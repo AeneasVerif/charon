@@ -2,8 +2,6 @@
 #[lang_item(MetaSized)]
 pub trait core::marker::MetaSized<Self>
 
-struct () {}
-
 pub trait test_crate::Foo<Self>
 {
     proof ImpliedClause0: (Self: core::marker::MetaSized)

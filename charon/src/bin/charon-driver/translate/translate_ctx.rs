@@ -8,8 +8,10 @@ use charon_lib::ast::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::ids::IndexVec;
 use charon_lib::options::TranslateOptions;
+use petgraph::graphmap::DiGraphMap;
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use rustc_middle::ty::TyCtxt;
+use rustc_span::def_id::DefId as RDefId;
 use std::borrow::Cow;
 use std::cell::RefCell;
 use std::collections::VecDeque;
@@ -23,6 +25,72 @@ use std::{fmt, mem};
 pub(crate) use charon_lib::errors::{
     DepSource, ErrorCtx, Level, error_assert, raise_error, register_error,
 };
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ItemOrModuleId {
+    Item(ItemId),
+    /// A module, foreign module, or inherent impl.
+    Module(RDefId),
+}
+
+// `DiGraphMap` requires ordered nodes. Rustc ids have no stable ordering across compilation
+// sessions, but ordering by their indices suffices for this graph within a single translation.
+impl Ord for ItemOrModuleId {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        use std::cmp::Ordering;
+        match (self, other) {
+            (Self::Item(a), Self::Item(b)) => a.cmp(b),
+            (Self::Module(a), Self::Module(b)) => {
+                (a.krate.as_u32(), a.index.as_u32()).cmp(&(b.krate.as_u32(), b.index.as_u32()))
+            }
+            (Self::Item(_), Self::Module(_)) => Ordering::Less,
+            (Self::Module(_), Self::Item(_)) => Ordering::Greater,
+        }
+    }
+}
+
+impl PartialOrd for ItemOrModuleId {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl ItemOrModuleId {
+    pub fn as_item(&self) -> Option<ItemId> {
+        match self {
+            Self::Item(id) => Some(*id),
+            Self::Module(_) => None,
+        }
+    }
+
+    pub fn expect_item<T: TryFrom<ItemId>>(&self) -> T {
+        self.as_item()
+            .expect("expected a translated item")
+            .try_into()
+            .ok()
+            .expect("unexpected item kind")
+    }
+}
+
+/// Nodes in the containment graph used to compute `ItemMeta::started_from`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum ContainmentNode {
+    Start,
+    Item(ItemOrModuleId),
+    TraitMethod(TraitDeclId, TraitMethodId),
+}
+
+impl From<ItemOrModuleId> for ContainmentNode {
+    fn from(id: ItemOrModuleId) -> Self {
+        Self::Item(id)
+    }
+}
+
+impl From<ItemId> for ContainmentNode {
+    fn from(id: ItemId) -> Self {
+        Self::Item(ItemOrModuleId::Item(id))
+    }
+}
 
 /// Translation context used while translating the crate data into our representation.
 pub struct TranslateCtx<'tcx> {
@@ -63,12 +131,12 @@ pub struct TranslateCtx<'tcx> {
     pub items_to_translate: VecDeque<TransItemSource<'tcx>>,
     /// The declaration we've already processed (successfully or not).
     pub processed: HashSet<TransItemSource<'tcx>>,
-    /// Items that were selected by `--start-from`. Because we don't translate modules or inherent
-    /// impls as separate items, we propagate that info to the contained items, which will also be
-    /// added to this set.
-    pub started_from: HashSet<hax::DefId>,
+    /// While translating, record which item is "contained" by another, in the sense that
+    /// `--start-from` the parent should make the child be considered started from too. We use this
+    /// to compute `ItemMeta.started_from` at the end of translation.
+    pub containment_graph: DiGraphMap<ContainmentNode, (), rustc_hash::FxBuildHasher>,
     /// Stack of the translations currently happening. Used to avoid accidental cycles.
-    pub translate_stack: Vec<ItemId>,
+    pub translate_stack: Vec<ItemOrModuleId>,
     /// Cache of the translated span, as translating one is costly
     pub cached_spans: HashMap<rustc_span::Span, meta::SpanData>,
     /// Cache of file ids per rustc source file, to avoid recomputing file names for every span.
@@ -106,8 +174,8 @@ impl Default for MethodStatus {
 pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     /// The definition we are currently extracting.
     pub item_src: TransItemSource<'tcx>,
-    /// The id of the definition we are currently extracting, if there is one.
-    pub item_id: Option<ItemId>,
+    /// The id of the definition we are currently extracting.
+    pub item_id: ItemOrModuleId,
     /// The translation context containing the top-level definitions/ids.
     pub t_ctx: &'ctx mut TranslateCtx<'tcx>,
     /// The Hax context with the current `DefId`.
@@ -202,14 +270,14 @@ impl<'tcx> TranslateCtx<'tcx> {
     pub(crate) fn with_def_id<F, T>(
         &mut self,
         def_id: &hax::DefId,
-        item_id: Option<ItemId>,
+        item_id: &ItemOrModuleId,
         f: F,
     ) -> T
     where
         F: FnOnce(&mut Self) -> T,
     {
         let mut errors = self.errors.borrow_mut();
-        let current_def_id = mem::replace(&mut errors.def_id, item_id);
+        let current_def_id = mem::replace(&mut errors.def_id, item_id.as_item());
         let current_def_id_is_local = mem::replace(&mut errors.def_id_is_local, def_id.is_local());
         drop(errors); // important: release the refcell "lock"
         let ret = f(self);
@@ -224,7 +292,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(
         item_src: TransItemSource<'tcx>,
-        item_id: Option<ItemId>,
+        item_id: ItemOrModuleId,
         t_ctx: &'ctx mut TranslateCtx<'tcx>,
     ) -> Self {
         use crate::hax::BaseState;

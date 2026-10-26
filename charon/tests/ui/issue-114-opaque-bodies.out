@@ -362,18 +362,6 @@ where
     return
 }
 
-struct (_, _)<A, B>
-where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
-}
-
-struct str {
-  _0: [u8],
-}
-
 // Full name: test_crate::use_inlines
 fn use_inlines() -> u32
 {

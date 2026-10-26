@@ -64,14 +64,6 @@ struct (_,)<A> {
   _0: A,
 }
 
-struct (_, _)<A, B>
-where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
-}
-
 // Full name: test_crate::apply_to_zero_mut
 fn apply_to_zero_mut<T0>(f: T0) -> u8
 where

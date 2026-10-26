@@ -199,14 +199,6 @@ where
     TypeOutlives1: A: '_0,
 = <opaque>
 
-struct (_, _)<A, B>
-where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
-}
-
 pub fn test_crate::swap<'a, T>(x: &'a mut T, y: &'a mut T)
 where
     TraitClause0: (T: Sized),

@@ -14,11 +14,6 @@ struct (_,)::<u8> {
   _0: u8,
 }
 
-struct (_, _)::<u8, bool> {
-  _0: u8,
-  _1: bool,
-}
-
 // Full name: test_crate::main::{closure}
 struct {closure} {
   _0: NotCopy,

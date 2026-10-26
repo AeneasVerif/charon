@@ -115,63 +115,6 @@ where
   _1: B,
 }
 
-// Full name: (_,)::{impl Destruct for (A,)}::drop_glue
-unsafe fn {impl Destruct for (A,)}::drop_glue<'_0, A>(_1: &'_0 mut (A,))
-where
-    TypeOutlives0: A: '_0,
-{
-    let _0: (); // return
-    let _1: &'1 mut (A,); // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
-    ↳⚡ storage_dead(_1)
-        unwind_continue
-    storage_dead(_1)
-    return
-}
-
-// Full name: (_,)::{impl Destruct for (A,)}
-impl<A> Destruct for (A,) {
-    fn drop_glue<'_0_1> = {impl Destruct for (A,)}::drop_glue<'_0_1, A>
-    non-dyn-compatible
-}
-
-// Full name: (_, _)::{impl Destruct for (A, B)}::drop_glue
-unsafe fn {impl Destruct for (A, B)}::drop_glue<'_0, A, B>(_1: &'_0 mut (A, B))
-where
-    TraitClause0: (A: Sized),
-    TypeOutlives0: A: '_0,
-    TypeOutlives1: B: '_0,
-{
-    let _0: (); // return
-    let _1: &'1 mut (A, B); // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
-    ↳⚡ drop[{built_in impl Destruct for B}::drop_glue<'4>] (*_1)._1
-        ↳⚡ storage_dead(_1)
-            unwind_terminate
-        storage_dead(_1)
-        unwind_continue
-    drop[{built_in impl Destruct for B}::drop_glue<'3>] (*_1)._1
-    ↳⚡ storage_dead(_1)
-        unwind_continue
-    storage_dead(_1)
-    return
-}
-
-// Full name: (_, _)::{impl Destruct for (A, B)}
-impl<A, B> Destruct for (A, B)
-where
-    TraitClause0: (A: Sized),
-{
-    fn drop_glue<'_0_1> = {impl Destruct for (A, B)}::drop_glue<'_0_1, A, B>[TraitClause0]
-    non-dyn-compatible
-}
-
 // Full name: test_crate::Trait
 trait Trait<Self>
 {
@@ -581,6 +524,48 @@ where
     proof ImpliedClause3: ((A,): Tuple) = {built_in impl Tuple for (A,)}
     fn call<'_0_1> = call<'_0_1, A, B>[TraitClause0, TraitClause1]
     vtable: {impl Fn<(A,)> for fn(A) -> B}::{vtable}<A, B>[TraitClause0, TraitClause1]
+}
+
+// Full name: (_,)::{impl Destruct for (A,)}::drop_glue
+unsafe fn {impl Destruct for (A,)}::drop_glue<'_0, A>(_1: &'_0 mut (A,))
+where
+    TypeOutlives0: A: '_0,
+{
+    let _0: (); // return
+    let _1: &'1 mut (A,); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
+}
+
+// Full name: (_, _)::{impl Destruct for (A, B)}::drop_glue
+unsafe fn {impl Destruct for (A, B)}::drop_glue<'_0, A, B>(_1: &'_0 mut (A, B))
+where
+    TraitClause0: (A: Sized),
+    TypeOutlives0: A: '_0,
+    TypeOutlives1: B: '_0,
+{
+    let _0: (); // return
+    let _1: &'1 mut (A, B); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
+    ↳⚡ drop[{built_in impl Destruct for B}::drop_glue<'4>] (*_1)._1
+        ↳⚡ storage_dead(_1)
+            unwind_terminate
+        storage_dead(_1)
+        unwind_continue
+    drop[{built_in impl Destruct for B}::drop_glue<'3>] (*_1)._1
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
 }
 
 // Full name: test_crate::{impl Trait for u32}

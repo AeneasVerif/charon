@@ -42,8 +42,6 @@ impl "impl_Clone_for_u8" Clone for u8 {
     non-dyn-compatible
 }
 
-struct () {}
-
 // Full name: test_crate::Foo
 pub trait Foo<Self>
 {

@@ -114,12 +114,6 @@ where
     return
 }
 
-// Full name: (_,)::{impl Destruct for (A,)}
-impl<A> "impl_Destruct_for_tuple" Destruct for (A,) {
-    fn drop_glue<'_0_1> = impl_Destruct_for_tuple::drop_glue<'_0_1, A>
-    non-dyn-compatible
-}
-
 // Full name: test_crate::LendingIterator
 pub trait LendingIterator<Self>
 {

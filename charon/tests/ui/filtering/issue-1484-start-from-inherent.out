@@ -4,8 +4,6 @@
 pub fn wrapping_add(_1: u32, _2: u32) -> u32
 = <opaque>
 
-struct () {}
-
 // Full name: test_crate::Counter
 pub struct Counter {
   n: u32,

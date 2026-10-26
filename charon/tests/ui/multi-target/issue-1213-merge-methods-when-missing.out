@@ -217,10 +217,6 @@ where
 
 struct () {}
 
-struct (_,)<A> {
-  _0: A,
-}
-
 fn test_crate::f<'_0>(blocks: &'_0 mut [u8])
 {
     let _0: (); // return

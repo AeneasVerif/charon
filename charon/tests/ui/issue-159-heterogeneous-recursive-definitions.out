@@ -5,8 +5,6 @@
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
-struct () {}
-
 // Full name: test_crate::Ops
 trait Ops<Self>
 {

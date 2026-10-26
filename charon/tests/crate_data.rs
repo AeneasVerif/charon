@@ -865,8 +865,8 @@ fn declaration_groups() -> anyhow::Result<()> {
     assert!(matches!(global.src, GlobalSource::TraitDefault { .. }));
 
     let decl_groups = crate_data.ordered_decls.unwrap();
-    // One of the groups is the declaration of `()`, which every crate has.
-    assert_eq!(decl_groups.len(), 9);
+    // The reachable groups are MetaSized, (), foo, Foo, FOO's initializer, FOO, and impl Foo for ().
+    assert_eq!(decl_groups.len(), 7);
 
     Ok(())
 }

@@ -4,8 +4,6 @@
 #[diagnostic_item("Send")]
 pub unsafe trait Send<Self>
 
-struct () {}
-
 // Full name: test_crate::S
 struct S {}
 

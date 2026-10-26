@@ -27,8 +27,6 @@ where
     TraitClause0: (T: Sized),
 = <opaque>
 
-struct () {}
-
 // Full name: test_crate::repeat_inline_const
 pub fn repeat_inline_const<T, const N : usize>() -> [MaybeUninit<T>[TraitClause0]; N]
 where

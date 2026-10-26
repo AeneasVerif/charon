@@ -49,14 +49,6 @@ where
     RegionOutlives0: 'f: '_1,
 = <opaque>
 
-struct (_, _)<A, B>
-where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
-}
-
 // Full name: test_crate::sum
 pub unsafe extern "C" fn sum(...) -> i32
 {

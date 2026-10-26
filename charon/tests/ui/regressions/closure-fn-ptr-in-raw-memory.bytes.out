@@ -24,60 +24,11 @@ pub trait Clone<Self>
     non-dyn-compatible
 }
 
-// Full name: core::marker::Tuple
-#[fundamental]
-#[lang_item(Tuple)]
-pub trait Tuple<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
-
 // Full name: core::mem::maybe_uninit::MaybeUninit
 #[lang_item(MaybeUninit)]
 pub opaque type MaybeUninit<T>
 where
     TraitClause0: (T: Sized),
-
-// Full name: core::ops::function::FnOnce
-#[fundamental]
-#[lang_item(FnOnce)]
-pub trait FnOnce<Self, Args>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Args: Sized)
-    proof ImpliedClause2: (Args: Tuple)
-    proof ImpliedClause3: (Self::Output: Sized)
-    type Output
-    fn call_once;
-    vtable: core::ops::function::FnOnce::{vtable}<Args, Self::Output>
-}
-
-// Full name: core::ops::function::FnMut
-#[fundamental]
-#[lang_item(FnMut)]
-pub trait FnMut<Self, Args>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: FnOnce<Args>)
-    proof ImpliedClause2: (Args: Sized)
-    proof ImpliedClause3: (Args: Tuple)
-    fn call_mut<'_0_1>;
-    vtable: core::ops::function::FnMut::{vtable}<Args, Self::ImpliedClause1::Output>
-}
-
-// Full name: core::ops::function::Fn
-#[fundamental]
-#[lang_item(Fn)]
-pub trait Fn<Self, Args>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    proof ImpliedClause1: (Self: FnMut<Args>)
-    proof ImpliedClause2: (Args: Sized)
-    proof ImpliedClause3: (Args: Tuple)
-    fn call<'_0_1>;
-    vtable: core::ops::function::Fn::{vtable}<Args, Self::ImpliedClause1::ImpliedClause1::Output>
-}
 
 struct () {}
 
@@ -113,91 +64,6 @@ where
     storage_dead(args)
     storage_dead(fn_ptr)
     return
-}
-
-// Full name: {impl FnMut<(A,)> for fn(A) -> B}::call_mut
-extern "rust-call" fn {impl FnMut<(A,)> for fn(A) -> B}::call_mut<'_0, A, B>(fn_ptr: &'_0 mut fn(A) -> B, args: (A,)) -> B
-where
-    TraitClause0: (A: Sized),
-    TraitClause1: (B: Sized),
-    TypeOutlives0: A: '_0,
-    TypeOutlives1: B: '_0,
-{
-    let _0: B; // return
-    let fn_ptr: &'_0 mut fn(A) -> B; // arg #1
-    let args: (A,); // arg #2
-
-    storage_live(_0)
-    _0 = (copy (*fn_ptr))(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
-        unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
-    return
-}
-
-// Full name: {impl FnOnce<(A,)> for fn(A) -> B}::call_once
-extern "rust-call" fn {impl FnOnce<(A,)> for fn(A) -> B}::call_once<A, B>(fn_ptr: fn(A) -> B, args: (A,)) -> B
-where
-    TraitClause0: (A: Sized),
-    TraitClause1: (B: Sized),
-{
-    let _0: B; // return
-    let fn_ptr: fn(A) -> B; // arg #1
-    let args: (A,); // arg #2
-
-    storage_live(_0)
-    _0 = (copy fn_ptr)(move args._0)
-    ↳⚡ storage_dead(args)
-        storage_dead(fn_ptr)
-        unwind_continue
-    storage_dead(args)
-    storage_dead(fn_ptr)
-    return
-}
-
-// Full name: {impl FnOnce<(A,)> for fn(A) -> B}
-impl<A, B> FnOnce<(A,)> for fn(A) -> B
-where
-    TraitClause0: (A: Sized),
-    TraitClause1: (B: Sized),
-{
-    proof ImpliedClause0: (fn(A) -> B: MetaSized) = {built_in impl MetaSized for fn(A) -> B}
-    proof ImpliedClause1: ((A,): Sized) = {built_in impl Sized for (A,)}
-    proof ImpliedClause2: ((A,): Tuple) = {built_in impl Tuple for (A,)}
-    proof ImpliedClause3: (B: Sized) = TraitClause1
-    type Output = B
-    fn call_once = {impl FnOnce<(A,)> for fn(A) -> B}::call_once<A, B>[TraitClause0, TraitClause1]
-    vtable: lazy
-}
-
-// Full name: {impl FnMut<(A,)> for fn(A) -> B}
-impl<A, B> FnMut<(A,)> for fn(A) -> B
-where
-    TraitClause0: (A: Sized),
-    TraitClause1: (B: Sized),
-{
-    proof ImpliedClause0: (fn(A) -> B: MetaSized) = {built_in impl MetaSized for fn(A) -> B}
-    proof ImpliedClause1: (fn(A) -> B: FnOnce<(A,)>) = {impl FnOnce<(A,)> for fn(A) -> B}<A, B>[TraitClause0, TraitClause1]
-    proof ImpliedClause2: ((A,): Sized) = {built_in impl Sized for (A,)}
-    proof ImpliedClause3: ((A,): Tuple) = {built_in impl Tuple for (A,)}
-    fn call_mut<'_0_1> = {impl FnMut<(A,)> for fn(A) -> B}::call_mut<'_0_1, A, B>[TraitClause0, TraitClause1]
-    vtable: lazy
-}
-
-// Full name: {impl Fn<(A,)> for fn(A) -> B}
-impl<A, B> Fn<(A,)> for fn(A) -> B
-where
-    TraitClause0: (A: Sized),
-    TraitClause1: (B: Sized),
-{
-    proof ImpliedClause0: (fn(A) -> B: MetaSized) = {built_in impl MetaSized for fn(A) -> B}
-    proof ImpliedClause1: (fn(A) -> B: FnMut<(A,)>) = {impl FnMut<(A,)> for fn(A) -> B}<A, B>[TraitClause0, TraitClause1]
-    proof ImpliedClause2: ((A,): Sized) = {built_in impl Sized for (A,)}
-    proof ImpliedClause3: ((A,): Tuple) = {built_in impl Tuple for (A,)}
-    fn call<'_0_1> = {impl Fn<(A,)> for fn(A) -> B}::call<'_0_1, A, B>[TraitClause0, TraitClause1]
-    vtable: lazy
 }
 
 struct test_crate::CLOSURE_STATELESS::{closure} {}

@@ -1,0 +1,75 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+struct () {}
+
+// Full name: test_crate::outer::inner::Trait
+pub trait Trait<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    const VALUE : ()
+    fn required;
+    fn defaulted = defaulted<Self>[Self]
+    non-dyn-compatible
+}
+
+// Full name: test_crate::outer::inner::Trait::defaulted
+pub fn defaulted<Self>()
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::outer::inner::Trait::defaulted::in_default
+fn in_default()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::outer::inner::Trait::VALUE
+pub fn VALUE<Self>()
+where
+    TraitClause0: (Self: Trait),
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+// Full name: test_crate::outer::inner::Trait::VALUE
+pub const VALUE<Self>: ()
+where
+    TraitClause0: (Self: Trait),
+ = VALUE<Self>[TraitClause0]()
+
+// Full name: test_crate::outer::inner::Trait::VALUE::in_default_const
+fn in_default_const()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = ()
+    return
+}
+
+
+

@@ -277,14 +277,6 @@ where
     TraitClause1: (I: Iterator),
 = <opaque>
 
-struct str {
-  _0: [u8],
-}
-
-struct (_,)<A> {
-  _0: A,
-}
-
 // Full name: test_crate::nested_loops_enum
 pub fn nested_loops_enum(step_out: usize, step_in: usize) -> usize
 {

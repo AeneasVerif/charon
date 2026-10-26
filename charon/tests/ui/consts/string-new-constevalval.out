@@ -57,66 +57,6 @@ pub fn alloc::string::{String}::new() -> String
 
 struct () {}
 
-// Full name: {impl Destruct for [T]}
-impl<T> "impl_Destruct_for_slice" Destruct for [T]
-where
-    TraitClause0: (T: Sized),
-{
-    non-dyn-compatible
-}
-
-// Full name: {impl Destruct for [T]}::drop_glue
-unsafe fn impl_Destruct_for_slice::drop_glue<'_0, T>(_1: &'_0 mut [T])
-where
-    TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
-{
-    let _0: (); // return
-    let _1: &'1 mut [T]; // arg #1
-    let _2: usize; // anonymous local
-    let _3: usize; // anonymous local
-    let _4: *mut T; // anonymous local
-    let _5: bool; // anonymous local
-    let _6: *mut T; // anonymous local
-    let _7: bool; // anonymous local
-
-    storage_live(_0)
-    storage_live(_2)
-    storage_live(_3)
-    storage_live(_4)
-    storage_live(_5)
-    storage_live(_6)
-    storage_live(_7)
-    _0 = ()
-    _2 = noretag copy _1.metadata
-    _3 = const 0usize
-    loop {
-        _7 = copy _3 == copy _2
-        if move _7 {
-            break 0
-        } else {
-            _6 = &raw mut (*_1)[copy _3]
-            _3 = move _3 wrap.+ const 1usize
-            drop[{built_in impl Destruct for T}::drop_glue<'2>] (*_6)
-            ↳⚡ loop {
-                    _5 = copy _3 == copy _2
-                    if move _5 {
-                        break 0
-                    } else {
-                        _4 = &raw mut (*_1)[copy _3]
-                        _3 = move _3 wrap.+ const 1usize
-                        drop[{built_in impl Destruct for T}::drop_glue<'3>] (*_4)
-                        ↳⚡ unwind_terminate
-                        continue 0
-                    }
-                }
-                unwind_continue
-            continue 0
-        }
-    }
-    return
-}
-
 // Full name: test_crate::mk_string
 pub fn mk_string()
 {
