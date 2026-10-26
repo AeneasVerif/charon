@@ -264,6 +264,8 @@ pub fn fn_sig_bound_region_variances<'tcx>(
     relation.variances
 }
 
+/// Instantiate this binder with the provided args. Use `None` if the args are known to be the
+/// identity args.
 pub fn inst_binder<'tcx, T>(
     tcx: ty::TyCtxt<'tcx>,
     typing_env: ty::TypingEnv<'tcx>,
@@ -279,6 +281,8 @@ where
     }
 }
 
+/// Instantiate this value with the provided args. Use `None` if the args are known to be the
+/// identity args.
 pub fn substitute<'tcx, T>(
     tcx: ty::TyCtxt<'tcx>,
     typing_env: ty::TypingEnv<'tcx>,
@@ -291,14 +295,70 @@ where
     inst_binder(tcx, typing_env, args, ty::EarlyBinder::bind(tcx, x))
 }
 
-/// Make a new `ParamEnv` from a list of clauses.
-pub fn param_env_from_clauses<'tcx>(
+/// Closures and inline consts have special type params that are used as inference variables. After
+/// analysis, they can be computed from the rest of the args (modulo some erased regions). This
+/// computes the identity args for this `def_id` with the inference ars properly inferred.
+pub fn identity_args_with_inferred<'tcx>(
     tcx: ty::TyCtxt<'tcx>,
-    predicates: impl Iterator<Item = ty::Clause<'tcx>>,
-) -> ty::ParamEnv<'tcx> {
-    let cause = rustc_trait_selection::traits::ObligationCause::dummy();
-    let param_env = ty::ParamEnv::new(tcx, predicates);
-    rustc_trait_selection::traits::normalize_param_env_or_error(tcx, param_env, cause)
+    def_id: RDefId,
+) -> ty::GenericArgsRef<'tcx> {
+    match tcx.def_kind(def_id) {
+        RDefKind::Closure | RDefKind::SyntheticCoroutineBody => {
+            let type_of = tcx
+                .type_of(def_id)
+                .instantiate_identity()
+                .skip_normalization();
+            match *type_of.kind() {
+                ty::Closure(_, args) | ty::Coroutine(_, args) => args,
+                _ => unreachable!(),
+            }
+        }
+        RDefKind::AnonConst
+            if tcx.anon_const_kind(def_id) == ty::AnonConstKind::NonTypeSystemInline =>
+        {
+            // `tcx.type_of` fetches its result from the provided arguments, which circularly can't
+            // help us. We get the real type from the MIR body which is sad but works.
+            let get_ret_ty = |body: &mir::Body<'tcx>| body.local_decls[mir::Local::ZERO].ty;
+            let ret_ty = mir_kinds::CTFE::get_mir(tcx, def_id, get_ret_ty)
+                .or_else(|| mir_kinds::Optimized::get_mir(tcx, def_id, get_ret_ty))
+                .expect("could not compute the type of this inline const: {def_id:?}");
+            let mut args = ty::GenericArgs::identity_for_item(tcx, def_id).to_vec();
+            *args
+                .last_mut()
+                .expect("inline const has a return type parameter") = ret_ty.into();
+            tcx.mk_args_from_iter(args.into_iter())
+        }
+        _ => ty::GenericArgs::identity_for_item(tcx, def_id),
+    }
+}
+
+/// Replace each erased region in this value with a fresh placeholder region.
+pub fn unerase_lifetimes<'tcx, T>(
+    s: &impl UnderOwnerState<'tcx>,
+    val: T,
+    new_region_name: Symbol,
+) -> (T, Vec<ty::PlaceholderRegion<'tcx>>)
+where
+    T: ty::TypeFoldable<ty::TyCtxt<'tcx>>,
+{
+    let tcx = s.base().tcx;
+    let mut extra_regions = Vec::new();
+    let val = ty::fold_regions(tcx, val, |region, _| {
+        if region.is_erased() {
+            let placeholder = ty::PlaceholderRegion::new(
+                ty::UniverseIndex::ROOT,
+                ty::BoundRegion {
+                    var: ty::BoundVar::from_usize(extra_regions.len()),
+                    kind: ty::BoundRegionKind::NamedForPrinting(new_region_name),
+                },
+            );
+            extra_regions.push(placeholder);
+            ty::Region::new_placeholder(tcx, placeholder)
+        } else {
+            region
+        }
+    });
+    (val, extra_regions)
 }
 
 #[extension_traits::extension(pub trait SubstBinder)]

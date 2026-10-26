@@ -1,0 +1,52 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::option::Option
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some { _0: T },
+}
+
+// Full name: test_crate::foo::{const}
+fn {const}<'a, '_1>() -> Option<&'_1 u8>[{built_in impl Sized for &'_1 u8}]
+{
+    let _0: Option<&'8 u8>[{built_in impl Sized for &'8 u8}]; // return
+
+    storage_live(_0)
+    _0 = Option::None {  }
+    return
+}
+
+// Full name: test_crate::foo::{const}
+const {const}<'a, '_1>: Option<&'_1 u8>[{built_in impl Sized for &'_1 u8}] = {const}<'a, '_1>()
+
+// Full name: test_crate::foo
+pub fn foo<'a>() -> Option<&'a u8>[{built_in impl Sized for &'a u8}]
+{
+    let _0: Option<&'8 u8>[{built_in impl Sized for &'8 u8}]; // return
+
+    storage_live(_0)
+    _0 = const {const}<'16, '29>
+    return
+}
+
+
+

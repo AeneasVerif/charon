@@ -44,8 +44,20 @@ where
     S: UnderOwnerState<'tcx>,
 {
     let tcx = s.base().tcx;
+
+    // Store extra placeholder regions we use if erased lifetimes are found in identity args.
+    let mut extra_early_regions = vec![];
     let this = if def_id.can_have_generics(s) {
-        let args_or_default = args.unwrap_or_else(|| def_id.identity_args(s));
+        // Construct the args for this item, unerasing lifetimes found erased (see
+        // `ParamEnv.extra_early_regions`).
+        let args_or_default = {
+            let mut identity_args = def_id.identity_args(s);
+            if def_id.is_typeck_child(s) {
+                let name = rustc_span::Symbol::intern(&format!("__unerased_region_{def_id:?}"));
+                (identity_args, extra_early_regions) = unerase_lifetimes(s, identity_args, name);
+            }
+            substitute(tcx, s.typing_env(), args, identity_args)
+        };
         ItemRef::translate_from_hax_def_id(s, def_id.clone(), args_or_default)
     } else {
         ItemRef::dummy_without_generics(s, def_id.clone())
@@ -54,7 +66,7 @@ where
     let source_span;
     let lang_item;
     let diagnostic_item;
-    let kind;
+    let mut kind;
     match def_id.base {
         DefIdBase::Synthetic(item) => {
             match item {
@@ -167,6 +179,25 @@ where
         }
     }
 
+    if let FullDefKind::Closure(Closure { param_env, .. })
+    | FullDefKind::Const(Const { param_env, .. }) = &mut kind
+        && def_id.is_typeck_child(s)
+    {
+        // Record the value of the inference-only type vars.
+        let identity_args = this.rustc_args(s);
+        for param in &mut param_env.generics.params {
+            let GenericParamDefKind::Type {
+                inference_value, ..
+            } = &mut param.kind
+            else {
+                unreachable!("typeck_child inference parameters must be types")
+            };
+            *inference_value = Some(identity_args[param.index as usize].expect_ty().sinto(s));
+        }
+        // Record the extra early regions added into these vars.
+        param_env.extra_early_regions = extra_early_regions.sinto(s);
+    }
+
     let attributes = def_id.attrs(tcx).to_vec();
     let visibility = def_id.visibility(tcx);
     let source_text = source_span
@@ -255,6 +286,9 @@ impl<'tcx> ItemRef<'tcx> {
 pub struct ParamEnv<'tcx> {
     /// Generic parameters of the item.
     pub generics: TyGenerics<'tcx>,
+    /// Extra early regions that we add to replace regions that rustc normally erases. We represent
+    /// them with placeholders so the types that mention them can still flow through rustc APIs.
+    pub extra_early_regions: Vec<PlaceholderRegion>,
     /// Required predicates for the item (see `traits::utils::required_predicates`).
     pub predicates: GenericPredicates<'tcx>,
     /// A reference to the parent of this item, with appropriate args.
@@ -284,10 +318,9 @@ impl<'tcx> ParamEnv<'tcx> {
                     .map(|parent| parent.def_id.generics_of(s).count())
                     .unwrap_or(0),
                 params: vec![],
-                has_self: false,
-                has_late_bound_regions: None,
             },
             predicates: GenericPredicates { predicates: vec![] },
+            extra_early_regions: vec![],
             parent: parent.cloned(),
         }
     }
@@ -943,11 +976,14 @@ impl<'tcx> FnPointer<'tcx> {
 pub struct Closure<'tcx> {
     def_id: DefId,
     /// `[closure_ty, tupled_args_ty]`: the args of the `Fn*` traits for this closure.
+    /// The signature's bound regions are liberated in these types, and the `extra_regions` may be
+    /// mentioned as well.
     fn_trait_args: [ty::Ty<'tcx>; 2],
     kind: ClosureKind,
-    /// This param env is empty because the (early-bound) generics of a closure are the same as
-    /// those of the item in which it is defined. We hide the special weird generics that rustc
-    /// uses internally for inference on closures.
+    /// The closure inherits its ordinary generics from its parent. It does have type parameters,
+    /// used by rustc for inference purposes. These are hidden from the `ParamEnv`. Any erased
+    /// lifetimes found in these inferred generics are replaced with placeholder regions, stored in
+    /// `extra_early_regions`.
     param_env: ParamEnv<'tcx>,
     sig: PolyFnSig<'tcx>,
     /// The captured variables, which together form the closure's state.
@@ -959,9 +995,6 @@ pub struct Closure<'tcx> {
 }
 
 impl<'tcx> Closure<'tcx> {
-    /// This param env is empty because the (early-bound) generics of a closure are the same as
-    /// those of the item in which it is defined. We hide the special weird generics that rustc
-    /// uses internally for inference on closures.
     pub fn param_env(&self) -> &ParamEnv<'tcx> {
         &self.param_env
     }
@@ -1283,8 +1316,12 @@ where
     let s = &s.with_hax_owner(hax_def_id);
     let def_id = hax_def_id.real_rust_def_id();
     let tcx = s.base().tcx;
-    let type_of_self = || inst_binder(tcx, s.typing_env(), args, hax_def_id.type_of(s));
-    let args_or_default = || args.unwrap_or_else(|| hax_def_id.identity_args(s));
+
+    let args_or_default = this.rustc_args(s);
+    let type_of_self = || {
+        let args = args_or_default;
+        inst_binder(tcx, s.typing_env(), Some(args), hax_def_id.type_of(s))
+    };
     match get_def_kind(tcx, def_id) {
         RDefKind::Struct { .. } | RDefKind::Union { .. } | RDefKind::Enum { .. } => {
             let def = tcx.adt_def(def_id);
@@ -1407,21 +1444,19 @@ where
             })
         }
         RDefKind::Closure { .. } => {
-            let closure_ty = type_of_self();
-            let ty::TyKind::Closure(_, closure_args) = closure_ty.kind() else {
-                unreachable!()
-            };
-            let closure = closure_args.as_closure();
-            let sig = closure_sig(tcx, closure);
-            let tupled_args_ty = sig.map_bound(|sig| ty::Ty::new_tup(tcx, sig.inputs()));
-            let input_ty = tcx.liberate_late_bound_regions(def_id, tupled_args_ty);
+            let closure_ty = ty::Ty::new_closure(tcx, def_id, args_or_default);
+            let closure = args_or_default.as_closure();
+
+            let raw_sig = closure.sig();
+            let sig = tcx.signature_unclosure(raw_sig, hir::Safety::Safe);
+            let input_ty = tcx.liberate_late_bound_regions(def_id, raw_sig).inputs()[0];
             FullDefKind::Closure(Closure {
                 def_id: hax_def_id.clone(),
-                fn_trait_args: [closure_ty, input_ty],
                 kind: closure.kind().sinto(s),
                 param_env: get_param_env(s, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 sig: sig.sinto(s),
+                fn_trait_args: [closure_ty, input_ty],
                 upvar_tys: closure.upvar_tys().sinto(s),
                 fn_trait_impls: Default::default(),
                 destruct_impl: Default::default(),
@@ -1434,27 +1469,9 @@ where
                 _ => unreachable!(),
             };
 
-            let self_ty = if matches!(kind, ConstKind::AnonConst)
-                && tcx.anon_const_kind(def_id) == ty::AnonConstKind::NonTypeSystemInline
-                && let get_ret_ty = (|body: &mir::Body<'tcx>| body.local_decls[mir::Local::ZERO].ty)
-                && let Some(ret_ty) = mir_kinds::CTFE::get_mir(tcx, def_id, get_ret_ty)
-                    .or_else(|| mir_kinds::Optimized::get_mir(tcx, def_id, get_ret_ty))
-            {
-                // Inline consts have a special `<const_ty>` param added to them for type inference
-                // purposes. `tcx.type_of` returns that, which is not useful to us. Instead, we get
-                // the real type from the MIR body which is sad but works.
-                inst_binder(
-                    tcx,
-                    s.typing_env(),
-                    args,
-                    ty::EarlyBinder::bind(tcx, ret_ty),
-                )
-            } else {
-                type_of_self()
-            };
             FullDefKind::Const(Const {
                 param_env: get_param_env(s, args),
-                ty: self_ty.sinto(s),
+                ty: type_of_self().sinto(s),
                 kind,
             })
         }
@@ -1486,9 +1503,8 @@ where
         RDefKind::LifetimeParam => FullDefKind::LifetimeParam,
         RDefKind::Variant => FullDefKind::Variant,
         RDefKind::Ctor(ctor_of, _) => {
-            let args = args_or_default();
+            let adt_args = args_or_default;
             let ctor_of = ctor_of.sinto(s);
-            let sig = tcx.fn_sig(def_id);
 
             // The def_id of the adt this ctor belongs to.
             let adt_def_id = match ctor_of {
@@ -1501,13 +1517,13 @@ where
                 .variant(variant_id)
                 .fields
                 .iter()
-                .map(|f| FieldDef::sfrom(s, f, args))
+                .map(|f| FieldDef::sfrom(s, f, adt_args))
                 .collect();
-            let output_ty = ty::Ty::new_adt(tcx, adt_def, args).sinto(s);
-            let sig = inst_binder(tcx, s.typing_env(), Some(args), sig);
+            let output_ty = ty::Ty::new_adt(tcx, adt_def, adt_args).sinto(s);
+            let sig = inst_binder(tcx, s.typing_env(), args, tcx.fn_sig(def_id));
             FullDefKind::Ctor(Ctor {
                 def_id: hax_def_id.clone(),
-                args,
+                args: adt_args,
                 rustc_sig: sig,
                 adt_def_id: adt_def_id.sinto(s),
                 ctor_of,
@@ -1599,13 +1615,20 @@ pub struct VirtualTraitImpl<'tcx> {
     /// The associated types and their predicates, in definition order.
     pub types: Vec<(Ty<'tcx>, Vec<TraitProof<'tcx>>)>,
     /// The methods, in definition order.
-    pub methods: Vec<DefId>,
+    pub methods: Vec<VirtualTraitMethod<'tcx>>,
     /// The item under which this impl was built.
     owner: DefId,
     /// The trait ref of the implemented trait, for `dyn_data`.
     trait_ref: ty::TraitRef<'tcx>,
     /// Computed on demand, see [`VirtualTraitImpl::dyn_self`].
     dyn_data: OnceCell<Option<(Ty<'tcx>, Vec<PolyFnSig<'tcx>>)>>,
+}
+
+/// A method of a virtual trait impl.
+#[derive(Debug, Clone)]
+pub struct VirtualTraitMethod<'tcx> {
+    pub def_id: DefId,
+    pub sig: PolyFnSig<'tcx>,
 }
 
 impl<'tcx> VirtualTraitImpl<'tcx> {
@@ -1628,7 +1651,8 @@ impl<'tcx> VirtualTraitImpl<'tcx> {
                     .methods
                     .iter()
                     .map(|method| {
-                        vtable_sig_with_dyn_self(s, method.real_rust_def_id(), dyn_self).sinto(s)
+                        vtable_sig_with_dyn_self(s, method.def_id.real_rust_def_id(), dyn_self)
+                            .sinto(s)
                     })
                     .collect();
                 Some((dyn_self.sinto(s), vtable_sigs))
@@ -1745,7 +1769,7 @@ impl<'tcx> FullDef<'tcx> {
     /// Whether the item has any generics at all (including parent generics).
     pub fn has_any_generics(&self) -> bool {
         match self.param_env() {
-            Some(p) => p.generics.parent_count != 0 || !p.generics.params.is_empty(),
+            Some(p) => p.generics.parent_count != 0 || self.has_own_generics(),
             None => false,
         }
     }
@@ -1771,7 +1795,7 @@ impl<'tcx> FullDef<'tcx> {
                     } else {
                         !p.predicates.predicates.is_empty()
                     };
-                !p.generics.params.is_empty() || has_predicates
+                self.has_own_generics() || has_predicates
             }
             None => false,
         }
@@ -1920,7 +1944,14 @@ where
         .associated_items(trait_ref.def_id)
         .in_definition_order()
         .filter(|assoc| matches!(assoc.kind, ty::AssocKind::Fn { .. }))
-        .map(|assoc| assoc.def_id.sinto(s))
+        .map(|assoc| {
+            let sig = tcx.fn_sig(assoc.def_id).instantiate(tcx, trait_ref.args);
+            let sig = normalize(tcx, s.typing_env(), sig);
+            VirtualTraitMethod {
+                def_id: assoc.def_id.sinto(s),
+                sig: sig.sinto(s),
+            }
+        })
         .collect();
     Box::new(VirtualTraitImpl {
         trait_pred,
@@ -1939,12 +1970,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
 ) -> ParamEnv<'tcx> {
     let tcx = s.base().tcx;
     let owner = s.owner();
-    // Rustc adds generic params to closures and inline consts for impl details purposes; we hide these.
-    let is_typeck_child = owner.is_typeck_child(s);
-    let mut generics = owner.generics_of(s).sinto(s);
-    if is_typeck_child {
-        generics.params = Default::default();
-    }
+    let generics = owner.generics_of(s).sinto(s);
 
     let parent = generics.parent.as_ref().map(|parent| {
         let parent_args = args
@@ -1955,11 +1981,8 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
     match args {
         None => ParamEnv {
             generics,
-            predicates: if is_typeck_child {
-                GenericPredicates::default()
-            } else {
-                owner.required_predicates(s).sinto(s)
-            },
+            extra_early_regions: vec![],
+            predicates: owner.required_predicates(s).sinto(s),
             parent,
         },
         // An instantiated item is monomorphic.
@@ -1969,6 +1992,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
                 params: Default::default(),
                 ..generics
             },
+            extra_early_regions: vec![],
             predicates: GenericPredicates::default(),
             parent,
         },

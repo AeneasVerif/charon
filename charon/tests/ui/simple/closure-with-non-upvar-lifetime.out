@@ -43,10 +43,10 @@ where
     RegionOutlives2: '_1: '_2,
 {
     let _0: u8; // return
-    let _1: &'1 {closure}<'_0, '_1>; // arg #1
+    let _1: &'10 {closure}<'_0, '_1>; // arg #1
     let tupled_args: (usize,); // arg #2
     let i: usize; // local
-    let _4: &'2 &'3 [u8]; // anonymous local
+    let _4: &'11 &'12 [u8]; // anonymous local
     let _5: usize; // anonymous local
     let _6: &'_ [u8]; // anonymous local
     let _7: &'_ u8; // anonymous local
@@ -80,9 +80,9 @@ fn call_fn<'_0>(a: &'_0 [u8], i: usize) -> u8
     let _0: u8; // return
     let a: &'1 [u8]; // arg #1
     let i: usize; // arg #2
-    let read: {closure}<'4, '5>; // local
-    let _4: &'8 &'9 [u8]; // anonymous local
-    let _5: &'13 {closure}<'14, '15>; // anonymous local
+    let read: {closure}<'10, '11>; // local
+    let _4: &'12 &'13 [u8]; // anonymous local
+    let _5: &'17 {closure}<'18, '19>; // anonymous local
     let _6: (usize,); // anonymous local
     let _7: usize; // anonymous local
 
@@ -99,7 +99,7 @@ fn call_fn<'_0>(a: &'_0 [u8], i: usize) -> u8
     storage_live(_7)
     _7 = copy i
     _6 = (move _7,)
-    _0 = call<'22, '23, '24>(move _5, move _6)
+    _0 = call<'37, '38, '39>(move _5, move _6)
     ↳⚡ storage_dead(i)
         storage_dead(a)
         unwind_continue

@@ -689,21 +689,23 @@ where
 }
 
 // Full name: test_crate::main::{closure}
-struct {closure} {}
+struct {closure}<'_0> {}
 
-// Full name: test_crate::main::{impl FnMut<(&'_0 u32,)> for {closure}}::call_mut
-extern "rust-call" fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}, tupled_args: (&'_0 u32,)) -> Ordering
+// Full name: test_crate::main::{impl FnMut<(&'_0 u32,)> for {closure}<'_0>}::call_mut
+extern "rust-call" fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}<'_0>, tupled_args: (&'_0 u32,)) -> Ordering
+where
+    RegionOutlives0: '_0: '_1,
 {
     let _0: Ordering; // return
-    let _1: &'1 mut {closure}; // arg #1
+    let _1: &'6 mut {closure}<'_0>; // arg #1
     let tupled_args: (&'_0 u32,); // arg #2
-    let x: &'3 u32; // local
-    let _4: &'4 u32; // anonymous local
-    let _5: &'5 u32; // anonymous local
-    let _6: &'6 u32; // anonymous local
-    let _7: &'7 u32; // anonymous local
-    let _8: &'8 u32; // anonymous local
-    let _9: &'13 u32; // anonymous local
+    let x: &'8 u32; // local
+    let _4: &'9 u32; // anonymous local
+    let _5: &'10 u32; // anonymous local
+    let _6: &'11 u32; // anonymous local
+    let _7: &'12 u32; // anonymous local
+    let _8: &'13 u32; // anonymous local
+    let _9: &'18 u32; // anonymous local
     let _10: u32; // anonymous local
 
     bb0: {
@@ -724,7 +726,7 @@ extern "rust-call" fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}, tupled_args: (&
         _7 = move _8;
         _6 = &(*_7);
         _5 = &(*_6);
-        _0 = cmp<'11, '12>(move _4, move _5) -> bb1 (unwind: bb2);
+        _0 = cmp<'16, '17>(move _4, move _5) -> bb1 (unwind: bb2);
     }
 
     bb1: {
@@ -753,19 +755,19 @@ extern "rust-call" fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}, tupled_args: (&
     }
 }
 
-// Full name: test_crate::main::{impl FnOnce<(&'_0 u32,)> for {closure}}::call_once
-extern "rust-call" fn call_once<'_0>(_1: {closure}, _2: (&'_0 u32,)) -> Ordering
+// Full name: test_crate::main::{impl FnOnce<(&'_0 u32,)> for {closure}<'_0>}::call_once
+extern "rust-call" fn call_once<'_0>(_1: {closure}<'_0>, _2: (&'_0 u32,)) -> Ordering
 {
     let _0: Ordering; // return
-    let _1: {closure}; // arg #1
-    let _2: (&'2 u32,); // arg #2
-    let _3: &'4 mut {closure}; // anonymous local
+    let _1: {closure}<'_0>; // arg #1
+    let _2: (&'7 u32,); // arg #2
+    let _3: &'9 mut {closure}<'_0>; // anonymous local
 
     bb0: {
         storage_live(_0);
         storage_live(_3);
         _3 = &mut _1;
-        _0 = call_mut<'_0, '9>(move _3, move _2) -> bb1 (unwind: bb2);
+        _0 = call_mut<'_0, '20>(move _3, move _2) -> bb1 (unwind: bb2);
     }
 
     bb1: {
@@ -783,9 +785,9 @@ extern "rust-call" fn call_once<'_0>(_1: {closure}, _2: (&'_0 u32,)) -> Ordering
     }
 }
 
-// Full name: test_crate::main::{impl FnOnce<(&'_0 u32,)> for {closure}}
-impl<'_0> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_0 u32,)> for {closure} {
-    proof ImpliedClause0: ({closure}: MetaSized) = {built_in impl MetaSized for {closure}}
+// Full name: test_crate::main::{impl FnOnce<(&'_0 u32,)> for {closure}<'_0>}
+impl<'_0> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_0 u32,)> for {closure}<'_0> {
+    proof ImpliedClause0: ({closure}<'_0>: MetaSized) = {built_in impl MetaSized for {closure}<'_0>}
     proof ImpliedClause1: ((&'_0 u32,): Sized) = {built_in impl Sized for (&'_0 u32,)}
     proof ImpliedClause2: ((&'_0 u32,): Tuple) = {built_in impl Tuple for (&'_0 u32,)}
     proof ImpliedClause3: (Ordering: Sized) = {built_in impl Sized for Ordering}
@@ -794,10 +796,10 @@ impl<'_0> "impl_FnOnce_tuple_for_closure" FnOnce<(&'_0 u32,)> for {closure} {
     vtable: lazy
 }
 
-// Full name: test_crate::main::{impl FnMut<(&'_0 u32,)> for {closure}}
-impl<'_0> "impl_FnMut_tuple_for_closure" FnMut<(&'_0 u32,)> for {closure} {
-    proof ImpliedClause0: ({closure}: MetaSized) = {built_in impl MetaSized for {closure}}
-    proof ImpliedClause1: ({closure}: FnOnce<(&'_0 u32,)>) = impl_FnOnce_tuple_for_closure<'_0>
+// Full name: test_crate::main::{impl FnMut<(&'_0 u32,)> for {closure}<'_0>}
+impl<'_0> "impl_FnMut_tuple_for_closure" FnMut<(&'_0 u32,)> for {closure}<'_0> {
+    proof ImpliedClause0: ({closure}<'_0>: MetaSized) = {built_in impl MetaSized for {closure}<'_0>}
+    proof ImpliedClause1: ({closure}<'_0>: FnOnce<(&'_0 u32,)>) = impl_FnOnce_tuple_for_closure<'_0>
     proof ImpliedClause2: ((&'_0 u32,): Sized) = {built_in impl Sized for (&'_0 u32,)}
     proof ImpliedClause3: ((&'_0 u32,): Tuple) = {built_in impl Tuple for (&'_0 u32,)}
     fn call_mut<'_0_1> = call_mut<'_0, '_0_1>
@@ -815,7 +817,7 @@ fn main()
     let res: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // local
     let _6: &'5 [u32]; // anonymous local
     let _7: &'6 [u32; 5usize]; // anonymous local
-    let _8: {closure}; // anonymous local
+    let _8: {closure}<'12>; // anonymous local
 
     bb0: {
         storage_live(_0);
@@ -829,20 +831,20 @@ fn main()
         storage_live(_4);
         _4 = &a;
         _3 = &(*_4);
-        b = unsize_cast<&'7 [u32], 5usize>(move _3);
+        b = unsize_cast<&'13 [u32], 5usize>(move _3);
         storage_dead(_3);
         fake_read(b);
-        set_type(typeof(b) == &'8 [u32]);
+        set_type(typeof(b) == &'14 [u32]);
         storage_dead(_4);
         storage_live(res);
         storage_live(_6);
         storage_live(_7);
         _7 = &a;
-        _6 = unsize_cast<&'9 [u32], 5usize>(move _7);
+        _6 = unsize_cast<&'15 [u32], 5usize>(move _7);
         storage_dead(_7);
         storage_live(_8);
         _8 = {closure} {  };
-        res = binary_search_by<'10, u32, {closure}>[{built_in impl Sized for u32}, {built_in impl Sized for {closure}}, impl_FnMut_tuple_for_closure<'10>, {built_in impl Destruct for {closure}}](move _6, move _8) -> bb1 (unwind: bb2);
+        res = binary_search_by<'18, u32, {closure}<'18>>[{built_in impl Sized for u32}, {built_in impl Sized for {closure}<'18>}, impl_FnMut_tuple_for_closure<'18>, {built_in impl Destruct for {closure}<'18>}](move _6, move _8) -> bb1 (unwind: bb2);
     }
 
     bb1: {

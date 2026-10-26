@@ -9,7 +9,6 @@ use rustc_span::def_id::DefId as RDefId;
 
 use super::translate_ctx::{ItemTransCtx, TransImplSource, TransItemSourceKind};
 use charon_lib::ast::*;
-use charon_lib::ids::IndexVec;
 use charon_lib::utils::CycleDetector;
 
 /// A level of binding for type-level variables. Each item has a top-level binding level
@@ -45,23 +44,21 @@ pub(crate) struct BindingLevel<'tcx> {
     pub region_vars_by_def_id: HashMap<hax::DefId, RegionId>,
     /// The map from rust late/bound regions to translated region indices.
     pub bound_region_vars: Vec<RegionId>,
+    /// Extra lifetimes unerased from the closure arguments. Hax represents them with placeholder
+    /// regions; they are parameters of the closure struct.
+    pub closure_extra_self_regions: HashMap<hax::PlaceholderRegion, RegionId>,
     /// Region added for the lifetime bound in the signature of the `call`/`call_mut` methods.
     pub closure_call_method_region: Option<RegionId>,
     /// Region added for the borrow accepted by a drop glue method or vtable drop shim.
     pub drop_glue_region: Option<RegionId>,
-    /// The map from rust type variable indices to translated type variable indices.
-    pub type_vars_map: HashMap<u32, TypeVarId>,
+    /// The map from rust type variable indices to the value they take in this scope. Ordinary
+    /// parameters map to type variables; inference-only parameters map to their known types.
+    pub type_vars_map: HashMap<u32, Ty>,
     /// The map from rust const generic variables to translated const generic variable indices.
     pub const_generic_vars_map: HashMap<u32, ConstGenericVarId>,
     /// The map from trait predicates to the translated trait clause indices, and the number of
     /// bound higher-kinded regions.
     pub trait_preds: HashMap<hax::GenericPredicateId, (TraitClauseId, usize)>,
-    /// The types of the captured variables, when we're translating a closure item. This is
-    /// translated early because this translation requires adding new lifetime generics to the
-    /// current binder.
-    pub closure_upvar_tys: Option<IndexVec<FieldId, Ty>>,
-    /// The regions we added for the upvars.
-    pub closure_upvar_regions: Vec<RegionId>,
     /// RPITIT can cause region names to be reused. To avoid clashes in our output, we rename
     /// duplicate names.
     pub used_region_names: HashSet<Symbol>,
@@ -156,16 +153,14 @@ impl<'tcx> BindingLevel<'tcx> {
         rid
     }
 
-    /// Add a region for an upvar in a closure.
-    pub fn push_upvar_region(&mut self) -> RegionId {
-        // We musn't push to `bound_region_vars` because that will contain the higher-kinded
-        // signature lifetimes (if any) and they must be lookup-able.
+    /// Extra lifetimes unerased from the closure arguments. Hax represents them with placeholder
+    /// regions; they are parameters of the closure struct.
+    pub fn push_unerased_region(&mut self, region: hax::PlaceholderRegion) {
         let region_id = self
             .params
             .regions
             .push_with(|index| RegionParam::new(index, None, Variance::Unknown));
-        self.closure_upvar_regions.push(region_id);
-        region_id
+        self.closure_extra_self_regions.insert(region, region_id);
     }
 
     pub fn push_drop_glue_region(&mut self) -> RegionId {
@@ -197,7 +192,10 @@ impl<'tcx> BindingLevel<'tcx> {
             name,
             variance,
         });
-        self.type_vars_map.insert(rid, var_id);
+        self.type_vars_map.insert(
+            rid,
+            TyKind::TypeVar(DeBruijnVar::new_at_zero(var_id)).into_ty(),
+        );
         var_id
     }
 
@@ -301,15 +299,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn lookup_param<Id: Copy>(
+    pub(crate) fn lookup_param<T: TyVisitable>(
         &mut self,
         span: Span,
-        f: impl for<'a> Fn(&'a BindingLevel) -> Option<Id>,
+        f: impl for<'a> Fn(&'a BindingLevel) -> Option<T>,
         mk_err: impl FnOnce() -> String,
-    ) -> Result<DeBruijnVar<Id>, Error> {
-        for (dbid, bl) in self.binding_levels.iter_enumerated() {
-            if let Some(id) = f(bl) {
-                return Ok(DeBruijnVar::bound(dbid, id));
+    ) -> Result<T, Error> {
+        for (depth, bl) in self.binding_levels.iter_enumerated() {
+            if let Some(x) = f(bl) {
+                return Ok(x.move_under_binders(depth));
             }
         }
         let err = mk_err();
@@ -323,7 +321,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<RegionDbVar, Error> {
         self.lookup_param(
             span,
-            |bl| bl.early_region_vars.get(region).copied(),
+            |bl| {
+                bl.early_region_vars
+                    .get(region)
+                    .copied()
+                    .map(DeBruijnVar::new_at_zero)
+            },
             || format!("the region variable {region:?}"),
         )
     }
@@ -359,7 +362,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             Named(def_id, _) => self.lookup_param(
                 span,
-                |bl| bl.region_vars_by_def_id.get(def_id).copied(),
+                |bl| {
+                    bl.region_vars_by_def_id
+                        .get(def_id)
+                        .copied()
+                        .map(DeBruijnVar::new_at_zero)
+                },
                 || format!("the late-bound region variable {region:?}"),
             ),
             ClosureEnv => {
@@ -372,10 +380,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         param: &hax::ParamTy,
-    ) -> Result<TypeDbVar, Error> {
+    ) -> Result<Ty, Error> {
         self.lookup_param(
             span,
-            |bl| bl.type_vars_map.get(&param.index).copied(),
+            |bl| bl.type_vars_map.get(&param.index).cloned(),
             || format!("the type variable {}", param.name),
         )
     }
@@ -387,7 +395,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> Result<ConstGenericDbVar, Error> {
         self.lookup_param(
             span,
-            |bl| bl.const_generic_vars_map.get(&param.index).copied(),
+            |bl| {
+                bl.const_generic_vars_map
+                    .get(&param.index)
+                    .copied()
+                    .map(DeBruijnVar::new_at_zero)
+            },
             || format!("the const generic variable {}", param.name),
         )
     }
@@ -397,15 +410,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         id: &hax::GenericPredicateId,
     ) -> Result<(ClauseDbVar, usize), Error> {
-        let var = self.lookup_param(
+        self.lookup_param(
             span,
-            |bl| bl.trait_preds.get(id).copied(),
+            |bl| {
+                let (id, regions) = bl.trait_preds.get(id).copied()?;
+                Some((DeBruijnVar::new_at_zero(id), regions))
+            },
             || format!("the trait clause variable {id:?}"),
-        )?;
-        Ok(match var {
-            DeBruijnVar::Bound(depth, (id, regions)) => (DeBruijnVar::Bound(depth, id), regions),
-            DeBruijnVar::Free(_) => unreachable!(),
-        })
+        )
     }
 
     pub(crate) fn push_generic_params(
@@ -444,7 +456,22 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     mutability,
                 );
             }
-            hax::GenericParamDefKind::Type { .. } => {
+            hax::GenericParamDefKind::Type {
+                inference_value: Some(ty),
+                ..
+            } => {
+                // Inference-only type parameter, as used in closures and inline consts. We record
+                // their known value in case a nested item references the parameter.
+                let span = self.def_span(&param.def_id);
+                let ty = self.translate_ty(span, ty)?;
+                self.innermost_binder_mut()
+                    .type_vars_map
+                    .insert(param.index, ty);
+            }
+            hax::GenericParamDefKind::Type {
+                inference_value: None,
+                ..
+            } => {
                 let _ =
                     self.innermost_binder_mut()
                         .push_type_var(param.index, param.name, variance);
@@ -551,6 +578,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         param_env: &hax::ParamEnv<'tcx>,
         origin: PredicateOrigin,
     ) -> Result<(), Error> {
+        for region in &param_env.extra_early_regions {
+            self.innermost_binder_mut()
+                .push_unerased_region(region.clone());
+        }
         self.push_generic_params(&param_env.generics)?;
         self.register_predicates(&param_env.predicates, origin)?;
         Ok(())
@@ -576,16 +607,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.push_late_bound_generics_for_def(span, def)?;
 
         if let hax::FullDefKind::Closure(c) = def.kind() {
-            // Add the lifetime generics coming from the upvars. We translate the upvar types early
-            // to know what lifetimes are needed.
-            let upvar_tys = self.translate_closure_upvar_tys(span, c)?;
-            // Add new lifetimes params to replace the erased ones.
-            let upvar_tys = upvar_tys.replace_erased_regions(|| {
-                let region_id = self.the_only_binder_mut().push_upvar_region();
-                Region::Var(DeBruijnVar::new_at_zero(region_id))
-            });
-            self.the_only_binder_mut().closure_upvar_tys = Some(upvar_tys);
-
             // Add the lifetime generics coming from the higher-kindedness of the signature.
             if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
             | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))

@@ -344,6 +344,49 @@ where
     vtable: lazy
 }
 
+// Full name: {impl FnOnce<(&'_0 A, &'_1 B)> for fn<'_0_1, '_1_1 where A: '_0_1, B: '_1_1, C: '_1_1, D: '_0_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D)}::call_once
+extern "rust-call" fn {impl FnOnce<(&'_0 A, &'_1 B)> for fn<'_0_1, '_1_1 where A: '_0_1, B: '_1_1, C: '_1_1, D: '_0_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D)}::call_once<'_0, '_1, A, B, C, D>(fn_ptr: fn<'_0_1, '_1_1 where A: '_0_1, B: '_1_1, C: '_1_1, D: '_0_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D), args: (&'_0 A, &'_1 B)) -> (&'_1 C, &'_0 D)
+where
+    TraitClause0: for<'_0_1, '_1_1> (&'_0_1 A: Sized),
+    TraitClause1: for<'_0_1, '_1_1> (&'_1_1 B: Sized),
+    TraitClause2: for<'_0_1, '_1_1> ((&'_1_1 C, &'_0_1 D): Sized),
+    TypeOutlives0: A: '_0,
+    TypeOutlives1: B: '_1,
+    TypeOutlives2: C: '_1,
+    TypeOutlives3: D: '_0,
+{
+    let _0: (&'_1 C, &'_0 D); // return
+    let fn_ptr: fn<'_0_1, '_1_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D); // arg #1
+    let args: (&'_0 A, &'_1 B); // arg #2
+
+    storage_live(_0)
+    _0 = (copy fn_ptr)<'_0, '_1>(move args._0, move args._1)
+    ↳⚡ storage_dead(args)
+        storage_dead(fn_ptr)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(fn_ptr)
+    return
+}
+
+// Full name: {impl FnOnce<(&'_0 A, &'_1 B)> for fn<'_0_1, '_1_1 where A: '_0_1, B: '_1_1, C: '_1_1, D: '_0_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D)}
+impl<'_0, '_1, A, B, C, D> FnOnce<(&'_0 A, &'_1 B)> for fn<'_0_1, '_1_1 where A: '_0_1, B: '_1_1, C: '_1_1, D: '_0_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D)
+where
+    TraitClause0: for<'_0_1, '_1_1> (&'_0_1 A: Sized),
+    TraitClause1: for<'_0_1, '_1_1> (&'_1_1 B: Sized),
+    TraitClause2: for<'_0_1, '_1_1> ((&'_1_1 C, &'_0_1 D): Sized),
+    TypeOutlives0: A: '_0,
+    TypeOutlives1: B: '_1,
+{
+    proof ImpliedClause0: (fn<'_0_2, '_1_2>(&'_0_2 A, &'_1_2 B) -> (&'_1_2 C, &'_0_2 D): MetaSized) = {built_in impl MetaSized for fn<'_0_2, '_1_2>(&'_0_2 A, &'_1_2 B) -> (&'_1_2 C, &'_0_2 D)}
+    proof ImpliedClause1: ((&'_0 A, &'_1 B): Sized) = {built_in impl Sized for (&'_0 A, &'_1 B)}
+    proof ImpliedClause2: ((&'_0 A, &'_1 B): Tuple) = {built_in impl Tuple for (&'_0 A, &'_1 B)}
+    proof ImpliedClause3: ((&'_1 C, &'_0 D): Sized) = TraitClause2<'_, '_>
+    type Output = (&'_1 C, &'_0 D)
+    fn call_once = {impl FnOnce<(&'_0 A, &'_1 B)> for fn<'_0_1, '_1_1 where A: '_0_1, B: '_1_1, C: '_1_1, D: '_0_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D)}::call_once<'_0, '_1, A, B, C, D>[for<'_0_2, '_1_2> TraitClause0<'_, '_>, for<'_0_2, '_1_2> TraitClause1<'_, '_>, for<'_0_2, '_1_2> TraitClause2<'_, '_>]
+    vtable: lazy
+}
+
 // Full name: {impl FnMut<(A,)> for fn(A) -> B}::call_mut
 extern "rust-call" fn call_mut<'_0, A, B>(fn_ptr: &'_0 mut fn(A) -> B, args: (A,)) -> B
 where
@@ -1101,6 +1144,116 @@ pub fn test_const_under_binder<'a>(x: [&'a u8; 3usize]) -> [&'a u8; 3usize]
     storage_dead(_4)
     storage_dead(_3)
     storage_dead(f)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::swap
+fn swap<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8)
+{
+    let _0: (&'9 u8, &'10 u8); // return
+    let x: &'14 u8; // arg #1
+    let y: &'15 u8; // arg #2
+    let _3: &'16 u8; // anonymous local
+    let _4: &'17 u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = copy y
+    storage_live(_4)
+    _4 = copy x
+    _0 = (move _3, move _4)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(y)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::{impl FnOnce<(&'a u8, &'b u8)> for for<'a, 'b> swap<'a, 'b>}::call_once
+extern "rust-call" fn {impl FnOnce<(&'a u8, &'b u8)> for for<'a, 'b> swap<'a, 'b>}::call_once<'a, 'b>(state: for<'a, 'b> swap<'a, 'b>, args: (&'a u8, &'b u8)) -> (&'b u8, &'a u8)
+{
+    let _0: (&'b u8, &'a u8); // return
+    let state: for<'a, 'b> swap<'a, 'b>; // arg #1
+    let args: (&'a u8, &'b u8); // arg #2
+
+    storage_live(_0)
+    _0 = swap<'a, 'b>(move args._0, move args._1)
+    ↳⚡ storage_dead(args)
+        storage_dead(state)
+        unwind_continue
+    storage_dead(args)
+    storage_dead(state)
+    return
+}
+
+// Full name: test_crate::{impl FnOnce<(&'a u8, &'b u8)> for for<'a, 'b> swap<'a, 'b>}
+impl<'a, 'b> FnOnce<(&'a u8, &'b u8)> for for<'a, 'b> swap<'a, 'b> {
+    proof ImpliedClause0: (for<'a, 'b> swap<'a, 'b>: MetaSized) = {built_in impl MetaSized for for<'a, 'b> swap<'a, 'b>}
+    proof ImpliedClause1: ((&'a u8, &'b u8): Sized) = {built_in impl Sized for (&'a u8, &'b u8)}
+    proof ImpliedClause2: ((&'a u8, &'b u8): Tuple) = {built_in impl Tuple for (&'a u8, &'b u8)}
+    proof ImpliedClause3: ((&'b u8, &'a u8): Sized) = {built_in impl Sized for (&'b u8, &'a u8)}
+    type Output = (&'b u8, &'a u8)
+    fn call_once = {impl FnOnce<(&'a u8, &'b u8)> for for<'a, 'b> swap<'a, 'b>}::call_once<'a, 'b>
+    vtable: lazy
+}
+
+// Full name: test_crate::test_fn_def_regions
+pub fn test_fn_def_regions<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8)
+{
+    let _0: (&'9 u8, &'10 u8); // return
+    let x: &'14 u8; // arg #1
+    let y: &'15 u8; // arg #2
+    let _3: &'16 u8; // anonymous local
+    let _4: &'17 u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(_3)
+    _3 = &(*x)
+    storage_live(_4)
+    _4 = &(*y)
+    _0 = generic_call_once2<for<'a, 'b> swap<'a, 'b>, &'21 u8, &'22 u8, (&'31 u8, &'32 u8)>[{built_in impl Sized for for<'a, 'b> swap<'a, 'b>}, {built_in impl Sized for &'21 u8}, {built_in impl Sized for &'22 u8}, {built_in impl Sized for (&'31 u8, &'32 u8)}, {impl FnOnce<(&'a u8, &'b u8)> for for<'a, 'b> swap<'a, 'b>}<'21, '22>](const swap<'118, '119>, move _3, move _4)
+    ↳⚡ storage_dead(y)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(y)
+    storage_dead(x)
+    return
+}
+
+// Full name: test_crate::test_fn_ptr_regions
+pub fn test_fn_ptr_regions<'a, 'b>(x: &'a u8, y: &'b u8) -> (&'b u8, &'a u8)
+{
+    let _0: (&'9 u8, &'10 u8); // return
+    let x: &'14 u8; // arg #1
+    let y: &'15 u8; // arg #2
+    let f: fn<'c, 'd>(&'c u8, &'d u8) -> (&'d u8, &'c u8); // local
+    let _4: fn<'c, 'd>(&'c u8, &'d u8) -> (&'d u8, &'c u8); // anonymous local
+    let _5: &'26 u8; // anonymous local
+    let _6: &'27 u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(f)
+    f = fn_def_to_fn_ptr(const swap<'34, '35>)
+    fake_read(f)
+    set_type(typeof(f) == fn<'c, 'd>(&'c u8, &'d u8) -> (&'d u8, &'c u8))
+    storage_live(_4)
+    _4 = copy f
+    storage_live(_5)
+    _5 = &(*x)
+    storage_live(_6)
+    _6 = &(*y)
+    _0 = generic_call_once2<fn<'_0_1, '_1_1>(&'_0_1 u8, &'_1_1 u8) -> (&'_1_1 u8, &'_0_1 u8), &'55 u8, &'56 u8, (&'65 u8, &'66 u8)>[{built_in impl Sized for fn<'_0_2, '_1_2>(&'_0_2 u8, &'_1_2 u8) -> (&'_1_2 u8, &'_0_2 u8)}, {built_in impl Sized for &'55 u8}, {built_in impl Sized for &'56 u8}, {built_in impl Sized for (&'65 u8, &'66 u8)}, {impl FnOnce<(&'_0 A, &'_1 B)> for fn<'_0_1, '_1_1 where A: '_0_1, B: '_1_1, C: '_1_1, D: '_0_1>(&'_0_1 A, &'_1_1 B) -> (&'_1_1 C, &'_0_1 D)}<'55, '56, u8, u8, u8, u8>[for<'_0_2, '_1_2> {built_in impl Sized for &'_0_2 u8}, for<'_0_2, '_1_2> {built_in impl Sized for &'_1_2 u8}, for<'_0_2, '_1_2> {built_in impl Sized for (&'_1_2 u8, &'_0_2 u8)}]](move _4, move _5, move _6)
+    ↳⚡ storage_dead(y)
+        storage_dead(x)
+        unwind_continue
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(f)
+    storage_dead(y)
     storage_dead(x)
     return
 }

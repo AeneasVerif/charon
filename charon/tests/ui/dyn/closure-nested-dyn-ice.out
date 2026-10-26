@@ -90,13 +90,13 @@ struct (_,)<A> {
 }
 
 // Full name: test_crate::closure::{closure}
-struct {closure} {}
+struct {closure}<'_0, '_1> {}
 
 // Full name: test_crate::closure
 pub fn closure()
 {
     let _0: (); // return
-    let _1: {closure}; // anonymous local
+    let _1: {closure}<'170, '171>; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -107,15 +107,17 @@ pub fn closure()
     return
 }
 
-// Full name: test_crate::closure::{impl Fn<(&'_0 (dyn Fn<(Box<(dyn Send + '_1)>[{built_in impl MetaSized for (dyn Send + '_1)}, {built_in impl Sized for Global}],), ImpliedClause1::ImpliedClause1::Output = ()> + '_0),)> for {closure}}::call
-extern "rust-call" fn call<'_0, '_1, '_2, '_3>(_1: &'_3 {closure}, tupled_args: (&'_0 (dyn Fn<(Box<(dyn Send + '_1)>[{built_in impl MetaSized for (dyn Send + '_1)}, {built_in impl Sized for Global}],), ImpliedClause1::ImpliedClause1::Output = ()> + '_0),))
+// Full name: test_crate::closure::{impl Fn<(&'_2 (dyn Fn<(Box<(dyn Send + '_0)>[{built_in impl MetaSized for (dyn Send + '_0)}, {built_in impl Sized for Global}],), ImpliedClause1::ImpliedClause1::Output = ()> + '_2),)> for {closure}<'_0, '_1>}::call
+extern "rust-call" fn call<'_0, '_1, '_2, '_3>(_1: &'_3 {closure}<'_0, '_1>, tupled_args: (&'_2 (dyn Fn<(Box<(dyn Send + '_0)>[{built_in impl MetaSized for (dyn Send + '_0)}, {built_in impl Sized for Global}],), ImpliedClause1::ImpliedClause1::Output = ()> + '_2),))
 where
-    RegionOutlives0: '_1: '_0,
+    RegionOutlives0: '_0: '_3,
+    RegionOutlives1: '_1: '_3,
+    RegionOutlives2: '_0: '_2,
 {
     let _0: (); // return
-    let _1: &'1 {closure}; // arg #1
-    let tupled_args: (&'_0 (dyn Fn<(Box<(dyn Send + '_1)>[{built_in impl MetaSized for (dyn Send + '_1)}, {built_in impl Sized for Global}],), ImpliedClause1::ImpliedClause1::Output = ()> + '_0),); // arg #2
-    let _3: &'65 (dyn Fn<(Box<(dyn Send + '66)>[{built_in impl MetaSized for (dyn Send + '68)}, {built_in impl Sized for Global}],), ImpliedClause1::ImpliedClause1::Output = ()> + '69); // anonymous local
+    let _1: &'171 {closure}<'_0, '_1>; // arg #1
+    let tupled_args: (&'_2 (dyn Fn<(Box<(dyn Send + '_0)>[{built_in impl MetaSized for (dyn Send + '_0)}, {built_in impl Sized for Global}],), ImpliedClause1::ImpliedClause1::Output = ()> + '_2),); // arg #2
+    let _3: &'235 (dyn Fn<(Box<(dyn Send + '236)>[{built_in impl MetaSized for (dyn Send + '238)}, {built_in impl Sized for Global}],), ImpliedClause1::ImpliedClause1::Output = ()> + '239); // anonymous local
 
     storage_live(_0)
     storage_live(_3)

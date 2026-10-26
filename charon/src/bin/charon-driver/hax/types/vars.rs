@@ -235,11 +235,14 @@ pub struct GenericParamDef<'tcx> {
     pub name: Symbol,
     pub def_id: DefId,
     pub index: u32,
-    pub pure_wrt_drop: bool,
     #[value(
         match self.kind {
             ty::GenericParamDefKind::Lifetime => GenericParamDefKind::Lifetime,
-            ty::GenericParamDefKind::Type { has_default, synthetic } => GenericParamDefKind::Type { has_default, synthetic },
+            ty::GenericParamDefKind::Type { has_default, synthetic } => GenericParamDefKind::Type {
+                has_default,
+                synthetic,
+                inference_value: None,
+            },
             ty::GenericParamDefKind::Const { has_default, .. } => {
                 let tcx = s.base().tcx;
                 let ty = if let Some(item) = s.owner().as_synthetic(s)
@@ -284,8 +287,17 @@ pub struct GenericParamDef<'tcx> {
 #[derive(Debug, Clone)]
 pub enum GenericParamDefKind<'tcx> {
     Lifetime,
-    Type { has_default: bool, synthetic: bool },
-    Const { has_default: bool, ty: Ty<'tcx> },
+    Type {
+        has_default: bool,
+        synthetic: bool,
+        /// Closures and inline consts use special type parameters for inference purposes. Their
+        /// value is known after analysis, which we store here.
+        inference_value: Option<Ty<'tcx>>,
+    },
+    Const {
+        has_default: bool,
+        ty: Ty<'tcx>,
+    },
 }
 
 /// Reflects [`ty::Generics`]
@@ -297,9 +309,6 @@ pub struct TyGenerics<'tcx> {
     pub parent_count: usize,
     #[from(own_params)]
     pub params: Vec<GenericParamDef<'tcx>>,
-    // pub param_def_id_to_index: FxHashMap<DefId, u32>,
-    pub has_self: bool,
-    pub has_late_bound_regions: Option<Span>,
 }
 
 pub type UnitBinder<'tcx> = ty::Binder<'tcx, ()>;

@@ -1,6 +1,8 @@
 use itertools::Itertools;
 use rustc_middle::ty;
 use rustc_span::sym;
+use rustc_trait_elaboration::ItemId;
+use std::ops::ControlFlow;
 
 use super::translate_ctx::*;
 use crate::hax::{self, UnderOwnerState, Visibility};
@@ -62,7 +64,21 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 Err(_) => Region::Erased,
             }),
             ReLateParam(region) => Ok(Region::Var(self.lookup_late_param_region(span, region)?)),
-            ReVar(..) | RePlaceholder(..) => {
+            RePlaceholder(placeholder) => {
+                // We use placeholders to track some closure regions that rustc erases.
+                for (dbid, level) in self.binding_levels.iter_enumerated() {
+                    if let Some(&rid) = level.closure_extra_self_regions.get(placeholder) {
+                        return Ok(Region::Var(DeBruijnVar::bound(dbid, rid)));
+                    }
+                }
+                if let hax::BoundRegionKind::NamedForPrinting(name) = placeholder.bound.kind
+                    && name.to_string().starts_with("__charon_closure_region_")
+                {
+                    return Ok(self.translate_erased_region());
+                }
+                raise_error!(self, span, "Unexpected placeholder region: {region:?}")
+            }
+            ReVar(..) => {
                 // Shouldn't exist outside of type inference.
                 raise_error!(
                     self,
@@ -163,8 +179,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .erase();
                     let assoc_type_id =
                         self.translate_assoc_type_id(trait_ref.trait_id(), &item.def_id)?;
-                    let generics =
-                        self.translate_generic_args(span, &item.generic_args, &item.trait_proofs)?;
+                    let generics = self.translate_generic_args(span, item)?;
                     TyKind::TraitType(trait_ref, assoc_type_id, generics)
                 }
                 hax::AliasKind::Opaque { hidden_ty, .. } => {
@@ -190,7 +205,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 } else {
                     None
                 };
-                let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
+                let mut args = self.translate_generic_args_without_trait_refs(span, item_ref)?;
                 assert!(args.types.len() == 1 && args.const_generics.len() == 1);
                 TyKind::Array(
                     args.types.pop().unwrap(),
@@ -210,7 +225,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 } else {
                     None
                 };
-                let mut args = self.translate_generic_args(span, &item_ref.generic_args, &[])?;
+                let mut args = self.translate_generic_args_without_trait_refs(span, item_ref)?;
                 assert!(args.types.len() == 1);
                 TyKind::Slice(args.types.pop().unwrap(), item_ty_is_sized)
             }
@@ -243,14 +258,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
             hax::TyKind::Param(param) => {
                 // A type parameter, for example `T` in `fn f<T>(x : T) {}`.
-                // Note that this type parameter may actually have been
-                // instantiated (in our environment, we may map it to another
-                // type): we just have to look it up.
-                // Note that if we are using this function to translate a field
-                // type in a type definition, it should actually map to a type
-                // parameter.
                 match self.lookup_type_var(span, param) {
-                    Ok(var) => TyKind::TypeVar(var),
+                    Ok(ty) => ty.kind().clone(),
                     Err(err) => TyKind::Error(err.msg),
                 }
             }
@@ -397,40 +406,203 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
-    /// Translate generic args. Don't call directly; use `translate_xxx_ref` as much as possible.
+    /// Translate an item's base generic arguments. This does not include extra arguments coming
+    /// from unerasing lifetimes or derived items; don't call directly; use `translate_xxx_ref` as
+    /// much as possible.
     pub fn translate_generic_args(
         &mut self,
         span: Span,
-        substs: &[hax::GenericArg<'tcx>],
-        trait_refs: &[hax::TraitProof<'tcx>],
+        item: &hax::ItemRef<'tcx>,
     ) -> Result<GenericArgs, Error> {
-        use crate::hax::GenericArg::*;
-        trace!("{:?}", substs);
+        self.translate_generic_args_inner(span, item, true)
+    }
 
-        let mut regions = IndexVec::new();
-        let mut types = IndexVec::new();
-        let mut const_generics = IndexVec::new();
-        for param in substs {
-            match param {
-                Type(param_ty) => {
-                    types.push(self.translate_ty(span, param_ty)?);
+    /// Translate the same arguments without their trait proofs, e.g. for an instantiated name.
+    /// Don't call directly; use `translate_xxx_ref` as much as possible.
+    pub fn translate_generic_args_without_trait_refs(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef<'tcx>,
+    ) -> Result<GenericArgs, Error> {
+        self.translate_generic_args_inner(span, item, false)
+    }
+
+    fn translate_generic_args_inner(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef<'tcx>,
+        include_trait_refs: bool,
+    ) -> Result<GenericArgs, Error> {
+        // Items that have a typeck parent use their extra arguments for inference variables that
+        // we don't translate directly. Instead, use `translate_closure_region_args` to extract the
+        // arguments we do translate.
+        // FIXME: iterate through parents and find some uniform scheme
+        let substs = if let Some(parent) = item.def_id.typeck_parent(self.hax_state()) {
+            &item.generic_args[..parent.generics_of(self.hax_state()).count()]
+        } else {
+            &item.generic_args
+        };
+        let mut args = self.translate_raw_generic_args(span, substs)?;
+        if include_trait_refs {
+            args.trait_refs = self.translate_trait_proofs(span, &item.trait_proofs)?;
+        }
+        Ok(args)
+    }
+
+    /// Translate a raw list of generic arguments. This does not produce the arguments of a Charon
+    /// item: use `translate_generic_args` for item references.
+    fn translate_raw_generic_args(
+        &mut self,
+        span: Span,
+        substs: &[hax::GenericArg<'tcx>],
+    ) -> Result<GenericArgs, Error> {
+        let mut args = GenericArgs::empty();
+        for arg in substs {
+            match arg {
+                hax::GenericArg::Type(ty) => {
+                    args.types.push(self.translate_ty(span, ty)?);
                 }
-                Lifetime(region) => {
-                    regions.push(self.translate_region(span, region)?);
+                hax::GenericArg::Lifetime(region) => {
+                    args.regions.push(self.translate_region(span, region)?);
                 }
-                Const(c) => {
-                    const_generics.push(self.translate_constant_expr(span, c)?);
+                hax::GenericArg::Const(c) => {
+                    args.const_generics
+                        .push(self.translate_constant_expr(span, c)?);
                 }
             }
         }
-        let trait_refs = self.translate_trait_proofs(span, trait_refs)?;
+        Ok(args)
+    }
 
-        Ok(GenericArgs {
-            regions,
-            types,
-            const_generics,
-            trait_refs,
-        })
+    /// In rustc/hax, closures and inline consts take a few extra generic types, which get inferred
+    /// and represent closure upvars and signature, or inline const return type. Instead of these
+    /// types, we add lifetime parameters. This method extracts the value of the lifetime
+    /// parameters in question.
+    // FIXME: iterate through parents, e.g. a promoted const in a closure needs these args provided,
+    // see `promoted-in-closure-regions.rs`. This is made harder by mono; we could streamline the
+    // whole thing by storing mono args inside the param defs, just like for inferred variables.
+    // Indeed the handling of inferred variables is pretty much a partial monomorphization. Maybe
+    // this would help with mono+traits.
+    pub(crate) fn recover_extra_early_regions(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef<'tcx>,
+    ) -> Result<Vec<Region>, Error> {
+        let def = self.poly_hax_def(&item.def_id)?;
+        let Some(param_env) = def.param_env() else {
+            return Ok(vec![]);
+        };
+        let num_regions = param_env.extra_early_regions.len();
+        if num_regions == 0 || self.options.monomorphize_with_hax {
+            return Ok((0..num_regions)
+                .map(|_| self.translate_erased_region())
+                .collect());
+        }
+        let actual = self.translate_raw_generic_args(span, &item.generic_args)?;
+
+        // We start from the original full args (with placeholder lifetimes), and
+        // instantiate+normalize them. This is crucial because the def may contain an associated
+        // type which has gotten normalized in `item`. Thankfully (I sure damn hope) going from
+        // erased to unerased lifetims can't make more normalization available, so this should
+        // guarantee that the types match structurally.
+        let template = hax::substitute(
+            self.tcx,
+            self.hax_state.typing_env(),
+            Some(item.rustc_args(self.hax_state())),
+            def.this().rustc_args(self.hax_state()),
+        );
+        let template: Vec<hax::GenericArg<'tcx>> = self.catch_sinto(span, &template)?;
+
+        // Translate the template arguments, with free regions instead of the placeholder ones.
+        let template = {
+            let template = self.inside_binder(BinderKind::Other, None, |this| {
+                let binder = this.innermost_binder_mut();
+                binder.is_hax_binder = false;
+                for region in &param_env.extra_early_regions {
+                    binder.push_unerased_region(region.clone());
+                }
+                this.translate_raw_generic_args(span, &template)
+            })?;
+            // Turn the regions we care about into `Free` regions.
+            let liberated_regions = template
+                .params
+                .regions
+                .map_ref_indexed(|id, _| Region::Var(DeBruijnVar::Free(id)));
+            template.apply(&GenericArgs::new_lifetimes(liberated_regions))
+        };
+
+        struct RegionMapping {
+            args: charon_lib::ids::IndexVec<RegionId, Option<Region>>,
+            depth: DeBruijnId,
+        }
+        impl Visitor for RegionMapping {
+            type Break = ();
+        }
+        impl ZipAst for RegionMapping {
+            fn visit_region_param(&mut self, _: &RegionParam, _: &RegionParam) -> ControlFlow<()> {
+                ControlFlow::Continue(())
+            }
+
+            fn visit_region(&mut self, source: &Region, target: &Region) -> ControlFlow<()> {
+                if let Region::Var(DeBruijnVar::Free(id)) = *source
+                    && !matches!(target, Region::Erased | Region::Body(_))
+                {
+                    let Some(target) = target.move_from_under_binders(self.depth) else {
+                        return ControlFlow::Break(());
+                    };
+                    let slot = &mut self.args[id];
+                    if slot.is_none_or(|previous| previous == target) {
+                        *slot = Some(target);
+                    } else {
+                        return ControlFlow::Break(());
+                    }
+                }
+                ControlFlow::Continue(())
+            }
+
+            fn visit_binder<T: AstVisitable>(
+                &mut self,
+                source: &Binder<T>,
+                target: &Binder<T>,
+            ) -> ControlFlow<()> {
+                self.depth = self.depth.incr();
+                let result = self.visit_inner(source, target);
+                self.depth = self.depth.decr();
+                result
+            }
+
+            fn visit_region_binder<T: AstVisitable>(
+                &mut self,
+                source: &RegionBinder<T>,
+                target: &RegionBinder<T>,
+            ) -> ControlFlow<()> {
+                self.depth = self.depth.incr();
+                let result = self.visit_inner(source, target);
+                self.depth = self.depth.decr();
+                result
+            }
+        }
+        let mut mapping = RegionMapping {
+            args: (0..num_regions).map(|_| None).collect(),
+            depth: DeBruijnId::zero(),
+        };
+        error_assert!(
+            self,
+            span,
+            ZipAst::visit(&mut mapping, &template, &actual).is_continue(),
+            "Inferred arguments don't match their definition: {:?} vs {:?}",
+            template,
+            actual
+        );
+        // Normalization may discard a parameter, for example through an associated type.
+        Ok(mapping
+            .args
+            .into_iter()
+            .map(|r| match r {
+                Some(r) => r,
+                None => self.translate_erased_region(),
+            })
+            .collect())
     }
 
     /// Whether Rust treats this type specially, i.e. whether it is a tuple, `str` or `Box`.
@@ -969,7 +1141,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let synthetic_fields = match adt_kind {
             AdtKind::Tuple => {
                 let item = def.this();
-                let args = self.translate_generic_args(def_span, &item.generic_args, &[])?;
+                let args = self.translate_generic_args_without_trait_refs(def_span, item)?;
                 Some(args.types.into_iter().collect_vec())
             }
             AdtKind::Str => {

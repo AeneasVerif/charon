@@ -39,37 +39,38 @@ where
   _0: &'a T,
 }
 
-struct test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'a, '_1, T>
+struct test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'a, '_1, '_2, T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
-    TypeOutlives0: T: '_1,
+    TypeOutlives0: T: '_2,
 {
-  _0: &'_1 T,
+  _0: &'_2 T,
 }
 
-// Full name: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{impl Fn<(&'_2 u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'a, '_1, T>[TraitClause0, TraitClause1]}::call
-extern "rust-call" fn {impl Fn<(&'_2 u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'a, '_1, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, '_3, T>(_1: &'_3 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'a, '_1, T>[TraitClause0, TraitClause1], tupled_args: (&'_2 u32,)) -> T
+// Full name: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{impl Fn<(&'_3 u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]}::call
+extern "rust-call" fn {impl Fn<(&'_3 u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, '_3, '_4, T>(_1: &'_4 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1], tupled_args: (&'_3 u32,)) -> T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
-    TypeOutlives0: T: '_1,
-    TypeOutlives1: T: '_3,
-    RegionOutlives0: 'a: '_3,
-    RegionOutlives1: '_1: '_3,
+    TypeOutlives0: T: '_2,
+    TypeOutlives1: T: '_4,
+    RegionOutlives0: 'a: '_4,
+    RegionOutlives1: '_1: '_4,
+    RegionOutlives2: '_2: '_4,
 {
     let _0: T; // return
-    let _1: &'1 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'a, '_1, T>[TraitClause0, TraitClause1]; // arg #1
-    let tupled_args: (&'_2 u32,); // arg #2
-    let _z: &'3 u32; // local
-    let _4: &'4 T; // anonymous local
+    let _1: &'8 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
+    let tupled_args: (&'_3 u32,); // arg #2
+    let _z: &'10 u32; // local
+    let _4: &'11 T; // anonymous local
 
     storage_live(_0)
     storage_live(_z)
     _z = noretag move tupled_args._0
     storage_live(_4)
     _4 = &(*(*_1)._0)
-    _0 = TraitClause1::clone<'6>(move _4)
+    _0 = TraitClause1::clone<'13>(move _4)
     ↳⚡ storage_dead(_z)
         storage_dead(tupled_args)
         storage_dead(_1)
@@ -81,30 +82,34 @@ where
     return
 }
 
-struct test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'a, '_1, T>
+struct test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
-    TypeOutlives0: T: '_1,
+    TypeOutlives0: T: '_4,
 {
-  _0: &'_1 T,
+  _0: &'_4 T,
 }
 
-// Full name: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{impl Fn<(&'_2 u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'a, '_1, T>[TraitClause0, TraitClause1]}::call
-extern "rust-call" fn {impl Fn<(&'_2 u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'a, '_1, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, '_3, '_4, '_5, T>(_1: &'_5 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'a, '_1, T>[TraitClause0, TraitClause1], tupled_args: (&'_2 u32,)) -> test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'_3, '_, T>[TraitClause0, TraitClause1]
+// Full name: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{impl Fn<(&'_5 u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, T>[TraitClause0, TraitClause1]}::call
+extern "rust-call" fn {impl Fn<(&'_5 u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, T>[TraitClause0, TraitClause1]}::call<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>(_1: &'_6 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, T>[TraitClause0, TraitClause1], tupled_args: (&'_5 u32,)) -> test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'_2, '_2, '_3, T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
-    TypeOutlives0: T: '_1,
-    TypeOutlives1: T: '_5,
-    RegionOutlives0: 'a: '_5,
-    RegionOutlives1: '_1: '_5,
+    TypeOutlives0: T: '_4,
+    TypeOutlives1: T: '_6,
+    TypeOutlives2: T: '_3,
+    RegionOutlives0: 'a: '_6,
+    RegionOutlives1: '_1: '_6,
+    RegionOutlives2: '_2: '_6,
+    RegionOutlives3: '_3: '_6,
+    RegionOutlives4: '_4: '_6,
 {
-    let _0: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'2, '3, T>[TraitClause0, TraitClause1]; // return
-    let _1: &'5 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'a, '_1, T>[TraitClause0, TraitClause1]; // arg #1
-    let tupled_args: (&'_2 u32,); // arg #2
-    let _y: &'7 u32; // local
-    let _4: &'8 T; // anonymous local
+    let _0: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'7, '8, '9, T>[TraitClause0, TraitClause1]; // return
+    let _1: &'31 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, T>[TraitClause0, TraitClause1]; // arg #1
+    let tupled_args: (&'_5 u32,); // arg #2
+    let _y: &'33 u32; // local
+    let _4: &'34 T; // anonymous local
 
     storage_live(_0)
     storage_live(_y)
@@ -119,29 +124,35 @@ where
     return
 }
 
-struct test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}<'a, '_1, T>
+struct test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
-    TypeOutlives0: T: '_1,
+    TypeOutlives0: T: '_6,
 {
-  _0: &'_1 T,
+  _0: &'_6 T,
 }
 
-// Full name: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{impl Fn<()> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}<'a, '_1, T>[TraitClause0, TraitClause1]}::call
-extern "rust-call" fn impl_Fn_unit_for_closure::call<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>(_1: &'_6 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}<'a, '_1, T>[TraitClause0, TraitClause1], tupled_args: ()) -> test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'_2, '_, T>[TraitClause0, TraitClause1]
+// Full name: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{impl Fn<()> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0, TraitClause1]}::call
+extern "rust-call" fn impl_Fn_unit_for_closure::call<'a, '_1, '_2, '_3, '_4, '_5, '_6, '_7, T>(_1: &'_7 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0, TraitClause1], tupled_args: ()) -> test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'_2, '_2, '_3, '_4, '_5, T>[TraitClause0, TraitClause1]
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
-    TypeOutlives0: T: '_1,
-    TypeOutlives1: T: '_6,
-    RegionOutlives0: 'a: '_6,
-    RegionOutlives1: '_1: '_6,
+    TypeOutlives0: T: '_6,
+    TypeOutlives1: T: '_7,
+    TypeOutlives2: T: '_5,
+    RegionOutlives0: 'a: '_7,
+    RegionOutlives1: '_1: '_7,
+    RegionOutlives2: '_2: '_7,
+    RegionOutlives3: '_3: '_7,
+    RegionOutlives4: '_4: '_7,
+    RegionOutlives5: '_5: '_7,
+    RegionOutlives6: '_6: '_7,
 {
-    let _0: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'2, '3, T>[TraitClause0, TraitClause1]; // return
-    let _1: &'5 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}<'a, '_1, T>[TraitClause0, TraitClause1]; // arg #1
+    let _0: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'22, '23, '24, '25, '26, T>[TraitClause0, TraitClause1]; // return
+    let _1: &'69 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6, T>[TraitClause0, TraitClause1]; // arg #1
     let tupled_args: (); // arg #2
-    let _3: &'6 T; // anonymous local
+    let _3: &'70 T; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -163,27 +174,27 @@ where
 {
     let _0: T; // return
     let x: &'3 &'4 T; // arg #1
-    let clo: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}<'7, '8, T>[TraitClause0, TraitClause1]; // local
-    let _3: &'9 T; // anonymous local
-    let _4: &'15 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'16, '17, T>[TraitClause0, TraitClause1]; // anonymous local
-    let _5: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'18, '19, T>[TraitClause0, TraitClause1]; // anonymous local
-    let _6: &'25 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'26, '27, T>[TraitClause0, TraitClause1]; // anonymous local
-    let _7: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'28, '29, T>[TraitClause0, TraitClause1]; // anonymous local
-    let _8: &'33 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}<'34, '35, T>[TraitClause0, TraitClause1]; // anonymous local
+    let clo: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}<'47, '48, '49, '50, '51, '52, '53, T>[TraitClause0, TraitClause1]; // local
+    let _3: &'54 T; // anonymous local
+    let _4: &'64 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'65, '66, '67, T>[TraitClause0, TraitClause1]; // anonymous local
+    let _5: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'68, '69, '70, T>[TraitClause0, TraitClause1]; // anonymous local
+    let _6: &'97 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'98, '99, '100, '101, '102, T>[TraitClause0, TraitClause1]; // anonymous local
+    let _7: test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'103, '104, '105, '106, '107, T>[TraitClause0, TraitClause1]; // anonymous local
+    let _8: &'116 test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}<'117, '118, '119, '120, '121, '122, '123, T>[TraitClause0, TraitClause1]; // anonymous local
     let _9: (); // anonymous local
-    let _10: (&'38 u32,); // anonymous local
-    let _11: &'39 u32; // anonymous local
-    let _12: &'40 u32; // anonymous local
-    let _13: (&'41 u32,); // anonymous local
-    let _14: &'42 u32; // anonymous local
-    let _15: &'43 u32; // anonymous local
-    let _16: &'44 u32; // anonymous local
-    let _17: &'45 u32; // anonymous local
-    let _18: &'61 u32; // anonymous local
-    let _19: &'77 u32; // anonymous local
-    let _20: &'90 u32; // anonymous local
+    let _10: (&'126 u32,); // anonymous local
+    let _11: &'127 u32; // anonymous local
+    let _12: &'128 u32; // anonymous local
+    let _13: (&'129 u32,); // anonymous local
+    let _14: &'130 u32; // anonymous local
+    let _15: &'131 u32; // anonymous local
+    let _16: &'132 u32; // anonymous local
+    let _17: &'133 u32; // anonymous local
+    let _18: &'242 u32; // anonymous local
+    let _19: &'297 u32; // anonymous local
+    let _20: &'319 u32; // anonymous local
     let _21: u32; // anonymous local
-    let _22: &'91 u32; // anonymous local
+    let _22: &'320 u32; // anonymous local
     let _23: u32; // anonymous local
 
     storage_live(_0)
@@ -203,7 +214,7 @@ where
     _8 = &clo
     storage_live(_9)
     _9 = ()
-    _7 = impl_Fn_unit_for_closure::call<'53, '54, '55, '56, '57, '58, '59, T>[TraitClause0, TraitClause1](move _8, move _9)
+    _7 = impl_Fn_unit_for_closure::call<'199, '234, '235, '236, '237, '238, '239, '240, T>[TraitClause0, TraitClause1](move _8, move _9)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(x)
@@ -224,7 +235,7 @@ where
     _12 = &(*_17)
     _11 = &(*_12)
     _10 = (move _11,)
-    _5 = {impl Fn<(&'_2 u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'a, '_1, T>[TraitClause0, TraitClause1]}::call<'70, '71, '72, '73, '74, '75, T>[TraitClause0, TraitClause1](move _6, move _10)
+    _5 = {impl Fn<(&'_5 u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}<'a, '_1, '_2, '_3, '_4, T>[TraitClause0, TraitClause1]}::call<'274, '290, '291, '292, '293, '294, '295, T>[TraitClause0, TraitClause1](move _6, move _10)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(x)
@@ -246,7 +257,7 @@ where
     _15 = &(*_16)
     _14 = &(*_15)
     _13 = (move _14,)
-    _0 = {impl Fn<(&'_2 u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'a, '_1, T>[TraitClause0, TraitClause1]}::call<'86, '87, '88, '89, T>[TraitClause0, TraitClause1](move _4, move _13)
+    _0 = {impl Fn<(&'_3 u32,)> for test_crate::{Foo<'a, T>[TraitClause0]}::test_nested_closures::{closure}::{closure}::{closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]}::call<'312, '315, '316, '317, '318, T>[TraitClause0, TraitClause1](move _4, move _13)
     ↳⚡ storage_dead(_17)
         storage_dead(_16)
         storage_dead(x)

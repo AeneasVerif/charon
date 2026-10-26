@@ -842,8 +842,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         {
             GenericArgs::empty()
         } else {
-            self.translate_generic_args(span, &hax_item.generic_args, &hax_item.trait_proofs)?
+            self.translate_generic_args(span, hax_item)?
         };
+
+        // Recover regions that rustc normally erases.
+        let regions = self.recover_extra_early_regions(span, hax_item)?;
+        generics.regions.extend(regions);
 
         // Add regions to make sure the item args match the params we set up in
         // `translate_item_generics`.
@@ -861,6 +865,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 hax::FullDefKind::FnPtr(f) => Some(f.sig()),
                 hax::FullDefKind::AssocFn(f) => Some(f.sig()),
                 hax::FullDefKind::Ctor(f) => Some(f.sig()),
+                hax::FullDefKind::Closure(c)
+                    if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
+                    | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))
+                    | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))
+                    | TransItemSourceKind::CallableMethod(..)
+                    | TransItemSourceKind::VTableMethod(TransImplSource::Callable(..))
+                    | TransItemSourceKind::ClosureAsFnCast = kind =>
+                {
+                    Some(c.sig())
+                }
                 _ => None,
             };
             if let Some(sig) = sig {
@@ -869,37 +883,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .iter()
                         .map(|_| self.translate_erased_region()),
                 );
-            } else if let hax::FullDefKind::Closure(c) = def.kind() {
-                let upvar_regions = if self.item_src.def_id() == def.def_id() {
-                    assert!(self.outermost_binder().closure_upvar_tys.is_some());
-                    self.outermost_binder().closure_upvar_regions.len()
-                } else {
-                    // If we're not translating a closure item, fetch the closure adt
-                    // definition and add enough erased lifetimes to match its number of
-                    // arguments.
-                    let adt_decl_id: ItemId =
-                        self.register_item(span, hax_item, TransItemSourceKind::Type);
-                    let adt_decl = self.get_or_translate(adt_decl_id)?;
-                    let adt_generics = adt_decl.generic_params();
-                    adt_generics.regions.len() - generics.regions.len()
-                };
-                generics
-                    .regions
-                    .extend((0..upvar_regions).map(|_| self.translate_erased_region()));
-                if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
-                | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))
-                | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))
-                | TransItemSourceKind::CallableMethod(..)
-                | TransItemSourceKind::VTableMethod(TransImplSource::Callable(..))
-                | TransItemSourceKind::ClosureAsFnCast = kind
-                {
-                    generics.regions.extend(
-                        c.sig()
-                            .bound_vars
-                            .iter()
-                            .map(|_| self.translate_erased_region()),
-                    );
-                }
             }
             if let TransItemSourceKind::CallableMethod(ClosureKind::FnMut | ClosureKind::Fn)
             | TransItemSourceKind::VTableMethod(TransImplSource::Callable(
@@ -982,9 +965,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             _ => None,
         };
         if builtin == Some(BuiltinAdt::Tuple) && self.t_ctx.options.no_gen_tuple_structs {
-            let mut generics = self.translate_generic_args(span, &item.generic_args, &[])?;
             // The declaration has no clauses, so we drop the `Sized` proofs of the fields.
-            generics.trait_refs.clear();
+            let generics = self.translate_generic_args_without_trait_refs(span, item)?;
             return Ok(TypeDeclRef {
                 id: TypeDeclId::UNIT,
                 generics: Box::new(generics),
@@ -1024,7 +1006,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         let trait_ref = self.translate_trait_proof(span, in_trait)?.erase();
-        let generics = self.translate_generic_args(span, &item.generic_args, &item.trait_proofs)?;
+        let generics = self.translate_generic_args(span, item)?;
         self.translate_region_binder(span, &f.sig().as_ref().rebind(()), |ctx, _| {
             let method_id = ctx.translate_trait_method_id(trait_ref.trait_id(), &item.def_id)?;
             let fn_kind = FnPtrKind::Trait(trait_ref.move_under_binder(), method_id);

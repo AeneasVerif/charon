@@ -496,8 +496,8 @@ impl<'tcx> TranslateCtx<'tcx> {
             let span = self.def_span(&item_ref.def_id);
             let mut bt_ctx = ItemTransCtx::new(src.clone(), trans_id, self);
             let binder = bt_ctx.inside_binder(BinderKind::Other, None, |bt_ctx| {
-                // We skip the clauses: the args are enough to uniquely identify an ite.
-                bt_ctx.translate_generic_args(span, &item_ref.generic_args, &[])
+                // We skip the clauses: the args are enough to uniquely identify an item.
+                bt_ctx.translate_generic_args_without_trait_refs(span, item_ref)
             })?;
             if !binder.skip_binder.is_empty() {
                 name.name.push(PathElem::Instantiated(Box::new(binder)));

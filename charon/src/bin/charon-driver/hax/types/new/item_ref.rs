@@ -40,6 +40,10 @@ pub struct ItemRef<'tcx> {
     pub(crate) contents: Interned<'tcx, ItemRefContents<'tcx>>,
 }
 
+// The rustc arguments are immutable interned data.
+impl std::panic::RefUnwindSafe for ItemRef<'_> {}
+impl std::panic::UnwindSafe for ItemRef<'_> {}
+
 /// Contents of `ItemRef`.
 #[derive(AdtInto)]
 #[args(< S: UnderOwnerState<'tcx>>, from: rustc_trait_elaboration::ItemRef<'tcx, DefId>, state: S as s)]
@@ -48,6 +52,10 @@ pub struct ItemRefContents<'tcx> {
     /// The item being refered to.
     #[value(self.def_id.clone())]
     pub def_id: DefId,
+    /// Keep the original arguments. Different rustc arguments can have the same translated
+    /// generics, so we must keep the args here if we want to be able to recover them.
+    #[value(self.generics())]
+    rustc_args: ty::GenericArgsRef<'tcx>,
     /// The generics passed to the item. If `in_trait` is `Some`, these are only the generics of
     /// the method/type/const itself; generics for the traits are available in
     /// `in_trait.unwrap().trait`.
@@ -75,13 +83,7 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef<'tcx>>
 {
     fn sinto(&self, s: &S) -> ItemRef<'tcx> {
         let content: ItemRefContents = self.sinto(s);
-        let item = content.intern(s);
-        s.with_global_cache(|cache| {
-            cache
-                .reverse_item_refs_map
-                .insert(item.clone(), self.generics());
-        });
-        item
+        content.intern(s)
     }
 }
 
@@ -172,11 +174,6 @@ impl<'tcx> ItemRef<'tcx> {
         s.with_cache(|cache| {
             cache.item_refs.insert(key, item.clone());
         });
-        s.with_global_cache(|cache| {
-            cache
-                .reverse_item_refs_map
-                .insert(item.clone(), item_ref.generics());
-        });
         item
     }
 
@@ -184,19 +181,14 @@ impl<'tcx> ItemRef<'tcx> {
     pub fn dummy_without_generics<S: BaseState<'tcx>>(s: &S, def_id: DefId) -> ItemRef<'tcx> {
         let content = ItemRefContents {
             def_id,
+            rustc_args: Default::default(),
             generic_args: Default::default(),
             trait_proofs: Default::default(),
             in_trait: Default::default(),
             has_param: false,
             has_non_lt_param: false,
         };
-        let item = content.intern(s);
-        s.with_global_cache(|cache| {
-            cache
-                .reverse_item_refs_map
-                .insert(item.clone(), ty::GenericArgsRef::default());
-        });
-        item
+        content.intern(s)
     }
 
     /// For an `ItemRef` that refers to a trait, this returns values for each of the non-gat
@@ -247,22 +239,16 @@ impl<'tcx> ItemRef<'tcx> {
         &self.contents
     }
 
-    /// Recover the original rustc args that generated this `ItemRef`. Will panic if the `ItemRef`
-    /// was built by hand instead of using `translate_item_ref`.
-    pub fn rustc_args<S: BaseState<'tcx>>(&self, s: &S) -> ty::GenericArgsRef<'tcx> {
-        s.with_global_cache(|cache| *cache.reverse_item_refs_map.get(self).unwrap())
+    /// Recover the original rustc args that generated this `ItemRef`.
+    pub fn rustc_args<S: BaseState<'tcx>>(&self, _s: &S) -> ty::GenericArgsRef<'tcx> {
+        self.rustc_args
     }
 
     /// Mutate the `DefId`, keeping the same generic args.
     pub fn mutate_def_id<S: BaseState<'tcx>>(&self, s: &S, f: impl FnOnce(&mut DefId)) -> Self {
-        let args = self.rustc_args(s);
         let mut contents = self.contents().clone();
         f(&mut contents.def_id);
-        let new = contents.intern(s);
-        s.with_global_cache(|cache| {
-            cache.reverse_item_refs_map.insert(new.clone(), args);
-        });
-        new
+        contents.intern(s)
     }
 
     /// Set the `DefId`, keeping the same generic args.
