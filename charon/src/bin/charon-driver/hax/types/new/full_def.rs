@@ -44,8 +44,20 @@ where
     S: UnderOwnerState<'tcx>,
 {
     let tcx = s.base().tcx;
+
+    // Store extra placeholder regions we use if erased lifetimes are found in identity args.
+    let mut extra_early_regions = vec![];
     let this = if def_id.can_have_generics(s) {
-        let args_or_default = args.unwrap_or_else(|| def_id.identity_args(s));
+        // Construct the args for this item, unerasing lifetimes found erased (see
+        // `ParamEnv.extra_early_regions`).
+        let args_or_default = {
+            let mut identity_args = def_id.identity_args(s);
+            if def_id.is_typeck_child(s) && matches!(def_id.kind, DefKind::Closure { .. }) {
+                let name = rustc_span::Symbol::intern(&format!("__unerased_region_{def_id:?}"));
+                (identity_args, extra_early_regions) = unerase_lifetimes(s, identity_args, name);
+            }
+            substitute(tcx, s.typing_env(), args, identity_args)
+        };
         ItemRef::translate_from_hax_def_id(s, def_id.clone(), args_or_default)
     } else {
         ItemRef::dummy_without_generics(s, def_id.clone())
@@ -54,7 +66,7 @@ where
     let source_span;
     let lang_item;
     let diagnostic_item;
-    let kind;
+    let mut kind;
     match def_id.base {
         DefIdBase::Synthetic(item) => {
             match item {
@@ -167,16 +179,25 @@ where
         }
     }
 
-    // We added some placeholder regions in scope, put them also in `this()`. See
-    // `ParamEnv.extra_early_regions`.
-    let this = if let FullDefKind::Closure(closure) = &kind {
-        let ty::Closure(_, args) = *closure.fn_trait_args[0].kind() else {
-            unreachable!()
-        };
-        ItemRef::translate_from_hax_def_id(s, def_id.clone(), args)
-    } else {
-        this
-    };
+    if let FullDefKind::Closure(Closure { param_env, .. })
+    | FullDefKind::Const(Const { param_env, .. }) = &mut kind
+        && def_id.is_typeck_child(s)
+    {
+        // Record the value of the inference-only type vars.
+        let identity_args = this.rustc_args(s);
+        for param in &mut param_env.generics.params {
+            let GenericParamDefKind::Type {
+                inference_value, ..
+            } = &mut param.kind
+            else {
+                unreachable!("typeck_child inference parameters must be types")
+            };
+            *inference_value = Some(identity_args[param.index as usize].expect_ty().sinto(s));
+        }
+        // Record the extra early regions added into these vars.
+        param_env.extra_early_regions = extra_early_regions.sinto(s);
+    }
+
     let attributes = def_id.attrs(tcx).to_vec();
     let visibility = def_id.visibility(tcx);
     let source_text = source_span
@@ -1295,8 +1316,12 @@ where
     let s = &s.with_hax_owner(hax_def_id);
     let def_id = hax_def_id.real_rust_def_id();
     let tcx = s.base().tcx;
-    let type_of_self = || inst_binder(tcx, s.typing_env(), args, hax_def_id.type_of(s));
-    let args_or_default = || args.unwrap_or_else(|| hax_def_id.identity_args(s));
+
+    let args_or_default = this.rustc_args(s);
+    let type_of_self = || {
+        let args = args_or_default;
+        inst_binder(tcx, s.typing_env(), Some(args), hax_def_id.type_of(s))
+    };
     match get_def_kind(tcx, def_id) {
         RDefKind::Struct { .. } | RDefKind::Union { .. } | RDefKind::Enum { .. } => {
             let def = tcx.adt_def(def_id);
@@ -1419,24 +1444,8 @@ where
             })
         }
         RDefKind::Closure { .. } => {
-            let identity_args = hax_def_id.identity_args(s);
-            let name = rustc_span::Symbol::intern(&format!("__unerased_region_{def_id:?}"));
-            let (identity_args, extra_regions) = unerase_lifetimes(s, identity_args, name);
-            let closure = substitute(tcx, s.typing_env(), args, identity_args).as_closure();
-            let closure_ty = ty::Ty::new_closure(tcx, def_id, closure.args);
-
-            let mut param_env = get_param_env(s, args);
-            param_env.extra_early_regions = extra_regions.sinto(s);
-            // Record the value of the inference-only type vars.
-            for param in &mut param_env.generics.params {
-                let GenericParamDefKind::Type {
-                    inference_value, ..
-                } = &mut param.kind
-                else {
-                    unreachable!("closure inference parameters must be types")
-                };
-                *inference_value = Some(closure.args[param.index as usize].expect_ty().sinto(s));
-            }
+            let closure_ty = ty::Ty::new_closure(tcx, def_id, args_or_default);
+            let closure = args_or_default.as_closure();
 
             let raw_sig = closure.sig();
             let sig = tcx.signature_unclosure(raw_sig, hir::Safety::Safe);
@@ -1444,7 +1453,7 @@ where
             FullDefKind::Closure(Closure {
                 def_id: hax_def_id.clone(),
                 kind: closure.kind().sinto(s),
-                param_env,
+                param_env: get_param_env(s, args),
                 inline: tcx.codegen_fn_attrs(def_id).inline.sinto(s),
                 sig: sig.sinto(s),
                 fn_trait_args: [closure_ty, input_ty],
@@ -1460,38 +1469,8 @@ where
                 _ => unreachable!(),
             };
 
-            let mut param_env = get_param_env(s, args);
-
-            if matches!(kind, ConstKind::AnonConst)
-                && tcx.anon_const_kind(def_id) == ty::AnonConstKind::NonTypeSystemInline
-                && args.is_none()
-            {
-                let get_ret_ty = |body: &mir::Body<'tcx>| body.local_decls[mir::Local::ZERO].ty;
-                let ret_ty = mir_kinds::CTFE::get_mir(tcx, def_id, get_ret_ty)
-                    .or_else(|| mir_kinds::Optimized::get_mir(tcx, def_id, get_ret_ty))
-                    .expect("could not compute the type of this inline const: {def_id:?}");
-                // Inline consts have a special `<const_ty>` param added to them for type inference
-                // purposes. `tcx.type_of` returns that parameter, so we get the real type from the
-                // MIR body which is sad but works.
-                let ty = inst_binder(
-                    tcx,
-                    s.typing_env(),
-                    args,
-                    ty::EarlyBinder::bind(tcx, ret_ty),
-                );
-                assert_eq!(param_env.generics.params.len(), 1);
-                // Record the value of the var.
-                let GenericParamDefKind::Type {
-                    inference_value, ..
-                } = &mut param_env.generics.params[0].kind
-                else {
-                    unreachable!("inline const inference parameters must be types")
-                };
-                *inference_value = Some(ty.sinto(s));
-            }
-
             FullDefKind::Const(Const {
-                param_env,
+                param_env: get_param_env(s, args),
                 ty: type_of_self().sinto(s),
                 kind,
             })
@@ -1524,9 +1503,8 @@ where
         RDefKind::LifetimeParam => FullDefKind::LifetimeParam,
         RDefKind::Variant => FullDefKind::Variant,
         RDefKind::Ctor(ctor_of, _) => {
-            let args = args_or_default();
+            let adt_args = args_or_default;
             let ctor_of = ctor_of.sinto(s);
-            let sig = tcx.fn_sig(def_id);
 
             // The def_id of the adt this ctor belongs to.
             let adt_def_id = match ctor_of {
@@ -1539,13 +1517,13 @@ where
                 .variant(variant_id)
                 .fields
                 .iter()
-                .map(|f| FieldDef::sfrom(s, f, args))
+                .map(|f| FieldDef::sfrom(s, f, adt_args))
                 .collect();
-            let output_ty = ty::Ty::new_adt(tcx, adt_def, args).sinto(s);
-            let sig = inst_binder(tcx, s.typing_env(), Some(args), sig);
+            let output_ty = ty::Ty::new_adt(tcx, adt_def, adt_args).sinto(s);
+            let sig = inst_binder(tcx, s.typing_env(), args, tcx.fn_sig(def_id));
             FullDefKind::Ctor(Ctor {
                 def_id: hax_def_id.clone(),
-                args,
+                args: adt_args,
                 rustc_sig: sig,
                 adt_def_id: adt_def_id.sinto(s),
                 ctor_of,
