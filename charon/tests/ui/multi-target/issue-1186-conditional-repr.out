@@ -1,5 +1,3 @@
-struct () {}
-
 pub struct test_crate::Inner {
   x: u32,
 }

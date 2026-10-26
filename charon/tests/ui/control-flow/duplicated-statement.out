@@ -21,16 +21,6 @@ where
     TypeOutlives0: T: '_0,
 = <opaque>
 
-struct () {}
-
-struct (_, _)<A, B>
-where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
-}
-
 // Full name: test_crate::rej_sample
 fn rej_sample<'_0>(a: &'_0 [u8]) -> usize
 {

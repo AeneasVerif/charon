@@ -25,8 +25,6 @@ where
   Some { _0: T },
 }
 
-struct () {}
-
 // Full name: test_crate::Trait
 trait Trait<Self>
 {

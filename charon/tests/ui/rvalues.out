@@ -72,14 +72,6 @@ pub fn MIN() -> f64
 // Full name: core::f64::{f64}::MIN
 pub const MIN: f64 = MIN()
 
-struct (_, _)<A, B>
-where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
-}
-
 struct (_,)<A> {
   _0: A,
 }

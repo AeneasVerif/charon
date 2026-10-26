@@ -22,11 +22,6 @@ pub enum Option::<&'_ [u64]> {
   Some { _0: &'_ [u64] },
 }
 
-struct (_, _)::<u64, bool> {
-  _0: u64,
-  _1: bool,
-}
-
 // Full name: test_crate::Concrete
 pub struct Concrete {}
 

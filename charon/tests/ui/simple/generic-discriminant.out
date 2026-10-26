@@ -132,10 +132,6 @@ where
     return
 }
 
-struct str {
-  _0: [u8],
-}
-
 // Full name: test_crate::f
 pub fn f<'_0, T>(x: &'_0 T) -> Discriminant<T>[TraitClause0]
 where

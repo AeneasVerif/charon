@@ -511,14 +511,6 @@ where
     TypeOutlives3: I: '_0,
 = <opaque>
 
-struct str {
-  _0: [u8],
-}
-
-struct (_,)<A> {
-  _0: A,
-}
-
 // Full name: test_crate::test_loop1
 pub fn test_loop1(max: u32) -> u32
 {

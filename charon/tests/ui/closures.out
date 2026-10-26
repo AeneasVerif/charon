@@ -135,29 +135,6 @@ where
   _1: B,
 }
 
-// Full name: (_,)::{impl Destruct for (A,)}::drop_glue
-unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A>(_1: &'_0 mut (A,))
-where
-    TypeOutlives0: A: '_0,
-{
-    let _0: (); // return
-    let _1: &'1 mut (A,); // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
-    ↳⚡ storage_dead(_1)
-        unwind_continue
-    storage_dead(_1)
-    return
-}
-
-// Full name: (_,)::{impl Destruct for (A,)}
-impl<A> "impl_Destruct_for_tuple" Destruct for (A,) {
-    fn drop_glue<'_0_1> = impl_Destruct_for_tuple::drop_glue<'_0_1, A>
-    non-dyn-compatible
-}
-
 // Full name: {impl Fn<(A,), B> for fn(A) -> B}::call
 extern "rust-call" fn {impl Fn<(A,), B> for fn(A) -> B}::call<'_0, A, B>(fn_ptr: &'_0 fn(A) -> B, args: (A,)) -> B
 where
@@ -262,6 +239,23 @@ where
     proof ImpliedClause3: ((A,): Tuple) = {built_in impl Tuple for (A,)}
     fn call<'_0_1> = {impl Fn<(A,), B> for fn(A) -> B}::call<'_0_1, A, B>[TraitClause0, TraitClause1]
     vtable: lazy
+}
+
+// Full name: (_,)::{impl Destruct for (A,)}::drop_glue
+unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A>(_1: &'_0 mut (A,))
+where
+    TypeOutlives0: A: '_0,
+{
+    let _0: (); // return
+    let _1: &'1 mut (A,); // arg #1
+
+    storage_live(_0)
+    _0 = ()
+    drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
+    ↳⚡ storage_dead(_1)
+        unwind_continue
+    storage_dead(_1)
+    return
 }
 
 // Full name: test_crate::incr_u32

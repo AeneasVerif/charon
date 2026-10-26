@@ -11,11 +11,6 @@ struct () {}
 
 vtable core::marker::MetaSized::{vtable}::<Struct>: core::marker::MetaSized::{vtable} = Opaque(VTable was chosen to be opaque)
 
-struct (_, _)::<i32, bool> {
-  _0: i32,
-  _1: bool,
-}
-
 struct test_crate::Trait::{vtable} {
   size: usize,
   align: usize,

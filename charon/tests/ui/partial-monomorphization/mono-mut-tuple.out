@@ -76,48 +76,6 @@ pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
     non-dyn-compatible
 }
 
-struct (_, _)<A, B>
-where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
-}
-
-// Full name: (_, _)::{impl Destruct for (A, B)}::drop_glue
-unsafe fn drop_glue<'_0, A, B>(_1: &'_0 mut (A, B))
-where
-    TraitClause0: (A: Sized),
-    TypeOutlives0: A: '_0,
-    TypeOutlives1: B: '_0,
-{
-    let _0: (); // return
-    let _1: &'1 mut (A, B); // arg #1
-
-    storage_live(_0)
-    _0 = ()
-    drop[{built_in impl Destruct for A}::drop_glue<'2>] (*_1)._0
-    ↳⚡ drop[{built_in impl Destruct for B}::drop_glue<'4>] (*_1)._1
-        ↳⚡ storage_dead(_1)
-            unwind_terminate
-        storage_dead(_1)
-        unwind_continue
-    drop[{built_in impl Destruct for B}::drop_glue<'3>] (*_1)._1
-    ↳⚡ storage_dead(_1)
-        unwind_continue
-    storage_dead(_1)
-    return
-}
-
-// Full name: (_, _)::{impl Destruct for (A, B)}
-impl<A, B> "impl_Destruct_for_tuple" Destruct for (A, B)
-where
-    TraitClause0: (A: Sized),
-{
-    fn drop_glue<'_0_1> = drop_glue<'_0_1, A, B>[TraitClause0]
-    non-dyn-compatible
-}
-
 // Full name: (_, _)::{impl Destruct for (A, B)}::drop_glue::<_, &_ mut _, _>
 unsafe fn (_, _)::impl_Destruct_for_tuple::drop_glue::<_, &_ mut _, _><'_0, '_1, T0, T1>(_1: &'_0 mut (&'_1 mut T0, T1))
 where
@@ -141,15 +99,6 @@ where
         unwind_continue
     storage_dead(_1)
     return
-}
-
-// Full name: (_, _)::{impl Destruct for (A, B)}::<&_ mut _, _>
-impl<'_0, T0, T1> core::marker::Destruct::<(&_ mut _, _)><'_0, T1>[TraitClause0] for T0
-where
-    TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_0>),
-{
-    fn drop_glue<'_0_1> = (_, _)::impl_Destruct_for_tuple::drop_glue::<_, &_ mut _, _><'_0_1, '_0, T0, T1>[TraitClause0]
-    non-dyn-compatible
 }
 
 // Full name: test_crate::id

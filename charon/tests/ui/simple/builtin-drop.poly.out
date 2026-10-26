@@ -240,16 +240,6 @@ where
     return
 }
 
-// Full name: {impl Destruct for [T; N]}
-impl<T, const N : usize> "impl_Destruct_for_array" Destruct for [T; N]
-where
-    TraitClause0: (T: Sized),
-    TraitClause1: (T: Destruct),
-{
-    fn drop_glue<'_0_1> = impl_Destruct_for_array::drop_glue<'_0_1, T, N>[TraitClause0, TraitClause1]
-    non-dyn-compatible
-}
-
 // Full name: (_, _)::{impl Destruct for (A, B)}::drop_glue
 unsafe fn impl_Destruct_for_tuple::drop_glue<'_0, A, B>(_1: &'_0 mut (A, B))
 where
@@ -275,17 +265,6 @@ where
         unwind_continue
     storage_dead(_1)
     return
-}
-
-// Full name: (_, _)::{impl Destruct for (A, B)}
-impl<A, B> "impl_Destruct_for_tuple" Destruct for (A, B)
-where
-    TraitClause0: (A: Sized),
-    TraitClause1: (A: Destruct),
-    TraitClause2: (B: Destruct),
-{
-    fn drop_glue<'_0_1> = impl_Destruct_for_tuple::drop_glue<'_0_1, A, B>[TraitClause0, TraitClause1, TraitClause2]
-    non-dyn-compatible
 }
 
 // Full name: test_crate::drop_array

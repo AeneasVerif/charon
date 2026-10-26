@@ -68,15 +68,6 @@ where
     return
 }
 
-// Full name: (_, _)::{impl Destruct for (A, B)}
-impl<A, B> "impl_Destruct_for_tuple" Destruct for (A, B)
-where
-    TraitClause0: (A: Sized),
-{
-    fn drop_glue<'_0_1> = impl_Destruct_for_tuple::drop_glue<'_0_1, A, B>[TraitClause0]
-    non-dyn-compatible
-}
-
 // Full name: test_crate::NeedsDrop
 struct NeedsDrop {}
 

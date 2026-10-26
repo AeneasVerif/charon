@@ -1,10 +1,5 @@
 # Final LLBC before serialization:
 
-struct (_, _)::<usize, bool> {
-  _0: usize,
-  _1: bool,
-}
-
 // Full name: test_crate::{impl HasLen for [u8; 4usize]}::LEN::<u8, 4usize>
 const LEN::<u8, 4usize>: usize = 4usize
 

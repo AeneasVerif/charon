@@ -346,18 +346,6 @@ where
     TypeOutlives0: T: '_0,
 = <opaque>
 
-struct (_, _)<A, B>
-where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
-}
-
-struct str {
-  _0: [u8],
-}
-
 // Full name: {impl Destruct for [T]}::drop_glue
 unsafe fn impl_Destruct_for_slice::drop_glue<'_0, T>(_1: &'_0 mut [T])
 where
@@ -484,15 +472,6 @@ where
     storage_dead(_2)
     storage_dead(_1)
     return
-}
-
-// Full name: {impl Destruct for [T; N]}
-impl<T, const N : usize> "impl_Destruct_for_array" Destruct for [T; N]
-where
-    TraitClause0: (T: Sized),
-{
-    fn drop_glue<'_0_1> = impl_Destruct_for_array::drop_glue<'_0_1, T, N>[TraitClause0]
-    non-dyn-compatible
 }
 
 // Full name: test_crate::AB

@@ -212,10 +212,6 @@ where
     TraitClause1: (I: Iterator),
 = <opaque>
 
-struct (_,)<A> {
-  _0: A,
-}
-
 // Full name: test_crate::f
 pub fn f()
 {

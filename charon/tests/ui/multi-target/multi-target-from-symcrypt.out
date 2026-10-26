@@ -445,10 +445,6 @@ where
     TypeOutlives0: T: '_0,
 = <opaque>
 
-struct (_,)<A> {
-  _0: A,
-}
-
 trait test_crate::NttIntrinsicsInterface<Self>
 {
     proof ImpliedClause0: (Self: core::marker::MetaSized)

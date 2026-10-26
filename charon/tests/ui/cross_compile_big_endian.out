@@ -27,14 +27,6 @@ struct () {}
 // Full name: core::num::{usize}::MAX
 pub const MAX: usize = MAX()
 
-struct (_, _)<A, B>
-where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
-}
-
 // Full name: test_crate::S
 fn S() -> [u8; 16usize]
 {
