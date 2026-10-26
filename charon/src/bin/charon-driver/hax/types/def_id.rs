@@ -592,7 +592,7 @@ impl DefId {
         match self.base {
             DefIdBase::Real(def_id) | DefIdBase::Promoted(def_id, ..) => {
                 if can_have_generics(tcx, def_id) {
-                    ty::GenericArgs::identity_for_item(tcx, def_id)
+                    identity_args_with_inferred(tcx, def_id)
                 } else {
                     ty::GenericArgsRef::default()
                 }

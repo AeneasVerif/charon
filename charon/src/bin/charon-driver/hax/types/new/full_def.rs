@@ -1019,40 +1019,6 @@ impl<'tcx> Closure<'tcx> {
     }
 }
 
-/// Construct identity args with any erased regions replaced with placeholder regions. Only
-/// sensible for items that can have erased regions in their args, like closures.
-fn identity_args_with_placeholders<'tcx, S: UnderOwnerState<'tcx>>(
-    s: &S,
-    def_id: RDefId,
-) -> (ty::GenericArgsRef<'tcx>, Vec<ty::PlaceholderRegion<'tcx>>) {
-    let tcx = s.base().tcx;
-    let type_of = tcx
-        .type_of(def_id)
-        .instantiate_identity()
-        .skip_normalization();
-    let ty::Closure(_, args) = *type_of.kind() else {
-        unreachable!()
-    };
-    let marker = rustc_span::Symbol::intern(&format!("__unerased_region_{def_id:?}"));
-    let mut extra_regions = Vec::new();
-    let args = ty::fold_regions(tcx, args, |region, _| {
-        if region.is_erased() {
-            let placeholder = ty::PlaceholderRegion::new(
-                ty::UniverseIndex::ROOT,
-                ty::BoundRegion {
-                    var: ty::BoundVar::from_usize(extra_regions.len()),
-                    kind: ty::BoundRegionKind::NamedForPrinting(marker),
-                },
-            );
-            extra_regions.push(placeholder);
-            ty::Region::new_placeholder(tcx, placeholder)
-        } else {
-            region
-        }
-    });
-    (args, extra_regions)
-}
-
 #[derive(Debug, Clone)]
 pub struct Const<'tcx> {
     param_env: ParamEnv<'tcx>,
@@ -1453,8 +1419,10 @@ where
             })
         }
         RDefKind::Closure { .. } => {
-            let (closure_args, extra_regions) = identity_args_with_placeholders(s, def_id);
-            let closure = substitute(tcx, s.typing_env(), args, closure_args).as_closure();
+            let identity_args = hax_def_id.identity_args(s);
+            let name = rustc_span::Symbol::intern(&format!("__unerased_region_{def_id:?}"));
+            let (identity_args, extra_regions) = unerase_lifetimes(s, identity_args, name);
+            let closure = substitute(tcx, s.typing_env(), args, identity_args).as_closure();
             let closure_ty = ty::Ty::new_closure(tcx, def_id, closure.args);
 
             let mut param_env = get_param_env(s, args);
