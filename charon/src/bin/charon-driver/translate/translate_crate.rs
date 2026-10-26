@@ -853,8 +853,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 | hax::DefKind::FnPtr
                 | hax::DefKind::AssocFn
                 | hax::DefKind::Closure
+                | hax::DefKind::AnonConst
                 | hax::DefKind::Ctor(..)
         ) {
+            // The regions bound in the closure struct that don't come from its parent.
+            let regions = self.recover_extra_early_regions(span, hax_item)?;
+            generics.regions.extend(regions);
+
             let def = self.hax_def(hax_item)?;
             let sig = match def.kind() {
                 hax::FullDefKind::Fn(f) => Some(f.sig()),
@@ -870,9 +875,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .map(|_| self.translate_erased_region()),
                 );
             } else if let hax::FullDefKind::Closure(c) = def.kind() {
-                // The regions bound in the closure struct that don't come from its parent.
-                let regions = self.translate_closure_region_args(span, hax_item)?;
-                generics.regions.extend(regions);
                 if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
                 | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))
                 | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))

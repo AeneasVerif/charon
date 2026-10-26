@@ -26,9 +26,9 @@ where
 }
 
 // Full name: test_crate::foo::{const}
-fn {const}<'a>() -> Option<&'_ u8>[{built_in impl Sized for &'_ u8}]
+fn {const}<'a, '_1>() -> Option<&'_1 u8>[{built_in impl Sized for &'_1 u8}]
 {
-    let _0: Option<&'0 u8>[{built_in impl Sized for &'0 u8}]; // return
+    let _0: Option<&'8 u8>[{built_in impl Sized for &'8 u8}]; // return
 
     storage_live(_0)
     _0 = Option::None {  }
@@ -36,7 +36,7 @@ fn {const}<'a>() -> Option<&'_ u8>[{built_in impl Sized for &'_ u8}]
 }
 
 // Full name: test_crate::foo::{const}
-const {const}<'a>: Option<&'_ u8>[{built_in impl Sized for &'_ u8}] = {const}<'a>()
+const {const}<'a, '_1>: Option<&'_1 u8>[{built_in impl Sized for &'_1 u8}] = {const}<'a, '_1>()
 
 // Full name: test_crate::foo
 pub fn foo<'a>() -> Option<&'a u8>[{built_in impl Sized for &'a u8}]
@@ -44,7 +44,7 @@ pub fn foo<'a>() -> Option<&'a u8>[{built_in impl Sized for &'a u8}]
     let _0: Option<&'8 u8>[{built_in impl Sized for &'8 u8}]; // return
 
     storage_live(_0)
-    _0 = const {const}<'16>
+    _0 = const {const}<'16, '29>
     return
 }
 

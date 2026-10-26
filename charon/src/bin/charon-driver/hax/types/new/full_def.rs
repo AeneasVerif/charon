@@ -52,7 +52,7 @@ where
         // `ParamEnv.extra_early_regions`).
         let args_or_default = {
             let mut identity_args = def_id.identity_args(s);
-            if def_id.is_typeck_child(s) && matches!(def_id.kind, DefKind::Closure { .. }) {
+            if def_id.is_typeck_child(s) {
                 let name = rustc_span::Symbol::intern(&format!("__unerased_region_{def_id:?}"));
                 (identity_args, extra_early_regions) = unerase_lifetimes(s, identity_args, name);
             }

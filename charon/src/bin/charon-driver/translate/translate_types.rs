@@ -474,19 +474,20 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(args)
     }
 
-    /// In rustc/hax, closures take a few extra generic types, which get inferred and represent
-    /// their upvars and signature. Instead of these types, we add lifetime parameters. This
-    /// method extracts the value of the lifetime parameters in question.
-    pub(crate) fn translate_closure_region_args(
+    /// In rustc/hax, closures and inline consts take a few extra generic types, which get inferred
+    /// and represent closure upvars and signature, or inline const return type. Instead of these
+    /// types, we add lifetime parameters. This method extracts the value of the lifetime
+    /// parameters in question.
+    pub(crate) fn recover_extra_early_regions(
         &mut self,
         span: Span,
         item: &hax::ItemRef<'tcx>,
     ) -> Result<Vec<Region>, Error> {
         let def = self.poly_hax_def(&item.def_id)?;
-        let hax::FullDefKind::Closure(closure) = def.kind() else {
-            unreachable!()
+        let Some(param_env) = def.param_env() else {
+            return Ok(vec![]);
         };
-        let num_regions = closure.param_env().extra_early_regions.len();
+        let num_regions = param_env.extra_early_regions.len();
         if num_regions == 0 || self.options.monomorphize_with_hax {
             return Ok((0..num_regions)
                 .map(|_| self.translate_erased_region())
@@ -494,11 +495,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
         let actual = self.translate_raw_generic_args(span, &item.generic_args)?;
 
-        // We start from the original full closure args (with placeholder lifetimes), and
-        // instantiate+normalize them. This is crucial because the closure def may contain an
-        // associated type which has gotten normalized in `item`. Thankfully (I sure damn hope)
-        // going from erased to unerased lifetims can't make more normalization available, so this
-        // should guarantee that the types match structurally.
+        // We start from the original full args (with placeholder lifetimes), and
+        // instantiate+normalize them. This is crucial because the def may contain an associated
+        // type which has gotten normalized in `item`. Thankfully (I sure damn hope) going from
+        // erased to unerased lifetims can't make more normalization available, so this should
+        // guarantee that the types match structurally.
         let template = hax::substitute(
             self.tcx,
             self.hax_state.typing_env(),
@@ -512,7 +513,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let template = self.inside_binder(BinderKind::Other, None, |this| {
                 let binder = this.innermost_binder_mut();
                 binder.is_hax_binder = false;
-                for region in &closure.param_env().extra_early_regions {
+                for region in &param_env.extra_early_regions {
                     binder.push_unerased_region(region.clone());
                 }
                 this.translate_raw_generic_args(span, &template)
@@ -584,7 +585,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             self,
             span,
             ZipAst::visit(&mut mapping, &template, &actual).is_continue(),
-            "Closure arguments don't match their definition: {:?} vs {:?}",
+            "Inferred arguments don't match their definition: {:?} vs {:?}",
             template,
             actual
         );
