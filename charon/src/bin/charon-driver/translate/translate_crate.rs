@@ -866,6 +866,16 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 hax::FullDefKind::FnPtr(f) => Some(f.sig()),
                 hax::FullDefKind::AssocFn(f) => Some(f.sig()),
                 hax::FullDefKind::Ctor(f) => Some(f.sig()),
+                hax::FullDefKind::Closure(c)
+                    if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
+                    | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))
+                    | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))
+                    | TransItemSourceKind::CallableMethod(..)
+                    | TransItemSourceKind::VTableMethod(TransImplSource::Callable(..))
+                    | TransItemSourceKind::ClosureAsFnCast = kind =>
+                {
+                    Some(c.sig())
+                }
                 _ => None,
             };
             if let Some(sig) = sig {
@@ -874,21 +884,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         .iter()
                         .map(|_| self.translate_erased_region()),
                 );
-            } else if let hax::FullDefKind::Closure(c) = def.kind() {
-                if let TransItemSourceKind::TraitImpl(TransImplSource::Callable(..))
-                | TransItemSourceKind::VTableInstance(TransImplSource::Callable(..))
-                | TransItemSourceKind::VTableDropShim(TransImplSource::Callable(..))
-                | TransItemSourceKind::CallableMethod(..)
-                | TransItemSourceKind::VTableMethod(TransImplSource::Callable(..))
-                | TransItemSourceKind::ClosureAsFnCast = kind
-                {
-                    generics.regions.extend(
-                        c.sig()
-                            .bound_vars
-                            .iter()
-                            .map(|_| self.translate_erased_region()),
-                    );
-                }
             }
             if let TransItemSourceKind::CallableMethod(ClosureKind::FnMut | ClosureKind::Fn)
             | TransItemSourceKind::VTableMethod(TransImplSource::Callable(
