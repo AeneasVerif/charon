@@ -392,13 +392,92 @@ pub trait TyVisitable: Sized + AstVisitable {
         .visit(self)
     }
 
+    /// Whether this value mentions any region var of its environment.
+    fn has_escaping_region_var(&self) -> bool {
+        struct HasEscapingRegionVar {
+            binder_depth: DeBruijnId,
+        }
+
+        impl Visitor for HasEscapingRegionVar {
+            type Break = ();
+        }
+
+        impl VisitorWithBinderDepth for HasEscapingRegionVar {
+            fn binder_depth_mut(&mut self) -> &mut DeBruijnId {
+                &mut self.binder_depth
+            }
+        }
+
+        impl VisitAst for HasEscapingRegionVar {
+            fn visit<T: AstVisitable>(&mut self, x: &T) -> ControlFlow<Self::Break> {
+                VisitWithBinderDepth::new(self).visit(x)
+            }
+
+            fn visit_region(&mut self, region: &Region) -> ControlFlow<Self::Break> {
+                match region {
+                    Region::Var(DeBruijnVar::Bound(dbid, _)) if *dbid >= self.binder_depth => {
+                        ControlFlow::Break(())
+                    }
+                    _ => ControlFlow::Continue(()),
+                }
+            }
+        }
+
+        HasEscapingRegionVar {
+            binder_depth: DeBruijnId::ZERO,
+        }
+        .visit(self)
+        .is_break()
+    }
+
     /// Collect the regions contained in `self`.
-    fn collect_regions(&self) -> impl Iterator<Item = Region> {
-        let mut regions = SeqHashSet::new();
-        self.dyn_visit(|region: &Region| {
-            regions.insert(*region);
-        });
-        regions.into_iter()
+    fn collect_regions(&self) -> SeqHashSet<Region> {
+        #[derive(Default, Visitor)]
+        struct CollectRegions {
+            depth: DeBruijnId,
+            regions: SeqHashSet<Region>,
+        }
+        impl VisitorWithBinderDepth for CollectRegions {
+            fn binder_depth_mut(&mut self) -> &mut DeBruijnId {
+                &mut self.depth
+            }
+        }
+        impl VisitAst for CollectRegions {
+            fn visit<U: AstVisitable>(&mut self, value: &U) -> ControlFlow<Self::Break> {
+                VisitWithBinderDepth::new(self).visit(value)
+            }
+            fn enter_region(&mut self, region: &Region) {
+                if let Some(region) = region.move_from_under_binders(self.depth)
+                    && !region.is_erased()
+                {
+                    self.regions.insert(region);
+                }
+            }
+        }
+        CollectRegions::default()
+            .visit_by_val_infallible(self)
+            .regions
+    }
+
+    /// Replace all the regions by the output of the provided function. Binders levels are handled
+    /// automatically.
+    fn replace_regions(mut self, f: impl FnMut() -> Region) -> Self {
+        if !self.type_info().has_region() {
+            return self;
+        }
+
+        #[derive(Visitor)]
+        struct RefreshRegions<F>(F);
+        impl<F: FnMut() -> Region> VarsVisitor for RefreshRegions<F> {
+            fn visit_region_var(&mut self, _v: RegionDbVar) -> Option<Region> {
+                Some((self.0)())
+            }
+            fn visit_erased_region(&mut self) -> Option<Region> {
+                Some((self.0)())
+            }
+        }
+        self.visit_vars(&mut RefreshRegions(f));
+        self
     }
 
     /// Replace all the erased regions by the output of the provided function. Binders levels are

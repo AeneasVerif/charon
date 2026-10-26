@@ -89,11 +89,25 @@ pub enum Variance {
     Covariant,
     Invariant,
     Contravariant,
+    // TODO: when does this happen?
     Bivariant,
     /// Variance was not sensible (e.g. on impls), not available (e.g. on higher-kinded
     /// predicates), or not computed (e.g. on parameters that Charon invents).
     #[cfg_attr(feature = "charon_on_charon", charon::rename("VaUnknown"))]
     Unknown,
+}
+
+impl Variance {
+    pub fn compose(outer: Variance, inner: Variance) -> Variance {
+        match (outer, inner) {
+            (Variance::Unknown, _) | (_, Variance::Unknown) => Variance::Unknown,
+            (Variance::Bivariant, _) | (_, Variance::Bivariant) => Variance::Bivariant,
+            (Variance::Invariant, _) | (_, Variance::Invariant) => Variance::Invariant,
+            (Variance::Covariant, variance) => variance,
+            (Variance::Contravariant, Variance::Covariant) => Variance::Contravariant,
+            (Variance::Contravariant, Variance::Contravariant) => Variance::Covariant,
+        }
+    }
 }
 
 /// A type variable in a signature or binder.

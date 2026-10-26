@@ -13,6 +13,8 @@ bitflags::bitflags! {
         const USES_SIZE_METADATA = 1 << 2;
         const POTENTIALLY_NORMALIZABLE = 1 << 3;
         const MENTIONS_FREE_VAR = 1 << 4;
+        const HAS_STATIC_REGION = 1 << 5;
+        const HAS_REGION_VAR = 1 << 6;
     }
 }
 
@@ -80,7 +82,8 @@ impl TypeInfo {
                         .info
                         .flags
                         .insert(TypeFlags::HAS_ERASED_OR_BODY_REGIONS),
-                    Region::Var(..) | Region::Static => {}
+                    Region::Static => self.info.flags.insert(TypeFlags::HAS_STATIC_REGION),
+                    Region::Var(..) => self.info.flags.insert(TypeFlags::HAS_REGION_VAR),
                 }
             }
 
@@ -183,6 +186,18 @@ impl TypeInfo {
     /// Whether this value contains an erased or body-local region.
     pub fn has_erased_or_body_regions(&self) -> bool {
         self.flags.contains(TypeFlags::HAS_ERASED_OR_BODY_REGIONS)
+    }
+
+    pub fn has_static_region(&self) -> bool {
+        self.flags.contains(TypeFlags::HAS_STATIC_REGION)
+    }
+
+    pub fn has_region_var(&self) -> bool {
+        self.flags.contains(TypeFlags::HAS_REGION_VAR)
+    }
+
+    pub fn has_region(&self) -> bool {
+        self.has_region_var() || self.has_static_region() || self.has_erased_or_body_regions()
     }
 
     /// The largest `DeBruijnId` mentioned by this item, if any.
