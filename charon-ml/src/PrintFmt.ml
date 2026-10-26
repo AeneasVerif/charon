@@ -143,7 +143,7 @@ let pp_ref_kind (fmt : Format.formatter) (rk : ref_kind) : unit =
 let de_bruijn_var_to_pretty_string show_varid var : string =
   match var with
   | Bound (dbid, varid) -> show_de_bruijn_id dbid ^ "_" ^ show_varid varid
-  | Free varid -> show_varid varid
+  | Free varid -> "Free(" ^ show_varid varid ^ ")"
 
 let region_db_var_to_pretty_string (var : region_db_var) : string =
   "'" ^ de_bruijn_var_to_pretty_string RegionId.to_string var
