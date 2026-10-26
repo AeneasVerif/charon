@@ -29,7 +29,7 @@
 use rustc_middle::ty::*;
 
 /// Make a new `ParamEnv` from a list of clauses.
-pub(crate) fn param_env_from_clauses<'tcx>(
+pub fn param_env_from_clauses<'tcx>(
     tcx: TyCtxt<'tcx>,
     predicates: impl Iterator<Item = Clause<'tcx>>,
 ) -> ParamEnv<'tcx> {

@@ -264,6 +264,8 @@ pub fn fn_sig_bound_region_variances<'tcx>(
     relation.variances
 }
 
+/// Instantiate this binder with the provided args. Use `None` if the args are known to be the
+/// identity args.
 pub fn inst_binder<'tcx, T>(
     tcx: ty::TyCtxt<'tcx>,
     typing_env: ty::TypingEnv<'tcx>,
@@ -279,6 +281,8 @@ where
     }
 }
 
+/// Instantiate this value with the provided args. Use `None` if the args are known to be the
+/// identity args.
 pub fn substitute<'tcx, T>(
     tcx: ty::TyCtxt<'tcx>,
     typing_env: ty::TypingEnv<'tcx>,
@@ -355,16 +359,6 @@ where
         }
     });
     (val, extra_regions)
-}
-
-/// Make a new `ParamEnv` from a list of clauses.
-pub fn param_env_from_clauses<'tcx>(
-    tcx: ty::TyCtxt<'tcx>,
-    predicates: impl Iterator<Item = ty::Clause<'tcx>>,
-) -> ty::ParamEnv<'tcx> {
-    let cause = rustc_trait_selection::traits::ObligationCause::dummy();
-    let param_env = ty::ParamEnv::new(tcx, predicates);
-    rustc_trait_selection::traits::normalize_param_env_or_error(tcx, param_env, cause)
 }
 
 #[extension_traits::extension(pub trait SubstBinder)]

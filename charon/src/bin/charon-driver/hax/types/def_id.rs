@@ -14,6 +14,7 @@ use itertools::Itertools;
 pub use rustc_middle::mir::Promoted as PromotedId;
 pub use rustc_middle::mir::interpret::AllocId as RAllocId;
 use rustc_span::DUMMY_SP;
+use rustc_trait_elaboration::param_env_from_clauses;
 use {rustc_hir as hir, rustc_hir::def_id::DefId as RDefId, rustc_middle::ty};
 
 sinto_reexport!(hir::Safety);
