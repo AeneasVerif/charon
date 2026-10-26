@@ -1982,11 +1982,7 @@ fn get_param_env<'tcx, S: UnderOwnerState<'tcx>>(
         None => ParamEnv {
             generics,
             extra_early_regions: vec![],
-            predicates: if owner.is_typeck_child(s) {
-                GenericPredicates::default()
-            } else {
-                owner.required_predicates(s).sinto(s)
-            },
+            predicates: owner.required_predicates(s).sinto(s),
             parent,
         },
         // An instantiated item is monomorphic.

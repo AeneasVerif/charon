@@ -845,6 +845,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             self.translate_generic_args(span, hax_item)?
         };
 
+        // Recover regions that rustc normally erases.
+        let regions = self.recover_extra_early_regions(span, hax_item)?;
+        generics.regions.extend(regions);
+
         // Add regions to make sure the item args match the params we set up in
         // `translate_item_generics`.
         if matches!(
@@ -853,13 +857,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 | hax::DefKind::FnPtr
                 | hax::DefKind::AssocFn
                 | hax::DefKind::Closure
-                | hax::DefKind::AnonConst
                 | hax::DefKind::Ctor(..)
         ) {
-            // The regions bound in the closure struct that don't come from its parent.
-            let regions = self.recover_extra_early_regions(span, hax_item)?;
-            generics.regions.extend(regions);
-
             let def = self.hax_def(hax_item)?;
             let sig = match def.kind() {
                 hax::FullDefKind::Fn(f) => Some(f.sig()),

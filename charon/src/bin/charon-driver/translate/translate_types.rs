@@ -436,7 +436,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // Items that have a typeck parent use their extra arguments for inference variables that
         // we don't translate directly. Instead, use `translate_closure_region_args` to extract the
         // arguments we do translate.
-        // TODO: inline consts.
+        // FIXME: iterate through parents and find some uniform scheme
         let substs = if let Some(parent) = item.def_id.typeck_parent(self.hax_state()) {
             &item.generic_args[..parent.generics_of(self.hax_state()).count()]
         } else {
@@ -478,6 +478,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// and represent closure upvars and signature, or inline const return type. Instead of these
     /// types, we add lifetime parameters. This method extracts the value of the lifetime
     /// parameters in question.
+    // FIXME: iterate through parents, e.g. a promoted const in a closure needs these args provided,
+    // see `promoted-in-closure-regions.rs`. This is made harder by mono; we could streamline the
+    // whole thing by storing mono args inside the param defs, just like for inferred variables.
+    // Indeed the handling of inferred variables is pretty much a partial monomorphization. Maybe
+    // this would help with mono+traits.
     pub(crate) fn recover_extra_early_regions(
         &mut self,
         span: Span,
