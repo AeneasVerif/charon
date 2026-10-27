@@ -1154,17 +1154,13 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 Byte::Value(value) => bytes.push(Some(*value)),
                 // MiniRust doesn't have TypeId provenance so we lower it to a hash of the type.
                 Byte::Provenance(GlobalProvenance::TypeId(ty), ptr_offset, i) => {
-                    let ptr_size = size_bytes(span, T::PTR_SIZE)?;
-                    let (chunk, i) = (*i as u64 / ptr_size, *i as u64 % ptr_size);
-                    let mut hasher = DefaultHasher::new();
-                    (ty, chunk).hash(&mut hasher);
-                    let ptr = hasher.finish().wrapping_add(ptr_offset.to_bits() as u64);
-                    let shift = if T::ENDIANNESS == mini::LittleEndian {
-                        i
+                    let val = self.type_id_val(span, ty, ptr_offset.to_bits() as u64)?;
+                    let val_bytes = if T::ENDIANNESS == mini::LittleEndian {
+                        val.to_le_bytes()
                     } else {
-                        ptr_size - 1 - i
+                        val.to_be_bytes()
                     };
-                    bytes.push(Some((ptr >> (8 * shift)) as u8));
+                    bytes.push(Some(val_bytes[*i as usize]));
                 }
                 Byte::Provenance(provenance, ptr_offset, pointer_byte) => {
                     let name = match provenance {
@@ -1311,6 +1307,13 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 mini::Constant::Int(self.variant_discriminant_for_tref(span, tref, *variant)?),
                 ty,
             ),
+            // Like in globals, we lower a `TypeId` to a hash of the type.
+            ConstantExprKind::TypeId(tid_ty) => {
+                let value = self.type_id_val(span, tid_ty, 0)?;
+                let int_ty = mb::int_ty(mini::Signedness::Unsigned, mini_size(16));
+                let int = mini::ValueExpr::Constant(mini::Constant::Int(value.into()), int_ty);
+                mb::transmute(int, ty)
+            }
             ConstantExprKind::SizeOf(value) => {
                 let (size, _) = self.size_and_align(span, value)?;
                 mini::ValueExpr::Constant(mini::Constant::Int(mini::Int::from(size)), ty)
@@ -1325,6 +1328,34 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 constant.with_ctx(&self.fmt)
             ),
         })
+    }
+
+    /// The value of the `TypeId` of `ty`, as a 16-byte integer, with its pointers offset by
+    /// `ptr_offset`. MiniRust doesn't have `TypeId` provenance so we make up the values of these
+    /// pointers by hashing the type.
+    fn type_id_val(&self, span: Span, ty: &Ty, ptr_offset: u64) -> Result<u128> {
+        // A TypeId is `[*const (); 16 / size_of::<*const ()>()]`; its number of chunks
+        // depends on the pointer size of the target platform
+        let ptr_size = size_bytes(span, T::PTR_SIZE)?;
+        let ptr_count = 16 / ptr_size;
+        let mut val = 0;
+        for i in 0..ptr_count {
+            let mut hasher = DefaultHasher::new();
+            (ty, i).hash(&mut hasher);
+            let ptr = hasher.finish();
+            // the ptr may have an offset, which we must apply
+            let ptr = ptr.wrapping_add(ptr_offset);
+            // we then make the ptr the right size
+            let ptr = ptr as u128 & ((1 << (8 * ptr_size)) - 1);
+            // the first pointer comes first in memory.
+            let pos = if T::ENDIANNESS == mini::LittleEndian {
+                i
+            } else {
+                ptr_count - 1 - i
+            };
+            val |= ptr << (8 * ptr_size * pos);
+        }
+        Ok(val)
     }
 
     pub(super) fn constant_int(&self, span: Span, constant: &ConstantExpr) -> Result<mini::Int> {
