@@ -34,9 +34,13 @@ static test_crate::{promoted_const}: MaybeUninit<[u8; 4usize]>[{built_in impl Si
 
 static test_crate::{promoted_const#1}: MaybeUninit<[u8; 12usize]>[{built_in impl Sized for [u8; 12usize]}] = RawMemory(0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00)
 
-static test_crate::{promoted_const#2}: MaybeUninit<[u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}] = RawMemory(0x05, 0x00, 0x00, 0x00)
+static test_crate::{promoted_const#2}: MaybeUninit<[u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}] = RawMemory(0x2a, 0x00, 0x00, 0x00)
 
-const test_crate::promoted_scalar::{promoted_const}: &'_ i32 = cast<&'_ i32>(&raw const test_crate::{promoted_const})
+static test_crate::{promoted_const#3}: MaybeUninit<[u8; 12usize]>[{built_in impl Sized for [u8; 12usize]}] = RawMemory(0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00)
+
+static test_crate::{promoted_const#4}: MaybeUninit<[u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}] = RawMemory(0x05, 0x00, 0x00, 0x00)
+
+const test_crate::promoted_scalar::{promoted_const}: &'_ i32 = cast<&'_ i32>(&raw const test_crate::{promoted_const#2})
 
 // Full name: test_crate::promoted_scalar
 pub fn promoted_scalar() -> &'static i32
@@ -56,7 +60,7 @@ pub fn promoted_scalar() -> &'static i32
     return
 }
 
-const test_crate::promoted_array::{promoted_const}: &'_ [i32; 3usize] = cast<&'_ [i32; 3usize]>(&raw const test_crate::{promoted_const#1})
+const test_crate::promoted_array::{promoted_const}: &'_ [i32; 3usize] = cast<&'_ [i32; 3usize]>(&raw const test_crate::{promoted_const#3})
 
 // Full name: test_crate::promoted_array
 pub fn promoted_array() -> &'static [i32; 3usize]
@@ -76,7 +80,7 @@ pub fn promoted_array() -> &'static [i32; 3usize]
     return
 }
 
-const test_crate::promoted_local::{promoted_const}: &'_ i32 = cast<&'_ i32>(&raw const test_crate::{promoted_const#2})
+const test_crate::promoted_local::{promoted_const}: &'_ i32 = cast<&'_ i32>(&raw const test_crate::{promoted_const#4})
 
 // Full name: test_crate::promoted_local
 pub fn promoted_local() -> i32
@@ -105,15 +109,19 @@ pub fn promoted_local() -> i32
 pub fn inline_ref_scalar() -> &'static i32
 {
     let _0: &'1 i32; // return
-    let _1: i32; // anonymous local
-    let _2: &'2 i32; // anonymous local
+    let _1: *const MaybeUninit<[u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}]; // anonymous local
+    let _2: *const i32; // anonymous local
+    let _3: &'2 i32; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
-    _1 = noretag const 42i32
+    _1 = &raw const test_crate::{promoted_const}
     storage_live(_2)
-    _2 = &_1
-    _0 = move _2
+    _2 = cast<*const i32>(move _1)
+    storage_live(_3)
+    _3 = &(*_2)
+    _0 = move _3
+    storage_dead(_3)
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -123,15 +131,19 @@ pub fn inline_ref_scalar() -> &'static i32
 pub fn inline_ref_array() -> &'static [i32; 3usize]
 {
     let _0: &'1 [i32; 3usize]; // return
-    let _1: [i32; 3usize]; // anonymous local
-    let _2: &'2 [i32; 3usize]; // anonymous local
+    let _1: *const MaybeUninit<[u8; 12usize]>[{built_in impl Sized for [u8; 12usize]}]; // anonymous local
+    let _2: *const [i32; 3usize]; // anonymous local
+    let _3: &'2 [i32; 3usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
-    _1 = [const 1i32, const 2i32, const 3i32]
+    _1 = &raw const test_crate::{promoted_const#1}
     storage_live(_2)
-    _2 = &_1
-    _0 = move _2
+    _2 = cast<*const [i32; 3usize]>(move _1)
+    storage_live(_3)
+    _3 = &(*_2)
+    _0 = move _3
+    storage_dead(_3)
     storage_dead(_2)
     storage_dead(_1)
     return
@@ -168,16 +180,12 @@ static S: i32 = 1i32
 pub fn inline_ref_static() -> &'static i32
 {
     let _0: &'1 i32; // return
-    let _1: i32; // anonymous local
-    let _2: &'2 i32; // anonymous local
+    let _1: &'2 i32; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
-    _1 = noretag const 1i32
-    storage_live(_2)
-    _2 = &_1
-    _0 = move _2
-    storage_dead(_2)
+    _1 = &S
+    _0 = move _1
     storage_dead(_1)
     return
 }

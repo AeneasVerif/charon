@@ -3,6 +3,7 @@
 use crate::*;
 use rustc_attr_ir::LangItem;
 use rustc_const_eval::const_eval;
+use rustc_middle::ty::TypeVisitableExt;
 use rustc_span::Span;
 use rustc_trait_elaboration::normalize;
 
@@ -167,6 +168,22 @@ impl<'tcx> ConstReader<'tcx> {
                 };
                 Evaluated::Value(val, self.global_ty(global))
             }
+            // Evaluate these only if they represent anon consts that don't show up in the type
+            // system (e.g. through `adt_const_params`).
+            ConstSource::TyConst(uv)
+                if let Some(def_id) = uv.kind.opt_def_id()
+                    && let rustc_hir::def::DefKind::AnonConst = tcx.def_kind(def_id)
+                    && let ty::AnonConstKind::NonTypeSystemInline = tcx.anon_const_kind(def_id)
+                    && !uv.has_opaque_types() =>
+            {
+                return self.evaluate(
+                    span,
+                    ConstSource::Item {
+                        def_id,
+                        args: uv.args,
+                    },
+                );
+            }
             ConstSource::TyConst(uv) => {
                 let value = self.eval_to_valtree(span, uv);
                 Evaluated::ValTree(value.ok_or(ReadError::NotEvaluable)?)
@@ -179,7 +196,6 @@ impl<'tcx> ConstReader<'tcx> {
     /// Evaluate a type-level constant to a valtree. Returns `None` if the constant is generic, if
     /// its evaluation fails, or if its type has no valtree representation.
     fn eval_to_valtree(&self, span: Span, uv: ty::AliasConst<'tcx>) -> Option<ty::Value<'tcx>> {
-        use ty::TypeVisitableExt;
         let tcx = self.tcx;
         if uv.has_non_region_param() {
             return None;
