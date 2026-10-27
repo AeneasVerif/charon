@@ -89,13 +89,23 @@ impl<'tcx> ConstReader<'tcx> {
                 ty: decl_ty,
                 projections,
             };
-            if Some(end_ty) == tcx.erase_and_anonymize_regions(view_ty) {
+            let (ty::Ref(.., mutability) | ty::RawPtr(_, mutability)) = *op.layout.ty.kind() else {
+                unreachable!()
+            };
+            // We can't take a `*mut` to an immutable global, so we take a `*const` and cast it.
+            let borrow_mutability = match alloc_target {
+                AllocTarget::Global(global) => global.mutability(tcx).min(mutability),
+                _ => mutability,
+            };
+            if Some(end_ty) == tcx.erase_and_anonymize_regions(view_ty)
+                && borrow_mutability == mutability
+            {
                 ConstKind::Ptr { target, unsize }
             } else {
                 // Point to the place we reached, then cast the pointer to the right type.
                 let ptr = |ty, kind| Box::new(Const { ty, kind });
                 let inner = ptr(
-                    Ty::new_ptr(tcx, end_ty, mutability),
+                    Ty::new_ptr(tcx, end_ty, borrow_mutability),
                     ConstKind::Ptr {
                         target,
                         unsize: None,
