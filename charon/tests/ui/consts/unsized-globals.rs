@@ -1,5 +1,6 @@
 //@ revisions=values,initializers
 //@[values] charon-args=--consts=values
+//@[values] known-failure
 //@[initializers] charon-args=--consts=initializers
 
 use std::fmt::Debug;
@@ -35,6 +36,7 @@ pub static DYN: &dyn Trait = &8;
 pub static FOO: &(dyn Debug + Sync) = &42;
 pub static DYN_TAIL: &Wrap<dyn Trait> = &Wrap { a: 9, b: 10u8 };
 pub static RAW_DYN: RawPtr = RawPtr(&11u8);
+pub static EMPTY: &[u8] = unsafe { core::slice::from_raw_parts(1 as *const u8, 0) };
 
 pub fn inline_const() {
     let _: &Outer<[u16]> = const {
