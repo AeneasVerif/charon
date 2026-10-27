@@ -125,6 +125,7 @@ impl<'tcx> ConstReader<'tcx> {
             };
             if Some(end_ty) == tcx.erase_and_anonymize_regions(view_ty)
                 && borrow_mutability == mutability
+                && !(op.layout.ty.is_ref() && mutability.is_mut())
             {
                 ConstKind::Ptr { target, unsize }
             } else {

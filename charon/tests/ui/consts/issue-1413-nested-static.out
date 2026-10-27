@@ -7,7 +7,7 @@ static mut test_crate::{promoted_const}: u32 = 42u32
 static test_crate::{promoted_const#1}: u32 = 42u32
 
 // Full name: test_crate::FOO
-static mut FOO: &'static mut u32 = &test_crate::{promoted_const}
+static mut FOO: &'static mut u32 = cast<&'_ mut u32>(&raw mut test_crate::{promoted_const})
 
 // Full name: test_crate::SHARED
 static SHARED: &'static u32 = &test_crate::{promoted_const#1}
