@@ -29,6 +29,15 @@ pub unsafe trait Sync<Self>
 
 vtable core::marker::Sync::{vtable}<Self>: core::marker::Sync::{vtable} = Opaque(VTable was chosen to be opaque)
 
+// Full name: core::slice::raw::from_raw_parts
+#[track_caller]
+#[diagnostic_item("slice_from_raw_parts")]
+pub unsafe fn from_raw_parts<'a, T>(_1: *const T, _2: usize) -> &'a [T]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: 'a,
+= <opaque>
+
 struct (_, _)<A, B>
 where
     TraitClause0: (A: Sized),
@@ -420,6 +429,28 @@ pub fn RAW_DYN() -> RawPtr
 
 // Full name: test_crate::RAW_DYN
 pub static RAW_DYN: RawPtr = RAW_DYN()
+
+// Full name: test_crate::EMPTY
+pub fn EMPTY() -> &'static [u8]
+{
+    let _0: &'1 [u8]; // return
+    let _1: &'2 [u8]; // anonymous local
+    let _2: *const u8; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    storage_live(_2)
+    _2 = cast_with_exposed<*const u8>(const 1usize)
+    _1 = from_raw_parts<'3, u8>[{built_in impl Sized for u8}](move _2, const 0usize)
+    ↳⚡ unwind_continue
+    _0 = &(*_1) with_metadata(copy _1.metadata)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::EMPTY
+pub static EMPTY: &'static [u8] = EMPTY()
 
 pub const test_crate::inline_const::{promoted_const}: Outer<[u16]>[{built_in impl MetaSized for [u16]}] = Outer { x: 1u32, w: Wrap { a: 2u8, b: [3u16, 4u16] } } with_metadata(2usize)
 
