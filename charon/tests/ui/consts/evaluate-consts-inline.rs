@@ -28,3 +28,8 @@ pub fn inline_block() -> u32 {
 pub fn inline_pair() -> (u32, u32) {
     const { (1, 2) }
 }
+
+static S: i32 = 1;
+pub fn inline_ref_static() -> &'static i32 {
+    const { &S }
+}

@@ -183,5 +183,26 @@ pub fn inline_pair() -> (u32, u32)
     return
 }
 
+// Full name: test_crate::S
+static S: i32 = 1i32
+
+// Full name: test_crate::inline_ref_static
+pub fn inline_ref_static() -> &'static i32
+{
+    let _0: &'1 i32; // return
+    let _1: i32; // anonymous local
+    let _2: &'2 i32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    _1 = noretag const 1i32
+    storage_live(_2)
+    _2 = &_1
+    _0 = move _2
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
 
 
