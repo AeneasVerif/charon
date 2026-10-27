@@ -22,19 +22,19 @@ where
 
 struct () {}
 
-static test_crate::{promoted_const}: MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}] = RawMemory(0x01)
+static test_crate::{promoted_const}: u8 = 1u8
 
-static test_crate::{promoted_const#1}: MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}] = RawMemory(0x02, 0x00)
+static test_crate::{promoted_const#1}: u16 = 2u16
 
-static test_crate::{promoted_const#2}: MaybeUninit<[u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}] = RawMemory(0x03, 0x00, 0x00, 0x00)
+static test_crate::{promoted_const#2}: u32 = 3u32
 
-static test_crate::{promoted_const#3}: MaybeUninit<[u8; 8usize]>[{built_in impl Sized for [u8; 8usize]}] = RawMemory(0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
+static test_crate::{promoted_const#3}: u64 = 4u64
 
-static test_crate::{promoted_const#4}: MaybeUninit<[u8; 16usize]>[{built_in impl Sized for [u8; 16usize]}] = RawMemory(0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
+static test_crate::{promoted_const#4}: u128 = 5u128
 
-static test_crate::{promoted_const#5}: MaybeUninit<[u8; 12usize]>[{built_in impl Sized for [u8; 12usize]}] = RawMemory(0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00)
+static test_crate::{promoted_const#5}: [u32; 3usize] = [1u32, 2u32, 3u32]
 
-static test_crate::{promoted_const#6}: MaybeUninit<[u8; 12usize]>[{built_in impl Sized for [u8; 12usize]}] = RawMemory(0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00)
+static test_crate::{promoted_const#6}: [u32; 3usize] = [1u32, 2u32, 3u32]
 
 static test_crate::{promoted_const#7}: MaybeUninit<[u8; 16usize]>[{built_in impl Sized for [u8; 16usize]}] = RawMemory(0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, --, --, --, --, --, --, --)
 
@@ -45,25 +45,25 @@ struct S {
 }
 
 // Full name: test_crate::U8
-static U8: &'static u8 = cast<&'_ u8>(&raw const test_crate::{promoted_const})
+static U8: &'static u8 = &test_crate::{promoted_const}
 
 // Full name: test_crate::U16
-static U16: &'static u16 = cast<&'_ u16>(&raw const test_crate::{promoted_const#1})
+static U16: &'static u16 = &test_crate::{promoted_const#1}
 
 // Full name: test_crate::U32
-static U32: &'static u32 = cast<&'_ u32>(&raw const test_crate::{promoted_const#2})
+static U32: &'static u32 = &test_crate::{promoted_const#2}
 
 // Full name: test_crate::U64
-static U64: &'static u64 = cast<&'_ u64>(&raw const test_crate::{promoted_const#3})
+static U64: &'static u64 = &test_crate::{promoted_const#3}
 
 // Full name: test_crate::U128
-static U128: &'static u128 = cast<&'_ u128>(&raw const test_crate::{promoted_const#4})
+static U128: &'static u128 = &test_crate::{promoted_const#4}
 
 // Full name: test_crate::ARR
-static ARR: &'static [u32; 3usize] = cast<&'_ [u32; 3usize]>(&raw const test_crate::{promoted_const#5})
+static ARR: &'static [u32; 3usize] = &test_crate::{promoted_const#5}
 
 // Full name: test_crate::SLICE
-static SLICE: &'static [u32] = unsize_cast<&'_ [u32], 3usize>(cast<*const [u32; 3usize]>(&raw const test_crate::{promoted_const#6}))
+static SLICE: &'static [u32] = &test_crate::{promoted_const#6} with_metadata(3usize)
 
 // Full name: test_crate::STRUCT
 static STRUCT: &'static S = cast<&'_ S>(&raw const test_crate::{promoted_const#7})

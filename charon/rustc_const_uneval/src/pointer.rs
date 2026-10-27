@@ -79,8 +79,34 @@ impl<'tcx> ConstReader<'tcx> {
         }
 
         let alloc_target = self.alloc_target(alloc_id);
+        let alloc_size = ecx.get_alloc_info(alloc_id).size;
         // A pointer outside of its allocation (one-past-the-end is fine) needs a wrapping offset.
-        let in_bounds = offset <= ecx.get_alloc_info(alloc_id).size;
+        let in_bounds = offset <= alloc_size;
+
+        // See if we can try reading this untyped allocation with a type, rather than bytes.
+        if let AllocTarget::Global(GlobalRef::Alloc(alloc_id)) = alloc_target {
+            self.alloc_types.update_if_unset(alloc_id, || {
+                if offset != Size::ZERO {
+                    return AllocView::Untyped;
+                };
+
+                // the sized type we will try reading with
+                let pointee_ty = match unsize {
+                    None if place.layout.is_sized() => ty,
+                    Some(unsize) if ty == unsize.to => unsize.from,
+                    _ => return AllocView::Untyped,
+                };
+                if let Ok(layout) = ecx.layout_of(pointee_ty)
+                    && layout.size == alloc_size
+                    && self.ty_covers_alloca(alloc_id, pointee_ty)
+                {
+                    AllocView::Typed(pointee_ty)
+                } else {
+                    AllocView::Untyped
+                }
+            })
+        }
+
         let kind = if !in_bounds || self.should_use_pointer(alloc_target) {
             let (decl_ty, projections, end_ty) =
                 self.place_in_global(ecx, &place, alloc_target, offset, in_bounds, view_ty)?;
@@ -140,6 +166,45 @@ impl<'tcx> ConstReader<'tcx> {
         interp_ok(Const { ty: ptr_ty, kind })
     }
 
+    /// Whether reading `alloc_id` with type `ty` is possible without losing information.
+    /// We do a simple under-approximate calculation to decide this:
+    /// - all bytes are initialised
+    /// - there are no provenance bytes
+    /// - the read is valid at that type
+    ///
+    /// In practice we restrain this to integers, floats, chars, bools, and arrays of these.
+    fn ty_covers_alloca(&self, alloc_id: interpret::AllocId, ty: Ty<'tcx>) -> bool {
+        use ty::*;
+        let mut elem_ty = ty;
+        while let Array(ty, _) = elem_ty.kind() {
+            elem_ty = *ty;
+        }
+        // we only handle these, because they must be initialised and can't store provenance.
+        if !matches!(elem_ty.kind(), Int(_) | Uint(_) | Float(_) | Bool | Char) {
+            return false;
+        }
+        // we look at the memory directly, as const-eval refuses to read mutable allocations.
+        let Some(alloc) = GlobalRef::Alloc(alloc_id).memory(self.tcx) else {
+            return false;
+        };
+        let alloc = alloc.inner();
+        let range = interpret::alloc_range(Size::ZERO, alloc.size());
+        let is_valid_elem = |bytes: &[u8]| {
+            let value = interpret::read_target_uint(self.tcx.data_layout.endian, bytes).unwrap();
+            match elem_ty.kind() {
+                Bool => value <= 1,
+                Char => char::try_from(value as u32).is_ok(),
+                _ => true, // ints/floats are valid for any bit pattern
+            }
+        };
+        alloc.init_mask().is_range_initialized(range).is_ok()
+            && alloc.provenance().range_empty(range, &self.tcx)
+            && alloc
+                .get_bytes_unchecked(range)
+                .chunks_exact(elem_ty.primitive_size(self.tcx).bytes_usize())
+                .all(is_valid_elem)
+    }
+
     /// Whether we view a value of the unsized type `ty` at the sized type it was unsized from: a
     /// slice or `dyn Trait` value is, and so is a `str` with `unsized_strings`.
     pub(crate) fn is_viewed_unsized_from(&self, ty: Ty<'tcx>) -> bool {
@@ -174,10 +239,8 @@ impl<'tcx> ConstReader<'tcx> {
             // Other allocations have no contents.
             _ => tcx.types.unit,
         };
-        // Allocations without an item are untyped (see `global_ty`), so we only follow the
-        // structure of statics. A place outside of the global has no such structure.
-        let (path, end_ty) = if in_bounds && let AllocTarget::Global(GlobalRef::Static(_)) = global
-        {
+        // We follow the structure of statics and of allocations we view at a type.
+        let (path, end_ty) = if in_bounds && global.is_read_typed(&self.alloc_types) {
             let (prov, _) = place.ptr().into_raw_parts();
             let ptr = interpret::Pointer::new(prov, Size::ZERO);
             let base = ecx.ptr_to_mplace(ptr, ecx.layout_of(decl_ty)?);

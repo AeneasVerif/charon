@@ -16,9 +16,10 @@ mod memory;
 mod pointer;
 mod valtree;
 
-pub use eval::{alloc_as_untyped_ty, promoted_body};
+pub use eval::promoted_body;
 
 use rustc_abi::{ExternAbi, FieldIdx, Size, VariantIdx};
+use rustc_hash::FxHashMap;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::{self, interpret};
 use rustc_middle::ty::{self, Ty, TyCtxt};
@@ -33,11 +34,26 @@ pub struct Config {
     pub unsized_strings: bool,
 }
 
+/// How we view an anonymous allocation
+#[derive(Clone, Copy, Default)]
+enum AllocView<'tcx> {
+    #[default]
+    Untyped,
+    Typed(Ty<'tcx>),
+}
+
+/// The types at which we view anonymous allocations.
+#[derive(Default, Clone)]
+pub struct AllocTypes<'tcx>(
+    std::rc::Rc<std::cell::RefCell<FxHashMap<interpret::AllocId, AllocView<'tcx>>>>,
+);
+
 /// Evaluates and reads constants in a given typing environment.
 pub struct ConstReader<'tcx> {
     pub tcx: TyCtxt<'tcx>,
     pub typing_env: ty::TypingEnv<'tcx>,
     pub config: Config,
+    pub alloc_types: AllocTypes<'tcx>,
 }
 
 /// A constant that we can ask rustc to evaluate.

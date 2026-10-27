@@ -382,8 +382,7 @@ impl DefId {
         contents.make_def_id(s)
     }
 
-    /// The global standing for an anonymous allocation. It has type `MaybeUninit<[u8; N]>` and
-    /// holds the raw bytes of the allocation; pointers to it view it at their own type.
+    /// The global standing for an anonymous allocation.
     pub fn make_anon_alloc<'tcx, S: BaseState<'tcx>>(s: &S, alloc_id: RAllocId) -> Self {
         let tcx = s.base().tcx;
         s.with_global_cache(|cache| cache.anon_allocs.insert(alloc_id));
@@ -645,9 +644,9 @@ impl DefId {
             DefIdBase::Real(def_id) | DefIdBase::Promoted(def_id, ..) => tcx.type_of(def_id),
             DefIdBase::Synthetic(synthetic) => synthetic.type_of(s),
             DefIdBase::ImplAssocItem(id) => tcx.type_of(id.item_decl_id),
-            DefIdBase::Alloc(alloc_id) => {
-                ty::EarlyBinder::bind(tcx, rustc_const_uneval::alloc_as_untyped_ty(tcx, alloc_id))
-            }
+            DefIdBase::Alloc(alloc_id) => s.with_global_cache(|cache| {
+                ty::EarlyBinder::bind(tcx, cache.alloc_types.ty(tcx, alloc_id))
+            }),
         }
     }
 }
