@@ -693,17 +693,6 @@ mod wrappers {
         pub fn new(inner: &'a mut V, krate: &'ctx TranslatedCrate) -> Self {
             Self { inner, krate }
         }
-
-        fn compose(outer: Variance, inner: Variance) -> Variance {
-            match (outer, inner) {
-                (Variance::Unknown, _) | (_, Variance::Unknown) => Variance::Unknown,
-                (Variance::Bivariant, _) | (_, Variance::Bivariant) => Variance::Bivariant,
-                (Variance::Invariant, _) | (_, Variance::Invariant) => Variance::Invariant,
-                (Variance::Covariant, variance) => variance,
-                (Variance::Contravariant, Variance::Covariant) => Variance::Contravariant,
-                (Variance::Contravariant, Variance::Contravariant) => Variance::Covariant,
-            }
-        }
     }
 
     pub trait VisitorWithVariance {
@@ -721,7 +710,7 @@ mod wrappers {
             f: impl FnOnce(&mut Self) -> ControlFlow<V::Break>,
         ) -> ControlFlow<V::Break> {
             let old = *self.inner.ambient_variance_mut();
-            *self.inner.ambient_variance_mut() = Self::compose(old, variance);
+            *self.inner.ambient_variance_mut() = Variance::compose(old, variance);
             let result = f(self);
             *self.inner.ambient_variance_mut() = old;
             result
@@ -1071,12 +1060,7 @@ mod wrappers {
             &mut self,
             binder: &RegionBinder<T>,
         ) -> ControlFlow<Self::Break> {
-            self.0.binder_stack_mut().push(GenericParams {
-                regions: binder.regions.clone(),
-                regions_outlive: binder.regions_outlive.clone(),
-                types_outlive: binder.types_outlive.clone(),
-                ..Default::default()
-            });
+            self.0.binder_stack_mut().push(binder.to_params());
             self.visit_inner(binder)?;
             self.0.binder_stack_mut().pop();
             Continue(())
@@ -1102,12 +1086,7 @@ mod wrappers {
             &mut self,
             binder: &mut RegionBinder<T>,
         ) -> ControlFlow<Self::Break> {
-            self.0.binder_stack_mut().push(GenericParams {
-                regions: binder.regions.clone(),
-                regions_outlive: binder.regions_outlive.clone(),
-                types_outlive: binder.types_outlive.clone(),
-                ..Default::default()
-            });
+            self.0.binder_stack_mut().push(binder.to_params());
             self.visit_inner(binder)?;
             self.0.binder_stack_mut().pop();
             Continue(())

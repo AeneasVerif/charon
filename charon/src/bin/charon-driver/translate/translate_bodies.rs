@@ -190,8 +190,12 @@ impl<'tcx> TranslateCtx<'tcx> {
         path.iter().map(|id| self.translate_field_id(*id)).collect()
     }
 
-    fn translate_borrow_kind(&self, borrow_kind: mir::BorrowKind) -> BorrowKind {
-        match borrow_kind {
+    fn translate_borrow_kind(
+        &self,
+        span: Span,
+        borrow_kind: mir::BorrowKind,
+    ) -> Result<BorrowKind, Error> {
+        Ok(match borrow_kind {
             mir::BorrowKind::Shared => BorrowKind::Shared,
             mir::BorrowKind::Mut { kind } => match kind {
                 mir::MutBorrowKind::Default => BorrowKind::Mut,
@@ -200,8 +204,10 @@ impl<'tcx> TranslateCtx<'tcx> {
             },
             mir::BorrowKind::Fake(mir::FakeBorrowKind::Shallow) => BorrowKind::Shallow,
             // This one is used only in deref patterns.
-            mir::BorrowKind::Fake(mir::FakeBorrowKind::Deep) => unimplemented!(),
-        }
+            mir::BorrowKind::Fake(mir::FakeBorrowKind::Deep) => {
+                raise_error!(self, span, "deref patterns are not supported")
+            }
+        })
     }
 }
 
@@ -1295,7 +1301,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             }
             mir::Rvalue::Ref(_region, borrow_kind, place) => {
                 let place = self.translate_place(span, place)?;
-                let borrow_kind = self.translate_borrow_kind(*borrow_kind);
+                let borrow_kind = self.translate_borrow_kind(span, *borrow_kind)?;
                 Ok(Rvalue::Ref {
                     place,
                     kind: borrow_kind,

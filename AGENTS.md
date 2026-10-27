@@ -15,6 +15,8 @@ Guidance for AI agents working on Charon.
 - Treat the git state as my domain: I will stage the bits I have reviewed. I may sometimes ask you
   to make commits but otherwise don't touch the git state. If you see surprising git state, assume
   I made that change and leave it as it is.
+- If I ask you to make commits, please prefix their name with "unreviewed: " so that I can then go
+  through them and review.
 - Always try to keep git diffs small to make my job easier. I particularly dislike small helpers
   used only once; I prefer a well-placed comment to make the code easy to follow.
 

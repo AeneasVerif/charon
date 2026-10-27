@@ -186,7 +186,7 @@ impl ProjectionElem {
                 }
             }
             Field(variant_id, field_id) => {
-                let tref = ty.as_adt().unwrap();
+                let tref = ty.as_adt()?;
                 let type_decl = krate.type_decls.get(tref.id)?;
                 use TypeDeclKind::*;
                 match &type_decl.kind {
@@ -209,7 +209,7 @@ impl ProjectionElem {
                     Opaque | Alias(_) | Error(_) => return None,
                 }
             }
-            PtrMetadata => ty.get_ptr_metadata(krate).into_type(),
+            PtrMetadata => ty.builtin_deref(krate)?.get_ptr_metadata(krate).into_type(),
             Index { .. } => ty.as_array_or_slice()?.clone(),
             Subslice { from, to, from_end } => match ty.kind() {
                 TyKind::Slice(..) => ty.clone(),

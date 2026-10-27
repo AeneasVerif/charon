@@ -46,6 +46,8 @@ pub struct OutlivesPred<T, U>(pub T, pub U);
 
 pub type RegionOutlives = OutlivesPred<Region, Region>;
 pub type TypeOutlives = OutlivesPred<Ty, Region>;
+pub type PolyRegionOutlives = RegionBinder<RegionOutlives>;
+pub type PolyTypeOutlives = RegionBinder<TypeOutlives>;
 
 /// A constraint over a trait associated type.
 ///
@@ -76,9 +78,9 @@ pub struct GenericParams {
     // TODO: rename to match [GenericArgs]?
     pub trait_clauses: IndexVec<TraitClauseId, TraitParam>,
     /// The first region in the pair outlives the second region
-    pub regions_outlive: Vec<RegionBinder<RegionOutlives>>,
+    pub regions_outlive: Vec<PolyRegionOutlives>,
     /// The type outlives the region
-    pub types_outlive: Vec<RegionBinder<TypeOutlives>>,
+    pub types_outlive: Vec<PolyTypeOutlives>,
     /// Constraints over trait associated types
     pub trait_type_constraints: IndexVec<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
 }
@@ -127,9 +129,9 @@ pub struct RegionBinder<T> {
     #[serde_state(stateless)]
     pub regions: IndexVec<RegionId, RegionParam>,
     /// Outlives relations involving the bound regions.
-    pub regions_outlive: Vec<RegionBinder<RegionOutlives>>,
+    pub regions_outlive: Vec<PolyRegionOutlives>,
     /// Outlives relations involving the bound regions.
-    pub types_outlive: Vec<RegionBinder<TypeOutlives>>,
+    pub types_outlive: Vec<PolyTypeOutlives>,
     /// Named this way to highlight accesses to the inner value that might be handling parameters
     /// incorrectly. Prefer using helper methods.
     #[cfg_attr(feature = "charon_on_charon", charon::rename("binder_value"))]
@@ -617,6 +619,16 @@ impl<T> RegionBinder<T> {
         }
     }
 
+    /// The parameters and predicates introduced by this binder.
+    pub fn to_params(&self) -> GenericParams {
+        GenericParams {
+            regions: self.regions.clone(),
+            regions_outlive: self.regions_outlive.clone(),
+            types_outlive: self.types_outlive.clone(),
+            ..GenericParams::default()
+        }
+    }
+
     pub fn map<U>(self, f: impl FnOnce(T) -> U) -> RegionBinder<U> {
         RegionBinder {
             regions: self.regions,
@@ -652,6 +664,24 @@ impl<T> RegionBinder<T> {
         assert_eq!(args.regions.len(), self.regions.len());
         let args = GenericArgs::new_lifetimes(args.regions);
         self.skip_binder.substitute_inner_binder(&args)
+    }
+
+    /// Like `apply`, but also keep the predicates: they mention the bound regions and therefore
+    /// need to be substituted before use too.
+    pub fn apply_keep_params(
+        self,
+        args: RegionArgs,
+    ) -> (T, Vec<PolyRegionOutlives>, Vec<PolyTypeOutlives>)
+    where
+        T: TyVisitable,
+    {
+        assert_eq!(args.regions.len(), self.regions.len());
+        let args = GenericArgs::new_lifetimes(args.regions);
+        (
+            self.skip_binder.substitute_inner_binder(&args),
+            self.regions_outlive.substitute_inner_binder(&args),
+            self.types_outlive.substitute_inner_binder(&args),
+        )
     }
 
     /// Extract the contents when we now the binder binds nothing.

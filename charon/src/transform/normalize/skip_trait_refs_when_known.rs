@@ -15,9 +15,7 @@ struct NormalizeFnPtr<'a> {
 
 impl VisitAstMut for NormalizeFnPtr<'_> {
     fn enter_fn_ptr(&mut self, fn_ptr: &mut FnPtr) {
-        if let Some(new_fn_ptr) = normalize_default_method_call_on_known_impl(self.ctx, fn_ptr)
-            .or_else(|| normalize_method_call_on_known_impl(self.ctx, fn_ptr))
-        {
+        if let Some(new_fn_ptr) = normalize_method_call(self.ctx, fn_ptr) {
             *fn_ptr = new_fn_ptr;
         }
     }
@@ -33,68 +31,59 @@ impl VisitAstMut for NormalizeFnPtr<'_> {
     }
 }
 
-/// Transform `Trait::default_method<X>[impl_trait_for_X]` to a direct method call.
-fn normalize_default_method_call_on_known_impl(
-    ctx: &TransformCtx,
-    fn_ptr: &FnPtr,
-) -> Option<FnPtr> {
-    let fun_id = fn_ptr.kind.as_ref().as_fun()?;
-    let fun_decl = ctx.translated.fun_decls.get(*fun_id)?;
-    let FunSource::TraitDefault {
-        trait_ref,
-        item_id: method_id,
-    } = &fun_decl.src
-    else {
-        return None;
-    };
-    // If the first trait proof (for the self clause) is a known impl.
-    let impl_trait_ref = fn_ptr
-        .generics
-        .trait_refs
-        .get(TraitClauseId::ZERO)?
-        .clone()
-        .no_bound_vars();
-    let impl_ref = impl_trait_ref.kind.as_trait_impl()?;
-    let method_generics = {
-        let generics = &fn_ptr.generics;
-        let trait_generics = trait_ref.generics.as_ref();
-        GenericArgs {
-            regions: generics
-                .regions
-                .clone()
-                .split_off(trait_generics.regions.len()),
-            types: generics.types.clone().split_off(trait_generics.types.len()),
-            const_generics: generics
-                .const_generics
-                .clone()
-                .split_off(trait_generics.const_generics.len()),
-            // The `+ 1` is for the self clause.
-            trait_refs: generics
+fn normalize_method_call(ctx: &TransformCtx, fn_ptr: &FnPtr) -> Option<FnPtr> {
+    let impl_trait_ref;
+    let method_generics;
+    let (impl_ref, method_id, method_generics) = match fn_ptr.kind.as_ref() {
+        // Transform `Trait::default_method<X>[impl_trait_for_X]` to a direct method call.
+        FnPtrKind::Fun(fun_id) => {
+            let fun_decl = ctx.translated.fun_decls.get(*fun_id)?;
+            let FunSource::TraitDefault {
+                trait_ref,
+                item_id: method_id,
+            } = &fun_decl.src
+            else {
+                return None;
+            };
+            // If the first trait proof (for the self clause) is a known impl.
+            impl_trait_ref = fn_ptr
+                .generics
                 .trait_refs
+                .get(TraitClauseId::ZERO)?
                 .clone()
-                .split_off(trait_generics.trait_refs.len() + 1),
+                .no_bound_vars();
+            let impl_ref = impl_trait_ref.kind.as_trait_impl()?;
+            method_generics = {
+                let generics = &fn_ptr.generics;
+                let trait_generics = trait_ref.generics.as_ref();
+                GenericArgs {
+                    regions: generics
+                        .regions
+                        .clone()
+                        .split_off(trait_generics.regions.len()),
+                    types: generics.types.clone().split_off(trait_generics.types.len()),
+                    const_generics: generics
+                        .const_generics
+                        .clone()
+                        .split_off(trait_generics.const_generics.len()),
+                    // The `+ 1` is for the self clause.
+                    trait_refs: generics
+                        .trait_refs
+                        .clone()
+                        .split_off(trait_generics.trait_refs.len() + 1),
+                }
+            };
+            (impl_ref, method_id, &method_generics)
+        }
+        // Transform `impl_trait_for_X::method` to a direct method call.
+        FnPtrKind::Trait(trait_ref, method_id) => {
+            let TraitRefKind::TraitImpl(impl_ref) = &trait_ref.kind else {
+                return None;
+            };
+            (impl_ref, method_id, fn_ptr.generics.as_ref())
         }
     };
-    normalize_method_call(ctx, impl_ref, method_id, &method_generics)
-}
 
-/// Transform `impl_trait_for_X::method` to a direct method call.
-fn normalize_method_call_on_known_impl(ctx: &TransformCtx, fn_ptr: &FnPtr) -> Option<FnPtr> {
-    let FnPtrKind::Trait(trait_ref, method_id) = fn_ptr.kind.as_ref() else {
-        return None;
-    };
-    let TraitRefKind::TraitImpl(impl_ref) = &trait_ref.kind else {
-        return None;
-    };
-    normalize_method_call(ctx, impl_ref, method_id, &fn_ptr.generics)
-}
-
-fn normalize_method_call(
-    ctx: &TransformCtx,
-    impl_ref: &TraitImplRef,
-    method_id: &TraitMethodId,
-    method_generics: &GenericArgs,
-) -> Option<FnPtr> {
     let trait_impl = &ctx.translated.trait_impls.get(impl_ref.id)?;
     // Find the function declaration corresponding to this impl.
     let bound_fn = trait_impl.methods.get(*method_id)?;
