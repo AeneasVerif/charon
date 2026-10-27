@@ -47,11 +47,25 @@ struct str {
   _0: [u8],
 }
 
-static test_crate::{promoted_const}: MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}] = RawMemory(0x08)
+static test_crate::{promoted_const}: MaybeUninit<[u8; 12usize]>[{built_in impl Sized for [u8; 12usize]}] = RawMemory(0x01, 0x00, 0x00, 0x00, 0x02, --, 0x03, 0x00, 0x04, 0x00, --, --)
 
-static test_crate::{promoted_const#1}: MaybeUninit<[u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}] = RawMemory(0x2a, 0x00, 0x00, 0x00)
+static test_crate::{promoted_const#1}: MaybeUninit<[u8; 3usize]>[{built_in impl Sized for [u8; 3usize]}] = RawMemory(0x05, 0x61, 0x62)
 
-static test_crate::{promoted_const#2}: MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}] = RawMemory(0x0b)
+static test_crate::{promoted_const#2}: MaybeUninit<[u8; 3usize]>[{built_in impl Sized for [u8; 3usize]}] = RawMemory(0x05, 0x61, 0x62)
+
+static test_crate::{promoted_const#3}: MaybeUninit<[u8; 3usize]>[{built_in impl Sized for [u8; 3usize]}] = RawMemory(0x05, 0x61, 0x62)
+
+static test_crate::{promoted_const#4}: MaybeUninit<[u8; 12usize]>[{built_in impl Sized for [u8; 12usize]}] = RawMemory(0x01, 0x00, 0x00, 0x00, 0x02, --, 0x03, 0x00, 0x04, 0x00, --, --)
+
+static test_crate::{promoted_const#5}: MaybeUninit<[u8; 12usize]>[{built_in impl Sized for [u8; 12usize]}] = RawMemory(0x01, 0x00, 0x00, 0x00, 0x02, --, 0x03, 0x00, 0x04, 0x00, --, --)
+
+static test_crate::{promoted_const#6}: MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}] = RawMemory(0x08)
+
+static test_crate::{promoted_const#7}: MaybeUninit<[u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}] = RawMemory(0x2a, 0x00, 0x00, 0x00)
+
+static test_crate::{promoted_const#8}: MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}] = RawMemory(0x09, 0x0a)
+
+static test_crate::{promoted_const#9}: MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}] = RawMemory(0x0b)
 
 // Full name: test_crate::Wrap
 pub struct Wrap<T>
@@ -72,25 +86,31 @@ where
 }
 
 // Full name: test_crate::OUTER
-pub const OUTER: &'static Outer<[u16]>[{built_in impl MetaSized for [u16]}] = &Outer { x: 1u32, w: Wrap { a: 2u8, b: [3u16, 4u16] } } with_metadata(2usize)
+pub const OUTER: &'static Outer<[u16]>[{built_in impl MetaSized for [u16]}] = unsize_cast<&'_ Outer<[u16]>[{built_in impl MetaSized for [u16]}], 2usize>(&raw const test_crate::{promoted_const})
 
 // Full name: test_crate::WRAP
-const WRAP: &'static Wrap<[u8]>[{built_in impl MetaSized for [u8]}] = &Wrap { a: 5u8, b: [97u8, 98u8] } with_metadata(2usize)
+const WRAP: &'static Wrap<[u8]>[{built_in impl MetaSized for [u8]}] = unsize_cast<&'_ Wrap<[u8]>[{built_in impl MetaSized for [u8]}], 2usize>(&raw const test_crate::{promoted_const#1})
 
 // Full name: test_crate::TUPLE
-pub const TUPLE: &'static (u8, [u8]) = &(5u8, [97u8, 98u8]) with_metadata(2usize)
+pub const TUPLE: &'static (u8, [u8]) = unsize_cast<&'_ (u8, [u8]), 2usize>(&raw const test_crate::{promoted_const#2})
 
 // Full name: test_crate::STR_TAIL
-pub const STR_TAIL: &'static Wrap<str>[{built_in impl MetaSized for str}] = &Wrap { a: 5u8, b: str { _0: [97u8, 98u8] } } with_metadata(2usize)
+pub const STR_TAIL: &'static Wrap<str>[{built_in impl MetaSized for str}] = unsize_cast<&'_ Wrap<str>[{built_in impl MetaSized for str}], 2usize>(&raw const test_crate::{promoted_const#3})
 
 // Full name: test_crate::NESTED
-pub const NESTED: (u8, &'static Outer<[u16]>[{built_in impl MetaSized for [u16]}]) = (7u8, &Outer { x: 1u32, w: Wrap { a: 2u8, b: [3u16, 4u16] } } with_metadata(2usize))
+pub const NESTED: (u8, &'static Outer<[u16]>[{built_in impl MetaSized for [u16]}]) = (7u8, unsize_cast<&'_ Outer<[u16]>[{built_in impl MetaSized for [u16]}], 2usize>(&raw const test_crate::{promoted_const#4}))
 
 // Full name: test_crate::STATIC
-pub static STATIC: &'static Outer<[u16]>[{built_in impl MetaSized for [u16]}] = &Outer { x: 1u32, w: Wrap { a: 2u8, b: [3u16, 4u16] } } with_metadata(2usize)
+pub static STATIC: &'static Outer<[u16]>[{built_in impl MetaSized for [u16]}] = unsize_cast<&'_ Outer<[u16]>[{built_in impl MetaSized for [u16]}], 2usize>(&raw const test_crate::{promoted_const#5})
 
 // Full name: test_crate::INTERIOR
-pub static INTERIOR: &'static Wrap<[u16]>[{built_in impl MetaSized for [u16]}] = &Wrap { a: 2u8, b: [3u16, 4u16] } with_metadata(2usize)
+pub static INTERIOR: &'static Wrap<[u16]>[{built_in impl MetaSized for [u16]}] = unsize_cast<&'_ Wrap<[u16]>[{built_in impl MetaSized for [u16]}], 2usize>(&raw const test_crate::{promoted_const#5}.offset!(4isize))
+
+// Full name: test_crate::SIZED
+pub static SIZED: Outer<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}] = Outer { x: 1u32, w: Wrap { a: 2u8, b: [3u16, 4u16] } }
+
+// Full name: test_crate::SIZED_INTERIOR
+pub static SIZED_INTERIOR: &'static Wrap<[u16]>[{built_in impl MetaSized for [u16]}] = unsize_cast<&'_ Wrap<[u16]>[{built_in impl MetaSized for [u16]}], 2usize>(&raw const SIZED.w)
 
 struct test_crate::Trait::{vtable} {
   size: usize,
@@ -145,38 +165,44 @@ unsafe impl "impl_Sync_for_RawPtr" Sync for RawPtr {
 }
 
 // Full name: test_crate::DYN
-pub static DYN: &'static (dyn Trait + 'static) = unsize_cast<&'_ (dyn Trait), &impl_Trait_for_u8::{vtable}>(cast<*const u8>(&raw const test_crate::{promoted_const}))
+pub static DYN: &'static (dyn Trait + 'static) = unsize_cast<&'_ (dyn Trait), &impl_Trait_for_u8::{vtable}>(cast<*const u8>(&raw const test_crate::{promoted_const#6}))
 
 // Full name: test_crate::FOO
-pub static FOO: &'static (dyn Debug + Sync + 'static) = unsize_cast<&'_ (dyn Debug + Sync), &{impl#8}::{vtable}>(cast<*const i32>(&raw const test_crate::{promoted_const#1}))
+pub static FOO: &'static (dyn Debug + Sync + 'static) = unsize_cast<&'_ (dyn Debug + Sync), &{impl#8}::{vtable}>(cast<*const i32>(&raw const test_crate::{promoted_const#7}))
 
 // Full name: test_crate::DYN_TAIL
-pub static DYN_TAIL: &'static Wrap<(dyn Trait + 'static)>[{built_in impl MetaSized for (dyn Trait + 'static)}] = &Wrap { a: 9u8, b: 10u8 } with_metadata(&impl_Trait_for_u8::{vtable})
+pub static DYN_TAIL: &'static Wrap<(dyn Trait + 'static)>[{built_in impl MetaSized for (dyn Trait + 'static)}] = unsize_cast<&'_ Wrap<(dyn Trait)>[{built_in impl MetaSized for (dyn Trait)}], &impl_Trait_for_u8::{vtable}>(&raw const test_crate::{promoted_const#8})
 
 // Full name: test_crate::RAW_DYN
-pub static RAW_DYN: RawPtr = RawPtr { _0: unsize_cast<*const (dyn Trait), &impl_Trait_for_u8::{vtable}>(cast<*const u8>(&raw const test_crate::{promoted_const#2})) }
+pub static RAW_DYN: RawPtr = RawPtr { _0: unsize_cast<*const (dyn Trait), &impl_Trait_for_u8::{vtable}>(cast<*const u8>(&raw const test_crate::{promoted_const#9})) }
 
 // Full name: test_crate::EMPTY
 pub static EMPTY: &'static [u8] = unsize_cast<&'_ [u8], 0usize>(no-provenance 1)
-
-pub const test_crate::inline_const::{promoted_const}: Outer<[u16]>[{built_in impl MetaSized for [u16]}] = Outer { x: 1u32, w: Wrap { a: 2u8, b: [3u16, 4u16] } } with_metadata(2usize)
 
 // Full name: test_crate::inline_const
 pub fn inline_const()
 {
     let _0: (); // return
     let _1: &'1 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
-    let _2: &'2 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
+    let _2: *const MaybeUninit<[u8; 12usize]>[{built_in impl Sized for [u8; 12usize]}]; // anonymous local
+    let _3: *const Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
+    let _4: &'2 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _2 = &test_crate::inline_const::{promoted_const} with_metadata(const 2usize)
-    _1 = move _2
+    _2 = &raw const test_crate::{promoted_const#4}
+    storage_live(_3)
+    _3 = unsize_cast<*const Outer<[u16]>[{built_in impl MetaSized for [u16]}], 2usize>(move _2)
+    storage_live(_4)
+    _4 = &(*_3) with_metadata(copy _3.metadata)
+    _1 = move _4
     set_type(typeof(_1) <= &'3 Outer<[u16]>[{built_in impl MetaSized for [u16]}])
     storage_dead(_1)
     _0 = ()
+    storage_dead(_4)
+    storage_dead(_3)
     storage_dead(_2)
     return
 }

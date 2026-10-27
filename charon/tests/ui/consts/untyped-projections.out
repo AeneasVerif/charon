@@ -92,7 +92,7 @@ where
 pub static CELL: Sy<UnsafeCell<(u8, u32)>[{built_in impl MetaSized for (u8, u32)}]>[{built_in impl Sized for UnsafeCell<(u8, u32)>[{built_in impl MetaSized for (u8, u32)}]}] = Sy { _0: UnsafeCell { 0: (1u8, 2u32) } }
 
 // Full name: test_crate::CELL_FIELD
-pub static CELL_FIELD: Sy<*mut u32>[{built_in impl Sized for *mut u32}] = Sy { _0: &raw mut CELL._0.0._1 }
+pub static CELL_FIELD: Sy<*mut u32>[{built_in impl Sized for *mut u32}] = Sy { _0: cast<*mut u32>(&raw const CELL._0.0._1) }
 
 
 

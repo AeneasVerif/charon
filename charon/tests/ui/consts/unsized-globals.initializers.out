@@ -242,6 +242,48 @@ pub fn INTERIOR() -> &'static Wrap<[u16]>[{built_in impl MetaSized for [u16]}]
 // Full name: test_crate::INTERIOR
 pub static INTERIOR: &'static Wrap<[u16]>[{built_in impl MetaSized for [u16]}] = INTERIOR()
 
+// Full name: test_crate::SIZED
+pub fn SIZED() -> Outer<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}]
+{
+    let _0: Outer<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}]; // return
+    let _1: Wrap<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}]; // anonymous local
+    let _2: [u16; 2usize]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    storage_live(_2)
+    _2 = [const 3u16, const 4u16]
+    _1 = Wrap { a: const 2u8, b: move _2 }
+    storage_dead(_2)
+    _0 = Outer { x: const 1u32, w: move _1 }
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::SIZED
+pub static SIZED: Outer<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}] = SIZED()
+
+// Full name: test_crate::SIZED_INTERIOR
+pub fn SIZED_INTERIOR() -> &'static Wrap<[u16]>[{built_in impl MetaSized for [u16]}]
+{
+    let _0: &'1 Wrap<[u16]>[{built_in impl MetaSized for [u16]}]; // return
+    let _1: &'3 Wrap<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}]; // anonymous local
+    let _2: &'4 Wrap<[u16; 2usize]>[{built_in impl MetaSized for [u16; 2usize]}]; // anonymous local
+
+    storage_live(_0)
+    storage_live(_1)
+    storage_live(_2)
+    _2 = &SIZED.w
+    _1 = &(*_2)
+    _0 = unsize_cast<&'8 Wrap<[u16]>[{built_in impl MetaSized for [u16]}], 2usize>(move _1)
+    storage_dead(_2)
+    storage_dead(_1)
+    return
+}
+
+// Full name: test_crate::SIZED_INTERIOR
+pub static SIZED_INTERIOR: &'static Wrap<[u16]>[{built_in impl MetaSized for [u16]}] = SIZED_INTERIOR()
+
 struct test_crate::Trait::{vtable} {
   size: usize,
   align: usize,

@@ -7,10 +7,10 @@ use rustc_const_eval::interpret::{InterpResult, MPlaceTy, OpTy, Projectable, int
 impl<'tcx> ConstReader<'tcx> {
     /// Whether this allocation target should be read through a pointer -- it is otherwise
     /// read directly, breaking sharing.
-    fn should_use_pointer(&self, tgt: AllocTarget, in_bounds: bool) -> bool {
+    fn should_use_pointer(&self, tgt: AllocTarget) -> bool {
         match tgt {
             AllocTarget::Global(GlobalRef::Static(_)) => true,
-            AllocTarget::Global(_) => self.config.anon_allocs_as_globals || !in_bounds,
+            AllocTarget::Global(_) => self.config.anon_allocs_as_globals,
             AllocTarget::Fn(_) | AllocTarget::VTable(..) | AllocTarget::TypeId(..) => true,
         }
     }
@@ -81,9 +81,7 @@ impl<'tcx> ConstReader<'tcx> {
         let alloc_target = self.alloc_target(alloc_id);
         // A pointer outside of its allocation (one-past-the-end is fine) needs a wrapping offset.
         let in_bounds = offset <= ecx.get_alloc_info(alloc_id).size;
-        let kind = if let Some(view_ty) = view_ty
-            && self.should_use_pointer(alloc_target, in_bounds)
-        {
+        let kind = if !in_bounds || self.should_use_pointer(alloc_target) {
             let (decl_ty, projections, end_ty) =
                 self.place_in_global(ecx, &place, alloc_target, offset, in_bounds, view_ty)?;
             let target = PtrTarget::Global {
@@ -91,25 +89,31 @@ impl<'tcx> ConstReader<'tcx> {
                 ty: decl_ty,
                 projections,
             };
-            if end_ty == tcx.erase_and_anonymize_regions(view_ty) {
+            let (ty::Ref(.., mutability) | ty::RawPtr(_, mutability)) = *op.layout.ty.kind() else {
+                unreachable!()
+            };
+            // We can't take a `*mut` to an immutable global, so we take a `*const` and cast it.
+            let borrow_mutability = match alloc_target {
+                AllocTarget::Global(global) => global.mutability(tcx).min(mutability),
+                _ => mutability,
+            };
+            if Some(end_ty) == tcx.erase_and_anonymize_regions(view_ty)
+                && borrow_mutability == mutability
+            {
                 ConstKind::Ptr { target, unsize }
             } else {
                 // Point to the place we reached, then cast the pointer to the right type.
                 let ptr = |ty, kind| Box::new(Const { ty, kind });
                 let inner = ptr(
-                    Ty::new_ptr(tcx, end_ty, mutability),
+                    Ty::new_ptr(tcx, end_ty, borrow_mutability),
                     ConstKind::Ptr {
                         target,
                         unsize: None,
                     },
                 );
-                match unsize {
-                    None => ConstKind::PtrCast {
-                        ptr: inner,
-                        unsize: None,
-                    },
+                match (unsize, view_ty) {
                     // Cast to the sized type first, then unsize.
-                    Some(unsize) => ConstKind::PtrCast {
+                    (Some(unsize), Some(view_ty)) => ConstKind::PtrCast {
                         ptr: ptr(
                             Ty::new_ptr(tcx, view_ty, mutability),
                             ConstKind::PtrCast {
@@ -119,10 +123,9 @@ impl<'tcx> ConstReader<'tcx> {
                         ),
                         unsize: Some(unsize),
                     },
+                    (_, _) => ConstKind::PtrCast { ptr: inner, unsize },
                 }
             }
-        } else if !in_bounds {
-            ConstKind::Unsupported("pointer outside of its allocation")
         } else {
             // HACK: fallback to reading the value of the pointee, at type `view_ty`.
             let place = match view_ty {
@@ -147,10 +150,10 @@ impl<'tcx> ConstReader<'tcx> {
         }
     }
 
-    /// Express the place of type `ty` located `offset` bytes into `global` (whose allocation
-    /// `place` points into) as projections from the global. `in_bounds` tells whether that place
-    /// is inside the global (incl. one past its end). Returns the type of the global, the
-    /// projections and the type of the place they reach.
+    /// Express `place`, located `offset` bytes into `global`, as projections from the global, aiming
+    /// for a place of the sized type `ty` if any. `in_bounds` tells whether that place is inside
+    /// the global (incl. one past its end). Returns the type of the global, the projections and the
+    /// type of the place they reach.
     fn place_in_global(
         &self,
         ecx: &CompileTimeInterpCx<'tcx>,
@@ -158,11 +161,14 @@ impl<'tcx> ConstReader<'tcx> {
         global: AllocTarget<'tcx>,
         offset: Size,
         in_bounds: bool,
-        ty: Ty<'tcx>,
+        ty: Option<Ty<'tcx>>,
     ) -> InterpResult<'tcx, (Ty<'tcx>, ProjectionPath<'tcx>, Ty<'tcx>)> {
         let tcx = self.tcx;
         let ty = tcx.erase_and_anonymize_regions(ty);
-        let size = ecx.layout_of(ty)?.size;
+        let size = match ecx.size_and_align_of_val(place)? {
+            Some((size, _)) => size,
+            None => Size::ZERO, // extern type
+        };
         let decl_ty = match global {
             AllocTarget::Global(global) => tcx.erase_and_anonymize_regions(self.global_ty(global)),
             // Other allocations have no contents.
@@ -182,81 +188,87 @@ impl<'tcx> ConstReader<'tcx> {
                 .data_layout
                 .pointer_size()
                 .sign_extend(offset.bytes().into());
-            let proj = offset_projection(offset as i64, ty, size, in_bounds);
-            // An offset reaches a place of the type we want.
-            let end_ty = if proj.is_some() { ty } else { decl_ty };
-            (proj.map(|proj| (proj, ty)).into_iter().collect(), end_ty)
+            let proj = offset_projection(tcx, offset as i64, ty, size, in_bounds);
+            let end_ty = match proj {
+                Some((_, ty)) => ty,
+                None => decl_ty,
+            };
+            (proj.into_iter().collect(), end_ty)
         };
         interp_ok((decl_ty, path, end_ty))
     }
 }
 
 /// The projection to the place located `offset` bytes after the current place, for a pointee of
-/// type `ty` and size `size`, if `offset` isn't zero.
+/// size `size`, if `offset` isn't zero.
 fn offset_projection<'tcx>(
+    tcx: TyCtxt<'tcx>,
     offset: i64,
-    ty: Ty<'tcx>,
+    ty: Option<Ty<'tcx>>,
     size: Size,
     in_bounds: bool,
-) -> Option<Projection<'tcx>> {
+) -> Option<(Projection<'tcx>, Ty<'tcx>)> {
     if offset == 0 {
         return None;
     }
     let size = size.bytes() as i64;
-    let (count, ty) = if size != 0 && offset % size == 0 {
+    let (count, elem_ty) = if let Some(ty) = ty
+        && size != 0
+        && offset % size == 0
+    {
         (offset / size, Some(ty))
     } else {
         (offset, None)
     };
-    Some(Projection::Offset {
+    let proj = Projection::Offset {
         count,
-        ty,
+        ty: elem_ty,
         in_bounds,
-    })
+    };
+    Some((proj, ty.unwrap_or(tcx.types.u8)))
 }
 
-/// Find projections from `place` to the place of type `to_ty` and size `size` located `offset`
-/// bytes after it. There may be many ways of reaching the same destination. Returns the
-/// projections to use, and the type of the final place, which may not match `to_ty`, in which
-/// case a cast is needed.
+/// Find projections from `place` to the place of size `size` located `offset` bytes after it,
+/// aiming for a place of type `to_ty` if any. There may be many ways of reaching the same
+/// destination. Returns the projections to use, and the type of the final place, which may not
+/// match `to_ty`, in which case a cast is needed.
 fn structural_path<'tcx>(
     ecx: &CompileTimeInterpCx<'tcx>,
     mut place: MPlaceTy<'tcx>,
     mut offset: Size,
-    to_ty: Ty<'tcx>,
+    to_ty: Option<Ty<'tcx>>,
     size: Size,
 ) -> (ProjectionPath<'tcx>, Ty<'tcx>) {
     let mut path = vec![];
-    while !(place.layout.ty == to_ty && offset == Size::ZERO) {
+    while !(Some(place.layout.ty) == to_ty && offset == Size::ZERO) {
         let Some((proj, sub, sub_offset)) = find_subplace(ecx, &place, offset, to_ty, size)
             .discard_err()
             .flatten()
         else {
             // Give up: we couldn't find a typed path, so we offset from the place we reached.
-            let proj = offset_projection(offset.bytes() as i64, to_ty, size, true);
-            let end_ty = if proj.is_some() {
-                to_ty
-            } else {
-                place.layout.ty
+            let proj = offset_projection(*ecx.tcx, offset.bytes() as i64, to_ty, size, true);
+            let end_ty = match proj {
+                Some((_, ty)) => ty,
+                None => place.layout.ty,
             };
-            path.extend(proj.map(|proj| (proj, to_ty)));
+            path.extend(proj);
             return (path, end_ty);
         };
         path.push((proj, sub.layout.ty));
         place = sub;
         offset = sub_offset;
     }
-    (path, to_ty)
+    (path, place.layout.ty)
 }
 
-/// Find the subplace of `place` that contains the place of type `to_ty` and size `size` located
-/// `offset` bytes after `place`. Returns the projection to that subplace, the subplace, and the
-/// offset of the target within it.
+/// Find the subplace of `place` that contains the place of size `size` (and type `to_ty`, if
+/// known) located `offset` bytes after `place`. Returns the projection to that subplace, the
+/// subplace, and the offset of the target within it.
 fn find_subplace<'tcx>(
     ecx: &CompileTimeInterpCx<'tcx>,
     place: &MPlaceTy<'tcx>,
     offset: Size,
-    to_ty: Ty<'tcx>,
+    to_ty: Option<Ty<'tcx>>,
     size: Size,
 ) -> InterpResult<'tcx, Option<(Projection<'tcx>, MPlaceTy<'tcx>, Size)>> {
     match place.layout.ty.kind() {
@@ -267,7 +279,8 @@ fn find_subplace<'tcx>(
                 return interp_ok(None);
             };
             // The target may be a subarray.
-            if let ty::Array(target_elem, _) = to_ty.kind()
+            if let Some(to_ty) = to_ty
+                && let ty::Array(target_elem, _) = to_ty.kind()
                 && target_elem == elem
                 && offset.bytes().is_multiple_of(stride)
                 && i + size.bytes() / stride <= len
@@ -292,7 +305,7 @@ fn find_subplace<'tcx>(
         ty::Adt(adt_def, _) if adt_def.is_union() => {
             if offset == Size::ZERO
                 && let Some(i) = (0..place.layout.fields.count())
-                    .find(|&i| place.layout.field(ecx, i).ty == to_ty)
+                    .find(|&i| Some(place.layout.field(ecx, i).ty) == to_ty)
             {
                 let field = FieldIdx::from_usize(i);
                 let sub = ecx.project_field(place, field)?;

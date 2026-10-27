@@ -42,7 +42,7 @@ extern opaque type Opaque
 static X: u8 = 0u8
 
 // Full name: test_crate::EXTERN
-static EXTERN: test_crate::Sync<*const Opaque>[{built_in impl Sized for *const Opaque}] = test_crate::Sync { _0: &raw const Opaque(Unhandled constant type) }
+static EXTERN: test_crate::Sync<*const Opaque>[{built_in impl Sized for *const Opaque}] = test_crate::Sync { _0: cast<*const Opaque>(&raw const X) }
 
 // Full name: test_crate::EXTERN_NO_PROVENANCE
 static EXTERN_NO_PROVENANCE: test_crate::Sync<*const Opaque>[{built_in impl Sized for *const Opaque}] = test_crate::Sync { _0: no-provenance 8 }
