@@ -1,6 +1,5 @@
 //@ revisions=values,initializers
 //@[values] charon-args=--consts=values
-//@[values] known-failure
 //@[initializers] charon-args=--consts=initializers
 
 use std::fmt::Debug;

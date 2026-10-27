@@ -23,29 +23,11 @@ impl<'tcx> ConstReader<'tcx> {
         op: &OpTy<'tcx>,
     ) -> InterpResult<'tcx, Const<'tcx>> {
         let tcx = self.tcx;
-        // Make sure we only read through if it's not dangling!
-        let pointee = ecx.deref_pointer(op).discard_err().and_then(|place| {
-            let (alloc_id, offset, _) = ecx.ptr_get_alloc_id(place.ptr(), 0).discard_err()?;
-            Some((place, alloc_id, offset))
-        });
-        let Some((place, alloc_id, offset)) = pointee else {
-            // Invalid pointer; try reading it as a raw address
-            let int = ecx.read_scalar(op)?.to_scalar_int()?;
-            let kind = ConstKind::PtrNoProvenance(int.to_uint(int.size()));
-            return interp_ok(Const {
-                ty: op.layout.ty,
-                kind,
-            });
+        let ptr_ty = op.layout.ty;
+        let (ty::Ref(.., mutability) | ty::RawPtr(_, mutability)) = *ptr_ty.kind() else {
+            unreachable!("not a pointer type: {ptr_ty:?}")
         };
-        // A pointer into the allocation of a `TypeId` can only be expressed as bytes.
-        if let AllocTarget::TypeId(_) = self.alloc_target(alloc_id) {
-            let kind = ConstKind::Memory(self.read_raw_bytes(ecx, op)?);
-            return interp_ok(Const {
-                ty: op.layout.ty,
-                kind,
-            });
-        }
-
+        let place = ecx.deref_pointer(op)?;
         let ty = place.layout.ty;
         let unsize = if place.meta().has_meta() {
             let tail = tcx.struct_tail_for_codegen(ty, self.typing_env);
@@ -59,6 +41,42 @@ impl<'tcx> ConstReader<'tcx> {
             None => place.layout.is_sized().then_some(ty),
             Some(unsize) => self.is_viewed_unsized_from(ty).then_some(unsize.from),
         };
+
+        // A pointer without provenance -- handle it separately to avoid ICEs.
+        if let (None, addr) = place.ptr().into_raw_parts() {
+            let addr = ConstKind::PtrNoProvenance(addr.bytes().into());
+            let kind = match (unsize, view_ty) {
+                (None, _) => match ptr_ty.kind() {
+                    ty::TyKind::RawPtr(..) => addr,
+                    ty::TyKind::Ref(..) => ConstKind::PtrCast {
+                        ptr: Box::new(Const {
+                            ty: Ty::new_ptr(tcx, ty, mutability),
+                            kind: addr,
+                        }),
+                        unsize: None,
+                    },
+                    _ => unreachable!(),
+                },
+                // Unsize the thin pointer with the metadata.
+                (Some(unsize), Some(view_ty)) => ConstKind::PtrCast {
+                    ptr: Box::new(Const {
+                        ty: Ty::new_ptr(tcx, view_ty, mutability),
+                        kind: addr,
+                    }),
+                    unsize: Some(unsize),
+                },
+                // We don't have a sized type to unsize from, so we encode the pointer as bytes.
+                (Some(_), None) => ConstKind::Memory(self.read_raw_bytes(ecx, op)?),
+            };
+            return interp_ok(Const { ty: ptr_ty, kind });
+        }
+
+        let (alloc_id, offset, _) = ecx.ptr_get_alloc_id(place.ptr(), 0)?;
+        // A pointer into the allocation of a `TypeId` can only be expressed as bytes.
+        if let AllocTarget::TypeId(_) = self.alloc_target(alloc_id) {
+            let kind = ConstKind::Memory(self.read_raw_bytes(ecx, op)?);
+            return interp_ok(Const { ty: ptr_ty, kind });
+        }
 
         let alloc_target = self.alloc_target(alloc_id);
         // A pointer outside of its allocation (one-past-the-end is fine) needs a wrapping offset.
@@ -77,10 +95,6 @@ impl<'tcx> ConstReader<'tcx> {
                 ConstKind::Ptr { target, unsize }
             } else {
                 // Point to the place we reached, then cast the pointer to the right type.
-                let (ty::Ref(.., mutability) | ty::RawPtr(_, mutability)) = *op.layout.ty.kind()
-                else {
-                    unreachable!()
-                };
                 let ptr = |ty, kind| Box::new(Const { ty, kind });
                 let inner = ptr(
                     Ty::new_ptr(tcx, end_ty, mutability),
@@ -120,10 +134,7 @@ impl<'tcx> ConstReader<'tcx> {
             let target = PtrTarget::Inline(Box::new(self.read_op(ecx, place.into())?));
             ConstKind::Ptr { target, unsize }
         };
-        interp_ok(Const {
-            ty: op.layout.ty,
-            kind,
-        })
+        interp_ok(Const { ty: ptr_ty, kind })
     }
 
     /// Whether we view a value of the unsized type `ty` at the sized type it was unsized from: a
