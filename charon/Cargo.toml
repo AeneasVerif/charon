@@ -11,6 +11,7 @@ members = [
 authors = [
     "Son Ho <hosonmarc@gmail.com>",
     "Guillaume Boisseau <nadrieril+git@gmail.com>",
+    "Opale Sjöstedt <opale.sjostedt@gmail.com>",
     "hax Authors",
 ]
 license = "Apache-2.0"
