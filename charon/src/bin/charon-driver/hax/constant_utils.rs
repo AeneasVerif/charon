@@ -152,8 +152,6 @@ pub enum ConstantByteProvenance<'tcx> {
     TypeId(Ty<'tcx>),
     /// A pointer to the vtable of this trait implementation.
     VTable(TraitProof<'tcx>),
-    /// A pointer to anything else (an anonymous allocation, a vtable...).
-    Unknown,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

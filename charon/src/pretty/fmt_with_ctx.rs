@@ -1959,7 +1959,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for GlobalProvenance {
             GlobalProvenance::Global(g) => g.fmt_with_ctx(ctx, f),
             GlobalProvenance::Function(func, _) => func.fmt_with_ctx(ctx, f),
             GlobalProvenance::TypeId(ty) => write!(f, "TypeId({})", ty.with_ctx(ctx)),
-            GlobalProvenance::Unknown => write!(f, "?"),
         }
     }
 }

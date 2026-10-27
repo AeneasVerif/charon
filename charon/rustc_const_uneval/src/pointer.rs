@@ -2,20 +2,15 @@
 use crate::*;
 use rustc_abi::{FieldIdx, FieldsShape, Size};
 use rustc_const_eval::const_eval::CompileTimeInterpCx;
-use rustc_const_eval::interpret::{AllocId, InterpResult, MPlaceTy, OpTy, Projectable, interp_ok};
+use rustc_const_eval::interpret::{InterpResult, MPlaceTy, OpTy, Projectable, interp_ok};
 
 impl<'tcx> ConstReader<'tcx> {
     /// Whether this allocation target should be read through a pointer -- it is otherwise
     /// read directly, breaking sharing.
-    fn should_use_pointer(&self, tgt: AllocTarget, in_bounds: bool, alloc_id: AllocId) -> bool {
+    fn should_use_pointer(&self, tgt: AllocTarget, in_bounds: bool) -> bool {
         match tgt {
-            AllocTarget::Global(global) => {
-                self.is_named_global(global)
-                    // We can't read the pointee of a pointer outside of its allocation, so we
-                    // name the allocation even if we otherwise inline them.
-                    ||  !in_bounds
-                        && matches!(self.tcx.global_alloc(alloc_id), interpret::GlobalAlloc::Memory(_))
-            }
+            AllocTarget::Global(GlobalRef::Static(_)) => true,
+            AllocTarget::Global(_) => self.config.anon_allocs_as_globals || !in_bounds,
             AllocTarget::Fn(_) | AllocTarget::VTable(..) | AllocTarget::TypeId(..) => true,
         }
     }
@@ -69,7 +64,7 @@ impl<'tcx> ConstReader<'tcx> {
         // A pointer outside of its allocation (one-past-the-end is fine) needs a wrapping offset.
         let in_bounds = offset <= ecx.get_alloc_info(alloc_id).size;
         let kind = if let Some(view_ty) = view_ty
-            && self.should_use_pointer(alloc_target, in_bounds, alloc_id)
+            && self.should_use_pointer(alloc_target, in_bounds)
         {
             let (decl_ty, projections, end_ty) =
                 self.place_in_global(ecx, &place, alloc_target, offset, in_bounds, view_ty)?;

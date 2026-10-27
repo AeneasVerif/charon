@@ -101,10 +101,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     {
                         prov.clone()
                     }
-                    _ => GlobalProvenance::Unknown,
+                    _ => raise_error!(self, span, "vtable without a global"),
                 }
             }
-            hax::ConstantByteProvenance::Unknown => GlobalProvenance::Unknown,
         })
     }
 

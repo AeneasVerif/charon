@@ -16,7 +16,7 @@ mod memory;
 mod pointer;
 mod valtree;
 
-pub use eval::promoted_body;
+pub use eval::{alloc_as_untyped_ty, promoted_body};
 
 use rustc_abi::{ExternAbi, FieldIdx, Size, VariantIdx};
 use rustc_hir::def_id::DefId;

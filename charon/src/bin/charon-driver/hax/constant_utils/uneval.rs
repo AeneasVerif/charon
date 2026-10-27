@@ -114,7 +114,7 @@ fn const_reader<'tcx, S: UnderOwnerState<'tcx>>(s: &S) -> ConstReader<'tcx> {
     }
 }
 
-/// The global standing for `self`, which must be named (see `ConstReader::is_named_global`).
+/// The global standing for `self`.
 impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ItemRef<'tcx>> for GlobalRef {
     fn sinto(&self, s: &S) -> ItemRef<'tcx> {
         match *self {
@@ -164,19 +164,16 @@ impl<'tcx, S: UnderOwnerState<'tcx>> SInto<S, ConstantByteProvenance<'tcx>> for 
                 let fn_ptr_ty = target.fn_ptr_ty(s.base().tcx, s.typing_env());
                 ConstantByteProvenance::Function(target.sinto(s), fn_ptr_ty.sinto(s))
             }
-            AllocTarget::Global(global) if const_reader(s).is_named_global(global) => {
-                ConstantByteProvenance::Global(global.sinto(s))
-            }
+            AllocTarget::Global(global) => ConstantByteProvenance::Global(global.sinto(s)),
             AllocTarget::TypeId(ty) => ConstantByteProvenance::TypeId(ty.sinto(s)),
             AllocTarget::VTable(ty, preds) => {
                 let tcx = s.base().tcx;
                 let dyn_ty = ty::Ty::new_dynamic(tcx, preds, tcx.lifetimes.re_erased);
                 match unsizing_metadata(s, ty, dyn_ty) {
                     UnsizingMetadata::DirectVTable(proof) => ConstantByteProvenance::VTable(proof),
-                    _ => ConstantByteProvenance::Unknown,
+                    metadata => unreachable!("unexpected vtable metadata {metadata:?}"),
                 }
             }
-            AllocTarget::Global(_) => ConstantByteProvenance::Unknown,
         }
     }
 }

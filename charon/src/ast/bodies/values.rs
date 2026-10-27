@@ -232,7 +232,6 @@ pub enum GlobalProvenance {
     /// worth of provenance, regardless of the platform's pointer size, so [`Byte::Provenance`]'s byte index can
     /// go up to 16! In other words, the bytes of a full `TypeId` are `Provenance(TypeId(ty), 0, 0..16)`.
     TypeId(Ty),
-    Unknown,
 }
 
 /// A byte, in the MiniRust sense: it can either be uninitialized, a concrete u8 value,

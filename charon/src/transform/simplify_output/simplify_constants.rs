@@ -125,10 +125,6 @@ fn transform_constant_expr(
                     let kind = ConstantExprKind::Opaque("pointer into a `TypeId`".into());
                     return Operand::Const(ConstantExpr::new(kind, val.ty().clone()));
                 }
-                GlobalPlaceKind::Global(GlobalProvenance::Unknown) => {
-                    let kind = ConstantExprKind::Opaque("pointer with unknown provenance".into());
-                    return Operand::Const(ConstantExpr::new(kind, val.ty().clone()));
-                }
                 GlobalPlaceKind::Projection(..) => unreachable!(),
                 // A local can't be unsized, so we put it in a new global
                 GlobalPlaceKind::Value(bval) if !bval_is_sized => {

@@ -527,7 +527,6 @@ and global_provenance =
           pointer size, so [[Byte::Provenance]]'s byte index can go up to 16! In
           other words, the bytes of a full [TypeId] are
           [Provenance(TypeId(ty), 0, 0..16)]. *)
-  | ProvUnknown
 
 (** Hash-consed data structure: a reference-counted wrapper that guarantees that
     two equal value will be stored at the same address. This makes it possible
