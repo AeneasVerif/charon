@@ -34,13 +34,14 @@ use charon_lib::{
     export::{CrateData, multi_target},
     formatter::IntoFormatter,
     logger,
-    options::{CHARON_ARGS, CliOpts, SerializationFormat},
+    options::{CHARON_ARGS, CliOpts, SerializationFormat, selected_crate_var},
     pretty::FmtWithCtx,
     utils::{arg_value, arg_values},
 };
 use clap::Parser;
 use cli::{Charon, Cli};
 use itertools::Itertools;
+use serde::Deserialize;
 use std::{env, path::PathBuf, process::ExitStatus};
 use toolchain::{CHARON_SYSROOT_VAR, setup_miri_sysroot, toolchain_path, toolchain_version};
 
@@ -213,14 +214,7 @@ fn translate_multi_target(
 
 fn translate_with_cargo(options: CliOpts, cargo_args: Vec<String>) -> anyhow::Result<ExitStatus> {
     ensure_rustup();
-    let mut cmd = toolchain::in_toolchain("cargo")?;
-    cmd.env("RUSTC_WRAPPER", toolchain::driver_path());
-    // We pass a random value to prevent cargo from considering a charon run cacheable.
-    cmd.env("RUSTC_WORKSPACE_WRAPPER", fresh_fingerprint());
-    cmd.env("CHARON_USING_CARGO", "1");
-    cmd.env_remove("CARGO_PRIMARY_PACKAGE");
-    cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
-    cmd.arg("build");
+    let mut build_args = vec![];
     let target = match arg_values(&cargo_args, "--target").collect_vec().as_slice() {
         [target] => target.to_string(),
         // We resolve a single sysroot for all the crates we build.
@@ -232,21 +226,80 @@ fn translate_with_cargo(options: CliOpts, cargo_args: Vec<String>) -> anyhow::Re
             // Make sure the build target is explicitly set. This is needed to detect which crates
             // are proc-macro/build-script in `charon-driver`.
             let host = get_rustc_version()?.host;
-            cmd.arg("--target");
-            cmd.arg(&host);
+            build_args.push("--target".to_owned());
+            build_args.push(host.clone());
             host
         }
     };
+    build_args.extend(cargo_args);
+
+    let mut cmd = toolchain::in_toolchain("cargo")?;
+    cmd.env("RUSTC_WRAPPER", toolchain::driver_path());
+    cmd.env_remove("RUSTC_WORKSPACE_WRAPPER");
+    cmd.env("CHARON_USING_CARGO", "1");
+    cmd.env_remove("CARGO_PRIMARY_PACKAGE");
+    cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
+    // Cargo skips the crates it considers fresh, and charon would emit nothing for a skipped
+    // crate. `charon-driver` records `selected_crate_var` of each target crate as an env
+    // dependency, and cargo reruns a crate when the value of such a variable changes. We give a
+    // fresh value to the variables of the crates this build selects only, so cargo reruns exactly
+    // them and keeps every dependency cached.
+    let nonce = fresh_nonce();
+    for crate_name in selected_crates(&build_args)? {
+        cmd.env(selected_crate_var(&crate_name), &nonce);
+    }
+    cmd.arg("build");
     if let Some(sysroot) = miri_sysroot(options.sysroot.as_deref(), &target) {
         cmd.env(CHARON_SYSROOT_VAR, sysroot);
     }
-    cmd.args(cargo_args);
+    cmd.args(build_args);
     trace!("running {cmd:?}");
     Ok(cmd
         .spawn()
         .expect("could not run cargo")
         .wait()
         .expect("failed to wait for cargo?"))
+}
+
+/// Returns the names of the crates that `cargo build <build_args>` selects, i.e. the root units of
+/// its unit graph.
+fn selected_crates(build_args: &[String]) -> anyhow::Result<Vec<String>> {
+    /// The parts of cargo's `--unit-graph` output we use.
+    #[derive(Deserialize)]
+    struct UnitGraph {
+        units: Vec<Unit>,
+        roots: Vec<usize>,
+    }
+    #[derive(Deserialize)]
+    struct Unit {
+        target: UnitTarget,
+    }
+    #[derive(Deserialize)]
+    struct UnitTarget {
+        name: String,
+    }
+
+    let mut cmd = toolchain::in_toolchain("cargo")?;
+    cmd.env_remove("RUSTC_WRAPPER");
+    cmd.env_remove("RUSTC_WORKSPACE_WRAPPER");
+    cmd.args(["build", "--unit-graph", "-Z", "unstable-options"]);
+    cmd.args(build_args);
+    trace!("running {cmd:?}");
+    let output = cmd.output().context("could not run cargo")?;
+    if !output.status.success() {
+        anyhow::bail!(
+            "`cargo build --unit-graph` failed with {}:\n{}",
+            output.status,
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+    let graph: UnitGraph = serde_json::from_slice(&output.stdout)
+        .context("could not parse the output of `cargo build --unit-graph`")?;
+    Ok(graph
+        .roots
+        .into_iter()
+        .map(|root| graph.units[root].target.name.replace('-', "_"))
+        .collect())
 }
 
 fn translate_without_cargo(mut options: CliOpts) -> anyhow::Result<ExitStatus> {
@@ -293,12 +346,12 @@ fn get_rustc_version() -> anyhow::Result<rustc_version::VersionMeta> {
     Ok(rustc_version)
 }
 
-/// A sufficiently unique string used to force cargo to re-run charon each time we call it.
-fn fresh_fingerprint() -> String {
+/// A sufficiently unique string, different for each charon run.
+fn fresh_nonce() -> String {
     let nanos = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map_or(0, |duration| duration.as_nanos());
-    format!("charon-dont-cache-this-{}-{nanos}", std::process::id())
+    format!("{}-{nanos}", std::process::id())
 }
 
 fn ensure_rustup() {

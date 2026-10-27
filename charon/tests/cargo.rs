@@ -6,7 +6,13 @@ use charon_lib::{ast::FileName, export::CrateData, options::SerializationFormat}
 use itertools::Itertools;
 use libtest_mimic::Trial;
 use regex::Regex;
-use std::{error::Error, ffi::OsStr, path::PathBuf, process::Command, sync::LazyLock};
+use std::{
+    error::Error,
+    ffi::OsStr,
+    path::{Path, PathBuf},
+    process::Command,
+    sync::LazyLock,
+};
 
 use util::compare_or_overwrite;
 mod util;
@@ -102,6 +108,51 @@ fn perform_test(test_case: &Case) -> anyhow::Result<()> {
     }
     compare_or_overwrite(output, &test_case.output_file)?;
 
+    Ok(())
+}
+
+/// Check that `charon cargo` reruns the selected crate on every run, keeps its dependencies
+/// cached, and translates a crate that was previously built only as a dependency.
+fn workspace_caching(dir: &Path) -> anyhow::Result<()> {
+    let tmp = tempfile::tempdir()?;
+    // A dedicated target dir, so that we don't race the `workspace` test.
+    let target_dir = tmp.path().join("target");
+    // Translate `krate` with `charon cargo`; returns the output file and cargo's stderr.
+    let run = |step: &str, krate: &str| -> anyhow::Result<(PathBuf, String)> {
+        let dest_file = tmp.path().join(format!("{krate}.llbc"));
+        let output = Command::cargo_bin("charon")?
+            .current_dir(dir)
+            .env("CARGO_TARGET_DIR", &target_dir)
+            .arg("cargo")
+            .arg("--dest-file")
+            .arg(&dest_file)
+            .args(["--", "-p", krate])
+            .output()?;
+        let stderr = String::from_utf8(output.stderr)?;
+        ensure!(
+            output.status.success(),
+            "step {step}: translating `{krate}` failed:\n{stderr}"
+        );
+        ensure!(
+            dest_file.exists(),
+            "step {step}: `{}` was not written:\n{stderr}",
+            dest_file.display()
+        );
+        Ok((dest_file, stderr))
+    };
+
+    let (crate2_file, stderr) = run("a", "crate2")?;
+    ensure!(
+        stderr.contains("Compiling crate1"),
+        "step a: expected cargo to build `crate1`:\n{stderr}"
+    );
+    std::fs::remove_file(&crate2_file)?;
+    let (_, stderr) = run("b", "crate2")?;
+    ensure!(
+        !stderr.contains("Compiling crate1"),
+        "step b: expected `crate1` to stay cached:\n{stderr}"
+    );
+    run("c", "crate1")?;
     Ok(())
 }
 
@@ -209,6 +260,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             &["--package=crate2".to_owned()],
             Success,
         ),
+        {
+            let dir = root.join("workspace");
+            Trial::test("workspace-caching", move || {
+                workspace_caching(&dir).map_err(|err| err.into())
+            })
+        },
         mktest(
             "issue-396-lib-bin",
             root.join("issue-396-lib-bin"),
