@@ -30,6 +30,9 @@ impl UllbcPass for Transform {
             })
             .filter_map(|(loc, st)| {
                 let (dest, rvalue) = &st.kind.as_assign()?;
+                let local = dest
+                    .as_local()
+                    .filter(|l| !body.locals.is_return_or_arg(*l))?;
                 let global = match rvalue {
                     // `Ref` for non-mut statics, `Ptr` for `static mut` and extern statics
                     Rvalue::Use(Operand::Const(c), _)
@@ -56,7 +59,7 @@ impl UllbcPass for Transform {
                     uses: 0,
                     derefs: 0,
                 };
-                Some((dest.as_local()?, info))
+                Some((local, info))
             })
             .collect();
         if statics.is_empty() {

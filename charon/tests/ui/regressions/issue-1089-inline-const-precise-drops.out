@@ -31,17 +31,9 @@ where
     TraitClause1: (T: Destruct),
 {
     let _0: usize; // return
-    let _1: usize; // anonymous local
-    let _2: usize; // anonymous local
 
-    storage_live(_1)
-    storage_live(_2)
-    _2 = const 42usize
-    _1 = move _2
     storage_live(_0)
-    _0 = move _1
-    storage_dead(_2)
-    storage_dead(_1)
+    _0 = const 42usize
     return
 }
 

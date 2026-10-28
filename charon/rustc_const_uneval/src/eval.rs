@@ -3,6 +3,7 @@
 use crate::*;
 use rustc_attr_ir::LangItem;
 use rustc_const_eval::const_eval;
+use rustc_middle::ty::TypeVisitableExt;
 use rustc_span::Span;
 use rustc_trait_elaboration::normalize;
 
@@ -75,8 +76,8 @@ impl<'tcx> ConstReader<'tcx> {
     ///
     /// Fails with:
     /// - [`ReadError::NotEvaluable`] if rustc can't evaluate the constant: if it is generic (and
-    ///   not trivial, i.e. its value isn't stored directly by rustc), if its evaluation fails, if
-    ///   it's an extern static, or if it's a promoted read in [`ReadMode::Structured`];
+    ///   not trivial, i.e. its value isn't stored directly by rustc), if its evaluation fails, or
+    ///   if it's an extern static;
     /// - [`ReadError::NotLoadable`] if the interpreter can't load the evaluated value;
     /// - [`ReadError::Read`] if reading the loaded value fails.
     pub fn read(
@@ -85,7 +86,7 @@ impl<'tcx> ConstReader<'tcx> {
         src: ConstSource<'tcx>,
         mode: ReadMode,
     ) -> Result<Const<'tcx>, ReadError<'tcx>> {
-        match self.evaluate(span, src, mode)? {
+        match self.evaluate(span, src)? {
             Evaluated::ValTree(value) if mode == ReadMode::Structured => {
                 self.read_valtree(span, value)
             }
@@ -103,39 +104,22 @@ impl<'tcx> ConstReader<'tcx> {
         &self,
         span: Span,
         src: ConstSource<'tcx>,
-        mode: ReadMode,
     ) -> Result<Evaluated<'tcx>, ReadError<'tcx>> {
         let tcx = self.tcx;
         let instantiate = |ty, args| ty::EarlyBinder::bind(tcx, ty).instantiate(tcx, args);
         Ok(match src {
             ConstSource::Item { def_id, args } => {
-                let evaluated = match mode {
-                    ReadMode::Structured => {
-                        let kind = ty::AliasConstKind::new_from_def_id(
-                            tcx,
-                            def_id,
-                            ty::AliasConstInherentArgsKind::Impl,
-                        );
-                        let uv = ty::AliasConst::new(tcx, kind, args);
-                        if let Some(value) = self.eval_to_valtree(span, uv) {
-                            return Ok(Evaluated::ValTree(value));
-                        }
-                        None
-                    }
-                    ReadMode::Bytes => {
-                        let uv = mir::UnevaluatedConst {
-                            def: def_id,
-                            args,
-                            promoted: None,
-                        };
-                        let ty = tcx
-                            .type_of(def_id)
-                            .instantiate_identity()
-                            .skip_normalization();
-                        let val = tcx.const_eval_resolve(self.typing_env, uv, span).ok();
-                        val.map(|val| (val, ty))
-                    }
+                let uv = mir::UnevaluatedConst {
+                    def: def_id,
+                    args,
+                    promoted: None,
                 };
+                let ty = tcx
+                    .type_of(def_id)
+                    .instantiate_identity()
+                    .skip_normalization();
+                let val = tcx.const_eval_resolve(self.typing_env, uv, span).ok();
+                let evaluated = val.map(|val| (val, ty));
                 // Otherwise, we can still read the value of "trivial" consts, which rustc
                 // stores directly. This works even for generic consts.
                 let (val, ty) = evaluated
@@ -148,11 +132,6 @@ impl<'tcx> ConstReader<'tcx> {
                 args,
                 promoted,
             } => {
-                // We can't go through valtrees for promoteds as we can't name them as type-level
-                // constants, so we only read them as bytes.
-                if mode == ReadMode::Structured {
-                    return Err(ReadError::NotEvaluable);
-                }
                 let uv = mir::UnevaluatedConst {
                     def: def_id,
                     args,
@@ -189,6 +168,22 @@ impl<'tcx> ConstReader<'tcx> {
                 };
                 Evaluated::Value(val, self.global_ty(global))
             }
+            // Evaluate these only if they represent anon consts that don't show up in the type
+            // system (e.g. through `adt_const_params`).
+            ConstSource::TyConst(uv)
+                if let Some(def_id) = uv.kind.opt_def_id()
+                    && let rustc_hir::def::DefKind::AnonConst = tcx.def_kind(def_id)
+                    && let ty::AnonConstKind::NonTypeSystemInline = tcx.anon_const_kind(def_id)
+                    && !uv.has_opaque_types() =>
+            {
+                return self.evaluate(
+                    span,
+                    ConstSource::Item {
+                        def_id,
+                        args: uv.args,
+                    },
+                );
+            }
             ConstSource::TyConst(uv) => {
                 let value = self.eval_to_valtree(span, uv);
                 Evaluated::ValTree(value.ok_or(ReadError::NotEvaluable)?)
@@ -201,7 +196,6 @@ impl<'tcx> ConstReader<'tcx> {
     /// Evaluate a type-level constant to a valtree. Returns `None` if the constant is generic, if
     /// its evaluation fails, or if its type has no valtree representation.
     fn eval_to_valtree(&self, span: Span, uv: ty::AliasConst<'tcx>) -> Option<ty::Value<'tcx>> {
-        use ty::TypeVisitableExt;
         let tcx = self.tcx;
         if uv.has_non_region_param() {
             return None;
