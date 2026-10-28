@@ -386,8 +386,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     impl_ref,
                     trait_ref,
                     item_id,
-                    // This item is defined in the impl, including when the trait item has
-                    // no default. Copies of defaults are labeled by the duplication pass.
                     reuses_default: false,
                 }
             }

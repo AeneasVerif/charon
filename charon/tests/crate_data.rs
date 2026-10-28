@@ -1215,8 +1215,8 @@ fn reuses_default_only_for_default_copies() -> anyhow::Result<()> {
     let mut seen = 0;
     for f in crate_data.fun_decls.iter() {
         if let FunSource::TraitImpl { reuses_default, .. } = &f.src {
-            // Every method here is written out in its impl block: `sides` implements a
-            // required method and `Triangle::describe` overrides a default.
+            // We don't pass `--duplicate-defaulted-methods`, so no copy of `describe` is
+            // generated for `Square`.
             assert!(
                 !reuses_default,
                 "{} is written in its impl but is labelled `reuses_default`",
