@@ -212,9 +212,11 @@ fn translate_multi_target(
     Ok(ExitStatus::default())
 }
 
-fn translate_with_cargo(options: CliOpts, cargo_args: Vec<String>) -> anyhow::Result<ExitStatus> {
+fn translate_with_cargo(
+    options: CliOpts,
+    mut cargo_args: Vec<String>,
+) -> anyhow::Result<ExitStatus> {
     ensure_rustup();
-    let mut build_args = vec![];
     let target = match arg_values(&cargo_args, "--target").collect_vec().as_slice() {
         [target] => target.to_string(),
         // We resolve a single sysroot for all the crates we build.
@@ -226,12 +228,11 @@ fn translate_with_cargo(options: CliOpts, cargo_args: Vec<String>) -> anyhow::Re
             // Make sure the build target is explicitly set. This is needed to detect which crates
             // are proc-macro/build-script in `charon-driver`.
             let host = get_rustc_version()?.host;
-            build_args.push("--target".to_owned());
-            build_args.push(host.clone());
+            cargo_args.push("--target".to_owned());
+            cargo_args.push(host.clone());
             host
         }
     };
-    build_args.extend(cargo_args);
 
     let mut cmd = toolchain::in_toolchain("cargo")?;
     cmd.env("RUSTC_WRAPPER", toolchain::driver_path());
@@ -245,14 +246,14 @@ fn translate_with_cargo(options: CliOpts, cargo_args: Vec<String>) -> anyhow::Re
     // fresh value to the variables of the crates this build selects only, so cargo reruns exactly
     // them and keeps every dependency cached.
     let nonce = fresh_nonce();
-    for crate_name in selected_crates(&build_args)? {
+    for crate_name in selected_crates(&cargo_args)? {
         cmd.env(selected_crate_var(&crate_name), &nonce);
     }
     cmd.arg("build");
     if let Some(sysroot) = miri_sysroot(options.sysroot.as_deref(), &target) {
         cmd.env(CHARON_SYSROOT_VAR, sysroot);
     }
-    cmd.args(build_args);
+    cmd.args(cargo_args);
     trace!("running {cmd:?}");
     Ok(cmd
         .spawn()
