@@ -370,7 +370,6 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             hax::AssocItemContainer::TraitImplContainer {
                 impl_,
                 implemented_trait_ref,
-                overrides_default,
                 ..
             } => {
                 let impl_ref =
@@ -387,7 +386,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     impl_ref,
                     trait_ref,
                     item_id,
-                    reuses_default: !overrides_default,
+                    reuses_default: false,
                 }
             }
             // This method is the *declaration* of a trait item
