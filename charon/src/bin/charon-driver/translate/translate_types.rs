@@ -652,10 +652,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         );
         let hax_ty: hax::Ty<'tcx> = self.t_ctx.catch_sinto(hax_state, span, &tail_ty)?;
 
-        // If we're hiding `Sized`, let's consider everything to be sized.
-        let everything_is_sized = self.t_ctx.options.hide_marker_traits;
         let ret = match tail_ty.kind() {
-            _ if everything_is_sized || tail_ty.is_sized(tcx, ty_env) => PtrMetadata::None,
+            _ if tail_ty.is_sized(tcx, ty_env) => PtrMetadata::None,
             ty::Str | ty::Slice(..) => PtrMetadata::Length,
             ty::Dynamic(..) => match hax_ty.kind() {
                 hax::TyKind::DynTrait(dyn_trait) => {
@@ -687,6 +685,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
                 _ => unreachable!("Unexpected hax type {hax_ty:?} for dynamic type: {ty:?}"),
             },
+            // If we're hiding `Sized`, let's consider every param to be sized.
+            ty::Param(..) if self.t_ctx.options.hide_marker_traits => PtrMetadata::None,
             ty::Param(..) => PtrMetadata::InheritFrom(self.translate_ty(span, &hax_ty)?),
             ty::Placeholder(..) | ty::Infer(..) | ty::Bound(..) => {
                 panic!(
