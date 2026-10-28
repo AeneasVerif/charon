@@ -175,8 +175,6 @@ where
     let _4: &'10 str; // anonymous local
     let _5: &'11 str; // anonymous local
     let _6: &'12 str; // anonymous local
-    let _7: &'15 str; // anonymous local
-    let _8: &'14 str; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -185,17 +183,13 @@ where
     match (*self) {
         Foo::A => {
             storage_live(_5)
-            storage_live(_7)
-            _7 = &test_crate::impl_Debug_for_Foo::fmt::{promoted_const} with_metadata(const 1usize)
-            _5 = move _7
+            _5 = &test_crate::impl_Debug_for_Foo::fmt::{promoted_const} with_metadata(const 1usize)
             _4 = &(*_5) with_metadata(copy _5.metadata)
             storage_dead(_5)
         },
         Foo::B => {
             storage_live(_6)
-            storage_live(_8)
-            _8 = &test_crate::impl_Debug_for_Foo::fmt::{promoted_const#1} with_metadata(const 1usize)
-            _6 = move _8
+            _6 = &test_crate::impl_Debug_for_Foo::fmt::{promoted_const#1} with_metadata(const 1usize)
             _4 = &(*_6) with_metadata(copy _6.metadata)
             storage_dead(_6)
         },
@@ -208,8 +202,6 @@ where
     storage_dead(_3)
     storage_dead(f)
     storage_dead(self)
-    storage_dead(_8)
-    storage_dead(_7)
     return
 }
 

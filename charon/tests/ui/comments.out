@@ -796,18 +796,14 @@ fn fool()
 {
     let _0: (); // return
     let _1: &'1 str; // anonymous local
-    let _2: &'2 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    storage_live(_2)
-    _2 = &test_crate::fool::{promoted_const} with_metadata(const 17usize)
-    _1 = move _2
+    _1 = &test_crate::fool::{promoted_const} with_metadata(const 17usize)
     storage_dead(_1)
     // Fooled ya";
     _0 = ()
-    storage_dead(_2)
     return
 }
 

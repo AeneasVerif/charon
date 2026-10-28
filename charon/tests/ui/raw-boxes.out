@@ -191,7 +191,6 @@ fn core::ptr::write_bytes::precondition_check(addr: *const (), align: usize, zer
     let _9: !; // anonymous local
     let _10: Arguments<'3>; // anonymous local
     let _11: &'4 str; // anonymous local
-    let _12: &'5 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -210,9 +209,7 @@ fn core::ptr::write_bytes::precondition_check(addr: *const (), align: usize, zer
         storage_dead(_6)
         storage_dead(_5)
         storage_live(msg)
-        storage_live(_12)
-        _12 = &core::ptr::write_bytes::precondition_check::{promoted_const} with_metadata(const 228usize)
-        msg = move _12
+        msg = &core::ptr::write_bytes::precondition_check::{promoted_const} with_metadata(const 228usize)
         storage_live(_9)
         storage_live(_10)
         storage_live(_11)
@@ -426,7 +423,6 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
     let _5: !; // anonymous local
     let _6: Arguments<'3>; // anonymous local
     let _7: &'4 str; // anonymous local
-    let _8: &'5 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -439,9 +435,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
     } else {
         storage_dead(_3)
         storage_live(msg)
-        storage_live(_8)
-        _8 = &core::mem::alignment::{Alignment}::new_unchecked::precondition_check::{promoted_const} with_metadata(const 198usize)
-        msg = move _8
+        msg = &core::mem::alignment::{Alignment}::new_unchecked::precondition_check::{promoted_const} with_metadata(const 198usize)
         storage_live(_5)
         storage_live(_6)
         storage_live(_7)
@@ -887,7 +881,6 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut 
     let _26: !; // anonymous local
     let _27: Arguments<'3>; // anonymous local
     let _28: &'4 str; // anonymous local
-    let _29: &'5 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -972,9 +965,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut 
     if move _6 {
     } else {
         storage_live(msg)
-        storage_live(_29)
-        _29 = &core::ptr::copy_nonoverlapping::precondition_check::{promoted_const} with_metadata(const 283usize)
-        msg = move _29
+        msg = &core::ptr::copy_nonoverlapping::precondition_check::{promoted_const} with_metadata(const 283usize)
         storage_live(_26)
         storage_live(_27)
         storage_live(_28)
@@ -1858,7 +1849,6 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mu
     let _5: !; // anonymous local
     let _6: Arguments<'3>; // anonymous local
     let _7: &'4 str; // anonymous local
-    let _8: &'5 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1876,9 +1866,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mu
     }
     storage_dead(_3)
     storage_live(msg)
-    storage_live(_8)
-    _8 = &core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check::{promoted_const} with_metadata(const 210usize)
-    msg = move _8
+    msg = &core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check::{promoted_const} with_metadata(const 210usize)
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)

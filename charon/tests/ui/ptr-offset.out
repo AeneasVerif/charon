@@ -222,7 +222,6 @@ fn precondition_check(this: *const (), count: isize, size: usize)
     let _9: !; // anonymous local
     let _10: Arguments<'3>; // anonymous local
     let _11: &'4 str; // anonymous local
-    let _12: &'5 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -240,7 +239,6 @@ fn precondition_check(this: *const (), count: isize, size: usize)
         storage_dead(size)
         storage_dead(count)
         storage_dead(this)
-        storage_dead(_12)
         unwind_terminate
     if move _4 {
     } else {
@@ -248,9 +246,7 @@ fn precondition_check(this: *const (), count: isize, size: usize)
         storage_dead(_6)
         storage_dead(_5)
         storage_live(msg)
-        storage_live(_12)
-        _12 = &core::ptr::const_ptr::{*const T}::offset::precondition_check::{promoted_const} with_metadata(const 210usize)
-        msg = move _12
+        msg = &core::ptr::const_ptr::{*const T}::offset::precondition_check::{promoted_const} with_metadata(const 210usize)
         storage_live(_9)
         storage_live(_10)
         storage_live(_11)
@@ -262,7 +258,6 @@ fn precondition_check(this: *const (), count: isize, size: usize)
             storage_dead(size)
             storage_dead(count)
             storage_dead(this)
-            storage_dead(_12)
             unwind_terminate
         storage_dead(_11)
         _9 = panic_nounwind_fmt<'8>(move _10, const false)
@@ -279,7 +274,6 @@ fn precondition_check(this: *const (), count: isize, size: usize)
     storage_dead(size)
     storage_dead(count)
     storage_dead(this)
-    storage_dead(_12)
     return
 }
 

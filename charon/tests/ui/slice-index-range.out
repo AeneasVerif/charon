@@ -178,7 +178,6 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     let _14: &'42 [Argument<'43>; 2usize]; // anonymous local
     let _15: &'47 [Argument<'48>; 2usize]; // anonymous local
     let _16: [u8; 55usize]; // anonymous local
-    let _17: &'68 [u8; 55usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -220,9 +219,7 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     storage_live(_13)
     storage_live(_16)
     _16 = [const 16u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 101u8, const 110u8, const 100u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 192u8, const 34u8, const 32u8, const 111u8, const 117u8, const 116u8, const 32u8, const 111u8, const 102u8, const 32u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 102u8, const 111u8, const 114u8, const 32u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 111u8, const 102u8, const 32u8, const 108u8, const 101u8, const 110u8, const 103u8, const 116u8, const 104u8, const 32u8, const 192u8, const 0u8]
-    storage_live(_17)
-    _17 = &_16
-    _13 = move _17
+    _13 = &_16
     _12 = &(*_13)
     storage_live(_14)
     storage_live(_15)
@@ -239,7 +236,6 @@ fn core::slice::index::slice_index_fail::do_panic#3::runtime(end: usize, len: us
     storage_dead(_14)
     storage_dead(_13)
     storage_dead(_12)
-    storage_dead(_17)
     storage_dead(_16)
     panic(core::panicking::panic_fmt)
     ↳⚡ storage_dead(args_7)
@@ -296,7 +292,6 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     let _14: &'42 [Argument<'43>; 2usize]; // anonymous local
     let _15: &'47 [Argument<'48>; 2usize]; // anonymous local
     let _16: [u8; 40usize]; // anonymous local
-    let _17: &'68 [u8; 40usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -338,9 +333,7 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     storage_live(_13)
     storage_live(_16)
     _16 = [const 22u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 115u8, const 116u8, const 97u8, const 114u8, const 116u8, const 115u8, const 32u8, const 97u8, const 116u8, const 32u8, const 192u8, const 13u8, const 32u8, const 98u8, const 117u8, const 116u8, const 32u8, const 101u8, const 110u8, const 100u8, const 115u8, const 32u8, const 97u8, const 116u8, const 32u8, const 192u8, const 0u8]
-    storage_live(_17)
-    _17 = &_16
-    _13 = move _17
+    _13 = &_16
     _12 = &(*_13)
     storage_live(_14)
     storage_live(_15)
@@ -357,7 +350,6 @@ fn core::slice::index::slice_index_fail::do_panic#2::runtime(start: usize, end: 
     storage_dead(_14)
     storage_dead(_13)
     storage_dead(_12)
-    storage_dead(_17)
     storage_dead(_16)
     panic(core::panicking::panic_fmt)
     ↳⚡ storage_dead(args_7)
@@ -414,7 +406,6 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     let _14: &'42 [Argument<'43>; 2usize]; // anonymous local
     let _15: &'47 [Argument<'48>; 2usize]; // anonymous local
     let _16: [u8; 55usize]; // anonymous local
-    let _17: &'68 [u8; 55usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -456,9 +447,7 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     storage_live(_13)
     storage_live(_16)
     _16 = [const 16u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 101u8, const 110u8, const 100u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 192u8, const 34u8, const 32u8, const 111u8, const 117u8, const 116u8, const 32u8, const 111u8, const 102u8, const 32u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 102u8, const 111u8, const 114u8, const 32u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 111u8, const 102u8, const 32u8, const 108u8, const 101u8, const 110u8, const 103u8, const 116u8, const 104u8, const 32u8, const 192u8, const 0u8]
-    storage_live(_17)
-    _17 = &_16
-    _13 = move _17
+    _13 = &_16
     _12 = &(*_13)
     storage_live(_14)
     storage_live(_15)
@@ -475,7 +464,6 @@ fn core::slice::index::slice_index_fail::do_panic#1::runtime(end: usize, len: us
     storage_dead(_14)
     storage_dead(_13)
     storage_dead(_12)
-    storage_dead(_17)
     storage_dead(_16)
     panic(core::panicking::panic_fmt)
     ↳⚡ storage_dead(args_7)
@@ -532,7 +520,6 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     let _14: &'42 [Argument<'43>; 2usize]; // anonymous local
     let _15: &'47 [Argument<'48>; 2usize]; // anonymous local
     let _16: [u8; 57usize]; // anonymous local
-    let _17: &'68 [u8; 57usize]; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -574,9 +561,7 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     storage_live(_13)
     storage_live(_16)
     _16 = [const 18u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 115u8, const 116u8, const 97u8, const 114u8, const 116u8, const 32u8, const 105u8, const 110u8, const 100u8, const 101u8, const 120u8, const 32u8, const 192u8, const 34u8, const 32u8, const 111u8, const 117u8, const 116u8, const 32u8, const 111u8, const 102u8, const 32u8, const 114u8, const 97u8, const 110u8, const 103u8, const 101u8, const 32u8, const 102u8, const 111u8, const 114u8, const 32u8, const 115u8, const 108u8, const 105u8, const 99u8, const 101u8, const 32u8, const 111u8, const 102u8, const 32u8, const 108u8, const 101u8, const 110u8, const 103u8, const 116u8, const 104u8, const 32u8, const 192u8, const 0u8]
-    storage_live(_17)
-    _17 = &_16
-    _13 = move _17
+    _13 = &_16
     _12 = &(*_13)
     storage_live(_14)
     storage_live(_15)
@@ -593,7 +578,6 @@ fn core::slice::index::slice_index_fail::do_panic::runtime(start: usize, len: us
     storage_dead(_14)
     storage_dead(_13)
     storage_dead(_12)
-    storage_dead(_17)
     storage_dead(_16)
     panic(core::panicking::panic_fmt)
     ↳⚡ storage_dead(args_7)
@@ -1242,7 +1226,6 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(
     let _11: !; // anonymous local
     let _12: Arguments<'3>; // anonymous local
     let _13: &'4 str; // anonymous local
-    let _14: &'5 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1273,7 +1256,6 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(
             storage_dead(len)
             storage_dead(end)
             storage_dead(start)
-            storage_dead(_14)
             return
         } else {
             storage_dead(_9)
@@ -1284,9 +1266,7 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(
         storage_dead(_5)
     }
     storage_live(msg)
-    storage_live(_14)
-    _14 = &core::slice::index::impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check::{promoted_const} with_metadata(const 218usize)
-    msg = move _14
+    msg = &core::slice::index::impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check::{promoted_const} with_metadata(const 218usize)
     storage_live(_11)
     storage_live(_12)
     storage_live(_13)
@@ -1298,7 +1278,6 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(
         storage_dead(len)
         storage_dead(end)
         storage_dead(start)
-        storage_dead(_14)
         unwind_terminate
     storage_dead(_13)
     _11 = panic_nounwind_fmt<'8>(move _12, const false)
@@ -1407,7 +1386,6 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(star
     let _11: !; // anonymous local
     let _12: Arguments<'3>; // anonymous local
     let _13: &'4 str; // anonymous local
-    let _14: &'5 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1438,7 +1416,6 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(star
             storage_dead(len)
             storage_dead(end)
             storage_dead(start)
-            storage_dead(_14)
             return
         } else {
             storage_dead(_9)
@@ -1449,9 +1426,7 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(star
         storage_dead(_5)
     }
     storage_live(msg)
-    storage_live(_14)
-    _14 = &core::slice::index::impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check::{promoted_const} with_metadata(const 214usize)
-    msg = move _14
+    msg = &core::slice::index::impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check::{promoted_const} with_metadata(const 214usize)
     storage_live(_11)
     storage_live(_12)
     storage_live(_13)
@@ -1463,7 +1438,6 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(star
         storage_dead(len)
         storage_dead(end)
         storage_dead(start)
-        storage_dead(_14)
         unwind_terminate
     storage_dead(_13)
     _11 = panic_nounwind_fmt<'8>(move _12, const false)

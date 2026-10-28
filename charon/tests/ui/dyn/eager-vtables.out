@@ -69,16 +69,13 @@ where
     let _3: &'7 mut Formatter<'8>; // anonymous local
     let _4: &'10 str; // anonymous local
     let _5: &'11 str; // anonymous local
-    let _6: &'13 str; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
     _3 = &two-phase-mut (*f) with_metadata(copy f.metadata)
     storage_live(_4)
     storage_live(_5)
-    storage_live(_6)
-    _6 = &test_crate::impl_Debug_for_S::fmt::{promoted_const} with_metadata(const 1usize)
-    _5 = move _6
+    _5 = &test_crate::impl_Debug_for_S::fmt::{promoted_const} with_metadata(const 1usize)
     _4 = &(*_5) with_metadata(copy _5.metadata)
     _0 = write_str<'14, '17, '18>(move _3, move _4)
     ↳⚡ storage_dead(f)
@@ -89,7 +86,6 @@ where
     storage_dead(_3)
     storage_dead(f)
     storage_dead(self)
-    storage_dead(_6)
     return
 }
 

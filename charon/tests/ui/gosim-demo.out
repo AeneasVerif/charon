@@ -94,7 +94,6 @@ where
     let _18: &'58 [Argument<'59>; 1usize]; // anonymous local
     let _19: &'63 [Argument<'64>; 1usize]; // anonymous local
     let _20: [u8; 7usize]; // anonymous local
-    let _21: &'98 [u8; 7usize]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -149,9 +148,7 @@ where
         storage_live(_17)
         storage_live(_20)
         _20 = [const 2u8, const 45u8, const 32u8, const 192u8, const 1u8, const 10u8, const 0u8]
-        storage_live(_21)
-        _21 = &_20
-        _17 = move _21
+        _17 = &_20
         _16 = &(*_17)
         storage_live(_18)
         storage_live(_19)
@@ -182,7 +179,6 @@ where
     storage_dead(iter)
     storage_dead(_2)
     storage_dead(slice)
-    storage_dead(_21)
     storage_dead(_20)
     return
 }

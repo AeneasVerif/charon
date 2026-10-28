@@ -75,16 +75,13 @@ fn main()
     let _5: &'6 (dyn Display + '7); // anonymous local
     let _6: &'9 String; // anonymous local
     let _7: &'10 String; // anonymous local
-    let _8: &'11 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(str)
     storage_live(_2)
     storage_live(_3)
-    storage_live(_8)
-    _8 = &test_crate::main::{promoted_const} with_metadata(const 5usize)
-    _3 = move _8
+    _3 = &test_crate::main::{promoted_const} with_metadata(const 5usize)
     _2 = &(*_3) with_metadata(copy _3.metadata)
     str = impl_ToString_for_str::to_string::<str><'13>(move _2)
     ↳⚡ unwind_continue
@@ -102,14 +99,12 @@ fn main()
     storage_dead(_6)
     _4 = dyn_to_string<'17>(move _5)
     ↳⚡ conditional_drop[drop_glue<'18>] str
-        ↳⚡ storage_dead(_8)
-            unwind_terminate
+        ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_5)
     conditional_drop[drop_glue<'19>] _4
     ↳⚡ conditional_drop[drop_glue<'18>] str
-        ↳⚡ storage_dead(_8)
-            unwind_terminate
+        ↳⚡ unwind_terminate
         unwind_continue
     storage_dead(_7)
     storage_dead(_4)
@@ -117,7 +112,6 @@ fn main()
     conditional_drop[drop_glue<'20>] str
     ↳⚡ unwind_continue
     storage_dead(str)
-    storage_dead(_8)
     return
 }
 

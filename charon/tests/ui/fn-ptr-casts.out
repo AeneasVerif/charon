@@ -142,13 +142,10 @@ fn from_inline_const<'a>(x: &'a u8) -> &'a u8
     let _3: &'3 u8; // anonymous local
     let _4: fn<'b>(&'b u8) -> &'b u8; // anonymous local
     let _5: &'4 u8; // anonymous local
-    let _6: fn<'_0_1>(&'_0_1 u8) -> &'_0_1 u8; // anonymous local
 
     storage_live(_0)
     storage_live(f)
-    storage_live(_6)
-    _6 = fn_def_to_fn_ptr(const identity<'6>)
-    f = move _6
+    f = fn_def_to_fn_ptr(const identity<'6>)
     fake_read(f)
     set_type(typeof(f) == fn<'b>(&'b u8) -> &'b u8)
     storage_live(_3)
@@ -165,7 +162,6 @@ fn from_inline_const<'a>(x: &'a u8) -> &'a u8
     storage_dead(f)
     storage_dead(_3)
     storage_dead(x)
-    storage_dead(_6)
     return
 }
 
