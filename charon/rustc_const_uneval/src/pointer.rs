@@ -207,13 +207,9 @@ impl<'tcx> ConstReader<'tcx> {
     }
 
     /// Whether we view a value of the unsized type `ty` at the sized type it was unsized from: a
-    /// slice or `dyn Trait` value is, and so is a `str` with `unsized_strings`.
+    /// slice or `dyn Trait` value is, but `str` is not since there's no "fixed-sized `str`" type.
     pub(crate) fn is_viewed_unsized_from(&self, ty: Ty<'tcx>) -> bool {
-        match ty.kind() {
-            ty::Slice(_) | ty::Dynamic(..) => true,
-            ty::Str => self.config.unsized_strings,
-            _ => false,
-        }
+        matches!(ty.kind(), ty::Slice(_) | ty::Dynamic(..))
     }
 
     /// Express `place`, located `offset` bytes into `global`, as projections from the global, aiming

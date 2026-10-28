@@ -1166,7 +1166,6 @@ pub fn translate<'tcx>(
                     translate_options.consts,
                     ConstHandling::Values | ConstHandling::Bytes
                 ),
-                unsized_strings: translate_options.unsized_strings,
             },
             treat_box_as_builtin: translate_options.treat_box_as_builtin,
         },

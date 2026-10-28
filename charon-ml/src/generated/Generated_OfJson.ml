@@ -2578,7 +2578,6 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("raw_consts", raw_consts);
           ("inline_anon_consts", inline_anon_consts);
           ("consts", consts);
-          ("unsized_strings", unsized_strings);
           ("reconstruct_fallible_operations", reconstruct_fallible_operations);
           ("reconstruct_panic_calls", reconstruct_panic_calls);
           ("reconstruct_asserts", reconstruct_asserts);
@@ -2658,7 +2657,6 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* raw_consts = bool_of_json ctx raw_consts in
         let* inline_anon_consts = bool_of_json ctx inline_anon_consts in
         let* consts = option_of_json const_handling_of_json ctx consts in
-        let* unsized_strings = bool_of_json ctx unsized_strings in
         let* reconstruct_fallible_operations =
           bool_of_json ctx reconstruct_fallible_operations
         in
@@ -2735,7 +2733,6 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              raw_consts;
              inline_anon_consts;
              consts;
-             unsized_strings;
              reconstruct_fallible_operations;
              reconstruct_panic_calls;
              reconstruct_asserts;
