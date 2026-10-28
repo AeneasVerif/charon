@@ -161,6 +161,7 @@ fn compute_guarantees(
             // `repr(int)`: each variant is its own struct `(tag, fields..)`, so
             // the first field is aligned to itself.
             ReprAlgorithm::Rust => OffsetGuarantee::ReprCField(FieldPredecessor::Tag),
+            ReprAlgorithm::Simd => unreachable!("repr(simd) on an enum"),
         });
 
         let align = type_align(tag_align.into_iter().chain(field_aligns).collect());

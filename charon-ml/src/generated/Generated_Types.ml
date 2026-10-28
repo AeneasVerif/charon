@@ -1502,13 +1502,15 @@ and repr_algorithm =
       (** The default layout algorithm. Used without an explicit [ŗepr] or for
           [repr(Rust)]. *)
   | C  (** The C layout algorithm as enforced by [repr(C)]. *)
+  | Simd
+      (** The SIMD vector layout algorithm as enforced by the unstable
+          [repr(simd)]. *)
 
 (** The representation options as annotated by the user.
 
-    NOTE: This does not include less common/unstable representations such as
-    [#[repr(simd)]] or the compiler internal [#[repr(linear)]]. Similarly, enum
-    discriminant representations are encoded in [[Variant::discriminant]] and
-    [[Discriminator]] instead. *)
+    NOTE: This does not include the compiler internal [#[repr(linear)]].
+    Similarly, enum discriminant representations are encoded in
+    [[Variant::discriminant]] and [[Discriminator]] instead. *)
 and repr_options = {
   repr_algo : repr_algorithm;
   align_modif : alignment_modifier option;

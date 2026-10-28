@@ -455,9 +455,9 @@ impl std::ops::Deref for InhabitedPredicate {
 
 /// The representation options as annotated by the user.
 ///
-/// NOTE: This does not include less common/unstable representations such as `#[repr(simd)]`
-/// or the compiler internal `#[repr(linear)]`. Similarly, enum discriminant representations
-/// are encoded in [`Variant::discriminant`] and [`Discriminator`] instead.
+/// NOTE: This does not include the compiler internal `#[repr(linear)]`. Similarly, enum
+/// discriminant representations are encoded in [`Variant::discriminant`] and [`Discriminator`]
+/// instead.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 #[derive(Serialize, Deserialize)]
 pub struct ReprOptions {
@@ -478,6 +478,8 @@ pub enum ReprAlgorithm {
     Rust,
     /// The C layout algorithm as enforced by `repr(C)`.
     C,
+    /// The SIMD vector layout algorithm as enforced by the unstable `repr(simd)`.
+    Simd,
 }
 
 /// Describes modifiers to the alignment and packing of the corresponding type.
@@ -563,9 +565,9 @@ impl ReprOptions {
     /// Whether this representation options guarantee a fixed
     /// field ordering for the type.
     ///
-    /// Since we don't support `repr(simd)` or `repr(linear)` yet, this is
-    /// the case if it's either `repr(C)` or an explicit discriminant type for
-    /// an enum with fields (if it doesn't have fields, this obviously doesn't matter anyway).
+    /// Since we don't support `repr(linear)` yet, this is the case if it's either `repr(C)` or an
+    /// explicit discriminant type for an enum with fields (if it doesn't have fields, this
+    /// obviously doesn't matter anyway).
     ///
     /// Cf. <https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.c.struct>
     /// and <https://doc.rust-lang.org/reference/type-layout.html#r-layout.repr.primitive.adt>.

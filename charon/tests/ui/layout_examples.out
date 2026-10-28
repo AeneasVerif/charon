@@ -1443,5 +1443,23 @@ enum ReprCEnum {
 //     ],
 //     repr(C),
 
+// Full name: test_crate::SimdVec
+struct SimdVec {
+  _0: [f32; 3usize],
+}
+// layout:
+//     size: 16usize (guaranteed: at_least(align_to((offset_of(SimdVec._0) + size_of::<[f32; 3usize]>()), align_of::<[f32; 3usize]>()))),
+//     align: 16usize (guaranteed: at_least(align_of::<[f32; 3usize]>())),
+//     discriminator: _,
+//     inhabited: true,
+//     variants: [
+//         _: {
+//             offset of _0: 0 (guaranteed: aligned(align_of::<[f32; 3usize]>())),
+//             inhabited: true,
+//             tagger: [],
+//         },
+//     ],
+//     repr(simd),
+
 
 

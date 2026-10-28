@@ -3892,6 +3892,7 @@ and repr_algorithm_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `String "Rust" -> Ok Rust
     | `String "C" -> Ok C
+    | `String "Simd" -> Ok Simd
     | _ -> Error "")
 
 and repr_options_of_json (ctx : of_json_ctx) (js : json) :

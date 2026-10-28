@@ -1,6 +1,7 @@
 //@ no-default-options
 //@ charon-args=--print-layouts --include=core::result::Result
 #![feature(never_type)]
+#![feature(repr_simd)]
 
 use std::num::NonZero;
 
@@ -244,3 +245,6 @@ enum ReprCEnum {
     B(u64),
     C,
 }
+
+#[repr(simd)]
+struct SimdVec([f32; 3]);
