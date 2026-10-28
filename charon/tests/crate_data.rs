@@ -1185,3 +1185,56 @@ fn multiple_deserialize() -> anyhow::Result<()> {
     assert_eq!(ty2_2, ty2_1);
     Ok(())
 }
+
+#[test]
+fn reuses_default_only_for_default_copies() -> anyhow::Result<()> {
+    let crate_data = translate(
+        r#"
+        pub trait Shape {
+            const ID: u32;
+            fn sides(&self) -> u32;
+            fn describe(&self) -> u32 { self.sides() + 100 }
+        }
+        pub struct Square;
+        impl Shape for Square {
+            const ID: u32 = 1;
+            fn sides(&self) -> u32 { 4 }
+        }
+        pub struct Triangle;
+        impl Shape for Triangle {
+            const ID: u32 = 2;
+            fn sides(&self) -> u32 { 3 }
+            fn describe(&self) -> u32 { 7 }
+        }
+        pub fn use_them() -> u32 {
+            Square::ID + Square.sides() + Square.describe()
+                + Triangle::ID + Triangle.sides() + Triangle.describe()
+        }
+        "#,
+    )?;
+    let mut seen = 0;
+    for f in crate_data.fun_decls.iter() {
+        if let FunSource::TraitImpl { reuses_default, .. } = &f.src {
+            // Every method here is written out in its impl block: `sides` implements a
+            // required method and `Triangle::describe` overrides a default.
+            assert!(
+                !reuses_default,
+                "{} is written in its impl but is labelled `reuses_default`",
+                f.item_meta.name.debug_repr(&crate_data)
+            );
+            seen += 1;
+        }
+    }
+    for g in crate_data.global_decls.iter() {
+        if let GlobalSource::TraitImpl { reuses_default, .. } = &g.src {
+            assert!(
+                !reuses_default,
+                "{} is written in its impl but is labelled `reuses_default`",
+                g.item_meta.name.debug_repr(&crate_data)
+            );
+            seen += 1;
+        }
+    }
+    assert_eq!(seen, 5, "3 impl methods and 2 impl consts");
+    Ok(())
+}
