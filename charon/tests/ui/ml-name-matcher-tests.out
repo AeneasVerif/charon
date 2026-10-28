@@ -507,6 +507,8 @@ where
     return
 }
 
+pub const test_crate::mono_usage::{promoted_const}: str = "test" with_metadata(4usize)
+
 // Full name: test_crate::mono_usage
 #[pattern::pass("test_crate::mono_usage")]
 fn mono_usage()
@@ -514,6 +516,7 @@ fn mono_usage()
     let _0: (); // return
     let _container1: MonoContainer<i32>[{built_in impl Sized for i32}]; // local
     let _container2: MonoContainer<&'8 str>[{built_in impl Sized for &'8 str}]; // local
+    let _3: &'20 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -522,7 +525,9 @@ fn mono_usage()
     ↳⚡ unwind_continue
     fake_read(_container1)
     storage_live(_container2)
-    _container2 = create<&'13 str>[{built_in impl Sized for &'13 str}](const "test")
+    storage_live(_3)
+    _3 = &test_crate::mono_usage::{promoted_const} with_metadata(const 4usize)
+    _container2 = create<&'13 str>[{built_in impl Sized for &'13 str}](move _3)
     ↳⚡ unwind_continue
     fake_read(_container2)
     _0 = ()

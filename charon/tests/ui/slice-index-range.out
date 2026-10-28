@@ -1221,6 +1221,9 @@ struct str {
   _0: [u8],
 }
 
+// Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check::{promoted_const}
+pub const core::slice::index::impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check::{promoted_const}: str = "unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety." with_metadata(218usize)
+
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked_mut::precondition_check
 #[track_caller]
 fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(start: usize, end: usize, len: usize)
@@ -1239,6 +1242,7 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(
     let _11: !; // anonymous local
     let _12: Arguments<'3>; // anonymous local
     let _13: &'4 str; // anonymous local
+    let _14: &'5 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1269,6 +1273,7 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(
             storage_dead(len)
             storage_dead(end)
             storage_dead(start)
+            storage_dead(_14)
             return
         } else {
             storage_dead(_9)
@@ -1279,7 +1284,9 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(
         storage_dead(_5)
     }
     storage_live(msg)
-    msg = const "unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+    storage_live(_14)
+    _14 = &core::slice::index::impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check::{promoted_const} with_metadata(const 218usize)
+    msg = move _14
     storage_live(_11)
     storage_live(_12)
     storage_live(_13)
@@ -1291,6 +1298,7 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked_mut::precondition_check(
         storage_dead(len)
         storage_dead(end)
         storage_dead(start)
+        storage_dead(_14)
         unwind_terminate
     storage_dead(_13)
     _11 = panic_nounwind_fmt<'8>(move _12, const false)
@@ -1378,6 +1386,9 @@ where
     return
 }
 
+// Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check::{promoted_const}
+pub const core::slice::index::impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check::{promoted_const}: str = "unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety." with_metadata(214usize)
+
 // Full name: core::slice::index::{impl SliceIndex<[T]> for Range<usize>[{built_in impl Sized for usize}]}::get_unchecked::precondition_check
 #[track_caller]
 fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(start: usize, end: usize, len: usize)
@@ -1396,6 +1407,7 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(star
     let _11: !; // anonymous local
     let _12: Arguments<'3>; // anonymous local
     let _13: &'4 str; // anonymous local
+    let _14: &'5 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -1426,6 +1438,7 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(star
             storage_dead(len)
             storage_dead(end)
             storage_dead(start)
+            storage_dead(_14)
             return
         } else {
             storage_dead(_9)
@@ -1436,7 +1449,9 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(star
         storage_dead(_5)
     }
     storage_live(msg)
-    msg = const "unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+    storage_live(_14)
+    _14 = &core::slice::index::impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check::{promoted_const} with_metadata(const 214usize)
+    msg = move _14
     storage_live(_11)
     storage_live(_12)
     storage_live(_13)
@@ -1448,6 +1463,7 @@ fn impl_SliceIndex_slice_for_Range_usize::get_unchecked::precondition_check(star
         storage_dead(len)
         storage_dead(end)
         storage_dead(start)
+        storage_dead(_14)
         unwind_terminate
     storage_dead(_13)
     _11 = panic_nounwind_fmt<'8>(move _12, const false)

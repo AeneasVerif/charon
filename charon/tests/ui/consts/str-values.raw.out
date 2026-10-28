@@ -50,10 +50,10 @@ fn main()
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = const "hello"
+    _1 = const &"hello" with_metadata(5usize)
     storage_dead(_1)
     storage_live(_2)
-    _2 = str_tail<&Wrap { _0: 5u8, _1: str { _0: [97u8, 98u8] } } with_metadata(2usize)>()
+    _2 = str_tail<&Wrap { _0: 5u8, _1: "ab" } with_metadata(2usize)>()
     ↳⚡ unwind_continue
     storage_dead(_2)
     _0 = const ()

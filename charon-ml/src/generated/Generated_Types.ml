@@ -379,7 +379,9 @@ and constant_expr_kind =
       (** A raw pointer to a constant place.
 
           This is eliminated inside functions if [--raw-consts] is off. *)
-  | CStr of string  (** [str] value. *)
+  | CStr of string
+      (** [str] value. This represents an unsized value of type [str] (and not
+          [&str]). *)
   | CByteStr of int list  (** Byte string value. *)
   | CFnDef of fn_ptr
       (** ZST constant corresponding to the unique value of the type of a

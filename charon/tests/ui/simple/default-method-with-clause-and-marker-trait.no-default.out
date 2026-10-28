@@ -34,10 +34,19 @@ where
 {
     let _0: TraitClause1::Assoc; // return
     let _1: !; // anonymous local
+    let _2: str; // anonymous local
+    let _3: &'_ str; // anonymous local
+    let _4: &'1 str; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
-    _1 = panic(const "not yet implemented")
+    storage_live(_2)
+    _2 = noretag const "not yet implemented"
+    storage_live(_3)
+    _3 = &_2
+    storage_live(_4)
+    _4 = unsize_cast<&'1 str, 19usize>(move _3)
+    _1 = panic(move _4)
     ↳⚡ unwind_continue
 }
 

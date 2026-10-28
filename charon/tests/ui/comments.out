@@ -789,19 +789,25 @@ pub fn fake_read(x: u32)
     return
 }
 
+pub const test_crate::fool::{promoted_const}: str = "\n    // Fooled ya" with_metadata(17usize)
+
 // Full name: test_crate::fool
 fn fool()
 {
     let _0: (); // return
     let _1: &'1 str; // anonymous local
+    let _2: &'2 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = const "\n    // Fooled ya"
+    storage_live(_2)
+    _2 = &test_crate::fool::{promoted_const} with_metadata(const 17usize)
+    _1 = move _2
     storage_dead(_1)
     // Fooled ya";
     _0 = ()
+    storage_dead(_2)
     return
 }
 

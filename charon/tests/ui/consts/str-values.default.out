@@ -40,23 +40,29 @@ fn str_tail<const W : &'static Wrap<str>[{built_in impl MetaSized for str}]>()
     return
 }
 
+pub const test_crate::main::{promoted_const}: str = "hello" with_metadata(5usize)
+
 // Full name: test_crate::main
 fn main()
 {
     let _0: (); // return
     let _1: &'1 str; // anonymous local
     let _2: (); // anonymous local
+    let _3: &'2 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = const "hello"
+    storage_live(_3)
+    _3 = &test_crate::main::{promoted_const} with_metadata(const 5usize)
+    _1 = move _3
     storage_dead(_1)
     storage_live(_2)
-    _2 = str_tail<&Wrap { _0: 5u8, _1: str { _0: [97u8, 98u8] } } with_metadata(2usize)>()
+    _2 = str_tail<&Wrap { _0: 5u8, _1: "ab" } with_metadata(2usize)>()
     ↳⚡ unwind_continue
     storage_dead(_2)
     _0 = ()
+    storage_dead(_3)
     return
 }
 

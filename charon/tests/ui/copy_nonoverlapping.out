@@ -369,6 +369,8 @@ fn check_language_ub() -> bool
     return
 }
 
+pub const core::mem::alignment::{Alignment}::new_unchecked::precondition_check::{promoted_const}: str = "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety." with_metadata(198usize)
+
 struct (_, _)<A, B>
 where
     TraitClause0: (A: Sized),
@@ -546,6 +548,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
     let _5: !; // anonymous local
     let _6: Arguments<'3>; // anonymous local
     let _7: &'4 str; // anonymous local
+    let _8: &'5 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -557,12 +560,15 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
         storage_dead(_5)
         storage_dead(msg)
         storage_dead(align)
+        storage_dead(_8)
         unwind_terminate
     if move _2 {
     } else {
         storage_dead(_3)
         storage_live(msg)
-        msg = const "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+        storage_live(_8)
+        _8 = &core::mem::alignment::{Alignment}::new_unchecked::precondition_check::{promoted_const} with_metadata(const 198usize)
+        msg = move _8
         storage_live(_5)
         storage_live(_6)
         storage_live(_7)
@@ -572,6 +578,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
             storage_dead(_5)
             storage_dead(msg)
             storage_dead(align)
+            storage_dead(_8)
             unwind_terminate
         storage_dead(_7)
         _5 = panic_nounwind_fmt<'8>(move _6, const false)
@@ -584,6 +591,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
     storage_dead(_5)
     storage_dead(msg)
     storage_dead(align)
+    storage_dead(_8)
     return
 }
 

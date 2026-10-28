@@ -240,6 +240,8 @@ where
     return
 }
 
+pub const test_crate::use_generic::{promoted_const}: str = "hello" with_metadata(5usize)
+
 // Full name: test_crate::use_generic
 #[pattern::pass("test_crate::use_generic")]
 fn use_generic()
@@ -249,6 +251,7 @@ fn use_generic()
     let _str_generic: Generic<&'8 str>[{built_in impl Sized for &'8 str}]; // local
     let _3: &'13 i32; // anonymous local
     let _4: &'15 Generic<i32>[{built_in impl Sized for i32}]; // anonymous local
+    let _5: &'24 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -257,7 +260,9 @@ fn use_generic()
     ↳⚡ unwind_continue
     fake_read(_int_generic)
     storage_live(_str_generic)
-    _str_generic = new<&'17 str>[{built_in impl Sized for &'17 str}](const "hello")
+    storage_live(_5)
+    _5 = &test_crate::use_generic::{promoted_const} with_metadata(const 5usize)
+    _str_generic = new<&'17 str>[{built_in impl Sized for &'17 str}](move _5)
     ↳⚡ unwind_continue
     fake_read(_str_generic)
     storage_live(_3)

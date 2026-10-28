@@ -156,6 +156,12 @@ impl "impl_ConstParamTy__for_Foo" ConstParamTy_ for Foo {
     non-dyn-compatible
 }
 
+// Full name: test_crate::{impl Debug for Foo}::fmt::{promoted_const#1}
+pub const test_crate::impl_Debug_for_Foo::fmt::{promoted_const#1}: str = "B" with_metadata(1usize)
+
+// Full name: test_crate::{impl Debug for Foo}::fmt::{promoted_const}
+pub const test_crate::impl_Debug_for_Foo::fmt::{promoted_const}: str = "A" with_metadata(1usize)
+
 // Full name: test_crate::{impl Debug for Foo}::fmt
 #[inline(hint)]
 pub fn fmt<'_0, '_1, '_2>(self: &'_0 Foo, f: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
@@ -169,6 +175,8 @@ where
     let _4: &'10 str; // anonymous local
     let _5: &'11 str; // anonymous local
     let _6: &'12 str; // anonymous local
+    let _7: &'15 str; // anonymous local
+    let _8: &'14 str; // anonymous local
 
     storage_live(_0)
     storage_live(_3)
@@ -177,13 +185,17 @@ where
     match (*self) {
         Foo::A => {
             storage_live(_5)
-            _5 = const "A"
+            storage_live(_7)
+            _7 = &test_crate::impl_Debug_for_Foo::fmt::{promoted_const} with_metadata(const 1usize)
+            _5 = move _7
             _4 = &(*_5) with_metadata(copy _5.metadata)
             storage_dead(_5)
         },
         Foo::B => {
             storage_live(_6)
-            _6 = const "B"
+            storage_live(_8)
+            _8 = &test_crate::impl_Debug_for_Foo::fmt::{promoted_const#1} with_metadata(const 1usize)
+            _6 = move _8
             _4 = &(*_6) with_metadata(copy _6.metadata)
             storage_dead(_6)
         },
@@ -196,6 +208,8 @@ where
     storage_dead(_3)
     storage_dead(f)
     storage_dead(self)
+    storage_dead(_8)
+    storage_dead(_7)
     return
 }
 

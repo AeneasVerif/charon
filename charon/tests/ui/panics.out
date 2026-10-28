@@ -31,35 +31,47 @@ fn panic1()
     ↳⚡ unwind_continue
 }
 
+pub const test_crate::panic2::{promoted_const}: str = "O no!" with_metadata(5usize)
+
 // Full name: test_crate::panic2
 fn panic2()
 {
     let _0: (); // return
     let _1: Arguments<'1>; // anonymous local
+    let _2: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = from_str<'2>(const "O no!")
+    storage_live(_2)
+    _2 = &test_crate::panic2::{promoted_const} with_metadata(const 5usize)
+    _1 = from_str<'2>(move _2)
     ↳⚡ storage_dead(_1)
         unwind_continue
+    storage_dead(_2)
     panic(core::panicking::panic_fmt)
     ↳⚡ storage_dead(_1)
         unwind_continue
 }
+
+pub const test_crate::panic3::{promoted_const}: str = "O no!" with_metadata(5usize)
 
 // Full name: test_crate::panic3
 fn panic3()
 {
     let _0: (); // return
     let _1: Arguments<'1>; // anonymous local
+    let _2: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = from_str_nonconst<'2>(const "O no!")
+    storage_live(_2)
+    _2 = &test_crate::panic3::{promoted_const} with_metadata(const 5usize)
+    _1 = from_str_nonconst<'2>(move _2)
     ↳⚡ storage_dead(_1)
         unwind_continue
+    storage_dead(_2)
     panic(core::panicking::panic_fmt)
     ↳⚡ storage_dead(_1)
         unwind_continue
@@ -82,12 +94,15 @@ fn panic4()
     return
 }
 
+pub const test_crate::panic5::{promoted_const}: str = "assert failed" with_metadata(13usize)
+
 // Full name: test_crate::panic5
 fn panic5()
 {
     let _0: (); // return
     let _1: bool; // anonymous local
     let _2: Arguments<'1>; // anonymous local
+    let _3: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -96,9 +111,12 @@ fn panic5()
     if move _1 {
     } else {
         storage_live(_2)
-        _2 = from_str<'2>(const "assert failed")
+        storage_live(_3)
+        _3 = &test_crate::panic5::{promoted_const} with_metadata(const 13usize)
+        _2 = from_str<'2>(move _3)
         ↳⚡ storage_dead(_2)
             unwind_continue
+        storage_dead(_3)
         panic(core::panicking::panic_fmt)
         ↳⚡ storage_dead(_2)
             unwind_continue
@@ -106,6 +124,7 @@ fn panic5()
     storage_dead(_1)
     _0 = ()
     storage_dead(_2)
+    storage_dead(_3)
     return
 }
 
@@ -120,18 +139,24 @@ fn panic6()
     ↳⚡ unwind_continue
 }
 
+pub const test_crate::panic7::{promoted_const}: str = "internal error: entered unreachable code: can't reach this" with_metadata(58usize)
+
 // Full name: test_crate::panic7
 fn panic7()
 {
     let _0: (); // return
     let _1: Arguments<'1>; // anonymous local
+    let _2: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = from_str_nonconst<'2>(const "internal error: entered unreachable code: can't reach this")
+    storage_live(_2)
+    _2 = &test_crate::panic7::{promoted_const} with_metadata(const 58usize)
+    _1 = from_str_nonconst<'2>(move _2)
     ↳⚡ storage_dead(_1)
         unwind_continue
+    storage_dead(_2)
     panic(core::panicking::panic_fmt)
     ↳⚡ storage_dead(_1)
         unwind_continue
