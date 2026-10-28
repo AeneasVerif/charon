@@ -31,7 +31,7 @@ struct str {
   _0: [u8],
 }
 
-static test_crate::{promoted_const}: MaybeUninit<[u8; 5usize]>[{built_in impl Sized for [u8; 5usize]}] = RawMemory(0x68, 0x65, 0x6c, 0x6c, 0x6f)
+static test_crate::{promoted_const}: [u8; 5usize] = [104u8, 101u8, 108u8, 108u8, 111u8]
 
 static test_crate::{promoted_const#1}: MaybeUninit<[u8; 3usize]>[{built_in impl Sized for [u8; 3usize]}] = RawMemory(0x68, 0x69, 0x00)
 

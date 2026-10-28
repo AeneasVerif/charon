@@ -33,3 +33,23 @@ static S: i32 = 1;
 pub fn inline_ref_static() -> &'static i32 {
     const { &S }
 }
+
+pub fn promoted_bools() -> &'static [bool; 2] {
+    &[true, false]
+}
+
+pub fn promoted_chars() -> &'static [char; 2] {
+    &['a', '🦀']
+}
+
+pub fn promoted_str() -> &'static str {
+    "hello"
+}
+
+#[repr(C)]
+pub struct P {
+    a: u8,
+    b: u16,
+}
+// Byte 1 is padding for `P`, but it is initialized in the allocation.
+pub const PADDED: &P = unsafe { &*(&0x0403_0201u32 as *const u32 as *const P) };

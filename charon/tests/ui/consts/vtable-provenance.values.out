@@ -25,14 +25,8 @@ vtable core::marker::MetaSized::{vtable}<Self>: core::marker::MetaSized::{vtable
 #[diagnostic_item("Sync")]
 pub unsafe trait Sync<Self>
 
-// Full name: core::mem::maybe_uninit::MaybeUninit
-#[lang_item(MaybeUninit)]
-pub opaque type MaybeUninit<T>
-where
-    TraitClause0: (T: Sized),
-
 // Full name: test_crate::{promoted_const}
-static {promoted_const}: MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}] = RawMemory(0x00)
+static {promoted_const}: u8 = 0u8
 
 struct test_crate::Trait::{vtable} {
   size: usize,
@@ -90,10 +84,10 @@ where
 }
 
 // Full name: test_crate::DYN
-const DYN: &'static (dyn Trait + Sync + 'static) = unsize_cast<&'_ (dyn Trait + Sync), &impl_Trait_for_u8::{vtable}>(cast<*const u8>(&raw const {promoted_const}))
+const DYN: &'static (dyn Trait + Sync + 'static) = &{promoted_const} with_metadata(&impl_Trait_for_u8::{vtable})
 
 // Full name: test_crate::DYN_REF
-static DYN_REF: &'static (dyn Trait + Sync + 'static) = unsize_cast<&'_ (dyn Trait + Sync), &impl_Trait_for_u8::{vtable}>(cast<*const u8>(&raw const {promoted_const}))
+static DYN_REF: &'static (dyn Trait + Sync + 'static) = &{promoted_const} with_metadata(&impl_Trait_for_u8::{vtable})
 
 // Full name: test_crate::VTABLE
 static VTABLE: Sy<*const u8>[{built_in impl Sized for *const u8}] = Sy { _0: cast<*const u8>(&raw const impl_Trait_for_u8::{vtable}) }

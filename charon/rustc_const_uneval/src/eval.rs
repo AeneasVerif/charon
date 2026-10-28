@@ -41,16 +41,50 @@ impl GlobalRef {
     }
 }
 
-/// The type at which we view an allocation without a corresponding item: `MaybeUninit<[u8; N]>`.
-pub fn alloc_as_untyped_ty<'tcx>(tcx: TyCtxt<'tcx>, alloc_id: interpret::AllocId) -> Ty<'tcx> {
-    let size = GlobalRef::Alloc(alloc_id)
-        .memory(tcx)
-        .unwrap()
-        .inner()
-        .size();
-    let bytes = Ty::new_array(tcx, tcx.types.u8, size.bytes());
-    let maybe_uninit = tcx.require_lang_item(LangItem::MaybeUninit, rustc_span::DUMMY_SP);
-    Ty::new_adt(tcx, tcx.adt_def(maybe_uninit), tcx.mk_args(&[bytes.into()]))
+impl<'tcx> AllocTypes<'tcx> {
+    /// Gets the view for this allocation; if none had been decided, it is now viewed untyped.
+    pub(crate) fn get(&self, alloc_id: interpret::AllocId) -> AllocView<'tcx> {
+        *self.0.borrow_mut().entry(alloc_id).or_default()
+    }
+
+    pub(crate) fn update_if_unset(
+        &self,
+        alloc_id: interpret::AllocId,
+        f: impl FnOnce() -> AllocView<'tcx>,
+    ) {
+        self.0.borrow_mut().entry(alloc_id).or_insert_with(f);
+    }
+
+    pub(crate) fn is_typed(&self, alloc_id: interpret::AllocId) -> bool {
+        matches!(self.get(alloc_id), AllocView::Typed(_))
+    }
+
+    /// The type at which we view the allocation `alloc_id`.
+    pub fn ty(&self, tcx: TyCtxt<'tcx>, alloc_id: interpret::AllocId) -> Ty<'tcx> {
+        if let AllocView::Typed(ty) = self.get(alloc_id) {
+            return ty;
+        }
+        // if we haven't seen it with a type, then it's untyped!
+        let size = GlobalRef::Alloc(alloc_id)
+            .memory(tcx)
+            .unwrap()
+            .inner()
+            .size();
+        let bytes = Ty::new_array(tcx, tcx.types.u8, size.bytes());
+        let maybe_uninit = tcx.require_lang_item(LangItem::MaybeUninit, rustc_span::DUMMY_SP);
+        Ty::new_adt(tcx, tcx.adt_def(maybe_uninit), tcx.mk_args(&[bytes.into()]))
+    }
+}
+
+impl<'tcx> AllocTarget<'tcx> {
+    /// Whether this target is read as its typed value.
+    pub(crate) fn is_read_typed(&self, views: &AllocTypes<'tcx>) -> bool {
+        match self {
+            AllocTarget::Global(GlobalRef::Static(_)) => true,
+            AllocTarget::Global(GlobalRef::Alloc(alloc_id)) => views.is_typed(*alloc_id),
+            AllocTarget::Fn(_) | AllocTarget::VTable(..) | AllocTarget::TypeId(_) => false,
+        }
+    }
 }
 
 /// Call `f` on the MIR of the given promoted constant.
@@ -216,8 +250,7 @@ impl<'tcx> ConstReader<'tcx> {
         })
     }
 
-    /// The type at which we read a global: the type of a static, or `MaybeUninit<[u8; N]>` for
-    /// an allocation without a corresponding item.
+    /// The type at which we read a global.
     pub fn global_ty(&self, global: GlobalRef) -> Ty<'tcx> {
         let tcx = self.tcx;
         match global {
@@ -226,7 +259,7 @@ impl<'tcx> ConstReader<'tcx> {
                     .instantiate_identity()
                     .skip_normalization(),
             ),
-            GlobalRef::Alloc(alloc_id) => alloc_as_untyped_ty(tcx, alloc_id),
+            GlobalRef::Alloc(alloc_id) => self.alloc_types.ty(tcx, alloc_id),
         }
     }
 

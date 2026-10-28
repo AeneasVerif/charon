@@ -31,15 +31,15 @@ struct str {
   _0: [u8],
 }
 
-static test_crate::{promoted_const}: MaybeUninit<[u8; 5usize]>[{built_in impl Sized for [u8; 5usize]}] = RawMemory(0x68, 0x65, 0x6c, 0x6c, 0x6f)
+static test_crate::{promoted_const}: [u8; 5usize] = [104u8, 101u8, 108u8, 108u8, 111u8]
 
 static test_crate::{promoted_const#1}: MaybeUninit<[u8; 3usize]>[{built_in impl Sized for [u8; 3usize]}] = RawMemory(0x68, 0x69, 0x00)
 
 // Full name: test_crate::STR
-pub static STR: &'static str = unsize_cast<&'_ str, 5usize>(cast<*const [u8; 5usize]>(&raw const test_crate::{promoted_const}))
+pub static STR: &'static str = &test_crate::{promoted_const} with_metadata(5usize)
 
 // Full name: test_crate::STR_SUFFIX
-pub static STR_SUFFIX: &'static str = &test_crate::{promoted_const}.offset!(1isize) with_metadata(4usize)
+pub static STR_SUFFIX: &'static str = &test_crate::{promoted_const}[1usize..5usize] with_metadata(4usize)
 
 // Full name: test_crate::CSTR
 pub static CSTR: &'static CStr = unsize_cast<&'_ CStr, 3usize>(&raw const test_crate::{promoted_const#1})

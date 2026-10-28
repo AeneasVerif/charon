@@ -100,10 +100,40 @@ let uchar_to_utf8 (c : Uchar.t) : string =
       | 2 -> cont (i lsr 6)
       | _ -> cont i)
 
+(* Chars that Rust's `char::escape_debug` escapes. Rust decides based on
+   unicode tables (control, private use, whitespace, grapheme extender,
+   default-ignorable, format, unassigned); we approximate them with the most
+   common ranges. *)
+let escaped_char_ranges =
+  [
+    (0x00, 0x1f) (* control *);
+    (0x7f, 0xa0) (* control, no-break space *);
+    (0xad, 0xad) (* soft hyphen *);
+    (0x300, 0x36f) (* combining diacritical marks *);
+    (0x1680, 0x1680) (* ogham space mark *);
+    (0x2000, 0x200f) (* spaces, zero-width chars, direction marks *);
+    (0x2028, 0x202f) (* line/paragraph separators, bidi controls, space *);
+    (0x205f, 0x206f) (* space, invisible operators, bidi controls *);
+    (0x20d0, 0x20ff) (* combining marks for symbols *);
+    (0x3000, 0x3000) (* ideographic space *);
+    (0xe000, 0xf8ff) (* private use *);
+    (0xfdd0, 0xfdef) (* noncharacters *);
+    (0xfe00, 0xfe0f) (* variation selectors *);
+    (0xfe20, 0xfe2f) (* combining half marks *);
+    (0xfeff, 0xfeff) (* byte order mark *);
+    (0xfff0, 0xfffb) (* unassigned, interlinear annotation controls *);
+    (0xfffe, 0xffff) (* noncharacters *);
+    (0x1fffe, 0x1ffff) (* noncharacters *);
+    (0x2fffe, 0x2ffff) (* noncharacters *);
+    (0x3fffe, 0x3ffff) (* noncharacters *);
+    (0x40000, 0x10ffff) (* unassigned, tags, variation selectors, private use *);
+  ]
+
 (* Mirror Rust's `char::escape_debug` *)
 let escape_char_debug (c : Uchar.t) : string =
   let i = Uchar.to_int c in
   match i with
+  | 0x00 -> "\\0"
   | 0x09 -> "\\t"
   | 0x0a -> "\\n"
   | 0x0d -> "\\r"
@@ -111,7 +141,9 @@ let escape_char_debug (c : Uchar.t) : string =
   | 0x27 -> "\\'"
   | 0x22 -> "\\\""
   | _ when i >= 0x20 && i <= 0x7e -> uchar_to_utf8 c
-  | _ -> Printf.sprintf "\\u{%x}" i
+  | _ when List.exists (fun (lo, hi) -> lo <= i && i <= hi) escaped_char_ranges
+    -> Printf.sprintf "\\u{%x}" i
+  | _ -> uchar_to_utf8 c
 
 let pp_g_region_group (pp_rid : Format.formatter -> 'rid -> unit)
     (pp_id : Format.formatter -> 'id -> unit) (fmt : Format.formatter)

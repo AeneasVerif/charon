@@ -9,6 +9,7 @@ edition.workspace = true
 path = "src/lib.rs"
 
 [dependencies]
+rustc-hash.workspace = true
 rustc_trait_elaboration = { path = "../rustc_trait_elaboration" }
 
 [package.metadata.rust-analyzer]

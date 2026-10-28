@@ -1993,6 +1993,7 @@ dependencies = [
 name = "rustc_const_uneval"
 version = "0.1.0"
 dependencies = [
+ "rustc-hash",
  "rustc_trait_elaboration",
 ]
 

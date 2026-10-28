@@ -51,13 +51,13 @@ static test_crate::{promoted_const}: MaybeUninit<[u8; 12usize]>[{built_in impl S
 
 static test_crate::{promoted_const#1}: MaybeUninit<[u8; 3usize]>[{built_in impl Sized for [u8; 3usize]}] = RawMemory(0x05, 0x61, 0x62)
 
-static test_crate::{promoted_const#2}: MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}] = RawMemory(0x08)
+static test_crate::{promoted_const#2}: u8 = 8u8
 
-static test_crate::{promoted_const#3}: MaybeUninit<[u8; 4usize]>[{built_in impl Sized for [u8; 4usize]}] = RawMemory(0x2a, 0x00, 0x00, 0x00)
+static test_crate::{promoted_const#3}: i32 = 42i32
 
 static test_crate::{promoted_const#4}: MaybeUninit<[u8; 2usize]>[{built_in impl Sized for [u8; 2usize]}] = RawMemory(0x09, 0x0a)
 
-static test_crate::{promoted_const#5}: MaybeUninit<[u8; 1usize]>[{built_in impl Sized for [u8; 1usize]}] = RawMemory(0x0b)
+static test_crate::{promoted_const#5}: u8 = 11u8
 
 static test_crate::{promoted_const#6}: MaybeUninit<[u8; 12usize]>[{built_in impl Sized for [u8; 12usize]}] = RawMemory(0x01, 0x00, 0x00, 0x00, 0x02, --, 0x03, 0x00, 0x04, 0x00, --, --)
 
@@ -159,16 +159,16 @@ unsafe impl "impl_Sync_for_RawPtr" Sync for RawPtr {
 }
 
 // Full name: test_crate::DYN
-pub static DYN: &'static (dyn Trait + 'static) = unsize_cast<&'_ (dyn Trait), &impl_Trait_for_u8::{vtable}>(cast<*const u8>(&raw const test_crate::{promoted_const#2}))
+pub static DYN: &'static (dyn Trait + 'static) = &test_crate::{promoted_const#2} with_metadata(&impl_Trait_for_u8::{vtable})
 
 // Full name: test_crate::FOO
-pub static FOO: &'static (dyn Debug + Sync + 'static) = unsize_cast<&'_ (dyn Debug + Sync), &{impl#8}::{vtable}>(cast<*const i32>(&raw const test_crate::{promoted_const#3}))
+pub static FOO: &'static (dyn Debug + Sync + 'static) = &test_crate::{promoted_const#3} with_metadata(&{impl#8}::{vtable})
 
 // Full name: test_crate::DYN_TAIL
 pub static DYN_TAIL: &'static Wrap<(dyn Trait + 'static)>[{built_in impl MetaSized for (dyn Trait + 'static)}] = unsize_cast<&'_ Wrap<(dyn Trait)>[{built_in impl MetaSized for (dyn Trait)}], &impl_Trait_for_u8::{vtable}>(&raw const test_crate::{promoted_const#4})
 
 // Full name: test_crate::RAW_DYN
-pub static RAW_DYN: RawPtr = RawPtr { _0: unsize_cast<*const (dyn Trait), &impl_Trait_for_u8::{vtable}>(cast<*const u8>(&raw const test_crate::{promoted_const#5})) }
+pub static RAW_DYN: RawPtr = RawPtr { _0: &raw const test_crate::{promoted_const#5} with_metadata(&impl_Trait_for_u8::{vtable}) }
 
 // Full name: test_crate::EMPTY
 pub static EMPTY: &'static [u8] = unsize_cast<&'_ [u8], 0usize>(no-provenance 1)
