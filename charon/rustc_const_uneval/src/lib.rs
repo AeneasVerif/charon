@@ -30,8 +30,6 @@ pub struct Config {
     /// Whether to refer to anonymous allocations (e.g. the bytes of `b"foo"`) as globals, or to
     /// inline their contents at each use.
     pub anon_allocs_as_globals: bool,
-    /// Whether to view string data as `[u8; N]`, and make it a global.
-    pub unsized_strings: bool,
 }
 
 /// How we view an anonymous allocation

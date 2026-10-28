@@ -174,6 +174,8 @@ struct str {
   _0: [u8],
 }
 
+pub const core::ptr::write_bytes::precondition_check::{promoted_const}: str = "unsafe precondition(s) violated: ptr::write_bytes requires that the destination pointer is aligned and non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety." with_metadata(228usize)
+
 #[track_caller]
 fn core::ptr::write_bytes::precondition_check(addr: *const (), align: usize, zero_size: bool)
 {
@@ -207,7 +209,7 @@ fn core::ptr::write_bytes::precondition_check(addr: *const (), align: usize, zer
         storage_dead(_6)
         storage_dead(_5)
         storage_live(msg)
-        msg = const "unsafe precondition(s) violated: ptr::write_bytes requires that the destination pointer is aligned and non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+        msg = &core::ptr::write_bytes::precondition_check::{promoted_const} with_metadata(const 228usize)
         storage_live(_9)
         storage_live(_10)
         storage_live(_11)
@@ -408,6 +410,8 @@ where
   Some { _0: T },
 }
 
+pub const core::mem::alignment::{Alignment}::new_unchecked::precondition_check::{promoted_const}: str = "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety." with_metadata(198usize)
+
 #[track_caller]
 fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: usize)
 {
@@ -431,7 +435,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
     } else {
         storage_dead(_3)
         storage_live(msg)
-        msg = const "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+        msg = &core::mem::alignment::{Alignment}::new_unchecked::precondition_check::{promoted_const} with_metadata(const 198usize)
         storage_live(_5)
         storage_live(_6)
         storage_live(_7)
@@ -818,6 +822,8 @@ where
     return
 }
 
+pub const core::alloc::Allocator::grow::{promoted_const}: str = "`new_layout.size()` must be greater than or equal to `old_layout.size()`" with_metadata(72usize)
+
 // Full name: core::ptr::non_null::{NonNull<[T]>}::as_mut_ptr
 pub fn as_mut_ptr<T>(self: NonNull<[T]>) -> *mut T
 where
@@ -840,6 +846,8 @@ where
     storage_dead(_2)
     return
 }
+
+pub const core::ptr::copy_nonoverlapping::precondition_check::{promoted_const}: str = "unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety." with_metadata(283usize)
 
 #[track_caller]
 fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut (), size: usize, align: usize, count: usize)
@@ -957,7 +965,7 @@ fn core::ptr::copy_nonoverlapping::precondition_check(src: *const (), dst: *mut 
     if move _6 {
     } else {
         storage_live(msg)
-        msg = const "unsafe precondition(s) violated: ptr::copy_nonoverlapping requires that both pointer arguments are aligned and non-null and the specified memory ranges do not overlap\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+        msg = &core::ptr::copy_nonoverlapping::precondition_check::{promoted_const} with_metadata(const 283usize)
         storage_live(_26)
         storage_live(_27)
         storage_live(_28)
@@ -1101,6 +1109,7 @@ where
     let _32: NonNull<u8>; // anonymous local
     let _33: Layout; // anonymous local
     let _34: NonNull<[u8]>; // anonymous local
+    let _35: &'17 str; // anonymous local
 
     storage_live(_0)
     storage_live(_18)
@@ -1127,7 +1136,9 @@ where
             storage_dead(_7)
             storage_live(_11)
             storage_live(_12)
-            _12 = from_str<'15>(const "`new_layout.size()` must be greater than or equal to `old_layout.size()`")
+            storage_live(_35)
+            _35 = &core::alloc::Allocator::grow::{promoted_const} with_metadata(const 72usize)
+            _12 = from_str<'15>(move _35)
             ↳⚡ unwind_continue
             _11 = panic_fmt<'19>(move _12)
             ↳⚡ unwind_continue
@@ -1227,6 +1238,8 @@ where
     return
 }
 
+pub const core::alloc::Allocator::grow_zeroed::{promoted_const}: str = "`new_layout.size()` must be greater than or equal to `old_layout.size()`" with_metadata(72usize)
+
 // Full name: core::alloc::Allocator::grow_zeroed
 pub unsafe fn grow_zeroed<'_0, Self>(self: &'_0 Self, ptr: NonNull<u8>, old_layout: Layout, new_layout: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 where
@@ -1268,6 +1281,7 @@ where
     let _32: NonNull<u8>; // anonymous local
     let _33: Layout; // anonymous local
     let _34: NonNull<[u8]>; // anonymous local
+    let _35: &'17 str; // anonymous local
 
     storage_live(_0)
     storage_live(_18)
@@ -1294,7 +1308,9 @@ where
             storage_dead(_7)
             storage_live(_11)
             storage_live(_12)
-            _12 = from_str<'15>(const "`new_layout.size()` must be greater than or equal to `old_layout.size()`")
+            storage_live(_35)
+            _35 = &core::alloc::Allocator::grow_zeroed::{promoted_const} with_metadata(const 72usize)
+            _12 = from_str<'15>(move _35)
             ↳⚡ unwind_continue
             _11 = panic_fmt<'19>(move _12)
             ↳⚡ unwind_continue
@@ -1394,6 +1410,8 @@ where
     return
 }
 
+pub const core::alloc::Allocator::shrink::{promoted_const}: str = "`new_layout.size()` must be smaller than or equal to `old_layout.size()`" with_metadata(72usize)
+
 // Full name: core::alloc::Allocator::shrink
 pub unsafe fn shrink<'_0, Self>(self: &'_0 Self, ptr: NonNull<u8>, old_layout: Layout, new_layout: Layout) -> Result<NonNull<[u8]>, AllocError>[{built_in impl Sized for NonNull<[u8]>}, {built_in impl Sized for AllocError}]
 where
@@ -1435,6 +1453,7 @@ where
     let _32: NonNull<u8>; // anonymous local
     let _33: Layout; // anonymous local
     let _34: NonNull<[u8]>; // anonymous local
+    let _35: &'17 str; // anonymous local
 
     storage_live(_0)
     storage_live(_18)
@@ -1461,7 +1480,9 @@ where
             storage_dead(_7)
             storage_live(_11)
             storage_live(_12)
-            _12 = from_str<'15>(const "`new_layout.size()` must be smaller than or equal to `old_layout.size()`")
+            storage_live(_35)
+            _35 = &core::alloc::Allocator::shrink::{promoted_const} with_metadata(const 72usize)
+            _12 = from_str<'15>(move _35)
             ↳⚡ unwind_continue
             _11 = panic_fmt<'19>(move _12)
             ↳⚡ unwind_continue
@@ -1815,6 +1836,8 @@ pub fn core::ptr::mut_ptr::{*mut T}::is_null<T>(self: *mut T) -> bool
     return
 }
 
+pub const core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check::{promoted_const}: str = "unsafe precondition(s) violated: NonNull::new_unchecked requires that the pointer is non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety." with_metadata(210usize)
+
 #[track_caller]
 fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mut ())
 {
@@ -1843,7 +1866,7 @@ fn core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check(ptr: *mu
     }
     storage_dead(_3)
     storage_live(msg)
-    msg = const "unsafe precondition(s) violated: NonNull::new_unchecked requires that the pointer is non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+    msg = &core::ptr::non_null::{NonNull<T>}::new_unchecked::precondition_check::{promoted_const} with_metadata(const 210usize)
     storage_live(_5)
     storage_live(_6)
     storage_live(_7)

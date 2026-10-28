@@ -9,23 +9,11 @@ use charon_lib::ast::*;
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn translate_constant_literal_to_constant_expr_kind(
         &mut self,
-        span: Span,
         v: &hax::ConstantLiteral,
     ) -> Result<ConstantExprKind, Error> {
         Ok(match v {
             hax::ConstantLiteral::ByteStr(bs) => ConstantExprKind::ByteStr(bs.clone()),
-            // A `str` value not behind a reference, e.g. the tail of a `str`-tailed DST
-            hax::ConstantLiteral::Str(str) => {
-                let ty_is_sized = self.translate_sized_proof(span, self.tcx.types.u8)?;
-                let bytes = str
-                    .bytes()
-                    .map(|b| IntegerValue::Unsigned(UIntTy::U8, b.into()).to_constant())
-                    .collect();
-                let slice_ty = Ty::mk_slice(Ty::mk_u8(), ty_is_sized);
-                let bytes = ConstantExpr::new(ConstantExprKind::Array(bytes), slice_ty);
-                // we encode `str` as `struct { [u8] }`
-                ConstantExprKind::Adt(None, [bytes].into())
-            }
+            hax::ConstantLiteral::Str(str) => ConstantExprKind::Str(str.clone()),
             hax::ConstantLiteral::Char(c) => ConstantExprKind::Char(*c),
             hax::ConstantLiteral::Bool(b) => ConstantExprKind::Bool(*b),
             hax::ConstantLiteral::Int(i) => {
@@ -134,7 +122,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let ty = self.translate_ty(span, &v.ty)?;
         let kind = match v.kind.as_ref() {
             hax::ConstantExprKind::Literal(lit) => {
-                self.translate_constant_literal_to_constant_expr_kind(span, lit)?
+                self.translate_constant_literal_to_constant_expr_kind(lit)?
             }
             hax::ConstantExprKind::Adt { kind, fields } => {
                 let fields: IndexVec<FieldId, ConstantExpr> = fields
@@ -179,15 +167,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     ConstantExprKind::Global(global_ref)
                 }
             },
-            hax::ConstantExprKind::Ptr {
-                base: hax::ConstantPtrBase::Value(arg),
-                ..
-            } if ty.is_ref()
-                && let hax::ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)) =
-                    arg.kind.as_ref() =>
-            {
-                ConstantExprKind::Str(s.clone())
-            }
             hax::ConstantExprKind::Ptr {
                 base,
                 projections,

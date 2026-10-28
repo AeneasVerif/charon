@@ -66,24 +66,31 @@ pub fn impl_Trait1_for_Type1::method()
     return
 }
 
+// Full name: test_crate::module2::{impl Trait1 for Type2}::method::{promoted_const}
+pub const test_crate::module2::impl_Trait1_for_Type2::method::{promoted_const}: str = "don't translate this!\n" with_metadata(22usize)
+
 // Full name: test_crate::module2::{impl Trait1 for Type2}::method
 pub fn impl_Trait1_for_Type2::method()
 {
     let _0: (); // return
     let _1: (); // anonymous local
     let _2: Arguments<'1>; // anonymous local
+    let _3: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _2 = from_str<'2>(const "don't translate this!\n")
+    storage_live(_3)
+    _3 = &test_crate::module2::impl_Trait1_for_Type2::method::{promoted_const} with_metadata(const 22usize)
+    _2 = from_str<'2>(move _3)
     ↳⚡ unwind_continue
     _1 = _print<'6>(move _2)
     ↳⚡ unwind_continue
     storage_dead(_2)
     storage_dead(_1)
     _0 = ()
+    storage_dead(_3)
     return
 }
 

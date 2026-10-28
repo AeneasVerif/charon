@@ -32,18 +32,23 @@ struct () {}
 pub fn _print<'_0>(_1: Arguments<'_0>)
 = <opaque>
 
+pub const unsafe::main::{promoted_const}: str = "Hello, world!\n" with_metadata(14usize)
+
 // Full name: unsafe::main
 fn main()
 {
     let _0: (); // return
     let _1: (); // anonymous local
     let _2: Arguments<'1>; // anonymous local
+    let _3: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _2 = from_str<'2>(const "Hello, world!\n")
+    storage_live(_3)
+    _3 = &unsafe::main::{promoted_const} with_metadata(const 14usize)
+    _2 = from_str<'2>(move _3)
     ↳⚡ unwind_continue
     _1 = _print<'6>(move _2)
     ↳⚡ unwind_continue

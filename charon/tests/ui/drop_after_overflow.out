@@ -58,6 +58,9 @@ where
 // Full name: test_crate::Foo
 struct Foo {}
 
+// Full name: test_crate::{impl Drop for Foo}::drop::{promoted_const}
+pub const test_crate::impl_Drop_for_Foo::drop::{promoted_const}: str = "Dropping Foo\n" with_metadata(13usize)
+
 // Full name: test_crate::{impl Drop for Foo}::drop
 pub fn impl_Drop_for_Foo::drop<'_0>(self: &'_0 mut Foo)
 {
@@ -65,13 +68,16 @@ pub fn impl_Drop_for_Foo::drop<'_0>(self: &'_0 mut Foo)
     let self: &'1 mut Foo; // arg #1
     let _2: (); // anonymous local
     let _3: Arguments<'3>; // anonymous local
+    let _4: &'6 str; // anonymous local
 
     bb0: {
         storage_live(_0);
         _0 = ();
         storage_live(_2);
         storage_live(_3);
-        _3 = from_str<'4>(const "Dropping Foo\n") -> bb1 (unwind: bb4);
+        storage_live(_4);
+        _4 = &test_crate::impl_Drop_for_Foo::drop::{promoted_const} with_metadata(const 13usize);
+        _3 = from_str<'4>(move _4) -> bb1 (unwind: bb4);
     }
 
     bb1: {

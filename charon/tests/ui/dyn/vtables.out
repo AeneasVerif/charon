@@ -1074,6 +1074,8 @@ fn use_alias<'_0>(x: &'_0 (dyn Both32And64 + '_0))
     return
 }
 
+pub const test_crate::main::{promoted_const#18}: str = "Hello" with_metadata(5usize)
+
 // Full name: test_crate::main
 fn main()
 {
@@ -1271,7 +1273,7 @@ fn main()
     storage_live(_15)
     storage_live(_16)
     storage_live(_17)
-    _17 = const "Hello"
+    _17 = &test_crate::main::{promoted_const#18} with_metadata(const 5usize)
     _16 = &(*_17) with_metadata(copy _17.metadata)
     _15 = to_string<'144, str>[{built_in impl MetaSized for str}, {impl#16}](move _16)
     ↳⚡ storage_dead(_85)

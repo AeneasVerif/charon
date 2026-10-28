@@ -1,5 +1,3 @@
-//@ revisions=sized,unsized
-//@[unsized] charon-args=--unsized-strings
 static FOO: &str = "hello";
 static BAR: &[u8] = b"hello";
 

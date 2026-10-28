@@ -299,10 +299,6 @@ and cli_options = {
           function, as an evaluated value, or as raw bytes. This is always
           best-effort: in some cases we only get the evaluated constant, and in
           others we cannot evaluate the constant and keep the initializer. *)
-  unsized_strings : bool;
-      (** Replace string literal constants with a constant u8 array that gets
-          unsized, expliciting the fact a string constant has a hidden
-          reference. *)
   reconstruct_fallible_operations : bool;
       (** Replace "bound checks followed by UB-on-overflow operation" with the
           corresponding panic-on-overflow operation. This loses unwinding

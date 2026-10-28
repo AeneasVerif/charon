@@ -2196,7 +2196,6 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      let* raw_consts = bool_of_postcard ctx st in
      let* inline_anon_consts = bool_of_postcard ctx st in
      let* consts = option_of_postcard const_handling_of_postcard ctx st in
-     let* unsized_strings = bool_of_postcard ctx st in
      let* reconstruct_fallible_operations = bool_of_postcard ctx st in
      let* reconstruct_panic_calls = bool_of_postcard ctx st in
      let* reconstruct_asserts = bool_of_postcard ctx st in
@@ -2265,7 +2264,6 @@ and cli_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
           raw_consts;
           inline_anon_consts;
           consts;
-          unsized_strings;
           reconstruct_fallible_operations;
           reconstruct_panic_calls;
           reconstruct_asserts;

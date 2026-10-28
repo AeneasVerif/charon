@@ -26,6 +26,8 @@ trait Trait<Self>
     non-dyn-compatible
 }
 
+pub const test_crate::Trait::default_method::{promoted_const}: str = "not yet implemented" with_metadata(19usize)
+
 // Full name: test_crate::Trait::default_method
 fn default_method<Self, T>() -> TraitClause1::Assoc
 where
@@ -34,10 +36,13 @@ where
 {
     let _0: TraitClause1::Assoc; // return
     let _1: !; // anonymous local
+    let _2: &'1 str; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
-    _1 = panic(const "not yet implemented")
+    storage_live(_2)
+    _2 = &test_crate::Trait::default_method::{promoted_const} with_metadata(const 19usize)
+    _1 = panic(move _2)
     ↳⚡ unwind_continue
 }
 

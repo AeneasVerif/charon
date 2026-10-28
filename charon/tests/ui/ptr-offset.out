@@ -74,6 +74,8 @@ struct str {
   _0: [u8],
 }
 
+pub const core::ptr::const_ptr::{*const T}::offset::precondition_check::{promoted_const}: str = "unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety." with_metadata(210usize)
+
 struct (_, _, _)<A, B, C>
 where
     TraitClause0: (A: Sized),
@@ -244,7 +246,7 @@ fn precondition_check(this: *const (), count: isize, size: usize)
         storage_dead(_6)
         storage_dead(_5)
         storage_live(msg)
-        msg = const "unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+        msg = &core::ptr::const_ptr::{*const T}::offset::precondition_check::{promoted_const} with_metadata(const 210usize)
         storage_live(_9)
         storage_live(_10)
         storage_live(_11)

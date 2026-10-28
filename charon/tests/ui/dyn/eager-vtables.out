@@ -54,6 +54,9 @@ trait Foo<Self>
 // Full name: test_crate::S
 struct S {}
 
+// Full name: test_crate::{impl Debug for S}::fmt::{promoted_const}
+pub const test_crate::impl_Debug_for_S::fmt::{promoted_const}: str = "S" with_metadata(1usize)
+
 // Full name: test_crate::{impl Debug for S}::fmt
 #[inline(hint)]
 pub fn fmt<'_0, '_1, '_2>(self: &'_0 S, f: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
@@ -72,7 +75,7 @@ where
     _3 = &two-phase-mut (*f) with_metadata(copy f.metadata)
     storage_live(_4)
     storage_live(_5)
-    _5 = const "S"
+    _5 = &test_crate::impl_Debug_for_S::fmt::{promoted_const} with_metadata(const 1usize)
     _4 = &(*_5) with_metadata(copy _5.metadata)
     _0 = write_str<'14, '17, '18>(move _3, move _4)
     ↳⚡ storage_dead(f)

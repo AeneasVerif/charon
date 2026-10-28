@@ -357,6 +357,10 @@ fn foo()
     return
 }
 
+pub const test_attributes::tests::test_ignore::{promoted_const#1}: str = "src/lib.rs" with_metadata(10usize)
+
+pub const test_attributes::tests::test_ignore::{promoted_const}: str = "tests::test_ignore" with_metadata(18usize)
+
 #[ignore]
 fn test_attributes::tests::test_ignore#1()
 {
@@ -447,18 +451,24 @@ pub fn test_attributes::tests::test_ignore() -> TestDescAndFn
     let _6: TestFn; // anonymous local
     let _7: fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // anonymous local
     let _8: test_attributes::tests::test_ignore::{closure}; // anonymous local
+    let _9: &'12 str; // anonymous local
+    let _10: &'20 str; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
     storage_live(_2)
-    _2 = TestName::StaticTestName { _0: const "tests::test_ignore" }
+    storage_live(_9)
+    _9 = &test_attributes::tests::test_ignore::{promoted_const} with_metadata(const 18usize)
+    _2 = TestName::StaticTestName { _0: move _9 }
     storage_live(_3)
     _3 = Option::None {  }
     storage_live(_4)
     _4 = ShouldPanic::No {  }
     storage_live(_5)
     _5 = TestType::UnitTest {  }
-    _1 = TestDesc { name: move _2, ignore: const true, ignore_message: move _3, source_file: const "src/lib.rs", start_line: const 18usize, start_col: const 8usize, end_line: const 18usize, end_col: const 19usize, should_panic: move _4, compile_fail: const false, no_run: const false, test_type: move _5 }
+    storage_live(_10)
+    _10 = &test_attributes::tests::test_ignore::{promoted_const#1} with_metadata(const 10usize)
+    _1 = TestDesc { name: move _2, ignore: const true, ignore_message: move _3, source_file: move _10, start_line: const 18usize, start_col: const 8usize, end_line: const 18usize, end_col: const 19usize, should_panic: move _4, compile_fail: const false, no_run: const false, test_type: move _5 }
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
@@ -489,18 +499,27 @@ pub fn test_attributes::tests::test_ignore() -> TestDescAndFn
 
 pub static test_attributes::tests::test_ignore: TestDescAndFn = test_attributes::tests::test_ignore()
 
+pub const test_attributes::tests::test_should_panic::{promoted_const#1}: str = "src/lib.rs" with_metadata(10usize)
+
+pub const test_attributes::tests::test_should_panic::{promoted_const}: str = "tests::test_should_panic" with_metadata(24usize)
+
+pub const test_attributes::tests::test_should_panic#1::{promoted_const}: str = "This test should panic" with_metadata(22usize)
+
 #[should_panic]
 fn test_attributes::tests::test_should_panic#1()
 {
     let _0: (); // return
     let _1: !; // anonymous local
     let _2: Arguments<'1>; // anonymous local
+    let _3: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
     storage_live(_2)
-    _2 = from_str<'2>(const "This test should panic")
+    storage_live(_3)
+    _3 = &test_attributes::tests::test_should_panic#1::{promoted_const} with_metadata(const 22usize)
+    _2 = from_str<'2>(move _3)
     ↳⚡ unwind_continue
     _1 = panic_fmt<'6>(move _2)
     ↳⚡ unwind_continue
@@ -585,18 +604,24 @@ pub fn test_attributes::tests::test_should_panic() -> TestDescAndFn
     let _6: TestFn; // anonymous local
     let _7: fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // anonymous local
     let _8: test_attributes::tests::test_should_panic::{closure}; // anonymous local
+    let _9: &'12 str; // anonymous local
+    let _10: &'20 str; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
     storage_live(_2)
-    _2 = TestName::StaticTestName { _0: const "tests::test_should_panic" }
+    storage_live(_9)
+    _9 = &test_attributes::tests::test_should_panic::{promoted_const} with_metadata(const 24usize)
+    _2 = TestName::StaticTestName { _0: move _9 }
     storage_live(_3)
     _3 = Option::None {  }
     storage_live(_4)
     _4 = ShouldPanic::Yes {  }
     storage_live(_5)
     _5 = TestType::UnitTest {  }
-    _1 = TestDesc { name: move _2, ignore: const false, ignore_message: move _3, source_file: const "src/lib.rs", start_line: const 12usize, start_col: const 8usize, end_line: const 12usize, end_col: const 25usize, should_panic: move _4, compile_fail: const false, no_run: const false, test_type: move _5 }
+    storage_live(_10)
+    _10 = &test_attributes::tests::test_should_panic::{promoted_const#1} with_metadata(const 10usize)
+    _1 = TestDesc { name: move _2, ignore: const false, ignore_message: move _3, source_file: move _10, start_line: const 12usize, start_col: const 8usize, end_line: const 12usize, end_col: const 25usize, should_panic: move _4, compile_fail: const false, no_run: const false, test_type: move _5 }
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)
@@ -626,6 +651,10 @@ pub fn test_attributes::tests::test_should_panic() -> TestDescAndFn
 }
 
 pub static test_attributes::tests::test_should_panic: TestDescAndFn = test_attributes::tests::test_should_panic()
+
+pub const test_attributes::tests::test_foo::{promoted_const#1}: str = "src/lib.rs" with_metadata(10usize)
+
+pub const test_attributes::tests::test_foo::{promoted_const}: str = "tests::test_foo" with_metadata(15usize)
 
 fn test_attributes::tests::test_foo#1()
 {
@@ -721,18 +750,24 @@ pub fn test_attributes::tests::test_foo() -> TestDescAndFn
     let _6: TestFn; // anonymous local
     let _7: fn() -> Result<(), String>[{built_in impl Sized for ()}, {built_in impl Sized for String}]; // anonymous local
     let _8: test_attributes::tests::test_foo::{closure}; // anonymous local
+    let _9: &'12 str; // anonymous local
+    let _10: &'20 str; // anonymous local
 
     storage_live(_0)
     storage_live(_1)
     storage_live(_2)
-    _2 = TestName::StaticTestName { _0: const "tests::test_foo" }
+    storage_live(_9)
+    _9 = &test_attributes::tests::test_foo::{promoted_const} with_metadata(const 15usize)
+    _2 = TestName::StaticTestName { _0: move _9 }
     storage_live(_3)
     _3 = Option::None {  }
     storage_live(_4)
     _4 = ShouldPanic::No {  }
     storage_live(_5)
     _5 = TestType::UnitTest {  }
-    _1 = TestDesc { name: move _2, ignore: const false, ignore_message: move _3, source_file: const "src/lib.rs", start_line: const 6usize, start_col: const 8usize, end_line: const 6usize, end_col: const 16usize, should_panic: move _4, compile_fail: const false, no_run: const false, test_type: move _5 }
+    storage_live(_10)
+    _10 = &test_attributes::tests::test_foo::{promoted_const#1} with_metadata(const 10usize)
+    _1 = TestDesc { name: move _2, ignore: const false, ignore_message: move _3, source_file: move _10, start_line: const 6usize, start_col: const 8usize, end_line: const 6usize, end_col: const 16usize, should_panic: move _4, compile_fail: const false, no_run: const false, test_type: move _5 }
     storage_dead(_5)
     storage_dead(_4)
     storage_dead(_3)

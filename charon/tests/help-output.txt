@@ -155,9 +155,6 @@ Options:
           - values:       Try evaluating consts and statics to their final value. If evaluation fails, we fall back to the initializer call
           - bytes:        Try evaluating consts and statics to raw bytes, using `ConstantExprKind::RawMemory`. If evaluation fails, we fall back to the initializer call
 
-      --unsized-strings
-          Replace string literal constants with a constant u8 array that gets unsized, expliciting the fact a string constant has a hidden reference
-
       --reconstruct-fallible-operations
           Replace "bound checks followed by UB-on-overflow operation" with the corresponding panic-on-overflow operation. This loses unwinding information
 

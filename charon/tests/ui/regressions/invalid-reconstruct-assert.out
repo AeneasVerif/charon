@@ -169,7 +169,6 @@ where
     let _48: bool; // anonymous local
     let _49: (); // anonymous local
     let _50: (); // anonymous local
-    let _51: Result<usize, usize>[{built_in impl Sized for usize}, {built_in impl Sized for usize}]; // anonymous local
 
     bb0: {
         storage_live(_0);
@@ -195,9 +194,7 @@ where
 
     bb1: {
         storage_dead(_4);
-        storage_live(_51);
-        _51 = Result::Err { _0: const 0usize };
-        _0 = move _51;
+        _0 = Result::Err { _0: const 0usize };
         storage_dead(size);
         drop[TraitClause3::drop_glue<'15>] f -> bb2 (unwind: bb3);
     }
@@ -222,7 +219,6 @@ where
         storage_dead(base);
         storage_dead(f);
         storage_dead(self);
-        storage_dead(_51);
         return;
     }
 
@@ -246,7 +242,6 @@ where
         storage_dead(base);
         storage_dead(f);
         storage_dead(self);
-        storage_dead(_51);
         unwind_continue;
     }
 
@@ -367,7 +362,6 @@ where
         storage_dead(base);
         storage_dead(f);
         storage_dead(self);
-        storage_dead(_51);
         unwind_continue;
     }
 
@@ -391,7 +385,6 @@ where
         storage_dead(base);
         storage_dead(f);
         storage_dead(self);
-        storage_dead(_51);
         unwind_terminate;
     }
 
@@ -419,7 +412,6 @@ where
         storage_dead(base);
         storage_dead(f);
         storage_dead(self);
-        storage_dead(_51);
         unwind_continue;
     }
 
@@ -443,7 +435,6 @@ where
         storage_dead(base);
         storage_dead(f);
         storage_dead(self);
-        storage_dead(_51);
         unwind_terminate;
     }
 
@@ -599,7 +590,6 @@ where
         storage_dead(base);
         storage_dead(f);
         storage_dead(self);
-        storage_dead(_51);
         return;
     }
 
@@ -623,7 +613,6 @@ where
         storage_dead(base);
         storage_dead(f);
         storage_dead(self);
-        storage_dead(_51);
         unwind_continue;
     }
 
@@ -655,7 +644,6 @@ where
         storage_dead(base);
         storage_dead(f);
         storage_dead(self);
-        storage_dead(_51);
         unwind_continue;
     }
 
@@ -679,7 +667,6 @@ where
         storage_dead(base);
         storage_dead(f);
         storage_dead(self);
-        storage_dead(_51);
         unwind_terminate;
     }
 

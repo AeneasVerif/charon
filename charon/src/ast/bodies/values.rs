@@ -45,7 +45,7 @@ pub enum ConstantExprKind {
     ///
     /// This is eliminated inside functions if `--raw-consts` is off.
     Ptr(RefKind, GlobalPlace, Option<UnsizingMetadata>),
-    /// `str` value.
+    /// `str` value. This represents an unsized value of type `str` (and not `&str`).
     Str(String),
     /// Byte string value.
     ByteStr(Vec<u8>),

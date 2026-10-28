@@ -1,7 +1,5 @@
 //@ rustc-args=--target x86_64-unknown-linux-gnu
-//@ revisions=values,unsized_strings
-//@[values] charon-args=--consts=values
-//@[unsized_strings] charon-args=--consts=values --unsized-strings
+//@ charon-args=--consts=values
 pub static STR: &str = "hello";
 pub static STR_SUFFIX: &str = "hello".split_at(1).1;
 pub static CSTR: &core::ffi::CStr = c"hi";

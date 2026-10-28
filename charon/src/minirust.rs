@@ -9,7 +9,7 @@ use minirust_rs::{mem::TreeBorrowsMemory, prelude::TerminationInfo};
 use miniutil::build as mb;
 use smallvec::{SmallVec, smallvec};
 use std::hash::{DefaultHasher, Hash, Hasher};
-use std::{cell::RefCell, io::Write, marker::PhantomData};
+use std::{io::Write, marker::PhantomData};
 
 use crate::{
     ast::{from_rustc::LangItem, *},
@@ -104,8 +104,6 @@ struct TranslateCtx<'a, T: mini::Target> {
     fmt: FmtCtx<'a>,
     target_name: &'a TargetTriple,
     target: &'a TargetInfo,
-    global_ids: RefCell<Generator<GlobalDeclId>>,
-    string_literals: RefCell<SeqHashMap<String, mini::GlobalName>>,
     mini_target: PhantomData<T>,
 }
 
@@ -128,8 +126,6 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
             fmt: krate.into_fmt(),
             target_name,
             target,
-            global_ids: RefCell::new(Generator::new_with_init_value(krate.global_decls.next_id())),
-            string_literals: RefCell::new(Default::default()),
             mini_target: PhantomData,
         })
     }
@@ -203,16 +199,6 @@ impl<'a, T: mini::Target> TranslateCtx<'a, T> {
                 let mini_global = self.global(gdecl.item_meta.span, gdecl)?;
                 globals.insert(self.global_name(id), mini_global);
             }
-        }
-        for (value, name) in self.string_literals.borrow().iter() {
-            globals.insert(
-                *name,
-                mini::Global {
-                    bytes: value.as_bytes().iter().copied().map(Some).collect(),
-                    relocations: Default::default(),
-                    align: mini::Align::ONE,
-                },
-            );
         }
 
         // For MiniRust, traits are basically just their vtables.
@@ -1247,32 +1233,6 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     .try_collect()?,
                 ty,
             ),
-            ConstantExprKind::Str(value) => {
-                let mut literals = self.string_literals.borrow_mut();
-                let name = if let Some(name) = literals.get(value) {
-                    *name
-                } else {
-                    let name = self.global_name(self.global_ids.borrow_mut().fresh_id());
-                    literals.insert(value.clone(), name);
-                    name
-                };
-                mb::construct_wide_pointer(
-                    mini::ValueExpr::Constant(
-                        mini::Constant::GlobalPointer(mini::Relocation {
-                            name,
-                            offset: mini::Size::ZERO,
-                        }),
-                        mini::Type::Ptr(mini::PtrType::Raw {
-                            meta_kind: mini::PointerMetaKind::None,
-                        }),
-                    ),
-                    mini::ValueExpr::Constant(
-                        mini::Constant::Int(mini::Int::from(value.len())),
-                        mb::int_ty(mini::Signedness::Unsigned, T::PTR_SIZE),
-                    ),
-                    ty,
-                )
-            }
             ConstantExprKind::FnDef(_) => mini::ValueExpr::Tuple(Default::default(), ty),
             ConstantExprKind::FnPtr(fn_ptr) => match *fn_ptr.kind {
                 FnPtrKind::Fun(id) => self.fn_pointer(id),

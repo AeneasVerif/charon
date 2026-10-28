@@ -283,7 +283,29 @@ impl UllbcPass for Transform {
     }
 
     fn transform_function(&self, ctx: &mut TransformCtx, fun_decl: &mut FunDecl) {
-        fun_decl.transform_ullbc_operands(ctx, transform_operand);
+        fun_decl.transform_ullbc_statements(ctx, |ctx, st| {
+            let assigns_const = matches!(
+                st.kind,
+                StatementKind::Assign(_, Rvalue::Use(Operand::Const(_), _))
+            );
+            st.kind
+                .dyn_visit_in_body_mut(|op: &mut Operand| transform_operand(ctx, op));
+            // If we turned `x = const c` into `tmp = rval; x = move tmp`, assign `rval` directly.
+            if assigns_const
+                && let StatementKind::Assign(_, rval) = &mut st.kind
+                && let Rvalue::Use(Operand::Move(tmp), _) = rval
+                && let Some(last) = ctx.statements.last()
+                && let StatementKind::Assign(last_dest, last_rval) = &last.kind
+                && last_dest == tmp
+            {
+                *rval = last_rval.clone();
+                ctx.statements.pop();
+            }
+        });
+        fun_decl.transform_ullbc_terminators(ctx, |ctx, term| {
+            term.kind
+                .dyn_visit_in_body_mut(|op: &mut Operand| transform_operand(ctx, op));
+        });
         if let Some(body) = fun_decl.body.as_unstructured_mut() {
             for block in body.body.iter_mut() {
                 // Normalize unit constants into unit aggregates.

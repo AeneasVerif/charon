@@ -180,7 +180,6 @@ pub fn inline_const()
     let _1: &'1 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
     let _2: *const MaybeUninit<[u8; 12usize]>[{built_in impl Sized for [u8; 12usize]}]; // anonymous local
     let _3: *const Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
-    let _4: &'2 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -189,13 +188,10 @@ pub fn inline_const()
     _2 = &raw const test_crate::{promoted_const#6}
     storage_live(_3)
     _3 = unsize_cast<*const Outer<[u16]>[{built_in impl MetaSized for [u16]}], 2usize>(move _2)
-    storage_live(_4)
-    _4 = &(*_3) with_metadata(copy _3.metadata)
-    _1 = move _4
+    _1 = &(*_3) with_metadata(copy _3.metadata)
     set_type(typeof(_1) <= &'3 Outer<[u16]>[{built_in impl MetaSized for [u16]}])
     storage_dead(_1)
     _0 = ()
-    storage_dead(_4)
     storage_dead(_3)
     storage_dead(_2)
     return

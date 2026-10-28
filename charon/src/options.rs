@@ -271,11 +271,6 @@ pub struct CliOpts {
     #[clap(long)]
     #[serde(default)]
     pub consts: Option<ConstHandling>,
-    /// Replace string literal constants with a constant u8 array that gets unsized,
-    /// expliciting the fact a string constant has a hidden reference.
-    #[clap(long)]
-    #[serde(default)]
-    pub unsized_strings: bool,
     /// Replace "bound checks followed by UB-on-overflow operation" with the corresponding
     /// panic-on-overflow operation. This loses unwinding information.
     #[clap(long)]
@@ -817,9 +812,6 @@ pub struct TranslateOptions {
     pub inline_anon_consts: bool,
     /// How much to evaluate constants and statics.
     pub consts: ConstHandling,
-    /// Replace string literal constants with a constant u8 array that gets unsized,
-    /// expliciting the fact a string constant has a hidden reference.
-    pub unsized_strings: bool,
     /// Replace "bound checks followed by UB-on-overflow operation" with the corresponding
     /// panic-on-overflow operation. This loses unwinding information.
     pub reconstruct_fallible_operations: bool,
@@ -1007,7 +999,6 @@ impl TranslateOptions {
             raw_consts: options.raw_consts,
             inline_anon_consts: options.inline_anon_consts,
             consts: options.consts.unwrap_or_default(),
-            unsized_strings: options.unsized_strings,
             reconstruct_fallible_operations: options.reconstruct_fallible_operations,
             reconstruct_panic_calls: options.reconstruct_panic_calls,
             reconstruct_asserts: options.reconstruct_asserts,

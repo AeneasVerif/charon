@@ -201,6 +201,9 @@ struct Point {
   y: Box<i32>[{built_in impl MetaSized for i32}, {built_in impl Sized for Global}, {built_in impl Destruct for i32}, {built_in impl Destruct for Global}],
 }
 
+// Full name: test_crate::{impl Drop for Point}::drop::{promoted_const}
+pub const test_crate::impl_Drop_for_Point::drop::{promoted_const}: str = "Dropping Point\n" with_metadata(15usize)
+
 // Full name: test_crate::{impl Drop for Point}::drop
 pub fn impl_Drop_for_Point::drop<'_0>(self: &'_0 mut Point)
 {
@@ -208,12 +211,15 @@ pub fn impl_Drop_for_Point::drop<'_0>(self: &'_0 mut Point)
     let self: &'1 mut Point; // arg #1
     let _2: (); // anonymous local
     let _3: Arguments<'3>; // anonymous local
+    let _4: &'6 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_2)
     storage_live(_3)
-    _3 = from_str<'4>(const "Dropping Point\n")
+    storage_live(_4)
+    _4 = &test_crate::impl_Drop_for_Point::drop::{promoted_const} with_metadata(const 15usize)
+    _3 = from_str<'4>(move _4)
     ↳⚡ storage_dead(self)
         unwind_continue
     _2 = _print<'8>(move _3)
@@ -223,6 +229,7 @@ pub fn impl_Drop_for_Point::drop<'_0>(self: &'_0 mut Point)
     storage_dead(_2)
     _0 = ()
     storage_dead(self)
+    storage_dead(_4)
     return
 }
 

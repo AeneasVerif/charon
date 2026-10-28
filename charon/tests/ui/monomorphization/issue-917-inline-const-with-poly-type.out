@@ -107,14 +107,11 @@ fn foo::<()>(x: ())
     let f: fn(()); // local
     let _3: fn(()); // anonymous local
     let _4: (); // anonymous local
-    let _5: fn(()); // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(f)
-    storage_live(_5)
-    _5 = fn_def_to_fn_ptr(const {as_fn}::<()>)
-    f = move _5
+    f = fn_def_to_fn_ptr(const {as_fn}::<()>)
     fake_read(f)
     set_type(typeof(f) == fn(()))
     storage_live(_3)
@@ -128,7 +125,6 @@ fn foo::<()>(x: ())
     storage_dead(_3)
     storage_dead(f)
     storage_dead(x)
-    storage_dead(_5)
     return
 }
 

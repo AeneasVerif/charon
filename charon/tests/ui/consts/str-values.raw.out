@@ -1,0 +1,64 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+struct str {
+  _0: [u8],
+}
+
+// Full name: test_crate::Wrap
+struct Wrap<T>
+where
+    TraitClause0: (T: MetaSized),
+{
+  _0: u8,
+  _1: T,
+}
+
+// Full name: test_crate::str_tail
+fn str_tail<const W : &'static Wrap<str>[{built_in impl MetaSized for str}]>()
+{
+    let _0: (); // return
+
+    storage_live(_0)
+    _0 = ()
+    _0 = const ()
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let _0: (); // return
+    let _1: &'1 str; // anonymous local
+    let _2: (); // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_1)
+    _1 = const &"hello" with_metadata(5usize)
+    storage_dead(_1)
+    storage_live(_2)
+    _2 = str_tail<&Wrap { _0: 5u8, _1: "ab" } with_metadata(2usize)>()
+    ↳⚡ unwind_continue
+    storage_dead(_2)
+    _0 = const ()
+    return
+}
+
+
+

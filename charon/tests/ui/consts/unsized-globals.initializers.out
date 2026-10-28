@@ -501,18 +501,14 @@ pub fn inline_const()
 {
     let _0: (); // return
     let _1: &'1 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
-    let _2: &'2 Outer<[u16]>[{built_in impl MetaSized for [u16]}]; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    storage_live(_2)
-    _2 = &test_crate::inline_const::{promoted_const} with_metadata(const 2usize)
-    _1 = move _2
+    _1 = &test_crate::inline_const::{promoted_const} with_metadata(const 2usize)
     set_type(typeof(_1) <= &'3 Outer<[u16]>[{built_in impl MetaSized for [u16]}])
     storage_dead(_1)
     _0 = ()
-    storage_dead(_2)
     return
 }
 

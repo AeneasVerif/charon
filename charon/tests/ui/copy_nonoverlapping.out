@@ -369,6 +369,8 @@ fn check_language_ub() -> bool
     return
 }
 
+pub const core::mem::alignment::{Alignment}::new_unchecked::precondition_check::{promoted_const}: str = "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety." with_metadata(198usize)
+
 struct (_, _)<A, B>
 where
     TraitClause0: (A: Sized),
@@ -562,7 +564,7 @@ fn core::mem::alignment::{Alignment}::new_unchecked::precondition_check(align: u
     } else {
         storage_dead(_3)
         storage_live(msg)
-        msg = const "unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."
+        msg = &core::mem::alignment::{Alignment}::new_unchecked::precondition_check::{promoted_const} with_metadata(const 198usize)
         storage_live(_5)
         storage_live(_6)
         storage_live(_7)

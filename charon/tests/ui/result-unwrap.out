@@ -37,6 +37,8 @@ struct str {
   _0: [u8],
 }
 
+pub const core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap::{promoted_const}: str = "called `Result::unwrap()` on an `Err` value" with_metadata(43usize)
+
 // Full name: core::result::unwrap_failed
 #[track_caller]
 fn unwrap_failed<'_0, '_1>(_1: &'_0 str, _2: &'_1 (dyn Debug + '_1)) -> !
@@ -55,6 +57,7 @@ where
     let _3: !; // anonymous local
     let _4: &'3 (dyn Debug + '4); // anonymous local
     let _5: &'6 E; // anonymous local
+    let _6: &'14 str; // anonymous local
 
     storage_live(t)
     storage_live(_3)
@@ -68,13 +71,16 @@ where
             storage_live(_5)
             _5 = &e
             _4 = unsize_cast<&'7 (dyn Debug + '8), &vtable_of(TraitClause2)>(copy _5)
-            _3 = unwrap_failed<'11, '12>(const "called `Result::unwrap()` on an `Err` value", move _4)
+            storage_live(_6)
+            _6 = &core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap::{promoted_const} with_metadata(const 43usize)
+            _3 = unwrap_failed<'11, '12>(move _6, move _4)
             ↳⚡ drop[{built_in impl Destruct for E}::drop_glue<'15>] e
                 ↳⚡ storage_dead(_5)
                     storage_dead(_4)
                     storage_dead(_3)
                     storage_dead(e)
                     storage_dead(self)
+                    storage_dead(_6)
                     unwind_terminate
                 storage_dead(_5)
                 storage_dead(_4)
@@ -90,6 +96,7 @@ where
     storage_dead(_3)
     storage_dead(e)
     storage_dead(self)
+    storage_dead(_6)
     return
 }
 

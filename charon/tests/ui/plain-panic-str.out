@@ -20,18 +20,24 @@ struct str {
   _0: [u8],
 }
 
+pub const test_crate::main::{promoted_const}: str = "O no" with_metadata(4usize)
+
 // Full name: test_crate::main
 fn main()
 {
     let _0: (); // return
     let _1: Arguments<'1>; // anonymous local
+    let _2: &'4 str; // anonymous local
 
     storage_live(_0)
     _0 = ()
     storage_live(_1)
-    _1 = from_str<'2>(const "O no")
+    storage_live(_2)
+    _2 = &test_crate::main::{promoted_const} with_metadata(const 4usize)
+    _1 = from_str<'2>(move _2)
     ↳⚡ storage_dead(_1)
         unwind_continue
+    storage_dead(_2)
     panic(core::panicking::panic_fmt)
     ↳⚡ storage_dead(_1)
         unwind_continue

@@ -125,7 +125,6 @@ fn main()
     let _11: &'28 [Argument<'29>; 1usize]; // anonymous local
     let _12: &'33 [Argument<'34>; 1usize]; // anonymous local
     let _13: [u8; 4usize]; // anonymous local
-    let _14: &'44 [u8; 4usize]; // anonymous local
 
     storage_live(_0)
     _0 = ()
@@ -154,9 +153,7 @@ fn main()
     storage_live(_10)
     storage_live(_13)
     _13 = [const 192u8, const 1u8, const 10u8, const 0u8]
-    storage_live(_14)
-    _14 = &_13
-    _10 = move _14
+    _10 = &_13
     _9 = &(*_10)
     storage_live(_11)
     storage_live(_12)

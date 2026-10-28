@@ -1,0 +1,20 @@
+# Final LLBC before serialization:
+
+struct str {
+  _0: [u8],
+}
+
+pub const test_crate::ret_str::{promoted_const}: str = "hello" with_metadata(5usize)
+
+// Full name: test_crate::ret_str
+fn ret_str() -> &'static str
+{
+    let _0: &'1 str; // return
+
+    storage_live(_0)
+    _0 = &test_crate::ret_str::{promoted_const} with_metadata(const 5usize)
+    return
+}
+
+
+
