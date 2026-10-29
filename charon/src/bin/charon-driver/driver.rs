@@ -13,7 +13,7 @@ use rustc_interface::interface::Compiler;
 use rustc_middle::ty::{InstanceKind, TyCtxt};
 use rustc_middle::util::Providers;
 use rustc_session::config::{OutputType, OutputTypes};
-use rustc_span::ErrorGuaranteed;
+use rustc_span::{ErrorGuaranteed, Symbol};
 use std::num::NonZero;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{env, fmt};
@@ -102,6 +102,20 @@ fn setup_compiler(
     set_mir_options(config);
 }
 
+/// Record the current value of `var` (the `selected_crate_var` of the crate being compiled) in the
+/// dep-info file. Cargo reruns the crate when that value changes, which `charon cargo` uses to
+/// rerun exactly the crates it selects for translation.
+fn track_selected_crate_var(config: &mut Config, var: Option<String>) {
+    if let Some(var) = var {
+        config.track_state = Some(Box::new(move |sess| {
+            let value = env::var(&var).ok().map(|value| Symbol::intern(&value));
+            sess.env_depinfo
+                .borrow_mut()
+                .insert((Symbol::intern(&var), value));
+        }));
+    }
+}
+
 /// Run a couple of rustc queries that don't involve MIR (so that they don't steal it). Returns
 /// whether rustc reported errors. This lets us avoid running Charon translation on crates rustc
 /// already rejects.
@@ -151,14 +165,6 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
     // Retreive the command-line arguments pased to `charon_driver`. The first arg is the path to
     // the current executable, we skip it.
     let mut compiler_args: Vec<String> = env::args().skip(1).collect();
-    // We use `RUSTC_WORKSPACE_WRAPPER` to break cargo's caching; that value ends up as our first
-    // argument.
-    if compiler_args
-        .first()
-        .is_some_and(|arg| arg.starts_with("charon-dont-cache-this-"))
-    {
-        compiler_args.remove(0);
-    }
     trace!(
         "charon-driver called with args: {}",
         compiler_args.iter().format(" ")
@@ -186,6 +192,13 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
     let target = arg_value(&compiler_args, "--target");
     // Whether this is the crate we want to translate.
     let is_selected_crate = !is_workspace_dependency && target.is_some();
+    // Under cargo, the env var through which `charon cargo` tells cargo whether to rerun this
+    // target crate.
+    let selected_crate_var = if env::var("CHARON_USING_CARGO").is_ok() && target.is_some() {
+        arg_value(&compiler_args, "--crate-name").map(options::selected_crate_var)
+    } else {
+        None
+    };
 
     let mut error_ctx = ErrorCtx::new();
 
@@ -227,7 +240,8 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
     let output = if !is_selected_crate {
         trace!("Skipping charon; running compiler normally instead.");
         // Run the compiler normally.
-        run_compiler_with_callbacks(compiler_args, &mut RunCompilerNormallyCallbacks)?;
+        let mut callback = RunCompilerNormallyCallbacks { selected_crate_var };
+        run_compiler_with_callbacks(compiler_args, &mut callback)?;
         None
     } else {
         error_ctx.continue_on_failure = !options.abort_on_error;
@@ -244,6 +258,7 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
             codegen,
             error_ctx: Some(error_ctx),
             transform_ctx: None,
+            selected_crate_var,
         };
         charon_lib::timing::time("rustc-driver", || {
             run_compiler_with_callbacks(compiler_args, &mut callback)
@@ -268,6 +283,8 @@ pub struct CharonCallbacks<'a> {
     /// This is to be filled during the extraction; it contains the translated crate. `None` at the
     /// start or if we couldn't translate anything.
     transform_ctx: Option<TransformCtx>,
+    /// See [`track_selected_crate_var`].
+    selected_crate_var: Option<String>,
 }
 impl<'a> Callbacks for CharonCallbacks<'a> {
     fn config(&mut self, config: &mut Config) {
@@ -278,6 +295,7 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
             self.emit_artifacts,
             self.codegen,
         );
+        track_selected_crate_var(config, self.selected_crate_var.take());
     }
 
     /// The MIR is modified in place: borrow-checking requires the "promoted" MIR, which causes the
@@ -314,11 +332,15 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
 }
 
 /// Dummy callbacks used to run the compiler normally when we shouldn't be analyzing the crate.
-pub struct RunCompilerNormallyCallbacks;
+pub struct RunCompilerNormallyCallbacks {
+    /// See [`track_selected_crate_var`].
+    selected_crate_var: Option<String>,
+}
 
 impl Callbacks for RunCompilerNormallyCallbacks {
     fn config(&mut self, config: &mut Config) {
         setup_compiler(config, &Default::default(), false, true, true);
+        track_selected_crate_var(config, self.selected_crate_var.take());
     }
 }
 
