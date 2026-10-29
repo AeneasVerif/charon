@@ -1329,7 +1329,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     pub fn translate_repr_options(&mut self, hax_repr_options: &hax::ReprOptions) -> ReprOptions {
-        let repr_algo = if hax_repr_options.flags.is_c {
+        let repr_algo = if hax_repr_options.flags.is_simd {
+            ReprAlgorithm::Simd
+        } else if hax_repr_options.flags.is_c {
             ReprAlgorithm::C
         } else {
             ReprAlgorithm::Rust

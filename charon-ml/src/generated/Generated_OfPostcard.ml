@@ -3263,6 +3263,7 @@ and repr_algorithm_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      match __tag with
      | 0 -> Ok Rust
      | 1 -> Ok C
+     | 2 -> Ok Simd
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and repr_options_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

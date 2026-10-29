@@ -2108,6 +2108,7 @@ impl Display for ReprOptions {
         let algorithm = match self.repr_algo {
             ReprAlgorithm::Rust => "Rust",
             ReprAlgorithm::C => "C",
+            ReprAlgorithm::Simd => "simd",
         };
         write!(f, "repr({algorithm}")?;
         if let Some(modifier) = &self.align_modif {
