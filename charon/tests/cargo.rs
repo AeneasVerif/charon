@@ -112,26 +112,30 @@ fn perform_test(test_case: &Case) -> anyhow::Result<()> {
 }
 
 /// Check that `charon cargo` reruns the selected crate on every run, keeps its dependencies
-/// cached, and translates a crate that was previously built only as a dependency.
+/// cached (including host builds of selected crates), and translates a crate that was previously
+/// built only as a dependency.
 fn workspace_caching(dir: &Path) -> anyhow::Result<()> {
     let tmp = tempfile::tempdir()?;
     // A dedicated target dir, so that we don't race the `workspace` test.
     let target_dir = tmp.path().join("target");
-    // Translate `krate` with `charon cargo`; returns the output file and cargo's stderr.
-    let run = |step: &str, krate: &str| -> anyhow::Result<(PathBuf, String)> {
-        let dest_file = tmp.path().join(format!("{krate}.llbc"));
-        let output = Command::cargo_bin("charon")?
-            .current_dir(dir)
+    // Translate `packages` with `charon cargo`; returns the output file and cargo's stderr.
+    let run = |step: &str, packages: &[&str]| -> anyhow::Result<(PathBuf, String)> {
+        let dest_file = tmp.path().join(format!("{}.llbc", packages.join("-")));
+        let mut cmd = Command::cargo_bin("charon")?;
+        cmd.current_dir(dir)
             .env("CARGO_TARGET_DIR", &target_dir)
             .arg("cargo")
             .arg("--dest-file")
             .arg(&dest_file)
-            .args(["--", "-p", krate])
-            .output()?;
+            .args(["--", "--verbose"]);
+        for package in packages {
+            cmd.args(["-p", package]);
+        }
+        let output = cmd.output()?;
         let stderr = String::from_utf8(output.stderr)?;
         ensure!(
             output.status.success(),
-            "step {step}: translating `{krate}` failed:\n{stderr}"
+            "step {step}: translating {packages:?} failed:\n{stderr}"
         );
         ensure!(
             dest_file.exists(),
@@ -141,18 +145,28 @@ fn workspace_caching(dir: &Path) -> anyhow::Result<()> {
         Ok((dest_file, stderr))
     };
 
-    let (crate2_file, stderr) = run("a", "crate2")?;
+    let (crate2_file, stderr) = run("a", &["crate2"])?;
     ensure!(
         stderr.contains("Compiling crate1"),
         "step a: expected cargo to build `crate1`:\n{stderr}"
     );
     std::fs::remove_file(&crate2_file)?;
-    let (_, stderr) = run("b", "crate2")?;
+    let (_, stderr) = run("b", &["crate2"])?;
     ensure!(
         !stderr.contains("Compiling crate1"),
         "step b: expected `crate1` to stay cached:\n{stderr}"
     );
-    run("c", "crate1")?;
+    run("c", &["crate1"])?;
+    run("d", &["crate1", "crate2"])?;
+    let (_, stderr) = run("e", &["crate1", "crate2"])?;
+    ensure!(
+        stderr.matches("--crate-name crate1 ").count() == 1,
+        "step e: expected only the target build of `crate1` to rerun:\n{stderr}"
+    );
+    ensure!(
+        !stderr.contains("--crate-name build_script_build "),
+        "step e: expected `crate2`'s build script to stay cached:\n{stderr}"
+    );
     Ok(())
 }
 

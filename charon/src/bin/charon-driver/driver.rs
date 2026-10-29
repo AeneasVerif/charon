@@ -3,7 +3,7 @@ use crate::CharonFailure;
 use crate::toolchain::CHARON_SYSROOT_VAR;
 use crate::translate::translate_crate;
 use charon_lib::errors::ErrorCtx;
-use charon_lib::options::{self, CliOpts};
+use charon_lib::options::{self, CliOpts, selected_crate_var};
 use charon_lib::transform::TransformCtx;
 use charon_lib::utils::arg_value;
 use itertools::Itertools;
@@ -71,10 +71,22 @@ fn skip_borrowck_if_set(providers: &mut Providers) {
 fn setup_compiler(
     config: &mut Config,
     options: &CliOpts,
+    is_target_crate: bool,
     do_translate: bool,
     emit_artifacts: bool,
     codegen: bool,
 ) {
+    if is_target_crate && let Some(crate_name) = &config.opts.crate_name {
+        // Rerun compilation if this variable changes. We don't do that for dependencies built for
+        // the host, like build scripts.
+        let var = selected_crate_var(crate_name);
+        config.track_state = Some(Box::new(move |sess| {
+            let value = env::var(&var).ok().map(|value| Symbol::intern(&value));
+            let var = Symbol::intern(&var);
+            sess.env_depinfo.borrow_mut().insert((var, value));
+        }));
+    }
+
     if do_translate {
         if options.skip_borrowck {
             // We use a static to be able to pass data to `override_queries`.
@@ -100,20 +112,6 @@ fn setup_compiler(
         set_parallel_frontend(config);
     }
     set_mir_options(config);
-}
-
-/// Record the current value of `var` (the `selected_crate_var` of the crate being compiled) in the
-/// dep-info file. Cargo reruns the crate when that value changes, which `charon cargo` uses to
-/// rerun exactly the crates it selects for translation.
-fn track_selected_crate_var(config: &mut Config, var: Option<String>) {
-    if let Some(var) = var {
-        config.track_state = Some(Box::new(move |sess| {
-            let value = env::var(&var).ok().map(|value| Symbol::intern(&value));
-            sess.env_depinfo
-                .borrow_mut()
-                .insert((Symbol::intern(&var), value));
-        }));
-    }
 }
 
 /// Run a couple of rustc queries that don't involve MIR (so that they don't steal it). Returns
@@ -189,16 +187,9 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
     // Currently, we detect this by checking for "--target=", which is never set for host crates.
     // This matches what Miri does, which hopefully makes it reliable enough. This relies on us
     // always invoking cargo itself with `--target`, which `charon` ensures.
-    let target = arg_value(&compiler_args, "--target");
+    let is_target_crate = arg_value(&compiler_args, "--target").is_some();
     // Whether this is the crate we want to translate.
-    let is_selected_crate = !is_workspace_dependency && target.is_some();
-    // Under cargo, the env var through which `charon cargo` tells cargo whether to rerun this
-    // target crate.
-    let selected_crate_var = if env::var("CHARON_USING_CARGO").is_ok() && target.is_some() {
-        arg_value(&compiler_args, "--crate-name").map(options::selected_crate_var)
-    } else {
-        None
-    };
+    let is_selected_crate = !is_workspace_dependency && is_target_crate;
 
     let mut error_ctx = ErrorCtx::new();
 
@@ -228,9 +219,7 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
         && sysroot != "miri"
     {
         compiler_args.push(format!("--sysroot={sysroot}"));
-    } else if target.is_some()
-        && let Ok(sysroot) = env::var(CHARON_SYSROOT_VAR)
-    {
+    } else if is_target_crate && let Ok(sysroot) = env::var(CHARON_SYSROOT_VAR) {
         // Charon built a sysroot for us to use.
         compiler_args.push(format!("--sysroot={sysroot}"));
         // The Miri sysroot (which is what Charon builds atm) doesn't support codegen.
@@ -240,7 +229,7 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
     let output = if !is_selected_crate {
         trace!("Skipping charon; running compiler normally instead.");
         // Run the compiler normally.
-        let mut callback = RunCompilerNormallyCallbacks { selected_crate_var };
+        let mut callback = RunCompilerNormallyCallbacks { is_target_crate };
         run_compiler_with_callbacks(compiler_args, &mut callback)?;
         None
     } else {
@@ -258,7 +247,6 @@ pub fn run_rustc_driver() -> Result<Option<(TransformCtx, CliOpts)>, CharonFailu
             codegen,
             error_ctx: Some(error_ctx),
             transform_ctx: None,
-            selected_crate_var,
         };
         charon_lib::timing::time("rustc-driver", || {
             run_compiler_with_callbacks(compiler_args, &mut callback)
@@ -283,8 +271,6 @@ pub struct CharonCallbacks<'a> {
     /// This is to be filled during the extraction; it contains the translated crate. `None` at the
     /// start or if we couldn't translate anything.
     transform_ctx: Option<TransformCtx>,
-    /// See [`track_selected_crate_var`].
-    selected_crate_var: Option<String>,
 }
 impl<'a> Callbacks for CharonCallbacks<'a> {
     fn config(&mut self, config: &mut Config) {
@@ -292,10 +278,10 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
             config,
             self.options,
             true,
+            true,
             self.emit_artifacts,
             self.codegen,
         );
-        track_selected_crate_var(config, self.selected_crate_var.take());
     }
 
     /// The MIR is modified in place: borrow-checking requires the "promoted" MIR, which causes the
@@ -333,14 +319,19 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
 
 /// Dummy callbacks used to run the compiler normally when we shouldn't be analyzing the crate.
 pub struct RunCompilerNormallyCallbacks {
-    /// See [`track_selected_crate_var`].
-    selected_crate_var: Option<String>,
+    is_target_crate: bool,
 }
 
 impl Callbacks for RunCompilerNormallyCallbacks {
     fn config(&mut self, config: &mut Config) {
-        setup_compiler(config, &Default::default(), false, true, true);
-        track_selected_crate_var(config, self.selected_crate_var.take());
+        setup_compiler(
+            config,
+            &Default::default(),
+            self.is_target_crate,
+            false,
+            true,
+            true,
+        );
     }
 }
 
