@@ -24,6 +24,14 @@ struct PythonTranspiler<'a> {
 impl<'a> PythonTranspiler<'a> {
     fn function_name(&self, function_id: FunDeclId) -> String {
         let function = &self.krate.fun_decls[function_id];
+        if let Body::Intrinsic { name, .. } = &function.body {
+            // These helpers implement the overflow intrinsics used by this example.
+            return match name.as_str() {
+                "add_with_overflow" => "checked_add_u128".to_owned(),
+                "mul_with_overflow" => "checked_mul_u128".to_owned(),
+                _ => panic!("unsupported intrinsic: {name}"),
+            };
+        }
         match &function.src {
             // Functions that initialize constants are named init_CONSTANT.
             FunSource::GlobalInitializer(global) => format!(
@@ -119,9 +127,6 @@ impl<'a> PythonTranspiler<'a> {
                     BinOp::BitOr => format!("{left} | {right}"),
                     BinOp::Eq => format!("{left} == {right}"),
                     BinOp::Lt => format!("{left} < {right}"),
-                    // These are functions we added ourselves
-                    BinOp::AddChecked => format!("checked_add_u128({left}, {right})"),
-                    BinOp::MulChecked => format!("checked_mul_u128({left}, {right})"),
                     BinOp::Shl(_) => format!("{left} << {right}"),
                     BinOp::Shr(_) => format!("{left} >> {right}"),
                     operation => panic!("unsupported binary operation: {operation:?}"),
@@ -205,6 +210,9 @@ impl<'a> PythonTranspiler<'a> {
     }
 
     fn write_function(&mut self, output: &mut dyn Write, function: &'a FunDecl) {
+        if function.body.is_intrinsic() {
+            return; // Implemented by the Python helpers.
+        }
         // We only support functions that have a structured body; unstructured bodies won't happen
         // because of the options passed to Charon, and other bodies are for builtin or extern or other
         // weird functions.

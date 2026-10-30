@@ -10,12 +10,54 @@ pub trait core::marker::Sized<Self>
     non-dyn-compatible
 }
 
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait core::clone::Clone<Self>
+{
+    proof ImpliedClause0: (Self: core::marker::Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+pub fn core::clone::impls::{impl core::clone::Clone for u64}::clone<'_0>(_1: &'_0 u64) -> u64
+= <opaque>
+
+// Full name: core::clone::impls::{impl core::clone::Clone for u64}
+impl core::clone::Clone for u64 {
+    proof ImpliedClause0: (u64: core::marker::Sized) = {built_in impl core::marker::Sized for u64}
+    fn clone<'_0_1> = core::clone::impls::{impl core::clone::Clone for u64}::clone<'_0_1>
+    non-dyn-compatible
+}
+
 struct (_, _)<A, B>
 where
     TraitClause0: (A: core::marker::Sized),
 {
   _0: A,
   _1: B,
+}
+
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait core::marker::Copy<Self>
+{
+    proof ImpliedClause0: (Self: core::marker::MetaSized)
+    proof ImpliedClause1: (Self: core::clone::Clone)
+    non-dyn-compatible
+}
+
+#[rustc_intrinsic]
+pub fn core::intrinsics::add_with_overflow<T>(x_1: T, y_2: T) -> (T, bool)
+where
+    TraitClause0: (T: core::marker::Sized),
+    TraitClause1: (T: core::marker::Copy),
+= <intrinsic:add_with_overflow>
+
+// Full name: core::marker::{impl core::marker::Copy for u64}
+impl core::marker::Copy for u64 {
+    proof ImpliedClause0: (u64: core::marker::MetaSized) = {built_in impl core::marker::MetaSized for u64}
+    proof ImpliedClause1: (u64: core::clone::Clone) = core::clone::impls::{impl core::clone::Clone for u64}
+    non-dyn-compatible
 }
 
 pub fn multi_targets::no_os(left: u64, right: u64) -> u64
@@ -33,7 +75,8 @@ pub fn multi_targets::no_os(left: u64, right: u64) -> u64
     _3 = copy left
     storage_live(_4)
     _4 = copy right
-    _5 = copy _3 checked.+ copy _4
+    _5 = core::intrinsics::add_with_overflow<u64>[{built_in impl core::marker::Sized for u64}, core::marker::{impl core::marker::Copy for u64}](copy _3, copy _4)
+    ↳⚡ undefined_behavior
     assert(move _5._1 == false) (overflow) else panic
     ↳⚡ unwind_continue
     _0 = move _5._0
@@ -57,7 +100,8 @@ pub fn multi_targets::on_unix(left: u64, right: u64) -> u64
     _3 = copy left
     storage_live(_4)
     _4 = copy right
-    _5 = copy _3 checked.+ copy _4
+    _5 = core::intrinsics::add_with_overflow<u64>[{built_in impl core::marker::Sized for u64}, core::marker::{impl core::marker::Copy for u64}](copy _3, copy _4)
+    ↳⚡ undefined_behavior
     assert(move _5._1 == false) (overflow) else panic
     ↳⚡ unwind_continue
     _0 = move _5._0

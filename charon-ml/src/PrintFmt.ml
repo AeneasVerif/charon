@@ -1638,9 +1638,6 @@ and pp_binop (fmt : Format.formatter) (binop : binop) : unit =
   | Mul om -> Format.fprintf fmt "%a.*" pp_overflow_mode om
   | Shl om -> Format.fprintf fmt "%a.<<" pp_overflow_mode om
   | Shr om -> Format.fprintf fmt "%a.>>" pp_overflow_mode om
-  | AddChecked -> pp_string fmt "checked.+"
-  | SubChecked -> pp_string fmt "checked.-"
-  | MulChecked -> pp_string fmt "checked.*"
   | Cmp -> pp_string fmt "cmp"
 
 and pp_operand (env : fmt_env) (fmt : Format.formatter) (op : operand) : unit =

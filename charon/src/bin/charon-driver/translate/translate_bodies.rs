@@ -1054,9 +1054,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             mir::BinOp::MulUnchecked => BinOp::Mul(OverflowMode::UB),
             mir::BinOp::Div => BinOp::Div(OverflowMode::UB),
             mir::BinOp::Rem => BinOp::Rem(OverflowMode::UB),
-            mir::BinOp::AddWithOverflow => BinOp::AddChecked,
-            mir::BinOp::SubWithOverflow => BinOp::SubChecked,
-            mir::BinOp::MulWithOverflow => BinOp::MulChecked,
+            mir::BinOp::AddWithOverflow
+            | mir::BinOp::SubWithOverflow
+            | mir::BinOp::MulWithOverflow => unreachable!("handled in `translate_statement`"),
             mir::BinOp::Shl => BinOp::Shl(OverflowMode::Wrap),
             mir::BinOp::ShlUnchecked => BinOp::Shl(OverflowMode::UB),
             mir::BinOp::Shr => BinOp::Shr(OverflowMode::Wrap),
@@ -1614,6 +1614,32 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
 
         self.span = span;
         let kind: Option<StatementKind> = match &statement.kind {
+            mir::StatementKind::Assign((
+                place,
+                mir::Rvalue::BinaryOp(
+                    binop @ (mir::BinOp::AddWithOverflow
+                    | mir::BinOp::SubWithOverflow
+                    | mir::BinOp::MulWithOverflow),
+                    (left, right),
+                ),
+            )) => {
+                // Translate these binops to intrinsic calls to make binops easier to typecheck:
+                // their return type is a tuple, which we monomorphize hence it's hard to compute
+                // ourselves.
+                let name = match binop {
+                    mir::BinOp::AddWithOverflow => sym::add_with_overflow,
+                    mir::BinOp::SubWithOverflow => sym::sub_with_overflow,
+                    mir::BinOp::MulWithOverflow => sym::mul_with_overflow,
+                    _ => unreachable!(),
+                };
+                let ty = left.ty(self.local_decls, self.tcx);
+                let generic_args = self.tcx.mk_args(&[ty.into()]);
+                let dest = self.translate_place(span, place)?;
+                let left = self.translate_operand(span, left)?;
+                let right = self.translate_operand(span, right)?;
+                self.translate_intrinsic_call(span, dest, name, generic_args, vec![left, right])?;
+                None
+            }
             mir::StatementKind::Assign((place, rvalue)) => {
                 let t_place = self.translate_place(span, place)?;
                 let t_rvalue = self.translate_mir_rvalue(span, rvalue, t_place.ty())?;
@@ -1637,8 +1663,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             }
             mir::StatementKind::Intrinsic(mir::NonDivergingIntrinsic::Assume(op)) => {
                 let op = self.translate_operand(span, op)?;
+                let dest = self.locals.new_var(None, Ty::mk_unit());
                 self.translate_intrinsic_call(
                     span,
+                    dest,
                     sym::assume,
                     ty::GenericArgs::empty(),
                     vec![op],
@@ -1656,8 +1684,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let src = self.translate_operand(span, src)?;
                 let dst = self.translate_operand(span, dst)?;
                 let count = self.translate_operand(span, count)?;
+                let dest = self.locals.new_var(None, Ty::mk_unit());
                 self.translate_intrinsic_call(
                     span,
+                    dest,
                     sym::copy_nonoverlapping,
                     generic_args,
                     vec![src, dst, count],
@@ -1724,6 +1754,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
     fn translate_intrinsic_call(
         &mut self,
         span: Span,
+        dest: Place,
         name: Symbol,
         generic_args: ty::GenericArgsRef<'tcx>,
         args: Vec<Operand>,
@@ -1735,7 +1766,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         let item = hax::ItemRef::translate(self.hax_state_with_id(), def_id, generic_args);
         let func =
             FnOperand::Regular(self.translate_fn_ptr(span, &item, TransItemSourceKind::Fun)?);
-        let dest = self.locals.new_var(None, Ty::mk_unit());
         self.push_nounwind_call(
             span,
             dest,

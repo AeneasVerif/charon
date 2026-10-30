@@ -14,6 +14,60 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u8}::clone
+pub fn clone<'_0>(_1: &'_0 u8) -> u8
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u8}
+impl "impl_Clone_for_u8" Clone for u8 {
+    proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
+    fn clone<'_0_1> = clone<'_0_1>
+    non-dyn-compatible
+}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::intrinsics::add_with_overflow
+#[rustc_intrinsic]
+pub fn add_with_overflow<T>(x_1: T, y_2: T) -> (T, bool)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
+= <intrinsic:add_with_overflow>
+
+// Full name: core::marker::{impl Copy for u8}
+impl "impl_Copy_for_u8" Copy for u8 {
+    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
+    proof ImpliedClause1: (u8: Clone) = impl_Clone_for_u8
+    non-dyn-compatible
+}
+
 struct () {}
 
 // Full name: core::ops::drop::Drop
@@ -30,14 +84,6 @@ where
     TraitClause0: (Self: Drop),
     TypeOutlives0: Self: '_0,
 = <opaque>
-
-struct (_, _)<A, B>
-where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
-}
 
 // Full name: test_crate::Foo
 struct Foo {}
@@ -113,7 +159,8 @@ fn main()
         unwind_continue
     storage_dead(_2)
     storage_live(_3)
-    _4 = const 255u8 checked.+ const 1u8
+    _4 = add_with_overflow<u8>[{built_in impl Sized for u8}, impl_Copy_for_u8](const 255u8, const 1u8)
+    ↳⚡ undefined_behavior
     assert(move _4._1 == false) (overflow) else panic
     ↳⚡ conditional_drop[drop_glue<'2>] f
         ↳⚡ unwind_terminate

@@ -138,14 +138,6 @@ pub enum BinOp {
     Mul(OverflowMode),
     Div(OverflowMode),
     Rem(OverflowMode),
-    /// Returns `(result, did_overflow)`, where `result` is the result of the operation with
-    /// wrapping semantics, and `did_overflow` is a boolean that indicates whether the operation
-    /// overflowed. This operation does not fail.
-    AddChecked,
-    /// Like `AddChecked`.
-    SubChecked,
-    /// Like `AddChecked`.
-    MulChecked,
     /// Fails if the shift is bigger than the bit-size of the type.
     Shl(OverflowMode),
     /// Fails if the shift is bigger than the bit-size of the type.
@@ -375,9 +367,9 @@ impl BorrowKind {
 impl BinOp {
     pub fn with_overflow(&self, overflow: OverflowMode) -> Self {
         match self {
-            BinOp::Add(_) | BinOp::AddChecked => BinOp::Add(overflow),
-            BinOp::Sub(_) | BinOp::SubChecked => BinOp::Sub(overflow),
-            BinOp::Mul(_) | BinOp::MulChecked => BinOp::Mul(overflow),
+            BinOp::Add(_) => BinOp::Add(overflow),
+            BinOp::Sub(_) => BinOp::Sub(overflow),
+            BinOp::Mul(_) => BinOp::Mul(overflow),
             BinOp::Div(_) => BinOp::Div(overflow),
             BinOp::Rem(_) => BinOp::Rem(overflow),
             BinOp::Shl(_) => BinOp::Shl(overflow),

@@ -299,9 +299,6 @@ and binop_of_json (ctx : of_json_ctx) (js : json) : (binop, string) result =
     | `Assoc [ ("Rem", _0) ] ->
         let* _0 = overflow_mode_of_json ctx _0 in
         Ok (Rem _0)
-    | `String "AddChecked" -> Ok AddChecked
-    | `String "SubChecked" -> Ok SubChecked
-    | `String "MulChecked" -> Ok MulChecked
     | `Assoc [ ("Shl", _0) ] ->
         let* _0 = overflow_mode_of_json ctx _0 in
         Ok (Shl _0)

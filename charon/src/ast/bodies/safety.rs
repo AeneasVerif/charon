@@ -236,8 +236,7 @@ impl HasSafety for BinOp {
         use BinOp::*;
         match self {
             Add(om) | Sub(om) | Mul(om) | Div(om) | Rem(om) | Shl(om) | Shr(om) => om.safety(krate),
-            BitXor | BitAnd | BitOr | Eq | Lt | Le | Ne | Ge | Gt | AddChecked | SubChecked
-            | MulChecked | Cmp => Safety::Safe,
+            BitXor | BitAnd | BitOr | Eq | Lt | Le | Ne | Ge | Gt | Cmp => Safety::Safe,
         }
     }
 }

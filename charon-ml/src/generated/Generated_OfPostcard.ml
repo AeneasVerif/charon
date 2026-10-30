@@ -254,16 +254,13 @@ and binop_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 13 ->
          let* _0 = overflow_mode_of_postcard ctx st in
          Ok (Rem _0)
-     | 14 -> Ok AddChecked
-     | 15 -> Ok SubChecked
-     | 16 -> Ok MulChecked
-     | 17 ->
+     | 14 ->
          let* _0 = overflow_mode_of_postcard ctx st in
          Ok (Shl _0)
-     | 18 ->
+     | 15 ->
          let* _0 = overflow_mode_of_postcard ctx st in
          Ok (Shr _0)
-     | 19 -> Ok Cmp
+     | 16 -> Ok Cmp
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and binder_of_postcard :

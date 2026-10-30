@@ -69,13 +69,6 @@ and binop =
   | Mul of overflow_mode
   | Div of overflow_mode
   | Rem of overflow_mode
-  | AddChecked
-      (** Returns [(result, did_overflow)], where [result] is the result of the
-          operation with wrapping semantics, and [did_overflow] is a boolean
-          that indicates whether the operation overflowed. This operation does
-          not fail. *)
-  | SubChecked  (** Like [AddChecked]. *)
-  | MulChecked  (** Like [AddChecked]. *)
   | Shl of overflow_mode
       (** Fails if the shift is bigger than the bit-size of the type. *)
   | Shr of overflow_mode

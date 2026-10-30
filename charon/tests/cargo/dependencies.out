@@ -1,5 +1,40 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u32}::clone
+pub fn clone<'_0>(_1: &'_0 u32) -> u32
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u32}
+impl "impl_Clone_for_u32" Clone for u32 {
+    proof ImpliedClause0: (u32: Sized) = {built_in impl Sized for u32}
+    fn clone<'_0_1> = clone<'_0_1>
+    non-dyn-compatible
+}
+
 // Full name: core::fmt::Error
 pub struct Error {}
 
@@ -14,20 +49,6 @@ where
 pub opaque type Arguments<'a>
 
 struct () {}
-
-// Full name: core::marker::MetaSized
-#[fundamental]
-#[lang_item(MetaSized)]
-pub trait MetaSized<Self>
-
-// Full name: core::marker::Sized
-#[fundamental]
-#[lang_item(Sized)]
-pub trait Sized<Self>
-{
-    proof ImpliedClause0: (Self: MetaSized)
-    non-dyn-compatible
-}
 
 // Full name: core::result::Result
 #[diagnostic_item("Result")]
@@ -58,6 +79,39 @@ where
 impl "impl_Debug_for_u32" Debug for u32 {
     fn fmt<'_0_1, '_1_1, '_2_1> = fmt<'_0_1, '_1_1, '_2_1>
     vtable: lazy
+}
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::intrinsics::add_with_overflow
+#[rustc_intrinsic]
+pub fn add_with_overflow<T>(x_1: T, y_2: T) -> (T, bool)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
+= <intrinsic:add_with_overflow>
+
+// Full name: core::marker::{impl Copy for u32}
+impl "impl_Copy_for_u32" Copy for u32 {
+    proof ImpliedClause0: (u32: MetaSized) = {built_in impl MetaSized for u32}
+    proof ImpliedClause1: (u32: Clone) = impl_Clone_for_u32
+    non-dyn-compatible
 }
 
 // Full name: core::marker::Tuple
@@ -127,14 +181,6 @@ where
     TypeConstraint0: TraitClause2::Output = T,
 = <opaque>
 
-struct (_, _)<A, B>
-where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
-}
-
 // Full name: test_cargo_dependencies::main::{promoted_const}
 fn {promoted_const}() -> &'_ u32
 {
@@ -170,7 +216,8 @@ extern "rust-call" fn call_once(_1: {closure}, tupled_args: (u32,)) -> u32
     y = noretag move tupled_args._0
     storage_live(_4)
     _4 = copy y
-    _5 = copy _4 checked.+ const 1u32
+    _5 = add_with_overflow<u32>[{built_in impl Sized for u32}, impl_Copy_for_u32](copy _4, const 1u32)
+    ↳⚡ undefined_behavior
     assert(move _5._1 == false) (overflow) else panic
     ↳⚡ unwind_continue
     _0 = move _5._0

@@ -815,9 +815,6 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             BinOp::Ne => mini::BinOp::Rel(mini::RelOp::Ne),
             BinOp::Ge => mini::BinOp::Rel(mini::RelOp::Ge),
             BinOp::Gt => mini::BinOp::Rel(mini::RelOp::Gt),
-            BinOp::AddChecked => mini::BinOp::IntWithOverflow(mini::IntBinOpWithOverflow::Add),
-            BinOp::SubChecked => mini::BinOp::IntWithOverflow(mini::IntBinOpWithOverflow::Sub),
-            BinOp::MulChecked => mini::BinOp::IntWithOverflow(mini::IntBinOpWithOverflow::Mul),
             BinOp::Add(mode) => mini::BinOp::Int(overflowing_op(
                 mode,
                 mini::IntBinOp::Add,
