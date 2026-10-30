@@ -59,7 +59,7 @@ pub trait Destruct<Self>
 pub fn impl_SliceIndex_slice_for_usize::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 struct (_, _)<A, B>
@@ -75,7 +75,7 @@ where
 pub fn split_at_mut<'_0, T>(_1: &'_0 mut [T], _2: usize) -> (&'_0 mut [T], &'_0 mut [T])
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: alloc::alloc::Global
@@ -116,7 +116,7 @@ struct (_,)<A> {
 // Full name: (_,)::{impl Destruct for (A,)}::drop_glue
 unsafe fn drop_glue<'_0, A>(_1: &'_0 mut (A,))
 where
-    TypeOutlives0: A: '_0,
+    Outlives0: (A: '_0),
 {
     let _0: (); // return
     let _1: &'1 mut (A,); // arg #1
@@ -131,7 +131,7 @@ where
 // Full name: test_crate::shared
 pub fn shared<'_0, '_1>(arr: (&'_0 mut (&'_1 mut (u64,),),))
 where
-    RegionOutlives0: '_1: '_0,
+    Outlives0: ('_1: '_0),
 {
     let _0: (); // return
     let arr: (&'6 mut (&'7 mut (u64,),),); // arg #1
@@ -146,7 +146,7 @@ where
 // Full name: test_crate::mutable
 pub fn mutable<'_0, '_1>(arr: (&'_0 (&'_1 (u64,),),))
 where
-    RegionOutlives0: '_1: '_0,
+    Outlives0: ('_1: '_0),
 {
     let _0: (); // return
     let arr: (&'6 (&'7 (u64,),),); // arg #1

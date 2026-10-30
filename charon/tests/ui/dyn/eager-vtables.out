@@ -61,7 +61,7 @@ pub const test_crate::impl_Debug_for_S::fmt::{promoted_const}: str = "S" with_me
 #[inline(hint)]
 pub fn fmt<'_0, '_1, '_2>(self: &'_0 S, f: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
-    RegionOutlives0: '_2: '_1,
+    Outlives0: ('_2: '_1),
 {
     let _0: Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]; // return
     let self: &'1 S; // arg #1

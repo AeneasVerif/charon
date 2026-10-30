@@ -42,16 +42,16 @@ pub trait Deref<Self>
 pub fn deref<'_0, '_1, T>(_1: &'_1 &'_0 T) -> &'_1 T
 where
     TraitClause0: (T: MetaSized),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: T: '_1,
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
+    Outlives1: (T: '_0),
+    Outlives2: (T: '_1),
 = <opaque>
 
 // Full name: core::ops::deref::{impl Deref for &'_0 T}
 impl<'_0, T> Deref for &'_0 T
 where
     TraitClause0: (T: MetaSized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     proof ImpliedClause0: (T: MetaSized) = TraitClause0
     type Target = T

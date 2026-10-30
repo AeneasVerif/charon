@@ -157,7 +157,7 @@ pub fn next<'_0, A>(_1: &'_0 mut Range<A>) -> Option<A>
 where
     TraitClause0: (A: Step),
     TraitClause1: (A: Destruct),
-    TypeOutlives0: A: '_0,
+    Outlives0: (A: '_0),
 = <opaque>
 
 // Full name: core::iter::range::{impl Iterator<A> for Range<A>}

@@ -39,7 +39,7 @@ where
 pub fn of<T>() -> TypeId
 where
     TraitClause0: (T: MetaSized),
-    TypeOutlives0: T: 'static,
+    Outlives0: (T: 'static),
 {
     let _0: TypeId; // return
     let _1: TypeId; // anonymous local
@@ -72,7 +72,7 @@ fn type_id_u32() -> TypeId
 fn type_id_generic<T>() -> TypeId
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'static,
+    Outlives0: (T: 'static),
 {
     let _0: TypeId; // return
 

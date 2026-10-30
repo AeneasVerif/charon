@@ -118,10 +118,10 @@ extern "rust-call" fn impl_Fn_tuple_for_closure::call<'a, '_1, '_2, '_3, '_4, T>
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Provide<'a>),
-    TypeOutlives0: T: '_4,
-    RegionOutlives0: 'a: '_4,
-    RegionOutlives1: '_1: '_4,
-    RegionOutlives2: '_2: '_4,
+    Outlives0: ('a: '_4),
+    Outlives1: ('_1: '_4),
+    Outlives2: ('_2: '_4),
+    Outlives3: (T: '_4),
 {
     let _0: (&'9 u8, &'10 u8); // return
     let _1: &'41 {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1
@@ -159,10 +159,10 @@ extern "rust-call" fn call_mut<'a, '_1, '_2, '_3, '_4, T>(state: &'_4 mut {closu
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Provide<'a>),
-    TypeOutlives0: T: '_4,
-    RegionOutlives0: 'a: '_4,
-    RegionOutlives1: '_1: '_4,
-    RegionOutlives2: '_2: '_4,
+    Outlives0: ('a: '_4),
+    Outlives1: ('_1: '_4),
+    Outlives2: ('_2: '_4),
+    Outlives3: (T: '_4),
 {
     let _0: (&'_3 u8, &'_2 u8); // return
     let state: &'_4 mut {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1

@@ -98,7 +98,7 @@ unsafe fn impl_Destruct_for_Foo::drop_glue<'_0>(_1: &'_0 mut Foo)
 enum Bar<'a, T>
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
   Variant { _0: &'a T },
 }
@@ -107,7 +107,7 @@ where
 fn Variant<'a, T>(_1: &'a T) -> Bar<'a, T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
     let _0: Bar<'a, T>[TraitClause0]; // return
     let _1: &'a T; // arg #1

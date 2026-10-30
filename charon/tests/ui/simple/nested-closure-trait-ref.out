@@ -55,7 +55,7 @@ unsafe fn {impl Destruct for test_crate::foo::{closure}<T>[TraitClause0, TraitCl
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]; // arg #1
@@ -143,7 +143,7 @@ extern "rust-call" fn call<'_0, T>(_1: &'_0 test_crate::foo::{closure}::{closure
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: T; // return
     let _1: &'1 test_crate::foo::{closure}::{closure}<T>[TraitClause0, TraitClause1]; // arg #1

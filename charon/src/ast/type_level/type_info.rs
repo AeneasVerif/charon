@@ -15,6 +15,7 @@ bitflags::bitflags! {
         const MENTIONS_FREE_VAR = 1 << 4;
         const HAS_STATIC_REGION = 1 << 5;
         const HAS_REGION_VAR = 1 << 6;
+        const HAS_REGIONS = 1 << 7;
     }
 }
 
@@ -77,6 +78,7 @@ impl TypeInfo {
             }
 
             fn enter_region(&mut self, region: &Region) {
+                self.info.flags.insert(TypeFlags::HAS_REGIONS);
                 match region {
                     Region::Body(..) | Region::Erased => self
                         .info
@@ -84,6 +86,7 @@ impl TypeInfo {
                         .insert(TypeFlags::HAS_ERASED_OR_BODY_REGIONS),
                     Region::Static => self.info.flags.insert(TypeFlags::HAS_STATIC_REGION),
                     Region::Var(..) => self.info.flags.insert(TypeFlags::HAS_REGION_VAR),
+                    Region::Lub(..) => {}
                 }
             }
 
@@ -198,7 +201,7 @@ impl TypeInfo {
     }
 
     pub fn has_region(&self) -> bool {
-        self.has_region_var() || self.has_static_region() || self.has_erased_or_body_regions()
+        self.flags.contains(TypeFlags::HAS_REGIONS)
     }
 
     /// The largest `DeBruijnId` mentioned by this item, if any.

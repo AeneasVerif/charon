@@ -76,7 +76,7 @@ struct (_,)<A> {
 // Full name: test_crate::dyn_fn_arg
 pub fn dyn_fn_arg<'a, '_1>(_1: &'_1 (dyn Fn<(&'a i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '_1))
 where
-    RegionOutlives0: 'a: '_1,
+    Outlives0: ('a: '_1),
 {
     let _0: (); // return
     let _1: &'19 (dyn Fn<(&'20 i32,), ImpliedClause1::ImpliedClause1::Output = ()> + '21); // arg #1
@@ -133,7 +133,7 @@ pub trait Obj<'a, Self>
 // Full name: test_crate::f
 pub fn f<'a, '_1>(_1: &'_1 (dyn Obj<'a, V = i32> + '_1))
 where
-    RegionOutlives0: 'a: '_1,
+    Outlives0: ('a: '_1),
 {
     let _0: (); // return
     let _1: &'7 (dyn Obj<'8, V = i32> + '9); // arg #1

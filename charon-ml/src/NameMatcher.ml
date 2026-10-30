@@ -338,7 +338,7 @@ let update_rmap (c : match_config) (m : maps) (id : var) (v : T.region) : bool =
   let is_var =
     match v with
     | RVar _ | RBody _ | RErased -> true
-    | RStatic -> false
+    | RStatic | RLub _ -> false
   in
   if c.map_vars_to_vars && not is_var then false
   else
@@ -438,7 +438,7 @@ let match_region (c : match_config) (m : maps) (id : region) (v : T.region) :
   | RVar id, (RVar _ | RErased | RBody _) ->
       (* When it comes to matching, we treat erased regions like variables *)
       opt_update_rmap c m id v
-  | RVar id, RStatic ->
+  | RVar id, (RStatic | RLub _) ->
       if c.map_vars_to_vars then false else opt_update_rmap c m id v
   | _ -> false
 
@@ -812,7 +812,7 @@ let region_to_pattern (m : constraints) (r : T.region) : region =
            (fun varid map -> T.RegionId.Map.find_opt varid map.rmap)
            var)
   | RStatic -> RStatic
-  | RBody _ | RErased ->
+  | RBody _ | RErased | RLub _ ->
       (* These regions cannot be named. *)
       RVar None
 

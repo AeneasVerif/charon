@@ -20,7 +20,7 @@ struct {closure}<Self> {}
 
 pub fn test_crate::Trait::method<'_0, Self>(self: &'_0 Self)
 where
-    TypeOutlives0: Self: '_0,
+    Outlives0: (Self: '_0),
 {
     let _0: (); // return
     let self: &'1 Self; // arg #1
@@ -39,7 +39,7 @@ where
 // Full name: test_crate::Trait::method::{impl Fn<(), usize> for {closure}<Self>}::call
 extern "rust-call" fn call<'_0, Self>(_1: &'_0 {closure}<Self>, tupled_args: ()) -> usize
 where
-    TypeOutlives0: Self: '_0,
+    Outlives0: (Self: '_0),
 {
     let _0: usize; // return
     let _1: &'1 {closure}<Self>; // arg #1

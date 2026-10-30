@@ -40,8 +40,8 @@ pub fn clone_from<'_0, '_1, Self>(_1: &'_0 mut Self, _2: &'_1 Self)
 where
     TraitClause0: (Self: Clone),
     TraitClause1: (Self: Destruct),
-    TypeOutlives0: Self: '_0,
-    TypeOutlives1: Self: '_1,
+    Outlives0: (Self: '_0),
+    Outlives1: (Self: '_1),
 = <opaque>
 
 // Full name: core::iter::sources::once::Once
@@ -65,15 +65,15 @@ pub fn wrapping_add(_1: u32, _2: u32) -> u32
 pub opaque type Iter<'a, T>
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
-    TypeOutlives1: T: 'a,
+    Outlives0: (T: 'a),
+    Outlives1: (T: 'a),
 
 pub fn core::slice::iter::{Iter<'a, T>[TraitClause0]}::as_slice<'a, '_1, T>(_1: &'_1 Iter<'a, T>[TraitClause0]) -> &'a [T]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
-    TypeOutlives1: T: '_1,
-    RegionOutlives0: 'a: '_1,
+    Outlives0: (T: 'a),
+    Outlives1: ('a: '_1),
+    Outlives2: (T: '_1),
 = <opaque>
 
 fn test_crate::module1::do_translate()

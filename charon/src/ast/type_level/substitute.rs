@@ -418,7 +418,7 @@ pub trait TyVisitable: Sized + AstVisitable {
                     Region::Var(DeBruijnVar::Bound(dbid, _)) if *dbid >= self.binder_depth => {
                         ControlFlow::Break(())
                     }
-                    _ => ControlFlow::Continue(()),
+                    _ => self.visit_inner(region),
                 }
             }
         }
@@ -447,7 +447,7 @@ pub trait TyVisitable: Sized + AstVisitable {
                 VisitWithBinderDepth::new(self).visit(value)
             }
             fn enter_region(&mut self, region: &Region) {
-                if let Some(region) = region.move_from_under_binders(self.depth)
+                if let Some(region) = region.clone().move_from_under_binders(self.depth)
                     && !region.is_erased()
                 {
                     self.regions.insert(region);

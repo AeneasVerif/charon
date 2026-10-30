@@ -226,8 +226,7 @@ let empty_generic_params : generic_params =
     types = [];
     const_generics = [];
     trait_clauses = [];
-    regions_outlive = [];
-    types_outlive = [];
+    outlives = [];
     trait_type_constraints = [];
   }
 
@@ -319,6 +318,8 @@ let region_in_set ?(allow_erased = false) (r : region) (rset : RegionId.Set.t) :
       else
         raise
           (Failure "region_in_set shouldn't be called on erased or body regions")
+  | RLub _ ->
+      raise (Failure "region_in_set should only be called on region variables")
   | RVar (Bound _) ->
       raise (Failure "region_in_set shouldn't be called on bound regions")
   | RVar (Free id) -> RegionId.Set.mem id rset

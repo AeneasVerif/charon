@@ -104,8 +104,8 @@ where
     TraitClause2: (A: Allocator),
     TraitClause3: (T: Destruct),
     TraitClause4: (A: Destruct),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 = <opaque>
 
 struct test_crate::T::{vtable} {

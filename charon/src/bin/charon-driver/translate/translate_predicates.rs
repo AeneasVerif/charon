@@ -186,15 +186,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     let r1 = ctx.translate_region(span, &p.rhs)?;
                     Ok(OutlivesPred(r0, r1))
                 })?;
-                self.innermost_generics_mut().regions_outlive.push(pred);
+                self.innermost_generics_mut().outlives.push(pred);
             }
             ClauseKind::TypeOutlives(p) => {
                 let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
                     let ty = ctx.translate_ty(span, &p.lhs)?;
                     let r = ctx.translate_region(span, &p.rhs)?;
-                    Ok(OutlivesPred(ty, r))
+                    Ok(OutlivesPred(Region::Lub(ty), r))
                 })?;
-                self.innermost_generics_mut().types_outlive.push(pred);
+                self.innermost_generics_mut().outlives.push(pred);
             }
             ClauseKind::Projection(p) => {
                 // This is used to express constraints over associated types.

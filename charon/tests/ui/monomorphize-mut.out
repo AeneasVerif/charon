@@ -77,14 +77,14 @@ where
 pub trait core::marker::MetaSized::<Iter<_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: Sized),
-    TypeOutlives0: T0: '_0,
+    Outlives0: (T0: '_0),
 
 #[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized::<Iter<_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: Sized),
-    TypeOutlives0: T0: '_0,
+    Outlives0: (T0: '_0),
 {
     proof ImpliedClause0: (T0: core::marker::MetaSized::<Iter<_, _>[TraitClause0]><'_0>[TraitClause0])
     non-dyn-compatible
@@ -95,14 +95,14 @@ where
 pub trait core::marker::MetaSized::<IterWrapper<_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: Sized),
-    TypeOutlives0: T0: '_0,
+    Outlives0: (T0: '_0),
 
 #[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized::<IterWrapper<_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: Sized),
-    TypeOutlives0: T0: '_0,
+    Outlives0: (T0: '_0),
 {
     proof ImpliedClause0: (T0: core::marker::MetaSized::<IterWrapper<_, _>[TraitClause0]><'_0>[TraitClause0])
     non-dyn-compatible
@@ -113,16 +113,16 @@ where
 pub trait core::marker::MetaSized::<IterMut<_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: Sized),
-    TypeOutlives0: T0: '_0,
-    TypeOutlives1: T0: '_0,
+    Outlives0: (T0: '_0),
+    Outlives1: (T0: '_0),
 
 #[fundamental]
 #[lang_item(Sized)]
 pub trait core::marker::Sized::<IterMut<_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: Sized),
-    TypeOutlives0: T0: '_0,
-    TypeOutlives1: T0: '_0,
+    Outlives0: (T0: '_0),
+    Outlives1: (T0: '_0),
 {
     proof ImpliedClause0: (T0: core::marker::MetaSized::<IterMut<_, _>[TraitClause0]><'_0>[TraitClause0])
     non-dyn-compatible
@@ -195,15 +195,15 @@ where
 pub opaque type IterMut<mut 'a, T>
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
-    TypeOutlives1: T: 'a,
+    Outlives0: (T: 'a),
+    Outlives1: (T: 'a),
 
 #[lang_item(Destruct)]
 pub trait core::marker::Destruct::<IterMut<_, _>[TraitClause0]><'_0, T0>
 where
     TraitClause0: (T0: Sized),
-    TypeOutlives0: T0: '_0,
-    TypeOutlives1: T0: '_0,
+    Outlives0: (T0: '_0),
+    Outlives1: (T0: '_0),
 {
     fn drop_glue<'_0_1>;
     non-dyn-compatible
@@ -257,7 +257,7 @@ where
 struct Iter<mut 'a, T>
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
   head: &'a mut T,
   tail: core::option::Option::<&_ mut _><'a, T>[{built_in impl core::marker::Sized::<&_ mut _><'a> for T}],
@@ -269,7 +269,7 @@ pub enum core::option::Option::<Iter<_, _>[TraitClause1]><'_0, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<Iter<_, _>[TraitClause0]><'_0>[TraitClause1]),
     TraitClause1: (T0: Sized),
-    TypeOutlives0: T0: '_0,
+    Outlives0: (T0: '_0),
 {
   None,
   Some { _0: Iter<'_0, T0>[TraitClause1] },
@@ -279,7 +279,7 @@ where
 struct IterWrapper<mut 'a, T>
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
   _0: Iter<'a, T>[TraitClause0],
 }
@@ -290,7 +290,7 @@ pub enum core::option::Option::<IterWrapper<_, _>[TraitClause1]><'_0, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<IterWrapper<_, _>[TraitClause0]><'_0>[TraitClause1]),
     TraitClause1: (T0: Sized),
-    TypeOutlives0: T0: '_0,
+    Outlives0: (T0: '_0),
 {
   None,
   Some { _0: IterWrapper<'_0, T0>[TraitClause1] },
@@ -503,8 +503,8 @@ fn test_crate::identity::<IterMut<_, _>[TraitClause1]><'_0, T0>(x: IterMut<'_0, 
 where
     TraitClause0: (T0: core::marker::Sized::<IterMut<_, _>[TraitClause0]><'_0>[TraitClause1]),
     TraitClause1: (T0: Sized),
-    TypeOutlives0: T0: '_0,
-    TypeOutlives1: T0: '_0,
+    Outlives0: (T0: '_0),
+    Outlives1: (T0: '_0),
 {
     let _0: IterMut<'_0, T0>[TraitClause1]; // return
     let x: IterMut<'_0, T0>[TraitClause1]; // arg #1
@@ -522,7 +522,7 @@ where
 fn mutable_identity<'_0, T>(x: &'_0 mut T) -> &'_0 mut T
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: &'1 mut T; // return
     let x: &'2 mut T; // arg #1
@@ -835,8 +835,8 @@ where
 fn use_example<'a, 'b, T>(_1: test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[TraitClause3]><'a, 'b, 'a, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'a, 'b> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'a>[{built_in impl core::marker::Sized::<&_ mut _><'a> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'a> for bool}])
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'b,
-    RegionOutlives0: 'b: 'a,
+    Outlives0: ('b: 'a),
+    Outlives1: (T: 'b),
 {
     let _0: (); // return
     let _1: test_crate::Triple::<_, &_ mut &_ mut _, core::option::Option::<&_ mut _><_, _>[TraitClause3]><'68, '69, '70, u32, T, bool>[{built_in impl Sized for u32}, {built_in impl core::marker::Sized::<&_ mut &_ mut _><'68, '69> for T}, {built_in impl core::marker::Sized::<core::option::Option::<&_ mut _><_, _>[TraitClause0]><'70>[{built_in impl core::marker::Sized::<&_ mut _><'70> for bool}] for bool}, {built_in impl core::marker::Sized::<&_ mut _><'70> for bool}]; // arg #1
@@ -885,7 +885,7 @@ where
 // Full name: test_crate::use_list_mut
 fn use_list_mut<'_0, '_1>(_1: &'_0 test_crate::List::<&_ mut _><'_1, u32>[{built_in impl core::marker::Sized::<&_ mut _><'_1> for u32}])
 where
-    RegionOutlives0: '_1: '_0,
+    Outlives0: ('_1: '_0),
 {
     let _0: (); // return
     let _1: &'13 test_crate::List::<&_ mut _><'14, u32>[{built_in impl core::marker::Sized::<&_ mut _><'14> for u32}]; // arg #1
@@ -900,7 +900,7 @@ where
 struct test_crate::Iter::<_, &_ mut _><'_0, '_1, T0>
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_1>),
-    TypeOutlives0: &'_1 mut T0: '_0,
+    Outlives0: (&'_1 mut T0: '_0),
 {
   head: &'_0 mut &'_1 mut T0,
   tail: core::option::Option::<&_ mut &_ mut _><'_0, '_1, T0>[{built_in impl core::marker::Sized::<&_ mut &_ mut _><'_0, '_1> for T0}],
@@ -910,7 +910,7 @@ where
 fn use_iter<'a, 'b, T>(_1: core::option::Option::<Iter<_, _>[TraitClause1]><'a, bool>[{built_in impl core::marker::Sized::<Iter<_, _>[TraitClause0]><'a>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}])
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: bool: 'a,
+    Outlives0: (bool: 'a),
 {
     let _0: (); // return
     let _1: core::option::Option::<Iter<_, _>[TraitClause1]><'8, bool>[{built_in impl core::marker::Sized::<Iter<_, _>[TraitClause0]><'8>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}]; // arg #1
@@ -926,8 +926,8 @@ where
 fn use_iter_mut<'a, 'b, T>(_1: test_crate::Iter::<_, &_ mut _><'a, 'b, T>[{built_in impl core::marker::Sized::<&_ mut _><'b> for T}])
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: &'b mut T: 'a,
-    TypeOutlives1: T: 'b,
+    Outlives0: (&'b mut T: 'a),
+    Outlives1: (T: 'b),
 {
     let _0: (); // return
     let _1: test_crate::Iter::<_, &_ mut _><'9, '10, T>[{built_in impl core::marker::Sized::<&_ mut _><'10> for T}]; // arg #1
@@ -943,7 +943,7 @@ where
 fn use_iter_wrapper<'a, 'b, T>(_1: core::option::Option::<IterWrapper<_, _>[TraitClause1]><'a, bool>[{built_in impl core::marker::Sized::<IterWrapper<_, _>[TraitClause0]><'a>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}])
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: bool: 'a,
+    Outlives0: (bool: 'a),
 {
     let _0: (); // return
     let _1: core::option::Option::<IterWrapper<_, _>[TraitClause1]><'8, bool>[{built_in impl core::marker::Sized::<IterWrapper<_, _>[TraitClause0]><'8>[{built_in impl Sized for bool}] for bool}, {built_in impl Sized for bool}]; // arg #1
@@ -996,7 +996,7 @@ fn use_const_generic<'_0, '_1>(_1: test_crate::ArrayWrapper::<&_ mut _, 1usize><
 fn use_opaque_iter<'a, 'b, T>(x: IterMut<'a, bool>[{built_in impl Sized for bool}])
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: bool: 'a,
+    Outlives0: (bool: 'a),
 {
     let _0: (); // return
     let x: IterMut<'1, bool>[{built_in impl Sized for bool}]; // arg #1

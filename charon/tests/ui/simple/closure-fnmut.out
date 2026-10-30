@@ -104,7 +104,7 @@ struct {closure}<'_0> {
 // Full name: test_crate::main::{impl FnMut<(u8,)> for {closure}<'_0>}::call_mut
 extern "rust-call" fn call_mut<'_0, '_1>(_1: &'_1 mut {closure}<'_0>, tupled_args: (u8,)) -> u8
 where
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
 {
     let _0: u8; // return
     let _1: &'5 mut {closure}<'_0>; // arg #1

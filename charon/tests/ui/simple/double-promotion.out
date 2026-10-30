@@ -20,7 +20,7 @@ struct () {}
 pub struct Ref<'a, B>
 where
     TraitClause0: (B: Sized),
-    TypeOutlives0: B: 'a,
+    Outlives0: (B: 'a),
 {
   _0: &'a B,
 }

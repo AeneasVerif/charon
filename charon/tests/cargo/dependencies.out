@@ -42,7 +42,7 @@ pub struct Error {}
 #[diagnostic_item("Formatter")]
 pub opaque type Formatter<mut 'a>
 where
-    RegionOutlives0: 'a: 'a,
+    Outlives0: ('a: 'a),
 
 // Full name: core::fmt::Arguments
 #[lang_item(FormatArguments)]
@@ -72,7 +72,7 @@ pub trait Debug<Self>
 // Full name: core::fmt::num::{impl Debug for u32}::fmt
 pub fn fmt<'_0, '_1, '_2>(_1: &'_0 u32, _2: &'_1 mut Formatter<'_2>) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
-    RegionOutlives0: '_2: '_1,
+    Outlives0: ('_2: '_1),
 = <opaque>
 
 // Full name: core::fmt::num::{impl Debug for u32}
@@ -163,8 +163,8 @@ where
     TraitClause1: (U: MetaSized),
     TraitClause2: (T: Debug),
     TraitClause3: (U: Debug),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: U: '_1,
+    Outlives0: (T: '_0),
+    Outlives1: (U: '_1),
 = <opaque>
 
 struct (_,)<A> {
@@ -177,7 +177,7 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (F: Sized),
     TraitClause2: (F: FnOnce<(T,)>),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
     TypeConstraint0: TraitClause2::Output = T,
 = <opaque>
 

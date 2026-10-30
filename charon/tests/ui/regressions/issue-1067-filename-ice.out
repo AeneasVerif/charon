@@ -18,7 +18,7 @@ pub trait Sized<Self>
 pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: core::io::error::Error
@@ -47,8 +47,8 @@ unsafe fn impl_Destruct_for_Result::drop_glue<'_0, T, E>(_1: &'_0 mut Result<T, 
 where
     TraitClause0: (T: Sized),
     TraitClause1: (E: Sized),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: E: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (E: '_0),
 = <opaque>
 
 // Full name: core::result::{Result<T, E>[TraitClause0, TraitClause1]}::unwrap
@@ -75,7 +75,7 @@ where
 pub fn impl_Write_for_Vec_u8::write_all<'_0, '_1, A>(_1: &'_0 mut Vec<u8>[{built_in impl Sized for u8}, TraitClause0], _2: &'_1 [u8]) -> Result<(), Error>[{built_in impl Sized for ()}, {built_in impl Sized for Error}]
 where
     TraitClause0: (A: Sized),
-    TypeOutlives0: A: '_0,
+    Outlives0: (A: '_0),
 = <opaque>
 
 // Full name: alloc::vec::Vec::{impl Destruct for Vec<T>[TraitClause0, TraitClause1]}::drop_glue
@@ -83,8 +83,8 @@ unsafe fn impl_Destruct_for_Vec::drop_glue<'_0, T, A>(_1: &'_0 mut Vec<T>[TraitC
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 = <opaque>
 
 // Full name: alloc::vec::{Vec<T>[TraitClause0, {built_in impl Sized for Global}]}::new

@@ -138,7 +138,7 @@ where
 extern "rust-call" fn call<'_0, T>(_1: &'_0 {closure}<T>[TraitClause0], tupled_args: ())
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: (); // return
     let _1: &'1 {closure}<T>[TraitClause0]; // arg #1

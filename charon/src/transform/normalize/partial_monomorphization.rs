@@ -111,24 +111,12 @@ impl<'pm, 'ctx> MutabilityShapeBuilder<'pm, 'ctx> {
                         x
                     }
                 });
-            shape_params.regions_outlive = shape_params
-                .regions_outlive
+            shape_params.outlives = shape_params
+                .outlives
                 .into_iter()
                 .enumerate()
                 .map(|(i, x)| {
-                    if i < target_params.regions_outlive.len() {
-                        x.substitute_explicits(&shape_contents)
-                    } else {
-                        x
-                    }
-                })
-                .collect();
-            shape_params.types_outlive = shape_params
-                .types_outlive
-                .into_iter()
-                .enumerate()
-                .map(|(i, x)| {
-                    if i < target_params.types_outlive.len() {
+                    if i < target_params.outlives.len() {
                         x.substitute_explicits(&shape_contents)
                     } else {
                         x

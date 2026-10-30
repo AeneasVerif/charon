@@ -160,7 +160,7 @@ where
 impl<'_0, T> Trait<T> for &'_0 [T]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     proof ImpliedClause0: (&'_0 [T]: MetaSized) = {built_in impl MetaSized for &'_0 [T]}
     proof ImpliedClause1: (T: Sized) = TraitClause0
@@ -226,7 +226,7 @@ where
 fn test_crate::{Generic<T>[TraitClause0]}::get<'_0, T>(self: &'_0 Generic<T>[TraitClause0]) -> &'_0 T
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: &'1 T; // return
     let self: &'3 Generic<T>[TraitClause0]; // arg #1

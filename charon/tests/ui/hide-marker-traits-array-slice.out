@@ -14,7 +14,7 @@ pub trait Destruct<Self>
 pub struct ArrayAndSlice<'a, T>
 where
     TraitClause0: (T: Destruct),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
   array: [T; 2usize],
   slice: &'a [T],

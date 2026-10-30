@@ -370,41 +370,33 @@ let trait_db_var_to_string (env : fmt_env) (var : trait_db_var) : string =
   | None -> trait_db_var_to_pretty_string var
   | Some _ -> trait_clause_var_to_string env var
 
-let region_to_string (env : fmt_env) (r : region) : string =
+let region_to_string_with ty_to_string (env : fmt_env) (r : region) : string =
   match r with
+  | RLub ty -> "'lub<" ^ ty_to_string env ty ^ ">"
   | RStatic -> "'static"
   | RErased -> "'_"
   | RBody id -> "'" ^ RegionId.to_string id
   | RVar var -> region_db_var_to_string env var
 
-let pp_region_args (env : fmt_env) (fmt : Format.formatter) (args : region_args)
-    : unit =
-  if args.regions <> [] then
-    Format.fprintf fmt "<%a>"
-      (pp_sep_list ", " pp_string)
-      (List.map (region_to_string env) args.regions)
+let outlives_to_string_with ty_to_string env (longer, shorter) =
+  let longer =
+    match longer with
+    | RLub ty -> ty_to_string env ty
+    | region -> region_to_string_with ty_to_string env region
+  in
+  longer ^ ": " ^ region_to_string_with ty_to_string env shorter
 
 let rec region_binder_params_to_string :
     'a. (fmt_env -> ty -> string) -> fmt_env -> 'a region_binder -> string =
  fun ty_to_string env rb ->
   let regions = List.map (region_param_to_string env) rb.binder_regions in
-  let types_outlive =
+  let predicates =
     List.map
       (region_binder_to_string ty_to_string
-         (fun env (ty, region) ->
-           ty_to_string env ty ^ ": " ^ region_to_string env region)
+         (outlives_to_string_with ty_to_string)
          env)
-      rb.types_outlive
+      rb.outlives
   in
-  let regions_outlive =
-    List.map
-      (region_binder_to_string ty_to_string
-         (fun env (r1, r2) ->
-           region_to_string env r1 ^ ": " ^ region_to_string env r2)
-         env)
-      rb.regions_outlive
-  in
-  let predicates = types_outlive @ regions_outlive in
   String.concat ", " regions
   ^
   if predicates = [] then ""
@@ -823,6 +815,13 @@ and pp_type_pattern (env : fmt_env) (fmt : Format.formatter)
   | NotNull -> pp_string fmt "!null"
 
 and ty_to_string env ty = pp_to_string (fun fmt -> pp_ty env fmt ty)
+and region_to_string env region = region_to_string_with ty_to_string env region
+
+and pp_region_args env fmt (args : region_args) =
+  if args.regions <> [] then
+    Format.fprintf fmt "<%a>"
+      (pp_sep_list ", " pp_string)
+      (List.map (region_to_string env) args.regions)
 
 and dyn_trait_type_constraint_to_string (env : fmt_env)
     (ttc : trait_type_constraint) : (trait_clause_id * string) option =
@@ -876,8 +875,8 @@ and pp_dyn_trait_clause (env : fmt_env)
 and dyn_trait_clause_to_string env constraints clause =
   pp_to_string (fun fmt -> pp_dyn_trait_clause env constraints clause fmt)
 
-and dyn_types_outlive_to_string (env : fmt_env)
-    (rb : (ty, region) outlives_pred region_binder) : string option =
+and dyn_outlives_to_string (env : fmt_env) (rb : outlives_pred region_binder) :
+    string option =
   match rb.binder_value with
   | _, RErased -> None
   | _, region ->
@@ -907,10 +906,8 @@ and pp_dyn_predicate (env : fmt_env) (fmt : Format.formatter)
   let trait_clauses =
     List.map (dyn_trait_clause_to_string env constraints) params.trait_clauses
   in
-  let types_outlive =
-    List.filter_map (dyn_types_outlive_to_string env) params.types_outlive
-  in
-  pp_sep_list " + " pp_string fmt (trait_clauses @ types_outlive)
+  let outlives = List.filter_map (dyn_outlives_to_string env) params.outlives in
+  pp_sep_list " + " pp_string fmt (trait_clauses @ outlives)
 
 (** Return two lists:
     - one for the regions, types, const generics
@@ -1088,8 +1085,7 @@ and pp_path_elem (env : fmt_env) (fmt : Format.formatter) (e : path_elem) : unit
             List.map
               (fun (c : const_generic_param) -> { c with name = "_" })
               binder.binder_params.const_generics;
-          regions_outlive = [];
-          types_outlive = [];
+          outlives = [];
           trait_type_constraints = [];
         }
       in
@@ -1215,25 +1211,15 @@ let trait_type_constraint_to_string env ttc =
 let generic_clauses_to_strings (env : fmt_env) (generics : generic_params) :
     string list =
   let _, trait_clauses = generic_params_to_strings env generics in
-  let regions_outlive =
-    let outlive_to_string env (x, y) =
-      region_to_string env x ^ ": " ^ region_to_string env y
-    in
+  let outlives =
     List.mapi
       (fun i rb ->
-        "RegionOutlives" ^ string_of_int i ^ ": "
-        ^ region_binder_to_string ty_to_string outlive_to_string env rb)
-      generics.regions_outlive
-  in
-  let types_outlive =
-    let outlive_to_string env (x, y) =
-      ty_to_string env x ^ ": " ^ region_to_string env y
-    in
-    List.mapi
-      (fun i rb ->
-        "TypeOutlives" ^ string_of_int i ^ ": "
-        ^ region_binder_to_string ty_to_string outlive_to_string env rb)
-      generics.types_outlive
+        "Outlives" ^ string_of_int i ^ ": ("
+        ^ region_binder_to_string ty_to_string
+            (outlives_to_string_with ty_to_string)
+            env rb
+        ^ ")")
+      generics.outlives
   in
   let trait_type_constraints =
     List.mapi
@@ -1243,8 +1229,7 @@ let generic_clauses_to_strings (env : fmt_env) (generics : generic_params) :
             env rb)
       generics.trait_type_constraints
   in
-  List.concat
-    [ trait_clauses; types_outlive; regions_outlive; trait_type_constraints ]
+  List.concat [ trait_clauses; outlives; trait_type_constraints ]
 
 (** Helper to format "where" clauses *)
 let pp_clauses (indent : string) (indent_incr : string) (fmt : Format.formatter)

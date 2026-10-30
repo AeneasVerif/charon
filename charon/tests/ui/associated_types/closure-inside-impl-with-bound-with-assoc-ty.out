@@ -67,7 +67,7 @@ extern "rust-call" fn call<'_0, F, Clause1_Repr>(_1: &'_0 {closure}<F, Clause1_R
 where
     TraitClause0: (F: Sized),
     TraitClause1: (F: PrimeField<Clause1_Repr>),
-    TypeOutlives0: F: '_0,
+    Outlives0: (F: '_0),
 {
     let _0: (); // return
     let _1: &'1 {closure}<F, Clause1_Repr>[TraitClause0, TraitClause1]; // arg #1

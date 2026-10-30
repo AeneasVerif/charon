@@ -164,8 +164,7 @@ impl FunDecl {
             regions,
             // Late-bound regions are guaranteed to not be involved in any non-implied outlives
             // relations.
-            regions_outlive: Vec::new(),
-            types_outlive: Vec::new(),
+            outlives: Vec::new(),
             skip_binder: signature,
         }
     }
@@ -195,12 +194,16 @@ impl RegionBinder<FunSig> {
             }
 
             fn visit_region(&mut self, source: &Region, target: &Region) -> ControlFlow<()> {
+                if let (Region::Lub(source), Region::Lub(target)) = (source, target) {
+                    return self.visit(source, target);
+                }
                 // We're only concerned with mapping bound variables.
                 if let Region::Var(var @ DeBruijnVar::Bound(depth, _)) = source
                     && *depth <= self.depth
                 {
                     if let Some(id) = var.bound_at_depth(self.depth) {
-                        let Some(target) = (*target).move_from_under_binders(self.depth) else {
+                        let Some(target) = target.clone().move_from_under_binders(self.depth)
+                        else {
                             return ControlFlow::Break(());
                         };
                         let mapped = &mut self.regions[id];
@@ -243,8 +246,7 @@ impl RegionBinder<FunSig> {
         let regions = RegionArgs::new(mapping.regions.into_iter().collect::<Option<_>>()?);
         Some(RegionBinder {
             regions: target.regions.clone(),
-            regions_outlive: target.regions_outlive.clone(),
-            types_outlive: target.types_outlive.clone(),
+            outlives: target.outlives.clone(),
             skip_binder: regions,
         })
     }

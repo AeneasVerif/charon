@@ -18,7 +18,7 @@ pub trait Sized<Self>
 pub fn as_slice<'_0, T, const N : usize>(_1: &'_0 [T; N]) -> &'_0 [T]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: core::mem::size_of
@@ -346,7 +346,7 @@ where
 pub fn as_ptr<'_0, T>(_1: &'_0 [T]) -> *const T
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: test_crate::main

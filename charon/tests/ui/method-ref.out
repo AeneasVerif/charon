@@ -75,8 +75,8 @@ trait Ord<Self>
 extern "rust-call" fn call_once<'_0, '_1, Self>(state: for<'_0_1, '_1_1> TraitClause0::cmp<'_0_1, '_1_1>, args: (&'_0 Self, &'_1 Self)) -> Ordering
 where
     TraitClause0: (Self: Ord),
-    TypeOutlives0: Self: '_0,
-    TypeOutlives1: Self: '_1,
+    Outlives0: (Self: '_0),
+    Outlives1: (Self: '_1),
 {
     let _0: Ordering; // return
     let state: for<'_0_1, '_1_1> TraitClause0::cmp<'_0_1, '_1_1>; // arg #1
@@ -96,8 +96,8 @@ where
 impl<'_0, '_1, Self> FnOnce<(&'_0 Self, &'_1 Self)> for for<'_0_1, '_1_1> TraitClause0::cmp<'_0_1, '_1_1>
 where
     TraitClause0: (Self: Ord),
-    TypeOutlives0: Self: '_0,
-    TypeOutlives1: Self: '_1,
+    Outlives0: (Self: '_0),
+    Outlives1: (Self: '_1),
 {
     proof ImpliedClause0: (for<'_0_2, '_1_2> TraitClause0::cmp<'_0_2, '_1_2>: MetaSized) = {built_in impl MetaSized for for<'_0_2, '_1_2> TraitClause0::cmp<'_0_2, '_1_2>}
     proof ImpliedClause1: ((&'_0 Self, &'_1 Self): Sized) = {built_in impl Sized for (&'_0 Self, &'_1 Self)}

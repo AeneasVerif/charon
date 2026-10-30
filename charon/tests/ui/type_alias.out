@@ -56,8 +56,8 @@ pub enum Cow<'a, B>
 where
     TraitClause0: (B: MetaSized),
     TraitClause1: (B: ToOwned),
-    TypeOutlives0: B: 'a,
-    TypeOutlives1: B: 'a,
+    Outlives0: (B: 'a),
+    Outlives1: (B: 'a),
 {
   Borrowed { _0: &'a B },
   Owned { _0: TraitClause1::Owned },
@@ -75,8 +75,8 @@ pub fn borrow<'_0, T, A>(_1: &'_0 Vec<T>[TraitClause0, TraitClause1]) -> &'_0 [T
 where
     TraitClause0: (T: Sized),
     TraitClause1: (A: Sized),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: A: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (A: '_0),
 = <opaque>
 
 // Full name: alloc::slice::{impl Borrow<[T]> for Vec<T>[TraitClause0, TraitClause1]}
@@ -96,7 +96,7 @@ pub fn to_owned<'_0, T>(_1: &'_0 [T]) -> Vec<T>[TraitClause0, {built_in impl Siz
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Clone),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: alloc::slice::{impl ToOwned for [T]}

@@ -15,7 +15,7 @@ pub opaque type TypeId
 #[diagnostic_item("Any")]
 pub trait Any<Self>
 where
-    TypeOutlives0: Self: 'static,
+    Outlives0: (Self: 'static),
 {
     proof ImpliedClause0: (Self: MetaSized)
     fn type_id<'_0_1>;
@@ -38,7 +38,7 @@ fn foo<'_0, T>(x: &'_0 T) -> &'_0 (dyn Any + 'static)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Any),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: &'3 (dyn Any + '4); // return
     let x: &'6 T; // arg #1

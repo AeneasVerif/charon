@@ -46,7 +46,7 @@ unsafe fn impl_Destruct_for_closure::drop_glue<'_0, T>(_1: &'_0 mut test_crate::
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Destruct),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: (); // return
     let _1: &'1 mut test_crate::foo::{closure}<T>[TraitClause0, TraitClause1]; // arg #1

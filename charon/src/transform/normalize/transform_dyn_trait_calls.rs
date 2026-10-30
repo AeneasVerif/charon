@@ -264,7 +264,7 @@ fn transform_dyn_trait_call(
         .rev()
         .take(method_region_count)
         .rev()
-        .copied()
+        .cloned()
         .collect();
 
     // Transform the original call to use the function pointer.

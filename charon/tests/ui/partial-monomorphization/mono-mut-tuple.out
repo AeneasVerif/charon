@@ -80,8 +80,8 @@ pub trait core::marker::Destruct::<&_ mut _><'_0, T0>
 unsafe fn (_, _)::impl_Destruct_for_tuple::drop_glue::<_, &_ mut _, _><'_0, '_1, T0, T1>(_1: &'_0 mut (&'_1 mut T0, T1))
 where
     TraitClause0: (T0: core::marker::Sized::<&_ mut _><'_1>),
-    TypeOutlives0: &'_1 mut T0: '_0,
-    TypeOutlives1: T1: '_0,
+    Outlives0: (&'_1 mut T0: '_0),
+    Outlives1: (T1: '_0),
 {
     let _0: (); // return
     let _1: &'1 mut (&'_1 mut T0, T1); // arg #1

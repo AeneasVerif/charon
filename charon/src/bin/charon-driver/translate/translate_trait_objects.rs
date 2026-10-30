@@ -973,8 +973,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 // Add regions. this is ad-hoc...
                 let method_ty = Ty::new(TyKind::FnPtr(RegionBinder {
                     regions: self.outermost_generics().regions.clone(),
-                    regions_outlive: self.outermost_generics().regions_outlive.clone(),
-                    types_outlive: self.outermost_generics().types_outlive.clone(),
+                    outlives: self.outermost_generics().outlives.clone(),
                     skip_binder: signature,
                 }));
 
@@ -1276,7 +1275,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
 
         let dyn_self = self.translate_ty(span, &dyn_self)?;
         // `&mut dyn Trait -> ()`
-        let signature = self.drop_glue_method_sig(dyn_self.clone(), borrow_region);
+        let signature = self.drop_glue_method_sig(dyn_self.clone(), borrow_region.clone());
 
         // `&mut T` for `impl Trait for T`
         let target_self_ref = {

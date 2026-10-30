@@ -401,7 +401,7 @@ where
 unsafe fn {impl FnOnce<(T,)> for generic_fn<T>[TraitClause0]}::{vtable_drop_shim}<'_0, T>(dyn_self: &'_0 mut (dyn FnOnce<(T,), Output = T>))
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let ret: (); // return
     let dyn_self: &'_0 mut (dyn FnOnce<(T,), Output = T> + '0); // arg #1
@@ -426,7 +426,7 @@ where
 extern "rust-call" fn {impl FnMut<(T,)> for generic_fn<T>[TraitClause0]}::call_mut<'_0, T>(state: &'_0 mut generic_fn<T>[TraitClause0], args: (T,)) -> T
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: T; // return
     let state: &'_0 mut generic_fn<T>[TraitClause0]; // arg #1
@@ -446,7 +446,7 @@ where
 extern "rust-call" fn {impl FnMut<(T,)> for generic_fn<T>[TraitClause0]}::{vtable_method}<'_0, T>(_1: &'_0 mut (dyn FnMut<(T,), ImpliedClause1::Output = T>), _2: (T,)) -> T
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: T; // return
     let _1: &'_0 mut (dyn FnMut<(T,), ImpliedClause1::Output = T> + '0); // arg #1
@@ -471,7 +471,7 @@ where
 unsafe fn {impl FnMut<(T,)> for generic_fn<T>[TraitClause0]}::{vtable_drop_shim}<'_0, T>(dyn_self: &'_0 mut (dyn FnMut<(T,), ImpliedClause1::Output = T>))
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let ret: (); // return
     let dyn_self: &'_0 mut (dyn FnMut<(T,), ImpliedClause1::Output = T> + '0); // arg #1
@@ -496,7 +496,7 @@ where
 extern "rust-call" fn {impl Fn<(T,)> for generic_fn<T>[TraitClause0]}::call<'_0, T>(state: &'_0 generic_fn<T>[TraitClause0], args: (T,)) -> T
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: T; // return
     let state: &'_0 generic_fn<T>[TraitClause0]; // arg #1
@@ -516,7 +516,7 @@ where
 extern "rust-call" fn {impl Fn<(T,)> for generic_fn<T>[TraitClause0]}::{vtable_method}<'_0, T>(_1: &'_0 (dyn Fn<(T,), ImpliedClause1::ImpliedClause1::Output = T>), _2: (T,)) -> T
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: T; // return
     let _1: &'_0 (dyn Fn<(T,), ImpliedClause1::ImpliedClause1::Output = T> + '0); // arg #1
@@ -541,7 +541,7 @@ where
 unsafe fn {impl Fn<(T,)> for generic_fn<T>[TraitClause0]}::{vtable_drop_shim}<'_0, T>(dyn_self: &'_0 mut (dyn Fn<(T,), ImpliedClause1::ImpliedClause1::Output = T>))
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let ret: (); // return
     let dyn_self: &'_0 mut (dyn Fn<(T,), ImpliedClause1::ImpliedClause1::Output = T> + '0); // arg #1

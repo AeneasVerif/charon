@@ -588,13 +588,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
             types,
             const_generics,
             trait_clauses,
-            regions_outlive,
-            types_outlive,
+            outlives,
             trait_type_constraints,
         } = params;
         assert!(regions.is_empty());
         assert!(const_generics.is_empty());
-        assert!(regions_outlive.is_empty());
+        assert!(outlives.iter().all(|pred| pred.skip_binder.0.is_lub()));
         assert_eq!(types.len(), 1);
 
         // Format the clauses with their assoc types, e.g. `Iterator<Item = ...>`.
@@ -655,15 +654,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for DynPredicate {
             })
         });
 
-        let types_outlive = types_outlive
+        let outlives = outlives
             .iter()
             .filter(|x| !x.skip_binder.1.is_erased())
-            .map(|x| {
-                x.fmt_as_for_with(ctx, |ctx, types_outlive| {
-                    types_outlive.1.to_string_with_ctx(ctx)
-                })
-            });
-        let clauses = trait_clauses.chain(types_outlive).format(" + ");
+            .map(|x| x.fmt_as_for_with(ctx, |ctx, outlives| outlives.1.to_string_with_ctx(ctx)));
+        let clauses = trait_clauses.chain(outlives).format(" + ");
         write!(f, "{clauses}")
     }
 }
@@ -960,26 +955,18 @@ impl GenericParams {
         C: AstFormatter,
     {
         let trait_clauses = self.trait_clauses.iter().map(|x| x.to_string_with_ctx(ctx));
-        let types_outlive = self
-            .types_outlive
+        let outlives = self
+            .outlives
             .iter()
             .enumerate()
-            .map(|(i, x)| format!("TypeOutlives{i}: {}", x.fmt_as_for(ctx)));
-        let regions_outlive = self
-            .regions_outlive
-            .iter()
-            .enumerate()
-            .map(|(i, x)| format!("RegionOutlives{i}: {}", x.fmt_as_for(ctx)));
+            .map(|(i, x)| format!("Outlives{i}: ({})", x.fmt_as_for(ctx)));
         let type_constraints = self
             .trait_type_constraints
             .iter_enumerated()
             .map(|(i, x)| format!("TypeConstraint{i}: {}", x.fmt_as_for(ctx)));
-        trait_clauses.map(Either::Left).chain(
-            types_outlive
-                .chain(regions_outlive)
-                .chain(type_constraints)
-                .map(Either::Right),
-        )
+        trait_clauses
+            .map(Either::Left)
+            .chain(outlives.chain(type_constraints).map(Either::Right))
     }
 
     pub fn fmt_with_ctx_with_trait_clauses<C>(&self, ctx: &C) -> (String, String)
@@ -1549,13 +1536,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for OffsetGuarantee {
     }
 }
 
-impl<C: AstFormatter, T, U> FmtWithCtx<C> for OutlivesPred<T, U>
-where
-    T: FmtWithCtx<C>,
-    U: FmtWithCtx<C>,
-{
+impl<C: AstFormatter> FmtWithCtx<C> for OutlivesPred {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}: {}", self.0.with_ctx(ctx), self.1.with_ctx(ctx))
+        match &self.0 {
+            Region::Lub(ty) => ty.fmt_with_ctx(ctx, f)?,
+            region => region.fmt_with_ctx(ctx, f)?,
+        }
+        write!(f, ": {}", self.1.with_ctx(ctx))
     }
 }
 
@@ -2186,6 +2173,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for SizeExpr {
 impl<C: AstFormatter> FmtWithCtx<C> for Region {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Region::Lub(ty) => write!(f, "'lub<{}>", ty.with_ctx(ctx)),
             Region::Static => write!(f, "'static"),
             Region::Var(var) => write!(f, "{}", var.with_ctx(ctx)),
             Region::Body(id) => write!(f, "'{}", id),
@@ -2203,10 +2191,9 @@ impl<T> RegionBinder<T> {
             .format(", ")
             .to_string();
         let predicates = self
-            .types_outlive
+            .outlives
             .iter()
             .map(|pred| pred.fmt_as_for(ctx))
-            .chain(self.regions_outlive.iter().map(|pred| pred.fmt_as_for(ctx)))
             .format(", ")
             .to_string();
         if !predicates.is_empty() {

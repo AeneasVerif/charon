@@ -276,8 +276,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         }
         Ok(RegionBinder {
             regions,
-            regions_outlive: Vec::new(),
-            types_outlive: Vec::new(),
+            outlives: Vec::new(),
             skip_binder: dref,
         })
     }

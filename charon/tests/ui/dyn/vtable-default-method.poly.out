@@ -32,7 +32,7 @@ pub trait Trait<Self>
 pub fn test_crate::Trait::dflt<'_0, Self>(self: &'_0 Self) -> i32
 where
     TraitClause0: (Self: Trait),
-    TypeOutlives0: Self: '_0,
+    Outlives0: (Self: '_0),
 {
     let _0: i32; // return
     let self: &'1 Self; // arg #1

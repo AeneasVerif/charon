@@ -84,6 +84,9 @@ impl TypeCheckVisitor<'_> {
     }
 
     fn match_regions(&mut self, a: &Region, b: &Region) -> Result<(), TypeError> {
+        if let (Region::Lub(a), Region::Lub(b)) = (a, b) {
+            return self.match_tys(a, b);
+        }
         if let (Region::Body(a), Region::Body(b)) = (a, b)
             && let Some(unifier) = &mut self.body_lt_unifier
         {

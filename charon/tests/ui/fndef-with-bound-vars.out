@@ -53,8 +53,8 @@ struct test_crate::main::{closure}::{closure}<'_0, '_1> {
 // Full name: test_crate::main::{impl Fn<()> for test_crate::main::{closure}<'_0, '_1>}::call
 extern "rust-call" fn {impl Fn<()> for test_crate::main::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::main::{closure}<'_0, '_1>, tupled_args: ()) -> test_crate::main::{closure}::{closure}<'_0, '_1>
 where
-    RegionOutlives0: '_0: '_2,
-    RegionOutlives1: '_1: '_2,
+    Outlives0: ('_0: '_2),
+    Outlives1: ('_1: '_2),
 {
     let _0: test_crate::main::{closure}::{closure}<'50, '51>; // return
     let _1: &'141 test_crate::main::{closure}<'_0, '_1>; // arg #1
@@ -75,8 +75,8 @@ where
 // Full name: test_crate::main::{closure}::{impl Fn<()> for test_crate::main::{closure}::{closure}<'_0, '_1>}::call
 extern "rust-call" fn {impl Fn<()> for test_crate::main::{closure}::{closure}<'_0, '_1>}::call<'_0, '_1, '_2>(_1: &'_2 test_crate::main::{closure}::{closure}<'_0, '_1>, tupled_args: ()) -> bar<&'_0 ()>[{built_in impl Sized for &'_0 ()}]
 where
-    RegionOutlives0: '_0: '_2,
-    RegionOutlives1: '_1: '_2,
+    Outlives0: ('_0: '_2),
+    Outlives1: ('_1: '_2),
 {
     let _0: bar<&'8 ()>[{built_in impl Sized for &'8 ()}]; // return
     let _1: &'55 test_crate::main::{closure}::{closure}<'_0, '_1>; // arg #1

@@ -31,7 +31,7 @@ struct test_crate::MyTrait::{vtable} {
 // Full name: test_crate::MyTrait
 pub trait MyTrait<Self>
 where
-    TypeOutlives0: Self: 'static,
+    Outlives0: (Self: 'static),
 {
     proof ImpliedClause0: (Self: MetaSized)
     proof ImpliedClause1: (Self: Send)

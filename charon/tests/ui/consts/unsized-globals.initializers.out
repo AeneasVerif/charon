@@ -35,7 +35,7 @@ vtable core::marker::Sync::{vtable}<Self>: core::marker::Sync::{vtable} = Opaque
 pub unsafe fn from_raw_parts<'a, T>(_1: *const T, _2: usize) -> &'a [T]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 = <opaque>
 
 struct (_, _)<A, B>

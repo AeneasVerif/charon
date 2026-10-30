@@ -20,11 +20,11 @@ pub trait MyTrait<Self>
     proof ImpliedClause0: (Self: MetaSized)
     type foo_ty<'a, '_1_1>
     where
-        TypeOutlives0: Self: 'a,
-        RegionOutlives0: 'a: '_1_1,
-        RegionOutlives1: '_1_1: 'a,
+        Outlives0: (Self: 'a),
+        Outlives1: ('a: '_1_1),
+        Outlives2: ('_1_1: 'a),
         proof ImpliedClause0: (Self::foo_ty<'a, '_1_1>: Sized);
-    fn foo<'a, TypeOutlives0: Self: 'a>;
+    fn foo<'a, Outlives0: (Self: 'a)>;
     non-dyn-compatible
 }
 

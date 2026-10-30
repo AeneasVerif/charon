@@ -38,7 +38,7 @@ struct () {}
 
 struct test_crate::f::{closure}<'_0, T>
 where
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
   _0: &'_0 T,
 }
@@ -48,7 +48,7 @@ fn f<'_0, T>(x: &'_0 T)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: (); // return
     let x: &'1 T; // arg #1
@@ -74,9 +74,9 @@ extern "rust-call" fn {impl Fn<(), T> for test_crate::f::{closure}<'_0, T>}::cal
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: T: '_1,
-    RegionOutlives0: '_0: '_1,
+    Outlives0: (T: '_0),
+    Outlives1: ('_0: '_1),
+    Outlives2: (T: '_1),
 {
     let _0: T; // return
     let _1: &'5 test_crate::f::{closure}<'_0, T>; // arg #1
@@ -91,7 +91,7 @@ where
 
 struct test_crate::g::{closure}<'_0, T>
 where
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
   _0: &'_0 T,
 }
@@ -126,9 +126,9 @@ extern "rust-call" fn {impl Fn<(), T> for test_crate::g::{closure}<'_0, T>}::cal
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Copy),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: T: '_1,
-    RegionOutlives0: '_0: '_1,
+    Outlives0: (T: '_0),
+    Outlives1: ('_0: '_1),
+    Outlives2: (T: '_1),
 {
     let _0: T; // return
     let _1: &'5 test_crate::g::{closure}<'_0, T>; // arg #1

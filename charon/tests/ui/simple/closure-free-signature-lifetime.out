@@ -53,10 +53,10 @@ extern "rust-call" fn call<'a, '_1, '_2, '_3, T>(_1: &'_3 {closure}<'a, '_1, '_2
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Accept<'a>),
-    TypeOutlives0: T: '_3,
-    RegionOutlives0: 'a: '_3,
-    RegionOutlives1: '_1: '_3,
-    RegionOutlives2: '_2: '_3,
+    Outlives0: ('a: '_3),
+    Outlives1: ('_1: '_3),
+    Outlives2: ('_2: '_3),
+    Outlives3: (T: '_3),
 {
     let _0: (); // return
     let _1: &'11 {closure}<'a, '_1, '_2, T>[TraitClause0, TraitClause1]; // arg #1

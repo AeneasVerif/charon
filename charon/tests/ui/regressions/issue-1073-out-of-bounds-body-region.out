@@ -22,15 +22,15 @@ pub trait Sized<Self>
 // Full name: core::io::io_slice::{IoSlice<'a>}::advance_slices
 pub fn advance_slices<'a, '_1, '_2>(_1: &'_1 mut &'_2 mut [IoSlice<'a>], _2: usize)
 where
-    RegionOutlives0: '_2: '_1,
-    RegionOutlives1: 'a: '_2,
+    Outlives0: ('_2: '_1),
+    Outlives1: ('a: '_2),
 = <opaque>
 
 // Full name: test_crate::foo
 pub fn foo<'_0, '_1, '_2>(bufs: &'_0 mut &'_1 mut [IoSlice<'_2>])
 where
-    RegionOutlives0: '_1: '_0,
-    RegionOutlives1: '_2: '_1,
+    Outlives0: ('_1: '_0),
+    Outlives1: ('_2: '_1),
 {
     let _0: (); // return
     let bufs: &'19 mut &'20 mut [IoSlice<'21>]; // arg #1

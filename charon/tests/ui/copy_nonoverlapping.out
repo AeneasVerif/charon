@@ -48,8 +48,8 @@ pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(self: &'_0 mut Self, sourc
 where
     TraitClause0: (Self: Clone),
     TraitClause1: (Self: Destruct),
-    TypeOutlives0: Self: '_0,
-    TypeOutlives1: Self: '_1,
+    Outlives0: (Self: '_0),
+    Outlives1: (Self: '_1),
 {
     let _0: (); // return
     let self: &'1 mut Self; // arg #1
@@ -383,7 +383,7 @@ where
 #[lang_item(PanicInfo)]
 pub struct PanicInfo<'a>
 where
-    RegionOutlives0: 'a: 'a,
+    Outlives0: ('a: 'a),
 {
   message: &'a Arguments<'a>,
   location: &'static Location<'static>,
@@ -394,7 +394,7 @@ where
 #[lang_item(PanicImpl)]
 extern unsafe fn core::panicking::panic_nounwind_fmt::runtime::panic_impl<'_0, '_1>(_1: &'_0 PanicInfo<'_1>) -> !
 where
-    RegionOutlives0: '_1: '_0,
+    Outlives0: ('_1: '_0),
 = <extern:_RNvCs<hash>_7___rustc17rust_begin_unwind>
 
 fn core::panic::panic_info::{PanicInfo<'a>}::new<'a>(message: &'a Arguments<'a>, location: &'static Location<'static>, can_unwind: bool, force_no_backtrace: bool) -> PanicInfo<'a>
@@ -1030,8 +1030,8 @@ where
 fn write<'_0, '_1, T>(x: &'_0 mut T, y: &'_1 T)
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: T: '_1,
+    Outlives0: (T: '_0),
+    Outlives1: (T: '_1),
 {
     let _0: (); // return
     let x: &'1 mut T; // arg #1

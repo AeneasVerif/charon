@@ -24,7 +24,7 @@ struct (_,)<A> {
 fn make_early<'a, T>(_1: fn(&'a T))
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'a,
+    Outlives0: (T: 'a),
 {
     let _0: (); // return
     let _1: fn(&'2 T); // arg #1
@@ -41,7 +41,7 @@ struct test_crate::main::{closure#1}<'_0> {}
 // Full name: test_crate::main::{impl Fn<(&'_0 u16,)> for test_crate::main::{closure#1}<'_0>}::call
 extern "rust-call" fn {impl Fn<(&'_0 u16,)> for test_crate::main::{closure#1}<'_0>}::call<'_0, '_1>(_1: &'_1 test_crate::main::{closure#1}<'_0>, tupled_args: (&'_0 u16,))
 where
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
 {
     let _0: (); // return
     let _1: &'6 test_crate::main::{closure#1}<'_0>; // arg #1
@@ -62,7 +62,7 @@ where
 // Full name: test_crate::main::{impl FnMut<(&'_0 u16,)> for test_crate::main::{closure#1}<'_0>}::call_mut
 extern "rust-call" fn {impl FnMut<(&'_0 u16,)> for test_crate::main::{closure#1}<'_0>}::call_mut<'_0, '_1>(state: &'_1 mut test_crate::main::{closure#1}<'_0>, args: (&'_0 u16,))
 where
-    RegionOutlives0: '_0: '_1,
+    Outlives0: ('_0: '_1),
 {
     let _0: (); // return
     let state: &'_1 mut test_crate::main::{closure#1}<'_0>; // arg #1

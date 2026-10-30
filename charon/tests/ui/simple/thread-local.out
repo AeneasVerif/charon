@@ -107,7 +107,7 @@ pub unsafe trait DestroyedState<Self>
 pub fn register_dtor<'_0, T>(_1: &'_0 Storage<T, !>[TraitClause0, {built_in impl Sized for !}])
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: std::sys::thread_local::native::lazy::{impl DestroyedState for !}
@@ -133,9 +133,9 @@ where
     TraitClause2: (D: DestroyedState),
     TraitClause3: (T2: Sized),
     TraitClause4: (T2: FnOnce<()>),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: D: '_0,
-    TypeOutlives2: T: '_1,
+    Outlives0: (T: '_0),
+    Outlives1: (D: '_0),
+    Outlives2: (T: '_1),
     TypeConstraint0: TraitClause4::Output = T,
 = <opaque>
 
@@ -144,12 +144,12 @@ where
 pub opaque type LocalKey<T>
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'static,
+    Outlives0: (T: 'static),
 
 pub unsafe fn std::thread::local::{LocalKey<T>[TraitClause0]}::new<T>(_1: fn<'_0_1 where T: '_0_1>(Option<&'_0_1 mut Option<T>[TraitClause0]>[{built_in impl Sized for &'_0_1 mut Option<T>[TraitClause0]}]) -> *const T) -> LocalKey<T>[TraitClause0]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: 'static,
+    Outlives0: (T: 'static),
 = <opaque>
 
 struct (_,)<A> {
@@ -314,7 +314,7 @@ fn {as_fn}<'_0>(arg1: Option<&'_0 mut Option<u32>[{built_in impl Sized for u32}]
 // Full name: test_crate::FOO
 fn FOO() -> LocalKey<u32>[{built_in impl Sized for u32}]
 where
-    TypeOutlives0: u32: 'static,
+    Outlives0: (u32: 'static),
 {
     let _0: LocalKey<u32>[{built_in impl Sized for u32}]; // return
     let _1: fn<'_0_1>(Option<&'_0_1 mut Option<u32>[{built_in impl Sized for u32}]>[{built_in impl Sized for &'_0_1 mut Option<u32>[{built_in impl Sized for u32}]}]) -> *const u32; // anonymous local

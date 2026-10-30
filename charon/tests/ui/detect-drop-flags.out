@@ -36,7 +36,7 @@ pub trait Drop<Self>
 pub fn core::ops::drop::Drop::drop<'_0, Self>(_1: &'_0 mut Self)
 where
     TraitClause0: (Self: Drop),
-    TypeOutlives0: Self: '_0,
+    Outlives0: (Self: '_0),
 = <opaque>
 
 // Full name: test_crate::NeedsDrop

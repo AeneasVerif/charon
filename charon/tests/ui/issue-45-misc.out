@@ -62,9 +62,9 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (I: Sized),
     TraitClause2: ([T]: IndexMut<I>),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: TraitClause2::ImpliedClause1::Output: '_0,
-    TypeOutlives2: I: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (TraitClause2::ImpliedClause1::Output: '_0),
+    Outlives2: (I: '_0),
 = <opaque>
 
 struct (_,)<A> {
@@ -283,7 +283,7 @@ where
     TraitClause0: (A: Sized),
     TraitClause1: (A: Step),
     TraitClause2: (A: Destruct),
-    TypeOutlives0: A: '_0,
+    Outlives0: (A: '_0),
 = <opaque>
 
 // Full name: core::iter::range::{impl Iterator for Range<A>[TraitClause0]}
@@ -339,9 +339,9 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (I: Sized),
     TraitClause2: (I: SliceIndex<[T]>),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: TraitClause2::Output: '_0,
-    TypeOutlives2: I: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (TraitClause2::Output: '_0),
+    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl Index<I> for [T]}
@@ -365,9 +365,9 @@ where
     TraitClause0: (T: Sized),
     TraitClause1: (I: Sized),
     TraitClause2: (I: SliceIndex<[T]>),
-    TypeOutlives0: T: '_0,
-    TypeOutlives1: TraitClause2::Output: '_0,
-    TypeOutlives2: I: '_0,
+    Outlives0: (T: '_0),
+    Outlives1: (TraitClause2::Output: '_0),
+    Outlives2: (I: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl IndexMut<I> for [T]}
@@ -388,14 +388,14 @@ where
 pub fn impl_SliceIndex_slice_for_usize::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index
 pub fn impl_SliceIndex_slice_for_usize::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked_mut
@@ -416,14 +416,14 @@ where
 pub fn impl_SliceIndex_slice_for_usize::get_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> Option<&'_0 mut T>[{built_in impl Sized for &'_0 mut T}]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get
 pub fn impl_SliceIndex_slice_for_usize::get<'_0, T>(_1: usize, _2: &'_0 [T]) -> Option<&'_0 T>[{built_in impl Sized for &'_0 T}]
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}
@@ -448,7 +448,7 @@ where
 pub fn core::slice::{[T]}::len<'_0, T>(_1: &'_0 [T]) -> usize
 where
     TraitClause0: (T: Sized),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 = <opaque>
 
 // Full name: test_crate::map::{closure}

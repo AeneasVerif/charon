@@ -49,7 +49,7 @@ fn takes_trait<'_0, T>(x: &'_0 T)
 where
     TraitClause0: (T: Sized),
     TraitClause1: (T: Trait),
-    TypeOutlives0: T: '_0,
+    Outlives0: (T: '_0),
 {
     let _0: (); // return
     let x: &'1 T; // arg #1
@@ -139,7 +139,7 @@ fn main()
 pub fn test_crate::foo::Trait::defaulted<'_0, Self>(self: &'_0 Self)
 where
     TraitClause0: (Self: Trait),
-    TypeOutlives0: Self: '_0,
+    Outlives0: (Self: '_0),
 {
     let _0: (); // return
     let self: &'1 Self; // arg #1
