@@ -57,13 +57,20 @@ pub enum Body {
     ),
     /// Function declared in an `extern { ... }` block. The string is the foreign symbol name.
     Extern(String),
-    /// Rust intrinsic function. This has no body and describes a "built-in" operation that must be
-    /// handled by the codegen backend.
+    /// Rust intrinsic function. This describes a "built-in" operation that must be handled by the
+    /// codegen backend.
     Intrinsic {
         /// The intrinsic name.
         name: String,
         /// The argument names, None if not available.
         arg_names: Vec<Option<String>>,
+        /// A fallback body that backends can use if they don't implement the intrinsic themselves.
+        fallback: Option<FunDeclRef>,
+        /// Whether the fallback body is marked `#[miri::intrinsic_fallback_is_spec]`, in which case
+        /// it exactly describes the behavior of the intrinsic. Otherwise the fallback is only one of
+        /// the valid implementations of the intrinsic, e.g. the intrinsic may have more UB or more
+        /// non-determinism.
+        fallback_is_spec: bool,
     },
     /// A body that the user chose not to translate, based on opacity settings like
     /// `--include`/`--opaque`.

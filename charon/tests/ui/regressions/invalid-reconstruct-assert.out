@@ -47,10 +47,14 @@ where
     TraitClause1: (T: Destruct),
 = <opaque>
 
+// Full name: core::intrinsics::assume::{fallback}
+unsafe fn {fallback}(_1: bool)
+= <opaque>
+
 // Full name: core::intrinsics::assume
 #[rustc_intrinsic]
 pub unsafe fn assume(b_1: bool)
-= <intrinsic:assume>
+= <intrinsic:assume> with fallback {fallback}
 
 // Full name: core::marker::Tuple
 #[fundamental]

@@ -152,9 +152,13 @@ impl "impl_Hash_for_unit" Hash for () {
     non-dyn-compatible
 }
 
+// Full name: core::intrinsics::assume::{fallback}
+unsafe fn {fallback}(_1: bool)
+= <opaque>
+
 #[rustc_intrinsic]
 pub unsafe fn core::intrinsics::assume(b_1: bool)
-= <intrinsic:assume>
+= <intrinsic:assume> with fallback {fallback}
 
 // Full name: core::marker::Send
 #[diagnostic_item("Send")]

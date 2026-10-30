@@ -90,12 +90,14 @@ class ['self] map_crate =
             StructuredBody (self#visit_gexpr_body self#visit_block env body)
         | UnstructuredBody _ -> (* ULLBC in LLBC visitor: ignore *) body
         | ExternBody sym -> ExternBody (self#visit_string env sym)
-        | IntrinsicBody (name, arg_names) ->
+        | IntrinsicBody (name, arg_names, fallback, fallback_is_spec) ->
             IntrinsicBody
               ( self#visit_string env name,
                 self#visit_list
                   (self#visit_option self#visit_string)
-                  env arg_names )
+                  env arg_names,
+                self#visit_option self#visit_fun_decl_ref env fallback,
+                self#visit_bool env fallback_is_spec )
         | TargetDispatchBody targets ->
             TargetDispatchBody
               (self#visit_list
@@ -222,9 +224,11 @@ class ['self] iter_crate =
       | StructuredBody body -> self#visit_expr_body env body
       | UnstructuredBody body -> (* ULLBC in LLBC visitor: ignore *) ()
       | ExternBody sym -> self#visit_string env sym
-      | IntrinsicBody (name, arg_names) ->
+      | IntrinsicBody (name, arg_names, fallback, fallback_is_spec) ->
           self#visit_string env name;
-          self#visit_list (self#visit_option self#visit_string) env arg_names
+          self#visit_list (self#visit_option self#visit_string) env arg_names;
+          self#visit_option self#visit_fun_decl_ref env fallback;
+          self#visit_bool env fallback_is_spec
       | TargetDispatchBody targets ->
           self#visit_list
             (fun env (tgt, fref) ->
