@@ -198,7 +198,7 @@ impl HasSafety for Rvalue {
             } => place
                 .read_safety(krate)
                 .or_else(|| ptr_metadata.safety(krate)),
-            Rvalue::Discriminant(place) | Rvalue::Len(place, ..) => place.read_safety(krate),
+            Rvalue::Discriminant(place) => place.read_safety(krate),
             Rvalue::UnaryOp(unop, op) => unop.safety(krate).or_else(|| op.safety(krate)),
             Rvalue::Use(op, _) | Rvalue::Repeat { operand: op, .. } => op.safety(krate),
             Rvalue::BinaryOp(binop, op1, op2) => binop

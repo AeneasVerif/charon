@@ -1275,11 +1275,6 @@ and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _1 = list_of_postcard operand_of_postcard ctx st in
          Ok (Aggregate (_0, _1))
      | 8 ->
-         let* _0 = place_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         let* _2 = option_of_postcard constant_expr_of_postcard ctx st in
-         Ok (Len (_0, _1, _2))
-     | 9 ->
          let* operand = operand_of_postcard ctx st in
          let* count = constant_expr_of_postcard ctx st in
          let* elem_is_sized = option_of_postcard trait_ref_of_postcard ctx st in

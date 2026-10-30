@@ -509,8 +509,7 @@ impl VisitBodyMut for IndexVisitor<'_, '_> {
                 kind: BorrowKind::Shared | BorrowKind::Shallow,
                 ..
             }
-            | Discriminant(..)
-            | Len(..) => self.visit_inner_with_mutability(x, false),
+            | Discriminant(..) => self.visit_inner_with_mutability(x, false),
 
             Use(..)
             | NullaryOp(..)

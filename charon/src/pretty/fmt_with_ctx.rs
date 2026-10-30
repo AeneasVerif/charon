@@ -2406,7 +2406,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                     }
                 }
             }
-            Rvalue::Len(place, ..) => write!(f, "len({})", place.with_ctx(ctx)),
             Rvalue::Repeat { operand, count, .. } => {
                 write!(f, "[{}; {}]", operand.with_ctx(ctx), count.with_ctx(ctx))
             }

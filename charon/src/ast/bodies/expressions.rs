@@ -60,17 +60,6 @@ pub enum Rvalue {
     /// Remark: in case of closures, the aggregated value groups the closure id
     /// together with its state.
     Aggregate(AggregateKind, Vec<Operand>),
-    /// Length of a place of type `[T]` or `[T; N]`. This applies to the place itself, not to a
-    /// pointer value. This is inserted by rustc in a single case: slice patterns.
-    /// ```text
-    /// fn slice_pattern_4(x: &[()]) {
-    ///     match x {
-    ///         [_named] => (),
-    ///         _ => (),
-    ///     }
-    /// }
-    /// ```
-    Len(Place, Ty, Option<ConstantExpr>),
     /// `Repeat(x, n)` creates an array containing `n` copies of `x`.
     Repeat {
         operand: Operand,

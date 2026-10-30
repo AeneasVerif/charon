@@ -428,29 +428,26 @@ fn slice_pat3()
     let _11: &'9 [i32; 4usize]; // anonymous local
     let _12: usize; // anonymous local
     let _13: usize; // anonymous local
-    let _14: usize; // anonymous local
-    let _15: &'10 [i32; 4usize]; // anonymous local
-    let _16: &'15 [i32; 4usize]; // anonymous local
-    let _17: [i32; 4usize]; // anonymous local
-    let _18: &'_ [i32]; // anonymous local
-    let _19: &'_ i32; // anonymous local
-    let _20: &'_ [i32]; // anonymous local
-    let _21: usize; // anonymous local
-    let _22: usize; // anonymous local
-    let _23: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
-    let _24: &'_ [i32]; // anonymous local
-    let _25: &'_ [i32]; // anonymous local
-    let _26: usize; // anonymous local
-    let _27: usize; // anonymous local
-    let _28: &'_ i32; // anonymous local
+    let _14: &'10 [i32; 4usize]; // anonymous local
+    let _15: &'15 [i32; 4usize]; // anonymous local
+    let _16: [i32; 4usize]; // anonymous local
+    let _17: &'_ [i32]; // anonymous local
+    let _18: &'_ i32; // anonymous local
+    let _19: &'_ [i32]; // anonymous local
+    let _20: usize; // anonymous local
+    let _21: Range<usize>[{built_in impl Sized for usize}]; // anonymous local
+    let _22: &'_ [i32]; // anonymous local
+    let _23: &'_ [i32]; // anonymous local
+    let _24: usize; // anonymous local
+    let _25: &'_ i32; // anonymous local
 
+    storage_live(_14)
     storage_live(_15)
     storage_live(_16)
-    storage_live(_17)
-    _17 = repeat<i32, 4usize>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 0i32)
+    _16 = repeat<i32, 4usize>[{built_in impl Sized for i32}, impl_Clone_for_i32](const 0i32)
     ↳⚡ undefined_behavior
-    _16 = &_17
-    _15 = move _16
+    _15 = &_16
+    _14 = move _15
     storage_live(_0)
     storage_live(_7)
     storage_live(_8)
@@ -461,7 +458,7 @@ fn slice_pat3()
     storage_live(slice)
     storage_live(_2)
     storage_live(_3)
-    _11 = move _15
+    _11 = move _14
     _3 = &(*_11)
     _2 = &(*_3)
     slice = as_slice<'_, i32, 4usize>[{built_in impl Sized for i32}](move _2)
@@ -477,69 +474,60 @@ fn slice_pat3()
     assert(move _10 == true) else panic(core::panicking::panic)
     ↳⚡ unwind_continue
     storage_live(_a)
+    storage_live(_17)
+    _17 = &(*slice) with_metadata(copy slice.metadata)
     storage_live(_18)
-    _18 = &(*slice) with_metadata(copy slice.metadata)
-    storage_live(_19)
-    _19 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](const 0usize, move _18)
+    _18 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](const 0usize, move _17)
     ↳⚡ undefined_behavior
-    _a = &(*_19)
+    _a = &(*_18)
     storage_live(_b)
     storage_live(_12)
-    _12 = len((*slice))
+    _12 = copy slice.metadata ub.- const 1usize
     storage_live(_13)
     _13 = copy _12 ub.- const 1usize
-    storage_dead(_12)
-    storage_live(_14)
-    _14 = copy _13 ub.- const 1usize
+    storage_live(_19)
+    _19 = &(*slice) with_metadata(copy slice.metadata)
     storage_live(_20)
-    _20 = &(*slice) with_metadata(copy slice.metadata)
+    _20 = copy slice.metadata ub.- const 1usize
     storage_live(_21)
-    _21 = len((*slice))
+    _21 = Range { start: const 1usize, end: copy _20 }
     storage_live(_22)
-    _22 = copy _21 ub.- const 1usize
-    storage_dead(_21)
-    storage_live(_23)
-    _23 = Range { start: const 1usize, end: copy _22 }
-    storage_live(_24)
-    _24 = impl_SliceIndex_slice_for_Range_usize::index<'_, i32>[{built_in impl Sized for i32}](move _23, move _20)
+    _22 = impl_SliceIndex_slice_for_Range_usize::index<'_, i32>[{built_in impl Sized for i32}](move _21, move _19)
     ↳⚡ undefined_behavior
-    _b = &(*_24) with_metadata(copy _14)
+    _b = &(*_22) with_metadata(copy _13)
     storage_live(_c)
+    storage_live(_23)
+    _23 = &(*slice) with_metadata(copy slice.metadata)
+    storage_live(_24)
+    _24 = copy slice.metadata ub.- const 1usize
     storage_live(_25)
-    _25 = &(*slice) with_metadata(copy slice.metadata)
-    storage_live(_26)
-    _26 = len((*slice))
-    storage_live(_27)
-    _27 = copy _26 ub.- const 1usize
-    storage_dead(_26)
-    storage_live(_28)
-    _28 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](copy _27, move _25)
+    _25 = impl_SliceIndex_slice_for_usize::index<'_, i32>[{built_in impl Sized for i32}](copy _24, move _23)
     ↳⚡ undefined_behavior
-    _c = &(*_28)
+    _c = &(*_25)
     _0 = ()
     storage_dead(_c)
     storage_dead(_b)
     storage_dead(_a)
     storage_dead(slice)
-    storage_dead(_14)
     storage_dead(_13)
+    storage_dead(_12)
     storage_dead(_11)
     storage_dead(_10)
     storage_dead(_9)
     storage_dead(_8)
     storage_dead(_7)
-    storage_dead(_28)
-    storage_dead(_27)
     storage_dead(_25)
     storage_dead(_24)
     storage_dead(_23)
     storage_dead(_22)
+    storage_dead(_21)
     storage_dead(_20)
     storage_dead(_19)
     storage_dead(_18)
     storage_dead(_17)
     storage_dead(_16)
     storage_dead(_15)
+    storage_dead(_14)
     return
 }
 

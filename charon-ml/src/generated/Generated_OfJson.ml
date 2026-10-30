@@ -1440,11 +1440,6 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         let* _0 = aggregate_kind_of_json ctx _0 in
         let* _1 = list_of_json operand_of_json ctx _1 in
         Ok (Aggregate (_0, _1))
-    | `Assoc [ ("Len", `List [ _0; _1; _2 ]) ] ->
-        let* _0 = place_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        let* _2 = option_of_json constant_expr_of_json ctx _2 in
-        Ok (Len (_0, _1, _2))
     | `Assoc
         [
           ( "Repeat",

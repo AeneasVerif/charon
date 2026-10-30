@@ -758,19 +758,6 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             }
             Rvalue::Discriminant(place) => mb::get_discriminant(self.place(span, place)?),
             Rvalue::Aggregate(kind, operands) => self.aggregate(span, kind, operands)?,
-            Rvalue::Len(place, _, known_len) => {
-                if let Some(len) = known_len {
-                    self.constant(span, len)?
-                } else {
-                    let ptr = mini::ValueExpr::AddrOf {
-                        target: mini::GcCow::new(self.place(span, place)?),
-                        ptr_ty: mini::PtrType::Raw {
-                            meta_kind: mini::PointerMetaKind::ElementCount,
-                        },
-                    };
-                    mb::get_metadata(ptr)
-                }
-            }
             Rvalue::Repeat { operand, count, .. } => {
                 let count = count
                     .as_usize_literal()

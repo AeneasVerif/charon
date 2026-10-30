@@ -251,18 +251,6 @@ and rvalue =
 
           Remark: in case of closures, the aggregated value groups the closure
           id together with its state. *)
-  | Len of place * ty * constant_expr option
-      (** Length of a place of type [[T]] or [[T; N]]. This applies to the place
-          itself, not to a pointer value. This is inserted by rustc in a single
-          case: slice patterns.
-          {@rust[
-            fn slice_pattern_4(x: &[()]) {
-                match x {
-                    [_named] => (),
-                    _ => (),
-                }
-            }
-          ]} *)
   | Repeat of operand * constant_expr * trait_ref option * trait_ref option
       (** [Repeat(x, n)] creates an array containing [n] copies of [x].
 
