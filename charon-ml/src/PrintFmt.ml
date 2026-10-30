@@ -2575,7 +2575,7 @@ let pp_fun_decl (env : fmt_env) (indent : string) (indent_incr : string)
     match def.body with
     | StructuredBody { locals; _ } | UnstructuredBody { locals; _ } ->
         args_of_locals locals
-    | IntrinsicBody (_, arg_names) ->
+    | IntrinsicBody (_, arg_names, _, _) ->
         arg_names
         |> Collections.List.mapi (fun i name ->
                let id = LocalId.of_int (i + 1) in
@@ -2620,8 +2620,14 @@ let pp_fun_decl (env : fmt_env) (indent : string) (indent_incr : string)
         (pp_ullbc_blocks env body_indent indent_incr)
         body indent
   | ExternBody name -> Format.fprintf fmt "\n%s= <extern:%s>" indent name
-  | IntrinsicBody (name, _) ->
-      Format.fprintf fmt "\n%s= <intrinsic:%s>" indent name
+  | IntrinsicBody (name, _, fallback, fallback_is_spec) -> (
+      Format.fprintf fmt "\n%s= <intrinsic:%s>" indent name;
+      match fallback with
+      | Some fallback ->
+          let spec = if fallback_is_spec then " (spec)" else "" in
+          Format.fprintf fmt " with fallback%s %a" spec (pp_fun_decl_ref env)
+            fallback
+      | None -> ())
   | OpaqueBody -> Format.fprintf fmt "\n%s= <opaque>" indent
   | MissingBody -> Format.fprintf fmt "\n%s= <missing>" indent
   | ErrorBody error -> Format.fprintf fmt "\n%s= error(\"%s\")" indent error.msg

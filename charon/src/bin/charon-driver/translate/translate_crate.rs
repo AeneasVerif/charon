@@ -86,6 +86,8 @@ pub enum TransItemSourceKind {
     VTableMethod(TransImplSource),
     /// The drop shim function to be used in the vtable as a field.
     VTableDropShim(TransImplSource),
+    /// The fallback body of an intrinsic. The `DefId` is that of the intrinsic.
+    IntrinsicFallback,
 }
 
 /// The kind of a [`TransItemSourceKind::TraitImpl`].
@@ -471,7 +473,7 @@ impl<'tcx> TranslateCtx<'tcx> {
                         ItemId::Global(self.translated.global_decls.reserve_slot())
                     }
                     Fun | CallableMethod(..) | ClosureAsFnCast | DropGlueMethod(..)
-                    | VTableMethod(..) | VTableDropShim(..) => {
+                    | VTableMethod(..) | VTableDropShim(..) | IntrinsicFallback => {
                         ItemId::Fun(self.translated.fun_decls.reserve_slot())
                     }
                     InherentImpl | Module => {

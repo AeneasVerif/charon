@@ -9,9 +9,7 @@ pub opaque type TypeId
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
-// Full name: core::intrinsics::type_id
-#[rustc_intrinsic]
-pub fn type_id<T>() -> TypeId
+fn core::intrinsics::type_id::{fallback}<T>() -> TypeId
 where
     TraitClause0: (T: MetaSized),
 {
@@ -21,6 +19,13 @@ where
     ret = noretag const TypeId(T)
     return
 }
+
+// Full name: core::intrinsics::type_id
+#[rustc_intrinsic]
+pub fn type_id<T>() -> TypeId
+where
+    TraitClause0: (T: MetaSized),
+= <intrinsic:type_id> with fallback (spec) core::intrinsics::type_id::{fallback}<T>[TraitClause0]
 
 // Full name: core::any::{TypeId}::of
 pub fn of<T>() -> TypeId
@@ -53,13 +58,67 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+fn core::intrinsics::select_unpredictable::{fallback}<T>(b: bool, true_val: T, false_val: T) -> T
+where
+    TraitClause0: (T: Sized),
+{
+    let _0: T; // return
+    let b: bool; // arg #1
+    let true_val: T; // arg #2
+    let false_val: T; // arg #3
+    let _4: bool; // anonymous local
+    let _5: T; // anonymous local
+    let _6: T; // anonymous local
+    let _7: bool; // anonymous local
+    let _8: bool; // anonymous local
+
+    storage_live(_0)
+    storage_live(_7)
+    storage_live(_8)
+    _8 = const false
+    _7 = const false
+    _8 = const true
+    _7 = const true
+    storage_live(_4)
+    _4 = copy b
+    if move _4 {
+    } else {
+        storage_live(_6)
+        _8 = const false
+        _6 = move true_val
+        storage_dead(_6)
+        _7 = const false
+        _0 = move false_val
+        storage_dead(_4)
+        storage_dead(_8)
+        storage_dead(_7)
+        storage_dead(false_val)
+        storage_dead(true_val)
+        storage_dead(b)
+        return
+    }
+    storage_live(_5)
+    _7 = const false
+    _5 = move false_val
+    storage_dead(_5)
+    _8 = const false
+    _0 = move true_val
+    storage_dead(_4)
+    storage_dead(_8)
+    storage_dead(_7)
+    storage_dead(false_val)
+    storage_dead(true_val)
+    storage_dead(b)
+    return
+}
+
 // Full name: core::intrinsics::select_unpredictable
 #[miri::intrinsic_fallback_is_spec]
 #[rustc_intrinsic]
 pub fn select_unpredictable<T>(b_1: bool, true_val_2: T, false_val_3: T) -> T
 where
     TraitClause0: (T: Sized),
-= <intrinsic:select_unpredictable>
+= <intrinsic:select_unpredictable> with fallback (spec) core::intrinsics::select_unpredictable::{fallback}<T>[TraitClause0]
 
 // Full name: core::intrinsics::black_box
 #[rustc_intrinsic]
@@ -68,10 +127,19 @@ where
     TraitClause0: (T: Sized),
 = <intrinsic:black_box>
 
+fn core::intrinsics::ub_checks::{fallback}() -> bool
+{
+    let _0: bool; // return
+
+    storage_live(_0)
+    _0 = const false
+    return
+}
+
 // Full name: core::intrinsics::ub_checks
 #[rustc_intrinsic]
 pub fn ub_checks() -> bool
-= <intrinsic:ub_checks>
+= <intrinsic:ub_checks> with fallback core::intrinsics::ub_checks::{fallback}
 
 struct () {}
 

@@ -480,6 +480,7 @@ and builtin_path_elem_of_json (ctx : of_json_ctx) (js : json) :
     | `String "VTable" -> Ok PeVTable
     | `String "VTableMethod" -> Ok PeVTableMethod
     | `String "VTableDropShim" -> Ok PeVTableDropShim
+    | `String "IntrinsicFallback" -> Ok PeIntrinsicFallback
     | _ -> Error "")
 
 and byte_of_json (ctx : of_json_ctx) (js : json) : (byte, string) result =
@@ -2497,13 +2498,23 @@ and body_of_json (ctx : of_json_ctx) (js : json) : (body, string) result =
         let* _0 = string_of_json ctx _0 in
         Ok (ExternBody _0)
     | `Assoc
-        [ ("Intrinsic", `Assoc [ ("name", name); ("arg_names", arg_names) ]) ]
-      ->
+        [
+          ( "Intrinsic",
+            `Assoc
+              [
+                ("name", name);
+                ("arg_names", arg_names);
+                ("fallback", fallback);
+                ("fallback_is_spec", fallback_is_spec);
+              ] );
+        ] ->
         let* name = string_of_json ctx name in
         let* arg_names =
           list_of_json (option_of_json string_of_json) ctx arg_names
         in
-        Ok (IntrinsicBody (name, arg_names))
+        let* fallback = option_of_json fun_decl_ref_of_json ctx fallback in
+        let* fallback_is_spec = bool_of_json ctx fallback_is_spec in
+        Ok (IntrinsicBody (name, arg_names, fallback, fallback_is_spec))
     | `String "Opaque" -> Ok OpaqueBody
     | `String "Missing" -> Ok MissingBody
     | `Assoc [ ("Error", _0) ] ->

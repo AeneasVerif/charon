@@ -479,6 +479,12 @@ impl<'tcx> TranslateCtx<'tcx> {
                     Disambiguator::ZERO,
                 ));
             }
+            TransItemSourceKind::IntrinsicFallback => {
+                name.name.push(PathElem::Builtin(
+                    BuiltinPathElem::IntrinsicFallback,
+                    Disambiguator::ZERO,
+                ));
+            }
         }
         Ok(name)
     }

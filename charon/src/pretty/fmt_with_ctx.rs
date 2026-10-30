@@ -325,7 +325,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for ast::Body {
                 write!(f, "{{\n{body}{tab}}}")
             }
             Body::Extern(name) => write!(f, "= <extern:{name}>"),
-            Body::Intrinsic { name, .. } => write!(f, "= <intrinsic:{name}>"),
+            Body::Intrinsic {
+                name,
+                fallback,
+                fallback_is_spec,
+                ..
+            } => {
+                write!(f, "= <intrinsic:{name}>")?;
+                if let Some(fallback) = fallback {
+                    let spec = if *fallback_is_spec { " (spec)" } else { "" };
+                    write!(f, " with fallback{spec} {}", fallback.with_ctx(ctx))?;
+                }
+                Ok(())
+            }
             Body::Opaque => write!(f, "= <opaque>"),
             Body::Missing => write!(f, "= <missing>"),
             Body::Error(error) => write!(f, "= error(\"{}\")", error.msg),
