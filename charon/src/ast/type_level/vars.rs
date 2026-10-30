@@ -496,9 +496,17 @@ impl<T> BinderSlice<T> {
         DeBruijnId::new(self.0.len() - 1)
     }
 
+    /// Map a bound variable to its binding depth. Panics on free variables.
+    #[track_caller]
+    pub fn as_bound_var<Id>(&self, var: DeBruijnVar<Id>) -> (DeBruijnId, Id) {
+        match var {
+            DeBruijnVar::Bound(dbid, varid) => (dbid, varid),
+            DeBruijnVar::Free(..) => panic!("free variables are not bound anywhere"),
+        }
+    }
     /// Map a bound variable to its binding depth. Considers free variables to be bound at the
     /// outermost binder, like when `--unbind-item-vars` is set.
-    pub fn as_bound_var<Id>(&self, var: DeBruijnVar<Id>) -> (DeBruijnId, Id) {
+    pub fn as_bound_var_with_outermost_free<Id>(&self, var: DeBruijnVar<Id>) -> (DeBruijnId, Id) {
         match var {
             DeBruijnVar::Bound(dbid, varid) => (dbid, varid),
             DeBruijnVar::Free(varid) => (self.depth(), varid),
@@ -511,12 +519,27 @@ impl<T> BinderSlice<T> {
     pub fn get(&self, id: DeBruijnId) -> Option<&T> {
         self.0.get(self.real_index(id)?)
     }
+
+    /// Lookup this variable in the stack. Panics on free variables.
+    #[track_caller]
     pub fn get_var<'a, Id: Idx, Inner>(&'a self, var: DeBruijnVar<Id>) -> Option<&'a Inner::Output>
     where
         T: Borrow<Inner>,
         Inner: HasIdxVecOf<Id> + 'a,
     {
         let (dbid, varid) = self.as_bound_var(var);
+        self.get(dbid)
+            .and_then(|x| x.borrow().get_idx_vec().get(varid))
+    }
+    pub fn get_var_with_outermost_free<'a, Id: Idx, Inner>(
+        &'a self,
+        var: DeBruijnVar<Id>,
+    ) -> Option<&'a Inner::Output>
+    where
+        T: Borrow<Inner>,
+        Inner: HasIdxVecOf<Id> + 'a,
+    {
+        let (dbid, varid) = self.as_bound_var_with_outermost_free(var);
         self.get(dbid)
             .and_then(|x| x.borrow().get_idx_vec().get(varid))
     }

@@ -325,13 +325,16 @@ impl<'c> AstFormatter for FmtCtx<'c> {
         if self.generics.is_empty() {
             return write!(f, "{var_prefix}{var}");
         }
-        match self.generics.get_var::<_, GenericParams>(var) {
+        match self
+            .generics
+            .get_var_with_outermost_free::<_, GenericParams>(var)
+        {
             None => write!(f, "missing({var_prefix}{var})"),
             Some(v) => match fmt_var(v) {
                 Some(name) => write!(f, "{name}"),
                 None => {
                     write!(f, "{var_prefix}")?;
-                    let (dbid, varid) = self.generics.as_bound_var(var);
+                    let (dbid, varid) = self.generics.as_bound_var_with_outermost_free(var);
                     let depth = self.generics.depth().index - dbid.index;
                     if depth == 0 {
                         write!(f, "{varid}")
