@@ -1743,9 +1743,9 @@ and pp_rvalue (env : fmt_env) (fmt : Format.formatter) (rv : rvalue) : unit =
       Format.fprintf fmt "@discriminant(%s)" (place_to_string env p)
   | Len (place, _, _) ->
       Format.fprintf fmt "len(%s)" (place_to_string env place)
-  | Repeat (v, _, len, _) ->
+  | Repeat (v, count, _, _) ->
       Format.fprintf fmt "[%s; %s]" (operand_to_string env v)
-        (constant_expr_to_string env len)
+        (constant_expr_to_string env count)
   | Aggregate (akind, ops) -> pp_aggregate env akind fmt ops
 
 let pp_fn_operand (env : fmt_env) (fmt : Format.formatter) (op : fn_operand) :

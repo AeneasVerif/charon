@@ -1280,11 +1280,11 @@ and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _2 = option_of_postcard constant_expr_of_postcard ctx st in
          Ok (Len (_0, _1, _2))
      | 9 ->
-         let* _0 = operand_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         let* _2 = constant_expr_of_postcard ctx st in
-         let* _3 = option_of_postcard trait_ref_of_postcard ctx st in
-         Ok (Repeat (_0, _1, _2, _3))
+         let* operand = operand_of_postcard ctx st in
+         let* count = constant_expr_of_postcard ctx st in
+         let* elem_is_sized = option_of_postcard trait_ref_of_postcard ctx st in
+         let* elem_is_copy = option_of_postcard trait_ref_of_postcard ctx st in
+         Ok (Repeat (operand, count, elem_is_sized, elem_is_copy))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and scalar_type_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :

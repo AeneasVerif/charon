@@ -1445,12 +1445,24 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         let* _1 = ty_of_json ctx _1 in
         let* _2 = option_of_json constant_expr_of_json ctx _2 in
         Ok (Len (_0, _1, _2))
-    | `Assoc [ ("Repeat", `List [ _0; _1; _2; _3 ]) ] ->
-        let* _0 = operand_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        let* _2 = constant_expr_of_json ctx _2 in
-        let* _3 = option_of_json trait_ref_of_json ctx _3 in
-        Ok (Repeat (_0, _1, _2, _3))
+    | `Assoc
+        [
+          ( "Repeat",
+            `Assoc
+              [
+                ("operand", operand);
+                ("count", count);
+                ("elem_is_sized", elem_is_sized);
+                ("elem_is_copy", elem_is_copy);
+              ] );
+        ] ->
+        let* operand = operand_of_json ctx operand in
+        let* count = constant_expr_of_json ctx count in
+        let* elem_is_sized =
+          option_of_json trait_ref_of_json ctx elem_is_sized
+        in
+        let* elem_is_copy = option_of_json trait_ref_of_json ctx elem_is_copy in
+        Ok (Repeat (operand, count, elem_is_sized, elem_is_copy))
     | _ -> Error "")
 
 and scalar_type_of_json (ctx : of_json_ctx) (js : json) :

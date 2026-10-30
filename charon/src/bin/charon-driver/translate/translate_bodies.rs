@@ -824,7 +824,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 panic!("expected an array type")
             };
             let translated_array_ty = self.translate_ty(span, array_ty)?;
-            let TyKind::Array(elem_ty, len, _) = translated_array_ty.kind() else {
+            let TyKind::Array(_, len, ty_is_sized) = translated_array_ty.kind() else {
                 unreachable!()
             };
             let rust_elem_ty = array.item.rustc_args(&self.hax_state).type_at(0);
@@ -834,12 +834,12 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             let ty_is_copy = self
                 .translate_trait_proof(span, &copy_proof)?
                 .no_bound_vars();
-            Ok(Some(Rvalue::Repeat(
-                Operand::Const(field),
-                elem_ty.clone(),
-                len.clone(),
-                Some(ty_is_copy),
-            )))
+            Ok(Some(Rvalue::Repeat {
+                operand: Operand::Const(field),
+                count: len.clone(),
+                elem_is_sized: ty_is_sized.clone(),
+                elem_is_copy: Some(ty_is_copy),
+            }))
         } else {
             Ok(None)
         }
@@ -1284,7 +1284,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let place = self.translate_place(span, place)?;
                 Ok(Rvalue::Use(Operand::Copy(place), WithRetag::No))
             }
-            mir::Rvalue::Repeat(operand, cnst) => {
+            mir::Rvalue::Repeat(operand, _) => {
                 let ty_is_copy = {
                     let rust_ty = operand.ty(self.local_decls, self.tcx);
                     hax::solve_copy(&self.hax_state, rust_ty)
@@ -1294,11 +1294,16 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                         })
                         .transpose()?
                 };
-                let c = self.translate_ty_constant_expr(span, cnst)?;
-                let op = self.translate_operand(span, operand)?;
-                let ty = op.ty().clone();
-                // Remark: we could desugar this into a function call later.
-                Ok(Rvalue::Repeat(op, ty, c, ty_is_copy))
+                let operand = self.translate_operand(span, operand)?;
+                let TyKind::Array(_, len, ty_is_sized) = tgt_ty.kind() else {
+                    raise_error!(self, span, "array repeat has non-array type")
+                };
+                Ok(Rvalue::Repeat {
+                    operand,
+                    count: len.clone(),
+                    elem_is_sized: ty_is_sized.clone(),
+                    elem_is_copy: ty_is_copy,
+                })
             }
             mir::Rvalue::Ref(_region, borrow_kind, place) => {
                 let place = self.translate_place(span, place)?;

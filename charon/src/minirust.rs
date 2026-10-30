@@ -771,7 +771,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     mb::get_metadata(ptr)
                 }
             }
-            Rvalue::Repeat(operand, ty, count, _) => {
+            Rvalue::Repeat { operand, count, .. } => {
                 let count = count
                     .as_usize_literal()
                     .ok_or("non-concrete array length")
@@ -780,7 +780,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     .map_err(|_| "array length does not fit usize")
                     .context(span)?;
                 let value = self.operand(span, operand)?;
-                mb::array(&vec![value; count], self.ty(span, ty)?)
+                mb::array(&vec![value; count], self.ty(span, operand.ty())?)
             }
         })
     }

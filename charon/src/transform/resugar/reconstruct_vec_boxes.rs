@@ -99,7 +99,7 @@ fn find_array_assign(body: &ExprBody, start: BlockId, src_local: LocalId) -> Opt
         for (idx, st) in block.statements.iter().enumerate() {
             let Some((
                 place,
-                value @ (Rvalue::Aggregate(AggregateKind::Array(..), _) | Rvalue::Repeat(..)),
+                value @ (Rvalue::Aggregate(AggregateKind::Array(..), _) | Rvalue::Repeat { .. }),
             )) = st.kind.as_assign()
             else {
                 continue;

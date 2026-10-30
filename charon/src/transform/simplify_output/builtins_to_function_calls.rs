@@ -128,8 +128,16 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
             }
         }
         // Transform the array aggregates to function calls.
-        StatementKind::Assign(place, Rvalue::Repeat(operand, ty, len, ty_is_copy)) => {
-            let Some(ty_is_copy) = ty_is_copy else {
+        StatementKind::Assign(
+            place,
+            Rvalue::Repeat {
+                operand,
+                count,
+                elem_is_sized,
+                elem_is_copy,
+            },
+        ) => {
+            let Some(elem_is_copy) = elem_is_copy else {
                 return;
             };
             // We could avoid the clone operations below if we take the content of
@@ -137,13 +145,10 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
             let Some(&fun_id) = std_items.item_map.get(&StdItem::ArrayRepeat) else {
                 return;
             };
-            let TyKind::Array(_, _, ty_is_sized) = place.ty().kind() else {
-                return;
-            };
             // `Copy`'s explicit `Clone` supertrait follows its optional implicit marker clause.
             // `array::repeat` has the corresponding `Clone` bound at the same position.
-            let clone_clause_id = TraitClauseId::new(usize::from(ty_is_sized.is_some()));
-            let Some(ty_is_clone) = ty_is_copy
+            let clone_clause_id = TraitClauseId::new(usize::from(elem_is_sized.is_some()));
+            let Some(ty_is_clone) = elem_is_copy
                 .clone()
                 .project_parent_clause(&ctx.translated, clone_clause_id)
             else {
@@ -151,9 +156,9 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
             };
             let generics = GenericArgs::new(
                 [].into(),
-                [ty.clone()].into(),
-                [len.clone()].into(),
-                ty_is_sized
+                [operand.ty().clone()].into(),
+                [count.clone()].into(),
+                elem_is_sized
                     .iter()
                     .cloned()
                     .map(PolyTraitRef::empty)
@@ -507,9 +512,12 @@ impl VisitBodyMut for IndexVisitor<'_, '_> {
             | Discriminant(..)
             | Len(..) => self.visit_inner_with_mutability(x, false),
 
-            Use(..) | NullaryOp(..) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Repeat(..) => {
-                self.visit_inner(x)
-            }
+            Use(..)
+            | NullaryOp(..)
+            | UnaryOp(..)
+            | BinaryOp(..)
+            | Aggregate(..)
+            | Repeat { .. } => self.visit_inner(x),
         }
     }
 

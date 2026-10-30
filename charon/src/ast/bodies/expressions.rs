@@ -72,11 +72,15 @@ pub enum Rvalue {
     /// ```
     Len(Place, Ty, Option<ConstantExpr>),
     /// `Repeat(x, n)` creates an array containing `n` copies of `x`.
-    ///
-    /// We translate this to a function call for LLBC.
-    /// The last field is the proof that the repeated value is `Copy`. This proof can be absent
-    /// when the operand is a constant, which Rust permits to be repeated without `Copy`.
-    Repeat(Operand, Ty, ConstantExpr, Option<TraitRef>),
+    Repeat {
+        operand: Operand,
+        count: ConstantExpr,
+        /// Proof that the element type is `Sized`; absent with `--hide-marker-traits`.
+        elem_is_sized: Option<TraitRef>,
+        /// Proof that the element type is `Copy`. This can be absent when the operand is a constant,
+        /// which Rust permits to be repeated without `Copy`.
+        elem_is_copy: Option<TraitRef>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
