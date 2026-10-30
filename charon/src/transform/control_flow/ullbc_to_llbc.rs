@@ -998,6 +998,7 @@ impl<'a> ReconstructCtx<'a> {
             }
             src::TerminatorKind::Call {
                 call,
+                dest,
                 target,
                 on_unwind,
             } => {
@@ -1006,6 +1007,7 @@ impl<'a> ReconstructCtx<'a> {
                     src_span,
                     tgt::StatementKind::Call {
                         call: call.clone(),
+                        dest: dest.clone(),
                         on_unwind,
                     },
                 );

@@ -30,7 +30,7 @@ impl UllbcPass for Transform {
             let Some(block) = body.body.get_mut(block_id) else {
                 continue;
             };
-            let mut new_calls: Vec<(LocalId, Call)> = vec![];
+            let mut new_calls: Vec<(Place, Call)> = vec![];
             block.dyn_visit_in_body_mut(|op: &mut Operand| {
                 if let Operand::Const(c) = op
                     && let ConstantExprKind::Global(gref) = c.kind()
@@ -38,14 +38,13 @@ impl UllbcPass for Transform {
                 {
                     let return_place = body.locals.new_var(None, c.ty().clone());
                     new_calls.push((
-                        return_place.as_local().unwrap(),
+                        return_place.clone(),
                         Call {
                             func: FnOperand::Regular(FnPtr::new(
                                 FnPtrKind::Fun(*initializer),
                                 gref.generics.clone(),
                             )),
                             args: vec![],
-                            dest: return_place.clone(),
                             safety: CallSafety::Inherit,
                         },
                     ));
@@ -58,7 +57,7 @@ impl UllbcPass for Transform {
                 let block = body.body[block_id].take();
                 let mut next_block = body.body.push(block);
                 // Each new block jumps to the previous one after completion
-                for (local_id, call) in new_calls {
+                for (dest, call) in new_calls {
                     // Const eval mustn't unwind into runtime.
                     let unwind = body
                         .body
@@ -66,12 +65,13 @@ impl UllbcPass for Transform {
                     next_block = body.body.push(BlockData {
                         statements: vec![Statement::new(
                             Span::dummy(),
-                            StatementKind::StorageLive(local_id),
+                            StatementKind::StorageLive(dest.as_local().unwrap()),
                         )],
                         terminator: Terminator::new(
                             Span::dummy(),
                             TerminatorKind::Call {
                                 call,
+                                dest,
                                 target: next_block,
                                 on_unwind: unwind,
                             },

@@ -20,14 +20,16 @@ pub struct Transform {
 
 impl Transform {
     fn replace_mem_discriminant_call(&self, block: &mut BlockData) {
-        if let TerminatorKind::Call { call, target, .. } = &block.terminator.kind
+        if let TerminatorKind::Call {
+            call, dest, target, ..
+        } = &block.terminator.kind
             && let FnOperand::Regular(fn_ptr) = &call.func
             && let FnPtrKind::Fun(fun_id) = fn_ptr.kind.as_ref()
             && self.discriminant_intrinsics.contains(fun_id)
             && let [Operand::Move(p)] = call.args.as_slice()
             && let TyKind::Ref(_, sub_ty, _) = p.ty().kind()
         {
-            let dest = call.dest.clone();
+            let dest = dest.clone();
             let p = p.clone().project(ProjectionElem::Deref, sub_ty.clone());
             let target = *target;
             let mut statement = Statement::new(

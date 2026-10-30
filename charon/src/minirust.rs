@@ -506,6 +506,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             }
             T::Call {
                 call,
+                dest,
                 target,
                 on_unwind,
             } => mini::Terminator::Call {
@@ -531,7 +532,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                         })
                     })
                     .collect::<Result<_>>()?,
-                ret: self.place(span, &call.dest)?,
+                ret: self.place(span, dest)?,
                 next_block: Some(self.block_name(*target)),
                 unwind_block: Some(self.block_name(*on_unwind)),
             },

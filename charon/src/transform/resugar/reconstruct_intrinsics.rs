@@ -6,7 +6,10 @@ pub struct Transform;
 impl UllbcPass for Transform {
     fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
         decl.transform_ullbc_terminators(ctx, |ctx, term| {
-            let TerminatorKind::Call { call, target, .. } = &term.kind else {
+            let TerminatorKind::Call {
+                call, dest, target, ..
+            } = &term.kind
+            else {
                 return;
             };
             let FnOperand::Regular(fn_ptr) = &call.func else {
@@ -40,7 +43,7 @@ impl UllbcPass for Transform {
                     Ty::mk_usize(),
                 );
                 ctx.insert_assn_stmt(
-                    call.dest.clone(),
+                    dest.clone(),
                     Rvalue::Use(Operand::Const(constant), WithRetag::No),
                 );
                 term.kind = TerminatorKind::Goto { target: *target };

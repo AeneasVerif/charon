@@ -142,7 +142,7 @@ impl<'tcx, 'tctx, 'ictx, 'bctx> BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
     }
 
     /// Used for non-diverging intrinsics.
-    fn push_nounwind_call(&mut self, span: Span, call: Call) {
+    fn push_nounwind_call(&mut self, span: Span, dest: Place, call: Call) {
         let target = self.blocks.reserve_slot();
         let unwind_kind = self.kind.further_unwind_kind();
         let on_unwind = self
@@ -154,6 +154,7 @@ impl<'tcx, 'tctx, 'ictx, 'bctx> BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
                 span,
                 TerminatorKind::Call {
                     call,
+                    dest,
                     target,
                     on_unwind,
                 },
@@ -479,7 +480,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             let initialized_box = builder.new_var(Some("x".to_string()), box_array_ty.clone());
             let box_slice = builder.new_var(Some("y".to_string()), box_slice_ty.clone());
 
-            builder.call({
+            let call = {
                 let assume_init_fn = {
                     let path = NamePattern::parse("alloc::boxed::Box::assume_init").unwrap();
                     let assume_init_def_id = self
@@ -506,10 +507,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 Call {
                     func: FnOperand::Regular(assume_init_fn),
                     args: vec![Operand::Move(input)],
-                    dest: initialized_box.clone(),
                     safety: CallSafety::Inherit,
                 }
-            });
+            };
+            builder.call(initialized_box.clone(), call);
 
             builder.push_statement({
                 let (path, meta) = hax::compute_unsizing_metadata(
@@ -528,7 +529,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 )
             });
 
-            builder.call({
+            let call = {
                 let into_vec_fn = {
                     let path = NamePattern::parse("slice::into_vec").unwrap();
                     let into_vec_def_id = self.resolve_single_path(span, &path)?;
@@ -543,10 +544,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 Call {
                     func: FnOperand::Regular(into_vec_fn),
                     args: vec![Operand::Move(box_slice)],
-                    dest: return_place,
                     safety: CallSafety::Inherit,
                 }
-            });
+            };
+            builder.call(return_place, call);
             builder.build()
         };
 
@@ -1737,10 +1738,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         let dest = self.locals.new_var(None, Ty::mk_unit());
         self.push_nounwind_call(
             span,
+            dest,
             Call {
                 func,
                 args,
-                dest,
                 safety: CallSafety::Inherit,
             },
         );
@@ -2133,7 +2134,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         let call = Call {
             func: fn_operand,
             args,
-            dest: lval,
             safety,
         };
 
@@ -2148,6 +2148,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
 
         Ok(TerminatorKind::Call {
             call,
+            dest: lval,
             target,
             on_unwind,
         })

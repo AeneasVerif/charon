@@ -81,9 +81,10 @@ and statement_kind =
             jumping. Absent for [naked_asm!] and [noreturn].
           - [labels]: Targets of [[AsmOperand::Label]] operands.
           - [on_unwind]: Action to be taken if the inline assembly unwinds. *)
-  | Call of call * block
+  | Call of call * place * block
       (** Fields:
           - [call]
+          - [dest]
           - [on_unwind] *)
   | Switch of switch_data * block list
       (** Fields:

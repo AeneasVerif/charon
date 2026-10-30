@@ -502,14 +502,11 @@ and byte_of_json (ctx : of_json_ctx) (js : json) : (byte, string) result =
 and call_of_json (ctx : of_json_ctx) (js : json) : (call, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc
-        [ ("func", func); ("args", args); ("dest", dest); ("safety", safety) ]
-      ->
+    | `Assoc [ ("func", func); ("args", args); ("safety", safety) ] ->
         let* func = fn_operand_of_json ctx func in
         let* args = list_of_json operand_of_json ctx args in
-        let* dest = place_of_json ctx dest in
         let* safety = call_safety_of_json ctx safety in
-        Ok ({ func; args; dest; safety } : call)
+        Ok ({ func; args; safety } : call)
     | _ -> Error "")
 
 and call_safety_of_json (ctx : of_json_ctx) (js : json) :
@@ -2007,13 +2004,18 @@ module Ullbc = struct
           [
             ( "Call",
               `Assoc
-                [ ("call", call); ("target", target); ("on_unwind", on_unwind) ]
-            );
+                [
+                  ("call", call);
+                  ("dest", dest);
+                  ("target", target);
+                  ("on_unwind", on_unwind);
+                ] );
           ] ->
           let* call = call_of_json ctx call in
+          let* dest = place_of_json ctx dest in
           let* target = block_id_of_json ctx target in
           let* on_unwind = block_id_of_json ctx on_unwind in
-          Ok (Call (call, target, on_unwind))
+          Ok (Call (call, dest, target, on_unwind))
       | `Assoc
           [
             ( "Drop",
@@ -2209,11 +2211,16 @@ module Llbc = struct
           in
           let* on_unwind = block_of_json ctx on_unwind in
           Ok (InlineAsm (asm, fallthrough, labels, on_unwind))
-      | `Assoc [ ("Call", `Assoc [ ("call", call); ("on_unwind", on_unwind) ]) ]
-        ->
+      | `Assoc
+          [
+            ( "Call",
+              `Assoc
+                [ ("call", call); ("dest", dest); ("on_unwind", on_unwind) ] );
+          ] ->
           let* call = call_of_json ctx call in
+          let* dest = place_of_json ctx dest in
           let* on_unwind = block_of_json ctx on_unwind in
-          Ok (Call (call, on_unwind))
+          Ok (Call (call, dest, on_unwind))
       | `Assoc [ ("Switch", `Assoc [ ("data", data); ("branches", branches) ]) ]
         ->
           let* data = switch_data_of_json ctx data in

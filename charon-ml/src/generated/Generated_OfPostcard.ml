@@ -454,9 +454,8 @@ and call_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* func = fn_operand_of_postcard ctx st in
      let* args = list_of_postcard operand_of_postcard ctx st in
-     let* dest = place_of_postcard ctx st in
      let* safety = call_safety_of_postcard ctx st in
-     Ok ({ func; args; dest; safety } : call))
+     Ok ({ func; args; safety } : call))
 
 and call_safety_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (call_safety, string) result =
@@ -1727,9 +1726,10 @@ module Ullbc = struct
            Ok (Switch (data, branches))
        | 2 ->
            let* call = call_of_postcard ctx st in
+           let* dest = place_of_postcard ctx st in
            let* target = block_id_of_postcard ctx st in
            let* on_unwind = block_id_of_postcard ctx st in
-           Ok (Call (call, target, on_unwind))
+           Ok (Call (call, dest, target, on_unwind))
        | 3 ->
            let* kind = drop_kind_of_postcard ctx st in
            let* place = place_of_postcard ctx st in
@@ -1851,8 +1851,9 @@ module Llbc = struct
            Ok (InlineAsm (asm, fallthrough, labels, on_unwind))
        | 9 ->
            let* call = call_of_postcard ctx st in
+           let* dest = place_of_postcard ctx st in
            let* on_unwind = block_of_postcard ctx st in
-           Ok (Call (call, on_unwind))
+           Ok (Call (call, dest, on_unwind))
        | 10 ->
            let* data = switch_data_of_postcard ctx st in
            let* branches =

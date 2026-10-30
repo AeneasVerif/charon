@@ -353,10 +353,9 @@ impl Display for BorrowKind {
 
 impl<C: AstFormatter> FmtWithCtx<C> for Call {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let dest = self.dest.with_ctx(ctx);
         let func = self.func.with_ctx(ctx);
         let args = self.args.iter().map(|x| x.with_ctx(ctx)).format(", ");
-        write!(f, "{dest} = {func}({args})")
+        write!(f, "{func}({args})")
     }
 }
 
@@ -2613,8 +2612,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 fmt_llbc_unwind_block(ctx, f, on_unwind)?;
                 Ok(())
             }
-            StatementKind::Call { call, on_unwind } => {
-                write!(f, "{}", call.with_ctx(ctx))?;
+            StatementKind::Call {
+                call,
+                dest,
+                on_unwind,
+            } => {
+                write!(f, "{} = {}", dest.with_ctx(ctx), call.with_ctx(ctx))?;
                 fmt_llbc_unwind_block(ctx, f, on_unwind)
             }
             StatementKind::Panic { name, on_unwind } => {
@@ -2768,11 +2771,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
             }
             TerminatorKind::Call {
                 call,
+                dest,
                 target,
                 on_unwind,
             } => {
+                let dest = dest.with_ctx(ctx);
                 let call = call.with_ctx(ctx);
-                write!(f, "{call} -> bb{target} (unwind: bb{on_unwind})",)
+                write!(f, "{dest} = {call} -> bb{target} (unwind: bb{on_unwind})",)
             }
             TerminatorKind::Drop {
                 kind,

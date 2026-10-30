@@ -200,12 +200,7 @@ and builtin_assert_kind =
   | ResumedAfterPanic
   | ResumedAfterDrop
 
-and call = {
-  func : fn_operand;
-  args : operand list;
-  dest : place;
-  safety : call_safety;
-}
+and call = { func : fn_operand; args : operand list; safety : call_safety }
 
 (** Whether we statically know something about the safety of this call, that
     takes precedence over the safety of the callee's signature. *)

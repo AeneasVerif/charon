@@ -120,9 +120,9 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
                     call: Call {
                         func: FnOperand::Regular(mk_fn_ptr(ctx, fun_id, generics)),
                         args: vec![operand.clone()],
-                        dest: place.clone(),
                         safety: CallSafety::Inherit,
                     },
+                    dest: place.clone(),
                     on_unwind: Block::new_unreachable(statement.span),
                 };
             }
@@ -164,9 +164,9 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
                 call: Call {
                     func: FnOperand::Regular(mk_fn_ptr(ctx, fun_id, generics)),
                     args: vec![operand.clone()],
-                    dest: place.clone(),
                     safety: CallSafety::Inherit,
                 },
+                dest: place.clone(),
                 on_unwind: Block::new_unreachable(statement.span),
             };
         }
@@ -400,11 +400,11 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
             let index_call = Call {
                 func: FnOperand::Regular(index_fn_ptr),
                 args,
-                dest: output_var.clone(),
                 safety: CallSafety::Inherit,
             };
             let kind = StatementKind::Call {
                 call: index_call,
+                dest: output_var.clone(),
                 on_unwind: Block::new_unreachable(self.ctx.span),
             };
             self.ctx
@@ -466,10 +466,6 @@ impl VisitBodyMut for IndexVisitor<'_, '_> {
             Operand::Copy(_) => self.visit_inner_with_mutability(x, false),
             Operand::Const(..) => self.visit_inner(x),
         }
-    }
-
-    fn visit_call(&mut self, x: &mut Call) -> ControlFlow<Infallible> {
-        self.visit_inner_with_mutability(x, true)
     }
 
     fn visit_asm_operand(&mut self, x: &mut AsmOperand) -> ControlFlow<Infallible> {

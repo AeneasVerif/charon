@@ -224,7 +224,7 @@ fn find_assume_init_tail(
     let (drop_bid, target_bid, drop_on_unwind) = find_next_drop(body, move_loc.block, uninit_box)?;
 
     let target_block = &body.body[target_bid];
-    let (call, assume_init_target, _unwind) = target_block.terminator.kind.as_call()?;
+    let (call, dest, assume_init_target, _unwind) = target_block.terminator.kind.as_call()?;
     let assume_init_fn = assume_init_fn_ptr(ctx, call)?;
     let [Operand::Move(init_box)] = call.args.as_slice() else {
         return None;
@@ -236,7 +236,7 @@ fn find_assume_init_tail(
         drop_bid,
         target_bid,
         arg_move_loc,
-        box_array: call.dest.clone(),
+        box_array: dest.clone(),
         assume_init_generics: assume_init_fn.generics.as_ref().clone(),
         drop_on_unwind,
         assume_init_target: *assume_init_target,
@@ -309,6 +309,7 @@ impl UllbcPass for Transform {
             .filter_map(|(new_uninit_bid, block)| {
                 let TerminatorKind::Call {
                     call,
+                    dest,
                     target: new_uninit_target,
                     ..
                 } = &block.terminator.kind
@@ -320,7 +321,7 @@ impl UllbcPass for Transform {
                     return None;
                 }
                 // check uninit_box: Box<MaybeUninit<_>>
-                let uninit_box = call.dest.clone();
+                let uninit_box = dest.clone();
                 let maybe_uninit_array_ty = box_inner(uninit_box.ty())?;
                 let maybe_uninit_ref = maybe_uninit_array_ty.as_adt()?;
                 let mu_decl = &ctx.translated.type_decls.get(maybe_uninit_ref.id)?;
@@ -405,9 +406,9 @@ impl UllbcPass for Transform {
                 call: Call {
                     func: FnOperand::Regular(fn_ptr),
                     args,
-                    dest: box_array_local.clone(),
                     safety: CallSafety::Inherit,
                 },
+                dest: box_array_local.clone(),
                 target: rw.target_bid,
                 on_unwind: rw.drop_on_unwind,
             };

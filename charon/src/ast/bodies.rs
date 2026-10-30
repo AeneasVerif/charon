@@ -184,7 +184,6 @@ pub enum FnOperand {
 pub struct Call {
     pub func: FnOperand,
     pub args: Vec<Operand>,
-    pub dest: Place,
     pub safety: CallSafety,
 }
 

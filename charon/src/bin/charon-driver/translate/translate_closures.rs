@@ -642,12 +642,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                     },
                 ));
 
-                builder.call(Call {
-                    func: fn_op,
-                    args: vec![Operand::Move(reborrow), Operand::Move(args)],
-                    dest: output,
-                    safety: CallSafety::Inherit,
-                });
+                builder.call(
+                    output,
+                    Call {
+                        func: fn_op,
+                        args: vec![Operand::Move(reborrow), Operand::Move(args)],
+                        safety: CallSafety::Inherit,
+                    },
+                );
 
                 Body::Unstructured(builder.build())
             }
@@ -701,12 +703,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             })
             .collect();
 
-        builder.call(Call {
-            func: fn_op,
-            args,
-            dest: output,
-            safety: CallSafety::Inherit,
-        });
+        builder.call(
+            output,
+            Call {
+                func: fn_op,
+                args,
+                safety: CallSafety::Inherit,
+            },
+        );
 
         Ok(Body::Unstructured(builder.build()))
     }
@@ -749,12 +753,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 Operand::Move(field)
             })
             .collect();
-        builder.call(Call {
-            func: FnOperand::Dynamic(fn_ptr, late_bound_regions),
-            args,
-            dest: output,
-            safety: CallSafety::Inherit,
-        });
+        builder.call(
+            output,
+            Call {
+                func: FnOperand::Dynamic(fn_ptr, late_bound_regions),
+                args,
+                safety: CallSafety::Inherit,
+            },
+        );
         Ok(Body::Unstructured(builder.build()))
     }
 
@@ -941,12 +947,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 Rvalue::Aggregate(AggregateKind::Adt(state_ty_adt.clone(), None, None), vec![]),
             ));
 
-            builder.call(Call {
-                func: fn_op,
-                args: vec![Operand::Move(state), Operand::Move(args_tupled)],
-                dest: output,
-                safety: CallSafety::Inherit,
-            });
+            builder.call(
+                output,
+                Call {
+                    func: fn_op,
+                    args: vec![Operand::Move(state), Operand::Move(args_tupled)],
+                    safety: CallSafety::Inherit,
+                },
+            );
 
             Body::Unstructured(builder.build())
         };

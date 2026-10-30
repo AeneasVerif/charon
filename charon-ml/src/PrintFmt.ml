@@ -1763,8 +1763,7 @@ let pp_fn_operand (env : fmt_env) (fmt : Format.formatter) (op : fn_operand) :
 
 let pp_call (env : fmt_env) (indent : string) (fmt : Format.formatter)
     (call : call) : unit =
-  Format.fprintf fmt "%s%a = %a(%a)" indent (pp_place env) call.dest
-    (pp_fn_operand env) call.func
+  Format.fprintf fmt "%s%a(%a)" indent (pp_fn_operand env) call.func
     (pp_sep_list ", " (pp_operand env))
     call.args
 
@@ -2306,8 +2305,9 @@ module Llbc = struct
             labels;
           Format.fprintf fmt "\n%s}" indent;
           pp_unwind_block env indent indent_incr fmt on_unwind
-    | Call (call, on_unwind) ->
-        Format.fprintf fmt "%a%a" (pp_print_call env indent) call
+    | Call (call, dest, on_unwind) ->
+        Format.fprintf fmt "%s%a = %a%a" indent (pp_place env) dest
+          (pp_print_call env "") call
           (pp_unwind_block env indent indent_incr)
           on_unwind
     | Panic (name, on_unwind) ->
@@ -2479,9 +2479,9 @@ module Ullbc = struct
     match st with
     | Goto bid -> Format.fprintf fmt "%sgoto %s" indent (block_id_to_string bid)
     | Switch (data, branches) -> pp_switch env indent fmt data branches
-    | Call (call, tgt, unwind) ->
-        Format.fprintf fmt "%a -> %s (unwind: %s)" (pp_print_call env indent)
-          call (block_id_to_string tgt)
+    | Call (call, dest, tgt, unwind) ->
+        Format.fprintf fmt "%s%a = %a -> %s (unwind: %s)" indent (pp_place env)
+          dest (pp_print_call env "") call (block_id_to_string tgt)
           (block_id_to_string unwind)
     | Drop (kind, p, fn_ptr, tgt, unwind) ->
         let kind =

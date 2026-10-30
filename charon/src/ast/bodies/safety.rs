@@ -260,8 +260,8 @@ impl HasSafety for SwitchData {
     }
 }
 
-/// The safety of calling the function (see [`CallSafety`]) and of evaluating the function pointer,
-/// the operands and the destination.
+/// The safety of calling the function (see [`CallSafety`]) and of evaluating the function pointer
+/// and the operands.
 impl HasSafety for Call {
     fn safety(&self, krate: &TranslatedCrate) -> Safety {
         let callee_safety = match self.safety {
@@ -275,7 +275,6 @@ impl HasSafety for Call {
                 FnOperand::Regular(_) => Safety::Safe,
             })
             .or_else(|| self.args.safety(krate))
-            .or_else(|| self.dest.write_safety(krate))
     }
 }
 
@@ -350,7 +349,9 @@ impl HasSafety for llbc_ast::Statement {
                 .cond
                 .safety(krate)
                 .or_else(|| on_failure.safety(krate)),
-            StatementKind::Call { call, .. } => call.safety(krate),
+            StatementKind::Call { call, dest, .. } => {
+                call.safety(krate).or_else(|| dest.write_safety(krate))
+            }
             StatementKind::Switch { data, .. } => data.safety(krate),
             StatementKind::InlineAsm { asm, .. } => asm.kind.is_asm().into(),
             StatementKind::UndefinedBehavior => Safety::Unsafe,
@@ -395,7 +396,9 @@ impl HasSafety for ullbc_ast::Terminator {
         use ullbc_ast::TerminatorKind;
         match &self.kind {
             TerminatorKind::Switch { data, .. } => data.safety(krate),
-            TerminatorKind::Call { call, .. } => call.safety(krate),
+            TerminatorKind::Call { call, dest, .. } => {
+                call.safety(krate).or_else(|| dest.write_safety(krate))
+            }
             TerminatorKind::Drop { place, .. } => place.read_safety(krate),
             TerminatorKind::Assert { assert, .. } => assert.cond.safety(krate),
             TerminatorKind::InlineAsm { asm, .. } => asm.kind.is_asm().into(),

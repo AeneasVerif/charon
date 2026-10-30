@@ -163,7 +163,7 @@ impl<'a> PythonTranspiler<'a> {
                 )
                 .unwrap();
             }
-            StatementKind::Call { call, .. } => {
+            StatementKind::Call { call, dest, .. } => {
                 if let FnOperand::Regular(function) = &call.func
                     && let FnPtrKind::Fun(function) = function.kind.as_ref()
                 {
@@ -172,7 +172,7 @@ impl<'a> PythonTranspiler<'a> {
                     writeln!(
                         output,
                         "{indent}{} = {function}({})",
-                        self.place(&call.dest),
+                        self.place(dest),
                         arguments.collect::<Vec<_>>().join(", ")
                     )
                     .unwrap();

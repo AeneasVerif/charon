@@ -377,12 +377,13 @@ impl<'a, 'b> CheckFlagCorrectness<'a, 'b> {
         } else {
             Some(match &block.terminator.kind {
                 TerminatorKind::Call {
-                    call,
+                    dest,
                     target,
                     on_unwind,
+                    ..
                 } => {
                     let mut after_return = state;
-                    if place.is_subplace(&call.dest) {
+                    if place.is_subplace(dest) {
                         after_return.place_is_initialized = true;
                     }
                     vec![(*target, after_return), (*on_unwind, state)]

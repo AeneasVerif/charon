@@ -78,9 +78,10 @@ and terminator_kind =
       (** Fields:
           - [data]
           - [branches] *)
-  | Call of call * block_id * block_id
+  | Call of call * place * block_id * block_id
       (** Fields:
           - [call]
+          - [dest]
           - [target]
           - [on_unwind] *)
   | Drop of drop_kind * place * fn_ptr * block_id * block_id

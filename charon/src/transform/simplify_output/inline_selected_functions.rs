@@ -88,9 +88,8 @@ impl UllbcPass for Transform {
                 continue;
             };
             let TerminatorKind::Call {
-                call: Call {
-                    func, args, dest, ..
-                },
+                call: Call { func, args, .. },
+                dest,
                 target,
                 on_unwind,
             } = &mut block.terminator.kind
