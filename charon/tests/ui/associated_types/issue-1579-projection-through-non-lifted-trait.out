@@ -1,0 +1,25 @@
+error: Could not compute the value of TraitClauseBound(1, 1)::ImpliedClause2::ImpliedClause1::B (on TraitClauseBound(1, 1)::ImpliedClause2::ImpliedClause1) needed to update item reference test_crate::Lang<TraitClauseBound(1, 1)::V>.
+       Constraints in scope:
+         - ClauseBound(0, 1)::Type0 = @TypeBound(0, 1)
+  --> tests/ui/associated_types/issue-1579-projection-through-non-lifted-trait.rs:10:1
+   |
+10 | pub fn f<T: Typed>(_: &<T::V as Lang>::B) {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Could not compute the value of TraitClauseBound(0, 1)::ImpliedClause2::ImpliedClause1::B (on TraitClauseBound(0, 1)::ImpliedClause2::ImpliedClause1) needed to update item reference test_crate::Lang<TraitClauseBound(0, 1)::V>.
+       Constraints in scope:
+         - ClauseBound(0, 1)::Type0 = @TypeBound(0, 1)
+  --> tests/ui/associated_types/issue-1579-projection-through-non-lifted-trait.rs:10:1
+   |
+10 | pub fn f<T: Typed>(_: &<T::V as Lang>::B) {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Could not compute the value of TraitClauseBound(0, 1)::ImpliedClause2::ImpliedClause1::B (on TraitClauseBound(0, 1)::ImpliedClause2::ImpliedClause1) needed to update item reference test_crate::Lang<TraitClauseBound(0, 1)::V>.
+       Constraints in scope:
+         - ClauseBound(0, 1)::Type0 = @TypeBound(0, 1)
+  --> tests/ui/associated_types/issue-1579-projection-through-non-lifted-trait.rs:10:1
+   |
+10 | pub fn f<T: Typed>(_: &<T::V as Lang>::B) {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (3 errors)
