@@ -141,6 +141,7 @@ impl TypeInfo {
                     | ConstantExprKind::Float(..)
                     | ConstantExprKind::Adt(..)
                     | ConstantExprKind::Array(..)
+                    | ConstantExprKind::Repeat { .. }
                     | ConstantExprKind::Ref(..)
                     | ConstantExprKind::Ptr(..)
                     | ConstantExprKind::Str(..)

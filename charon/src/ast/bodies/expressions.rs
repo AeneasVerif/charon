@@ -64,11 +64,10 @@ pub enum Rvalue {
     Repeat {
         operand: Operand,
         count: ConstantExpr,
+        /// Proof that the element type is `Copy`.
+        elem_is_copy: TraitRef,
         /// Proof that the element type is `Sized`; absent with `--hide-marker-traits`.
         elem_is_sized: Option<TraitRef>,
-        /// Proof that the element type is `Copy`. This can be absent when the operand is a constant,
-        /// which Rust permits to be repeated without `Copy`.
-        elem_is_copy: Option<TraitRef>,
     },
 }
 

@@ -2011,6 +2011,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
                 let values = values.iter().map(|v| v.with_ctx(ctx)).format(", ");
                 write!(f, "[{}]", values)
             }
+            ConstantExprKind::Repeat { value, count, .. } => {
+                write!(f, "[{}; {}]", value.with_ctx(ctx), count.with_ctx(ctx))
+            }
             ConstantExprKind::Global(global_ref) => {
                 write!(f, "{}", global_ref.with_ctx(ctx))
             }

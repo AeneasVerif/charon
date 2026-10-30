@@ -251,17 +251,15 @@ and rvalue =
 
           Remark: in case of closures, the aggregated value groups the closure
           id together with its state. *)
-  | Repeat of operand * constant_expr * trait_ref option * trait_ref option
+  | Repeat of operand * constant_expr * trait_ref * trait_ref option
       (** [Repeat(x, n)] creates an array containing [n] copies of [x].
 
           Fields:
           - [operand]
           - [count]
+          - [elem_is_copy]: Proof that the element type is [Copy].
           - [elem_is_sized]: Proof that the element type is [Sized]; absent with
-            [--hide-marker-traits].
-          - [elem_is_copy]: Proof that the element type is [Copy]. This can be
-            absent when the operand is a constant, which Rust permits to be
-            repeated without [Copy]. *)
+            [--hide-marker-traits]. *)
 
 (** Unary operation *)
 and unop =

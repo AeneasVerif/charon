@@ -624,6 +624,9 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
     end
   | CArray fields ->
       Format.fprintf fmt "[%a]" (pp_sep_list ", " (pp_constant_expr env)) fields
+  | CRepeat (value, count, _) ->
+      Format.fprintf fmt "[%a; %a]" (pp_constant_expr env) value
+        (pp_constant_expr env) count
   | CGlobal gref -> pp_global_decl_ref env fmt gref
   | CPtrNoProvenance n -> Format.fprintf fmt "no-provenance %s" (Z.to_string n)
   | CExternSymbol name -> Format.fprintf fmt "&raw const <extern:%s>" name

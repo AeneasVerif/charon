@@ -809,42 +809,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         ))
     }
 
-    /// If all the input constants are identical and copyable, return an `Rvalue::Repeat`. This
-    /// simplifies some giant array constants.
-    fn try_reconstruct_array_repeat(
-        &mut self,
-        span: Span,
-        array_ty: &hax::Ty<'tcx>,
-        fields: impl ExactSizeIterator<Item = ConstantExpr>,
-    ) -> Result<Option<Rvalue>, Error> {
-        if fields.len() >= 2
-            && let Ok(field) = fields.dedup().exactly_one()
-        {
-            let hax::TyKind::Array(array) = array_ty.kind() else {
-                panic!("expected an array type")
-            };
-            let translated_array_ty = self.translate_ty(span, array_ty)?;
-            let TyKind::Array(_, len, ty_is_sized) = translated_array_ty.kind() else {
-                unreachable!()
-            };
-            let rust_elem_ty = array.item.rustc_args(&self.hax_state).type_at(0);
-            let Some(copy_proof) = hax::solve_copy(&self.hax_state, rust_elem_ty) else {
-                return Ok(None);
-            };
-            let ty_is_copy = self
-                .translate_trait_proof(span, &copy_proof)?
-                .no_bound_vars();
-            Ok(Some(Rvalue::Repeat {
-                operand: Operand::Const(field),
-                count: len.clone(),
-                elem_is_sized: ty_is_sized.clone(),
-                elem_is_copy: Some(ty_is_copy),
-            }))
-        } else {
-            Ok(None)
-        }
-    }
-
     fn apply_user_type_projection(
         &mut self,
         span: Span,
@@ -1224,19 +1188,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 match &const_op.kind {
                     hax::ConstOperandKind::Value(constant) => {
                         let constant = self.translate_constant_expr(span, constant)?;
-                        // Avoid large array constant.
-                        if let ConstantExprKind::Array(fields) = constant.kind()
-                            && matches!(const_op.ty.kind(), hax::TyKind::Array(_))
-                            && let Some(repeat) = self.try_reconstruct_array_repeat(
-                                span,
-                                &const_op.ty,
-                                fields.iter().cloned(),
-                            )?
-                        {
-                            let local = self.fresh_var(None, constant.ty().clone());
-                            self.insert_assn_stmt(local.clone(), repeat);
-                            return Ok(Operand::Move(local));
-                        }
                         Operand::Const(constant)
                     }
                     hax::ConstOperandKind::Promoted(item) => {
@@ -1285,25 +1236,47 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 Ok(Rvalue::Use(Operand::Copy(place), WithRetag::No))
             }
             mir::Rvalue::Repeat(operand, _) => {
-                let ty_is_copy = {
+                let copy_proof = {
                     let rust_ty = operand.ty(self.local_decls, self.tcx);
                     hax::solve_copy(&self.hax_state, rust_ty)
-                        .map(|proof| {
-                            self.translate_trait_proof(span, &proof)
-                                .map(|p| p.no_bound_vars())
-                        })
-                        .transpose()?
                 };
                 let operand = self.translate_operand(span, operand)?;
-                let TyKind::Array(_, len, ty_is_sized) = tgt_ty.kind() else {
+                let TyKind::Array(elem_ty, len, ty_is_sized) = tgt_ty.kind() else {
                     raise_error!(self, span, "array repeat has non-array type")
                 };
-                Ok(Rvalue::Repeat {
-                    operand,
-                    count: len.clone(),
-                    elem_is_sized: ty_is_sized.clone(),
-                    elem_is_copy: ty_is_copy,
-                })
+                if let Some(copy_proof) = copy_proof {
+                    let elem_is_copy = self
+                        .translate_trait_proof(span, &copy_proof)?
+                        .no_bound_vars();
+                    Ok(Rvalue::Repeat {
+                        operand,
+                        count: len.clone(),
+                        elem_is_copy,
+                        elem_is_sized: ty_is_sized.clone(),
+                    })
+                } else if let Operand::Const(value) = operand {
+                    let value = ConstantExpr::new(
+                        ConstantExprKind::Repeat {
+                            value,
+                            count: len.clone(),
+                            value_is_sized: ty_is_sized.clone(),
+                        },
+                        tgt_ty.clone(),
+                    );
+                    Ok(Rvalue::Use(Operand::Const(value), WithRetag::Yes))
+                } else if len.as_usize_literal() == Some(1) {
+                    // A single element can be moved into the array without being `Copy`.
+                    Ok(Rvalue::Aggregate(
+                        AggregateKind::Array(elem_ty.clone(), len.clone(), ty_is_sized.clone()),
+                        vec![operand],
+                    ))
+                } else {
+                    raise_error!(
+                        self,
+                        span,
+                        "Rvalue::Repeat found with an operand that is neither constant nor `Copy`"
+                    )
+                }
             }
             mir::Rvalue::Ref(_region, borrow_kind, place) => {
                 let place = self.translate_place(span, place)?;
@@ -1517,26 +1490,29 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 match aggregate_kind {
                     mir::AggregateKind::Array(ty) => {
                         let t_ty = self.translate_rustc_ty(span, ty)?;
-                        if operands_t.iter().all(Operand::is_const) {
-                            let rust_array_ty =
-                                ty::Ty::new_array(self.tcx, *ty, operands_t.len() as u64);
-                            let hax_array_ty = self.catch_sinto(span, &rust_array_ty)?;
-                            let fields = operands_t
-                                .iter()
-                                .map(|operand| operand.as_const().unwrap())
-                                .cloned();
-                            if let Some(repeat) =
-                                self.try_reconstruct_array_repeat(span, &hax_array_ty, fields)?
-                            {
-                                return Ok(repeat);
-                            }
-                        }
-                        let c = ConstantExpr::mk_usize(operands_t.len() as u128);
+                        let len = ConstantExpr::mk_usize(operands_t.len() as u128);
                         let TyKind::Array(_, _, ty_is_sized) = tgt_ty.kind() else {
                             raise_error!(self, span, "array aggregate has non-array type")
                         };
+                        if operands_t.len() >= 2 && operands_t.iter().all(Operand::is_const) {
+                            let fields =
+                                operands_t.iter().map(|operand| operand.as_const().unwrap());
+                            if let Ok(field) = fields.dedup().exactly_one()
+                                && let Some(copy_proof) = hax::solve_copy(&self.hax_state, *ty)
+                            {
+                                let ty_is_copy = self
+                                    .translate_trait_proof(span, &copy_proof)?
+                                    .no_bound_vars();
+                                return Ok(Rvalue::Repeat {
+                                    operand: Operand::Const(field.clone()),
+                                    count: len,
+                                    elem_is_sized: ty_is_sized.clone(),
+                                    elem_is_copy: ty_is_copy,
+                                });
+                            }
+                        }
                         Ok(Rvalue::Aggregate(
-                            AggregateKind::Array(t_ty, c, ty_is_sized.clone()),
+                            AggregateKind::Array(t_ty, len, ty_is_sized.clone()),
                             operands_t,
                         ))
                     }

@@ -701,6 +701,22 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = type_decl_ref_of_json ctx _0 in
         let* _1 = variant_id_of_json ctx _1 in
         Ok (CDiscriminant (_0, _1))
+    | `Assoc
+        [
+          ( "Repeat",
+            `Assoc
+              [
+                ("value", value);
+                ("count", count);
+                ("value_is_sized", value_is_sized);
+              ] );
+        ] ->
+        let* value = constant_expr_of_json ctx value in
+        let* count = constant_expr_of_json ctx count in
+        let* value_is_sized =
+          option_of_json trait_ref_of_json ctx value_is_sized
+        in
+        Ok (CRepeat (value, count, value_is_sized))
     | `Assoc [ ("SizeOf", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CSizeOf _0)
@@ -1447,17 +1463,17 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
               [
                 ("operand", operand);
                 ("count", count);
-                ("elem_is_sized", elem_is_sized);
                 ("elem_is_copy", elem_is_copy);
+                ("elem_is_sized", elem_is_sized);
               ] );
         ] ->
         let* operand = operand_of_json ctx operand in
         let* count = constant_expr_of_json ctx count in
+        let* elem_is_copy = trait_ref_of_json ctx elem_is_copy in
         let* elem_is_sized =
           option_of_json trait_ref_of_json ctx elem_is_sized
         in
-        let* elem_is_copy = option_of_json trait_ref_of_json ctx elem_is_copy in
-        Ok (Repeat (operand, count, elem_is_sized, elem_is_copy))
+        Ok (Repeat (operand, count, elem_is_copy, elem_is_sized))
     | _ -> Error "")
 
 and scalar_type_of_json (ctx : of_json_ctx) (js : json) :

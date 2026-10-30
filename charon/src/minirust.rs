@@ -1179,6 +1179,10 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
     pub(super) fn constant(&self, span: Span, constant: &ConstantExpr) -> Result<mini::ValueExpr> {
         let ty = self.ty(span, constant.ty())?;
         Ok(match constant.kind() {
+            ConstantExprKind::Global(gref) => mb::load(self.place(
+                span,
+                &Place::new_global(gref.clone(), constant.ty().clone()),
+            )?),
             ConstantExprKind::Bool(value) => mb::const_bool(*value),
             ConstantExprKind::Integer(value) => {
                 mini::ValueExpr::Constant(mini::Constant::Int(mini_int(*value)), ty)
@@ -1220,6 +1224,17 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     .try_collect()?,
                 ty,
             ),
+            ConstantExprKind::Repeat { value, count, .. } => {
+                let count = count
+                    .as_usize_literal()
+                    .ok_or("non-concrete array length")
+                    .context(span)?;
+                let count = usize::try_from(count)
+                    .map_err(|_| "array length does not fit usize")
+                    .context(span)?;
+                let value = self.constant(span, value)?;
+                mini::ValueExpr::Tuple(std::iter::repeat_n(value, count).collect(), ty)
+            }
             ConstantExprKind::FnDef(_) => mini::ValueExpr::Tuple(Default::default(), ty),
             ConstantExprKind::FnPtr(fn_ptr) => match *fn_ptr.kind {
                 FnPtrKind::Fun(id) => self.fn_pointer(id),

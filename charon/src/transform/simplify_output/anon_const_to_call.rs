@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::transform::CowBox;
 use crate::transform::{TransformCtx, ctx::UllbcPass};
@@ -6,6 +6,20 @@ use crate::ullbc_ast::*;
 
 pub struct Transform {
     anon_consts: HashMap<GlobalDeclId, FunDeclId>,
+}
+
+/// These globals and their initializers must remain available: a constant repeat cannot use a
+/// runtime call to evaluate its elements, as the element type may not be `Copy`/`Clone`.
+pub(super) fn globals_in_constant_repeats(krate: &TranslatedCrate) -> HashSet<GlobalDeclId> {
+    let mut globals = HashSet::new();
+    krate.dyn_visit(|kind: &ConstantExprKind| {
+        if let ConstantExprKind::Repeat { .. } = kind {
+            kind.dyn_visit(|gref: &GlobalDeclRef| {
+                globals.insert(gref.id);
+            });
+        }
+    });
+    globals
 }
 
 impl Transform {
@@ -85,8 +99,11 @@ impl UllbcPass for Transform {
         }
     }
     fn finalize(&self, ctx: &mut TransformCtx) {
+        let repeated_globals = globals_in_constant_repeats(&ctx.translated);
         for gid in self.anon_consts.keys() {
-            ctx.translated.global_decls.remove(*gid);
+            if !repeated_globals.contains(gid) {
+                ctx.translated.global_decls.remove(*gid);
+            }
         }
     }
 }

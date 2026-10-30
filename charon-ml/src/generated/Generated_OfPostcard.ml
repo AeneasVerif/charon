@@ -638,17 +638,24 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* _1 = variant_id_of_postcard ctx st in
          Ok (CDiscriminant (_0, _1))
      | 23 ->
-         let* _0 = ty_of_postcard ctx st in
-         Ok (CSizeOf _0)
+         let* value = constant_expr_of_postcard ctx st in
+         let* count = constant_expr_of_postcard ctx st in
+         let* value_is_sized =
+           option_of_postcard trait_ref_of_postcard ctx st
+         in
+         Ok (CRepeat (value, count, value_is_sized))
      | 24 ->
          let* _0 = ty_of_postcard ctx st in
-         Ok (CAlignOf _0)
+         Ok (CSizeOf _0)
      | 25 ->
+         let* _0 = ty_of_postcard ctx st in
+         Ok (CAlignOf _0)
+     | 26 ->
          let* _0 = type_decl_ref_of_postcard ctx st in
          let* _1 = option_of_postcard variant_id_of_postcard ctx st in
          let* _2 = field_id_of_postcard ctx st in
          Ok (COffsetOf (_0, _1, _2))
-     | 26 ->
+     | 27 ->
          let* _0 = string_of_postcard ctx st in
          Ok (COpaque _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
@@ -1277,9 +1284,9 @@ and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 8 ->
          let* operand = operand_of_postcard ctx st in
          let* count = constant_expr_of_postcard ctx st in
+         let* elem_is_copy = trait_ref_of_postcard ctx st in
          let* elem_is_sized = option_of_postcard trait_ref_of_postcard ctx st in
-         let* elem_is_copy = option_of_postcard trait_ref_of_postcard ctx st in
-         Ok (Repeat (operand, count, elem_is_sized, elem_is_copy))
+         Ok (Repeat (operand, count, elem_is_copy, elem_is_sized))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and scalar_type_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
