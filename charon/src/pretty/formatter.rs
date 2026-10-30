@@ -1,9 +1,6 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt;
-use std::fmt::Display;
-
-use index_vec::Idx;
 
 use crate::ast::*;
 use crate::ids::IndexVec;
@@ -56,15 +53,13 @@ pub trait AstFormatter: Sized {
     fn indent(&self) -> String;
 
     fn format_local_id(&self, f: &mut fmt::Formatter<'_>, id: LocalId) -> fmt::Result;
-    fn format_bound_var<Id: Idx + Display, T>(
+    fn format_bound_var<Id: TypeLevelVar>(
         &self,
         f: &mut fmt::Formatter<'_>,
         var: DeBruijnVar<Id>,
         var_prefix: &str,
-        fmt_var: impl Fn(&T) -> Option<String>,
-    ) -> fmt::Result
-    where
-        GenericParams: HasIdxVecOf<Id, Output = T>;
+        fmt_var: impl Fn(&Id::Param) -> Option<String>,
+    ) -> fmt::Result;
 
     fn format_method_name(
         &self,
@@ -312,23 +307,17 @@ impl<'c> AstFormatter for FmtCtx<'c> {
         }
     }
 
-    fn format_bound_var<Id: Idx + Display, T>(
+    fn format_bound_var<Id: TypeLevelVar>(
         &self,
         f: &mut fmt::Formatter<'_>,
         var: DeBruijnVar<Id>,
         var_prefix: &str,
-        fmt_var: impl Fn(&T) -> Option<String>,
-    ) -> fmt::Result
-    where
-        GenericParams: HasIdxVecOf<Id, Output = T>,
-    {
+        fmt_var: impl Fn(&Id::Param) -> Option<String>,
+    ) -> fmt::Result {
         if self.generics.is_empty() {
             return write!(f, "{var_prefix}{var}");
         }
-        match self
-            .generics
-            .get_var_with_outermost_free::<_, GenericParams>(var)
-        {
+        match self.generics.get_var_with_outermost_free(var) {
             None => write!(f, "missing({var_prefix}{var})"),
             Some(v) => match fmt_var(v) {
                 Some(name) => write!(f, "{name}"),

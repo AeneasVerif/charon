@@ -319,6 +319,43 @@ pub type TypeDbVar = DeBruijnVar<TypeVarId>;
 pub type ConstGenericDbVar = DeBruijnVar<ConstGenericVarId>;
 pub type ClauseDbVar = DeBruijnVar<TraitClauseId>;
 
+pub trait TypeLevelVar: Idx + std::fmt::Debug + std::fmt::Display + AstVisitable {
+    type Param;
+    type Arg;
+    fn get_param_vec(params: &GenericParams) -> &IndexVec<Self, Self::Param>;
+    fn get_param_vec_mut(params: &mut GenericParams) -> &mut IndexVec<Self, Self::Param>;
+    fn get_arg_vec(args: &GenericArgs) -> &IndexVec<Self, Self::Arg>;
+    fn get_arg_vec_mut(args: &mut GenericArgs) -> &mut IndexVec<Self, Self::Arg>;
+}
+
+macro_rules! impl_type_level_var {
+    ($id:ty: $param:ty = $param_field:ident, $arg:ty = $arg_field:ident) => {
+        impl TypeLevelVar for $id {
+            type Param = $param;
+            type Arg = $arg;
+            fn get_param_vec(params: &GenericParams) -> &IndexVec<Self, Self::Param> {
+                &params.$param_field
+            }
+            fn get_param_vec_mut(params: &mut GenericParams) -> &mut IndexVec<Self, Self::Param> {
+                &mut params.$param_field
+            }
+            fn get_arg_vec(args: &GenericArgs) -> &IndexVec<Self, Self::Arg> {
+                &args.$arg_field
+            }
+            fn get_arg_vec_mut(args: &mut GenericArgs) -> &mut IndexVec<Self, Self::Arg> {
+                &mut args.$arg_field
+            }
+        }
+    };
+}
+impl_type_level_var!(RegionId: RegionParam = regions, Region = regions);
+impl_type_level_var!(TypeVarId: TypeParam = types, Ty = types);
+impl_type_level_var!(
+    ConstGenericVarId: ConstGenericParam = const_generics,
+    ConstantExpr = const_generics
+);
+impl_type_level_var!(TraitClauseId: TraitParam = trait_clauses, PolyTraitRef = trait_refs);
+
 impl_from_enum!(Region::Var(RegionDbVar));
 impl_from_enum!(TyKind::TypeVar(TypeDbVar));
 impl_from_enum!(ConstantExprKind::Var(ConstGenericDbVar));
@@ -519,29 +556,38 @@ impl<T> BinderSlice<T> {
     pub fn get(&self, id: DeBruijnId) -> Option<&T> {
         self.0.get(self.real_index(id)?)
     }
-
     /// Lookup this variable in the stack. Panics on free variables.
     #[track_caller]
-    pub fn get_var<'a, Id: Idx, Inner>(&'a self, var: DeBruijnVar<Id>) -> Option<&'a Inner::Output>
+    pub fn get_var<Id: TypeLevelVar>(&self, var: DeBruijnVar<Id>) -> Option<&Id::Param>
     where
-        T: Borrow<Inner>,
-        Inner: HasIdxVecOf<Id> + 'a,
+        T: Borrow<GenericParams>,
     {
         let (dbid, varid) = self.as_bound_var(var);
         self.get(dbid)
-            .and_then(|x| x.borrow().get_idx_vec().get(varid))
+            .and_then(|x| Id::get_param_vec(x.borrow()).get(varid))
     }
-    pub fn get_var_with_outermost_free<'a, Id: Idx, Inner>(
+    pub fn get_var_and_shift<'a, Id: TypeLevelVar, R>(
         &'a self,
         var: DeBruijnVar<Id>,
-    ) -> Option<&'a Inner::Output>
+        f: impl FnOnce(&'a Id::Param) -> R,
+    ) -> Option<R>
     where
-        T: Borrow<Inner>,
-        Inner: HasIdxVecOf<Id> + 'a,
+        T: Borrow<GenericParams>,
+        R: TyVisitable,
+    {
+        let (depth, _) = self.as_bound_var(var);
+        self.get_var(var).map(|x| f(x).move_under_binders(depth))
+    }
+    pub fn get_var_with_outermost_free<Id: TypeLevelVar>(
+        &self,
+        var: DeBruijnVar<Id>,
+    ) -> Option<&Id::Param>
+    where
+        T: Borrow<GenericParams>,
     {
         let (dbid, varid) = self.as_bound_var_with_outermost_free(var);
         self.get(dbid)
-            .and_then(|x| x.borrow().get_idx_vec().get(varid))
+            .and_then(|x| Id::get_param_vec(x.borrow()).get(varid))
     }
     pub fn get_mut(&mut self, id: DeBruijnId) -> Option<&mut T> {
         let index = self.real_index(id)?;

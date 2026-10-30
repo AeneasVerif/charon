@@ -99,11 +99,7 @@ impl VisitAstMut for RemoveAdtClausesVisitor<'_> {
         let TraitRefKind::Clause(var, _) = &tref.kind else {
             return;
         };
-        if self
-            .binder_stack
-            .get_var::<_, GenericParams>(*var)
-            .is_some()
-        {
+        if self.binder_stack.get_var(*var).is_some() {
             return;
         }
         let new_kind = build_removed_clause_placeholder(self.translated, &tref.trait_decl_ref);

@@ -269,7 +269,7 @@ use derive_generic_visitor::*;
         llbc_statement: llbc_ast::Statement,
         ullbc_statement: ullbc_ast::Statement,
         ullbc_terminator: ullbc_ast::Terminator,
-        for<T: AstVisitable + Idx> DeBruijnVar<T>,
+        for<T: TypeLevelVar> DeBruijnVar<T>,
         for<T: AstVisitable> Binder<T>,
         for<T: AstVisitable> RegionBinder<T>,
         for<T: AstVisitable> WithCachedTypeInfo<T>,
