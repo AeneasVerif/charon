@@ -1052,18 +1052,18 @@ mod wrappers {
             binder: &Binder<T>,
         ) -> ControlFlow<Self::Break> {
             self.0.binder_stack_mut().push(binder.params.clone());
-            self.visit_inner(binder)?;
+            let result = self.visit_inner(binder);
             self.0.binder_stack_mut().pop();
-            Continue(())
+            result
         }
         fn visit_region_binder<T: AstVisitable>(
             &mut self,
             binder: &RegionBinder<T>,
         ) -> ControlFlow<Self::Break> {
             self.0.binder_stack_mut().push(binder.to_params());
-            self.visit_inner(binder)?;
+            let result = self.visit_inner(binder);
             self.0.binder_stack_mut().pop();
-            Continue(())
+            result
         }
     }
     impl<V: VisitAstMut + VisitorWithBinderStack> VisitAstMut for VisitWithBinderStack<V> {
@@ -1078,18 +1078,18 @@ mod wrappers {
             binder: &mut Binder<T>,
         ) -> ControlFlow<Self::Break> {
             self.0.binder_stack_mut().push(binder.params.clone());
-            self.visit_inner(binder)?;
+            let result = self.visit_inner(binder);
             self.0.binder_stack_mut().pop();
-            Continue(())
+            result
         }
         fn visit_region_binder<T: AstVisitable>(
             &mut self,
             binder: &mut RegionBinder<T>,
         ) -> ControlFlow<Self::Break> {
             self.0.binder_stack_mut().push(binder.to_params());
-            self.visit_inner(binder)?;
+            let result = self.visit_inner(binder);
             self.0.binder_stack_mut().pop();
-            Continue(())
+            result
         }
     }
 
