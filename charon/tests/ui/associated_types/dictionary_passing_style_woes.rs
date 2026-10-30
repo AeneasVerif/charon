@@ -42,8 +42,8 @@ fn b<T: B>(x: T) -> T::Assoc {
     x.method()
 }
 
-/// This will pick one of the two parent clauses to resolve `T::Assoc` within this body, which is
-/// guaranteed to make one of the two calls fail to typecheck.
+/// This will pick one of the two parent clauses to resolve `T::Assoc` within this body. Both
+/// parent clauses prove `T: X`, so we use the same type parameter for both.
 fn x<T: A + B + Copy>(x: T) -> (T::Assoc, T::Assoc) {
     (a(x), b(x))
 }
