@@ -148,6 +148,33 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     "size_of_val" => self.make_layout_of_val_function(span, fdecl, false)?,
                     "align_of_val" => self.make_layout_of_val_function(span, fdecl, true)?,
                     "cold_path" => self.make_cold_path_function(span, fdecl)?,
+                    "add_with_overflow" | "sub_with_overflow" | "mul_with_overflow" => {
+                        let op = match name.as_str() {
+                            "add_with_overflow" => mini::IntBinOpWithOverflow::Add,
+                            "sub_with_overflow" => mini::IntBinOpWithOverflow::Sub,
+                            "mul_with_overflow" => mini::IntBinOpWithOverflow::Mul,
+                            _ => unreachable!(),
+                        };
+                        let mut builder = FunctionBuilder::new(self, span, &fdecl.signature)?;
+                        let ret = mini::PlaceExpr::Local(builder.return_local());
+                        let left = mb::load(mini::PlaceExpr::Local(builder.argument(0)));
+                        let right = mb::load(mini::PlaceExpr::Local(builder.argument(1)));
+                        let value = mini::ValueExpr::BinOp {
+                            operator: mini::BinOp::IntWithOverflow(op),
+                            left: mini::GcCow::new(left),
+                            right: mini::GcCow::new(right),
+                        };
+                        let start = builder.declare_block();
+                        builder.set_block(
+                            start,
+                            mb::block(
+                                &[mb::assign(ret, value)],
+                                mini::Terminator::Return,
+                                mini::BbKind::Regular,
+                            ),
+                        );
+                        builder.finish()
+                    }
                     "arith_offset" => self.make_arith_offset_function(span, fdecl)?,
                     "ptr_offset_from" => self.make_ptr_offset_from_function(span, fdecl, false)?,
                     "ptr_offset_from_unsigned" => {

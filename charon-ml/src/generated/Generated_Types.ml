@@ -273,9 +273,10 @@ and cast_kind =
       *)
   | CastRawPtr of ty
       (** Convert a raw pointer or function pointer to a raw pointer. *)
-  | CastPtrExposeProvenance
+  | CastPtrExposeProvenance of integer_type
       (** Converts a pointer or function pointer to an address, exposing its
-          provenance. See
+          provenance. The parameter is the destination integer type, which need
+          not be [usize]. See
           <https://doc.rust-lang.org/std/primitive.pointer.html#method.expose_provenance>.
       *)
   | CastPtrWithExposedProvenance of ty
@@ -427,6 +428,15 @@ and constant_expr_kind =
           This is eliminated if [--raw-consts] is off. *)
   | CDiscriminant of type_decl_ref * variant_id
       (** The integer discriminant value corresponding to this enum variant. *)
+  | CRepeat of constant_expr * constant_expr * trait_ref option
+      (** Make an array of [count] copies of [value]. [value] does not need to
+          be [Copy] or [Clone].
+
+          Fields:
+          - [value]
+          - [count]
+          - [value_is_sized]: Proof that the element type is [Sized]; absent
+            with [--hide-marker-traits]. *)
   | CSizeOf of ty  (** The size of the given type. *)
   | CAlignOf of ty  (** The alignment of the given type. *)
   | COffsetOf of type_decl_ref * variant_id option * field_id

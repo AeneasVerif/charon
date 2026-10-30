@@ -94,6 +94,13 @@ pub enum ConstantExprKind {
     VTableRef(PolyTraitRef),
     /// The integer discriminant value corresponding to this enum variant.
     Discriminant(TypeDeclRef, VariantId),
+    /// Make an array of `count` copies of `value`. `value` does not need to be `Copy` or `Clone`.
+    Repeat {
+        value: ConstantExpr,
+        count: ConstantExpr,
+        /// Proof that the element type is `Sized`; absent with `--hide-marker-traits`.
+        value_is_sized: Option<TraitRef>,
+    },
     /// The size of the given type.
     SizeOf(Ty),
     /// The alignment of the given type.

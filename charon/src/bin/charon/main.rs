@@ -240,16 +240,16 @@ fn translate_with_cargo(
     cmd.env("CHARON_USING_CARGO", "1");
     cmd.env_remove("CARGO_PRIMARY_PACKAGE");
     cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
-    // Cargo skips the crates it considers fresh, and charon would emit nothing for a skipped
-    // crate. `charon-driver` records `selected_crate_var` of each target crate as an env
-    // dependency, and cargo reruns a crate when the value of such a variable changes. We give a
-    // fresh value to the variables of the crates this build selects only, so cargo reruns exactly
-    // them and keeps every dependency cached.
-    let nonce = fresh_nonce();
-    for crate_name in selected_crates(&cargo_args)? {
+    // We control cargo caching as follows: `charon-driver` declares that if
+    // `CHARON_SELECTED_CRATE_{crate_name}` changes, then cache should be invalidated and the
+    // driver re-run. We then set it with a fresh value for all the crates that are targeted by the
+    // current command (e.g. the workspace roots, or a crate selected with `-p`).
+    for crate_name in cargo_targets(&cargo_args)? {
+        let nonce = fresh_nonce();
         cmd.env(selected_crate_var(&crate_name), &nonce);
     }
     cmd.arg("build");
+
     if let Some(sysroot) = miri_sysroot(options.sysroot.as_deref(), &target) {
         cmd.env(CHARON_SYSROOT_VAR, sysroot);
     }
@@ -262,9 +262,8 @@ fn translate_with_cargo(
         .expect("failed to wait for cargo?"))
 }
 
-/// Returns the names of the crates that `cargo build <build_args>` selects, i.e. the root units of
-/// its unit graph.
-fn selected_crates(build_args: &[String]) -> anyhow::Result<Vec<String>> {
+/// Returns the names of the crates that `cargo build <build_args>` selects.
+fn cargo_targets(build_args: &[String]) -> anyhow::Result<Vec<String>> {
     /// The parts of cargo's `--unit-graph` output we use.
     #[derive(Deserialize)]
     struct UnitGraph {
@@ -281,8 +280,6 @@ fn selected_crates(build_args: &[String]) -> anyhow::Result<Vec<String>> {
     }
 
     let mut cmd = toolchain::in_toolchain("cargo")?;
-    cmd.env_remove("RUSTC_WRAPPER");
-    cmd.env_remove("RUSTC_WORKSPACE_WRAPPER");
     cmd.args(["build", "--unit-graph", "-Z", "unstable-options"]);
     cmd.args(build_args);
     trace!("running {cmd:?}");
@@ -347,7 +344,7 @@ fn get_rustc_version() -> anyhow::Result<rustc_version::VersionMeta> {
     Ok(rustc_version)
 }
 
-/// A sufficiently unique string, different for each charon run.
+/// A sufficiently unique string, used to control cargo caching.
 fn fresh_nonce() -> String {
     let nanos = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)

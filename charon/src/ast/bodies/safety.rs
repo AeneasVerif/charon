@@ -198,9 +198,9 @@ impl HasSafety for Rvalue {
             } => place
                 .read_safety(krate)
                 .or_else(|| ptr_metadata.safety(krate)),
-            Rvalue::Discriminant(place) | Rvalue::Len(place, ..) => place.read_safety(krate),
+            Rvalue::Discriminant(place) => place.read_safety(krate),
             Rvalue::UnaryOp(unop, op) => unop.safety(krate).or_else(|| op.safety(krate)),
-            Rvalue::Use(op, _) | Rvalue::Repeat(op, ..) => op.safety(krate),
+            Rvalue::Use(op, _) | Rvalue::Repeat { operand: op, .. } => op.safety(krate),
             Rvalue::BinaryOp(binop, op1, op2) => binop
                 .safety(krate)
                 .or_else(|| op1.safety(krate).or_else(|| op2.safety(krate))),
@@ -221,7 +221,7 @@ impl HasSafety for UnOp {
                 CastKind::Scalar(..)
                 | CastKind::Subtype(..)
                 | CastKind::RawPtr(..)
-                | CastKind::PtrExposeProvenance
+                | CastKind::PtrExposeProvenance(..)
                 | CastKind::PtrWithExposedProvenance(..)
                 | CastKind::Unsize(..)
                 | CastKind::FnDefToFnPtr
@@ -236,8 +236,7 @@ impl HasSafety for BinOp {
         use BinOp::*;
         match self {
             Add(om) | Sub(om) | Mul(om) | Div(om) | Rem(om) | Shl(om) | Shr(om) => om.safety(krate),
-            BitXor | BitAnd | BitOr | Eq | Lt | Le | Ne | Ge | Gt | AddChecked | SubChecked
-            | MulChecked | Cmp => Safety::Safe,
+            BitXor | BitAnd | BitOr | Eq | Lt | Le | Ne | Ge | Gt | Cmp => Safety::Safe,
         }
     }
 }
@@ -260,8 +259,8 @@ impl HasSafety for SwitchData {
     }
 }
 
-/// The safety of calling the function (see [`CallSafety`]) and of evaluating the function pointer,
-/// the operands and the destination.
+/// The safety of calling the function (see [`CallSafety`]) and of evaluating the function pointer
+/// and the operands.
 impl HasSafety for Call {
     fn safety(&self, krate: &TranslatedCrate) -> Safety {
         let callee_safety = match self.safety {
@@ -275,7 +274,6 @@ impl HasSafety for Call {
                 FnOperand::Regular(_) => Safety::Safe,
             })
             .or_else(|| self.args.safety(krate))
-            .or_else(|| self.dest.write_safety(krate))
     }
 }
 
@@ -350,7 +348,9 @@ impl HasSafety for llbc_ast::Statement {
                 .cond
                 .safety(krate)
                 .or_else(|| on_failure.safety(krate)),
-            StatementKind::Call { call, .. } => call.safety(krate),
+            StatementKind::Call { call, dest, .. } => {
+                call.safety(krate).or_else(|| dest.write_safety(krate))
+            }
             StatementKind::Switch { data, .. } => data.safety(krate),
             StatementKind::InlineAsm { asm, .. } => asm.kind.is_asm().into(),
             StatementKind::UndefinedBehavior => Safety::Unsafe,
@@ -395,7 +395,9 @@ impl HasSafety for ullbc_ast::Terminator {
         use ullbc_ast::TerminatorKind;
         match &self.kind {
             TerminatorKind::Switch { data, .. } => data.safety(krate),
-            TerminatorKind::Call { call, .. } => call.safety(krate),
+            TerminatorKind::Call { call, dest, .. } => {
+                call.safety(krate).or_else(|| dest.write_safety(krate))
+            }
             TerminatorKind::Drop { place, .. } => place.read_safety(krate),
             TerminatorKind::Assert { assert, .. } => assert.cond.safety(krate),
             TerminatorKind::InlineAsm { asm, .. } => asm.kind.is_asm().into(),

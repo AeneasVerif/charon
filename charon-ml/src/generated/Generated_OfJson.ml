@@ -299,9 +299,6 @@ and binop_of_json (ctx : of_json_ctx) (js : json) : (binop, string) result =
     | `Assoc [ ("Rem", _0) ] ->
         let* _0 = overflow_mode_of_json ctx _0 in
         Ok (Rem _0)
-    | `String "AddChecked" -> Ok AddChecked
-    | `String "SubChecked" -> Ok SubChecked
-    | `String "MulChecked" -> Ok MulChecked
     | `Assoc [ ("Shl", _0) ] ->
         let* _0 = overflow_mode_of_json ctx _0 in
         Ok (Shl _0)
@@ -502,14 +499,11 @@ and byte_of_json (ctx : of_json_ctx) (js : json) : (byte, string) result =
 and call_of_json (ctx : of_json_ctx) (js : json) : (call, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc
-        [ ("func", func); ("args", args); ("dest", dest); ("safety", safety) ]
-      ->
+    | `Assoc [ ("func", func); ("args", args); ("safety", safety) ] ->
         let* func = fn_operand_of_json ctx func in
         let* args = list_of_json operand_of_json ctx args in
-        let* dest = place_of_json ctx dest in
         let* safety = call_safety_of_json ctx safety in
-        Ok ({ func; args; dest; safety } : call)
+        Ok ({ func; args; safety } : call)
     | _ -> Error "")
 
 and call_safety_of_json (ctx : of_json_ctx) (js : json) :
@@ -531,7 +525,9 @@ and cast_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("RawPtr", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CastRawPtr _0)
-    | `String "PtrExposeProvenance" -> Ok CastPtrExposeProvenance
+    | `Assoc [ ("PtrExposeProvenance", _0) ] ->
+        let* _0 = integer_type_of_json ctx _0 in
+        Ok (CastPtrExposeProvenance _0)
     | `Assoc [ ("PtrWithExposedProvenance", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CastPtrWithExposedProvenance _0)
@@ -705,6 +701,22 @@ and constant_expr_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* _0 = type_decl_ref_of_json ctx _0 in
         let* _1 = variant_id_of_json ctx _1 in
         Ok (CDiscriminant (_0, _1))
+    | `Assoc
+        [
+          ( "Repeat",
+            `Assoc
+              [
+                ("value", value);
+                ("count", count);
+                ("value_is_sized", value_is_sized);
+              ] );
+        ] ->
+        let* value = constant_expr_of_json ctx value in
+        let* count = constant_expr_of_json ctx count in
+        let* value_is_sized =
+          option_of_json trait_ref_of_json ctx value_is_sized
+        in
+        Ok (CRepeat (value, count, value_is_sized))
     | `Assoc [ ("SizeOf", _0) ] ->
         let* _0 = ty_of_json ctx _0 in
         Ok (CSizeOf _0)
@@ -1444,17 +1456,24 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         let* _0 = aggregate_kind_of_json ctx _0 in
         let* _1 = list_of_json operand_of_json ctx _1 in
         Ok (Aggregate (_0, _1))
-    | `Assoc [ ("Len", `List [ _0; _1; _2 ]) ] ->
-        let* _0 = place_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        let* _2 = option_of_json constant_expr_of_json ctx _2 in
-        Ok (Len (_0, _1, _2))
-    | `Assoc [ ("Repeat", `List [ _0; _1; _2; _3 ]) ] ->
-        let* _0 = operand_of_json ctx _0 in
-        let* _1 = ty_of_json ctx _1 in
-        let* _2 = constant_expr_of_json ctx _2 in
-        let* _3 = option_of_json trait_ref_of_json ctx _3 in
-        Ok (Repeat (_0, _1, _2, _3))
+    | `Assoc
+        [
+          ( "Repeat",
+            `Assoc
+              [
+                ("operand", operand);
+                ("count", count);
+                ("elem_is_copy", elem_is_copy);
+                ("elem_is_sized", elem_is_sized);
+              ] );
+        ] ->
+        let* operand = operand_of_json ctx operand in
+        let* count = constant_expr_of_json ctx count in
+        let* elem_is_copy = trait_ref_of_json ctx elem_is_copy in
+        let* elem_is_sized =
+          option_of_json trait_ref_of_json ctx elem_is_sized
+        in
+        Ok (Repeat (operand, count, elem_is_copy, elem_is_sized))
     | _ -> Error "")
 
 and scalar_type_of_json (ctx : of_json_ctx) (js : json) :
@@ -2007,13 +2026,18 @@ module Ullbc = struct
           [
             ( "Call",
               `Assoc
-                [ ("call", call); ("target", target); ("on_unwind", on_unwind) ]
-            );
+                [
+                  ("call", call);
+                  ("dest", dest);
+                  ("target", target);
+                  ("on_unwind", on_unwind);
+                ] );
           ] ->
           let* call = call_of_json ctx call in
+          let* dest = place_of_json ctx dest in
           let* target = block_id_of_json ctx target in
           let* on_unwind = block_id_of_json ctx on_unwind in
-          Ok (Call (call, target, on_unwind))
+          Ok (Call (call, dest, target, on_unwind))
       | `Assoc
           [
             ( "Drop",
@@ -2209,11 +2233,16 @@ module Llbc = struct
           in
           let* on_unwind = block_of_json ctx on_unwind in
           Ok (InlineAsm (asm, fallthrough, labels, on_unwind))
-      | `Assoc [ ("Call", `Assoc [ ("call", call); ("on_unwind", on_unwind) ]) ]
-        ->
+      | `Assoc
+          [
+            ( "Call",
+              `Assoc
+                [ ("call", call); ("dest", dest); ("on_unwind", on_unwind) ] );
+          ] ->
           let* call = call_of_json ctx call in
+          let* dest = place_of_json ctx dest in
           let* on_unwind = block_of_json ctx on_unwind in
-          Ok (Call (call, on_unwind))
+          Ok (Call (call, dest, on_unwind))
       | `Assoc [ ("Switch", `Assoc [ ("data", data); ("branches", branches) ]) ]
         ->
           let* data = switch_data_of_json ctx data in

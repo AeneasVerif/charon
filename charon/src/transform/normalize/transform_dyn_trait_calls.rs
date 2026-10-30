@@ -33,6 +33,7 @@ use crate::{
 fn transform_dyn_trait_call(
     ctx: &mut UllbcStatementTransformCtx<'_>,
     call: &mut Call,
+    dest: &Place,
 ) -> Result<(), Error> {
     let fmt_ctx = &ctx.ctx.into_fmt();
 
@@ -237,7 +238,7 @@ fn transform_dyn_trait_call(
             abi: Abi::rust(),
             is_variadic: false,
             inputs: call.args.iter().map(|op| op.ty().clone()).collect(),
-            output: call.dest.ty.clone(),
+            output: dest.ty.clone(),
         }))
         .into_ty();
         let fn_ptr_place = ctx.fresh_var(None, real_sig_ty);
@@ -276,8 +277,8 @@ pub struct Transform;
 impl UllbcPass for Transform {
     fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
         decl.transform_ullbc_terminators(ctx, |ctx, term| {
-            if let TerminatorKind::Call { call, .. } = &mut term.kind {
-                let _ = transform_dyn_trait_call(ctx, call);
+            if let TerminatorKind::Call { call, dest, .. } = &mut term.kind {
+                let _ = transform_dyn_trait_call(ctx, call, dest);
             }
         });
     }

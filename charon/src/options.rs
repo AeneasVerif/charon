@@ -18,9 +18,8 @@ use crate::{
 /// when calling charon-driver from cargo-charon.
 pub const CHARON_ARGS: &str = "CHARON_ARGS";
 
-/// The name of the environment variable that `charon cargo` sets to a fresh value for each crate
-/// it selects for translation. `charon-driver` records it as an env dependency of every target
-/// crate, so that cargo reruns exactly the selected crates and keeps every other crate cached.
+/// The name of an environment variable we use to control `cargo`'s caching, so that cargo reruns
+/// `charon-driver` on exactly the selected crates and keeps every other crate cached.
 pub fn selected_crate_var(crate_name: &str) -> String {
     format!("CHARON_SELECTED_CRATE_{crate_name}")
 }

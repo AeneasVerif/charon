@@ -5,6 +5,19 @@
 #[lang_item(MetaSized)]
 pub trait MetaSized<Self>
 
+// Full name: core::ops::index::Index
+#[lang_item(Index)]
+pub trait Index<Self, Idx>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Idx: MetaSized)
+    proof ImpliedClause2: (Self::Output: MetaSized)
+    type Output
+    #[track_caller]
+    fn index<'_0_1>;
+    vtable: core::ops::index::Index::{vtable}<Idx, Self::Output>
+}
+
 // Full name: core::marker::Sized
 #[fundamental]
 #[lang_item(Sized)]
@@ -14,12 +27,132 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::array::{impl Index<I> for [T; N]}::index
+pub fn impl_Index_for_array::index<'_0, T, I, const N : usize>(_1: &'_0 [T; N], _2: I) -> &'_0 TraitClause2::Output
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (I: Sized),
+    TraitClause2: ([T]: Index<I>),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: TraitClause2::Output: '_0,
+    TypeOutlives2: I: '_0,
+= <opaque>
+
+// Full name: core::option::Option
+#[lang_item(Option)]
+#[diagnostic_item("Option")]
+pub enum Option<T>
+where
+    TraitClause0: (T: Sized),
+{
+  None,
+  Some { _0: T },
+}
+
+// Full name: core::slice::index::SliceIndex
+#[diagnostic_item("SliceIndex")]
+pub unsafe trait SliceIndex<Self, T>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (T: MetaSized)
+    proof ImpliedClause2: (Self::Output: MetaSized)
+    type Output
+    fn get<'_0_1>;
+    fn get_mut<'_0_1>;
+    fn get_unchecked;
+    fn get_unchecked_mut;
+    #[track_caller]
+    fn index<'_0_1>;
+    #[track_caller]
+    fn index_mut<'_0_1>;
+    vtable: core::slice::index::SliceIndex::{vtable}<T, Self::Output>
+}
+
+// Full name: core::slice::index::{impl Index<I> for [T]}::index
+pub fn impl_Index_for_slice::index<'_0, T, I>(_1: &'_0 [T], _2: I) -> &'_0 TraitClause2::Output
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (I: Sized),
+    TraitClause2: (I: SliceIndex<[T]>),
+    TypeOutlives0: T: '_0,
+    TypeOutlives1: TraitClause2::Output: '_0,
+    TypeOutlives2: I: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl Index<I> for [T]}
+impl<T, I> "impl_Index_for_slice" Index<I> for [T]
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (I: Sized),
+    TraitClause2: (I: SliceIndex<[T]>),
+{
+    proof ImpliedClause0: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
+    proof ImpliedClause1: (I: MetaSized) = TraitClause1::ImpliedClause0
+    proof ImpliedClause2: (TraitClause2::Output: MetaSized) = TraitClause2::ImpliedClause2
+    type Output = TraitClause2::Output
+    fn index<'_0_1> = impl_Index_for_slice::index<'_0_1, T, I>[TraitClause0, TraitClause1, TraitClause2]
+    vtable: lazy
+}
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index_mut
+pub fn impl_SliceIndex_slice_for_usize::index_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> &'_0 mut T
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
 // Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::index
 pub fn impl_SliceIndex_slice_for_usize::index<'_0, T>(_1: usize, _2: &'_0 [T]) -> &'_0 T
 where
     TraitClause0: (T: Sized),
     TypeOutlives0: T: '_0,
 = <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked_mut
+#[track_caller]
+pub unsafe fn impl_SliceIndex_slice_for_usize::get_unchecked_mut<T>(_1: usize, _2: *mut [T]) -> *mut T
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_unchecked
+#[track_caller]
+pub unsafe fn impl_SliceIndex_slice_for_usize::get_unchecked<T>(_1: usize, _2: *const [T]) -> *const T
+where
+    TraitClause0: (T: Sized),
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get_mut
+pub fn impl_SliceIndex_slice_for_usize::get_mut<'_0, T>(_1: usize, _2: &'_0 mut [T]) -> Option<&'_0 mut T>[{built_in impl Sized for &'_0 mut T}]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}::get
+pub fn impl_SliceIndex_slice_for_usize::get<'_0, T>(_1: usize, _2: &'_0 [T]) -> Option<&'_0 T>[{built_in impl Sized for &'_0 T}]
+where
+    TraitClause0: (T: Sized),
+    TypeOutlives0: T: '_0,
+= <opaque>
+
+// Full name: core::slice::index::{impl SliceIndex<[T]> for usize}
+unsafe impl<T> "impl_SliceIndex_slice_for_usize" SliceIndex<[T]> for usize
+where
+    TraitClause0: (T: Sized),
+{
+    proof ImpliedClause0: (usize: MetaSized) = {built_in impl MetaSized for usize}
+    proof ImpliedClause1: ([T]: MetaSized) = {built_in impl MetaSized for [T]}
+    proof ImpliedClause2: (T: MetaSized) = TraitClause0::ImpliedClause0
+    type Output = T
+    fn get<'_0_1> = impl_SliceIndex_slice_for_usize::get<'_0_1, T>[TraitClause0]
+    fn get_mut<'_0_1> = impl_SliceIndex_slice_for_usize::get_mut<'_0_1, T>[TraitClause0]
+    fn get_unchecked = impl_SliceIndex_slice_for_usize::get_unchecked<T>[TraitClause0]
+    fn get_unchecked_mut = impl_SliceIndex_slice_for_usize::get_unchecked_mut<T>[TraitClause0]
+    fn index<'_0_1> = impl_SliceIndex_slice_for_usize::index<'_0_1, T>[TraitClause0]
+    fn index_mut<'_0_1> = impl_SliceIndex_slice_for_usize::index_mut<'_0_1, T>[TraitClause0]
+    vtable: lazy
+}
 
 struct () {}
 
@@ -35,8 +168,7 @@ fn slice_pattern_end<'_0>(x: &'_0 [()])
     let _named: &'3 (); // local
     let _7: &'_ [()]; // anonymous local
     let _8: usize; // anonymous local
-    let _9: usize; // anonymous local
-    let _10: &'_ (); // anonymous local
+    let _9: &'_ (); // anonymous local
 
     storage_live(_0)
     storage_live(_2)
@@ -56,8 +188,8 @@ fn slice_pattern_end<'_0>(x: &'_0 [()])
         storage_dead(_3)
         storage_dead(_2)
         storage_dead(x)
-        storage_dead(_10)
         storage_dead(_9)
+        storage_dead(_8)
         storage_dead(_7)
         return
     }
@@ -65,14 +197,11 @@ fn slice_pattern_end<'_0>(x: &'_0 [()])
     storage_live(_7)
     _7 = &(*x) with_metadata(copy x.metadata)
     storage_live(_8)
-    _8 = len((*x))
+    _8 = copy x.metadata ub.- const 1usize
     storage_live(_9)
-    _9 = copy _8 ub.- const 1usize
-    storage_dead(_8)
-    storage_live(_10)
-    _10 = impl_SliceIndex_slice_for_usize::index<'_, ()>[{built_in impl Sized for ()}](copy _9, move _7)
+    _9 = impl_SliceIndex_slice_for_usize::index<'_, ()>[{built_in impl Sized for ()}](copy _8, move _7)
     ↳⚡ undefined_behavior
-    _named = &(*_10)
+    _named = &(*_9)
     _0 = ()
     storage_dead(_named)
     storage_dead(_5)
@@ -80,9 +209,104 @@ fn slice_pattern_end<'_0>(x: &'_0 [()])
     storage_dead(_3)
     storage_dead(_2)
     storage_dead(x)
+    storage_dead(_9)
+    storage_dead(_8)
+    storage_dead(_7)
+    return
+}
+
+// Full name: test_crate::array_pattern_end
+fn array_pattern_end<'_0>(x: &'_0 [u32; 3usize]) -> u32
+{
+    let _0: u32; // return
+    let x: &'1 [u32; 3usize]; // arg #1
+    let last: &'3 u32; // local
+    let _3: &'_ [u32; 3usize]; // anonymous local
+    let _4: &'_ u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(last)
+    storage_live(_3)
+    _3 = &(*x)
+    storage_live(_4)
+    _4 = impl_Index_for_array::index<'_, u32, usize, 3usize>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, impl_Index_for_slice<u32, usize>[{built_in impl Sized for u32}, {built_in impl Sized for usize}, impl_SliceIndex_slice_for_usize<u32>[{built_in impl Sized for u32}]]](move _3, const 2usize)
+    ↳⚡ undefined_behavior
+    last = &(*_4)
+    _0 = copy (*last)
+    storage_dead(last)
+    storage_dead(x)
+    storage_dead(_4)
+    storage_dead(_3)
+    return
+}
+
+// Full name: test_crate::Tail
+struct Tail {
+  prefix: u8,
+  values: [u32],
+}
+
+// Full name: test_crate::field_pattern_end
+fn field_pattern_end<'_0>(x: &'_0 Tail) -> u32
+{
+    let _0: u32; // return
+    let x: &'1 Tail; // arg #1
+    let _2: usize; // anonymous local
+    let _3: *const [u32]; // anonymous local
+    let _4: usize; // anonymous local
+    let _5: usize; // anonymous local
+    let _6: bool; // anonymous local
+    let last: u32; // local
+    let _8: &'_ [u32]; // anonymous local
+    let _9: usize; // anonymous local
+    let _10: &'_ u32; // anonymous local
+
+    storage_live(_0)
+    storage_live(_2)
+    storage_live(_3)
+    storage_live(_4)
+    storage_live(_5)
+    storage_live(_6)
+    _ = (*x).values
+    _3 = &raw const (*x).values with_metadata(copy x.metadata)
+    _4 = noretag copy _3.metadata
+    _2 = move _4
+    _5 = const 1usize
+    _6 = move _2 >= move _5
+    if move _6 {
+    } else {
+        _0 = const 0u32
+        storage_dead(_6)
+        storage_dead(_5)
+        storage_dead(_4)
+        storage_dead(_3)
+        storage_dead(_2)
+        storage_dead(x)
+        storage_dead(_10)
+        storage_dead(_9)
+        storage_dead(_8)
+        return
+    }
+    storage_live(last)
+    storage_live(_8)
+    _8 = &(*x).values with_metadata(copy x.metadata)
+    storage_live(_9)
+    _9 = copy x.metadata ub.- const 1usize
+    storage_live(_10)
+    _10 = impl_SliceIndex_slice_for_usize::index<'_, u32>[{built_in impl Sized for u32}](copy _9, move _8)
+    ↳⚡ undefined_behavior
+    last = copy (*_10)
+    _0 = copy last
+    storage_dead(last)
+    storage_dead(_6)
+    storage_dead(_5)
+    storage_dead(_4)
+    storage_dead(_3)
+    storage_dead(_2)
+    storage_dead(x)
     storage_dead(_10)
     storage_dead(_9)
-    storage_dead(_7)
+    storage_dead(_8)
     return
 }
 

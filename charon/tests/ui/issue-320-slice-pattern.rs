@@ -20,8 +20,7 @@ fn slice_pat4(x: &[u32]) {
     }
 }
 
-/// This test generates a `RValue::Len` on a place that isn't `Deref`. It's a regression test to
-/// avoid the mistaken assumption that `Len` only applies to `Deref` places.
+/// The slice length must be obtained through a field projection, using the enclosing DST's metadata.
 struct Unsized([u32]);
 fn slice_pat5(x: &Unsized) {
     match x.0 {

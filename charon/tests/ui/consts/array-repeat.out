@@ -1,0 +1,43 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::MetaSized
+#[fundamental]
+#[lang_item(MetaSized)]
+pub trait MetaSized<Self>
+
+// Full name: core::marker::Sized
+#[fundamental]
+#[lang_item(Sized)]
+pub trait Sized<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    non-dyn-compatible
+}
+
+struct () {}
+
+// Full name: test_crate::REPEATED
+const REPEATED: [u32; 4usize] = [7u32; 4usize]
+
+// Full name: test_crate::DISTINCT
+const DISTINCT: [u32; 4usize] = [7u32, 7u32, 8u32, 7u32]
+
+// Full name: test_crate::EMPTY
+const EMPTY: [u32; 0usize] = []
+
+// Full name: test_crate::SINGLE
+const SINGLE: [u32; 1usize] = [7u32]
+
+// Full name: test_crate::NESTED
+const NESTED: [[u32; 2usize]; 3usize] = [[7u32; 2usize]; 3usize]
+
+// Full name: test_crate::NonCopy
+struct NonCopy {
+  _0: u32,
+}
+
+// Full name: test_crate::NON_COPY
+const NON_COPY: [NonCopy; 2usize] = [NonCopy { _0: 7u32 }; 2usize]
+
+
+

@@ -1187,12 +1187,14 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
         );
         builder.push_statement(StatementKind::Assign(target_self.clone(), rval));
 
-        builder.call(Call {
-            func: FnOperand::Regular(target_fn),
-            args: method_args.into_iter().map(Operand::Move).collect(),
-            dest: ret_place,
-            safety: CallSafety::Inherit,
-        });
+        builder.call(
+            ret_place,
+            Call {
+                func: FnOperand::Regular(target_fn),
+                args: method_args.into_iter().map(Operand::Move).collect(),
+                safety: CallSafety::Inherit,
+            },
+        );
 
         Ok(Body::Unstructured(builder.build()))
     }

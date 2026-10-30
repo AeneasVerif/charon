@@ -624,6 +624,9 @@ and pp_constant_expr (env : fmt_env) (fmt : Format.formatter)
     end
   | CArray fields ->
       Format.fprintf fmt "[%a]" (pp_sep_list ", " (pp_constant_expr env)) fields
+  | CRepeat (value, count, _) ->
+      Format.fprintf fmt "[%a; %a]" (pp_constant_expr env) value
+        (pp_constant_expr env) count
   | CGlobal gref -> pp_global_decl_ref env fmt gref
   | CPtrNoProvenance n -> Format.fprintf fmt "no-provenance %s" (Z.to_string n)
   | CExternSymbol name -> Format.fprintf fmt "&raw const <extern:%s>" name
@@ -651,7 +654,8 @@ and pp_cast_kind (env : fmt_env) (fmt : Format.formatter) (cast : cast_kind) :
     unit =
   match cast with
   | CastScalar tgt -> Format.fprintf fmt "cast<%a>" pp_scalar_type tgt
-  | CastPtrExposeProvenance -> Format.pp_print_string fmt "cast_expose"
+  | CastPtrExposeProvenance tgt ->
+      Format.fprintf fmt "cast_expose<%a>" pp_integer_type tgt
   | CastPtrWithExposedProvenance tgt ->
       Format.fprintf fmt "cast_with_exposed<%a>" (pp_ty env) tgt
   | CastFnDefToFnPtr -> Format.pp_print_string fmt "fn_def_to_fn_ptr"
@@ -1638,9 +1642,6 @@ and pp_binop (fmt : Format.formatter) (binop : binop) : unit =
   | Mul om -> Format.fprintf fmt "%a.*" pp_overflow_mode om
   | Shl om -> Format.fprintf fmt "%a.<<" pp_overflow_mode om
   | Shr om -> Format.fprintf fmt "%a.>>" pp_overflow_mode om
-  | AddChecked -> pp_string fmt "checked.+"
-  | SubChecked -> pp_string fmt "checked.-"
-  | MulChecked -> pp_string fmt "checked.*"
   | Cmp -> pp_string fmt "cmp"
 
 and pp_operand (env : fmt_env) (fmt : Format.formatter) (op : operand) : unit =
@@ -1743,11 +1744,9 @@ and pp_rvalue (env : fmt_env) (fmt : Format.formatter) (rv : rvalue) : unit =
         (pp_operand env) op2
   | Discriminant p ->
       Format.fprintf fmt "@discriminant(%s)" (place_to_string env p)
-  | Len (place, _, _) ->
-      Format.fprintf fmt "len(%s)" (place_to_string env place)
-  | Repeat (v, _, len, _) ->
+  | Repeat (v, count, _, _) ->
       Format.fprintf fmt "[%s; %s]" (operand_to_string env v)
-        (constant_expr_to_string env len)
+        (constant_expr_to_string env count)
   | Aggregate (akind, ops) -> pp_aggregate env akind fmt ops
 
 let pp_fn_operand (env : fmt_env) (fmt : Format.formatter) (op : fn_operand) :
@@ -1763,8 +1762,7 @@ let pp_fn_operand (env : fmt_env) (fmt : Format.formatter) (op : fn_operand) :
 
 let pp_call (env : fmt_env) (indent : string) (fmt : Format.formatter)
     (call : call) : unit =
-  Format.fprintf fmt "%s%a = %a(%a)" indent (pp_place env) call.dest
-    (pp_fn_operand env) call.func
+  Format.fprintf fmt "%s%a(%a)" indent (pp_fn_operand env) call.func
     (pp_sep_list ", " (pp_operand env))
     call.args
 
@@ -2306,8 +2304,9 @@ module Llbc = struct
             labels;
           Format.fprintf fmt "\n%s}" indent;
           pp_unwind_block env indent indent_incr fmt on_unwind
-    | Call (call, on_unwind) ->
-        Format.fprintf fmt "%a%a" (pp_print_call env indent) call
+    | Call (call, dest, on_unwind) ->
+        Format.fprintf fmt "%s%a = %a%a" indent (pp_place env) dest
+          (pp_print_call env "") call
           (pp_unwind_block env indent indent_incr)
           on_unwind
     | Panic (name, on_unwind) ->
@@ -2479,9 +2478,9 @@ module Ullbc = struct
     match st with
     | Goto bid -> Format.fprintf fmt "%sgoto %s" indent (block_id_to_string bid)
     | Switch (data, branches) -> pp_switch env indent fmt data branches
-    | Call (call, tgt, unwind) ->
-        Format.fprintf fmt "%a -> %s (unwind: %s)" (pp_print_call env indent)
-          call (block_id_to_string tgt)
+    | Call (call, dest, tgt, unwind) ->
+        Format.fprintf fmt "%s%a = %a -> %s (unwind: %s)" indent (pp_place env)
+          dest (pp_print_call env "") call (block_id_to_string tgt)
           (block_id_to_string unwind)
     | Drop (kind, p, fn_ptr, tgt, unwind) ->
         let kind =

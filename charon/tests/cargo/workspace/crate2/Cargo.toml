@@ -6,3 +6,6 @@ edition = "2021"
 
 [dependencies]
 crate1 = { path = "../crate1" }
+
+[build-dependencies]
+crate1 = { path = "../crate1" }

@@ -125,6 +125,14 @@ impl "impl_Clone_for_u8" Clone for u8 {
     non-dyn-compatible
 }
 
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
 // Full name: core::marker::Copy
 #[lang_item(Copy)]
 #[diagnostic_item("Copy")]
@@ -134,6 +142,14 @@ pub trait Copy<Self>
     proof ImpliedClause1: (Self: Clone)
     non-dyn-compatible
 }
+
+// Full name: core::intrinsics::add_with_overflow
+#[rustc_intrinsic]
+pub fn add_with_overflow<T>(x_1: T, y_2: T) -> (T, bool)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
+= <intrinsic:add_with_overflow>
 
 #[rustc_intrinsic]
 pub fn core::intrinsics::saturating_add<T>(a_1: T, b_2: T) -> T
@@ -171,14 +187,6 @@ pub fn wrapping_add(self: u8, rhs: u8) -> u8
     return
 }
 
-struct (_, _)<A, B>
-where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
-}
-
 // Full name: core::num::{u8}::overflowing_add
 pub fn overflowing_add(self: u8, rhs: u8) -> (u8, bool)
 {
@@ -199,7 +207,8 @@ pub fn overflowing_add(self: u8, rhs: u8) -> (u8, bool)
     _6 = copy self
     storage_live(_7)
     _7 = copy rhs
-    _5 = move _6 checked.+ move _7
+    _5 = add_with_overflow<u8>[{built_in impl Sized for u8}, impl_Copy_for_u8](move _6, move _7)
+    ↳⚡ undefined_behavior
     storage_dead(_7)
     storage_dead(_6)
     storage_live(a)

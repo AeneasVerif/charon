@@ -97,6 +97,7 @@ pub enum StatementKind {
     },
     Call {
         call: Call,
+        dest: Place,
         on_unwind: Block,
     },
     Switch {

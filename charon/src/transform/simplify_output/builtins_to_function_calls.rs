@@ -120,30 +120,32 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
                     call: Call {
                         func: FnOperand::Regular(mk_fn_ptr(ctx, fun_id, generics)),
                         args: vec![operand.clone()],
-                        dest: place.clone(),
                         safety: CallSafety::Inherit,
                     },
+                    dest: place.clone(),
                     on_unwind: Block::new_unreachable(statement.span),
                 };
             }
         }
         // Transform the array aggregates to function calls.
-        StatementKind::Assign(place, Rvalue::Repeat(operand, ty, len, ty_is_copy)) => {
-            let Some(ty_is_copy) = ty_is_copy else {
-                return;
-            };
+        StatementKind::Assign(
+            place,
+            Rvalue::Repeat {
+                operand,
+                count,
+                elem_is_sized,
+                elem_is_copy,
+            },
+        ) => {
             // We could avoid the clone operations below if we take the content of
             // the statement. In practice, this shouldn't have much impact.
             let Some(&fun_id) = std_items.item_map.get(&StdItem::ArrayRepeat) else {
                 return;
             };
-            let TyKind::Array(_, _, ty_is_sized) = place.ty().kind() else {
-                return;
-            };
             // `Copy`'s explicit `Clone` supertrait follows its optional implicit marker clause.
             // `array::repeat` has the corresponding `Clone` bound at the same position.
-            let clone_clause_id = TraitClauseId::new(usize::from(ty_is_sized.is_some()));
-            let Some(ty_is_clone) = ty_is_copy
+            let clone_clause_id = TraitClauseId::new(usize::from(elem_is_sized.is_some()));
+            let Some(ty_is_clone) = elem_is_copy
                 .clone()
                 .project_parent_clause(&ctx.translated, clone_clause_id)
             else {
@@ -151,9 +153,9 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
             };
             let generics = GenericArgs::new(
                 [].into(),
-                [ty.clone()].into(),
-                [len.clone()].into(),
-                ty_is_sized
+                [operand.ty().clone()].into(),
+                [count.clone()].into(),
+                elem_is_sized
                     .iter()
                     .cloned()
                     .map(PolyTraitRef::empty)
@@ -164,9 +166,9 @@ fn transform_operation(std_items: &Transform, ctx: &TransformCtx, statement: &mu
                 call: Call {
                     func: FnOperand::Regular(mk_fn_ptr(ctx, fun_id, generics)),
                     args: vec![operand.clone()],
-                    dest: place.clone(),
                     safety: CallSafety::Inherit,
                 },
+                dest: place.clone(),
                 on_unwind: Block::new_unreachable(statement.span),
             };
         }
@@ -400,11 +402,11 @@ impl<'a, 'b> IndexVisitor<'a, 'b> {
             let index_call = Call {
                 func: FnOperand::Regular(index_fn_ptr),
                 args,
-                dest: output_var.clone(),
                 safety: CallSafety::Inherit,
             };
             let kind = StatementKind::Call {
                 call: index_call,
+                dest: output_var.clone(),
                 on_unwind: Block::new_unreachable(self.ctx.span),
             };
             self.ctx
@@ -468,10 +470,6 @@ impl VisitBodyMut for IndexVisitor<'_, '_> {
         }
     }
 
-    fn visit_call(&mut self, x: &mut Call) -> ControlFlow<Infallible> {
-        self.visit_inner_with_mutability(x, true)
-    }
-
     fn visit_asm_operand(&mut self, x: &mut AsmOperand) -> ControlFlow<Infallible> {
         match x {
             AsmOperand::Out { .. } | AsmOperand::InOut { .. } => {
@@ -508,12 +506,14 @@ impl VisitBodyMut for IndexVisitor<'_, '_> {
                 kind: BorrowKind::Shared | BorrowKind::Shallow,
                 ..
             }
-            | Discriminant(..)
-            | Len(..) => self.visit_inner_with_mutability(x, false),
+            | Discriminant(..) => self.visit_inner_with_mutability(x, false),
 
-            Use(..) | NullaryOp(..) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Repeat(..) => {
-                self.visit_inner(x)
-            }
+            Use(..)
+            | NullaryOp(..)
+            | UnaryOp(..)
+            | BinaryOp(..)
+            | Aggregate(..)
+            | Repeat { .. } => self.visit_inner(x),
         }
     }
 

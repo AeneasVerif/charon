@@ -247,9 +247,6 @@ impl Display for BinOp {
             BinOp::Mul(mode) => write!(f, "{}.*", mode),
             BinOp::Div(mode) => write!(f, "{}./", mode),
             BinOp::Rem(mode) => write!(f, "{}.%", mode),
-            BinOp::AddChecked => write!(f, "checked.+"),
-            BinOp::SubChecked => write!(f, "checked.-"),
-            BinOp::MulChecked => write!(f, "checked.*"),
             BinOp::Shl(mode) => write!(f, "{}.<<", mode),
             BinOp::Shr(mode) => write!(f, "{}.>>", mode),
             BinOp::Cmp => write!(f, "cmp"),
@@ -353,10 +350,9 @@ impl Display for BorrowKind {
 
 impl<C: AstFormatter> FmtWithCtx<C> for Call {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let dest = self.dest.with_ctx(ctx);
         let func = self.func.with_ctx(ctx);
         let args = self.args.iter().map(|x| x.with_ctx(ctx)).format(", ");
-        write!(f, "{dest} = {func}({args})")
+        write!(f, "{func}({args})")
     }
 }
 
@@ -490,7 +486,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             CastKind::Scalar(tgt) => write!(f, "cast<{tgt}>"),
-            CastKind::PtrExposeProvenance => write!(f, "cast_expose"),
+            CastKind::PtrExposeProvenance(tgt) => write!(f, "cast_expose<{tgt}>"),
             CastKind::PtrWithExposedProvenance(tgt) => {
                 write!(f, "cast_with_exposed<{}>", tgt.with_ctx(ctx))
             }
@@ -2015,6 +2011,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
                 let values = values.iter().map(|v| v.with_ctx(ctx)).format(", ");
                 write!(f, "[{}]", values)
             }
+            ConstantExprKind::Repeat { value, count, .. } => {
+                write!(f, "[{}; {}]", value.with_ctx(ctx), count.with_ctx(ctx))
+            }
             ConstantExprKind::Global(global_ref) => {
                 write!(f, "{}", global_ref.with_ctx(ctx))
             }
@@ -2410,9 +2409,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                     }
                 }
             }
-            Rvalue::Len(place, ..) => write!(f, "len({})", place.with_ctx(ctx)),
-            Rvalue::Repeat(operand, _, len, _) => {
-                write!(f, "[{}; {}]", operand.with_ctx(ctx), len.with_ctx(ctx))
+            Rvalue::Repeat { operand, count, .. } => {
+                write!(f, "[{}; {}]", operand.with_ctx(ctx), count.with_ctx(ctx))
             }
         }
     }
@@ -2613,8 +2611,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 fmt_llbc_unwind_block(ctx, f, on_unwind)?;
                 Ok(())
             }
-            StatementKind::Call { call, on_unwind } => {
-                write!(f, "{}", call.with_ctx(ctx))?;
+            StatementKind::Call {
+                call,
+                dest,
+                on_unwind,
+            } => {
+                write!(f, "{} = {}", dest.with_ctx(ctx), call.with_ctx(ctx))?;
                 fmt_llbc_unwind_block(ctx, f, on_unwind)
             }
             StatementKind::Panic { name, on_unwind } => {
@@ -2768,11 +2770,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
             }
             TerminatorKind::Call {
                 call,
+                dest,
                 target,
                 on_unwind,
             } => {
+                let dest = dest.with_ctx(ctx);
                 let call = call.with_ctx(ctx);
-                write!(f, "{call} -> bb{target} (unwind: bb{on_unwind})",)
+                write!(f, "{dest} = {call} -> bb{target} (unwind: bb{on_unwind})",)
             }
             TerminatorKind::Drop {
                 kind,

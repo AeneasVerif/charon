@@ -254,16 +254,13 @@ and binop_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 13 ->
          let* _0 = overflow_mode_of_postcard ctx st in
          Ok (Rem _0)
-     | 14 -> Ok AddChecked
-     | 15 -> Ok SubChecked
-     | 16 -> Ok MulChecked
-     | 17 ->
+     | 14 ->
          let* _0 = overflow_mode_of_postcard ctx st in
          Ok (Shl _0)
-     | 18 ->
+     | 15 ->
          let* _0 = overflow_mode_of_postcard ctx st in
          Ok (Shr _0)
-     | 19 -> Ok Cmp
+     | 16 -> Ok Cmp
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and binder_of_postcard :
@@ -454,9 +451,8 @@ and call_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
   combine_error_msgs st __FUNCTION__
     (let* func = fn_operand_of_postcard ctx st in
      let* args = list_of_postcard operand_of_postcard ctx st in
-     let* dest = place_of_postcard ctx st in
      let* safety = call_safety_of_postcard ctx st in
-     Ok ({ func; args; dest; safety } : call))
+     Ok ({ func; args; safety } : call))
 
 and call_safety_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
     (call_safety, string) result =
@@ -479,7 +475,9 @@ and cast_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
      | 1 ->
          let* _0 = ty_of_postcard ctx st in
          Ok (CastRawPtr _0)
-     | 2 -> Ok CastPtrExposeProvenance
+     | 2 ->
+         let* _0 = integer_type_of_postcard ctx st in
+         Ok (CastPtrExposeProvenance _0)
      | 3 ->
          let* _0 = ty_of_postcard ctx st in
          Ok (CastPtrWithExposedProvenance _0)
@@ -640,17 +638,24 @@ and constant_expr_kind_of_postcard (ctx : of_postcard_ctx) (st : postcard_state)
          let* _1 = variant_id_of_postcard ctx st in
          Ok (CDiscriminant (_0, _1))
      | 23 ->
-         let* _0 = ty_of_postcard ctx st in
-         Ok (CSizeOf _0)
+         let* value = constant_expr_of_postcard ctx st in
+         let* count = constant_expr_of_postcard ctx st in
+         let* value_is_sized =
+           option_of_postcard trait_ref_of_postcard ctx st
+         in
+         Ok (CRepeat (value, count, value_is_sized))
      | 24 ->
          let* _0 = ty_of_postcard ctx st in
-         Ok (CAlignOf _0)
+         Ok (CSizeOf _0)
      | 25 ->
+         let* _0 = ty_of_postcard ctx st in
+         Ok (CAlignOf _0)
+     | 26 ->
          let* _0 = type_decl_ref_of_postcard ctx st in
          let* _1 = option_of_postcard variant_id_of_postcard ctx st in
          let* _2 = field_id_of_postcard ctx st in
          Ok (COffsetOf (_0, _1, _2))
-     | 26 ->
+     | 27 ->
          let* _0 = string_of_postcard ctx st in
          Ok (COpaque _0)
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
@@ -1277,16 +1282,11 @@ and rvalue_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
          let* _1 = list_of_postcard operand_of_postcard ctx st in
          Ok (Aggregate (_0, _1))
      | 8 ->
-         let* _0 = place_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         let* _2 = option_of_postcard constant_expr_of_postcard ctx st in
-         Ok (Len (_0, _1, _2))
-     | 9 ->
-         let* _0 = operand_of_postcard ctx st in
-         let* _1 = ty_of_postcard ctx st in
-         let* _2 = constant_expr_of_postcard ctx st in
-         let* _3 = option_of_postcard trait_ref_of_postcard ctx st in
-         Ok (Repeat (_0, _1, _2, _3))
+         let* operand = operand_of_postcard ctx st in
+         let* count = constant_expr_of_postcard ctx st in
+         let* elem_is_copy = trait_ref_of_postcard ctx st in
+         let* elem_is_sized = option_of_postcard trait_ref_of_postcard ctx st in
+         Ok (Repeat (operand, count, elem_is_copy, elem_is_sized))
      | _ -> Error ("unknown enum variant tag: " ^ string_of_int __tag))
 
 and scalar_type_of_postcard (ctx : of_postcard_ctx) (st : postcard_state) :
@@ -1727,9 +1727,10 @@ module Ullbc = struct
            Ok (Switch (data, branches))
        | 2 ->
            let* call = call_of_postcard ctx st in
+           let* dest = place_of_postcard ctx st in
            let* target = block_id_of_postcard ctx st in
            let* on_unwind = block_id_of_postcard ctx st in
-           Ok (Call (call, target, on_unwind))
+           Ok (Call (call, dest, target, on_unwind))
        | 3 ->
            let* kind = drop_kind_of_postcard ctx st in
            let* place = place_of_postcard ctx st in
@@ -1851,8 +1852,9 @@ module Llbc = struct
            Ok (InlineAsm (asm, fallthrough, labels, on_unwind))
        | 9 ->
            let* call = call_of_postcard ctx st in
+           let* dest = place_of_postcard ctx st in
            let* on_unwind = block_of_postcard ctx st in
-           Ok (Call (call, on_unwind))
+           Ok (Call (call, dest, on_unwind))
        | 10 ->
            let* data = switch_data_of_postcard ctx st in
            let* branches =

@@ -45,11 +45,11 @@ impl<'a> UllbcStatementTransformCtx<'a> {
             let call = Call {
                 func: FnOperand::Regular(fn_ptr.clone()),
                 args: Vec::from([Operand::Move(drop_arg)]),
-                dest: drop_ret,
                 safety: CallSafety::Safe, // drop_glue is unsafe, but here we know it's safe
             };
             term.kind = TerminatorKind::Call {
                 call,
+                dest: drop_ret,
                 target: *target,
                 on_unwind: *on_unwind,
             };

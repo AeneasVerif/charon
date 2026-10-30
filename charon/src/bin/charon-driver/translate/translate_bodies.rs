@@ -142,7 +142,7 @@ impl<'tcx, 'tctx, 'ictx, 'bctx> BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
     }
 
     /// Used for non-diverging intrinsics.
-    fn push_nounwind_call(&mut self, span: Span, call: Call) {
+    fn push_nounwind_call(&mut self, span: Span, dest: Place, call: Call) {
         let target = self.blocks.reserve_slot();
         let unwind_kind = self.kind.further_unwind_kind();
         let on_unwind = self
@@ -154,6 +154,7 @@ impl<'tcx, 'tctx, 'ictx, 'bctx> BlockTransCtx<'tcx, 'tctx, 'ictx, 'bctx> {
                 span,
                 TerminatorKind::Call {
                     call,
+                    dest,
                     target,
                     on_unwind,
                 },
@@ -479,7 +480,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
             let initialized_box = builder.new_var(Some("x".to_string()), box_array_ty.clone());
             let box_slice = builder.new_var(Some("y".to_string()), box_slice_ty.clone());
 
-            builder.call({
+            let call = {
                 let assume_init_fn = {
                     let path = NamePattern::parse("alloc::boxed::Box::assume_init").unwrap();
                     let assume_init_def_id = self
@@ -506,10 +507,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 Call {
                     func: FnOperand::Regular(assume_init_fn),
                     args: vec![Operand::Move(input)],
-                    dest: initialized_box.clone(),
                     safety: CallSafety::Inherit,
                 }
-            });
+            };
+            builder.call(initialized_box.clone(), call);
 
             builder.push_statement({
                 let (path, meta) = hax::compute_unsizing_metadata(
@@ -528,7 +529,7 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 )
             });
 
-            builder.call({
+            let call = {
                 let into_vec_fn = {
                     let path = NamePattern::parse("slice::into_vec").unwrap();
                     let into_vec_def_id = self.resolve_single_path(span, &path)?;
@@ -543,10 +544,10 @@ impl<'tcx> ItemTransCtx<'tcx, '_> {
                 Call {
                     func: FnOperand::Regular(into_vec_fn),
                     args: vec![Operand::Move(box_slice)],
-                    dest: return_place,
                     safety: CallSafety::Inherit,
                 }
-            });
+            };
+            builder.call(return_place, call);
             builder.build()
         };
 
@@ -808,42 +809,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         ))
     }
 
-    /// If all the input constants are identical and copyable, return an `Rvalue::Repeat`. This
-    /// simplifies some giant array constants.
-    fn try_reconstruct_array_repeat(
-        &mut self,
-        span: Span,
-        array_ty: &hax::Ty<'tcx>,
-        fields: impl ExactSizeIterator<Item = ConstantExpr>,
-    ) -> Result<Option<Rvalue>, Error> {
-        if fields.len() >= 2
-            && let Ok(field) = fields.dedup().exactly_one()
-        {
-            let hax::TyKind::Array(array) = array_ty.kind() else {
-                panic!("expected an array type")
-            };
-            let translated_array_ty = self.translate_ty(span, array_ty)?;
-            let TyKind::Array(elem_ty, len, _) = translated_array_ty.kind() else {
-                unreachable!()
-            };
-            let rust_elem_ty = array.item.rustc_args(&self.hax_state).type_at(0);
-            let Some(copy_proof) = hax::solve_copy(&self.hax_state, rust_elem_ty) else {
-                return Ok(None);
-            };
-            let ty_is_copy = self
-                .translate_trait_proof(span, &copy_proof)?
-                .no_bound_vars();
-            Ok(Some(Rvalue::Repeat(
-                Operand::Const(field),
-                elem_ty.clone(),
-                len.clone(),
-                Some(ty_is_copy),
-            )))
-        } else {
-            Ok(None)
-        }
-    }
-
     fn apply_user_type_projection(
         &mut self,
         span: Span,
@@ -1053,9 +1018,9 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             mir::BinOp::MulUnchecked => BinOp::Mul(OverflowMode::UB),
             mir::BinOp::Div => BinOp::Div(OverflowMode::UB),
             mir::BinOp::Rem => BinOp::Rem(OverflowMode::UB),
-            mir::BinOp::AddWithOverflow => BinOp::AddChecked,
-            mir::BinOp::SubWithOverflow => BinOp::SubChecked,
-            mir::BinOp::MulWithOverflow => BinOp::MulChecked,
+            mir::BinOp::AddWithOverflow
+            | mir::BinOp::SubWithOverflow
+            | mir::BinOp::MulWithOverflow => unreachable!("handled in `translate_statement`"),
             mir::BinOp::Shl => BinOp::Shl(OverflowMode::Wrap),
             mir::BinOp::ShlUnchecked => BinOp::Shl(OverflowMode::UB),
             mir::BinOp::Shr => BinOp::Shr(OverflowMode::Wrap),
@@ -1223,19 +1188,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 match &const_op.kind {
                     hax::ConstOperandKind::Value(constant) => {
                         let constant = self.translate_constant_expr(span, constant)?;
-                        // Avoid large array constant.
-                        if let ConstantExprKind::Array(fields) = constant.kind()
-                            && matches!(const_op.ty.kind(), hax::TyKind::Array(_))
-                            && let Some(repeat) = self.try_reconstruct_array_repeat(
-                                span,
-                                &const_op.ty,
-                                fields.iter().cloned(),
-                            )?
-                        {
-                            let local = self.fresh_var(None, constant.ty().clone());
-                            self.insert_assn_stmt(local.clone(), repeat);
-                            return Ok(Operand::Move(local));
-                        }
                         Operand::Const(constant)
                     }
                     hax::ConstOperandKind::Promoted(item) => {
@@ -1283,21 +1235,48 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let place = self.translate_place(span, place)?;
                 Ok(Rvalue::Use(Operand::Copy(place), WithRetag::No))
             }
-            mir::Rvalue::Repeat(operand, cnst) => {
-                let ty_is_copy = {
+            mir::Rvalue::Repeat(operand, _) => {
+                let copy_proof = {
                     let rust_ty = operand.ty(self.local_decls, self.tcx);
                     hax::solve_copy(&self.hax_state, rust_ty)
-                        .map(|proof| {
-                            self.translate_trait_proof(span, &proof)
-                                .map(|p| p.no_bound_vars())
-                        })
-                        .transpose()?
                 };
-                let c = self.translate_ty_constant_expr(span, cnst)?;
-                let op = self.translate_operand(span, operand)?;
-                let ty = op.ty().clone();
-                // Remark: we could desugar this into a function call later.
-                Ok(Rvalue::Repeat(op, ty, c, ty_is_copy))
+                let operand = self.translate_operand(span, operand)?;
+                let TyKind::Array(elem_ty, len, ty_is_sized) = tgt_ty.kind() else {
+                    raise_error!(self, span, "array repeat has non-array type")
+                };
+                if let Some(copy_proof) = copy_proof {
+                    let elem_is_copy = self
+                        .translate_trait_proof(span, &copy_proof)?
+                        .no_bound_vars();
+                    Ok(Rvalue::Repeat {
+                        operand,
+                        count: len.clone(),
+                        elem_is_copy,
+                        elem_is_sized: ty_is_sized.clone(),
+                    })
+                } else if let Operand::Const(value) = operand {
+                    let value = ConstantExpr::new(
+                        ConstantExprKind::Repeat {
+                            value,
+                            count: len.clone(),
+                            value_is_sized: ty_is_sized.clone(),
+                        },
+                        tgt_ty.clone(),
+                    );
+                    Ok(Rvalue::Use(Operand::Const(value), WithRetag::Yes))
+                } else if len.as_usize_literal() == Some(1) {
+                    // A single element can be moved into the array without being `Copy`.
+                    Ok(Rvalue::Aggregate(
+                        AggregateKind::Array(elem_ty.clone(), len.clone(), ty_is_sized.clone()),
+                        vec![operand],
+                    ))
+                } else {
+                    raise_error!(
+                        self,
+                        span,
+                        "Rvalue::Repeat found with an operand that is neither constant nor `Copy`"
+                    )
+                }
             }
             mir::Rvalue::Ref(_region, borrow_kind, place) => {
                 let place = self.translate_place(span, place)?;
@@ -1349,7 +1328,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                     )
                     | mir::CastKind::FnPtrToPtr => CastKind::RawPtr(tgt_ty.clone()),
 
-                    mir::CastKind::PointerExposeProvenance => CastKind::PtrExposeProvenance,
+                    mir::CastKind::PointerExposeProvenance => {
+                        let tgt_ty = *tgt_ty.kind().as_scalar().unwrap().as_integer().unwrap();
+                        CastKind::PtrExposeProvenance(tgt_ty)
+                    }
                     mir::CastKind::PointerWithExposedProvenance => {
                         CastKind::PtrWithExposedProvenance(tgt_ty.clone())
                     }
@@ -1508,26 +1490,29 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 match aggregate_kind {
                     mir::AggregateKind::Array(ty) => {
                         let t_ty = self.translate_rustc_ty(span, ty)?;
-                        if operands_t.iter().all(Operand::is_const) {
-                            let rust_array_ty =
-                                ty::Ty::new_array(self.tcx, *ty, operands_t.len() as u64);
-                            let hax_array_ty = self.catch_sinto(span, &rust_array_ty)?;
-                            let fields = operands_t
-                                .iter()
-                                .map(|operand| operand.as_const().unwrap())
-                                .cloned();
-                            if let Some(repeat) =
-                                self.try_reconstruct_array_repeat(span, &hax_array_ty, fields)?
-                            {
-                                return Ok(repeat);
-                            }
-                        }
-                        let c = ConstantExpr::mk_usize(operands_t.len() as u128);
+                        let len = ConstantExpr::mk_usize(operands_t.len() as u128);
                         let TyKind::Array(_, _, ty_is_sized) = tgt_ty.kind() else {
                             raise_error!(self, span, "array aggregate has non-array type")
                         };
+                        if operands_t.len() >= 2 && operands_t.iter().all(Operand::is_const) {
+                            let fields =
+                                operands_t.iter().map(|operand| operand.as_const().unwrap());
+                            if let Ok(field) = fields.dedup().exactly_one()
+                                && let Some(copy_proof) = hax::solve_copy(&self.hax_state, *ty)
+                            {
+                                let ty_is_copy = self
+                                    .translate_trait_proof(span, &copy_proof)?
+                                    .no_bound_vars();
+                                return Ok(Rvalue::Repeat {
+                                    operand: Operand::Const(field.clone()),
+                                    count: len,
+                                    elem_is_sized: ty_is_sized.clone(),
+                                    elem_is_copy: ty_is_copy,
+                                });
+                            }
+                        }
                         Ok(Rvalue::Aggregate(
-                            AggregateKind::Array(t_ty, c, ty_is_sized.clone()),
+                            AggregateKind::Array(t_ty, len, ty_is_sized.clone()),
                             operands_t,
                         ))
                     }
@@ -1613,6 +1598,32 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
 
         self.span = span;
         let kind: Option<StatementKind> = match &statement.kind {
+            mir::StatementKind::Assign((
+                place,
+                mir::Rvalue::BinaryOp(
+                    binop @ (mir::BinOp::AddWithOverflow
+                    | mir::BinOp::SubWithOverflow
+                    | mir::BinOp::MulWithOverflow),
+                    (left, right),
+                ),
+            )) => {
+                // Translate these binops to intrinsic calls to make binops easier to typecheck:
+                // their return type is a tuple, which we monomorphize hence it's hard to compute
+                // ourselves.
+                let name = match binop {
+                    mir::BinOp::AddWithOverflow => sym::add_with_overflow,
+                    mir::BinOp::SubWithOverflow => sym::sub_with_overflow,
+                    mir::BinOp::MulWithOverflow => sym::mul_with_overflow,
+                    _ => unreachable!(),
+                };
+                let ty = left.ty(self.local_decls, self.tcx);
+                let generic_args = self.tcx.mk_args(&[ty.into()]);
+                let dest = self.translate_place(span, place)?;
+                let left = self.translate_operand(span, left)?;
+                let right = self.translate_operand(span, right)?;
+                self.translate_intrinsic_call(span, dest, name, generic_args, vec![left, right])?;
+                None
+            }
             mir::StatementKind::Assign((place, rvalue)) => {
                 let t_place = self.translate_place(span, place)?;
                 let t_rvalue = self.translate_mir_rvalue(span, rvalue, t_place.ty())?;
@@ -1636,8 +1647,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
             }
             mir::StatementKind::Intrinsic(mir::NonDivergingIntrinsic::Assume(op)) => {
                 let op = self.translate_operand(span, op)?;
+                let dest = self.locals.new_var(None, Ty::mk_unit());
                 self.translate_intrinsic_call(
                     span,
+                    dest,
                     sym::assume,
                     ty::GenericArgs::empty(),
                     vec![op],
@@ -1655,8 +1668,10 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
                 let src = self.translate_operand(span, src)?;
                 let dst = self.translate_operand(span, dst)?;
                 let count = self.translate_operand(span, count)?;
+                let dest = self.locals.new_var(None, Ty::mk_unit());
                 self.translate_intrinsic_call(
                     span,
+                    dest,
                     sym::copy_nonoverlapping,
                     generic_args,
                     vec![src, dst, count],
@@ -1723,6 +1738,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
     fn translate_intrinsic_call(
         &mut self,
         span: Span,
+        dest: Place,
         name: Symbol,
         generic_args: ty::GenericArgsRef<'tcx>,
         args: Vec<Operand>,
@@ -1734,13 +1750,12 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         let item = hax::ItemRef::translate(self.hax_state_with_id(), def_id, generic_args);
         let func =
             FnOperand::Regular(self.translate_fn_ptr(span, &item, TransItemSourceKind::Fun)?);
-        let dest = self.locals.new_var(None, Ty::mk_unit());
         self.push_nounwind_call(
             span,
+            dest,
             Call {
                 func,
                 args,
-                dest,
                 safety: CallSafety::Inherit,
             },
         );
@@ -2133,7 +2148,6 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
         let call = Call {
             func: fn_operand,
             args,
-            dest: lval,
             safety,
         };
 
@@ -2148,6 +2162,7 @@ impl<'tcx> BlockTransCtx<'tcx, '_, '_, '_> {
 
         Ok(TerminatorKind::Call {
             call,
+            dest: lval,
             target,
             on_unwind,
         })

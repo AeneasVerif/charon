@@ -159,10 +159,8 @@ struct PendingShiftCheck {
 /// Rustc inserts dynamic checks during MIR lowering. They all end in an `Assert` statement (and
 /// this is the only use of this statement).
 fn remove_dynamic_checks(
-    ctx: &mut TransformCtx,
     uses: &LocalUses,
     block_id: BlockId,
-    locals: &mut Locals,
     statements: &mut [Statement],
     pending_shift_checks: &mut Vec<PendingShiftCheck>,
 ) {
@@ -496,124 +494,6 @@ fn remove_dynamic_checks(
             }
         }
 
-        // Overflow checks for addition/subtraction/multiplication. They look like:
-        // ```text
-        //   r := x checked.+ y;
-        //   assert(move r.1 == false);
-        //   ...
-        //   z := move r.0;
-        // ```
-        // We replace that with:
-        // ```text
-        // z := x panic.+ y;
-        // ```
-        //
-        // But sometimes, because of constant promotion, we end up with a lone checked operation
-        // without assert. In that case we replace it with its wrapping equivalent.
-        [
-            Statement {
-                kind:
-                    StatementKind::Assign(
-                        tuple,
-                        Rvalue::BinaryOp(
-                            binop @ (BinOp::AddChecked | BinOp::SubChecked | BinOp::MulChecked),
-                            _,
-                            _,
-                        ),
-                    ),
-                ..
-            },
-            rest @ ..,
-        ] if let Some(tuple_local_id) = tuple.as_local()
-            && !used_outside_block(tuple_local_id) =>
-        {
-            // Check if the result boolean is used in any other way than just getting the integer
-            // result.
-            let mut uses_of_tuple = 0;
-            let mut uses_of_integer = 0;
-            if *tuple == locals.return_place() {
-                uses_of_tuple += 1; // The return place counts as a use.
-            }
-            for stmt in rest.iter_mut() {
-                stmt.dyn_visit_in_body(|p: &Place| {
-                    if p == tuple {
-                        uses_of_tuple += 1;
-                    }
-                    if let Some((sub, ProjectionElem::Field(_, fid))) = p.as_projection()
-                        && sub.ty().is_tuple()
-                        && fid.index() == 0
-                        && sub == tuple
-                    {
-                        uses_of_integer += 1;
-                    }
-                });
-            }
-            // Check if the operation is followed by an assert.
-            let followed_by_assert = if let [
-                Statement {
-                    kind:
-                        StatementKind::Assert {
-                            assert:
-                                Assert {
-                                    cond: Operand::Move(assert_cond),
-                                    expected: false,
-                                    check_kind: Some(BuiltinAssertKind::Overflow(..)),
-                                },
-                            ..
-                        },
-                    ..
-                },
-                ..,
-            ] = rest
-                && let Some((sub, ProjectionElem::Field(_, fid))) = assert_cond.as_projection()
-                && sub.ty().is_tuple()
-                && fid.index() == 1
-                && sub == tuple
-            {
-                true
-            } else {
-                false
-            };
-            if uses_of_tuple != uses_of_integer && !followed_by_assert {
-                // The tuple is used either directly or for the overflow check; we change nothing.
-                return;
-            }
-
-            if followed_by_assert {
-                // We have a compiler-emitted assert. We replace the operation with one that has
-                // panic-on-overflow semantics.
-                *binop = binop.with_overflow(OverflowMode::Panic);
-                // The failure behavior is part of the binop now, so we remove the assert.
-                rest[0].kind = StatementKind::Nop;
-            } else {
-                // The tuple is used exclusively to access the integer result, so we replace the
-                // operation with wrapping semantics.
-                *binop = binop.with_overflow(OverflowMode::Wrap);
-            }
-            // Fixup the local type.
-            let result_local = &mut locals.locals[tuple_local_id];
-            result_local.ty = result_local
-                .ty
-                .as_tuple_fields(&ctx.translated)
-                .swap_remove(0);
-            // Fixup the place type.
-            let new_result_place = locals.place_for_var(tuple_local_id);
-            // Replace uses of `r.0` with `r`.
-            for stmt in rest.iter_mut() {
-                stmt.dyn_visit_in_body_mut(|p: &mut Place| {
-                    if let Some((sub, ProjectionElem::Field(_, fid))) = p.as_projection()
-                        && sub.ty().is_tuple()
-                        && sub == tuple
-                    {
-                        assert_eq!(fid.index(), 0);
-                        *p = new_result_place.clone()
-                    }
-                });
-            }
-            *tuple = new_result_place;
-            return;
-        }
-
         _ => return,
     };
 
@@ -729,6 +609,146 @@ fn resolve_pending_shift_check(body: &mut ExprBody, check: PendingShiftCheck) {
         StatementKind::Assign(dest, Rvalue::Use(Operand::Move(fresh), WithRetag::No));
 }
 
+/// Overflow checks for addition/subtraction/multiplication. They look like:
+/// ```text
+///   r := x checked.+ y;
+///   assert(move r.1 == false);
+///   ...
+///   z := move r.0;
+/// ```
+/// We replace that with:
+/// ```text
+/// z := x panic.+ y;
+/// ```
+///
+/// Also sometimes, because of constant promotion, we end up with a lone checked operation without
+/// assert. In that case we replace it with its wrapping equivalent.
+fn reconstruct_overflow_calls(ctx: &TransformCtx, body: &mut ExprBody) {
+    let mut predecessors = body.body.map_ref(|_| 0usize);
+    // Count the uses of `r` and `r.0`.
+    let mut tuple_mentions = body.locals.locals.map_ref(|_| 0usize);
+    let mut integer_uses = body.locals.locals.map_ref(|_| 0usize);
+    for block in &body.body {
+        for target in block.terminator.targets() {
+            predecessors[target] += 1;
+        }
+        block.dyn_visit_in_body(|place: &Place| {
+            if let Some(local) = place.as_local() {
+                tuple_mentions[local] += 1;
+            }
+        });
+        block.dyn_visit_in_body(|operand: &Operand| {
+            if let Operand::Move(place) | Operand::Copy(place) = operand
+                && let Some((base, ProjectionElem::Field(None, field))) = place.as_projection()
+                && let Some(local) = base.as_local()
+                && field.index() == 0
+            {
+                integer_uses[local] += 1;
+            }
+        });
+    }
+
+    let mut rewritten_locals = HashSet::default();
+    for id in body.body.indices() {
+        let block = &body.body[id];
+        let TerminatorKind::Call {
+            call, dest, target, ..
+        } = &block.terminator.kind
+        else {
+            continue;
+        };
+
+        let Some(local) = dest.as_local() else {
+            continue;
+        };
+        let target = *target;
+        // Return and argument locals must keep the types from the function signature.
+        if body.locals.is_return_or_arg(local) {
+            continue;
+        }
+
+        let FnOperand::Regular(fn_ptr) = &call.func else {
+            continue;
+        };
+        let FnPtrKind::Fun(fun_id) = fn_ptr.kind.as_ref() else {
+            continue;
+        };
+        let Some(decl) = ctx.translated.fun_decls.get(*fun_id) else {
+            continue;
+        };
+        let Body::Intrinsic { name, .. } = &decl.body else {
+            continue;
+        };
+        let binop = match name.as_str() {
+            "add_with_overflow" => BinOp::Add(OverflowMode::Wrap),
+            "sub_with_overflow" => BinOp::Sub(OverflowMode::Wrap),
+            "mul_with_overflow" => BinOp::Mul(OverflowMode::Wrap),
+            _ => continue,
+        };
+        let [left, right] = call.args.as_slice() else {
+            continue;
+        };
+
+        let continuation = &body.body[target];
+        let followed_by_assert = predecessors[target] == 1
+            && matches!(
+                continuation.statements.first(),
+                Some(Statement {
+                    kind: StatementKind::Assert {
+                        assert: Assert {
+                            cond: Operand::Move(cond),
+                            expected: false,
+                            check_kind: Some(BuiltinAssertKind::Overflow(..)),
+                        },
+                        ..
+                    },
+                    ..
+                }) if matches!(cond.as_projection(), Some((base, ProjectionElem::Field(None, field)))
+                    if base == dest && field.index() == 1)
+            );
+        // Every use of the integer field also counts as a mention of the tuple local. The other
+        // mentions allowed are: its assignment, and the assert. If these are the only uses, we can
+        // replace the operation.
+        if tuple_mentions[local] != integer_uses[local] + 1 + usize::from(followed_by_assert) {
+            continue;
+        }
+        let binop = if followed_by_assert {
+            binop.with_overflow(OverflowMode::Panic)
+        } else {
+            binop
+        };
+        let rvalue = Rvalue::BinaryOp(binop, left.clone(), right.clone());
+
+        // All uses of the tuple are accounted for, so we can give its local the scalar type.
+        body.locals.locals[local].ty = left.ty().clone();
+        let scalar = body.locals.place_for_var(local);
+        rewritten_locals.insert(local);
+
+        let block = &mut body.body[id];
+        let span = block.terminator.span;
+        block.statements.push(Statement {
+            span,
+            kind: StatementKind::Assign(scalar, rvalue),
+            comments_before: std::mem::take(&mut block.terminator.comments_before),
+        });
+        block.terminator.kind = TerminatorKind::Goto { target };
+        if followed_by_assert {
+            let continuation = &mut body.body[target];
+            continuation.statements[0].kind = StatementKind::Nop;
+        }
+    }
+    body.body.dyn_visit_in_body_mut(|place: &mut Place| {
+        if let Some((base, ProjectionElem::Field(None, field))) = place.as_projection()
+            && let Some(local) = base.as_local()
+            && rewritten_locals.contains(&local)
+            && field.index() == 0
+        {
+            // Recompute the place because it has changed type.
+            *place = body.locals.place_for_var(local);
+        }
+    });
+}
+
 pub struct Transform;
 impl UllbcPass for Transform {
     fn should_run(&self, options: &crate::options::TranslateOptions) -> bool {
@@ -736,10 +756,11 @@ impl UllbcPass for Transform {
     }
 
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
+        reconstruct_overflow_calls(ctx, b);
         let local_uses: LocalUses = compute_uses(b);
         let mut pending_shift_checks = Vec::new();
-        b.transform_sequences_fwd(|id, locals, seq| {
-            remove_dynamic_checks(ctx, &local_uses, id, locals, seq, &mut pending_shift_checks);
+        b.transform_sequences_fwd(|id, _locals, seq| {
+            remove_dynamic_checks(&local_uses, id, seq, &mut pending_shift_checks);
             Vec::new()
         });
         // Resolve the checks whose shift lives in a later block (see [PendingShiftCheck]).

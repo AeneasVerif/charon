@@ -52,7 +52,7 @@ fn main()
     storage_live(_4)
     storage_live(_5)
     _5 = copy z
-    _4 = cast_expose(move _5)
+    _4 = cast_expose<usize>(move _5)
     storage_dead(_5)
     storage_dead(_4)
     _0 = ()

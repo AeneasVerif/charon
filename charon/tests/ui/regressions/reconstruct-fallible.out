@@ -1,11 +1,16 @@
 # Final LLBC before serialization:
 
-struct () {}
-
 struct (_, _)::<usize, bool> {
   _0: usize,
   _1: bool,
 }
+
+// Full name: core::intrinsics::add_with_overflow::<usize>
+#[rustc_intrinsic]
+pub fn add_with_overflow::<usize>(x_1: usize, y_2: usize) -> (usize, bool)
+= <intrinsic:add_with_overflow>
+
+struct () {}
 
 // Full name: test_crate::other
 fn other()
@@ -69,7 +74,8 @@ fn must_preserve_tuple()
     storage_live(_0)
     _0 = ()
     storage_live(z)
-    z = const 0usize checked.+ const 0usize
+    z = add_with_overflow::<usize>(const 0usize, const 0usize)
+    ↳⚡ undefined_behavior
     storage_live(_2)
     _2 = other()
     ↳⚡ unwind_continue
@@ -90,7 +96,7 @@ fn must_preserve_tuple()
 fn can_erase_check()
 {
     let _0: (); // return
-    let z: (usize, bool); // local
+    let z: usize; // local
     let _2: (); // anonymous local
     let _3: (); // anonymous local
     let _4: usize; // anonymous local
@@ -98,14 +104,14 @@ fn can_erase_check()
     storage_live(_0)
     _0 = ()
     storage_live(z)
-    z = const 0usize checked.+ const 0usize
+    z = const 0usize wrap.+ const 0usize
     storage_live(_2)
     _2 = other()
     ↳⚡ unwind_continue
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy z._0
+    _4 = copy z
     _3 = sink_int(move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
@@ -127,7 +133,8 @@ fn must_preserve_overflow_flag()
     storage_live(_0)
     _0 = ()
     storage_live(z)
-    z = const 0usize checked.+ const 0usize
+    z = add_with_overflow::<usize>(const 0usize, const 0usize)
+    ↳⚡ undefined_behavior
     storage_live(_2)
     _2 = other()
     ↳⚡ unwind_continue
@@ -158,7 +165,8 @@ fn mixed_field0_and_cross_block_tuple()
     storage_live(_0)
     _0 = ()
     storage_live(z)
-    z = const 0usize checked.+ const 0usize
+    z = add_with_overflow::<usize>(const 0usize, const 0usize)
+    ↳⚡ undefined_behavior
     storage_live(_2)
     storage_live(_3)
     _3 = copy z._0
@@ -186,7 +194,7 @@ fn mixed_field0_and_cross_block_tuple()
 fn can_erase_check_multi_block()
 {
     let _0: (); // return
-    let z: (usize, bool); // local
+    let z: usize; // local
     let _2: (); // anonymous local
     let _3: (); // anonymous local
     let _4: usize; // anonymous local
@@ -197,14 +205,14 @@ fn can_erase_check_multi_block()
     storage_live(_0)
     _0 = ()
     storage_live(z)
-    z = const 0usize checked.+ const 0usize
+    z = const 0usize wrap.+ const 0usize
     storage_live(_2)
     _2 = other()
     ↳⚡ unwind_continue
     storage_dead(_2)
     storage_live(_3)
     storage_live(_4)
-    _4 = copy z._0
+    _4 = copy z
     _3 = sink_int(move _4)
     ↳⚡ unwind_continue
     storage_dead(_4)
@@ -215,7 +223,7 @@ fn can_erase_check_multi_block()
     storage_dead(_5)
     storage_live(_6)
     storage_live(_7)
-    _7 = copy z._0
+    _7 = copy z
     _6 = sink_int(move _7)
     ↳⚡ unwind_continue
     storage_dead(_7)

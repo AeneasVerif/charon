@@ -1,6 +1,7 @@
 //! Functions to translate constants to LLBC.
 use crate::hax;
 use crate::hax::state::UnderOwnerState;
+use itertools::Itertools;
 use rustc_middle::ty;
 
 use super::translate_ctx::*;
@@ -143,7 +144,18 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     .map(|x| self.translate_constant_expr(span, x))
                     .try_collect()?;
 
-                ConstantExprKind::Array(fields)
+                if let TyKind::Array(_, count, value_is_sized) = ty.kind()
+                    && fields.len() >= 2
+                    && let Ok(value) = fields.iter().dedup().exactly_one()
+                {
+                    ConstantExprKind::Repeat {
+                        value: value.clone(),
+                        count: count.clone(),
+                        value_is_sized: value_is_sized.clone(),
+                    }
+                } else {
+                    ConstantExprKind::Array(fields)
+                }
             }
             hax::ConstantExprKind::Tuple { fields } => {
                 let fields: IndexVec<FieldId, ConstantExpr> = fields

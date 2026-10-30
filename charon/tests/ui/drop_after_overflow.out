@@ -1,9 +1,5 @@
 # Final ULLBC before serialization:
 
-// Full name: core::fmt::Arguments
-#[lang_item(FormatArguments)]
-pub opaque type Arguments<'a>
-
 // Full name: core::marker::MetaSized
 #[fundamental]
 #[lang_item(MetaSized)]
@@ -18,6 +14,31 @@ pub trait Sized<Self>
     non-dyn-compatible
 }
 
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    proof ImpliedClause0: (Self: Sized)
+    fn clone<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::impls::{impl Clone for u8}::clone
+pub fn clone<'_0>(_1: &'_0 u8) -> u8
+= <opaque>
+
+// Full name: core::clone::impls::{impl Clone for u8}
+impl "impl_Clone_for_u8" Clone for u8 {
+    proof ImpliedClause0: (u8: Sized) = {built_in impl Sized for u8}
+    fn clone<'_0_1> = clone<'_0_1>
+    non-dyn-compatible
+}
+
+// Full name: core::fmt::Arguments
+#[lang_item(FormatArguments)]
+pub opaque type Arguments<'a>
+
 struct str {
   _0: [u8],
 }
@@ -25,6 +46,39 @@ struct str {
 // Full name: core::fmt::{Arguments<'a>}::from_str
 pub fn from_str<'a>(_1: &'static str) -> Arguments<'a>
 = <opaque>
+
+struct (_, _)<A, B>
+where
+    TraitClause0: (A: Sized),
+{
+  _0: A,
+  _1: B,
+}
+
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: MetaSized)
+    proof ImpliedClause1: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::intrinsics::add_with_overflow
+#[rustc_intrinsic]
+pub fn add_with_overflow<T>(x_1: T, y_2: T) -> (T, bool)
+where
+    TraitClause0: (T: Sized),
+    TraitClause1: (T: Copy),
+= <intrinsic:add_with_overflow>
+
+// Full name: core::marker::{impl Copy for u8}
+impl "impl_Copy_for_u8" Copy for u8 {
+    proof ImpliedClause0: (u8: MetaSized) = {built_in impl MetaSized for u8}
+    proof ImpliedClause1: (u8: Clone) = impl_Clone_for_u8
+    non-dyn-compatible
+}
 
 struct () {}
 
@@ -46,14 +100,6 @@ where
 // Full name: std::io::stdio::_print
 pub fn _print<'_0>(_1: Arguments<'_0>)
 = <opaque>
-
-struct (_, _)<A, B>
-where
-    TraitClause0: (A: Sized),
-{
-  _0: A,
-  _1: B,
-}
 
 // Full name: test_crate::Foo
 struct Foo {}
@@ -150,11 +196,14 @@ fn main()
         f = Foo {  };
         fake_read(f);
         storage_live(_2);
-        _3 = const 255u8 checked.+ const 1u8;
-        assert assert(move _3._1 == false) (overflow) -> bb1 (unwind: bb4);
+        _3 = add_with_overflow<u8>[{built_in impl Sized for u8}, impl_Copy_for_u8](const 255u8, const 1u8) -> bb1 (unwind: bb8);
     }
 
     bb1: {
+        assert assert(move _3._1 == false) (overflow) -> bb2 (unwind: bb5);
+    }
+
+    bb2: {
         _2 = move _3._0;
         storage_dead(_2);
         storage_live(f_ref);
@@ -162,28 +211,32 @@ fn main()
         fake_read(f_ref);
         _0 = ();
         storage_dead(f_ref);
-        conditional_drop[drop_glue<'3>] f -> bb2 (unwind: bb3);
+        conditional_drop[drop_glue<'3>] f -> bb3 (unwind: bb4);
     }
 
-    bb2: {
+    bb3: {
         storage_dead(f);
         return;
     }
 
-    bb3 (cleanup): {
-        unwind_continue;
-    }
-
     bb4 (cleanup): {
-        conditional_drop[drop_glue<'2>] f -> bb5 (unwind: bb6);
+        unwind_continue;
     }
 
     bb5 (cleanup): {
+        conditional_drop[drop_glue<'2>] f -> bb6 (unwind: bb7);
+    }
+
+    bb6 (cleanup): {
         unwind_continue;
     }
 
-    bb6 (terminate): {
+    bb7 (terminate): {
         unwind_terminate;
+    }
+
+    bb8 (cleanup): {
+        undefined_behavior;
     }
 }
 

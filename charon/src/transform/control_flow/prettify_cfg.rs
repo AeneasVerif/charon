@@ -32,7 +32,7 @@ impl Transform {
         }
         if let [
             Statement {
-                kind: StatementKind::Call { call, .. },
+                kind: StatementKind::Call { dest, .. },
                 ..
             },
             Statement {
@@ -44,7 +44,7 @@ impl Transform {
             },
             ..,
         ] = seq
-            && let Some(local_id) = call.dest.as_local()
+            && let Some(local_id) = dest.as_local()
             && locals[local_id].ty.kind().is_never()
         {
             *second_abort = StatementKind::Nop;

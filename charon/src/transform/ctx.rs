@@ -277,35 +277,21 @@ pub trait BodyTransformCtx: Sized {
         from_end: bool,
     ) -> Operand {
         if from_end {
-            // `storage_live(len_var)`
-            // `len_var = len(p)`
-            let len_var = self.fresh_var(None, Ty::mk_usize());
             let len = match len_place.ty().kind() {
-                TyKind::Array(_, len, _) => Some(len.clone()),
-                TyKind::Slice(..) => None,
+                TyKind::Array(_, len, _) => Operand::Const(len.clone()),
+                TyKind::Slice(..) => self.compute_place_metadata(len_place),
                 _ => panic!(
                     "called `compute_subslice_end_idx` on something that isn't an array or slice: {:?}",
                     len_place.ty()
                 ),
             };
-            self.insert_assn_stmt(
-                len_var.clone(),
-                Rvalue::Len(len_place.clone(), len_place.ty().clone(), len),
-            );
-
             // `storage_live(index_var)`
-            // `index_var = len_var - last_arg`
-            // `storage_dead(len_var)`
+            // `index_var = len - last_arg`
             let index_var = self.fresh_var(None, Ty::mk_usize());
             self.insert_assn_stmt(
                 index_var.clone(),
-                Rvalue::BinaryOp(
-                    BinOp::Sub(OverflowMode::UB),
-                    Operand::Copy(len_var.clone()),
-                    last_arg,
-                ),
+                Rvalue::BinaryOp(BinOp::Sub(OverflowMode::UB), len, last_arg),
             );
-            self.insert_storage_dead_stmt(len_var.local_id().unwrap());
             Operand::Copy(index_var)
         } else {
             last_arg

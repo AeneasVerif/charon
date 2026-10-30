@@ -1,11 +1,118 @@
 # Final LLBC before serialization:
 
+struct () {}
+
+// Full name: core::marker::Destruct
+#[lang_item(Destruct)]
+pub trait Destruct<Self>
+{
+    fn drop_glue<'_0_1>;
+    non-dyn-compatible
+}
+
+// Full name: core::clone::Clone
+#[lang_item(Clone)]
+#[diagnostic_item("Clone")]
+pub trait Clone<Self>
+{
+    fn clone<'_0_1>;
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (Self: Destruct)> = core::clone::Clone::clone_from<'_0_1, '_1_1, Self>[Self, TraitClause0_1]
+    non-dyn-compatible
+}
+
+pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(self: &'_0 mut Self, source: &'_1 Self)
+where
+    TraitClause0: (Self: Clone),
+    TraitClause1: (Self: Destruct),
+    TypeOutlives0: Self: '_0,
+    TypeOutlives1: Self: '_1,
+{
+    let _0: (); // return
+    let self: &'1 mut Self; // arg #1
+    let source: &'3 Self; // arg #2
+    let _3: Self; // anonymous local
+    let _4: &'4 Self; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &(*source)
+    _3 = TraitClause0::clone<'5>(move _4)
+    ↳⚡ storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_4)
+    drop[TraitClause1::drop_glue<'6>] (*self)
+    ↳⚡ (*self) = move _3
+        storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    (*self) = move _3
+    _0 = ()
+    storage_dead(_3)
+    storage_dead(source)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::clone::impls::{impl Clone for u128}::clone
+pub fn clone<'_0>(self: &'_0 u128) -> u128
+{
+    let _0: u128; // return
+    let self: &'1 u128; // arg #1
+
+    storage_live(_0)
+    _0 = copy (*self)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::clone::impls::{impl Clone for u128}::clone_from
+pub fn impl_Clone_for_u128::clone_from<'_0, '_1>(self: &'_0 mut u128, source: &'_1 u128)
+where
+    TraitClause0: (u128: Destruct),
+{
+    let _0: (); // return
+    let self: &'1 mut u128; // arg #1
+    let source: &'3 u128; // arg #2
+    let _3: u128; // anonymous local
+    let _4: &'4 u128; // anonymous local
+
+    storage_live(_0)
+    _0 = ()
+    storage_live(_3)
+    storage_live(_4)
+    _4 = &(*source)
+    _3 = clone<'5>(move _4)
+    ↳⚡ storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    storage_dead(_4)
+    drop[TraitClause0::drop_glue<'6>] (*self)
+    ↳⚡ (*self) = move _3
+        storage_dead(source)
+        storage_dead(self)
+        unwind_continue
+    (*self) = move _3
+    _0 = ()
+    storage_dead(_3)
+    storage_dead(source)
+    storage_dead(self)
+    return
+}
+
+// Full name: core::clone::impls::{impl Clone for u128}
+impl "impl_Clone_for_u128" Clone for u128 {
+    fn clone<'_0_1> = clone<'_0_1>
+    fn clone_from<'_0_1, '_1_1, TraitClause0_1: (u128: Destruct)> = impl_Clone_for_u128::clone_from<'_0_1, '_1_1>[TraitClause0_1]
+    non-dyn-compatible
+}
+
 struct (_, _)<A, B> {
   _0: A,
   _1: B,
 }
-
-struct () {}
 
 // Full name: core::num::{u64}::MAX
 pub fn MAX() -> u64
@@ -473,6 +580,28 @@ fn wide_mul_u128(a_1: u128, b_2: u128) -> (u128, u128)
     return
 }
 
+// Full name: core::marker::Copy
+#[lang_item(Copy)]
+#[diagnostic_item("Copy")]
+pub trait Copy<Self>
+{
+    proof ImpliedClause0: (Self: Clone)
+    non-dyn-compatible
+}
+
+// Full name: core::marker::{impl Copy for u128}
+impl "impl_Copy_for_u128" Copy for u128 {
+    proof ImpliedClause0: (u128: Clone) = impl_Clone_for_u128
+    non-dyn-compatible
+}
+
+// Full name: core::intrinsics::add_with_overflow
+#[rustc_intrinsic]
+pub fn add_with_overflow<T>(x_1: T, y_2: T) -> (T, bool)
+where
+    TraitClause0: (T: Copy),
+= <intrinsic:add_with_overflow>
+
 // Full name: core::num::{u128}::overflowing_add
 pub fn overflowing_add(self: u128, rhs: u128) -> (u128, bool)
 {
@@ -493,7 +622,8 @@ pub fn overflowing_add(self: u128, rhs: u128) -> (u128, bool)
     _6 = copy self
     storage_live(_7)
     _7 = copy rhs
-    _5 = move _6 checked.+ move _7
+    _5 = add_with_overflow<u128>[impl_Copy_for_u128](move _6, move _7)
+    ↳⚡ undefined_behavior
     storage_dead(_7)
     storage_dead(_6)
     storage_live(a)

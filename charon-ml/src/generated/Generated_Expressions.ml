@@ -69,13 +69,6 @@ and binop =
   | Mul of overflow_mode
   | Div of overflow_mode
   | Rem of overflow_mode
-  | AddChecked
-      (** Returns [(result, did_overflow)], where [result] is the result of the
-          operation with wrapping semantics, and [did_overflow] is a boolean
-          that indicates whether the operation overflowed. This operation does
-          not fail. *)
-  | SubChecked  (** Like [AddChecked]. *)
-  | MulChecked  (** Like [AddChecked]. *)
   | Shl of overflow_mode
       (** Fails if the shift is bigger than the bit-size of the type. *)
   | Shr of overflow_mode
@@ -258,25 +251,15 @@ and rvalue =
 
           Remark: in case of closures, the aggregated value groups the closure
           id together with its state. *)
-  | Len of place * ty * constant_expr option
-      (** Length of a place of type [[T]] or [[T; N]]. This applies to the place
-          itself, not to a pointer value. This is inserted by rustc in a single
-          case: slice patterns.
-          {@rust[
-            fn slice_pattern_4(x: &[()]) {
-                match x {
-                    [_named] => (),
-                    _ => (),
-                }
-            }
-          ]} *)
-  | Repeat of operand * ty * constant_expr * trait_ref option
+  | Repeat of operand * constant_expr * trait_ref * trait_ref option
       (** [Repeat(x, n)] creates an array containing [n] copies of [x].
 
-          We translate this to a function call for LLBC. The last field is the
-          proof that the repeated value is [Copy]. This proof can be absent when
-          the operand is a constant, which Rust permits to be repeated without
-          [Copy]. *)
+          Fields:
+          - [operand]
+          - [count]
+          - [elem_is_copy]: Proof that the element type is [Copy].
+          - [elem_is_sized]: Proof that the element type is [Sized]; absent with
+            [--hide-marker-traits]. *)
 
 (** Unary operation *)
 and unop =

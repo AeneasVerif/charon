@@ -13,7 +13,7 @@ let binop_can_fail : binop -> bool = function
   | Mul OWrap
   | Shl OWrap
   | Shr OWrap
-  | AddChecked | SubChecked | MulChecked | Cmp -> false
+  | Cmp -> false
   | Div _ | Rem _ | Add _ | Sub _ | Mul _ | Shl _ | Shr _ -> true
 
 let mk_unit_const : constant_expr = { kind = CAdt (None, []); ty = mk_unit_ty }

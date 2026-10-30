@@ -106,6 +106,7 @@ pub enum TerminatorKind {
     },
     Call {
         call: Call,
+        dest: Place,
         target: BlockId,
         on_unwind: BlockId,
     },
@@ -645,7 +646,7 @@ impl BodyBuilder {
         })
     }
 
-    pub fn call(&mut self, call: Call) {
+    pub fn call(&mut self, dest: Place, call: Call) {
         let next_block = self.body.body.push(mk_block(
             self.span,
             TerminatorKind::Return,
@@ -654,6 +655,7 @@ impl BodyBuilder {
         let term = TerminatorKind::Call {
             target: next_block,
             call,
+            dest,
             on_unwind: self.unwind_block(),
         };
         self.current_block().terminator.kind = term;

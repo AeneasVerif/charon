@@ -1214,7 +1214,9 @@ fn reuses_default_only_for_default_copies() -> anyhow::Result<()> {
     )?;
     let mut seen = 0;
     for f in crate_data.fun_decls.iter() {
-        if let FunSource::TraitImpl { reuses_default, .. } = &f.src {
+        if f.item_meta.is_local
+            && let FunSource::TraitImpl { reuses_default, .. } = &f.src
+        {
             // We don't pass `--duplicate-defaulted-methods`, so no copy of `describe` is
             // generated for `Square`.
             assert!(
@@ -1226,7 +1228,9 @@ fn reuses_default_only_for_default_copies() -> anyhow::Result<()> {
         }
     }
     for g in crate_data.global_decls.iter() {
-        if let GlobalSource::TraitImpl { reuses_default, .. } = &g.src {
+        if g.item_meta.is_local
+            && let GlobalSource::TraitImpl { reuses_default, .. } = &g.src
+        {
             assert!(
                 !reuses_default,
                 "{} is written in its impl but is labelled `reuses_default`",

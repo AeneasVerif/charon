@@ -60,23 +60,15 @@ pub enum Rvalue {
     /// Remark: in case of closures, the aggregated value groups the closure id
     /// together with its state.
     Aggregate(AggregateKind, Vec<Operand>),
-    /// Length of a place of type `[T]` or `[T; N]`. This applies to the place itself, not to a
-    /// pointer value. This is inserted by rustc in a single case: slice patterns.
-    /// ```text
-    /// fn slice_pattern_4(x: &[()]) {
-    ///     match x {
-    ///         [_named] => (),
-    ///         _ => (),
-    ///     }
-    /// }
-    /// ```
-    Len(Place, Ty, Option<ConstantExpr>),
     /// `Repeat(x, n)` creates an array containing `n` copies of `x`.
-    ///
-    /// We translate this to a function call for LLBC.
-    /// The last field is the proof that the repeated value is `Copy`. This proof can be absent
-    /// when the operand is a constant, which Rust permits to be repeated without `Copy`.
-    Repeat(Operand, Ty, ConstantExpr, Option<TraitRef>),
+    Repeat {
+        operand: Operand,
+        count: ConstantExpr,
+        /// Proof that the element type is `Copy`.
+        elem_is_copy: TraitRef,
+        /// Proof that the element type is `Sized`; absent with `--hide-marker-traits`.
+        elem_is_sized: Option<TraitRef>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -138,14 +130,6 @@ pub enum BinOp {
     Mul(OverflowMode),
     Div(OverflowMode),
     Rem(OverflowMode),
-    /// Returns `(result, did_overflow)`, where `result` is the result of the operation with
-    /// wrapping semantics, and `did_overflow` is a boolean that indicates whether the operation
-    /// overflowed. This operation does not fail.
-    AddChecked,
-    /// Like `AddChecked`.
-    SubChecked,
-    /// Like `AddChecked`.
-    MulChecked,
     /// Fails if the shift is bigger than the bit-size of the type.
     Shl(OverflowMode),
     /// Fails if the shift is bigger than the bit-size of the type.
@@ -180,8 +164,9 @@ pub enum CastKind {
     /// Convert a raw pointer or function pointer to a raw pointer.
     RawPtr(Ty),
     /// Converts a pointer or function pointer to an address, exposing its provenance.
+    /// The parameter is the destination integer type, which need not be `usize`.
     /// See <https://doc.rust-lang.org/std/primitive.pointer.html#method.expose_provenance>.
-    PtrExposeProvenance,
+    PtrExposeProvenance(#[serde_state(stateless)] IntegerTy),
     /// Converts an address to a pointer, which picks up exposed provenance.
     /// See <https://doc.rust-lang.org/std/ptr/fn.with_exposed_provenance.html>.
     PtrWithExposedProvenance(Ty),
@@ -375,9 +360,9 @@ impl BorrowKind {
 impl BinOp {
     pub fn with_overflow(&self, overflow: OverflowMode) -> Self {
         match self {
-            BinOp::Add(_) | BinOp::AddChecked => BinOp::Add(overflow),
-            BinOp::Sub(_) | BinOp::SubChecked => BinOp::Sub(overflow),
-            BinOp::Mul(_) | BinOp::MulChecked => BinOp::Mul(overflow),
+            BinOp::Add(_) => BinOp::Add(overflow),
+            BinOp::Sub(_) => BinOp::Sub(overflow),
+            BinOp::Mul(_) => BinOp::Mul(overflow),
             BinOp::Div(_) => BinOp::Div(overflow),
             BinOp::Rem(_) => BinOp::Rem(overflow),
             BinOp::Shl(_) => BinOp::Shl(overflow),

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::transform::CowBox;
 use crate::transform::{TransformCtx, ctx::UllbcPass};
@@ -6,6 +6,20 @@ use crate::ullbc_ast::*;
 
 pub struct Transform {
     anon_consts: HashMap<GlobalDeclId, FunDeclId>,
+}
+
+/// These globals and their initializers must remain available: a constant repeat cannot use a
+/// runtime call to evaluate its elements, as the element type may not be `Copy`/`Clone`.
+pub(super) fn globals_in_constant_repeats(krate: &TranslatedCrate) -> HashSet<GlobalDeclId> {
+    let mut globals = HashSet::new();
+    krate.dyn_visit(|kind: &ConstantExprKind| {
+        if let ConstantExprKind::Repeat { .. } = kind {
+            kind.dyn_visit(|gref: &GlobalDeclRef| {
+                globals.insert(gref.id);
+            });
+        }
+    });
+    globals
 }
 
 impl Transform {
@@ -30,7 +44,7 @@ impl UllbcPass for Transform {
             let Some(block) = body.body.get_mut(block_id) else {
                 continue;
             };
-            let mut new_calls: Vec<(LocalId, Call)> = vec![];
+            let mut new_calls: Vec<(Place, Call)> = vec![];
             block.dyn_visit_in_body_mut(|op: &mut Operand| {
                 if let Operand::Const(c) = op
                     && let ConstantExprKind::Global(gref) = c.kind()
@@ -38,14 +52,13 @@ impl UllbcPass for Transform {
                 {
                     let return_place = body.locals.new_var(None, c.ty().clone());
                     new_calls.push((
-                        return_place.as_local().unwrap(),
+                        return_place.clone(),
                         Call {
                             func: FnOperand::Regular(FnPtr::new(
                                 FnPtrKind::Fun(*initializer),
                                 gref.generics.clone(),
                             )),
                             args: vec![],
-                            dest: return_place.clone(),
                             safety: CallSafety::Inherit,
                         },
                     ));
@@ -58,7 +71,7 @@ impl UllbcPass for Transform {
                 let block = body.body[block_id].take();
                 let mut next_block = body.body.push(block);
                 // Each new block jumps to the previous one after completion
-                for (local_id, call) in new_calls {
+                for (dest, call) in new_calls {
                     // Const eval mustn't unwind into runtime.
                     let unwind = body
                         .body
@@ -66,12 +79,13 @@ impl UllbcPass for Transform {
                     next_block = body.body.push(BlockData {
                         statements: vec![Statement::new(
                             Span::dummy(),
-                            StatementKind::StorageLive(local_id),
+                            StatementKind::StorageLive(dest.as_local().unwrap()),
                         )],
                         terminator: Terminator::new(
                             Span::dummy(),
                             TerminatorKind::Call {
                                 call,
+                                dest,
                                 target: next_block,
                                 on_unwind: unwind,
                             },
@@ -85,8 +99,11 @@ impl UllbcPass for Transform {
         }
     }
     fn finalize(&self, ctx: &mut TransformCtx) {
+        let repeated_globals = globals_in_constant_repeats(&ctx.translated);
         for gid in self.anon_consts.keys() {
-            ctx.translated.global_decls.remove(*gid);
+            if !repeated_globals.contains(gid) {
+                ctx.translated.global_decls.remove(*gid);
+            }
         }
     }
 }

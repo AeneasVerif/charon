@@ -361,14 +361,14 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                         destination,
                         Rvalue::UnaryOp(
                             UnOp::Cast(
-                                cast @ (CastKind::PtrExposeProvenance
+                                cast @ (CastKind::PtrExposeProvenance(..)
                                 | CastKind::PtrWithExposedProvenance(..)),
                             ),
                             operand,
                         ),
                     ) => {
                         let intrinsic = match cast {
-                            CastKind::PtrExposeProvenance => {
+                            CastKind::PtrExposeProvenance(..) => {
                                 mini::IntrinsicOp::PointerExposeProvenance
                             }
                             CastKind::PtrWithExposedProvenance(_) => {
@@ -506,6 +506,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             }
             T::Call {
                 call,
+                dest,
                 target,
                 on_unwind,
             } => mini::Terminator::Call {
@@ -531,7 +532,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                         })
                     })
                     .collect::<Result<_>>()?,
-                ret: self.place(span, &call.dest)?,
+                ret: self.place(span, dest)?,
                 next_block: Some(self.block_name(*target)),
                 unwind_block: Some(self.block_name(*on_unwind)),
             },
@@ -757,20 +758,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             }
             Rvalue::Discriminant(place) => mb::get_discriminant(self.place(span, place)?),
             Rvalue::Aggregate(kind, operands) => self.aggregate(span, kind, operands)?,
-            Rvalue::Len(place, _, known_len) => {
-                if let Some(len) = known_len {
-                    self.constant(span, len)?
-                } else {
-                    let ptr = mini::ValueExpr::AddrOf {
-                        target: mini::GcCow::new(self.place(span, place)?),
-                        ptr_ty: mini::PtrType::Raw {
-                            meta_kind: mini::PointerMetaKind::ElementCount,
-                        },
-                    };
-                    mb::get_metadata(ptr)
-                }
-            }
-            Rvalue::Repeat(operand, ty, count, _) => {
+            Rvalue::Repeat { operand, count, .. } => {
                 let count = count
                     .as_usize_literal()
                     .ok_or("non-concrete array length")
@@ -779,7 +767,7 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     .map_err(|_| "array length does not fit usize")
                     .context(span)?;
                 let value = self.operand(span, operand)?;
-                mb::array(&vec![value; count], self.ty(span, ty)?)
+                mb::array(&vec![value; count], self.ty(span, operand.ty())?)
             }
         })
     }
@@ -814,9 +802,6 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
             BinOp::Ne => mini::BinOp::Rel(mini::RelOp::Ne),
             BinOp::Ge => mini::BinOp::Rel(mini::RelOp::Ge),
             BinOp::Gt => mini::BinOp::Rel(mini::RelOp::Gt),
-            BinOp::AddChecked => mini::BinOp::IntWithOverflow(mini::IntBinOpWithOverflow::Add),
-            BinOp::SubChecked => mini::BinOp::IntWithOverflow(mini::IntBinOpWithOverflow::Sub),
-            BinOp::MulChecked => mini::BinOp::IntWithOverflow(mini::IntBinOpWithOverflow::Mul),
             BinOp::Add(mode) => mini::BinOp::Int(overflowing_op(
                 mode,
                 mini::IntBinOp::Add,
@@ -916,7 +901,9 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                 }
             }
             // Handled at the statement level.
-            UnOp::Cast(CastKind::PtrExposeProvenance | CastKind::PtrWithExposedProvenance(..)) => {
+            UnOp::Cast(
+                CastKind::PtrExposeProvenance(..) | CastKind::PtrWithExposedProvenance(..),
+            ) => {
                 unreachable!()
             }
             UnOp::Cast(CastKind::FnDefToFnPtr) => {
@@ -1192,6 +1179,10 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
     pub(super) fn constant(&self, span: Span, constant: &ConstantExpr) -> Result<mini::ValueExpr> {
         let ty = self.ty(span, constant.ty())?;
         Ok(match constant.kind() {
+            ConstantExprKind::Global(gref) => mb::load(self.place(
+                span,
+                &Place::new_global(gref.clone(), constant.ty().clone()),
+            )?),
             ConstantExprKind::Bool(value) => mb::const_bool(*value),
             ConstantExprKind::Integer(value) => {
                 mini::ValueExpr::Constant(mini::Constant::Int(mini_int(*value)), ty)
@@ -1233,6 +1224,17 @@ impl<T: mini::Target> TranslateCtx<'_, T> {
                     .try_collect()?,
                 ty,
             ),
+            ConstantExprKind::Repeat { value, count, .. } => {
+                let count = count
+                    .as_usize_literal()
+                    .ok_or("non-concrete array length")
+                    .context(span)?;
+                let count = usize::try_from(count)
+                    .map_err(|_| "array length does not fit usize")
+                    .context(span)?;
+                let value = self.constant(span, value)?;
+                mini::ValueExpr::Tuple(std::iter::repeat_n(value, count).collect(), ty)
+            }
             ConstantExprKind::FnDef(_) => mini::ValueExpr::Tuple(Default::default(), ty),
             ConstantExprKind::FnPtr(fn_ptr) => match *fn_ptr.kind {
                 FnPtrKind::Fun(id) => self.fn_pointer(id),
